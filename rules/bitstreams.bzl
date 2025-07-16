@@ -60,11 +60,13 @@ def _bitstreams_repo_impl(rctx):
     rctx.getenv("BITSTREAM")
     rctx.watch(rctx.attr.python_interpreter)
     rctx.watch(rctx.attr._cache_manager)
+
     result = rctx.execute(
         [
             rctx.path(rctx.attr.python_interpreter),
             rctx.attr._cache_manager,
             "--build-file=BUILD.bazel",
+            "--watch-file=watch.txt",
             "--bucket-url={}".format(rctx.attr.bucket_url),
             "--cache={}".format(cache_path),
             "--refresh-time={}".format(rctx.attr.refresh_time),
@@ -73,6 +75,10 @@ def _bitstreams_repo_impl(rctx):
     )
     if result.return_code != 0:
         fail("Bitstream cache not initialized properly.")
+
+    # Watch all files that the cache manager asks for.
+    for f in rctx.read("watch.txt").splitlines():
+        rctx.watch(f)
 
 # The bitstream repo should be evaluated with `bazel fetch --configure` after
 # every Git checkout. Once the cache is initialized, a typical invocation will

@@ -63,6 +63,9 @@ parser.add_argument('--bucket-url', default=BUCKET_URL, help='GCP Bucket URL')
 parser.add_argument('--build-file',
                     default='BUILD.bazel',
                     help='Name of the generated BUILD file')
+parser.add_argument('--watch-file',
+                    default=None,
+                    help='Path to output files to watch')
 parser.add_argument('--list',
                     default=False,
                     action=argparse.BooleanOptionalAction,
@@ -103,6 +106,7 @@ class BitstreamCache(object):
         self.latest_update = latest_update
         self.offline = offline
         self.available = {}
+        self.watch_list = []
 
     @staticmethod
     def MakeWithDefaults() -> 'BitstreamCache':
@@ -117,6 +121,43 @@ class BitstreamCache(object):
         os.makedirs(self.cachedir, exist_ok=True)
         if create_symlink:
             os.symlink(self.cachedir, 'cache')
+
+    def ResolveGitRef(self, repodir: str, ref: str):
+        """Resolve Git references and add related Git files to watch list.
+        This is conceptually equivalent to `git rev-parse <ref>` but it makes effort to figure
+        out files to watch.
+        """
+
+        # Object ID (possibly in short form)
+        if re.search(r'^[0-9A-Fa-f]{4,}$', ref):
+            return subprocess.check_output(
+                ['git', 'rev-parse', ref],
+                universal_newlines=True,
+                cwd=repodir).strip()
+
+        # For short form of references, expand it to long form
+        if not ref.endswith("HEAD") and not ref.startswith("refs/"):
+            ref = subprocess.check_output(
+                ['git', 'rev-parse', '--symbolic-full-name', ref],
+                universal_newlines=True,
+                cwd=repodir).strip()
+
+        # Resolve git path. This is not simply `<repodir>/.git/<ref>` when worktrees are used.
+        path = subprocess.check_output(
+            ['git', 'rev-parse', '--path-format=absolute', '--git-path', ref],
+            universal_newlines=True,
+            cwd=repodir).strip()
+
+        self.watch_list.append(path)
+
+        with open(path) as f:
+            content = f.read().strip()
+
+        # For refs, recurse into contents.
+        if content.startswith('ref: '):
+            return self.ResolveGitRef(repodir, content.removeprefix('ref: '))
+
+        return content
 
     def Touch(self, key):
         """Set the latest known bitstream.
@@ -238,6 +279,9 @@ class BitstreamCache(object):
         """
         if key in self.available:
             return key
+
+        key = self.ResolveGitRef(repodir, key)
+
         commits = []
         lines = subprocess.check_output(
             ['git', 'log', '--oneline', '--no-abbrev-commit', key],
@@ -589,6 +633,10 @@ def main(argv):
         return 1
     logging.info(
         'Configured latest bitstream as {}.'.format(configured_bitream))
+
+    if args.watch_file is not None:
+        with open(args.watch_file, "w") as f:
+            f.write("\n".join(cache.watch_list))
 
     return 0
 
