@@ -67,6 +67,34 @@ static inline void gcm_context_restore(otcrypto_aes_gcm_context_t *api_ctx,
 }
 
 /**
+ * Remask the key if it is not sideloaded.
+ *
+ * Generate a fresh mask and apply it to the current key.
+ *
+ * @param[in,out] internal_ctx Internal context object.
+ * @return Result of the operation.
+ */
+status_t gcm_remask_key(aes_gcm_context_t *internal_ctx) {
+  if (launder32(internal_ctx->key.sideload) == kHardenedBoolFalse) {
+    HARDENED_CHECK_EQ(internal_ctx->key.sideload, kHardenedBoolFalse);
+
+    // Generate a fresh mask the size of one share.
+    uint32_t mask[internal_ctx->key.key_len];
+    hardened_memshred(mask, internal_ctx->key.key_len);
+
+    // XOR each share with the mask.
+    hardened_xor((uint32_t *)internal_ctx->key.key_shares[0], mask,
+                 internal_ctx->key.key_len);
+    hardened_xor((uint32_t *)internal_ctx->key.key_shares[1], mask,
+                 internal_ctx->key.key_len);
+  } else {
+    HARDENED_CHECK_EQ(internal_ctx->key.sideload, kHardenedBoolTrue);
+  }
+
+  return OTCRYPTO_OK;
+}
+
+/**
  * Construct the underlying AES key for AES-GCM.
  *
  * Also performs integrity, mode, and null-pointer checks on the key.
@@ -427,6 +455,8 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   aes_gcm_context_t internal_ctx;
   gcm_context_restore(ctx, &internal_ctx);
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
+  // Remask the key if it is not sideloaded.
+  HARDENED_TRY(gcm_remask_key(&internal_ctx));
 
   // The output buffer must be long enough to hold all full blocks that will
   // exist after `input` is added.
@@ -474,6 +504,8 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   aes_gcm_context_t internal_ctx;
   gcm_context_restore(ctx, &internal_ctx);
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
+  // Remask the key if it is not sideloaded.
+  HARDENED_TRY(gcm_remask_key(&internal_ctx));
 
   // If the partial block is nonempty, the output must be at least as long as
   // the partial block.
@@ -517,6 +549,8 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
   aes_gcm_context_t internal_ctx;
   gcm_context_restore(ctx, &internal_ctx);
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
+  // Remask the key if it is not sideloaded.
+  HARDENED_TRY(gcm_remask_key(&internal_ctx));
 
   // If the partial block is nonempty, the output must be at least as long as
   // the partial block.
