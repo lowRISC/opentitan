@@ -44,7 +44,7 @@ def parse_test_vectors(raw_data):
 
             test_vectors.append(test_vec)
 
-        return test_vectors
+    return test_vectors
 
 
 def main():
