@@ -1078,11 +1078,7 @@ def amend_interrupt(top: ConfigT,
     if "interrupt" not in top or top["interrupt"] == "":
         top["interrupt"] = []
 
-    # Careful, "interrupt*s*"
-    default_plic = None
-    if "interrupts" in top and "default_plic" in top["interrupts"]:
-        default_plic = top["interrupts"]["default_plic"]
-
+    default_plic = top.get("default_plic", None)
     interrupts = []
     outgoing_interrupts = defaultdict(list)
     for m in modules + list(chain(*outgoing_modules.values())):

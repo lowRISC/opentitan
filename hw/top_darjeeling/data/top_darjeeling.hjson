@@ -196,12 +196,9 @@
   // Number of cores: used in rv_plic and timer
   num_cores: "1",
 
-  // Interrupt handler information for the design
-  interrupts: {
-    // Any module with interrupts that doesn't specify plic
-    // will have its interrupts sent here
-    default_plic: "rv_plic"
-  }
+  // Any module with interrupts that doesn't specify plic
+  // will have its interrupts sent here
+  default_plic: "rv_plic"
 
   // Any module with alerts that doesn't specify alert_handler
   // will have its alerts sent here
