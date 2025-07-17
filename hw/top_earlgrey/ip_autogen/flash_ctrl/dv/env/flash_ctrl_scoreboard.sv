@@ -209,10 +209,10 @@ class flash_ctrl_scoreboard #(
     bit            write = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
 
-    bit            addr_phase_read = (!write && channel == AddrChannel);
-    bit            addr_phase_write = (write && channel == AddrChannel);
-    bit            data_phase_read = (!write && channel == DataChannel);
-    bit            data_phase_write = (write && channel == DataChannel);
+    bit            addr_phase_read = (!write && channel == AChannel);
+    bit            addr_phase_write = (write && channel == AChannel);
+    bit            data_phase_read = (!write && channel == DChannel);
+    bit            data_phase_write = (write && channel == DChannel);
     bit            erase_req;
     if (skip_read_check) do_read_check = 0;
     // if access was to a valid csr, get the csr handle
@@ -839,7 +839,7 @@ class flash_ctrl_scoreboard #(
                         ), UVM_HIGH)
 
     if (over_rd_err.exists(item.a_addr)) begin
-      if (channel == DataChannel)  begin
+      if (channel == DChannel)  begin
         over_rd_err[item.a_addr]--;
         if (over_rd_err[item.a_addr] == 0) over_rd_err.delete(item.a_addr);
         `uvm_info(`gfn, $sformatf("addr is clear 0x%x", item.a_addr), UVM_HIGH)
@@ -861,7 +861,7 @@ class flash_ctrl_scoreboard #(
     end
 
     if (ecc_err | in_err) begin
-      if (channel == DataChannel) begin
+      if (channel == DChannel) begin
         `DV_CHECK_EQ(item.d_error, 1,
                      $sformatf("On interface %s, TL item: %s, ecc_err:%0d in_err:%0d",
                                ral_name, item.sprint(uvm_default_line_printer),
@@ -870,11 +870,11 @@ class flash_ctrl_scoreboard #(
       end
     end
 
-    if (exp_tl_rsp_intg_err == 1 && channel == DataChannel) begin
+    if (exp_tl_rsp_intg_err == 1 && channel == DChannel) begin
       return (!item.is_d_chan_intg_ok(.throw_error(0)));
     end
 
-    if (ral_name == cfg.flash_ral_name && channel == DataChannel) begin
+    if (ral_name == cfg.flash_ral_name && channel == DChannel) begin
       bit has_error = cfg.address_has_some_injected_error({item.a_addr[TL_AW-1:3],3'h0},
                                                           FlashPartData);
       if (has_error) begin
@@ -892,7 +892,7 @@ class flash_ctrl_scoreboard #(
     // Local Variable
     tlul_pkg::tl_a_user_t a_user = item.a_user;
     if (cfg.en_cov) begin
-      if (channel == AddrChannel) begin
+      if (channel == AChannel) begin
         cov.fetch_code_cg.sample(is_exec_key, a_user.instr_type);
       end
     end
@@ -901,8 +901,8 @@ class flash_ctrl_scoreboard #(
     if (((a_user.instr_type == MuBi4False) || (item.a_opcode != tlul_pkg::Get)) ||
          (`gmv(ral.exec) == CODE_EXEC_KEY)) return(0);  // No Error Predicted
 
-    // Error is Predicted,  Expect an Error if Channel==DataChannel
-    if (channel == DataChannel) begin
+    // Error is Predicted,  Expect an Error if Channel==DChannel
+    if (channel == DChannel) begin
       `uvm_info(`gfn, "TL Error Expected", UVM_HIGH)
       `DV_CHECK_EQ(item.d_error, 1)
     end

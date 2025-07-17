@@ -2135,7 +2135,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     `uvm_info(`gfn, $sformatf("CSR name: %s",csr.get_name()), UVM_DEBUG)
     // if incoming access is a write to a valid csr, then make updates right away
     // don't update flash_status predict value as it's updated at the end of spi transaction
-    if (write && channel == AddrChannel && csr.get_name != "flash_status") begin
+    if (write && channel == AChannel && csr.get_name != "flash_status") begin
       // store the previous value if it's a TPM HW reg and SPI interface is busy
       if (!cfg.spi_host_agent_cfg.vif.csb[TPM_CSB_ID] &&
           csr.get_name inside {ALL_TPM_HW_REG_NAMES}) begin
@@ -2171,7 +2171,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         // ADDR_MODE updates on SCK side after the first byte is received. The TB updates
         // ADDR_MODE.addr_4b_en at the end of the flash_command, so the TB won't need to handle this
         // case differently.
-        if (write && channel == AddrChannel) begin
+        if (write && channel == AChannel) begin
           bit rtl_pending;
           tl_ul_side_addr_mode_pending = 1;
           tl_ul_side_addr_mode_addr_4b_en = item.a_data[0];
@@ -2185,7 +2185,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                        $sformatf("Comparison mismatch, act (0x%0x) != exp %p",
                                  rtl_pending, tl_ul_side_addr_mode_pending))
         end
-        if (!write && channel == DataChannel) begin
+        if (!write && channel == DChannel) begin
           bit [TL_DW-1:0] exp_addr_mode = tl_ul_side_addr_mode_pending ?
                                           tl_ul_side_addr_mode_addr_4b_en :
                                           spi_side_addr_mode_addr_4b_en;
@@ -2202,7 +2202,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         end
       end
       "flash_status": begin
-        if (write && channel == AddrChannel) begin
+        if (write && channel == AChannel) begin
           flash_status_t flash_status = item.a_data;
           `uvm_info(`gfn, $sformatf("SW Write to flash_status (0x%0x)", item.a_data), UVM_DEBUG)
 
@@ -2217,7 +2217,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           // in function 'populate_tl_ul_side_flash_status_q'
           populate_tl_ul_side_flash_status_q(flash_status);
         end
-        if (!write && channel == DataChannel) begin
+        if (!write && channel == DChannel) begin
           string print_str;
           flash_status_t exp_val = `gmv(ral.flash_status); // predicted value updated when CSB (0->1)
           flash_status_t exp_data_q[$] = {tl_ul_old_flash_status_q, exp_val,
@@ -2261,7 +2261,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         return;
       end
       "intr_state": begin
-        if (!write && channel == DataChannel) begin
+        if (!write && channel == DChannel) begin
           bit [NumSpiDevIntr-1:0] intr_exp = `gmv(csr);
           bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
           //Set when a read_line command is ongoing, or was ongoing last:
@@ -2367,8 +2367,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
           // skip updating predict value to d_data
           return;
-        end // if (!write && channel == DataChannel)
-        else if (write && channel == AddrChannel) begin
+        end // if (!write && channel == DChannel)
+        else if (write && channel == AChannel) begin
           bit [NumSpiDevIntr-1:0] intr_val = item.a_data;
           bit [NumSpiDevIntr-1:0] intr_exp = `gmv(csr);
           `uvm_info(`gfn, $sformatf("INTR_STATE: write (0x%0x)",intr_val ), UVM_DEBUG)
@@ -2408,7 +2408,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         end
       end
       "intr_test": begin
-        if (write && channel == AddrChannel) begin
+        if (write && channel == AChannel) begin
           bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
           bit [NumSpiDevIntr-1:0] intr_val;
           intr_val = `gmv(ral.intr_state) | item.a_data;
@@ -2423,7 +2423,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         ;
       end
       "upload_cmdfifo": begin
-        if (!write && channel == DataChannel) begin
+        if (!write && channel == DChannel) begin
           `DV_CHECK_GT(upload_cmd_q.size, 0)
           // TODO: Check addr4b_mode, wel, and busy bits
           `DV_CHECK_EQ(item.d_data[7:0], upload_cmd_q.pop_front())
@@ -2431,7 +2431,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         end
       end
       "upload_addrfifo": begin
-        if (!write && channel == DataChannel) begin
+        if (!write && channel == DChannel) begin
           `DV_CHECK_GT(upload_addr_q.size, 0)
           `DV_CHECK_EQ(item.d_data, upload_addr_q.pop_front())
           update_addrfifo_status();
@@ -2441,7 +2441,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         do_read_check = 1;
       end
       "tpm_cmd_addr": begin
-        if (!write && channel == DataChannel) begin
+        if (!write && channel == DChannel) begin
           bit [7:0] cmd = get_field_val(ral.tpm_cmd_addr.cmd, item.d_data);
           bit [TPM_ADDR_WIDTH-1:0] addr = get_field_val(ral.tpm_cmd_addr.addr, item.d_data);
           spi_item tpm_item = spi_item::type_id::create("tpm_item", this);
@@ -2468,7 +2468,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         end
       end
       "tpm_read_fifo": begin
-        if (write && channel == AddrChannel) begin
+        if (write && channel == AChannel) begin
           uint num_bytes;
           int size_to_done;
 
@@ -2496,7 +2496,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     endcase
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
-    if (!write && channel == DataChannel) begin
+    if (!write && channel == DChannel) begin
       if (do_read_check) begin
         `DV_CHECK_EQ(item.d_data, `gmv(csr),
                     $sformatf("CSR %s compare mismatch act 0x%0x != exp 0x%0x",

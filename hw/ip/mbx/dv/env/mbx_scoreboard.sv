@@ -96,10 +96,10 @@ class mbx_scoreboard extends cip_base_scoreboard #(
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
     bit [31:0] mask = 'hffff_ffff;
 
-    bit addr_phase_read   = (!write && channel == AddrChannel);
-    bit addr_phase_write  = (write && channel == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
-    bit data_phase_write  = (write && channel == DataChannel);
+    bit addr_phase_read   = (!write && channel == AChannel);
+    bit addr_phase_write  = (write && channel == AChannel);
+    bit data_phase_read   = (!write && channel == DChannel);
+    bit data_phase_write  = (write && channel == DChannel);
 
     // if access was to a valid csr, get the csr handle
     if (ral_name != cfg.mbx_mem_ral_name) begin
@@ -236,10 +236,10 @@ return;
     uvm_reg_addr_t csr_addr = cfg.ral_models[RAL_T::type_name].get_word_aligned_addr(
                               item.a_addr);
 
-    bit addr_phase_read   = (!write && channel == AddrChannel);
-    bit addr_phase_write  = (write && channel == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
-    bit data_phase_write  = (write && channel == DataChannel);
+    bit addr_phase_read   = (!write && channel == AChannel);
+    bit addr_phase_write  = (write && channel == AChannel);
+    bit data_phase_read   = (!write && channel == DChannel);
+    bit data_phase_write  = (write && channel == DChannel);
 
     `uvm_info(`gfn, "process_tl_mbx_core_access -- Start", UVM_DEBUG)
     csr = cfg.ral_models[RAL_T::type_name].default_map.get_reg_by_offset(csr_addr);
@@ -325,10 +325,10 @@ return;
     uvm_reg_addr_t csr_addr =
       cfg.ral_models[cfg.mbx_soc_ral_name].get_word_aligned_addr(item.a_addr);
 
-    bit addr_phase_read   = (!write && channel == AddrChannel);
-    bit addr_phase_write  = (write && channel == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
-    bit data_phase_write  = (write && channel == DataChannel);
+    bit addr_phase_read   = (!write && channel == AChannel);
+    bit addr_phase_write  = (write && channel == AChannel);
+    bit data_phase_read   = (!write && channel == DChannel);
+    bit data_phase_write  = (write && channel == DChannel);
 
     `uvm_info(`gfn, "process_tl_mbx_soc_access -- Start", UVM_DEBUG)
     csr = cfg.ral_models[cfg.mbx_soc_ral_name].default_map.get_reg_by_offset(csr_addr);
@@ -442,10 +442,10 @@ return;
 
   virtual function void process_tl_mbx_mem_access(tl_seq_item item, tl_channels_e channel);
     bit write             = item.is_write();
-    bit addr_phase_read   = (!write && channel == AddrChannel);
-    bit addr_phase_write  = (write && channel == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
-    bit data_phase_write  = (write && channel == DataChannel);
+    bit addr_phase_read   = (!write && channel == AChannel);
+    bit addr_phase_write  = (write && channel == AChannel);
+    bit data_phase_read   = (!write && channel == DChannel);
+    bit data_phase_write  = (write && channel == DChannel);
 
     `uvm_info(`gfn, "process_tl_mbx_mem_access -- Start", UVM_DEBUG)
     if(addr_phase_read || addr_phase_write) begin

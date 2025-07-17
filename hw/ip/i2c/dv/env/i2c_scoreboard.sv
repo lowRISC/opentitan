@@ -232,10 +232,10 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     uvm_reg csr;
 
     bit write = item.is_write();
-    bit tl_get           = (!write && channel == AddrChannel);
-    bit tl_putdata       =  (write && channel == AddrChannel); // write
-    bit tl_accessackdata = (!write && channel == DataChannel); // read
-    bit tl_accessack     =  (write && channel == DataChannel);
+    bit tl_get           = (!write && channel == AChannel);
+    bit tl_putdata       =  (write && channel == AChannel); // write
+    bit tl_accessackdata = (!write && channel == DChannel); // read
+    bit tl_accessack     =  (write && channel == DChannel);
 
     // If access was not addressed to a valid csr, raise a fatal error
     if (!(csr_addr inside {i2c_ral.csr_addrs})) begin

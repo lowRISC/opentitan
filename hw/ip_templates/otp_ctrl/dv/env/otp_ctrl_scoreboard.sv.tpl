@@ -537,10 +537,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     uvm_reg_addr_t csr_addr   = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
     bit [TL_AW-1:0] addr_mask = ral.get_addr_mask();
 
-    bit addr_phase_read   = (!write && channel == AddrChannel);
-    bit addr_phase_write  = (write && channel == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
-    bit data_phase_write  = (write && channel == DataChannel);
+    bit addr_phase_read   = (!write && channel == AChannel);
+    bit addr_phase_write  = (write && channel == AChannel);
+    bit data_phase_read   = (!write && channel == DChannel);
+    bit data_phase_write  = (write && channel == DChannel);
 
     if (ral_name != "otp_macro_prim_reg_block") begin
       process_core_tl_access(item, csr_addr, ral_name, addr_mask,
@@ -1461,7 +1461,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
     if (ral_name == "otp_macro_prim_reg_block" &&
         cfg.otp_ctrl_vif.lc_dft_en_i != lc_ctrl_pkg::On) begin
-      if (channel == DataChannel) begin
+      if (channel == DChannel) begin
         `DV_CHECK_EQ(item.d_error, 1,
             $sformatf({"On interface %0s, TL item: %0s, access gated by lc_dft_en_i"},
             ral_name, item.sprint(uvm_default_line_printer)))

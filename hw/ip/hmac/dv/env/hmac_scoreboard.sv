@@ -134,8 +134,8 @@ task hmac_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e channel,
     `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
   end
 
-  // if incoming access is a write to a valid csr or mem, then update right away on addr channel
-  if (write && channel == AddrChannel) begin
+  // if incoming access is a write to a valid csr or mem, then update right away on A channel
+  if (write && channel == AChannel) begin
     // push the msg into msg_fifo
     if ((item.a_addr & addr_mask) inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]}) begin
       // Only push message into the FIFO when intended, as in case of S&R triggered with another
@@ -373,8 +373,8 @@ task hmac_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e channel,
     end
   end
 
-  // predict status based on csr read addr channel
-  if (!write && channel != DataChannel) begin
+  // predict status based on csr read A channel
+  if (!write && channel != DChannel) begin
     // Update expected status register
     if (csr_name == "status") begin
       hmac_status_data = (hmac_idle       << HmacStaIdle)         |

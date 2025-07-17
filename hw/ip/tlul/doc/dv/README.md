@@ -98,7 +98,7 @@ Due to this limitation, scoreboard is designed as following:
   Each host has a queue used only for unmapped items. It stores the unmapped item from a_channel, then compare it with the same source ID response received in d_channel.
 
 Following analysis fifos are created to retrieve the data monitored by corresponding interface agents:
-* a_chan_host/device_name, d_chan_host/device_name: These fifos provide transaction items at the end of address channel and data channel respectively from host/device
+* `a_chan_host/device_name`, `d_chan_host/device_name`: These fifos provide transaction items at the end of the A and D channel respectively from host/device
 
 Following item queues are created to store items for check
 * a_chan_device_name: store items from all hosts that are sent to this device

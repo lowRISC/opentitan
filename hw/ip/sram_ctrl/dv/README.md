@@ -150,12 +150,12 @@ The following covergroups have been developed to prove that the test intent has 
 #### Scoreboard
 The `sram_ctrl_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* tl_a_chan_fifo: TL address channel for CSR accesses
-* tl_d_chan_fifo: TL data channel for CSR accesses
+* `tl_a_chan_fifo`: TileLink A channel for CSR accesses
+* `tl_d_chan_fifo`: TileLink D channel for CSR accesses
 * alert_fifos: Alert handshakes
-* sram_tl_a_chan_fifo: TL address channel for memory accesses
-* sram_tl_d_chan_fifo: TL data channel for memory accesses
-* kdi_fifo: For key refresh operations from OTP_CTRL
+* `sram_tl_a_chan_fifo`: TL A channel for memory accesses
+* `sram_tl_d_chan_fifo`: TL D channel for memory accesses
+* `kdi_fifo`: For key refresh operations from OTP_CTRL
 
 All CSR accesses made to the SRAM_CTRL register file are tracked and predicted by the scoreboard.
 
