@@ -58,11 +58,11 @@ enum {
 
 status_t rsa_modexp_wait(size_t *num_words) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
 
   // Read the application mode.
   uint32_t mode;
-  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMode, &mode));
+  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(1, kOtbnVarRsaMode, &mode));
 
   *num_words = 0;
   if (mode == kMode2048Modexp || mode == kMode2048ModexpF4) {
@@ -94,7 +94,7 @@ status_t rsa_modexp_wait(size_t *num_words) {
 static status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
   // Wait for OTBN to complete and get the result size.
   size_t num_words_inferred;
-  HARDENED_TRY(rsa_modexp_wait(&num_words_inferred));
+  HARDENED_TRY_WIPE_DMEM(rsa_modexp_wait(&num_words_inferred));
 
   // Check that the inferred result size matches expectations.
   if (num_words != num_words_inferred) {
@@ -104,7 +104,7 @@ static status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
   }
 
   // Read the result.
-  HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaInOut, result));
+  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(num_words, kOtbnVarRsaInOut, result));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
