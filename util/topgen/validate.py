@@ -76,7 +76,8 @@ top_optional = {
     'racl_config': ['s', 'Path to a RACL configuration HJSON file'],
     'reset_requests': ['g', 'define reset requests grouped by type'],
     'rnd_cnst_seed': ['int', "Seed for random netlist constant computation"],
-    'unmanaged_resets': ['l', 'List of unmanaged external resets']
+    'unmanaged_resets': ['l', 'List of unmanaged external resets'],
+    'default_alert_handler': ['s', 'Modules not defining alert_handler have alerts sent here']
 }
 
 top_added = {
@@ -609,14 +610,12 @@ def check_alerts(top: ConfigT, ip_name_to_block: IpBlocksT, prefix: str) -> int:
     handler_names = [handler["name"] for handler in alert_handlers]
 
     # Check that the default handler exists
-    default_handler = None
-    if "alerts" in top and "default_handler" in top["alerts"]:
-        default_handler = top["alerts"]["default_handler"]
-        if default_handler is not None and \
-           default_handler not in handler_names:
-            errors += 1
-            log.error(f"{default_handler} (named as default alert handler) "
-                      f"does not exist")
+    default_handler = top.get("default_alert_handler", None)
+    if (default_handler is not None and
+       default_handler not in handler_names):
+        errors += 1
+        log.error(f"{default_handler} (named as default alert handler) "
+                  f"does not exist")
 
     for module in top["module"]:
         log.info(f"Checking alerts for {module['name']}")
