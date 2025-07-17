@@ -70,6 +70,8 @@ status_t rsa_modexp_wait(size_t *num_words) {
       break;
     default:
       // Unrecognized mode.
+      // Wipe DMEM.
+      HARDENED_TRY(otbn_dmem_sec_wipe());
       return OTCRYPTO_FATAL_ERR;
   }
 
@@ -93,6 +95,8 @@ static status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
 
   // Check that the inferred result size matches expectations.
   if (num_words != num_words_inferred) {
+    // Wipe DMEM.
+    HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_FATAL_ERR;
   }
 
