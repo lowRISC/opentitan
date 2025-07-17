@@ -207,65 +207,6 @@ status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
   return keyblob_from_shares(share0, mask, config, keyblob);
 }
 
-/**
- * Combines two word buffers with XOR.
- *
- * Callers should ensure the entropy complex is up before calling this
- * function.  The implementation uses random-order hardening primitives for
- * side-channel defense.
- *
- * @param[in,out] x Pointer to the first operand (modified in-place).
- * @param y Pointer to the second operand.
- * @param word_len Length in words of each operand.
- */
-void hardened_xor(uint32_t *restrict x, const uint32_t *restrict y,
-                  size_t word_len) {
-  // Generate a random ordering.
-  random_order_t order;
-  random_order_init(&order, word_len);
-  size_t count = 0;
-  size_t expected_count = random_order_len(&order);
-
-  // Create some random values for decoy operations.
-  uint32_t decoys[8];
-  hardened_memshred(decoys, ARRAYSIZE(decoys));
-
-  // Cast pointers to `uintptr_t` to erase their provenance.
-  uintptr_t x_addr = (uintptr_t)x;
-  uintptr_t y_addr = (uintptr_t)y;
-  uintptr_t decoy_addr = (uintptr_t)&decoys;
-
-  // XOR the mask with the first share. This loop is modelled off the one in
-  // `hardened_memcpy`; see the comments there for more details.
-  size_t byte_len = word_len * sizeof(uint32_t);
-  for (; launderw(count) < expected_count; count = launderw(count) + 1) {
-    size_t byte_idx = launderw(random_order_advance(&order)) * sizeof(uint32_t);
-
-    // Prevent the compiler from re-ordering the loop.
-    barrierw(byte_idx);
-
-    // Calculate pointers. The x and y pointers might not be valid, but in this
-    // case they will not be selected.
-    uintptr_t xp = x_addr + byte_idx;
-    uintptr_t yp = y_addr + byte_idx;
-    uintptr_t decoy1 = decoy_addr + (byte_idx % sizeof(decoys));
-    uintptr_t decoy2 =
-        decoy_addr +
-        ((byte_idx + (sizeof(decoys) / 2) + sizeof(uint32_t)) % sizeof(decoys));
-
-    // Select in constant-time either the real pointers or decoys.
-    void *xv = (void *)launderw(
-        ct_cmovw(ct_sltuw(launderw(byte_idx), byte_len), xp, decoy1));
-    void *yv = (void *)launderw(
-        ct_cmovw(ct_sltuw(launderw(byte_idx), byte_len), yp, decoy2));
-
-    // Perform an XOR in either the decoy array or the real array.
-    write_32(read_32(xv) ^ read_32(yv), xv);
-  }
-  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
-  HARDENED_CHECK_EQ(count, expected_count);
-}
-
 status_t keyblob_remask(otcrypto_blinded_key_t *key) {
   // Check that the key is masked with XOR.
   HARDENED_TRY(keyblob_ensure_xor_masked(key->config));
