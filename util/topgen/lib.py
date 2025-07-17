@@ -922,10 +922,7 @@ class TopGen:
         self._enum_type = enum_type
         self._array_mapping_type = array_mapping_type
 
-        if "interrupts" in self.top:
-            self.default_plic = self.top["interrupts"].get("default_plic")
-        else:
-            self.default_plic = None
+        self.default_plic = self.top.get("default_plic", None)
         self._init_plics()
 
         # Only generate alert_handler and mappings if there is an alert_handler

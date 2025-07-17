@@ -84,10 +84,7 @@ class TopGenCTest(TopGenC):
         self.alert_handler = find_module(self.top['module'], 'alert_handler')
         self.rv_plics = find_modules(self.top['module'], 'rv_plic')
 
-        self.default_plic = None
-        if "interrupts" in self.top:
-            self.default_plic = self.top["interrupts"].get("default_plic")
-
+        self.default_plic = self.top.get("default_plic", None)
         self.irq_peripherals = {}
         for plic in self.rv_plics:
             self.irq_peripherals[plic["name"]] = {
