@@ -442,10 +442,7 @@
     ]
   }
   num_cores: "1"
-  interrupts:
-  {
-    default_plic: rv_plic
-  }
+  default_plic: rv_plic
   default_alert_handler: null
   addr_spaces:
   [

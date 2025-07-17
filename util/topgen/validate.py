@@ -77,7 +77,8 @@ top_optional = {
     'reset_requests': ['g', 'define reset requests grouped by type'],
     'rnd_cnst_seed': ['int', "Seed for random netlist constant computation"],
     'unmanaged_resets': ['l', 'List of unmanaged external resets'],
-    'default_alert_handler': ['s', 'Modules not defining alert_handler have alerts sent here']
+    'default_alert_handler': ['s', 'Modules not defining alert_handler have alerts sent here'],
+    'default_plic': ['s', 'Modules not defining plic have interrupts sent here']
 }
 
 top_added = {
