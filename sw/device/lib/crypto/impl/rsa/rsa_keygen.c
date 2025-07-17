@@ -79,20 +79,21 @@ static status_t keygen_start(uint32_t mode) {
 static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
                                 uint32_t *n, uint32_t *d) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
 
   // Read the mode from OTBN dmem and panic if it's not as expected.
   uint32_t act_mode = 0;
-  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMode, &act_mode));
+  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(1, kOtbnVarRsaMode, &act_mode));
   if (act_mode != exp_mode) {
+    HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_FATAL_ERR;
   }
 
   // Read the public modulus (n) from OTBN dmem.
-  HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaN, n));
+  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(num_words, kOtbnVarRsaN, n));
 
   // Read the private exponent (d) from OTBN dmem.
-  HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaD, d));
+  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(num_words, kOtbnVarRsaD, d));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();

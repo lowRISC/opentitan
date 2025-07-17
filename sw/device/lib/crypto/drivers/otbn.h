@@ -16,6 +16,27 @@ extern "C" {
 #endif
 
 /**
+ * Hardened version of the `TRY` macro that wipes DMEM() on an error.
+ *
+ * Returns an error if either expr_ represents an error, or if the OK code does
+ * not match the expected hardened value.
+ *
+ * @param expr_ An expression that evaluates to a `status_t`.
+ * @return The enclosed OK value.
+ */
+#define HARDENED_TRY_WIPE_DMEM(expr_)                                   \
+  do {                                                                  \
+    status_t status_ = expr_;                                           \
+    if (launder32(OT_UNSIGNED(status_.value)) != kHardenedBoolTrue) {   \
+      otbn_dmem_sec_wipe();                                             \
+      return (status_t){                                                \
+          .value = (int32_t)(OT_UNSIGNED(status_.value) | 0x80000000)}; \
+    }                                                                   \
+    HARDENED_CHECK_EQ(status_.value, kHardenedBoolTrue);                \
+    status_.value;                                                      \
+  } while (false)
+
+/**
  * Constants related to OTBN wide words
  */
 enum {
