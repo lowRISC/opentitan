@@ -1171,10 +1171,7 @@ def get_alert_connections(top: ConfigT,
         suffix = handler.replace("alert_handler", "")
         return (f"alert{suffix}_tx", f"alert{suffix}_rx")
 
-    default_handler = None
-    if "alerts" in top:
-        default_handler = top["alerts"].get("default_handler", None)
-
+    default_handler = top.get("default_alert_handler", None)
     connections = defaultdict(list)
 
     # Construct the connection information here
@@ -1317,11 +1314,7 @@ def amend_alert(top: ConfigT,
     outgoing_alerts = defaultdict(list)
     missing_ips = []
 
-    # Careful, "alert*s*"
-    default_handler = None
-    if "alerts" in top and "default_handler" in top["alerts"]:
-        default_handler = top["alerts"]["default_handler"]
-
+    default_handler = top.get("default_alert_handler", None)
     for m in alert_modules + list(chain(*outgoing_modules.values())):
         ips = list(filter(lambda module: module["name"] == m, top["module"]))
         if len(ips) == 0:
