@@ -99,9 +99,7 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaD, d));
 
   // Wipe DMEM.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_sec_wipe();
 }
 
 status_t rsa_keygen_2048_start(void) {
