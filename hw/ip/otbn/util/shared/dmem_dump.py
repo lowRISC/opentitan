@@ -32,6 +32,7 @@ def parse_dmem_exp(dump: str) -> Dict[str, int]:
             raise ValueError(f'Failed to parse dmem dump line ({line}).')
         label = m.group('label')
         value = bytes.fromhex(m.group('val'))
+        value = value[::-1]  # big-endian -> little-endian
 
         if label in out:
             raise ValueError(f'DMEM dump contains multiple values '
@@ -50,10 +51,8 @@ def parse_actual_dmem(dump: bytes) -> bytes:
     # 8 32-bit data words + 1 byte integrity info per word = 40 bytes
     bytes_w_integrity = 8 * 4 + 8
     for w in struct.iter_unpack(f"<{bytes_w_integrity}s", dump):
-        tmp = []
         # discard byte indicating integrity status
         for v in struct.iter_unpack("<BI", w[0]):
-            tmp += [x for x in struct.unpack("4B", v[1].to_bytes(4, "big"))]
-        dmem_bytes += tmp
+            dmem_bytes += v[1].to_bytes(4, "little")
     assert len(dmem_bytes) == get_memory_layout().dmem_size_bytes
     return bytes(dmem_bytes)

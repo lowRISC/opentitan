@@ -80,6 +80,7 @@ start:
   beq   x2, x3, attestation_key_save
 
   /* Invalid mode; fail. */
+start_failed:
   unimp
   unimp
   unimp
