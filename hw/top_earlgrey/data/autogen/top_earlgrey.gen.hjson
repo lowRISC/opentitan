@@ -563,10 +563,7 @@
   {
     default_plic: rv_plic
   }
-  alerts:
-  {
-    default_handler: alert_handler
-  }
+  default_alert_handler: alert_handler
   addr_spaces:
   [
     {

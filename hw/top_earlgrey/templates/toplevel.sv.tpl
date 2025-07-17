@@ -52,9 +52,7 @@ last_modidx_with_params = lib.idx_of_last_module_with_params(top)
 # plic -> {count, prefix}
 plic_info = {}
 
-default_handler = None
-if "alerts" in top and "default_handler" in top["alerts"]:
-  default_handler = top["alerts"]["default_handler"]
+default_handler = top.get("default_alert_handler", None)
 
 alert_handlers = [handler["type"] for handler in lib.find_modules(top["module"], "alert_handler")]
 %>\
