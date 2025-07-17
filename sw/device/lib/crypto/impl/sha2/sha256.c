@@ -245,7 +245,7 @@ static status_t process_message(sha256_state_t *state, const uint8_t *msg,
   }
 
   // Read the final state from OTBN dmem.
-  HARDENED_TRY(
+  HARDENED_TRY_WIPE_DMEM(
       otbn_dmem_read(kSha256StateWords, kOtbnVarSha256State, new_state.H));
 
   // Clear OTBN's memory.
