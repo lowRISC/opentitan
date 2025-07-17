@@ -5,13 +5,22 @@
 
 package tlul_pkg;
 
-  // this can be either PPC or BINTREE
-  // there is no functional difference, but timing and area behavior is different
-  // between the two instances. PPC can result in smaller implementations when timing
-  // is not critical, whereas BINTREE is favorable when timing pressure is high (but this
-  // may also result in a larger implementation). on FPGA targets, BINTREE is favorable
-  // both in terms of area and timing.
-  parameter ArbiterImpl = "PPC";
+  // Different possible arbiters for TLUL arbitration.
+  typedef enum logic [0:0] {
+    // The PPC arbiter is defined in prim_arbiter_ppc and uses the parallel prefix computing
+    // optimization to optimize the request / arbiter tree. This can result in smaller
+    // implementations when timing is not critical.
+    PPCArbiter,
+
+    // The bintree arbiter is a binary tree implementation of a round robin arbiter, defined in
+    // prim_arbiter_tree. This might be more favorable than the PPC arbiter when timing pressure is
+    // high, but it may also result in a larger implementation.
+    //
+    // On FPGA targets, this arbiter is better than the PPC arbiter for both area and timing.
+    BintreeArbiter
+  } arbiter_impl_e;
+
+  parameter arbiter_impl_e ArbiterImpl = PPCArbiter;
 
   typedef enum logic [2:0] {
     PutFullData    = 3'h 0,
