@@ -155,7 +155,8 @@ status_t handle_cryptolib_fi_sym_init(ujson_t *uj) {
       uj_cpuctrl_data.enable_sram_readback, &uj_output.clock_jitter_locked,
       &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
       &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
-      &uj_output.sram_ret_readback_en));
+      &uj_output.sram_ret_readback_en, uj_cpuctrl_data.enable_data_ind_timing,
+      &uj_output.data_ind_timing_en));
 
   // Read rom digest.
   TRY(pentest_read_rom_digest(uj_output.rom_digest));
