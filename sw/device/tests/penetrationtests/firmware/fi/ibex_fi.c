@@ -4221,7 +4221,8 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
       uj_cpuctrl_data.enable_sram_readback, &uj_output.clock_jitter_locked,
       &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
       &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
-      &uj_output.sram_ret_readback_en));
+      &uj_output.sram_ret_readback_en, uj_cpuctrl_data.enable_data_ind_timing,
+      &uj_output.data_ind_timing_en));
 
   // Enable the flash.
   flash_info = dif_flash_ctrl_get_device_info();
