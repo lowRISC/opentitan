@@ -135,7 +135,7 @@ static status_t process_message_buffer(sha512_otbn_ctx_t *ctx) {
 
   // Run the OTBN program.
   HARDENED_TRY(otbn_execute());
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
 
   // Reset the message buffer counter.
   ctx->num_blocks = 0;
@@ -307,8 +307,9 @@ static status_t process_message(sha512_state_t *state, const uint8_t *msg,
   // boundaries.
   otbn_addr_t state_read_addr = kOtbnVarSha512State;
   for (size_t i = 0; i + 1 < kSha512StateWords; i += 2) {
-    HARDENED_TRY(otbn_dmem_read(1, state_read_addr, &new_state.H[i + 1]));
-    HARDENED_TRY(
+    HARDENED_TRY_WIPE_DMEM(
+        otbn_dmem_read(1, state_read_addr, &new_state.H[i + 1]));
+    HARDENED_TRY_WIPE_DMEM(
         otbn_dmem_read(1, state_read_addr + sizeof(uint32_t), &new_state.H[i]));
     state_read_addr += kOtbnWideWordNumBytes;
   }
