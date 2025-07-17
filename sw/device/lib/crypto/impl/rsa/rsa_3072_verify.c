@@ -138,13 +138,14 @@ status_t rsa_3072_compute_constants(const rsa_3072_public_key_t *public_key,
   HARDENED_TRY(otbn_execute());
 
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
 
   // Read constant rr out of DMEM.
-  HARDENED_TRY(read_rsa_3072_int_from_otbn(kOtbnVarRsaRR, &result->rr));
+  HARDENED_TRY_WIPE_DMEM(
+      read_rsa_3072_int_from_otbn(kOtbnVarRsaRR, &result->rr));
 
   // Read constant m0_inv out of DMEM.
-  HARDENED_TRY(
+  HARDENED_TRY_WIPE_DMEM(
       otbn_dmem_read(kOtbnWideWordNumWords, kOtbnVarRsaM0Inv, result->m0_inv));
 
   // Wipe DMEM.
@@ -198,11 +199,11 @@ status_t rsa_3072_verify_finalize(const rsa_3072_int_t *message,
   *result = kHardenedBoolFalse;
 
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
 
   // Read recovered message out of OTBN dmem.
   rsa_3072_int_t recoveredMessage;
-  HARDENED_TRY(
+  HARDENED_TRY_WIPE_DMEM(
       read_rsa_3072_int_from_otbn(kOtbnVarRsaOutBuf, &recoveredMessage));
 
   // TODO: harden this memory comparison
