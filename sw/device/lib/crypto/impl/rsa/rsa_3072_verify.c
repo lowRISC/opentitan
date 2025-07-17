@@ -147,7 +147,8 @@ status_t rsa_3072_compute_constants(const rsa_3072_public_key_t *public_key,
   HARDENED_TRY(
       otbn_dmem_read(kOtbnWideWordNumWords, kOtbnVarRsaM0Inv, result->m0_inv));
 
-  return OTCRYPTO_OK;
+  // Wipe DMEM.
+  return otbn_dmem_sec_wipe();
 }
 
 status_t rsa_3072_verify_start(const rsa_3072_int_t *signature,
@@ -213,7 +214,8 @@ status_t rsa_3072_verify_finalize(const rsa_3072_int_t *message,
     }
   }
 
-  return OTCRYPTO_OK;
+  // Wipe DMEM.
+  return otbn_dmem_sec_wipe();
 }
 
 status_t rsa_3072_verify(const rsa_3072_int_t *signature,
