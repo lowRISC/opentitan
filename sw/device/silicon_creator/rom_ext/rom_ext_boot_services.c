@@ -80,13 +80,14 @@ static rom_error_t boot_svc_min_sec_ver_handler(
     uint32_t *isfb_check_count) {
   const uint32_t current_min_sec_ver = boot_data->min_security_version_bl0;
   const uint32_t requested_min_sec_ver =
-      boot_svc_msg->next_boot_bl0_slot_req.next_bl0_slot;
+      boot_svc_msg->min_bl0_sec_ver_req.min_bl0_sec_ver;
 
   // Ensure the requested minimum security version isn't lower than the current
   // minimum security version.
   if (launder32(requested_min_sec_ver) > current_min_sec_ver) {
     HARDENED_CHECK_GT(requested_min_sec_ver, current_min_sec_ver);
-    uint32_t max_sec_ver = current_min_sec_ver;
+    uint32_t slot_a_max_sec_ver = current_min_sec_ver;
+    uint32_t slot_b_max_sec_ver = current_min_sec_ver;
 
     // Check the two flash slots for valid manifests and determine the maximum
     // value of the new minimum_security_version.  This prevents a malicious
@@ -96,15 +97,17 @@ static rom_error_t boot_svc_min_sec_ver_handler(
     rom_error_t error =
         rom_ext_verify(manifest, boot_data, &flash_exec, keyring, verify_key,
                        owner_config, isfb_check_count);
-    if (error == kErrorOk && manifest->security_version > max_sec_ver) {
-      max_sec_ver = manifest->security_version;
+    if (error == kErrorOk && manifest->security_version > slot_a_max_sec_ver) {
+      slot_a_max_sec_ver = manifest->security_version;
     }
     manifest = rom_ext_boot_policy_manifest_b_get();
     error = rom_ext_verify(manifest, boot_data, &flash_exec, keyring,
                            verify_key, owner_config, isfb_check_count);
-    if (error == kErrorOk && manifest->security_version > max_sec_ver) {
-      max_sec_ver = manifest->security_version;
+    if (error == kErrorOk && manifest->security_version > slot_b_max_sec_ver) {
+      slot_b_max_sec_ver = manifest->security_version;
     }
+
+    uint32_t max_sec_ver = MIN(slot_a_max_sec_ver, slot_b_max_sec_ver);
 
     if (requested_min_sec_ver <= max_sec_ver) {
       HARDENED_CHECK_LE(requested_min_sec_ver, max_sec_ver);
