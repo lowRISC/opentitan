@@ -190,6 +190,7 @@ status_t interpret_verify_status(ujson_t *uj, otcrypto_status_t status,
 }
 
 status_t p256_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
+                   otcrypto_unblinded_key_t *public_key,
                    otcrypto_hash_digest_t message_digest,
                    otcrypto_word32_buf_t signature_mut,
                    cryptotest_ecdsa_signature_t *uj_signature) {
@@ -205,8 +206,8 @@ status_t p256_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
   memcpy(private_key_masked.share1, uj_private_key->d1, kP256ScalarBytes);
   private_key.checksum = integrity_blinded_checksum(&private_key);
 
-  otcrypto_status_t status =
-      otcrypto_ecdsa_p256_sign(&private_key, message_digest, signature_mut);
+  otcrypto_status_t status = otcrypto_ecdsa_p256_sign_verify(
+      &private_key, public_key, message_digest, signature_mut);
   if (status.value != kOtcryptoStatusValueOk) {
     return INTERNAL(status.value);
   }
@@ -225,6 +226,7 @@ status_t p256_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
 }
 
 status_t p384_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
+                   otcrypto_unblinded_key_t *public_key,
                    otcrypto_hash_digest_t message_digest,
                    otcrypto_word32_buf_t signature_mut,
                    cryptotest_ecdsa_signature_t *uj_signature) {
@@ -240,8 +242,8 @@ status_t p384_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
   memcpy(private_key_masked.share1, uj_private_key->d1, kP384ScalarBytes);
   private_key.checksum = integrity_blinded_checksum(&private_key);
 
-  otcrypto_status_t status =
-      otcrypto_ecdsa_p384_sign(&private_key, message_digest, signature_mut);
+  otcrypto_status_t status = otcrypto_ecdsa_p384_sign_verify(
+      &private_key, public_key, message_digest, signature_mut);
   if (status.value != kOtcryptoStatusValueOk) {
     return INTERNAL(status.value);
   }
@@ -353,12 +355,12 @@ status_t handle_ecdsa(ujson_t *uj) {
     case kCryptotestEcdsaOperationSign: {
       switch (uj_curve) {
         case kCryptotestEcdsaCurveP256: {
-          return p256_sign(uj, &uj_private_key, message_digest, signature_mut,
-                           &uj_signature);
+          return p256_sign(uj, &uj_private_key, &public_key, message_digest,
+                           signature_mut, &uj_signature);
         }
         case kCryptotestEcdsaCurveP384: {
-          return p384_sign(uj, &uj_private_key, message_digest, signature_mut,
-                           &uj_signature);
+          return p384_sign(uj, &uj_private_key, &public_key, message_digest,
+                           signature_mut, &uj_signature);
         }
         default:
           LOG_ERROR("Unsupported ECC curve: %d", uj_curve);
