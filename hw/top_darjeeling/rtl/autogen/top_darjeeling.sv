@@ -85,7 +85,7 @@ module top_darjeeling #(
   parameter bit SecOtbnSkipUrndReseedAtStart = 0,
   // parameters for keymgr_dpe
   parameter bit KeymgrDpeKmacEnMasking = 1,
-  parameter bit KeymgrDpeFlopToKmac = 0,
+  parameter bit KeymgrDpeFlopToKmac = 1'b1,
   // parameters for csrng
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
   // parameters for entropy_src
