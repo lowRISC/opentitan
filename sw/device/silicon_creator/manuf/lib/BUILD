@@ -224,6 +224,7 @@ opentitan_test(
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",

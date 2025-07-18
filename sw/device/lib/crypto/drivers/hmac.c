@@ -7,7 +7,10 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 #include "hmac_regs.h"  // Generated.
@@ -156,8 +159,9 @@ static void clear(void) {
   cfg = bitfield_bit32_write(cfg, HMAC_CFG_SHA_EN_BIT, false);
   abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, cfg);
 
-  // TODO(#23191): Use a random value from EDN to wipe.
-  abs_mmio_write32(kHmacBaseAddr + HMAC_WIPE_SECRET_REG_OFFSET, UINT32_MAX);
+  // Use a random value from EDN to wipe HMAC.
+  abs_mmio_write32(kHmacBaseAddr + HMAC_WIPE_SECRET_REG_OFFSET,
+                   (uint32_t)ibex_rnd32_read());
 }
 
 /**
@@ -268,6 +272,34 @@ static void context_save(hmac_ctx_t *ctx) {
 }
 
 /**
+ * Wipes the ctx struct by replacing sensitive data with randomness from the
+ * Ibex EDN interface. Non-sensitive variables are zeroized.
+ *
+ * @param[out] ctx Initialized context object for SHA2/HMAC-SHA2 operations.
+ * @return Result of the operation.
+ */
+static status_t hmac_context_wipe(hmac_ctx_t *ctx) {
+  // Ensure entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
+
+  // Randomize sensitive data.
+  hardened_memshred(ctx->key, kHmacMaxBlockWords);
+  hardened_memshred(ctx->H, kHmacMaxDigestWords);
+  hardened_memshred((uint32_t *)(ctx->partial_block),
+                    kHmacMaxBlockBytes / sizeof(uint32_t));
+  // Zero the remaining ctx fields.
+  ctx->cfg_reg = 0;
+  ctx->key_wordlen = 0;
+  ctx->msg_block_wordlen = 0;
+  ctx->digest_wordlen = 0;
+  ctx->lower = 0;
+  ctx->upper = 0;
+  ctx->partial_block_bytelen = 0;
+
+  return OTCRYPTO_OK;
+}
+
+/**
  * Write given byte array into the `MSG_FIFO`. This function should only be
  * called when HMAC HWIP is already running and expecting further message bytes.
  *
@@ -354,6 +386,9 @@ static status_t oneshot(const uint32_t cfg, const uint32_t *key,
                         size_t digest_wordlen, uint32_t *digest) {
   // Check that the block is idle.
   HARDENED_TRY(ensure_idle());
+
+  // Make sure that the entropy complex is configured correctly.
+  HARDENED_TRY(entropy_complex_check());
 
   // Configure the HMAC block.
   abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, cfg);
@@ -509,6 +544,9 @@ void hmac_hmac_sha512_init(const uint32_t *key_block, hmac_ctx_t *ctx) {
 }
 
 status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
+  // Make sure that the entropy complex is configured correctly.
+  HARDENED_TRY(entropy_complex_check());
+
   // If we don't have enough new bytes to fill a block, just update the partial
   // block and return.
   size_t block_bytelen = ctx->msg_block_wordlen * sizeof(uint32_t);
@@ -554,6 +592,9 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
 }
 
 status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest) {
+  // Make sure that the entropy complex is configured correctly.
+  HARDENED_TRY(entropy_complex_check());
+
   // Retore context will restore the context and also hit start or continue
   // button as necessary.
   context_restore(ctx);
@@ -571,7 +612,8 @@ status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest) {
   HARDENED_TRY(hmac_idle_wait());
   digest_read(digest, ctx->digest_wordlen);
 
-  // TODO(#23191): Destroy sensitive values in the ctx object.
+  // Destroy sensitive values in the ctx object.
+  HARDENED_TRY(hmac_context_wipe(ctx));
 
   // Clean up.
   clear();

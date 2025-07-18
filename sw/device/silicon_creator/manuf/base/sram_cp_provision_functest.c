@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -87,6 +88,7 @@ static status_t check_device_id_and_manuf_state(
 
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
+  CHECK_STATUS_OK(entropy_complex_init());
   pinmux_testutils_init(&pinmux);
   ottf_console_init();
   ujson_t uj = ujson_ottf_console();

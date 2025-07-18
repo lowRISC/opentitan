@@ -838,6 +838,7 @@ static status_t finalize_otp_partitions(void) {
 
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
+  CHECK_STATUS_OK(entropy_complex_init());
   ujson_t uj = ujson_ottf_console();
   log_self_hash();
   CHECK_STATUS_OK(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
