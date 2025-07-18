@@ -13,6 +13,10 @@
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 /**
  * Personalization data is sent between the device and the host during the
  * device provisioning. Personalization data is laid out as a sequence of
@@ -262,5 +266,9 @@ rom_error_t perso_tlv_push_cert_to_perso_blob(
 OT_WARN_UNUSED_RESULT
 rom_error_t perso_tlv_push_to_perso_blob(const void *data, size_t size,
                                          perso_blob_t *perso_blob);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_BASE_PERSO_TLV_DATA_H_
