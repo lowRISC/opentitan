@@ -24,6 +24,7 @@
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
+#include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cert.h"
@@ -37,6 +38,8 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
+#include "sw/device/silicon_creator/lib/ownership/owner_block.h"
+#include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 #include "sw/device/silicon_creator/manuf/base/personalize_ext.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
@@ -156,6 +159,16 @@ static cert_flash_info_layout_t cert_flash_layout[] = {
         .num_certs = 0,
     },
 };
+
+/**
+ * Ownership initialization function.
+ */
+OT_WEAK rom_error_t
+sku_creator_owner_init(boot_data_t *bootdata, owner_config_t *config,
+                       owner_application_keyring_t *keyring) {
+  LOG_ERROR("No ownership initialization");
+  return kErrorOk;
+}
 
 static void log_self_hash(void) {
   // clang-format off
@@ -503,6 +516,9 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
       kDiceCertFormat, all_certs, curr_cert_size, &perso_blob_to_host));
   LOG_INFO("Generated UDS certificate.");
 
+  ownership_seal_init();
+  LOG_INFO("Initialized ownership sealing in UDS state.");
+
   // Generate CDI_0 keys and cert.
   curr_cert_size = kCdi0MaxCertSizeBytes;
   compute_keymgr_owner_int_binding(&certgen_inputs);
@@ -543,6 +559,39 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
                                         kDiceCertFormat, all_certs,
                                         curr_cert_size, &perso_blob_to_host));
   LOG_INFO("Generated CDI_1 certificate.");
+
+  return OK_STATUS();
+}
+
+static status_t install_owner(void) {
+  // Get the boot_data; installing the owner will write it back with the
+  // ownership_state set to LockedOwner.
+  boot_data_t boot_data;
+  TRY(boot_data_read(kLcStateProd, &boot_data));
+
+  // Initialize the ownership-related flash pages.
+  flash_ctrl_perms_t perm = {
+      .read = kMultiBitBool4True,
+      .write = kMultiBitBool4True,
+      .erase = kMultiBitBool4True,
+  };
+  flash_ctrl_cfg_t cfg = {
+      .scrambling = kMultiBitBool4True,
+      .ecc = kMultiBitBool4True,
+      .he = kMultiBitBool4False,
+  };
+  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot0, perm);
+  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot0, cfg);
+  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot1, perm);
+  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot1, cfg);
+
+  // Initialize ownership.  This will write the owner block into OwnerSlot0 and
+  // set the ownership_state to LockedOwner.  The first boot of the ROM_EXT
+  // will create a redundanty copy in OwnerSlot1.
+  owner_config_t config;
+  owner_config_default(&config);
+  owner_application_keyring_t keyring = {0};
+  TRY(sku_creator_owner_init(&boot_data, &config, &keyring));
 
   return OK_STATUS();
 }
@@ -843,6 +892,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
   CHECK_STATUS_OK(personalize_otp_and_flash_secrets(&uj));
   CHECK_STATUS_OK(personalize_gen_dice_certificates(&uj));
+  CHECK_STATUS_OK(install_owner());
 
   personalize_extension_pre_endorse_t pre_endorse = {
       .uj = &uj,
