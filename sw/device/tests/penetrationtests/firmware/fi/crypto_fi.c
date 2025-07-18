@@ -22,6 +22,7 @@
 #include "sw/device/tests/penetrationtests/json/crypto_fi_commands.h"
 
 #include "aes_regs.h"
+#include "hmac_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "kmac_regs.h"
 
@@ -56,11 +57,6 @@ static dif_rv_core_ibex_t rv_core_ibex;
 
 static dif_aes_key_share_t aes_key_shares;
 static dif_aes_data_t aes_plaintext;
-
-static const dif_hmac_transaction_t kHmacTransactionConfig = {
-    .digest_endianness = kDifHmacEndiannessLittle,
-    .message_endianness = kDifHmacEndiannessLittle,
-};
 
 /**
  * KMAC test description.
@@ -480,20 +476,90 @@ status_t handle_crypto_fi_kmac_state(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_crypto_fi_sha256(ujson_t *uj) {
-  // Get the message.
-  crypto_fi_hmac_message_t uj_msg;
-  TRY(ujson_deserialize_crypto_fi_hmac_message_t(uj, &uj_msg));
+status_t handle_crypto_fi_hmac(ujson_t *uj) {
+  // Get the message and key.
+  crypto_fi_hmac_input_t uj_input;
+  TRY(ujson_deserialize_crypto_fi_hmac_input_t(uj, &uj_input));
   // Get the test mode.
   crypto_fi_hmac_mode_t uj_data;
   TRY(ujson_deserialize_crypto_fi_hmac_mode_t(uj, &uj_data));
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
 
+  // hash_mode 0 equals SHA256, 1 equals SHA384, and 2 equals SHA512
+  uint32_t digest_cfg_size = 0;
+  uint32_t key_cfg_size = 0;
+  uint32_t digest_word_size = 0;
+  uint32_t key_word_size = 0;
+  switch (uj_data.hash_mode) {
+    case 0:
+      digest_cfg_size = HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_256;
+      key_cfg_size = HMAC_CFG_KEY_LENGTH_VALUE_KEY_256;
+      digest_word_size = 8;
+      key_word_size = 8;
+      break;
+    case 1:
+      digest_cfg_size = HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_384;
+      key_cfg_size = HMAC_CFG_KEY_LENGTH_VALUE_KEY_384;
+      digest_word_size = 12;
+      key_word_size = 12;
+      break;
+    case 2:
+      digest_cfg_size = HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_512;
+      key_cfg_size = HMAC_CFG_KEY_LENGTH_VALUE_KEY_512;
+      digest_word_size = 16;
+      key_word_size = 16;
+      break;
+    default:
+      digest_cfg_size = HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_256;
+      key_cfg_size = HMAC_CFG_KEY_LENGTH_VALUE_KEY_256;
+      digest_word_size = 8;
+      key_word_size = 8;
+  }
+
   if (uj_data.start_trigger) {
     pentest_set_trigger_high();
   }
-  TRY(dif_hmac_mode_sha256_start(&hmac, kHmacTransactionConfig));
+  // This mimics dif_hmac_mode_sha256_start, however, we need to include SHA384
+  // and SHA512 as well.
+  uint32_t reg = mmio_region_read32(hmac.base_addr, HMAC_CFG_REG_OFFSET);
+
+  // Set the byte-order of the input message and the digest.
+  reg = bitfield_bit32_write(reg, HMAC_CFG_ENDIAN_SWAP_BIT,
+                             uj_data.message_endianness_big);
+  reg = bitfield_bit32_write(reg, HMAC_CFG_DIGEST_SWAP_BIT,
+                             uj_data.digest_endianness_big);
+  reg = bitfield_bit32_write(reg, HMAC_CFG_KEY_SWAP_BIT,
+                             uj_data.key_endianness_big);
+
+  // Set HMAC to process in SHA2 or HMAC mode.
+  reg = bitfield_bit32_write(reg, HMAC_CFG_SHA_EN_BIT, true);
+  reg = bitfield_bit32_write(reg, HMAC_CFG_HMAC_EN_BIT, uj_data.enable_hmac);
+
+  // Set digest size.
+  reg =
+      bitfield_field32_write(reg, HMAC_CFG_DIGEST_SIZE_FIELD, digest_cfg_size);
+  // Set key size.
+  reg = bitfield_field32_write(reg, HMAC_CFG_KEY_LENGTH_FIELD, key_cfg_size);
+  // Set the key size (only matters for HMAC).
+  reg = bitfield_field32_write(reg, HMAC_CFG_KEY_LENGTH_FIELD, key_cfg_size);
+
+  // Write new CFG register value.
+  mmio_region_write32(hmac.base_addr, HMAC_CFG_REG_OFFSET, reg);
+
+  // Write the key.
+  if (uj_data.enable_hmac) {
+    for (size_t i = 0; i < key_word_size; ++i) {
+      abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_KEY_0_REG_OFFSET +
+                           i * sizeof(uint32_t),
+                       uj_input.key[i]);
+    }
+  }
+
+  // Begin HMAC operation.
+  mmio_region_nonatomic_set_bit32(hmac.base_addr, HMAC_CMD_REG_OFFSET,
+                                  HMAC_CMD_HASH_START_BIT);
+
   if (uj_data.start_trigger) {
     pentest_set_trigger_low();
   }
@@ -501,8 +567,8 @@ status_t handle_crypto_fi_sha256(ujson_t *uj) {
   if (uj_data.msg_trigger) {
     pentest_set_trigger_high();
   }
-  TRY(hmac_testutils_push_message(&hmac, (char *)uj_msg.message,
-                                  sizeof(uj_msg.message)));
+  TRY(hmac_testutils_push_message(&hmac, (char *)uj_input.message,
+                                  sizeof(uj_input.message)));
   if (uj_data.msg_trigger) {
     pentest_set_trigger_low();
   }
@@ -515,11 +581,39 @@ status_t handle_crypto_fi_sha256(ujson_t *uj) {
     pentest_set_trigger_low();
   }
 
-  dif_hmac_digest_t digest;
+  uint32_t digest[CRYPTOFI_HMAC_CMD_MAX_TAG_WORDS];
+  memset(digest, 0, CRYPTOFI_HMAC_CMD_MAX_TAG_WORDS);
   if (uj_data.finish_trigger) {
     pentest_set_trigger_high();
   }
-  TRY(hmac_testutils_finish_polled(&hmac, &digest));
+  // We again adapt the dif to allow for SHA384 and SHA512 outputs
+  uint32_t usec;
+  compute_hmac_testutils_finish_timeout_usec(&usec);
+  mmio_region_nonatomic_set_bit32(hmac.base_addr, HMAC_INTR_STATE_REG_OFFSET,
+                                  HMAC_INTR_STATE_HMAC_DONE_BIT);
+
+  // Read digest
+  for (size_t i = 0; i < digest_word_size; ++i) {
+    digest[digest_word_size - i - 1] = mmio_region_read32(
+        hmac.base_addr,
+        HMAC_DIGEST_0_REG_OFFSET + (ptrdiff_t)(i * sizeof(uint32_t)));
+  }
+
+  // Disable after done
+  uint32_t device_config =
+      mmio_region_read32(hmac.base_addr, HMAC_CFG_REG_OFFSET);
+  device_config =
+      bitfield_bit32_write(device_config, HMAC_CFG_SHA_EN_BIT, false);
+  device_config =
+      bitfield_bit32_write(device_config, HMAC_CFG_HMAC_EN_BIT, false);
+  device_config =
+      bitfield_field32_write(device_config, HMAC_CFG_DIGEST_SIZE_FIELD,
+                             HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_NONE);
+  device_config =
+      bitfield_field32_write(device_config, HMAC_CFG_KEY_LENGTH_FIELD,
+                             HMAC_CFG_KEY_LENGTH_VALUE_KEY_256);
+
+  mmio_region_write32(hmac.base_addr, HMAC_CFG_REG_OFFSET, device_config);
   if (uj_data.finish_trigger) {
     pentest_set_trigger_low();
   }
@@ -536,7 +630,8 @@ status_t handle_crypto_fi_sha256(ujson_t *uj) {
   // Send the digest and the alerts back to the host.
   crypto_fi_hmac_tag_t uj_output;
   uj_output.err_status = codes;
-  memcpy(uj_output.tag, digest.digest, sizeof(uj_output.tag));
+  memset(uj_output.tag, 0, sizeof(uj_output.tag));
+  memcpy(uj_output.tag, digest, digest_word_size * 4);
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
@@ -708,8 +803,8 @@ status_t handle_crypto_fi(ujson_t *uj) {
       return handle_crypto_fi_kmac(uj);
     case kCryptoFiSubcommandKmacState:
       return handle_crypto_fi_kmac_state(uj);
-    case kCryptoFiSubcommandSha256:
-      return handle_crypto_fi_sha256(uj);
+    case kCryptoFiSubcommandHmac:
+      return handle_crypto_fi_hmac(uj);
     case kCryptoFiSubcommandShadowRegAccess:
       return handle_crypto_fi_shadow_reg_access(uj);
     case kCryptoFiSubcommandShadowRegRead:

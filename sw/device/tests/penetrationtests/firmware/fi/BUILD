@@ -10,6 +10,7 @@ cc_library(
     hdrs = ["crypto_fi.h"],
     deps = [
         "//hw/top:aes_c_regs",
+        "//hw/top:hmac_c_regs",
         "//hw/top:kmac_c_regs",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",

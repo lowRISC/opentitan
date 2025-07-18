@@ -69,39 +69,95 @@
   },
   {
     "test_case_id": 11,
-    "command": "Sha256",
-    "input": "{\"message\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}",
-    "mode": "{\"start_trigger\": true,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": false}",
-    "expected_output": ["{\"tag\":[686569403,627255979,3962665531,1869430007,3580678696,2543765621,4151418325,927402239],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "command": "Hmac",
+    "input": "{\"message\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"key\": [0, 0, 0, 0, 0, 0, 0, 0]}",
+    "mode": "{\"start_trigger\": true,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": false, \"enable_hmac\": false, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":0}",
+    "expected_output": ["{\"tag\":[686569403,627255979,3962665531,1869430007,3580678696,2543765621,4151418325,927402239,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   },
   {
     "test_case_id": 12,
-    "command": "Sha256",
-    "input": "{\"message\": [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]}",
-    "mode": "{\"start_trigger\": false,\"msg_trigger\": true,\"process_trigger\": false,\"finish_trigger\": false}",
-    "expected_output": ["{\"tag\":[1080378907,3894047529,4265098468,2275438372,2555095219,287412521,1595297801,1522967956],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "command": "Hmac",
+    "input": "{\"message\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"key\": [0, 0, 0, 0, 0, 0, 0, 0]}",
+    "mode": "{\"start_trigger\": true,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": false, \"enable_hmac\": false, \"message_endianness_big\": true, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":0}",
+    "expected_output": ["{\"tag\":[686569403,627255979,3962665531,1869430007,3580678696,2543765621,4151418325,927402239,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   },
   {
     "test_case_id": 13,
-    "command": "Sha256",
-    "input": "{\"message\": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}",
-    "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": true,\"finish_trigger\": false}",
-    "expected_output": ["{\"tag\":[3996813713,3685128488,2749163006,1137088592,438890749,3186001028,96417470,3192245030],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "command": "Hmac",
+    "input": "{\"message\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"key\": [0, 0, 0, 0, 0, 0, 0, 0]}",
+    "mode": "{\"start_trigger\": true,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": false, \"enable_hmac\": false, \"message_endianness_big\": true, \"digest_endianness_big\": true, \"key_endianness_big\": false, \"hash_mode\":0}",
+    "expected_output": ["{\"tag\":[3141004328,2871681829,997863916,4147932527,684879061,1976082071,3583865335,4278732599,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   },
   {
     "test_case_id": 14,
-    "command": "Sha256",
-    "input": "{\"message\": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]}",
-    "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true}",
-    "expected_output": ["{\"tag\":[956051232,3683224361,4139697432,3225996988,496274419,3147268997,3136358402,529633942],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "command": "Hmac",
+    "input": "{\"message\": [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]}",
+    "mode": "{\"start_trigger\": false,\"msg_trigger\": true,\"process_trigger\": false,\"finish_trigger\": false, \"enable_hmac\": false, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":0}",
+    "expected_output": ["{\"tag\":[1080378907,3894047529,4265098468,2275438372,2555095219,287412521,1595297801,1522967956,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   },
   {
     "test_case_id": 15,
+    "command": "Hmac",
+    "input": "{\"message\": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], \"key\": [0, 0, 0, 0, 0, 0, 0, 0]}",
+    "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": true,\"finish_trigger\": false, \"enable_hmac\": false, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":0}",
+    "expected_output": ["{\"tag\":[3996813713,3685128488,2749163006,1137088592,438890749,3186001028,96417470,3192245030,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+  },
+  {
+    "test_case_id": 16,
+    "command": "Hmac",
+    "input": "{\"message\": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0], \"key\": [0, 0, 0, 0, 0, 0, 0, 0]}",
+    "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true, \"enable_hmac\": false, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":0}",
+    "expected_output": ["{\"tag\":[956051232,3683224361,4139697432,3225996988,496274419,3147268997,3136358402,529633942,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+  },
+  {
+    "test_case_id": 17,
+    "command": "Hmac",
+    "input": "{\"message\": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0], \"key\": [0, 0, 0, 0, 0, 0, 0, 0]}",
+    "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true, \"enable_hmac\": false, \"message_endianness_big\": true, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":0}",
+    "expected_output": ["{\"tag\":[2856256064,3909088473,1660650950,4117743022,1622899107,107234495,3357956274,284642735,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+  },
+  {
+    "test_case_id": 18,
+    "command": "Hmac",
+    "input": "{\"message\": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0], \"key\": [0, 0, 0, 0, 0, 0, 0, 0]}",
+    "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true, \"enable_hmac\": false, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":1}",
+    "expected_output": ["{\"tag\":[956794333,2962363795,807320094,1443896907,450466098,1195137667,4279831992,1530897902,2770728890,2252409361,1392239866,1021544579,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+  },
+  {
+    "test_case_id": 19,
+    "command": "Hmac",
+    "input": "{\"message\": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0], \"key\": [0, 0, 0, 0, 0, 0, 0, 0]}",
+    "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true, \"enable_hmac\": false, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":2}",
+    "expected_output": ["{\"tag\":[1817511279,2381723475,1333175416,3289336254,21289985,2726264315,3303817390,1284292231,1189285626,4048996872,1452280734,2335544134,1687508487,592318096,467060269,2055378582],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+  },
+  {
+    "test_case_id": 20,
+    "command": "Hmac",
+    "input": "{\"message\": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0], \"key\": [0, 1, 2, 3, 4, 5, 6, 7]}",
+    "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true, \"enable_hmac\": true, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":0}",
+    "expected_output": ["{\"tag\":[1718936401,3934232619,660172194,642293994,832111426,1447558433,2262381463,704814822,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+  },
+  {
+    "test_case_id": 21,
+    "command": "Hmac",
+    "input": "{\"message\": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0], \"key\": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]}",
+    "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true, \"enable_hmac\": true, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":1}",
+    "expected_output": ["{\"tag\":[2002654839,2171821763,3734709844,319069890,1658767967,3907547394,2147427249,4285135042,1044645490,565219722,532991724,696101234,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+  },
+  {
+    "test_case_id": 22,
+    "command": "Hmac",
+    "input": "{\"message\": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0], \"key\": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}",
+    "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true, \"enable_hmac\": true, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":2}",
+    "expected_output": ["{\"tag\":[1709257561,1763202480,856627814,1141678823,3814690376,1695667148,1632553365,1215934345,820770384,1324704972,714820083,1277918871,1632724788,331654792,1853992088,827702048],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+  },
+  {
+    "test_case_id": 23,
     "command": "ShadowRegAccess",
     "expected_output": ["{\"result\":[68162304,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   },
   {
-    "test_case_id": 16,
+    "test_case_id": 24,
     "command": "ShadowRegRead",
     "expected_output": ["{\"result\":[0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   }
