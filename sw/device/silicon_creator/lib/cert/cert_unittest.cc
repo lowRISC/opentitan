@@ -87,6 +87,11 @@ TEST_F(CertTest, DecodeSize) {
             expected_cert_size_);
 }
 
+TEST_F(CertTest, DecodeSizeFailed) {
+  uint8_t zero_cert_bytes[32] = {0};
+  EXPECT_EQ(cert_x509_asn1_decode_size_header(zero_cert_bytes), 0);
+}
+
 /**
  * Here we test if a flash page has been erased (i.e., is all 1s) but the page
  * has never been provisioned with a certificate.
@@ -127,6 +132,15 @@ TEST_F(CertTest, BadSerialNumberLength) {
             kErrorOk);
   EXPECT_EQ(matches, kHardenedBoolFalse);
   valid_dice_cert_bytes_[kCertX509Asn1SerialNumberLengthByteOffset] = backup;
+}
+
+TEST_F(CertTest, BufferTooSmall) {
+  hardened_bool_t matches = kHardenedBoolFalse;
+  EXPECT_EQ(cert_x509_asn1_check_serial_number(valid_dice_cert_bytes_,
+                                               /*size=*/1, &expected_sn_bytes_,
+                                               &matches),
+            kErrorCertInvalidSize);
+  EXPECT_EQ(matches, kHardenedBoolFalse);
 }
 
 TEST_F(CertTest, CertOutdated) {
