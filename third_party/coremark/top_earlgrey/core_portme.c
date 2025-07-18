@@ -19,7 +19,7 @@ Original Author: Shay Gal-on
 #include "third_party/coremark/top_earlgrey/core_portme.h"
 
 #include "sw/device/lib/dif/dif_uart.h"
-#include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/runtime/print_uart.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"

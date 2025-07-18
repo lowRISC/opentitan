@@ -6,7 +6,7 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_uart.h"
-#include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/runtime/print_uart.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
