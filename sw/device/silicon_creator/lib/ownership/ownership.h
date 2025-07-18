@@ -12,6 +12,10 @@
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Initialize the owner pages from flash
  */
@@ -36,5 +40,9 @@ rom_error_t ownership_flash_lockdown(boot_data_t *bootdata, boot_log_t *bootlog,
  * @param rescue Whether the ROM_EXT is in rescue mode.
  */
 void ownership_pages_lockdown(boot_data_t *bootdata, hardened_bool_t rescue);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_OWNERSHIP_OWNERSHIP_H_
