@@ -139,7 +139,7 @@ class OtDut():
             fw_bundle_bin = fw_bundle_bin.format(self.sku_config.name,
                                                  "silicon_creator")
 
-        # Assemble bazel command.
+        # Assemble FT command.
         # TODO: support multiple CAs
         # TODO: support cloud KMS CAs
         # TODO: autocompute measurements of expected ROM_EXT + Owner FW payloads

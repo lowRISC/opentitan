@@ -34,7 +34,6 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "ft_all",
-    testonly = True,
     srcs = [
         ":ft_{}".format(sku)
         for sku in EARLGREY_SKUS.keys()

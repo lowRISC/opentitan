@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Module for computing OpenTitan device IDs."""
 
-import binascii
 import struct
 from dataclasses import dataclass
 
@@ -74,7 +73,6 @@ class DeviceId():
         si_creator_id: A 16-bit number assigned by the OpenTitan project.
         product_id: A 16-bit number assigned by the OpenTitan project.
         din: A 64-bit unique identifier.
-        crc32: A CRC32 over the above 96-bits.
         package_id: A 16-bit number indicating which package the chip is in.
         sku_id: A 32-bit string indicating the SKU the chip was provisioned for.
     """
@@ -103,14 +101,9 @@ class DeviceId():
         # - Wafer Y coord.
         self.din = din
 
-        # Build CRC32 over HW origin + DIN.
-        self.crc32 = binascii.crc32(
-            struct.pack("<IQ", self._hw_origin, self.din.to_int()))
-
         # Build base unique ID.
         self._base_uid = bytes_to_int(
-            struct.pack("<IQI", self._hw_origin, self.din.to_int(),
-                        self.crc32))
+            struct.pack("<IQI", self._hw_origin, self.din.to_int(), 0))
 
         # Build SKU specific field.
         self.package_id = sku_config.package_id
@@ -147,12 +140,12 @@ class DeviceId():
         print("DIN Wafer:         {}".format(self.din.wafer))
         print("DIN Wafer X Coord: {}".format(self.din.wafer_x_coord))
         print("DIN Wafer Y Coord: {}".format(self.din.wafer_y_coord))
+        print("Reserved:          {}".format(hex(0)))
         print("SKU ID:            {} ({})".format(
             format_hex(self.sku_id),
             self.sku_id.to_bytes(length=4, byteorder="big").decode("utf-8")))
         print("Package ID:        {} ({})".format(self.package_id,
                                                   self._package))
-        print("CRC32:             {}".format(hex(self.crc32)))
 
     def __str__(self):
         return self.to_hexstr()
