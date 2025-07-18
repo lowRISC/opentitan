@@ -8,11 +8,14 @@ description: "Flash Controller"
 filesets:
   files_rtl:
     depend:
+      - ${instance_vlnv("lowrisc:ip:flash_phy_macro_pkg")}
+      - ${instance_vlnv("lowrisc:ip:flash_phy_pkg")}
+      - ${instance_vlnv("lowrisc:ip:flash_ctrl_top_specific_pkg")}
       - lowrisc:ip:tlul
+      - lowrisc:ip:flash_macro_wrapper
       - lowrisc:prim:all
       - lowrisc:prim:count
       - lowrisc:prim:edge_detector
-      - lowrisc:prim:flash
       - lowrisc:prim:flop_2sync
       - lowrisc:prim:gf_mult
       - lowrisc:prim:lc_sync
@@ -22,7 +25,6 @@ filesets:
       # TODO(#27347): prim_legacy_pkg is deprecated
       - lowrisc:prim:prim_legacy_pkg
       - lowrisc:ip:otp_ctrl_pkg
-      - ${instance_vlnv("lowrisc:ip:flash_ctrl_top_specific_pkg")}
       - ${instance_vlnv("lowrisc:ip:flash_ctrl_reg")}
       - ${instance_vlnv("lowrisc:constants:top_pkg")}
       - lowrisc:ip:jtag_pkg

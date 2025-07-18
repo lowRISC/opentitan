@@ -5,7 +5,7 @@
 // Emulate a single generic flash bank
 //
 
-module prim_generic_flash_bank #(
+module flash_macro_bank #(
   parameter int InfosPerBank   = 1,   // info pages per bank
   parameter int InfoTypes      = 1,   // different info types
   parameter int InfoTypesWidth = 1,   // different info types
@@ -18,28 +18,28 @@ module prim_generic_flash_bank #(
   localparam int WordW = $clog2(WordsPerPage),
   localparam int AddrW = PageW + WordW
 ) (
-  input                                           clk_i,
-  input                                           rst_ni,
-  input                                           rd_i,
-  input                                           prog_i,
-  input                                           prog_last_i,
+  input                              clk_i,
+  input                              rst_ni,
+  input                              rd_i,
+  input                              prog_i,
+  input                              prog_last_i,
   // the generic model does not make use of program types
-  input flash_ctrl_top_specific_pkg::flash_prog_e prog_type_i,
-  input                                           pg_erase_i,
-  input                                           bk_erase_i,
-  input                                           erase_suspend_req_i,
-  input                                           he_i,
-  input [AddrW-1:0]                               addr_i,
-  input flash_ctrl_top_specific_pkg::flash_part_e part_i,
-  input [InfoTypesWidth-1:0]                      info_sel_i,
-  input [DataWidth-1:0]                           prog_data_i,
-  output logic                                    ack_o,
-  output logic                                    done_o,
-  output logic [DataWidth-1:0]                    rd_data_o,
-  input                                           init_i,
-  output logic                                    init_busy_o,
-  input                                           flash_power_ready_h_i,
-  input                                           flash_power_down_h_i
+  input flash_ctrl_pkg::flash_prog_e prog_type_i,
+  input                              pg_erase_i,
+  input                              bk_erase_i,
+  input                              erase_suspend_req_i,
+  input                              he_i,
+  input [AddrW-1:0]                  addr_i,
+  input flash_ctrl_pkg::flash_part_e part_i,
+  input [InfoTypesWidth-1:0]         info_sel_i,
+  input [DataWidth-1:0]              prog_data_i,
+  output logic                       ack_o,
+  output logic                       done_o,
+  output logic [DataWidth-1:0]       rd_data_o,
+  input                              init_i,
+  output logic                       init_busy_o,
+  input                              flash_power_ready_h_i,
+  input                              flash_power_down_h_i
 );
 
   `ifdef SYNTHESIS
@@ -101,7 +101,7 @@ module prim_generic_flash_bank #(
   logic                                     mem_wr;
   logic [DataWidth-1:0]                     mem_wdata;
   logic [AddrW-1:0]                         mem_addr;
-  flash_ctrl_top_specific_pkg::flash_part_e mem_part;
+  flash_ctrl_pkg::flash_part_e mem_part;
   logic                                     mem_bk_erase;
   logic [InfoTypesWidth-1:0]                mem_info_sel;
 
@@ -110,11 +110,11 @@ module prim_generic_flash_bank #(
     logic                                     rd;
     logic                                     prog;
     logic                                     prog_last;
-    flash_ctrl_top_specific_pkg::flash_prog_e prog_type;
+    flash_ctrl_pkg::flash_prog_e prog_type;
     logic                                     pg_erase;
     logic                                     bk_erase;
     logic [AddrW-1:0]                         addr;
-    flash_ctrl_top_specific_pkg::flash_part_e part;
+    flash_ctrl_pkg::flash_part_e part;
     logic [InfoTypesWidth-1:0]                info_sel;
     logic [DataWidth-1:0]                     prog_data;
   } cmd_payload_t;
@@ -216,11 +216,11 @@ module prim_generic_flash_bank #(
   end
 
   // latch partition being read since the command fifo is popped early
-  flash_ctrl_top_specific_pkg::flash_part_e rd_part_q;
+  flash_ctrl_pkg::flash_part_e rd_part_q;
   logic [InfoTypesWidth-1:0] info_sel_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      rd_part_q <= flash_ctrl_top_specific_pkg::FlashPartData;
+      rd_part_q <= flash_ctrl_pkg::FlashPartData;
       info_sel_q <= '0;
     end else if (mem_rd_d) begin
       rd_part_q <= cmd_q.part;
@@ -401,7 +401,7 @@ module prim_generic_flash_bank #(
   // OR if it's a bank erase
   logic data_mem_req;
   assign data_mem_req = mem_req &
-                        (mem_part == flash_ctrl_top_specific_pkg::FlashPartData |
+                        (mem_part == flash_ctrl_pkg::FlashPartData |
                          mem_bk_erase);
 
   prim_ram_1p #(
@@ -427,7 +427,7 @@ module prim_generic_flash_bank #(
     // if NOT bank erase, then only the selected info partition is erased
     logic info_mem_req;
     assign info_mem_req = mem_req &
-                          (mem_part == flash_ctrl_top_specific_pkg::FlashPartInfo) &
+                          (mem_part == flash_ctrl_pkg::FlashPartInfo) &
                           ((mem_info_sel == info_type) | mem_bk_erase);
 
     prim_ram_1p #(
@@ -449,14 +449,14 @@ module prim_generic_flash_bank #(
   end
 
   assign rd_data_info = rd_nom_data_info[info_sel_q];
-  assign rd_data_d    = rd_part_q == flash_ctrl_top_specific_pkg::FlashPartData
+  assign rd_data_d    = rd_part_q == flash_ctrl_pkg::FlashPartData
                                          ? rd_data_main
                                          : rd_data_info;
 
-  flash_ctrl_top_specific_pkg::flash_prog_e unused_prog_type;
+  flash_ctrl_pkg::flash_prog_e unused_prog_type;
   assign unused_prog_type = cmd_q.prog_type;
 
   logic unused_he;
   assign unused_he = he_i;
 
-endmodule // prim_generic_flash_bank
+endmodule : flash_macro_bank

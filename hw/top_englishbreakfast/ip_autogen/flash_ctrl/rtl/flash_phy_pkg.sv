@@ -7,15 +7,26 @@
 
 package flash_phy_pkg;
 
+  import flash_phy_macro_pkg::NumBanks;
+  import flash_phy_macro_pkg::InfosPerBank;
+  import flash_phy_macro_pkg::InfoTypes;
+  import flash_phy_macro_pkg::InfoTypesWidth;
+  import flash_phy_macro_pkg::PagesPerBank;
+  import flash_phy_macro_pkg::WordsPerPage;
+  import flash_phy_macro_pkg::BankAddrW;
+
+  export flash_phy_macro_pkg::NumBanks;
+  export flash_phy_macro_pkg::InfosPerBank;
+  export flash_phy_macro_pkg::InfoTypes;
+  export flash_phy_macro_pkg::InfoTypesWidth;
+  export flash_phy_macro_pkg::PagesPerBank;
+  export flash_phy_macro_pkg::WordsPerPage;
+  export flash_phy_macro_pkg::BankAddrW;
+
   // flash phy parameters
-  parameter int unsigned NumBanks       = flash_ctrl_top_specific_pkg::NumBanks;
-  parameter int unsigned InfosPerBank   = flash_ctrl_top_specific_pkg::InfosPerBank;
-  parameter int unsigned PagesPerBank   = flash_ctrl_top_specific_pkg::PagesPerBank;
-  parameter int unsigned WordsPerPage   = flash_ctrl_top_specific_pkg::WordsPerPage;
   parameter int unsigned BankW          = flash_ctrl_top_specific_pkg::BankW;
   parameter int unsigned PageW          = flash_ctrl_top_specific_pkg::PageW;
   parameter int unsigned WordW          = flash_ctrl_top_specific_pkg::WordW;
-  parameter int unsigned BankAddrW      = flash_ctrl_top_specific_pkg::BankAddrW;
   parameter int unsigned DataWidth      = flash_ctrl_top_specific_pkg::DataWidth;
   parameter int unsigned EccWidth       = 8;
   parameter int unsigned MetaDataWidth  = flash_ctrl_top_specific_pkg::MetaDataWidth;
@@ -25,17 +36,13 @@ package flash_phy_pkg;
                                              // will switch to this after bus widening
   parameter int unsigned PlainIntgWidth = MetaDataWidth - EccWidth;
   parameter int unsigned PlainDataWidth = DataWidth + PlainIntgWidth;
-  //parameter int unsigned ScrDataWidth   = DataWidth + EccWidth;
   parameter int unsigned FullDataWidth  = DataWidth + MetaDataWidth;
-  parameter int unsigned InfoTypes      = flash_ctrl_top_specific_pkg::InfoTypes;
-  parameter int unsigned InfoTypesWidth = flash_ctrl_top_specific_pkg::InfoTypesWidth;
 
   // flash ctrl / bus parameters
   parameter int unsigned BusWidth       = flash_ctrl_top_specific_pkg::BusWidth;
   parameter int unsigned BusFullWidth   = flash_ctrl_top_specific_pkg::BusFullWidth;
   parameter int unsigned BusBankAddrW   = flash_ctrl_top_specific_pkg::BusBankAddrW;
   parameter int unsigned BusWordW       = flash_ctrl_top_specific_pkg::BusWordW;
-  parameter int unsigned ProgTypes      = flash_ctrl_top_specific_pkg::ProgTypes;
 
   // address bits remain must be 0
   parameter int unsigned AddrBitsRemain = DataWidth % BusWidth;
@@ -114,28 +121,6 @@ package flash_phy_pkg;
     DeScrambleOp = 1'b1
   } cipher_ops_e;
 
-  // Connections to prim_flash
-  typedef struct packed {
-    logic rd_req;
-    logic prog_req;
-    logic prog_last;
-    flash_ctrl_top_specific_pkg::flash_prog_e prog_type;
-    logic pg_erase_req;
-    logic bk_erase_req;
-    logic erase_suspend_req;
-    logic he;
-    logic [BankAddrW-1:0] addr;
-    flash_ctrl_top_specific_pkg::flash_part_e part;
-    logic [InfoTypesWidth-1:0] info_sel;
-    logic [FullDataWidth-1:0] prog_full_data;
-  } flash_phy_prim_flash_req_t;
-
-  typedef struct packed {
-    logic ack;
-    logic done;
-    logic [FullDataWidth-1:0] rdata;
-  } flash_phy_prim_flash_rsp_t;
-
   typedef struct packed {
     logic calc_req;
     logic op_req;
@@ -153,4 +138,4 @@ package flash_phy_pkg;
     logic [DataWidth-1:0] scrambled_data;
   } scramble_rsp_t;
 
-endpackage // flash_phy_pkg
+endpackage : flash_phy_pkg

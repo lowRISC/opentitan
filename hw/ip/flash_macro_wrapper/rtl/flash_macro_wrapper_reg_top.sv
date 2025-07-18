@@ -6,20 +6,20 @@
 
 `include "prim_assert.sv"
 
-module flash_ctrl_prim_reg_top (
+module flash_macro_wrapper_reg_top (
   input clk_i,
   input rst_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
-  output flash_ctrl_reg_pkg::flash_ctrl_prim_reg2hw_t reg2hw, // Write
-  input  flash_ctrl_reg_pkg::flash_ctrl_prim_hw2reg_t hw2reg, // Read
+  output flash_macro_wrapper_reg_pkg::flash_macro_wrapper_reg2hw_t reg2hw, // Write
+  input  flash_macro_wrapper_reg_pkg::flash_macro_wrapper_hw2reg_t hw2reg, // Read
 
   // Integrity check errors
   output logic intg_err_o
 );
 
-  import flash_ctrl_reg_pkg::* ;
+  import flash_macro_wrapper_reg_pkg::* ;
 
   localparam int AW = 7;
   localparam int DW = 32;
@@ -2003,27 +2003,27 @@ module flash_ctrl_prim_reg_top (
 
   logic [20:0] addr_hit;
   always_comb begin
-    addr_hit[ 0] = (reg_addr == FLASH_CTRL_CSR0_REGWEN_OFFSET);
-    addr_hit[ 1] = (reg_addr == FLASH_CTRL_CSR1_OFFSET);
-    addr_hit[ 2] = (reg_addr == FLASH_CTRL_CSR2_OFFSET);
-    addr_hit[ 3] = (reg_addr == FLASH_CTRL_CSR3_OFFSET);
-    addr_hit[ 4] = (reg_addr == FLASH_CTRL_CSR4_OFFSET);
-    addr_hit[ 5] = (reg_addr == FLASH_CTRL_CSR5_OFFSET);
-    addr_hit[ 6] = (reg_addr == FLASH_CTRL_CSR6_OFFSET);
-    addr_hit[ 7] = (reg_addr == FLASH_CTRL_CSR7_OFFSET);
-    addr_hit[ 8] = (reg_addr == FLASH_CTRL_CSR8_OFFSET);
-    addr_hit[ 9] = (reg_addr == FLASH_CTRL_CSR9_OFFSET);
-    addr_hit[10] = (reg_addr == FLASH_CTRL_CSR10_OFFSET);
-    addr_hit[11] = (reg_addr == FLASH_CTRL_CSR11_OFFSET);
-    addr_hit[12] = (reg_addr == FLASH_CTRL_CSR12_OFFSET);
-    addr_hit[13] = (reg_addr == FLASH_CTRL_CSR13_OFFSET);
-    addr_hit[14] = (reg_addr == FLASH_CTRL_CSR14_OFFSET);
-    addr_hit[15] = (reg_addr == FLASH_CTRL_CSR15_OFFSET);
-    addr_hit[16] = (reg_addr == FLASH_CTRL_CSR16_OFFSET);
-    addr_hit[17] = (reg_addr == FLASH_CTRL_CSR17_OFFSET);
-    addr_hit[18] = (reg_addr == FLASH_CTRL_CSR18_OFFSET);
-    addr_hit[19] = (reg_addr == FLASH_CTRL_CSR19_OFFSET);
-    addr_hit[20] = (reg_addr == FLASH_CTRL_CSR20_OFFSET);
+    addr_hit[ 0] = (reg_addr == FLASH_MACRO_WRAPPER_CSR0_REGWEN_OFFSET);
+    addr_hit[ 1] = (reg_addr == FLASH_MACRO_WRAPPER_CSR1_OFFSET);
+    addr_hit[ 2] = (reg_addr == FLASH_MACRO_WRAPPER_CSR2_OFFSET);
+    addr_hit[ 3] = (reg_addr == FLASH_MACRO_WRAPPER_CSR3_OFFSET);
+    addr_hit[ 4] = (reg_addr == FLASH_MACRO_WRAPPER_CSR4_OFFSET);
+    addr_hit[ 5] = (reg_addr == FLASH_MACRO_WRAPPER_CSR5_OFFSET);
+    addr_hit[ 6] = (reg_addr == FLASH_MACRO_WRAPPER_CSR6_OFFSET);
+    addr_hit[ 7] = (reg_addr == FLASH_MACRO_WRAPPER_CSR7_OFFSET);
+    addr_hit[ 8] = (reg_addr == FLASH_MACRO_WRAPPER_CSR8_OFFSET);
+    addr_hit[ 9] = (reg_addr == FLASH_MACRO_WRAPPER_CSR9_OFFSET);
+    addr_hit[10] = (reg_addr == FLASH_MACRO_WRAPPER_CSR10_OFFSET);
+    addr_hit[11] = (reg_addr == FLASH_MACRO_WRAPPER_CSR11_OFFSET);
+    addr_hit[12] = (reg_addr == FLASH_MACRO_WRAPPER_CSR12_OFFSET);
+    addr_hit[13] = (reg_addr == FLASH_MACRO_WRAPPER_CSR13_OFFSET);
+    addr_hit[14] = (reg_addr == FLASH_MACRO_WRAPPER_CSR14_OFFSET);
+    addr_hit[15] = (reg_addr == FLASH_MACRO_WRAPPER_CSR15_OFFSET);
+    addr_hit[16] = (reg_addr == FLASH_MACRO_WRAPPER_CSR16_OFFSET);
+    addr_hit[17] = (reg_addr == FLASH_MACRO_WRAPPER_CSR17_OFFSET);
+    addr_hit[18] = (reg_addr == FLASH_MACRO_WRAPPER_CSR18_OFFSET);
+    addr_hit[19] = (reg_addr == FLASH_MACRO_WRAPPER_CSR19_OFFSET);
+    addr_hit[20] = (reg_addr == FLASH_MACRO_WRAPPER_CSR20_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2031,27 +2031,27 @@ module flash_ctrl_prim_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[ 0] & (|(FLASH_CTRL_PRIM_PERMIT[ 0] & ~reg_be))) |
-               (addr_hit[ 1] & (|(FLASH_CTRL_PRIM_PERMIT[ 1] & ~reg_be))) |
-               (addr_hit[ 2] & (|(FLASH_CTRL_PRIM_PERMIT[ 2] & ~reg_be))) |
-               (addr_hit[ 3] & (|(FLASH_CTRL_PRIM_PERMIT[ 3] & ~reg_be))) |
-               (addr_hit[ 4] & (|(FLASH_CTRL_PRIM_PERMIT[ 4] & ~reg_be))) |
-               (addr_hit[ 5] & (|(FLASH_CTRL_PRIM_PERMIT[ 5] & ~reg_be))) |
-               (addr_hit[ 6] & (|(FLASH_CTRL_PRIM_PERMIT[ 6] & ~reg_be))) |
-               (addr_hit[ 7] & (|(FLASH_CTRL_PRIM_PERMIT[ 7] & ~reg_be))) |
-               (addr_hit[ 8] & (|(FLASH_CTRL_PRIM_PERMIT[ 8] & ~reg_be))) |
-               (addr_hit[ 9] & (|(FLASH_CTRL_PRIM_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(FLASH_CTRL_PRIM_PERMIT[10] & ~reg_be))) |
-               (addr_hit[11] & (|(FLASH_CTRL_PRIM_PERMIT[11] & ~reg_be))) |
-               (addr_hit[12] & (|(FLASH_CTRL_PRIM_PERMIT[12] & ~reg_be))) |
-               (addr_hit[13] & (|(FLASH_CTRL_PRIM_PERMIT[13] & ~reg_be))) |
-               (addr_hit[14] & (|(FLASH_CTRL_PRIM_PERMIT[14] & ~reg_be))) |
-               (addr_hit[15] & (|(FLASH_CTRL_PRIM_PERMIT[15] & ~reg_be))) |
-               (addr_hit[16] & (|(FLASH_CTRL_PRIM_PERMIT[16] & ~reg_be))) |
-               (addr_hit[17] & (|(FLASH_CTRL_PRIM_PERMIT[17] & ~reg_be))) |
-               (addr_hit[18] & (|(FLASH_CTRL_PRIM_PERMIT[18] & ~reg_be))) |
-               (addr_hit[19] & (|(FLASH_CTRL_PRIM_PERMIT[19] & ~reg_be))) |
-               (addr_hit[20] & (|(FLASH_CTRL_PRIM_PERMIT[20] & ~reg_be)))));
+              ((addr_hit[ 0] & (|(FLASH_MACRO_WRAPPER_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(FLASH_MACRO_WRAPPER_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(FLASH_MACRO_WRAPPER_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(FLASH_MACRO_WRAPPER_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(FLASH_MACRO_WRAPPER_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(FLASH_MACRO_WRAPPER_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(FLASH_MACRO_WRAPPER_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(FLASH_MACRO_WRAPPER_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(FLASH_MACRO_WRAPPER_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(FLASH_MACRO_WRAPPER_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(FLASH_MACRO_WRAPPER_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(FLASH_MACRO_WRAPPER_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(FLASH_MACRO_WRAPPER_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(FLASH_MACRO_WRAPPER_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(FLASH_MACRO_WRAPPER_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(FLASH_MACRO_WRAPPER_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(FLASH_MACRO_WRAPPER_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(FLASH_MACRO_WRAPPER_PERMIT[17] & ~reg_be))) |
+               (addr_hit[18] & (|(FLASH_MACRO_WRAPPER_PERMIT[18] & ~reg_be))) |
+               (addr_hit[19] & (|(FLASH_MACRO_WRAPPER_PERMIT[19] & ~reg_be))) |
+               (addr_hit[20] & (|(FLASH_MACRO_WRAPPER_PERMIT[20] & ~reg_be)))));
   end
 
   // Generate write-enables

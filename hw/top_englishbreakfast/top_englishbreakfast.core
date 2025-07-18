@@ -17,7 +17,6 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:ram_1p_adv
       - lowrisc:prim:ram_1p_scr
-      - lowrisc:prim:flash
       - lowrisc:ip:sram_ctrl
       # Instantiated by topgen
       - lowrisc:ip:uart:0.1
@@ -26,6 +25,7 @@ filesets:
       - lowrisc:ip:spi_host
       - lowrisc:ip:aes
       - lowrisc:ip:entropy_src
+      - lowrisc:ip:flash_macro_wrapper
       - lowrisc:ip:hmac
       - lowrisc:ip:kmac
       - lowrisc:ip:keymgr
