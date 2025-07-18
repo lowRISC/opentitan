@@ -114,6 +114,23 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "ownership_unittest",
+    srcs = [
+        "ownership_unittest.cc",
+    ],
+    deps = [
+        ":datatypes",
+        ":ownership",
+        ":ownership_key",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_header",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "owner_block",
     srcs = ["owner_block.c"],
