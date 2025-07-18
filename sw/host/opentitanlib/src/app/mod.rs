@@ -27,6 +27,7 @@ use crate::transport::{
 use anyhow::{bail, ensure, Result};
 use indicatif::{ProgressBar, ProgressStyle};
 use serde_annotate::Annotate;
+use serialport::Parity;
 use std::any::Any;
 use std::cell::{Cell, RefCell};
 use std::collections::hash_map::Entry;
@@ -173,6 +174,15 @@ impl PinConfiguration {
 }
 
 #[derive(Default, Debug)]
+pub struct UartConfiguration {
+    pub underlying_instance: String,
+    pub baud_rate: Option<u32>,
+    pub parity: Option<config::UartParity>,
+    pub stop_bits: Option<config::UartStopBits>,
+    pub alias_of: Option<String>,
+}
+
+#[derive(Default, Debug)]
 pub struct SpiConfiguration {
     pub underlying_instance: String,
     pub mode: Option<TransferMode>,
@@ -200,8 +210,8 @@ pub struct TransportWrapperBuilder {
     requires_list: Vec<(String, String)>,
     pin_alias_map: HashMap<String, String>,
     pin_on_io_expander_map: HashMap<String, config::IoExpanderPin>,
-    uart_map: HashMap<String, String>,
     pin_conf_list: Vec<(String, PinConfiguration)>,
+    uart_conf_map: HashMap<String, config::UartConfiguration>,
     spi_conf_map: HashMap<String, config::SpiConfiguration>,
     i2c_conf_map: HashMap<String, config::I2cConfiguration>,
     strapping_conf_map: HashMap<String, Vec<(String, PinConfiguration)>>,
@@ -218,8 +228,8 @@ pub struct TransportWrapper {
     provides_map: HashMap<String, String>,
     pin_map: HashMap<String, String>,
     artificial_pin_map: HashMap<String, Rc<dyn GpioPin>>,
-    uart_map: HashMap<String, String>,
     pin_conf_map: HashMap<String, PinConfiguration>,
+    uart_conf_map: HashMap<String, UartConfiguration>,
     spi_conf_map: HashMap<String, SpiConfiguration>,
     i2c_conf_map: HashMap<String, I2cConfiguration>,
     strapping_conf_map: HashMap<String, HashMap<String, PinConfiguration>>,
@@ -248,8 +258,8 @@ impl TransportWrapperBuilder {
             requires_list: Vec::new(),
             pin_alias_map: HashMap::new(),
             pin_on_io_expander_map: HashMap::new(),
-            uart_map: HashMap::new(),
             pin_conf_list: Vec::new(),
+            uart_conf_map: HashMap::new(),
             spi_conf_map: HashMap::new(),
             i2c_conf_map: HashMap::new(),
             strapping_conf_map: HashMap::new(),
@@ -289,6 +299,23 @@ impl TransportWrapperBuilder {
             conf_entry.invert = Some(invert);
         }
         pin_conf_list.push((pin_conf.name.to_string(), conf_entry))
+    }
+
+    fn record_uart_conf(
+        uart_conf_map: &mut HashMap<String, config::UartConfiguration>,
+        uart_conf: &config::UartConfiguration,
+    ) -> Result<(), ()> {
+        let entry = uart_conf_map
+            .entry(uart_conf.name.to_uppercase().to_string())
+            .or_insert_with(|| config::UartConfiguration {
+                name: uart_conf.name.clone(),
+                ..Default::default()
+            });
+        merge_field(&mut entry.baudrate, &uart_conf.baudrate)?;
+        merge_field(&mut entry.parity, &uart_conf.parity)?;
+        merge_field(&mut entry.stopbits, &uart_conf.stopbits)?;
+        merge_field(&mut entry.alias_of, &uart_conf.alias_of)?;
+        Ok(())
     }
 
     fn record_spi_conf(
@@ -415,12 +442,12 @@ impl TransportWrapperBuilder {
             })?;
         }
         for uart_conf in file.uarts {
-            if let Some(alias_of) = &uart_conf.alias_of {
-                self.uart_map
-                    .insert(uart_conf.name.to_uppercase(), alias_of.clone());
-            }
-            // TODO(#8769): Record baud / parity configration for later
-            // use when opening uart.
+            Self::record_uart_conf(&mut self.uart_conf_map, &uart_conf).map_err(|_| {
+                TransportError::InconsistentConf(
+                    TransportInterfaceType::Uart,
+                    uart_conf.name.to_string(),
+                )
+            })?;
         }
         for io_expander_conf in file.io_expanders {
             match self
@@ -497,6 +524,49 @@ impl TransportWrapperBuilder {
                 })?;
         }
         Ok(result_pin_conf_map)
+    }
+
+    fn resolve_uart_conf(
+        name: &str,
+        uart_conf_map: &HashMap<String, config::UartConfiguration>,
+    ) -> Result<UartConfiguration> {
+        if let Some(entry) = uart_conf_map.get(name.to_uppercase().as_str()) {
+            let mut conf = if let Some(ref alias_of) = entry.alias_of {
+                Self::resolve_uart_conf(alias_of.as_str(), uart_conf_map)?
+            } else {
+                UartConfiguration {
+                    underlying_instance: name.to_uppercase().to_string(),
+                    ..Default::default()
+                }
+            };
+            // Apply configuration from this level
+            if let Some(baud_rate) = entry.baudrate {
+                conf.baud_rate = Some(baud_rate);
+            }
+            if let Some(parity) = entry.parity {
+                conf.parity = Some(parity);
+            }
+            if let Some(stop_bits) = entry.stopbits {
+                conf.stop_bits = Some(stop_bits);
+            }
+            Ok(conf)
+        } else {
+            Ok(UartConfiguration {
+                underlying_instance: name.to_string(),
+                ..Default::default()
+            })
+        }
+    }
+
+    fn consolidate_uart_conf_map(
+        uart_conf_map: &HashMap<String, config::UartConfiguration>,
+    ) -> Result<HashMap<String, UartConfiguration>> {
+        let mut resolved_uart_conf_map = HashMap::new();
+        for name in uart_conf_map.keys() {
+            resolved_uart_conf_map
+                .insert(name.clone(), Self::resolve_uart_conf(name, uart_conf_map)?);
+        }
+        Ok(resolved_uart_conf_map)
     }
 
     fn resolve_spi_conf(
@@ -632,6 +702,7 @@ impl TransportWrapperBuilder {
                 Self::consolidate_pin_conf_map(&self.pin_alias_map, &pin_conf_map)?,
             );
         }
+        let uart_conf_map = Self::consolidate_uart_conf_map(&self.uart_conf_map)?;
         let spi_conf_map = Self::consolidate_spi_conf_map(&self.spi_conf_map, &self.pin_alias_map)?;
         let i2c_conf_map = Self::consolidate_i2c_conf_map(&self.i2c_conf_map)?;
         let mut transport_wrapper = TransportWrapper {
@@ -641,7 +712,7 @@ impl TransportWrapperBuilder {
             provides_map,
             pin_map: self.pin_alias_map,
             artificial_pin_map: HashMap::new(),
-            uart_map: self.uart_map,
+            uart_conf_map,
             pin_conf_map,
             spi_conf_map,
             i2c_conf_map,
@@ -805,7 +876,45 @@ impl TransportWrapper {
 
     /// Returns a [`Uart`] implementation.
     pub fn uart(&self, name: &str) -> Result<Rc<dyn Uart>> {
-        self.transport.uart(map_name(&self.uart_map, name).as_str())
+        let uart_conf = self.uart_conf_map.get(name.to_uppercase().as_str());
+        let uart_name = uart_conf
+            .map(|uart_conf| uart_conf.underlying_instance.as_str())
+            .unwrap_or(name);
+        let uart = self.transport.uart(uart_name)?;
+        if let Some(conf) = uart_conf {
+            // Since current OT tests harnesses quite freely re-create the Uart
+            // when they expect it to continue receiving in the background, we
+            // try and read the values first and only set if there is a mismatch.
+            if let Some(baud_rate) = conf.baud_rate {
+                if let Ok(current_baud_rate) = uart.get_baudrate() {
+                    if current_baud_rate != baud_rate {
+                        uart.set_baudrate(baud_rate)?;
+                    }
+                } else {
+                    log::warn!("Could not read UART baud rate to check it is {}", baud_rate);
+                }
+            }
+            if let Some(parity) = conf.parity {
+                let new_parity = match parity {
+                    config::UartParity::None => Parity::None,
+                    config::UartParity::Even => Parity::Even,
+                    config::UartParity::Odd => Parity::Odd,
+                    config::UartParity::Mark | config::UartParity::Space => {
+                        log::warn!("Mark & Space parities not yet supported");
+                        Parity::None
+                    }
+                };
+                if let Ok(current_parity) = uart.get_parity() {
+                    if current_parity != new_parity {
+                        uart.set_parity(new_parity)?;
+                    }
+                } else {
+                    log::warn!("Could not read UART parity to check it is {}", new_parity);
+                }
+            }
+            // TODO: stop bits are not yet supported in the UART interface
+        }
+        Ok(uart)
     }
 
     /// Returns a [`GpioPin`] implementation.
