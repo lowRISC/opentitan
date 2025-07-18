@@ -79,6 +79,8 @@ class MultiRegister(RegBase):
 
       count        The number of copies of the replicated register.
 
+      stride       The address offset step.
+
       cregs        The concrete registers that make up the multiregister.
                    These will each contain at least one copy of the replicated
                    register.
@@ -89,13 +91,15 @@ class MultiRegister(RegBase):
                    of reg divide evenly into a whole number of concrete
                    registers).
 
-      needs_qe     This is true iff at least one of the pseudo-registers in the
+      needs_qe     This is true if at least one of the pseudo-registers in the
                    multi-register needs a q-enable signal.
     """
 
     def __init__(self,
                  name: str,
                  offset: int,
+                 count: int,
+                 stride: int,
                  alias_target: Optional[str],
                  pregs: List[Register],
                  cname: str,
@@ -132,6 +136,8 @@ class MultiRegister(RegBase):
 
         super().__init__(name, offset,
                          pregs[0].async_clk, pregs[0].sync_clk, alias_target)
+        self.count = count
+        self.stride = stride
         self.pregs = pregs
         self.cname = cname
         self.regwen_multi = regwen_multi
@@ -300,7 +306,7 @@ class MultiRegister(RegBase):
         # pack them as an array
         dv_compact = (count < regs_per_creg or (count % regs_per_creg) == 0)
 
-        return MultiRegister(name, offset, alias_target,
+        return MultiRegister(name, offset, count, addrsep,  alias_target,
                              pregs, cname, regwen_multi,
                              compact, dv_compact, cregs)
 
