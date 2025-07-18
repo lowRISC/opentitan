@@ -12,6 +12,15 @@ module rom_ctrl
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   // Number of cycles a differential skew is tolerated on the alert signal
   parameter int unsigned          AlertSkewCycles = 1,
+  // If FlopToKmac is true, insert a flop stage between the output of the ROM and the data that gets
+  // sent to KMAC. This path might be long in a target design and inserting this flop breaks the
+  // path at the cost of chip area.
+  //
+  // Note that this works by adding a FIFO. This would work with just one item in the FIFO, but
+  // splitting the long path means that the bandwidth halves (because the ready signal from KMAC
+  // isn't fed through to the ROM). The code below sets Depth=2 to maintain bandwidth, but Depth=1
+  // would also work, at the cost of halving bandwidth.
+  parameter bit                   FlopToKmac = 1'b0,
   parameter bit [63:0]            RndCnstScrNonce = '0,
   parameter bit [127:0]           RndCnstScrKey = '0,
   // ROM size in bytes
@@ -78,16 +87,16 @@ module rom_ctrl
 
   logic [RomIndexWidth-1:0] checker_rom_index;
   logic                     checker_rom_req;
-  logic [DataWidth-1:0]     checker_rom_rdata;
+  logic [DataWidth-1:0]     checker_rom_rdata, checker_rom_rdata_outer;
 
   logic                     internal_alert;
 
   // Pack / unpack kmac connection data ========================================
 
   logic [63:0]              kmac_rom_data;
-  logic                     kmac_rom_rdy;
-  logic                     kmac_rom_vld;
-  logic                     kmac_rom_last;
+  logic                     kmac_rom_rdy, kmac_rom_rdy_outer;
+  logic                     kmac_rom_vld, kmac_rom_vld_outer;
+  logic                     kmac_rom_last, kmac_rom_last_outer;
   logic                     kmac_done;
   logic [255:0]             kmac_digest;
   logic                     kmac_err;
@@ -118,12 +127,12 @@ module rom_ctrl
     localparam int NumBytes = (DataWidth + 7) / 8;
 
     // SEC_CM: MEM.DIGEST
-    assign kmac_data_o = '{valid: kmac_rom_vld,
+    assign kmac_data_o = '{valid: kmac_rom_vld_outer,
                            data: kmac_rom_data,
                            strb: kmac_pkg::MsgStrbW'({NumBytes{1'b1}}),
-                           last: kmac_rom_last};
+                           last: kmac_rom_last_outer};
 
-    assign kmac_rom_rdy = kmac_data_i.ready;
+    assign kmac_rom_rdy_outer = kmac_data_i.ready;
     assign kmac_done = kmac_data_i.done;
     assign kmac_digest = kmac_data_i.digest_share0[255:0] ^ kmac_data_i.digest_share1[255:0];
     assign kmac_err = kmac_data_i.error;
@@ -139,7 +148,7 @@ module rom_ctrl
     // Scrambling is disabled. Stub out all KMAC connections and waive the ignored signals.
 
     assign kmac_data_o = '0;
-    assign kmac_rom_rdy = 1'b0;
+    assign kmac_rom_rdy_outer = 1'b0;
     assign kmac_done = 1'b0;
     assign kmac_digest = '0;
     assign kmac_err = 1'b0;
@@ -312,7 +321,7 @@ module rom_ctrl
   end : gen_rom_scramble_disabled
 
   // Zero expand checker rdata to pass to KMAC
-  assign kmac_rom_data = {{64-DataWidth{1'b0}}, checker_rom_rdata};
+  assign kmac_rom_data = {{64-DataWidth{1'b0}}, checker_rom_rdata_outer};
 
   // Register block ============================================================
 
@@ -371,6 +380,48 @@ module rom_ctrl
       .alert_o              (checker_alert)
     );
 
+    if (FlopToKmac) begin : gen_kmac_flopped_output
+      // If there is a flop between the ROM and KMAC then we distinguish between the data that is
+      // connected to the ROM itself and the version that is connected to KMAC. The latter signals
+      // have an "_outer" suffix.
+      //
+      // Note that for data coming out of the block (e.g. kmac_rom_vld), the "_outer" signal is
+      // later than the undecorated version. For data coming into the block (e.g. kmac_rom_rdy), the
+      // "_outer" signal is earlier than the undecorated version.
+
+      prim_fifo_sync #(
+        .Width(1 + DataWidth),
+        .Pass(1'b0),
+        .Depth(2),
+        .OutputZeroIfEmpty(1'b0),
+        .NeverClears(1'b1),
+        .Secure(0)
+      ) u_kmac_data_flop (
+        .clk_i,
+        .rst_ni,
+        .clr_i    (1'b0),
+        .wvalid_i (kmac_rom_vld),
+        .wready_o (kmac_rom_rdy),
+        .wdata_i  ({kmac_rom_last, checker_rom_rdata}),
+        .rvalid_o (kmac_rom_vld_outer),
+        .rready_i (kmac_rom_rdy_outer),
+        .rdata_o  ({kmac_rom_last_outer, checker_rom_rdata_outer}),
+        .full_o   (),
+        .depth_o  (),
+        .err_o    ()
+      );
+    end else begin : gen_kmac_direct_output
+      // If there is not a flop on the output, the "_outer" version of a signal is exactly the same
+      // as the underlying signal.
+
+      assign kmac_rom_vld_outer      = kmac_rom_vld;
+      assign kmac_rom_last_outer     = kmac_rom_last;
+      assign checker_rom_rdata_outer = checker_rom_rdata;
+
+      assign kmac_rom_rdy = kmac_rom_rdy_outer;
+    end
+
+
   end : gen_fsm_scramble_enabled
   else begin : gen_fsm_scramble_disabled
 
@@ -387,8 +438,9 @@ module rom_ctrl
     // zeros" check.
     assign keymgr_data_o = '{data: {128{2'b10}}, valid: 1'b1};
 
-    assign kmac_rom_vld = 1'b0;
-    assign kmac_rom_last = 1'b0;
+    assign kmac_rom_vld       = 1'b0;
+    assign kmac_rom_vld_outer = 1'b0;
+    assign kmac_rom_last      = 1'b0;
 
     // Always grant access to the bus. Setting this to a constant should mean the mux gets
     // synthesized away completely.
