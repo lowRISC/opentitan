@@ -1,0 +1,9 @@
+{
+    "integrity": "sha256-CeF7R8AVBGVjGqMZ8nQnYKQ+3tqy6cAS+R0K4u/wImg=",
+    "strip_prefix": "",
+    "url": "https://github.com/bazelbuild/rules_rust/releases/download/0.59.2/rules_rust-0.59.2.tar.gz",
+    "patches": {
+        "rules_rust.extra_rustc_toolchain_dirs.patch": "sha256-NbDd90Khxoa52OkyNS+f6Dn44yvHJlLzRIN/c64/c6c="
+    },
+    "patch_strip": "1"
+}

@@ -77,6 +77,9 @@ licence_test(
         "hw/ip/aes/pre_sca/alma/cpp/verilator_tb_aes_sbox.cpp",
         "hw/ip/aes/pre_sca/alma/cpp/verilator_tb_aes_sub_bytes.cpp",
         "hw/ip/kmac/pre_sca/alma/cpp/verilator_tb_keccak_2share.cpp",
+
+        # Bazel registry
+        "registry/**",
     ],
     licence = """
     Copyright lowRISC contributors (OpenTitan project).
