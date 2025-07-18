@@ -7787,6 +7787,20 @@
           name_top: RomCtrl0BootRomInitFile
         }
         {
+          name: FlopToKmac
+          desc:
+            '''
+            Add a flop stage between the output of the ROM and the data that gets
+            sent to KMAC. This may break long paths in a target chip, at the cost of
+            adding chip area.
+            '''
+          type: bit
+          default: 1'b0
+          local: "true"
+          expose: "true"
+          name_top: RomCtrl0FlopToKmac
+        }
+        {
           name: RndCnstScrNonce
           desc: Fixed nonce used for address / data scrambling
           type: bit [63:0]
@@ -7971,6 +7985,20 @@
           local: "false"
           expose: "true"
           name_top: RomCtrl1BootRomInitFile
+        }
+        {
+          name: FlopToKmac
+          desc:
+            '''
+            Add a flop stage between the output of the ROM and the data that gets
+            sent to KMAC. This may break long paths in a target chip, at the cost of
+            adding chip area.
+            '''
+          type: bit
+          default: 1'b0
+          local: "true"
+          expose: "true"
+          name_top: RomCtrl1FlopToKmac
         }
         {
           name: RndCnstScrNonce
