@@ -108,9 +108,11 @@ module top_darjeeling #(
   parameter bit SramCtrlMboxEccCorrection = 0,
   // parameters for rom_ctrl0
   parameter RomCtrl0BootRomInitFile = "",
+  parameter bit RomCtrl0FlopToKmac = 1'b0,
   parameter bit SecRomCtrl0DisableScrambling = 1'b0,
   // parameters for rom_ctrl1
   parameter RomCtrl1BootRomInitFile = "",
+  parameter bit RomCtrl1FlopToKmac = 1'b0,
   parameter bit SecRomCtrl1DisableScrambling = 1'b0,
   // parameters for dma
   parameter bit DmaEnableDataIntgGen = 1'b1,
@@ -2255,6 +2257,7 @@ module top_darjeeling #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[72:72]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .BootRomInitFile(RomCtrl0BootRomInitFile),
+    .FlopToKmac(RomCtrl0FlopToKmac),
     .RndCnstScrNonce(RndCnstRomCtrl0ScrNonce),
     .RndCnstScrKey(RndCnstRomCtrl0ScrKey),
     .SecDisableScrambling(SecRomCtrl0DisableScrambling),
@@ -2283,6 +2286,7 @@ module top_darjeeling #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[73:73]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .BootRomInitFile(RomCtrl1BootRomInitFile),
+    .FlopToKmac(RomCtrl1FlopToKmac),
     .RndCnstScrNonce(RndCnstRomCtrl1ScrNonce),
     .RndCnstScrKey(RndCnstRomCtrl1ScrKey),
     .SecDisableScrambling(SecRomCtrl1DisableScrambling),
