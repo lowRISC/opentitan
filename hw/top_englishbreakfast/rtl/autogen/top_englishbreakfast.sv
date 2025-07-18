@@ -168,6 +168,8 @@ module top_englishbreakfast #(
   localparam int SpiHost0NumCS = 1;
   // local parameters for sram_ctrl_main
   localparam int SramCtrlMainOutstanding = 2;
+  // local parameters for rom_ctrl
+  localparam bit RomCtrlFlopToKmac = 1'b0;
 
   // Signals
   logic [37:0] mio_p2d;
@@ -1244,6 +1246,7 @@ module top_englishbreakfast #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[23:23]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .BootRomInitFile(RomCtrlBootRomInitFile),
+    .FlopToKmac(RomCtrlFlopToKmac),
     .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
     .RndCnstScrKey(RndCnstRomCtrlScrKey),
     .SecDisableScrambling(SecRomCtrlDisableScrambling),

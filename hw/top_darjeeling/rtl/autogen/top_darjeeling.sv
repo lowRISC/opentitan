@@ -338,6 +338,10 @@ module top_darjeeling #(
   localparam int SramCtrlMainOutstanding = 2;
   // local parameters for sram_ctrl_mbox
   localparam int SramCtrlMboxOutstanding = 2;
+  // local parameters for rom_ctrl0
+  localparam bit RomCtrl0FlopToKmac = 1'b0;
+  // local parameters for rom_ctrl1
+  localparam bit RomCtrl1FlopToKmac = 1'b0;
   // local parameters for racl_ctrl
   localparam int RaclCtrlNumSubscribingIps = 11;
 
@@ -2255,6 +2259,7 @@ module top_darjeeling #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[72:72]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .BootRomInitFile(RomCtrl0BootRomInitFile),
+    .FlopToKmac(RomCtrl0FlopToKmac),
     .RndCnstScrNonce(RndCnstRomCtrl0ScrNonce),
     .RndCnstScrKey(RndCnstRomCtrl0ScrKey),
     .SecDisableScrambling(SecRomCtrl0DisableScrambling),
@@ -2283,6 +2288,7 @@ module top_darjeeling #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[73:73]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .BootRomInitFile(RomCtrl1BootRomInitFile),
+    .FlopToKmac(RomCtrl1FlopToKmac),
     .RndCnstScrNonce(RndCnstRomCtrl1ScrNonce),
     .RndCnstScrKey(RndCnstRomCtrl1ScrKey),
     .SecDisableScrambling(SecRomCtrl1DisableScrambling),
