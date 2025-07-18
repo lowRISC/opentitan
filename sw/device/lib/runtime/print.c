@@ -12,8 +12,10 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
+#include "sw/device/lib/runtime/hart.h"
 
 #include "spi_device_regs.h"  // Generated.
 
@@ -63,6 +65,10 @@ static buffer_sink_t base_stdout = {
     // .data section and triggers the assertion in rom.ld.
     .sink = NULL,
 };
+
+// The GPIO TX indicator pin that can be used with the SPI console.
+static dif_gpio_t *spi_console_gpio = NULL;
+static dif_gpio_pin_t spi_console_tx_ready_gpio = UINT32_MAX;
 
 void base_set_stdout(buffer_sink_t out) {
   if (out.sink == NULL) {
@@ -153,37 +159,58 @@ static size_t spi_device_send_frame(void *data, const char *buf, size_t len) {
     frame_header_bytes[i + 8] = (len >> (i * 8)) & 0xff;
   }
 
-  uint32_t available_buffer_size = 0;
-  do {
+  // Wait for enough space to free up in the SPI flash buffer if we are in
+  // operating in polling mode.
+  if (spi_console_gpio == NULL) {
+    uint32_t available_buffer_size = 0;
     uint32_t last_read_address = 0;
-    if (dif_spi_device_get_last_read_address(spi_device, &last_read_address) !=
-        kDifOk) {
-      return 0;
-    }
+    do {
+      if (dif_spi_device_get_last_read_address(spi_device,
+                                               &last_read_address) != kDifOk) {
+        return 0;
+      }
 
-    // Adjust the last read address. The host continuously reads from the read
-    // buffer, unaware of whether a new frame has arrived. This could result in
-    // the reported last_read_address being the header size ahead of the actual
-    // address of the last valid frame if all the frames in the read buffer has
-    // been consumed by the host. While it's harmless to adjust the last read
-    // address even if the reported value is correct, doing so might temporarily
-    // underestimate the available buffer size by the size of a header.
-    uint32_t adjusted_last_read_address =
-        (kSpiDeviceReadBufferSizeBytes + last_read_address -
-         kSpiDeviceFrameHeaderSizeBytes) %
-        kSpiDeviceReadBufferSizeBytes;
-    uint32_t next_read_address = ((adjusted_last_read_address + 1) & ~3u) %
-                                 kSpiDeviceReadBufferSizeBytes;
+      // If we are not using the GPIO TX-ready indicator pin (which is the
+      // default) the host SPI console is constantly polling the spi_device to
+      // see if data is available to be read out. In this case, we need to
+      // adjust the last read address.
+      //
+      // Specifically, when the host is continuously reading from the read
+      // buffer, it is unaware of whether it is going to find a valid new frame
+      // (marked by a magic number in the frame header), an frame header all
+      // zeros, or garbage, since it is operating in polling mode. This could
+      // result in the reported last_read_address being one header size ahead of
+      // the actual address of the last valid frame if all the frames in the
+      // read buffer has been consumed by the host. While it's harmless to use
+      // the last read address even if the reported value is a frame header
+      // ahead, doing so might temporarily underestimate the available buffer
+      // size by the size of a frame header (or 12 bytes to be specific).
+      //
+      // However, if we are using the GPIO TX-ready indicator pin, the host will
+      // only ever attempt to read out data if it was signaled to do so by the
+      // device. In which case the next write address will always be 0, i.e.,
+      // the beginning of the buffer.
+      uint32_t adjusted_last_read_address =
+          (kSpiDeviceReadBufferSizeBytes + last_read_address -
+           kSpiDeviceFrameHeaderSizeBytes) %
+          kSpiDeviceReadBufferSizeBytes;
 
-    if (next_read_address > next_write_address) {
-      available_buffer_size = next_read_address - next_write_address - 1;
-    } else {
-      available_buffer_size =
-          next_read_address +
-          (kSpiDeviceReadBufferSizeBytes - next_write_address) - 1;
-    }
-  } while ((frame_size_bytes + kSpiDeviceBufferPreservedSizeBytes) >
-           available_buffer_size);
+      // Frames are always word aligned, so ensure the last read address is word
+      // aligned too.
+      uint32_t next_read_address = ((adjusted_last_read_address + 1) & ~3u) %
+                                   kSpiDeviceReadBufferSizeBytes;
+
+      // Compute the remaining free space in the SPI flash buffer.
+      if (next_read_address > next_write_address) {
+        available_buffer_size = next_read_address - next_write_address - 1;
+      } else {
+        available_buffer_size =
+            next_read_address +
+            (kSpiDeviceReadBufferSizeBytes - next_write_address) - 1;
+      }
+    } while ((frame_size_bytes + kSpiDeviceBufferPreservedSizeBytes) >
+             available_buffer_size);
+  }
 
   // Send aligned data.
   size_t data_write_address =
@@ -217,9 +244,39 @@ static size_t spi_device_send_frame(void *data, const char *buf, size_t len) {
     return 0;
   }
 
+  // Update the next write address and frame number.
   next_write_address =
       (next_write_address + frame_size_bytes) % kSpiDeviceReadBufferSizeBytes;
   spi_device_frame_num++;
+
+  // Block until the host to reads out the frame by toggling the GPIO TX-ready
+  // indicator pin to signal to the host to clock out data from the spi_device
+  // egress buffer.
+  if (spi_console_gpio != NULL) {
+    OT_DISCARD(
+        dif_gpio_write(spi_console_gpio, spi_console_tx_ready_gpio, true));
+    bool cs_state = true;
+    bool target_cs_state = false;
+    // There will be two bulk transfers that can be synchronized by the
+    // chip-select action. First the host will read out the 12-byte frame
+    // header, followed by the N-byte payload. Each transfer can be observed by
+    // the chip-select toggling low then high. After the first toggle low, when
+    // the host begins reading out the frame header, we can deassert the
+    // TX-ready pin as the host has already initiated the two SPI transactions.
+    for (size_t i = 0; i < 4; ++i) {
+      do {
+        if (dif_spi_device_get_csb_status(spi_device, &cs_state) != kDifOk) {
+          return 0;
+        }
+      } while (cs_state != target_cs_state);
+      if (i == 0) {
+        OT_DISCARD(
+            dif_gpio_write(spi_console_gpio, spi_console_tx_ready_gpio, false));
+      }
+      target_cs_state = !target_cs_state;
+    }
+    next_write_address = 0;
+  }
 
   return len;
 }
@@ -232,7 +289,6 @@ static size_t base_dev_spi_device(void *data, const char *buf, size_t len) {
     if (payload_len > kSpiDeviceMaxFramePayloadSizeBytes) {
       payload_len = kSpiDeviceMaxFramePayloadSizeBytes;
     }
-
     if (spi_device_send_frame(data, buf + write_data_len, payload_len) ==
         payload_len) {
       write_data_len += payload_len;
@@ -255,6 +311,12 @@ static size_t base_dev_uart(void *data, const char *buf, size_t len) {
 }
 
 sink_func_ptr get_uart_sink(void) { return &base_dev_uart; }
+
+void base_spi_device_set_gpio_tx_indicator(dif_gpio_t *gpio,
+                                           dif_gpio_pin_t tx_indicator_pin) {
+  spi_console_gpio = gpio;
+  spi_console_tx_ready_gpio = tx_indicator_pin;
+}
 
 void base_spi_device_stdout(const dif_spi_device_handle_t *spi_device) {
   // Reset the frame counter.

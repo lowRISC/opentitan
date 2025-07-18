@@ -4396,6 +4396,35 @@ cc_library(
 )
 
 opentitan_test(
+    name = "ottf_console_with_gpio_tx_indicator_test",
+    srcs = ["ottf_console_with_gpio_tx_indicator_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+    },
+    fpga = fpga_params(
+        # We run this as part of the manuf test suite as we want to run it in
+        # the hyper310 exec_env as this is most realistic of a provisioning
+        # scenario where this feature will be used. Without this tag, the test
+        # is not run in CI which causes a CI error ("Verify FPGA Jobs" check
+        # will fail).
+        tags = ["manuf"],
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/ottf_console_with_gpio_tx_indicator",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "spi_device_ottf_console_test",
     srcs = ["spi_device_ottf_console_test.c"],
     exec_env = dicts.add(

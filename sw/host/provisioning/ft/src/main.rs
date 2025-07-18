@@ -108,7 +108,7 @@ fn main() -> Result<()> {
     let transport = backend::create(&opts.init.backend_opts)?;
     transport.apply_default_configuration(None)?;
     let spi = transport.spi(&opts.console_spi)?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None)?;
     InitializeTest::print_result("load_bitstream", opts.init.load_bitstream.init(&transport))?;
 
     // Parse and format LC tokens.
