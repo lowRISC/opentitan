@@ -1075,11 +1075,7 @@ def amend_interrupt(top: ConfigT,
     if "interrupt" not in top or top["interrupt"] == "":
         top["interrupt"] = []
 
-    # Careful, "interrupt*s*"
-    default_plic = None
-    if "interrupts" in top and "default_plic" in top["interrupts"]:
-        default_plic = top["interrupts"]["default_plic"]
-
+    default_plic = top.get("default_plic", None)
     interrupts = []
     outgoing_interrupts = defaultdict(list)
     for m in modules + list(chain(*outgoing_modules.values())):
@@ -1159,9 +1155,110 @@ def get_alert_modules(top: ConfigT,
     return modules
 
 
+def get_alert_connections(top: ConfigT,
+                          name_to_block: IpBlocksT,
+                          allow_missing_blocks=False) -> List[str]:
+    '''Return an existing top['alert_connections'] or generate one.
+    '''
+    if 'alert_connections' in top:
+        return top['alert_connections']
+
+    def alert_handler_signals(handler):
+        suffix = handler.replace("alert_handler", "")
+        return (f"alert{suffix}_tx", f"alert{suffix}_rx")
+
+    default_handler = top.get("default_alert_handler", None)
+    connections = defaultdict(list)
+
+    # Construct the connection information here
+    alert_idx = defaultdict(int)
+    outgoing_alert_idx = defaultdict(int)
+    for module in top['module']:
+        outgoing = "outgoing_alert" in module
+        block = name_to_block.get(module['type'])
+        if block is None and allow_missing_blocks:
+            continue
+        if block.alerts:
+            alert_comments = []
+            handler = module.get("alert_handler", default_handler)
+
+            # Checking whether there is a handler is done in validation
+            if not outgoing and not handler:
+                continue
+
+            # Generate slices
+            w = len(block.alerts)
+            if outgoing:
+                outgoing_group = module['outgoing_alert']
+                lo = outgoing_alert_idx[outgoing_group]
+                slice = f"{lo+w-1}:{lo}"
+                async_expr = f"AsyncOnOutgoingAlert{outgoing_group.capitalize()}[{slice}]"
+                alert_tx_expr = f"outgoing_alert_{outgoing_group}_tx_o[{slice}]"
+                alert_rx_expr = f"outgoing_alert_{outgoing_group}_rx_i[{slice}]"
+            else:
+                alert_tx, alert_rx = alert_handler_signals(handler)
+                lo = alert_idx[handler]
+                slice = f"{lo+w-1}:{lo}"
+                async_expr = f"{handler}_reg_pkg::AsyncOn[{slice}]"
+                alert_tx_expr = f"{alert_tx}[{slice}]"
+                alert_rx_expr = f"{alert_rx}[{slice}]"
+
+            # Generate comments, and increment the applicable alert indices
+            for a in block.alerts:
+                if outgoing:
+                    alert_comments.append(f"External alert group \"{module['outgoing_alert']}\" "
+                                          f"[{outgoing_alert_idx[module['outgoing_alert']]}]: "
+                                          f"{a.name}")
+                    outgoing_alert_idx[module['outgoing_alert']] += 1
+                else:
+                    alert_comments.append(f"{handler}[{alert_idx[handler]}]: {a.name}")
+                    alert_idx[handler] += 1
+
+            alert_info = {
+                "tx_expr": alert_tx_expr,
+                "rx_expr": alert_rx_expr,
+                "async_expr": async_expr,
+                "comments": alert_comments
+            }
+            connections["module_" + module["name"]] = alert_info
+
+    # Process incoming alerts
+    for alert_group, alerts in top.get("incoming_alert", {}).items():
+        handler = default_handler
+        if not handler:
+            continue
+
+        w = len(alerts)
+        alert_tx, alert_rx = alert_handler_signals(handler)
+        lo = alert_idx[handler]
+        slice = f"{lo+w-1}:{lo}"
+        alert_tx_expr = f"{alert_tx}[{slice}]"
+        alert_rx_expr = f"{alert_rx}[{slice}]"
+
+        alert_comments = []
+        for a in alerts:
+            alert_comments.append(f"{handler}[{alert_idx[handler]}]: {a['name']}")
+            alert_idx[handler] += 1
+
+        alert_info = {
+            "tx_expr": alert_tx_expr,
+            "rx_expr": alert_rx_expr,
+            "async_expr": None,
+            "comments": alert_comments
+        }
+        connections["incoming_" + alert_group] = alert_info
+
+    return connections
+
+
 def commit_alert_modules(top: ConfigT, name_to_block: IpBlocksT):
     """Make sure top['alert_module'] is populated in the final config."""
     top['alert_module'] = get_alert_modules(top, name_to_block)
+
+
+def commit_alert_connections(top: ConfigT, name_to_block: IpBlocksT):
+    """Make sure top['alert_connections'] is populated in the final config."""
+    top['alert_connections'] = get_alert_connections(top, name_to_block)
 
 
 def get_outgoing_alert_modules(top: ConfigT,
@@ -1213,6 +1310,7 @@ def amend_alert(top: ConfigT,
     outgoing_alerts = defaultdict(list)
     missing_ips = []
 
+    default_handler = top.get("default_alert_handler", None)
     for m in alert_modules + list(chain(*outgoing_modules.values())):
         ips = list(filter(lambda module: module["name"] == m, top["module"]))
         if len(ips) == 0:
@@ -1230,6 +1328,7 @@ def amend_alert(top: ConfigT,
         for alert in block.alerts:
             alert_dict = alert.as_nwt_dict('alert')
             alert_dict['async'] = '1'
+            alert_dict['handler'] = ip.get("alert_handler", default_handler)
             qual_sig = lib.add_module_prefix_to_signal(alert_dict,
                                                        module=m.lower())
             alert_name = alert_dict['name']

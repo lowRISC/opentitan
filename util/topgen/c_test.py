@@ -84,10 +84,7 @@ class TopGenCTest(TopGenC):
         self.alert_handler = find_module(self.top['module'], 'alert_handler')
         self.rv_plics = find_modules(self.top['module'], 'rv_plic')
 
-        self.default_plic = None
-        if "interrupts" in self.top:
-            self.default_plic = self.top["interrupts"].get("default_plic")
-
+        self.default_plic = self.top.get("default_plic", None)
         self.irq_peripherals = {}
         for plic in self.rv_plics:
             self.irq_peripherals[plic["name"]] = {
@@ -235,9 +232,11 @@ class TopGenCTest(TopGenC):
             return alert_peripherals
         all_device_regions = self.all_device_regions()
         all_direct_regions = all_device_regions[addr_space]
+        alerting_modules = self.top["alert_module"]
+
         for entry in self.top['module']:
             inst_name = entry['name']
-            if inst_name not in self.top["alert_module"]:
+            if inst_name not in alerting_modules:
                 continue
 
             if not entry['generate_dif']:

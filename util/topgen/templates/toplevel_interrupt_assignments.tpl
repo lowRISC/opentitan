@@ -5,9 +5,7 @@
 % for plic, info in plic_info.items():
 <%
    base = info["count"]
-   default_plic = None
-   if "interrupts" in top and "default_plic" in top["interrupts"]:
-     default_plic = top["interrupts"]["default_plic"]
+   default_plic = top.get("default_plic", None)
 %>\
   assign ${info["vector"]} = {
   % if plic == default_plic:
