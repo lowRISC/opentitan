@@ -50,7 +50,7 @@ static owner_page_status_t owner_page_validity_check(size_t page,
 
   rom_error_t result = ownership_key_validate(
       page, kOwnershipKeyOwner, kTlvTagOwner, &bootdata->nonce,
-      &owner_page[page].signature, &owner_page[page], sig_len);
+      &owner_page[page].signature, &owner_page[page], sig_len, NULL);
   if (result != kErrorOk) {
     // If the page is bad, destroy the RAM copy.
     memset(&owner_page[page], 0x5a, sizeof(owner_page[0]));

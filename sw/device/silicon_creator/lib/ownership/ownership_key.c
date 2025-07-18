@@ -52,7 +52,8 @@ const owner_detached_signature_t *ownership_signature_scan(
 rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
                                    uint32_t command, const nonce_t *nonce,
                                    const owner_signature_t *signature,
-                                   const void *message, size_t len) {
+                                   const void *message, size_t len,
+                                   uint32_t *flash_exec) {
   const ecdsa_p256_signature_t *ecdsa = NULL;
   const sigverify_spx_signature_t *spx = NULL;
   uint32_t key_alg = owner_page[page].ownership_key_alg;
@@ -90,25 +91,26 @@ rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
 
   if ((key & kOwnershipKeyUnlock) == kOwnershipKeyUnlock) {
     if (owner_verify(key_alg, &owner_page[page].unlock_key, ecdsa, spx, NULL, 0,
-                     NULL, 0, message, len, &digest, NULL) == kErrorOk) {
+                     NULL, 0, message, len, &digest, flash_exec) == kErrorOk) {
       return kErrorOk;
     }
   }
   if ((key & kOwnershipKeyActivate) == kOwnershipKeyActivate) {
     if (owner_verify(key_alg, &owner_page[page].activate_key, ecdsa, spx, NULL,
-                     0, NULL, 0, message, len, &digest, NULL) == kErrorOk) {
+                     0, NULL, 0, message, len, &digest,
+                     flash_exec) == kErrorOk) {
       return kErrorOk;
     }
   }
   if (kNoOwnerRecoveryKey &&
       (key & kOwnershipKeyRecovery) == kOwnershipKeyRecovery) {
     if (owner_verify(key_alg, kNoOwnerRecoveryKey, ecdsa, spx, NULL, 0, NULL, 0,
-                     message, len, &digest, NULL) == kErrorOk) {
+                     message, len, &digest, flash_exec) == kErrorOk) {
       return kErrorOk;
     }
   }
   if (owner_verify(key_alg, &owner_page[page].owner_key, ecdsa, spx, NULL, 0,
-                   NULL, 0, message, len, &digest, NULL) == kErrorOk) {
+                   NULL, 0, message, len, &digest, flash_exec) == kErrorOk) {
     return kErrorOk;
   }
   return kErrorOwnershipInvalidSignature;

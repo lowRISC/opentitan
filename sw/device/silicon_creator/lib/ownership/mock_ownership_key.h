@@ -19,7 +19,7 @@ class MockOwnershipKey : public global_mock::GlobalMock<MockOwnershipKey> {
  public:
   MOCK_METHOD(rom_error_t, validate,
               (size_t, ownership_key_t, uint32_t, const nonce_t *,
-               const owner_signature_t *, const void *, size_t));
+               const owner_signature_t *, const void *, size_t, uint32_t *));
   MOCK_METHOD(rom_error_t, seal_init, ());
   MOCK_METHOD(rom_error_t, seal_page, (size_t));
   MOCK_METHOD(rom_error_t, seal_check, (size_t));
