@@ -79,6 +79,39 @@ TEST_F(RomExtBootPolicyTest, ManifestCheckBadBl0SecVer) {
             kErrorBootPolicyRollback);
 }
 
+TEST_F(RomExtBootPolicyTest, ManifestCheckBadSignedRegion) {
+  boot_data_t boot_data{};
+  boot_data.min_security_version_bl0 = 1;
+
+  manifest_t manifest{};
+  manifest.identifier = CHIP_BL0_IDENTIFIER;
+  manifest.length = CHIP_BL0_SIZE_MIN;
+  manifest.security_version = 1;
+  manifest.manifest_version.major = kManifestVersionMajor2;
+  manifest.signed_region_end = manifest.length + 1;
+
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest, &boot_data),
+            kErrorManifestBadSignedRegion);
+}
+
+TEST_F(RomExtBootPolicyTest, ManifestCheckBadEntryPoint) {
+  boot_data_t boot_data{};
+  boot_data.min_security_version_bl0 = 1;
+
+  manifest_t manifest{};
+  manifest.identifier = CHIP_BL0_IDENTIFIER;
+  manifest.length = sizeof(manifest_t) + 0x1000;
+  manifest.security_version = 1;
+  manifest.manifest_version.major = kManifestVersionMajor2;
+  manifest.signed_region_end = sizeof(manifest_t) + 0x900;
+  manifest.code_start = sizeof(manifest_t);
+  manifest.code_end = sizeof(manifest_t) + 0x800;
+  manifest.entry_point = manifest.code_start - 1;
+
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest, &boot_data),
+            kErrorManifestBadEntryPoint);
+}
+
 struct ManifestOrderTestCase {
   uint32_t primary;
 };
