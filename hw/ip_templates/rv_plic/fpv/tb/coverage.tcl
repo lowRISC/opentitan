@@ -33,21 +33,6 @@ check_cov -waiver -add -source_file {src/lowrisc_prim_subreg_0/rtl/prim_subreg.s
  58 -end_line 58 -type {branch} -comment {wr_en is true and the branch doesn't contain the else\
  part}
 
-# The waivers below are waiving the branch and statement (inside those branches) in mubi(4-16)_and
-# function in prim_mubi_pkg used in rv_plic_csr_assert_fpv. Since, rv_plic registers doesn't have
-# any regwen types therefore all the mubi(4-16)_and functions are unused.
-check_cov -waiver -add -start_line 119 -end_line 139 -instance {prim_mubi_pkg} -comment {Unused\
- code block}
-
-check_cov -waiver -add -start_line 258 -end_line 278 -instance {prim_mubi_pkg} -comment {Unused\
- code block}
-
-check_cov -waiver -add -start_line 397 -end_line 417 -instance {prim_mubi_pkg} -comment {Unused\
- code block}
-
-check_cov -waiver -add -start_line 536 -end_line 556 -instance {prim_mubi_pkg} -comment {Unused\
- code block}
-
 # These two blocking assignment appear as undetectable and making an assertion for them looks
 # unreasonable as for this particular instance, they will always be generated as zero.
 check_cov -waiver -add -start_line 67 -end_line 68 -type {statement} -instance\
