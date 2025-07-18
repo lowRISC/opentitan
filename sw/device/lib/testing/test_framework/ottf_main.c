@@ -28,6 +28,10 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
+#if !OT_IS_ENGLISH_BREAKFAST
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
+#endif  // !OT_IS_ENGLISH_BREAKFAST
+
 // TODO: make this toplevel agnostic.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -169,6 +173,12 @@ void _ottf_main(void) {
       LOG_INFO("Running %s", kOttfTestConfig.file);
     }
   }
+
+#if !OT_IS_ENGLISH_BREAKFAST
+  if (!kOttfTestConfig.ignore_alerts) {
+    CHECK_STATUS_OK(ottf_alerts_enable_all());
+  }
+#endif  // !OT_IS_ENGLISH_BREAKFAST
 
   // Initialize a global random number generator testutil context to provide
   // tests with a source of entropy for randomizing test behaviors.
