@@ -69,6 +69,20 @@ TEST(LogTest, PrintfHex) {
   EXPECT_EQ(*uart_buf, "0x0102030405060708");
 }
 
+TEST(LogTest, PrintfPointer) {
+  uart_buf->clear();
+  dbg_printf("%p", 0xabcdef01);
+  EXPECT_EQ(*uart_buf, "abcdef01");
+
+  uart_buf->clear();
+  dbg_printf("%p", 0);
+  EXPECT_EQ(*uart_buf, "00000000");
+
+  uart_buf->clear();
+  dbg_printf("0x%p%p", 0x01020304, 0x05060708);
+  EXPECT_EQ(*uart_buf, "0x0102030405060708");
+}
+
 TEST(LogTest, PrintfString) {
   uart_buf->clear();
   dbg_printf("Hello, %s!", "World");
