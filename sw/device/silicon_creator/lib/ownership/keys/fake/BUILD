@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
 load("//rules/opentitan:keyutils.bzl", "key_ecdsa", "key_sphincs_plus")
 
 package(default_visibility = ["//visibility:public"])
@@ -161,4 +162,24 @@ key_ecdsa(
     private_key = "app_unauthorized_ecdsa_p256.der",
     pub_key = "app_unauthorized_ecdsa_p256.pub.der",
     type = "TestKey",
+)
+
+pkg_files(
+    name = "fpga_dev_files",
+    testonly = True,
+    srcs = [
+        ":app_dev",
+        ":app_dev_pub",
+        ":app_ecdsa_prod",
+        ":app_prod_ecdsa_pub",
+    ],
+)
+
+pkg_filegroup(
+    name = "fpga_dev_pkg",
+    testonly = True,
+    srcs = [
+        ":fpga_dev_files",
+    ],
+    prefix = "fake_keys",
 )

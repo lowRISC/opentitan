@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
+load("//rules:files.bzl", "output_groups")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules:linker.bzl", "ld_library")
@@ -366,4 +368,33 @@ opentitan_binary(
         "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
         "//sw/device/silicon_creator/rom_ext/imm_section:main_section_dice_x509_slot_a",
     ],
+)
+
+output_groups(
+    name = "fpga_dev_binaries",
+    testonly = True,
+    srcs = [":rom_ext_dice_x509_slot_virtual"],
+    groups = [
+        "fpga_cw310_signed_bin",
+        "fpga_cw340_signed_bin",
+    ],
+)
+
+pkg_files(
+    name = "fpga_dev_files",
+    testonly = True,
+    srcs = [
+        ":fpga_dev_binaries",
+    ],
+    tags = ["manual"],
+)
+
+pkg_filegroup(
+    name = "fpga_dev_pkg",
+    testonly = True,
+    srcs = [
+        ":fpga_dev_files",
+    ],
+    prefix = "rom_ext",
+    tags = ["manual"],
 )
