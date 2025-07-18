@@ -210,19 +210,8 @@ status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
   return keyblob_from_shares(share0, mask, config, keyblob);
 }
 
-/**
- * Combines two word buffers with XOR.
- *
- * Callers should ensure the entropy complex is up before calling this
- * function.  The implementation uses random-order hardening primitives for
- * side-channel defense.
- *
- * @param[in,out] x Pointer to the first operand (modified in-place).
- * @param y Pointer to the second operand.
- * @param word_len Length in words of each operand.
- */
-void hardened_xor(uint32_t *restrict x, const uint32_t *restrict y,
-                  size_t word_len) {
+status_t hardened_xor(uint32_t *restrict x, const uint32_t *restrict y,
+                      size_t word_len) {
   // Generate a random ordering.
   random_order_t order;
   random_order_init(&order, word_len);
@@ -267,6 +256,8 @@ void hardened_xor(uint32_t *restrict x, const uint32_t *restrict y,
   }
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(count, expected_count);
+
+  return OTCRYPTO_OK;
 }
 
 status_t keyblob_remask(otcrypto_blinded_key_t *key) {
