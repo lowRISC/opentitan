@@ -245,6 +245,54 @@ TEST_P(MemCmpTest, Properties) {
   EXPECT_GT(memcmp_func(zs, xs, kLen), 0);
 }
 
+TEST_P(MemCmpTest, UnalignedHeadTest) {
+  auto memcmp_func = GetParam();
+
+  constexpr size_t kLen = 8;
+  alignas(uint32_t) constexpr uint8_t xs[kLen] = {0, 0, 0, 0, 0, 0, 0, 0};
+  alignas(uint32_t) constexpr uint8_t ys[kLen] = {0, 1, 0, 0, 0, 0, 0, 0};
+
+  // Reflexive property.
+  EXPECT_EQ(memcmp_func(xs + 1, xs + 1, kLen - 1), 0);
+  EXPECT_EQ(memcmp_func(ys + 1, ys + 1, kLen - 1), 0);
+  // Transitive property for less-than result.
+  EXPECT_LT(memcmp_func(xs + 1, ys + 1, kLen - 1), 0);
+  // Transitive property for greater-than result.
+  EXPECT_GT(memcmp_func(ys + 1, xs + 1, kLen - 1), 0);
+}
+
+TEST_P(MemCmpTest, UnalignedTailTest) {
+  auto memcmp_func = GetParam();
+
+  constexpr size_t kLen = 6;
+  alignas(uint32_t) constexpr uint8_t xs[kLen] = {0, 0, 0, 0, 0, 0};
+  alignas(uint32_t) constexpr uint8_t ys[kLen] = {0, 0, 0, 0, 0, 1};
+
+  // Reflexive property.
+  EXPECT_EQ(memcmp_func(xs, xs, kLen), 0);
+  EXPECT_EQ(memcmp_func(ys, ys, kLen), 0);
+  // Transitive property for less-than result.
+  EXPECT_LT(memcmp_func(xs, ys, kLen), 0);
+  // Transitive property for greater-than result.
+  EXPECT_GT(memcmp_func(ys, xs, kLen), 0);
+}
+
+TEST_P(MemCmpTest, AlignedBodyTest) {
+  auto memcmp_func = GetParam();
+
+  constexpr size_t kLen = 4;
+  alignas(uint32_t) constexpr uint8_t xs[kLen] = {0, 0, 0, 0};
+  alignas(uint32_t) constexpr uint8_t ys[kLen] = {0, 0, 0, 1};
+
+  // Reflexive property.
+  EXPECT_EQ(memcmp_func(xs, xs, kLen), 0);
+  EXPECT_EQ(memcmp_func(ys, ys, kLen), 0);
+  // Transitive property for less-than result.
+  EXPECT_LT(memcmp_func(xs, ys, kLen), 0);
+  // Transitive property for greater-than result.
+  EXPECT_GT(memcmp_func(ys, xs, kLen), 0);
+}
+
 TEST_P(MemCmpTest, DoesNotUseSystemEndianness) {
   auto memcmp_func = GetParam();
 
