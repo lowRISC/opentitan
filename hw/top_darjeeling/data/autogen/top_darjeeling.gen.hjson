@@ -6124,6 +6124,19 @@
           name_top: KeymgrDpeKmacEnMasking
         }
         {
+          name: FlopToKmac
+          desc:
+            '''
+            If true, insert flops to break a potential long chain between
+            the active key slot and KMAC.
+            '''
+          type: bit
+          default: "0"
+          local: "true"
+          expose: "true"
+          name_top: KeymgrDpeFlopToKmac
+        }
+        {
           name: RndCnstLfsrSeed
           desc: Compile-time random bits for initial LFSR seed
           type: keymgr_pkg::lfsr_seed_t
