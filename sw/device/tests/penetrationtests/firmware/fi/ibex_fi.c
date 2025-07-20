@@ -2124,6 +2124,11 @@ status_t handle_ibex_fi_char_csr_combi(ujson_t *uj) {
   cfg = bitfield_bit32_write(cfg, HMAC_CFG_SHA_EN_BIT, false);
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, cfg);
 
+  // Make explicit register variables for the test
+  register volatile uint32_t reg_x9 asm("x9");
+  register volatile uint32_t reg_x19 asm("x19");
+  register volatile uint32_t reg_x29 asm("x29");
+
   // Write reference value into CSR.
   if (uj_data.trigger & 0x1) {
     PENTEST_ASM_TRIGGER_HIGH
@@ -2168,9 +2173,9 @@ status_t handle_ibex_fi_char_csr_combi(ujson_t *uj) {
       TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
           ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_REG_OFFSET,
       uj_data.ref_values[13]);
-  asm volatile("mv x9, %0" : : "r"(uj_data.ref_values[14]));
-  asm volatile("mv x19, %0" : : "r"(uj_data.ref_values[15]));
-  asm volatile("mv x29, %0" : : "r"(uj_data.ref_values[16]));
+  reg_x9 = uj_data.ref_values[14];
+  reg_x19 = uj_data.ref_values[15];
+  reg_x29 = uj_data.ref_values[16];
   if (uj_data.trigger & 0x1) {
     PENTEST_ASM_TRIGGER_LOW
   }
@@ -2218,9 +2223,9 @@ status_t handle_ibex_fi_char_csr_combi(ujson_t *uj) {
   read_csrs[13] =
       abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
                       ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_REG_OFFSET);
-  asm volatile("mv %0, x9" : "=r"(read_csrs[14]));
-  asm volatile("mv %0, x19" : "=r"(read_csrs[15]));
-  asm volatile("mv %0, x29" : "=r"(read_csrs[16]));
+  read_csrs[14] = reg_x9;
+  read_csrs[15] = reg_x19;
+  read_csrs[16] = reg_x29;
   if (uj_data.trigger & 0x4) {
     PENTEST_ASM_TRIGGER_LOW
   }
