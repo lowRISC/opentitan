@@ -196,13 +196,13 @@
   {
     "test_case_id": 37,
     "command": "CharCsrCombi",
-    "input": "{\"trigger\": 0, \"ref_values\": [2,3,16641,4,5,6,38553,7,5137,256,26214,26214,26214,5,2,3,4]}",
+    "input": "{\"trigger\": 7, \"ref_values\": [2,3,16641,4,5,6,38553,7,5137,256,26214,26214,26214,5,2,3,4]}",
     "expected_output": ["{\"output\":[2,3,16641,4,5,6,38553,7,5137,256,26214,26214,26214,5,2,3,4], \"data_faulty\": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], \"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   },
   {
     "test_case_id": 38,
     "command": "CharCsrCombi",
-    "input": "{\"trigger\": 0, \"ref_values\": [1,5,33,101,3,5,39321,6,5138,50115,39321,38502,39321,39321,1,2,3]}",
+    "input": "{\"trigger\": 7, \"ref_values\": [1,5,33,101,3,5,39321,6,5138,50115,39321,38502,39321,39321,1,2,3]}",
     "expected_output": ["{\"output\":[1,5,33,101,3,5,39321,6,5138,50115,39321,38502,39321,39321,1,2,3], \"data_faulty\": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], \"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   }
 ]
