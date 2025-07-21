@@ -166,6 +166,10 @@ UJSON_SERDE_STRUCT(IbexFiCsrCombiIn, ibex_fi_csr_combi_in_t, IBEXFI_CSR_COMBI_IN
     field(output, uint32_t, IBEXFI_NUM_CSR_COMBI)
 UJSON_SERDE_STRUCT(IbexFiCsrCombiOut, ibex_fi_csr_combi_out_t, IBEXFI_CSR_COMBI_OUT);
 
+#define IBEXFI_EMPTY(field, string) \
+    field(success, bool)
+UJSON_SERDE_STRUCT(IbexFiEmpty, ibex_fi_empty_t, IBEXFI_EMPTY);
+
 // clang-format on
 
 #ifdef __cplusplus

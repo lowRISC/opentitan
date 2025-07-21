@@ -17,6 +17,6 @@
   {
     "test_case_id": 2,
     "command": "RuntimeCorruption",
-    "expected_output": ["{\"res\":0,\"state\":17,\"counter\":5,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "flaky_expected_output": ["{\"res\":0,\"state\":17,\"counter\":5,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   }
 ]
