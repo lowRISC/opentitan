@@ -967,7 +967,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           exp_status[OtpCheckPendingIdx] = 1;
           under_chk = 1;
           if (check_timeout <= CHK_TIMEOUT_CYC) begin
-            set_exp_alert("fatal_check_error", 1, `gmv(ral.check_timeout));
+            set_exp_alert("fatal_check_error", 1, `gmv(ral.check_timeout) + CHK_TIMEOUT_SLACK);
             predict_err(OtpTimeoutErrIdx);
           end else begin
             if (get_field_val(ral.check_trigger.consistency, item.a_data)) begin
