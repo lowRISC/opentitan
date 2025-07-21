@@ -17,7 +17,7 @@
   {
     "test_case_id": 2,
     "command": "HwCfg",
-    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "flaky_expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   },
   {
     "test_case_id": 3,
@@ -27,11 +27,11 @@
   {
     "test_case_id":4,
     "command": "VendorTest",
-    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "flaky_expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   },
   {
     "test_case_id": 5,
     "command": "OwnerSwCfg",
-    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "flaky_expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   }
 ]

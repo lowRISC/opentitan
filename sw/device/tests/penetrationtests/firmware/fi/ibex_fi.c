@@ -548,7 +548,10 @@ status_t handle_ibex_fi_address_translation(ujson_t *uj)
       kDifRvCoreIbexAddrTranslationIBus, increment_100x10_mapping);
   if (status == kDifLocked) {
     LOG_INFO("address translation locked");
-    return PERMISSION_DENIED();
+    ibex_fi_empty_t uj_output;
+    uj_output.success = false;
+    RESP_OK(ujson_serialize_ibex_fi_empty_t, uj, &uj_output);
+    return OK_STATUS();
   }
   TRY(dif_rv_core_ibex_configure_addr_translation(
       &rv_core_ibex, kDifRvCoreIbexAddrTranslationSlot_0,
@@ -640,7 +643,10 @@ status_t handle_ibex_fi_address_translation_config(ujson_t *uj)
       kDifRvCoreIbexAddrTranslationIBus, mapping1);
   if (status == kDifLocked) {
     LOG_INFO("address translation locked");
-    return PERMISSION_DENIED();
+    ibex_fi_empty_t uj_output;
+    uj_output.success = false;
+    RESP_OK(ujson_serialize_ibex_fi_empty_t, uj, &uj_output);
+    return OK_STATUS();
   }
 
   // FI code target.
@@ -2298,7 +2304,10 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
         &flash, flash_region_index, kDifToggleEnabled);
     if (res_prop == kDifLocked || res_en == kDifLocked) {
       LOG_INFO("Flash region locked, aborting!");
-      return ABORTED();
+      ibex_fi_empty_t uj_output;
+      uj_output.success = false;
+      RESP_OK(ujson_serialize_ibex_fi_empty_t, uj, &uj_output);
+      return OK_STATUS();
     }
 
     flash_init = true;
@@ -2423,8 +2432,10 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) __attribute__((optnone)) {
     dif_result_t res_en = dif_flash_ctrl_set_data_region_enablement(
         &flash, flash_region_index, kDifToggleEnabled);
     if (res_prop == kDifLocked || res_en == kDifLocked) {
-      LOG_INFO("Flash region locked, aborting!");
-      return ABORTED();
+      ibex_fi_empty_t uj_output;
+      uj_output.success = false;
+      RESP_OK(ujson_serialize_ibex_fi_empty_t, uj, &uj_output);
+      return OK_STATUS();
     }
 
     flash_init = true;
@@ -3407,7 +3418,7 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) __attribute__((optnone)) {
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_sram_write(ujson_t *uj) __attribute__((optnone)) {
