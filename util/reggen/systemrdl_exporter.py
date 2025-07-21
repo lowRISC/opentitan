@@ -123,9 +123,9 @@ class Window2Systemrdl:
 
     def export(self) -> systemrdl.component.Mem:
         rdl_mem_t = self.importer.create_mem_definition(self.inner.name)
-        self.importer.assign_property(
-            rdl_mem_t, "memwidth", self.inner.size_in_bytes // self.inner.items
-        )
+        memwidth = self.inner.size_in_bytes // self.inner.items
+        self.importer.assign_property(rdl_mem_t, "memwidth", memwidth * 8)
+        self.importer.assign_property(rdl_mem_t, "mementries", self.inner.items)
         return self.importer.instantiate_mem(
             rdl_mem_t, self.inner.name, self.inner.offset, [self.inner.items]
         )
