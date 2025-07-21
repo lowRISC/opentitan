@@ -43,6 +43,10 @@ module rom_ctrl_scrambled_rom
   // The (fixed) key for the PRINCE cipher
   parameter bit [127:0] ScrKey = '0,
 
+  // If this parameter is set, the ROM responds in two cycles (instead of one). This allows us to
+  // break hot paths if the ROM isn't all that quick.
+  parameter bit TwoCycleRom = 1'b0,
+
   localparam int Aw = $clog2(Depth)
 ) (
   input logic              clk_i,
@@ -128,6 +132,18 @@ module rom_ctrl_scrambled_rom
     assign unused_top_keystream = ^keystream[63:Width];
   end
 
+  logic [Width-1:0] keystream_out;
+
+  if (TwoCycleRom) begin : gen_delay2_keystream
+    logic [Width-1:0] keystream_q;
+    always_ff @(posedge clk_i) begin
+      keystream_q <= keystream[Width-1:0];
+    end
+    assign keystream_out = keystream_q;
+  end else begin : gen_delay1_keystream
+    assign keystream_out = keystream[Width-1:0];
+  end
+
   // The physical ROM ==========================================================
 
   logic [Width-1:0] rdata_scr;
@@ -135,6 +151,7 @@ module rom_ctrl_scrambled_rom
   prim_rom_adv #(
     .Width       (Width),
     .Depth       (Depth),
+    .Latency     (TwoCycleRom ? 2 : 1),
     .MemInitFile (MemInitFile)
   ) u_rom (
     .clk_i    (clk_i),
@@ -150,6 +167,6 @@ module rom_ctrl_scrambled_rom
 
   // XOR rdata with keystream ==================================================
 
-  assign clr_rdata_o = rdata_scr ^ keystream[Width-1:0];
+  assign clr_rdata_o = rdata_scr ^ keystream_out;
 
 endmodule
