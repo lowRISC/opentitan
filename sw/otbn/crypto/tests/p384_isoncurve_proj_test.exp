@@ -1,0 +1,8 @@
+# Expected values:
+# [w1, w0] is right side result of Weierstrass equation,
+# [w3, w2] is left side result of Weierstrass equation.
+# Point is on curve if [w3,w2] == [w1,w0].
+w0  = 0x00e9787385550c0f88f54f97468d45f2d0583cfa3b497875fd6cf385a91fd763
+w1  = 0x00000000000000000000000000000000d34440792a17aadd1866862341ff09cd
+w2  = 0x00e9787385550c0f88f54f97468d45f2d0583cfa3b497875fd6cf385a91fd763
+w3  = 0x00000000000000000000000000000000d34440792a17aadd1866862341ff09cd
