@@ -7,8 +7,6 @@
 namespace test {
 extern "C" {
 
-hardened_bool_t ibex_check_security_config(void) { return kHardenedBoolTrue; }
-
 // Since this mock library is for tests only, the randomness does not need to be
 // real. https://xkcd.com/221/
 uint32_t ibex_rnd32_read(void) { return 4; }
