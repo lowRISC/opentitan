@@ -531,6 +531,19 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "p384_isoncurve_proj_test",
+    srcs = [
+        "p384_isoncurve_proj_test.s",
+    ],
+    exp = "p384_isoncurve_proj_test.exp",
+    deps = [
+        "//sw/otbn/crypto:p384_base",
+        "//sw/otbn/crypto:p384_isoncurve",
+        "//sw/otbn/crypto:p384_isoncurve_proj",
+    ],
+)
+
+otbn_sim_test(
     name = "p384_curve_point_valid_test",
     srcs = [
         "p384_curve_point_valid_test.s",
