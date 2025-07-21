@@ -221,6 +221,19 @@ cc_library(
 )
 
 cc_library(
+    name = "security_config",
+    srcs = ["security_config.c"],
+    hdrs = ["security_config.h"],
+    deps = [
+        ":integrity",
+        ":status",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:clkmgr",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
+    ],
+)
+
+cc_library(
     name = "sha2",
     srcs = ["sha2.c"],
     hdrs = [
