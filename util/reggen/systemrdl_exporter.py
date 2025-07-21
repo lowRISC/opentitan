@@ -126,6 +126,10 @@ class Window2Systemrdl:
         memwidth = self.inner.size_in_bytes // self.inner.items
         self.importer.assign_property(rdl_mem_t, "memwidth", memwidth * 8)
         self.importer.assign_property(rdl_mem_t, "mementries", self.inner.items)
+
+        swaccess = SWAccess2Systemrdl(self.inner.swaccess).export()
+        self.importer.assign_property(rdl_mem_t, "sw", swaccess["sw"])
+
         return self.importer.instantiate_mem(
             rdl_mem_t, self.inner.name, self.inner.offset, [self.inner.items]
         )
