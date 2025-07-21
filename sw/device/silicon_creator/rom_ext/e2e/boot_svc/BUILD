@@ -221,8 +221,15 @@ manifest({
     "identifier": hex(CONST.OWNER),
 })
 
+manifest({
+    "name": "manifest_version_5",
+    "address_translation": hex(CONST.HARDENED_TRUE),
+    "security_version": "5",
+    "identifier": hex(CONST.OWNER),
+})
+
 opentitan_binary(
-    name = "min_sec_ver_4",
+    name = "min_sec_ver_5",
     testonly = True,
     srcs = ["boot_svc_min_sec_ver_test.c"],
     exec_env = [
@@ -230,7 +237,7 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw340_rom_ext",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
-    manifest = ":manifest_version_4",
+    manifest = ":manifest_version_5",
     deps = [
         ":boot_svc_test_lib",
         "//sw/device/lib/base:status",
@@ -253,9 +260,9 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
-        assemble = "{rom_ext}@0 {firmware}@0x10000 {min_sec_ver_4:signed_bin}@0x90000",
+        assemble = "{rom_ext}@0 {firmware}@0x10000 {min_sec_ver_5:signed_bin}@0x90000",
         binaries = {
-            ":min_sec_ver_4": "min_sec_ver_4",
+            ":min_sec_ver_5": "min_sec_ver_5",
         },
         test_cmd = """
             --exec="transport init"
@@ -268,7 +275,7 @@ opentitan_test(
         """,
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
-    manifest = "//sw/device/silicon_owner:manifest",
+    manifest = ":manifest_version_4",
     deps = [
         ":boot_svc_test_lib",
         "//sw/device/lib/base:status",
