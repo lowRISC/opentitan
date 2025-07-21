@@ -24,6 +24,8 @@ from systemrdl import RDLCompiler  # type: ignore[attr-defined]
 from systemrdl.messages import FileSourceRef  # type: ignore[attr-defined]
 from systemrdl.importer import RDLImporter
 from systemrdl.component import Addrmap
+from systemrdl.core.parameter import Parameter
+from systemrdl import rdltypes
 from systemrdl.rdltypes import AccessType, OnReadType, OnWriteType  # type: ignore[attr-defined]
 from rdlexporter import RdlExporter
 
@@ -217,6 +219,12 @@ class IpBlock2Systemrdl:
 
         if num_children > 1:
             rdl_addrmap.properties["bridge"] = True
+
+        for param in self.inner.params.get_localparams():
+            value = int(param.value)
+            rdl_param = Parameter(rdltypes.get_rdltype(value), param.name)
+            rdl_param._value = value
+            rdl_addrmap.parameters.append(rdl_param)
 
         return rdl_addrmap if num_children else None
 
