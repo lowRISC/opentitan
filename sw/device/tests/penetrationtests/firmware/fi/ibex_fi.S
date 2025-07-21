@@ -8,7 +8,7 @@
  * As this function is targeted by fault injection, the code is unrolled.
  *
  * @param a0 initial value which gets incremented.
- * @return Initial value incremeted 100 times by 1.
+ * @return Initial value incremented 100 times by 1.
  */
   .globl increment_100x1
   .type increment_100x1, @function
@@ -124,7 +124,7 @@ increment_100x1:
  * As this function is targeted by fault injection, the code is unrolled.
  *
  * @param a0 initial value which gets incremented.
- * @return Initial value incremeted 100 times by 10.
+ * @return Initial value incremented 100 times by 10.
  */
   .globl increment_100x10
   .type increment_100x10, @function

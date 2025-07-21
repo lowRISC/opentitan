@@ -169,7 +169,7 @@ static inline void cfi_func_counter_increment(uint32_t table[], size_t index,
  * @param table The counters array variable.
  * @param src Index counter associated with the caller function.
  * @param src_step Initial expected step of the `src` counter.
- * @param target Index counter associated with the calee function.
+ * @param target Index counter associated with the callee function.
  * @param src_init_value The caller's counter's initial value.
  * @param target_init_value The calle's counter's initial value.
  */
@@ -247,7 +247,7 @@ static inline void cfi_func_counter_check(uint32_t table[], size_t index,
  * @param table The counters array variable.
  * @param src Index counter associated with the caller function.
  * @param src_step Initial expected step of the `src` counter.
- * @param target Index counter associated with the calee function.
+ * @param target Index counter associated with the callee function.
  */
 #define CFI_FUNC_COUNTER_PREPCALL(table, src, src_step, target)      \
   cfi_func_counter_prepcall(table, src, src_step, target, src##Val0, \

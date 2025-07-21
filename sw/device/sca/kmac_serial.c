@@ -501,7 +501,7 @@ static void sha3_serial_single_absorb(const uint8_t *msg, size_t msg_len) {
   sha3_serial_absorb(msg, msg_len);
   pentest_set_trigger_low();
 
-  // Check KMAC has finsihed processing the message.
+  // Check KMAC has finished processing the message.
   kmac_msg_done();
 
   // Read the digest and send it to the host for verification.

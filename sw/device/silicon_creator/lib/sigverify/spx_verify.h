@@ -52,7 +52,7 @@ uint32_t sigverify_spx_verify_enabled(lifecycle_state_t lc_state);
 /**
  * Verifies a SPHINCS+ signature.
  *
- * To accomodate both "pure" and "pre-hash" variants of SPHINCS+, this function
+ * To accommodate both "pure" and "pre-hash" variants of SPHINCS+, this function
  * takes both the raw message components and the precomputed SHA256 digest as
  * parameters. If the OTP parameter `SIGVERIFY_SPX_PREHASH` is set, then the
  * raw message is ignored and we sign the digest. If it is unset, we ignore the

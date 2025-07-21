@@ -14,7 +14,7 @@
 /**
  * Ensure that log_fields_t is always 20 bytes.
  *
- * The assertion below helps prevent inadvertant changes to the struct.
+ * The assertion below helps prevent inadvertent changes to the struct.
  * Please see the description of log_fields_t in log.h for more details.
  */
 static_assert(sizeof(log_fields_t) == 20,

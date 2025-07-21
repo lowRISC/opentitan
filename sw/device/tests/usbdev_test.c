@@ -11,11 +11,11 @@
 // then starts polling the USB device for data sent by the host. Any data
 // received on Endpoint 1 is stored in a buffer and printed via UART.
 //
-// The DPI model mimicks the USB host. After device initialization, it detects
+// The DPI model mimics the USB host. After device initialization, it detects
 // the assertion of the pullup and first assigns an address to the device. It
 // then sends various USB transactions to the device including two OUT
 // transactions with a data payload of "Hi!" to Endpoint 1. If these two OUT
-// transactions are succesfully received by the device, the test passes.
+// transactions are successfully received by the device, the test passes.
 
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/ibex.h"
@@ -85,7 +85,7 @@ static size_t usb_chars_recved_total;
 static char buffer[7];
 
 /**
- * Callback for processing USB reciept.
+ * Callback for processing USB receipt.
  */
 static void usb_receipt_callback(uint8_t c) {
   c = make_printable(c, '?');

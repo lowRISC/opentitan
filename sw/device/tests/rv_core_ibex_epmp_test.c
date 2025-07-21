@@ -330,7 +330,7 @@ bool test_main(void) {
       "csrw mepc, t0\n"
       "mret\n"
       :  // The clobber doesn't really matter;
-      :  // we're not comming back.
+      :  // we're not coming back.
       : "t0");
   OT_UNREACHABLE();
 }

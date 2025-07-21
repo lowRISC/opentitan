@@ -21,20 +21,20 @@ dif_rv_plic_t plic;
 void fault_test_main(void) {
 #if defined(LOAD_ACCESS_FAULT)
   // This address is not a valid address.  It is located near the end of the
-  // peripheral MMIO regiion 0x4000_0000 to 0x5000_0000, but there is no
+  // peripheral MMIO region 0x4000_0000 to 0x5000_0000, but there is no
   // peripheral located there.
   //
-  // We expeect the ROM_EXT to report BFV:05524902.
+  // We expect the ROM_EXT to report BFV:05524902.
   volatile uint32_t *p = (volatile uint32_t *)0x4FFF0000;
   uint32_t value = *p;
   dbg_printf("Got value: %x\r\n", value);
   dbg_printf("LOAD_ACCESS_FAULT: FAIL!\r\n");
 #elif defined(STORE_ACCESS_FAULT)
   // This address is not a valid address.  It is located near the end of the
-  // peripheral MMIO regiion 0x4000_0000 to 0x5000_0000, but there is no
+  // peripheral MMIO region 0x4000_0000 to 0x5000_0000, but there is no
   // peripheral located there.
   //
-  // We expeect the ROM_EXT to report BFV:07524902.
+  // We expect the ROM_EXT to report BFV:07524902.
   volatile uint32_t *p = (volatile uint32_t *)0x4FFF0000;
   *p = 100;
   dbg_printf("STORE_ACCESS_FAULT: FAIL!\r\n");
@@ -42,7 +42,7 @@ void fault_test_main(void) {
   // The "HARDENED_TRAP" emits some "unimp" instructions into the instruction
   // stream.
   //
-  // We expeect the ROM_EXT to report BFV:02524902.
+  // We expect the ROM_EXT to report BFV:02524902.
   HARDENED_TRAP();
   dbg_printf("ILLEGAL_INSTRUCTION_FAULT: FAIL!\r\n");
 #elif defined(HARDWARE_INTERRUPT)
@@ -50,7 +50,7 @@ void fault_test_main(void) {
   // IRQs at the CPU, the PLIC and the peripheral itself.  We'll use the
   // UART INTR_TEST register to cause a TX_WATERMARK interrupt.
   //
-  // We expeect the ROM_EXT to report BFV:8b524902.
+  // We expect the ROM_EXT to report BFV:8b524902.
   dif_result_t result = dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic);
   dbg_printf("plic_init = 0x%x\r\n", result);

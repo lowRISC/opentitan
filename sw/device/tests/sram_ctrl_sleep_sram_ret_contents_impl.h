@@ -10,7 +10,7 @@
 /**
  * This test checks whether the contents of retention sram are modified
  * by either low power exit reset and hardware resets, depending on whether
- * they are rescrambed or not.
+ * they are rescrambled or not.
  *
  * @param scramble When true, scramble the retention sram contents.
  */

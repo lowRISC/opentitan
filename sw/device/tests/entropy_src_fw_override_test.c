@@ -421,7 +421,7 @@ status_t firmware_override_extract_insert(
   uint32_t aes_timeout_usec = kAesTestutilsTimeoutUsec;
   if (kDeviceType == kDeviceSimVerilator) {
     // Simulation on Verilator generates entropy much more slowly than other
-    // execution environments. As a result, the timeout for AES testuils is
+    // execution environments. As a result, the timeout for AES testutils is
     // increased only when running on Verilator.
     aes_timeout_usec = kVerilatorAesTestutilsTimeoutUsec;
   }
@@ -534,7 +534,7 @@ bool test_main(void) {
     // If running on Verilator, then we skip the final phase of testing,
     // since entropy is generated much more slowly on Verilator and we do not
     // learn a lot of useful information from running these tests. This stops
-    // simulaton on Verilator taking an impractical amount of time.
+    // simulation on Verilator taking an impractical amount of time.
     return status_ok(test_result);
   }
 

@@ -370,7 +370,7 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
     // fired.
     //
     // Phase #2: N/A (As the `ping_timeout_cnt = 2` in this phase, the ping-fail
-    // alerts will come continuosly)
+    // alerts will come continuously)
     num_fired_alerts = alert_handler_num_fired_alerts();
     num_fired_loc_alerts = alert_handler_num_fired_loc_alerts();
     if (test_phase == 1) {

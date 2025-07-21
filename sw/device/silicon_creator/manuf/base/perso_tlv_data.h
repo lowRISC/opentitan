@@ -167,7 +167,7 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
  * - 16 bit LTV object header
  * - 16 bit cert header
  * - Certificate name string
- * - Cerificate data
+ * - Certificate data
  *
  * Note that both certificate and object headers' are 16 bit integers in big
  * endian format.

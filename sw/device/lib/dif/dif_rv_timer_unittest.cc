@@ -77,8 +77,8 @@ TEST(ApproximateParamsTest, UnrepresenableTooSlow) {
 }
 
 TEST(ApproximateParamsTest, UnrepresenableTooFast) {
-  // This freqncy is unrepresentable; the GCD is 50, meaning that the step must
-  // be 2'400'000, which does not fit into a u8.
+  // This frequency is unrepresentable; the GCD is 50, meaning that the step
+  // must be 2'400'000, which does not fit into a u8.
   dif_rv_timer_tick_params_t params;
   EXPECT_DIF_BADARG(dif_rv_timer_approximate_tick_params(kSlowClockSpeed,
                                                          kFastTimer, &params));

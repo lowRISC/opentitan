@@ -12,7 +12,7 @@
 // and unmasks only the interrupt we wish to see. After observing this
 // interrupt, the test masks all interrupts again, and waits for the stimulus to
 // complete. Note that the DUT is not reset/cleared between test routines unless
-// done so explicity.
+// done so explicitly.
 
 #include <assert.h>
 

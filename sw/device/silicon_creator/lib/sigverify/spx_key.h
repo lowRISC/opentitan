@@ -56,7 +56,8 @@ enum {
 /**
  * SPX configuration ID.
  *
- * Used to identify the SPX parameter confuration used to sign/verify a message.
+ * Used to identify the SPX parameter configuration used to sign/verify a
+ * message.
  *
  * Encoding generated with:
  * ./util/design/sparse-fsm-encode.py -d 6 -m 2 -n 32 -s 359186736 --language=c

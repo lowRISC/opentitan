@@ -507,7 +507,7 @@ TEST_F(FifoTest, MisalignedWrite) {
 }
 
 // Checks that an aligned destination buffer receives the contents of the
-// recieve FIFO.
+// receive FIFO.
 TEST_F(FifoTest, AlignedRead) {
   uint32_t buffer[2];
 
@@ -521,7 +521,7 @@ TEST_F(FifoTest, AlignedRead) {
 }
 
 // Checks that a misaligned destination buffer receives the contents of the
-// recieve FIFO.
+// receive FIFO.
 TEST_F(FifoTest, MisalignedRead) {
   // We'll intentionally mis-align the buffer by 1 when calling
   // dif_spi_host_fifo_read.

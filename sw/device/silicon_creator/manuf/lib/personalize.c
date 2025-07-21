@@ -143,7 +143,7 @@ static status_t flash_keymgr_secret_seed_write(
  * Entropy is extracted from the CSRNG instance and programmed into the SECRET2
  * OTP partition. The data needs to be programmed before the OTP SECRET2
  * partition is locked and when the device is in DEV, PROD, or PROD_END
- * lifecyle state.
+ * lifecycle state.
  *
  * @param otp_ctrl OTP controller instance.
  * @param rma_unlock_token_hash Hash of the RMA unlock token to store on chip.
@@ -217,7 +217,7 @@ status_t manuf_personalize_device_secrets(
     return INTERNAL();
   }
 
-  // Re-initialize the entropy complex in continous mode. This also configures
+  // Re-initialize the entropy complex in continuous mode. This also configures
   // the entropy_src health checks in FIPS mode.
   TRY(entropy_complex_init());
 

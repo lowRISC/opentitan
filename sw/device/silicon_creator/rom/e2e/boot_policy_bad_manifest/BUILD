@@ -82,7 +82,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
     {
         "name": "empty_code",
         "manifest": {
-            # Note: `length` is filled automatically unless overriden here.
+            # Note: `length` is filled automatically unless overridden here.
             "identifier": hex(CONST.ROM_EXT),
             "code_start": hex(CONST.MANIFEST_SIZE + 12),
             "code_end": hex(CONST.MANIFEST_SIZE + 12),

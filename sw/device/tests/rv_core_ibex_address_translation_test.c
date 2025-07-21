@@ -89,7 +89,7 @@ static volatile bool illegal_instr_fault = false;
  * approach would not work.
  *
  * Instead the control flow needs to be returned to the caller. In other words,
- * test_main -> unmapped vitual memory -> exception_handler -> test_main.
+ * test_main -> unmapped virtual memory -> exception_handler -> test_main.
  *
  * Before the jump into the exception handler, the register set is saved on
  * stack by the OTTF exception handler entry subroutine, which means that the

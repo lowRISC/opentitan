@@ -398,7 +398,7 @@ TEST_F(ShutdownTest, InitializeProdWithAlertError) {
     alert_class_t cls = c.prod;
     alert_enable_t en = RomAlertClassEnable(cls);
     // Return an error on i zero.  The error should not cause alert
-    // configuation to abort early (ie: still expect the rest of the
+    // configuration to abort early (ie: still expect the rest of the
     // alerts to get configured).
     EXPECT_CALL(alert_, alert_configure(i, cls, en))
         .WillOnce(Return(i == 0 ? kErrorUnknown : kErrorOk));
@@ -431,7 +431,7 @@ TEST_F(ShutdownTest, InitializeProdWithLocalAlertError) {
     alert_class_t cls = c.prod;
     alert_enable_t en = RomAlertClassEnable(cls);
     // Return an error on i zero.  The error should not cause alert
-    // configuation to abort early (ie: still expect the rest of the
+    // configuration to abort early (ie: still expect the rest of the
     // alerts to get configured).
     EXPECT_CALL(alert_, alert_local_configure(i, cls, en))
         .WillOnce(Return(i == 0 ? kErrorUnknown : kErrorOk));

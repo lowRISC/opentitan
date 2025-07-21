@@ -250,7 +250,7 @@ struct usb_testutils_streams_ctx {
    */
   usbdev_stream_t streams[USBUTILS_STREAMS_MAX];
   /**
-   * Callback information for each of the test streamms
+   * Callback information for each of the test streams
    */
   usbdev_stream_cb_ctx_t cb[USBUTILS_STREAMS_MAX];
   /**

@@ -14,7 +14,7 @@
 
 INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 
-/* Slot A starts at begining of the eFlash. */
+/* Slot A starts at beginning of the eFlash. */
 _rom_ext_size = LENGTH(eflash) / 2;
 _rom_ext_start_address = ORIGIN(eflash);
 

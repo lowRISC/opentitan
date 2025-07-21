@@ -21,7 +21,7 @@
  * - 64-bit shifts.
  * - 32-bit popcount, parity, bswap, clz, ctz, and find first.
  *
- * Although the RISC-V B extension provides instructions for some ofthese, we
+ * Although the RISC-V B extension provides instructions for some of these, we
  * currently do not require using a Clang that is aware of how to codegen them,
  * so LLVM may choose to emit libgcc polyfill symbols (like the following)
  * instead. Once we mandate such a Clang, they should be removed.
@@ -151,7 +151,7 @@ int64_t __ashrdi3(int64_t val, int32_t shift);
 extern noreturn void
 _ot_builtin_div64_intentionally_not_implemented_see_pull_11451(void);
 
-// "Trap" polyfills to catch uses of u64 divsion and display an "error" via
+// "Trap" polyfills to catch uses of u64 division and display an "error" via
 // the name of an undefined symbol.
 //
 // Of course, this depends on people linking this file in... but hopefully it

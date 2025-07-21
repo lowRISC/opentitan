@@ -59,7 +59,7 @@ bool test_main(void) {
 
   // Read out Device ID from OTP DAI read, and compare the value with LC_CTRL's
   // `device_id` registers.
-  // TODO: current HW CFG value is randomly genenrated from the HJSON file,
+  // TODO: current HW CFG value is randomly generated from the HJSON file,
   // plan to backdoor inject.
   uint32_t otp_device_id;
   for (uint32_t i = 0; i < kNumDeviceId; i++) {

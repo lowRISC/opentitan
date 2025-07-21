@@ -57,7 +57,7 @@ static const kmac_edn_timeout_t kTestTimeoutVals[] = {
 
 enum {
   kKmacTimeoutTestCount = ARRAYSIZE(kTestTimeoutVals),
-  // Maxiumum digest size in bytes
+  // Maximum digest size in bytes
   kKmacDigestLenMax = 100,
   kKmacEntropyHashThresholdStall = 2,
   kNumIterationsStall = kKmacEntropyHashThresholdStall,

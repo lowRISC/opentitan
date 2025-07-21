@@ -244,7 +244,7 @@ dif_result_t dif_uart_bytes_send(const dif_uart_t *uart, const uint8_t *data,
                                  size_t bytes_requested, size_t *bytes_written);
 
 /**
- * Recieves bytes over UART.
+ * Receives bytes over UART.
  *
  * Can be used from inside an UART ISR.
  *
@@ -338,7 +338,7 @@ dif_result_t dif_uart_fifo_reset(const dif_uart_t *uart,
  * routines.
  *
  * Loopback should only be enabled when device is in the IDLE state to prevent
- * data loss/coruption. Behaviour depends on the `loopback` parameter:
+ * data loss/corruption. Behaviour depends on the `loopback` parameter:
  *    - `kDifUartLoopbackSystem`:
  *      Receives the data that is being transmitted. No external data can be
  *      received (from the RX line). When enabled the TX line goes high.

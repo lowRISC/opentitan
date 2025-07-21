@@ -1113,7 +1113,7 @@ static void crypto_data_load(void) {
                                kKmacMessageLength, NULL));
   // Prepare KMAC for squeeze command (to come later in max power epoch) by
   // formatting message for KMAC operation. Note, below code is derived from
-  // the KMAC DIF: `dif_kmac_sqeeze()`.
+  // the KMAC DIF: `dif_kmac_squeeze()`.
   CHECK(!kmac_operation_state.squeezing);
   if (kmac_operation_state.append_d) {
     // The KMAC operation requires that the output length (d) in bits be

@@ -944,7 +944,7 @@ dif_result_t dif_usbdev_buffer_raw_write(const dif_usbdev_t *usbdev, uint8_t id,
 /**
  * Raw data transfer directly from the packet buffer memory. This is a faster
  * implementation of the generic `mmio_memcpy_from_mmio32` that is specialized
- * for the USB device and gives a significant performance improvemenet.
+ * for the USB device and gives a significant performance improvement.
  *
  * @param usbdev A USB device.
  * @param id Buffer number.

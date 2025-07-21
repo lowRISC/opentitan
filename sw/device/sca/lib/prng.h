@@ -29,7 +29,7 @@ extern "C" {
 /**
  * Initializes the random number generator.
  *
- * @param seed Seed to initalize with.
+ * @param seed Seed to initialize with.
  */
 void prng_seed(uint32_t seed);
 

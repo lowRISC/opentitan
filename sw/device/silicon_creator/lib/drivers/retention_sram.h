@@ -85,7 +85,7 @@ typedef struct retention_sram_owner {
   /**
    * Space reserved for allocation by the silicon owner.
    *
-   * The silcon creator boot stages will not modify this field except for
+   * The silicon creator boot stages will not modify this field except for
    * clearing it at initial power on.
    *
    * Tests that need to trigger (or detect) a device reset may use this field to

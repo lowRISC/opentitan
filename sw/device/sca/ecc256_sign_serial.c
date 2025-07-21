@@ -95,7 +95,7 @@ uint32_t ecc256_msg[kEcc256NumWords] = {
     0x424e0000,  // 'BN'
 };
 
-// p256_ecdsa_sca has randomnization removed.
+// p256_ecdsa_sca has randomization removed.
 OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa_sca);
 
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, mode);

@@ -134,7 +134,7 @@ typedef enum i2c_pinmux_platform_id {
  * Connect the i2c pins to mio pins via pinmux based on the platform the test is
  * running.
  *
- * @param pimmux A pinmux handler.
+ * @param pinmux A pinmux handler.
  * @param kI2cIdx The i2c instance identifier.
  * @param platform The platform which the test is running.
  * @return The result of the operation.
@@ -147,7 +147,7 @@ status_t i2c_testutils_select_pinmux(const dif_pinmux_t *pinmux,
 /**
  * Disconnect the i2c input pins from mio pads and wire it to zero.
  *
- * @param pimmux A pinmux handler.
+ * @param pinmux A pinmux handler.
  * @param i2c_id The i2c instance identifier.
  * @return The result of the operation.
  */

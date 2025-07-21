@@ -1,6 +1,6 @@
 # Provisioning Flow Extensions
 
-Provisioning an Earlgrey chip requires executing code on devivce during two core
+Provisioning an Earlgrey chip requires executing code on device during two core
 phases:
 1. Chip Probe (CP): when the wafer is still intact, and
 2. Final Test (FT): when each chip has been packaged and loaded into a socket.

@@ -86,7 +86,7 @@ typedef struct lifecycle_hw_rev {
  * Get the life cycle state.
  *
  * This function checks the value read from the hardware and returns a
- * `life_cycle_state_t`. See `life_cyle_state_t` for more details.
+ * `life_cycle_state_t`. See `life_cycle_state_t` for more details.
  *
  * @return Life cycle state.
  */

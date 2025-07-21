@@ -21,10 +21,10 @@
  * device.
  *
  * Preconditions:
- * - Device has SW CSRNG data access (configured in HW_CFG0 parition).
+ * - Device has SW CSRNG data access (configured in HW_CFG0 partition).
  *
  * Note: The test will skip all programming steps and succeed if the SECRET1
- * parition is already locked. This is to facilitate test re-runs.
+ * partition is already locked. This is to facilitate test re-runs.
  *
  * The caller should reset the device after calling this function and call
  * `manuf_personalize_device_secret1_check()` afterwards to confirm that the
@@ -58,7 +58,7 @@ status_t manuf_personalize_device_secret1_check(const dif_otp_ctrl_t *otp_ctrl);
  * 2. the RMA unlock token (OTP - SECRET2 Partition)
  *
  * Preconditions:
- * - Device has SW CSRNG data access (configured in HW_CFG0 parition).
+ * - Device has SW CSRNG data access (configured in HW_CFG0 partition).
  *
  * Note: The test will skip all programming steps and succeed if the SECRET2
  * partition is already locked. This is to facilitate test re-runs.
@@ -84,7 +84,7 @@ status_t manuf_personalize_device_secrets(
  * to generate an asymmetric (e.g., ECDSA) key pair.
  *
  * Preconditions:
- * - Device has SW CSRNG data access (configured in HW_CFG0 parition).
+ * - Device has SW CSRNG data access (configured in HW_CFG0 partition).
  * - Device has initialized the entropy complex.
  *
  * @param flash_state Flash controller instance.

@@ -20,7 +20,7 @@
 namespace mock_mmio {
 /**
  * Reads a little-endian integer from `bytes`. This function is lazy, and will
- * only perform the converion when used with an EXPECT_* macro. For example:
+ * only perform the conversion when used with an EXPECT_* macro. For example:
  *   EXPECT_READ32(offset, LeInt("abcd"));
  *
  * It is not possible to directly pass in string literals into EXPECT_* macros;
@@ -81,11 +81,11 @@ class MockDevice {
 };
 
 /**
- * Conveninence fixture for creating device tests.
+ * Convenience fixture for creating device tests.
  *
  * This class should be derived by a test fixture (along with `testing::Test`)
  * and used in a `TEST_F` block. Doing so will make the `EXPECT_READN` and
- * `EXPECT_WRITEN` conveinence macros useable.
+ * `EXPECT_WRITEN` convenience macros useable.
  *
  * The device being mocked can be accessed in the test body with `this->dev()`.
  * `this->` is required in this case, since the name `dev` is not immediately

@@ -64,7 +64,7 @@ typedef struct dif_rv_core_ibex_addr_translation_mapping {
 
   /**
    * Remap address (Physical address).
-   * The region where the matched transtaction will be
+   * The region where the matched transaction will be
    * redirected to.
    */
   uintptr_t remap_addr;
@@ -270,7 +270,7 @@ dif_result_t dif_rv_core_ibex_disable_addr_translation(
     dif_rv_core_ibex_addr_translation_bus_t bus);
 
 /**
- * Read a discription of the address mapping configured on a given `slot`
+ * Read a description of the address mapping configured on a given `slot`
  * for a given `bus`.
  *
  * @param rv_core_ibex Handle.

@@ -104,7 +104,7 @@ typedef struct asn1_tag {
 } asn1_tag_t;
 
 /**
- * Structure holding the information about an unfinished bistring.
+ * Structure holding the information about an unfinished bitstring.
  *
  * The fields in this structure should be considered
  * private and not be read or written directly.
@@ -285,7 +285,7 @@ void asn1_push_oid_raw(asn1_state_t *state, const uint8_t *bytes, size_t size);
  *
  * This function allows the caller to set the tag to a non-standard value which
  * can be useful for IMPLICIT strings. Use ASN1_TAG_PRINTABLE_STRING or
- * ASN1_TAG_UTF8_STRING for standard strings. It is the responsability of the
+ * ASN1_TAG_UTF8_STRING for standard strings. It is the responsibility of the
  * caller to make sure that the provided string does not contain invalid
  * characters for the selected encoding. This function will stop at the first 0
  * in the string or after processing the provided number of characters,

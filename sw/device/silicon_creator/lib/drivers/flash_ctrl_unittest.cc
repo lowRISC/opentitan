@@ -405,7 +405,7 @@ TEST_F(TransferTest, ProgAcrossWindows) {
   ExpectWaitForDone(true, false);
   iter += 2 * half_step;
 
-  // Programm address range [0x80, 0xA0)
+  // Program address range [0x80, 0xA0)
   ExpectTransferStart(0, 0, 0, FLASH_CTRL_CONTROL_OP_VALUE_PROG, 2 * kWinSize,
                       half_step);
   ExpectProgData(std::vector<uint32_t>(iter, iter + half_step));

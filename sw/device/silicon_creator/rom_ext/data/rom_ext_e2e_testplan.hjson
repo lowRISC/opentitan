@@ -196,7 +196,7 @@
         Verify that ROM_EXT processes the BootSvcMinBl0SecVerReq message.
 
         - The test program should be launched via the OTTF.
-        - The test program should be signed twice: once with securtiy version N and once with version N+1.
+        - The test program should be signed twice: once with security version N and once with version N+1.
         - Assemble the image such that version N and N+1 are in slots A and B.
         - Verify the ROM_EXT can boot both sides.
         - Create a boot services minimum BL0 version message setting the version to N+1.
