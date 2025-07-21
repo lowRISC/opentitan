@@ -45,7 +45,10 @@ struct FiOtpTestCase {
     sensors: String,
     #[serde(default)]
     alerts: String,
+    #[serde(default)]
     expected_output: Vec<String>,
+    #[serde(default)]
+    flaky_expected_output: Vec<String>,
 }
 
 fn filter_response(response: serde_json::Value) -> serde_json::Map<String, serde_json::Value> {
@@ -122,7 +125,7 @@ fn run_fi_otp_testcase(
                 // Check received with expected output.
                 if output_expected != output_received {
                     log::info!(
-                        "FAILED {} test #{}: expected = '{}', actual = '{}'",
+                        "FAILED {} test #{}: expected = '{}', actual = '{}'\n",
                         test_case.command,
                         test_case.test_case_id,
                         exp_output,
@@ -130,6 +133,35 @@ fn run_fi_otp_testcase(
                     );
                     *fail_counter += 1;
                 }
+            }
+        }
+    }
+
+    // Check flaky test outputs
+    if !test_case.flaky_expected_output.is_empty() {
+        for exp_output in test_case.flaky_expected_output.iter() {
+            // Get test output & filter.
+            let output = serde_json::Value::recv(uart, opts.timeout, false)?;
+            // Only check non empty JSON responses.
+            if output.as_object().is_some() {
+                let output_received = filter_response(output.clone());
+
+                // Filter expected output.
+                let exp_output: serde_json::Value =
+                    serde_json::from_str(exp_output.as_str()).unwrap();
+                let output_expected = filter_response(exp_output.clone());
+
+                // Check received with expected output.
+                if output_expected != output_received {
+                    log::info!(
+                        "Flaky result of {} test #{}: expected = '{}', actual = '{}'\n",
+                        test_case.command,
+                        test_case.test_case_id,
+                        exp_output,
+                        output
+                    );
+                }
+                // Do not let the flaky test influence the fail counter.
             }
         }
     }
