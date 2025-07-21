@@ -49,54 +49,54 @@ module rom_ctrl_fsm
   import rom_ctrl_pkg::*;
 #(
   parameter int RomDepth = 16,
-  parameter int TopCount = 8
+  parameter int TopCount = 8,
+
+  localparam int unsigned AW = vbits(RomDepth), // derived parameter
+  localparam int unsigned TAW = vbits(TopCount) // derived parameter
 ) (
-  input logic                        clk_i,
-  input logic                        rst_ni,
+  input logic                    clk_i,
+  input logic                    rst_ni,
 
   // CSR inputs for DIGEST and EXP_DIGEST. To make the indexing look nicer, these are ordered so
   // that DIGEST_0 is the bottom 32 bits (they get reversed while we're shuffling around the wires
   // in rom_ctrl).
-  input logic [TopCount*32-1:0]      digest_i,
-  input logic [TopCount*32-1:0]      exp_digest_i,
+  input logic [TopCount*32-1:0]  digest_i,
+  input logic [TopCount*32-1:0]  exp_digest_i,
 
   // CSR outputs for DIGEST and EXP_DIGEST. Ordered with word 0 as LSB.
-  output logic [TopCount*32-1:0]     digest_o,
-  output logic                       digest_vld_o,
-  output logic [31:0]                exp_digest_o,
-  output logic                       exp_digest_vld_o,
-  output logic [vbits(TopCount)-1:0] exp_digest_idx_o,
+  output logic [TopCount*32-1:0] digest_o,
+  output logic                   digest_vld_o,
+  output logic [31:0]            exp_digest_o,
+  output logic                   exp_digest_vld_o,
+  output logic [TAW-1:0]         exp_digest_idx_o,
 
   // To power manager and key manager
-  output pwrmgr_data_t               pwrmgr_data_o,
-  output keymgr_data_t               keymgr_data_o,
+  output pwrmgr_data_t           pwrmgr_data_o,
+  output keymgr_data_t           keymgr_data_o,
 
   // To KMAC (ROM data)
-  input logic                        kmac_rom_rdy_i,
-  output logic                       kmac_rom_vld_o,
-  output logic                       kmac_rom_last_o,
+  input logic                    kmac_rom_rdy_i,
+  output logic                   kmac_rom_vld_o,
+  output logic                   kmac_rom_last_o,
 
   // From KMAC (digest data)
-  input logic                        kmac_done_i,
-  input logic [TopCount*32-1:0]      kmac_digest_i,
-  input logic                        kmac_err_i,
+  input logic                    kmac_done_i,
+  input logic [TopCount*32-1:0]  kmac_digest_i,
+  input logic                    kmac_err_i,
 
   // To ROM mux
-  output mubi4_t                     rom_select_bus_o,
-  output logic [vbits(RomDepth)-1:0] rom_addr_o,
+  output mubi4_t                 rom_select_bus_o,
+  output logic [AW-1:0]          rom_addr_o,
 
   // Raw bits from ROM
-  input logic [31:0]                 rom_data_i,
+  input logic [31:0]             rom_data_i,
 
   // To alert system
-  output logic                       alert_o
+  output logic                   alert_o
 );
 
   import prim_mubi_pkg::mubi4_test_true_loose;
   import prim_mubi_pkg::MuBi4False, prim_mubi_pkg::MuBi4True;
-
-  localparam int AW = vbits(RomDepth);
-  localparam int TAW = vbits(TopCount);
 
   localparam int unsigned TopStartAddrInt = RomDepth - TopCount;
   localparam bit [AW-1:0] TopStartAddr    = TopStartAddrInt[AW-1:0];
