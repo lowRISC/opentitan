@@ -14,11 +14,8 @@ if alert_handler is not None:
 else:
     has_alert_handler = False
 
-plic = lib.find_module(top['module'], 'rv_plic')
-if plic is not None:
-    has_plic = addr_space_name in plic['base_addrs'][None]
-else:
-    has_plic = False
+plics = lib.find_modules(top['module'], 'rv_plic')
+has_plic = any(addr_space_name in plic['base_addrs'][None] for plic in plics)
 
 pinmux = lib.find_module(top['module'], 'pinmux')
 if pinmux is not None:
@@ -148,21 +145,15 @@ package top_${top["name"]}${addr_space_suffix}_pkg;
 % if has_plic:
 
   // Enumeration of interrupts
+  % for plic, interrupts in helper.plic_interrupts.items():
   typedef enum int unsigned {
-<% irq_id = 1 %>\
-  % for irq in top["interrupt"]:
-    % if irq["width"] > 1:
-      % for w in range(irq["width"]):
-    ${lib.Name.from_snake_case(f"top_{top['name']}_irq_id_{irq['name']}{str(w)}").as_camel_case()} = ${irq_id},
-<% irq_id += 1 %>\
-      % endfor
-    % else:
-    ${lib.Name.from_snake_case(f"top_{top['name']}_irq_id_{irq['name']}").as_camel_case()} = ${irq_id},
-<% irq_id += 1 %>\
-    % endif
+    % for name, value, _ in interrupts.constants:
+    ${name.as_sv_enum()} = ${value},
+    % endfor
+    ${(interrupts.name + lib.Name(["count"])).as_sv_enum()}
+  } interrupt_${plic}_id_e;
+
   % endfor
-    ${lib.Name.from_snake_case(f"top_{top['name']}_irq_id_count").as_camel_case()}
-  } interrupt_id_e;
 % for irq_group, irqs in top["incoming_interrupt"].items():
 
   // Number of ${irq_group} incoming interrupts
