@@ -131,6 +131,7 @@ static status_t aes_gcm_gctr(const aes_key_t key, aes_block_t *iv,
     // Not enough data for a full block; copy into the partial block.
     unsigned char *partial_bytes = (unsigned char *)partial->data;
     memcpy(partial_bytes + partial_len, input, input_len);
+    *output_len = 0;
   } else {
     // Construct a block from the partial data and the start of the new data.
     unsigned char *partial_bytes = (unsigned char *)partial->data;
