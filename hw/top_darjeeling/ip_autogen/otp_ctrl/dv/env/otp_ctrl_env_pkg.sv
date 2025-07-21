@@ -61,7 +61,11 @@ package otp_ctrl_env_pkg;
   parameter uint NUM_SRAM_EDN_REQ = 12;
   parameter uint NUM_OTBN_EDN_REQ = 10;
 
+  // This is used to randomize CHECK_TIMEOUT in sequences, set to a low value
+  // so it will certainly cause a check error due to a timeout.
   parameter uint CHK_TIMEOUT_CYC = 40;
+  // This is some slack for a timeout error propagation to become an alert.
+  parameter uint CHK_TIMEOUT_SLACK = 4;
 
   // When fatal alert triggered, all partitions and the DAI & LCI go to error state and status will
   // be set to 1.
