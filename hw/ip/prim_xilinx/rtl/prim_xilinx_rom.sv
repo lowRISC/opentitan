@@ -5,9 +5,10 @@
 `include "prim_assert.sv"
 
 module prim_rom import prim_rom_pkg::*; #(
-  parameter  int Width       = 32,
-  parameter  int Depth       = 2048, // 8kB default
-  parameter  string MemInitFile = "", // VMEM file to initialize the memory with
+  parameter int unsigned Width       = 32,
+  parameter int unsigned Depth       = 2048,
+  parameter int unsigned Latency     = 1,
+  parameter string MemInitFile = "", // VMEM file to initialize the memory with
 
   localparam int Aw          = $clog2(Depth)
 ) (
@@ -26,10 +27,14 @@ module prim_rom import prim_rom_pkg::*; #(
 
     logic [Width-1:0] mem [Depth];
 
-    always_ff @(posedge clk_i) begin
-      if (req_i) begin
-        rdata_o <= mem[addr_i];
+    if (Latency > 0) begin : gen_pos_latency
+      logic [Latency-1:0][Width-1:0] queue;
+      always_ff @(posedge clk_i) begin
+        queue <= (queue << Width) | (req_i ? mem[addr_i] : 0);
       end
+      assign rdata_o = queue[Latency-1];
+    end else begin : gen_zero_latency
+      assign rdata_o = mem[addr_i];
     end
 
     `include "prim_util_memload.svh"
@@ -41,7 +46,7 @@ module prim_rom import prim_rom_pkg::*; #(
      .MEMORY_OPTIMIZATION("false"),
      .MEMORY_SIZE(Width * Depth),
      .READ_DATA_WIDTH_A(Width),
-     .READ_LATENCY_A(1),
+     .READ_LATENCY_A(Latency),
      .USE_MEM_INIT_MMI(1)
     ) xpm_memory_sprom_inst (
      .clka(clk_i),
