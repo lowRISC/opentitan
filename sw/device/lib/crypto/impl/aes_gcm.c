@@ -16,6 +16,7 @@
 #include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/security_config.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
@@ -391,6 +392,9 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
   if (key == NULL || key->keyblob == NULL || iv.data == NULL || ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Check the security config of the device.
+  HARDENED_TRY(security_config_check(key->config.security_level));
 
   // Ensure entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());

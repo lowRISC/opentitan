@@ -28,6 +28,7 @@ cc_library(
     deps = [
         ":integrity",
         ":keyblob",
+        ":security_config",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:aes",
@@ -44,6 +45,7 @@ cc_library(
     deps = [
         ":integrity",
         ":keyblob",
+        ":security_config",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:aes",
@@ -75,6 +77,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":keyblob",
+        ":security_config",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/impl/ecc:p256",
@@ -89,6 +92,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":keyblob",
+        ":security_config",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/impl/ecc:p384",
@@ -217,6 +221,7 @@ cc_library(
     hdrs = ["//sw/device/lib/crypto/include:rsa.h"],
     deps = [
         ":integrity",
+        ":security_config",
         ":status",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:entropy",
@@ -225,6 +230,20 @@ cc_library(
         "//sw/device/lib/crypto/impl/rsa:rsa_signature",
         "//sw/device/lib/crypto/impl/rsa:run_rsa_key_from_cofactor",
         "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
+    name = "security_config",
+    srcs = ["security_config.c"],
+    hdrs = ["security_config.h"],
+    deps = [
+        ":integrity",
+        ":status",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/silicon_creator/lib/drivers:clkmgr",
     ],
 )
 
@@ -322,6 +341,7 @@ cc_library(
     deps = [
         ":integrity",
         ":keyblob",
+        ":security_config",
         ":sha2",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
@@ -340,6 +360,7 @@ cc_library(
     deps = [
         ":integrity",
         ":keyblob",
+        ":security_config",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:kmac",
