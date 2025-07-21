@@ -17,6 +17,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 static status_t initialize(retention_sram_t *retram, boot_svc_retram_t *state) {
   boot_svc_msg_t msg = {0};
+  LOG_INFO("Initialize: try to advance to min_sec_ver %d", 2);
   boot_svc_min_bl0_sec_ver_req_init(2, &msg.min_bl0_sec_ver_req);
   retram->creator.boot_svc_msg = msg;
   state->state = kBootSvcTestStateMinSecAdvance;
@@ -36,6 +37,8 @@ static status_t advance(retention_sram_t *retram, boot_svc_retram_t *state) {
 
   if (msg.min_bl0_sec_ver_res.min_bl0_sec_ver < MANIFEST_SEC_VER) {
     // Advance by one and check again for success
+    LOG_INFO("Advance: try to advance to min_sec_ver %d",
+             msg.min_bl0_sec_ver_res.min_bl0_sec_ver + 1);
     boot_svc_min_bl0_sec_ver_req_init(
         msg.min_bl0_sec_ver_res.min_bl0_sec_ver + 1, &msg.min_bl0_sec_ver_req);
     retram->creator.boot_svc_msg = msg;
@@ -44,6 +47,8 @@ static status_t advance(retention_sram_t *retram, boot_svc_retram_t *state) {
 
   if (msg.min_bl0_sec_ver_res.min_bl0_sec_ver == MANIFEST_SEC_VER) {
     // Advance by one and check for failure
+    LOG_INFO("Too Far: try to advance to min_sec_ver %d",
+             msg.min_bl0_sec_ver_res.min_bl0_sec_ver + 1);
     state->state = kBootSvcTestStateMinSecTooFar;
     boot_svc_min_bl0_sec_ver_req_init(
         msg.min_bl0_sec_ver_res.min_bl0_sec_ver + 1, &msg.min_bl0_sec_ver_req);
@@ -64,6 +69,8 @@ static status_t too_far(retention_sram_t *retram, boot_svc_retram_t *state) {
   TRY_CHECK(msg.min_bl0_sec_ver_res.min_bl0_sec_ver == MANIFEST_SEC_VER);
 
   // Try to go back
+  LOG_INFO("Go Back: try to advance to min_sec_ver %d",
+           msg.min_bl0_sec_ver_res.min_bl0_sec_ver - 1);
   state->state = kBootSvcTestStateMinSecGoBack;
   boot_svc_min_bl0_sec_ver_req_init(msg.min_bl0_sec_ver_res.min_bl0_sec_ver - 1,
                                     &msg.min_bl0_sec_ver_req);
