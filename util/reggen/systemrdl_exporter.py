@@ -228,9 +228,13 @@ class SystemrdlExporter(Exporter):
         imp = RDLImporter(comp)
         imp.default_src_ref = FileSourceRef(outfile.name)
 
-        rdl_addrmap = IpBlock2Systemrdl(self.block, imp).export()
+        try:
+            rdl_addrmap = IpBlock2Systemrdl(self.block, imp).export()
+        except Exception as e:
+            raise RuntimeError(f"Error while building RDL AST for {self.block.name}.") from e
+
         if rdl_addrmap is None:
-            raise RuntimeError("Block has no registers or windows.")
+            raise RuntimeError("Block {self.block.name} has no registers or windows.")
 
         imp.register_root_component(rdl_addrmap)
 
@@ -238,6 +242,11 @@ class SystemrdlExporter(Exporter):
         # to exp.export (which expects a path rather than a stream).
         outfile.close()
 
-        exporter.SystemRDLExporter().export(comp.elaborate(), outfile.name)
+        try:
+            exporter.SystemRDLExporter().export(comp.elaborate(), outfile.name)
+        except Exception as e:
+            raise RuntimeError(f"Error exporting {self.block.name} to RDL.") from e
+
+        print(f"Successfully generated {outfile.name}")
 
         return 0
