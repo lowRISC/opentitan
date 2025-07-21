@@ -117,10 +117,17 @@ module prim_alert_rxtx_async_assert_fpv
   // Transmission of pings
   //
   // Check that if we tell the receiver to request a ping then it will send one and get a response
-  // in a bounded time.
+  // in a bounded time. Note that this is considering the "good case": we assume that we aren't
+  // injecting errors or skews that will break the signal integrity.
   //
-  // This bound is relatively large as in the worst case, we need to resolve staggered differential
+  // This bound is relatively large as, in the worst case, we need to resolve staggered differential
   // signal patterns on all three differential channels.
+  //
+  // Note 0: The ping sent from the alert receiver is just a single cycle long. For this property,
+  // we aren't interested in the sort of clock jitter that might eat the ping signal (a pulse of a
+  // channel of ping_skew_i at just the wrong time). If that happens in the real chip, it probably
+  // shows an attack and this will behave like a ping that doesn't get a response. This causes a
+  // timer in the alert handler that requested the ping to send an alert out itself.
   //
   // Note 1: The complete transmission of pings only happens when no ping handshake is in progress,
   // so we only allow the property to start when the sender isn't in a ping handshake FSM state.
@@ -131,7 +138,9 @@ module prim_alert_rxtx_async_assert_fpv
   `ASSERT(AlertPingOk_A,
           !sender_is_pinging && $rose(ping_req_i) |-> ##[1:23] ping_ok_o,
           clk_i,
-          (!rst_ni || error_setreg_q || init_pending || alert_from_sender))
+          (!rst_ni || error_setreg_q || init_pending || alert_from_sender ||
+           $changed(ping_skew_i, @clk_i) || ^ping_skew_i ||
+           ack_skew_i))
 
   `ASSERT(AlertPingIgnored_A,
           sender_is_pinging && $rose(ping_req_i) |-> ping_ok_o == 0 throughout ping_req_i[->1],
