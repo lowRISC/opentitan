@@ -7,6 +7,7 @@
 
 from dataclasses import dataclass
 from typing import TextIO
+from pathlib import Path
 
 from reggen.ip_block import IpBlock
 from reggen.reg_block import RegBlock
@@ -24,7 +25,7 @@ from systemrdl.messages import FileSourceRef  # type: ignore[attr-defined]
 from systemrdl.importer import RDLImporter
 from systemrdl.component import Addrmap
 from systemrdl.rdltypes import AccessType, OnReadType, OnWriteType  # type: ignore[attr-defined]
-from peakrdl_systemrdl import exporter
+from rdlexporter import RdlExporter
 
 
 @dataclass
@@ -172,7 +173,7 @@ class RegBlock2Systemrdl:
     importer: RDLImporter
 
     def export(self) -> Addrmap | None:
-        name = self.inner.name or "none"
+        name = self.inner.name or "Block"
         rdl_addrmap_t = self.importer.create_addrmap_definition(name)
         rdl_addrmap = self.importer.instantiate_addrmap(rdl_addrmap_t, name, 0)
 
@@ -243,7 +244,7 @@ class SystemrdlExporter(Exporter):
         outfile.close()
 
         try:
-            exporter.SystemRDLExporter().export(comp.elaborate(), outfile.name)
+            RdlExporter(comp).export(Path(outfile.name))
         except Exception as e:
             raise RuntimeError(f"Error exporting {self.block.name} to RDL.") from e
 
