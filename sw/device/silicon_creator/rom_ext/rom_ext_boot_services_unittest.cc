@@ -191,13 +191,13 @@ TEST_F(RomExtBootServicesTest, BootSvcNextBl0Slot) {
   EXPECT_EQ(boot_svc_msg.next_boot_bl0_slot_res.status, kErrorOk);
 }
 
-TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVer) {
+TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVerValid) {
   boot_svc_msg.header.identifier = kBootSvcIdentifier;
   boot_svc_msg.header.type = kBootSvcMinBl0SecVerReqType;
-  boot_svc_msg.header.length = sizeof(boot_svc_next_boot_bl0_slot_req_t);
+  boot_svc_msg.header.length = sizeof(boot_svc_min_bl0_sec_ver_req_t);
   boot_svc_msg.header.digest = hmac_digest_t{0x1234};
 
-  boot_svc_msg.next_boot_bl0_slot_req.next_bl0_slot = 2;
+  boot_svc_msg.min_bl0_sec_ver_req.min_bl0_sec_ver = 2;
 
   boot_data.min_security_version_bl0 = 1;
 
@@ -214,8 +214,6 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVer) {
 
   keyring.length = 1;
   keyring.key[0] = &key;
-
-  manifest_ext_spx_key_t spx_key = {.key{.data = {0}}};
 
   manifest_t manifest_a{};
   manifest_t manifest_b{};
@@ -248,8 +246,9 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVer) {
   EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestA)
       .WillOnce(Return(&manifest_a));
   EXPECT_CALL(mock_manifest_, SpxKey)
-      .WillOnce(DoAll(SetArgPointee<1>(&spx_key), Return(kErrorOk)));
-  EXPECT_CALL(mock_manifest_, SpxSignature).WillOnce(Return(kErrorOk));
+      .WillOnce(Return(kErrorManifestBadExtension));
+  EXPECT_CALL(mock_manifest_, SpxSignature)
+      .WillOnce(Return(kErrorManifestBadExtension));
 
   EXPECT_CALL(mock_rnd_, Uint32);
   EXPECT_CALL(mock_hmac_, sha256_init);
@@ -268,8 +267,9 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVer) {
   EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestB)
       .WillOnce(Return(&manifest_b));
   EXPECT_CALL(mock_manifest_, SpxKey)
-      .WillOnce(DoAll(SetArgPointee<1>(&spx_key), Return(kErrorOk)));
-  EXPECT_CALL(mock_manifest_, SpxSignature).WillOnce(Return(kErrorOk));
+      .WillOnce(Return(kErrorManifestBadExtension));
+  EXPECT_CALL(mock_manifest_, SpxSignature)
+      .WillOnce(Return(kErrorManifestBadExtension));
 
   EXPECT_CALL(mock_rnd_, Uint32);
   EXPECT_CALL(mock_hmac_, sha256_init);
@@ -302,6 +302,159 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVer) {
             kBootSvcMinBl0SecVerResType);
 
   EXPECT_EQ(boot_svc_msg.min_bl0_sec_ver_res.status, kErrorOk);
+}
+
+TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVerInvalidLow) {
+  boot_svc_msg.header.identifier = kBootSvcIdentifier;
+  boot_svc_msg.header.type = kBootSvcMinBl0SecVerReqType;
+  boot_svc_msg.header.length = sizeof(boot_svc_min_bl0_sec_ver_req_t);
+  boot_svc_msg.header.digest = hmac_digest_t{0x1234};
+
+  boot_svc_msg.min_bl0_sec_ver_req.min_bl0_sec_ver = 0;
+
+  boot_data.min_security_version_bl0 = 1;
+
+  owner_config.isfb = (owner_isfb_config_t *)kHardenedBoolFalse;
+
+  owner_application_key_t key = {
+      .header =
+          {
+              .tag = kTlvTagApplicationKey,
+              .length = sizeof(owner_application_key_t),
+          },
+      .key_alg = kOwnershipKeyAlgEcdsaP256,
+  };
+
+  keyring.length = 1;
+  keyring.key[0] = &key;
+
+  EXPECT_CALL(mock_hmac_, sha256)
+      .WillOnce(SetArgPointee<2>(hmac_digest_t{0x1234}));
+
+  EXPECT_CALL(mock_hmac_, sha256)
+      .WillOnce(SetArgPointee<2>(hmac_digest_t{0x1234}));
+
+  EXPECT_EQ(
+      boot_svc_handler(&boot_svc_msg, &boot_data, &boot_log, lc_state, &keyring,
+                       &verify_key, &owner_config, &isfb_check_count),
+      kErrorOk);
+
+  EXPECT_EQ(boot_svc_msg.min_bl0_sec_ver_res.header.identifier,
+            kBootSvcIdentifier);
+  EXPECT_EQ(boot_svc_msg.min_bl0_sec_ver_res.header.type,
+            kBootSvcMinBl0SecVerResType);
+
+  EXPECT_EQ(boot_svc_msg.min_bl0_sec_ver_res.status, kErrorBootSvcBadSecVer);
+}
+
+TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVerInvalidHigh) {
+  boot_svc_msg.header.identifier = kBootSvcIdentifier;
+  boot_svc_msg.header.type = kBootSvcMinBl0SecVerReqType;
+  boot_svc_msg.header.length = sizeof(boot_svc_min_bl0_sec_ver_req_t);
+  boot_svc_msg.header.digest = hmac_digest_t{0x1234};
+
+  boot_svc_msg.min_bl0_sec_ver_req.min_bl0_sec_ver = 3;
+
+  boot_data.min_security_version_bl0 = 1;
+
+  owner_config.isfb = (owner_isfb_config_t *)kHardenedBoolFalse;
+
+  owner_application_key_t key = {
+      .header =
+          {
+              .tag = kTlvTagApplicationKey,
+              .length = sizeof(owner_application_key_t),
+          },
+      .key_alg = kOwnershipKeyAlgEcdsaP256,
+  };
+
+  keyring.length = 1;
+  keyring.key[0] = &key;
+
+  manifest_t manifest_a{};
+  manifest_t manifest_b{};
+
+  manifest_a.identifier = CHIP_BL0_IDENTIFIER;
+  manifest_a.length = CHIP_BL0_SIZE_MIN;
+  manifest_a.security_version = 2;
+  manifest_a.manifest_version.major = kManifestVersionMajor2;
+  manifest_a.length = sizeof(manifest_t) + 0x1000;
+  manifest_a.signed_region_end = sizeof(manifest_t) + 0x900;
+  manifest_a.code_start = sizeof(manifest_t);
+  manifest_a.code_end = sizeof(manifest_t) + 0x800;
+  manifest_a.entry_point = 0x500;
+  manifest_a.ecdsa_public_key.x[0] = 0;
+
+  manifest_b.identifier = CHIP_BL0_IDENTIFIER;
+  manifest_b.length = CHIP_BL0_SIZE_MIN;
+  manifest_b.security_version = 3;
+  manifest_b.manifest_version.major = kManifestVersionMajor2;
+  manifest_b.length = sizeof(manifest_t) + 0x1000;
+  manifest_b.signed_region_end = sizeof(manifest_t) + 0x900;
+  manifest_b.code_start = sizeof(manifest_t);
+  manifest_b.code_end = sizeof(manifest_t) + 0x800;
+  manifest_b.entry_point = 0x500;
+  manifest_b.ecdsa_public_key.x[0] = 0;
+
+  EXPECT_CALL(mock_hmac_, sha256)
+      .WillOnce(SetArgPointee<2>(hmac_digest_t{0x1234}));
+
+  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestA)
+      .WillOnce(Return(&manifest_a));
+  EXPECT_CALL(mock_manifest_, SpxKey)
+      .WillOnce(Return(kErrorManifestBadExtension));
+  EXPECT_CALL(mock_manifest_, SpxSignature)
+      .WillOnce(Return(kErrorManifestBadExtension));
+
+  EXPECT_CALL(mock_rnd_, Uint32);
+  EXPECT_CALL(mock_hmac_, sha256_init);
+  EXPECT_CALL(mock_lifecycle_, DeviceId);
+  EXPECT_CALL(mock_otp_, read32);
+  EXPECT_CALL(mock_otp_, read32);
+  EXPECT_CALL(mock_lifecycle_, State);
+  EXPECT_CALL(mock_hmac_, sha256_update);
+  EXPECT_CALL(mock_manifest_, DigestRegion);
+  EXPECT_CALL(mock_hmac_, sha256_update);
+  EXPECT_CALL(mock_hmac_, sha256_process);
+  EXPECT_CALL(mock_hmac_, sha256_final);
+
+  EXPECT_CALL(mock_owner_verify_, verify).WillOnce(Return(kErrorOk));
+
+  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestB)
+      .WillOnce(Return(&manifest_b));
+  EXPECT_CALL(mock_manifest_, SpxKey)
+      .WillOnce(Return(kErrorManifestBadExtension));
+  EXPECT_CALL(mock_manifest_, SpxSignature)
+      .WillOnce(Return(kErrorManifestBadExtension));
+
+  EXPECT_CALL(mock_rnd_, Uint32);
+  EXPECT_CALL(mock_hmac_, sha256_init);
+  EXPECT_CALL(mock_lifecycle_, DeviceId);
+  EXPECT_CALL(mock_otp_, read32);
+  EXPECT_CALL(mock_otp_, read32);
+  EXPECT_CALL(mock_lifecycle_, State);
+  EXPECT_CALL(mock_hmac_, sha256_update);
+  EXPECT_CALL(mock_manifest_, DigestRegion);
+  EXPECT_CALL(mock_hmac_, sha256_update);
+  EXPECT_CALL(mock_hmac_, sha256_process);
+  EXPECT_CALL(mock_hmac_, sha256_final);
+
+  EXPECT_CALL(mock_owner_verify_, verify).WillOnce(Return(kErrorOk));
+
+  EXPECT_CALL(mock_hmac_, sha256)
+      .WillOnce(SetArgPointee<2>(hmac_digest_t{0x1234}));
+
+  EXPECT_EQ(
+      boot_svc_handler(&boot_svc_msg, &boot_data, &boot_log, lc_state, &keyring,
+                       &verify_key, &owner_config, &isfb_check_count),
+      kErrorOk);
+
+  EXPECT_EQ(boot_svc_msg.min_bl0_sec_ver_res.header.identifier,
+            kBootSvcIdentifier);
+  EXPECT_EQ(boot_svc_msg.min_bl0_sec_ver_res.header.type,
+            kBootSvcMinBl0SecVerResType);
+
+  EXPECT_EQ(boot_svc_msg.min_bl0_sec_ver_res.status, kErrorBootSvcBadSecVer);
 }
 
 TEST_F(RomExtBootServicesTest, BootSvcOwnershipUnlock) {
