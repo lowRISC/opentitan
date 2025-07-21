@@ -66,6 +66,7 @@ UJSON_SERDE_STRUCT(CryptotestAesScaFpgaMode, aes_sca_fpga_mode_t, AES_SCA_FPGA_M
 #define AES_SCA_CMD(field, string) \
     field(cmd, uint32_t)
 UJSON_SERDE_STRUCT(CryptotestAesScaCmd, aes_sca_cmd_t, AES_SCA_CMD);
+
 // clang-format on
 
 #ifdef __cplusplus
