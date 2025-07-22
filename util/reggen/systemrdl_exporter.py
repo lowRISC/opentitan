@@ -13,7 +13,7 @@ from reggen.reg_block import RegBlock
 from reggen.register import Register
 from reggen.window import Window
 from reggen.field import Field
-from reggen.access import SWAccess, SwAccess, HWAccess, HwAccess
+from reggen.access import SWAccess, HWAccess, HwAccess
 from reggen.exporter import Exporter
 from reggen.systemrdl.udp import register_udps
 
@@ -37,7 +37,7 @@ class HWAccess2Systemrdl:
         HwAccess.HRO: {"hw": AccessType.r},
         HwAccess.HRW: {"hw": AccessType.rw},
         HwAccess.HWO: {"hw": AccessType.w},
-        HwAccess.NONE: {"hw": AccessType.rw},
+        HwAccess.NONE: {"hw": AccessType.na},
     }
 
     def export(self) -> dict[str, object]:
@@ -54,19 +54,19 @@ class SWAccess2Systemrdl:
     #   onread: Side effect when software reads.
     #   onwrite: Side effect when software writes.
     MAP = {
-        SwAccess.RO: {"sw": AccessType.r},
-        SwAccess.RC: {"sw": AccessType.r, "onread": OnReadType.rclr},
-        SwAccess.R0W1C: {"sw": AccessType.w, "onwrite": OnWriteType.woclr},
-        SwAccess.RW: {"sw": AccessType.rw},
-        SwAccess.WO: {"sw": AccessType.w},
-        SwAccess.W1C: {"sw": AccessType.w, "onwrite": OnWriteType.woset},
-        SwAccess.W0C: {"sw": AccessType.w, "onwrite": OnWriteType.wzc},
-        SwAccess.W1S: {"sw": AccessType.w, "onwrite": OnWriteType.woset},
-        SwAccess.NONE: {"sw": AccessType.r},
+        "ro": {"sw": AccessType.r},
+        "rw": {"sw": AccessType.rw},
+        "wo": {"sw": AccessType.w},
+        "rc": {"sw": AccessType.rw, "onread": OnReadType.rclr},
+        "r0w1c": {"sw": AccessType.w, "onwrite": OnWriteType.woclr},
+        "rw1c": {"sw": AccessType.rw, "onwrite": OnWriteType.woclr},
+        "rw0c": {"sw": AccessType.rw, "onwrite": OnWriteType.wzc},
+        "rw1s": {"sw": AccessType.rw, "onwrite": OnWriteType.woset},
+        "none": {"sw": AccessType.na},
     }
 
     def export(self) -> dict[str, object]:
-        return self.MAP[self.inner.value[1]]
+        return self.MAP[self.inner.key]
 
 
 @dataclass
