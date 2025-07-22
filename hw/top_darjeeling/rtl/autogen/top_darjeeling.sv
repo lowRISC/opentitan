@@ -108,11 +108,11 @@ module top_darjeeling #(
   parameter bit SramCtrlMboxEccCorrection = 0,
   // parameters for rom_ctrl0
   parameter RomCtrl0BootRomInitFile = "",
-  parameter bit RomCtrl0TwoCycleRom = 1'b0,
+  parameter bit RomCtrl0TwoCycleRom = 1'b1,
   parameter bit SecRomCtrl0DisableScrambling = 1'b0,
   // parameters for rom_ctrl1
   parameter RomCtrl1BootRomInitFile = "",
-  parameter bit RomCtrl1TwoCycleRom = 1'b0,
+  parameter bit RomCtrl1TwoCycleRom = 1'b1,
   parameter bit SecRomCtrl1DisableScrambling = 1'b0,
   // parameters for dma
   parameter bit DmaEnableDataIntgGen = 1'b1,
