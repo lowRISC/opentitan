@@ -32,10 +32,11 @@ class Shadowed(UDPBoolean):
 OPENTITAN_UDPS = Path(__file__).parent / "udp.rdl"
 
 
-def register_udps(compiler: RDLCompiler) -> None:
+def register_udps(compiler: RDLCompiler) -> Path:
     """
     Register opentitan specific UDPs (User Defined Properties)
     """
     compiler.register_udp(Hwre)
     compiler.register_udp(Shadowed)
     compiler.compile_file(OPENTITAN_UDPS)
+    return OPENTITAN_UDPS
