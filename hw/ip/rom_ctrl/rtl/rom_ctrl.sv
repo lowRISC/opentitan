@@ -560,6 +560,11 @@ module rom_ctrl
   `ASSERT_KNOWN(KmacDataOValidKnown_A, kmac_data_o.valid)
   `ASSERT_KNOWN_IF(KmacDataODataKnown_A, kmac_data_o, kmac_data_o.valid)
 
+  // Check that kmac_data_o.last is "telling the truth": kmac_data_o.valid should drop on the cycle
+  // after the word that it decorates is transferred.
+  `ASSERT(KmacLastTrue_A,
+          kmac_data_o.valid && kmac_data_i.ready && kmac_data_o.last |=> !kmac_data_o.valid)
+
   // Check that pwrmgr_data_o.good is stable when kmac_data_o.valid is asserted
   `ASSERT(StabilityChkKmac_A, kmac_data_o.valid && $past(kmac_data_o.valid)
           |-> $stable(pwrmgr_data_o.good))
