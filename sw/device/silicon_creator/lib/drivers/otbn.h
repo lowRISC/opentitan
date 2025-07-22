@@ -322,6 +322,18 @@ rom_error_t sc_otbn_imem_sec_wipe(void);
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_otbn_dmem_sec_wipe(void);
 
+/**
+ * Patch a bad instruction in OTBN imem.
+ *
+ * There is a bug in the OTBN boot services program loaded by ROM.  There is a
+ * single instruction with mistakenly transposed operands which can affect the
+ * random share values.  This bug DOES NOT affect the correctness of the OTBN
+ * calculations.
+ *
+ * This function patches the bad instruction with the correctly instruction.
+ */
+void sc_otbn_patch(void);
+
 #ifdef __cplusplus
 }
 #endif

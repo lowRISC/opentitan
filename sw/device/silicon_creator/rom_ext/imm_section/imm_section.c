@@ -11,6 +11,7 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/cert/dice_chain.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/otbn.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -21,6 +22,13 @@
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t imm_section_start(void) {
+  // Patch a bug in the OTBN ECDSA-P256 program.
+  //
+  // There is a single instruction with mistakenly transposed operands which
+  // can affect the random share values.  This bug DOES NOT affect the
+  // correctness of the OTBN calculations.
+  sc_otbn_patch();
+
   // Check the ePMP state.
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
   // Check sec_mmio expectations.
