@@ -59,7 +59,7 @@ static status_t trigger_hmac(uint8_t key_buf[], uint8_t msg_buf[],
   dif_hmac_digest_t digest;
 
   if (uj_triggers.start_trigger) {
-    pentest_set_trigger_low();
+    pentest_set_trigger_high();
   }
   TRY(dif_hmac_mode_hmac_start(&hmac, inverted_key_buff,
                                kHmacTransactionConfig));
