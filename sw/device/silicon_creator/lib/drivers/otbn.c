@@ -264,3 +264,20 @@ rom_error_t sc_otbn_load_app(const sc_otbn_app_t app) {
   }
   return kErrorOk;
 }
+
+void sc_otbn_patch(void) {
+  enum {
+    // Offset in the code of the bad instruction:
+    kBugOffset = 0x958,
+    // The bad instruction is:
+    // bn.rshi   w16, w20, w31 >> 192
+    kBadInstr = 0xc1fa387b,
+    // The good instruction is:
+    // bn.rshi   w16, w31, w20 >> 192
+    kGoodInstr = 0xc14fb87b,
+  };
+  uint32_t inst = abs_mmio_read32(kBase + OTBN_IMEM_REG_OFFSET + kBugOffset);
+  if (inst == kBadInstr) {
+    abs_mmio_write32(kBase + OTBN_IMEM_REG_OFFSET + kBugOffset, kGoodInstr);
+  }
+}
