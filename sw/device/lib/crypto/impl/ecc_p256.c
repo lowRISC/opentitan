@@ -10,6 +10,7 @@
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/security_config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
 // Module ID for status codes.
@@ -86,6 +87,19 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_start(
     const otcrypto_blinded_key_t *private_key) {
   if (private_key == NULL || private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the security config of the device.
+  if (launder32(private_key->config.security_level) >
+      kOtcryptoKeySecurityLevelLow) {
+    hardened_bool_t security_config_valid = security_config_check();
+    if (launder32(security_config_valid) != kHardenedBoolTrue) {
+      return OTCRYPTO_FATAL_ERR;
+    }
+    HARDENED_CHECK_EQ(security_config_valid, kHardenedBoolTrue);
+  } else {
+    HARDENED_CHECK_EQ(private_key->config.security_level,
+                      kOtcryptoKeySecurityLevelLow);
   }
 
   // Check the key mode.
@@ -247,6 +261,19 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
   if (private_key == NULL || private_key->keyblob == NULL ||
       message_digest.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the security config of the device.
+  if (launder32(private_key->config.security_level) >
+      kOtcryptoKeySecurityLevelLow) {
+    hardened_bool_t security_config_valid = security_config_check();
+    if (launder32(security_config_valid) != kHardenedBoolTrue) {
+      return OTCRYPTO_FATAL_ERR;
+    }
+    HARDENED_CHECK_EQ(security_config_valid, kHardenedBoolTrue);
+  } else {
+    HARDENED_CHECK_EQ(private_key->config.security_level,
+                      kOtcryptoKeySecurityLevelLow);
   }
 
   // Check that the entropy complex is initialized.

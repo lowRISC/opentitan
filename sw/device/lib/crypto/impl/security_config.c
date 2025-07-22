@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/drivers/clkmgr.h"
-#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/security_config.h"
 
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/crypto/drivers/clkmgr.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 
 hardened_bool_t security_config_check(void) {
   // Check if the jittery clock is enabled.

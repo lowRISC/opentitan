@@ -13,6 +13,7 @@
 #include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/security_config.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
@@ -262,6 +263,17 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
   if (key == NULL || (aes_mode != kOtcryptoAesModeEcb && iv.data == NULL) ||
       cipher_input.data == NULL || cipher_output.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the security config of the device.
+  if (launder32(key->config.security_level) > kOtcryptoKeySecurityLevelLow) {
+    hardened_bool_t security_config_valid = security_config_check();
+    if (launder32(security_config_valid) != kHardenedBoolTrue) {
+      return OTCRYPTO_FATAL_ERR;
+    }
+    HARDENED_CHECK_EQ(security_config_valid, kHardenedBoolTrue);
+  } else {
+    HARDENED_CHECK_EQ(key->config.security_level, kOtcryptoKeySecurityLevelLow);
   }
 
   // Ensure the entropy complex is initialized.
