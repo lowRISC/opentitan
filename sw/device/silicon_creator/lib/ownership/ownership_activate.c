@@ -95,12 +95,12 @@ static rom_error_t activate_handler(boot_svc_msg_t *msg,
   HARDENED_RETURN_IF_ERROR(
       ownership_activate(bootdata, /*write_both_pages=*/kHardenedBoolTrue));
 
-  // The requested primary_bl0_slot is user input.  Validate and clamp it to
-  // legal values.
-  if (msg->ownership_activate_req.primary_bl0_slot == kBootSlotB) {
-    bootdata->primary_bl0_slot = kBootSlotB;
-  } else {
-    bootdata->primary_bl0_slot = kBootSlotA;
+  // The requested primary_bl0_slot is user input.
+  // Legal values change the primary boot slot.  All other values result in no
+  // change.
+  if (msg->ownership_activate_req.primary_bl0_slot == kBootSlotA ||
+      msg->ownership_activate_req.primary_bl0_slot == kBootSlotB) {
+    bootdata->primary_bl0_slot = msg->ownership_activate_req.primary_bl0_slot;
   }
 
   if (bootdata->ownership_state == kOwnershipStateUnlockedSelf) {
