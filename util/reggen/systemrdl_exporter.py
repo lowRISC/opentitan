@@ -5,6 +5,7 @@
 
 """Generate a SystemRDL description of the block"""
 
+import re
 from dataclasses import dataclass
 from typing import TextIO
 from pathlib import Path
@@ -28,6 +29,13 @@ from systemrdl.core.parameter import Parameter
 from systemrdl import rdltypes
 from systemrdl.rdltypes import AccessType, OnReadType, OnWriteType  # type: ignore[attr-defined]
 from rdlexporter import RdlExporter
+
+
+def sanitize_str(s: str) -> str:
+    substitutions = [(r"\\:", ":"), ("`", ""), (r"\n", ""), ('''"''', '''\\"''')]
+    for pattern, replacement in substitutions:
+        s = re.sub(pattern, replacement, s)
+    return s
 
 
 @dataclass
@@ -106,7 +114,7 @@ class Field2Systemrdl:
             self.importer.assign_property(field, "swmod", self.inner.hwqe)
 
         if self.inner.desc:
-            self.importer.assign_property(field, "desc", self.inner.desc)
+            self.importer.assign_property(field, "desc", sanitize_str(self.inner.desc))
 
         if self.inner.mubi:
             mubi_enum_name = self._get_mubi_name()
@@ -164,7 +172,7 @@ class Register2Systemrdl:
             self.importer.assign_property(reg_type, "shadowed", self.inner.shadowed)
 
         if self.inner.desc:
-            self.importer.assign_property(reg_type, "desc", self.inner.desc)
+            self.importer.assign_property(reg_type, "desc", sanitize_str(self.inner.desc))
 
         reg = self.importer.instantiate_reg(
             reg_type,
