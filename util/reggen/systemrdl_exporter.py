@@ -9,6 +9,7 @@ import re
 from dataclasses import dataclass
 from typing import TextIO
 from pathlib import Path
+import shutil
 
 from reggen.ip_block import IpBlock
 from reggen.reg_block import RegBlock
@@ -247,7 +248,7 @@ class IpBlock2Systemrdl:
 class SystemrdlExporter(Exporter):
     def export(self, outfile: TextIO) -> int:
         comp = RDLCompiler()
-        register_udps(comp)
+        udp_path = register_udps(comp)
 
         imp = RDLImporter(comp)
         imp.default_src_ref = FileSourceRef(outfile.name)
@@ -266,11 +267,18 @@ class SystemrdlExporter(Exporter):
         # to exp.export (which expects a path rather than a stream).
         outfile.close()
 
+        outpath = Path(outfile.name)
+        # Include the user defined enums and properties.
+        with outpath.open("w") as f:
+            f.write(f'`include "{udp_path.name}"\n\n')
+        # Copy the inlcude file to the output dir.
+        shutil.copy(udp_path, outpath.parent / udp_path.name)
+
         try:
-            RdlExporter(comp).export(Path(outfile.name))
+            RdlExporter(comp).export(outpath)
         except Exception as e:
             raise RuntimeError(f"Error exporting {self.block.name} to RDL.") from e
 
-        print(f"Successfully generated {outfile.name}")
+        print(f"Successfully generated {outfile.name}, {outpath.parent / udp_path.name}")
 
         return 0
