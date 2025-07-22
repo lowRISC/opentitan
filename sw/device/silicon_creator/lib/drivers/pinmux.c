@@ -112,8 +112,8 @@ static void configure_input(pinmux_input_t input) {
  */
 static void enable_pull(top_earlgrey_muxed_pads_t pad, bool enable, bool up) {
   uint32_t reg = 0;
-  reg = bitfield_bit32_write(reg, PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, enable);
-  reg = bitfield_bit32_write(reg, PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT, up);
+  reg = bitfield_bit32_write(reg, PINMUX_MIO_PAD_ATTR_0_PULL_EN_BIT, enable);
+  reg = bitfield_bit32_write(reg, PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_BIT, up);
   abs_mmio_write32(
       kBase + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET + pad * sizeof(uint32_t), reg);
 }

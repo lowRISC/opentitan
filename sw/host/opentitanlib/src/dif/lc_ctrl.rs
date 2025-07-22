@@ -427,7 +427,7 @@ bitflags! {
     /// Bits of the lc_ctrl.TRANSITION_REGWEN register, aka [LcCtrlReg::TransitionRegwen].
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
     pub struct LcCtrlTransitionRegwen: u32 {
-        const TRANSITION_REGWEN = 0b1 << bindgen::dif::LC_CTRL_TRANSITION_REGWEN_TRANSITION_REGWEN_BIT;
+        const TRANSITION_REGWEN = 0b1 << bindgen::dif::LC_CTRL_TRANSITION_REGWEN_EN_BIT;
     }
 }
 

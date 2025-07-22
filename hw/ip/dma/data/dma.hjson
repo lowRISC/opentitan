@@ -328,7 +328,7 @@
       fields: [
         { bits: "3:0"
           mubi: "true"
-          name: "regwen"
+          name: "EN",
           resval: true
           desc: '''
                 Used by firmware to lock the DMA enabled memory range configuration registers from further modification.
@@ -358,7 +358,7 @@
         { bits: "3:0"
           mubi: "true"
           resval: true
-          name: "regwen"
+          name: "EN",
           desc: '''
                 Used by hardware to lock the DMA configuration registers.
                 This register is purely managed by hardware and only software readable.

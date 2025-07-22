@@ -57,7 +57,7 @@ static bool aon_timer_watchdog_is_locked(const dif_aon_timer_t *aon) {
       mmio_region_read32(aon->base_addr, AON_TIMER_WDOG_REGWEN_REG_OFFSET);
 
   // Locked when bit is cleared.
-  return !bitfield_bit32_read(reg, AON_TIMER_WDOG_REGWEN_REGWEN_BIT);
+  return !bitfield_bit32_read(reg, AON_TIMER_WDOG_REGWEN_EN_BIT);
 }
 
 dif_result_t dif_aon_timer_wakeup_start(const dif_aon_timer_t *aon,

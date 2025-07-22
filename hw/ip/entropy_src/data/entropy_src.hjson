@@ -384,6 +384,7 @@
       fields: [
         {
             bits: "0",
+            name: "EN",
             desc: ''' When true, the !!MODULE_ENABLE register can be modified.
             When false, it becomes read-only.
             '''
@@ -418,6 +419,7 @@
       fields: [
         {
             bits: "0",
+            name: "EN",
             desc: '''
                   This read-only write enable bit will allow write access to control and threshold registers that are associated with this bit, but only when the !!MODULE_ENABLE register is set to `kMultiBitBool4False` and the !!SW_REGUPD write enable bit is set to true.
                   When read as false, these registers become read-only.

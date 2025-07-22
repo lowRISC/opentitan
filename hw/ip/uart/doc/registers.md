@@ -213,13 +213,13 @@ UART read data
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "RDATA", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description   |
 |:------:|:------:|:-------:|:-------|:--------------|
 |  31:8  |        |         |        | Reserved      |
-|  7:0   |   ro   |    x    | RDATA  |               |
+|  7:0   |   ro   |    x    | DATA   |               |
 
 ## WDATA
 UART write data
@@ -230,13 +230,13 @@ UART write data
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "WDATA", "bits": 8, "attr": ["wo"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 8, "attr": ["wo"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description   |
 |:------:|:------:|:-------:|:-------|:--------------|
 |  31:8  |        |         |        | Reserved      |
-|  7:0   |   wo   |   0x0   | WDATA  |               |
+|  7:0   |   wo   |   0x0   | DATA   |               |
 
 ## FIFO_CTRL
 UART FIFO control register

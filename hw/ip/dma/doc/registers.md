@@ -334,15 +334,15 @@ Used to lock the DMA enabled memory range configuration registers.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "regwen", "bits": 4, "attr": ["rw0c"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "EN", "bits": 4, "attr": ["rw0c"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                            |
-|:------:|:------:|:-------:|:--------------------------------|
-|  31:4  |        |         | Reserved                        |
-|  3:0   |  rw0c  |   0x6   | [regwen](#range_regwen--regwen) |
+|  Bits  |  Type  |  Reset  | Name                    |
+|:------:|:------:|:-------:|:------------------------|
+|  31:4  |        |         | Reserved                |
+|  3:0   |  rw0c  |   0x6   | [EN](#range_regwen--en) |
 
-### RANGE_REGWEN . regwen
+### RANGE_REGWEN . EN
 Used by firmware to lock the DMA enabled memory range configuration registers from further modification.
 Once this register is set to kMultiBitBool4False, it can only be set to kMultiBitBool4True through a reset event.
 
@@ -362,13 +362,13 @@ When the DMA reaches an interrupt or alert condition, it will perform the action
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "regwen", "bits": 4, "attr": ["ro"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "EN", "bits": 4, "attr": ["ro"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                       |
 |:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------------------------------------------|
 |  31:4  |        |         |        | Reserved                                                                                                                          |
-|  3:0   |   ro   |   0x6   | regwen | Used by hardware to lock the DMA configuration registers. This register is purely managed by hardware and only software readable. |
+|  3:0   |   ro   |   0x6   | EN     | Used by hardware to lock the DMA configuration registers. This register is purely managed by hardware and only software readable. |
 
 ## TOTAL_DATA_SIZE
 Total size of the data blob involved in DMA movement.

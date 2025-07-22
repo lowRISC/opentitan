@@ -243,7 +243,7 @@
       hwaccess: "none",
       fields: [
         { bits: "0",
-          name: "regwen",
+          name: "EN",
           desc: "Once cleared, the watchdog configuration will be locked until the next reset.",
           resval: 1
         }
