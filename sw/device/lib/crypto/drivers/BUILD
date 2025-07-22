@@ -228,6 +228,8 @@ dual_cc_library(
             "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:csr",
+            "//sw/device/lib/base:hardened",
+            "//sw/device/lib/crypto/impl:status",
         ],
     ),
 )
