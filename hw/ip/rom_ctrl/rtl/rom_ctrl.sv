@@ -25,7 +25,8 @@ module rom_ctrl
   parameter bit [127:0]           RndCnstScrKey = '0,
   // ROM size in bytes
   parameter int                   MemSizeRom = 32'h8000,
-
+  // If this parameter is set, the ROM responds in two cycles (instead of one).
+  parameter bit                   TwoCycleRom = 1'b0,
   // Disable all (de)scrambling operation. This disables both the scrambling block and the boot-time
   // checker. Don't use this in a real chip, but it's handy for small FPGA targets where we don't
   // want to spend area on unused scrambling.
@@ -281,7 +282,8 @@ module rom_ctrl
       .Width       (DataWidth),
       .Depth       (RomSizeWords),
       .ScrNonce    (RndCnstScrNonce),
-      .ScrKey      (RndCnstScrKey)
+      .ScrKey      (RndCnstScrKey),
+      .TwoCycleRom (TwoCycleRom)
     ) u_rom (
       .clk_i,
       .rst_ni,
@@ -303,7 +305,8 @@ module rom_ctrl
     prim_rom_adv #(
       .Width       (DataWidth),
       .Depth       (RomSizeWords),
-      .MemInitFile (BootRomInitFile)
+      .MemInitFile (BootRomInitFile),
+      .Latency     (TwoCycleRom ? 2 : 1)
     ) u_rom (
       .clk_i,
       .rst_ni,
@@ -356,9 +359,10 @@ module rom_ctrl
   if (!SecDisableScrambling) begin : gen_fsm_scramble_enabled
 
     rom_ctrl_fsm #(
-      .RomDepth  (RomSizeWords),
-      .TopCount  (8),
-      .DataWidth (DataWidth)
+      .RomDepth   (RomSizeWords),
+      .TopCount   (8),
+      .DataWidth  (DataWidth),
+      .TwoCycleRom(TwoCycleRom)
     ) u_checker_fsm (
       .clk_i,
       .rst_ni,
