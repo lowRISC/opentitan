@@ -43,6 +43,10 @@ struct ScaAesTestCase {
     #[serde(default)]
     input: String,
     #[serde(default)]
+    message: String,
+    #[serde(default)]
+    key: String,
+    #[serde(default)]
     sensors: String,
     #[serde(default)]
     expected_output: Vec<String>,
@@ -73,6 +77,16 @@ fn run_sca_aes_testcase(
     }
 
     // Check if we need to send an input.
+    if !test_case.key.is_empty() {
+        let key: serde_json::Value = serde_json::from_str(test_case.key.as_str()).unwrap();
+        key.send(uart)?;
+    }
+
+    if !test_case.message.is_empty() {
+        let message: serde_json::Value = serde_json::from_str(test_case.message.as_str()).unwrap();
+        message.send(uart)?;
+    }
+
     if !test_case.input.is_empty() {
         let input: serde_json::Value = serde_json::from_str(test_case.input.as_str()).unwrap();
         input.send(uart)?;
