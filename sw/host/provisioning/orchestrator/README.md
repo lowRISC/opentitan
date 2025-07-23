@@ -11,7 +11,7 @@ ways:
 To run on an CW310 FPGA for testing, run:
 ```
 bazel run \
-  --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys \
+  --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys \
   --//hw/bitstream/universal:otp=//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_test_unlocked0_manuf_empty \
   //sw/host/provisioning/orchestrator/src:orchestrator -- \
     --sku-config=$(pwd)/sw/host/provisioning/orchestrator/configs/skus/sival.hjson \

@@ -141,7 +141,7 @@ opentitan_test(
     name = "individualize_functest",
     srcs = ["individualize_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_sival": None,
     },
     fpga = fpga_params(
@@ -205,7 +205,7 @@ opentitan_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
@@ -265,7 +265,7 @@ opentitan_test(
     srcs = ["personalize_functest.c"],
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:dev_key_0_ecdsa_p256": "dev_key_0"},
     exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -328,7 +328,7 @@ opentitan_test(
         "AST_PROGRAM_UNITTEST=1",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         tags = ["manuf"],

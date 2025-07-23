@@ -45,7 +45,7 @@ opentitan_binary(
     testonly = True,
     srcs = ["sram_cp_provision.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
@@ -86,7 +86,7 @@ opentitan_binary(
     testonly = True,
     srcs = ["sram_cp_provision_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
@@ -130,7 +130,7 @@ _CP_PROVISIONING_HARNESS = "//sw/host/provisioning/cp"
 opentitan_test(
     name = "cp_provision",
     exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
@@ -156,7 +156,7 @@ opentitan_test(
 opentitan_test(
     name = "cp_provision_functest",
     exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
@@ -182,7 +182,7 @@ opentitan_test(
         testonly = True,
         srcs = ["sram_ft_individualize.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
@@ -302,7 +302,7 @@ manifest(d = {
         srcs = ["ft_personalize.c"],
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = {
-            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
@@ -364,7 +364,7 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft:ft_{}"
             config["owner_fw"]: OWNER_SLOTS["b"],
         },
         exec_env = [
-            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys",
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
             "//hw/top_earlgrey:silicon_creator",
         ],
@@ -389,7 +389,7 @@ filegroup(
     opentitan_test(
         name = "ft_provision_{}".format(sku),
         exec_env = {
-            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
@@ -447,7 +447,7 @@ test_suite(
     name = "ft_provision_cw310",
     tags = ["manual"],
     tests = [
-        ":ft_provision_{}_fpga_hyper310_rom_with_fake_keys".format(sku)
+        ":ft_provision_{}_fpga_cw310_rom_with_fake_keys".format(sku)
         for sku in EARLGREY_SKUS.keys()
     ],
 )
