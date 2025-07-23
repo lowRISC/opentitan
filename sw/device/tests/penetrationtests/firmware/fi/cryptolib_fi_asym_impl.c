@@ -383,13 +383,7 @@ status_t cryptolib_fi_rsa_sign_impl(
     pentest_set_trigger_high();
   }
   // Hash the message.
-  if (hash_mode == kOtcryptoHashModeSha256) {
-    TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
-  } else if (hash_mode == kOtcryptoHashModeSha384) {
-    TRY(otcrypto_sha2_384(msg_buf, &msg_digest));
-  } else {
-    TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
-  }
+  TRY(otcrypto_hash(msg_buf, msg_digest));
   if (uj_input.trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
