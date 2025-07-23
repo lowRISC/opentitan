@@ -311,25 +311,13 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
       break;
     case kHardenedBoolFalse:
       HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolFalse);
-      // Normally we'd want to clear the ROM region since we aren't using it
-      // anymore and since it isn't being used to encode access to the virtual
-      // window.  However, for SiVal, we want to keep low entries locked to
-      // prevent using low entries to override policy in higher entries.
-      // epmp_clear_rom_region();
       break;
     default:
       HARDENED_TRAP();
   }
 
-  // Allow execution of owner stage executable code (text) sections,
-  // unlock the ROM_EXT code regions so the next stage can re-use those
-  // entries and clear RLB to prevent further changes to locked ePMP regions.
-  HARDENED_RETURN_IF_ERROR(epmp_state_check());
+  // Allow execution of owner stage executable code (text) sections.
   epmp_set_tor(2, text_region, kEpmpPermReadExecute);
-
-  // Now that we're done reconfiguring the ePMP, we'll clear the RLB bit to
-  // prevent any modification to locked entries.
-  epmp_clear_rlb();
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Lock the address translation windows.
