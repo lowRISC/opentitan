@@ -9,6 +9,7 @@ use std::time::Duration;
 use thiserror::Error;
 
 use crate::impl_serializable_error;
+use crate::io::gpio::{Edge, MonitoringEvent, MonitoringReadResponse};
 
 /// Errors related to VCD encoding/decoding
 #[derive(Debug, Error, Serialize, Deserialize)]
@@ -37,6 +38,21 @@ pub enum VcdError {
     UnknownVariable(String),
 }
 impl_serializable_error!(VcdError);
+
+/// Convert a `u64` timestamp from the GpioMonitoring interface to a time in
+/// nanoseconds given some initial timestamp measurement and a clock resolution.
+fn timestamp_to_nanos(initial: u64, timestamp: u64, clock_res: u64) -> u64 {
+    let delta = (timestamp - initial) as u128;
+    let nanos = delta * 1_000_000_000u128 / clock_res as u128;
+    nanos as u64
+}
+
+/// Convert a time in nanoseconds to a timestamp used with the GpioMonitoring
+/// interface, using some initial timestamp measurement & a clock resolution.
+fn timestamp_from_nanos(initial: u64, nanos: u64, clock_res: u64) -> u64 {
+    let delta = (nanos as u128) * (clock_res as u128) / 1_000_000_000u128;
+    initial + delta as u64
+}
 
 /// Dump a single discrete waveform sample as a VCD value change based on the
 /// previous sample, which will be updated with the provided sample.
@@ -121,6 +137,47 @@ pub fn dump_vcd_from_samples(
         vcd.push_str(&format!("\n#{}", samples.len() - 1));
     }
     vcd.push('\n');
+    Ok(vcd)
+}
+
+/// Dump a VCD of a waveform represented by a chronological sequence of rising /
+/// falling edges (i.e. value changes) as is returned by the `GpioMonitoring`
+/// interface. This includes an initial & final timestamp, some initial values,
+/// and a list of edge `events`.
+pub fn dump_vcd_from_edges(
+    pin_names: &[Option<String>],
+    clock_resolution: u64,
+    initial_timestamp: u64,
+    initial_values: &[bool],
+    events: &[MonitoringEvent],
+    final_timestamp: u64,
+) -> Result<String> {
+    let vars = &(0..pin_names.len())
+        .map(|c| format!("'{}", c))
+        .collect::<Vec<_>>();
+    let mut vcd = dump_vcd_header(Duration::from_nanos(1));
+    let pins = vars.iter().zip(pin_names).collect::<Vec<_>>();
+    vcd.push_str(&dump_vcd_vardefs(&pins)?);
+    // Dump the initial values
+    vcd.push_str("#0");
+    for (&bit, var) in initial_values.iter().zip(vars.iter()) {
+        vcd.push_str(&format!(" {}{}", bit as u8, var));
+    }
+    // Edge events are essentially 1-to-1 with the VCD format
+    let mut timestamp: u64 = 0;
+    for event in events.iter() {
+        let edge_time = timestamp_to_nanos(initial_timestamp, event.timestamp, clock_resolution);
+        if edge_time > timestamp {
+            timestamp = edge_time;
+            vcd.push_str(&format!("\n#{}", edge_time));
+        }
+        let index = event.signal_index as usize;
+        let bit = if event.edge == Edge::Rising { 1 } else { 0 };
+        vcd.push_str(&format!(" {}{}", bit, vars[index]));
+    }
+    // Include a final timestamp marking the final measurement
+    let end_time = timestamp_to_nanos(initial_timestamp, final_timestamp, clock_resolution);
+    vcd.push_str(&format!("\n#{}\n", end_time));
     Ok(vcd)
 }
 
@@ -332,6 +389,93 @@ fn parse_vcd_values_to_samples<'a>(
     Ok(samples)
 }
 
+/// Parse the value change section of a VCD to a list of `MonitoringEvent`s, each
+/// of which corresponds to an edge on some signal (a value change). Expects to
+/// be used after the `$end` token has been consumed but before any variable
+/// change tokens have been seen.
+/// A clock resolution and initial timestamp can be provided to scale/offsetthe
+/// timesteps being used from the default of 1ns & 0.
+fn parse_vcd_values_to_edges<'a>(
+    identifiers: &[String],
+    timescale: Duration,
+    clock_resolution: u64,
+    initial_timestamp: u64,
+    vcd: &mut impl Iterator<Item = &'a str>,
+) -> Result<(u64, Vec<MonitoringEvent>)> {
+    let timescale = timescale.as_nanos() as u64;
+    let mut events = Vec::new();
+    let mut current_time: u64 = 0;
+    let mut current_values: u8 = 0x00;
+    #[allow(clippy::while_let_on_iterator)]
+    while let Some(token) = vcd.next() {
+        match token {
+            // Commands
+            "$dumpvars" => return Err(VcdError::UnsupportedFeature("$dumpvars".into()).into()),
+            "$end" => return Err(VcdError::MismatchedEnd.into()),
+            v if v.starts_with("$") => {
+                return Err(VcdError::UnsupportedFeature("commands".into()).into())
+            }
+            // Timesteps
+            v if v.starts_with("#") => {
+                let value = v.strip_prefix("#").unwrap().parse::<u64>()?;
+                if value < current_time {
+                    return Err(VcdError::TimestampsOutOfOrder(current_time, value).into());
+                }
+                current_time = value;
+            }
+            // Values
+            v if v.starts_with("0") || v.starts_with("1") => {
+                let value = if v.starts_with("0") { 0 } else { 1 };
+                let index = parse_vcd_scalar(identifiers, v)?;
+                let current_value = current_values >> index & 0x01;
+                if value != current_value {
+                    current_values &= !(1 << index);
+                    current_values |= value << index;
+                    // Don't generate edges for initial signal values.
+                    if current_time == 0 {
+                        // TODO: maybe this should be parsed from a `$dumpvars`
+                        // and not `#0`, as we might have an edge at `t=0`?
+                        continue;
+                    }
+                    let nanos = current_time.div_ceil(timescale);
+                    let timestamp =
+                        timestamp_from_nanos(initial_timestamp, nanos, clock_resolution);
+                    events.push(MonitoringEvent {
+                        signal_index: index as u8,
+                        edge: if value == 1 {
+                            Edge::Rising
+                        } else {
+                            Edge::Falling
+                        },
+                        timestamp,
+                    });
+                }
+            }
+            v if v.starts_with("z")
+                || v.starts_with("Z")
+                || v.starts_with("x")
+                || v.starts_with("X") =>
+            {
+                return Err(VcdError::UnsupportedFeature("non-binary scalars".into()).into())
+            }
+            v if v.starts_with("b") || v.starts_with("B") => {
+                return Err(VcdError::UnsupportedFeature("vector signals".into()).into())
+            }
+            v if v.starts_with("r") || v.starts_with("R") => {
+                return Err(VcdError::UnsupportedFeature("real vars".into()).into())
+            }
+            v if v.starts_with("s") || v.starts_with("S") => {
+                return Err(VcdError::UnsupportedFeature("strings".into()).into())
+            }
+            v => return Err(VcdError::UnknownToken(v.into()).into()),
+        }
+    }
+    // Determine a final timestamp for the waveform from the last timestep seen
+    let last_nanos = current_time.div_ceil(timescale);
+    let last_timestamp = timestamp_from_nanos(initial_timestamp, last_nanos, clock_resolution);
+    Ok((last_timestamp, events))
+}
+
 /// Lexes the VCD, returning an iterator over all whitespace-separated tokens.
 fn tokenize_vcd(vcd: &str) -> impl Iterator<Item = &str> {
     vcd.lines().flat_map(|line| line.split_whitespace())
@@ -363,9 +507,52 @@ pub fn parse_vcd_to_samples(vcd: &str) -> Result<ParsedVcdSamples> {
     })
 }
 
+/// The output of parsing a VCD to a Vec of discrete samples, including the
+/// samples itself, as well as any parsed pin variables and the timescale.
+/// The output of parsing a VCD to a Vec of edges, including the edges as a
+/// `MonitoringReadResponse` and any parsed pin variables.
+pub struct ParsedVcdEdges {
+    pub pin_vars: Vec<String>,
+    pub events: MonitoringReadResponse,
+}
+
+/// Parses a VCD (given its contents) to a Vec of edges (value changes), with
+/// timestamps relative to the `clock_resolution` and `initial_timestamp`.
+pub fn parse_vcd_to_edges(
+    vcd: &str,
+    clock_resolution: u64,
+    initial_timestamp: u64,
+) -> Result<ParsedVcdEdges> {
+    let mut tokens = tokenize_vcd(vcd);
+    let clock_tick = parse_vcd_header(&mut tokens)?;
+    let pin_vars = parse_vcd_vardefs(&mut tokens)?;
+    ensure!(
+        pin_vars.len() < 8,
+        VcdError::UnsupportedVariableCount(pin_vars.len())
+    );
+    let (timestamp, events) = parse_vcd_values_to_edges(
+        &pin_vars,
+        clock_tick,
+        clock_resolution,
+        initial_timestamp,
+        &mut tokens,
+    )?;
+    let events = MonitoringReadResponse { events, timestamp };
+    Ok(ParsedVcdEdges { pin_vars, events })
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
+
+    // A helper to compactly construct `MonitoringEvent` edges.
+    fn edge(signal_index: u8, edge: Edge, timestamp: u64) -> MonitoringEvent {
+        MonitoringEvent {
+            signal_index,
+            edge,
+            timestamp,
+        }
+    }
 
     // Test by dumping a given uniformly sampled waveform to a VCD and parsing
     // it back, to check the decoded contents match the original.
@@ -380,6 +567,33 @@ mod test {
         // are parsed into sample bit indexes in the same order they are defined).
         let decoded = parse_vcd_to_samples(&vcd)?;
         assert_eq!(&decoded.samples, samples);
+        Ok(())
+    }
+
+    // Test by dumping a given edge-represented waveform to a VCD and parsing it
+    // back, to check the decoded contents match the original.
+    fn edges_encode_decode(
+        clock_resolution: u64,
+        initial_timestamp: u64,
+        initial_values: &[bool],
+        events: &[MonitoringEvent],
+        final_timestamp: u64,
+        pin_names: &[Option<String>],
+    ) -> Result<()> {
+        let vcd = dump_vcd_from_edges(
+            pin_names,
+            clock_resolution,
+            initial_timestamp,
+            initial_values,
+            events,
+            final_timestamp,
+        )?;
+        assert!(!vcd.is_empty());
+        // For now this test assumes the order of signals is retained (i.e.
+        // vars are parsed into signal indexes in the order they are defined).
+        let decoded = parse_vcd_to_edges(&vcd, clock_resolution, initial_timestamp)?;
+        assert_eq!(decoded.events.timestamp, final_timestamp);
+        assert_eq!(decoded.events.events, events);
         Ok(())
     }
 
@@ -413,5 +627,80 @@ mod test {
             2,
         ];
         samples_encode_decode(&samples, &pin_names, clock_tick)
+    }
+
+    #[test]
+    fn edges_waveform() -> Result<()> {
+        // Random waveform over 3 pins, with a clock_tick of 1 us.
+        let clock_resolution = 1_000_000; // Each clock tick is 1 us.
+        let initial_timestamp = 536;
+        let initial_values = vec![true, false, true];
+        let events = Vec::from([
+            edge(2, Edge::Falling, 562),
+            edge(1, Edge::Rising, 621),
+            edge(0, Edge::Falling, 754),
+            edge(2, Edge::Rising, 832),
+            edge(2, Edge::Falling, 855),
+            edge(2, Edge::Rising, 912),
+            edge(0, Edge::Rising, 1012),
+            edge(1, Edge::Falling, 1058),
+            edge(2, Edge::Falling, 1123),
+            edge(2, Edge::Rising, 1157),
+            edge(0, Edge::Falling, 1210),
+            edge(1, Edge::Rising, 1258),
+            edge(0, Edge::Rising, 1315),
+            edge(2, Edge::Falling, 1415),
+            edge(1, Edge::Falling, 1510),
+            edge(0, Edge::Falling, 1633),
+            edge(0, Edge::Rising, 1901),
+        ]);
+        let final_timestamp = 1947;
+        let pin_names = [const { None }; 3];
+        edges_encode_decode(
+            clock_resolution,
+            initial_timestamp,
+            &initial_values,
+            &events,
+            final_timestamp,
+            &pin_names,
+        )?;
+
+        // Example UART RX waveform with 1 pin taken from a bitbanging test sample
+        let initial_timestamp = 0;
+        let initial_values = vec![true];
+        let event_timestamps = [
+            5889252340, 5889252358, 5889252375, 5889252392, 5889252410, 5889252427, 5889252445,
+            5889252462, 5889252479, 5889252497, 5889252514, 5889252532, 5889252549, 5889252636,
+            5889252654, 5889252671, 5889252688, 5889252723, 5889252740, 5889252775, 5889252793,
+            5889252810, 5889252827, 5889252845, 5889252862, 5889252914, 5889252932, 5889252949,
+            5889252967, 5889252984, 5889253001, 5889253019, 5889253036, 5889253141, 5889253158,
+            5889253193, 5889253210, 5889253245, 5889253263, 5889253315, 5889253349, 5889253367,
+            5889253386, 5889253402, 5889253419, 5889253454, 5889253471, 5889253489, 5889253523,
+            5889253541, 5889253558, 5889253610, 5889253628, 5889253645, 5889253697, 5889253715,
+            5889253732, 5889253767, 5889253784, 5889253837, 5889253871, 5889253889, 5889253906,
+            5889253924, 5889253941, 5889254011, 5889254046, 5889254063, 5889254080, 5889254115,
+            5889254167, 5889254185, 5889254219, 5889254238, 5889254254, 5889254272, 5889254324,
+            5889254359, 5889254393, 5889254411, 5889254428, 5889254533, 5889254550, 5889254585,
+            5889254603, 5889254655, 5889254672, 5889254689, 5889254741, 5889254759, 5889254776,
+            5889254794, 5889254811, 5889254828, 5889254846, 5889254881, 5889254915, 5889254933,
+            5889254950, 5889254968, 5889255002, 5889255037, 5889255089, 5889255107, 5889255124,
+            5889255176, 5889255194, 5889255211, 5889255264, 5889255281, 5889255298, 5889255455,
+        ];
+        let edges = [Edge::Falling, Edge::Rising];
+        let events = event_timestamps
+            .into_iter()
+            .enumerate()
+            .map(|(i, t)| edge(0, edges[i % 2], t))
+            .collect::<Vec<_>>();
+        let final_timestamp = 5889262827;
+        let pin_names = [Some("uart_rx".into())];
+        edges_encode_decode(
+            clock_resolution,
+            initial_timestamp,
+            &initial_values,
+            &events,
+            final_timestamp,
+            &pin_names,
+        )
     }
 }
