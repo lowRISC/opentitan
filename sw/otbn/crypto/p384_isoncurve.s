@@ -160,6 +160,70 @@ p384_isoncurve:
   ret
 
 /**
+ * Checks if a point is a valid curve point on curve P-384
+ *
+ * This routine checks if a point with given x- and y-coordinate is a valid
+ * curve point on P-384.
+ * The routine checks whether the coordinates are a solution of the
+ * Weierstrass equation y^2 = x^3 + ax + b  mod p.
+ * The routine makes use of the property that the domain parameter 'a' can be
+ * written as a=-3 for the P-384 curve, hence the routine is limited to P-384.
+ *
+ * This routine sets `ok` to false if the check fails and immediately exits the
+ * program. If the check succeeds, `ok` is unmodified.
+ *
+ * The routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  [w13, w12]:  domain parameter p (modulus)
+ * @param[in]  x20:         dptr_x, pointer to dmem location containing affine
+ *                                  x-coordinate of input point
+ * @param[in]  x21:         dptr_y, pointer to dmem location containing affine
+ *                                  y-coordinate of input point
+ *
+ * clobbered registers: x2, x3, w0 to w5, w10 to w17
+ * clobbered flag groups: FG0
+ */
+ .globl p384_isoncurve_check
+p384_isoncurve_check:
+  /* Fill gpp registers with pointers to variables */
+  la        x22, rhs
+  la        x23, lhs
+
+  /* Compute both sides of the Weierstrauss equation.
+       dmem[rhs] <= (x^3 + ax + b) mod p
+       dmem[lhs] <= (y^2) mod p */
+  jal       x1, p384_isoncurve
+
+  /* Load both sides of the equation.
+       [w7, w6] <= dmem[rhs]
+       [w5, w4] <= dmem[lhs] */
+  li        x2, 6
+  bn.lid    x2++, 0(x22)
+  bn.lid    x2, 32(x22)
+  li        x2, 4
+  bn.lid    x2++, 0(x23)
+  bn.lid    x2, 32(x23)
+
+  /* Compare the two sides of the equation.
+       FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
+  bn.sub    w0, w4, w6
+  bn.subb   w1, w5, w7
+
+  bn.cmp    w0, w31
+
+  /* Fail if FG0.Z is false. */
+  jal       x1, trigger_fault_if_fg0_not_z
+
+  bn.cmp    w1, w31
+
+  /* Fail if FG0.Z is false. */
+  jal       x1, trigger_fault_if_fg0_not_z
+
+  ret
+
+/**
  * Check if a provided curve point is valid.
  *
  * For a given curve point (x, y), check that:
@@ -239,40 +303,7 @@ p384_check_public_key:
   unimp
 
   _y_valid:
-
-  /* Fill gpp registers with pointers to variables */
-  la        x22, rhs
-  la        x23, lhs
-
-  /* Compute both sides of the Weierstrauss equation.
-       dmem[rhs] <= (x^3 + ax + b) mod p
-       dmem[lhs] <= (y^2) mod p */
-  jal       x1, p384_isoncurve
-
-  /* Load both sides of the equation.
-       [w7, w6] <= dmem[rhs]
-       [w5, w4] <= dmem[lhs] */
-  li        x2, 6
-  bn.lid    x2++, 0(x22)
-  bn.lid    x2, 32(x22)
-  li        x2, 4
-  bn.lid    x2++, 0(x23)
-  bn.lid    x2, 32(x23)
-
-  /* Compare the two sides of the equation.
-       FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
-  bn.sub    w0, w4, w6
-  bn.subb   w1, w5, w7
-
-  bn.cmp    w0, w31
-
-  /* Fail if FG0.Z is false. */
-  jal       x1, trigger_fault_if_fg0_not_z
-
-  bn.cmp    w1, w31
-
-  /* Fail if FG0.Z is false. */
-  jal       x1, trigger_fault_if_fg0_not_z
+  jal       x1, p384_isoncurve_check
 
   ret
 
