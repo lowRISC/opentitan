@@ -81,8 +81,8 @@ p384_random_scalar:
 
   /* Shift bits to get 448-bit seeds.
      seed0 = [w7,w6], seed1 = [w9,w8]
-     w7 <= w7[192:0]
-     w9 <= w9[192:0] */
+     w7 <= w7[255:64]
+     w9 <= w9[255:64] */
   bn.rshi   w7, w31, w7 >> 64
   /* Dummy instruction to avoid consecutive share access. */
   bn.xor    w31, w31, w31
