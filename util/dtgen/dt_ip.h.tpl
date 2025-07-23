@@ -26,6 +26,9 @@
 #include "dt_api.h"
 #include <stdint.h>
 
+## Extension
+${helper.render_extension(Extension.DtIpPos.HeaderIncludes)}
+
 /**
  * List of instances.
  */
