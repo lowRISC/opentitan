@@ -34,7 +34,7 @@ MATCHA = opentitan_top(
 )
 ```
 
-Since this process can be quite tedious, parts of it are automated by topgen, see the documentation [top creation](./doc/create_top.md).
+Since this process can be quite tedious, parts of it are automated by topgen, see the documentation [top creation](./create_top.md).
 The list of attributes is explained in more details in the following sections.
 
 ## Attributes
