@@ -92,10 +92,18 @@ class Field2Systemrdl:
         aligned_width = (self.inner.bits.width() + alignment - 1) & ~(alignment - 1)
         return f"MultiBitBool{aligned_width}"
 
-    def export(self) -> systemrdl.component.Field:
-        rdl_t = self.importer.create_field_definition(self.inner.name)
+    def export(
+        self, strip_suffix: bool = False, regwen: str | None = None
+    ) -> systemrdl.component.Field:
+        # Workaround because reggen adds the register index to all multiregisters fields,
+        # although it only makes sense when multiregisters are compacted (collapsed)
+        # to avoid name colision.
+
+        name = re.sub(r"_\d+$", "", self.inner.name) if strip_suffix else self.inner.name
+
+        rdl_t = self.importer.create_field_definition(name)
         field = self.importer.instantiate_field(
-            rdl_t, self.inner.name.upper(), self.inner.bits.lsb, self.inner.bits.width()
+            rdl_t, name.upper(), self.inner.bits.lsb, self.inner.bits.width()
         )
 
         swaccess = SWAccess2Systemrdl(self.inner.swaccess).export()
@@ -149,20 +157,31 @@ class Register2Systemrdl:
     importer: RDLImporter
     stride: int | None = None
     count: int | None = None
+    strip_suffix: bool = False
+    name: str = ""
 
     def __init__(self, reg: MultiRegister | Register, importer: RDLImporter):
         self.importer = importer
         if isinstance(reg, Register):
             self.inner = reg
+            self.name = reg.name
         elif isinstance(reg, MultiRegister):
             self.inner = reg.cregs[0]
             self.stride = reg.stride
             self.count = len(reg.cregs)
+            # Workaround because reggen adds the register index to all multiregisters fields,
+            # although it only makes sense when multiregisters are compacted (collapsed)
+            # to avoid name colision.
+            self.strip_suffix = not self._has_name_colision(reg)
+            self.name = re.sub("_\d+$", "", self.inner.name)
 
     def export(self) -> systemrdl.component.Reg:
         reg_type = self.importer.create_reg_definition(self.inner.name)
         for rfield in self.inner.fields:
-            self.importer.add_child(reg_type, Field2Systemrdl(rfield, self.importer).export())
+            self.importer.add_child(
+                reg_type,
+                Field2Systemrdl(rfield, self.importer).export(self.strip_suffix, self.inner.regwen),
+            )
 
         reg_type.external = self.inner.hwext
 
@@ -177,12 +196,16 @@ class Register2Systemrdl:
 
         reg = self.importer.instantiate_reg(
             reg_type,
-            self.inner.name,
+            self.name,
             self.inner.offset,
             [self.count] if self.count else None,
             self.stride if self.stride else None,
         )
         return reg
+
+    def _has_name_colision(self, reg: MultiRegister) -> bool:
+        names = set([re.sub(r"_\d+$", "", f.name) for f in reg.cregs[0].fields])
+        return len(names) != len(reg.cregs[0].fields)
 
 
 @dataclass
