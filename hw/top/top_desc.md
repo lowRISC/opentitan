@@ -67,6 +67,8 @@ The following attributes have a well-defined meaning in the codebase:
 - `hjson`: label string of the Hjson description file of the IP.
 - `ipconfig`: for generated IPs, this is label string of the `<top>_<ip>.ipconfig.hjson` file created by `ipgen`.
 - `extension`: for IPs which want to provide an extension plugin to `dtgen`, this is the label-string of the `py_library` of the extension.
+- `dt_hdr_deps`: extra dependencies which will be added to the `cc_library` target containing the DT header for this IP.
+- `dt_src_deps`: extra dependencies which will be added to the `cc_library` target containing the DT source for this IP.
 
 Example for the `uart` IP:
 ```py
