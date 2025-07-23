@@ -7,6 +7,8 @@ files.
 """
 from typing import List, Dict
 
+from ipgen.clkmgr_gen import get_rg_srcs
+
 
 class ClkmgrIpConfig:
     def __init__(self, ipconfig: object):
@@ -49,3 +51,12 @@ class ClkmgrIpConfig:
             }
             for clk in self.param_values["typed_clocks"]["hint_clks"].values()
         ]
+
+    def measurable_clks(self) -> List[str]:
+        """
+        Return the list of measurable clocks: each clock is described by its
+        name.
+        """
+        # Currently, the clkmgr measures every root-gated clock.
+        rg_srcs = get_rg_srcs(self.param_values["typed_clocks"])
+        return rg_srcs

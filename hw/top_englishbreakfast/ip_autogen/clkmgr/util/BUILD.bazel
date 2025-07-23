@@ -7,6 +7,9 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "ipconfig",
     srcs = ["ipconfig.py"],
+    deps = [
+        "//util/ipgen",
+    ],
 )
 
 py_library(
