@@ -38,45 +38,8 @@
 p384_base_mult_checked:
   jal       x1, p384_base_mult
 
-  /* load left and right hand side output
-     addresses for the is on curve check */
-  la        x22, rhs
-  la        x23, lhs
-
-  /* load domain parameter p (modulus)
-     [w13, w12] = p = dmem[p384_p] */
-  li        x2, 12
-  la        x3, p384_p
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2++, 32(x3)
-
-  /* call curve point test routine in P-384 lib */
-  jal       x1, p384_isoncurve
-
-  /* Load both sides of the equation.
-       [w7, w6] <= dmem[rhs]
-       [w5, w4] <= dmem[lhs] */
-  li        x2, 6
-  bn.lid    x2++, 0(x22)
-  bn.lid    x2, 32(x22)
-  li        x2, 4
-  bn.lid    x2++, 0(x23)
-  bn.lid    x2, 32(x23)
-
-  /* Compare the two sides of the equation.
-       FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
-  bn.sub    w0, w4, w6
-  bn.subb   w1, w5, w7
-
-  bn.cmp    w0, w31
-
-  /* Fail if FG0.Z is false. */
-  jal       x1, trigger_fault_if_fg0_not_z
-
-  bn.cmp    w1, w31
-
-  /* Fail if FG0.Z is false. */
-  jal       x1, trigger_fault_if_fg0_not_z
+  /* check if the result is on the p384 curve */
+  jal       x1, p384_isoncurve_check
 
   ret
 
