@@ -16,13 +16,11 @@ use opentitanlib::chip::boot_log::OwnershipState;
 use opentitanlib::chip::boot_svc::{BootSlot, OwnershipActivateRequest, OwnershipUnlockRequest};
 use opentitanlib::chip::device_id::DeviceId;
 use opentitanlib::image::image::{self};
-use opentitanlib::io::uart::Uart;
 use opentitanlib::ownership::{
     CommandTag, OwnerBlock, OwnerConfigItem, OwnerRescueConfig, TlvHeader,
 };
 use opentitanlib::rescue::{EntryMode, RescueMode, RescueParams, RescueProtocol};
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::transport::Capability;
 use opentitanlib::uart::console::UartConsole;
 use opentitanlib::util::file::FromReader;
 
@@ -241,44 +239,11 @@ where
     }
 }
 
-fn expect_err<T, E>(
-    result: Result<T, E>,
-    error: &str,
-    uart_console: Option<&dyn Uart>,
-) -> Result<()>
-where
-    E: std::fmt::Display,
-{
-    match uart_console {
-        // If no UART console is provided (implying XMODEM variant), check the rescue operation result directly.
-        None => expect_err_from_rescue_result(result, error),
-
-        // With a UART console (for DFU), we primarily check the device log for the expected error because the
-        // rescue operation result might not report the disallowed error properly in some rescue configurations.
-        Some(console) => {
-            if error.is_empty() {
-                // SPECIAL CASE: An empty 'error' string signals a specific scenario
-                // (e.g., BootSvcReq allowed, but its sub-commands are disallowed).
-                // In this situation, there is no informative device log.
-                // The rescue operation result is checked for an error message containing "Vendor".
-                expect_err_from_rescue_result(result, "Vendor")
-            } else {
-                // The pattern may have multiple lines, so we need to wait for them one at a time.
-                for line in error.split("\r\n") {
-                    log::info!("wait for {line:?}");
-                    let _ = UartConsole::wait_for(console, line, Duration::from_secs(1))?;
-                }
-                Ok(())
-            }
-        }
-    }
-}
-
 macro_rules! expect_disallowed_cmd {
-    ($uart_console:expr, $command_allow_list:expr, $command_tag:expr, $operation:expr, $reset:expr, $expected_err_str:expr $(,)?) => {
+    ($command_allow_list:expr, $command_tag:expr, $operation:expr, $reset:expr, $expected_err_str:expr $(,)?) => {
         if !$command_allow_list.contains(&$command_tag) {
             log::info!("Testing disallowed command: {}", $command_tag,);
-            expect_err($operation, $expected_err_str, $uart_console)?;
+            expect_err_from_rescue_result($operation, $expected_err_str)?;
             ($reset)?;
         }
     };
@@ -288,7 +253,7 @@ fn get_expected_err_msg(command: CommandTag, params: &RescueParams) -> String {
     let command_string = String::from_utf8(command.0.to_be_bytes().to_vec()).unwrap_or_default();
     match params.protocol {
         RescueProtocol::Xmodem => format!(r"bad mode: mode: {}", &command_string),
-        _ => format!("mode: {}\r\nerror: mode not allowed", &command_string),
+        _ => r"UsbBadSetup".to_string(),
     }
 }
 
@@ -315,17 +280,6 @@ fn disability_test(
             let rescue = params.create(transport)?;
             rescue.enter(transport, EntryMode::Reset)?;
 
-            let uart_console = if params.protocol == RescueProtocol::Xmodem {
-                None
-            } else {
-                transport.capabilities()?.request(Capability::UART).ok()?;
-                Some(
-                    transport
-                        .uart("console")
-                        .expect("Failed to init Uart console"),
-                )
-            };
-
             let boot_svc_req_allowed = config.command_allow.contains(&CommandTag::BootSvcReq);
 
             if !boot_svc_req_allowed {
@@ -345,7 +299,6 @@ fn disability_test(
 
             const DUMMY_BYTES: [u8; 256] = [0u8; 256];
             expect_disallowed_cmd!(
-                uart_console.as_deref(),
                 config.command_allow,
                 CommandTag::Rescue,
                 rescue.update_firmware(BootSlot::SlotA, &DUMMY_BYTES),
@@ -354,7 +307,6 @@ fn disability_test(
             );
 
             expect_disallowed_cmd!(
-                uart_console.as_deref(),
                 config.command_allow,
                 CommandTag::RescueB,
                 rescue.update_firmware(BootSlot::SlotB, &DUMMY_BYTES),
@@ -363,7 +315,6 @@ fn disability_test(
             );
 
             expect_disallowed_cmd!(
-                uart_console.as_deref(),
                 config.command_allow,
                 CommandTag::GetDeviceId,
                 rescue.get_device_id(),
@@ -372,7 +323,6 @@ fn disability_test(
             );
 
             expect_disallowed_cmd!(
-                uart_console.as_deref(),
                 config.command_allow,
                 CommandTag::GetBootLog,
                 rescue.get_boot_log(),
@@ -381,7 +331,6 @@ fn disability_test(
             );
 
             expect_disallowed_cmd!(
-                uart_console.as_deref(),
                 config.command_allow,
                 CommandTag::GetOwnerPage0,
                 rescue.get_raw(RescueMode::GetOwnerPage0),
@@ -392,7 +341,6 @@ fn disability_test(
             // GetOwnerPage1 command is only supported in Xmodem variant.
             if params.protocol == RescueProtocol::Xmodem {
                 expect_disallowed_cmd!(
-                    uart_console.as_deref(),
                     config.command_allow,
                     CommandTag::GetOwnerPage1,
                     rescue.get_raw(RescueMode::GetOwnerPage1),
@@ -403,13 +351,12 @@ fn disability_test(
 
             // When BootSvcReq is allowed but its sub-commands are not:
             // - XMODEM propagates the rescue error as "Cancelled".
-            // - DFU won't have a device log error; an empty string is used.
-            //  This is a signal for `expect_err` to use fallback logic.
+            // - DFU reports "Vendor" error instead of "UsbBadSetup" error.
             let boot_svc_req_sub_cmd_err_msg = if boot_svc_req_allowed {
                 if params.protocol == RescueProtocol::Xmodem {
                     "Cancelled".to_string()
                 } else {
-                    "".to_string()
+                    "Vendor".to_string()
                 }
             } else {
                 get_expected_err_msg(CommandTag::BootSvcReq, params)
@@ -417,7 +364,6 @@ fn disability_test(
 
             const DUMMY_PAYLOAD: [u32; 64] = [0u32; 64];
             expect_disallowed_cmd!(
-                uart_console.as_deref(),
                 config.command_allow,
                 CommandTag::Empty,
                 rescue.empty(DUMMY_PAYLOAD.as_ref()),
@@ -427,7 +373,6 @@ fn disability_test(
 
             const NEW_BL0_VER: u32 = 2;
             expect_disallowed_cmd!(
-                uart_console.as_deref(),
                 config.command_allow,
                 CommandTag::MinBl0SecVerRequest,
                 rescue.set_min_bl0_sec_ver(NEW_BL0_VER),
@@ -436,7 +381,6 @@ fn disability_test(
             );
 
             expect_disallowed_cmd!(
-                uart_console.as_deref(),
                 config.command_allow,
                 CommandTag::NextBl0SlotRequest,
                 rescue.set_next_bl0_slot(BootSlot::SlotA, BootSlot::SlotA),
@@ -445,7 +389,6 @@ fn disability_test(
             );
 
             expect_disallowed_cmd!(
-                uart_console.as_deref(),
                 config.command_allow,
                 CommandTag::OwnershipUnlockRequest,
                 rescue.ownership_unlock(OwnershipUnlockRequest::default()),
@@ -454,7 +397,6 @@ fn disability_test(
             );
 
             expect_disallowed_cmd!(
-                uart_console.as_deref(),
                 config.command_allow,
                 CommandTag::OwnershipActivateRequest,
                 rescue.ownership_activate(OwnershipActivateRequest::default()),
@@ -463,7 +405,6 @@ fn disability_test(
             );
 
             expect_disallowed_cmd!(
-                uart_console.as_deref(),
                 config.command_allow,
                 CommandTag::BootSvcRsp,
                 rescue.get_boot_svc(),
