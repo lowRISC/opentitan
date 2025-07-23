@@ -7748,3 +7748,25 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:status",
     ],
 )
+
+opentitan_test(
+    name = "ottf_alert_catch_test",
+    srcs = ["ottf_alert_catch_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+        },
+    ),
+    fpga = fpga_params(
+        exit_failure = "PASS!",
+        exit_success = "Alert 0 is asserted",
+    ),
+    deps = [
+        "//hw/top:dt",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
