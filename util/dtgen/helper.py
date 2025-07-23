@@ -260,6 +260,7 @@ class Extension(ABC):
         HeaderEnd = 0  # At the end of `dt_<ip>.h`
         SourceEnd = 1  # At the end of `dt_<ip>.c`
         SourceIncludes = 2  # At the include stage of `dt_<ip>.c`
+        HeaderIncludes = 3  # At the include stage of `dt_<ip>.h`
 
     def render_dt_ip(self, pos: DtIpPos) -> str:
         """
