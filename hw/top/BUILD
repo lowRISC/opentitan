@@ -7,7 +7,7 @@ load("//rules/opentitan:util.bzl", "flatten")
 load(
     "//rules:autogen.bzl",
     "opentitan_ip_c_header",
-    "opentitan_ip_dt_header",
+    "opentitan_ip_dt",
     "opentitan_ip_rust_header",
     "opentitan_top_dt_api",
 )
@@ -82,11 +82,10 @@ opentitan_top_dt_api(
 )
 
 [
-    opentitan_ip_dt_header(
+    opentitan_ip_dt(
         name = "dt_{}".format(ip),
         ip = ip,
         target_compatible_with = opentitan_require_ip(ip),
-        deps = [":dt_api"],
     )
     for ip in ALL_IP_NAMES
 ]
