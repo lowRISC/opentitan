@@ -5,21 +5,51 @@
 #include "dt/dt_uart.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false);
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-// This test forces an alert and expects OTTF to catch and report it.
+// This test exercises OTTF's alert catching mechanism.
+//
+// We force two alerts: `Uart1FatalFault` and `Uart2FatalFault`. We expect the
+// first to be handled by our custom handler and the second to be handled by
+// OTTF leading to an error message and abort.
+//
+// The test is considered passing if we abort with `Alert 2 is asserted` and
+// failing if the test ends naturally.
+
+OTTF_DEFINE_TEST_CONFIG();
+
+enum {
+  kAlertTimeoutMicros = 1000,
+};
+
 bool test_main(void) {
-  dif_uart_t uart;
-  CHECK_DIF_OK(dif_uart_init_from_dt(kDtUart0, &uart));
+  dif_uart_t uart1, uart2, uart3;
+  CHECK_DIF_OK(dif_uart_init_from_dt(kDtUart1, &uart1));
+  CHECK_DIF_OK(dif_uart_init_from_dt(kDtUart2, &uart2));
+  CHECK_DIF_OK(dif_uart_init_from_dt(kDtUart3, &uart3));
 
-  LOG_INFO("Forcing alert");
-  CHECK_DIF_OK(dif_uart_alert_force(&uart, kDifUartAlertFatalFault));
+  LOG_INFO("Forcing alert on UART1 (expected)");
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdUart1FatalFault));
+  CHECK_DIF_OK(dif_uart_alert_force(&uart1, kDifUartAlertFatalFault));
+  busy_spin_micros(kAlertTimeoutMicros);
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_finish(kTopEarlgreyAlertIdUart1FatalFault));
+
+  LOG_INFO("Forcing alert on UART2 (ignored)");
+  CHECK_STATUS_OK(ottf_alerts_ignore_alert(kTopEarlgreyAlertIdUart2FatalFault));
+  CHECK_DIF_OK(dif_uart_alert_force(&uart2, kDifUartAlertFatalFault));
+  busy_spin_micros(kAlertTimeoutMicros);
+
+  LOG_INFO("Forcing alert on UART3 (unexpected)");
+  CHECK_DIF_OK(dif_uart_alert_force(&uart3, kDifUartAlertFatalFault));
 
   LOG_INFO("Waiting for alert to be caught");
-  busy_spin_micros(1000);
+  busy_spin_micros(kAlertTimeoutMicros);
 
   LOG_INFO("Alert was not caught, we should not have gotten here");
-  return true;
+  return false;
 }

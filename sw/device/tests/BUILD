@@ -7783,11 +7783,12 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        exit_failure = "PASS!",
-        exit_success = "Alert 0 is asserted",
+        exit_failure = "FAIL!",
+        exit_success = "Alert 3 is asserted",
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/testing/test_framework:ottf_main",
