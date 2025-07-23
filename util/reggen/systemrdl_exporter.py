@@ -213,27 +213,28 @@ class RegBlock2Systemrdl:
     inner: RegBlock
     importer: RDLImporter
 
-    def export(self) -> Addrmap | None:
-        name = self.inner.name or "Block"
-        rdl_addrmap_t = self.importer.create_addrmap_definition(name)
-        rdl_addrmap = self.importer.instantiate_addrmap(rdl_addrmap_t, name, 0)
+    def export(self, addrmap: Addrmap | None = None) -> Addrmap | None:
+        if not addrmap:
+            name = self.inner.name or "Block"
+            rdl_addrmap_t = self.importer.create_addrmap_definition(name)
+            addrmap = self.importer.instantiate_addrmap(rdl_addrmap_t, name, 0)
 
         # registers and multiregs
         for reg in self.inner.registers:
-            self.importer.add_child(rdl_addrmap, Register2Systemrdl(reg, self.importer).export())
+            self.importer.add_child(addrmap, Register2Systemrdl(reg, self.importer).export())
 
         # multiregs
         for mreg in self.inner.multiregs:
-            self.importer.add_child(rdl_addrmap, Register2Systemrdl(mreg, self.importer).export())
+            self.importer.add_child(addrmap, Register2Systemrdl(mreg, self.importer).export())
 
         # windows
         for window in self.inner.windows:
-            self.importer.add_child(rdl_addrmap, Window2Systemrdl(window, self.importer).export())
+            self.importer.add_child(addrmap, Window2Systemrdl(window, self.importer).export())
 
         nonempty = bool(
             len(self.inner.registers) + len(self.inner.multiregs) + len(self.inner.windows)
         )
-        return rdl_addrmap if nonempty else None
+        return addrmap if nonempty else None
 
 
 @dataclass
@@ -242,11 +243,22 @@ class IpBlock2Systemrdl:
     importer: RDLImporter
 
     def export(self) -> Addrmap | None:
-        num_children = 0
-
         rdl_addrmap = self.importer.create_addrmap_definition(self.inner.name)
 
-        for rb in self.inner.reg_blocks.values():
+        for param in self.inner.params.get_localparams():
+            value = int(param.value)
+            rdl_param = Parameter(rdltypes.get_rdltype(value), param.name)
+            rdl_param._value = value
+            rdl_addrmap.parameters.append(rdl_param)
+
+        interfaces = list(self.inner.reg_blocks.values())
+        if len(interfaces) == 1 and not bool(interfaces[0].name):
+            # If there's only one interface, the registers can go directly on the root addressmap.
+            RegBlock2Systemrdl(interfaces[0], self.importer).export(rdl_addrmap)
+            return rdl_addrmap
+
+        num_children = 0
+        for rb in interfaces:
             rdl_rb = RegBlock2Systemrdl(rb, self.importer).export()
 
             # Skip empty interfaces
@@ -258,12 +270,6 @@ class IpBlock2Systemrdl:
 
         if num_children > 1:
             rdl_addrmap.properties["bridge"] = True
-
-        for param in self.inner.params.get_localparams():
-            value = int(param.value)
-            rdl_param = Parameter(rdltypes.get_rdltype(value), param.name)
-            rdl_param._value = value
-            rdl_addrmap.parameters.append(rdl_param)
 
         return rdl_addrmap if num_children else None
 
