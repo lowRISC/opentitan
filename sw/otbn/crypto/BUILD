@@ -369,6 +369,7 @@ otbn_binary(
     deps = [
         ":p384_base",
         ":p384_internal_mult",
+        ":p384_isoncurve",
         ":p384_modinv",
         ":p384_sign",
     ],
