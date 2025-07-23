@@ -85,14 +85,16 @@ These update modes are motivated by two scenarios:
 - The Unlock Key is a very powerful key and owners may want to attenuate the power of the unlock key to mitigate the risk of the key leaking.
 - An owner may want to provide a configuration update for devices in the field that does not require the unlock and activate procedure.
 
-The update mode provides for three types of owner configuration update procedures:
+The update mode provides for four types of owner configuration update procedures:
 
 - `Open` mode allows the unlock key to unlock the device into any of the unlocked states.
 - `Self` mode allows the unlock key to unlock the device into only the `UnlockedSelf` state.
 - `NewVersion` mode forbids the unlock key from unlocking the device.
   Instead, the device may accept an ownership configuration update at any time _if and only if_ the new configuration is signed by the self-same owner _and_ the configuration has a newer `config_version` number.
+- `SelfVersion` is a combination of the `Self` and `NewVersion` modes.
+  Instead, the device may accept an ownership configuration update at any time _if and only if_ the new configuration is signed by the self-same owner _and_ the configuration has a newer `config_version` number.  The device will _also_ allow the unlock key to unlock the device into the `UnlockedSelf` state.  When in the `UnlockedSelf` state, the device can accept a configuration that would move the `config_version` backwards.
 
-When the update mode is either `Self` or `NewVersion`, the power of the unlock key is reduced to only allow ownership operations that do not change the owner.
+When the update mode is `Self`, `NewVersion` or `SelfVersion`, the power of the unlock key is reduced to only allow ownership operations that do not change the owner.
 
 ### Ownership Nonce
 
@@ -126,6 +128,15 @@ The Unlock key is used to authenticate the Unlock Ownership boot services comman
 This key is separate from the Owner Key to allow owners to have different security policies for the Owner and Unlock keys.
 
 The Unlock key is endorsed by the Owner key via the Ownership Configuration data structure.
+
+### Detached Signature
+
+A detached signature is a signature that is stored separately from the data it signs. It can be used to validate either a signed command or an owner block.
+
+Detached signatures have the following properties:
+- They are necessary when using PQC (Post-Quantum Cryptography) algorithms, either on their own or in a hybrid mode alongside ECDSA. This is because PQC signatures are typically too large to fit within the designated signature area of the original data structure.
+- They may be located anywhere in flash, as long as flash page alignment constraints are met.
+- They only need to be stored in flash temporarily. Once the device verifies the signature against its corresponding data structure or command, the flash space occupied by the detached signature may be reclaimed for other purposes.
 
 ## Ownership Transfer Operations
 
@@ -438,7 +449,7 @@ typedef struct boot_svc_ownership_activate_req {
   uint32_t primary_bl0_slot;
   /** The 64-bit DIN subfield of the full 256-bit device ID.  */
   uint32_t din[2];
-  /** Erase previous owner's flash (hardened_bool_t).  */
+  /** Erase previous owner's flash (hardened_bool_t, currently unimplemented).  */
   uint32_t erase_previous;
   /** Reserved for future use.  */
   uint32_t reserved[31];
@@ -481,10 +492,42 @@ The owner configuration contains the following items:
 Because the Owner Configuration is composed of several sections of varying size and count (e.g. perhaps several different keys), the owner configuration utilizes tag-length-value (TLV) encoded structures.
 
 ```c
-struct TLVHeader {
+typedef struct tlv_header {
     uint32_t tag;
-    uint32_t length;
-};
+    uint16_t length;
+    struct_version_t version;
+} tlv_header_t;
+
+typedef struct struct_version {
+    uint8_t major;
+    uint8_t minor;
+} struct_version_t;
+```
+See the definition in [datatypes.h](../../lib/ownership/datatypes.h).
+
+### Owner Keydata
+
+The `owner_keydata_t` structure is a union that can hold different types of cryptographic keys. The actual key type is determined by a separate field in the owner block or application key types.
+
+- The `ecdsa` field holds an ECDSA P-256 public key.
+- The `spx` field holds a SPHINCS+ public key.
+- The `hybrid` field holds a hybrid of both an ECDSA and a SPHINCS+ public key.
+- The `raw` field provides enough space to hold both key types for hybrid schemes.
+- The `id` field is the first 32-bit word of the key data, serving as a key identifier.
+
+```c
+typedef union owner_key_data {
+  /** ECDSA P256 public key */
+  ecdsa_p256_public_key_t ecdsa;
+  /** SPHINCS+ public key */
+  sigverify_spx_key_t spx;
+  /** Hybrid ECDSA & SPHINCS+ public key */
+  hybrid_key_t hybrid;
+  /** Enough space to hold an ECDSA key and a SPX+ key for hybrid schemes */
+  uint32_t raw[16 + 8];
+  /** A key ID is the first 32-bit word of the key data */
+  uint32_t id;
+} owner_keydata_t;
 ```
 See the definition in [datatypes.h](../../lib/ownership/datatypes.h).
 
@@ -507,26 +550,28 @@ typedef struct owner_block {
    * length: 2048.
    */
   tlv_header_t header;
-  /** Version of the owner struct.  Currently `0`. */
-  uint32_t struct_version;
+  /** Configuraion version (monotonically increasing per owner) */
+  uint32_t config_version;
   /** SRAM execution configuration (DisabledLocked, Disabled, Enabled). */
   uint32_t sram_exec_mode;
   /** Ownership key algorithm (currently, only ECDSA is supported). */
   uint32_t ownership_key_alg;
-  /** Configuration version (monotonically increasing per owner) */
-  uint32_t config_version;
+  /** Ownership update mode (one of OPEN, SELF, NEWV) */
+  uint32_t update_mode;
   /** Set the minimum security version to this value (UINT32_MAX: no change) */
   uint32_t min_security_version_bl0;
-  /** Ownership update mode (one of Open, Self, NewVersion) */
-  uint32_t update_mode;
+  /** The device ID locking constraint */
+  uint32_t lock_constraint;
+  /** The device ID to which this config applies */
+  uint32_t device_id[8];
   /** Reserved space for future use. */
-  uint32_t reserved[24];
+  uint32_t reserved[16];
   /** Owner public key. */
-  owner_key_t owner_key;
+  owner_keydata_t owner_key;
   /** Owner's Activate public key. */
-  owner_key_t activate_key;
+  owner_keydata_t activate_key;
   /** Owner's Unlock public key. */
-  owner_key_t unlock_key;
+  owner_keydata_t unlock_key;
   /** Data region to hold the other configuration structs. */
   uint8_t data[1536];
   /** Signature over [tag..data] with the owner private key. */
@@ -561,23 +606,23 @@ typedef struct owner_application_key {
   tlv_header_t header;
   /** Key algorithm.  One of ECDSA, SPX+ or SPXq20. */
   uint32_t key_alg;
-  /** Key domain.  Recognized values: PROD, DEV, TEST */
-  uint32_t key_domain;
-  /** Key diversifier.
-   *
-   * This value is concatenated to key_domain to create an 8 word
-   * diversification constant to be programmed into the keymgr.
-   */
-  uint32_t key_diversifier[7];
+  union {
+    struct {
+      /** Key domain.  Recognized values: PROD, DEV, TEST */
+      uint32_t key_domain;
+      /** Key diversifier.
+       *
+       * This value is concatenated to key_domain to create an 8 word
+       * diversification constant to be programmed into the keymgr.
+       */
+      uint32_t key_diversifier[7];
+    };
+    uint32_t raw_diversifier[8];
+  };
   /** Usage constraint must match manifest header's constraint */
   uint32_t usage_constraint;
   /** Key material.  Varies by algorithm type. */
-  union {
-    uint32_t id;
-    sigverify_rsa_key_t rsa;
-    sigverify_spx_key_t spx;
-    sigverify_ecdsa_p256_buffer_t ecdsa;
-  } data;
+  owner_keydata_t data;
 } owner_application_key_t;
 ```
 See the definition in [datatypes.h](../../lib/ownership/datatypes.h).
@@ -698,8 +743,40 @@ typedef struct owner_rescue_config {
    * length: 16 + sizeof(command_allow).
    */
   tlv_header_t header;
-  /** The rescue type.  Currently, only `XMDM` is supported. */
-  uint32_t rescue_type;
+  /**
+   * The rescue protocol:
+   * - 'X'modem.
+   * - 'U'SB-DFU.
+   * - 'S'PI-DFU.
+   */
+  uint8_t protocol;
+  /**
+   * The gpio configuration (if relevant, depending on `detect`).
+   *
+   *  7             2       1       0
+   * +---------------+--------+-------+
+   * | Reserved      | PullEn | Value |
+   * +---------------+--------+-------+
+   */
+  uint8_t gpio;
+  /**
+   * The timeout configuration (not implemented yet).
+   *
+   *     7  6                        0
+   * +-----+--------------------------+
+   * | EoF |                  Timeout |
+   * +-----+--------------------------+
+   */
+  uint8_t timeout;
+  /**
+   * Trigger detection configuration.
+   *
+   *  7     6  5                    0
+   * +--------+-----------------------+
+   * | Detect |                 Index |
+   * +--------+-----------------------+
+   */
+  uint8_t detect;
   /** The start offset of the rescue region in flash (in pages). */
   uint16_t start;
   /** The size of the rescue region in flash (in pages). */
@@ -712,3 +789,46 @@ typedef struct owner_rescue_config {
   uint32_t command_allow[];
 } owner_rescue_config_t;
 ```
+See the definition in [datatypes.h](../../lib/ownership/datatypes.h).
+
+### Detached Signature
+
+A detached signature can be used to validate either a signed command or an
+owner block.
+
+Detached signatures are used when the signature is too larger to fit within
+the designated signature area of the original buffer. In such cases, the
+orginal buffer's signature field will be all zeros and the verification
+function will scan through the flash data pages to find the detached
+signature.
+
+The detached signature must be aligned on a flash page boundary.
+
+```c
+typedef struct owner_detached_signature {
+  /**
+   * Header identifying this struct.
+   * tag: `SIGN`.
+   * length: 8192.
+   */
+  tlv_header_t header;
+  uint32_t _pad[2];
+  /** The command associated with this signature (e.g. UNLK, ACTV, OWNR). */
+  uint32_t command;
+  /** The algorithm used to generate this signature (ownership_key_alg_t). */
+  uint32_t algorithm;
+  /** The current nonce associated with the command. */
+  nonce_t nonce;
+  /** The signature data. */
+  union {
+    uint32_t raw[2040];
+    ecdsa_p256_signature_t ecdsa;
+    sigverify_spx_signature_t spx;
+    struct {
+      ecdsa_p256_signature_t ecdsa;
+      sigverify_spx_signature_t spx;
+    } hybrid;
+  } signature;
+} owner_detached_signature_t;
+```
+See the definition in [datatypes.h](../../lib/ownership/datatypes.h).
