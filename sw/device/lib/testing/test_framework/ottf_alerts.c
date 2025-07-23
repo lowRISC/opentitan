@@ -36,8 +36,8 @@ status_t ottf_alerts_enable_all(void) {
 
     // Temporarily skip alert 37 (`flash_ctrl_fatal_err`) on FPGAs and sims at
     // the owner stage since flash will not be provisioned with expected data.
-    // See #23038.
-    if (kDeviceType != kDeviceSilicon) {
+    if (i == kTopEarlgreyAlertIdFlashCtrlFatalErr &&
+        kDeviceType != kDeviceSilicon) {
       alerts[i] = 0;
     }
   }
