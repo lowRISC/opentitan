@@ -1636,7 +1636,7 @@ p256_random_scalar:
      w16 <= w16[63:0] */
   bn.rshi   w18, w31, w16 >> 192
   bn.rshi   w20, w16, w31 >> 64
-  bn.rshi   w16, w20, w31 >> 192
+  bn.rshi   w16, w31, w20 >> 192
 
   /* Generate a random masking parameter.
      w14 <= URND(127) + 1 = x */
