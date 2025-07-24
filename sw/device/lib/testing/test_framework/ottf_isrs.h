@@ -161,4 +161,19 @@ void ottf_load_integrity_error_handler(uint32_t *exc_info);
  */
 void ottf_internal_isr(uint32_t *exc_info);
 
+/**
+ * OTTF alert ISR handler.
+ *
+ * `ottf_isrs.c` provides a weak definition of this symbol, which can be
+ * overridden at link-time by providing an additional non-weak definition.
+ *
+ * Returning `true` will cause OTTF to acknowledge the interrupt at the PLIC.
+ * Returning `false` will cause OTTF to abort the test with an error message.
+ *
+ * Note that OTTF will not acknowledge the *alert* when `true` is returned,
+ * only the interrupt at the PLIC. It also does not acknowledge the alert at
+ * the IP.
+ */
+bool ottf_alert_isr(uint32_t *exc_info);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_ISRS_H_
