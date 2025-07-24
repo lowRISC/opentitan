@@ -80,8 +80,14 @@ if part["variant"] != "Buffered":
 part_name = Name.from_snake_case(part["name"])
 part_name_camel = part_name.as_camel_case()
 part_name_snake = part_name.as_snake_case()
-has_digest = part["hw_digest"] or part["sw_digest"]
-part_items = part["items"][:-1] if has_digest else part["items"]
+def get_part_items(part):
+    has_digest = part["hw_digest"] or part["sw_digest"]
+    match has_digest, part["zeroizable"]:
+        case (True, True): return part["items"][:-2]
+        case (False, False): return part["items"]
+        case _: return part["items"][:-1]
+
+part_items = get_part_items(part)
 %>\
 ## Declare function and ports.
   function automatic void otp_write_${part_name_snake}_partition(

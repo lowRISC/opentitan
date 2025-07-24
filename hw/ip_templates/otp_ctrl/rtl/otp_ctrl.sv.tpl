@@ -369,11 +369,13 @@ module otp_ctrl
                                    !reg2hw.direct_access_regwen.q) ? 1'b0 : direct_access_regwen_q;
 
   // Any write to this register triggers a DAI command.
-  assign dai_req = reg2hw.direct_access_cmd.digest.qe |
+  assign dai_req = reg2hw.direct_access_cmd.zeroize.qe |
+                   reg2hw.direct_access_cmd.digest.qe |
                    reg2hw.direct_access_cmd.wr.qe  |
                    reg2hw.direct_access_cmd.rd.qe;
 
-  assign dai_cmd = dai_cmd_e'({reg2hw.direct_access_cmd.digest.q,
+  assign dai_cmd = dai_cmd_e'({reg2hw.direct_access_cmd.zeroize.q,
+                               reg2hw.direct_access_cmd.digest.q,
                                reg2hw.direct_access_cmd.wr.q,
                                reg2hw.direct_access_cmd.rd.q});
 
@@ -906,6 +908,8 @@ end
   logic                           part_init_req;
   logic [NumPart-1:0]             part_init_done;
   part_access_t [NumPart-1:0]     part_access_dai;
+  mubi8_t [NumPart-1:0]           part_zer_trigs;
+  mubi8_t [NumPart-1:0]           part_is_zer;
 
   // The init request comes from the power manager, which lives in the AON clock domain.
   logic pwr_otp_req_synced;
@@ -967,7 +971,9 @@ end
     .scrmbl_valid_o   ( part_scrmbl_req_bundle[DaiIdx].valid  ),
     .scrmbl_ready_i   ( part_scrmbl_req_ready[DaiIdx]         ),
     .scrmbl_valid_i   ( part_scrmbl_rsp_valid[DaiIdx]         ),
-    .scrmbl_data_i    ( part_scrmbl_rsp_data                  )
+    .scrmbl_data_i    ( part_scrmbl_rsp_data                  ),
+    .zer_trigs_o      ( part_zer_trigs                        ),
+    .zer_i            ( part_is_zer                           )
   );
 
   ////////////////////////////////////
@@ -1107,7 +1113,9 @@ end
         .otp_gnt_i     ( part_otp_arb_gnt[k]          ),
         .otp_rvalid_i  ( part_otp_rvalid[k]           ),
         .otp_rdata_i   ( part_otp_rdata               ),
-        .otp_err_i     ( part_otp_err                 )
+        .otp_err_i     ( part_otp_err                 ),
+        .zer_trig_i    ( part_zer_trigs[k]            ),
+        .zer_o         ( part_is_zer[k]               )
       );
 
       // Tie off unused connections.
@@ -1173,7 +1181,9 @@ end
         .scrmbl_valid_o    ( part_scrmbl_req_bundle[k].valid ),
         .scrmbl_ready_i    ( part_scrmbl_req_ready[k]        ),
         .scrmbl_valid_i    ( part_scrmbl_rsp_valid[k]        ),
-        .scrmbl_data_i     ( part_scrmbl_rsp_data            )
+        .scrmbl_data_i     ( part_scrmbl_rsp_data            ),
+        .zer_trig_i        ( part_zer_trigs[k]               ),
+        .zer_o             ( part_is_zer[k]                  )
       );
 
       // Buffered partitions are not accessible via the TL-UL window.
@@ -1233,7 +1243,9 @@ end
         .scrmbl_valid_o    (                                 ),
         .scrmbl_ready_i    ( 1'b0                            ),
         .scrmbl_valid_i    ( 1'b0                            ),
-        .scrmbl_data_i     ( '0                              )
+        .scrmbl_data_i     ( '0                              ),
+        .zer_trig_i        ( part_zer_trigs[k]               ),
+        .zer_o             ( part_is_zer[k]                  )
       );
 
       // Buffered partitions are not accessible via the TL-UL window.

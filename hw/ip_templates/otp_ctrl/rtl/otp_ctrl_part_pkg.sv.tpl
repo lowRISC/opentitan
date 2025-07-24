@@ -97,6 +97,7 @@ package otp_ctrl_part_pkg;
     logic integrity;        // Whether the partition is integrity protected
     logic iskeymgr_creator; // Whether the partition has any creator key material
     logic iskeymgr_owner;   // Whether the partition has any owner key material
+    logic zeroizable;       // Whether the partition can be zeroized
   } part_info_t;
 
   parameter part_info_t PartInfoDefault = '{
@@ -111,7 +112,8 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b0,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b0
   };
 
   ////////////////////////
@@ -133,7 +135,8 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b${"1" if part["read_lock"].lower() == "digest" else "0"},
       integrity:        1'b${"1" if part["integrity"] else "0"},
       iskeymgr_creator: 1'b${"1" if part["iskeymgr_creator"] else "0"},
-      iskeymgr_owner:   1'b${"1" if part["iskeymgr_owner"] else "0"}
+      iskeymgr_owner:   1'b${"1" if part["iskeymgr_owner"] else "0"},
+      zeroizable:       1'b${"1" if part["zeroizable"] else "0"}
     }${"" if loop.last else ","}
 % endfor
   };
@@ -159,7 +162,7 @@ package otp_ctrl_part_pkg;
   typedef struct packed {<% offset = part['offset'] + part['size'] %>
     % for item in part["items"][::-1]:
       ## Skip digest
-      % if not item['isdigest']:
+      % if not item['isdigest'] and not item['iszer']:
         ## Deal with unallocated items
         % if offset != item['offset'] + item['size']:
     logic [${(offset - item['size'] - item['offset']) * 8 - 1}:0] unallocated;<% offset = item['offset'] + item['size'] %>
@@ -180,7 +183,7 @@ package otp_ctrl_part_pkg;
   parameter otp_${part["name"].lower()}_data_t OTP_${part["name"].upper()}_DATA_DEFAULT = '{<% offset = part['offset'] + part['size'] %>
     % for k, item in enumerate(part["items"][::-1]):
       ## Skip digest
-      % if not item['isdigest']:
+      % if not item['isdigest'] and not item['iszer']:
         % if offset != item['offset'] + item['size']:
     unallocated: ${"{}'h{:0X}".format((offset - item['size'] - item['offset']) * 8, 0)}<% offset = item['offset'] + item['size'] %>,
         % endif
@@ -241,8 +244,10 @@ prev_offset = total_size
   parameter logic [${total_size * 8 - 1}:0] PartInvDefault = ${total_size * 8}'({
   ## Iterate backwards since arrays are laid out from top partitions down.
   % for k, part in enumerate(otp_mmap["partitions"][::-1]):
+    // ${part["name"]} default
     ${int(part["size"])*8}'({
     % for item in part["items"][::-1]:
+      // ${item["name"]}
       % if prev_offset > item["offset"] + item["size"]:
       ${"{}'h{:0X}".format((prev_offset - item["size"] - item["offset"]) * 8, 0)}, // unallocated ${prev_offset - item["offset"] - item["size"]} bytes
 <% prev_offset = item["offset"] + item["size"] %>\
@@ -315,7 +320,11 @@ sep = ("," if not loop.last else ("\n    })," if k < len(otp_mmap["partitions"])
 <%
 has_unused_chunk = False
 part_regular_size = part_name_camel + "Size"
-if (part["hw_digest"] or part["sw_digest"]):
+if (part["hw_digest"] or part["sw_digest"]) and part["zeroizable"]:
+  has_unused_chunk = True
+  skip_size = 16
+  part_regular_size = f"({part_regular_size} - {skip_size})"
+elif part["hw_digest"] or part["sw_digest"] or part["zeroizable"]:
   has_unused_chunk = True
   skip_size = 8
   part_regular_size = f"({part_regular_size} - {skip_size})"

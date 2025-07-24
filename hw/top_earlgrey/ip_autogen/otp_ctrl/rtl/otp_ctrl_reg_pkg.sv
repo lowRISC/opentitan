@@ -353,6 +353,10 @@ package otp_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
+    } zeroize;
+    struct packed {
+      logic        q;
+      logic        qe;
     } digest;
     struct packed {
       logic        q;
@@ -543,12 +547,12 @@ package otp_ctrl_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    otp_ctrl_reg2hw_intr_state_reg_t intr_state; // [205:204]
-    otp_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [203:202]
-    otp_ctrl_reg2hw_intr_test_reg_t intr_test; // [201:198]
-    otp_ctrl_reg2hw_alert_test_reg_t alert_test; // [197:188]
-    otp_ctrl_reg2hw_direct_access_regwen_reg_t direct_access_regwen; // [187:186]
-    otp_ctrl_reg2hw_direct_access_cmd_reg_t direct_access_cmd; // [185:180]
+    otp_ctrl_reg2hw_intr_state_reg_t intr_state; // [207:206]
+    otp_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [205:204]
+    otp_ctrl_reg2hw_intr_test_reg_t intr_test; // [203:200]
+    otp_ctrl_reg2hw_alert_test_reg_t alert_test; // [199:190]
+    otp_ctrl_reg2hw_direct_access_regwen_reg_t direct_access_regwen; // [189:188]
+    otp_ctrl_reg2hw_direct_access_cmd_reg_t direct_access_cmd; // [187:180]
     otp_ctrl_reg2hw_direct_access_address_reg_t direct_access_address; // [179:169]
     otp_ctrl_reg2hw_direct_access_wdata_mreg_t [1:0] direct_access_wdata; // [168:105]
     otp_ctrl_reg2hw_check_trigger_reg_t check_trigger; // [104:101]
@@ -702,10 +706,11 @@ package otp_ctrl_reg_pkg;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_12_ERR_CODE_12_RESVAL = 3'h 0;
   parameter logic [0:0] OTP_CTRL_DIRECT_ACCESS_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_RESVAL = 1'h 1;
-  parameter logic [2:0] OTP_CTRL_DIRECT_ACCESS_CMD_RESVAL = 3'h 0;
+  parameter logic [3:0] OTP_CTRL_DIRECT_ACCESS_CMD_RESVAL = 4'h 0;
   parameter logic [0:0] OTP_CTRL_DIRECT_ACCESS_CMD_RD_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_DIRECT_ACCESS_CMD_WR_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_DIRECT_ACCESS_CMD_DIGEST_RESVAL = 1'h 0;
+  parameter logic [0:0] OTP_CTRL_DIRECT_ACCESS_CMD_ZEROIZE_RESVAL = 1'h 0;
   parameter logic [31:0] OTP_CTRL_DIRECT_ACCESS_RDATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_DIRECT_ACCESS_RDATA_0_DIRECT_ACCESS_RDATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_DIRECT_ACCESS_RDATA_1_RESVAL = 32'h 0;

@@ -36,8 +36,8 @@ package otp_ctrl_macro_pkg;
   parameter int OtpCmdWidth = 7;
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 4 -m 5 -n 7 \
-  //     -s 696743973 --language=sv
+  // $ ./util/design/sparse-fsm-encode.py -d 4 -m 6 -n 7 \
+  //     -s 787759652 --language=sv
   //
   // Hamming distance histogram:
   //
@@ -52,16 +52,17 @@ package otp_ctrl_macro_pkg;
   //
   // Minimum Hamming distance: 4
   // Maximum Hamming distance: 4
-  // Minimum Hamming weight: 3
+  // Minimum Hamming weight: 1
   // Maximum Hamming weight: 5
   //
   typedef enum logic [OtpCmdWidth-1:0] {
-    Read     = 7'b1000101,
-    Write    = 7'b0110111,
+    Read     = 7'b1111010,
+    Write    = 7'b1001001,
     // Raw commands ignore integrity
-    ReadRaw  = 7'b1111001,
-    WriteRaw = 7'b1100010,
-    Init     = 7'b0101100
+    ReadRaw  = 7'b1010100,
+    WriteRaw = 7'b1100111,
+    Init     = 7'b0100000,
+    Zeroize  = 7'b0111101
   } cmd_e;
   parameter int OtpErrWidth      = 3;
 
@@ -71,7 +72,8 @@ package otp_ctrl_macro_pkg;
     MacroError           = 3'h1,
     MacroEccCorrError    = 3'h2,
     MacroEccUncorrError  = 3'h3,
-    MacroWriteBlankError = 3'h4
+    MacroWriteBlankError = 3'h4,
+    MacroZeroizeError    = 3'h5
   } err_e;
 
   typedef struct packed {
