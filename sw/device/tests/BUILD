@@ -1891,6 +1891,7 @@ opentitan_test(
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -2029,6 +2030,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
     ),
     # Run also as ROM_EXT stage as test coverage is reduced in silicon owner stage.
@@ -2038,6 +2040,7 @@ opentitan_test(
     ],
     verilator = verilator_params(timeout = "long"),
     deps = [
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -2045,6 +2048,7 @@ opentitan_test(
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -2080,11 +2084,13 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
             # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top:flash_ctrl_c_regs",
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -2092,6 +2098,7 @@ opentitan_test(
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
