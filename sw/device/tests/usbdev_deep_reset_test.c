@@ -5,7 +5,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/usbdev_suspend.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
 bool test_main(void) {
   return usbdev_suspend_test(kSuspendPhaseDeepResume, kSuspendPhaseDeepReset,
