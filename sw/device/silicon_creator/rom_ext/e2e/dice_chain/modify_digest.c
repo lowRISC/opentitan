@@ -4,11 +4,13 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 
 #include "flash_ctrl_regs.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -41,6 +43,10 @@ static status_t modify_digest_test(void) {
 }
 
 bool test_main(void) {
+  // This test intentionally creates an invalid digest triggering recoverable
+  // errors. Ignore the alert in OTTF.
+  ottf_alerts_ignore_alert(kTopEarlgreyAlertIdFlashCtrlRecovErr);
+
   status_t sts = modify_digest_test();
   if (status_err(sts)) {
     LOG_ERROR("modify_digest_test: %r", sts);
