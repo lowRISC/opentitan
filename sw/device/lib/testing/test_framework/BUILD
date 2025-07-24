@@ -193,6 +193,7 @@ cc_library(
     ] + select({
         "//sw/device:is_english_breakfast": [],
         "//conditions:default": [
+            ":ottf_alerts",
             "//hw/top_earlgrey:alert_handler_c_regs",
             "//sw/device/lib/dif:alert_handler",
         ],
