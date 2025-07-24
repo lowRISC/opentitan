@@ -128,7 +128,7 @@ class CommitterStatsReporter:
                 print(f"HTTP Error: {e}\nWaiting 5 seconds and retrying...")
                 time.sleep(5)
                 continue
-            except requests.exceptions.ConnectTimeout:
+            except (requests.exceptions.ConnectTimeout, requests.exceptions.ConnectionError):
                 if response_wait_time is None:
                     response_wait_time = 1
                 else:
