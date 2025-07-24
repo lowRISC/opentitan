@@ -16,17 +16,14 @@ Expectations of Technical Committee members include the following:
 * Proactively seek to identify contributors who should be nominated for committer status.
 
 ## Membership
-The OpenTitan Technical Committee membership is:
-* Andreas Kurth (chair)
-* Cyril Guyot
-* Felix Miller
-* Michael Munday (observer)
-* Rupert Swarbrick
-* Michael Tempelmeier
-* Nir Tasher
-* Arnon Sharlin
-* Tim Trippel
-* Miles Dai
-* Shimeon Greenberg
-* Jade Philipoom
-* Ravi Sahita
+The OpenTitan Technical Committee membership is below.
+Individuals marked with a star are included through partner entitlement.
+Other individuals are directly appointed by the OpenTitan Governing Board.
+
+- Andreas Kurth (chair, lowRISC)*
+- Eran Meisner (Nuvoton)*
+- Ravi Sahita (Rivos)*
+- Tim Trippel (Google)*
+- Shimeon Greenberg (Nuvoton)
+- Rupert Swarbrick (lowRISC)
+- No current appointee (Giesecke & Devrient)*
