@@ -6,6 +6,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
@@ -26,9 +27,32 @@ static dif_flash_ctrl_device_info_t flash_info;
 #define FLASH_PAGES_PER_BANK flash_info.data_pages
 
 static dif_flash_ctrl_state_t flash;
+static dif_alert_handler_t alert_handler;
 
 static uint32_t flash_region_index;
 static uint32_t flash_page_to_test;
+
+volatile bool recov_err_alert_expected = false;
+bool ottf_alert_isr(uint32_t *exc_info) {
+  (void)exc_info;
+
+  // We expect the "recoverable flash_ctrl error" alert to fire when we
+  // write across a good/bad protection region boundary.
+  bool flash_ctrl_recov_err = false;
+  CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+      &alert_handler, kTopEarlgreyAlertIdFlashCtrlRecovErr,
+      &flash_ctrl_recov_err));
+
+  if (flash_ctrl_recov_err) {
+    CHECK(recov_err_alert_expected,
+          "`flash_ctrl_recov_err` alert fired when not expected");
+
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, kTopEarlgreyAlertIdFlashCtrlRecovErr));
+  }
+
+  return flash_ctrl_recov_err;
+}
 
 /*
  * Basic test of page erase / program / read functions. Tests pages from both
@@ -174,6 +198,8 @@ static void test_memory_protection(void) {
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
+  recov_err_alert_expected = false;
+
   // Set up default access for data partitions.
   // If current platform uses scramble, you can't turn it off once you write
   // your test with scrambled form. Add if / else to make sure not to revert
@@ -245,9 +271,12 @@ static void test_memory_protection(void) {
   }
 
   // Perform a partial write.
+  recov_err_alert_expected = true;
   CHECK(status_err(flash_ctrl_testutils_write(
       &flash, region_boundary_start, /*partition_id=*/0, words,
       kDifFlashCtrlPartitionTypeData, ARRAYSIZE(words))));
+  recov_err_alert_expected = false;
+
   // Words in the good region should still match, while words in the bad region
   // should be all-ones, since we erased.
   for (int i = 0; i < ARRAYSIZE(words); ++i) {
@@ -260,11 +289,13 @@ static void test_memory_protection(void) {
   }
 
   // Attempt to erase bad page, which should fail.
+  recov_err_alert_expected = true;
   CHECK(status_err(flash_ctrl_testutils_erase_page(
       &flash, bad_region_start,
       /*partition_id=*/0, kDifFlashCtrlPartitionTypeData)));
 
   // Attempt to erase the good page, which should succeed.
+  recov_err_alert_expected = false;
   CHECK_STATUS_OK(flash_ctrl_testutils_erase_page(
       &flash, ok_region_start,
       /*partition_id=*/0, kDifFlashCtrlPartitionTypeData));
@@ -287,6 +318,10 @@ bool test_main(void) {
     flash_region_index = 0;
     flash_page_to_test = FLASH_PAGES_PER_BANK;
   }
+
+  CHECK_DIF_OK(dif_alert_handler_init(
+      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      &alert_handler));
 
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
