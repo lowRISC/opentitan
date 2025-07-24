@@ -15,12 +15,13 @@
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/lc_ctrl_regs.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
 
 static dif_lc_ctrl_t lc_ctrl;
 static dif_rv_plic_t plic0;
@@ -172,9 +173,13 @@ static void test_info_part(uint32_t partition_number, const uint32_t *test_data,
     compare_and_clear_irq_variables();
     LOG_INFO("partition:%1d write done", partition_number);
   } else {
+    CHECK_STATUS_OK(
+        ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdFlashCtrlRecovErr));
     CHECK_STATUS_NOT_OK(flash_ctrl_testutils_write(
         &flash_state, address, kPartitionId, test_data,
         kDifFlashCtrlPartitionTypeInfo, kInfoSize));
+    CHECK_STATUS_OK(
+        ottf_alerts_expect_alert_finish(kTopEarlgreyAlertIdFlashCtrlRecovErr));
     LOG_INFO("partition:%1d write not allowed", partition_number);
   }
 
@@ -199,9 +204,13 @@ static void test_info_part(uint32_t partition_number, const uint32_t *test_data,
     CHECK_ARRAYS_EQ(readback_data, test_data, kInfoSize);
     LOG_INFO("partition:%1d read done", partition_number);
   } else {
+    CHECK_STATUS_OK(
+        ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdFlashCtrlRecovErr));
     CHECK_STATUS_NOT_OK(flash_ctrl_testutils_read(
         &flash_state, address, kPartitionId, readback_data,
         kDifFlashCtrlPartitionTypeInfo, kInfoSize, 1));
+    CHECK_STATUS_OK(
+        ottf_alerts_expect_alert_finish(kTopEarlgreyAlertIdFlashCtrlRecovErr));
     LOG_INFO("partition:%1d read not allowed", partition_number);
   }
 }
