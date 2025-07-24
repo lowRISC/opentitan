@@ -148,8 +148,10 @@ opentitan_binary(
     ],
     deps = [
         "//hw/top:flash_ctrl_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:status",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
