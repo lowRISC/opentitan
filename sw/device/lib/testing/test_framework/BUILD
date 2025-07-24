@@ -216,7 +216,10 @@ cc_library(
         "//sw/device/lib/runtime:log",
     ] + select({
         "//sw/device:is_english_breakfast": [],
-        "//conditions:default": ["//sw/device/lib/dif:alert_handler"],
+        "//conditions:default": [
+            ":ottf_alerts",
+            "//sw/device/lib/dif:alert_handler",
+        ],
     }),
 )
 
