@@ -29,6 +29,11 @@ class Shadowed(UDPBoolean):
     valid_components = {Reg}
 
 
+class AsyncClk(UDPBoolean):
+    name = "async_clk"
+    valid_components = {Reg}
+
+
 OPENTITAN_UDPS = Path(__file__).parent / "udp.rdl"
 
 
@@ -38,5 +43,6 @@ def register_udps(compiler: RDLCompiler) -> Path:
     """
     compiler.register_udp(Hwre)
     compiler.register_udp(Shadowed)
+    compiler.register_udp(AsyncClk)
     compiler.compile_file(OPENTITAN_UDPS)
     return OPENTITAN_UDPS
