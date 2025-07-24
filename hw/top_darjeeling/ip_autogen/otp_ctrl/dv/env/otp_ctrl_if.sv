@@ -56,7 +56,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   otp_ast_rsp_t           otp_ast_pwr_seq_h_i;
   ast_pkg::ast_obs_ctrl_t obs_ctrl_i;
 
-  // Unused in prim_generic_otp memory.
+  // Unused in otp_macro memory.
   logic [OtpTestCtrlWidth-1:0]   otp_vendor_test_ctrl_i;
   logic [OtpTestStatusWidth-1:0] otp_vendor_test_status_o;
   logic [OtpTestVectWidth-1:0]   cio_test_o;
@@ -293,7 +293,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     end
   endtask
 
-  // Force prim_generic_otp input cmd_i to a invalid value.
+  // Force otp_macro input cmd_i to a invalid value.
   task automatic force_invalid_otp_cmd_i();
     @(posedge clk_i);
     force `PRIM_GENERIC_OTP_CMD_I_PATH = otp_ctrl_macro_pkg::cmd_e'(2'b10);
