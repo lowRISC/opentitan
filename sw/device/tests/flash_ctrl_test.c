@@ -11,6 +11,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -245,9 +246,14 @@ static void test_memory_protection(void) {
   }
 
   // Perform a partial write.
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdFlashCtrlRecovErr));
   CHECK(status_err(flash_ctrl_testutils_write(
       &flash, region_boundary_start, /*partition_id=*/0, words,
       kDifFlashCtrlPartitionTypeData, ARRAYSIZE(words))));
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_finish(kTopEarlgreyAlertIdFlashCtrlRecovErr));
+
   // Words in the good region should still match, while words in the bad region
   // should be all-ones, since we erased.
   for (int i = 0; i < ARRAYSIZE(words); ++i) {
@@ -260,9 +266,13 @@ static void test_memory_protection(void) {
   }
 
   // Attempt to erase bad page, which should fail.
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdFlashCtrlRecovErr));
   CHECK(status_err(flash_ctrl_testutils_erase_page(
       &flash, bad_region_start,
       /*partition_id=*/0, kDifFlashCtrlPartitionTypeData)));
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_finish(kTopEarlgreyAlertIdFlashCtrlRecovErr));
 
   // Attempt to erase the good page, which should succeed.
   CHECK_STATUS_OK(flash_ctrl_testutils_erase_page(
