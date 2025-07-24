@@ -86,3 +86,12 @@ property shadowed {
   component = reg;
   default = false;
 };
+
+/* Indicates the register must cross to a different clock domain before use.
+ * The value shown here should correspond to one of the module's clocks.
+ */
+property async_clk {
+  type = boolean;
+  component = reg;
+  default = false;
+};
