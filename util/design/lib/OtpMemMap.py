@@ -202,9 +202,21 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
             "Partition {} with key material for the key manager cannot be "
             "associated with the creator AND the owner.".format(part["name"]))
 
-    # if size not previously defined, set it
+    # set size if not previously defined, otherwise check it against the
+    # calculated size
+    calc_size = _calc_size(part, size)
     if "size" not in part:
-        part["size"] = _calc_size(part, size)
+        part["size"] = calc_size
+    elif int(part["size"]) < calc_size:
+        raise RuntimeError(
+            f"{part['name']} declared partition size {part['size']}B can't "
+            "fit all items, needs at least {calc_size}B")
+    elif int(part["size"]) > calc_size:
+        log.warning(
+            f"{part['name']} declared partition size {part['size']}B exceeds "
+            f"minimum required size {calc_size}B")
+        log.warning(
+            "Suggestion: avoid declaring the size since it will be computed")
 
     # Make sure this has integer type.
     part["size"] = check_int(part["size"])
