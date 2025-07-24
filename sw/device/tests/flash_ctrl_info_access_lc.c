@@ -12,6 +12,7 @@
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -80,8 +81,7 @@ bool ottf_handle_irq(uint32_t *exc_info,
   }
 
   dif_flash_ctrl_irq_t irq =
-    (dif_flash_ctrl_irq_t)(plic_id -
-                           flash_ctx.plic_flash_ctrl_start_irq_id);
+      (dif_flash_ctrl_irq_t)(plic_id - flash_ctx.plic_flash_ctrl_start_irq_id);
   fired_irqs[irq] = true;
 
   // Either acknowledge or mute IRQ.
@@ -133,7 +133,8 @@ static void flash_ctrl_init_with_event_irqs(mmio_region_t base_addr,
  */
 static void compare_and_clear_irq_variables(void) {
   for (int i = 0; i < kNumIRQs; ++i) {
-    CHECK(expected_irqs[i] == fired_irqs[i], "IRQ %d was %sexpected", i, expected_irqs[i] ? "" : "not ");
+    CHECK(expected_irqs[i] == fired_irqs[i], "IRQ %d was %sexpected", i,
+          expected_irqs[i] ? "" : "not ");
   }
   clear_irq_variables();
 }
@@ -179,9 +180,13 @@ static void test_info_part(uint32_t partition_number, const uint32_t *test_data,
     compare_and_clear_irq_variables();
     LOG_INFO("partition:%1d write done", partition_number);
   } else {
+    CHECK_STATUS_OK(
+        ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdFlashCtrlRecovErr));
     CHECK_STATUS_NOT_OK(flash_ctrl_testutils_write(
         &flash_state, address, kPartitionId, test_data,
         kDifFlashCtrlPartitionTypeInfo, kInfoSize));
+    CHECK_STATUS_OK(
+        ottf_alerts_expect_alert_finish(kTopEarlgreyAlertIdFlashCtrlRecovErr));
     LOG_INFO("partition:%1d write not allowed", partition_number);
   }
 
@@ -206,9 +211,13 @@ static void test_info_part(uint32_t partition_number, const uint32_t *test_data,
     CHECK_ARRAYS_EQ(readback_data, test_data, kInfoSize);
     LOG_INFO("partition:%1d read done", partition_number);
   } else {
+    CHECK_STATUS_OK(
+        ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdFlashCtrlRecovErr));
     CHECK_STATUS_NOT_OK(flash_ctrl_testutils_read(
         &flash_state, address, kPartitionId, readback_data,
         kDifFlashCtrlPartitionTypeInfo, kInfoSize, 1));
+    CHECK_STATUS_OK(
+        ottf_alerts_expect_alert_finish(kTopEarlgreyAlertIdFlashCtrlRecovErr));
     LOG_INFO("partition:%1d read not allowed", partition_number);
   }
 }
