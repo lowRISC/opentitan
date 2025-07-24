@@ -194,6 +194,9 @@ class Register2Systemrdl:
         if self.inner.desc:
             self.importer.assign_property(reg_type, "desc", sanitize_str(self.inner.desc))
 
+        if self.inner.async_clk:
+            self.importer.assign_property(reg_type, "async_clk", True)
+
         reg = self.importer.instantiate_reg(
             reg_type,
             self.name,
