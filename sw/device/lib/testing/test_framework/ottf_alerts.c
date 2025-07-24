@@ -21,6 +21,11 @@
 #include "hw/top/dt/flash_ctrl.h"
 #endif  // OPENTITAN_HAS_FLASH_CTRL
 
+// Maximum number of alerts that can be expected at once.
+#define MAX_ALERTS_EXPECTED 16
+// Number of words required to store all alerts one per bit.
+#define ALERT_COUNT_WORDS (ALERT_HANDLER_PARAM_N_ALERTS + 31) / 32
+
 static dif_alert_handler_t ottf_alert_handler;
 
 status_t ottf_alerts_enable_all(void) {
@@ -105,19 +110,123 @@ bool ottf_alerts_should_handle_irq(dt_instance_id_t devid,
                             kDtAlertHandler, kDtAlertHandlerIrqClassd);
 }
 
-void ottf_alert_isr(uint32_t *exc_info) {
-  dif_alert_handler_t alert_handler;
-  CHECK_DIF_OK(dif_alert_handler_init_from_dt(kDtAlertHandler, &alert_handler));
+static_assert(ALERT_HANDLER_PARAM_N_ALERTS <= UINT8_MAX,
+              "alert IDs stored as bytes");
 
-  // Log all asserted alerts.
-  for (dif_alert_handler_alert_t alert = 0; alert < kDtAlertCount; alert++) {
+// List of expected alerts and the number of elements in the list.
+static volatile uint8_t alert_expected[MAX_ALERTS_EXPECTED] = {0};
+static volatile size_t alert_expected_cnt = 0;
+
+// Bitmap of whether each alert has been caught while expected.
+static volatile uint32_t alert_caught[ALERT_COUNT_WORDS] = {0};
+
+void ottf_alert_isr(uint32_t *exc_info) {
+  OT_DISCARD(exc_info);
+
+  bool expected_caught = false;
+
+  // Iterate over expected alerts and check if they are currently asserted.
+  for (int i = 0; i < alert_expected_cnt; i++) {
+    dif_alert_handler_alert_t alert =
+        (dif_alert_handler_alert_t)alert_expected[i];
+
     bool is_cause = false;
-    CHECK_DIF_OK(
-        dif_alert_handler_alert_is_cause(&alert_handler, alert, &is_cause));
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(&ottf_alert_handler, alert,
+                                                  &is_cause));
+
     if (is_cause) {
-      LOG_ERROR("INFO: Alert %d is asserted", alert);
+      CHECK_DIF_OK(
+          dif_alert_handler_alert_acknowledge(&ottf_alert_handler, alert));
+      alert_caught[alert / 32] |= (1 << (alert % 32));
+      expected_caught = true;
     }
   }
 
-  abort();
+  if (!expected_caught) {
+    // Log all asserted alerts.
+    // We can pay the cost of iterating all alerts in the failure case.
+    for (dif_alert_handler_alert_t alert = 0;
+         alert < ALERT_HANDLER_PARAM_N_ALERTS; alert++) {
+      bool is_cause = false;
+      CHECK_DIF_OK(dif_alert_handler_alert_is_cause(&ottf_alert_handler, alert,
+                                                    &is_cause));
+
+      // Don't print expected alerts that were triggered at the same time as
+      // unexpected alerts (unlikely but possible).
+      bool cause_expected = false;
+      for (int i = 0; i < alert_expected_cnt; i++) {
+        if (alert_expected[i] == alert) {
+          cause_expected = true;
+          break;
+        }
+      }
+
+      if (is_cause && !cause_expected) {
+        LOG_ERROR("ERROR: Alert %d is asserted but not expected", alert);
+      }
+    }
+
+    test_status_set(kTestStatusFailed);
+    abort();
+  }
+
+  // Clear the alert escalation counter.
+  CHECK_DIF_OK(dif_alert_handler_escalation_clear(&ottf_alert_handler,
+                                                  kDifAlertHandlerClassD));
+  // Complete the IRQ at the alert handler.
+  CHECK_DIF_OK(dif_alert_handler_irq_acknowledge(&ottf_alert_handler,
+                                                 kDifAlertHandlerIrqClassd));
+}
+
+status_t ottf_alerts_expect_alert_start(dif_alert_handler_alert_t alert) {
+  if (alert >= kDtAlertCount) {
+    return INVALID_ARGUMENT();
+  }
+
+  // Check for a full list.
+  if (alert_expected_cnt >= MAX_ALERTS_EXPECTED) {
+    return RESOURCE_EXHAUSTED();
+  }
+
+  alert_expected[alert_expected_cnt] = (uint8_t)alert;
+  alert_expected_cnt++;
+
+  return OK_STATUS();
+}
+
+status_t ottf_alerts_expect_alert_finish(dif_alert_handler_alert_t alert) {
+  if (alert >= kDtAlertCount) {
+    return INVALID_ARGUMENT();
+  }
+  // Find the index of this alert in the `alert_expected` list.
+  int expected_idx = 0;
+  for (; expected_idx < alert_expected_cnt; expected_idx++) {
+    if (alert_expected[expected_idx] == alert) {
+      break;
+    }
+  }
+
+  if (expected_idx >= alert_expected_cnt) {
+    // This alert was not expected with `ottf_alerts_expect_alert_start`.
+    return FAILED_PRECONDITION();
+  }
+
+  // Shift the list down one space to clear this expectation.
+  for (int i = expected_idx; i + 1 < alert_expected_cnt; i++) {
+    alert_expected[i] = alert_expected[i + 1];
+  }
+  alert_expected_cnt--;
+
+  uint32_t alert_word_idx = alert / 32;
+  uint32_t alert_bit_idx = alert % 32;
+
+  if (((alert_caught[alert_word_idx] >> alert_bit_idx) & 1) == 0) {
+    // Alert was not caught when expected.
+    return NOT_FOUND();
+  }
+
+  // Forget that the alert was caught.
+  alert_caught[alert_word_idx] &= ~(1 << alert_bit_idx);
+
+  return OK_STATUS();
 }

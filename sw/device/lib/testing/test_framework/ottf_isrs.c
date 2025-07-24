@@ -238,6 +238,9 @@ static void generic_internal_irq_handler(uint32_t *exc_info) {
 OT_WEAK
 bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
                      dif_rv_plic_irq_id_t plic_id) {
+  OT_DISCARD(exc_info);
+  OT_DISCARD(devid);
+  OT_DISCARD(plic_id);
   return false;
 }
 
