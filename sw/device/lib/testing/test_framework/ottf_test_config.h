@@ -133,8 +133,7 @@ typedef struct ottf_test_config {
    * escalate and abort the test.
    *
    * The alert handler configuration is not locked and can be modified further
-   * by the test. The ISR for class D can also be overridden by defining the
-   * symbol `ottf_alert_isr` in the test.
+   * by the test.
    */
   bool catch_alerts;
 } ottf_test_config_t;
