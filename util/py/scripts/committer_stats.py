@@ -17,6 +17,7 @@
 #   You can use `--exclude-committers` to filter existing and historical committers, to
 #   assist in finding potential candidates for future committers.
 
+import datetime as dt
 import git
 import json
 import os
@@ -60,6 +61,14 @@ class CommitterStatsReporter:
 
         def __str__(self):
             return self.value
+
+    @staticmethod
+    def positive_int(value):
+        """Argparse type for a strictly positive integer."""
+        ivalue = int(value)
+        if ivalue <= 0:
+            raise ValueError(f"{value} is not a positive integer")
+        return ivalue
 
     # A list of users to ignore from calculated statistics.
     IgnoredUsers = [
@@ -170,6 +179,7 @@ class CommitterStatsReporter:
     def get_commit_authors(
         self,
         page_limit: Optional[int] = None,
+        since_days: Optional[int] = None,
     ) -> Counter[str]:
         """Get information about the authors of commits in a Github repository.
 
@@ -177,6 +187,8 @@ class CommitterStatsReporter:
             page_limit (Optional[int], optional): A limit for the number of (100-item)
             pages to query. Will then return the first N pages, which is useful for
             testing. Defaults to None, meaning all commits are searched.
+            since_days (Optional[int], optional): If set, only commits from the last
+            N days are counted. Defaults to None, meaning all commits are counted.
 
         Returns:
             Counter[str]: The count of commits per committer.
@@ -199,6 +211,7 @@ class CommitterStatsReporter:
                           login
                         }
                       }
+                      committedDate
                     }
                     pageInfo {
                       hasNextPage
@@ -211,6 +224,8 @@ class CommitterStatsReporter:
           }
         }
         """
+
+        cutoff = dt.datetime.now() - dt.timedelta(days=since_days) if since_days is not None else None
 
         pages_traversed = 0
         while True:
@@ -225,19 +240,24 @@ class CommitterStatsReporter:
                 for node in history["nodes"]:
                     author_user = node["author"]["user"]
                     author = author_user["login"] if author_user else "Unknown Author"
+                    if cutoff is not None:
+                        committed_date = dt.datetime.strptime(
+                            node["committedDate"], "%Y-%m-%dT%H:%M:%SZ"
+                        )
+                        if committed_date <= cutoff:
+                            continue
                     if author:
                         authors[author] += 1
 
                 if self.log_progress:
-                    print(
-                        f"Searched {sum(authors.values())} commits for author information..."
-                    )
+                    print(f"Traversed {pages_traversed} pages of commits...")
 
                 if not history["pageInfo"]["hasNextPage"] or (
                     page_limit and pages_traversed >= page_limit
                 ):
                     break
                 cursor = history["pageInfo"]["endCursor"]
+
             except KeyError as e:
                 print(
                     f"Error accessing data: {e}. Check the structure of the GraphQL response."
@@ -260,6 +280,7 @@ class CommitterStatsReporter:
     def get_pr_and_review_authors(
         self,
         page_limit: Optional[int] = None,
+        since_days: Optional[int] = None,
     ) -> Tuple[Counter[str], Counter[str]]:
         """Get information about the authors of PRs and reviews on those PRs in a
         Github repository.
@@ -268,6 +289,9 @@ class CommitterStatsReporter:
             page_limit (Optional[int], optional): A limit for the number of (100-item)
             pages to query. Will then return the first N pages, which is useful for
             testing. Defaults to None, meaning all commits are searched.
+            since_days (Optional[int], optional): If set, only PRs merged and reviews
+            created in the last N days are counted. Defaults to None, meaning all
+            PRs and reviews are counted.
 
         Returns:
             Tuple[Counter[str], Counter[str]]: The count of PRs per contributor and
@@ -285,6 +309,7 @@ class CommitterStatsReporter:
               nodes {
                 baseRefName
                 merged
+                mergedAt
                 author {
                   login
                 }
@@ -293,6 +318,7 @@ class CommitterStatsReporter:
                     author {
                       login
                     }
+                    createdAt
                   }
                 }
               }
@@ -304,6 +330,8 @@ class CommitterStatsReporter:
           }
         }
         """
+
+        cutoff = dt.datetime.now() - dt.timedelta(days=since_days) if since_days is not None else None
 
         pages_traversed = 0
         while True:
@@ -320,6 +348,12 @@ class CommitterStatsReporter:
 
                     author = pr["author"]["login"] if pr["author"] else "Unknown Author"
                     if pr["merged"] and author:
+                        if cutoff is not None:
+                            merged_at = dt.datetime.strptime(
+                                pr["mergedAt"], "%Y-%m-%dT%H:%M:%SZ"
+                            )
+                            if merged_at <= cutoff:
+                                continue
                         pr_authors[author] += 1
 
                     reviews = pr["reviews"]
@@ -330,6 +364,12 @@ class CommitterStatsReporter:
                             if review["author"]
                             else "Unknown Author"
                         )
+                        if cutoff is not None:
+                            created_at = dt.datetime.strptime(
+                                review["createdAt"], "%Y-%m-%dT%H:%M:%SZ"
+                            )
+                            if created_at <= cutoff:
+                                continue
                         if (
                             review_author != author
                             and review_author not in unique_authors
@@ -338,11 +378,7 @@ class CommitterStatsReporter:
                             review_authors[review_author] += 1
 
                 if self.log_progress:
-                    print(
-                        "Searched {} PRs ({} reviews) for author information...".format(
-                            sum(pr_authors.values()), sum(review_authors.values())
-                        )
-                    )
+                    print(f"Traversed {pages_traversed} pages of PRs...")
 
                 if not prs["pageInfo"]["hasNextPage"] or (
                     page_limit and pages_traversed >= page_limit
@@ -448,6 +484,7 @@ class CommitterStatsReporter:
     def calculate_stats(
         self,
         page_limit: Optional[int] = None,
+        since_days: Optional[int] = None,
     ) -> int:
         """Calculate committer, contributor and reviewer statistics for the OpenTitan
         repository. Will output the results to stdout.
@@ -456,15 +493,18 @@ class CommitterStatsReporter:
             page_limit (Optional[int], optional): The number of pages to limit each
             request to. Intended to be used for testing purposes only. Defaults to
             None, meaning no page limits (fetch all the data).
+            since_days (Optional[int], optional): If set, only contributions from the
+            last N days are counted. Defaults to None, meaning all contributions are
+            counted.
 
         Returns:
             int: Return code (0 = Ok).
         """
-        commit_data = self.get_commit_authors(page_limit=page_limit)
+        commit_data = self.get_commit_authors(page_limit=page_limit, since_days=since_days)
         if commit_data is None:
             print("Error: No commit author data found in response to query.")
             return -1
-        pr_data, review_data = self.get_pr_and_review_authors(page_limit=page_limit)
+        pr_data, review_data = self.get_pr_and_review_authors(page_limit=page_limit, since_days=since_days)
         if pr_data is None:
             print("Error: No PR author data found in response to query.")
             return -1
@@ -659,6 +699,7 @@ def main(
     format: CommitterStatsReporter.OutputFormat,
     log_progress: bool,
     page_limit: Optional[int] = None,
+    since_days: Optional[int] = None,
 ) -> int:
     """The main body of the committer stats script, initialising a reporter
     for the OpenTitan repo with authentication, and then calculating and
@@ -675,6 +716,9 @@ def main(
         page_limit (Optional[int], optional): The number of pages to limit each
         request to. Intended to be used for testing purposes only. Defaults to
         None, meaning no page limits (fetch all the data).
+        since_days (Optional[int], optional): If set, only contributions from the
+        last N days are counted. Defaults to None, meaning all contributions are
+        counted.
 
     Returns:
         int: Return code (0 = ok).
@@ -709,7 +753,7 @@ def main(
     else:
         only_names = []
 
-    res = stats.calculate_stats(page_limit=page_limit)
+    res = stats.calculate_stats(page_limit=page_limit, since_days=since_days)
     if res != 0:
         return res
 
@@ -760,6 +804,16 @@ if __name__ == "__main__":
         choices=list(CommitterStatsReporter.OutputFormat),
         help="The output contributor stats report format.",
     )
+    parser.add_argument(
+        "--since-days",
+        type=CommitterStatsReporter.positive_int,
+        default=None,
+        metavar="DAYS",
+        help=(
+            "If set, only contributions since this many days ago are taken into account. "
+            "If not set, all contributions are counted."
+        ),
+    )
 
     args = parser.parse_args()
 
@@ -778,5 +832,6 @@ if __name__ == "__main__":
             args.format,
             args.log_progress,
             args.pages,
+            args.since_days,
         )
     )
