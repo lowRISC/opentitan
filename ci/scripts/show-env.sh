@@ -42,3 +42,7 @@ echo
 
 set -x
 printenv
+
+./bazelisk.sh info
+mount
+ps -aux
