@@ -36,7 +36,7 @@ All comportable IP must adhere to a few requirements, briefly discussed here.
 ### License and copyright
 
 All files should include a comment with a copyright message.
-This is normally "lowRISC contributors".
+This is normally "lowRISC contributors (OpenTitan project)".
 The style is to not include a year in the notice.
 Files adapted from other sources should retain any copyright messages and include details of the upstream location.
 
