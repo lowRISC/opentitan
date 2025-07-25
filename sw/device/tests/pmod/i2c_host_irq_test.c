@@ -326,7 +326,9 @@ bool test_main(void) {
   CHECK_STATUS_OK(test_init());
 
   test_result = OK_STATUS();
-  CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, kDifI2cSpeedStandard));
+  CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, kDifI2cSpeedStandard,
+                                          /*sda_rise_nanos=*/400,
+                                          /*sda_fall_nanos=*/110));
   EXECUTE_TEST(test_result, nak_irq);
   EXECUTE_TEST(test_result, nak_irq_disabled);
   EXECUTE_TEST(test_result, cmd_complete_irq);
