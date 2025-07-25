@@ -257,6 +257,10 @@ impl<'a> TransportCommandHandler<'a> {
                         instance.set_baudrate(*rate)?;
                         Ok(Response::Uart(UartResponse::SetBaudrate))
                     }
+                    UartRequest::SetBreak(enable) => {
+                        instance.set_break(*enable)?;
+                        Ok(Response::Uart(UartResponse::SetBreak))
+                    }
                     UartRequest::SetParity(parity) => {
                         instance.set_parity(*parity)?;
                         Ok(Response::Uart(UartResponse::SetParity))
