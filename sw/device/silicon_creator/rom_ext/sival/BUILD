@@ -45,13 +45,13 @@ ROM_EXT_FEATURES = [
 #
 # bazel build //hw/bitstream/universal:splice \
 #   --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_hyper310_rom_ext \
-#   --//hw/bitstream/universal:otp=//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_prod_manuf_personalized
+#   --//hw/bitstream/universal:otp=//hw/top_earlgrey/data/otp/sival_skus:otp_img_prod_manuf_personalized
 [
     opentitan_binary(
         name = "rom_ext_fake_slot_{}".format(slot),
         ecdsa_key = select({
             "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
-            "//conditions:default": {"//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-test-0"},
+            "//conditions:default": {"//hw/top_earlgrey/data/otp/sival_skus/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-test-0"},
         }),
         exec_env = [
             "//hw/top_earlgrey:silicon_creator",
@@ -110,7 +110,7 @@ offline_presigning_artifacts(
         ":rom_ext_prod_slot_virtual",
     ],
     ecdsa_key = {
-        "//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-prod-0",
+        "//hw/top_earlgrey/data/otp/sival_skus/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-prod-0",
     },
     manifest = ":manifest_sival",
     tags = ["manual"],

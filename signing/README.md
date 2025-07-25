@@ -13,7 +13,7 @@ NitroKey.  The profile is defined by the keyset you want to use for signing.
 The configuration should map the profile name to the specific token holding
 the private key material for the named keyset.
 
-For example, a configuration for `//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset`
+For example, a configuration for `//hw/top_earlgrey/data/otp/sival_skus/keys:keyset`
 might look like the following:
 
 >Locate this file in $HOME/.config/hsmtool/profiles.json and set the file
@@ -46,12 +46,12 @@ bazel build --//signing:token=//signing/tokens:nitrokey //label-of-target
 
 To sign with an alternate key, you can override the key label via the
 keyset in question.  For the `sival` sku, the keyset is
-`//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset`:
+`//hw/top_earlgrey/data/otp/sival_skus/keys:keyset`:
 
 ```console
 bazel build \
     --//signing:token=//signing/tokens:nitrokey \
-    --//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset=sv00-earlgrey-a1-root-ecdsa-test-0 \
+    --//hw/top_earlgrey/data/otp/sival_skus/keys:keyset=sv00-earlgrey-a1-root-ecdsa-test-0 \
     //label-of-target
 ```
 

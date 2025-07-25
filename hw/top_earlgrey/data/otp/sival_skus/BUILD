@@ -31,7 +31,7 @@ load(
 package(default_visibility = ["//visibility:public"])
 
 OTP_SIGVERIFY_REAL_KEYS = [
-    "//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:ecdsa_root_keys",
+    "//hw/top_earlgrey/data/otp/sival_skus/keys:ecdsa_root_keys",
 ]
 
 otp_json(
@@ -247,16 +247,16 @@ LC_MISSION_STATES = get_lc_items(
 [
     otp_image(
         name = "otp_img_{}_manuf_personalized".format(lc_state),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = [
-            "//hw/ip/otp_ctrl/data:otp_json_fixed_secret0",
+            "//hw/top_earlgrey/data/otp:otp_json_fixed_secret0",
             ":alert_digest_cfg",
             ":otp_json_creator_sw_cfg",
             ":otp_json_owner_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg0",
-            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg1",
-            "//hw/ip/otp_ctrl/data:otp_json_secret1",
-            "//hw/ip/otp_ctrl/data:otp_json_fixed_secret2",
+            "//hw/top_earlgrey/data/otp:otp_json_hw_cfg0",
+            "//hw/top_earlgrey/data/otp:otp_json_hw_cfg1",
+            "//hw/top_earlgrey/data/otp:otp_json_secret1",
+            "//hw/top_earlgrey/data/otp:otp_json_fixed_secret2",
         ] + OTP_SIGVERIFY_REAL_KEYS,
     )
     for lc_state, _ in LC_MISSION_STATES
