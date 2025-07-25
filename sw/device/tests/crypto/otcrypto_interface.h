@@ -35,30 +35,30 @@ typedef struct otcrypto_interface_t {
                                           otcrypto_word32_buf_t key_share1);
 
   // AES
-  otcrypto_status_t (*aes)(const otcrypto_blinded_key_t *,
-                           otcrypto_word32_buf_t, otcrypto_aes_mode_t,
-                           otcrypto_aes_operation_t, otcrypto_const_byte_buf_t,
-                           otcrypto_aes_padding_t, otcrypto_byte_buf_t);
+  otcrypto_status_t (*aes)(otcrypto_blinded_key_t *, otcrypto_word32_buf_t,
+                           otcrypto_aes_mode_t, otcrypto_aes_operation_t,
+                           otcrypto_const_byte_buf_t, otcrypto_aes_padding_t,
+                           otcrypto_byte_buf_t);
   otcrypto_status_t (*aes_padded_plaintext_length)(size_t,
                                                    otcrypto_aes_padding_t,
                                                    size_t *);
 
   // AES-GCM
   otcrypto_status_t (*aes_gcm_encrypt)(
-      const otcrypto_blinded_key_t *, otcrypto_const_byte_buf_t,
+      otcrypto_blinded_key_t *, otcrypto_const_byte_buf_t,
       otcrypto_const_word32_buf_t, otcrypto_const_byte_buf_t,
       otcrypto_aes_gcm_tag_len_t, otcrypto_byte_buf_t, otcrypto_word32_buf_t);
-  otcrypto_status_t (*aes_gcm_decrypt)(const otcrypto_blinded_key_t *,
+  otcrypto_status_t (*aes_gcm_decrypt)(otcrypto_blinded_key_t *,
                                        otcrypto_const_byte_buf_t,
                                        otcrypto_const_word32_buf_t,
                                        otcrypto_const_byte_buf_t,
                                        otcrypto_aes_gcm_tag_len_t,
                                        otcrypto_const_word32_buf_t,
                                        otcrypto_byte_buf_t, hardened_bool_t *);
-  otcrypto_status_t (*aes_gcm_encrypt_init)(const otcrypto_blinded_key_t *,
+  otcrypto_status_t (*aes_gcm_encrypt_init)(otcrypto_blinded_key_t *,
                                             otcrypto_const_word32_buf_t,
                                             otcrypto_aes_gcm_context_t *);
-  otcrypto_status_t (*aes_gcm_decrypt_init)(const otcrypto_blinded_key_t *,
+  otcrypto_status_t (*aes_gcm_decrypt_init)(otcrypto_blinded_key_t *,
                                             otcrypto_const_word32_buf_t,
                                             otcrypto_aes_gcm_context_t *);
   otcrypto_status_t (*aes_gcm_update_aad)(otcrypto_aes_gcm_context_t *,
@@ -118,8 +118,7 @@ typedef struct otcrypto_interface_t {
                                     otcrypto_blinded_key_t *);
 
   // KMAC
-  otcrypto_status_t (*kmac)(const otcrypto_blinded_key_t *,
-                            otcrypto_const_byte_buf_t,
+  otcrypto_status_t (*kmac)(otcrypto_blinded_key_t *, otcrypto_const_byte_buf_t,
                             otcrypto_const_byte_buf_t, size_t,
                             otcrypto_word32_buf_t);
 
