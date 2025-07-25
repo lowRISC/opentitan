@@ -228,7 +228,9 @@ bool test_main(void) {
     CHECK_STATUS_OK(i2c_configure(&i2c, &pinmux, i2c_instance, platform));
 
     for (size_t i = 0; i < ARRAYSIZE(kSetup); ++i) {
-      CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, kSetup[i].speed));
+      CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, kSetup[i].speed,
+                                              /*sda_rise_nanos=*/400,
+                                              /*sda_fall_nanos=*/110));
       EXECUTE_TEST(test_result, read_device_id, &i2c);
       EXECUTE_TEST(test_result, write_read_byte, &i2c);
       EXECUTE_TEST(test_result, write_read_page, &i2c);
