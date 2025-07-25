@@ -91,7 +91,8 @@ static status_t i2c_configure_instance(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
 
   TRY(i2c_testutils_select_pinmux(pinmux, i2c_instance,
                                   I2cPinmuxPlatformIdHyper310));
-  TRY(i2c_testutils_set_speed(i2c, kDifI2cSpeedStandard));
+  TRY(i2c_testutils_set_speed(i2c, kDifI2cSpeedStandard, /*sda_rise_nanos=*/400,
+                              /*sda_fall_nanos=*/110));
   TRY(dif_i2c_host_set_enabled(i2c, kDifToggleEnabled));
   return OK_STATUS();
 }

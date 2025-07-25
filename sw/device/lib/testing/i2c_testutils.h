@@ -226,13 +226,21 @@ status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,
 
 /**
  * Set the i2c timing parameters based on the desired speed mode.
+ * Also see
+ * https://opentitan.org/book/hw/ip/i2c/doc/programmers_guide.html#initialization
  *
  * @param i2c An I2C DIF handle.
  * @param speed The speed mode.
+ * @param sda_rise_nanos The expected time it takes for the I2C bus signal to
+ * rise. This depends on hardware interconnect properties.
+ * @param sda_fall_nanos The expected time it takes for the I2C bus signal to
+ * fall. This depends on hardware interconnect properties.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t i2c_testutils_set_speed(const dif_i2c_t *i2c, dif_i2c_speed_t speed);
+status_t i2c_testutils_set_speed(const dif_i2c_t *i2c, dif_i2c_speed_t speed,
+                                 uint32_t sda_rise_nanos,
+                                 uint32_t sda_fall_nanos);
 
 /**
  * Busy spin until the i2c host get idle.

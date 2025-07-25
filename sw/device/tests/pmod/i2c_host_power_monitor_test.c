@@ -171,7 +171,8 @@ bool test_main(void) {
 
   test_result = OK_STATUS();
   for (size_t i = 0; i < ARRAYSIZE(speeds); ++i) {
-    CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, speeds[i]));
+    CHECK_STATUS_OK(i2c_testutils_set_speed(
+        &i2c, speeds[i], /*sda_rise_nanos=*/400, /*sda_fall_nanos=*/110));
     EXECUTE_TEST(test_result, read_manufacture_id);
     EXECUTE_TEST(test_result, read_product_id);
     EXECUTE_TEST(test_result, read_write_1byte);
