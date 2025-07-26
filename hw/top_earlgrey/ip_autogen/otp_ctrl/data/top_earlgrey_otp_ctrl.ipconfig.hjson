@@ -65,7 +65,6 @@
         {
           name: VENDOR_TEST
           variant: Unbuffered
-          size: 64
           secret: false
           sw_digest: true
           hw_digest: false
@@ -109,6 +108,7 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
+          size: 64
           offset: 0
         }
         {
