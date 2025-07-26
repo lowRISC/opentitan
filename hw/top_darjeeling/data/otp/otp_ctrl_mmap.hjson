@@ -63,15 +63,15 @@
         ]
     }
 
-    // The enumeration order below defines the address map of the OTP controller,
-    // if the offsets are not defined explicitly via the "offset" key.
+
+    // The enumeration order below defines OTP address map,
+    // unless the offsets are assigned explicitly via the "offset" key.
     // Note that the digest items are added automatically to the address map.
     partitions: [
         {
             name:       "VENDOR_TEST",
             variant:    "Unbuffered",
             absorb:     false,
-            size:       "64", // in bytes
             secret:     false,
             sw_digest:  true,
             hw_digest:  false,
@@ -98,7 +98,6 @@
             name:       "CREATOR_SW_CFG",
             variant:    "Unbuffered",
             absorb:     false,
-            size:       "320", // in bytes
             secret:     false,
             sw_digest:  true,
             hw_digest:  false,
@@ -254,7 +253,6 @@
             name:       "OWNER_SW_CFG",
             variant:    "Unbuffered",
             absorb:     false,
-            size:       "632", // in bytes
             secret:     false,
             sw_digest:  true,
             hw_digest:  false,
@@ -798,7 +796,7 @@
                 {
                     name: "EXT_NVM_ANTIREPLAY_FRESHNESS_CNT",
                     size: "1024"
-                    desc: ''' Fully SW managed patition
+                    desc: ''' Fully SW managed partition
                     1 bit (double bit allocated for redundancy - i.e. 2 physical bits for every logical bit) per day
                     assuming 10 year product lifecycle, allocating 8192 bits of freshness protection.
                     Implemented as thermometer encoding. Redundant bit programming & logical OR-ing managed by
