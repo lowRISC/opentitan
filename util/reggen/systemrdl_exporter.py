@@ -148,7 +148,7 @@ class Window2Systemrdl:
         self.importer.assign_property(rdl_mem_t, "sw", swaccess["sw"])
 
         return self.importer.instantiate_mem(
-            rdl_mem_t, self.inner.name, self.inner.offset, [self.inner.items]
+            rdl_mem_t, self.inner.name.upper(), self.inner.offset, [self.inner.items]
         )
 
 
@@ -173,7 +173,7 @@ class Register2Systemrdl:
             # although it only makes sense when multiregisters are compacted (collapsed)
             # to avoid name colision.
             self.strip_suffix = not self._has_name_colision(reg)
-            self.name = re.sub("_\d+$", "", self.inner.name)
+            self.name = re.sub(r"_\d+$", "", self.inner.name)
 
     def export(self) -> systemrdl.component.Reg:
         reg_type = self.importer.create_reg_definition(self.inner.name)
@@ -199,7 +199,7 @@ class Register2Systemrdl:
 
         reg = self.importer.instantiate_reg(
             reg_type,
-            self.name,
+            self.name.upper(),
             self.inner.offset,
             [self.count] if self.count else None,
             self.stride if self.stride else None,
@@ -220,7 +220,7 @@ class RegBlock2Systemrdl:
         if not addrmap:
             name = self.inner.name or "Block"
             rdl_addrmap_t = self.importer.create_addrmap_definition(name)
-            addrmap = self.importer.instantiate_addrmap(rdl_addrmap_t, name, 0)
+            addrmap = self.importer.instantiate_addrmap(rdl_addrmap_t, name.upper(), 0)
 
         # registers and multiregs
         for reg in self.inner.registers:
