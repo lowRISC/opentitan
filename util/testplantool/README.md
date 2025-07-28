@@ -40,8 +40,16 @@ Available testpoint filters:
 fields filters:
     --fields: Comma separated list of fields that should be in the output.
 
-## Exporting the SiVal bazel testsuites:
+## Exporting bazel testsuites:
+Based on SiVal stage
 ```sh
 bazel run util/testplantool -- export-testsuite \
 $(pwd)/hw/top_earlgrey/data/chip_testplan.hjson $(pwd)/sw/device/tests/sival/BUILD
+```
+
+Based on `lc_state`
+```sh
+mkdir -p sw/device/tests/lc_state
+bazel run util/testplantool -- export-testsuite -g "lc_state" \
+$(pwd)/hw/top_earlgrey/data/chip_testplan.hjson $(pwd)/sw/device/tests/lc_state/BUILD
 ```
