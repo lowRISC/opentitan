@@ -104,6 +104,13 @@ otbn_library(
 )
 
 otbn_library(
+    name = "p256_isoncurve_proj",
+    srcs = [
+        "p256_isoncurve_proj.s",
+    ],
+)
+
+otbn_library(
     name = "p256_sign",
     srcs = [
         "p256_sign.s",
@@ -125,6 +132,7 @@ otbn_binary(
     deps = [
         ":p256_base",
         ":p256_isoncurve",
+        ":p256_isoncurve_proj",
         ":p256_shared_key",
         ":p256_sign",
         ":p256_verify",
@@ -338,6 +346,7 @@ otbn_binary(
     ],
     deps = [
         ":p256_base",
+        ":p256_isoncurve",
     ],
 )
 
@@ -348,6 +357,7 @@ otbn_binary(
     ],
     deps = [
         ":p256_base",
+        ":p256_isoncurve",
     ],
 )
 
