@@ -17,32 +17,52 @@ class dma_handshake_mode_fifo #(int AddrWidth = bus_params_pkg::BUS_AW,
   typedef logic [DataWidth/8-1:0] mem_mask_t;
 
   // FIFO variables
-  // As SV queue has methods to push or pop data from queue
+  // An SV queue has methods to push or pop data to/from queue.
   // Data is pushed to the front of the FIFO and popped from the back.
   bit [7:0] fifo[$];
   // Enable FIFO
   bit fifo_en;
   // Programmed transfer width
   dma_transfer_width_e per_transfer_width;
+  // Size of each non-final chunk of data transferred.
+  mem_addr_t chunk_size;
+  // Wrap address at the end of each chunk, i.e. _all_ accesses occur to a single address?
+  bit wrap;
   // Maximum allowed size of the FIFO; detects excess data being written into FIFO.
   mem_addr_t max_size;
   // Base address of the FIFO
   mem_addr_t fifo_base;
+  // Expected address of next access.
+  mem_addr_t exp_addr;
+  // Byte offset within the current chunk.
+  mem_addr_t chunk_offset;
 
   function void init();
     fifo.delete();
     fifo_en = '0;
     fifo_base = '0;
     max_size = '0;
+    chunk_size = '0;
+    wrap = 1'b0;
+    exp_addr = '0;
+    chunk_offset = '0;
   endfunction
 
   // Enable and configure the FIFO to transfer a chunk of data
   function void enable_fifo(mem_addr_t fifo_base, dma_transfer_width_e per_transfer_width,
+                            mem_addr_t chunk_size, bit wrap, mem_addr_t offset,
                             mem_addr_t max_size);
     fifo_en = 1;
+    // Configuration of FIFO model.
     this.max_size = max_size;
     this.per_transfer_width = per_transfer_width;
     this.fifo_base = fifo_base;
+    this.chunk_size = chunk_size;
+    this.wrap = wrap;
+    // Current state of data transfer.
+    exp_addr = fifo_base;
+    chunk_offset = offset % chunk_size;
+    if (!wrap) exp_addr += offset - chunk_offset;
   endfunction
 
   function void disable_fifo();
@@ -93,9 +113,9 @@ class dma_handshake_mode_fifo #(int AddrWidth = bus_params_pkg::BUS_AW,
     bit [DataWidth-1:0] data = 32'hBAAD_F00D;
 
     `DV_CHECK(fifo_en, "Cannot read data when FIFO is disabled")
-    `DV_CHECK(addr[AddrWidth-1:2] == fifo_base[AddrWidth-1:2] && ~|addr[1:0],
-              $sformatf("addr:%0x doesn't match FIFO base address : %0x",
-                        addr, fifo_base))
+    `DV_CHECK(addr[AddrWidth-1:2] == exp_addr[AddrWidth-1:2] && ~|addr[1:0],
+              $sformatf("addr:%0x doesn't match expectation : %0x",
+                        addr, exp_addr))
 
     // Unfortunately we must be tolerant of the fact that only entire 32-bit bus words are
     // requested because of the behavior of 'tlul_adapter_host.' So we must check FIFO underflow
@@ -112,11 +132,13 @@ class dma_handshake_mode_fifo #(int AddrWidth = bus_params_pkg::BUS_AW,
     case (per_transfer_width)
       DmaXfer1BperTxn: begin
         data = {(DataWidth/8){data[7:0]}};
+        chunk_offset++;
       end
       DmaXfer2BperTxn: begin
         if (fifo.size() > 0) data[15:8] = fifo.pop_back();
         // Replicate 2B quantity across bus width
         data = {(DataWidth/16){data[15:0]}};
+        chunk_offset += 2;
       end
       default: begin
         `DV_CHECK_EQ(per_transfer_width, DmaXfer4BperTxn, "Invalid FIFO transfer width")
@@ -124,8 +146,14 @@ class dma_handshake_mode_fifo #(int AddrWidth = bus_params_pkg::BUS_AW,
           if (fifo.size() > 0) data[i*8+7 -: 8] = fifo.pop_back();
         // Replicate 4B quantity across bus width
         data = {(DataWidth/32){data[31:0]}};
+        chunk_offset += 4;
       end
     endcase
+    // Update the transfer state, to form a new address expectation.
+    if (chunk_offset >= chunk_size) begin
+      chunk_offset = '0;
+      if (!wrap) exp_addr += chunk_size;
+    end
     return data;
   endfunction
 
@@ -134,9 +162,15 @@ class dma_handshake_mode_fifo #(int AddrWidth = bus_params_pkg::BUS_AW,
   function void write_byte(mem_addr_t addr, logic [7:0] data);
     `DV_CHECK(fifo_en, "Cannot write data when FIFO is disabled")
     `DV_CHECK_LT(fifo.size(), max_size, "FIFO overflow")
-    `DV_CHECK(addr[AddrWidth-1:2] == fifo_base[AddrWidth-1:2],
-              $sformatf("addr:%0x doesn't match FIFO base address : %0x",
-                        addr, fifo_base))
+    `DV_CHECK(addr[AddrWidth-1:2] == exp_addr[AddrWidth-1:2],
+              $sformatf("addr:%0x doesn't match expectation : %0x",
+                        addr, exp_addr))
     fifo.push_front(data);
+    // Update the transfer state, to form a new address expectation.
+    chunk_offset++;
+    if (chunk_offset >= chunk_size) begin
+      chunk_offset = '0;
+      if (!wrap) exp_addr += chunk_size;
+    end
   endfunction
 endclass: dma_handshake_mode_fifo

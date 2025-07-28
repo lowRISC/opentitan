@@ -1226,7 +1226,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
             end
 
             // TODO: we are still unable to check the final output data if in hardware-handshaking
-            // mode and the destination chunks overlap but auto-increment _is_ used, ie. it's not
+            // mode and the destination chunks overlap but auto-increment _is_ used, i.e. it's not
             // using a FIFO model.
             if (dma_config.handshake && dma_config.dst_chunk_wrap && dma_config.dst_addr_inc) begin
               `uvm_info(`gfn, "Unable to check output data because of chunks overlapping", UVM_LOW)

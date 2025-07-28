@@ -143,16 +143,6 @@ class dma_seq_item extends uvm_sequence_item;
     intr_src_wr_val.size() == dma_reg_pkg::NumIntClearSources;
   }
 
-  // Constrain the source/destination address configuration; presently the DV cannot handle
-  // non-wrapping, non-incrementing because this requires a FIFO model that accepts
-  // data at multiple addresses.
-  constraint src_config_c {
-    src_addr_inc | src_chunk_wrap;
-  }
-  constraint dst_config_c {
-    dst_addr_inc | dst_chunk_wrap;
-  }
-
   constraint src_addr_c {
     // Set solve order to make sure source address is randomized correctly in case
     // valid_dma_config is set
@@ -458,7 +448,7 @@ class dma_seq_item extends uvm_sequence_item;
         $sformatf("\n\ttotal_data_size         : 0x%x",   total_data_size)
     };
 
-    // Verdict on whether this is a valid DMA configuration, eg. post-randomization
+    // Verdict on whether this is a valid DMA configuration, e.g. post-randomization
     str = {str,
         $sformatf("\n\n\t=> Valid: %0d", is_valid_config)
     };
