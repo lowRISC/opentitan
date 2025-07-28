@@ -40,14 +40,24 @@ cc_library(
     ],
 )
 
-cc_binary(
+opentitan_binary(
     name = "otcrypto_export_size",
-    srcs = ["otcrypto_export_size.c"],
+    testonly = True,
+    srcs = [
+        "otcrypto_export_size.c",
+        "//sw/device/silicon_owner/bare_metal:bare_metal_start",
+    ],
     # Disable link-time optimization to preserve unused cryptolib functions.
     copts = ["-fno-lto"],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310_rom_ext",
+    ],
+    linker_script = "//sw/device/silicon_owner/bare_metal:ld_slot_a",
+    manifest = "//sw/device/silicon_owner/bare_metal:manifest",
     deps = [
         ":otcrypto_interface",
-        "//sw/device/lib/arch:silicon",
+        "//sw/device/lib/crt",
+        "//sw/device/silicon_creator/lib:manifest_def",
     ],
 )
 
