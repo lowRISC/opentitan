@@ -32,7 +32,12 @@ bool test_main(void) {
 
   uint32_t spi_speed = 10000000;  // 10MHz
   if (kDeviceType == kDeviceSilicon) {
-    spi_speed = 16000000;  // 16MHz
+    // On Earlgrey, Silicon's SPI core clock is 96 MHz, meaning the max SCK
+    // rate is 48 MHz. The speed is set via a divider, meaning the largest
+    // possible configurations are 12, 16, 24 and 48 MHz. By adding a small CS
+    // idle time we can support 24 MHz reliably, but 48 MHz likely requires a
+    // specialized interconnect with low capacitance.
+    spi_speed = 24000000;  // 24MHz
 
     dif_pinmux_t pinmux;
     mmio_region_t base_addr =
@@ -63,6 +68,10 @@ bool test_main(void) {
                                  .spi_clock = spi_speed,
                                  .peripheral_clock_freq_hz =
                                      (uint32_t)kClockFreqHiSpeedPeripheralHz,
+                                 .chip_select =
+                                     {
+                                         .idle = 1,
+                                     },
                              }),
       "SPI_HOST config failed!");
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host, true));
