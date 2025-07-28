@@ -339,7 +339,7 @@ typedef struct otcrypto_interface_t {
 
 } otcrypto_interface_t;
 
-extern const otcrypto_interface_t otcrypto;
+extern volatile otcrypto_interface_t otcrypto;
 
 #ifdef __cplusplus
 }  // extern "C"
