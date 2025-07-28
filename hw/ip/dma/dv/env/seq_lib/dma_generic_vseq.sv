@@ -168,7 +168,7 @@ class dma_generic_vseq extends dma_base_vseq;
         fork
           // Wait for completion of the entire transfer
           // - all chunks have been completed and Done interrupt/Status bit detected
-          // - error has occurred (eg. configuration rejected, TL-UL error response)
+          // - error has occurred (e.g. configuration rejected, TL-UL error response)
           // - aborted, in response to abort request
           // - timeout
           while (!stop) begin
