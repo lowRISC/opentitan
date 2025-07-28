@@ -145,3 +145,11 @@ common --legacy_external_runfiles
 # these when running sandboxed tests.
 test --sandbox_explicit_pseudoterminal
 run --sandbox_explicit_pseudoterminal
+
+# We have Verilator DPIs that use pseudoterminals, so we need to be able to use
+# these when running sandboxed tests.
+test --sandbox_explicit_pseudoterminal
+run --sandbox_explicit_pseudoterminal
+
+# Import Google FuzzTest configuration.
+try-import %workspace%/fuzztest.bazelrc

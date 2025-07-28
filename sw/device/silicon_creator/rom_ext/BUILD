@@ -145,6 +145,37 @@ cc_test(
     ],
 )
 
+# Run via --config=fuzztest
+cc_test(
+    name = "rom_ext_boot_services_fuzztest",
+    srcs = ["rom_ext_boot_services_fuzztest.cc"],
+    deps = [
+        ":rom_ext_boot_services",
+        dual_cc_device_library_of("//sw/device/silicon_creator/lib/boot_svc:boot_svc_header"),
+        "//sw/device/silicon_creator/lib/rescue:rescue_null",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@fuzztest//fuzztest",
+        "@fuzztest//fuzztest:fuzztest_gtest_main",
+        "@googletest//:gtest",
+    ],
+)
+
+# Run via Centipede
+cc_binary(
+    name = "rom_ext_boot_services_fuzztest_binary",
+    testonly = True,
+    srcs = ["rom_ext_boot_services_fuzztest.cc"],
+    deps = [
+        ":rom_ext_boot_services",
+        dual_cc_device_library_of("//sw/device/silicon_creator/lib/boot_svc:boot_svc_header"),
+        "//sw/device/silicon_creator/lib/rescue:rescue_null",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@fuzztest//fuzztest",
+        "@fuzztest//fuzztest:fuzztest_gtest_main",
+        "@googletest//:gtest",
+    ],
+)
+
 cc_library(
     name = "rom_ext_flash_exc_handler",
     srcs = ["//sw/device/silicon_creator/lib:flash_exc_handler"],
