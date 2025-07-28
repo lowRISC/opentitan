@@ -149,7 +149,7 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
      mubi_regwen = False
      mubi_width = 4
      # Locate the REGWEN register and determine its type.
-     for reg in hro_regs_list:
+     for reg in rb.flat_regs:
        if reg.name == regwen:
          hidden_regwen = False
          if reg.fields[0].mubi:
