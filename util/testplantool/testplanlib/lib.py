@@ -29,6 +29,13 @@ class Testplan:
         res = filter(lambda item: item.lower() not in ["na", "none"], res)
         return list(sorted(set(res)))
 
+    def get_lc_states(self) -> list[str]:
+        """
+        Return a unique list of life-cycle stages
+        """
+        res = [state for tp in self.testpoints for state in tp.get("lc_states", [])]
+        return list(sorted(set(res)))
+
     def join(self, other: "Testplan") -> None:
         self.testpoints.extend(other.testpoints)
 
