@@ -78,16 +78,3 @@ jobs:
           else
             echo "No tests to run after filtering"
           fi
-
-      - name: Publish Bazel test results
-        uses: ./.github/actions/publish-bazel-test-results
-        if: ${{ !cancelled() }}
-        with:
-          artifact-name: ${{ inputs.job_name }}-test-results
-
-      - name: Upload target pattern file
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ inputs.job_name }}-targets
-          path: target_pattern_file.txt
