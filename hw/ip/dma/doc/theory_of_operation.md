@@ -36,8 +36,9 @@ the OT Trusted Compute Boundary
     digital signing etc. Such an operation is requested using the
     Mailbox interface and may involve bulk data movement.
 
-    -   Please refer to the [*mailbox specification*]()
-        for further details on the mailbox structure.
+    -   Please refer to the
+        [*mailbox specification*](../../mbx/doc/theory_of_operation.md) for
+        further details on the mailbox structure.
 
 -   Through the mailbox interface following information may be passed:
 
@@ -51,8 +52,6 @@ the OT Trusted Compute Boundary
 
     -   Opcode - Type of any optionally supported operation e.g.
         Cryptographic hash.
-
-    -   \<anything else TBD\>.
 
 -   OT firmware parses the command object passed through the mailbox.
 -   OT firmware sanitizes mailbox objects as required.
@@ -117,11 +116,11 @@ hardware handshake DMA operation.
 
 **Receiving data from LSIO**
 
--   [*Source address*](../data/dma.hjson#src_addr_lo): address of the low speed IO
+-   [*Source address*](registers.md#src_addr_lo): address of the low speed IO
     receive FIFO read out register.
--   [*Destination address*](../data/dma.hjson#dst_addr_lo): address to the memory
+-   [*Destination address*](registers.md#dst_addr_lo): address to the memory
     buffer where received data is placed.
--   [*Address space ID*](../data/dma.hjson#addr_space_id) (ASID): (OT Internal, CTN or System)
+-   [*Address space ID*](registers.md#addr_space_id) (ASID): (OT Internal, CTN or System)
 
     -   Source ASID: Specify the address space in which the LSIO FIFO is
         visible.
@@ -129,59 +128,61 @@ hardware handshake DMA operation.
     -   Destination ASID: Specify the address space in which the
         destination buffer resides.
 
--   [*Total Size*](../data/dma.hjson#total-data-size): Size of the data object to be popped
+-   [*Chunk Size*](registers.md#chunk_data_size): Size of each of the non-final chunks
+    of data making up the total transfer. Chunked transfers allowing the DMA controller
+    to perform a transfer in a piecemeal fashion, incrementally moving chunks of data
+    from the Low Speed IO peripheral FIFO as they become available.
+-   [*Total Size*](registers.md#total_data_size): Total size of the data object to be popped
     from the FIFO (equivalent to the number of reads from the FIFO per
     interrupt times the FIFO read data width).
--   [*Transfer Width*](../data/dma.hjson#transfer_width): Width of each transaction
+-   [*Transfer Width*](registers.md#transfer_width): Width of each transaction
     (equivalent to FIFO read data width).
--   [*DMAC Control register*](../data/dma.hjson#control):
+-   [*Source Configuration*](registers.md#src_config): Source configuration specifying
+    the addressing mode to be used for the source of the data.
+
+    -   Wrap: When set, the source address will wrap back to the programmed start address at
+        the end of each data chunk such that all chunks overlap. When clear, chunks are
+        retrieved from contiguously-ascending addresses.
+
+    -   Increment: If set, consecutive 'transfer width' bytes of data are transferred to/from
+        the source using consecutive addresses. If not set, all data reads within a single
+        chunk are performed to/from a single address.
+
+-   [*Destination Configuration*](registers.md#dst_config): Destination configuration
+    specifying the addressing mode to be used for the data destination. Addressing modes are as
+    per the Source Configuration description above.
+-   [*DMAC Control register*](registers.md#control):
 
     -   Opcode: Type of operation requested. Typically set to copy
         operation in case of hardware handshake mode of operation.
 
     -   Hardware handshake enable = 1
 
-    -   Data Direction = 0 (receive)
-
-    -   FIFO address auto-increment enable: If set, consecutive
-        'transfer width' bytes of data are transferred to/from the FIFO using consecutive
-        register addresses, resetting to the initial address at the start of each new chunk within
-        the transfer. If not enabled, all accesses are performed to/from a single address.
-
-    -   Data buffer Auto-increment Enable: If set to 1, data shall be
-        loaded into consecutive buffer segments in memory, where each
-        segment is equivalent to 'total size' worth of data. To
-        prepare for the next data buffer segment, [*Destination
-        address*](../data/dma.hjson#dst_addr_lo) register is incremented by '[*Total
-        Size*](../data/dma.hjson#total-data-size)' once an equivalent amount of data is
-        emptied from the FIFO & written to the buffer segment. If auto
-        increment feature is not set, then the memory buffer gets
-        overwritten each time the low speed device triggers the DMA
-        based hardware handshake operation.
+    -   Initial Transfer: This bit shall be set for the first chunk of any DMA transfer,
+        which ensures that the DMA transfer and any inline hashing operation are properly
+        initialized. It shall be cleared for all non-initial chunks of the transfer.
 
     -   Go = 1 to start the operation.
 
 -   DMA engines start listening to input interrupt.
 -   Low speed IO peripheral FIFO asserts interrupt once FIFO reaches a
     certain threshold.
--   The DMA engine reads the 'total size' number of bytes from the
-    pointer in source address register (receive FIFO) and places them in
-    the destination buffer. Note that width of each read is per the
-    'transfer width' setting.
--   **Note**: *assumption is the peripheral lowers input once FIFO is
-    cleared. No explicit clearing necessary.*
--   The DMA engine increments the source and destination address
-    register if respective auto-increment enable is set.
--   DMA engine waits for the interrupt to get asserted again (i.e. waits
-    for FIFO to be filled).
+-   The DMA engine reads 'chunk size' bytes from the pointer in the source address
+    register and transfers them to the destination.
+    Note that the width of each read is as per the 'transfer width' setting.
+-   **Note**: *the assumption is that the peripheral lowers its interrupt signal once
+    the FIFO is cleared. No explicit clearing is necessary.*
+-   The DMA engine advances the source and/or destination addresses to the start of the next
+    chunk if the source/destination configuration does not specify 'wrap' addressing mode.
+-   DMA engine waits for the interrupt to get asserted again (i.e. waits for FIFO to be filled).
 
 **Sending data to LSIO**
 
--   [*Source address*](../data/dma.hjson#src_addr_lo): Pointer to the head of the
+-   [*Source address*](registers.md#src_addr_lo): Pointer to the head of the
     memory buffer.
--   [*Destination address*](../data/dma.hjson#dst_addr_lo): pointer to the FIFO
+-   [*Destination address*](registers.md#dst_addr_lo): pointer to the FIFO
     register.
--   [*Address space ID*](../data/dma.hjson#addr_space_id) (ASID): (OT Internal, CTN or System)
+-   [*Address space ID*](registers.md#addr_space_id) (ASID): (OT Internal, CTN or System)
 
     -   Source ASID: Specify the address space in which the source
         buffer resides.
@@ -189,47 +190,54 @@ hardware handshake DMA operation.
     -   Destination ASID: Specify the address space in which the LSIO
         FIFO is visible.
 
--   [*Total Size*](../data/dma.hjson#total-data-size): Size of the data object to be pushed
+-   [*Chunk Size*](registers.md#chunk_data_size): Size of each of the non-final chunks
+    of data making up the total transfers. Chunked transfers allowing the DMA controller
+    to perform a transfer in a piecemeal fashion, incrementally sending chunks of data
+    to the Low Speed IO peripheral FIFO as space becomes available.
+-   [*Total Size*](registers.md#total_data_size): Size of the data object to be pushed
     into the FIFO.
--   [*Transfer Width*](../data/dma.hjson#transfer_width): Write Data width of the LSIO FIFO
+-   [*Transfer Width*](registers.md#transfer_width): Write Data width of the LSIO FIFO
     register. Each write transaction is equal to this size.
--   [*DMAC Control register*](../data/dma.hjson#control)
+-   [*Source Configuration*](registers.md#src_config): Source configuration specifying
+    the addressing mode to be used for the source of the data. Addressing modes are as
+    per the Destination Configuration description below.
+-   [*Destination Configuration*](registers.md#dst_config): Destination configuration
+    specifying the addressing mode to be used for the data destination.
+
+    - Wrap: When set the destination address will return to its programmed start
+      address at the end of data chunk such that all chunks overlap. This is normally
+      the desired behavior when writing to a destination FIFO.
+
+    - Increment: If clear, all of the data words within a chunk will be written to the
+      same address. For a memory-mapped peripheral FIFO this will normally be the
+      desired behavior. If this bit is set then the data words within a chunk will be
+      sent to contiguously-ascending addresses which may be useful with some peripherals
+      that do not present a typical FIFO interface but rather, for example, a set of
+      registers.
+
+-   [*DMAC Control register*](registers.md#control)
 
     -   Opcode: Type of operation requested. Typically set to copy
         operation in case of hardware handshake mode of operation.
 
     -   Hardware handshake enable = 1
 
-    -   Data Direction = 1 (send)
-
-    -   FIFO address auto-increment enabled if consecutive 'transfer
-        size' worth of data chunks are pushed to the FIFO using
-        consecutive register addresses. If not enabled, consecutive
-        data chunks are pushed by repeatedly writing the same register
-        address.
-
-    -   Data buffer Auto-increment Enable: If set to 1, data shall be
-        read from consecutive buffer spaces, each equivalent to 'total
-        size' worth of data. To prepare for the next data buffer
-        segment [*Source address*](../data/dma.hjson#src_addr_lo) register is
-        incremented by '[*Total Size*](../data/dma.hjson#total-data-size)' once the
-        equivalent amount of data is written to the FIFO. If auto
-        increment feature is not set, then the same memory buffer
-        segment gets read each time an interrupt triggers the DMA
-        based hardware handshake operation.
+    -   Initial Transfer: This bit shall be set for the first chunk of any DMA transfer,
+        which ensures that the DMA transfer and any inline hashing operation are properly
+        initialized. It shall be cleared for all non-initial chunks of the transfer.
 
     -   Go = 1 to start the operation.
 
 -   DMA engines start listening to input interrupt.
 -   Low speed IO peripheral FIFO asserts interrupt once FIFO reaches a
     certain 'almost empty' threshold.
--   The DMA engine reads the total size number of bytes from the source
-    address register (memory) and writes them into the FIFO register.
-    Width of each write is equal to the transfer width setting.
--   ***Note**: assumption is the peripheral lowers 'almost empty'
-    interrupt once FIFO is filled. No explicit clearing necessary.
--   The DMA engine increments the source and destination address
-    register if respective auto-increment enable is set.
+-   The DMA engine reads 'total size' bytes from the source address (memory) and
+    sends them to the peripheral.
+    Note that the width of each write is as per the 'transfer width' setting.
+-   **Note**: *the assumption is that the peripheral lowers its 'almost empty'
+    interrupt once the FIFO is filled. No explicit clearing is necessary.*
+-   The DMA engine advances the source and/or destination addresses to the start of the next
+    chunk if the source/destination configuration does not specify 'wrap' addressing mode.
 -   DMA engine waits for the interrupt to get asserted again (i.e. waits
     for FIFO to be almost empty).
 
@@ -257,19 +265,19 @@ The DMA controller provides the following security value:
     perimeter.
 -   A read to an SoC address may have side effects causing the operation
     to hang. Using the Ibex core directly to perform such a read
-    operation may end up hanging the core. Using the DMA controller to
+    operation could risk hanging the core. Using the DMA controller to
     perform such reads shields the Ibex core from such availability
     issues. The DMA controller must ensure that problems such as hanging
     transactions on the SoC interface do not lead to problems on any
     OpenTitan-internal interfaces.
 
-Note that to ensure secure movement of data, following assumption hold
-true:
+Note that to ensure secure movement of data, the following assumptions must
+hold:
 
--   DMA Controller configuration shall be under OpenTitan firmware (Ibex
-    core) control only.
+-   The DMA Controller configuration shall be under OpenTitan firmware
+    (Ibex core) control only.
 -   External agents to the OpenTitan secure boundary *shall not* have
-    access the DMA registers.
+    access to the DMA registers.
 -   Following restrictions to data movement are observed and enforced by
     the DMA controller.
 
@@ -307,6 +315,20 @@ DMA requests are initiated by the system software (or SoC firmware
 agent) through the appropriately defined [*DOE mailbox
 objects*](). Completion status of the DMA operation to
 the original requested is done via the DOE response object mechanism.
+
+## Inline Hashing
+
+The DMA controller offers support for on-the-fly calculation of hash digests on
+the data being transferred, using any of the following algorithms:
+
+- SHA-256 - SHA-2 hash with a 256-bit digest.
+- SHA-384 - SHA-2 hash with a 384-bit digest.
+- SHA-512 - SHA-2 hash with a 512-bit digest.
+
+This is achived simply by modifying the [*opcode*](registers.md#control--opcode)
+field of the [*CONTROL*](registers.md#control) and collecting the
+[digest](registers.md#sha2_digest) from the registers interface when the
+transfer has completed.
 
 ## Extension: Inline Operations
 
@@ -400,7 +422,7 @@ Data buffer Auto-increment Enable: If set to 1, data shall be loaded
 into consecutive buffer segments in memory, where each segment is
 equivalent to 'total size' worth of data. To prepare for the next data
 buffer segment, *Destination address*
-register is incremented by '[*Total Size*](../data/dma.hjson#total-data-size)'
+register is incremented by '[*Total Size*](registers.md#total_data_size)'
 once an equivalent amount of data is emptied from the FIFO & written to
 the buffer segment. If auto increment feature is not set, then the
 memory buffer gets overwritten each time the low speed device triggers
