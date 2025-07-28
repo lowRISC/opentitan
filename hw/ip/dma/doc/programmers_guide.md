@@ -16,7 +16,7 @@ This involves a specific sequence of register writes:
 To start a memory transfer, software needs to configure several registers that define the source and destination of the data, as well as the transfer size and access pattern:
 
 1.  **Source and Destination Configuration:** Configure the source and destination address modes using the [`SRC_CONFIG`](registers.md#src_config) and [`DST_CONFIG`](registers.md#dst_config) registers. The DMA supports 3 addressing modes, which can be configured independently for the source and destination via the aforementioned registers:
-  * Continuously accessing the same address (`increment = 0`, `wrap = 0`)
+  * Continuously accessing the same address (`increment = 0`, `wrap = 1`)
   * Linear addressing (`increment = 1`, `wrap = 0`), with an address increment after each transfer
   * Wrap Mode:  (`increment = 1`, `wrap = 1`), with an address increment after each transfer and a wrap to the start address after finishing the transfer of one chunk.
 2.  **Source and Destination Addresses:** Specify the starting memory addresses for the source and destination using the lower and upper 32-bit parts of the addresses in the [`SRC_ADDR_LO`](registers.md#src_addr_lo), [`SRC_ADDR_HI`](registers.md#src_addr_hi), [`DST_ADDR_LO`](registers.md#dst_addr_lo), and [`DST_ADDR_HI`](registers.md#dst_addr_hi) registers.
@@ -47,7 +47,7 @@ The [`STATUS`](registers.md#status) indicates via the `aborted` bit that the DMA
 ## Chunked Data Transfers
 
 The DMA performs memory transfers in discrete units called chunks.
-Each chunk consists of a contiguous block of data with a size defined by the [`CHUNK_DATA_SIZE`](#chunk_data_size) register.
+Each chunk consists of a contiguous block of data with a size defined by the [`CHUNK_DATA_SIZE`](registers.md#chunk_data_size) register.
 After transferring a chunk, the DMA can optionally generate an interrupt.
 
 While chunked transfers are primarily utilized in conjunction with the [Hardware Handshaking Mode](#Hardware_Handshaking_Mode) for interacting with IO peripherals, they can also be employed in memory-to-memory transfers.
@@ -60,12 +60,12 @@ Initiating the transfer of subsequent chunks must not assert the `initial_transf
 The DMA supports a hardware handshaking mode that enables seamless data transfers between IO peripherals and memory.
 This mode leverages the chunked data transfer mechanism and interrupts from the IO peripheral.
 
-In this mode, the IO peripheral fills its internal transfer FIFO and then signals the DMA by raising an interrupt.
-Upon receiving this interrupt, the DMA reads the data from the peripheral's FIFO and writes it to the destination memory.
-This process continues in a loop: the DMA transfers a chunk of data, waits for the IO peripheral to fill its FIFO and issue another interrupt, and then transfers the next chunk.
+In this mode, the IO peripheral fills its internal transfer FIFO and then signals the DMA by raising an input line that acts like a 'Status' type hardware interrupt.
+Upon receiving this signal, the DMA reads the data from the peripheral's FIFO and writes it to the destination memory.
+This process continues in a loop: the DMA transfers a chunk of data, waits for the IO peripheral to repopulate its FIFO and issue another interrupt, and then transfers the next chunk.
 This loop repeats until the total number of bytes specified by [`TOTAL_DATA_SIZE`](registers.md#total_data_size) has been transferred.
 
-To enable hardware handshaking, software must set the `hardware_handshake_enable` bit in the [`CONTROL`](#control) register and configure the appropriate addressing mode to access the IO peripheral.
+To enable hardware handshaking, software must set the `hardware_handshake_enable` bit in the [`CONTROL`](registers.md#control) register and configure the appropriate addressing mode to access the IO peripheral.
 
 The DMA's chunked transfer mechanism in hardware handshaking mode supports two address update modes for the peripheral:
 
@@ -73,17 +73,17 @@ The DMA's chunked transfer mechanism in hardware handshaking mode supports two a
   * **Wrap-around:** After transferring a chunk, the DMA's peripheral address wraps around to the starting address configured for the transfer.
 
 These modes are configured via the [`SRC_CONFIG`](registers.md#src_config) and [`DST_CONFIG`](registers.md#dst_config) registers as described above.
-For interrupt handling in hardware handshaking mode, software needs to enable the corresponding interrupt using the [`HANDSHAKE_INTR_ENABLE`](#handshake_intr_enable) register.
+For interrupt handling in hardware handshaking mode, software needs to enable the corresponding interrupt using the [`HANDSHAKE_INTR_ENABLE`](registers.md#handshake_intr_enable) register.
 
 The DMA also provides a mechanism to acknowledge the interrupt received from the IO peripheral by performing a configurable write operation.
-If interrupt acknowledgement is required, software must enable it in the [`CLEAR_INTR_SRC`](#clear_intr_src) register.
-The address space for this write operation is configured using the [`CLEAR_INTR_BUS`](#clear_intr_bus) register.
-The specific address and data value to be written for acknowledgement are defined by the [`INTR_SRC_ADDR_0-10`](#intr_src_addr) and [`INTR_SRC_WR_VAL_0-10`](#intr_src_wr_val) registers, respectively.
+If interrupt acknowledgement is required, software must enable it in the [`CLEAR_INTR_SRC`](registers.md#clear_intr_src) register.
+The address space for this write operation is configured using the [`CLEAR_INTR_BUS`](registers.md#clear_intr_bus) register.
+The specific address and data value to be written for acknowledgement are defined by the [`INTR_SRC_ADDR_0-10`](registers.md#intr_src_addr) and [`INTR_SRC_WR_VAL_0-10`](registers.md#intr_src_wr_val) registers, respectively.
 
 ## Inline Hashing
 
 The DMA incorporates an inline hashing capability for SHA-2 algorithms (SHA-256, SHA-384, and SHA-512).
-This allows the DMA to compute the hash digest of the transferred data concurrently with the memory transfer.
+This allows the DMA to compute the hash digest of the transferred data concurrently with performing the memory transfer.
 
 To enable inline hashing, software must set the desired SHA-2 algorithm as the opcode in the `opcode` field of the [`CONTROL`](registers.md#control) register.
 This will instruct the DMA to perform the data copy operation along with the hash computation.
