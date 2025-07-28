@@ -37,11 +37,12 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Security Countermeasures
 
-| Countermeasure ID            | Description                                               |
-|:-----------------------------|:----------------------------------------------------------|
-| DMA.BUS.INTEGRITY            | End-to-end bus integrity scheme.                          |
-| DMA.ASID.INTERSIG.MUBI       | Destination and source ASID signals are multibit encoded. |
-| DMA.RANGE.CONFIG.REGWEN_MUBI | DMA enabled memory range is software multibit lockable.   |
+| Countermeasure ID            | Description                                                  |
+|:-----------------------------|:-------------------------------------------------------------|
+| DMA.BUS.INTEGRITY            | End-to-end bus integrity scheme.                             |
+| DMA.ASID.INTERSIG.MUBI       | Destination and source ASID signals are multibit encoded.    |
+| DMA.RANGE.CONFIG.REGWEN_MUBI | DMA enabled memory range is software multibit lockable.      |
+| DMA.FSM.SPARSE               | FSM is sparsely encoded. There is a single `ctrl_state` FSM. |
 
 
 <!-- END CMDGEN -->

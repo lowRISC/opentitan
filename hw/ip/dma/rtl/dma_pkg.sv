@@ -63,18 +63,40 @@ package dma_pkg;
     logic [31:0] enabled_memory_range_limit;
   } control_state_t;
 
-  typedef enum logic [3:0] {
-    DmaIdle                  = 4'b0000,
-    DmaClearIntrSrc          = 4'b0001,
-    DmaWaitIntrSrcResponse   = 4'b0010,
-    DmaAddrSetup             = 4'b0011,
-    DmaSendRead              = 4'b0100,
-    DmaWaitReadResponse      = 4'b0101,
-    DmaSendWrite             = 4'b0110,
-    DmaWaitWriteResponse     = 4'b0111,
-    DmaError                 = 4'b1000,
-    DmaShaFinalize           = 4'b1001,
-    DmaShaWait               = 4'b1010
+
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 11 -n 8 \
+  //     -s 8273645 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: ||||||||||||| (27.27%)
+  //  4: |||||||||||||||||||| (40.00%)
+  //  5: ||||||||| (18.18%)
+  //  6: |||| (9.09%)
+  //  7: || (5.45%)
+  //  8: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 7
+  // Minimum Hamming weight: 3
+  // Maximum Hamming weight: 7
+
+  typedef enum logic [7:0] {
+    DmaIdle                 = 8'b11110111,
+    DmaClearIntrSrc         = 8'b10101100,
+    DmaWaitIntrSrcResponse  = 8'b00101011,
+    DmaAddrSetup            = 8'b11110000,
+    DmaSendRead             = 8'b01000011,
+    DmaWaitReadResponse     = 8'b00011111,
+    DmaSendWrite            = 8'b10010100,
+    DmaWaitWriteResponse    = 8'b11011001,
+    DmaError                = 8'b01010110,
+    DmaShaFinalize          = 8'b00110001,
+    DmaShaWait              = 8'b01111010
   } dma_ctrl_state_e;
 
   // Maximum number of outstanding TL-UL requests per host post
