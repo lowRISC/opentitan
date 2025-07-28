@@ -277,6 +277,15 @@ class IpBlock2Systemrdl:
         return rdl_addrmap if num_children else None
 
 
+def check_rdl(rdl: Path) -> None:
+    compiler = RDLCompiler()
+    try:
+        compiler.compile_file(rdl)
+        compiler.elaborate()
+    except Exception as e:
+        raise RuntimeError(f"Error while compiling {rdl}.") from e
+
+
 class SystemrdlExporter(Exporter):
     def export(self, outfile: TextIO) -> int:
         comp = RDLCompiler()
@@ -313,4 +322,6 @@ class SystemrdlExporter(Exporter):
 
         print(f"Successfully generated {outfile.name}, {outpath.parent / udp_path.name}")
 
+        check_rdl(outpath)
+        print(f"Successfully generated {outfile.name}, {outpath.parent / udp_path.name}")
         return 0
