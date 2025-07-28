@@ -8,9 +8,9 @@ from mako.template import Template
 from pathlib import Path
 from testplanlib import Testplan
 
-SV_SUITE_TEMPLATE = """
+TEST_SUITE_TEMPLATE = """
 test_suite(
-    name = "${sival_stage}_tests",
+    name = "${suite_name}_tests",
     tests = [
         % for test in test_list:
         "${test}",
@@ -124,22 +124,35 @@ def query(input_file: str, name: str, stage: str, si_stage: str, lc_state: str, 
     "out_file",
     type=click.Path(writable=True),
 )
-def export_testsuite(input_file: str, out_file: str):
+@click.option(
+    "--group-by",
+    "-g",
+    type=click.Choice(["si_stage", "lc_state"], case_sensitive=False),
+    default="si_stage",
+)
+def export_testsuite(input_file: str, out_file: str, group_by: str):
     """Export an bazel OUT_FILE with the bazel targets found in INPUT_FILE grouped by
     si-stage in testsuites.
     INPUT_FILE is the top testplan.hjson.
     OUT_FILE is the output filename.
+    GROUPBY is an optional string defining the grouping criteria.
     """
+
+    template = Template(TEST_SUITE_TEMPLATE)
     tp = Testplan.from_top(Path(input_file))
-    template = Template(SV_SUITE_TEMPLATE)
     file = Path(out_file).open("w")
     file.write(LICENSE_HEADER.replace("//", "#"))
-    sv_stages = tp.get_si_stage()
-    for stage in sv_stages:
-        filtered = tp.filter_testpoints(si_stage=stage)
-        sv_tests = filtered.get_bazel()
-        file.write(template.render(sival_stage=stage.lower(), test_list=sv_tests))
 
-    all_suite = Template(ALL_SUITE_TEMPLATE)
-    file.write(all_suite.render(suites=[s.lower() + "_tests" for s in sv_stages]))
+    if group_by == "si_stage":
+        items = tp.get_si_stage()
+        for item in items:
+            filtered = tp.filter_testpoints(si_stage=item)
+            sv_tests = filtered.get_bazel()
+            file.write(template.render(suite_name=item.lower(), test_list=sv_tests))
+
+        all_suite = Template(ALL_SUITE_TEMPLATE)
+        file.write(all_suite.render(suites=[s.lower() + "_tests" for s in items]))
+
     print(f"Generated {out_file}.")
+
+
