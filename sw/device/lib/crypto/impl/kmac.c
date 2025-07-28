@@ -9,6 +9,7 @@
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/security_config.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 // Module ID for status codes.
@@ -24,6 +25,17 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
   // Check for null pointers.
   if (key == NULL || key->keyblob == NULL || tag.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the security config of the device.
+  if (launder32(key->config.security_level) > kOtcryptoKeySecurityLevelLow) {
+    hardened_bool_t security_config_valid = security_config_check();
+    if (launder32(security_config_valid) != kHardenedBoolTrue) {
+      return OTCRYPTO_FATAL_ERR;
+    }
+    HARDENED_CHECK_EQ(security_config_valid, kHardenedBoolTrue);
+  } else {
+    HARDENED_CHECK_EQ(key->config.security_level, kOtcryptoKeySecurityLevelLow);
   }
 
   // Check for null input message with nonzero length.

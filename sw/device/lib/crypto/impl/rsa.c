@@ -11,6 +11,7 @@
 #include "sw/device/lib/crypto/impl/rsa/rsa_encryption.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_keygen.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_signature.h"
+#include "sw/device/lib/crypto/impl/security_config.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
@@ -654,6 +655,19 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
     return OTCRYPTO_BAD_ARGS;
   }
 
+  // Check the security config of the device.
+  if (launder32(private_key->config.security_level) >
+      kOtcryptoKeySecurityLevelLow) {
+    hardened_bool_t security_config_valid = security_config_check();
+    if (launder32(security_config_valid) != kHardenedBoolTrue) {
+      return OTCRYPTO_FATAL_ERR;
+    }
+    HARDENED_CHECK_EQ(security_config_valid, kHardenedBoolTrue);
+  } else {
+    HARDENED_CHECK_EQ(private_key->config.security_level,
+                      kOtcryptoKeySecurityLevelLow);
+  }
+
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
@@ -930,6 +944,19 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
   if (private_key == NULL || private_key->keyblob == NULL ||
       ciphertext.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the security config of the device.
+  if (launder32(private_key->config.security_level) >
+      kOtcryptoKeySecurityLevelLow) {
+    hardened_bool_t security_config_valid = security_config_check();
+    if (launder32(security_config_valid) != kHardenedBoolTrue) {
+      return OTCRYPTO_FATAL_ERR;
+    }
+    HARDENED_CHECK_EQ(security_config_valid, kHardenedBoolTrue);
+  } else {
+    HARDENED_CHECK_EQ(private_key->config.security_level,
+                      kOtcryptoKeySecurityLevelLow);
   }
 
   // Check that the entropy complex is initialized.
