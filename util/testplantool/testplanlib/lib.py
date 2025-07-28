@@ -18,7 +18,7 @@ class Testplan:
         """
         Return a unique list of bazel targets
         """
-        res = [item for tp in self.testpoints for item in tp["bazel"]]
+        res = [item for tp in self.testpoints for item in tp.get("bazel", [])]
         return list(sorted(set(res)))
 
     def get_si_stage(self) -> list[str]:
