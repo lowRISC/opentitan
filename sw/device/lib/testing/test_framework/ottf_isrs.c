@@ -16,6 +16,7 @@
 
 #if !OT_IS_ENGLISH_BREAKFAST
 #include "sw/device/lib/dif/dif_alert_handler.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 
 #include "alert_handler_regs.h"
 #endif  // !OT_IS_ENGLISH_BREAKFAST
@@ -113,6 +114,21 @@ static void generic_fault_handler(uint32_t *exc_info) {
   abort();
 }
 
+static void ottf_alert_print(uint32_t *exc_info) {
+  // Log all asserted alerts.
+  for (dif_alert_handler_alert_t alert = 0;
+       alert < ALERT_HANDLER_PARAM_N_ALERTS; alert++) {
+    bool is_cause = false;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(&ottf_alert_handler, alert,
+                                                  &is_cause));
+    if (is_cause) {
+      LOG_ERROR("INFO: Alert %d is asserted", alert);
+    }
+  }
+
+  ottf_generic_fault_print(exc_info, "Alert IRQ", ibex_mcause_read());
+}
+
 /**
  * The weak `pxCurrentTCB` symbol below enable the OTTF ISRs to be used without
  * the OTTF itself. This enables us to maintain one set of default ISRs for
@@ -200,29 +216,9 @@ OT_WEAK
 bool ottf_console_flow_control_isr(uint32_t *exc_info) { return false; }
 
 OT_WEAK
-void ottf_alert_isr(uint32_t *exc_info) {
-#if !OT_IS_ENGLISH_BREAKFAST
-  dif_alert_handler_t alert_handler;
-  CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
-      &alert_handler));
-
-  // Log all asserted alerts.
-  for (dif_alert_handler_alert_t alert = 0;
-       alert < ALERT_HANDLER_PARAM_N_ALERTS; alert++) {
-    bool is_cause = false;
-    CHECK_DIF_OK(
-        dif_alert_handler_alert_is_cause(&alert_handler, alert, &is_cause));
-    if (is_cause) {
-      LOG_ERROR("INFO: Alert %d is asserted", alert);
-    }
-  }
-
-  ottf_generic_fault_print(exc_info, "Alert IRQ", ibex_mcause_read());
-  abort();
-#else
-  return;
-#endif  // !OT_IS_ENGLISH_BREAKFAST
+bool ottf_alert_isr(uint32_t *exc_info) {
+  (void)exc_info;
+  return false;
 }
 
 OT_WEAK
@@ -243,12 +239,22 @@ void ottf_external_isr(uint32_t *exc_info) {
 #if !OT_IS_ENGLISH_BREAKFAST
   } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler &&
              !kOttfTestConfig.ignore_alerts) {
-    ottf_alert_isr(exc_info);
-    // Complete the IRQ at PLIC.
-    CHECK_DIF_OK(
-        dif_rv_plic_irq_complete(&ottf_plic, kPlicTarget, plic_irq_id));
-    return;
-#endif  // OT_IS_ENGLISH_BREAKFAST
+    if (ottf_alert_isr(exc_info)) {
+      // Clear the alert escalation counter.
+      CHECK_DIF_OK(dif_alert_handler_escalation_clear(&ottf_alert_handler,
+                                                      kDifAlertHandlerClassD));
+      // Complete the IRQ at the alert handler.
+      CHECK_DIF_OK(dif_alert_handler_irq_acknowledge(
+          &ottf_alert_handler, kDifAlertHandlerIrqClassd));
+      // Complete the IRQ at PLIC.
+      CHECK_DIF_OK(
+          dif_rv_plic_irq_complete(&ottf_plic, kPlicTarget, plic_irq_id));
+      return;
+    } else {
+      ottf_alert_print(exc_info);
+      abort();
+    }
+#endif  // !OT_IS_ENGLISH_BREAKFAST
   }
 
   ottf_generic_fault_print(exc_info, "External IRQ", ibex_mcause_read());

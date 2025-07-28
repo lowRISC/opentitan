@@ -6,6 +6,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
@@ -26,9 +27,28 @@ static dif_flash_ctrl_device_info_t flash_info;
 #define FLASH_PAGES_PER_BANK flash_info.data_pages
 
 static dif_flash_ctrl_state_t flash;
+static dif_alert_handler_t alert_handler;
 
 static uint32_t flash_region_index;
 static uint32_t flash_page_to_test;
+
+bool ottf_alert_isr(uint32_t *exc_info) {
+  (void)exc_info;
+
+  // We expect the "recoverable flash_ctrl error" alert to fire when we
+  // write across a good/bad protection region boundary.
+  bool flash_ctrl_recov_err = false;
+  CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+      &alert_handler, kTopEarlgreyAlertIdFlashCtrlRecovErr,
+      &flash_ctrl_recov_err));
+
+  if (flash_ctrl_recov_err) {
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, kTopEarlgreyAlertIdFlashCtrlRecovErr));
+  }
+
+  return flash_ctrl_recov_err;
+}
 
 /*
  * Basic test of page erase / program / read functions. Tests pages from both
@@ -287,6 +307,10 @@ bool test_main(void) {
     flash_region_index = 0;
     flash_page_to_test = FLASH_PAGES_PER_BANK;
   }
+
+  CHECK_DIF_OK(dif_alert_handler_init(
+      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      &alert_handler));
 
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));

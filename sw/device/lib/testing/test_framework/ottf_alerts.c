@@ -15,11 +15,12 @@
 #include "alert_handler_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+dif_alert_handler_t ottf_alert_handler;
+
 status_t ottf_alerts_enable_all(void) {
-  dif_alert_handler_t alert_handler;
   TRY(dif_alert_handler_init(
       mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
-      &alert_handler));
+      &ottf_alert_handler));
 
   dif_alert_handler_alert_t alerts[ALERT_HANDLER_PARAM_N_ALERTS];
   dif_alert_handler_class_t alert_classes[ARRAYSIZE(alerts)];
@@ -30,7 +31,7 @@ status_t ottf_alerts_enable_all(void) {
     // Temporarily skip alert 37 (`flash_ctrl_fatal_err`) on FPGAs and sims at
     // the owner stage since flash will not be provisioned with expected data.
     // See #23038.
-    if (kDeviceType != kDeviceSilicon) {
+    if (i == 37 && kDeviceType != kDeviceSilicon) {
       alerts[i] = 0;
     }
   }
@@ -59,11 +60,11 @@ status_t ottf_alerts_enable_all(void) {
       .classes_len = ARRAYSIZE(class_configs),
       .ping_timeout = UINT16_MAX,
   };
-  TRY(alert_handler_testutils_configure_all(&alert_handler, config,
+  TRY(alert_handler_testutils_configure_all(&ottf_alert_handler, config,
                                             kDifToggleDisabled));
 
   TRY(dif_alert_handler_irq_set_enabled(
-      &alert_handler, kDifAlertHandlerIrqClassd, kDifToggleEnabled));
+      &ottf_alert_handler, kDifAlertHandlerIrqClassd, kDifToggleEnabled));
 
   dif_rv_plic_t rv_plic;
   TRY(dif_rv_plic_init(mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR),
