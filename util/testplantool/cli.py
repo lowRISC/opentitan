@@ -153,6 +153,10 @@ def export_testsuite(input_file: str, out_file: str, group_by: str):
         all_suite = Template(ALL_SUITE_TEMPLATE)
         file.write(all_suite.render(suites=[s.lower() + "_tests" for s in items]))
 
+    elif group_by == "lc_state":
+        for item in tp.get_lc_states():
+            filtered = tp.filter_testpoints(lc_state=item).filter_fields(["bazel"])
+            tests = filtered.get_bazel()
+            file.write(template.render(suite_name=item.lower(), test_list=tests))
+
     print(f"Generated {out_file}.")
-
-
