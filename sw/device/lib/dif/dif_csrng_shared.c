@@ -36,9 +36,9 @@ dif_result_t csrng_send_app_cmd(mmio_region_t base_addr,
                                 csrng_app_cmd_type_t cmd_type,
                                 csrng_app_cmd_t cmd) {
   ptrdiff_t cmd_reg_offset;
-  ptrdiff_t sts_reg_offset;
+  ptrdiff_t sts_reg_offset = CSRNG_SW_CMD_STS_REG_OFFSET;
   uint32_t rdy_bit_offset;
-  uint32_t reg_rdy_bit_offset;
+  uint32_t reg_rdy_bit_offset = CSRNG_SW_CMD_STS_CMD_RDY_BIT;
   uint32_t reg;
   bool ready;
 
