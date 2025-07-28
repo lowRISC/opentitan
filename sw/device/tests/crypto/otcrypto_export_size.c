@@ -3,14 +3,123 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/tests/crypto/otcrypto_interface.h"
+// #include "sw/device/silicon_creator/lib/dbg_print.h"
+
+extern void dbg_printf(const char *fmt, ...);
 
 // Simple main function so the linker doesn't discard the inerface struct.
-int main(void) {
-  uint32_t digest_data[8];
-  otcrypto_hash_digest_t digest = {.data = digest_data, .len = 8};
-  otcrypto.sha2_256((otcrypto_const_byte_buf_t){.data = NULL, .len = 0},
-                    &digest);
-
-  // SHA256('') is a constant value; this will always be 0.
-  return digest_data[0] & 1;
+void bare_metal_main(void) {
+  dbg_printf("%p\r\n", otcrypto.symmetric_keygen);
+  dbg_printf("%p\r\n", otcrypto.hw_backed_key);
+  dbg_printf("%p\r\n", otcrypto.wrapped_key_len);
+  dbg_printf("%p\r\n", otcrypto.key_wrap);
+  dbg_printf("%p\r\n", otcrypto.key_unwrap);
+  dbg_printf("%p\r\n", otcrypto.import_blinded_key);
+  dbg_printf("%p\r\n", otcrypto.export_blinded_key);
+  dbg_printf("%p\r\n", otcrypto.aes);
+  dbg_printf("%p\r\n", otcrypto.aes_padded_plaintext_length);
+  dbg_printf("%p\r\n", otcrypto.aes_gcm_encrypt);
+  dbg_printf("%p\r\n", otcrypto.aes_gcm_decrypt);
+  dbg_printf("%p\r\n", otcrypto.aes_gcm_encrypt_init);
+  dbg_printf("%p\r\n", otcrypto.aes_gcm_decrypt_init);
+  dbg_printf("%p\r\n", otcrypto.aes_gcm_update_aad);
+  dbg_printf("%p\r\n", otcrypto.aes_gcm_update_encrypted_data);
+  dbg_printf("%p\r\n", otcrypto.aes_gcm_encrypt_final);
+  dbg_printf("%p\r\n", otcrypto.aes_gcm_decrypt_final);
+  dbg_printf("%p\r\n", otcrypto.drbg_instantiate);
+  dbg_printf("%p\r\n", otcrypto.drbg_reseed);
+  dbg_printf("%p\r\n", otcrypto.drbg_manual_instantiate);
+  dbg_printf("%p\r\n", otcrypto.drbg_manual_reseed);
+  dbg_printf("%p\r\n", otcrypto.drbg_generate);
+  dbg_printf("%p\r\n", otcrypto.drbg_manual_generate);
+  dbg_printf("%p\r\n", otcrypto.drbg_uninstantiate);
+  dbg_printf("%p\r\n", otcrypto.hkdf);
+  dbg_printf("%p\r\n", otcrypto.hkdf_extract);
+  dbg_printf("%p\r\n", otcrypto.hkdf_expand);
+  dbg_printf("%p\r\n", otcrypto.hmac);
+  dbg_printf("%p\r\n", otcrypto.hmac_init);
+  dbg_printf("%p\r\n", otcrypto.hmac_update);
+  dbg_printf("%p\r\n", otcrypto.hmac_final);
+  dbg_printf("%p\r\n", otcrypto.kdf_ctr_hmac);
+  dbg_printf("%p\r\n", otcrypto.kmac);
+  dbg_printf("%p\r\n", otcrypto.kmac_kdf);
+  dbg_printf("%p\r\n", otcrypto.sha2_256);
+  dbg_printf("%p\r\n", otcrypto.sha2_384);
+  dbg_printf("%p\r\n", otcrypto.sha2_512);
+  dbg_printf("%p\r\n", otcrypto.sha2_init);
+  dbg_printf("%p\r\n", otcrypto.sha2_update);
+  dbg_printf("%p\r\n", otcrypto.sha2_final);
+  dbg_printf("%p\r\n", otcrypto.sha3_224);
+  dbg_printf("%p\r\n", otcrypto.sha3_256);
+  dbg_printf("%p\r\n", otcrypto.sha3_384);
+  dbg_printf("%p\r\n", otcrypto.sha3_512);
+  dbg_printf("%p\r\n", otcrypto.shake128);
+  dbg_printf("%p\r\n", otcrypto.shake256);
+  dbg_printf("%p\r\n", otcrypto.cshake128);
+  dbg_printf("%p\r\n", otcrypto.cshake256);
+  dbg_printf("%p\r\n", otcrypto.ed25519_keygen);
+  dbg_printf("%p\r\n", otcrypto.ed25519_sign);
+  dbg_printf("%p\r\n", otcrypto.ed25519_verify);
+  dbg_printf("%p\r\n", otcrypto.ed25519_keygen_async_start);
+  dbg_printf("%p\r\n", otcrypto.ed25519_keygen_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.ed25519_sign_async_start);
+  dbg_printf("%p\r\n", otcrypto.ed25519_sign_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.ed25519_verify_async_start);
+  dbg_printf("%p\r\n", otcrypto.ed25519_verify_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.x25519_keygen);
+  dbg_printf("%p\r\n", otcrypto.x25519);
+  dbg_printf("%p\r\n", otcrypto.x25519_keygen_async_start);
+  dbg_printf("%p\r\n", otcrypto.x25519_keygen_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.x25519_async_start);
+  dbg_printf("%p\r\n", otcrypto.x25519_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.rsa_keygen);
+  dbg_printf("%p\r\n", otcrypto.rsa_public_key_construct);
+  dbg_printf("%p\r\n", otcrypto.rsa_private_key_from_exponents);
+  dbg_printf("%p\r\n", otcrypto.rsa_keypair_from_cofactor);
+  dbg_printf("%p\r\n", otcrypto.rsa_sign);
+  dbg_printf("%p\r\n", otcrypto.rsa_verify);
+  dbg_printf("%p\r\n", otcrypto.rsa_encrypt);
+  dbg_printf("%p\r\n", otcrypto.rsa_decrypt);
+  dbg_printf("%p\r\n", otcrypto.rsa_keygen_async_start);
+  dbg_printf("%p\r\n", otcrypto.rsa_keygen_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.rsa_keypair_from_cofactor_async_start);
+  dbg_printf("%p\r\n", otcrypto.rsa_keypair_from_cofactor_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.rsa_sign_async_start);
+  dbg_printf("%p\r\n", otcrypto.rsa_sign_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.rsa_verify_async_start);
+  dbg_printf("%p\r\n", otcrypto.rsa_verify_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.rsa_encrypt_async_start);
+  dbg_printf("%p\r\n", otcrypto.rsa_encrypt_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.rsa_decrypt_async_start);
+  dbg_printf("%p\r\n", otcrypto.rsa_decrypt_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p256_keygen);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p256_sign);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p256_verify);
+  dbg_printf("%p\r\n", otcrypto.ecdh_p256_keygen);
+  dbg_printf("%p\r\n", otcrypto.ecdh_p256);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p256_keygen_async_start);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p256_keygen_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p256_sign_async_start);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p256_sign_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p256_verify_async_start);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p256_verify_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.ecdh_p256_keygen_async_start);
+  dbg_printf("%p\r\n", otcrypto.ecdh_p256_keygen_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.ecdh_p256_async_start);
+  dbg_printf("%p\r\n", otcrypto.ecdh_p256_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p384_keygen);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p384_sign);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p384_verify);
+  dbg_printf("%p\r\n", otcrypto.ecdh_p384_keygen);
+  dbg_printf("%p\r\n", otcrypto.ecdh_p384);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p384_keygen_async_start);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p384_keygen_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p384_sign_async_start);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p384_sign_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p384_verify_async_start);
+  dbg_printf("%p\r\n", otcrypto.ecdsa_p384_verify_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.ecdh_p384_keygen_async_start);
+  dbg_printf("%p\r\n", otcrypto.ecdh_p384_keygen_async_finalize);
+  dbg_printf("%p\r\n", otcrypto.ecdh_p384_async_start);
+  dbg_printf("%p\r\n", otcrypto.ecdh_p384_async_finalize);
 }

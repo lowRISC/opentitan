@@ -9,6 +9,11 @@ load("//rules/opentitan:defs.bzl", "fpga_params", "opentitan_binary", "opentitan
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "bare_metal_start",
+    srcs = ["bare_metal_start.S"],
+)
+
 ld_library(
     name = "ld_common",
     includes = ["bare_metal_common.ld"],
