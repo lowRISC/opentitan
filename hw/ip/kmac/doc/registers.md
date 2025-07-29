@@ -507,7 +507,6 @@ counter is only reset by the CMD.hash_cnt_clr CSR bit.
 - Offset: `0x24`
 - Reset default: `0x0`
 - Reset mask: `0x3ff`
-- Register enable: [`CFG_REGWEN`](#cfg_regwen)
 
 ### Fields
 
