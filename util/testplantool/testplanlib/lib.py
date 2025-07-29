@@ -81,22 +81,22 @@ class Testplan:
 
     @staticmethod
     def from_dict(testplan: dict) -> "Testplan":
-        OPTIONAL_FIELDS = [
-            "bazel",
-            "lc_states",
-            "features",
-            "boot_stages",
-            "tags",
-            "otp_mutate",
-            "host_support",
-            "si_stage",
-        ]
+        OPTIONAL_FIELDS = {
+            "bazel": lambda: [],
+            "lc_states": lambda: [],
+            "features": lambda: [],
+            "boot_stages": lambda: [],
+            "tags": lambda: [],
+            "otp_mutate": lambda: False,
+            "host_support": lambda: False,
+            "si_stage": lambda: "None",
+        }
         testpoints = testplan["testpoints"]
         for test in testpoints:
             test["ip"] = testplan.get("name", "unknown")
-            for f in OPTIONAL_FIELDS:
+            for f, default in OPTIONAL_FIELDS.items():
                 if f not in test:
-                    test[f] = "None"
+                    test[f] = default()
 
         return Testplan(testpoints)
 
