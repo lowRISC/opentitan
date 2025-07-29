@@ -948,3 +948,51 @@ keyset = rule(
         ),
     },
 )
+
+def _signature_test_impl(ctx):
+    script = ctx.actions.declare_file("{}.bash".format(ctx.label.name))
+
+    files = [f.short_path for f in ctx.files.srcs]
+    ctx.actions.expand_template(
+      template = ctx.file._script,
+      output = script,
+      substitutions = {
+        "@FILES@": " ".join(files),
+        "@OPENTITANTOOL@": ctx.executable._opentitantool.short_path,
+        "@VERIFY_ARGS@": "--spx --domain " + ctx.attr.spx_domain,
+      },
+      is_executable=True,
+  )
+
+    return [
+        DefaultInfo(
+            runfiles = ctx.runfiles(files=ctx.files.srcs + [ctx.executable._opentitantool]),
+            executable= script,
+        )
+    ]
+
+signature_test = rule(
+  implementation = _signature_test_impl,
+  attrs = {
+      "srcs": attr.label_list(allow_files=True, doc="help string"),
+      "spx_domain": attr.string(
+            default = "",
+            values = ["", "Pure", "PrehashedSha256", "PrehashedSha256Reversed"],
+            doc = "The SPHINCS+ domain to use for signing.",
+      ),
+      "_script": attr.label(
+            default = "//rules/scripts:sival_signature_test.bash",
+            doc = "The shell script to execute for the test.",
+            allow_single_file = True,
+            executable = True,
+            cfg = "exec",
+      ),
+      "_opentitantool": attr.label(
+            default = "//sw/host/opentitantool:opentitantool",
+            executable = True,
+            cfg = "exec",
+            doc = "The opentitantool binary to use for signing.",
+        ),
+  },
+  test = True,
+)
