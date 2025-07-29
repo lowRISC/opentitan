@@ -118,7 +118,7 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
       end
     end
     // Recompute data integrity bits because the code above changed `d_data`.
-    rsp.d_user[6:0] = prim_secded_pkg::prim_secded_inv_39_32_enc(rsp.d_data)[38:32];
+    rsp.d_user[6:0] = prim_secded_pkg::prim_secded_inv_39_32_enc(rsp.d_data) >> 32;
   endfunction: update_mem
 
   virtual function void randomize_rsp(REQ rsp);
@@ -141,8 +141,8 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
     rsp.d_user[13:7] = prim_secded_pkg::prim_secded_inv_64_57_enc({51'b0,
                                                                    rsp.d_opcode,
                                                                    rsp.d_size,
-                                                                   rsp.d_error})[63:57];
-    rsp.d_user[6:0] = prim_secded_pkg::prim_secded_inv_39_32_enc(rsp.d_data)[38:32];
+                                                                   rsp.d_error}) >> 57;
+    rsp.d_user[6:0] = prim_secded_pkg::prim_secded_inv_39_32_enc(rsp.d_data) >> 32;
     `uvm_info("dma_pull_seq",
               $sformatf("[check][d_chan] : a_address=0x%08h d_valid_delay=%0d",
                         rsp.a_addr, rsp.d_valid_delay),
