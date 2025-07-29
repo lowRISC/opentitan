@@ -33,7 +33,7 @@ p384_ecdsa_verify:
   /*jal      x1, p384_verify*/
   ecall
 
-.data
+.bss
 
 /* Freely available DMEM space. */
 

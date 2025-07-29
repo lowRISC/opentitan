@@ -174,7 +174,7 @@ p384_scalar_mult:
   ret
 
 /* scratchpad memory */
-.section .data
+.section .bss
 
 .balign 32
 

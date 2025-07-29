@@ -95,7 +95,7 @@ p384_base_mult:
   ret
 
 /* variables and scratchpad memory */
-.section .data
+.section .bss
 
 .balign 32
 

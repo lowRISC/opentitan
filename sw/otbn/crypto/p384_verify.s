@@ -435,7 +435,7 @@ p384_verify:
 
 
 /* scratchpad memory */
-.section .data
+.section .bss
 
 .balign 32
 

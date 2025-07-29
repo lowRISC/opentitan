@@ -283,7 +283,7 @@ p384_invalid_input:
   /* End the program. */
   ecall
 
-.data
+.bss
 
 /* Success code for basic validity checks on the public key and signature.
    Should be HARDENED_BOOL_TRUE or HARDENED_BOOL_FALSE. */
