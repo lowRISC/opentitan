@@ -6,12 +6,19 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/csr.h"
+#include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/crypto/impl/status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rv_core_ibex_regs.h"
 
 enum {
   kBaseAddr = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR,
+  /**
+   * CSR_REG_CPUCTRL[0] is the iCache configuration field.
+   */
+  kCpuctrlICacheMask = 1,
 };
 
 /**
@@ -24,6 +31,33 @@ static void wait_rnd_valid(void) {
     if (bitfield_bit32_read(reg, RV_CORE_IBEX_RND_STATUS_RND_DATA_VALID_BIT)) {
       return;
     }
+  }
+}
+
+hardened_bool_t ibex_disable_icache(void) {
+  // Check if the instruction cache is already disabled.
+  uint32_t csr;
+  CSR_READ(CSR_REG_CPUCTRL, &csr);
+  hardened_bool_t icache_enabled = kHardenedBoolFalse;
+  if ((csr & kCpuctrlICacheMask) == 1) {
+    icache_enabled = kHardenedBoolTrue;
+  }
+
+  // If the instruction cache is enabled, disable it.
+  if (launder32(icache_enabled) == kHardenedBoolTrue) {
+    CSR_CLEAR_BITS(CSR_REG_CPUCTRL, kCpuctrlICacheMask);
+  } else {
+    HARDENED_CHECK_EQ(icache_enabled, kHardenedBoolFalse);
+  }
+
+  return icache_enabled;
+}
+
+void ibex_restore_icache(hardened_bool_t icache_enabled) {
+  // If the instruction cache was enabled before the CL disabled it, enable it
+  // again.
+  if (icache_enabled == kHardenedBoolTrue) {
+    CSR_SET_BITS(CSR_REG_CPUCTRL, kCpuctrlICacheMask);
   }
 }
 
