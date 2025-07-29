@@ -1794,7 +1794,7 @@ module top_darjeeling #(
       .jtag_o(),
       .lc_hw_debug_clr_i(lc_ctrl_lc_hw_debug_clr),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
-      .lc_dft_en_i(lc_ctrl_pkg::Off),
+      .lc_dft_en_i(lc_ctrl_lc_dft_en),
       .pinmux_hw_debug_en_i(lc_ctrl_pkg::Off),
       .otp_dis_rv_dm_late_debug_i(rv_dm_otp_dis_rv_dm_late_debug),
       .unavailable_i(1'b0),
