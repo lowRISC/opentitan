@@ -22,7 +22,7 @@ module tb;
 
   // Common wire - Handshake/Interrupt Inputs
   wire [dma_reg_pkg::NumIntClearSources - 1 : 0] handshake_i;
-  dma_if dma_intf(.clk_i(clk), .rst_ni(rst_n));
+  dma_if dma_intf();
   assign handshake_i = dma_intf.handshake_i;
 
   // Common Interface - Interrupt Outputs
@@ -68,20 +68,6 @@ module tb;
     .sys_o (sys_tl_adapter_if.sys_h2d),
     .sys_i (sys_tl_adapter_if.sys_d2h)
   );
-
-  assign dma_intf.remaining     = dut.remaining_bytes;
-  assign dma_intf.read_cmpl_host = tl_host_if.d2h.d_valid;
-  assign dma_intf.read_cmpl_ctn = tl_ctn_if.d2h.d_valid;
-
-  assign dma_intf.read_opc_host = tl_host_if.d2h.d_opcode;
-  assign dma_intf.read_opc_ctn = tl_ctn_if.d2h.d_opcode;
-
-
-  // Clocking related
-  bit clk_100mhz;
-  initial begin
-    forever #5ns clk_100mhz <= ~clk_100mhz;
-  end
 
   // Main Block for Initialization
   initial begin
