@@ -25,6 +25,9 @@ inputs:
     description: Path at which to install Verible
     required: true
     default: /tools/verible
+  install-verible:
+    description: Install verbile
+    default: false
   configure-bazel:
     description: Configure Bazel to use remote cache
     required: true
@@ -73,6 +76,7 @@ runs:
       shell: bash
 
     - name: Install Verible
+      if: inputs.install-verible == 'true'
       run: |
         VERIBLE_TAR="verible-${{ inputs.verible-version }}-linux-static-x86_64.tar.gz"
         VERIBLE_URL="https://github.com/chipsalliance/verible/releases/download/${{ inputs.verible-version }}/${VERIBLE_TAR}"
