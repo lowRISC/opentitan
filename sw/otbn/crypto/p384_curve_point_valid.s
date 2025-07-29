@@ -31,7 +31,7 @@ validate_point:
 
   ecall
 
-.data
+.bss
 
 /* Public key x-coordinate. */
 .globl x

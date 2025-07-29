@@ -270,7 +270,7 @@ p384_sign:
 
 
 /* scratchpad memory */
-.section .data
+.section .bss
 
 .balign 32
 
