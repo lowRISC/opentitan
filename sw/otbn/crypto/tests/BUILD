@@ -583,7 +583,10 @@ otbn_consttime_test(
 
 otbn_consttime_test(
     name = "p384_scalar_mult_consttime",
-    subroutine = "p384_scalar_mult",
+    subroutine = "p384_scalar_mult_checked",
+    ignore = [
+        "trigger_fault_if_fg0_not_z",
+    ],
     deps = [
         ":p384_scalar_mult_test",
     ],
