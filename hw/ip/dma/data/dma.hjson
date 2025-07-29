@@ -147,8 +147,7 @@
     { name: "RANGE.CONFIG.REGWEN_MUBI",
       desc: "DMA enabled memory range is software multibit lockable."
     }
-    {
-      name: "FSM.SPARSE",
+    { name: "FSM.SPARSE",
       desc: "FSM is sparsely encoded. There is a single `ctrl_state` FSM."
     }
   ]

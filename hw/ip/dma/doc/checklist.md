@@ -9,16 +9,16 @@ All checklist items refer to the content in the [Checklist.](../../../../doc/pro
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Not Started | [DMA Controller](../README.md)
-Documentation | [CSR_DEFINED][]                | Not Started |
-RTL           | [CLKRST_CONNECTED][]           | Not Started |
-RTL           | [IP_TOP][]                     | Not Started |
-RTL           | [IP_INSTANTIABLE][]            | Not Started |
-RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Not Started |
-RTL           | [FUNC_IMPLEMENTED][]           | Not Started |
-RTL           | [ASSERT_KNOWN_ADDED][]         | Not Started |
-Code Quality  | [LINT_SETUP][]                 | Not Started |
-Security      | [SEC_CM_SCOPED][]              | Not Started |
+Documentation | [SPEC_COMPLETE][]              | Done        | [DMA Controller](../README.md)
+Documentation | [CSR_DEFINED][]                | Done        |
+RTL           | [CLKRST_CONNECTED][]           | Done        |
+RTL           | [IP_TOP][]                     | Done        |
+RTL           | [IP_INSTANTIABLE][]            | Done        |
+RTL           | [PHYSICAL_MACROS_DEFINED_80][] | N/A         |
+RTL           | [FUNC_IMPLEMENTED][]           | Done        |
+RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
+Code Quality  | [LINT_SETUP][]                 | Done        |
+Security      | [SEC_CM_SCOPED][]              | Done        |
 
 [SPEC_COMPLETE]:              ../../../../doc/project_governance/checklist/README.md#spec_complete
 [CSR_DEFINED]:                ../../../../doc/project_governance/checklist/README.md#csr_defined
@@ -35,24 +35,24 @@ Security      | [SEC_CM_SCOPED][]              | Not Started |
 
 Type          | Item                      | Resolution  | Note/Collaterals
 --------------|---------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]          | Not Started |
-Documentation | [BLOCK_DIAGRAM][]         | Not Started |
-Documentation | [DOC_INTERFACE][]         | Not Started |
-Documentation | [DOC_INTEGRATION_GUIDE][] | Not Started |
-Documentation | [MISSING_FUNC][]          | Not Started |
-Documentation | [FEATURE_FROZEN][]        | Not Started |
-RTL           | [FEATURE_COMPLETE][]      | Not Started |
-RTL           | [PORT_FROZEN][]           | Not Started |
-RTL           | [ARCHITECTURE_FROZEN][]   | Not Started |
-RTL           | [REVIEW_TODO][]           | Not Started |
-RTL           | [STYLE_X][]               | Not Started |
-RTL           | [CDC_SYNCMACRO][]         | Not Started |
-Code Quality  | [LINT_PASS][]             | Not Started |
-Code Quality  | [CDC_SETUP][]             | Not Started |
-Code Quality  | [RDC_SETUP][]             | Not Started |
-Code Quality  | [AREA_CHECK][]            | Not Started |
-Code Quality  | [TIMING_CHECK][]          | Not Started |
-Security      | [SEC_CM_DOCUMENTED][]     | Not Started |
+Documentation | [NEW_FEATURES][]          | Done        |
+Documentation | [BLOCK_DIAGRAM][]         | Done        |
+Documentation | [DOC_INTERFACE][]         | Done        |
+Documentation | [DOC_INTEGRATION_GUIDE][] | Done        |
+Documentation | [MISSING_FUNC][]          | Done        |
+Documentation | [FEATURE_FROZEN][]        | Done        |
+RTL           | [FEATURE_COMPLETE][]      | Done        |
+RTL           | [PORT_FROZEN][]           | Done        |
+RTL           | [ARCHITECTURE_FROZEN][]   | Done        |
+RTL           | [REVIEW_TODO][]           | Done        |
+RTL           | [STYLE_X][]               | Done        |
+RTL           | [CDC_SYNCMACRO][]         | Done        |
+Code Quality  | [LINT_PASS][]             | Done        |
+Code Quality  | [CDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
+Code Quality  | [RDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
+Code Quality  | [AREA_CHECK][]            | Done        |
+Code Quality  | [TIMING_CHECK][]          | Done        |
+Security      | [SEC_CM_DOCUMENTED][]     | Done        |
 
 [NEW_FEATURES]:          ../../../../doc/project_governance/checklist/README.md#new_features
 [BLOCK_DIAGRAM]:         ../../../../doc/project_governance/checklist/README.md#block_diagram
@@ -77,9 +77,9 @@ Security      | [SEC_CM_DOCUMENTED][]     | Not Started |
 
  Type         | Item                         | Resolution  | Note/Collaterals
 --------------|------------------------------|-------------|------------------
-Security      | [SEC_CM_ASSETS_LISTED][]     | Not Started |
-Security      | [SEC_CM_IMPLEMENTED][]       | Not Started |
-Security      | [SEC_CM_RND_CNST][]          | Not Started |
+Security      | [SEC_CM_ASSETS_LISTED][]     | Done        |
+Security      | [SEC_CM_IMPLEMENTED][]       | Done        |
+Security      | [SEC_CM_RND_CNST][]          | N/A         |
 Security      | [SEC_CM_NON_RESET_FLOPS][]   | Not Started |
 Security      | [SEC_CM_SHADOW_REGS][]       | Not Started |
 Security      | [SEC_CM_RTL_REVIEWED][]      | Not Started |
@@ -125,25 +125,25 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started | [DMA Controller DV document](../dv/README.md)
-Documentation | [TESTPLAN_COMPLETED][]                | Not Started | [DMA Controller Testplan](../dv/README.md#testplan)
-Testbench     | [TB_TOP_CREATED][]                    | Not Started |
-Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
-Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
-Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Not Started |
-Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Not Started |
-Testbench     | [TB_GEN_AUTOMATED][]                  | Not Started |
-Tests         | [SIM_SMOKE_TEST_PASSING][]            | Not Started |
-Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Not Started |
-Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Not Started |
-Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Not Started |
-Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Not Started |
-Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Not Started |
-Regression    | [FPV_REGRESSION_SETUP][]              | Not Started |
-Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Not Started |
-Code Quality  | [TB_LINT_SETUP][]                     | Not Started |
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [DMA Controller DV document](../dv/README.md)
+Documentation | [TESTPLAN_COMPLETED][]                | Done        | [DMA Controller Testplan](../dv/README.md#testplan)
+Testbench     | [TB_TOP_CREATED][]                    | Done        |
+Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
+Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
+Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Done        |
+Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Done        |
+Testbench     | [TB_GEN_AUTOMATED][]                  | N/A         |
+Tests         | [SIM_SMOKE_TEST_PASSING][]            | Done        |
+Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Done        |
+Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | N/A         |
+Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Done        |
+Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Done        |
+Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Done        |
+Regression    | [FPV_REGRESSION_SETUP][]              | N/A         |
+Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done        |
+Code Quality  | [TB_LINT_SETUP][]                     | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Not Started |
-Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
+Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
 Review        | [TESTPLAN_REVIEWED][]                 | Not Started |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started | Exception (?)
 Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
@@ -175,17 +175,17 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Not Started |
-Documentation | [DV_DOC_COMPLETED][]                    | Not Started |
-Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Not Started |
-Testbench     | [ALL_INTERFACES_EXERCISED][]            | Not Started |
-Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Not Started |
-Testbench     | [SIM_TB_ENV_COMPLETED][]                | Not Started |
-Tests         | [SIM_ALL_TESTS_PASSING][]               | Not Started |
-Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | Not Started |
-Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | Not Started |
-Tests         | [SIM_FW_SIMULATED][]                    | Not Started |
-Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Not Started |
+Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Done        |
+Documentation | [DV_DOC_COMPLETED][]                    | Done        |
+Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Done        |
+Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
+Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        |
+Testbench     | [SIM_TB_ENV_COMPLETED][]                | Done        |
+Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        |
+Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | N/A         |
+Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | N/A         |
+Tests         | [SIM_FW_SIMULATED][]                    | N/A         |
+Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Done        |
 Coverage      | [SIM_CODE_COVERAGE_V2][]                | Not Started |
 Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Not Started |
 Coverage      | [FPV_CODE_COVERAGE_V2][]                | Not Started |
