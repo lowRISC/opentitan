@@ -172,6 +172,47 @@ cc_test(
     ],
 )
 
+# Run with --config=fuzztest
+cc_test(
+    name = "owner_block_fuzztest",
+    srcs = [
+        "owner_block_fuzztest.cc",
+        "testdata/basic_owner_testdata.h",
+    ],
+    deps = [
+        ":datatypes",
+        ":owner_block",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/testing:binary_blob",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@fuzztest//fuzztest",
+        "@fuzztest//fuzztest:fuzztest_gtest_main",
+        "@googletest//:gtest",
+    ],
+)
+
+# Run via Centipede
+cc_binary(
+    name = "owner_block_fuzztest_binary",
+    testonly = True,
+    srcs = [
+        "owner_block_fuzztest.cc",
+        "testdata/basic_owner_testdata.h",
+    ],
+    deps = [
+        ":datatypes",
+        ":owner_block",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/testing:binary_blob",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@fuzztest//fuzztest",
+        "@fuzztest//fuzztest:fuzztest_gtest_main",
+        "@googletest//:gtest",
+    ],
+)
+
 cc_library(
     name = "ownership_unlock",
     srcs = ["ownership_unlock.c"],
