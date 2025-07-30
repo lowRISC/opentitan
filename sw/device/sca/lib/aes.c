@@ -22,10 +22,6 @@
  */
 #include "aes.h"
 
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "sw/device/lib/base/memory.h"
 
 enum {
