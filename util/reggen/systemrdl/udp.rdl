@@ -95,3 +95,11 @@ property async_clk {
   component = reg;
   default = false;
 };
+
+/* If true, integrity bits are passed through directly from the memory.
+ */
+property integrity_bypass {
+  type = boolean;
+  component = mem;
+  default = false;
+};
