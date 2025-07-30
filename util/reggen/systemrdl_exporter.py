@@ -147,6 +147,9 @@ class Window2Systemrdl:
         swaccess = SWAccess2Systemrdl(self.inner.swaccess).export()
         self.importer.assign_property(rdl_mem_t, "sw", swaccess["sw"])
 
+        if self.inner.data_intg_passthru:
+            self.importer.assign_property(rdl_mem_t, "integrity_bypass", True)
+
         return self.importer.instantiate_mem(
             rdl_mem_t, self.inner.name.upper(), self.inner.offset, [self.inner.items]
         )
