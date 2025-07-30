@@ -18,7 +18,7 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "doc_files",
-    srcs = glob(["**/*.md"]),
+    srcs = glob(["**/*.md"]) + ["//sw/device/lib/base/freestanding:doc_files"],
 )
 
 dual_cc_library(
