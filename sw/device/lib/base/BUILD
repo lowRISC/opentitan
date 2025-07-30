@@ -15,6 +15,11 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = ["//sw/device/lib/base/freestanding:doc_files"],
+)
+
 dual_cc_library(
     name = "crc32",
     srcs = dual_inputs(

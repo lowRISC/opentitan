@@ -63,7 +63,6 @@ cc_toolchain(
         ":arch_rv32imc",
         ":arch_rv32imcb",
         ":abi",
-        ":sys_spec",
         ":warnings",
         ":reproducible",
         ":symbol_garbage_collection",
@@ -246,27 +245,15 @@ cc_args(
         "-isystem",
         "{clang-include}",
         "-isystem",
-        "{riscv32-include}",
-        "-isystem",
-        "{cxx-include}",
-        "-isystem",
-        "{cxx-backward}",
-        "-isystem",
-        "{cxx-riscv32}",
+        "{freestanding}",
     ],
     data = [
-        "@lowrisc_rv32imcb_toolchain//:cxx-backward",
-        "@lowrisc_rv32imcb_toolchain//:cxx-include",
-        "@lowrisc_rv32imcb_toolchain//:cxx-riscv32-unknown-elf",
+        "//sw/device/lib/base/freestanding",
         "@lowrisc_rv32imcb_toolchain//:lib-clang-include",
-        "@lowrisc_rv32imcb_toolchain//:riscv32-unknown-elf-include",
     ],
     format = {
         "clang-include": "@lowrisc_rv32imcb_toolchain//:lib-clang-include",
-        "riscv32-include": "@lowrisc_rv32imcb_toolchain//:riscv32-unknown-elf-include",
-        "cxx-include": "@lowrisc_rv32imcb_toolchain//:cxx-include",
-        "cxx-backward": "@lowrisc_rv32imcb_toolchain//:cxx-backward",
-        "cxx-riscv32": "@lowrisc_rv32imcb_toolchain//:cxx-riscv32-unknown-elf",
+        "freestanding": "//sw/device/lib/base/freestanding",
     },
 )
 
@@ -477,16 +464,10 @@ cc_args_list(
 )
 
 cc_args(
-    name = "sys_spec",
-    actions = ["@rules_cc//cc/toolchains/actions:link_actions"],
-    args = ["-lnosys"],
-)
-
-cc_args(
     name = "constructor_destructor",
     actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
     args = [
-        # Indicate that this program may not neccesarily be able to use standard system calls.
+        # Indicate that this program may not necessarily be able to use standard system calls.
         "-ffreestanding",
         # Instantiate global variables only once.
         "-fno-common",
