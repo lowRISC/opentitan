@@ -101,7 +101,7 @@ ifneq (${sw_images},)
 			echo "Building SW image \"$${bazel_label}\"."; \
 			bazel_airgapped_opts=""; \
 			bazel_opts="${sw_build_opts} --define DISABLE_VERILATOR_BUILD=true"; \
-			bazel_opts+=" --//util/design/data:img_seed=${seed}"; \
+			bazel_opts+=" --//util/design/data:img_seed=${short_seed}"; \
 			if [[ "${build_seed}" != "None" ]]; then \
 				bazel_opts+=" --//util/design/data:lc_seed=${build_seed}"; \
 				bazel_opts+=" --//util/design/data:otp_seed=${build_seed}"; \
