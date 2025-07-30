@@ -150,9 +150,7 @@ class Window2Systemrdl:
         if self.inner.data_intg_passthru:
             self.importer.assign_property(rdl_mem_t, "integrity_bypass", True)
 
-        return self.importer.instantiate_mem(
-            rdl_mem_t, self.inner.name.upper(), self.inner.offset, [self.inner.items]
-        )
+        return self.importer.instantiate_mem(rdl_mem_t, self.inner.name.upper(), self.inner.offset)
 
 
 class Register2Systemrdl:
