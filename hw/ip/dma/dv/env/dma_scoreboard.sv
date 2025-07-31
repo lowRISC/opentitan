@@ -45,7 +45,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
   bit [NUM_MAX_INTERRUPTS-1:0] intr_enable;
   // Interrupt test state (contributes to `intr_state`).
   bit [NUM_MAX_INTERRUPTS-1:0] intr_test;
-  // Hardware  interrupt state (contributes to `intr_state`).
+  // Hardware interrupt state (contributes to `intr_state`).
   bit [NUM_MAX_INTERRUPTS-1:0] intr_state_hw;
 
   // Prediction of the state of an interrupt signal from the DUT.
@@ -884,6 +884,14 @@ class dma_scoreboard extends cip_base_scoreboard #(
         intr_test = item.a_data & ro_mask;
         now_set = item.a_data | intr_state_hw;
         predict_interrupts(CSRtoIntrLatency, item.a_data | ro_mask, now_set & intr_enable);
+
+        // Sample tested interrupts.
+        if (cfg.en_cov) begin
+          uvm_reg_data_t intr_state = `gmv(ral.intr_state);
+          foreach (item.a_data[i]) begin
+            cov.intr_test_cg.sample(i, item.a_data[i], intr_enable[i], intr_state[i]);
+          end
+        end
       end
       "src_addr_lo": begin
         dma_config.src_addr[31:0] = item.a_data;
@@ -1144,6 +1152,13 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // RAL is unaware of the combined contributions of `intr_test` and the `status` register.
         `DV_CHECK_EQ(item.d_data, intr_test | intr_state_hw, "Mismatched interrupt state")
         do_read_check = 1'b0;
+        // Sample asserted interrupt bits.
+        if (cfg.en_cov) begin
+          foreach (item.d_data[i]) begin
+            cov.intr_cg.sample(i, intr_enable[i], item.d_data[i]);
+            cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
+          end
+        end
       end
       "status": begin
         bit busy, done, chunk_done, aborted, error, sha2_digest_valid;
@@ -1249,7 +1264,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         error_code[DmaRangeValidErr] = get_field_val(ral.error_code.range_valid_error, item.d_data);
         error_code[DmaAsidErr]       = get_field_val(ral.error_code.asid_error, item.d_data);
         if (cfg.en_cov) begin
-          cov.error_code_cg.sample(.error_code (error_code));
+          cov.error_code_cg.sample(.error_code(error_code));
         end
       end
       // Register read check for lock register
