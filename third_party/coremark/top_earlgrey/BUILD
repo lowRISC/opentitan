@@ -28,7 +28,6 @@ opentitan_test(
     name = "coremark_test",
     srcs = [
         "core_portme.c",
-        "cvt.c",
         "ee_printf.c",
     ],
     copts = [
