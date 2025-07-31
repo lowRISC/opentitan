@@ -155,8 +155,26 @@ class BitstreamCache(object):
         query = urllib.parse.urlencode(kwargs)
         url = url_parts._replace(path=path, query=query).geturl()
 
-        response = urllib.request.urlopen(url)
-        return response.read()
+        # Attempt to get from the URL, with 4 attempts (3 retries)
+        # and exponential backoff (1s, 2s, 4s, 8s).
+        max_attempts = 4
+        attempt = 0
+        wait_time = 1.0
+        while attempt < max_attempts:
+            attempt += 1
+            try:
+                response = urllib.request.urlopen(url)
+                return response.read()
+            except urllib.error.HTTPError as e:
+                if e.code not in (403, 408, 429, 500, 502, 503, 504):
+                    logging.error(
+                        f"Request to {url} failed with status code {e.code}")
+                    sys.exit(1)
+                elif attempt >= max_attempts:
+                    logging.error(f"Requests to {url} failed afer retries: {e}")
+                    sys.exit(1)
+            time.sleep(wait_time)
+            wait_time *= 2.0
 
     def GetBitstreamsAvailable(self, refresh, load_latest_update=True):
         """Inventory which bitstreams are available.
