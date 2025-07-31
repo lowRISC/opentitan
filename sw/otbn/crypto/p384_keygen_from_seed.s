@@ -101,9 +101,17 @@ p384_key_from_seed:
   /* Compute d1. Because 2^384 < 2 * n, a conditional subtraction is
      sufficient to reduce. Similarly to the carry bit, the conditional bit here
      is not very sensitive because the shares are large relative to n.
+
+     N.B. Even though the conditional bit isn't sensitive here, other flags set
+     by the above subtraction (i.e. the LSB flag) may be; the dummy instruction
+     below serves both to clear these flags as well as to separate instructions
+     accessing w11 and w21 respectively, as these form the upper words of a pair
+     of secret shares.
+
        [w6,w5] <= x1 mod n = d1 */
   bn.sel    w5, w10, w24, FG0.C
   bn.sel    w6, w11, w25, FG0.C
+  bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
 
   /* Isolate the carry bit and shift it back into position.
        w25 <= x0[384] << 128 */
@@ -130,7 +138,11 @@ p384_key_from_seed:
 
   /* Compute d0 with a modular subtraction. First we add n to protect
      against underflow, then conditionally subtract it again if needed.
-       [w23,w22] <= ([w21, w20] - [w25,w24]) mod n = d0 */
+       [w23,w22] <= ([w21, w20] - [w25,w24]) mod n = d0
+
+     N.B. We also insert a dummy instruction after this step, as the flags set
+     will reveal information regarding d0 in the case that the final conditional
+     subtraction is performed. */
   bn.add    w20, w20, w16
   bn.addc   w21, w21, w17
   bn.sub    w20, w20, w24
@@ -139,6 +151,7 @@ p384_key_from_seed:
   bn.subb   w27, w21, w17
   bn.sel    w22, w20, w26, FG0.C
   bn.sel    w23, w21, w27, FG0.C
+  bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
 
   /* Get 63 bits of randomness from RND, multiply it with n,
      and add it to the key share to get a 448-bit share. */
@@ -151,9 +164,13 @@ p384_key_from_seed:
   bn.mov    w1, w18
   bn.mov    w2, w19
 
-  /* [w6,w5] <= [w6,w5] + [w2,w1] = d1 + (RND >> 193) * n = d1' */
-  bn.add    w5, w5, w1
-  bn.addc   w6, w6, w2
+  /* N.B. We clear flags after this step to prevent the flags from leaking
+     information about d1'.
+
+      [w6,w5] <= [w6,w5] + [w2,w1] = d1 + (RND >> 193) * n = d1' */
+  bn.add    w5,  w5,  w1
+  bn.addc   w6,  w6,  w2
+  bn.add    w31, w31, w31  /* dummy instruction to clear flags */
 
   /* [w4,w3] <= (RND >> 193) * n */
   bn.wsrr   w10, RND
@@ -163,9 +180,13 @@ p384_key_from_seed:
   bn.mov    w3, w18
   bn.mov    w4, w19
 
-  /* [w23,w22] <= [w23,w22] + [w4,w3] = d0 + (RND >> 193) * n = d0' */
+  /* N.B. We clear flags after this step to prevent the flags from leaking
+     information about d0'.
+
+     [w23,w22] <= [w23,w22] + [w4,w3] = d0 + (RND >> 193) * n = d0' */
   bn.add    w22, w22, w3
   bn.addc   w23, w23, w4
+  bn.add    w31, w31, w31  /* dummy instruction to clear flags */
 
   /* Write first 448-bit share to DMEM.
      dmem[d0] <= [w23,w22] = d0' */
