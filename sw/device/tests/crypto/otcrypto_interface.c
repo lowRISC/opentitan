@@ -4,7 +4,7 @@
 
 #include "sw/device/tests/crypto/otcrypto_interface.h"
 
-const otcrypto_interface_t otcrypto = {
+const otcrypto_interface_t __attribute__((used)) otcrypto = {
     // Symmetric key generation.
     .symmetric_keygen = &otcrypto_symmetric_keygen,
     .hw_backed_key = &otcrypto_hw_backed_key,
