@@ -29,6 +29,7 @@ from systemrdl.component import Addrmap
 from systemrdl.core.parameter import Parameter
 from systemrdl import rdltypes
 from systemrdl.rdltypes import AccessType, OnReadType, OnWriteType  # type: ignore[attr-defined]
+from systemrdl.ast.references import InstRef
 from rdlexporter import RdlExporter
 
 
@@ -86,6 +87,7 @@ class SWAccess2Systemrdl:
 class Field2Systemrdl:
     inner: Field
     importer: RDLImporter
+    root: Addrmap
 
     def _get_mubi_name(self) -> str:
         alignment = 4
@@ -130,6 +132,18 @@ class Field2Systemrdl:
             enum = self.importer.compiler.namespace.lookup_type(mubi_enum_name)
             self.importer.assign_property(field, "encode", enum)
 
+        if swwe := bool(regwen):
+            if reg_ref := self.root.get_child_by_name(str(regwen)):
+                # This is a workaround and shall be fixed when the Issue
+                # https://github.com/SystemRDL/systemrdl-compiler/issues/276 is fixed.
+                swwe = InstRef(
+                    self.importer.compiler.env,
+                    self.root,
+                    [(str(regwen), [], None), (str(reg_ref.children[0].inst_name), [], None)],
+                )  # type: ignore
+
+            self.importer.assign_property(field, "swwe", swwe)
+
         return field
 
 
@@ -156,13 +170,15 @@ class Window2Systemrdl:
 class Register2Systemrdl:
     inner: Register
     importer: RDLImporter
+    root: Addrmap
     stride: int | None = None
     count: int | None = None
     strip_suffix: bool = False
     name: str = ""
 
-    def __init__(self, reg: MultiRegister | Register, importer: RDLImporter):
+    def __init__(self, reg: MultiRegister | Register, importer: RDLImporter, root: Addrmap):
         self.importer = importer
+        self.root = root
         if isinstance(reg, Register):
             self.inner = reg
             self.name = reg.name
@@ -181,7 +197,9 @@ class Register2Systemrdl:
         for rfield in self.inner.fields:
             self.importer.add_child(
                 reg_type,
-                Field2Systemrdl(rfield, self.importer).export(self.strip_suffix, self.inner.regwen),
+                Field2Systemrdl(rfield, self.importer, self.root).export(
+                    self.strip_suffix, self.inner.regwen
+                ),
             )
 
         reg_type.external = self.inner.hwext
@@ -225,11 +243,15 @@ class RegBlock2Systemrdl:
 
         # registers and multiregs
         for reg in self.inner.registers:
-            self.importer.add_child(addrmap, Register2Systemrdl(reg, self.importer).export())
+            self.importer.add_child(
+                addrmap, Register2Systemrdl(reg, self.importer, addrmap).export()
+            )
 
         # multiregs
         for mreg in self.inner.multiregs:
-            self.importer.add_child(addrmap, Register2Systemrdl(mreg, self.importer).export())
+            self.importer.add_child(
+                addrmap, Register2Systemrdl(mreg, self.importer, addrmap).export()
+            )
 
         # windows
         for window in self.inner.windows:
