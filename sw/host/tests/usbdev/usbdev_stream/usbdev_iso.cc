@@ -147,6 +147,7 @@ bool USBDevIso::ServiceOUT() {
     uint8_t *data;
     size_t num_bytes = DataAvailable(&data);
     assert(num_bytes >= len);
+    (void)num_bytes;
 
     // Supply details of the single OUT packet.
     if (!xfrOut_) {
