@@ -39,17 +39,6 @@ const uint8_t kSpiTxData[kSpiDeviceDatasetSize] = {
     0xf5, 0xb1, 0xab, 0xef, 0x6f, 0xd8, 0x23, 0xfd,
 };
 
-static status_t configure_jedec_id(dif_spi_device_handle_t *spid) {
-  dif_spi_device_flash_id_t id = {
-      .device_id = 0x2298,
-      .manufacturer_id = 0x74,
-      .continuation_code = 0x17,
-      .num_continuation_code = 2,
-  };
-  TRY(dif_spi_device_set_flash_id(spid, id));
-  return OK_STATUS();
-}
-
 static status_t configure_flash_mode(dif_spi_device_handle_t *spid) {
   dif_spi_device_config_t spi_device_config = {
       .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
