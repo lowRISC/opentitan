@@ -63,8 +63,6 @@ runs:
       shell: bash
       run: |
         uv pip install -r python-requirements.txt --require-hashes
-        # We installed uv from setup-uv action, so uninstall from venv to prevent conflict
-        uv pip uninstall uv
 
     - name: Install Verilator
       run: |
