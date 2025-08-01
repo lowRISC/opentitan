@@ -316,7 +316,7 @@ cc_library(
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/runtime:print_uart",
     ],
 )
 
@@ -344,7 +344,7 @@ opentitan_test(
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/runtime:print_uart",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
