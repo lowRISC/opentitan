@@ -11,6 +11,7 @@ filesets:
       - lowrisc:dv:cip_lib
       - lowrisc:dv:dv_base_reg
       - lowrisc:dv:dv_lib
+      - lowrisc:darjeeling_ip:ac_range_check:0.1
     files:
       - ac_range_check_env_pkg.sv
       - ac_range_check_dut_cfg.sv: {is_include_file: true}
@@ -26,6 +27,7 @@ filesets:
       - seq_lib/ac_range_check_common_vseq.sv: {is_include_file: true}
       - seq_lib/ac_range_check_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/ac_range_check_smoke_racl_vseq.sv: {is_include_file: true}
+      - seq_lib/ac_range_check_smoke_high_threshold_vseq.sv: {is_include_file: true}
       - seq_lib/ac_range_check_bypass_vseq.sv: {is_include_file: true}
       - seq_lib/ac_range_check_lock_range_vseq.sv: {is_include_file: true}
       - seq_lib/ac_range_check_stress_all_vseq.sv: {is_include_file: true}
