@@ -8,16 +8,38 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
-#include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/ottf_console_internal.h"
-#include "sw/device/lib/testing/test_framework/ottf_isrs.h"
+#include "sw/device/lib/testing/test_framework/ottf_console.h"
 
 #include "spi_device_regs.h"  // Generated.
 
 #define MODULE_ID MAKE_MODULE_ID('o', 'c', 's')
+
+/**
+ * SPI console buffer management constants.
+ */
+enum {
+  kSpiDeviceReadBufferSizeBytes =
+      SPI_DEVICE_PARAM_SRAM_READ_BUFFER_DEPTH * sizeof(uint32_t),
+  kSpiDeviceFrameHeaderSizeBytes = 12,
+  kSpiDeviceBufferPreservedSizeBytes = kSpiDeviceFrameHeaderSizeBytes,
+  kSpiDeviceMaxFramePayloadSizeBytes = kSpiDeviceReadBufferSizeBytes -
+                                       kSpiDeviceFrameHeaderSizeBytes -
+                                       kSpiDeviceBufferPreservedSizeBytes - 4,
+  kSpiDeviceFrameMagicNumber = 0xa5a5beef,
+};
+
+// Staging buffer used by ottf_console.c for the main console when using SPI.
+// This buffer MUST NOT be used directly in this file. It is only declared here
+// so it's size can use all the SPI device parameters.
+static char main_spi_buf[kSpiDeviceMaxFramePayloadSizeBytes];
+
+void *ottf_console_spi_get_main_staging_buffer(size_t *size) {
+  *size = sizeof(main_spi_buf);
+  return main_spi_buf;
+}
 
 // The following variables are only initialized if at least one console
 // needs a GPIO.
