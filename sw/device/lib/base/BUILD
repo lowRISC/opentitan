@@ -259,6 +259,15 @@ cc_library(
     deps = [":bitfield"],
 )
 
+cc_test(
+    name = "random_order_unittest",
+    srcs = ["random_order_unittest.cc"],
+    deps = [
+        ":random_order",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "hardened_memory",
     srcs = ["hardened_memory.c"],
