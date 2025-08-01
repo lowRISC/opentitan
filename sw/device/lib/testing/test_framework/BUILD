@@ -13,6 +13,8 @@ load(
     "opentitan_test",
     "verilator_params",
 )
+load("//rules/opentitan:util.bzl", "flatten")
+load("//hw/top:defs.bzl", "opentitan_if_ip")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -335,6 +337,7 @@ OTTF_CONSOLE_BACKENDS = {
             "//sw/device/lib/dif:rv_plic",
             "//sw/device/lib/runtime:irq",
         ],
+        "defines": ["OTTF_CONSOLE_HAS_UART"],
     },
     "spi_device": {
         "srcs": ["ottf_console_spi.c"],
@@ -344,6 +347,7 @@ OTTF_CONSOLE_BACKENDS = {
             "//sw/device/lib/dif:pinmux",
             "//sw/device/lib/testing:spi_device_testutils",
         ],
+        "defines": ["OTTF_CONSOLE_HAS_SPI_DEVICE"],
     },
 }
 
@@ -361,6 +365,7 @@ cc_library(
     cc_library(
         name = "ottf_console_{}_header".format(ip),
         hdrs = cfg["hdrs"],
+        defines = cfg["defines"],
         target_compatible_with = [OPENTITAN_CPU],
         deps = cfg["deps"] + [
             ":ottf_console_types",
@@ -374,10 +379,14 @@ cc_library(
     hdrs = [
         "ottf_console.h",
     ],
-    deps = [
-        ":ottf_console_{}_header".format(ip)
+    deps = flatten([
+        opentitan_if_ip(
+            ip,
+            [":ottf_console_{}_header".format(ip)],
+            [],
+        )
         for ip in OTTF_CONSOLE_BACKENDS
-    ] + [
+    ]) + [
         ":ottf_console_types",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:gpio",
@@ -410,10 +419,14 @@ cc_library(
         "//sw/device/lib/base:status",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:print",
-    ] + [
-        ":ottf_console_{}".format(ip)
+    ] + flatten([
+        opentitan_if_ip(
+            ip,
+            [":ottf_console_{}".format(ip)],
+            [],
+        )
         for ip in OTTF_CONSOLE_BACKENDS
-    ],
+    ]),
 )
 
 _FLOW_CONTROL_MESSAGE = (

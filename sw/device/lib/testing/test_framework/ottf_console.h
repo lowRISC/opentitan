@@ -9,8 +9,12 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_gpio.h"
+#ifdef OTTF_CONSOLE_HAS_SPI_DEVICE
 #include "sw/device/lib/testing/test_framework/ottf_console_spi.h"
+#endif
+#ifdef OTTF_CONSOLE_HAS_UART
 #include "sw/device/lib/testing/test_framework/ottf_console_uart.h"
+#endif
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/ottf_console_types.h"
 
@@ -36,10 +40,14 @@ struct ottf_console {
   size_t buf_end;
   /** Auxiliary data, per console type */
   union {
+#ifdef OTTF_CONSOLE_HAS_UART
     /** UART data. */
     ottf_console_uart_t uart;
+#endif  // OTTF_CONSOLE_HAS_UART
+#ifdef OTTF_CONSOLE_HAS_SPI_DEVICE
     /** SPI device data. */
     ottf_console_spi_t spi;
+#endif  // OTTF_CONSOLE_HAS_SPI_DEVICE
   } data;
 };
 
