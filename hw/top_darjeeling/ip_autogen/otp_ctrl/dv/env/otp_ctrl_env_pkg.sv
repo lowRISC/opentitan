@@ -121,6 +121,30 @@ package otp_ctrl_env_pkg;
     Secret3DigestOffset >> 2
   };
 
+  parameter int PART_OTP_ZEROIZED_ADDRS [NumPart-1] = {
+    VendorTestZerOffset >> 2,
+    CreatorSwCfgZerOffset >> 2,
+    OwnerSwCfgZerOffset >> 2,
+    OwnershipSlotStateZerOffset >> 2,
+    RotCreatorAuthZerOffset >> 2,
+    RotOwnerAuthSlot0ZerOffset >> 2,
+    RotOwnerAuthSlot1ZerOffset >> 2,
+    PlatIntegAuthSlot0ZerOffset >> 2,
+    PlatIntegAuthSlot1ZerOffset >> 2,
+    PlatOwnerAuthSlot0ZerOffset >> 2,
+    PlatOwnerAuthSlot1ZerOffset >> 2,
+    PlatOwnerAuthSlot2ZerOffset >> 2,
+    PlatOwnerAuthSlot3ZerOffset >> 2,
+    ExtNvmZerOffset >> 2,
+    RomPatchZerOffset >> 2,
+    HwCfg0ZerOffset >> 2,
+    HwCfg1ZerOffset >> 2,
+    Secret0ZerOffset >> 2,
+    Secret1ZerOffset >> 2,
+    Secret2ZerOffset >> 2,
+    Secret3ZerOffset >> 2
+  };
+
   // types
   typedef enum bit [1:0] {
     OtpOperationDone,

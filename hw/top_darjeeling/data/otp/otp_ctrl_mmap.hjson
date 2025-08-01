@@ -71,7 +71,6 @@
             name:       "VENDOR_TEST",
             variant:    "Unbuffered",
             absorb:     false,
-            size:       "64", // in bytes
             secret:     false,
             sw_digest:  true,
             hw_digest:  false,
@@ -80,6 +79,7 @@
             key_sel:    "NoKey",
             integrity:  false, // Do not use integrity (ECC) on this partition.
             bkout_type: false, // Do not generate a breakout type for this partition.
+            zeroizable: true
             items: [
                 {
                     name: "SCRATCH",
@@ -98,7 +98,6 @@
             name:       "CREATOR_SW_CFG",
             variant:    "Unbuffered",
             absorb:     false,
-            size:       "320", // in bytes
             secret:     false,
             sw_digest:  true,
             hw_digest:  false,
@@ -107,6 +106,7 @@
             key_sel:    "NoKey",
             integrity:  true,  // Use integrity (ECC) on this partition.
             bkout_type: false, // Do not generate a breakout type for this partition.
+            zeroizable: true,
             items: [
                 {
                     name: "CREATOR_SW_CFG_AST_CFG",
@@ -254,7 +254,6 @@
             name:       "OWNER_SW_CFG",
             variant:    "Unbuffered",
             absorb:     false,
-            size:       "632", // in bytes
             secret:     false,
             sw_digest:  true,
             hw_digest:  false,
@@ -263,6 +262,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: true,
             items: [
                 {
                     name: "OWNER_SW_CFG_ROM_ERROR_REPORTING",
@@ -351,6 +351,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: true,
             items: [
                 {
                     name: "OWNERSHIP_SLOT_STATE_ROT_OWNER_AUTH",
@@ -425,6 +426,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: true,
             items: [
                 {
                     name: "ROT_CREATOR_AUTH_NON_RAW_MFW_CODESIGN_KEY",
@@ -496,6 +498,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: true,
             items: [
                 {
                     name: "ROT_OWNER_AUTH_SLOT0_KEYMANIFEST_KEY",
@@ -533,6 +536,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: true,
             items: [
                 {
                     name: "ROT_OWNER_AUTH_SLOT1_KEYMANIFEST_KEY",
@@ -570,6 +574,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: true,
             items: [
                 {
                     name: "PLAT_INTEG_AUTH_SLOT0_KEYMANIFEST_KEY",
@@ -607,6 +612,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: true,
             items: [
                 {
                     name: "PLAT_INTEG_AUTH_SLOT1_KEYMANIFEST_KEY",
@@ -644,6 +650,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: true,
             items: [
                 {
                     name: "PLAT_OWNER_AUTH_SLOT0_KEYMANIFEST_KEY",
@@ -681,6 +688,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: true,
             items: [
                 {
                     name: "PLAT_OWNER_AUTH_SLOT1_KEYMANIFEST_KEY",
@@ -718,6 +726,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: true,
             items: [
                 {
                     name: "PLAT_OWNER_AUTH_SLOT2_KEYMANIFEST_KEY",
@@ -755,6 +764,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: true,
             items: [
                 {
                     name: "PLAT_OWNER_AUTH_SLOT3_KEYMANIFEST_KEY",
@@ -794,6 +804,7 @@
             // Integrity is handled at a higher level by SW as described below.
             integrity:  false,
             bkout_type: false,
+            zeroizable: true,
             items: [
                 {
                     name: "EXT_NVM_ANTIREPLAY_FRESHNESS_CNT",
@@ -821,6 +832,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: true,
             items: [
                 {
                     name: "ROM_PATCH_DATA",
@@ -847,6 +859,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: true,
+            zeroizable: true,
             items: [
                 {
                     name:        "DEVICE_ID",
@@ -879,6 +892,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: true,
+            zeroizable: true,
             items: [
                 {
                     name:        "SOC_DBG_STATE",
@@ -941,6 +955,7 @@
             key_sel:    "Secret0Key",
             integrity:  true,
             bkout_type: false,
+            zeroizable: true,
             items: [
                 {
                     name: "TEST_UNLOCK_TOKEN",
@@ -971,6 +986,7 @@
             key_sel:    "Secret1Key",
             integrity:  true,
             bkout_type: false,
+            zeroizable: true,
             items: [
                    {
                     name: "SRAM_DATA_KEY_SEED",
@@ -993,6 +1009,7 @@
             key_sel:    "Secret2Key",
             integrity:  true,
             bkout_type: false,
+            zeroizable: true,
             items: [
                 {
                     name: "RMA_TOKEN",
@@ -1033,6 +1050,7 @@
             key_sel:    "Secret3Key",
             integrity:  true,
             bkout_type: false,
+            zeroizable: true,
             items: [
                 {
                     name: "OWNER_SEED",
