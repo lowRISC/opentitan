@@ -63,13 +63,6 @@ static const dif_hmac_digest_t kExpectedHmacDigest = {
 };
 
 /**
- * Initialize the HMAC engine. Return `true` if the configuration is valid.
- */
-static void test_setup(mmio_region_t base_addr, dif_hmac_t *hmac) {
-  CHECK_DIF_OK(dif_hmac_init(base_addr, hmac));
-}
-
-/**
  * Start HMAC in the correct mode. If `key` == NULL use SHA256 mode, otherwise
  * use the provided key in HMAC mode.
  */
