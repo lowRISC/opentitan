@@ -106,6 +106,9 @@ hmac_digest_t owner_history_hash;
 // Verifying key index
 size_t verify_key;
 
+// Supply a source of randomness for the random order functions.
+uint32_t random_order_random_word(void) { return rnd_uint32(); }
+
 OT_WARN_UNUSED_RESULT
 static uint32_t rom_ext_current_slot(void) {
   uint32_t pc = ibex_addr_remap_get(0);

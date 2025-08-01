@@ -6,6 +6,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_BASE_RANDOM_ORDER_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,6 +16,13 @@ extern "C" {
  * @file
  * @brief Functions for generating random traversal orders.
  */
+
+/**
+ * Expects some external implementation of randomness to be linked.
+ *
+ * @return A fresh random word.
+ */
+extern uint32_t random_order_random_word(void);
 
 /**
  * Context for a random traversal order.
@@ -46,6 +54,7 @@ typedef struct random_order {
  *
  * @param ctx The context to initialize.
  * @param min_len The minimum length this traversal order must visit.
+ *                This value should be in the range [1..SSIZE_MAX].
  */
 void random_order_init(random_order_t *ctx, size_t min_len);
 
