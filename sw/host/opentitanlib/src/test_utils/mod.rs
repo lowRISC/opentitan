@@ -30,6 +30,7 @@ pub mod rpc;
 pub mod spi_passthru;
 pub mod status;
 pub mod test_status;
+pub mod vcd;
 
 /// The `execute_test` macro should be used in end-to-end tests to
 /// invoke each test from the `main` function.
