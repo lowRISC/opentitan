@@ -805,7 +805,6 @@
       '''
       swaccess: "ro"
       hwaccess: "hwo"
-      regwen: "CFG_REGWEN"
       fields: [
         { bits: "HashCntW-1:0"
           name: "hash_cnt"
