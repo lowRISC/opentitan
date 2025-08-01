@@ -492,7 +492,7 @@ This register exposes the id state of the device.
 ### LC_ID_STATE . STATE
 This field exposes the id state in redundant enum format.
 The 2bit id state enum is repeated 16x so that it fills the entire 32bit register.
-The encoding is straightforward replication: [val, val, ... val]."
+The encoding is straightforward replication: `[val, val, ... val]`.
 
 | Value      | Name         | Description                               |
 |:-----------|:-------------|:------------------------------------------|
