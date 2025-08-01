@@ -78,12 +78,14 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
             '''
       type: "logic [NAlerts-1:0][NLpgWidth-1:0]",
       default: '''
-% if lpg_map:
+% if lpg_map and isinstance(lpg_map, list):
                {
   % for l in list(reversed(lpg_map)):
                  ${l}${"" if loop.last else ","}
   % endfor
                }
+% elif lpg_map:
+               ${lpg_map}
 % else:
                '0
 % endif
@@ -109,12 +111,14 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
             '''
       type: "logic [NAlerts-1:0]",
       default: '''
-% if async_on:
+% if async_on and isinstance(async_on, list):
                {
   % for a in list(reversed(async_on)):
                  ${a}${"" if loop.last else ","}
   % endfor
                }
+% elif async_on:
+               ${async_on}
 % else:
                '0
 % endif
