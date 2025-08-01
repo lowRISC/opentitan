@@ -13,6 +13,8 @@ load(
     "opentitan_test",
     "verilator_params",
 )
+load("//rules/opentitan:util.bzl", "flatten")
+load("//hw/top:defs.bzl", "opentitan_if_ip")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -337,6 +339,7 @@ OTTF_CONSOLE_BACKENDS = {
             ":ottf_isrs",
             "//sw/device/lib/runtime:irq",
         ],
+        "defines": ["OTTF_CONSOLE_HAS_UART"],
     },
     "spi_device": {
         "srcs": ["ottf_console_spi.c"],
@@ -348,6 +351,7 @@ OTTF_CONSOLE_BACKENDS = {
         "dev_deps": [
             "//sw/device/lib/testing:spi_device_testutils",
         ],
+        "defines": ["OTTF_CONSOLE_HAS_SPI_DEVICE"],
     },
 }
 
@@ -365,6 +369,7 @@ cc_library(
     dual_cc_library(
         name = "ottf_console_{}_header".format(ip),
         hdrs = cfg["hdrs"],
+        defines = cfg["defines"],
         deps = dual_inputs(
             device = cfg["dev_deps"],
             shared = cfg["deps"] + [
@@ -380,10 +385,14 @@ cc_library(
     hdrs = [
         "ottf_console.h",
     ],
-    deps = [
-        ":ottf_console_{}_header".format(ip)
+    deps = flatten([
+        opentitan_if_ip(
+            ip,
+            [":ottf_console_{}_header".format(ip)],
+            [],
+        )
         for ip in OTTF_CONSOLE_BACKENDS
-    ] + [
+    ]) + [
         ":ottf_console_types",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:gpio",
@@ -416,10 +425,14 @@ dual_cc_library(
             "//sw/device/lib/runtime:print",
             "//sw/device/lib/runtime:ibex",
             "//hw/top:top_lib",
-        ] + [
-            ":ottf_console_{}".format(ip)
+        ] + flatten([
+            opentitan_if_ip(
+                ip,
+                [":ottf_console_{}".format(ip)],
+                [],
+            )
             for ip in OTTF_CONSOLE_BACKENDS
-        ],
+        ]),
         shared = [
             ":ottf_console_headers",
             ":ottf_test_config",
