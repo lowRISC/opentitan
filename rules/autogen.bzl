@@ -350,15 +350,15 @@ def opentitan_top_dt_gen(name, gen_ips = [], gen_top = False, output_groups = {}
         ]),
     )
 
-def opentitan_ip_dt_header(name, ip, deps = None, target_compatible_with = []):
+def opentitan_ip_dt(name, ip, target_compatible_with = []):
     """
-    Generate the C header for an IP block as used in the current top.
+    Generate the C header/source for an IP block as used in the current top.
     The target will also be marked as compatible only with tops containing this IP.
-    Additionally, a `cc_library` will be created from this header with additional
-    dependencies on `deps`.
+    Specifically, three targets will be created:
+    - <name>_gen: rule generating all files
+    - <name>_src: filegroup containing only the source file of <name>_gen
+    - <name>_hdr: filegroup containing only the header file of <name>_gen
     """
-    if deps == None:
-        deps = []
     if target_compatible_with == None:
         target_compatible_with = []
 

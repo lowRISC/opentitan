@@ -69,7 +69,7 @@ It is generally recommended that device code either depends on `//hw/top:dt` if 
 
 ### Top description
 
-Each top has a description in Bazel created by `opentitan_top` which can be used to tweak the build graph. See [./top_desc.md] for more details.
+Each top has a description in Bazel created by `opentitan_top` which can be used to tweak the build graph. See [./doc/top_desc.md] for more details.
 
 ### Compatibility annotations
 
@@ -135,7 +135,7 @@ cc_library(
 )
 ```
 
-There more macro available to access the top's description, see [./top_desc.md] for more details.
+There more macro available to access the top's description, see [./doc/top_desc.md] for more details.
 
 ## Common operations
 
