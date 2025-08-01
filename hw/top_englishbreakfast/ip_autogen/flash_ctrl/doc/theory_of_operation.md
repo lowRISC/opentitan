@@ -65,7 +65,7 @@ Software then configures the access privileges for that region.
 Finally, each region can be activated or de-activated from matching through [`MP_REGION_CFG_0.EN`](registers.md#mp_region_cfg).
 
 Subsequent accesses are then allowed or denied based on the defined rule set.
-Similar to RISCV pmp, if two region overlaps, the lower region index has higher priority.
+Similar to RISC-V PMP (physical memory protection), if two region overlaps, the lower region index has higher priority.
 
 For information partitions, the protection is done per individual page.
 Each page can be configured with access privileges.
