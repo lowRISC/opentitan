@@ -184,6 +184,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/ownership:datatypes",
         "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
+        "@open-dice//:cbor_reader_writer",
     ],
 )
 

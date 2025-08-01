@@ -12,6 +12,7 @@ load(
     "CONST",
     "EARLGREY_ALERTS",
     "EARLGREY_LOC_ALERTS",
+    "get_lc_items",
 )
 load(
     "//rules:otp.bzl",
@@ -19,6 +20,7 @@ load(
     "otp_alert_classification",
     "otp_alert_digest",
     "otp_hex",
+    "otp_image",
     "otp_image_consts",
     "otp_json",
     "otp_partition",
@@ -229,3 +231,32 @@ cc_library(
         "//sw/device/silicon_creator/manuf/lib:otp_img_types",
     ],
 )
+
+# The `LC_MISSION_STATES` object contains the set of mission mode life cycle
+# states.
+LC_MISSION_STATES = get_lc_items(
+    CONST.LCV.DEV,
+    CONST.LCV.PROD,
+    CONST.LCV.PROD_END,
+)
+
+# Personalized configuration for FPGA testing. Available on `LC_MISSION_STATES`
+# life cycle states.
+# See sw/device/tests/doc/sival/devguide.md for more details.
+[
+    otp_image(
+        name = "otp_img_{}_manuf_personalized".format(lc_state),
+        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
+        overlays = [
+            "//hw/top_earlgrey/data/otp:otp_json_fixed_secret0",
+            ":alert_digest_cfg",
+            ":otp_json_creator_sw_cfg",
+            ":otp_json_owner_sw_cfg",
+            "//hw/top_earlgrey/data/otp:otp_json_hw_cfg0",
+            "//hw/top_earlgrey/data/otp:otp_json_hw_cfg1",
+            "//hw/top_earlgrey/data/otp:otp_json_secret1",
+            "//hw/top_earlgrey/data/otp:otp_json_fixed_secret2",
+        ] + OTP_SIGVERIFY_FAKE_KEYS,
+    )
+    for lc_state, _ in LC_MISSION_STATES
+]
