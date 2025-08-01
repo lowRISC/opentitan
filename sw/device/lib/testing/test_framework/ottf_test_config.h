@@ -15,7 +15,7 @@ typedef enum ottf_console_type {
   kOttfConsoleSpiDevice,
 } ottf_console_type_t;
 
-typedef struct ottf_console {
+typedef struct ottf_console_opt {
   /**
    * Communication interface type to use for the OTTF console (see
    * `ottf_console_type_t` above).
@@ -31,7 +31,16 @@ typedef struct ottf_console {
    * reconfigure it before printing the test status.
    */
   bool test_may_clobber;
-} ottf_console_t;
+  /**
+   * Indicates if SW buffering should be turned on for `ottf_console_putbuf()`
+   * to increase the transmit performance when using a peripheral backend like
+   * SPI that has a frame overhead associated with each packet transmission.
+   *
+   * Set this option to true if you are using the SPI console device with UJSON
+   * transmissions.
+   */
+  bool putbuf_buffered;
+} ottf_console_opt_t;
 
 typedef struct ottf_console_tx_indicator {
   /**
@@ -84,7 +93,7 @@ typedef struct ottf_test_config {
    * status and error messages are written to. Typically UART0, but other
    * communication peripherals may be supported.
    */
-  ottf_console_t console;
+  ottf_console_opt_t console;
 
   /**
    * The TX indicator GPIO to use in conjunction with the SPI console, if a
