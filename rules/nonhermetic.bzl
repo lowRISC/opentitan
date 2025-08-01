@@ -45,5 +45,5 @@ def _nonhermetic_repo_impl(rctx):
 nonhermetic_repo = repository_rule(
     implementation = _nonhermetic_repo_impl,
     attrs = {},
-    environ = NONHERMETIC_ENV_VARS,
+    environ = NONHERMETIC_ENV_VARS + ["PATH"],
 )
