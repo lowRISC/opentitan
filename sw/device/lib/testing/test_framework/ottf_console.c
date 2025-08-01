@@ -21,11 +21,28 @@ static volatile uint32_t flow_control_irqs;
 
 ottf_console_t *ottf_console_get(void) { return &main_console; }
 
+static status_t ottf_console_null_getc(void *io) {
+  OT_DISCARD(io);
+  return UNAVAILABLE();
+}
+
+static size_t ottf_console_null_sink(void *io, const char *buf, size_t len) {
+  OT_DISCARD(io);
+  OT_DISCARD(buf);
+  return len;
+}
+
+void ottf_console_configure_null(ottf_console_t *console) {
+  console->getc = ottf_console_null_getc;
+  console->sink = ottf_console_null_sink;
+}
+
 void ottf_console_init(void) {
   // Initialize/Configure the console device.
   uintptr_t base_addr = kOttfTestConfig.console.base_addr;
 
   switch (kOttfTestConfig.console.type) {
+#ifdef OTTF_CONSOLE_HAS_UART
     case kOttfConsoleUart:
       // Set a default for the console base address if the base address is not
       // configured. The default is to use UART0.
@@ -39,6 +56,8 @@ void ottf_console_init(void) {
         ottf_console_uart_flow_control_enable(&main_console);
       }
       break;
+#endif
+#ifdef OTTF_CONSOLE_HAS_SPI_DEVICE
     case (kOttfConsoleSpiDevice):
       ottf_console_configure_spi_device(
           &main_console, base_addr, kOttfTestConfig.console_tx_indicator.enable,
@@ -52,8 +71,10 @@ void ottf_console_init(void) {
                                  kOttfTestConfig.console.putbuf_buffered,
                                  main_spi_buf, main_spi_buf_sz);
       break;
+#endif
     default:
-      CHECK(false, "unsupported OTTF console interface.");
+      // Create a null console.
+      ottf_console_configure_null(&main_console);
       break;
   }
 
@@ -65,12 +86,20 @@ uint32_t ottf_console_get_flow_control_irqs(void) { return flow_control_irqs; }
 
 bool ottf_console_flow_control_isr(uint32_t *exc_info) {
   flow_control_irqs += 1;
+#ifdef OTTF_CONSOLE_HAS_UART
   return ottf_console_uart_flow_control_isr(exc_info, &main_console);
+#else
+  return false;
+#endif
 }
 
 status_t ottf_console_flow_control(ottf_console_t *console,
                                    ottf_console_flow_control_t ctrl) {
+#ifdef OTTF_CONSOLE_HAS_UART
   return ottf_console_uart_flow_control(console, ctrl);
+#else
+  return INVALID_ARGUMENT();
+#endif
 }
 
 void ottf_console_set_buffering(ottf_console_t *console, bool enabled,
