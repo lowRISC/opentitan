@@ -8,8 +8,6 @@
 #include <stdarg.h>
 #include <stddef.h>
 
-#include "sw/device/lib/dif/dif_uart.h"
-
 /**
  * @file
  * @brief Libc-like printing facilities.
@@ -284,20 +282,5 @@ size_t base_fhexdump_with(buffer_sink_t out, base_hexdump_fmt_t fmt,
  * @param out the sink to use for "default" printing.
  */
 void base_set_stdout(buffer_sink_t out);
-
-/**
- * Configures a minimal stdout UART driver for `base_print.h` to use.
- *
- * Note that this function will save `uart` in a global variable, so the pointer
- * must have static storage duration. This driver uses
- * `dif_uart_byte_send_polled` to send characters one by one, does not perform
- * flow control and is generally unsafe to use in an interrupt setting.
- *
- * The UART IP and pinmux must have been initialized prior to calling this
- * function.
- *
- * @param uart The UART handle to use for stdout.
- */
-void base_uart_stdout(const dif_uart_t *uart);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_PRINT_H_
