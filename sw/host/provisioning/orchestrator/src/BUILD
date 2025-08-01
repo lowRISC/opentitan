@@ -70,6 +70,7 @@ py_binary(
         "//sw/device/silicon_creator/manuf/base:sram_ft_individualize_all",
         "//sw/device/silicon_creator/manuf/keys/fake:dice_ca.pem",
         "//sw/device/silicon_creator/manuf/keys/fake:ext_ca.pem",
+        "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_enc_rsa3072.pub.der",
         "//sw/device/silicon_creator/manuf/keys/fake:sk.pkcs8.der",
         "//sw/host/provisioning/cp",
         "//sw/host/provisioning/ft:ft_all",

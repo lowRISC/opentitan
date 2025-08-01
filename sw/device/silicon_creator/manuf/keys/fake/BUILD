@@ -12,6 +12,7 @@ filegroup(
         ":ca_config.json",
         ":dice_ca.pem",
         ":ext_ca.pem",
+        ":rma_unlock_enc_rsa3072.pub.der",
         ":sk.pkcs8.der",
     ],
 )
