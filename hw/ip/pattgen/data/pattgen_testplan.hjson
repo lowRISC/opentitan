@@ -55,25 +55,30 @@
     {
       name: cnt_rollover
       desc: '''
-            Checking ip operation with random counter values
+            Check that the IP works correctly with a range of counter values.
 
             Stimulus:
-              - Program the pre-divider and size registers to unconstrained random values
-              - Program the clk_cnt, bit_cnt and rep_cnt to values less than but close to
-                predivider and size registers, so that counting would take a reasonable
-                number of clock cycles
-              - include programming for corner cases
-                repeat programming a random number of times
-              - Start and stop channels quickly
-              - Clear interrupts quickly
+
+              When picking a random configuration for a channel, this testpoint wants to see a large
+              range of values for prediv (cycles per bit), len (number of bits in the message) and
+              reps (number of pattern repetitions).
+
+              To avoid the test taking a very long time, the product of the three values can be
+              constrained with a bound.
+
+              To check for edge cases, the random values described above should be weighted to
+              sample the corners more often.
 
             Checking:
-              - Include functional cover point that rollover value is reached and counter is re-enabled:
-              - Ensure patterns are correctly generated
-              - Ensure interrupts are robust asserted and cleared (e.g. at the high data rate)
+
+              - Use the standard monitor/scoreboard to check that the generated patterns are as
+                expected.
+
+              - Add a functional cover point requiring that the rollover value is reached and then
+                the counter is re-enabled.
             '''
       stage: V2
-      tests: ["cnt_rollover"]
+      tests: ["pattgen_cnt_rollover"]
     }
     {
       name: error
