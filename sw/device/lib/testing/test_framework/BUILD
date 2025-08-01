@@ -324,38 +324,106 @@ cc_library(
     ],
 )
 
+OTTF_CONSOLE_BACKENDS = {
+    "uart": {
+        "srcs": ["ottf_console_uart.c"],
+        "hdrs": ["ottf_console_uart.h"],
+        "deps": [
+            "//sw/device/lib/dif:uart",
+            "//sw/device/lib/dif:pinmux",
+            "//sw/device/lib/dif:rv_plic",
+        ],
+        "dev_deps": [
+            ":ottf_isrs",
+            "//sw/device/lib/runtime:irq",
+        ],
+    },
+    "spi_device": {
+        "srcs": ["ottf_console_spi.c"],
+        "hdrs": ["ottf_console_spi.h"],
+        "deps": [
+            "//sw/device/lib/dif:spi_device",
+            "//sw/device/lib/dif:pinmux",
+        ],
+        "dev_deps": [
+            "//sw/device/lib/testing:spi_device_testutils",
+        ],
+    },
+}
+
+cc_library(
+    name = "ottf_console_types",
+    hdrs = [
+        "ottf_console_types.h",
+    ],
+    deps = [
+        ":ottf_test_config",
+    ],
+)
+
+[
+    dual_cc_library(
+        name = "ottf_console_{}_header".format(ip),
+        hdrs = cfg["hdrs"],
+        deps = dual_inputs(
+            device = cfg["dev_deps"],
+            shared = cfg["deps"] + [
+                ":ottf_console_types",
+            ],
+        ),
+    )
+    for (ip, cfg) in OTTF_CONSOLE_BACKENDS.items()
+]
+
+cc_library(
+    name = "ottf_console_headers",
+    hdrs = [
+        "ottf_console.h",
+    ],
+    deps = [
+        ":ottf_console_{}_header".format(ip)
+        for ip in OTTF_CONSOLE_BACKENDS
+    ] + [
+        ":ottf_console_types",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:gpio",
+    ],
+)
+
+[
+    cc_library(
+        name = "ottf_console_{}".format(ip),
+        srcs = cfg["srcs"],
+        deps = [
+            ":ottf_console_headers",
+        ],
+    )
+    for (ip, cfg) in OTTF_CONSOLE_BACKENDS.items()
+]
+
 dual_cc_library(
     name = "ottf_console",
     srcs = dual_inputs(
         device = [
             "ottf_console.c",
-            "ottf_console_uart.c",
-            "ottf_console_spi.c",
         ],
     ),
-    hdrs = [
-        "ottf_console.h",
-        "ottf_console_internal.h",
-    ],
     deps = dual_inputs(
         device = [
             ":check",
             ":ottf_isrs",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/runtime:print",
-            "//sw/device/lib/dif:rv_plic",
-            "//sw/device/lib/dif:gpio",
-            "//sw/device/lib/dif:pinmux",
             "//sw/device/lib/runtime:ibex",
-            "//sw/device/lib/runtime:irq",
-            "//sw/device/lib/testing:spi_device_testutils",
             "//hw/top:top_lib",
+        ] + [
+            ":ottf_console_{}".format(ip)
+            for ip in OTTF_CONSOLE_BACKENDS
         ],
         shared = [
+            ":ottf_console_headers",
             ":ottf_test_config",
             "//sw/device/lib/base:status",
-            "//sw/device/lib/dif:uart",
-            "//sw/device/lib/dif:spi_device",
         ],
     ),
 )

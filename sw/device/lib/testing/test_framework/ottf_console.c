@@ -9,20 +9,8 @@
 
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_gpio.h"
-#include "sw/device/lib/dif/dif_pinmux.h"
-#include "sw/device/lib/dif/dif_rv_plic.h"
-#include "sw/device/lib/dif/dif_spi_device.h"
-#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/runtime/irq.h"
-#include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/ottf_console_internal.h"
-#include "sw/device/lib/testing/test_framework/ottf_isrs.h"
-#include "sw/device/lib/testing/test_framework/ottf_test_config.h"
-
-#include "spi_device_regs.h"  // Generated.
 
 #define MODULE_ID MAKE_MODULE_ID('o', 't', 'c')
 
@@ -30,9 +18,6 @@
 static ottf_console_t main_console;
 
 static volatile uint32_t flow_control_irqs;
-
-// Staging buffer for the SPI console implementation.
-static char main_spi_buf[kSpiDeviceMaxFramePayloadSizeBytes];
 
 ottf_console_t *ottf_console_get(void) { return &main_console; }
 
@@ -61,9 +46,12 @@ void ottf_console_init(void) {
           kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio,
           kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_mio);
       // For the SPI console, we use the global SPI buffer.
+      size_t main_spi_buf_sz;
+      void *main_spi_buf =
+          ottf_console_spi_get_main_staging_buffer(&main_spi_buf_sz);
       ottf_console_set_buffering(&main_console,
                                  kOttfTestConfig.console.putbuf_buffered,
-                                 main_spi_buf, sizeof(main_spi_buf));
+                                 main_spi_buf, main_spi_buf_sz);
       break;
     default:
       CHECK(false, "unsupported OTTF console interface.");
