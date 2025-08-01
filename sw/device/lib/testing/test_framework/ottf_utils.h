@@ -75,7 +75,7 @@
 
 #if defined(OPENTITAN_IS_EARLGREY)
 
-static void ottf_backdoor_flush_read_buffers(void) {
+static inline void ottf_backdoor_flush_read_buffers(void) {
   // On earlgrey, some backdoor variables may live on flash, which
   // has a read buffer that needs to be flushed to get up-to-date value.
   //
@@ -90,7 +90,7 @@ static void ottf_backdoor_flush_read_buffers(void) {
 
 #elif defined(OPENTITAN_IS_DARJEELING)
 
-static void ottf_backdoor_flush_read_buffers(void) {}
+static inline void ottf_backdoor_flush_read_buffers(void) {}
 
 #else
 #error Unsupported top
