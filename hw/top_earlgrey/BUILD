@@ -432,10 +432,10 @@ silicon(
     },
     # The //conditions:default ROM_EXT needs to be updated to use the following
     # target once available:
-    # //sw/device/silicon_creator/rom_ext/sival/binaries:rom_ext_real_prod_signed_slot_a
+    # //sw/device/silicon_creator/rom_ext/sival/binaries:rom_ext_prod_slot_a
     rom_ext = select({
-        "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_a",
-        "//conditions:default": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_a",
+        "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_slot_a",
+        "//conditions:default": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_slot_a",
     }),
     test_cmd = """
         --exec="transport init"
