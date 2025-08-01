@@ -113,6 +113,33 @@ cc_test(
     ],
 )
 
+# Run via --config=fuzztest
+cc_test(
+    name = "rom_ext_boot_policy_fuzztest",
+    srcs = ["rom_ext_boot_policy_fuzztest.cc"],
+    deps = [
+        ":rom_ext_boot_policy",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@fuzztest//fuzztest",
+        "@fuzztest//fuzztest:fuzztest_gtest_main",
+        "@googletest//:gtest",
+    ],
+)
+
+# Run via Centipede
+cc_binary(
+    name = "rom_ext_boot_policy_fuzztest_binary",
+    testonly = True,
+    srcs = ["rom_ext_boot_policy_fuzztest.cc"],
+    deps = [
+        ":rom_ext_boot_policy",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@fuzztest//fuzztest",
+        "@fuzztest//fuzztest:fuzztest_gtest_main",
+        "@googletest//:gtest",
+    ],
+)
+
 cc_library(
     name = "rom_ext_boot_services",
     srcs = ["rom_ext_boot_services.c"],
@@ -220,6 +247,33 @@ cc_library(
         "//sw/device/silicon_creator/lib/ownership:owner_block",
         "//sw/device/silicon_creator/lib/ownership:owner_verify",
         "//sw/device/silicon_creator/lib/sigverify:usage_constraints",
+    ],
+)
+
+# Run via --config=fuzztest
+cc_test(
+    name = "rom_ext_verify_fuzztest",
+    srcs = ["rom_ext_verify_fuzztest.cc"],
+    deps = [
+        ":rom_ext_verify",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@fuzztest//fuzztest",
+        "@fuzztest//fuzztest:fuzztest_gtest_main",
+        "@googletest//:gtest",
+    ],
+)
+
+# Run via Centipede
+cc_binary(
+    name = "rom_ext_verify_fuzztest_binary",
+    testonly = True,
+    srcs = ["rom_ext_verify_fuzztest.cc"],
+    deps = [
+        ":rom_ext_verify",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@fuzztest//fuzztest",
+        "@fuzztest//fuzztest:fuzztest_gtest_main",
+        "@googletest//:gtest",
     ],
 )
 
