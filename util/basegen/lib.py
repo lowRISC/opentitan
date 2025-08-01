@@ -80,5 +80,14 @@ class Name:
     def as_rust_enum(self) -> str:
         return self.as_camel_case()
 
+    def as_sv_define(self) -> str:
+        return "_".join([p.upper() for p in self._parts])
+
+    def as_sv_enum(self) -> str:
+        return self.as_camel_case()
+
+    def as_sv_type(self) -> str:
+        return self.as_snake_case() + "_t"
+
     def remove_part(self, part_to_remove: str) -> "Name":
         return Name([p for p in self._parts if p != part_to_remove])
