@@ -206,6 +206,18 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.conf));
     #(pause);
 
+    // The CSR write accesses above may trigger recoverable alerts (e.g. in case invalid MuBis are
+    // written to the CSRs). To handle such cases, the calling entropy_src_init() task listens for
+    // recoverable alerts and if necessary aborts this task here. Because all this can take some
+    // time, we must wait a couple of clock cycles before potentially locking configuration CSRs.
+    // Otherwise, we may lock invalid configurations which would require resetting the DUT.
+    wait_no_outstanding_access();
+    cfg.clk_rst_vif.wait_clks(
+        cfg.m_alert_agent_cfgs["recov_alert"].ping_delay_max +
+        cfg.m_alert_agent_cfgs["recov_alert"].ack_delay_max +
+        cfg.m_alert_agent_cfgs["recov_alert"].ack_stable_max +
+        2); // Pause between back-to-back handshakes at sender end.
+
     // Register write enable lock is on be default
     // Setting this to zero will lock future writes
     csr_wr(.ptr(ral.sw_regupd), .value(newcfg.sw_regupd));
