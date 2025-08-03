@@ -10,9 +10,8 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
   }
   `uvm_object_new
 
-  virtual task post_apply_reset(string reset_kind = "HARD");
-    super.post_apply_reset(reset_kind);
-
+  virtual task apply_reset(string kind = "HARD");
+    super.apply_reset(kind);
     for (int ram_idx = 0; ram_idx < cfg.num_ram_ret_tiles; ram_idx++) begin
       cfg.mem_bkdr_util_h[chip_mem_e'(RamRet0 + ram_idx)].randomize_mem();
     end
