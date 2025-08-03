@@ -86,7 +86,12 @@ void _ottf_main(void) {
   // Now have UART <-> Buttons/LEDs demo
   // all LEDs off
   CHECK_DIF_OK(dif_gpio_write_all(&gpio, 0x0000));
-  LOG_INFO("Try out USERDIP switches 0-thru-3 on the board");
+  if (kDeviceType == kDeviceFpgaCw310) {
+    LOG_INFO("Try out USERDIP switches 0-thru-3 on the board");
+  }
+  if (kDeviceType == kDeviceSimVerilator) {
+    LOG_INFO("Try out GPIO switches 0, 3, 4, 7");
+  }
   LOG_INFO("or type anything into the console window.");
   LOG_INFO(
       "The LEDs show the lower nibble of the ASCII code of the last "
