@@ -354,149 +354,526 @@ package otp_ctrl_part_pkg;
 
 
   // OTP invalid partition default for buffered partitions.
-  parameter logic [16383:0] PartInvDefault = 16384'({
-    704'({
-      320'h93B61DE417B9FB339605F051E74379CBCC6596C7174EBA643E725E464F593C87A445C3C29F71A256,
-      384'hA0D1E90E8C9FDDFA01E46311FD36D95401136C663A36C3E3E817E760B27AE937BFCDF15A3429452A851B80674A2B6FBE
-    }),
-    704'({
-      64'h8CBBAD02BB4CA928,
-      256'hD68C96F0B3D1FEED688098A43C33459F0279FC51CC7C626E315FD2B871D88819,
-      256'hD0BAC511D08ECE0E2C0DBDDEDF7A854D5E58D0AA97A0F8F6D3D58610F4851667,
-      128'h94CD3DED94B578192A4D8B51F5D41C8A
-    }),
-    704'({
-      64'hC469C593E5DC0DA8,
-      128'hE00E9680BD9B70291C752824C7DDC896,
-      256'h105733EAA3880C5A234729143F97B62A55D0320379A0D260426D99D374E699CA,
-      256'hDBC827839FE2DCC27E17D06B5D4E0DDDDBB9844327F20FB5D396D1CE085BDC31
-    }),
-    320'({
-      64'hBE193854E9CA60A0,
-      128'h711D135F59A50322B6711DB6F5D40A37,
-      128'hB5AC1F53D00A08C3B28B5C0FEE5F4C02
-    }),
-    128'({
-      64'hBBF4A76885E754F2,
-      40'h0, // unallocated space
-      8'h69,
-      8'h69,
-      8'h69
-    }),
-    576'({
-      64'hF87BED95CFBA3727,
-      256'hDF3888886BD10DC67ABB319BDA0529AE40119A3C6E63CDF358840E458E4029A6,
-      256'h63B9485A3856C417CF7A50A9A91EF7F7B3A5B4421F462370FFF698183664DC7E
-    }),
-    320'({
-      64'h20440F25BB053FB5,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0
-    }),
-    3776'({
-      64'h15F164D7930C9D19,
-      256'h0,
-      32'h0,
-      256'h0,
-      32'h0,
-      32'h0,
-      256'h0,
-      32'h0,
-      32'h0,
-      256'h0,
-      32'h0,
-      32'h0,
-      256'h0,
-      32'h0,
-      512'h0,
-      32'h0,
-      512'h0,
-      32'h0,
-      512'h0,
-      32'h0,
-      512'h0,
-      32'h0
-    }),
-    5696'({
-      64'hE29749216775E8A5,
-      96'h0, // unallocated space
-      1024'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      96'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      512'h0,
-      128'h0,
-      128'h0,
-      512'h0,
-      2560'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0
-    }),
-    2944'({
-      64'h340A5B93BB19342,
-      96'h0, // unallocated space
-      256'h0,
-      256'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      32'h0,
-      1248'h0
-    }),
-    512'({
-      64'h4947DD361344767A,
-      448'h0
-    })});
+  parameter logic [2047:0][7:0] PartInvDefault = {
+    { // Partition 'EN_SRAM_IFETCH'.
+      {
+        // Item 'LC_STATE'.
+        64'h93B61DE417B9FB33,
+        256'h9605F051E74379CBCC6596C7174EBA643E725E464F593C87A445C3C29F71A256
+      },
+      {
+        // Item 'LC_TRANSITION_CNT'.
+        128'hA0D1E90E8C9FDDFA01E46311FD36D954,
+        256'h01136C663A36C3E3E817E760B27AE937BFCDF15A3429452A851B80674A2B6FBE
+      }
+    },
+    { // Partition 'LC_TRANSITION_CNT'.
+      {
+        // Item 'SECRET2_DIGEST'.
+        64'h8CBBAD02BB4CA928
+      },
+      {
+        // Item 'CREATOR_ROOT_KEY_SHARE1'.
+        256'hD68C96F0B3D1FEED688098A43C33459F0279FC51CC7C626E315FD2B871D88819
+      },
+      {
+        // Item 'CREATOR_ROOT_KEY_SHARE0'.
+        256'hD0BAC511D08ECE0E2C0DBDDEDF7A854D5E58D0AA97A0F8F6D3D58610F4851667
+      },
+      {
+        // Item 'RMA_TOKEN'.
+        128'h94CD3DED94B578192A4D8B51F5D41C8A
+      }
+    },
+    { // Partition 'RMA_TOKEN'.
+      {
+        // Item 'SECRET1_DIGEST'.
+        64'hC469C593E5DC0DA8
+      },
+      {
+        // Item 'SRAM_DATA_KEY_SEED'.
+        128'hE00E9680BD9B70291C752824C7DDC896
+      },
+      {
+        // Item 'FLASH_DATA_KEY_SEED'.
+        256'h105733EAA3880C5A234729143F97B62A55D0320379A0D260426D99D374E699CA
+      },
+      {
+        // Item 'FLASH_ADDR_KEY_SEED'.
+        256'hDBC827839FE2DCC27E17D06B5D4E0DDDDBB9844327F20FB5D396D1CE085BDC31
+      }
+    },
+    { // Partition 'FLASH_ADDR_KEY_SEED'.
+      {
+        // Item 'SECRET0_DIGEST'.
+        64'hBE193854E9CA60A0
+      },
+      {
+        // Item 'TEST_EXIT_TOKEN'.
+        128'h711D135F59A50322B6711DB6F5D40A37
+      },
+      {
+        // Item 'TEST_UNLOCK_TOKEN'.
+        128'hB5AC1F53D00A08C3B28B5C0FEE5F4C02
+      }
+    },
+    { // Partition 'TEST_UNLOCK_TOKEN'.
+      {
+        // Item 'HW_CFG1_DIGEST'.
+        64'hBBF4A76885E754F2
+      },
+      { // Unallocated space.
+        {5{8'h00}}
+      },
+      {
+        // Item 'DIS_RV_DM_LATE_DEBUG'.
+        8'h69
+      },
+      {
+        // Item 'EN_CSRNG_SW_APP_READ'.
+        8'h69
+      },
+      {
+        // Item 'EN_SRAM_IFETCH'.
+        8'h69
+      }
+    },
+    { // Partition 'EN_SRAM_IFETCH'.
+      {
+        // Item 'HW_CFG0_DIGEST'.
+        64'hF87BED95CFBA3727
+      },
+      {
+        // Item 'MANUF_STATE'.
+        256'hDF3888886BD10DC67ABB319BDA0529AE40119A3C6E63CDF358840E458E4029A6
+      },
+      {
+        // Item 'DEVICE_ID'.
+        256'h63B9485A3856C417CF7A50A9A91EF7F7B3A5B4421F462370FFF698183664DC7E
+      }
+    },
+    { // Partition 'DEVICE_ID'.
+      {
+        // Item 'ROT_CREATOR_AUTH_STATE_DIGEST'.
+        64'h20440F25BB053FB5
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_STATE_SPX_KEY3'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_STATE_SPX_KEY2'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_STATE_SPX_KEY1'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_STATE_SPX_KEY0'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_STATE_ECDSA_KEY3'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_STATE_ECDSA_KEY2'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_STATE_ECDSA_KEY1'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_STATE_ECDSA_KEY0'.
+        32'h00000000
+      }
+    },
+    { // Partition 'ROT_CREATOR_AUTH_STATE_ECDSA_KEY0'.
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_DIGEST'.
+        64'h15F164D7930C9D19
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_BLOCK_SHA2_256_HASH'.
+        256'h0000000000000000000000000000000000000000000000000000000000000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG3'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_SPX_KEY3'.
+        256'h0000000000000000000000000000000000000000000000000000000000000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE3'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG2'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_SPX_KEY2'.
+        256'h0000000000000000000000000000000000000000000000000000000000000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE2'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG1'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_SPX_KEY1'.
+        256'h0000000000000000000000000000000000000000000000000000000000000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE1'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG0'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_SPX_KEY0'.
+        256'h0000000000000000000000000000000000000000000000000000000000000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE0'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY3'.
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE3'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY2'.
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE2'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY1'.
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE1'.
+        32'h00000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY0'.
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000
+      },
+      {
+        // Item 'ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE0'.
+        32'h00000000
+      }
+    },
+    { // Partition 'ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE0'.
+      {
+        // Item 'OWNER_SW_CFG_DIGEST'.
+        64'hE29749216775E8A5
+      },
+      { // Unallocated space.
+        {12{8'h00}}
+      },
+      {
+        // Item 'OWNER_SW_CFG_RESERVED'.
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN'.
+        32'h00000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_BANNER_EN'.
+        32'h00000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE'.
+        32'h00000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN'.
+        32'h00000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_SRAM_READBACK_EN'.
+        32'h00000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG'.
+        96'h000000000000000000000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_EXT_BOOTSTRAP_EN'.
+        32'h00000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_RSTMGR_INFO_EN'.
+        32'h00000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_MANUF_STATE'.
+        32'h00000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN'.
+        32'h00000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES'.
+        32'h00000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA'.
+        32'h00000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV'.
+        32'h00000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END'.
+        32'h00000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD'.
+        32'h00000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES'.
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES'.
+        128'h00000000000000000000000000000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH'.
+        128'h00000000000000000000000000000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION'.
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION'.
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_ALERT_ESCALATION'.
+        32'h00000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_ALERT_CLASS_EN'.
+        32'h00000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_BOOTSTRAP_DIS'.
+        32'h00000000
+      },
+      {
+        // Item 'OWNER_SW_CFG_ROM_ERROR_REPORTING'.
+        32'h00000000
+      }
+    },
+    { // Partition 'OWNER_SW_CFG_ROM_ERROR_REPORTING'.
+      {
+        // Item 'CREATOR_SW_CFG_DIGEST'.
+        64'h0340A5B93BB19342
+      },
+      { // Unallocated space.
+        {12{8'h00}}
+      },
+      {
+        // Item 'CREATOR_SW_CFG_RESERVED'.
+        256'h0000000000000000000000000000000000000000000000000000000000000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH'.
+        256'h0000000000000000000000000000000000000000000000000000000000000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_SRAM_KEY_RENEW_EN'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_RNG_ALERT_THRESHOLD'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_RNG_EXTHT_HI_THRESHOLDS'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_RNG_MARKOV_HI_THRESHOLDS'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_RNG_ADAPTP_LO_THRESHOLDS'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_RNG_ADAPTP_HI_THRESHOLDS'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_RNG_REPCNTS_THRESHOLDS'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_RMA_SPIN_CYCLES'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_RMA_SPIN_EN'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_MIN_SEC_VER_BL0'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_CPUCTRL'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_ROM_EXEC_EN'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_MANUF_STATE'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_RET_RAM_RESET_MASK'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_JITTER_EN'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_RNG_EN'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_SIGVERIFY_SPX_EN'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_ROM_EXT_SKU'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_AST_INIT_EN'.
+        32'h00000000
+      },
+      {
+        // Item 'CREATOR_SW_CFG_AST_CFG'.
+        224'h00000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000
+      }
+    },
+    { // Partition 'CREATOR_SW_CFG_AST_CFG'.
+      {
+        // Item 'VENDOR_TEST_DIGEST'.
+        64'h4947DD361344767A
+      },
+      {
+        // Item 'SCRATCH'.
+        192'h000000000000000000000000000000000000000000000000,
+        256'h0000000000000000000000000000000000000000000000000000000000000000
+      }
+    }
+  };
 
-  ///////////////////////////////////////////////
+  ///////////////////////////////////////////////k
   // Parameterized Assignment Helper Functions //
   ///////////////////////////////////////////////
 
@@ -642,7 +1019,7 @@ package otp_ctrl_part_pkg;
           part_buf_data[CreatorRootKeyShare0Offset +: CreatorRootKeyShare0Size];
     end else begin
       otp_keymgr_key.creator_root_key_share0 =
-          PartInvDefault[CreatorRootKeyShare0Offset*8 +: CreatorRootKeyShare0Size*8];
+          PartInvDefault[CreatorRootKeyShare0Offset +: CreatorRootKeyShare0Size];
     end
     otp_keymgr_key.creator_root_key_share1_valid = valid;
     if (lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en)) begin
@@ -650,7 +1027,7 @@ package otp_ctrl_part_pkg;
           part_buf_data[CreatorRootKeyShare1Offset +: CreatorRootKeyShare1Size];
     end else begin
       otp_keymgr_key.creator_root_key_share1 =
-          PartInvDefault[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
+          PartInvDefault[CreatorRootKeyShare1Offset +: CreatorRootKeyShare1Size];
     end
     // This is not used since we consume the
     // ungated digest values from the part_digest array.
