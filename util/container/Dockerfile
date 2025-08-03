@@ -50,7 +50,7 @@ COPY apt-requirements.txt /tmp/apt-requirements.txt
 RUN sed -i -e '/^$/d' -e '/^#/d' -e 's/#.*//' /tmp/apt-requirements.txt \
     && apt-get update \
     && xargs apt-get install -y </tmp/apt-requirements.txt \
-    && apt-get install -y \
+    && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y \
         sudo \
         gosu \
         locales \
@@ -60,6 +60,10 @@ RUN sed -i -e '/^$/d' -e '/^#/d' -e 's/#.*//' /tmp/apt-requirements.txt \
         dc \
         time \
         software-properties-common \
+        environment-modules \
+        tclsh \
+        csh \
+        ksh \
     && apt-get clean; \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
