@@ -53,7 +53,8 @@ module gpiodpi
      gpiodpi_close(ctx);
    end
 
-   logic eff_clk = clk_i && active;
+   logic eff_clk;
+   assign eff_clk = clk_i && active;
 
    logic [N_GPIO-1:0] gpio_d2p_r;
    always_ff @(posedge eff_clk) begin
