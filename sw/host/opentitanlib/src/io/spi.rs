@@ -12,6 +12,7 @@ use thiserror::Error;
 use super::{eeprom, gpio};
 use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
+use crate::transport::TransportError;
 use crate::util::voltage::Voltage;
 
 #[derive(Clone, Default, Debug, Args, Serialize, Deserialize)]
@@ -200,6 +201,12 @@ pub trait Target {
 
     fn set_voltage(&self, _voltage: Voltage) -> Result<()> {
         Err(SpiError::InvalidOption("This target does not support set_voltage".to_string()).into())
+    }
+
+    /// Returns `"raiden_debug_spi:serial=XXX"` or similar string usable for passing via `-p`
+    /// argument to `flashrom`, in order for it to connect to this SPI port instance.
+    fn get_flashrom_programmer(&self) -> Result<String> {
+        Err(TransportError::UnsupportedOperation.into())
     }
 
     /// Runs a SPI transaction composed from the slice of [`Transfer`] objects.  Will assert the

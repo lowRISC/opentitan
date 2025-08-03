@@ -56,6 +56,7 @@ enum RootCommandHierarchy {
     Spx(command::spx::Spx),
     #[command(subcommand)]
     Transport(command::transport::TransportCommand),
+    Uart(command::uart::UartCommand),
     Version(command::version::Version),
     #[command(subcommand)]
     Status(command::status_cmd::StatusCommand),

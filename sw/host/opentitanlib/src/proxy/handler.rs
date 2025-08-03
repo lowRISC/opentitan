@@ -261,6 +261,10 @@ impl<'a> TransportCommandHandler<'a> {
                         instance.set_parity(*parity)?;
                         Ok(Response::Uart(UartResponse::SetParity))
                     }
+                    UartRequest::GetDevicePath => {
+                        let path = instance.get_device_path()?;
+                        Ok(Response::Uart(UartResponse::GetDevicePath { path }))
+                    }
                     UartRequest::Read {
                         timeout_millis,
                         len,
@@ -357,6 +361,10 @@ impl<'a> TransportCommandHandler<'a> {
                     SpiRequest::SetVoltage { voltage } => {
                         instance.set_voltage(*voltage)?;
                         Ok(Response::Spi(SpiResponse::SetVoltage))
+                    }
+                    SpiRequest::GetFlashromArgs => {
+                        let programmer = instance.get_flashrom_programmer()?;
+                        Ok(Response::Spi(SpiResponse::GetFlashromArgs { programmer }))
                     }
                     SpiRequest::RunTransaction { transaction: reqs } => {
                         // Construct proper response to each transfer in request.

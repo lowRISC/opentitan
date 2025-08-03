@@ -205,6 +205,13 @@ impl Target for LogicalSpiWrapper {
         self.physical_wrapper.underlying_target.set_voltage(voltage)
     }
 
+    fn get_flashrom_programmer(&self) -> Result<String> {
+        self.apply_settings_to_underlying()?;
+        self.physical_wrapper
+            .underlying_target
+            .get_flashrom_programmer()
+    }
+
     fn run_transaction(&self, transaction: &mut [spi::Transfer]) -> Result<()> {
         self.apply_settings_to_underlying()?;
         self.physical_wrapper

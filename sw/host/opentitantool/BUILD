@@ -36,6 +36,7 @@ rust_binary(
         "src/command/status_cmd.rs",
         "src/command/tpm.rs",
         "src/command/transport.rs",
+        "src/command/uart.rs",
         "src/command/update_usr_access.rs",
         "src/command/version.rs",
         "src/command/xmodem.rs",
