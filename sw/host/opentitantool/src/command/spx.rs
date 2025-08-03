@@ -70,7 +70,7 @@ impl CommandDispatch for SpxKeyShowCommand {
 /// <OUTPUT_DIR>/<BASENAME>.pub.key.
 #[derive(Debug, Args)]
 pub struct SpxKeyGenerateCommand {
-    /// SPHINCS+ algorithm (SHAKE-128s-simple, SHA2-128s-simple)
+    /// SPHINCS+ algorithm (SHA2-128s-simple, SHAKE-128s-simple)
     #[arg(long, default_value = "SHAKE-128s-simple")]
     algorithm: SphincsPlus,
     /// Output directory.
@@ -116,7 +116,7 @@ pub struct SpxSignCommand {
     /// Set to true if signing for a target that uses a byte-reversed representation of the hash.
     #[arg(short='r', long, action = clap::ArgAction::Set, default_value = "false")]
     spx_hash_reversal_bug: bool,
-    /// The signature domain (Raw, Pure, PreHashedSha256)
+    /// The signature domain (None, Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxDomain::default())]
     domain: SpxDomain,
     /// The filename for the message to sign.
@@ -154,10 +154,10 @@ pub struct SpxVerifyCommand {
     /// Set to true if verifying for a target that uses a byte-reversed representation of the hash.
     #[arg(short='r', long, action = clap::ArgAction::Set, default_value = "false")]
     spx_hash_reversal_bug: bool,
-    /// The signature domain (Raw, Pure, PreHashedSha256)
+    /// The signature domain (None, Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxDomain::default())]
     domain: SpxDomain,
-    /// The signature algorithm (Shake128sSimple, Sha2128sSimple)
+    /// The signature algorithm (SLH-DSA-SHA2-128s, SLH-DSA-SHAKE-128s)
     #[arg(long, default_value_t = SphincsPlus::Sha2128sSimple)]
     spx_algorithm: SphincsPlus,
     /// The file containing the SPHINCS+ raw public key in PEM format.
