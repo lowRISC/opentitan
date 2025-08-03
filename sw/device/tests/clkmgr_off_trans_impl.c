@@ -14,22 +14,24 @@
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
+#include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "aes_regs.h"
+#include "hmac_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "kmac_regs.h"
+#include "otbn_regs.h"
 
 /**
- * The hints bit order is
- * bit 0: AES
- * bit 1: HMAC
- * bit 2: KMAC
- * bit 3: OTBN
+ * Test an access to a transactional unit that has been disabled causes
+ * a hang access, resulting in a watchdog reset. Check the crash dump
+ * data address and current pc after the reset.
  */
-
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_aon_timer_t aon_timer;
@@ -39,19 +41,44 @@ static dif_hmac_t hmac;
 static dif_kmac_t kmac;
 static dif_otbn_t otbn;
 
-static const uint32_t bite_us = 400;
+typedef struct clock_error_info {
+  /**
+   * The unit being tested.
+   */
+  const char *name;
+
+  /**
+   * The memory location that causes the error.
+   * This is the expected value of crash_dump's mdaa.
+   */
+  uint32_t csr_offset;
+
+  /**
+   * The address of the function causing the error.  The functions
+   * that cause the error are chosen so they perform a CSR read
+   * shortly after the function entry, so crash_dump's mcpc is
+   * expected to be past the possible error pc by no more than about 8
+   * instructions, meaning 8 * 4 bytes.
+   */
+  uint32_t crash_function;
+} clock_error_info_t;
+
+enum { kPcSpread = 8 * 4 };
+
+inline uint32_t addr_as_offset(mmio_region_t base, uint32_t offset) {
+  return (uint32_t)base.base + offset;
+}
 
 /**
  * Send CSR access to aes, expecting to timeout.
  */
 static void aes_csr_access(void) {
-  bool status;
-  CHECK_DIF_OK(dif_aes_get_status(&aes, kDifAesStatusIdle, &status));
+  CHECK_DIF_OK(dif_aes_alert_force(&aes, kDifAesAlertRecovCtrlUpdateErr));
 }
 
 static void hmac_csr_access(void) {
-  uint32_t num_entries;
-  CHECK_DIF_OK(dif_hmac_fifo_count_entries(&hmac, &num_entries));
+  dif_hmac_irq_state_snapshot_t snapshot;
+  CHECK_DIF_OK(dif_hmac_irq_get_state(&hmac, &snapshot));
 }
 
 static void kmac_csr_access(void) {
@@ -95,19 +122,12 @@ static void test_hintable_clocks_off(const dif_clkmgr_t *clkmgr,
   CHECK_DIF_OK(
       dif_clkmgr_hintable_clock_set_hint(clkmgr, clock, kDifToggleEnabled));
 
-  // The unit is enabled. Set the aon timer to bite, disable it, and issue a
-  // CSR read.
-  uint32_t bite_cycles = 0;
-  CHECK_STATUS_OK(
-      aon_timer_testutils_get_aon_cycles_32_from_us(bite_us, &bite_cycles));
-  LOG_INFO("Setting bite reset for %u us (%u cycles)", bite_us, bite_cycles);
-
-  CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(&aon_timer, UINT32_MAX,
-                                                      bite_cycles, false));
+  // Disable the unit, set the aon timer to bite, and issue a CSR read.
   CHECK_DIF_OK(
       dif_clkmgr_hintable_clock_set_hint(clkmgr, clock, kDifToggleDisabled));
   // Short wait to make sure clocks reacted to hints.
-  busy_spin_micros(1);
+  busy_spin_micros(5);
+
   // Check all units but the hinted one are alive.
   for (dif_clkmgr_hintable_clock_t other = 0;
        other <= kTopEarlgreyHintableClocksLast; ++other) {
@@ -115,7 +135,17 @@ static void test_hintable_clocks_off(const dif_clkmgr_t *clkmgr,
       trans_csr_access(other);
     }
   }
-  LOG_INFO("All other units are alive");
+
+  // Set the watchdog with some time to run the necessary code before the
+  // access that should hang.
+  uint32_t bite_us = 20;
+  uint32_t bite_cycles = 0;
+  CHECK_STATUS_OK(
+      aon_timer_testutils_get_aon_cycles_32_from_us(bite_us, &bite_cycles));
+  LOG_INFO("Setting bite reset for %u us (%u cycles)", bite_us, bite_cycles);
+  CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(&aon_timer, UINT32_MAX,
+                                                      bite_cycles, false));
+  // This should hang.
   trans_csr_access(clock);
   LOG_ERROR("Access to disabled unit should freeze and cause a reset");
 }
@@ -154,6 +184,17 @@ bool execute_off_trans_test(dif_clkmgr_hintable_clock_t clock) {
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
 
+  // Initialize the expected error data address and execution address.
+  clock_error_info_t clock_error_info[kTopEarlgreyHintableClocksLast + 1] = {
+      {"aes", addr_as_offset(aes.base_addr, AES_ALERT_TEST_REG_OFFSET),
+       (uint32_t)&dif_aes_alert_force},
+      {"hmac", addr_as_offset(hmac.base_addr, HMAC_INTR_STATE_REG_OFFSET),
+       (uint32_t)&dif_hmac_irq_get_state},
+      {"kmac", addr_as_offset(kmac.base_addr, KMAC_STATUS_REG_OFFSET),
+       (uint32_t)&dif_kmac_get_status},
+      {"otbn", addr_as_offset(otbn.base_addr, OTBN_ERR_BITS_REG_OFFSET),
+       (uint32_t)&dif_otbn_get_err_bits}};
+
   // Enable cpu dump capture.
   CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(&rstmgr, kDifToggleEnabled));
 
@@ -173,20 +214,24 @@ bool execute_off_trans_test(dif_clkmgr_hintable_clock_t clock) {
                  &rstmgr, kDifRstmgrResetInfoWatchdog))) {
     // Verify the cpu crash dump.
     LOG_INFO("Got an expected watchdog reset when reading for clock %d", clock);
-    // TODO: Enable reading the CPU dump once the following issue is resolved
-    // (https://github.com/lowRISC/opentitan/issues/13022)
-    /*
-    dif_rstmgr_cpu_info_dump_segment_t cpu_dump[DIF_RSTMGR_CPU_INFO_MAX_SIZE];
+    dif_rv_core_ibex_crash_dump_info_t crash_dump;
+    // The sizes for dif_rstmgr_cpu_info_dump_read are measured in
+    // units of dif_rstmgr_cpu_info_dump_segment_t.
     size_t size_read;
     CHECK_DIF_OK(dif_rstmgr_cpu_info_dump_read(
-        &rstmgr, cpu_dump, DIF_RSTMGR_CPU_INFO_MAX_SIZE, &size_read));
-    LOG_INFO("Read cpu dump");
-    CHECK(size_read == DIF_RSTMGR_CPU_INFO_MAX_SIZE);
-    LOG_INFO("PC           = 0x%x", cpu_dump[0]);
-    LOG_INFO("NEXT PC      = 0x%x", cpu_dump[1]);
-    LOG_INFO("DATA ADDRESS = 0x%x", cpu_dump[2]);
-    LOG_INFO("EXC ADDRESS  = 0x%x", cpu_dump[3]);
-    */
+        &rstmgr, (dif_rstmgr_cpu_info_dump_segment_t *)&crash_dump,
+        sizeof(crash_dump) / sizeof(dif_rstmgr_cpu_info_dump_segment_t),
+        &size_read));
+    // crash_dump.fault_state.mdaa is the DATA ADDRESS that caused the error.
+    CHECK(crash_dump.fault_state.mdaa == clock_error_info[clock].csr_offset);
+    // The functions that cause the error are chosen so they perform a
+    // CSR read shortly after the function entry, so this expects
+    // crash_dump.fault_state.mcpc to be past the crash_function by no
+    // more than about 8 instructions, meaning 8 * 4 bytes.
+    CHECK(crash_dump.fault_state.mcpc >=
+              clock_error_info[clock].crash_function &&
+          crash_dump.fault_state.mcpc <=
+              clock_error_info[clock].crash_function + kPcSpread);
 
     return true;
   } else {
