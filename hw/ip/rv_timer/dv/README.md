@@ -79,19 +79,19 @@ The following covergroups have been developed to prove that the test intent has 
 #### Scoreboard
 The `rv_timer_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* tl_a_chan_fifo: tl address channel
-* tl_d_chan_fifo: tl data channel
+* `tl_a_chan_fifo`: TileLink A channel
+* `tl_d_chan_fifo`: TileLink D channel
 
 rv_timer scoreboard monitors all CSR registers and interrupt pins.
 
-For a write transaction, during the address channel, CSR values are updated in RAL and config values (timer enable, step, prescale, timer value, compare value) are updated in internal arrays.
+For a write transaction, during the A channel, CSR values are updated in RAL and config values (timer enable, step, prescale, timer value, compare value) are updated in internal arrays.
 When particular timer is enabled, rv_timer scoreboard calculate timeout clocks and start a thread to wait for timeout, then if any of timer configuration updated on active timer, rv_timer scoreboard recalculate and update the timeout clocks in their running timeout thread.
 If multiple timers are enabled, multiple threads will be initiated. On timeout scoreboard calculate the expected interrupt status and update RAL registers.
 
-For a read transaction, during the address channel for interrupt status CSR rv_timer will predict its value according to the timer timeout threads.
-During the data channel, rv_timer scoreboard will compare the read data with expected data in RAL.
+For a read transaction of the interrupt csr, the `rv_timer` scoreboard will predict its value on the A channel message.
+It will then compare the read data with the expected value when it sees the D channel response.
 
-Interrupt pins are checked against expected at every read/write data channel.
+Interrupt pins are checked against expected at every read/write message on the D channel.
 
 #### Assertions
 * TLUL assertions: The `tb/rv_timer_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance

@@ -217,7 +217,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
                   "Received an SBA TL item when SBA should have been disabled.")
       end
 
-      process_tl_sba_access(item, AddrChannel);
+      process_tl_sba_access(item, AChannel);
     end
   endtask
 
@@ -236,7 +236,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       if (!item.is_ok()) begin
         // TODO: deal with item not being ok.
       end
-      process_tl_sba_access(item, DataChannel);
+      process_tl_sba_access(item, DChannel);
     end
   endtask
 
@@ -309,10 +309,10 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     bit     write           = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
 
-    bit addr_phase_read   = (!write && channel == AddrChannel);
-    bit addr_phase_write  = (write && channel == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
-    bit data_phase_write  = (write && channel == DataChannel);
+    bit addr_phase_read   = (!write && channel == AChannel);
+    bit addr_phase_write  = (write && channel == AChannel);
+    bit data_phase_read   = (!write && channel == DChannel);
+    bit data_phase_write  = (write && channel == DChannel);
 
     // Scoreboard only takes csr address, so filter out memory address.
     if (is_mem_addr(item, ral_name)) return;
@@ -440,7 +440,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     end
 
     if ((ral_name == "rv_dm_mem_reg_block") &&
-        (channel == DataChannel) &&
+        (channel == DChannel) &&
         !is_debug_enabled()) begin
 
       `DV_CHECK(item.d_error)

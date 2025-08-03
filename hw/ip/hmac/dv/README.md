@@ -104,20 +104,20 @@ that the test intent has been adequately met:
 The `hmac_scoreboard` is primarily used for end to end checking. It creates the
 following analysis ports to retrieve the data monitored by corresponding
 interface agents:
-* tl_a_chan_fifo: tl address channel
-* tl_d_chan_fifo: tl data channel
+* `tl_a_chan_fifo`: TileLink A channel
+* `tl_d_chan_fifo`: TileLink D channel
 
 Hmac scoreboard monitors all hmac valid CSR registers, hmac msg_fifo (addr:
 'h800 to 'hfff), and interrupt pins.
 
-For a write transaction, during the address channel, CSR values are updated in
+For a write transaction, during the A channel, CSR values are updated in
 RAL. Msg_fifo values are updated to an internal msg queue. Once the data
 finishes streaming, hmac scoreboard will input the msg queue to the C model and
 calculate the expected output, then update the corresponding RAL registers.
 
-For a read transaction, during the address channel, for status related CSRs
+For a read transaction, during the A channel, for status related CSRs
 (such as fifo_full, fifo_empty, etc), hmac will predict its value according to
-the cycle accurate model. During the data channel, hmac scoreboard will compare
+the cycle accurate model. At the D channel response, `hmac_scoreboard` will compare
 the read data with expected data in RAL.
 
 ##### Scoreboard cycle accurate checking model

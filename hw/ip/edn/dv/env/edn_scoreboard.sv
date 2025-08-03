@@ -125,10 +125,10 @@ class edn_scoreboard extends cip_base_scoreboard #(
     bit     write           = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
 
-    bit addr_phase_read   = (!write && channel == AddrChannel);
-    bit addr_phase_write  = (write && channel == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
-    bit data_phase_write  = (write && channel == DataChannel);
+    bit addr_phase_read   = (!write && channel == AChannel);
+    bit addr_phase_write  = (write && channel == AChannel);
+    bit data_phase_read   = (!write && channel == DChannel);
+    bit data_phase_write  = (write && channel == DChannel);
 
     // bools to determine whether sm is done and FIFOs need to be reset
     bit auto_req_mode_turned_off;

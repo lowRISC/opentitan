@@ -202,10 +202,10 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     bit            write = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
 
-    bit            addr_phase_read = (!write && channel == AddrChannel);
-    bit            addr_phase_write = (write && channel == AddrChannel);
-    bit            data_phase_read = (!write && channel == DataChannel);
-    bit            data_phase_write = (write && channel == DataChannel);
+    bit            addr_phase_read = (!write && channel == AChannel);
+    bit            addr_phase_write = (write && channel == AChannel);
+    bit            data_phase_read = (!write && channel == DChannel);
+    bit            data_phase_write = (write && channel == DChannel);
     uvm_reg_data_t write_data;
 
     // if access was to a valid csr, get the csr handle

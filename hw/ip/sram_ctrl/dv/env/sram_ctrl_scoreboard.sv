@@ -155,7 +155,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     end
     if (status_lc_esc == EscFinal) is_tl_err |= 1;
 
-    if (channel == DataChannel && is_tl_err) begin
+    if (channel == DChannel && is_tl_err) begin
       `DV_CHECK_EQ(item.d_error, 1,
           $sformatf({"item_err: %0d, allow_ifetch : %0d, sram_ifetch: %0d, exec: %0d, ",
                      "debug_en: %0d, lc_esc %0d"},
@@ -512,13 +512,13 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     bit     write           = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
 
-    bit addr_phase_read   = (!write && channel == AddrChannel);
-    bit addr_phase_write  = (write && channel == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
-    bit data_phase_write  = (write && channel == DataChannel);
+    bit addr_phase_read   = (!write && channel == AChannel);
+    bit addr_phase_write  = (write && channel == AChannel);
+    bit data_phase_read   = (!write && channel == DChannel);
+    bit data_phase_write  = (write && channel == DChannel);
 
     if (ral_name == cfg.sram_ral_name) begin
-      if (channel == AddrChannel) process_sram_tl_a_chan_item(item);
+      if (channel == AChannel) process_sram_tl_a_chan_item(item);
       else                        process_sram_tl_d_chan_item(item);
       return;
     end

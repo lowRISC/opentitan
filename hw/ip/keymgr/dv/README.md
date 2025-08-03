@@ -83,8 +83,8 @@ The covergroups defined in testplan have been developed to prove that the test i
 #### Scoreboard
 The `keymgr_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* tl_a_chan_fifo: An analysis FIFO to hold transactions from TL address channel.
-* tl_d_chan_fifo: An analysis FIFO to hold transactions from TL data channel.
+* `tl_a_chan_fifo`: An analysis FIFO to hold transactions from TL A channel.
+* `tl_d_chan_fifo`: An analysis FIFO to hold transactions from TL D channel.
 * req_fifo: An analysis FIFO to hold request data sent to KMAC.
 * rsp_fifo: An analysis FIFO to hold response digests received from KMAC.
 * edn_fifo: An analysis FIFO to hold transactions coming from the EDN interface.

@@ -82,8 +82,8 @@ Refer to the testplan covergroups sections for the detail descriptions.
 #### Scoreboard
 The `spi_device_scoreboard` is primarily used for end to end checking.
 It creates the following analysis FIFOs to retrieve the data monitored by corresponding interface agents:
-* tl_a_chan_fifo, tl_d_chan_fifo:           These 2 FIFOs provide transaction items at the end of address channel and data channel respectively
-* upstream_spi_host_fifo, upstream_spi_device_fifo: These 2 FIFOs provides TX/RX words of data from spi_monitor
+* `tl_a_chan_fifo`, `tl_d_chan_fifo`: FIFOs that provide sequence items at the end of transactions on the A and D channel respectively
+* `upstream_spi_host_fifo`, `upstream_spi_device_fifo`: FIFOs that provide TX/RX words of data from spi_monitor
 
 #### Assertions
 * TLUL assertions: The `tb/spi_device_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
