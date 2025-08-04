@@ -17,7 +17,7 @@ path = "empty_file_to_appease_cargo.rs"
 aes = "0.8.2"
 anyhow = { version = "1.0.57", features=["backtrace"] }
 arrayvec = { version = "0.7", features=["serde"] }
-asn1 = "0.21"
+asn1 = "0.22"
 base64ct = "1.6.0"
 bitflags = { version = "2.1", features = ["serde"] }
 byteorder = "1.4.3"
@@ -46,7 +46,7 @@ heck = "0.5"
 hex = { version = "0.4.3", features = ["serde"] }
 humantime = "2.1.0"
 humantime-serde = "1.1"
-indicatif = "0.17.9"
+indicatif = "0.18"
 itertools = "0.14.0"
 log = "0.4"
 memchr = "2.6.4"
