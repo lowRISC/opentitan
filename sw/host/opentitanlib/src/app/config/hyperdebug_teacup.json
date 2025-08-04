@@ -403,8 +403,14 @@
       "alias_of": "CN8_2"
     },
     {
+      // The VBUS sense pin (IOC7) is connected to the output of a buffer, controlled
+      // by IOA2 and VBUS_SENSE_EN. When the buffer is off, the pin is left floating
+      // but there is a pull-down resistor on the board. Unfortunately, the resistor
+      // is very weak which can cause some issues. This is why we also request a pull-down
+      // from hyperdebug on this pin.
       "name": "VBUS_SENSE",
       "mode": "Input",
+      "pull_mode": "PullDown",
       "alias_of": "CN10_18"
     }
   ],
