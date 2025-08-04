@@ -91,3 +91,5 @@ book
 
 # Custom Ruff config overrides
 .ruff.toml
+
+.DS_Store
