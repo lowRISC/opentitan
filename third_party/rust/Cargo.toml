@@ -90,8 +90,8 @@ zerocopy = { version = "0.8", features = ["derive"] }
 zeroize = "1.8.1"
 
 # hsmtool dependencies
-cryptoki = "0.9.0"
-cryptoki-sys = "0.3.0"
+cryptoki = "0.10.0"
+cryptoki-sys = "0.4.0"
 indexmap = { version = "2.0", features = ["serde"] }
 libloading = "0.8"
 

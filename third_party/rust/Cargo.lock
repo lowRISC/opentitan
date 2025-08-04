@@ -254,7 +254,7 @@ dependencies = [
  "indicatif",
  "indoc",
  "itertools",
- "libloading 0.8.6",
+ "libloading",
  "log",
  "memchr",
  "memoffset",
@@ -483,13 +483,13 @@ dependencies = [
 
 [[package]]
 name = "cryptoki"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b34e469ac5a28d546ed7aae9dd69037b38f4e966cd9adb2a01250a5d257de02"
+checksum = "781357a7779a8e92ea985121bbf379a9adf0777f44ab6392efc6abd5aa9b67db"
 dependencies = [
  "bitflags 1.3.2",
  "cryptoki-sys",
- "libloading 0.7.4",
+ "libloading",
  "log",
  "paste",
  "secrecy",
@@ -497,11 +497,11 @@ dependencies = [
 
 [[package]]
 name = "cryptoki-sys"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d279ad423469b93e631f4bc53f277c7424cf01353c70eba685046d294dc042c7"
+checksum = "753e27d860277930ae9f394c119c8c70303236aab0ffab1d51f3d207dbb2bc4b"
 dependencies = [
- "libloading 0.7.4",
+ "libloading",
 ]
 
 [[package]]
@@ -1105,16 +1105,6 @@ dependencies = [
  "libc",
  "pkg-config",
  "vcpkg",
-]
-
-[[package]]
-name = "libloading"
-version = "0.7.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b67380fd3b2fbe7527a606e18729d21c6f3951633d0500574c4dc22d2d638b9f"
-dependencies = [
- "cfg-if",
- "winapi",
 ]
 
 [[package]]
