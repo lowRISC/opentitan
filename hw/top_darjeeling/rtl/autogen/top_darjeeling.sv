@@ -339,9 +339,9 @@ module top_darjeeling #(
   // local parameters for sram_ctrl_mbox
   localparam int SramCtrlMboxOutstanding = 2;
   // local parameters for rom_ctrl0
-  localparam bit RomCtrl0FlopToKmac = 1'b0;
+  localparam bit RomCtrl0FlopToKmac = 1'b1;
   // local parameters for rom_ctrl1
-  localparam bit RomCtrl1FlopToKmac = 1'b0;
+  localparam bit RomCtrl1FlopToKmac = 1'b1;
   // local parameters for racl_ctrl
   localparam int RaclCtrlNumSubscribingIps = 11;
 
