@@ -21,6 +21,10 @@ SCALAR_TYPES = {
         "c_typename": "uint8_t",
         "c_invalid_value": 0,
     },
+    "uint16": {
+        "c_typename": "uint16_t",
+        "c_invalid_value": 0,
+    },
 }
 
 # Schema of the "dtgen" attribute in the ipconfig.
