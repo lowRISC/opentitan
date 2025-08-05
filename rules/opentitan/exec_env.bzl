@@ -34,6 +34,7 @@ _FIELDS = {
     "flash_scramble_tool": ("attr.flash_scramble_tool", False),
     "openocd": ("attr.openocd", False),
     "openocd_adapter_config": ("attr.openocd_adapter_config", False),
+    "slot_spec": ("attr.slot_spec", False),
 }
 
 ExecEnvInfo = provider(
@@ -149,6 +150,10 @@ def exec_env_common_attrs(**kwargs):
             default = kwargs.get("rom_ext"),
             allow_files = True,
             doc = "ROM_EXT image to use in this environment",
+        ),
+        "slot_spec": attr.string_dict(
+            default = kwargs.get("slot_spec", {}),
+            doc = "Firmware slot addresses to use in this environment",
         ),
         "otp": attr.label(
             default = kwargs.get("otp"),
@@ -408,5 +413,11 @@ def common_test_setup(ctx, exec_env, firmware):
         data_labels += jtag_data
         data_files += get_files(jtag_data)
         param["jtag_test_cmd"] = jtag_test_cmd
+
+    # Update the actual firmware slot spec
+    slot_spec = dict(exec_env.slot_spec)
+    slot_spec.update(ctx.attr.slot_spec)
+    action_param.update(slot_spec)
+    param.update(slot_spec)
 
     return test_harness, data_labels, data_files, param, action_param
