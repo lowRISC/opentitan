@@ -16,9 +16,8 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
  * Symbols to be used in the setup of the address translation for the OTTF run
  * at the BL0 boot stage in slot A.
  */
-/* TODO(#9045): Move ROM_EXT size to a common location. */
-_ottf_size = (LENGTH(eflash) / 2) - 0x10000;
-_ottf_start_address = ORIGIN(eflash) + 0x10000;
+_ottf_size = (LENGTH(eflash) / 2) - _rom_ext_size;
+_ottf_start_address = ORIGIN(eflash) + _rom_ext_size;
 
 REGION_ALIAS("ottf_flash", eflash);
 
