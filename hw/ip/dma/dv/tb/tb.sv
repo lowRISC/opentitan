@@ -40,6 +40,16 @@ module tb;
   assign tl_sys_if.h2d = sys_tl_adapter_if.tl_h2d;
   assign sys_tl_adapter_if.tl_d2h = tl_sys_if.d2h;
 
+  // Connect assertion module to SYS interface
+  tlul_assert #(
+    .EndpointType("Device")
+  ) tlul_assert_sys (
+    .clk_i  (clk),
+    .rst_ni (rst_n),
+    .h2d    (tl_sys_if.h2d),
+    .d2h    (tl_sys_if.d2h)
+  );
+
   `DV_ALERT_IF_CONNECT()
 
   // Instantiate DUT
