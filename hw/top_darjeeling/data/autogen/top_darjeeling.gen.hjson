@@ -7769,6 +7769,7 @@
       param_decl:
       {
         SecDisableScrambling: 1'b0
+        FlopToKmac: 1'b1
       }
       clock_connections:
       {
@@ -7794,7 +7795,7 @@
             adding chip area.
             '''
           type: bit
-          default: 1'b0
+          default: 1'b1
           local: "true"
           expose: "true"
           name_top: RomCtrl0FlopToKmac
@@ -7969,6 +7970,7 @@
       param_decl:
       {
         SecDisableScrambling: 1'b0
+        FlopToKmac: 1'b1
       }
       clock_connections:
       {
@@ -7994,7 +7996,7 @@
             adding chip area.
             '''
           type: bit
-          default: 1'b0
+          default: 1'b1
           local: "true"
           expose: "true"
           name_top: RomCtrl1FlopToKmac
