@@ -157,14 +157,16 @@ fn find_device(hub: &UsbHub, port: u8) -> Result<rusb::Device<rusb::Context>> {
 fn reset(hub: &UsbHub, port: u8, check_status: bool) -> Result<()> {
     log::info!("resetting device on port {}", port);
     let device = find_device(hub, port)?;
-    // Resetting the device is a tricky: if we only send a hub operation, the kernel
-    // will not be aware of the reset and it will not try to configure the device afterwards.
-    // On the other hand, since we mess with the suspend/resume state of the device directly
-    // at the hub, this could also confuse the kernel and it might not succeed in sending
-    // a reset. Experimentally, we have observed however that requesting a reset from the
-    // kernel will at least trigger a re-enumeration if it fails. So to be really safe,
-    // we do both.
-    hub.op(UsbHubOp::Reset, port, Duration::from_millis(1000), check_status)?;
+    if false {
+        // Resetting the device is a tricky: if we only send a hub operation, the kernel
+        // will not be aware of the reset and it will not try to configure the device afterwards.
+        // On the other hand, since we mess with the suspend/resume state of the device directly
+        // at the hub, this could also confuse the kernel and it might not succeed in sending
+        // a reset. Experimentally, we have observed however that requesting a reset from the
+        // kernel will at least trigger a re-enumeration if it fails. So to be really safe,
+        // we do both.
+        hub.op(UsbHubOp::Reset, port, Duration::from_millis(1000), check_status)?;
+    }
 
     let res = device.open().context("could not find device under test").and_then(
         |dev| dev.reset().context("could not reset device via the kernel"));
