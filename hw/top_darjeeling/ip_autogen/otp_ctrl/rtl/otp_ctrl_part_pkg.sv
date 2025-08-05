@@ -93,6 +93,7 @@ package otp_ctrl_part_pkg;
     logic integrity;        // Whether the partition is integrity protected
     logic iskeymgr_creator; // Whether the partition has any creator key material
     logic iskeymgr_owner;   // Whether the partition has any owner key material
+    logic zeroizable;       // Whether the partition can be zeroized
   } part_info_t;
 
   parameter part_info_t PartInfoDefault = '{
@@ -107,7 +108,8 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b0,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b0
   };
 
   ////////////////////////
@@ -119,7 +121,7 @@ package otp_ctrl_part_pkg;
     '{
       variant:          Unbuffered,
       offset:           14'd0,
-      size:             64,
+      size:             72,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -128,13 +130,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b0,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // CREATOR_SW_CFG
     '{
       variant:          Unbuffered,
-      offset:           14'd64,
-      size:             320,
+      offset:           14'd72,
+      size:             312,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -143,13 +146,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // OWNER_SW_CFG
     '{
       variant:          Unbuffered,
       offset:           14'd384,
-      size:             632,
+      size:             624,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -158,13 +162,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // OWNERSHIP_SLOT_STATE
     '{
       variant:          Unbuffered,
-      offset:           14'd1016,
-      size:             48,
+      offset:           14'd1008,
+      size:             56,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b0,
@@ -173,13 +178,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // ROT_CREATOR_AUTH
     '{
       variant:          Unbuffered,
       offset:           14'd1064,
-      size:             1424,
+      size:             1432,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -188,13 +194,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // ROT_OWNER_AUTH_SLOT0
     '{
       variant:          Unbuffered,
-      offset:           14'd2488,
-      size:             328,
+      offset:           14'd2496,
+      size:             336,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -203,13 +210,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // ROT_OWNER_AUTH_SLOT1
     '{
       variant:          Unbuffered,
-      offset:           14'd2816,
-      size:             328,
+      offset:           14'd2832,
+      size:             336,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -218,13 +226,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // PLAT_INTEG_AUTH_SLOT0
     '{
       variant:          Unbuffered,
-      offset:           14'd3144,
-      size:             328,
+      offset:           14'd3168,
+      size:             336,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -233,13 +242,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // PLAT_INTEG_AUTH_SLOT1
     '{
       variant:          Unbuffered,
-      offset:           14'd3472,
-      size:             328,
+      offset:           14'd3504,
+      size:             336,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -248,13 +258,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // PLAT_OWNER_AUTH_SLOT0
     '{
       variant:          Unbuffered,
-      offset:           14'd3800,
-      size:             328,
+      offset:           14'd3840,
+      size:             336,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -263,13 +274,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // PLAT_OWNER_AUTH_SLOT1
     '{
       variant:          Unbuffered,
-      offset:           14'd4128,
-      size:             328,
+      offset:           14'd4176,
+      size:             336,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -278,13 +290,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // PLAT_OWNER_AUTH_SLOT2
     '{
       variant:          Unbuffered,
-      offset:           14'd4456,
-      size:             328,
+      offset:           14'd4512,
+      size:             336,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -293,13 +306,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // PLAT_OWNER_AUTH_SLOT3
     '{
       variant:          Unbuffered,
-      offset:           14'd4784,
-      size:             328,
+      offset:           14'd4848,
+      size:             336,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -308,13 +322,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // EXT_NVM
     '{
       variant:          Unbuffered,
-      offset:           14'd5112,
-      size:             1024,
+      offset:           14'd5184,
+      size:             1032,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b0,
@@ -323,13 +338,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b0,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // ROM_PATCH
     '{
       variant:          Unbuffered,
-      offset:           14'd6136,
-      size:             9848,
+      offset:           14'd6216,
+      size:             9720,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -338,13 +354,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // HW_CFG0
     '{
       variant:          Buffered,
-      offset:           14'd15984,
-      size:             72,
+      offset:           14'd15936,
+      size:             80,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b0,
@@ -353,13 +370,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // HW_CFG1
     '{
       variant:          Buffered,
-      offset:           14'd16056,
-      size:             16,
+      offset:           14'd16016,
+      size:             24,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b0,
@@ -368,13 +386,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // SECRET0
     '{
       variant:          Buffered,
-      offset:           14'd16072,
-      size:             40,
+      offset:           14'd16040,
+      size:             48,
       key_sel:          Secret0Key,
       secret:           1'b1,
       sw_digest:        1'b0,
@@ -383,13 +402,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b1,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // SECRET1
     '{
       variant:          Buffered,
-      offset:           14'd16112,
-      size:             24,
+      offset:           14'd16088,
+      size:             32,
       key_sel:          Secret1Key,
       secret:           1'b1,
       sw_digest:        1'b0,
@@ -398,13 +418,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b1,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // SECRET2
     '{
       variant:          Buffered,
-      offset:           14'd16136,
-      size:             120,
+      offset:           14'd16120,
+      size:             128,
       key_sel:          Secret2Key,
       secret:           1'b1,
       sw_digest:        1'b0,
@@ -413,13 +434,14 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b1,
       integrity:        1'b1,
       iskeymgr_creator: 1'b1,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1
     },
     // SECRET3
     '{
       variant:          Buffered,
-      offset:           14'd16256,
-      size:             40,
+      offset:           14'd16248,
+      size:             48,
       key_sel:          Secret3Key,
       secret:           1'b1,
       sw_digest:        1'b0,
@@ -428,7 +450,8 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b1,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b1
+      iskeymgr_owner:   1'b1,
+      zeroizable:       1'b1
     },
     // LIFE_CYCLE
     '{
@@ -443,7 +466,8 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b0
     }
   };
 
@@ -483,6 +507,7 @@ package otp_ctrl_part_pkg;
 
   // Breakout types for easier access of individual items.
   typedef struct packed {
+    logic [63:0] hw_cfg0_zer;
     logic [63:0] hw_cfg0_digest;
     logic [255:0] manuf_state;
     logic [255:0] device_id;
@@ -490,11 +515,13 @@ package otp_ctrl_part_pkg;
 
   // default value used for intermodule
   parameter otp_hw_cfg0_data_t OTP_HW_CFG0_DATA_DEFAULT = '{
+    hw_cfg0_zer: 64'h0,
     hw_cfg0_digest: 64'h8CBBAD02BB4CA928,
     manuf_state: 256'h63B9485A3856C417CF7A50A9A91EF7F7B3A5B4421F462370FFF698183664DC7E,
     device_id: 256'h90C7F21F6224F027F98C48B1F93772844A22D4B78FE0266FBEE3958332F2939B
   };
   typedef struct packed {
+    logic [63:0] hw_cfg1_zer;
     logic [63:0] hw_cfg1_digest;
     logic [15:0] unallocated;
     prim_mubi_pkg::mubi8_t en_sram_ifetch;
@@ -504,6 +531,7 @@ package otp_ctrl_part_pkg;
 
   // default value used for intermodule
   parameter otp_hw_cfg1_data_t OTP_HW_CFG1_DATA_DEFAULT = '{
+    hw_cfg1_zer: 64'h0,
     hw_cfg1_digest: 64'hAA3F4C71234F097C,
     unallocated: 16'h0,
     en_sram_ifetch: prim_mubi_pkg::mubi8_t'(8'h69),
@@ -531,87 +559,104 @@ package otp_ctrl_part_pkg;
       320'h1136C663A36C3E3E817E760B27AE937BFCDF15A3429452A851B80674A2B6FBE93B61DE417B9FB33,
       384'hD68C96F0B3D1FEED688098A43C33459F0279FC51CC7C626E315FD2B871D88819A0D1E90E8C9FDDFA01E46311FD36D954
     }),
-    320'({
+    384'({
+      64'h0,
       64'h3BF7D79A9FF747F6,
       256'hD0BAC511D08ECE0E2C0DBDDEDF7A854D5E58D0AA97A0F8F6D3D58610F4851667
     }),
-    960'({
+    1024'({
+      64'h0,
       64'h41837480464544A1,
       256'hE00E9680BD9B70291C752824C7DDC89694CD3DED94B578192A4D8B51F5D41C8A,
       256'h105733EAA3880C5A234729143F97B62A55D0320379A0D260426D99D374E699CA,
       256'hDBC827839FE2DCC27E17D06B5D4E0DDDDBB9844327F20FB5D396D1CE085BDC31,
       128'h711D135F59A50322B6711DB6F5D40A37
     }),
-    192'({
+    256'({
+      64'h0,
       64'h6FDFE93D3146B0F,
       128'hB5AC1F53D00A08C3B28B5C0FEE5F4C02
     }),
-    320'({
+    384'({
+      64'h0,
       64'h67BBE3B4555DF35C,
       128'h40119A3C6E63CDF358840E458E4029A6,
       128'hDF3888886BD10DC67ABB319BDA0529AE
     }),
-    128'({
+    192'({
+      64'h0,
       64'hAA3F4C71234F097C,
       16'h0, // unallocated space
       8'h69,
       8'h69,
       32'h0
     }),
-    576'({
+    640'({
+      64'h0,
       64'h8CBBAD02BB4CA928,
       256'h63B9485A3856C417CF7A50A9A91EF7F7B3A5B4421F462370FFF698183664DC7E,
       256'h90C7F21F6224F027F98C48B1F93772844A22D4B78FE0266FBEE3958332F2939B
     }),
-    78784'({
+    77760'({
+      64'h0,
       64'hC469C593E5DC0DA8,
-      5184'h0, // unallocated space
+      4096'h0, // unallocated space
       73536'h0
     }),
-    8192'({
+    8256'({
+      64'h0,
       8192'h0
     }),
-    2624'({
+    2688'({
+      64'h0,
       64'hBE193854E9CA60A0,
       1280'h0,
       1280'h0
     }),
-    2624'({
+    2688'({
+      64'h0,
       64'hBBF4A76885E754F2,
       1280'h0,
       1280'h0
     }),
-    2624'({
+    2688'({
+      64'h0,
       64'hF87BED95CFBA3727,
       1280'h0,
       1280'h0
     }),
-    2624'({
+    2688'({
+      64'h0,
       64'h20440F25BB053FB5,
       1280'h0,
       1280'h0
     }),
-    2624'({
+    2688'({
+      64'h0,
       64'h15F164D7930C9D19,
       1280'h0,
       1280'h0
     }),
-    2624'({
+    2688'({
+      64'h0,
       64'hE29749216775E8A5,
       1280'h0,
       1280'h0
     }),
-    2624'({
+    2688'({
+      64'h0,
       64'h340A5B93BB19342,
       1280'h0,
       1280'h0
     }),
-    2624'({
+    2688'({
+      64'h0,
       64'h4947DD361344767A,
       1280'h0,
       1280'h0
     }),
-    11392'({
+    11456'({
+      64'h0,
       64'hA445C3C29F71A256,
       32'h0, // unallocated space
       6144'h0,
@@ -621,14 +666,15 @@ package otp_ctrl_part_pkg;
       32'h0,
       1280'h0
     }),
-    384'({
+    448'({
+      64'h0,
       128'h0,
       128'h0,
       128'h0
     }),
-    5056'({
+    4992'({
+      64'h0,
       64'h3E725E464F593C87,
-      128'h0, // unallocated space
       32'h0,
       32'h0,
       32'h0,
@@ -647,9 +693,10 @@ package otp_ctrl_part_pkg;
       32'h0,
       32'h0
     }),
-    2560'({
+    2496'({
+      64'h0,
       64'hCC6596C7174EBA64,
-      160'h0, // unallocated space
+      32'h0, // unallocated space
       32'h0,
       32'h0,
       32'h0,
@@ -685,7 +732,8 @@ package otp_ctrl_part_pkg;
       32'h0,
       992'h0
     }),
-    512'({
+    576'({
+      64'h0,
       64'h9605F051E74379CB,
       448'h0
     })});
@@ -966,6 +1014,7 @@ package otp_ctrl_part_pkg;
       otp_keymgr_key.creator_seed =
           PartInvDefault[CreatorSeedOffset*8 +: CreatorSeedSize*8];
     end
+    unused ^= ^part_buf_data[Secret2ZerOffset +: Secret2ZerSize];
     // This is not used since we consume the
     // ungated digest values from the part_digest array.
     unused ^= ^part_buf_data[Secret2DigestOffset +: Secret2DigestSize];
@@ -979,6 +1028,7 @@ package otp_ctrl_part_pkg;
       otp_keymgr_key.owner_seed =
           PartInvDefault[OwnerSeedOffset*8 +: OwnerSeedSize*8];
     end
+    unused ^= ^part_buf_data[Secret3ZerOffset +: Secret3ZerSize];
     // This is not used since we consume the
     // ungated digest values from the part_digest array.
     unused ^= ^part_buf_data[Secret3DigestOffset +: Secret3DigestSize];

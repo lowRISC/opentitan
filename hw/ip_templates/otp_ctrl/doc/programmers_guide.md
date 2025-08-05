@@ -111,6 +111,28 @@ The hardware will set [`DIRECT_ACCESS_REGWEN`](registers.md#direct_access_regwen
 It should also be noted that the effect of locking a partition via the digest only takes effect **after** the next system reset.
 To prevent integrity check failures SW must therefore ensure that no more programming operations are issued to the affected partition after initiating the digest calculation sequence.
 
+### Zeroization Sequence
+
+Zeroization is a destructive operation, and should only be performed when the contents of the zeroized partition are not needed and won't need to be reprogrammed.
+Attempting to zeroize a non-zeroizable partition will trigger a non-fatal error.
+Zeroization of a partition should always zeroize the zeroization item first (the last 64-bit granule in a partition).
+A typical zeroization sequence for a partition proceeds like this:
+
+1. Check whether the DAI is idle by reading the [`STATUS`](registers.md#status) register.
+2. Perform a read sequence to a 64 bit granule that is expected to be balanced, like the digest field of a non-zeroized partition.
+3. Write the address of the zeroized field to  [`DIRECT_ACCESS_ADDRESS`](registers.md#direct_access_address).
+Note that zeroization always affects a full granule (32 or 64 bits).
+4. Trigger a zeroize command by writing 0x8 to [`DIRECT_ACCESS_CMD`](registers.md#direct_access_cmd).
+5. Poll the [`STATUS`](registers.md#status) until the DAI state goes back to idle.
+6. If the status register flags a DAI error, additional handling is required (see [Error handling](#error-handling)).
+7. If an alert was raised there was an attack, and the device will be reset.
+The zeroization did not succeed and should be tried again if possible.
+7. Read the data from the [`DIRECT_ACCESS_RDATA_0`](registers.md#direct_access_rdata) and [`DIRECT_ACCESS_RDATA_1`](registers.md#direct_access_rdata) registers, depending on the granule.
+8. If the data just read is different from that read in step 2 the zeroization succeeded, but for non-secret partitions there may not be enough zeroized bits and zeroization could be tried again.
+If the data read for a secret partition is the same as that in step 2 not enough bits were affected, but this was below the fatal threshold, so perhaps try it again.
+
+These steps need to be done for each item intended to be zeroized. When all is done, trigger a device reset.
+
 ### Software Integrity Handling
 
 As opposed to buffered partitions, the digest and integrity handling of unbuffered partitions is entirely up to software.

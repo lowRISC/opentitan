@@ -40,11 +40,12 @@ package otp_ctrl_top_specific_pkg;
     prim_mubi_pkg::mubi8_t write_lock;
   } part_access_t;
 
-  parameter int DaiCmdWidth = 3;
+  parameter int DaiCmdWidth = 4;
   typedef enum logic [DaiCmdWidth-1:0] {
-    DaiRead   = 3'b001,
-    DaiWrite  = 3'b010,
-    DaiDigest = 3'b100
+    DaiRead    = 4'b0001,
+    DaiWrite   = 4'b0010,
+    DaiDigest  = 4'b0100,
+    DaiZeroize = 4'b1000
   } dai_cmd_e;
 
   // Typedef for extended OTP Error. This extends the OTP macro errors.
@@ -74,6 +75,32 @@ package otp_ctrl_top_specific_pkg;
     DigestInit,
     DigestFinalize
   } otp_scrmbl_cmd_e;
+
+  /////////////////////
+  // OTP Zeroization //
+  /////////////////////
+
+  // A 64-bit word is recognized as correctly zeroized if and only if the number of
+  // set bits is greater or equal `ZeroizationValidBound`. Conversely, if a zeroization
+  // results in word with less than `ZeroizationFatalBound` set bits without the OTP
+  // macro signalling a corresponding error, then a fatal (possibly of malicious
+  // nature) fault has occurred. If the number of set bits falls between the two bounds,
+  // then it is at the discretion of the otp_ctrl to act accordingly. For example, the
+  // DAI might decide to discard the read out word without entering a terminal state.
+  // Integrators should calibrate these two bounds in line with the macro-specific
+  // ratio of potentially stuck-at-0 bits.
+  parameter int unsigned ZeroizationValidBound = ScrmblBlockWidth - 8;        // 87.50%
+  parameter int unsigned ZeroizationFatalBound = (ScrmblBlockWidth >> 2) * 3; // 75.00%
+
+  // Check if the zeroization marker falls into the valid range.
+  function automatic logic check_zeroized_valid(logic [ScrmblBlockWidth-1:0] word);
+    return $countones(word) >= ZeroizationValidBound;
+  endfunction : check_zeroized_valid
+
+  // Check if the zeroization marker falls into the fatal range.
+  function automatic logic check_zeroized_fatal(logic [ScrmblBlockWidth-1:0] word);
+    return $countones(word) < ZeroizationFatalBound;
+  endfunction : check_zeroized_fatal
 
   ////////////////////////////////
   // Typedefs for Key Broadcast //
