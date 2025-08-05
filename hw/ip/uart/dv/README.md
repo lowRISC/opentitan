@@ -47,14 +47,16 @@ which provides the ability to drive and independently monitor random traffic via
 TL host interface into UART device.
 
 ### UART agent
-[UART agent](../../../dv/sv/usb20_agent/README.md) is used to drive and monitor UART items, which also provides basic coverage on
-data, parity, baud rate etc.
+[UART agent](../../../dv/sv/uart_agent/README.md) is used to drive and monitor UART items, which also provides basic coverage on data, parity, baud rate etc.
 These baud rates are supported: 9600, 115200, 230400, 1Mbps(1048576), 2Mbps(2097152)
 
 ### UVM RAL Model
 The UART RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
 It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
+```console
+$ $REPO_TOP/util/regtool.py $REPO_TOP/hw/ip/uart/data/uart.hjson -s --outdir <path_to_directory>
+```
 
 ### Stimulus strategy
 #### Test sequences
@@ -89,7 +91,7 @@ It creates the following analysis FIFOs to retrieve the data monitored by corres
 * uart_tx_fifo, uart_rx_fifo:     These 2 FIFOs provides UART TX and RX item when its transfer completes
 
 #### Assertions
-* TLUL assertions: The `tb/uart_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `sva/uart_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
