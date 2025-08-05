@@ -38,7 +38,7 @@ fpga_cw310(
         "interface": "cw310",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
-        "assemble": "{rom_ext}@0 {firmware}@0x10000",
+        "assemble": "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
     },
     visibility = ["//visibility:private"],
 )

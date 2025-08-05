@@ -567,7 +567,7 @@ opentitan_test(
             --exec="console --non-interactive --exit-success='PASS.*\r\n' --exit-failure='{exit_failure}'"
 
             --exec="no-op --info '### Measuring stack utilization for bootstrap slot B'"
-            --exec="bootstrap --mirror=false --clear-uart=true --leave-in-bootstrap {good_b}@0x80000"
+            --exec="bootstrap --mirror=false --clear-uart=true --leave-in-bootstrap {good_b}@{rom_ext_slot_b}"
             --exec="console --non-interactive --exit-success='{stack_usage}' --exit-failure='{exit_failure}'"
 
             --exec="gpio remove ROM_BOOTSTRAP"
