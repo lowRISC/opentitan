@@ -172,7 +172,7 @@ opentitan_binary(
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
-            assemble = "{rom_ext}@0 {fw_a}@{slot_a} {rom_ext}@0x80000 {fw_b}@{slot_b}",
+            assemble = "{rom_ext}@{rom_ext_slot_a} {fw_a}@{owner_slot_a} {rom_ext}@{rom_ext_slot_b} {fw_b}@{owner_slot_b}",
             binaries = {
                 t["a"].format(c["cause"]): "fw_a",
                 t["b"].format(c["cause"]): "fw_b",
@@ -182,8 +182,6 @@ opentitan_binary(
             otp = ":otp_img_flash_ecc_error",
             primary = t["primary"],
             rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
-            slot_a = "0x10000",
-            slot_b = "0x90000",
             test_cmd = """
                 --exec="transport init"
                 --exec="fpga load-bitstream {bitstream}"
@@ -214,7 +212,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
-        assemble = "{rom_ext}@0 {fw_a}@{slot_a} {rom_ext}@0x80000 {fw_b}@{slot_b}",
+        assemble = "{rom_ext}@{rom_ext_slot_a} {fw_a}@{owner_slot_a} {rom_ext}@{rom_ext_slot_b} {fw_b}@{owner_slot_b}",
         binaries = {
             ":flash_ecc_self_corruption_slot_a_manifest_identifier": "fw_a",
             ":uncorrupted_test_slot_b": "fw_b",
@@ -228,8 +226,6 @@ opentitan_test(
         otp = ":otp_img_flash_exc_handler_disabled",
         primary = "SlotA",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
-        slot_a = "0x10000",
-        slot_b = "0x90000",
         test_cmd = """
             --exec="transport init"
             --exec="fpga load-bitstream {bitstream}"

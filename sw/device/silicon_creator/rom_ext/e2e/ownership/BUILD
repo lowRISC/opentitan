@@ -356,7 +356,7 @@ ownership_transfer_test(
     fpga = fpga_params(
         timeout = "long",
         # We boot on Side B since rescue will rewrite side A.
-        assemble = "{rom_ext}@0 {firmware}@0x90000",
+        assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_b}",
         changes_otp = True,
         test_cmd = """
             --clear-bitstream
@@ -407,22 +407,22 @@ _FLASH_PERMISSION_TESTS = {
     "aa": {
         "rom_ext_slot": "SlotA",
         "owner_slot": "SlotA",
-        "rom_ext_offset": "0",
+        "rom_ext_offset": "{rom_ext_slot_a}",
     },
     "ab": {
         "rom_ext_slot": "SlotA",
         "owner_slot": "SlotB",
-        "rom_ext_offset": "0",
+        "rom_ext_offset": "{rom_ext_slot_a}",
     },
     "ba": {
         "rom_ext_slot": "SlotB",
         "owner_slot": "SlotA",
-        "rom_ext_offset": "0x80000",
+        "rom_ext_offset": "{rom_ext_slot_b}",
     },
     "bb": {
         "rom_ext_slot": "SlotB",
         "owner_slot": "SlotB",
-        "rom_ext_offset": "0x80000",
+        "rom_ext_offset": "{rom_ext_slot_b}",
     },
 }
 
@@ -431,7 +431,7 @@ _FLASH_PERMISSION_TESTS = {
         name = "flash_permission_test_slot_{}".format(name),
         srcs = ["flash_regions.c"],
         fpga = fpga_params(
-            assemble = "{rom_ext}@{rom_ext_offset} {firmware}@0x10000",
+            assemble = "{rom_ext}@{rom_ext_offset} {firmware}@{owner_slot_a}",
             binaries = {
                 ":flash_regions": "flash_regions",
             },
