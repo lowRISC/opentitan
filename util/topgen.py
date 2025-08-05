@@ -412,6 +412,11 @@ def _get_rv_plic_params(top: ConfigT, name: str) -> ParamsT:
     if num_srcs <= 1:
         log.warning(f"no interrupts are connected to {name}, is it needed?")
 
+    if num_srcs > 1024:
+        log.error(f"RISC-V PLIC Error: Configured interrupt sources ({num_srcs}) "
+                  "exceed the maximum of 1024.")
+        return
+
     if num_targets < 1:
         log.warning(f"{name} specifies no targets, is it needed?")
 
