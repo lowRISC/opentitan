@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
-#include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_soc_proxy.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/irq.h"
@@ -47,12 +46,9 @@ void after_por(dif_pwrmgr_t *pwrmgr) {
 bool test_main(void) {
   dif_pwrmgr_t pwrmgr;
   dif_rstmgr_t rstmgr;
-  dif_rv_plic_t rv_plic;
-  dif_soc_proxy_t soc_proxy;
 
   CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgrAon, &pwrmgr));
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
-  CHECK_DIF_OK(dif_soc_proxy_init_from_dt(kDtSocProxy, &soc_proxy));
 
   // Behave based on reset reason.
   if (UNWRAP(
