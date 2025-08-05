@@ -199,7 +199,7 @@ def _hacky_tags(env):
         tags.append(suffix)
     return tags
 
-def _exec_env_to_top_map(exec_env):
+def exec_env_to_top_map(exec_env):
     """
     Given a list of execution environments, return a map that indicates for
     each one which top it corresponds to.
@@ -239,7 +239,7 @@ def _exec_env_to_top_map(exec_env):
 
             # Check if we found one
             if env not in ev_map:
-                fail("exec env {} does not match any known top. See _exec_env_to_top_map() for details".format(env))
+                fail("exec env {} does not match any known top. See exec_env_to_top_map() for details".format(env))
     return ev_map
 
 # Note about multitop behaviour:
@@ -248,10 +248,10 @@ def _exec_env_to_top_map(exec_env):
 # This means that the targets created by opentitan_binary() will expose only the
 # binaries which can be compiled for the active top.
 #
-# See _exec_env_to_top_map() for constraints on the exec_env for this work.
+# See exec_env_to_top_map() for constraints on the exec_env for this work.
 def opentitan_binary(name, exec_env, **kwargs):
     # Filter execution environments by top.
-    ev_map = _exec_env_to_top_map(exec_env)
+    ev_map = exec_env_to_top_map(exec_env)
     select_map = {}
     for ev in exec_env:
         topname = ev_map[ev]
@@ -279,7 +279,7 @@ def opentitan_binary(name, exec_env, **kwargs):
 # This means that the targets created by opentitan_test() will expose only the
 # test which can be compiled/run for the active top.
 #
-# See _exec_env_to_top_map() for constraints on the exec_env for this work.
+# See exec_env_to_top_map() for constraints on the exec_env for this work.
 
 def opentitan_test(
         name,
@@ -429,7 +429,7 @@ def opentitan_test(
     for env in exec_env:
         (_, suffix) = env.split(":")
         suffix_map[suffix] = suffix_map.get(suffix, []) + [env]
-    ev_to_top_map = _exec_env_to_top_map(exec_env)
+    ev_to_top_map = exec_env_to_top_map(exec_env)
 
     all_tests = []
     for (suffix, env_list) in suffix_map.items():
