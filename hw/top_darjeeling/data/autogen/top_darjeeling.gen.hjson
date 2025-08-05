@@ -10903,6 +10903,7 @@
         DmHaltAddr: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0]
         DmExceptionAddr: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::ExceptionAddress[31:0]
         PipeLine: "1"
+        InstructionPipeline: "1"
         NEscalationSeverities: AlertHandlerEscNumSeverities
         WidthPingCounter: AlertHandlerEscPingCountWidth
       }
@@ -11294,6 +11295,15 @@
           local: "false"
           expose: "true"
           name_top: RvCoreIbexCsrMimpId
+        }
+        {
+          name: InstructionPipeline
+          desc: Add a pipeline stage in the instruction interface between Ibex and the address translation
+          type: bit
+          default: "1"
+          local: "true"
+          expose: "true"
+          name_top: RvCoreIbexInstructionPipeline
         }
       ]
       inter_signal_list:

@@ -9986,6 +9986,15 @@
           expose: "true"
           name_top: RvCoreIbexCsrMimpId
         }
+        {
+          name: InstructionPipeline
+          desc: Add a pipeline stage in the instruction interface between Ibex and the address translation
+          type: bit
+          default: 1'b0
+          local: "true"
+          expose: "true"
+          name_top: RvCoreIbexInstructionPipeline
+        }
       ]
       inter_signal_list:
       [

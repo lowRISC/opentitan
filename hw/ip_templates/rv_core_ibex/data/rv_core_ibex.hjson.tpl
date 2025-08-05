@@ -542,6 +542,13 @@
       local:   "false"
       expose:  "true"
     }
+    { name:    "InstructionPipeline"
+      type:    "bit"
+      default: "1'b0"
+      desc:    "Add a pipeline stage in the instruction interface between Ibex and the address translation"
+      local:   "true"
+      expose:  "true"
+    },
   ],
   features: [
     {
