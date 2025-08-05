@@ -236,10 +236,10 @@ opentitan_binary(
 # Create the legacy ROM target names so that existing splicing rules can find
 # the rom VMEM files.
 legacy_rom_targets(
-    suffixes = [
-        "fpga_cw310",
-        "fpga_cw340",
-    ],
+    suffixes = {
+        "fpga_cw310": ["//hw/top_earlgrey:fpga_cw310"],
+        "fpga_cw340": ["//hw/top_earlgrey:fpga_cw340"],
+    },
     target = "mask_rom",
 )
 
