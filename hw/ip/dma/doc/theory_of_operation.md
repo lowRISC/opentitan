@@ -1,5 +1,9 @@
 # Theory of Operation
 
+## Block Diagram
+
+![DMA Block Diagram](block_diagram.svg)
+
 ## Defining Relevant Memory Regions
 
 |                       |     |
