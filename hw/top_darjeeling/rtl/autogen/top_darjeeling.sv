@@ -344,6 +344,8 @@ module top_darjeeling #(
   localparam bit RomCtrl1FlopToKmac = 1'b1;
   // local parameters for racl_ctrl
   localparam int RaclCtrlNumSubscribingIps = 11;
+  // local parameters for rv_core_ibex
+  localparam bit RvCoreIbexInstructionPipeline = 1;
 
   // Signals
   logic [3:0] mio_p2d;
@@ -2844,7 +2846,8 @@ module top_darjeeling #(
     .PipeLine(RvCoreIbexPipeLine),
     .TlulHostUserRsvdBits(RvCoreIbexTlulHostUserRsvdBits),
     .CsrMvendorId(RvCoreIbexCsrMvendorId),
-    .CsrMimpId(RvCoreIbexCsrMimpId)
+    .CsrMimpId(RvCoreIbexCsrMimpId),
+    .InstructionPipeline(RvCoreIbexInstructionPipeline)
   ) u_rv_core_ibex (
       // [101]: fatal_sw_err
       // [102]: recov_sw_err

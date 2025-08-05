@@ -170,6 +170,8 @@ module top_englishbreakfast #(
   localparam int SramCtrlMainOutstanding = 2;
   // local parameters for rom_ctrl
   localparam bit RomCtrlFlopToKmac = 1'b0;
+  // local parameters for rv_core_ibex
+  localparam bit RvCoreIbexInstructionPipeline = 1'b0;
 
   // Signals
   logic [37:0] mio_p2d;
@@ -1309,7 +1311,8 @@ module top_englishbreakfast #(
     .PipeLine(RvCoreIbexPipeLine),
     .TlulHostUserRsvdBits(RvCoreIbexTlulHostUserRsvdBits),
     .CsrMvendorId(RvCoreIbexCsrMvendorId),
-    .CsrMimpId(RvCoreIbexCsrMimpId)
+    .CsrMimpId(RvCoreIbexCsrMimpId),
+    .InstructionPipeline(RvCoreIbexInstructionPipeline)
   ) u_rv_core_ibex (
       // [24]: fatal_sw_err
       // [25]: recov_sw_err

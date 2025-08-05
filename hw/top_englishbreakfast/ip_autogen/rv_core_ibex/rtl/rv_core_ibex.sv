@@ -12,38 +12,39 @@ module rv_core_ibex
   import rv_core_ibex_pkg::*;
   import rv_core_ibex_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0]   AlertAsyncOn     = {NumAlerts{1'b1}},
+  parameter logic [NumAlerts-1:0]   AlertAsyncOn        = {NumAlerts{1'b1}},
   // Number of cycles a differential skew is tolerated on the alert and escalation signal
-  parameter int unsigned            AlertSkewCycles  = 1,
-  parameter bit                     PMPEnable        = 1'b1,
-  parameter int unsigned            PMPGranularity   = 0,
-  parameter int unsigned            PMPNumRegions    = 16,
-  parameter int unsigned            MHPMCounterNum   = 10,
-  parameter int unsigned            MHPMCounterWidth = 32,
-  parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[16]    = ibex_pkg::PmpCfgRst,
-  parameter logic [33:0]            PMPRstAddr[16]   = ibex_pkg::PmpAddrRst,
-  parameter ibex_pkg::pmp_mseccfg_t PMPRstMsecCfg    = ibex_pkg::PmpMseccfgRst,
-  parameter bit                     RV32E            = 0,
-  parameter ibex_pkg::rv32m_e       RV32M            = ibex_pkg::RV32MSingleCycle,
-  parameter ibex_pkg::rv32b_e       RV32B            = ibex_pkg::RV32BOTEarlGrey,
-  parameter ibex_pkg::regfile_e     RegFile          = ibex_pkg::RegFileFF,
-  parameter bit                     BranchTargetALU  = 1'b1,
-  parameter bit                     WritebackStage   = 1'b1,
-  parameter bit                     ICache           = 1'b1,
-  parameter bit                     ICacheECC        = 1'b1,
-  parameter bit                     ICacheScramble   = 1'b1,
-  parameter int unsigned            ICacheNWays      = 2,
-  parameter bit                     BranchPredictor  = 1'b0,
-  parameter bit                     DbgTriggerEn     = 1'b1,
-  parameter int unsigned            DbgHwBreakNum    = 4,
-  parameter bit                     SecureIbex       = 1'b1,
-  parameter ibex_pkg::lfsr_seed_t   RndCnstLfsrSeed  = ibex_pkg::RndCnstLfsrSeedDefault,
-  parameter ibex_pkg::lfsr_perm_t   RndCnstLfsrPerm  = ibex_pkg::RndCnstLfsrPermDefault,
-  parameter int unsigned            DmBaseAddr       = 32'h1A110000,
-  parameter int unsigned            DmAddrMask       = 32'h00000FFF,
-  parameter int unsigned            DmHaltAddr       = 32'h1A110800,
-  parameter int unsigned            DmExceptionAddr  = 32'h1A110808,
-  parameter bit                     PipeLine         = 1'b0,
+  parameter int unsigned            AlertSkewCycles     = 1,
+  parameter bit                     PMPEnable           = 1'b1,
+  parameter int unsigned            PMPGranularity      = 0,
+  parameter int unsigned            PMPNumRegions       = 16,
+  parameter int unsigned            MHPMCounterNum      = 10,
+  parameter int unsigned            MHPMCounterWidth    = 32,
+  parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[16]       = ibex_pkg::PmpCfgRst,
+  parameter logic [33:0]            PMPRstAddr[16]      = ibex_pkg::PmpAddrRst,
+  parameter ibex_pkg::pmp_mseccfg_t PMPRstMsecCfg       = ibex_pkg::PmpMseccfgRst,
+  parameter bit                     RV32E               = 0,
+  parameter ibex_pkg::rv32m_e       RV32M               = ibex_pkg::RV32MSingleCycle,
+  parameter ibex_pkg::rv32b_e       RV32B               = ibex_pkg::RV32BOTEarlGrey,
+  parameter ibex_pkg::regfile_e     RegFile             = ibex_pkg::RegFileFF,
+  parameter bit                     BranchTargetALU     = 1'b1,
+  parameter bit                     WritebackStage      = 1'b1,
+  parameter bit                     ICache              = 1'b1,
+  parameter bit                     ICacheECC           = 1'b1,
+  parameter bit                     ICacheScramble      = 1'b1,
+  parameter int unsigned            ICacheNWays         = 2,
+  parameter bit                     BranchPredictor     = 1'b0,
+  parameter bit                     DbgTriggerEn        = 1'b1,
+  parameter int unsigned            DbgHwBreakNum       = 4,
+  parameter bit                     SecureIbex          = 1'b1,
+  parameter ibex_pkg::lfsr_seed_t   RndCnstLfsrSeed     = ibex_pkg::RndCnstLfsrSeedDefault,
+  parameter ibex_pkg::lfsr_perm_t   RndCnstLfsrPerm     = ibex_pkg::RndCnstLfsrPermDefault,
+  parameter int unsigned            DmBaseAddr          = 32'h1A110000,
+  parameter int unsigned            DmAddrMask          = 32'h00000FFF,
+  parameter int unsigned            DmHaltAddr          = 32'h1A110800,
+  parameter int unsigned            DmExceptionAddr     = 32'h1A110808,
+  parameter bit                     PipeLine            = 1'b0,
+  parameter bit                     InstructionPipeline = 1'b0,
   parameter logic [ibex_pkg::SCRAMBLE_KEY_W-1:0] RndCnstIbexKeyDefault =
       ibex_pkg::RndCnstIbexKeyDefault,
   parameter logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonceDefault =
@@ -147,10 +148,10 @@ module rv_core_ibex
   localparam int NumOutstandingReqs = ICache ? 8 : 2;
 
   // Instruction interface (internal)
-  logic        instr_req;
-  logic        instr_gnt;
+  logic        instr_req, instr_req_q;
+  logic        instr_gnt, instr_gnt_ibex;
   logic        instr_rvalid;
-  logic [31:0] instr_addr;
+  logic [31:0] instr_addr, instr_addr_q;
   logic [31:0] instr_rdata;
   logic [6:0]  instr_rdata_intg;
   logic        instr_err;
@@ -444,7 +445,7 @@ module rv_core_ibex
     .boot_addr_i,
 
     .instr_req_o        ( instr_req        ),
-    .instr_gnt_i        ( instr_gnt        ),
+    .instr_gnt_i        ( instr_gnt_ibex   ),
     .instr_rvalid_i     ( instr_rvalid     ),
     .instr_addr_o       ( instr_addr       ),
     .instr_rdata_i      ( instr_rdata      ),
@@ -566,6 +567,28 @@ module rv_core_ibex
     end
   end
 
+  // Add an optional pipeline stage between Ibex and the address translation
+  if (InstructionPipeline) begin : gen_instr_req_pipe
+    // Request is granted for Ibex if the pipeline's request is granted or if the pipeline is empty
+    assign instr_gnt_ibex = instr_gnt || !instr_req_q;
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        instr_req_q  <= 1'b0;
+        instr_addr_q <= 32'h0;
+      end else if (instr_gnt_ibex) begin
+        // The request is captured if the pipeline's request is granted or if the pipeline is empty
+        instr_req_q  <= instr_req;
+        // Only capture the address if the request is valid
+        if (instr_req) begin
+          instr_addr_q <= instr_addr;
+        end
+      end
+    end
+  end else begin : gen_no_instr_req_pipe
+    assign instr_req_q = instr_req;
+    assign instr_addr_q = instr_addr;
+    assign instr_gnt_ibex = instr_gnt;
+  end
 
   //
   // Convert ibex data/instruction bus to TL-UL
@@ -578,7 +601,7 @@ module rv_core_ibex
     .clk_i,
     .rst_ni(addr_trans_rst_ni),
     .region_cfg_i(ibus_region_cfg),
-    .addr_i(instr_addr),
+    .addr_i(instr_addr_q),
     .addr_o(instr_addr_trans)
   );
 
@@ -595,7 +618,7 @@ module rv_core_ibex
   ) tl_adapter_host_i_ibex (
     .clk_i,
     .rst_ni,
-    .req_i        (instr_req),
+    .req_i        (instr_req_q),
     .instr_type_i (prim_mubi_pkg::MuBi4True),
     .gnt_o        (instr_gnt),
     .addr_i       (instr_addr_trans),

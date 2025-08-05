@@ -266,6 +266,8 @@ module top_earlgrey #(
   localparam int SramCtrlMainOutstanding = 2;
   // local parameters for rom_ctrl
   localparam bit RomCtrlFlopToKmac = 1'b0;
+  // local parameters for rv_core_ibex
+  localparam bit RvCoreIbexInstructionPipeline = 1'b0;
 
   // Signals
   logic [56:0] mio_p2d;
@@ -2848,7 +2850,8 @@ module top_earlgrey #(
     .PipeLine(RvCoreIbexPipeLine),
     .TlulHostUserRsvdBits(RvCoreIbexTlulHostUserRsvdBits),
     .CsrMvendorId(RvCoreIbexCsrMvendorId),
-    .CsrMimpId(RvCoreIbexCsrMimpId)
+    .CsrMimpId(RvCoreIbexCsrMimpId),
+    .InstructionPipeline(RvCoreIbexInstructionPipeline)
   ) u_rv_core_ibex (
       // [61]: fatal_sw_err
       // [62]: recov_sw_err
