@@ -33,7 +33,7 @@ The following three types of interrupts are supported:
 
 1.  **Transfer Completion:** An interrupt is raised when the entire data transfer (as defined by `TOTAL_DATA_SIZE`) is complete.
 2.  **Chunk Completion:** An interrupt is raised after the transfer of a single chunk of data (as defined by `CHUNK_DATA_SIZE`) is finished. This interrupt is only available when not using the [Hardware Handshaking Mode](#Hardware_Handshaking_Mode).
-3.  **Error Condition:** An interrupt is raised if an error occurs during the transfer process.
+3.  **Error Condition:** An interrupt is raised if an [error](#Error Condition) occurs during the transfer process.
 
 The current status of the DMA, including pending interrupts, can be read from the [`STATUS`](registers.md#status) register.
 Since interrupts are implemented as status bits, they are cleared by writing a '1' to the corresponding bit in the `STATUS` register.
@@ -92,9 +92,18 @@ When initiating a transfer with inline hashing, the `initial_transfer` bit in th
 This signals the DMA to initialize its internal hash state.
 When using chunked transfers with inline hashing, subsequent chunk transfers should have the `initial_transfer` bit cleared to prevent re-initialization of the hash state between chunks.
 
-The endianness of the resulting hash digest can be configured using the `digest_swap` bit in the [`CONTROL`](registers.md#control) register.
-
 Once the transfer is complete, the computed hash digest value can be read from the [`SHA2_DIGEST_0-15`](registers.md#sha2_digest) registers.
+
+The endianness of the resulting hash digest can be configured using the `digest_swap` bit in the [`CONTROL`](registers.md#control) register.
+Changing this bit affects the digests of subsequent DMA transfers; it does not alter the current contents of the [`SHA2_DIGEST_0-15`](registers.md#sha2_digest) registers.
+
+## Error Condition
+
+For security reasons, the DMA controller performs extensive checking of the configuration registers before starting a transfer.
+If any part of the configuration is invalid, the controller reports all detected errors in the [`ERROR_CODE`](registers.md#error_code) register.
+An error may also be reported during a transfer if either the source device or the destination device detects an error condition.
+
+After an error has occurred, firmware must write a 1 to the `error` bit of the [`STATUS`](registers.md#status) register to clear the error condition before another DMA transfer can be performed.
 
 ## Device Interface Functions (DIFs)
 
