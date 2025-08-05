@@ -19,7 +19,7 @@ load(
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_override")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
-load("//rules/opentitan:util.bzl", "assemble_for_test")
+load("//rules/opentitan:util.bzl", "assemble_for_test", "recursive_format")
 load("//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo")
 
 def _expand(ctx, name, items):
@@ -50,7 +50,7 @@ def ot_binary(ctx, **kwargs):
         includes: Include directories to pass to the compiler.
         deps: Dependencies for this binary.
         linker_script: Linker script for this binary.
-        linkopts: Linker options for this binary.
+        linkopts: Extra linker options for this binary.
     Returns:
       (elf_file, map_file) File objects.
     """
@@ -101,10 +101,13 @@ def ot_binary(ctx, **kwargs):
         linking_contexts.append(linker_script[CcInfo].linking_context)
     mapfile = kwargs.get("mapfile", "{}.map".format(name))
     mapfile = ctx.actions.declare_file(mapfile)
+
+    extra_linkopts = (ctx.attr.linkopts or []) + kwargs.get("linkopts", [])
+
     linkopts = [
         "-Wl,-Map={}".format(mapfile.path),
         "-nostdlib",
-    ] + _expand(ctx, "linkopts", get_override(ctx, "attr.linkopts", kwargs))
+    ] + _expand(ctx, "linkopts", extra_linkopts)
 
     lout = cc_common.link(
         name = name + ".elf",
@@ -175,11 +178,18 @@ def _build_binary(ctx, exec_env, name, deps, kind):
       (dict, dict): A dict of output artifacts and a dict of signing artifacts.
     """
     linker_script = get_fallback(ctx, "attr.linker_script", exec_env)
+
+    slot_spec = dict(exec_env.slot_spec)
+    slot_spec.update(ctx.attr.slot_spec)
+
+    linkopts = ["-Wl,--defsym=_{}={}".format(key, value) for key, value in slot_spec.items()]
+
     elf, mapfile = ot_binary(
         ctx,
         name = name,
         deps = deps,
         linker_script = linker_script,
+        linkopts = linkopts,
     )
     binary = obj_transform(
         ctx,
@@ -399,6 +409,10 @@ common_binary_attrs = {
         default = [],
         doc = "List of features that will apply to this binary, and transitively to all `deps`.",
     ),
+    "slot_spec": attr.string_dict(
+        default = {},
+        doc = "Firmware slot spec to use in this environment",
+    ),
 }
 
 opentitan_binary = rv_rule(
@@ -542,8 +556,9 @@ def _opentitan_binary_assemble_impl(ctx):
     ot_bin_env_info = {}
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
     for env in ctx.attr.exec_env:
-        exec_env_name = env[ExecEnvInfo].exec_env
-        exec_env_provider = env[ExecEnvInfo].provider
+        exec_env = env[ExecEnvInfo]
+        exec_env_name = exec_env.exec_env
+        exec_env_provider = exec_env.provider
         name = "{}_{}".format(ctx.attr.name, exec_env_name)
         spec = []
         input_bins = []
@@ -552,6 +567,12 @@ def _opentitan_binary_assemble_impl(ctx):
                 fail("Only flash binaries can be assembled.")
             input_bins.append(binary[exec_env_provider].default)
             spec.append("{}@{}".format(binary[exec_env_provider].default.path, offset))
+        action_param = {}
+        action_param.update(exec_env.slot_spec)
+
+        spec = " ".join(spec)
+        spec = recursive_format(spec, action_param)
+        spec = spec.split(" ")
         img = assemble_for_test(ctx, name, spec, input_bins, tc.tools.opentitantool)
         result.append(exec_env_provider(default = img, kind = "flash"))
         assembled_bins.append(img)

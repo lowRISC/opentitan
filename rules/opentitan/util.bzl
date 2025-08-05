@@ -96,3 +96,41 @@ def assemble_for_test(ctx, name, spec, data_files, opentitantool):
         executable = opentitantool,
     )
     return image
+
+def recursive_format(spec, variables, max_depth = 10):
+    """Recursively apply string formatting to a string.
+
+    This function repeatedly applies `str.format()` using the provided
+    `variables` until all placeholders are resolved or `max_depth` is
+    reached. This is useful for handling nested variable substitutions.
+
+    All `format` placeholders like `{something}` are recursively resolved,
+    and escaped sequences `{{` are unescaped only once to `{`.
+
+    Examples:
+      "{{ blah }}"                      =>  "{ blah }"
+      "{  blah  }",  blah="{{ blah }}"  =>  "{ blah }"
+      "{  blah  }",  blah="   blah   "  =>  "   blah   "
+      "{  blah  }",  blah="{  blah  }"  =>  error
+      "{"                               =>  error
+
+    Args:
+      spec: The string to be formatted.
+      variables: A dictionary of variables to use for formatting.
+      max_depth: The maximum number of times to apply formatting.
+
+    Returns:
+      The fully formatted string.
+
+    Raises:
+      If the spec cannot be fully evaluated within `max_depth` iterations.
+    """
+    for _ in range(max_depth):
+        spec = spec.replace("{{", "{{{{").replace("}}", "}}}}")
+        spec = spec.format(**variables)
+
+    spec_without_escape = spec.replace("{{", "").replace("}}", "")
+    if "{" in spec_without_escape or "}" in spec_without_escape:
+        fail("RecursionError: the spec cannot be fully evaluated after ", max_depth, " levels: ", spec)
+
+    return spec.format()
