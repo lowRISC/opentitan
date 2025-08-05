@@ -17,7 +17,7 @@
   {
     src:
     {
-      type: uint8
+      type: uint16
       name: num_irq_sources
       doc: Number of interrupt sources
     }
