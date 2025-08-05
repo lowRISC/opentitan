@@ -59,7 +59,7 @@ _FAULT_TEST_CASES = {
         ],
         defines = test_data["defines"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
         },
         fpga = fpga_params(
             exit_success = test_data["exit_success"],

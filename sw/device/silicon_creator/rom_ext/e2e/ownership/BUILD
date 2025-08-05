@@ -63,7 +63,7 @@ opentitan_binary(
 
 # This manifest is node-locked to the DEVICE_ID provided by the ROM_EXT E2E OTP
 # configuration //sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma,
-# and required by the exec_env `fpga_cw310_rom_ext`.
+# and required by the exec_env `fpga_hyper310_rom_ext`.
 manifest({
     "name": "nodelocked_manifest",
     "identifier": hex(CONST.OWNER),

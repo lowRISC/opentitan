@@ -74,7 +74,7 @@ _MANUF_TEST_LOCKED_KEY = None
         ecdsa_key = _MANUF_TEST_LOCKED_KEY if (lc_state, lc_val) in _TEST_LOCKED_LC_ITEMS else ecdsa_key_for_lc_state(ECDSA_SPX_KEY_STRUCTS, lc_val),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             changes_otp = True,
@@ -115,7 +115,7 @@ opentitan_test(
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw340_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -137,7 +137,7 @@ opentitan_test(
     name = "manuf_cp_volatile_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -176,7 +176,7 @@ opentitan_test(
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             changes_otp = True,
@@ -226,7 +226,7 @@ cc_library(
         srcs = ["sram_empty_functest.c"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
         fpga = fpga_params(
@@ -239,7 +239,7 @@ cc_library(
         kind = "ram",
         linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
         silicon = silicon_params(
-            interface = "cw310",
+            interface = "hyper310",
             needs_jtag = True,
             test_cmd = "--elf={firmware}",
             test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
@@ -274,7 +274,7 @@ opentitan_binary(
     testonly = True,
     srcs = ["sram_device_info_flash_wr_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_sival": None,
     },
     kind = "ram",
@@ -317,7 +317,7 @@ opentitan_binary(
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             binaries = {
@@ -371,7 +371,7 @@ opentitan_binary(
     testonly = True,
     srcs = ["sram_exec_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     kind = "ram",
@@ -402,7 +402,7 @@ opentitan_binary(
         srcs = ["idle_functest.c"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             binaries = {
@@ -440,7 +440,7 @@ opentitan_test(
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw340_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -468,7 +468,7 @@ opentitan_test(
     name = "otp_ctrl_functest",
     srcs = [":empty_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
