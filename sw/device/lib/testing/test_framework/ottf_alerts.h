@@ -24,6 +24,16 @@
 OT_WARN_UNUSED_RESULT
 status_t ottf_alerts_enable_all(void);
 /**
+ * Disable an alert in OTTF's alert catching configuration.
+ *
+ * Useful when a particular alert cannot be dismissed when caught.
+ *
+ * @param alert The alert to be ignored.
+ */
+OT_WARN_UNUSED_RESULT
+status_t ottf_alerts_ignore_alert(dif_alert_handler_alert_t alert);
+
+/**
  * Record for the OTTF alert catcher that the given alert is expected.
  *
  * When this alert is caught, OTTF will not fault but will remember that
