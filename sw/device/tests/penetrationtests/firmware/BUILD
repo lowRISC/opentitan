@@ -28,6 +28,7 @@ PENTEST_EXEC_ENVS = dicts.add(
 )
 
 FIRMWARE_DEPS_FI = [
+    "//sw/device/tests/penetrationtests/firmware/fi:alert_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:crypto_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:lc_ctrl_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:otp_fi",
