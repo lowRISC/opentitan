@@ -68,7 +68,7 @@ def key_from_dict(key, attr_name):
         key_info = key[KeyInfo]
         return struct(
             label = key,
-            file = None,
+            file = key_info.pub_key,
             name = name,
             info = key_info,
             config = key_info.config,
@@ -955,10 +955,6 @@ def _signature_test_impl(ctx):
     verify_args = ""
     ecdsa_key = key_from_dict(ctx.attr.ecdsa_key, "ecdsa_key")
     spx_key = key_from_dict(ctx.attr.spx_key, "spx_key")
-    info = getattr(ecdsa_key, "info", None)
-    info_spx = getattr(spx_key, "info", None)
-    selected_ecdsa_key = getattr(ecdsa_key, "file", None)
-    selected_spx_key = getattr(spx_key, "file", None)
 
     selected_ecdsa_key_path = ""
     selected_spx_key_path = ""
@@ -967,26 +963,12 @@ def _signature_test_impl(ctx):
         print("WARNING: Using default test parameters")
     else:
         verify_args = "--spx --domain " + ctx.attr.spx_domain
-        if info:
-            # Provider is KeyInfo; get the public key file.
-            if info.pub_key:
-                selected_ecdsa_key_path = ecdsa_key.info.pub_key.path
-                keys.append(ecdsa_key.info.pub_key)
-            elif selected_ecdsa_key:
-                # Provider is KeySetInfo; we already have the key file.
-                pass
-            else:
-                fail("Expected either KeyInfo or KeySetInfo; got neither")
-        if info_spx:
-            # Provider is KeyInfo; get the public key file.
-            if info_spx.pub_key:
-                selected_spx_key_path = spx_key.info.pub_key.path
-                keys.append(spx_key.info.pub_key)
-            elif selected_spx_key:
-                # Provider is KeySetInfo; we already have the key file.
-                pass
-            else:
-                fail("Expected either KeyInfo or KeySetInfo; got neither")
+    if ecdsa_key:
+        selected_ecdsa_key_path = ecdsa_key.file.path
+        keys.append(ecdsa_key.file)
+    if spx_key:
+        selected_spx_key_path = spx_key.file.path
+        keys.append(spx_key.file)
 
     files = [f.short_path for f in ctx.files.srcs]
     ctx.actions.expand_template(
