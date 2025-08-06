@@ -250,7 +250,7 @@ OwnerIntermediateKey =
     <td><strong>Description</strong></td>
   </tr>
   <tr>
-    <td> id="creator-secret"CreatorSeed</td>
+    <td id="creator-secret">CreatorSeed</td>
     <td>Flash</td>
     <td>
 Additional diversification key stored in flash. Provisioned at
@@ -331,7 +331,7 @@ OwnerKey =
     <td><strong>Description</strong></td>
   </tr>
   <tr>
-    <td> id="creator-secret"OwnerSeed</td>
+    <td id="creator-secret">OwnerSeed</td>
     <td>Flash</td>
     <td>
 Additional diversification key stored in flash. Provisioned during ownership
