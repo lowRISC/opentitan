@@ -11,6 +11,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 
 // Include commands
+#include "sw/device/tests/penetrationtests/json/alert_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/commands.h"
 #include "sw/device/tests/penetrationtests/json/crypto_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/lc_ctrl_fi_commands.h"
@@ -20,6 +21,7 @@
 #include "sw/device/tests/penetrationtests/json/rom_fi_commands.h"
 
 // Include handlers
+#include "fi/alert_fi.h"
 #include "fi/crypto_fi.h"
 #include "fi/lc_ctrl_fi.h"
 #include "fi/otp_fi.h"
@@ -55,6 +57,9 @@ status_t process_cmd(ujson_t *uj) {
         break;
       case kPenetrationtestCommandRomFi:
         RESP_ERR(uj, handle_rom_fi(uj));
+        break;
+      case kPenetrationtestCommandAlertFi:
+        RESP_ERR(uj, handle_alert_fi(uj));
         break;
       default:
         LOG_ERROR("Unrecognized command: %d", cmd);
