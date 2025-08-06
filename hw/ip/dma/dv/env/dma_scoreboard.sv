@@ -455,6 +455,14 @@ class dma_scoreboard extends cip_base_scoreboard #(
     `DV_CHECK(got_source_item || got_dest_item,
               $sformatf("Data item source id doesn't match any outstanding request"))
 
+    // Handle any TL-UL errors returned by the source.
+    // - DMA controller does not send overlapping read requests, so an error should terminate
+    //   the transfer and no other source items should be seen.
+    // - Similarly, writes and reads are not overlapped.
+    // - Source TL-UL transaction returning an error shall not lead to any output.
+    `DV_CHECK_EQ(src_tl_error_detected, 1'b0, "TL-UL transaction occurred after TL-UL error")
+    `DV_CHECK_EQ(dst_tl_error_detected, 1'b0, "TL-UL transaction occurred after TL-UL error")
+
     // Source interface item checks
     if (got_source_item) begin
       src_tl_error_detected = item.d_error;
@@ -1061,6 +1069,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // register write is just a nudge to proceed
         if (start_transfer) begin
           `uvm_info(`gfn, $sformatf("Got Start_Transfer = %0b", start_transfer), UVM_HIGH)
+          // Forget any TL-UL errors that occurred in the previous transfer; it's important
+          // that no more transactions occur after an error, _for that transfer_.
+          dst_tl_error_detected = 1'b0;
+          src_tl_error_detected = 1'b0;
           // Get mirrored field value and cast to associated enum in dma_config
           dma_config.opcode = opcode_e'(`gmv(ral.control.opcode));
           `uvm_info(`gfn, $sformatf("Got opcode = %s", dma_config.opcode.name()), UVM_HIGH)
