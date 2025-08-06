@@ -889,8 +889,9 @@ module dma
             next_error[DmaSrcAddrErr] = 1'b1;
           end
 
-          // If the destination ASID is the SOC control por or the OT internal port we are accessing
-          // a 32-bit address space. Thus the upper bits of the destination address must be zero
+          // If the destination ASID is the SOC control port or the OT internal port we are
+          // accessing a 32-bit address space. Thus the upper bits of the destination address must
+          // be zero
           if ((dst_asid inside {SocControlAddr, OtInternalAddr}) &&
               (|reg2hw.dst_addr_hi.q)) begin
             next_error[DmaDstAddrErr] = 1'b1;
