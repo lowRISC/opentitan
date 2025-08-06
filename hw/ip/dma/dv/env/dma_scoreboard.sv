@@ -422,7 +422,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
   // Process items on Data channel
   task process_tl_data_txn(string if_name, bit [63:0] a_addr, ref tl_seq_item item);
-    bit tl_error_suppressed = 0;
     bit got_source_item = 0;
     bit got_dest_item = 0;
     uint queue_idx = 0;
@@ -485,12 +484,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn,
                   $sformatf("Detected TL error on Destination Data item (addr 0x%0x)", a_addr),
                   UVM_HIGH)
-        // The SoC System bus does not support signaling of Write errors, so the TL-UL write error
-        // will not be reported by the DMA controller; modify our expectation accordingly.
-        if (if_name == "sys") begin
-          `uvm_info(`gfn, "WARN: Error suppressed because Full System bus DV waived", UVM_LOW)
-          tl_error_suppressed = 1;
-        end
       end
       // Check if data item opcode is as expected
       `DV_CHECK(d_opcode inside {AccessAck},
@@ -508,7 +501,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
     // Errors are expected to raise an interrupt if enabled, but we not must forget a configuration
     // error whilst error-free 'clear interrupt' writes are occurring.
-    if (item.d_error && !tl_error_suppressed) begin
+    if (item.d_error) begin
       `uvm_info(`gfn, "Bus error detected", UVM_MEDIUM)
       predict_interrupts(BusErrorToIntrLatency, 1 << IntrDmaError, intr_enable);
       intr_state_hw[IntrDmaError] = 1'b1;
