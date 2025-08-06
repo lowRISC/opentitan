@@ -148,7 +148,7 @@ do_modexp:
   /* Run exponentiation.
        dmem[work_buf] = dmem[inout]^dmem[d] mod dmem[n] */
   la       x14, inout
-  la       x15, d
+  la       x15, d0
   la       x2, work_buf
   jal      x1, modexp
 
@@ -210,10 +210,16 @@ mode:
 n:
 .zero 512
 
-/* RSA private exponent (d) for signing, up to 4096 bits. */
-.globl d
+/* RSA first share of the private exponent (d) for signing, up to 4096 bits. */
+.globl d0
 .balign 32
-d:
+d0:
+  .zero 512
+
+/* RSA second share of the private exponent (d) for signing, up to 4096 bits. */
+.globl d1
+.balign 32
+d1:
 .zero 512
 
 /**

@@ -133,7 +133,7 @@ derive_d:
      `rsa_cofactor` and the required-contiguous `rsa_p` and `rsa_q` buffers.
        dmem[rsa_d..rsa_d+(plen*2*32)] <= (65537^-1) mod dmem[x12..x12+(n*2*32)] */
   la       x12, tmp_scratchpad
-  la       x13, rsa_d
+  la       x13, rsa_d0
   la       x14, rsa_cofactor
   la       x15, rsa_pq
   jal      x1, modinv_f4
@@ -163,7 +163,7 @@ check_d:
   /* Get a pointer to the second half of d.
        x3 <= rsa_d + plen*32 */
   slli     x2, x30, 5
-  la       x3, rsa_d
+  la       x3, rsa_d0
   add      x3, x3, x2
 
   /* Check that d > 2^(plen*256), i.e. that the highest plen limbs are nonzero. We
@@ -1742,10 +1742,16 @@ tmp_scratchpad:
 rsa_n:
 .zero 512
 
-/* RSA private exponent d (up to 4096 bits). */
+/* RSA first share of the private exponent d (up to 4096 bits). */
 .balign 32
-.globl rsa_d
-rsa_d:
+.globl rsa_d0
+rsa_d0:
+.zero 512
+
+/* RSA second shares of the private exponent d (up to 4096 bits). */
+.balign 32
+.globl rsa_d1
+rsa_d1:
 .zero 512
 
 /* Prime cofactor for n for `rsa_key_from_cofactor`; also used as a temporary
