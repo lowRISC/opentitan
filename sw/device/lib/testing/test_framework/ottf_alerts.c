@@ -15,7 +15,7 @@
 #include "alert_handler_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-dif_alert_handler_t ottf_alert_handler;
+dif_alert_handler_t ottf_alert_handler = {0};
 
 status_t ottf_alerts_enable_all(void) {
   TRY(dif_alert_handler_init(
@@ -81,6 +81,14 @@ status_t ottf_alerts_enable_all(void) {
 
   irq_global_ctrl(true);
   irq_external_ctrl(true);
+
+  return OK_STATUS();
+}
+
+status_t ottf_alerts_ignore_alert(dif_alert_handler_alert_t alert) {
+  TRY(dif_alert_handler_configure_alert(
+      &ottf_alert_handler, alert, kDifAlertHandlerClassD, kDifToggleDisabled,
+      kDifToggleDisabled));
 
   return OK_STATUS();
 }
