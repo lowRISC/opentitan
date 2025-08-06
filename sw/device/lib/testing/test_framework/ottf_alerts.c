@@ -102,6 +102,13 @@ status_t ottf_alerts_enable_all(void) {
   return OK_STATUS();
 }
 
+status_t ottf_alerts_ignore_alert(dif_alert_handler_alert_t alert) {
+  TRY(dif_alert_handler_alert_set_enabled(&ottf_alert_handler, alert,
+                                          kDifToggleDisabled));
+
+  return OK_STATUS();
+}
+
 bool ottf_alerts_should_handle_irq(dt_instance_id_t devid,
                                    dif_rv_plic_irq_id_t plic_irq_id) {
   return kOttfTestConfig.catch_alerts &&
