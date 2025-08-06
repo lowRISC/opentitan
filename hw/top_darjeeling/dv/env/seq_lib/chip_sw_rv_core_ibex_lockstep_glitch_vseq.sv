@@ -547,13 +547,13 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
           $assertoff(0,
               "tb.dut.top_darjeeling.u_xbar_main.tlul_assert_host_rv_core_ibex__corei.gen_device");
           $assertoff(0,
-              "tb.dut.top_darjeeling.u_xbar_main.tlul_assert_device_rom_ctrl__rom.gen_host");
+              "tb.dut.top_darjeeling.u_xbar_main.tlul_assert_device_rom_ctrl0__rom.gen_host");
+          $assertoff(0,
+              "tb.dut.top_darjeeling.u_xbar_main.tlul_assert_device_rom_ctrl1__rom.gen_host");
           $assertoff(0,
               "tb.dut.top_darjeeling.u_xbar_main.tlul_assert_device_rv_dm__mem.gen_host");
           $assertoff(0,
               "tb.dut.top_darjeeling.u_xbar_main.tlul_assert_device_sram_ctrl_main__ram.gen_host");
-          $assertoff(0,
-              "tb.dut.top_darjeeling.u_xbar_main.tlul_assert_device_flash_ctrl__mem.gen_host");
         end
         "data_req_o",
         "data_we_o",
