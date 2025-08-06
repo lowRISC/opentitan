@@ -91,8 +91,16 @@ status_t ottf_alerts_enable_all(void) {
   return OK_STATUS();
 }
 
-static_assert(ALERT_HANDLER_PARAM_N_ALERTS < 255,
-              "alert IDs stored as bytes with 0xff as sentinal");
+status_t ottf_alerts_ignore_alert(dif_alert_handler_alert_t alert) {
+  TRY(dif_alert_handler_configure_alert(
+      &ottf_alert_handler, alert, kDifAlertHandlerClassD, kDifToggleDisabled,
+      kDifToggleDisabled));
+
+  return OK_STATUS();
+}
+
+static_assert(ALERT_HANDLER_PARAM_N_ALERTS < UINT8_MAX,
+              "alert IDs stored as bytes with 0xff as sentinel");
 
 // List of expected alerts and the number of elements in the list.
 static volatile uint8_t alert_expected[MAX_ALERTS_EXPECTED] = {0};
