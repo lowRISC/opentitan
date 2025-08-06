@@ -106,9 +106,7 @@ interface dma_sys_tl_if
     sys_d2h.read_data_vld          = (tl_d2h.d_valid & (tl_d2h.d_opcode == AccessAckData))
                                    | read_mismatch;
     sys_d2h.read_data              = tl_d2h.d_data;
-    sys_d2h.error_vld              = (tl_d2h.d_valid & (tl_d2h.d_opcode == AccessAckData) &
-                                      tl_d2h.d_error)
-                                   | read_mismatch;
+    sys_d2h.error_vld              = (tl_d2h.d_valid & tl_d2h.d_error) | read_mismatch;
   end
 
 `ifdef INC_ASSERT
