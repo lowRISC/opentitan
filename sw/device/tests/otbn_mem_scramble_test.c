@@ -8,6 +8,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 static_assert(kDtOtbnCount >= 1,
@@ -19,7 +20,7 @@ static_assert(kDtRvCoreIbexCount >= 1,
 static dt_otbn_t kTestOtbn = (dt_otbn_t)0;
 static dt_rv_core_ibex_t kTestRvCoreIbex = (dt_rv_core_ibex_t)0;
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
 
 typedef dif_result_t (*otbn_read_t)(const dif_otbn_t *otbn,
                                     uint32_t offset_bytes, void *dest,
@@ -89,6 +90,7 @@ static volatile bool has_irq_fired;
  * This overrides the default OTTF load integrity handler.
  */
 void ottf_load_integrity_error_handler(uint32_t *exc_info) {
+  OT_DISCARD(exc_info);
   has_irq_fired = true;
 }
 
@@ -238,6 +240,11 @@ bool test_main(void) {
   CHECK_STATUS_OK(otbn_testutils_wait_for_done(&otbn, kDifOtbnErrBitsNoError));
   CHECK_DIF_OK(dif_otbn_write_cmd(&otbn, kDifOtbnCmdSecWipeDmem));
   CHECK_STATUS_OK(otbn_testutils_wait_for_done(&otbn, kDifOtbnErrBitsNoError));
+
+  // The following integrity errors in OTBN's memory causes a fatal alert in
+  // Ibex which cannot be acknowledge/dismissed, so we must ignore it instead.
+  CHECK_STATUS_OK(ottf_alerts_ignore_alert(dt_rv_core_ibex_alert_to_alert_id(
+      kTestRvCoreIbex, kDtRvCoreIbexAlertFatalHwErr)));
 
   // Read back and check random address offsets. We don't care about the values.
   // "Most" reads should trigger integrity errors.
