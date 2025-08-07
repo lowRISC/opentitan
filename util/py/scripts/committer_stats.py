@@ -370,9 +370,13 @@ class CommitterStatsReporter:
 
         return pr_authors, review_authors
 
-    def get_existing_committers(self) -> Optional[list[str]]:
+    def get_existing_committers(self, only_current_revision: bool = False) -> Optional[list[str]]:
         """Get a list of the existing OpenTitan project committers from the
         COMMITTERS_FILE.
+
+        Args:
+            only_current_revision (bool): If True, only search the current revision
+            of the COMMITTERS_FILE. Defaults to False (looks at historical revisions).
 
         Returns:
             Optional[list[str]]: The list of committers. Returns None if some
@@ -385,23 +389,28 @@ class CommitterStatsReporter:
             print("COMMITTERS file is not a file as expected.")
             return None
 
-        # Get all git revisions in which the COMMITTERS file changed.
-        try:
-            revision_list = [
-                (
-                    commit,
-                    (commit.tree / COMMITTERS_FILE).data_stream.read().decode("utf-8"),
-                )
-                for commit in git.Repo().iter_commits(paths=COMMITTERS_PATH)
-            ]
-        except Exception as e:
-            print(f"Error when reading git history of COMMITTERS file: {e}")
-            print("Defaulting to use just the current file contents.")
+        # If not disabled, get all git revisions in which the COMMITTERS file changed.
+        revision_list = []
+        if not only_current_revision:
+            try:
+                revision_list = [
+                    (
+                        commit,
+                        (commit.tree / COMMITTERS_FILE).data_stream.read().decode("utf-8"),
+                    )
+                    for commit in git.Repo().iter_commits(paths=COMMITTERS_PATH)
+                ]
+            except Exception as e:
+                print(f"Error when reading git history of COMMITTERS file: {e}")
+
+        if not revision_list:
+            if not only_current_revision:
+                print("Defaulting to use only the current file contents.")
             try:
                 with open(COMMITTERS_PATH, "r") as f:
                     revision_list = [("HEAD", f.read())]
-            except Exception as e2:
-                print(f"Error when reading the COMMITTERS file: {e2}")
+            except Exception as e:
+                print(f"Error when reading the COMMITTERS file: {e}")
                 return None
 
         # For each revision, parse the set of committers. The list of
@@ -569,7 +578,9 @@ class CommitterStatsReporter:
             f.write(table_html)
         webbrowser.open(f"file://{HTML_OUTPUT_PATH}")
 
-    def display_stats(self, exclude_names: list[str], format: OutputFormat) -> int:
+    def display_stats(
+        self, exclude_names: list[str], only_names: list[str], format: OutputFormat
+    ) -> int:
         """Display the most recently calculated contributor statistics for the
         configured repository. Requires `calculate_stats` to have been called
         at least once previously.
@@ -596,6 +607,8 @@ class CommitterStatsReporter:
         )
         if exclude_names:
             contributors.difference_update(set(exclude_names))
+        if only_names:
+            contributors.intersection_update(set(only_names))
 
         headers = ("Account name", "Commits", "Merged PRs", "PRs Reviewed")
         table = []
@@ -634,6 +647,7 @@ def main(
     repo_url: str,
     github_token: str,
     exclude_committers: bool,
+    only_committers: bool,
     format: CommitterStatsReporter.OutputFormat,
     log_progress: bool,
     page_limit: Optional[int] = None,
@@ -676,11 +690,22 @@ def main(
     else:
         exclude_names = []
 
+    if only_committers:
+        committers = stats.get_existing_committers(only_current_revision=True)
+        if committers is None:
+            print("Contributor results will not be limited to committers due to an error.")
+            only_names = []
+        else:
+            only_names = committers
+            print(f"Limiting results to committers: {', '.join(only_names)}")
+    else:
+        only_names = []
+
     res = stats.calculate_stats(page_limit=page_limit)
     if res != 0:
         return res
 
-    res = stats.display_stats(exclude_names, format)
+    res = stats.display_stats(exclude_names, only_names, format)
     if res != 0:
         return res
     return 0
@@ -715,6 +740,11 @@ if __name__ == "__main__":
         help="Exclude all current and previous names in the COMMITTERS file.",
     )
     parser.add_argument(
+        "--only-committers",
+        action="store_true",
+        help="Filter to only include names currently in the COMMITTERS file.",
+    )
+    parser.add_argument(
         "-F",
         "--format",
         type=CommitterStatsReporter.OutputFormat,
@@ -736,6 +766,7 @@ if __name__ == "__main__":
             OT_REPO_URL,
             github_token,
             args.exclude_committers,
+            args.only_committers,
             args.format,
             args.log_progress,
             args.pages,
