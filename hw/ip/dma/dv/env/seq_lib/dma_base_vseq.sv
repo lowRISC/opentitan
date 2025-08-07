@@ -55,13 +55,6 @@ class dma_base_vseq extends cip_base_vseq #(
     seq_sys.mem = mem_model#(.AddrWidth(SYS_ADDR_WIDTH),
                                 .DataWidth(SYS_DATA_WIDTH))::type_id::create("mem_sys");
 
-    // System bus is currently unavailable and untestable withing this DV environment,
-    // so activate additional constraints to prevent it causing test failures.
-    void'($value$plusargs("dma_dv_waive_system_bus=%0b", dma_config.dma_dv_waive_system_bus));
-    `uvm_info(`gfn,
-              $sformatf("dma_dv_waive_system_bus = %d", dma_config.dma_dv_waive_system_bus),
-              UVM_LOW)
-
     // Mutual exclusion of CONTROL register accesses.
     sem_control = new(1);
   endfunction : new
@@ -92,28 +85,31 @@ class dma_base_vseq extends cip_base_vseq #(
     cfg.fifo_src_sys.init();
   endfunction
 
-  // When full testing of the SoC System bus has been waived at block level and we have only a
-  // 32-bit TL-UL agent available, the additional address bits must be supplied for checking and
-  // subsequent reinstatement to permit checking within the scoreboard and SoC System
-  // `dma_pull_seq`.
+  // When testing the SoC System bus, we have only a 32-bit TL-UL agent, so the addresses must be
+  // adjusted using base addresses. These have been randomized within the 64-bit address space of
+  // the SoC System bus.
   function void set_system_base_addr(ref dma_seq_item dma_config);
-    // We need to retain this configuration setting so that the scoreboard has awareness of it.
-    cfg.dma_dv_waive_system_bus = dma_config.dma_dv_waive_system_bus;
-    if (dma_config.dma_dv_waive_system_bus) begin
-      logic [63:0] full_addr;
-      if (dma_config.src_asid == SocSystemAddr || dma_config.dst_asid == SocSystemAddr) begin
-        // TODO: maybe we randomize a full 64-bit base address instead?
-        full_addr = {dma_config.soc_system_hi_addr, 32'b0};
-      end else begin
-        full_addr = {64{1'bX}};
-      end
-      cfg.soc_system_hi_addr = full_addr >> 32;
-      // Inform the interface adapter of the chosen base address so that it may perform checking.
-      cfg.dma_sys_tl_vif.set_base_addr(full_addr);
-      seq_sys.set_base_addr(full_addr);
-    end else begin
-      seq_sys.set_base_addr(0);
-    end
+    // Note: we are deliberately setting the Sys-TL adapter base addresses to 'x' if they are not
+    // to be used according to the ASID values.
+    logic [SYS_ADDR_WIDTH-1:0] src_base_addr;
+    logic [SYS_ADDR_WIDTH-1:0] dst_base_addr;
+
+    // Set up the base address for Source/Read traffic.
+    if (dma_config.src_asid == SocSystemAddr) src_base_addr = dma_config.soc_system_src_base_addr;
+    cfg.soc_system_src_base_addr = src_base_addr;
+    // Inform the interface adapter of the chosen base address so that it may perform checking.
+    cfg.dma_sys_tl_vif.set_base_addr(SysCmdRead, src_base_addr);
+    seq_sys.set_base_addr(SysCmdRead, src_base_addr);
+
+    // Set up the base address for Source/Read traffic.
+    if (dma_config.dst_asid == SocSystemAddr) dst_base_addr = dma_config.soc_system_dst_base_addr;
+    cfg.soc_system_dst_base_addr = dst_base_addr;
+    // Inform the interface adapter of the chosen base address so that it may perform checking.
+    cfg.dma_sys_tl_vif.set_base_addr(SysCmdWrite, dst_base_addr);
+    seq_sys.set_base_addr(SysCmdWrite, dst_base_addr);
+
+    `uvm_info(`gfn, $sformatf("Setting Sys-TL adapter src base 0x%0x dst base 0x%0x",
+                              src_base_addr, dst_base_addr), UVM_MEDIUM)
   endfunction
 
   // Randomization of DMA configuration and transfer properties; to be overridden in those
