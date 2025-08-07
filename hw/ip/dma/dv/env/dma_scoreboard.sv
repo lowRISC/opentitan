@@ -566,8 +566,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
             `DV_CHECK_FATAL(a_chan_fifo.try_get(item),
                             "dir_fifo pointed at A channel, but a_chan_fifo empty")
             a_addr = item.a_addr;
-            if (cfg.dma_dv_waive_system_bus && if_name == "sys") begin
-              a_addr[63:32] = cfg.soc_system_hi_addr;
+            if (if_name == "sys") begin
+              a_addr += (item.a_opcode == Get) ? cfg.soc_system_src_base_addr
+                                               : cfg.soc_system_dst_base_addr;
             end
 
             `uvm_info(`gfn, $sformatf("received %s a_chan %s item with addr: %0x and data: %0x",
@@ -589,8 +590,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
             `DV_CHECK_FATAL(d_chan_fifo.try_get(item),
                             "dir_fifo pointed at D channel, but d_chan_fifo empty")
             a_addr = item.a_addr;
-            if (cfg.dma_dv_waive_system_bus && if_name == "sys") begin
-              a_addr[63:32] = cfg.soc_system_hi_addr;
+            if (if_name == "sys") begin
+              a_addr += (item.a_opcode == Get) ? cfg.soc_system_src_base_addr
+                                               : cfg.soc_system_dst_base_addr;
             end
             `uvm_info(`gfn, $sformatf("received %s d_chan item with addr: %0x and data: %0x",
                                       if_name, a_addr, item.d_data), UVM_HIGH)
@@ -1092,9 +1094,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, $sformatf("dma_config\n %s",
                                     dma_config.sprint()), UVM_HIGH)
           // Check if configuration is valid;
-          // Note: this may depend upon whether full SoC System bus testing has been waived.
-          dma_config.dma_dv_waive_system_bus = cfg.dma_dv_waive_system_bus;
-          dma_config.soc_system_hi_addr = cfg.soc_system_hi_addr;
+          dma_config.soc_system_src_base_addr = cfg.soc_system_src_base_addr;
+          dma_config.soc_system_dst_base_addr = cfg.soc_system_dst_base_addr;
           operation_in_progress = 1'b1;
           exp_src_addr = dma_config.src_addr;
           exp_dst_addr = dma_config.dst_addr;
