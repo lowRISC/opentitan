@@ -375,7 +375,9 @@ status_t i2c_testutils_detach_pinmux(const dif_pinmux_t *pinmux,
   return OK_STATUS();
 }
 
-status_t i2c_testutils_set_speed(const dif_i2c_t *i2c, dif_i2c_speed_t speed) {
+status_t i2c_testutils_set_speed(const dif_i2c_t *i2c, dif_i2c_speed_t speed,
+                                 uint32_t sda_rise_nanos,
+                                 uint32_t sda_fall_nanos) {
   uint32_t speed_khz = 0;
   switch (speed) {
     case kDifI2cSpeedStandard:
@@ -396,8 +398,8 @@ status_t i2c_testutils_set_speed(const dif_i2c_t *i2c, dif_i2c_speed_t speed) {
       .lowest_target_device_speed = speed,
       .clock_period_nanos =
           (uint32_t)udiv64_slow(1000000000, kClockFreqPeripheralHz, NULL),
-      .sda_rise_nanos = 400,
-      .sda_fall_nanos = 110,
+      .sda_rise_nanos = sda_rise_nanos,
+      .sda_fall_nanos = sda_fall_nanos,
       .scl_period_nanos = 1000000 / speed_khz};
 
   dif_i2c_status_t status;

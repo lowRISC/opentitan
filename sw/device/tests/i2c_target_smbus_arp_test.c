@@ -295,7 +295,8 @@ static status_t test_init(void) {
   TRY(dif_i2c_init(base_addr, &i2c));
 
   TRY(i2c_testutils_select_pinmux(&pinmux, 0, I2cPinmuxPlatformIdHyper310));
-  TRY(i2c_testutils_set_speed(&i2c, kDifI2cSpeedStandard));
+  TRY(i2c_testutils_set_speed(&i2c, kDifI2cSpeedStandard,
+                              /*sda_rise_nanos=*/400, /*sda_fall_nanos=*/110));
 
   // 25 ms bus timeout. The upper limit of support is ~1 GHz for the IP, so OK
   // to make the frequency a uint32_t.

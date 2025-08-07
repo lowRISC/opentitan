@@ -77,7 +77,8 @@ static status_t peripheral_init(void) {
 
 static status_t configure_led_i2c_controller(void) {
   TRY(dif_i2c_host_set_enabled(&i2c, kDifToggleEnabled));
-  TRY(i2c_testutils_set_speed(&i2c, kDifI2cSpeedFastPlus));
+  TRY(i2c_testutils_set_speed(&i2c, kDifI2cSpeedFastPlus,
+                              /*sda_rise_nanos=*/400, /*sda_fall_nanos=*/110));
   TRY(leds_i2c_controller_configure(&i2c));
   return OK_STATUS();
 }
