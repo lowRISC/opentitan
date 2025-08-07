@@ -10,10 +10,13 @@
 // traverses from 0 to `min_len * 2`.
 
 void random_order_init(random_order_t *ctx, size_t min_len) {
-  ctx->state = 0;
+  ctx->state = random_order_random_word();
   ctx->max = min_len * 2;
 }
 
 size_t random_order_len(const random_order_t *ctx) { return ctx->max; }
 
-size_t random_order_advance(random_order_t *ctx) { return ctx->state++; }
+size_t random_order_advance(random_order_t *ctx) {
+  size_t val = ctx->state++;
+  return val % ctx->max;
+}
