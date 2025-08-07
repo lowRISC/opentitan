@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
@@ -30,7 +31,29 @@ OTBN_DECLARE_APP_SYMBOLS(err_test);
 
 static const otbn_app_t kAppErrTest = OTBN_APP_T_INIT(err_test);
 
+dif_otbn_t otbn;
+dif_alert_handler_t alert_handler;
+
 OTTF_DEFINE_TEST_CONFIG();
+
+volatile bool otbn_recov_alert_expected = false;
+bool ottf_alert_isr(uint32_t *exc_info) {
+  (void)exc_info;
+
+  bool otbn_recov = false;
+  CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+      &alert_handler, kTopEarlgreyAlertIdOtbnRecov, &otbn_recov));
+
+  if (otbn_recov) {
+    CHECK(otbn_recov_alert_expected,
+          "`otbn_recov` alert fired when not expected");
+
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, kTopEarlgreyAlertIdOtbnRecov));
+  }
+
+  return otbn_recov;
+}
 
 /**
  * Gets the OTBN instruction count, checks that it matches expectations.
@@ -126,10 +149,12 @@ static void test_err_test(dif_otbn_t *otbn) {
   // TODO: Turn on software_errs_fatal for err_test. Currently the model doesn't
   // support this feature so turning it on leads to a failure when run with the
   // model.
+  otbn_recov_alert_expected = true;
   CHECK_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(otbn, false));
   CHECK_STATUS_OK(otbn_testutils_execute(otbn));
   CHECK_STATUS_OK(
       otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsBadDataAddr));
+  otbn_recov_alert_expected = false;
 
   check_otbn_insn_cnt(otbn, 1);
 }
@@ -151,9 +176,11 @@ static void test_sec_wipe(dif_otbn_t *otbn) {
 bool test_main(void) {
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
-  dif_otbn_t otbn;
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(dif_alert_handler_init(
+      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      &alert_handler));
 
   test_barrett384(&otbn);
   test_sec_wipe(&otbn);

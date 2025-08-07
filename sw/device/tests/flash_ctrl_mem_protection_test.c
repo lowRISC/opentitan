@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
@@ -38,6 +39,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_flash_ctrl_state_t flash;
+static dif_alert_handler_t alert_handler;
 
 typedef struct test {
   /**
@@ -135,6 +137,28 @@ static const test_t kRegion[] = {
          }},
 };
 
+volatile bool recov_err_alert_expected = false;
+bool ottf_alert_isr(uint32_t *exc_info) {
+  (void)exc_info;
+
+  // We expect the "recoverable flash_ctrl error" alert to fire when we
+  // intentionally violate the protection regions.
+  bool flash_ctrl_recov_err = false;
+  CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+      &alert_handler, kTopEarlgreyAlertIdFlashCtrlRecovErr,
+      &flash_ctrl_recov_err));
+
+  if (flash_ctrl_recov_err) {
+    CHECK(recov_err_alert_expected,
+          "`flash_ctrl_recov_err` alert fired when not expected");
+
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, kTopEarlgreyAlertIdFlashCtrlRecovErr));
+  }
+
+  return flash_ctrl_recov_err;
+}
+
 /**
  * Memory write and readback test
  * For each MP region, this function check write and read permission
@@ -161,10 +185,12 @@ static void test_mem_access(test_t region) {
       LOG_INFO("test_mem_access: page %d write complete",
                region.page_start + i);
     } else {
+      recov_err_alert_expected = true;
       CHECK_STATUS_NOT_OK(flash_ctrl_testutils_write(
           &flash, start_epage,
           /*partition_id=*/0, wdata, kDifFlashCtrlPartitionTypeData,
           ARRAYSIZE(wdata)));
+      recov_err_alert_expected = false;
       LOG_INFO("test_mem_access: page %d write is not allowed",
                region.page_start + i);
     }
@@ -179,10 +205,12 @@ static void test_mem_access(test_t region) {
       LOG_INFO("test_mem_access: page %d read check complete",
                region.page_start + i);
     } else {
+      recov_err_alert_expected = true;
       CHECK_STATUS_NOT_OK(flash_ctrl_testutils_read(
           &flash, start_epage, /*partition_id=*/0, rdata,
           kDifFlashCtrlPartitionTypeData, ARRAYSIZE(rdata),
           /*delay=*/1));
+      recov_err_alert_expected = false;
       LOG_INFO("test_mem_access: page %d read is not allowed",
                region.page_start + i);
     }
@@ -194,6 +222,10 @@ bool test_main(void) {
   LOG_INFO("flash mp test start!");
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+
+  CHECK_DIF_OK(dif_alert_handler_init(
+      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      &alert_handler));
 
   // Set up default access for data partitions.
   // In silicon, rom_ext will set default region access.

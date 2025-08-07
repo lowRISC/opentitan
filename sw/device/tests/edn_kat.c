@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/dif/dif_edn.h"
@@ -26,6 +27,7 @@ enum {
   kEdnKatWordsPerBlock = 4,
 };
 
+static dif_alert_handler_t alert_handler;
 static dif_entropy_src_t entropy_src;
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
@@ -116,6 +118,25 @@ const dif_edn_seed_material_t kEdnAlertTestSeedMaterialReseed = {
 
 OTTF_DEFINE_TEST_CONFIG();
 
+volatile bool edn0_recov_alert_expected = false;
+bool ottf_alert_isr(uint32_t *exc_info) {
+  (void)exc_info;
+
+  bool edn0_recov_alert = false;
+  CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+      &alert_handler, kTopEarlgreyAlertIdEdn0RecovAlert, &edn0_recov_alert));
+
+  if (edn0_recov_alert) {
+    CHECK(edn0_recov_alert_expected,
+          "`edn0_recov_alert` alert fired when not expected");
+
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, kTopEarlgreyAlertIdEdn0RecovAlert));
+  }
+
+  return edn0_recov_alert;
+}
+
 // Initializes the peripherals used in this test.
 static void init_peripherals(void) {
   CHECK_DIF_OK(dif_entropy_src_init(
@@ -129,6 +150,9 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_rv_core_ibex_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
+  CHECK_DIF_OK(dif_alert_handler_init(
+      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      &alert_handler));
 }
 
 dif_edn_auto_params_t kat_auto_params_build(bool alert_test) {
@@ -229,10 +253,13 @@ static bool execute_kat(void) {
 }
 
 static void execute_alert_test(void) {
-  uint32_t alerts;
+  edn0_recov_alert_expected = true;
   for (int i = 0; i <= 2 * kEdnKatWordsPerBlock; ++i) {
     ibex_get_rnd_data();
   }
+  edn0_recov_alert_expected = false;
+
+  uint32_t alerts;
   CHECK_DIF_OK(dif_edn_get_recoverable_alerts(&edn0, &alerts));
   CHECK((alerts >> kDifEdnRecoverableAlertRepeatedGenBits) & 0x1);
 }

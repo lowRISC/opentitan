@@ -7,6 +7,7 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/runtime/hart.h"
@@ -21,6 +22,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otbn_regs.h"  // Generated.
 
+static dif_alert_handler_t alert_handler;
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
 static dif_otbn_t otbn;
@@ -37,6 +39,25 @@ static const otbn_addr_t kOtbnVarEncResult =
 
 OTTF_DEFINE_TEST_CONFIG();
 
+volatile bool otbn_recov_alert_expected = false;
+bool ottf_alert_isr(uint32_t *exc_info) {
+  (void)exc_info;
+
+  bool otbn_recov = false;
+  CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+      &alert_handler, kTopEarlgreyAlertIdOtbnRecov, &otbn_recov));
+
+  if (otbn_recov) {
+    CHECK(otbn_recov_alert_expected,
+          "`otbn_recov` alert fired when not expected");
+
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, kTopEarlgreyAlertIdOtbnRecov));
+  }
+
+  return otbn_recov;
+}
+
 /**
  * Initializes all DIF handles for each peripheral used in this test.
  */
@@ -47,6 +68,9 @@ static void init_peripheral_handles(void) {
       mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(dif_alert_handler_init(
+      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      &alert_handler));
 }
 
 /**
@@ -136,11 +160,13 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
 
   // Clear the sideload key and check that OTBN errors with the correct error
   // code (`KEY_INVALID` bit 5 = 1).
+  otbn_recov_alert_expected = true;
   CHECK_DIF_OK(
       dif_keymgr_sideload_clear_set_enabled(keymgr, kDifToggleEnabled));
   LOG_INFO("Clearing the Keymgr generated sideload keys.");
   uint32_t at_clear_salt_result[8];
   run_x25519_app(otbn, at_clear_salt_result, kOtbnInvalidKeyErr);
+  otbn_recov_alert_expected = false;
 
   // Disable sideload key clearing.
   CHECK_DIF_OK(

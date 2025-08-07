@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/ibex.h"
@@ -20,8 +21,30 @@ static const otbn_app_t kAppErrTest = OTBN_APP_T_INIT(err_test);
 
 OTTF_DEFINE_TEST_CONFIG();
 
+static dif_alert_handler_t alert_handler;
 static dif_rv_plic_t plic;
+static dif_otbn_t otbn;
+
 static volatile bool otbn_finished;
+
+volatile bool otbn_recov_alert_expected = false;
+bool ottf_alert_isr(uint32_t *exc_info) {
+  (void)exc_info;
+
+  bool otbn_recov = false;
+  CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+      &alert_handler, kTopEarlgreyAlertIdOtbnRecov, &otbn_recov));
+
+  if (otbn_recov) {
+    CHECK(otbn_recov_alert_expected,
+          "`otbn_recov` alert fired when not expected");
+
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, kTopEarlgreyAlertIdOtbnRecov));
+  }
+
+  return otbn_recov;
+}
 
 /**
  * Get OTBN error bits; check they match expected_err_bits.
@@ -71,6 +94,8 @@ static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
   // we see the Done interrupt fire.
   otbn_finished = false;
 
+  otbn_recov_alert_expected = expected_err_bits != kDifOtbnErrBitsNoError;
+
   CHECK_STATUS_OK(otbn_testutils_load_app(otbn, app));
 
   // If the CTRL.SOFTWARE_ERRS_FATAL flag is set, a software error will be
@@ -88,6 +113,8 @@ static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
   // At this point, OTBN should be running. Wait for an interrupt that says
   // it's done.
   ATOMIC_WAIT_FOR_INTERRUPT(otbn_finished);
+
+  otbn_recov_alert_expected = false;
 
   check_otbn_status(otbn, expected_status);
   check_otbn_err_bits(otbn, expected_insn_cnt);
@@ -116,26 +143,17 @@ static void plic_init_with_irqs(void) {
       &plic, kTopEarlgreyPlicTargetIbex0, 0x0));
 }
 
-/**
- * The ISR for this test.
- *
- * This function overrides the default OTTF external ISR.
- */
-void ottf_external_isr(uint32_t *exc_info) {
-  // Find which interrupt fired at PLIC by claiming it.
-  dif_rv_plic_irq_id_t irq_id;
-  CHECK_DIF_OK(
-      dif_rv_plic_irq_claim(&plic, kTopEarlgreyPlicTargetIbex0, &irq_id));
-
+bool ottf_handle_irq(uint32_t *exc_info, top_earlgrey_plic_peripheral_t peri,
+                     dif_rv_plic_irq_id_t irq_id) {
   // Check it was from OTBN
-  top_earlgrey_plic_peripheral_t peri =
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
-  CHECK(peri == kTopEarlgreyPlicPeripheralOtbn,
-        "Interrupt from incorrect peripheral: (exp: %d, obs: %s)",
-        kTopEarlgreyPlicPeripheralOtbn, peri);
+  if (peri != kTopEarlgreyPlicPeripheralOtbn) {
+    return false;
+  }
 
   // Check this is the interrupt we expected
-  CHECK(irq_id == kTopEarlgreyPlicIrqIdOtbnDone);
+  if (irq_id != kTopEarlgreyPlicIrqIdOtbnDone) {
+    return false;
+  }
 
   // otbn_finished should currently be false (we're supposed to clear it before
   // starting OTBN)
@@ -143,20 +161,25 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   // Set otbn_finished, which we'll pick up in run_test_with_irqs.
   otbn_finished = true;
+
+  CHECK_DIF_OK(dif_otbn_irq_acknowledge(&otbn, kDifOtbnIrqDone));
+
+  return true;
 }
 
 bool test_main(void) {
+  CHECK_DIF_OK(
+      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(dif_alert_handler_init(
+      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      &alert_handler));
+
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
   plic_init_with_irqs();
 
   // Enable the external IRQ (so that we see the interrupt from the PLIC)
   irq_global_ctrl(true);
   irq_external_ctrl(true);
-
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
-
-  dif_otbn_t otbn;
-  CHECK_DIF_OK(dif_otbn_init(base_addr, &otbn));
 
   run_test_with_irqs(&otbn, kAppErrTest, kDifOtbnStatusIdle,
                      kDifOtbnErrBitsBadDataAddr, 1);

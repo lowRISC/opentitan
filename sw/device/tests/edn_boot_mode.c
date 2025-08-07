@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
@@ -26,6 +27,7 @@ enum {
   kEdnBootModeOtbnRandomnessIterations = 1,
 };
 
+static dif_alert_handler_t alert_handler;
 static dif_entropy_src_t entropy_src;
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
@@ -46,6 +48,25 @@ dif_entropy_src_config_t entropy_src_config = {
 
 OTTF_DEFINE_TEST_CONFIG();
 
+volatile bool otbn_recov_alert_expected = false;
+bool ottf_alert_isr(uint32_t *exc_info) {
+  (void)exc_info;
+
+  bool otbn_recov = false;
+  CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+      &alert_handler, kTopEarlgreyAlertIdOtbnRecov, &otbn_recov));
+
+  if (otbn_recov) {
+    CHECK(otbn_recov_alert_expected,
+          "`otbn_recov` alert fired when not expected");
+
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, kTopEarlgreyAlertIdOtbnRecov));
+  }
+
+  return otbn_recov;
+}
+
 // Initializes the peripherals used in this test.
 static void init_peripherals(void) {
   CHECK_DIF_OK(dif_entropy_src_init(
@@ -61,6 +82,9 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_rv_core_ibex_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
+  CHECK_DIF_OK(dif_alert_handler_init(
+      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      &alert_handler));
 }
 
 static void configure_otbn(void) {
@@ -138,6 +162,10 @@ static void consume_entropy(unsigned int round,
   dif_rv_core_ibex_rnd_status_t ibex_rnd_status;
   dif_otbn_irq_state_snapshot_t intr_state;
   CHECK_STATUS_OK(entropy_config(round));
+
+  // Expect the recoverable error alert only if errors are expected.
+  otbn_recov_alert_expected = otbn_err_val != kDifOtbnErrBitsNoError;
+
   // Launch an OTBN program consuming entropy via both
   // the RND and the URND interface.
   CHECK_STATUS_OK(otbn_testutils_execute(&otbn));
@@ -147,6 +175,9 @@ static void consume_entropy(unsigned int round,
   CHECK_DIF_OK(dif_otbn_irq_get_state(&otbn, &intr_state));
   CHECK(intr_state & 0x1);
   CHECK_DIF_OK(dif_otbn_irq_acknowledge_all(&otbn));
+
+  otbn_recov_alert_expected = false;
+
   // Read rnd data through the IBEX and verify if the FIPS compliance
   // status is as expected.
   // The first read gets rid of leftover entropy from previous configurations
