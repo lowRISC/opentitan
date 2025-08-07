@@ -77,18 +77,6 @@ OTTF_DEFINE_TEST_CONFIG();
  * Initialize the dif handles required for this test.
  */
 static void init_peripheral_handles(void) {
-  // The testutils initialize the key manager and KMAC handles.
-  CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
-
-  // Reconfigure the KMAC to use the EDN entropy source as opposed to a
-  // software-provided one as is default in the testutils.
-  dif_kmac_config_t config = {
-      .entropy_mode = kDifKmacEntropyModeEdn,
-      .entropy_fast_process = true,
-      .sideload = true,
-  };
-  CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
-
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
   CHECK_DIF_OK(dif_sram_ctrl_init(
@@ -96,6 +84,10 @@ static void init_peripheral_handles(void) {
       &sram_ctrl));
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(dif_keymgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
+  CHECK_DIF_OK(
+      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
 }
 
 /**
@@ -423,6 +415,20 @@ bool test_main(void) {
   CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &reset_counter));
 
   init_peripheral_handles();
+
+  // Prepare the flash with secrets only on the first reset.
+  if (reset_info == kDifRstmgrResetInfoPor) {
+    CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
+  }
+
+  // Reconfigure the KMAC to use the EDN entropy source as opposed to a
+  // software-provided one as is default in the testutils.
+  dif_kmac_config_t config = {
+      .entropy_mode = kDifKmacEntropyModeEdn,
+      .entropy_fast_process = true,
+      .sideload = true,
+  };
+  CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
 
   test_derive_cdi(reset_counter);
 
