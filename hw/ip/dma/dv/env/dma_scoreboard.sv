@@ -236,7 +236,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
     return next_addr;
   endfunction
 
-  // Process items on Addr channel
+  // Model the A channel transactions from the DMA controller to the attached devices.
+  //
+  // - the DUT sends requests on the A channel to the source/destination device and the
+  //   the device responds on the D channel (see `process_tl_data_txn` below).
   task process_tl_addr_txn(string if_name, bit [63:0] a_addr, ref tl_seq_item item);
     uint expected_txn_size = dma_config.transfer_width_to_a_size(
                                dma_config.per_transfer_width);
@@ -291,7 +294,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
       // Push addr item to source queue
       src_queue.push_back(item);
-      `uvm_info(`gfn, $sformatf("Addr channel checks done for source item"), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("A channel checks done for source item"), UVM_HIGH)
 
       // Update the count of bytes read from the source.
       // Note that this is complicated by the fact that the TL-UL host adapter always fetches
@@ -315,7 +318,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       intr_source = intr_addr_lookup(a_addr);
       // Push addr item to destination queue
       dst_queue.push_back(item);
-      `uvm_info(`gfn, $sformatf("Addr channel checks done for destination item"), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("A channel checks done for destination item"), UVM_HIGH)
 
       // The range of memory addresses that should be touched by the DMA controller depends upon
       // whether chunks overlap.
@@ -394,6 +397,11 @@ class dma_scoreboard extends cip_base_scoreboard #(
         exp_dst_addr = predict_addr(exp_dst_addr, num_bytes_transferred, dma_config.dst_addr,
                                     dma_config.dst_addr_inc, dma_config.dst_chunk_wrap,
                                     dma_config, "Destination");
+
+        if (cfg.en_cov) begin
+          // Capture the INTR_SRC_ADDR|WR_VAL that have been issued.
+          cov.intr_src_cg.sample(a_addr, item.a_data);
+        end
       end else begin
         // Write to 'Clear Interrupt' address, so check the value written and the bus to which the
         // write has been sent.
@@ -420,7 +428,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
                               num_bytes_transferred, dma_config.total_data_size), UVM_HIGH);
   endtask
 
-  // Process items on Data channel
+  // Model the D channel responses from the attached devices to the DMA controller.
+  //
+  // - the source/destination device of the DMA transfer responds to requests placed by the
+  //   DUT on the A channel (see `process_tl_addr_txn` above).
   task process_tl_data_txn(string if_name, bit [63:0] a_addr, ref tl_seq_item item);
     bit got_source_item = 0;
     bit got_dest_item = 0;
@@ -473,7 +484,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // Check if data item opcode is as expected
       `DV_CHECK(d_opcode inside {AccessAckData},
                 $sformatf("Invalid opcode %s for source data item", d_opcode))
-      // Delete after all checks related to data channel are done
+      // Delete after all checks related to D channel are done
       `uvm_info(`gfn, $sformatf("Deleting element at %d index in source queue", queue_idx),
                 UVM_HIGH)
       src_queue.delete(queue_idx);
@@ -488,7 +499,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // Check if data item opcode is as expected
       `DV_CHECK(d_opcode inside {AccessAck},
                 $sformatf("Invalid opcode %s for destination data item", d_opcode))
-      // Delete after all checks related to data channel are done
+      // Delete after all checks related to D channel are done
       `uvm_info(`gfn, $sformatf("Deleting element at %d index in destination queue", queue_idx),
                 UVM_HIGH)
       dst_queue.delete(queue_idx);
@@ -508,7 +519,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
     end else if (got_dest_item) begin
       // Is this the final destination write?
       //
-      // Note: we must perform this on the data channel (write response) because an error may occur
+      // Note: we must perform this on the D channel (write response) because an error may occur
       //       on the very final write transaction, in which case DONE should not be seen.
       if (num_bytes_transferred >= exp_bytes_transferred) begin
         // Whether an interrupt is expected also depends upon whether it is enabled.
@@ -526,7 +537,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  // Method to process requests on TL interfaces
+  // Process TL-UL transactions from the DMA controller to attached devices.
   task process_tl_txn(string if_name,
                       uvm_tlm_analysis_fifo#(tl_channels_e) dir_fifo,
                       uvm_tlm_analysis_fifo#(tl_seq_item) a_chan_fifo,
@@ -1115,20 +1126,13 @@ class dma_scoreboard extends cip_base_scoreboard #(
           exp_bytes_transferred += dma_config.chunk_size(exp_bytes_transferred);
         end
         if (cfg.en_cov && go) begin
-          logic [dma_reg_pkg::NumIntClearSources-1:0][2:0] intr_source_addr_offset;
-          logic [dma_reg_pkg::NumIntClearSources-1:0][31:0] intr_source_wr_val;
-          for (int unsigned i = 0; i < dma_reg_pkg::NumIntClearSources; i++) begin
-            intr_source_addr_offset[i] = dma_config.intr_src_addr[i] % 8;
-            intr_source_wr_val[i] = dma_config.intr_src_wr_val[i];
-          end
+          // Capture the interrupt-related configuration.
           cov.config_cg.sample(.dma_config(dma_config),
                                .initial_transfer(initial_transfer));
           cov.interrupt_cg.sample(
             .handshake_interrupt_enable(dma_config.handshake_intr_en),
             .clear_intr_src(dma_config.clear_intr_src),
-            .clear_intr_bus(dma_config.clear_intr_bus),
-            .intr_source_addr_offset(intr_source_addr_offset),
-            .intr_source_wr_val(intr_source_wr_val)
+            .clear_intr_bus(dma_config.clear_intr_bus)
           );
         end
       end
