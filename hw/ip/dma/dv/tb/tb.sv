@@ -65,6 +65,7 @@ module tb;
     .intr_dma_error_o (interrupts[IntrDmaError]),
     .alert_rx_i (alert_rx),
     .alert_tx_o (alert_tx),
+    .racl_policies_i (top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
     // TL Interface to OT Internal address space
     .host_tl_h_o (tl_host_if.h2d),
     .host_tl_h_i (tl_host_if.d2h),
