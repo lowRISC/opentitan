@@ -1317,6 +1317,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
         },
         DARJEELING_TEST_ENVS,
     ),
@@ -1339,6 +1340,7 @@ opentitan_test(
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:rv_core_ibex_testutils",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/tests:otbn_randomness_impl",
     ],
@@ -2620,6 +2622,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
         },
     ),
     qemu = qemu_params(
@@ -2631,6 +2634,7 @@ opentitan_test(
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top:otbn_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:keymgr",
@@ -2641,6 +2645,7 @@ opentitan_test(
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/otbn/crypto:x25519_sideload",
     ],
@@ -3038,6 +3043,7 @@ opentitan_test(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/otbn/code-snippets:err_test",
     ],
@@ -3147,6 +3153,8 @@ opentitan_test(
         DARJEELING_TEST_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -3158,6 +3166,7 @@ opentitan_test(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/otbn/code-snippets:barrett384",
         "//sw/otbn/code-snippets:err_test",
