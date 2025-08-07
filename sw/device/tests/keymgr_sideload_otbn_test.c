@@ -16,6 +16,7 @@
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/otbn_regs.h"  // Generated.
@@ -35,7 +36,7 @@ static const otbn_addr_t kOtbnVarEncU =
 static const otbn_addr_t kOtbnVarEncResult =
     OTBN_ADDR_T_INIT(x25519_sideload, enc_result);
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
 
 /**
  * Initializes all DIF handles for each peripheral used in this test.
@@ -136,11 +137,14 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
 
   // Clear the sideload key and check that OTBN errors with the correct error
   // code (`KEY_INVALID` bit 5 = 1).
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdOtbnRecov));
   CHECK_DIF_OK(
       dif_keymgr_sideload_clear_set_enabled(keymgr, kDifToggleEnabled));
   LOG_INFO("Clearing the Keymgr generated sideload keys.");
   uint32_t at_clear_salt_result[8];
   run_x25519_app(otbn, at_clear_salt_result, kOtbnInvalidKeyErr);
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_finish(kTopEarlgreyAlertIdOtbnRecov));
 
   // Disable sideload key clearing.
   CHECK_DIF_OK(
