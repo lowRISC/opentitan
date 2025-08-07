@@ -8,7 +8,7 @@ on:
   push:
     branches-ignore:
       - "backport-*"
-      - "gh-readonly-queue/*"
+      - "gh-readonly-queue/**"
     tags:
       - "*"
   merge_group:
