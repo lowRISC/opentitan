@@ -220,6 +220,7 @@ _ISFB_CONTRAINT_TESTS = {
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
+            timeout = "long",
             binaries = {
                 ":isfb_page_init": "isfb_page_init",
             },
@@ -228,7 +229,7 @@ _ISFB_CONTRAINT_TESTS = {
             exit_success = param["success"],
             rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_isfb",
             test_cmd = """
-                --exec="image assemble --output=init.bin --mirror=false --size=131072 {rom_ext}@0 {isfb_page_init}@0x10000"
+                --exec="image assemble --output=init.bin --mirror=false --size=524288 {rom_ext}@{rom_ext_slot_a} {isfb_page_init}@{owner_slot_a}"
                 --exec="transport init"
                 --exec="fpga clear-bitstream"
                 --exec="fpga load-bitstream {bitstream}"

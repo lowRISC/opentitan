@@ -123,12 +123,16 @@ def _test_dispatch(ctx, exec_env, firmware):
     # assemble the image.  Replace the firmware param with the newly assembled
     # image.
     if "assemble" in param:
-        assemble = param["assemble"].format(**action_param)
+        assemble = param.get("assemble")
+
+        for _ in range(10):
+            # Recursive evaluation of the assemble spec
+            assemble = assemble.format(**action_param)
         assemble = ctx.expand_location(assemble, data_labels)
         image = assemble_for_test(
             ctx,
             name = ctx.attr.name,
-            spec = assemble.split(" "),
+            spec = assemble.strip().split(" "),
             data_files = data_files,
             opentitantool = exec_env._opentitantool,
         )
