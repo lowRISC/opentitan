@@ -1324,6 +1324,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
         },
     ),
     verilator = verilator_params(
@@ -1344,6 +1345,7 @@ opentitan_test(
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:rv_core_ibex_testutils",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

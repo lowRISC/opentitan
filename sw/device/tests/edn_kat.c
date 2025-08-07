@@ -14,6 +14,7 @@
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "edn_regs.h"  // Generated
@@ -24,6 +25,7 @@ enum {
   kEdnKatMaxClen = 12,
   kEdnKatOutputLen = 16,
   kEdnKatWordsPerBlock = 4,
+  kEdnKatRecovAlertDelay = 100 * 1000,  // 100ms
 };
 
 static dif_entropy_src_t entropy_src;
@@ -229,10 +231,18 @@ static bool execute_kat(void) {
 }
 
 static void execute_alert_test(void) {
-  uint32_t alerts;
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdEdn0RecovAlert));
   for (int i = 0; i <= 2 * kEdnKatWordsPerBlock; ++i) {
     ibex_get_rnd_data();
   }
+  // Note: the alert from EDN can be delayed after `get_random_data` so we
+  // must wait before finishing the expectation.
+  busy_spin_micros(kEdnKatRecovAlertDelay);
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_finish(kTopEarlgreyAlertIdEdn0RecovAlert));
+
+  uint32_t alerts;
   CHECK_DIF_OK(dif_edn_get_recoverable_alerts(&edn0, &alerts));
   CHECK((alerts >> kDifEdnRecoverableAlertRepeatedGenBits) & 0x1);
 }
