@@ -1103,7 +1103,7 @@ module top_earlgrey #(
       .intr_rx_timeout_o    (intr_uart0_rx_timeout),
       .intr_rx_parity_err_o (intr_uart0_rx_parity_err),
       .intr_tx_empty_o      (intr_uart0_tx_empty),
-      // [0]: fatal_fault
+      // alert_handler[0]: fatal_fault
       .alert_tx_o  ( alert_tx[0:0] ),
       .alert_rx_i  ( alert_rx[0:0] ),
 
@@ -1140,7 +1140,7 @@ module top_earlgrey #(
       .intr_rx_timeout_o    (intr_uart1_rx_timeout),
       .intr_rx_parity_err_o (intr_uart1_rx_parity_err),
       .intr_tx_empty_o      (intr_uart1_tx_empty),
-      // [1]: fatal_fault
+      // alert_handler[1]: fatal_fault
       .alert_tx_o  ( alert_tx[1:1] ),
       .alert_rx_i  ( alert_rx[1:1] ),
 
@@ -1177,7 +1177,7 @@ module top_earlgrey #(
       .intr_rx_timeout_o    (intr_uart2_rx_timeout),
       .intr_rx_parity_err_o (intr_uart2_rx_parity_err),
       .intr_tx_empty_o      (intr_uart2_tx_empty),
-      // [2]: fatal_fault
+      // alert_handler[2]: fatal_fault
       .alert_tx_o  ( alert_tx[2:2] ),
       .alert_rx_i  ( alert_rx[2:2] ),
 
@@ -1214,7 +1214,7 @@ module top_earlgrey #(
       .intr_rx_timeout_o    (intr_uart3_rx_timeout),
       .intr_rx_parity_err_o (intr_uart3_rx_parity_err),
       .intr_tx_empty_o      (intr_uart3_tx_empty),
-      // [3]: fatal_fault
+      // alert_handler[3]: fatal_fault
       .alert_tx_o  ( alert_tx[3:3] ),
       .alert_rx_i  ( alert_rx[3:3] ),
 
@@ -1245,7 +1245,7 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_gpio_o (intr_gpio_gpio),
-      // [4]: fatal_fault
+      // alert_handler[4]: fatal_fault
       .alert_tx_o  ( alert_tx[4:4] ),
       .alert_rx_i  ( alert_rx[4:4] ),
 
@@ -1286,7 +1286,7 @@ module top_earlgrey #(
       .intr_tpm_header_not_empty_o     (intr_spi_device_tpm_header_not_empty),
       .intr_tpm_rdfifo_cmd_end_o       (intr_spi_device_tpm_rdfifo_cmd_end),
       .intr_tpm_rdfifo_drop_o          (intr_spi_device_tpm_rdfifo_drop),
-      // [5]: fatal_fault
+      // alert_handler[5]: fatal_fault
       .alert_tx_o  ( alert_tx[5:5] ),
       .alert_rx_i  ( alert_rx[5:5] ),
 
@@ -1343,7 +1343,7 @@ module top_earlgrey #(
       .intr_acq_stretch_o      (intr_i2c0_acq_stretch),
       .intr_unexp_stop_o       (intr_i2c0_unexp_stop),
       .intr_host_timeout_o     (intr_i2c0_host_timeout),
-      // [6]: fatal_fault
+      // alert_handler[6]: fatal_fault
       .alert_tx_o  ( alert_tx[6:6] ),
       .alert_rx_i  ( alert_rx[6:6] ),
 
@@ -1392,7 +1392,7 @@ module top_earlgrey #(
       .intr_acq_stretch_o      (intr_i2c1_acq_stretch),
       .intr_unexp_stop_o       (intr_i2c1_unexp_stop),
       .intr_host_timeout_o     (intr_i2c1_host_timeout),
-      // [7]: fatal_fault
+      // alert_handler[7]: fatal_fault
       .alert_tx_o  ( alert_tx[7:7] ),
       .alert_rx_i  ( alert_rx[7:7] ),
 
@@ -1441,7 +1441,7 @@ module top_earlgrey #(
       .intr_acq_stretch_o      (intr_i2c2_acq_stretch),
       .intr_unexp_stop_o       (intr_i2c2_unexp_stop),
       .intr_host_timeout_o     (intr_i2c2_host_timeout),
-      // [8]: fatal_fault
+      // alert_handler[8]: fatal_fault
       .alert_tx_o  ( alert_tx[8:8] ),
       .alert_rx_i  ( alert_rx[8:8] ),
 
@@ -1476,7 +1476,7 @@ module top_earlgrey #(
       // Interrupt
       .intr_done_ch0_o (intr_pattgen_done_ch0),
       .intr_done_ch1_o (intr_pattgen_done_ch1),
-      // [9]: fatal_fault
+      // alert_handler[9]: fatal_fault
       .alert_tx_o  ( alert_tx[9:9] ),
       .alert_rx_i  ( alert_rx[9:9] ),
 
@@ -1495,7 +1495,7 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_timer_expired_hart0_timer0_o (intr_rv_timer_timer_expired_hart0_timer0),
-      // [10]: fatal_fault
+      // alert_handler[10]: fatal_fault
       .alert_tx_o  ( alert_tx[10:10] ),
       .alert_rx_i  ( alert_rx[10:10] ),
 
@@ -1520,11 +1520,11 @@ module top_earlgrey #(
       // Interrupt
       .intr_otp_operation_done_o (intr_otp_ctrl_otp_operation_done),
       .intr_otp_error_o          (intr_otp_ctrl_otp_error),
-      // [11]: fatal_macro_error
-      // [12]: fatal_check_error
-      // [13]: fatal_bus_integ_error
-      // [14]: fatal_prim_otp_alert
-      // [15]: recov_prim_otp_alert
+      // alert_handler[11]: fatal_macro_error
+      // alert_handler[12]: fatal_check_error
+      // alert_handler[13]: fatal_bus_integ_error
+      // alert_handler[14]: fatal_prim_otp_alert
+      // alert_handler[15]: recov_prim_otp_alert
       .alert_tx_o  ( alert_tx[15:11] ),
       .alert_rx_i  ( alert_rx[15:11] ),
 
@@ -1617,9 +1617,9 @@ module top_earlgrey #(
     .EscNumSeverities(AlertHandlerEscNumSeverities),
     .EscPingCountWidth(AlertHandlerEscPingCountWidth)
   ) u_lc_ctrl (
-      // [16]: fatal_prog_error
-      // [17]: fatal_state_error
-      // [18]: fatal_bus_integ_error
+      // alert_handler[16]: fatal_prog_error
+      // alert_handler[17]: fatal_state_error
+      // alert_handler[18]: fatal_bus_integ_error
       .alert_tx_o  ( alert_tx[18:16] ),
       .alert_rx_i  ( alert_rx[18:16] ),
 
@@ -1732,7 +1732,7 @@ module top_earlgrey #(
       // Interrupt
       .intr_error_o     (intr_spi_host0_error),
       .intr_spi_event_o (intr_spi_host0_spi_event),
-      // [19]: fatal_fault
+      // alert_handler[19]: fatal_fault
       .alert_tx_o  ( alert_tx[19:19] ),
       .alert_rx_i  ( alert_rx[19:19] ),
 
@@ -1769,7 +1769,7 @@ module top_earlgrey #(
       // Interrupt
       .intr_error_o     (intr_spi_host1_error),
       .intr_spi_event_o (intr_spi_host1_spi_event),
-      // [20]: fatal_fault
+      // alert_handler[20]: fatal_fault
       .alert_tx_o  ( alert_tx[20:20] ),
       .alert_rx_i  ( alert_rx[20:20] ),
 
@@ -1823,7 +1823,7 @@ module top_earlgrey #(
       .intr_powered_o         (intr_usbdev_powered),
       .intr_link_out_err_o    (intr_usbdev_link_out_err),
       .intr_av_setup_empty_o  (intr_usbdev_av_setup_empty),
-      // [21]: fatal_fault
+      // alert_handler[21]: fatal_fault
       .alert_tx_o  ( alert_tx[21:21] ),
       .alert_rx_i  ( alert_rx[21:21] ),
 
@@ -1863,7 +1863,7 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_wakeup_o (intr_pwrmgr_aon_wakeup),
-      // [22]: fatal_fault
+      // alert_handler[22]: fatal_fault
       .alert_tx_o  ( alert_tx[22:22] ),
       .alert_rx_i  ( alert_rx[22:22] ),
 
@@ -1912,8 +1912,8 @@ module top_earlgrey #(
     .SecCheck(SecRstmgrAonCheck),
     .SecMaxSyncDelay(SecRstmgrAonMaxSyncDelay)
   ) u_rstmgr_aon (
-      // [23]: fatal_fault
-      // [24]: fatal_cnsty_fault
+      // alert_handler[23]: fatal_fault
+      // alert_handler[24]: fatal_cnsty_fault
       .alert_tx_o  ( alert_tx[24:23] ),
       .alert_rx_i  ( alert_rx[24:23] ),
 
@@ -1947,8 +1947,8 @@ module top_earlgrey #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[26:25]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_clkmgr_aon (
-      // [25]: recov_fault
-      // [26]: fatal_fault
+      // alert_handler[25]: recov_fault
+      // alert_handler[26]: fatal_fault
       .alert_tx_o  ( alert_tx[26:25] ),
       .alert_rx_i  ( alert_rx[26:25] ),
 
@@ -2029,7 +2029,7 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_event_detected_o (intr_sysrst_ctrl_aon_event_detected),
-      // [27]: fatal_fault
+      // alert_handler[27]: fatal_fault
       .alert_tx_o  ( alert_tx[27:27] ),
       .alert_rx_i  ( alert_rx[27:27] ),
 
@@ -2052,7 +2052,7 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_match_pending_o (intr_adc_ctrl_aon_match_pending),
-      // [28]: fatal_fault
+      // alert_handler[28]: fatal_fault
       .alert_tx_o  ( alert_tx[28:28] ),
       .alert_rx_i  ( alert_rx[28:28] ),
 
@@ -2077,7 +2077,7 @@ module top_earlgrey #(
       // Output
       .cio_pwm_o    (cio_pwm_aon_pwm_d2p),
       .cio_pwm_en_o (cio_pwm_aon_pwm_en_d2p),
-      // [29]: fatal_fault
+      // alert_handler[29]: fatal_fault
       .alert_tx_o  ( alert_tx[29:29] ),
       .alert_rx_i  ( alert_rx[29:29] ),
 
@@ -2099,7 +2099,7 @@ module top_earlgrey #(
     .SecVolatileRawUnlockEn(SecPinmuxAonVolatileRawUnlockEn),
     .TargetCfg(PinmuxAonTargetCfg)
   ) u_pinmux_aon (
-      // [30]: fatal_fault
+      // alert_handler[30]: fatal_fault
       .alert_tx_o  ( alert_tx[30:30] ),
       .alert_rx_i  ( alert_rx[30:30] ),
 
@@ -2171,7 +2171,7 @@ module top_earlgrey #(
       // Interrupt
       .intr_wkup_timer_expired_o (intr_aon_timer_aon_wkup_timer_expired),
       .intr_wdog_timer_bark_o    (intr_aon_timer_aon_wdog_timer_bark),
-      // [31]: fatal_fault
+      // alert_handler[31]: fatal_fault
       .alert_tx_o  ( alert_tx[31:31] ),
       .alert_rx_i  ( alert_rx[31:31] ),
 
@@ -2204,8 +2204,8 @@ module top_earlgrey #(
       // Interrupt
       .intr_io_status_change_o   (intr_sensor_ctrl_aon_io_status_change),
       .intr_init_status_change_o (intr_sensor_ctrl_aon_init_status_change),
-      // [32]: recov_alert
-      // [33]: fatal_alert
+      // alert_handler[32]: recov_alert
+      // alert_handler[33]: fatal_alert
       .alert_tx_o  ( alert_tx[33:32] ),
       .alert_rx_i  ( alert_rx[33:32] ),
 
@@ -2241,7 +2241,7 @@ module top_earlgrey #(
     .Outstanding(SramCtrlRetAonOutstanding),
     .EccCorrection(SramCtrlRetAonEccCorrection)
   ) u_sram_ctrl_ret_aon (
-      // [34]: fatal_error
+      // alert_handler[34]: fatal_error
       .alert_tx_o  ( alert_tx[34:34] ),
       .alert_rx_i  ( alert_rx[34:34] ),
       .racl_policy_sel_ranges_ram_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),
@@ -2297,11 +2297,11 @@ module top_earlgrey #(
       .intr_rd_lvl_o     (intr_flash_ctrl_rd_lvl),
       .intr_op_done_o    (intr_flash_ctrl_op_done),
       .intr_corr_err_o   (intr_flash_ctrl_corr_err),
-      // [35]: recov_err
-      // [36]: fatal_std_err
-      // [37]: fatal_err
-      // [38]: fatal_prim_flash_alert
-      // [39]: recov_prim_flash_alert
+      // alert_handler[35]: recov_err
+      // alert_handler[36]: fatal_std_err
+      // alert_handler[37]: fatal_err
+      // alert_handler[38]: fatal_prim_flash_alert
+      // alert_handler[39]: recov_prim_flash_alert
       .alert_tx_o  ( alert_tx[39:35] ),
       .alert_rx_i  ( alert_rx[39:35] ),
 
@@ -2352,7 +2352,7 @@ module top_earlgrey #(
     .SecVolatileRawUnlockEn(SecRvDmVolatileRawUnlockEn),
     .TlulHostUserRsvdBits(RvDmTlulHostUserRsvdBits)
   ) u_rv_dm (
-      // [40]: fatal_fault
+      // alert_handler[40]: fatal_fault
       .alert_tx_o  ( alert_tx[40:40] ),
       .alert_rx_i  ( alert_rx[40:40] ),
 
@@ -2396,7 +2396,7 @@ module top_earlgrey #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[41:41]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_rv_plic (
-      // [41]: fatal_fault
+      // alert_handler[41]: fatal_fault
       .alert_tx_o  ( alert_tx[41:41] ),
       .alert_rx_i  ( alert_rx[41:41] ),
 
@@ -2427,8 +2427,8 @@ module top_earlgrey #(
     .RndCnstMaskingLfsrSeed(RndCnstAesMaskingLfsrSeed),
     .RndCnstMaskingLfsrPerm(RndCnstAesMaskingLfsrPerm)
   ) u_aes (
-      // [42]: recov_ctrl_update_err
-      // [43]: fatal_fault
+      // alert_handler[42]: recov_ctrl_update_err
+      // alert_handler[43]: fatal_fault
       .alert_tx_o  ( alert_tx[43:42] ),
       .alert_rx_i  ( alert_rx[43:42] ),
 
@@ -2457,7 +2457,7 @@ module top_earlgrey #(
       .intr_hmac_done_o  (intr_hmac_hmac_done),
       .intr_fifo_empty_o (intr_hmac_fifo_empty),
       .intr_hmac_err_o   (intr_hmac_hmac_err),
-      // [44]: fatal_fault
+      // alert_handler[44]: fatal_fault
       .alert_tx_o  ( alert_tx[44:44] ),
       .alert_rx_i  ( alert_rx[44:44] ),
 
@@ -2489,8 +2489,8 @@ module top_earlgrey #(
       .intr_kmac_done_o  (intr_kmac_kmac_done),
       .intr_fifo_empty_o (intr_kmac_fifo_empty),
       .intr_kmac_err_o   (intr_kmac_kmac_err),
-      // [45]: recov_operation_err
-      // [46]: fatal_fault_err
+      // alert_handler[45]: recov_operation_err
+      // alert_handler[46]: fatal_fault_err
       .alert_tx_o  ( alert_tx[46:45] ),
       .alert_rx_i  ( alert_rx[46:45] ),
 
@@ -2527,8 +2527,8 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_done_o (intr_otbn_done),
-      // [47]: fatal
-      // [48]: recov
+      // alert_handler[47]: fatal
+      // alert_handler[48]: recov
       .alert_tx_o  ( alert_tx[48:47] ),
       .alert_rx_i  ( alert_rx[48:47] ),
 
@@ -2582,8 +2582,8 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_op_done_o (intr_keymgr_op_done),
-      // [49]: recov_operation_err
-      // [50]: fatal_fault_err
+      // alert_handler[49]: recov_operation_err
+      // alert_handler[50]: fatal_fault_err
       .alert_tx_o  ( alert_tx[50:49] ),
       .alert_rx_i  ( alert_rx[50:49] ),
 
@@ -2625,8 +2625,8 @@ module top_earlgrey #(
       .intr_cs_entropy_req_o  (intr_csrng_cs_entropy_req),
       .intr_cs_hw_inst_exc_o  (intr_csrng_cs_hw_inst_exc),
       .intr_cs_fatal_err_o    (intr_csrng_cs_fatal_err),
-      // [51]: recov_alert
-      // [52]: fatal_alert
+      // alert_handler[51]: recov_alert
+      // alert_handler[52]: fatal_alert
       .alert_tx_o  ( alert_tx[52:51] ),
       .alert_rx_i  ( alert_rx[52:51] ),
 
@@ -2662,8 +2662,8 @@ module top_earlgrey #(
       .intr_es_health_test_failed_o (intr_entropy_src_es_health_test_failed),
       .intr_es_observe_fifo_ready_o (intr_entropy_src_es_observe_fifo_ready),
       .intr_es_fatal_err_o          (intr_entropy_src_es_fatal_err),
-      // [53]: recov_alert
-      // [54]: fatal_alert
+      // alert_handler[53]: recov_alert
+      // alert_handler[54]: fatal_alert
       .alert_tx_o  ( alert_tx[54:53] ),
       .alert_rx_i  ( alert_rx[54:53] ),
 
@@ -2699,8 +2699,8 @@ module top_earlgrey #(
       // Interrupt
       .intr_edn_cmd_req_done_o (intr_edn0_edn_cmd_req_done),
       .intr_edn_fatal_err_o    (intr_edn0_edn_fatal_err),
-      // [55]: recov_alert
-      // [56]: fatal_alert
+      // alert_handler[55]: recov_alert
+      // alert_handler[56]: fatal_alert
       .alert_tx_o  ( alert_tx[56:55] ),
       .alert_rx_i  ( alert_rx[56:55] ),
 
@@ -2724,8 +2724,8 @@ module top_earlgrey #(
       // Interrupt
       .intr_edn_cmd_req_done_o (intr_edn1_edn_cmd_req_done),
       .intr_edn_fatal_err_o    (intr_edn1_edn_fatal_err),
-      // [57]: recov_alert
-      // [58]: fatal_alert
+      // alert_handler[57]: recov_alert
+      // alert_handler[58]: fatal_alert
       .alert_tx_o  ( alert_tx[58:57] ),
       .alert_rx_i  ( alert_rx[58:57] ),
 
@@ -2756,7 +2756,7 @@ module top_earlgrey #(
     .Outstanding(SramCtrlMainOutstanding),
     .EccCorrection(SramCtrlMainEccCorrection)
   ) u_sram_ctrl_main (
-      // [59]: fatal_error
+      // alert_handler[59]: fatal_error
       .alert_tx_o  ( alert_tx[59:59] ),
       .alert_rx_i  ( alert_rx[59:59] ),
       .racl_policy_sel_ranges_ram_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),
@@ -2793,7 +2793,7 @@ module top_earlgrey #(
     .SecDisableScrambling(SecRomCtrlDisableScrambling),
     .MemSizeRom(32768)
   ) u_rom_ctrl (
-      // [60]: fatal
+      // alert_handler[60]: fatal
       .alert_tx_o  ( alert_tx[60:60] ),
       .alert_rx_i  ( alert_rx[60:60] ),
 
@@ -2853,10 +2853,10 @@ module top_earlgrey #(
     .CsrMimpId(RvCoreIbexCsrMimpId),
     .InstructionPipeline(RvCoreIbexInstructionPipeline)
   ) u_rv_core_ibex (
-      // [61]: fatal_sw_err
-      // [62]: recov_sw_err
-      // [63]: fatal_hw_err
-      // [64]: recov_hw_err
+      // alert_handler[61]: fatal_sw_err
+      // alert_handler[62]: recov_sw_err
+      // alert_handler[63]: fatal_hw_err
+      // alert_handler[64]: recov_hw_err
       .alert_tx_o  ( alert_tx[64:61] ),
       .alert_rx_i  ( alert_rx[64:61] ),
 
