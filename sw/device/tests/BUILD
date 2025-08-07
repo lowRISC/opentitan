@@ -1527,6 +1527,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
         },
     ),
     verilator = verilator_params(timeout = "long"),
@@ -1552,6 +1553,7 @@ opentitan_test(
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
