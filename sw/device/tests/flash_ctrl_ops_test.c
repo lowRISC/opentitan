@@ -70,6 +70,7 @@ enum {
   kPageSize = 2048,
 };
 
+const uint32_t FLASH_CTRL_PARAM_NUM_REGIONS = 7;
 const uint32_t kRandomData1[kInfoSize] = {
     0xb295d21b, 0xecdfbdcd, 0x67e7ab2d, 0x6f660b08, 0x273bf65c, 0xe80f1695,
     0x586b80db, 0xc3dba27e, 0xdc124c5d, 0xb01ccd52, 0x815713e1, 0x31a141b2,
@@ -310,6 +311,16 @@ static void do_bank1_data_partition_test(void) {
         (i == 0) ? flash_bank_1_page_index : flash_bank_1_page_index_scr;
     const uint32_t *test_data = (i == 0) ? kRandomData4 : kRandomData5;
 
+    for (uint32_t region = 0; region < FLASH_CTRL_PARAM_NUM_REGIONS; region++) {
+      bool locked;
+      CHECK_DIF_OK(
+          dif_flash_ctrl_data_region_is_locked(&flash_state, region, &locked));
+      if (!locked) {
+        flash_bank_1_data_region = region;
+        LOG_INFO("This region is unlocked REGION 0x%x", region);
+        break;
+      }
+    }
     if (i == 0) {
       // Set region1 for non-scrambled ecc enabled.
       CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
@@ -423,16 +434,29 @@ static void do_bank1_data_partition_test(void) {
 bool test_main(void) {
   flash_info = dif_flash_ctrl_get_device_info();
 
+  // for(uint32_t region = 0; region < FLASH_CTRL_PARAM_NUM_REGIONS+1; region++)
+  //  {
+  //  bool locked;
+  //  LOG_INFO("Testing  REGION 0x%x" ,region);
+  //  CHECK_DIF_OK(dif_flash_ctrl_data_region_is_locked(&flash, region,
+  //  &locked)); if(!locked) { We can use this region
+  // flash_region_index = region;
+  //   LOG_INFO("This region is unlocked REGION 0x%x" ,region);
+  //     }
+  // break;
+  // }
+
   // Determine the region index and page index to use for tests.
   // Test data page used for flash bank 1 should be the lowest and highest
   // usable page.
   if (kBootStage != kBootStageOwner) {
     flash_bank_0_data_region = 0;
     flash_bank_1_page_index = flash_info.data_pages;
+    LOG_INFO("Running as owner");
   } else {
     // If we boot up in owner stage, the first 2 regions will be used by
     // ROM_EXT.
-    flash_bank_0_data_region = 2;
+    flash_bank_0_data_region = 3;
     // First 0x20 pages are configured by ROM_EXT. To avoid conflicts, skip over
     // these pages.
     flash_bank_1_page_index = flash_info.data_pages + 0x20;
@@ -460,7 +484,9 @@ bool test_main(void) {
     do_info_partition_test(kFlashInfoPageIdOwnerSecret, kRandomData2);
     do_info_partition_test(kFlashInfoPageIdIsoPart, kRandomData3);
     do_bank0_data_partition_test();
+    LOG_INFO("Running as not owner");
   }
+  LOG_INFO(" Non -owner");
   do_bank1_data_partition_test();
 
   return true;
