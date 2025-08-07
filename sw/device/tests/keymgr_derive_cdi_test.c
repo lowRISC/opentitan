@@ -11,6 +11,7 @@
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/sram_ctrl_testutils.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
@@ -190,7 +191,11 @@ static void derive_sw_key(const char *state_name, dif_keymgr_output_t *key) {
   // If the key version is larger than the permitted maximum version, then
   // the key generation must fail.
   params.version += 1;
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+      kTopEarlgreyAlertIdKeymgrRecovOperationErr));
   CHECK_STATUS_NOT_OK(keymgr_testutils_generate_versioned_key(&keymgr, params));
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+      kTopEarlgreyAlertIdKeymgrRecovOperationErr));
 #endif
 }
 
@@ -236,7 +241,11 @@ static void derive_sideload_otbn_key(const char *state_name,
   // If the key version is larger than the permitted maximum version, then
   // the key generation must fail.
   params.version += 1;
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+      kTopEarlgreyAlertIdKeymgrRecovOperationErr));
   CHECK_STATUS_NOT_OK(keymgr_testutils_generate_versioned_key(&keymgr, params));
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+      kTopEarlgreyAlertIdKeymgrRecovOperationErr));
 #endif
 }
 
