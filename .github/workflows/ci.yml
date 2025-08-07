@@ -339,8 +339,8 @@ jobs:
           artifact-name: verilator_earlgrey-test-results
 
   # Build CW305 variant of the English Breakfast toplevel design using Vivado
-  chip_englishbreakfast_cw305:
-    name: CW305's Bitstream
+  englishbreakfast_cw305:
+    name: English Breakfast CW305 Bitstream
     runs-on: ubuntu-22.04-vivado
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
@@ -395,8 +395,8 @@ jobs:
           path: build-bin.tar
           overwrite: true
 
-  chip_earlgrey_cw310_hyperdebug:
-    name: Earl Grey for CW310 Hyperdebug
+  bitstream_earlgrey_cw310:
+    name: Earl Grey CW310 bitstream
     needs: quick_lint
     uses: ./.github/workflows/bitstream.yml
     secrets: inherit
@@ -404,8 +404,8 @@ jobs:
       top_name: earlgrey
       design_suffix: cw310_hyperdebug
 
-  chip_earlgrey_cw340:
-    name: Earl Grey for CW340
+  bitstream_earlgrey_cw340:
+    name: Earl Grey CW340 bitstream
     needs: quick_lint
     uses: ./.github/workflows/bitstream.yml
     secrets: inherit
@@ -418,8 +418,8 @@ jobs:
     runs-on: ubuntu-22.04
     if: ${{ github.event_name != 'pull_request' }}
     needs:
-      - chip_earlgrey_cw310_hyperdebug
-      - chip_earlgrey_cw340
+      - bitstream_earlgrey_cw310
+      - bitstream_earlgrey_cw340
     steps:
       - uses: actions/checkout@v4
       - name: Prepare environment
@@ -429,7 +429,7 @@ jobs:
       - name: Download partial build-bin
         uses: ./.github/actions/download-partial-build-bin
         with:
-          job-patterns: chip_earlgrey_{cw310,cw310_hyperdebug,cw340}
+          job-patterns: earlgrey_{cw310,cw340}
       - name: Create bitstream cache archive
         run: |
           shopt -s globstar # Allow use of **
@@ -450,7 +450,7 @@ jobs:
   # CW310 FPGA jobs.
   execute_test_rom_fpga_tests_cw310:
     name: CW310 Test ROM Tests
-    needs: chip_earlgrey_cw310_hyperdebug
+    needs: bitstream_earlgrey_cw310
     uses: ./.github/workflows/fpga.yml
     if: ${{ github.event_name != 'merge_group' }}
     secrets: inherit
@@ -463,7 +463,7 @@ jobs:
 
   execute_rom_fpga_tests_cw310:
     name: CW310 ROM Tests
-    needs: chip_earlgrey_cw310_hyperdebug
+    needs: bitstream_earlgrey_cw310
     uses: ./.github/workflows/fpga.yml
     if: ${{ github.event_name != 'merge_group' }}
     secrets: inherit
@@ -477,7 +477,7 @@ jobs:
 
   execute_rom_ext_fpga_tests_cw310:
     name: CW310 ROM_EXT Tests
-    needs: chip_earlgrey_cw310_hyperdebug
+    needs: bitstream_earlgrey_cw310
     uses: ./.github/workflows/fpga.yml
     if: ${{ github.event_name != 'merge_group' }}
     secrets: inherit
@@ -490,7 +490,7 @@ jobs:
 
   execute_sival_fpga_tests_cw310:
     name: CW310 SiVal Tests
-    needs: chip_earlgrey_cw310_hyperdebug
+    needs: bitstream_earlgrey_cw310
     uses: ./.github/workflows/fpga.yml
     if: ${{ github.event_name != 'merge_group' }}
     secrets: inherit
@@ -503,7 +503,7 @@ jobs:
 
   execute_sival_rom_ext_fpga_tests_cw310:
     name: CW310 SiVal ROM_EXT Tests
-    needs: chip_earlgrey_cw310_hyperdebug
+    needs: bitstream_earlgrey_cw310
     uses: ./.github/workflows/fpga.yml
     if: ${{ github.event_name != 'merge_group' }}
     secrets: inherit
@@ -516,7 +516,7 @@ jobs:
 
   execute_manuf_fpga_tests_cw310:
     name: CW310 Manufacturing Tests
-    needs: chip_earlgrey_cw310_hyperdebug
+    needs: bitstream_earlgrey_cw310
     uses: ./.github/workflows/fpga.yml
     if: ${{ github.event_name != 'merge_group' }}
     secrets: inherit
@@ -530,7 +530,7 @@ jobs:
   # CW340 FPGA jobs
   execute_test_rom_fpga_tests_cw340:
     name: CW340 Test ROM Tests
-    needs: chip_earlgrey_cw340
+    needs: bitstream_earlgrey_cw340
     uses: ./.github/workflows/fpga.yml
     if: ${{ github.event_name != 'merge_group' }}
     secrets: inherit
@@ -543,7 +543,7 @@ jobs:
 
   execute_rom_fpga_tests_cw340:
     name: CW340 ROM Tests
-    needs: chip_earlgrey_cw340
+    needs: bitstream_earlgrey_cw340
     uses: ./.github/workflows/fpga.yml
     if: ${{ github.event_name != 'merge_group' }}
     secrets: inherit
@@ -556,7 +556,7 @@ jobs:
 
   execute_rom_ext_fpga_tests_cw340:
     name: CW340 ROM_EXT Tests
-    needs: chip_earlgrey_cw340
+    needs: bitstream_earlgrey_cw340
     uses: ./.github/workflows/fpga.yml
     if: ${{ github.event_name != 'merge_group' }}
     secrets: inherit
@@ -569,7 +569,7 @@ jobs:
 
   execute_sival_fpga_tests_cw340:
     name: CW340 SiVal Tests
-    needs: chip_earlgrey_cw340
+    needs: bitstream_earlgrey_cw340
     uses: ./.github/workflows/fpga.yml
     if: ${{ github.event_name != 'merge_group' }}
     secrets: inherit
@@ -582,7 +582,7 @@ jobs:
 
   execute_sival_rom_ext_fpga_tests_cw340:
     name: CW340 SiVal ROM_EXT Tests
-    needs: chip_earlgrey_cw340
+    needs: bitstream_earlgrey_cw340
     uses: ./.github/workflows/fpga.yml
     if: ${{ github.event_name != 'merge_group' }}
     secrets: inherit
@@ -595,7 +595,7 @@ jobs:
 
   execute_manuf_fpga_tests_cw340:
     name: CW340 Manufacturing Tests
-    needs: chip_earlgrey_cw340
+    needs: bitstream_earlgrey_cw340
     uses: ./.github/workflows/fpga.yml
     if: ${{ github.event_name != 'merge_group' }}
     secrets: inherit
