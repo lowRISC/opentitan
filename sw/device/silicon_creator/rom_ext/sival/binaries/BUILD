@@ -59,3 +59,11 @@ signature_test(
         ":signed_binaries",
     ],
 )
+
+signature_test(
+    name = "sival_negative_sig_test",
+    negative_test = True,
+    srcs = [
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted_fpga_cw310_rom_with_fake_keys.fake_ecdsa_prod_key_0.signed.bin",
+    ],
+)

@@ -980,6 +980,7 @@ def _signature_test_impl(ctx):
         "@VERIFY_ARGS@": verify_args,
         "@ECDSA_KEY@": selected_ecdsa_key_path,
         "@SPX_KEY@": selected_spx_key_path,
+        "@IS_NEGATIVE_TEST@": str(ctx.attr.negative_test),
       },
       is_executable=True,
   )
@@ -1004,6 +1005,10 @@ signature_test = rule(
             providers = [[KeySetInfo], [DefaultInfo]],
             allow_files = True,
             doc = "SPX public key to validate this image",
+        ),
+      "negative_test": attr.bool(
+            default = False,
+            doc = "Whether this is a negative test case.",
         ),
       "spx_domain": attr.string(
             default = "",
