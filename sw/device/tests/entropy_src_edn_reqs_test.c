@@ -34,6 +34,7 @@
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/otbn_randomness_impl.h"
 
@@ -57,7 +58,7 @@ enum {
   kFpgaLoop = 5,
 };
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
 
 /**
  * Trigger an reseed operation.
@@ -222,6 +223,10 @@ void test_initialize(void) {
   CHECK_DIF_OK(dif_aes_init_from_dt(kDtAes, &aes));
   CHECK_DIF_OK(dif_kmac_init_from_dt(kDtKmac, &kmac));
   CHECK_DIF_OK(dif_alert_handler_init_from_dt(kDtAlertHandler, &alert_handler));
+
+  // We intentionally trigger this alert later, ignore it in OTTF.
+  CHECK_STATUS_OK(ottf_alerts_ignore_alert(
+      dt_pwrmgr_alert_to_alert_id(kDtPwrmgrAon, kDtPwrmgrAlertFatalFault)));
 }
 
 status_t execute_test(void) {
