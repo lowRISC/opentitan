@@ -23,41 +23,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Required by get-bitstream-strategy.sh
+
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
 
-      - name: Configure bitstream strategy
-        id: strategy
-        run: |
-          ci/scripts/get-bitstream-strategy.sh "chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}" \
-            ':!/third_party/rust/' \
-            ':!/sw/' \
-            ':!/*.hjson' \
-            ':!/*.tpl' \
-            ':!/site/' \
-            ':!/doc/' \
-            ':!/COMMITTERS' \
-            ':!/CLA' \
-            ':!/*.md' \
-            ':!/.github/' \
-            ':!/hw/**/dv/*' \
-            ':!/hw/dv/'
-
-      - name: Extract cached bitstream
-        if: steps.strategy.outputs.bitstreamStrategy == 'cached'
-        run: |
-          . util/build_consts.sh
-          bazel_package="//hw/bitstream"
-          design_name=chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}
-          cached_archive="${bazel_package}:${design_name}_cached_archive"
-          ./bazelisk.sh build "${cached_archive}"
-          bitstream_archive=$(./bazelisk.sh outquery "${cached_archive}")
-          cp -Lv ${bitstream_archive} build-bin.tar
-
       - name: Build and splice bitstream with Vivado
-        if: steps.strategy.outputs.bitstreamStrategy != 'cached'
         run: |
           bazel_package=//hw/bitstream/vivado
           bitstream_target=${bazel_package}:fpga_${{ inputs.design_suffix }}
@@ -79,7 +51,6 @@ jobs:
           ./bazelisk.sh build ${archive_target}
 
       - name: Display synthesis & implementation logs
-        if: steps.strategy.outputs.bitstreamStrategy != 'cached'
         run: |
           . util/build_consts.sh
 

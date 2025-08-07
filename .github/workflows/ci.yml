@@ -395,9 +395,48 @@ jobs:
           path: build-bin.tar
           overwrite: true
 
+  bitstream_strategy:
+    name: Configure bitstream strategy
+    runs-on: ubuntu-22.04
+    needs: quick_lint
+    outputs:
+      earlgrey_cw310: ${{ steps.strategy.outputs.chip_earlgrey_cw310_hyperdebug }}
+      earlgrey_cw340: ${{ steps.strategy.outputs.chip_earlgrey_cw340 }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required by get-bitstream-strategy.sh
+
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+
+      - name: Configure bitstream strategy
+        id: strategy
+        run: |
+          filters=(
+            ':!/third_party/rust/'
+            ':!/sw/'
+            ':!/*.hjson'
+            ':!/*.tpl'
+            ':!/site/'
+            ':!/doc/'
+            ':!/COMMITTERS'
+            ':!/CLA'
+            ':!/*.md'
+            ':!/.github/'
+            ':!/hw/**/dv/*'
+            ':!/hw/dv/'
+          )
+          ci/scripts/get-bitstream-strategy.sh "chip_earlgrey_cw310_hyperdebug" "${filters[@]}"
+          ci/scripts/get-bitstream-strategy.sh "chip_earlgrey_cw340"            "${filters[@]}"
+
+
   bitstream_earlgrey_cw310:
     name: Earl Grey CW310 bitstream
-    needs: quick_lint
+    needs: bitstream_strategy
+    if: needs.bitstream_strategy.outputs.earlgrey_cw310 != 'cached'
     uses: ./.github/workflows/bitstream.yml
     secrets: inherit
     with:
@@ -406,7 +445,8 @@ jobs:
 
   bitstream_earlgrey_cw340:
     name: Earl Grey CW340 bitstream
-    needs: quick_lint
+    needs: bitstream_strategy
+    if: needs.bitstream_strategy.outputs.earlgrey_cw340 != 'cached'
     uses: ./.github/workflows/bitstream.yml
     secrets: inherit
     with:
@@ -452,7 +492,7 @@ jobs:
     name: CW310 Test ROM Tests
     needs: bitstream_earlgrey_cw310
     uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
+    if: ${{ github.event_name != 'merge_group' && !failure() && !cancelled() }}
     secrets: inherit
     with:
       job_name: execute_test_rom_fpga_tests_cw310
@@ -465,7 +505,7 @@ jobs:
     name: CW310 ROM Tests
     needs: bitstream_earlgrey_cw310
     uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
+    if: ${{ github.event_name != 'merge_group' && !failure() && !cancelled() }}
     secrets: inherit
     with:
       job_name: execute_rom_fpga_tests_cw310
@@ -479,7 +519,7 @@ jobs:
     name: CW310 ROM_EXT Tests
     needs: bitstream_earlgrey_cw310
     uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
+    if: ${{ github.event_name != 'merge_group' && !failure() && !cancelled() }}
     secrets: inherit
     with:
       job_name: execute_rom_ext_fpga_tests_cw310
@@ -492,7 +532,7 @@ jobs:
     name: CW310 SiVal Tests
     needs: bitstream_earlgrey_cw310
     uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
+    if: ${{ github.event_name != 'merge_group' && !failure() && !cancelled() }}
     secrets: inherit
     with:
       job_name: execute_sival_fpga_tests_cw310
@@ -505,7 +545,7 @@ jobs:
     name: CW310 SiVal ROM_EXT Tests
     needs: bitstream_earlgrey_cw310
     uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
+    if: ${{ github.event_name != 'merge_group' && !failure() && !cancelled() }}
     secrets: inherit
     with:
       job_name: execute_sival_rom_ext_fpga_tests_cw310
@@ -518,7 +558,7 @@ jobs:
     name: CW310 Manufacturing Tests
     needs: bitstream_earlgrey_cw310
     uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
+    if: ${{ github.event_name != 'merge_group' && !failure() && !cancelled() }}
     secrets: inherit
     with:
       job_name: execute_manuf_fpga_tests_cw310
@@ -532,7 +572,7 @@ jobs:
     name: CW340 Test ROM Tests
     needs: bitstream_earlgrey_cw340
     uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
+    if: ${{ github.event_name != 'merge_group' && !failure() && !cancelled() }}
     secrets: inherit
     with:
       job_name: execute_test_rom_fpga_tests_cw340
@@ -545,7 +585,7 @@ jobs:
     name: CW340 ROM Tests
     needs: bitstream_earlgrey_cw340
     uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
+    if: ${{ github.event_name != 'merge_group' && !failure() && !cancelled() }}
     secrets: inherit
     with:
       job_name: execute_rom_fpga_tests_cw340
@@ -558,7 +598,7 @@ jobs:
     name: CW340 ROM_EXT Tests
     needs: bitstream_earlgrey_cw340
     uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
+    if: ${{ github.event_name != 'merge_group' && !failure() && !cancelled() }}
     secrets: inherit
     with:
       job_name: execute_rom_ext_fpga_tests_cw340
@@ -571,7 +611,7 @@ jobs:
     name: CW340 SiVal Tests
     needs: bitstream_earlgrey_cw340
     uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
+    if: ${{ github.event_name != 'merge_group' && !failure() && !cancelled() }}
     secrets: inherit
     with:
       job_name: execute_sival_fpga_tests_cw340
@@ -584,7 +624,7 @@ jobs:
     name: CW340 SiVal ROM_EXT Tests
     needs: bitstream_earlgrey_cw340
     uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
+    if: ${{ github.event_name != 'merge_group' && !failure() && !cancelled() }}
     secrets: inherit
     with:
       job_name: execute_sival_rom_ext_fpga_tests_cw340
@@ -597,7 +637,7 @@ jobs:
     name: CW340 Manufacturing Tests
     needs: bitstream_earlgrey_cw340
     uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
+    if: ${{ github.event_name != 'merge_group' && !failure() && !cancelled() }}
     secrets: inherit
     with:
       job_name: execute_manuf_fpga_tests_cw340
@@ -807,7 +847,7 @@ jobs:
     name: Merge blocker${{ github.event_name != 'pull_request' && ' (skipped)' || '' }}
     runs-on: ubuntu-latest
     needs: quick_lint
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' && !failure() && !cancelled() }}
     steps:
       - name: Complete
         run: 'true'
@@ -816,7 +856,7 @@ jobs:
     name: Merge blocker${{ github.event_name != 'merge_group' && ' (skipped)' || '' }}
     runs-on: ubuntu-latest
     needs: cache_bitstreams
-    if: ${{ github.event_name == 'merge_group' }}
+    if: ${{ github.event_name == 'merge_group' && !failure() && !cancelled() }}
     steps:
       - name: Complete
         run: 'true'
