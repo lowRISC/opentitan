@@ -205,14 +205,54 @@ covergroup dma_status_cg with function sample(
 endgroup
 
 covergroup dma_error_code_cg with function sample(
-  bit[7:0] error_code
+  bit[7:0] error_code,
+  asid_encoding_e asid,
+  bit src
 );
   option.per_instance = 1;
   option.name = "dma_error_code_cg";
 
-  cp_status_errcode: coverpoint error_code {
-    bins error_code[] = {[0:$]};
+  // Each configuration error is tested independently; there is no
+  // benefit in trying to induce all permutations.
+  cp_src_error: coverpoint error_code[DmaSrcAddrErr];
+  cp_dst_error: coverpoint error_code[DmaDstAddrErr];
+  cp_opc_error: coverpoint error_code[DmaOpcodeErr];
+  cp_size_error: coverpoint error_code[DmaSizeErr];
+  cp_asid_error: coverpoint error_code[DmaAsidErr];
+  cp_baselim_error: coverpoint error_code[DmaBaseLimitErr];
+  cp_rangeval_error: coverpoint error_code[DmaRangeValidErr];
+
+  // For a bus error to be detected, the configuration must have been
+  // accepted; i.e. the other errors shall not have been seen.
+  cp_bus_error: coverpoint error_code[DmaBusErr];
+
+  cp_src_dst: coverpoint src {
+    bins src = {1};
+    bins dst = {0};
   }
+
+  cp_asid: coverpoint asid {
+    bins OtInt = {OtInternalAddr};
+    bins SocCnt = {SocControlAddr};
+    bins SocSys = {SocSystemAddr};
+  }
+
+  // We want to observe both error and non-error responses on all ports.
+  cr_asid_X_src_dst_X_bus_err: cross
+    cp_asid,
+    cp_src_dst,
+    cp_bus_error;
+
+  // We want to observe source address checking on all ports.
+  cr_asid_X_src_error: cross
+    cp_asid,
+    cp_src_error;
+
+  // We want to observe destination address checking on all ports.
+  cr_asid_X_dst_error: cross
+    cp_asid,
+    cp_dst_error;
+
 endgroup
 
 // Interrupt-related configuration used in hardware-handshaking mode.
@@ -235,6 +275,7 @@ covergroup dma_interrupt_cg with function sample(
   cp_clear_intr_bus: coverpoint clear_intr_bus {
     `DMA_ENV_COV_INTERRUPT_BINS
   }
+
 endgroup
 
 // Interrupt-clearing address and data.
