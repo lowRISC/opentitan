@@ -8,6 +8,7 @@
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -29,6 +30,8 @@ static const otbn_addr_t kOupC = OTBN_ADDR_T_INIT(barrett384, oup_c);
 OTBN_DECLARE_APP_SYMBOLS(err_test);
 
 static const otbn_app_t kAppErrTest = OTBN_APP_T_INIT(err_test);
+
+static dif_otbn_t otbn;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -126,10 +129,13 @@ static void test_err_test(dif_otbn_t *otbn) {
   // TODO: Turn on software_errs_fatal for err_test. Currently the model doesn't
   // support this feature so turning it on leads to a failure when run with the
   // model.
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdOtbnRecov));
   CHECK_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(otbn, false));
   CHECK_STATUS_OK(otbn_testutils_execute(otbn));
   CHECK_STATUS_OK(
       otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsBadDataAddr));
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_finish(kTopEarlgreyAlertIdOtbnRecov));
 
   check_otbn_insn_cnt(otbn, 1);
 }
@@ -151,7 +157,6 @@ static void test_sec_wipe(dif_otbn_t *otbn) {
 bool test_main(void) {
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
-  dif_otbn_t otbn;
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
 
