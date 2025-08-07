@@ -20,6 +20,7 @@
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/otbn_randomness_impl.h"
 
@@ -37,6 +38,8 @@ static dif_edn_t edn1;
 static dif_otbn_t otbn;
 static dif_rv_core_ibex_t rv_core_ibex;
 
+static const dt_otbn_t kOtbnDt = (dt_otbn_t)0;
+
 dif_entropy_src_config_t entropy_src_config = {
     .fips_enable = false,
     .fips_flag = false,
@@ -48,7 +51,7 @@ dif_entropy_src_config_t entropy_src_config = {
     .alert_threshold = 2,
 };
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
 
 // Initializes the peripherals used in this test.
 static void init_peripherals(void) {
@@ -135,6 +138,13 @@ static void consume_entropy(unsigned int round,
   dif_rv_core_ibex_rnd_status_t ibex_rnd_status;
   dif_otbn_irq_state_snapshot_t intr_state;
   CHECK_STATUS_OK(entropy_config(round));
+
+  // Expect the recoverable error alert only if errors are expected.
+  if (otbn_err_val != kDifOtbnErrBitsNoError) {
+    CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+        dt_otbn_alert_to_alert_id(kOtbnDt, kDtOtbnAlertRecov)));
+  }
+
   // Launch an OTBN program consuming entropy via both
   // the RND and the URND interface.
   CHECK_STATUS_OK(otbn_testutils_execute(&otbn));
@@ -144,6 +154,12 @@ static void consume_entropy(unsigned int round,
   CHECK_DIF_OK(dif_otbn_irq_get_state(&otbn, &intr_state));
   CHECK(intr_state & 0x1);
   CHECK_DIF_OK(dif_otbn_irq_acknowledge_all(&otbn));
+
+  if (otbn_err_val != kDifOtbnErrBitsNoError) {
+    CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+        dt_otbn_alert_to_alert_id(kOtbnDt, kDtOtbnAlertRecov)));
+  }
+
   // Read rnd data through the IBEX and verify if the FIPS compliance
   // status is as expected.
   // The first read gets rid of leftover entropy from previous configurations
