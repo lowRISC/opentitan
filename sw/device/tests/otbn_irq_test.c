@@ -11,6 +11,7 @@
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 OTBN_DECLARE_APP_SYMBOLS(err_test);
@@ -18,7 +19,7 @@ OTBN_DECLARE_APP_SYMBOLS(err_test);
 static const otbn_app_t kAppErrTest = OTBN_APP_T_INIT(err_test);
 static const uint32_t kPlicTarget = 0;
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
 
 static dif_rv_plic_t plic;
 static dif_otbn_t otbn;
@@ -74,6 +75,12 @@ static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
   // we see the Done interrupt fire.
   otbn_finished = false;
 
+  // Expect the recoverable error alert only if errors are expected.
+  if (expected_err_bits != kDifOtbnErrBitsNoError) {
+    CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+        dt_otbn_alert_to_alert_id(kOtbnDt, kDtOtbnAlertRecov)));
+  }
+
   CHECK_STATUS_OK(otbn_testutils_load_app(otbn, app));
 
   // If the CTRL.SOFTWARE_ERRS_FATAL flag is set, a software error will be
@@ -91,6 +98,11 @@ static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
   // At this point, OTBN should be running. Wait for an interrupt that says
   // it's done.
   ATOMIC_WAIT_FOR_INTERRUPT(otbn_finished);
+
+  if (expected_err_bits != kDifOtbnErrBitsNoError) {
+    CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+        dt_otbn_alert_to_alert_id(kOtbnDt, kDtOtbnAlertRecov)));
+  }
 
   check_otbn_status(otbn, expected_status);
   check_otbn_err_bits(otbn, expected_insn_cnt);

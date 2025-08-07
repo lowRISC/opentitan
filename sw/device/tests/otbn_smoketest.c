@@ -9,6 +9,7 @@
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 OTBN_DECLARE_APP_SYMBOLS(barrett384);
@@ -34,7 +35,7 @@ static_assert(kDtOtbnCount >= 1,
 
 static dt_otbn_t kTestOtbn = (dt_otbn_t)0;
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
 
 /**
  * Gets the OTBN instruction count, checks that it matches expectations.
@@ -130,10 +131,14 @@ static void test_err_test(dif_otbn_t *otbn) {
   // TODO: Turn on software_errs_fatal for err_test. Currently the model doesn't
   // support this feature so turning it on leads to a failure when run with the
   // model.
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+      dt_otbn_alert_to_alert_id(kTestOtbn, kDtOtbnAlertRecov)));
   CHECK_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(otbn, false));
   CHECK_STATUS_OK(otbn_testutils_execute(otbn));
   CHECK_STATUS_OK(
       otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsBadDataAddr));
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+      dt_otbn_alert_to_alert_id(kTestOtbn, kDtOtbnAlertRecov)));
 
   check_otbn_insn_cnt(otbn, 1);
 }
