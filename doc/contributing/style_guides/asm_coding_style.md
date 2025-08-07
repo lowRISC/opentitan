@@ -8,7 +8,7 @@ OpenTitan needs to implement substantial functionality directly in RISC-V assemb
 This document describes best practices for both assembly `.S` files and inline assembly statements in C and C++.
 It also codifies otherwise unwritten style guidelines in one central location.
 
-This document is not an introduction to RISC-V assembly; for that purpose, see the [RISC-V Assembly Programmer's Manual](https://github.com/riscv/riscv-asm-manual/blob/master/riscv-asm.md).
+This document is not an introduction to RISC-V assembly; for that purpose, see the [RISC-V Assembly Programmer's Manual](https://github.com/riscv-non-isa/riscv-asm-manual/releases).
 
 Assembly is typically very specialized; the following rules do not presume to describe every use-case, so use your best judgment.
 
@@ -21,7 +21,7 @@ As such, no advice is provided for other RISC-V extensions, though this style gu
 
 ***When referring to a RISC-V register, they must be referred to by their ABI names.***
 
-See the [psABI Reference](https://github.com/riscv/riscv-elf-psabi-doc/blob/master/riscv-elf.adoc#register-convention) for a reference to these names.
+See the [psABI Reference](https://github.com/riscv-non-isa/riscv-elf-psabi-doc/blob/712449f8efcf6b3acd9e2a2a7ddfe89486317877/riscv-cc.adoc#register-convention) for a reference to these names.
 
 Example:
 ```S
