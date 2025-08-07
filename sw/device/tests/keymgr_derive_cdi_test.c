@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
@@ -16,6 +17,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+static dif_alert_handler_t alert_handler;
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
 static dif_otbn_t otbn;
@@ -72,6 +74,26 @@ static const otbn_addr_t kOtbnVarEncResult =
     OTBN_ADDR_T_INIT(x25519_sideload, enc_result);
 
 OTTF_DEFINE_TEST_CONFIG();
+
+volatile bool keymgr_recov_operation_err_expected = false;
+bool ottf_alert_isr(uint32_t *exc_info) {
+  (void)exc_info;
+
+  bool keymgr_recov_operation_err = false;
+  CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+      &alert_handler, kTopEarlgreyAlertIdKeymgrRecovOperationErr,
+      &keymgr_recov_operation_err));
+
+  if (keymgr_recov_operation_err) {
+    CHECK(keymgr_recov_operation_err_expected,
+          "`keymgr_recov_operation_err` alert fired when not expected");
+
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, kTopEarlgreyAlertIdKeymgrRecovOperationErr));
+  }
+
+  return keymgr_recov_operation_err;
+}
 
 /**
  * Initialize the dif handles required for this test.
@@ -193,7 +215,9 @@ static void derive_sw_key(const char *state_name, dif_keymgr_output_t *key) {
   // If the key version is larger than the permitted maximum version, then
   // the key generation must fail.
   params.version += 1;
+  keymgr_recov_operation_err_expected = true;
   CHECK_STATUS_NOT_OK(keymgr_testutils_generate_versioned_key(&keymgr, params));
+  keymgr_recov_operation_err_expected = false;
 #endif
 }
 
@@ -239,7 +263,9 @@ static void derive_sideload_otbn_key(const char *state_name,
   // If the key version is larger than the permitted maximum version, then
   // the key generation must fail.
   params.version += 1;
+  keymgr_recov_operation_err_expected = true;
   CHECK_STATUS_NOT_OK(keymgr_testutils_generate_versioned_key(&keymgr, params));
+  keymgr_recov_operation_err_expected = false;
 #endif
 }
 
