@@ -116,26 +116,18 @@ static void plic_init_with_irqs(void) {
       &plic, kTopEarlgreyPlicTargetIbex0, 0x0));
 }
 
-/**
- * The ISR for this test.
- *
- * This function overrides the default OTTF external ISR.
- */
-void ottf_external_isr(uint32_t *exc_info) {
-  // Find which interrupt fired at PLIC by claiming it.
-  dif_rv_plic_irq_id_t irq_id;
-  CHECK_DIF_OK(
-      dif_rv_plic_irq_claim(&plic, kTopEarlgreyPlicTargetIbex0, &irq_id));
-
+bool ottf_handle_irq(uint32_t *exc_info, top_earlgrey_plic_peripheral_t peri,
+bool ottf_handle_irq(uint32_t *exc_info,
+                     top_earlgrey_plic_peripheral_t peripheral,
   // Check it was from OTBN
-  top_earlgrey_plic_peripheral_t peri =
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
-  CHECK(peri == kTopEarlgreyPlicPeripheralOtbn,
-        "Interrupt from incorrect peripheral: (exp: %d, obs: %s)",
-        kTopEarlgreyPlicPeripheralOtbn, peri);
+  if (peri != kTopEarlgreyPlicPeripheralOtbn) {
+  if (peripheral != kTopEarlgreyPlicPeripheralOtbn) {
+  }
 
   // Check this is the interrupt we expected
-  CHECK(irq_id == kTopEarlgreyPlicIrqIdOtbnDone);
+  if (irq_id != kTopEarlgreyPlicIrqIdOtbnDone) {
+    return false;
+  }
 
   // otbn_finished should currently be false (we're supposed to clear it before
   // starting OTBN)
@@ -143,6 +135,10 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   // Set otbn_finished, which we'll pick up in run_test_with_irqs.
   otbn_finished = true;
+
+  CHECK_DIF_OK(dif_otbn_irq_acknowledge(&otbn, kDifOtbnIrqDone));
+
+  return true;
 }
 
 bool test_main(void) {
