@@ -80,6 +80,13 @@ impl Uart for ProxyUart {
         }
     }
 
+    fn set_break(&self, enable: bool) -> Result<()> {
+        match self.execute_command(UartRequest::SetBreak(enable))? {
+            UartResponse::SetBreak => Ok(()),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
     fn set_parity(&self, parity: Parity) -> Result<()> {
         match self.execute_command(UartRequest::SetParity(parity))? {
             UartResponse::SetParity => Ok(()),
