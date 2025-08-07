@@ -14,7 +14,7 @@
 #       https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
 # - Run this script with no parameters. Optionally use `--log-progress` to
 #   output query progress, as the paginated queries can take some time to run.
-#   You can use `--filter` to filter existing and historical committers, to
+#   You can use `--exclude-committers` to filter existing and historical committers, to
 #   assist in finding potential candidates for future committers.
 
 import git
@@ -569,14 +569,14 @@ class CommitterStatsReporter:
             f.write(table_html)
         webbrowser.open(f"file://{HTML_OUTPUT_PATH}")
 
-    def display_stats(self, filtered: list[str], format: OutputFormat) -> int:
+    def display_stats(self, exclude_names: list[str], format: OutputFormat) -> int:
         """Display the most recently calculated contributor statistics for the
         configured repository. Requires `calculate_stats` to have been called
         at least once previously.
 
         Args:
-            filter (list[str]): A list of entries to filter out of the results,
-            so that these entries are not displayed.
+            exclude_names (list[str]): A list of names to filter out of the results,
+            so that their entries are not displayed.
             format (OutputFormat): The format to display the results using.
 
         Returns:
@@ -594,8 +594,8 @@ class CommitterStatsReporter:
             | set(self.pr_data.keys())
             | set(self.review_data.keys())
         )
-        if filtered:
-            contributors.difference_update(set(filtered))
+        if exclude_names:
+            contributors.difference_update(set(exclude_names))
 
         headers = ("Account name", "Commits", "Merged PRs", "PRs Reviewed")
         table = []
@@ -633,7 +633,7 @@ class CommitterStatsReporter:
 def main(
     repo_url: str,
     github_token: str,
-    filter: bool,
+    exclude_committers: bool,
     format: CommitterStatsReporter.OutputFormat,
     log_progress: bool,
     page_limit: Optional[int] = None,
@@ -646,7 +646,7 @@ def main(
         repo_url (str): The URL of the GitHub repository to query.
         github_token (str): The Github Personal Access Token (PAT) to use for
         API authorization.
-        filter (bool): Whether to filter the results to exclude contributors
+        exclude_committers (bool): Whether to filter the results to exclude contributors
         that are already in the current `COMMITTERS_FILE`.
         format (CommitterStatsReporter.OutputFormat): Output display format.
         log_progress (bool): Whether to log progress in computing stats or not.
@@ -665,21 +665,22 @@ def main(
 
     stats = CommitterStatsReporter(owner, repo, github_token, log_progress=log_progress)
 
-    if filter:
-        filtered_names = stats.get_existing_committers()
-        if filtered_names is None:
-            print("Contributor results will not be filtered due to an error.")
-            filtered_names = []
+    if exclude_committers:
+        committers = stats.get_existing_committers()
+        if committers is None:
+            print("Contributor results will not exclude committers due to an error.")
+            exclude_names = []
         else:
-            print(f"Excluding existing committers: {', '.join(filtered_names)}")
+            exclude_names = committers
+            print(f"Excluding existing committers: {', '.join(exclude_names)}")
     else:
-        filtered_names = []
+        exclude_names = []
 
     res = stats.calculate_stats(page_limit=page_limit)
     if res != 0:
         return res
 
-    res = stats.display_stats(filtered_names, format)
+    res = stats.display_stats(exclude_names, format)
     if res != 0:
         return res
     return 0
@@ -709,10 +710,9 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument(
-        "-f",
-        "--filter",
+        "--exclude-committers",
         action="store_true",
-        help="Filter for only contributors not in the current COMMITTERS file.",
+        help="Exclude all current and previous names in the COMMITTERS file.",
     )
     parser.add_argument(
         "-F",
@@ -735,7 +735,7 @@ if __name__ == "__main__":
         main(
             OT_REPO_URL,
             github_token,
-            args.filter,
+            args.exclude_committers,
             args.format,
             args.log_progress,
             args.pages,
