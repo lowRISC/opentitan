@@ -108,25 +108,25 @@ static status_t spi_device_getc(void *io) {
   return OK_STATUS(info.data[index++]);
 }
 
-static void spi_device_clear_flash_buffer(dif_spi_device_handle_t *spi_device) {
-  const uint8_t kEmptyPattern[4] = {0};
+static void spi_device_write_all_flash_buffers(
+    dif_spi_device_handle_t *spi_device, const uint8_t *pattern) {
   for (size_t i = 0; i < SPI_DEVICE_PARAM_SRAM_READ_BUFFER_DEPTH; i++) {
     CHECK_DIF_OK(dif_spi_device_write_flash_buffer(
-        spi_device, kDifSpiDeviceFlashBufferTypeEFlash,
-        i * ARRAYSIZE(kEmptyPattern), ARRAYSIZE(kEmptyPattern), kEmptyPattern));
+        spi_device, kDifSpiDeviceFlashBufferTypeEFlash, i * sizeof(uint32_t),
+        sizeof(uint32_t), pattern));
   }
+}
+
+static void spi_device_clear_flash_buffer(dif_spi_device_handle_t *spi_device) {
+  const uint8_t kEmptyPattern[4] = {0};
+  spi_device_write_all_flash_buffers(spi_device, kEmptyPattern);
   CHECK_DIF_OK(dif_spi_device_set_flash_status_registers(spi_device, 0x00));
 }
 
 static void spi_device_wait_for_sync(dif_spi_device_handle_t *spi_device) {
   // Write the boot synchronization data to the flash buffer.
   const uint8_t kBootMagicPattern[4] = {0x02, 0xb0, 0xfe, 0xca};
-  for (size_t i = 0; i < SPI_DEVICE_PARAM_SRAM_READ_BUFFER_DEPTH; i++) {
-    CHECK_DIF_OK(dif_spi_device_write_flash_buffer(
-        spi_device, kDifSpiDeviceFlashBufferTypeEFlash,
-        i * ARRAYSIZE(kBootMagicPattern), ARRAYSIZE(kBootMagicPattern),
-        kBootMagicPattern));
-  }
+  spi_device_write_all_flash_buffers(spi_device, kBootMagicPattern);
 
   // Wait for host to read out the boot synchronization data.
   upload_info_t info = {0};
