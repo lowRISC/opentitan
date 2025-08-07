@@ -10,11 +10,12 @@
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/sensor_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
 
 /**
  * This test measure clock counts with clkmgr frequency measurements, performing
@@ -46,6 +47,12 @@ bool test_main(void) {
       &sensor_ctrl));
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+
+  // The test will trigger many measurement errors which cause an alert that
+  // fires constantly with each new measurement and cannot really be
+  // acknowledged. Ignore this alert for the purpose of this test.
+  CHECK_STATUS_OK(ottf_alerts_ignore_alert(
+      dt_clkmgr_alert_to_alert_id(kDtClkmgrAon, kDtClkmgrAlertRecovFault)));
 
   LOG_INFO("TEST: wait for ast init");
   IBEX_SPIN_FOR(sensor_ctrl_ast_init_done(&sensor_ctrl), 1000);

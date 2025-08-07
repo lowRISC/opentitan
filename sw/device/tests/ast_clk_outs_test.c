@@ -10,9 +10,10 @@
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/sensor_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
 
 /**
  * AST CLK OUTPUTS TEST
@@ -67,6 +68,12 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
       &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kAonTimerDt),
       kDtAonTimerWakeupWkupReq, &wakeup_sources));
+
+  // The test will trigger many measurement errors which cause an alert that
+  // fires constantly with each new measurement and cannot really be
+  // acknowledged. Ignore this alert for the purpose of this test.
+  CHECK_STATUS_OK(ottf_alerts_ignore_alert(
+      dt_clkmgr_alert_to_alert_id(kClkmgrDt, kDtClkmgrAlertRecovFault)));
 
   LOG_INFO("TEST: wait for ast init");
   IBEX_SPIN_FOR(sensor_ctrl_ast_init_done(&sensor_ctrl), 1000);
