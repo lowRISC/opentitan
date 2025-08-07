@@ -10,6 +10,7 @@
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -21,6 +22,8 @@ static const otbn_app_t kAppErrTest = OTBN_APP_T_INIT(err_test);
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_rv_plic_t plic;
+static dif_otbn_t otbn;
+
 static volatile bool otbn_finished;
 
 /**
@@ -71,6 +74,12 @@ static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
   // we see the Done interrupt fire.
   otbn_finished = false;
 
+  // Expect the recoverable error alert only if errors are expected.
+  if (expected_err_bits != kDifOtbnErrBitsNoError) {
+    CHECK_STATUS_OK(
+        ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdOtbnRecov));
+  }
+
   CHECK_STATUS_OK(otbn_testutils_load_app(otbn, app));
 
   // If the CTRL.SOFTWARE_ERRS_FATAL flag is set, a software error will be
@@ -88,6 +97,11 @@ static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
   // At this point, OTBN should be running. Wait for an interrupt that says
   // it's done.
   ATOMIC_WAIT_FOR_INTERRUPT(otbn_finished);
+
+  if (expected_err_bits != kDifOtbnErrBitsNoError) {
+    CHECK_STATUS_OK(
+        ottf_alerts_expect_alert_finish(kTopEarlgreyAlertIdOtbnRecov));
+  }
 
   check_otbn_status(otbn, expected_status);
   check_otbn_err_bits(otbn, expected_insn_cnt);
@@ -116,12 +130,12 @@ static void plic_init_with_irqs(void) {
       &plic, kTopEarlgreyPlicTargetIbex0, 0x0));
 }
 
-bool ottf_handle_irq(uint32_t *exc_info, top_earlgrey_plic_peripheral_t peri,
 bool ottf_handle_irq(uint32_t *exc_info,
                      top_earlgrey_plic_peripheral_t peripheral,
+                     dif_rv_plic_irq_id_t irq_id) {
   // Check it was from OTBN
-  if (peri != kTopEarlgreyPlicPeripheralOtbn) {
   if (peripheral != kTopEarlgreyPlicPeripheralOtbn) {
+    return false;
   }
 
   // Check this is the interrupt we expected
@@ -142,17 +156,15 @@ bool ottf_handle_irq(uint32_t *exc_info,
 }
 
 bool test_main(void) {
+  CHECK_DIF_OK(
+      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
   plic_init_with_irqs();
 
   // Enable the external IRQ (so that we see the interrupt from the PLIC)
   irq_global_ctrl(true);
   irq_external_ctrl(true);
-
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
-
-  dif_otbn_t otbn;
-  CHECK_DIF_OK(dif_otbn_init(base_addr, &otbn));
 
   run_test_with_irqs(&otbn, kAppErrTest, kDifOtbnStatusIdle,
                      kDifOtbnErrBitsBadDataAddr, 1);
