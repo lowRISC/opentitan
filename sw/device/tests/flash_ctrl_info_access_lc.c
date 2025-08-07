@@ -72,15 +72,29 @@ static volatile bool fired_irqs[kNumIRQs];
  *
  * This function overrides the default OTTF external ISR.
  */
-void ottf_external_isr(uint32_t *exc_info) {
-  top_earlgrey_plic_peripheral_t peripheral_serviced;
-  dif_flash_ctrl_irq_t irq_serviced;
-  // Instruct the ISR to mute any status interrupt that is firing.
-  isr_testutils_flash_ctrl_isr(plic_ctx, flash_ctx, true, &peripheral_serviced,
-                               &irq_serviced);
-  CHECK(peripheral_serviced == kTopEarlgreyPlicPeripheralFlashCtrl,
-        "Interurpt from unexpected peripheral: %d", peripheral_serviced);
-  fired_irqs[irq_serviced] = true;
+bool ottf_handle_irq(uint32_t *exc_info,
+                     top_earlgrey_plic_peripheral_t peripheral,
+                     dif_rv_plic_irq_id_t plic_id) {
+  if (peripheral != kTopEarlgreyPlicPeripheralFlashCtrl) {
+    return false;
+  }
+
+  dif_flash_ctrl_irq_t irq =
+    (dif_flash_ctrl_irq_t)(plic_id -
+                           flash_ctx.plic_flash_ctrl_start_irq_id);
+  fired_irqs[irq] = true;
+
+  // Either acknowledge or mute IRQ.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_flash_ctrl_irq_get_type(flash_ctx.flash_ctrl, irq, &type));
+  if (type == kDifIrqTypeStatus) {
+    CHECK_DIF_OK(dif_flash_ctrl_irq_set_enabled(flash_ctx.flash_ctrl, irq,
+                                                kDifToggleDisabled));
+  } else {
+    CHECK_DIF_OK(dif_flash_ctrl_irq_acknowledge(flash_ctx.flash_ctrl, irq));
+  }
+
+  return true;
 }
 
 /**
@@ -119,7 +133,7 @@ static void flash_ctrl_init_with_event_irqs(mmio_region_t base_addr,
  */
 static void compare_and_clear_irq_variables(void) {
   for (int i = 0; i < kNumIRQs; ++i) {
-    CHECK(expected_irqs[i] == fired_irqs[i], "expected IRQ mismatch = %d", i);
+    CHECK(expected_irqs[i] == fired_irqs[i], "IRQ %d was %sexpected", i, expected_irqs[i] ? "" : "not ");
   }
   clear_irq_variables();
 }
