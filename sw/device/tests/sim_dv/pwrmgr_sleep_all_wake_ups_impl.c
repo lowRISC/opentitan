@@ -355,14 +355,16 @@ static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
 /**
  * External interrupt handler.
  */
-void ottf_external_isr(uint32_t *exc_info) {
-  dif_pwrmgr_irq_t irq_id;
-  top_earlgrey_plic_peripheral_t peripheral;
+bool ottf_handle_irq(uint32_t *exc_info,
+                     top_earlgrey_plic_peripheral_t peripheral,
+                     dif_pwrmgr_irq_t irq_id) {
+  OT_DISCARD(exc_info);
 
-  isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
+  if (peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon &&
+      irq_id == kTopEarlgreyPlicIrqIdPwrmgrAonWakeup) {
+    CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr, kDifPwrmgrIrqWakeup));
+    return true;
+  }
 
-  // Check that both the peripheral and the irq id is correct
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon,
-        "IRQ peripheral: %d is incorrect", peripheral);
-  CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
+  return false;
 }
