@@ -166,7 +166,7 @@ pub enum ClockNature {
 }
 
 /// Represents an edge detected on the GPIO pin.
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct MonitoringEvent {
     /// Identification of the signal that had an event, in the form of an index into the array
     /// originally passed to `monitoring_read()`.
@@ -178,7 +178,7 @@ pub struct MonitoringEvent {
     pub timestamp: u64,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct MonitoringStartResponse {
     /// Transport timestamp at the time monitoring started.
     pub timestamp: u64,
@@ -186,7 +186,7 @@ pub struct MonitoringStartResponse {
     pub initial_levels: Vec<bool>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct MonitoringReadResponse {
     /// List of events having occurred since the start or the last read.
     pub events: Vec<MonitoringEvent>,
