@@ -23,7 +23,10 @@
   This is tracked by a retention sram counter, given there are resets involved.
  */
 
-OTTF_DEFINE_TEST_CONFIG();
+// Test handles its own alerts.
+// `sensor_ctrl_aon_recov_alert` fires immediately on wake-up which doesn't
+// give us enough time to disable it specifically.
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = false);
 
 /**
  * Clean up pwrmgr wakeup reason register for the next round.
