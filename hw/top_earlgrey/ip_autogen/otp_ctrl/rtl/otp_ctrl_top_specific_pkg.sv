@@ -40,11 +40,12 @@ package otp_ctrl_top_specific_pkg;
     prim_mubi_pkg::mubi8_t write_lock;
   } part_access_t;
 
-  parameter int DaiCmdWidth = 3;
+  parameter int DaiCmdWidth = 4;
   typedef enum logic [DaiCmdWidth-1:0] {
-    DaiRead   = 3'b001,
-    DaiWrite  = 3'b010,
-    DaiDigest = 3'b100
+    DaiRead    = 4'b0001,
+    DaiWrite   = 4'b0010,
+    DaiDigest  = 4'b0100,
+    DaiZeroize = 4'b1000
   } dai_cmd_e;
 
   // Typedef for extended OTP Error. This extends the OTP macro errors.
