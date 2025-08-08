@@ -1,10 +1,10 @@
 diff --git a/cryptoki/src/mechanism/mod.rs b/cryptoki/src/mechanism/mod.rs
-index 5ede1a4..0000000 100644
+index 884ffcd..0000000 100644
 --- a/cryptoki/src/mechanism/mod.rs
 +++ b/cryptoki/src/mechanism/mod.rs
-@@ -764,8 +764,12 @@ impl TryFrom<CK_MECHANISM_TYPE> for MechanismType {
-             CKM_HKDF_DERIVE => Ok(MechanismType::HKDF_DERIVE),
-             CKM_HKDF_DATA => Ok(MechanismType::HKDF_DATA),
+@@ -822,8 +822,12 @@ impl TryFrom<CK_MECHANISM_TYPE> for MechanismType {
+             CKM_SP800_108_FEEDBACK_KDF => Ok(MechanismType::SP800_108_FEEDBACK_KDF),
+             CKM_SP800_108_DOUBLE_PIPELINE_KDF => Ok(MechanismType::SP800_108_DOUBLE_PIPELINE_KDF),
              other => {
 -                error!("Mechanism type {} is not supported.", other);
 -                Err(Error::NotSupported)
