@@ -566,50 +566,6 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 368
-            }
-            {
-              name: OWNER_SW_CFG_ROM_BOOTSTRAP_DIS
-              size: 4
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              inv_default: 0
-              offset: 372
-            }
-            {
-              name: OWNER_SW_CFG_ROM_ALERT_CLASS_EN
-              size: 4
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              inv_default: 0
-              offset: 376
-            }
-            {
-              name: OWNER_SW_CFG_ROM_ALERT_ESCALATION
-              size: 4
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              inv_default: 0
-              offset: 380
-            }
-            {
-              name: OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION
-              size: 400
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              inv_default: 0
               offset: 384
             }
             {
@@ -676,17 +632,6 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 848
-            }
-            {
-              name: OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES
-              size: 16
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              inv_default: 0
               offset: 864
             }
             {
@@ -713,50 +658,6 @@
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD
-              size: 4
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              inv_default: 0
-              offset: 944
-            }
-            {
-              name: OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END
-              size: 4
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              inv_default: 0
-              offset: 948
-            }
-            {
-              name: OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV
-              size: 4
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              inv_default: 0
-              offset: 952
-            }
-            {
-              name: OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA
-              size: 4
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              inv_default: 0
-              offset: 956
-            }
-            {
-              name: OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES
               size: 4
               isdigest: false
               iszer: false

@@ -76,6 +76,25 @@ package otp_ctrl_top_specific_pkg;
     DigestFinalize
   } otp_scrmbl_cmd_e;
 
+  /////////////////////
+  // OTP Zeroization //
+  /////////////////////
+
+  // A 64-bit word is recognized as correctly zeroized if and only if the number of
+  // set bits is greater or equal `ZeroizationValidBound`. Integrators should
+  // calibrate these this bounds in line with the macro-specific ratio of potentially
+  // stuck-at-0 bits.
+  parameter int unsigned ZeroizationValidBound = ScrmblBlockWidth - 6; // 90.625%
+
+  // Check if the zeroization marker falls into the valid range.
+  function automatic logic check_zeroized_valid(logic [ScrmblBlockWidth-1:0] word);
+    logic [$clog2(ScrmblBlockWidth+1)-1:0] count = '0;
+    for (int i = 0; i < ScrmblBlockWidth; i++) begin
+      count = count + word[i];
+    end
+    return count >= ZeroizationValidBound;
+  endfunction : check_zeroized_valid
+
   ////////////////////////////////
   // Typedefs for Key Broadcast //
   ////////////////////////////////
