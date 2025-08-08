@@ -1441,7 +1441,7 @@
     { name: "RomPatchSize",
       desc: "Size of the ROM_PATCH partition",
       type: "int",
-      default: "9848",
+      default: "9864",
       local: "true"
     },
     { name: "RomPatchDataOffset",

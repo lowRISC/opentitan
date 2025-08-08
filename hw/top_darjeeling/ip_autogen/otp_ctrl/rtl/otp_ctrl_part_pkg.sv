@@ -344,8 +344,8 @@ package otp_ctrl_part_pkg;
     // ROM_PATCH
     '{
       variant:          Unbuffered,
-      offset:           14'd6104,
-      size:             9848,
+      offset:           14'd6088,
+      size:             9864,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -591,9 +591,9 @@ package otp_ctrl_part_pkg;
       256'h63B9485A3856C417CF7A50A9A91EF7F7B3A5B4421F462370FFF698183664DC7E,
       256'h90C7F21F6224F027F98C48B1F93772844A22D4B78FE0266FBEE3958332F2939B
     }),
-    78784'({
+    78912'({
       64'hC469C593E5DC0DA8,
-      5184'h0, // unallocated space
+      5312'h0, // unallocated space
       73536'h0
     }),
     8192'({
