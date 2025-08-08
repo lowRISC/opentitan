@@ -166,6 +166,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
+        timeout = "long",
         binaries = {
             ":sram_cp_provision": "sram_cp_provision",
             ":sram_cp_provision_functest": "sram_cp_provision_functest",
