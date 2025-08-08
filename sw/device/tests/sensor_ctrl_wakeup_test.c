@@ -16,7 +16,10 @@
 
 #include "hw/top/sensor_ctrl_regs.h"  // Generated.
 
-OTTF_DEFINE_TEST_CONFIG();
+// Test handles its own alerts.
+// `sensor_ctrl_aon_recov_alert` fires immediately on wake-up which doesn't
+// give us enough time to disable it specifically.
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = false);
 
 static const dt_pwrmgr_t kPwrmgrDt = 0;
 static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
