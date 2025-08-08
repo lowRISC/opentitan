@@ -41,12 +41,11 @@ function void ac_range_check_dut_cfg::do_print(uvm_printer printer);
   super.do_print(printer);
 
   foreach (range_attr[i]) begin
-    printer.print_field($sformatf("range_attr[%0d]", i), "range_attr_t", $bits(range_attr[i]),
-                        $sformatf("%p", range_attr[i]));
+    printer.print_string($sformatf("range_attr[%0d]", i), $sformatf("%p", range_attr[i]));
   end
 
   foreach (range_racl_policy[i]) begin
-    printer.print_field($sformatf("range_racl_policy[%0d]", i), "racl_policy_t",
-                        $bits(range_racl_policy[i]), $sformatf("%p", range_racl_policy[i]));
+    printer.print_string($sformatf("range_racl_policy[%0d]", i),
+                         $sformatf("%p", range_racl_policy[i]));
   end
 endfunction: do_print

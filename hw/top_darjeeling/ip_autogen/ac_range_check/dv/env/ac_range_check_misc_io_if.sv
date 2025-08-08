@@ -24,11 +24,12 @@ interface ac_range_check_misc_io_if();
   import top_racl_pkg::NrRaclPolicies;
   import top_racl_pkg::RACL_POLICY_VEC_DEFAULT;
   import top_racl_pkg::racl_policy_vec_t;
+  import top_racl_pkg::racl_error_log_t;
 
   // Variables corresponding to some of the DUT signals
   mubi8_t           range_check_overwrite;
   racl_policy_vec_t racl_policies;
-  logic             racl_error;
+  racl_error_log_t  racl_error;
 
   // Methods to manage range_check_overwrite
   function automatic void set_range_check_overwrite(bit val);
