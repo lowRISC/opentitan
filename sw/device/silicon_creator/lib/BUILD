@@ -251,13 +251,10 @@ cc_library(
     ],
 )
 
-cc_test(
-    name = "dbg_print_unittest",
-    srcs = [
-        "dbg_print.c",
-        "dbg_print.h",
-        "dbg_print_unittest.cc",
-    ],
+cc_library(
+    name = "dbg_print_unittest_variant",
+    srcs = ["dbg_print.c"],
+    hdrs = ["dbg_print.h"],
     local_defines = ["DBG_PRINT_UNIT_TEST_"],
     deps = [
         ":epmp_defs",
@@ -266,6 +263,16 @@ cc_test(
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib/drivers:uart",
+    ],
+)
+
+cc_test(
+    name = "dbg_print_unittest",
+    srcs = [
+        "dbg_print_unittest.cc",
+    ],
+    deps = [
+        ":dbg_print_unittest_variant",
         "@googletest//:gtest_main",
     ],
 )
