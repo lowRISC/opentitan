@@ -62,4 +62,4 @@ fi
 
 echo
 echo "Bitstream strategy is ${bitstream_strategy}"
-echo "bitstreamStrategy=${bitstream_strategy}" >> "${GITHUB_OUTPUT:-/dev/null}"
+echo "${bitstream_design}=${bitstream_strategy}" >> "${GITHUB_OUTPUT:-/dev/null}"
