@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -33,21 +34,23 @@ class otp_ctrl_background_chks_vseq extends otp_ctrl_dai_lock_vseq;
       // Write background check
       if (trigger_chks[0]) csr_wr(ral.integrity_check_period,   check_period);
       if (trigger_chks[1]) csr_wr(ral.consistency_check_period, check_period);
-      `uvm_info(`gfn, $sformatf("trigger background check %0h", trigger_chks), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("trigger background check 0x%0h", trigger_chks), UVM_LOW)
 
       cfg.en_scb = 0;
       // According to spec, check period will append an 'hFF from the LSF. Add 10 cycle buffers for
       // register updates.
       check_wait_cycles = (check_period + 1) << 8 + 10;
 
-      // Wait for first check done
-      repeat($countones(trigger_chks)) begin
+      // Wait for first check done if there are multiple checks.
+      if ($countones(trigger_chks) > 1) begin
         csr_spinwait(.ptr(ral.status.check_pending), .exp_data(1),
                      .timeout_ns(cfg.clk_rst_vif.clk_period_ps / 1000 * check_wait_cycles));
 
         csr_spinwait(.ptr(ral.status.check_pending), .exp_data(0));
       end
-
+      // This is the last check: trigger a timeout once the check starts
+      csr_spinwait(.ptr(ral.status.check_pending), .exp_data(1),
+                   .timeout_ns(cfg.clk_rst_vif.clk_period_ps / 1000 * check_wait_cycles));
       // Configure timeout settings to trigger check error
       csr_wr(ral.check_timeout, $urandom_range(1, 5));
       `uvm_info(`gfn, "trigger check timeout error", UVM_LOW)
@@ -58,7 +61,6 @@ class otp_ctrl_background_chks_vseq extends otp_ctrl_dai_lock_vseq;
          cfg.clk_rst_vif.wait_clks(check_wait_cycles);,
          $sformatf("Timeout waiting for alert %0s", "fatal_check_error"))
       check_fatal_alert_nonblocking("fatal_check_error");
-
       cfg.clk_rst_vif.wait_clks($urandom_range(50, 1000));
       csr_rd_check(.ptr(ral.status.timeout_error), .compare_value(1));
     end
