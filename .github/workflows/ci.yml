@@ -428,6 +428,7 @@ jobs:
             ':!/.github/'
             ':!/hw/**/dv/*'
             ':!/hw/dv/'
+            ':!/ci/'
           )
           ci/scripts/get-bitstream-strategy.sh "chip_earlgrey_cw310_hyperdebug" "${filters[@]}"
           ci/scripts/get-bitstream-strategy.sh "chip_earlgrey_cw340"            "${filters[@]}"
