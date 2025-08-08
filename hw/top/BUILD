@@ -7,7 +7,7 @@ load("//rules/opentitan:util.bzl", "flatten")
 load(
     "//rules:autogen.bzl",
     "opentitan_ip_c_header",
-    "opentitan_ip_dt_header",
+    "opentitan_ip_dt",
     "opentitan_ip_rust_header",
     "opentitan_top_dt_api",
 )
@@ -19,6 +19,7 @@ load(
     "opentitan_alias_top_attr",
     "opentitan_if_ip",
     "opentitan_require_ip",
+    "opentitan_select_ip_attr",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -82,11 +83,10 @@ opentitan_top_dt_api(
 )
 
 [
-    opentitan_ip_dt_header(
+    opentitan_ip_dt(
         name = "dt_{}".format(ip),
         ip = ip,
         target_compatible_with = opentitan_require_ip(ip),
-        deps = [":dt_api"],
     )
     for ip in ALL_IP_NAMES
 ]
@@ -103,14 +103,27 @@ cc_library(
     ]),
     # Make the header accessible as "dt_<ip>.h".
     includes = ["."],
-    deps = [":dt_api"],
+    deps = [":dt_api"] + flatten([
+        opentitan_select_ip_attr(
+            ip,
+            "dt_hdr_deps",
+            default = [],
+            required = False,
+        )
+        for ip in ALL_IP_NAMES
+    ]),
 )
 
 [
     cc_library(
         name = "dt_{}".format(ip),
         srcs = [":dt_{}_src".format(ip)],
-        deps = [":dt_headers"],
+        deps = [":dt_headers"] + opentitan_select_ip_attr(
+            ip,
+            "dt_src_deps",
+            default = [],
+            required = False,
+        ),
     )
     for ip in ALL_IP_NAMES
 ]

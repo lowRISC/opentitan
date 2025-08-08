@@ -8,4 +8,6 @@ CLKMGR = opentitan_ip(
     hjson = "//hw/top_${topname}/ip_autogen/clkmgr/data:clkmgr.hjson",
     ipconfig = "//hw/top_${topname}/ip_autogen/clkmgr/data:top_${topname}_clkmgr.ipconfig.hjson",
     extension = "//hw/top_${topname}/ip_autogen/clkmgr/util:dt",
+    dt_hdr_deps = ["//sw/device/lib/base:bitfield"],
+    dt_src_deps = ["//hw/top:clkmgr_c_regs"],
 )
