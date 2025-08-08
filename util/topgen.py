@@ -568,11 +568,6 @@ def _get_pwrmgr_params(top: ConfigT) -> ParamsT:
     return ipgen_params
 
 
-def get_rst_ni(top: ConfigT) -> object:
-    rstmgr = find_module(top["module"], "rstmgr", True)
-    return rstmgr["reset_connections"]
-
-
 def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     """Extracts parameters for rstmgr ipgen."""
     # Parameters needed for generation
@@ -597,7 +592,8 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     sw_rsts = OrderedDict([(r.name, r.clock.name)
                            for r in reset_obj.get_sw_resets()])
     # rst_ni
-    rst_ni = get_rst_ni(top)
+    rstmgr = find_module(top["module"], "rstmgr")
+    rst_ni = rstmgr["reset_connections"]
 
     # leaf resets
     leaf_rsts = reset_obj.get_generated_resets()
@@ -609,7 +605,6 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     with_alert_handler = lib.find_module(top['module'],
                                          'alert_handler') is not None
 
-    rstmgr = lib.find_module(top["module"], "rstmgr")
     ipgen_params = get_ipgen_params(rstmgr)
     ipgen_params.update({
         "clk_freqs": clk_freqs,
