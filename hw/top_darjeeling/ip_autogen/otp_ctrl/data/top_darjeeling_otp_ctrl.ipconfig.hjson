@@ -1651,8 +1651,8 @@
           desc: ROM Patch Code section. May contain multiple signed ROM2 patches.
           iskeymgr_creator: false
           iskeymgr_owner: false
-          size: 9848
-          offset: 6104
+          size: 9864
+          offset: 6088
         }
         {
           name: HW_CFG0
