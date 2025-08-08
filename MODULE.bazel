@@ -10,7 +10,6 @@ bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "googletest", version = "1.14.0.bcr.1")
 bazel_dep(name = "platforms", version = "0.0.11")
 bazel_dep(name = "rules_cc", version = "0.1.2")
-bazel_dep(name = "rules_foreign_cc", version = "0.9.0")
 bazel_dep(name = "rules_fuzzing", version = "0.5.2")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 
@@ -35,6 +34,8 @@ archive_override(
 include("//third_party/rust:rust.MODULE.bazel")
 
 include("//third_party/python:python.MODULE.bazel")
+
+include("//third_party/foreign_cc:foreign_cc.MODULE.bazel")
 
 # Repository rules:
 bitstreams_repo = use_repo_rule("//rules:bitstreams.bzl", "bitstreams_repo")

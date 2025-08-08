@@ -79,6 +79,12 @@ def main():
                         '-q',
                         action='store_true',
                         help='''Don't print out progress messages.''')
+    parser.add_argument('-stamp',
+                        action='store_true',
+                        help='''
+                        Add a comment 'Generated on [Date] with [Command]' to
+                        generated output files.
+                        ''')
     parser.add_argument('--seed',
                         type=int,
                         metavar='<seed>',
@@ -249,10 +255,12 @@ def main():
                 a = a.resolve() if isinstance(a, Path) else a
                 argstr += ' \\\n//   --' + argname + ' ' + str(a) + ''
 
-    dt = datetime.datetime.now(datetime.timezone.utc)
-    dtstr = dt.strftime("%a, %d %b %Y %H:%M:%S %Z")
-    file_header = '// Generated on {} with\n// $ gen-otp-img.py {}\n//\n'.format(
-        dtstr, argstr)
+    file_header = '//\n'
+    if args.stamp:
+        dt = datetime.datetime.now(datetime.timezone.utc)
+        dtstr = dt.strftime("%a, %d %b %Y %H:%M:%S %Z")
+        file_header = '// Generated on {} with\n// $ gen-otp-img.py {}\n//\n'.format(
+            dtstr, argstr)
 
     if args.c_out:
         log.info(f'Generating C file: {args.c_out}')
