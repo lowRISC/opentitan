@@ -327,14 +327,20 @@ cc_library(
 dual_cc_library(
     name = "ottf_console",
     srcs = dual_inputs(
-        device = ["ottf_console.c"],
+        device = [
+            "ottf_console.c",
+            "ottf_console_uart.c",
+            "ottf_console_spi.c",
+        ],
     ),
-    hdrs = ["ottf_console.h"],
+    hdrs = [
+        "ottf_console.h",
+        "ottf_console_internal.h",
+    ],
     deps = dual_inputs(
         device = [
             ":check",
             ":ottf_isrs",
-            ":ottf_test_config",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/runtime:print",
             "//sw/device/lib/dif:rv_plic",
@@ -346,6 +352,7 @@ dual_cc_library(
             "//hw/top:top_lib",
         ],
         shared = [
+            ":ottf_test_config",
             "//sw/device/lib/base:status",
             "//sw/device/lib/dif:uart",
             "//sw/device/lib/dif:spi_device",
