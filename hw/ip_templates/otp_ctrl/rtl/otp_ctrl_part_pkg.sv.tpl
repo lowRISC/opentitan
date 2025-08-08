@@ -97,6 +97,7 @@ package otp_ctrl_part_pkg;
     logic integrity;        // Whether the partition is integrity protected
     logic iskeymgr_creator; // Whether the partition has any creator key material
     logic iskeymgr_owner;   // Whether the partition has any owner key material
+    logic zeroizable;       // Whether the partition can be zeroized
   } part_info_t;
 
   parameter part_info_t PartInfoDefault = '{
@@ -111,7 +112,8 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b0,
       integrity:        1'b0,
       iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b0
   };
 
   ////////////////////////
@@ -133,7 +135,8 @@ package otp_ctrl_part_pkg;
       read_lock:        1'b${"1" if part["read_lock"].lower() == "digest" else "0"},
       integrity:        1'b${"1" if part["integrity"] else "0"},
       iskeymgr_creator: 1'b${"1" if part["iskeymgr_creator"] else "0"},
-      iskeymgr_owner:   1'b${"1" if part["iskeymgr_owner"] else "0"}
+      iskeymgr_owner:   1'b${"1" if part["iskeymgr_owner"] else "0"},
+      zeroizable:       1'b${"1" if part["zeroizable"] else "0"}
     }${"" if loop.last else ","}
 % endfor
   };
