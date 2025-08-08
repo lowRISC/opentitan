@@ -21,6 +21,9 @@ from design.lib.common import check_bool, check_int, random_or_hexvalue
 DIGEST_SUFFIX = "_DIGEST"
 DIGEST_SIZE = 8
 
+ZER_SUFFIX = "_ZER"
+ZER_SIZE = 8
+
 # Seed diversification constant for OtpMemMap (this enables to use
 # the same seed for different classes)
 OTP_SEED_DIVERSIFIER = 177149201092001677687
@@ -108,6 +111,9 @@ def _calc_size(part: Dict, size: int) -> int:
     if part["sw_digest"] or part["hw_digest"]:
         size += DIGEST_SIZE
 
+    if part["zeroizable"]:
+        size += ZER_SIZE
+
     return size
 
 
@@ -124,6 +130,7 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
     part.setdefault("absorb", False)
     part.setdefault("iskeymgr_creator", False)
     part.setdefault("iskeymgr_owner", False)
+    part.setdefault("zeroizable", False)
     log.info("Validating partition {}".format(part["name"]))
 
     # Make sure these are boolean types (simplifies the mako templates)
@@ -132,6 +139,7 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
     part["hw_digest"] = check_bool(part["hw_digest"])
     part["bkout_type"] = check_bool(part["bkout_type"])
     part["integrity"] = check_bool(part["integrity"])
+    part["zeroizable"] = check_bool(part["zeroizable"])
 
     # basic checks
     if part["variant"] not in ["Unbuffered", "Buffered", "LifeCycle"]:
@@ -233,6 +241,7 @@ def _validate_item(item: Dict, buffered: bool, secret: bool):
     item.setdefault("name", "unknown_name")
     item.setdefault("size", "0")
     item.setdefault("isdigest", "false")
+    item.setdefault("iszer", "false")
     item.setdefault("ismubi", "false")
     item.setdefault("iskeymgr_creator", "false")
     item.setdefault("iskeymgr_owner", "false")
@@ -241,6 +250,7 @@ def _validate_item(item: Dict, buffered: bool, secret: bool):
     item["iskeymgr_creator"] = check_bool(item["iskeymgr_creator"])
     item["iskeymgr_owner"] = check_bool(item["iskeymgr_owner"])
     item["isdigest"] = check_bool(item["isdigest"])
+    item["iszer"] = check_bool(item["iszer"])
     item["ismubi"] = check_bool(item["ismubi"])
     item["size"] = check_int(item["size"])
     item_width = item["size"] * 8
@@ -331,9 +341,10 @@ def _validate_mmap(config: Dict) -> Dict:
             offset += check_int(item["size"])
             item_dict[item['name']] = k
 
-        # Place digest at the end of a partition.
+        # Place digest at the end of a partition unless it is zeroizable
         if part["sw_digest"] or part["hw_digest"]:
             digest_name = part["name"] + DIGEST_SUFFIX
+            zer_size = ZER_SIZE if part["zeroizable"] else 0
             if digest_name in item_dict:
                 raise RuntimeError(
                     'Digest name {} is not unique'.format(digest_name))
@@ -345,11 +356,13 @@ def _validate_mmap(config: Dict) -> Dict:
                 DIGEST_SIZE,
                 "offset":
                 check_int(part["offset"]) + check_int(part["size"]) -
-                DIGEST_SIZE,
+                DIGEST_SIZE - zer_size,
                 "ismubi":
                 False,
                 "isdigest":
                 True,
+                "iszer":
+                False,
                 "inv_default":
                 "<random>",
                 "iskeymgr_creator":
@@ -365,7 +378,8 @@ def _validate_mmap(config: Dict) -> Dict:
             # We always place the digest into the last 64bit word
             # of a partition.
             canonical_offset = (check_int(part["offset"]) +
-                                check_int(part["size"]) - DIGEST_SIZE)
+                                check_int(part["size"]) -
+                                DIGEST_SIZE - zer_size)
             if offset > canonical_offset:
                 raise RuntimeError(
                     "Not enough space in partition "
@@ -377,6 +391,50 @@ def _validate_mmap(config: Dict) -> Dict:
             log.info("> Adding digest {} at offset {} with size {}".format(
                 digest_name, offset, DIGEST_SIZE))
             offset += DIGEST_SIZE
+
+        # Place zeroization field after the digest.
+        if part["zeroizable"]:
+            zer_name = part["name"] + ZER_SUFFIX
+            if zer_name in item_dict:
+                raise RuntimeError(
+                    'Digest name {} is not unique'.format(zer_name))
+            item_dict[zer_name] = len(part["items"])
+            part["items"].append({
+                "name":
+                zer_name,
+                "size":
+                ZER_SIZE,
+                "offset":
+                check_int(part["offset"]) + check_int(part["size"]) -
+                ZER_SIZE,
+                "ismubi":
+                False,
+                "isdigest":
+                False,
+                "iszer":
+                True,
+                "inv_default":
+                0,
+                "iskeymgr_creator":
+                False,
+                "iskeymgr_owner":
+                False
+            })
+
+            # We always place the zeroization field into a 64-bit word after the data.
+            canonical_offset = (check_int(part["offset"]) +
+                                check_int(part["size"]) - ZER_SIZE)
+            if offset > canonical_offset:
+                raise RuntimeError(
+                    "Not enough space in partition "
+                    "{} to accommodate a zeroization field. Bytes available "
+                    "= {}, bytes allocated to items = {}".format(
+                        part["name"], part["size"], offset - part["offset"]))
+
+            offset = canonical_offset
+            log.info("> Adding digest {} at offset {} with size {}".format(
+                zer_name, offset, ZER_SIZE))
+            offset += ZER_SIZE
 
         # check offsets and size
         if offset > check_int(part["offset"]) + check_int(part["size"]):
@@ -528,6 +586,9 @@ class OtpMemMap():
                     granule = "64bit"
                     name = "[{}](#Reg_{}_0)".format(item["name"],
                                                     item["name"].lower())
+                elif check_bool(item["iszer"]):
+                    granule = "64bit"
+                    name = item["name"]
                 else:
                     name = item["name"]
 

@@ -79,6 +79,7 @@
               name: SCRATCH
               size: 56
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -91,6 +92,7 @@
               offset: 56
               ismubi: false
               isdigest: true
+              iszer: false
               inv_default: 5280432312436422266
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -108,6 +110,7 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
+          zeroizable: false
           size: 64
           offset: 0
         }
@@ -134,6 +137,7 @@
                 the AST CSRs during ROM execution.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -151,6 +155,7 @@
                 values disable.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -162,6 +167,7 @@
               size: 4
               desc: SKU identifier metadata. Unused by SiliconCreator software.
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -181,6 +187,7 @@
                 TEST_UNLOCKED* LC states.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -197,6 +204,7 @@
                 execution.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -213,6 +221,7 @@
                 execution.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -234,6 +243,7 @@
                 the HW_INFO_CFG_OVERRIDE flash_ctrl CSR for more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -251,6 +261,7 @@
                 hardware generated entropy, while all other values disable.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -266,6 +277,7 @@
                 kMultiBitBool4False disables, while all other values enable.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -283,6 +295,7 @@
                 rstmgr RESET_INFO CSR documentation for more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -299,6 +312,7 @@
                 specific device or set of devices.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -319,6 +333,7 @@
                 appropriate time during.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -335,6 +350,7 @@
                 Ibex documentation for more information.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -350,6 +366,7 @@
                 default boot data.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -365,6 +382,7 @@
                 default boot data.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -383,6 +401,7 @@
                 prior to enabling ROM execution.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -401,6 +420,7 @@
                 values disable.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -417,6 +437,7 @@
                 CREATOR_SW_CFG_RMA_SPIN_EN field.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -434,6 +455,7 @@
                 See entropy_src documentation for more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -451,6 +473,7 @@
                 See entropy_src documentation for more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -468,6 +491,7 @@
                 See entropy_src documentation for more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -485,6 +509,7 @@
                 See entropy_src documentation for more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -502,6 +527,7 @@
                 See entropy_src documentation for more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -519,6 +545,7 @@
                 See entropy_src documentation for more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -536,6 +563,7 @@
                 See entropy_src documentation for more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -553,6 +581,7 @@
                 See entropy_src documentation for more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -570,6 +599,7 @@
                 See entropy_src documentation for more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -587,6 +617,7 @@
                 See entropy_src documentation for more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -604,6 +635,7 @@
                 See entropy_src documentation for more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -620,6 +652,7 @@
                 while all other values enable.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -636,6 +669,7 @@
                 All other values disable it.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -651,6 +685,7 @@
                 find the immutable code section at.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -662,6 +697,7 @@
               size: 4
               desc: Length (in bytes) of the immutable code section.
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -673,6 +709,7 @@
               size: 32
               desc: SHA256 hash of the immutable ROM_EXT section.
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -688,6 +725,7 @@
                 be claimed by software as needed.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -700,6 +738,7 @@
               offset: 424
               ismubi: false
               isdigest: true
+              iszer: false
               inv_default: 234369395612291906
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -713,6 +752,7 @@
             '''
           iskeymgr_creator: false
           iskeymgr_owner: false
+          zeroizable: false
           size: 368
           offset: 64
         }
@@ -741,6 +781,7 @@
                 `sw/device/silicon_creator/lib/shutdown.h` for more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -761,6 +802,7 @@
                 in flash once this value is configured to true.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -780,6 +822,7 @@
                 documentation for more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -799,6 +842,7 @@
                 See the alert_handler documentation for more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -822,6 +866,7 @@
                 See the alert_handler documentation for more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -839,6 +884,7 @@
                 `rules/const.bzl`.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -858,6 +904,7 @@
                 more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -874,6 +921,7 @@
                 configuration of an alert class.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -901,6 +949,7 @@
                 more details.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -923,6 +972,7 @@
                 configurations are included in this digest.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -939,6 +989,7 @@
                 PROD_END LC state.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -955,6 +1006,7 @@
                 DEV LC state.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -971,6 +1023,7 @@
                 RMA LC state.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -982,6 +1035,7 @@
               size: 4
               desc: Watchdog timer bite threshold (in cycles) configured by the ROM.
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1002,6 +1056,7 @@
                 included in the ROM_EXT manifest.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1018,6 +1073,7 @@
                 specific device or set of devices.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1042,6 +1098,7 @@
                 **should be left unprovisioned, or set to all 0**.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1053,6 +1110,7 @@
               size: 4
               desc: Unused. Set to 0.
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1077,6 +1135,7 @@
                 field are used.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1097,6 +1156,7 @@
                 CSR of the sram_ctrl for more details on this feature.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1115,6 +1175,7 @@
                 the retention SRAM.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1136,6 +1197,7 @@
                 values will instruct the ROM to perform the check.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1153,6 +1215,7 @@
                 it.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1176,6 +1239,7 @@
                 and reset.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1191,6 +1255,7 @@
                 claimed by software as needed.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1203,6 +1268,7 @@
               offset: 1136
               ismubi: false
               isdigest: true
+              iszer: false
               inv_default: 16327599381873551525
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1217,6 +1283,7 @@
             '''
           iskeymgr_creator: false
           iskeymgr_owner: false
+          zeroizable: false
           size: 712
           offset: 432
         }
@@ -1238,6 +1305,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE0
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1248,6 +1316,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY0
               size: 64
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1258,6 +1327,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE1
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1268,6 +1338,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY1
               size: 64
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1278,6 +1349,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE2
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1288,6 +1360,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY2
               size: 64
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1298,6 +1371,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE3
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1308,6 +1382,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY3
               size: 64
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1318,6 +1393,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE0
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1328,6 +1404,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY0
               size: 32
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1338,6 +1415,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG0
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1348,6 +1426,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE1
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1358,6 +1437,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY1
               size: 32
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1368,6 +1448,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG1
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1378,6 +1459,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE2
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1388,6 +1470,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY2
               size: 32
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1398,6 +1481,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG2
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1408,6 +1492,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE3
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1418,6 +1503,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY3
               size: 32
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1428,6 +1514,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG3
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1438,6 +1525,7 @@
               name: ROT_CREATOR_AUTH_CODESIGN_BLOCK_SHA2_256_HASH
               size: 32
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1450,6 +1538,7 @@
               offset: 1608
               ismubi: false
               isdigest: true
+              iszer: false
               inv_default: 1581155821231578393
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1465,6 +1554,7 @@
             '''
           iskeymgr_creator: false
           iskeymgr_owner: false
+          zeroizable: false
           size: 472
           offset: 1144
         }
@@ -1486,6 +1576,7 @@
               name: ROT_CREATOR_AUTH_STATE_ECDSA_KEY0
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1496,6 +1587,7 @@
               name: ROT_CREATOR_AUTH_STATE_ECDSA_KEY1
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1506,6 +1598,7 @@
               name: ROT_CREATOR_AUTH_STATE_ECDSA_KEY2
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1516,6 +1609,7 @@
               name: ROT_CREATOR_AUTH_STATE_ECDSA_KEY3
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1526,6 +1620,7 @@
               name: ROT_CREATOR_AUTH_STATE_SPX_KEY0
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1536,6 +1631,7 @@
               name: ROT_CREATOR_AUTH_STATE_SPX_KEY1
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1546,6 +1642,7 @@
               name: ROT_CREATOR_AUTH_STATE_SPX_KEY2
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1556,6 +1653,7 @@
               name: ROT_CREATOR_AUTH_STATE_SPX_KEY3
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1568,6 +1666,7 @@
               offset: 1648
               ismubi: false
               isdigest: true
+              iszer: false
               inv_default: 2324999962355908533
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1591,6 +1690,7 @@
             '''
           iskeymgr_creator: false
           iskeymgr_owner: false
+          zeroizable: false
           size: 40
           offset: 1616
         }
@@ -1618,6 +1718,7 @@
                 Identifiers.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1633,6 +1734,7 @@
                 to 0.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1644,6 +1746,7 @@
               offset: 1720
               ismubi: false
               isdigest: true
+              iszer: false
               inv_default: 17905165971232536359
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1657,6 +1760,7 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
+          zeroizable: false
           size: 72
           offset: 1656
         }
@@ -1685,6 +1789,7 @@
                 other values disable.
                 '''
               isdigest: false
+              iszer: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               offset: 1728
@@ -1702,6 +1807,7 @@
                 CSRNG via software.
                 '''
               isdigest: false
+              iszer: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               offset: 1729
@@ -1720,6 +1826,7 @@
                 the value of LATE_DEBUG_ENABLE CSR in the rv_dm block.
                 '''
               isdigest: false
+              iszer: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               offset: 1730
@@ -1730,6 +1837,7 @@
               offset: 1736
               ismubi: false
               isdigest: true
+              iszer: false
               inv_default: 13543634046774891762
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1743,6 +1851,7 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
+          zeroizable: false
           size: 16
           offset: 1728
         }
@@ -1764,6 +1873,7 @@
               inv_default: 241483977691757977923367841809339206658
               size: 16
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1774,6 +1884,7 @@
               inv_default: 150353733052794565317978902093985221175
               size: 16
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1785,6 +1896,7 @@
               offset: 1776
               ismubi: false
               isdigest: true
+              iszer: false
               inv_default: 13698041678974836896
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1798,6 +1910,7 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
+          zeroizable: false
           size: 40
           offset: 1744
         }
@@ -1819,6 +1932,7 @@
               inv_default: 99410155969389534278404680059562745406179175357375916509714598543499986721841
               size: 32
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1829,6 +1943,7 @@
               inv_default: 7391079586881058628634247621478375370202976073106929415694865999470879218122
               size: 32
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1839,6 +1954,7 @@
               inv_default: 297822815773166572715338675789917702294
               size: 16
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1850,6 +1966,7 @@
               offset: 1864
               ismubi: false
               isdigest: true
+              iszer: false
               inv_default: 14153060542995762600
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1863,6 +1980,7 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
+          zeroizable: false
           size: 88
           offset: 1784
         }
@@ -1884,6 +2002,7 @@
               inv_default: 197791420282250691661260177080212266122
               size: 16
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1895,6 +2014,7 @@
               size: 32
               iskeymgr_creator: true
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_owner: false
               offset: 1888
@@ -1905,6 +2025,7 @@
               size: 32
               iskeymgr_creator: true
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_owner: false
               offset: 1920
@@ -1915,6 +2036,7 @@
               offset: 1952
               ismubi: false
               isdigest: true
+              iszer: false
               inv_default: 10140889213198706984
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1928,6 +2050,7 @@
           absorb: false
           iskeymgr_creator: true
           iskeymgr_owner: false
+          zeroizable: false
           size: 88
           offset: 1872
         }
@@ -1949,6 +2072,7 @@
               inv_default: 24752457638992396544754265753960069142084552974894085834358048399991475854089517042067373962426813673346557748670398
               size: 48
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1959,6 +2083,7 @@
               inv_default: 1232459460109293830193445129566839459062644876142083683633340923439827006874097651236687620186710
               size: 40
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1980,6 +2105,7 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
+          zeroizable: false
           size: 88
           offset: 1960
         }
