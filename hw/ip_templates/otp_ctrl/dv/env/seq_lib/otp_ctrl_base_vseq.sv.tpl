@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
@@ -162,12 +163,13 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0] val;
     dai_wr_inprogress = 1;
     if (write_unused_addr) begin
-      if (used_dai_addrs.exists(addr[OTP_ADDR_WIDTH - 1 : 0])) begin
+      bit [OTP_ADDR_WIDTH - 1 : 0] granule_addr = normalize_dai_addr(addr);
+      if (used_dai_addrs.exists(granule_addr)) begin
         `uvm_info(`gfn, $sformatf("addr %0h is already written!", addr), UVM_MEDIUM)
         dai_wr_inprogress = 0;
         return;
       end else begin
-        used_dai_addrs[addr] = 1;
+        used_dai_addrs[granule_addr] = 1;
       end
     end
     addr = randomize_dai_addr(addr);
