@@ -869,6 +869,14 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
                   !!DIRECT_ACCESS_ADDRESS.
                   '''
           }
+          { bits: "3",
+            name: "ZEROIZE",
+            desc: '''
+                  Initiates the zeroization sequence of location specified by !!DIRECT_ACCESS_ADDRESS.
+                  The command places the zeroized data into !!DIRECT_ACCESS_RDATA_0 and
+                  !!DIRECT_ACCESS_RDATA_1 (for 64bit partitions) if the execution is successful.
+                  '''
+          }
         ]
       }
       { name: "DIRECT_ACCESS_ADDRESS",
