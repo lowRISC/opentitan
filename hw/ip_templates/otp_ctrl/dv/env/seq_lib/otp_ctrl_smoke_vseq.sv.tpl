@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
@@ -149,7 +150,8 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       end
 
       for (int i = 0; i < num_dai_op; i++) begin
-        bit [TL_DW-1:0] rdata0, rdata1, backdoor_rd_val;
+        bit [TL_DW-1:0] rdata0, rdata1;
+        uvm_hdl_data_t backdoor_rd_val;
         if (cfg.stop_transaction_generators()) break;
 
         `DV_CHECK_RANDOMIZE_FATAL(this)
@@ -190,9 +192,10 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
         // Backdoor restore injected ECC error, but should not affect fatal alerts.
         if (ecc_otp_err != OtpNoEccErr && dai_addr < LifeCycleOffset) begin
-          `uvm_info(`gfn, $sformatf("Injecting ecc error %0d at 0x%x", ecc_otp_err, dai_addr),
+          `uvm_info(`gfn, $sformatf("Repairing ecc error %0d at 0x%x with 0x%x",
+                    ecc_otp_err, dai_addr, OTP_MACRO_FULL_WIDTH'(backdoor_rd_val)),
                     UVM_HIGH)
-          cfg.mem_bkdr_util_h.write32({dai_addr[TL_DW-3:2], 2'b00}, backdoor_rd_val);
+          cfg.mem_bkdr_util_h.write(dai_addr, backdoor_rd_val);
           // Wait for two lock cycles to make sure the local escalation error propagates to other
           // partitions and err_code reg.
           cfg.clk_rst_vif.wait_clks(2);

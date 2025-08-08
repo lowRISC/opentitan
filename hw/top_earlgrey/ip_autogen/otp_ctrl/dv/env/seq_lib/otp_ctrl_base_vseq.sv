@@ -414,19 +414,17 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // This function backdoor inject error according to ecc_err:
   // - for OtpEccUncorrErr it injects a 2 bit error
   // - for OtpEccCorrErr it injects a 1 bit error
-  // This function will output original backdoor read data for the given address
+  // Return the original backdoor read data for the given address
   // so the error can be cleared.
   virtual function bit [TL_DW-1:0] backdoor_inject_ecc_err(bit [TL_DW-1:0] addr,
                                                            otp_ecc_err_e   ecc_err);
-    bit [TL_DW-1:0] val;
-    addr = {addr[TL_DW-1:2], 2'b00};
-    val = cfg.mem_bkdr_util_h.read32(addr);
+    uvm_hdl_data_t val = cfg.mem_bkdr_util_h.read(addr);
     if (ecc_err == OtpNoEccErr || addr >= (LifeCycleOffset + LifeCycleSize)) return val;
 
     // Backdoor read and write back with error bits
     cfg.mem_bkdr_util_h.inject_errors(addr, (ecc_err == OtpEccUncorrErr) ? 2 : 1);
     `uvm_info(`gfn, $sformatf("original val %0h, addr %0h, err_type %0s",
-                              val, addr, ecc_err.name), UVM_HIGH)
+                              OTP_MACRO_FULL_WIDTH'(val), addr, ecc_err.name), UVM_HIGH)
     return val;
   endfunction
 
@@ -464,7 +462,10 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     if (wait_done && val) csr_spinwait(ral.status.check_pending, 0);
 
     if (ecc_err != OtpNoEccErr) begin
-      cfg.mem_bkdr_util_h.write32(addr, backdoor_rd_val);
+      `uvm_info(`gfn, $sformatf("Repairing ecc error %0d at 0x%x with data 0x%x",
+                    ecc_err, addr, OTP_MACRO_FULL_WIDTH'(backdoor_rd_val)),
+                    UVM_HIGH)
+      cfg.mem_bkdr_util_h.write(addr, backdoor_rd_val);
       cfg.ecc_chk_err = '{default: OtpNoEccErr};
     end
   endtask
