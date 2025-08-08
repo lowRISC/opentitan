@@ -12,6 +12,11 @@ load(
     "IMM_SECTION_MINOR_VERSION",
 )
 load(
+    "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "ROM_EXT_VARIATIONS",
+    "SLOTS",
+)
+load(
     "//sw/device/silicon_creator/rom_ext/imm_section:utils.bzl",
     "create_imm_section_targets",
     "imm_section_bundle",
@@ -101,96 +106,50 @@ ld_library(
     ],
 )
 
-ld_library(
-    name = "ld_slot_a",
-    script = "imm_section_slot_a.ld",
-    deps = [
-        ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
-    ],
-)
+[
+    ld_library(
+        name = "ld_slot_{}".format(slot),
+        script = "imm_section_slot_{}.ld".format(slot),
+        deps = [
+            ":ld_common",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        ],
+    )
+    for slot in SLOTS
+]
 
-ld_library(
-    name = "ld_slot_b",
-    script = "imm_section_slot_b.ld",
-    deps = [
-        ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
-    ],
-)
+[
+    opentitan_binary(
+        name = "main_binaries_{}_slot_{}".format(variation_name, slot),
+        exec_env = DEFAULT_EXEC_ENV,
+        linker_script = ":ld_slot_{}".format(slot),
+        manifest = "//hw/top_earlgrey:none_manifest",
+        transitive_features = [
+            "minsize",
+            "use_lld",
+        ],
+        deps = [
+            ":main_lib",
+            "//sw/device/lib/crt",
+        ] + variation_deps,
+    )
+    for variation_name, variation_deps in ROM_EXT_VARIATIONS.items()
+    for slot in SLOTS
+]
 
-ld_library(
-    name = "ld_slot_virtual",
-    script = "imm_section_slot_virtual.ld",
-    deps = [
-        ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
-    ],
-)
-
-opentitan_binary(
-    name = "main_binaries_slot_a",
-    exec_env = DEFAULT_EXEC_ENV,
-    linker_script = ":ld_slot_a",
-    manifest = "//hw/top_earlgrey:none_manifest",
-    transitive_features = [
-        "minsize",
-        "use_lld",
-    ],
-    deps = [
-        ":main_lib",
-        "//sw/device/lib/crt",
-    ],
-)
-
-create_imm_section_targets(
-    name = "main_section_slot_a",
-    src = ":main_binaries_slot_a",
-)
-
-opentitan_binary(
-    name = "main_binaries_slot_b",
-    exec_env = DEFAULT_EXEC_ENV,
-    linker_script = ":ld_slot_b",
-    manifest = "//hw/top_earlgrey:none_manifest",
-    transitive_features = [
-        "minsize",
-        "use_lld",
-    ],
-    deps = [
-        ":main_lib",
-        "//sw/device/lib/crt",
-    ],
-)
-
-create_imm_section_targets(
-    name = "main_section_slot_b",
-    src = ":main_binaries_slot_b",
-)
-
-opentitan_binary(
-    name = "main_binaries_slot_virtual",
-    exec_env = DEFAULT_EXEC_ENV,
-    linker_script = ":ld_slot_virtual",
-    manifest = "//hw/top_earlgrey:none_manifest",
-    transitive_features = [
-        "minsize",
-        "use_lld",
-    ],
-    deps = [
-        ":main_lib",
-        "//sw/device/lib/crt",
-    ],
-)
-
-create_imm_section_targets(
-    name = "main_section_slot_virtual",
-    src = ":main_binaries_slot_virtual",
-)
+[
+    create_imm_section_targets(
+        name = "main_section_{}_slot_{}".format(variation_name, slot),
+        src = ":main_binaries_{}_slot_{}".format(variation_name, slot),
+    )
+    for variation_name, variation_deps in ROM_EXT_VARIATIONS.items()
+    for slot in SLOTS
+]
 
 imm_section_bundle(
     name = "release_bundle",
     variants = {
-        "dice_x509": "main_binaries_slot_virtual",
+        variation_name: ":main_binaries_{}_slot_virtual".format(variation_name)
+        for variation_name, _ in ROM_EXT_VARIATIONS.items()
     },
 )
