@@ -245,7 +245,7 @@ cc_library(
         ":personalize_ext",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/silicon_creator/lib:attestation",

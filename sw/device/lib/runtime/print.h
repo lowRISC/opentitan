@@ -8,10 +8,6 @@
 #include <stdarg.h>
 #include <stddef.h>
 
-#include "sw/device/lib/dif/dif_gpio.h"
-#include "sw/device/lib/dif/dif_spi_device.h"
-#include "sw/device/lib/dif/dif_uart.h"
-
 /**
  * @file
  * @brief Libc-like printing facilities.
@@ -48,16 +44,6 @@ typedef struct buffer_sink {
   void *data;
   sink_func_ptr sink;
 } buffer_sink_t;
-
-/**
- * Returns a function pointer to the spi device sink function.
- */
-sink_func_ptr get_spi_device_sink(void);
-
-/**
- * Returns a function pointer to the uart sink function.
- */
-sink_func_ptr get_uart_sink(void);
 
 /**
  * Prints out a message to stdout, formatted according to the format string
@@ -296,37 +282,5 @@ size_t base_fhexdump_with(buffer_sink_t out, base_hexdump_fmt_t fmt,
  * @param out the sink to use for "default" printing.
  */
 void base_set_stdout(buffer_sink_t out);
-
-/**
- * Configures SPI device GPIO TX indicator pin for `base_print.h` to use.
- *
- * Note that this function will save `gpio` in a global variable, so the
- * pointer must have static storage duration.
- *
- * @param gpio The GPIO handle to use for the SPI console TX indicator pin.
- * @param tx_indicator_pin The GPIO pin to use for the SPI console TX indicator.
- */
-void base_spi_device_set_gpio_tx_indicator(dif_gpio_t *gpio,
-                                           dif_gpio_pin_t tx_indicator_pin);
-
-/**
- * Configures SPI device stdout for `base_print.h` to use.
- *
- * Note that this function will save `spi_device` in a global variable, so the
- * pointer must have static storage duration.
- *
- * @param spi_device The SPI device handle to use for stdout.
- */
-void base_spi_device_stdout(const dif_spi_device_handle_t *spi_device);
-
-/**
- * Configures UART stdout for `base_print.h` to use.
- *
- * Note that this function will save `uart` in a global variable, so the pointer
- * must have static storage duration.
- *
- * @param uart The UART handle to use for stdout.
- */
-void base_uart_stdout(const dif_uart_t *uart);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_PRINT_H_
