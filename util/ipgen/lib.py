@@ -303,7 +303,7 @@ class IpConfig:
         """ Load an IpConfig from a raw object """
 
         rd = check_keys(raw, 'configuration file ' + where, ['instance_name'],
-                        ['param_values'])
+                        ['param_values', 'dtgen'])
         instance_name = check_name(rd.get('instance_name'),
                                    "the key 'instance_name' of " + where)
 
@@ -314,6 +314,9 @@ class IpConfig:
 
         param_values = IpConfig._check_param_values(template_params,
                                                     rd['param_values'])
+        # The dtgen part of the configuration only depends on the template
+        # and not on the values, so it is re-derived in the constructor anyway.
+        # Therefore we just ignore it.
 
         return cls(template_params, instance_name, param_values)
 
