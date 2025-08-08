@@ -35,7 +35,10 @@
   #5 is excluded because sensor_ctrl is not in the aon domain.
  */
 
-OTTF_DEFINE_TEST_CONFIG();
+// Test handles its own alerts.
+// `sensor_ctrl_aon_recov_alert` fires immediately on wake-up which doesn't
+// give us enough time to disable it specifically.
+OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
 /**
  * Clean up pwrmgr wakeup reason register for the next round.
