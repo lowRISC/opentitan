@@ -348,13 +348,6 @@ def _get_alert_handler_params(top: ConfigT) -> ParamsT:
     return ipgen_params
 
 
-def generate_alert_handler(top: ConfigT, module: ConfigT,
-                           out_path: Path) -> None:
-    log.info("Generating alert_handler with ipgen")
-    params = _get_alert_handler_params(top)
-    generate_ipgen(top, module, params, out_path)
-
-
 def generate_outgoing_alerts(top: ConfigT, out_path: Path) -> None:
     log.info("Generating outgoing alert definitions")
 
@@ -434,12 +427,6 @@ def _get_rv_plic_params(top: ConfigT, name: str) -> ParamsT:
         "prio": 3,
     })
     return ipgen_params
-
-
-def generate_plic(top: ConfigT, module: ConfigT, out_path: Path) -> None:
-    log.info("Generating rv_plic with ipgen")
-    params = _get_rv_plic_params(top, module["type"])
-    generate_ipgen(top, module, params, out_path)
 
 
 def generate_regfile_from_path(hjson_path: Path,
@@ -535,24 +522,6 @@ def _get_pinmux_params(top: ConfigT) -> ParamsT:
     return ipgen_params
 
 
-def generate_pinmux(top: ConfigT, module: ConfigT, out_path: Path) -> None:
-    log.info("Generating pinmux with ipgen")
-    params = _get_pinmux_params(top)
-    generate_ipgen(top, module, params, out_path)
-
-
-# generate clkmgr with ipgen
-def generate_clkmgr(top: ConfigT, module: ConfigT, out_path: Path) -> None:
-    log.info("Generating clkmgr with ipgen")
-    clkmgr = lib.find_module(top["module"], "clkmgr")
-    ipgen_params = get_ipgen_params(clkmgr)
-    ipgen_params.update(get_clkmgr_params(top))
-    log.info("clkmgr params:")
-    for k, v in ipgen_params.items():
-        log.info(f"{k}: {v}")
-    generate_ipgen(top, module, ipgen_params, out_path)
-
-
 def _get_pwrmgr_params(top: ConfigT) -> ParamsT:
     """Extracts parameters for pwrmgr ipgen."""
     # Count number of wakeups
@@ -599,17 +568,6 @@ def _get_pwrmgr_params(top: ConfigT) -> ParamsT:
     return ipgen_params
 
 
-def generate_pwrmgr(top: ConfigT, module: ConfigT, out_path: Path) -> None:
-    log.info("Generating pwrmgr with ipgen")
-    params = _get_pwrmgr_params(top)
-    generate_ipgen(top, module, params, out_path)
-
-
-def get_rst_ni(top: ConfigT) -> object:
-    rstmgr = find_module(top["module"], "rstmgr", True)
-    return rstmgr["reset_connections"]
-
-
 def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     """Extracts parameters for rstmgr ipgen."""
     # Parameters needed for generation
@@ -634,7 +592,8 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     sw_rsts = OrderedDict([(r.name, r.clock.name)
                            for r in reset_obj.get_sw_resets()])
     # rst_ni
-    rst_ni = get_rst_ni(top)
+    rstmgr = find_module(top["module"], "rstmgr")
+    rst_ni = rstmgr["reset_connections"]
 
     # leaf resets
     leaf_rsts = reset_obj.get_generated_resets()
@@ -646,7 +605,6 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     with_alert_handler = lib.find_module(top['module'],
                                          'alert_handler') is not None
 
-    rstmgr = lib.find_module(top["module"], "rstmgr")
     ipgen_params = get_ipgen_params(rstmgr)
     ipgen_params.update({
         "clk_freqs": clk_freqs,
@@ -661,13 +619,6 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
         "with_alert_handler": with_alert_handler,
     })
     return ipgen_params
-
-
-# generate rstmgr with ipgen
-def generate_rstmgr(top: ConfigT, module: ConfigT, out_path: Path) -> None:
-    log.info("Generating rstmgr with ipgen")
-    params = _get_rstmgr_params(top)
-    generate_ipgen(top, module, params, out_path)
 
 
 def _get_flash_ctrl_params(top: ConfigT) -> ParamsT:
@@ -693,13 +644,6 @@ def _get_flash_ctrl_params(top: ConfigT) -> ParamsT:
 
     ipgen_params.pop('base_addrs', None)
     return ipgen_params
-
-
-# generate flash_ctrl with ipgen
-def generate_flash(top: ConfigT, module: ConfigT, out_path: Path) -> None:
-    log.info("Generating flash_ctrl with ipgen")
-    params = _get_flash_ctrl_params(top)
-    generate_ipgen(top, module, params, out_path)
 
 
 def _get_otp_ctrl_params(top: ConfigT,
@@ -738,16 +682,6 @@ def _get_otp_ctrl_params(top: ConfigT,
     return ipgen_params
 
 
-def generate_otp_ctrl(top: ConfigT,
-                      module: ConfigT,
-                      cfg_path: Path,
-                      out_path: Path,
-                      seed: int = None) -> None:
-    log.info("Generating otp_ctrl with ipgen")
-    params = _get_otp_ctrl_params(top, cfg_path, seed)
-    generate_ipgen(top, module, params, out_path)
-
-
 def _get_ac_range_check_params(top: ConfigT) -> ParamsT:
     """Extracts parameters for ac_range_check ipgen."""
     # Determine RACL params from the top-level config, otherwise use ipgen's
@@ -768,14 +702,6 @@ def _get_ac_range_check_params(top: ConfigT) -> ParamsT:
         "module_instance_name": module["type"]
     })
     return ipgen_params
-
-
-# generate ac_range_check with ipgen
-def generate_ac_range_check(top: ConfigT, module: ConfigT,
-                            out_path: Path) -> None:
-    log.info('Generating ac_range_check with ipgen')
-    params = _get_ac_range_check_params(top)
-    generate_ipgen(top, module, params, out_path)
 
 
 def _get_racl_params(top: ConfigT) -> ParamsT:
@@ -811,20 +737,9 @@ def _get_racl_params(top: ConfigT) -> ParamsT:
     return ipgen_params
 
 
-# Generate RACL collateral
-def generate_racl(top: ConfigT, module: ConfigT, out_path: Path) -> None:
-    # Not all tops use RACL
-    if "racl_config" not in top:
-        raise ValueError(
-            "There is a racl_ctrl module but no 'racl_config' in top config")
-    log.info("Generating RACL Control IP with ipgen")
-    params = _get_racl_params(top)
-    generate_ipgen(top, module, params, out_path)
-
-
-def _get_gpio_params(top: ConfigT) -> ParamsT:
-    """Extracts parameters for GPIO ipgen."""
-    module = lib.find_module(top["module"], "gpio")
+def _get_basic_ipgen_params(topcfg: Dict[str, object], template_type: str) -> Dict[str, object]:
+    """Extracts parameters for given ipgen IP."""
+    module = lib.find_module(topcfg["module"], template_type)
     uniquified_modules.add_module(module["template_type"], module["type"])
 
     ipgen_params = get_ipgen_params(module)
@@ -832,45 +747,6 @@ def _get_gpio_params(top: ConfigT) -> ParamsT:
         "module_instance_name": module["type"]
     })
     return ipgen_params
-
-
-def generate_gpio(top: ConfigT, module: ConfigT, out_path: Path) -> None:
-    log.info('Generating GPIO with ipgen')
-    params = _get_gpio_params(top)
-    generate_ipgen(top, module, params, out_path)
-
-
-def _get_rv_core_ibex_params(topcfg: Dict[str, object]) -> Dict[str, object]:
-    """Extracts parameters for rv_core_ibex ipgen."""
-    module = lib.find_module(topcfg["module"], "rv_core_ibex")
-    uniquified_modules.add_module(module["template_type"], module["type"])
-
-    ipgen_params = get_ipgen_params(module)
-    ipgen_params.update({
-        "module_instance_name": module["type"]
-    })
-    return ipgen_params
-
-
-def generate_rv_core_ibex(topcfg: Dict[str, object], module: Dict[str, object],
-                          out_path: Path) -> None:
-    log.info("Generating RV Core Ibex with ipgen")
-    params = _get_rv_core_ibex_params(topcfg)
-    generate_ipgen(topcfg, module, params, out_path)
-
-
-def _get_pwm_params(top: ConfigT) -> ParamsT:
-    """Extracts parameters for PWM ipgen."""
-
-    pwm = lib.find_module(top["module"], "pwm")
-    params = {"module_instance_name": pwm["type"]}
-    return params
-
-
-def generate_pwm(top: ConfigT, module: ConfigT, out_path: Path) -> None:
-    log.info('Generating PWM with ipgen')
-    params = _get_pwm_params(top)
-    generate_ipgen(top, module, params, out_path)
 
 
 def generate_top_only(top_only_dict: List[str], out_path: Path, top_name: str,
@@ -1183,10 +1059,10 @@ def create_ipgen_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
 
     if "gpio" in ipgen_instances:
         instance = ipgen_instances["gpio"][0]
-        insert_ip_attrs(instance, _get_gpio_params(topcfg))
+        insert_ip_attrs(instance, _get_basic_ipgen_params(topcfg, "gpio"))
     if "pwm" in ipgen_instances:
         instance = ipgen_instances["pwm"][0]
-        insert_ip_attrs(instance, _get_pwm_params(topcfg))
+        insert_ip_attrs(instance, _get_basic_ipgen_params(topcfg, "pwm"))
     if "racl_config" in topcfg:
         amend_racl(topcfg, name_to_block, allow_missing_blocks=True)
         assert "racl_ctrl" in ipgen_instances
@@ -1207,7 +1083,7 @@ def create_ipgen_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
 
     if "rv_core_ibex" in ipgen_instances:
         instance = ipgen_instances["rv_core_ibex"][0]
-        insert_ip_attrs(instance, _get_rv_core_ibex_params(topcfg))
+        insert_ip_attrs(instance, _get_basic_ipgen_params(topcfg, "rv_core_ibex"))
 
     # Pinmux depends on flash_ctrl and otp_ctrl
     if "pinmux" in ipgen_instances:
@@ -1312,34 +1188,39 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
     # order, which means could just iterate over all in the topcfg.
 
     def generate_modules(template_type: str,
-                         generate_module: Callable[[Dict, Dict, Path], None],
-                         single_instance: bool) -> None:
+                         single_instance: bool,
+                         get_params: Callable[[Dict, Dict, Path], None] = None) -> None:
         modules = ipgens_by_template_type[template_type]
         if len(modules) > 1 and single_instance:
-            raise SystemExit(
-                f"Cannot have more than one {template_type} per top")
+            raise SystemExit(f"Cannot have more than one {template_type} per top")
         for module in modules:
-            generate_module(topcfg, module, out_path)
+            log.info(f"Generating {template_type} with ipgen")
+            if get_params:
+                args = (topcfg,) if single_instance else (topcfg, module["name"])
+                params = get_params(*args)
+            else:
+                params = _get_basic_ipgen_params(topcfg, template_type)
+            generate_ipgen(topcfg, module, params, out_path)
 
     ipgens_by_template_type = defaultdict(list)
     for m in topcfg["module"]:
         if m.get("attr") == "ipgen":
             ipgens_by_template_type[m["template_type"]].append(m)
 
-    generate_modules("clkmgr", generate_clkmgr, single_instance=True)
-    generate_modules("flash_ctrl", generate_flash, single_instance=False)
+    generate_modules("clkmgr", single_instance=True, get_params=get_clkmgr_params)
+    generate_modules("flash_ctrl", single_instance=True, get_params=_get_flash_ctrl_params)
     if not args.no_plic and \
        not args.alert_handler_only and \
        not args.xbar_only:
-        generate_modules("rv_plic", generate_plic, single_instance=False)
+        generate_modules("rv_plic", single_instance=False, get_params=_get_rv_plic_params)
     if args.plic_only:
         sys.exit()
 
     # Generate Alert Handler if there is an instance
     if not args.xbar_only:
         generate_modules("alert_handler",
-                         generate_alert_handler,
-                         single_instance=True)
+                         single_instance=True,
+                         get_params=_get_alert_handler_params)
     if args.alert_handler_only:
         sys.exit()
 
@@ -1349,41 +1230,34 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
     # Generate outgoing interrupts
     generate_outgoing_interrupts(topcfg, out_path)
 
-    # Generate otp_ctrl if there is an instance. It needs an extra argument
-    # than the other ipgens, so it cannot call generate_modules.
-    modules = ipgens_by_template_type["otp_ctrl"]
-    if len(modules) > 1:
-        raise SystemExit("Cannot have more than one otp_ctrl per top")
-    for module in modules:
-        generate_otp_ctrl(topcfg, module, cfg_path, out_path)
+    generate_modules("otp_ctrl", single_instance=True,
+                     get_params=lambda topcfg: _get_otp_ctrl_params(topcfg, out_path))
 
     # Generate Pinmux
-    generate_modules("pinmux", generate_pinmux, single_instance=True)
+    generate_modules("pinmux", single_instance=True, get_params=_get_pinmux_params)
 
     # Generate Pwrmgr if there is an instance
-    generate_modules("pwrmgr", generate_pwrmgr, single_instance=True)
+    generate_modules("pwrmgr", single_instance=True, get_params=_get_pwrmgr_params)
 
     # Generate rstmgr if there is an instance
-    generate_modules("rstmgr", generate_rstmgr, single_instance=True)
+    generate_modules("rstmgr", single_instance=True, get_params=_get_rstmgr_params)
 
     # Generate gpio if there is an instance
-    generate_modules("gpio", generate_gpio, single_instance=True)
+    generate_modules("gpio", single_instance=True)
 
     # Generate rv_core_ibex if there is an instance
-    generate_modules("rv_core_ibex",
-                     generate_rv_core_ibex,
-                     single_instance=True)
+    generate_modules("rv_core_ibex", single_instance=True)
     # Generate pwm if there is an instance
-    generate_modules("pwm", generate_pwm, single_instance=True)
+    generate_modules("pwm", single_instance=True)
 
     # Generate ac_range_check
     generate_modules("ac_range_check",
-                     generate_ac_range_check,
-                     single_instance=True)
+                     single_instance=True,
+                     get_params=_get_ac_range_check_params)
 
     # Generate RACL collateral
     if "racl_config" in topcfg:
-        generate_modules("racl_ctrl", generate_racl, single_instance=True)
+        generate_modules("racl_ctrl", single_instance=True, get_params=_get_racl_params)
 
 
 def _check_countermeasures(completecfg: ConfigT, name_to_block: IpBlocksT,
