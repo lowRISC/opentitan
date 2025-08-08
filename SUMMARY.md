@@ -220,6 +220,8 @@
     - [Device Interface Functions](./sw/device/lib/dif/dif_pwrmgr.h)
     - [Checklist](./hw/top_darjeeling/ip_autogen/pwrmgr/doc/checklist.md)
   - [RACL Control](./hw/top_darjeeling/ip_autogen/racl_ctrl/README.md)
+    - [Theory of Operation](./hw/top_darjeeling/ip_autogen/racl_ctrl/doc/theory_of_operation.md)
+    - [Programmer's Guide](./hw/top_darjeeling/ip_autogen/racl_ctrl/doc/programmers_guide.md)
     - [RACL Configuration](./hw/top_darjeeling/ip_autogen/racl_ctrl/doc/racl_configuration.md)
     - [Hardware Interfaces](./hw/top_darjeeling/ip_autogen/racl_ctrl/doc/interfaces.md)
     - [Registers](./hw/top_darjeeling/ip_autogen/racl_ctrl/doc/registers.md)
