@@ -22,7 +22,7 @@
 #endif
 
 #ifndef TEST_MAX_IRQ_PERIPHERAL
-#define TEST_MAX_IRQ_PERIPHERAL 20
+#define TEST_MAX_IRQ_PERIPHERAL 19
 #endif
 
 #include "sw/device/lib/arch/boot_stage.h"
@@ -45,7 +45,6 @@
 #include "sw/device/lib/dif/autogen/dif_pwrmgr_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_rv_plic_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_rv_timer_autogen.h"
-#include "sw/device/lib/dif/autogen/dif_soc_proxy_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_spi_device_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_spi_host_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_uart_autogen.h"
@@ -164,18 +163,14 @@ static dif_rv_timer_t rv_timer;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 16 && 16 < TEST_MAX_IRQ_PERIPHERAL
-static dif_soc_proxy_t soc_proxy;
-#endif
-
-#if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
 static dif_spi_device_t spi_device;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
 static dif_spi_host_t spi_host0;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
 static dif_uart_t uart0;
 #endif
 
@@ -279,21 +274,16 @@ static volatile dif_rv_timer_irq_t rv_timer_irq_serviced;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 16 && 16 < TEST_MAX_IRQ_PERIPHERAL
-static volatile dif_soc_proxy_irq_t soc_proxy_irq_expected;
-static volatile dif_soc_proxy_irq_t soc_proxy_irq_serviced;
-#endif
-
-#if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
 static volatile dif_spi_device_irq_t spi_device_irq_expected;
 static volatile dif_spi_device_irq_t spi_device_irq_serviced;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
 static volatile dif_spi_host_irq_t spi_host_irq_expected;
 static volatile dif_spi_host_irq_t spi_host_irq_serviced;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
 static volatile dif_uart_irq_t uart_irq_expected;
 static volatile dif_uart_irq_t uart_irq_serviced;
 #endif
@@ -973,29 +963,6 @@ void ottf_external_isr(uint32_t *exc_info) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 16 && 16 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopDarjeelingPlicPeripheralSocProxy: {
-      dif_soc_proxy_irq_t irq =
-          (dif_soc_proxy_irq_t)(plic_irq_id -
-                                (dif_rv_plic_irq_id_t)
-                                    kTopDarjeelingPlicIrqIdSocProxyExternal0);
-      CHECK(irq == soc_proxy_irq_expected,
-            "Incorrect soc_proxy IRQ triggered: exp = %d, obs = %d",
-            soc_proxy_irq_expected, irq);
-      soc_proxy_irq_serviced = irq;
-
-      dif_soc_proxy_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_soc_proxy_irq_get_state(&soc_proxy, &snapshot));
-      CHECK(snapshot == (dif_soc_proxy_irq_state_snapshot_t)(1 << irq),
-            "Only soc_proxy IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      CHECK_DIF_OK(dif_soc_proxy_irq_acknowledge(&soc_proxy, irq));
-      break;
-    }
-#endif
-
-#if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
     case kTopDarjeelingPlicPeripheralSpiDevice: {
       dif_spi_device_irq_t irq =
           (dif_spi_device_irq_t)(plic_irq_id -
@@ -1031,7 +998,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
     case kTopDarjeelingPlicPeripheralSpiHost0: {
       dif_spi_host_irq_t irq =
           (dif_spi_host_irq_t)(plic_irq_id -
@@ -1067,7 +1034,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
     case kTopDarjeelingPlicPeripheralUart0: {
       dif_uart_irq_t irq =
           (dif_uart_irq_t)(plic_irq_id -
@@ -1248,21 +1215,16 @@ static void peripherals_init(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 16 && 16 < TEST_MAX_IRQ_PERIPHERAL
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_soc_proxy_init(base_addr, &soc_proxy));
-#endif
-
-#if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_DARJEELING_SPI_DEVICE_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_device_init(base_addr, &spi_device));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_host_init(base_addr, &spi_host0));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR);
   CHECK_DIF_OK(dif_uart_init(base_addr, &uart0));
 #endif
@@ -1382,18 +1344,14 @@ static void peripheral_irqs_clear(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 16 && 16 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_soc_proxy_irq_acknowledge_all(&soc_proxy));
-#endif
-
-#if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_spi_device_irq_acknowledge_all(&spi_device));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_spi_host_irq_acknowledge_all(&spi_host0));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_uart_irq_acknowledge_all(&uart0));
 #endif
 }
@@ -1478,21 +1436,16 @@ static void peripheral_irqs_enable(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 16 && 16 < TEST_MAX_IRQ_PERIPHERAL
-  dif_soc_proxy_irq_state_snapshot_t soc_proxy_irqs =
-      (dif_soc_proxy_irq_state_snapshot_t)0xffffffff;
-#endif
-
-#if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
   dif_spi_device_irq_state_snapshot_t spi_device_irqs =
       (dif_spi_device_irq_state_snapshot_t)0xffffffff;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
   dif_spi_host_irq_state_snapshot_t spi_host_irqs =
       (dif_spi_host_irq_state_snapshot_t)0xffffffff;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
   // Note: this peripheral contains status interrupts that are asserted by
   // default. Therefore, not all interrupts are enabled here, since that
   // would interfere with this test. Instead, these interrupts are enabled on
@@ -1604,18 +1557,14 @@ static void peripheral_irqs_enable(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 16 && 16 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_soc_proxy_irq_restore_all(&soc_proxy, &soc_proxy_irqs));
-#endif
-
-#if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_spi_device_irq_restore_all(&spi_device, &spi_device_irqs));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_spi_host_irq_restore_all(&spi_host0, &spi_host_irqs));
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
   // lowrisc/opentitan#8656: Skip UART0 in non-DV setups due to interference
   // from the logging facility.
   if (kDeviceType == kDeviceSimDV) {
@@ -2077,21 +2026,6 @@ static void peripheral_irqs_trigger(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 16 && 16 < TEST_MAX_IRQ_PERIPHERAL
-  peripheral_expected = kTopDarjeelingPlicPeripheralSocProxy;
-  for (dif_soc_proxy_irq_t irq = kDifSocProxyIrqExternal0; irq <= kDifSocProxyIrqExternal31;
-       ++irq) {
-    soc_proxy_irq_expected = irq;
-    LOG_INFO("Triggering soc_proxy IRQ %d.", irq);
-    CHECK_DIF_OK(dif_soc_proxy_irq_force(&soc_proxy, irq, true));
-
-    // This avoids a race where *irq_serviced is read before
-    // entering the ISR.
-    IBEX_SPIN_FOR(soc_proxy_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from soc_proxy is serviced.", irq);
-  }
-#endif
-
-#if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopDarjeelingPlicPeripheralSpiDevice;
   status_default_mask = 0x0;
   for (dif_spi_device_irq_t irq = kDifSpiDeviceIrqUploadCmdfifoNotEmpty; irq <= kDifSpiDeviceIrqTpmRdfifoDrop;
@@ -2115,7 +2049,7 @@ static void peripheral_irqs_trigger(void) {
   }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopDarjeelingPlicPeripheralSpiHost0;
   status_default_mask = 0x0;
   for (dif_spi_host_irq_t irq = kDifSpiHostIrqError; irq <= kDifSpiHostIrqSpiEvent;
@@ -2139,7 +2073,7 @@ static void peripheral_irqs_trigger(void) {
   }
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
+#if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
   // lowrisc/opentitan#8656: Skip UART0 in non-DV setups due to interference
   // from the logging facility.
   // aon_timer may generate a NMI instead of a PLIC IRQ depending on the ROM.
