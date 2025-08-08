@@ -18,7 +18,10 @@
 #include "sensor_ctrl_regs.h"  // Generated.
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+// Test handles its own alerts.
+// `sensor_ctrl_aon_recov_alert` fires immediately on wake-up which doesn't
+// give us enough time to disable it specifically.
+OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
 static dif_pwrmgr_t pwrmgr;
 static dif_rv_plic_t plic;
