@@ -32,7 +32,8 @@ package gpio_env_pkg;
   typedef virtual gpio_straps_if straps_vif;
   typedef class gpio_env_cfg;
   typedef class gpio_env_cov;
-  typedef cip_base_virtual_sequencer #(gpio_env_cfg, gpio_env_cov) gpio_virtual_sequencer;
+  typedef class gpio_seq_item;
+  typedef class gpio_strap_agent_cfg;
 
   // structure to indicate gpio pin transition and type of transition
   // transition_occurred: 1-yes, 0-no
@@ -53,9 +54,21 @@ package gpio_env_pkg;
   } gpio_reg_update_due_t;
 
   // package sources
+  `include "gpio_agent/gpio_strap_agent_cfg.sv"
   `include "gpio_env_cfg.sv"
+  `include "seq_lib/gpio_seq_item.sv"
+  `include "gpio_virtual_sequencer.sv"
+
+  typedef gpio_virtual_sequencer #(.CFG_T(gpio_strap_agent_cfg),
+    .COV_T(gpio_env_cov),
+    .ITEM_T(uvm_sequence_item),
+    .RSP_ITEM_T(uvm_sequence_item)) strap_sequencer;
+
+  `include "gpio_agent/gpio_strap_monitor.sv"
+  `include "gpio_agent/gpio_strap_driver.sv"
+  `include "gpio_agent/gpio_strap_agent.sv"
   `include "gpio_env_cov.sv"
+  `include "gpio_vseq_list.sv"
   `include "gpio_scoreboard.sv"
   `include "gpio_env.sv"
-  `include "gpio_vseq_list.sv"
 endpackage

@@ -9,12 +9,11 @@
 //    - The data read and sampled_straps_o will be checked in the scoreboard.
 //    - Drive the gpio_out to make sure that has no impact on straps registers.
 //    - Read to make sure that if does not affect the straps registers after drive the gpio_out.
-//    - Apply reset and make sure the strap registers are clean.
-//    - Read straps registers after reset.
-//    - Iterate again the same flow, with new random values.
-class ${module_instance_name}_rand_straps_vseq extends ${module_instance_name}_base_vseq;
+//    - Random apply reset and make sure the strap registers are clean,
+//    using the stress_all wrap tests with random reset vseq.
+class gpio_rand_straps_vseq extends gpio_base_vseq;
 
-  `uvm_object_utils(${module_instance_name}_rand_straps_vseq)
+  `uvm_object_utils(gpio_rand_straps_vseq)
 
   // gpio input to drive
   rand bit [NUM_GPIOS-1:0] gpio_in;
@@ -23,7 +22,7 @@ class ${module_instance_name}_rand_straps_vseq extends ${module_instance_name}_b
   // gpio output enable to program in register
   rand bit [NUM_GPIOS-1:0] gpio_oe;
 
-  function new(string name = "${module_instance_name}_rand_straps_vseq");
+  function new(string name = "gpio_rand_straps_vseq");
     super.new(name);
   endfunction
 
@@ -31,75 +30,91 @@ class ${module_instance_name}_rand_straps_vseq extends ${module_instance_name}_b
   // check they match the expected value in
   // the scoreboard
   task csr_strap_read();
-    fork
-      begin
-        uvm_status_e status;
-        ral.hw_straps_data_in.mirror(status, UVM_CHECK);
-        `DV_CHECK_EQ(status, UVM_IS_OK)
-        `uvm_info(`gfn, $sformatf("Read the data_in status = %0d", status), UVM_HIGH)
-      end
-      begin
-        uvm_status_e status;
-        ral.hw_straps_data_in_valid.mirror(status, UVM_CHECK);
-        `DV_CHECK_EQ(status, UVM_IS_OK)
-        `uvm_info(`gfn, $sformatf("Read the data valid status = %0d", status), UVM_HIGH)
-      end
-    join
+    uvm_status_e status_data_in;
+    uvm_status_e status_data_in_valid;
+
+    `uvm_info(`gfn, $sformatf("Reading the data_in status = %0d", status_data_in), UVM_HIGH)
+    ral.hw_straps_data_in.mirror(.status(status_data_in), .check(UVM_CHECK), .prior(100));
+    cfg.clk_rst_vif.wait_clks_or_rst(1);
+    `uvm_info(`gfn, $sformatf("Reading the data valid status = %0d",
+                              status_data_in_valid), UVM_HIGH)
+    ral.hw_straps_data_in_valid.mirror(.status(status_data_in_valid),
+                                       .check(UVM_CHECK),
+                                       .prior(100));
+    // Check for errors if is not under reset.
+    if (!cfg.clk_rst_vif.rst_n) begin
+      `uvm_info(`gfn, $sformatf("Reading ignored because is under reset"), UVM_LOW)
+    end else begin
+      `DV_CHECK_EQ(status_data_in, UVM_IS_OK)
+      `DV_CHECK_EQ(status_data_in_valid, UVM_IS_OK)
+    end
   endtask : csr_strap_read
 
+  // Drive the strap_en_i input signal using the strap_en_seq sequence
+  task set_strap_en(bit strap_en);
+
+    string strap_seqr = "strap_sequencer";
+    strap_sequencer seqr;
+    gpio_strap_en_vseq strap_en_seq;
+
+    // Instantiate the strap_en sequence
+    strap_en_seq = gpio_strap_en_vseq::type_id::create("strap_en_seq");
+
+    if(!$cast(seqr, p_sequencer.get_sequencer(strap_seqr))) begin
+      `uvm_fatal(`gfn, "cast error getting the strap sequencer")
+    end
+
+    // Start the strap_en_seq sequence with the desired value.
+    if (seqr != null) begin
+      `uvm_info(`gfn, $sformatf("Driving strap_en = %0d", strap_en), UVM_HIGH)
+      strap_en_seq.strap_en = strap_en;
+      strap_en_seq.start(seqr);
+    end
+  endtask : set_strap_en
+
   task test_straps_gpio_in();
-    // Drive the gpio_in
+
     drive_gpio_in(gpio_in);
+    cfg.clk_rst_vif.wait_clks_or_rst(1);
 
     // Random wait to drive the strap_en
-    // The strap feature should work from zero clock cycles
-    // after driving the gpio_i inputs into the interface.
     short_wait(0);
+    if (!cfg.clk_rst_vif.rst_n) return;
 
     // Trigger the snapshot of gpio_in to be stored in the straps registers
-    cfg.straps_vif_inst.tb_port.strap_en = 1;
+    set_strap_en('b1);
+    if (!cfg.clk_rst_vif.rst_n) return;
     // Wait at least one clock cycle to update the strap register values.
-    short_wait(1);
-
+    cfg.clk_rst_vif.wait_clks_or_rst(4);
     // Read the hw_straps_data_in registers and check the expected value in the scoreboard
     csr_strap_read();
-
+    cfg.clk_rst_vif.wait_clks_or_rst(1);
     // Random wait
     short_wait(0);
-
     // Stop driving gpio_in to make sure that, this is not affecting the strap_en registers
     // so it will keep the same values were stored before.
     undrive_gpio_in();
-
+    cfg.clk_rst_vif.wait_clks_or_rst(1);
     // Random wait
-    short_wait(0);
-
+    short_wait(1);
     // Read to make sure that if does not affect the straps registers after undrive the gpio_in
     csr_strap_read();
-
+    cfg.clk_rst_vif.wait_clks_or_rst(1);
   endtask : test_straps_gpio_in
 
   task test_straps_gpio_out();
-
-    // Additional verification
     // Drive the gpio_out to make sure that has no impact on straps registers.
     // then read the gpio strap registers again
     cfg.gpio_vif.drive_en('0);
     csr_wr(ral.direct_out, gpio_out);
+    cfg.clk_rst_vif.wait_clks_or_rst(1);
     csr_wr(ral.direct_oe, gpio_oe);
-
-    // Random wait
-    short_wait(0);
-
+    cfg.clk_rst_vif.wait_clks_or_rst(2);
     // Read to make sure that if does not affect the straps registers after drive the gpio_out
     csr_strap_read();
-
+    cfg.clk_rst_vif.wait_clks_or_rst(1);
   endtask : test_straps_gpio_out
 
-  // This task start the strap en test. First it will test the strap enable
-  // with the driven gpio_i. On a second step drive the gpio_out and check the strap
-  // registers based on that. And finally applies a second reset and check if the strap registers
-  // are reseted.
   task start_test();
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_in)
@@ -108,35 +123,15 @@ class ${module_instance_name}_rand_straps_vseq extends ${module_instance_name}_b
 
     // User case to test the straps output, with gpio_in data randomised
     test_straps_gpio_in();
-
     // User case to test the straps output/registers, with gpio_out data randomised
     // The gpio_out should not affect the straps output/registers.
     test_straps_gpio_out();
-
-    // Random wait
-    short_wait(0);
-
-    // Set zero to the strap_en input.
-    cfg.straps_vif_inst.tb_port.strap_en = 0;
-    // Apply reset and make sure the strap registers are clean
-    apply_reset();
-
-    // Random wait
-    // At least one clock cycle required to take the updated register values.
-    short_wait(1);
-
-    // Read the straps registers after reset
-    csr_strap_read();
-
   endtask : start_test
 
   task body();
-    `uvm_info(`gfn, "Starting the test", UVM_HIGH)
-    // Just a minimum one clock cycle wait between more than one iteration if this
-    // test is executed into the stress_all virtual sequence.
-    short_wait(1);
-    start_test();
-    `uvm_info(`gfn, "End of the test", UVM_HIGH)
+      `uvm_info(`gfn, "Start of Test", UVM_HIGH)
+      start_test();
+      `uvm_info(`gfn, "End of Test", UVM_HIGH)
   endtask : body
 
-endclass : ${module_instance_name}_rand_straps_vseq
+endclass : gpio_rand_straps_vseq

@@ -5,24 +5,24 @@
 // combine all gpio seqs (except below seqs) in one seq to run sequentially
 // 1. csr seq, which requires scb to be disabled
 // 2. gpio_cfg_update_on_fly, which requires zero_delays as it's very timing sensitive
-class ${module_instance_name}_stress_all_vseq extends ${module_instance_name}_base_vseq;
-  `uvm_object_utils(${module_instance_name}_stress_all_vseq)
+class gpio_stress_all_vseq extends gpio_base_vseq;
+  `uvm_object_utils(gpio_stress_all_vseq)
 
   `uvm_object_new
 
   task body();
-    string seq_names[] = {"${module_instance_name}_smoke_vseq",
-                          // "${module_instance_name}_common_vseq",
+    string seq_names[] = {"gpio_smoke_vseq",
+                          // "gpio_common_vseq",
                           // does not support intr_test as plus_arg disable do_clear_all_interrupts
-                          "${module_instance_name}_random_dout_din_vseq",
-                          "${module_instance_name}_dout_din_regs_random_rw_vseq",
-                          "${module_instance_name}_intr_rand_pgm_vseq",
-                          "${module_instance_name}_rand_intr_trigger_vseq",
-                          "${module_instance_name}_random_long_reg_writes_reg_reads_vseq",
-                          "${module_instance_name}_rand_straps_vseq"};
+                          "gpio_random_dout_din_vseq",
+                          "gpio_dout_din_regs_random_rw_vseq",
+                          "gpio_intr_rand_pgm_vseq",
+                          "gpio_rand_intr_trigger_vseq",
+                          "gpio_random_long_reg_writes_reg_reads_vseq",
+                          "gpio_rand_straps_vseq"};
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence   seq;
-      ${module_instance_name}_base_vseq gpio_vseq;
+      gpio_base_vseq gpio_vseq;
       uint           seq_idx = $urandom_range(0, seq_names.size - 1);
 
       seq = create_seq_by_name(seq_names[seq_idx]);
