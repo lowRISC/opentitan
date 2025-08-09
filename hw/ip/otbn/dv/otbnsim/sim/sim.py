@@ -28,6 +28,7 @@ class OTBNSim:
         self.program: List[OTBNInsn] = []
         self.loop_warps: LoopWarps = {}
         self.stats: Optional[ExecutionStats] = None
+        self.symbols: Dict[str, int] = {}
         self._execute_generator: Optional[Iterator[None]] = None
         self._next_insn: Optional[OTBNInsn] = None
 
@@ -49,7 +50,7 @@ class OTBNSim:
         format.
 
         '''
-        self.state.dmem.load_le_words(data, has_validity)
+        self.state.dmem.load_le_words(data, has_validity, word_offset=0)
 
     def start(self, collect_stats: bool) -> None:
         '''Prepare to start the execution.
