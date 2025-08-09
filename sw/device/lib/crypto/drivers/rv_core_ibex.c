@@ -6,13 +6,45 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/csr.h"
+#include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/crypto/impl/status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rv_core_ibex_regs.h"
 
 enum {
   kBaseAddr = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR,
+  /**
+   * Mask for extracting cpuctrl_csr[1] and cpuctrl_csr[2] is 0b11.
+   */
+  kMask = 0x3,
+  /**
+   * The first item is cpuctrl_csr[1].
+   */
+  kIdx = 0x1,
+  /**
+   * cpuctrl_csr[1] and cpuctrl_csr[2] should be set to 0b11.
+   */
+  kExpectedConfig = 0x3,
 };
+
+hardened_bool_t ibex_check_security_config(void) {
+  uint32_t cpuctrl_csr;
+  CSR_READ(CSR_REG_CPUCTRL, &cpuctrl_csr);
+
+  // Check if cpuctrl_csr[1] (data_ind_timing) and cpuctrl_csr[2]
+  // (dummy_instr_en) is set to 1 (enabled).
+  bitfield_field32_t cpuctrl_mask = {.mask = kMask, .index = kIdx};
+  uint32_t cpuctrl_cfg = bitfield_field32_read(cpuctrl_csr, cpuctrl_mask);
+
+  if (launder32(cpuctrl_cfg) != kExpectedConfig) {
+    return kHardenedBoolFalse;
+  }
+  HARDENED_CHECK_EQ(cpuctrl_cfg, kExpectedConfig);
+
+  return kHardenedBoolTrue;
+}
 
 /**
  * Blocks until data is ready in the RND register.
