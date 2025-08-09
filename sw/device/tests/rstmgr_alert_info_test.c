@@ -745,8 +745,7 @@ bool test_main(void) {
   LOG_INFO("reset info = 0x%02X", rst_info);
   global_alert_called = 0;
 
-  // TODO(#13098): Change to equality after #13277 is merged.
-  if (rst_info & kDifRstmgrResetInfoPor) {
+  if (rst_info == kDifRstmgrResetInfoPor) {
     // Initialize the counter. Upon POR they have random values.
     CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kEventCounter));
     CHECK_STATUS_OK(ret_sram_testutils_counter_get(kEventCounter, &event_idx));

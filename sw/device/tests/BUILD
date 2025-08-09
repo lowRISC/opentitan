@@ -905,6 +905,7 @@ opentitan_test(
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/dif:usbdev",
@@ -932,6 +933,7 @@ cc_library(
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
@@ -3471,55 +3473,6 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
     silicon = silicon_params(
-        test_cmd = """
-            --bootstrap={firmware}
-        """,
-        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
-    ),
-    # This test can take > 40 minutes, so mark it manual as it shouldn't run
-    # in CI/nightlies.
-    verilator = verilator_params(tags = ["manual"]),
-    deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/runtime:irq",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:ret_sram_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/tests/sim_dv:pwrmgr_sleep_all_wake_ups_impl",
-    ],
-)
-
-# This test reproduces a silicon failure, but passes in all other environments.
-# TODO(lowrisc/opentitan#20798)  Remove this test and extend
-# pwrmgr_random_sleep_all_wake_ups to cover all wakeups once this issue is
-# fixed.
-opentitan_test(
-    name = "pwrmgr_sleep_wake_5_bug_test",
-    srcs = ["pwrmgr_sleep_wake_5_bug_test.c"],
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
-        },
-    ),
-    fpga = fpga_params(
-        test_cmd = """
-            --bootstrap={firmware}
-        """,
-        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
-    ),
-    silicon = silicon_params(
-        tags = ["broken"],
         test_cmd = """
             --bootstrap={firmware}
         """,

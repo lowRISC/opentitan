@@ -84,7 +84,7 @@
             Refer to `chip_sw_rstmgr_*sys_reset_info`.
 
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
-            This can be an important diagnostic tool, so setting it to SV2.
+            This can be an important diagnostic tool, so setting it to SV1.
             This test already runs in CW310.
             '''
       stage: V2
@@ -132,7 +132,7 @@
             Refer to `chip_sw_rstmgr_*sys_reset_info`.
 
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
-            This can be an important diagnostic tool, so setting it to SV3.
+            This can be an important diagnostic tool, so setting it to SV1.
             '''
       stage: V2
       si_stage: SV1

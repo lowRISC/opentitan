@@ -152,7 +152,6 @@ test_suite(
         "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_test",
         "//sw/device/tests:pwrmgr_random_sleep_all_wake_ups",
         "//sw/device/tests:pwrmgr_sleep_disabled_test",
-        "//sw/device/tests:pwrmgr_sleep_wake_5_bug_test",
         "//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test",
         "//sw/device/tests:pwrmgr_wdog_reset_reqs_test",
         "//sw/device/tests:rstmgr_alert_info_test",

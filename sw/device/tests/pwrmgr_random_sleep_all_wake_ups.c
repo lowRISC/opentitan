@@ -98,18 +98,9 @@ bool test_main(void) {
     CHECK_STATUS_OK(
         ret_sram_testutils_counter_get(kCounterCases, &wakeup_count));
 
-    // Check if all wakeups are tested, or some need to be skipped.
-    // There is a bug in the last wakeup (5), so this test skips that
-    // and there is a separate test that triggers it.
-    // TODO(lowrisc/opentitan#20798) Enable all wakeups once this is addressed.
+    // The test is done once all wakeups are tested.
     if (wakeup_count >= 2 * (PWRMGR_PARAM_NUM_WKUPS - 1)) {
       return true;
-    } else if (kDeviceType != kDeviceSimDV &&
-               wakeup_count == 2 * PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX) {
-      // Skip both normal and deep sleep.
-      wakeup_count += 2;
-      CHECK_STATUS_OK(
-          ret_sram_testutils_counter_set(kCounterCases, wakeup_count));
     }
   }
   // All is well, get ready for the next unit, normal and deep sleep.
