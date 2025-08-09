@@ -139,12 +139,13 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
 
   // Trigger window.
   pentest_set_trigger_high();
-  otcrypto_aes(&aes_key, aes_iv, aes_mode, op, input, aes_padding, output);
+  otcrypto_status_t status =
+      otcrypto_aes(&aes_key, aes_iv, aes_mode, op, input, aes_padding, output);
   pentest_set_trigger_low();
 
   // Return data back to host.
   *data_out_len = padded_len_bytes;
-  *cfg_out = 0;
+  *cfg_out = (size_t)status.value;
   memset(data_out, 0, AES_CMD_MAX_MSG_BYTES);
   memcpy(data_out, output_buf, padded_len_bytes);
 
@@ -197,14 +198,14 @@ status_t cryptolib_sca_drbg_impl(uint8_t entropy[DRBG_CMD_MAX_ENTROPY_BYTES],
   if (trigger == 1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_drbg_generate(nonce_in, output));
+  otcrypto_status_t status = otcrypto_drbg_generate(nonce_in, output);
   if (trigger == 1) {
     pentest_set_trigger_low();
   }
 
   // Return data back to host.
   *data_out_len = entropy_len;
-  *cfg_out = 0;
+  *cfg_out = (size_t)status.value;
   memset(data_out, 0, DRBG_CMD_MAX_OUTPUT_BYTES);
   memcpy(data_out, output_data, *data_out_len);
 
@@ -302,15 +303,16 @@ status_t cryptolib_sca_gcm_impl(
       LOG_ERROR("Unrecognized AES-GCM tag length: %d", *tag_len);
       return INVALID_ARGUMENT();
   }
-  LOG_INFO("GCM IMPl1");
+
   // Trigger window.
   pentest_set_trigger_high();
-  TRY(otcrypto_aes_gcm_encrypt(&gcm_key, plaintext, gcm_iv, gcm_aad,
-                               gcm_tag_len, actual_ciphertext, actual_tag));
+  otcrypto_status_t status =
+      otcrypto_aes_gcm_encrypt(&gcm_key, plaintext, gcm_iv, gcm_aad,
+                               gcm_tag_len, actual_ciphertext, actual_tag);
   pentest_set_trigger_low();
-  LOG_INFO("GCM IMPl1");
+
   // Return data back to host.
-  *cfg_out = 0;
+  *cfg_out = (size_t)status.value;
   // Ciphertext.
   *data_out_len = data_in_len;
   memset(data_out, 0, AES_CMD_MAX_MSG_BYTES);
@@ -396,12 +398,12 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
 
   // Trigger window.
   pentest_set_trigger_high();
-  TRY(otcrypto_hmac(&hmac_key, input_message, tag));
+  otcrypto_status_t status = otcrypto_hmac(&hmac_key, input_message, tag);
   pentest_set_trigger_low();
 
   // Return data back to host.
   *data_out_len = tag_bytes;
-  *cfg_out = 0;
+  *cfg_out = (size_t)status.value;
   memset(data_out, 0, HMAC_CMD_MAX_TAG_BYTES);
   memcpy(data_out, tag_buf, tag_bytes);
 
