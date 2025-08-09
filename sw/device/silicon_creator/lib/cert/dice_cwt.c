@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "include/dice/cbor_reader.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/cert/cbor.h"
@@ -26,6 +27,17 @@
 #include "otp_ctrl_regs.h"  // Generated.
 
 const dice_cert_format_t kDiceCertFormat = kDiceCertFormatCWTAndroid;
+
+enum {
+  // Must match the label used for the public key in
+  // `cwt_dice_chain_entry_payload.hjson`.
+  kDiceCwtSubjectPublicKeyLabel = -4670552,
+
+  // Must match the labels used for the public key X/Y coords in
+  // `cwt_cose_key.hjson`.
+  kDiceCwtCoseKeyXCoordLabel = -2,
+  kDiceCwtCoseKeyYCoordLabel = -3,
+};
 
 enum config_desc_labels {
   kSecurityVersionLabel = -70005,
@@ -347,10 +359,140 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
   return kErrorOk;
 }
 
+static rom_error_t extract_pubkey_from_cose_key(const uint8_t *obj,
+                                                size_t obj_size,
+                                                const uint32_t **x_coord_p,
+                                                const uint32_t **y_coord_p) {
+  // Initialize CBOR object.
+  struct CborIn cbor_obj;
+  CborInInit(obj, obj_size, &cbor_obj);
+
+  // Find the x/y-coord bstrs.
+  size_t num_pairs = 0;
+  CborReadMap(&cbor_obj, &num_pairs);
+  if (num_pairs == 0) {
+    return kErrorDiceCwtKeyCoordsNotFound;
+  }
+
+  size_t x_coord_size = 0;
+  size_t y_coord_size = 0;
+  *x_coord_p = NULL;
+  *y_coord_p = NULL;
+
+  // Locate public key coords bstrs.
+  int64_t key = 0;
+  for (size_t i = 0; i < num_pairs; ++i) {
+    CborReadInt(&cbor_obj, &key);
+    if (key == kDiceCwtCoseKeyXCoordLabel) {
+      CborReadBstr(&cbor_obj, &x_coord_size, (const uint8_t **)x_coord_p);
+      continue;
+    } else if (key == kDiceCwtCoseKeyYCoordLabel) {
+      CborReadBstr(&cbor_obj, &y_coord_size, (const uint8_t **)y_coord_p);
+      continue;
+    }
+    CborReadSkip(&cbor_obj);
+  }
+
+  // Confirm we found the key.
+  if (x_coord_p == NULL || y_coord_p == NULL) {
+    return kErrorDiceCwtKeyCoordsNotFound;
+  }
+  // Confirm the key is the correct size.
+  if (x_coord_size != kEcdsaP256PublicKeyCoordBytes ||
+      y_coord_size != kEcdsaP256PublicKeyCoordBytes) {
+    return kErrorDiceCwtCoseKeyBadSize;
+  }
+
+  return kErrorOk;
+}
+
+static rom_error_t extract_pubkey_from_cose_sign1_payload(
+    const uint8_t *payload, size_t payload_size, const uint32_t **x_coord_p,
+    const uint32_t **y_coord_p) {
+  // Initialize CBOR object.
+  struct CborIn cbor_obj;
+  CborInInit(payload, payload_size, &cbor_obj);
+
+  // Find the COSE_Key object in the COSE_Sign1 payload.
+  size_t num_payload_pairs = 0;
+  CborReadMap(&cbor_obj, &num_payload_pairs);
+  if (num_payload_pairs == 0) {
+    return kErrorDiceCwtCoseKeyNotFound;
+  }
+
+  int64_t key = 0;
+  size_t cose_key_size = 0;
+  const uint8_t *cose_key_p = NULL;
+  for (size_t i = 0; i < num_payload_pairs; ++i) {
+    CborReadInt(&cbor_obj, &key);
+    if (key == kDiceCwtSubjectPublicKeyLabel) {
+      CborReadBstr(&cbor_obj, &cose_key_size, &cose_key_p);
+      break;
+    }
+    CborReadSkip(&cbor_obj);
+  }
+
+  // Check the COSE_Key object was found in the COSE_Sign1 payload.
+  if (key != kDiceCwtSubjectPublicKeyLabel) {
+    return kErrorDiceCwtCoseKeyNotFound;
+  }
+
+  // Extract the pubkey from the COSE_Key payload.
+  RETURN_IF_ERROR(extract_pubkey_from_cose_key(cose_key_p, cose_key_size,
+                                               x_coord_p, y_coord_p));
+
+  return kErrorOk;
+}
+
 rom_error_t dice_cert_check_valid(const perso_tlv_cert_obj_t *cert_obj,
                                   const hmac_digest_t *pubkey_id,
                                   const ecdsa_p256_public_key_t *pubkey,
                                   hardened_bool_t *cert_valid_output) {
-  // TODO(lowRISC/opentitan:#24281): implement body
+  const uint32_t *x_coord_p = NULL;
+  const uint32_t *y_coord_p = NULL;
+
+  struct CborIn cbor_obj;
+  CborInInit(cert_obj->cert_body_p, cert_obj->cert_body_size, &cbor_obj);
+
+  // Check if CBOR object is array or map. UDS is a COSE_Key which is a map.
+  // CDI_* are COSE_Sign1 objects, which are arrays.
+  size_t num_array_items = 0;
+  CborReadArray(&cbor_obj, &num_array_items);
+  size_t num_map_items = 0;
+  CborReadMap(&cbor_obj, &num_map_items);
+
+  // Extract the public key from the CBOR certificate object.
+  if (num_array_items > 0 && num_map_items == 0) {
+    // Skip first two parent items; subject public key is in the "payload" item
+    // of COSE_Sign1 object, which is encoded as a bstr.
+    CborReadSkip(&cbor_obj);
+    CborReadSkip(&cbor_obj);
+    size_t payload_size = 0;
+    const uint8_t *payload_p = NULL;
+    CborReadBstr(&cbor_obj, &payload_size, &payload_p);
+    RETURN_IF_ERROR(extract_pubkey_from_cose_sign1_payload(
+        payload_p, payload_size, &x_coord_p, &y_coord_p));
+  } else if (num_map_items > 0 && num_array_items == 0) {
+    RETURN_IF_ERROR(extract_pubkey_from_cose_key(cert_obj->cert_body_p,
+                                                 cert_obj->cert_body_size,
+                                                 &x_coord_p, &y_coord_p));
+  } else {
+    return kErrorDiceCwtCoseKeyNotFound;
+  }
+
+  // Compare the public key in the certificate to the public updated key.
+  for (size_t i = 0; i < kEcdsaP256PublicKeyCoordWords; ++i) {
+    if (x_coord_p[i] != pubkey->x[i]) {
+      *cert_valid_output = kHardenedBoolFalse;
+      return kErrorOk;
+    }
+    if (y_coord_p[i] != pubkey->y[i]) {
+      *cert_valid_output = kHardenedBoolFalse;
+      return kErrorOk;
+    }
+  }
+
+  *cert_valid_output = kHardenedBoolTrue;
+
   return kErrorOk;
 }
