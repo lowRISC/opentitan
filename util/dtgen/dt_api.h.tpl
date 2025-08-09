@@ -47,6 +47,13 @@ include_guard = "OPENTITAN_TOP_{}_DT_API_H_".format(top["name"].upper())
 ${helper.device_type_enum.render()}
 
 /**
+ * List of device types as defined macros.
+ *
+ * Can be useful for deciding whether or not to include a library header.
+ */
+${helper.device_type_defines.render()}
+
+/**
  * List of instance IDs.
  *
  * Instance IDs are guaranteed to be numbered consecutively from 0.
