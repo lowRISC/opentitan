@@ -1,0 +1,35 @@
+"bazelbuild/rules_foreign_cc"
+
+module(
+    name = "rules_foreign_cc",
+    version = "0.9.0",
+    compatibility_level = 1,
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.1.1")
+bazel_dep(name = "platforms", version = "0.0.4")
+
+
+ext = use_extension("@rules_foreign_cc//foreign_cc:extensions.bzl", "ext")
+use_repo(ext, "cmake_3.23.2_toolchains")
+use_repo(ext, "rules_foreign_cc_framework_toolchain_freebsd")
+use_repo(ext, "rules_foreign_cc_framework_toolchain_linux")
+use_repo(ext, "rules_foreign_cc_framework_toolchain_macos")
+use_repo(ext, "rules_foreign_cc_framework_toolchain_windows")
+use_repo(ext, "cmake_src")
+use_repo(ext, "gnumake_src")
+use_repo(ext, "ninja_build_src")
+use_repo(ext, "ninja_1.11.0_toolchains")
+register_toolchains(
+    "@rules_foreign_cc_framework_toolchain_freebsd//:toolchain",
+    "@rules_foreign_cc_framework_toolchain_linux//:toolchain",
+    "@rules_foreign_cc_framework_toolchain_macos//:toolchain",
+    "@rules_foreign_cc_framework_toolchain_windows//:toolchain",
+    "@rules_foreign_cc//toolchains:built_make_toolchain",
+    "@rules_foreign_cc//toolchains:preinstalled_autoconf_toolchain",
+    "@rules_foreign_cc//toolchains:preinstalled_automake_toolchain",
+    "@rules_foreign_cc//toolchains:preinstalled_m4_toolchain",
+    "@rules_foreign_cc//toolchains:preinstalled_pkgconfig_toolchain",
+    "@cmake_3.23.2_toolchains//:all",
+    "@ninja_1.11.0_toolchains//:all"
+)
