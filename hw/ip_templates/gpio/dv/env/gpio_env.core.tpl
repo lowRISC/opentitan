@@ -9,10 +9,21 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
+      - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}:0.1")}
     files:
       - ${module_instance_name}_env_pkg.sv
       - ${module_instance_name}_env_cfg.sv: {is_include_file: true}
       - ${module_instance_name}_env_cov.sv: {is_include_file: true}
+      - ${module_instance_name}_virtual_sequencer.sv: {is_include_file: true}
+      - model/${module_instance_name}_model.sv: {is_include_file: true}
+      - ${module_instance_name}_agent/${module_instance_name}_strap_agent_cfg.sv: {is_include_file: true}
+      - ${module_instance_name}_agent/${module_instance_name}_strap_driver.sv: {is_include_file: true}
+      - ${module_instance_name}_agent/${module_instance_name}_strap_monitor.sv: {is_include_file: true}
+      - ${module_instance_name}_agent/${module_instance_name}_strap_agent.sv: {is_include_file: true}
+      - ${module_instance_name}_agent/${module_instance_name}_data_agent_cfg.sv: {is_include_file: true}
+      - ${module_instance_name}_agent/${module_instance_name}_data_agent.sv: {is_include_file: true}
+      - ${module_instance_name}_agent/${module_instance_name}_data_driver.sv: {is_include_file: true}
+      - ${module_instance_name}_agent/${module_instance_name}_data_monitor.sv: {is_include_file: true}
       - ${module_instance_name}_scoreboard.sv: {is_include_file: true}
       - ${module_instance_name}_env.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_vseq_list.sv: {is_include_file: true}
@@ -32,6 +43,8 @@ filesets:
       - seq_lib/${module_instance_name}_intr_rand_pgm_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_intr_with_filter_rand_intr_event_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_rand_straps_vseq.sv : {is_include_file: true}
+      - seq_lib/${module_instance_name}_seq_item.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_strap_en_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

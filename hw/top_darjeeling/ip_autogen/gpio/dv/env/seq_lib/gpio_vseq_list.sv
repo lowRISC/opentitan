@@ -15,4 +15,5 @@
 `include "gpio_random_long_reg_writes_reg_reads_vseq.sv"
 `include "gpio_full_random_vseq.sv"
 `include "gpio_stress_all_vseq.sv"
+`include "gpio_strap_en_vseq.sv"
 `include "gpio_rand_straps_vseq.sv"
