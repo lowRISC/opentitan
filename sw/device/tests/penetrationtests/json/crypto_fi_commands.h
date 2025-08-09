@@ -15,6 +15,9 @@ extern "C" {
 #define CRYPTOFI_HMAC_CMD_MAX_KEY_WORDS 16
 #define CRYPTOFI_HMAC_CMD_MAX_TAG_WORDS 16
 
+#define CRYPTOFI_AES_MAX_MSG_BYTES 16
+#define CRYPTOFI_AES_MAX_KEY_BYTES 16
+
 // clang-format off
 
 #define CRYPTOFI_SUBCOMMAND(_, value) \
@@ -34,6 +37,11 @@ RUST_ONLY(UJSON_SERDE_ENUM(CryptoFiSubcommand, crypto_fi_subcommand_t, CRYPTOFI_
     field(encrypt_trigger, bool) \
     field(ciphertext_trigger, bool)
 UJSON_SERDE_STRUCT(CryptoFiAesMode, crypto_fi_aes_mode_t, CRYPTOFI_AES_MODE);
+
+#define CRYPTOFI_AES_INPUT(field, string) \
+    field(plaintext, uint8_t, CRYPTOFI_AES_MAX_MSG_BYTES) \
+    field(key, uint8_t, CRYPTOFI_AES_MAX_KEY_BYTES)
+UJSON_SERDE_STRUCT(CryptoFiAesInput, crypto_fi_aes_input_t, CRYPTOFI_AES_INPUT);
 
 #define CRYPTOFI_KMAC_MODE(field, string) \
     field(key_trigger, bool) \
