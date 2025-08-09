@@ -86,8 +86,6 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
 
   cp_transfer_width: coverpoint dma_config.per_transfer_width;
 
-  cp_opcode: coverpoint dma_config.opcode;
-
   cp_mem_range_base: coverpoint dma_config.mem_range_base {
     `DMA_ENV_COV_32B_ADDR_BINS
   }
@@ -110,6 +108,8 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
 
   cp_initial_transfer: coverpoint initial_transfer;
 
+  cp_opcode: coverpoint dma_config.opcode;
+
   cr_src_addr_X_src_asid: cross
       cp_src_addr,
       cp_src_asid;
@@ -118,43 +118,34 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
       cp_dst_addr,
       cp_dst_asid;
 
-  cr_opcode_X_src_asid_X_dst_asid_X_handshake: cross
-      cp_opcode,
+  cr_src_asid_X_dst_asid_X_handshake: cross
       cp_src_asid,
       cp_dst_asid,
       cp_handshake;
 
-  cr_opcode_X_chunk_data_size_X_src_asid_X_dst_asid: cross
-      cp_opcode,
+  cr_chunk_data_size_X_src_asid_X_dst_asid: cross
       cp_chunk_data_size,
       cp_src_asid,
       cp_dst_asid;
 
-  cr_opcode_X_total_data_size_X_transfer_width_X_src_asid_X_dst_asid: cross
-      cp_opcode,
+  cr_total_data_size_X_transfer_width: cross
       cp_total_data_size,
-      cp_transfer_width,
-      cp_src_asid,
-      cp_dst_asid;
+      cp_transfer_width;
 
-  cr_opcode_X_handshake_X_chunk_data_size_X_transfer_width_X_src_asid_X_dst_asid: cross
-      cp_opcode,
+  cr_handshake_X_transfer_width_X_src_asid_X_dst_asid: cross
       cp_handshake,
-      cp_chunk_data_size,
       cp_transfer_width,
       cp_src_asid,
       cp_dst_asid;
 
-  cr_opcode_X_handshake_X_dst_addr_inc_X_dst_chunk_wrap_X_src_addr_inc_X_src_chunk_wrap: cross
-      cp_opcode,
+  cr_handshake_X_dst_addr_inc_X_dst_chunk_wrap_X_src_addr_inc_X_src_chunk_wrap: cross
       cp_handshake,
       cp_dst_chunk_wrap,
       cp_dst_addr_inc,
       cp_src_chunk_wrap,
       cp_src_addr_inc;
 
-  cr_opcode_X_handshake_X_initial_transfer: cross
-      cp_opcode,
+  cr_handshake_X_initial_transfer: cross
       cp_handshake,
       cp_initial_transfer;
 
