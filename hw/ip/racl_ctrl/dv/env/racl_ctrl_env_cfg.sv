@@ -12,6 +12,10 @@ class racl_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(racl_ctrl_reg_block));
   // An interface that will be bound to the racl_policies_o output of the dut.
   virtual racl_ctrl_policies_if policies_vif;
 
+  // Configuration for the two error log agents
+  rand racl_error_log_agent_cfg internal_error_agent_cfg;
+  rand racl_error_log_agent_cfg external_error_agent_cfg;
+
   extern function new (string name="");
   extern virtual function void initialize(bit [31:0] csr_base_addr = '1);
 endclass
@@ -30,4 +34,7 @@ function void racl_ctrl_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
 
   // Tell regs about ral, which contains the actual register model.
   regs.set_reg_block(ral);
+
+  internal_error_agent_cfg = racl_error_log_agent_cfg::type_id::create("internal_error_agent_cfg");
+  external_error_agent_cfg = racl_error_log_agent_cfg::type_id::create("external_error_agent_cfg");
 endfunction
