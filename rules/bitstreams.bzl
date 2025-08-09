@@ -60,6 +60,25 @@ def _bitstreams_repo_impl(rctx):
     rctx.getenv("BITSTREAM")
     rctx.watch(rctx.attr.python_interpreter)
     rctx.watch(rctx.attr._cache_manager)
+
+    # We would like the rule to be re-evaluated when the commit hash changes.
+    # This can be done by watching for change of git HEAD, usually stored in `.git/HEAD`.
+    # However the exact place that this get stored depends on the exact setup, e.g. for submodule or worktrees,
+    # `.git` is a file storing actual git location. So we ask git to give us the path to HEAD.
+    #
+    # Don't fail if `git` fails, as this can happen with OT is used without SCM.
+    result = rctx.execute(["git", "rev-parse", "--path-format=absolute", "--git-path", "HEAD"], working_directory = str(rctx.workspace_root))
+    if result.return_code == 0:
+        head = rctx.read(result.stdout.strip())
+
+        # `head` would contain the commit hash for a loose checkout, however more often we checked out a branch.
+        # In that case, the file is `ref: refs/head/<branch name>`. We follow the reference and watch for that file
+        # as well, so we can detect new commits on the same branch as well as change of branches.
+        if head.startswith("ref: "):
+            result = rctx.execute(["git", "rev-parse", "--path-format=absolute", "--git-path", head.removeprefix("ref: ")], working_directory = str(rctx.workspace_root))
+            if result.return_code == 0:
+                rctx.watch(result.stdout.strip())
+
     result = rctx.execute(
         [
             rctx.path(rctx.attr.python_interpreter),
