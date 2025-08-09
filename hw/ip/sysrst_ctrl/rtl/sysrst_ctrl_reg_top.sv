@@ -953,11 +953,11 @@ module sysrst_ctrl_reg_top (
   assign unused_aon_auto_block_out_ctl_wdata =
       ^aon_auto_block_out_ctl_wdata;
 
-  logic  aon_com_pre_sel_ctl_0_key0_in_sel_0_qs_int;
-  logic  aon_com_pre_sel_ctl_0_key1_in_sel_0_qs_int;
-  logic  aon_com_pre_sel_ctl_0_key2_in_sel_0_qs_int;
-  logic  aon_com_pre_sel_ctl_0_pwrb_in_sel_0_qs_int;
-  logic  aon_com_pre_sel_ctl_0_ac_present_sel_0_qs_int;
+  logic  aon_com_pre_sel_ctl_0_key0_in_sel_qs_int;
+  logic  aon_com_pre_sel_ctl_0_key1_in_sel_qs_int;
+  logic  aon_com_pre_sel_ctl_0_key2_in_sel_qs_int;
+  logic  aon_com_pre_sel_ctl_0_pwrb_in_sel_qs_int;
+  logic  aon_com_pre_sel_ctl_0_ac_present_sel_qs_int;
   logic [4:0] aon_com_pre_sel_ctl_0_qs;
   logic [4:0] aon_com_pre_sel_ctl_0_wdata;
   logic aon_com_pre_sel_ctl_0_we;
@@ -966,11 +966,11 @@ module sysrst_ctrl_reg_top (
 
   always_comb begin
     aon_com_pre_sel_ctl_0_qs = 5'h0;
-    aon_com_pre_sel_ctl_0_qs[0] = aon_com_pre_sel_ctl_0_key0_in_sel_0_qs_int;
-    aon_com_pre_sel_ctl_0_qs[1] = aon_com_pre_sel_ctl_0_key1_in_sel_0_qs_int;
-    aon_com_pre_sel_ctl_0_qs[2] = aon_com_pre_sel_ctl_0_key2_in_sel_0_qs_int;
-    aon_com_pre_sel_ctl_0_qs[3] = aon_com_pre_sel_ctl_0_pwrb_in_sel_0_qs_int;
-    aon_com_pre_sel_ctl_0_qs[4] = aon_com_pre_sel_ctl_0_ac_present_sel_0_qs_int;
+    aon_com_pre_sel_ctl_0_qs[0] = aon_com_pre_sel_ctl_0_key0_in_sel_qs_int;
+    aon_com_pre_sel_ctl_0_qs[1] = aon_com_pre_sel_ctl_0_key1_in_sel_qs_int;
+    aon_com_pre_sel_ctl_0_qs[2] = aon_com_pre_sel_ctl_0_key2_in_sel_qs_int;
+    aon_com_pre_sel_ctl_0_qs[3] = aon_com_pre_sel_ctl_0_pwrb_in_sel_qs_int;
+    aon_com_pre_sel_ctl_0_qs[4] = aon_com_pre_sel_ctl_0_ac_present_sel_qs_int;
   end
 
   prim_reg_cdc #(
@@ -1000,11 +1000,11 @@ module sysrst_ctrl_reg_top (
   assign unused_aon_com_pre_sel_ctl_0_wdata =
       ^aon_com_pre_sel_ctl_0_wdata;
 
-  logic  aon_com_pre_sel_ctl_1_key0_in_sel_1_qs_int;
-  logic  aon_com_pre_sel_ctl_1_key1_in_sel_1_qs_int;
-  logic  aon_com_pre_sel_ctl_1_key2_in_sel_1_qs_int;
-  logic  aon_com_pre_sel_ctl_1_pwrb_in_sel_1_qs_int;
-  logic  aon_com_pre_sel_ctl_1_ac_present_sel_1_qs_int;
+  logic  aon_com_pre_sel_ctl_1_key0_in_sel_qs_int;
+  logic  aon_com_pre_sel_ctl_1_key1_in_sel_qs_int;
+  logic  aon_com_pre_sel_ctl_1_key2_in_sel_qs_int;
+  logic  aon_com_pre_sel_ctl_1_pwrb_in_sel_qs_int;
+  logic  aon_com_pre_sel_ctl_1_ac_present_sel_qs_int;
   logic [4:0] aon_com_pre_sel_ctl_1_qs;
   logic [4:0] aon_com_pre_sel_ctl_1_wdata;
   logic aon_com_pre_sel_ctl_1_we;
@@ -1013,11 +1013,11 @@ module sysrst_ctrl_reg_top (
 
   always_comb begin
     aon_com_pre_sel_ctl_1_qs = 5'h0;
-    aon_com_pre_sel_ctl_1_qs[0] = aon_com_pre_sel_ctl_1_key0_in_sel_1_qs_int;
-    aon_com_pre_sel_ctl_1_qs[1] = aon_com_pre_sel_ctl_1_key1_in_sel_1_qs_int;
-    aon_com_pre_sel_ctl_1_qs[2] = aon_com_pre_sel_ctl_1_key2_in_sel_1_qs_int;
-    aon_com_pre_sel_ctl_1_qs[3] = aon_com_pre_sel_ctl_1_pwrb_in_sel_1_qs_int;
-    aon_com_pre_sel_ctl_1_qs[4] = aon_com_pre_sel_ctl_1_ac_present_sel_1_qs_int;
+    aon_com_pre_sel_ctl_1_qs[0] = aon_com_pre_sel_ctl_1_key0_in_sel_qs_int;
+    aon_com_pre_sel_ctl_1_qs[1] = aon_com_pre_sel_ctl_1_key1_in_sel_qs_int;
+    aon_com_pre_sel_ctl_1_qs[2] = aon_com_pre_sel_ctl_1_key2_in_sel_qs_int;
+    aon_com_pre_sel_ctl_1_qs[3] = aon_com_pre_sel_ctl_1_pwrb_in_sel_qs_int;
+    aon_com_pre_sel_ctl_1_qs[4] = aon_com_pre_sel_ctl_1_ac_present_sel_qs_int;
   end
 
   prim_reg_cdc #(
@@ -1047,11 +1047,11 @@ module sysrst_ctrl_reg_top (
   assign unused_aon_com_pre_sel_ctl_1_wdata =
       ^aon_com_pre_sel_ctl_1_wdata;
 
-  logic  aon_com_pre_sel_ctl_2_key0_in_sel_2_qs_int;
-  logic  aon_com_pre_sel_ctl_2_key1_in_sel_2_qs_int;
-  logic  aon_com_pre_sel_ctl_2_key2_in_sel_2_qs_int;
-  logic  aon_com_pre_sel_ctl_2_pwrb_in_sel_2_qs_int;
-  logic  aon_com_pre_sel_ctl_2_ac_present_sel_2_qs_int;
+  logic  aon_com_pre_sel_ctl_2_key0_in_sel_qs_int;
+  logic  aon_com_pre_sel_ctl_2_key1_in_sel_qs_int;
+  logic  aon_com_pre_sel_ctl_2_key2_in_sel_qs_int;
+  logic  aon_com_pre_sel_ctl_2_pwrb_in_sel_qs_int;
+  logic  aon_com_pre_sel_ctl_2_ac_present_sel_qs_int;
   logic [4:0] aon_com_pre_sel_ctl_2_qs;
   logic [4:0] aon_com_pre_sel_ctl_2_wdata;
   logic aon_com_pre_sel_ctl_2_we;
@@ -1060,11 +1060,11 @@ module sysrst_ctrl_reg_top (
 
   always_comb begin
     aon_com_pre_sel_ctl_2_qs = 5'h0;
-    aon_com_pre_sel_ctl_2_qs[0] = aon_com_pre_sel_ctl_2_key0_in_sel_2_qs_int;
-    aon_com_pre_sel_ctl_2_qs[1] = aon_com_pre_sel_ctl_2_key1_in_sel_2_qs_int;
-    aon_com_pre_sel_ctl_2_qs[2] = aon_com_pre_sel_ctl_2_key2_in_sel_2_qs_int;
-    aon_com_pre_sel_ctl_2_qs[3] = aon_com_pre_sel_ctl_2_pwrb_in_sel_2_qs_int;
-    aon_com_pre_sel_ctl_2_qs[4] = aon_com_pre_sel_ctl_2_ac_present_sel_2_qs_int;
+    aon_com_pre_sel_ctl_2_qs[0] = aon_com_pre_sel_ctl_2_key0_in_sel_qs_int;
+    aon_com_pre_sel_ctl_2_qs[1] = aon_com_pre_sel_ctl_2_key1_in_sel_qs_int;
+    aon_com_pre_sel_ctl_2_qs[2] = aon_com_pre_sel_ctl_2_key2_in_sel_qs_int;
+    aon_com_pre_sel_ctl_2_qs[3] = aon_com_pre_sel_ctl_2_pwrb_in_sel_qs_int;
+    aon_com_pre_sel_ctl_2_qs[4] = aon_com_pre_sel_ctl_2_ac_present_sel_qs_int;
   end
 
   prim_reg_cdc #(
@@ -1094,11 +1094,11 @@ module sysrst_ctrl_reg_top (
   assign unused_aon_com_pre_sel_ctl_2_wdata =
       ^aon_com_pre_sel_ctl_2_wdata;
 
-  logic  aon_com_pre_sel_ctl_3_key0_in_sel_3_qs_int;
-  logic  aon_com_pre_sel_ctl_3_key1_in_sel_3_qs_int;
-  logic  aon_com_pre_sel_ctl_3_key2_in_sel_3_qs_int;
-  logic  aon_com_pre_sel_ctl_3_pwrb_in_sel_3_qs_int;
-  logic  aon_com_pre_sel_ctl_3_ac_present_sel_3_qs_int;
+  logic  aon_com_pre_sel_ctl_3_key0_in_sel_qs_int;
+  logic  aon_com_pre_sel_ctl_3_key1_in_sel_qs_int;
+  logic  aon_com_pre_sel_ctl_3_key2_in_sel_qs_int;
+  logic  aon_com_pre_sel_ctl_3_pwrb_in_sel_qs_int;
+  logic  aon_com_pre_sel_ctl_3_ac_present_sel_qs_int;
   logic [4:0] aon_com_pre_sel_ctl_3_qs;
   logic [4:0] aon_com_pre_sel_ctl_3_wdata;
   logic aon_com_pre_sel_ctl_3_we;
@@ -1107,11 +1107,11 @@ module sysrst_ctrl_reg_top (
 
   always_comb begin
     aon_com_pre_sel_ctl_3_qs = 5'h0;
-    aon_com_pre_sel_ctl_3_qs[0] = aon_com_pre_sel_ctl_3_key0_in_sel_3_qs_int;
-    aon_com_pre_sel_ctl_3_qs[1] = aon_com_pre_sel_ctl_3_key1_in_sel_3_qs_int;
-    aon_com_pre_sel_ctl_3_qs[2] = aon_com_pre_sel_ctl_3_key2_in_sel_3_qs_int;
-    aon_com_pre_sel_ctl_3_qs[3] = aon_com_pre_sel_ctl_3_pwrb_in_sel_3_qs_int;
-    aon_com_pre_sel_ctl_3_qs[4] = aon_com_pre_sel_ctl_3_ac_present_sel_3_qs_int;
+    aon_com_pre_sel_ctl_3_qs[0] = aon_com_pre_sel_ctl_3_key0_in_sel_qs_int;
+    aon_com_pre_sel_ctl_3_qs[1] = aon_com_pre_sel_ctl_3_key1_in_sel_qs_int;
+    aon_com_pre_sel_ctl_3_qs[2] = aon_com_pre_sel_ctl_3_key2_in_sel_qs_int;
+    aon_com_pre_sel_ctl_3_qs[3] = aon_com_pre_sel_ctl_3_pwrb_in_sel_qs_int;
+    aon_com_pre_sel_ctl_3_qs[4] = aon_com_pre_sel_ctl_3_ac_present_sel_qs_int;
   end
 
   prim_reg_cdc #(
@@ -1297,11 +1297,11 @@ module sysrst_ctrl_reg_top (
   assign unused_aon_com_pre_det_ctl_3_wdata =
       ^aon_com_pre_det_ctl_3_wdata;
 
-  logic  aon_com_sel_ctl_0_key0_in_sel_0_qs_int;
-  logic  aon_com_sel_ctl_0_key1_in_sel_0_qs_int;
-  logic  aon_com_sel_ctl_0_key2_in_sel_0_qs_int;
-  logic  aon_com_sel_ctl_0_pwrb_in_sel_0_qs_int;
-  logic  aon_com_sel_ctl_0_ac_present_sel_0_qs_int;
+  logic  aon_com_sel_ctl_0_key0_in_sel_qs_int;
+  logic  aon_com_sel_ctl_0_key1_in_sel_qs_int;
+  logic  aon_com_sel_ctl_0_key2_in_sel_qs_int;
+  logic  aon_com_sel_ctl_0_pwrb_in_sel_qs_int;
+  logic  aon_com_sel_ctl_0_ac_present_sel_qs_int;
   logic [4:0] aon_com_sel_ctl_0_qs;
   logic [4:0] aon_com_sel_ctl_0_wdata;
   logic aon_com_sel_ctl_0_we;
@@ -1310,11 +1310,11 @@ module sysrst_ctrl_reg_top (
 
   always_comb begin
     aon_com_sel_ctl_0_qs = 5'h0;
-    aon_com_sel_ctl_0_qs[0] = aon_com_sel_ctl_0_key0_in_sel_0_qs_int;
-    aon_com_sel_ctl_0_qs[1] = aon_com_sel_ctl_0_key1_in_sel_0_qs_int;
-    aon_com_sel_ctl_0_qs[2] = aon_com_sel_ctl_0_key2_in_sel_0_qs_int;
-    aon_com_sel_ctl_0_qs[3] = aon_com_sel_ctl_0_pwrb_in_sel_0_qs_int;
-    aon_com_sel_ctl_0_qs[4] = aon_com_sel_ctl_0_ac_present_sel_0_qs_int;
+    aon_com_sel_ctl_0_qs[0] = aon_com_sel_ctl_0_key0_in_sel_qs_int;
+    aon_com_sel_ctl_0_qs[1] = aon_com_sel_ctl_0_key1_in_sel_qs_int;
+    aon_com_sel_ctl_0_qs[2] = aon_com_sel_ctl_0_key2_in_sel_qs_int;
+    aon_com_sel_ctl_0_qs[3] = aon_com_sel_ctl_0_pwrb_in_sel_qs_int;
+    aon_com_sel_ctl_0_qs[4] = aon_com_sel_ctl_0_ac_present_sel_qs_int;
   end
 
   prim_reg_cdc #(
@@ -1344,11 +1344,11 @@ module sysrst_ctrl_reg_top (
   assign unused_aon_com_sel_ctl_0_wdata =
       ^aon_com_sel_ctl_0_wdata;
 
-  logic  aon_com_sel_ctl_1_key0_in_sel_1_qs_int;
-  logic  aon_com_sel_ctl_1_key1_in_sel_1_qs_int;
-  logic  aon_com_sel_ctl_1_key2_in_sel_1_qs_int;
-  logic  aon_com_sel_ctl_1_pwrb_in_sel_1_qs_int;
-  logic  aon_com_sel_ctl_1_ac_present_sel_1_qs_int;
+  logic  aon_com_sel_ctl_1_key0_in_sel_qs_int;
+  logic  aon_com_sel_ctl_1_key1_in_sel_qs_int;
+  logic  aon_com_sel_ctl_1_key2_in_sel_qs_int;
+  logic  aon_com_sel_ctl_1_pwrb_in_sel_qs_int;
+  logic  aon_com_sel_ctl_1_ac_present_sel_qs_int;
   logic [4:0] aon_com_sel_ctl_1_qs;
   logic [4:0] aon_com_sel_ctl_1_wdata;
   logic aon_com_sel_ctl_1_we;
@@ -1357,11 +1357,11 @@ module sysrst_ctrl_reg_top (
 
   always_comb begin
     aon_com_sel_ctl_1_qs = 5'h0;
-    aon_com_sel_ctl_1_qs[0] = aon_com_sel_ctl_1_key0_in_sel_1_qs_int;
-    aon_com_sel_ctl_1_qs[1] = aon_com_sel_ctl_1_key1_in_sel_1_qs_int;
-    aon_com_sel_ctl_1_qs[2] = aon_com_sel_ctl_1_key2_in_sel_1_qs_int;
-    aon_com_sel_ctl_1_qs[3] = aon_com_sel_ctl_1_pwrb_in_sel_1_qs_int;
-    aon_com_sel_ctl_1_qs[4] = aon_com_sel_ctl_1_ac_present_sel_1_qs_int;
+    aon_com_sel_ctl_1_qs[0] = aon_com_sel_ctl_1_key0_in_sel_qs_int;
+    aon_com_sel_ctl_1_qs[1] = aon_com_sel_ctl_1_key1_in_sel_qs_int;
+    aon_com_sel_ctl_1_qs[2] = aon_com_sel_ctl_1_key2_in_sel_qs_int;
+    aon_com_sel_ctl_1_qs[3] = aon_com_sel_ctl_1_pwrb_in_sel_qs_int;
+    aon_com_sel_ctl_1_qs[4] = aon_com_sel_ctl_1_ac_present_sel_qs_int;
   end
 
   prim_reg_cdc #(
@@ -1391,11 +1391,11 @@ module sysrst_ctrl_reg_top (
   assign unused_aon_com_sel_ctl_1_wdata =
       ^aon_com_sel_ctl_1_wdata;
 
-  logic  aon_com_sel_ctl_2_key0_in_sel_2_qs_int;
-  logic  aon_com_sel_ctl_2_key1_in_sel_2_qs_int;
-  logic  aon_com_sel_ctl_2_key2_in_sel_2_qs_int;
-  logic  aon_com_sel_ctl_2_pwrb_in_sel_2_qs_int;
-  logic  aon_com_sel_ctl_2_ac_present_sel_2_qs_int;
+  logic  aon_com_sel_ctl_2_key0_in_sel_qs_int;
+  logic  aon_com_sel_ctl_2_key1_in_sel_qs_int;
+  logic  aon_com_sel_ctl_2_key2_in_sel_qs_int;
+  logic  aon_com_sel_ctl_2_pwrb_in_sel_qs_int;
+  logic  aon_com_sel_ctl_2_ac_present_sel_qs_int;
   logic [4:0] aon_com_sel_ctl_2_qs;
   logic [4:0] aon_com_sel_ctl_2_wdata;
   logic aon_com_sel_ctl_2_we;
@@ -1404,11 +1404,11 @@ module sysrst_ctrl_reg_top (
 
   always_comb begin
     aon_com_sel_ctl_2_qs = 5'h0;
-    aon_com_sel_ctl_2_qs[0] = aon_com_sel_ctl_2_key0_in_sel_2_qs_int;
-    aon_com_sel_ctl_2_qs[1] = aon_com_sel_ctl_2_key1_in_sel_2_qs_int;
-    aon_com_sel_ctl_2_qs[2] = aon_com_sel_ctl_2_key2_in_sel_2_qs_int;
-    aon_com_sel_ctl_2_qs[3] = aon_com_sel_ctl_2_pwrb_in_sel_2_qs_int;
-    aon_com_sel_ctl_2_qs[4] = aon_com_sel_ctl_2_ac_present_sel_2_qs_int;
+    aon_com_sel_ctl_2_qs[0] = aon_com_sel_ctl_2_key0_in_sel_qs_int;
+    aon_com_sel_ctl_2_qs[1] = aon_com_sel_ctl_2_key1_in_sel_qs_int;
+    aon_com_sel_ctl_2_qs[2] = aon_com_sel_ctl_2_key2_in_sel_qs_int;
+    aon_com_sel_ctl_2_qs[3] = aon_com_sel_ctl_2_pwrb_in_sel_qs_int;
+    aon_com_sel_ctl_2_qs[4] = aon_com_sel_ctl_2_ac_present_sel_qs_int;
   end
 
   prim_reg_cdc #(
@@ -1438,11 +1438,11 @@ module sysrst_ctrl_reg_top (
   assign unused_aon_com_sel_ctl_2_wdata =
       ^aon_com_sel_ctl_2_wdata;
 
-  logic  aon_com_sel_ctl_3_key0_in_sel_3_qs_int;
-  logic  aon_com_sel_ctl_3_key1_in_sel_3_qs_int;
-  logic  aon_com_sel_ctl_3_key2_in_sel_3_qs_int;
-  logic  aon_com_sel_ctl_3_pwrb_in_sel_3_qs_int;
-  logic  aon_com_sel_ctl_3_ac_present_sel_3_qs_int;
+  logic  aon_com_sel_ctl_3_key0_in_sel_qs_int;
+  logic  aon_com_sel_ctl_3_key1_in_sel_qs_int;
+  logic  aon_com_sel_ctl_3_key2_in_sel_qs_int;
+  logic  aon_com_sel_ctl_3_pwrb_in_sel_qs_int;
+  logic  aon_com_sel_ctl_3_ac_present_sel_qs_int;
   logic [4:0] aon_com_sel_ctl_3_qs;
   logic [4:0] aon_com_sel_ctl_3_wdata;
   logic aon_com_sel_ctl_3_we;
@@ -1451,11 +1451,11 @@ module sysrst_ctrl_reg_top (
 
   always_comb begin
     aon_com_sel_ctl_3_qs = 5'h0;
-    aon_com_sel_ctl_3_qs[0] = aon_com_sel_ctl_3_key0_in_sel_3_qs_int;
-    aon_com_sel_ctl_3_qs[1] = aon_com_sel_ctl_3_key1_in_sel_3_qs_int;
-    aon_com_sel_ctl_3_qs[2] = aon_com_sel_ctl_3_key2_in_sel_3_qs_int;
-    aon_com_sel_ctl_3_qs[3] = aon_com_sel_ctl_3_pwrb_in_sel_3_qs_int;
-    aon_com_sel_ctl_3_qs[4] = aon_com_sel_ctl_3_ac_present_sel_3_qs_int;
+    aon_com_sel_ctl_3_qs[0] = aon_com_sel_ctl_3_key0_in_sel_qs_int;
+    aon_com_sel_ctl_3_qs[1] = aon_com_sel_ctl_3_key1_in_sel_qs_int;
+    aon_com_sel_ctl_3_qs[2] = aon_com_sel_ctl_3_key2_in_sel_qs_int;
+    aon_com_sel_ctl_3_qs[3] = aon_com_sel_ctl_3_pwrb_in_sel_qs_int;
+    aon_com_sel_ctl_3_qs[4] = aon_com_sel_ctl_3_ac_present_sel_qs_int;
   end
 
   prim_reg_cdc #(
@@ -1641,10 +1641,10 @@ module sysrst_ctrl_reg_top (
   assign unused_aon_com_det_ctl_3_wdata =
       ^aon_com_det_ctl_3_wdata;
 
-  logic  aon_com_out_ctl_0_bat_disable_0_qs_int;
-  logic  aon_com_out_ctl_0_interrupt_0_qs_int;
-  logic  aon_com_out_ctl_0_ec_rst_0_qs_int;
-  logic  aon_com_out_ctl_0_rst_req_0_qs_int;
+  logic  aon_com_out_ctl_0_bat_disable_qs_int;
+  logic  aon_com_out_ctl_0_interrupt_qs_int;
+  logic  aon_com_out_ctl_0_ec_rst_qs_int;
+  logic  aon_com_out_ctl_0_rst_req_qs_int;
   logic [3:0] aon_com_out_ctl_0_qs;
   logic [3:0] aon_com_out_ctl_0_wdata;
   logic aon_com_out_ctl_0_we;
@@ -1653,10 +1653,10 @@ module sysrst_ctrl_reg_top (
 
   always_comb begin
     aon_com_out_ctl_0_qs = 4'h0;
-    aon_com_out_ctl_0_qs[0] = aon_com_out_ctl_0_bat_disable_0_qs_int;
-    aon_com_out_ctl_0_qs[1] = aon_com_out_ctl_0_interrupt_0_qs_int;
-    aon_com_out_ctl_0_qs[2] = aon_com_out_ctl_0_ec_rst_0_qs_int;
-    aon_com_out_ctl_0_qs[3] = aon_com_out_ctl_0_rst_req_0_qs_int;
+    aon_com_out_ctl_0_qs[0] = aon_com_out_ctl_0_bat_disable_qs_int;
+    aon_com_out_ctl_0_qs[1] = aon_com_out_ctl_0_interrupt_qs_int;
+    aon_com_out_ctl_0_qs[2] = aon_com_out_ctl_0_ec_rst_qs_int;
+    aon_com_out_ctl_0_qs[3] = aon_com_out_ctl_0_rst_req_qs_int;
   end
 
   prim_reg_cdc #(
@@ -1686,10 +1686,10 @@ module sysrst_ctrl_reg_top (
   assign unused_aon_com_out_ctl_0_wdata =
       ^aon_com_out_ctl_0_wdata;
 
-  logic  aon_com_out_ctl_1_bat_disable_1_qs_int;
-  logic  aon_com_out_ctl_1_interrupt_1_qs_int;
-  logic  aon_com_out_ctl_1_ec_rst_1_qs_int;
-  logic  aon_com_out_ctl_1_rst_req_1_qs_int;
+  logic  aon_com_out_ctl_1_bat_disable_qs_int;
+  logic  aon_com_out_ctl_1_interrupt_qs_int;
+  logic  aon_com_out_ctl_1_ec_rst_qs_int;
+  logic  aon_com_out_ctl_1_rst_req_qs_int;
   logic [3:0] aon_com_out_ctl_1_qs;
   logic [3:0] aon_com_out_ctl_1_wdata;
   logic aon_com_out_ctl_1_we;
@@ -1698,10 +1698,10 @@ module sysrst_ctrl_reg_top (
 
   always_comb begin
     aon_com_out_ctl_1_qs = 4'h0;
-    aon_com_out_ctl_1_qs[0] = aon_com_out_ctl_1_bat_disable_1_qs_int;
-    aon_com_out_ctl_1_qs[1] = aon_com_out_ctl_1_interrupt_1_qs_int;
-    aon_com_out_ctl_1_qs[2] = aon_com_out_ctl_1_ec_rst_1_qs_int;
-    aon_com_out_ctl_1_qs[3] = aon_com_out_ctl_1_rst_req_1_qs_int;
+    aon_com_out_ctl_1_qs[0] = aon_com_out_ctl_1_bat_disable_qs_int;
+    aon_com_out_ctl_1_qs[1] = aon_com_out_ctl_1_interrupt_qs_int;
+    aon_com_out_ctl_1_qs[2] = aon_com_out_ctl_1_ec_rst_qs_int;
+    aon_com_out_ctl_1_qs[3] = aon_com_out_ctl_1_rst_req_qs_int;
   end
 
   prim_reg_cdc #(
@@ -1731,10 +1731,10 @@ module sysrst_ctrl_reg_top (
   assign unused_aon_com_out_ctl_1_wdata =
       ^aon_com_out_ctl_1_wdata;
 
-  logic  aon_com_out_ctl_2_bat_disable_2_qs_int;
-  logic  aon_com_out_ctl_2_interrupt_2_qs_int;
-  logic  aon_com_out_ctl_2_ec_rst_2_qs_int;
-  logic  aon_com_out_ctl_2_rst_req_2_qs_int;
+  logic  aon_com_out_ctl_2_bat_disable_qs_int;
+  logic  aon_com_out_ctl_2_interrupt_qs_int;
+  logic  aon_com_out_ctl_2_ec_rst_qs_int;
+  logic  aon_com_out_ctl_2_rst_req_qs_int;
   logic [3:0] aon_com_out_ctl_2_qs;
   logic [3:0] aon_com_out_ctl_2_wdata;
   logic aon_com_out_ctl_2_we;
@@ -1743,10 +1743,10 @@ module sysrst_ctrl_reg_top (
 
   always_comb begin
     aon_com_out_ctl_2_qs = 4'h0;
-    aon_com_out_ctl_2_qs[0] = aon_com_out_ctl_2_bat_disable_2_qs_int;
-    aon_com_out_ctl_2_qs[1] = aon_com_out_ctl_2_interrupt_2_qs_int;
-    aon_com_out_ctl_2_qs[2] = aon_com_out_ctl_2_ec_rst_2_qs_int;
-    aon_com_out_ctl_2_qs[3] = aon_com_out_ctl_2_rst_req_2_qs_int;
+    aon_com_out_ctl_2_qs[0] = aon_com_out_ctl_2_bat_disable_qs_int;
+    aon_com_out_ctl_2_qs[1] = aon_com_out_ctl_2_interrupt_qs_int;
+    aon_com_out_ctl_2_qs[2] = aon_com_out_ctl_2_ec_rst_qs_int;
+    aon_com_out_ctl_2_qs[3] = aon_com_out_ctl_2_rst_req_qs_int;
   end
 
   prim_reg_cdc #(
@@ -1776,10 +1776,10 @@ module sysrst_ctrl_reg_top (
   assign unused_aon_com_out_ctl_2_wdata =
       ^aon_com_out_ctl_2_wdata;
 
-  logic  aon_com_out_ctl_3_bat_disable_3_qs_int;
-  logic  aon_com_out_ctl_3_interrupt_3_qs_int;
-  logic  aon_com_out_ctl_3_ec_rst_3_qs_int;
-  logic  aon_com_out_ctl_3_rst_req_3_qs_int;
+  logic  aon_com_out_ctl_3_bat_disable_qs_int;
+  logic  aon_com_out_ctl_3_interrupt_qs_int;
+  logic  aon_com_out_ctl_3_ec_rst_qs_int;
+  logic  aon_com_out_ctl_3_rst_req_qs_int;
   logic [3:0] aon_com_out_ctl_3_qs;
   logic [3:0] aon_com_out_ctl_3_wdata;
   logic aon_com_out_ctl_3_we;
@@ -1788,10 +1788,10 @@ module sysrst_ctrl_reg_top (
 
   always_comb begin
     aon_com_out_ctl_3_qs = 4'h0;
-    aon_com_out_ctl_3_qs[0] = aon_com_out_ctl_3_bat_disable_3_qs_int;
-    aon_com_out_ctl_3_qs[1] = aon_com_out_ctl_3_interrupt_3_qs_int;
-    aon_com_out_ctl_3_qs[2] = aon_com_out_ctl_3_ec_rst_3_qs_int;
-    aon_com_out_ctl_3_qs[3] = aon_com_out_ctl_3_rst_req_3_qs_int;
+    aon_com_out_ctl_3_qs[0] = aon_com_out_ctl_3_bat_disable_qs_int;
+    aon_com_out_ctl_3_qs[1] = aon_com_out_ctl_3_interrupt_qs_int;
+    aon_com_out_ctl_3_qs[2] = aon_com_out_ctl_3_ec_rst_qs_int;
+    aon_com_out_ctl_3_qs[3] = aon_com_out_ctl_3_rst_req_qs_int;
   end
 
   prim_reg_cdc #(
@@ -4227,13 +4227,13 @@ module sysrst_ctrl_reg_top (
   // Create REGWEN-gated WE signal
   logic aon_com_pre_sel_ctl_0_gated_we;
   assign aon_com_pre_sel_ctl_0_gated_we = aon_com_pre_sel_ctl_0_we & aon_com_pre_sel_ctl_0_regwen;
-  //   F[key0_in_sel_0]: 0:0
+  //   F[key0_in_sel]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_0_key0_in_sel_0 (
+  ) u_com_pre_sel_ctl_0_key0_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4251,16 +4251,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_0_key0_in_sel_0_qs_int)
+    .qs     (aon_com_pre_sel_ctl_0_key0_in_sel_qs_int)
   );
 
-  //   F[key1_in_sel_0]: 1:1
+  //   F[key1_in_sel]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_0_key1_in_sel_0 (
+  ) u_com_pre_sel_ctl_0_key1_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4278,16 +4278,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_0_key1_in_sel_0_qs_int)
+    .qs     (aon_com_pre_sel_ctl_0_key1_in_sel_qs_int)
   );
 
-  //   F[key2_in_sel_0]: 2:2
+  //   F[key2_in_sel]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_0_key2_in_sel_0 (
+  ) u_com_pre_sel_ctl_0_key2_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4305,16 +4305,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_0_key2_in_sel_0_qs_int)
+    .qs     (aon_com_pre_sel_ctl_0_key2_in_sel_qs_int)
   );
 
-  //   F[pwrb_in_sel_0]: 3:3
+  //   F[pwrb_in_sel]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_0_pwrb_in_sel_0 (
+  ) u_com_pre_sel_ctl_0_pwrb_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4332,16 +4332,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_0_pwrb_in_sel_0_qs_int)
+    .qs     (aon_com_pre_sel_ctl_0_pwrb_in_sel_qs_int)
   );
 
-  //   F[ac_present_sel_0]: 4:4
+  //   F[ac_present_sel]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_0_ac_present_sel_0 (
+  ) u_com_pre_sel_ctl_0_ac_present_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4359,7 +4359,7 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_0_ac_present_sel_0_qs_int)
+    .qs     (aon_com_pre_sel_ctl_0_ac_present_sel_qs_int)
   );
 
 
@@ -4368,13 +4368,13 @@ module sysrst_ctrl_reg_top (
   // Create REGWEN-gated WE signal
   logic aon_com_pre_sel_ctl_1_gated_we;
   assign aon_com_pre_sel_ctl_1_gated_we = aon_com_pre_sel_ctl_1_we & aon_com_pre_sel_ctl_1_regwen;
-  //   F[key0_in_sel_1]: 0:0
+  //   F[key0_in_sel]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_1_key0_in_sel_1 (
+  ) u_com_pre_sel_ctl_1_key0_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4392,16 +4392,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_1_key0_in_sel_1_qs_int)
+    .qs     (aon_com_pre_sel_ctl_1_key0_in_sel_qs_int)
   );
 
-  //   F[key1_in_sel_1]: 1:1
+  //   F[key1_in_sel]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_1_key1_in_sel_1 (
+  ) u_com_pre_sel_ctl_1_key1_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4419,16 +4419,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_1_key1_in_sel_1_qs_int)
+    .qs     (aon_com_pre_sel_ctl_1_key1_in_sel_qs_int)
   );
 
-  //   F[key2_in_sel_1]: 2:2
+  //   F[key2_in_sel]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_1_key2_in_sel_1 (
+  ) u_com_pre_sel_ctl_1_key2_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4446,16 +4446,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_1_key2_in_sel_1_qs_int)
+    .qs     (aon_com_pre_sel_ctl_1_key2_in_sel_qs_int)
   );
 
-  //   F[pwrb_in_sel_1]: 3:3
+  //   F[pwrb_in_sel]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_1_pwrb_in_sel_1 (
+  ) u_com_pre_sel_ctl_1_pwrb_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4473,16 +4473,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_1_pwrb_in_sel_1_qs_int)
+    .qs     (aon_com_pre_sel_ctl_1_pwrb_in_sel_qs_int)
   );
 
-  //   F[ac_present_sel_1]: 4:4
+  //   F[ac_present_sel]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_1_ac_present_sel_1 (
+  ) u_com_pre_sel_ctl_1_ac_present_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4500,7 +4500,7 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_1_ac_present_sel_1_qs_int)
+    .qs     (aon_com_pre_sel_ctl_1_ac_present_sel_qs_int)
   );
 
 
@@ -4509,13 +4509,13 @@ module sysrst_ctrl_reg_top (
   // Create REGWEN-gated WE signal
   logic aon_com_pre_sel_ctl_2_gated_we;
   assign aon_com_pre_sel_ctl_2_gated_we = aon_com_pre_sel_ctl_2_we & aon_com_pre_sel_ctl_2_regwen;
-  //   F[key0_in_sel_2]: 0:0
+  //   F[key0_in_sel]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_2_key0_in_sel_2 (
+  ) u_com_pre_sel_ctl_2_key0_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4533,16 +4533,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_2_key0_in_sel_2_qs_int)
+    .qs     (aon_com_pre_sel_ctl_2_key0_in_sel_qs_int)
   );
 
-  //   F[key1_in_sel_2]: 1:1
+  //   F[key1_in_sel]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_2_key1_in_sel_2 (
+  ) u_com_pre_sel_ctl_2_key1_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4560,16 +4560,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_2_key1_in_sel_2_qs_int)
+    .qs     (aon_com_pre_sel_ctl_2_key1_in_sel_qs_int)
   );
 
-  //   F[key2_in_sel_2]: 2:2
+  //   F[key2_in_sel]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_2_key2_in_sel_2 (
+  ) u_com_pre_sel_ctl_2_key2_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4587,16 +4587,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_2_key2_in_sel_2_qs_int)
+    .qs     (aon_com_pre_sel_ctl_2_key2_in_sel_qs_int)
   );
 
-  //   F[pwrb_in_sel_2]: 3:3
+  //   F[pwrb_in_sel]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_2_pwrb_in_sel_2 (
+  ) u_com_pre_sel_ctl_2_pwrb_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4614,16 +4614,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_2_pwrb_in_sel_2_qs_int)
+    .qs     (aon_com_pre_sel_ctl_2_pwrb_in_sel_qs_int)
   );
 
-  //   F[ac_present_sel_2]: 4:4
+  //   F[ac_present_sel]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_2_ac_present_sel_2 (
+  ) u_com_pre_sel_ctl_2_ac_present_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4641,7 +4641,7 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_2_ac_present_sel_2_qs_int)
+    .qs     (aon_com_pre_sel_ctl_2_ac_present_sel_qs_int)
   );
 
 
@@ -4650,13 +4650,13 @@ module sysrst_ctrl_reg_top (
   // Create REGWEN-gated WE signal
   logic aon_com_pre_sel_ctl_3_gated_we;
   assign aon_com_pre_sel_ctl_3_gated_we = aon_com_pre_sel_ctl_3_we & aon_com_pre_sel_ctl_3_regwen;
-  //   F[key0_in_sel_3]: 0:0
+  //   F[key0_in_sel]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_3_key0_in_sel_3 (
+  ) u_com_pre_sel_ctl_3_key0_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4674,16 +4674,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_3_key0_in_sel_3_qs_int)
+    .qs     (aon_com_pre_sel_ctl_3_key0_in_sel_qs_int)
   );
 
-  //   F[key1_in_sel_3]: 1:1
+  //   F[key1_in_sel]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_3_key1_in_sel_3 (
+  ) u_com_pre_sel_ctl_3_key1_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4701,16 +4701,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_3_key1_in_sel_3_qs_int)
+    .qs     (aon_com_pre_sel_ctl_3_key1_in_sel_qs_int)
   );
 
-  //   F[key2_in_sel_3]: 2:2
+  //   F[key2_in_sel]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_3_key2_in_sel_3 (
+  ) u_com_pre_sel_ctl_3_key2_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4728,16 +4728,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_3_key2_in_sel_3_qs_int)
+    .qs     (aon_com_pre_sel_ctl_3_key2_in_sel_qs_int)
   );
 
-  //   F[pwrb_in_sel_3]: 3:3
+  //   F[pwrb_in_sel]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_3_pwrb_in_sel_3 (
+  ) u_com_pre_sel_ctl_3_pwrb_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4755,16 +4755,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_3_pwrb_in_sel_3_qs_int)
+    .qs     (aon_com_pre_sel_ctl_3_pwrb_in_sel_qs_int)
   );
 
-  //   F[ac_present_sel_3]: 4:4
+  //   F[ac_present_sel]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_pre_sel_ctl_3_ac_present_sel_3 (
+  ) u_com_pre_sel_ctl_3_ac_present_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4782,7 +4782,7 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_pre_sel_ctl_3_ac_present_sel_3_qs_int)
+    .qs     (aon_com_pre_sel_ctl_3_ac_present_sel_qs_int)
   );
 
 
@@ -4919,13 +4919,13 @@ module sysrst_ctrl_reg_top (
   // Create REGWEN-gated WE signal
   logic aon_com_sel_ctl_0_gated_we;
   assign aon_com_sel_ctl_0_gated_we = aon_com_sel_ctl_0_we & aon_com_sel_ctl_0_regwen;
-  //   F[key0_in_sel_0]: 0:0
+  //   F[key0_in_sel]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_0_key0_in_sel_0 (
+  ) u_com_sel_ctl_0_key0_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4943,16 +4943,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_0_key0_in_sel_0_qs_int)
+    .qs     (aon_com_sel_ctl_0_key0_in_sel_qs_int)
   );
 
-  //   F[key1_in_sel_0]: 1:1
+  //   F[key1_in_sel]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_0_key1_in_sel_0 (
+  ) u_com_sel_ctl_0_key1_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4970,16 +4970,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_0_key1_in_sel_0_qs_int)
+    .qs     (aon_com_sel_ctl_0_key1_in_sel_qs_int)
   );
 
-  //   F[key2_in_sel_0]: 2:2
+  //   F[key2_in_sel]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_0_key2_in_sel_0 (
+  ) u_com_sel_ctl_0_key2_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -4997,16 +4997,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_0_key2_in_sel_0_qs_int)
+    .qs     (aon_com_sel_ctl_0_key2_in_sel_qs_int)
   );
 
-  //   F[pwrb_in_sel_0]: 3:3
+  //   F[pwrb_in_sel]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_0_pwrb_in_sel_0 (
+  ) u_com_sel_ctl_0_pwrb_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5024,16 +5024,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_0_pwrb_in_sel_0_qs_int)
+    .qs     (aon_com_sel_ctl_0_pwrb_in_sel_qs_int)
   );
 
-  //   F[ac_present_sel_0]: 4:4
+  //   F[ac_present_sel]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_0_ac_present_sel_0 (
+  ) u_com_sel_ctl_0_ac_present_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5051,7 +5051,7 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_0_ac_present_sel_0_qs_int)
+    .qs     (aon_com_sel_ctl_0_ac_present_sel_qs_int)
   );
 
 
@@ -5060,13 +5060,13 @@ module sysrst_ctrl_reg_top (
   // Create REGWEN-gated WE signal
   logic aon_com_sel_ctl_1_gated_we;
   assign aon_com_sel_ctl_1_gated_we = aon_com_sel_ctl_1_we & aon_com_sel_ctl_1_regwen;
-  //   F[key0_in_sel_1]: 0:0
+  //   F[key0_in_sel]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_1_key0_in_sel_1 (
+  ) u_com_sel_ctl_1_key0_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5084,16 +5084,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_1_key0_in_sel_1_qs_int)
+    .qs     (aon_com_sel_ctl_1_key0_in_sel_qs_int)
   );
 
-  //   F[key1_in_sel_1]: 1:1
+  //   F[key1_in_sel]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_1_key1_in_sel_1 (
+  ) u_com_sel_ctl_1_key1_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5111,16 +5111,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_1_key1_in_sel_1_qs_int)
+    .qs     (aon_com_sel_ctl_1_key1_in_sel_qs_int)
   );
 
-  //   F[key2_in_sel_1]: 2:2
+  //   F[key2_in_sel]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_1_key2_in_sel_1 (
+  ) u_com_sel_ctl_1_key2_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5138,16 +5138,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_1_key2_in_sel_1_qs_int)
+    .qs     (aon_com_sel_ctl_1_key2_in_sel_qs_int)
   );
 
-  //   F[pwrb_in_sel_1]: 3:3
+  //   F[pwrb_in_sel]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_1_pwrb_in_sel_1 (
+  ) u_com_sel_ctl_1_pwrb_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5165,16 +5165,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_1_pwrb_in_sel_1_qs_int)
+    .qs     (aon_com_sel_ctl_1_pwrb_in_sel_qs_int)
   );
 
-  //   F[ac_present_sel_1]: 4:4
+  //   F[ac_present_sel]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_1_ac_present_sel_1 (
+  ) u_com_sel_ctl_1_ac_present_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5192,7 +5192,7 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_1_ac_present_sel_1_qs_int)
+    .qs     (aon_com_sel_ctl_1_ac_present_sel_qs_int)
   );
 
 
@@ -5201,13 +5201,13 @@ module sysrst_ctrl_reg_top (
   // Create REGWEN-gated WE signal
   logic aon_com_sel_ctl_2_gated_we;
   assign aon_com_sel_ctl_2_gated_we = aon_com_sel_ctl_2_we & aon_com_sel_ctl_2_regwen;
-  //   F[key0_in_sel_2]: 0:0
+  //   F[key0_in_sel]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_2_key0_in_sel_2 (
+  ) u_com_sel_ctl_2_key0_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5225,16 +5225,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_2_key0_in_sel_2_qs_int)
+    .qs     (aon_com_sel_ctl_2_key0_in_sel_qs_int)
   );
 
-  //   F[key1_in_sel_2]: 1:1
+  //   F[key1_in_sel]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_2_key1_in_sel_2 (
+  ) u_com_sel_ctl_2_key1_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5252,16 +5252,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_2_key1_in_sel_2_qs_int)
+    .qs     (aon_com_sel_ctl_2_key1_in_sel_qs_int)
   );
 
-  //   F[key2_in_sel_2]: 2:2
+  //   F[key2_in_sel]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_2_key2_in_sel_2 (
+  ) u_com_sel_ctl_2_key2_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5279,16 +5279,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_2_key2_in_sel_2_qs_int)
+    .qs     (aon_com_sel_ctl_2_key2_in_sel_qs_int)
   );
 
-  //   F[pwrb_in_sel_2]: 3:3
+  //   F[pwrb_in_sel]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_2_pwrb_in_sel_2 (
+  ) u_com_sel_ctl_2_pwrb_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5306,16 +5306,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_2_pwrb_in_sel_2_qs_int)
+    .qs     (aon_com_sel_ctl_2_pwrb_in_sel_qs_int)
   );
 
-  //   F[ac_present_sel_2]: 4:4
+  //   F[ac_present_sel]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_2_ac_present_sel_2 (
+  ) u_com_sel_ctl_2_ac_present_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5333,7 +5333,7 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_2_ac_present_sel_2_qs_int)
+    .qs     (aon_com_sel_ctl_2_ac_present_sel_qs_int)
   );
 
 
@@ -5342,13 +5342,13 @@ module sysrst_ctrl_reg_top (
   // Create REGWEN-gated WE signal
   logic aon_com_sel_ctl_3_gated_we;
   assign aon_com_sel_ctl_3_gated_we = aon_com_sel_ctl_3_we & aon_com_sel_ctl_3_regwen;
-  //   F[key0_in_sel_3]: 0:0
+  //   F[key0_in_sel]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_3_key0_in_sel_3 (
+  ) u_com_sel_ctl_3_key0_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5366,16 +5366,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_3_key0_in_sel_3_qs_int)
+    .qs     (aon_com_sel_ctl_3_key0_in_sel_qs_int)
   );
 
-  //   F[key1_in_sel_3]: 1:1
+  //   F[key1_in_sel]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_3_key1_in_sel_3 (
+  ) u_com_sel_ctl_3_key1_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5393,16 +5393,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_3_key1_in_sel_3_qs_int)
+    .qs     (aon_com_sel_ctl_3_key1_in_sel_qs_int)
   );
 
-  //   F[key2_in_sel_3]: 2:2
+  //   F[key2_in_sel]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_3_key2_in_sel_3 (
+  ) u_com_sel_ctl_3_key2_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5420,16 +5420,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_3_key2_in_sel_3_qs_int)
+    .qs     (aon_com_sel_ctl_3_key2_in_sel_qs_int)
   );
 
-  //   F[pwrb_in_sel_3]: 3:3
+  //   F[pwrb_in_sel]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_3_pwrb_in_sel_3 (
+  ) u_com_sel_ctl_3_pwrb_in_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5447,16 +5447,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_3_pwrb_in_sel_3_qs_int)
+    .qs     (aon_com_sel_ctl_3_pwrb_in_sel_qs_int)
   );
 
-  //   F[ac_present_sel_3]: 4:4
+  //   F[ac_present_sel]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_sel_ctl_3_ac_present_sel_3 (
+  ) u_com_sel_ctl_3_ac_present_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5474,7 +5474,7 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_sel_ctl_3_ac_present_sel_3_qs_int)
+    .qs     (aon_com_sel_ctl_3_ac_present_sel_qs_int)
   );
 
 
@@ -5611,13 +5611,13 @@ module sysrst_ctrl_reg_top (
   // Create REGWEN-gated WE signal
   logic aon_com_out_ctl_0_gated_we;
   assign aon_com_out_ctl_0_gated_we = aon_com_out_ctl_0_we & aon_com_out_ctl_0_regwen;
-  //   F[bat_disable_0]: 0:0
+  //   F[bat_disable]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_out_ctl_0_bat_disable_0 (
+  ) u_com_out_ctl_0_bat_disable (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5635,16 +5635,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_out_ctl_0_bat_disable_0_qs_int)
+    .qs     (aon_com_out_ctl_0_bat_disable_qs_int)
   );
 
-  //   F[interrupt_0]: 1:1
+  //   F[interrupt]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_out_ctl_0_interrupt_0 (
+  ) u_com_out_ctl_0_interrupt (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5662,16 +5662,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_out_ctl_0_interrupt_0_qs_int)
+    .qs     (aon_com_out_ctl_0_interrupt_qs_int)
   );
 
-  //   F[ec_rst_0]: 2:2
+  //   F[ec_rst]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_out_ctl_0_ec_rst_0 (
+  ) u_com_out_ctl_0_ec_rst (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5689,16 +5689,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_out_ctl_0_ec_rst_0_qs_int)
+    .qs     (aon_com_out_ctl_0_ec_rst_qs_int)
   );
 
-  //   F[rst_req_0]: 3:3
+  //   F[rst_req]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_out_ctl_0_rst_req_0 (
+  ) u_com_out_ctl_0_rst_req (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5716,7 +5716,7 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_out_ctl_0_rst_req_0_qs_int)
+    .qs     (aon_com_out_ctl_0_rst_req_qs_int)
   );
 
 
@@ -5725,13 +5725,13 @@ module sysrst_ctrl_reg_top (
   // Create REGWEN-gated WE signal
   logic aon_com_out_ctl_1_gated_we;
   assign aon_com_out_ctl_1_gated_we = aon_com_out_ctl_1_we & aon_com_out_ctl_1_regwen;
-  //   F[bat_disable_1]: 0:0
+  //   F[bat_disable]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_out_ctl_1_bat_disable_1 (
+  ) u_com_out_ctl_1_bat_disable (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5749,16 +5749,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_out_ctl_1_bat_disable_1_qs_int)
+    .qs     (aon_com_out_ctl_1_bat_disable_qs_int)
   );
 
-  //   F[interrupt_1]: 1:1
+  //   F[interrupt]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_out_ctl_1_interrupt_1 (
+  ) u_com_out_ctl_1_interrupt (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5776,16 +5776,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_out_ctl_1_interrupt_1_qs_int)
+    .qs     (aon_com_out_ctl_1_interrupt_qs_int)
   );
 
-  //   F[ec_rst_1]: 2:2
+  //   F[ec_rst]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_out_ctl_1_ec_rst_1 (
+  ) u_com_out_ctl_1_ec_rst (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5803,16 +5803,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_out_ctl_1_ec_rst_1_qs_int)
+    .qs     (aon_com_out_ctl_1_ec_rst_qs_int)
   );
 
-  //   F[rst_req_1]: 3:3
+  //   F[rst_req]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_out_ctl_1_rst_req_1 (
+  ) u_com_out_ctl_1_rst_req (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5830,7 +5830,7 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_out_ctl_1_rst_req_1_qs_int)
+    .qs     (aon_com_out_ctl_1_rst_req_qs_int)
   );
 
 
@@ -5839,13 +5839,13 @@ module sysrst_ctrl_reg_top (
   // Create REGWEN-gated WE signal
   logic aon_com_out_ctl_2_gated_we;
   assign aon_com_out_ctl_2_gated_we = aon_com_out_ctl_2_we & aon_com_out_ctl_2_regwen;
-  //   F[bat_disable_2]: 0:0
+  //   F[bat_disable]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_out_ctl_2_bat_disable_2 (
+  ) u_com_out_ctl_2_bat_disable (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5863,16 +5863,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_out_ctl_2_bat_disable_2_qs_int)
+    .qs     (aon_com_out_ctl_2_bat_disable_qs_int)
   );
 
-  //   F[interrupt_2]: 1:1
+  //   F[interrupt]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_out_ctl_2_interrupt_2 (
+  ) u_com_out_ctl_2_interrupt (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5890,16 +5890,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_out_ctl_2_interrupt_2_qs_int)
+    .qs     (aon_com_out_ctl_2_interrupt_qs_int)
   );
 
-  //   F[ec_rst_2]: 2:2
+  //   F[ec_rst]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_out_ctl_2_ec_rst_2 (
+  ) u_com_out_ctl_2_ec_rst (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5917,16 +5917,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_out_ctl_2_ec_rst_2_qs_int)
+    .qs     (aon_com_out_ctl_2_ec_rst_qs_int)
   );
 
-  //   F[rst_req_2]: 3:3
+  //   F[rst_req]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_out_ctl_2_rst_req_2 (
+  ) u_com_out_ctl_2_rst_req (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5944,7 +5944,7 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_out_ctl_2_rst_req_2_qs_int)
+    .qs     (aon_com_out_ctl_2_rst_req_qs_int)
   );
 
 
@@ -5953,13 +5953,13 @@ module sysrst_ctrl_reg_top (
   // Create REGWEN-gated WE signal
   logic aon_com_out_ctl_3_gated_we;
   assign aon_com_out_ctl_3_gated_we = aon_com_out_ctl_3_we & aon_com_out_ctl_3_regwen;
-  //   F[bat_disable_3]: 0:0
+  //   F[bat_disable]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_out_ctl_3_bat_disable_3 (
+  ) u_com_out_ctl_3_bat_disable (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -5977,16 +5977,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_out_ctl_3_bat_disable_3_qs_int)
+    .qs     (aon_com_out_ctl_3_bat_disable_qs_int)
   );
 
-  //   F[interrupt_3]: 1:1
+  //   F[interrupt]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_out_ctl_3_interrupt_3 (
+  ) u_com_out_ctl_3_interrupt (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -6004,16 +6004,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_out_ctl_3_interrupt_3_qs_int)
+    .qs     (aon_com_out_ctl_3_interrupt_qs_int)
   );
 
-  //   F[ec_rst_3]: 2:2
+  //   F[ec_rst]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_out_ctl_3_ec_rst_3 (
+  ) u_com_out_ctl_3_ec_rst (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -6031,16 +6031,16 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_out_ctl_3_ec_rst_3_qs_int)
+    .qs     (aon_com_out_ctl_3_ec_rst_qs_int)
   );
 
-  //   F[rst_req_3]: 3:3
+  //   F[rst_req]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_com_out_ctl_3_rst_req_3 (
+  ) u_com_out_ctl_3_rst_req (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -6058,7 +6058,7 @@ module sysrst_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_com_out_ctl_3_rst_req_3_qs_int)
+    .qs     (aon_com_out_ctl_3_rst_req_qs_int)
   );
 
 

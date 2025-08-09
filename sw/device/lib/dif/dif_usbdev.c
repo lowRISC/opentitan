@@ -594,15 +594,15 @@ dif_result_t dif_usbdev_send(const dif_usbdev_t *usbdev, uint8_t endpoint,
   // layout.
   uint32_t config_in_val = 0;
   config_in_val = bitfield_field32_write(
-      config_in_val, USBDEV_CONFIGIN_0_BUFFER_0_FIELD, buffer->id);
+      config_in_val, USBDEV_CONFIGIN_0_BUFFER_FIELD, buffer->id);
   config_in_val = bitfield_field32_write(
-      config_in_val, USBDEV_CONFIGIN_0_SIZE_0_FIELD, buffer->offset);
+      config_in_val, USBDEV_CONFIGIN_0_SIZE_FIELD, buffer->offset);
   mmio_region_write32(usbdev->base_addr, (ptrdiff_t)config_in_reg_offset,
                       config_in_val);
 
   // Mark the packet as ready for transmission
   config_in_val =
-      bitfield_bit32_write(config_in_val, USBDEV_CONFIGIN_0_RDY_0_BIT, true);
+      bitfield_bit32_write(config_in_val, USBDEV_CONFIGIN_0_RDY_BIT, true);
   mmio_region_write32(usbdev->base_addr, (ptrdiff_t)config_in_reg_offset,
                       config_in_val);
 
@@ -635,10 +635,10 @@ dif_result_t dif_usbdev_clear_tx_status(const dif_usbdev_t *usbdev,
   uint32_t config_in_reg_val =
       mmio_region_read32(usbdev->base_addr, (ptrdiff_t)config_in_reg_offset);
   uint8_t buffer = (uint8_t)bitfield_field32_read(
-      config_in_reg_val, USBDEV_CONFIGIN_0_BUFFER_0_FIELD);
+      config_in_reg_val, USBDEV_CONFIGIN_0_BUFFER_FIELD);
 
   mmio_region_write32(usbdev->base_addr, (ptrdiff_t)config_in_reg_offset,
-                      1u << USBDEV_CONFIGIN_0_PEND_0_BIT);
+                      1u << USBDEV_CONFIGIN_0_PEND_BIT);
   // Clear IN_SENT bit (rw1c).
   mmio_region_write32(usbdev->base_addr, USBDEV_IN_SENT_REG_OFFSET,
                       1u << endpoint);
@@ -666,7 +666,7 @@ dif_result_t dif_usbdev_get_tx_status(const dif_usbdev_t *usbdev,
       mmio_region_read32(usbdev->base_addr, (ptrdiff_t)config_in_reg_offset);
 
   // Check the status of the packet.
-  if (bitfield_bit32_read(config_in_val, USBDEV_CONFIGIN_0_RDY_0_BIT)) {
+  if (bitfield_bit32_read(config_in_val, USBDEV_CONFIGIN_0_RDY_BIT)) {
     // Packet is marked as ready to be sent and pending transmission.
     *status = kDifUsbdevTxStatusPending;
   } else if (bitfield_bit32_read(mmio_region_read32(usbdev->base_addr,
@@ -674,7 +674,7 @@ dif_result_t dif_usbdev_get_tx_status(const dif_usbdev_t *usbdev,
                                  endpoint_bit_index)) {
     // Packet was sent successfully.
     *status = kDifUsbdevTxStatusSent;
-  } else if (bitfield_bit32_read(config_in_val, USBDEV_CONFIGIN_0_PEND_0_BIT)) {
+  } else if (bitfield_bit32_read(config_in_val, USBDEV_CONFIGIN_0_PEND_BIT)) {
     // Canceled due to an IN SETUP packet or link reset.
     *status = kDifUsbdevTxStatusCancelled;
   } else {

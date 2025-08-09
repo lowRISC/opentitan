@@ -831,653 +831,653 @@ module spi_device_reg_top
   logic [31:0] payload_swap_data_qs;
   logic [31:0] payload_swap_data_wd;
   logic cmd_info_0_we;
-  logic [7:0] cmd_info_0_opcode_0_qs;
-  logic [7:0] cmd_info_0_opcode_0_wd;
-  logic [1:0] cmd_info_0_addr_mode_0_qs;
-  logic [1:0] cmd_info_0_addr_mode_0_wd;
-  logic cmd_info_0_addr_swap_en_0_qs;
-  logic cmd_info_0_addr_swap_en_0_wd;
-  logic cmd_info_0_mbyte_en_0_qs;
-  logic cmd_info_0_mbyte_en_0_wd;
-  logic [2:0] cmd_info_0_dummy_size_0_qs;
-  logic [2:0] cmd_info_0_dummy_size_0_wd;
-  logic cmd_info_0_dummy_en_0_qs;
-  logic cmd_info_0_dummy_en_0_wd;
-  logic [3:0] cmd_info_0_payload_en_0_qs;
-  logic [3:0] cmd_info_0_payload_en_0_wd;
-  logic cmd_info_0_payload_dir_0_qs;
-  logic cmd_info_0_payload_dir_0_wd;
-  logic cmd_info_0_payload_swap_en_0_qs;
-  logic cmd_info_0_payload_swap_en_0_wd;
-  logic [1:0] cmd_info_0_read_pipeline_mode_0_qs;
-  logic [1:0] cmd_info_0_read_pipeline_mode_0_wd;
-  logic cmd_info_0_upload_0_qs;
-  logic cmd_info_0_upload_0_wd;
-  logic cmd_info_0_busy_0_qs;
-  logic cmd_info_0_busy_0_wd;
-  logic cmd_info_0_valid_0_qs;
-  logic cmd_info_0_valid_0_wd;
+  logic [7:0] cmd_info_0_opcode_qs;
+  logic [7:0] cmd_info_0_opcode_wd;
+  logic [1:0] cmd_info_0_addr_mode_qs;
+  logic [1:0] cmd_info_0_addr_mode_wd;
+  logic cmd_info_0_addr_swap_en_qs;
+  logic cmd_info_0_addr_swap_en_wd;
+  logic cmd_info_0_mbyte_en_qs;
+  logic cmd_info_0_mbyte_en_wd;
+  logic [2:0] cmd_info_0_dummy_size_qs;
+  logic [2:0] cmd_info_0_dummy_size_wd;
+  logic cmd_info_0_dummy_en_qs;
+  logic cmd_info_0_dummy_en_wd;
+  logic [3:0] cmd_info_0_payload_en_qs;
+  logic [3:0] cmd_info_0_payload_en_wd;
+  logic cmd_info_0_payload_dir_qs;
+  logic cmd_info_0_payload_dir_wd;
+  logic cmd_info_0_payload_swap_en_qs;
+  logic cmd_info_0_payload_swap_en_wd;
+  logic [1:0] cmd_info_0_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_0_read_pipeline_mode_wd;
+  logic cmd_info_0_upload_qs;
+  logic cmd_info_0_upload_wd;
+  logic cmd_info_0_busy_qs;
+  logic cmd_info_0_busy_wd;
+  logic cmd_info_0_valid_qs;
+  logic cmd_info_0_valid_wd;
   logic cmd_info_1_we;
-  logic [7:0] cmd_info_1_opcode_1_qs;
-  logic [7:0] cmd_info_1_opcode_1_wd;
-  logic [1:0] cmd_info_1_addr_mode_1_qs;
-  logic [1:0] cmd_info_1_addr_mode_1_wd;
-  logic cmd_info_1_addr_swap_en_1_qs;
-  logic cmd_info_1_addr_swap_en_1_wd;
-  logic cmd_info_1_mbyte_en_1_qs;
-  logic cmd_info_1_mbyte_en_1_wd;
-  logic [2:0] cmd_info_1_dummy_size_1_qs;
-  logic [2:0] cmd_info_1_dummy_size_1_wd;
-  logic cmd_info_1_dummy_en_1_qs;
-  logic cmd_info_1_dummy_en_1_wd;
-  logic [3:0] cmd_info_1_payload_en_1_qs;
-  logic [3:0] cmd_info_1_payload_en_1_wd;
-  logic cmd_info_1_payload_dir_1_qs;
-  logic cmd_info_1_payload_dir_1_wd;
-  logic cmd_info_1_payload_swap_en_1_qs;
-  logic cmd_info_1_payload_swap_en_1_wd;
-  logic [1:0] cmd_info_1_read_pipeline_mode_1_qs;
-  logic [1:0] cmd_info_1_read_pipeline_mode_1_wd;
-  logic cmd_info_1_upload_1_qs;
-  logic cmd_info_1_upload_1_wd;
-  logic cmd_info_1_busy_1_qs;
-  logic cmd_info_1_busy_1_wd;
-  logic cmd_info_1_valid_1_qs;
-  logic cmd_info_1_valid_1_wd;
+  logic [7:0] cmd_info_1_opcode_qs;
+  logic [7:0] cmd_info_1_opcode_wd;
+  logic [1:0] cmd_info_1_addr_mode_qs;
+  logic [1:0] cmd_info_1_addr_mode_wd;
+  logic cmd_info_1_addr_swap_en_qs;
+  logic cmd_info_1_addr_swap_en_wd;
+  logic cmd_info_1_mbyte_en_qs;
+  logic cmd_info_1_mbyte_en_wd;
+  logic [2:0] cmd_info_1_dummy_size_qs;
+  logic [2:0] cmd_info_1_dummy_size_wd;
+  logic cmd_info_1_dummy_en_qs;
+  logic cmd_info_1_dummy_en_wd;
+  logic [3:0] cmd_info_1_payload_en_qs;
+  logic [3:0] cmd_info_1_payload_en_wd;
+  logic cmd_info_1_payload_dir_qs;
+  logic cmd_info_1_payload_dir_wd;
+  logic cmd_info_1_payload_swap_en_qs;
+  logic cmd_info_1_payload_swap_en_wd;
+  logic [1:0] cmd_info_1_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_1_read_pipeline_mode_wd;
+  logic cmd_info_1_upload_qs;
+  logic cmd_info_1_upload_wd;
+  logic cmd_info_1_busy_qs;
+  logic cmd_info_1_busy_wd;
+  logic cmd_info_1_valid_qs;
+  logic cmd_info_1_valid_wd;
   logic cmd_info_2_we;
-  logic [7:0] cmd_info_2_opcode_2_qs;
-  logic [7:0] cmd_info_2_opcode_2_wd;
-  logic [1:0] cmd_info_2_addr_mode_2_qs;
-  logic [1:0] cmd_info_2_addr_mode_2_wd;
-  logic cmd_info_2_addr_swap_en_2_qs;
-  logic cmd_info_2_addr_swap_en_2_wd;
-  logic cmd_info_2_mbyte_en_2_qs;
-  logic cmd_info_2_mbyte_en_2_wd;
-  logic [2:0] cmd_info_2_dummy_size_2_qs;
-  logic [2:0] cmd_info_2_dummy_size_2_wd;
-  logic cmd_info_2_dummy_en_2_qs;
-  logic cmd_info_2_dummy_en_2_wd;
-  logic [3:0] cmd_info_2_payload_en_2_qs;
-  logic [3:0] cmd_info_2_payload_en_2_wd;
-  logic cmd_info_2_payload_dir_2_qs;
-  logic cmd_info_2_payload_dir_2_wd;
-  logic cmd_info_2_payload_swap_en_2_qs;
-  logic cmd_info_2_payload_swap_en_2_wd;
-  logic [1:0] cmd_info_2_read_pipeline_mode_2_qs;
-  logic [1:0] cmd_info_2_read_pipeline_mode_2_wd;
-  logic cmd_info_2_upload_2_qs;
-  logic cmd_info_2_upload_2_wd;
-  logic cmd_info_2_busy_2_qs;
-  logic cmd_info_2_busy_2_wd;
-  logic cmd_info_2_valid_2_qs;
-  logic cmd_info_2_valid_2_wd;
+  logic [7:0] cmd_info_2_opcode_qs;
+  logic [7:0] cmd_info_2_opcode_wd;
+  logic [1:0] cmd_info_2_addr_mode_qs;
+  logic [1:0] cmd_info_2_addr_mode_wd;
+  logic cmd_info_2_addr_swap_en_qs;
+  logic cmd_info_2_addr_swap_en_wd;
+  logic cmd_info_2_mbyte_en_qs;
+  logic cmd_info_2_mbyte_en_wd;
+  logic [2:0] cmd_info_2_dummy_size_qs;
+  logic [2:0] cmd_info_2_dummy_size_wd;
+  logic cmd_info_2_dummy_en_qs;
+  logic cmd_info_2_dummy_en_wd;
+  logic [3:0] cmd_info_2_payload_en_qs;
+  logic [3:0] cmd_info_2_payload_en_wd;
+  logic cmd_info_2_payload_dir_qs;
+  logic cmd_info_2_payload_dir_wd;
+  logic cmd_info_2_payload_swap_en_qs;
+  logic cmd_info_2_payload_swap_en_wd;
+  logic [1:0] cmd_info_2_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_2_read_pipeline_mode_wd;
+  logic cmd_info_2_upload_qs;
+  logic cmd_info_2_upload_wd;
+  logic cmd_info_2_busy_qs;
+  logic cmd_info_2_busy_wd;
+  logic cmd_info_2_valid_qs;
+  logic cmd_info_2_valid_wd;
   logic cmd_info_3_we;
-  logic [7:0] cmd_info_3_opcode_3_qs;
-  logic [7:0] cmd_info_3_opcode_3_wd;
-  logic [1:0] cmd_info_3_addr_mode_3_qs;
-  logic [1:0] cmd_info_3_addr_mode_3_wd;
-  logic cmd_info_3_addr_swap_en_3_qs;
-  logic cmd_info_3_addr_swap_en_3_wd;
-  logic cmd_info_3_mbyte_en_3_qs;
-  logic cmd_info_3_mbyte_en_3_wd;
-  logic [2:0] cmd_info_3_dummy_size_3_qs;
-  logic [2:0] cmd_info_3_dummy_size_3_wd;
-  logic cmd_info_3_dummy_en_3_qs;
-  logic cmd_info_3_dummy_en_3_wd;
-  logic [3:0] cmd_info_3_payload_en_3_qs;
-  logic [3:0] cmd_info_3_payload_en_3_wd;
-  logic cmd_info_3_payload_dir_3_qs;
-  logic cmd_info_3_payload_dir_3_wd;
-  logic cmd_info_3_payload_swap_en_3_qs;
-  logic cmd_info_3_payload_swap_en_3_wd;
-  logic [1:0] cmd_info_3_read_pipeline_mode_3_qs;
-  logic [1:0] cmd_info_3_read_pipeline_mode_3_wd;
-  logic cmd_info_3_upload_3_qs;
-  logic cmd_info_3_upload_3_wd;
-  logic cmd_info_3_busy_3_qs;
-  logic cmd_info_3_busy_3_wd;
-  logic cmd_info_3_valid_3_qs;
-  logic cmd_info_3_valid_3_wd;
+  logic [7:0] cmd_info_3_opcode_qs;
+  logic [7:0] cmd_info_3_opcode_wd;
+  logic [1:0] cmd_info_3_addr_mode_qs;
+  logic [1:0] cmd_info_3_addr_mode_wd;
+  logic cmd_info_3_addr_swap_en_qs;
+  logic cmd_info_3_addr_swap_en_wd;
+  logic cmd_info_3_mbyte_en_qs;
+  logic cmd_info_3_mbyte_en_wd;
+  logic [2:0] cmd_info_3_dummy_size_qs;
+  logic [2:0] cmd_info_3_dummy_size_wd;
+  logic cmd_info_3_dummy_en_qs;
+  logic cmd_info_3_dummy_en_wd;
+  logic [3:0] cmd_info_3_payload_en_qs;
+  logic [3:0] cmd_info_3_payload_en_wd;
+  logic cmd_info_3_payload_dir_qs;
+  logic cmd_info_3_payload_dir_wd;
+  logic cmd_info_3_payload_swap_en_qs;
+  logic cmd_info_3_payload_swap_en_wd;
+  logic [1:0] cmd_info_3_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_3_read_pipeline_mode_wd;
+  logic cmd_info_3_upload_qs;
+  logic cmd_info_3_upload_wd;
+  logic cmd_info_3_busy_qs;
+  logic cmd_info_3_busy_wd;
+  logic cmd_info_3_valid_qs;
+  logic cmd_info_3_valid_wd;
   logic cmd_info_4_we;
-  logic [7:0] cmd_info_4_opcode_4_qs;
-  logic [7:0] cmd_info_4_opcode_4_wd;
-  logic [1:0] cmd_info_4_addr_mode_4_qs;
-  logic [1:0] cmd_info_4_addr_mode_4_wd;
-  logic cmd_info_4_addr_swap_en_4_qs;
-  logic cmd_info_4_addr_swap_en_4_wd;
-  logic cmd_info_4_mbyte_en_4_qs;
-  logic cmd_info_4_mbyte_en_4_wd;
-  logic [2:0] cmd_info_4_dummy_size_4_qs;
-  logic [2:0] cmd_info_4_dummy_size_4_wd;
-  logic cmd_info_4_dummy_en_4_qs;
-  logic cmd_info_4_dummy_en_4_wd;
-  logic [3:0] cmd_info_4_payload_en_4_qs;
-  logic [3:0] cmd_info_4_payload_en_4_wd;
-  logic cmd_info_4_payload_dir_4_qs;
-  logic cmd_info_4_payload_dir_4_wd;
-  logic cmd_info_4_payload_swap_en_4_qs;
-  logic cmd_info_4_payload_swap_en_4_wd;
-  logic [1:0] cmd_info_4_read_pipeline_mode_4_qs;
-  logic [1:0] cmd_info_4_read_pipeline_mode_4_wd;
-  logic cmd_info_4_upload_4_qs;
-  logic cmd_info_4_upload_4_wd;
-  logic cmd_info_4_busy_4_qs;
-  logic cmd_info_4_busy_4_wd;
-  logic cmd_info_4_valid_4_qs;
-  logic cmd_info_4_valid_4_wd;
+  logic [7:0] cmd_info_4_opcode_qs;
+  logic [7:0] cmd_info_4_opcode_wd;
+  logic [1:0] cmd_info_4_addr_mode_qs;
+  logic [1:0] cmd_info_4_addr_mode_wd;
+  logic cmd_info_4_addr_swap_en_qs;
+  logic cmd_info_4_addr_swap_en_wd;
+  logic cmd_info_4_mbyte_en_qs;
+  logic cmd_info_4_mbyte_en_wd;
+  logic [2:0] cmd_info_4_dummy_size_qs;
+  logic [2:0] cmd_info_4_dummy_size_wd;
+  logic cmd_info_4_dummy_en_qs;
+  logic cmd_info_4_dummy_en_wd;
+  logic [3:0] cmd_info_4_payload_en_qs;
+  logic [3:0] cmd_info_4_payload_en_wd;
+  logic cmd_info_4_payload_dir_qs;
+  logic cmd_info_4_payload_dir_wd;
+  logic cmd_info_4_payload_swap_en_qs;
+  logic cmd_info_4_payload_swap_en_wd;
+  logic [1:0] cmd_info_4_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_4_read_pipeline_mode_wd;
+  logic cmd_info_4_upload_qs;
+  logic cmd_info_4_upload_wd;
+  logic cmd_info_4_busy_qs;
+  logic cmd_info_4_busy_wd;
+  logic cmd_info_4_valid_qs;
+  logic cmd_info_4_valid_wd;
   logic cmd_info_5_we;
-  logic [7:0] cmd_info_5_opcode_5_qs;
-  logic [7:0] cmd_info_5_opcode_5_wd;
-  logic [1:0] cmd_info_5_addr_mode_5_qs;
-  logic [1:0] cmd_info_5_addr_mode_5_wd;
-  logic cmd_info_5_addr_swap_en_5_qs;
-  logic cmd_info_5_addr_swap_en_5_wd;
-  logic cmd_info_5_mbyte_en_5_qs;
-  logic cmd_info_5_mbyte_en_5_wd;
-  logic [2:0] cmd_info_5_dummy_size_5_qs;
-  logic [2:0] cmd_info_5_dummy_size_5_wd;
-  logic cmd_info_5_dummy_en_5_qs;
-  logic cmd_info_5_dummy_en_5_wd;
-  logic [3:0] cmd_info_5_payload_en_5_qs;
-  logic [3:0] cmd_info_5_payload_en_5_wd;
-  logic cmd_info_5_payload_dir_5_qs;
-  logic cmd_info_5_payload_dir_5_wd;
-  logic cmd_info_5_payload_swap_en_5_qs;
-  logic cmd_info_5_payload_swap_en_5_wd;
-  logic [1:0] cmd_info_5_read_pipeline_mode_5_qs;
-  logic [1:0] cmd_info_5_read_pipeline_mode_5_wd;
-  logic cmd_info_5_upload_5_qs;
-  logic cmd_info_5_upload_5_wd;
-  logic cmd_info_5_busy_5_qs;
-  logic cmd_info_5_busy_5_wd;
-  logic cmd_info_5_valid_5_qs;
-  logic cmd_info_5_valid_5_wd;
+  logic [7:0] cmd_info_5_opcode_qs;
+  logic [7:0] cmd_info_5_opcode_wd;
+  logic [1:0] cmd_info_5_addr_mode_qs;
+  logic [1:0] cmd_info_5_addr_mode_wd;
+  logic cmd_info_5_addr_swap_en_qs;
+  logic cmd_info_5_addr_swap_en_wd;
+  logic cmd_info_5_mbyte_en_qs;
+  logic cmd_info_5_mbyte_en_wd;
+  logic [2:0] cmd_info_5_dummy_size_qs;
+  logic [2:0] cmd_info_5_dummy_size_wd;
+  logic cmd_info_5_dummy_en_qs;
+  logic cmd_info_5_dummy_en_wd;
+  logic [3:0] cmd_info_5_payload_en_qs;
+  logic [3:0] cmd_info_5_payload_en_wd;
+  logic cmd_info_5_payload_dir_qs;
+  logic cmd_info_5_payload_dir_wd;
+  logic cmd_info_5_payload_swap_en_qs;
+  logic cmd_info_5_payload_swap_en_wd;
+  logic [1:0] cmd_info_5_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_5_read_pipeline_mode_wd;
+  logic cmd_info_5_upload_qs;
+  logic cmd_info_5_upload_wd;
+  logic cmd_info_5_busy_qs;
+  logic cmd_info_5_busy_wd;
+  logic cmd_info_5_valid_qs;
+  logic cmd_info_5_valid_wd;
   logic cmd_info_6_we;
-  logic [7:0] cmd_info_6_opcode_6_qs;
-  logic [7:0] cmd_info_6_opcode_6_wd;
-  logic [1:0] cmd_info_6_addr_mode_6_qs;
-  logic [1:0] cmd_info_6_addr_mode_6_wd;
-  logic cmd_info_6_addr_swap_en_6_qs;
-  logic cmd_info_6_addr_swap_en_6_wd;
-  logic cmd_info_6_mbyte_en_6_qs;
-  logic cmd_info_6_mbyte_en_6_wd;
-  logic [2:0] cmd_info_6_dummy_size_6_qs;
-  logic [2:0] cmd_info_6_dummy_size_6_wd;
-  logic cmd_info_6_dummy_en_6_qs;
-  logic cmd_info_6_dummy_en_6_wd;
-  logic [3:0] cmd_info_6_payload_en_6_qs;
-  logic [3:0] cmd_info_6_payload_en_6_wd;
-  logic cmd_info_6_payload_dir_6_qs;
-  logic cmd_info_6_payload_dir_6_wd;
-  logic cmd_info_6_payload_swap_en_6_qs;
-  logic cmd_info_6_payload_swap_en_6_wd;
-  logic [1:0] cmd_info_6_read_pipeline_mode_6_qs;
-  logic [1:0] cmd_info_6_read_pipeline_mode_6_wd;
-  logic cmd_info_6_upload_6_qs;
-  logic cmd_info_6_upload_6_wd;
-  logic cmd_info_6_busy_6_qs;
-  logic cmd_info_6_busy_6_wd;
-  logic cmd_info_6_valid_6_qs;
-  logic cmd_info_6_valid_6_wd;
+  logic [7:0] cmd_info_6_opcode_qs;
+  logic [7:0] cmd_info_6_opcode_wd;
+  logic [1:0] cmd_info_6_addr_mode_qs;
+  logic [1:0] cmd_info_6_addr_mode_wd;
+  logic cmd_info_6_addr_swap_en_qs;
+  logic cmd_info_6_addr_swap_en_wd;
+  logic cmd_info_6_mbyte_en_qs;
+  logic cmd_info_6_mbyte_en_wd;
+  logic [2:0] cmd_info_6_dummy_size_qs;
+  logic [2:0] cmd_info_6_dummy_size_wd;
+  logic cmd_info_6_dummy_en_qs;
+  logic cmd_info_6_dummy_en_wd;
+  logic [3:0] cmd_info_6_payload_en_qs;
+  logic [3:0] cmd_info_6_payload_en_wd;
+  logic cmd_info_6_payload_dir_qs;
+  logic cmd_info_6_payload_dir_wd;
+  logic cmd_info_6_payload_swap_en_qs;
+  logic cmd_info_6_payload_swap_en_wd;
+  logic [1:0] cmd_info_6_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_6_read_pipeline_mode_wd;
+  logic cmd_info_6_upload_qs;
+  logic cmd_info_6_upload_wd;
+  logic cmd_info_6_busy_qs;
+  logic cmd_info_6_busy_wd;
+  logic cmd_info_6_valid_qs;
+  logic cmd_info_6_valid_wd;
   logic cmd_info_7_we;
-  logic [7:0] cmd_info_7_opcode_7_qs;
-  logic [7:0] cmd_info_7_opcode_7_wd;
-  logic [1:0] cmd_info_7_addr_mode_7_qs;
-  logic [1:0] cmd_info_7_addr_mode_7_wd;
-  logic cmd_info_7_addr_swap_en_7_qs;
-  logic cmd_info_7_addr_swap_en_7_wd;
-  logic cmd_info_7_mbyte_en_7_qs;
-  logic cmd_info_7_mbyte_en_7_wd;
-  logic [2:0] cmd_info_7_dummy_size_7_qs;
-  logic [2:0] cmd_info_7_dummy_size_7_wd;
-  logic cmd_info_7_dummy_en_7_qs;
-  logic cmd_info_7_dummy_en_7_wd;
-  logic [3:0] cmd_info_7_payload_en_7_qs;
-  logic [3:0] cmd_info_7_payload_en_7_wd;
-  logic cmd_info_7_payload_dir_7_qs;
-  logic cmd_info_7_payload_dir_7_wd;
-  logic cmd_info_7_payload_swap_en_7_qs;
-  logic cmd_info_7_payload_swap_en_7_wd;
-  logic [1:0] cmd_info_7_read_pipeline_mode_7_qs;
-  logic [1:0] cmd_info_7_read_pipeline_mode_7_wd;
-  logic cmd_info_7_upload_7_qs;
-  logic cmd_info_7_upload_7_wd;
-  logic cmd_info_7_busy_7_qs;
-  logic cmd_info_7_busy_7_wd;
-  logic cmd_info_7_valid_7_qs;
-  logic cmd_info_7_valid_7_wd;
+  logic [7:0] cmd_info_7_opcode_qs;
+  logic [7:0] cmd_info_7_opcode_wd;
+  logic [1:0] cmd_info_7_addr_mode_qs;
+  logic [1:0] cmd_info_7_addr_mode_wd;
+  logic cmd_info_7_addr_swap_en_qs;
+  logic cmd_info_7_addr_swap_en_wd;
+  logic cmd_info_7_mbyte_en_qs;
+  logic cmd_info_7_mbyte_en_wd;
+  logic [2:0] cmd_info_7_dummy_size_qs;
+  logic [2:0] cmd_info_7_dummy_size_wd;
+  logic cmd_info_7_dummy_en_qs;
+  logic cmd_info_7_dummy_en_wd;
+  logic [3:0] cmd_info_7_payload_en_qs;
+  logic [3:0] cmd_info_7_payload_en_wd;
+  logic cmd_info_7_payload_dir_qs;
+  logic cmd_info_7_payload_dir_wd;
+  logic cmd_info_7_payload_swap_en_qs;
+  logic cmd_info_7_payload_swap_en_wd;
+  logic [1:0] cmd_info_7_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_7_read_pipeline_mode_wd;
+  logic cmd_info_7_upload_qs;
+  logic cmd_info_7_upload_wd;
+  logic cmd_info_7_busy_qs;
+  logic cmd_info_7_busy_wd;
+  logic cmd_info_7_valid_qs;
+  logic cmd_info_7_valid_wd;
   logic cmd_info_8_we;
-  logic [7:0] cmd_info_8_opcode_8_qs;
-  logic [7:0] cmd_info_8_opcode_8_wd;
-  logic [1:0] cmd_info_8_addr_mode_8_qs;
-  logic [1:0] cmd_info_8_addr_mode_8_wd;
-  logic cmd_info_8_addr_swap_en_8_qs;
-  logic cmd_info_8_addr_swap_en_8_wd;
-  logic cmd_info_8_mbyte_en_8_qs;
-  logic cmd_info_8_mbyte_en_8_wd;
-  logic [2:0] cmd_info_8_dummy_size_8_qs;
-  logic [2:0] cmd_info_8_dummy_size_8_wd;
-  logic cmd_info_8_dummy_en_8_qs;
-  logic cmd_info_8_dummy_en_8_wd;
-  logic [3:0] cmd_info_8_payload_en_8_qs;
-  logic [3:0] cmd_info_8_payload_en_8_wd;
-  logic cmd_info_8_payload_dir_8_qs;
-  logic cmd_info_8_payload_dir_8_wd;
-  logic cmd_info_8_payload_swap_en_8_qs;
-  logic cmd_info_8_payload_swap_en_8_wd;
-  logic [1:0] cmd_info_8_read_pipeline_mode_8_qs;
-  logic [1:0] cmd_info_8_read_pipeline_mode_8_wd;
-  logic cmd_info_8_upload_8_qs;
-  logic cmd_info_8_upload_8_wd;
-  logic cmd_info_8_busy_8_qs;
-  logic cmd_info_8_busy_8_wd;
-  logic cmd_info_8_valid_8_qs;
-  logic cmd_info_8_valid_8_wd;
+  logic [7:0] cmd_info_8_opcode_qs;
+  logic [7:0] cmd_info_8_opcode_wd;
+  logic [1:0] cmd_info_8_addr_mode_qs;
+  logic [1:0] cmd_info_8_addr_mode_wd;
+  logic cmd_info_8_addr_swap_en_qs;
+  logic cmd_info_8_addr_swap_en_wd;
+  logic cmd_info_8_mbyte_en_qs;
+  logic cmd_info_8_mbyte_en_wd;
+  logic [2:0] cmd_info_8_dummy_size_qs;
+  logic [2:0] cmd_info_8_dummy_size_wd;
+  logic cmd_info_8_dummy_en_qs;
+  logic cmd_info_8_dummy_en_wd;
+  logic [3:0] cmd_info_8_payload_en_qs;
+  logic [3:0] cmd_info_8_payload_en_wd;
+  logic cmd_info_8_payload_dir_qs;
+  logic cmd_info_8_payload_dir_wd;
+  logic cmd_info_8_payload_swap_en_qs;
+  logic cmd_info_8_payload_swap_en_wd;
+  logic [1:0] cmd_info_8_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_8_read_pipeline_mode_wd;
+  logic cmd_info_8_upload_qs;
+  logic cmd_info_8_upload_wd;
+  logic cmd_info_8_busy_qs;
+  logic cmd_info_8_busy_wd;
+  logic cmd_info_8_valid_qs;
+  logic cmd_info_8_valid_wd;
   logic cmd_info_9_we;
-  logic [7:0] cmd_info_9_opcode_9_qs;
-  logic [7:0] cmd_info_9_opcode_9_wd;
-  logic [1:0] cmd_info_9_addr_mode_9_qs;
-  logic [1:0] cmd_info_9_addr_mode_9_wd;
-  logic cmd_info_9_addr_swap_en_9_qs;
-  logic cmd_info_9_addr_swap_en_9_wd;
-  logic cmd_info_9_mbyte_en_9_qs;
-  logic cmd_info_9_mbyte_en_9_wd;
-  logic [2:0] cmd_info_9_dummy_size_9_qs;
-  logic [2:0] cmd_info_9_dummy_size_9_wd;
-  logic cmd_info_9_dummy_en_9_qs;
-  logic cmd_info_9_dummy_en_9_wd;
-  logic [3:0] cmd_info_9_payload_en_9_qs;
-  logic [3:0] cmd_info_9_payload_en_9_wd;
-  logic cmd_info_9_payload_dir_9_qs;
-  logic cmd_info_9_payload_dir_9_wd;
-  logic cmd_info_9_payload_swap_en_9_qs;
-  logic cmd_info_9_payload_swap_en_9_wd;
-  logic [1:0] cmd_info_9_read_pipeline_mode_9_qs;
-  logic [1:0] cmd_info_9_read_pipeline_mode_9_wd;
-  logic cmd_info_9_upload_9_qs;
-  logic cmd_info_9_upload_9_wd;
-  logic cmd_info_9_busy_9_qs;
-  logic cmd_info_9_busy_9_wd;
-  logic cmd_info_9_valid_9_qs;
-  logic cmd_info_9_valid_9_wd;
+  logic [7:0] cmd_info_9_opcode_qs;
+  logic [7:0] cmd_info_9_opcode_wd;
+  logic [1:0] cmd_info_9_addr_mode_qs;
+  logic [1:0] cmd_info_9_addr_mode_wd;
+  logic cmd_info_9_addr_swap_en_qs;
+  logic cmd_info_9_addr_swap_en_wd;
+  logic cmd_info_9_mbyte_en_qs;
+  logic cmd_info_9_mbyte_en_wd;
+  logic [2:0] cmd_info_9_dummy_size_qs;
+  logic [2:0] cmd_info_9_dummy_size_wd;
+  logic cmd_info_9_dummy_en_qs;
+  logic cmd_info_9_dummy_en_wd;
+  logic [3:0] cmd_info_9_payload_en_qs;
+  logic [3:0] cmd_info_9_payload_en_wd;
+  logic cmd_info_9_payload_dir_qs;
+  logic cmd_info_9_payload_dir_wd;
+  logic cmd_info_9_payload_swap_en_qs;
+  logic cmd_info_9_payload_swap_en_wd;
+  logic [1:0] cmd_info_9_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_9_read_pipeline_mode_wd;
+  logic cmd_info_9_upload_qs;
+  logic cmd_info_9_upload_wd;
+  logic cmd_info_9_busy_qs;
+  logic cmd_info_9_busy_wd;
+  logic cmd_info_9_valid_qs;
+  logic cmd_info_9_valid_wd;
   logic cmd_info_10_we;
-  logic [7:0] cmd_info_10_opcode_10_qs;
-  logic [7:0] cmd_info_10_opcode_10_wd;
-  logic [1:0] cmd_info_10_addr_mode_10_qs;
-  logic [1:0] cmd_info_10_addr_mode_10_wd;
-  logic cmd_info_10_addr_swap_en_10_qs;
-  logic cmd_info_10_addr_swap_en_10_wd;
-  logic cmd_info_10_mbyte_en_10_qs;
-  logic cmd_info_10_mbyte_en_10_wd;
-  logic [2:0] cmd_info_10_dummy_size_10_qs;
-  logic [2:0] cmd_info_10_dummy_size_10_wd;
-  logic cmd_info_10_dummy_en_10_qs;
-  logic cmd_info_10_dummy_en_10_wd;
-  logic [3:0] cmd_info_10_payload_en_10_qs;
-  logic [3:0] cmd_info_10_payload_en_10_wd;
-  logic cmd_info_10_payload_dir_10_qs;
-  logic cmd_info_10_payload_dir_10_wd;
-  logic cmd_info_10_payload_swap_en_10_qs;
-  logic cmd_info_10_payload_swap_en_10_wd;
-  logic [1:0] cmd_info_10_read_pipeline_mode_10_qs;
-  logic [1:0] cmd_info_10_read_pipeline_mode_10_wd;
-  logic cmd_info_10_upload_10_qs;
-  logic cmd_info_10_upload_10_wd;
-  logic cmd_info_10_busy_10_qs;
-  logic cmd_info_10_busy_10_wd;
-  logic cmd_info_10_valid_10_qs;
-  logic cmd_info_10_valid_10_wd;
+  logic [7:0] cmd_info_10_opcode_qs;
+  logic [7:0] cmd_info_10_opcode_wd;
+  logic [1:0] cmd_info_10_addr_mode_qs;
+  logic [1:0] cmd_info_10_addr_mode_wd;
+  logic cmd_info_10_addr_swap_en_qs;
+  logic cmd_info_10_addr_swap_en_wd;
+  logic cmd_info_10_mbyte_en_qs;
+  logic cmd_info_10_mbyte_en_wd;
+  logic [2:0] cmd_info_10_dummy_size_qs;
+  logic [2:0] cmd_info_10_dummy_size_wd;
+  logic cmd_info_10_dummy_en_qs;
+  logic cmd_info_10_dummy_en_wd;
+  logic [3:0] cmd_info_10_payload_en_qs;
+  logic [3:0] cmd_info_10_payload_en_wd;
+  logic cmd_info_10_payload_dir_qs;
+  logic cmd_info_10_payload_dir_wd;
+  logic cmd_info_10_payload_swap_en_qs;
+  logic cmd_info_10_payload_swap_en_wd;
+  logic [1:0] cmd_info_10_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_10_read_pipeline_mode_wd;
+  logic cmd_info_10_upload_qs;
+  logic cmd_info_10_upload_wd;
+  logic cmd_info_10_busy_qs;
+  logic cmd_info_10_busy_wd;
+  logic cmd_info_10_valid_qs;
+  logic cmd_info_10_valid_wd;
   logic cmd_info_11_we;
-  logic [7:0] cmd_info_11_opcode_11_qs;
-  logic [7:0] cmd_info_11_opcode_11_wd;
-  logic [1:0] cmd_info_11_addr_mode_11_qs;
-  logic [1:0] cmd_info_11_addr_mode_11_wd;
-  logic cmd_info_11_addr_swap_en_11_qs;
-  logic cmd_info_11_addr_swap_en_11_wd;
-  logic cmd_info_11_mbyte_en_11_qs;
-  logic cmd_info_11_mbyte_en_11_wd;
-  logic [2:0] cmd_info_11_dummy_size_11_qs;
-  logic [2:0] cmd_info_11_dummy_size_11_wd;
-  logic cmd_info_11_dummy_en_11_qs;
-  logic cmd_info_11_dummy_en_11_wd;
-  logic [3:0] cmd_info_11_payload_en_11_qs;
-  logic [3:0] cmd_info_11_payload_en_11_wd;
-  logic cmd_info_11_payload_dir_11_qs;
-  logic cmd_info_11_payload_dir_11_wd;
-  logic cmd_info_11_payload_swap_en_11_qs;
-  logic cmd_info_11_payload_swap_en_11_wd;
-  logic [1:0] cmd_info_11_read_pipeline_mode_11_qs;
-  logic [1:0] cmd_info_11_read_pipeline_mode_11_wd;
-  logic cmd_info_11_upload_11_qs;
-  logic cmd_info_11_upload_11_wd;
-  logic cmd_info_11_busy_11_qs;
-  logic cmd_info_11_busy_11_wd;
-  logic cmd_info_11_valid_11_qs;
-  logic cmd_info_11_valid_11_wd;
+  logic [7:0] cmd_info_11_opcode_qs;
+  logic [7:0] cmd_info_11_opcode_wd;
+  logic [1:0] cmd_info_11_addr_mode_qs;
+  logic [1:0] cmd_info_11_addr_mode_wd;
+  logic cmd_info_11_addr_swap_en_qs;
+  logic cmd_info_11_addr_swap_en_wd;
+  logic cmd_info_11_mbyte_en_qs;
+  logic cmd_info_11_mbyte_en_wd;
+  logic [2:0] cmd_info_11_dummy_size_qs;
+  logic [2:0] cmd_info_11_dummy_size_wd;
+  logic cmd_info_11_dummy_en_qs;
+  logic cmd_info_11_dummy_en_wd;
+  logic [3:0] cmd_info_11_payload_en_qs;
+  logic [3:0] cmd_info_11_payload_en_wd;
+  logic cmd_info_11_payload_dir_qs;
+  logic cmd_info_11_payload_dir_wd;
+  logic cmd_info_11_payload_swap_en_qs;
+  logic cmd_info_11_payload_swap_en_wd;
+  logic [1:0] cmd_info_11_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_11_read_pipeline_mode_wd;
+  logic cmd_info_11_upload_qs;
+  logic cmd_info_11_upload_wd;
+  logic cmd_info_11_busy_qs;
+  logic cmd_info_11_busy_wd;
+  logic cmd_info_11_valid_qs;
+  logic cmd_info_11_valid_wd;
   logic cmd_info_12_we;
-  logic [7:0] cmd_info_12_opcode_12_qs;
-  logic [7:0] cmd_info_12_opcode_12_wd;
-  logic [1:0] cmd_info_12_addr_mode_12_qs;
-  logic [1:0] cmd_info_12_addr_mode_12_wd;
-  logic cmd_info_12_addr_swap_en_12_qs;
-  logic cmd_info_12_addr_swap_en_12_wd;
-  logic cmd_info_12_mbyte_en_12_qs;
-  logic cmd_info_12_mbyte_en_12_wd;
-  logic [2:0] cmd_info_12_dummy_size_12_qs;
-  logic [2:0] cmd_info_12_dummy_size_12_wd;
-  logic cmd_info_12_dummy_en_12_qs;
-  logic cmd_info_12_dummy_en_12_wd;
-  logic [3:0] cmd_info_12_payload_en_12_qs;
-  logic [3:0] cmd_info_12_payload_en_12_wd;
-  logic cmd_info_12_payload_dir_12_qs;
-  logic cmd_info_12_payload_dir_12_wd;
-  logic cmd_info_12_payload_swap_en_12_qs;
-  logic cmd_info_12_payload_swap_en_12_wd;
-  logic [1:0] cmd_info_12_read_pipeline_mode_12_qs;
-  logic [1:0] cmd_info_12_read_pipeline_mode_12_wd;
-  logic cmd_info_12_upload_12_qs;
-  logic cmd_info_12_upload_12_wd;
-  logic cmd_info_12_busy_12_qs;
-  logic cmd_info_12_busy_12_wd;
-  logic cmd_info_12_valid_12_qs;
-  logic cmd_info_12_valid_12_wd;
+  logic [7:0] cmd_info_12_opcode_qs;
+  logic [7:0] cmd_info_12_opcode_wd;
+  logic [1:0] cmd_info_12_addr_mode_qs;
+  logic [1:0] cmd_info_12_addr_mode_wd;
+  logic cmd_info_12_addr_swap_en_qs;
+  logic cmd_info_12_addr_swap_en_wd;
+  logic cmd_info_12_mbyte_en_qs;
+  logic cmd_info_12_mbyte_en_wd;
+  logic [2:0] cmd_info_12_dummy_size_qs;
+  logic [2:0] cmd_info_12_dummy_size_wd;
+  logic cmd_info_12_dummy_en_qs;
+  logic cmd_info_12_dummy_en_wd;
+  logic [3:0] cmd_info_12_payload_en_qs;
+  logic [3:0] cmd_info_12_payload_en_wd;
+  logic cmd_info_12_payload_dir_qs;
+  logic cmd_info_12_payload_dir_wd;
+  logic cmd_info_12_payload_swap_en_qs;
+  logic cmd_info_12_payload_swap_en_wd;
+  logic [1:0] cmd_info_12_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_12_read_pipeline_mode_wd;
+  logic cmd_info_12_upload_qs;
+  logic cmd_info_12_upload_wd;
+  logic cmd_info_12_busy_qs;
+  logic cmd_info_12_busy_wd;
+  logic cmd_info_12_valid_qs;
+  logic cmd_info_12_valid_wd;
   logic cmd_info_13_we;
-  logic [7:0] cmd_info_13_opcode_13_qs;
-  logic [7:0] cmd_info_13_opcode_13_wd;
-  logic [1:0] cmd_info_13_addr_mode_13_qs;
-  logic [1:0] cmd_info_13_addr_mode_13_wd;
-  logic cmd_info_13_addr_swap_en_13_qs;
-  logic cmd_info_13_addr_swap_en_13_wd;
-  logic cmd_info_13_mbyte_en_13_qs;
-  logic cmd_info_13_mbyte_en_13_wd;
-  logic [2:0] cmd_info_13_dummy_size_13_qs;
-  logic [2:0] cmd_info_13_dummy_size_13_wd;
-  logic cmd_info_13_dummy_en_13_qs;
-  logic cmd_info_13_dummy_en_13_wd;
-  logic [3:0] cmd_info_13_payload_en_13_qs;
-  logic [3:0] cmd_info_13_payload_en_13_wd;
-  logic cmd_info_13_payload_dir_13_qs;
-  logic cmd_info_13_payload_dir_13_wd;
-  logic cmd_info_13_payload_swap_en_13_qs;
-  logic cmd_info_13_payload_swap_en_13_wd;
-  logic [1:0] cmd_info_13_read_pipeline_mode_13_qs;
-  logic [1:0] cmd_info_13_read_pipeline_mode_13_wd;
-  logic cmd_info_13_upload_13_qs;
-  logic cmd_info_13_upload_13_wd;
-  logic cmd_info_13_busy_13_qs;
-  logic cmd_info_13_busy_13_wd;
-  logic cmd_info_13_valid_13_qs;
-  logic cmd_info_13_valid_13_wd;
+  logic [7:0] cmd_info_13_opcode_qs;
+  logic [7:0] cmd_info_13_opcode_wd;
+  logic [1:0] cmd_info_13_addr_mode_qs;
+  logic [1:0] cmd_info_13_addr_mode_wd;
+  logic cmd_info_13_addr_swap_en_qs;
+  logic cmd_info_13_addr_swap_en_wd;
+  logic cmd_info_13_mbyte_en_qs;
+  logic cmd_info_13_mbyte_en_wd;
+  logic [2:0] cmd_info_13_dummy_size_qs;
+  logic [2:0] cmd_info_13_dummy_size_wd;
+  logic cmd_info_13_dummy_en_qs;
+  logic cmd_info_13_dummy_en_wd;
+  logic [3:0] cmd_info_13_payload_en_qs;
+  logic [3:0] cmd_info_13_payload_en_wd;
+  logic cmd_info_13_payload_dir_qs;
+  logic cmd_info_13_payload_dir_wd;
+  logic cmd_info_13_payload_swap_en_qs;
+  logic cmd_info_13_payload_swap_en_wd;
+  logic [1:0] cmd_info_13_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_13_read_pipeline_mode_wd;
+  logic cmd_info_13_upload_qs;
+  logic cmd_info_13_upload_wd;
+  logic cmd_info_13_busy_qs;
+  logic cmd_info_13_busy_wd;
+  logic cmd_info_13_valid_qs;
+  logic cmd_info_13_valid_wd;
   logic cmd_info_14_we;
-  logic [7:0] cmd_info_14_opcode_14_qs;
-  logic [7:0] cmd_info_14_opcode_14_wd;
-  logic [1:0] cmd_info_14_addr_mode_14_qs;
-  logic [1:0] cmd_info_14_addr_mode_14_wd;
-  logic cmd_info_14_addr_swap_en_14_qs;
-  logic cmd_info_14_addr_swap_en_14_wd;
-  logic cmd_info_14_mbyte_en_14_qs;
-  logic cmd_info_14_mbyte_en_14_wd;
-  logic [2:0] cmd_info_14_dummy_size_14_qs;
-  logic [2:0] cmd_info_14_dummy_size_14_wd;
-  logic cmd_info_14_dummy_en_14_qs;
-  logic cmd_info_14_dummy_en_14_wd;
-  logic [3:0] cmd_info_14_payload_en_14_qs;
-  logic [3:0] cmd_info_14_payload_en_14_wd;
-  logic cmd_info_14_payload_dir_14_qs;
-  logic cmd_info_14_payload_dir_14_wd;
-  logic cmd_info_14_payload_swap_en_14_qs;
-  logic cmd_info_14_payload_swap_en_14_wd;
-  logic [1:0] cmd_info_14_read_pipeline_mode_14_qs;
-  logic [1:0] cmd_info_14_read_pipeline_mode_14_wd;
-  logic cmd_info_14_upload_14_qs;
-  logic cmd_info_14_upload_14_wd;
-  logic cmd_info_14_busy_14_qs;
-  logic cmd_info_14_busy_14_wd;
-  logic cmd_info_14_valid_14_qs;
-  logic cmd_info_14_valid_14_wd;
+  logic [7:0] cmd_info_14_opcode_qs;
+  logic [7:0] cmd_info_14_opcode_wd;
+  logic [1:0] cmd_info_14_addr_mode_qs;
+  logic [1:0] cmd_info_14_addr_mode_wd;
+  logic cmd_info_14_addr_swap_en_qs;
+  logic cmd_info_14_addr_swap_en_wd;
+  logic cmd_info_14_mbyte_en_qs;
+  logic cmd_info_14_mbyte_en_wd;
+  logic [2:0] cmd_info_14_dummy_size_qs;
+  logic [2:0] cmd_info_14_dummy_size_wd;
+  logic cmd_info_14_dummy_en_qs;
+  logic cmd_info_14_dummy_en_wd;
+  logic [3:0] cmd_info_14_payload_en_qs;
+  logic [3:0] cmd_info_14_payload_en_wd;
+  logic cmd_info_14_payload_dir_qs;
+  logic cmd_info_14_payload_dir_wd;
+  logic cmd_info_14_payload_swap_en_qs;
+  logic cmd_info_14_payload_swap_en_wd;
+  logic [1:0] cmd_info_14_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_14_read_pipeline_mode_wd;
+  logic cmd_info_14_upload_qs;
+  logic cmd_info_14_upload_wd;
+  logic cmd_info_14_busy_qs;
+  logic cmd_info_14_busy_wd;
+  logic cmd_info_14_valid_qs;
+  logic cmd_info_14_valid_wd;
   logic cmd_info_15_we;
-  logic [7:0] cmd_info_15_opcode_15_qs;
-  logic [7:0] cmd_info_15_opcode_15_wd;
-  logic [1:0] cmd_info_15_addr_mode_15_qs;
-  logic [1:0] cmd_info_15_addr_mode_15_wd;
-  logic cmd_info_15_addr_swap_en_15_qs;
-  logic cmd_info_15_addr_swap_en_15_wd;
-  logic cmd_info_15_mbyte_en_15_qs;
-  logic cmd_info_15_mbyte_en_15_wd;
-  logic [2:0] cmd_info_15_dummy_size_15_qs;
-  logic [2:0] cmd_info_15_dummy_size_15_wd;
-  logic cmd_info_15_dummy_en_15_qs;
-  logic cmd_info_15_dummy_en_15_wd;
-  logic [3:0] cmd_info_15_payload_en_15_qs;
-  logic [3:0] cmd_info_15_payload_en_15_wd;
-  logic cmd_info_15_payload_dir_15_qs;
-  logic cmd_info_15_payload_dir_15_wd;
-  logic cmd_info_15_payload_swap_en_15_qs;
-  logic cmd_info_15_payload_swap_en_15_wd;
-  logic [1:0] cmd_info_15_read_pipeline_mode_15_qs;
-  logic [1:0] cmd_info_15_read_pipeline_mode_15_wd;
-  logic cmd_info_15_upload_15_qs;
-  logic cmd_info_15_upload_15_wd;
-  logic cmd_info_15_busy_15_qs;
-  logic cmd_info_15_busy_15_wd;
-  logic cmd_info_15_valid_15_qs;
-  logic cmd_info_15_valid_15_wd;
+  logic [7:0] cmd_info_15_opcode_qs;
+  logic [7:0] cmd_info_15_opcode_wd;
+  logic [1:0] cmd_info_15_addr_mode_qs;
+  logic [1:0] cmd_info_15_addr_mode_wd;
+  logic cmd_info_15_addr_swap_en_qs;
+  logic cmd_info_15_addr_swap_en_wd;
+  logic cmd_info_15_mbyte_en_qs;
+  logic cmd_info_15_mbyte_en_wd;
+  logic [2:0] cmd_info_15_dummy_size_qs;
+  logic [2:0] cmd_info_15_dummy_size_wd;
+  logic cmd_info_15_dummy_en_qs;
+  logic cmd_info_15_dummy_en_wd;
+  logic [3:0] cmd_info_15_payload_en_qs;
+  logic [3:0] cmd_info_15_payload_en_wd;
+  logic cmd_info_15_payload_dir_qs;
+  logic cmd_info_15_payload_dir_wd;
+  logic cmd_info_15_payload_swap_en_qs;
+  logic cmd_info_15_payload_swap_en_wd;
+  logic [1:0] cmd_info_15_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_15_read_pipeline_mode_wd;
+  logic cmd_info_15_upload_qs;
+  logic cmd_info_15_upload_wd;
+  logic cmd_info_15_busy_qs;
+  logic cmd_info_15_busy_wd;
+  logic cmd_info_15_valid_qs;
+  logic cmd_info_15_valid_wd;
   logic cmd_info_16_we;
-  logic [7:0] cmd_info_16_opcode_16_qs;
-  logic [7:0] cmd_info_16_opcode_16_wd;
-  logic [1:0] cmd_info_16_addr_mode_16_qs;
-  logic [1:0] cmd_info_16_addr_mode_16_wd;
-  logic cmd_info_16_addr_swap_en_16_qs;
-  logic cmd_info_16_addr_swap_en_16_wd;
-  logic cmd_info_16_mbyte_en_16_qs;
-  logic cmd_info_16_mbyte_en_16_wd;
-  logic [2:0] cmd_info_16_dummy_size_16_qs;
-  logic [2:0] cmd_info_16_dummy_size_16_wd;
-  logic cmd_info_16_dummy_en_16_qs;
-  logic cmd_info_16_dummy_en_16_wd;
-  logic [3:0] cmd_info_16_payload_en_16_qs;
-  logic [3:0] cmd_info_16_payload_en_16_wd;
-  logic cmd_info_16_payload_dir_16_qs;
-  logic cmd_info_16_payload_dir_16_wd;
-  logic cmd_info_16_payload_swap_en_16_qs;
-  logic cmd_info_16_payload_swap_en_16_wd;
-  logic [1:0] cmd_info_16_read_pipeline_mode_16_qs;
-  logic [1:0] cmd_info_16_read_pipeline_mode_16_wd;
-  logic cmd_info_16_upload_16_qs;
-  logic cmd_info_16_upload_16_wd;
-  logic cmd_info_16_busy_16_qs;
-  logic cmd_info_16_busy_16_wd;
-  logic cmd_info_16_valid_16_qs;
-  logic cmd_info_16_valid_16_wd;
+  logic [7:0] cmd_info_16_opcode_qs;
+  logic [7:0] cmd_info_16_opcode_wd;
+  logic [1:0] cmd_info_16_addr_mode_qs;
+  logic [1:0] cmd_info_16_addr_mode_wd;
+  logic cmd_info_16_addr_swap_en_qs;
+  logic cmd_info_16_addr_swap_en_wd;
+  logic cmd_info_16_mbyte_en_qs;
+  logic cmd_info_16_mbyte_en_wd;
+  logic [2:0] cmd_info_16_dummy_size_qs;
+  logic [2:0] cmd_info_16_dummy_size_wd;
+  logic cmd_info_16_dummy_en_qs;
+  logic cmd_info_16_dummy_en_wd;
+  logic [3:0] cmd_info_16_payload_en_qs;
+  logic [3:0] cmd_info_16_payload_en_wd;
+  logic cmd_info_16_payload_dir_qs;
+  logic cmd_info_16_payload_dir_wd;
+  logic cmd_info_16_payload_swap_en_qs;
+  logic cmd_info_16_payload_swap_en_wd;
+  logic [1:0] cmd_info_16_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_16_read_pipeline_mode_wd;
+  logic cmd_info_16_upload_qs;
+  logic cmd_info_16_upload_wd;
+  logic cmd_info_16_busy_qs;
+  logic cmd_info_16_busy_wd;
+  logic cmd_info_16_valid_qs;
+  logic cmd_info_16_valid_wd;
   logic cmd_info_17_we;
-  logic [7:0] cmd_info_17_opcode_17_qs;
-  logic [7:0] cmd_info_17_opcode_17_wd;
-  logic [1:0] cmd_info_17_addr_mode_17_qs;
-  logic [1:0] cmd_info_17_addr_mode_17_wd;
-  logic cmd_info_17_addr_swap_en_17_qs;
-  logic cmd_info_17_addr_swap_en_17_wd;
-  logic cmd_info_17_mbyte_en_17_qs;
-  logic cmd_info_17_mbyte_en_17_wd;
-  logic [2:0] cmd_info_17_dummy_size_17_qs;
-  logic [2:0] cmd_info_17_dummy_size_17_wd;
-  logic cmd_info_17_dummy_en_17_qs;
-  logic cmd_info_17_dummy_en_17_wd;
-  logic [3:0] cmd_info_17_payload_en_17_qs;
-  logic [3:0] cmd_info_17_payload_en_17_wd;
-  logic cmd_info_17_payload_dir_17_qs;
-  logic cmd_info_17_payload_dir_17_wd;
-  logic cmd_info_17_payload_swap_en_17_qs;
-  logic cmd_info_17_payload_swap_en_17_wd;
-  logic [1:0] cmd_info_17_read_pipeline_mode_17_qs;
-  logic [1:0] cmd_info_17_read_pipeline_mode_17_wd;
-  logic cmd_info_17_upload_17_qs;
-  logic cmd_info_17_upload_17_wd;
-  logic cmd_info_17_busy_17_qs;
-  logic cmd_info_17_busy_17_wd;
-  logic cmd_info_17_valid_17_qs;
-  logic cmd_info_17_valid_17_wd;
+  logic [7:0] cmd_info_17_opcode_qs;
+  logic [7:0] cmd_info_17_opcode_wd;
+  logic [1:0] cmd_info_17_addr_mode_qs;
+  logic [1:0] cmd_info_17_addr_mode_wd;
+  logic cmd_info_17_addr_swap_en_qs;
+  logic cmd_info_17_addr_swap_en_wd;
+  logic cmd_info_17_mbyte_en_qs;
+  logic cmd_info_17_mbyte_en_wd;
+  logic [2:0] cmd_info_17_dummy_size_qs;
+  logic [2:0] cmd_info_17_dummy_size_wd;
+  logic cmd_info_17_dummy_en_qs;
+  logic cmd_info_17_dummy_en_wd;
+  logic [3:0] cmd_info_17_payload_en_qs;
+  logic [3:0] cmd_info_17_payload_en_wd;
+  logic cmd_info_17_payload_dir_qs;
+  logic cmd_info_17_payload_dir_wd;
+  logic cmd_info_17_payload_swap_en_qs;
+  logic cmd_info_17_payload_swap_en_wd;
+  logic [1:0] cmd_info_17_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_17_read_pipeline_mode_wd;
+  logic cmd_info_17_upload_qs;
+  logic cmd_info_17_upload_wd;
+  logic cmd_info_17_busy_qs;
+  logic cmd_info_17_busy_wd;
+  logic cmd_info_17_valid_qs;
+  logic cmd_info_17_valid_wd;
   logic cmd_info_18_we;
-  logic [7:0] cmd_info_18_opcode_18_qs;
-  logic [7:0] cmd_info_18_opcode_18_wd;
-  logic [1:0] cmd_info_18_addr_mode_18_qs;
-  logic [1:0] cmd_info_18_addr_mode_18_wd;
-  logic cmd_info_18_addr_swap_en_18_qs;
-  logic cmd_info_18_addr_swap_en_18_wd;
-  logic cmd_info_18_mbyte_en_18_qs;
-  logic cmd_info_18_mbyte_en_18_wd;
-  logic [2:0] cmd_info_18_dummy_size_18_qs;
-  logic [2:0] cmd_info_18_dummy_size_18_wd;
-  logic cmd_info_18_dummy_en_18_qs;
-  logic cmd_info_18_dummy_en_18_wd;
-  logic [3:0] cmd_info_18_payload_en_18_qs;
-  logic [3:0] cmd_info_18_payload_en_18_wd;
-  logic cmd_info_18_payload_dir_18_qs;
-  logic cmd_info_18_payload_dir_18_wd;
-  logic cmd_info_18_payload_swap_en_18_qs;
-  logic cmd_info_18_payload_swap_en_18_wd;
-  logic [1:0] cmd_info_18_read_pipeline_mode_18_qs;
-  logic [1:0] cmd_info_18_read_pipeline_mode_18_wd;
-  logic cmd_info_18_upload_18_qs;
-  logic cmd_info_18_upload_18_wd;
-  logic cmd_info_18_busy_18_qs;
-  logic cmd_info_18_busy_18_wd;
-  logic cmd_info_18_valid_18_qs;
-  logic cmd_info_18_valid_18_wd;
+  logic [7:0] cmd_info_18_opcode_qs;
+  logic [7:0] cmd_info_18_opcode_wd;
+  logic [1:0] cmd_info_18_addr_mode_qs;
+  logic [1:0] cmd_info_18_addr_mode_wd;
+  logic cmd_info_18_addr_swap_en_qs;
+  logic cmd_info_18_addr_swap_en_wd;
+  logic cmd_info_18_mbyte_en_qs;
+  logic cmd_info_18_mbyte_en_wd;
+  logic [2:0] cmd_info_18_dummy_size_qs;
+  logic [2:0] cmd_info_18_dummy_size_wd;
+  logic cmd_info_18_dummy_en_qs;
+  logic cmd_info_18_dummy_en_wd;
+  logic [3:0] cmd_info_18_payload_en_qs;
+  logic [3:0] cmd_info_18_payload_en_wd;
+  logic cmd_info_18_payload_dir_qs;
+  logic cmd_info_18_payload_dir_wd;
+  logic cmd_info_18_payload_swap_en_qs;
+  logic cmd_info_18_payload_swap_en_wd;
+  logic [1:0] cmd_info_18_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_18_read_pipeline_mode_wd;
+  logic cmd_info_18_upload_qs;
+  logic cmd_info_18_upload_wd;
+  logic cmd_info_18_busy_qs;
+  logic cmd_info_18_busy_wd;
+  logic cmd_info_18_valid_qs;
+  logic cmd_info_18_valid_wd;
   logic cmd_info_19_we;
-  logic [7:0] cmd_info_19_opcode_19_qs;
-  logic [7:0] cmd_info_19_opcode_19_wd;
-  logic [1:0] cmd_info_19_addr_mode_19_qs;
-  logic [1:0] cmd_info_19_addr_mode_19_wd;
-  logic cmd_info_19_addr_swap_en_19_qs;
-  logic cmd_info_19_addr_swap_en_19_wd;
-  logic cmd_info_19_mbyte_en_19_qs;
-  logic cmd_info_19_mbyte_en_19_wd;
-  logic [2:0] cmd_info_19_dummy_size_19_qs;
-  logic [2:0] cmd_info_19_dummy_size_19_wd;
-  logic cmd_info_19_dummy_en_19_qs;
-  logic cmd_info_19_dummy_en_19_wd;
-  logic [3:0] cmd_info_19_payload_en_19_qs;
-  logic [3:0] cmd_info_19_payload_en_19_wd;
-  logic cmd_info_19_payload_dir_19_qs;
-  logic cmd_info_19_payload_dir_19_wd;
-  logic cmd_info_19_payload_swap_en_19_qs;
-  logic cmd_info_19_payload_swap_en_19_wd;
-  logic [1:0] cmd_info_19_read_pipeline_mode_19_qs;
-  logic [1:0] cmd_info_19_read_pipeline_mode_19_wd;
-  logic cmd_info_19_upload_19_qs;
-  logic cmd_info_19_upload_19_wd;
-  logic cmd_info_19_busy_19_qs;
-  logic cmd_info_19_busy_19_wd;
-  logic cmd_info_19_valid_19_qs;
-  logic cmd_info_19_valid_19_wd;
+  logic [7:0] cmd_info_19_opcode_qs;
+  logic [7:0] cmd_info_19_opcode_wd;
+  logic [1:0] cmd_info_19_addr_mode_qs;
+  logic [1:0] cmd_info_19_addr_mode_wd;
+  logic cmd_info_19_addr_swap_en_qs;
+  logic cmd_info_19_addr_swap_en_wd;
+  logic cmd_info_19_mbyte_en_qs;
+  logic cmd_info_19_mbyte_en_wd;
+  logic [2:0] cmd_info_19_dummy_size_qs;
+  logic [2:0] cmd_info_19_dummy_size_wd;
+  logic cmd_info_19_dummy_en_qs;
+  logic cmd_info_19_dummy_en_wd;
+  logic [3:0] cmd_info_19_payload_en_qs;
+  logic [3:0] cmd_info_19_payload_en_wd;
+  logic cmd_info_19_payload_dir_qs;
+  logic cmd_info_19_payload_dir_wd;
+  logic cmd_info_19_payload_swap_en_qs;
+  logic cmd_info_19_payload_swap_en_wd;
+  logic [1:0] cmd_info_19_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_19_read_pipeline_mode_wd;
+  logic cmd_info_19_upload_qs;
+  logic cmd_info_19_upload_wd;
+  logic cmd_info_19_busy_qs;
+  logic cmd_info_19_busy_wd;
+  logic cmd_info_19_valid_qs;
+  logic cmd_info_19_valid_wd;
   logic cmd_info_20_we;
-  logic [7:0] cmd_info_20_opcode_20_qs;
-  logic [7:0] cmd_info_20_opcode_20_wd;
-  logic [1:0] cmd_info_20_addr_mode_20_qs;
-  logic [1:0] cmd_info_20_addr_mode_20_wd;
-  logic cmd_info_20_addr_swap_en_20_qs;
-  logic cmd_info_20_addr_swap_en_20_wd;
-  logic cmd_info_20_mbyte_en_20_qs;
-  logic cmd_info_20_mbyte_en_20_wd;
-  logic [2:0] cmd_info_20_dummy_size_20_qs;
-  logic [2:0] cmd_info_20_dummy_size_20_wd;
-  logic cmd_info_20_dummy_en_20_qs;
-  logic cmd_info_20_dummy_en_20_wd;
-  logic [3:0] cmd_info_20_payload_en_20_qs;
-  logic [3:0] cmd_info_20_payload_en_20_wd;
-  logic cmd_info_20_payload_dir_20_qs;
-  logic cmd_info_20_payload_dir_20_wd;
-  logic cmd_info_20_payload_swap_en_20_qs;
-  logic cmd_info_20_payload_swap_en_20_wd;
-  logic [1:0] cmd_info_20_read_pipeline_mode_20_qs;
-  logic [1:0] cmd_info_20_read_pipeline_mode_20_wd;
-  logic cmd_info_20_upload_20_qs;
-  logic cmd_info_20_upload_20_wd;
-  logic cmd_info_20_busy_20_qs;
-  logic cmd_info_20_busy_20_wd;
-  logic cmd_info_20_valid_20_qs;
-  logic cmd_info_20_valid_20_wd;
+  logic [7:0] cmd_info_20_opcode_qs;
+  logic [7:0] cmd_info_20_opcode_wd;
+  logic [1:0] cmd_info_20_addr_mode_qs;
+  logic [1:0] cmd_info_20_addr_mode_wd;
+  logic cmd_info_20_addr_swap_en_qs;
+  logic cmd_info_20_addr_swap_en_wd;
+  logic cmd_info_20_mbyte_en_qs;
+  logic cmd_info_20_mbyte_en_wd;
+  logic [2:0] cmd_info_20_dummy_size_qs;
+  logic [2:0] cmd_info_20_dummy_size_wd;
+  logic cmd_info_20_dummy_en_qs;
+  logic cmd_info_20_dummy_en_wd;
+  logic [3:0] cmd_info_20_payload_en_qs;
+  logic [3:0] cmd_info_20_payload_en_wd;
+  logic cmd_info_20_payload_dir_qs;
+  logic cmd_info_20_payload_dir_wd;
+  logic cmd_info_20_payload_swap_en_qs;
+  logic cmd_info_20_payload_swap_en_wd;
+  logic [1:0] cmd_info_20_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_20_read_pipeline_mode_wd;
+  logic cmd_info_20_upload_qs;
+  logic cmd_info_20_upload_wd;
+  logic cmd_info_20_busy_qs;
+  logic cmd_info_20_busy_wd;
+  logic cmd_info_20_valid_qs;
+  logic cmd_info_20_valid_wd;
   logic cmd_info_21_we;
-  logic [7:0] cmd_info_21_opcode_21_qs;
-  logic [7:0] cmd_info_21_opcode_21_wd;
-  logic [1:0] cmd_info_21_addr_mode_21_qs;
-  logic [1:0] cmd_info_21_addr_mode_21_wd;
-  logic cmd_info_21_addr_swap_en_21_qs;
-  logic cmd_info_21_addr_swap_en_21_wd;
-  logic cmd_info_21_mbyte_en_21_qs;
-  logic cmd_info_21_mbyte_en_21_wd;
-  logic [2:0] cmd_info_21_dummy_size_21_qs;
-  logic [2:0] cmd_info_21_dummy_size_21_wd;
-  logic cmd_info_21_dummy_en_21_qs;
-  logic cmd_info_21_dummy_en_21_wd;
-  logic [3:0] cmd_info_21_payload_en_21_qs;
-  logic [3:0] cmd_info_21_payload_en_21_wd;
-  logic cmd_info_21_payload_dir_21_qs;
-  logic cmd_info_21_payload_dir_21_wd;
-  logic cmd_info_21_payload_swap_en_21_qs;
-  logic cmd_info_21_payload_swap_en_21_wd;
-  logic [1:0] cmd_info_21_read_pipeline_mode_21_qs;
-  logic [1:0] cmd_info_21_read_pipeline_mode_21_wd;
-  logic cmd_info_21_upload_21_qs;
-  logic cmd_info_21_upload_21_wd;
-  logic cmd_info_21_busy_21_qs;
-  logic cmd_info_21_busy_21_wd;
-  logic cmd_info_21_valid_21_qs;
-  logic cmd_info_21_valid_21_wd;
+  logic [7:0] cmd_info_21_opcode_qs;
+  logic [7:0] cmd_info_21_opcode_wd;
+  logic [1:0] cmd_info_21_addr_mode_qs;
+  logic [1:0] cmd_info_21_addr_mode_wd;
+  logic cmd_info_21_addr_swap_en_qs;
+  logic cmd_info_21_addr_swap_en_wd;
+  logic cmd_info_21_mbyte_en_qs;
+  logic cmd_info_21_mbyte_en_wd;
+  logic [2:0] cmd_info_21_dummy_size_qs;
+  logic [2:0] cmd_info_21_dummy_size_wd;
+  logic cmd_info_21_dummy_en_qs;
+  logic cmd_info_21_dummy_en_wd;
+  logic [3:0] cmd_info_21_payload_en_qs;
+  logic [3:0] cmd_info_21_payload_en_wd;
+  logic cmd_info_21_payload_dir_qs;
+  logic cmd_info_21_payload_dir_wd;
+  logic cmd_info_21_payload_swap_en_qs;
+  logic cmd_info_21_payload_swap_en_wd;
+  logic [1:0] cmd_info_21_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_21_read_pipeline_mode_wd;
+  logic cmd_info_21_upload_qs;
+  logic cmd_info_21_upload_wd;
+  logic cmd_info_21_busy_qs;
+  logic cmd_info_21_busy_wd;
+  logic cmd_info_21_valid_qs;
+  logic cmd_info_21_valid_wd;
   logic cmd_info_22_we;
-  logic [7:0] cmd_info_22_opcode_22_qs;
-  logic [7:0] cmd_info_22_opcode_22_wd;
-  logic [1:0] cmd_info_22_addr_mode_22_qs;
-  logic [1:0] cmd_info_22_addr_mode_22_wd;
-  logic cmd_info_22_addr_swap_en_22_qs;
-  logic cmd_info_22_addr_swap_en_22_wd;
-  logic cmd_info_22_mbyte_en_22_qs;
-  logic cmd_info_22_mbyte_en_22_wd;
-  logic [2:0] cmd_info_22_dummy_size_22_qs;
-  logic [2:0] cmd_info_22_dummy_size_22_wd;
-  logic cmd_info_22_dummy_en_22_qs;
-  logic cmd_info_22_dummy_en_22_wd;
-  logic [3:0] cmd_info_22_payload_en_22_qs;
-  logic [3:0] cmd_info_22_payload_en_22_wd;
-  logic cmd_info_22_payload_dir_22_qs;
-  logic cmd_info_22_payload_dir_22_wd;
-  logic cmd_info_22_payload_swap_en_22_qs;
-  logic cmd_info_22_payload_swap_en_22_wd;
-  logic [1:0] cmd_info_22_read_pipeline_mode_22_qs;
-  logic [1:0] cmd_info_22_read_pipeline_mode_22_wd;
-  logic cmd_info_22_upload_22_qs;
-  logic cmd_info_22_upload_22_wd;
-  logic cmd_info_22_busy_22_qs;
-  logic cmd_info_22_busy_22_wd;
-  logic cmd_info_22_valid_22_qs;
-  logic cmd_info_22_valid_22_wd;
+  logic [7:0] cmd_info_22_opcode_qs;
+  logic [7:0] cmd_info_22_opcode_wd;
+  logic [1:0] cmd_info_22_addr_mode_qs;
+  logic [1:0] cmd_info_22_addr_mode_wd;
+  logic cmd_info_22_addr_swap_en_qs;
+  logic cmd_info_22_addr_swap_en_wd;
+  logic cmd_info_22_mbyte_en_qs;
+  logic cmd_info_22_mbyte_en_wd;
+  logic [2:0] cmd_info_22_dummy_size_qs;
+  logic [2:0] cmd_info_22_dummy_size_wd;
+  logic cmd_info_22_dummy_en_qs;
+  logic cmd_info_22_dummy_en_wd;
+  logic [3:0] cmd_info_22_payload_en_qs;
+  logic [3:0] cmd_info_22_payload_en_wd;
+  logic cmd_info_22_payload_dir_qs;
+  logic cmd_info_22_payload_dir_wd;
+  logic cmd_info_22_payload_swap_en_qs;
+  logic cmd_info_22_payload_swap_en_wd;
+  logic [1:0] cmd_info_22_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_22_read_pipeline_mode_wd;
+  logic cmd_info_22_upload_qs;
+  logic cmd_info_22_upload_wd;
+  logic cmd_info_22_busy_qs;
+  logic cmd_info_22_busy_wd;
+  logic cmd_info_22_valid_qs;
+  logic cmd_info_22_valid_wd;
   logic cmd_info_23_we;
-  logic [7:0] cmd_info_23_opcode_23_qs;
-  logic [7:0] cmd_info_23_opcode_23_wd;
-  logic [1:0] cmd_info_23_addr_mode_23_qs;
-  logic [1:0] cmd_info_23_addr_mode_23_wd;
-  logic cmd_info_23_addr_swap_en_23_qs;
-  logic cmd_info_23_addr_swap_en_23_wd;
-  logic cmd_info_23_mbyte_en_23_qs;
-  logic cmd_info_23_mbyte_en_23_wd;
-  logic [2:0] cmd_info_23_dummy_size_23_qs;
-  logic [2:0] cmd_info_23_dummy_size_23_wd;
-  logic cmd_info_23_dummy_en_23_qs;
-  logic cmd_info_23_dummy_en_23_wd;
-  logic [3:0] cmd_info_23_payload_en_23_qs;
-  logic [3:0] cmd_info_23_payload_en_23_wd;
-  logic cmd_info_23_payload_dir_23_qs;
-  logic cmd_info_23_payload_dir_23_wd;
-  logic cmd_info_23_payload_swap_en_23_qs;
-  logic cmd_info_23_payload_swap_en_23_wd;
-  logic [1:0] cmd_info_23_read_pipeline_mode_23_qs;
-  logic [1:0] cmd_info_23_read_pipeline_mode_23_wd;
-  logic cmd_info_23_upload_23_qs;
-  logic cmd_info_23_upload_23_wd;
-  logic cmd_info_23_busy_23_qs;
-  logic cmd_info_23_busy_23_wd;
-  logic cmd_info_23_valid_23_qs;
-  logic cmd_info_23_valid_23_wd;
+  logic [7:0] cmd_info_23_opcode_qs;
+  logic [7:0] cmd_info_23_opcode_wd;
+  logic [1:0] cmd_info_23_addr_mode_qs;
+  logic [1:0] cmd_info_23_addr_mode_wd;
+  logic cmd_info_23_addr_swap_en_qs;
+  logic cmd_info_23_addr_swap_en_wd;
+  logic cmd_info_23_mbyte_en_qs;
+  logic cmd_info_23_mbyte_en_wd;
+  logic [2:0] cmd_info_23_dummy_size_qs;
+  logic [2:0] cmd_info_23_dummy_size_wd;
+  logic cmd_info_23_dummy_en_qs;
+  logic cmd_info_23_dummy_en_wd;
+  logic [3:0] cmd_info_23_payload_en_qs;
+  logic [3:0] cmd_info_23_payload_en_wd;
+  logic cmd_info_23_payload_dir_qs;
+  logic cmd_info_23_payload_dir_wd;
+  logic cmd_info_23_payload_swap_en_qs;
+  logic cmd_info_23_payload_swap_en_wd;
+  logic [1:0] cmd_info_23_read_pipeline_mode_qs;
+  logic [1:0] cmd_info_23_read_pipeline_mode_wd;
+  logic cmd_info_23_upload_qs;
+  logic cmd_info_23_upload_wd;
+  logic cmd_info_23_busy_qs;
+  logic cmd_info_23_busy_wd;
+  logic cmd_info_23_valid_qs;
+  logic cmd_info_23_valid_wd;
   logic cmd_info_en4b_we;
   logic [7:0] cmd_info_en4b_opcode_qs;
   logic [7:0] cmd_info_en4b_opcode_wd;
@@ -10028,19 +10028,19 @@ module spi_device_reg_top
 
   // Subregister 0 of Multireg cmd_info
   // R[cmd_info_0]: V(False)
-  //   F[opcode_0]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_0_opcode_0 (
+  ) u_cmd_info_0_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_we),
-    .wd     (cmd_info_0_opcode_0_wd),
+    .wd     (cmd_info_0_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10052,22 +10052,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_0_opcode_0_qs)
+    .qs     (cmd_info_0_opcode_qs)
   );
 
-  //   F[addr_mode_0]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_0_addr_mode_0 (
+  ) u_cmd_info_0_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_we),
-    .wd     (cmd_info_0_addr_mode_0_wd),
+    .wd     (cmd_info_0_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10079,22 +10079,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_0_addr_mode_0_qs)
+    .qs     (cmd_info_0_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_0]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_0_addr_swap_en_0 (
+  ) u_cmd_info_0_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_we),
-    .wd     (cmd_info_0_addr_swap_en_0_wd),
+    .wd     (cmd_info_0_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10106,22 +10106,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_0_addr_swap_en_0_qs)
+    .qs     (cmd_info_0_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_0]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_0_mbyte_en_0 (
+  ) u_cmd_info_0_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_we),
-    .wd     (cmd_info_0_mbyte_en_0_wd),
+    .wd     (cmd_info_0_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10133,22 +10133,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_0_mbyte_en_0_qs)
+    .qs     (cmd_info_0_mbyte_en_qs)
   );
 
-  //   F[dummy_size_0]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_0_dummy_size_0 (
+  ) u_cmd_info_0_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_we),
-    .wd     (cmd_info_0_dummy_size_0_wd),
+    .wd     (cmd_info_0_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10160,22 +10160,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_0_dummy_size_0_qs)
+    .qs     (cmd_info_0_dummy_size_qs)
   );
 
-  //   F[dummy_en_0]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_0_dummy_en_0 (
+  ) u_cmd_info_0_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_we),
-    .wd     (cmd_info_0_dummy_en_0_wd),
+    .wd     (cmd_info_0_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10187,22 +10187,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_0_dummy_en_0_qs)
+    .qs     (cmd_info_0_dummy_en_qs)
   );
 
-  //   F[payload_en_0]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_0_payload_en_0 (
+  ) u_cmd_info_0_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_we),
-    .wd     (cmd_info_0_payload_en_0_wd),
+    .wd     (cmd_info_0_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10214,22 +10214,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_0_payload_en_0_qs)
+    .qs     (cmd_info_0_payload_en_qs)
   );
 
-  //   F[payload_dir_0]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_0_payload_dir_0 (
+  ) u_cmd_info_0_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_we),
-    .wd     (cmd_info_0_payload_dir_0_wd),
+    .wd     (cmd_info_0_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10241,22 +10241,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_0_payload_dir_0_qs)
+    .qs     (cmd_info_0_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_0]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_0_payload_swap_en_0 (
+  ) u_cmd_info_0_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_we),
-    .wd     (cmd_info_0_payload_swap_en_0_wd),
+    .wd     (cmd_info_0_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10268,22 +10268,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_0_payload_swap_en_0_qs)
+    .qs     (cmd_info_0_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_0]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_0_read_pipeline_mode_0 (
+  ) u_cmd_info_0_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_we),
-    .wd     (cmd_info_0_read_pipeline_mode_0_wd),
+    .wd     (cmd_info_0_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10295,22 +10295,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_0_read_pipeline_mode_0_qs)
+    .qs     (cmd_info_0_read_pipeline_mode_qs)
   );
 
-  //   F[upload_0]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_0_upload_0 (
+  ) u_cmd_info_0_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_we),
-    .wd     (cmd_info_0_upload_0_wd),
+    .wd     (cmd_info_0_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10322,22 +10322,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_0_upload_0_qs)
+    .qs     (cmd_info_0_upload_qs)
   );
 
-  //   F[busy_0]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_0_busy_0 (
+  ) u_cmd_info_0_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_we),
-    .wd     (cmd_info_0_busy_0_wd),
+    .wd     (cmd_info_0_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10349,22 +10349,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_0_busy_0_qs)
+    .qs     (cmd_info_0_busy_qs)
   );
 
-  //   F[valid_0]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_0_valid_0 (
+  ) u_cmd_info_0_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_0_we),
-    .wd     (cmd_info_0_valid_0_wd),
+    .wd     (cmd_info_0_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10376,25 +10376,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_0_valid_0_qs)
+    .qs     (cmd_info_0_valid_qs)
   );
 
 
   // Subregister 1 of Multireg cmd_info
   // R[cmd_info_1]: V(False)
-  //   F[opcode_1]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_1_opcode_1 (
+  ) u_cmd_info_1_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_we),
-    .wd     (cmd_info_1_opcode_1_wd),
+    .wd     (cmd_info_1_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10406,22 +10406,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_1_opcode_1_qs)
+    .qs     (cmd_info_1_opcode_qs)
   );
 
-  //   F[addr_mode_1]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_1_addr_mode_1 (
+  ) u_cmd_info_1_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_we),
-    .wd     (cmd_info_1_addr_mode_1_wd),
+    .wd     (cmd_info_1_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10433,22 +10433,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_1_addr_mode_1_qs)
+    .qs     (cmd_info_1_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_1]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_1_addr_swap_en_1 (
+  ) u_cmd_info_1_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_we),
-    .wd     (cmd_info_1_addr_swap_en_1_wd),
+    .wd     (cmd_info_1_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10460,22 +10460,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_1_addr_swap_en_1_qs)
+    .qs     (cmd_info_1_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_1]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_1_mbyte_en_1 (
+  ) u_cmd_info_1_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_we),
-    .wd     (cmd_info_1_mbyte_en_1_wd),
+    .wd     (cmd_info_1_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10487,22 +10487,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_1_mbyte_en_1_qs)
+    .qs     (cmd_info_1_mbyte_en_qs)
   );
 
-  //   F[dummy_size_1]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_1_dummy_size_1 (
+  ) u_cmd_info_1_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_we),
-    .wd     (cmd_info_1_dummy_size_1_wd),
+    .wd     (cmd_info_1_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10514,22 +10514,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_1_dummy_size_1_qs)
+    .qs     (cmd_info_1_dummy_size_qs)
   );
 
-  //   F[dummy_en_1]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_1_dummy_en_1 (
+  ) u_cmd_info_1_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_we),
-    .wd     (cmd_info_1_dummy_en_1_wd),
+    .wd     (cmd_info_1_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10541,22 +10541,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_1_dummy_en_1_qs)
+    .qs     (cmd_info_1_dummy_en_qs)
   );
 
-  //   F[payload_en_1]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_1_payload_en_1 (
+  ) u_cmd_info_1_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_we),
-    .wd     (cmd_info_1_payload_en_1_wd),
+    .wd     (cmd_info_1_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10568,22 +10568,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_1_payload_en_1_qs)
+    .qs     (cmd_info_1_payload_en_qs)
   );
 
-  //   F[payload_dir_1]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_1_payload_dir_1 (
+  ) u_cmd_info_1_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_we),
-    .wd     (cmd_info_1_payload_dir_1_wd),
+    .wd     (cmd_info_1_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10595,22 +10595,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_1_payload_dir_1_qs)
+    .qs     (cmd_info_1_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_1]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_1_payload_swap_en_1 (
+  ) u_cmd_info_1_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_we),
-    .wd     (cmd_info_1_payload_swap_en_1_wd),
+    .wd     (cmd_info_1_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10622,22 +10622,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_1_payload_swap_en_1_qs)
+    .qs     (cmd_info_1_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_1]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_1_read_pipeline_mode_1 (
+  ) u_cmd_info_1_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_we),
-    .wd     (cmd_info_1_read_pipeline_mode_1_wd),
+    .wd     (cmd_info_1_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10649,22 +10649,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_1_read_pipeline_mode_1_qs)
+    .qs     (cmd_info_1_read_pipeline_mode_qs)
   );
 
-  //   F[upload_1]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_1_upload_1 (
+  ) u_cmd_info_1_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_we),
-    .wd     (cmd_info_1_upload_1_wd),
+    .wd     (cmd_info_1_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10676,22 +10676,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_1_upload_1_qs)
+    .qs     (cmd_info_1_upload_qs)
   );
 
-  //   F[busy_1]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_1_busy_1 (
+  ) u_cmd_info_1_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_we),
-    .wd     (cmd_info_1_busy_1_wd),
+    .wd     (cmd_info_1_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10703,22 +10703,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_1_busy_1_qs)
+    .qs     (cmd_info_1_busy_qs)
   );
 
-  //   F[valid_1]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_1_valid_1 (
+  ) u_cmd_info_1_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_1_we),
-    .wd     (cmd_info_1_valid_1_wd),
+    .wd     (cmd_info_1_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10730,25 +10730,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_1_valid_1_qs)
+    .qs     (cmd_info_1_valid_qs)
   );
 
 
   // Subregister 2 of Multireg cmd_info
   // R[cmd_info_2]: V(False)
-  //   F[opcode_2]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_2_opcode_2 (
+  ) u_cmd_info_2_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_we),
-    .wd     (cmd_info_2_opcode_2_wd),
+    .wd     (cmd_info_2_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10760,22 +10760,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_2_opcode_2_qs)
+    .qs     (cmd_info_2_opcode_qs)
   );
 
-  //   F[addr_mode_2]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_2_addr_mode_2 (
+  ) u_cmd_info_2_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_we),
-    .wd     (cmd_info_2_addr_mode_2_wd),
+    .wd     (cmd_info_2_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10787,22 +10787,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_2_addr_mode_2_qs)
+    .qs     (cmd_info_2_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_2]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_2_addr_swap_en_2 (
+  ) u_cmd_info_2_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_we),
-    .wd     (cmd_info_2_addr_swap_en_2_wd),
+    .wd     (cmd_info_2_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10814,22 +10814,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_2_addr_swap_en_2_qs)
+    .qs     (cmd_info_2_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_2]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_2_mbyte_en_2 (
+  ) u_cmd_info_2_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_we),
-    .wd     (cmd_info_2_mbyte_en_2_wd),
+    .wd     (cmd_info_2_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10841,22 +10841,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_2_mbyte_en_2_qs)
+    .qs     (cmd_info_2_mbyte_en_qs)
   );
 
-  //   F[dummy_size_2]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_2_dummy_size_2 (
+  ) u_cmd_info_2_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_we),
-    .wd     (cmd_info_2_dummy_size_2_wd),
+    .wd     (cmd_info_2_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10868,22 +10868,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_2_dummy_size_2_qs)
+    .qs     (cmd_info_2_dummy_size_qs)
   );
 
-  //   F[dummy_en_2]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_2_dummy_en_2 (
+  ) u_cmd_info_2_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_we),
-    .wd     (cmd_info_2_dummy_en_2_wd),
+    .wd     (cmd_info_2_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10895,22 +10895,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_2_dummy_en_2_qs)
+    .qs     (cmd_info_2_dummy_en_qs)
   );
 
-  //   F[payload_en_2]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_2_payload_en_2 (
+  ) u_cmd_info_2_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_we),
-    .wd     (cmd_info_2_payload_en_2_wd),
+    .wd     (cmd_info_2_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10922,22 +10922,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_2_payload_en_2_qs)
+    .qs     (cmd_info_2_payload_en_qs)
   );
 
-  //   F[payload_dir_2]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_2_payload_dir_2 (
+  ) u_cmd_info_2_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_we),
-    .wd     (cmd_info_2_payload_dir_2_wd),
+    .wd     (cmd_info_2_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10949,22 +10949,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_2_payload_dir_2_qs)
+    .qs     (cmd_info_2_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_2]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_2_payload_swap_en_2 (
+  ) u_cmd_info_2_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_we),
-    .wd     (cmd_info_2_payload_swap_en_2_wd),
+    .wd     (cmd_info_2_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -10976,22 +10976,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_2_payload_swap_en_2_qs)
+    .qs     (cmd_info_2_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_2]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_2_read_pipeline_mode_2 (
+  ) u_cmd_info_2_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_we),
-    .wd     (cmd_info_2_read_pipeline_mode_2_wd),
+    .wd     (cmd_info_2_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11003,22 +11003,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_2_read_pipeline_mode_2_qs)
+    .qs     (cmd_info_2_read_pipeline_mode_qs)
   );
 
-  //   F[upload_2]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_2_upload_2 (
+  ) u_cmd_info_2_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_we),
-    .wd     (cmd_info_2_upload_2_wd),
+    .wd     (cmd_info_2_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11030,22 +11030,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_2_upload_2_qs)
+    .qs     (cmd_info_2_upload_qs)
   );
 
-  //   F[busy_2]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_2_busy_2 (
+  ) u_cmd_info_2_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_we),
-    .wd     (cmd_info_2_busy_2_wd),
+    .wd     (cmd_info_2_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11057,22 +11057,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_2_busy_2_qs)
+    .qs     (cmd_info_2_busy_qs)
   );
 
-  //   F[valid_2]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_2_valid_2 (
+  ) u_cmd_info_2_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_2_we),
-    .wd     (cmd_info_2_valid_2_wd),
+    .wd     (cmd_info_2_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11084,25 +11084,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_2_valid_2_qs)
+    .qs     (cmd_info_2_valid_qs)
   );
 
 
   // Subregister 3 of Multireg cmd_info
   // R[cmd_info_3]: V(False)
-  //   F[opcode_3]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_3_opcode_3 (
+  ) u_cmd_info_3_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_we),
-    .wd     (cmd_info_3_opcode_3_wd),
+    .wd     (cmd_info_3_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11114,22 +11114,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_3_opcode_3_qs)
+    .qs     (cmd_info_3_opcode_qs)
   );
 
-  //   F[addr_mode_3]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_3_addr_mode_3 (
+  ) u_cmd_info_3_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_we),
-    .wd     (cmd_info_3_addr_mode_3_wd),
+    .wd     (cmd_info_3_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11141,22 +11141,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_3_addr_mode_3_qs)
+    .qs     (cmd_info_3_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_3]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_3_addr_swap_en_3 (
+  ) u_cmd_info_3_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_we),
-    .wd     (cmd_info_3_addr_swap_en_3_wd),
+    .wd     (cmd_info_3_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11168,22 +11168,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_3_addr_swap_en_3_qs)
+    .qs     (cmd_info_3_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_3]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_3_mbyte_en_3 (
+  ) u_cmd_info_3_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_we),
-    .wd     (cmd_info_3_mbyte_en_3_wd),
+    .wd     (cmd_info_3_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11195,22 +11195,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_3_mbyte_en_3_qs)
+    .qs     (cmd_info_3_mbyte_en_qs)
   );
 
-  //   F[dummy_size_3]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_3_dummy_size_3 (
+  ) u_cmd_info_3_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_we),
-    .wd     (cmd_info_3_dummy_size_3_wd),
+    .wd     (cmd_info_3_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11222,22 +11222,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_3_dummy_size_3_qs)
+    .qs     (cmd_info_3_dummy_size_qs)
   );
 
-  //   F[dummy_en_3]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_3_dummy_en_3 (
+  ) u_cmd_info_3_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_we),
-    .wd     (cmd_info_3_dummy_en_3_wd),
+    .wd     (cmd_info_3_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11249,22 +11249,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_3_dummy_en_3_qs)
+    .qs     (cmd_info_3_dummy_en_qs)
   );
 
-  //   F[payload_en_3]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_3_payload_en_3 (
+  ) u_cmd_info_3_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_we),
-    .wd     (cmd_info_3_payload_en_3_wd),
+    .wd     (cmd_info_3_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11276,22 +11276,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_3_payload_en_3_qs)
+    .qs     (cmd_info_3_payload_en_qs)
   );
 
-  //   F[payload_dir_3]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_3_payload_dir_3 (
+  ) u_cmd_info_3_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_we),
-    .wd     (cmd_info_3_payload_dir_3_wd),
+    .wd     (cmd_info_3_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11303,22 +11303,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_3_payload_dir_3_qs)
+    .qs     (cmd_info_3_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_3]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_3_payload_swap_en_3 (
+  ) u_cmd_info_3_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_we),
-    .wd     (cmd_info_3_payload_swap_en_3_wd),
+    .wd     (cmd_info_3_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11330,22 +11330,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_3_payload_swap_en_3_qs)
+    .qs     (cmd_info_3_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_3]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_3_read_pipeline_mode_3 (
+  ) u_cmd_info_3_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_we),
-    .wd     (cmd_info_3_read_pipeline_mode_3_wd),
+    .wd     (cmd_info_3_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11357,22 +11357,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_3_read_pipeline_mode_3_qs)
+    .qs     (cmd_info_3_read_pipeline_mode_qs)
   );
 
-  //   F[upload_3]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_3_upload_3 (
+  ) u_cmd_info_3_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_we),
-    .wd     (cmd_info_3_upload_3_wd),
+    .wd     (cmd_info_3_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11384,22 +11384,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_3_upload_3_qs)
+    .qs     (cmd_info_3_upload_qs)
   );
 
-  //   F[busy_3]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_3_busy_3 (
+  ) u_cmd_info_3_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_we),
-    .wd     (cmd_info_3_busy_3_wd),
+    .wd     (cmd_info_3_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11411,22 +11411,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_3_busy_3_qs)
+    .qs     (cmd_info_3_busy_qs)
   );
 
-  //   F[valid_3]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_3_valid_3 (
+  ) u_cmd_info_3_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_3_we),
-    .wd     (cmd_info_3_valid_3_wd),
+    .wd     (cmd_info_3_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11438,25 +11438,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_3_valid_3_qs)
+    .qs     (cmd_info_3_valid_qs)
   );
 
 
   // Subregister 4 of Multireg cmd_info
   // R[cmd_info_4]: V(False)
-  //   F[opcode_4]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_4_opcode_4 (
+  ) u_cmd_info_4_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_we),
-    .wd     (cmd_info_4_opcode_4_wd),
+    .wd     (cmd_info_4_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11468,22 +11468,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_4_opcode_4_qs)
+    .qs     (cmd_info_4_opcode_qs)
   );
 
-  //   F[addr_mode_4]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_4_addr_mode_4 (
+  ) u_cmd_info_4_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_we),
-    .wd     (cmd_info_4_addr_mode_4_wd),
+    .wd     (cmd_info_4_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11495,22 +11495,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_4_addr_mode_4_qs)
+    .qs     (cmd_info_4_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_4]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_4_addr_swap_en_4 (
+  ) u_cmd_info_4_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_we),
-    .wd     (cmd_info_4_addr_swap_en_4_wd),
+    .wd     (cmd_info_4_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11522,22 +11522,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_4_addr_swap_en_4_qs)
+    .qs     (cmd_info_4_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_4]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_4_mbyte_en_4 (
+  ) u_cmd_info_4_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_we),
-    .wd     (cmd_info_4_mbyte_en_4_wd),
+    .wd     (cmd_info_4_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11549,22 +11549,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_4_mbyte_en_4_qs)
+    .qs     (cmd_info_4_mbyte_en_qs)
   );
 
-  //   F[dummy_size_4]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_4_dummy_size_4 (
+  ) u_cmd_info_4_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_we),
-    .wd     (cmd_info_4_dummy_size_4_wd),
+    .wd     (cmd_info_4_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11576,22 +11576,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_4_dummy_size_4_qs)
+    .qs     (cmd_info_4_dummy_size_qs)
   );
 
-  //   F[dummy_en_4]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_4_dummy_en_4 (
+  ) u_cmd_info_4_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_we),
-    .wd     (cmd_info_4_dummy_en_4_wd),
+    .wd     (cmd_info_4_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11603,22 +11603,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_4_dummy_en_4_qs)
+    .qs     (cmd_info_4_dummy_en_qs)
   );
 
-  //   F[payload_en_4]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_4_payload_en_4 (
+  ) u_cmd_info_4_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_we),
-    .wd     (cmd_info_4_payload_en_4_wd),
+    .wd     (cmd_info_4_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11630,22 +11630,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_4_payload_en_4_qs)
+    .qs     (cmd_info_4_payload_en_qs)
   );
 
-  //   F[payload_dir_4]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_4_payload_dir_4 (
+  ) u_cmd_info_4_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_we),
-    .wd     (cmd_info_4_payload_dir_4_wd),
+    .wd     (cmd_info_4_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11657,22 +11657,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_4_payload_dir_4_qs)
+    .qs     (cmd_info_4_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_4]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_4_payload_swap_en_4 (
+  ) u_cmd_info_4_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_we),
-    .wd     (cmd_info_4_payload_swap_en_4_wd),
+    .wd     (cmd_info_4_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11684,22 +11684,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_4_payload_swap_en_4_qs)
+    .qs     (cmd_info_4_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_4]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_4_read_pipeline_mode_4 (
+  ) u_cmd_info_4_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_we),
-    .wd     (cmd_info_4_read_pipeline_mode_4_wd),
+    .wd     (cmd_info_4_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11711,22 +11711,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_4_read_pipeline_mode_4_qs)
+    .qs     (cmd_info_4_read_pipeline_mode_qs)
   );
 
-  //   F[upload_4]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_4_upload_4 (
+  ) u_cmd_info_4_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_we),
-    .wd     (cmd_info_4_upload_4_wd),
+    .wd     (cmd_info_4_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11738,22 +11738,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_4_upload_4_qs)
+    .qs     (cmd_info_4_upload_qs)
   );
 
-  //   F[busy_4]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_4_busy_4 (
+  ) u_cmd_info_4_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_we),
-    .wd     (cmd_info_4_busy_4_wd),
+    .wd     (cmd_info_4_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11765,22 +11765,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_4_busy_4_qs)
+    .qs     (cmd_info_4_busy_qs)
   );
 
-  //   F[valid_4]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_4_valid_4 (
+  ) u_cmd_info_4_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_4_we),
-    .wd     (cmd_info_4_valid_4_wd),
+    .wd     (cmd_info_4_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11792,25 +11792,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_4_valid_4_qs)
+    .qs     (cmd_info_4_valid_qs)
   );
 
 
   // Subregister 5 of Multireg cmd_info
   // R[cmd_info_5]: V(False)
-  //   F[opcode_5]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_5_opcode_5 (
+  ) u_cmd_info_5_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_we),
-    .wd     (cmd_info_5_opcode_5_wd),
+    .wd     (cmd_info_5_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11822,22 +11822,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_5_opcode_5_qs)
+    .qs     (cmd_info_5_opcode_qs)
   );
 
-  //   F[addr_mode_5]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_5_addr_mode_5 (
+  ) u_cmd_info_5_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_we),
-    .wd     (cmd_info_5_addr_mode_5_wd),
+    .wd     (cmd_info_5_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11849,22 +11849,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_5_addr_mode_5_qs)
+    .qs     (cmd_info_5_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_5]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_5_addr_swap_en_5 (
+  ) u_cmd_info_5_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_we),
-    .wd     (cmd_info_5_addr_swap_en_5_wd),
+    .wd     (cmd_info_5_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11876,22 +11876,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_5_addr_swap_en_5_qs)
+    .qs     (cmd_info_5_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_5]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_5_mbyte_en_5 (
+  ) u_cmd_info_5_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_we),
-    .wd     (cmd_info_5_mbyte_en_5_wd),
+    .wd     (cmd_info_5_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11903,22 +11903,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_5_mbyte_en_5_qs)
+    .qs     (cmd_info_5_mbyte_en_qs)
   );
 
-  //   F[dummy_size_5]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_5_dummy_size_5 (
+  ) u_cmd_info_5_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_we),
-    .wd     (cmd_info_5_dummy_size_5_wd),
+    .wd     (cmd_info_5_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11930,22 +11930,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_5_dummy_size_5_qs)
+    .qs     (cmd_info_5_dummy_size_qs)
   );
 
-  //   F[dummy_en_5]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_5_dummy_en_5 (
+  ) u_cmd_info_5_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_we),
-    .wd     (cmd_info_5_dummy_en_5_wd),
+    .wd     (cmd_info_5_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11957,22 +11957,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_5_dummy_en_5_qs)
+    .qs     (cmd_info_5_dummy_en_qs)
   );
 
-  //   F[payload_en_5]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_5_payload_en_5 (
+  ) u_cmd_info_5_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_we),
-    .wd     (cmd_info_5_payload_en_5_wd),
+    .wd     (cmd_info_5_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -11984,22 +11984,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_5_payload_en_5_qs)
+    .qs     (cmd_info_5_payload_en_qs)
   );
 
-  //   F[payload_dir_5]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_5_payload_dir_5 (
+  ) u_cmd_info_5_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_we),
-    .wd     (cmd_info_5_payload_dir_5_wd),
+    .wd     (cmd_info_5_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12011,22 +12011,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_5_payload_dir_5_qs)
+    .qs     (cmd_info_5_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_5]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_5_payload_swap_en_5 (
+  ) u_cmd_info_5_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_we),
-    .wd     (cmd_info_5_payload_swap_en_5_wd),
+    .wd     (cmd_info_5_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12038,22 +12038,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_5_payload_swap_en_5_qs)
+    .qs     (cmd_info_5_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_5]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_5_read_pipeline_mode_5 (
+  ) u_cmd_info_5_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_we),
-    .wd     (cmd_info_5_read_pipeline_mode_5_wd),
+    .wd     (cmd_info_5_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12065,22 +12065,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_5_read_pipeline_mode_5_qs)
+    .qs     (cmd_info_5_read_pipeline_mode_qs)
   );
 
-  //   F[upload_5]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_5_upload_5 (
+  ) u_cmd_info_5_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_we),
-    .wd     (cmd_info_5_upload_5_wd),
+    .wd     (cmd_info_5_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12092,22 +12092,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_5_upload_5_qs)
+    .qs     (cmd_info_5_upload_qs)
   );
 
-  //   F[busy_5]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_5_busy_5 (
+  ) u_cmd_info_5_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_we),
-    .wd     (cmd_info_5_busy_5_wd),
+    .wd     (cmd_info_5_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12119,22 +12119,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_5_busy_5_qs)
+    .qs     (cmd_info_5_busy_qs)
   );
 
-  //   F[valid_5]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_5_valid_5 (
+  ) u_cmd_info_5_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_5_we),
-    .wd     (cmd_info_5_valid_5_wd),
+    .wd     (cmd_info_5_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12146,25 +12146,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_5_valid_5_qs)
+    .qs     (cmd_info_5_valid_qs)
   );
 
 
   // Subregister 6 of Multireg cmd_info
   // R[cmd_info_6]: V(False)
-  //   F[opcode_6]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_6_opcode_6 (
+  ) u_cmd_info_6_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_we),
-    .wd     (cmd_info_6_opcode_6_wd),
+    .wd     (cmd_info_6_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12176,22 +12176,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_6_opcode_6_qs)
+    .qs     (cmd_info_6_opcode_qs)
   );
 
-  //   F[addr_mode_6]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_6_addr_mode_6 (
+  ) u_cmd_info_6_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_we),
-    .wd     (cmd_info_6_addr_mode_6_wd),
+    .wd     (cmd_info_6_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12203,22 +12203,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_6_addr_mode_6_qs)
+    .qs     (cmd_info_6_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_6]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_6_addr_swap_en_6 (
+  ) u_cmd_info_6_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_we),
-    .wd     (cmd_info_6_addr_swap_en_6_wd),
+    .wd     (cmd_info_6_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12230,22 +12230,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_6_addr_swap_en_6_qs)
+    .qs     (cmd_info_6_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_6]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_6_mbyte_en_6 (
+  ) u_cmd_info_6_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_we),
-    .wd     (cmd_info_6_mbyte_en_6_wd),
+    .wd     (cmd_info_6_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12257,22 +12257,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_6_mbyte_en_6_qs)
+    .qs     (cmd_info_6_mbyte_en_qs)
   );
 
-  //   F[dummy_size_6]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_6_dummy_size_6 (
+  ) u_cmd_info_6_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_we),
-    .wd     (cmd_info_6_dummy_size_6_wd),
+    .wd     (cmd_info_6_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12284,22 +12284,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_6_dummy_size_6_qs)
+    .qs     (cmd_info_6_dummy_size_qs)
   );
 
-  //   F[dummy_en_6]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_6_dummy_en_6 (
+  ) u_cmd_info_6_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_we),
-    .wd     (cmd_info_6_dummy_en_6_wd),
+    .wd     (cmd_info_6_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12311,22 +12311,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_6_dummy_en_6_qs)
+    .qs     (cmd_info_6_dummy_en_qs)
   );
 
-  //   F[payload_en_6]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_6_payload_en_6 (
+  ) u_cmd_info_6_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_we),
-    .wd     (cmd_info_6_payload_en_6_wd),
+    .wd     (cmd_info_6_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12338,22 +12338,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_6_payload_en_6_qs)
+    .qs     (cmd_info_6_payload_en_qs)
   );
 
-  //   F[payload_dir_6]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_6_payload_dir_6 (
+  ) u_cmd_info_6_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_we),
-    .wd     (cmd_info_6_payload_dir_6_wd),
+    .wd     (cmd_info_6_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12365,22 +12365,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_6_payload_dir_6_qs)
+    .qs     (cmd_info_6_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_6]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_6_payload_swap_en_6 (
+  ) u_cmd_info_6_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_we),
-    .wd     (cmd_info_6_payload_swap_en_6_wd),
+    .wd     (cmd_info_6_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12392,22 +12392,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_6_payload_swap_en_6_qs)
+    .qs     (cmd_info_6_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_6]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_6_read_pipeline_mode_6 (
+  ) u_cmd_info_6_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_we),
-    .wd     (cmd_info_6_read_pipeline_mode_6_wd),
+    .wd     (cmd_info_6_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12419,22 +12419,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_6_read_pipeline_mode_6_qs)
+    .qs     (cmd_info_6_read_pipeline_mode_qs)
   );
 
-  //   F[upload_6]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_6_upload_6 (
+  ) u_cmd_info_6_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_we),
-    .wd     (cmd_info_6_upload_6_wd),
+    .wd     (cmd_info_6_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12446,22 +12446,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_6_upload_6_qs)
+    .qs     (cmd_info_6_upload_qs)
   );
 
-  //   F[busy_6]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_6_busy_6 (
+  ) u_cmd_info_6_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_we),
-    .wd     (cmd_info_6_busy_6_wd),
+    .wd     (cmd_info_6_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12473,22 +12473,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_6_busy_6_qs)
+    .qs     (cmd_info_6_busy_qs)
   );
 
-  //   F[valid_6]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_6_valid_6 (
+  ) u_cmd_info_6_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_6_we),
-    .wd     (cmd_info_6_valid_6_wd),
+    .wd     (cmd_info_6_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12500,25 +12500,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_6_valid_6_qs)
+    .qs     (cmd_info_6_valid_qs)
   );
 
 
   // Subregister 7 of Multireg cmd_info
   // R[cmd_info_7]: V(False)
-  //   F[opcode_7]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_7_opcode_7 (
+  ) u_cmd_info_7_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_we),
-    .wd     (cmd_info_7_opcode_7_wd),
+    .wd     (cmd_info_7_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12530,22 +12530,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_7_opcode_7_qs)
+    .qs     (cmd_info_7_opcode_qs)
   );
 
-  //   F[addr_mode_7]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_7_addr_mode_7 (
+  ) u_cmd_info_7_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_we),
-    .wd     (cmd_info_7_addr_mode_7_wd),
+    .wd     (cmd_info_7_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12557,22 +12557,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_7_addr_mode_7_qs)
+    .qs     (cmd_info_7_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_7]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_7_addr_swap_en_7 (
+  ) u_cmd_info_7_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_we),
-    .wd     (cmd_info_7_addr_swap_en_7_wd),
+    .wd     (cmd_info_7_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12584,22 +12584,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_7_addr_swap_en_7_qs)
+    .qs     (cmd_info_7_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_7]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_7_mbyte_en_7 (
+  ) u_cmd_info_7_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_we),
-    .wd     (cmd_info_7_mbyte_en_7_wd),
+    .wd     (cmd_info_7_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12611,22 +12611,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_7_mbyte_en_7_qs)
+    .qs     (cmd_info_7_mbyte_en_qs)
   );
 
-  //   F[dummy_size_7]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_7_dummy_size_7 (
+  ) u_cmd_info_7_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_we),
-    .wd     (cmd_info_7_dummy_size_7_wd),
+    .wd     (cmd_info_7_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12638,22 +12638,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_7_dummy_size_7_qs)
+    .qs     (cmd_info_7_dummy_size_qs)
   );
 
-  //   F[dummy_en_7]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_7_dummy_en_7 (
+  ) u_cmd_info_7_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_we),
-    .wd     (cmd_info_7_dummy_en_7_wd),
+    .wd     (cmd_info_7_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12665,22 +12665,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_7_dummy_en_7_qs)
+    .qs     (cmd_info_7_dummy_en_qs)
   );
 
-  //   F[payload_en_7]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_7_payload_en_7 (
+  ) u_cmd_info_7_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_we),
-    .wd     (cmd_info_7_payload_en_7_wd),
+    .wd     (cmd_info_7_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12692,22 +12692,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_7_payload_en_7_qs)
+    .qs     (cmd_info_7_payload_en_qs)
   );
 
-  //   F[payload_dir_7]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_7_payload_dir_7 (
+  ) u_cmd_info_7_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_we),
-    .wd     (cmd_info_7_payload_dir_7_wd),
+    .wd     (cmd_info_7_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12719,22 +12719,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_7_payload_dir_7_qs)
+    .qs     (cmd_info_7_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_7]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_7_payload_swap_en_7 (
+  ) u_cmd_info_7_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_we),
-    .wd     (cmd_info_7_payload_swap_en_7_wd),
+    .wd     (cmd_info_7_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12746,22 +12746,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_7_payload_swap_en_7_qs)
+    .qs     (cmd_info_7_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_7]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_7_read_pipeline_mode_7 (
+  ) u_cmd_info_7_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_we),
-    .wd     (cmd_info_7_read_pipeline_mode_7_wd),
+    .wd     (cmd_info_7_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12773,22 +12773,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_7_read_pipeline_mode_7_qs)
+    .qs     (cmd_info_7_read_pipeline_mode_qs)
   );
 
-  //   F[upload_7]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_7_upload_7 (
+  ) u_cmd_info_7_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_we),
-    .wd     (cmd_info_7_upload_7_wd),
+    .wd     (cmd_info_7_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12800,22 +12800,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_7_upload_7_qs)
+    .qs     (cmd_info_7_upload_qs)
   );
 
-  //   F[busy_7]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_7_busy_7 (
+  ) u_cmd_info_7_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_we),
-    .wd     (cmd_info_7_busy_7_wd),
+    .wd     (cmd_info_7_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12827,22 +12827,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_7_busy_7_qs)
+    .qs     (cmd_info_7_busy_qs)
   );
 
-  //   F[valid_7]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_7_valid_7 (
+  ) u_cmd_info_7_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_7_we),
-    .wd     (cmd_info_7_valid_7_wd),
+    .wd     (cmd_info_7_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12854,25 +12854,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_7_valid_7_qs)
+    .qs     (cmd_info_7_valid_qs)
   );
 
 
   // Subregister 8 of Multireg cmd_info
   // R[cmd_info_8]: V(False)
-  //   F[opcode_8]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_8_opcode_8 (
+  ) u_cmd_info_8_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_we),
-    .wd     (cmd_info_8_opcode_8_wd),
+    .wd     (cmd_info_8_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12884,22 +12884,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_8_opcode_8_qs)
+    .qs     (cmd_info_8_opcode_qs)
   );
 
-  //   F[addr_mode_8]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_8_addr_mode_8 (
+  ) u_cmd_info_8_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_we),
-    .wd     (cmd_info_8_addr_mode_8_wd),
+    .wd     (cmd_info_8_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12911,22 +12911,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_8_addr_mode_8_qs)
+    .qs     (cmd_info_8_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_8]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_8_addr_swap_en_8 (
+  ) u_cmd_info_8_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_we),
-    .wd     (cmd_info_8_addr_swap_en_8_wd),
+    .wd     (cmd_info_8_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12938,22 +12938,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_8_addr_swap_en_8_qs)
+    .qs     (cmd_info_8_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_8]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_8_mbyte_en_8 (
+  ) u_cmd_info_8_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_we),
-    .wd     (cmd_info_8_mbyte_en_8_wd),
+    .wd     (cmd_info_8_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12965,22 +12965,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_8_mbyte_en_8_qs)
+    .qs     (cmd_info_8_mbyte_en_qs)
   );
 
-  //   F[dummy_size_8]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_8_dummy_size_8 (
+  ) u_cmd_info_8_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_we),
-    .wd     (cmd_info_8_dummy_size_8_wd),
+    .wd     (cmd_info_8_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -12992,22 +12992,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_8_dummy_size_8_qs)
+    .qs     (cmd_info_8_dummy_size_qs)
   );
 
-  //   F[dummy_en_8]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_8_dummy_en_8 (
+  ) u_cmd_info_8_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_we),
-    .wd     (cmd_info_8_dummy_en_8_wd),
+    .wd     (cmd_info_8_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13019,22 +13019,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_8_dummy_en_8_qs)
+    .qs     (cmd_info_8_dummy_en_qs)
   );
 
-  //   F[payload_en_8]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_8_payload_en_8 (
+  ) u_cmd_info_8_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_we),
-    .wd     (cmd_info_8_payload_en_8_wd),
+    .wd     (cmd_info_8_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13046,22 +13046,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_8_payload_en_8_qs)
+    .qs     (cmd_info_8_payload_en_qs)
   );
 
-  //   F[payload_dir_8]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_8_payload_dir_8 (
+  ) u_cmd_info_8_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_we),
-    .wd     (cmd_info_8_payload_dir_8_wd),
+    .wd     (cmd_info_8_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13073,22 +13073,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_8_payload_dir_8_qs)
+    .qs     (cmd_info_8_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_8]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_8_payload_swap_en_8 (
+  ) u_cmd_info_8_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_we),
-    .wd     (cmd_info_8_payload_swap_en_8_wd),
+    .wd     (cmd_info_8_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13100,22 +13100,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_8_payload_swap_en_8_qs)
+    .qs     (cmd_info_8_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_8]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_8_read_pipeline_mode_8 (
+  ) u_cmd_info_8_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_we),
-    .wd     (cmd_info_8_read_pipeline_mode_8_wd),
+    .wd     (cmd_info_8_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13127,22 +13127,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_8_read_pipeline_mode_8_qs)
+    .qs     (cmd_info_8_read_pipeline_mode_qs)
   );
 
-  //   F[upload_8]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_8_upload_8 (
+  ) u_cmd_info_8_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_we),
-    .wd     (cmd_info_8_upload_8_wd),
+    .wd     (cmd_info_8_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13154,22 +13154,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_8_upload_8_qs)
+    .qs     (cmd_info_8_upload_qs)
   );
 
-  //   F[busy_8]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_8_busy_8 (
+  ) u_cmd_info_8_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_we),
-    .wd     (cmd_info_8_busy_8_wd),
+    .wd     (cmd_info_8_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13181,22 +13181,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_8_busy_8_qs)
+    .qs     (cmd_info_8_busy_qs)
   );
 
-  //   F[valid_8]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_8_valid_8 (
+  ) u_cmd_info_8_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_8_we),
-    .wd     (cmd_info_8_valid_8_wd),
+    .wd     (cmd_info_8_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13208,25 +13208,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_8_valid_8_qs)
+    .qs     (cmd_info_8_valid_qs)
   );
 
 
   // Subregister 9 of Multireg cmd_info
   // R[cmd_info_9]: V(False)
-  //   F[opcode_9]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_9_opcode_9 (
+  ) u_cmd_info_9_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_we),
-    .wd     (cmd_info_9_opcode_9_wd),
+    .wd     (cmd_info_9_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13238,22 +13238,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_9_opcode_9_qs)
+    .qs     (cmd_info_9_opcode_qs)
   );
 
-  //   F[addr_mode_9]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_9_addr_mode_9 (
+  ) u_cmd_info_9_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_we),
-    .wd     (cmd_info_9_addr_mode_9_wd),
+    .wd     (cmd_info_9_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13265,22 +13265,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_9_addr_mode_9_qs)
+    .qs     (cmd_info_9_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_9]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_9_addr_swap_en_9 (
+  ) u_cmd_info_9_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_we),
-    .wd     (cmd_info_9_addr_swap_en_9_wd),
+    .wd     (cmd_info_9_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13292,22 +13292,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_9_addr_swap_en_9_qs)
+    .qs     (cmd_info_9_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_9]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_9_mbyte_en_9 (
+  ) u_cmd_info_9_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_we),
-    .wd     (cmd_info_9_mbyte_en_9_wd),
+    .wd     (cmd_info_9_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13319,22 +13319,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_9_mbyte_en_9_qs)
+    .qs     (cmd_info_9_mbyte_en_qs)
   );
 
-  //   F[dummy_size_9]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_9_dummy_size_9 (
+  ) u_cmd_info_9_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_we),
-    .wd     (cmd_info_9_dummy_size_9_wd),
+    .wd     (cmd_info_9_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13346,22 +13346,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_9_dummy_size_9_qs)
+    .qs     (cmd_info_9_dummy_size_qs)
   );
 
-  //   F[dummy_en_9]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_9_dummy_en_9 (
+  ) u_cmd_info_9_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_we),
-    .wd     (cmd_info_9_dummy_en_9_wd),
+    .wd     (cmd_info_9_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13373,22 +13373,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_9_dummy_en_9_qs)
+    .qs     (cmd_info_9_dummy_en_qs)
   );
 
-  //   F[payload_en_9]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_9_payload_en_9 (
+  ) u_cmd_info_9_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_we),
-    .wd     (cmd_info_9_payload_en_9_wd),
+    .wd     (cmd_info_9_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13400,22 +13400,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_9_payload_en_9_qs)
+    .qs     (cmd_info_9_payload_en_qs)
   );
 
-  //   F[payload_dir_9]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_9_payload_dir_9 (
+  ) u_cmd_info_9_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_we),
-    .wd     (cmd_info_9_payload_dir_9_wd),
+    .wd     (cmd_info_9_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13427,22 +13427,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_9_payload_dir_9_qs)
+    .qs     (cmd_info_9_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_9]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_9_payload_swap_en_9 (
+  ) u_cmd_info_9_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_we),
-    .wd     (cmd_info_9_payload_swap_en_9_wd),
+    .wd     (cmd_info_9_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13454,22 +13454,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_9_payload_swap_en_9_qs)
+    .qs     (cmd_info_9_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_9]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_9_read_pipeline_mode_9 (
+  ) u_cmd_info_9_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_we),
-    .wd     (cmd_info_9_read_pipeline_mode_9_wd),
+    .wd     (cmd_info_9_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13481,22 +13481,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_9_read_pipeline_mode_9_qs)
+    .qs     (cmd_info_9_read_pipeline_mode_qs)
   );
 
-  //   F[upload_9]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_9_upload_9 (
+  ) u_cmd_info_9_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_we),
-    .wd     (cmd_info_9_upload_9_wd),
+    .wd     (cmd_info_9_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13508,22 +13508,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_9_upload_9_qs)
+    .qs     (cmd_info_9_upload_qs)
   );
 
-  //   F[busy_9]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_9_busy_9 (
+  ) u_cmd_info_9_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_we),
-    .wd     (cmd_info_9_busy_9_wd),
+    .wd     (cmd_info_9_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13535,22 +13535,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_9_busy_9_qs)
+    .qs     (cmd_info_9_busy_qs)
   );
 
-  //   F[valid_9]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_9_valid_9 (
+  ) u_cmd_info_9_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_9_we),
-    .wd     (cmd_info_9_valid_9_wd),
+    .wd     (cmd_info_9_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13562,25 +13562,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_9_valid_9_qs)
+    .qs     (cmd_info_9_valid_qs)
   );
 
 
   // Subregister 10 of Multireg cmd_info
   // R[cmd_info_10]: V(False)
-  //   F[opcode_10]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_10_opcode_10 (
+  ) u_cmd_info_10_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_we),
-    .wd     (cmd_info_10_opcode_10_wd),
+    .wd     (cmd_info_10_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13592,22 +13592,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_10_opcode_10_qs)
+    .qs     (cmd_info_10_opcode_qs)
   );
 
-  //   F[addr_mode_10]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_10_addr_mode_10 (
+  ) u_cmd_info_10_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_we),
-    .wd     (cmd_info_10_addr_mode_10_wd),
+    .wd     (cmd_info_10_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13619,22 +13619,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_10_addr_mode_10_qs)
+    .qs     (cmd_info_10_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_10]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_10_addr_swap_en_10 (
+  ) u_cmd_info_10_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_we),
-    .wd     (cmd_info_10_addr_swap_en_10_wd),
+    .wd     (cmd_info_10_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13646,22 +13646,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_10_addr_swap_en_10_qs)
+    .qs     (cmd_info_10_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_10]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_10_mbyte_en_10 (
+  ) u_cmd_info_10_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_we),
-    .wd     (cmd_info_10_mbyte_en_10_wd),
+    .wd     (cmd_info_10_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13673,22 +13673,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_10_mbyte_en_10_qs)
+    .qs     (cmd_info_10_mbyte_en_qs)
   );
 
-  //   F[dummy_size_10]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_10_dummy_size_10 (
+  ) u_cmd_info_10_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_we),
-    .wd     (cmd_info_10_dummy_size_10_wd),
+    .wd     (cmd_info_10_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13700,22 +13700,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_10_dummy_size_10_qs)
+    .qs     (cmd_info_10_dummy_size_qs)
   );
 
-  //   F[dummy_en_10]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_10_dummy_en_10 (
+  ) u_cmd_info_10_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_we),
-    .wd     (cmd_info_10_dummy_en_10_wd),
+    .wd     (cmd_info_10_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13727,22 +13727,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_10_dummy_en_10_qs)
+    .qs     (cmd_info_10_dummy_en_qs)
   );
 
-  //   F[payload_en_10]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_10_payload_en_10 (
+  ) u_cmd_info_10_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_we),
-    .wd     (cmd_info_10_payload_en_10_wd),
+    .wd     (cmd_info_10_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13754,22 +13754,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_10_payload_en_10_qs)
+    .qs     (cmd_info_10_payload_en_qs)
   );
 
-  //   F[payload_dir_10]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_10_payload_dir_10 (
+  ) u_cmd_info_10_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_we),
-    .wd     (cmd_info_10_payload_dir_10_wd),
+    .wd     (cmd_info_10_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13781,22 +13781,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_10_payload_dir_10_qs)
+    .qs     (cmd_info_10_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_10]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_10_payload_swap_en_10 (
+  ) u_cmd_info_10_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_we),
-    .wd     (cmd_info_10_payload_swap_en_10_wd),
+    .wd     (cmd_info_10_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13808,22 +13808,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_10_payload_swap_en_10_qs)
+    .qs     (cmd_info_10_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_10]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_10_read_pipeline_mode_10 (
+  ) u_cmd_info_10_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_we),
-    .wd     (cmd_info_10_read_pipeline_mode_10_wd),
+    .wd     (cmd_info_10_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13835,22 +13835,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_10_read_pipeline_mode_10_qs)
+    .qs     (cmd_info_10_read_pipeline_mode_qs)
   );
 
-  //   F[upload_10]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_10_upload_10 (
+  ) u_cmd_info_10_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_we),
-    .wd     (cmd_info_10_upload_10_wd),
+    .wd     (cmd_info_10_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13862,22 +13862,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_10_upload_10_qs)
+    .qs     (cmd_info_10_upload_qs)
   );
 
-  //   F[busy_10]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_10_busy_10 (
+  ) u_cmd_info_10_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_we),
-    .wd     (cmd_info_10_busy_10_wd),
+    .wd     (cmd_info_10_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13889,22 +13889,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_10_busy_10_qs)
+    .qs     (cmd_info_10_busy_qs)
   );
 
-  //   F[valid_10]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_10_valid_10 (
+  ) u_cmd_info_10_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_10_we),
-    .wd     (cmd_info_10_valid_10_wd),
+    .wd     (cmd_info_10_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13916,25 +13916,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_10_valid_10_qs)
+    .qs     (cmd_info_10_valid_qs)
   );
 
 
   // Subregister 11 of Multireg cmd_info
   // R[cmd_info_11]: V(False)
-  //   F[opcode_11]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_11_opcode_11 (
+  ) u_cmd_info_11_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_we),
-    .wd     (cmd_info_11_opcode_11_wd),
+    .wd     (cmd_info_11_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13946,22 +13946,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_11_opcode_11_qs)
+    .qs     (cmd_info_11_opcode_qs)
   );
 
-  //   F[addr_mode_11]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_11_addr_mode_11 (
+  ) u_cmd_info_11_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_we),
-    .wd     (cmd_info_11_addr_mode_11_wd),
+    .wd     (cmd_info_11_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13973,22 +13973,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_11_addr_mode_11_qs)
+    .qs     (cmd_info_11_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_11]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_11_addr_swap_en_11 (
+  ) u_cmd_info_11_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_we),
-    .wd     (cmd_info_11_addr_swap_en_11_wd),
+    .wd     (cmd_info_11_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14000,22 +14000,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_11_addr_swap_en_11_qs)
+    .qs     (cmd_info_11_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_11]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_11_mbyte_en_11 (
+  ) u_cmd_info_11_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_we),
-    .wd     (cmd_info_11_mbyte_en_11_wd),
+    .wd     (cmd_info_11_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14027,22 +14027,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_11_mbyte_en_11_qs)
+    .qs     (cmd_info_11_mbyte_en_qs)
   );
 
-  //   F[dummy_size_11]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_11_dummy_size_11 (
+  ) u_cmd_info_11_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_we),
-    .wd     (cmd_info_11_dummy_size_11_wd),
+    .wd     (cmd_info_11_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14054,22 +14054,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_11_dummy_size_11_qs)
+    .qs     (cmd_info_11_dummy_size_qs)
   );
 
-  //   F[dummy_en_11]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_11_dummy_en_11 (
+  ) u_cmd_info_11_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_we),
-    .wd     (cmd_info_11_dummy_en_11_wd),
+    .wd     (cmd_info_11_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14081,22 +14081,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_11_dummy_en_11_qs)
+    .qs     (cmd_info_11_dummy_en_qs)
   );
 
-  //   F[payload_en_11]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_11_payload_en_11 (
+  ) u_cmd_info_11_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_we),
-    .wd     (cmd_info_11_payload_en_11_wd),
+    .wd     (cmd_info_11_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14108,22 +14108,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_11_payload_en_11_qs)
+    .qs     (cmd_info_11_payload_en_qs)
   );
 
-  //   F[payload_dir_11]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_11_payload_dir_11 (
+  ) u_cmd_info_11_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_we),
-    .wd     (cmd_info_11_payload_dir_11_wd),
+    .wd     (cmd_info_11_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14135,22 +14135,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_11_payload_dir_11_qs)
+    .qs     (cmd_info_11_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_11]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_11_payload_swap_en_11 (
+  ) u_cmd_info_11_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_we),
-    .wd     (cmd_info_11_payload_swap_en_11_wd),
+    .wd     (cmd_info_11_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14162,22 +14162,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_11_payload_swap_en_11_qs)
+    .qs     (cmd_info_11_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_11]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_11_read_pipeline_mode_11 (
+  ) u_cmd_info_11_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_we),
-    .wd     (cmd_info_11_read_pipeline_mode_11_wd),
+    .wd     (cmd_info_11_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14189,22 +14189,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_11_read_pipeline_mode_11_qs)
+    .qs     (cmd_info_11_read_pipeline_mode_qs)
   );
 
-  //   F[upload_11]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_11_upload_11 (
+  ) u_cmd_info_11_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_we),
-    .wd     (cmd_info_11_upload_11_wd),
+    .wd     (cmd_info_11_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14216,22 +14216,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_11_upload_11_qs)
+    .qs     (cmd_info_11_upload_qs)
   );
 
-  //   F[busy_11]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_11_busy_11 (
+  ) u_cmd_info_11_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_we),
-    .wd     (cmd_info_11_busy_11_wd),
+    .wd     (cmd_info_11_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14243,22 +14243,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_11_busy_11_qs)
+    .qs     (cmd_info_11_busy_qs)
   );
 
-  //   F[valid_11]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_11_valid_11 (
+  ) u_cmd_info_11_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_11_we),
-    .wd     (cmd_info_11_valid_11_wd),
+    .wd     (cmd_info_11_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14270,25 +14270,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_11_valid_11_qs)
+    .qs     (cmd_info_11_valid_qs)
   );
 
 
   // Subregister 12 of Multireg cmd_info
   // R[cmd_info_12]: V(False)
-  //   F[opcode_12]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_12_opcode_12 (
+  ) u_cmd_info_12_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_we),
-    .wd     (cmd_info_12_opcode_12_wd),
+    .wd     (cmd_info_12_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14300,22 +14300,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_12_opcode_12_qs)
+    .qs     (cmd_info_12_opcode_qs)
   );
 
-  //   F[addr_mode_12]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_12_addr_mode_12 (
+  ) u_cmd_info_12_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_we),
-    .wd     (cmd_info_12_addr_mode_12_wd),
+    .wd     (cmd_info_12_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14327,22 +14327,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_12_addr_mode_12_qs)
+    .qs     (cmd_info_12_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_12]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_12_addr_swap_en_12 (
+  ) u_cmd_info_12_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_we),
-    .wd     (cmd_info_12_addr_swap_en_12_wd),
+    .wd     (cmd_info_12_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14354,22 +14354,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_12_addr_swap_en_12_qs)
+    .qs     (cmd_info_12_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_12]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_12_mbyte_en_12 (
+  ) u_cmd_info_12_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_we),
-    .wd     (cmd_info_12_mbyte_en_12_wd),
+    .wd     (cmd_info_12_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14381,22 +14381,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_12_mbyte_en_12_qs)
+    .qs     (cmd_info_12_mbyte_en_qs)
   );
 
-  //   F[dummy_size_12]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_12_dummy_size_12 (
+  ) u_cmd_info_12_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_we),
-    .wd     (cmd_info_12_dummy_size_12_wd),
+    .wd     (cmd_info_12_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14408,22 +14408,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_12_dummy_size_12_qs)
+    .qs     (cmd_info_12_dummy_size_qs)
   );
 
-  //   F[dummy_en_12]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_12_dummy_en_12 (
+  ) u_cmd_info_12_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_we),
-    .wd     (cmd_info_12_dummy_en_12_wd),
+    .wd     (cmd_info_12_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14435,22 +14435,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_12_dummy_en_12_qs)
+    .qs     (cmd_info_12_dummy_en_qs)
   );
 
-  //   F[payload_en_12]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_12_payload_en_12 (
+  ) u_cmd_info_12_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_we),
-    .wd     (cmd_info_12_payload_en_12_wd),
+    .wd     (cmd_info_12_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14462,22 +14462,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_12_payload_en_12_qs)
+    .qs     (cmd_info_12_payload_en_qs)
   );
 
-  //   F[payload_dir_12]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_12_payload_dir_12 (
+  ) u_cmd_info_12_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_we),
-    .wd     (cmd_info_12_payload_dir_12_wd),
+    .wd     (cmd_info_12_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14489,22 +14489,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_12_payload_dir_12_qs)
+    .qs     (cmd_info_12_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_12]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_12_payload_swap_en_12 (
+  ) u_cmd_info_12_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_we),
-    .wd     (cmd_info_12_payload_swap_en_12_wd),
+    .wd     (cmd_info_12_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14516,22 +14516,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_12_payload_swap_en_12_qs)
+    .qs     (cmd_info_12_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_12]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_12_read_pipeline_mode_12 (
+  ) u_cmd_info_12_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_we),
-    .wd     (cmd_info_12_read_pipeline_mode_12_wd),
+    .wd     (cmd_info_12_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14543,22 +14543,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_12_read_pipeline_mode_12_qs)
+    .qs     (cmd_info_12_read_pipeline_mode_qs)
   );
 
-  //   F[upload_12]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_12_upload_12 (
+  ) u_cmd_info_12_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_we),
-    .wd     (cmd_info_12_upload_12_wd),
+    .wd     (cmd_info_12_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14570,22 +14570,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_12_upload_12_qs)
+    .qs     (cmd_info_12_upload_qs)
   );
 
-  //   F[busy_12]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_12_busy_12 (
+  ) u_cmd_info_12_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_we),
-    .wd     (cmd_info_12_busy_12_wd),
+    .wd     (cmd_info_12_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14597,22 +14597,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_12_busy_12_qs)
+    .qs     (cmd_info_12_busy_qs)
   );
 
-  //   F[valid_12]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_12_valid_12 (
+  ) u_cmd_info_12_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_12_we),
-    .wd     (cmd_info_12_valid_12_wd),
+    .wd     (cmd_info_12_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14624,25 +14624,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_12_valid_12_qs)
+    .qs     (cmd_info_12_valid_qs)
   );
 
 
   // Subregister 13 of Multireg cmd_info
   // R[cmd_info_13]: V(False)
-  //   F[opcode_13]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_13_opcode_13 (
+  ) u_cmd_info_13_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_we),
-    .wd     (cmd_info_13_opcode_13_wd),
+    .wd     (cmd_info_13_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14654,22 +14654,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_13_opcode_13_qs)
+    .qs     (cmd_info_13_opcode_qs)
   );
 
-  //   F[addr_mode_13]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_13_addr_mode_13 (
+  ) u_cmd_info_13_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_we),
-    .wd     (cmd_info_13_addr_mode_13_wd),
+    .wd     (cmd_info_13_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14681,22 +14681,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_13_addr_mode_13_qs)
+    .qs     (cmd_info_13_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_13]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_13_addr_swap_en_13 (
+  ) u_cmd_info_13_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_we),
-    .wd     (cmd_info_13_addr_swap_en_13_wd),
+    .wd     (cmd_info_13_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14708,22 +14708,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_13_addr_swap_en_13_qs)
+    .qs     (cmd_info_13_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_13]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_13_mbyte_en_13 (
+  ) u_cmd_info_13_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_we),
-    .wd     (cmd_info_13_mbyte_en_13_wd),
+    .wd     (cmd_info_13_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14735,22 +14735,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_13_mbyte_en_13_qs)
+    .qs     (cmd_info_13_mbyte_en_qs)
   );
 
-  //   F[dummy_size_13]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_13_dummy_size_13 (
+  ) u_cmd_info_13_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_we),
-    .wd     (cmd_info_13_dummy_size_13_wd),
+    .wd     (cmd_info_13_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14762,22 +14762,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_13_dummy_size_13_qs)
+    .qs     (cmd_info_13_dummy_size_qs)
   );
 
-  //   F[dummy_en_13]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_13_dummy_en_13 (
+  ) u_cmd_info_13_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_we),
-    .wd     (cmd_info_13_dummy_en_13_wd),
+    .wd     (cmd_info_13_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14789,22 +14789,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_13_dummy_en_13_qs)
+    .qs     (cmd_info_13_dummy_en_qs)
   );
 
-  //   F[payload_en_13]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_13_payload_en_13 (
+  ) u_cmd_info_13_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_we),
-    .wd     (cmd_info_13_payload_en_13_wd),
+    .wd     (cmd_info_13_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14816,22 +14816,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_13_payload_en_13_qs)
+    .qs     (cmd_info_13_payload_en_qs)
   );
 
-  //   F[payload_dir_13]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_13_payload_dir_13 (
+  ) u_cmd_info_13_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_we),
-    .wd     (cmd_info_13_payload_dir_13_wd),
+    .wd     (cmd_info_13_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14843,22 +14843,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_13_payload_dir_13_qs)
+    .qs     (cmd_info_13_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_13]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_13_payload_swap_en_13 (
+  ) u_cmd_info_13_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_we),
-    .wd     (cmd_info_13_payload_swap_en_13_wd),
+    .wd     (cmd_info_13_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14870,22 +14870,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_13_payload_swap_en_13_qs)
+    .qs     (cmd_info_13_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_13]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_13_read_pipeline_mode_13 (
+  ) u_cmd_info_13_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_we),
-    .wd     (cmd_info_13_read_pipeline_mode_13_wd),
+    .wd     (cmd_info_13_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14897,22 +14897,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_13_read_pipeline_mode_13_qs)
+    .qs     (cmd_info_13_read_pipeline_mode_qs)
   );
 
-  //   F[upload_13]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_13_upload_13 (
+  ) u_cmd_info_13_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_we),
-    .wd     (cmd_info_13_upload_13_wd),
+    .wd     (cmd_info_13_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14924,22 +14924,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_13_upload_13_qs)
+    .qs     (cmd_info_13_upload_qs)
   );
 
-  //   F[busy_13]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_13_busy_13 (
+  ) u_cmd_info_13_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_we),
-    .wd     (cmd_info_13_busy_13_wd),
+    .wd     (cmd_info_13_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14951,22 +14951,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_13_busy_13_qs)
+    .qs     (cmd_info_13_busy_qs)
   );
 
-  //   F[valid_13]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_13_valid_13 (
+  ) u_cmd_info_13_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_13_we),
-    .wd     (cmd_info_13_valid_13_wd),
+    .wd     (cmd_info_13_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -14978,25 +14978,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_13_valid_13_qs)
+    .qs     (cmd_info_13_valid_qs)
   );
 
 
   // Subregister 14 of Multireg cmd_info
   // R[cmd_info_14]: V(False)
-  //   F[opcode_14]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_14_opcode_14 (
+  ) u_cmd_info_14_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_we),
-    .wd     (cmd_info_14_opcode_14_wd),
+    .wd     (cmd_info_14_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15008,22 +15008,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_14_opcode_14_qs)
+    .qs     (cmd_info_14_opcode_qs)
   );
 
-  //   F[addr_mode_14]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_14_addr_mode_14 (
+  ) u_cmd_info_14_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_we),
-    .wd     (cmd_info_14_addr_mode_14_wd),
+    .wd     (cmd_info_14_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15035,22 +15035,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_14_addr_mode_14_qs)
+    .qs     (cmd_info_14_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_14]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_14_addr_swap_en_14 (
+  ) u_cmd_info_14_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_we),
-    .wd     (cmd_info_14_addr_swap_en_14_wd),
+    .wd     (cmd_info_14_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15062,22 +15062,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_14_addr_swap_en_14_qs)
+    .qs     (cmd_info_14_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_14]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_14_mbyte_en_14 (
+  ) u_cmd_info_14_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_we),
-    .wd     (cmd_info_14_mbyte_en_14_wd),
+    .wd     (cmd_info_14_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15089,22 +15089,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_14_mbyte_en_14_qs)
+    .qs     (cmd_info_14_mbyte_en_qs)
   );
 
-  //   F[dummy_size_14]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_14_dummy_size_14 (
+  ) u_cmd_info_14_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_we),
-    .wd     (cmd_info_14_dummy_size_14_wd),
+    .wd     (cmd_info_14_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15116,22 +15116,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_14_dummy_size_14_qs)
+    .qs     (cmd_info_14_dummy_size_qs)
   );
 
-  //   F[dummy_en_14]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_14_dummy_en_14 (
+  ) u_cmd_info_14_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_we),
-    .wd     (cmd_info_14_dummy_en_14_wd),
+    .wd     (cmd_info_14_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15143,22 +15143,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_14_dummy_en_14_qs)
+    .qs     (cmd_info_14_dummy_en_qs)
   );
 
-  //   F[payload_en_14]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_14_payload_en_14 (
+  ) u_cmd_info_14_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_we),
-    .wd     (cmd_info_14_payload_en_14_wd),
+    .wd     (cmd_info_14_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15170,22 +15170,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_14_payload_en_14_qs)
+    .qs     (cmd_info_14_payload_en_qs)
   );
 
-  //   F[payload_dir_14]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_14_payload_dir_14 (
+  ) u_cmd_info_14_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_we),
-    .wd     (cmd_info_14_payload_dir_14_wd),
+    .wd     (cmd_info_14_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15197,22 +15197,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_14_payload_dir_14_qs)
+    .qs     (cmd_info_14_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_14]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_14_payload_swap_en_14 (
+  ) u_cmd_info_14_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_we),
-    .wd     (cmd_info_14_payload_swap_en_14_wd),
+    .wd     (cmd_info_14_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15224,22 +15224,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_14_payload_swap_en_14_qs)
+    .qs     (cmd_info_14_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_14]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_14_read_pipeline_mode_14 (
+  ) u_cmd_info_14_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_we),
-    .wd     (cmd_info_14_read_pipeline_mode_14_wd),
+    .wd     (cmd_info_14_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15251,22 +15251,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_14_read_pipeline_mode_14_qs)
+    .qs     (cmd_info_14_read_pipeline_mode_qs)
   );
 
-  //   F[upload_14]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_14_upload_14 (
+  ) u_cmd_info_14_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_we),
-    .wd     (cmd_info_14_upload_14_wd),
+    .wd     (cmd_info_14_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15278,22 +15278,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_14_upload_14_qs)
+    .qs     (cmd_info_14_upload_qs)
   );
 
-  //   F[busy_14]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_14_busy_14 (
+  ) u_cmd_info_14_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_we),
-    .wd     (cmd_info_14_busy_14_wd),
+    .wd     (cmd_info_14_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15305,22 +15305,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_14_busy_14_qs)
+    .qs     (cmd_info_14_busy_qs)
   );
 
-  //   F[valid_14]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_14_valid_14 (
+  ) u_cmd_info_14_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_14_we),
-    .wd     (cmd_info_14_valid_14_wd),
+    .wd     (cmd_info_14_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15332,25 +15332,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_14_valid_14_qs)
+    .qs     (cmd_info_14_valid_qs)
   );
 
 
   // Subregister 15 of Multireg cmd_info
   // R[cmd_info_15]: V(False)
-  //   F[opcode_15]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_15_opcode_15 (
+  ) u_cmd_info_15_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_we),
-    .wd     (cmd_info_15_opcode_15_wd),
+    .wd     (cmd_info_15_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15362,22 +15362,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_15_opcode_15_qs)
+    .qs     (cmd_info_15_opcode_qs)
   );
 
-  //   F[addr_mode_15]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_15_addr_mode_15 (
+  ) u_cmd_info_15_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_we),
-    .wd     (cmd_info_15_addr_mode_15_wd),
+    .wd     (cmd_info_15_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15389,22 +15389,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_15_addr_mode_15_qs)
+    .qs     (cmd_info_15_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_15]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_15_addr_swap_en_15 (
+  ) u_cmd_info_15_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_we),
-    .wd     (cmd_info_15_addr_swap_en_15_wd),
+    .wd     (cmd_info_15_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15416,22 +15416,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_15_addr_swap_en_15_qs)
+    .qs     (cmd_info_15_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_15]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_15_mbyte_en_15 (
+  ) u_cmd_info_15_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_we),
-    .wd     (cmd_info_15_mbyte_en_15_wd),
+    .wd     (cmd_info_15_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15443,22 +15443,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_15_mbyte_en_15_qs)
+    .qs     (cmd_info_15_mbyte_en_qs)
   );
 
-  //   F[dummy_size_15]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_15_dummy_size_15 (
+  ) u_cmd_info_15_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_we),
-    .wd     (cmd_info_15_dummy_size_15_wd),
+    .wd     (cmd_info_15_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15470,22 +15470,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_15_dummy_size_15_qs)
+    .qs     (cmd_info_15_dummy_size_qs)
   );
 
-  //   F[dummy_en_15]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_15_dummy_en_15 (
+  ) u_cmd_info_15_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_we),
-    .wd     (cmd_info_15_dummy_en_15_wd),
+    .wd     (cmd_info_15_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15497,22 +15497,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_15_dummy_en_15_qs)
+    .qs     (cmd_info_15_dummy_en_qs)
   );
 
-  //   F[payload_en_15]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_15_payload_en_15 (
+  ) u_cmd_info_15_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_we),
-    .wd     (cmd_info_15_payload_en_15_wd),
+    .wd     (cmd_info_15_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15524,22 +15524,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_15_payload_en_15_qs)
+    .qs     (cmd_info_15_payload_en_qs)
   );
 
-  //   F[payload_dir_15]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_15_payload_dir_15 (
+  ) u_cmd_info_15_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_we),
-    .wd     (cmd_info_15_payload_dir_15_wd),
+    .wd     (cmd_info_15_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15551,22 +15551,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_15_payload_dir_15_qs)
+    .qs     (cmd_info_15_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_15]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_15_payload_swap_en_15 (
+  ) u_cmd_info_15_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_we),
-    .wd     (cmd_info_15_payload_swap_en_15_wd),
+    .wd     (cmd_info_15_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15578,22 +15578,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_15_payload_swap_en_15_qs)
+    .qs     (cmd_info_15_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_15]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_15_read_pipeline_mode_15 (
+  ) u_cmd_info_15_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_we),
-    .wd     (cmd_info_15_read_pipeline_mode_15_wd),
+    .wd     (cmd_info_15_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15605,22 +15605,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_15_read_pipeline_mode_15_qs)
+    .qs     (cmd_info_15_read_pipeline_mode_qs)
   );
 
-  //   F[upload_15]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_15_upload_15 (
+  ) u_cmd_info_15_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_we),
-    .wd     (cmd_info_15_upload_15_wd),
+    .wd     (cmd_info_15_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15632,22 +15632,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_15_upload_15_qs)
+    .qs     (cmd_info_15_upload_qs)
   );
 
-  //   F[busy_15]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_15_busy_15 (
+  ) u_cmd_info_15_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_we),
-    .wd     (cmd_info_15_busy_15_wd),
+    .wd     (cmd_info_15_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15659,22 +15659,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_15_busy_15_qs)
+    .qs     (cmd_info_15_busy_qs)
   );
 
-  //   F[valid_15]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_15_valid_15 (
+  ) u_cmd_info_15_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_15_we),
-    .wd     (cmd_info_15_valid_15_wd),
+    .wd     (cmd_info_15_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15686,25 +15686,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_15_valid_15_qs)
+    .qs     (cmd_info_15_valid_qs)
   );
 
 
   // Subregister 16 of Multireg cmd_info
   // R[cmd_info_16]: V(False)
-  //   F[opcode_16]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_16_opcode_16 (
+  ) u_cmd_info_16_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_16_we),
-    .wd     (cmd_info_16_opcode_16_wd),
+    .wd     (cmd_info_16_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15716,22 +15716,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_16_opcode_16_qs)
+    .qs     (cmd_info_16_opcode_qs)
   );
 
-  //   F[addr_mode_16]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_16_addr_mode_16 (
+  ) u_cmd_info_16_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_16_we),
-    .wd     (cmd_info_16_addr_mode_16_wd),
+    .wd     (cmd_info_16_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15743,22 +15743,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_16_addr_mode_16_qs)
+    .qs     (cmd_info_16_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_16]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_16_addr_swap_en_16 (
+  ) u_cmd_info_16_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_16_we),
-    .wd     (cmd_info_16_addr_swap_en_16_wd),
+    .wd     (cmd_info_16_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15770,22 +15770,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_16_addr_swap_en_16_qs)
+    .qs     (cmd_info_16_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_16]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_16_mbyte_en_16 (
+  ) u_cmd_info_16_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_16_we),
-    .wd     (cmd_info_16_mbyte_en_16_wd),
+    .wd     (cmd_info_16_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15797,22 +15797,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_16_mbyte_en_16_qs)
+    .qs     (cmd_info_16_mbyte_en_qs)
   );
 
-  //   F[dummy_size_16]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_16_dummy_size_16 (
+  ) u_cmd_info_16_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_16_we),
-    .wd     (cmd_info_16_dummy_size_16_wd),
+    .wd     (cmd_info_16_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15824,22 +15824,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_16_dummy_size_16_qs)
+    .qs     (cmd_info_16_dummy_size_qs)
   );
 
-  //   F[dummy_en_16]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_16_dummy_en_16 (
+  ) u_cmd_info_16_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_16_we),
-    .wd     (cmd_info_16_dummy_en_16_wd),
+    .wd     (cmd_info_16_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15851,22 +15851,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_16_dummy_en_16_qs)
+    .qs     (cmd_info_16_dummy_en_qs)
   );
 
-  //   F[payload_en_16]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_16_payload_en_16 (
+  ) u_cmd_info_16_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_16_we),
-    .wd     (cmd_info_16_payload_en_16_wd),
+    .wd     (cmd_info_16_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15878,22 +15878,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_16_payload_en_16_qs)
+    .qs     (cmd_info_16_payload_en_qs)
   );
 
-  //   F[payload_dir_16]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_16_payload_dir_16 (
+  ) u_cmd_info_16_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_16_we),
-    .wd     (cmd_info_16_payload_dir_16_wd),
+    .wd     (cmd_info_16_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15905,22 +15905,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_16_payload_dir_16_qs)
+    .qs     (cmd_info_16_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_16]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_16_payload_swap_en_16 (
+  ) u_cmd_info_16_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_16_we),
-    .wd     (cmd_info_16_payload_swap_en_16_wd),
+    .wd     (cmd_info_16_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15932,22 +15932,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_16_payload_swap_en_16_qs)
+    .qs     (cmd_info_16_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_16]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_16_read_pipeline_mode_16 (
+  ) u_cmd_info_16_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_16_we),
-    .wd     (cmd_info_16_read_pipeline_mode_16_wd),
+    .wd     (cmd_info_16_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15959,22 +15959,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_16_read_pipeline_mode_16_qs)
+    .qs     (cmd_info_16_read_pipeline_mode_qs)
   );
 
-  //   F[upload_16]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_16_upload_16 (
+  ) u_cmd_info_16_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_16_we),
-    .wd     (cmd_info_16_upload_16_wd),
+    .wd     (cmd_info_16_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -15986,22 +15986,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_16_upload_16_qs)
+    .qs     (cmd_info_16_upload_qs)
   );
 
-  //   F[busy_16]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_16_busy_16 (
+  ) u_cmd_info_16_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_16_we),
-    .wd     (cmd_info_16_busy_16_wd),
+    .wd     (cmd_info_16_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16013,22 +16013,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_16_busy_16_qs)
+    .qs     (cmd_info_16_busy_qs)
   );
 
-  //   F[valid_16]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_16_valid_16 (
+  ) u_cmd_info_16_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_16_we),
-    .wd     (cmd_info_16_valid_16_wd),
+    .wd     (cmd_info_16_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16040,25 +16040,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_16_valid_16_qs)
+    .qs     (cmd_info_16_valid_qs)
   );
 
 
   // Subregister 17 of Multireg cmd_info
   // R[cmd_info_17]: V(False)
-  //   F[opcode_17]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_17_opcode_17 (
+  ) u_cmd_info_17_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_17_we),
-    .wd     (cmd_info_17_opcode_17_wd),
+    .wd     (cmd_info_17_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16070,22 +16070,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_17_opcode_17_qs)
+    .qs     (cmd_info_17_opcode_qs)
   );
 
-  //   F[addr_mode_17]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_17_addr_mode_17 (
+  ) u_cmd_info_17_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_17_we),
-    .wd     (cmd_info_17_addr_mode_17_wd),
+    .wd     (cmd_info_17_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16097,22 +16097,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_17_addr_mode_17_qs)
+    .qs     (cmd_info_17_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_17]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_17_addr_swap_en_17 (
+  ) u_cmd_info_17_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_17_we),
-    .wd     (cmd_info_17_addr_swap_en_17_wd),
+    .wd     (cmd_info_17_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16124,22 +16124,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_17_addr_swap_en_17_qs)
+    .qs     (cmd_info_17_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_17]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_17_mbyte_en_17 (
+  ) u_cmd_info_17_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_17_we),
-    .wd     (cmd_info_17_mbyte_en_17_wd),
+    .wd     (cmd_info_17_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16151,22 +16151,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_17_mbyte_en_17_qs)
+    .qs     (cmd_info_17_mbyte_en_qs)
   );
 
-  //   F[dummy_size_17]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_17_dummy_size_17 (
+  ) u_cmd_info_17_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_17_we),
-    .wd     (cmd_info_17_dummy_size_17_wd),
+    .wd     (cmd_info_17_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16178,22 +16178,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_17_dummy_size_17_qs)
+    .qs     (cmd_info_17_dummy_size_qs)
   );
 
-  //   F[dummy_en_17]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_17_dummy_en_17 (
+  ) u_cmd_info_17_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_17_we),
-    .wd     (cmd_info_17_dummy_en_17_wd),
+    .wd     (cmd_info_17_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16205,22 +16205,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_17_dummy_en_17_qs)
+    .qs     (cmd_info_17_dummy_en_qs)
   );
 
-  //   F[payload_en_17]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_17_payload_en_17 (
+  ) u_cmd_info_17_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_17_we),
-    .wd     (cmd_info_17_payload_en_17_wd),
+    .wd     (cmd_info_17_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16232,22 +16232,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_17_payload_en_17_qs)
+    .qs     (cmd_info_17_payload_en_qs)
   );
 
-  //   F[payload_dir_17]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_17_payload_dir_17 (
+  ) u_cmd_info_17_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_17_we),
-    .wd     (cmd_info_17_payload_dir_17_wd),
+    .wd     (cmd_info_17_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16259,22 +16259,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_17_payload_dir_17_qs)
+    .qs     (cmd_info_17_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_17]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_17_payload_swap_en_17 (
+  ) u_cmd_info_17_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_17_we),
-    .wd     (cmd_info_17_payload_swap_en_17_wd),
+    .wd     (cmd_info_17_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16286,22 +16286,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_17_payload_swap_en_17_qs)
+    .qs     (cmd_info_17_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_17]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_17_read_pipeline_mode_17 (
+  ) u_cmd_info_17_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_17_we),
-    .wd     (cmd_info_17_read_pipeline_mode_17_wd),
+    .wd     (cmd_info_17_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16313,22 +16313,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_17_read_pipeline_mode_17_qs)
+    .qs     (cmd_info_17_read_pipeline_mode_qs)
   );
 
-  //   F[upload_17]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_17_upload_17 (
+  ) u_cmd_info_17_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_17_we),
-    .wd     (cmd_info_17_upload_17_wd),
+    .wd     (cmd_info_17_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16340,22 +16340,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_17_upload_17_qs)
+    .qs     (cmd_info_17_upload_qs)
   );
 
-  //   F[busy_17]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_17_busy_17 (
+  ) u_cmd_info_17_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_17_we),
-    .wd     (cmd_info_17_busy_17_wd),
+    .wd     (cmd_info_17_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16367,22 +16367,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_17_busy_17_qs)
+    .qs     (cmd_info_17_busy_qs)
   );
 
-  //   F[valid_17]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_17_valid_17 (
+  ) u_cmd_info_17_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_17_we),
-    .wd     (cmd_info_17_valid_17_wd),
+    .wd     (cmd_info_17_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16394,25 +16394,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_17_valid_17_qs)
+    .qs     (cmd_info_17_valid_qs)
   );
 
 
   // Subregister 18 of Multireg cmd_info
   // R[cmd_info_18]: V(False)
-  //   F[opcode_18]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_18_opcode_18 (
+  ) u_cmd_info_18_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_18_we),
-    .wd     (cmd_info_18_opcode_18_wd),
+    .wd     (cmd_info_18_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16424,22 +16424,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_18_opcode_18_qs)
+    .qs     (cmd_info_18_opcode_qs)
   );
 
-  //   F[addr_mode_18]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_18_addr_mode_18 (
+  ) u_cmd_info_18_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_18_we),
-    .wd     (cmd_info_18_addr_mode_18_wd),
+    .wd     (cmd_info_18_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16451,22 +16451,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_18_addr_mode_18_qs)
+    .qs     (cmd_info_18_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_18]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_18_addr_swap_en_18 (
+  ) u_cmd_info_18_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_18_we),
-    .wd     (cmd_info_18_addr_swap_en_18_wd),
+    .wd     (cmd_info_18_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16478,22 +16478,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_18_addr_swap_en_18_qs)
+    .qs     (cmd_info_18_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_18]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_18_mbyte_en_18 (
+  ) u_cmd_info_18_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_18_we),
-    .wd     (cmd_info_18_mbyte_en_18_wd),
+    .wd     (cmd_info_18_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16505,22 +16505,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_18_mbyte_en_18_qs)
+    .qs     (cmd_info_18_mbyte_en_qs)
   );
 
-  //   F[dummy_size_18]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_18_dummy_size_18 (
+  ) u_cmd_info_18_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_18_we),
-    .wd     (cmd_info_18_dummy_size_18_wd),
+    .wd     (cmd_info_18_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16532,22 +16532,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_18_dummy_size_18_qs)
+    .qs     (cmd_info_18_dummy_size_qs)
   );
 
-  //   F[dummy_en_18]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_18_dummy_en_18 (
+  ) u_cmd_info_18_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_18_we),
-    .wd     (cmd_info_18_dummy_en_18_wd),
+    .wd     (cmd_info_18_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16559,22 +16559,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_18_dummy_en_18_qs)
+    .qs     (cmd_info_18_dummy_en_qs)
   );
 
-  //   F[payload_en_18]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_18_payload_en_18 (
+  ) u_cmd_info_18_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_18_we),
-    .wd     (cmd_info_18_payload_en_18_wd),
+    .wd     (cmd_info_18_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16586,22 +16586,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_18_payload_en_18_qs)
+    .qs     (cmd_info_18_payload_en_qs)
   );
 
-  //   F[payload_dir_18]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_18_payload_dir_18 (
+  ) u_cmd_info_18_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_18_we),
-    .wd     (cmd_info_18_payload_dir_18_wd),
+    .wd     (cmd_info_18_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16613,22 +16613,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_18_payload_dir_18_qs)
+    .qs     (cmd_info_18_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_18]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_18_payload_swap_en_18 (
+  ) u_cmd_info_18_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_18_we),
-    .wd     (cmd_info_18_payload_swap_en_18_wd),
+    .wd     (cmd_info_18_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16640,22 +16640,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_18_payload_swap_en_18_qs)
+    .qs     (cmd_info_18_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_18]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_18_read_pipeline_mode_18 (
+  ) u_cmd_info_18_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_18_we),
-    .wd     (cmd_info_18_read_pipeline_mode_18_wd),
+    .wd     (cmd_info_18_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16667,22 +16667,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_18_read_pipeline_mode_18_qs)
+    .qs     (cmd_info_18_read_pipeline_mode_qs)
   );
 
-  //   F[upload_18]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_18_upload_18 (
+  ) u_cmd_info_18_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_18_we),
-    .wd     (cmd_info_18_upload_18_wd),
+    .wd     (cmd_info_18_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16694,22 +16694,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_18_upload_18_qs)
+    .qs     (cmd_info_18_upload_qs)
   );
 
-  //   F[busy_18]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_18_busy_18 (
+  ) u_cmd_info_18_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_18_we),
-    .wd     (cmd_info_18_busy_18_wd),
+    .wd     (cmd_info_18_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16721,22 +16721,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_18_busy_18_qs)
+    .qs     (cmd_info_18_busy_qs)
   );
 
-  //   F[valid_18]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_18_valid_18 (
+  ) u_cmd_info_18_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_18_we),
-    .wd     (cmd_info_18_valid_18_wd),
+    .wd     (cmd_info_18_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16748,25 +16748,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_18_valid_18_qs)
+    .qs     (cmd_info_18_valid_qs)
   );
 
 
   // Subregister 19 of Multireg cmd_info
   // R[cmd_info_19]: V(False)
-  //   F[opcode_19]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_19_opcode_19 (
+  ) u_cmd_info_19_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_19_we),
-    .wd     (cmd_info_19_opcode_19_wd),
+    .wd     (cmd_info_19_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16778,22 +16778,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_19_opcode_19_qs)
+    .qs     (cmd_info_19_opcode_qs)
   );
 
-  //   F[addr_mode_19]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_19_addr_mode_19 (
+  ) u_cmd_info_19_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_19_we),
-    .wd     (cmd_info_19_addr_mode_19_wd),
+    .wd     (cmd_info_19_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16805,22 +16805,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_19_addr_mode_19_qs)
+    .qs     (cmd_info_19_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_19]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_19_addr_swap_en_19 (
+  ) u_cmd_info_19_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_19_we),
-    .wd     (cmd_info_19_addr_swap_en_19_wd),
+    .wd     (cmd_info_19_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16832,22 +16832,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_19_addr_swap_en_19_qs)
+    .qs     (cmd_info_19_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_19]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_19_mbyte_en_19 (
+  ) u_cmd_info_19_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_19_we),
-    .wd     (cmd_info_19_mbyte_en_19_wd),
+    .wd     (cmd_info_19_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16859,22 +16859,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_19_mbyte_en_19_qs)
+    .qs     (cmd_info_19_mbyte_en_qs)
   );
 
-  //   F[dummy_size_19]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_19_dummy_size_19 (
+  ) u_cmd_info_19_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_19_we),
-    .wd     (cmd_info_19_dummy_size_19_wd),
+    .wd     (cmd_info_19_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16886,22 +16886,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_19_dummy_size_19_qs)
+    .qs     (cmd_info_19_dummy_size_qs)
   );
 
-  //   F[dummy_en_19]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_19_dummy_en_19 (
+  ) u_cmd_info_19_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_19_we),
-    .wd     (cmd_info_19_dummy_en_19_wd),
+    .wd     (cmd_info_19_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16913,22 +16913,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_19_dummy_en_19_qs)
+    .qs     (cmd_info_19_dummy_en_qs)
   );
 
-  //   F[payload_en_19]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_19_payload_en_19 (
+  ) u_cmd_info_19_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_19_we),
-    .wd     (cmd_info_19_payload_en_19_wd),
+    .wd     (cmd_info_19_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16940,22 +16940,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_19_payload_en_19_qs)
+    .qs     (cmd_info_19_payload_en_qs)
   );
 
-  //   F[payload_dir_19]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_19_payload_dir_19 (
+  ) u_cmd_info_19_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_19_we),
-    .wd     (cmd_info_19_payload_dir_19_wd),
+    .wd     (cmd_info_19_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16967,22 +16967,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_19_payload_dir_19_qs)
+    .qs     (cmd_info_19_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_19]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_19_payload_swap_en_19 (
+  ) u_cmd_info_19_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_19_we),
-    .wd     (cmd_info_19_payload_swap_en_19_wd),
+    .wd     (cmd_info_19_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -16994,22 +16994,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_19_payload_swap_en_19_qs)
+    .qs     (cmd_info_19_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_19]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_19_read_pipeline_mode_19 (
+  ) u_cmd_info_19_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_19_we),
-    .wd     (cmd_info_19_read_pipeline_mode_19_wd),
+    .wd     (cmd_info_19_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17021,22 +17021,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_19_read_pipeline_mode_19_qs)
+    .qs     (cmd_info_19_read_pipeline_mode_qs)
   );
 
-  //   F[upload_19]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_19_upload_19 (
+  ) u_cmd_info_19_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_19_we),
-    .wd     (cmd_info_19_upload_19_wd),
+    .wd     (cmd_info_19_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17048,22 +17048,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_19_upload_19_qs)
+    .qs     (cmd_info_19_upload_qs)
   );
 
-  //   F[busy_19]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_19_busy_19 (
+  ) u_cmd_info_19_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_19_we),
-    .wd     (cmd_info_19_busy_19_wd),
+    .wd     (cmd_info_19_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17075,22 +17075,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_19_busy_19_qs)
+    .qs     (cmd_info_19_busy_qs)
   );
 
-  //   F[valid_19]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_19_valid_19 (
+  ) u_cmd_info_19_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_19_we),
-    .wd     (cmd_info_19_valid_19_wd),
+    .wd     (cmd_info_19_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17102,25 +17102,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_19_valid_19_qs)
+    .qs     (cmd_info_19_valid_qs)
   );
 
 
   // Subregister 20 of Multireg cmd_info
   // R[cmd_info_20]: V(False)
-  //   F[opcode_20]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_20_opcode_20 (
+  ) u_cmd_info_20_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_20_we),
-    .wd     (cmd_info_20_opcode_20_wd),
+    .wd     (cmd_info_20_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17132,22 +17132,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_20_opcode_20_qs)
+    .qs     (cmd_info_20_opcode_qs)
   );
 
-  //   F[addr_mode_20]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_20_addr_mode_20 (
+  ) u_cmd_info_20_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_20_we),
-    .wd     (cmd_info_20_addr_mode_20_wd),
+    .wd     (cmd_info_20_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17159,22 +17159,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_20_addr_mode_20_qs)
+    .qs     (cmd_info_20_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_20]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_20_addr_swap_en_20 (
+  ) u_cmd_info_20_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_20_we),
-    .wd     (cmd_info_20_addr_swap_en_20_wd),
+    .wd     (cmd_info_20_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17186,22 +17186,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_20_addr_swap_en_20_qs)
+    .qs     (cmd_info_20_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_20]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_20_mbyte_en_20 (
+  ) u_cmd_info_20_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_20_we),
-    .wd     (cmd_info_20_mbyte_en_20_wd),
+    .wd     (cmd_info_20_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17213,22 +17213,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_20_mbyte_en_20_qs)
+    .qs     (cmd_info_20_mbyte_en_qs)
   );
 
-  //   F[dummy_size_20]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_20_dummy_size_20 (
+  ) u_cmd_info_20_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_20_we),
-    .wd     (cmd_info_20_dummy_size_20_wd),
+    .wd     (cmd_info_20_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17240,22 +17240,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_20_dummy_size_20_qs)
+    .qs     (cmd_info_20_dummy_size_qs)
   );
 
-  //   F[dummy_en_20]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_20_dummy_en_20 (
+  ) u_cmd_info_20_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_20_we),
-    .wd     (cmd_info_20_dummy_en_20_wd),
+    .wd     (cmd_info_20_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17267,22 +17267,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_20_dummy_en_20_qs)
+    .qs     (cmd_info_20_dummy_en_qs)
   );
 
-  //   F[payload_en_20]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_20_payload_en_20 (
+  ) u_cmd_info_20_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_20_we),
-    .wd     (cmd_info_20_payload_en_20_wd),
+    .wd     (cmd_info_20_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17294,22 +17294,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_20_payload_en_20_qs)
+    .qs     (cmd_info_20_payload_en_qs)
   );
 
-  //   F[payload_dir_20]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_20_payload_dir_20 (
+  ) u_cmd_info_20_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_20_we),
-    .wd     (cmd_info_20_payload_dir_20_wd),
+    .wd     (cmd_info_20_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17321,22 +17321,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_20_payload_dir_20_qs)
+    .qs     (cmd_info_20_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_20]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_20_payload_swap_en_20 (
+  ) u_cmd_info_20_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_20_we),
-    .wd     (cmd_info_20_payload_swap_en_20_wd),
+    .wd     (cmd_info_20_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17348,22 +17348,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_20_payload_swap_en_20_qs)
+    .qs     (cmd_info_20_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_20]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_20_read_pipeline_mode_20 (
+  ) u_cmd_info_20_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_20_we),
-    .wd     (cmd_info_20_read_pipeline_mode_20_wd),
+    .wd     (cmd_info_20_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17375,22 +17375,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_20_read_pipeline_mode_20_qs)
+    .qs     (cmd_info_20_read_pipeline_mode_qs)
   );
 
-  //   F[upload_20]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_20_upload_20 (
+  ) u_cmd_info_20_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_20_we),
-    .wd     (cmd_info_20_upload_20_wd),
+    .wd     (cmd_info_20_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17402,22 +17402,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_20_upload_20_qs)
+    .qs     (cmd_info_20_upload_qs)
   );
 
-  //   F[busy_20]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_20_busy_20 (
+  ) u_cmd_info_20_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_20_we),
-    .wd     (cmd_info_20_busy_20_wd),
+    .wd     (cmd_info_20_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17429,22 +17429,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_20_busy_20_qs)
+    .qs     (cmd_info_20_busy_qs)
   );
 
-  //   F[valid_20]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_20_valid_20 (
+  ) u_cmd_info_20_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_20_we),
-    .wd     (cmd_info_20_valid_20_wd),
+    .wd     (cmd_info_20_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17456,25 +17456,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_20_valid_20_qs)
+    .qs     (cmd_info_20_valid_qs)
   );
 
 
   // Subregister 21 of Multireg cmd_info
   // R[cmd_info_21]: V(False)
-  //   F[opcode_21]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_21_opcode_21 (
+  ) u_cmd_info_21_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_21_we),
-    .wd     (cmd_info_21_opcode_21_wd),
+    .wd     (cmd_info_21_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17486,22 +17486,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_21_opcode_21_qs)
+    .qs     (cmd_info_21_opcode_qs)
   );
 
-  //   F[addr_mode_21]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_21_addr_mode_21 (
+  ) u_cmd_info_21_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_21_we),
-    .wd     (cmd_info_21_addr_mode_21_wd),
+    .wd     (cmd_info_21_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17513,22 +17513,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_21_addr_mode_21_qs)
+    .qs     (cmd_info_21_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_21]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_21_addr_swap_en_21 (
+  ) u_cmd_info_21_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_21_we),
-    .wd     (cmd_info_21_addr_swap_en_21_wd),
+    .wd     (cmd_info_21_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17540,22 +17540,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_21_addr_swap_en_21_qs)
+    .qs     (cmd_info_21_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_21]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_21_mbyte_en_21 (
+  ) u_cmd_info_21_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_21_we),
-    .wd     (cmd_info_21_mbyte_en_21_wd),
+    .wd     (cmd_info_21_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17567,22 +17567,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_21_mbyte_en_21_qs)
+    .qs     (cmd_info_21_mbyte_en_qs)
   );
 
-  //   F[dummy_size_21]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_21_dummy_size_21 (
+  ) u_cmd_info_21_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_21_we),
-    .wd     (cmd_info_21_dummy_size_21_wd),
+    .wd     (cmd_info_21_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17594,22 +17594,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_21_dummy_size_21_qs)
+    .qs     (cmd_info_21_dummy_size_qs)
   );
 
-  //   F[dummy_en_21]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_21_dummy_en_21 (
+  ) u_cmd_info_21_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_21_we),
-    .wd     (cmd_info_21_dummy_en_21_wd),
+    .wd     (cmd_info_21_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17621,22 +17621,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_21_dummy_en_21_qs)
+    .qs     (cmd_info_21_dummy_en_qs)
   );
 
-  //   F[payload_en_21]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_21_payload_en_21 (
+  ) u_cmd_info_21_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_21_we),
-    .wd     (cmd_info_21_payload_en_21_wd),
+    .wd     (cmd_info_21_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17648,22 +17648,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_21_payload_en_21_qs)
+    .qs     (cmd_info_21_payload_en_qs)
   );
 
-  //   F[payload_dir_21]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_21_payload_dir_21 (
+  ) u_cmd_info_21_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_21_we),
-    .wd     (cmd_info_21_payload_dir_21_wd),
+    .wd     (cmd_info_21_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17675,22 +17675,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_21_payload_dir_21_qs)
+    .qs     (cmd_info_21_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_21]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_21_payload_swap_en_21 (
+  ) u_cmd_info_21_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_21_we),
-    .wd     (cmd_info_21_payload_swap_en_21_wd),
+    .wd     (cmd_info_21_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17702,22 +17702,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_21_payload_swap_en_21_qs)
+    .qs     (cmd_info_21_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_21]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_21_read_pipeline_mode_21 (
+  ) u_cmd_info_21_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_21_we),
-    .wd     (cmd_info_21_read_pipeline_mode_21_wd),
+    .wd     (cmd_info_21_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17729,22 +17729,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_21_read_pipeline_mode_21_qs)
+    .qs     (cmd_info_21_read_pipeline_mode_qs)
   );
 
-  //   F[upload_21]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_21_upload_21 (
+  ) u_cmd_info_21_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_21_we),
-    .wd     (cmd_info_21_upload_21_wd),
+    .wd     (cmd_info_21_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17756,22 +17756,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_21_upload_21_qs)
+    .qs     (cmd_info_21_upload_qs)
   );
 
-  //   F[busy_21]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_21_busy_21 (
+  ) u_cmd_info_21_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_21_we),
-    .wd     (cmd_info_21_busy_21_wd),
+    .wd     (cmd_info_21_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17783,22 +17783,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_21_busy_21_qs)
+    .qs     (cmd_info_21_busy_qs)
   );
 
-  //   F[valid_21]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_21_valid_21 (
+  ) u_cmd_info_21_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_21_we),
-    .wd     (cmd_info_21_valid_21_wd),
+    .wd     (cmd_info_21_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17810,25 +17810,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_21_valid_21_qs)
+    .qs     (cmd_info_21_valid_qs)
   );
 
 
   // Subregister 22 of Multireg cmd_info
   // R[cmd_info_22]: V(False)
-  //   F[opcode_22]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_22_opcode_22 (
+  ) u_cmd_info_22_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_22_we),
-    .wd     (cmd_info_22_opcode_22_wd),
+    .wd     (cmd_info_22_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17840,22 +17840,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_22_opcode_22_qs)
+    .qs     (cmd_info_22_opcode_qs)
   );
 
-  //   F[addr_mode_22]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_22_addr_mode_22 (
+  ) u_cmd_info_22_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_22_we),
-    .wd     (cmd_info_22_addr_mode_22_wd),
+    .wd     (cmd_info_22_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17867,22 +17867,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_22_addr_mode_22_qs)
+    .qs     (cmd_info_22_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_22]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_22_addr_swap_en_22 (
+  ) u_cmd_info_22_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_22_we),
-    .wd     (cmd_info_22_addr_swap_en_22_wd),
+    .wd     (cmd_info_22_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17894,22 +17894,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_22_addr_swap_en_22_qs)
+    .qs     (cmd_info_22_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_22]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_22_mbyte_en_22 (
+  ) u_cmd_info_22_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_22_we),
-    .wd     (cmd_info_22_mbyte_en_22_wd),
+    .wd     (cmd_info_22_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17921,22 +17921,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_22_mbyte_en_22_qs)
+    .qs     (cmd_info_22_mbyte_en_qs)
   );
 
-  //   F[dummy_size_22]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_22_dummy_size_22 (
+  ) u_cmd_info_22_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_22_we),
-    .wd     (cmd_info_22_dummy_size_22_wd),
+    .wd     (cmd_info_22_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17948,22 +17948,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_22_dummy_size_22_qs)
+    .qs     (cmd_info_22_dummy_size_qs)
   );
 
-  //   F[dummy_en_22]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_22_dummy_en_22 (
+  ) u_cmd_info_22_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_22_we),
-    .wd     (cmd_info_22_dummy_en_22_wd),
+    .wd     (cmd_info_22_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -17975,22 +17975,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_22_dummy_en_22_qs)
+    .qs     (cmd_info_22_dummy_en_qs)
   );
 
-  //   F[payload_en_22]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_22_payload_en_22 (
+  ) u_cmd_info_22_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_22_we),
-    .wd     (cmd_info_22_payload_en_22_wd),
+    .wd     (cmd_info_22_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18002,22 +18002,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_22_payload_en_22_qs)
+    .qs     (cmd_info_22_payload_en_qs)
   );
 
-  //   F[payload_dir_22]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_22_payload_dir_22 (
+  ) u_cmd_info_22_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_22_we),
-    .wd     (cmd_info_22_payload_dir_22_wd),
+    .wd     (cmd_info_22_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18029,22 +18029,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_22_payload_dir_22_qs)
+    .qs     (cmd_info_22_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_22]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_22_payload_swap_en_22 (
+  ) u_cmd_info_22_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_22_we),
-    .wd     (cmd_info_22_payload_swap_en_22_wd),
+    .wd     (cmd_info_22_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18056,22 +18056,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_22_payload_swap_en_22_qs)
+    .qs     (cmd_info_22_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_22]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_22_read_pipeline_mode_22 (
+  ) u_cmd_info_22_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_22_we),
-    .wd     (cmd_info_22_read_pipeline_mode_22_wd),
+    .wd     (cmd_info_22_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18083,22 +18083,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_22_read_pipeline_mode_22_qs)
+    .qs     (cmd_info_22_read_pipeline_mode_qs)
   );
 
-  //   F[upload_22]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_22_upload_22 (
+  ) u_cmd_info_22_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_22_we),
-    .wd     (cmd_info_22_upload_22_wd),
+    .wd     (cmd_info_22_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18110,22 +18110,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_22_upload_22_qs)
+    .qs     (cmd_info_22_upload_qs)
   );
 
-  //   F[busy_22]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_22_busy_22 (
+  ) u_cmd_info_22_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_22_we),
-    .wd     (cmd_info_22_busy_22_wd),
+    .wd     (cmd_info_22_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18137,22 +18137,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_22_busy_22_qs)
+    .qs     (cmd_info_22_busy_qs)
   );
 
-  //   F[valid_22]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_22_valid_22 (
+  ) u_cmd_info_22_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_22_we),
-    .wd     (cmd_info_22_valid_22_wd),
+    .wd     (cmd_info_22_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18164,25 +18164,25 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_22_valid_22_qs)
+    .qs     (cmd_info_22_valid_qs)
   );
 
 
   // Subregister 23 of Multireg cmd_info
   // R[cmd_info_23]: V(False)
-  //   F[opcode_23]: 7:0
+  //   F[opcode]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_23_opcode_23 (
+  ) u_cmd_info_23_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_23_we),
-    .wd     (cmd_info_23_opcode_23_wd),
+    .wd     (cmd_info_23_opcode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18194,22 +18194,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_23_opcode_23_qs)
+    .qs     (cmd_info_23_opcode_qs)
   );
 
-  //   F[addr_mode_23]: 9:8
+  //   F[addr_mode]: 9:8
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_23_addr_mode_23 (
+  ) u_cmd_info_23_addr_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_23_we),
-    .wd     (cmd_info_23_addr_mode_23_wd),
+    .wd     (cmd_info_23_addr_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18221,22 +18221,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_23_addr_mode_23_qs)
+    .qs     (cmd_info_23_addr_mode_qs)
   );
 
-  //   F[addr_swap_en_23]: 10:10
+  //   F[addr_swap_en]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_23_addr_swap_en_23 (
+  ) u_cmd_info_23_addr_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_23_we),
-    .wd     (cmd_info_23_addr_swap_en_23_wd),
+    .wd     (cmd_info_23_addr_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18248,22 +18248,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_23_addr_swap_en_23_qs)
+    .qs     (cmd_info_23_addr_swap_en_qs)
   );
 
-  //   F[mbyte_en_23]: 11:11
+  //   F[mbyte_en]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_23_mbyte_en_23 (
+  ) u_cmd_info_23_mbyte_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_23_we),
-    .wd     (cmd_info_23_mbyte_en_23_wd),
+    .wd     (cmd_info_23_mbyte_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18275,22 +18275,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_23_mbyte_en_23_qs)
+    .qs     (cmd_info_23_mbyte_en_qs)
   );
 
-  //   F[dummy_size_23]: 14:12
+  //   F[dummy_size]: 14:12
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h7),
     .Mubi    (1'b0)
-  ) u_cmd_info_23_dummy_size_23 (
+  ) u_cmd_info_23_dummy_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_23_we),
-    .wd     (cmd_info_23_dummy_size_23_wd),
+    .wd     (cmd_info_23_dummy_size_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18302,22 +18302,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_23_dummy_size_23_qs)
+    .qs     (cmd_info_23_dummy_size_qs)
   );
 
-  //   F[dummy_en_23]: 15:15
+  //   F[dummy_en]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_23_dummy_en_23 (
+  ) u_cmd_info_23_dummy_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_23_we),
-    .wd     (cmd_info_23_dummy_en_23_wd),
+    .wd     (cmd_info_23_dummy_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18329,22 +18329,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_23_dummy_en_23_qs)
+    .qs     (cmd_info_23_dummy_en_qs)
   );
 
-  //   F[payload_en_23]: 19:16
+  //   F[payload_en]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_23_payload_en_23 (
+  ) u_cmd_info_23_payload_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_23_we),
-    .wd     (cmd_info_23_payload_en_23_wd),
+    .wd     (cmd_info_23_payload_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18356,22 +18356,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_23_payload_en_23_qs)
+    .qs     (cmd_info_23_payload_en_qs)
   );
 
-  //   F[payload_dir_23]: 20:20
+  //   F[payload_dir]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_23_payload_dir_23 (
+  ) u_cmd_info_23_payload_dir (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_23_we),
-    .wd     (cmd_info_23_payload_dir_23_wd),
+    .wd     (cmd_info_23_payload_dir_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18383,22 +18383,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_23_payload_dir_23_qs)
+    .qs     (cmd_info_23_payload_dir_qs)
   );
 
-  //   F[payload_swap_en_23]: 21:21
+  //   F[payload_swap_en]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_23_payload_swap_en_23 (
+  ) u_cmd_info_23_payload_swap_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_23_we),
-    .wd     (cmd_info_23_payload_swap_en_23_wd),
+    .wd     (cmd_info_23_payload_swap_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18410,22 +18410,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_23_payload_swap_en_23_qs)
+    .qs     (cmd_info_23_payload_swap_en_qs)
   );
 
-  //   F[read_pipeline_mode_23]: 23:22
+  //   F[read_pipeline_mode]: 23:22
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_23_read_pipeline_mode_23 (
+  ) u_cmd_info_23_read_pipeline_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_23_we),
-    .wd     (cmd_info_23_read_pipeline_mode_23_wd),
+    .wd     (cmd_info_23_read_pipeline_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18437,22 +18437,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_23_read_pipeline_mode_23_qs)
+    .qs     (cmd_info_23_read_pipeline_mode_qs)
   );
 
-  //   F[upload_23]: 24:24
+  //   F[upload]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_23_upload_23 (
+  ) u_cmd_info_23_upload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_23_we),
-    .wd     (cmd_info_23_upload_23_wd),
+    .wd     (cmd_info_23_upload_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18464,22 +18464,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_23_upload_23_qs)
+    .qs     (cmd_info_23_upload_qs)
   );
 
-  //   F[busy_23]: 25:25
+  //   F[busy]: 25:25
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_23_busy_23 (
+  ) u_cmd_info_23_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_23_we),
-    .wd     (cmd_info_23_busy_23_wd),
+    .wd     (cmd_info_23_busy_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18491,22 +18491,22 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_23_busy_23_qs)
+    .qs     (cmd_info_23_busy_qs)
   );
 
-  //   F[valid_23]: 31:31
+  //   F[valid]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_cmd_info_23_valid_23 (
+  ) u_cmd_info_23_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cmd_info_23_we),
-    .wd     (cmd_info_23_valid_23_wd),
+    .wd     (cmd_info_23_valid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -18518,7 +18518,7 @@ module spi_device_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (cmd_info_23_valid_23_qs)
+    .qs     (cmd_info_23_valid_qs)
   );
 
 
@@ -20321,652 +20321,652 @@ module spi_device_reg_top
   assign payload_swap_data_wd = reg_wdata[31:0];
   assign cmd_info_0_we = racl_addr_hit_write[31] & reg_we & !reg_error;
 
-  assign cmd_info_0_opcode_0_wd = reg_wdata[7:0];
+  assign cmd_info_0_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_0_addr_mode_0_wd = reg_wdata[9:8];
+  assign cmd_info_0_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_0_addr_swap_en_0_wd = reg_wdata[10];
+  assign cmd_info_0_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_0_mbyte_en_0_wd = reg_wdata[11];
+  assign cmd_info_0_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_0_dummy_size_0_wd = reg_wdata[14:12];
+  assign cmd_info_0_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_0_dummy_en_0_wd = reg_wdata[15];
+  assign cmd_info_0_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_0_payload_en_0_wd = reg_wdata[19:16];
+  assign cmd_info_0_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_0_payload_dir_0_wd = reg_wdata[20];
+  assign cmd_info_0_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_0_payload_swap_en_0_wd = reg_wdata[21];
+  assign cmd_info_0_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_0_read_pipeline_mode_0_wd = reg_wdata[23:22];
+  assign cmd_info_0_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_0_upload_0_wd = reg_wdata[24];
+  assign cmd_info_0_upload_wd = reg_wdata[24];
 
-  assign cmd_info_0_busy_0_wd = reg_wdata[25];
+  assign cmd_info_0_busy_wd = reg_wdata[25];
 
-  assign cmd_info_0_valid_0_wd = reg_wdata[31];
+  assign cmd_info_0_valid_wd = reg_wdata[31];
   assign cmd_info_1_we = racl_addr_hit_write[32] & reg_we & !reg_error;
 
-  assign cmd_info_1_opcode_1_wd = reg_wdata[7:0];
+  assign cmd_info_1_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_1_addr_mode_1_wd = reg_wdata[9:8];
+  assign cmd_info_1_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_1_addr_swap_en_1_wd = reg_wdata[10];
+  assign cmd_info_1_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_1_mbyte_en_1_wd = reg_wdata[11];
+  assign cmd_info_1_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_1_dummy_size_1_wd = reg_wdata[14:12];
+  assign cmd_info_1_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_1_dummy_en_1_wd = reg_wdata[15];
+  assign cmd_info_1_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_1_payload_en_1_wd = reg_wdata[19:16];
+  assign cmd_info_1_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_1_payload_dir_1_wd = reg_wdata[20];
+  assign cmd_info_1_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_1_payload_swap_en_1_wd = reg_wdata[21];
+  assign cmd_info_1_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_1_read_pipeline_mode_1_wd = reg_wdata[23:22];
+  assign cmd_info_1_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_1_upload_1_wd = reg_wdata[24];
+  assign cmd_info_1_upload_wd = reg_wdata[24];
 
-  assign cmd_info_1_busy_1_wd = reg_wdata[25];
+  assign cmd_info_1_busy_wd = reg_wdata[25];
 
-  assign cmd_info_1_valid_1_wd = reg_wdata[31];
+  assign cmd_info_1_valid_wd = reg_wdata[31];
   assign cmd_info_2_we = racl_addr_hit_write[33] & reg_we & !reg_error;
 
-  assign cmd_info_2_opcode_2_wd = reg_wdata[7:0];
+  assign cmd_info_2_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_2_addr_mode_2_wd = reg_wdata[9:8];
+  assign cmd_info_2_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_2_addr_swap_en_2_wd = reg_wdata[10];
+  assign cmd_info_2_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_2_mbyte_en_2_wd = reg_wdata[11];
+  assign cmd_info_2_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_2_dummy_size_2_wd = reg_wdata[14:12];
+  assign cmd_info_2_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_2_dummy_en_2_wd = reg_wdata[15];
+  assign cmd_info_2_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_2_payload_en_2_wd = reg_wdata[19:16];
+  assign cmd_info_2_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_2_payload_dir_2_wd = reg_wdata[20];
+  assign cmd_info_2_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_2_payload_swap_en_2_wd = reg_wdata[21];
+  assign cmd_info_2_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_2_read_pipeline_mode_2_wd = reg_wdata[23:22];
+  assign cmd_info_2_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_2_upload_2_wd = reg_wdata[24];
+  assign cmd_info_2_upload_wd = reg_wdata[24];
 
-  assign cmd_info_2_busy_2_wd = reg_wdata[25];
+  assign cmd_info_2_busy_wd = reg_wdata[25];
 
-  assign cmd_info_2_valid_2_wd = reg_wdata[31];
+  assign cmd_info_2_valid_wd = reg_wdata[31];
   assign cmd_info_3_we = racl_addr_hit_write[34] & reg_we & !reg_error;
 
-  assign cmd_info_3_opcode_3_wd = reg_wdata[7:0];
+  assign cmd_info_3_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_3_addr_mode_3_wd = reg_wdata[9:8];
+  assign cmd_info_3_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_3_addr_swap_en_3_wd = reg_wdata[10];
+  assign cmd_info_3_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_3_mbyte_en_3_wd = reg_wdata[11];
+  assign cmd_info_3_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_3_dummy_size_3_wd = reg_wdata[14:12];
+  assign cmd_info_3_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_3_dummy_en_3_wd = reg_wdata[15];
+  assign cmd_info_3_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_3_payload_en_3_wd = reg_wdata[19:16];
+  assign cmd_info_3_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_3_payload_dir_3_wd = reg_wdata[20];
+  assign cmd_info_3_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_3_payload_swap_en_3_wd = reg_wdata[21];
+  assign cmd_info_3_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_3_read_pipeline_mode_3_wd = reg_wdata[23:22];
+  assign cmd_info_3_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_3_upload_3_wd = reg_wdata[24];
+  assign cmd_info_3_upload_wd = reg_wdata[24];
 
-  assign cmd_info_3_busy_3_wd = reg_wdata[25];
+  assign cmd_info_3_busy_wd = reg_wdata[25];
 
-  assign cmd_info_3_valid_3_wd = reg_wdata[31];
+  assign cmd_info_3_valid_wd = reg_wdata[31];
   assign cmd_info_4_we = racl_addr_hit_write[35] & reg_we & !reg_error;
 
-  assign cmd_info_4_opcode_4_wd = reg_wdata[7:0];
+  assign cmd_info_4_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_4_addr_mode_4_wd = reg_wdata[9:8];
+  assign cmd_info_4_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_4_addr_swap_en_4_wd = reg_wdata[10];
+  assign cmd_info_4_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_4_mbyte_en_4_wd = reg_wdata[11];
+  assign cmd_info_4_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_4_dummy_size_4_wd = reg_wdata[14:12];
+  assign cmd_info_4_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_4_dummy_en_4_wd = reg_wdata[15];
+  assign cmd_info_4_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_4_payload_en_4_wd = reg_wdata[19:16];
+  assign cmd_info_4_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_4_payload_dir_4_wd = reg_wdata[20];
+  assign cmd_info_4_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_4_payload_swap_en_4_wd = reg_wdata[21];
+  assign cmd_info_4_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_4_read_pipeline_mode_4_wd = reg_wdata[23:22];
+  assign cmd_info_4_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_4_upload_4_wd = reg_wdata[24];
+  assign cmd_info_4_upload_wd = reg_wdata[24];
 
-  assign cmd_info_4_busy_4_wd = reg_wdata[25];
+  assign cmd_info_4_busy_wd = reg_wdata[25];
 
-  assign cmd_info_4_valid_4_wd = reg_wdata[31];
+  assign cmd_info_4_valid_wd = reg_wdata[31];
   assign cmd_info_5_we = racl_addr_hit_write[36] & reg_we & !reg_error;
 
-  assign cmd_info_5_opcode_5_wd = reg_wdata[7:0];
+  assign cmd_info_5_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_5_addr_mode_5_wd = reg_wdata[9:8];
+  assign cmd_info_5_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_5_addr_swap_en_5_wd = reg_wdata[10];
+  assign cmd_info_5_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_5_mbyte_en_5_wd = reg_wdata[11];
+  assign cmd_info_5_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_5_dummy_size_5_wd = reg_wdata[14:12];
+  assign cmd_info_5_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_5_dummy_en_5_wd = reg_wdata[15];
+  assign cmd_info_5_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_5_payload_en_5_wd = reg_wdata[19:16];
+  assign cmd_info_5_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_5_payload_dir_5_wd = reg_wdata[20];
+  assign cmd_info_5_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_5_payload_swap_en_5_wd = reg_wdata[21];
+  assign cmd_info_5_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_5_read_pipeline_mode_5_wd = reg_wdata[23:22];
+  assign cmd_info_5_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_5_upload_5_wd = reg_wdata[24];
+  assign cmd_info_5_upload_wd = reg_wdata[24];
 
-  assign cmd_info_5_busy_5_wd = reg_wdata[25];
+  assign cmd_info_5_busy_wd = reg_wdata[25];
 
-  assign cmd_info_5_valid_5_wd = reg_wdata[31];
+  assign cmd_info_5_valid_wd = reg_wdata[31];
   assign cmd_info_6_we = racl_addr_hit_write[37] & reg_we & !reg_error;
 
-  assign cmd_info_6_opcode_6_wd = reg_wdata[7:0];
+  assign cmd_info_6_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_6_addr_mode_6_wd = reg_wdata[9:8];
+  assign cmd_info_6_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_6_addr_swap_en_6_wd = reg_wdata[10];
+  assign cmd_info_6_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_6_mbyte_en_6_wd = reg_wdata[11];
+  assign cmd_info_6_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_6_dummy_size_6_wd = reg_wdata[14:12];
+  assign cmd_info_6_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_6_dummy_en_6_wd = reg_wdata[15];
+  assign cmd_info_6_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_6_payload_en_6_wd = reg_wdata[19:16];
+  assign cmd_info_6_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_6_payload_dir_6_wd = reg_wdata[20];
+  assign cmd_info_6_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_6_payload_swap_en_6_wd = reg_wdata[21];
+  assign cmd_info_6_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_6_read_pipeline_mode_6_wd = reg_wdata[23:22];
+  assign cmd_info_6_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_6_upload_6_wd = reg_wdata[24];
+  assign cmd_info_6_upload_wd = reg_wdata[24];
 
-  assign cmd_info_6_busy_6_wd = reg_wdata[25];
+  assign cmd_info_6_busy_wd = reg_wdata[25];
 
-  assign cmd_info_6_valid_6_wd = reg_wdata[31];
+  assign cmd_info_6_valid_wd = reg_wdata[31];
   assign cmd_info_7_we = racl_addr_hit_write[38] & reg_we & !reg_error;
 
-  assign cmd_info_7_opcode_7_wd = reg_wdata[7:0];
+  assign cmd_info_7_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_7_addr_mode_7_wd = reg_wdata[9:8];
+  assign cmd_info_7_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_7_addr_swap_en_7_wd = reg_wdata[10];
+  assign cmd_info_7_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_7_mbyte_en_7_wd = reg_wdata[11];
+  assign cmd_info_7_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_7_dummy_size_7_wd = reg_wdata[14:12];
+  assign cmd_info_7_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_7_dummy_en_7_wd = reg_wdata[15];
+  assign cmd_info_7_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_7_payload_en_7_wd = reg_wdata[19:16];
+  assign cmd_info_7_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_7_payload_dir_7_wd = reg_wdata[20];
+  assign cmd_info_7_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_7_payload_swap_en_7_wd = reg_wdata[21];
+  assign cmd_info_7_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_7_read_pipeline_mode_7_wd = reg_wdata[23:22];
+  assign cmd_info_7_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_7_upload_7_wd = reg_wdata[24];
+  assign cmd_info_7_upload_wd = reg_wdata[24];
 
-  assign cmd_info_7_busy_7_wd = reg_wdata[25];
+  assign cmd_info_7_busy_wd = reg_wdata[25];
 
-  assign cmd_info_7_valid_7_wd = reg_wdata[31];
+  assign cmd_info_7_valid_wd = reg_wdata[31];
   assign cmd_info_8_we = racl_addr_hit_write[39] & reg_we & !reg_error;
 
-  assign cmd_info_8_opcode_8_wd = reg_wdata[7:0];
+  assign cmd_info_8_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_8_addr_mode_8_wd = reg_wdata[9:8];
+  assign cmd_info_8_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_8_addr_swap_en_8_wd = reg_wdata[10];
+  assign cmd_info_8_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_8_mbyte_en_8_wd = reg_wdata[11];
+  assign cmd_info_8_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_8_dummy_size_8_wd = reg_wdata[14:12];
+  assign cmd_info_8_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_8_dummy_en_8_wd = reg_wdata[15];
+  assign cmd_info_8_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_8_payload_en_8_wd = reg_wdata[19:16];
+  assign cmd_info_8_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_8_payload_dir_8_wd = reg_wdata[20];
+  assign cmd_info_8_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_8_payload_swap_en_8_wd = reg_wdata[21];
+  assign cmd_info_8_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_8_read_pipeline_mode_8_wd = reg_wdata[23:22];
+  assign cmd_info_8_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_8_upload_8_wd = reg_wdata[24];
+  assign cmd_info_8_upload_wd = reg_wdata[24];
 
-  assign cmd_info_8_busy_8_wd = reg_wdata[25];
+  assign cmd_info_8_busy_wd = reg_wdata[25];
 
-  assign cmd_info_8_valid_8_wd = reg_wdata[31];
+  assign cmd_info_8_valid_wd = reg_wdata[31];
   assign cmd_info_9_we = racl_addr_hit_write[40] & reg_we & !reg_error;
 
-  assign cmd_info_9_opcode_9_wd = reg_wdata[7:0];
+  assign cmd_info_9_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_9_addr_mode_9_wd = reg_wdata[9:8];
+  assign cmd_info_9_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_9_addr_swap_en_9_wd = reg_wdata[10];
+  assign cmd_info_9_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_9_mbyte_en_9_wd = reg_wdata[11];
+  assign cmd_info_9_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_9_dummy_size_9_wd = reg_wdata[14:12];
+  assign cmd_info_9_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_9_dummy_en_9_wd = reg_wdata[15];
+  assign cmd_info_9_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_9_payload_en_9_wd = reg_wdata[19:16];
+  assign cmd_info_9_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_9_payload_dir_9_wd = reg_wdata[20];
+  assign cmd_info_9_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_9_payload_swap_en_9_wd = reg_wdata[21];
+  assign cmd_info_9_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_9_read_pipeline_mode_9_wd = reg_wdata[23:22];
+  assign cmd_info_9_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_9_upload_9_wd = reg_wdata[24];
+  assign cmd_info_9_upload_wd = reg_wdata[24];
 
-  assign cmd_info_9_busy_9_wd = reg_wdata[25];
+  assign cmd_info_9_busy_wd = reg_wdata[25];
 
-  assign cmd_info_9_valid_9_wd = reg_wdata[31];
+  assign cmd_info_9_valid_wd = reg_wdata[31];
   assign cmd_info_10_we = racl_addr_hit_write[41] & reg_we & !reg_error;
 
-  assign cmd_info_10_opcode_10_wd = reg_wdata[7:0];
+  assign cmd_info_10_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_10_addr_mode_10_wd = reg_wdata[9:8];
+  assign cmd_info_10_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_10_addr_swap_en_10_wd = reg_wdata[10];
+  assign cmd_info_10_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_10_mbyte_en_10_wd = reg_wdata[11];
+  assign cmd_info_10_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_10_dummy_size_10_wd = reg_wdata[14:12];
+  assign cmd_info_10_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_10_dummy_en_10_wd = reg_wdata[15];
+  assign cmd_info_10_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_10_payload_en_10_wd = reg_wdata[19:16];
+  assign cmd_info_10_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_10_payload_dir_10_wd = reg_wdata[20];
+  assign cmd_info_10_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_10_payload_swap_en_10_wd = reg_wdata[21];
+  assign cmd_info_10_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_10_read_pipeline_mode_10_wd = reg_wdata[23:22];
+  assign cmd_info_10_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_10_upload_10_wd = reg_wdata[24];
+  assign cmd_info_10_upload_wd = reg_wdata[24];
 
-  assign cmd_info_10_busy_10_wd = reg_wdata[25];
+  assign cmd_info_10_busy_wd = reg_wdata[25];
 
-  assign cmd_info_10_valid_10_wd = reg_wdata[31];
+  assign cmd_info_10_valid_wd = reg_wdata[31];
   assign cmd_info_11_we = racl_addr_hit_write[42] & reg_we & !reg_error;
 
-  assign cmd_info_11_opcode_11_wd = reg_wdata[7:0];
+  assign cmd_info_11_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_11_addr_mode_11_wd = reg_wdata[9:8];
+  assign cmd_info_11_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_11_addr_swap_en_11_wd = reg_wdata[10];
+  assign cmd_info_11_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_11_mbyte_en_11_wd = reg_wdata[11];
+  assign cmd_info_11_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_11_dummy_size_11_wd = reg_wdata[14:12];
+  assign cmd_info_11_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_11_dummy_en_11_wd = reg_wdata[15];
+  assign cmd_info_11_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_11_payload_en_11_wd = reg_wdata[19:16];
+  assign cmd_info_11_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_11_payload_dir_11_wd = reg_wdata[20];
+  assign cmd_info_11_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_11_payload_swap_en_11_wd = reg_wdata[21];
+  assign cmd_info_11_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_11_read_pipeline_mode_11_wd = reg_wdata[23:22];
+  assign cmd_info_11_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_11_upload_11_wd = reg_wdata[24];
+  assign cmd_info_11_upload_wd = reg_wdata[24];
 
-  assign cmd_info_11_busy_11_wd = reg_wdata[25];
+  assign cmd_info_11_busy_wd = reg_wdata[25];
 
-  assign cmd_info_11_valid_11_wd = reg_wdata[31];
+  assign cmd_info_11_valid_wd = reg_wdata[31];
   assign cmd_info_12_we = racl_addr_hit_write[43] & reg_we & !reg_error;
 
-  assign cmd_info_12_opcode_12_wd = reg_wdata[7:0];
+  assign cmd_info_12_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_12_addr_mode_12_wd = reg_wdata[9:8];
+  assign cmd_info_12_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_12_addr_swap_en_12_wd = reg_wdata[10];
+  assign cmd_info_12_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_12_mbyte_en_12_wd = reg_wdata[11];
+  assign cmd_info_12_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_12_dummy_size_12_wd = reg_wdata[14:12];
+  assign cmd_info_12_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_12_dummy_en_12_wd = reg_wdata[15];
+  assign cmd_info_12_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_12_payload_en_12_wd = reg_wdata[19:16];
+  assign cmd_info_12_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_12_payload_dir_12_wd = reg_wdata[20];
+  assign cmd_info_12_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_12_payload_swap_en_12_wd = reg_wdata[21];
+  assign cmd_info_12_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_12_read_pipeline_mode_12_wd = reg_wdata[23:22];
+  assign cmd_info_12_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_12_upload_12_wd = reg_wdata[24];
+  assign cmd_info_12_upload_wd = reg_wdata[24];
 
-  assign cmd_info_12_busy_12_wd = reg_wdata[25];
+  assign cmd_info_12_busy_wd = reg_wdata[25];
 
-  assign cmd_info_12_valid_12_wd = reg_wdata[31];
+  assign cmd_info_12_valid_wd = reg_wdata[31];
   assign cmd_info_13_we = racl_addr_hit_write[44] & reg_we & !reg_error;
 
-  assign cmd_info_13_opcode_13_wd = reg_wdata[7:0];
+  assign cmd_info_13_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_13_addr_mode_13_wd = reg_wdata[9:8];
+  assign cmd_info_13_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_13_addr_swap_en_13_wd = reg_wdata[10];
+  assign cmd_info_13_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_13_mbyte_en_13_wd = reg_wdata[11];
+  assign cmd_info_13_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_13_dummy_size_13_wd = reg_wdata[14:12];
+  assign cmd_info_13_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_13_dummy_en_13_wd = reg_wdata[15];
+  assign cmd_info_13_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_13_payload_en_13_wd = reg_wdata[19:16];
+  assign cmd_info_13_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_13_payload_dir_13_wd = reg_wdata[20];
+  assign cmd_info_13_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_13_payload_swap_en_13_wd = reg_wdata[21];
+  assign cmd_info_13_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_13_read_pipeline_mode_13_wd = reg_wdata[23:22];
+  assign cmd_info_13_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_13_upload_13_wd = reg_wdata[24];
+  assign cmd_info_13_upload_wd = reg_wdata[24];
 
-  assign cmd_info_13_busy_13_wd = reg_wdata[25];
+  assign cmd_info_13_busy_wd = reg_wdata[25];
 
-  assign cmd_info_13_valid_13_wd = reg_wdata[31];
+  assign cmd_info_13_valid_wd = reg_wdata[31];
   assign cmd_info_14_we = racl_addr_hit_write[45] & reg_we & !reg_error;
 
-  assign cmd_info_14_opcode_14_wd = reg_wdata[7:0];
+  assign cmd_info_14_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_14_addr_mode_14_wd = reg_wdata[9:8];
+  assign cmd_info_14_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_14_addr_swap_en_14_wd = reg_wdata[10];
+  assign cmd_info_14_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_14_mbyte_en_14_wd = reg_wdata[11];
+  assign cmd_info_14_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_14_dummy_size_14_wd = reg_wdata[14:12];
+  assign cmd_info_14_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_14_dummy_en_14_wd = reg_wdata[15];
+  assign cmd_info_14_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_14_payload_en_14_wd = reg_wdata[19:16];
+  assign cmd_info_14_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_14_payload_dir_14_wd = reg_wdata[20];
+  assign cmd_info_14_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_14_payload_swap_en_14_wd = reg_wdata[21];
+  assign cmd_info_14_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_14_read_pipeline_mode_14_wd = reg_wdata[23:22];
+  assign cmd_info_14_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_14_upload_14_wd = reg_wdata[24];
+  assign cmd_info_14_upload_wd = reg_wdata[24];
 
-  assign cmd_info_14_busy_14_wd = reg_wdata[25];
+  assign cmd_info_14_busy_wd = reg_wdata[25];
 
-  assign cmd_info_14_valid_14_wd = reg_wdata[31];
+  assign cmd_info_14_valid_wd = reg_wdata[31];
   assign cmd_info_15_we = racl_addr_hit_write[46] & reg_we & !reg_error;
 
-  assign cmd_info_15_opcode_15_wd = reg_wdata[7:0];
+  assign cmd_info_15_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_15_addr_mode_15_wd = reg_wdata[9:8];
+  assign cmd_info_15_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_15_addr_swap_en_15_wd = reg_wdata[10];
+  assign cmd_info_15_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_15_mbyte_en_15_wd = reg_wdata[11];
+  assign cmd_info_15_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_15_dummy_size_15_wd = reg_wdata[14:12];
+  assign cmd_info_15_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_15_dummy_en_15_wd = reg_wdata[15];
+  assign cmd_info_15_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_15_payload_en_15_wd = reg_wdata[19:16];
+  assign cmd_info_15_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_15_payload_dir_15_wd = reg_wdata[20];
+  assign cmd_info_15_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_15_payload_swap_en_15_wd = reg_wdata[21];
+  assign cmd_info_15_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_15_read_pipeline_mode_15_wd = reg_wdata[23:22];
+  assign cmd_info_15_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_15_upload_15_wd = reg_wdata[24];
+  assign cmd_info_15_upload_wd = reg_wdata[24];
 
-  assign cmd_info_15_busy_15_wd = reg_wdata[25];
+  assign cmd_info_15_busy_wd = reg_wdata[25];
 
-  assign cmd_info_15_valid_15_wd = reg_wdata[31];
+  assign cmd_info_15_valid_wd = reg_wdata[31];
   assign cmd_info_16_we = racl_addr_hit_write[47] & reg_we & !reg_error;
 
-  assign cmd_info_16_opcode_16_wd = reg_wdata[7:0];
+  assign cmd_info_16_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_16_addr_mode_16_wd = reg_wdata[9:8];
+  assign cmd_info_16_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_16_addr_swap_en_16_wd = reg_wdata[10];
+  assign cmd_info_16_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_16_mbyte_en_16_wd = reg_wdata[11];
+  assign cmd_info_16_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_16_dummy_size_16_wd = reg_wdata[14:12];
+  assign cmd_info_16_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_16_dummy_en_16_wd = reg_wdata[15];
+  assign cmd_info_16_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_16_payload_en_16_wd = reg_wdata[19:16];
+  assign cmd_info_16_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_16_payload_dir_16_wd = reg_wdata[20];
+  assign cmd_info_16_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_16_payload_swap_en_16_wd = reg_wdata[21];
+  assign cmd_info_16_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_16_read_pipeline_mode_16_wd = reg_wdata[23:22];
+  assign cmd_info_16_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_16_upload_16_wd = reg_wdata[24];
+  assign cmd_info_16_upload_wd = reg_wdata[24];
 
-  assign cmd_info_16_busy_16_wd = reg_wdata[25];
+  assign cmd_info_16_busy_wd = reg_wdata[25];
 
-  assign cmd_info_16_valid_16_wd = reg_wdata[31];
+  assign cmd_info_16_valid_wd = reg_wdata[31];
   assign cmd_info_17_we = racl_addr_hit_write[48] & reg_we & !reg_error;
 
-  assign cmd_info_17_opcode_17_wd = reg_wdata[7:0];
+  assign cmd_info_17_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_17_addr_mode_17_wd = reg_wdata[9:8];
+  assign cmd_info_17_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_17_addr_swap_en_17_wd = reg_wdata[10];
+  assign cmd_info_17_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_17_mbyte_en_17_wd = reg_wdata[11];
+  assign cmd_info_17_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_17_dummy_size_17_wd = reg_wdata[14:12];
+  assign cmd_info_17_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_17_dummy_en_17_wd = reg_wdata[15];
+  assign cmd_info_17_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_17_payload_en_17_wd = reg_wdata[19:16];
+  assign cmd_info_17_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_17_payload_dir_17_wd = reg_wdata[20];
+  assign cmd_info_17_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_17_payload_swap_en_17_wd = reg_wdata[21];
+  assign cmd_info_17_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_17_read_pipeline_mode_17_wd = reg_wdata[23:22];
+  assign cmd_info_17_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_17_upload_17_wd = reg_wdata[24];
+  assign cmd_info_17_upload_wd = reg_wdata[24];
 
-  assign cmd_info_17_busy_17_wd = reg_wdata[25];
+  assign cmd_info_17_busy_wd = reg_wdata[25];
 
-  assign cmd_info_17_valid_17_wd = reg_wdata[31];
+  assign cmd_info_17_valid_wd = reg_wdata[31];
   assign cmd_info_18_we = racl_addr_hit_write[49] & reg_we & !reg_error;
 
-  assign cmd_info_18_opcode_18_wd = reg_wdata[7:0];
+  assign cmd_info_18_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_18_addr_mode_18_wd = reg_wdata[9:8];
+  assign cmd_info_18_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_18_addr_swap_en_18_wd = reg_wdata[10];
+  assign cmd_info_18_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_18_mbyte_en_18_wd = reg_wdata[11];
+  assign cmd_info_18_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_18_dummy_size_18_wd = reg_wdata[14:12];
+  assign cmd_info_18_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_18_dummy_en_18_wd = reg_wdata[15];
+  assign cmd_info_18_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_18_payload_en_18_wd = reg_wdata[19:16];
+  assign cmd_info_18_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_18_payload_dir_18_wd = reg_wdata[20];
+  assign cmd_info_18_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_18_payload_swap_en_18_wd = reg_wdata[21];
+  assign cmd_info_18_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_18_read_pipeline_mode_18_wd = reg_wdata[23:22];
+  assign cmd_info_18_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_18_upload_18_wd = reg_wdata[24];
+  assign cmd_info_18_upload_wd = reg_wdata[24];
 
-  assign cmd_info_18_busy_18_wd = reg_wdata[25];
+  assign cmd_info_18_busy_wd = reg_wdata[25];
 
-  assign cmd_info_18_valid_18_wd = reg_wdata[31];
+  assign cmd_info_18_valid_wd = reg_wdata[31];
   assign cmd_info_19_we = racl_addr_hit_write[50] & reg_we & !reg_error;
 
-  assign cmd_info_19_opcode_19_wd = reg_wdata[7:0];
+  assign cmd_info_19_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_19_addr_mode_19_wd = reg_wdata[9:8];
+  assign cmd_info_19_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_19_addr_swap_en_19_wd = reg_wdata[10];
+  assign cmd_info_19_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_19_mbyte_en_19_wd = reg_wdata[11];
+  assign cmd_info_19_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_19_dummy_size_19_wd = reg_wdata[14:12];
+  assign cmd_info_19_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_19_dummy_en_19_wd = reg_wdata[15];
+  assign cmd_info_19_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_19_payload_en_19_wd = reg_wdata[19:16];
+  assign cmd_info_19_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_19_payload_dir_19_wd = reg_wdata[20];
+  assign cmd_info_19_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_19_payload_swap_en_19_wd = reg_wdata[21];
+  assign cmd_info_19_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_19_read_pipeline_mode_19_wd = reg_wdata[23:22];
+  assign cmd_info_19_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_19_upload_19_wd = reg_wdata[24];
+  assign cmd_info_19_upload_wd = reg_wdata[24];
 
-  assign cmd_info_19_busy_19_wd = reg_wdata[25];
+  assign cmd_info_19_busy_wd = reg_wdata[25];
 
-  assign cmd_info_19_valid_19_wd = reg_wdata[31];
+  assign cmd_info_19_valid_wd = reg_wdata[31];
   assign cmd_info_20_we = racl_addr_hit_write[51] & reg_we & !reg_error;
 
-  assign cmd_info_20_opcode_20_wd = reg_wdata[7:0];
+  assign cmd_info_20_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_20_addr_mode_20_wd = reg_wdata[9:8];
+  assign cmd_info_20_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_20_addr_swap_en_20_wd = reg_wdata[10];
+  assign cmd_info_20_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_20_mbyte_en_20_wd = reg_wdata[11];
+  assign cmd_info_20_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_20_dummy_size_20_wd = reg_wdata[14:12];
+  assign cmd_info_20_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_20_dummy_en_20_wd = reg_wdata[15];
+  assign cmd_info_20_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_20_payload_en_20_wd = reg_wdata[19:16];
+  assign cmd_info_20_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_20_payload_dir_20_wd = reg_wdata[20];
+  assign cmd_info_20_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_20_payload_swap_en_20_wd = reg_wdata[21];
+  assign cmd_info_20_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_20_read_pipeline_mode_20_wd = reg_wdata[23:22];
+  assign cmd_info_20_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_20_upload_20_wd = reg_wdata[24];
+  assign cmd_info_20_upload_wd = reg_wdata[24];
 
-  assign cmd_info_20_busy_20_wd = reg_wdata[25];
+  assign cmd_info_20_busy_wd = reg_wdata[25];
 
-  assign cmd_info_20_valid_20_wd = reg_wdata[31];
+  assign cmd_info_20_valid_wd = reg_wdata[31];
   assign cmd_info_21_we = racl_addr_hit_write[52] & reg_we & !reg_error;
 
-  assign cmd_info_21_opcode_21_wd = reg_wdata[7:0];
+  assign cmd_info_21_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_21_addr_mode_21_wd = reg_wdata[9:8];
+  assign cmd_info_21_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_21_addr_swap_en_21_wd = reg_wdata[10];
+  assign cmd_info_21_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_21_mbyte_en_21_wd = reg_wdata[11];
+  assign cmd_info_21_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_21_dummy_size_21_wd = reg_wdata[14:12];
+  assign cmd_info_21_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_21_dummy_en_21_wd = reg_wdata[15];
+  assign cmd_info_21_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_21_payload_en_21_wd = reg_wdata[19:16];
+  assign cmd_info_21_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_21_payload_dir_21_wd = reg_wdata[20];
+  assign cmd_info_21_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_21_payload_swap_en_21_wd = reg_wdata[21];
+  assign cmd_info_21_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_21_read_pipeline_mode_21_wd = reg_wdata[23:22];
+  assign cmd_info_21_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_21_upload_21_wd = reg_wdata[24];
+  assign cmd_info_21_upload_wd = reg_wdata[24];
 
-  assign cmd_info_21_busy_21_wd = reg_wdata[25];
+  assign cmd_info_21_busy_wd = reg_wdata[25];
 
-  assign cmd_info_21_valid_21_wd = reg_wdata[31];
+  assign cmd_info_21_valid_wd = reg_wdata[31];
   assign cmd_info_22_we = racl_addr_hit_write[53] & reg_we & !reg_error;
 
-  assign cmd_info_22_opcode_22_wd = reg_wdata[7:0];
+  assign cmd_info_22_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_22_addr_mode_22_wd = reg_wdata[9:8];
+  assign cmd_info_22_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_22_addr_swap_en_22_wd = reg_wdata[10];
+  assign cmd_info_22_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_22_mbyte_en_22_wd = reg_wdata[11];
+  assign cmd_info_22_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_22_dummy_size_22_wd = reg_wdata[14:12];
+  assign cmd_info_22_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_22_dummy_en_22_wd = reg_wdata[15];
+  assign cmd_info_22_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_22_payload_en_22_wd = reg_wdata[19:16];
+  assign cmd_info_22_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_22_payload_dir_22_wd = reg_wdata[20];
+  assign cmd_info_22_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_22_payload_swap_en_22_wd = reg_wdata[21];
+  assign cmd_info_22_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_22_read_pipeline_mode_22_wd = reg_wdata[23:22];
+  assign cmd_info_22_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_22_upload_22_wd = reg_wdata[24];
+  assign cmd_info_22_upload_wd = reg_wdata[24];
 
-  assign cmd_info_22_busy_22_wd = reg_wdata[25];
+  assign cmd_info_22_busy_wd = reg_wdata[25];
 
-  assign cmd_info_22_valid_22_wd = reg_wdata[31];
+  assign cmd_info_22_valid_wd = reg_wdata[31];
   assign cmd_info_23_we = racl_addr_hit_write[54] & reg_we & !reg_error;
 
-  assign cmd_info_23_opcode_23_wd = reg_wdata[7:0];
+  assign cmd_info_23_opcode_wd = reg_wdata[7:0];
 
-  assign cmd_info_23_addr_mode_23_wd = reg_wdata[9:8];
+  assign cmd_info_23_addr_mode_wd = reg_wdata[9:8];
 
-  assign cmd_info_23_addr_swap_en_23_wd = reg_wdata[10];
+  assign cmd_info_23_addr_swap_en_wd = reg_wdata[10];
 
-  assign cmd_info_23_mbyte_en_23_wd = reg_wdata[11];
+  assign cmd_info_23_mbyte_en_wd = reg_wdata[11];
 
-  assign cmd_info_23_dummy_size_23_wd = reg_wdata[14:12];
+  assign cmd_info_23_dummy_size_wd = reg_wdata[14:12];
 
-  assign cmd_info_23_dummy_en_23_wd = reg_wdata[15];
+  assign cmd_info_23_dummy_en_wd = reg_wdata[15];
 
-  assign cmd_info_23_payload_en_23_wd = reg_wdata[19:16];
+  assign cmd_info_23_payload_en_wd = reg_wdata[19:16];
 
-  assign cmd_info_23_payload_dir_23_wd = reg_wdata[20];
+  assign cmd_info_23_payload_dir_wd = reg_wdata[20];
 
-  assign cmd_info_23_payload_swap_en_23_wd = reg_wdata[21];
+  assign cmd_info_23_payload_swap_en_wd = reg_wdata[21];
 
-  assign cmd_info_23_read_pipeline_mode_23_wd = reg_wdata[23:22];
+  assign cmd_info_23_read_pipeline_mode_wd = reg_wdata[23:22];
 
-  assign cmd_info_23_upload_23_wd = reg_wdata[24];
+  assign cmd_info_23_upload_wd = reg_wdata[24];
 
-  assign cmd_info_23_busy_23_wd = reg_wdata[25];
+  assign cmd_info_23_busy_wd = reg_wdata[25];
 
-  assign cmd_info_23_valid_23_wd = reg_wdata[31];
+  assign cmd_info_23_valid_wd = reg_wdata[31];
   assign cmd_info_en4b_we = racl_addr_hit_write[55] & reg_we & !reg_error;
 
   assign cmd_info_en4b_opcode_wd = reg_wdata[7:0];
@@ -21537,387 +21537,387 @@ module spi_device_reg_top
       end
 
       racl_addr_hit_read[31]: begin
-        reg_rdata_next[7:0] = cmd_info_0_opcode_0_qs;
-        reg_rdata_next[9:8] = cmd_info_0_addr_mode_0_qs;
-        reg_rdata_next[10] = cmd_info_0_addr_swap_en_0_qs;
-        reg_rdata_next[11] = cmd_info_0_mbyte_en_0_qs;
-        reg_rdata_next[14:12] = cmd_info_0_dummy_size_0_qs;
-        reg_rdata_next[15] = cmd_info_0_dummy_en_0_qs;
-        reg_rdata_next[19:16] = cmd_info_0_payload_en_0_qs;
-        reg_rdata_next[20] = cmd_info_0_payload_dir_0_qs;
-        reg_rdata_next[21] = cmd_info_0_payload_swap_en_0_qs;
-        reg_rdata_next[23:22] = cmd_info_0_read_pipeline_mode_0_qs;
-        reg_rdata_next[24] = cmd_info_0_upload_0_qs;
-        reg_rdata_next[25] = cmd_info_0_busy_0_qs;
-        reg_rdata_next[31] = cmd_info_0_valid_0_qs;
+        reg_rdata_next[7:0] = cmd_info_0_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_0_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_0_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_0_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_0_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_0_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_0_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_0_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_0_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_0_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_0_upload_qs;
+        reg_rdata_next[25] = cmd_info_0_busy_qs;
+        reg_rdata_next[31] = cmd_info_0_valid_qs;
       end
 
       racl_addr_hit_read[32]: begin
-        reg_rdata_next[7:0] = cmd_info_1_opcode_1_qs;
-        reg_rdata_next[9:8] = cmd_info_1_addr_mode_1_qs;
-        reg_rdata_next[10] = cmd_info_1_addr_swap_en_1_qs;
-        reg_rdata_next[11] = cmd_info_1_mbyte_en_1_qs;
-        reg_rdata_next[14:12] = cmd_info_1_dummy_size_1_qs;
-        reg_rdata_next[15] = cmd_info_1_dummy_en_1_qs;
-        reg_rdata_next[19:16] = cmd_info_1_payload_en_1_qs;
-        reg_rdata_next[20] = cmd_info_1_payload_dir_1_qs;
-        reg_rdata_next[21] = cmd_info_1_payload_swap_en_1_qs;
-        reg_rdata_next[23:22] = cmd_info_1_read_pipeline_mode_1_qs;
-        reg_rdata_next[24] = cmd_info_1_upload_1_qs;
-        reg_rdata_next[25] = cmd_info_1_busy_1_qs;
-        reg_rdata_next[31] = cmd_info_1_valid_1_qs;
+        reg_rdata_next[7:0] = cmd_info_1_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_1_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_1_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_1_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_1_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_1_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_1_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_1_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_1_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_1_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_1_upload_qs;
+        reg_rdata_next[25] = cmd_info_1_busy_qs;
+        reg_rdata_next[31] = cmd_info_1_valid_qs;
       end
 
       racl_addr_hit_read[33]: begin
-        reg_rdata_next[7:0] = cmd_info_2_opcode_2_qs;
-        reg_rdata_next[9:8] = cmd_info_2_addr_mode_2_qs;
-        reg_rdata_next[10] = cmd_info_2_addr_swap_en_2_qs;
-        reg_rdata_next[11] = cmd_info_2_mbyte_en_2_qs;
-        reg_rdata_next[14:12] = cmd_info_2_dummy_size_2_qs;
-        reg_rdata_next[15] = cmd_info_2_dummy_en_2_qs;
-        reg_rdata_next[19:16] = cmd_info_2_payload_en_2_qs;
-        reg_rdata_next[20] = cmd_info_2_payload_dir_2_qs;
-        reg_rdata_next[21] = cmd_info_2_payload_swap_en_2_qs;
-        reg_rdata_next[23:22] = cmd_info_2_read_pipeline_mode_2_qs;
-        reg_rdata_next[24] = cmd_info_2_upload_2_qs;
-        reg_rdata_next[25] = cmd_info_2_busy_2_qs;
-        reg_rdata_next[31] = cmd_info_2_valid_2_qs;
+        reg_rdata_next[7:0] = cmd_info_2_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_2_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_2_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_2_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_2_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_2_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_2_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_2_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_2_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_2_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_2_upload_qs;
+        reg_rdata_next[25] = cmd_info_2_busy_qs;
+        reg_rdata_next[31] = cmd_info_2_valid_qs;
       end
 
       racl_addr_hit_read[34]: begin
-        reg_rdata_next[7:0] = cmd_info_3_opcode_3_qs;
-        reg_rdata_next[9:8] = cmd_info_3_addr_mode_3_qs;
-        reg_rdata_next[10] = cmd_info_3_addr_swap_en_3_qs;
-        reg_rdata_next[11] = cmd_info_3_mbyte_en_3_qs;
-        reg_rdata_next[14:12] = cmd_info_3_dummy_size_3_qs;
-        reg_rdata_next[15] = cmd_info_3_dummy_en_3_qs;
-        reg_rdata_next[19:16] = cmd_info_3_payload_en_3_qs;
-        reg_rdata_next[20] = cmd_info_3_payload_dir_3_qs;
-        reg_rdata_next[21] = cmd_info_3_payload_swap_en_3_qs;
-        reg_rdata_next[23:22] = cmd_info_3_read_pipeline_mode_3_qs;
-        reg_rdata_next[24] = cmd_info_3_upload_3_qs;
-        reg_rdata_next[25] = cmd_info_3_busy_3_qs;
-        reg_rdata_next[31] = cmd_info_3_valid_3_qs;
+        reg_rdata_next[7:0] = cmd_info_3_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_3_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_3_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_3_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_3_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_3_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_3_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_3_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_3_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_3_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_3_upload_qs;
+        reg_rdata_next[25] = cmd_info_3_busy_qs;
+        reg_rdata_next[31] = cmd_info_3_valid_qs;
       end
 
       racl_addr_hit_read[35]: begin
-        reg_rdata_next[7:0] = cmd_info_4_opcode_4_qs;
-        reg_rdata_next[9:8] = cmd_info_4_addr_mode_4_qs;
-        reg_rdata_next[10] = cmd_info_4_addr_swap_en_4_qs;
-        reg_rdata_next[11] = cmd_info_4_mbyte_en_4_qs;
-        reg_rdata_next[14:12] = cmd_info_4_dummy_size_4_qs;
-        reg_rdata_next[15] = cmd_info_4_dummy_en_4_qs;
-        reg_rdata_next[19:16] = cmd_info_4_payload_en_4_qs;
-        reg_rdata_next[20] = cmd_info_4_payload_dir_4_qs;
-        reg_rdata_next[21] = cmd_info_4_payload_swap_en_4_qs;
-        reg_rdata_next[23:22] = cmd_info_4_read_pipeline_mode_4_qs;
-        reg_rdata_next[24] = cmd_info_4_upload_4_qs;
-        reg_rdata_next[25] = cmd_info_4_busy_4_qs;
-        reg_rdata_next[31] = cmd_info_4_valid_4_qs;
+        reg_rdata_next[7:0] = cmd_info_4_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_4_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_4_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_4_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_4_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_4_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_4_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_4_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_4_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_4_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_4_upload_qs;
+        reg_rdata_next[25] = cmd_info_4_busy_qs;
+        reg_rdata_next[31] = cmd_info_4_valid_qs;
       end
 
       racl_addr_hit_read[36]: begin
-        reg_rdata_next[7:0] = cmd_info_5_opcode_5_qs;
-        reg_rdata_next[9:8] = cmd_info_5_addr_mode_5_qs;
-        reg_rdata_next[10] = cmd_info_5_addr_swap_en_5_qs;
-        reg_rdata_next[11] = cmd_info_5_mbyte_en_5_qs;
-        reg_rdata_next[14:12] = cmd_info_5_dummy_size_5_qs;
-        reg_rdata_next[15] = cmd_info_5_dummy_en_5_qs;
-        reg_rdata_next[19:16] = cmd_info_5_payload_en_5_qs;
-        reg_rdata_next[20] = cmd_info_5_payload_dir_5_qs;
-        reg_rdata_next[21] = cmd_info_5_payload_swap_en_5_qs;
-        reg_rdata_next[23:22] = cmd_info_5_read_pipeline_mode_5_qs;
-        reg_rdata_next[24] = cmd_info_5_upload_5_qs;
-        reg_rdata_next[25] = cmd_info_5_busy_5_qs;
-        reg_rdata_next[31] = cmd_info_5_valid_5_qs;
+        reg_rdata_next[7:0] = cmd_info_5_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_5_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_5_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_5_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_5_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_5_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_5_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_5_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_5_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_5_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_5_upload_qs;
+        reg_rdata_next[25] = cmd_info_5_busy_qs;
+        reg_rdata_next[31] = cmd_info_5_valid_qs;
       end
 
       racl_addr_hit_read[37]: begin
-        reg_rdata_next[7:0] = cmd_info_6_opcode_6_qs;
-        reg_rdata_next[9:8] = cmd_info_6_addr_mode_6_qs;
-        reg_rdata_next[10] = cmd_info_6_addr_swap_en_6_qs;
-        reg_rdata_next[11] = cmd_info_6_mbyte_en_6_qs;
-        reg_rdata_next[14:12] = cmd_info_6_dummy_size_6_qs;
-        reg_rdata_next[15] = cmd_info_6_dummy_en_6_qs;
-        reg_rdata_next[19:16] = cmd_info_6_payload_en_6_qs;
-        reg_rdata_next[20] = cmd_info_6_payload_dir_6_qs;
-        reg_rdata_next[21] = cmd_info_6_payload_swap_en_6_qs;
-        reg_rdata_next[23:22] = cmd_info_6_read_pipeline_mode_6_qs;
-        reg_rdata_next[24] = cmd_info_6_upload_6_qs;
-        reg_rdata_next[25] = cmd_info_6_busy_6_qs;
-        reg_rdata_next[31] = cmd_info_6_valid_6_qs;
+        reg_rdata_next[7:0] = cmd_info_6_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_6_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_6_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_6_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_6_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_6_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_6_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_6_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_6_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_6_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_6_upload_qs;
+        reg_rdata_next[25] = cmd_info_6_busy_qs;
+        reg_rdata_next[31] = cmd_info_6_valid_qs;
       end
 
       racl_addr_hit_read[38]: begin
-        reg_rdata_next[7:0] = cmd_info_7_opcode_7_qs;
-        reg_rdata_next[9:8] = cmd_info_7_addr_mode_7_qs;
-        reg_rdata_next[10] = cmd_info_7_addr_swap_en_7_qs;
-        reg_rdata_next[11] = cmd_info_7_mbyte_en_7_qs;
-        reg_rdata_next[14:12] = cmd_info_7_dummy_size_7_qs;
-        reg_rdata_next[15] = cmd_info_7_dummy_en_7_qs;
-        reg_rdata_next[19:16] = cmd_info_7_payload_en_7_qs;
-        reg_rdata_next[20] = cmd_info_7_payload_dir_7_qs;
-        reg_rdata_next[21] = cmd_info_7_payload_swap_en_7_qs;
-        reg_rdata_next[23:22] = cmd_info_7_read_pipeline_mode_7_qs;
-        reg_rdata_next[24] = cmd_info_7_upload_7_qs;
-        reg_rdata_next[25] = cmd_info_7_busy_7_qs;
-        reg_rdata_next[31] = cmd_info_7_valid_7_qs;
+        reg_rdata_next[7:0] = cmd_info_7_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_7_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_7_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_7_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_7_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_7_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_7_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_7_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_7_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_7_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_7_upload_qs;
+        reg_rdata_next[25] = cmd_info_7_busy_qs;
+        reg_rdata_next[31] = cmd_info_7_valid_qs;
       end
 
       racl_addr_hit_read[39]: begin
-        reg_rdata_next[7:0] = cmd_info_8_opcode_8_qs;
-        reg_rdata_next[9:8] = cmd_info_8_addr_mode_8_qs;
-        reg_rdata_next[10] = cmd_info_8_addr_swap_en_8_qs;
-        reg_rdata_next[11] = cmd_info_8_mbyte_en_8_qs;
-        reg_rdata_next[14:12] = cmd_info_8_dummy_size_8_qs;
-        reg_rdata_next[15] = cmd_info_8_dummy_en_8_qs;
-        reg_rdata_next[19:16] = cmd_info_8_payload_en_8_qs;
-        reg_rdata_next[20] = cmd_info_8_payload_dir_8_qs;
-        reg_rdata_next[21] = cmd_info_8_payload_swap_en_8_qs;
-        reg_rdata_next[23:22] = cmd_info_8_read_pipeline_mode_8_qs;
-        reg_rdata_next[24] = cmd_info_8_upload_8_qs;
-        reg_rdata_next[25] = cmd_info_8_busy_8_qs;
-        reg_rdata_next[31] = cmd_info_8_valid_8_qs;
+        reg_rdata_next[7:0] = cmd_info_8_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_8_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_8_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_8_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_8_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_8_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_8_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_8_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_8_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_8_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_8_upload_qs;
+        reg_rdata_next[25] = cmd_info_8_busy_qs;
+        reg_rdata_next[31] = cmd_info_8_valid_qs;
       end
 
       racl_addr_hit_read[40]: begin
-        reg_rdata_next[7:0] = cmd_info_9_opcode_9_qs;
-        reg_rdata_next[9:8] = cmd_info_9_addr_mode_9_qs;
-        reg_rdata_next[10] = cmd_info_9_addr_swap_en_9_qs;
-        reg_rdata_next[11] = cmd_info_9_mbyte_en_9_qs;
-        reg_rdata_next[14:12] = cmd_info_9_dummy_size_9_qs;
-        reg_rdata_next[15] = cmd_info_9_dummy_en_9_qs;
-        reg_rdata_next[19:16] = cmd_info_9_payload_en_9_qs;
-        reg_rdata_next[20] = cmd_info_9_payload_dir_9_qs;
-        reg_rdata_next[21] = cmd_info_9_payload_swap_en_9_qs;
-        reg_rdata_next[23:22] = cmd_info_9_read_pipeline_mode_9_qs;
-        reg_rdata_next[24] = cmd_info_9_upload_9_qs;
-        reg_rdata_next[25] = cmd_info_9_busy_9_qs;
-        reg_rdata_next[31] = cmd_info_9_valid_9_qs;
+        reg_rdata_next[7:0] = cmd_info_9_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_9_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_9_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_9_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_9_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_9_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_9_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_9_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_9_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_9_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_9_upload_qs;
+        reg_rdata_next[25] = cmd_info_9_busy_qs;
+        reg_rdata_next[31] = cmd_info_9_valid_qs;
       end
 
       racl_addr_hit_read[41]: begin
-        reg_rdata_next[7:0] = cmd_info_10_opcode_10_qs;
-        reg_rdata_next[9:8] = cmd_info_10_addr_mode_10_qs;
-        reg_rdata_next[10] = cmd_info_10_addr_swap_en_10_qs;
-        reg_rdata_next[11] = cmd_info_10_mbyte_en_10_qs;
-        reg_rdata_next[14:12] = cmd_info_10_dummy_size_10_qs;
-        reg_rdata_next[15] = cmd_info_10_dummy_en_10_qs;
-        reg_rdata_next[19:16] = cmd_info_10_payload_en_10_qs;
-        reg_rdata_next[20] = cmd_info_10_payload_dir_10_qs;
-        reg_rdata_next[21] = cmd_info_10_payload_swap_en_10_qs;
-        reg_rdata_next[23:22] = cmd_info_10_read_pipeline_mode_10_qs;
-        reg_rdata_next[24] = cmd_info_10_upload_10_qs;
-        reg_rdata_next[25] = cmd_info_10_busy_10_qs;
-        reg_rdata_next[31] = cmd_info_10_valid_10_qs;
+        reg_rdata_next[7:0] = cmd_info_10_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_10_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_10_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_10_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_10_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_10_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_10_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_10_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_10_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_10_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_10_upload_qs;
+        reg_rdata_next[25] = cmd_info_10_busy_qs;
+        reg_rdata_next[31] = cmd_info_10_valid_qs;
       end
 
       racl_addr_hit_read[42]: begin
-        reg_rdata_next[7:0] = cmd_info_11_opcode_11_qs;
-        reg_rdata_next[9:8] = cmd_info_11_addr_mode_11_qs;
-        reg_rdata_next[10] = cmd_info_11_addr_swap_en_11_qs;
-        reg_rdata_next[11] = cmd_info_11_mbyte_en_11_qs;
-        reg_rdata_next[14:12] = cmd_info_11_dummy_size_11_qs;
-        reg_rdata_next[15] = cmd_info_11_dummy_en_11_qs;
-        reg_rdata_next[19:16] = cmd_info_11_payload_en_11_qs;
-        reg_rdata_next[20] = cmd_info_11_payload_dir_11_qs;
-        reg_rdata_next[21] = cmd_info_11_payload_swap_en_11_qs;
-        reg_rdata_next[23:22] = cmd_info_11_read_pipeline_mode_11_qs;
-        reg_rdata_next[24] = cmd_info_11_upload_11_qs;
-        reg_rdata_next[25] = cmd_info_11_busy_11_qs;
-        reg_rdata_next[31] = cmd_info_11_valid_11_qs;
+        reg_rdata_next[7:0] = cmd_info_11_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_11_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_11_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_11_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_11_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_11_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_11_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_11_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_11_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_11_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_11_upload_qs;
+        reg_rdata_next[25] = cmd_info_11_busy_qs;
+        reg_rdata_next[31] = cmd_info_11_valid_qs;
       end
 
       racl_addr_hit_read[43]: begin
-        reg_rdata_next[7:0] = cmd_info_12_opcode_12_qs;
-        reg_rdata_next[9:8] = cmd_info_12_addr_mode_12_qs;
-        reg_rdata_next[10] = cmd_info_12_addr_swap_en_12_qs;
-        reg_rdata_next[11] = cmd_info_12_mbyte_en_12_qs;
-        reg_rdata_next[14:12] = cmd_info_12_dummy_size_12_qs;
-        reg_rdata_next[15] = cmd_info_12_dummy_en_12_qs;
-        reg_rdata_next[19:16] = cmd_info_12_payload_en_12_qs;
-        reg_rdata_next[20] = cmd_info_12_payload_dir_12_qs;
-        reg_rdata_next[21] = cmd_info_12_payload_swap_en_12_qs;
-        reg_rdata_next[23:22] = cmd_info_12_read_pipeline_mode_12_qs;
-        reg_rdata_next[24] = cmd_info_12_upload_12_qs;
-        reg_rdata_next[25] = cmd_info_12_busy_12_qs;
-        reg_rdata_next[31] = cmd_info_12_valid_12_qs;
+        reg_rdata_next[7:0] = cmd_info_12_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_12_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_12_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_12_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_12_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_12_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_12_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_12_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_12_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_12_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_12_upload_qs;
+        reg_rdata_next[25] = cmd_info_12_busy_qs;
+        reg_rdata_next[31] = cmd_info_12_valid_qs;
       end
 
       racl_addr_hit_read[44]: begin
-        reg_rdata_next[7:0] = cmd_info_13_opcode_13_qs;
-        reg_rdata_next[9:8] = cmd_info_13_addr_mode_13_qs;
-        reg_rdata_next[10] = cmd_info_13_addr_swap_en_13_qs;
-        reg_rdata_next[11] = cmd_info_13_mbyte_en_13_qs;
-        reg_rdata_next[14:12] = cmd_info_13_dummy_size_13_qs;
-        reg_rdata_next[15] = cmd_info_13_dummy_en_13_qs;
-        reg_rdata_next[19:16] = cmd_info_13_payload_en_13_qs;
-        reg_rdata_next[20] = cmd_info_13_payload_dir_13_qs;
-        reg_rdata_next[21] = cmd_info_13_payload_swap_en_13_qs;
-        reg_rdata_next[23:22] = cmd_info_13_read_pipeline_mode_13_qs;
-        reg_rdata_next[24] = cmd_info_13_upload_13_qs;
-        reg_rdata_next[25] = cmd_info_13_busy_13_qs;
-        reg_rdata_next[31] = cmd_info_13_valid_13_qs;
+        reg_rdata_next[7:0] = cmd_info_13_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_13_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_13_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_13_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_13_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_13_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_13_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_13_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_13_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_13_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_13_upload_qs;
+        reg_rdata_next[25] = cmd_info_13_busy_qs;
+        reg_rdata_next[31] = cmd_info_13_valid_qs;
       end
 
       racl_addr_hit_read[45]: begin
-        reg_rdata_next[7:0] = cmd_info_14_opcode_14_qs;
-        reg_rdata_next[9:8] = cmd_info_14_addr_mode_14_qs;
-        reg_rdata_next[10] = cmd_info_14_addr_swap_en_14_qs;
-        reg_rdata_next[11] = cmd_info_14_mbyte_en_14_qs;
-        reg_rdata_next[14:12] = cmd_info_14_dummy_size_14_qs;
-        reg_rdata_next[15] = cmd_info_14_dummy_en_14_qs;
-        reg_rdata_next[19:16] = cmd_info_14_payload_en_14_qs;
-        reg_rdata_next[20] = cmd_info_14_payload_dir_14_qs;
-        reg_rdata_next[21] = cmd_info_14_payload_swap_en_14_qs;
-        reg_rdata_next[23:22] = cmd_info_14_read_pipeline_mode_14_qs;
-        reg_rdata_next[24] = cmd_info_14_upload_14_qs;
-        reg_rdata_next[25] = cmd_info_14_busy_14_qs;
-        reg_rdata_next[31] = cmd_info_14_valid_14_qs;
+        reg_rdata_next[7:0] = cmd_info_14_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_14_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_14_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_14_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_14_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_14_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_14_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_14_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_14_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_14_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_14_upload_qs;
+        reg_rdata_next[25] = cmd_info_14_busy_qs;
+        reg_rdata_next[31] = cmd_info_14_valid_qs;
       end
 
       racl_addr_hit_read[46]: begin
-        reg_rdata_next[7:0] = cmd_info_15_opcode_15_qs;
-        reg_rdata_next[9:8] = cmd_info_15_addr_mode_15_qs;
-        reg_rdata_next[10] = cmd_info_15_addr_swap_en_15_qs;
-        reg_rdata_next[11] = cmd_info_15_mbyte_en_15_qs;
-        reg_rdata_next[14:12] = cmd_info_15_dummy_size_15_qs;
-        reg_rdata_next[15] = cmd_info_15_dummy_en_15_qs;
-        reg_rdata_next[19:16] = cmd_info_15_payload_en_15_qs;
-        reg_rdata_next[20] = cmd_info_15_payload_dir_15_qs;
-        reg_rdata_next[21] = cmd_info_15_payload_swap_en_15_qs;
-        reg_rdata_next[23:22] = cmd_info_15_read_pipeline_mode_15_qs;
-        reg_rdata_next[24] = cmd_info_15_upload_15_qs;
-        reg_rdata_next[25] = cmd_info_15_busy_15_qs;
-        reg_rdata_next[31] = cmd_info_15_valid_15_qs;
+        reg_rdata_next[7:0] = cmd_info_15_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_15_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_15_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_15_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_15_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_15_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_15_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_15_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_15_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_15_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_15_upload_qs;
+        reg_rdata_next[25] = cmd_info_15_busy_qs;
+        reg_rdata_next[31] = cmd_info_15_valid_qs;
       end
 
       racl_addr_hit_read[47]: begin
-        reg_rdata_next[7:0] = cmd_info_16_opcode_16_qs;
-        reg_rdata_next[9:8] = cmd_info_16_addr_mode_16_qs;
-        reg_rdata_next[10] = cmd_info_16_addr_swap_en_16_qs;
-        reg_rdata_next[11] = cmd_info_16_mbyte_en_16_qs;
-        reg_rdata_next[14:12] = cmd_info_16_dummy_size_16_qs;
-        reg_rdata_next[15] = cmd_info_16_dummy_en_16_qs;
-        reg_rdata_next[19:16] = cmd_info_16_payload_en_16_qs;
-        reg_rdata_next[20] = cmd_info_16_payload_dir_16_qs;
-        reg_rdata_next[21] = cmd_info_16_payload_swap_en_16_qs;
-        reg_rdata_next[23:22] = cmd_info_16_read_pipeline_mode_16_qs;
-        reg_rdata_next[24] = cmd_info_16_upload_16_qs;
-        reg_rdata_next[25] = cmd_info_16_busy_16_qs;
-        reg_rdata_next[31] = cmd_info_16_valid_16_qs;
+        reg_rdata_next[7:0] = cmd_info_16_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_16_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_16_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_16_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_16_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_16_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_16_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_16_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_16_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_16_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_16_upload_qs;
+        reg_rdata_next[25] = cmd_info_16_busy_qs;
+        reg_rdata_next[31] = cmd_info_16_valid_qs;
       end
 
       racl_addr_hit_read[48]: begin
-        reg_rdata_next[7:0] = cmd_info_17_opcode_17_qs;
-        reg_rdata_next[9:8] = cmd_info_17_addr_mode_17_qs;
-        reg_rdata_next[10] = cmd_info_17_addr_swap_en_17_qs;
-        reg_rdata_next[11] = cmd_info_17_mbyte_en_17_qs;
-        reg_rdata_next[14:12] = cmd_info_17_dummy_size_17_qs;
-        reg_rdata_next[15] = cmd_info_17_dummy_en_17_qs;
-        reg_rdata_next[19:16] = cmd_info_17_payload_en_17_qs;
-        reg_rdata_next[20] = cmd_info_17_payload_dir_17_qs;
-        reg_rdata_next[21] = cmd_info_17_payload_swap_en_17_qs;
-        reg_rdata_next[23:22] = cmd_info_17_read_pipeline_mode_17_qs;
-        reg_rdata_next[24] = cmd_info_17_upload_17_qs;
-        reg_rdata_next[25] = cmd_info_17_busy_17_qs;
-        reg_rdata_next[31] = cmd_info_17_valid_17_qs;
+        reg_rdata_next[7:0] = cmd_info_17_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_17_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_17_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_17_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_17_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_17_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_17_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_17_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_17_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_17_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_17_upload_qs;
+        reg_rdata_next[25] = cmd_info_17_busy_qs;
+        reg_rdata_next[31] = cmd_info_17_valid_qs;
       end
 
       racl_addr_hit_read[49]: begin
-        reg_rdata_next[7:0] = cmd_info_18_opcode_18_qs;
-        reg_rdata_next[9:8] = cmd_info_18_addr_mode_18_qs;
-        reg_rdata_next[10] = cmd_info_18_addr_swap_en_18_qs;
-        reg_rdata_next[11] = cmd_info_18_mbyte_en_18_qs;
-        reg_rdata_next[14:12] = cmd_info_18_dummy_size_18_qs;
-        reg_rdata_next[15] = cmd_info_18_dummy_en_18_qs;
-        reg_rdata_next[19:16] = cmd_info_18_payload_en_18_qs;
-        reg_rdata_next[20] = cmd_info_18_payload_dir_18_qs;
-        reg_rdata_next[21] = cmd_info_18_payload_swap_en_18_qs;
-        reg_rdata_next[23:22] = cmd_info_18_read_pipeline_mode_18_qs;
-        reg_rdata_next[24] = cmd_info_18_upload_18_qs;
-        reg_rdata_next[25] = cmd_info_18_busy_18_qs;
-        reg_rdata_next[31] = cmd_info_18_valid_18_qs;
+        reg_rdata_next[7:0] = cmd_info_18_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_18_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_18_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_18_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_18_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_18_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_18_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_18_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_18_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_18_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_18_upload_qs;
+        reg_rdata_next[25] = cmd_info_18_busy_qs;
+        reg_rdata_next[31] = cmd_info_18_valid_qs;
       end
 
       racl_addr_hit_read[50]: begin
-        reg_rdata_next[7:0] = cmd_info_19_opcode_19_qs;
-        reg_rdata_next[9:8] = cmd_info_19_addr_mode_19_qs;
-        reg_rdata_next[10] = cmd_info_19_addr_swap_en_19_qs;
-        reg_rdata_next[11] = cmd_info_19_mbyte_en_19_qs;
-        reg_rdata_next[14:12] = cmd_info_19_dummy_size_19_qs;
-        reg_rdata_next[15] = cmd_info_19_dummy_en_19_qs;
-        reg_rdata_next[19:16] = cmd_info_19_payload_en_19_qs;
-        reg_rdata_next[20] = cmd_info_19_payload_dir_19_qs;
-        reg_rdata_next[21] = cmd_info_19_payload_swap_en_19_qs;
-        reg_rdata_next[23:22] = cmd_info_19_read_pipeline_mode_19_qs;
-        reg_rdata_next[24] = cmd_info_19_upload_19_qs;
-        reg_rdata_next[25] = cmd_info_19_busy_19_qs;
-        reg_rdata_next[31] = cmd_info_19_valid_19_qs;
+        reg_rdata_next[7:0] = cmd_info_19_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_19_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_19_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_19_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_19_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_19_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_19_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_19_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_19_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_19_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_19_upload_qs;
+        reg_rdata_next[25] = cmd_info_19_busy_qs;
+        reg_rdata_next[31] = cmd_info_19_valid_qs;
       end
 
       racl_addr_hit_read[51]: begin
-        reg_rdata_next[7:0] = cmd_info_20_opcode_20_qs;
-        reg_rdata_next[9:8] = cmd_info_20_addr_mode_20_qs;
-        reg_rdata_next[10] = cmd_info_20_addr_swap_en_20_qs;
-        reg_rdata_next[11] = cmd_info_20_mbyte_en_20_qs;
-        reg_rdata_next[14:12] = cmd_info_20_dummy_size_20_qs;
-        reg_rdata_next[15] = cmd_info_20_dummy_en_20_qs;
-        reg_rdata_next[19:16] = cmd_info_20_payload_en_20_qs;
-        reg_rdata_next[20] = cmd_info_20_payload_dir_20_qs;
-        reg_rdata_next[21] = cmd_info_20_payload_swap_en_20_qs;
-        reg_rdata_next[23:22] = cmd_info_20_read_pipeline_mode_20_qs;
-        reg_rdata_next[24] = cmd_info_20_upload_20_qs;
-        reg_rdata_next[25] = cmd_info_20_busy_20_qs;
-        reg_rdata_next[31] = cmd_info_20_valid_20_qs;
+        reg_rdata_next[7:0] = cmd_info_20_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_20_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_20_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_20_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_20_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_20_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_20_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_20_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_20_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_20_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_20_upload_qs;
+        reg_rdata_next[25] = cmd_info_20_busy_qs;
+        reg_rdata_next[31] = cmd_info_20_valid_qs;
       end
 
       racl_addr_hit_read[52]: begin
-        reg_rdata_next[7:0] = cmd_info_21_opcode_21_qs;
-        reg_rdata_next[9:8] = cmd_info_21_addr_mode_21_qs;
-        reg_rdata_next[10] = cmd_info_21_addr_swap_en_21_qs;
-        reg_rdata_next[11] = cmd_info_21_mbyte_en_21_qs;
-        reg_rdata_next[14:12] = cmd_info_21_dummy_size_21_qs;
-        reg_rdata_next[15] = cmd_info_21_dummy_en_21_qs;
-        reg_rdata_next[19:16] = cmd_info_21_payload_en_21_qs;
-        reg_rdata_next[20] = cmd_info_21_payload_dir_21_qs;
-        reg_rdata_next[21] = cmd_info_21_payload_swap_en_21_qs;
-        reg_rdata_next[23:22] = cmd_info_21_read_pipeline_mode_21_qs;
-        reg_rdata_next[24] = cmd_info_21_upload_21_qs;
-        reg_rdata_next[25] = cmd_info_21_busy_21_qs;
-        reg_rdata_next[31] = cmd_info_21_valid_21_qs;
+        reg_rdata_next[7:0] = cmd_info_21_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_21_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_21_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_21_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_21_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_21_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_21_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_21_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_21_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_21_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_21_upload_qs;
+        reg_rdata_next[25] = cmd_info_21_busy_qs;
+        reg_rdata_next[31] = cmd_info_21_valid_qs;
       end
 
       racl_addr_hit_read[53]: begin
-        reg_rdata_next[7:0] = cmd_info_22_opcode_22_qs;
-        reg_rdata_next[9:8] = cmd_info_22_addr_mode_22_qs;
-        reg_rdata_next[10] = cmd_info_22_addr_swap_en_22_qs;
-        reg_rdata_next[11] = cmd_info_22_mbyte_en_22_qs;
-        reg_rdata_next[14:12] = cmd_info_22_dummy_size_22_qs;
-        reg_rdata_next[15] = cmd_info_22_dummy_en_22_qs;
-        reg_rdata_next[19:16] = cmd_info_22_payload_en_22_qs;
-        reg_rdata_next[20] = cmd_info_22_payload_dir_22_qs;
-        reg_rdata_next[21] = cmd_info_22_payload_swap_en_22_qs;
-        reg_rdata_next[23:22] = cmd_info_22_read_pipeline_mode_22_qs;
-        reg_rdata_next[24] = cmd_info_22_upload_22_qs;
-        reg_rdata_next[25] = cmd_info_22_busy_22_qs;
-        reg_rdata_next[31] = cmd_info_22_valid_22_qs;
+        reg_rdata_next[7:0] = cmd_info_22_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_22_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_22_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_22_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_22_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_22_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_22_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_22_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_22_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_22_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_22_upload_qs;
+        reg_rdata_next[25] = cmd_info_22_busy_qs;
+        reg_rdata_next[31] = cmd_info_22_valid_qs;
       end
 
       racl_addr_hit_read[54]: begin
-        reg_rdata_next[7:0] = cmd_info_23_opcode_23_qs;
-        reg_rdata_next[9:8] = cmd_info_23_addr_mode_23_qs;
-        reg_rdata_next[10] = cmd_info_23_addr_swap_en_23_qs;
-        reg_rdata_next[11] = cmd_info_23_mbyte_en_23_qs;
-        reg_rdata_next[14:12] = cmd_info_23_dummy_size_23_qs;
-        reg_rdata_next[15] = cmd_info_23_dummy_en_23_qs;
-        reg_rdata_next[19:16] = cmd_info_23_payload_en_23_qs;
-        reg_rdata_next[20] = cmd_info_23_payload_dir_23_qs;
-        reg_rdata_next[21] = cmd_info_23_payload_swap_en_23_qs;
-        reg_rdata_next[23:22] = cmd_info_23_read_pipeline_mode_23_qs;
-        reg_rdata_next[24] = cmd_info_23_upload_23_qs;
-        reg_rdata_next[25] = cmd_info_23_busy_23_qs;
-        reg_rdata_next[31] = cmd_info_23_valid_23_qs;
+        reg_rdata_next[7:0] = cmd_info_23_opcode_qs;
+        reg_rdata_next[9:8] = cmd_info_23_addr_mode_qs;
+        reg_rdata_next[10] = cmd_info_23_addr_swap_en_qs;
+        reg_rdata_next[11] = cmd_info_23_mbyte_en_qs;
+        reg_rdata_next[14:12] = cmd_info_23_dummy_size_qs;
+        reg_rdata_next[15] = cmd_info_23_dummy_en_qs;
+        reg_rdata_next[19:16] = cmd_info_23_payload_en_qs;
+        reg_rdata_next[20] = cmd_info_23_payload_dir_qs;
+        reg_rdata_next[21] = cmd_info_23_payload_swap_en_qs;
+        reg_rdata_next[23:22] = cmd_info_23_read_pipeline_mode_qs;
+        reg_rdata_next[24] = cmd_info_23_upload_qs;
+        reg_rdata_next[25] = cmd_info_23_busy_qs;
+        reg_rdata_next[31] = cmd_info_23_valid_qs;
       end
 
       racl_addr_hit_read[55]: begin

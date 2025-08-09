@@ -505,14 +505,14 @@ void flash_ctrl_info_perms_set(const flash_ctrl_info_page_t *info_page,
   // Read first to preserve ECC, scrambling, and high endurance bits.
   uint32_t reg =
       sec_mmio_read32(flash_ctrl_core_base() + info_page->cfg_offset);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_FIELD,
+                               kMultiBitBool4True);
   reg = bitfield_field32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0_FIELD, kMultiBitBool4True);
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_RD_EN_FIELD, perms.read);
   reg = bitfield_field32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_RD_EN_0_FIELD, perms.read);
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_PROG_EN_FIELD, perms.write);
   reg = bitfield_field32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_PROG_EN_0_FIELD, perms.write);
-  reg = bitfield_field32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ERASE_EN_0_FIELD, perms.erase);
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ERASE_EN_FIELD, perms.erase);
   sec_mmio_write32(flash_ctrl_core_base() + info_page->cfg_offset, reg);
 }
 
@@ -562,25 +562,23 @@ flash_ctrl_cfg_t flash_ctrl_data_default_cfg_get(void) {
 static void flash_ctrl_mp_region_write(flash_ctrl_region_index_t region,
                                        uint32_t page_offset,
                                        uint32_t num_pages) {
-#define FLASH_CTRL_MP_REGION_WRITE_(region_macro_arg)                              \
-  case ((region_macro_arg)): {                                                     \
-    HARDENED_CHECK_EQ(region, (region_macro_arg));                                 \
-    uint32_t mp_region = FLASH_CTRL_MP_REGION_##region_macro_arg##_REG_RESVAL;     \
-    /* Write the region's base address into the bitfield. */                       \
-    mp_region = bitfield_field32_write(                                            \
-        mp_region,                                                                 \
-        FLASH_CTRL_MP_REGION_##region_macro_arg##_BASE_##region_macro_arg##_FIELD, \
-        page_offset);                                                              \
-    /* Write the region's size in pages into the bitfield. */                      \
-    mp_region = bitfield_field32_write(                                            \
-        mp_region,                                                                 \
-        FLASH_CTRL_MP_REGION_##region_macro_arg##_SIZE_##region_macro_arg##_FIELD, \
-        num_pages);                                                                \
-    /* Write the bitfield to the MP_REGION_${region} register. */                  \
-    sec_mmio_write32(flash_ctrl_core_base() +                                      \
-                         FLASH_CTRL_MP_REGION_##region_macro_arg##_REG_OFFSET,     \
-                     mp_region);                                                   \
-    return;                                                                        \
+#define FLASH_CTRL_MP_REGION_WRITE_(region_macro_arg)                          \
+  case ((region_macro_arg)): {                                                 \
+    HARDENED_CHECK_EQ(region, (region_macro_arg));                             \
+    uint32_t mp_region = FLASH_CTRL_MP_REGION_##region_macro_arg##_REG_RESVAL; \
+    /* Write the region's base address into the bitfield. */                   \
+    mp_region = bitfield_field32_write(                                        \
+        mp_region, FLASH_CTRL_MP_REGION_##region_macro_arg##_BASE_FIELD,       \
+        page_offset);                                                          \
+    /* Write the region's size in pages into the bitfield. */                  \
+    mp_region = bitfield_field32_write(                                        \
+        mp_region, FLASH_CTRL_MP_REGION_##region_macro_arg##_SIZE_FIELD,       \
+        num_pages);                                                            \
+    /* Write the bitfield to the MP_REGION_${region} register. */              \
+    sec_mmio_write32(flash_ctrl_core_base() +                                  \
+                         FLASH_CTRL_MP_REGION_##region_macro_arg##_REG_OFFSET, \
+                     mp_region);                                               \
+    return;                                                                    \
   }
 
   switch (launder32(region)) {
@@ -595,21 +593,20 @@ static void flash_ctrl_mp_region_write(flash_ctrl_region_index_t region,
 // Resets the given region's memory protection config by resetting the
 // MP_REGION_CFG_${region} register, which implicitly disables the region.
 static void flash_ctrl_mp_region_cfg_reset(flash_ctrl_region_index_t region) {
-#define FLASH_CTRL_MP_REGION_CFG_RESET_(region_macro_arg)                               \
-  case ((region_macro_arg)): {                                                          \
-    HARDENED_CHECK_EQ(region, (region_macro_arg));                                      \
-    static_assert(                                                                      \
-        (FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_REG_RESVAL &                     \
-         FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_EN_##region_macro_arg##_MASK) == \
-            kMultiBitBool4False,                                                        \
-        "FLASH_CTRL_MP_REGION_CFG_" #region_macro_arg                                   \
-        "'s reset value should disable the region");                                    \
-    /* Reset the MP_REGION_CFG_${region} register. */                                   \
-    sec_mmio_write32(                                                                   \
-        flash_ctrl_core_base() +                                                        \
-            FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_REG_OFFSET,                   \
-        FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_REG_RESVAL);                      \
-    return;                                                                             \
+#define FLASH_CTRL_MP_REGION_CFG_RESET_(region_macro_arg)                     \
+  case ((region_macro_arg)): {                                                \
+    HARDENED_CHECK_EQ(region, (region_macro_arg));                            \
+    static_assert((FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_REG_RESVAL & \
+                   FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_EN_MASK) ==  \
+                      kMultiBitBool4False,                                    \
+                  "FLASH_CTRL_MP_REGION_CFG_" #region_macro_arg               \
+                  "'s reset value should disable the region");                \
+    /* Reset the MP_REGION_CFG_${region} register. */                         \
+    sec_mmio_write32(                                                         \
+        flash_ctrl_core_base() +                                              \
+            FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_REG_OFFSET,         \
+        FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_REG_RESVAL);            \
+    return;                                                                   \
   }
 
   switch (launder32(region)) {
@@ -628,50 +625,47 @@ static void flash_ctrl_mp_region_cfg_write(flash_ctrl_region_index_t region,
                                            flash_ctrl_perms_t perms,
                                            multi_bit_bool_t en,
                                            hardened_bool_t lock) {
-#define FLASH_CTRL_MP_REGION_CFG_WRITE_(region_macro_arg)                                     \
-  case ((region_macro_arg)): {                                                                \
-    HARDENED_CHECK_EQ(region, (region_macro_arg));                                            \
-    uint32_t mp_region_cfg =                                                                  \
-        FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_REG_RESVAL;                             \
-    mp_region_cfg = bitfield_field32_write(                                                   \
-        mp_region_cfg,                                                                        \
-        FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_HE_EN_##region_macro_arg##_FIELD,       \
-        cfg.he);                                                                              \
-    mp_region_cfg = bitfield_field32_write(                                                   \
-        mp_region_cfg,                                                                        \
-        FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_ECC_EN_##region_macro_arg##_FIELD,      \
-        cfg.ecc);                                                                             \
-    mp_region_cfg = bitfield_field32_write(                                                   \
-        mp_region_cfg,                                                                        \
-        FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_SCRAMBLE_EN_##region_macro_arg##_FIELD, \
-        cfg.scrambling);                                                                      \
-    mp_region_cfg = bitfield_field32_write(                                                   \
-        mp_region_cfg,                                                                        \
-        FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_ERASE_EN_##region_macro_arg##_FIELD,    \
-        perms.erase);                                                                         \
-    mp_region_cfg = bitfield_field32_write(                                                   \
-        mp_region_cfg,                                                                        \
-        FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_PROG_EN_##region_macro_arg##_FIELD,     \
-        perms.write);                                                                         \
-    mp_region_cfg = bitfield_field32_write(                                                   \
-        mp_region_cfg,                                                                        \
-        FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_RD_EN_##region_macro_arg##_FIELD,       \
-        perms.read);                                                                          \
-    mp_region_cfg = bitfield_field32_write(                                                   \
-        mp_region_cfg,                                                                        \
-        FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_EN_##region_macro_arg##_FIELD,          \
-        en);                                                                                  \
-    sec_mmio_write32(                                                                         \
-        flash_ctrl_core_base() +                                                              \
-            FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_REG_OFFSET,                         \
-        mp_region_cfg);                                                                       \
-    if (lock != kHardenedBoolFalse) {                                                         \
-      sec_mmio_write32(                                                                       \
-          flash_ctrl_core_base() +                                                            \
-              FLASH_CTRL_REGION_CFG_REGWEN_##region_macro_arg##_REG_OFFSET,                   \
-          0);                                                                                 \
-    }                                                                                         \
-    return;                                                                                   \
+#define FLASH_CTRL_MP_REGION_CFG_WRITE_(region_macro_arg)                      \
+  case ((region_macro_arg)): {                                                 \
+    HARDENED_CHECK_EQ(region, (region_macro_arg));                             \
+    uint32_t mp_region_cfg =                                                   \
+        FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_REG_RESVAL;              \
+    mp_region_cfg = bitfield_field32_write(                                    \
+        mp_region_cfg,                                                         \
+        FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_HE_EN_FIELD, cfg.he);    \
+    mp_region_cfg = bitfield_field32_write(                                    \
+        mp_region_cfg,                                                         \
+        FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_ECC_EN_FIELD, cfg.ecc);  \
+    mp_region_cfg = bitfield_field32_write(                                    \
+        mp_region_cfg,                                                         \
+        FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_SCRAMBLE_EN_FIELD,       \
+        cfg.scrambling);                                                       \
+    mp_region_cfg = bitfield_field32_write(                                    \
+        mp_region_cfg,                                                         \
+        FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_ERASE_EN_FIELD,          \
+        perms.erase);                                                          \
+    mp_region_cfg = bitfield_field32_write(                                    \
+        mp_region_cfg,                                                         \
+        FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_PROG_EN_FIELD,           \
+        perms.write);                                                          \
+    mp_region_cfg = bitfield_field32_write(                                    \
+        mp_region_cfg,                                                         \
+        FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_RD_EN_FIELD,             \
+        perms.read);                                                           \
+    mp_region_cfg = bitfield_field32_write(                                    \
+        mp_region_cfg, FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_EN_FIELD, \
+        en);                                                                   \
+    sec_mmio_write32(                                                          \
+        flash_ctrl_core_base() +                                               \
+            FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_REG_OFFSET,          \
+        mp_region_cfg);                                                        \
+    if (lock != kHardenedBoolFalse) {                                          \
+      sec_mmio_write32(                                                        \
+          flash_ctrl_core_base() +                                             \
+              FLASH_CTRL_REGION_CFG_REGWEN_##region_macro_arg##_REG_OFFSET,    \
+          0);                                                                  \
+    }                                                                          \
+    return;                                                                    \
   }
 
   switch (launder32(region)) {
@@ -707,15 +701,14 @@ void flash_ctrl_info_cfg_set(const flash_ctrl_info_page_t *info_page,
   // Read first to preserve permission bits.
   uint32_t reg =
       sec_mmio_read32(flash_ctrl_core_base() + info_page->cfg_offset);
+  reg = bitfield_field32_write(reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_FIELD,
+                               kMultiBitBool4True);
   reg = bitfield_field32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0_FIELD, kMultiBitBool4True);
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_SCRAMBLE_EN_FIELD, cfg.scrambling);
   reg = bitfield_field32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_SCRAMBLE_EN_0_FIELD,
-      cfg.scrambling);
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ECC_EN_FIELD, cfg.ecc);
   reg = bitfield_field32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ECC_EN_0_FIELD, cfg.ecc);
-  reg = bitfield_field32_write(
-      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_HE_EN_0_FIELD, cfg.he);
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_HE_EN_FIELD, cfg.he);
   sec_mmio_write32(flash_ctrl_core_base() + info_page->cfg_offset, reg);
 }
 

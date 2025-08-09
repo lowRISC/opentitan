@@ -506,11 +506,11 @@ static rom_error_t rom_measure_otp_partitions(
   // which will not be endorsed. Hence we save the cycles of using sec_mmio.
   hmac_sha256_init();
   static_assert(
-      (OTP_CTRL_CREATOR_SW_CFG_DIGEST_CREATOR_SW_CFG_DIGEST_FIELD_WIDTH *
+      (OTP_CTRL_CREATOR_SW_CFG_DIGEST_DATA_FIELD_WIDTH *
        OTP_CTRL_CREATOR_SW_CFG_DIGEST_MULTIREG_COUNT / 8) == sizeof(uint64_t),
       "CreatorSwCfg OTP partition digest no longer 64 bits.");
   static_assert(
-      (OTP_CTRL_OWNER_SW_CFG_DIGEST_OWNER_SW_CFG_DIGEST_FIELD_WIDTH *
+      (OTP_CTRL_OWNER_SW_CFG_DIGEST_DATA_FIELD_WIDTH *
        OTP_CTRL_OWNER_SW_CFG_DIGEST_MULTIREG_COUNT / 8) == sizeof(uint64_t),
       "OwnerSwCfg OTP partition digest no longer 64 bits.");
   hmac_sha256_update(

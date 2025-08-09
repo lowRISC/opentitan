@@ -30,24 +30,21 @@ class OtpTest : public testing::Test, public MmioTest {
 class DaiRegwenTest : public OtpTest {};
 
 TEST_F(DaiRegwenTest, LockDai) {
-  EXPECT_WRITE32(
-      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
-      {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, false}});
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
+                 {{OTP_CTRL_DIRECT_ACCESS_REGWEN_EN_BIT, false}});
   EXPECT_DIF_OK(dif_otp_ctrl_dai_lock(&otp_));
 }
 
 TEST_F(DaiRegwenTest, IsDaiLocked) {
   bool flag;
 
-  EXPECT_READ32(
-      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
-      {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, true}});
+  EXPECT_READ32(OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
+                {{OTP_CTRL_DIRECT_ACCESS_REGWEN_EN_BIT, true}});
   EXPECT_DIF_OK(dif_otp_ctrl_dai_is_locked(&otp_, &flag));
   EXPECT_FALSE(flag);
 
-  EXPECT_READ32(
-      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
-      {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, false}});
+  EXPECT_READ32(OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
+                {{OTP_CTRL_DIRECT_ACCESS_REGWEN_EN_BIT, false}});
   EXPECT_DIF_OK(dif_otp_ctrl_dai_is_locked(&otp_, &flag));
   EXPECT_TRUE(flag);
 }
@@ -70,7 +67,7 @@ TEST_F(ConfigTest, Basic) {
   };
 
   EXPECT_READ32(OTP_CTRL_CHECK_REGWEN_REG_OFFSET,
-                {{OTP_CTRL_CHECK_REGWEN_CHECK_REGWEN_BIT, true}});
+                {{OTP_CTRL_CHECK_REGWEN_EN_BIT, true}});
 
   EXPECT_WRITE32(OTP_CTRL_CHECK_TIMEOUT_REG_OFFSET, config.check_timeout);
   EXPECT_WRITE32(OTP_CTRL_INTEGRITY_CHECK_PERIOD_REG_OFFSET,
@@ -83,7 +80,7 @@ TEST_F(ConfigTest, Basic) {
 
 TEST_F(ConfigTest, Locked) {
   EXPECT_READ32(OTP_CTRL_CHECK_REGWEN_REG_OFFSET,
-                {{OTP_CTRL_CHECK_REGWEN_CHECK_REGWEN_BIT, false}});
+                {{OTP_CTRL_CHECK_REGWEN_EN_BIT, false}});
 
   EXPECT_EQ(dif_otp_ctrl_configure(&otp_, {}), kDifLocked);
 }
@@ -92,19 +89,19 @@ TEST_F(ConfigTest, IsConfigLocked) {
   bool flag;
 
   EXPECT_READ32(OTP_CTRL_CHECK_REGWEN_REG_OFFSET,
-                {{OTP_CTRL_CHECK_REGWEN_CHECK_REGWEN_BIT, true}});
+                {{OTP_CTRL_CHECK_REGWEN_EN_BIT, true}});
   EXPECT_DIF_OK(dif_otp_ctrl_config_is_locked(&otp_, &flag));
   EXPECT_FALSE(flag);
 
   EXPECT_READ32(OTP_CTRL_CHECK_REGWEN_REG_OFFSET,
-                {{OTP_CTRL_CHECK_REGWEN_CHECK_REGWEN_BIT, false}});
+                {{OTP_CTRL_CHECK_REGWEN_EN_BIT, false}});
   EXPECT_DIF_OK(dif_otp_ctrl_config_is_locked(&otp_, &flag));
   EXPECT_TRUE(flag);
 }
 
 TEST_F(ConfigTest, LockConfig) {
   EXPECT_WRITE32(OTP_CTRL_CHECK_REGWEN_REG_OFFSET,
-                 {{OTP_CTRL_CHECK_REGWEN_CHECK_REGWEN_BIT, false}});
+                 {{OTP_CTRL_CHECK_REGWEN_EN_BIT, false}});
   EXPECT_DIF_OK(dif_otp_ctrl_lock_config(&otp_));
 }
 
@@ -121,9 +118,8 @@ TEST_F(ConfigTest, NullArgs) {
 class CheckTest : public OtpTest {};
 
 TEST_F(CheckTest, Integrity) {
-  EXPECT_READ32(
-      OTP_CTRL_CHECK_TRIGGER_REGWEN_REG_OFFSET,
-      {{OTP_CTRL_CHECK_TRIGGER_REGWEN_CHECK_TRIGGER_REGWEN_BIT, true}});
+  EXPECT_READ32(OTP_CTRL_CHECK_TRIGGER_REGWEN_REG_OFFSET,
+                {{OTP_CTRL_CHECK_TRIGGER_REGWEN_EN_BIT, true}});
   EXPECT_WRITE32(OTP_CTRL_CHECK_TRIGGER_REG_OFFSET,
                  {{OTP_CTRL_CHECK_TRIGGER_INTEGRITY_BIT, true}});
 
@@ -131,9 +127,8 @@ TEST_F(CheckTest, Integrity) {
 }
 
 TEST_F(CheckTest, Consistency) {
-  EXPECT_READ32(
-      OTP_CTRL_CHECK_TRIGGER_REGWEN_REG_OFFSET,
-      {{OTP_CTRL_CHECK_TRIGGER_REGWEN_CHECK_TRIGGER_REGWEN_BIT, true}});
+  EXPECT_READ32(OTP_CTRL_CHECK_TRIGGER_REGWEN_REG_OFFSET,
+                {{OTP_CTRL_CHECK_TRIGGER_REGWEN_EN_BIT, true}});
   EXPECT_WRITE32(OTP_CTRL_CHECK_TRIGGER_REG_OFFSET,
                  {{OTP_CTRL_CHECK_TRIGGER_CONSISTENCY_BIT, true}});
 
@@ -141,21 +136,18 @@ TEST_F(CheckTest, Consistency) {
 }
 
 TEST_F(CheckTest, LockTrigger) {
-  EXPECT_WRITE32(
-      OTP_CTRL_CHECK_TRIGGER_REGWEN_REG_OFFSET,
-      {{OTP_CTRL_CHECK_TRIGGER_REGWEN_CHECK_TRIGGER_REGWEN_BIT, false}});
+  EXPECT_WRITE32(OTP_CTRL_CHECK_TRIGGER_REGWEN_REG_OFFSET,
+                 {{OTP_CTRL_CHECK_TRIGGER_REGWEN_EN_BIT, false}});
   EXPECT_DIF_OK(dif_otp_ctrl_lock_check_trigger(&otp_));
 }
 
 TEST_F(CheckTest, Locked) {
-  EXPECT_READ32(
-      OTP_CTRL_CHECK_TRIGGER_REGWEN_REG_OFFSET,
-      {{OTP_CTRL_CHECK_TRIGGER_REGWEN_CHECK_TRIGGER_REGWEN_BIT, false}});
+  EXPECT_READ32(OTP_CTRL_CHECK_TRIGGER_REGWEN_REG_OFFSET,
+                {{OTP_CTRL_CHECK_TRIGGER_REGWEN_EN_BIT, false}});
   EXPECT_EQ(dif_otp_ctrl_check_integrity(&otp_), kDifLocked);
 
-  EXPECT_READ32(
-      OTP_CTRL_CHECK_TRIGGER_REGWEN_REG_OFFSET,
-      {{OTP_CTRL_CHECK_TRIGGER_REGWEN_CHECK_TRIGGER_REGWEN_BIT, false}});
+  EXPECT_READ32(OTP_CTRL_CHECK_TRIGGER_REGWEN_REG_OFFSET,
+                {{OTP_CTRL_CHECK_TRIGGER_REGWEN_EN_BIT, false}});
   EXPECT_EQ(dif_otp_ctrl_check_consistency(&otp_), kDifLocked);
 }
 
