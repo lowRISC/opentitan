@@ -55,9 +55,6 @@ static dif_hmac_t hmac;
 // Interface to Ibex.
 static dif_rv_core_ibex_t rv_core_ibex;
 
-static dif_aes_key_share_t aes_key_shares;
-static dif_aes_data_t aes_plaintext;
-
 /**
  * KMAC test description.
  */
@@ -114,12 +111,6 @@ static const kmac_test_t kKmacTestVector = {
     .digest_len_is_fixed = false,
 };
 
-static const uint8_t kKeyShare1[] = {
-    0x0f, 0x1f, 0x2f, 0x3f, 0x4f, 0x5f, 0x6f, 0x7f, 0x8f, 0x9f, 0xaf,
-    0xbf, 0xcf, 0xdf, 0xef, 0xff, 0x0a, 0x1a, 0x2a, 0x3a, 0x4a, 0x5a,
-    0x6a, 0x7a, 0x8a, 0x9a, 0xaa, 0xba, 0xca, 0xda, 0xea, 0xfa,
-};
-
 static dif_aes_transaction_t transaction = {
     .operation = kDifAesOperationEncrypt,
     .mode = kDifAesModeEcb,
@@ -150,9 +141,35 @@ static inline uint32_t aes_spin_until(uint32_t bit) {
 }
 
 status_t handle_crypto_fi_aes(ujson_t *uj) {
+  // Get the plaintext and key.
+  crypto_fi_aes_input_t uj_input;
+  TRY(ujson_deserialize_crypto_fi_aes_input_t(uj, &uj_input));
   // Get the test mode.
   crypto_fi_aes_mode_t uj_data;
   TRY(ujson_deserialize_crypto_fi_aes_mode_t(uj, &uj_data));
+
+  // Copy in the plaintext and key
+  dif_aes_data_t aes_plaintext;
+  memcpy(aes_plaintext.data, uj_input.plaintext, sizeof(aes_plaintext.data));
+  dif_aes_key_share_t aes_key_shares;
+  // Mask the provided key.
+  for (int i = 0; i < 4; ++i) {
+    aes_key_shares.share1[i] = pentest_non_linear_layer(
+        pentest_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking)));
+    aes_key_shares.share0[i] =
+        *((uint32_t *)uj_input.key + i) ^ aes_key_shares.share1[i];
+  }
+  // Provide random shares for unused key bits.
+  for (size_t i = 4; i < 8; ++i) {
+    aes_key_shares.share1[i] =
+        pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
+    aes_key_shares.share0[i] =
+        pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
+  }
+
+  // Reset the AES
+  TRY(dif_aes_reset(&aes));
+
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -271,18 +288,6 @@ status_t handle_crypto_fi_init(ujson_t *uj) {
 
   // Init the AES block.
   TRY(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
-  TRY(dif_aes_reset(&aes));
-
-  // Mask the AES key.
-  uint8_t key_share0[sizeof(kAesModesKey256)];
-  for (int i = 0; i < sizeof(kAesModesKey256); ++i) {
-    key_share0[i] = kAesModesKey256[i] ^ kKeyShare1[i];
-  }
-  // "Convert" AES key share byte arrays to `dif_aes_key_share_t`.
-  memcpy(aes_key_shares.share0, key_share0, sizeof(aes_key_shares.share0));
-  memcpy(aes_key_shares.share1, kKeyShare1, sizeof(aes_key_shares.share1));
-  // Copy the plaintext into `dif_aes_data_t`.
-  memcpy(aes_plaintext.data, kAesModesPlainText, sizeof(aes_plaintext.data));
 
   // Init the KMAC block.
   TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));

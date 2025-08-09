@@ -18,25 +18,29 @@
     "test_case_id": 2,
     "command": "Aes",
     "mode": "{\"key_trigger\": true,\"plaintext_trigger\": false,\"encrypt_trigger\": false,\"ciphertext_trigger\": false}",
-    "expected_output": ["{\"ciphertext\":[141,145,88,155,234,129,16,92,221,12,69,21,69,208,99,12],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "input": "{\"plaintext\": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], \"key\": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]}",
+    "expected_output": ["{\"ciphertext\":[10,148,11,181,65,110,240,69,241,195,148,88,198,83,234,90],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   },
   {
     "test_case_id": 3,
     "command": "Aes",
     "mode": "{\"key_trigger\": false,\"plaintext_trigger\": true,\"encrypt_trigger\": false,\"ciphertext_trigger\": false}",
-    "expected_output": ["{\"ciphertext\":[141,145,88,155,234,129,16,92,221,12,69,21,69,208,99,12],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "input": "{\"plaintext\": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], \"key\": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]}",
+    "expected_output": ["{\"ciphertext\":[10,148,11,181,65,110,240,69,241,195,148,88,198,83,234,90],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   },
   {
     "test_case_id": 4,
     "command": "Aes",
     "mode": "{\"key_trigger\": false,\"plaintext_trigger\": false,\"encrypt_trigger\": true,\"ciphertext_trigger\": false}",
-    "expected_output": ["{\"ciphertext\":[141,145,88,155,234,129,16,92,221,12,69,21,69,208,99,12],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "input": "{\"plaintext\": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], \"key\": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]}",
+    "expected_output": ["{\"ciphertext\":[10,148,11,181,65,110,240,69,241,195,148,88,198,83,234,90],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   },
   {
     "test_case_id": 5,
     "command": "Aes",
     "mode": "{\"key_trigger\": false,\"plaintext_trigger\": false,\"encrypt_trigger\": false,\"ciphertext_trigger\": true}",
-    "expected_output": ["{\"ciphertext\":[141,145,88,155,234,129,16,92,221,12,69,21,69,208,99,12],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "input": "{\"plaintext\": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], \"key\": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]}",
+    "expected_output": ["{\"ciphertext\":[10,148,11,181,65,110,240,69,241,195,148,88,198,83,234,90],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   },
   {
     "test_case_id": 6,
