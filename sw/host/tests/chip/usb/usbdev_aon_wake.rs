@@ -68,6 +68,7 @@ fn wait_for_device_and_get_parent(opts: &Opts) -> Result<(rusb::Device<rusb::Con
 }
 
 fn usbdev_aon_wake(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -> Result<()> {
+    opts.usb.apply_strappings(transport, true)?;
     // Enable VBUS sense on the board if necessary.
     if opts.usb.vbus_control_available() {
         opts.usb.enable_vbus(transport, true)?;
@@ -94,9 +95,10 @@ fn usbdev_aon_wake(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -
 
     // Next, we suspend the device by directly accessing the parent hub.
     let _ = UartConsole::wait_for(uart, r"configured, waiting for suspend", opts.timeout)?;
-    let hub = UsbHub::from_device(&parent).context("for this test, you need to make sure that the program has sufficient permissions to access the hub")?;
+    let hub = UsbHub::from_device(&parent).context("for this test, you need to make sure that the program has sufficient permissions to access the hub\n
+        See sw/host/tests/chip/usb/README.md for more information")?;
     log::info!("suspend device");
-    hub.op(UsbHubOp::Suspend, port, Duration::from_millis(100))?;
+    hub.op(UsbHubOp::Suspend, port, Duration::from_millis(1000), !opts.usb.relaxed_hub_op)?;
     let _ = UartConsole::wait_for(uart, r"suspended, waiting for", opts.timeout)?;
     log::info!("device has suspended");
 
@@ -104,7 +106,7 @@ fn usbdev_aon_wake(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -
     match opts.wake {
         WakeMethod::Reset => {
             log::info!("reset device");
-            hub.op(UsbHubOp::Reset, port, Duration::from_millis(100))?;
+            hub.op(UsbHubOp::Reset, port, Duration::from_millis(1000), !opts.usb.relaxed_hub_op)?;
             let _ =
                 UartConsole::wait_for(uart, r"reset, take control back from aon", opts.timeout)?;
         }
