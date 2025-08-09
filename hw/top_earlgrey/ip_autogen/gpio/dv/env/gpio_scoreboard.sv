@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
-                                                    .RAL_T (gpio_reg_block),
-                                                    .COV_T (gpio_env_cov));
+                                                                       .RAL_T (gpio_reg_block),
+                                                                       .COV_T (gpio_env_cov));
 
   // predicted value of DATA_OUT rtl implementation register
   bit   [NUM_GPIOS-1:0] data_out;
@@ -151,7 +151,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
             // that caused last interrupt update (As per definition of w1c in comportability
             // specification)
             if (intr_state_write_to_clear_update.eval_time == intr_state_update_queue[$].eval_time)
-                begin
+            begin
               // Re-apply interrupt update
               intr_state_write_to_clear_update.reg_value |= last_intr_update_except_clearing;
               // Delete last entry with same time stamp
@@ -364,12 +364,12 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     end
   endtask : monitor_gpio_interrupt_pins
 
-  virtual task update_gpio_straps_regs(logic [NUM_GPIOS-1:0] gpio_i_sampled);
+  virtual task update_gpio_straps_regs(logic [NUM_GPIOS-1:0] gpio_i_sampled, bit data_valid);
     // Update data_in and data_in_valid ral register value based on result of input
     `DV_CHECK_FATAL(ral.hw_straps_data_in.predict(.value(gpio_i_sampled),
                                                   .kind(UVM_PREDICT_READ)));
-    `DV_CHECK_FATAL(ral.hw_straps_data_in_valid.predict(.value('b1),
-                                                        .kind(UVM_PREDICT_READ)));
+    `DV_CHECK_FATAL(ral.hw_straps_data_in_valid.predict(.value(data_valid),
+                                                  .kind(UVM_PREDICT_READ)));
   endtask : update_gpio_straps_regs
 
   // Task: monitor_gpio_straps
@@ -377,34 +377,31 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   // and checks the straps output signal after the first strap trigger
   virtual task monitor_gpio_straps();
     logic [NUM_GPIOS-1:0] gpio_i_sampled;
+
     forever begin : monitor_gpio_straps
-      // Wait for going out of reset operation.
-      wait(!cfg.under_reset);
-      // Wait until the strap_en input be triggered
-      // if a reset comes in the middle, step-out of the loop.
-      while (!cfg.straps_vif_inst.tb_port.strap_en) begin
-        cfg.clk_rst_vif.wait_clks_or_rst(1);
-        if (cfg.under_reset) break;
+      @(cfg.straps_vif_inst.tb_port.strap_en or cfg.under_reset) begin
+        wait(!cfg.under_reset);
+        // Get the gpio_i input data from the pins interface.
+        gpio_i_sampled = cfg.gpio_vif.pins;
+        // Wait for one clock cycle to update the register model.
+        cfg.clk_rst_vif.wait_clks(1);
+        if(cfg.straps_vif_inst.tb_port.strap_en == 1'b1) begin
+          // Update the register model.
+          update_gpio_straps_regs(gpio_i_sampled, 'b1);
+          // Checker: Compare those values of gpio pins
+          // against the output strap_data.
+          `DV_CHECK_CASE_EQ(gpio_i_sampled, cfg.straps_vif_inst.tb_port.sampled_straps.data)
+          // Check the output data_in_valid
+          `DV_CHECK_CASE_EQ('b1, cfg.straps_vif_inst.tb_port.sampled_straps.valid)
+        end else begin
+          `uvm_info(`gfn, $sformatf("Update register model strap_en = %0h", 0), UVM_HIGH)
+          update_gpio_straps_regs('b0, 'b0);
+          // Checker: Compare if the values are zero if the strap is disabled.
+          `DV_CHECK_CASE_EQ('b0, cfg.straps_vif_inst.tb_port.sampled_straps.data)
+          // Check the register hw_straps_data_in_valid zero value.
+          `DV_CHECK_CASE_EQ('b0, cfg.straps_vif_inst.tb_port.sampled_straps.valid)
+        end
       end
-      // Step out to the next iteration if a reset happens.
-      if (cfg.under_reset) continue;
-      // Get the gpio_i input data from the pins interface.
-      gpio_i_sampled = cfg.gpio_vif.pins;
-      // Wait for one clock cycle to update the register model.
-      cfg.clk_rst_vif.wait_clks_or_rst(1);
-      // Step out from the loop if a reset comes.
-      if (cfg.under_reset) continue;
-      // Update the register model.
-      update_gpio_straps_regs(gpio_i_sampled);
-
-      // Checker: Compare actual values of gpio pins with straps register.
-      // Check the register hw_straps_data_in against gpio_i pins
-      `DV_CHECK_CASE_EQ(gpio_i_sampled, cfg.straps_vif_inst.tb_port.sampled_straps.data)
-      // Check the register hw_straps_data_in_valid
-      `DV_CHECK_CASE_EQ('b1, cfg.straps_vif_inst.tb_port.sampled_straps.valid)
-
-      // Wait for the next reset, if it happens.
-      wait(cfg.under_reset);
     end
   endtask : monitor_gpio_straps
 
@@ -439,7 +436,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           uvm_reg_data_t data = ral.masked_out_lower.data.get_mirrored_value();
 
           for (uint pin_idx = 0;
-               pin_idx < ral.masked_out_lower.mask.get_n_bits(); pin_idx++) begin
+          pin_idx < ral.masked_out_lower.mask.get_n_bits(); pin_idx++) begin
             if (masked_out_lower_mask[pin_idx] == 1'b1) begin
               data_out[pin_idx] = data[pin_idx];
             end
@@ -546,7 +543,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         end
       end
       `uvm_info(msg_id, $sformatf("data_out_effect_on_gpio_i = 0x%0h [%0b]",
-                                  data_out_effect_on_gpio_i, data_out_effect_on_gpio_i), UVM_HIGH)
+      data_out_effect_on_gpio_i, data_out_effect_on_gpio_i), UVM_HIGH)
       `uvm_info(msg_id, $sformatf("gpio_i_driven = 0x%0h [%0b]", gpio_i_driven, gpio_i_driven),
                 UVM_HIGH)
 
@@ -572,7 +569,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         end
       end
       `uvm_info(msg_id, $sformatf("pred_val_gpio_pins = %0h(%0b)", pred_val_gpio_pins,
-                                  pred_val_gpio_pins), UVM_HIGH)
+                                   pred_val_gpio_pins), UVM_HIGH)
 
       // Store latest update to be applied to data_in
       begin
@@ -606,7 +603,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
       // Checker-1: Compare predicted and actual values of gpio pins
       // Avoid calling this checker due to weak pull-up or pull-down effect
       if ((csr != null) ||
-          ((|gpio_i_driven === 1'b1) && (actual_gpio_i_activity() == 1))) begin
+         ((|gpio_i_driven === 1'b1) && (actual_gpio_i_activity() == 1))) begin
         `DV_CHECK_CASE_EQ(pred_val_gpio_pins, cfg.gpio_vif.pins)
       end
 
@@ -618,7 +615,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   // This function computes expected value of gpio intr_status based on
   // changes of gpio_i data or interrupt control registers
   virtual function void gpio_interrupt_predict(
-      input gpio_transition_t [NUM_GPIOS-1:0] gpio_i_transition = {NUM_GPIOS{2'b00}});
+    input gpio_transition_t [NUM_GPIOS-1:0] gpio_i_transition = {NUM_GPIOS{2'b00}});
 
     string msg_id = {`gfn, $sformatf(" gpio_interrupt_predict: ")};
     bit [TL_DW-1:0] intr_enable          = ral.intr_enable.get_mirrored_value();
@@ -644,13 +641,13 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     if (cfg.en_cov) begin
       foreach (intr_ctrl_en_rising[each_bit]) begin
         cov.intr_ctrl_en_cov_objs[each_bit]["intr_ctrl_en_rising"].sample(
-            intr_ctrl_en_rising[each_bit]);
+        intr_ctrl_en_rising[each_bit]);
         cov.intr_ctrl_en_cov_objs[each_bit]["intr_ctrl_en_falling"].sample(
-            intr_ctrl_en_falling[each_bit]);
+        intr_ctrl_en_falling[each_bit]);
         cov.intr_ctrl_en_cov_objs[each_bit]["intr_ctrl_en_lvlhigh"].sample(
-            intr_ctrl_en_lvlhigh[each_bit]);
+        intr_ctrl_en_lvlhigh[each_bit]);
         cov.intr_ctrl_en_cov_objs[each_bit]["intr_ctrl_en_lvllow"].sample(
-            intr_ctrl_en_lvllow[each_bit]);
+        intr_ctrl_en_lvllow[each_bit]);
       end
     end
     // 1. Look for edge triggerred interrupts
@@ -660,9 +657,9 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         foreach (rising_edge_intr_events[each_bit]) begin
           if (gpio_i_transition[each_bit].transition_occurred) begin
             rising_edge_intr_events[each_bit]  = gpio_i_transition[each_bit].is_rising_edge &
-                                                 intr_ctrl_en_rising[each_bit];
+            intr_ctrl_en_rising[each_bit];
             falling_edge_intr_events[each_bit] = !gpio_i_transition[each_bit].is_rising_edge &
-                                                 intr_ctrl_en_falling[each_bit];
+            intr_ctrl_en_falling[each_bit];
           end
         end
         foreach (gpio_i_transition[each_bit]) begin
@@ -785,16 +782,16 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     // 2. Update masked_out_lower
     data = data_out;
     for (uint idx = ral.masked_out_lower.data.get_n_bits();
-         idx < `UVM_REG_DATA_WIDTH;
-         idx++) begin
+    idx < `UVM_REG_DATA_WIDTH;
+    idx++) begin
       data[idx] = 1'b0;
     end
     void'(ral.masked_out_lower.data.predict(.value(data), .kind(UVM_PREDICT_WRITE)));
     // 3. Update masked_out_upper
     data = 0;
     for (uint idx = ral.masked_out_upper.data.get_n_bits();
-         idx < `UVM_REG_DATA_WIDTH;
-         idx++) begin
+    idx < `UVM_REG_DATA_WIDTH;
+    idx++) begin
       data[idx - ral.masked_out_upper.data.get_n_bits()] = data_out[idx];
     end
     void'(ral.masked_out_upper.data.predict(.value(data), .kind(UVM_PREDICT_WRITE)));
