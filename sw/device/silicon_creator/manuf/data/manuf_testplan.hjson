@@ -222,7 +222,7 @@
       otp_mutate: true
       lc_states: ["TEST_UNLOCKED"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/silicon_creator/manuf/base:ft_provision_sival"]
     }
 
     {
@@ -257,7 +257,7 @@
       otp_mutate: true
       lc_states: ["TEST_UNLOCKED"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_functest"]
     }
 
     {
@@ -307,7 +307,7 @@
       otp_mutate: true
       lc_states: ["DEV", "PROD", "PROD_END"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/silicon_creator/manuf/lib:individualize_functest"]
     }
 
     {
@@ -392,7 +392,7 @@
       otp_mutate: true
       lc_states: ["DEV", "PROD", "PROD_END"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/silicon_creator/manuf/base:ft_provision_sival"]
     }
 
     {
@@ -416,7 +416,7 @@
       otp_mutate: false
       lc_states: ["DEV", "PROD", "PROD_END"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/silicon_creator/manuf/base:ft_provision_sival"]
     }
 
     {
@@ -446,7 +446,7 @@
       otp_mutate: false
       lc_states: ["DEV", "PROD", "PROD_END"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/silicon_creator/manuf/base:ft_provision_sival"]
     }
 
     {
@@ -468,7 +468,7 @@
       otp_mutate: true
       lc_states: ["DEV", "PROD", "PROD_END"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/silicon_creator/manuf/base:ft_provision_sival"]
     }
 
     {
