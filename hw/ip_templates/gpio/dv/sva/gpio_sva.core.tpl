@@ -11,6 +11,7 @@ filesets:
       - lowrisc:fpv:csr_assert_gen
     files:
       - ${module_instance_name}_bind.sv
+      - ${module_instance_name}_strap_check.sv
     file_type: systemVerilogSource
 
   files_formal:
