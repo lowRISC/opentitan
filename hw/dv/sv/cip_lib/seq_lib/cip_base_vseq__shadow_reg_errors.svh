@@ -62,7 +62,7 @@ virtual task run_shadow_reg_errors(int num_times, bit en_csr_rw_seq = 0);
 
     shadowed_csrs.shuffle();
 
-    for (int i = 0; i < max_idx; i++) begin
+    for (int i = 0; i <= max_idx; ++i) begin
       if (cfg.stop_transaction_generators()) break;
       `uvm_info(`gfn, $sformatf("mycsr: %s    en_csr_rw_seq:%d",
                 shadowed_csrs[i].get_name(), en_csr_rw_seq), UVM_HIGH);
