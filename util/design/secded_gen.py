@@ -757,31 +757,63 @@ def _hsiao_code(k, m):
 
             # Calculate each row fan-in with current
             fanins = calc_fanin(m, codes)
+
+            subset = []
+            other = candidate[:]
+
+            max_fanin = max(fanins)
+
             while required_row != 0:
-                # Let's shuffle
-                # Shuffling makes the sequence randomized --> it reduces the
-                # fanin as the code takes randomly at the end of the round
-
-                # TODO: There should be a clever way to find the subset without
-                # random retrying.
-                # Suggested this algorithm
-                #    https://en.wikipedia.org/wiki/Assignment_problem
-                random.shuffle(candidate)
-
-                # Take a subset
-                subset = candidate[0:required_row]
-
-                subset_fanins = calc_fanin(m, subset)
-                # Check if it exceeds Ideal Fan-In
-                ideal = True
+                current_fanins = calc_fanin(m, subset)
                 for i in range(m):
-                    if fanins[i] + subset_fanins[i] > fanin_ideal:
-                        # Exceeded. Retry
-                        ideal = False
+                    current_fanins[i] += fanins[i]
+
+                added = False
+
+                min_fanin = min(current_fanins)
+
+                # First add to increase minimum while keeping max low
+                for i in range(len(other)):
+                    tmp_fanins = current_fanins[:]
+
+                    for j in range(step):
+                        tmp_fanins[other[i][j]] += 1
+
+                    if min(tmp_fanins) > min_fanin and max(tmp_fanins) <= max_fanin:
+                        added = True
+                        subset.append(other[i])
+                        other.pop(i)
+                        required_row -= 1
                         break
 
-                if ideal:
-                    required_row = 0
+                if (added):
+                    continue
+
+                # Then add to increase maximum if previous did not work
+                for i in range(len(other)):
+                    tmp_fanins = current_fanins[:]
+
+                    for j in range(step):
+                        tmp_fanins[other[i][j]] += 1
+                    if max(tmp_fanins) <= max_fanin:
+                        added = True
+                        subset.append(other[i])
+                        other.pop(i)
+                        required_row -= 1
+                        break
+
+                if not added:
+                    max_fanin += 1
+
+            subset_fanins = calc_fanin(m, subset)
+
+            # Check if it exceeds Ideal Fan-In
+            # ideal = True
+            for i in range(m):
+                if fanins[i] + subset_fanins[i] > fanin_ideal:
+                    # Exceeded. Retry
+                    # ideal = False
+                    print("Not Ideal!!!")
 
             # Append to the code matrix
             codes.extend(subset)

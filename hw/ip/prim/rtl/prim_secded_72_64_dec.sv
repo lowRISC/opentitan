@@ -13,14 +13,14 @@ module prim_secded_72_64_dec (
 
   always_comb begin : p_encode
     // Syndrome calculation
-    syndrome_o[0] = ^(data_i & 72'h01B9000000001FFFFF);
-    syndrome_o[1] = ^(data_i & 72'h025E00000FFFE0003F);
-    syndrome_o[2] = ^(data_i & 72'h0467003FF003E007C1);
-    syndrome_o[3] = ^(data_i & 72'h08CD0FC0F03C207842);
-    syndrome_o[4] = ^(data_i & 72'h10B671C711C4438884);
-    syndrome_o[5] = ^(data_i & 72'h20B5B65926488C9108);
-    syndrome_o[6] = ^(data_i & 72'h40CBDAAA4A91152210);
-    syndrome_o[7] = ^(data_i & 72'h807AED348D221A4420);
+    syndrome_o[0] = ^(data_i & 72'h015B000000001FFFFF);
+    syndrome_o[1] = ^(data_i & 72'h026B00000FFFE0003F);
+    syndrome_o[2] = ^(data_i & 72'h046D003FF003E007C1);
+    syndrome_o[3] = ^(data_i & 72'h08AD0FC0F03C207842);
+    syndrome_o[4] = ^(data_i & 72'h10B571C711C4438884);
+    syndrome_o[5] = ^(data_i & 72'h20B6B65926488C9108);
+    syndrome_o[6] = ^(data_i & 72'h40D6DAAA4A91152210);
+    syndrome_o[7] = ^(data_i & 72'h80DAED348D221A4420);
 
     // Corrected output calculation
     data_o[0] = (syndrome_o == 8'h7) ^ data_i[0];
@@ -79,14 +79,14 @@ module prim_secded_72_64_dec (
     data_o[53] = (syndrome_o == 8'hb0) ^ data_i[53];
     data_o[54] = (syndrome_o == 8'hd0) ^ data_i[54];
     data_o[55] = (syndrome_o == 8'he0) ^ data_i[55];
-    data_o[56] = (syndrome_o == 8'h6d) ^ data_i[56];
-    data_o[57] = (syndrome_o == 8'hd6) ^ data_i[57];
-    data_o[58] = (syndrome_o == 8'h3e) ^ data_i[58];
-    data_o[59] = (syndrome_o == 8'hcb) ^ data_i[59];
-    data_o[60] = (syndrome_o == 8'hb3) ^ data_i[60];
-    data_o[61] = (syndrome_o == 8'hb5) ^ data_i[61];
-    data_o[62] = (syndrome_o == 8'hce) ^ data_i[62];
-    data_o[63] = (syndrome_o == 8'h79) ^ data_i[63];
+    data_o[56] = (syndrome_o == 8'h1f) ^ data_i[56];
+    data_o[57] = (syndrome_o == 8'he3) ^ data_i[57];
+    data_o[58] = (syndrome_o == 8'h7c) ^ data_i[58];
+    data_o[59] = (syndrome_o == 8'h8f) ^ data_i[59];
+    data_o[60] = (syndrome_o == 8'hf1) ^ data_i[60];
+    data_o[61] = (syndrome_o == 8'h3e) ^ data_i[61];
+    data_o[62] = (syndrome_o == 8'hc7) ^ data_i[62];
+    data_o[63] = (syndrome_o == 8'hf8) ^ data_i[63];
 
     // err_o calc. bit0: single error, bit1: double error
     err_o[0] = ^syndrome_o;
