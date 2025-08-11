@@ -504,6 +504,7 @@
           domain: "0"
         }
       }
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -595,6 +596,7 @@
           domain: "0"
         }
       }
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -692,6 +694,7 @@
         GpioAsyncOn: "1"
       }
       attr: ipgen
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -817,6 +820,7 @@
           domain: "0"
         }
       }
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -983,6 +987,7 @@
           domain: "0"
         }
       }
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_peri
@@ -1098,6 +1103,7 @@
           domain: "0"
         }
       }
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
@@ -1181,6 +1187,7 @@
           domain: "0"
         }
       }
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_usb_peri
@@ -1521,6 +1528,7 @@
         Aon
       ]
       attr: ipgen
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
@@ -1842,6 +1850,7 @@
         SecCheck: "0"
       }
       attr: ipgen
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
@@ -2107,6 +2116,7 @@
         Aon
       ]
       attr: ipgen
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
@@ -2365,6 +2375,7 @@
         Aon
       ]
       attr: ipgen
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
@@ -2807,6 +2818,7 @@
       [
         Aon
       ]
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
@@ -3071,6 +3083,7 @@
         }
       }
       attr: ipgen
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
@@ -3446,6 +3459,7 @@
       [
         rv_core_ibex
       ]
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
@@ -3545,6 +3559,7 @@
         SecMasking: "1"
         SecSBoxImpl: aes_pkg::SBoxImplDom
       }
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_aes
@@ -3796,6 +3811,7 @@
           size: 0x20000
         }
       }
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
@@ -4105,6 +4121,7 @@
       {
         SecDisableScrambling: 1'b1
       }
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
@@ -4314,6 +4331,7 @@
           domain: "0"
         }
       }
+      outgoing_alert: englishbreakfast
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
@@ -7903,318 +7921,321 @@
     }
   ]
   exported_rsts: {}
-  alert:
-  [
-    {
-      name: uart0_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: uart0
-      desc: uart0 fatal_fault alert
-      lpg_name: peri_lc_io_div4_0
-      lpg_idx: 0
-    }
-    {
-      name: uart1_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: uart1
-      desc: uart1 fatal_fault alert
-      lpg_name: peri_lc_io_div4_0
-      lpg_idx: 0
-    }
-    {
-      name: gpio_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: gpio
-      desc: gpio fatal_fault alert
-      lpg_name: peri_sys_io_div4_0
-      lpg_idx: 1
-    }
-    {
-      name: spi_device_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: spi_device
-      desc: spi_device fatal_fault alert
-      lpg_name: peri_spi_device_0
-      lpg_idx: 2
-    }
-    {
-      name: spi_host0_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: spi_host0
-      desc: spi_host0 fatal_fault alert
-      lpg_name: peri_spi_host0_0
-      lpg_idx: 3
-    }
-    {
-      name: rv_timer_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: rv_timer
-      desc: rv_timer fatal_fault alert
-      lpg_name: timers_sys_io_div4_0
-      lpg_idx: 4
-    }
-    {
-      name: usbdev_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: usbdev
-      desc: usbdev fatal_fault alert
-      lpg_name: peri_usb_0
-      lpg_idx: 5
-    }
-    {
-      name: pwrmgr_aon_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: pwrmgr_aon
-      desc: pwrmgr_aon fatal_fault alert
-      lpg_name: powerup_por_io_div4_Aon
-      lpg_idx: 6
-    }
-    {
-      name: rstmgr_aon_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: rstmgr_aon
-      desc: rstmgr_aon fatal_fault alert
-      lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 7
-    }
-    {
-      name: rstmgr_aon_fatal_cnsty_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: rstmgr_aon
-      desc: rstmgr_aon fatal_cnsty_fault alert
-      lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 7
-    }
-    {
-      name: clkmgr_aon_recov_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: clkmgr_aon
-      desc: clkmgr_aon recov_fault alert
-      lpg_name: powerup_por_io_div4_Aon
-      lpg_idx: 6
-    }
-    {
-      name: clkmgr_aon_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: clkmgr_aon
-      desc: clkmgr_aon fatal_fault alert
-      lpg_name: powerup_por_io_div4_Aon
-      lpg_idx: 6
-    }
-    {
-      name: pinmux_aon_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: pinmux_aon
-      desc: pinmux_aon fatal_fault alert
-      lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 7
-    }
-    {
-      name: aon_timer_aon_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: aon_timer_aon
-      desc: aon_timer_aon fatal_fault alert
-      lpg_name: timers_sys_io_div4_Aon
-      lpg_idx: 8
-    }
-    {
-      name: flash_ctrl_recov_err
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: flash_ctrl
-      desc: flash_ctrl recov_err alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: flash_ctrl_fatal_std_err
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: flash_ctrl
-      desc: flash_ctrl fatal_std_err alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: flash_ctrl_fatal_err
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: flash_ctrl
-      desc: flash_ctrl fatal_err alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: flash_ctrl_fatal_prim_flash_alert
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: flash_ctrl
-      desc: flash_ctrl fatal_prim_flash_alert alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: flash_ctrl_recov_prim_flash_alert
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: flash_ctrl
-      desc: flash_ctrl recov_prim_flash_alert alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: rv_plic_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: rv_plic
-      desc: rv_plic fatal_fault alert
-      lpg_name: secure_sys_0
-      lpg_idx: 11
-    }
-    {
-      name: aes_recov_ctrl_update_err
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: aes
-      desc: aes recov_ctrl_update_err alert
-      lpg_name: aes_trans_sys_0
-      lpg_idx: 12
-    }
-    {
-      name: aes_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: aes
-      desc: aes fatal_fault alert
-      lpg_name: aes_trans_sys_0
-      lpg_idx: 12
-    }
-    {
-      name: sram_ctrl_main_fatal_error
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: sram_ctrl_main
-      desc: sram_ctrl_main fatal_error alert
-      lpg_name: secure_sys_0
-      lpg_idx: 11
-    }
-    {
-      name: rom_ctrl_fatal
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: rom_ctrl
-      desc: rom_ctrl fatal alert
-      lpg_name: infra_sys_0
-      lpg_idx: 13
-    }
-    {
-      name: rv_core_ibex_fatal_sw_err
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: rv_core_ibex
-      desc: rv_core_ibex fatal_sw_err alert
-      lpg_name: infra_sys_0
-      lpg_idx: 13
-    }
-    {
-      name: rv_core_ibex_recov_sw_err
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: rv_core_ibex
-      desc: rv_core_ibex recov_sw_err alert
-      lpg_name: infra_sys_0
-      lpg_idx: 13
-    }
-    {
-      name: rv_core_ibex_fatal_hw_err
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: rv_core_ibex
-      desc: rv_core_ibex fatal_hw_err alert
-      lpg_name: infra_sys_0
-      lpg_idx: 13
-    }
-    {
-      name: rv_core_ibex_recov_hw_err
-      width: 1
-      type: alert
-      async: "1"
-      handler: null
-      module_name: rv_core_ibex
-      desc: rv_core_ibex recov_hw_err alert
-      lpg_name: infra_sys_0
-      lpg_idx: 13
-    }
-  ]
-  outgoing_alert: {}
+  alert: []
+  outgoing_alert:
+  {
+    englishbreakfast:
+    [
+      {
+        name: uart0_fatal_fault
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: uart0
+        desc: uart0 fatal_fault alert
+        lpg_name: peri_lc_io_div4_0
+        lpg_idx: 0
+      }
+      {
+        name: uart1_fatal_fault
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: uart1
+        desc: uart1 fatal_fault alert
+        lpg_name: peri_lc_io_div4_0
+        lpg_idx: 0
+      }
+      {
+        name: gpio_fatal_fault
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: gpio
+        desc: gpio fatal_fault alert
+        lpg_name: peri_sys_io_div4_0
+        lpg_idx: 1
+      }
+      {
+        name: spi_device_fatal_fault
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: spi_device
+        desc: spi_device fatal_fault alert
+        lpg_name: peri_spi_device_0
+        lpg_idx: 2
+      }
+      {
+        name: spi_host0_fatal_fault
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: spi_host0
+        desc: spi_host0 fatal_fault alert
+        lpg_name: peri_spi_host0_0
+        lpg_idx: 3
+      }
+      {
+        name: rv_timer_fatal_fault
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: rv_timer
+        desc: rv_timer fatal_fault alert
+        lpg_name: timers_sys_io_div4_0
+        lpg_idx: 4
+      }
+      {
+        name: usbdev_fatal_fault
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: usbdev
+        desc: usbdev fatal_fault alert
+        lpg_name: peri_usb_0
+        lpg_idx: 5
+      }
+      {
+        name: pwrmgr_aon_fatal_fault
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: pwrmgr_aon
+        desc: pwrmgr_aon fatal_fault alert
+        lpg_name: powerup_por_io_div4_Aon
+        lpg_idx: 6
+      }
+      {
+        name: rstmgr_aon_fatal_fault
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: rstmgr_aon
+        desc: rstmgr_aon fatal_fault alert
+        lpg_name: powerup_lc_io_div4_Aon
+        lpg_idx: 7
+      }
+      {
+        name: rstmgr_aon_fatal_cnsty_fault
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: rstmgr_aon
+        desc: rstmgr_aon fatal_cnsty_fault alert
+        lpg_name: powerup_lc_io_div4_Aon
+        lpg_idx: 7
+      }
+      {
+        name: clkmgr_aon_recov_fault
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: clkmgr_aon
+        desc: clkmgr_aon recov_fault alert
+        lpg_name: powerup_por_io_div4_Aon
+        lpg_idx: 6
+      }
+      {
+        name: clkmgr_aon_fatal_fault
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: clkmgr_aon
+        desc: clkmgr_aon fatal_fault alert
+        lpg_name: powerup_por_io_div4_Aon
+        lpg_idx: 6
+      }
+      {
+        name: pinmux_aon_fatal_fault
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: pinmux_aon
+        desc: pinmux_aon fatal_fault alert
+        lpg_name: powerup_lc_io_div4_Aon
+        lpg_idx: 7
+      }
+      {
+        name: aon_timer_aon_fatal_fault
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: aon_timer_aon
+        desc: aon_timer_aon fatal_fault alert
+        lpg_name: timers_sys_io_div4_Aon
+        lpg_idx: 8
+      }
+      {
+        name: flash_ctrl_recov_err
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: flash_ctrl
+        desc: flash_ctrl recov_err alert
+        lpg_name: infra_lc_0
+        lpg_idx: 9
+      }
+      {
+        name: flash_ctrl_fatal_std_err
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: flash_ctrl
+        desc: flash_ctrl fatal_std_err alert
+        lpg_name: infra_lc_0
+        lpg_idx: 9
+      }
+      {
+        name: flash_ctrl_fatal_err
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: flash_ctrl
+        desc: flash_ctrl fatal_err alert
+        lpg_name: infra_lc_0
+        lpg_idx: 9
+      }
+      {
+        name: flash_ctrl_fatal_prim_flash_alert
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: flash_ctrl
+        desc: flash_ctrl fatal_prim_flash_alert alert
+        lpg_name: infra_lc_0
+        lpg_idx: 9
+      }
+      {
+        name: flash_ctrl_recov_prim_flash_alert
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: flash_ctrl
+        desc: flash_ctrl recov_prim_flash_alert alert
+        lpg_name: infra_lc_0
+        lpg_idx: 9
+      }
+      {
+        name: rv_plic_fatal_fault
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: rv_plic
+        desc: rv_plic fatal_fault alert
+        lpg_name: secure_sys_0
+        lpg_idx: 10
+      }
+      {
+        name: aes_recov_ctrl_update_err
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: aes
+        desc: aes recov_ctrl_update_err alert
+        lpg_name: aes_trans_sys_0
+        lpg_idx: 11
+      }
+      {
+        name: aes_fatal_fault
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: aes
+        desc: aes fatal_fault alert
+        lpg_name: aes_trans_sys_0
+        lpg_idx: 11
+      }
+      {
+        name: sram_ctrl_main_fatal_error
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: sram_ctrl_main
+        desc: sram_ctrl_main fatal_error alert
+        lpg_name: secure_sys_0
+        lpg_idx: 10
+      }
+      {
+        name: rom_ctrl_fatal
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: rom_ctrl
+        desc: rom_ctrl fatal alert
+        lpg_name: infra_sys_0
+        lpg_idx: 12
+      }
+      {
+        name: rv_core_ibex_fatal_sw_err
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: rv_core_ibex
+        desc: rv_core_ibex fatal_sw_err alert
+        lpg_name: infra_sys_0
+        lpg_idx: 12
+      }
+      {
+        name: rv_core_ibex_recov_sw_err
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: rv_core_ibex
+        desc: rv_core_ibex recov_sw_err alert
+        lpg_name: infra_sys_0
+        lpg_idx: 12
+      }
+      {
+        name: rv_core_ibex_fatal_hw_err
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: rv_core_ibex
+        desc: rv_core_ibex fatal_hw_err alert
+        lpg_name: infra_sys_0
+        lpg_idx: 12
+      }
+      {
+        name: rv_core_ibex_recov_hw_err
+        width: 1
+        type: alert
+        async: "1"
+        handler: null
+        module_name: rv_core_ibex
+        desc: rv_core_ibex recov_hw_err alert
+        lpg_name: infra_sys_0
+        lpg_idx: 12
+      }
+    ]
+  }
   interrupt:
   [
     {
@@ -8891,262 +8912,227 @@
     }
   ]
   outgoing_interrupt: {}
-  alert_module:
-  [
-    uart0
-    uart1
-    gpio
-    spi_device
-    spi_host0
-    rv_timer
-    usbdev
-    pwrmgr_aon
-    rstmgr_aon
-    clkmgr_aon
-    pinmux_aon
-    aon_timer_aon
-    flash_ctrl
-    rv_plic
-    aes
-    sram_ctrl_main
-    rom_ctrl
-    rv_core_ibex
-  ]
-  alert_connections: {}
-  outgoing_alert_module: {}
+  alert_module: []
+  alert_connections:
+  {
+    module_uart0:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[0:0]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[0:0]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[0:0]
+      comments:
+      [
+        External alert group "englishbreakfast" [0]: fatal_fault
+      ]
+    }
+    module_uart1:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[1:1]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[1:1]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[1:1]
+      comments:
+      [
+        External alert group "englishbreakfast" [1]: fatal_fault
+      ]
+    }
+    module_gpio:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[2:2]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[2:2]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[2:2]
+      comments:
+      [
+        External alert group "englishbreakfast" [2]: fatal_fault
+      ]
+    }
+    module_spi_device:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[3:3]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[3:3]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[3:3]
+      comments:
+      [
+        External alert group "englishbreakfast" [3]: fatal_fault
+      ]
+    }
+    module_spi_host0:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[4:4]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[4:4]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[4:4]
+      comments:
+      [
+        External alert group "englishbreakfast" [4]: fatal_fault
+      ]
+    }
+    module_rv_timer:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[5:5]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[5:5]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[5:5]
+      comments:
+      [
+        External alert group "englishbreakfast" [5]: fatal_fault
+      ]
+    }
+    module_usbdev:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[6:6]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[6:6]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[6:6]
+      comments:
+      [
+        External alert group "englishbreakfast" [6]: fatal_fault
+      ]
+    }
+    module_pwrmgr_aon:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[7:7]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[7:7]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[7:7]
+      comments:
+      [
+        External alert group "englishbreakfast" [7]: fatal_fault
+      ]
+    }
+    module_rstmgr_aon:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[9:8]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[9:8]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[9:8]
+      comments:
+      [
+        External alert group "englishbreakfast" [8]: fatal_fault
+        External alert group "englishbreakfast" [9]: fatal_cnsty_fault
+      ]
+    }
+    module_clkmgr_aon:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[11:10]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[11:10]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[11:10]
+      comments:
+      [
+        External alert group "englishbreakfast" [10]: recov_fault
+        External alert group "englishbreakfast" [11]: fatal_fault
+      ]
+    }
+    module_pinmux_aon:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[12:12]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[12:12]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[12:12]
+      comments:
+      [
+        External alert group "englishbreakfast" [12]: fatal_fault
+      ]
+    }
+    module_aon_timer_aon:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[13:13]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[13:13]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[13:13]
+      comments:
+      [
+        External alert group "englishbreakfast" [13]: fatal_fault
+      ]
+    }
+    module_flash_ctrl:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[18:14]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[18:14]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[18:14]
+      comments:
+      [
+        External alert group "englishbreakfast" [14]: recov_err
+        External alert group "englishbreakfast" [15]: fatal_std_err
+        External alert group "englishbreakfast" [16]: fatal_err
+        External alert group "englishbreakfast" [17]: fatal_prim_flash_alert
+        External alert group "englishbreakfast" [18]: recov_prim_flash_alert
+      ]
+    }
+    module_rv_plic:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[19:19]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[19:19]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[19:19]
+      comments:
+      [
+        External alert group "englishbreakfast" [19]: fatal_fault
+      ]
+    }
+    module_aes:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[21:20]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[21:20]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[21:20]
+      comments:
+      [
+        External alert group "englishbreakfast" [20]: recov_ctrl_update_err
+        External alert group "englishbreakfast" [21]: fatal_fault
+      ]
+    }
+    module_sram_ctrl_main:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[22:22]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[22:22]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[22:22]
+      comments:
+      [
+        External alert group "englishbreakfast" [22]: fatal_error
+      ]
+    }
+    module_rom_ctrl:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[23:23]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[23:23]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[23:23]
+      comments:
+      [
+        External alert group "englishbreakfast" [23]: fatal
+      ]
+    }
+    module_rv_core_ibex:
+    {
+      tx_expr: outgoing_alert_englishbreakfast_tx_o[27:24]
+      rx_expr: outgoing_alert_englishbreakfast_rx_i[27:24]
+      async_expr: AsyncOnOutgoingAlertEnglishbreakfast[27:24]
+      comments:
+      [
+        External alert group "englishbreakfast" [24]: fatal_sw_err
+        External alert group "englishbreakfast" [25]: recov_sw_err
+        External alert group "englishbreakfast" [26]: fatal_hw_err
+        External alert group "englishbreakfast" [27]: recov_hw_err
+      ]
+    }
+  }
+  outgoing_alert_module:
+  {
+    englishbreakfast:
+    [
+      uart0
+      uart1
+      gpio
+      spi_device
+      spi_host0
+      rv_timer
+      usbdev
+      pwrmgr_aon
+      rstmgr_aon
+      clkmgr_aon
+      pinmux_aon
+      aon_timer_aon
+      flash_ctrl
+      rv_plic
+      aes
+      sram_ctrl_main
+      rom_ctrl
+      rv_core_ibex
+    ]
+  }
   outgoing_interrupt_module: {}
   alert_lpgs:
   [
-    {
-      name: peri_lc_io_div4_0
-      clock_group:
-      {
-        name: peri
-        src: top
-        sw_cg: yes
-        unique: no
-        clocks:
-        {
-          clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
-          clk_io_peri: io
-          clk_usb_peri: usb
-          clk_aon_peri: aon
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
-      unmanaged_clock: false
-      unmanaged_reset: false
-      reset_connection:
-      {
-        name: lc_io_div4
-        domain: "0"
-      }
-    }
-    {
-      name: peri_sys_io_div4_0
-      clock_group:
-      {
-        name: peri
-        src: top
-        sw_cg: yes
-        unique: no
-        clocks:
-        {
-          clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
-          clk_io_peri: io
-          clk_usb_peri: usb
-          clk_aon_peri: aon
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
-      unmanaged_clock: false
-      unmanaged_reset: false
-      reset_connection:
-      {
-        name: sys_io_div4
-        domain: "0"
-      }
-    }
-    {
-      name: peri_spi_device_0
-      clock_group:
-      {
-        name: peri
-        src: top
-        sw_cg: yes
-        unique: no
-        clocks:
-        {
-          clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
-          clk_io_peri: io
-          clk_usb_peri: usb
-          clk_aon_peri: aon
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
-      unmanaged_clock: false
-      unmanaged_reset: false
-      reset_connection:
-      {
-        name: spi_device
-        domain: "0"
-      }
-    }
-    {
-      name: peri_spi_host0_0
-      clock_group:
-      {
-        name: peri
-        src: top
-        sw_cg: yes
-        unique: no
-        clocks:
-        {
-          clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
-          clk_io_peri: io
-          clk_usb_peri: usb
-          clk_aon_peri: aon
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_io_peri
-      unmanaged_clock: false
-      unmanaged_reset: false
-      reset_connection:
-      {
-        name: spi_host0
-        domain: "0"
-      }
-    }
-    {
-      name: timers_sys_io_div4_0
-      clock_group:
-      {
-        name: timers
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_timers: io_div4
-          clk_aon_timers: aon
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_io_div4_timers
-      unmanaged_clock: false
-      unmanaged_reset: false
-      reset_connection:
-      {
-        name: sys_io_div4
-        domain: "0"
-      }
-    }
-    {
-      name: peri_usb_0
-      clock_group:
-      {
-        name: peri
-        src: top
-        sw_cg: yes
-        unique: no
-        clocks:
-        {
-          clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
-          clk_io_peri: io
-          clk_usb_peri: usb
-          clk_aon_peri: aon
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_usb_peri
-      unmanaged_clock: false
-      unmanaged_reset: false
-      reset_connection:
-      {
-        name: usb
-        domain: "0"
-      }
-    }
-    {
-      name: powerup_por_io_div4_Aon
-      clock_group:
-      {
-        name: powerup
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_powerup: io_div4
-          clk_aon_powerup: aon
-          clk_main_powerup: main
-          clk_io_powerup: io
-          clk_usb_powerup: usb
-          clk_io_div2_powerup: io_div2
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_io_div4_powerup
-      unmanaged_clock: false
-      unmanaged_reset: false
-      reset_connection:
-      {
-        name: por_io_div4
-        domain: Aon
-      }
-    }
-    {
-      name: powerup_lc_io_div4_Aon
-      clock_group:
-      {
-        name: powerup
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_powerup: io_div4
-          clk_aon_powerup: aon
-          clk_main_powerup: main
-          clk_io_powerup: io
-          clk_usb_powerup: usb
-          clk_io_div2_powerup: io_div2
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_io_div4_powerup
-      unmanaged_clock: false
-      unmanaged_reset: false
-      reset_connection:
-      {
-        name: lc_io_div4
-        domain: Aon
-      }
-    }
-    {
-      name: timers_sys_io_div4_Aon
-      clock_group:
-      {
-        name: timers
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_timers: io_div4
-          clk_aon_timers: aon
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_io_div4_timers
-      unmanaged_clock: false
-      unmanaged_reset: false
-      reset_connection:
-      {
-        name: sys_io_div4
-        domain: Aon
-      }
-    }
     {
       name: secure_lc_io_div4_0
       clock_group:
@@ -9171,104 +9157,339 @@
         domain: "0"
       }
     }
-    {
-      name: infra_lc_0
-      clock_group:
-      {
-        name: infra
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_main_infra: main
-          clk_io_div4_infra: io_div4
-          clk_io_infra: io
-          clk_usb_infra: usb
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_main_infra
-      unmanaged_clock: false
-      unmanaged_reset: false
-      reset_connection:
-      {
-        name: lc
-        domain: "0"
-      }
-    }
-    {
-      name: secure_sys_0
-      clock_group:
-      {
-        name: secure
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_secure: io_div4
-          clk_aon_secure: aon
-          clk_main_secure: main
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_main_secure
-      unmanaged_clock: false
-      unmanaged_reset: false
-      reset_connection:
-      {
-        name: sys
-        domain: "0"
-      }
-    }
-    {
-      name: aes_trans_sys_0
-      clock_group:
-      {
-        name: trans
-        src: top
-        sw_cg: hint
-        unique: yes
-        clocks:
-        {
-          clk_main_aes: main
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_main_aes
-      unmanaged_clock: false
-      unmanaged_reset: false
-      reset_connection:
-      {
-        name: sys
-        domain: "0"
-      }
-    }
-    {
-      name: infra_sys_0
-      clock_group:
-      {
-        name: infra
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_main_infra: main
-          clk_io_div4_infra: io_div4
-          clk_io_infra: io
-          clk_usb_infra: usb
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_main_infra
-      unmanaged_clock: false
-      unmanaged_reset: false
-      reset_connection:
-      {
-        name: sys
-        domain: "0"
-      }
-    }
   ]
-  outgoing_alert_lpgs: {}
+  outgoing_alert_lpgs:
+  {
+    englishbreakfast:
+    [
+      {
+        name: peri_lc_io_div4_0
+        clock_group:
+        {
+          name: peri
+          src: top
+          sw_cg: yes
+          unique: no
+          clocks:
+          {
+            clk_io_div4_peri: io_div4
+            clk_io_div2_peri: io_div2
+            clk_io_peri: io
+            clk_usb_peri: usb
+            clk_aon_peri: aon
+          }
+        }
+        clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
+        unmanaged_clock: false
+        unmanaged_reset: false
+        reset_connection:
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
+      }
+      {
+        name: peri_sys_io_div4_0
+        clock_group:
+        {
+          name: peri
+          src: top
+          sw_cg: yes
+          unique: no
+          clocks:
+          {
+            clk_io_div4_peri: io_div4
+            clk_io_div2_peri: io_div2
+            clk_io_peri: io
+            clk_usb_peri: usb
+            clk_aon_peri: aon
+          }
+        }
+        clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
+        unmanaged_clock: false
+        unmanaged_reset: false
+        reset_connection:
+        {
+          name: sys_io_div4
+          domain: "0"
+        }
+      }
+      {
+        name: peri_spi_device_0
+        clock_group:
+        {
+          name: peri
+          src: top
+          sw_cg: yes
+          unique: no
+          clocks:
+          {
+            clk_io_div4_peri: io_div4
+            clk_io_div2_peri: io_div2
+            clk_io_peri: io
+            clk_usb_peri: usb
+            clk_aon_peri: aon
+          }
+        }
+        clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
+        unmanaged_clock: false
+        unmanaged_reset: false
+        reset_connection:
+        {
+          name: spi_device
+          domain: "0"
+        }
+      }
+      {
+        name: peri_spi_host0_0
+        clock_group:
+        {
+          name: peri
+          src: top
+          sw_cg: yes
+          unique: no
+          clocks:
+          {
+            clk_io_div4_peri: io_div4
+            clk_io_div2_peri: io_div2
+            clk_io_peri: io
+            clk_usb_peri: usb
+            clk_aon_peri: aon
+          }
+        }
+        clock_connection: clkmgr_aon_clocks.clk_io_peri
+        unmanaged_clock: false
+        unmanaged_reset: false
+        reset_connection:
+        {
+          name: spi_host0
+          domain: "0"
+        }
+      }
+      {
+        name: timers_sys_io_div4_0
+        clock_group:
+        {
+          name: timers
+          src: top
+          sw_cg: no
+          unique: no
+          clocks:
+          {
+            clk_io_div4_timers: io_div4
+            clk_aon_timers: aon
+          }
+        }
+        clock_connection: clkmgr_aon_clocks.clk_io_div4_timers
+        unmanaged_clock: false
+        unmanaged_reset: false
+        reset_connection:
+        {
+          name: sys_io_div4
+          domain: "0"
+        }
+      }
+      {
+        name: peri_usb_0
+        clock_group:
+        {
+          name: peri
+          src: top
+          sw_cg: yes
+          unique: no
+          clocks:
+          {
+            clk_io_div4_peri: io_div4
+            clk_io_div2_peri: io_div2
+            clk_io_peri: io
+            clk_usb_peri: usb
+            clk_aon_peri: aon
+          }
+        }
+        clock_connection: clkmgr_aon_clocks.clk_usb_peri
+        unmanaged_clock: false
+        unmanaged_reset: false
+        reset_connection:
+        {
+          name: usb
+          domain: "0"
+        }
+      }
+      {
+        name: powerup_por_io_div4_Aon
+        clock_group:
+        {
+          name: powerup
+          src: top
+          sw_cg: no
+          unique: no
+          clocks:
+          {
+            clk_io_div4_powerup: io_div4
+            clk_aon_powerup: aon
+            clk_main_powerup: main
+            clk_io_powerup: io
+            clk_usb_powerup: usb
+            clk_io_div2_powerup: io_div2
+          }
+        }
+        clock_connection: clkmgr_aon_clocks.clk_io_div4_powerup
+        unmanaged_clock: false
+        unmanaged_reset: false
+        reset_connection:
+        {
+          name: por_io_div4
+          domain: Aon
+        }
+      }
+      {
+        name: powerup_lc_io_div4_Aon
+        clock_group:
+        {
+          name: powerup
+          src: top
+          sw_cg: no
+          unique: no
+          clocks:
+          {
+            clk_io_div4_powerup: io_div4
+            clk_aon_powerup: aon
+            clk_main_powerup: main
+            clk_io_powerup: io
+            clk_usb_powerup: usb
+            clk_io_div2_powerup: io_div2
+          }
+        }
+        clock_connection: clkmgr_aon_clocks.clk_io_div4_powerup
+        unmanaged_clock: false
+        unmanaged_reset: false
+        reset_connection:
+        {
+          name: lc_io_div4
+          domain: Aon
+        }
+      }
+      {
+        name: timers_sys_io_div4_Aon
+        clock_group:
+        {
+          name: timers
+          src: top
+          sw_cg: no
+          unique: no
+          clocks:
+          {
+            clk_io_div4_timers: io_div4
+            clk_aon_timers: aon
+          }
+        }
+        clock_connection: clkmgr_aon_clocks.clk_io_div4_timers
+        unmanaged_clock: false
+        unmanaged_reset: false
+        reset_connection:
+        {
+          name: sys_io_div4
+          domain: Aon
+        }
+      }
+      {
+        name: infra_lc_0
+        clock_group:
+        {
+          name: infra
+          src: top
+          sw_cg: no
+          unique: no
+          clocks:
+          {
+            clk_main_infra: main
+            clk_io_div4_infra: io_div4
+            clk_io_infra: io
+            clk_usb_infra: usb
+          }
+        }
+        clock_connection: clkmgr_aon_clocks.clk_main_infra
+        unmanaged_clock: false
+        unmanaged_reset: false
+        reset_connection:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      {
+        name: secure_sys_0
+        clock_group:
+        {
+          name: secure
+          src: top
+          sw_cg: no
+          unique: no
+          clocks:
+          {
+            clk_io_div4_secure: io_div4
+            clk_aon_secure: aon
+            clk_main_secure: main
+          }
+        }
+        clock_connection: clkmgr_aon_clocks.clk_main_secure
+        unmanaged_clock: false
+        unmanaged_reset: false
+        reset_connection:
+        {
+          name: sys
+          domain: "0"
+        }
+      }
+      {
+        name: aes_trans_sys_0
+        clock_group:
+        {
+          name: trans
+          src: top
+          sw_cg: hint
+          unique: yes
+          clocks:
+          {
+            clk_main_aes: main
+          }
+        }
+        clock_connection: clkmgr_aon_clocks.clk_main_aes
+        unmanaged_clock: false
+        unmanaged_reset: false
+        reset_connection:
+        {
+          name: sys
+          domain: "0"
+        }
+      }
+      {
+        name: infra_sys_0
+        clock_group:
+        {
+          name: infra
+          src: top
+          sw_cg: no
+          unique: no
+          clocks:
+          {
+            clk_main_infra: main
+            clk_io_div4_infra: io_div4
+            clk_io_infra: io
+            clk_usb_infra: usb
+          }
+        }
+        clock_connection: clkmgr_aon_clocks.clk_main_infra
+        unmanaged_clock: false
+        unmanaged_reset: false
+        reset_connection:
+        {
+          name: sys
+          domain: "0"
+        }
+      }
+    ]
+  }
   inter_signal:
   {
     signals:

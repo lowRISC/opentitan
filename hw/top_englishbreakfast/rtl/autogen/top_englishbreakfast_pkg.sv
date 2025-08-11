@@ -272,6 +272,100 @@ package top_englishbreakfast_pkg;
   parameter int unsigned TOP_ENGLISHBREAKFAST_ROM_SIZE_BYTES = 32'h8000;
 
 
+  // Number of englishbreakfast outgoing alerts
+  parameter int unsigned NOutgoingAlertsEnglishbreakfast = 28;
+
+  // Number of LPGs for outgoing alert group englishbreakfast
+  parameter int unsigned NOutgoingLpgsEnglishbreakfast = 13;
+
+  // Enumeration of englishbreakfast outgoing alert modules
+  typedef enum int unsigned {
+    TopEnglishbreakfastAlertPeripheralUart0 = 0,
+    TopEnglishbreakfastAlertPeripheralUart1 = 1,
+    TopEnglishbreakfastAlertPeripheralGpio = 2,
+    TopEnglishbreakfastAlertPeripheralSpiDevice = 3,
+    TopEnglishbreakfastAlertPeripheralSpiHost0 = 4,
+    TopEnglishbreakfastAlertPeripheralRvTimer = 5,
+    TopEnglishbreakfastAlertPeripheralUsbdev = 6,
+    TopEnglishbreakfastAlertPeripheralPwrmgrAon = 7,
+    TopEnglishbreakfastAlertPeripheralRstmgrAon = 8,
+    TopEnglishbreakfastAlertPeripheralClkmgrAon = 9,
+    TopEnglishbreakfastAlertPeripheralPinmuxAon = 10,
+    TopEnglishbreakfastAlertPeripheralAonTimerAon = 11,
+    TopEnglishbreakfastAlertPeripheralFlashCtrl = 12,
+    TopEnglishbreakfastAlertPeripheralRvPlic = 13,
+    TopEnglishbreakfastAlertPeripheralAes = 14,
+    TopEnglishbreakfastAlertPeripheralSramCtrlMain = 15,
+    TopEnglishbreakfastAlertPeripheralRomCtrl = 16,
+    TopEnglishbreakfastAlertPeripheralRvCoreIbex = 17,
+    TopEnglishbreakfastOutgoingAlertEnglishbreakfastPeripheralCount
+  } outgoing_alert_englishbreakfast_peripheral_e;
+
+  // Enumeration of englishbreakfast outgoing alerts
+  typedef enum int unsigned {
+    TopEnglishbreakfastAlertIdUart0FatalFault = 0,
+    TopEnglishbreakfastAlertIdUart1FatalFault = 1,
+    TopEnglishbreakfastAlertIdGpioFatalFault = 2,
+    TopEnglishbreakfastAlertIdSpiDeviceFatalFault = 3,
+    TopEnglishbreakfastAlertIdSpiHost0FatalFault = 4,
+    TopEnglishbreakfastAlertIdRvTimerFatalFault = 5,
+    TopEnglishbreakfastAlertIdUsbdevFatalFault = 6,
+    TopEnglishbreakfastAlertIdPwrmgrAonFatalFault = 7,
+    TopEnglishbreakfastAlertIdRstmgrAonFatalFault = 8,
+    TopEnglishbreakfastAlertIdRstmgrAonFatalCnstyFault = 9,
+    TopEnglishbreakfastAlertIdClkmgrAonRecovFault = 10,
+    TopEnglishbreakfastAlertIdClkmgrAonFatalFault = 11,
+    TopEnglishbreakfastAlertIdPinmuxAonFatalFault = 12,
+    TopEnglishbreakfastAlertIdAonTimerAonFatalFault = 13,
+    TopEnglishbreakfastAlertIdFlashCtrlRecovErr = 14,
+    TopEnglishbreakfastAlertIdFlashCtrlFatalStdErr = 15,
+    TopEnglishbreakfastAlertIdFlashCtrlFatalErr = 16,
+    TopEnglishbreakfastAlertIdFlashCtrlFatalPrimFlashAlert = 17,
+    TopEnglishbreakfastAlertIdFlashCtrlRecovPrimFlashAlert = 18,
+    TopEnglishbreakfastAlertIdRvPlicFatalFault = 19,
+    TopEnglishbreakfastAlertIdAesRecovCtrlUpdateErr = 20,
+    TopEnglishbreakfastAlertIdAesFatalFault = 21,
+    TopEnglishbreakfastAlertIdSramCtrlMainFatalError = 22,
+    TopEnglishbreakfastAlertIdRomCtrlFatal = 23,
+    TopEnglishbreakfastAlertIdRvCoreIbexFatalSwErr = 24,
+    TopEnglishbreakfastAlertIdRvCoreIbexRecovSwErr = 25,
+    TopEnglishbreakfastAlertIdRvCoreIbexFatalHwErr = 26,
+    TopEnglishbreakfastAlertIdRvCoreIbexRecovHwErr = 27,
+    TopEnglishbreakfastOutgoingAlertEnglishbreakfastIdCount
+  } outgoing_alert_englishbreakfast_id_e;
+
+  // Enumeration of englishbreakfast outgoing alerts AsyncOn configuration
+  parameter logic [NOutgoingAlertsEnglishbreakfast-1:0] AsyncOnOutgoingAlertEnglishbreakfast = {
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1,
+    1'b1
+  };
+
   // Enumeration of interrupts
   typedef enum int unsigned {
     TopEnglishbreakfastPlicIrqIdNone = 0,
