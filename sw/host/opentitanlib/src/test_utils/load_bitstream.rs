@@ -4,7 +4,6 @@
 
 use anyhow::Result;
 use clap::Args;
-use serde_annotate::Annotate;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
@@ -32,7 +31,10 @@ pub struct LoadBitstream {
 }
 
 impl LoadBitstream {
-    pub fn init(&self, transport: &TransportWrapper) -> Result<Option<Box<dyn Annotate>>> {
+    pub fn init(
+        &self,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // Clear out existing bitstream, if requested.
         if self.clear_bitstream {
             log::info!("Clearing bitstream.");
@@ -50,7 +52,7 @@ impl LoadBitstream {
         &self,
         transport: &TransportWrapper,
         file: &Path,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         log::info!("Loading bitstream: {:?}", file);
         let payload = std::fs::read(file)?;
         let progress = StagedProgressBar::new();

@@ -12,7 +12,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
 use sphincsplus::{DecodeKey, EncodeKey, SphincsPlus, SpxDomain, SpxPublicKey, SpxSecretKey};
 
-#[derive(Annotate, serde::Serialize)]
+#[derive(Annotate)]
 pub struct SpxPublicKeyInfo {
     pub algorithm: String,
     pub public_key_num_bits: usize,
@@ -34,7 +34,7 @@ impl CommandDispatch for SpxKeyShowCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let key = SpxPublicKey::read_pem_file(&self.key_file)?;
         let bytes = key.as_bytes();
 
@@ -82,7 +82,7 @@ impl CommandDispatch for SpxKeyGenerateCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let (private_key, public_key) = SpxSecretKey::new_keypair(self.algorithm)?;
         let mut file = self.output_dir.to_owned();
         file.push(&self.basename);
@@ -102,7 +102,7 @@ pub enum SpxKeySubcommands {
     Generate(SpxKeyGenerateCommand),
 }
 
-#[derive(serde::Serialize, Annotate)]
+#[derive(Annotate)]
 pub struct SpxSignResult {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
@@ -129,7 +129,7 @@ impl CommandDispatch for SpxSignCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let message = std::fs::read(&self.message)?;
         let private_key = SpxSecretKey::read_pem_file(&self.private_key)?;
         let signature = private_key.sign(self.domain, &message)?;
@@ -160,7 +160,7 @@ impl CommandDispatch for SpxVerifyCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let message = std::fs::read(&self.message)?;
         let public_key = SpxPublicKey::read_pem_file(&self.public_key)?;
         let signature = std::fs::read(&self.signature)?;

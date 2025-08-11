@@ -21,13 +21,13 @@ rust_library(
         "//sw/host/opentitanlib:opentitanlib_base",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
+        "@crate_index//:erased-serde",
         "@crate_index//:log",
         "@crate_index//:regex",
         "@crate_index//:rusb",
         "@crate_index//:serde",
         "@crate_index//:serialport",
         "@crate_index//:zerocopy",
-        "@lowrisc_serde_annotate//serde_annotate",
     ],
 )
 

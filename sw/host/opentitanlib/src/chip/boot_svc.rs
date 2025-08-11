@@ -4,7 +4,6 @@
 
 use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use serde::Serialize;
 use serde_annotate::Annotate;
 use sha2::{Digest, Sha256};
 use std::convert::TryFrom;
@@ -63,7 +62,7 @@ impl BootSlot {
 }
 
 /// The Boot Services header common to all boot services commands and responses.
-#[derive(Debug, Default, Serialize, Annotate)]
+#[derive(Debug, Default, Annotate)]
 pub struct Header {
     /// A SHA256 digest over the rest of the boot services message.
     #[annotate(format=hex)]
@@ -78,21 +77,21 @@ pub struct Header {
 }
 
 /// An empty boot services message.
-#[derive(Debug, Default, Serialize, Annotate)]
+#[derive(Debug, Default, Annotate)]
 pub struct Empty {
     #[annotate(format=hex)]
     pub payload: Vec<u32>,
 }
 
 /// Request to set the minimum owner stage firmware version.
-#[derive(Debug, Default, Serialize, Annotate)]
+#[derive(Debug, Default, Annotate)]
 pub struct MinBl0SecVerRequest {
     /// The desired minimum BL0 version.
     pub ver: u32,
 }
 
 /// Response to the minimum version request.
-#[derive(Debug, Default, Serialize, Annotate)]
+#[derive(Debug, Default, Annotate)]
 pub struct MinBl0SecVerResponse {
     /// The current minimum BL0 version.
     pub ver: u32,
@@ -102,7 +101,7 @@ pub struct MinBl0SecVerResponse {
 }
 
 /// Request to set the next (one-time) owner stage boot slot.
-#[derive(Debug, Default, Serialize, Annotate)]
+#[derive(Debug, Default, Annotate)]
 pub struct NextBl0SlotRequest {
     /// The slot to boot.
     pub next_bl0_slot: BootSlot,
@@ -111,7 +110,7 @@ pub struct NextBl0SlotRequest {
 }
 
 /// Response to the set next boot slot request.
-#[derive(Debug, Default, Serialize, Annotate)]
+#[derive(Debug, Default, Annotate)]
 pub struct NextBl0SlotResponse {
     /// The status response to the request.
     #[annotate(format = hex)]
@@ -121,7 +120,7 @@ pub struct NextBl0SlotResponse {
 }
 
 /// Request to unlock ownership of the chip.
-#[derive(Debug, Default, Serialize, Annotate)]
+#[derive(Debug, Default, Annotate)]
 pub struct OwnershipUnlockRequest {
     /// The desired unlock mode.
     pub unlock_mode: UnlockMode,
@@ -145,7 +144,7 @@ pub struct OwnershipUnlockRequest {
 }
 
 /// Response to the ownership unlock command.
-#[derive(Debug, Default, Serialize, Annotate)]
+#[derive(Debug, Default, Annotate)]
 pub struct OwnershipUnlockResponse {
     /// The status response to the request.
     #[annotate(format = hex)]
@@ -153,7 +152,7 @@ pub struct OwnershipUnlockResponse {
 }
 
 /// Request to activate ownership of the chip.
-#[derive(Debug, Default, Serialize, Annotate)]
+#[derive(Debug, Default, Annotate)]
 pub struct OwnershipActivateRequest {
     /// The new primary boot slot after activating ownership.
     pub primary_bl0_slot: BootSlot,
@@ -173,14 +172,14 @@ pub struct OwnershipActivateRequest {
 }
 
 /// Response to the ownership activate command.
-#[derive(Debug, Default, Serialize, Annotate)]
+#[derive(Debug, Default, Annotate)]
 pub struct OwnershipActivateResponse {
     /// The status response to the request.
     #[annotate(format = hex)]
     pub status: RomError,
 }
 
-#[derive(Debug, Serialize, Annotate)]
+#[derive(Debug, Annotate)]
 pub enum Message {
     Raw(
         #[serde(with = "serde_bytes")]
@@ -198,7 +197,7 @@ pub enum Message {
     OwnershipActivateResponse(OwnershipActivateResponse),
 }
 
-#[derive(Debug, Serialize, Annotate)]
+#[derive(Debug, Annotate)]
 pub struct BootSvc {
     pub header: Header,
     pub message: Message,

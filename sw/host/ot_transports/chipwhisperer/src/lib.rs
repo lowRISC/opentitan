@@ -10,7 +10,6 @@ use std::rc::Rc;
 
 use anyhow::{Result, ensure};
 use clap::Args;
-use serde_annotate::Annotate;
 use serialport::SerialPortType;
 
 use opentitanlib::backend::{Backend, BackendOpts, define_interface};
@@ -166,7 +165,7 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
         Ok(Rc::clone(inner.spi.as_ref().unwrap()))
     }
 
-    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
+    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
             self.load_bitstream(fpga_program)?;
             Ok(None)

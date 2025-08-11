@@ -865,7 +865,7 @@
     },
     "//third_party/rust:extensions.bzl%serde_annotate": {
       "general": {
-        "bzlTransitiveDigest": "oaV4+3tLql5Mxur6f49tKnuLe1huJqb1byj/ZX3WFKI=",
+        "bzlTransitiveDigest": "QDMDUXqVCpQP+b1YPGlZm5j6q1qJN3zW7rIlV4cazwA=",
         "usagesDigest": "Tsf/q9LjKCtQ8nKZW4yKxNPGltd7MZ1oZ54ZaytQHiI=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -874,9 +874,9 @@
           "lowrisc_serde_annotate": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
-              "sha256": "7d6db7c811469f3abd6b58745bd2b8ebb7596a68974739da51bc8b6568c8002a",
-              "strip_prefix": "serde-annotate-0.0.11",
-              "url": "https://github.com/lowRISC/serde-annotate/archive/refs/tags/v0.0.11.tar.gz"
+              "integrity": "sha256-pT+WAj/aVJADXzwHjNmKXIDh+7yWiy8ti8dENmDb7z4=",
+              "strip_prefix": "serde-annotate-0.0.13",
+              "url": "https://github.com/lowRISC/serde-annotate/archive/refs/tags/v0.0.13.tar.gz"
             }
           }
         },

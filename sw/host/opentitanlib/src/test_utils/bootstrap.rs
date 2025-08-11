@@ -4,7 +4,6 @@
 
 use anyhow::Result;
 use clap::Args;
-use serde_annotate::Annotate;
 use std::path::{Path, PathBuf};
 
 use crate::app::{StagedProgressBar, TransportWrapper};
@@ -22,7 +21,10 @@ pub struct Bootstrap {
 }
 
 impl Bootstrap {
-    pub fn init(&self, transport: &TransportWrapper) -> Result<Option<Box<dyn Annotate>>> {
+    pub fn init(
+        &self,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         if let Some(bootstrap) = &self.bootstrap {
             self.load(transport, bootstrap)?;
         }

@@ -26,7 +26,7 @@ pub trait Dispatch {
         context: &dyn Any,
         hsm: &Module,
         session: Option<&Session>,
-    ) -> Result<Box<dyn Annotate>>;
+    ) -> Result<Box<dyn erased_serde::Serialize>>;
 
     fn leaf(&self) -> &dyn Dispatch
     where
@@ -58,7 +58,7 @@ impl Dispatch for Commands {
         context: &dyn Any,
         hsm: &Module,
         session: Option<&Session>,
-    ) -> Result<Box<dyn Annotate>> {
+    ) -> Result<Box<dyn erased_serde::Serialize>> {
         match self {
             Commands::Ecdsa(x) => x.run(context, hsm, session),
             Commands::Exec(x) => x.run(context, hsm, session),
@@ -84,7 +84,7 @@ impl Dispatch for Commands {
     }
 }
 
-#[derive(Debug, Serialize, Annotate)]
+#[derive(Debug, Annotate)]
 pub struct BasicResult {
     success: bool,
     #[serde(skip_serializing_if = "AttrData::is_none")]
@@ -99,7 +99,7 @@ pub struct BasicResult {
     error: Option<String>,
 }
 
-#[derive(Debug, Serialize, Annotate)]
+#[derive(Debug, Annotate)]
 pub struct SignResult {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
@@ -122,7 +122,7 @@ impl Default for BasicResult {
 }
 
 impl BasicResult {
-    pub fn from_error(e: &anyhow::Error) -> Box<dyn Annotate> {
+    pub fn from_error(e: &anyhow::Error) -> Box<dyn erased_serde::Serialize> {
         Box::new(BasicResult {
             success: false,
             id: AttrData::None,
@@ -145,7 +145,7 @@ pub fn print_result(
     format: Format,
     color: Option<bool>,
     quiet: bool,
-    result: Result<Box<dyn Annotate>>,
+    result: Result<Box<dyn erased_serde::Serialize>>,
 ) -> Result<()> {
     let (doc, result) = match result {
         Ok(value) => {

@@ -4,7 +4,6 @@
 
 use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt};
-use serde::Serialize;
 use serde_annotate::Annotate;
 use sha2::{Digest, Sha256};
 use std::convert::TryFrom;
@@ -26,7 +25,7 @@ with_unknown! {
 
 /// The BootLog provides information about how the ROM and ROM_EXT
 /// booted the chip.
-#[derive(Debug, Default, Serialize, Annotate)]
+#[derive(Debug, Default, Annotate)]
 pub struct BootLog {
     /// A SHA256 digest over all other fields in this struct.
     #[annotate(format=hex)]

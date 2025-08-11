@@ -4,7 +4,7 @@
 
 use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_annotate::Annotate;
 use std::convert::TryFrom;
 use std::io::{Read, Write};
@@ -23,7 +23,7 @@ with_unknown! {
 }
 
 /// The OwnerApplicationKey is used to verify the owner's firmware payload.
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate)]
 pub struct OwnerApplicationKey {
     /// Header identifying this struct.
     #[serde(

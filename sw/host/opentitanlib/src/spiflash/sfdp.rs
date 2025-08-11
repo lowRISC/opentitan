@@ -29,7 +29,7 @@ pub enum Error {
 }
 
 /// The SFDP header identifies a valid SFDP, its version and the number of parameter headers.
-#[derive(Debug, Serialize, Annotate)]
+#[derive(Debug, Annotate)]
 pub struct SfdpHeader {
     #[annotate(format=hex, comment=comment_signature())]
     pub signature: u32,
@@ -417,7 +417,7 @@ impl From<u32> for MaxSpeed {
 }
 
 /// `FastReadParam` represents the parameters for the different styles of fast read.
-#[derive(Clone, Default, Debug, Serialize, Annotate)]
+#[derive(Clone, Default, Debug, Annotate)]
 pub struct FastReadParam {
     pub wait_states: u8,
     pub mode_bits: u8,
@@ -426,7 +426,7 @@ pub struct FastReadParam {
 }
 
 /// `SectorErase` represents the supported erase sector sizes of the device.
-#[derive(Clone, Default, Debug, Serialize, Annotate)]
+#[derive(Clone, Default, Debug, Annotate)]
 pub struct SectorErase {
     pub size: u32,
     #[annotate(format=hex)]
@@ -460,7 +460,7 @@ pub struct TimeBound {
 ///   eight-lane SPI modes.
 /// - Rev F, version 1.7 extends the table to 23 "dwords", including information about
 ///   dual data rate operations.
-#[derive(Default, Debug, Serialize, Annotate)]
+#[derive(Default, Debug, Annotate)]
 pub struct JedecParams {
     /// Erase granularity.
     pub block_erase_size: BlockEraseSize,
@@ -513,7 +513,7 @@ pub struct JedecParams {
 }
 
 /// The Rev B extensions to the JEDEC parameters table.
-#[derive(Default, Debug, Serialize, Annotate)]
+#[derive(Default, Debug, Annotate)]
 pub struct JedecParamsRevB {
     pub page_size: u32,
     pub page_program_time: TimeBound,

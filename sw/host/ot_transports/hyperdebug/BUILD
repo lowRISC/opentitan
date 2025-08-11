@@ -36,12 +36,12 @@ rust_library(
         "//sw/host/ot_transports/chipwhisperer",
         "@crate_index//:anyhow",
         "@crate_index//:byteorder",
+        "@crate_index//:erased-serde",
         "@crate_index//:log",
         "@crate_index//:regex",
         "@crate_index//:rusb",
         "@crate_index//:serialport",
         "@crate_index//:zerocopy",
-        "@lowrisc_serde_annotate//serde_annotate",
     ],
 )
 

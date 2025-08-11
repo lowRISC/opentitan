@@ -4,7 +4,7 @@
 
 use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_annotate::Annotate;
 use std::io::{Read, Write};
 
@@ -13,7 +13,7 @@ use super::misc::{TlvHeader, TlvTag};
 use crate::chip::boolean::MultiBitBool4;
 
 /// Describes the proprerties of a flash region.
-#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Default, Clone, Copy, Deserialize, Annotate)]
 pub struct FlashFlags {
     /// Read operations are allowed in this region.
     #[serde(default)]
@@ -146,7 +146,7 @@ impl From<FlashFlags> for u64 {
 }
 
 /// Describes a region to which a set of flags apply.
-#[derive(Debug, Default, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Default, Deserialize, Annotate)]
 pub struct OwnerFlashRegion {
     /// The start of the region (in pages).
     pub start: u16,
@@ -176,7 +176,7 @@ impl OwnerFlashRegion {
 }
 
 /// Describes the overall flash configuration for data pages.
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate)]
 pub struct OwnerFlashConfig {
     /// Header identifying this struct.
     #[serde(

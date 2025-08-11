@@ -10,7 +10,6 @@ use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result, ensure};
 use regex::Regex;
-use serde_annotate::Annotate;
 
 use opentitanlib::io::gpio::{GpioError, GpioPin};
 use opentitanlib::io::uart::Uart;
@@ -123,7 +122,7 @@ impl Transport for Verilator {
         })))
     }
 
-    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
+    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         if let Some(watch) = action.downcast_ref::<Watch>() {
             let subprocess = self.subprocess.as_ref().unwrap();
             let deadline = Instant::now() + watch.timeout.unwrap_or(Watch::FOREVER);
