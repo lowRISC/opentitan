@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
@@ -267,9 +268,12 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
 
 //  `ASSERT(CioTestOWithDftOn_A, lc_dft_en_i == lc_ctrl_pkg::On |->
 //                               ${"##"}[2:3] cio_test_o == `PRIM_GENERIC_OTP_PATH.test_vect_o)
-  `ASSERT(CioTestOWithDftOff_A, lc_dft_en_i != lc_ctrl_pkg::On |-> ##[2:3] cio_test_o == 0)
-  `ASSERT(CioTestEnOWithDftOn_A, lc_dft_en_i == lc_ctrl_pkg::On |-> ##[2:3] cio_test_en_o == '1)
-  `ASSERT(CioTestEnOWithDftOff_A, lc_dft_en_i != lc_ctrl_pkg::On |-> ##[2:3] cio_test_en_o == 0)
+  `ASSERT(CioTestOWithDftOff_A, lc_dft_en_i != lc_ctrl_pkg::On |->
+                                ${"##"}[2:3] lc_dft_en_i == lc_ctrl_pkg::On || cio_test_o == 0)
+  `ASSERT(CioTestEnOWithDftOn_A, lc_dft_en_i == lc_ctrl_pkg::On |->
+                                 ${"##"}[2:3] lc_dft_en_i != lc_ctrl_pkg::On || cio_test_en_o == '1)
+  `ASSERT(CioTestEnOWithDftOff_A, lc_dft_en_i != lc_ctrl_pkg::On |->
+                                  ${"##"}[2:3] lc_dft_en_i == lc_ctrl_pkg::On || cio_test_en_o == 0)
 
 
   `define OTP_ASSERT_WO_LC_ESC(NAME, SEQ) ${"\\"}
