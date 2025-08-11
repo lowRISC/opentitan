@@ -703,6 +703,10 @@ module dma
                 ctrl_state_d = DmaError;
               end else if (32'(clear_index_q) >= (NumIntClearSources - 1)) begin
                 ctrl_state_d = DmaAddrSetup;  // Proceed now we've handled all
+              end else begin
+                clear_index_en = 1'b1;
+                clear_index_d  = clear_index_q + INTR_CLEAR_SOURCES_WIDTH'(1'b1);
+                ctrl_state_d   = DmaClearIntrSrc;  // Override the _gnt response above.
               end
             end
           end else begin
