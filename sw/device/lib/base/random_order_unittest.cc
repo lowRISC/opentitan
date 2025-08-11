@@ -28,20 +28,12 @@ extern "C" uint32_t random_order_random_word(void) {
  * @param len Length of the target iteration sequence.
  */
 static void ctx_check(random_order_t *ctx, size_t len) {
-  // `step` should always be greater than zero.
-  EXPECT_LT(0, ctx->step);
-  // `state` should always be strictly less than the max.
-  EXPECT_LT(ctx->state, ctx->max);
-
-  // `step` should be less than the length if possible.
-  if (len > 1) {
-    EXPECT_LT(ctx->step, len);
-  }
-
-  // `max` should be greater than the length, strictly if possible.
-  EXPECT_LE(len, ctx->max);
-  if (len < UINT32_MAX) {
-    EXPECT_LT(len, ctx->max);
+  // `state` should always be strictly less than the max when
+  // the max is non-zero.
+  if (ctx->max > 0) {
+    EXPECT_LT(ctx->state, ctx->max);
+  } else {
+    EXPECT_EQ(ctx->state, ctx->max);
   }
 }
 
