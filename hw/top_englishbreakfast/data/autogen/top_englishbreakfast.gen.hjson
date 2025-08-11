@@ -4137,6 +4137,19 @@
           name_top: RomCtrlFlopToKmac
         }
         {
+          name: TwoCycleRom
+          desc:
+            '''
+            The underlying ROM macro has a read latency of 1 clock cycle (0) or
+            2 clock cycles (1). This may help breaking long paths in a target chip.
+            '''
+          type: bit
+          default: 1'b0
+          local: "true"
+          expose: "true"
+          name_top: RomCtrlTwoCycleRom
+        }
+        {
           name: RndCnstScrNonce
           desc: Fixed nonce used for address / data scrambling
           type: bit [63:0]
