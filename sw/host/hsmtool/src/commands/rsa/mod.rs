@@ -5,7 +5,7 @@
 use anyhow::Result;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
-use serde_annotate::Annotate;
+use serde_annotate::AnnotateSerialize;
 use std::any::Any;
 
 use crate::commands::Dispatch;
@@ -37,7 +37,7 @@ impl Dispatch for Rsa {
         context: &dyn Any,
         hsm: &Module,
         session: Option<&Session>,
-    ) -> Result<Box<dyn Annotate>> {
+    ) -> Result<Box<dyn AnnotateSerialize>> {
         match self {
             Rsa::Decrypt(x) => x.run(context, hsm, session),
             Rsa::Encrypt(x) => x.run(context, hsm, session),

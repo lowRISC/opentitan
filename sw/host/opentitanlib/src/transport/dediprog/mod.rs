@@ -7,7 +7,7 @@
 use anyhow::{bail, ensure, Result};
 use once_cell::sync::Lazy;
 use regex::Regex;
-use serde_annotate::Annotate;
+use serde_annotate::AnnotateSerialize;
 use serialport::SerialPortType;
 use std::any::Any;
 use std::cell::RefCell;

@@ -5,7 +5,7 @@
 use anyhow::Result;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
-use serde_annotate::{Annotate, Document};
+use serde_annotate::{AnnotateSerialize, Document};
 use std::any::Any;
 use std::path::PathBuf;
 use thiserror::Error;
@@ -21,7 +21,7 @@ pub struct Exec {
 #[derive(Debug, Serialize)]
 pub struct ExecResult {
     pub command: String,
-    pub result: Box<dyn Annotate>,
+    pub result: Box<dyn AnnotateSerialize>,
 }
 
 #[derive(Debug, Error)]
@@ -38,7 +38,7 @@ impl Dispatch for Exec {
         context: &dyn Any,
         hsm: &Module,
         session: Option<&Session>,
-    ) -> Result<Box<dyn Annotate>> {
+    ) -> Result<Box<dyn AnnotateSerialize>> {
         let commands = std::fs::read_to_string(&self.file)?;
         let commands = serde_annotate::from_str::<Vec<Box<dyn Dispatch>>>(&commands)?;
 

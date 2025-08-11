@@ -5,7 +5,7 @@
 use anyhow::{anyhow, Result};
 use clap::{Args, Subcommand};
 use opentitanlib::io::uart::UartParams;
-use serde_annotate::Annotate;
+use serde_annotate::{Annotate, AnnotateSerialize};
 use std::any::Any;
 use std::fs::File;
 use std::path::PathBuf;
@@ -23,7 +23,7 @@ use opentitanlib::rescue::serial::RescueSerial;
 use opentitanlib::util::file::FromReader;
 use opentitanlib::util::parse_int::ParseInt;
 
-#[derive(Debug, serde::Serialize, Annotate)]
+#[derive(Debug, Annotate)]
 pub struct RawBytes(
     #[serde(with = "serde_bytes")]
     #[annotate(format=hexdump)]
@@ -71,7 +71,7 @@ impl CommandDispatch for Firmware {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         let image = Image::read_from_file(&self.filename)?;
         let payload = if self.raw {
             image.bytes()
@@ -138,7 +138,7 @@ impl CommandDispatch for GetBootLog {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         let uart = self.params.create(transport)?;
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport, self.reset_target)?;
@@ -172,7 +172,7 @@ impl CommandDispatch for GetBootSvc {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         let uart = self.params.create(transport)?;
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport, self.reset_target)?;
@@ -206,7 +206,7 @@ impl CommandDispatch for GetDeviceId {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         let uart = self.params.create(transport)?;
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport, self.reset_target)?;
@@ -259,7 +259,7 @@ impl CommandDispatch for SetNextBl0Slot {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         let uart = self.params.create(transport)?;
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport, self.reset_target)?;
@@ -304,7 +304,7 @@ impl CommandDispatch for OwnershipUnlock {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         let unlock = self
             .unlock
             .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
@@ -353,7 +353,7 @@ impl CommandDispatch for OwnershipActivate {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         let activate = self
             .activate
             .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
@@ -393,7 +393,7 @@ impl CommandDispatch for SetOwnerConfig {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         let data = std::fs::read(&self.input)?;
         let uart = self.params.create(transport)?;
         let rescue = RescueSerial::new(uart);
@@ -432,7 +432,7 @@ impl CommandDispatch for GetOwnerConfig {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         let page = match self.page {
             0 => RescueSerial::GET_OWNER_PAGE0,
             1 => RescueSerial::GET_OWNER_PAGE1,
@@ -475,7 +475,7 @@ impl CommandDispatch for EraseOwner {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         if self.really {
             let uart = self.params.create(transport)?;
             let rescue = RescueSerial::new(uart);

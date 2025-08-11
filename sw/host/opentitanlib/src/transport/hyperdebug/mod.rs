@@ -5,7 +5,7 @@
 use anyhow::{bail, ensure, Context, Result};
 use once_cell::sync::Lazy;
 use regex::Regex;
-use serde_annotate::Annotate;
+use serde_annotate::AnnotateSerialize;
 use serialport::TTYPort;
 use std::any::Any;
 use std::cell::Cell;
@@ -832,7 +832,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         )?))
     }
 
-    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
+    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         if let Some(update_firmware_action) = action.downcast_ref::<UpdateFirmware>() {
             let usb_vid = self.inner.usb_device.borrow().get_vendor_id();
             let usb_pid = self.inner.usb_device.borrow().get_product_id();

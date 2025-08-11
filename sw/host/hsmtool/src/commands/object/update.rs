@@ -5,7 +5,7 @@
 use anyhow::{bail, Result};
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
-use serde_annotate::Annotate;
+use serde_annotate::AnnotateSerialize;
 use std::any::Any;
 
 use crate::commands::Dispatch;
@@ -31,7 +31,7 @@ impl Dispatch for Update {
         _context: &dyn Any,
         _hsm: &Module,
         session: Option<&Session>,
-    ) -> Result<Box<dyn Annotate>> {
+    ) -> Result<Box<dyn AnnotateSerialize>> {
         let session = session.ok_or(HsmError::SessionRequired)?;
         let attr = helper::search_spec(self.id.as_deref(), self.label.as_deref())?;
         let objects = session.find_objects(&attr)?;
