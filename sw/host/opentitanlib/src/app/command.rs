@@ -5,7 +5,6 @@
 use crate::app::TransportWrapper;
 use anyhow::Result;
 pub use opentitantool_derive::*;
-use serde_annotate::Annotate;
 use std::any::Any;
 
 /// The `CommandDispatch` trait should be implemented for all leaf structures
@@ -21,7 +20,7 @@ pub trait CommandDispatch {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>>;
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>>;
 
     /// For optimization.  Indicates whether this command expects to not run concurrently with
     /// other manipulations of the backend debugger.  Only long-running commands such as `console`

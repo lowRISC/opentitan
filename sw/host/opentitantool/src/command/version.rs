@@ -4,7 +4,6 @@
 
 use anyhow::Result;
 use clap::Args;
-use serde_annotate::Annotate;
 use std::any::Any;
 
 use opentitanlib::app::TransportWrapper;
@@ -47,7 +46,7 @@ impl CommandDispatch for Version {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         Ok(Some(Box::<VersionResponse>::default()))
     }
 }

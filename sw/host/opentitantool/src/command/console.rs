@@ -5,7 +5,6 @@
 use anyhow::{Result, anyhow};
 use clap::Args;
 use regex::Regex;
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs::File;
 use std::time::Duration;
@@ -58,7 +57,7 @@ impl CommandDispatch for Console {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // We need the UART for the console command to operate.
         transport.capabilities()?.request(Capability::UART).ok()?;
 

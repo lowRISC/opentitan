@@ -169,6 +169,7 @@ rust_library(
         "@crate_index//:der",
         "@crate_index//:directories",
         "@crate_index//:ecdsa",
+        "@crate_index//:erased-serde",
         "@crate_index//:hex",
         "@crate_index//:indexmap",
         "@crate_index//:log",

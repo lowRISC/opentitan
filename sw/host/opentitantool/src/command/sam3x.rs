@@ -4,7 +4,6 @@
 
 use anyhow::Result;
 use clap::Args;
-use serde_annotate::Annotate;
 use std::any::Any;
 
 use opentitanlib::app::TransportWrapper;
@@ -19,7 +18,7 @@ impl CommandDispatch for Reset {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         log::info!("Resetting the SAM3X chip");
         transport.dispatch(&ot_transport_chipwhisperer::ResetSam3x {})
     }
@@ -34,7 +33,7 @@ impl CommandDispatch for GetFwVersion {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.dispatch(&ot_transport_chipwhisperer::GetSam3xFwVersion {})
     }
 }

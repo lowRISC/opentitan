@@ -34,7 +34,6 @@ pub mod xmodem;
 
 use anyhow::Result;
 use clap::Args;
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::time::Duration;
 
@@ -60,7 +59,7 @@ impl CommandDispatch for NoOp {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         if let Some(d) = self.delay {
             std::thread::sleep(d);
         }

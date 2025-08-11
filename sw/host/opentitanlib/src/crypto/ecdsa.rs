@@ -10,7 +10,7 @@ use ecdsa::signature::hazmat::PrehashVerifier;
 use p256::NistP256;
 use p256::ecdsa::{SigningKey, VerifyingKey};
 use rand::rngs::OsRng;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_annotate::Annotate;
 use sha2::digest::generic_array::GenericArray;
 use std::fs::File;
@@ -78,7 +78,7 @@ impl EcdsaPrivateKey {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate)]
 pub struct EcdsaRawSignature {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
@@ -235,7 +235,7 @@ impl TryFrom<&EcdsaRawPublicKey> for EcdsaPublicKey {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate)]
 pub struct EcdsaRawPublicKey {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]

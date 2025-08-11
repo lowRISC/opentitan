@@ -9,7 +9,6 @@
 
 use anyhow::Result;
 use clap::{Args, Subcommand};
-use serde_annotate::Annotate;
 use std::any::Any;
 
 use opentitanlib::app::TransportWrapper;
@@ -33,7 +32,7 @@ impl CommandDispatch for HelloWorld {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // Is the world cruel or not?
         let msg = if self.cruel {
             "Hello cruel World!"
@@ -55,7 +54,7 @@ impl CommandDispatch for HelloPeople {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // The `hello people` command produces no result.
         Ok(None)
     }
@@ -86,7 +85,7 @@ impl CommandDispatch for GoodbyeCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         Ok(Some(Box::new(GoodbyeMessage {
             message: "Goodbye!".to_owned(),
         })))

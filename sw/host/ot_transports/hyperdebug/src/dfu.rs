@@ -10,7 +10,6 @@ use std::sync::LazyLock;
 
 use anyhow::{Result, anyhow, bail};
 use regex::Regex;
-use serde_annotate::Annotate;
 
 use opentitanlib::transport::{
     Capabilities, Capability, ProgressIndicator, Transport, TransportError, UpdateFirmware,
@@ -89,7 +88,7 @@ impl Transport for HyperdebugDfu {
         Ok(Capabilities::new(Capability::NONE))
     }
 
-    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
+    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         if let Some(update_firmware_action) = action.downcast_ref::<UpdateFirmware>() {
             update_firmware(
                 &mut self.usb_backend.borrow_mut(),
@@ -174,7 +173,7 @@ pub fn update_firmware(
     force: bool,
     usb_vid: u16,
     usb_pid: u16,
-) -> Result<Option<Box<dyn Annotate>>> {
+) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
     let firmware: &[u8] = if let Some(vec) = firmware.as_ref() {
         validate_firmware_image(vec)?;
         vec

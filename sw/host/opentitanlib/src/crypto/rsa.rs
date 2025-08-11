@@ -9,7 +9,7 @@ use rsa::pkcs1::{DecodeRsaPublicKey, EncodeRsaPublicKey};
 use rsa::pkcs1v15::Pkcs1v15Sign;
 use rsa::pkcs8::{DecodePrivateKey, DecodePublicKey, EncodePrivateKey};
 use rsa::traits::PublicKeyParts;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_annotate::Annotate;
 use sha2::Sha256;
 use std::fs::File;
@@ -244,7 +244,7 @@ impl Deref for RsaPrivateKey {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate)]
 pub struct RsaRawPublicKey {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#![feature(min_specialization)]
 use anyhow::{Context, Result, anyhow};
 use clap::Parser;
 use cryptoki::session::UserType;

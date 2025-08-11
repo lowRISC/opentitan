@@ -5,7 +5,6 @@
 use anyhow::Result;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::path::PathBuf;
 
@@ -31,7 +30,7 @@ impl Dispatch for Import {
         _context: &dyn Any,
         hsm: &Module,
         _session: Option<&Session>,
-    ) -> Result<Box<dyn Annotate>> {
+    ) -> Result<Box<dyn erased_serde::Serialize>> {
         let spx = hsm.spx.as_ref().ok_or(HsmError::SpxUnavailable)?;
         let token = hsm.token.as_deref().ok_or(HsmError::SessionRequired)?;
 
