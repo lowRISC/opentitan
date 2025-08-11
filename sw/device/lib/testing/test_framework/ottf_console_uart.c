@@ -86,6 +86,7 @@ static uint32_t get_flow_control_watermark_plic_id(ottf_console_t *console) {
 }
 
 void ottf_console_uart_flow_control_enable(ottf_console_t *console) {
+  CHECK(console->type == kOttfConsoleUart);
   const dif_uart_t *uart = &console->data.uart.dif;
   CHECK_DIF_OK(dif_uart_watermark_rx_set(uart, kFlowControlRxWatermark));
   CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
@@ -113,6 +114,7 @@ void ottf_console_uart_flow_control_enable(ottf_console_t *console) {
 // This version of the function is safe to call from within the ISR.
 static status_t manage_flow_control(ottf_console_t *console,
                                     ottf_console_flow_control_t ctrl) {
+  CHECK(console->type == kOttfConsoleUart);
   const dif_uart_t *uart = &console->data.uart.dif;
   if (console->data.uart.flow_control_state == kOttfConsoleFlowControlNone) {
     return OK_STATUS((int32_t)console->data.uart.flow_control_state);
@@ -148,6 +150,7 @@ static status_t manage_flow_control(ottf_console_t *console,
 
 bool ottf_console_uart_flow_control_isr(uint32_t *exc_info,
                                         ottf_console_t *console) {
+  CHECK(console->type == kOttfConsoleUart);
   const dif_uart_t *uart = &console->data.uart.dif;
   bool rx;
   CHECK_DIF_OK(dif_uart_irq_is_pending(uart, kDifUartIrqRxWatermark, &rx));
@@ -163,6 +166,7 @@ bool ottf_console_uart_flow_control_isr(uint32_t *exc_info,
 // unexpected write to `console->data.uart.flow_control_state`.
 status_t ottf_console_uart_flow_control(ottf_console_t *console,
                                         ottf_console_flow_control_t ctrl) {
+  CHECK(console->type == kOttfConsoleUart);
   const dif_uart_t *uart = &console->data.uart.dif;
   dif_uart_irq_enable_snapshot_t snapshot;
   CHECK_DIF_OK(dif_uart_irq_disable_all(uart, &snapshot));
