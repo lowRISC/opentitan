@@ -13,7 +13,7 @@ from typing import List, Tuple
 
 from mako.template import Template
 from mubi.prim_mubi import mubi_value_as_int
-from topgen import secure_prng as sp
+from topgen.secure_prng import SecurePrngFactory
 
 from lib import common
 from lib.LcStEnc import LcStEnc
@@ -227,7 +227,7 @@ class OtpMemImg(OtpMemMap):
         log.info('')
 
         # Re-initialize with seed to make results reproducible.
-        sp.reseed(OTP_IMG_SEED_DIVERSIFIER + int(img_config['seed']))
+        SecurePrngFactory.create("otpmemimg", OTP_IMG_SEED_DIVERSIFIER + int(img_config['seed']))
 
         if 'partitions' not in img_config:
             raise RuntimeError('Missing partitions key in configuration.')
@@ -341,7 +341,8 @@ class OtpMemImg(OtpMemMap):
             mubi_str = ""
             mubi_val_str = ""
             item.setdefault('value', '0x0')
-            common.random_or_hexvalue(item, 'value', item_width)
+            prng = SecurePrngFactory.get("otpmemimg")
+            common.random_or_hexvalue(prng, item, 'value', item_width)
 
         mmap_item['value'] = item['value']
 

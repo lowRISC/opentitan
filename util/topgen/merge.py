@@ -16,7 +16,8 @@ from reggen.ip_block import IpBlock
 from reggen.params import (LocalParam, MemSizeParameter, Parameter,
                            RandParameter)
 from reggen.validate import check_bool
-from topgen import lib, secure_prng
+from topgen import lib
+from topgen.secure_prng import SecurePrngFactory
 from topgen.typing import IpBlocksT
 
 from .clocks import Clocks, UnmanagedClocks
@@ -26,7 +27,8 @@ from .resets import Resets, UnmanagedResets
 def _get_random_data_hex_literal(width):
     """ Fetch 'width' random bits and return them as hex literal"""
     width = int(width)
-    literal_str = hex(secure_prng.getrandbits(width))
+    prng = SecurePrngFactory.get("topgen")
+    literal_str = hex(prng.getrandbits(width))
     return literal_str
 
 
@@ -36,7 +38,8 @@ def _get_random_perm_hex_literal(numel):
     num_elements = int(numel)
     width = int(ceil(log2(num_elements)))
     idx = [x for x in range(num_elements)]
-    secure_prng.shuffle(idx)
+    prng = SecurePrngFactory.get("topgen")
+    prng.shuffle(idx)
     literal_str = ""
     for k in idx:
         literal_str += format(k, '0' + str(width) + 'b')

@@ -10,7 +10,7 @@ from collections import OrderedDict
 from Crypto.Hash import cSHAKE128
 from lib.common import (check_int, ecc_encode, get_hd, hd_histogram,
                         is_valid_codeword, random_or_hexvalue, scatter_bits)
-from topgen import secure_prng as sp
+from topgen.secure_prng import SecurePrngFactory
 
 # Seed diversification constant for LcStEnc (this enables to use
 # the same seed for different classes)
@@ -77,12 +77,13 @@ def _get_incremental_codewords(config, base_ecc, existing_words):
 
 def _get_new_state_word_pair(config, existing_words):
     '''Randomly generate a new incrementally writable word pair'''
+    prng = SecurePrngFactory.get("lcstenc")
     while 1:
         # Draw a random number and check whether it is unique and whether
         # the Hamming weight is in range.
         width = config['secded']['data_width']
         ecc_width = config['secded']['ecc_width']
-        base = sp.getrandbits(width)
+        base = prng.getrandbits(width)
         base = format(base, '0' + str(width) + 'b')
         base_cand_ecc = ecc_encode(config, base)
         # disallow all-zero and all-one states
@@ -100,7 +101,7 @@ def _get_new_state_word_pair(config, existing_words):
                 # there are valid candidates, draw one at random.
                 # otherwise we just start over.
                 if incr_cands_ecc:
-                    incr_cand_ecc = sp.choice(incr_cands_ecc)
+                    incr_cand_ecc = prng.choice(incr_cands_ecc)
                     log.info('word {}: {}|{} -> {}|{}'.format(
                         int(len(existing_words) / 2),
                         base_cand_ecc[ecc_width:], base_cand_ecc[0:ecc_width],
@@ -192,8 +193,9 @@ def _validate_tokens(config):
     num_bytes = config['token_size'] // 8
 
     hashed_tokens = []
+    prng = SecurePrngFactory.get("lcstenc")
     for token in config['tokens']:
-        random_or_hexvalue(token, 'value', config['token_size'])
+        random_or_hexvalue(prng, token, 'value', config['token_size'])
         hashed_token = OrderedDict()
         hashed_token['name'] = token['name'] + 'Hashed'
         data = token['value'].to_bytes(num_bytes, byteorder='little')
@@ -287,7 +289,7 @@ class LcStEnc():
         log.info('Seed: {0:x}'.format(config['seed']))
         log.info('')
 
-        sp.reseed(LC_SEED_DIVERSIFIER + int(config['seed']))
+        SecurePrngFactory.create("lcstenc", LC_SEED_DIVERSIFIER + int(config['seed']))
 
         log.info('Checking SECDED.')
         _validate_secded(config)

@@ -14,7 +14,7 @@ from basegen.typing import ConfigT
 from design.mubi.prim_mubi import is_width_valid, mubi_value_as_int
 import hjson
 from tabulate import tabulate
-from topgen import secure_prng as sp
+from topgen.secure_prng import SecurePrngFactory
 
 from design.lib.common import check_bool, check_int, random_or_hexvalue
 
@@ -54,17 +54,18 @@ def _validate_scrambling(scr: Dict):
     if "digests" not in scr:
         raise RuntimeError("Missing digest configuration.")
 
+    prng = SecurePrngFactory.get("otmemmap")
     for key in scr["keys"]:
         key.setdefault("name", "unknown_key_name")
         key.setdefault("value", "<random>")
-        random_or_hexvalue(key, "value", scr["key_size"] * 8)
+        random_or_hexvalue(prng, key, "value", scr["key_size"] * 8)
 
     for dig in scr["digests"]:
         dig.setdefault("name", "unknown_key_name")
         dig.setdefault("iv_value", "<random>")
         dig.setdefault("cnst_value", "<random>")
-        random_or_hexvalue(dig, "iv_value", scr["iv_size"] * 8)
-        random_or_hexvalue(dig, "cnst_value", scr["cnst_size"] * 8)
+        random_or_hexvalue(prng, dig, "iv_value", scr["iv_size"] * 8)
+        random_or_hexvalue(prng, dig, "cnst_value", scr["cnst_size"] * 8)
 
 
 # if remaining number of bytes are not perfectly aligned, truncate
@@ -277,7 +278,8 @@ def _validate_item(item: Dict, buffered: bool, secret: bool):
     else:
         # Generate random constant to be used when partition has
         # not been initialized yet or when it is in error state.
-        random_or_hexvalue(item, "inv_default", item_width)
+        prng = SecurePrngFactory.get("otmemmap")
+        random_or_hexvalue(prng, item, "inv_default", item_width)
 
 
 def _validate_mmap(config: Dict) -> Dict:
@@ -356,7 +358,8 @@ def _validate_mmap(config: Dict) -> Dict:
                 False
             })
             # Randomize the digest default.
-            random_or_hexvalue(part["items"][-1], "inv_default",
+            prng = SecurePrngFactory.get("otmemmap")
+            random_or_hexvalue(prng, part["items"][-1], "inv_default",
                                DIGEST_SIZE * 8)
 
             # We always place the digest into the last 64bit word
@@ -421,7 +424,7 @@ class OtpMemMap():
         config["seed"] = check_int(config["seed"])
 
         # Initialize RNG.
-        sp.reseed(OTP_SEED_DIVERSIFIER + int(config['seed']))
+        SecurePrngFactory.create("otmemmap", OTP_SEED_DIVERSIFIER + int(config['seed']))
         log.info('Seed: {0:x}'.format(config['seed']))
         log.info('')
 

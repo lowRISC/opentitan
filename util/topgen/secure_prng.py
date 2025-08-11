@@ -17,6 +17,7 @@ import logging as log
 import sys
 from math import ceil as _ceil
 from math import log as _log
+from typing import Any
 
 from Crypto.Cipher import AES
 
@@ -304,15 +305,33 @@ class secure_prng():
         return test_point
 
 
-# ----------------------------------------------------------------------
-# Create one instance, and export its methods as module-level functions.
-# The functions share state across all uses.
+class SecurePrngFactory:
+    """
+    A factory class for creating and managing named pseudo-random number generators (PRNGs).
 
-_inst = secure_prng()
-reseed = _inst.reseed
-fetchbyte = _inst.fetchbyte
-getrandbits = _inst.getrandbits
-randbelow = _inst.randbelow
-shuffle = _inst.shuffle
-choice = _inst.choice
-test_point_gen = _inst.test_point_gen
+    This factory allows you to instantiate multiple PRNGs with different seeds
+    and retrieve them later by name.
+    """
+    _rngs: dict[str, secure_prng] = {}
+
+    @classmethod
+    def create(cls, name: str, seed: Any) -> None:
+        """
+        Creates and registers a new pseudo-random number generator.
+
+        If a generator with the same name already exists, it will be
+        overwritten with the new one.
+        """
+        rng_instance = secure_prng()
+        rng_instance.reseed(seed)
+        cls._rngs[name] = rng_instance
+
+    @classmethod
+    def get(cls, name: str) -> secure_prng:
+        """
+        Retrieves a previously created pseudo-random number generator by its name.
+        """
+        if name not in cls._rngs:
+            raise KeyError(f"Error: PRNG with name '{name}' not found. "
+                           "Please create it first using SecurePrngFactory.create().")
+        return cls._rngs[name]
