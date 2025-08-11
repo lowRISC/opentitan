@@ -28,7 +28,7 @@ build --workspace_status_command=util/get_workspace_status.sh
 
 # This enables convenient building for opentitan targets with the argument
 # --config=riscv32
-build:riscv32 --platforms=@crt//platforms/riscv32:opentitan
+build:riscv32 --platforms=@//toolchain:opentitan_platform
 
 # These options are required to build `cc_fuzz_test` targets. Enable with
 # --config=asan-libfuzzer
@@ -61,7 +61,7 @@ coverage:ot_coverage_off_target --repo_env='BAZEL_LLVM_COV=/usr/bin/llvm-cov'
 # Configuration for measuring on-target coverage. Enable with
 # `--config=ot_coverage_on_target`.
 build:ot_coverage_on_target --config='ot_coverage'
-build:ot_coverage_on_target --platforms="@crt//platforms/riscv32:opentitan"
+build:ot_coverage_on_target --platforms="@//toolchain:opentitan_platform"
 build:ot_coverage_on_target --define='measure_coverage_on_target=true'
 # Instrument selectively to limit size overhead when measuring on-target coverage.
 # Note: We have to disable optimizations until the corresponding item in #16761 is
