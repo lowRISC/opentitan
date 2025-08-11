@@ -13,3 +13,14 @@ key_ecdsa(
     pub_key = "unauthorized_key_0_ecdsa_p256.pub.der",
     type = "TestKey",
 )
+
+keyset(
+    name = "unauthorized_keys",
+    build_setting_default = "",
+    keys = {
+        "unauthorized_key_0_ecdsa_p256.pub.der": "unauthorized_key_0_ecdsa_p256",
+        "unauthorized_key_0_ecdsa_p256.der": "unauthorized_key_0_ecdsa_p256",
+    },
+    profile = "unauthorized_root",
+    tool = "//signing:token",
+)
