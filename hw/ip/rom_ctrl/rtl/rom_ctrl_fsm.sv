@@ -35,8 +35,7 @@
 //
 // Immediately after reset, the FSM is in control of ROM requests. The rom_select_bus_o signal
 // becomes MuBi4True when we have read the entire contents and the mux should instead give access to
-// the bus. Until that happens, the FSM makes requests by sending an address in rom_addr_o and
-// requesting the read with rom_req_o.
+// the bus. Until that happens, it should service the requests the FSM makes with rom_addr_o.
 //
 // Raw words from ROM appear in rom_data_i (to be incorporated into the expected digest).
 //
@@ -85,7 +84,6 @@ module rom_ctrl_fsm
   // To ROM mux
   output mubi4_t                     rom_select_bus_o,
   output logic [vbits(RomDepth)-1:0] rom_addr_o,
-  output logic                       rom_req_o,
 
   // Raw bits from ROM
   input logic [31:0]                 rom_data_i,
@@ -106,10 +104,8 @@ module rom_ctrl_fsm
   // The counter / address generator
   logic          counter_done;
   logic [AW-1:0] counter_read_addr;
-  logic          counter_read_req;
-  logic [AW-1:0] counter_data_addr;
+  logic          counter_read_data_top;
   logic          counter_data_rdy;
-  logic          counter_lnt;
   rom_ctrl_counter #(
     .RomDepth (RomDepth),
     .RomTopCount (TopCount)
@@ -118,10 +114,8 @@ module rom_ctrl_fsm
     .rst_ni             (rst_ni),
     .done_o             (counter_done),
     .read_addr_o        (counter_read_addr),
-    .read_req_o         (counter_read_req),
-    .data_addr_o        (counter_data_addr),
-    .data_rdy_i         (counter_data_rdy),
-    .data_last_nontop_o (counter_lnt)
+    .read_last_data_o   (counter_read_data_top),
+    .data_rdy_i         (counter_data_rdy)
   );
 
   // The compare block (responsible for comparing CSR data and forwarding it to the key manager)
@@ -179,12 +173,10 @@ module rom_ctrl_fsm
 
     unique case (state_q)
       ReadingLow: begin
-        // Switch to ReadingHigh when counter_lnt is true and kmac_rom_rdy_i & kmac_rom_vld_o
-        // (implying that the transaction went through)
-        //
-        // If counter_lnt is true then we requested the last non-top word from the ROM on the last
-        // cycle and the response will be available now. This gets taken if kmac_rom_rdy_i.
-        if (counter_lnt && kmac_rom_rdy_i) begin
+        // Switch to ReadingHigh when counter_read_data_top & kmac_rom_rdy_i is true (implying that
+        // the last word of the low section has been requested and the counter will switch to the
+        // high section next cycle).
+        if (counter_read_data_top && kmac_rom_rdy_i) begin
           state_d = ReadingHigh;
         end
       end
@@ -262,26 +254,47 @@ module rom_ctrl_fsm
   assign digest_o     = kmac_digest_i;
   assign digest_vld_o = kmac_done_i;
 
-  // Snoop on ROM reads to populate EXP_DIGEST, one word at a time
-  logic reading_top;
-  logic [AW-1:0] rel_addr_wide;
-  logic [TAW-1:0] rel_addr;
+  // Snoop on ROM reads to populate EXP_DIGEST, one word at a time. The address that is being
+  // requested of the ROM is in counter_read_addr, which is at index read_rel_addr_wide in the
+  // digest (once we are reading it). Since the ROM responds in a cycle, we use a flop and
+  // data_rel_addr index of the rom_data_i response.
+  logic reading_top, just_read_top;
+  logic [AW-1:0] read_rel_addr_wide;
+  logic [TAW-1:0] read_rel_addr, data_rel_addr;
 
+  assign read_rel_addr_wide = counter_read_addr - TopStartAddr;
+  assign read_rel_addr = read_rel_addr_wide[TAW-1:0];
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      data_rel_addr <= '0;
+    end else begin
+      data_rel_addr <= read_rel_addr;
+    end
+  end
+
+  // The reading_top signal means that we are currently receiving data that we have read from the
+  // top of ROM.
   assign reading_top = (state_q == ReadingHigh || state_q == KmacAhead) & ~counter_done;
-  assign rel_addr_wide = counter_data_addr - TopStartAddr;
-  assign rel_addr = rel_addr_wide[TAW-1:0];
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      just_read_top <= 1'b0;
+    end else begin
+      just_read_top <= reading_top;
+    end
+  end
 
   // The top bits of rel_addr_wide should always be zero if we're reading the top bits (because TAW
   // bits should be enough to encode the difference between counter_data_addr and TopStartAddr)
   //
-  // Consider them unused and add an assertion to check that the are indeed zero.
+  // Consider them unused and add an assertion to check that they are indeed zero.
   logic unused_top_rel_addr_wide;
-  assign unused_top_rel_addr_wide = |rel_addr_wide[AW-1:TAW];
-  `ASSERT(RelAddrWide_A, exp_digest_vld_o |-> !unused_top_rel_addr_wide)
+  assign unused_top_rel_addr_wide = |read_rel_addr_wide[AW-1:TAW];
+  `ASSERT(RelAddrWide_A, reading_top |-> !unused_top_rel_addr_wide)
 
   assign exp_digest_o = rom_data_i;
-  assign exp_digest_vld_o = reading_top;
-  assign exp_digest_idx_o = rel_addr;
+  assign exp_digest_vld_o = just_read_top;
+  assign exp_digest_idx_o = data_rel_addr;
 
   // The 'done' signal for pwrmgr is asserted once we get into the Done state. The 'good' signal
   // comes directly from the checker.
@@ -292,36 +305,30 @@ module rom_ctrl_fsm
   assign keymgr_data_o = '{data: digest_i, valid: mubi4_test_true_loose(in_state_done)};
 
   // KMAC rom data interface
-  logic kmac_rom_vld_d, kmac_rom_vld_q;
-  always_comb begin
-    // There will be valid data to pass to KMAC on each cycle after a counter request has gone out
-    // when we were in state ReadingLow. That data goes out (causing us to drop the valid signal) if
-    // KMAC was ready. Note that this formulation allows kmac_rom_vld_q to be high even if we're not
-    // in the ReadingLow state: if something goes wrong and we get faulted into Invalid then we'll
-    // still correctly send the end of the KMAC transaction.
-    kmac_rom_vld_d = kmac_rom_vld_q;
-    if (kmac_rom_rdy_i) begin
-      kmac_rom_vld_d = 0;
-    end
-    if (counter_read_req && state_q == ReadingLow && !counter_lnt) begin
-      kmac_rom_vld_d = 1;
-    end
-  end
+  //
+  // kmac_rom_vld_q is a valid flag that says that the word currently being returned from ROM should
+  // be passed to KMAC. This will be taken on this cycle if kmac_rom_rdy_i is high, so
+  // kmac_rom_vld_q should drop on the next cycle unless we are currently reading the another word
+  // that should be possed to KMAC.
+  logic kmac_rom_vld_q;
+  logic all_data_read_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       kmac_rom_vld_q <= 0;
+      all_data_read_q <= 0;
     end else begin
-      kmac_rom_vld_q <= kmac_rom_vld_d;
+      kmac_rom_vld_q <= (kmac_rom_vld_q && ~kmac_rom_rdy_i) || (state_q == ReadingLow);
+      all_data_read_q <= all_data_read_q | counter_read_data_top;
     end
   end
 
   assign counter_data_rdy = kmac_rom_rdy_i | (state_q inside {ReadingHigh, KmacAhead});
   assign kmac_rom_vld_o = kmac_rom_vld_q;
-  assign kmac_rom_last_o = counter_lnt;
+  assign kmac_rom_last_o = all_data_read_q;
 
   // The "last" flag is signalled when we're reading the last word in the first part of the ROM. As
-  // a quick consistency check, this should only happen when the "valid" flag is also high.
-  `ASSERT(LastImpliesValid_A, kmac_rom_last_o |-> kmac_rom_vld_o,
+  // a quick consistency check, this should only start when the "valid" flag is also high.
+  `ASSERT(LastImpliesValid_A, $rose(kmac_rom_last_o) |-> kmac_rom_vld_o,
           clk_i, !rst_ni || (state_q == Invalid))
 
   // Start the checker when transitioning into the "Checking" state
@@ -348,11 +355,10 @@ module rom_ctrl_fsm
   assign rom_select_bus_o = in_state_done;
 
   assign rom_addr_o = counter_read_addr;
-  assign rom_req_o = counter_read_req;
 
   assign alert_o = fsm_alert | checker_alert | unexpected_counter_change;
 
-  `ASSERT(CounterLntImpliesKmacRomVldO_A,
-          state_q == ReadingLow && counter_lnt -> kmac_rom_vld_o)
+  `ASSERT(AllDataReadToKmacRomVldO_A,
+          state_q == ReadingLow && all_data_read_q -> kmac_rom_vld_o)
 
 endmodule

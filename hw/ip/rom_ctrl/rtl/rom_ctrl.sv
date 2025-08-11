@@ -86,7 +86,6 @@ module rom_ctrl
   logic                     bus_rom_rvalid, bus_rom_rvalid_raw;
 
   logic [RomIndexWidth-1:0] checker_rom_index;
-  logic                     checker_rom_req;
   logic [DataWidth-1:0]     checker_rom_rdata, checker_rom_rdata_outer;
 
   logic                     internal_alert;
@@ -246,7 +245,9 @@ module rom_ctrl
     .bus_rdata_o       (bus_rom_rdata),
     .bus_rvalid_o      (bus_rom_rvalid_raw),
     .chk_addr_i        (checker_rom_index),
-    .chk_req_i         (checker_rom_req),
+    .chk_req_i         (1'b1), // Once the ROM has been checked after reset, the `rom_select_bus`
+                               // switches to the bus and the checker inputs including the request
+                               // signal get ignored.
     .chk_rdata_o       (checker_rom_rdata),
     .rom_rom_addr_o    (rom_rom_index),
     .rom_prince_addr_o (rom_prince_index),
@@ -375,7 +376,6 @@ module rom_ctrl
       .kmac_err_i           (kmac_err),
       .rom_select_bus_o     (rom_select_bus),
       .rom_addr_o           (checker_rom_index),
-      .rom_req_o            (checker_rom_req),
       .rom_data_i           (checker_rom_rdata[31:0]),
       .alert_o              (checker_alert)
     );
@@ -447,7 +447,6 @@ module rom_ctrl
     assign rom_select_bus = MuBi4True;
 
     assign checker_rom_index = '0;
-    assign checker_rom_req = 1'b0;
     assign checker_alert = 1'b0;
 
     logic unused_fsm_inputs;
