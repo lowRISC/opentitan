@@ -1811,9 +1811,11 @@ def main():
         # generate chip level xbar and alert_handler TB
         tb_files = [
             "xbar_env_pkg__params.sv", "tb__xbar_connect.sv",
-            "tb__alert_handler_connect.sv", "xbar_tgl_excl.cfg",
-            "rstmgr_tgl_excl.cfg"
+            "xbar_tgl_excl.cfg", "rstmgr_tgl_excl.cfg"
         ]
+        if completecfg["alert"]:
+            tb_files += ["tb__alert_handler_connect.sv"]
+
         for fname in tb_files:
             tpl_fname = "%s.tpl" % (fname)
             xbar_chip_data_path = TOPGEN_TEMPLATE_PATH / tpl_fname

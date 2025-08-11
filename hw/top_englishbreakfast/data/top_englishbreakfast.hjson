@@ -280,6 +280,7 @@
       base_addr: {
         hart: "0x40000000",
       },
+      outgoing_alert: "englishbreakfast",
     },
     { name: "uart1",    // instance name
       type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
@@ -297,6 +298,7 @@
       base_addr: {
         hart: "0x40010000",
       },
+      outgoing_alert: "englishbreakfast",
     },
     { name: "gpio",
       type: "gpio",
@@ -311,6 +313,7 @@
         GpioAsyncOn: "1"
       },
       attr: "ipgen"
+      outgoing_alert: "englishbreakfast",
     }
     { name: "spi_device",
       type: "spi_device",
@@ -320,6 +323,7 @@
       base_addr: {
         hart: "0x40050000",
       },
+      outgoing_alert: "englishbreakfast",
     },
     { name: "spi_host0",
       type: "spi_host",
@@ -329,6 +333,7 @@
       base_addr: {
         hart: "0x40060000",
       },
+      outgoing_alert: "englishbreakfast",
     },
     { name: "rv_timer",
       type: "rv_timer",
@@ -338,6 +343,7 @@
       base_addr: {
         hart: "0x40100000",
       },
+      outgoing_alert: "englishbreakfast",
     },
     { name: "usbdev",
       type: "usbdev",
@@ -347,6 +353,7 @@
       base_addr: {
         hart: "0x40320000",
       },
+      outgoing_alert: "englishbreakfast",
     },
     { name: "pwrmgr_aon",
       type: "pwrmgr",
@@ -365,7 +372,7 @@
         hart: "0x40400000",
       },
       attr: "ipgen",
-
+      outgoing_alert: "englishbreakfast",
     },
     { name: "rstmgr_aon",
       type: "rstmgr",
@@ -382,6 +389,7 @@
         SecCheck: "0",
       }
       attr: "ipgen",
+      outgoing_alert: "englishbreakfast",
     },
     { name: "clkmgr_aon",
       type: "clkmgr",
@@ -425,6 +433,7 @@
         hart: "0x40420000",
       },
       attr: "ipgen",
+      outgoing_alert: "englishbreakfast",
     },
     { name: "pinmux_aon",
       type: "pinmux",
@@ -440,6 +449,7 @@
         hart: "0x40460000",
       },
       attr: "ipgen",
+      outgoing_alert: "englishbreakfast",
     },
     { name: "aon_timer_aon",
       type: "aon_timer",
@@ -450,6 +460,7 @@
       base_addr: {
         hart: "0x40470000",
       },
+      outgoing_alert: "englishbreakfast",
     },
     { name: "ast",
       type: "ast",
@@ -507,6 +518,7 @@
         }
       }
       attr: "ipgen",
+      outgoing_alert: "englishbreakfast",
     },
     { name: "rv_plic",
       type: "rv_plic",
@@ -519,6 +531,7 @@
       },
       attr: "ipgen",
       targets: ["rv_core_ibex"]
+      outgoing_alert: "englishbreakfast",
     },
     { name: "aes",
       type: "aes",
@@ -532,6 +545,7 @@
       base_addr: {
         hart: "0x41100000",
       },
+      outgoing_alert: "englishbreakfast",
     },
     { name: "sram_ctrl_main",
       type: "sram_ctrl",
@@ -556,6 +570,7 @@
           size:       "0x20000"
         }
       }
+      outgoing_alert: "englishbreakfast",
     },
     { name: "rom_ctrl",
       type: "rom_ctrl",
@@ -578,6 +593,7 @@
       param_decl: {
         SecDisableScrambling: "1'b1"
       }
+      outgoing_alert: "englishbreakfast",
     },
     { name: "rv_core_ibex",
       type: "rv_core_ibex",
@@ -618,6 +634,7 @@
       base_addr: {
         hart: "0x411F0000",
       },
+      outgoing_alert: "englishbreakfast",
     },
   ]
 
