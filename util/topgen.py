@@ -32,7 +32,8 @@ from reggen.ip_block import IpBlock
 from topgen import get_hjsonobj_xbars
 from topgen import intermodule as im
 from topgen import lib as lib
-from topgen import merge_top, secure_prng, validate_top
+from topgen import merge_top, validate_top
+from topgen.secure_prng import SecurePrngFactory
 from topgen.c_test import TopGenCTest
 from topgen.clocks import Clocks
 from topgen.gen_dv import gen_dv
@@ -1530,7 +1531,7 @@ def main():
     for pass_idx in range(maximum_passes):
         log.info("Generation pass {}".format(pass_idx + 1))
         # Use the same seed for each pass to have stable random constants.
-        secure_prng.reseed(topcfg["rnd_cnst_seed"])
+        SecurePrngFactory.create("topgen", topcfg["rnd_cnst_seed"])
         # Insert the config file path of the HJSON to allow parsing files
         # relative the config directory
         cfg_copy["cfg_path"] = Path(args.topcfg).parent
