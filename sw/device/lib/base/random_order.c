@@ -9,55 +9,28 @@
 
 void random_order_init(random_order_t *ctx, size_t min_len) {
   ctx->ctr = 0;
-
-  // If the sequence length is zero or one, there's not much randomization we
-  // can do, but we can at least return one value past the range.
-  if (launder32(min_len) < 2) {
-    ctx->state = 0;
-    ctx->step = 1;
-    ctx->max = min_len + 1;
-    return;
-  }
-  HARDENED_CHECK_LE(2, min_len);
-
-  // Sample the start index from the range [0, n-1].
-  ctx->state = random_order_random_word() % min_len;
-  // Sample the step size from the range [1, n-1].
-  ctx->step = (random_order_random_word() % (min_len - 1)) + 1;
-
-  if (min_len - (min_len % ctx->step) > UINT32_MAX - ctx->step) {
-    // Safe fallback for cases where the max calculation would overflow.
-    ctx->max = UINT32_MAX;
-    ctx->step = 1;
+  if (min_len > 0) {
+    ctx->state = random_order_random_word() % min_len;
   } else {
-    // The maximum value is the smallest multiple of `step` that is strictly
-    // greater than `min_len`.
-    ctx->max = min_len - (min_len % ctx->step) + ctx->step;
+    ctx->state = 0;
   }
-  HARDENED_CHECK_LE(min_len, ctx->max);
+  ctx->max = min_len;
 }
 
 size_t random_order_len(const random_order_t *ctx) { return ctx->max; }
 
 size_t random_order_advance(random_order_t *ctx) {
   size_t out = ctx->state;
+  // Compute the next value and next value if we overflow max.
+  size_t next = ctx->state + 1;
+  size_t next_overflow = next - ctx->max;
 
-  // Normally, the increment is the step size. However, if we came back around
-  // to the start index, increase it by one to change the offset of the step.
-  uint32_t inc = ctx->step;
+  // Is next strictly less than max?
+  ct_bool32_t which = ct_sltu32(next, ctx->max);
+  // If yes, choose next, else next_overflow.
+  ctx->state = ct_cmov32(which, next, next_overflow);
+
   ctx->ctr = launder32(ctx->ctr) + 1;
-  if (ctx->ctr % (ctx->max / ctx->step) == 0) {
-    inc++;
-  }
-
-  if (launder32(inc) >= ctx->max - ctx->state) {
-    // If the next step would be greater than the maximum value, then loop back
-    // around to the start.
-    ctx->state = ctx->state + inc - ctx->max;
-  } else {
-    ctx->state += inc;
-  }
   HARDENED_CHECK_LE(ctx->state, ctx->max);
-
   return out;
 }
