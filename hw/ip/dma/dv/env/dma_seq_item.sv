@@ -263,7 +263,9 @@ class dma_seq_item extends uvm_sequence_item;
       // Longer transfers are exercised by disabling this constraint and, although we expect this
       // configuration to be rejected, we cannot leave the size with full 32-bit randomization
       // because we must generate an appropriate quantity of source data up front.
-      total_data_size inside {[1:'h10_0000]};
+      per_transfer_width == DmaXfer1BperTxn -> total_data_size inside {[1:'h04_0000]};
+      per_transfer_width == DmaXfer2BperTxn -> total_data_size inside {[1:'h08_0000]};
+      per_transfer_width == DmaXfer4BperTxn -> total_data_size inside {[1:'h10_0000]};
     }
   }
 
