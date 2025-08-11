@@ -256,6 +256,8 @@ static bool spi_tx_last_data_chunk(upload_info_t *info) {
 
 size_t ottf_console_spi_device_read(ottf_console_t *console, size_t buf_size,
                                     uint8_t *const buf) {
+  CHECK(console->type == kOttfConsoleSpiDevice);
+
   size_t received_data_len = 0;
   upload_info_t info;
   memset(&info, 0, sizeof(upload_info_t));
