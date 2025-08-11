@@ -113,57 +113,6 @@ filegroup(
     name = "app_spx_prod_pub",
     srcs = ["app_prod_spx.pub.pem"],
 )
-
-key_ecdsa(
-    name = "app_prod_ecdsa",
-    method = "local",
-    private_key = "app_prod_ecdsa_p256.der",
-    pub_key = "app_prod_ecdsa_p256.pub.der",
-    type = "ProdKey",
-)
-
-key_sphincs_plus(
-    name = "app_prod_spx",
-    config = {"domain": "Pure"},
-    method = "local",
-    private_key = "app_prod_spx.pem",
-    pub_key = "app_prod_spx.pub.pem",
-    type = "ProdKey",
-)
-
-key_ecdsa(
-    name = "app_dev_ecdsa",
-    method = "local",
-    private_key = "app_dev_ecdsa_p256.der",
-    pub_key = "app_dev_ecdsa_p256.pub.der",
-    type = "DevKey",
-)
-
-key_sphincs_plus(
-    name = "app_dev_spx",
-    config = {"domain": "PreHashedSha256"},
-    method = "local",
-    private_key = "app_dev_spx.pem",
-    pub_key = "app_dev_spx.pub.pem",
-    type = "DevKey",
-)
-
-key_ecdsa(
-    name = "app_test_ecdsa",
-    method = "local",
-    private_key = "app_test_ecdsa_p256.der",
-    pub_key = "app_test_ecdsa_p256.pub.der",
-    type = "TestKey",
-)
-
-key_ecdsa(
-    name = "app_unauthorized_ecdsa",
-    method = "local",
-    private_key = "app_unauthorized_ecdsa_p256.der",
-    pub_key = "app_unauthorized_ecdsa_p256.pub.der",
-    type = "TestKey",
-)
-
 keyset(
     name = "ecdsa_keys",
     build_setting_default = "",
@@ -177,7 +126,7 @@ keyset(
         "app_prod_ecdsa_p256.pub.der": "app_prod_ecdsa_p256",
         "app_prod_ecdsa_p256.der": "app_prod_ecdsa_p256",
         "app_dev_ecdsa_p256.pub.der": "app_dev_ecdsa_p256",
-        "app_dev_ecdsa_p256.der": "app_dev_ecdsa_p256
+        "app_dev_ecdsa_p256.der": "app_dev_ecdsa_p256",
         "app_test_ecdsa_p256.pub.der": "app_test_ecdsa_p256",
         "app_test_ecdsa_p256.der": "app_test_ecdsa_p256",
         "app_unauthorized_ecdsa_p256.pub.der": "app_unauthorized_ecdsa_p256",

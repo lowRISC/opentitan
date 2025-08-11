@@ -22,35 +22,3 @@ keyset(
     profile = "sival_root",
     tool = "//signing:token",
 )
-
-key_ecdsa(
-    name = "test_key_0_ecdsa_p256",
-    method = "local",
-    private_key = "test_key_0_ecdsa_p256.der",
-    pub_key = "test_key_0_ecdsa_p256.pub.der",
-    type = "TestKey",
-)
-
-key_ecdsa(
-    name = "dev_key_0_ecdsa_p256",
-    method = "local",
-    private_key = "dev_key_0_ecdsa_p256.der",
-    pub_key = "dev_key_0_ecdsa_p256.pub.der",
-    type = "DevKey",
-)
-
-key_ecdsa(
-    name = "prod_key_0_ecdsa_p256",
-    method = "local",
-    private_key = "prod_key_0_ecdsa_p256.der",
-    pub_key = "prod_key_0_ecdsa_p256.pub.der",
-    type = "ProdKey",
-)
-
-key_ecdsa(
-    name = "prod_key_1_ecdsa_p256",
-    method = "local",
-    private_key = "prod_key_1_ecdsa_p256.der",
-    pub_key = "prod_key_1_ecdsa_p256.pub.der",
-    type = "ProdKey",
-)

@@ -83,11 +83,3 @@ keyset(
     profile = "sival_root",
     tool = "//signing:token",
 )
-
-key_ecdsa(
-    name = "app_prod_ecdsa",
-    method = "local",
-    private_key = "app_prod_ecdsa_p256.der",
-    pub_key = "app_prod_ecdsa_p256.pub.der",
-    type = "ProdKey",
-)
