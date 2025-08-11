@@ -91,10 +91,10 @@ enum {
   /*
    * The expected instruction counts for constant time functions.
    */
-  kModeKeygenInsCnt = 1443816,
-  kModeKeygenSideloadInsCnt = 1443730,
-  kModeEcdhInsCnt = 1454932,
-  kModeEcdhSideloadInsCnt = 1455071,
+  kModeKeygenInsCnt = 1444128,
+  kModeKeygenSideloadInsCnt = 1444042,
+  kModeEcdhInsCnt = 1454936,
+  kModeEcdhSideloadInsCnt = 1455075,
   kModeEcdsaSignInsCnt = 1505346,
   kModeEcdsaSignSideloadInsCnt = 1505485,
 };
