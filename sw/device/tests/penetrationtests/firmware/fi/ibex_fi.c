@@ -477,8 +477,8 @@ static status_t read_otp_partitions(ujson_t *uj) {
     }
   }
 
-  for (size_t i = 0; i < ((OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
-                           OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
+  for (size_t i = 0; i < ((OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
+                           OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE) /
                           sizeof(uint32_t));
        i++) {
     if (otp_data_read_ref_creator_sw_cfg[i] !=
@@ -487,8 +487,8 @@ static status_t read_otp_partitions(ujson_t *uj) {
     }
   }
 
-  for (size_t i = 0; i < ((OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
-                           OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
+  for (size_t i = 0; i < ((OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
+                           OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE) /
                           sizeof(uint32_t));
        i++) {
     if (otp_data_read_ref_owner_sw_cfg[i] !=
