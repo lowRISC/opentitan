@@ -8,6 +8,7 @@
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
@@ -196,7 +197,8 @@ rom_error_t attestation_save_clear_key_test(void) {
   RETURN_IF_ERROR(otbn_boot_attestation_endorse(&digest, &sig));
 
   // Clear the key and check that endorsing now fails (it should even lock
-  // OTBN).
+  // OTBN). We cannot recover from the fatal alert so must ignore it.
+  CHECK_STATUS_OK(ottf_alerts_ignore_alert(kTopEarlgreyAlertIdOtbnFatal));
   RETURN_IF_ERROR(otbn_boot_attestation_key_clear());
   hmac_sha256(kTestMessage, kTestMessageLen, &digest);
   CHECK(otbn_boot_attestation_endorse(&digest, &sig) ==
