@@ -540,6 +540,7 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             # See #21706, expects keymgr state 0 so not working after ROM_EXT.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
             "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
@@ -551,9 +552,11 @@ opentitan_test(
     # This target uses OTBN pointers internally, so it cannot work host-side.
     deps = [
         ":otbn_boot_services",
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
     ],
