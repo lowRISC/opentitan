@@ -483,7 +483,9 @@ status_t cryptolib_sca_p256_sign_impl(
   };
 
   // Trigger window.
+  pentest_set_trigger_high();
   TRY(otcrypto_ecdsa_p256_sign(&private_key, message_digest, signature_mut));
+  pentest_set_trigger_low();
 
   // Return data back to host.
   uj_output->cfg = 0;
@@ -620,7 +622,9 @@ status_t cryptolib_sca_p384_sign_impl(
   };
 
   // Trigger window.
+  pentest_set_trigger_high();
   TRY(otcrypto_ecdsa_p384_sign(&private_key, message_digest, signature_mut));
+  pentest_set_trigger_low();
 
   // Return data back to host.
   uj_output->cfg = 0;
