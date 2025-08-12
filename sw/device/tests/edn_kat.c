@@ -5,20 +5,17 @@
 #include "hw/top/dt/csrng.h"
 #include "hw/top/dt/edn.h"
 #include "hw/top/dt/rv_core_ibex.h"
-#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/dif/dif_edn.h"
-#include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/edn_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-
-#include "hw/top/edn_regs.h"  // Generated
 
 enum {
   kEdnKatTimeout = (10 * 1000 * 1000),
@@ -114,7 +111,7 @@ const dif_edn_seed_material_t kEdnAlertTestSeedMaterialReseed = {
              0x73040c38, 0x6596739e},
 };
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
 
 // Initializes the peripherals used in this test.
 static void init_peripherals(void) {
@@ -221,12 +218,16 @@ static bool execute_kat(void) {
 }
 
 static void execute_alert_test(void) {
+  dt_alert_id_t edn0_recov_alert =
+      dt_edn_alert_to_alert_id(kDtEdn0, kDtEdnAlertRecovAlert);
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(edn0_recov_alert));
   uint32_t alerts;
   for (int i = 0; i <= 2 * kEdnKatWordsPerBlock; ++i) {
     ibex_get_rnd_data();
   }
   CHECK_DIF_OK(dif_edn_get_recoverable_alerts(&edn0, &alerts));
   CHECK((alerts >> kDifEdnRecoverableAlertRepeatedGenBits) & 0x1);
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(edn0_recov_alert));
 }
 
 bool test_main(void) {
