@@ -47,6 +47,12 @@ cc_library(
             "//sw/device/lib/testing:csrng_testutils",
         ],
         [],
+    ) + opentitan_if_ip(
+        "alert_handler",
+        [
+            "//sw/device/lib/dif:alert_handler",
+        ],
+        [],
     ),
 )
 
