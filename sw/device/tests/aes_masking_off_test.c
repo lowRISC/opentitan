@@ -14,6 +14,7 @@
 #include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -30,6 +31,9 @@ static const uint8_t kKeyShare1[] = {
     0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
     0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
 };
+
+dif_edn_t edn;
+dif_csrng_t csrng;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -85,13 +89,26 @@ status_t execute_test(void) {
       .ctrl_aux_lock = false,
   };
   CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key, NULL));
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true, kTestTimeout);
+
+  // The second time we reseed, the internal entropy bus will have the same
+  // value as when `aes_testutils_csrng_kat` internally reseeds previously in
+  // the test. This triggers a recoverable alert in the EDN.
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdEdn0RecovAlert));
 
   // Trigger a reseed of the internal PRNGs. This will load the seed generated
   // by CSRNG to be loaded into the AES masking PRNG. After this point, the AES
   // masking PRNG outputs an all-zero vector.
-  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true, kTestTimeout);
   CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true, kTestTimeout);
+
+  uint32_t alerts;
+  CHECK_DIF_OK(dif_edn_get_recoverable_alerts(&edn, &alerts));
+  CHECK(alerts == (1 << kDifEdnRecoverableAlertRepeatedGenBits));
+
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_finish(kTopEarlgreyAlertIdEdn0RecovAlert));
 
   // Trigger the clearing of the output data registers. After this point, also
   // the PRNG buffer stage will output an all-zero vector.
@@ -130,11 +147,12 @@ bool test_main(void) {
   // interfaces.
   LOG_INFO("Testing CSRNG SW application interface");
 
+  CHECK_DIF_OK(
+      dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn));
+  CHECK_DIF_OK(dif_csrng_init(
+      mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
+
   // Disable EDN connected to AES as well as CSRNG.
-  const dif_edn_t edn = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
-  const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
   CHECK_DIF_OK(dif_edn_stop(&edn));
   CHECK_DIF_OK(dif_csrng_stop(&csrng));
 
