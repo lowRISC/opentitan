@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/kmac.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
@@ -11,6 +12,7 @@
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/keymgr_regs.h"  // Generated.
@@ -19,7 +21,9 @@
 static dif_kmac_t kmac;
 static dif_keymgr_t keymgr;
 
-OTTF_DEFINE_TEST_CONFIG();
+static const dt_kmac_t kKmacDt = (dt_kmac_t)0;
+
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
 
 /**
  * KMAC test description.
@@ -511,7 +515,11 @@ status_t test_err_shadow_reg_update(void) {
   mmio_region_write32(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
   // Change the value of one config bit and write again.
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT, false);
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+      dt_kmac_alert_to_alert_id(kKmacDt, kDtKmacAlertRecovOperationErr)));
   mmio_region_write32(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+      dt_kmac_alert_to_alert_id(kKmacDt, kDtKmacAlertRecovOperationErr)));
 
   // On a mismatch between first and second write, the recoverable alert should
   // trigger.
