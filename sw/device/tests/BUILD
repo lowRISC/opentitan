@@ -78,6 +78,7 @@ opentitan_test(
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
