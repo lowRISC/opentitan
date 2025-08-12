@@ -6,6 +6,7 @@
 
 #include "hw/ip/aes/model/aes_modes.h"
 #include "sw/device/lib/dif/dif_aes.h"
+#include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #if !OT_IS_ENGLISH_BREAKFAST
@@ -207,11 +208,43 @@ status_t aes_testutils_csrng_kat(void) {
   TRY(csrng_testutils_kat_reseed(&csrng, &seed_material_reseed,
                                  &expected_state_reseed));
 
+  // We're about to generate the same `genbits` again which will trigger a
+  // `csrng_recov_alert`. This is expected, so we must disable this alert if it
+  // is currently enabled and restore it after.
+  dif_alert_handler_t alert_handler;
+  CHECK_DIF_OK(dif_alert_handler_init(
+      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      &alert_handler));
+
+  dif_toggle_t was_enabled = kDifToggleDisabled;
+  CHECK_DIF_OK(dif_alert_handler_alert_is_enabled(
+      &alert_handler, kTopEarlgreyAlertIdCsrngRecovAlert, &was_enabled));
+
+  if (was_enabled == kDifToggleEnabled) {
+    CHECK_DIF_OK(dif_alert_handler_alert_set_enabled(
+        &alert_handler, kTopEarlgreyAlertIdCsrngRecovAlert,
+        kDifToggleDisabled));
+  }
+
   // Generate one block containing the required seed for the AES masking PRNG
   // to output an all-zero vector.
   TRY(csrng_testutils_kat_generate(&csrng, 1, kCsrngBlockLen,
                                    kAesMaskingPrngZeroOutputSeed,
                                    &expected_state_generate));
+
+  // Check that the correct recoverable alert fired even if the alert was
+  // ignored.
+  uint32_t recov_alerts = 0;
+  CHECK_DIF_OK(dif_csrng_get_recoverable_alerts(&csrng, &recov_alerts));
+  CHECK(recov_alerts == kDifCsrngRecoverableAlertRepeatedGenBits);
+  CHECK_DIF_OK(dif_csrng_clear_recoverable_alerts(&csrng));
+
+  // Restore the alert if it was enabled.
+  if (was_enabled == kDifToggleEnabled) {
+    CHECK_DIF_OK(dif_alert_handler_alert_set_enabled(
+        &alert_handler, kTopEarlgreyAlertIdCsrngRecovAlert, kDifToggleEnabled));
+  }
+
   return OK_STATUS();
 }
 #endif
