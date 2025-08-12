@@ -954,3 +954,45 @@ dif_result_t dif_alert_handler_get_class_state(
 
   return kDifOk;
 }
+
+dif_result_t dif_alert_handler_alert_is_enabled(
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_alert_t alert,
+    dif_toggle_t *is_enabled) {
+  if (alert_handler == NULL || alert >= ALERT_HANDLER_PARAM_N_ALERTS ||
+      is_enabled == NULL) {
+    return kDifBadArg;
+  }
+
+  // Enable the alert.
+  ptrdiff_t enable_reg_offset = ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET +
+                                (ptrdiff_t)alert * (ptrdiff_t)sizeof(uint32_t);
+  bool enabled =
+      mmio_region_read32(alert_handler->base_addr, enable_reg_offset);
+  *is_enabled = dif_bool_to_toggle(enabled);
+
+  return kDifOk;
+}
+
+dif_result_t dif_alert_handler_alert_set_enabled(
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_alert_t alert,
+    dif_toggle_t enabled) {
+  if (alert_handler == NULL || alert >= ALERT_HANDLER_PARAM_N_ALERTS ||
+      !dif_is_valid_toggle(enabled)) {
+    return kDifBadArg;
+  }
+
+  // Check if configuration is locked.
+  ptrdiff_t regwen_offset = ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET +
+                            (ptrdiff_t)alert * (ptrdiff_t)sizeof(uint32_t);
+  if (!mmio_region_read32(alert_handler->base_addr, regwen_offset)) {
+    return kDifLocked;
+  }
+
+  // Enable the alert.
+  ptrdiff_t enable_reg_offset = ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET +
+                                (ptrdiff_t)alert * (ptrdiff_t)sizeof(uint32_t);
+  mmio_region_write32_shadowed(alert_handler->base_addr, enable_reg_offset,
+                               dif_toggle_to_bool(enabled));
+
+  return kDifOk;
+}
