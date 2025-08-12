@@ -246,6 +246,7 @@ cc_library(
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
