@@ -30,6 +30,7 @@ cc_library(
         "//hw/ip/aes:model",
         "//hw/top:dt",
         "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:csrng_shared",
         "//sw/device/lib/dif:edn",
         "//sw/device/lib/runtime:ibex",
