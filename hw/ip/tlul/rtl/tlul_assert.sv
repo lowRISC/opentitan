@@ -46,7 +46,7 @@ module tlul_assert #(
 
   pend_req_t [2**TL_AIW-1:0] pend_req;
 
-  // To test TLUL error cases in UVM tests, pass the tlul_assert_en argument in the UVM config db,
+  // To test TL-UL error cases in UVM tests, pass the tlul_assert_en argument in the UVM config db,
   // which will cause disable_sva to be set to 1. This disables some assertions about the
   // well-formedness of the TL input.
   bit disable_sva;
@@ -65,6 +65,26 @@ module tlul_assert #(
   assign d_data = 64'(d2h.d_data);
 
   ////////////////////////////////////
+  // Current request                //
+  ////////////////////////////////////
+  pend_req_t curr_req;
+  always_comb begin
+    // Indicates whether a request is being accepted.
+    curr_req.pend   = h2d.a_valid & d2h.a_ready;
+    // Properties of current request.
+    curr_req.opcode = h2d.a_opcode;
+    curr_req.size   = h2d.a_size;
+    curr_req.mask   = h2d.a_mask;
+  end
+
+  // Forward the current request for checking?
+  // This supports combinational responses. Only defined when `d_valid` asserted, i.e. it may
+  // be used unqualified in the `consequent` of an assertion, where the `antecedent` tests
+  // assertion of `d_valid`.
+  logic curr_fwd;
+  assign curr_fwd = curr_req.pend & (d2h.d_source == h2d.a_source);
+
+  ////////////////////////////////////
   // keep track of pending requests //
   ////////////////////////////////////
 
@@ -73,17 +93,11 @@ module tlul_assert #(
     if (!rst_ni) begin
       pend_req <= '0;
     end else begin
-      if (h2d.a_valid) begin
-        // store each request in pend_req array (we use blocking statements below so
-        // that we can handle the case where request and response for the same
-        // source-ID happen in the same cycle)
-        if (d2h.a_ready) begin
-          pend_req[h2d.a_source].pend    <= 1;
-          pend_req[h2d.a_source].opcode  <= h2d.a_opcode;
-          pend_req[h2d.a_source].size    <= h2d.a_size;
-          pend_req[h2d.a_source].mask    <= h2d.a_mask;
-        end
-      end // h2d.a_valid
+      // store each request in pend_req array, ignoring requests that receive a combinational
+      // response.
+      if (curr_req.pend & (!d2h.d_valid || d2h.d_source != h2d.a_source)) begin
+        pend_req[h2d.a_source] <= curr_req;
+      end
 
       if (d2h.d_valid) begin
         // update pend_req array
@@ -178,7 +192,8 @@ module tlul_assert #(
 
   // d_opcode: if request was Get, then response must be AccessAckData
   sequence respOpcode_S;
-    d2h.d_opcode === ((pend_req[d2h.d_source].opcode == Get) ? AccessAckData : AccessAck);
+    d2h.d_opcode === (((curr_fwd ? curr_req.opcode : pend_req[d2h.d_source].opcode) == Get) ?
+                        AccessAckData : AccessAck);
   endsequence
 
   // d_param is reserved
@@ -188,12 +203,12 @@ module tlul_assert #(
 
   // d_size must equal the a_size of the corresponding request
   sequence respSzEqReqSz_S;
-    d2h.d_size === pend_req[d2h.d_source].size;
+    d2h.d_size === (curr_fwd ? curr_req.size : pend_req[d2h.d_source].size);
   endsequence
 
-  // d_source: each response should have a pending request using same source ID
+  // d_source: each non-combinational response should have a pending request using same source ID
   sequence respMustHaveReq_S;
-    pend_req[d2h.d_source].pend;
+    curr_fwd | pend_req[d2h.d_source].pend;
   endsequence
 
 // d_data must be known for AccessAckData (depending on mask bits)
