@@ -86,16 +86,17 @@ module rom_ctrl
   logic                     bus_rom_rvalid, bus_rom_rvalid_raw;
 
   logic [RomIndexWidth-1:0] checker_rom_index;
-  logic [DataWidth-1:0]     checker_rom_rdata, checker_rom_rdata_outer;
+  logic [DataWidth-1:0]     checker_rom_rdata;
 
   logic                     internal_alert;
 
   // Pack / unpack kmac connection data ========================================
 
-  logic [63:0]              kmac_rom_data;
+  logic [63:0]              kmac_rom_data_full;
   logic                     kmac_rom_rdy, kmac_rom_rdy_outer;
   logic                     kmac_rom_vld, kmac_rom_vld_outer;
   logic                     kmac_rom_last, kmac_rom_last_outer;
+  logic [DataWidth-1:0]     kmac_rom_data, kmac_rom_data_outer;
   logic                     kmac_done;
   logic [255:0]             kmac_digest;
   logic                     kmac_err;
@@ -127,7 +128,7 @@ module rom_ctrl
 
     // SEC_CM: MEM.DIGEST
     assign kmac_data_o = '{valid: kmac_rom_vld_outer,
-                           data: kmac_rom_data,
+                           data: kmac_rom_data_full,
                            strb: kmac_pkg::MsgStrbW'({NumBytes{1'b1}}),
                            last: kmac_rom_last_outer};
 
@@ -322,7 +323,7 @@ module rom_ctrl
   end : gen_rom_scramble_disabled
 
   // Zero expand checker rdata to pass to KMAC
-  assign kmac_rom_data = {{64-DataWidth{1'b0}}, checker_rom_rdata_outer};
+  assign kmac_rom_data_full = {{64-DataWidth{1'b0}}, kmac_rom_data_outer};
 
   // Register block ============================================================
 
@@ -354,8 +355,9 @@ module rom_ctrl
   if (!SecDisableScrambling) begin : gen_fsm_scramble_enabled
 
     rom_ctrl_fsm #(
-      .RomDepth (RomSizeWords),
-      .TopCount (8)
+      .RomDepth  (RomSizeWords),
+      .TopCount  (8),
+      .DataWidth (DataWidth)
     ) u_checker_fsm (
       .clk_i,
       .rst_ni,
@@ -371,12 +373,13 @@ module rom_ctrl
       .kmac_rom_rdy_i       (kmac_rom_rdy),
       .kmac_rom_vld_o       (kmac_rom_vld),
       .kmac_rom_last_o      (kmac_rom_last),
+      .kmac_rom_data_o      (kmac_rom_data),
       .kmac_done_i          (kmac_done),
       .kmac_digest_i        (kmac_digest),
       .kmac_err_i           (kmac_err),
       .rom_select_bus_o     (rom_select_bus),
       .rom_addr_o           (checker_rom_index),
-      .rom_data_i           (checker_rom_rdata[31:0]),
+      .rom_data_i           (checker_rom_rdata),
       .alert_o              (checker_alert)
     );
 
@@ -402,10 +405,10 @@ module rom_ctrl
         .clr_i    (1'b0),
         .wvalid_i (kmac_rom_vld),
         .wready_o (kmac_rom_rdy),
-        .wdata_i  ({kmac_rom_last, checker_rom_rdata}),
+        .wdata_i  ({kmac_rom_last, kmac_rom_data}),
         .rvalid_o (kmac_rom_vld_outer),
         .rready_i (kmac_rom_rdy_outer),
-        .rdata_o  ({kmac_rom_last_outer, checker_rom_rdata_outer}),
+        .rdata_o  ({kmac_rom_last_outer, kmac_rom_data_outer}),
         .full_o   (),
         .depth_o  (),
         .err_o    ()
@@ -414,9 +417,9 @@ module rom_ctrl
       // If there is not a flop on the output, the "_outer" version of a signal is exactly the same
       // as the underlying signal.
 
-      assign kmac_rom_vld_outer      = kmac_rom_vld;
-      assign kmac_rom_last_outer     = kmac_rom_last;
-      assign checker_rom_rdata_outer = checker_rom_rdata;
+      assign kmac_rom_vld_outer  = kmac_rom_vld;
+      assign kmac_rom_last_outer = kmac_rom_last;
+      assign kmac_rom_data_outer = kmac_rom_data;
 
       assign kmac_rom_rdy = kmac_rom_rdy_outer;
     end
