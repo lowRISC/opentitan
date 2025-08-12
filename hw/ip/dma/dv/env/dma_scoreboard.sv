@@ -545,61 +545,90 @@ class dma_scoreboard extends cip_base_scoreboard #(
     tl_channels_e dir;
     tl_seq_item   item;
     fork
-      forever begin
-        bit [63:0] a_addr;
+      begin
+        bit data_phase = 0;
+        bit got_addr = 0;
+        bit got_data = 0;
 
-        dir_fifo.get(dir);
-        // Clear Interrupt writes are emitted even for invalid configurations.
-        exp_intr_clearing = dma_config.handshake & |dma_config.clear_intr_src &
-                           |dma_config.handshake_intr_en;
-        // Check if transaction is expected for a valid configuration
-        `DV_CHECK_FATAL(dma_config.is_valid_config || exp_intr_clearing,
-                           $sformatf("transaction observed on %s for invalid configuration",
-                                     if_name))
-        // Check if there is any active operation, but be aware that the Abort functionality
-        // intentionally does not wait for a bus response (this is safe because the design never
-        // blocks/stalls the TL-UL response).
-        `DV_CHECK_FATAL(operation_in_progress || abort_via_reg_write,
-                        "Transaction detected with no active operation")
-        case (dir)
-          AddrChannel: begin
-            `DV_CHECK_FATAL(a_chan_fifo.try_get(item),
-                            "dir_fifo pointed at A channel, but a_chan_fifo empty")
-            a_addr = item.a_addr;
-            if (if_name == "sys") begin
-              a_addr += (item.a_opcode == Get) ? cfg.soc_system_src_base_addr
-                                               : cfg.soc_system_dst_base_addr;
-            end
+        forever begin
+          bit [63:0] a_addr;
 
-            `uvm_info(`gfn, $sformatf("received %s a_chan %s item with addr: %0x and data: %0x",
-                                      if_name,
-                                      item.is_write() ? "write" : "read", a_addr,
-                                      item.a_data), UVM_HIGH)
-            process_tl_addr_txn(if_name, a_addr, item);
-            // Update num_fifo_reg_write
-            if (num_fifo_reg_write > 0) begin
-              `uvm_info(`gfn, $sformatf("Processed FIFO clear_intr_src addr: %0x0x", item.a_addr),
-                        UVM_DEBUG)
-              num_fifo_reg_write--;
+          // Collect A and D channel notifications in either order (the DUT supports combinational
+          // responses) and pair them before proceeding to the original code below.
+          if (got_addr && got_data) begin
+            if (data_phase) begin
+              dir = DataChannel;
+              got_addr = 0;
+              got_data = 0;
             end else begin
-              // Set status bit after all FIFO interrupt clear register writes are done
-              fifo_intr_cleared = 1;
+              dir = AddrChannel;
+            end
+            data_phase = !data_phase;
+          end else begin
+            data_phase = 0;
+            dir_fifo.get(dir);
+            if (dir == DataChannel) begin
+              got_data = 1;
+              continue;
+            end else begin
+              `DV_CHECK_FATAL(dir == AddrChannel);
+              got_addr = 1;
+              continue;
             end
           end
-          DataChannel: begin
-            `DV_CHECK_FATAL(d_chan_fifo.try_get(item),
-                            "dir_fifo pointed at D channel, but d_chan_fifo empty")
-            a_addr = item.a_addr;
-            if (if_name == "sys") begin
-              a_addr += (item.a_opcode == Get) ? cfg.soc_system_src_base_addr
-                                               : cfg.soc_system_dst_base_addr;
+
+          // Clear Interrupt writes are emitted even for invalid configurations.
+          exp_intr_clearing = dma_config.handshake & |dma_config.clear_intr_src &
+                             |dma_config.handshake_intr_en;
+          // Check if transaction is expected for a valid configuration
+          `DV_CHECK_FATAL(dma_config.is_valid_config || exp_intr_clearing,
+                             $sformatf("transaction observed on %s for invalid configuration",
+                                       if_name))
+          // Check if there is any active operation, but be aware that the Abort functionality
+          // intentionally does not wait for a bus response (this is safe because the design never
+          // blocks/stalls the TL-UL response).
+          `DV_CHECK_FATAL(operation_in_progress || abort_via_reg_write,
+                          "Transaction detected with no active operation")
+          case (dir)
+            AddrChannel: begin
+              `DV_CHECK_FATAL(a_chan_fifo.try_get(item),
+                              "dir_fifo pointed at A channel, but a_chan_fifo empty")
+              a_addr = item.a_addr;
+              if (if_name == "sys") begin
+                a_addr += (item.a_opcode == Get) ? cfg.soc_system_src_base_addr
+                                                 : cfg.soc_system_dst_base_addr;
+              end
+
+              `uvm_info(`gfn, $sformatf("received %s a_chan %s item with addr: %0x and data: %0x",
+                                        if_name,
+                                        item.is_write() ? "write" : "read", a_addr,
+                                        item.a_data), UVM_HIGH)
+              process_tl_addr_txn(if_name, a_addr, item);
+              // Update num_fifo_reg_write
+              if (num_fifo_reg_write > 0) begin
+                `uvm_info(`gfn, $sformatf("Processed FIFO clear_intr_src addr: %0x0x", item.a_addr),
+                          UVM_DEBUG)
+                num_fifo_reg_write--;
+              end else begin
+                // Set status bit after all FIFO interrupt clear register writes are done
+                fifo_intr_cleared = 1;
+              end
             end
-            `uvm_info(`gfn, $sformatf("received %s d_chan item with addr: %0x and data: %0x",
-                                      if_name, a_addr, item.d_data), UVM_HIGH)
-            process_tl_data_txn(if_name, a_addr, item);
-          end
-          default: `uvm_fatal(`gfn, "Invalid entry in dir_fifo")
-        endcase
+            DataChannel: begin
+              `DV_CHECK_FATAL(d_chan_fifo.try_get(item),
+                              "dir_fifo pointed at D channel, but d_chan_fifo empty")
+              a_addr = item.a_addr;
+              if (if_name == "sys") begin
+                a_addr += (item.a_opcode == Get) ? cfg.soc_system_src_base_addr
+                                                 : cfg.soc_system_dst_base_addr;
+              end
+              `uvm_info(`gfn, $sformatf("received %s d_chan item with addr: %0x and data: %0x",
+                                        if_name, a_addr, item.d_data), UVM_HIGH)
+              process_tl_data_txn(if_name, a_addr, item);
+            end
+            default: `uvm_fatal(`gfn, "Invalid entry in dir_fifo")
+          endcase
+        end
       end
     join_none
   endtask
@@ -1101,12 +1130,12 @@ class dma_scoreboard extends cip_base_scoreboard #(
           dma_config.src_chunk_wrap = `gmv(ral.src_config.wrap);
           dma_config.dst_addr_inc = `gmv(ral.dst_config.increment);
           dma_config.src_addr_inc = `gmv(ral.src_config.increment);
+          dma_config.soc_system_src_base_addr = cfg.soc_system_src_base_addr;
+          dma_config.soc_system_dst_base_addr = cfg.soc_system_dst_base_addr;
 
           `uvm_info(`gfn, $sformatf("dma_config\n %s",
                                     dma_config.sprint()), UVM_HIGH)
           // Check if configuration is valid;
-          dma_config.soc_system_src_base_addr = cfg.soc_system_src_base_addr;
-          dma_config.soc_system_dst_base_addr = cfg.soc_system_dst_base_addr;
           operation_in_progress = 1'b1;
           exp_src_addr = dma_config.src_addr;
           exp_dst_addr = dma_config.dst_addr;

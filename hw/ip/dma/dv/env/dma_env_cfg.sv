@@ -103,6 +103,12 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
     // TL Agent Configuration - RAL based
     m_tl_agent_cfg.max_outstanding_req = 1;
 
+    // The DMA controller must be able to handle combinational devices too, i.e. those
+    // with a combinational path from `a_valid` to `d_valid` on the TL-UL bus.
+    tl_agent_dma_host_cfg.device_can_rsp_on_same_cycle = 1'b1;
+    tl_agent_dma_ctn_cfg.device_can_rsp_on_same_cycle = 1'b1;
+    tl_agent_dma_sys_cfg.device_can_rsp_on_same_cycle = 1'b1;
+
   endfunction: initialize
 
 endclass
