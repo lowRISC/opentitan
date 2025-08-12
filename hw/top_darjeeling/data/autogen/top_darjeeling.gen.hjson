@@ -6105,12 +6105,15 @@
           domain: "0"
         }
       }
+      param_decl:
+      {
+        FlopToKmac: 1'b1
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
         clk_edn_i: clkmgr_aon_clocks.clk_main_secure
       }
-      param_decl: {}
       memory: {}
       param_list:
       [
@@ -6131,7 +6134,7 @@
             the active key slot and KMAC.
             '''
           type: bit
-          default: "0"
+          default: 1'b1
           local: "true"
           expose: "true"
           name_top: KeymgrDpeFlopToKmac

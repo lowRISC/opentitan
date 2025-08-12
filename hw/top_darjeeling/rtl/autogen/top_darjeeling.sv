@@ -332,7 +332,7 @@ module top_darjeeling #(
   // local parameters for sram_ctrl_ret_aon
   localparam int SramCtrlRetAonOutstanding = 2;
   // local parameters for keymgr_dpe
-  localparam bit KeymgrDpeFlopToKmac = 0;
+  localparam bit KeymgrDpeFlopToKmac = 1'b1;
   // local parameters for entropy_src
   localparam int EntropySrcEsFifoDepth = 3;
   localparam int unsigned EntropySrcDistrFifoDepth = 26;
