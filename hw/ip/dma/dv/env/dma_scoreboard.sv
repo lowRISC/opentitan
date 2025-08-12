@@ -506,8 +506,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
     end
 
     if (cfg.en_cov && (src_tl_error_detected || dst_tl_error_detected)) begin
-      cov.tlul_error_cg.sample(.dma_config(dma_config),
-                               .tl_err_asid(if_name_to_asid(if_name)));
+      cov.tlul_error_cg.sample(if_name_to_asid(if_name), src_tl_error_detected);
     end
 
     // Errors are expected to raise an interrupt if enabled, but we not must forget a configuration

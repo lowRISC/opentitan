@@ -6,11 +6,9 @@
   `dv_fatal("Did not expect DMA_ENV_COV_32B_ADDR_BINS to be defined already!")
 `else
   `define DMA_ENV_COV_32B_ADDR_BINS \
-    bins zero = {'0}; \
-    bins less_than_4_KiB = {[1:4095]}; \
-    bins between_4_and_64_KiB = {[4096:64*1024-1]}; \
-    bins between_64_KiB_and_1_GiB = {[64*1024:'h3fff_ffff]}; \
-    bins between_1_and_4_GiB = {['h4000_0000:'hffff_ffff]};
+    bins less_than_1MiB = {[0:'hf_ffff]}; \
+    bins between_1MiB_and_2_GiB = {['h10_0000:'h7fff_ffff]}; \
+    bins between_2_and_4_GiB = {['h8000_0000:'hffff_ffff]};
 `endif
 
 `ifdef DMA_ENV_COV_64B_ADDR_BINS
@@ -18,7 +16,8 @@
 `else
   `define DMA_ENV_COV_64B_ADDR_BINS \
     `DMA_ENV_COV_32B_ADDR_BINS \
-    bins above_4_GiB = {['h1_0000_0000:$]};
+    bins above_4_GiB = {['h1_0000_0000:'h7fff_ffff_ffff_ffff]}; \
+    bins msb_set = {['h8000_0000_0000_0000:$]};
 `endif
 
 `ifdef DMA_ENV_COV_SIZE_BINS \
@@ -163,17 +162,19 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
 
 endgroup
 
-covergroup dma_tlul_error_cg with function sample(dma_seq_item dma_config,
-                                                  asid_encoding_e tl_err_asid);
+// Ensure that we've seen a TL-UL error response from each address space (ASID) as both source
+// (Reads) and destination (Writes).
+covergroup dma_tlul_error_cg with function sample(asid_encoding_e tl_err_asid, bit is_source);
   option.per_instance = 1;
   option.name = "dma_tlul_error_cg";
 
   cp_tl_err_asid: coverpoint tl_err_asid;
 
-  cr_tl_err_asid_X_src_asid_X_dst_asid: cross
+  cp_tl_err_src: coverpoint is_source;
+
+  cr_tl_err_asid_X_is_source: cross
       cp_tl_err_asid,
-      dma_config.src_asid,
-      dma_config.dst_asid;
+      cp_tl_err_src;
 
 endgroup
 
