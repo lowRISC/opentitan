@@ -40,7 +40,6 @@ initial force dut.rst_fixed_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(rom_ctrl1__rom, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(rom_ctrl1__regs, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(peri, dut, clk_fixed_i, rst_n)
-`CONNECT_TL_DEVICE_IF(soc_proxy__core, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(soc_proxy__ctn, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(hmac, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(kmac, dut, clk_main_i, rst_n)

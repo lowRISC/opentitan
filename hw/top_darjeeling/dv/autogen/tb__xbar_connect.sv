@@ -52,7 +52,6 @@ tl_if rom_ctrl0__rom_tl_if(clk_main, rst_n);
 tl_if rom_ctrl0__regs_tl_if(clk_main, rst_n);
 tl_if rom_ctrl1__rom_tl_if(clk_main, rst_n);
 tl_if rom_ctrl1__regs_tl_if(clk_main, rst_n);
-tl_if soc_proxy__core_tl_if(clk_main, rst_n);
 tl_if soc_proxy__ctn_tl_if(clk_main, rst_n);
 tl_if hmac_tl_if(clk_main, rst_n);
 tl_if kmac_tl_if(clk_main, rst_n);
@@ -154,7 +153,6 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl0__regs, rom_ctrl0, regs_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl1__rom, rom_ctrl1, rom_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl1__regs, rom_ctrl1, regs_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(soc_proxy__core, soc_proxy, core_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(soc_proxy__ctn, soc_proxy, ctn_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(hmac, hmac, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(kmac, kmac, tl)
