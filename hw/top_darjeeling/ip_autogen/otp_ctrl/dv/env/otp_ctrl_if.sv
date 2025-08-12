@@ -294,7 +294,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     end
   endtask
 
-  // Force prim_generic_otp input cmd_i to a invalid value.
+  // Force prim_generic_otp input cmd_i to an invalid value.
   task automatic force_invalid_otp_cmd_i();
     @(posedge clk_i);
     force `PRIM_GENERIC_OTP_CMD_I_PATH = otp_ctrl_macro_pkg::cmd_e'(2'b10);

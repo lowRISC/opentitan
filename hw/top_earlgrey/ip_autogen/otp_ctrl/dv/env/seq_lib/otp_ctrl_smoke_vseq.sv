@@ -181,7 +181,8 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
         // Inject ECC error.
         if (ecc_otp_err != OtpNoEccErr && dai_addr < LifeCycleOffset) begin
-          `uvm_info(`gfn, $sformatf("Injecting ecc error %0d at 0x%x", ecc_otp_err, dai_addr),
+          `uvm_info(`gfn, $sformatf("Injecting ecc error %0d at 0x%x, old data 0x%x",
+                    ecc_otp_err, dai_addr, OTP_MACRO_FULL_WIDTH'(backdoor_rd_val)),
                     UVM_HIGH)
           backdoor_rd_val = backdoor_inject_ecc_err(dai_addr, ecc_otp_err);
         end
