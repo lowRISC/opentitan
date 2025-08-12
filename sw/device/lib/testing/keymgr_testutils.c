@@ -18,6 +18,7 @@
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
@@ -78,8 +79,10 @@ status_t keymgr_testutils_flash_init(
     const keymgr_testutils_secret_t *creator_secret,
     const keymgr_testutils_secret_t *owner_secret) {
   // Initialize flash secrets.
-  write_info_page(flash, kFlashInfoPageIdCreatorSecret, creator_secret,
-                  /*scramble=*/true);
+  if (creator_secret) {
+    write_info_page(flash, kFlashInfoPageIdCreatorSecret, creator_secret,
+                    /*scramble=*/true);
+  }
   write_info_page(flash, kFlashInfoPageIdOwnerSecret, owner_secret,
                   /*scramble=*/true);
   return OK_STATUS();
@@ -189,6 +192,7 @@ status_t keymgr_testutils_try_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
 status_t keymgr_testutils_init_nvm_then_reset(void) {
   dif_flash_ctrl_state_t flash;
   dif_rstmgr_t rstmgr;
+  dif_otp_ctrl_t otp_ctrl;
 
   TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
                       &rstmgr));
@@ -201,8 +205,22 @@ status_t keymgr_testutils_init_nvm_then_reset(void) {
 
     TRY(dif_flash_ctrl_init_state(
         &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+    TRY(dif_otp_ctrl_init(
+        mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR),
+        &otp_ctrl));
 
-    TRY(keymgr_testutils_flash_init(&flash, &kCreatorSecret, &kOwnerSecret));
+    bool secret2_computed = false;
+    TRY(dif_otp_ctrl_is_digest_computed(&otp_ctrl, kDifOtpCtrlPartitionSecret2,
+                                        &secret2_computed));
+
+    // Only initialise the creator secret if `SECRET2` digest has not been
+    // computed. `flash_ctrl` will throw a recoverable error if we try to write
+    // this afterwards.
+    const keymgr_testutils_secret_t *creator_secret = NULL;
+    if (!secret2_computed) {
+      creator_secret = &kCreatorSecret;
+    }
+    TRY(keymgr_testutils_flash_init(&flash, creator_secret, &kOwnerSecret));
 
     TRY(check_lock_otp_partition());
 
