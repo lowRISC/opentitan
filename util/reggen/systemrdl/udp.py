@@ -7,7 +7,7 @@ from typing import Any
 from systemrdl.udp import UDPDefinition
 from systemrdl import RDLCompiler  # type: ignore[attr-defined]
 from systemrdl.node import Node
-from systemrdl.component import Reg
+from systemrdl.component import Reg, Mem
 
 
 class UDPBoolean(UDPDefinition):
@@ -29,13 +29,26 @@ class Shadowed(UDPBoolean):
     valid_components = {Reg}
 
 
+class AsyncClk(UDPBoolean):
+    name = "async_clk"
+    valid_components = {Reg}
+
+
+class IntegrityBypass(UDPBoolean):
+    name = "integrity_bypass"
+    valid_components = {Mem}
+
+
 OPENTITAN_UDPS = Path(__file__).parent / "udp.rdl"
 
 
-def register_udps(compiler: RDLCompiler) -> None:
+def register_udps(compiler: RDLCompiler) -> Path:
     """
     Register opentitan specific UDPs (User Defined Properties)
     """
     compiler.register_udp(Hwre)
     compiler.register_udp(Shadowed)
+    compiler.register_udp(AsyncClk)
+    compiler.register_udp(IntegrityBypass)
     compiler.compile_file(OPENTITAN_UDPS)
+    return OPENTITAN_UDPS

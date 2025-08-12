@@ -5,8 +5,12 @@
 
 """Generate a SystemRDL description of the block"""
 
+import re
 from dataclasses import dataclass
 from typing import TextIO
+from pathlib import Path
+import shutil
+import re
 
 from reggen.ip_block import IpBlock
 from reggen.reg_block import RegBlock
@@ -23,8 +27,18 @@ from systemrdl import RDLCompiler  # type: ignore[attr-defined]
 from systemrdl.messages import FileSourceRef  # type: ignore[attr-defined]
 from systemrdl.importer import RDLImporter
 from systemrdl.component import Addrmap
+from systemrdl.core.parameter import Parameter
+from systemrdl import rdltypes
 from systemrdl.rdltypes import AccessType, OnReadType, OnWriteType  # type: ignore[attr-defined]
-from peakrdl_systemrdl import exporter
+from systemrdl.ast.references import InstRef
+from rdlexporter import RdlExporter
+
+
+def sanitize_str(s: str) -> str:
+    substitutions = [(r"\\:", ":"), ("`", ""), (r"\n", ""), ('''"''', '''\\"''')]
+    for pattern, replacement in substitutions:
+        s = re.sub(pattern, replacement, s)
+    return s
 
 
 @dataclass
@@ -74,16 +88,25 @@ class SWAccess2Systemrdl:
 class Field2Systemrdl:
     inner: Field
     importer: RDLImporter
+    root: Addrmap
 
     def _get_mubi_name(self) -> str:
         alignment = 4
         aligned_width = (self.inner.bits.width() + alignment - 1) & ~(alignment - 1)
         return f"MultiBitBool{aligned_width}"
 
-    def export(self) -> systemrdl.component.Field:
-        rdl_t = self.importer.create_field_definition(self.inner.name)
+    def export(
+        self, strip_suffix: bool = False, regwen: str | None = None
+    ) -> systemrdl.component.Field:
+        # Workaround because reggen adds the register index to all multiregisters fields,
+        # although it only makes sense when multiregisters are compacted (collapsed)
+        # to avoid name colision.
+
+        name = re.sub(r"_\d+$", "", self.inner.name) if strip_suffix else self.inner.name
+
+        rdl_t = self.importer.create_field_definition(name)
         field = self.importer.instantiate_field(
-            rdl_t, self.inner.name.upper(), self.inner.bits.lsb, self.inner.bits.width()
+            rdl_t, name.upper(), self.inner.bits.lsb, self.inner.bits.width()
         )
 
         swaccess = SWAccess2Systemrdl(self.inner.swaccess).export()
@@ -103,12 +126,24 @@ class Field2Systemrdl:
             self.importer.assign_property(field, "swmod", self.inner.hwqe)
 
         if self.inner.desc:
-            self.importer.assign_property(field, "desc", self.inner.desc)
+            self.importer.assign_property(field, "desc", sanitize_str(self.inner.desc))
 
         if self.inner.mubi:
             mubi_enum_name = self._get_mubi_name()
             enum = self.importer.compiler.namespace.lookup_type(mubi_enum_name)
             self.importer.assign_property(field, "encode", enum)
+
+        if swwe := bool(regwen):
+            if reg_ref := self.root.get_child_by_name(regwen):
+                # This is a workaround and shall be fixed when the Issue
+                # https://github.com/SystemRDL/systemrdl-compiler/issues/276 is fixed.
+                swwe = InstRef(
+                    self.importer.compiler.env,
+                    self.root,
+                    [(regwen, [], None), (reg_ref.children[0].inst_name, [], None)],
+                )
+
+            self.importer.assign_property(field, "swwe", swwe)
 
         return field
 
@@ -120,33 +155,53 @@ class Window2Systemrdl:
 
     def export(self) -> systemrdl.component.Mem:
         rdl_mem_t = self.importer.create_mem_definition(self.inner.name)
-        self.importer.assign_property(
-            rdl_mem_t, "memwidth", self.inner.size_in_bytes // self.inner.items
-        )
-        return self.importer.instantiate_mem(
-            rdl_mem_t, self.inner.name, self.inner.offset, [self.inner.items]
-        )
+        memwidth = self.inner.size_in_bytes // self.inner.items
+        self.importer.assign_property(rdl_mem_t, "memwidth", memwidth * 8)
+        self.importer.assign_property(rdl_mem_t, "mementries", self.inner.items)
+
+        swaccess = SWAccess2Systemrdl(self.inner.swaccess).export()
+        self.importer.assign_property(rdl_mem_t, "sw", swaccess["sw"])
+
+        if self.inner.data_intg_passthru:
+            self.importer.assign_property(rdl_mem_t, "integrity_bypass", True)
+
+        return self.importer.instantiate_mem(rdl_mem_t, self.inner.name.upper(), self.inner.offset)
 
 
 class Register2Systemrdl:
     inner: Register
     importer: RDLImporter
+    root: Addrmap
     stride: int | None = None
     count: int | None = None
+    strip_suffix: bool = False
+    name: str = ""
 
-    def __init__(self, reg: MultiRegister | Register, importer: RDLImporter):
+    def __init__(self, reg: MultiRegister | Register, importer: RDLImporter, root: Addrmap):
         self.importer = importer
+        self.root = root
         if isinstance(reg, Register):
             self.inner = reg
+            self.name = reg.name
         elif isinstance(reg, MultiRegister):
             self.inner = reg.cregs[0]
             self.stride = reg.stride
             self.count = len(reg.cregs)
+            # Workaround because reggen adds the register index to all multiregisters fields,
+            # although it only makes sense when multiregisters are compacted (collapsed)
+            # to avoid name colision.
+            self.strip_suffix = not self._has_name_colision(reg)
+            self.name = re.sub(r"_\d+$", "", self.inner.name)
 
     def export(self) -> systemrdl.component.Reg:
         reg_type = self.importer.create_reg_definition(self.inner.name)
         for rfield in self.inner.fields:
-            self.importer.add_child(reg_type, Field2Systemrdl(rfield, self.importer).export())
+            self.importer.add_child(
+                reg_type,
+                Field2Systemrdl(rfield, self.importer, self.root).export(
+                    self.strip_suffix, self.inner.regwen
+                ),
+            )
 
         reg_type.external = self.inner.hwext
 
@@ -156,14 +211,24 @@ class Register2Systemrdl:
         if self.inner.shadowed:
             self.importer.assign_property(reg_type, "shadowed", self.inner.shadowed)
 
+        if self.inner.desc:
+            self.importer.assign_property(reg_type, "desc", sanitize_str(self.inner.desc))
+
+        if self.inner.async_clk:
+            self.importer.assign_property(reg_type, "async_clk", True)
+
         reg = self.importer.instantiate_reg(
             reg_type,
-            self.inner.name,
+            self.name.upper(),
             self.inner.offset,
             [self.count] if self.count else None,
             self.stride if self.stride else None,
         )
         return reg
+
+    def _has_name_colision(self, reg: MultiRegister) -> bool:
+        names = set([re.sub(r"_\d+$", "", f.name) for f in reg.cregs[0].fields])
+        return len(names) != len(reg.cregs[0].fields)
 
 
 @dataclass
@@ -171,27 +236,32 @@ class RegBlock2Systemrdl:
     inner: RegBlock
     importer: RDLImporter
 
-    def export(self) -> Addrmap | None:
-        name = self.inner.name or "none"
-        rdl_addrmap_t = self.importer.create_addrmap_definition(name)
-        rdl_addrmap = self.importer.instantiate_addrmap(rdl_addrmap_t, name, 0)
+    def export(self, addrmap: Addrmap | None = None) -> Addrmap | None:
+        if not addrmap:
+            name = self.inner.name or "Block"
+            rdl_addrmap_t = self.importer.create_addrmap_definition(name)
+            addrmap = self.importer.instantiate_addrmap(rdl_addrmap_t, name.upper(), 0)
 
         # registers and multiregs
         for reg in self.inner.registers:
-            self.importer.add_child(rdl_addrmap, Register2Systemrdl(reg, self.importer).export())
+            self.importer.add_child(
+                addrmap, Register2Systemrdl(reg, self.importer, addrmap).export()
+            )
 
         # multiregs
         for mreg in self.inner.multiregs:
-            self.importer.add_child(rdl_addrmap, Register2Systemrdl(mreg, self.importer).export())
+            self.importer.add_child(
+                addrmap, Register2Systemrdl(mreg, self.importer, addrmap).export()
+            )
 
         # windows
         for window in self.inner.windows:
-            self.importer.add_child(rdl_addrmap, Window2Systemrdl(window, self.importer).export())
+            self.importer.add_child(addrmap, Window2Systemrdl(window, self.importer).export())
 
         nonempty = bool(
             len(self.inner.registers) + len(self.inner.multiregs) + len(self.inner.windows)
         )
-        return rdl_addrmap if nonempty else None
+        return addrmap if nonempty else None
 
 
 @dataclass
@@ -200,11 +270,22 @@ class IpBlock2Systemrdl:
     importer: RDLImporter
 
     def export(self) -> Addrmap | None:
-        num_children = 0
-
         rdl_addrmap = self.importer.create_addrmap_definition(self.inner.name)
 
-        for rb in self.inner.reg_blocks.values():
+        for param in self.inner.params.get_localparams():
+            value = int(param.value)
+            rdl_param = Parameter(rdltypes.get_rdltype(value), param.name)
+            rdl_param._value = value
+            rdl_addrmap.parameters.append(rdl_param)
+
+        interfaces = list(self.inner.reg_blocks.values())
+        if len(interfaces) == 1 and not bool(interfaces[0].name):
+            # If there's only one interface, the registers can go directly on the root addressmap.
+            RegBlock2Systemrdl(interfaces[0], self.importer).export(rdl_addrmap)
+            return rdl_addrmap
+
+        num_children = 0
+        for rb in interfaces:
             rdl_rb = RegBlock2Systemrdl(rb, self.importer).export()
 
             # Skip empty interfaces
@@ -220,17 +301,30 @@ class IpBlock2Systemrdl:
         return rdl_addrmap if num_children else None
 
 
+def check_rdl(rdl: Path):
+    compiler = RDLCompiler()
+    try:
+        compiler.compile_file(rdl)
+        compiler.elaborate()
+    except Exception as e:
+        raise RuntimeError(f"Error while compiling {rdl}.") from e
+
+
 class SystemrdlExporter(Exporter):
     def export(self, outfile: TextIO) -> int:
         comp = RDLCompiler()
-        register_udps(comp)
+        udp_path = register_udps(comp)
 
         imp = RDLImporter(comp)
         imp.default_src_ref = FileSourceRef(outfile.name)
 
-        rdl_addrmap = IpBlock2Systemrdl(self.block, imp).export()
+        try:
+            rdl_addrmap = IpBlock2Systemrdl(self.block, imp).export()
+        except Exception as e:
+            raise RuntimeError(f"Error while building RDL AST for {self.block.name}.") from e
+
         if rdl_addrmap is None:
-            raise RuntimeError("Block has no registers or windows.")
+            raise RuntimeError("Block {self.block.name} has no registers or windows.")
 
         imp.register_root_component(rdl_addrmap)
 
@@ -238,6 +332,20 @@ class SystemrdlExporter(Exporter):
         # to exp.export (which expects a path rather than a stream).
         outfile.close()
 
-        exporter.SystemRDLExporter().export(comp.elaborate(), outfile.name)
+        outpath = Path(outfile.name)
+        # Include the user defined enums and properties.
+        with outpath.open("w") as f:
+            f.write(f'`include "{udp_path.name}"\n\n')
+        # Copy the inlcude file to the output dir.
+        shutil.copy(udp_path, outpath.parent / udp_path.name)
 
+        try:
+            RdlExporter(comp).export(outpath)
+        except Exception as e:
+            raise RuntimeError(f"Error exporting {self.block.name} to RDL.") from e
+
+        print(f"Successfully generated {outfile.name}, {outpath.parent / udp_path.name}")
+
+        check_rdl(outpath)
+        print(f"Successfully generated {outfile.name}, {outpath.parent / udp_path.name}")
         return 0
