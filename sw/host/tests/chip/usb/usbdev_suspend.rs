@@ -36,6 +36,13 @@ struct Opts {
     #[arg(long, value_parser = humantime::parse_duration, default_value = "60s")]
     timeout: Duration,
 
+    // How much is given to the device to print some debugging logs at certain points
+    // of the tests. A timeout of 0 means that the test will move on with the test phases
+    // as soon as it syncs with the device, therefore the device logs may be interleave
+    // the host messages in a weird way.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "100ms")]
+    logging_duration: Duration,
+
     /// USB options.
     #[command(flatten)]
     usb: UsbOpts,
@@ -260,6 +267,11 @@ fn usbdev_suspend(
             // However do not suspend if we have reached the Shutdown phase because the device will
             // disconnect from the bus.
             if phase != SuspendPhase::Shutdown {
+                // If logging is enabled, a lot more messages will be printed after this sync message above.
+                // In order to keep the host and device log roughly in-order, give a chance to the device
+                // to print messages before moving-on.
+                let _ = UartConsole::wait_for(uart, r"(PASS|FAIL)!", opts.logging_duration);
+
                 suspend(&hub, port, !opts.usb.relaxed_hub_op)?;
                 if phase == SuspendPhase::Suspend {
                     delay_millis(time_suspended_short);
@@ -267,6 +279,10 @@ fn usbdev_suspend(
                     // Longer Suspended state, a cue to enter the sleep state.
                     delay_millis(time_suspended_long);
                 }
+                // If logging is enabled, a lot more messages will be printed, for example when going to
+                // sleep. In order to keep the host and device log roughly in-order, give a chance to the device
+                // to print messages before moving-on.
+                let _ = UartConsole::wait_for(uart, r"(PASS|FAIL)!", opts.logging_duration);
             }
 
             // Next test phase; initialize to final phase (safer default than the current phase).
