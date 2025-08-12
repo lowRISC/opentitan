@@ -299,6 +299,37 @@ cc_test(
     ],
 )
 
+# Run via --config=fuzztest
+cc_test(
+    name = "perso_tlv_data_fuzztest",
+    srcs = ["perso_tlv_data_fuzztest.cc"],
+    deps = [
+        ":perso_tlv_data",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/cert",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@fuzztest//fuzztest",
+        "@fuzztest//fuzztest:fuzztest_gtest_main",
+        "@googletest//:gtest",
+    ],
+)
+
+# Run via Centipede
+cc_binary(
+    name = "perso_tlv_data_fuzztest_binary",
+    testonly = True,
+    srcs = ["perso_tlv_data_fuzztest.cc"],
+    deps = [
+        ":perso_tlv_data",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/cert",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@fuzztest//fuzztest",
+        "@fuzztest//fuzztest:fuzztest_gtest_main",
+        "@googletest//:gtest",
+    ],
+)
+
 # Need a separate library for the headers, because adding a dependency on
 #//sw/device/silicon_creator/lib/cert required by perso_tlv_data above causes
 # bindgen failures due to otbn (which is a cert dependency) requiring risc32
