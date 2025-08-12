@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
@@ -294,41 +295,51 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   // 1. Externally lc_escalation_en is set to lc_ctrl_pkg::On.
   // 2. Internal fatal alert triggered and all partitions are driven to error states.
   virtual task process_lc_esc();
-    forever begin
-      wait(cfg.otp_ctrl_vif.alert_reqs == 1 && cfg.en_scb);
-
-      if (cfg.otp_ctrl_vif.lc_esc_on == 0) `DV_CHECK_NE(exp_alert, OtpNoAlert)
-
-      if (exp_alert != OtpCheckAlert) set_exp_alert("fatal_check_error", 1, 5);
-
-      // If the lc_escalation is triggered by internal fatal alert, wait 2 negedge until status is
-      // updated internally
-      if (cfg.otp_ctrl_vif.lc_esc_on == 0) begin
-        cfg.clk_rst_vif.wait_n_clks(2);
-        exp_status[OtpCheckPendingIdx] = 0;
-        exp_status[OtpDaiIdleIdx] = 0;
-      end else begin
-        exp_status = '0;
-        // Only lc_esc_on will set these bits to 1.
-        exp_status[OtpDerivKeyFsmErrIdx:OtpLfsrFsmErrIdx] = '1;
+    fork
+      // Handle external escalation requests.
+      forever begin
+        wait(cfg.otp_ctrl_vif.lc_escalate_en_i != lc_ctrl_pkg::Off && cfg.en_scb);
+        `uvm_info(`gfn, "Got lc_escalate_en_i", UVM_MEDIUM)
+        set_exp_alert("fatal_check_error", 1, 5);
+        wait(cfg.otp_ctrl_vif.lc_escalate_en_i == lc_ctrl_pkg::Off);
       end
+      // Handle internal alerts.
+      forever begin
+        wait(cfg.otp_ctrl_vif.alert_reqs == 1 && cfg.en_scb);
 
-      // Update status bits.
-      foreach (FATAL_EXP_STATUS[i]) begin
-        if (FATAL_EXP_STATUS[i]) begin
-          predict_err(.status_err_idx(otp_status_e'(i)), .err_code(OtpFsmStateError),
-                      .update_esc_err(1));
+        if (cfg.otp_ctrl_vif.lc_esc_on == 0) `DV_CHECK_NE(exp_alert, OtpNoAlert)
+
+        if (exp_alert != OtpCheckAlert) set_exp_alert("fatal_check_error", 1, 5);
+
+        // If the lc_escalation is triggered by internal fatal alert, wait 2 negedge until status is
+        // updated internally
+        if (cfg.otp_ctrl_vif.lc_esc_on == 0) begin
+          cfg.clk_rst_vif.wait_n_clks(2);
+          exp_status[OtpCheckPendingIdx] = 0;
+          exp_status[OtpDaiIdleIdx] = 0;
+        end else begin
+          exp_status = '0;
+          // Only lc_esc_on will set these bits to 1.
+          exp_status[OtpDerivKeyFsmErrIdx:OtpLfsrFsmErrIdx] = '1;
         end
+
+        // Update status bits.
+        foreach (FATAL_EXP_STATUS[i]) begin
+          if (FATAL_EXP_STATUS[i]) begin
+            predict_err(.status_err_idx(otp_status_e'(i)), .err_code(OtpFsmStateError),
+                        .update_esc_err(1));
+          end
+        end
+
+        // Update digest values and direct_access_regwen.
+        predict_rdata(1, 0, 0);
+        void'(ral.direct_access_regwen.predict(.value(0), .kind(UVM_PREDICT_READ)));
+
+        // DAI access is locked until reset, so no need to backdoor read otp write value until reset.
+
+        wait(cfg.otp_ctrl_vif.alert_reqs == 0);
       end
-
-      // Update digest values and direct_access_regwen.
-      predict_rdata(1, 0, 0);
-      void'(ral.direct_access_regwen.predict(.value(0), .kind(UVM_PREDICT_READ)));
-
-      // DAI access is locked until reset, so no need to backdoor read otp write value until reset.
-
-      wait(cfg.otp_ctrl_vif.alert_reqs == 0);
-    end
+    join
   endtask
 
   // This task monitors if lc_program req is interrupted by reset.
@@ -738,30 +749,21 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                 // Check if it is sw partition read lock
                 check_dai_rd_data = 1;
 
+                // Hardware digests are always readable.
                 // SW partitions write read_lock_csr can lock read access.
-                if (sw_read_lock ||
-                    // Secret partitions cal digest can also lock read access.
-                    // However, digest is always readable except SW partitions (Issue #5752).
-                    (is_secret(dai_addr) && get_digest_reg_val(part_idx) != 0 &&
-                     !is_digest(dai_addr)) ||
-                    // If the partition has creator key material and lc_creator_seed_sw_rw is
-                    // disable, then return access error.
-                    (PartInfo[part_idx].iskeymgr_creator && !is_digest(dai_addr) &&
-                     cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
+                if (!(is_digest(dai_addr) && PartInfo[part_idx].hw_digest) &&
+                    (sw_read_lock ||
+                     // Secret partitions cal digest can also lock read access.
+                     (is_secret(dai_addr) && get_digest_reg_val(part_idx) != 0) ||
+                     // If the partition has creator key material and lc_creator_seed_sw_rw is
+                     // disabled, or the partition has owner key material and lc_owner_seed_sw_rw
+                     // is disabled, then return access error.
+                     (PartInfo[part_idx].iskeymgr_creator &&
+                      cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On) ||
+                     (PartInfo[part_idx].iskeymgr_owner &&
+                      cfg.otp_ctrl_vif.lc_owner_seed_sw_rw_en_i != lc_ctrl_pkg::On))) begin
                   predict_err(OtpDaiErrIdx, OtpAccessError);
                   predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
-                end else if (sw_read_lock ||
-                    // Secret partitions cal digest can also lock read access.
-                    // However, digest is always readable except SW partitions (Issue #5752).
-                    (is_secret(dai_addr) && get_digest_reg_val(part_idx) != 0 &&
-                     !is_digest(dai_addr)) ||
-                    // If the partition has owner key material and lc_owner_seed_sw_rw is disable,
-                    // then return access error.
-                    (PartInfo[part_idx].iskeymgr_owner && !is_digest(dai_addr) &&
-                     cfg.otp_ctrl_vif.lc_owner_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
-                  predict_err(OtpDaiErrIdx, OtpAccessError);
-                  predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
-
                 end else begin
                   bit [TL_DW-1:0] read_out0, read_out1;
                   bit [TL_AW-1:0] otp_addr = get_scb_otp_addr();
