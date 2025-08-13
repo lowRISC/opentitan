@@ -19,6 +19,8 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"  // Generated.
 
+#define MODULE_ID MAKE_MODULE_ID('i', 's', 'c')
+
 enum {
   kValidAstCfgOtpAddrLow = OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET,
   kInvalidAstCfgOtpAddrHigh =

@@ -17,6 +17,8 @@
 #include "sw/device/lib/testing/test_framework/ottf_console_internal.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 
+#define MODULE_ID MAKE_MODULE_ID('o', 'c', 'u')
+
 /**
  * OTTF console configuration parameters.
  */

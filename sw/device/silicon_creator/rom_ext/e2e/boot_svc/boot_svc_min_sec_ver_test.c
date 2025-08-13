@@ -11,6 +11,8 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/rom_ext/e2e/boot_svc/boot_svc_test_lib.h"
 
+#define MODULE_ID MAKE_MODULE_ID('s', 'm', 's')
+
 OTTF_DEFINE_TEST_CONFIG();
 
 #define MANIFEST_SEC_VER 4
