@@ -41,6 +41,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
+load("//hw/top:defs.bzl", "opentitan_select_top_attr")
 
 def get_otp_images():
     """Returns a list of (otp_name, img_target) tuples.
@@ -277,7 +278,7 @@ otp_image = rule(
         ),
         "mmap_def": attr.label(
             allow_single_file = True,
-            default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
+            default = "//hw/top:top_otp_map",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
         "img_seed": attr.label(
@@ -392,28 +393,9 @@ otp_image_consts = rule(
 # The following overlays are used to generate a generic OTP image with fake
 # keys. This is useful for testing in dv_sim, fpga and verilator
 # environments.
-OTP_SIGVERIFY_FAKE_KEYS = [
-    "//sw/device/silicon_creator/rom/keys/fake/otp:json_rot_keys",
-]
+OTP_SIGVERIFY_FAKE_KEYS = opentitan_select_top_attr("otp_sigverify_fake_keys")
 
-# This is a set of overlays to generate a generic, standard OTP image.
-# Additional overlays can be applied on top to further customize the OTP.
-# This set overlays does not include any of the SECRET[0-2] partitions.
-STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS = OTP_SIGVERIFY_FAKE_KEYS + [
-    "//hw/top_earlgrey/data/otp:otp_json_creator_sw_cfg",
-    "//hw/top_earlgrey/data/otp:otp_json_owner_sw_cfg",
-    "//hw/top_earlgrey/data/otp:otp_json_alert_digest_cfg",
-    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg0",
-    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg1",
-]
-
-# This is a set of overlays to generate a generic, standard OTP image.
-# Additional overlays can be applied on top to further customize the OTP.
-STD_OTP_OVERLAYS = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS + [
-    "//hw/top_earlgrey/data/otp:otp_json_secret0",
-    "//hw/top_earlgrey/data/otp:otp_json_secret1",
-    "//hw/top_earlgrey/data/otp:otp_json_secret2_unlocked",
-]
+STD_OTP_OVERLAYS = opentitan_select_top_attr("std_otp_overlay")
 
 def otp_hex(v):
     return hex(v)
