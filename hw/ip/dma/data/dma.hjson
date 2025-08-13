@@ -81,6 +81,7 @@
       package: "dma_pkg"
       act: "req"
       width: "1"
+      desc: "SoC System Bus (requests and responses), synchronous"
     }
     { struct:  "tl_h2d"
       package: "tlul_pkg"
