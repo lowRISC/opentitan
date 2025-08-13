@@ -18,7 +18,7 @@ use cert_lib::{
     CaConfig, CaKey, EndorsedCert, parse_and_endorse_x509_cert, validate_cert_chain,
     validate_cwt_dice_chain,
 };
-use ft_ext_lib::ft_ext;
+use ft_ext_lib::{ft_inject_certs_ext, ft_post_boot_ext};
 use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::io::console::ConsoleError;
@@ -515,6 +515,7 @@ fn provision_certificates(
 
     // Execute extension hook.
     let t0 = Instant::now();
+    endorsed_cert_concat = ft_inject_certs_ext(endorsed_cert_concat)?;
     response.stats.log_elapsed_time("perso-ft-ext", t0);
 
     // Authenticate WAS HMAC.
@@ -710,7 +711,7 @@ pub fn check_slot_b_boot_up(
     let error_code_msg = r"BFV:.*\r\n";
 
     // Optional text requried by certain SKUs.
-    let owner_ext_string = ft_ext(response)?;
+    let owner_ext_string = ft_post_boot_ext(response)?;
 
     // Compile the full regex anchor including possible error messages and
     // expected owner FW messages.
