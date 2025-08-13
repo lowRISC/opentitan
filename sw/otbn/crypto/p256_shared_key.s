@@ -57,6 +57,9 @@ p256_shared_key:
   li        x2, 3
   bn.lid    x2, 0(x16)
 
+  /* Reblind the secret key before running the scalar multiplication. */
+  jal       x1, p256_masked_scalar_reblind
+
   /* Call internal scalar multiplication routine.
      Returns point in projective coordinates.
      R = (x, y, z) = (w8, w9, w10) <= d*P = ([w0,w1] + [w2,w3])*P */
