@@ -50,7 +50,7 @@ enum {
  * execution prevention on Machine mode (Smepmp)" document
  * (https://github.com/riscv/riscv-tee/blob/main/Smepmp/Smepmp.pdf).
  */
-typedef enum epmp_perm {
+typedef enum epmp_perm : uint32_t {
   kEpmpPermUnlocked = 0,
   /** M mode: no access. U mode: no access. */
   kEpmpPermLockedNoAccess = EPMP_CFG_L,
@@ -85,7 +85,7 @@ typedef enum epmp_perm {
  *
  * May be combined with `epmp_perm_t` values to form complete configurations.
  */
-typedef enum epmp_mode {
+typedef enum epmp_mode : uint32_t {
   kEpmpModeOff = EPMP_CFG_A_OFF,
   kEpmpModeTor = EPMP_CFG_A_TOR,
   kEpmpModeNa4 = EPMP_CFG_A_NA4,
