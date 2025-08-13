@@ -869,7 +869,7 @@ def find_modules(modules: List[Dict[str, object]],
 def find_module(
         modules: List[Dict[str, object]],
         type: str,
-        use_base_template_type=True) -> Optional[List[Dict[str, object]]]:
+        use_base_template_type=True) -> Optional[Dict[str, object]]:
     '''Returns the first module of a given type
 
     If use_base_template_type is set to True, ipgen-based modules are
