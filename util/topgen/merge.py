@@ -381,7 +381,7 @@ def xbar_adddevice(top: ConfigT, name_to_block: IpBlocksT, xbar: ConfigT,
         log.error(
             "Another crossbar %s needs to be specified in the 'nodes' list" %
             device)
-        return
+        raise RuntimeError(f"Cannot add device {device} to crossbar")
 
     # If there is no module or memory with the right name, this might still be
     # ok: we might be connecting to another crossbar or to a predefined module.
@@ -402,13 +402,13 @@ def xbar_adddevice(top: ConfigT, name_to_block: IpBlocksT, xbar: ConfigT,
         if device in predefined_modules:
             log.error("device %s shouldn't be host type" % device)
 
-            return
+            raise RuntimeError(f"Cannot add device {device} to crossbar")
 
         # case 3: not defined
         # Crossbar check
         log.error("Device %s doesn't exist in 'module', 'memory', predefined, "
                   "or as a node object" % device)
-        return
+        raise RuntimeError(f"Cannot add device {device} to crossbar")
 
     # If we get here, inst points an instance of some block or memory. It
     # shouldn't point at a crossbar (because that would imply a naming clash)

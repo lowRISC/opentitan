@@ -1201,7 +1201,7 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
         if len(modules) > 1 and single_instance:
             raise SystemExit(f"Cannot have more than one {template_type} per top")
         for module in modules:
-            log.info(f"Generating {template_type} with ipgen")
+            log.info(f'Generating {module["type"]} with ipgen from template {template_type}')
             if get_params:
                 args = (topcfg,) if single_instance else (topcfg, module["name"])
                 params = get_params(*args)
