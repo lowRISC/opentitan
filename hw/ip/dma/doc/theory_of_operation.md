@@ -377,3 +377,88 @@ hundred kGE, depending on requirements).
 Shared modules are thus preferable if they can meet throughput and
 latency requirements. To make this design decision, those requirements
 have to be known.
+
+## Clocking and reset
+
+The DMA controller uses a single clock and the entire IP block operates synchronously on that clock. An important design consideration is the implementation of clock gating throughout the module to save power.
+A single reset input provides an asynchronous reset of the entire IP block. Any clock domain crossings and reset domain crossings required to interface to devices and/or the System On Chip infrastructure are outside of the scope of this IP.
+
+### Clock gating
+
+As a power-saving measure - since it is anticipated that the DMA controller will only be used sporadically - the design includes a clock gate that is used to stop the clock to most of the IP block when it is not in active use.
+The `prim_clock_gating` clock gate is enabled by writes to the  `CONTROL` register - used to start a transfer - and remains enabled whilst the DMA controller is operating.
+The gating is handled automatically by the hardware and should not be software-visible.
+
+## Integration into Systems On Chips (SoCs)
+
+In accordance with the [comportability specification](../../../../doc/contributing/hw/comportability) the DMA controller offers the following interfaces:
+
+- TileLink-UL interface to registers
+- Interrupts
+- Alerts
+- [RACL](../../../../doc/contributing/hw/racl)
+
+The DMA controller also has up to three host interfaces, permitting it to transfer data to/from a number of devices.
+Two of these interfaces are TL-UL (TileLink Uncached Light) as per the register interface:
+
+- host_tl_h_i|o: TL-UL host connection to the RoT-private memory.
+- ctn_tl_d2h_i|h2d_o: Host connection to the ConTrol Network of the SoC.
+
+The third host interface of the DMA controller uses a different bus specification which is described below.
+
+### SoC System Bus
+
+Unlike the TL-UL ports, the SoC System Bus requires a 64-bit address space.
+The signaling is similar to that of the TL-UL bus except that read and write channels are separated.
+The DMA controller, however, presently issues only a single read or a single write request at a time.
+
+#### SoC System Bus Request
+
+| Signal            | Description                     |
+|-------------------|---------------------------------|
+| vld_vec[cmd]      | Valid request                   |
+| metadata_vec[cmd] | Constant, indicating the source |
+| opcode_vec[cmd]   | Opcode indicating request type  |
+| iova_vec[cmd]     | Requested address (64 bits)     |
+| racl_vec[cmd]     | RACL role of DMA controller     |
+| write_data[cmd]   | Data for write commands         |
+| write_be[cmd]     | Byte enables for write commands |
+| read_be[cmd]      | Byte enables for read commands  |
+
+#### SoC System Bus Response
+
+| Signal            | Description                      |
+|-------------------|----------------------------------|
+| grant_vec[cmd]    | Indicates request accepted       |
+| read_data_vld     | Read data is valid               |
+| read_data         | Data returned for read request   |
+| read_metadata     | Constant from request            |
+| error_vld         | Indicates a read/write error     |
+| error_vec         | Error condition(s) that occurred |
+
+## Sub-word extraction and replication
+
+The DMA controller supports sub-word transfers on the bus, e.g. for a 32-bit TL-UL implementation it is also capable of transferring 1-byte and 2-byte quantities.
+This may be useful for lower-speed peripherals with narrower FIFOs/registers.
+Since the `tlul_adapter_host` only issues reads of full bus words the device should normally ignore the least significant bit(s) of the address, which will be zero.
+Such a device is normally expected to replicate the sub-word across the width of the returned bus word, making its behavior compatible with that of a regular memory responding to word read requests.
+To operate seamlessly with either a memory or a peripheral, the DMA controller will extract the sub-word from the appropriate lane of the returned data word, based upon the least significant bit(s) of the source address.
+
+When writing less than a full bus word, the DMA controller will replicate the selected 8- or 16-bit sub-word across the width of the bus word before writing.
+It will also assert the appropriate bits of the `mask` field on the TL-UL A channel (or correspondingly the `write_be` strobes of the SoC System Bus), and a narrower peripheral may thus ascertain which part of the word is to be used.
+
+The example below shows this behavior when performing 1-byte transfers from a source to a destination, with the two least significant address bits being 2'b01 (i.e. the source address is of the form '4n + 1').
+
+![Sub-word extraction and replication](sub_words.svg)
+
+The second byte within the 32-bit word ('b') is extracted from the 32-bit word read from the source, and then replicated at every byte position within the 32-bit data word that is written to the destination.
+
+## Low Speed I/O peripheral interrupt lines
+
+The DMA controller also offers hardware-mediated transfers using direct interrupt lines from a peripheral block involved in the transfer.
+These lines, instead of signaling to a CPU in the conventional fashion, may be steered to the DMA controller to inform it of the availability of source data (e.g. receive FIFO level in excess of a programmed threshold), or that there is sufficient space at the destination (e.g. transmit FIFO level is below a programmed threshold).
+
+In response to the assertion of an enabled bit of the `lsio_trigger_i` input, the DMA controller will proceed to transfer an entire chunk of data from the source to the destination.
+The action of reading/writing this data must cause the interrupt input to become deasserted before the DMA controller has completed the reading/writing of this chunk, unless sufficient additional input/output causes another interrupt-generating condition to occur.
+Whilst the `lsio_trigger_i` input is not asserted, the DMA controller will remain in its Idle state awaiting instruction to proceed with the next chunk of the transfer.
+Data is thus transferred from source to destination at a rate appropriate for each device involved in the transfer.

@@ -8216,6 +8216,7 @@
         }
         {
           name: sys
+          desc: SoC System Bus (requests and responses), synchronous
           struct: sys
           package: dma_pkg
           type: req_rsp
@@ -26207,6 +26208,7 @@
       }
       {
         name: sys
+        desc: SoC System Bus (requests and responses), synchronous
         struct: sys
         package: dma_pkg
         type: req_rsp
