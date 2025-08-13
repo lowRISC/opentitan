@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#define MODULE_ID MAKE_MODULE_ID('j', 'k', 'm')
+
 // These two are >= the longest size our test vectors happen to use.
 #define KMAC_CMD_MAX_MESSAGE_BYTES 256
 #define KMAC_CMD_MAX_TAG_BYTES 64
@@ -47,6 +49,8 @@ UJSON_SERDE_STRUCT(CryptotestKmacCustomizationString, cryptotest_kmac_customizat
     field(tag, uint8_t, KMAC_CMD_MAX_TAG_BYTES) \
     field(tag_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestKmacTag, cryptotest_kmac_tag_t, KMAC_TAG);
+
+#undef MODULE_ID
 
 // clang-format on
 

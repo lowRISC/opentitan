@@ -18,6 +18,8 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "spi_device_regs.h"  // Generated.
 
+#define MODULE_ID MAKE_MODULE_ID('o', 'c', 's')
+
 static dif_gpio_t ottf_console_gpio;
 static dif_pinmux_t ottf_console_pinmux;
 

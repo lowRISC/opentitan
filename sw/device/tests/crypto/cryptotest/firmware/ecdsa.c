@@ -16,6 +16,8 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/tests/crypto/cryptotest/json/ecdsa_commands.h"
 
+#define MODULE_ID MAKE_MODULE_ID('e', 'c', 'a')
+
 // Copied from //sw/device/tests/crypto/ecdsa_p256_functest.c
 enum {
   /* Number of bytes in a P-256 private key. */
