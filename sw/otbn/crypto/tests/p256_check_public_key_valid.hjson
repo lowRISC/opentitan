@@ -1,0 +1,19 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "entrypoint": "p256_check_public_key",
+  "input": {
+    "dmem": {
+      # First public key of wycheproof ecdsa_secp256r1_sha256_p1363_test.json
+      "x": "0x2927b10512bae3eddcfe467828128bad2903269919f7086069c8c4df6c732838"
+      "y": "0xc7787964eaac00e5921fb1498a60f4606766b3d9685001558d1a974e7341513e"
+      "ok": "0x00000739"  # HARDENED_TRUE
+    }
+  }
+  "output": {
+    "dmem": {
+      "ok": "0x00000739"  # HARDENED_TRUE
+    }
+  }
+}
