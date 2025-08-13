@@ -68,20 +68,12 @@ rust.repository_set(
     name = "rust_host",
     edition = "2024",
     exec_triple = "x86_64-unknown-linux-gnu",
-    sha256s = {
-        "2025-01-03/rustc-nightly-x86_64-unknown-linux-gnu.tar.xz": "a7e713b2c38d2c16a2025d228480909a2281c91ad8fd225b1dacc3eda933724c",
-        "2025-01-03/clippy-nightly-x86_64-unknown-linux-gnu.tar.xz": "5d04b1e1a23c054cbb1775a32ece3d09f7bb158601b82a038f51bb998fce8ee8",
-        "2025-01-03/cargo-nightly-x86_64-unknown-linux-gnu.tar.xz": "e28f21e048490c2cc212169799b5ac3a01651e6946aca2f120adf0be6f3a70d9",
-        "2025-01-03/llvm-tools-nightly-x86_64-unknown-linux-gnu.tar.xz": "67e9e52780680c3a4b0dadc138864a9da0fb99a4af882d3477b90c8b2efe474c",
-        "2025-01-03/rust-std-nightly-x86_64-unknown-linux-gnu.tar.xz": "a5f96b464ace329963eef9e358303a17b5544cbd49b450474f4bc16cae0cc191",
-    },
     target_compatible_with = [
         "@platforms//cpu:x86_64",
         "@platforms//os:linux",
     ],
     target_triple = "x86_64-unknown-linux-gnu",
-    # Use nightly that Rust 1.85 branches from.
-    versions = ["nightly/2025-01-03"],
+    versions = ["1.85.1"],
 )
 rust.repository_set(
     name = "rust_tock",
