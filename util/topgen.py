@@ -398,7 +398,7 @@ def generate_outgoing_interrupts(top: ConfigT, out_path: Path) -> None:
 def _get_rv_plic_params(top: ConfigT, name: str) -> ParamsT:
     """Gets parameters for plic ipgen from top config."""
     # Get this PLIC instance
-    module = lib.find_module(top["module"], name, use_base_template_type=False)
+    module = lib.find_module_by_name(top["module"], name)
 
     # Count number of interrupts
     # Interrupt source 0 is tied to 0 to conform RISC-V PLIC spec.
@@ -1117,7 +1117,7 @@ def create_ipgen_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
     # Add rv_plic
     amend_interrupt(topcfg, name_to_block, allow_missing_blocks=True)
     for inst in ipgen_instances.get("rv_plic", []):
-        insert_ip_attrs(inst, _get_rv_plic_params(topcfg, inst["type"]))
+        insert_ip_attrs(inst, _get_rv_plic_params(topcfg, inst["name"]))
 
     return ip_attrs
 

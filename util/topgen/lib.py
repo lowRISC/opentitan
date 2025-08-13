@@ -880,6 +880,15 @@ def find_module(
     return mods[0] if mods else None
 
 
+def find_module_by_name(modules: List[Dict[str, object]],
+                        name: str) -> Optional[Dict[str, object]]:
+    """Return the (first) module with a given name, or None."""
+    for m in modules:
+        if m["name"] == name:
+            return m
+    return None
+
+
 def get_addr_space(top: ConfigT, addr_space_name: str) -> ConfigT:
     """Returns the address dict for a given address space name"""
     for addr_space in top['addr_spaces']:
