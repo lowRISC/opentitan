@@ -517,7 +517,7 @@ module dma
     sys_req_d.opcode_vec  [SysCmdWrite] = SysOpcWrite;
     sys_req_d.iova_vec    [SysCmdWrite] = dma_sys_write ?
                                          {dst_addr_q[(SYS_ADDR_WIDTH-1):2], 2'b0} : 'b0;
-    sys_req_d.racl_vec    [SysCmdWrite] = SysRacl[SysOpcWrite-1:0];
+    sys_req_d.racl_vec    [SysCmdWrite] = SysRacl;
 
     sys_req_d.write_data = {SYS_DATA_WIDTH{dma_sys_write}} & read_return_data_q;
     sys_req_d.write_be   = {SYS_DATA_BYTEWIDTH{dma_sys_write}} & req_dst_be_q;
@@ -527,7 +527,7 @@ module dma
     sys_req_d.opcode_vec  [SysCmdRead] = SysOpcRead;
     sys_req_d.iova_vec    [SysCmdRead] = dma_sys_read ?
                                          {src_addr_q[(SYS_ADDR_WIDTH-1):2], 2'b0} : 'b0;
-    sys_req_d.racl_vec    [SysCmdRead] = SysRacl[SYS_RACL_WIDTH-1:0];
+    sys_req_d.racl_vec    [SysCmdRead] = SysRacl;
     sys_req_d.read_be                  = req_src_be_q;
   end
 
