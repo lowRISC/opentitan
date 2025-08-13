@@ -258,6 +258,18 @@ otbn_consttime_test(
     ],
 )
 
+otbn_sim_test(
+    name = "p256_scalar_reblind_test",
+    srcs = [
+        "p256_scalar_reblind_test.s",
+    ],
+    exp = "p256_scalar_reblind_test.exp",
+    deps = [
+        "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_isoncurve",
+    ],
+)
+
 otbn_consttime_test(
     name = "p256_shared_key_consttime",
     subroutine = "p256_shared_key",
