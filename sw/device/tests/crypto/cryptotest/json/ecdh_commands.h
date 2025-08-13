@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#define MODULE_ID MAKE_MODULE_ID('j', 'e', 'h')
+
 #define ECDH_CMD_MAX_PRIVATE_KEY_BYTES 48
 #define ECDH_CMD_MAX_SHARED_SECRET_BYTES 48
 #define ECDH_CMD_MAX_COORDINATE_BYTES 48
@@ -38,6 +40,8 @@ UJSON_SERDE_STRUCT(CryptotestEcdhCoordinate, cryptotest_ecdh_coordinate_t, ECDH_
     field(shared_secret, uint8_t, ECDH_CMD_MAX_SHARED_SECRET_BYTES) \
     field(shared_secret_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestEcdhDeriveOutput, cryptotest_ecdh_derive_output_t, ECDH_DERIVE_OUTPUT);
+
+#undef MODULE_ID
 
 // clang-format on
 

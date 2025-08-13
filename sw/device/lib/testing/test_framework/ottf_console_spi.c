@@ -17,6 +17,8 @@
 
 #include "spi_device_regs.h"  // Generated.
 
+#define MODULE_ID MAKE_MODULE_ID('o', 'c', 's')
+
 // The following variables are only initialized if at least one console
 // needs a GPIO.
 static dif_gpio_t ottf_console_gpio;
