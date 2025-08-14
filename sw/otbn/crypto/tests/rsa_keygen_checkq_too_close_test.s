@@ -5,8 +5,8 @@
 /**
  * Ensure that a value for q which is too close to p fails RSA keygen checks.
  *
- * Uses the test data from `rsa_keygen_checkpq_test_data`, which is sized for
- * RSA-2048.
+ * Uses the test data from `rsa_keygen_checkq_too_close_test`, which is sized
+ * for RSA-2048.
  */
 
 .section .text.start
@@ -22,20 +22,6 @@ main:
   /* Load required constants. */
   li        x20, 20
   li        x21, 21
-
-  /* Copy a "good" p value into `rsa_p`. */
-  la        x16, good_p
-  la        x3, rsa_p
-  loop      x30, 2
-    bn.lid   x20, 0(x16++)
-    bn.sid   x20, 0(x3++)
-
-  /* Copy the too-close value into `rsa_q`. */
-  la        x16, too_close
-  la        x3, rsa_q
-  loop      x30, 2
-    bn.lid   x20, 0(x16++)
-    bn.sid   x20, 0(x3++)
 
   /* w24 <= 2^256-1 if the check passed, otherwise 0 */
   jal       x1, check_q
