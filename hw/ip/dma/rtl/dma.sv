@@ -15,7 +15,7 @@ module dma
   parameter bit                             EnableDataIntgGen         = 1'b1,
   parameter bit                             EnableRspDataIntgCheck    = 1'b1,
   parameter logic [RsvdWidth-1:0]           TlUserRsvd                = '0,
-  parameter logic [SYS_RACL_WIDTH-1:0]      SysRacl                   = '0,
+  parameter top_racl_pkg::racl_role_t       SysRaclRole               = '0,
   parameter int unsigned                    OtAgentId                 = 0,
   parameter bit                             EnableRacl                = 1'b0,
   parameter bit                             RaclErrorRsp              = EnableRacl,
@@ -517,7 +517,7 @@ module dma
     sys_req_d.opcode_vec  [SysCmdWrite] = SysOpcWrite;
     sys_req_d.iova_vec    [SysCmdWrite] = dma_sys_write ?
                                          {dst_addr_q[(SYS_ADDR_WIDTH-1):2], 2'b0} : 'b0;
-    sys_req_d.racl_vec    [SysCmdWrite] = SysRacl;
+    sys_req_d.racl_vec    [SysCmdWrite] = SysRaclRole;
 
     sys_req_d.write_data = {SYS_DATA_WIDTH{dma_sys_write}} & read_return_data_q;
     sys_req_d.write_be   = {SYS_DATA_BYTEWIDTH{dma_sys_write}} & req_dst_be_q;
@@ -527,7 +527,7 @@ module dma
     sys_req_d.opcode_vec  [SysCmdRead] = SysOpcRead;
     sys_req_d.iova_vec    [SysCmdRead] = dma_sys_read ?
                                          {src_addr_q[(SYS_ADDR_WIDTH-1):2], 2'b0} : 'b0;
-    sys_req_d.racl_vec    [SysCmdRead] = SysRacl;
+    sys_req_d.racl_vec    [SysCmdRead] = SysRaclRole;
     sys_req_d.read_be                  = req_src_be_q;
   end
 
@@ -1365,7 +1365,6 @@ module dma
     .q_o   ( sys_o.metadata_vec[SysCmdWrite]     )
   );
 
-  logic [$bits(sys_opc_e)-1:0] sys_req_opcode_write_vec_q;
   prim_flop_en #(
     .Width($bits(sys_opc_e))
   ) u_sys_opcode_write_vec (
@@ -1373,9 +1372,8 @@ module dma
     .rst_ni( rst_ni                            ),
     .en_i  ( sys_req_d.vld_vec[SysCmdWrite]    ),
     .d_i   ( sys_req_d.opcode_vec[SysCmdWrite] ),
-    .q_o   ( sys_req_opcode_write_vec_q        )
+    .q_o   ( {sys_o.opcode_vec[SysCmdWrite]}   )
   );
-  assign sys_o.opcode_vec[SysCmdWrite] = sys_opc_e'(sys_req_opcode_write_vec_q);
 
   prim_flop_en #(
     .Width(SYS_ADDR_WIDTH)
@@ -1388,7 +1386,7 @@ module dma
   );
 
   prim_flop_en #(
-    .Width(SYS_RACL_WIDTH)
+    .Width($bits(top_racl_pkg::racl_role_t))
   ) u_sys_racl_write_vec (
     .clk_i ( gated_clk                       ),
     .rst_ni( rst_ni                          ),
@@ -1407,7 +1405,6 @@ module dma
     .q_o   ( sys_o.metadata_vec[SysCmdRead]     )
   );
 
-  logic [$bits(sys_opc_e)-1:0] sys_req_opcode_read_vec_q;
   prim_flop_en #(
     .Width($bits(sys_opc_e))
   ) u_sys_opcode_read_vec (
@@ -1415,9 +1412,8 @@ module dma
     .rst_ni( rst_ni                           ),
     .en_i  ( sys_req_d.vld_vec[SysCmdRead]    ),
     .d_i   ( sys_req_d.opcode_vec[SysCmdRead] ),
-    .q_o   ( sys_req_opcode_read_vec_q        )
+    .q_o   ( {sys_o.opcode_vec[SysCmdRead]}   )
   );
-  assign sys_o.opcode_vec[SysCmdRead] = sys_opc_e'(sys_req_opcode_read_vec_q);
 
   prim_flop_en #(
     .Width(SYS_ADDR_WIDTH)
@@ -1430,7 +1426,7 @@ module dma
   );
 
   prim_flop_en #(
-    .Width(SYS_RACL_WIDTH)
+    .Width($bits(top_racl_pkg::racl_role_t))
   ) u_sys_racl_read_vec (
     .clk_i ( gated_clk                      ),
     .rst_ni( rst_ni                         ),

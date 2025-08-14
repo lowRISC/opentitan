@@ -116,7 +116,7 @@ module top_darjeeling #(
   parameter bit DmaEnableDataIntgGen = 1'b1,
   parameter bit DmaEnableRspDataIntgCheck = 1'b1,
   parameter logic [tlul_pkg::RsvdWidth-1:0] DmaTlUserRsvd = '0,
-  parameter logic [dma_pkg::SYS_RACL_WIDTH-1:0] DmaSysRacl = '0,
+  parameter top_racl_pkg::racl_role_t DmaSysRaclRole = '0,
   parameter int unsigned DmaOtAgentId = 0,
   // parameters for mbx0
   // parameters for mbx1
@@ -2321,7 +2321,7 @@ module top_darjeeling #(
     .EnableDataIntgGen(DmaEnableDataIntgGen),
     .EnableRspDataIntgCheck(DmaEnableRspDataIntgCheck),
     .TlUserRsvd(DmaTlUserRsvd),
-    .SysRacl(DmaSysRacl),
+    .SysRaclRole(DmaSysRaclRole),
     .OtAgentId(DmaOtAgentId)
   ) u_dma (
 

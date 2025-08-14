@@ -52,9 +52,9 @@
       local: "false",
       expose: "true",
     },
-    { name: "SysRacl",
-      desc: "Value of `racl_vec` field in `sys` output",
-      type: "logic [dma_pkg::SYS_RACL_WIDTH-1:0]"
+    { name: "SysRaclRole",
+      desc: "RACL propagated on the Sys interface via `racl_vec`",
+      type: "top_racl_pkg::racl_role_t"
       default: "'0",
       local: "false",
       expose: "true",

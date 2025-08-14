@@ -109,7 +109,6 @@ package dma_pkg;
   parameter int unsigned SYS_NUM_REQ_CH      = 2;
   parameter int unsigned SYS_ADDR_WIDTH      = 64;
   parameter int unsigned SYS_METADATA_WIDTH  = 3;
-  parameter int unsigned SYS_RACL_WIDTH      = 4;
   parameter int unsigned SYS_DATA_BYTEWIDTH  = 4;
   parameter int unsigned SYS_DATA_WIDTH      = SYS_DATA_BYTEWIDTH * 8;
   parameter int unsigned SYS_NUM_ERROR_TYPES = 1;
@@ -134,14 +133,14 @@ package dma_pkg;
 
   // System port request interface
   typedef struct packed {
-    logic     [SYS_NUM_REQ_CH-1:0]                         vld_vec;
-    logic     [SYS_NUM_REQ_CH-1:0][SYS_METADATA_WIDTH-1:0] metadata_vec;
-    sys_opc_e [SYS_NUM_REQ_CH-1:0]                         opcode_vec;
-    logic     [SYS_NUM_REQ_CH-1:0][SYS_ADDR_WIDTH-1:0]     iova_vec;
-    logic     [SYS_NUM_REQ_CH-1:0][SYS_RACL_WIDTH-1:0]     racl_vec;
-    logic     [SYS_DATA_WIDTH-1:0]                         write_data;
-    logic     [SYS_DATA_BYTEWIDTH-1:0]                     write_be;
-    logic     [SYS_DATA_BYTEWIDTH-1:0]                     read_be;
+    logic                     [SYS_NUM_REQ_CH-1:0]                         vld_vec;
+    logic                     [SYS_NUM_REQ_CH-1:0][SYS_METADATA_WIDTH-1:0] metadata_vec;
+    sys_opc_e                 [SYS_NUM_REQ_CH-1:0]                         opcode_vec;
+    logic                     [SYS_NUM_REQ_CH-1:0][SYS_ADDR_WIDTH-1:0]     iova_vec;
+    top_racl_pkg::racl_role_t [SYS_NUM_REQ_CH-1:0]                         racl_vec;
+    logic                     [SYS_DATA_WIDTH-1:0]                         write_data;
+    logic                     [SYS_DATA_BYTEWIDTH-1:0]                     write_be;
+    logic                     [SYS_DATA_BYTEWIDTH-1:0]                     read_be;
   } sys_req_t;
 
   // System port response interface
