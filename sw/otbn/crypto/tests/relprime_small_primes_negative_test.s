@@ -3,7 +3,11 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Ensure that a multiple of F4 fails RSA keygen checks for p.
+ * Standalone test to check an RSA keygen subroutine.
+ *
+ * The `relprime_small_primes` subroutine checks if a candidate prime is a
+ * multiple of a small prime. This test ensures that the check does not think a
+ * prime number is divisible by small primes.
  */
 
 .section .text.start
@@ -14,15 +18,9 @@ main:
 
   /* Load the number of limbs for this test. */
   li        x30, 4
-  li        x31, 3
 
-  /* Load required constants. */
-  li        x20, 20
-  li        x21, 21
-
-  /* Check a value of p that is not relatively prime to F4.
-       w24 <= 2^256-1 if the check passed, otherwise 0 */
+  /* w22 <= 0 if dmem[rsa_p] is NOT relatively prime to F4 */
   la        x16, rsa_p
-  jal       x1, check_p
+  jal       x1, relprime_small_primes
 
   ecall
