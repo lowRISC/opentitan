@@ -575,3 +575,370 @@ pub fn load_vcd(vcd: &str) -> Result<Vcd> {
     let mut parser = VcdParser::new(cursor);
     parser.parse_vcd()
 }
+
+/// Dump a single discrete waveform sample as a VCD value change based on the
+/// previous sample. Samples are given as a slice of bytes, where each bit
+/// refers to 1 value. `pin_vars` describes the variables to use for each
+/// signal in LSB order (e.g. pin_vars[0] is used for byte 0 LSB, etc.)
+fn dump_vcd_sample(
+    pin_vars: &[String],
+    timestamp: u128,
+    sample: &[u8],
+    prev_sample: Option<&[u8]>,
+) -> Vec<ValueChangeItem> {
+    let mut changes = Vec::with_capacity(pin_vars.len());
+    for (i, var) in pin_vars.iter().enumerate() {
+        // For each bit, calculate changes from the previous sample
+        let byte_index = i / 8;
+        let bit_index = i % 8;
+        let sample_byte = sample.get(byte_index).unwrap_or(&0x00);
+        let bit = (sample_byte >> bit_index) & 0x01;
+        if let Some(prev_bytes) = prev_sample {
+            let prev_byte = prev_bytes.get(byte_index).unwrap_or(&0x00);
+            let prev_bit = (prev_byte >> bit_index) & 0x01;
+            if prev_bit == bit {
+                continue;
+            }
+        }
+        // There has been a change in value (or this is the first sample),
+        // so record the change.
+        if changes.is_empty() {
+            changes.push(ValueChangeItem::Timestamp { step: timestamp });
+        }
+        changes.push(ValueChangeItem::Scalar {
+            identifier: var.to_string(),
+            value: if bit != 0 {
+                ScalarValue::One
+            } else {
+                ScalarValue::Zero
+            },
+        });
+    }
+    changes
+}
+
+/// Generate a vardefs section resulting from dumping a list of scalar (1 width)
+/// write signals into a single named scope, as a helper for easily exporting
+/// basic VCD files.
+pub fn dump_vcd_wire_vardefs(scope: String, pin_vars: Vec<(String, Option<String>)>) -> VarDefs {
+    let opentitanlib_scope = ScopeItem::Scope {
+        scope_type: String::from("module"),
+        identifier: scope,
+        items: pin_vars
+            .into_iter()
+            .enumerate()
+            .map(|(i, (identifier, pin))| ScopeItem::VarDef {
+                signal: Signal {
+                    signal_type: String::from("wire"),
+                    width: 1,
+                    reference: pin.unwrap_or(format!("pin_{}", i)),
+                },
+                identifier,
+            })
+            .collect::<Vec<_>>(),
+    };
+    VarDefs {
+        scopes: vec![opentitanlib_scope],
+    }
+}
+
+/// Construct a VCD from a uniformly (discretely) sampled waveform, represented by
+/// a list of samples (pin values over time) and a `timescale` (sampling period).
+/// Each sample is defined by a slice of bytes, where each bit index in a slice
+/// refers to a single pin over each sample.
+/// Variables are defined in order, corresponding to LSB-first sample order.
+pub fn vcd_from_samples(
+    pin_names: Vec<Option<String>>,
+    timescale_ps: u128,
+    samples: &[&[u8]],
+) -> Result<Vcd> {
+    // Generate a header sections, sequentially assigning vars '0, '1, '2, etc.
+    let header = Header {
+        timescale_ps: Some(timescale_ps),
+        date: None,
+        version: None,
+    };
+    let vars = &(0..pin_names.len())
+        .map(|c| format!("'{}", c))
+        .collect::<Vec<_>>();
+    let vardefs = dump_vcd_wire_vardefs(
+        String::from("opentitanlib"),
+        vars.clone().into_iter().zip(pin_names).collect::<Vec<_>>(),
+    );
+
+    // Compute value changes across the uniform samples to construct the
+    // value change section of the VCD
+    let mut changes = Vec::new();
+    let mut prev_sample = None;
+    let mut last_sample_index = 0;
+    let num_samples = samples.len();
+    for (i, sample) in samples.iter().enumerate() {
+        let value_change_items = dump_vcd_sample(vars, i as u128, sample, prev_sample);
+        prev_sample = Some(sample);
+        if !value_change_items.is_empty() {
+            changes.extend(value_change_items);
+            last_sample_index = i;
+        }
+    }
+
+    // Make sure we include an ending timestamp for the final sample
+    if (last_sample_index + 1) < num_samples {
+        changes.push(ValueChangeItem::Timestamp {
+            step: num_samples as u128 - 1,
+        });
+    }
+    let value_changes = ValueChangeSection { changes };
+
+    // Dump the VCD
+    Ok(Vcd {
+        header,
+        vardefs,
+        value_changes,
+    })
+}
+
+/// An iterator over a VCD file, which returns uniform samples of values of
+/// VCD signals at every VCD time step. Depending on the delay between value
+/// changes, this could result in very long iteration counts.
+pub struct UniformVcdSampler {
+    pub step: u128,
+    pin_vars: Vec<String>,
+    value_changes: std::vec::IntoIter<ValueChangeItem>,
+    current_timestamp: u128,
+    next_timestamp: u128,
+    current_values: Vec<u8>,
+    depleted: bool,
+}
+
+impl UniformVcdSampler {
+    /// Create a new uniform VCD sampler. Samples every `step` steps in the VCD.
+    pub fn new(vcd: Vcd, step: u128) -> Self {
+        let pin_vars = vcd
+            .var_names()
+            .iter()
+            .map(|n| n.to_string())
+            .collect::<Vec<_>>();
+        let num_bytes = pin_vars.len().div_ceil(8);
+        Self {
+            step,
+            pin_vars,
+            value_changes: vcd.value_changes.changes.into_iter(),
+            current_timestamp: 0u128,
+            next_timestamp: 0u128,
+            current_values: std::iter::repeat(0x00).take(num_bytes).collect::<Vec<_>>(),
+            depleted: false,
+        }
+    }
+}
+
+impl Iterator for UniformVcdSampler {
+    type Item = Result<Vec<u8>>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            // Handle sampling in-between parsed timestamps
+            if self.next_timestamp > self.current_timestamp {
+                self.current_timestamp += self.step;
+                return Some(Ok(self.current_values.clone()));
+            }
+            match self.value_changes.next() {
+                // If we read a timestamp, sample in steps until it is reached
+                Some(ValueChangeItem::Timestamp { step }) => {
+                    self.next_timestamp = step;
+                }
+                // If we read a value, update the internal `current_values` state
+                Some(ValueChangeItem::Scalar { identifier, value }) => {
+                    let value = match value {
+                        ScalarValue::Zero => 0,
+                        ScalarValue::One => 1,
+                        _ => {
+                            return Some(Err(VcdParseError::UnsupportedFeature(
+                                "non-binary scalars".into(),
+                            )
+                            .into()));
+                        }
+                    };
+                    let Some(index) = self.pin_vars.iter().position(|id| *id == identifier) else {
+                        return Some(Err(VcdParseError::UnknownVariable(identifier).into()));
+                    };
+                    let byte_index = index / 8;
+                    let bit_index = index % 8;
+                    self.current_values[byte_index] &= !(1 << bit_index);
+                    self.current_values[byte_index] |= value << bit_index;
+                }
+                // If there are no more value changes to read, output one final
+                // sample of the current values. Otherwise return `None`.
+                None => {
+                    if self.depleted {
+                        return None;
+                    }
+                    self.depleted = true;
+                    return Some(Ok(self.current_values.clone()));
+                }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use std::time::Duration;
+
+    // Test by dumping a given uniformly sampled waveform to a VCD and parsing
+    // it back, to check the decoded contents match the original.
+    fn samples_encode_decode(
+        samples: &[&[u8]],
+        pin_names: Vec<Option<String>>,
+        clock_tick: Duration,
+    ) -> Result<()> {
+        let vcd = dump_vcd(&vcd_from_samples(
+            pin_names,
+            clock_tick.as_nanos() * 1000,
+            samples,
+        )?)?;
+        assert!(!vcd.is_empty());
+        // For now this test assumes the order of bits is retained (i.e. vars
+        // are parsed into sample bit indexes in the same order they are defined).
+        let vcd = load_vcd(&vcd)?;
+        let decoded = UniformVcdSampler::new(vcd, 1).collect::<Result<Vec<_>>>()?;
+        for (decoded_sample, sample) in decoded.iter().zip(samples) {
+            assert_eq!(decoded_sample, sample);
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn samples_waveform() -> Result<()> {
+        // Random waveform over 3 pins, with a clock_tick of 3 us.
+        let samples = [
+            4, 5, 3, 4, 1, 3, 6, 0, 2, 4, 5, 1, 7, 2, 3, 4, 0, 0, 1, 4, 0, 1, 2, 3, 4, 6,
+        ];
+        let sample_slices = samples.iter().map(std::slice::from_ref).collect::<Vec<_>>();
+        let pin_names = Vec::from([const { None }; 3]);
+        let clock_tick = Duration::from_nanos(3000);
+        samples_encode_decode(&sample_slices, pin_names.clone(), clock_tick)?;
+
+        // Example SPI waveform over 3 pins, again with a clock_tick of 3 us.
+        let pin_names = vec![
+            Some("spi_sck".into()),
+            Some("spi_cs".into()),
+            Some("spi_copi".into()),
+        ];
+        let samples = [
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 4,
+            5, 4, 5, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,
+            0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
+            1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,
+            0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
+            1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,
+            0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
+            1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,
+            0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
+            1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
+            2,
+        ];
+        let sample_slices = samples.iter().map(std::slice::from_ref).collect::<Vec<_>>();
+        samples_encode_decode(&sample_slices, pin_names, clock_tick)
+    }
+
+    #[test]
+    fn raw_vcd_to_samples() -> Result<()> {
+        let vcd = "
+$timescale 1345ns $end\n\
+$scope module opentitanlib $end\n\
+$var wire 1 # CN_04_2 $end\n\
+$var wire 1 ! CN_05_3 $end\n\
+$var wire 1 ; CN_05_4 $end\n\
+$var wire 1 ? CN_15_4 $end\n\
+$upscope $end\n\
+$enddefinitions $end\n\
+#0 0# 0! 1; 0?\n\
+#1 1# 1! 0;\n\
+#2 0#\n\
+#3 1# 0!\n\
+#4 0# 1! 1;\n\
+#5 1#\n\
+#6 0# 0! 0; 1?\n\
+#7 1# 1! 1;\n\
+#8 0#\n\
+#9 1# 0; 0?\n\
+#10 0# 0! 1;\n\
+#11 1# 1! 0;\n\
+#12 0# 0!\n\
+#13 1# 1!\n\
+#14 0# 0! 1; 1?\n\
+#15 1# 0;\n\
+#16 0#\n\
+#17 1# 1! 0?\n\
+#18 0# 0!\n\
+#19 1#\n\
+#20 0#\n\
+#21 1#\n\
+#22 0#\n\
+#23 1#\n\
+#24 0#\n\
+#33 1;\n\
+#34 1# 1! 1?\n\
+#35 0#\n\
+#36 1# 0! 0; 0?\n\
+#37 0#";
+        let expected_pin_vars = [
+            String::from("#"),
+            String::from("!"),
+            String::from(";"),
+            String::from("?"),
+        ];
+        let expected_timescale = Some(1345 * 1000); // 1345 ns
+        let expected_samples: [u8; 38] = [
+            4, 3, 2, 1, 6, 7, 8, 15, 14, 3, 4, 3, 0, 3, 12, 9, 8, 3, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 4, 15, 14, 1, 0,
+        ];
+
+        // Load & decode the VCD, and check it matches expected contents
+        let vcd = load_vcd(vcd)?;
+        let decoded_pin_vars = vcd
+            .var_names()
+            .iter()
+            .map(|n| n.to_string())
+            .collect::<Vec<_>>();
+        let decoded_timescale_ps = vcd.header.timescale_ps;
+        let decoded_samples = UniformVcdSampler::new(vcd, 1).collect::<Result<Vec<_>>>()?;
+        for expected in expected_pin_vars {
+            assert!(decoded_pin_vars.contains(&expected));
+        }
+        assert_eq!(decoded_timescale_ps, expected_timescale);
+        for (decoded_sample, sample) in decoded_samples.iter().zip(expected_samples) {
+            assert_eq!(decoded_sample, std::slice::from_ref(&sample));
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn many_signals() -> Result<()> {
+        // Test with a VCD containing 10 samples with 1024 different signals,
+        // to be sure we can handle large VCDs and large samples without restriction
+        const NUM_PINS: usize = 1024;
+        const NUM_SAMPLES: usize = 10;
+        let mut samples = Vec::new();
+        let mut prng = 0x0ACECAFE;
+        for _ in 0..NUM_SAMPLES {
+            let mut sample = Vec::new();
+            for _ in 0..NUM_PINS.div_ceil(32) {
+                // xorshift32 PRNG to distribute changes across sample bitmaps.
+                prng ^= prng << 13;
+                prng ^= prng >> 17;
+                prng ^= prng << 5;
+                sample.push(prng as u8);
+                sample.push((prng >> 8) as u8);
+                sample.push((prng >> 16) as u8);
+                sample.push((prng >> 24) as u8);
+            }
+            samples.push(sample);
+        }
+        let sample_slices = samples.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
+        let pin_names = Vec::from([const { None }; NUM_PINS]);
+        let clock_tick = Duration::from_nanos(3000);
+        samples_encode_decode(&sample_slices, pin_names, clock_tick)
+    }
+}
