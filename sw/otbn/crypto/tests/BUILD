@@ -674,10 +674,11 @@ otbn_sim_test(
     srcs = [
         "primality_test.s",
     ],
-    exp = "primality_test.exp",
+    testcase = "primality_test.hjson",
     deps = [
         "//sw/otbn/crypto:montmul",
         "//sw/otbn/crypto:primality",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -687,10 +688,11 @@ otbn_sim_test(
     srcs = [
         "primality_test_witness_test.s",
     ],
-    exp = "primality_test_witness_test.exp",
+    testcase = "primality_test_witness_test.hjson",
     deps = [
         "//sw/otbn/crypto:montmul",
         "//sw/otbn/crypto:primality",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -700,10 +702,11 @@ otbn_sim_test(
     srcs = [
         "primality_test_witness_negative_test.s",
     ],
-    exp = "primality_test_witness_negative_test.exp",
+    testcase = "primality_test_witness_negative_test.hjson",
     deps = [
         "//sw/otbn/crypto:montmul",
         "//sw/otbn/crypto:primality",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -713,10 +716,11 @@ otbn_sim_test(
     srcs = [
         "primality_negative_test.s",
     ],
-    exp = "primality_negative_test.exp",
+    testcase = "primality_negative_test.hjson",
     deps = [
         "//sw/otbn/crypto:montmul",
         "//sw/otbn/crypto:primality",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -776,7 +780,7 @@ otbn_sim_test(
     srcs = [
         "modinv_f4_test.s",
     ],
-    exp = "modinv_f4_test.exp",
+    testcase = "modinv_f4_test.hjson",
     deps = [
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
@@ -785,6 +789,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -808,7 +813,7 @@ otbn_sim_test(
     srcs = [
         "relprime_f4_test.s",
     ],
-    exp = "relprime_f4_test.exp",
+    testcase = "relprime_f4.hjson",
     deps = [
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
@@ -817,6 +822,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -836,7 +842,7 @@ otbn_sim_test(
     srcs = [
         "relprime_small_primes_multiple_of_3_test.s",
     ],
-    exp = "relprime_small_primes_multiple_of_3_test.exp",
+    testcase = "relprime_small_primes_multiple_of_3_test.hjson",
     deps = [
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
@@ -845,6 +851,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -853,7 +860,7 @@ otbn_sim_test(
     srcs = [
         "relprime_small_primes_multiple_of_5_test.s",
     ],
-    exp = "relprime_small_primes_multiple_of_5_test.exp",
+    testcase = "relprime_small_primes_multiple_of_5_test.hjson",
     deps = [
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
@@ -862,6 +869,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -870,7 +878,7 @@ otbn_sim_test(
     srcs = [
         "relprime_small_primes_multiple_of_7_test.s",
     ],
-    exp = "relprime_small_primes_multiple_of_7_test.exp",
+    testcase = "relprime_small_primes_multiple_of_7_test.hjson",
     deps = [
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
@@ -879,6 +887,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -887,7 +896,7 @@ otbn_sim_test(
     srcs = [
         "relprime_small_primes_multiple_of_11_test.s",
     ],
-    exp = "relprime_small_primes_multiple_of_11_test.exp",
+    testcase = "relprime_small_primes_multiple_of_11_test.hjson",
     deps = [
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
@@ -896,6 +905,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -904,7 +914,7 @@ otbn_sim_test(
     srcs = [
         "relprime_small_primes_multiple_of_17_test.s",
     ],
-    exp = "relprime_small_primes_multiple_of_17_test.exp",
+    testcase = "relprime_small_primes_multiple_of_17_test.hjson",
     deps = [
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
@@ -913,6 +923,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -921,7 +932,7 @@ otbn_sim_test(
     srcs = [
         "relprime_small_primes_multiple_of_31_test.s",
     ],
-    exp = "relprime_small_primes_multiple_of_31_test.exp",
+    testcase = "relprime_small_primes_multiple_of_31_test.hjson",
     deps = [
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
@@ -930,6 +941,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -938,7 +950,7 @@ otbn_sim_test(
     srcs = [
         "relprime_small_primes_negative_test.s",
     ],
-    exp = "relprime_small_primes_negative_test.exp",
+    testcase = "relprime_small_primes_negative_test.hjson",
     deps = [
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
@@ -947,6 +959,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -963,10 +976,9 @@ otbn_sim_test(
     srcs = [
         "rsa_keygen_checkp_good_test.s",
     ],
-    exp = "rsa_keygen_checkp_good_test.exp",
-    tags = ["nightly"],  # slow, do not run in CI
+    tags = ["nightly"],  # slow, do not run in CI,
+    testcase = "rsa_keygen_checkp_good_test.hjson",
     deps = [
-        ":rsa_keygen_checkpq_test_data",
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
         "//sw/otbn/crypto:lcm",
@@ -974,6 +986,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -982,16 +995,16 @@ otbn_sim_test(
     srcs = [
         "rsa_keygen_checkp_not_relprime_test.s",
     ],
-    exp = "rsa_keygen_checkp_not_relprime_test.exp",
+    testcase = "rsa_keygen_checkp_not_relprime_test.hjson",
     deps = [
         ":fake_primality",
-        ":rsa_keygen_checkpq_test_data",
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
         "//sw/otbn/crypto:lcm",
         "//sw/otbn/crypto:montmul",
         "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:rsa_keygen",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -1001,9 +1014,8 @@ otbn_sim_test(
     srcs = [
         "rsa_keygen_checkp_not_prime_test.s",
     ],
-    exp = "rsa_keygen_checkp_not_prime_test.exp",
+    testcase = "rsa_keygen_checkp_not_prime_test.hjson",
     deps = [
-        ":rsa_keygen_checkpq_test_data",
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
         "//sw/otbn/crypto:lcm",
@@ -1011,6 +1023,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -1020,10 +1033,9 @@ otbn_sim_test(
     srcs = [
         "rsa_keygen_checkq_good_test.s",
     ],
-    exp = "rsa_keygen_checkq_good_test.exp",
     tags = ["nightly"],  # slow, do not run in CI
+    testcase = "rsa_keygen_checkq_good_test.hjson",
     deps = [
-        ":rsa_keygen_checkpq_test_data",
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
         "//sw/otbn/crypto:lcm",
@@ -1031,6 +1043,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -1040,9 +1053,8 @@ otbn_sim_test(
     srcs = [
         "rsa_keygen_checkq_not_prime_test.s",
     ],
-    exp = "rsa_keygen_checkq_not_prime_test.exp",
+    testcase = "rsa_keygen_checkq_not_prime_test.hjson",
     deps = [
-        ":rsa_keygen_checkpq_test_data",
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
         "//sw/otbn/crypto:lcm",
@@ -1050,6 +1062,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -1058,16 +1071,16 @@ otbn_sim_test(
     srcs = [
         "rsa_keygen_checkq_not_relprime_test.s",
     ],
-    exp = "rsa_keygen_checkq_not_relprime_test.exp",
+    testcase = "rsa_keygen_checkq_not_relprime_test.hjson",
     deps = [
         ":fake_primality",
-        ":rsa_keygen_checkpq_test_data",
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
         "//sw/otbn/crypto:lcm",
         "//sw/otbn/crypto:montmul",
         "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:rsa_keygen",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 
@@ -1076,16 +1089,16 @@ otbn_sim_test(
     srcs = [
         "rsa_keygen_checkq_too_close_test.s",
     ],
-    exp = "rsa_keygen_checkq_too_close_test.exp",
+    testcase = "rsa_keygen_checkq_too_close_test.hjson",
     deps = [
         ":fake_primality",
-        ":rsa_keygen_checkpq_test_data",
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
         "//sw/otbn/crypto:lcm",
         "//sw/otbn/crypto:montmul",
         "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:rsa_keygen",
+        "//sw/otbn/crypto:run_rsa_keygen_mem",
     ],
 )
 

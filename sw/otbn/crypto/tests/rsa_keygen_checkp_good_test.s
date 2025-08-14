@@ -5,8 +5,8 @@
 /**
  * Ensure that a good value for p passes RSA keygen checks.
  *
- * Uses the test data from `rsa_keygen_checkpq_test_data`, which is sized for
- * RSA-2048.
+ * Uses the test data from `rsa_keygen_checkp_good_test.hjson`, which is sized
+ * for RSA-2048.
  */
 
 .section .text.start
@@ -25,7 +25,7 @@ main:
 
   /* Check an acceptable value of p.
        w24 <= 2^256-1 if the check passed, otherwise 0 */
-  la        x16, good_p
+  la        x16, rsa_p
   jal       x1, check_p
 
   ecall

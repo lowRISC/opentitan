@@ -121,11 +121,3 @@ rsa_key_from_cofactor_4096:
   /* Generate a key (results in dmem[rsa_n] and dmem[rsa_d]). */
   jal     x1, rsa_key_from_cofactor
   ecall
-
-.bss
-
-/* Operational mode. */
-.globl mode
-.balign 4
-mode:
-.zero 4
