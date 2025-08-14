@@ -37,6 +37,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Required so we can lint commit messages.
+      - name: Fail test
+        run: ${{ false }}
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
