@@ -245,6 +245,13 @@ otbn_binary(
 )
 
 otbn_library(
+    name = "run_rsa_keygen_mem",
+    srcs = [
+        "run_rsa_keygen_mem.s",
+    ],
+)
+
+otbn_library(
     name = "rsa_keygen",
     srcs = [
         "rsa_keygen.s",
@@ -264,6 +271,7 @@ otbn_binary(
         ":mul",
         ":primality",
         ":rsa_keygen",
+        ":run_rsa_keygen_mem",
     ],
 )
 

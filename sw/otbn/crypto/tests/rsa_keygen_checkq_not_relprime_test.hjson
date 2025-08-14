@@ -1,0 +1,54 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// An acceptable value for p.
+//
+// To make sure the checks on q are being tested, this value is specifically
+// chosen to be far enough away from the "bad" values of q that they wouldn't
+// be rejected on that basis.
+//
+// Python script for generating p (using PyCryptoDome's Crypto.Util.number
+// package for the primality check):
+// while True:
+//   p = random.randrange(lower_bound, 1 << 1024)
+//   p |= 3
+//   if abs(p - too_small) < (1 << 924):
+//     continue
+//   if abs(p - not_relprime) < (1 << 924):
+//     continue
+//   if abs(p - not_prime) < (1 << 924):
+//     continue
+//   if math.gcd(p-1, 65537) != 1:
+//     continue
+//   if number.isPrime(p):
+//     break
+
+//  An 1024-bit value that doesn't satisfy relative primality with 65537.
+//
+//  This number is selected to be larger than the lower bound and prime, so it
+//  doesn't fail any other checks than GCD(p-1,e)=1.
+//
+//  Python script for generating the test data (using PyCryptoDome's
+//  Crypto.Util.number package for the primality check):
+//  while True:
+//    y = random.randrange(lower_bound, (1 << 1024))
+//    y -= (y % 65537)
+//    if (y & 1 == 0) and number.isPrime(y+1):
+//      break
+//  not_relprime = y+1
+
+{
+  "entrypoint": "main",
+  "input": {
+    "dmem": {
+      "rsa_p": "0xd10b3338d7d2cca85be7b76c5497f2fe89a9f9b73e613262565636dbc5901c386b1df3c7b8eb3ac8548a9062a5958b33c84dfe0fa9e2c61250d75683be1585008f926d5cfc4d3a3f003746a3beefcc71d287133768fc0268e1f84cb791be8e6dfc48b706ee0515089ff618c0a648854d6a93e9a0452552e93720ffa2021fd53b",
+      "rsa_q": "0xf36b245b0051285df9f46be79c821a95584a00007b907c4102578d6c8c5d459c4328a174859c703e66bc706a9224e20f387da68e80a362fb1f0f36a912df95c26dc8b40902bff546d3aff671eea79a86df507180e0fba265c0ab601e582580f9fb18a62f9ff4e92d8d698408be08d7c24507244c6d3859be3804f2a7d9f16867"
+    }
+  }
+  "output": {
+    "regs": {
+      "w24": "0x0"
+    }
+  }
+}

@@ -1,0 +1,52 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// An acceptable value for p.
+//
+// To make sure the checks on q are being tested, this value is specifically
+// chosen to be far enough away from the "bad" values of q that they wouldn't
+// be rejected on that basis.
+//
+// Python script for generating p (using PyCryptoDome's Crypto.Util.number
+// package for the primality check):
+// while True:
+//   p = random.randrange(lower_bound, 1 << 1024)
+//   p |= 3
+//   if abs(p - too_small) < (1 << 924):
+//     continue
+//   if abs(p - not_relprime) < (1 << 924):
+//     continue
+//   if abs(p - not_prime) < (1 << 924):
+//     continue
+//   if math.gcd(p-1, 65537) != 1:
+//     continue
+//   if number.isPrime(p):
+//     break
+
+// An 1024-bit value that passes other checks but isn't prime.
+//
+// Python script for generating the test data (using PyCryptoDome's
+// Crypto.Util.number package for the primality check):
+// while True:
+//   not_prime = random.randrange(lower_bound, (1 << 1024))
+//   not_prime |= 3
+//   if math.gcd(not_prime, 65537) != 1:
+//     continue
+//  if not number.isPrime(not_prime):
+//    break
+
+{
+  "entrypoint": "main",
+  "input": {
+    "dmem": {
+      "rsa_p": "0xd10b3338d7d2cca85be7b76c5497f2fe89a9f9b73e613262565636dbc5901c386b1df3c7b8eb3ac8548a9062a5958b33c84dfe0fa9e2c61250d75683be1585008f926d5cfc4d3a3f003746a3beefcc71d287133768fc0268e1f84cb791be8e6dfc48b706ee0515089ff618c0a648854d6a93e9a0452552e93720ffa2021fd53b",
+      "rsa_q": "0xecbbd72477e406de8ff72a93afbe19ed4258d3dd8cfa5b2a8b5c76d22053504710a8460c30c5141fc581df484e58a2bd019c03a1acab6c7fd70f9865ac6dcdcce4cca95266e4d2dea9a408b8ded6591daa4416bb7ca78357cad5c7d527d46a06807337d6845484589c8010eb6b674194608e1b9732db4e8cee053d2572158cf7"
+    }
+  }
+  "output": {
+    "regs": {
+      "w24": "0x0"
+    }
+  }
+}
