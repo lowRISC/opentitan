@@ -153,22 +153,15 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
   keymgr_start(diversification);
   HARDENED_TRY(keymgr_wait_until_done());
 
-  // Randomize the destination buffer.
+  // Collect the output. To avoid side-channel lekage, first randomize the
+  // destination buffers using memshred. Then copy the key using a hardened
+  // memcpy.
+  uint32_t share0 = kBaseAddr + KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET;
+  uint32_t share1 = kBaseAddr + KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET;
   hardened_memshred(key->share0, kKeymgrOutputShareNumWords);
+  hardened_memcpy(key->share0, (uint32_t *)share0, kKeymgrOutputShareNumWords);
   hardened_memshred(key->share1, kKeymgrOutputShareNumWords);
-
-  // Collect output.
-  // TODO: for SCA hardening, randomize the order of these reads.
-  for (size_t i = 0; i < kKeymgrOutputShareNumWords; i++) {
-    key->share0[i] =
-        abs_mmio_read32(kBaseAddr + KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET +
-                        (i * sizeof(uint32_t)));
-  }
-  for (size_t i = 0; i < kKeymgrOutputShareNumWords; i++) {
-    key->share1[i] =
-        abs_mmio_read32(kBaseAddr + KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET +
-                        (i * sizeof(uint32_t)));
-  }
+  hardened_memcpy(key->share1, (uint32_t *)share1, kKeymgrOutputShareNumWords);
 
   return OTCRYPTO_OK;
 }
