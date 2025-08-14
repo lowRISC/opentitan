@@ -2154,13 +2154,13 @@ opentitan_test(
         test_cmd = """
             --bootstrap="{firmware}"
         """,
-        test_harness = "//sw/host/tests/chip/gpio_intr",
+        test_harness = "//sw/host/tests/chip/gpio:gpio_intr",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap={firmware}
         """,
-        test_harness = "//sw/host/tests/chip/gpio_intr",
+        test_harness = "//sw/host/tests/chip/gpio:gpio_intr",
     ),
     deps = [
         "//sw/device/lib/dif:gpio",
