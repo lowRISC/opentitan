@@ -7,6 +7,8 @@ description: "DMA Engine Package"
 
 filesets:
   files_rtl:
+    depend:
+      - lowrisc:virtual_constants:top_racl_pkg
     files:
       - rtl/dma_reg_pkg.sv
       - rtl/dma_pkg.sv
