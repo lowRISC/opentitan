@@ -5,6 +5,7 @@
 pub mod i2c;
 pub mod pwm;
 pub mod spi;
+pub mod uart;
 
 #[repr(u8)]
 #[derive(Debug, PartialEq, Clone, Copy)]
