@@ -40,11 +40,13 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   virtual task get_and_drive();
     i2c_item req;
+    bit      sent_item;
     @(posedge cfg.vif.rst_ni);
     forever begin
       if (cfg.if_mode == Device) release_bus();
       // driver drives bus per mode
       seq_item_port.get_next_item(req);
+      sent_item = 1'b0;
       fork
         begin: iso_fork
           fork
@@ -54,6 +56,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
                 Device: drive_device_item(req);
                 default: `uvm_fatal(`gfn, "Shouldn't reach this state!")
               endcase
+              sent_item = 1'b1;
             end
             // handle on-the-fly reset
             begin
@@ -73,7 +76,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
           disable fork;
         end: iso_fork
       join
-      seq_item_port.item_done();
+      if (sent_item) seq_item_port.item_done();
       // When agent reset happens, flush all sequence items from sequencer request queue,
       // before it starts a new sequence.
       if (cfg.driver_rst) begin
