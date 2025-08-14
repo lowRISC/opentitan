@@ -17,8 +17,26 @@ load(
     "TEST_OWNER_CONFIGS",
 )
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load("//rules:signing.bzl", "signature_test")
 
 package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "signed_spx_binaries",
+    testonly = True,
+    srcs = ["//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a"],
+    output_group = "fpga_cw310_signed_bin",
+)
+
+signature_test(
+    name = "rom_ext_signature_test",
+    srcs = [
+        ":signed_spx_binaries",
+    ],
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    spx_domain = "Pure",  # "Pure", "PrehashedSha256"
+    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx_key": "prod_spx_0"},
+)
 
 string_flag(
     name = "secver_write",

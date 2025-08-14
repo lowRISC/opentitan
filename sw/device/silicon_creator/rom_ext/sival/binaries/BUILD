@@ -4,6 +4,7 @@
 
 load("//rules/opentitan:cc.bzl", "exec_env_filegroup")
 load("//rules:files.bzl", "copy_files")
+load("//rules:signing.bzl", "signature_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -45,4 +46,16 @@ exec_env_filegroup(
         "rom_ext_dice_cwt_prod_slot_virtual_fpga_cw340.signed.bin": "cw340",
         "rom_ext_dice_cwt_prod_slot_virtual_silicon_creator.signed.bin": "silicon",
     },
+)
+
+filegroup(
+    name = "signed_binaries",
+    srcs = glob(["*.signed.bin"]),
+)
+
+signature_test(
+    name = "sival_signature_test",
+    srcs = [
+        ":signed_binaries",
+    ],
 )
