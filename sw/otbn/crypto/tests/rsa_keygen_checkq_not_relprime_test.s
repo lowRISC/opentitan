@@ -5,8 +5,8 @@
 /**
  * Ensure that a multiple of F4 fails RSA keygen checks for q.
  *
- * Uses the test data from `rsa_keygen_checkpq_test_data`, which is sized for
- * RSA-2048.
+ * Uses the test data from `rsa_keygen_checkq_not_relprime_test.hjson`, which is
+ * sized for RSA-2048.
  */
 
 .section .text.start
@@ -22,20 +22,6 @@ main:
   /* Load required constants. */
   li        x20, 20
   li        x21, 21
-
-  /* Copy a "good" p value into `rsa_p`. */
-  la        x16, good_p
-  la        x3, rsa_p
-  loop      x30, 2
-    bn.lid   x20, 0(x16++)
-    bn.sid   x20, 0(x3++)
-
-  /* Copy the bad value into `rsa_q`. */
-  la        x16, not_relprime
-  la        x3, rsa_q
-  loop      x30, 2
-    bn.lid   x20, 0(x16++)
-    bn.sid   x20, 0(x3++)
 
   /* w24 <= 2^256-1 if the check passed, otherwise 0 */
   jal       x1, check_q

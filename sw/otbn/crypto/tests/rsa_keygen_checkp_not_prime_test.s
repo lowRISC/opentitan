@@ -5,8 +5,8 @@
 /**
  * Ensure that a nonprime value for p fails RSA keygen checks.
  *
- * Uses the test data from `rsa_keygen_checkpq_test_data`, which is sized for
- * RSA-2048.
+ * Uses the test data from `rsa_keygen_checkp_not_prime_test.hjson`, which is
+ * sized for RSA-2048.
  */
 
 .section .text.start
@@ -25,7 +25,7 @@ main:
 
   /* Check a value of p that is nonprime.
        w24 <= 2^256-1 if the check passed, otherwise 0 */
-  la        x16, not_prime
+  la        x16, rsa_p
   jal       x1, check_p
 
   ecall
