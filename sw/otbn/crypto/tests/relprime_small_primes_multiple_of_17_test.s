@@ -3,10 +3,11 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Ensure that a value for q which is too close to p fails RSA keygen checks.
+ * Standalone test to check an RSA keygen subroutine.
  *
- * Uses the test data from `rsa_keygen_checkq_too_close_test`, which is sized
- * for RSA-2048.
+ * The `relprime_small_primes` subroutine checks if a candidate prime is a
+ * multiple of a small prime. This test ensures that the check detects a
+ * multiple of 17.
  */
 
 .section .text.start
@@ -17,13 +18,9 @@ main:
 
   /* Load the number of limbs for this test. */
   li        x30, 4
-  li        x31, 3
 
-  /* Load required constants. */
-  li        x20, 20
-  li        x21, 21
-
-  /* w24 <= 2^256-1 if the check passed, otherwise 0 */
-  jal       x1, check_q
+  /* w22 <= 0 if dmem[rsa_p] is NOT relatively prime to F4 */
+  la        x16, rsa_p
+  jal       x1, relprime_small_primes
 
   ecall
