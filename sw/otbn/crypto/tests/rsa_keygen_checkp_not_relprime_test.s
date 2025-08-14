@@ -4,9 +4,6 @@
 
 /**
  * Ensure that a multiple of F4 fails RSA keygen checks for p.
- *
- * Uses the test data from `rsa_keygen_checkpq_test_data`, which is sized for
- * RSA-2048.
  */
 
 .section .text.start
@@ -25,7 +22,7 @@ main:
 
   /* Check a value of p that is not relatively prime to F4.
        w24 <= 2^256-1 if the check passed, otherwise 0 */
-  la        x16, not_relprime
+  la        x16, rsa_p
   jal       x1, check_p
 
   ecall
