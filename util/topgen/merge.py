@@ -586,15 +586,6 @@ def xbar_cross_node(node_name: str,
     return (asid, result)
 
 
-# find the first instance name of a given type
-def _find_module_name(modules: Dict[str, ConfigT], module_type: str):
-    for m in modules:
-        if m['type'] == module_type:
-            return m['name']
-
-    return None
-
-
 def _get_clock_group_name(clk: Union[str, OrderedDict],
                           default_ep_grp: str) -> Tuple[str, str]:
     """Return the clock group of a particular clock connection
@@ -725,14 +716,14 @@ def connect_clocks(top: ConfigT, name_to_block: IpBlocksT):
     assert isinstance(clocks, Clocks)
 
     # add entry to inter_module automatically
-    clkmgr_name = _find_module_name(top["module"], "clkmgr")
+    clkmgr = lib.find_module(top["module"], "clkmgr")
     # If there is no clkmgr, nothing to do here
-    if not clkmgr_name:
+    if not clkmgr:
         return
 
     external = top['inter_module']['external']
     for intf in top['exported_clks']:
-        external[f'{clkmgr_name}.clocks_{intf}'] = f"clks_{intf}"
+        external[f'{clkmgr["name"]}.clocks_{intf}'] = f"clks_{intf}"
 
     typed_clocks = clocks.typed_clocks()
 
@@ -805,7 +796,7 @@ def connect_clocks(top: ConfigT, name_to_block: IpBlocksT):
 
         clkmgr_idle.append(ep_name + '.' + idle_signal)
 
-    top['inter_module']['connect']['{}.idle'.format(clkmgr_name)] = clkmgr_idle
+    top['inter_module']['connect']['{}.idle'.format(clkmgr["name"])] = clkmgr_idle
 
 
 def amend_resets(top: ConfigT,
@@ -824,7 +815,7 @@ def amend_resets(top: ConfigT,
         top['unmanaged_resets'] = UnmanagedResets(unmanaged_resets)
     top_resets = (top['resets'] if isinstance(top['resets'], Resets) else
                   Resets(top['resets'], top['clocks']))
-    rstmgr_name = _find_module_name(top['module'], 'rstmgr')
+    rstmgr = lib.find_module(top['module'], 'rstmgr')
 
     # Generate exported reset list
     exported_rsts = OrderedDict()
@@ -879,11 +870,11 @@ def amend_resets(top: ConfigT,
     top['exported_rsts'] = exported_rsts
 
     # add entry to inter_module automatically
-    if rstmgr_name is None and allow_missing_blocks:
+    if not rstmgr and allow_missing_blocks:
         pass
     else:
         for intf in top['exported_rsts']:
-            top['inter_module']['external'][f'{rstmgr_name}.resets_{intf}'] = (
+            top['inter_module']['external'][f'{rstmgr["name"]}.resets_{intf}'] = (
                 "rsts_{}".format(intf))
 
     # reset class objects
@@ -1373,14 +1364,14 @@ def amend_wkup(topcfg: ConfigT,
             })
     topcfg["wakeups"] = wakeups
 
-    pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
-    if pwrmgr_name:
+    pwrmgr = lib.find_module(topcfg['module'], 'pwrmgr')
+    if pwrmgr:
         # add wakeup signals to pwrmgr connections if there is one
         signal_names = [
             f"{s['module'].lower()}.{s['name'].lower()}"
             for s in topcfg["wakeups"]
         ]
-        topcfg["inter_module"]["connect"][f"{pwrmgr_name}.wakeups"] = (
+        topcfg["inter_module"]["connect"][f"{pwrmgr['name']}.wakeups"] = (
             signal_names)
         log.info("Intermodule signals: {}".format(
             topcfg["inter_module"]["connect"]))
@@ -1411,14 +1402,14 @@ def amend_reset_request(topcfg: ConfigT,
             })
     topcfg["reset_requests"]["peripheral"] = reset_signals
 
-    pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
-    if pwrmgr_name:
+    pwrmgr = lib.find_module(topcfg['module'], 'pwrmgr')
+    if pwrmgr:
         # add reset requests to pwrmgr connections if there is one
         signal_names = [
             "{}.{}".format(s["module"].lower(), s["name"].lower())
             for s in topcfg["reset_requests"]["peripheral"]
         ]
-        topcfg["inter_module"]["connect"][f"{pwrmgr_name}.rstreqs"] = (
+        topcfg["inter_module"]["connect"][f"{pwrmgr['name']}.rstreqs"] = (
             signal_names)
     log.info("Intermodule signals: {}".format(
         topcfg["inter_module"]["connect"]))
