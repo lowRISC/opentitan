@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use std::io;
 use thiserror::Error;
 
@@ -260,4 +260,318 @@ pub fn dump_vcd(vcd: &Vcd) -> Result<String> {
     writer.write_vcd(vcd)?;
     writer.flush()?;
     Ok(String::from_utf8(vcd_bytes).expect("Generated VCD should be UTF-8 compatible"))
+}
+
+/// Errors related to VCD decoding/parsing
+#[derive(Debug, Error)]
+pub enum VcdParseError {
+    #[error("Missing required {0} value")]
+    MissingValue(String),
+    #[error("Missing required definition {0}")]
+    MissingDefinition(String),
+    #[error("Missing $end for definition {0}")]
+    MissingDefinitionEnd(String),
+    #[error("Multiple definitions for {0}")]
+    MultipleDefinitions(String),
+    #[error("Found $end when there was no definition to end")]
+    MismatchedEnd,
+    #[error("Found a $scope after already parsing $enddefinitions")]
+    DefinitionAfterEnd,
+    #[error("{0} is not yet supported by VCD parsing")]
+    UnsupportedFeature(String),
+    #[error("VCD timestamps #{0} and #{1} are out of order!")]
+    TimestampsOutOfOrder(u128, u128),
+    #[error("Unrecognized value {0}")]
+    UnknownToken(String),
+    #[error("Supplied identifier {0} does not match any defined identifier")]
+    UnknownVariable(String),
+}
+
+/// Iterator for reading whitespace-separated tokens from a given io::BufRead.
+/// Internally buffers the next line, returning tokens from that line.
+#[derive(Debug)]
+struct WhitespaceTokenizer<R: io::BufRead> {
+    reader: R,
+    line_buf: String,
+    tokens: Vec<String>,
+}
+
+impl<R: io::BufRead> WhitespaceTokenizer<R> {
+    fn new(reader: R) -> Self {
+        Self {
+            reader,
+            line_buf: String::new(),
+            tokens: Vec::new(),
+        }
+    }
+}
+
+impl<R: io::BufRead> Iterator for WhitespaceTokenizer<R> {
+    type Item = io::Result<String>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            if let Some(token) = self.tokens.pop() {
+                return Some(Ok(token));
+            }
+            self.line_buf.clear();
+            match self.reader.read_line(&mut self.line_buf) {
+                Ok(0) => return None, // EOF
+                Ok(_) => {}
+                Err(e) => return Some(Err(e)),
+            };
+            // Collect tokens in reverse to efficiently pop from the back of the
+            // vec, rather than the front.
+            self.tokens = self
+                .line_buf
+                .split_whitespace()
+                .map(|s| s.to_string())
+                .rev()
+                .collect();
+        }
+    }
+}
+
+/// Struct implementing methods for parsing VCD data from some io::BufRead.
+#[derive(Debug)]
+pub struct VcdParser<R: io::BufRead> {
+    tokenizer: WhitespaceTokenizer<R>,
+    identifiers: Vec<String>,
+}
+
+impl<R: io::BufRead> VcdParser<R> {
+    pub fn new(reader: R) -> Self {
+        VcdParser {
+            tokenizer: WhitespaceTokenizer::new(reader),
+            identifiers: Vec::new(),
+        }
+    }
+
+    /// Get the next whitespace-separated VCD file token
+    pub fn next_token(&mut self) -> Result<Option<String>, io::Error> {
+        self.tokenizer.next().transpose()
+    }
+
+    pub fn parse_vcd(&mut self) -> Result<Vcd> {
+        Ok(Vcd {
+            header: self.parse_header()?,
+            vardefs: self.parse_vardefs()?,
+            value_changes: self.parse_value_change_section()?,
+        })
+    }
+
+    pub fn parse_header(&mut self) -> Result<Header> {
+        let mut header = Header {
+            timescale_ps: None,
+            date: None,
+            version: None,
+        };
+        while let Some(token) = self.next_token()?.as_deref() {
+            match token {
+                "$timescale" => {
+                    if header.timescale_ps.is_some() {
+                        bail!(VcdParseError::MultipleDefinitions("timescale".into()));
+                    }
+                    // TODO: add a custom `Duration` type that supports parsing
+                    // picoseconds (`ps`) rather than hacking slightly here
+                    let timescale_str = self.parse_header_str("timescale")?;
+                    header.timescale_ps = if timescale_str.ends_with("ps") {
+                        Some(
+                            timescale_str
+                                .strip_suffix("ps")
+                                .unwrap()
+                                .trim()
+                                .parse::<u128>()?,
+                        )
+                    } else {
+                        Some(humantime::parse_duration(&timescale_str)?.as_nanos() * 1000)
+                    }
+                }
+                "$date" => {
+                    if header.date.is_some() {
+                        bail!(VcdParseError::MultipleDefinitions("date".into()));
+                    }
+                    header.date = Some(self.parse_header_str("date")?)
+                }
+                "$version" => {
+                    if header.version.is_some() {
+                        bail!(VcdParseError::MultipleDefinitions("version".into()));
+                    }
+                    header.version = Some(self.parse_header_str("version")?)
+                }
+                "$scope" => {
+                    return Ok(header);
+                }
+                _ => (),
+            }
+        }
+        bail!(VcdParseError::MissingDefinition("scope".into()))
+    }
+
+    pub fn parse_header_str(&mut self, field: &str) -> Result<String> {
+        let Some(mut value) = self.next_token()? else {
+            bail!(VcdParseError::MissingValue(field.into()));
+        };
+        loop {
+            match self.next_token()?.as_deref() {
+                Some("$end") => return Ok(value),
+                Some(next_val) => {
+                    value.push(' ');
+                    value.push_str(next_val);
+                }
+                None => bail!(VcdParseError::MissingDefinitionEnd(field.into())),
+            }
+        }
+    }
+
+    pub fn parse_vardefs(&mut self) -> Result<VarDefs> {
+        let mut scopes = Vec::new();
+        scopes.push(self.parse_scope()?);
+        let mut end_seen = false;
+        while let Some(token) = self.next_token()?.as_deref() {
+            match (token, end_seen) {
+                ("$scope", false) => {
+                    scopes.push(self.parse_scope()?);
+                }
+                ("$scope", true) => bail!(VcdParseError::DefinitionAfterEnd),
+                ("$enddefinitions", false) => {
+                    end_seen = true;
+                }
+                ("$enddefinitions", true) => {
+                    bail!(VcdParseError::MultipleDefinitions("$enddefinitions".into()))
+                }
+                ("$end", false) => bail!(VcdParseError::MismatchedEnd),
+                ("$end", true) => return Ok(VarDefs { scopes }),
+                _ => (),
+            }
+        }
+        bail!(VcdParseError::MissingDefinition("$enddefinitions".into()))
+    }
+
+    pub fn parse_scope(&mut self) -> Result<ScopeItem> {
+        let Some(scope_type) = self.next_token()? else {
+            bail!(VcdParseError::MissingValue("scope type".into()));
+        };
+        let Some(identifier) = self.next_token()? else {
+            bail!(VcdParseError::MissingValue("scope name".into()));
+        };
+        match self.next_token()?.as_deref() {
+            Some("$end") => (),
+            _ => bail!(VcdParseError::MissingDefinitionEnd("scope".into())),
+        };
+        let mut items = Vec::new();
+        while let Some(token) = self.next_token()?.as_deref() {
+            match token {
+                "$scope" => {
+                    items.push(self.parse_scope()?);
+                }
+                "$var" => {
+                    items.push(self.parse_variable()?);
+                }
+                "$end" => {
+                    return Ok(ScopeItem::Scope {
+                        scope_type,
+                        identifier,
+                        items,
+                    })
+                }
+                _ => (),
+            }
+        }
+        bail!(VcdParseError::MissingDefinitionEnd("scope".into()))
+    }
+
+    pub fn parse_variable(&mut self) -> Result<ScopeItem> {
+        let Some(signal_type) = self.next_token()? else {
+            bail!(VcdParseError::MissingValue("signal type".into()));
+        };
+        let Some(var_width) = self.next_token()? else {
+            bail!(VcdParseError::MissingValue("signal width".into()));
+        };
+        let width = var_width.parse::<u32>()?;
+        let Some(identifier) = self.next_token()? else {
+            bail!(VcdParseError::MissingValue("identifier".into()));
+        };
+        let Some(reference) = self.next_token()? else {
+            bail!(VcdParseError::MissingValue("signal name".into()));
+        };
+        match self.next_token()?.as_deref() {
+            Some("$end") => {
+                self.identifiers.push(identifier.to_string());
+                Ok(ScopeItem::VarDef {
+                    signal: Signal {
+                        signal_type,
+                        width,
+                        reference,
+                    },
+                    identifier,
+                })
+            }
+            _ => bail!(VcdParseError::MissingDefinitionEnd("var".into())),
+        }
+    }
+
+    pub fn parse_value_change_section(&mut self) -> Result<ValueChangeSection> {
+        let mut changes = Vec::new();
+        let current_step: u128 = 0;
+        while let Some(token) = self.next_token()? {
+            match token.as_str() {
+                // Commands
+                "$dumpvars" => {
+                    bail!(VcdParseError::UnsupportedFeature("$dumpvars".into()));
+                }
+                "$end" => bail!(VcdParseError::MismatchedEnd),
+                v if v.starts_with("$") => {
+                    bail!(VcdParseError::UnsupportedFeature("commands".into()));
+                }
+                // Timesteps
+                v if v.starts_with("#") => {
+                    let step = v.strip_prefix("#").unwrap().parse::<u128>()?;
+                    if step < current_step {
+                        bail!(VcdParseError::TimestampsOutOfOrder(current_step, step));
+                    }
+                    changes.push(ValueChangeItem::Timestamp { step });
+                }
+                // Values
+                v if v.starts_with(['0', '1', 'z', 'Z', 'x', 'X']) => {
+                    changes.push(self.parse_scalar(token)?);
+                }
+                // TODO: add support for more VCD signal types
+                v if v.starts_with(['b', 'B']) => {
+                    bail!(VcdParseError::UnsupportedFeature("vector signals".into()))
+                }
+                v if v.starts_with(['r', 'R']) => {
+                    bail!(VcdParseError::UnsupportedFeature("real vars".into()))
+                }
+                v if v.starts_with(['s', 'S']) => {
+                    bail!(VcdParseError::UnsupportedFeature("strings".into()))
+                }
+                v => bail!(VcdParseError::UnknownToken(v.into())),
+            }
+        }
+        Ok(ValueChangeSection { changes })
+    }
+
+    pub fn parse_scalar(&self, token: String) -> Result<ValueChangeItem> {
+        let value = match &token[0..1] {
+            "0" => ScalarValue::Zero,
+            "1" => ScalarValue::One,
+            "z" | "Z" => ScalarValue::Z,
+            "x" | "X" => ScalarValue::X,
+            v => bail!(VcdParseError::UnknownToken(v.into())),
+        };
+        let identifier = token[1..].to_string();
+        if !self.identifiers.contains(&identifier) {
+            bail!(VcdParseError::UnknownVariable(identifier));
+        }
+        Ok(ValueChangeItem::Scalar { identifier, value })
+    }
+}
+
+/// A helper function using a `VcdParser` to directly load given VCD file
+/// contents (as a &str) to an equivalent Vcd.
+pub fn load_vcd(vcd: &str) -> Result<Vcd> {
+    let cursor = io::Cursor::new(vcd.as_bytes());
+    let mut parser = VcdParser::new(cursor);
+    parser.parse_vcd()
 }
