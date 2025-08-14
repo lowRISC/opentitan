@@ -416,7 +416,7 @@ fn pattgen_ios(
                 if res.is_err() || opts.dump_waves {
                     log::info!(
                         "====[ VCD dump ]====\n{}\n====[ end dump ]====",
-                        waves.dump_vcd()
+                        waves.dump_vcd()?
                     );
                 }
                 res.with_context(|| format!("channel {i} did not meet expectations"))?;
