@@ -106,7 +106,8 @@ status_t handle_rom_fi_init(ujson_t *uj) {
       uj_cpuctrl_data.enable_sram_readback, &uj_output.clock_jitter_locked,
       &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
       &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
-      &uj_output.sram_ret_readback_en));
+      &uj_output.sram_ret_readback_en, uj_cpuctrl_data.enable_data_ind_timing,
+      &uj_output.data_ind_timing_en));
 
   // Initialize rom_ctrl.
   mmio_region_t rom_ctrl_reg =
@@ -117,6 +118,9 @@ status_t handle_rom_fi_init(ujson_t *uj) {
   TRY(dif_rv_core_ibex_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
+
+  // Read rom digest.
+  TRY(pentest_read_rom_digest(uj_output.rom_digest));
 
   // Read device ID and return to host.
   TRY(pentest_read_device_id(uj_output.device_id));

@@ -25,6 +25,8 @@ extern "C" {
 #define DRBG_CMD_MAX_NONCE_BYTES 16
 #define DRBG_CMD_MAX_OUTPUT_BYTES 256
 
+#define TRNG_CMD_MAX_OUTPUT_BYTES 4
+
 // clang-format off
 
 #define CRYPTOLIBFISYM_SUBCOMMAND(_, value) \
@@ -33,7 +35,10 @@ extern "C" {
     value(_, Gcm) \
     value(_, Tdes) \
     value(_, Hmac) \
-    value(_, Drbg) \
+    value(_, DrbgGenerate) \
+    value(_, DrbgReseed) \
+    value(_, TrngGenerate) \
+    value(_, TrngInit) \
     value(_, Init)
 C_ONLY(UJSON_SERDE_ENUM(CryptoLibFiSymSubcommand, cryptolib_fi_sym_subcommand_t, CRYPTOLIBFISYM_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(CryptoLibFiSymSubcommand, cryptolib_fi_sym_subcommand_t, CRYPTOLIBFISYM_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
@@ -54,6 +59,7 @@ UJSON_SERDE_STRUCT(CryptoLibFiSymAesIn, cryptolib_fi_sym_aes_in_t, CRYPTOLIBFISY
 #define CRYPTOLIBFISYM_AES_OUT(field, string) \
     field(data, uint8_t, AES_CMD_MAX_MSG_BYTES) \
     field(data_len, size_t) \
+    field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibFiSymAesOut, cryptolib_fi_sym_aes_out_t, CRYPTOLIBFISYM_AES_OUT);
 
@@ -70,6 +76,7 @@ UJSON_SERDE_STRUCT(CryptoLibFiSymCmacIn, cryptolib_fi_sym_cmac_in_t, CRYPTOLIBFI
 #define CRYPTOLIBFISYM_CMAC_OUT(field, string) \
     field(data, uint8_t, AES_CMD_MAX_MSG_BYTES) \
     field(data_len, size_t) \
+    field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibFiSymCmacOut, cryptolib_fi_sym_cmac_out_t, CRYPTOLIBFISYM_CMAC_OUT);
 
@@ -92,6 +99,7 @@ UJSON_SERDE_STRUCT(CryptoLibFiSymGcmIn, cryptolib_fi_sym_gcm_in_t, CRYPTOLIBFISY
     field(data_len, size_t) \
     field(tag, uint8_t, AES_CMD_MAX_MSG_BYTES) \
     field(tag_len, size_t) \
+    field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibFiSymGcmOut, cryptolib_fi_sym_gcm_out_t, CRYPTOLIBFISYM_GCM_OUT);
 
@@ -111,6 +119,7 @@ UJSON_SERDE_STRUCT(CryptoLibFiSymTdesIn, cryptolib_fi_sym_tdes_in_t, CRYPTOLIBFI
 #define CRYPTOLIBFISYM_TDES_OUT(field, string) \
     field(data, uint8_t, TDES_CMD_MAX_MSG_BYTES) \
     field(data_len, size_t) \
+    field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibFiSymTdesOut, cryptolib_fi_sym_tdes_out_t, CRYPTOLIBFISYM_TDES_OUT);
 
@@ -128,10 +137,20 @@ UJSON_SERDE_STRUCT(CryptoLibFiSymHmacIn, cryptolib_fi_sym_hmac_in_t, CRYPTOLIBFI
 #define CRYPTOLIBFISYM_HMAC_OUT(field, string) \
     field(data, uint8_t, HMAC_CMD_MAX_TAG_BYTES) \
     field(data_len, size_t) \
+    field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibFiSymHmacOut, cryptolib_fi_sym_hmac_out_t, CRYPTOLIBFISYM_HMAC_OUT);
 
-#define CRYPTOLIBFISYM_DRBG_IN(field, string) \
+#define CRYPTOLIBFISYM_DRBG_GENERATE_IN(field, string) \
+    field(nonce, uint8_t, DRBG_CMD_MAX_NONCE_BYTES) \
+    field(nonce_len, size_t) \
+    field(data_len, size_t) \
+    field(mode, size_t) \
+    field(cfg, size_t) \
+    field(trigger, size_t)
+UJSON_SERDE_STRUCT(CryptoLibFiSymDrbgGenerateIn, cryptolib_fi_sym_drbg_generate_in_t, CRYPTOLIBFISYM_DRBG_GENERATE_IN);
+
+#define CRYPTOLIBFISYM_DRBG_RESEED_IN(field, string) \
     field(entropy, uint8_t, DRBG_CMD_MAX_ENTROPY_BYTES) \
     field(entropy_len, size_t) \
     field(nonce, uint8_t, DRBG_CMD_MAX_NONCE_BYTES) \
@@ -140,13 +159,40 @@ UJSON_SERDE_STRUCT(CryptoLibFiSymHmacOut, cryptolib_fi_sym_hmac_out_t, CRYPTOLIB
     field(mode, size_t) \
     field(cfg, size_t) \
     field(trigger, size_t)
-UJSON_SERDE_STRUCT(CryptoLibFiSymDrbgIn, cryptolib_fi_sym_drbg_in_t, CRYPTOLIBFISYM_DRBG_IN);
+UJSON_SERDE_STRUCT(CryptoLibFiSymDrbgReseedIn, cryptolib_fi_sym_drbg_reseed_in_t, CRYPTOLIBFISYM_DRBG_RESEED_IN);
 
-#define CRYPTOLIBFISYM_DRBG_OUT(field, string) \
+#define CRYPTOLIBFISYM_DRBG_GENERATE_OUT(field, string) \
     field(data, uint8_t, DRBG_CMD_MAX_OUTPUT_BYTES) \
-    field(data_len, size_t) \
+    field(status, size_t) \
     field(cfg, size_t)
-UJSON_SERDE_STRUCT(CryptoLibFiSymDrbgOut, cryptolib_fi_sym_drbg_out_t, CRYPTOLIBFISYM_DRBG_OUT);
+UJSON_SERDE_STRUCT(CryptoLibFiSymDrbgGenerateOut, cryptolib_fi_sym_drbg_generate_out_t, CRYPTOLIBFISYM_DRBG_GENERATE_OUT);
+
+#define CRYPTOLIBFISYM_DRBG_RESEED_OUT(field, string) \
+    field(status, size_t) \
+    field(cfg, size_t)
+UJSON_SERDE_STRUCT(CryptoLibFiSymDrbgReseedOut, cryptolib_fi_sym_drbg_reseed_out_t, CRYPTOLIBFISYM_DRBG_RESEED_OUT);
+
+#define CRYPTOLIBFISYM_TRNG_GENERATE_IN(field, string) \
+    field(cfg, size_t) \
+    field(trigger, size_t)
+UJSON_SERDE_STRUCT(CryptoLibFiSymTrngGenerateIn, cryptolib_fi_sym_trng_generate_in_t, CRYPTOLIBFISYM_TRNG_GENERATE_IN);
+
+#define CRYPTOLIBFISYM_TRNG_RESEED_IN(field, string) \
+    field(mode, size_t) \
+    field(cfg, size_t) \
+    field(trigger, size_t)
+UJSON_SERDE_STRUCT(CryptoLibFiSymTrngReseedIn, cryptolib_fi_sym_trng_reseed_in_t, CRYPTOLIBFISYM_TRNG_RESEED_IN);
+
+#define CRYPTOLIBFISYM_TRNG_GENERATE_OUT(field, string) \
+    field(data, uint8_t, TRNG_CMD_MAX_OUTPUT_BYTES) \
+    field(status, size_t) \
+    field(cfg, size_t)
+UJSON_SERDE_STRUCT(CryptoLibFiSymTrngGenerateOut, cryptolib_fi_sym_trng_generate_out_t, CRYPTOLIBFISYM_TRNG_GENERATE_OUT);
+
+#define CRYPTOLIBFISYM_TRNG_RESEED_OUT(field, string) \
+    field(status, size_t) \
+    field(cfg, size_t)
+UJSON_SERDE_STRUCT(CryptoLibFiSymTrngReseedOut, cryptolib_fi_sym_trng_reseed_out_t, CRYPTOLIBFISYM_TRNG_RESEED_OUT);
 
 // clang-format on
 

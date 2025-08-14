@@ -159,7 +159,8 @@ status_t handle_ibex_pentest_init(ujson_t *uj) {
       uj_cpuctrl_data.enable_sram_readback, &uj_output.clock_jitter_locked,
       &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
       &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
-      &uj_output.sram_ret_readback_en));
+      &uj_output.sram_ret_readback_en, uj_cpuctrl_data.enable_data_ind_timing,
+      &uj_output.data_ind_timing_en));
 
   // Key manager not initialized for the handle_ibex_sca_key_sideloading test.
   key_manager_init = false;
@@ -178,6 +179,9 @@ status_t handle_ibex_pentest_init(ujson_t *uj) {
   // Load p256 keygen from seed app into OTBN.
   // This is not used, but just set so it receives input,
   TRY(otbn_load_app(kOtbnAppP256Ecdsa));
+
+  // Read rom digest.
+  TRY(pentest_read_rom_digest(uj_output.rom_digest));
 
   // Read device ID and return to host.
   TRY(pentest_read_device_id(uj_output.device_id));

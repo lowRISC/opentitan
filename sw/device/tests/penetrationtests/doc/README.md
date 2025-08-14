@@ -30,6 +30,22 @@ cd $REPO_TOP
 ./bazelisk.sh build \
   --//signing:token=//signing/tokens:cloud_kms_sival \
   //sw/device/tests/penetrationtests/firmware:pen_test_fi_otbn_silicon_owner_sival_rom_ext
+
+./bazelisk.sh build \
+  --//signing:token=//signing/tokens:cloud_kms_sival \
+  //sw/device/tests/penetrationtests/firmware:pen_test_cryptolib_sym_fi_silicon_owner_sival_rom_ext
+
+./bazelisk.sh build \
+  --//signing:token=//signing/tokens:cloud_kms_sival \
+  //sw/device/tests/penetrationtests/firmware:pen_test_cryptolib_asym_fi_silicon_owner_sival_rom_ext
+
+./bazelisk.sh build \
+  --//signing:token=//signing/tokens:cloud_kms_sival \
+  //sw/device/tests/penetrationtests/firmware:pen_test_cryptolib_sym_sca_silicon_owner_sival_rom_ext
+
+./bazelisk.sh build \
+  --//signing:token=//signing/tokens:cloud_kms_sival \
+  //sw/device/tests/penetrationtests/firmware:pen_test_cryptolib_asym_sca_silicon_owner_sival_rom_ext
 ```
 
 The binaries are located in `bazel-bin/sw/device/tests/penetrationtests/firmware/`.

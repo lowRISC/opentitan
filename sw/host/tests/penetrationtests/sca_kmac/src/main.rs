@@ -41,6 +41,10 @@ struct ScaKmacTestCase {
     #[serde(default)]
     input: String,
     #[serde(default)]
+    message: String,
+    #[serde(default)]
+    key: String,
+    #[serde(default)]
     mode: String,
     #[serde(default)]
     sensors: String,
@@ -77,6 +81,16 @@ fn run_sca_kmac_testcase(
         input.send(uart)?;
     }
 
+    if !test_case.message.is_empty() {
+        let message: serde_json::Value = serde_json::from_str(test_case.message.as_str()).unwrap();
+        message.send(uart)?;
+    }
+
+    if !test_case.key.is_empty() {
+        let key: serde_json::Value = serde_json::from_str(test_case.key.as_str()).unwrap();
+        key.send(uart)?;
+    }
+
     // Check if we need to send sensor info.
     if !test_case.sensors.is_empty() {
         let sensors: serde_json::Value = serde_json::from_str(test_case.sensors.as_str()).unwrap();
@@ -100,7 +114,7 @@ fn run_sca_kmac_testcase(
                 // Check received with expected output.
                 if output_expected != output_received {
                     log::info!(
-                        "FAILED {} test #{}: expected = '{}', actual = '{}'",
+                        "FAILED {} test #{}: expected = '{}', actual = '{}'\n",
                         test_case.command,
                         test_case.test_case_id,
                         exp_output,

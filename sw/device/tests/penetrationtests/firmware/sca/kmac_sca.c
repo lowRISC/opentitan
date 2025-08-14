@@ -483,13 +483,17 @@ status_t handle_kmac_pentest_init(ujson_t *uj) {
       uj_cpuctrl_data.enable_sram_readback, &uj_output.clock_jitter_locked,
       &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
       &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
-      &uj_output.sram_ret_readback_en));
+      &uj_output.sram_ret_readback_en, uj_cpuctrl_data.enable_data_ind_timing,
+      &uj_output.data_ind_timing_en));
 
   // Setup the trigger.
   pentest_init(kPentestTriggerSourceKmac,
                kPentestPeripheralIoDiv4 | kPentestPeripheralKmac,
                uj_sensor_data.sensor_ctrl_enable,
                uj_sensor_data.sensor_ctrl_en_fatal);
+
+  // Read rom digest.
+  TRY(pentest_read_rom_digest(uj_output.rom_digest));
 
   // Read device ID and return to host.
   TRY(pentest_read_device_id(uj_output.device_id));
@@ -695,6 +699,7 @@ status_t handle_kmac_sca_batch(ujson_t *uj) {
   for (uint32_t i = 0; i < uj_data.num_enc; ++i) {
     kmac_reset();
     memcpy(kmac_key.share0, kmac_batch_keys[i], kKeyLength);
+    memset(kmac_key.share1, 0, kKeyLength);
 
     pentest_set_trigger_high();
     if (sha3_ujson_absorb(batch_messages[i], kMessageLength) != kmacScaOk) {
@@ -718,6 +723,58 @@ status_t handle_kmac_sca_batch(ujson_t *uj) {
   cryptotest_kmac_sca_batch_digest_t uj_output;
   memcpy(uj_output.batch_digest, (uint8_t *)batch_digest, kDigestLength * 4);
   RESP_OK(ujson_serialize_cryptotest_kmac_sca_batch_digest_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
+/**
+ * Batch command handler with daisy chaining.
+ *
+ * Start batch mode.
+ *
+ * The uJSON data contains:
+ *  - data: The number of encryptions.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_kmac_sca_batch_daisy_chain(ujson_t *uj) {
+  penetrationtest_num_enc_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_num_enc_t(uj, &uj_data));
+  cryptotest_kmac_sca_msg_t uj_message;
+  TRY(ujson_deserialize_cryptotest_kmac_sca_msg_t(uj, &uj_message));
+  cryptotest_kmac_sca_key_t uj_key;
+  TRY(ujson_deserialize_cryptotest_kmac_sca_key_t(uj, &uj_key));
+
+  uint32_t out[kDigestLength];
+
+  uint8_t message_buf[KMACSCA_CMD_MAX_MSG_BYTES];
+  // Pad with zero.
+  memset(message_buf, 0, KMACSCA_CMD_MAX_MSG_BYTES);
+  memcpy(message_buf, uj_message.msg, uj_message.msg_length);
+
+  for (uint32_t i = 0; i < uj_data.num_enc; ++i) {
+    kmac_reset();
+    memcpy(kmac_key.share0, uj_key.key, kKeyLength);
+
+    pentest_set_trigger_high();
+    if (sha3_ujson_absorb(message_buf, KMACSCA_CMD_MAX_MSG_BYTES) !=
+        kmacScaOk) {
+      return ABORTED();
+    }
+    pentest_set_trigger_low();
+
+    kmac_msg_done();
+    if (kmac_get_digest(out, kDigestLength) != kmacScaOk) {
+      return ABORTED();
+    }
+
+    // Copy the output to the input.
+    memcpy(message_buf, (uint8_t *)out, KMACSCA_CMD_MAX_MSG_BYTES);
+  }
+  // Send the last digest to the host for verification.
+  cryptotest_kmac_sca_digest_t uj_output;
+  memcpy(uj_output.digest, (uint8_t *)out, kDigestLength * 2);
+  RESP_OK(ujson_serialize_cryptotest_kmac_sca_digest_t, uj, &uj_output);
 
   return OK_STATUS();
 }
@@ -759,6 +816,8 @@ status_t handle_kmac_sca(ujson_t *uj) {
       return handle_kmac_sca_single_absorb(uj);
     case kKmacScaSubcommandBatch:
       return handle_kmac_sca_batch(uj);
+    case kKmacScaSubcommandBatchDaisy:
+      return handle_kmac_sca_batch_daisy_chain(uj);
     case kKmacScaSubcommandFixedKeySet:
       return handle_kmac_sca_fixed_key_set(uj);
     case kKmacScaSubcommandSeedLfsr:

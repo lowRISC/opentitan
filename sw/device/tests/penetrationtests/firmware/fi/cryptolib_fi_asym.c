@@ -25,7 +25,8 @@ status_t handle_cryptolib_fi_asym_rsa_enc(ujson_t *uj) {
   // You can give cfg a value such that the RSA generates its own private key.
   // Trigger are over the API calls.
   cryptolib_fi_asym_rsa_enc_out_t uj_output;
-  TRY(cryptolib_fi_rsa_enc_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_rsa_enc_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_rsa_enc_out_t, uj, &uj_output);
@@ -41,7 +42,8 @@ status_t handle_cryptolib_fi_asym_rsa_sign(ujson_t *uj) {
   // You can give cfg a value such that the RSA generates its own private key.
   // Trigger are over the API calls.
   cryptolib_fi_asym_rsa_sign_out_t uj_output;
-  TRY(cryptolib_fi_rsa_sign_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_rsa_sign_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_rsa_sign_out_t, uj, &uj_output);
@@ -56,7 +58,8 @@ status_t handle_cryptolib_fi_asym_rsa_verify(ujson_t *uj) {
   // Perform an RSA verification with hashing and padding options.
   // Trigger are over the API calls.
   cryptolib_fi_asym_rsa_verify_out_t uj_output;
-  TRY(cryptolib_fi_rsa_verify_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_rsa_verify_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_rsa_verify_out_t, uj, &uj_output);
@@ -75,6 +78,7 @@ status_t handle_cryptolib_fi_asym_prime(ujson_t *uj) {
   memset(uj_output.prime, 0, RSA_CMD_MAX_MESSAGE_BYTES);
   uj_output.prime_len = RSA_CMD_MAX_MESSAGE_BYTES;
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_prime_out_t, uj, &uj_output);
 
@@ -93,6 +97,7 @@ status_t handle_cryptolib_fi_asym_p256_base_mul(ujson_t *uj) {
   memset(uj_output.x, 0, P256_CMD_BYTES);
   memset(uj_output.y, 0, P256_CMD_BYTES);
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_p256_base_mul_out_t, uj,
           &uj_output);
@@ -113,6 +118,7 @@ status_t handle_cryptolib_fi_asym_p256_point_mul(ujson_t *uj) {
   memset(uj_output.x, 0, P256_CMD_BYTES);
   memset(uj_output.y, 0, P256_CMD_BYTES);
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_p256_point_mul_out_t, uj,
           &uj_output);
@@ -128,7 +134,8 @@ status_t handle_cryptolib_fi_asym_p256_ecdh(ujson_t *uj) {
   // Perform ecdh in P256.
   // Trigger are over the API calls.
   cryptolib_fi_asym_p256_ecdh_out_t uj_output;
-  TRY(cryptolib_fi_p256_ecdh_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_p256_ecdh_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_p256_ecdh_out_t, uj, &uj_output);
@@ -143,7 +150,8 @@ status_t handle_cryptolib_fi_asym_p256_sign(ujson_t *uj) {
   // Perform a P256 signature.
   // Trigger are over the API calls.
   cryptolib_fi_asym_p256_sign_out_t uj_output;
-  TRY(cryptolib_fi_p256_sign_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_p256_sign_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_p256_sign_out_t, uj, &uj_output);
@@ -158,7 +166,8 @@ status_t handle_cryptolib_fi_asym_p256_verify(ujson_t *uj) {
   // Perform a P256 verification.
   // Trigger are over the API calls.
   cryptolib_fi_asym_p256_verify_out_t uj_output;
-  TRY(cryptolib_fi_p256_verify_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_p256_verify_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_p256_verify_out_t, uj, &uj_output);
@@ -177,6 +186,7 @@ status_t handle_cryptolib_fi_asym_p384_base_mul(ujson_t *uj) {
   memset(uj_output.x, 0, P384_CMD_BYTES);
   memset(uj_output.y, 0, P384_CMD_BYTES);
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_p384_base_mul_out_t, uj,
           &uj_output);
@@ -197,6 +207,7 @@ status_t handle_cryptolib_fi_asym_p384_point_mul(ujson_t *uj) {
   memset(uj_output.x, 0, P384_CMD_BYTES);
   memset(uj_output.y, 0, P384_CMD_BYTES);
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_p384_point_mul_out_t, uj,
           &uj_output);
@@ -212,7 +223,8 @@ status_t handle_cryptolib_fi_asym_p384_ecdh(ujson_t *uj) {
   // Perform ecdh in P384.
   // Trigger are over the API calls.
   cryptolib_fi_asym_p384_ecdh_out_t uj_output;
-  TRY(cryptolib_fi_p384_ecdh_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_p384_ecdh_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_p384_ecdh_out_t, uj, &uj_output);
@@ -227,7 +239,8 @@ status_t handle_cryptolib_fi_asym_p384_sign(ujson_t *uj) {
   // Perform a p384 signature.
   // Trigger are over the API calls.
   cryptolib_fi_asym_p384_sign_out_t uj_output;
-  TRY(cryptolib_fi_p384_sign_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_p384_sign_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_p384_sign_out_t, uj, &uj_output);
@@ -242,7 +255,8 @@ status_t handle_cryptolib_fi_asym_p384_verify(ujson_t *uj) {
   // Perform a p384 verification.
   // Trigger are over the API calls.
   cryptolib_fi_asym_p384_verify_out_t uj_output;
-  TRY(cryptolib_fi_p384_verify_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_p384_verify_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_p384_verify_out_t, uj, &uj_output);
@@ -262,6 +276,7 @@ status_t handle_cryptolib_fi_asym_secp256k1_base_mul(ujson_t *uj) {
   memset(uj_output.x, 0, SECP256K1_CMD_BYTES);
   memset(uj_output.y, 0, SECP256K1_CMD_BYTES);
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_secp256k1_base_mul_out_t, uj,
           &uj_output);
@@ -283,6 +298,7 @@ status_t handle_cryptolib_fi_asym_secp256k1_point_mul(ujson_t *uj) {
   memset(uj_output.x, 0, SECP256K1_CMD_BYTES);
   memset(uj_output.y, 0, SECP256K1_CMD_BYTES);
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_secp256k1_point_mul_out_t, uj,
           &uj_output);
@@ -301,6 +317,7 @@ status_t handle_cryptolib_fi_asym_secp256k1_ecdh(ujson_t *uj) {
   cryptolib_fi_asym_secp256k1_ecdh_out_t uj_output;
   memset(uj_output.shared_key, 0, SECP256K1_CMD_BYTES);
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_secp256k1_ecdh_out_t, uj,
           &uj_output);
@@ -322,6 +339,7 @@ status_t handle_cryptolib_fi_asym_secp256k1_sign(ujson_t *uj) {
   memset(uj_output.r, 0, SECP256K1_CMD_BYTES);
   memset(uj_output.s, 0, SECP256K1_CMD_BYTES);
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_secp256k1_sign_out_t, uj,
           &uj_output);
@@ -340,6 +358,7 @@ status_t handle_cryptolib_fi_asym_secp256k1_verify(ujson_t *uj) {
   cryptolib_fi_asym_secp256k1_verify_out_t uj_output;
   uj_output.result = true;
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_secp256k1_verify_out_t, uj,
           &uj_output);
@@ -359,6 +378,7 @@ status_t handle_cryptolib_fi_asym_x25519_base_mul(ujson_t *uj) {
   memset(uj_output.x, 0, X25519_CMD_BYTES);
   memset(uj_output.y, 0, X25519_CMD_BYTES);
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_x25519_base_mul_out_t, uj,
           &uj_output);
@@ -379,6 +399,7 @@ status_t handle_cryptolib_fi_asym_x25519_point_mul(ujson_t *uj) {
   memset(uj_output.x, 0, X25519_CMD_BYTES);
   memset(uj_output.y, 0, X25519_CMD_BYTES);
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_x25519_point_mul_out_t, uj,
           &uj_output);
@@ -397,6 +418,7 @@ status_t handle_cryptolib_fi_asym_x25519_ecdh(ujson_t *uj) {
   cryptolib_fi_asym_x25519_ecdh_out_t uj_output;
   memset(uj_output.shared_key, 0, X25519_CMD_BYTES);
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_x25519_ecdh_out_t, uj, &uj_output);
 
@@ -415,6 +437,7 @@ status_t handle_cryptolib_fi_asym_ed25519_base_mul(ujson_t *uj) {
   memset(uj_output.x, 0, ED25519_CMD_SCALAR_BYTES);
   memset(uj_output.y, 0, ED25519_CMD_SCALAR_BYTES);
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_ed25519_base_mul_out_t, uj,
           &uj_output);
@@ -436,6 +459,7 @@ status_t handle_cryptolib_fi_asym_ed25519_sign(ujson_t *uj) {
   memset(uj_output.r, 0, ED25519_CMD_SIG_BYTES);
   memset(uj_output.s, 0, ED25519_CMD_SIG_BYTES);
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_ed25519_sign_out_t, uj, &uj_output);
 
@@ -453,6 +477,7 @@ status_t handle_cryptolib_fi_asym_ed25519_verify(ujson_t *uj) {
   cryptolib_fi_asym_ed25519_verify_out_t uj_output;
   uj_output.result = true;
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_asym_ed25519_verify_out_t, uj,
           &uj_output);
@@ -497,7 +522,11 @@ status_t handle_cryptolib_fi_asym_init(ujson_t *uj) {
       uj_cpuctrl_data.enable_sram_readback, &uj_output.clock_jitter_locked,
       &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
       &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
-      &uj_output.sram_ret_readback_en));
+      &uj_output.sram_ret_readback_en, uj_cpuctrl_data.enable_data_ind_timing,
+      &uj_output.data_ind_timing_en));
+
+  // Read rom digest.
+  TRY(pentest_read_rom_digest(uj_output.rom_digest));
 
   // Read device ID and return to host.
   TRY(pentest_read_device_id(uj_output.device_id));

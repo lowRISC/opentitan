@@ -10,6 +10,7 @@ cc_library(
     hdrs = ["crypto_fi.h"],
     deps = [
         "//hw/top:aes_c_regs",
+        "//hw/top:hmac_c_regs",
         "//hw/top:kmac_c_regs",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
@@ -126,7 +127,15 @@ cc_library(
     ],
     hdrs = ["ibex_fi.h"],
     deps = [
+        "//hw/top:aes_c_regs",
+        "//hw/top:alert_handler_c_regs",
+        "//hw/top:entropy_src_c_regs",
+        "//hw/top:hmac_c_regs",
+        "//hw/top:keymgr_c_regs",
         "//hw/top:otp_ctrl_c_regs",
+        "//hw/top:sram_ctrl_c_regs",
+        "//sw/device/lib/arch:boot_stage",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:memory",

@@ -19,20 +19,14 @@ extern "C" {
 // AES SCA arguments
 
 #define AESSCA_SUBCOMMAND(_, value) \
-    value(_, BatchAlternativeEncrypt) \
-    value(_, BatchEncrypt) \
-    value(_, BatchEncryptRandom) \
-    value(_, BatchPlaintextSet) \
-    value(_, FvsrDataBatchEncrypt) \
-    value(_, FvsrKeyBatchEncrypt) \
-    value(_, FvsrKeyBatchGenerate) \
-    value(_, FvsrKeySet) \
-    value(_, FvsrKeyStartBatchGenerate) \
+    value(_, Single) \
+    value(_, BatchDaisy) \
+    value(_, BatchRandom) \
+    value(_, BatchFvsrData) \
+    value(_, BatchFvsrKey) \
     value(_, Init) \
-    value(_, KeySet) \
     value(_, SeedLfsr) \
-    value(_, SeedLfsrOrder) \
-    value(_, SingleEncrypt)
+    value(_, SeedLfsrOrder)
 C_ONLY(UJSON_SERDE_ENUM(AesScaSubcommand, aes_sca_subcommand_t, AESSCA_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(AesScaSubcommand, aes_sca_subcommand_t, AESSCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
@@ -40,10 +34,6 @@ RUST_ONLY(UJSON_SERDE_ENUM(AesScaSubcommand, aes_sca_subcommand_t, AESSCA_SUBCOM
     field(key, uint8_t, AESSCA_CMD_MAX_KEY_BYTES) \
     field(key_length, size_t)
 UJSON_SERDE_STRUCT(CryptotestAesScaKey, aes_sca_key_t, AES_SCA_KEY);
-
-#define AES_SCA_DATA(field, string) \
-    field(data, uint8_t, AESSCA_CMD_MAX_DATA_BYTES)
-UJSON_SERDE_STRUCT(CryptotestAesScaData, aes_sca_data_t, AES_SCA_DATA);
 
 #define AES_SCA_TEXT(field, string) \
     field(text, uint8_t, AESSCA_CMD_MAX_DATA_BYTES) \
@@ -63,9 +53,6 @@ UJSON_SERDE_STRUCT(CryptotestAesScaCiphertext, aes_sca_ciphertext_t, AES_SCA_CIP
     field(fpga_mode, uint8_t)
 UJSON_SERDE_STRUCT(CryptotestAesScaFpgaMode, aes_sca_fpga_mode_t, AES_SCA_FPGA_MODE);
 
-#define AES_SCA_CMD(field, string) \
-    field(cmd, uint32_t)
-UJSON_SERDE_STRUCT(CryptotestAesScaCmd, aes_sca_cmd_t, AES_SCA_CMD);
 // clang-format on
 
 #ifdef __cplusplus

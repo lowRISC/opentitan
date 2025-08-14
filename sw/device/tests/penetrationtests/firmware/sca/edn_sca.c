@@ -132,7 +132,8 @@ status_t handle_edn_sca_init(ujson_t *uj) {
       uj_cpuctrl_data.enable_sram_readback, &uj_output.clock_jitter_locked,
       &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
       &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
-      &uj_output.sram_ret_readback_en));
+      &uj_output.sram_ret_readback_en, uj_cpuctrl_data.enable_data_ind_timing,
+      &uj_output.data_ind_timing_en));
 
   // As we are using the software defined trigger, the first argument of
   // sca_init is not needed. kPentestTriggerSourceAes is selected as a
@@ -151,6 +152,9 @@ status_t handle_edn_sca_init(ujson_t *uj) {
   // Configure the entropy complex. Set the reseed interval to max to avoid
   // reseed during the trigger window.
   TRY(pentest_configure_entropy_source_max_reseed_interval());
+
+  // Read rom digest.
+  TRY(pentest_read_rom_digest(uj_output.rom_digest));
 
   // Read device ID and return to host.
   TRY(pentest_read_device_id(uj_output.device_id));
