@@ -6,6 +6,8 @@ use anyhow::{bail, Result};
 use std::io;
 use thiserror::Error;
 
+use crate::io::gpio::{Edge, MonitoringEvent, MonitoringReadResponse};
+
 /// A VCD file header, containing timescale info & additional metadata
 #[derive(Debug)]
 pub struct Header {
@@ -697,6 +699,96 @@ pub fn vcd_from_samples(
     })
 }
 
+/// Transform a `u64` timestamp to a time in picoseconds given some initial
+/// offset timestamp measurement and a clock resolution
+fn timestamp_to_picos(initial: u64, timestamp: u64, clock_res: u64) -> u128 {
+    let delta = (timestamp - initial) as u128;
+    delta * 1_000_000_000_000u128 / (clock_res as u128)
+}
+
+/// Transform a time in picoseconds to a `u64` timestamp relative to some
+/// initial offset timestamp measurement and a clock resolution.
+fn timestamp_from_picos(initial: u64, picos: u128, clock_res: u64) -> u64 {
+    let delta = picos * clock_res as u128 / 1_000_000_000_000u128;
+    initial + delta as u64
+}
+
+/// Construct a VCD of a waveform represented by a chronological sequence of
+/// rising / falling edges (i.e. value changes) as is returned by the
+/// `GpioMonitoring` interface. This includes an initial & final timestamp,
+/// some initial values, and a list of edge `events`.
+pub fn vcd_from_edges(
+    pin_names: Vec<Option<String>>,
+    clock_resolution: u64,
+    initial_timestamp: u64,
+    initial_values: &[bool],
+    events: &[MonitoringEvent],
+    final_timestamp: u64,
+) -> Result<Vcd> {
+    // Generate a header sections, sequentially assigning vars '0, '1, '2, etc.
+    // We use a timescale of 1 picosecond to accurately represent different
+    // monitoring clock resolutions.
+    let header = Header {
+        timescale_ps: Some(1),
+        date: None,
+        version: None,
+    };
+    let vars = &(0..pin_names.len())
+        .map(|c| format!("'{}", c))
+        .collect::<Vec<_>>();
+    let vardefs = dump_vcd_wire_vardefs(
+        String::from("opentitanlib"),
+        vars.clone().into_iter().zip(pin_names).collect::<Vec<_>>(),
+    );
+
+    // Compute the value change section, which is mostly a 1-to-1 mapping
+    let mut changes = Vec::new();
+    // Dump the initial values
+    changes.push(ValueChangeItem::Timestamp { step: 0 });
+    for (&bit, var) in initial_values.iter().zip(vars.iter()) {
+        changes.push(ValueChangeItem::Scalar {
+            identifier: var.to_string(),
+            value: if bit {
+                ScalarValue::One
+            } else {
+                ScalarValue::Zero
+            },
+        });
+    }
+    // Edge events are essentially 1-to-1 with the VCD format
+    let mut timestamp: u128 = 0;
+    for event in events.iter() {
+        let edge_time = timestamp_to_picos(initial_timestamp, event.timestamp, clock_resolution);
+        if edge_time > timestamp {
+            timestamp = edge_time;
+            changes.push(ValueChangeItem::Timestamp { step: edge_time });
+        }
+        let index = event.signal_index as usize;
+        changes.push(ValueChangeItem::Scalar {
+            identifier: vars[index].clone(),
+            value: if event.edge == Edge::Rising {
+                ScalarValue::One
+            } else {
+                ScalarValue::Zero
+            },
+        });
+    }
+
+    // Include a final timestamp marking the final measurement
+    let end_time = timestamp_to_picos(initial_timestamp, final_timestamp, clock_resolution);
+    if end_time > timestamp {
+        changes.push(ValueChangeItem::Timestamp { step: end_time });
+    }
+    let value_changes = ValueChangeSection { changes };
+
+    // Dump the VCD
+    Ok(Vcd {
+        header,
+        vardefs,
+        value_changes,
+    })
+}
+
 /// An iterator over a VCD file, which returns uniform samples of values of
 /// VCD signals at every VCD time step. Depending on the delay between value
 /// changes, this could result in very long iteration counts.
@@ -780,10 +872,105 @@ impl Iterator for UniformVcdSampler {
     }
 }
 
+/// The output of parsing a VCD to a list of edges as a `MonitoringReadResponse`,
+/// which will include any parsed pin variables.
+pub struct ParsedVcdEdges {
+    pub pin_vars: Vec<String>,
+    pub events: MonitoringReadResponse,
+}
+
+/// Parses a VCD (given its contents) to a Vec of edges (value changes), with
+/// timestamps relative to the `clock_resolution` and `initial_timestamp`.
+pub fn vcd_to_edges(
+    vcd: Vcd,
+    clock_resolution: u64,
+    initial_timestamp: u64,
+) -> Result<ParsedVcdEdges> {
+    let pin_vars = vcd.var_names();
+    let timescale = vcd
+        .header
+        .timescale_ps
+        .expect("VCD must contain a timescale to parse to edges");
+
+    // Parse edges from the value changes
+    let mut events = Vec::new();
+    let mut current_time: u128 = 0;
+    let num_bytes = pin_vars.len().div_ceil(8);
+    // Assume all values are initialized at 0 if not given a value at t=0.
+    let mut current_values: Vec<u8> = std::iter::repeat(0x00).take(num_bytes).collect();
+
+    for change in &vcd.value_changes.changes {
+        match change {
+            ValueChangeItem::Timestamp { step } => {
+                current_time = *step;
+            }
+            ValueChangeItem::Scalar { identifier, value } => {
+                let value = match value {
+                    ScalarValue::Zero => 0,
+                    ScalarValue::One => 1,
+                    _ => bail!(VcdParseError::UnsupportedFeature(
+                        "non-binary scalars".into()
+                    )),
+                };
+                let Some(index) = pin_vars.iter().position(|id| id == identifier) else {
+                    bail!(VcdParseError::UnknownVariable(identifier.into()));
+                };
+                let byte_index = index / 8;
+                let bit_index = index % 8;
+                let current_value = current_values[byte_index] >> bit_index & 0x01;
+                // Only create an edge on a change of value
+                if value != current_value {
+                    current_values[byte_index] &= !(1 << bit_index);
+                    current_values[byte_index] |= value << bit_index;
+                    // Don't generate edges for initial signal values (t=0)
+                    if current_time == 0 {
+                        // TODO: maybe this should be parsed from a `$dumpvars` instead
+                        // of `#0`, so we can have an edge at `t=0`?
+                        continue;
+                    }
+                    let picos = current_time * timescale;
+                    let timestamp =
+                        timestamp_from_picos(initial_timestamp, picos, clock_resolution);
+                    events.push(MonitoringEvent {
+                        signal_index: index as u8,
+                        edge: if value == 1 {
+                            Edge::Rising
+                        } else {
+                            Edge::Falling
+                        },
+                        timestamp,
+                    });
+                }
+            }
+        }
+    }
+
+    // Determine a final timestamp for the waveform from the last step seen
+    let last_picos = current_time * timescale;
+    let last_timestamp = timestamp_from_picos(initial_timestamp, last_picos, clock_resolution);
+    let events = MonitoringReadResponse {
+        events,
+        timestamp: last_timestamp,
+    };
+    Ok(ParsedVcdEdges {
+        pin_vars: pin_vars.iter().map(|n| n.to_string()).collect(),
+        events,
+    })
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
     use std::time::Duration;
+
+    // A helper to compactly construct `MonitoringEvent` edges.
+    fn edge(signal_index: u8, edge: Edge, timestamp: u64) -> MonitoringEvent {
+        MonitoringEvent {
+            signal_index,
+            edge,
+            timestamp,
+        }
+    }
 
     // Test by dumping a given uniformly sampled waveform to a VCD and parsing
     // it back, to check the decoded contents match the original.
@@ -805,6 +992,34 @@ mod test {
         for (decoded_sample, sample) in decoded.iter().zip(samples) {
             assert_eq!(decoded_sample, sample);
         }
+        Ok(())
+    }
+
+    // Test by dumping a given edge-represented waveform to a VCD and parsing it
+    // back, to check the decoded contents match the original.
+    fn edges_encode_decode(
+        clock_resolution: u64,
+        initial_timestamp: u64,
+        initial_values: &[bool],
+        events: &[MonitoringEvent],
+        final_timestamp: u64,
+        pin_names: Vec<Option<String>>,
+    ) -> Result<()> {
+        let vcd = dump_vcd(&vcd_from_edges(
+            pin_names,
+            clock_resolution,
+            initial_timestamp,
+            initial_values,
+            events,
+            final_timestamp,
+        )?)?;
+        assert!(!vcd.is_empty());
+        // For now this test assumes the order of signals is retained (i.e.
+        // vars are parsed into signal indexes in the order they are defined).
+        let vcd = load_vcd(&vcd)?;
+        let decoded = vcd_to_edges(vcd, clock_resolution, initial_timestamp)?;
+        assert_eq!(decoded.events.timestamp, final_timestamp);
+        assert_eq!(decoded.events.events, events);
         Ok(())
     }
 
@@ -911,6 +1126,202 @@ $enddefinitions $end\n\
         for (decoded_sample, sample) in decoded_samples.iter().zip(expected_samples) {
             assert_eq!(decoded_sample, std::slice::from_ref(&sample));
         }
+        Ok(())
+    }
+
+    #[test]
+    fn edges_waveform() -> Result<()> {
+        // Random waveform over 3 pins, with a clock_tick of 1 us.
+        let clock_resolution = 1_000_000;
+        let initial_timestamp = 536;
+        let initial_values = vec![true, false, true];
+        let events = vec![
+            edge(2, Edge::Falling, 562),
+            edge(1, Edge::Rising, 621),
+            edge(0, Edge::Falling, 754),
+            edge(2, Edge::Rising, 832),
+            edge(2, Edge::Falling, 855),
+            edge(2, Edge::Rising, 912),
+            edge(0, Edge::Rising, 1012),
+            edge(1, Edge::Falling, 1058),
+            edge(2, Edge::Falling, 1123),
+            edge(2, Edge::Rising, 1157),
+            edge(0, Edge::Falling, 1210),
+            edge(1, Edge::Rising, 1258),
+            edge(0, Edge::Rising, 1315),
+            edge(2, Edge::Falling, 1415),
+            edge(1, Edge::Falling, 1510),
+            edge(0, Edge::Falling, 1633),
+            edge(0, Edge::Rising, 1901),
+        ];
+        let final_timestamp = 1947;
+        let pin_names = Vec::from([const { None }; 3]);
+        edges_encode_decode(
+            clock_resolution,
+            initial_timestamp,
+            &initial_values,
+            &events,
+            final_timestamp,
+            pin_names,
+        )?;
+
+        // Example UART RX waveform with 1 pin taken from a bitbanging test sample
+        let initial_timestamp = 0;
+        let initial_values = vec![true];
+        let event_timestamps = [
+            5889252340, 5889252358, 5889252375, 5889252392, 5889252410, 5889252427, 5889252445,
+            5889252462, 5889252479, 5889252497, 5889252514, 5889252532, 5889252549, 5889252636,
+            5889252654, 5889252671, 5889252688, 5889252723, 5889252740, 5889252775, 5889252793,
+            5889252810, 5889252827, 5889252845, 5889252862, 5889252914, 5889252932, 5889252949,
+            5889252967, 5889252984, 5889253001, 5889253019, 5889253036, 5889253141, 5889253158,
+            5889253193, 5889253210, 5889253245, 5889253263, 5889253315, 5889253349, 5889253367,
+            5889253386, 5889253402, 5889253419, 5889253454, 5889253471, 5889253489, 5889253523,
+            5889253541, 5889253558, 5889253610, 5889253628, 5889253645, 5889253697, 5889253715,
+            5889253732, 5889253767, 5889253784, 5889253837, 5889253871, 5889253889, 5889253906,
+            5889253924, 5889253941, 5889254011, 5889254046, 5889254063, 5889254080, 5889254115,
+            5889254167, 5889254185, 5889254219, 5889254238, 5889254254, 5889254272, 5889254324,
+            5889254359, 5889254393, 5889254411, 5889254428, 5889254533, 5889254550, 5889254585,
+            5889254603, 5889254655, 5889254672, 5889254689, 5889254741, 5889254759, 5889254776,
+            5889254794, 5889254811, 5889254828, 5889254846, 5889254881, 5889254915, 5889254933,
+            5889254950, 5889254968, 5889255002, 5889255037, 5889255089, 5889255107, 5889255124,
+            5889255176, 5889255194, 5889255211, 5889255264, 5889255281, 5889255298, 5889255455,
+        ];
+        let edges = [Edge::Falling, Edge::Rising];
+        let events = event_timestamps
+            .into_iter()
+            .enumerate()
+            .map(|(i, t)| edge(0, edges[i % 2], t))
+            .collect::<Vec<_>>();
+        let final_timestamp = 5889262827;
+        let pin_names = vec![Some("uart_rx".into())];
+        edges_encode_decode(
+            clock_resolution,
+            initial_timestamp,
+            &initial_values,
+            &events,
+            final_timestamp,
+            pin_names,
+        )
+    }
+
+    #[test]
+    fn raw_vcd_to_edges() -> Result<()> {
+        let vcd = "
+$timescale 1ns $end\n\
+$scope module opentitanlib $end\n\
+$var wire 1 # a $end\n\
+$var wire 1 ! b $end\n\
+$var wire 1 ; c $end\n\
+$var wire 1 ? d $end\n\
+$upscope $end\n\
+$enddefinitions $end\n\
+#0 0# 0! 1; 0?\n\
+#10000 1# 1! 0;\n\
+#20000 0#\n\
+#30000 1# 0!\n\
+#40000 0# 1! 1;\n\
+#50000 1#\n\
+#60000 0# 0! 0; 1?\n\
+#70000 1# 1! 1;\n\
+#80000 0#\n\
+#90000 1# 0; 0?\n\
+#100000 0# 0! 1;\n\
+#110000 1# 1! 0;\n\
+#120000 0# 0!\n\
+#130000 1# 1!\n\
+#140000 0# 0! 1; 1?\n\
+#150000 1# 0;\n\
+#160000 0#\n\
+#170000 1# 1! 0?\n\
+#180000 0# 0!\n\
+#190000 1#\n\
+#200000 0#\n\
+#210000 1#\n\
+#220000 0#\n\
+#230000 1#\n\
+#240000 0#\n\
+#330000 1;\n\
+#340000 1# 1! 1?\n\
+#350000 0#\n\
+#360000 1# 0! 0; 0?\n\
+#100000000 0#";
+        let clock_resolution = 1_000_000; // Each clock tick is 1 us.
+        let initial_timestamp = 536;
+        let vcd = load_vcd(vcd)?;
+        let decoded = vcd_to_edges(vcd, clock_resolution, initial_timestamp)?;
+
+        let expected_pin_vars = [
+            String::from("#"),
+            String::from("!"),
+            String::from(";"),
+            String::from("?"),
+        ];
+        let expected_edges = vec![
+            edge(0, Edge::Rising, 546),
+            edge(1, Edge::Rising, 546),
+            edge(2, Edge::Falling, 546),
+            edge(0, Edge::Falling, 556),
+            edge(0, Edge::Rising, 566),
+            edge(1, Edge::Falling, 566),
+            edge(0, Edge::Falling, 576),
+            edge(1, Edge::Rising, 576),
+            edge(2, Edge::Rising, 576),
+            edge(0, Edge::Rising, 586),
+            edge(0, Edge::Falling, 596),
+            edge(1, Edge::Falling, 596),
+            edge(2, Edge::Falling, 596),
+            edge(3, Edge::Rising, 596),
+            edge(0, Edge::Rising, 606),
+            edge(1, Edge::Rising, 606),
+            edge(2, Edge::Rising, 606),
+            edge(0, Edge::Falling, 616),
+            edge(0, Edge::Rising, 626),
+            edge(2, Edge::Falling, 626),
+            edge(3, Edge::Falling, 626),
+            edge(0, Edge::Falling, 636),
+            edge(1, Edge::Falling, 636),
+            edge(2, Edge::Rising, 636),
+            edge(0, Edge::Rising, 646),
+            edge(1, Edge::Rising, 646),
+            edge(2, Edge::Falling, 646),
+            edge(0, Edge::Falling, 656),
+            edge(1, Edge::Falling, 656),
+            edge(0, Edge::Rising, 666),
+            edge(1, Edge::Rising, 666),
+            edge(0, Edge::Falling, 676),
+            edge(1, Edge::Falling, 676),
+            edge(2, Edge::Rising, 676),
+            edge(3, Edge::Rising, 676),
+            edge(0, Edge::Rising, 686),
+            edge(2, Edge::Falling, 686),
+            edge(0, Edge::Falling, 696),
+            edge(0, Edge::Rising, 706),
+            edge(1, Edge::Rising, 706),
+            edge(3, Edge::Falling, 706),
+            edge(0, Edge::Falling, 716),
+            edge(1, Edge::Falling, 716),
+            edge(0, Edge::Rising, 726),
+            edge(0, Edge::Falling, 736),
+            edge(0, Edge::Rising, 746),
+            edge(0, Edge::Falling, 756),
+            edge(0, Edge::Rising, 766),
+            edge(0, Edge::Falling, 776),
+            edge(2, Edge::Rising, 866),
+            edge(0, Edge::Rising, 876),
+            edge(1, Edge::Rising, 876),
+            edge(3, Edge::Rising, 876),
+            edge(0, Edge::Falling, 886),
+            edge(0, Edge::Rising, 896),
+            edge(1, Edge::Falling, 896),
+            edge(2, Edge::Falling, 896),
+            edge(3, Edge::Falling, 896),
+            edge(0, Edge::Falling, 100536),
+        ];
+        for expected in expected_pin_vars {
+            assert!(decoded.pin_vars.contains(&expected));
+        }
+        assert_eq!(decoded.events.events, expected_edges);
+        assert!(decoded.events.timestamp >= expected_edges.last().unwrap().timestamp);
         Ok(())
     }
 
