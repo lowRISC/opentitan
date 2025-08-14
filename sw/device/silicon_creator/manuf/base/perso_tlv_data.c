@@ -30,7 +30,8 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
   PERSO_TLV_GET_FIELD(Objh, Type, objh, &obj_type);
   obj->obj_type = obj_type;
   if (obj_type != kPersoObjectTypeX509Cert &&
-      obj_type != kPersoObjectTypeCwtCert) {
+      obj_type != kPersoObjectTypeCwtCert &&
+      obj_type != kPersoObjectTypeX509Tbs) {
     return kErrorPersoTlvCertObjNotFound;
   }
   buf += sizeof(perso_tlv_object_header_t);
