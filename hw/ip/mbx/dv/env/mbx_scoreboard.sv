@@ -34,13 +34,14 @@ class mbx_scoreboard extends cip_base_scoreboard #(
 
   `uvm_component_new
 
-  function void build_phase(uvm_phase phase);
-    super.build_phase(phase);
-  endfunction
-
-  function void connect_phase(uvm_phase phase);
-    super.connect_phase(phase);
-  endfunction
+  // TODO: Presently no additional work to be done.
+  // function void build_phase(uvm_phase phase);
+  //   super.build_phase(phase);
+  // endfunction
+  //
+  // function void connect_phase(uvm_phase phase);
+  //   super.connect_phase(phase);
+  // endfunction
 
   virtual task monitor_core_interrupt();
     `uvm_info(`gfn, "monitor_core_interrupt -- Start", UVM_DEBUG)

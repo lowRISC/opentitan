@@ -5,7 +5,9 @@
 class mbx_env_cfg extends cip_base_env_cfg #(
   .RAL_T(mbx_core_reg_block)
 );
+  // RoT-side SRAM interface.
   string mbx_mem_ral_name = "mbx_mem_reg_block";
+  // SoC-side configuration registers.
   string mbx_soc_ral_name = "mbx_soc_reg_block";
 
   virtual pins_if #(NUM_MAX_INTERRUPTS) intr_soc_vif;
@@ -24,16 +26,19 @@ class mbx_env_cfg extends cip_base_env_cfg #(
 
     super.initialize(csr_base_addr);
 
-    // TODO: Revisit the configuration parameters for tl_agent_cfg
-    // scxb_mbx_core_cfg
-    m_tl_agent_cfgs[mbx_soc_ral_name].max_outstanding_req = 16;
-    m_tl_agent_cfgs[mbx_soc_ral_name].if_mode = dv_utils_pkg::Host;
+    // Interrupt count
+    num_interrupts = ral.intr_state.get_n_used_bits();
 
-    // agxb_mbx_core_cfg
+    // TODO: Revisit the configuration parameters for tl_agent_cfg
+    // RoT-side configuration registers.
     m_tl_agent_cfgs[RAL_T::type_name].max_outstanding_req = 16;
     m_tl_agent_cfgs[RAL_T::type_name].if_mode = dv_utils_pkg::Host;
 
-    // mbx_agxb TL I/F
+    // SoC-side configuration registers.
+    m_tl_agent_cfgs[mbx_soc_ral_name].max_outstanding_req = 16;
+    m_tl_agent_cfgs[mbx_soc_ral_name].if_mode = dv_utils_pkg::Host;
+
+    // RoT-side SRAM interface.
     m_tl_agent_cfgs[mbx_mem_ral_name].max_outstanding_req = 16;
     m_tl_agent_cfgs[mbx_mem_ral_name].if_mode = dv_utils_pkg::Device;
 
