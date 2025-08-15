@@ -21,6 +21,8 @@ extern "C" {
 #define ED25519_CMD_MAX_MSG_BYTES 128
 #define ED25519_CMD_SIG_BYTES 64
 
+#define MODULE_ID MAKE_MODULE_ID('j', 's', 'a')
+
 // clang-format off
 
 #define CRYPTOLIBFIASYM_SUBCOMMAND(_, value) \
@@ -544,6 +546,8 @@ UJSON_SERDE_STRUCT(CryptoLibFiAsymED25519VerifyIn, cryptolib_fi_asym_ed25519_ver
     field(ast_alerts, uint32_t, 2) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibFiAsymED25519VerifyOut, cryptolib_fi_asym_ed25519_verify_out_t, CRYPTOLIBFIASYM_ED25519_VERIFY_OUT);
+
+#undef MODULE_ID
 
 // clang-format on
 
