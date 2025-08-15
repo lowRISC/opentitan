@@ -266,6 +266,7 @@ module top_earlgrey #(
   localparam int SramCtrlMainOutstanding = 2;
   // local parameters for rom_ctrl
   localparam bit RomCtrlFlopToKmac = 1'b0;
+  localparam bit RomCtrlTwoCycleRom = 1'b0;
   // local parameters for rv_core_ibex
   localparam bit RvCoreIbexInstructionPipeline = 1'b0;
 
@@ -2788,6 +2789,7 @@ module top_earlgrey #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .BootRomInitFile(RomCtrlBootRomInitFile),
     .FlopToKmac(RomCtrlFlopToKmac),
+    .TwoCycleRom(RomCtrlTwoCycleRom),
     .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
     .RndCnstScrKey(RndCnstRomCtrlScrKey),
     .SecDisableScrambling(SecRomCtrlDisableScrambling),

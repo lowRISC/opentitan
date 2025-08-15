@@ -53,6 +53,17 @@
       default:   "1'b0"
     }
 
+    { name:      "TwoCycleRom",
+      type:      "bit",
+      desc:      '''
+        The underlying ROM macro has a read latency of 1 clock cycle (0) or
+        2 clock cycles (1). This may help breaking long paths in a target chip.
+      '''
+      local:     "true",
+      expose:    "true",
+      default:   "1'b0"
+    }
+
     { name:      "RndCnstScrNonce",
       type:      "bit [63:0]",
       desc:      "Fixed nonce used for address / data scrambling"

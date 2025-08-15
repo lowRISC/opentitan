@@ -10,7 +10,8 @@ module rom_ctrl_mux
   import prim_mubi_pkg::mubi4_t;
 #(
   parameter int AW = 8,
-  parameter int DW = 39
+  parameter int DW = 39,
+  parameter bit TwoCycleRom = 1'b0  // If true, the ROM responds in two cycles (instead of one).
 ) (
   input logic           clk_i,
   input logic           rst_ni,
@@ -108,6 +109,11 @@ module rom_ctrl_mux
     end
   end
 
+  logic rsp_is_for_bus;
+  assign rsp_is_for_bus = TwoCycleRom ?
+                          mubi4_test_true_strict(sel_bus_qq) :
+                          mubi4_test_true_strict(sel_bus_q);
+
   assign alert_o = alert_q;
 
   // The bus can have access every cycle, from when the select signal switches to the bus.
@@ -115,7 +121,7 @@ module rom_ctrl_mux
   assign bus_rdata_o  = rom_clr_rdata_i;
   // A high rom_rvalid_i is a response to a bus request if the select signal pointed at the bus on
   // the previous cycle.
-  assign bus_rvalid_o = mubi4_test_true_strict(sel_bus_q) & rom_rvalid_i;
+  assign bus_rvalid_o = rsp_is_for_bus & rom_rvalid_i;
 
   assign chk_rdata_o = rom_scr_rdata_i;
 

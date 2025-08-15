@@ -9,5 +9,7 @@
   // Import the base rom_ctrl sim_cfg file
   import_cfgs: ["{proj_root}/hw/ip/rom_ctrl/dv/rom_ctrl_base_sim_cfg.hjson"]
 
-  build_opts: ["+define+ROM_BYTE_ADDR_WIDTH=16"]
+  build_opts: ["+define+FLOP_TO_KMAC=0",
+               "+define+ROM_BYTE_ADDR_WIDTH=16",
+               "+define+TWO_CYCLE_ROM=0"]
 }
