@@ -44,7 +44,7 @@ def ot_binary(ctx, **kwargs):
         includes: Include directories to pass to the compiler.
         deps: Dependencies for this binary.
         linker_script: Linker script for this binary.
-        linkopts: Linker options for this binary.
+        linkopts: Extra linker options for this binary.
     Returns:
       (elf_file, map_file) File objects.
     """
@@ -93,10 +93,13 @@ def ot_binary(ctx, **kwargs):
         linking_contexts.append(linker_script[CcInfo].linking_context)
     mapfile = kwargs.get("mapfile", "{}.map".format(name))
     mapfile = ctx.actions.declare_file(mapfile)
+
+    extra_linkopts = (ctx.attr.linkopts or []) + kwargs.get("linkopts", [])
+
     linkopts = [
         "-Wl,-Map={}".format(mapfile.path),
         "-nostdlib",
-    ] + _expand(ctx, "linkopts", get_override(ctx, "attr.linkopts", kwargs))
+    ] + _expand(ctx, "linkopts", extra_linkopts)
 
     lout = cc_common.link(
         name = name + ".elf",
@@ -151,7 +154,7 @@ def _binary_name(ctx, exec_env):
         exec_env = exec_env.exec_env,
     )
 
-def _build_binary(ctx, exec_env, name, deps, kind):
+def _build_binary(ctx, exec_env, name, deps, kind, linkopts):
     """Build a binary, sign and perform output file transformations.
 
     This function is the core of the `opentitan_binary` and `opentitan_test`
@@ -172,6 +175,7 @@ def _build_binary(ctx, exec_env, name, deps, kind):
         name = name,
         deps = deps,
         linker_script = linker_script,
+        linkopts = linkopts,
     )
     binary = obj_transform(
         ctx,
@@ -231,8 +235,13 @@ def _opentitan_binary(ctx):
         name = _binary_name(ctx, exec_env)
         deps = ctx.attr.deps + exec_env.libs
 
+        slot_spec = dict(exec_env.slot_spec)
+        slot_spec.update(ctx.attr.slot_spec)
+
+        linkopts = ["-Wl,--defsym=_{}={}".format(key, value) for key, value in slot_spec.items()]
+
         kind = ctx.attr.kind
-        provides, signed = _build_binary(ctx, exec_env, name, deps, kind)
+        provides, signed = _build_binary(ctx, exec_env, name, deps, kind, linkopts)
         providers.append(exec_env.provider(kind = kind, **provides))
         default_info.append(provides["default"])
         default_info.append(provides["elf"])
@@ -327,6 +336,10 @@ common_binary_attrs = {
         executable = True,
         cfg = "exec",
     ),
+    "slot_spec": attr.string_dict(
+        default = {},
+        doc = "Firmware slot spec to use in this environment",
+    ),
 }
 
 opentitan_binary = rv_rule(
@@ -364,11 +377,16 @@ _testing_bitstream = transition(
 def _opentitan_test(ctx):
     exec_env = ctx.attr.exec_env[ExecEnvInfo]
 
+    slot_spec = dict(exec_env.slot_spec)
+    slot_spec.update(ctx.attr.slot_spec)
+
+    linkopts = ["-Wl,--defsym=_{}={}".format(key, value) for key, value in slot_spec.items()]
+
     if ctx.attr.srcs or ctx.attr.deps:
         name = _binary_name(ctx, exec_env)
         deps = ctx.attr.deps + exec_env.libs
         kind = ctx.attr.kind
-        provides, signed = _build_binary(ctx, exec_env, name, deps, kind)
+        provides, signed = _build_binary(ctx, exec_env, name, deps, kind, linkopts)
         p = exec_env.provider(**provides)
     else:
         p = None
@@ -459,8 +477,9 @@ def _opentitan_binary_assemble_impl(ctx):
     result = []
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
     for env in ctx.attr.exec_env:
-        exec_env_name = env[ExecEnvInfo].exec_env
-        exec_env_provider = env[ExecEnvInfo].provider
+        exec_env = env[ExecEnvInfo]
+        exec_env_name = exec_env.exec_env
+        exec_env_provider = exec_env.provider
         name = "{}_{}".format(ctx.attr.name, exec_env_name)
         spec = []
         input_bins = []
@@ -469,6 +488,15 @@ def _opentitan_binary_assemble_impl(ctx):
                 fail("Only flash binaries can be assembled.")
             input_bins.append(binary[exec_env_provider].default)
             spec.append("{}@{}".format(binary[exec_env_provider].default.path, offset))
+
+        action_param = {}
+        action_param.update(exec_env.slot_spec)
+
+        spec = " ".join(spec)
+        for _ in range(10):
+            # Recursive evaluation of the assemble spec
+            spec = spec.format(**action_param)
+        spec = spec.split(" ")
 
         # Generate the multislot bin.
         bin = assemble_for_test(ctx, name, spec, input_bins, tc.tools.opentitantool)
