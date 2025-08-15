@@ -6,7 +6,10 @@ use anyhow::Result;
 use arrayvec::ArrayVec;
 use util_lib::response::PersonalizeResponse;
 
-pub fn ft_inject_certs_ext(endorsed_cert_concat: ArrayVec<u8, 5120>) -> Result<ArrayVec<u8, 5120>> {
+pub fn ft_inject_certs_ext(
+    endorsed_cert_concat: ArrayVec<u8, 5120>,
+    _num_host_endorsed_certs: &mut usize,
+) -> Result<ArrayVec<u8, 5120>> {
     Ok(endorsed_cert_concat)
 }
 
