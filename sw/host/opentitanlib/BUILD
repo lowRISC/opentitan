@@ -242,6 +242,7 @@ rust_library(
         "src/util/unknown.rs",
         "src/util/usb.rs",
         "src/util/usr_access.rs",
+        "src/util/vcd.rs",
         "src/util/vmem/mod.rs",
         "src/util/vmem/parser.rs",
         "src/util/voltage.rs",
