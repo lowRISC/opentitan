@@ -78,6 +78,15 @@ enum {
       (kOtbnWideWordNumWords -
        (kP256MaskedScalarShareWords % kOtbnWideWordNumWords)) %
       kOtbnWideWordNumWords,
+  /*
+   * The expected instruction counts for constant time functions.
+   */
+  kModeKeygenInsCnt = 565388,
+  kModeKeygenSideloadInsCnt = 565273,
+  kModeEcdhInsCnt = 573071,
+  kModeEcdhSideloadInsCnt = 573131,
+  kModeEcdsaSignInsCnt = 598592,
+  kModeEcdsaSignSideloadInsCnt = 598652,
 };
 
 static status_t p256_masked_scalar_write(const p256_masked_scalar_t *src,
