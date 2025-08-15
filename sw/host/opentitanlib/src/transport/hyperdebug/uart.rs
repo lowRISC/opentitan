@@ -13,7 +13,7 @@ use super::UartInterface;
 use crate::io::nonblocking_help::NonblockingHelp;
 use crate::io::uart::{FlowControl, Uart, UartError};
 use crate::transport::TransportError;
-use crate::transport::common::uart::SerialPortUart;
+use crate::transport::common::uart::{SerialPortUart, SoftwareFlowControl};
 use crate::transport::hyperdebug::Inner;
 
 const UART_BAUD: u32 = 115200;
@@ -22,7 +22,7 @@ pub struct HyperdebugUart {
     inner: Rc<Inner>,
     usb_interface: u8,
     supports_clearing_queues: bool,
-    serial_port: SerialPortUart,
+    serial_port: SoftwareFlowControl<SerialPortUart>,
 }
 
 #[allow(dead_code)]
@@ -52,13 +52,13 @@ impl HyperdebugUart {
             inner: Rc::clone(inner),
             usb_interface: uart_interface.interface,
             supports_clearing_queues,
-            serial_port: SerialPortUart::open(
+            serial_port: SoftwareFlowControl::new(SerialPortUart::open(
                 uart_interface
                     .tty
                     .to_str()
                     .ok_or(TransportError::UnicodePathError)?,
                 UART_BAUD,
-            )?,
+            )?),
         })
     }
 }
