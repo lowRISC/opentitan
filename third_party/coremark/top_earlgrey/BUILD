@@ -10,6 +10,7 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
+    "EARLGREY_CW340_TEST_ENVS",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
     "opentitan_test",
@@ -43,6 +44,7 @@ opentitan_test(
     ],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     verilator = verilator_params(
@@ -55,6 +57,7 @@ opentitan_test(
         ":core_portme",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_console",
         "//sw/device/lib/testing/test_framework:ottf_start",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",

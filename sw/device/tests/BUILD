@@ -1138,6 +1138,7 @@ opentitan_test(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_console",
         "//sw/device/lib/testing/test_framework:ottf_start",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
@@ -6971,6 +6972,7 @@ opentitan_test(
         ),
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
     ),
     fpga = fpga_params(
@@ -7008,6 +7010,7 @@ opentitan_binary(
     ],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
@@ -7020,6 +7023,7 @@ opentitan_binary(
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_console",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/lib:dbg_print",
@@ -7093,6 +7097,7 @@ opentitan_test(
         {
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
     ),
     fpga = fpga_params(
@@ -7129,6 +7134,7 @@ opentitan_binary(
     srcs = ["rv_core_ibex_mem_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     kind = "ram",
@@ -7145,6 +7151,7 @@ opentitan_binary(
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_console",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/lib/base:chip",
