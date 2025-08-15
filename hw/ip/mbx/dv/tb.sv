@@ -68,11 +68,10 @@ module tb;
       null, "*.env", "clk_rst_vif_mbx_soc_reg_block", clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(
       null, "*.env.m_tl_agent_mbx_soc_reg_block*", "vif", tl_soc_if);
+
     // RoT-side SRAM interface.
-    uvm_config_db#(virtual clk_rst_if)::set(
-      null, "*.env", "clk_rst_vif_mbx_mem_reg_block", clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(
-      null, "*.env.m_tl_agent_mbx_mem_reg_block*", "vif", tl_sram_if);
+      null, "*.env.m_tl_agent_sram*", "vif", tl_sram_if);
 
     // RoT-side interrupt interface.
     uvm_config_db#(intr_vif)::set(

@@ -13,6 +13,9 @@ class mbx_env extends cip_base_env #(
 
   `uvm_component_new
 
+  // TL Agent to model the Mailbox SRAM.
+  tl_agent m_tl_agent_sram;
+
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
@@ -20,10 +23,18 @@ class mbx_env extends cip_base_env #(
         cfg.num_interrupts > 0) begin
       `uvm_fatal(get_full_name(), "failed to get intr_soc_vif from uvm_config_db")
     end
+
+    // SRAM TL agent.
+    m_tl_agent_sram = tl_agent::type_id::create("m_tl_agent_sram", this);
+    uvm_config_db#(tl_agent_cfg)::set(this, "m_tl_agent_sram", "cfg", cfg.m_tl_agent_sram_cfg);
+
   endfunction: build_phase
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+
+    virtual_sequencer.tl_sequencer_sram_h = m_tl_agent_sram.sequencer;
+    // TODO: Connect analysis ports.
   endfunction: connect_phase
 
 endclass: mbx_env

@@ -11,7 +11,6 @@ filesets:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
     files:
-      - mbx_mem_ral_pkg.sv
       - mbx_env_pkg.sv
       - mbx_env_cfg.sv: {is_include_file: true}
       - mbx_env_cov.sv: {is_include_file: true}
