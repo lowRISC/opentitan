@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
@@ -55,6 +56,10 @@ package otp_ctrl_env_pkg;
   parameter uint OTP_ARRAY_SIZE = LcTransitionCntOffset / TL_SIZE;
 
   parameter int OTP_ADDR_WIDTH = OtpByteAddrWidth-2;
+
+  // The full word size of the OTP macro, including ECC.
+  parameter int OTP_MACRO_FULL_WIDTH = OtpWidth + prim_secded_pkg::get_synd_width(
+              prim_secded_pkg::SecdedHamming, OtpWidth);
 
   parameter uint NUM_PRIM_REG = 8;
 
