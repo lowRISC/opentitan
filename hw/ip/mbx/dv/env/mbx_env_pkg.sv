@@ -12,7 +12,6 @@ package mbx_env_pkg;
   import prim_mubi_pkg::*;
   import mbx_core_ral_pkg::*;
   import mbx_soc_ral_pkg::*;
-  import mbx_mem_ral_pkg::*;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
   import dv_base_reg_pkg::*;

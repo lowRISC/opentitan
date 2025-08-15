@@ -25,7 +25,6 @@ class mbx_base_vseq extends cip_base_vseq #(
 
   `uvm_object_utils(mbx_base_vseq)
 
-  string mbx_mem_ral_name = "mbx_mem_reg_block";
   string mbx_soc_ral_name = "mbx_soc_reg_block";
 
   // Number of iterations
@@ -38,7 +37,6 @@ class mbx_base_vseq extends cip_base_vseq #(
 
   mbx_tl_device_seq seq_h;
 
-  mbx_mem_reg_block m_mbx_mem_ral;
   mbx_soc_reg_block m_mbx_soc_ral;
 
   mbx_seq_item mbx_config;
@@ -93,7 +91,6 @@ class mbx_base_vseq extends cip_base_vseq #(
   function void pre_randomize();
     super.pre_randomize();
     `downcast(m_mbx_soc_ral, cfg.ral_models[cfg.mbx_soc_ral_name])
-    `downcast(m_mbx_mem_ral, cfg.ral_models[cfg.mbx_mem_ral_name])
   endfunction: pre_randomize
 
   // Task: Simulate a clock delay
@@ -105,29 +102,29 @@ class mbx_base_vseq extends cip_base_vseq #(
   // TODO: this function was introduced to guarantee the desired values during bring up;
   // it may no longer be required.
   function void set_access_delays(int min, int max);
-    cfg.m_tl_agent_cfgs[mbx_mem_ral_name].a_ready_delay_min = min;
-    cfg.m_tl_agent_cfgs[mbx_mem_ral_name].a_ready_delay_max = max;
-
     cfg.m_tl_agent_cfgs[RAL_T::type_name].a_valid_delay_min = min;
     cfg.m_tl_agent_cfgs[RAL_T::type_name].a_valid_delay_max = max;
 
     cfg.m_tl_agent_cfgs[mbx_soc_ral_name].a_valid_delay_min = min;
     cfg.m_tl_agent_cfgs[mbx_soc_ral_name].a_valid_delay_max = max;
+
+    cfg.m_tl_agent_sram_cfg.a_valid_delay_min = min;
+    cfg.m_tl_agent_sram_cfg.a_valid_delay_max = max;
   endfunction
 
   // Set the minimum and maximum response delays of the mailbox SRAM
   // TODO: this function was introduced to guarantee the desired values during bring up;
   // it may no longer be required.
   function void set_response_delays(int min, int max);
-    cfg.m_tl_agent_cfgs[mbx_mem_ral_name].use_seq_item_d_valid_delay = 1'b0;
-    cfg.m_tl_agent_cfgs[mbx_mem_ral_name].d_valid_delay_min = min;
-    cfg.m_tl_agent_cfgs[mbx_mem_ral_name].d_valid_delay_max = max;
-
     cfg.m_tl_agent_cfgs[RAL_T::type_name].d_ready_delay_min = min;
     cfg.m_tl_agent_cfgs[RAL_T::type_name].d_ready_delay_max = max;
 
     cfg.m_tl_agent_cfgs[mbx_soc_ral_name].d_ready_delay_min = min;
     cfg.m_tl_agent_cfgs[mbx_soc_ral_name].d_ready_delay_max = max;
+
+    cfg.m_tl_agent_sram_cfg.use_seq_item_d_valid_delay = 1'b0;
+    cfg.m_tl_agent_sram_cfg.d_valid_delay_min = min;
+    cfg.m_tl_agent_sram_cfg.d_valid_delay_max = max;
 
     seq_h.min_rsp_delay = min;
     seq_h.max_rsp_delay = max;
@@ -153,7 +150,7 @@ class mbx_base_vseq extends cip_base_vseq #(
     seq_h = mbx_tl_device_seq::type_id::create("seq_h");
     seq_h.mem = seq_mem_model;
     fork
-      seq_h.start(p_sequencer.tl_sequencer_hs[cfg.mbx_mem_ral_name]);
+      seq_h.start(p_sequencer.tl_sequencer_sram_h);
     join_none
   endtask: start_mem_seq
 
