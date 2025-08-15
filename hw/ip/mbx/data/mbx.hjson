@@ -461,7 +461,7 @@
       { window: {
           name: "WDATA"
           items: "1"
-          swaccess: "wo"
+          swaccess: "rw"
           desc: '''DOE mailbox write data register.
                 The DOE instance receives data objects via writes to this register.
                 A successful write adds one DWORD to the data object being assembled in the DOE instance.

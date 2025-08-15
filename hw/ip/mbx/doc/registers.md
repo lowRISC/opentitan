@@ -425,7 +425,7 @@ A write of 1 to the DOE Go bit in the DOE Control Register marks the completion 
 
 - Word Aligned Offset Range: `0x10`to`0x10`
 - Size (words): `1`
-- Access: `wo`
+- Access: `rw`
 - Byte writes are *not* supported.
 
 ## RDATA
