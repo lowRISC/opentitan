@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#define MODULE_ID MAKE_MODULE_ID('j', 's', 'a')
+
 #define RSA_CMD_MAX_MESSAGE_BYTES 512
 #define RSA_CMD_MAX_N_BYTES 512
 #define RSA_CMD_MAX_SIGNATURE_BYTES 512
@@ -336,6 +338,8 @@ UJSON_SERDE_STRUCT(CryptoLibScaAsymED25519SignIn, cryptolib_sca_asym_ed25519_sig
     field(puby, uint8_t, ED25519_CMD_SCALAR_BYTES) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaAsymED25519SignOut, cryptolib_sca_asym_ed25519_sign_out_t, CRYPTOLIBSCAASYM_ED25519_SIGN_OUT);
+
+#undef MODULE_ID
 
 // clang-format on
 

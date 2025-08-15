@@ -20,6 +20,8 @@
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/cryptolib_fi_sym_commands.h"
 
+#define MODULE_ID MAKE_MODULE_ID('c', 'f', 's')
+
 status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
                                cryptolib_fi_sym_aes_out_t *uj_output) {
   // Set the AES mode.

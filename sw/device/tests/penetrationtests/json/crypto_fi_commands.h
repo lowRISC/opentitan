@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#define MODULE_ID MAKE_MODULE_ID('j', 'c', 'f')
+
 #define CRYPTOFI_HMAC_CMD_MAX_MESSAGE_BYTES 16
 #define CRYPTOFI_HMAC_CMD_MAX_KEY_BYTES 32
 #define CRYPTOFI_HMAC_CMD_MAX_TAG_WORDS 8
@@ -88,6 +90,8 @@ UJSON_SERDE_STRUCT(FiHmacTag, crypto_fi_hmac_tag_t, CRYPTOFI_HMAC_TAG);
     field(process_trigger, bool) \
     field(finish_trigger, bool)
 UJSON_SERDE_STRUCT(CryptoFiHmacMode, crypto_fi_hmac_mode_t, CRYPTOFI_HMAC_MODE);
+
+#undef MODULE_ID
 
 // clang-format on
 

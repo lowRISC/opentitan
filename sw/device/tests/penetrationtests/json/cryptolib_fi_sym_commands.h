@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#define MODULE_ID MAKE_MODULE_ID('j', 'f', 's')
+
 #define AES_CMD_MAX_MSG_BYTES 64
 #define AES_CMD_MAX_KEY_BYTES 32
 #define AES_CMD_MAX_BLOCK_BYTES 16
@@ -147,6 +149,8 @@ UJSON_SERDE_STRUCT(CryptoLibFiSymDrbgIn, cryptolib_fi_sym_drbg_in_t, CRYPTOLIBFI
     field(data_len, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibFiSymDrbgOut, cryptolib_fi_sym_drbg_out_t, CRYPTOLIBFISYM_DRBG_OUT);
+
+#undef MODULE_ID
 
 // clang-format on
 

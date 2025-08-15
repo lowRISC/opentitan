@@ -16,6 +16,8 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#define MODULE_ID MAKE_MODULE_ID('c', 'f', 'a')
+
 status_t handle_cryptolib_fi_asym_rsa_enc(ujson_t *uj) {
   cryptolib_fi_asym_rsa_enc_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_fi_asym_rsa_enc_in_t(uj, &uj_input));
