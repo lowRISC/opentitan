@@ -40,7 +40,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen(
  * Generates an ECDSA signature with curve P-256.
  *
  * The message digest must be exactly 256 bits (32 bytes) long, but may use any
- * hash mode.  The caller is responsible for ensuring that the security
+ * hash mode. The caller is responsible for ensuring that the security
  * strength of the hash function is at least equal to the security strength of
  * the curve, but in some cases it may be truncated. See FIPS 186-5 for
  * details.
@@ -57,10 +57,33 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign(
     otcrypto_word32_buf_t signature);
 
 /**
+ * Generates an ECDSA signature with curve P-256 and verifies the signature
+ * before releasing it to mitigate fault injection attacks.
+ *
+ * The message digest must be exactly 256 bits (32 bytes) long, but may use any
+ * hash mode. The caller is responsible for ensuring that the security
+ * strength of the hash function is at least equal to the security strength of
+ * the curve, but in some cases it may be truncated. See FIPS 186-5 for
+ * details.
+ *
+ * @param private_key Pointer to the blinded private key (d) struct.
+ * @param public_key Pointer to the unblinded public key (Q) struct.
+ * @param message_digest Message digest to be signed (pre-hashed).
+ * @param[out] signature Pointer to the signature struct with (r,s) values.
+ * @return Result of the ECDSA signature generation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p256_sign_verify(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *public_key,
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_word32_buf_t signature);
+
+/**
  * Verifies an ECDSA/P-256 signature.
  *
  * The message digest must be exactly 256 bits (32 bytes) long, but may use any
- * hash mode.  The caller is responsible for ensuring that the security
+ * hash mode. The caller is responsible for ensuring that the security
  * strength of the hash function is at least equal to the security strength of
  * the curve, but in some cases it may be truncated. See FIPS 186-5 for
  * details.
