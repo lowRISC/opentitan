@@ -17,7 +17,7 @@ module mbx_imbx #(
   output logic                        imbx_status_busy_update_o,
   output logic                        imbx_status_busy_o,
   output logic                        imbx_overflow_error_set_o,
-  // Access to the control and status registers of host interface
+  // Access to the control and status registers of the host interface
   // Writing a 1 to control.abort register clears the abort condition
   input  logic                        hostif_control_abort_clear_i,
   input  logic                        mbx_error_set_i,
@@ -45,8 +45,8 @@ module mbx_imbx #(
   // Status signals from the FSM
   logic mbx_empty, mbx_write, mbx_read, mbx_sys_abort;
 
-  // hostif_sram_write_req_o is actually sticky because the sys-side TLUL_adapter_reg is
-  // NOT ack'ed until the command is granted by the host-side TLUL_adapter_host
+  // hostif_sram_write_req_o is actually sticky because the sys-side tlul_adapter_reg is
+  // NOT ack'ed until the command is granted by the host-side tlul_adapter_host
   // RW2A = sticky from DEC/RW-stage to (srm command) ACK
   logic write_req;
   assign write_req = (mbx_empty & sysif_data_write_valid_i) |
@@ -58,11 +58,11 @@ module mbx_imbx #(
   assign awaiting_gnt = hostif_sram_write_req_o & ~hostif_sram_write_gnt_i &
                        ~hostif_control_abort_clear_i;
 
-  // Raise an error if the requester tries to write out of the limits
+  // Raise an error if the requester tries to write beyond the limit
   assign imbx_overflow_error_set_o = mbx_write & sysif_data_write_valid_i &
                                     (sram_write_ptr_q > hostif_limit_i);
 
-  // Create a sticky TLUL write request until its granted
+  // Create a sticky TL-UL write request until it's granted
   logic req_q;
   assign hostif_sram_write_req_o = write_req | req_q;
 
@@ -111,10 +111,10 @@ module mbx_imbx #(
   );
   assign hostif_sram_write_ptr_o = sram_write_ptr_q;
 
-  // Backpressure the next write data until the current write data is granted by the TLUL adapter
+  // Backpressure the next write data until the current write data is granted by the TL-UL adapter
   logic set_pending, clear_pending;
 
-  // Block the request from TLUL until the SRAM write is complete.
+  // Block the request from TL-UL until the SRAM write is complete.
   // Reset state if the host side is acknowledging an Abort request.
   assign set_pending   = write_req;
   assign clear_pending = hostif_sram_write_gnt_i | hostif_control_abort_clear_i;
@@ -179,7 +179,7 @@ module mbx_imbx #(
   // Assertions
   //////////////////////////////////////////////////////////////////////////////
 
-  // Don't write the mailbox if it is full
+  // Don't write to the mailbox if it is full
   `ASSERT_NEVER(NeverWriteMbxIfFull_A, hostif_sram_write_req_o &
                 (sram_write_ptr_q > hostif_limit_i))
 

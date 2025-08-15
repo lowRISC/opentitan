@@ -6,7 +6,7 @@ module mbx_hostif
   import mbx_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0]           AlertAsyncOn                      = {NumAlerts{1'b1}},
-  // Number of cycles a differential skew is tolerated on the alert signal
+  // Number of cycles of differential skew to be tolerated on the alert signal
   parameter int unsigned                    AlertSkewCycles                   = 1,
   parameter int unsigned                    CfgSramAddrWidth                  = 32,
   parameter int unsigned                    CfgSramDataWidth                  = 32,
@@ -125,7 +125,7 @@ module mbx_hostif
   logic intr_ready_de, intr_abort_de, intr_error_de;
   logic intr_ready_d, intr_abort_d, intr_error_d;
 
-  // Instantiate interrupt hardware primitives for ready, abort, and error IRQ
+  // Instantiate interrupt hardware primitives for ready, abort, and error IRQs
   prim_intr_hw #(.Width(1)) u_intr_ready (
     .clk_i                  ( clk_i                          ),
     .rst_ni                 ( rst_ni                         ),
@@ -210,7 +210,7 @@ module mbx_hostif
                                             ~reg2hw.control.sys_async_msg.q;
 
   // Status Register
-  // It is implemented as hwext and implemented in a different hierarchy and only providing an
+  // It is implemented as `hwext` in a different hierarchy and this is just an
   // alias. Thus manually assigning the external signals
 
   // External read logic
