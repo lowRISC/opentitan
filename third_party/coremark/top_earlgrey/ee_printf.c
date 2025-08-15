@@ -16,10 +16,7 @@ limitations under the License.
 
 #include <coremark.h>
 #include <stdarg.h>
-
-#include "sw/device/lib/dif/dif_uart.h"
-
-extern dif_uart_t uart;
+#include "sw/device/lib/testing/test_framework/ottf_console.h"
 
 #define ZEROPAD   (1 << 0) /* Pad with zero */
 #define SIGN      (1 << 1) /* Unsigned/signed long */
@@ -663,29 +660,15 @@ ee_vsprintf(char *buf, const char *fmt, va_list args)
     return str - buf;
 }
 
-void
-uart_send_char(char c)
-{
-  (void)dif_uart_byte_send_polled(&uart, c);
-}
-
 int
 ee_printf(const char *fmt, ...)
 {
-    char    buf[1024], *p;
+    char    buf[1024];
     va_list args;
-    int     n = 0;
 
     va_start(args, fmt);
-    ee_vsprintf(buf, fmt, args);
+    int len = ee_vsprintf(buf, fmt, args);
     va_end(args);
-    p = buf;
-    while (*p)
-    {
-        uart_send_char(*p);
-        n++;
-        p++;
-    }
-
-    return n;
+    status_t res = ottf_console_putbuf(ottf_console_get(), buf, len);
+    return status_ok(res) ? res.value : 0;
 }
