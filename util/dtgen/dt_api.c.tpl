@@ -26,9 +26,8 @@ else:
 #include <stdint.h>
 
 <%
-  top_plic_irq_id_name = Name.from_snake_case("top_" + helper.top["name"] + "_plic_irq_id")
-  top_plic_irq_id_last = top_plic_irq_id_name + Name(["last"])
-  top_plic_irq_id_count = top_plic_irq_id_name + Name(["count"])
+  top_plic_irq_id_last = helper.the_plic_irq_id_type_name + Name(["last"])
+  top_plic_irq_id_count = helper.the_plic_irq_id_type_name + Name(["count"])
 %>
 enum {
   ${top_plic_irq_id_count.as_c_enum()} = ${top_plic_irq_id_last.as_c_enum()} + 1,

@@ -70,10 +70,10 @@ dt_device_type_t dt_device_type(dt_instance_id_t id);
  * This is an alias to the top's `plic_irq_id_t` type for backward compatibility
  * with existing code.
  */
-typedef ${top_name.as_snake_case()}_plic_irq_id_t dt_plic_irq_id_t;
+typedef ${helper.the_plic_irq_id_type_name.as_c_type()} dt_plic_irq_id_t;
 
 /** PLIC IRQ ID for no interrupt. */
-static const dt_plic_irq_id_t kDtPlicIrqIdNone=${top_name.as_c_enum()}PlicIrqIdNone;
+static const dt_plic_irq_id_t kDtPlicIrqIdNone = ${helper.the_plic_irq_id_type_name.as_c_enum()}None;
 
 /**
  * Get the instance ID for a given PLIC IRQ ID.
