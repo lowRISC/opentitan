@@ -9,16 +9,16 @@ All checklist items refer to the content in the [Checklist.](../../../../doc/pro
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Not Started | [Mailbox](../README.md)
-Documentation | [CSR_DEFINED][]                | Not Started |
-RTL           | [CLKRST_CONNECTED][]           | Not Started |
-RTL           | [IP_TOP][]                     | Not Started |
-RTL           | [IP_INSTANTIABLE][]            | Not Started |
-RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Not Started |
-RTL           | [FUNC_IMPLEMENTED][]           | Not Started |
-RTL           | [ASSERT_KNOWN_ADDED][]         | Not Started |
-Code Quality  | [LINT_SETUP][]                 | Not Started |
-Security      | [SEC_CM_SCOPED][]              | Not Started |
+Documentation | [SPEC_COMPLETE][]              | Done        | [Mailbox](../README.md)
+Documentation | [CSR_DEFINED][]                | Done        |
+RTL           | [CLKRST_CONNECTED][]           | Done        |
+RTL           | [IP_TOP][]                     | Done        |
+RTL           | [IP_INSTANTIABLE][]            | Done        |
+RTL           | [PHYSICAL_MACROS_DEFINED_80][] | N/A         |
+RTL           | [FUNC_IMPLEMENTED][]           | Done        |
+RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
+Code Quality  | [LINT_SETUP][]                 | Done        |
+Security      | [SEC_CM_SCOPED][]              | Done        |
 
 [SPEC_COMPLETE]:              ../../../../doc/project_governance/checklist/README.md#spec_complete
 [CSR_DEFINED]:                ../../../../doc/project_governance/checklist/README.md#csr_defined
@@ -47,11 +47,11 @@ RTL           | [ARCHITECTURE_FROZEN][]   | Not Started |
 RTL           | [REVIEW_TODO][]           | Not Started |
 RTL           | [STYLE_X][]               | Not Started |
 RTL           | [CDC_SYNCMACRO][]         | Not Started |
-Code Quality  | [LINT_PASS][]             | Not Started |
-Code Quality  | [CDC_SETUP][]             | Not Started |
-Code Quality  | [RDC_SETUP][]             | Not Started |
-Code Quality  | [AREA_CHECK][]            | Not Started |
-Code Quality  | [TIMING_CHECK][]          | Not Started |
+Code Quality  | [LINT_PASS][]             | Done        |
+Code Quality  | [CDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
+Code Quality  | [RDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
+Code Quality  | [AREA_CHECK][]            | Done        |
+Code Quality  | [TIMING_CHECK][]          | Done        |
 Security      | [SEC_CM_DOCUMENTED][]     | Not Started |
 
 [NEW_FEATURES]:          ../../../../doc/project_governance/checklist/README.md#new_features
@@ -127,22 +127,22 @@ Review        | Signoff date            | Not Started |
 --------------|---------------------------------------|-------------|------------------
 Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started |
 Documentation | [TESTPLAN_COMPLETED][]                | Not Started |
-Testbench     | [TB_TOP_CREATED][]                    | Not Started |
-Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
-Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
-Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Not Started |
-Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Not Started |
-Testbench     | [TB_GEN_AUTOMATED][]                  | Not Started |
-Tests         | [SIM_SMOKE_TEST_PASSING][]            | Not Started |
-Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Not Started |
-Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Not Started |
-Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Not Started |
-Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Not Started |
-Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Not Started |
-Regression    | [FPV_REGRESSION_SETUP][]              | Not Started |
+Testbench     | [TB_TOP_CREATED][]                    | Done        |
+Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
+Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
+Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Done        |
+Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Done        |
+Testbench     | [TB_GEN_AUTOMATED][]                  | N/A         |
+Tests         | [SIM_SMOKE_TEST_PASSING][]            | Done        |
+Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Done        |
+Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | N/A         |
+Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Done        |
+Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Done        |
+Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Done        |
+Regression    | [FPV_REGRESSION_SETUP][]              | N/A         |
 Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Not Started |
 Code Quality  | [TB_LINT_SETUP][]                     | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Not Started |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         |
 Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
 Review        | [TESTPLAN_REVIEWED][]                 | Not Started |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started | Exception (?)
