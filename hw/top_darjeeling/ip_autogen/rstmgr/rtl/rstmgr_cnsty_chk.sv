@@ -57,7 +57,20 @@ module rstmgr_cnsty_chk
   logic sync_parent_rst;
   prim_flop_2sync #(
     .Width(1),
-    .ResetValue(1)
+    .ResetValue(1),
+    // We disable CDC randomization for this instance to prevent the CDC instrumentation from
+    // delaying the parent reset de-assertion until after the child reset de-assertion which would
+    // trigger a consistency check failure.
+    //
+    // This is fine as this scenario cannot occur in reality:
+    // Both parent_rst_asserted and child_rst_asserted are synchronous to the same clock, and the
+    // child_rst_ni reset of the latter is derived from the parent_rst_ni of the former using a
+    // 2-flop synchronizer (see u_rst_sync in rstmgr_leaf_rst) which is clocked using the same
+    // clock (clk_io_div4_i). This means child_rst_asserted always de-asserts after
+    // parent_rst_asserted unless we are under attack.
+    //
+    // For details, refer to https://github.com/lowRISC/opentitan/issues/27659 .
+    .EnablePrimCdcRand(0)
   ) u_parent_sync (
     .clk_i,
     .rst_ni,
