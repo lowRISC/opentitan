@@ -1458,17 +1458,27 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     return mem_access_allowed;
   endfunction
 
-  virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
+  // This is an extension of the base class implementation (cip_base_scoreboard::predict_tl_err). If
+  // this is a TL transaction for otp_macro when that block isn't enabled by its lc_dft_en_i signal,
+  // the function always expects an error and returns 1.
+  //
+  // As well as returning the prediction, this function also performs some checks in that situation
+  // (unlike DV code elsewhere in the project). It checks that a D channel response will have
+  // d_error=1 and that a response with data (opcode AccessAckData) will have the expected data.
+  function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
     if (ral_name == "otp_macro_prim_reg_block" &&
         cfg.otp_ctrl_vif.lc_dft_en_i != lc_ctrl_pkg::On) begin
       if (channel == DataChannel) begin
         `DV_CHECK_EQ(item.d_error, 1,
-            $sformatf({"On interface %0s, TL item: %0s, access gated by lc_dft_en_i"},
-            ral_name, item.sprint(uvm_default_line_printer)))
+                     $sformatf({"On interface %0s, TL item: %0s, access gated by lc_dft_en_i"},
+                               ral_name, item.sprint(uvm_default_line_printer)))
 
-        // In data read phase, check d_data when d_error = 1.
-        if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
-          check_tl_read_value_after_error(item, ral_name);
+        // If this D channel response has any data (because d_opcode is AccessAckData), it should
+        // have been squashed to '0 or '1, depending on whether this was a fetch or not.
+        if (item.d_opcode == tlul_pkg::AccessAckData) begin
+          logic [DataWidth-1:0] exp_data = 0;
+          if (!is_csr_fetch(item, ral_name)) exp_data = ~exp_data;
+          `DV_CHECK_EQ(item.d_data, exp_data, "d_data mismatch when d_error = 1")
         end
       end
       return 1;
