@@ -14,7 +14,6 @@
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
-#include "sw/device/lib/testing/test_framework/ottf_console_internal.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 
 /**

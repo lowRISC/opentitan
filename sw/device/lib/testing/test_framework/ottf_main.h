@@ -8,7 +8,6 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
