@@ -30,7 +30,6 @@ void ottf_console_init(void) {
       // Set a default for the console base address if the base address is not
       // configured. The default is to use UART0.
       if (base_addr == 0) {
-        CHECK(kOttfTestConfig.console.type == kOttfConsoleUart);
         base_addr = dt_uart_primary_reg_block(kDtUart0);
       }
 
