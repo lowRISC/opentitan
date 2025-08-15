@@ -449,16 +449,19 @@ class OtpMemImg(OtpMemMap):
                     data_blocks[k] = _present_64bit_encrypt(
                         data_blocks[k], key['value'])
 
-        # Check if digest calculation is needed
+        # Check if digest calculation is needed.
+        # The digest is stored after the data. It is the last block of a
+        # partition when the partition is not zeroizable and the penultimate
+        # if it is.
+        digest_idx = len(data_blocks)-2 if part['zeroizable'] else len(data_blocks)-1
         if part['hw_digest']:
             # Make sure that this HW-governed digest has not been
             # overridden manually
-            if data_blocks[-1] != 0:
+            if data_blocks[digest_idx] != 0:
                 raise RuntimeError(
                     'Digest of partition {} cannot be overridden manually'.
                     format(part_name))
 
-            # Digest is stored in last block of a partition
             if part.setdefault('lock', False):
                 log.info('> Lock partition by computing digest')
                 # Digest constants at index 0 are used to compute the
@@ -466,8 +469,8 @@ class OtpMemImg(OtpMemMap):
                 iv = self.config['scrambling']['digests'][0]['iv_value']
                 const = self.config['scrambling']['digests'][0]['cnst_value']
 
-                data_blocks[-1] = _present_64bit_digest(
-                    data_blocks[0:-1], iv, const)
+                data_blocks[digest_idx] = _present_64bit_digest(
+                    data_blocks[0:digest_idx], iv, const)
             else:
                 log.info(
                     '> Partition is not locked, hence no digest is computed')

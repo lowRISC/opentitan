@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 <%
 from topgen.lib import Name
+from design.lib.OtpMemMap import get_part_by_name
 
 read_locked_csr_parts = [part for part in otp_mmap["partitions"] if
                          part["read_lock"] == "CSR"]
@@ -166,17 +167,31 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             exp_status[OtpDaiIdleIdx] = 1;
           end
 
-          // Hwcfg_o gets data from OTP HW cfg partition
+          // hw_cfg0_o gets data from OTP HW_CFG0 partition, excluding the digest
+          // and potentially the zeroized mark
+<%
+if get_part_by_name("HW_CFG0", otp_mmap["partitions"])["zeroizable"]:
+  part_size = "(HwCfg0Size - 16)"
+else:
+  part_size = "(HwCfg0Size - 8)"
+%>\
           exp_hw_cfg0_data = cfg.otp_ctrl_vif.under_error_states() ?
-                             otp_ctrl_part_pkg::PartInvDefault[HwCfg0Offset*8 +: HwCfg0Size*8] :
-                             otp_hw_cfg0_data_t'({<<32 {otp_a[HwCfg0Offset/4 +: HwCfg0Size/4]}});
+                             otp_ctrl_part_pkg::PartInvDefault[HwCfg0Offset*8 +: ${part_size}*8] :
+                             otp_hw_cfg0_data_t'({<<32 {otp_a[HwCfg0Offset/4 +: ${part_size}/4]}});
           `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_broadcast_o.valid, lc_ctrl_pkg::On)
           `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_broadcast_o.hw_cfg0_data, exp_hw_cfg0_data)
 
-          // Hwcfg_o gets data from OTP HW cfg partition
+          // hw_cfg1 gets data from OTP HW_CFG1 partition, excluding the digest
+          // and potentially the zeroized mark
+<%
+if get_part_by_name("HW_CFG1", otp_mmap["partitions"])["zeroizable"]:
+  part_size = "(HwCfg1Size - 16)"
+else:
+  part_size = "(HwCfg1Size - 8)"
+%>\
           exp_hw_cfg1_data = cfg.otp_ctrl_vif.under_error_states() ?
-                             otp_ctrl_part_pkg::PartInvDefault[HwCfg1Offset*8 +: HwCfg1Size*8] :
-                             otp_hw_cfg1_data_t'({<<32 {otp_a[HwCfg1Offset/4 +: HwCfg1Size/4]}});
+                             otp_ctrl_part_pkg::PartInvDefault[HwCfg1Offset*8 +: ${part_size}*8] :
+                             otp_hw_cfg1_data_t'({<<32 {otp_a[HwCfg1Offset/4 +: ${part_size}/4]}});
           `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_broadcast_o.valid, lc_ctrl_pkg::On)
           `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_broadcast_o.hw_cfg1_data, exp_hw_cfg1_data)
 

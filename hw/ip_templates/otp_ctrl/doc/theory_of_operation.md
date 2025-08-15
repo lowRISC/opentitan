@@ -231,6 +231,44 @@ Similar to the functional interface, the life cycle controller allows only one u
 
 For more details on how the software programs the OTP, please refer to the [Programmer's Guide](programmers_guide.md).
 
+## Zeroizing the OTP
+
+Zeroization of sensitive keys is a required to meet FIPS 140-3 CMVP requirement. For the `otp_ctrl` this requires overwriting already programmed and locked partitions.
+Firmware can interact with the direct-access interface (DAI) to achieve the zeroization of a partition.
+
+### Enabling Zeroization
+
+Zeroization is configured per partition when the RTL is generated if the `zeroizable` parameter is set in the top-specific OTP memory map hjson file.
+For example, most partitions in darjeeling are zeroizable: see [darjeeling's memory map](../../../data/otp/otp_ctrl_mmap.hjson)).
+Every partition type except `LIFE_CYCLE` can be zeroizable regardless of whether it has hardware or software digests.
+When a partition is marked as zeroizable, the partition generation [library](../../../../../util/design/lib/OtpMemMap.py) inserts a 64-bit item (the **zeroized item**) at the end of the partition that serves as an indicator that a partition is zeroized or in the process of being zeroized.
+
+### Zeroizing a Partition
+
+Zeroizing a partition is completely handled by firmware and resembles an ordinary in-field provisioning flow.
+Zeroization is performed via the `ZEROIZE` DAI command issued to the address of any specific item in a zeroizable partition, including digests and zeroized items.
+It will affect 32 or 64 bits depending of the granule of the addressed item.
+
+It is important to zeroize the zeroized item of a partition whenever any of its items is zeroized.
+Consistency checks are disabled immediately when any item in a partition is zeroized since the check will fail, and potentially cause an interruption of an ongoing zeroization procedure.
+Integrity checks will remain active since they only affect buffered data.
+A reset after any zeroization will mark any partition whose zeroized item is set such that no consistency or integrity checks will be performed, and any reads will ignore ECC (since zeroization will cause ECC errors).
+
+### The Zeroization Command
+
+Zeroization is a DAI command triggered by a write to the `ZEROIZE` bit in the [`DIRECT_ACCESS_CMD CSR`](registers.md#direct-access-command).
+The OTP field zeroized is determined by contents of the [`DIRECT_ACCESS_ADDRESS`](registers.md#direct-access-address), and the full granule is affected.
+The command writes all ones to the data and ECC of the field to be zeroized, and subsequently reads it back.
+It is possible not all bits will be updated due to stuck-at-0 bits.
+
+For non-secret partitions the data read back from the macro is returned in [`DIRECT_ACCESS_RDATA`](registers.md#direct-access-rdata).
+For secret partitions the resulting data is examined:
+- If not more than 1/8 of the bits remain as 0 they are assumed to be due to stuck-at-0 faults, the zeroization command succeeds, and the resulting data is written in [`DIRECT_ACCESS_RDATA`](registers.md#direct-access-rdata) without descrambling it.
+- If more than 1/4 of the bits are 0 it is highly unlikely they are all due to stuck-at-0, and otp goes to a terminal state on the assumption that there was an active attack.
+- Otherwise no error is issued but [`DIRECT_ACCESS_RDATA`](registers.md#direct-access-rdata) is not updated.
+  Software can detect this condition and determine what to do.
+
+This means software can always infer if zeroization completed.
 
 ## Design Details
 

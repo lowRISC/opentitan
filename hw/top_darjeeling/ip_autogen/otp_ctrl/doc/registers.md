@@ -319,21 +319,22 @@ will also be set to 0 in such a case.
 Command register for direct accesses.
 - Offset: `0x78`
 - Reset default: `0x0`
-- Reset mask: `0x7`
+- Reset mask: `0xf`
 - Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "RD", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"name": "WR", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"name": "DIGEST", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "RD", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"name": "WR", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"name": "DIGEST", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"name": "ZEROIZE", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                                                                                |
-|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:3  |        |         |        | Reserved                                                                                                                                                                                                                                                                                   |
-|   2    | r0w1c  |   0x0   | DIGEST | Initiates the digest calculation and locking sequence for the partition specified by [`DIRECT_ACCESS_ADDRESS.`](#direct_access_address)                                                                                                                                                    |
-|   1    | r0w1c  |   0x0   | WR     | Initiates a programming sequence that writes the data in [`DIRECT_ACCESS_WDATA_0`](#direct_access_wdata_0) and [`DIRECT_ACCESS_WDATA_1`](#direct_access_wdata_1) (for 64bit partitions) to the location specified by [`DIRECT_ACCESS_ADDRESS.`](#direct_access_address)                    |
-|   0    | r0w1c  |   0x0   | RD     | Initiates a readout sequence that reads the location specified by [`DIRECT_ACCESS_ADDRESS.`](#direct_access_address) The command places the data read into [`DIRECT_ACCESS_RDATA_0`](#direct_access_rdata_0) and [`DIRECT_ACCESS_RDATA_1`](#direct_access_rdata_1) (for 64bit partitions). |
+|  Bits  |  Type  |  Reset  | Name    | Description                                                                                                                                                                                                                                                                                                             |
+|:------:|:------:|:-------:|:--------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:4  |        |         |         | Reserved                                                                                                                                                                                                                                                                                                                |
+|   3    | r0w1c  |   0x0   | ZEROIZE | Initiates the zeroization sequence of location specified by [`DIRECT_ACCESS_ADDRESS.`](#direct_access_address) The command places the zeroized data into [`DIRECT_ACCESS_RDATA_0`](#direct_access_rdata_0) and [`DIRECT_ACCESS_RDATA_1`](#direct_access_rdata_1) (for 64bit partitions) if the execution is successful. |
+|   2    | r0w1c  |   0x0   | DIGEST  | Initiates the digest calculation and locking sequence for the partition specified by [`DIRECT_ACCESS_ADDRESS.`](#direct_access_address)                                                                                                                                                                                 |
+|   1    | r0w1c  |   0x0   | WR      | Initiates a programming sequence that writes the data in [`DIRECT_ACCESS_WDATA_0`](#direct_access_wdata_0) and [`DIRECT_ACCESS_WDATA_1`](#direct_access_wdata_1) (for 64bit partitions) to the location specified by [`DIRECT_ACCESS_ADDRESS.`](#direct_access_address)                                                 |
+|   0    | r0w1c  |   0x0   | RD      | Initiates a readout sequence that reads the location specified by [`DIRECT_ACCESS_ADDRESS.`](#direct_access_address) The command places the data read into [`DIRECT_ACCESS_RDATA_0`](#direct_access_rdata_0) and [`DIRECT_ACCESS_RDATA_1`](#direct_access_rdata_1) (for 64bit partitions).                              |
 
 ## DIRECT_ACCESS_ADDRESS
 Address register for direct accesses.
