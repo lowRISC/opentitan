@@ -311,19 +311,16 @@ package otp_ctrl_part_pkg;
 
   // Breakout types for easier access of individual items.
   typedef struct packed {
-    logic [63:0] hw_cfg0_digest;
     logic [255:0] manuf_state;
     logic [255:0] device_id;
   } otp_hw_cfg0_data_t;
 
   // default value used for intermodule
   parameter otp_hw_cfg0_data_t OTP_HW_CFG0_DATA_DEFAULT = '{
-    hw_cfg0_digest: 64'hF87BED95CFBA3727,
     manuf_state: 256'hDF3888886BD10DC67ABB319BDA0529AE40119A3C6E63CDF358840E458E4029A6,
     device_id: 256'h63B9485A3856C417CF7A50A9A91EF7F7B3A5B4421F462370FFF698183664DC7E
   };
   typedef struct packed {
-    logic [63:0] hw_cfg1_digest;
     logic [39:0] unallocated;
     prim_mubi_pkg::mubi8_t dis_rv_dm_late_debug;
     prim_mubi_pkg::mubi8_t en_csrng_sw_app_read;
@@ -332,7 +329,6 @@ package otp_ctrl_part_pkg;
 
   // default value used for intermodule
   parameter otp_hw_cfg1_data_t OTP_HW_CFG1_DATA_DEFAULT = '{
-    hw_cfg1_digest: 64'hBBF4A76885E754F2,
     unallocated: 40'h0,
     dis_rv_dm_late_debug: prim_mubi_pkg::mubi8_t'(8'h69),
     en_csrng_sw_app_read: prim_mubi_pkg::mubi8_t'(8'h69),
@@ -353,7 +349,7 @@ package otp_ctrl_part_pkg;
   };
 
 
-  // OTP invalid partition default for buffered partitions.
+  // OTP invalid partition default for all partitions.
   parameter logic [16383:0] PartInvDefault = 16384'({
     704'({
       320'h93B61DE417B9FB339605F051E74379CBCC6596C7174EBA643E725E464F593C87A445C3C29F71A256,
@@ -378,7 +374,7 @@ package otp_ctrl_part_pkg;
     }),
     128'({
       64'hBBF4A76885E754F2,
-      40'h0, // unallocated space
+      40'h0, // unallocated 5 bytes
       8'h69,
       8'h69,
       8'h69
@@ -425,7 +421,7 @@ package otp_ctrl_part_pkg;
     }),
     5696'({
       64'hE29749216775E8A5,
-      96'h0, // unallocated space
+      96'h0, // unallocated 12 bytes
       1024'h0,
       32'h0,
       32'h0,
@@ -454,7 +450,7 @@ package otp_ctrl_part_pkg;
     }),
     2944'({
       64'h340A5B93BB19342,
-      96'h0, // unallocated space
+      96'h0, // unallocated 12 bytes
       256'h0,
       256'h0,
       32'h0,
@@ -551,6 +547,8 @@ package otp_ctrl_part_pkg;
     return part_access_pre;
   endfunction : named_part_access_pre
 
+  // Create the broadcast data from specific partitions excluding digests since they
+  // are of no use for consumers of this data data.
   function automatic otp_broadcast_t named_broadcast_assign(
       logic [NumPart-1:0] part_init_done,
       logic [$bits(PartInvDefault)/8-1:0][7:0] part_buf_data);
@@ -575,10 +573,12 @@ package otp_ctrl_part_pkg;
                 part_buf_data[RotCreatorAuthStateOffset +: RotCreatorAuthStateSize]};
     // HW_CFG0
     valid &= part_init_done[HwCfg0Idx];
-    otp_broadcast.hw_cfg0_data = otp_hw_cfg0_data_t'(part_buf_data[HwCfg0Offset +: HwCfg0Size]);
+    otp_broadcast.hw_cfg0_data = otp_hw_cfg0_data_t'(part_buf_data[HwCfg0Offset +: (HwCfg0Size - 8)]);
+    unused ^= ^part_buf_data[HwCfg0Offset + (HwCfg0Size - 8) +: 8];
     // HW_CFG1
     valid &= part_init_done[HwCfg1Idx];
-    otp_broadcast.hw_cfg1_data = otp_hw_cfg1_data_t'(part_buf_data[HwCfg1Offset +: HwCfg1Size]);
+    otp_broadcast.hw_cfg1_data = otp_hw_cfg1_data_t'(part_buf_data[HwCfg1Offset +: (HwCfg1Size - 8)]);
+    unused ^= ^part_buf_data[HwCfg1Offset + (HwCfg1Size - 8) +: 8];
     // SECRET0
     unused ^= ^{part_init_done[Secret0Idx],
                 part_buf_data[Secret0Offset +: Secret0Size]};

@@ -158,25 +158,32 @@ package otp_ctrl_part_pkg;
   % if part["bkout_type"]:
   typedef struct packed {<% offset = part['offset'] + part['size'] %>
     % for item in part["items"][::-1]:
-      % if offset != item['offset'] + item['size']:
+      ## Skip digest
+      % if not item['isdigest']:
+        ## Deal with unallocated items
+        % if offset != item['offset'] + item['size']:
     logic [${(offset - item['size'] - item['offset']) * 8 - 1}:0] unallocated;<% offset = item['offset'] + item['size'] %>
-      % endif
+        % endif
 <%
   if item['ismubi']:
     item_type = 'prim_mubi_pkg::mubi' + str(item["size"]*8) + '_t'
   else:
     item_type = 'logic [' + str(int(item["size"])*8-1) + ':0]'
 %>\
-    ${item_type} ${item["name"].lower()};<% offset -= item['size'] %>
+    ${item_type} ${item["name"].lower()};
+      % endif
+<% offset -= item['size'] %>\
     % endfor
   } otp_${part["name"].lower()}_data_t;
 
   // default value used for intermodule
   parameter otp_${part["name"].lower()}_data_t OTP_${part["name"].upper()}_DATA_DEFAULT = '{<% offset = part['offset'] + part['size'] %>
-  % for k, item in enumerate(part["items"][::-1]):
-    % if offset != item['offset'] + item['size']:
+    % for k, item in enumerate(part["items"][::-1]):
+      ## Skip digest
+      % if not item['isdigest']:
+        % if offset != item['offset'] + item['size']:
     unallocated: ${"{}'h{:0X}".format((offset - item['size'] - item['offset']) * 8, 0)}<% offset = item['offset'] + item['size'] %>,
-    % endif
+        % endif
 <%
   if item['ismubi']:
     item_cast_pre = "prim_mubi_pkg::mubi" + str(item["size"]*8) + "_t'("
@@ -185,8 +192,10 @@ package otp_ctrl_part_pkg;
     item_cast_pre = ""
     item_cast_post = ""
 %>\
-    ${item["name"].lower()}: ${item_cast_pre}${"{}'h{:0X}".format(item["size"] * 8, item["inv_default"])}${item_cast_post}${"," if k < len(part["items"])-1 else ""}<% offset -= item['size'] %>
-  % endfor
+    ${item["name"].lower()}: ${item_cast_pre}${"{}'h{:0X}".format(item["size"] * 8, item["inv_default"])}${item_cast_post}${"," if k < len(part["items"])-1 else ""}
+      % endif
+<% offset -= item['size'] %>\
+    % endfor
   };
   % endif
 % endfor
@@ -218,16 +227,31 @@ package otp_ctrl_part_pkg;
 % endfor
   };
 
-<% offset =  int(otp_mmap["partitions"][-1]["offset"]) + int(otp_mmap["partitions"][-1]["size"]) %>
-  // OTP invalid partition default for buffered partitions.
-  parameter logic [${offset * 8 - 1}:0] PartInvDefault = ${offset * 8}'({
+## The default value as a packed sequence of bits.
+## Packed sequences assign the leftmost literal to the highest array
+## position, so all partitions and items are traversed backwards.
+
+<%
+last_part = otp_mmap["partitions"][-1]
+total_size = int(last_part["offset"]) + int(last_part["size"])
+## prev_offset is kept pointing at the last item's offset
+prev_offset = total_size
+%>\
+  // OTP invalid partition default for all partitions.
+  parameter logic [${total_size * 8 - 1}:0] PartInvDefault = ${total_size * 8}'({
+  ## Iterate backwards since arrays are laid out from top partitions down.
   % for k, part in enumerate(otp_mmap["partitions"][::-1]):
     ${int(part["size"])*8}'({
     % for item in part["items"][::-1]:
-      % if offset != item['offset'] + item['size']:
-      ${"{}'h{:0X}".format((offset - item['size'] - item['offset']) * 8, 0)}, // unallocated space<% offset = item['offset'] + item['size'] %>
+      % if prev_offset > item["offset"] + item["size"]:
+      ${"{}'h{:0X}".format((prev_offset - item["size"] - item["offset"]) * 8, 0)}, // unallocated ${prev_offset - item["offset"] - item["size"]} bytes
+<% prev_offset = item["offset"] + item["size"] %>\
       % endif
-      ${"{}'h{:0X}".format(item["size"] * 8, item["inv_default"])}${("\n    })," if k < len(otp_mmap["partitions"])-1 else "\n    })});") if loop.last else ","}<% offset -= item['size'] %>
+<%
+sep = ("," if not loop.last else ("\n    })," if k < len(otp_mmap["partitions"])-1 else "\n    })});"))
+%>\
+      ${"{}'h{:0X}".format(item["size"] * 8, item["inv_default"])}${sep}
+<% prev_offset -= item["size"] %>\
     % endfor
   % endfor
 
@@ -272,6 +296,8 @@ package otp_ctrl_part_pkg;
     return part_access_pre;
   endfunction : named_part_access_pre
 
+  // Create the broadcast data from specific partitions excluding digests since they
+  // are of no use for consumers of this data data.
   function automatic otp_broadcast_t named_broadcast_assign(
       logic [NumPart-1:0] part_init_done,
       logic [$bits(PartInvDefault)/8-1:0][7:0] part_buf_data);
@@ -286,7 +312,18 @@ package otp_ctrl_part_pkg;
 %>\
   % if part["bkout_type"]:
     valid &= part_init_done[${part_name_camel}Idx];
-    otp_broadcast.${part["name"].lower()}_data = otp_${part["name"].lower()}_data_t'(part_buf_data[${part_name_camel}Offset +: ${part_name_camel}Size]);
+<%
+has_unused_chunk = False
+part_regular_size = part_name_camel + "Size"
+if (part["hw_digest"] or part["sw_digest"]):
+  has_unused_chunk = True
+  skip_size = 8
+  part_regular_size = f"({part_regular_size} - {skip_size})"
+%>\
+    otp_broadcast.${part["name"].lower()}_data = otp_${part["name"].lower()}_data_t'(part_buf_data[${part_name_camel}Offset +: ${part_regular_size}]);
+    % if has_unused_chunk:
+    unused ^= ^part_buf_data[${part_name_camel}Offset + ${part_regular_size} +: ${skip_size}];
+    % endif
   % else:
     unused ^= ^{part_init_done[${part_name_camel}Idx],
                 part_buf_data[${part_name_camel}Offset +: ${part_name_camel}Size]};
