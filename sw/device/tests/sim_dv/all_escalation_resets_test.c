@@ -71,6 +71,7 @@
 #include "dt/dt_spi_device.h"     // Generated
 #include "dt/dt_spi_host.h"       // Generated
 #include "dt/dt_sram_ctrl.h"      // Generated
+#include "dt/dt_uart.h"           // Generated
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/math.h"
