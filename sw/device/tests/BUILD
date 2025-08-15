@@ -4563,6 +4563,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -4601,6 +4602,7 @@ opentitan_test(
         test_cmd = """
             --bootstrap="{firmware}"
             --timeout=30s
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -4635,6 +4637,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -4664,6 +4667,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --wake=disconnect
@@ -4699,6 +4703,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -4744,6 +4749,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --wake=reset
@@ -4779,6 +4785,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -4815,6 +4822,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -4855,6 +4863,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -4913,6 +4922,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --exec=$(rootpath :usbdev_stream_host_harness)
@@ -4952,6 +4962,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --exec=$(rootpath :usbdev_stream_host_harness)
@@ -4991,6 +5002,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --exec=$(rootpath :usbdev_stream_host_harness)
@@ -5027,6 +5039,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -5127,6 +5140,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=suspend
             --init-phase=suspend
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5165,6 +5179,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=sleep-resume
             --init-phase=sleep-resume
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5204,6 +5219,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=sleep-reset
             --init-phase=sleep-resume
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5245,6 +5261,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=deep-resume
             --init-phase=sleep-disconnect
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5284,6 +5301,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=deep-resume
             --init-phase=deep-resume
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5323,6 +5341,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=deep-reset
             --init-phase=deep-resume
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5362,6 +5381,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=shutdown
             --init-phase=deep-disconnect
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5392,6 +5412,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=shutdown
             --init-phase=suspend
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
