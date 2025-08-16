@@ -23,7 +23,6 @@ mod ftdi;
 mod hyperdebug;
 mod proxy;
 mod ti50emulator;
-mod ultradebug;
 mod verilator;
 
 #[derive(Debug, Args)]
@@ -97,10 +96,6 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
         "ti50emulator" => (
             ti50emulator::create(&args.ti50emulator_opts)?,
             Some(Path::new("/__builtin__/ti50emulator.json")),
-        ),
-        "ultradebug" => (
-            ultradebug::create(args)?,
-            Some(Path::new("/__builtin__/opentitan_ultradebug.json")),
         ),
         "hyper310" => (
             hyperdebug::create::<ChipWhispererFlavor<Cw310>>(args)?,

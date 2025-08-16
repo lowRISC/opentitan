@@ -27,7 +27,6 @@ pub mod hyperdebug;
 pub mod ioexpander;
 pub mod proxy;
 pub mod ti50emulator;
-pub mod ultradebug;
 pub mod verilator;
 
 // Export custom error types

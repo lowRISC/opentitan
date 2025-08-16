@@ -28,7 +28,7 @@ impl DediprogPin {
         })
     }
 
-    /// Given an ultradebug pin name, return its pin number.
+    /// Given a dediprog pin name, return its pin number.
     pub fn pin_name_to_number(pinname: &str) -> Result<u8> {
         // If the pinname is an integer, use it; otherwise try to see if it
         // is a symbolic name of a pin.
