@@ -7,9 +7,25 @@ load("@rules_rust//rust:defs.bzl", "rust_binary")
 package(default_visibility = ["//visibility:public"])
 
 rust_binary(
-    name = "gpio",
+    name = "gpio_pinmux",
     srcs = [
-        "src/main.rs",
+        "src/gpio_pinmux.rs",
+    ],
+    deps = [
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@crate_index//:once_cell",
+        "@crate_index//:serde_json",
+    ],
+)
+
+rust_binary(
+    name = "gpio_intr",
+    srcs = [
+        "src/gpio_intr.rs",
     ],
     deps = [
         "//sw/host/opentitanlib",
