@@ -5,6 +5,7 @@
 
 import argparse
 import logging
+import os
 import shlex
 import subprocess
 import sys
@@ -107,11 +108,20 @@ def main(args_in):
         help="Skip all non-required user confirmations.",
     )
     parser.add_argument(
+        "--runfiles-dir",
+        type=str,
+        help="Runfiles directory to use for provisioning.",
+    )
+    parser.add_argument(
         "--log-dir",
         default="logs",
         help="Root directory to store log files under.",
     )
     args = parser.parse_args(args_in)
+
+    # All relative paths are relative to the runfiles directory.
+    if args.runfiles_dir:
+        os.chdir(args.runfiles_dir)
 
     # Load and validate a SKU configuration file.
     sku_config_args = {}
