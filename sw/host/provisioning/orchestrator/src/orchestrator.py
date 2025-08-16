@@ -91,11 +91,6 @@ def main(args_in):
         help="Raw test exit token to inject into OTP SECRET0 partition.",
     )
     parser.add_argument(
-        "--rma-unlock-token",
-        type=parse_hexstring_to_int,
-        help="Raw RMA token to inject into OTP SECRET2 partition.",
-    )
-    parser.add_argument(
         "--fpga",
         choices=["hyper310", "cw340"],
         help="Run flow on FPGA (instead of silicon).",
@@ -146,7 +141,6 @@ def main(args_in):
                 device_id=device_id,
                 test_unlock_token=args.test_unlock_token,
                 test_exit_token=args.test_exit_token,
-                rma_unlock_token=args.rma_unlock_token,
                 fpga=args.fpga,
                 require_confirmation=not args.non_interactive)
     dut.run_cp()

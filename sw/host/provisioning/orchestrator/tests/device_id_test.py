@@ -129,7 +129,7 @@ class TestDeviceId(unittest.TestCase):
                 format_hex(expected_field, width=4)))
 
     def test_sku_id_field(self):
-        expected_field = bytes_to_int("LUME".encode("utf-8"))
+        expected_field = bytes_to_int("AVIS".encode("utf-8"))
         actual_field = (self.device_id.to_int() >> 160) & 0xffffffff
         self.assertEqual(
             actual_field, expected_field, "actual: {}, expected: {}.".format(
