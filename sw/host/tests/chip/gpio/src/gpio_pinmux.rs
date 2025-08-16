@@ -2,13 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
-use clap::Parser;
-use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::time::Duration;
 
+use anyhow::{Context, Result};
+use clap::Parser;
+use once_cell::sync::Lazy;
+
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::dif::pinmux::PinmuxPadAttr;
 use opentitanlib::io::gpio::PinMode;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::gpio::{GpioGet, GpioSet};
@@ -228,72 +230,79 @@ static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
 fn write_all_verify(
     transport: &TransportWrapper,
     uart: &dyn Uart,
-    value: u32,
+    write: u32,
+    read: u32,
     config: &HashMap<PinmuxMioOut, PinmuxOutsel>,
 ) -> Result<()> {
     let mask = config.values().fold(0, |acc, v| {
         let i = u32::from(*v) - u32::from(PinmuxOutsel::GpioGpio0);
         acc | 1u32 << i
     });
-    let masked_value = value & mask;
+
+    let (masked_write, masked_read) = (write & mask, read & mask);
+
     log::info!(
-        "write & verify pattern: {:08x} & {:08x} -> {:08x}",
-        value,
-        mask,
-        masked_value
+        "write & verify pattern {write:08x} with mask {mask:08x}: {masked_write:08x} -> {masked_read:08x}"
     );
-    if masked_value == 0 {
+
+    if masked_write == 0 {
         log::info!(
-            "skipping: {:08x} has no bits in common with the pinmux configuration",
-            value
+            "skipping: {masked_write:08x} has no bits in common with the pinmux configuration"
         );
-    } else {
-        GpioSet::write_all(uart, masked_value)?;
-        let mut result = 0u32;
-        for (k, v) in config.iter() {
-            let n = u32::from(transport.gpio_pin(&k.to_string())?.read()?);
-            let i = u32::from(*v) - u32::from(PinmuxOutsel::GpioGpio0);
-            result |= n << i;
-        }
-        log::info!("result = {:08x}", result);
-        assert_eq!(masked_value, result);
+        return Ok(());
     }
+
+    GpioSet::write_all(uart, masked_write)?;
+
+    let mut result = 0u32;
+    for (k, v) in config.iter() {
+        let n = u32::from(transport.gpio_pin(&k.to_string())?.read()?);
+        let i = u32::from(*v) - u32::from(PinmuxOutsel::GpioGpio0);
+        result |= n << i;
+    }
+
+    log::info!("result = {result:08x}");
+    assert_eq!(masked_read, result);
+
     Ok(())
 }
 
 fn read_all_verify(
     transport: &TransportWrapper,
     uart: &dyn Uart,
-    value: u32,
+    write: u32,
+    read: u32,
     config: &HashMap<PinmuxPeripheralIn, PinmuxInsel>,
 ) -> Result<()> {
     let mask = config.keys().fold(0, |acc, k| {
         let i = u32::from(*k) - u32::from(PinmuxPeripheralIn::GpioGpio0);
         acc | 1u32 << i
     });
-    let masked_value = value & mask;
+
+    let (masked_write, masked_read) = (write & mask, read & mask);
+
     log::info!(
-        "read & verify pattern: {:08x} & {:08x} -> {:08x}",
-        value,
-        mask,
-        masked_value
+        "read & verify pattern with mask {mask:08x}: {masked_write:08x} -> {masked_read:08x}"
     );
-    if masked_value == 0 {
+
+    if masked_write == 0 {
         log::info!(
-            "skipping: {:08x} has no bits in common with the pinmux configuration",
-            value
+            "skipping: {masked_write:08x} has no bits in common with the pinmux configuration"
         );
-    } else {
-        for (k, v) in config.iter() {
-            let i = u32::from(*k) - u32::from(PinmuxPeripheralIn::GpioGpio0);
-            transport
-                .gpio_pin(&v.to_string())?
-                .write((masked_value >> i) & 1 != 0)?;
-        }
-        let result = GpioGet::read_all(uart)? & mask;
-        log::info!("result = {:08x}", result);
-        assert_eq!(masked_value, result);
+        return Ok(());
     }
+
+    for (k, v) in config.iter() {
+        let i = u32::from(*k) - u32::from(PinmuxPeripheralIn::GpioGpio0);
+        transport
+            .gpio_pin(&v.to_string())?
+            .write((masked_write >> i) & 1 != 0)?;
+    }
+
+    let result = GpioGet::read_all(uart)? & mask;
+    log::info!("result = {result:08x}");
+    assert_eq!(masked_read, result);
+
     Ok(())
 }
 
@@ -306,7 +315,7 @@ fn test_gpio_outputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let config = CONFIG
         .get(opts.init.backend_opts.interface.as_str())
         .expect("interface");
-    PinmuxConfig::configure(&*uart, None, Some(&config.output))?;
+    PinmuxConfig::configure(&*uart, None, Some(&config.output), None)?;
 
     log::info!("Configuring debugger GPIOs as inputs");
     // The outputs (with respect to pinmux config) correspond to the input pins on the debug board.
@@ -318,12 +327,13 @@ fn test_gpio_outputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     log::info!("Enabling outputs on the DUT");
     GpioSet::set_enabled_all(&*uart, 0xFFFFFFFF)?;
-    write_all_verify(transport, &*uart, 0x5555_5555, &config.output)?;
-    write_all_verify(transport, &*uart, 0xAAAA_AAAA, &config.output)?;
+    write_all_verify(transport, &*uart, 0x5555_5555, 0x5555_5555, &config.output)?;
+    write_all_verify(transport, &*uart, 0xAAAA_AAAA, 0xAAAA_AAAA, &config.output)?;
 
     for i in 0..32 {
-        write_all_verify(transport, &*uart, 1 << i, &config.output)?;
+        write_all_verify(transport, &*uart, 1 << i, 1 << i, &config.output)?;
     }
+
     Ok(())
 }
 
@@ -336,7 +346,7 @@ fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let config = CONFIG
         .get(opts.init.backend_opts.interface.as_str())
         .expect("interface");
-    PinmuxConfig::configure(&*uart, Some(&config.input), None)?;
+    PinmuxConfig::configure(&*uart, Some(&config.input), None, None)?;
 
     log::info!("Configuring debugger GPIOs as outputs");
     // The inputs (with respect to pinmux config) correspond to the output pins on the debug board.
@@ -349,12 +359,74 @@ fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     log::info!("Disabling outputs on the DUT");
     GpioSet::set_enabled_all(&*uart, 0x0)?;
 
-    read_all_verify(transport, &*uart, 0x5555_5555, &config.input)?;
-    read_all_verify(transport, &*uart, 0xAAAA_AAAA, &config.input)?;
+    read_all_verify(transport, &*uart, 0x5555_5555, 0x5555_5555, &config.input)?;
+    read_all_verify(transport, &*uart, 0xAAAA_AAAA, 0xAAAA_AAAA, &config.input)?;
 
     for i in 0..32 {
-        read_all_verify(transport, &*uart, 1 << i, &config.input)?;
+        read_all_verify(transport, &*uart, 1 << i, 1 << i, &config.input)?;
     }
+    Ok(())
+}
+
+fn test_pad_inversion(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let uart = transport.uart("console")?;
+    let interface = opts.init.backend_opts.interface.as_str();
+    log::info!("Configuring pinmux for {interface}");
+
+    let config = CONFIG
+        .get(interface)
+        .with_context(|| format!("interface '{interface}' is not yet supported"))?;
+
+    let invert_all: HashMap<_, _> = config
+        .output
+        .keys()
+        .map(|&mio| (mio, PinmuxPadAttr::INVERT))
+        .collect();
+
+    log::info!("Configuring pads as inverted inputs");
+    PinmuxConfig::configure(&*uart, Some(&config.input), None, Some(&invert_all))?;
+
+    log::info!("Configuring debugger GPIOs as outputs");
+    // The inputs (with respect to pinmux config) correspond to the output pins on the debug board.
+    for pin in config.input.values() {
+        transport
+            .gpio_pin(&pin.to_string())?
+            .set_mode(PinMode::PushPull)?;
+    }
+
+    log::info!("Disabling outputs on the DUT");
+    GpioSet::set_enabled_all(&*uart, 0x0)?;
+
+    log::info!("Testing inverted device inputs");
+    read_all_verify(transport, &*uart, 0x5555_5555, !0x5555_5555, &config.input)?;
+    read_all_verify(transport, &*uart, 0xAAAA_AAAA, !0xAAAA_AAAA, &config.input)?;
+
+    for i in 0..32 {
+        read_all_verify(transport, &*uart, 1 << i, !(1 << i), &config.input)?;
+    }
+
+    log::info!("Configuring pads as inverted outputs");
+    PinmuxConfig::configure(&*uart, None, Some(&config.output), Some(&invert_all))?;
+
+    log::info!("Configuring debugger GPIOs as inputs");
+    // The outputs (with respect to pinmux config) correspond to the input pins on the debug board.
+    for pin in config.output.keys() {
+        transport
+            .gpio_pin(&pin.to_string())?
+            .set_mode(PinMode::Input)?;
+    }
+
+    log::info!("Enabling outputs on the DUT");
+    GpioSet::set_enabled_all(&*uart, 0xFFFFFFFF)?;
+
+    log::info!("Testing inverted device outputs");
+    write_all_verify(transport, &*uart, 0x5555_5555, !0x5555_5555, &config.output)?;
+    write_all_verify(transport, &*uart, 0xAAAA_AAAA, !0xAAAA_AAAA, &config.output)?;
+
+    for i in 0..32 {
+        write_all_verify(transport, &*uart, 1 << i, !(1 << i), &config.output)?;
+    }
+
     Ok(())
 }
 
@@ -369,5 +441,7 @@ fn main() -> Result<()> {
 
     execute_test!(test_gpio_outputs, &opts, &transport);
     execute_test!(test_gpio_inputs, &opts, &transport);
+    execute_test!(test_pad_inversion, &opts, &transport);
+
     Ok(())
 }

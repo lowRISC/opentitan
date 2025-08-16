@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/testing/json/pinmux_config.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 
 status_t pinmux_config(ujson_t *uj, dif_pinmux_t *pinmux) {
@@ -29,6 +30,19 @@ status_t pinmux_config(ujson_t *uj, dif_pinmux_t *pinmux) {
     }
     TRY(dif_pinmux_output_select(pinmux, config.output.mio[i],
                                  config.output.selector[i]));
+  }
+  for (size_t i = 0; i < ARRAYSIZE(config.attrs.mio); ++i) {
+    if (config.attrs.mio[i] == kPinmuxMioOutEnd) {
+      break;
+    }
+    dif_pinmux_pad_attr_t pad_attr = {.flags = config.attrs.flags[i]};
+    dif_pinmux_pad_attr_t attrs_out;
+    TRY(dif_pinmux_pad_write_attrs(pinmux, config.attrs.mio[i],
+                                   kDifPinmuxPadKindMio, pad_attr, &attrs_out));
+    TRY_CHECK(
+        pad_attr.flags == attrs_out.flags,
+        "not all attributes could be set for mio %d: wanted 0b%b, got 0b%b",
+        pad_attr.flags, attrs_out.flags);
   }
   return RESP_OK_STATUS(uj);
 }

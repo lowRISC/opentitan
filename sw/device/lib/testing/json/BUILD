@@ -66,6 +66,7 @@ cc_library(
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
     ],
