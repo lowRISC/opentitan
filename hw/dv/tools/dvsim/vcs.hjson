@@ -124,6 +124,7 @@
   run_opts:   ["-licqueue",
                "-ucli -do {run_script}",
                "+ntb_random_seed={svseed}",
+               "-xlrm hier_inst_seed",
                // Disable the display of the SystemVerilog assert and cover statement summary
                // at the end of simulation. This summary is list of assertions that started but
                // did not finish because the simulation terminated, or assertions that did not
