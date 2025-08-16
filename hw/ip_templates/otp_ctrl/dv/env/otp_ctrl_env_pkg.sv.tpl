@@ -106,6 +106,19 @@ package otp_ctrl_env_pkg;
 % endfor
   };
 
+  parameter int PART_OTP_ZEROIZED_ADDRS [NumPart-1] = {
+% for part in parts_without_lc:
+<%
+  part_name_camel = Name.to_camel_case(part["name"])
+%>\
+% if part["zeroizable"]:
+    ${part_name_camel}ZerOffset >> 2${"" if loop.last else ","}
+% else:
+    -1${"" if loop.last else ","} // This partition has no zeroized field.
+% endif
+% endfor
+  };
+
   // types
   typedef enum bit [1:0] {
     OtpOperationDone,

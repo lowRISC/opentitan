@@ -101,6 +101,19 @@ package otp_ctrl_env_pkg;
     Secret2DigestOffset >> 2
   };
 
+  parameter int PART_OTP_ZEROIZED_ADDRS [NumPart-1] = {
+    -1, // This partition has no zeroized field.
+    -1, // This partition has no zeroized field.
+    -1, // This partition has no zeroized field.
+    -1, // This partition has no zeroized field.
+    -1, // This partition has no zeroized field.
+    -1, // This partition has no zeroized field.
+    -1, // This partition has no zeroized field.
+    -1, // This partition has no zeroized field.
+    -1, // This partition has no zeroized field.
+    -1 // This partition has no zeroized field.
+  };
+
   // types
   typedef enum bit [1:0] {
     OtpOperationDone,
