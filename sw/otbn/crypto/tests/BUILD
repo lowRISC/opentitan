@@ -1166,10 +1166,11 @@ otbn_sim_test(
     srcs = [
         "rsa_1024_dec_test.s",
     ],
-    exp = "rsa_1024_dec_test.exp",
+    testcase = "rsa_1024_dec_test.hjson",
     deps = [
         "//sw/otbn/crypto:modexp",
         "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:run_rsa_modexp_mem",
     ],
 )
 
@@ -1178,10 +1179,11 @@ otbn_sim_test(
     srcs = [
         "rsa_1024_enc_test.s",
     ],
-    exp = "rsa_1024_enc_test.exp",
+    testcase = "rsa_1024_enc_test.hjson",
     deps = [
         "//sw/otbn/crypto:modexp",
         "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:run_rsa_modexp_mem",
     ],
 )
 
@@ -1191,10 +1193,11 @@ otbn_sim_test(
     srcs = [
         "rsa_2048_dec_test.s",
     ],
-    exp = "rsa_2048_dec_test.exp",
+    testcase = "rsa_2048_dec_test.hjson",
     deps = [
         "//sw/otbn/crypto:modexp",
         "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:run_rsa_modexp_mem",
     ],
 )
 
@@ -1203,10 +1206,11 @@ otbn_sim_test(
     srcs = [
         "rsa_2048_enc_test.s",
     ],
-    exp = "rsa_2048_enc_test.exp",
+    testcase = "rsa_2048_enc_test.hjson",
     deps = [
         "//sw/otbn/crypto:modexp",
         "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:run_rsa_modexp_mem",
     ],
 )
 
@@ -1216,11 +1220,12 @@ otbn_sim_test(
     srcs = [
         "rsa_3072_dec_test.s",
     ],
-    exp = "rsa_3072_dec_test.exp",
     tags = ["nightly"],  # slow, do not run in CI
+    testcase = "rsa_3072_dec_test.hjson",
     deps = [
         "//sw/otbn/crypto:modexp",
         "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:run_rsa_modexp_mem",
     ],
 )
 
@@ -1229,10 +1234,11 @@ otbn_sim_test(
     srcs = [
         "rsa_3072_enc_test.s",
     ],
-    exp = "rsa_3072_enc_test.exp",
+    testcase = "rsa_3072_enc_test.hjson",
     deps = [
         "//sw/otbn/crypto:modexp",
         "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:run_rsa_modexp_mem",
     ],
 )
 
@@ -1241,10 +1247,11 @@ otbn_sim_test(
     srcs = [
         "rsa_4096_enc_test.s",
     ],
-    exp = "rsa_4096_enc_test.exp",
+    testcase = "rsa_4096_enc_test.hjson",
     deps = [
         "//sw/otbn/crypto:modexp",
         "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:run_rsa_modexp_mem",
     ],
 )
 
