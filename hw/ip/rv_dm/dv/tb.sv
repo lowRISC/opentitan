@@ -173,11 +173,11 @@ module tb;
   initial begin
     forever @rv_dm_if.disable_tlul_assert_host_sba_resp_svas begin
       if (rv_dm_if.disable_tlul_assert_host_sba_resp_svas) begin
-        $assertoff(0, dut.tlul_assert_host_sba.gen_host.respOpcode_M);
-        $assertoff(0, dut.tlul_assert_host_sba.gen_host.respSzEqReqSz_M);
+        $assertoff(0, dut.tlul_assert_host_sba.gen_host.gen_d2h.respOpcode_M);
+        $assertoff(0, dut.tlul_assert_host_sba.gen_host.gen_d2h.respSzEqReqSz_M);
       end else begin
-        $asserton(0, dut.tlul_assert_host_sba.gen_host.respOpcode_M);
-        $asserton(0, dut.tlul_assert_host_sba.gen_host.respSzEqReqSz_M);
+        $asserton(0, dut.tlul_assert_host_sba.gen_host.gen_d2h.respOpcode_M);
+        $asserton(0, dut.tlul_assert_host_sba.gen_host.gen_d2h.respSzEqReqSz_M);
       end
     end
   end
