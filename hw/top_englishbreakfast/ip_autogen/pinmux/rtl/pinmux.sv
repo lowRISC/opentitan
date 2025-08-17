@@ -682,11 +682,10 @@ module pinmux
   //   `ASSERT_KNOWN_IF(DioOutKnownO_A, dio_out_o[k], dio_oe_o[k])
   // end
 
-  // Pinmux does not have a block-level DV environment, hence we add an FPV assertion to test this.
-  `ASSERT(FpvSecCmBusIntegrity_A,
-          $rose(u_reg.intg_err)
-          |->
-          ##[0:`_SEC_CM_ALERT_MAX_CYC] (alert_tx_o[0].alert_p))
+  // Check that an integrity error in the register block will cause the alert sender to be told to
+  // send an alert. This is equivalent to ASSERT_ERROR_TRIGGER_ALERT_IN (but doesn't set
+  // unused_assert_connected, because that signal doesn't exist).
+  `ASSERT(FpvSecCmBusIntegrity_A, $rose(u_reg.intg_err) |-> ##[0:1] alerts[0])
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
