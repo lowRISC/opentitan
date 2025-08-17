@@ -220,7 +220,7 @@ module pinmux_strap_sampling
       lc_tx_test_false_loose(pinmux_hw_debug_en_q) ##1
       lc_tx_test_true_strict(pinmux_hw_debug_en_q)
       |->
-      $past(lc_tx_test_true_strict(lc_hw_debug_en[0])))
+      lc_tx_test_true_strict($past(lc_hw_debug_en[0])))
   // Check that latching ON can only occur if strap_en_i is set.
   `ASSERT(LcHwDebugEnSetRev1_A,
       lc_tx_test_false_loose(pinmux_hw_debug_en_q) ##1
