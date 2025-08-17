@@ -373,22 +373,25 @@ module tlul_assert #(
         ##0 pre_source == h2d.a_source;
   endsequence
 
-  // a channel content is changed without being accepted
-  `define TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED(NAME) \
-    sequence a_``NAME``ChangedNotAccepted_S; \
-      int pre; \
-      (h2d.a_valid && !d2h.a_ready, pre = h2d.a_``NAME``) ##1 h2d.a_valid[->1] \
-          ##0 pre != h2d.a_``NAME``; \
-    endsequence \
+  // This macro defines a sequence where a value is provided for the given signal on the A channel
+  // which isn't accepted and then a different value is provided on the next cycle (without a_valid
+  // dropping).
+  //
+  // It also defines a coverpoint for the sequence.
+  `define TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED(NAME)       \
+    sequence a_``NAME``ChangedNotAccepted_S;                  \
+      h2d.a_valid && !d2h.a_ready ##1                         \
+      h2d.a_valid && $changed(h2d.a_``NAME``);                \
+    endsequence                                               \
     `TLUL_COVER(a_``NAME``ChangedNotAccepted)
 
-  // d channel content is changed without being accepted
-  `define TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED(NAME) \
-    sequence d_``NAME``ChangedNotAccepted_S; \
-      int pre; \
-      (d2h.d_valid && !h2d.d_ready, pre = d2h.d_``NAME``) ##1 d2h.d_valid[->1] \
-          ##0 pre != d2h.d_``NAME``; \
-    endsequence \
+  // This macro is like the previous one (TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED), but applies to
+  // the D channel.
+  `define TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED(NAME)       \
+    sequence d_``NAME``ChangedNotAccepted_S;                  \
+      d2h.d_valid && !h2d.d_ready ##1                         \
+      d2h.d_valid && $changed(d2h.d_``NAME``);                \
+    endsequence                                               \
     `TLUL_COVER(d_``NAME``ChangedNotAccepted)
 
   if (EndpointType == "Host") begin : gen_host_cov // DUT is host
