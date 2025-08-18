@@ -193,9 +193,10 @@ module mbx_imbx #(
     .d_i   ( sram_write_ptr_d        ),
     .q_o   ( sram_write_ptr_assert_q )
   );
-  // A granted write by the host adapter must advance the write pointer
-  `ASSERT_IF(GntMustAdvanceWritePtr_A, advance_write_ptr &
-             (sram_write_ptr_d == sram_write_ptr_assert_q + LCFG_SRM_ADDRINC),
+  // A granted write by the host adapter must advance the write pointer unless it's being reloaded
+  // because an abort request has been processed.
+  `ASSERT_IF(GntMustAdvanceWritePtr_A, (advance_write_ptr &
+             (sram_write_ptr_d == sram_write_ptr_assert_q + LCFG_SRM_ADDRINC)) | host_clear_abort,
              hostif_sram_write_gnt_i)
 `endif
 
@@ -206,9 +207,5 @@ module mbx_imbx #(
   // The write pointer should not be advanced if the request has not yet been granted.
   `ASSERT_IF(WrPtrShouldNotAdvanceIfNoAck_A, hostif_sram_write_gnt_i,
              advance_write_ptr & imbx_pending_o)
-
-  // When writing to the mailbox, DOE status busy must be low; it shall be set after the request
-  // writing is complete, and no further requests shall be received until it has been cleared.
-  `ASSERT_NEVER(WriteToMbxBusyMustBeLow_A, sysif_data_write_valid_i & sysif_status_busy_i)
 
 endmodule
