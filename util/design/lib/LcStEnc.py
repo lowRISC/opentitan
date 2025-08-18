@@ -8,8 +8,8 @@ import logging as log
 from collections import OrderedDict
 
 from Crypto.Hash import cSHAKE128
-from lib.common import (check_int, ecc_encode, get_hd, hd_histogram,
-                        is_valid_codeword, random_or_hexvalue, scatter_bits)
+from design.lib.common import (check_int, ecc_encode, get_hd, hd_histogram,
+                               is_valid_codeword, random_or_hexvalue, scatter_bits)
 from topgen.secure_prng import SecurePrngFactory
 
 # Seed diversification constant for LcStEnc (this enables to use

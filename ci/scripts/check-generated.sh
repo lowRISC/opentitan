@@ -67,7 +67,6 @@ fi
 destructive_cleanup
 
 gen_hw_and_check_clean "Register headers" regs             || bad=1
-gen_hw_and_check_clean "LC state"         lc-state-enc     || bad=1
 
 # This runs both top and cmdgen targets together since for ipgen
 # ips the top target will not run cmdgen on generated md files,

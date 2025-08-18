@@ -19,6 +19,7 @@ import tlgen
 import version_file
 from basegen.typing import ConfigT, ParamsT
 from design.lib.OtpMemMap import OtpMemMap
+from design.lib.LcStEnc import LcStEnc
 from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
                    IpTemplate, TemplateRenderError)
 from ipgen.clkmgr_gen import get_clkmgr_params
@@ -1678,6 +1679,21 @@ def main():
                         gencmd=gencmd_sv,
                         topcfg=completecfg,
                         racl_config=racl_config)
+
+        if lib.find_module(topcfg["module"], "lc_ctrl"):
+            lc_state_def_file = load_cfg(IP_RAW_PATH / "lc_ctrl" / "data" / "lc_ctrl_state.hjson")
+            lc_st_enc = LcStEnc(lc_state_def_file)
+            lc_st_enc_filename = "rtl/autogen/lc_ctrl_state_pkg.sv"
+            render_template(IP_RAW_PATH / "lc_ctrl" / "rtl" / "lc_ctrl_state_pkg.sv.tpl",
+                            out_path / lc_st_enc_filename,
+                            lc_st_enc=lc_st_enc)
+            render_template(TOPGEN_TEMPLATE_PATH / "core_file.core.tpl",
+                            out_path / f"top_{topname}_lc_ctrl_state_pkg.core",
+                            package=f"lowrisc:{topname}_constants:lc_ctrl_state_pkg:0.1",
+                            description="LC Controller State Encoding Package",
+                            virtual_package="lowrisc:virtual_ip:lc_ctrl_state_pkg",
+                            dependencies=["lowrisc:prim:util"],
+                            files=[lc_st_enc_filename])
 
         # The C / SV file needs some complex information, so we initialize this
         # object to store it.
