@@ -520,7 +520,8 @@
     }
     {
       name: MioJtagAttrO_A
-      desc: "If jtag is enabled, the jtag `mio_attr_o` index should be equal to 0."
+      desc: '''If JTAG is enabled, each padring attribute should be clamped to zero, except that
+               Schmitt triggering should be enabled for the tck and trst pads.'''
       stage: V1
       tests: ["pinmux_assert"]
     }

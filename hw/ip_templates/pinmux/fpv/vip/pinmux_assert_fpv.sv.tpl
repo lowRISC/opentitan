@@ -308,12 +308,15 @@ module pinmux_assert_fpv
 
   `ASSERT(MioAttrO_A, mio_attr_o[mio_sel_i] == (mio_pad_attr & mio_pad_attr_mask))
 
-  `ASSERT(MioJtagAttrO_A, pinmux.u_pinmux_strap_sampling.jtag_en |->
-                          mio_attr_o[TargetCfg.tck_idx] == 0 &&
-                          mio_attr_o[TargetCfg.tms_idx] == 0 &&
-                          mio_attr_o[TargetCfg.trst_idx] == 0 &&
-                          mio_attr_o[TargetCfg.tdi_idx] == 0 &&
-                          mio_attr_o[TargetCfg.tdo_idx] == 0)
+  // When JTAG is enabled, the mio pad addributes should mostly be tied to zero. The only exception
+  // is for the tck and trst signals, which should be configured to enable Schmitt triggering.
+  `ASSERT(MioJtagAttrO_A,
+          pinmux.u_pinmux_strap_sampling.jtag_en |->
+          mio_attr_o[TargetCfg.tck_idx]  == '{schmitt_en: 1'b1, default: '0} &&
+          mio_attr_o[TargetCfg.tms_idx]  == '0 &&
+          mio_attr_o[TargetCfg.trst_idx] == '{schmitt_en: 1'b1, default: '0} &&
+          mio_attr_o[TargetCfg.tdi_idx]  == '0 &&
+          mio_attr_o[TargetCfg.tdo_idx]  == '0)
 
   // ------ Dio_attr_o ------
   pinmux_reg_pkg::pinmux_reg2hw_dio_pad_attr_mreg_t dio_pad_attr;
