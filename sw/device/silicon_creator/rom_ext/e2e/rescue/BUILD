@@ -280,32 +280,77 @@ genrule(
     for protocol, config in _CONFIGS.items()
 ]
 
-opentitan_test(
-    name = "rescue_rate_test",
-    exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
-    },
-    fpga = fpga_params(
-        assemble = "",
-        binaries = {
-            ":boot_test_slot_a": "payload",
+[
+    opentitan_test(
+        name = "rescue_rate_{}_test".format(rate),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
-        changes_otp = True,
-        test_cmd = """
-            --exec="transport init"
-            --exec="fpga load-bitstream {bitstream}"
-            --exec="bootstrap --clear-uart=true {rom_ext}"
-            # First make sure the ROM_EXT is faulting because there is no firmware
-            --exec="console --non-interactive --exit-success='BFV:' --exit-failure='PASS|FAIL'"
-            # Load firmware via rescue
-            --exec="rescue firmware --rate=115200 {payload:signed_bin}"
-            # Check for firmware execution
-            --exec="console --baudrate=115200 --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
-            no-op
-        """,
-    ),
-)
+        fpga = fpga_params(
+            assemble = "",
+            binaries = {
+                ":boot_test_slot_a": "payload",
+            },
+            changes_otp = True,
+            rate = rate,
+            test_cmd = """
+                --exec="transport init"
+                --exec="fpga load-bitstream {bitstream}"
+                --exec="bootstrap --clear-uart=true {rom_ext}"
+                # First make sure the ROM_EXT is faulting because there is no firmware
+                --exec="console --non-interactive --exit-success='BFV:' --exit-failure='PASS|FAIL'"
+                # Load firmware via rescue
+                --exec="rescue firmware --rate={rate} {payload:signed_bin}"
+                # Check for firmware execution
+                --exec="console --baudrate=115200 --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+                no-op
+            """,
+        ),
+    )
+    # FPGA CW310 and CW340 only support the baudrate up to 230K.
+    for rate in [
+        "115200",
+        "230400",
+    ]
+]
+
+[
+    opentitan_test(
+        name = "rescue_unsupported_rate_{}_test".format(rate),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        },
+        fpga = fpga_params(
+            assemble = "",
+            binaries = {
+                ":boot_test_slot_a": "payload",
+            },
+            changes_otp = True,
+            rate = rate,
+            test_cmd = """
+                --exec="transport init"
+                --exec="fpga load-bitstream {bitstream}"
+                --exec="bootstrap --clear-uart=true {rom_ext}"
+                # Trigger rescue.
+                --exec="rescue no-op"
+                --exec="console --non-interactive --send='BAUD\r{rate}\r' --exit-success='unsupported baudrate' --exit-failure='BFV:.*\r\n'"
+                # Try the `REBO` mode and make sure we reboot without crash.
+                --exec="console --non-interactive --send='REBO\r' --exit-success='ROM:' --exit-failure='BFV:.*\r\n'"
+                no-op
+            """,
+        ),
+    )
+    # FPGA CW310 and CW340 only support the baudrate up to 230K.
+    for rate in [
+        "460K",
+        "921K",
+        "1M33",
+        "1M50",
+        "INVALID",
+    ]
+]
 
 # TODO(lowRISC#26481): Eliminate this test when we no longer care about
 # supporting version 0 of the rescue protocol.
