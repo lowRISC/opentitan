@@ -23,9 +23,9 @@ main:
   jal      x1, modload
 
   /* Run exponentiation.
-       dmem[work_buf] = dmem[inout]^dmem[d] mod dmem[n] */
-  la       x14, inout
-  la       x15, d
+       dmem[work_buf] = dmem[r0]^dmem[d] mod dmem[n] */
+  la       x14, r0
+  la       x15, d0
   la       x2, work_buf
   jal      x1, modexp
 
