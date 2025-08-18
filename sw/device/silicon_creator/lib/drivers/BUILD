@@ -20,22 +20,12 @@ load(
     "qemu_params",
     "verilator_params",
 )
+load(
+    "//hw/top:defs.bzl",
+    "opentitan_select_top",
+)
 
 package(default_visibility = ["//visibility:public"])
-
-filegroup(
-    name = "english_breakfast_test_rom_driver_srcs",
-    srcs = [
-        "flash_ctrl.c",
-        "flash_ctrl.h",
-        "flash_ctrl_info_pages.c",
-        "lifecycle.h",
-        "otp.h",
-        "rstmgr.h",
-        "spi_device.c",
-        "spi_device.h",
-    ],
-)
 
 dual_cc_library(
     name = "alert",
@@ -148,9 +138,11 @@ dual_cc_library(
     ),
     visibility = ["//visibility:public"],
     deps = dual_inputs(
-        device = [
-            "//hw/top:otp_ctrl_c_regs",
-        ],
+        device = opentitan_select_top({
+                "englishbreakfast": [],
+            },
+            ["//hw/top:otp_ctrl_c_regs"],
+        ),
         host = [
             "//sw/device/lib/base:global_mock",
             "//sw/device/silicon_creator/testing:rom_test",
@@ -166,8 +158,11 @@ dual_cc_library(
             "//sw/device/lib/base:multibits",
             "//sw/device/silicon_creator/lib:error",
             "//sw/device/silicon_creator/lib/base:sec_mmio",
-            "//sw/device/silicon_creator/lib/drivers:otp",
-        ],
+        ] + opentitan_select_top({
+                "englishbreakfast": [],
+            },
+            ["//sw/device/silicon_creator/lib/drivers:otp"],
+        )
     ),
 )
 
@@ -388,8 +383,25 @@ opentitan_test(
     ],
 )
 
+cc_library(
+    name = "lifecycle_stub",
+    srcs = ["lifecycle_stub.c"],
+    deps = [
+        ":lifecycle_hdr",
+    ]
+)
+
+cc_library(
+    name = "lifecycle_hdr",
+    hdrs = ["lifecycle.h"],
+    deps = [
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+    ]
+)
+
 dual_cc_library(
-    name = "lifecycle",
+    name = "lifecycle_real",
     srcs = dual_inputs(
         device = ["lifecycle.c"],
         host = ["mock_lifecycle.cc"],
@@ -415,6 +427,13 @@ dual_cc_library(
             "//sw/device/silicon_creator/lib/base:sec_mmio",
         ],
     ),
+)
+
+alias(
+    name = "lifecycle",
+    actual = opentitan_select_top({
+        "englishbreakfast": ":lifecycle_stub",
+    }, ":lifecycle_real")
 )
 
 cc_test(
@@ -455,8 +474,19 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "otp_stub",
+    srcs = ["otp_stub.c"],
+    hdrs = ["otp.h"],
+    deps = [
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
+    ]
+)
+
 dual_cc_library(
-    name = "otp",
+    name = "otp_real",
     srcs = dual_inputs(
         device = ["otp.c"],
         host = ["mock_otp.cc"],
@@ -482,6 +512,14 @@ dual_cc_library(
             "//sw/device/lib/base:abs_mmio",
         ],
     ),
+)
+
+
+alias(
+    name = "otp",
+    actual = opentitan_select_top({
+        "englishbreakfast": ":otp_stub",
+    }, ":otp_real")
 )
 
 cc_test(
@@ -666,7 +704,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/top:rstmgr_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:dt",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -674,7 +712,6 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
-            "//hw/top:otp_ctrl_c_regs",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:multibits",
@@ -682,7 +719,9 @@ dual_cc_library(
             "//sw/device/silicon_creator/lib:error",
             "//sw/device/silicon_creator/lib/base:sec_mmio",
             "//sw/device/silicon_creator/lib/drivers:otp",
-        ],
+        ] + opentitan_select_top({
+            "earlgrey": ["//hw/top:otp_ctrl_c_regs"],
+        }, []),
     ),
 )
 

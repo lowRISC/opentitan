@@ -11,45 +11,54 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits.h"
+
+#ifdef OPENTITAN_IS_EARLGREY
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
+#include "otp_ctrl_regs.h"
+#endif
 
 #ifdef OT_PLATFORM_RV32
 #include "sw/device/lib/runtime/hart.h"
 #endif
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
 #include "rstmgr_regs.h"
+#include "dt/dt_rstmgr.h"
 
-enum {
-  kBase = TOP_EARLGREY_RSTMGR_AON_BASE_ADDR,
-};
+/**
+ * Base address of the rst,gr registers.
+ */
+static inline uint32_t rstmgr_base(void) {
+  return dt_rstmgr_primary_reg_block(kDtRstmgrFirst);
+}
 
 void rstmgr_alert_info_collect(rstmgr_info_t *info) {
   info->length = bitfield_field32_read(
-      abs_mmio_read32(kBase + RSTMGR_ALERT_INFO_ATTR_REG_OFFSET),
+      abs_mmio_read32(rstmgr_base() + RSTMGR_ALERT_INFO_ATTR_REG_OFFSET),
       RSTMGR_ALERT_INFO_ATTR_CNT_AVAIL_FIELD);
   for (uint32_t i = 0; i < info->length; ++i) {
     abs_mmio_write32(
-        kBase + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
+        rstmgr_base() + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
         bitfield_field32_write(0, RSTMGR_ALERT_INFO_CTRL_INDEX_FIELD, i));
-    info->info[i] = abs_mmio_read32(kBase + RSTMGR_ALERT_INFO_REG_OFFSET);
+    info->info[i] = abs_mmio_read32(rstmgr_base() + RSTMGR_ALERT_INFO_REG_OFFSET);
   }
 }
 
 void rstmgr_cpu_info_collect(rstmgr_info_t *info) {
   info->length = bitfield_field32_read(
-      abs_mmio_read32(kBase + RSTMGR_CPU_INFO_ATTR_REG_OFFSET),
+      abs_mmio_read32(rstmgr_base() + RSTMGR_CPU_INFO_ATTR_REG_OFFSET),
       RSTMGR_CPU_INFO_ATTR_CNT_AVAIL_FIELD);
   for (uint32_t i = 0; i < info->length; ++i) {
     abs_mmio_write32(
-        kBase + RSTMGR_CPU_INFO_CTRL_REG_OFFSET,
+        rstmgr_base() + RSTMGR_CPU_INFO_CTRL_REG_OFFSET,
         bitfield_field32_write(0, RSTMGR_CPU_INFO_CTRL_INDEX_FIELD, i));
-    info->info[i] = abs_mmio_read32(kBase + RSTMGR_CPU_INFO_REG_OFFSET);
+    info->info[i] = abs_mmio_read32(rstmgr_base() + RSTMGR_CPU_INFO_REG_OFFSET);
   }
 }
 
+// HACK
 uint32_t rstmgr_reason_get(void) {
+  // FIXME This is incorrect for English Breakfast
+#ifdef OPENTITAN_IS_EARLGREY
   // Static assertions for bitfield indices.
 #define REASON_ASSERT(index, expect) \
   static_assert((index) == (expect), #index " value incorrect.");
@@ -78,22 +87,24 @@ uint32_t rstmgr_reason_get(void) {
       "kRstmgrReasonLast value incorrect.");
 
 #undef REASON_ASSERT
+#endif
 
-  return abs_mmio_read32(kBase + RSTMGR_RESET_INFO_REG_OFFSET);
+  return abs_mmio_read32(rstmgr_base() + RSTMGR_RESET_INFO_REG_OFFSET);
 }
 
 void rstmgr_reason_clear(uint32_t reasons) {
-  abs_mmio_write32(kBase + RSTMGR_RESET_INFO_REG_OFFSET, reasons);
+  abs_mmio_write32(rstmgr_base() + RSTMGR_RESET_INFO_REG_OFFSET, reasons);
 }
 
 void rstmgr_alert_info_enable(void) {
-  abs_mmio_write32(kBase + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, 1);
+  abs_mmio_write32(rstmgr_base() + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, 1);
 }
 
 void rstmgr_cpu_info_enable(void) {
-  abs_mmio_write32(kBase + RSTMGR_CPU_INFO_CTRL_REG_OFFSET, 1);
+  abs_mmio_write32(rstmgr_base() + RSTMGR_CPU_INFO_CTRL_REG_OFFSET, 1);
 }
 
+#ifdef OPENTITAN_IS_EARLGREY
 rom_error_t rstmgr_info_en_check(uint32_t reset_reasons) {
   enum {
     kByteTrueXorFalse = kHardenedByteBoolTrue ^ kHardenedByteBoolFalse,
@@ -117,13 +128,13 @@ rom_error_t rstmgr_info_en_check(uint32_t reset_reasons) {
   // Prepare the expected OTP value from rstmgr.
   uint32_t alert_info = launder32(kHardenedByteBoolFalse);
   if (bitfield_bit32_read(
-          abs_mmio_read32(kBase + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET),
+          abs_mmio_read32(rstmgr_base() + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET),
           RSTMGR_ALERT_INFO_CTRL_EN_BIT)) {
     alert_info ^= launder32(kByteTrueXorFalse);
   }
   uint32_t cpu_info = launder32(kHardenedByteBoolFalse);
   if (bitfield_bit32_read(
-          abs_mmio_read32(kBase + RSTMGR_CPU_INFO_CTRL_REG_OFFSET),
+          abs_mmio_read32(rstmgr_base() + RSTMGR_CPU_INFO_CTRL_REG_OFFSET),
           RSTMGR_CPU_INFO_CTRL_EN_BIT)) {
     cpu_info ^= launder32(kByteTrueXorFalse);
   }
@@ -150,9 +161,10 @@ rom_error_t rstmgr_info_en_check(uint32_t reset_reasons) {
   }
   return kErrorRstmgrBadInit;
 }
+#endif
 
 void rstmgr_reset(void) {
-  abs_mmio_write32(kBase + RSTMGR_RESET_REQ_REG_OFFSET, kMultiBitBool4True);
+  abs_mmio_write32(rstmgr_base() + RSTMGR_RESET_REQ_REG_OFFSET, kMultiBitBool4True);
 #ifdef OT_PLATFORM_RV32
   // Wait until the chip resets.
   while (true) {
