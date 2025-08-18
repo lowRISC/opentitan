@@ -431,11 +431,11 @@ class mbx_base_vseq extends cip_base_vseq #(
         `uvm_info(`gfn, $sformatf("Request size 0x%x DWORD(s), Response size 0x%x DWORD(s)",
                                   req_size, rsp_size), UVM_MEDIUM)
         `uvm_info(`gfn,
-                  $sformatf("Inbox should use address range [0x%x,0x%x]",
+                  $sformatf("Inbox should use address range [0x%x:0x%x)",
                             mbx_config.ibmbx_base_addr, mbx_config.ibmbx_base_addr + req_size * 4),
                   UVM_MEDIUM)
         `uvm_info(`gfn,
-                  $sformatf("Outbox should use address range [0x%x,0x%x]",
+                  $sformatf("Outbox should use address range [0x%x:0x%x)",
                             mbx_config.obmbx_base_addr, mbx_config.obmbx_base_addr + rsp_size * 4),
                   UVM_MEDIUM)
 
@@ -472,9 +472,6 @@ class mbx_base_vseq extends cip_base_vseq #(
           bit intr_abort;
           bit intr_ready;
 
-          // As we supplied all of the data, it should all make it into the mailbox SRAM.
-          check_request = 1'b1;
-
           // Set the GO bit to mark complete transmission of the Request to the OT FW.
           m_mbx_soc_ral.soc_control.abort.set(1'b0);
           m_mbx_soc_ral.soc_control.go.set(1'b1);
@@ -491,6 +488,10 @@ class mbx_base_vseq extends cip_base_vseq #(
           `uvm_info(`gfn, $sformatf("intr_ready %d abort %d errored %d panicked %d",
                                     intr_ready, intr_abort, errored, panicked), UVM_HIGH);
           send_response = intr_ready & !intr_abort & !aborted & !errored & !panicked;
+
+          // If we supplied all of the data without any subsequent interruption, it should all
+          // have made it into the mailbox SRAM.
+          check_request = !aborted & !panicked;
         end
 
         if (check_request) begin
@@ -648,6 +649,7 @@ class mbx_base_vseq extends cip_base_vseq #(
           ral.control.abort.set(1'b1);
           ral.control.error.set(1'b0);  // Don't raise another ERROR!
           csr_update(ral.control);
+          panicked = 1'b1;
 
           // Check that the BUSY bit resets
           csr_rd(m_mbx_soc_ral.soc_status, rd_data);
@@ -671,6 +673,14 @@ class mbx_base_vseq extends cip_base_vseq #(
         // SoC side interrupt
         m_mbx_soc_ral.soc_status.doe_intr_status.set(1'b1);
         csr_update(m_mbx_soc_ral.soc_status);
+
+        if (aborted | panicked) begin
+          // TODO: We need to await the return of all squashed outstanding requests in the event
+          // that the transaction was aborted. It would be better to have a proper test of whether
+          // all outstanding TL-UL traffic has completed; in practice we know that the max response
+          // delay is 20 cycles for each of <= 4 outstanding requests (`mbx_stress_vseq`).
+          delay(100);
+        end
 
         // Can the memory range still be changed on subsequent transactions?
         if (mbx_config.address_range_regwen != MuBi4True) begin
