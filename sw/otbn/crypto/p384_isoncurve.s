@@ -17,6 +17,40 @@
  .section .text
 
 /**
+ * Trigger a fault if the FG0.Z flag is 0.
+ *
+ * If the flag is 0, then this routine will trigger an `ILLEGAL_INSN` error and
+ * abort the OTBN program. If the flag is 1, the routine will essentially do
+ * nothing.
+ *
+ * NOTE: Be careful when calling this routine that the FG0.Z flag is not/**
+ * Trigger a fault if the FG0.Z flag is 0.
+ *
+ * @param[in]    w31: all-zero
+ * @param[in]  FG0.Z: boolean indicating fault condition
+ *
+ * clobbered registers: x2
+ * clobbered flag groups: none
+ */
+ .globl trigger_fault_if_fg0_not_z
+trigger_fault_if_fg0_not_z:
+  /* Fail if FG0.Z is false. */
+  csrrs     x2, FG0, x0
+  srli      x2, x2, 3
+  andi      x2, x2, 1
+  bne       x2, x0, _pt_reg_valid
+  jal       x0, p384_invalid_input
+
+  /* Extra unimps in case an attacker tries to skip the jump, since this one is
+     especially critical. */
+  unimp
+  unimp
+  unimp
+
+  _pt_reg_valid:
+  ret
+
+/**
  * Checks if a point is a valid curve point on curve P-384
  *
  * Returns rhs = x^3 + ax + b  mod p
@@ -233,36 +267,12 @@ p384_check_public_key:
   bn.cmp    w0, w31
 
   /* Fail if FG0.Z is false. */
-  csrrs     x2, FG0, x0
-  srli      x2, x2, 3
-  andi      x2, x2, 1
-  bne       x2, x0, _pt_1st_reg_valid
-  jal       x0, p384_invalid_input
-
-  /* Extra unimps in case an attacker tries to skip the jump, since this one is
-     especially critical. */
-  unimp
-  unimp
-  unimp
-
-  _pt_1st_reg_valid:
+  jal       x1, trigger_fault_if_fg0_not_z
 
   bn.cmp    w1, w31
 
   /* Fail if FG0.Z is false. */
-  csrrs     x2, FG0, x0
-  srli      x2, x2, 3
-  andi      x2, x2, 1
-  bne       x2, x0, _pt_valid
-  jal       x0, p384_invalid_input
-
-  /* Extra unimps in case an attacker tries to skip the jump, since this one is
-     especially critical. */
-  unimp
-  unimp
-  unimp
-
-  _pt_valid:
+  jal       x1, trigger_fault_if_fg0_not_z
 
   ret
 
