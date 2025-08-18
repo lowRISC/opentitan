@@ -61,7 +61,6 @@ status_t rsa_modexp_consttime_2048_start(const rsa_2048_int_t *base,
  * @return Status of the operation (OK or error).
  */
 status_t rsa_modexp_vartime_2048_start(const rsa_2048_int_t *base,
-                                       const uint32_t exp,
                                        const rsa_2048_int_t *modulus);
 
 /**
@@ -107,7 +106,6 @@ status_t rsa_modexp_consttime_3072_start(const rsa_3072_int_t *base,
  * @return Status of the operation (OK or error).
  */
 status_t rsa_modexp_vartime_3072_start(const rsa_3072_int_t *base,
-                                       const uint32_t exp,
                                        const rsa_3072_int_t *modulus);
 
 /**
@@ -153,7 +151,6 @@ status_t rsa_modexp_consttime_4096_start(const rsa_4096_int_t *base,
  * @return Status of the operation (OK or error).
  */
 status_t rsa_modexp_vartime_4096_start(const rsa_4096_int_t *base,
-                                       const uint32_t exp,
                                        const rsa_4096_int_t *modulus);
 
 /**
