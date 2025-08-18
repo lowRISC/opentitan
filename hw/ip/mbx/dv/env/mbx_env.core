@@ -18,7 +18,6 @@ filesets:
       - mbx_seq_item.sv: {is_include_file: true}
       - mbx_scoreboard.sv: {is_include_file: true}
       - mbx_env.sv: {is_include_file: true}
-      - seq_lib/mbx_tl_reg_seq.sv: {is_include_file: true}
       - seq_lib/mbx_tl_device_seq.sv: {is_include_file: true}
       - seq_lib/mbx_base_vseq.sv: {is_include_file: true}
       - seq_lib/mbx_common_vseq.sv: {is_include_file: true}
