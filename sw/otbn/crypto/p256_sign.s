@@ -179,21 +179,88 @@ p256_sign:
   /* w1 <= w0^-1 mod n = (k * alpha)^-1 mod n */
   jal       x1, mod_inv
 
+  /* [w7,w0] <= n << 64 */
+  bn.rshi w0, w29, w31 >> 192
+  bn.rshi w7, w31, w29 >> 192
+
+  /* Load 320 bits of randomness into [w15,w14] */
+  bn.wsrr  w14, URND
+  bn.wsrr  w15, URND
+  bn.rshi  w15, w31, w15 >> 192
+
+  /* [w27,w26] <= [w15,w14] - [w7,w0] = rand(320) - (n << 64) */
+  bn.sub    w26, w14, w0
+  bn.subb   w27, w15, w7
+
+  /* [w25,w24] <= m mod (n << 64) */
+  bn.sel    w24, w14, w26, FG0.C
+  bn.sel    w25, w15, w27, FG0.C
+
+  /* Clear flags and randomize registers. */
+  bn.sub    w31, w31, w31
+  bn.wsrr    w2, URND
+  bn.wsrr    w3, URND
+  bn.wsrr   w14, URND
+  bn.wsrr   w15, URND
+  bn.wsrr   w26, URND
+  bn.wsrr   w27, URND
+
   /* Load first share of secret key d from dmem.
-       w2,w3 = dmem[d0] */
+       w14,w15 = dmem[d0] */
   la        x16, d0
-  li        x2, 2
+  li        x2, 14
   bn.lid    x2, 0(x16++)
-  li        x2, 3
+  li        x2, 15
   bn.lid    x2, 0(x16)
 
+  /* [w15,w14] <= d0 + m */
+  bn.add    w14, w14, w24
+  bn.addc   w15, w15, w25
+
+  /* [w27,w26] <= d0 + m - (n << 64) */
+  bn.sub    w26, w14, w0
+  bn.subb   w27, w15, w7
+
+  /* [w3,w2] <= d0 + m mod (n << 64) */
+  bn.sel    w2, w14, w26, FG0.C
+  bn.sel    w3, w15, w27, FG0.C
+
+  /* Clear flags and randomize registers. */
+  bn.sub    w31, w31, w31
+  bn.wsrr    w5, URND
+  bn.wsrr    w6, URND
+  bn.wsrr   w14, URND
+  bn.wsrr   w15, URND
+  bn.wsrr   w26, URND
+  bn.wsrr   w27, URND
+
   /* Load second share of secret key d from dmem.
-       w5,w6 = dmem[d1] */
+       w14,w15 = dmem[d1] */
   la        x16, d1
-  li        x2, 5
+  li        x2, 14
   bn.lid    x2, 0(x16++)
-  li        x2, 6
+  li        x2, 15
   bn.lid    x2, 0(x16)
+
+  /* [w15,w14] <= d1 - m */
+  bn.sub    w14, w14, w24, FG1
+  bn.subb   w15, w15, w25, FG1
+
+  /* [w27,w26] <= d1 - m + (n << 64) */
+  bn.add    w26, w14, w0
+  bn.addc   w27, w15, w7
+
+  /* [w6,w5] <= d1 - m mod (n << 64) */
+  bn.sel    w5, w26, w14, FG1.C
+  bn.sel    w6, w27, w15, FG1.C
+
+  /* Clear flags and randomize registers. */
+  bn.sub    w31, w31, w31
+  bn.sub    w31, w31, w31, FG1
+  bn.wsrr   w14, URND
+  bn.wsrr   w15, URND
+  bn.wsrr   w26, URND
+  bn.wsrr   w27, URND
 
   /* w0 <= ([w2,w3] * w4) mod n = (d0 * alpha) mod n */
   bn.mov    w24, w2
