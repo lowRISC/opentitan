@@ -24,7 +24,6 @@ main:
 
   /* Load pointers to modulus and Montgomery constant buffers. */
   la    x16, n
-  la    x17, m0d
   la    x18, RR
 
   /* Compute Montgomery constants. */
