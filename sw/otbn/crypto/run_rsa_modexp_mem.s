@@ -8,37 +8,51 @@
 
 .bss
 
-/* Operational mode. */
-.globl mode
-.balign 4
-mode:
-.zero 4
-
 /* RSA modulus (n), up to 4096 bits. */
 .globl n
 .balign 32
 n:
 .zero 512
 
-/* RSA private exponent (d) for signing, up to 4096 bits. */
-.globl d
+/*
+ * RSA first Boolean share of the private exponent (d) for decryption and
+ * signing, up to 4096 bits.
+ */
+.globl d0
 .balign 32
-d:
+d0:
 .zero 512
 
-/**
- * Buffer used for both input and output, up to 4096 bits.
- *
- * - Input: Base for exponentiation (a), e.g. message digest or signature.
- * - Output: Modular exponentiation result.
+/*
+ * RSA second Boolean share of the private exponent (d) for decryption and
+ * signing, up to 4096 bits.
+ */
+.globl d1
+.balign 32
+d1:
+.zero 512
+
+/*
+ * Three 4096-bit buffers required to store intermediate results of the
+ * Boolean-masked modular exponentation. r0 doubles as the input/output buffer.
+ * r1 stores the mode of the computation when the app is loaded.
  */
 .balign 32
-.globl inout
-inout:
+.globl r0
+r0:
 .zero 512
 
+.balign 32
+.globl r1
+.globl mode
+r1:
+mode:
+.zero 512
 
 .balign 32
+.globl r2
+r2:
+.zero 512
 
 .section .scratchpad
 

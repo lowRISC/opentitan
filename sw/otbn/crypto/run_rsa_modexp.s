@@ -146,14 +146,14 @@ do_modexp:
 
   /* Run exponentiation.
        dmem[work_buf] = dmem[inout]^dmem[d] mod dmem[n] */
-  la       x14, inout
-  la       x15, d
+  la       x14, r0
+  la       x15, d0
   la       x2, work_buf
   jal      x1, modexp
 
   /* Copy final result to the output buffer. */
   la    x3, work_buf
-  la    x4, inout
+  la    x4, r0
   loop  x30, 2
     bn.lid x0, 0(x3++)
     bn.sid x0, 0(x4++)
@@ -181,13 +181,13 @@ do_modexp_f4:
 
   /* Run exponentiation.
        dmem[work_buf] = dmem[inout]^65537 mod dmem[n] */
-  la       x14, inout
+  la       x14, r0
   la       x2, work_buf
   jal      x1, modexp_65537
 
   /* Copy final result to the output buffer. */
   la    x3, work_buf
-  la    x4, inout
+  la    x4, r0
   loop  x30, 2
     bn.lid x0, 0(x3++)
     bn.sid x0, 0(x4++)

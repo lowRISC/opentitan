@@ -44,7 +44,8 @@ status_t rsa_modexp_wait(size_t *num_words);
  * @return Status of the operation (OK or error).
  */
 status_t rsa_modexp_consttime_2048_start(const rsa_2048_int_t *base,
-                                         const rsa_2048_int_t *exp,
+                                         const rsa_2048_int_t *exp0,
+                                         const rsa_2048_int_t *exp1,
                                          const rsa_2048_int_t *modulus);
 
 /**
@@ -89,7 +90,8 @@ status_t rsa_modexp_2048_finalize(rsa_2048_int_t *result);
  * @return Status of the operation (OK or error).
  */
 status_t rsa_modexp_consttime_3072_start(const rsa_3072_int_t *base,
-                                         const rsa_3072_int_t *exp,
+                                         const rsa_3072_int_t *exp0,
+                                         const rsa_3072_int_t *exp1,
                                          const rsa_3072_int_t *modulus);
 
 /**
@@ -134,7 +136,8 @@ status_t rsa_modexp_3072_finalize(rsa_3072_int_t *result);
  * @return Status of the operation (OK or error).
  */
 status_t rsa_modexp_consttime_4096_start(const rsa_4096_int_t *base,
-                                         const rsa_4096_int_t *exp,
+                                         const rsa_4096_int_t *exp0,
+                                         const rsa_4096_int_t *exp1,
                                          const rsa_4096_int_t *modulus);
 
 /**

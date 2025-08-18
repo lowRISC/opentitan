@@ -140,7 +140,7 @@ static status_t run_key_from_cofactor(const uint32_t *cofactor) {
   // keyblobs, and will need to be updated if the representation changes.
   TRY_CHECK(private_key.keyblob_length == sizeof(rsa_2048_private_key_t));
   rsa_2048_private_key_t *sk = (rsa_2048_private_key_t *)private_key.keyblob;
-  TRY_CHECK_ARRAYS_EQ(sk->d.data, kTestPrivateExponent,
+  TRY_CHECK_ARRAYS_EQ(sk->d0.data, kTestPrivateExponent,
                       ARRAYSIZE(kTestPrivateExponent));
 
   // Check the other values too, just to be safe.
