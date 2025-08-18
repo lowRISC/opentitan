@@ -37,6 +37,7 @@ filesets:
       - lowrisc:constants:top_darjeeling_jtag_id_pkg
       - lowrisc:constants:top_darjeeling_ibex_pmp_reset_pkg
       - lowrisc:ip:lc_ctrl
+      - lowrisc:darjeeling_constants:lc_ctrl_state_pkg
       - lowrisc:ip:mbx
       - lowrisc:top_darjeeling:xbar_dbg
       - lowrisc:top_darjeeling:xbar_main
@@ -104,6 +105,7 @@ mapping:
   "lowrisc:virtual_constants:top_pkg": "lowrisc:darjeeling_constants:top_pkg"
   "lowrisc:virtual_constants:top_racl_pkg": "lowrisc:darjeeling_constants:top_racl_pkg"
   "lowrisc:systems:ast_pkg": "lowrisc:systems:top_darjeeling_ast_pkg"
+  "lowrisc:virtual_ip:lc_ctrl_state_pkg": "lowrisc:darjeeling_constants:lc_ctrl_state_pkg"
   # TODO(#27347): prim_legacy_pkg is deprecated
   "lowrisc:prim:prim_pkg": "lowrisc:prim:prim_legacy_pkg"
 
