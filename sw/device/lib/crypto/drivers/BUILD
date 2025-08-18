@@ -192,8 +192,8 @@ cc_library(
     srcs = ["rv_core_ibex.c"],
     hdrs = ["rv_core_ibex.h"],
     deps = [
-        "//hw/top:dt",
-        "//hw/top:rv_core_ibex_c_regs",
+        "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
     ],
@@ -208,7 +208,7 @@ opentitan_test(
     ),
     deps = [
         ":rv_core_ibex",
-        "//hw/top:rv_core_ibex_c_regs",
+        "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
