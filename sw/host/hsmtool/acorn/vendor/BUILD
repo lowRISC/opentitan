@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust_bindgen//:defs.bzl", "rust_bindgen_library")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_PLATFORM")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -20,6 +21,7 @@ rust_bindgen_library(
         "--allowlist-type=acorn_.*",
     ],
     cc_lib = ":acorn_hdr",
+    cc_lib_platform = OPENTITAN_PLATFORM,
     header = "acorn.h",
     rustc_flags = [
         "--allow=non_snake_case",

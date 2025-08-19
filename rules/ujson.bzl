@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
+load("//rules:rv.bzl", "OPENTITAN_PLATFORM", "opentitan_transition")
 
 """Rust generation rules for `ujson`."""
 
@@ -61,6 +62,7 @@ ujson_rust = rule(
         "srcs": attr.label_list(
             providers = [CcInfo],
             doc = "ujson cc_library targets to generate Rust for",
+            cfg = opentitan_transition,
         ),
         "defines": attr.string_list(
             doc = "C preprocessor defines",
@@ -69,6 +71,9 @@ ujson_rust = rule(
             default = "//sw/device/lib/ujson",
             doc = "Location of the ujson library",
             providers = [CcInfo],
+        ),
+        "platform": attr.string(
+            default = OPENTITAN_PLATFORM,
         ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_rustfmt": attr.label(
