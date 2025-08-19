@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// USB Full-Speed Device Interface (usbdev).
-//
-//
+// USB Full Speed Device Interface (usbdev).
 
 `include "prim_assert.sv"
 
@@ -15,7 +13,7 @@ module usbdev
 #(
   parameter bit Stub = 1'b0,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  // Number of cycles a differential skew is tolerated on the alert signal
+  // Number of cycles of differential skew tolerated on the alert signal.
   parameter int unsigned AlertSkewCycles = 1,
   // Max time (in microseconds) from rx_enable_o high to the
   // external differential receiver outputting valid data (when

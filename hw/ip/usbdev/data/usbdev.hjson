@@ -177,7 +177,7 @@
     { name:    "Stub",
       type:    "bit",
       default: "0",
-      desc:    "Stub out the core of entropy_src logic"
+      desc:    "Stub out the USB device logic, leaving only the register interface"
       local:   "false",
       expose:  "true"
     },
