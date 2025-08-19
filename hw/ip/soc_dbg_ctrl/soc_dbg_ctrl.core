@@ -11,10 +11,7 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:ip:rom_ctrl_pkg
       - lowrisc:ip:soc_dbg_ctrl_pkg
-      # TODO(PR #23555): This must depend upon the Darjeeling pwrmgr pkg directly
-      # for the pwr_boot_status_t structure presently.
-      # - lowrisc:ip_interfaces:pwrmgr_pkg
-      - lowrisc:darjeeling_ip:pwrmgr_pkg
+      - lowrisc:ip_interfaces:pwrmgr_pkg
       - lowrisc:ip:lc_ctrl_pkg
     files:
       - rtl/soc_dbg_ctrl_reg_pkg.sv
