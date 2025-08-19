@@ -263,7 +263,10 @@ package top_${top["name"]}${addr_space_suffix}_pkg;
 % endfor
     ${lib.Name.from_snake_case("dio_pad_count").as_camel_case()}
   } dio_pad_e;
+% endif # has_pinmux
+% if addr_space_suffix == "":
 
+## TODO this is a hack such that peripheral_e and AST macros are only generated once
 <%
     instances = sorted(set(inst for (inst, _), __ in helper.devices(addr_space_name)))
 %>\
@@ -285,6 +288,6 @@ package top_${top["name"]}${addr_space_suffix}_pkg;
   `define INOUT_AI inout
   `define INOUT_AO inout
 `endif
-% endif
+% endif # addr_space_suffix
 
 endpackage
