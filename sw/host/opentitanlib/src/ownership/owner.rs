@@ -4,7 +4,7 @@
 
 use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_annotate::Annotate;
 use std::convert::TryFrom;
 use std::io::{Read, Write};
@@ -35,7 +35,7 @@ with_unknown! {
 }
 
 /// Describes the owner configuration and key material.
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate)]
 pub struct OwnerBlock {
     /// Header identifying this struct.
     #[serde(
@@ -234,7 +234,7 @@ impl OwnerBlock {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate)]
 pub enum OwnerConfigItem {
     #[serde(alias = "application_key")]
     ApplicationKey(OwnerApplicationKey),

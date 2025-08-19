@@ -4,7 +4,7 @@
 
 use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_annotate::Annotate;
 use std::convert::TryFrom;
 use std::io::{Read, Write};
@@ -44,7 +44,7 @@ with_unknown! {
 }
 
 /// Describes the configuration of the rescue feature of the ROM_EXT.
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate)]
 pub struct OwnerRescueConfig {
     /// Header identifying this struct.
     #[serde(

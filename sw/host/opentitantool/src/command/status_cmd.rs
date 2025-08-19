@@ -4,7 +4,7 @@
 
 use anyhow::{bail, Context, Result};
 use clap::{Args, Subcommand};
-use serde_annotate::Annotate;
+use serde_annotate::AnnotateSerialize;
 use std::any::Any;
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
@@ -46,7 +46,7 @@ impl CommandDispatch for ListCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         let records = load_elf(&self.elf_file)?;
         if self.raw_records {
             return Ok(Some(Box::new(records)));
@@ -91,7 +91,7 @@ impl CommandDispatch for LintCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         // We group filenames by Module ID, coming from all ELF files at once
         let mut mod_id_map: HashMap<String, HashSet<ModuleIdProvenance>> = HashMap::new();
 
@@ -156,7 +156,7 @@ impl CommandDispatch for DecodeCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         // Decode status.
         let status = Status::from_u32(self.raw_status)?;
         // Find filenames

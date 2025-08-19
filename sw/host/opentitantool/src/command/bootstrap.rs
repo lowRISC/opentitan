@@ -4,7 +4,7 @@
 
 use anyhow::{ensure, Context, Result};
 use clap::Args;
-use serde_annotate::Annotate;
+use serde_annotate::AnnotateSerialize;
 use std::any::Any;
 use std::path::PathBuf;
 
@@ -35,7 +35,7 @@ impl BootstrapCommand {
     fn bootstrap_using_direct_emulator_integration(
         &self,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         ensure!(
             !(self.filename.len() > 1 || self.filename[0].contains('@')),
             "The `emulator` protocol does not support image assembly"
@@ -62,7 +62,7 @@ impl CommandDispatch for BootstrapCommand {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         if self.bootstrap_options.protocol == BootstrapProtocol::Emulator {
             return self.bootstrap_using_direct_emulator_integration(transport);
         }

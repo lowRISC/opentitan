@@ -38,7 +38,7 @@ with_unknown! {
     }
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize, Annotate)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(try_from = "String", into = "String")]
 pub struct StructVersion {
     pub major: u8,
@@ -90,7 +90,7 @@ impl StructVersion {
     }
 }
 
-#[derive(Debug, Default, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Default, Deserialize, Annotate)]
 pub struct TlvHeader {
     #[serde(default)]
     pub identifier: TlvTag,

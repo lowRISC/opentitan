@@ -4,7 +4,7 @@
 
 use anyhow::Result;
 use clap::{Args, Subcommand};
-use serde_annotate::Annotate;
+use serde_annotate::AnnotateSerialize;
 use std::any::Any;
 
 use opentitanlib::app::command::CommandDispatch;
@@ -26,7 +26,7 @@ impl CommandDispatch for UartOsDevice {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         let context = context.downcast_ref::<UartCommand>().unwrap();
         let uart = context.params.create(transport)?;
         Ok(Some(Box::new(UartOsDeviceResponse {
@@ -55,7 +55,7 @@ impl CommandDispatch for UartCommand {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         // None of the UART commands care about the prior context, but they do
         // care about the `UartParams` parameter in the current node.
         self.command.run(self, transport)

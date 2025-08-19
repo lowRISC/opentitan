@@ -4,7 +4,7 @@
 
 use anyhow::Result;
 use clap::Args;
-use serde_annotate::Annotate;
+use serde_annotate::AnnotateSerialize;
 use std::any::Any;
 use std::fs;
 use std::path::PathBuf;
@@ -33,7 +33,7 @@ impl CommandDispatch for UpdateUsrAccess {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         let mut bs = fs::read(&self.input)?;
 
         let usr_access_val = match self.usr_access {

@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 
 use serde_annotate::Annotate;
 
-#[derive(Annotate, Serialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum OtpImgValue {
     Word(u64),
@@ -92,19 +92,19 @@ impl<'de> Deserialize<'de> for OtpImgValue {
     }
 }
 
-#[derive(Annotate, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Annotate, Deserialize, Debug, PartialEq, Eq)]
 pub struct OtpImgItem {
     pub name: String,
     pub value: OtpImgValue,
 }
 
-#[derive(Annotate, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Annotate, Deserialize, Debug, PartialEq, Eq)]
 pub struct OtpImgPartition {
     pub name: String,
     pub items: Option<Vec<OtpImgItem>>,
 }
 
-#[derive(Annotate, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Annotate, Deserialize, Debug, PartialEq, Eq)]
 pub struct OtpImg {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<u64>,

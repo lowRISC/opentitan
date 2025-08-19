@@ -5,7 +5,7 @@
 use anyhow::Result;
 use clap::{Args, Subcommand};
 use regex::Regex;
-use serde_annotate::Annotate;
+use serde_annotate::AnnotateSerialize;
 use std::any::Any;
 use std::collections::HashMap;
 use std::fs;
@@ -35,7 +35,7 @@ impl CommandDispatch for TransportInit {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         // Configure all GPIO pins to default direction and level, according to
         // configuration files provided, and configures SPI port mode/speed, etc.
         // Also apply an optional, named gpio strap while performing pin initialization.
@@ -61,7 +61,7 @@ impl CommandDispatch for TransportSetJtagPins {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         transport
             .capabilities()?
             .request(Capability::GPIO | Capability::JTAG)
@@ -97,7 +97,7 @@ impl CommandDispatch for TransportUpdateFirmware {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         let firmware = match self.filename.as_ref() {
             Some(name) => Some(fs::read(name)?),
             None => None,
@@ -127,7 +127,7 @@ impl CommandDispatch for VerilatorWatch {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         let watch = Watch {
             regex: Regex::new(&self.regex)?,
             timeout: self.timeout,
@@ -153,7 +153,7 @@ impl CommandDispatch for TransportQuery {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         let value = transport.query_provides(&self.key)?;
         Ok(Some(Box::new(TransportQueryResult {
             key: self.key.clone(),
@@ -170,7 +170,7 @@ impl CommandDispatch for TransportQueryAll {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         let value: HashMap<String, String> = transport.provides_map()?.clone();
         Ok(Some(Box::new(value)))
     }

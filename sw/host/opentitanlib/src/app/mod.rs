@@ -26,7 +26,7 @@ use crate::transport::{
 
 use anyhow::{bail, ensure, Result};
 use indicatif::{ProgressBar, ProgressStyle};
-use serde_annotate::Annotate;
+use serde_annotate::AnnotateSerialize;
 use serialport::Parity;
 use std::any::Any;
 use std::cell::{Cell, RefCell};
@@ -997,7 +997,7 @@ impl TransportWrapper {
     }
 
     /// Invoke non-standard functionality of some Transport implementations.
-    pub fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
+    pub fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn AnnotateSerialize>>> {
         self.transport.dispatch(action)
     }
 
