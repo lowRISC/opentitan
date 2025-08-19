@@ -2610,9 +2610,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   endfunction
 
   task health_test_scoring_thread();
-    bit [15:0]                window_size;
+    int unsigned              window_size;
     entropy_phase_e           dut_fsm_phase;
-    int                       window_rng_frames;
     int                       pass_requirement, pass_count, startup_fail_count;
     bit                       fw_ov_insert;
     bit                       is_fips_mode;
@@ -2682,20 +2681,14 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
         `uvm_info(`gfn, $sformatf("phase: %s\n", dut_fsm_phase.name), UVM_HIGH)
 
-        window_size = rng_window_size(seed_idx, is_fips_mode, fw_ov_insert,
+        // `window` is a queue of items of size `RNG_BUS_WIDTH. Depending on the configuration of
+        // the DUT, the rate of the entropy input and whether we're performing the startup health
+        // checks, we expect a different number of elements to get accumulated.
+        window_size = rng_window_size(seed_idx, is_fips_mode, rng_bit_en, fw_ov_insert,
+                                      `gmv(ral.health_test_windows.bypass_window),
                                       `gmv(ral.health_test_windows.fips_window));
 
         `uvm_info(`gfn, $sformatf("window_size: %08d\n", window_size), UVM_HIGH)
-
-        // Note on RNG bit enable and window frame count:
-        // When rng_bit_enable is selected, the function below repacks the data so that
-        // the selected bit fills a whole frame.
-        // This mirrors the DUT's behavior of repacking the data before the health checks
-        //
-        // Thus the number of window frames RNG_BUS_WIDTH times as large when the bit select is
-        // enabled.
-
-        window_rng_frames = rng_bit_en ? window_size : (window_size / `RNG_BUS_WIDTH);
 
         forever begin : window_loop
           string fmt;
@@ -2725,13 +2718,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           if (disable_detected) break; // No sample events. DUT has shutdown
 
           // In case of entropy drops, there is more entropy to be health tested than the usual
-          // window_rng_frames.
+          // window_size.
           if (xht_item.req.window_wrap_pulse) begin
-            `DV_CHECK(window.size() == (window_rng_frames + post_ht_drops))
+            `DV_CHECK(window.size() == (window_size + post_ht_drops))
             post_ht_drops = 0;
             break;
           end else begin
-            `DV_CHECK(window.size() < (window_rng_frames + post_ht_drops))
+            `DV_CHECK(window.size() < (window_size + post_ht_drops))
           end
           // Check whether the rng_bit_en and the rng_bit_sel match the values in the CONF register.
           `DV_CHECK(xht_item.req.rng_bit_en == rng_bit_en)
