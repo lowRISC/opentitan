@@ -6,9 +6,7 @@
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 //
 // util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson \
-//                -o hw/top_darjeeling/ \
-//                --rnd_cnst_seed \
-//                1017106219537032642877583828875051302543807092889754935647094601236425074047
+//                -o hw/top_darjeeling/
 
 
 module chip_darjeeling_asic #(
