@@ -46,9 +46,16 @@ filesets:
       - lowrisc:tlul:headers
       - lowrisc:systems:top_englishbreakfast_pkg
     files:
-      - rtl/autogen/top_englishbreakfast_rnd_cnst_pkg.sv
       - rtl/autogen/top_englishbreakfast.sv
     file_type: systemVerilogSource
+
+  files_rtl_dev:
+    depend:
+      - lowrisc:englishbreakfast_constants:dev_rnd_cnst_pkg
+
+  files_rtl_prod:
+    depend:
+      - lowrisc:englishbreakfast_constants:prod_rnd_cnst_pkg
 
   files_verilator_waiver:
     depend:
@@ -96,6 +103,8 @@ targets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
+      - fileset_prod     ? (files_rtl_prod)
+      - "!fileset_prod   ? (files_rtl_dev)"
       - files_rtl_generic
     parameters:
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
@@ -104,6 +113,8 @@ targets:
   sim:
     default_tool: icarus
     filesets:
+      - fileset_prod     ? (files_rtl_prod)
+      - "!fileset_prod   ? (files_rtl_dev)"
       - files_rtl_generic
     parameters:
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric

@@ -1665,9 +1665,61 @@ def main():
 // File is generated based on the following seed configuration:
 //   {os.path.relpath(args.seedcfg, SRCTREE_TOP)}
 """
+        topgen_seed = completecfg["seed"]["topgen_seed"]
+        seed_mode = topgen_seed.seed_mode
+        rnd_cnst_path = f"rtl/autogen/{seed_mode}"
+        rnd_cnst_file = f"{top_name}_rnd_cnst_pkg.sv"
+
+        # Determine the dependencies for the random netlist constant package. This construction
+        # depends on which modules are present in the top configuration and which require random
+        # netlist constants.
+        rnd_cnst_deps = []
+        RND_CNST_DEPENDENCIES = {
+            # ipgen-based modules (using template_type)
+            "flash_ctrl": [f"lowrisc:{topname}_ip:flash_ctrl"],
+            "otp_ctrl": [
+                f"lowrisc:{topname}_ip:otp_ctrl_top_specific_pkg",
+                "lowrisc:ip:otp_ctrl_pkg"
+            ],
+            "alert_handler": [f"lowrisc:{topname}_ip:alert_handler_pkg"],
+            "rv_core_ibex": ["lowrisc:ibex:ibex_pkg"],
+
+            # Direct IP modules (using type)
+            "lc_ctrl": ["lowrisc:ip:lc_ctrl_pkg"],
+            "sram_ctrl": ["lowrisc:ip:sram_ctrl_pkg"],
+            "aes": ["lowrisc:ip:aes"],
+            "kmac": ["lowrisc:ip:kmac_pkg"],
+            "otbn": ["lowrisc:ip:otbn_pkg"],
+            "keymgr": ["lowrisc:ip:keymgr_pkg"],
+            "csrng": ["lowrisc:ip:csrng_pkg"],
+        }
+
+        for m in completecfg["module"]:
+            template_type = m.get("template_type", "")
+            if template_type and template_type in RND_CNST_DEPENDENCIES:
+                deps = RND_CNST_DEPENDENCIES[template_type]
+                rnd_cnst_deps.extend(deps)
+                continue
+
+            module_type = m["type"]
+            if module_type in RND_CNST_DEPENDENCIES:
+                deps = RND_CNST_DEPENDENCIES[module_type]
+                rnd_cnst_deps.extend(deps)
+
+        # Ensure the dependencies are unique and sorted
+        rnd_cnst_deps = sorted(list(set(rnd_cnst_deps)))
+
         render_template(TOPGEN_TEMPLATE_PATH / "toplevel_rnd_cnst_pkg.sv.tpl",
-                        out_path / f"rtl/autogen/{top_name}_rnd_cnst_pkg.sv",
+                        out_path / rnd_cnst_path / rnd_cnst_file,
                         gencmd=gencmd_rnd_cnst_sv)
+        render_template(TOPGEN_TEMPLATE_PATH / "core_file.core.tpl",
+                        out_path / rnd_cnst_path /
+                        f"top_{topname}_{seed_mode}_rnd_cnst_pkg.core",
+                        package=f"lowrisc:{topname}_constants:{seed_mode}_rnd_cnst_pkg:0.1",
+                        description="Random netlist constant package",
+                        virtual_package="lowrisc:virtual_constants:rnd_cnst_pkg",
+                        dependencies=rnd_cnst_deps,
+                        files=[rnd_cnst_file])
 
         racl_config = completecfg.get('racl', DEFAULT_RACL_CONFIG)
         render_template(TOPGEN_TEMPLATE_PATH / 'top_racl_pkg.sv.tpl',
@@ -1684,18 +1736,24 @@ def main():
 
         if lib.find_module(topcfg["module"], "lc_ctrl"):
             lc_state_def_file = load_cfg(IP_RAW_PATH / "lc_ctrl" / "data" / "lc_ctrl_state.hjson")
-            lc_st_enc = LcStEnc(lc_state_def_file, topcfg["seed"]["lc_ctrl_seed"].value)
-            lc_st_enc_filename = "rtl/autogen/lc_ctrl_state_pkg.sv"
+            lc_seed = topcfg["seed"]["lc_ctrl_seed"]
+            lc_st_enc = LcStEnc(lc_state_def_file, lc_seed.value)
+            lc_st_enc_path = f"rtl/autogen/{lc_seed.seed_mode}"
+            lc_st_enc_file = "lc_ctrl_state_pkg.sv"
             render_template(IP_RAW_PATH / "lc_ctrl" / "rtl" / "lc_ctrl_state_pkg.sv.tpl",
-                            out_path / lc_st_enc_filename,
+                            out_path / lc_st_enc_path / lc_st_enc_file,
                             lc_st_enc=lc_st_enc)
             render_template(TOPGEN_TEMPLATE_PATH / "core_file.core.tpl",
-                            out_path / f"top_{topname}_lc_ctrl_state_pkg.core",
-                            package=f"lowrisc:{topname}_constants:lc_ctrl_state_pkg:0.1",
+                            out_path / lc_st_enc_path /
+                            f"top_{topname}_{lc_seed.seed_mode}_lc_ctrl_state_pkg.core",
+                            package=(
+                                f"lowrisc:{topname}_constants:"
+                                f"{lc_seed.seed_mode}_lc_ctrl_state_pkg:0.1"
+                            ),
                             description="LC Controller State Encoding Package",
                             virtual_package="lowrisc:virtual_ip:lc_ctrl_state_pkg",
                             dependencies=["lowrisc:prim:util"],
-                            files=[lc_st_enc_filename])
+                            files=[lc_st_enc_file])
 
         # The C / SV file needs some complex information, so we initialize this
         # object to store it.

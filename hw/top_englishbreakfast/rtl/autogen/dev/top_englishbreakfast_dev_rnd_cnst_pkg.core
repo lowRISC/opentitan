@@ -1,0 +1,25 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:englishbreakfast_constants:dev_rnd_cnst_pkg:0.1"
+description: "Random netlist constant package"
+virtual:
+  - lowrisc:virtual_constants:rnd_cnst_pkg
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:englishbreakfast_ip:flash_ctrl
+      - lowrisc:ibex:ibex_pkg
+      - lowrisc:ip:aes
+      - lowrisc:ip:sram_ctrl_pkg
+    files:
+      - top_englishbreakfast_rnd_cnst_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
