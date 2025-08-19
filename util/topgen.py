@@ -1304,10 +1304,40 @@ def dump_completecfg(cfg: ConfigT, out_path: Path) -> None:
     cfg_dir = out_path / "data/autogen"
     cfg_dir.mkdir(parents=True, exist_ok=True)
     genhjson_path = cfg_dir / f"{top_name}.gen.hjson"
+    seed_mode = cfg['seed']['topgen_seed'].seed_mode
+    secretgenhjson_path = cfg_dir / f"{top_name}.secrets.{seed_mode}.gen.hjson"
+
+    # Sanitize the top config and create separate files for secrets
+    dump_cfg = deepcopy(cfg)
+
+    # Seed goes into the secrets file
+    secret_cfg = {}
+    secret_cfg["seed"] = dump_cfg.pop("seed")
+    secret_cfg["module"] = []
+
+    # Filter params list for secret params and move that to the secrets file
+    for module in dump_cfg["module"]:
+        secret_params = [p for p in module["param_list"] if p.get("randtype")]
+        module["param_list"][:] = [p for p in module["param_list"] if not p.get("randtype")]
+
+        if secret_params:
+            # Pass a minimal set of information of a module such that tools that
+            # consume the .secret.gen.hjson have all necessary information
+            module_with_secret_params = {
+                "name": module["name"],
+                "type": module["type"],
+                "base_addrs": module["base_addrs"],
+                "memory": module["memory"],
+                "param_list": secret_params
+            }
+            secret_cfg["module"].append(module_with_secret_params)
 
     genhjson_path.write_text(genhdr + GENCMD.format(top_name=top_name) + "\n" +
-                             hjson.dumps(cfg, for_json=True, default=vars) +
+                             hjson.dumps(dump_cfg, for_json=True, default=vars) +
                              '\n')
+    secretgenhjson_path.write_text(genhdr + GENCMD.format(top_name=top_name) + "\n" +
+                                   hjson.dumps(secret_cfg, for_json=True, default=vars) +
+                                   '\n')
 
 
 def main():

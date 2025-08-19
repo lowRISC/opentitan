@@ -1844,39 +1844,7 @@
       }
       param_decl: {}
       memory: {}
-      param_list:
-      [
-        {
-          name: RndCnstLfsrSeed
-          desc: Compile-time random bits for initial LFSR seed
-          type: otp_ctrl_top_specific_pkg::lfsr_seed_t
-          randcount: 40
-          randtype: data
-          name_top: RndCnstOtpCtrlLfsrSeed
-          default: 0x309a163990
-          randwidth: 40
-        }
-        {
-          name: RndCnstLfsrPerm
-          desc: Compile-time random permutation for LFSR output
-          type: otp_ctrl_top_specific_pkg::lfsr_perm_t
-          randcount: 40
-          randtype: perm
-          name_top: RndCnstOtpCtrlLfsrPerm
-          default: 0x28c1c838f5e301069d05379551c18598359f90408d60b6c98a7860951499
-          randwidth: 240
-        }
-        {
-          name: RndCnstScrmblKeyInit
-          desc: Compile-time random permutation for scrambling key/nonce register reset value
-          type: otp_ctrl_top_specific_pkg::scrmbl_key_init_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstOtpCtrlScrmblKeyInit
-          default: 0x21dd4c0ac2406d467215dab3f2b54a52e6728678af0718068e344d2eae4d73c8
-          randwidth: 256
-        }
-      ]
+      param_list: []
       inter_signal_list:
       [
         {
@@ -2483,66 +2451,6 @@
           name_top: LcCtrlUseDmiInterface
         }
         {
-          name: RndCnstLcKeymgrDivInvalid
-          desc: Diversification value used for all invalid life cycle states.
-          type: lc_ctrl_pkg::lc_keymgr_div_t
-          randcount: 128
-          randtype: data
-          name_top: RndCnstLcCtrlLcKeymgrDivInvalid
-          default: 0xfa54de8aa4a4f258f3b2a145fd1950ae
-          randwidth: 128
-        }
-        {
-          name: RndCnstLcKeymgrDivTestUnlocked
-          desc: Diversification value used for the TEST_UNLOCKED* life cycle states.
-          type: lc_ctrl_pkg::lc_keymgr_div_t
-          randcount: 128
-          randtype: data
-          name_top: RndCnstLcCtrlLcKeymgrDivTestUnlocked
-          default: 0x55d693e57968117e66dc634155e0f815
-          randwidth: 128
-        }
-        {
-          name: RndCnstLcKeymgrDivDev
-          desc: Diversification value used for the DEV life cycle state.
-          type: lc_ctrl_pkg::lc_keymgr_div_t
-          randcount: 128
-          randtype: data
-          name_top: RndCnstLcCtrlLcKeymgrDivDev
-          default: 0x242862eb20eea9a1f7544716551512a
-          randwidth: 128
-        }
-        {
-          name: RndCnstLcKeymgrDivProduction
-          desc: Diversification value used for the PROD/PROD_END life cycle states.
-          type: lc_ctrl_pkg::lc_keymgr_div_t
-          randcount: 128
-          randtype: data
-          name_top: RndCnstLcCtrlLcKeymgrDivProduction
-          default: 0x112ded678ce824a08e29c772795a358e
-          randwidth: 128
-        }
-        {
-          name: RndCnstLcKeymgrDivRma
-          desc: Diversification value used for the RMA life cycle state.
-          type: lc_ctrl_pkg::lc_keymgr_div_t
-          randcount: 128
-          randtype: data
-          name_top: RndCnstLcCtrlLcKeymgrDivRma
-          default: 0xc30f1bedd1af0ec9d9a9cf36a2b130d3
-          randwidth: 128
-        }
-        {
-          name: RndCnstInvalidTokens
-          desc: Compile-time random bits used for invalid tokens in the token mux
-          type: lc_ctrl_pkg::lc_token_mux_t
-          randcount: 1024
-          randtype: data
-          name_top: RndCnstLcCtrlInvalidTokens
-          default: 0x2afe121af734f628363aaa0e93d45c423690ed05bd1e710f22d1095889fbd8a7b57fb1e11df367c1c1ede3f35cfc8f6e72abdd73a9eefbf8b7081eb9f636e13ca9d21f1edebe60a22db6d398d4a21b73699e80820434a1dcd0488805541166f1ec8ceb42692b089a6f99b1a7ac084224ade4612980d48e6c6493a50eedbac6a4
-          randwidth: 1024
-        }
-        {
           name: SiliconCreatorId
           desc: Chip generation number.
           type: logic [15:0]
@@ -3142,26 +3050,6 @@
       memory: {}
       param_list:
       [
-        {
-          name: RndCnstLfsrSeed
-          desc: Compile-time random bits for initial LFSR seed
-          type: alert_handler_pkg::lfsr_seed_t
-          randcount: 32
-          randtype: data
-          name_top: RndCnstAlertHandlerLfsrSeed
-          default: 0x6b7a8a9b
-          randwidth: 32
-        }
-        {
-          name: RndCnstLfsrPerm
-          desc: Compile-time random permutation for LFSR output
-          type: alert_handler_pkg::lfsr_perm_t
-          randcount: 32
-          randtype: perm
-          name_top: RndCnstAlertHandlerLfsrPerm
-          default: 0x1119aa856ebb4c0f2b7fb52191f3078a133975e5
-          randwidth: 160
-        }
         {
           name: EscNumSeverities
           desc: Number of escalation severities as regular parameter
@@ -5895,46 +5783,6 @@
       param_list:
       [
         {
-          name: RndCnstSramKey
-          desc: Compile-time random reset value for SRAM scrambling key.
-          type: otp_ctrl_pkg::sram_key_t
-          randcount: 128
-          randtype: data
-          name_top: RndCnstSramCtrlRetAonSramKey
-          default: 0x521d4711e64066908adfd5918f8c563c
-          randwidth: 128
-        }
-        {
-          name: RndCnstSramNonce
-          desc: Compile-time random reset value for SRAM scrambling nonce.
-          type: otp_ctrl_pkg::sram_nonce_t
-          randcount: 128
-          randtype: data
-          name_top: RndCnstSramCtrlRetAonSramNonce
-          default: 0x92184f1c76a61e112578bf9f469fc482
-          randwidth: 128
-        }
-        {
-          name: RndCnstLfsrSeed
-          desc: Compile-time random bits for initial LFSR seed
-          type: sram_ctrl_pkg::lfsr_seed_t
-          randcount: 64
-          randtype: data
-          name_top: RndCnstSramCtrlRetAonLfsrSeed
-          default: 0xfa14a8f2b75c265c
-          randwidth: 64
-        }
-        {
-          name: RndCnstLfsrPerm
-          desc: Compile-time random permutation for LFSR output
-          type: sram_ctrl_pkg::lfsr_perm_t
-          randcount: 64
-          randtype: perm
-          name_top: RndCnstSramCtrlRetAonLfsrPerm
-          default: 0xe758c46bddbbfd061f0c9c91762bb71f420d2a6a54ad959b32500f397b55cde085bfac38a242e01814ea85c4b1f3eb27
-          randwidth: 384
-        }
-        {
           name: MemSizeRam
           desc: Memory size of the RAM (in bytes).
           type: int
@@ -6227,56 +6075,6 @@
       }
       param_list:
       [
-        {
-          name: RndCnstAddrKey
-          desc: Compile-time random bits for default address key
-          type: flash_ctrl_pkg::flash_key_t
-          randcount: 128
-          randtype: data
-          name_top: RndCnstFlashCtrlAddrKey
-          default: 0xf6037b9daca18eb5801c444ebc53ec27
-          randwidth: 128
-        }
-        {
-          name: RndCnstDataKey
-          desc: Compile-time random bits for default data key
-          type: flash_ctrl_pkg::flash_key_t
-          randcount: 128
-          randtype: data
-          name_top: RndCnstFlashCtrlDataKey
-          default: 0xf13eb602172c4d950331bebad605bb69
-          randwidth: 128
-        }
-        {
-          name: RndCnstAllSeeds
-          desc: Compile-time random bits for default seeds
-          type: flash_ctrl_top_specific_pkg::all_seeds_t
-          randcount: 512
-          randtype: data
-          name_top: RndCnstFlashCtrlAllSeeds
-          default: 0x6be7a52b9a29e3c871ee416dc904583df8bae9c46dee80a869a1ce14c113994cf87eda86140651ac88eb62e834aa3425c620c68ce20120a0d95ce4ee55b032c0
-          randwidth: 512
-        }
-        {
-          name: RndCnstLfsrSeed
-          desc: Compile-time random bits for initial LFSR seed
-          type: flash_ctrl_top_specific_pkg::lfsr_seed_t
-          randcount: 32
-          randtype: data
-          name_top: RndCnstFlashCtrlLfsrSeed
-          default: 0x7a29b920
-          randwidth: 32
-        }
-        {
-          name: RndCnstLfsrPerm
-          desc: Compile-time random permutation for LFSR output
-          type: flash_ctrl_top_specific_pkg::lfsr_perm_t
-          randcount: 32
-          randtype: perm
-          name_top: RndCnstFlashCtrlLfsrPerm
-          default: 0x76f3c6fc3cd20a79a3f6234ee05a51548b49e56
-          randwidth: 160
-        }
         {
           name: SecScrambleEn
           desc: Compile-time option to enable flash scrambling
@@ -7220,56 +7018,6 @@
           expose: "true"
           name_top: SecAesSkipPRNGReseeding
         }
-        {
-          name: RndCnstClearingLfsrSeed
-          desc: Default seed of the PRNG used for register clearing.
-          type: aes_pkg::clearing_lfsr_seed_t
-          randcount: 64
-          randtype: data
-          name_top: RndCnstAesClearingLfsrSeed
-          default: 0x3beafe8389e9f8ac
-          randwidth: 64
-        }
-        {
-          name: RndCnstClearingLfsrPerm
-          desc: Permutation applied to the LFSR of the PRNG used for clearing.
-          type: aes_pkg::clearing_lfsr_perm_t
-          randcount: 64
-          randtype: perm
-          name_top: RndCnstAesClearingLfsrPerm
-          default: 0x73039aa6e7c86e04990aba3ea860739d8353c50c87863783d2230af17dbf55d991d40dc9938ef92ec97af541163efb45
-          randwidth: 384
-        }
-        {
-          name: RndCnstClearingSharePerm
-          desc: Permutation applied to the clearing PRNG output for clearing the second share of registers.
-          type: aes_pkg::clearing_lfsr_perm_t
-          randcount: 64
-          randtype: perm
-          name_top: RndCnstAesClearingSharePerm
-          default: 0x3dbb3322bb83fe5e2253dc8678e62045268b14a0294dc0a3116d2692a9f9ef15ed04935dfb0dfa87532fd95419a1ff07
-          randwidth: 384
-        }
-        {
-          name: RndCnstMaskingLfsrSeed
-          desc: Default seed of the PRNG used for masking.
-          type: aes_pkg::masking_lfsr_seed_t
-          randcount: 288
-          randtype: data
-          name_top: RndCnstAesMaskingLfsrSeed
-          default: 0x8a468d23eecbd09de6b8f9faeaf1a70e57e8eda03a353b76a2f833509acc7b3aa3fa7dac
-          randwidth: 288
-        }
-        {
-          name: RndCnstMaskingLfsrPerm
-          desc: Permutation applied to the output of the PRNG used for masking.
-          type: aes_pkg::masking_lfsr_perm_t
-          randcount: 160
-          randtype: perm
-          name_top: RndCnstAesMaskingLfsrPerm
-          default: 0x111e1d25773743872e29390f513a910112627b524e484f7a706e8d5b69736f6857072d09827c2c713c801b7f4c96909879323f1c2766846d9e8586409c31444928422697617d4d108b955c9a928a176b58835d145f05740a889b412065728c9922896460083335190e2f0b75157e5a1a4b93530d036c8f0c56139d0204348e54503d946324812145467659675518473b2a38004a5e16361f6a30069f782b3e23
-          randwidth: 1280
-        }
       ]
       inter_signal_list:
       [
@@ -7521,46 +7269,6 @@
           expose: "true"
           name_top: KmacAppCfg
         }
-        {
-          name: RndCnstLfsrSeed
-          desc: Compile-time random data for PRNG default seed
-          type: kmac_pkg::lfsr_seed_t
-          randcount: 288
-          randtype: data
-          name_top: RndCnstKmacLfsrSeed
-          default: 0xe6aef30d8577834ccc6caaa63a8e6604338151b9a23c08f9eed04ca1ebb0bdd305ffb6c4
-          randwidth: 288
-        }
-        {
-          name: RndCnstLfsrPerm
-          desc: Compile-time random permutation for PRNG output
-          type: kmac_pkg::lfsr_perm_t
-          randcount: 800
-          randtype: perm
-          name_top: RndCnstKmacLfsrPerm
-          default: 0x8b5f6c52e176ecc9267e5e0b16556f958b3580876599d178e1bb8d00e2fd8db1c756adacf0a2671a1a247312d321189b52e29d477782d15d6295a4a04d428c068711da643416b6e8ab69c55f555baa79be17c0c66f3d57e80a25a3d8bb807d4652d1331d229686e41e23140886d9ae88852e0771ec0a452352814718722ac326328274a00c20bf53a4215459125df3b45273d4dac433371271cc25822f57a30e349b0c5efe15f0f759d03e5f134db6b203a994cb28a0c8defc3fc09278fe09c8d6fd0e5592f402c7318c17ae9ebe9f99aa7d5d92c78a9041a8b771d98e67f94f061a6e56f0c3ae1229ce8e93dd313e9c139ac03decbd26db611f97ac38d6845c47fb199e4c4d89822606820054ca61c2d5e8801904ab9d63415933de782ea0e5186c5aef957840a24e92f60d871d13091a604ad609c31442a12cc5246961e4981f2e497ea40fd090acae852a1aa012c671e2489c5dd4594603b5c0d17e3235e2c11011c27123b81826de5844675605620f11721e6c36ecc5a2ab58ec455ad3c699c2f150180c4aee93cd525c9bb28eb92e6dca0c8b0f8a1bae011f8d119a1732630321af681b496cddad57450c8133304aca882f8b5462f33566b1aa5d7c2bf6c97b82557268da4a1251e9ba82a503da130d076215d41b6cf9a1ee5719a66cdb4813ab556c648e44dd33998ef8c4f24a80e00460000afab0a7990e2985020c1ca4406188aa04e413a5effab9c94d197840d69011b735e76ad90430c06a1c2b8d1d011fc9ee3d33b0c7862759285175a553d0445e4c47111964086029ab296a074b73a1cb1221b970ac3802fb356719562bc437879366a42491132a98b41c150aad1229886761a31c4fb292180723c8bef038ed29a5ed6844d90c41ad99c923077d1cc58671adc9f10e286aa2ea32742540a140e7abe418d2152db186202e51dfd8fa382ee701ad24ba0aa8748f1d40b88d3f6c5707028d69e462c0fc4055d962bb1609492d99188f03eadda04bc0e58ebc81f7dc297eb1bbbca5880e6619796cea305cde84afb7907baf6952406f9dcfd5b5089f0eab7d9f4e1d7bd82125a98b7aa5b396e9e8df7edf5869420d5488e929bdee682c034f272118c7512056f90a650930650b530d46ba764ecb2b24022a20f25ca9226a7b0526a01662757f3e0536d58d1b8107c83d41f0343c23b422498d98569510d8d99505c4f82660e939b1f8459419151e645a41531f938058fe4daaa1f5962bc0949779e94c15f6de677747473a3b7cd1301ce5b2c5aaf845aa4cf0895bbb43b06db868a865ce5716d842e2b0a5262a6c429683c20985c4313af1c476a4ac1514564637bceb8102c85b007aac463dbd3369d9b92e7fa55a4921551ffad13d706523d1e31e23323a19a8ac5a7d8a40ec254e06
-          randwidth: 8000
-        }
-        {
-          name: RndCnstBufferLfsrSeed
-          desc: Compile-time random data for PRNG buffer default seed
-          type: kmac_pkg::buffer_lfsr_seed_t
-          randcount: 800
-          randtype: data
-          name_top: RndCnstKmacBufferLfsrSeed
-          default: 0x3b07e9bf4ee42784136d42c85e456f3b26d15f5584bb9879bd2497852c23d0fa289c3348ce364ed534970e1fd45ec606be134fc08318bd29b22b08df647bdc30068e7513200fa828bfee3eccf02417fa68d004534267f60b34a8f072e77ee4859b243f92
-          randwidth: 800
-        }
-        {
-          name: RndCnstMsgPerm
-          desc: Compile-time random permutation for LFSR Message output
-          type: kmac_pkg::msg_perm_t
-          randcount: 64
-          randtype: perm
-          name_top: RndCnstKmacMsgPerm
-          default: 0x4ddacc9daffeca104f3baf62617a4a90d1507b1807a3644b23b546b77f0901472a8f40ee7f5125e780925b065bbe6b33
-          randwidth: 384
-        }
       ]
       inter_signal_list:
       [
@@ -7746,16 +7454,6 @@
           name_top: OtbnRegFile
         }
         {
-          name: RndCnstUrndPrngSeed
-          desc: Default seed of the PRNG used for URND.
-          type: otbn_pkg::urnd_prng_seed_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstOtbnUrndPrngSeed
-          default: 0x627a281c5681d6566641eecccc88876ad113c50ad1be4d94dce8fca54128a386
-          randwidth: 256
-        }
-        {
           name: SecMuteUrnd
           desc:
             '''
@@ -7782,26 +7480,6 @@
           local: "false"
           expose: "true"
           name_top: SecOtbnSkipUrndReseedAtStart
-        }
-        {
-          name: RndCnstOtbnKey
-          desc: Compile-time random reset value for IMem/DMem scrambling key.
-          type: otp_ctrl_pkg::otbn_key_t
-          randcount: 128
-          randtype: data
-          name_top: RndCnstOtbnOtbnKey
-          default: 0xae1d3493fbef6b9ba5dfe4463a4615e
-          randwidth: 128
-        }
-        {
-          name: RndCnstOtbnNonce
-          desc: Compile-time random reset value for IMem/DMem scrambling nonce.
-          type: otp_ctrl_pkg::otbn_nonce_t
-          randcount: 64
-          randtype: data
-          name_top: RndCnstOtbnOtbnNonce
-          default: 0xf46762a794a8c259
-          randwidth: 64
         }
       ]
       inter_signal_list:
@@ -8028,146 +7706,6 @@
           expose: "true"
           name_top: KeymgrKmacEnMasking
         }
-        {
-          name: RndCnstLfsrSeed
-          desc: Compile-time random bits for initial LFSR seed
-          type: keymgr_pkg::lfsr_seed_t
-          randcount: 64
-          randtype: data
-          name_top: RndCnstKeymgrLfsrSeed
-          default: 0x7e69fb259b961914
-          randwidth: 64
-        }
-        {
-          name: RndCnstLfsrPerm
-          desc: Compile-time random permutation for LFSR output
-          type: keymgr_pkg::lfsr_perm_t
-          randcount: 64
-          randtype: perm
-          name_top: RndCnstKeymgrLfsrPerm
-          default: 0x661c843bba36fa2f30bc14078e6b45c58b1bfdc94f03a1912d7a4229620c92baa7dd44c969e0d5e357f48394bd36e773
-          randwidth: 384
-        }
-        {
-          name: RndCnstRandPerm
-          desc: Compile-time random permutation for entropy used in share overriding
-          type: keymgr_pkg::rand_perm_t
-          randcount: 32
-          randtype: perm
-          name_top: RndCnstKeymgrRandPerm
-          default: 0x165cb816b3c6a20e6c6622a96f33ed3f5e995c28
-          randwidth: 160
-        }
-        {
-          name: RndCnstRevisionSeed
-          desc: Compile-time random bits for revision seed
-          type: keymgr_pkg::seed_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstKeymgrRevisionSeed
-          default: 0xa52226b6a4a7bdb05fe921615bf2ff984540f7d43ece76b4eb13363774ed2ed4
-          randwidth: 256
-        }
-        {
-          name: RndCnstCreatorIdentitySeed
-          desc: Compile-time random bits for creator identity seed
-          type: keymgr_pkg::seed_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstKeymgrCreatorIdentitySeed
-          default: 0x5545e927f6d9e4abac398d42c745eef646c1464dca86dafd7c7c71e6058ddfd8
-          randwidth: 256
-        }
-        {
-          name: RndCnstOwnerIntIdentitySeed
-          desc: Compile-time random bits for owner intermediate identity seed
-          type: keymgr_pkg::seed_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstKeymgrOwnerIntIdentitySeed
-          default: 0x71c51cacbaf4410f06dcc036fcd16fcde97d171891105dd895e3a1d0a19a16d6
-          randwidth: 256
-        }
-        {
-          name: RndCnstOwnerIdentitySeed
-          desc: Compile-time random bits for owner identity seed
-          type: keymgr_pkg::seed_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstKeymgrOwnerIdentitySeed
-          default: 0xdbd8b20fc9e662e1e1b4982b3e8eff63890dbeae926fd468a77efde3de5b4caf
-          randwidth: 256
-        }
-        {
-          name: RndCnstSoftOutputSeed
-          desc: Compile-time random bits for software generation seed
-          type: keymgr_pkg::seed_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstKeymgrSoftOutputSeed
-          default: 0x4776a247baba4c9908ed16bc5415ec16d28c53551312fcedcf2832a66ceacf8e
-          randwidth: 256
-        }
-        {
-          name: RndCnstHardOutputSeed
-          desc: Compile-time random bits for hardware generation seed
-          type: keymgr_pkg::seed_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstKeymgrHardOutputSeed
-          default: 0xd4d5b616177dd43b56fa754e1f53ad658193b563d9bdc6d2aee84852f0cc7371
-          randwidth: 256
-        }
-        {
-          name: RndCnstAesSeed
-          desc: Compile-time random bits for generation seed when aes destination selected
-          type: keymgr_pkg::seed_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstKeymgrAesSeed
-          default: 0xed3a6faa516c144b34c96dfabb6f6e79208a74f35c79f397c4e4c7e22b758184
-          randwidth: 256
-        }
-        {
-          name: RndCnstKmacSeed
-          desc: Compile-time random bits for generation seed when kmac destination selected
-          type: keymgr_pkg::seed_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstKeymgrKmacSeed
-          default: 0x8a90a1254b2276bec9fc1a7a5722a9aaca4db84a32e5c6985a1a6435118b5f5f
-          randwidth: 256
-        }
-        {
-          name: RndCnstOtbnSeed
-          desc: Compile-time random bits for generation seed when otbn destination selected
-          type: keymgr_pkg::seed_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstKeymgrOtbnSeed
-          default: 0x3fd3b9313116b67192d856dd742d40e072e417ad9a5f261204cbcc69a2147819
-          randwidth: 256
-        }
-        {
-          name: RndCnstCdi
-          desc: Compile-time random bits for generation seed when no CDI is selected
-          type: keymgr_pkg::seed_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstKeymgrCdi
-          default: 0xb290a4bb0264347c0f91b0cec93c0129d85b95801dbe03f17e69dc260a79998e
-          randwidth: 256
-        }
-        {
-          name: RndCnstNoneSeed
-          desc: Compile-time random bits for generation seed when no destination selected
-          type: keymgr_pkg::seed_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstKeymgrNoneSeed
-          default: 0xff5c710b67838adfb99a5eca671672cf19bca6adc1ebfab611f19e7262e0a491
-          randwidth: 256
-        }
       ]
       inter_signal_list:
       [
@@ -8372,26 +7910,6 @@
       memory: {}
       param_list:
       [
-        {
-          name: RndCnstCsKeymgrDivNonProduction
-          desc: Compile-time random bits for csrng state group diversification value
-          type: csrng_pkg::cs_keymgr_div_t
-          randcount: 384
-          randtype: data
-          name_top: RndCnstCsrngCsKeymgrDivNonProduction
-          default: 0x970e51b28e7026d0e5dce9e265a416a812231cfa76e3d982f8fdcec9ae1af0b8cd9e17606ec981060e94795a1d573089
-          randwidth: 384
-        }
-        {
-          name: RndCnstCsKeymgrDivProduction
-          desc: Compile-time random bits for csrng state group diversification value
-          type: csrng_pkg::cs_keymgr_div_t
-          randcount: 384
-          randtype: data
-          name_top: RndCnstCsrngCsKeymgrDivProduction
-          default: 0x578c104a36a647e90ffaff9760f5e838bd8e2413ab956b106ca7139a07effee457dee82b6e06663c291739ff0e7d6447
-          randwidth: 384
-        }
         {
           name: SBoxImpl
           desc: Selection of the S-Box implementation. See aes_pkg.sv.
@@ -9084,46 +8602,6 @@
       param_list:
       [
         {
-          name: RndCnstSramKey
-          desc: Compile-time random reset value for SRAM scrambling key.
-          type: otp_ctrl_pkg::sram_key_t
-          randcount: 128
-          randtype: data
-          name_top: RndCnstSramCtrlMainSramKey
-          default: 0x58fee1c58564cf346d9622e537109136
-          randwidth: 128
-        }
-        {
-          name: RndCnstSramNonce
-          desc: Compile-time random reset value for SRAM scrambling nonce.
-          type: otp_ctrl_pkg::sram_nonce_t
-          randcount: 128
-          randtype: data
-          name_top: RndCnstSramCtrlMainSramNonce
-          default: 0x6efbd61b0cb470b944ef806e573b44b6
-          randwidth: 128
-        }
-        {
-          name: RndCnstLfsrSeed
-          desc: Compile-time random bits for initial LFSR seed
-          type: sram_ctrl_pkg::lfsr_seed_t
-          randcount: 64
-          randtype: data
-          name_top: RndCnstSramCtrlMainLfsrSeed
-          default: 0x43ebf0c5de019fc0
-          randwidth: 64
-        }
-        {
-          name: RndCnstLfsrPerm
-          desc: Compile-time random permutation for LFSR output
-          type: sram_ctrl_pkg::lfsr_perm_t
-          randcount: 64
-          randtype: perm
-          name_top: RndCnstSramCtrlMainLfsrPerm
-          default: 0xb99612d278f8a9759da4322bf1f55305b821cef680db5dc7170b2d94610b7b2a0f38a08c24defde7afd04648949bec5c
-          randwidth: 384
-        }
-        {
           name: MemSizeRam
           desc: Memory size of the RAM (in bytes).
           type: int
@@ -9423,26 +8901,6 @@
           name_top: RomCtrlFlopToKmac
         }
         {
-          name: RndCnstScrNonce
-          desc: Fixed nonce used for address / data scrambling
-          type: bit [63:0]
-          randcount: 64
-          randtype: data
-          name_top: RndCnstRomCtrlScrNonce
-          default: 0x356888ae5343dd78
-          randwidth: 64
-        }
-        {
-          name: RndCnstScrKey
-          desc: Randomised constant used as a scrambling key for ROM data
-          type: bit [127:0]
-          randcount: 128
-          randtype: data
-          name_top: RndCnstRomCtrlScrKey
-          default: 0x4cba5bebbe2a6ead062d9516fdd8b110
-          randwidth: 128
-        }
-        {
           name: SecDisableScrambling
           desc:
             '''
@@ -9641,46 +9099,6 @@
       memory: {}
       param_list:
       [
-        {
-          name: RndCnstLfsrSeed
-          desc: Default seed of the PRNG used for random instructions.
-          type: ibex_pkg::lfsr_seed_t
-          randcount: 32
-          randtype: data
-          name_top: RndCnstRvCoreIbexLfsrSeed
-          default: 0x861a797c
-          randwidth: 32
-        }
-        {
-          name: RndCnstLfsrPerm
-          desc: Permutation applied to the LFSR of the PRNG used for random instructions.
-          type: ibex_pkg::lfsr_perm_t
-          randcount: 32
-          randtype: perm
-          name_top: RndCnstRvCoreIbexLfsrPerm
-          default: 0xae8d23a0970e7624b55c64ddd5bfdf1c70505216
-          randwidth: 160
-        }
-        {
-          name: RndCnstIbexKeyDefault
-          desc: Default icache scrambling key
-          type: logic [ibex_pkg::SCRAMBLE_KEY_W-1:0]
-          randcount: 128
-          randtype: data
-          name_top: RndCnstRvCoreIbexIbexKeyDefault
-          default: 0x1c67f59cba5482c1e35e6e3335c20cc7
-          randwidth: 128
-        }
-        {
-          name: RndCnstIbexNonceDefault
-          desc: Default icache scrambling nonce
-          type: logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0]
-          randcount: 64
-          randtype: data
-          name_top: RndCnstRvCoreIbexIbexNonceDefault
-          default: 0x78fc309917b9c870
-          randwidth: 64
-        }
         {
           name: NEscalationSeverities
           desc: Number of escalation severities
@@ -15751,29 +15169,6 @@
       }
     }
   ]
-  seed:
-  {
-    topgen_seed:
-    {
-      seed_mode: dev
-      value: 1017106219537032642877583828875051302543807092889754935647094601236425074047
-    }
-    otp_ctrl_seed:
-    {
-      seed_mode: dev
-      value: 36021179872380457113239299468132194022238108125576166239904535336103582949069
-    }
-    otp_img_seed:
-    {
-      seed_mode: dev
-      value: 52408960416235844780753299194502148156786072650816676092165912261205302331741
-    }
-    lc_ctrl_seed:
-    {
-      seed_mode: dev
-      value: 40182201019264397688411770949626922549663256047001778394918990008320537410392
-    }
-  }
   incoming_alert: {}
   incoming_interrupt: {}
   exported_clks: {}

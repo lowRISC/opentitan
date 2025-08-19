@@ -7,4 +7,4 @@
 # util/topgen.py -t hw/top_englishbreakfast/data/top_englishbreakfast.hjson \
 #                -o hw/top_englishbreakfast/
 
-exports_files(["top_englishbreakfast.gen.hjson"])
+exports_files(glob(["*.hjson"]))
