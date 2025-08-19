@@ -1257,6 +1257,24 @@ def check_modules(top: ConfigT, prefix: str) -> int:
     return error
 
 
+def validate_seed_cfg(top: ConfigT, seed_cfg: ConfigT):
+    """
+    Validates the seed config coming from am external file
+    """
+    # Validate seed information is here. First determine the required keys depending on the
+    # top configuration
+    if find_module(top["module"], "otp_ctrl"):
+        top_seed_required["otp_ctrl_seed"] = top_seed_optional["otp_ctrl_seed"]
+        top_seed_required["otp_img_seed"] = top_seed_optional["otp_img_seed"]
+    if find_module(top["module"], "lc_ctrl"):
+        top_seed_required["lc_ctrl_seed"] = top_seed_optional["lc_ctrl_seed"]
+
+    error = check_keys(seed_cfg, top_seed_required, top_seed_optional, [], "seed")
+    if error:
+        log.error("Seed HJSON has errors. Aborting")
+    return error
+
+
 def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
                  xbar_name_to_block: IpBlocksT) -> int:
     # return as it is for now
@@ -1267,16 +1285,6 @@ def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
         return top, error
 
     component = top['name']
-
-    # Validate seed information is here. First determine the required keys depending on the
-    # top configuration
-    if find_module(top["module"], "otp_ctrl"):
-        top_seed_required["otp_ctrl_seed"] = top_seed_optional["otp_ctrl_seed"]
-        top_seed_required["otp_img_seed"] = top_seed_optional["otp_img_seed"]
-    if find_module(top["module"], "lc_ctrl"):
-        top_seed_required["lc_ctrl_seed"] = top_seed_optional["lc_ctrl_seed"]
-
-    error += check_keys(top["seed"], top_seed_required, [], [], "seed")
 
     # Check module instantiations
     error += check_modules(top, component)

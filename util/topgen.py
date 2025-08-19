@@ -5,6 +5,7 @@
 r"""Top Module Generator
 """
 import argparse
+from dataclasses import dataclass
 import logging as log
 import os
 import shutil
@@ -52,6 +53,7 @@ from topgen.resets import Resets
 from topgen.rust import TopGenRust
 from topgen.top import Top
 from topgen.typing import IpBlocksT
+from topgen.validate import validate_seed_cfg
 
 # Common header for generated files
 warnhdr = """//
@@ -71,6 +73,13 @@ SRCTREE_TOP = Path(__file__).parents[1].resolve()
 TOPGEN_TEMPLATE_PATH = SRCTREE_TOP / "util" / "topgen" / "templates"
 IP_RAW_PATH = SRCTREE_TOP / "hw" / "ip"
 IP_TEMPLATES_PATH = SRCTREE_TOP / "hw" / "ip_templates"
+
+
+@dataclass
+class Seed:
+    """Holds the seeds value along with its identifier"""
+    seed_mode: str
+    value: int
 
 
 class UniquifiedModules(object):
@@ -675,7 +684,7 @@ def _get_otp_ctrl_params(top: ConfigT,
 
     """Returns the parameters extracted from the otp_mmap.hjson file."""
     otp_mmap_path = out_path / "data" / "otp" / "otp_ctrl_mmap.hjson"
-    otp_mmap = OtpMemMap.from_mmap_path(otp_mmap_path, top["seed"]["otp_ctrl_seed"]).config
+    otp_mmap = OtpMemMap.from_mmap_path(otp_mmap_path, top["seed"]["otp_ctrl_seed"].value).config
     enable_flash_keys = has_flash_keys(otp_mmap["partitions"], otp_mmap_path)
     otp_ctrl = lib.find_module(top["module"], "otp_ctrl")
     ipgen_params = get_ipgen_params(otp_ctrl)
@@ -1451,7 +1460,15 @@ def main():
     topcfg = load_cfg(args.topcfg)
 
     # Load the seed config from the separate configuration file
-    topcfg["seed"] = load_cfg(args.seedcfg)
+    seed_cfg = load_cfg(args.seedcfg)
+    seed_error = validate_seed_cfg(topcfg, seed_cfg)
+    if seed_error:
+        sys.exit(1)
+
+    seed_mode = seed_cfg.pop("name")
+    topcfg["seed"] = {}
+    for seed_name, seed_value in seed_cfg.items():
+        topcfg["seed"][seed_name] = Seed(seed_mode, seed_value)
 
     # Add domain information to each module's reset_connections
     amend_reset_connections(topcfg)
@@ -1524,7 +1541,7 @@ def main():
     for pass_idx in range(maximum_passes):
         log.info("Generation pass {}".format(pass_idx + 1))
         # Use the same seed for each pass to have stable random constants.
-        SecurePrngFactory.create("topgen", topcfg["seed"]["topgen_seed"])
+        SecurePrngFactory.create("topgen", topcfg["seed"]["topgen_seed"].value)
         # Insert the config file path of the HJSON to allow parsing files
         # relative the config directory
         cfg_copy["cfg_path"] = Path(args.topcfg).parent
@@ -1667,7 +1684,7 @@ def main():
 
         if lib.find_module(topcfg["module"], "lc_ctrl"):
             lc_state_def_file = load_cfg(IP_RAW_PATH / "lc_ctrl" / "data" / "lc_ctrl_state.hjson")
-            lc_st_enc = LcStEnc(lc_state_def_file, topcfg["seed"]["lc_ctrl_seed"])
+            lc_st_enc = LcStEnc(lc_state_def_file, topcfg["seed"]["lc_ctrl_seed"].value)
             lc_st_enc_filename = "rtl/autogen/lc_ctrl_state_pkg.sv"
             render_template(IP_RAW_PATH / "lc_ctrl" / "rtl" / "lc_ctrl_state_pkg.sv.tpl",
                             out_path / lc_st_enc_filename,
