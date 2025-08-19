@@ -251,15 +251,11 @@ static bool get_byte(struct tcp_server_ctx *ctx, char *cmd) {
   if (num_read == -1) {
     if (errno == EAGAIN || errno == EWOULDBLOCK) {
       return false;
-    } else if (errno == EBADF) {
+    } else {
       // Possibly client went away? Accept a new connection.
       fprintf(stderr, "%s: Client disappeared.\n", ctx->display_name);
       tcp_server_client_close(ctx);
       return false;
-    } else {
-      fprintf(stderr, "%s: Error while reading from client: %s (%d)\n",
-              ctx->display_name, strerror(errno), errno);
-      assert(0 && "Error reading from client");
     }
   }
   assert(num_read == 1);
@@ -278,14 +274,11 @@ static void put_byte(struct tcp_server_ctx *ctx, char cmd) {
     if (num_written == -1) {
       if (errno == EAGAIN || errno == EWOULDBLOCK) {
         continue;
-      } else if (errno == EPIPE) {
+      } else {
+        // Possibly client went away? Accept a new connection.
         printf("%s: Remote disconnected.\n", ctx->display_name);
         tcp_server_client_close(ctx);
         break;
-      } else {
-        fprintf(stderr, "%s: Error while writing to client: %s (%d)\n",
-                ctx->display_name, strerror(errno), errno);
-        assert(0 && "Error writing to client.");
       }
     }
     if (num_written >= 1) {
