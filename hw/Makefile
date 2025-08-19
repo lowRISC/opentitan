@@ -100,12 +100,6 @@ $(ips_reg): %_reg:
 	${PRJ_DIR}/util/regtool.py ${toolflags} -r $(blk-hjson)
 	${PRJ_DIR}/util/regtool.py --sec-cm-testplan $(blk-hjson)
 
-# Register generation for otp_ctrl also depends on running gen-otp-mmap.py
-.PHONY: otp-mmap
-$(filter otp_ctrl_reg,$(ips_reg)): otp-mmap
-otp-mmap:
-	cd ${PRJ_DIR} && ./util/design/gen-otp-mmap.py ${OTP_MMAP_BUFER}
-
 # Register generation for lc_ctrl also depends on running gen-lc-state-enc.py
 .PHONY: lc-state-enc
 $(filter lc_ctrl_reg,$(ips_reg)): lc-state-enc
