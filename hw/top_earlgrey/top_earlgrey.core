@@ -36,7 +36,6 @@ filesets:
       - lowrisc:constants:top_earlgrey_jtag_id_pkg
       - lowrisc:constants:top_earlgrey_ibex_pmp_reset_pkg
       - lowrisc:ip:lc_ctrl
-      - lowrisc:earlgrey_constants:lc_ctrl_state_pkg
       - lowrisc:ip:usbdev
       - lowrisc:top_earlgrey:xbar_main
       - lowrisc:top_earlgrey:xbar_peri
@@ -68,9 +67,18 @@ filesets:
       - "fileset_partner  ? (partner:ip:otp_macro)"
       - "!fileset_partner ? (lowrisc:ip:otp_macro)"
     files:
-      - rtl/autogen/top_earlgrey_rnd_cnst_pkg.sv
       - rtl/autogen/top_earlgrey.sv
     file_type: systemVerilogSource
+
+  files_rtl_dev:
+    depend:
+      - lowrisc:earlgrey_constants:dev_rnd_cnst_pkg
+      - lowrisc:earlgrey_constants:dev_lc_ctrl_state_pkg
+
+  files_rtl_prod:
+    depend:
+      - lowrisc:earlgrey_constants:prod_rnd_cnst_pkg
+      - lowrisc:earlgrey_constants:prod_lc_ctrl_state_pkg
 
   files_verilator_waiver:
     depend:
@@ -104,7 +112,7 @@ mapping:
   "lowrisc:virtual_constants:top_racl_pkg": "lowrisc:earlgrey_constants:top_racl_pkg"
   "lowrisc:systems:ast_pkg": "lowrisc:systems:top_earlgrey_ast_pkg"
   "lowrisc:virtual_ip:flash_ctrl_prim_reg_top": "lowrisc:earlgrey_ip:flash_ctrl_prim_reg_top"
-  "lowrisc:virtual_ip:lc_ctrl_state_pkg": "lowrisc:earlgrey_constants:lc_ctrl_state_pkg"
+  "lowrisc:virtual_ip:lc_ctrl_state_pkg": "lowrisc:earlgrey_constants:dev_lc_ctrl_state_pkg"
   # TODO(#27347): prim_legacy_pkg is deprecated
   "lowrisc:prim:prim_pkg": "lowrisc:prim:prim_legacy_pkg"
 
@@ -119,12 +127,16 @@ targets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
+      - fileset_prod     ? (files_rtl_prod)
+      - "!fileset_prod   ? (files_rtl_dev)"
       - files_rtl_generic
     toplevel: top_earlgrey
 
   sim:
     default_tool: icarus
     filesets:
+      - fileset_prod     ? (files_rtl_prod)
+      - "!fileset_prod   ? (files_rtl_dev)"
       - files_rtl_generic
     toplevel: top_earlgrey
 
