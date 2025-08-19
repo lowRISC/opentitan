@@ -30,8 +30,8 @@ then
   REDIR='/dev/null'
 fi
 
-REL_PATH=$(${REPO_TOP}/bazelisk.sh outquery "$@" 2>$REDIR)
+REL_PATH=$(${REPO_TOP}/bazelisk.sh cquery --output=files "$@" 2>$REDIR)
 readonly REL_PATH
 REPO_EXECROOT=$(${REPO_TOP}/bazelisk.sh info --show_make_env execution_root)
 readonly REPO_EXECROOT
-echo "${REPO_EXECROOT}/${REL_PATH}"
+echo "${REL_PATH}" | awk -v root="$REPO_EXECROOT" '{print root "/" $0}'

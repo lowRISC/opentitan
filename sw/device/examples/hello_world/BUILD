@@ -18,6 +18,7 @@ opentitan_binary(
     ],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv",
         "//hw/top_earlgrey:sim_verilator",
         # For some reason, this target makes englishbreakfast builds fail.
