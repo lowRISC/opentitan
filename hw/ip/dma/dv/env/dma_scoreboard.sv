@@ -863,6 +863,18 @@ class dma_scoreboard extends cip_base_scoreboard #(
     `uvm_info(`gfn, $sformatf("Got reg_write to %s with addr : %0x and data : %0x ",
                               csr.get_name(), item.a_addr, item.a_data), UVM_HIGH)
 
+    // CFG_REGWEN prevents updates to most of the configuration registers when the DUT is active.
+    //
+    // Note: since we're using the mirrored value here, any sequence that attempts to change the
+    //       configuration registers whilst the DUT is operating must be sure to read CFG_REGWEN
+    //       at strategic moments.
+    if (prim_mubi_pkg::MuBi4True != `gmv(ral.cfg_regwen) &&
+        ral.cfg_regwen.locks_reg_or_fld(csr)) begin
+      `uvm_info(`gfn, $sformatf("Ignoring write to '%s' because of cfg_regwen", csr.get_name()),
+                UVM_MEDIUM)
+      return;
+    end
+
     // incoming access is a write to a valid csr, so make updates right away
     void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
 
@@ -922,13 +934,12 @@ class dma_scoreboard extends cip_base_scoreboard #(
         dma_config.dst_addr[63:32] = item.a_data;
         `uvm_info(`gfn, $sformatf("Got dst_addr_hi = %0x", dma_config.dst_addr[63:32]), UVM_HIGH)
       end
-      // TODO: Drop dst_control and src_control
-      "dst_config", "dst_control": begin
+      "dst_config": begin
         `uvm_info(`gfn, $sformatf("Got dst_config = %0x", item.a_data), UVM_HIGH)
         dma_config.dst_chunk_wrap = get_field_val(ral.dst_config.wrap, item.a_data);
         dma_config.dst_addr_inc = get_field_val(ral.dst_config.increment, item.a_data);
       end
-      "src_config", "src_control": begin
+      "src_config": begin
         `uvm_info(`gfn, $sformatf("Got src_config = %0x", item.a_data), UVM_HIGH)
         dma_config.src_chunk_wrap = get_field_val(ral.src_config.wrap, item.a_data);
         dma_config.src_addr_inc = get_field_val(ral.src_config.increment, item.a_data);
@@ -1311,7 +1322,56 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                   real_digest_val, exp_digest[digest_idx]), UVM_MEDIUM)
         `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx]);
       end
-      default: do_read_check = 1'b0;
+      "cfg_regwen": begin
+        // Ensure that we have an accurate model of the CFG_REGWEN because this is critical in
+        // knowing whether configuration writes are to be ignored.
+        void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+        do_read_check = 1'b0;
+      end
+      // These configuration registers are updated automatically by the DUT, so they cannot be
+      // predicted easily.
+      "src_addr_lo",
+      "src_addr_hi",
+      "dst_addr_lo",
+      "dst_addr_hi" : begin
+        void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+        do_read_check = 1'b0;
+      end
+      // These configuration registers should all be predictable.
+      "addr_space_id", "total_data_size", "chunk_data_size", "transfer_width",
+      "src_config", "dst_config",
+      "handshake_intr_enable", "clear_intr_src", "clear_intr_bus",
+      "intr_src_addr_0",
+      "intr_src_addr_1",
+      "intr_src_addr_2",
+      "intr_src_addr_3",
+      "intr_src_addr_4",
+      "intr_src_addr_5",
+      "intr_src_addr_6",
+      "intr_src_addr_7",
+      "intr_src_addr_8",
+      "intr_src_addr_9",
+      "intr_src_addr_10",
+      "intr_src_wr_val_0",
+      "intr_src_wr_val_1",
+      "intr_src_wr_val_2",
+      "intr_src_wr_val_3",
+      "intr_src_wr_val_4",
+      "intr_src_wr_val_5",
+      "intr_src_wr_val_6",
+      "intr_src_wr_val_7",
+      "intr_src_wr_val_8",
+      "intr_src_wr_val_9",
+      "intr_src_wr_val_10": begin
+        `uvm_info(`gfn, $sformatf("reg_read of config reg `%s`", csr.get_name()), UVM_HIGH)
+        do_read_check = 1'b1;
+      end
+      default: begin
+        // This message may indicate a failure to update the scoreboard to match the DUT.
+        // so that it matches the configuration programmed into the DUT
+        `uvm_info(`gfn, $sformatf("reg_read of `%s` not handled", csr.get_name()), UVM_MEDIUM)
+        do_read_check = 1'b0;
+      end
     endcase
 
     if (do_read_check) begin

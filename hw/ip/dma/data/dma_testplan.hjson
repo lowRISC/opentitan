@@ -292,6 +292,26 @@
         stage: V2S
         tests: ["dma_generic_stress", "dma_handshake_stress", "dma_mem_enabled"]
       }
+      {
+        name: dma_config_lock
+        desc: '''
+              Attempt to change the configuration registers whilst the DMA controller is active.
+              The majority of the configuration registers are protected using the `CFG_REGWEN` write enable register.
+              Since the enable is controlled exclusively by the hardware itself, the standard CSR tests are unable to test that it operates correctly.
+
+              Stimulus:
+              - Configure and start the DUT performing a long transfer.
+              - Choose one or more random configuration registers that should be protected by `CFG_REGWEN`.
+              - Whilst the DUT is still operating, attempt to invert the contents of the protected registers.
+
+              Checking:
+              - Check the value of the `CFG_REGWEN` register before and after starting the DMA transfer.
+              - Check that the contents of the chosen configuration registers do not change.
+              - Check the value of the `CFG_REGWEN` register after the transfer has completed.
+              '''
+        stage: V2S
+        tests: ["dma_config_lock"]
+      }
     ]
     covergroups: [
       {
