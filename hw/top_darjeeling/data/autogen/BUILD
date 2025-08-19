@@ -7,4 +7,4 @@
 # util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson \
 #                -o hw/top_darjeeling/
 
-exports_files(["top_darjeeling.gen.hjson"])
+exports_files(glob(["*.hjson"]))

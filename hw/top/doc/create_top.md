@@ -142,7 +142,7 @@ sim_dv(
         "//hw/top_darjeeling/sw/dt:sim_dv",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    rom_scramble_config = "//hw/top_darjeeling/data/autogen:top_matcha.gen.hjson",
+    rom_scramble_config = "//hw/top_darjeeling/data/autogen:top_matcha.secrets.dev.gen.hjson",
 )
 
 sim_dv(

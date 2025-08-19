@@ -7,4 +7,4 @@
 # util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson \
 #                -o hw/top_earlgrey/
 
-exports_files(["top_earlgrey.gen.hjson"])
+exports_files(glob(["*.hjson"]))
