@@ -22,7 +22,8 @@ from typing import List
 import hjson
 from pyfinite import ffield
 from lib.OtpMemMap import OtpMemMap
-from lib.common import (inverse_permute_bits,
+from lib.common import (check_int,
+                        inverse_permute_bits,
                         validate_data_perm_option,
                         vmem_permutation_string)
 from lib.Present import Present
@@ -146,17 +147,8 @@ def _get_otp_ctrl_netlist_consts(otp_mmap_file: str, otp_seed: int,
     # Read in the OTP memory map file to a dictionary.
     with open(otp_mmap_file, 'r') as infile:
         otp_mmap_config = hjson.load(infile)
-        # If a OTP memory map seed is provided, we use it.
-        if otp_seed is not None:
-            otp_mmap_config["seed"] = otp_seed
-        # Otherwise, we either take it from the .hjson if present, else we
-        # error out. If we did not provide a seed via a cmd line arg, and there
-        # is not one present in the .hjson, then it won't be in sync with what
-        # `gen-otp-mmap.py` generated on the RTL side.
-        elif "seed" not in otp_mmap_config:
-            log.error("No OTP seed provided.")
         try:
-            otp_mmap = OtpMemMap(otp_mmap_config)
+            otp_mmap = OtpMemMap(otp_mmap_config, otp_seed)
         except RuntimeError as err:
             log.error(err)
             exit(1)
@@ -353,11 +345,13 @@ def main(argv: List[str]):
     parser.add_argument("--in-otp-vmem",
                         type=str,
                         help="Input OTP (VMEM) file to retrieve data from.")
-    parser.add_argument(
-        "--otp-seed",
-        type=int,
-        help=
-        "Configuration override seed used to randomize OTP netlist constants.")
+    parser.add_argument('--seed-cfg',
+                        type=Path,
+                        metavar='<path>',
+                        required=True,
+                        help='''
+                        Path to the seed configuration in Hjson format.
+                        ''')
     parser.add_argument("--out-flash-vmem", type=str, help="Output VMEM file.")
     parser.add_argument("--otp-data-perm",
                         type=vmem_permutation_string,
@@ -386,7 +380,11 @@ def main(argv: List[str]):
     # Read flash scrambling configurations (including: enablement, otp_ctrl
     # netlist consts, address and data key seeds) directly from OTP VMEM file.
     if args.in_otp_vmem:
-        _get_otp_ctrl_netlist_consts(args.in_otp_mmap, args.otp_seed,
+        with open(args.seed_cfg, 'r') as infile:
+            seed_cfg = hjson.load(infile)
+
+        otp_ctrl_seed = check_int(seed_cfg["otp_ctrl_seed"])
+        _get_otp_ctrl_netlist_consts(args.in_otp_mmap, otp_ctrl_seed,
                                      scrambling_configs)
         _get_flash_scrambling_configs(args.in_otp_vmem, args.otp_data_perm,
                                       scrambling_configs)

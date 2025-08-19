@@ -651,8 +651,7 @@ def _get_flash_ctrl_params(top: ConfigT) -> ParamsT:
 
 
 def _get_otp_ctrl_params(top: ConfigT,
-                         out_path: Path,
-                         seed: int = None) -> ParamsT:
+                         out_path: Path) -> ParamsT:
 
     def has_flash_keys(parts, path) -> bool:
         """Determines if the SECRET1 partition has flash key seeds.
@@ -675,7 +674,7 @@ def _get_otp_ctrl_params(top: ConfigT,
 
     """Returns the parameters extracted from the otp_mmap.hjson file."""
     otp_mmap_path = out_path / "data" / "otp" / "otp_ctrl_mmap.hjson"
-    otp_mmap = OtpMemMap.from_mmap_path(otp_mmap_path, seed).config
+    otp_mmap = OtpMemMap.from_mmap_path(otp_mmap_path, top["seed"]["otp_ctrl_seed"]).config
     enable_flash_keys = has_flash_keys(otp_mmap["partitions"], otp_mmap_path)
     otp_ctrl = lib.find_module(top["module"], "otp_ctrl")
     ipgen_params = get_ipgen_params(otp_ctrl)
@@ -1301,7 +1300,7 @@ def dump_completecfg(cfg: ConfigT, out_path: Path) -> None:
 // util/topgen.py -t hw/{top_name}/data/{top_name}.hjson \\
 //                -o hw/{top_name}/ \\
 //                --rnd_cnst_seed {seed}
-""".format(top_name=top_name, seed=cfg["rnd_cnst_seed"])
+""".format(top_name=top_name, seed=cfg["seed"]["topgen_seed"])
 
     genhjson_path.write_text(genhdr + gencmd +
                              hjson.dumps(cfg, for_json=True, default=vars) +
@@ -1314,6 +1313,10 @@ def main():
                         "-t",
                         required=True,
                         help="`top_{name}.hjson` file.")
+    parser.add_argument("--seedcfg",
+                        "-s",
+                        required=True,
+                        help="top_{name} seed configuration file.")
     parser.add_argument(
         "--outdir",
         "-o",
@@ -1405,12 +1408,6 @@ def main():
         nargs="+",
         help="Names or prefix for the DV register classes from which "
         "the register models are derived.")
-    # Generator options for compile time random netlist constants
-    parser.add_argument(
-        "--rnd_cnst_seed",
-        type=int,
-        metavar="<seed>",
-        help="Custom seed for RNG to compute netlist constants.")
     # Miscellaneous: only return the list of blocks and exit.
     parser.add_argument("--get_blocks",
                         default=False,
@@ -1459,6 +1456,9 @@ def main():
 
     topcfg = load_cfg(args.topcfg)
 
+    # Load the seed config from the separate configuration file
+    topcfg["seed"] = load_cfg(args.seedcfg)
+
     # Add domain information to each module's reset_connections
     amend_reset_connections(topcfg)
 
@@ -1486,17 +1486,6 @@ def main():
 
     # Extract version stamp from file
     version_stamp = version_file.VersionInformation(args.version_stamp)
-
-    # Determine the seed for RNG for compile-time netlist constants.
-    # If specified, override the seed for random netlist constant computation.
-    if args.rnd_cnst_seed:
-        log.warning("Commandline override of rnd_cnst_seed with {}.".format(
-            args.rnd_cnst_seed))
-        topcfg["rnd_cnst_seed"] = args.rnd_cnst_seed
-    # Otherwise we make sure a seed exists in the HJSON config file.
-    elif "rnd_cnst_seed" not in topcfg:
-        log.error('Seed "rnd_cnst_seed" not found in configuration HJSON.')
-        exit(1)
 
     # The generation of ipgen modules needs to be carefully orchestrated to
     # avoid performing multiple passes when creating the complete top
@@ -1541,7 +1530,7 @@ def main():
     for pass_idx in range(maximum_passes):
         log.info("Generation pass {}".format(pass_idx + 1))
         # Use the same seed for each pass to have stable random constants.
-        SecurePrngFactory.create("topgen", topcfg["rnd_cnst_seed"])
+        SecurePrngFactory.create("topgen", topcfg["seed"]["topgen_seed"])
         # Insert the config file path of the HJSON to allow parsing files
         # relative the config directory
         cfg_copy["cfg_path"] = Path(args.topcfg).parent
@@ -1645,7 +1634,7 @@ def main():
 //                -o hw/{top_name}/ \\
 //                --rnd_cnst_seed \\
 //                {seed}
-""".format(top_name=top_name, seed=completecfg["rnd_cnst_seed"])
+""".format(top_name=top_name, seed=completecfg["seed"]["topgen_seed"])
 
         # Top and chiplevel templates are top-specific
         top_template_path = SRCTREE_TOP / "hw" / top_name / "templates"
@@ -1685,7 +1674,7 @@ def main():
 
         if lib.find_module(topcfg["module"], "lc_ctrl"):
             lc_state_def_file = load_cfg(IP_RAW_PATH / "lc_ctrl" / "data" / "lc_ctrl_state.hjson")
-            lc_st_enc = LcStEnc(lc_state_def_file)
+            lc_st_enc = LcStEnc(lc_state_def_file, topcfg["seed"]["lc_ctrl_seed"])
             lc_st_enc_filename = "rtl/autogen/lc_ctrl_state_pkg.sv"
             render_template(IP_RAW_PATH / "lc_ctrl" / "rtl" / "lc_ctrl_state_pkg.sv.tpl",
                             out_path / lc_st_enc_filename,

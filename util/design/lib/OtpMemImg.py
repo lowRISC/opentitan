@@ -195,13 +195,15 @@ def _int_to_hex_array(val: int, size: int, alignment: int) -> List[str]:
 class OtpMemImg(OtpMemMap):
 
     def __init__(self, lc_state_config, otp_mmap_config, img_config,
-                 data_perm):
+                 seed_cfg, data_perm):
         # Initialize memory map
-        super().__init__(otp_mmap_config)
+        otp_ctrl_seed = common.check_int(seed_cfg["otp_ctrl_seed"])
+        super().__init__(otp_mmap_config, otp_ctrl_seed)
 
         # Initialize the LC state and OTP memory map objects first, since
         # validation and image generation depends on them
-        self.lc_state = LcStEnc(lc_state_config)
+        lc_ctrl_seed = common.check_int(seed_cfg["lc_ctrl_seed"])
+        self.lc_state = LcStEnc(lc_state_config, lc_ctrl_seed)
 
         # Validate memory image configuration
         log.info('')
@@ -219,10 +221,7 @@ class OtpMemImg(OtpMemMap):
         if otp_width != secded_width:
             raise RuntimeError('OTP width and SECDED data width must be equal')
 
-        if 'seed' not in img_config:
-            raise RuntimeError('Missing seed in configuration.')
-
-        img_config['seed'] = common.check_int(img_config['seed'])
+        img_config["seed"] = seed_cfg["otp_img_seed"]
         log.info('Seed: {0:x}'.format(img_config['seed']))
         log.info('')
 

@@ -22,14 +22,15 @@ def _lc_raw_unlock_token_impl(ctx):
         output,
     )
     args.add(
-        "--seed",
-        ctx.attr.lc_seed[BuildSettingInfo].value,
+        "--seed-cfg",
+        ctx.file.seed_cfg,
     )
     ctx.actions.run(
         outputs = [output],
         inputs = [
             ctx.file.lc_state_def,
             ctx.file.src,
+            ctx.file.seed_cfg,
         ],
         arguments = [args],
         executable = ctx.executable._tool,
@@ -54,9 +55,10 @@ lc_raw_unlock_token = rule(
             default = "//sw/device/silicon_creator/manuf/data:lc_raw_unlock_token.rs.tpl",
             doc = "Life-cycle state definition file in Hjson format.",
         ),
-        "lc_seed": attr.label(
-            default = "//util/design/data:lc_seed",
-            doc = "Configuration override seed used to randomize LC netlist constants.",
+        "seed_cfg": attr.label(
+            allow_single_file = True,
+            default = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
+            doc = "Seed configuration file.",
         ),
         "_tool": attr.label(
             default = "//util/design:gen-lc-state-enc",

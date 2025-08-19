@@ -61,6 +61,7 @@ filegroup(
             "//sw/device/silicon_creator/rom_ext/e2e:otp_json_secret2_locked",
             ":otp_json_with_{}_imm_romext_enabled".format(name),
         ],
+        seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
         visibility = ["//visibility:private"],
     )
     for name in IMM_SECTION_VARIATIONS

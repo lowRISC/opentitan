@@ -22,6 +22,7 @@ otp_image(
     overlays = STD_OTP_OVERLAYS + [
         "//sw/device/silicon_creator/rom/e2e/sigverify_spx:otp_json_sigverify_spx_enabled_true",
     ],
+    seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
     visibility = ["//visibility:private"],
 )
 

@@ -123,9 +123,10 @@ scramble_flash_vmem = rv_rule(
             default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
             doc = "OTP memory map configuration HJSON file.",
         ),
-        "otp_seed": attr.label(
-            default = "//util/design/data:otp_seed",
-            doc = "Configuration override seed used to randomize OTP netlist constants.",
+        "seed_cfg": attr.label(
+            allow_single_file = True,
+            doc = "Seed configuration file.",
+            mandatory = True,
         ),
         "otp_data_perm": attr.label(
             default = "//util/design/data:data_perm",

@@ -94,10 +94,8 @@ def otp_partition(name, **kwargs):
     partition.update(kwargs)
     return json.encode(partition)
 
-def _otp_json_builder(ctx, seed = None):
+def _otp_json_builder(ctx):
     otp = {}
-    if seed:
-        otp["seed"] = seed
     otp["partitions"] = [json.decode(p) for p in ctx.attr.partitions]
 
     # For every partition with an "items" dictionary, expand the dictionary of
@@ -117,20 +115,17 @@ def _otp_json_builder(ctx, seed = None):
     return file
 
 def _otp_json_impl(ctx):
-    return [DefaultInfo(files = depset([_otp_json_builder(ctx, ctx.attr.seed)]))]
+    return [DefaultInfo(files = depset([_otp_json_builder(ctx)]))]
 
 otp_json = rule(
     implementation = _otp_json_impl,
     attrs = {
-        "seed": attr.string(
-            doc = "Seed to be used for generation of partition randomized values. Can be overridden by the OTP image generation tool.",
-        ),
         "partitions": attr.string_list(doc = "A list of serialized partitions from otp_partition."),
     },
 )
 
 def _otp_json_rot_keys_impl(ctx):
-    intput_file = _otp_json_builder(ctx, seed = None)
+    intput_file = _otp_json_builder(ctx)
     output_file = ctx.actions.declare_file("{}.with_digest.json".format(ctx.attr.name))
     args = ctx.actions.args()
     args.add("--input", intput_file)
@@ -165,7 +160,7 @@ def _otp_json_immutable_rom_ext_impl(ctx):
             break
     if rom_ext_elf_file == None:
         fail("No ELF dependency for ROM_EXT target.")
-    intput_file = _otp_json_builder(ctx, seed = None)
+    intput_file = _otp_json_builder(ctx)
     output_file = ctx.actions.declare_file("{}.with_immutable_re_params.json".format(ctx.attr.name))
     args = ctx.actions.args()
     args.add("--input", intput_file)
@@ -237,12 +232,7 @@ def _otp_image(ctx):
         args.add("--stamp")
     args.add("--lc-state-def", ctx.file.lc_state_def)
     args.add("--mmap-def", ctx.file.mmap_def)
-    if ctx.attr.img_seed:
-        args.add("--img-seed", ctx.attr.img_seed[BuildSettingInfo].value)
-    if ctx.attr.lc_seed:
-        args.add("--lc-seed", ctx.attr.lc_seed[BuildSettingInfo].value)
-    if ctx.attr.otp_seed:
-        args.add("--otp-seed", ctx.attr.otp_seed[BuildSettingInfo].value)
+    args.add("--seed-cfg", ctx.file.seed_cfg)
     if ctx.attr.data_perm:
         args.add("--data-perm", ctx.attr.data_perm[BuildSettingInfo].value)
     args.add("--img-cfg", ctx.file.src)
@@ -254,6 +244,7 @@ def _otp_image(ctx):
             ctx.file.src,
             ctx.file.lc_state_def,
             ctx.file.mmap_def,
+            ctx.file.seed_cfg,
         ] + ctx.files.overlays,
         arguments = [args],
         executable = ctx.executable._tool,
@@ -281,17 +272,10 @@ otp_image = rule(
             default = "//hw/top:top_otp_map",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
-        "img_seed": attr.label(
-            default = "//util/design/data:img_seed",
-            doc = "Configuration override seed used to randomize field values in an OTP image.",
-        ),
-        "lc_seed": attr.label(
-            default = "//util/design/data:lc_seed",
-            doc = "Configuration override seed used to randomize LC netlist constants.",
-        ),
-        "otp_seed": attr.label(
-            default = "//util/design/data:otp_seed",
-            doc = "Configuration override seed used to randomize OTP netlist constants.",
+        "seed_cfg": attr.label(
+            allow_single_file = True,
+            doc = "Seed configuration file.",
+            mandatory = True,
         ),
         "data_perm": attr.label(
             default = "//util/design/data:data_perm",
@@ -318,9 +302,7 @@ def _otp_image_consts_impl(ctx):
         args.add("--stamp")
     args.add("--lc-state-def", ctx.file.lc_state_def)
     args.add("--mmap-def", ctx.file.mmap_def)
-    args.add("--img-seed", ctx.attr.img_seed[BuildSettingInfo].value)
-    args.add("--lc-seed", ctx.attr.lc_seed[BuildSettingInfo].value)
-    args.add("--otp-seed", ctx.attr.otp_seed[BuildSettingInfo].value)
+    args.add("--seed-cfg", ctx.file.seed_cfg)
     args.add("--img-cfg", ctx.file.src)
     args.add("--c-template", ctx.file.c_template)
     args.add("--c-out", "{}/{}.c".format(output.dirname, ctx.attr.name))
@@ -332,6 +314,7 @@ def _otp_image_consts_impl(ctx):
             ctx.file.c_template,
             ctx.file.lc_state_def,
             ctx.file.mmap_def,
+            ctx.file.seed_cfg,
         ] + ctx.files.overlays,
         arguments = [args],
         executable = ctx.executable._tool,
@@ -361,17 +344,10 @@ otp_image_consts = rule(
             default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
-        "img_seed": attr.label(
-            default = "//util/design/data:img_seed",
-            doc = "Configuration override seed used to randomize field values in an OTP image.",
-        ),
-        "lc_seed": attr.label(
-            default = "//util/design/data:lc_seed",
-            doc = "Configuration override seed used to randomize LC netlist constants.",
-        ),
-        "otp_seed": attr.label(
-            default = "//util/design/data:otp_seed",
-            doc = "Configuration override seed used to randomize OTP netlist constants.",
+        "seed_cfg": attr.label(
+            allow_single_file = True,
+            doc = "Seed configuration file.",
+            mandatory = True,
         ),
         "c_template": attr.label(
             allow_single_file = True,

@@ -29,6 +29,7 @@ package(default_visibility = ["//visibility:public"])
         name = "otp_img_e2e_bootstrap_entry_{}".format(lc_state),
         src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS,
+        seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
     )
     for lc_state, _ in get_lc_items()
 ]

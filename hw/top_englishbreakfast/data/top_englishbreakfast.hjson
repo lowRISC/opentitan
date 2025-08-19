@@ -6,12 +6,6 @@
 { name: "englishbreakfast",
   type: "top",
 
-  /////////////////////////////////////////////////////////////
-  // 256 bit seed for compile-time random constants          //
-  // NOTE: REPLACE THIS WITH A NEW VALUE BEFORE THE TAPEOUT  //
-  /////////////////////////////////////////////////////////////
-  rnd_cnst_seed: 47496257290787239787852990649372780135330843464066774986444696694703339830170
-
   // 32-bit datawidth
   datawidth: "32",
 

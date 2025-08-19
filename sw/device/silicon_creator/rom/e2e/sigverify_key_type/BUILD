@@ -129,6 +129,7 @@ otp_json(
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_enable_spx",
         ],
+        seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
     )
     for lc_state, _ in get_lc_items()
 ]

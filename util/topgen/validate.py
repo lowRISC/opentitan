@@ -12,7 +12,7 @@ from reggen.ip_block import IpBlock
 from reggen.validate import check_keys
 from topgen.resets import Resets, UnmanagedResets
 from topgen.typing import IpBlocksT
-from topgen.lib import find_modules
+from topgen.lib import find_module, find_modules
 
 # For the reference
 # val_types = {
@@ -75,7 +75,7 @@ top_optional = {
     'port': ['g', 'assign special attributes to specific ports'],
     'racl_config': ['s', 'Path to a RACL configuration HJSON file'],
     'reset_requests': ['g', 'define reset requests grouped by type'],
-    'rnd_cnst_seed': ['int', "Seed for random netlist constant computation"],
+    'seed': ['g', "Seed information for topgen and subsequent flows"],
     'unmanaged_resets': ['l', 'List of unmanaged external resets'],
     'default_alert_handler': ['s', 'Modules not defining alert_handler have alerts sent here'],
     'default_plic': ['s', 'Modules not defining plic have interrupts sent here']
@@ -91,6 +91,18 @@ top_added = {
     'wakeups':
     ['l', 'list of wakeup requests each holding name, width, and module'],
     'cfg_path': ['s', 'Path to the folder of the toplevel HJSON file']
+}
+
+# Required/optional field in top seeds hjson
+top_seed_required = {
+    'name': ['s', 'Top name'],
+    'topgen_seed': ['int', "Seed for topgen generated random netlist constants"],
+}
+
+top_seed_optional = {
+    'otp_ctrl_seed': ['int', "Seed for otp_ctrl generated random netlist constants"],
+    'otp_img_seed': ['int', "Seed for OTP image generation"],
+    'lc_ctrl_seed': ['int', "Seed for lc_ctrl generated random netlist constants"],
 }
 
 pinmux_required = {
@@ -1255,6 +1267,16 @@ def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
         return top, error
 
     component = top['name']
+
+    # Validate seed information is here. First determine the required keys depending on the
+    # top configuration
+    if find_module(top["module"], "otp_ctrl"):
+        top_seed_required["otp_ctrl_seed"] = top_seed_optional["otp_ctrl_seed"]
+        top_seed_required["otp_img_seed"] = top_seed_optional["otp_img_seed"]
+    if find_module(top["module"], "lc_ctrl"):
+        top_seed_required["lc_ctrl_seed"] = top_seed_optional["lc_ctrl_seed"]
+
+    error += check_keys(top["seed"], top_seed_required, [], [], "seed")
 
     # Check module instantiations
     error += check_modules(top, component)

@@ -43,6 +43,7 @@ otp_image(
     name = "otp_img_reset_ret_ram",
     src = "//hw/top_earlgrey/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":otp_json_reset_ret_ram_overlay"],
+    seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
     visibility = ["//visibility:private"],
 )
 

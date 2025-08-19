@@ -470,16 +470,13 @@ class OtpMemMap():
     # This holds the partition/item index dict for fast access.
     part_dict = {}
 
-    def __init__(self, config):
+    def __init__(self, config, seed):
 
         log.info('')
         log.info('Parse and translate OTP memory map.')
         log.info('')
 
-        if "seed" not in config:
-            raise RuntimeError("Missing seed in configuration.")
-
-        config["seed"] = check_int(config["seed"])
+        config["seed"] = seed
 
         # Initialize RNG.
         SecurePrngFactory.create("otmemmap", OTP_SEED_DIVERSIFIER + int(config['seed']))
@@ -518,18 +515,8 @@ class OtpMemMap():
             log.error(f"Some error loading {mmap_path} into hjson: {e}")
             exit(1)
 
-        # If specified, override the seed for random netlist constant
-        # computation.
-        if seed:
-            log.warning('Commandline override of seed with {}.'.format(seed))
-            config['seed'] = seed
-        # Otherwise we make sure a seed exists in the HJSON config file.
-        elif 'seed' not in config:
-            log.error('Seed not found in configuration HJSON.')
-            exit(1)
-
         try:
-            otp_mmap = cls(config)
+            otp_mmap = cls(config, seed)
         except RuntimeError as err:
             log.error(err)
             exit(1)

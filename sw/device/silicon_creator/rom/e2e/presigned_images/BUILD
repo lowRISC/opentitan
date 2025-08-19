@@ -24,6 +24,7 @@ scramble_flash_vmem(
     name = "rom_e2e_self_hash_sim_dv_scr_vmem64",
     src = ":rom_e2e_self_hash_sim_dv_vmem64",
     otp = "//hw/top_earlgrey/data/otp:img_test_unlocked0",
+    seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
 )
 
 [
