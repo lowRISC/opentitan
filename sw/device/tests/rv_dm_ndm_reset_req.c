@@ -13,23 +13,35 @@
 #include "otp_ctrl_regs.h"
 #include "pinmux_regs.h"
 
-#if defined(OPENTITAN_IS_EARLGREY)
-#include "dt/dt_adc_ctrl.h"     // Generated
-#include "dt/dt_flash_ctrl.h"   // Generated
-#include "dt/dt_keymgr.h"       // Generated
+#if OPENTITAN_HAS_ADC_CTRL
+#include "dt/dt_adc_ctrl.h"  // Generated
+
+#include "adc_ctrl_regs.h"  // Generated
+#endif                      // OPENTITAN_HAS_ADC_CTRL
+
+#if OPENTITAN_HAS_FLASH_CTRL
+#include "dt/dt_flash_ctrl.h"  // Generated
+
+#include "flash_ctrl_regs.h"  // Generated
+#endif                        // OPENTITAN_HAS_FLASH_CTRL
+
+#if OPENTITAN_HAS_SYSRST_CTRL
 #include "dt/dt_sysrst_ctrl.h"  // Generated
 
-#include "adc_ctrl_regs.h"
-#include "flash_ctrl_regs.h"
-#include "keymgr_regs.h"
-#include "sysrst_ctrl_regs.h"
-#elif defined(OPENTITAN_IS_DARJEELING)
+#include "sysrst_ctrl_regs.h"  // Generated
+#endif                         // OPENTITAN_HAS_SYSRST_CTRL
+
+#if OPENTITAN_HAS_KEYMGR
+#include "dt/dt_keymgr.h"  // Generated
+
+#include "keymgr_regs.h"  // Generated
+#endif                    // OPENTITAN_HAS_KEYMGR
+
+#if OPENTITAN_HAS_KEYMGR_DPE
 #include "dt/dt_keymgr_dpe.h"  // Generated
 
-#include "keymgr_dpe_regs.h"
-#else
-#error Unsupported top
-#endif
+#include "keymgr_dpe_regs.h"  // Generated
+#endif                        // OPENTITAN_HAS_KEYMGR_DPE
 
 /*
    RV_DM NDM RESET REQUEST TEST
@@ -132,7 +144,7 @@ bool test_main(void) {
         .exp_read_val = PINMUX_WKUP_DETECTOR_CNT_TH_1_REG_RESVAL,
 
     },
-#if defined(OPENTITAN_IS_EARLGREY)
+#if OPENTITAN_HAS_ADC_CTRL
     {
         .name = "ADC_CTRL",
         .base = dt_adc_ctrl_primary_reg_block(kDtAdcCtrlAon),
@@ -141,6 +153,8 @@ bool test_main(void) {
         .exp_read_val = ADC_CTRL_ADC_SAMPLE_CTL_REG_RESVAL,
 
     },
+#endif  // OPENTITAN_HAS_ADC_CTRL
+#if OPENTITAN_HAS_SYSRST_CTRL
     {
         .name = "SYSRST_CTRL",
         .base = dt_sysrst_ctrl_primary_reg_block(kDtSysrstCtrlAon),
@@ -149,6 +163,8 @@ bool test_main(void) {
         .exp_read_val = SYSRST_CTRL_EC_RST_CTL_REG_RESVAL,
 
     },
+#endif  // OPENTITAN_HAS_SYSRST_CTRL
+#if OPENTITAN_HAS_KEYMGR
     {
         .name = "KEYMGR",
         .base = dt_keymgr_primary_reg_block(kDtKeymgr),
@@ -157,6 +173,8 @@ bool test_main(void) {
         .exp_read_val = KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_RESVAL,
 
     },
+#endif  // OPENTITAN_HAS_KEYMGR
+#if OPENTITAN_HAS_FLASH_CTRL
     {
         .name = "FLASH_CTRL",
         .base = dt_flash_ctrl_primary_reg_block(kDtFlashCtrl),
@@ -164,7 +182,8 @@ bool test_main(void) {
         .write_val = 0x3927,
         .exp_read_val = FLASH_CTRL_SCRATCH_REG_RESVAL,
     },
-#elif defined(OPENTITAN_IS_DARJEELING)
+#endif  // OPENTITAN_HAS_FLASH_CTRL
+#if OPENTITAN_HAS_KEYMGR_DPE
     {
         .name = "KEYMGR_DPE",
         .base = dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe),
@@ -172,9 +191,7 @@ bool test_main(void) {
         .write_val = 0x1600ABBA,
         .exp_read_val = KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_RESVAL,
     },
-#else
-#error Unsupported top
-#endif
+#endif  // OPENTITAN_HAS_KEYMGR_DPE
   };
 
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));

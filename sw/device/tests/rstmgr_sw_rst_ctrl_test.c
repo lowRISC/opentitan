@@ -2,16 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if OPENTITAN_HAS_USBDEV
 #include "dt/dt_usbdev.h"                  // Generated
 #include "sw/device/lib/dif/dif_usbdev.h"  // Generated
 
 #include "usbdev_regs.h"  // Generated
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling does not have a USB device
-#else
-#error "rstmgr_sw_rst_ctrl_test does not support this top"
-#endif
+#endif                    // OPENTITAN_HAS_USBDEV
 
 #include "dt/dt_i2c.h"         // Generated
 #include "dt/dt_rstmgr.h"      // Generated
@@ -94,9 +90,9 @@ OTTF_DEFINE_TEST_CONFIG();
   MAKE_BASE_ADDR_FUNC(ip_);  \
   MAKE_RSTMGR_RESET_FUNC(ip_);
 
-#if defined(OT_HAS_USBDEV)
+#if OPENTITAN_HAS_USBDEV
 MAKE_TEST_FUNCS(usbdev);
-#endif  // defined(OT_HAS_USBDEV)
+#endif  // OPENTITAN_HAS_USBDEV
 
 MAKE_TEST_FUNCS(spi_device);
 MAKE_TEST_FUNCS(spi_host);
@@ -376,7 +372,7 @@ bool test_main(void) {
   dif_rstmgr_t rstmgr;
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
 
-#if defined(OT_HAS_USBDEV)
+#if OPENTITAN_HAS_USBDEV
   // For completeness reset USB_AON first, expecting no side-effects. The lame
   // check is that the rest of the test goes through with no problem.
   dt_reset_t reset = dt_usbdev_reset((dt_usbdev_t)0, kDtUsbdevResetRst);
@@ -385,7 +381,7 @@ bool test_main(void) {
       dif_rstmgr_get_sw_reset_index(kDtRstmgrAon, reset, &sw_reset_index));
   CHECK_DIF_OK(dif_rstmgr_software_reset(&rstmgr, sw_reset_index,
                                          kDifRstmgrSoftwareReset));
-#endif  // defined(OT_HAS_USBDEV)
+#endif  // OPENTITAN_HAS_USBDEV
 
   uint32_t reset_vals[ARRAYSIZE(kPeripherals)];
   for (size_t i = 0; i < ARRAYSIZE(kPeripherals); ++i) {

@@ -351,6 +351,11 @@ class TopHelper:
         if isinstance(self.device_type_enum, CEnum):
             self.device_type_enum.add_count_constant("Number of instance types")
 
+        self.device_type_defines = DefinesBlock()
+        for module_name in self._module_types:
+            def_name = Name(["opentitan", "has", module_name])
+            self.device_type_defines.add_define(def_name, 1)
+
         # List of all module instance IDs and put them in an enum.
         self.instance_id_enum = self._enum_type(Name([]), self.DT_INSTANCE_ID_NAME)
         self.instance_id_enum.add_constant(Name(["unknown"]), "Unknown instance")
