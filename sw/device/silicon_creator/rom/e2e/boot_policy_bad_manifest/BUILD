@@ -208,6 +208,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
         ),
         src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [":otp_json_sec_ver_{}".format(sec_ver)],
+        seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
         visibility = ["//visibility:private"],
     )
     for lc_state, _ in get_lc_items()

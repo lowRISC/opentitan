@@ -52,6 +52,7 @@ otp_json(
         name = "otp_img_watchdog_enable_{}".format(lc_state),
         src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [":otp_json_watchdog_enable"],
+        seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
     )
     for lc_state, _ in get_lc_items()
 ]

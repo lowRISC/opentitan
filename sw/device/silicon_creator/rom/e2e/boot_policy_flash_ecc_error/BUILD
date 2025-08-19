@@ -142,6 +142,7 @@ otp_image(
     name = "otp_img_boot_policy_flash_ecc_error",
     src = "//hw/top_earlgrey/data/otp:otp_json_prod",
     overlays = STD_OTP_OVERLAYS + [":otp_json_flash_data_cfg_default_scr_and_ecc_enabled"],
+    seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
     visibility = ["//visibility:private"],
 )
 
@@ -152,6 +153,7 @@ otp_image(
         ":otp_json_flash_data_cfg_default_scr_and_ecc_enabled",
         ":otp_json_flash_exc_handler_disabled",
     ],
+    seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
     visibility = ["//visibility:private"],
 )
 

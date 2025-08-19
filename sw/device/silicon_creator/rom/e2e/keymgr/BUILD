@@ -60,6 +60,7 @@ rom_e2e_keymgr_init_configs = [
         name = "otp_img_keymgr_{}".format(config["name"]),
         src = "//hw/top_earlgrey/data/otp:otp_json_rma",
         overlays = STD_OTP_OVERLAYS + [":otp_json_keymgr_{}".format(config["name"])],
+        seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
         visibility = ["//visibility:private"],
     )
     for config in rom_e2e_keymgr_init_configs

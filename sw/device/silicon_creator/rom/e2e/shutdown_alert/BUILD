@@ -161,6 +161,7 @@ otp_alert_digest(
             ":shutdown_alert_owner_sw_cfg",
             ":shutdown_alert_digest_cfg",
         ],
+        seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
     )
     for lc_state, _ in ALERT_LC_STATES
 ]

@@ -7,11 +7,6 @@
 //
 
 {
-    // 256 bit seed to be used for generation of partition randomized values.
-    // Can be overridden on the command line with the --seed switch.
-    // The default seed was generated using secrets.py module.
-    seed: 113517944176559405110937879233240229311794601727326023435899657066678782830485
-
     // The partition and item names must correspond with the OTP memory map.
     partitions: [
         {

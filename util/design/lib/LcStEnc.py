@@ -267,15 +267,13 @@ class LcStEnc():
     # This holds the config dict.
     config = {}
 
-    def __init__(self, config):
+    def __init__(self, config, seed):
         '''The constructor validates the configuration dict.'''
 
         log.info('')
         log.info('Generate life cycle state')
         log.info('')
 
-        if 'seed' not in config:
-            raise RuntimeError('Missing seed in configuration')
         if 'secded' not in config:
             raise RuntimeError('Missing secded configuration')
         if 'tokens' not in config:
@@ -285,7 +283,7 @@ class LcStEnc():
             if typ not in config:
                 raise RuntimeError('Missing {} definition'.format(typ))
 
-        config['seed'] = check_int(config['seed'])
+        config['seed'] = seed
         log.info('Seed: {0:x}'.format(config['seed']))
         log.info('')
 

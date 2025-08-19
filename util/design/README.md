@@ -165,10 +165,11 @@ Common example configuration files that can be used for simulation and emulation
 
 Note that the preload image generator script automatically scrambles secret partitions, computes digests of locked partitions using the PRESENT cipher, and computes the OTP ECC bits.
 
-The OTP preload image generator expects at least one main image configuration file to be specified with the `--img-cfg` switch, for example:
+The OTP preload image generator expects at least one main image configuration file to be specified with the `--img-cfg` switch and a seed configuration provided vie the `--seed-cfg` switch, for example:
 ```console
 $ cd ${PROJ_ROOT}
 $ ./util/design/gen-otp-img.py --img-cfg hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson \
+                               --seed-cfg hw/top_earlgrey/data/top_earlgrey_seed.dev.hjson \
                                --out otp-img.mem
 ```
 
@@ -215,6 +216,7 @@ The generator script call would then look as follows:
 ```console
 $ cd ${PROJ_ROOT}
 $ ./util/design/gen-otp-img.py --img-cfg hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson \
+                               --seed-cfg hw/top_earlgrey/data/top_earlgrey_seed.dev.hjson \
                                --add-cfg otp_ctrl_img_sw_cfg.hjson \
                                --out otp-img.mem
 ```

@@ -4,6 +4,7 @@
 
 CUR_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PRJ_DIR := $(realpath ${CUR_DIR}/../)
+SEED_MODE := dev
 
 REG_OUTPUT_AUTOGEN_DIR ?= ${PRJ_DIR}/build/autogen
 
@@ -101,6 +102,7 @@ $(ips_reg): %_reg:
 	${PRJ_DIR}/util/regtool.py --sec-cm-testplan $(blk-hjson)
 
 top_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/$*.hjson
+top_seed_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/$*_seed.$(SEED_MODE).hjson
 version_out_dir = $(PRJ_DIR)/build
 version_path = $(version_out_dir)/workspace_status.txt
 top_chip_hjson = $(PRJ_DIR)/hw/$(TOPS)/$(dir_hjson)/$(TOPS).hjson
@@ -113,14 +115,14 @@ workspace_status: $(version_out_dir)
 
 topgen_rust: workspace_status
 	mkdir -p ${REG_OUTPUT_AUTOGEN_DIR}
-	${PRJ_DIR}/util/topgen.py -t $(top_chip_hjson) --rust-only -o ${REG_OUTPUT_AUTOGEN_DIR}/ --version-stamp ${version_path} ${toolflags}
+	${PRJ_DIR}/util/topgen.py -t $(top_chip_hjson) -s $(top_seed_hjson) --rust-only -o ${REG_OUTPUT_AUTOGEN_DIR}/ --version-stamp ${version_path} ${toolflags}
 
 topgen_rust_pkg: topgen_rust
 	tar -C ${REG_OUTPUT_AUTOGEN_DIR}/sw/autogen/ -cvf ${REG_OUTPUT_AUTOGEN_DIR}/chip_${TOPS}.tar chip
 
 top: $(tops_gen)
 $(tops_gen): %_gen:
-	${PRJ_DIR}/util/topgen.py -t $(top_hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags}
+	${PRJ_DIR}/util/topgen.py -t $(top_hjson) -s $(top_seed_hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags}
 
 # This runs cmdgen on all md files of the repo using xargs for parallelism
 cmdgen:
