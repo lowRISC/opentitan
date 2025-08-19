@@ -307,13 +307,13 @@ manifest(d = {
             "//hw/top_earlgrey:sim_verilator_base",
             "//hw/top_earlgrey:silicon_creator",
         ],
-        extra_bazel_features = [
-            "minsize",
-            "use_lld",
-        ],
         linker_script = ":ld_slot_{}".format(slot),
         manifest = ":manifest",
         spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+        transitive_features = [
+            "minsize",
+            "use_lld",
+        ],
         deps = [
             ":rom_ext_{}".format(variation_name),
             "//sw/device/lib/crt",
@@ -371,12 +371,12 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
     ],
-    extra_bazel_features = [
+    linker_script = ":ld_slot_a",
+    manifest = ":manifest_bad_address_translation",
+    transitive_features = [
         "minsize",
         "use_lld",
     ],
-    linker_script = ":ld_slot_a",
-    manifest = ":manifest_bad_address_translation",
     deps = [
         ":rom_ext_dice_x509",
         "//sw/device/lib/crt",

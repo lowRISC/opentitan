@@ -46,10 +46,6 @@ manifest(d = {
             "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
         ],
-        extra_bazel_features = [
-            "minsize",
-            "use_lld",
-        ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         # In order to prevent the linker from prematurely discarding symbols, we
         # need to give the CRT library last.
@@ -58,6 +54,10 @@ manifest(d = {
             "$(location //sw/device/lib/crt)",
         ],
         manifest = ":manifest_sival",
+        transitive_features = [
+            "minsize",
+            "use_lld",
+        ],
         deps = [
             # The sival_owner C library is included only in the "fake" ROM_EXT,
             # as it is typically used to test FPGA flows and the FPGA doesn't
@@ -82,14 +82,14 @@ manifest(d = {
             "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
         ],
-        extra_bazel_features = [
-            "minsize",
-            "use_lld",
-        ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         linkopts = [
             "$(location //sw/device/silicon_creator/rom_ext:rom_ext_{})".format(variation),
             "$(location //sw/device/lib/crt)",
+        ],
+        transitive_features = [
+            "minsize",
+            "use_lld",
         ],
         deps = [
             # The sival_owner C library is excluded from the real ROM_EXT,

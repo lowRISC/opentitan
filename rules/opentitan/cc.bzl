@@ -49,11 +49,13 @@ def ot_binary(ctx, **kwargs):
       (elf_file, map_file) File objects.
     """
     cc_toolchain = find_cc_toolchain(ctx)
+    transitive_features = [f for f in ctx.attr.transitive_features if not f.startswith("-")]
+    transitive_disabled_features = [f.removeprefix("-") for f in ctx.attr.transitive_features if f.startswith("-")]
     features = cc_common.configure_features(
         ctx = ctx,
         cc_toolchain = cc_toolchain,
-        requested_features = get_override(ctx, "features", kwargs),
-        unsupported_features = get_override(ctx, "disabled_features", kwargs),
+        requested_features = get_override(ctx, "features", kwargs) + transitive_features,
+        unsupported_features = get_override(ctx, "disabled_features", kwargs) + transitive_disabled_features,
     )
 
     compilation_contexts = [
@@ -260,6 +262,22 @@ def _opentitan_binary(ctx):
     providers.append(OutputGroupInfo(**groups))
     return providers
 
+def _transitive_feature_transition_impl(settings, attr):
+    features = settings["//command_line_option:features"] + attr.transitive_features
+    return {
+        "//command_line_option:features": features,
+    }
+
+_transitive_feature_transition = transition(
+    implementation = _transitive_feature_transition_impl,
+    inputs = [
+        "//command_line_option:features",
+    ],
+    outputs = [
+        "//command_line_option:features",
+    ],
+)
+
 common_binary_attrs = {
     "srcs": attr.label_list(
         allow_files = True,
@@ -267,6 +285,7 @@ common_binary_attrs = {
     ),
     "deps": attr.label_list(
         providers = [CcInfo],
+        cfg = _transitive_feature_transition,
         doc = "The list of other libraries to be linked in to the binary target.",
     ),
     "linker_script": attr.label(
@@ -326,6 +345,10 @@ common_binary_attrs = {
         default = "//hw/ip/rom_ctrl/util:scramble_image",
         executable = True,
         cfg = "exec",
+    ),
+    "transitive_features": attr.string_list(
+        default = [],
+        doc = "List of features that will apply to this binary, and transitively to all `deps`.",
     ),
 }
 
