@@ -190,16 +190,18 @@ package entropy_src_env_pkg;
   endfunction
 
   //
-  // Helper function to determines the proper window_size for the current round of health checks
+  // Helper function to determine the proper window_size for the current round of health checks
   // as a function of the seed index.
   //
-  // Like like the phase helper function above, this function is required for both scoreboarding and
+  // Like the phase helper function above, this function is required for both scoreboarding and
   // sequence generation.
   //
   // The window size also dictates the amount of data needed to create a single seed.
   //
-  function automatic int rng_window_size(int seed_idx, bit fips_enable, bit fw_ov_insert,
-                                         int fips_window_size);
+  function automatic int unsigned rng_window_size(int seed_idx, bit fips_enable, bit rng_bit_en,
+                                                  bit fw_ov_insert,
+                                                  int unsigned bypass_window_size,
+                                                  int unsigned fips_window_size);
     entropy_phase_e phase;
 
     // Counts the number of seeds that have been successfully generated
@@ -207,8 +209,13 @@ package entropy_src_env_pkg;
 
     phase = convert_seed_idx_to_phase(seed_idx, fips_enable, fw_ov_insert);
 
-    return (phase == BOOT || phase == HALTED) ? entropy_src_pkg::CSRNG_BUS_WIDTH : fips_window_size;
-
+    // The bypass window is specified in bits, whereas the FIPS window is specified in symbols.
+    // `rng_bit_en` manipulates the symbol size.
+    if (phase == BOOT || phase == HALTED) begin
+      return rng_bit_en ? bypass_window_size : bypass_window_size / `RNG_BUS_WIDTH;
+    end else begin
+      return fips_window_size;
+    end
   endfunction
 
   // Determine a random failure time according to an exponential distribution with
