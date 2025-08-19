@@ -353,14 +353,21 @@
                 * handshake interrupt enable
                 * interrupt source clearing enablement
                 * interrupt source clearing bus selection
-                * interrupt source clearing destination address alignment
-                * interrupt source clearing write values; required bins:
-                  + all zeros
-                  + all ones
-                  + each of the one-hot values
               - Cross coverage:
                 * handshake interrupt enable, interrupt source clearing enablement, and interrupt source clearing bus selection
-                * handshake interrupt enable, interrupt source clearing enablement, and interrupt source clearing destination addresses
+              '''
+      }
+      {
+        name: dma_intr_src_cg
+        desc: '''
+              - Cover the interrupt-clearing address and write values, as observed on the TL-UL buses rather than in the configuration that was chosen:
+                * interrupt source clearing address alignment; required bins:
+                  + bits [3:2] - all four permutations.
+                * interrupt source clearing write values; required bins:
+                  + all zeros
+                  + not all zeros
+              - Cross coverage:
+                * handshake interrupt enable, interrupt source clearing enablement, and interrupt source clearing address alignment
                 * handshake interrupt enable, interrupt source clearing enablement, and interrupt source clearing write values
               '''
       }
