@@ -6,6 +6,7 @@ r"""Top Module Generator
 """
 import argparse
 import logging as log
+import os
 import shutil
 import sys
 import tempfile
@@ -62,8 +63,8 @@ genhdr = """// Copyright lowRISC contributors (OpenTitan project).
 // SPDX-License-Identifier: Apache-2.0
 """ + warnhdr
 
-GENCMD = ("// util/topgen.py -t hw/{top_name}/data/{top_name}.hjson\n"
-          "// -o hw/{top_name}")
+GENCMD = ("// util/topgen.py -t hw/{top_name}/data/{top_name}.hjson \\\n"
+          "//                -o hw/{top_name}/")
 
 SRCTREE_TOP = Path(__file__).parents[1].resolve()
 
@@ -1295,14 +1296,7 @@ def dump_completecfg(cfg: ConfigT, out_path: Path) -> None:
     cfg_dir.mkdir(parents=True, exist_ok=True)
     genhjson_path = cfg_dir / f"{top_name}.gen.hjson"
 
-    # Header for HJSON
-    gencmd = """//
-// util/topgen.py -t hw/{top_name}/data/{top_name}.hjson \\
-//                -o hw/{top_name}/ \\
-//                --rnd_cnst_seed {seed}
-""".format(top_name=top_name, seed=cfg["seed"]["topgen_seed"])
-
-    genhjson_path.write_text(genhdr + gencmd +
+    genhjson_path.write_text(genhdr + GENCMD.format(top_name=top_name) + "\n" +
                              hjson.dumps(cfg, for_json=True, default=vars) +
                              '\n')
 
@@ -1629,12 +1623,7 @@ def main():
                 fout.write(template_contents)
 
         # Header for SV files
-        gencmd_sv = warnhdr + """//
-// util/topgen.py -t hw/{top_name}/data/{top_name}.hjson \\
-//                -o hw/{top_name}/ \\
-//                --rnd_cnst_seed \\
-//                {seed}
-""".format(top_name=top_name, seed=completecfg["seed"]["topgen_seed"])
+        gencmd_sv = warnhdr + "//\n" + GENCMD.format(top_name=top_name) + "\n"
 
         # Top and chiplevel templates are top-specific
         top_template_path = SRCTREE_TOP / "hw" / top_name / "templates"
@@ -1655,9 +1644,13 @@ def main():
                             target=target)
 
         # compile-time random netlist constants
+        gencmd_rnd_cnst_sv = gencmd_sv + f"""//
+// File is generated based on the following seed configuration:
+//   {os.path.relpath(args.seedcfg, SRCTREE_TOP)}
+"""
         render_template(TOPGEN_TEMPLATE_PATH / "toplevel_rnd_cnst_pkg.sv.tpl",
                         out_path / f"rtl/autogen/{top_name}_rnd_cnst_pkg.sv",
-                        gencmd=gencmd_sv)
+                        gencmd=gencmd_rnd_cnst_sv)
 
         racl_config = completecfg.get('racl', DEFAULT_RACL_CONFIG)
         render_template(TOPGEN_TEMPLATE_PATH / 'top_racl_pkg.sv.tpl',
