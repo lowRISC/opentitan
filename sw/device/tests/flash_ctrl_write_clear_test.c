@@ -22,6 +22,9 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
+static uint32_t flash_region_index;
+static uint32_t flash_page_to_test;
+
 enum {
   // Some dif_flash_ctrl functions don't require the partition parameter when
   // interacting with data partitions. This constant is added to improve
@@ -40,7 +43,7 @@ enum {
   kBank1StartPageNum = 256 + kRomExtPageCount,
 
   // The ROM_EXT protects itself using regions 0-1.
-  kFlashRegionNum = 2,
+  kFlashRegionNum = 3,
 
 };
 
@@ -105,6 +108,21 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
+  flash_region_index = 0;
+  flash_page_to_test = 0;
+  for (uint32_t region = 0; region < FLASH_CTRL_PARAM_NUM_REGIONS; region++) {
+    bool locked;
+    LOG_INFO("Testing  REGION 0x%x", region);
+    CHECK_DIF_OK(dif_flash_ctrl_data_region_is_locked(&flash, region, &locked));
+    if (!locked) {
+      flash_region_index = region;
+      LOG_INFO("This region is unlocked REGION 0x%x", region);
+      break;
+    }
+  }
+
+  // kFlashRegionNum = flash_region_index;
+
   // The ROM_EXT configures the default region access. We can't modify the
   // values after configured.
   if (kBootStage != kBootStageOwner) {
@@ -114,7 +132,7 @@ bool test_main(void) {
   }
 
   LOG_INFO("ECC enabled with high endurance disabled.");
-  flash_ctrl_write_clear_test(/*mp_region_index=*/kFlashRegionNum,
+  flash_ctrl_write_clear_test(/*mp_region_index=*/flash_region_index,
                               (dif_flash_ctrl_data_region_properties_t){
                                   .base = kBank1StartPageNum,
                                   .size = 1,
