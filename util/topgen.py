@@ -1745,26 +1745,27 @@ def main():
                                 helper=c_helper,
                                 gencmd=gencmd_c)
 
-                # "toplevel_BUILD.h.tpl" -> "sw/autogen/BUILD"
-                memory_cheader_path = cformat_dir / "BUILD"
-                render_template(TOPGEN_TEMPLATE_PATH / "toplevel_BUILD.tpl",
-                                memory_cheader_path,
-                                helper=c_helper,
-                                gencmd=gencmd_bzl)
-
-                # "data_BUILD.h.tpl" -> "data/autogen/BUILD"
-                render_template(TOPGEN_TEMPLATE_PATH / "data_BUILD.tpl",
-                                path / "data" / "autogen" / "BUILD",
-                                gencmd=gencmd_bzl)
-                # "data_defs.bzl.tpl" -> "data/autogen/defs.bzl"
-                render_template(TOPGEN_TEMPLATE_PATH / "data_defs.bzl.tpl",
-                                path / "data" / "autogen" / "defs.bzl",
-                                gencmd=gencmd_bzl)
-
         for idx, path in enumerate(out_paths):
             cformat_dir = path / "sw" / "autogen"
             c_helper.header_macro_prefix = (
                 "OPENTITAN_" + str(rel_header_dir).replace("/", "_").upper())
+
+            # "toplevel_BUILD.h.tpl" -> "sw/autogen/BUILD"
+            memory_cheader_path = cformat_dir / "BUILD"
+            render_template(TOPGEN_TEMPLATE_PATH / "toplevel_BUILD.tpl",
+                            memory_cheader_path,
+                            helper=c_helper,
+                            gencmd=gencmd_bzl)
+
+            # "data_BUILD.h.tpl" -> "data/autogen/BUILD"
+            render_template(TOPGEN_TEMPLATE_PATH / "data_BUILD.tpl",
+                            path / "data" / "autogen" / "BUILD",
+                            gencmd=gencmd_bzl)
+
+            # "data_defs.bzl.tpl" -> "data/autogen/defs.bzl"
+            render_template(TOPGEN_TEMPLATE_PATH / "data_defs.bzl.tpl",
+                            path / "data" / "autogen" / "defs.bzl",
+                            gencmd=gencmd_bzl)
 
             # "toplevel_memory.ld.tpl" ->
             #   "sw/autogen/{top_name}{addr_space_suffix}_memory.ld"
