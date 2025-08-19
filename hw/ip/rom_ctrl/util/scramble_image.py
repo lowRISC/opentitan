@@ -54,6 +54,7 @@ class MemoryController:
         params = MemoryController._get_params(mem_ctrl)
         nonce, nonce_width = MemoryController._get_param_cnst(params, nonce_name)
         scr_key, scr_key_width = MemoryController._get_param_cnst(params, key_name)
+        scrambling_disabled = MemoryController._get_param_bit(params, "SecDisableScrambling")
 
         self.ctrl_name = ctrl_name
         self.memory_type = memory_type
@@ -63,6 +64,7 @@ class MemoryController:
         self.scr_key_width = scr_key_width
         self.nonce = nonce
         self.nonce_width = nonce_width
+        self.scrambling_disabled = scrambling_disabled
 
     @staticmethod
     def _get_params(module: _UDict) -> Dict[str, _UDict]:
@@ -105,6 +107,23 @@ class MemoryController:
         assert 0 <= val < (1 << width)
 
         return val, width
+
+    @staticmethod
+    def _get_param_bit(params: Dict[str, _UDict], name: str) -> Tuple[int, int]:
+        param = params.get(name)
+        assert isinstance(param, dict)
+
+        assert param.get('type') == 'bit'
+        val = param.get(MemoryController.PARAM_VALUE)
+        assert isinstance(val, str)
+        assert 'b' in val, f"invalid bit value for parameter {name}"
+        val_width, val = val.split("'b")
+        assert int(val_width) == 1, f"parameter {name} has value unexpected width {val_width}"
+
+        val = int(val, 0)
+        assert 0 <= val <= 1, f"invalid bit value for parameter {name}"
+
+        return val
 
     @staticmethod
     def _get_size_words(module: _UDict, memory_type: str) -> int:
@@ -249,7 +268,7 @@ class Scrambler:
     subst_perm_rounds = 2
     num_rounds_half = 3
 
-    def __init__(self, nonce: int, nonce_width: int,
+    def __init__(self, disable: bool, nonce: int, nonce_width: int,
                  key: int, key_width: int,
                  rom_base: int, rom_size_words: int,
                  hash_file: IO[str]):
@@ -259,6 +278,7 @@ class Scrambler:
         assert 0 <= key < (1 << key_width)
         assert 0 < rom_size_words < (1 << 64)
 
+        self.disable = disable
         self.nonce = nonce
         self.nonce_width = nonce_width
         self.key = key
@@ -271,12 +291,15 @@ class Scrambler:
 
         self._addr_width = (rom_size_words - 1).bit_length()
 
+    def is_disabled(self):
+        return self.disable
+
     @staticmethod
     def from_hjson_path(path: str, mode: str, hash_file: IO[str]) -> 'Scrambler':
         mem_ctrl = MemoryController.from_hjson_path(path, mode)
         assert mem_ctrl is not None
 
-        return Scrambler(mem_ctrl.nonce, mem_ctrl.nonce_width,
+        return Scrambler(mem_ctrl.scrambling_disabled, mem_ctrl.nonce, mem_ctrl.nonce_width,
                          mem_ctrl.scr_key, mem_ctrl.scr_key_width,
                          mem_ctrl.base, mem_ctrl.size_words, hash_file)
 
@@ -467,6 +490,13 @@ def main() -> int:
     # Flatten the file, padding with pseudo-random data and ensuring it's
     # exactly scrambler.rom_size_words words long.
     clr_flat = scrambler.flatten(clr_mem)
+
+    # If scrambling is disabled then the memory width is 32 bits, ie no ECC
+    # and the data is not scrambled. There is also no hash added.
+
+    if scrambler.is_disabled():
+        clr_flat.write_vmem(args.outfile)
+        return 0
 
     # Extend from 32 bits to 39 by adding Hsiao (39,32) ECC bits.
     clr_flat.add_ecc32()
