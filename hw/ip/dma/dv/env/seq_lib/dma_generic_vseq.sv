@@ -75,16 +75,20 @@ class dma_generic_vseq extends dma_base_vseq;
     `uvm_info(`gfn, $sformatf("DMA: Running iteration %0d/%0d", iter + 1, num_iters), UVM_LOW)
   endtask
 
+  // Notification that transaction is just starting; after the configuration has been decided
+  // and programmed into the DMA controller, but before the transfer has commenced.
   virtual task starting_txn(int unsigned txn, int unsigned num_txns, ref dma_seq_item dma_config);
     `uvm_info(`gfn, $sformatf("DMA: Running transaction %0d/%0d", txn + 1, num_txns),
               UVM_LOW)
   endtask
 
+  // Notification that the transaction is ending, indicating the completion status
   virtual task ending_txn(int unsigned txn, int unsigned num_txns, ref dma_seq_item dma_config,
                           status_t status);
     // Possibly overridden in derived classes.
   endtask
 
+  // Notification that this iteration is ending, and the DUT is about to be reset
   virtual task ending_iter(int unsigned iter, int unsigned num_iters);
     // Possibly overridden in derived classes.
   endtask

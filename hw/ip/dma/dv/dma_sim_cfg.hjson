@@ -89,6 +89,11 @@
       reseed: 5
     }
     {
+      name: dma_config_lock
+      uvm_test_seq: dma_config_lock_vseq
+      reseed: 15
+    }
+    {
       name: dma_generic_stress
       uvm_test_seq: dma_generic_stress_vseq
       run_opts: ["+test_timeout_ns=300_000_000_000"]
