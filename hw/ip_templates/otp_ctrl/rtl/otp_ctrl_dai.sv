@@ -154,7 +154,8 @@ module otp_ctrl_dai
   typedef enum logic [1:0] {
     OtpData = 2'b00,
     DaiData = 2'b01,
-    ScrmblData = 2'b10
+    ScrmblData = 2'b10,
+    ZerData = 2'b11
   } data_sel_e;
 
 
@@ -768,10 +769,11 @@ module otp_ctrl_dai
       ///////////////////////////////////////////////////////////////////
       // Wait for OTP response to the zeroization request. An error or
       // a non-zeroized value will not be returned to software. Note that
-      // in order to retry a failed zeroization requeset all errors are
+      // in order to retry a failed zeroization request all errors are
       // treated as recoverable.
       ZerWaitSt: begin
         dai_prog_idle_o = 1'b0;
+        data_sel = ZerData;
         // Continuously check write access and bail out if this is not consistent.
         if (PartInfo[part_idx].zeroizable &&
             // The entire address space of a zeroizable partition is writable.
@@ -988,6 +990,8 @@ module otp_ctrl_dai
           data_q <= scrmbl_data_i;
         end else if (data_sel == DaiData) begin
           data_q <= dai_wdata_i;
+        end else if (data_sel == ZerData) begin
+           data_q <= countones(otp_rdata_i);
         end else begin
           data_q <= otp_rdata_i;
         end
