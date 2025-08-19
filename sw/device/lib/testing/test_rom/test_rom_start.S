@@ -188,6 +188,7 @@ _reset_start:
   .global _start
   .type _start, @function
 _start:
+#ifdef OPENTITAN_IS_DARJEELING
   // Certain tops like Darjeeling lock down everything but the ROM by default.
   //
   // Remove address space protections by configuring entry 15 as
@@ -203,6 +204,7 @@ _start:
   csrw pmpcfg0, zero
   csrw pmpcfg1, zero
   csrw pmpcfg2, zero
+#endif
 
 #ifdef OTP_CTRL_CORE_BASE_ADDR
   // Check if AST initialization should be skipped.
