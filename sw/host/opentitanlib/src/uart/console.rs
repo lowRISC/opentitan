@@ -24,6 +24,7 @@ pub struct UartConsole {
     pub timestamp: bool,
     pub buffer: String,
     pub newline: bool,
+    pub carriage_return: bool,
     pub break_en: bool,
 }
 
@@ -213,9 +214,14 @@ impl UartConsole {
                 self.newline = false;
             }
             self.newline = buf[i] == b'\n';
-            stdout
-                .as_mut()
-                .map_or(Ok(()), |out| out.write_all(&buf[i..i + 1]))?;
+            stdout.as_mut().map_or(Ok(()), |out| {
+                out.write_all(if self.newline && !self.carriage_return {
+                    b"\r\n"
+                } else {
+                    &buf[i..i + 1]
+                })
+            })?;
+            self.carriage_return = buf[i] == b'\r';
         }
         stdout.as_mut().map_or(Ok(()), |out| out.flush())?;
 
