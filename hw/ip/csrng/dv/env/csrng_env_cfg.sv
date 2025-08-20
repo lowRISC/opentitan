@@ -263,6 +263,9 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
 
     // only support 1 outstanding TL item
     m_tl_agent_cfg.max_outstanding_req = 1;
+
+    // Used to allow reset operations without waiting for CSR accesses to complete
+    can_reset_with_csr_accesses = 1;
   endfunction
 
   // Check internal state w/ optional compare

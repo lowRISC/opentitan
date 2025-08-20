@@ -76,7 +76,7 @@ class csrng_base_vseq extends cip_base_vseq #(
   endtask
 
   function automatic bit edn_under_reset();
-    return cfg.m_edn_agent_cfg[0].vif.rst_n === 1'b0;
+    return cfg.m_edn_agent_cfg[0].under_reset;
   endfunction
 
   // Wait for a CSR to contain an expected value or EDN to be reset, whichever happens first.  This
@@ -107,6 +107,10 @@ class csrng_base_vseq extends cip_base_vseq #(
       cmd = {cs_item.glen, cs_item.flags, cs_item.clen, 1'b0, cs_item.acmd};
     end
     if (app != SW_APP) begin
+      if (edn_under_reset()) begin
+        `uvm_info(`gfn, "HW app stopped due to EDN reset", UVM_HIGH)
+        return;
+      end
       cfg.m_edn_agent_cfg[app].m_cmd_push_agent_cfg.add_h_user_data(cmd);
       m_edn_push_seq[app].num_trans = cs_item.clen + 1;
       for (int i = 0; i < cs_item.clen; i++)
