@@ -32,13 +32,45 @@ typedef struct ghash_block {
 
 typedef struct ghash_context {
   /**
-   * Precomputed product table for the hash subkey.
+   * Precomputed product table for the hash subkey share 0.
    */
-  ghash_block_t tbl[16];
+  ghash_block_t tbl0[16];
   /**
-   * Cipher block representing the current GHASH state.
+   * Precomputed product table for the hash subkey share 1.
    */
-  ghash_block_t state;
+  ghash_block_t tbl1[16];
+  /**
+   * Cipher block representing the current GHASH state for share 0.
+   */
+  ghash_block_t state0;
+  /**
+   * Cipher block representing the current GHASH state for share 1.
+   */
+  ghash_block_t state1;
+  /**
+   * Precomputed correction term (S0 * (H0+1)) for state share 0.
+   */
+  ghash_block_t correction_term0;
+  /**
+   * Precomputed correction term (S0 * H1) for state share 1.
+   */
+  ghash_block_t correction_term1;
+  /**
+   * Precomputed initial correction term (S1 * H1) for state share 1.
+   */
+  ghash_block_t correction_term1_init;
+  /**
+   * Encrypted initial counter block share 0.
+   */
+  ghash_block_t enc_initial_counter_block0;
+  /**
+   * Encrypted initial counter block share 1.
+   */
+  ghash_block_t enc_initial_counter_block1;
+  /**
+   * Number of processed ghash blocks.
+   */
+  size_t ghash_block_cnt;
 } ghash_context_t;
 
 /**
@@ -55,9 +87,9 @@ typedef struct ghash_context {
  *
  * @param hash_subkey Subkey for the GHASH operation (`kGhashBlockNumWords`
  * words).
- * @param[out] ctx Context object with product table populated.
+ * @param[out] tbl The populated product table.
  */
-void ghash_init_subkey(const uint32_t *hash_subkey, ghash_context_t *ctx);
+void ghash_init_subkey(const uint32_t *hash_subkey, ghash_block_t *tbl);
 
 /**
  * Start a GHASH operation.
@@ -105,6 +137,21 @@ void ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
  * @param input Pointer to input buffer.
  */
 void ghash_update(ghash_context_t *ctx, size_t input_len, const uint8_t *input);
+
+/**
+ * Computes the correction terms needed for the masking scheme.
+ *
+ * correction_term0 = S0 * (H0 + 1).
+ * correction_term1 = S0 * H1.
+ * correction_term1_init = S1 * H1.
+ *
+ * @param enc_initial_counter_block0 Pointer to S0.
+ * @param enc_initial_counter_block1 Pointer to S1.
+ * @param ctx Context object.
+ */
+void ghash_handle_enc_initial_counter_block(
+    const uint32_t *enc_initial_counter_block0,
+    const uint32_t *enc_initial_counter_block1, ghash_context_t *ctx);
 
 /**
  * Update the state of a GHASH operation.
