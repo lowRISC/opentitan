@@ -143,7 +143,7 @@ class mbx_base_vseq extends cip_base_vseq #(
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
-  endtask: dut_init
+  endtask : dut_init
 
   // Start a sequence that creates a memory_model on the 'mem' interface.
   virtual task start_mem_seq();
@@ -152,7 +152,7 @@ class mbx_base_vseq extends cip_base_vseq #(
     fork
       seq_h.start(p_sequencer.tl_sequencer_sram_h);
     join_none
-  endtask: start_mem_seq
+  endtask : start_mem_seq
 
   virtual task set_mem_range_regwen(mubi4_t regwen);
     `uvm_info(`gfn, $sformatf("Setting memory range regwen to 0x%x", regwen), UVM_MEDIUM)
@@ -190,20 +190,20 @@ class mbx_base_vseq extends cip_base_vseq #(
     `uvm_info(get_full_name(),
       $sformatf("write_mem(start_addr='h%0h, q=%p) -- End", start_addr, q),
       UVM_DEBUG);
-  endtask: write_mem
+  endtask : write_mem
 
   virtual task read_mem(int start_addr, int sz, ref byte q[$]);
     `uvm_info(get_full_name(),
       $sformatf("read_mem(start_addr='h%0h, sz=%0d) -- Start", start_addr, sz),
       UVM_DEBUG)
     q = {};
-    for(int ii = 0; ii < sz; ii++) begin
+    for (int ii = 0; ii < sz; ii++) begin
       q[ii] = seq_mem_model.read_byte(start_addr + ii);
     end
     `uvm_info(get_full_name(),
       $sformatf("read_mem(start_addr='h%0h', sz=%0d, q=%p) -- Start", start_addr, sz, q),
       UVM_DEBUG)
-  endtask: read_mem
+  endtask : read_mem
 
   virtual task mbx_init();
     uvm_status_e status;
@@ -217,7 +217,7 @@ class mbx_base_vseq extends cip_base_vseq #(
     `uvm_info(get_full_name(),
       $sformatf("mbx_init -- End"),
       UVM_DEBUG)
-  endtask: mbx_init
+  endtask : mbx_init
 
   virtual task mbx_abort();
     `uvm_info(`gfn, "ABORTing operation", UVM_HIGH)
@@ -230,7 +230,7 @@ class mbx_base_vseq extends cip_base_vseq #(
                                        input int clks_timeout = 'h10000);
     bit aborted = 1'b0;
     `uvm_info(`gfn, $sformatf("wait_for_core_interrupt -- Start"), UVM_DEBUG)
-    fork begin : iso_fork
+    fork begin : isolation_fork
       fork
         begin
           `DV_WAIT(cfg.intr_vif.pins[MbxCoreReady] == 1'b1, "core ready interrupt wait timeout")
@@ -246,7 +246,7 @@ class mbx_base_vseq extends cip_base_vseq #(
         end
       join_any;
       disable fork;
-    end: iso_fork join
+    end : isolation_fork join
     if (aborted) begin
       intr_abort = 1'b1;
     end else begin
@@ -257,7 +257,7 @@ class mbx_base_vseq extends cip_base_vseq #(
 
   virtual task wait_for_soc_interrupt(int clks_timeout = 'h10000);
     `uvm_info(`gfn, $sformatf("wait_for_soc_interrupt -- Start"), UVM_DEBUG)
-    fork begin : iso_fork
+    fork begin : isolation_fork
       fork
         begin
           `DV_WAIT(cfg.intr_soc_vif.pins[0] == 1'b1, "soc interrupt wait timeout")
@@ -269,7 +269,7 @@ class mbx_base_vseq extends cip_base_vseq #(
         end
       join_any;
       disable fork;
-    end: iso_fork join
+    end : isolation_fork join
     `uvm_info(`gfn, $sformatf("wait_for_soc_interrupt -- End"), UVM_DEBUG)
   endtask : wait_for_soc_interrupt
 
@@ -290,7 +290,7 @@ class mbx_base_vseq extends cip_base_vseq #(
     bit gen_error = 1'b0;
     bit gen_panic = 1'b0;
     event e_stop;
-    fork begin: iso_fork
+    fork begin : isolation_fork
       // With two processes we monitor CSR activity and interrupt signals concurrently.
       fork
         // CSR-driving thread generates errors and aborts as well as optionally polling the
@@ -319,7 +319,7 @@ class mbx_base_vseq extends cip_base_vseq #(
       join_any
       // Ensure that the interrupt-monitoring process terminates.
       disable fork;
-    end: iso_fork join
+    end : isolation_fork join
     // Signals from DUT
     intr_ready = got_ready;
     intr_abort = got_abort;
@@ -339,7 +339,7 @@ class mbx_base_vseq extends cip_base_vseq #(
     // a regular memory
     cfg.en_scb_mem_chk = 1'b0;
 
-    for (int unsigned iter = 0; iter < num_iters; iter++) begin: b_num_iters
+    for (int unsigned iter = 0; iter < num_iters; iter++) begin : b_num_iters
       `uvm_info(`gfn, $sformatf("Starting iteration %0d of %0d", iter + 1, num_iters), UVM_LOW)
 
       // Since the DUT has just been reset, we should take the opportunity to choose new memory
@@ -349,7 +349,7 @@ class mbx_base_vseq extends cip_base_vseq #(
       // Initialize mailbox with randomized memory configuration.
       mbx_init();
 
-      for (int unsigned txn = 0; txn < num_txns; txn++) begin
+      for (int unsigned txn = 0; txn < num_txns; txn++) begin : b_num_txns
         bit [top_pkg::TL_DW-1:0] rd_data;
         bit [top_pkg::TL_DW-1:0] wr_data;
         int error_pct = $urandom_range(0, 200);
@@ -688,11 +688,11 @@ class mbx_base_vseq extends cip_base_vseq #(
           // remain in step with those used by the DUT.
           mbx_config.set_address_range_randomization(1'b0);
         end
-      end: b_num_txns
+      end : b_num_txns
 
       apply_resets_concurrently();
       delay(10);
-    end: b_num_iters
+    end : b_num_iters
 
     `uvm_info(get_full_name(), "body -- End", UVM_DEBUG)
   endtask : body
