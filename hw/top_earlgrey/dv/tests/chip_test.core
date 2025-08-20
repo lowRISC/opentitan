@@ -10,7 +10,7 @@ virtual:
 filesets:
   files_dv:
     depend:
-      - lowrisc:dv:chip_env
+      - lowrisc:dv:top_earlgrey_chip_env
     files:
       - chip_test_pkg.sv
       - chip_base_test.sv: {is_include_file: true}

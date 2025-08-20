@@ -185,7 +185,6 @@ mapping:
   "lowrisc:virtual_constants:top_racl_pkg": "lowrisc:earlgrey_constants:top_racl_pkg"
   "lowrisc:systems:ast_pkg": "lowrisc:systems:top_earlgrey_ast_pkg"
   "lowrisc:virtual_ip:flash_ctrl_prim_reg_top": "lowrisc:earlgrey_ip:flash_ctrl_prim_reg_top"
-  "lowrisc:dv:chip_env": "lowrisc:dv:top_earlgrey_chip_env"
   "lowrisc:prim:prim_pkg": "lowrisc:prim:prim_legacy_pkg"
 ```
 
