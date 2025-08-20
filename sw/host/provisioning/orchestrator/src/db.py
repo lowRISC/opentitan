@@ -156,7 +156,7 @@ class DeviceRecord(object):
         """
 
         self.timestamp = int(datetime.datetime.now().timestamp())
-        self.last_update = int(datetime.datetime.now().timestamp())
+        self.last_update = self.timestamp
 
         c = db.try_cursor()
         c.execute(
