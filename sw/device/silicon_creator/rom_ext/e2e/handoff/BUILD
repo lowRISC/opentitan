@@ -6,6 +6,10 @@ load("//rules:const.bzl", "CONST", "hex")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:manifest.bzl", "manifest")
 load("//rules/opentitan:defs.bzl", "cw310_params", "fpga_params", "opentitan_test")
+load(
+    "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "ROM_EXT_VERSION",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -128,5 +132,36 @@ opentitan_test(
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:dbg_print",
+    ],
+)
+
+opentitan_test(
+    name = "rom_ext_device_status_test",
+    srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        device_status = "0x1",
+        needs_jtag = True,
+        owner_fw_version = "0",
+        rom_ext_sec_version = ROM_EXT_VERSION.SECURITY,
+        rom_ext_version = ROM_EXT_VERSION.MINOR,
+        test_cmd = """
+            --bootstrap={firmware}
+            --wait-for="PASS!"
+            --rom-ext-version="{rom_ext_version}"
+            --rom-ext-sec-version="{rom_ext_sec_version}"
+            --owner-fw-version="{owner_fw_version}"
+            --device-status="{device_status}"
+        """,
+        test_harness = "//sw/host/tests/rom_ext/device_status",
+    ),
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )

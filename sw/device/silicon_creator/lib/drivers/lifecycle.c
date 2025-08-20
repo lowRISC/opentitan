@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "hw/top/dt/lc_ctrl.h"
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
@@ -125,4 +126,17 @@ hardened_bool_t lifecycle_din_eq(lifecycle_device_id_t *id, uint32_t *din) {
   if (id->device_id[1] == din[0] && id->device_id[2] == din[1])
     return kHardenedBoolTrue;
   return kHardenedBoolFalse;
+}
+
+bool lifecycle_claim(uint32_t claim) {
+  abs_mmio_write32(lc_ctrl_base() + LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET,
+                   claim);
+  return (bool)abs_mmio_read32(lc_ctrl_base() +
+                               LC_CTRL_TRANSITION_REGWEN_REG_OFFSET);
+}
+
+void lifecycle_set_status(lifecycle_status_word_t word, uint32_t value) {
+  abs_mmio_write32(lc_ctrl_base() + LC_CTRL_TRANSITION_TOKEN_0_REG_OFFSET +
+                       word * sizeof(uint32_t),
+                   value);
 }
