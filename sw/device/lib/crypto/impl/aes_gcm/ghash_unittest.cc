@@ -13,6 +13,14 @@ namespace ghash_unittest {
 namespace {
 using ::testing::ElementsAreArray;
 
+// Zero block.
+std::array<uint32_t, 4> Zero = {
+    0x0,
+    0x0,
+    0x0,
+    0x0,
+};
+
 TEST(Ghash, McGrawViegaTestCase1) {
   // GHASH computation from test case 1 of:
   // https://csrc.nist.rip/groups/ST/toolkit/BCM/documents/proposedmodes/gcm/gcm-spec.pdf
@@ -31,7 +39,9 @@ TEST(Ghash, McGrawViegaTestCase1) {
 
   // Compute GHASH(H, A, C).
   ghash_context_t ctx;
-  ghash_init_subkey(H.data(), &ctx);
+  ghash_init_subkey(H.data(), ctx.tbl0);
+  ghash_init_subkey(Zero.data(), ctx.tbl1);
+  ghash_handle_enc_initial_counter_block(Zero.data(), Zero.data(), &ctx);
   ghash_init(&ctx);
   uint32_t result[kGhashBlockNumWords];
   ghash_final(&ctx, result);
@@ -59,11 +69,13 @@ TEST(Ghash, ProcessFullBlocksOneByte) {
 
   // Initialize context.
   ghash_context_t ctx;
-  ghash_init_subkey(H.data(), &ctx);
+  ghash_init_subkey(H.data(), ctx.tbl0);
+  ghash_init_subkey(Zero.data(), ctx.tbl1);
+  ghash_handle_enc_initial_counter_block(Zero.data(), Zero.data(), &ctx);
   ghash_init(&ctx);
-  EXPECT_THAT(ctx.state.data, testing::ElementsAreArray(zero_block));
+  EXPECT_THAT(ctx.state0.data, testing::ElementsAreArray(zero_block));
   ghash_process_full_blocks(&ctx, partial_len, &partial, input_len, input);
-  EXPECT_THAT(ctx.state.data, testing::ElementsAreArray(zero_block));
+  EXPECT_THAT(ctx.state0.data, testing::ElementsAreArray(zero_block));
   EXPECT_EQ(partial.data[0], input_word);
   EXPECT_EQ(partial.data[1], 0);
   EXPECT_EQ(partial.data[2], 0);
@@ -85,9 +97,11 @@ TEST(Ghash, Mul1) {
   uint8_t one = 0x80;
 
   ghash_context_t ctx;
-  ghash_init_subkey(H.data(), &ctx);
+  ghash_init_subkey(H.data(), ctx.tbl0);
+  ghash_init_subkey(Zero.data(), ctx.tbl1);
+  ghash_handle_enc_initial_counter_block(Zero.data(), Zero.data(), &ctx);
   ghash_init(&ctx);
-  EXPECT_THAT(ctx.state.data, testing::ElementsAreArray(zero));
+  EXPECT_THAT(ctx.state0.data, testing::ElementsAreArray(zero));
 
   ghash_block_t partial = {.data = {0}};
   size_t partial_len = 0;
@@ -96,10 +110,10 @@ TEST(Ghash, Mul1) {
   ghash_process_full_blocks(&ctx, partial_len, &partial, input_len, input);
   EXPECT_LT(input_len, kGhashBlockNumBytes - partial_len);
   EXPECT_EQ(partial.data[0], one);
-  EXPECT_THAT(ctx.state.data, testing::ElementsAreArray(zero));
+  EXPECT_THAT(ctx.state0.data, testing::ElementsAreArray(zero));
 
   ghash_update(&ctx, 1, &one);
-  EXPECT_THAT(ctx.state.data, testing::ElementsAreArray(H));
+  EXPECT_THAT(ctx.state0.data, testing::ElementsAreArray(H));
   uint32_t result[kGhashBlockNumWords];
   ghash_final(&ctx, result);
 
@@ -144,7 +158,9 @@ TEST(Ghash, McGrawViegaTestCase2) {
 
   // Compute GHASH(H, A, C).
   ghash_context_t ctx;
-  ghash_init_subkey(H.data(), &ctx);
+  ghash_init_subkey(H.data(), ctx.tbl0);
+  ghash_init_subkey(Zero.data(), ctx.tbl1);
+  ghash_handle_enc_initial_counter_block(Zero.data(), Zero.data(), &ctx);
   ghash_init(&ctx);
   ghash_update(&ctx, A.size() * sizeof(uint32_t), (unsigned char *)A.data());
   ghash_update(&ctx, C.size() * sizeof(uint32_t), (unsigned char *)C.data());
@@ -190,7 +206,9 @@ TEST(Ghash, ContextReset) {
 
   // Initialize the hash subkey (should only need to do this once).
   ghash_context_t ctx;
-  ghash_init_subkey(H.data(), &ctx);
+  ghash_init_subkey(H.data(), ctx.tbl0);
+  ghash_init_subkey(Zero.data(), ctx.tbl1);
+  ghash_handle_enc_initial_counter_block(Zero.data(), Zero.data(), &ctx);
 
   // Compute GHASH(H, A, C).
   ghash_init(&ctx);
@@ -254,7 +272,9 @@ TEST(Ghash, McGrawViegaTestCase18) {
 
   // Compute GHASH(H, A, C).
   ghash_context_t ctx;
-  ghash_init_subkey(H.data(), &ctx);
+  ghash_init_subkey(H.data(), ctx.tbl0);
+  ghash_init_subkey(Zero.data(), ctx.tbl1);
+  ghash_handle_enc_initial_counter_block(Zero.data(), Zero.data(), &ctx);
   ghash_init(&ctx);
   ghash_update(&ctx, A.size() * sizeof(uint32_t), (unsigned char *)A.data());
   ghash_update(&ctx, C.size() * sizeof(uint32_t), (unsigned char *)C.data());
