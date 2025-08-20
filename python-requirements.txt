@@ -515,9 +515,6 @@ packaging==24.2 \
 pathspec==0.12.1 \
     --hash=sha256:a0d503e138a4c123b27490a4f7beda6a01c6f288df0e4a8b79c7eb0dc7b4cc08 \
     --hash=sha256:a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712
-peakrdl-systemrdl==1.0.0 \
-    --hash=sha256:812b847d31db50c29d557d86f63656f4f98366aac82f36bcd638959c8f744a72 \
-    --hash=sha256:dd88b16d4cc8957344550b2b3716083604bfd2c60356fef59069477905d1fdfc
 pluggy==1.5.0 \
     --hash=sha256:2cffa88e94fdc978c4c574f15f9e59b7f4201d439195c3715ca9e2486f1d0cf1 \
     --hash=sha256:44e1ad92c8ca002de6377e165f3e0f1be63266ab4d554740532335b9d75ea669
@@ -651,6 +648,9 @@ pyyaml==6.0.2 \
 questionary==2.1.0 \
     --hash=sha256:44174d237b68bc828e4878c763a9ad6790ee61990e0ae72927694ead57bab8ec \
     --hash=sha256:6302cdd645b19667d8f6e6634774e9538bfcd1aad9be287e743d96cacaf95587
+rdlexporter==0.2.0 \
+    --hash=sha256:38d2dbdda140d9d6aa2977aa49a8857b564a011dd79f774afa50d9b8ebb2ec17 \
+    --hash=sha256:b20af613f7fe81115ae6a948bd8f4752a8a7adc97594e6689c2703f53cd03b3e
 referencing==0.36.2 \
     --hash=sha256:df2e89862cd09deabbdba16944cc3f10feb6b3e6f18e902f7cc25609a34775aa \
     --hash=sha256:e8699adbbf8b5c7de96d8ffa0eb5c158b3beafce084968e2ea8bb08c6794dcd0

@@ -27,13 +27,10 @@ dependencies = [
   "semantic_version==2.10.0",
   "tabulate==0.8.10",
   "typer==0.6.1",
-
   # Dependencies: bitstreams cache
   "jsonschema ~= 4.17",
-
   # Dependencies: gen-flash-img.py
   "pyfinite==1.9.1",
-
   # Dependencies: dv_sim
   "enlighten ~= 1.10",
   "mistletoe==0.9.0",
@@ -42,32 +39,27 @@ dependencies = [
   # To relax the constraint we either need to do a runtime detection, or switch all
   # users to a newer version.
   "premailer==3.8.0",
-
   # Dependencies: check_dif_statuses.py
   "pydriller ~= 2.7",
   "termcolor==1.1.0",
-
   # Linters
   "flake8 ~= 7.1",
   "isort ~= 5.10",
   "mypy == 0.991",
   "yapf==0.32.0",
   "ruff>=0.9.6",
-
   # Type stubs for mypy checking.
   "types-pyyaml ~= 6.0",
   "types-tabulate==0.8.11",
-
   # Dependency of sw/host/vendor/google_verible_verilog_syntax_py
   "anytree ~= 2.8",
-
   # Dependency of third_party/tock
   "tockloader==1.13",
-
   # The hardware package manager and build system.
   "fusesoc==2.4.3",
-
-  "peakrdl-systemrdl >= 1.0",
+  # Used in reggen to export register description in SystemRDL format from hjson.
+  "rdlexporter>=0.2",
+  "systemrdl-compiler>=1.29",
 ]
 
 [tool.setuptools]

@@ -343,7 +343,9 @@ py_library(
         ":reg_block",
         ":register",
         ":window",
-        requirement("peakrdl_systemrdl"),
+        "//util/reggen/systemrdl:udp",
+        requirement("systemrdl-compiler"),
+        requirement("rdlexporter"),
     ],
 )
 
