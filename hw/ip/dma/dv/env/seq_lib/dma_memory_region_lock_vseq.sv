@@ -149,23 +149,28 @@ class dma_memory_region_lock_vseq extends dma_generic_vseq;
   virtual task body();
     `uvm_info(`gfn, "DMA: Starting dma_memory region lock Sequence", UVM_LOW)
     fork
-      // Run smoke test body
-      super.body();
-      // Parallel task attempts to change the DMA-enabled memory range
-      forever begin
-        // Await a signal from the main task, indicating that the range should be locked.
-        wait (e_start.triggered);
-        while (operating) begin
-          delay($urandom_range(10, 80));
-          // Write random data into the DMA enabled memory region registers during the DMA
-          // operation; these attempted writes should be suppressed by the 'regwen' locking within
-          // the register interface.
-          update_and_check_registers();
-        end
-        // Signal to the main task that we have stopped trying to modify the range.
-        ->e_stopped;
-      end
-    join_any
+      begin : isolation_fork
+        fork
+          // Run smoke test body
+          super.body();
+          // Parallel task attempts to change the DMA-enabled memory range
+          forever begin
+            // Await a signal from the main task, indicating that the range should be locked.
+            wait (e_start.triggered);
+            while (operating) begin
+              delay($urandom_range(10, 80));
+              // Write random data into the DMA enabled memory region registers during the DMA
+              // operation; these attempted writes should be suppressed by the 'regwen' locking
+              // within the register interface.
+              update_and_check_registers();
+            end
+            // Signal to the main task that we have stopped trying to modify the range.
+            ->e_stopped;
+          end
+        join_any
+        disable fork;
+      end : isolation_fork
+    join
     `uvm_info(`gfn, "DMA: Completed dma_memory region lock sequence", UVM_LOW)
   endtask : body
 endclass
