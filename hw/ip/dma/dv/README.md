@@ -62,7 +62,18 @@ Deriving from `dma_base_vseq` is a sequence called `dma_generic_vseq` which is c
 There are two main categories of derived sequences called `dma_handshake_<>` and `dma_memory_<>` which, respectively, perform DMA transfers with and without the use of hardware-handshaking to/from a Low Speed I/O peripheral.
 
 #### Functional coverage
-TBD
+To ensure high-quality constrained random stimuli, it is necessary to develop a functional coverage model.
+The following covergroups have been developed to prove that the test intent has been adequately met:
+* common covergroup for interrupts `hw/dv/sv/cip_lib/cip_base_env_cov.sv`: Cover interrupt value, interrupt enable, intr_test, interrupt pin
+* common covergroups for alerts `hw/dv/sv/alert_esc_agent/alert_esc_agent_cov.sv`: Cover alert handshake signaling
+* common covergroups for CSRs `hw/dv/sv/dv_base_reg/*cov.sv`: Cover lockable register fields
+* common covergroups for TL-UL accesses `hw/dv/sv/tl_agent/tl_agent_cov.sv`: Covert TL-UL A/D channel traffic
+* dma_config_cg `hw/ip/dma/dv/env/dma_env_cov.sv`: Cover the different DMA transfer configurations
+* dma_tlul_error_cg `hw/ip/dma/dv/env/dma_env_cov.sv`: Cover TL-UL error and non-error responses on all ports
+* dma_status_cg `hw/ip/dma/dv/env/dma_env_cov.sv`: Cover the different status indicators
+* dma_error_code_cg `hw/ip/dma/dv/env/dma_env_cov.sv`: Cover all of the error conditions that the DMA controller reports
+* dma_interrupt_cg `hw/ip/dma/dv/env/dma_env_cov.sv`: Interrupt-clearing configuration in hardware-handshaking mode
+* dma_intr_src_cg `hw/ip/dma/dv/env/dma_env_cov.sv`: Interrupt-clearing address and data.
 
 ### Self-checking strategy
 #### Scoreboard
