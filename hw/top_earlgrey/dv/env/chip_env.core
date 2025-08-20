@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:top_earlgrey_chip_env:0.1"
 description: "CHIP DV UVM environmnt"
-virtual:
-  - lowrisc:dv:chip_env
 
 filesets:
   files_dv:
