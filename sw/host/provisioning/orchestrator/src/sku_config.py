@@ -19,9 +19,9 @@ _PACKAGE_IDS_HJSON = "sw/host/provisioning/orchestrator/data/packages/earlgrey_a
 class SkuConfig:
     """Class for storing an OpenTitan SKU configuration."""
     name: str  # valid: lower snake case only
-    product: str  # valid: any product that exists in product database
-    si_creator: str  # valid: any SiliconCreator that exists in product database
-    package: str  # valid: any package that exists in package database
+    product: Optional[str]  # valid: any product that exists in product database
+    si_creator: Optional[str]  # valid: any SiliconCreator that exists in product database
+    package: Optional[str]  # valid: any package that exists in package database
     target_lc_state: str  # valid: must be in ["dev", "prod", "prod_end"]
     dice_ca: Optional[OrderedDict]  # valid: see CaConfig
     ext_ca: Optional[OrderedDict]  # valid: see CaConfig
