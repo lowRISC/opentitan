@@ -11,7 +11,7 @@ use once_cell::sync::Lazy;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::pinmux::PinmuxPadAttr;
-use opentitanlib::io::gpio::PinMode;
+use opentitanlib::io::gpio::{PinMode, PullMode};
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::gpio::{GpioGet, GpioSet};
 use opentitanlib::test_utils::init::InitializeTest;
@@ -227,6 +227,59 @@ static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
     }
 });
 
+static SUPPORTS_OD: [PinmuxMioOut; 14] = [
+    PinmuxMioOut::Ioa6,
+    PinmuxMioOut::Ioa7,
+    PinmuxMioOut::Ioa8,
+    PinmuxMioOut::Iob9,
+    PinmuxMioOut::Iob10,
+    PinmuxMioOut::Iob11,
+    PinmuxMioOut::Iob12,
+    PinmuxMioOut::Ioc10,
+    PinmuxMioOut::Ioc11,
+    PinmuxMioOut::Ioc12,
+    PinmuxMioOut::Ior10,
+    PinmuxMioOut::Ior11,
+    PinmuxMioOut::Ior12,
+    PinmuxMioOut::Ior13,
+];
+
+static SUPPORTS_VIRT_OD: [PinmuxMioOut; 33] = [
+    PinmuxMioOut::Ioa0,
+    PinmuxMioOut::Ioa1,
+    PinmuxMioOut::Ioa2,
+    PinmuxMioOut::Ioa3,
+    PinmuxMioOut::Ioa4,
+    PinmuxMioOut::Ioa5,
+    PinmuxMioOut::Iob0,
+    PinmuxMioOut::Iob1,
+    PinmuxMioOut::Iob2,
+    PinmuxMioOut::Iob3,
+    PinmuxMioOut::Iob4,
+    PinmuxMioOut::Iob5,
+    PinmuxMioOut::Iob6,
+    PinmuxMioOut::Iob7,
+    PinmuxMioOut::Iob8,
+    PinmuxMioOut::Ioc0,
+    PinmuxMioOut::Ioc1,
+    PinmuxMioOut::Ioc2,
+    PinmuxMioOut::Ioc3,
+    PinmuxMioOut::Ioc4,
+    PinmuxMioOut::Ioc5,
+    PinmuxMioOut::Ioc6,
+    PinmuxMioOut::Ioc7,
+    PinmuxMioOut::Ioc8,
+    PinmuxMioOut::Ioc9,
+    PinmuxMioOut::Ior0,
+    PinmuxMioOut::Ior1,
+    PinmuxMioOut::Ior2,
+    PinmuxMioOut::Ior3,
+    PinmuxMioOut::Ior4,
+    PinmuxMioOut::Ior5,
+    PinmuxMioOut::Ior6,
+    PinmuxMioOut::Ior7,
+];
+
 fn write_all_verify(
     transport: &TransportWrapper,
     uart: &dyn Uart,
@@ -430,6 +483,62 @@ fn test_pad_inversion(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     Ok(())
 }
 
+fn test_opendrain(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    pad_filter: &[PinmuxMioOut],
+    pad_attr: PinmuxPadAttr,
+) -> Result<()> {
+    let uart = transport.uart("console")?;
+    let interface = opts.init.backend_opts.interface.as_str();
+    log::info!("Configuring pinmux for {interface}");
+
+    let config = CONFIG
+        .get(interface)
+        .with_context(|| format!("interface '{interface}' is not yet supported"))?;
+
+    log::info!("Configuring debugger GPIOs as pulled-up inputs");
+    // The inputs (with respect to pinmux config) correspond to the output pins on the debug board.
+    let opendrain_inputs = config.input.values();
+    for pin in opendrain_inputs {
+        let pin = transport.gpio_pin(&pin.to_string())?;
+        pin.set(Some(PinMode::Input), None, Some(PullMode::PullUp), None)?;
+    }
+
+    // Filter pads to those supporting opendrain using the provided filter.
+    let opendrain_outputs: HashMap<_, _> = config
+        .output
+        .clone()
+        .into_iter()
+        .filter(|&(mio, _)| pad_filter.iter().any(|&o| o == mio))
+        .collect();
+    let opendrain_attrs: HashMap<_, _> = opendrain_outputs
+        .keys()
+        .map(|&mio| (mio, pad_attr))
+        .collect();
+
+    log::info!("Configuring pads as opendrain outputs");
+    PinmuxConfig::configure(
+        &*uart,
+        None,
+        Some(&opendrain_outputs),
+        Some(&opendrain_attrs),
+    )?;
+
+    log::info!("Enabling outputs on the DUT");
+    GpioSet::set_enabled_all(&*uart, 0xFFFFFFFF)?;
+
+    log::info!("Testing opendrain device outputs");
+    for pattern in [0x5555_5555, 0xAAAA_AAAA] {
+        write_all_verify(transport, &*uart, pattern, pattern, &opendrain_outputs)?;
+    }
+    for i in 0..32 {
+        write_all_verify(transport, &*uart, 1 << i, 1 << i, &opendrain_outputs)?;
+    }
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
@@ -442,6 +551,24 @@ fn main() -> Result<()> {
     execute_test!(test_gpio_outputs, &opts, &transport);
     execute_test!(test_gpio_inputs, &opts, &transport);
     execute_test!(test_pad_inversion, &opts, &transport);
+    // Only silicon supports OpenDrain, FPGA does not.
+    if opts.init.backend_opts.interface == "teacup" {
+        execute_test!(
+            test_opendrain,
+            &opts,
+            &transport,
+            &SUPPORTS_OD,
+            PinmuxPadAttr::OD_EN,
+        );
+    }
+
+    execute_test!(
+        test_opendrain,
+        &transport,
+        &config,
+        &SUPPORTS_VIRT_OD,
+        PinmuxPadAttr::VIRTUAL_OD_EN,
+    );
 
     Ok(())
 }
