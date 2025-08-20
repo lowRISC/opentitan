@@ -184,8 +184,22 @@ static status_t aes_gcm_hash_subkey(const aes_key_t key, ghash_context_t *ctx) {
   aes_block_t hash_subkey;
   HARDENED_TRY(aes_encrypt_block(key, &zero, &zero, &hash_subkey));
 
+  // Create two shares of the hash subkey.
+  aes_block_t hash_subkey_share0;
+  aes_block_t hash_subkey_share1;
+
+  // Share 0: random data.
+  hardened_memshred(hash_subkey_share0.data, kAesBlockNumWords);
+
+  // Share 1: hash_subkey ^ hash_subkey_share0
+  hardened_memcpy(hash_subkey_share1.data, hash_subkey_share0.data,
+                  kAesBlockNumWords);
+  // TODO(#28008): make sure that we do not override shares.
+  hardened_xor(hash_subkey_share1.data, hash_subkey.data, kAesBlockNumWords);
+
   // Set the key for the GHASH context.
-  ghash_init_subkey(hash_subkey.data, ctx);
+  ghash_init_subkey(hash_subkey_share0.data, ctx->tbl0);
+  ghash_init_subkey(hash_subkey_share1.data, ctx->tbl1);
 
   return OTCRYPTO_OK;
 }
@@ -213,6 +227,29 @@ static status_t aes_gcm_counter(const size_t iv_len, const uint32_t *iv,
   } else if (iv_len == 4) {
     // If the IV is 128 bits, then J0 = GHASH(H, IV || {0}^120 || 0x80), where
     // {0}^120 means 120 zero bits (15 0x00 bytes).
+
+    // As the encrypted initial counter block S only can be computed AFTER
+    // aes_gcm_counter(), set S0 and S1 to random.
+    aes_block_t enc_initial_counter_block;
+    hardened_memshred(enc_initial_counter_block.data, kAesBlockNumWords);
+
+    // Split the initial counter block S into two shares S0 and S1.
+    // S0: random data.
+    aes_block_t enc_initial_counter_block0;
+    hardened_memshred(enc_initial_counter_block0.data, kAesBlockNumWords);
+
+    // S1: S ^ S0
+    aes_block_t enc_initial_counter_block1;
+    hardened_memcpy(enc_initial_counter_block1.data,
+                    enc_initial_counter_block0.data, kAesBlockNumWords);
+    hardened_xor(enc_initial_counter_block1.data,
+                 enc_initial_counter_block.data, kAesBlockNumWords);
+
+    // Calculate the masking correction terms and store the encrypted initial
+    // counter blocks S0 and S1.
+    ghash_handle_enc_initial_counter_block(
+        enc_initial_counter_block0.data, enc_initial_counter_block1.data, ctx);
+
     ghash_init(ctx);
     ghash_update(ctx, iv_len * sizeof(uint32_t), (unsigned char *)iv);
     uint8_t buffer[kAesBlockNumBytes];
@@ -220,6 +257,10 @@ static status_t aes_gcm_counter(const size_t iv_len, const uint32_t *iv,
     buffer[kAesBlockNumBytes - 1] = 0x80;
     ghash_update(ctx, kAesBlockNumBytes, buffer);
     ghash_final(ctx, j0->data);
+    // In the masking scheme, the GHASH function now actually XORs the initial
+    // counter block S to the output. As we do not want to have this for J0,
+    // correct the output.
+    hardened_xor(j0->data, enc_initial_counter_block.data, kAesBlockNumWords);
   } else {
     // Should not happen; invalid IV length.
     return OTCRYPTO_BAD_ARGS;
@@ -249,29 +290,16 @@ static status_t aes_gcm_get_tag(aes_gcm_context_t *ctx, size_t tag_len,
       __builtin_bswap64(((uint64_t)ctx->input_len) * 8),
   };
 
-  // Finish computing S by appending (len64(A) || len64(C)).
+  // Append (len64(A) || len64(C)) and XOR the result with S1 to get the final
+  // tag.
   ghash_update(&ctx->ghash_ctx, kAesBlockNumBytes, (unsigned char *)last_block);
-  aes_block_t s;
-  ghash_final(&ctx->ghash_ctx, s.data);
-
-  // Compute the tag T = GCTR(K, J0, S).
-  uint32_t full_tag[kAesBlockNumWords];
-  size_t full_tag_len;
-  aes_block_t empty = {.data = {0}};
-  HARDENED_TRY(aes_gcm_gctr(ctx->key, &ctx->initial_counter_block,
-                            /*partial_len=*/0, &empty, kAesBlockNumBytes,
-                            (unsigned char *)s.data, &full_tag_len,
-                            (unsigned char *)full_tag));
-
-  // Sanity check.
-  if (full_tag_len != kAesBlockNumBytes) {
-    return OTCRYPTO_FATAL_ERR;
-  }
+  aes_block_t full_tag;
+  ghash_final(&ctx->ghash_ctx, full_tag.data);
 
   // Truncate the tag if needed. NIST requires we take the most significant
   // bits in big-endian representation, which corresponds to the least
   // significant bits in Ibex's little-endian representation.
-  hardened_memcpy(tag, full_tag, tag_len);
+  hardened_memcpy(tag, full_tag.data, tag_len);
   return OTCRYPTO_OK;
 }
 
@@ -316,6 +344,32 @@ static status_t aes_gcm_init(const aes_key_t key, const size_t iv_len,
   // Compute the counter block (called J0 in the NIST specification).
   HARDENED_TRY(aes_gcm_counter(iv_len, iv, &ctx->ghash_ctx,
                                &ctx->initial_counter_block));
+
+  // Create the encrypted initial counter block S.
+  aes_block_t zero;
+  memset(zero.data, 0, kAesBlockNumBytes);
+  aes_block_t enc_initial_counter_block;
+  HARDENED_TRY(aes_encrypt_block(key, &ctx->initial_counter_block, &zero,
+                                 &enc_initial_counter_block));
+
+  // Split the initial counter block S into two shares S0 and S1.
+  // S0: random data.
+  aes_block_t enc_initial_counter_block0;
+  hardened_memshred(enc_initial_counter_block0.data, kAesBlockNumWords);
+
+  // S1: S ^ S0
+  aes_block_t enc_initial_counter_block1;
+  hardened_memcpy(enc_initial_counter_block1.data,
+                  enc_initial_counter_block0.data, kAesBlockNumWords);
+  // TODO(#28008): make sure that we do not override shares.
+  hardened_xor(enc_initial_counter_block1.data, enc_initial_counter_block.data,
+               kAesBlockNumWords);
+
+  // Calculate the masking correction terms and store the encrypted initial
+  // counter blocks.
+  ghash_handle_enc_initial_counter_block(enc_initial_counter_block0.data,
+                                         enc_initial_counter_block1.data,
+                                         &ctx->ghash_ctx);
 
   // Set the initial IV for GCTR to inc32(J0).
   // The eventual ciphertext is C = GCTR(K, inc32(J0), plaintext).
