@@ -219,7 +219,6 @@
             resval: "0x0"
           }
         ]
-        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "INBOUND_LIMIT_ADDRESS"
         desc: '''Inclusive end address of the inbound mailbox memory range in the private SRAM.
@@ -236,7 +235,6 @@
             resval: "0x0"
           }
         ]
-        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "INBOUND_WRITE_PTR"
         desc: '''Write pointer for the next inbound DWORD write (32 bits).
@@ -254,7 +252,6 @@
             hwaccess: "hwo"
           }
         ]
-        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "OUTBOUND_BASE_ADDRESS"
         desc: '''Base address of SRAM region, which is used to buffer the outbound mailbox data.
@@ -270,7 +267,6 @@
             resval: "0x0"
           }
         ]
-        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "OUTBOUND_LIMIT_ADDRESS"
         desc: '''Inclusive end address of the outbound mailbox memory range in the private SRAM.
@@ -287,7 +283,6 @@
             resval: "0x0"
           }
         ]
-        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "OUTBOUND_READ_PTR"
         desc: '''Read pointer for the next outbound DWORD read.
@@ -306,7 +301,6 @@
             hwaccess: "hwo"
           }
         ]
-        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "OUTBOUND_OBJECT_SIZE"
         desc: '''Indicates the size of the data object to be transferred out.
@@ -323,7 +317,6 @@
             hwqe: "true"
           }
         ]
-        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "DOE_INTR_MSG_ADDR"
         desc: '''
@@ -340,7 +333,7 @@
             resval: "0x0"
           }
         ]
-        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
+        tags: ["excl:CsrAllTests:CsrExclAll"] // alias of another register; no automated CSR tests applicable
       }
       { name: "DOE_INTR_MSG_DATA"
         desc: '''
@@ -357,7 +350,7 @@
             resval: "0x0"
           }
         ]
-        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
+        tags: ["excl:CsrAllTests:CsrExclAll"] // alias of another register; no automated CSR tests applicable
       }
     ]
     soc: [
