@@ -46,6 +46,37 @@ pub enum LcTransitionError {
 }
 impl_serializable_error!(LcTransitionError);
 
+pub fn claim_lc_mutex(jtag: &mut dyn Jtag, claim: bool) -> Result<()> {
+    if claim {
+        // Check the LC transition mutex has not been claimed yet.
+        if jtag.read_lc_ctrl_reg(&LcCtrlReg::ClaimTransitionIf)?
+            == u8::from(MultiBitBool8::True) as u32
+        {
+            return Err(LcTransitionError::MutexAlreadyClaimed.into());
+        }
+
+        // Attempt to claim the LC transition mutex.
+        jtag.write_lc_ctrl_reg(
+            &LcCtrlReg::ClaimTransitionIf,
+            u8::from(MultiBitBool8::True) as u32,
+        )?;
+
+        // Check the LC transition mutex was claimed.
+        if jtag.read_lc_ctrl_reg(&LcCtrlReg::ClaimTransitionIf)?
+            != u8::from(MultiBitBool8::True) as u32
+        {
+            return Err(LcTransitionError::FailedToClaimMutex.into());
+        }
+    } else {
+        // Release the LC transition mutex.
+        jtag.write_lc_ctrl_reg(
+            &LcCtrlReg::ClaimTransitionIf,
+            u8::from(MultiBitBool8::False) as u32,
+        )?;
+    }
+    Ok(())
+}
+
 fn setup_lc_transition(
     jtag: &mut dyn Jtag,
     target_lc_state: DifLcCtrlState,
@@ -58,23 +89,7 @@ fn setup_lc_transition(
         return Err(LcTransitionError::LcCtrlNotReady(status).into());
     }
 
-    // Check the LC transition mutex has not been claimed yet.
-    if jtag.read_lc_ctrl_reg(&LcCtrlReg::ClaimTransitionIf)? == u8::from(MultiBitBool8::True) as u32
-    {
-        return Err(LcTransitionError::MutexAlreadyClaimed.into());
-    }
-
-    // Attempt to claim the LC transition mutex.
-    jtag.write_lc_ctrl_reg(
-        &LcCtrlReg::ClaimTransitionIf,
-        u8::from(MultiBitBool8::True) as u32,
-    )?;
-
-    // Check the LC transition mutex was claimed.
-    if jtag.read_lc_ctrl_reg(&LcCtrlReg::ClaimTransitionIf)? != u8::from(MultiBitBool8::True) as u32
-    {
-        return Err(LcTransitionError::FailedToClaimMutex.into());
-    }
+    claim_lc_mutex(jtag, true)?;
 
     // Program the target LC state.
     jtag.write_lc_ctrl_reg(
