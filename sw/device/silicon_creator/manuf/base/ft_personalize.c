@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
@@ -41,6 +42,7 @@
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
@@ -223,6 +225,13 @@ static status_t log_self_hash(perso_blob_t *perso_blob_to_host) {
                                    perso_blob_to_host));
   perso_blob_to_host->num_objs++;
   return OK_STATUS();
+}
+
+/*
+ * Return a pointer to the ROM_EXT manifest located in the slot a.
+ */
+static const manifest_t *rom_ext_manifest_a_get(void) {
+  return (const manifest_t *)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
 }
 
 /*
@@ -1169,6 +1178,17 @@ static status_t provision(ujson_t *uj) {
 }
 
 bool test_main(void) {
+  // Log our boot status in the lifecycle token registers.
+  const manifest_t *self = rom_ext_manifest_a_get();
+  lifecycle_claim(kMultiBitBool8True);
+  lifecycle_set_status(kLifecycleStatusWordRomExtVersion, self->version_minor);
+  lifecycle_set_status(kLifecycleStatusWordRomExtSecVersion,
+                       self->security_version);
+  lifecycle_set_status(kLifecycleStatusWordOwnerVersion, 0);
+  lifecycle_set_status(kLifecycleStatusWordDeviceStatus,
+                       kLifecycleDeviceStatusPersoStart);
+  lifecycle_claim(kMultiBitBool8False);
+
   // Unconditionally disable the watchdog timer.
   // This is needed to avoid a watchdog reset if enabled in the ROM.
   watchdog_disable();
