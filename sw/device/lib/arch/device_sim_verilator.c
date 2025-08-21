@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <stdbool.h>
 
-#include "dt/dt_rv_core_ibex.h"
+#include "hw/top/dt/dt_rv_core_ibex.h"
 #include "sw/device/lib/arch/device.h"
 
 #include "rv_core_ibex_regs.h"

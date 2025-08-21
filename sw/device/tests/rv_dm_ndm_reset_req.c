@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "dt/dt_otp_ctrl.h"  // Generated
-#include "dt/dt_pinmux.h"    // Generated
+#include "hw/top/dt/dt_otp_ctrl.h"  // Generated
+#include "hw/top/dt/dt_pinmux.h"    // Generated
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -14,17 +14,17 @@
 #include "pinmux_regs.h"
 
 #if defined(OPENTITAN_IS_EARLGREY)
-#include "dt/dt_adc_ctrl.h"     // Generated
-#include "dt/dt_flash_ctrl.h"   // Generated
-#include "dt/dt_keymgr.h"       // Generated
-#include "dt/dt_sysrst_ctrl.h"  // Generated
+#include "hw/top/dt/dt_adc_ctrl.h"     // Generated
+#include "hw/top/dt/dt_flash_ctrl.h"   // Generated
+#include "hw/top/dt/dt_keymgr.h"       // Generated
+#include "hw/top/dt/dt_sysrst_ctrl.h"  // Generated
 
 #include "adc_ctrl_regs.h"
 #include "flash_ctrl_regs.h"
 #include "keymgr_regs.h"
 #include "sysrst_ctrl_regs.h"
 #elif defined(OPENTITAN_IS_DARJEELING)
-#include "dt/dt_keymgr_dpe.h"  // Generated
+#include "hw/top/dt/dt_keymgr_dpe.h"  // Generated
 
 #include "keymgr_dpe_regs.h"
 #else
