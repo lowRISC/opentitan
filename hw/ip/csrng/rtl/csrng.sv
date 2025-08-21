@@ -14,9 +14,10 @@ module csrng
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   // Number of cycles a differential skew is tolerated on the alert signal
   parameter int unsigned AlertSkewCycles = 1,
-  parameter int NHwApps = 2,
   parameter cs_keymgr_div_t RndCnstCsKeymgrDivNonProduction = CsKeymgrDivWidth'(0),
-  parameter cs_keymgr_div_t RndCnstCsKeymgrDivProduction = CsKeymgrDivWidth'(0)
+  parameter cs_keymgr_div_t RndCnstCsKeymgrDivProduction = CsKeymgrDivWidth'(0),
+
+  localparam int unsigned NumHwApps = NumApps - 1 // derived parameter
 ) (
   input logic         clk_i,
   input logic         rst_ni,
@@ -41,8 +42,8 @@ module csrng
   output entropy_src_pkg::cs_aes_halt_rsp_t cs_aes_halt_o,
 
   // Application Interfaces
-  input  csrng_req_t  [NHwApps-1:0] csrng_cmd_i,
-  output csrng_rsp_t  [NHwApps-1:0] csrng_cmd_o,
+  input  csrng_req_t  [NumHwApps-1:0] csrng_cmd_i,
+  output csrng_rsp_t  [NumHwApps-1:0] csrng_cmd_o,
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
@@ -79,7 +80,7 @@ module csrng
 
   csrng_core #(
     .SBoxImpl(SBoxImpl),
-    .NHwApps(NHwApps),
+    .NumHwApps(NumHwApps),
     .RndCnstCsKeymgrDivNonProduction(RndCnstCsKeymgrDivNonProduction),
     .RndCnstCsKeymgrDivProduction(RndCnstCsKeymgrDivProduction)
   ) u_csrng_core (
@@ -145,7 +146,7 @@ module csrng
   `ASSERT_KNOWN(EsReqKnownO_A, entropy_src_hw_if_o.es_req)
 
   // Application Interface Asserts
-  for (genvar i = 0; i < NHwApps; i = i+1) begin : gen_app_if_asserts
+  for (genvar i = 0; i < NumHwApps; i = i+1) begin : gen_app_if_asserts
     `ASSERT_KNOWN(CsrngReqReadyKnownO_A, csrng_cmd_o[i].csrng_req_ready)
     `ASSERT_KNOWN(CsrngRspAckKnownO_A, csrng_cmd_o[i].csrng_rsp_ack)
     `ASSERT_KNOWN(CsrngRspStsKnownO_A, csrng_cmd_o[i].csrng_rsp_sts)
@@ -172,7 +173,7 @@ module csrng
     u_csrng_core.u_csrng_ctr_drbg_gen.u_prim_count_ctr_drbg,
     alert_tx_o[1])
 
-  for (genvar i = 0; i < NHwApps + 1; i++) begin : gen_cnt_asserts
+  for (genvar i = 0; i < NumHwApps + 1; i++) begin : gen_cnt_asserts
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
       u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.u_prim_count_cmd_gen_cntr,
       alert_tx_o[1])
@@ -214,4 +215,8 @@ module csrng
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
+
+  // The total number of application interfaces defined in the hjson must be at least two:
+  // One SW interface and at least one HW interface. Zero HW interfaces is currently not supported.
+  `ASSERT_INIT(CsrngNumAppsMatch_A, NumApps >= 2)
 endmodule
