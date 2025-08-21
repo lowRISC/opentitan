@@ -7,6 +7,7 @@ use std::sync::{Arc, LazyLock, Mutex};
 use std::task::{Context, Poll, Wake, Waker};
 use std::time::Duration;
 
+use anyhow::Result;
 use tokio::runtime::Runtime;
 
 static RUNTIME: LazyLock<Runtime> = LazyLock::new(|| Runtime::new().unwrap());
@@ -150,5 +151,35 @@ impl MultiWaker {
 impl Default for MultiWaker {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+/// Listen for shutdown signals.
+pub async fn shutdown_signal() {
+    let ctrl_c = async {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    let terminate = async {
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    tokio::select! {
+        biased;
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
+}
+
+/// Run a future with graceful shutdown.
+pub async fn with_graceful_shutdown(fut: impl Future<Output = Result<()>>) -> Result<()> {
+    tokio::select! {
+        v = fut => v,
+        _ = shutdown_signal() => Ok(()),
     }
 }

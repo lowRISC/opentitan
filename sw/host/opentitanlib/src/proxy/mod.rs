@@ -77,6 +77,8 @@ impl<'a> SessionHandler<'a> {
     }
 
     pub fn run_loop(&mut self) -> Result<()> {
-        self.socket_server.run_loop()
+        crate::util::runtime::block_on(crate::util::runtime::with_graceful_shutdown(
+            self.socket_server.run_loop(),
+        ))
     }
 }

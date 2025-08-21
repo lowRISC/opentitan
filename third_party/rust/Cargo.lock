@@ -265,7 +265,6 @@ dependencies = [
  "memchr",
  "memoffset",
  "mio 0.8.11",
- "mio-signals",
  "num-bigint-dig",
  "num-traits",
  "object",
@@ -1265,17 +1264,6 @@ dependencies = [
  "libc",
  "wasi 0.11.1+wasi-snapshot-preview1",
  "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "mio-signals"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21e9524e26c8749824640a1282b68a695b21d55862efa6d465b5f71107c93368"
-dependencies = [
- "libc",
- "log",
- "mio 0.8.11",
 ]
 
 [[package]]
