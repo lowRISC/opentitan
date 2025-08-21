@@ -171,7 +171,7 @@ class DeviceId():
         mask = (1 << 128) - 1
         base_uid = device_id & mask
         # Extract HW origin.
-        hw_origin = base_uid & 0xFFFFFFFFFF
+        hw_origin = base_uid & 0xFFFFFFFF
         si_creator_id = hw_origin & 0xFFFF
         product_id = (hw_origin >> 16) & 0xFFFF
 
