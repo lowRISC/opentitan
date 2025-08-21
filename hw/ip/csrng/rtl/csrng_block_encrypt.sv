@@ -8,9 +8,7 @@
 module csrng_block_encrypt import csrng_pkg::*; #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut,
   parameter int Cmd = 3,
-  parameter int StateId = 4,
-  parameter int BlkLen = 128,
-  parameter int KeyLen = 256
+  parameter int StateId = 4
 ) (
   input logic                clk_i,
   input logic                rst_ni,
