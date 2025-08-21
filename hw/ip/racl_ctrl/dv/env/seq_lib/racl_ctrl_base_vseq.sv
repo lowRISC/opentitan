@@ -15,8 +15,12 @@ class racl_ctrl_base_vseq
   racl_error_log_sequencer external_error_log_sequencer_h;
 
   extern function new (string name="");
+  extern function uvm_object clone();
   extern task body();
   extern task post_start();
+
+  // Create a child sequence by name, copying sequencer handles across. Overridden from dv_base_seq.
+  extern function uvm_sequence create_seq_by_name(string name);
 
   // Occasionally write 1 to the the error_log register, which will clear the valid bit (clearing
   // the error). Stop once the stopping flag goes high.
@@ -41,7 +45,20 @@ function racl_ctrl_base_vseq::new (string name="");
   ext_seq = racl_error_log_sporadic_seq::type_id::create("ext_seq");
 endfunction
 
+function uvm_object racl_ctrl_base_vseq::clone();
+  racl_ctrl_base_vseq ret;
+  `downcast(ret, super.clone());
+
+  ret.internal_error_log_sequencer_h = internal_error_log_sequencer_h;
+  ret.external_error_log_sequencer_h = external_error_log_sequencer_h;
+
+  return ret;
+endfunction
+
 task racl_ctrl_base_vseq::body();
+  `DV_CHECK_FATAL(internal_error_log_sequencer_h)
+  `DV_CHECK_FATAL(external_error_log_sequencer_h)
+
   // Start "sporadic" sequences on the two error log agents. These are spawned into background
   // threads which are asked to stop in the post_start() task (which will run when the body() task
   // has completed, including any subclass implementation)
@@ -67,6 +84,19 @@ task racl_ctrl_base_vseq::post_start();
   stopping = 1'b1;
   wait(!clear_error_log_running);
 endtask
+
+function uvm_sequence racl_ctrl_base_vseq::create_seq_by_name(string name);
+  uvm_sequence        base_ret = super.create_seq_by_name(name);
+  racl_ctrl_base_vseq ret;
+
+  `downcast(ret, base_ret)
+  `DV_CHECK_FATAL(ret != null)
+
+  ret.internal_error_log_sequencer_h = internal_error_log_sequencer_h;
+  ret.external_error_log_sequencer_h = external_error_log_sequencer_h;
+
+  return ret;
+endfunction
 
 task racl_ctrl_base_vseq::clear_error_log();
   dv_base_reg error_log_reg;
