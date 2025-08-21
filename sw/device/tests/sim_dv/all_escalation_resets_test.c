@@ -28,50 +28,50 @@
 #include <stdint.h>
 
 #if defined(OPENTITAN_IS_EARLGREY)
-#include "dt/dt_adc_ctrl.h"     // Generated
-#include "dt/dt_entropy_src.h"  // Generated
-#include "dt/dt_flash_ctrl.h"   // Generated
-#include "dt/dt_keymgr.h"       // Generated
-#include "dt/dt_pattgen.h"      // Generated
-#include "dt/dt_pwm.h"          // Generated
-#include "dt/dt_sensor_ctrl.h"  // Generated
-#include "dt/dt_sysrst_ctrl.h"  // Generated
-#include "dt/dt_usbdev.h"       // Generated
+#include "hw/top/dt/dt_adc_ctrl.h"     // Generated
+#include "hw/top/dt/dt_entropy_src.h"  // Generated
+#include "hw/top/dt/dt_flash_ctrl.h"   // Generated
+#include "hw/top/dt/dt_keymgr.h"       // Generated
+#include "hw/top/dt/dt_pattgen.h"      // Generated
+#include "hw/top/dt/dt_pwm.h"          // Generated
+#include "hw/top/dt/dt_sensor_ctrl.h"  // Generated
+#include "hw/top/dt/dt_sysrst_ctrl.h"  // Generated
+#include "hw/top/dt/dt_usbdev.h"       // Generated
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 
 #include "flash_ctrl_regs.h"  // Generated
 #elif defined(OPENTITAN_IS_DARJEELING)
-#include "dt/dt_keymgr_dpe.h"  // Generated
+#include "hw/top/dt/dt_keymgr_dpe.h"  // Generated
 #else
 #error "all_escalation_resets_test does not support this top"
 #endif
 
-#include "dt/dt_aes.h"            // Generated
-#include "dt/dt_alert_handler.h"  // Generated
-#include "dt/dt_aon_timer.h"      // Generated
-#include "dt/dt_api.h"            // Generated
-#include "dt/dt_clkmgr.h"         // Generated
-#include "dt/dt_csrng.h"          // Generated
-#include "dt/dt_edn.h"            // Generated
-#include "dt/dt_gpio.h"           // Generated
-#include "dt/dt_hmac.h"           // Generated
-#include "dt/dt_i2c.h"            // Generated
-#include "dt/dt_kmac.h"           // Generated
-#include "dt/dt_lc_ctrl.h"        // Generated
-#include "dt/dt_otbn.h"           // Generated
-#include "dt/dt_otp_ctrl.h"       // Generated
-#include "dt/dt_pinmux.h"         // Generated
-#include "dt/dt_pwrmgr.h"         // Generated
-#include "dt/dt_rom_ctrl.h"       // Generated
-#include "dt/dt_rstmgr.h"         // Generated
-#include "dt/dt_rv_core_ibex.h"   // Generated
-#include "dt/dt_rv_dm.h"          // Generated
-#include "dt/dt_rv_plic.h"        // Generated
-#include "dt/dt_rv_timer.h"       // Generated
-#include "dt/dt_spi_device.h"     // Generated
-#include "dt/dt_spi_host.h"       // Generated
-#include "dt/dt_sram_ctrl.h"      // Generated
-#include "dt/dt_uart.h"           // Generated
+#include "hw/top/dt/dt_aes.h"            // Generated
+#include "hw/top/dt/dt_alert_handler.h"  // Generated
+#include "hw/top/dt/dt_aon_timer.h"      // Generated
+#include "hw/top/dt/dt_api.h"            // Generated
+#include "hw/top/dt/dt_clkmgr.h"         // Generated
+#include "hw/top/dt/dt_csrng.h"          // Generated
+#include "hw/top/dt/dt_edn.h"            // Generated
+#include "hw/top/dt/dt_gpio.h"           // Generated
+#include "hw/top/dt/dt_hmac.h"           // Generated
+#include "hw/top/dt/dt_i2c.h"            // Generated
+#include "hw/top/dt/dt_kmac.h"           // Generated
+#include "hw/top/dt/dt_lc_ctrl.h"        // Generated
+#include "hw/top/dt/dt_otbn.h"           // Generated
+#include "hw/top/dt/dt_otp_ctrl.h"       // Generated
+#include "hw/top/dt/dt_pinmux.h"         // Generated
+#include "hw/top/dt/dt_pwrmgr.h"         // Generated
+#include "hw/top/dt/dt_rom_ctrl.h"       // Generated
+#include "hw/top/dt/dt_rstmgr.h"         // Generated
+#include "hw/top/dt/dt_rv_core_ibex.h"   // Generated
+#include "hw/top/dt/dt_rv_dm.h"          // Generated
+#include "hw/top/dt/dt_rv_plic.h"        // Generated
+#include "hw/top/dt/dt_rv_timer.h"       // Generated
+#include "hw/top/dt/dt_spi_device.h"     // Generated
+#include "hw/top/dt/dt_spi_host.h"       // Generated
+#include "hw/top/dt/dt_sram_ctrl.h"      // Generated
+#include "hw/top/dt/dt_uart.h"           // Generated
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/math.h"
