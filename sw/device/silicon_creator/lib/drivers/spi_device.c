@@ -11,8 +11,8 @@
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "flash_ctrl_regs.h"
-#include "spi_device_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/spi_device_regs.h"
 
 static const dt_spi_device_t kSpiDeviceDt = kDtSpiDevice;
 

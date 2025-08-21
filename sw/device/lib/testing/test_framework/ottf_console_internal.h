@@ -13,7 +13,7 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 
-#include "spi_device_regs.h"  // Generated.
+#include "hw/top/spi_device_regs.h"  // Generated.
 
 /**
  * SPI console buffer management constants.

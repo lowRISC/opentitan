@@ -10,7 +10,7 @@
 #include "sw/device/lib/dif/dif_test_base.h"
 
 extern "C" {
-#include "dma_regs.h"  // Generated.
+#include "hw/top/dma_regs.h"  // Generated.
 }  // extern "C"
 
 namespace dif_dma_test {

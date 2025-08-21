@@ -18,8 +18,8 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/otbn_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otbn_regs.h"  // Generated.
 
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;

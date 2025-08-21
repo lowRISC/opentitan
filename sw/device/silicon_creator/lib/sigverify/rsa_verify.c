@@ -7,7 +7,7 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/sigverify/mod_exp_ibex.h"
 
-#include "otp_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 
 /*
  * Shares for producing the `flash_exec` value in encoded message check. First

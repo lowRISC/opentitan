@@ -20,8 +20,8 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
-#include "rstmgr_regs.h"     // Generated.
-#include "sram_ctrl_regs.h"  // Generated.
+#include "hw/top/rstmgr_regs.h"     // Generated.
+#include "hw/top/sram_ctrl_regs.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();
 

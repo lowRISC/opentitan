@@ -10,10 +10,10 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/pwrmgr.h"
 
-#include "aon_timer_regs.h"
+#include "hw/top/aon_timer_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/pwrmgr_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
-#include "pwrmgr_regs.h"
 
 enum {
   kBase = TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR,

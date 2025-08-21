@@ -10,7 +10,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "kmac_regs.h"  // Generated.
+#include "hw/top/kmac_regs.h"  // Generated.
 
 static_assert(kDtKmacCount >= 1,
               "This test requires at least one KMAC instance");

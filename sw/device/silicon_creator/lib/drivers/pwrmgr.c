@@ -8,8 +8,8 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 
+#include "hw/top/pwrmgr_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "pwrmgr_regs.h"
 
 enum {
   kBase = TOP_EARLGREY_PWRMGR_AON_BASE_ADDR,

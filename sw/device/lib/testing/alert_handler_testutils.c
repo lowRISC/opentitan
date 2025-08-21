@@ -13,7 +13,7 @@
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "alert_handler_regs.h"  // Generated
+#include "hw/top/alert_handler_regs.h"  // Generated
 
 #define MODULE_ID MAKE_MODULE_ID('a', 'h', 't')
 

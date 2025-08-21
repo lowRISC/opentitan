@@ -13,7 +13,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
-#include "rv_plic_regs.h"  // Generated.
+#include "hw/top/rv_plic_regs.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();
 

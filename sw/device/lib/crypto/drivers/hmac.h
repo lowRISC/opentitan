@@ -11,7 +11,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
-#include "hmac_regs.h"
+#include "hw/top/hmac_regs.h"
 
 #ifdef __cplusplus
 extern "C" {
