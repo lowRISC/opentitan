@@ -9,34 +9,42 @@ class mbx_scoreboard extends cip_base_scoreboard #(
   );
   `uvm_component_utils(mbx_scoreboard)
 
-  // local variables
+  // Expected Inbound write and Outbound read addresses.
   bit [top_pkg::TL_AW-1:0] m_ibmbx_ptr;
-  bit [top_pkg::TL_AW-1:0] m_obmbx_ptr_q[$];
   bit [top_pkg::TL_AW-1:0] m_obmbx_ptr;
-  bit [9:0] m_obdwcnt;
+  // Expected destination address for WDATA write.
+  bit [top_pkg::TL_AW-1:0] m_ib_wdata_ptr;
+  // Count of Outbound response words.
+  bit [10:0] m_obdwcnt;
 
   bit exp_mbx_core_irq;
   bit exp_mbx_core_irq_q[$];
 
-  // TLM agent fifos
+  // Expected status; these indications are visible on both register interfaces.
+  bit m_mbx_busy = 1'b0;
+  bit m_mbx_ready = 1'b0;
+  bit m_mbx_error = 1'b0;
+  bit m_mbx_abort = 1'b0;
+  bit m_mbx_async_msg = 1'b0;
 
   // local queues to hold incoming packets pending comparison
-  bit [top_pkg::TL_DW-1:0] m_ib_q[$]; // Inbound data (request to RoT).
-  bit [top_pkg::TL_DW-1:0] m_ob_q[$]; // Outbound data (response from RoT).
+  bit m_ibmbx_start = 1'b1;
+  bit [top_pkg::TL_DW-1:0] m_ib_data_q[$]; // Inbound data (request to RoT).
+  bit [top_pkg::TL_DW-1:0] m_ob_data_q[$]; // Outbound data (response from RoT).
 
   // System RAL model; keep a local handle for cleaner/easier access.
   mbx_soc_reg_block m_mbx_soc_ral;
 
   `uvm_component_new
 
-  // TODO: Presently no additional work to be done.
-  // function void build_phase(uvm_phase phase);
-  //   super.build_phase(phase);
-  // endfunction
-  //
-  // function void connect_phase(uvm_phase phase);
-  //   super.connect_phase(phase);
-  // endfunction
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+
+    // Create analysis FIFOs to receive items from the SRAM tl_agent monitor.
+    tl_a_chan_fifos["tl_sram_a_chan"] = new("tl_sram_a_chan", this);
+    tl_d_chan_fifos["tl_sram_d_chan"] = new("tl_sram_d_chan", this);
+    tl_dir_fifos["tl_sram_dir"] = new("tl_sram_dir", this);
+  endfunction
 
   virtual task monitor_core_interrupt();
     `uvm_info(`gfn, "monitor_core_interrupt -- Start", UVM_DEBUG)
@@ -78,12 +86,55 @@ class mbx_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     `downcast(m_mbx_soc_ral, cfg.ral_models[cfg.mbx_soc_ral_name])
-    // TODO: Re-enable interrupt checking once scoreboard is fully functional
-    //fork
-    //  monitor_core_interrupt();
-    //  monitor_exp_core_interrupts();
-    //join_none
+    // We need a process to monitor the TL-UL traffic on the SRAM port.
+    //
+    // TODO: Since we expect combinational responses and therefore the A/D items arrive
+    // unsequenced, we should probably change this to be simply two independent processes at some
+    // point, and neither process need concern itself with the `dir_fifo`.
+    fork
+      begin
+        uvm_tlm_analysis_fifo#(tl_seq_item) a_chan_fifo = tl_a_chan_fifos["tl_sram_a_chan"];
+        uvm_tlm_analysis_fifo#(tl_seq_item) d_chan_fifo = tl_d_chan_fifos["tl_sram_d_chan"];
+        uvm_tlm_analysis_fifo#(tl_channels_e) dir_fifo  = tl_dir_fifos["tl_sram_dir"];
+
+        forever begin
+          tl_seq_item   item;
+          tl_channels_e dir;
+
+          dir_fifo.get(dir);
+          case (dir)
+            AddrChannel: begin
+              `DV_CHECK_FATAL(a_chan_fifo.try_get(item),
+                              "dir_fifo pointed at A channel, but a_chan_fifo empty")
+            end
+            DataChannel: begin
+              `DV_CHECK_FATAL(d_chan_fifo.try_get(item),
+                              "dir_fifo pointed at D channel, but d_chan_fifo empty")
+            end
+            default: `dv_fatal($sformatf("Invalid direction %p from tl_agent monitor", dir))
+          endcase
+          process_tl_mbx_mem_access(item, dir);
+        end
+      end
+      // TODO: Re-enable interrupt checking once scoreboard is fully functional
+      //  monitor_core_interrupt();
+      //  monitor_exp_core_interrupts();
+    join
   endtask
+
+  // Mailbox becoming Idle. This can occur for a number of reasons:
+  // - clearing an abort request.
+  // - raising an error condition.
+  // - transfer of response completed.
+  function void mbx_deactivate();
+    m_mbx_busy    = 1'b0;
+    m_mbx_ready   = 1'b0;
+    m_mbx_error   = 1'b0;
+    m_mbx_abort   = 1'b0;
+    m_ibmbx_start = 1'b1;
+    m_ib_data_q.delete();
+    m_ob_data_q.delete();
+  endfunction
 
   // Model TL-UL register accesses. There are two TL-UL register interfaces:
   // - Root of Trust side (a.k.a. `core`)
@@ -109,9 +160,13 @@ class mbx_scoreboard extends cip_base_scoreboard #(
     csr = cfg.ral_models[RAL_T::type_name].default_map.get_reg_by_offset(csr_addr);
 
     if (csr && addr_phase_write) begin
+      `uvm_info(`gfn, $sformatf("Core register '%s' write 0x%x", csr.get_name(), item.a_data),
+                UVM_MEDIUM)
+
+      // `ADDRESS_RANGE_REGWEN` controls writing to the address-related registers on the RoT side,
+      // but if the register write is not gated by that, then perform the update immediately.
       if (prim_mubi_pkg::MuBi4True == `gmv(ral.address_range_regwen) ||
           !ral.address_range_regwen.locks_reg_or_fld(csr)) begin
-        // If incoming access is a write to a valid CSR, then make updates right away.
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
       end
 
@@ -129,36 +184,40 @@ class mbx_scoreboard extends cip_base_scoreboard #(
           end
         end
 
-        "outbound_object_size": begin
-          m_obdwcnt = item.a_data;
-          `uvm_info(`gfn, $sformatf("Updating m_obdwcnt to %0d", m_obdwcnt), UVM_LOW)
-        end
         "control": begin
-          /* TODO: This looks suspect; confusion over w1c?
-          if (ral.control.abort.get_mirrored_value() == 0) begin
-            exp_mbx_core_irq = 0;
-            exp_mbx_core_irq_q.push_back(0);
+          if (get_field_val(ral.control.abort, item.a_data)) begin
+            // Clearing Abort condition; this also serves as a RoT firmware 'panic' akin to a sw
+            // reset of the DUT.
+            mbx_deactivate();
           end
-          if (ral.control.error.get_mirrored_value() == 1) begin
-            // TODO: Check if busy bit is expected to be cleared - RVSCS-491
-            void'(ral.status.busy.predict(.value(0), .kind(UVM_PREDICT_READ)));
+          // Setting of error condition.
+          if (get_field_val(ral.control.error, item.a_data)) begin
+            mbx_deactivate();
+            m_mbx_error = 1'b1;
+            m_ibmbx_start = 1'b1;
           end
-          */
+          // Raise asynchronous message notification.
+          if (get_field_val(ral.control.sys_async_msg, item.a_data)) m_mbx_async_msg = 1'b1;
+          if (cfg.en_cov) begin
+            // Collect coverage on stimulation of CONTROL bits.
+            cov.rot_control_cg.sample(.abort(get_field_val(ral.control.abort, item.a_data)),
+                                      .error(get_field_val(ral.control.error, item.a_data)),
+                                      .sys_async_msg(get_field_val(ral.control.sys_async_msg,
+                                                                   item.a_data)));
+          end
         end
-        "status": begin
-          /* TODO: Add the support for async message sts
-          if (ral.status.busy.get_mirrored_value() == 0) begin
-            exp_mbx_core_irq = 0;
-            exp_mbx_core_irq_q.push_back(0);
-          end
-          */
-          //
+
+        "outbound_object_size": begin
+          m_obdwcnt = get_field_val(ral.outbound_object_size.cnt, item.a_data);
+          `uvm_info(`gfn, $sformatf("Updating m_obdwcnt to %0d", m_obdwcnt), UVM_LOW)
+          if (cfg.en_cov) cov.object_size_cg.sample(m_obdwcnt);
         end
 
         // These registers do not require any further modeling.
         "alert_test",
         "intr_state",
         "intr_enable",
+        "status",
         "address_range_regwen",
         "address_range_valid",
         "inbound_base_address",
@@ -166,38 +225,48 @@ class mbx_scoreboard extends cip_base_scoreboard #(
         "inbound_write_ptr",
         "outbound_read_ptr",
         "outbound_base_address",
-        "outbound_limit_address":; // Do nothing
+        "outbound_limit_address",
+        "doe_intr_msg_addr",
+        "doe_intr_msg_data":; // Do nothing
 
         default: `dv_fatal($sformatf("Core register '%s' write not modeled", csr.get_name()))
       endcase
     end else if (csr && data_phase_read) begin
-      bit [31:0] mask = 'hffff_ffff;
       bit do_read_check = 1'b1;
 
       case (csr.get_name())
         "inbound_write_ptr": begin
           // Update prediction based upon observed traffic to SRAM.
-          void'(ral.inbound_write_ptr.predict(
-            .value(ral.inbound_base_address.get() + m_ibmbx_ptr),
-            .kind(UVM_PREDICT_READ)));
+          void'(ral.inbound_write_ptr.predict(.value(m_ibmbx_ptr), .kind(UVM_PREDICT_READ)));
         end
         "outbound_read_ptr": begin
           // Update prediction based upon observed traffic from SRAM.
-          void'(ral.outbound_read_ptr.predict(
-            .value(ral.outbound_base_address.get() + (m_obmbx_ptr_q[0])),
-            .kind(UVM_PREDICT_READ)));
+          void'(ral.outbound_read_ptr.predict(.value(m_obmbx_ptr), .kind(UVM_PREDICT_READ)));
         end
         "outbound_object_size": begin
           // Update prediction based upon observed traffic from SRAM.
           void'(ral.outbound_object_size.predict(.value(m_obdwcnt), .kind(UVM_PREDICT_READ)));
         end
 
-        "control": begin
-          // TODO: Do nothing presently
-        end
         "status": begin
-          //TODO: Review ready field
-          mask = 'h7fff_ffff;
+          // Our expectation of the `busy` indicator.
+          void'(ral.status.busy.predict(.value(m_mbx_busy), .kind(UVM_PREDICT_READ)));
+          // These fields are aliases of the SoC-side status indicators.
+          void'(ral.status.sys_intr_state.predict(
+                  .value(`gmv(m_mbx_soc_ral.soc_status.doe_intr_status)), .kind(UVM_PREDICT_READ)));
+          void'(ral.status.sys_intr_enable.predict(
+                  .value(`gmv(m_mbx_soc_ral.soc_control.doe_intr_en)), .kind(UVM_PREDICT_READ)));
+          void'(ral.status.sys_async_enable.predict(
+                  .value(`gmv(m_mbx_soc_ral.soc_control.doe_async_msg_en)),
+                  .kind(UVM_PREDICT_READ)));
+          if (cfg.en_cov) begin
+            // Collect coverage for the observed DUT status indicators.
+            cov.rot_status_cg.sample(
+              .busy(get_field_val(ral.status.busy, item.d_data)),
+              .sys_intr_state(get_field_val(ral.status.sys_intr_state, item.d_data)),
+              .sys_intr_enable(get_field_val(ral.status.sys_intr_enable, item.d_data)),
+              .sys_async_enable(get_field_val(ral.status.busy, item.d_data)));
+          end
         end
 
         "intr_state": begin
@@ -218,6 +287,7 @@ class mbx_scoreboard extends cip_base_scoreboard #(
         "alert_test",
         "intr_enable",
         "intr_test",
+        "control",
         "address_range_regwen",
         "address_range_valid",
         "inbound_base_address",
@@ -225,6 +295,27 @@ class mbx_scoreboard extends cip_base_scoreboard #(
         "outbound_base_address",
         "outbound_limit_address":; // Do nothing
 
+        // These registers are aliases of the SoC-side registers; they form a Read Only channel
+        // from the SoC side. They have no direct input on the DUT internals or its ports, but are
+        // instead intended to be used by firmware via another channel.
+        "doe_intr_msg_addr": begin
+          uvm_reg_data_t addr = item.d_data;
+          // We cannot readily predict this value with accurate timing.
+          do_read_check = 1'b0;
+          if (cfg.en_cov) begin
+            // Collect coverage to be sure that we have seen each of the bits in each of its two
+            // possible states.
+            foreach (addr[i]) cov.doe_intr_msg_addr_cg.sample(i, addr[i]);
+          end
+        end
+        "doe_intr_msg_data": begin
+          uvm_reg_data_t data = item.d_data;
+          // We cannot readily predict this value with accurate timing.
+          do_read_check = 1'b0;
+          if (cfg.en_cov) begin
+            foreach (data[i]) cov.doe_intr_msg_data_cg.sample(i, data[i]);
+          end
+        end
         default: `dv_fatal($sformatf("Core register '%s' read not modeled", csr.get_name()))
       endcase
 
@@ -255,63 +346,48 @@ class mbx_scoreboard extends cip_base_scoreboard #(
 
     if (addr_phase_write) begin
       if (csr) begin
+        `uvm_info(`gfn, $sformatf("SoC register '%s' write 0x%x", csr.get_name(), item.a_data),
+                  UVM_MEDIUM)
+
         // If incoming access is a write to a valid CSR, then make updates right away.
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
 
         case (csr.get_name())
           "soc_control": begin
-            mbx_soc_reg_soc_control ctl_reg_h;
-
-            `DV_CHECK_FATAL($cast(ctl_reg_h, csr), "Unable to cast csr handle to MBX control type")
-
-            /* TODO: Fix this.
-            if(ctl_reg_h.abort.get() == 1) begin
-              exp_mbx_core_irq = 1;
-              exp_mbx_core_irq_q.push_back(1);
-              // TODO: Check if busy bit also needs to be set
-              void'(ral.control.abort.predict(.value(1), .kind(UVM_PREDICT_WRITE)));
-              void'(ral.status.busy.predict(.value(1), .kind(UVM_PREDICT_WRITE)));
-              if((ral.status.busy.get() == 1) || (ral.control.error.get() == 1) ||
-                (m_obdwcnt != 0)) begin
-                void'(ral.status.busy.predict(.value(1), .kind(UVM_PREDICT_WRITE)));
-              end
-            end */
+            // Abort requests.
+            if (get_field_val(m_mbx_soc_ral.soc_control.abort, item.a_data)) begin
+              mbx_deactivate();
+              m_mbx_abort = 1'b1;
+            end
             // Go bit notifies the RoT side that there is a message available.
             if (get_field_val(m_mbx_soc_ral.soc_control.go, item.a_data)) begin
-              /* TODO: Fix this.
-              // if (ctl_reg_h.abort.get() == 1)
-              if((ral.status.busy.get() == 0) && (ral.control.error.get() == 0) &&
-                (ral.control.abort.get() == 0)) begin
-                void'(ral.status.busy.predict(.value(1), .kind(UVM_PREDICT_WRITE)));
-                void'(m_mbx_soc_ral.soc_status.busy.predict(.value(1), .kind(UVM_PREDICT_READ)));
+              // Note that the Inbound mailbox (SoC -> RoT) is already active at this point and
+              // will have written (most of) the request into the mailbox SRAM.
+              m_mbx_busy = 1'b1;
+              // Set the initial expectation of the Outbox read pointer.
+              m_obmbx_ptr = `gmv(ral.outbound_base_address);
 
-                exp_mbx_core_irq = 1;
-                exp_mbx_core_irq_q.push_back(1);
-              end
-              */
               if (cfg.en_cov) begin
                 cov.mem_range_cg.sample(`gmv(ral.inbound_base_address),
                                         `gmv(ral.outbound_base_address));
               end
             end
-            void'(ral.status.sys_intr_enable.predict(
-                     .value(ctl_reg_h.doe_intr_en.get()),
-                     .kind(UVM_PREDICT_WRITE)));
-            // TODO: Add async logic
-          end
-          "soc_status": begin
-            mbx_soc_reg_soc_status soc_sts_reg_h;
-            mbx_core_reg_status hst_sts_reg_h;
-            mbx_core_reg_control hst_ctl_reg_h;
-
-            `DV_CHECK_FATAL($cast(soc_sts_reg_h, csr),
-              "Unable to cast csr handle to soc_status type")
-            hst_sts_reg_h = ral.status;
-            hst_ctl_reg_h = ral.control;
-            if((item.a_data[1] & item.a_mask[0]) == 1) begin
-              void'(hst_sts_reg_h.sys_intr_state.predict(.value(0)));
+            if (cfg.en_cov) begin
+              // Collect coverage on stimulation of SOC_CONTROL bits.
+              cov.soc_control_cg.sample(
+                .abort(get_field_val(m_mbx_soc_ral.soc_control.abort, item.a_data)),
+                .doe_intr_en(get_field_val(m_mbx_soc_ral.soc_control.doe_intr_en, item.a_data)),
+                .doe_async_msg_en(get_field_val(m_mbx_soc_ral.soc_control.doe_async_msg_en,
+                                                item.a_data)),
+                .go(get_field_val(m_mbx_soc_ral.soc_control.go, item.a_data)));
             end
           end
+
+          // These registers do not require any further modeling.
+          "soc_status",
+          "soc_doe_intr_msg_addr",
+          "soc_doe_intr_msg_data":; // Do nothing
+
           default: `dv_fatal($sformatf("SoC register '%s' write not modeled", csr.get_name()))
         endcase
       end else begin
@@ -321,73 +397,81 @@ class mbx_scoreboard extends cip_base_scoreboard #(
         uvm_mem mem = m_mbx_soc_ral.default_map.get_mem_by_offset(csr_addr);
         case (mem.get_name())
           "wdata": begin
-            `uvm_info(`gfn, $sformatf("WDATA write of 0x%0x", item.a_data), UVM_MEDIUM)
-            m_ib_q.push_back(item.a_data);
+            `uvm_info(`gfn, $sformatf("WDATA write of 0x%0x (Inbox [0x%0x,0x%0x] wdata_ptr 0x%0x",
+                                      item.a_data, `gmv(ral.inbound_base_address),
+                                      `gmv(ral.inbound_limit_address), m_ib_wdata_ptr),
+                      UVM_MEDIUM)
+            // Set the initial expectation of the Inbox write pointer.
+            if (m_ibmbx_start) begin
+              m_ibmbx_start = 1'b0;
+              // Expected address for memory traffic.
+              m_ibmbx_ptr = `gmv(ral.inbound_base_address);
+              // Expected address at which WDATA would be written, if deemed valid.
+              m_ib_wdata_ptr = m_ibmbx_ptr;
+            end
+            if (m_ib_wdata_ptr <= `gmv(ral.inbound_limit_address)) begin
+              // Append this data word to the request.
+              m_ib_data_q.push_back(item.a_data);
+              m_ib_wdata_ptr += 4;
+            end else begin
+              // Raise an Inbound mailbox overflow error.
+              m_mbx_error = 1'b1;
+            end
           end
           "rdata": begin
             // Writing to RDATA pops the most recent data word from the Outbox.
-            if (m_ob_q.size() > 0) begin
+            if (m_ob_data_q.size() > 0) begin
               `uvm_info(`gfn, "RDATA write, popping DWORD", UVM_MEDIUM)
-              m_ob_q.pop_front();
+              m_ob_data_q.pop_front();
+            end
+            // Update our expectation of whether the mailbox is busy.
+            if (!m_ob_data_q.size()) begin
+              m_mbx_busy = 1'b0;
+              m_mbx_ready = 1'b0;
+              // Starting a new request on the Inbound side.
+              m_ibmbx_start = 1'b1;
             end
           end
           default: `dv_fatal($sformatf("SoC memory '%s' write not handled", mem.get_name()))
         endcase
-        // RDATA:
-        //  int tmp_ptr=0;
-        //  if(m_obmbx_ptr_q.size() == 0)
-        //    tmp_ptr = m_obmbx_ptr+4;
-        //  else
-        //    tmp_ptr = m_obmbx_ptr_q[$]+4;
-        //    m_obmbx_ptr_q.push_back(tmp_ptr);
-        //    m_obmbx_ptr = tmp_ptr;
-        //    m_obdwcnt--;
-        //    void'(m_ob_q.pop_front());
       end
     end else if (data_phase_read) begin
       if (csr) begin
         bit do_read_check = 1'b1;
 
         case (csr.get_name())
-          "soc_control": begin
-            mbx_soc_reg_soc_control ctl_reg_h;
-            void'(ctl_reg_h.abort.predict(
-                            .value(0),
-                            .kind(UVM_PREDICT_READ)));
-            void'(ctl_reg_h.doe_intr_en.predict(
-                            .value(ral.status.sys_intr_enable.get()),
-                            .kind(UVM_PREDICT_READ)));
-            void'(ctl_reg_h.go.predict(
-                            .value(0),
-                            .kind(UVM_PREDICT_READ)));
-            // TODO Add async logic
-          end
           "soc_status": begin
-            mbx_soc_reg_soc_status soc_sts_reg_h;
-            mbx_core_reg_status hst_sts_reg_h;
-            mbx_core_reg_control hst_ctl_reg_h;
-
-            `DV_CHECK_FATAL($cast(soc_sts_reg_h, csr),
-              "Unable to cast csr handle to soc_status type")
-            hst_sts_reg_h = ral.status;
-            hst_ctl_reg_h = ral.control;
-
-            void'(soc_sts_reg_h.busy.predict(
-                               .value(hst_sts_reg_h.busy.get()),
-                               .kind(UVM_PREDICT_READ)));
-            void'(soc_sts_reg_h.doe_intr_status.predict(
-                               .value(hst_sts_reg_h.sys_intr_state.get()),
-                               .kind(UVM_PREDICT_READ)));
-            void'(soc_sts_reg_h.error.predict(
-                               .value(hst_ctl_reg_h.error.get()),
-                               .kind(UVM_PREDICT_READ)));
-            //TODO: Review new ready field
-            void'(soc_sts_reg_h.ready.predict(
-                               .value(m_obdwcnt != 0),
-                               .kind(UVM_PREDICT_READ)));
-            // TODO: The scoreboard is not yet up to checking this.
+            void'(m_mbx_soc_ral.soc_status.busy.predict(.value(m_mbx_busy),
+                                                        .kind(UVM_PREDICT_READ)));
+            void'(m_mbx_soc_ral.soc_status.doe_intr_status.predict(
+                    .value(|{m_mbx_ready, m_mbx_abort, m_mbx_error, m_mbx_async_msg}),
+                    .kind(UVM_PREDICT_READ)));
+            void'(m_mbx_soc_ral.soc_status.error.predict(.value(m_mbx_error),
+                                                         .kind(UVM_PREDICT_READ)));
+            void'(m_mbx_soc_ral.soc_status.doe_async_msg_status.predict(.value(m_mbx_async_msg),
+                                                                        .kind(UVM_PREDICT_READ)));
+            void'(m_mbx_soc_ral.soc_status.ready.predict(.value(m_mbx_ready),
+                                                         .kind(UVM_PREDICT_READ)));
+            if (cfg.en_cov) begin
+              // Collect coverage for the observed DUT status indicators.
+              cov.soc_status_cg.sample(
+                .busy(get_field_val(m_mbx_soc_ral.soc_status.ready, item.d_data)),
+                .doe_intr_status(get_field_val(m_mbx_soc_ral.soc_status.doe_intr_status,
+                                               item.d_data)),
+                .error(get_field_val(m_mbx_soc_ral.soc_status.error, item.d_data)),
+                .doe_async_msg_status(get_field_val(m_mbx_soc_ral.soc_status.doe_async_msg_status,
+                                                    item.d_data)),
+                .ready(get_field_val(m_mbx_soc_ral.soc_status.ready, item.d_data)));
+            end
+            // TODO: Modeling is presently not up to the task.
             do_read_check = 1'b0;
           end
+
+          // These registers do not require any further modeling.
+          "soc_control",
+          "soc_doe_intr_msg_addr",
+          "soc_doe_intr_msg_data":; // Do nothing
+
           default: `dv_fatal($sformatf("SoC register '%s' read not modeled", csr.get_name()))
         endcase
 
@@ -409,7 +493,7 @@ class mbx_scoreboard extends cip_base_scoreboard #(
           end
           "rdata": begin
             uvm_reg_data_t exp_data = 0;
-            if (m_ob_q.size() > 0) exp_data = m_ob_q[0];
+            if (m_ob_data_q.size() > 0) exp_data = m_ob_data_q[0];
             `DV_CHECK_EQ(item.d_data, exp_data, "RDATA read data mismatched")
           end
           default: `dv_fatal($sformatf("SoC memory '%s' read not handled", mem.get_name()))
@@ -419,8 +503,6 @@ class mbx_scoreboard extends cip_base_scoreboard #(
     `uvm_info(`gfn, "process_tl_mbx_soc_access -- End", UVM_DEBUG)
   endfunction : process_tl_mbx_soc_access
 
-  // TODO: This is presently unused, but we shall want to check all of the TL-UL traffic to/from
-  // the mailbox SRAM as it happens.
   virtual function void process_tl_mbx_mem_access(tl_seq_item item, tl_channels_e channel);
     bit write             = item.is_write();
     bit addr_phase_read   = (!write && channel == AddrChannel);
@@ -438,54 +520,49 @@ class mbx_scoreboard extends cip_base_scoreboard #(
          $sformatf("Incorrect a_size(%0d) or a_mask('b%0b)", item.a_size, item.a_mask))
 
       // Check the addresses are generated between the configured limits only
-      if(addr_phase_write) begin
+      if (addr_phase_write) begin
         bit is_addr_match;
 
         // Check if address is within IB Mailbox SRAM range
-        if((item.a_addr >= ral.inbound_base_address.get()) &&
-          (item.a_addr < ral.inbound_limit_address.get())) begin
-          is_addr_match = 1'b1;
-        end
+        is_addr_match = (item.a_addr >= ral.inbound_base_address.get()) &&
+                        (item.a_addr <= ral.inbound_limit_address.get());
         `DV_CHECK_EQ(is_addr_match, 1,
           $sformatf("Address('h%0h) doesn't match any of inbound mailbox address ranges",
           item.a_addr))
 
         // Check if the SRAM write is expected or not
-        `DV_CHECK_NE(m_ib_q.size(), 0, "No write data in mbxwrdat register")
+        `DV_CHECK_NE(m_ib_data_q.size(), 0, "No write data in WDATA register")
 
         // Check if the SRAM write address is correct.
-        `DV_CHECK_EQ(item.a_addr, (ral.inbound_base_address.get() + m_ibmbx_ptr),
-          "Incorrect address seen on the write to SRAM")
+        `DV_CHECK_EQ(item.a_addr, m_ibmbx_ptr, "Incorrect address seen on the write to SRAM")
         m_ibmbx_ptr += 4;
 
-        // Check if the data written matches with the data written to wrdat register
-        `DV_CHECK_EQ(item.a_data, m_ib_q[0],
-          "Bus data doesn't match with data written to wdat")
-        void'(m_ib_q.pop_front());
+        // Check if the data written matches with the data written to WDATA.
+        `DV_CHECK_EQ(item.a_data, m_ib_data_q[0],
+          "Bus data doesn't match with data written to WDATA")
+        void'(m_ib_data_q.pop_front());
       end
-    end
-    if (data_phase_read) begin
+    end else if (data_phase_read) begin
       bit is_addr_match;
 
       // Check if address is within OB Mailbox SRAM range
-      if((item.a_addr >= ral.outbound_base_address.get()) &&
-        (item.a_addr < ral.outbound_limit_address.get())) begin
-        is_addr_match = 1'b1;
-      end
+      is_addr_match = (item.a_addr >= ral.outbound_base_address.get()) &&
+                      (item.a_addr <= ral.outbound_limit_address.get());
       `DV_CHECK_EQ(is_addr_match, 1,
         $sformatf("Address('h%0h) out of outbound mailbox address ranges",  item.a_addr))
 
       // No read should occur when obdwcnt is '0'
       `DV_CHECK_NE(m_obdwcnt, 0, "Illegal read from memory when obdwcnt is 0")
 
-       m_obmbx_ptr = m_obmbx_ptr_q[0];
       // Check if the SRAM read address is correct.
-      `DV_CHECK_EQ(item.a_addr, (ral.outbound_base_address.get() + m_obmbx_ptr_q[0]),
-        "Incorrect address seen on the read to SRAM")
-      `uvm_info(`gfn, $sformatf("Added data 'h%0h to m_ob_q", item.d_data), UVM_LOW)
-       m_ob_q.push_back(item.d_data);
-       void'(m_obmbx_ptr_q.pop_front());
+      `DV_CHECK_EQ(item.a_addr, m_obmbx_ptr, "Incorrect address seen on the read to SRAM")
+      `uvm_info(`gfn, $sformatf("Added data 'h%0h to m_ob_data_q", item.d_data), UVM_LOW)
+      m_ob_data_q.push_back(item.d_data);
 
+      // Update Outbound reader state.
+      m_mbx_ready = 1'b1;
+      m_obmbx_ptr += 4;
+      m_obdwcnt--;
     end
     `uvm_info(`gfn, "process_tl_mbx_mem_access -- End", UVM_DEBUG)
   endfunction : process_tl_mbx_mem_access
@@ -493,22 +570,26 @@ class mbx_scoreboard extends cip_base_scoreboard #(
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
-    m_ib_q.delete();
-    m_ob_q.delete();
+    m_ib_data_q.delete();
+    m_ob_data_q.delete();
     m_ibmbx_ptr = 0;
     m_obmbx_ptr = 0;
     m_obdwcnt = 0;
+    m_mbx_busy = 1'b0;
+    m_mbx_error = 1'b0;
+    m_mbx_async_msg = 1'b0;
+    m_ibmbx_start = 1'b1;
     exp_mbx_core_irq = 0;
   endfunction
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
     // post test checks - ensure that all local fifos and queues are empty
-    if(m_ib_q.size() > 0) begin
-      `uvm_error(`gfn, $sformatf("m_ib_q is not empty(%0d)", m_ib_q.size()))
+    if(m_ib_data_q.size() > 0) begin
+      `uvm_error(`gfn, $sformatf("m_ib_data_q is not empty(%0d)", m_ib_data_q.size()))
     end
-    if(m_ob_q.size() > 0) begin
-      `uvm_error(`gfn, $sformatf("m_ob_q is not empty(%0d)", m_ob_q.size()))
+    if(m_ob_data_q.size() > 0) begin
+      `uvm_error(`gfn, $sformatf("m_ob_data_q is not empty(%0d)", m_ob_data_q.size()))
     end
     if(exp_mbx_core_irq_q.size() > 0) begin
       `uvm_error(`gfn, $sformatf("exp_mbx_core_irq_q is not empty(%0d)", exp_mbx_core_irq_q.size()))
