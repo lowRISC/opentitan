@@ -13,167 +13,269 @@
 .globl modexp
 
 /**
- * Conditionally overwrite bigint in dmem
+ * Constant-time, conditional swap of two general-purpose registers
  *
- * Depending on state of FG0.C overwrites a bigint in dmem with one from
- * a buffer in the wide reg file.
+ * This routine implements a conditional, constant-time, out-of-place swap of
+ * two values in GPR registers such that
  *
- * Flags: Does not set any flags, does not use flags except FG0.C
+ * Input:  GPR0(X), GPR1(Y)
+ * Output: GPR2(Y), GPR3(X) if b == 0 else GPR2(X), GPR3(Y)
  *
- * @param[in]  x21: dptr, pointer to first limb of bigint in dmem
- * @param[in]  x8: rptr, pointer to first limb of bigint in regfile buffer
- * @param[in]  FG.C: selection condition, overwrite dmem when FG0.C==1
- * @param[in]  x30: number of limbs
- * @param[in]  x9: pointer to temp reg, must be set to 3
- * @param[in]  x11: pointer to temp reg, must be set to 2
+ * It is a direct adaption of the masked conditional swap presented in
  *
- * clobbered registers: x8, x21, w0, w2
- * clobbered Flag Groups: FG1
+ *   https://ieeexplore.ieee.org/document/9581247
+ *
+ * @param[in]  x23: GPR0 containing value X
+ * @param[in]  x24: GPR1 containing value Y
+ * @param[in]  x14: a conditional bit b
+ * @param[out] x19: GPR2 containing either X or Y depending on b
+ * @param[out] x20: GPR3 containing either X or Y depending on b
+ *
+ * Clobbered registers: x17, x18
  */
-sel_sqr_or_sqrmul:
-  /* iterate over all limbs */
-  loop      x30, 8
-    /* load limb from dmem */
-    bn.lid    x9, 0(x21)
+cond_swap_gprs:
+  /*
+   * Calculate Boolean mask (0 - b) = 0 if b == 0 else 0xFFFF_FFFF
+   * Randomize the destination register to soften the impact of overwritting
+   * it with all 0s or all 1s:
+   *
+   *   d = (0 - b)
+   */
+  csrrs x17, RND, x0
+  sub   x17, x0, x14
 
-    /* load limb from regfile buffer */
-    bn.movr   x11, x8++
+  /* z = (X ^ Y) & d. */
+  xor x18, x23, x24
+  and x18, x17, x18
 
-    /* randomize dmem with value from URND (one extra dummy call to clear) */
-    bn.addi   w31, w31, 0, FG1 /* dummy */
-    bn.wsrr   w0, URND
-    bn.sid    x0, 0(x21)
+  /* Sample a random mask r and XOR it to the intermediate result: z = z ^ r. */
+  csrrs x17, RND, x0
+  xor x18, x17, x18
 
-    /* select a limb and store to dmem */
-    bn.sel    w0, w2, w3, FG0.C
-    bn.sid    x0, 0(x21++)
-
-    /* dummy call to clear */
-    bn.addi   w31, w31, 0, FG1
+  /*
+   * Calculate the value of the output registers:
+   *
+   *   GPR2 = (z ^ X) ^ r
+   *   GPR3 = (z ^ Y) ^ r
+   */
+  xor x19, x18, x23
+  xor x19, x17, x19
+  xor x20, x18, x24
+  xor x20, x17, x20
 
   ret
 
-
 /**
- * Constant-time bigint modular exponentiation
+ * Constant-time, boolean-masked Montgomery ladder bigint exponentiation
  *
- * Returns: C = modexp(A,E) = A^E mod M
+ * Calculates: C = modexp(A, E) = A^E mod M
  *
- * This implements the square and multiply algorithm, i.e. for each bit of the
- * exponent both the squared only and the squared with multiply results are
- * computed but one result is discarded.
- * Computation is carried out in the Montgomery domain, by using the montmul
- * primitive.
- * The squared Montgomery modulus RR and the Montgomery constant m0' have to
- * be precomputed and provided at the appropriate locations in dmem.
+ * This routine implements a constant-time modular exponentation Montgomery
+ * ladder using Boolean-masked exponents in two shares (d0, d1) as proposed by
+ * Tunstall et al.
  *
- * Flags: The states of both FG0 and FG1 depend on intermediate values and are
- *        not usable after return.
+ *   [1] https://eprint.iacr.org/2018/1226.pdf
  *
- * The base bignum A is expected in the input buffer, the exponent E in the
- * exp buffer, the result C is written to the output buffer.
- * Note, that the content of both, the input buffer and the exp buffer is
- * modified during execution.
+ * The individual bits of the exponent shares randomize the memory accesses of
+ * intermediate values in each iteration thus inhibiting horizontal attacks that
+ * exploit leakage spanning multiple rounds. As the exponent is re-masked for
+ * every exponentation vertical attacks over multiple traces are mitigated as
+ * well.
  *
- * @param[in]   x2: dptr_c, dmem pointer to buffer for output C
- * @param[in]  x14: dptr_a, dmem pointer to first limb of input A
- * @param[in]  x15: dptr_e, dmem pointer to first limb of exponent E
- * @param[in]  x16: dptr_M, dmem pointer to first limb of modulus M
- * @param[in]  x18: dptr_RR, dmem pointer to first limb of RR
- * @param[in]  x30: N, number of limbs per bignum
- * @param[in]   w1: Montgomery Constant m0'
- * @param[in]  w31: all-zero
- * @param[out] dmem[dptr_c:dptr_c+N*32] C, A^E mod M
+ * TODO: The actual intermediate values are not randomized requiring an
+ * additional blinding of the input. An efficient, inverse-free technique
+ * was proposed by Ebeid and Lambert:
  *
- * clobbered registers: x3 to x13, x16 to x31
- *                      w0 to w3, w24 to w30
- *                      w4 to w[4+N-1]
- * clobbered Flag Groups: FG0, FG1
+ *   [2] https://dl.acm.org/doi/10.1145/1873548.1873556
+ *
+ * The computation is carried out in the Montgomery domain, by using the montmul
+ * primitive. The squared Montgomery modulus RR and the Montgomery constant m0'
+ * have to be precomputed and provided at the appropriate locations in DMEM.
+ *
+ * @param[in] x23: dptr_r0, DMEM pointer to the input A and output C
+ * @param[in] x24: dptr_r1, DMEM pointer to a tmp location of size 512 bytes
+ * @param[in] x25: dptr_r2, DMEM pointer to a tmp location of size 512 bytes
+ * @param[in] x26: dptr_d0, DMEM pointer to the first share of exponent d
+ * @param[in] x27: dptr_d1, DMEM pointer to the second shrare of the exponent d
+ * @param[in] x28: dptr_n,  DMEM pointer to the modulus M
+ * @param[in] x29: dptr_rr, DMEM pointer to RR = R^2 mod M
+ * @param[in] x30: N, number of limbs per bignum
+ * @param[in]  w1: Montgomery Constant m0'
+ * @param[in] w31: all-zero
+ *
+ * The buffers A, r0, r1, r2, d0 and d1 are modified over the course of this
+ * routine.
+ *
+ * Clobbered registers: x5 to x22, x31
+ *                      w2, w3, w4 to w[4+N-1], w24 to w30
+ * Clobbered flag groups: FG0, FG1
  */
 modexp:
-  /* prepare pointers to temp regs */
+  /* Constant wide register pointers */
   li         x8, 4
   li         x9, 3
   li        x10, 4
   li        x11, 2
 
-  /* Compute (N-1).
-       x31 <= x30 - 1 = N - 1 */
+  /* Compute (N-1): x31 <= x30 - 1 = N - 1 */
   addi      x31, x30, -1
 
-  /* Convert input to montgomery domain.
-       dmem[dptr_a] <= montmul(A,RR) = A*R mod M */
-  addi      x19, x14, 0
-  addi      x20, x18, 0
-  addi      x21, x14, 0
+  /*
+   * Convert input to Montgomery domain:
+   *
+   *   [w[4+N-1]:w4] = A' = modexp(A, RR)
+   */
+  addi      x16, x28, 0
+  addi      x19, x23, 0
+  addi      x20, x29, 0
   jal       x1, montmul
-  loop      x30, 2
-    bn.sid    x8, 0(x21++)
-    addi      x8, x8, 1
 
-  /* zeroize w2 and reset flags */
-  bn.sub    w2, w2, w2
+  /* montmul clobbers the flags, clear them here. */
+  bn.add w31, w31, w31, FG0
+  bn.add w31, w31, w31, FG1
 
-  /* initialize the output buffer with -M */
-  addi      x3, x16, 0
-  addi      x21, x2, 0
-  loop      x30, 3
-    /* load limb from modulus */
-    bn.lid    x11, 0(x3++)
+  /*
+   * Step 1 in Algorithm 2 [1]:
+   *
+   * Initialize r0 and r1 with -M mod R. Note that this Montgomery ladder
+   * operates with redundant residuals over Z/RZ as opposed to Z/MZ which
+   * significantly simplifies the final comparison step in the Montgomery
+   * multiplication. Only the in the very last step of the exponentational, when
+   * the output is converted back from the Montgomery form, the value is mapped
+   * into Z/NZ (see Section 2.4.2 in https://eprint.iacr.org/2017/1057.pdf for
+   * more details on this optimization).
+   *
+   * [1] asks for r0 and r1 to be initialzed to 1 or montmul(1, RR) in the
+   * Montgomery domain over Z/MZ which congruent to -M in Z/RZ.
+   */
+  addi x2, x23, 0
+  addi x3, x24, 0
+  addi x5, x28, 0
+  loop x30, 5
+    bn.lid  x11, 0(x5++)
+    bn.subb w2, w31, w2
+    bn.sid  x11, 0(x2++)
+    bn.sid  x11, 0(x3++)
 
-    /* subtract limb from 0 */
-    bn.subb   w2, w31, w2
+  /*
+   * Step 2 in Algorithm 2 [1]:
+   *
+   * Generate a random bit x4 = b'.
+   */
+  csrrs   x4, RND, x0
+  andi    x4, x4, 1
 
-    /* store limb in dmem */
-    bn.sid    x11, 0(x21++)
+  /* Store the converted input back into DMEM r[b' ^ 1] = A'. */
+  xori x14, x4, 1
+  jal x1, cond_swap_gprs
 
-  /* compute bit length of current bigint size */
-  slli      x24, x30, 8
+  addi x2, x8, 0
+  loop x30, 2
+    bn.sid  x2, 0(x19++)
+    addi x2, x2, 1
 
-  /* iterate over all bits of bigint */
-  loop      x24, 20
-    /* square: out = montmul(out,out)  */
-    addi      x19, x2, 0
-    addi      x20, x2, 0
-    addi      x21, x2, 0
-    jal       x1, montmul
-    /* Store result in dmem starting at dmem[dptr_c] */
-    loop      x30, 2
-      bn.sid    x8, 0(x21++)
-      addi      x8, x8, 1
+  /* Compute bit length of current bigint size. */
+  slli      x21, x30, 8
 
-    /* multiply: out = montmul(in,out) */
-    addi      x19, x14, 0
-    addi      x20, x2, 0
-    addi      x21, x2, 0
-    jal       x1, montmul
+  /*
+   * Main loop of the exponentiation, iterate over all exponent bits:
+   *
+   * w2, x2, x3, x4 hold secret values for all the iterations. x2, x3 are shares
+   * of the same secret.
+   */
+  loop      x21, 42
 
-    /* w2 <= w2 << 1 */
-    bn.add    w2, w2, w2
-
-    /* the loop performs a 1-bit left shift of the exponent. Last MSB moves
-       to FG0.C, such that it can be used for selection */
-    addi      x20, x15, 0
+    /* Shift d0 and siphon the shifted out MSB into FG0, x3 = a[i] = d0[i]. */
+    addi      x15, x26, 0
     loop      x30, 3
-      bn.lid    x11, 0(x20)
+      bn.lid    x11, 0(x15)
       /* w2 <= w2 << 1 */
       bn.addc   w2, w2, w2
-      bn.sid    x11, 0(x20++)
+      bn.sid    x11, 0(x15++)
+    csrrs x3, FG0, x0
+    andi x3, x3, 1
 
-    /* select squared or squared+multiplied result */
-    addi      x21, x2, 0
-    jal       x1, sel_sqr_or_sqrmul
+    /*
+     * Step 4 in Algorithm 2 [1]:
+     *
+     * Depending on a[i] assign the input buffers to calculate
+     * [w[4+N-1]:w4] = r[a[i]] * r[a[i] ^ 1] and store the result in r2.
+     */
+    addi x14, x3, 0
+    jal x1, cond_swap_gprs
+
+    addi x16, x28, 0
+    jal x1, montmul
+
+    addi x2, x8, 0
+    addi x15, x25, 0
+    loop x30, 2
+      bn.sid  x2, 0(x15++)
+      addi x2, x2, 1
+
+    /* Shift d1 and siphon the shifted out MSB into FG0, x2 = b[i] = d1[i]. */
+    addi      x15, x27, 0
+    loop      x30, 3
+      bn.lid    x11, 0(x15)
+      /* w2 <= w2 << 1 */
+      bn.addc   w2, w2, w2
+      bn.sid    x11, 0(x15++)
+    csrrs x2, FG0, x0
+    andi  x2, x2, 1
+
+    /* Calculate c = (b[i] ^ b') ^ a[i] = (x2 ^ x4) ^ x3. */
+    xor x4, x2, x4
+    xor x4, x4, x3
+
+    /*
+     * Step 5 in Algorithm 2 [1]:
+     *
+     * Calculate [w[4+N-1]:w4] = r[c] * r[c].
+     */
+    addi x14, x4, 0
+    jal x1, cond_swap_gprs
+
+    addi x16, x28, 0
+    addi x20, x19, 0
+    jal x1, montmul
+
+    /*
+     * Step 7 in Algorithm 2 [1]:
+     *
+     * b' = b[i] = x2
+     */
+    addi x4, x2, 0
+
+    /*
+     * Step 6 in Algorithm 2 [1]:
+     *
+     * Store r2 and r[c] * r[c] into DMEM depending on b[i].
+     */
+    addi x14, x3, 0
+    jal x1, cond_swap_gprs
+
+    addi x2, x8, 0
+    loop x30, 2
+      bn.sid  x2, 0(x19++)
+      addi x2, x2, 1
+
+    addi x16, x25, 0
+    loop x30, 2
+      bn.lid x11, 0(x16++)
+      bn.sid x11, 0(x20++)
 
     nop
 
-  /* convert back from montgomery domain */
-  /* out = montmul(out,1) = out/R mod M  */
-  addi      x19, x2, 0
-  addi      x21, x2, 0
-  jal       x1, montmul_mul1
+  /* Make sure the output C is in r0. */
+  addi x14, x4, 0
+  jal x1, cond_swap_gprs
+
+  /* Convert back from Montogomery form. */
+  addi x16, x28, 0
+  addi x21, x23, 0
+  jal x1, montmul_mul1
 
   ret
-
 
 /**
  * Bigint modular exponentiation with fixed exponent of 65537

@@ -23,14 +23,18 @@ main:
   jal      x1, modload
 
   /* Run exponentiation.
-       dmem[work_buf] = dmem[r0]^dmem[d] mod dmem[n] */
-  la       x14, r0
-  la       x15, d0
-  la       x2, work_buf
+       dmem[r0] = dmem[r0]^dmem[d] mod dmem[n] */
+  la       x23, r0
+  la       x24, r1
+  la       x25, r2
+  la       x26, d0
+  la       x27, d1
+  la       x28, n
+  la       x29, RR
   jal      x1, modexp
 
   /* copy all limbs of result to wide reg file */
-  la       x21, work_buf
+  la       x21, r0
   li       x8, 0
   loop     x30, 2
     bn.lid   x8, 0(x21++)
