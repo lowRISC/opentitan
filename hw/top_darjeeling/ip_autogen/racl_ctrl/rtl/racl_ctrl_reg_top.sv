@@ -179,7 +179,7 @@ module racl_ctrl_reg_top
   logic error_log_read_access_qs;
   logic [3:0] error_log_role_qs;
   logic [4:0] error_log_ctn_uid_qs;
-  logic [31:0] error_log_address_qs;
+  logic [29:0] error_log_address_qs;
 
   // Register instances
   // R[policy_all_rd_wr_shadowed]: V(False)
@@ -668,9 +668,9 @@ module racl_ctrl_reg_top
 
   // R[error_log_address]: V(False)
   prim_subreg #(
-    .DW      (32),
+    .DW      (30),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
+    .RESVAL  (30'h0),
     .Mubi    (1'b0)
   ) u_error_log_address (
     .clk_i   (clk_i),
@@ -871,7 +871,7 @@ module racl_ctrl_reg_top
       end
 
       racl_addr_hit_read[8]: begin
-        reg_rdata_next[31:0] = error_log_address_qs;
+        reg_rdata_next[29:0] = error_log_address_qs;
       end
 
       default: begin

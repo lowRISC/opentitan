@@ -199,8 +199,14 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   assign hw2reg.error_log.ctn_uid.d  = clear_log ? '0 : racl_error_arb.ctn_uid;
   assign hw2reg.error_log.ctn_uid.de = first_error | clear_log;
 
-  assign hw2reg.error_log_address.d  = clear_log ? '0 : racl_error_arb.request_address;
+  assign hw2reg.error_log_address.d  = clear_log
+                                       ? '0
+                                       : racl_error_arb.request_address[top_pkg::TL_AW-1:2];
   assign hw2reg.error_log_address.de = first_error | clear_log;
+
+  // unused request_address bits
+  logic unused_request_address;
+  assign unused_request_address = ^racl_error_arb.request_address[1:0];
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Interrupt handling
