@@ -38,6 +38,9 @@ function void racl_ctrl_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
   // Tell regs about ral, which contains the actual register model.
   regs.set_reg_block(ral);
 
+  // Used to allow reset operations without waiting for CSR accesses to complete
+  can_reset_with_csr_accesses = 1;
+
   internal_error_agent_cfg = racl_error_log_agent_cfg::type_id::create("internal_error_agent_cfg");
   external_error_agent_cfg = racl_error_log_agent_cfg::type_id::create("external_error_agent_cfg");
 endfunction
