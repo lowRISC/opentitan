@@ -10,7 +10,7 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 
-#include "ast_regs.h"  // Generated.
+#include "hw/top/ast_regs.h"  // Generated.
 
 typedef struct flash_info_field {
   uint32_t partition;

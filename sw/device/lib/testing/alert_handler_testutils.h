@@ -12,7 +12,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 
-#include "alert_handler_regs.h"
+#include "hw/top/alert_handler_regs.h"
 
 enum {
   kAlertHandlerTestutilsDefaultPingTimeout = 256,

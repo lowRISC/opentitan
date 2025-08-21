@@ -33,9 +33,9 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 
-#include "flash_ctrl_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/pwm_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "pwm_regs.h"
 #include "rv_timer_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();

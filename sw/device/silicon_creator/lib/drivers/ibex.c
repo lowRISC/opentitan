@@ -10,7 +10,7 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
-#include "rv_core_ibex_regs.h"
+#include "hw/top/rv_core_ibex_regs.h"
 
 static const dt_rv_core_ibex_t kRvCoreIbexDt = kDtRvCoreIbex;
 

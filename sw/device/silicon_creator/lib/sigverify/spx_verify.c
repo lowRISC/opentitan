@@ -9,7 +9,7 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/verify.h"
 
-#include "otp_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 
 // Declared as a weak symbol so that we can override in tests. See
 // spx_verify_functest.c.

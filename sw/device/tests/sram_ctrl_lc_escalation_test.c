@@ -29,8 +29,8 @@
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
+#include "hw/top/sram_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "sram_ctrl_regs.h"  // Generated.
 
 static const uint32_t kStatusRegMask = kDifSramCtrlStatusBusIntegErr |
                                        kDifSramCtrlStatusInitErr |

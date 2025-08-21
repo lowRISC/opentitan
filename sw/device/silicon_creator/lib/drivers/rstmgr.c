@@ -17,8 +17,8 @@
 #include "sw/device/lib/runtime/hart.h"
 #endif
 
+#include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
 #include "rstmgr_regs.h"
 
 enum {

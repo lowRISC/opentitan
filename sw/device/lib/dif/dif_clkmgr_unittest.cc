@@ -11,7 +11,7 @@
 #include "sw/device/lib/dif/dif_test_base.h"
 
 // Generated.
-#include "clkmgr_regs.h"
+#include "hw/top/clkmgr_regs.h"
 
 namespace dif_clkmgr_unittest {
 namespace {

@@ -12,7 +12,7 @@
  * extent by using the assembly versions.
  */
 
-#include "rv_core_ibex_regs.h"
+#include "hw/top/rv_core_ibex_regs.h"
 
 /**
  * Read RND Data and immediately read RND status afterwards.

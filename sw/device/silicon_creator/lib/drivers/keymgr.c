@@ -12,7 +12,7 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
-#include "keymgr_regs.h"  // Generated.
+#include "hw/top/keymgr_regs.h"  // Generated.
 
 #define KEYMGR_ASSERT(a, b) static_assert(a == b, "Bad value for " #a)
 KEYMGR_ASSERT(kScKeymgrStateReset, KEYMGR_WORKING_STATE_STATE_VALUE_RESET);

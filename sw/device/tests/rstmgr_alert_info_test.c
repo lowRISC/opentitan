@@ -44,7 +44,7 @@
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #endif  // OPENTITAN_IS_EARLGREY
 
-#include "alert_handler_regs.h"  // Generated.
+#include "hw/top/alert_handler_regs.h"  // Generated.
 
 /*
   RSTMGR ALERT_INFO Test

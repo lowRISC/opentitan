@@ -10,7 +10,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "otp_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 #include "pinmux_regs.h"
 
 #if defined(OPENTITAN_IS_EARLGREY)
@@ -19,14 +19,14 @@
 #include "hw/top/dt/dt_keymgr.h"       // Generated
 #include "hw/top/dt/dt_sysrst_ctrl.h"  // Generated
 
-#include "adc_ctrl_regs.h"
 #include "flash_ctrl_regs.h"
+#include "hw/top/adc_ctrl_regs.h"
 #include "keymgr_regs.h"
 #include "sysrst_ctrl_regs.h"
 #elif defined(OPENTITAN_IS_DARJEELING)
 #include "hw/top/dt/dt_keymgr_dpe.h"  // Generated
 
-#include "keymgr_dpe_regs.h"
+#include "hw/top/keymgr_dpe_regs.h"
 #else
 #error Unsupported top
 #endif

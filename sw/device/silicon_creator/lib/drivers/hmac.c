@@ -11,7 +11,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "hmac_regs.h"  // Generated.
+#include "hw/top/hmac_regs.h"  // Generated.
 
 static const dt_hmac_t kHmacDt = kDtHmac;
 

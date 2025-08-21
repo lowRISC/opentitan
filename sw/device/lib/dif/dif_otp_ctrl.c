@@ -9,7 +9,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_base.h"
 
-#include "otp_ctrl_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"  // Generated.
 
 /**
  * Checks if integrity/consistency-check-related operations are locked.

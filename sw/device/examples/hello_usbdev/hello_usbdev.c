@@ -24,7 +24,7 @@
 
 // These just for the '/' printout
 #define USBDEV_BASE_ADDR TOP_EARLGREY_USBDEV_BASE_ADDR
-#include "usbdev_regs.h"  // Generated.
+#include "hw/top/usbdev_regs.h"  // Generated.
 
 #define REG32(add) *((volatile uint32_t *)(add))
 

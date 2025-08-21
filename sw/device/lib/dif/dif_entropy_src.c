@@ -12,7 +12,7 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_base.h"
 
-#include "entropy_src_regs.h"  // Generated.
+#include "hw/top/entropy_src_regs.h"  // Generated.
 
 dif_result_t dif_entropy_src_stop(const dif_entropy_src_t *entropy_src) {
   if (entropy_src == NULL) {

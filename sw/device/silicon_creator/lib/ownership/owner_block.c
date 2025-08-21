@@ -14,7 +14,7 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "flash_ctrl_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
 
 // RAM copy of the owner INFO pages from flash.
 owner_block_t owner_page[2];

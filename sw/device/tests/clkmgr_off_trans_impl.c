@@ -21,8 +21,8 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "aes_regs.h"
 #include "hmac_regs.h"
+#include "hw/top/aes_regs.h"
 #include "kmac_regs.h"
 #include "otbn_regs.h"
 

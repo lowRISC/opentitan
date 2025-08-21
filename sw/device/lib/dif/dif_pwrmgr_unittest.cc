@@ -12,7 +12,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "pwrmgr_regs.h"  // Generated
+#include "hw/top/pwrmgr_regs.h"  // Generated
 
 namespace dif_pwrmgr_unittest {
 namespace {
