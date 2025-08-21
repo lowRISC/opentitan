@@ -10,17 +10,14 @@
 
 module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   parameter int Cmd = 3,
-  parameter int StateId = 4,
-  parameter int BlkLen = 128,
-  parameter int KeyLen = 256,
-  parameter int SeedLen = 384,
-  parameter int CtrLen  = 32
+  parameter int StateId = 4
 ) (
   input logic                clk_i,
   input logic                rst_ni,
 
    // command interface
   input logic                ctr_drbg_cmd_enable_i,
+  // command request
   input logic                ctr_drbg_cmd_req_i,
   output logic               ctr_drbg_cmd_rdy_o, // ready to process the req above
   input logic [Cmd-1:0]      ctr_drbg_cmd_ccmd_i,    // current command
@@ -34,9 +31,10 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   input logic [CtrLen-1:0]   ctr_drbg_cmd_rc_i,
   input logic                ctr_drbg_cmd_fips_i,
 
+  // command response
   output logic               ctr_drbg_cmd_ack_o, // final ack when update process has been completed
-  output csrng_cmd_sts_e     ctr_drbg_cmd_sts_o, // final ack status
   input logic                ctr_drbg_cmd_rdy_i, // ready to process the ack above
+  output csrng_cmd_sts_e     ctr_drbg_cmd_sts_o, // final ack status
   output logic [Cmd-1:0]     ctr_drbg_cmd_ccmd_o,
   output logic [StateId-1:0] ctr_drbg_cmd_inst_id_o,
   output logic               ctr_drbg_cmd_glast_o,
@@ -46,7 +44,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   output logic [BlkLen-1:0]  ctr_drbg_cmd_v_o,
   output logic [CtrLen-1:0]  ctr_drbg_cmd_rc_o,
 
-   // update interface
+  // update request interface
   output logic               cmd_upd_req_o,
   input logic                upd_cmd_rdy_i,
   output logic [Cmd-1:0]     cmd_upd_ccmd_o,
@@ -55,13 +53,15 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   output logic [KeyLen-1:0]  cmd_upd_key_o,
   output logic [BlkLen-1:0]  cmd_upd_v_o,
 
+  // update response interface
   input logic                upd_cmd_ack_i,
   output logic               cmd_upd_rdy_o,
   input logic [Cmd-1:0]      upd_cmd_ccmd_i,
   input logic [StateId-1:0]  upd_cmd_inst_id_i,
   input logic [KeyLen-1:0]   upd_cmd_key_i,
   input logic [BlkLen-1:0]   upd_cmd_v_i,
-  // misc
+
+  // error status outputs
   output logic [2:0]         ctr_drbg_cmd_sfifo_cmdreq_err_o,
   output logic [2:0]         ctr_drbg_cmd_sfifo_rcstage_err_o,
   output logic [2:0]         ctr_drbg_cmd_sfifo_keyvrc_err_o
@@ -160,9 +160,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
     .err_o          ()
   );
 
-  assign fips_modified = ((ctr_drbg_cmd_ccmd_i == INS) ||
-                          (ctr_drbg_cmd_ccmd_i == RES)) ? ctr_drbg_cmd_entropy_fips_i :
-                         ctr_drbg_cmd_fips_i;
+  assign fips_modified = ((ctr_drbg_cmd_ccmd_i == INS) || (ctr_drbg_cmd_ccmd_i == RES)) ? 
+                         ctr_drbg_cmd_entropy_fips_i : ctr_drbg_cmd_fips_i;
 
   assign sfifo_cmdreq_wdata = {ctr_drbg_cmd_key_i,ctr_drbg_cmd_v_i,
                                ctr_drbg_cmd_rc_i,fips_modified,

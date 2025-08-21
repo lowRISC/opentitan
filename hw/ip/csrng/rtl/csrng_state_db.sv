@@ -12,9 +12,6 @@
 module csrng_state_db import csrng_pkg::*; #(
   parameter int NApps = 4,
   parameter int StateId = 4,
-  parameter int BlkLen = 128,
-  parameter int KeyLen = 256,
-  parameter int CtrLen  = 32,
   parameter int Cmd     = 3
 ) (
   input logic                clk_i,
