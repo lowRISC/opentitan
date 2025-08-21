@@ -280,11 +280,11 @@
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION",
-                    size: "400"
+                    size: "420"
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION",
-                    size: "64"
+                    size: "28"
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH",
