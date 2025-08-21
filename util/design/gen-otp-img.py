@@ -79,7 +79,7 @@ def main():
                         '-q',
                         action='store_true',
                         help='''Don't print out progress messages.''')
-    parser.add_argument('-stamp',
+    parser.add_argument('--stamp',
                         action='store_true',
                         help='''
                         Add a comment 'Generated on [Date] with [Command]' to
