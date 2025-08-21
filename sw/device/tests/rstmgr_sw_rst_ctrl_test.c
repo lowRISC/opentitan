@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #if defined(OPENTITAN_IS_EARLGREY)
-#include "dt/dt_usbdev.h"                  // Generated
+#include "hw/top/dt/dt_usbdev.h"           // Generated
 #include "sw/device/lib/dif/dif_usbdev.h"  // Generated
 
 #include "usbdev_regs.h"  // Generated
@@ -13,10 +13,10 @@
 #error "rstmgr_sw_rst_ctrl_test does not support this top"
 #endif
 
-#include "dt/dt_i2c.h"         // Generated
-#include "dt/dt_rstmgr.h"      // Generated
-#include "dt/dt_spi_device.h"  // Generated
-#include "dt/dt_spi_host.h"    // Generated
+#include "hw/top/dt/dt_i2c.h"         // Generated
+#include "hw/top/dt/dt_rstmgr.h"      // Generated
+#include "hw/top/dt/dt_spi_device.h"  // Generated
+#include "hw/top/dt/dt_spi_host.h"    // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"

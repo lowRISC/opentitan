@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "dt/dt_pwrmgr.h"        // Generated
-#include "dt/dt_rstmgr.h"        // Generated
-#include "dt/dt_rv_core_ibex.h"  // Generated
+#include "hw/top/dt/dt_pwrmgr.h"        // Generated
+#include "hw/top/dt/dt_rstmgr.h"        // Generated
+#include "hw/top/dt/dt_rv_core_ibex.h"  // Generated
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"

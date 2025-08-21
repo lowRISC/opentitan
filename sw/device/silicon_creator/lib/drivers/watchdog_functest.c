@@ -5,9 +5,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "dt/dt_aon_timer.h"
-#include "dt/dt_api.h"
-#include "dt/dt_rstmgr.h"
+#include "hw/top/dt/dt_aon_timer.h"
+#include "hw/top/dt/dt_api.h"
+#include "hw/top/dt/dt_rstmgr.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
