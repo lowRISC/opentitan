@@ -9,9 +9,7 @@
 // ctr_drbg cmd module.
 
 module csrng_ctr_drbg_gen import csrng_pkg::*; #(
-  parameter int NApps = 4,
-  parameter int Cmd = 3,
-  parameter int StateId = 4
+  parameter int NApps = 4
 ) (
   input logic                clk_i,
   input logic                rst_ni,
@@ -21,8 +19,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
 
   input logic                ctr_drbg_gen_req_i,
   output logic               ctr_drbg_gen_rdy_o, // ready to process the req above
-  input logic [Cmd-1:0]      ctr_drbg_gen_ccmd_i,    // current command
-  input logic [StateId-1:0]  ctr_drbg_gen_inst_id_i, // instance id
+  input logic [CmdWidth-1:0] ctr_drbg_gen_ccmd_i,    // current command
+  input logic [InstIdWidth-1:0]  ctr_drbg_gen_inst_id_i, // instance id
   input logic                ctr_drbg_gen_glast_i,   // gen cmd last beat
   input logic                ctr_drbg_gen_fips_i,    // fips
   input logic [SeedLen-1:0]  ctr_drbg_gen_adata_i,   // additional data
@@ -33,8 +31,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   output logic               ctr_drbg_gen_ack_o, // final ack when update process has been completed
   input logic                ctr_drbg_gen_rdy_i, // ready to process the ack above
   output csrng_cmd_sts_e     ctr_drbg_gen_sts_o, // final ack status
-  output logic [Cmd-1:0]     ctr_drbg_gen_ccmd_o,
-  output logic [StateId-1:0] ctr_drbg_gen_inst_id_o,
+  output logic [CmdWidth-1:0]ctr_drbg_gen_ccmd_o,
+  output logic [InstIdWidth-1:0] ctr_drbg_gen_inst_id_o,
   output logic [KeyLen-1:0]  ctr_drbg_gen_key_o,
   output logic [BlkLen-1:0]  ctr_drbg_gen_v_o,
   output logic [CtrLen-1:0]  ctr_drbg_gen_rc_o,
@@ -48,31 +46,31 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   // update interface
   output logic               gen_upd_req_o,
   input logic                upd_gen_rdy_i,
-  output logic [Cmd-1:0]     gen_upd_ccmd_o,
-  output logic [StateId-1:0] gen_upd_inst_id_o,
+  output logic [CmdWidth-1:0]gen_upd_ccmd_o,
+  output logic [InstIdWidth-1:0] gen_upd_inst_id_o,
   output logic [SeedLen-1:0] gen_upd_pdata_o,
   output logic [KeyLen-1:0]  gen_upd_key_o,
   output logic [BlkLen-1:0]  gen_upd_v_o,
 
   input logic                upd_gen_ack_i,
   output logic               gen_upd_rdy_o,
-  input logic [Cmd-1:0]      upd_gen_ccmd_i,
-  input logic [StateId-1:0]  upd_gen_inst_id_i,
+  input logic [CmdWidth-1:0] upd_gen_ccmd_i,
+  input logic [InstIdWidth-1:0]  upd_gen_inst_id_i,
   input logic [KeyLen-1:0]   upd_gen_key_i,
   input logic [BlkLen-1:0]   upd_gen_v_i,
 
   // block encrypt interface
   output logic               block_encrypt_req_o,
   input logic                block_encrypt_rdy_i,
-  output logic [Cmd-1:0]     block_encrypt_ccmd_o,
-  output logic [StateId-1:0] block_encrypt_inst_id_o,
+  output logic [CmdWidth-1:0]block_encrypt_ccmd_o,
+  output logic [InstIdWidth-1:0] block_encrypt_inst_id_o,
   output logic [KeyLen-1:0]  block_encrypt_key_o,
   output logic [BlkLen-1:0]  block_encrypt_v_o,
 
   input logic                block_encrypt_ack_i,
   output logic               block_encrypt_rdy_o,
-  input logic [Cmd-1:0]      block_encrypt_ccmd_i,
-  input logic [StateId-1:0]  block_encrypt_inst_id_i,
+  input logic [CmdWidth-1:0] block_encrypt_ccmd_i,
+  input logic [InstIdWidth-1:0]  block_encrypt_inst_id_i,
   input logic [BlkLen-1:0]   block_encrypt_v_i,
 
   // error status signals
@@ -86,19 +84,19 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
 );
 
   localparam int GenreqFifoDepth = 1;
-  localparam int GenreqFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+1+StateId+Cmd;
+  localparam int GenreqFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+1+InstIdWidth+CmdWidth;
   localparam int BlkEncAckFifoDepth = 1;
-  localparam int BlkEncAckFifoWidth = BlkLen+StateId+Cmd;
+  localparam int BlkEncAckFifoWidth = BlkLen+InstIdWidth+CmdWidth;
   localparam int AdstageFifoDepth = 1;
   localparam int AdstageFifoWidth = KeyLen+BlkLen+CtrLen+1+1;
   localparam int RCStageFifoDepth = 1;
-  localparam int RCStageFifoWidth = KeyLen+BlkLen+BlkLen+CtrLen+1+1+StateId+Cmd;
+  localparam int RCStageFifoWidth = KeyLen+BlkLen+BlkLen+CtrLen+1+1+InstIdWidth+CmdWidth;
   localparam int GenbitsFifoDepth = 1;
-  localparam int GenbitsFifoWidth = 1+BlkLen+KeyLen+BlkLen+CtrLen+StateId+Cmd;
+  localparam int GenbitsFifoWidth = 1+BlkLen+KeyLen+BlkLen+CtrLen+InstIdWidth+CmdWidth;
 
   // signals
-  logic [Cmd-1:0]     genreq_ccmd;
-  logic [StateId-1:0] genreq_id;
+  logic [CmdWidth-1:0]genreq_ccmd;
+  logic [InstIdWidth-1:0] genreq_id;
   logic               genreq_glast;
   logic [SeedLen-1:0] genreq_adata;
   logic               genreq_fips;
@@ -120,11 +118,11 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   logic               rcstage_glast;
   logic               rcstage_fips;
   logic [CtrLen-1:0]  rcstage_rc_plus1;
-  logic [Cmd-1:0]     rcstage_ccmd;
-  logic [StateId-1:0] rcstage_inst_id;
+  logic [CmdWidth-1:0]rcstage_ccmd;
+  logic [InstIdWidth-1:0] rcstage_inst_id;
 
-  logic [Cmd-1:0]     genreq_ccmd_modified;
-  logic [Cmd-1:0]     bencack_ccmd_modified;
+  logic [CmdWidth-1:0]genreq_ccmd_modified;
+  logic [CmdWidth-1:0]bencack_ccmd_modified;
 
   // cmdreq fifo
   // logic [$clog2(CmdreqFifoDepth):0] sfifo_cmdreq_depth;
@@ -150,8 +148,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   logic                       sfifo_bencack_full;
   logic                       sfifo_bencack_not_empty;
   // breakout
-  logic [Cmd-1:0]             sfifo_bencack_ccmd;
-  logic [StateId-1:0]         sfifo_bencack_inst_id;
+  logic [CmdWidth-1:0]        sfifo_bencack_ccmd;
+  logic [InstIdWidth-1:0]     sfifo_bencack_inst_id;
   logic [BlkLen-1:0]          sfifo_bencack_bits;
 
   // rcstage fifo
