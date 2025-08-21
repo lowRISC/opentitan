@@ -5,6 +5,29 @@
 
 package csrng_pkg;
 
+  // Main design parameters
+  // We use the suffix 'Len' (as opposed to 'Width') to stick to the symbols used in the
+  // NIST SP 800-90A algorithm specification.
+
+  // Size of the generated random number blocks in bits and the internal state variable 'v'.
+  parameter int unsigned BlkLen = 128;
+  // Cipher key size in bits
+  parameter int unsigned KeyLen = 256;
+  // Seed size in bits; must be equal to the sum of BlkLen and KeyLen 
+  parameter int unsigned SeedLen = BlkLen + KeyLen;
+  // Width of the counter field used as input to the cipher
+  // Caution: Not to be confused with the reseed counter width! These two are independent.
+  parameter int unsigned CtrLen = 32;
+
+  parameter int unsigned ReseedCntrWidth = 32;
+
+  // Commonly used internal signal widths
+  parameter int unsigned CmdWidth = 3;
+  parameter int unsigned InstIdWidth = 4;
+
+  // Maximum number of 32b words additionally supplied on the application interfaces
+  parameter int unsigned MaxClen = 12; 
+
   //-------------------------
   // Application Interfaces
   //-------------------------

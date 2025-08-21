@@ -6,19 +6,17 @@
 //
 // implementation using security_strength = 256
 
-module csrng_ctr_drbg_upd #(
+module csrng_ctr_drbg_upd import csrng_pkg::*; #(
   parameter int Cmd = 3,
-  parameter int StateId = 4,
-  parameter int BlkLen = 128,
-  parameter int KeyLen = 256,
-  parameter int SeedLen = 384,
-  parameter int CtrLen  = 32
+  parameter int StateId = 4
 ) (
   input logic                clk_i,
   input logic                rst_ni,
 
-   // update interface
+  // update interface
   input logic                ctr_drbg_upd_enable_i,
+
+  // request in
   input logic                ctr_drbg_upd_req_i,
   output logic               ctr_drbg_upd_rdy_o, // ready to process the req above
   input logic [Cmd-1:0]      ctr_drbg_upd_ccmd_i,
@@ -26,29 +24,36 @@ module csrng_ctr_drbg_upd #(
   input logic [SeedLen-1:0]  ctr_drbg_upd_pdata_i, // provided_data
   input logic [KeyLen-1:0]   ctr_drbg_upd_key_i,
   input logic [BlkLen-1:0]   ctr_drbg_upd_v_i,
+
+  // response out
+  output logic               ctr_drbg_upd_ack_o, // final ack when update process has been completed
+  input logic                ctr_drbg_upd_rdy_i, // ready to process the ack above
   output logic [Cmd-1:0]     ctr_drbg_upd_ccmd_o,
   output logic [StateId-1:0] ctr_drbg_upd_inst_id_o,
   output logic [KeyLen-1:0]  ctr_drbg_upd_key_o,
   output logic [BlkLen-1:0]  ctr_drbg_upd_v_o,
-  output logic               ctr_drbg_upd_ack_o, // final ack when update process has been completed
-  input logic                ctr_drbg_upd_rdy_i, // ready to process the ack above
 
-   // es_req/ack
+  // es_req/ack
   input logic                ctr_drbg_upd_es_req_i,
   output logic               ctr_drbg_upd_es_ack_o,
 
-   // block encrypt interface
+  // block encrypt interfaces
+  // Request interface (out to block_encrypt)
   output logic               block_encrypt_req_o,
   input logic                block_encrypt_rdy_i,
   output logic [Cmd-1:0]     block_encrypt_ccmd_o,
   output logic [StateId-1:0] block_encrypt_inst_id_o,
   output logic [KeyLen-1:0]  block_encrypt_key_o,
   output logic [BlkLen-1:0]  block_encrypt_v_o,
+
+  // Response interface
   input logic                block_encrypt_ack_i,
   output logic               block_encrypt_rdy_o,
   input logic [Cmd-1:0]      block_encrypt_ccmd_i,
   input logic [StateId-1:0]  block_encrypt_inst_id_i,
   input logic [BlkLen-1:0]   block_encrypt_v_i,
+
+  // error status outputs
   output logic               ctr_drbg_upd_v_ctr_err_o,
   output logic [2:0]         ctr_drbg_upd_sfifo_updreq_err_o,
   output logic [2:0]         ctr_drbg_upd_sfifo_bencreq_err_o,

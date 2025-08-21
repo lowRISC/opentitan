@@ -8,7 +8,7 @@
 
 module csrng_core import csrng_pkg::*; #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut,
-  parameter int NHwApps = 2,
+  parameter int NumHwApps = 2,
   parameter cs_keymgr_div_t RndCnstCsKeymgrDivNonProduction = CsKeymgrDivWidth'(0),
   parameter cs_keymgr_div_t RndCnstCsKeymgrDivProduction = CsKeymgrDivWidth'(0)
 ) (
@@ -33,8 +33,8 @@ module csrng_core import csrng_pkg::*; #(
   output entropy_src_pkg::cs_aes_halt_rsp_t       cs_aes_halt_o,
 
   // Application Interfaces
-  input  csrng_req_t [NHwApps-1:0]                csrng_cmd_i,
-  output csrng_rsp_t [NHwApps-1:0]                csrng_cmd_o,
+  input  csrng_req_t [NumHwApps-1:0]              csrng_cmd_i,
+  output csrng_rsp_t [NumHwApps-1:0]              csrng_cmd_o,
 
   // Alerts
 
@@ -55,17 +55,17 @@ module csrng_core import csrng_pkg::*; #(
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_invalid;
 
-  localparam int NApps = NHwApps + 1;
+  // TODO Move (some of) the parameters to csrng_pkg.sv
+  localparam int NApps = NumHwApps + 1;
   localparam int NAppsLog = $clog2(NApps);
   localparam int AppCmdWidth = 32;
   localparam int AppCmdFifoDepth = 2;
   localparam int GenBitsWidth = 128;
+  
   localparam int Cmd = 3;
   localparam int StateId = 4;
-  localparam int KeyLen = 256;
-  localparam int BlkLen = 128;
-  localparam int SeedLen = 384;
-  localparam int CtrLen = 32;
+  
+
   localparam int NBlkEncArbReqs = 2;
   localparam int BlkEncArbWidth = KeyLen+BlkLen+StateId+Cmd;
   localparam int NUpdateArbReqs = 2;
@@ -217,9 +217,6 @@ module csrng_core import csrng_pkg::*; #(
   logic [CtrLen-1:0]           state_db_rd_rc;
   logic                        state_db_rd_fips;
   logic [2:0]                  acmd_hold;
-  logic [3:0]                  shid;
-  logic                        gen_last;
-  mubi4_t                      flag0;
 
   // blk encrypt arbiter
   logic [Cmd-1:0]              updblk_benblk_cmd_arb_din;
@@ -964,7 +961,6 @@ module csrng_core import csrng_pkg::*; #(
   );
 
   // pack the gen bits into a 32 bit register sized word
-
   prim_packer_fifo #(
     .InW(BlkLen),
     .OutW(32),
@@ -994,8 +990,7 @@ module csrng_core import csrng_pkg::*; #(
   //--------------------------------------------
   // data path integrity check
   // - a countermeasure to detect entropy bus tampering attempts
-  // - checks to make sure repeated data sets off
-  //   an alert for sw to handle
+  // - checks to make sure repeated data sets off an alert for sw to handle
   //--------------------------------------------
 
   // SEC_CM: SW_GENBITS.BUS.CONSISTENCY
@@ -1044,12 +1039,12 @@ module csrng_core import csrng_pkg::*; #(
   end : gen_app_if
 
   // set ack status for configured instances
-  for (genvar i = 0; i < NHwApps; i = i+1) begin : gen_app_if_sts
+  for (genvar i = 0; i < NumHwApps; i = i+1) begin : gen_app_if_sts
     assign hw_exception_sts[i] = cmd_stage_ack[i] && (cmd_stage_ack_sts[i] != CMD_STS_SUCCESS);
   end : gen_app_if_sts
 
   // set ack status to zero for un-configured instances
-  for (genvar i = NHwApps; i < 16; i = i+1) begin : gen_app_if_zero_sts
+  for (genvar i = NumHwApps; i < 16; i = i+1) begin : gen_app_if_zero_sts
     assign hw_exception_sts[i] = 1'b0;
   end : gen_app_if_zero_sts
 
@@ -1099,18 +1094,14 @@ module csrng_core import csrng_pkg::*; #(
     .ready_i  (acmd_accept) // 1 fsm rdy
   );
 
-  mubi4_t mubi_acmd_flag0;
-  assign mubi_acmd_flag0 = mubi4_t'(acmd_bus[11:8]);
   assign acmd_flag0_pfa = mubi4_test_invalid(flag0_q);
   assign hw2reg.recov_alert_sts.acmd_flag0_field_alert.de = acmd_flag0_pfa;
   assign hw2reg.recov_alert_sts.acmd_flag0_field_alert.d  = acmd_flag0_pfa;
 
   // parse the command bus
   assign acmd_hold = acmd_sop ? acmd_bus[2:0] : acmd_q;
-  assign flag0 = mubi_acmd_flag0;
-  assign shid = acmd_bus[15:12];
-  assign gen_last = acmd_bus[16];
 
+  // TODO rewrite as an always_comb block
   assign acmd_d =
          (!cs_enable_fo[32]) ? '0 :
          acmd_sop ? acmd_bus[2:0] :
@@ -1118,17 +1109,17 @@ module csrng_core import csrng_pkg::*; #(
 
   assign shid_d =
          (!cs_enable_fo[33]) ? '0 :
-         acmd_sop ? shid :
+         acmd_sop ? acmd_bus[15:12] :
          shid_q;
 
   assign gen_last_d =
          (!cs_enable_fo[34]) ? '0 :
-         acmd_sop ? gen_last :
+         acmd_sop ? acmd_bus[16] :
          gen_last_q;
 
   assign flag0_d =
          (!cs_enable_fo[35]) ? prim_mubi_pkg::MuBi4False :
-         (acmd_sop && ((acmd_bus[2:0] == INS) || (acmd_bus[2:0] == RES))) ? flag0 :
+         (acmd_sop && ((acmd_bus[2:0] == INS) || (acmd_bus[2:0] == RES))) ? mubi4_t'(acmd_bus[11:8]) :
          flag0_q;
 
   // SEC_CM: CTRL.MUBI
@@ -1240,9 +1231,6 @@ module csrng_core import csrng_pkg::*; #(
   csrng_state_db #(
     .NApps(NApps),
     .StateId(StateId),
-    .BlkLen(BlkLen),
-    .KeyLen(KeyLen),
-    .CtrLen(CtrLen),
     .Cmd(Cmd)
   ) u_csrng_state_db (
     .clk_i(clk_i),
@@ -1290,14 +1278,14 @@ module csrng_core import csrng_pkg::*; #(
   assign gen_result_ack_rdy = gen_blk_select && state_db_wr_req_rdy;
 
   // muxes for statedb block inputs
-  assign state_db_wr_req = gen_blk_select ? gen_result_wr_req : cmd_result_wr_req;
+  assign state_db_wr_req     = gen_blk_select ? gen_result_wr_req  : cmd_result_wr_req;
   assign state_db_wr_inst_id = gen_blk_select ? gen_result_inst_id : cmd_result_inst_id;
-  assign state_db_wr_fips = gen_blk_select ? gen_result_fips : cmd_result_fips;
-  assign state_db_wr_ccmd = gen_blk_select ?  gen_result_ccmd : cmd_result_ccmd;
-  assign state_db_wr_key = gen_blk_select ? gen_result_key : cmd_result_key;
-  assign state_db_wr_v = gen_blk_select ? gen_result_v : cmd_result_v;
-  assign state_db_wr_rc = gen_blk_select ? gen_result_rc : cmd_result_rc;
-  assign state_db_wr_sts = gen_blk_select ? gen_result_ack_sts : cmd_result_ack_sts;
+  assign state_db_wr_fips    = gen_blk_select ? gen_result_fips    : cmd_result_fips;
+  assign state_db_wr_ccmd    = gen_blk_select ? gen_result_ccmd    : cmd_result_ccmd;
+  assign state_db_wr_key     = gen_blk_select ? gen_result_key     : cmd_result_key;
+  assign state_db_wr_v       = gen_blk_select ? gen_result_v       : cmd_result_v;
+  assign state_db_wr_rc      = gen_blk_select ? gen_result_rc      : cmd_result_rc;
+  assign state_db_wr_sts     = gen_blk_select ? gen_result_ack_sts : cmd_result_ack_sts;
 
   // Forward the reseed counter values to the register interface.
   always_comb begin : reseed_counter_assign
@@ -1378,15 +1366,12 @@ module csrng_core import csrng_pkg::*; #(
 
   csrng_ctr_drbg_cmd #(
     .Cmd(Cmd),
-    .StateId(StateId),
-    .BlkLen(BlkLen),
-    .KeyLen(KeyLen),
-    .SeedLen(SeedLen),
-    .CtrLen(CtrLen)
+    .StateId(StateId)
   ) u_csrng_ctr_drbg_cmd (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .ctr_drbg_cmd_enable_i(cs_enable_fo[46]),
+
     .ctr_drbg_cmd_req_i(ctr_drbg_cmd_req),
     .ctr_drbg_cmd_rdy_o(ctr_drbg_cmd_req_rdy),
     .ctr_drbg_cmd_ccmd_i(ctr_drbg_cmd_ccmd),
@@ -1401,8 +1386,8 @@ module csrng_core import csrng_pkg::*; #(
     .ctr_drbg_cmd_fips_i(state_db_rd_fips), // send to genbits user
 
     .ctr_drbg_cmd_ack_o(cmd_result_ack),
-    .ctr_drbg_cmd_sts_o(cmd_result_ack_sts),
     .ctr_drbg_cmd_rdy_i(cmd_result_ack_rdy),
+    .ctr_drbg_cmd_sts_o(cmd_result_ack_sts),
     .ctr_drbg_cmd_ccmd_o(cmd_result_ccmd),
     .ctr_drbg_cmd_inst_id_o(cmd_result_inst_id),
     .ctr_drbg_cmd_glast_o(cmd_result_glast),
@@ -1447,24 +1432,23 @@ module csrng_core import csrng_pkg::*; #(
 
   csrng_ctr_drbg_upd #(
     .Cmd(Cmd),
-    .StateId(StateId),
-    .BlkLen(BlkLen),
-    .KeyLen(KeyLen),
-    .SeedLen(SeedLen),
-    .CtrLen(CtrLen)
+    .StateId(StateId)
   ) u_csrng_ctr_drbg_upd (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
+
     .ctr_drbg_upd_enable_i(cs_enable_fo[47]),
+
     .ctr_drbg_upd_req_i(updblk_arb_vld),
     .ctr_drbg_upd_rdy_o(updblk_arb_rdy),
-    .ctr_drbg_upd_ack_o(updblk_ack),
-    .ctr_drbg_upd_rdy_i(updblk_ack_rdy),
     .ctr_drbg_upd_ccmd_i(updblk_arb_ccmd),
     .ctr_drbg_upd_inst_id_i(updblk_arb_inst_id),
     .ctr_drbg_upd_pdata_i(updblk_arb_pdata),
     .ctr_drbg_upd_key_i(updblk_arb_key),
     .ctr_drbg_upd_v_i(updblk_arb_v),
+
+    .ctr_drbg_upd_ack_o(updblk_ack),
+    .ctr_drbg_upd_rdy_i(updblk_ack_rdy),
     .ctr_drbg_upd_ccmd_o(updblk_ccmd),
     .ctr_drbg_upd_inst_id_o(updblk_inst_id),
     .ctr_drbg_upd_key_o(updblk_key),
@@ -1480,11 +1464,13 @@ module csrng_core import csrng_pkg::*; #(
     .block_encrypt_inst_id_o(updblk_benblk_id_arb_din),
     .block_encrypt_key_o(updblk_benblk_key_arb_din),
     .block_encrypt_v_o(updblk_benblk_v_arb_din),
+
     .block_encrypt_ack_i(benblk_updblk_ack),
     .block_encrypt_rdy_o(updblk_benblk_ack_rdy),
     .block_encrypt_ccmd_i(benblk_cmd),
     .block_encrypt_inst_id_i(benblk_inst_id),
     .block_encrypt_v_i(benblk_v),
+
     .ctr_drbg_upd_v_ctr_err_o(ctr_drbg_upd_v_ctr_err),
     .ctr_drbg_upd_sfifo_updreq_err_o(ctr_drbg_upd_sfifo_updreq_err),
     .ctr_drbg_upd_sfifo_bencreq_err_o(ctr_drbg_upd_sfifo_bencreq_err),
@@ -1496,7 +1482,6 @@ module csrng_core import csrng_pkg::*; #(
   );
 
   // update block  arbiter
-
   prim_arbiter_ppc #(
     .N(NUpdateArbReqs), // (cmd req and gen req)
     .DW(UpdateArbWidth) // Data width
@@ -1566,9 +1551,7 @@ module csrng_core import csrng_pkg::*; #(
   csrng_block_encrypt #(
     .SBoxImpl(SBoxImpl),
     .Cmd(Cmd),
-    .StateId(StateId),
-    .BlkLen(BlkLen),
-    .KeyLen(KeyLen)
+    .StateId(StateId)
   ) u_csrng_block_encrypt (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -1629,15 +1612,10 @@ module csrng_core import csrng_pkg::*; #(
 
   assign ctr_drbg_gen_req = cmd_result_ack && (cmd_result_ccmd == GEN);
 
-
   csrng_ctr_drbg_gen #(
     .NApps(NApps),
     .Cmd(Cmd),
-    .StateId(StateId),
-    .BlkLen(BlkLen),
-    .KeyLen(KeyLen),
-    .SeedLen(SeedLen),
-    .CtrLen(CtrLen)
+    .StateId(StateId)
   ) u_csrng_ctr_drbg_gen (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -1771,7 +1749,7 @@ module csrng_core import csrng_pkg::*; #(
   `ASSERT(CsrngUniZeroizeSts_A,  state_db_zeroize -> (state_db_wr_sts  == '0))
 
   // The number of application interfaces defined in the hjson must match the number of
-  // application interfaces derived from the top-level parameter NHwApps.
+  // application interfaces derived from the top-level parameter NumHwApps.
   `ASSERT_INIT(CsrngNumAppsMatch_A, NumApps == NApps)
 `endif
 
