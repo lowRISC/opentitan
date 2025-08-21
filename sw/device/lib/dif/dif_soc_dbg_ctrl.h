@@ -11,7 +11,7 @@
  * Interface Functions
  */
 
-#include "soc_dbg_ctrl_regs.h"  // Generated.
+#include "hw/top/soc_dbg_ctrl_regs.h"  // Generated.
 
 #ifdef __cplusplus
 extern "C" {

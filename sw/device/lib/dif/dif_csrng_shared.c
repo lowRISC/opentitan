@@ -6,8 +6,8 @@
 
 #include "sw/device/lib/base/multibits.h"
 
-#include "csrng_regs.h"  // Generated
-#include "edn_regs.h"    // Generated
+#include "hw/top/csrng_regs.h"  // Generated
+#include "hw/top/edn_regs.h"    // Generated
 
 // The application command header is not specified as a register in the
 // hardware specification, so the fields are mapped here by hand. The

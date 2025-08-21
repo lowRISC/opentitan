@@ -13,7 +13,7 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "otp_ctrl_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"  // Generated.
 
 static inline uint32_t otp_ctrl_base(void) {
   return dt_otp_ctrl_primary_reg_block(kDtOtpCtrl);

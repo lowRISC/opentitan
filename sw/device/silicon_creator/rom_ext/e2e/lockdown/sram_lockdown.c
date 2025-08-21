@@ -7,8 +7,8 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/sram_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "sram_ctrl_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 

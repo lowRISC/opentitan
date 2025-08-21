@@ -9,7 +9,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 
-#include "usbdev_regs.h"  // Generated.
+#include "hw/top/usbdev_regs.h"  // Generated.
 
 /**
  * Definition in the header file (and probably other places) must be updated if

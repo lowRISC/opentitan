@@ -9,7 +9,7 @@
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "otp_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 
 enum {
   // The size of the `ROT_CREATOR_AUTH_CODESIGN` partition ignoring the size of

@@ -12,7 +12,7 @@
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
-#include "otp_ctrl_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"  // Generated.
 
 /**
  * Configures the SECRET1 OTP partition.

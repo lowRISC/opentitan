@@ -24,7 +24,7 @@
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 
-#include "otp_ctrl_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"  // Generated.
 
 const dice_cert_format_t kDiceCertFormat = kDiceCertFormatCWTAndroid;
 

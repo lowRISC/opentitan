@@ -19,8 +19,8 @@
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/otbn_fi_commands.h"
 
+#include "hw/top/otbn_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otbn_regs.h"
 
 // Interface to Ibex.
 static dif_rv_core_ibex_t rv_core_ibex;

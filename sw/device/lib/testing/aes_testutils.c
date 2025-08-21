@@ -12,7 +12,7 @@
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
 
-#include "csrng_regs.h"  // Generated
+#include "hw/top/csrng_regs.h"  // Generated
 #endif
 
 // `extern` declarations to give the inline functions in the

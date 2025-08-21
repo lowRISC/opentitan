@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/multibits.h"
 
-#include "lc_ctrl_regs.h"  // Generated.
+#include "hw/top/lc_ctrl_regs.h"  // Generated.
 
 dif_result_t dif_lc_ctrl_get_state(const dif_lc_ctrl_t *lc,
                                    dif_lc_ctrl_state_t *state) {

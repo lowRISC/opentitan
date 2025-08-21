@@ -13,10 +13,10 @@
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
-#include "aon_timer_regs.h"
+#include "hw/top/aon_timer_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/pwrmgr_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
-#include "pwrmgr_regs.h"
 
 namespace watchdog_unittest {
 namespace {

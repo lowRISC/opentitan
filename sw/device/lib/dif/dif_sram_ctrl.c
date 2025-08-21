@@ -6,7 +6,7 @@
 
 #include "sw/device/lib/base/multibits.h"
 
-#include "sram_ctrl_regs.h"  // Generated.
+#include "hw/top/sram_ctrl_regs.h"  // Generated.
 
 /**
  * Obtains the lock state of the "Control" register.

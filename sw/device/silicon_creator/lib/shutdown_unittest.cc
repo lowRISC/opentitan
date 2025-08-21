@@ -21,9 +21,9 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
-#include "alert_handler_regs.h"
-#include "flash_ctrl_regs.h"
-#include "lc_ctrl_regs.h"
+#include "hw/top/alert_handler_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/lc_ctrl_regs.h"
 #include "otp_ctrl_regs.h"
 #include "rv_core_ibex_regs.h"
 

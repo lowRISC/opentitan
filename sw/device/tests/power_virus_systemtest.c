@@ -39,19 +39,19 @@
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "adc_ctrl_regs.h"     // Generated.
-#include "aes_regs.h"          // Generated.
-#include "csrng_regs.h"        // Generated.
-#include "entropy_src_regs.h"  // Generated.
-#include "gpio_regs.h"         // Generated.
-#include "hmac_regs.h"         // Generated.
+#include "hw/top/adc_ctrl_regs.h"     // Generated.
+#include "hw/top/aes_regs.h"          // Generated.
+#include "hw/top/csrng_regs.h"        // Generated.
+#include "hw/top/entropy_src_regs.h"  // Generated.
+#include "hw/top/gpio_regs.h"         // Generated.
+#include "hw/top/hmac_regs.h"         // Generated.
+#include "hw/top/i2c_regs.h"          // Generated.
+#include "hw/top/kmac_regs.h"         // Generated.
+#include "hw/top/pattgen_regs.h"      // Generated.
+#include "hw/top/pwm_regs.h"          // Generated.
+#include "hw/top/spi_host_regs.h"     // Generated.
+#include "hw/top/uart_regs.h"         // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "i2c_regs.h"       // Generated.
-#include "kmac_regs.h"      // Generated.
-#include "pattgen_regs.h"   // Generated.
-#include "pwm_regs.h"       // Generated.
-#include "spi_host_regs.h"  // Generated.
-#include "uart_regs.h"      // Generated.
 
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
                         .enable_uart_flow_control = true);

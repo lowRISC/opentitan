@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 
-#include "mbx_regs.h"  // Generated.
+#include "hw/top/mbx_regs.h"  // Generated.
 
 dif_result_t dif_mbx_range_set(const dif_mbx_t *mbx,
                                dif_mbx_range_config_t config) {

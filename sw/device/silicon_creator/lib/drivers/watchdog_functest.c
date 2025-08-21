@@ -23,7 +23,7 @@
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "rstmgr_regs.h"
+#include "hw/top/rstmgr_regs.h"
 
 static uint32_t compute_ticks_per_ms(uint64_t hz) {
   const uint64_t kTicksPerMs = udiv64_slow(hz, 1000, NULL);

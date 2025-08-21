@@ -14,7 +14,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "pwm_regs.h"  // Generated.
+#include "hw/top/pwm_regs.h"  // Generated.
 
 namespace dif_pwm_unittest {
 namespace {

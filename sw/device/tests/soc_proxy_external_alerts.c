@@ -8,8 +8,8 @@
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/soc_proxy_regs.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-#include "soc_proxy_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 

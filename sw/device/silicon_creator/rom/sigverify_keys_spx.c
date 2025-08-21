@@ -7,7 +7,7 @@
 #include "sw/device/silicon_creator/lib/sigverify/spx_verify.h"
 #include "sw/device/silicon_creator/rom/sigverify_otp_keys.h"
 
-#include "otp_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 
 rom_error_t sigverify_spx_key_get(const sigverify_otp_key_ctx_t *sigverify_ctx,
                                   uint32_t key_id, lifecycle_state_t lc_state,

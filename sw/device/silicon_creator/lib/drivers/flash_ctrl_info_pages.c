@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 
-#include "flash_ctrl_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
 
 #define INFO_PAGE_STRUCT_(name_, bank_, page_)                          \
   const flash_ctrl_info_page_t name_ = {                                \

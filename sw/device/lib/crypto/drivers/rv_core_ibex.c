@@ -7,8 +7,8 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 
+#include "hw/top/rv_core_ibex_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "rv_core_ibex_regs.h"
 
 enum {
   kBaseAddr = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR,

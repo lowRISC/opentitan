@@ -268,7 +268,7 @@ class ClkmgrExt(Extension):
             }
             return SOURCE_EXT_TEMPLATE % subs
         elif pos == Extension.DtIpPos.SourceIncludes:
-            return '#include "clkmgr_regs.h"'
+            return '#include "hw/top/clkmgr_regs.h"'
         elif pos == Extension.DtIpPos.HeaderIncludes:
             return '#include "sw/device/lib/base/bitfield.h"'
         else:

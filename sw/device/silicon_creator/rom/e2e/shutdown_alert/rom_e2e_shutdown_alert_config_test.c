@@ -10,8 +10,8 @@
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 
+#include "hw/top/uart_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "uart_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 

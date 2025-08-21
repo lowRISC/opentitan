@@ -17,7 +17,7 @@
 #include "sw/device/silicon_creator/lib/sigverify/mock_mod_exp_ibex.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
-#include "otp_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 
 namespace sigverify_unittest {
 namespace {

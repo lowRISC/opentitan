@@ -12,7 +12,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 
-#include "spi_host_regs.h"  // Generated.
+#include "hw/top/spi_host_regs.h"  // Generated.
 
 // We create weak symbol aliases for the FIFO write and read functions so the
 // unit tests can provide mocks.  The mocks provide for separate testing of

@@ -10,7 +10,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
 
-#include "otbn_regs.h"  // Generated.
+#include "hw/top/otbn_regs.h"  // Generated.
 
 static_assert(kDifOtbnErrBitsBadDataAddr ==
                   (1 << OTBN_ERR_BITS_BAD_DATA_ADDR_BIT),

@@ -16,9 +16,9 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/pinmux_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
-#include "pinmux_regs.h"
 #include "uart_regs.h"
 
 enum {

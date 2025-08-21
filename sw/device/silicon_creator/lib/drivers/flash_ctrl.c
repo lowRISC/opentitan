@@ -17,8 +17,8 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "flash_ctrl_regs.h"
-#include "otp_ctrl_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 
 static const dt_flash_ctrl_t kFlashCtrlDt = kDtFlashCtrl;
 

@@ -16,7 +16,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
 
-#include "csrng_regs.h"  // Generated
+#include "hw/top/csrng_regs.h"  // Generated
 #include "sw/device/lib/dif/autogen/dif_csrng_autogen.h"
 
 #ifdef __cplusplus

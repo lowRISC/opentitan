@@ -13,7 +13,7 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_base.h"
 
-#include "rstmgr_regs.h"  // Generated.
+#include "hw/top/rstmgr_regs.h"  // Generated.
 
 // These assertions are only defined for the Earl Grey chip.
 #if defined(OPENTITAN_IS_EARLGREY)

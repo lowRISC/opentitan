@@ -11,46 +11,46 @@
 
 #ifdef OT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
 
-#include "aon_timer_regs.h"  // Generated.
-#include "clkmgr_regs.h"     // Generated.
-#include "lc_ctrl_regs.h"    // Generated.
-#include "otp_ctrl_regs.h"   // Generated.
-#include "rstmgr_regs.h"     // Generated.
-#include "sram_ctrl_regs.h"  // Generated.
-#include "uart_regs.h"       // Generated.
+#include "hw/top/aon_timer_regs.h"  // Generated.
+#include "hw/top/clkmgr_regs.h"     // Generated.
+#include "hw/top/lc_ctrl_regs.h"    // Generated.
+#include "hw/top/otp_ctrl_regs.h"   // Generated.
+#include "hw/top/rstmgr_regs.h"     // Generated.
+#include "hw/top/sram_ctrl_regs.h"  // Generated.
+#include "hw/top/uart_regs.h"       // Generated.
 
 #else
 
-#include "adc_ctrl_regs.h"       // Generated.
-#include "aes_regs.h"            // Generated.
-#include "alert_handler_regs.h"  // Generated.
-#include "aon_timer_regs.h"      // Generated.
-#include "clkmgr_regs.h"         // Generated.
-#include "csrng_regs.h"          // Generated.
-#include "edn_regs.h"            // Generated.
-#include "entropy_src_regs.h"    // Generated.
-#include "flash_ctrl_regs.h"     // Generated.
-#include "gpio_regs.h"           // Generated.
-#include "hmac_regs.h"           // Generated.
-#include "i2c_regs.h"            // Generated.
-#include "keymgr_regs.h"         // Generated.
-#include "kmac_regs.h"           // Generated.
-#include "lc_ctrl_regs.h"        // Generated.
-#include "otbn_regs.h"           // Generated.
-#include "otp_ctrl_regs.h"       // Generated.
-#include "pattgen_regs.h"        // Generated.
-#include "pinmux_regs.h"         // Generated.
-#include "pwm_regs.h"            // Generated.
-#include "pwrmgr_regs.h"         // Generated.
-#include "rstmgr_regs.h"         // Generated.
-#include "rv_timer_regs.h"       // Generated.
-#include "sensor_ctrl_regs.h"    // Generated.
-#include "spi_device_regs.h"     // Generated.
-#include "spi_host_regs.h"       // Generated.
-#include "sram_ctrl_regs.h"      // Generated.
-#include "sysrst_ctrl_regs.h"    // Generated.
-#include "uart_regs.h"           // Generated.
-#include "usbdev_regs.h"         // Generated.
+#include "hw/top/adc_ctrl_regs.h"       // Generated.
+#include "hw/top/aes_regs.h"            // Generated.
+#include "hw/top/alert_handler_regs.h"  // Generated.
+#include "hw/top/aon_timer_regs.h"      // Generated.
+#include "hw/top/clkmgr_regs.h"         // Generated.
+#include "hw/top/csrng_regs.h"          // Generated.
+#include "hw/top/edn_regs.h"            // Generated.
+#include "hw/top/entropy_src_regs.h"    // Generated.
+#include "hw/top/flash_ctrl_regs.h"     // Generated.
+#include "hw/top/gpio_regs.h"           // Generated.
+#include "hw/top/hmac_regs.h"           // Generated.
+#include "hw/top/i2c_regs.h"            // Generated.
+#include "hw/top/keymgr_regs.h"         // Generated.
+#include "hw/top/kmac_regs.h"           // Generated.
+#include "hw/top/lc_ctrl_regs.h"        // Generated.
+#include "hw/top/otbn_regs.h"           // Generated.
+#include "hw/top/otp_ctrl_regs.h"       // Generated.
+#include "hw/top/pattgen_regs.h"        // Generated.
+#include "hw/top/pinmux_regs.h"         // Generated.
+#include "hw/top/pwm_regs.h"            // Generated.
+#include "hw/top/pwrmgr_regs.h"         // Generated.
+#include "hw/top/rstmgr_regs.h"         // Generated.
+#include "hw/top/rv_timer_regs.h"       // Generated.
+#include "hw/top/sensor_ctrl_regs.h"    // Generated.
+#include "hw/top/spi_device_regs.h"     // Generated.
+#include "hw/top/spi_host_regs.h"       // Generated.
+#include "hw/top/sram_ctrl_regs.h"      // Generated.
+#include "hw/top/sysrst_ctrl_regs.h"    // Generated.
+#include "hw/top/uart_regs.h"           // Generated.
+#include "hw/top/usbdev_regs.h"         // Generated.
 
 #endif
 

@@ -22,8 +22,8 @@
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/ibex_sca_commands.h"
 
+#include "hw/top/otbn_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otbn_regs.h"  // Generated.
 
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;

@@ -6,7 +6,7 @@
 
 #include "sw/device/lib/base/multibits.h"
 
-#include "rv_dm_regs.h"  // Generated.
+#include "hw/top/rv_dm_regs.h"  // Generated.
 
 static bool late_debug_enable_is_locked(const dif_rv_dm_t *rv_dm) {
   uint32_t reg = mmio_region_read32(rv_dm->base_addr,

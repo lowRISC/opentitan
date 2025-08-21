@@ -11,7 +11,7 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_base.h"
 
-#include "sensor_ctrl_regs.h"  // Generated
+#include "hw/top/sensor_ctrl_regs.h"  // Generated
 
 /**
  * Helper function to determine if a higher than supported event was supplied

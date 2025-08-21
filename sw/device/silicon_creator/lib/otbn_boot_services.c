@@ -14,7 +14,7 @@
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/otbn.h"
 
-#include "otbn_regs.h"  // Generated.
+#include "hw/top/otbn_regs.h"  // Generated.
 
 static_assert(kAttestationSeedWords <= 16,
               "Additional attestation seed needs must be <= 516 bits.");

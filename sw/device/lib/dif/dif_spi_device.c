@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_base.h"
 
-#include "spi_device_regs.h"  // Generated.
+#include "hw/top/spi_device_regs.h"  // Generated.
 
 #define DIF_SPI_DEVICE_TPM_FIFO_DEPTH 16
 

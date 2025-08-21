@@ -37,8 +37,8 @@
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #endif
 
-#include "alert_handler_regs.h"
-#include "lc_ctrl_regs.h"
+#include "hw/top/alert_handler_regs.h"
+#include "hw/top/lc_ctrl_regs.h"
 #include "otp_ctrl_regs.h"
 #include "rstmgr_regs.h"
 #include "rv_core_ibex_regs.h"

@@ -15,7 +15,7 @@
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
-#include "aes_regs.h"  // Generated.
+#include "hw/top/aes_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 // Module ID for status codes.

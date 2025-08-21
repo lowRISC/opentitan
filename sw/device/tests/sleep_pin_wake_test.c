@@ -18,8 +18,8 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 // Below includes are generated during compile time.
-#include "flash_ctrl_regs.h"
-#include "pinmux_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/pinmux_regs.h"
 
 /* We need control flow for the ujson messages exchanged
  * with the host in OTTF_WAIT_FOR on real devices. */

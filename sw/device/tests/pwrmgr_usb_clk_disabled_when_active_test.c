@@ -18,7 +18,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "usbdev_regs.h"
+#include "hw/top/usbdev_regs.h"
 
 static_assert(kDtPwrmgrCount == 1, "this test expects exactly one pwrmgr");
 static const dt_pwrmgr_t kPwrmgrDt = 0;

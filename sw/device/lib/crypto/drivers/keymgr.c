@@ -12,8 +12,8 @@
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/runtime/hart.h"
 
+#include "hw/top/keymgr_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "keymgr_regs.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('d', 'k', 'r')
