@@ -6,7 +6,7 @@
 
 #include <assert.h>
 
-#include "dt/dt_sram_ctrl.h"
+#include "hw/top/dt/dt_sram_ctrl.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/memory.h"
 
