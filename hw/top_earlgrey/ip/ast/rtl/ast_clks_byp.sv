@@ -36,7 +36,7 @@ module ast_clks_byp (
 `endif // of AST_BYPASS_CLK
   input prim_mubi_pkg::mubi4_t io_clk_byp_req_i,    // External IO clock mux for OTP bootstrap
   input prim_mubi_pkg::mubi4_t all_clk_byp_req_i,   // External all clock mux override
-  input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,   // External Clock Frequecy is 96MHz (else 48MHz)
+  input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,   // External Clock Frequency is 96MHz (not 48MHz)
   output prim_mubi_pkg::mubi4_t io_clk_byp_ack_o,   // Switch IO clock to External clock
   output prim_mubi_pkg::mubi4_t all_clk_byp_ack_o,  // Switch all clocks to External clock
   output logic clk_src_sys_o,               // SYS Source Clock
