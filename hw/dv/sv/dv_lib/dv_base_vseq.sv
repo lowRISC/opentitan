@@ -279,4 +279,13 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
     uvm_config_db#(bit)::set(null, path, "csr_assert_en", enable);
   endfunction
 
+  // Use the factory to create a sequence by name and return the resulting uvm_sequence.
+  //
+  // The created sequence should be an instance of the class where this function is defined.
+  // Creating the sequence through this method rather than the underlying function,
+  // dv_utils_pkg::create_seq_by_name, allows subclasses of dv_base_seq to copy information about
+  // themselves (such as sequencers or other configuration) to the new sequence.
+  virtual function uvm_sequence create_seq_by_name(string name);
+    return dv_utils_pkg::create_seq_by_name(name);
+  endfunction
 endclass
