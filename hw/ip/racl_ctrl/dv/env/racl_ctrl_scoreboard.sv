@@ -59,7 +59,9 @@ task racl_ctrl_scoreboard::run_phase(uvm_phase phase);
   wait(!$isunknown(cfg.clk_rst_vif.rst_n));
   fork
     super.run_phase(phase);
-    watch_policies();
+    if (cfg.en_scb) begin
+      watch_policies();
+    end
   join
 endtask
 
