@@ -7,15 +7,14 @@
 
 module csrng_cmd_stage import csrng_pkg::*; #(
   parameter int CmdFifoWidth = 32,
-  parameter int CmdFifoDepth = 16,
-  parameter int StateId = 4
+  parameter int CmdFifoDepth = 16
 ) (
   input logic                        clk_i,
   input logic                        rst_ni,
   // Command input.
   input logic                        cs_enable_i,
   input logic                        cmd_stage_vld_i,
-  input logic [StateId-1:0]          cmd_stage_shid_i,
+  input logic [InstIdWidth-1:0]      cmd_stage_shid_i,
   input logic [CmdFifoWidth-1:0]     cmd_stage_bus_i,
   output logic                       cmd_stage_rdy_o,
   // Command checking interface.

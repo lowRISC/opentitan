@@ -8,10 +8,7 @@
 
 `include "prim_assert.sv"
 
-module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
-  parameter int Cmd = 3,
-  parameter int StateId = 4
-) (
+module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   input logic                clk_i,
   input logic                rst_ni,
 
@@ -20,8 +17,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   // command request
   input logic                ctr_drbg_cmd_req_i,
   output logic               ctr_drbg_cmd_rdy_o, // ready to process the req above
-  input logic [Cmd-1:0]      ctr_drbg_cmd_ccmd_i,    // current command
-  input logic [StateId-1:0]  ctr_drbg_cmd_inst_id_i, // instance id
+  input logic [CmdWidth-1:0] ctr_drbg_cmd_ccmd_i,    // current command
+  input logic [InstIdWidth-1:0] ctr_drbg_cmd_inst_id_i, // instance id
   input logic                ctr_drbg_cmd_glast_i,   // gen cmd last beat
   input logic [SeedLen-1:0]  ctr_drbg_cmd_entropy_i, // es entropy
   input logic                ctr_drbg_cmd_entropy_fips_i, // es entropy)fips
@@ -35,8 +32,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   output logic               ctr_drbg_cmd_ack_o, // final ack when update process has been completed
   input logic                ctr_drbg_cmd_rdy_i, // ready to process the ack above
   output csrng_cmd_sts_e     ctr_drbg_cmd_sts_o, // final ack status
-  output logic [Cmd-1:0]     ctr_drbg_cmd_ccmd_o,
-  output logic [StateId-1:0] ctr_drbg_cmd_inst_id_o,
+  output logic [CmdWidth-1:0]ctr_drbg_cmd_ccmd_o,
+  output logic [InstIdWidth-1:0] ctr_drbg_cmd_inst_id_o,
   output logic               ctr_drbg_cmd_glast_o,
   output logic               ctr_drbg_cmd_fips_o,
   output logic [SeedLen-1:0] ctr_drbg_cmd_adata_o,
@@ -47,8 +44,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   // update request interface
   output logic               cmd_upd_req_o,
   input logic                upd_cmd_rdy_i,
-  output logic [Cmd-1:0]     cmd_upd_ccmd_o,
-  output logic [StateId-1:0] cmd_upd_inst_id_o,
+  output logic [CmdWidth-1:0]cmd_upd_ccmd_o,
+  output logic [InstIdWidth-1:0] cmd_upd_inst_id_o,
   output logic [SeedLen-1:0] cmd_upd_pdata_o,
   output logic [KeyLen-1:0]  cmd_upd_key_o,
   output logic [BlkLen-1:0]  cmd_upd_v_o,
@@ -56,8 +53,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   // update response interface
   input logic                upd_cmd_ack_i,
   output logic               cmd_upd_rdy_o,
-  input logic [Cmd-1:0]      upd_cmd_ccmd_i,
-  input logic [StateId-1:0]  upd_cmd_inst_id_i,
+  input logic [CmdWidth-1:0] upd_cmd_ccmd_i,
+  input logic [InstIdWidth-1:0] upd_cmd_inst_id_i,
   input logic [KeyLen-1:0]   upd_cmd_key_i,
   input logic [BlkLen-1:0]   upd_cmd_v_i,
 
@@ -68,16 +65,16 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
 );
 
   localparam int CmdreqFifoDepth = 1;
-  localparam int CmdreqFifoWidth = KeyLen+BlkLen+CtrLen+1+2*SeedLen+1+StateId+Cmd;
+  localparam int CmdreqFifoWidth = KeyLen+BlkLen+CtrLen+1+2*SeedLen+1+InstIdWidth+CmdWidth;
   localparam int RCStageFifoDepth = 1;
-  localparam int RCStageFifoWidth = KeyLen+BlkLen+StateId+CtrLen+1+SeedLen+1+Cmd;
+  localparam int RCStageFifoWidth = KeyLen+BlkLen+InstIdWidth+CtrLen+1+SeedLen+1+CmdWidth;
   localparam int KeyVRCFifoDepth = 1;
-  localparam int KeyVRCFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+1+StateId+Cmd;
+  localparam int KeyVRCFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+1+InstIdWidth+CmdWidth;
 
 
   // signals
-  logic [Cmd-1:0]     cmdreq_ccmd;
-  logic [StateId-1:0] cmdreq_id;
+  logic [CmdWidth-1:0]cmdreq_ccmd;
+  logic [InstIdWidth-1:0] cmdreq_id;
   logic               cmdreq_glast;
   logic [SeedLen-1:0] cmdreq_entropy;
   logic               cmdreq_entropy_fips;
@@ -93,9 +90,9 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   logic               prep_gen_adata_null;
   logic [KeyLen-1:0]  rcstage_key;
   logic [BlkLen-1:0]  rcstage_v;
-  logic [StateId-1:0] rcstage_id;
+  logic [InstIdWidth-1:0] rcstage_id;
   logic [CtrLen-1:0]  rcstage_rc;
-  logic [Cmd-1:0]     rcstage_ccmd;
+  logic [CmdWidth-1:0]rcstage_ccmd;
   logic               rcstage_glast;
   logic [SeedLen-1:0] rcstage_adata;
   logic               rcstage_fips;
