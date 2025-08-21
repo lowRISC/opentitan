@@ -5,17 +5,14 @@
 // Description: CSRNG command staging module.
 //
 
-module csrng_cmd_stage import csrng_pkg::*; #(
-  parameter int CmdFifoWidth = 32,
-  parameter int CmdFifoDepth = 16
-) (
+module csrng_cmd_stage import csrng_pkg::*; (
   input logic                        clk_i,
   input logic                        rst_ni,
   // Command input.
   input logic                        cs_enable_i,
   input logic                        cmd_stage_vld_i,
   input logic [InstIdWidth-1:0]      cmd_stage_shid_i,
-  input logic [CmdFifoWidth-1:0]     cmd_stage_bus_i,
+  input logic [CmdBusWidth-1:0]      cmd_stage_bus_i,
   output logic                       cmd_stage_rdy_o,
   // Command checking interface.
   input logic                        reseed_cnt_reached_i,
@@ -28,7 +25,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   output logic                       cmd_arb_mop_o,
   output logic                       cmd_arb_eop_o,
   input logic                        cmd_arb_gnt_i,
-  output logic [CmdFifoWidth-1:0]    cmd_arb_bus_o,
+  output logic [CmdBusWidth-1:0]     cmd_arb_bus_o,
   // Ack from core.
   input logic                        cmd_ack_i,
   input csrng_cmd_sts_e              cmd_ack_sts_i,
@@ -52,15 +49,15 @@ module csrng_cmd_stage import csrng_pkg::*; #(
 );
 
   // Genbits parameters.
-  localparam int GenBitsFifoWidth = 1+128;
+  localparam int GenBitsFifoWidth = 1+BlkLen;
   localparam int GenBitsFifoDepth = 1;
   localparam int GenBitsCntrWidth = 12;
 
   // Command FIFO.
-  logic [CmdFifoWidth-1:0] sfifo_cmd_rdata;
-  logic [$clog2(CmdFifoDepth):0] sfifo_cmd_depth;
+  logic [CmdBusWidth-1:0]  sfifo_cmd_rdata;
+  logic [$clog2(CmdBusWidth):0] sfifo_cmd_depth;
   logic                    sfifo_cmd_push;
-  logic [CmdFifoWidth-1:0] sfifo_cmd_wdata;
+  logic [CmdBusWidth-1:0]  sfifo_cmd_wdata;
   logic                    sfifo_cmd_pop;
   logic [2:0]              sfifo_cmd_err;
   logic                    sfifo_cmd_full;
@@ -129,7 +126,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   //---------------------------------------------------------
 
   prim_fifo_sync #(
-    .Width(CmdFifoWidth),
+    .Width(CmdBusWidth),
     .Pass(0),
     .Depth(CmdFifoDepth),
     .OutputZeroIfEmpty(1'b0)
