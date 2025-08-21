@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::rc::Rc;
-use std::time::Duration;
 
 use anyhow::{Context, Result};
 use rusb::{Direction, Recipient, RequestType};
@@ -110,12 +109,12 @@ impl Uart for HyperdebugUart {
         self.serial_port.get_device_path()
     }
 
-    fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        self.serial_port.read(buf)
-    }
-
-    fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
-        self.serial_port.read_timeout(buf, timeout)
+    fn poll_read(
+        &self,
+        cx: &mut std::task::Context<'_>,
+        buf: &mut [u8],
+    ) -> std::task::Poll<Result<usize>> {
+        self.serial_port.poll_read(cx, buf)
     }
 
     fn write(&self, buf: &[u8]) -> Result<()> {

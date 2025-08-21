@@ -87,7 +87,7 @@ impl CommandDispatch for Console {
             let mut stdin = if self.non_interactive {
                 None
             } else {
-                Some(RawTty::new(std::io::stdin())?)
+                Some(RawTty::new(tokio::io::stdin())?)
             };
             let mut stdout = std::io::stdout();
 
