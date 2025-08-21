@@ -29,8 +29,11 @@ endfunction
 
 function void racl_ctrl_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
   list_of_alerts = racl_ctrl_env_pkg::LIST_OF_ALERTS;
+
+  // Tell the CIP base code how many interrupts we have (defaults to zero)
+  num_interrupts = 1;
+
   super.initialize(csr_base_addr);
-  num_interrupts = 0;
 
   // Tell regs about ral, which contains the actual register model.
   regs.set_reg_block(ral);
