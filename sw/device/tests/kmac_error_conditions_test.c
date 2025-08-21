@@ -11,6 +11,7 @@
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -512,7 +513,11 @@ status_t test_err_shadow_reg_update(void) {
   mmio_region_write32(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
   // Change the value of one config bit and write again.
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT, false);
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdKmacRecovOperationErr));
   mmio_region_write32(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+      kTopEarlgreyAlertIdKmacRecovOperationErr));
 
   // On a mismatch between first and second write, the recoverable alert should
   // trigger.

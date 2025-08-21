@@ -10,6 +10,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "flash_ctrl_regs.h"
@@ -161,10 +162,14 @@ static void test_mem_access(test_t region) {
       LOG_INFO("test_mem_access: page %d write complete",
                region.page_start + i);
     } else {
+      CHECK_STATUS_OK(
+          ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdFlashCtrlRecovErr));
       CHECK_STATUS_NOT_OK(flash_ctrl_testutils_write(
           &flash, start_epage,
           /*partition_id=*/0, wdata, kDifFlashCtrlPartitionTypeData,
           ARRAYSIZE(wdata)));
+      CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+          kTopEarlgreyAlertIdFlashCtrlRecovErr));
       LOG_INFO("test_mem_access: page %d write is not allowed",
                region.page_start + i);
     }
@@ -179,10 +184,14 @@ static void test_mem_access(test_t region) {
       LOG_INFO("test_mem_access: page %d read check complete",
                region.page_start + i);
     } else {
+      CHECK_STATUS_OK(
+          ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdFlashCtrlRecovErr));
       CHECK_STATUS_NOT_OK(flash_ctrl_testutils_read(
           &flash, start_epage, /*partition_id=*/0, rdata,
           kDifFlashCtrlPartitionTypeData, ARRAYSIZE(rdata),
           /*delay=*/1));
+      CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+          kTopEarlgreyAlertIdFlashCtrlRecovErr));
       LOG_INFO("test_mem_access: page %d read is not allowed",
                region.page_start + i);
     }
