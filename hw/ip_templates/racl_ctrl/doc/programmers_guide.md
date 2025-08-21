@@ -17,7 +17,7 @@ Interrupts are disabled by default but can be enabled via the [`INTR_ENABLE`](./
 
 When a RACL error occurs, the following information about the error is logged in the [`ERROR_LOG`](./registers.md#error_log) and [`ERROR_LOG_ADDRESS`](./registers.md#error_log_address) registers.
 
-- `ERROR_LOG_ADDRESS` contains the address on which a RACL violation occurred.
+- `ERROR_LOG_ADDRESS` contains the address, shifted by 2 bits to the right, on which a RACL violation occurred.
 - `ERROR_LOG.valid` indicates that the log registers contain valid data.
 - `ERROR_LOG.overflow` indicates that a RACL error occurred while the `valid` bit was set or that more than one error was reported in the same clock cycle.
 - `ERROR_LOG.read_access` states whether the RACL error occurred due to a read (`1`) or write (`0`) operation.
