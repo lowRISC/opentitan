@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, bail};
+use anyhow::{Context, Result, bail, ensure};
 use serde::{Deserialize, Serialize};
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
@@ -23,7 +23,8 @@ use crate::io::nonblocking_help::NonblockingHelp;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::proxy::protocol::{
-    AsyncMessage, Message, ProxyRequest, ProxyResponse, Request, Response,
+    AsyncMessage, Message, ProxyRequest, ProxyResponse, Request, Response, UartRequest,
+    UartResponse,
 };
 use crate::transport::{Capabilities, Capability, ProxyOps, Transport, TransportError};
 
@@ -325,10 +326,40 @@ impl Transport for Proxy {
         if let Some(instance) = self.inner.uarts.borrow().get(instance_name) {
             return Ok(Rc::clone(&instance.uart));
         }
+
+        // For now, only support uart that can be read non-blockingly. We will lift this soon.
+        let Response::Uart(UartResponse::SupportsNonblockingRead { has_support }) =
+            self.inner.execute_command(Request::Uart {
+                id: instance_name.to_owned(),
+                command: UartRequest::SupportsNonblockingRead,
+            })?
+        else {
+            bail!(ProxyError::UnexpectedReply())
+        };
+        ensure!(has_support);
+
+        // All `Uart` instances that we create via proxy supports non-blocking.
+        // This allows us to control whether UART is blocking or not by controlling if
+        // `pipe_receiver` is blocking.
+        let Response::Uart(UartResponse::RegisterNonblockingRead { channel }) =
+            self.inner.execute_command(Request::Uart {
+                id: instance_name.to_owned(),
+                command: UartRequest::RegisterNonblockingRead,
+            })?
+        else {
+            bail!(ProxyError::UnexpectedReply())
+        };
+
         let instance: Rc<dyn Uart> = Rc::new(uart::ProxyUart::open(self, instance_name)?);
         let (pipe_sender, pipe_receiver) = mio::unix::pipe::new()?;
+        pipe_receiver.set_nonblocking(false)?;
+
+        self.inner
+            .uart_channel_map
+            .borrow_mut()
+            .insert(channel, instance_name.to_owned());
         self.inner.uarts.borrow_mut().insert(
-            instance_name.to_string(),
+            instance_name.to_owned(),
             UartRecord {
                 uart: Rc::clone(&instance),
                 pipe_sender,
