@@ -7,7 +7,6 @@ use mio::event::Event;
 use mio::net::TcpListener;
 use mio::net::TcpStream;
 use mio::{Events, Interest, Poll, Registry, Token};
-use mio_signals::{Signal, SignalSet, Signals};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
@@ -15,6 +14,7 @@ use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::io::{ErrorKind, Read, Write};
 use std::marker::PhantomData;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::time::Duration;
 
 use super::CommandHandler;
 use super::ExtraEventHandler;
@@ -41,10 +41,7 @@ pub struct JsonSocketServer<
     poll: Poll,
     socket: TcpListener,
     socket_token: Token,
-    signals: Signals,
-    signal_token: Token,
     connection_map: HashMap<Token, Connection>,
-    exit_requested: bool,
     phantom: PhantomData<Msg>,
 }
 
@@ -60,31 +57,24 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg, E>, E: ExtraEvent
         let socket_token = get_next_token();
         poll.registry()
             .register(&mut socket, socket_token, Interest::READABLE)?;
-        // Create a `Signals` instance that will catch given set of signals for us.
-        let signals: SignalSet = Signal::Terminate | Signal::Interrupt;
-        let mut signals = Signals::new(signals)?;
-        // And register it with our `Poll` instance.
-        let signal_token = get_next_token();
-        poll.registry()
-            .register(&mut signals, signal_token, Interest::READABLE)?;
         Ok(Self {
             command_handler,
             extra_event_handler,
             poll,
             socket,
             socket_token,
-            signals,
-            signal_token,
             connection_map: HashMap::new(),
-            exit_requested: false,
             phantom: PhantomData,
         })
     }
 
-    pub fn run_loop(&mut self) -> Result<()> {
+    pub async fn run_loop(&mut self) -> Result<()> {
         let mut events = Events::with_capacity(1024);
-        while !self.exit_requested {
-            match self.poll.poll(&mut events, None) {
+        loop {
+            tokio::task::yield_now().await;
+            match tokio::task::block_in_place(|| {
+                self.poll.poll(&mut events, Some(Duration::from_millis(5)))
+            }) {
                 Ok(()) => (),
                 Err(err) if err.kind() == ErrorKind::Interrupted => {
                     continue;
@@ -94,8 +84,6 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg, E>, E: ExtraEvent
             for event in events.iter() {
                 if event.token() == self.socket_token {
                     self.process_new_connection()?;
-                } else if event.token() == self.signal_token {
-                    self.process_signals()?;
                 } else if self
                     .extra_event_handler
                     .handle_poll_event(event, &mut self.connection_map)?
@@ -115,7 +103,6 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg, E>, E: ExtraEvent
                 }
             }
         }
-        Ok(())
     }
 
     /// Accept new socket connections, creating new Connection objects.
@@ -144,25 +131,6 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg, E>, E: ExtraEvent
                     return Ok(());
                 }
                 Err(err) => bail!("Error accepting TCP connection: {}", err),
-            }
-        }
-    }
-
-    fn process_signals(&mut self) -> Result<()> {
-        loop {
-            match self.signals.receive()? {
-                Some(Signal::Interrupt) => {
-                    log::info!("Got interrupt signal");
-                    self.exit_requested = true;
-                }
-                Some(Signal::Terminate) => {
-                    log::info!("Got terminate signal");
-                    self.exit_requested = true;
-                }
-                Some(signal) => {
-                    log::info!("Got unexpected signal: {:?}", signal);
-                }
-                None => return Ok(()),
             }
         }
     }
