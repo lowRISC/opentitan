@@ -14,22 +14,17 @@ class mbx_scoreboard extends cip_base_scoreboard #(
   bit [top_pkg::TL_AW-1:0] m_obmbx_ptr_q[$];
   bit [top_pkg::TL_AW-1:0] m_obmbx_ptr;
   bit [9:0] m_obdwcnt;
-  bit mbxsts_core_wr_in_progress;
-  bit mbxsts_system_rd_in_progress;
-  bit mbxsts_core_rd_in_progress;
-  bit mbxsts_system_wr_in_progress;
 
-  bit skip_read_check;
   bit exp_mbx_core_irq;
   bit exp_mbx_core_irq_q[$];
 
   // TLM agent fifos
 
   // local queues to hold incoming packets pending comparison
-  bit [top_pkg::TL_DW-1:0] m_ib_q[$];
-  bit [top_pkg::TL_DW-1:0] m_ob_q[$];
+  bit [top_pkg::TL_DW-1:0] m_ib_q[$]; // Inbound data (request to RoT).
+  bit [top_pkg::TL_DW-1:0] m_ob_q[$]; // Outbound data (response from RoT).
 
-  // System RAL model
+  // System RAL model; keep a local handle for cleaner/easier access.
   mbx_soc_reg_block m_mbx_soc_ral;
 
   `uvm_component_new
@@ -114,28 +109,26 @@ class mbx_scoreboard extends cip_base_scoreboard #(
     csr = cfg.ral_models[RAL_T::type_name].default_map.get_reg_by_offset(csr_addr);
 
     if (csr && addr_phase_write) begin
-      // If incoming access is a write to a valid CSR, then make updates right away.
-      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+      if (prim_mubi_pkg::MuBi4True == `gmv(ral.address_range_regwen) ||
+          !ral.address_range_regwen.locks_reg_or_fld(csr)) begin
+        // If incoming access is a write to a valid CSR, then make updates right away.
+        void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+      end
 
       case (csr.get_name())
-        default:; // Do nothing
-        "inbound_write_ptr": m_ibmbx_ptr = item.a_data;
-        "outbound_read_ptr": begin
-          m_obmbx_ptr_q[0] = item.a_data;
-          m_obmbx_ptr = item.a_data;
+        "intr_test": begin
+          uvm_reg_data_t intr_enable = `gmv(ral.intr_enable);
+          `uvm_info(`gfn, $sformatf("intr_test write 0x%x with enables 0x%0x", item.a_data,
+                                    intr_enable), UVM_HIGH)
+          // Sample tested interrupts.
+          if (cfg.en_cov) begin
+            uvm_reg_data_t intr_state = `gmv(ral.intr_state);
+            foreach (item.a_data[i]) begin
+              cov.intr_test_cg.sample(i, item.a_data[i], intr_enable[i], intr_state[i]);
+            end
+          end
         end
-        "inbound_base_address": begin
-          // Do nothing
-        end
-        "inbound_limit_address": begin
-          // Do nothing
-        end
-        "outbound_base_address": begin
-          // Do nothing
-        end
-        "outbound_limit_address": begin
-          // Do nothing
-        end
+
         "outbound_object_size": begin
           m_obdwcnt = item.a_data;
           `uvm_info(`gfn, $sformatf("Updating m_obdwcnt to %0d", m_obdwcnt), UVM_LOW)
@@ -159,52 +152,88 @@ class mbx_scoreboard extends cip_base_scoreboard #(
             exp_mbx_core_irq_q.push_back(0);
           end
           */
+          //
         end
+
+        // These registers do not require any further modeling.
+        "alert_test",
+        "intr_state",
+        "intr_enable",
+        "address_range_regwen",
+        "address_range_valid",
+        "inbound_base_address",
+        "inbound_limit_address",
+        "inbound_write_ptr",
+        "outbound_read_ptr",
+        "outbound_base_address",
+        "outbound_limit_address":; // Do nothing
+
+        default: `dv_fatal($sformatf("Core register '%s' write not modeled", csr.get_name()))
       endcase
     end else if (csr && data_phase_read) begin
       bit [31:0] mask = 'hffff_ffff;
       bit do_read_check = 1'b1;
 
       case (csr.get_name())
-        default:; // Do nothing
         "inbound_write_ptr": begin
+          // Update prediction based upon observed traffic to SRAM.
           void'(ral.inbound_write_ptr.predict(
             .value(ral.inbound_base_address.get() + m_ibmbx_ptr),
             .kind(UVM_PREDICT_READ)));
         end
         "outbound_read_ptr": begin
+          // Update prediction based upon observed traffic from SRAM.
           void'(ral.outbound_read_ptr.predict(
             .value(ral.outbound_base_address.get() + (m_obmbx_ptr_q[0])),
             .kind(UVM_PREDICT_READ)));
         end
-        "inbound_base_address": begin
-          // Do nothing
-        end
-        "inbound_limit_address": begin
-          // Do nothing
-        end
-        "outbound_base_address": begin
-          // Do nothing
-        end
-        "outbound_limit_address": begin
-          // Do nothing
-        end
         "outbound_object_size": begin
+          // Update prediction based upon observed traffic from SRAM.
           void'(ral.outbound_object_size.predict(.value(m_obdwcnt), .kind(UVM_PREDICT_READ)));
         end
+
         "control": begin
-          // Do nothing
+          // TODO: Do nothing presently
         end
         "status": begin
           //TODO: Review ready field
           mask = 'h7fff_ffff;
         end
+
+        "intr_state": begin
+          // TODO: Presently the scoreboard is not up to the task of predicting interrupts.
+          do_read_check = 1'b0;
+
+          if (cfg.en_cov) begin
+            uvm_reg_data_t intr_enable = `gmv(ral.intr_enable);
+            uvm_reg_data_t intr_state = item.d_data;
+            foreach (item.d_data[i]) begin
+              cov.intr_cg.sample(i, intr_enable[i], intr_state[i]);
+              cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
+            end
+          end
+        end
+
+        // These registers do not require any further modeling.
+        "alert_test",
+        "intr_enable",
+        "intr_test",
+        "address_range_regwen",
+        "address_range_valid",
+        "inbound_base_address",
+        "inbound_limit_address",
+        "outbound_base_address",
+        "outbound_limit_address":; // Do nothing
+
+        default: `dv_fatal($sformatf("Core register '%s' read not modeled", csr.get_name()))
       endcase
 
       if (do_read_check) begin
-        // Check mirrored_value against item.d_data
-        void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+        // Check read data returned by DUT against the mirrored value.
+        `DV_CHECK_EQ(item.d_data, `gmv(csr),
+                     $sformatf("Core register '%s' does not have expected value", csr.get_name()))
       end
+      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
 
     `uvm_info(`gfn, "process_tl_mbx_core_access -- End", UVM_DEBUG)
@@ -214,13 +243,12 @@ class mbx_scoreboard extends cip_base_scoreboard #(
   virtual function void process_tl_mbx_soc_access(tl_seq_item item, tl_channels_e channel);
     uvm_reg csr;
     bit     write           = item.is_write();
-    uvm_reg_addr_t csr_addr =
-      cfg.ral_models[cfg.mbx_soc_ral_name].get_word_aligned_addr(item.a_addr);
+    uvm_reg_addr_t csr_addr = m_mbx_soc_ral.get_word_aligned_addr(item.a_addr);
     bit addr_phase_write  = (write && channel == AddrChannel);
     bit data_phase_read   = (!write && channel == DataChannel);
 
     `uvm_info(`gfn, "process_tl_mbx_soc_access -- Start", UVM_DEBUG)
-    csr = cfg.ral_models[cfg.mbx_soc_ral_name].default_map.get_reg_by_offset(csr_addr);
+    csr = m_mbx_soc_ral.default_map.get_reg_by_offset(csr_addr);
 
     // Note: WDATA and RDATA memory windows exist on the SoC TL-UL interface, and these are not
     //       regular CSRs, so `csr` will be null.
@@ -231,7 +259,6 @@ class mbx_scoreboard extends cip_base_scoreboard #(
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
 
         case (csr.get_name())
-          default:; // Do nothing
           "soc_control": begin
             mbx_soc_reg_soc_control ctl_reg_h;
 
@@ -248,7 +275,10 @@ class mbx_scoreboard extends cip_base_scoreboard #(
                 (m_obdwcnt != 0)) begin
                 void'(ral.status.busy.predict(.value(1), .kind(UVM_PREDICT_WRITE)));
               end
-            end else if((item.a_data[31] & item.a_mask[3]) == 1) begin
+            end */
+            // Go bit notifies the RoT side that there is a message available.
+            if (get_field_val(m_mbx_soc_ral.soc_control.go, item.a_data)) begin
+              /* TODO: Fix this.
               // if (ctl_reg_h.abort.get() == 1)
               if((ral.status.busy.get() == 0) && (ral.control.error.get() == 0) &&
                 (ral.control.abort.get() == 0)) begin
@@ -258,8 +288,12 @@ class mbx_scoreboard extends cip_base_scoreboard #(
                 exp_mbx_core_irq = 1;
                 exp_mbx_core_irq_q.push_back(1);
               end
+              */
+              if (cfg.en_cov) begin
+                cov.mem_range_cg.sample(`gmv(ral.inbound_base_address),
+                                        `gmv(ral.outbound_base_address));
+              end
             end
-            */
             void'(ral.status.sys_intr_enable.predict(
                      .value(ctl_reg_h.doe_intr_en.get()),
                      .kind(UVM_PREDICT_WRITE)));
@@ -278,10 +312,27 @@ class mbx_scoreboard extends cip_base_scoreboard #(
               void'(hst_sts_reg_h.sys_intr_state.predict(.value(0)));
             end
           end
+          default: `dv_fatal($sformatf("SoC register '%s' write not modeled", csr.get_name()))
         endcase
       end else begin
-        // TODO: else model WDATA / RDATA.
-        // WDATA: m_ib_q.push_back(item.a_data);
+        // DUT has two memory windows on the SoC TL-UL:
+        // - WDATA transfers the request from the SoC to the RoT.
+        // - RDATA retrieves the response from the RoT.
+        uvm_mem mem = m_mbx_soc_ral.default_map.get_mem_by_offset(csr_addr);
+        case (mem.get_name())
+          "wdata": begin
+            `uvm_info(`gfn, $sformatf("WDATA write of 0x%0x", item.a_data), UVM_MEDIUM)
+            m_ib_q.push_back(item.a_data);
+          end
+          "rdata": begin
+            // Writing to RDATA pops the most recent data word from the Outbox.
+            if (m_ob_q.size() > 0) begin
+              `uvm_info(`gfn, "RDATA write, popping DWORD", UVM_MEDIUM)
+              m_ob_q.pop_front();
+            end
+          end
+          default: `dv_fatal($sformatf("SoC memory '%s' write not handled", mem.get_name()))
+        endcase
         // RDATA:
         //  int tmp_ptr=0;
         //  if(m_obmbx_ptr_q.size() == 0)
@@ -294,11 +345,10 @@ class mbx_scoreboard extends cip_base_scoreboard #(
         //    void'(m_ob_q.pop_front());
       end
     end else if (data_phase_read) begin
-      bit do_read_check = 1'b1;
-
       if (csr) begin
+        bit do_read_check = 1'b1;
+
         case (csr.get_name())
-          default:; // Do nothing
           "soc_control": begin
             mbx_soc_reg_soc_control ctl_reg_h;
             void'(ctl_reg_h.abort.predict(
@@ -335,17 +385,35 @@ class mbx_scoreboard extends cip_base_scoreboard #(
             void'(soc_sts_reg_h.ready.predict(
                                .value(m_obdwcnt != 0),
                                .kind(UVM_PREDICT_READ)));
+            // TODO: The scoreboard is not yet up to checking this.
+            do_read_check = 1'b0;
           end
+          default: `dv_fatal($sformatf("SoC register '%s' read not modeled", csr.get_name()))
         endcase
+
+        if (do_read_check) begin
+          // Check read data returned by DUT against the mirrored value.
+          `DV_CHECK_EQ(item.d_data, `gmv(csr),
+                       $sformatf("SoC register '%s' does not have expected value", csr.get_name()))
+        end
+        void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
       end else begin
-        // TODO: else model WDATA / RDATA.
-        // WDATA: void'(csr.predict(.value(0), .kind(UVM_PREDICT_READ)));
-        // RDATA:
-        //  if(m_obdwcnt == 0) begin
-        //      void'(csr.predict(.value(0), .kind(UVM_PREDICT_READ)));
-        //  end else begin
-        //       void'(csr.predict(.value(m_ob_q[0]), .kind(UVM_PREDICT_READ)));
-        //  end
+        // DUT has two memory windows on the SoC TL-UL:
+        // - WDATA transfers the request from the SoC to the RoT.
+        // - RDATA retrieves the response from the RoT.
+        uvm_mem mem = m_mbx_soc_ral.default_map.get_mem_by_offset(csr_addr);
+        case (mem.get_name())
+          "wdata": begin // Reading WDATA shall always return zero.
+            `uvm_info(`gfn, $sformatf("WDATA read of 0x%0x", item.a_data), UVM_MEDIUM)
+            `DV_CHECK_EQ(item.d_data, 0, "Read of WDATA returned non-zero value")
+          end
+          "rdata": begin
+            uvm_reg_data_t exp_data = 0;
+            if (m_ob_q.size() > 0) exp_data = m_ob_q[0];
+            `DV_CHECK_EQ(item.d_data, exp_data, "RDATA read data mismatched")
+          end
+          default: `dv_fatal($sformatf("SoC memory '%s' read not handled", mem.get_name()))
+        endcase
       end
     end
     `uvm_info(`gfn, "process_tl_mbx_soc_access -- End", UVM_DEBUG)
