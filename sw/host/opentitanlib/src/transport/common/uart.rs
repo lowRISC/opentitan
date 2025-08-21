@@ -6,21 +6,25 @@ use std::cell::{Cell, RefCell};
 use std::collections::VecDeque;
 use std::io::{ErrorKind, Read, Write};
 use std::os::fd::{AsRawFd, BorrowedFd};
+use std::task::{Context, Poll, Waker, ready};
 use std::time::Duration;
 
-use anyhow::{Context, Result};
+use anyhow::{Context as _, Result};
 use serialport::{ClearBuffer, Parity, SerialPort, TTYPort};
+use tokio::io::unix::AsyncFd;
 
 //use crate::io::uart::{Uart, UartError};
 use crate::io::uart::{FlowControl, Uart, UartError};
 use crate::transport::TransportError;
 use crate::util;
+use crate::util::runtime::MultiWaker;
 
 /// Implementation of the `Uart` trait on top of a serial device, such as `/dev/ttyUSB0`.
 pub struct SerialPortUart {
     port_name: String,
-    port: RefCell<TTYPort>,
+    port: RefCell<AsyncFd<TTYPort>>,
     pseudo_baud: Cell<u32>,
+    multi_waker: MultiWaker,
 }
 
 impl SerialPortUart {
@@ -35,11 +39,14 @@ impl SerialPortUart {
     pub fn open(port_name: &str, baud: u32) -> Result<Self> {
         let port = TTYPort::open(&serialport::new(port_name, baud).preserve_dtr_on_open())
             .map_err(|e| UartError::OpenError(e.to_string()))?;
-        flock_serial(&port, port_name)?;
+        let _runtime_guard = crate::util::runtime().enter();
+        let port = AsyncFd::new(port)?;
+        flock_serial(port.get_ref(), port_name)?;
         Ok(SerialPortUart {
             port_name: port_name.to_string(),
             port: RefCell::new(port),
             pseudo_baud: Cell::new(0),
+            multi_waker: MultiWaker::new(),
         })
     }
 
@@ -47,11 +54,14 @@ impl SerialPortUart {
     pub fn open_pseudo(port_name: &str, baud: u32) -> Result<Self> {
         let port = TTYPort::open(&serialport::new(port_name, baud).preserve_dtr_on_open())
             .map_err(|e| UartError::OpenError(e.to_string()))?;
-        flock_serial(&port, port_name)?;
+        let _runtime_guard = crate::util::runtime().enter();
+        let port = AsyncFd::new(port)?;
+        flock_serial(port.get_ref(), port_name)?;
         Ok(SerialPortUart {
             port_name: port_name.to_string(),
             port: RefCell::new(port),
             pseudo_baud: Cell::new(baud),
+            multi_waker: MultiWaker::new(),
         })
     }
 }
@@ -61,7 +71,11 @@ impl Uart for SerialPortUart {
     fn get_baudrate(&self) -> Result<u32> {
         let pseudo = self.pseudo_baud.get();
         if pseudo == 0 {
-            self.port.borrow().baud_rate().context("getting baudrate")
+            self.port
+                .borrow()
+                .get_ref()
+                .baud_rate()
+                .context("getting baudrate")
         } else {
             Ok(pseudo)
         }
@@ -73,6 +87,7 @@ impl Uart for SerialPortUart {
         if pseudo == 0 {
             self.port
                 .borrow_mut()
+                .get_mut()
                 .set_baud_rate(baudrate)
                 .map_err(|_| UartError::InvalidSpeed(baudrate))?;
         } else {
@@ -85,26 +100,31 @@ impl Uart for SerialPortUart {
         Ok(self.port_name.clone())
     }
 
-    /// Reads UART receive data into `buf`, returning the number of bytes read.
-    /// The `timeout` may be used to specify a duration to wait for data.
-    fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
+    fn poll_read(&self, cx: &mut Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
         let mut port = self.port.borrow_mut();
 
-        port.set_timeout(timeout).context("UART read error")?;
-        let result = match port.read(buf) {
-            Ok(n) => Ok(n),
-            Err(ioerr) if ioerr.kind() == ErrorKind::TimedOut => Ok(0),
-            Err(e) => return Err(e.into()),
-        };
-        port.set_timeout(Self::FOREVER).context("UART read error")?;
+        loop {
+            let mut guard = ready!(
+                self.multi_waker
+                    .poll_with(cx, |cx| port.poll_read_ready_mut(cx))
+            )?;
 
-        result
-    }
-
-    /// Reads UART receive data into `buf`, returning the number of bytes read.
-    /// This function _may_ block.
-    fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        self.read_timeout(buf, Self::FOREVER)
+            match guard.try_io(|inner| {
+                inner.get_mut().set_timeout(Duration::ZERO)?;
+                let result = match inner.get_mut().read(buf) {
+                    Ok(n) => Ok(n),
+                    Err(ioerr) if ioerr.kind() == ErrorKind::TimedOut => {
+                        Err(std::io::Error::new(std::io::ErrorKind::WouldBlock, ioerr))
+                    }
+                    Err(ioerr) => Err(ioerr)?,
+                };
+                inner.get_mut().set_timeout(Self::FOREVER)?;
+                result
+            }) {
+                Ok(result) => return Poll::Ready(Ok(result?)),
+                Err(_would_block) => continue,
+            }
+        }
     }
 
     /// Writes data from `buf` to the UART.
@@ -114,7 +134,7 @@ impl Uart for SerialPortUart {
         let mut port = self.port.borrow_mut();
         let mut idx = 0;
         while idx < buf.len() {
-            match port.write(&buf[idx..]) {
+            match port.get_mut().write(&buf[idx..]) {
                 Ok(n) => idx += n,
                 Err(ioerr) if ioerr.kind() == ErrorKind::TimedOut => {
                     // Buffers are full, file descriptor is non-blocking.  Explicitly wait for
@@ -135,23 +155,23 @@ impl Uart for SerialPortUart {
     }
 
     fn set_break(&self, enable: bool) -> Result<()> {
-        let port = self.port.borrow_mut();
+        let mut port = self.port.borrow_mut();
         if enable {
-            port.set_break()?;
+            port.get_mut().set_break()?;
         } else {
-            port.clear_break()?;
+            port.get_mut().clear_break()?;
         }
         Ok(())
     }
 
     fn set_parity(&self, parity: Parity) -> Result<()> {
-        self.port.borrow_mut().set_parity(parity)?;
+        self.port.borrow_mut().get_mut().set_parity(parity)?;
         Ok(())
     }
 
     /// Clears the UART RX buffer.
     fn clear_rx_buffer(&self) -> Result<()> {
-        self.port.borrow_mut().clear(ClearBuffer::Input)?;
+        self.port.borrow_mut().get_mut().clear(ClearBuffer::Input)?;
 
         // There might still be data in the device buffer, try to
         // drain that as well.
@@ -173,7 +193,7 @@ impl Uart for SerialPortUart {
     }
 
     fn register_nonblocking_read(&self, registry: &mio::Registry, token: mio::Token) -> Result<()> {
-        let port: &mut TTYPort = &mut self.port.borrow_mut();
+        let port = self.port.borrow_mut();
         registry.register(
             &mut mio::unix::SourceFd(&port.as_raw_fd()),
             token,
@@ -204,9 +224,6 @@ pub struct SoftwareFlowControl<T> {
 }
 
 impl<T: Uart> SoftwareFlowControl<T> {
-    /// See `SerialPortUart::FOREVER`.
-    const FOREVER: Duration = Duration::from_secs(100 * 365 * 86400);
-
     /// Open the given serial device, such as `/dev/ttyUSB0`.
     pub fn new(inner: T) -> Self {
         SoftwareFlowControl {
@@ -216,12 +233,12 @@ impl<T: Uart> SoftwareFlowControl<T> {
         }
     }
 
-    fn read_worker(&self, timeout: Duration) -> Result<()> {
+    /// Attempt to read more data into the buffer, and handle flow control characters.
+    ///
+    /// This may not add more data to the buffer if all characters are flow control.
+    fn poll_read_to_buffer(&self, cx: &mut Context<'_>) -> Poll<Result<()>> {
         let mut buf = [0u8; 256];
-        let len = self
-            .inner
-            .read_timeout(&mut buf, timeout)
-            .context("UART read error")?;
+        let len = ready!(self.inner.poll_read(cx, &mut buf)).context("UART read error")?;
 
         for &ch in &buf[..len] {
             if self.flow_control.get() != FlowControl::None {
@@ -237,7 +254,7 @@ impl<T: Uart> SoftwareFlowControl<T> {
             }
             self.rxbuf.borrow_mut().push_back(ch);
         }
-        Ok(())
+        Poll::Ready(Ok(()))
     }
 }
 
@@ -269,14 +286,12 @@ impl<T: Uart> Uart for SoftwareFlowControl<T> {
         self.inner.get_device_path()
     }
 
-    /// Reads UART receive data into `buf`, returning the number of bytes read.
-    /// The `timeout` may be used to specify a duration to wait for data.
-    fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
+    fn poll_read(&self, cx: &mut Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
         let mut rxbuf = self.rxbuf.borrow_mut();
 
-        if rxbuf.is_empty() {
+        while rxbuf.is_empty() {
             drop(rxbuf);
-            self.read_worker(timeout)?;
+            ready!(self.poll_read_to_buffer(cx))?;
             rxbuf = self.rxbuf.borrow_mut();
         }
 
@@ -291,13 +306,7 @@ impl<T: Uart> Uart for SoftwareFlowControl<T> {
 
         let copy_len = front_copy + back_copy;
         rxbuf.drain(..copy_len);
-        Ok(copy_len)
-    }
-
-    /// Reads UART receive data into `buf`, returning the number of bytes read.
-    /// This function _may_ block.
-    fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        self.read_timeout(buf, Self::FOREVER)
+        Poll::Ready(Ok(copy_len))
     }
 
     /// Writes data from `buf` to the UART.
@@ -318,7 +327,7 @@ impl<T: Uart> Uart for SoftwareFlowControl<T> {
             // If flow control is enabled, read data from the input stream and
             // process the flow control chars.
             loop {
-                self.read_worker(Duration::ZERO)?;
+                let _ = self.poll_read_to_buffer(&mut Context::from_waker(Waker::noop()))?;
                 // If we're ok to send, then break out of the flow-control loop and send the data.
                 if self.flow_control.get() == FlowControl::Resume {
                     break;

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, bail, ensure};
-use serde::{Deserialize, Serialize};
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::io;
@@ -11,8 +9,11 @@ use std::io::{BufWriter, ErrorKind, Read, Write};
 use std::net::{TcpStream, ToSocketAddrs};
 use std::os::unix::io::AsRawFd;
 use std::rc::Rc;
-use std::time::Duration;
+
+use anyhow::{Context, Result, bail, ensure};
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use tokio::io::AsyncWriteExt;
 
 use crate::bootstrap::BootstrapOptions;
 use crate::impl_serializable_error;
@@ -75,8 +76,8 @@ impl Proxy {
 
 struct UartRecord {
     pub uart: Rc<dyn Uart>,
-    pub pipe_sender: mio::unix::pipe::Sender,
-    pub pipe_receiver: mio::unix::pipe::Receiver,
+    pub pipe_sender: tokio::io::WriteHalf<tokio::io::SimplexStream>,
+    pub pipe_receiver: tokio::io::ReadHalf<tokio::io::SimplexStream>,
 }
 
 struct Inner {
@@ -104,12 +105,8 @@ impl Inner {
         }
     }
 
-    fn poll_for_async_data(&self, timeout: Option<Duration>) -> Result<()> {
-        if timeout == Some(Duration::from_millis(0)) {
-            self.recv_nonblocking()?;
-        } else {
-            self.recv_with_timeout(timeout)?;
-        }
+    fn poll_for_async_data(&self) -> Result<()> {
+        self.recv_nonblocking()?;
         while let Some(msg) = self.dequeue_json_response()? {
             match msg {
                 Message::Async { channel, msg } => self.process_async_data(channel, msg)?,
@@ -124,7 +121,9 @@ impl Inner {
             AsyncMessage::UartData { data } => {
                 if let Some(uart_instance) = self.uart_channel_map.borrow().get(&channel) {
                     if let Some(uart_record) = self.uarts.borrow_mut().get_mut(uart_instance) {
-                        uart_record.pipe_sender.write_all(&data)?;
+                        crate::util::runtime::block_on(async {
+                            uart_record.pipe_sender.write_all(&data).await
+                        })?;
                     }
                 }
             }
@@ -168,28 +167,6 @@ impl Inner {
             buf.drain(..idx - rc + newline_pos + 1);
             return Ok(result);
         }
-    }
-
-    fn recv_with_timeout(&self, timeout: Option<Duration>) -> Result<()> {
-        let mut conn = self.conn.borrow_mut();
-        conn.set_read_timeout(timeout)?;
-        let mut buf = self.recv_buf.borrow_mut();
-        let mut idx: usize = buf.len();
-        buf.resize(idx + 2048, 0);
-        match conn.read(&mut buf[idx..]) {
-            Ok(0) => {
-                anyhow::bail!(io::Error::new(
-                    ErrorKind::UnexpectedEof,
-                    "Server unexpectedly closed connection"
-                ))
-            }
-            Ok(rc) => idx += rc,
-            Err(ref e) if e.kind() == ErrorKind::WouldBlock => (),
-            Err(e) => anyhow::bail!(e),
-        }
-        buf.resize(idx, 0);
-        conn.set_read_timeout(None)?;
-        Ok(())
     }
 
     fn recv_nonblocking(&self) -> Result<()> {
@@ -351,8 +328,7 @@ impl Transport for Proxy {
         };
 
         let instance: Rc<dyn Uart> = Rc::new(uart::ProxyUart::open(self, instance_name)?);
-        let (pipe_sender, pipe_receiver) = mio::unix::pipe::new()?;
-        pipe_receiver.set_nonblocking(false)?;
+        let (pipe_receiver, pipe_sender) = tokio::io::simplex(65536);
 
         self.inner
             .uart_channel_map
@@ -417,7 +393,6 @@ impl NonblockingHelp for ProxyNonblockingHelp {
         Ok(())
     }
     fn nonblocking_help(&self) -> Result<()> {
-        self.inner
-            .poll_for_async_data(Some(Duration::from_millis(0)))
+        self.inner.poll_for_async_data()
     }
 }

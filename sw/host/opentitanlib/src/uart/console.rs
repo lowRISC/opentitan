@@ -2,17 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Result, anyhow, bail};
-use mio::{Events, Interest, Poll, Token};
+use anyhow::{Result, anyhow};
 use regex::{Captures, Regex};
 use std::fs::File;
-use std::io::{ErrorKind, Read, Write};
-use std::os::fd::{AsFd, AsRawFd};
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::io::Write;
+use std::os::fd::AsFd;
 use std::time::{Duration, Instant, SystemTime};
 
+use tokio::io::AsyncReadExt;
+
 use crate::io::console::{ConsoleDevice, ConsoleError};
-use crate::util::file;
 
 #[derive(Default)]
 pub struct UartConsole {
@@ -37,8 +36,8 @@ pub enum ExitStatus {
 }
 
 // Creates a vtable for implementors of Read and AsFd traits.
-pub trait ReadAsFd: Read + AsFd {}
-impl<T: Read + AsFd> ReadAsFd for T {}
+pub trait ReadAsFd: tokio::io::AsyncRead + AsFd + std::marker::Unpin {}
+impl<T: tokio::io::AsyncRead + AsFd + std::marker::Unpin> ReadAsFd for T {}
 
 impl UartConsole {
     const CTRL_B: u8 = 2;
@@ -49,8 +48,8 @@ impl UartConsole {
     pub fn interact<T>(
         &mut self,
         device: &T,
-        mut stdin: Option<&mut dyn ReadAsFd>,
-        mut stdout: Option<&mut dyn Write>,
+        stdin: Option<&mut dyn ReadAsFd>,
+        stdout: Option<&mut dyn Write>,
     ) -> Result<ExitStatus>
     where
         T: ConsoleDevice + ?Sized,
@@ -58,20 +57,12 @@ impl UartConsole {
         if let Some(timeout) = &self.timeout {
             self.deadline = Some(Instant::now() + *timeout);
         }
-        if device.supports_nonblocking_read()? {
-            return self.interact_mio(device, stdin, stdout);
-        }
-        loop {
-            match self.interact_once(device, &mut stdin, &mut stdout)? {
-                ExitStatus::None => {}
-                status => return Ok(status),
-            }
-        }
+        crate::util::runtime::block_on(self.interact_async(device, stdin, stdout))
     }
 
     // Runs an interactive console until CTRL_C is received.  Uses `mio` library to simultaneously
     // wait for data from UART or from stdin, without need for timeouts and repeated calls.
-    fn interact_mio<T>(
+    async fn interact_async<T>(
         &mut self,
         device: &T,
         mut stdin: Option<&mut dyn ReadAsFd>,
@@ -80,105 +71,51 @@ impl UartConsole {
     where
         T: ConsoleDevice + ?Sized,
     {
-        if self.exit_success.as_ref().map(|rx| rx.is_match("")) == Some(true) {
-            // For compatibility with non-mio implementation, an `exit_success` regexp which
-            // matches the empty string will result in a single read to clear any buffered
-            // characters.
-            self.uart_read(device, Duration::from_millis(10), &mut stdout)?;
-            return Ok(ExitStatus::ExitSuccess);
-        }
-
-        // HACK(nbdd0121): do a nonblocking read because the UART buffer may still have data in it.
-        // If we wait for mio event now, we might be blocking forever.
-        while self.uart_read(device, Duration::from_millis(0), &mut stdout)? {
-            if self
-                .exit_success
-                .as_ref()
-                .map(|rx| rx.is_match(&self.buffer))
-                == Some(true)
-            {
-                return Ok(ExitStatus::ExitSuccess);
-            }
-            if self
-                .exit_failure
-                .as_ref()
-                .map(|rx| rx.is_match(&self.buffer))
-                == Some(true)
-            {
-                return Ok(ExitStatus::ExitFailure);
-            }
-        }
-
-        let mut poll = Poll::new()?;
-        let transport_help_token = Self::get_next_token();
-        let nonblocking_help = device.nonblocking_help()?;
-        nonblocking_help.register_nonblocking_help(poll.registry(), transport_help_token)?;
-        let stdin_token = Self::get_next_token();
-        if stdin.is_some() {
-            poll.registry().register(
-                &mut mio::unix::SourceFd(&stdin.as_mut().unwrap().as_fd().as_raw_fd()),
-                stdin_token,
-                Interest::READABLE,
-            )?;
-        }
-        let uart_token = Self::get_next_token();
-        device.register_nonblocking_read(poll.registry(), uart_token)?;
-
-        let mut events = Events::with_capacity(2);
-        loop {
-            let now = Instant::now();
-            let poll_timeout = if let Some(deadline) = &self.deadline {
-                if now >= *deadline {
-                    return Ok(ExitStatus::Timeout);
-                }
-                Some(*deadline - now)
+        let mut break_en = self.break_en;
+        let deadline = self.deadline;
+        let tx = async {
+            if let Some(stdin) = stdin.as_mut() {
+                Self::process_input(&mut break_en, device, stdin).await
             } else {
-                None
-            };
-            match poll.poll(&mut events, poll_timeout) {
-                Ok(()) => (),
-                Err(err) if err.kind() == ErrorKind::Interrupted => {
-                    continue;
-                }
-                Err(err) => bail!("poll: {}", err),
+                std::future::pending().await
             }
-            for event in events.iter() {
-                if event.token() == transport_help_token {
-                    nonblocking_help.nonblocking_help()?;
-                } else if event.token() == stdin_token {
-                    match self.process_input(device, &mut stdin)? {
-                        ExitStatus::None => {}
-                        status => return Ok(status),
-                    }
-                } else if event.token() == uart_token {
-                    // `mio` convention demands that we keep reading until a read returns zero
-                    // bytes, otherwise next `poll()` is not guaranteed to notice more data.
-                    while self.uart_read(device, Duration::from_millis(1), &mut stdout)? {
-                        if self
-                            .exit_success
-                            .as_ref()
-                            .map(|rx| rx.is_match(&self.buffer))
-                            == Some(true)
-                        {
-                            return Ok(ExitStatus::ExitSuccess);
-                        }
-                        if self
-                            .exit_failure
-                            .as_ref()
-                            .map(|rx| rx.is_match(&self.buffer))
-                            == Some(true)
-                        {
-                            return Ok(ExitStatus::ExitFailure);
-                        }
-                    }
+        };
+        let rx = async {
+            loop {
+                self.uart_read(device, &mut stdout).await?;
+                if self
+                    .exit_success
+                    .as_ref()
+                    .map(|rx| rx.is_match(&self.buffer))
+                    == Some(true)
+                {
+                    return Ok(ExitStatus::ExitSuccess);
+                }
+                if self
+                    .exit_failure
+                    .as_ref()
+                    .map(|rx| rx.is_match(&self.buffer))
+                    == Some(true)
+                {
+                    return Ok(ExitStatus::ExitFailure);
                 }
             }
-        }
-    }
+        };
+        let deadline = async {
+            if let Some(deadline) = deadline {
+                tokio::time::sleep_until(tokio::time::Instant::from_std(deadline)).await;
+            } else {
+                std::future::pending().await
+            }
+        };
 
-    fn get_next_token() -> Token {
-        static TOKEN_COUNTER: AtomicUsize = AtomicUsize::new(0);
-        Token(TOKEN_COUNTER.fetch_add(1, Ordering::Relaxed))
+        let r = tokio::select! {
+            v = tx => v,
+            v = rx => v,
+            _ = deadline => Ok(ExitStatus::Timeout),
+        };
+        self.break_en = break_en;
+        r
     }
 
     /// Returns `true` if any regular expressions are used to match the streamed output.  If so,
@@ -198,12 +135,7 @@ impl UartConsole {
     }
 
     // Read from the console device and process the data read.
-    fn uart_read<T>(
-        &mut self,
-        device: &T,
-        timeout: Duration,
-        stdout: &mut Option<&mut dyn Write>,
-    ) -> Result<bool>
+    async fn uart_read<T>(&mut self, device: &T, stdout: &mut Option<&mut dyn Write>) -> Result<()>
     where
         T: ConsoleDevice + ?Sized,
     {
@@ -215,10 +147,7 @@ impl UartConsole {
         } else {
             &mut buf
         };
-        let len = device.console_read(effective_buf, timeout)?;
-        if len == 0 {
-            return Ok(false);
-        }
+        let len = std::future::poll_fn(|cx| device.console_poll_read(cx, effective_buf)).await?;
         for i in 0..len {
             if self.timestamp && self.newline {
                 let t = humantime::format_rfc3339_millis(SystemTime::now());
@@ -241,93 +170,42 @@ impl UartConsole {
         if self.uses_regex() {
             self.append_buffer(&buf[..len]);
         }
-        Ok(true)
+        Ok(())
     }
 
-    fn process_input<T>(
-        &mut self,
+    async fn process_input<T>(
+        break_en: &mut bool,
         device: &T,
-        stdin: &mut Option<&mut (dyn ReadAsFd)>,
+        stdin: &mut dyn ReadAsFd,
     ) -> Result<ExitStatus>
     where
         T: ConsoleDevice + ?Sized,
     {
-        if let Some(ref mut input) = stdin.as_mut() {
-            while file::wait_read_timeout(&input.as_fd(), Duration::from_millis(0)).is_ok() {
-                let mut buf = [0u8; 256];
-                let len = input.read(&mut buf)?;
-                if len == 1 {
-                    if buf[0] == UartConsole::CTRL_C {
-                        return Ok(ExitStatus::CtrlC);
-                    }
-                    if buf[0] == UartConsole::CTRL_B {
-                        self.break_en = !self.break_en;
-                        eprint!(
-                            "\r\n{} break",
-                            if self.break_en { "Setting" } else { "Clearing" }
-                        );
-                        let b = device.set_break(self.break_en);
-                        if b.is_err() {
-                            eprint!(": {:?}", b);
-                        }
-                        eprint!("\r\n");
-                        break;
-                    }
+        loop {
+            let mut buf = [0u8; 256];
+            let len = stdin.read(&mut buf).await?;
+            if len == 1 {
+                if buf[0] == UartConsole::CTRL_C {
+                    return Ok(ExitStatus::CtrlC);
                 }
-                if len > 0 {
-                    device.console_write(&buf[..len])?;
-                } else {
-                    break;
+                if buf[0] == UartConsole::CTRL_B {
+                    *break_en = !*break_en;
+                    eprint!(
+                        "\r\n{} break",
+                        if *break_en { "Setting" } else { "Clearing" }
+                    );
+                    let b = device.set_break(*break_en);
+                    if b.is_err() {
+                        eprint!(": {:?}", b);
+                    }
+                    eprint!("\r\n");
+                    continue;
                 }
             }
-        }
-        Ok(ExitStatus::None)
-    }
-
-    fn interact_once<T>(
-        &mut self,
-        device: &T,
-        stdin: &mut Option<&mut (dyn ReadAsFd)>,
-        stdout: &mut Option<&mut dyn Write>,
-    ) -> Result<ExitStatus>
-    where
-        T: ConsoleDevice + ?Sized,
-    {
-        if let Some(deadline) = &self.deadline {
-            if Instant::now() > *deadline {
-                return Ok(ExitStatus::Timeout);
+            if len > 0 {
+                device.console_write(&buf[..len])?;
             }
         }
-        // This _should_ really use unix `poll` in the conventional way
-        // to learn when the console or uart file descriptors become ready,
-        // but some UART backends will bury their implementation in libusb
-        // and make discovering the file descriptor difficult or impossible.
-        //
-        // As a pragmatic implementation detail, we wait for the UART
-        // for a short period of time and then service the console.
-        //
-        // TODO: as we write more backends, re-evaluate whether there is a
-        // better way to approach waiting on the UART and keyboard.
-
-        // Check for input on the uart.
-        self.uart_read(device, Duration::from_millis(10), stdout)?;
-        if self
-            .exit_success
-            .as_ref()
-            .map(|rx| rx.is_match(&self.buffer))
-            == Some(true)
-        {
-            return Ok(ExitStatus::ExitSuccess);
-        }
-        if self
-            .exit_failure
-            .as_ref()
-            .map(|rx| rx.is_match(&self.buffer))
-            == Some(true)
-        {
-            return Ok(ExitStatus::ExitFailure);
-        }
-        self.process_input(device, stdin)
     }
 
     pub fn captures(&self, status: ExitStatus) -> Option<Captures> {
