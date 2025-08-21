@@ -44,7 +44,9 @@ class mbx_env_cfg extends cip_base_env_cfg #(
     // RoT-side SRAM interface. This has no RAL because it is a Device-mode TL agent
     // and thus we manage the agent and its configuration ourselves.
     `uvm_create_obj(tl_agent_cfg, m_tl_agent_sram_cfg)
-    m_tl_agent_sram_cfg.max_outstanding_req = 16;
+    // The DUT logic will send up to 4 overlapped read/write requests, which it counts
+    // internally.
+    m_tl_agent_sram_cfg.max_outstanding_req = 4;
     m_tl_agent_sram_cfg.if_mode = dv_utils_pkg::Device;
 
     // The mailbox must be able to handle combinational devices too, i.e. those
