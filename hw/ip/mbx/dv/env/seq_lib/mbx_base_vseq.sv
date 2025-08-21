@@ -558,13 +558,16 @@ class mbx_base_vseq extends cip_base_vseq #(
             bit done = 1'b0;
             fork
               begin
+                // Get the full TL-UL address of the RDATA mem window on the SoC bus.
+                uvm_reg_addr_t rdata_addr;
+                rdata_addr = m_mbx_soc_ral.get_addr_from_offset(mbx_reg_pkg::MBX_RDATA_OFFSET);
                 // Collect the entire message before checking it.
                 // Note: this may not be the best approach unless we can time out in the event of a
                 // lock up in the provision of new RDATA values.
                 for(int unsigned ii = 0; ii < rsp_size && !done; ii++) begin
                   // Read from RDATA to collect the next message word
-                  tl_access(.addr(cfg.ral.get_addr_from_offset(mbx_reg_pkg::MBX_RDATA_OFFSET)),
-                            .write(1'b0), .data(rd_data), .mask(4'hF), .compare_mask(0),
+                  tl_access(.addr(rdata_addr), .write(1'b0), .data(rd_data), .mask(4'hF),
+                            .compare_mask(0),
                             .blocking(1'b1),
                             .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.mbx_soc_ral_name]));
 
@@ -574,8 +577,8 @@ class mbx_base_vseq extends cip_base_vseq #(
 
                   // Write anything to RDATA to advance to the next word.
                   wr_data = $urandom;
-                  tl_access(.addr(cfg.ral.get_addr_from_offset(mbx_reg_pkg::MBX_RDATA_OFFSET)),
-                            .write(1'b1), .data(wr_data), .mask(4'hF), .blocking(rdata_wr_blocking),
+                  tl_access(.addr(rdata_addr), .write(1'b1), .data(wr_data), .mask(4'hF),
+                            .blocking(rdata_wr_blocking),
                             .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.mbx_soc_ral_name]));
                 end
                 `uvm_info(`gfn, "READ all DATA from SoC side", UVM_HIGH);
