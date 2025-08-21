@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, bail, Context, Result};
+use anyhow::{Context, Result, anyhow, bail};
 use clap::Parser;
 use directories::{BaseDirs, ProjectDirs};
 use erased_serde::Serialize;
 use log::LevelFilter;
 use rustix::process::{Pid, Signal};
-use std::env::{self, args_os, ArgsOs};
+use std::env::{self, ArgsOs, args_os};
 use std::ffi::OsString;
-use std::fs::{self, read_to_string, File};
+use std::fs::{self, File, read_to_string};
 use std::io::{self, ErrorKind, Write};
 use std::iter::Iterator;
 use std::path::PathBuf;

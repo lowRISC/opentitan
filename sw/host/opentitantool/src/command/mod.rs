@@ -38,8 +38,8 @@ use serde_annotate::Annotate;
 use std::any::Any;
 use std::time::Duration;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 
 #[derive(Debug, Args)]
 /// No Operation.

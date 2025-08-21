@@ -9,8 +9,8 @@ use serde_annotate::Annotate;
 use sha2::{Digest, Sha256};
 use std::convert::TryFrom;
 
-use super::boot_svc::BootSlot;
 use super::ChipDataError;
+use super::boot_svc::BootSlot;
 use crate::with_unknown;
 
 with_unknown! {

@@ -9,8 +9,8 @@ use std::any::Any;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::io::emu::{EmuState, EmuValue};
 use opentitanlib::transport::Capability;
 

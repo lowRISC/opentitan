@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
@@ -10,12 +10,12 @@ use std::fs::{self, File};
 use std::io::Write;
 use std::path::PathBuf;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use ot_certs::cwt;
-use ot_certs::template::subst::{Subst, SubstData};
-use ot_certs::template::Template;
+use opentitanlib::app::command::CommandDispatch;
 use ot_certs::CertFormat;
+use ot_certs::cwt;
+use ot_certs::template::Template;
+use ot_certs::template::subst::{Subst, SubstData};
 use ot_certs::{codegen, x509};
 
 fn load_template(path: &PathBuf) -> Result<Template> {
@@ -151,7 +151,9 @@ impl CommandDispatch for GenCertCommand {
         let data = self.subst.as_ref().map(load_subst).transpose()?;
         // Warn user if there is no substitution data and variables.
         if !template.variables.is_empty() && data.is_none() {
-            bail!("the template contains variable so you must specify some substition data using --subst")
+            bail!(
+                "the template contains variable so you must specify some substition data using --subst"
+            )
         }
         // Substitute
         let template = if let Some(data) = data {

@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::util::parse_int::ParseInt;
-use opentitanlib::util::status::{load_elf, Status};
+use opentitanlib::util::status::{Status, load_elf};
 
 #[derive(Debug, Subcommand, CommandDispatch)]
 /// Commands for interacting with status.

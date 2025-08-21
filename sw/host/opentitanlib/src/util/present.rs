@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use std::convert::TryInto;
 
 /// PRESENT block cipher.

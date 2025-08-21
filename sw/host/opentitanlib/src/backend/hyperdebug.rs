@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::transport::hyperdebug::{Flavor, Hyperdebug, HyperdebugDfu};
 use crate::transport::Transport;
+use crate::transport::hyperdebug::{Flavor, Hyperdebug, HyperdebugDfu};
 use anyhow::Result;
 
 use crate::backend::BackendOpts;

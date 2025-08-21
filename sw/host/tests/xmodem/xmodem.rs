@@ -9,7 +9,7 @@
 use std::io::Write;
 use std::os::raw::c_void;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 
 use opentitanlib::io::uart::Uart;
 use opentitanlib::with_unknown;

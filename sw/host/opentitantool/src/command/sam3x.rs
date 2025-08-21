@@ -7,8 +7,8 @@ use clap::Args;
 use serde_annotate::Annotate;
 use std::any::Any;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::transport::chip_whisperer;
 
 /// Resets the SAM3X chip on the Chip Whisperer FPGA board.

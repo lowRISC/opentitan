@@ -9,8 +9,8 @@ use std::any::Any;
 use std::fs;
 use std::path::PathBuf;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::util::parse_int::ParseInt;
 use opentitanlib::util::usr_access::{usr_access_crc32, usr_access_set};
 

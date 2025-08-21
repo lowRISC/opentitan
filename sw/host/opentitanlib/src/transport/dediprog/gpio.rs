@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
+use anyhow::{Result, ensure};
 use once_cell::sync::Lazy;
 use std::cell::RefCell;
 use std::collections::HashMap;

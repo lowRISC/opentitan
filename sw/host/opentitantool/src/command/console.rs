@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::Args;
 use regex::Regex;
 use serde_annotate::Annotate;
@@ -10,8 +10,8 @@ use std::any::Any;
 use std::fs::File;
 use std::time::Duration;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::io::uart::UartParams;
 use opentitanlib::transport::Capability;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};

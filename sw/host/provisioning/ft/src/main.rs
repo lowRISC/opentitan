@@ -6,11 +6,11 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use base64ct::{Base64, Encoding};
 use clap::{Args, Parser};
-use elliptic_curve::pkcs8::DecodePrivateKey;
 use elliptic_curve::SecretKey;
+use elliptic_curve::pkcs8::DecodePrivateKey;
 use p256::NistP256;
 
 use cert_lib::{CaConfig, CaKey, CaKeyType};
@@ -26,7 +26,7 @@ use opentitanlib::test_utils::lc::read_lc_state;
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
 use ujson_lib::provisioning_data::{ManufCertgenInputs, ManufFtIndividualizeData};
 use util_lib::{
-    encrypt_token, hex_string_to_u32_arrayvec, hex_string_to_u8_arrayvec, load_rsa_public_key,
+    encrypt_token, hex_string_to_u8_arrayvec, hex_string_to_u32_arrayvec, load_rsa_public_key,
     random_token,
 };
 

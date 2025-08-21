@@ -5,14 +5,14 @@
 use std::any::Any;
 use std::time::Duration;
 
-use anyhow::{ensure, Result};
+use anyhow::{Result, ensure};
 use clap::{Args, Subcommand};
 use hex::decode;
 use humantime::parse_duration;
 use serde_annotate::Annotate;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, DifLcCtrlToken, LcCtrlReg, LcCtrlStatus};
 use opentitanlib::io::jtag::{Jtag, JtagParams, JtagTap};
 use opentitanlib::test_utils::lc_transition::{trigger_lc_transition, trigger_volatile_raw_unlock};

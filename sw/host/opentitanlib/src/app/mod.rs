@@ -20,18 +20,18 @@ use crate::io::nonblocking_help::NonblockingHelp;
 use crate::io::spi::{Target, TransferMode};
 use crate::io::uart::Uart;
 use crate::transport::{
-    ioexpander, Capability, MaintainConnection, ProgressIndicator, ProxyOps, Transport,
-    TransportError, TransportInterfaceType,
+    Capability, MaintainConnection, ProgressIndicator, ProxyOps, Transport, TransportError,
+    TransportInterfaceType, ioexpander,
 };
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use indicatif::{ProgressBar, ProgressStyle};
 use serde_annotate::Annotate;
 use serialport::Parity;
 use std::any::Any;
 use std::cell::{Cell, RefCell};
-use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::collections::hash_map::Entry;
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::time::Duration;

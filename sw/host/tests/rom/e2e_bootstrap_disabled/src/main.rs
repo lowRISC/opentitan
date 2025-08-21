@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #![allow(clippy::bool_assert_comparison)]
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use clap::Parser;
 use regex::Regex;
 use std::time::Duration;

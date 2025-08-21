@@ -11,7 +11,7 @@
 use std::mem;
 use std::time::Duration;
 
-use anyhow::{bail, Context};
+use anyhow::{Context, bail};
 use thiserror::Error;
 
 use top_earlgrey::top_earlgrey;

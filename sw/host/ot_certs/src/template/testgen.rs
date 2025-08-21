@@ -5,7 +5,7 @@
 //! This module provides functionality to generate substitute data for template
 //! to test corner cases of the certificate generator.
 
-use anyhow::{ensure, Result};
+use anyhow::{Result, ensure};
 use rand::distributions::{DistString, Distribution, Uniform};
 
 use openssl::bn::{BigNum, BigNumContext};

@@ -9,7 +9,7 @@ use directories::ProjectDirs;
 use log::LevelFilter;
 use serde_annotate::Annotate;
 use serde_annotate::ColorProfile;
-use std::env::{args_os, ArgsOs};
+use std::env::{ArgsOs, args_os};
 use std::ffi::OsString;
 use std::io::ErrorKind;
 use std::io::IsTerminal;
@@ -19,8 +19,8 @@ use std::rc::Rc;
 use std::str::FromStr;
 
 mod command;
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::backend;
 use opentitanlib::transport::MaintainConnection;
 

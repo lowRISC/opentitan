@@ -8,7 +8,7 @@ use crate::util::bigint::fixed_size_bigint;
 use crate::util::num_de::HexEncoded;
 use crate::util::parse_int::ParseInt;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
 use std::fmt;

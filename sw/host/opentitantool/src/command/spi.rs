@@ -13,7 +13,7 @@ use std::time::Duration;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::{StagedProgressBar, TransportWrapper};
-use opentitanlib::io::eeprom::{AddressMode, Transaction, MODE_111};
+use opentitanlib::io::eeprom::{AddressMode, MODE_111, Transaction};
 use opentitanlib::io::spi::{SpiParams, Transfer};
 use opentitanlib::spiflash::{EraseMode, ReadMode, SpiFlash};
 use opentitanlib::tpm;

@@ -8,7 +8,7 @@ use anyhow::Result;
 use clap::Parser;
 
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::debug::dmi::{consts, DmiDebugger, OpenOcdDmi};
+use opentitanlib::debug::dmi::{DmiDebugger, OpenOcdDmi, consts};
 use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(clippy::bool_assert_comparison)]
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use base64ct::{Base64, Decoder};
 use clap::Parser;
 use num_bigint_dig::BigUint;

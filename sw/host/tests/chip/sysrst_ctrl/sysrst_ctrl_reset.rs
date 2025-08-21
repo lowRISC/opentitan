@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
+use anyhow::{Result, ensure};
 use clap::Parser;
 use once_cell::sync::Lazy;
 use std::path::PathBuf;
@@ -16,7 +16,7 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::test_status::TestStatus;
 use opentitanlib::uart::console::UartConsole;
 
-use sysrst_ctrl::{set_pins, setup_pins, Config};
+use sysrst_ctrl::{Config, set_pins, setup_pins};
 
 #[derive(Debug, Parser)]
 struct Opts {

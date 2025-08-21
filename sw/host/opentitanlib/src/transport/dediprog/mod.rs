@@ -4,15 +4,15 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde_annotate::Annotate;
 use serialport::SerialPortType;
 use std::any::Any;
 use std::cell::RefCell;
-use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::collections::hash_map::Entry;
 use std::rc::Rc;
 
 use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
@@ -252,11 +252,7 @@ impl Dediprog {
         ];
 
         let protocol_version = if product == "SF100" || product == "SF200" {
-            if version < [5, 5, 0] {
-                1
-            } else {
-                2
-            }
+            if version < [5, 5, 0] { 1 } else { 2 }
         } else if product == "SF600" {
             if version < [6, 9, 0] {
                 1

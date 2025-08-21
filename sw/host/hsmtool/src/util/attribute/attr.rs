@@ -400,7 +400,10 @@ mod tests {
         // Currently, the best way to check that the attributes have the
         // expected values is to check the output of the Debug trait.
         let result = format!("{:x?}", a);
-        assert_eq!(result, "[Copyable(true), ModulusBits(Ulong { val: c00 }), Label([66, 6f, 6f]), ObjectId([12, 34, 56, 78]), CertificateType(CertificateType { val: 0 }), Class(ObjectClass { val: 1 }), KeyType(KeyType { val: 0 }), KeyGenMechanism(MechanismType { val: 1 }), AllowedMechanisms([MechanismType { val: 1 }, MechanismType { val: 0 }]), StartDate(Date { date: CK_DATE { year: [32, 30, 32, 33], month: [30, 32], day: [31, 35] } })]");
+        assert_eq!(
+            result,
+            "[Copyable(true), ModulusBits(Ulong { val: c00 }), Label([66, 6f, 6f]), ObjectId([12, 34, 56, 78]), CertificateType(CertificateType { val: 0 }), Class(ObjectClass { val: 1 }), KeyType(KeyType { val: 0 }), KeyGenMechanism(MechanismType { val: 1 }), AllowedMechanisms([MechanismType { val: 1 }, MechanismType { val: 0 }]), StartDate(Date { date: CK_DATE { year: [32, 30, 32, 33], month: [30, 32], day: [31, 35] } })]"
+        );
         Ok(())
     }
 }

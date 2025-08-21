@@ -5,8 +5,8 @@
 use anyhow::Result;
 use clap::Args;
 
-use crate::transport::proxy::Proxy;
 use crate::transport::Transport;
+use crate::transport::proxy::Proxy;
 
 #[derive(Debug, Args)]
 pub struct ProxyOpts {

@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
+use anyhow::{Result, ensure};
 use serde_annotate::Annotate;
 use serialport::SerialPortType;
 use std::any::Any;
 use std::cell::RefCell;
-use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::collections::hash_map::Entry;
 use std::rc::Rc;
 
 use crate::io::gpio::GpioPin;

@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
 use std::cmp::Ordering;
 use std::io::{Read, Write};
 
+use crate::crypto::Error;
 use crate::crypto::ecdsa::EcdsaRawPublicKey;
 use crate::crypto::rsa::RsaRawPublicKey;
 use crate::crypto::spx::SpxRawPublicKey;
-use crate::crypto::Error;
 use crate::util::serde::string_or_struct;
 use crate::with_unknown;
 

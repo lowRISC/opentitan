@@ -374,13 +374,15 @@ mod tests {
 
     #[test]
     fn missing_name() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {};
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
@@ -409,42 +411,48 @@ mod tests {
 
     #[test]
     fn missing_field_name() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 uint32_t;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn char_field() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 char is_not_allowed;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn bad_annotation() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 // cryptotest:omelette
                 uint32_t something;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
@@ -571,41 +579,47 @@ mod tests {
 
     #[test]
     fn missing_vec_field_name() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 uint32_t[4];
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn transposed_vec_field_name() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 uint32_t[4] foo;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn non_literal_vec_len() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 uint32_t foo[kLen];
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
@@ -641,41 +655,47 @@ mod tests {
 
     #[test]
     fn missing_cstr_const() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 char *mut_str;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn missing_cstr_star() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 const char mut_str;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn cstr_right_const() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 char *const mut_str;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
@@ -712,8 +732,9 @@ mod tests {
 
     #[test]
     fn missing_int_array_const() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -721,14 +742,16 @@ mod tests {
                 uint32_t *mut;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn mystery_len() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -736,8 +759,9 @@ mod tests {
                 uint32_t *mut;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
@@ -774,8 +798,9 @@ mod tests {
 
     #[test]
     fn missing_vec_array_const() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -783,14 +808,16 @@ mod tests {
                 uint32_t (*keys)[32];
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn missing_vec_array_star() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -798,14 +825,16 @@ mod tests {
                 uint32_t (keys)[32];
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn missing_vec_array_parens() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -813,8 +842,9 @@ mod tests {
                 uint32_t *keys[32];
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
@@ -851,8 +881,9 @@ mod tests {
 
     #[test]
     fn missing_cstr_array_inner_const() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -860,14 +891,16 @@ mod tests {
                 char* const* sonnets;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn missing_cstr_array_outer_const() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -875,14 +908,16 @@ mod tests {
                 const char** sonnets;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn missing_cstr_array_outer_star() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -890,14 +925,16 @@ mod tests {
                 const char* const sonnets;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn missing_cstr_array_inner_star() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -905,7 +942,8 @@ mod tests {
                 const char const* sonnets;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 }
