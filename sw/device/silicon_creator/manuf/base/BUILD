@@ -287,8 +287,8 @@ manifest(d = {
     "manuf_state_creator": hex(CONST.MANUF_STATE.PERSO_INITIAL),
     "visibility": ["//visibility:private"],
     "version_major": "0",
-    # Release: 2025-07-10-RC00
-    "version_minor": "2025071000",
+    # Release: 2025-08-20-RC00
+    "version_minor": "2025082000",
     "security_version": "0xFFFFFFFF",
 })
 
