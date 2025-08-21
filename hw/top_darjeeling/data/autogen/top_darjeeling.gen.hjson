@@ -481,7 +481,6 @@
             pinmux_aon
             aon_timer_aon
             ast
-            soc_proxy.core
             soc_dbg_ctrl.core
             sram_ctrl_ret_aon
             rv_plic
@@ -2944,7 +2943,7 @@
           struct: logic
           type: uni
           act: rcv
-          width: 4
+          width: 3
           inst_name: pwrmgr_aon
           default: ""
           package: ""
@@ -3982,10 +3981,6 @@
       ]
       base_addrs:
       {
-        core:
-        {
-          hart: 0x22030000
-        }
         ctn:
         {
           hart: 0x40000000
@@ -4074,18 +4069,6 @@
           index: -1
         }
         {
-          name: wkup_internal_req
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: soc_proxy
-          default: ""
-          package: ""
-          top_signame: pwrmgr_aon_wakeups
-          index: 2
-        }
-        {
           name: wkup_external_req
           struct: logic
           type: uni
@@ -4095,7 +4078,7 @@
           default: ""
           package: ""
           top_signame: pwrmgr_aon_wakeups
-          index: 3
+          index: 2
         }
         {
           name: rst_req_external
@@ -4207,36 +4190,6 @@
           index: -1
         }
         {
-          name: soc_fatal_alert
-          desc: Differential fatal alert from SoC, synchronous
-          struct: soc_alert
-          package: soc_proxy_pkg
-          type: req_rsp
-          act: rsp
-          width: 24
-          inst_name: soc_proxy
-          default: ""
-          external: true
-          top_signame: soc_fatal_alert
-          conn_type: false
-          index: -1
-        }
-        {
-          name: soc_recov_alert
-          desc: Differential recoverable alert from SoC, synchronous
-          struct: soc_alert
-          package: soc_proxy_pkg
-          type: req_rsp
-          act: rsp
-          width: 4
-          inst_name: soc_proxy
-          default: ""
-          external: true
-          top_signame: soc_recov_alert
-          conn_type: false
-          index: -1
-        }
-        {
           name: soc_wkup_async
           desc: Wakeup request from SoC, asynchronous, level-encoded
           struct: logic
@@ -4263,21 +4216,6 @@
           package: ""
           external: true
           top_signame: soc_rst_req_async
-          conn_type: false
-          index: -1
-        }
-        {
-          name: soc_intr_async
-          desc: Interrupt request from SoC, asynchronous, level-encoded
-          struct: logic
-          type: uni
-          act: rcv
-          width: 32
-          inst_name: soc_proxy
-          default: ""
-          package: ""
-          external: true
-          top_signame: soc_intr_async
           conn_type: false
           index: -1
         }
@@ -4324,19 +4262,6 @@
           external: true
           top_signame: integrator_id
           conn_type: false
-          index: -1
-        }
-        {
-          name: core_tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: soc_proxy
-          default: ""
-          end_idx: -1
-          top_signame: soc_proxy_core_tl
           index: -1
         }
         {
@@ -12014,7 +11939,6 @@
       [
         pinmux_aon.pin_wkup_req
         aon_timer_aon.wkup_req
-        soc_proxy.wkup_internal_req
         soc_proxy.wkup_external_req
       ]
       pwrmgr_aon.rstreqs:
@@ -12061,10 +11985,6 @@
       main.tl_peri:
       [
         peri.tl_main
-      ]
-      soc_proxy.core_tl:
-      [
-        main.tl_soc_proxy__core
       ]
       soc_proxy.ctn_tl:
       [
@@ -12493,11 +12413,8 @@
       rv_core_ibex.fpga_info: fpga_info
       soc_proxy.misc_tl_h2d: ctn_misc_tl_h2d
       soc_proxy.misc_tl_d2h: ctn_misc_tl_d2h
-      soc_proxy.soc_fatal_alert: soc_fatal_alert
-      soc_proxy.soc_recov_alert: soc_recov_alert
       soc_proxy.soc_wkup_async: soc_wkup_async
       soc_proxy.soc_rst_req_async: soc_rst_req_async
-      soc_proxy.soc_intr_async: soc_intr_async
       soc_proxy.soc_lsio_trigger: soc_lsio_trigger
       soc_proxy.soc_gpi_async: soc_gpi_async
       soc_proxy.soc_gpo_async: soc_gpo_async
@@ -12580,7 +12497,6 @@
           sram_ctrl_mbox.ram
           sram_ctrl_mbox.regs
           soc_proxy.ctn
-          soc_proxy.core
           dma
           mbx0.core
           mbx1.core
@@ -12618,7 +12534,6 @@
           sram_ctrl_mbox.ram
           sram_ctrl_mbox.regs
           soc_proxy.ctn
-          soc_proxy.core
           dma
           mbx0.core
           mbx1.core
@@ -12878,28 +12793,6 @@
               size_byte: 0x800000
             }
           ]
-        }
-        {
-          name: soc_proxy.core
-          type: device
-          clock: clk_main_i
-          reset: rst_main_ni
-          req_fifo_pass: false
-          rsp_fifo_pass: false
-          inst_type: soc_proxy
-          addr_range:
-          [
-            {
-              base_addrs:
-              {
-                hart: 0x22030000
-              }
-              size_byte: 0x10
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline: true
         }
         {
           name: soc_proxy.ctn
@@ -13908,18 +13801,6 @@
           default: ""
           end_idx: -1
           top_signame: main_tl_peri
-          index: -1
-        }
-        {
-          name: tl_soc_proxy__core
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          inst_name: main
-          width: 1
-          default: ""
-          top_signame: soc_proxy_core_tl
           index: -1
         }
         {
@@ -18336,11 +18217,6 @@
       module: aon_timer_aon
     }
     {
-      name: wkup_internal_req
-      width: "1"
-      module: soc_proxy
-    }
-    {
       name: wkup_external_req
       width: "1"
       module: soc_proxy
@@ -18580,325 +18456,6 @@
       desc: aon_timer_aon fatal_fault alert
       lpg_name: timers_lc_io_div4_Aon
       lpg_idx: 8
-    }
-    {
-      name: soc_proxy_fatal_alert_intg
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_intg alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_0
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_0 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_1
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_1 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_2
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_2 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_3
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_3 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_4
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_4 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_5
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_5 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_6
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_6 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_7
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_7 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_8
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_8 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_9
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_9 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_10
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_10 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_11
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_11 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_12
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_12 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_13
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_13 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_14
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_14 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_15
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_15 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_16
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_16 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_17
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_17 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_18
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_18 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_19
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_19 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_20
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_20 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_21
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_21 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_22
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_22 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_23
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_23 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_recov_alert_external_0
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy recov_alert_external_0 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_recov_alert_external_1
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy recov_alert_external_1 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_recov_alert_external_2
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy recov_alert_external_2 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_recov_alert_external_3
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: soc_proxy
-      desc: soc_proxy recov_alert_external_3 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
     }
     {
       name: sram_ctrl_ret_aon_fatal_error
@@ -20050,18 +19607,6 @@
       outgoing: false
     }
     {
-      name: soc_proxy_external
-      width: 32
-      type: interrupt
-      module_name: soc_proxy
-      desc: soc_proxy external interrupt
-      intr_type: IntrType.Event
-      default_val: false
-      incoming: false
-      plic: rv_plic
-      outgoing: false
-    }
-    {
       name: hmac_hmac_done
       width: 1
       type: interrupt
@@ -20738,7 +20283,6 @@
     clkmgr_aon
     pinmux_aon
     aon_timer_aon
-    soc_proxy
     sram_ctrl_ret_aon
     rv_dm
     rv_plic
@@ -20911,376 +20455,338 @@
         alert_handler[20]: fatal_fault
       ]
     }
-    module_soc_proxy:
-    {
-      tx_expr: alert_tx[49:21]
-      rx_expr: alert_rx[49:21]
-      async_expr: alert_handler_reg_pkg::AsyncOn[49:21]
-      comments:
-      [
-        alert_handler[21]: fatal_alert_intg
-        alert_handler[22]: fatal_alert_external_0
-        alert_handler[23]: fatal_alert_external_1
-        alert_handler[24]: fatal_alert_external_2
-        alert_handler[25]: fatal_alert_external_3
-        alert_handler[26]: fatal_alert_external_4
-        alert_handler[27]: fatal_alert_external_5
-        alert_handler[28]: fatal_alert_external_6
-        alert_handler[29]: fatal_alert_external_7
-        alert_handler[30]: fatal_alert_external_8
-        alert_handler[31]: fatal_alert_external_9
-        alert_handler[32]: fatal_alert_external_10
-        alert_handler[33]: fatal_alert_external_11
-        alert_handler[34]: fatal_alert_external_12
-        alert_handler[35]: fatal_alert_external_13
-        alert_handler[36]: fatal_alert_external_14
-        alert_handler[37]: fatal_alert_external_15
-        alert_handler[38]: fatal_alert_external_16
-        alert_handler[39]: fatal_alert_external_17
-        alert_handler[40]: fatal_alert_external_18
-        alert_handler[41]: fatal_alert_external_19
-        alert_handler[42]: fatal_alert_external_20
-        alert_handler[43]: fatal_alert_external_21
-        alert_handler[44]: fatal_alert_external_22
-        alert_handler[45]: fatal_alert_external_23
-        alert_handler[46]: recov_alert_external_0
-        alert_handler[47]: recov_alert_external_1
-        alert_handler[48]: recov_alert_external_2
-        alert_handler[49]: recov_alert_external_3
-      ]
-    }
     module_sram_ctrl_ret_aon:
     {
-      tx_expr: alert_tx[50:50]
-      rx_expr: alert_rx[50:50]
-      async_expr: alert_handler_reg_pkg::AsyncOn[50:50]
+      tx_expr: alert_tx[21:21]
+      rx_expr: alert_rx[21:21]
+      async_expr: alert_handler_reg_pkg::AsyncOn[21:21]
       comments:
       [
-        alert_handler[50]: fatal_error
+        alert_handler[21]: fatal_error
       ]
     }
     module_rv_dm:
     {
-      tx_expr: alert_tx[51:51]
-      rx_expr: alert_rx[51:51]
-      async_expr: alert_handler_reg_pkg::AsyncOn[51:51]
+      tx_expr: alert_tx[22:22]
+      rx_expr: alert_rx[22:22]
+      async_expr: alert_handler_reg_pkg::AsyncOn[22:22]
       comments:
       [
-        alert_handler[51]: fatal_fault
+        alert_handler[22]: fatal_fault
       ]
     }
     module_rv_plic:
     {
-      tx_expr: alert_tx[52:52]
-      rx_expr: alert_rx[52:52]
-      async_expr: alert_handler_reg_pkg::AsyncOn[52:52]
+      tx_expr: alert_tx[23:23]
+      rx_expr: alert_rx[23:23]
+      async_expr: alert_handler_reg_pkg::AsyncOn[23:23]
       comments:
       [
-        alert_handler[52]: fatal_fault
+        alert_handler[23]: fatal_fault
       ]
     }
     module_aes:
     {
-      tx_expr: alert_tx[54:53]
-      rx_expr: alert_rx[54:53]
-      async_expr: alert_handler_reg_pkg::AsyncOn[54:53]
+      tx_expr: alert_tx[25:24]
+      rx_expr: alert_rx[25:24]
+      async_expr: alert_handler_reg_pkg::AsyncOn[25:24]
       comments:
       [
-        alert_handler[53]: recov_ctrl_update_err
-        alert_handler[54]: fatal_fault
+        alert_handler[24]: recov_ctrl_update_err
+        alert_handler[25]: fatal_fault
       ]
     }
     module_hmac:
     {
-      tx_expr: alert_tx[55:55]
-      rx_expr: alert_rx[55:55]
-      async_expr: alert_handler_reg_pkg::AsyncOn[55:55]
+      tx_expr: alert_tx[26:26]
+      rx_expr: alert_rx[26:26]
+      async_expr: alert_handler_reg_pkg::AsyncOn[26:26]
       comments:
       [
-        alert_handler[55]: fatal_fault
+        alert_handler[26]: fatal_fault
       ]
     }
     module_kmac:
+    {
+      tx_expr: alert_tx[28:27]
+      rx_expr: alert_rx[28:27]
+      async_expr: alert_handler_reg_pkg::AsyncOn[28:27]
+      comments:
+      [
+        alert_handler[27]: recov_operation_err
+        alert_handler[28]: fatal_fault_err
+      ]
+    }
+    module_otbn:
+    {
+      tx_expr: alert_tx[30:29]
+      rx_expr: alert_rx[30:29]
+      async_expr: alert_handler_reg_pkg::AsyncOn[30:29]
+      comments:
+      [
+        alert_handler[29]: fatal
+        alert_handler[30]: recov
+      ]
+    }
+    module_keymgr_dpe:
+    {
+      tx_expr: alert_tx[32:31]
+      rx_expr: alert_rx[32:31]
+      async_expr: alert_handler_reg_pkg::AsyncOn[32:31]
+      comments:
+      [
+        alert_handler[31]: recov_operation_err
+        alert_handler[32]: fatal_fault_err
+      ]
+    }
+    module_csrng:
+    {
+      tx_expr: alert_tx[34:33]
+      rx_expr: alert_rx[34:33]
+      async_expr: alert_handler_reg_pkg::AsyncOn[34:33]
+      comments:
+      [
+        alert_handler[33]: recov_alert
+        alert_handler[34]: fatal_alert
+      ]
+    }
+    module_entropy_src:
+    {
+      tx_expr: alert_tx[36:35]
+      rx_expr: alert_rx[36:35]
+      async_expr: alert_handler_reg_pkg::AsyncOn[36:35]
+      comments:
+      [
+        alert_handler[35]: recov_alert
+        alert_handler[36]: fatal_alert
+      ]
+    }
+    module_edn0:
+    {
+      tx_expr: alert_tx[38:37]
+      rx_expr: alert_rx[38:37]
+      async_expr: alert_handler_reg_pkg::AsyncOn[38:37]
+      comments:
+      [
+        alert_handler[37]: recov_alert
+        alert_handler[38]: fatal_alert
+      ]
+    }
+    module_edn1:
+    {
+      tx_expr: alert_tx[40:39]
+      rx_expr: alert_rx[40:39]
+      async_expr: alert_handler_reg_pkg::AsyncOn[40:39]
+      comments:
+      [
+        alert_handler[39]: recov_alert
+        alert_handler[40]: fatal_alert
+      ]
+    }
+    module_sram_ctrl_main:
+    {
+      tx_expr: alert_tx[41:41]
+      rx_expr: alert_rx[41:41]
+      async_expr: alert_handler_reg_pkg::AsyncOn[41:41]
+      comments:
+      [
+        alert_handler[41]: fatal_error
+      ]
+    }
+    module_sram_ctrl_mbox:
+    {
+      tx_expr: alert_tx[42:42]
+      rx_expr: alert_rx[42:42]
+      async_expr: alert_handler_reg_pkg::AsyncOn[42:42]
+      comments:
+      [
+        alert_handler[42]: fatal_error
+      ]
+    }
+    module_rom_ctrl0:
+    {
+      tx_expr: alert_tx[43:43]
+      rx_expr: alert_rx[43:43]
+      async_expr: alert_handler_reg_pkg::AsyncOn[43:43]
+      comments:
+      [
+        alert_handler[43]: fatal
+      ]
+    }
+    module_rom_ctrl1:
+    {
+      tx_expr: alert_tx[44:44]
+      rx_expr: alert_rx[44:44]
+      async_expr: alert_handler_reg_pkg::AsyncOn[44:44]
+      comments:
+      [
+        alert_handler[44]: fatal
+      ]
+    }
+    module_dma:
+    {
+      tx_expr: alert_tx[45:45]
+      rx_expr: alert_rx[45:45]
+      async_expr: alert_handler_reg_pkg::AsyncOn[45:45]
+      comments:
+      [
+        alert_handler[45]: fatal_fault
+      ]
+    }
+    module_mbx0:
+    {
+      tx_expr: alert_tx[47:46]
+      rx_expr: alert_rx[47:46]
+      async_expr: alert_handler_reg_pkg::AsyncOn[47:46]
+      comments:
+      [
+        alert_handler[46]: fatal_fault
+        alert_handler[47]: recov_fault
+      ]
+    }
+    module_mbx1:
+    {
+      tx_expr: alert_tx[49:48]
+      rx_expr: alert_rx[49:48]
+      async_expr: alert_handler_reg_pkg::AsyncOn[49:48]
+      comments:
+      [
+        alert_handler[48]: fatal_fault
+        alert_handler[49]: recov_fault
+      ]
+    }
+    module_mbx2:
+    {
+      tx_expr: alert_tx[51:50]
+      rx_expr: alert_rx[51:50]
+      async_expr: alert_handler_reg_pkg::AsyncOn[51:50]
+      comments:
+      [
+        alert_handler[50]: fatal_fault
+        alert_handler[51]: recov_fault
+      ]
+    }
+    module_mbx3:
+    {
+      tx_expr: alert_tx[53:52]
+      rx_expr: alert_rx[53:52]
+      async_expr: alert_handler_reg_pkg::AsyncOn[53:52]
+      comments:
+      [
+        alert_handler[52]: fatal_fault
+        alert_handler[53]: recov_fault
+      ]
+    }
+    module_mbx4:
+    {
+      tx_expr: alert_tx[55:54]
+      rx_expr: alert_rx[55:54]
+      async_expr: alert_handler_reg_pkg::AsyncOn[55:54]
+      comments:
+      [
+        alert_handler[54]: fatal_fault
+        alert_handler[55]: recov_fault
+      ]
+    }
+    module_mbx5:
     {
       tx_expr: alert_tx[57:56]
       rx_expr: alert_rx[57:56]
       async_expr: alert_handler_reg_pkg::AsyncOn[57:56]
       comments:
       [
-        alert_handler[56]: recov_operation_err
-        alert_handler[57]: fatal_fault_err
+        alert_handler[56]: fatal_fault
+        alert_handler[57]: recov_fault
       ]
     }
-    module_otbn:
+    module_mbx6:
     {
       tx_expr: alert_tx[59:58]
       rx_expr: alert_rx[59:58]
       async_expr: alert_handler_reg_pkg::AsyncOn[59:58]
       comments:
       [
-        alert_handler[58]: fatal
-        alert_handler[59]: recov
+        alert_handler[58]: fatal_fault
+        alert_handler[59]: recov_fault
       ]
     }
-    module_keymgr_dpe:
+    module_mbx_jtag:
     {
       tx_expr: alert_tx[61:60]
       rx_expr: alert_rx[61:60]
       async_expr: alert_handler_reg_pkg::AsyncOn[61:60]
       comments:
       [
-        alert_handler[60]: recov_operation_err
-        alert_handler[61]: fatal_fault_err
+        alert_handler[60]: fatal_fault
+        alert_handler[61]: recov_fault
       ]
     }
-    module_csrng:
+    module_mbx_pcie0:
     {
       tx_expr: alert_tx[63:62]
       rx_expr: alert_rx[63:62]
       async_expr: alert_handler_reg_pkg::AsyncOn[63:62]
       comments:
       [
-        alert_handler[62]: recov_alert
-        alert_handler[63]: fatal_alert
+        alert_handler[62]: fatal_fault
+        alert_handler[63]: recov_fault
       ]
     }
-    module_entropy_src:
+    module_mbx_pcie1:
     {
       tx_expr: alert_tx[65:64]
       rx_expr: alert_rx[65:64]
       async_expr: alert_handler_reg_pkg::AsyncOn[65:64]
       comments:
       [
-        alert_handler[64]: recov_alert
-        alert_handler[65]: fatal_alert
+        alert_handler[64]: fatal_fault
+        alert_handler[65]: recov_fault
       ]
     }
-    module_edn0:
+    module_soc_dbg_ctrl:
     {
       tx_expr: alert_tx[67:66]
       rx_expr: alert_rx[67:66]
       async_expr: alert_handler_reg_pkg::AsyncOn[67:66]
       comments:
       [
-        alert_handler[66]: recov_alert
-        alert_handler[67]: fatal_alert
+        alert_handler[66]: fatal_fault
+        alert_handler[67]: recov_ctrl_update_err
       ]
     }
-    module_edn1:
+    module_racl_ctrl:
     {
       tx_expr: alert_tx[69:68]
       rx_expr: alert_rx[69:68]
       async_expr: alert_handler_reg_pkg::AsyncOn[69:68]
       comments:
       [
-        alert_handler[68]: recov_alert
-        alert_handler[69]: fatal_alert
-      ]
-    }
-    module_sram_ctrl_main:
-    {
-      tx_expr: alert_tx[70:70]
-      rx_expr: alert_rx[70:70]
-      async_expr: alert_handler_reg_pkg::AsyncOn[70:70]
-      comments:
-      [
-        alert_handler[70]: fatal_error
-      ]
-    }
-    module_sram_ctrl_mbox:
-    {
-      tx_expr: alert_tx[71:71]
-      rx_expr: alert_rx[71:71]
-      async_expr: alert_handler_reg_pkg::AsyncOn[71:71]
-      comments:
-      [
-        alert_handler[71]: fatal_error
-      ]
-    }
-    module_rom_ctrl0:
-    {
-      tx_expr: alert_tx[72:72]
-      rx_expr: alert_rx[72:72]
-      async_expr: alert_handler_reg_pkg::AsyncOn[72:72]
-      comments:
-      [
-        alert_handler[72]: fatal
-      ]
-    }
-    module_rom_ctrl1:
-    {
-      tx_expr: alert_tx[73:73]
-      rx_expr: alert_rx[73:73]
-      async_expr: alert_handler_reg_pkg::AsyncOn[73:73]
-      comments:
-      [
-        alert_handler[73]: fatal
-      ]
-    }
-    module_dma:
-    {
-      tx_expr: alert_tx[74:74]
-      rx_expr: alert_rx[74:74]
-      async_expr: alert_handler_reg_pkg::AsyncOn[74:74]
-      comments:
-      [
-        alert_handler[74]: fatal_fault
-      ]
-    }
-    module_mbx0:
-    {
-      tx_expr: alert_tx[76:75]
-      rx_expr: alert_rx[76:75]
-      async_expr: alert_handler_reg_pkg::AsyncOn[76:75]
-      comments:
-      [
-        alert_handler[75]: fatal_fault
-        alert_handler[76]: recov_fault
-      ]
-    }
-    module_mbx1:
-    {
-      tx_expr: alert_tx[78:77]
-      rx_expr: alert_rx[78:77]
-      async_expr: alert_handler_reg_pkg::AsyncOn[78:77]
-      comments:
-      [
-        alert_handler[77]: fatal_fault
-        alert_handler[78]: recov_fault
-      ]
-    }
-    module_mbx2:
-    {
-      tx_expr: alert_tx[80:79]
-      rx_expr: alert_rx[80:79]
-      async_expr: alert_handler_reg_pkg::AsyncOn[80:79]
-      comments:
-      [
-        alert_handler[79]: fatal_fault
-        alert_handler[80]: recov_fault
-      ]
-    }
-    module_mbx3:
-    {
-      tx_expr: alert_tx[82:81]
-      rx_expr: alert_rx[82:81]
-      async_expr: alert_handler_reg_pkg::AsyncOn[82:81]
-      comments:
-      [
-        alert_handler[81]: fatal_fault
-        alert_handler[82]: recov_fault
-      ]
-    }
-    module_mbx4:
-    {
-      tx_expr: alert_tx[84:83]
-      rx_expr: alert_rx[84:83]
-      async_expr: alert_handler_reg_pkg::AsyncOn[84:83]
-      comments:
-      [
-        alert_handler[83]: fatal_fault
-        alert_handler[84]: recov_fault
-      ]
-    }
-    module_mbx5:
-    {
-      tx_expr: alert_tx[86:85]
-      rx_expr: alert_rx[86:85]
-      async_expr: alert_handler_reg_pkg::AsyncOn[86:85]
-      comments:
-      [
-        alert_handler[85]: fatal_fault
-        alert_handler[86]: recov_fault
-      ]
-    }
-    module_mbx6:
-    {
-      tx_expr: alert_tx[88:87]
-      rx_expr: alert_rx[88:87]
-      async_expr: alert_handler_reg_pkg::AsyncOn[88:87]
-      comments:
-      [
-        alert_handler[87]: fatal_fault
-        alert_handler[88]: recov_fault
-      ]
-    }
-    module_mbx_jtag:
-    {
-      tx_expr: alert_tx[90:89]
-      rx_expr: alert_rx[90:89]
-      async_expr: alert_handler_reg_pkg::AsyncOn[90:89]
-      comments:
-      [
-        alert_handler[89]: fatal_fault
-        alert_handler[90]: recov_fault
-      ]
-    }
-    module_mbx_pcie0:
-    {
-      tx_expr: alert_tx[92:91]
-      rx_expr: alert_rx[92:91]
-      async_expr: alert_handler_reg_pkg::AsyncOn[92:91]
-      comments:
-      [
-        alert_handler[91]: fatal_fault
-        alert_handler[92]: recov_fault
-      ]
-    }
-    module_mbx_pcie1:
-    {
-      tx_expr: alert_tx[94:93]
-      rx_expr: alert_rx[94:93]
-      async_expr: alert_handler_reg_pkg::AsyncOn[94:93]
-      comments:
-      [
-        alert_handler[93]: fatal_fault
-        alert_handler[94]: recov_fault
-      ]
-    }
-    module_soc_dbg_ctrl:
-    {
-      tx_expr: alert_tx[96:95]
-      rx_expr: alert_rx[96:95]
-      async_expr: alert_handler_reg_pkg::AsyncOn[96:95]
-      comments:
-      [
-        alert_handler[95]: fatal_fault
-        alert_handler[96]: recov_ctrl_update_err
-      ]
-    }
-    module_racl_ctrl:
-    {
-      tx_expr: alert_tx[98:97]
-      rx_expr: alert_rx[98:97]
-      async_expr: alert_handler_reg_pkg::AsyncOn[98:97]
-      comments:
-      [
-        alert_handler[97]: fatal_fault
-        alert_handler[98]: recov_ctrl_update_err
+        alert_handler[68]: fatal_fault
+        alert_handler[69]: recov_ctrl_update_err
       ]
     }
     module_ac_range_check:
     {
-      tx_expr: alert_tx[100:99]
-      rx_expr: alert_rx[100:99]
-      async_expr: alert_handler_reg_pkg::AsyncOn[100:99]
+      tx_expr: alert_tx[71:70]
+      rx_expr: alert_rx[71:70]
+      async_expr: alert_handler_reg_pkg::AsyncOn[71:70]
       comments:
       [
-        alert_handler[99]: recov_ctrl_update_err
-        alert_handler[100]: fatal_fault
+        alert_handler[70]: recov_ctrl_update_err
+        alert_handler[71]: fatal_fault
       ]
     }
     module_rv_core_ibex:
     {
-      tx_expr: alert_tx[104:101]
-      rx_expr: alert_rx[104:101]
-      async_expr: alert_handler_reg_pkg::AsyncOn[104:101]
+      tx_expr: alert_tx[75:72]
+      rx_expr: alert_rx[75:72]
+      async_expr: alert_handler_reg_pkg::AsyncOn[75:72]
       comments:
       [
-        alert_handler[101]: fatal_sw_err
-        alert_handler[102]: recov_sw_err
-        alert_handler[103]: fatal_hw_err
-        alert_handler[104]: recov_hw_err
+        alert_handler[72]: fatal_sw_err
+        alert_handler[73]: recov_sw_err
+        alert_handler[74]: fatal_hw_err
+        alert_handler[75]: recov_hw_err
       ]
     }
   }
@@ -21296,7 +20802,6 @@
     spi_host0
     pwrmgr_aon
     aon_timer_aon
-    soc_proxy
     hmac
     kmac
     otbn
@@ -23308,7 +22813,7 @@
         struct: logic
         type: uni
         act: rcv
-        width: 4
+        width: 3
         inst_name: pwrmgr_aon
         default: ""
         package: ""
@@ -23987,18 +23492,6 @@
         index: -1
       }
       {
-        name: wkup_internal_req
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: soc_proxy
-        default: ""
-        package: ""
-        top_signame: pwrmgr_aon_wakeups
-        index: 2
-      }
-      {
         name: wkup_external_req
         struct: logic
         type: uni
@@ -24008,7 +23501,7 @@
         default: ""
         package: ""
         top_signame: pwrmgr_aon_wakeups
-        index: 3
+        index: 2
       }
       {
         name: rst_req_external
@@ -24120,36 +23613,6 @@
         index: -1
       }
       {
-        name: soc_fatal_alert
-        desc: Differential fatal alert from SoC, synchronous
-        struct: soc_alert
-        package: soc_proxy_pkg
-        type: req_rsp
-        act: rsp
-        width: 24
-        inst_name: soc_proxy
-        default: ""
-        external: true
-        top_signame: soc_fatal_alert
-        conn_type: false
-        index: -1
-      }
-      {
-        name: soc_recov_alert
-        desc: Differential recoverable alert from SoC, synchronous
-        struct: soc_alert
-        package: soc_proxy_pkg
-        type: req_rsp
-        act: rsp
-        width: 4
-        inst_name: soc_proxy
-        default: ""
-        external: true
-        top_signame: soc_recov_alert
-        conn_type: false
-        index: -1
-      }
-      {
         name: soc_wkup_async
         desc: Wakeup request from SoC, asynchronous, level-encoded
         struct: logic
@@ -24176,21 +23639,6 @@
         package: ""
         external: true
         top_signame: soc_rst_req_async
-        conn_type: false
-        index: -1
-      }
-      {
-        name: soc_intr_async
-        desc: Interrupt request from SoC, asynchronous, level-encoded
-        struct: logic
-        type: uni
-        act: rcv
-        width: 32
-        inst_name: soc_proxy
-        default: ""
-        package: ""
-        external: true
-        top_signame: soc_intr_async
         conn_type: false
         index: -1
       }
@@ -24237,19 +23685,6 @@
         external: true
         top_signame: integrator_id
         conn_type: false
-        index: -1
-      }
-      {
-        name: core_tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: soc_proxy
-        default: ""
-        end_idx: -1
-        top_signame: soc_proxy_core_tl
         index: -1
       }
       {
@@ -28467,18 +27902,6 @@
         index: -1
       }
       {
-        name: tl_soc_proxy__core
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        inst_name: main
-        width: 1
-        default: ""
-        top_signame: soc_proxy_core_tl
-        index: -1
-      }
-      {
         name: tl_soc_proxy__ctn
         struct: tl
         package: tlul_pkg
@@ -30583,54 +30006,6 @@
         netname: ctn_misc_tl_d2h
       }
       {
-        package: soc_proxy_pkg
-        struct: soc_alert_req
-        signame: soc_fatal_alert_req_i
-        width: 24
-        type: req_rsp
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: soc_fatal_alert_req
-      }
-      {
-        package: soc_proxy_pkg
-        struct: soc_alert_rsp
-        signame: soc_fatal_alert_rsp_o
-        width: 24
-        type: req_rsp
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: soc_fatal_alert_rsp
-      }
-      {
-        package: soc_proxy_pkg
-        struct: soc_alert_req
-        signame: soc_recov_alert_req_i
-        width: 4
-        type: req_rsp
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: soc_recov_alert_req
-      }
-      {
-        package: soc_proxy_pkg
-        struct: soc_alert_rsp
-        signame: soc_recov_alert_rsp_o
-        width: 4
-        type: req_rsp
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: soc_recov_alert_rsp
-      }
-      {
         package: ""
         struct: logic
         signame: soc_wkup_async_i
@@ -30653,18 +30028,6 @@
         conn_type: false
         index: -1
         netname: soc_rst_req_async
-      }
-      {
-        package: ""
-        struct: logic
-        signame: soc_intr_async_i
-        width: 32
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: soc_intr_async
       }
       {
         package: ""
@@ -31749,7 +31112,7 @@
         package: ""
         struct: logic
         signame: pwrmgr_aon_wakeups
-        width: 4
+        width: 3
         type: uni
         end_idx: -1
         act: rcv
@@ -31986,28 +31349,6 @@
         act: req
         suffix: rsp
         default: tlul_pkg::TL_D2H_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: soc_proxy_core_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: soc_proxy_core_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
       }
       {
         package: tlul_pkg
