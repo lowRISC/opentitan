@@ -23,8 +23,8 @@
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/otbn_sca_commands.h"
 
+#include "hw/top/otbn_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otbn_regs.h"  // Generated.
 
 #define MAX_BATCH_SIZE 256
 #define BYTES_IN_WDR 32

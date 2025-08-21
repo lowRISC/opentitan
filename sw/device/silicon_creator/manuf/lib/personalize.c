@@ -20,7 +20,7 @@
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/util.h"
 
-#include "otp_ctrl_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"  // Generated.
 
 static_assert(OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE0_SIZE ==
                   OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE1_SIZE,

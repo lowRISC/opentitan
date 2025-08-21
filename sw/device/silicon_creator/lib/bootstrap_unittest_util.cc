@@ -9,10 +9,10 @@
 
 #include "sw/device/silicon_creator/lib/base/chip.h"
 
-#include "flash_ctrl_regs.h"
-#include "gpio_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/gpio_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
 
 bool operator==(flash_ctrl_perms_t lhs, flash_ctrl_perms_t rhs) {
   return memcmp(&lhs, &rhs, sizeof(flash_ctrl_perms_t)) == 0;

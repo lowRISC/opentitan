@@ -39,7 +39,7 @@
 #include "hw/top/dt/dt_usbdev.h"       // Generated
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 
-#include "flash_ctrl_regs.h"  // Generated
+#include "hw/top/flash_ctrl_regs.h"  // Generated
 #elif defined(OPENTITAN_IS_DARJEELING)
 #include "hw/top/dt/dt_keymgr_dpe.h"  // Generated
 #else
@@ -102,7 +102,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "alert_handler_regs.h"  // Generated
+#include "hw/top/alert_handler_regs.h"  // Generated
 
 OTTF_DEFINE_TEST_CONFIG();
 

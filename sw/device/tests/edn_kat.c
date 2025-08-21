@@ -15,7 +15,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "edn_regs.h"  // Generated
+#include "hw/top/edn_regs.h"  // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 enum {

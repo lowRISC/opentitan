@@ -25,7 +25,7 @@
 #include "hw/top/dt/dt_sensor_ctrl.h"
 #include "sw/device/lib/dif/dif_sensor_ctrl.h"
 
-#include "sensor_ctrl_regs.h"
+#include "hw/top/sensor_ctrl_regs.h"
 #endif
 #ifdef HAS_SYSRST_CTRL
 #include "hw/top/dt/dt_sysrst_ctrl.h"

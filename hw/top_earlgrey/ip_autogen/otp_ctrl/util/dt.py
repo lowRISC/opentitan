@@ -149,7 +149,7 @@ class OtpCtrlExt(Extension):
             }
             return HEADER_EXT_TEMPLATE % subs
         elif pos == Extension.DtIpPos.SourceIncludes:
-            return '#include "otp_ctrl_regs.h"'
+            return '#include "hw/top/otp_ctrl_regs.h"'
         elif pos == Extension.DtIpPos.SourceEnd:
             subs = {
                 'otp_partition_info_struct_name': self._otp_partition_info_struct.as_c_type(),

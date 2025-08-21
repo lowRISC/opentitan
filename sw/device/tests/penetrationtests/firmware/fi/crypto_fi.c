@@ -21,10 +21,10 @@
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/crypto_fi_commands.h"
 
-#include "aes_regs.h"
-#include "hmac_regs.h"
+#include "hw/top/aes_regs.h"
+#include "hw/top/hmac_regs.h"
+#include "hw/top/kmac_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "kmac_regs.h"
 
 #define SHADOW_REG_ACCESS(shadow_reg_addr, tmp)    \
   abs_mmio_write32_shadowed(shadow_reg_addr, tmp); \

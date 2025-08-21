@@ -10,7 +10,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 
-#include "csrng_regs.h"  // Generated
+#include "hw/top/csrng_regs.h"  // Generated
 
 /**
  * Reads the output data register status.

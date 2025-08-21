@@ -17,7 +17,7 @@
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/xmodem.h"
 
-#include "flash_ctrl_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
 
 // All of the xmodem functions accept an opaque iohandle pointer.
 // The iohandle is used to facilitate unit tests and doesn't have

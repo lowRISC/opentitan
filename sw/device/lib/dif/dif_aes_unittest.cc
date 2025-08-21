@@ -11,7 +11,7 @@
 #include "sw/device/lib/dif/dif_test_base.h"
 
 extern "C" {
-#include "aes_regs.h"  // Generated.
+#include "hw/top/aes_regs.h"  // Generated.
 }  // extern "C"
 
 namespace dif_aes_test {

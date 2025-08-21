@@ -10,7 +10,7 @@
 #include "sw/device/lib/dif/dif_test_base.h"
 
 extern "C" {
-#include "rom_ctrl_regs.h"  // Generated.
+#include "hw/top/rom_ctrl_regs.h"  // Generated.
 }  // extern "C"
 
 namespace dif_rom_ctrl_test {

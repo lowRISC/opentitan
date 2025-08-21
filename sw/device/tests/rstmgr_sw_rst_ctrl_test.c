@@ -6,7 +6,7 @@
 #include "hw/top/dt/dt_usbdev.h"           // Generated
 #include "sw/device/lib/dif/dif_usbdev.h"  // Generated
 
-#include "usbdev_regs.h"  // Generated
+#include "hw/top/usbdev_regs.h"  // Generated
 #elif defined(OPENTITAN_IS_DARJEELING)
 // Darjeeling does not have a USB device
 #else
@@ -29,9 +29,9 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "i2c_regs.h"         // Generated
-#include "spi_device_regs.h"  // Generated
-#include "spi_host_regs.h"    // Generated
+#include "hw/top/i2c_regs.h"         // Generated
+#include "hw/top/spi_device_regs.h"  // Generated
+#include "hw/top/spi_host_regs.h"    // Generated
 
 OTTF_DEFINE_TEST_CONFIG();
 

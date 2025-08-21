@@ -13,7 +13,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
-#include "lc_ctrl_regs.h"
+#include "hw/top/lc_ctrl_regs.h"
 
 static inline uint32_t lc_ctrl_base(void) {
   return dt_lc_ctrl_primary_reg_block(kDtLcCtrl);

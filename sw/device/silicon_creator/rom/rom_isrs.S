@@ -5,7 +5,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/hardened_asm.h"
-#include "flash_ctrl_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
 
 .equ LOAD_ACCESS_FAULT, 5
 

@@ -13,9 +13,9 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/keymgr_regs.h"  // Generated.
+#include "hw/top/kmac_regs.h"    // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "keymgr_regs.h"  // Generated.
-#include "kmac_regs.h"    // Generated.
 
 static dif_kmac_t kmac;
 static dif_keymgr_t keymgr;

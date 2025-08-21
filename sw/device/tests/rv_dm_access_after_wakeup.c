@@ -18,7 +18,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
-#include "pwrmgr_regs.h"
+#include "hw/top/pwrmgr_regs.h"
 
 /*
  * RV_DM access after wakeup test.

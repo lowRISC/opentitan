@@ -9,7 +9,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 
-#include "aes_regs.h"  // Generated.
+#include "hw/top/aes_regs.h"  // Generated.
 
 /*
  * From: https://opentitan.org/book/hw/ip/aes/doc/registers.html,

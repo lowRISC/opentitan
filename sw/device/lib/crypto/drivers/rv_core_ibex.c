@@ -10,8 +10,8 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
+#include "hw/top/rv_core_ibex_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "rv_core_ibex_regs.h"
 
 enum {
   kBaseAddr = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR,

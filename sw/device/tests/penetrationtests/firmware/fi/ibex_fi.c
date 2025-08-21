@@ -27,15 +27,15 @@
 #include "sw/device/tests/penetrationtests/json/ibex_fi_commands.h"
 
 // Generated
-#include "aes_regs.h"
-#include "alert_handler_regs.h"
 #include "csrng_regs.h"
 #include "edn_regs.h"
 #include "entropy_src_regs.h"
 #include "hmac_regs.h"
+#include "hw/top/aes_regs.h"
+#include "hw/top/alert_handler_regs.h"
+#include "hw/top/keymgr_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "keymgr_regs.h"
-#include "otp_ctrl_regs.h"
 #include "rv_core_ibex_regs.h"
 #include "sram_ctrl_regs.h"
 

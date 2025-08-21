@@ -44,7 +44,7 @@
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #endif  // OPENTITAN_IS_EARLGREY
 
-#include "alert_handler_regs.h"  // Generated.
+#include "hw/top/alert_handler_regs.h"  // Generated.
 
 #define IDENTITY_U32(a) ((uint32_t)((a) < UINT32_MAX ? (a) : UINT32_MAX))
 

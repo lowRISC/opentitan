@@ -52,10 +52,10 @@
 #include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
 #include "sw/device/silicon_creator/rom/sigverify_otp_keys.h"
 
-#include "hmac_regs.h"  // Generated.
+#include "hw/top/hmac_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/rstmgr_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
-#include "rstmgr_regs.h"
 
 /**
  * Table of forward branch Control Flow Integrity (CFI) counters.

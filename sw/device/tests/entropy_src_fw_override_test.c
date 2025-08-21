@@ -25,7 +25,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/otbn_randomness_impl.h"
 
-#include "entropy_src_regs.h"                         // Generated.
+#include "hw/top/entropy_src_regs.h"                  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();

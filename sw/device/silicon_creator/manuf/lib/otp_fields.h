@@ -7,7 +7,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 
-#include "otp_ctrl_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"  // Generated.
 
 extern const bitfield_field32_t kSramFetch;
 extern const bitfield_field32_t kCsrngAppRead;

@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 
-#include "hmac_regs.h"  // Generated.
+#include "hw/top/hmac_regs.h"  // Generated.
 
 /**
  * Read the status register from `hmac`.

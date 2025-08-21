@@ -14,8 +14,8 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
-#include "entropy_src_regs.h"
-#include "otp_ctrl_regs.h"
+#include "hw/top/entropy_src_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 #include "rv_core_ibex_regs.h"
 
 enum {

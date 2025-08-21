@@ -12,7 +12,7 @@
 #include "sw/device/lib/base/mock_mmio.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "csrng_regs.h"  // Generated
+#include "hw/top/csrng_regs.h"  // Generated
 
 namespace dif_csrng_unittest {
 namespace {

@@ -15,9 +15,9 @@
 #include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
 #include "sw/device/silicon_creator/manuf/lib/util.h"
 
-#include "flash_ctrl_regs.h"  // Generated.
+#include "hw/top/flash_ctrl_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"    // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"  // Generated.
 
 #define MODULE_ID MAKE_MODULE_ID('i', 's', 'c')
 

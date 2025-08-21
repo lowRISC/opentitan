@@ -21,11 +21,11 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "alert_handler_regs.h"
-#include "flash_ctrl_regs.h"
+#include "hw/top/alert_handler_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/rstmgr_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
-#include "rstmgr_regs.h"
 
 enum {
   kAlertBase = TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR,

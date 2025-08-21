@@ -21,9 +21,9 @@
 #include "sw/device/silicon_creator/lib/drivers/mock_rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_spi_device.h"
 
-#include "flash_ctrl_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
 
 namespace bootstrap_fuzzer {
 

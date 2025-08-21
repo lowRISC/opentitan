@@ -26,7 +26,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/otbn_randomness_impl.h"
 
-#include "alert_handler_regs.h"  // Generated.
+#include "hw/top/alert_handler_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_aes_t aes;

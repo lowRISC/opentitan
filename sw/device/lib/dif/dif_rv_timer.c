@@ -11,7 +11,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/math.h"
 
-#include "rv_timer_regs.h"  // Generated.
+#include "hw/top/rv_timer_regs.h"  // Generated.
 
 static_assert(RV_TIMER_PARAM_N_HARTS > 0,
               "RV Timer must support at least one hart.");

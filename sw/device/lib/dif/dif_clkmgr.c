@@ -11,7 +11,7 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_base.h"
 
-#include "clkmgr_regs.h"  // Generated
+#include "hw/top/clkmgr_regs.h"  // Generated
 
 // TODO: For the moment, CLKMGR_PARAM_NUM_SW_GATEABLE_CLOCKS has to be <= than
 // 32, as we only support one enable register for gateable clocks.

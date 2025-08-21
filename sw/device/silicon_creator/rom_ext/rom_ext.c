@@ -51,10 +51,10 @@
 #include "sw/device/silicon_creator/rom_ext/rom_ext_manifest.h"
 #include "sw/device/silicon_creator/rom_ext/sigverify_keys.h"
 
-#include "flash_ctrl_regs.h"                          // Generated.
+#include "hw/top/flash_ctrl_regs.h"                   // Generated.
+#include "hw/top/otp_ctrl_regs.h"                     // Generated.
+#include "hw/top/sram_ctrl_regs.h"                    // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
-#include "otp_ctrl_regs.h"                            // Generated.
-#include "sram_ctrl_regs.h"                           // Generated.
 
 // Declaration for the ROM_EXT manifest start address, populated by the linker
 extern char _rom_ext_start_address[];

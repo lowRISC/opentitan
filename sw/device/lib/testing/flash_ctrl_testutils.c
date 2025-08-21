@@ -16,7 +16,7 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "flash_ctrl_regs.h"  // Generated
+#include "hw/top/flash_ctrl_regs.h"  // Generated
 
 #define MODULE_ID MAKE_MODULE_ID('f', 'c', 't')
 

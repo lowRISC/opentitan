@@ -7,7 +7,7 @@
 #include "hw/top/dt/dt_rv_core_ibex.h"
 #include "sw/device/lib/arch/device.h"
 
-#include "rv_core_ibex_regs.h"
+#include "hw/top/rv_core_ibex_regs.h"
 
 // Use the first dt_rv_core_ibex_t enum, i.e. the first Ibex core instance.
 static const dt_rv_core_ibex_t kRvCoreIbexDt = (dt_rv_core_ibex_t)0;

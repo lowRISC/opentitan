@@ -14,9 +14,9 @@
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/edn_sca_commands.h"
 
-#include "edn_regs.h"  // Generated
+#include "hw/top/edn_regs.h"           // Generated
+#include "hw/top/rv_core_ibex_regs.h"  // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "rv_core_ibex_regs.h"  // Generated
 
 enum {
   kEdnKatTimeout = (10 * 1000 * 1000),

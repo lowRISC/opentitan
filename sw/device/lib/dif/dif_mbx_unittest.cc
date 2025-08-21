@@ -13,7 +13,7 @@
 #include "sw/device/lib/dif/dif_test_base.h"
 
 extern "C" {
-#include "mbx_regs.h"  // Generated.
+#include "hw/top/mbx_regs.h"  // Generated.
 }  // extern "C"
 
 namespace dif_mbx_test {

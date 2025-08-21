@@ -20,8 +20,8 @@
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 #include "sw/device/silicon_creator/manuf/tests/test_wafer_auth_secret.h"
 
+#include "hw/top/otp_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();
 

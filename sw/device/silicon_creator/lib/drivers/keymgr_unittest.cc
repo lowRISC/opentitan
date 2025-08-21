@@ -13,7 +13,7 @@
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "keymgr_regs.h"  // Generated.
+#include "hw/top/keymgr_regs.h"  // Generated.
 
 namespace keymgr_unittest {
 namespace {

@@ -15,7 +15,7 @@
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "otbn_regs.h"  // Generated.
+#include "hw/top/otbn_regs.h"  // Generated.
 
 static inline uint32_t otbn_base(void) {
   return dt_otbn_primary_reg_block(kDtOtbn);

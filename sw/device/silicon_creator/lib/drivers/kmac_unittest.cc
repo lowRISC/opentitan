@@ -10,8 +10,8 @@
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
+#include "hw/top/kmac_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "kmac_regs.h"  // Generated.
 
 namespace kmac_unittest {
 namespace {

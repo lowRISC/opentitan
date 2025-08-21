@@ -16,8 +16,8 @@
 #include "sw/device/sca/otbn_vertical/ecc256_modinv_serial.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
+#include "hw/top/otbn_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otbn_regs.h"
 
 /**
  * OpenTitan program for OTBN vertical side-channel analysis.

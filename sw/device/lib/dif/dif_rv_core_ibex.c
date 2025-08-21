@@ -13,7 +13,7 @@
 #include "sw/device/lib/runtime/hart.h"
 
 // #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "rv_core_ibex_regs.h"
+#include "hw/top/rv_core_ibex_regs.h"
 
 /**
  * Error code constants of `dif_rv_core_ibex_error_status_t` are masks for the

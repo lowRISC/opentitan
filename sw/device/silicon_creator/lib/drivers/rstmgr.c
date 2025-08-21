@@ -20,8 +20,8 @@
 #include "sw/device/lib/runtime/hart.h"
 #endif
 
-#include "otp_ctrl_regs.h"
-#include "rstmgr_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/rstmgr_regs.h"
 
 static inline uint32_t rstmgr_base(void) {
   return dt_rstmgr_primary_reg_block(kDtRstmgrAon);

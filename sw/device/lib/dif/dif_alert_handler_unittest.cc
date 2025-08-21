@@ -15,7 +15,7 @@
 #include "sw/device/lib/base/mock_mmio.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "alert_handler_regs.h"  // Generated.
+#include "hw/top/alert_handler_regs.h"  // Generated.
 
 namespace dif_alert_handler_unittest {
 namespace {

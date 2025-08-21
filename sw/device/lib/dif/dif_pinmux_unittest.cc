@@ -10,7 +10,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "pinmux_regs.h"  // Generated.
+#include "hw/top/pinmux_regs.h"  // Generated.
 
 namespace dif_pinmux_unittest {
 namespace {
