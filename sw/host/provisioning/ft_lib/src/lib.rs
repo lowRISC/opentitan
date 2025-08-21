@@ -8,11 +8,11 @@ use std::collections::HashSet;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use arrayvec::ArrayVec;
 use zerocopy::IntoBytes;
 
-use cert_lib::{parse_and_endorse_x509_cert, validate_cert_chain, CaConfig, CaKey, EndorsedCert};
+use cert_lib::{CaConfig, CaKey, EndorsedCert, parse_and_endorse_x509_cert, validate_cert_chain};
 use ft_ext_lib::ft_ext;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::console::spi::SpiConsoleDevice;
@@ -25,8 +25,8 @@ use opentitanlib::test_utils::load_sram_program::{
 };
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
-use ot_certs::x509::parse_certificate;
 use ot_certs::CertFormat;
+use ot_certs::x509::parse_certificate;
 use perso_tlv_lib::perso_tlv_get_field;
 use perso_tlv_lib::{CertHeader, CertHeaderType, ObjHeader, ObjHeaderType, ObjType};
 use ujson_lib::provisioning_data::{

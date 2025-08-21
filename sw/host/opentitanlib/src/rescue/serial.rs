@@ -11,8 +11,8 @@ use crate::chip::boot_log::BootLog;
 use crate::chip::boot_svc::{BootSlot, BootSvc, OwnershipActivateRequest, OwnershipUnlockRequest};
 use crate::chip::device_id::DeviceId;
 use crate::io::uart::Uart;
-use crate::rescue::xmodem::Xmodem;
 use crate::rescue::RescueError;
+use crate::rescue::xmodem::Xmodem;
 use crate::uart::console::UartConsole;
 
 pub struct RescueSerial {

@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use mio::event::Event;
 use mio::net::TcpListener;
 use mio::net::TcpStream;
 use mio::{Events, Interest, Poll, Registry, Token};
 use mio_signals::{Signal, SignalSet, Signals};
-use serde::de::DeserializeOwned;
 use serde::Serialize;
-use std::collections::hash_map::Entry::{Occupied, Vacant};
+use serde::de::DeserializeOwned;
 use std::collections::HashMap;
+use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::io::{ErrorKind, Read, Write};
 use std::marker::PhantomData;
 use std::sync::atomic::{AtomicUsize, Ordering};

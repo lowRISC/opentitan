@@ -64,7 +64,9 @@ fn check_jitter(opts: &Opts, cs: &ChipStartup) -> Result<()> {
         MultiBitBool4::True => assert_eq!(cs.jitter, true),
         _ => {
             if opts.otp_unprogrammed {
-                log::info!("CREATOR_SW_CFG_AST_JITTER_EN is neither True nor False:  Checking for jitter enabled.");
+                log::info!(
+                    "CREATOR_SW_CFG_AST_JITTER_EN is neither True nor False:  Checking for jitter enabled."
+                );
                 assert_eq!(cs.jitter, true)
             } else {
                 assert!(en.is_known_value());

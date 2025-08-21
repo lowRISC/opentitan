@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use clap::{Args, Subcommand, ValueEnum};
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::convert::From;
 use std::time::Duration;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::io::i2c::{self, DeviceStatus, I2cParams, Transfer};
 use opentitanlib::tpm;
 use opentitanlib::transport::Capability;

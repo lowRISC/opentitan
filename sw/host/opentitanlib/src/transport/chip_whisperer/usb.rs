@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Context, Result};
+use anyhow::{Context, Result, ensure};
 use once_cell::sync::Lazy;
 use std::cmp;
 use std::collections::HashMap;
@@ -120,15 +120,27 @@ impl<B: Board> Backend<B> {
 
     /// Send a control write transaction to the Chip Whisperer board.
     pub fn send_ctrl(&self, cmd: u8, value: u16, data: &[u8]) -> Result<usize> {
-        log::debug!("WRITE_CTRL: bmRequestType: {:02x}, bRequest: {:02x}, wValue: {:04x}, wIndex: {:04x}, data: {:?}",
-                0x41, cmd, value, 0, data);
+        log::debug!(
+            "WRITE_CTRL: bmRequestType: {:02x}, bRequest: {:02x}, wValue: {:04x}, wIndex: {:04x}, data: {:?}",
+            0x41,
+            cmd,
+            value,
+            0,
+            data
+        );
         self.usb.write_control(0x41, cmd, value, 0, data)
     }
 
     /// Send a control read transaction to the Chip Whisperer board.
     pub fn read_ctrl(&self, cmd: u8, value: u16, data: &mut [u8]) -> Result<usize> {
-        log::debug!("READ_CTRL: bmRequestType: {:02x}, bRequest: {:02x}, wValue: {:04x}, wIndex: {:04x}, data: {:?}",
-                0xC1, cmd, value, 0, data);
+        log::debug!(
+            "READ_CTRL: bmRequestType: {:02x}, bRequest: {:02x}, wValue: {:04x}, wIndex: {:04x}, data: {:?}",
+            0xC1,
+            cmd,
+            value,
+            0,
+            data
+        );
         self.usb.read_control(0xC1, cmd, value, 0, data)
     }
 
@@ -584,7 +596,7 @@ impl<B: Board> Backend<B> {
             _ => {
                 return Err(
                     TransportError::PllProgramFailed(format!("Unknown PLL: {}", pll_num)).into(),
-                )
+                );
             }
         };
         data &= !(1 << pll_bit);
@@ -605,7 +617,7 @@ impl<B: Board> Backend<B> {
             _ => {
                 return Err(
                     TransportError::PllProgramFailed(format!("Unknown PLL: {}", pll_num)).into(),
-                )
+                );
             }
         };
 

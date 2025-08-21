@@ -12,8 +12,8 @@ use std::ptr::hash;
 use std::rc::Rc;
 use std::time::Duration;
 
-use super::socket_server::{get_next_token, Connection};
 use super::ExtraEventHandler;
+use super::socket_server::{Connection, get_next_token};
 use crate::io::uart::Uart;
 
 pub struct NonblockingUartRegistry {

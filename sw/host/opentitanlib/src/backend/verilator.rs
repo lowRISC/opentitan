@@ -7,8 +7,8 @@ use clap::Args;
 use humantime::parse_duration;
 use std::time::Duration;
 
-use crate::transport::verilator::{Options, Verilator};
 use crate::transport::Transport;
+use crate::transport::verilator::{Options, Verilator};
 
 #[derive(Debug, Args)]
 pub struct VerilatorOpts {

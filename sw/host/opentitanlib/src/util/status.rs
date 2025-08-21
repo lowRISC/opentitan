@@ -9,7 +9,7 @@ use std::convert::TryFrom;
 use std::ffi::CString;
 use std::path::PathBuf;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use bindgen::status::{ot_status_create_record_t, status_create, status_err, status_extract};
 use object::{Object, ObjectSection};
 use zerocopy::FromBytes;
@@ -228,8 +228,11 @@ pub fn load_elf(elf_file: &PathBuf) -> Result<StatusCreateRecords> {
     // Make sure that the section size is a multiple of the record size.
     const RECORD_SIZE: usize = std::mem::size_of::<ot_status_create_record_t>();
     if status_create_records.len() % RECORD_SIZE != 0 {
-        bail!(".ot.status_create_record section size ({}) is not a multiple of the ot_status_create_record_t size ({})",
-              status_create_records.len(), RECORD_SIZE);
+        bail!(
+            ".ot.status_create_record section size ({}) is not a multiple of the ot_status_create_record_t size ({})",
+            status_create_records.len(),
+            RECORD_SIZE
+        );
     }
     // Conversion is unsafe but since the structure is packed and contains only POD,
     // it really is safe.

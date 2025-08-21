@@ -5,9 +5,9 @@
 use anyhow::Result;
 
 use crate::backend::BackendOpts;
-use crate::transport::ftdi::chip::Chip;
-use crate::transport::ftdi::Ftdi;
 use crate::transport::Transport;
+use crate::transport::ftdi::Ftdi;
+use crate::transport::ftdi::chip::Chip;
 
 pub fn create<C: Chip + 'static>(_args: &BackendOpts) -> Result<Box<dyn Transport>> {
     Ok(Box::new(Ftdi::<C>::new()?))

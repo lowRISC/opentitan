@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, bail, Context, Result};
+use anyhow::{Context, Result, anyhow, bail};
 use cryptoki::object::{Attribute, ObjectHandle};
 use cryptoki::session::Session;
 use rsa::{RsaPrivateKey, RsaPublicKey};
@@ -16,8 +16,8 @@ use crate::error::HsmError;
 use crate::module::Module;
 use crate::util::attribute::{AttrData, AttributeMap, AttributeType, KeyType, ObjectClass};
 use crate::util::helper;
-use crate::util::key::rsa::{save_private_key, save_public_key};
 use crate::util::key::KeyEncoding;
+use crate::util::key::rsa::{save_private_key, save_public_key};
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Export {

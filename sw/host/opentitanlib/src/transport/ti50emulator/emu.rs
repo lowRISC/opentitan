@@ -13,15 +13,15 @@ use std::process::{Child, Command, Stdio};
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use log;
 use rustix::process::{Pid, Signal};
 use serde::{Deserialize, Serialize};
 
 use crate::io::emu::{EmuError, EmuState, EmuValue, Emulator};
 use crate::io::gpio::{self, GpioError, PinMode, PullMode};
-use crate::transport::ti50emulator::gpio::Logic;
 use crate::transport::ti50emulator::Inner;
+use crate::transport::ti50emulator::gpio::Logic;
 use crate::util::file;
 
 const SPAWN_TIMEOUT: Duration = Duration::from_secs(10);

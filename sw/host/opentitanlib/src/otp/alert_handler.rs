@@ -6,7 +6,7 @@ use crate::otp::alert_handler_regs::*;
 use crate::otp::lc_state::LcStateVal;
 use crate::otp::otp_img::OtpRead;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use crc::{Crc, Digest};
 
 /// ALERT_HANDLER_ALERT_CLASS related register values.

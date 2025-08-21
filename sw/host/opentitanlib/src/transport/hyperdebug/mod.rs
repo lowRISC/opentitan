@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{Context, Result, bail, ensure};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde_annotate::Annotate;
@@ -10,8 +10,8 @@ use serialport::TTYPort;
 use std::any::Any;
 use std::cell::Cell;
 use std::cell::RefCell;
-use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::collections::hash_map::Entry;
 use std::fs;
 use std::io::Read;
 use std::io::Write;
@@ -26,11 +26,11 @@ use crate::io::i2c::Bus;
 use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
-use crate::transport::chip_whisperer::board::Board;
+use crate::transport::MaintainConnection;
 use crate::transport::chip_whisperer::ChipWhisperer;
+use crate::transport::chip_whisperer::board::Board;
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use crate::transport::common::uart::flock_serial;
-use crate::transport::MaintainConnection;
 use crate::transport::{
     Capabilities, Capability, SetJtagPins, Transport, TransportError, TransportInterfaceType,
     UpdateFirmware,

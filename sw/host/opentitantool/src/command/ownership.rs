@@ -9,8 +9,8 @@ use std::any::Any;
 use std::fs::{File, OpenOptions};
 use std::path::PathBuf;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
 use opentitanlib::crypto::ecdsa::{EcdsaPrivateKey, EcdsaRawSignature};
 use opentitanlib::ownership::{GlobalFlags, OwnerBlock, TlvHeader};

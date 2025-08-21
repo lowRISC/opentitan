@@ -8,9 +8,9 @@ use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
 use std::io::{Read, Write};
 
+use super::GlobalFlags;
 use super::flash::FlashFlags;
 use super::misc::{TlvHeader, TlvTag};
-use super::GlobalFlags;
 
 /// Describes an INFO page to which a set of flags apply.
 #[derive(Debug, Default, Deserialize, Serialize, Annotate)]

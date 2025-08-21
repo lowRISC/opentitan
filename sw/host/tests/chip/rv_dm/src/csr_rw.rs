@@ -4,7 +4,7 @@
 
 use std::time::Duration;
 
-use anyhow::{ensure, Context, Result};
+use anyhow::{Context, Result, ensure};
 use clap::Parser;
 use rand::prelude::*;
 

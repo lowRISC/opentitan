@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::io::uart::Uart;
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use std::cell::RefCell;
 use std::ffi::OsStr;
 use std::io::{Read, Write};

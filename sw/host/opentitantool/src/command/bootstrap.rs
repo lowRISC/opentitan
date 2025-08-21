@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Context, Result};
+use anyhow::{Context, Result, ensure};
 use clap::Args;
 use serde_annotate::Annotate;
 use std::any::Any;

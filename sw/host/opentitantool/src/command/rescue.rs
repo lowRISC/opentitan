@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::{Args, Subcommand};
 use opentitanlib::io::uart::UartParams;
 use serde_annotate::Annotate;
@@ -12,8 +12,8 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use std::time::Duration;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::chip::boot_svc::BootSlot;
 use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
 use opentitanlib::image::image::Image;
@@ -86,7 +86,10 @@ impl CommandDispatch for Firmware {
                 .ok_or_else(|| anyhow!("No application image in {:?}", self.filename))?;
             log::info!("Found application image at offset {:#x}", subimage.offset);
             if self.slot != BootSlot::SlotA && self.offset.is_none() {
-                log::warn!("Rescuing to {} may produce unexpected results.  Use `--offset` to select the desired application image.", self.slot);
+                log::warn!(
+                    "Rescuing to {} may produce unexpected results.  Use `--offset` to select the desired application image.",
+                    self.slot
+                );
             }
             subimage.data
         };
@@ -483,7 +486,9 @@ impl CommandDispatch for EraseOwner {
             rescue.erase_owner()?;
             Ok(None)
         } else {
-            Err(anyhow!("The owner may only be erased on DEV lifecycle-state chips with a ROM_EXT configured to permit owner erasing.\n\nUse the `--really` flag to send the command."))
+            Err(anyhow!(
+                "The owner may only be erased on DEV lifecycle-state chips with a ROM_EXT configured to permit owner erasing.\n\nUse the `--really` flag to send the command."
+            ))
         }
     }
 }

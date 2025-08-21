@@ -22,10 +22,10 @@ use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
-use p256::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP256;
 use p256::U256;
-use p384::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP384;
+use p256::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP256;
 use p384::U384;
+use p384::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP384;
 
 const ECDH_CMD_MAX_COORDINATE_BYTES_P256: usize = 32;
 const ECDH_CMD_MAX_PRIVATE_KEY_BYTES_P256: usize = 32;

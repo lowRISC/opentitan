@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use std::cell::Cell;
 use std::cmp;
 use std::rc::Rc;
@@ -373,7 +373,12 @@ impl Bus for HyperdebugI2cBus {
             .ok_or(I2cError::MissingAddress)?;
         while !transaction.is_empty() {
             match transaction {
-                [Transfer::Write(wbuf), Transfer::GscReady, Transfer::Read(rbuf), ..] => {
+                [
+                    Transfer::Write(wbuf),
+                    Transfer::GscReady,
+                    Transfer::Read(rbuf),
+                    ..,
+                ] => {
                     // Hyperdebug can do I2C write followed by I2C read as a single USB
                     // request/reply.  Take advantage of that by detecting pairs of
                     // Transfer::Write followed by Transfer::Read.

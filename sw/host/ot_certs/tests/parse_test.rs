@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use base64ct::Encoding;
 
-use ot_certs::template::subst::Subst;
 use ot_certs::template::Template;
+use ot_certs::template::subst::Subst;
 use ot_certs::x509;
 
 const GENERIC_CERT: &str = include_str!("generic.hjson");

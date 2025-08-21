@@ -7,8 +7,8 @@ use clap::Args;
 use serde_annotate::Annotate;
 use std::any::Any;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::transport::common::fpga;
 
 /// Clear the bitstream of the FPGA

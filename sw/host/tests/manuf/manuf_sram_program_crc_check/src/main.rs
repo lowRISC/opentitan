@@ -4,7 +4,7 @@
 
 use std::time::Duration;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use clap::Parser;
 
 use opentitanlib::app::TransportWrapper;
@@ -12,7 +12,7 @@ use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::load_sram_program::{
-    execute_sram_program, ExecutionError, ExecutionMode, ExecutionResult, SramProgramParams,
+    ExecutionError, ExecutionMode, ExecutionResult, SramProgramParams, execute_sram_program,
 };
 use opentitanlib::uart::console::UartConsole;
 

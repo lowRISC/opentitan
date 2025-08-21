@@ -12,8 +12,8 @@ use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 
 #[derive(Debug, Args)]
 /// The `hello world` command accepts an command option of `--cruel`.

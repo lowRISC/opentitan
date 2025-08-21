@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::app::NoProgressBar;
-use crate::io::eeprom::{AddressMode, Mode, Transaction, MODE_111, MODE_112, MODE_114};
+use crate::io::eeprom::{AddressMode, MODE_111, MODE_112, MODE_114, Mode, Transaction};
 use crate::io::spi::Target;
 use crate::spiflash::sfdp::{
     BlockEraseSize, FastReadParam, SectorErase, Sfdp, SupportedAddressModes,
 };
 use crate::transport::ProgressIndicator;
-use anyhow::{ensure, Result};
+use anyhow::{Result, ensure};
 use clap::ValueEnum;
 use std::convert::TryFrom;
 use thiserror::Error;

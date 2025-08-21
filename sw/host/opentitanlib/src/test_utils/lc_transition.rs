@@ -5,7 +5,7 @@
 use std::iter;
 use std::time::Duration;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 

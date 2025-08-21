@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use rusb::{Direction, Recipient, RequestType};
 use std::cell::Cell;
 use std::mem::size_of;
@@ -15,8 +15,8 @@ use crate::io::gpio::GpioPin;
 use crate::io::spi::{
     AssertChipSelect, MaxSizes, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
 };
-use crate::transport::hyperdebug::{BulkInterface, Inner};
 use crate::transport::TransportError;
+use crate::transport::hyperdebug::{BulkInterface, Inner};
 
 pub struct HyperdebugSpiTarget {
     inner: Rc<Inner>,
@@ -809,7 +809,12 @@ impl Target for HyperdebugSpiTarget {
                 self.receive(rbuf)?;
                 return Ok(());
             }
-            [Transfer::Write(wbuf), Transfer::TpmPoll, Transfer::Read(rbuf), Transfer::GscReady] => {
+            [
+                Transfer::Write(wbuf),
+                Transfer::TpmPoll,
+                Transfer::Read(rbuf),
+                Transfer::GscReady,
+            ] => {
                 // Hyperdebug can do SPI TPM transaction as a single USB
                 // request/reply.
                 ensure!(
@@ -824,7 +829,11 @@ impl Target for HyperdebugSpiTarget {
                 self.receive(rbuf)?;
                 return Ok(());
             }
-            [Transfer::Write(wbuf), Transfer::TpmPoll, Transfer::Read(rbuf)] => {
+            [
+                Transfer::Write(wbuf),
+                Transfer::TpmPoll,
+                Transfer::Read(rbuf),
+            ] => {
                 // Hyperdebug can do SPI TPM transaction as a single USB
                 // request/reply.
                 ensure!(
@@ -858,8 +867,12 @@ impl Target for HyperdebugSpiTarget {
                     return Ok(());
                 }
             }
-            [Transfer::Write(wbuf1), Transfer::TpmPoll, Transfer::Write(wbuf2), Transfer::GscReady] =>
-            {
+            [
+                Transfer::Write(wbuf1),
+                Transfer::TpmPoll,
+                Transfer::Write(wbuf2),
+                Transfer::GscReady,
+            ] => {
                 // Hyperdebug can do SPI TPM transaction as a single USB
                 // request/reply.
                 ensure!(
@@ -873,7 +886,11 @@ impl Target for HyperdebugSpiTarget {
                 self.receive(&mut [])?;
                 return Ok(());
             }
-            [Transfer::Write(wbuf1), Transfer::TpmPoll, Transfer::Write(wbuf2)] => {
+            [
+                Transfer::Write(wbuf1),
+                Transfer::TpmPoll,
+                Transfer::Write(wbuf2),
+            ] => {
                 // Hyperdebug can do SPI TPM transaction as a single USB
                 // request/reply.
                 ensure!(
@@ -974,8 +991,12 @@ impl Target for HyperdebugSpiTarget {
         let mut stream_state = StreamState::NoPending;
         loop {
             match transactions {
-                [eeprom::Transaction::Command(pre_cmd), eeprom::Transaction::Write(cmd, wbuf), eeprom::Transaction::WaitForBusyClear, rest @ ..] =>
-                {
+                [
+                    eeprom::Transaction::Command(pre_cmd),
+                    eeprom::Transaction::Write(cmd, wbuf),
+                    eeprom::Transaction::WaitForBusyClear,
+                    rest @ ..,
+                ] => {
                     if pre_cmd.get_opcode().len() == 1 {
                         stream_state = self.eeprom_transmit(
                             Some(pre_cmd), /* write_enable */
@@ -1009,8 +1030,11 @@ impl Target for HyperdebugSpiTarget {
                         self.eeprom_transmit(None, cmd, &[], rbuf, false, stream_state)?;
                     transactions = rest;
                 }
-                [eeprom::Transaction::Write(cmd, wbuf), eeprom::Transaction::WaitForBusyClear, rest @ ..] =>
-                {
+                [
+                    eeprom::Transaction::Write(cmd, wbuf),
+                    eeprom::Transaction::WaitForBusyClear,
+                    rest @ ..,
+                ] => {
                     stream_state = self.eeprom_transmit(
                         None, /* write_enable */
                         cmd,

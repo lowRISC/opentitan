@@ -9,12 +9,12 @@ use std::path::PathBuf;
 
 use anyhow::Result;
 
-use serde_annotate::{serialize, Annotate, Base};
+use serde_annotate::{Annotate, Base, serialize};
 
 use clap::{Args, Subcommand};
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::otp::alert_handler::AlertRegs;
 use opentitanlib::otp::lc_state::LcStateVal;
 use opentitanlib::otp::otp_img::{OtpImg, OtpImgItem, OtpImgPartition, OtpImgValue};

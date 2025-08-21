@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use memoffset::offset_of;
 use sphincsplus::{SphincsPlus, SpxDomain, SpxPublicKey};
 use std::borrow::Cow;
@@ -21,9 +21,9 @@ use crate::crypto::rsa::RsaPublicKey;
 use crate::crypto::rsa::Signature as RsaSignature;
 use crate::crypto::sha256;
 use crate::image::manifest::{
-    Manifest, ManifestKind, SigverifySpxSignature, CHIP_MANIFEST_VERSION_MAJOR1,
-    CHIP_MANIFEST_VERSION_MAJOR2, CHIP_MANIFEST_VERSION_MINOR1, CHIP_ROM_EXT_IDENTIFIER,
-    CHIP_ROM_EXT_SIZE_MAX, MANIFEST_EXT_ID_SPX_KEY, MANIFEST_EXT_ID_SPX_SIGNATURE,
+    CHIP_MANIFEST_VERSION_MAJOR1, CHIP_MANIFEST_VERSION_MAJOR2, CHIP_MANIFEST_VERSION_MINOR1,
+    CHIP_ROM_EXT_IDENTIFIER, CHIP_ROM_EXT_SIZE_MAX, MANIFEST_EXT_ID_SPX_KEY,
+    MANIFEST_EXT_ID_SPX_SIGNATURE, Manifest, ManifestKind, SigverifySpxSignature,
 };
 use crate::image::manifest_def::{ManifestSigverifyBuffer, ManifestSpec};
 use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtSpec};

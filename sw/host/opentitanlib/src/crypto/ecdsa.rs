@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, ensure, Context, Result};
+use anyhow::{Context, Result, anyhow, ensure};
+use ecdsa::Signature;
 use ecdsa::elliptic_curve::pkcs8::{DecodePrivateKey, EncodePrivateKey};
 use ecdsa::elliptic_curve::pkcs8::{DecodePublicKey, EncodePublicKey};
 use ecdsa::signature::hazmat::PrehashVerifier;
-use ecdsa::Signature;
-use p256::ecdsa::{SigningKey, VerifyingKey};
 use p256::NistP256;
+use p256::ecdsa::{SigningKey, VerifyingKey};
 use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
@@ -19,7 +19,7 @@ use std::path::Path;
 use std::str::FromStr;
 
 use super::Error;
-use crate::crypto::sha256::{sha256, Sha256Digest};
+use crate::crypto::sha256::{Sha256Digest, sha256};
 
 pub struct EcdsaPrivateKey {
     pub key: SigningKey,

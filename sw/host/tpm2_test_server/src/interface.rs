@@ -5,7 +5,7 @@
 use std::io::{Read, Write};
 use std::net::Shutdown;
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use mio::net::TcpStream;
 use opentitanlib::tpm::Driver;
 

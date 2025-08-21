@@ -15,10 +15,10 @@ use std::time::Duration;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::{StagedProgressBar, TransportWrapper};
 use opentitanlib::io::jtag::JtagParams;
-use opentitanlib::transport::verilator::transport::Watch;
 use opentitanlib::transport::Capability;
 use opentitanlib::transport::SetJtagPins;
 use opentitanlib::transport::UpdateFirmware;
+use opentitanlib::transport::verilator::transport::Watch;
 
 /// Initialize state of a transport debugger device to fit the device under test.  This
 /// typically involves setting pins as input/output, open drain, etc. according to configuration

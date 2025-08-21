@@ -9,7 +9,7 @@ use crate::io::i2c::{self, Bus};
 use crate::io::ioexpander::IoExpander;
 use crate::transport::TransportError;
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use std::rc::Rc;
 use std::vec::Vec;
 

@@ -5,7 +5,7 @@
 use std::path::PathBuf;
 use std::time::Duration;
 
-use anyhow::{ensure, Result};
+use anyhow::{Result, ensure};
 use clap::Parser;
 use rand::prelude::*;
 
@@ -139,7 +139,9 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         let addr = base + offset;
         let mut readback = 0;
         jtag.read_memory32(addr, std::slice::from_mut(&mut readback))?;
-        log::info!("Reading from {name} (base {base:#x}) offset {offset:#x} with value {readback:#x} (expecting {value:#x})");
+        log::info!(
+            "Reading from {name} (base {base:#x}) offset {offset:#x} with value {readback:#x} (expecting {value:#x})"
+        );
         ensure!(value == readback);
     }
 

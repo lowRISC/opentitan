@@ -1,11 +1,11 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-use anyhow::{anyhow, Result};
-use crc::{Crc, CRC_32_ISO_HDLC};
+use anyhow::{Result, anyhow};
+use crc::{CRC_32_ISO_HDLC, Crc};
 use regex::Regex;
-use serde::de::DeserializeOwned;
 use serde::Serialize;
+use serde::de::DeserializeOwned;
 use std::io::Write;
 use std::time::Duration;
 

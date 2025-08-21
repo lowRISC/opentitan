@@ -7,7 +7,7 @@ use crate::util::parse_int::ParseInt;
 use std::fmt;
 use std::path::Path;
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::{Result, anyhow, bail};
 
 use serde::de::{self, Unexpected};
 use serde::{Deserialize, Serialize};

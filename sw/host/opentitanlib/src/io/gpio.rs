@@ -42,11 +42,15 @@ pub enum GpioError {
     MismatchedDataLength(usize, usize),
     #[error("Bitbang data beyond the {0} least significant bits")]
     InvalidBitbangData(usize),
-    #[error("Bitbang delay of zero, immediately preceding `await()`, or at end of sequence, not permitted")]
+    #[error(
+        "Bitbang delay of zero, immediately preceding `await()`, or at end of sequence, not permitted"
+    )]
     InvalidBitbangDelay,
     #[error("Dac-bang samples not a multiple of number of pins")]
     InvalidDacBangData,
-    #[error("Dac-bang delay of zero or immediately adjacent to linear(), or at end of sequence, not permitted")]
+    #[error(
+        "Dac-bang delay of zero or immediately adjacent to linear(), or at end of sequence, not permitted"
+    )]
     InvalidDacBangDelay,
     #[error("Generic error: {0}")]
     Generic(String),

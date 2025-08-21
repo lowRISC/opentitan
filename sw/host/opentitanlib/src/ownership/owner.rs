@@ -9,8 +9,8 @@ use serde_annotate::Annotate;
 use std::convert::TryFrom;
 use std::io::{Read, Write};
 
-use super::misc::{KeyMaterial, OwnershipKeyAlg, TlvHeader, TlvTag};
 use super::GlobalFlags;
+use super::misc::{KeyMaterial, OwnershipKeyAlg, TlvHeader, TlvTag};
 use super::{OwnerApplicationKey, OwnerFlashConfig, OwnerFlashInfoConfig, OwnerRescueConfig};
 use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaRawSignature};
 use crate::with_unknown;
