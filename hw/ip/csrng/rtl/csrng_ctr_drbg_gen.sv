@@ -8,9 +8,7 @@
 // It takes in the key, v, and reseed counter values processed by the
 // ctr_drbg cmd module.
 
-module csrng_ctr_drbg_gen import csrng_pkg::*; #(
-  parameter int NApps = 4
-) (
+module csrng_ctr_drbg_gen import csrng_pkg::*; (
   input logic                clk_i,
   input logic                rst_ni,
 
@@ -20,7 +18,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   input logic                ctr_drbg_gen_req_i,
   output logic               ctr_drbg_gen_rdy_o, // ready to process the req above
   input logic [CmdWidth-1:0] ctr_drbg_gen_ccmd_i,    // current command
-  input logic [InstIdWidth-1:0]  ctr_drbg_gen_inst_id_i, // instance id
+  input logic [InstIdWidth-1:0] ctr_drbg_gen_inst_id_i, // instance id
   input logic                ctr_drbg_gen_glast_i,   // gen cmd last beat
   input logic                ctr_drbg_gen_fips_i,    // fips
   input logic [SeedLen-1:0]  ctr_drbg_gen_adata_i,   // additional data
@@ -55,7 +53,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   input logic                upd_gen_ack_i,
   output logic               gen_upd_rdy_o,
   input logic [CmdWidth-1:0] upd_gen_ccmd_i,
-  input logic [InstIdWidth-1:0]  upd_gen_inst_id_i,
+  input logic [InstIdWidth-1:0] upd_gen_inst_id_i,
   input logic [KeyLen-1:0]   upd_gen_key_i,
   input logic [BlkLen-1:0]   upd_gen_v_i,
 
@@ -82,6 +80,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   output logic [2:0]         ctr_drbg_gen_sfifo_ggenbits_err_o,
   output logic               ctr_drbg_gen_sm_err_o
 );
+
+  import csrng_reg_pkg::NumApps;
 
   localparam int GenreqFifoDepth = 1;
   localparam int GenreqFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+1+InstIdWidth+CmdWidth;
@@ -175,8 +175,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   logic                        v_ctr_inc;
   logic                        interate_ctr_done;
   logic                        interate_ctr_inc;
-  logic [NApps-1:0]            capt_adata;
-  logic [SeedLen-1:0]          update_adata[NApps];
+  logic [NumApps-1:0]          capt_adata;
+  logic [SeedLen-1:0]          update_adata[NumApps];
   logic [CtrLen-1:0]           v_ctr;
 
   // status error signals
@@ -184,8 +184,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
 
   // flops
   logic [1:0]                  interate_ctr_q, interate_ctr_d;
-  logic [SeedLen-1:0]          update_adata_q[NApps], update_adata_d[NApps];
-  logic [NApps-1:0]            update_adata_vld_q, update_adata_vld_d;
+  logic [SeedLen-1:0]          update_adata_q[NumApps], update_adata_d[NumApps];
+  logic [NumApps-1:0]          update_adata_vld_q, update_adata_vld_d;
 
 // Encoding generated with:
 // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \
@@ -420,7 +420,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
 
 
   // array to hold each channel's adata
-  for (genvar i = 0; i < NApps; i = i+1) begin : gen_adata
+  for (genvar i = 0; i < NumApps; i = i+1) begin : gen_adata
     assign capt_adata[i] = (sfifo_adstage_push && (genreq_id == i));
 
     assign update_adata_vld_d[i] = ~ctr_drbg_gen_enable_i ? 1'b0 :
@@ -437,7 +437,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
 
   always_comb begin
     adstage_adata = '0;
-    for (int i = 0; i < NApps; i = i+1) begin
+    for (int i = 0; i < NumApps; i = i+1) begin
       // since only one bus is active at a time based on the instant id,
       // an "or" of all the buses can be done below
       adstage_adata |= update_adata[i];

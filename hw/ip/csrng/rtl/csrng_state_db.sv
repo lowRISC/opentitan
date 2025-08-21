@@ -9,9 +9,10 @@
 
 `include "prim_assert.sv"
 
-module csrng_state_db import csrng_pkg::*; #(
-  parameter int NApps = 4
-) (
+module csrng_state_db
+  import csrng_pkg::*;
+  import csrng_reg_pkg::NumApps;
+(
   input logic                clk_i,
   input logic                rst_ni,
 
@@ -42,10 +43,10 @@ module csrng_state_db import csrng_pkg::*; #(
   output logic               state_db_sts_ack_o,
   output csrng_cmd_sts_e     state_db_sts_sts_o,
   output logic [InstIdWidth-1:0] state_db_sts_id_o,
-  input logic [NApps-1:0]    int_state_read_enable_i,
+  input logic [NumApps-1:0]  int_state_read_enable_i,
 
   // The reseed counters are always readable via register interface.
-  output logic [NApps-1:0][31:0] reseed_counter_o
+  output logic [NumApps-1:0][31:0] reseed_counter_o
 );
 
   localparam int InternalStateWidth = 2+KeyLen+BlkLen+CtrLen;
@@ -62,10 +63,10 @@ module csrng_state_db import csrng_pkg::*; #(
   csrng_cmd_sts_e                  state_db_sts;
   logic                            state_db_write;
   logic                            instance_status;
-  logic [NApps-1:0]                int_st_out_sel;
-  logic [NApps-1:0]                int_st_dump_sel;
-  logic [InternalStateWidth-1:0]   internal_states_out[NApps];
-  logic [InternalStateWidth-1:0]   internal_states_dump[NApps];
+  logic [NumApps-1:0]              int_st_out_sel;
+  logic [NumApps-1:0]              int_st_dump_sel;
+  logic [InternalStateWidth-1:0]   internal_states_out[NumApps];
+  logic [InternalStateWidth-1:0]   internal_states_dump[NumApps];
   logic [InternalStateWidth-1:0]   internal_state_pl;
   logic [InternalStateWidth-1:0]   internal_state_pl_dump;
   logic [RegInternalStateWidth-1:0] internal_state_diag;
@@ -94,7 +95,7 @@ module csrng_state_db import csrng_pkg::*; #(
     end
 
   // flops - no reset
-  logic [InternalStateWidth-1:0]  internal_states_q[NApps], internal_states_d[NApps];
+  logic [InternalStateWidth-1:0]  internal_states_q[NumApps], internal_states_d[NumApps];
 
   // no reset on state
   always_ff @(posedge clk_i)
@@ -106,7 +107,7 @@ module csrng_state_db import csrng_pkg::*; #(
   //--------------------------------------------
   // internal state read logic
   //--------------------------------------------
-  for (genvar rd = 0; rd < NApps; rd = rd+1) begin : gen_state_rd
+  for (genvar rd = 0; rd < NumApps; rd = rd+1) begin : gen_state_rd
     assign int_st_out_sel[rd] = (state_db_rd_inst_id_i == rd);
     assign int_st_dump_sel[rd] = (int_st_dump_id_q == rd);
     assign internal_states_out[rd] = int_st_out_sel[rd] ? internal_states_q[rd] : '0;
@@ -119,7 +120,7 @@ module csrng_state_db import csrng_pkg::*; #(
   always_comb begin
     internal_state_pl = '0;
     internal_state_pl_dump = '0;
-    for (int i = 0; i < NApps; i = i+1) begin
+    for (int i = 0; i < NumApps; i = i+1) begin
       internal_state_pl |= internal_states_out[i];
       internal_state_pl_dump |= internal_states_dump[i];
     end
@@ -169,7 +170,7 @@ module csrng_state_db import csrng_pkg::*; #(
          int_st_dump_id_q;
 
   // The reseed counters are always readable via register interface.
-  for (genvar i = 0; i < NApps; i++) begin : gen_reseed_counter
+  for (genvar i = 0; i < NumApps; i++) begin : gen_reseed_counter
     assign reseed_counter_o[i] = internal_states_q[i][31:0];
   end
 
@@ -177,7 +178,7 @@ module csrng_state_db import csrng_pkg::*; #(
   // write state logic
   //--------------------------------------------
 
-  for (genvar wr = 0; wr < NApps; wr = wr+1) begin : gen_state_wr
+  for (genvar wr = 0; wr < NumApps; wr = wr+1) begin : gen_state_wr
 
     assign internal_states_d[wr] = !state_db_enable_i ? '0 : // better timing
                                    (state_db_write && (state_db_id == wr)) ?

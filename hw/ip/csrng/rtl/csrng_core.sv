@@ -18,7 +18,7 @@ module csrng_core import csrng_pkg::*; #(
   input  csrng_reg_pkg::csrng_reg2hw_t            reg2hw,
   output csrng_reg_pkg::csrng_hw2reg_t            hw2reg,
 
-  // Efuse Interface
+  // OTP Interface
   input  prim_mubi_pkg::mubi8_t                   otp_en_csrng_sw_app_read_i,
 
   // Lifecycle broadcast inputs
@@ -37,12 +37,12 @@ module csrng_core import csrng_pkg::*; #(
   output csrng_rsp_t [NumHwApps-1:0]              csrng_cmd_o,
 
   // Alerts
-
   output logic                                    recov_alert_test_o,
   output logic                                    fatal_alert_test_o,
   output logic                                    recov_alert_o,
   output logic                                    fatal_alert_o,
 
+  // Interrupts
   output logic                                    intr_cs_cmd_req_done_o,
   output logic                                    intr_cs_entropy_req_o,
   output logic                                    intr_cs_hw_inst_exc_o,
@@ -56,8 +56,7 @@ module csrng_core import csrng_pkg::*; #(
   import prim_mubi_pkg::mubi4_test_invalid;
 
   // TODO Move (some of) the parameters to csrng_pkg.sv
-  localparam int NApps = NumHwApps + 1;
-  localparam int NAppsLog = $clog2(NApps);
+
   localparam int AppCmdWidth = 32;
   localparam int AppCmdFifoDepth = 2;
   localparam int GenBitsWidth = 128;
@@ -286,43 +285,43 @@ module csrng_core import csrng_pkg::*; #(
   logic [KeyLen-1:0]           updblk_key;
   logic [BlkLen-1:0]           updblk_v;
 
-  logic [2:0]                  cmd_stage_sfifo_cmd_err[NApps];
-  logic [NApps-1:0]            cmd_stage_sfifo_cmd_err_sum;
-  logic [NApps-1:0]            cmd_stage_sfifo_cmd_err_wr;
-  logic [NApps-1:0]            cmd_stage_sfifo_cmd_err_rd;
-  logic [NApps-1:0]            cmd_stage_sfifo_cmd_err_st;
-  logic [2:0]                  cmd_stage_sfifo_genbits_err[NApps];
-  logic [NApps-1:0]            cmd_stage_sfifo_genbits_err_sum;
-  logic [NApps-1:0]            cmd_stage_sfifo_genbits_err_wr;
-  logic [NApps-1:0]            cmd_stage_sfifo_genbits_err_rd;
-  logic [NApps-1:0]            cmd_stage_sfifo_genbits_err_st;
-  logic [NApps-1:0]            cmd_gen_cnt_err;
-  logic [NApps-1:0]            cmd_stage_sm_err;
+  logic [2:0]                  cmd_stage_sfifo_cmd_err[NumApps];
+  logic [NumApps-1:0]          cmd_stage_sfifo_cmd_err_sum;
+  logic [NumApps-1:0]          cmd_stage_sfifo_cmd_err_wr;
+  logic [NumApps-1:0]          cmd_stage_sfifo_cmd_err_rd;
+  logic [NumApps-1:0]          cmd_stage_sfifo_cmd_err_st;
+  logic [2:0]                  cmd_stage_sfifo_genbits_err[NumApps];
+  logic [NumApps-1:0]          cmd_stage_sfifo_genbits_err_sum;
+  logic [NumApps-1:0]          cmd_stage_sfifo_genbits_err_wr;
+  logic [NumApps-1:0]          cmd_stage_sfifo_genbits_err_rd;
+  logic [NumApps-1:0]          cmd_stage_sfifo_genbits_err_st;
+  logic [NumApps-1:0]          cmd_gen_cnt_err;
+  logic [NumApps-1:0]          cmd_stage_sm_err;
   logic                        ctr_drbg_upd_v_ctr_err;
   logic                        ctr_drbg_gen_v_ctr_err;
 
-  logic [NApps-1:0]            cmd_stage_vld;
-  logic [InstIdWidth-1:0]      cmd_stage_shid[NApps];
-  logic [AppCmdWidth-1:0]      cmd_stage_bus[NApps];
-  logic [NApps-1:0]            cmd_stage_rdy;
-  logic [NApps-1:0]            cmd_arb_req;
-  logic [NApps-1:0]            cmd_arb_gnt;
-  logic [$clog2(NApps)-1:0]    cmd_arb_idx;
-  logic [NApps-1:0]            cmd_arb_sop;
-  logic [NApps-1:0]            cmd_arb_mop;
-  logic [NApps-1:0]            cmd_arb_eop;
-  logic [AppCmdWidth-1:0]      cmd_arb_bus[NApps];
-  logic [NApps-1:0]            cmd_core_ack;
-  csrng_cmd_sts_e [NApps-1:0]  cmd_core_ack_sts;
-  logic [NApps-1:0]            cmd_stage_ack;
-  csrng_cmd_sts_e [NApps-1:0]  cmd_stage_ack_sts;
-  logic [NApps-1:0]            genbits_core_vld;
-  logic [GenBitsWidth-1:0]     genbits_core_bus[NApps];
-  logic [NApps-1:0]            genbits_core_fips;
-  logic [NApps-1:0]            genbits_stage_vld;
-  logic [NApps-1:0]            genbits_stage_fips;
-  logic [GenBitsWidth-1:0]     genbits_stage_bus[NApps];
-  logic [NApps-1:0]            genbits_stage_rdy;
+  logic [NumApps-1:0]          cmd_stage_vld;
+  logic [InstIdWidth-1:0]      cmd_stage_shid[NumApps];
+  logic [AppCmdWidth-1:0]      cmd_stage_bus[NumApps];
+  logic [NumApps-1:0]          cmd_stage_rdy;
+  logic [NumApps-1:0]          cmd_arb_req;
+  logic [NumApps-1:0]          cmd_arb_gnt;
+  logic [$clog2(NumApps)-1:0]  cmd_arb_idx;
+  logic [NumApps-1:0]          cmd_arb_sop;
+  logic [NumApps-1:0]          cmd_arb_mop;
+  logic [NumApps-1:0]          cmd_arb_eop;
+  logic [AppCmdWidth-1:0]      cmd_arb_bus[NumApps];
+  logic [NumApps-1:0]          cmd_core_ack;
+  csrng_cmd_sts_e [NumApps-1:0]cmd_core_ack_sts;
+  logic [NumApps-1:0]          cmd_stage_ack;
+  csrng_cmd_sts_e [NumApps-1:0]cmd_stage_ack_sts;
+  logic [NumApps-1:0]          genbits_core_vld;
+  logic [GenBitsWidth-1:0]     genbits_core_bus[NumApps];
+  logic [NumApps-1:0]          genbits_core_fips;
+  logic [NumApps-1:0]          genbits_stage_vld;
+  logic [NumApps-1:0]          genbits_stage_fips;
+  logic [GenBitsWidth-1:0]     genbits_stage_bus[NumApps];
+  logic [NumApps-1:0]          genbits_stage_rdy;
   logic                        genbits_stage_vldo_sw;
   logic                        genbits_stage_bus_rd_sw;
   logic [31:0]                 genbits_stage_bus_sw;
@@ -335,7 +334,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                        state_db_reg_rd_id_pulse;
   logic [InstIdWidth-1:0]      state_db_reg_rd_id;
   logic [31:0]                 state_db_reg_rd_val;
-  logic [NApps-1:0]            int_state_read_enable;
+  logic [NumApps-1:0]            int_state_read_enable;
 
   logic [30:0]                 err_code_test_bit;
   logic                        ctr_drbg_upd_es_ack;
@@ -345,13 +344,13 @@ module csrng_core import csrng_pkg::*; #(
   logic                        cs_rdata_capt_vld;
   logic                        cs_bus_cmp_alert;
   logic                        cmd_rdy;
-  logic [NApps-1:0]            invalid_cmd_seq_alert;
-  logic [NApps-1:0]            invalid_acmd_alert;
-  logic [NApps-1:0]            reseed_cnt_alert;
+  logic [NumApps-1:0]          invalid_cmd_seq_alert;
+  logic [NumApps-1:0]          invalid_acmd_alert;
+  logic [NumApps-1:0]          reseed_cnt_alert;
   logic                        sw_sts_ack;
   logic [1:0]                  efuse_sw_app_enable;
 
-  logic [NApps-1:0][31:0]      reseed_counter;
+  logic [NumApps-1:0][31:0]    reseed_counter;
 
   logic                        unused_err_code_test_bit;
   logic                        unused_reg2hw_genbits;
@@ -367,7 +366,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [3:0]                shid_q, shid_d;
   logic                      gen_last_q, gen_last_d;
   mubi4_t                    flag0_q, flag0_d;
-  logic [$clog2(NApps)-1:0]  cmd_arb_idx_q, cmd_arb_idx_d;
+  logic [$clog2(NumApps)-1:0]cmd_arb_idx_q, cmd_arb_idx_d;
   logic                      statedb_wr_select_q, statedb_wr_select_d;
   logic                      genbits_stage_fips_sw_q, genbits_stage_fips_sw_d;
   logic                      cmd_req_dly_q, cmd_req_dly_d;
@@ -379,7 +378,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                      cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
   logic                      sw_rdy_sts_q, sw_rdy_sts_d;
   logic                      sw_sts_ack_q, sw_sts_ack_d;
-  logic [NApps-1:0]          reseed_cnt_reached_q, reseed_cnt_reached_d;
+  logic [NumApps-1:0]        reseed_cnt_reached_q, reseed_cnt_reached_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -864,7 +863,7 @@ module csrng_core import csrng_pkg::*; #(
   // and return any genbits if the command
   // is a generate command.
 
-  for (genvar ai = 0; ai < NApps; ai = ai+1) begin : gen_cmd_stage
+  for (genvar ai = 0; ai < NumApps; ai = ai+1) begin : gen_cmd_stage
 
     csrng_cmd_stage #(
       .CmdFifoWidth(AppCmdWidth),
@@ -915,29 +914,29 @@ module csrng_core import csrng_pkg::*; #(
 
   // SW interface connection (only 1, and must be present)
   // cmd req
-  assign cmd_stage_vld[NApps-1] = reg2hw.cmd_req.qe;
-  assign cmd_stage_shid[NApps-1] = InstIdWidth'(NApps-1);
-  assign cmd_stage_bus[NApps-1] = reg2hw.cmd_req.q;
+  assign cmd_stage_vld[NumApps-1] = reg2hw.cmd_req.qe;
+  assign cmd_stage_shid[NumApps-1] = InstIdWidth'(NumApps-1);
+  assign cmd_stage_bus[NumApps-1] = reg2hw.cmd_req.q;
   assign hw2reg.sw_cmd_sts.cmd_rdy.de = 1'b1;
   assign hw2reg.sw_cmd_sts.cmd_rdy.d = cmd_rdy;
-  assign cmd_rdy = !cmd_stage_vld[NApps-1] && sw_rdy_sts_q;
+  assign cmd_rdy = !cmd_stage_vld[NumApps-1] && sw_rdy_sts_q;
   assign sw_rdy_sts_d =
          !cs_enable_fo[28] ? 1'b0 :
-         cmd_stage_vld[NApps-1] ? 1'b0 :
-         cmd_stage_rdy[NApps-1] ? 1'b1 :
+         cmd_stage_vld[NumApps-1] ? 1'b0 :
+         cmd_stage_rdy[NumApps-1] ? 1'b1 :
          sw_rdy_sts_q;
   // cmd sts ack
   assign hw2reg.sw_cmd_sts.cmd_ack.de = 1'b1;
   assign hw2reg.sw_cmd_sts.cmd_ack.d = sw_sts_ack_d;
-  assign sw_sts_ack = cmd_stage_ack[NApps-1];
+  assign sw_sts_ack = cmd_stage_ack[NumApps-1];
   assign sw_sts_ack_d =
          !cs_enable_fo[28] ? 1'b0 :
-         cmd_stage_vld[NApps-1] ? 1'b0 :
-         cmd_stage_ack[NApps-1] ? 1'b1 :
+         cmd_stage_vld[NumApps-1] ? 1'b0 :
+         cmd_stage_ack[NumApps-1] ? 1'b1 :
          sw_sts_ack_q;
   // cmd ack sts
-  assign hw2reg.sw_cmd_sts.cmd_sts.de = cmd_stage_ack[NApps-1];
-  assign hw2reg.sw_cmd_sts.cmd_sts.d = cmd_stage_ack_sts[NApps-1];
+  assign hw2reg.sw_cmd_sts.cmd_sts.de = cmd_stage_ack[NumApps-1];
+  assign hw2reg.sw_cmd_sts.cmd_sts.d = cmd_stage_ack_sts[NumApps-1];
   // genbits
   assign hw2reg.genbits_vld.genbits_vld.d = genbits_stage_vldo_sw;
   assign hw2reg.genbits_vld.genbits_fips.d = genbits_stage_fips_sw;
@@ -966,9 +965,9 @@ module csrng_core import csrng_pkg::*; #(
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!cs_enable_fo[29]),
-    .wvalid_i (genbits_stage_vld[NApps-1]),
-    .wdata_i  (genbits_stage_bus[NApps-1]),
-    .wready_o (genbits_stage_rdy[NApps-1]),
+    .wvalid_i (genbits_stage_vld[NumApps-1]),
+    .wdata_i  (genbits_stage_bus[NumApps-1]),
+    .wready_o (genbits_stage_rdy[NumApps-1]),
     .rvalid_o (genbits_stage_vldo_sw),
     .rdata_o  (genbits_stage_bus_sw),
     .rready_i (genbits_stage_bus_rd_sw),
@@ -978,7 +977,7 @@ module csrng_core import csrng_pkg::*; #(
   // flops for SW fips status
   assign genbits_stage_fips_sw_d =
          (!cs_enable_fo[30]) ? 1'b0 :
-         (genbits_stage_rdy[NApps-1] && genbits_stage_vld[NApps-1]) ? genbits_stage_fips[NApps-1] :
+         (genbits_stage_rdy[NumApps-1] && genbits_stage_vld[NumApps-1]) ? genbits_stage_fips[NumApps-1] :
          genbits_stage_fips_sw_q;
 
   assign genbits_stage_fips_sw = genbits_stage_fips_sw_q;
@@ -993,9 +992,9 @@ module csrng_core import csrng_pkg::*; #(
   // SEC_CM: SW_GENBITS.BUS.CONSISTENCY
 
   // capture a copy of the genbits data
-  assign cs_rdata_capt_vld = (genbits_stage_vld[NApps-1] && genbits_stage_rdy[NApps-1]);
+  assign cs_rdata_capt_vld = (genbits_stage_vld[NumApps-1] && genbits_stage_rdy[NumApps-1]);
 
-  assign cs_rdata_capt_d = cs_rdata_capt_vld ? genbits_stage_bus[NApps-1][63:0] : cs_rdata_capt_q;
+  assign cs_rdata_capt_d = cs_rdata_capt_vld ? genbits_stage_bus[NumApps-1][63:0] : cs_rdata_capt_q;
 
   assign cs_rdata_capt_vld_d =
          !cs_enable_fo[31] ? 1'b0 :
@@ -1004,7 +1003,7 @@ module csrng_core import csrng_pkg::*; #(
 
   // continuous compare of the entropy data for sw port
   assign cs_bus_cmp_alert = cs_rdata_capt_vld && cs_rdata_capt_vld_q &&
-         (cs_rdata_capt_q == genbits_stage_bus[NApps-1][63:0]); // only look at 64 bits
+         (cs_rdata_capt_q == genbits_stage_bus[NumApps-1][63:0]); // only look at 64 bits
 
   assign hw2reg.recov_alert_sts.cs_bus_cmp_alert.de = cs_bus_cmp_alert;
   assign hw2reg.recov_alert_sts.cs_bus_cmp_alert.d  = cs_bus_cmp_alert;
@@ -1019,7 +1018,7 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.recov_alert_sts.cmd_stage_reseed_cnt_alert.d  = |reseed_cnt_alert;
 
   // HW interface connections (up to 16, numbered 0-14)
-  for (genvar hai = 0; hai < (NApps-1); hai = hai+1) begin : gen_app_if
+  for (genvar hai = 0; hai < (NumApps-1); hai = hai+1) begin : gen_app_if
     // cmd req
     assign cmd_stage_vld[hai] = csrng_cmd_i[hai].csrng_req_valid;
     assign cmd_stage_shid[hai] = hai;
@@ -1046,7 +1045,7 @@ module csrng_core import csrng_pkg::*; #(
   end : gen_app_if_zero_sts
 
   // set fifo err status bits
-  for (genvar i = 0; i < NApps; i = i+1) begin : gen_fifo_sts
+  for (genvar i = 0; i < NumApps; i = i+1) begin : gen_fifo_sts
     assign cmd_stage_sfifo_cmd_err_sum[i] = (|cmd_stage_sfifo_cmd_err[i] ||
                                              err_code_test_bit[0]);
     assign cmd_stage_sfifo_cmd_err_wr[i] = cmd_stage_sfifo_cmd_err[i][2];
@@ -1076,7 +1075,7 @@ module csrng_core import csrng_pkg::*; #(
 
   prim_arbiter_ppc #(
     .EnDataPort(0),    // Ignore data port
-    .N(NApps),  // Number of request ports
+    .N(NumApps),  // Number of request ports
     .DW(1) // Data width
   ) u_prim_arbiter_ppc_acmd (
     .clk_i    (clk_i),
@@ -1176,7 +1175,7 @@ module csrng_core import csrng_pkg::*; #(
   // entropy available
   assign cmd_entropy_avail = entropy_src_hw_if_i.es_ack;
 
-  for (genvar csi = 0; csi < NApps; csi = csi+1) begin : gen_cmd_ack
+  for (genvar csi = 0; csi < NumApps; csi = csi+1) begin : gen_cmd_ack
     assign cmd_core_ack[csi] = state_db_sts_ack && (state_db_sts_id == csi);
     assign cmd_core_ack_sts[csi] = state_db_sts_sts;
     assign genbits_core_vld[csi] = gen_result_wr_req && (gen_result_inst_id == csi);
@@ -1225,9 +1224,7 @@ module csrng_core import csrng_pkg::*; #(
   assign state_db_is_dump_en = cs_enable_fo[40] && read_int_state && efuse_sw_app_enable[1];
   assign int_state_read_enable = reg2hw.int_state_read_enable.q;
 
-  csrng_state_db #(
-    .NApps(NApps)
-  ) u_csrng_state_db (
+  csrng_state_db u_csrng_state_db (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .state_db_enable_i(cs_enable_fo[41]),
@@ -1284,7 +1281,7 @@ module csrng_core import csrng_pkg::*; #(
 
   // Forward the reseed counter values to the register interface.
   always_comb begin : reseed_counter_assign
-    for (int i = 0; i < NApps; i++) begin
+    for (int i = 0; i < NumApps; i++) begin
       hw2reg.reseed_counter[i].d = reseed_counter[i];
     end
   end
@@ -1311,7 +1308,7 @@ module csrng_core import csrng_pkg::*; #(
   assign entropy_src_fips_d =
          // Use shid_d here such that u_csrng_ctr_drbg_cmd gets the shid_q and the proper
          // entropy_src_fips_q in the next clock cycle.
-         fips_force_enable && reg2hw.fips_force.q[shid_d[NAppsLog-1:0]] ? 1'b1 :
+         fips_force_enable && reg2hw.fips_force.q[shid_d[$clog2(NumApps)-1:0]] ? 1'b1 :
          flag0_fo[2] ? '0 : // special case where zero is used
          cmd_entropy_req && cmd_entropy_avail ? entropy_src_hw_if_i.es_fips :
          entropy_src_fips_q;
@@ -1599,9 +1596,7 @@ module csrng_core import csrng_pkg::*; #(
 
   assign ctr_drbg_gen_req = cmd_result_ack && (cmd_result_ccmd == GEN);
 
-  csrng_ctr_drbg_gen #(
-    .NApps(NApps)
-  ) u_csrng_ctr_drbg_gen (
+  csrng_ctr_drbg_gen u_csrng_ctr_drbg_gen (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .ctr_drbg_gen_enable_i(cs_enable_fo[49]),
@@ -1732,10 +1727,6 @@ module csrng_core import csrng_pkg::*; #(
   `ASSERT(CsrngUniZeroizeV_A,    state_db_zeroize -> (state_db_wr_v    == '0))
   `ASSERT(CsrngUniZeroizeRc_A,   state_db_zeroize -> (state_db_wr_rc   == '0))
   `ASSERT(CsrngUniZeroizeSts_A,  state_db_zeroize -> (state_db_wr_sts  == '0))
-
-  // The number of application interfaces defined in the hjson must match the number of
-  // application interfaces derived from the top-level parameter NumHwApps.
-  `ASSERT_INIT(CsrngNumAppsMatch_A, NumApps == NApps)
 `endif
 
 endmodule // csrng_core

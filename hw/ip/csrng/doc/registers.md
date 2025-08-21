@@ -390,8 +390,8 @@ Internal state number register
 Setting this field will set the number for which internal state can be
 selected for a read access. Up to 16 internal state values can be chosen
 from this register. The actual number of valid internal state fields
-is set by parameter NHwApps plus 1 software app. For those selections that point
-to reserved locations (greater than NHwApps plus 1), the returned value
+is set by parameter NumHwApps plus 1 software app. For those selections that point
+to reserved locations (greater than NumHwApps plus 1), the returned value
 will be zero. Writing this register will also reset the internal read
 pointer for the [`INT_STATE_VAL`](#int_state_val) register.
 Note: This register should be read back after being written to ensure
