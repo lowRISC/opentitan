@@ -6,10 +6,7 @@
 //
 // implementation using security_strength = 256
 
-module csrng_ctr_drbg_upd import csrng_pkg::*; #(
-  parameter int Cmd = 3,
-  parameter int StateId = 4
-) (
+module csrng_ctr_drbg_upd import csrng_pkg::*; (
   input logic                clk_i,
   input logic                rst_ni,
 
@@ -19,8 +16,8 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; #(
   // request in
   input logic                ctr_drbg_upd_req_i,
   output logic               ctr_drbg_upd_rdy_o, // ready to process the req above
-  input logic [Cmd-1:0]      ctr_drbg_upd_ccmd_i,
-  input logic [StateId-1:0]  ctr_drbg_upd_inst_id_i, // instance id
+  input logic [CmdWidth-1:0] ctr_drbg_upd_ccmd_i,
+  input logic [InstIdWidth-1:0] ctr_drbg_upd_inst_id_i, // instance id
   input logic [SeedLen-1:0]  ctr_drbg_upd_pdata_i, // provided_data
   input logic [KeyLen-1:0]   ctr_drbg_upd_key_i,
   input logic [BlkLen-1:0]   ctr_drbg_upd_v_i,
@@ -28,8 +25,8 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; #(
   // response out
   output logic               ctr_drbg_upd_ack_o, // final ack when update process has been completed
   input logic                ctr_drbg_upd_rdy_i, // ready to process the ack above
-  output logic [Cmd-1:0]     ctr_drbg_upd_ccmd_o,
-  output logic [StateId-1:0] ctr_drbg_upd_inst_id_o,
+  output logic [CmdWidth-1:0]ctr_drbg_upd_ccmd_o,
+  output logic [InstIdWidth-1:0] ctr_drbg_upd_inst_id_o,
   output logic [KeyLen-1:0]  ctr_drbg_upd_key_o,
   output logic [BlkLen-1:0]  ctr_drbg_upd_v_o,
 
@@ -41,16 +38,16 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; #(
   // Request interface (out to block_encrypt)
   output logic               block_encrypt_req_o,
   input logic                block_encrypt_rdy_i,
-  output logic [Cmd-1:0]     block_encrypt_ccmd_o,
-  output logic [StateId-1:0] block_encrypt_inst_id_o,
+  output logic [CmdWidth-1:0]block_encrypt_ccmd_o,
+  output logic [InstIdWidth-1:0] block_encrypt_inst_id_o,
   output logic [KeyLen-1:0]  block_encrypt_key_o,
   output logic [BlkLen-1:0]  block_encrypt_v_o,
 
   // Response interface
   input logic                block_encrypt_ack_i,
   output logic               block_encrypt_rdy_o,
-  input logic [Cmd-1:0]      block_encrypt_ccmd_i,
-  input logic [StateId-1:0]  block_encrypt_inst_id_i,
+  input logic [CmdWidth-1:0] block_encrypt_ccmd_i,
+  input logic [InstIdWidth-1:0] block_encrypt_inst_id_i,
   input logic [BlkLen-1:0]   block_encrypt_v_i,
 
   // error status outputs
@@ -65,15 +62,15 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; #(
 );
 
   localparam int UpdReqFifoDepth = 1;
-  localparam int UpdReqFifoWidth = KeyLen+BlkLen+SeedLen+StateId+Cmd;
+  localparam int UpdReqFifoWidth = KeyLen+BlkLen+SeedLen+InstIdWidth+CmdWidth;
   localparam int BlkEncReqFifoDepth = 1;
-  localparam int BlkEncReqFifoWidth = KeyLen+BlkLen+StateId+Cmd;
+  localparam int BlkEncReqFifoWidth = KeyLen+BlkLen+InstIdWidth+CmdWidth;
   localparam int BlkEncAckFifoDepth = 1;
-  localparam int BlkEncAckFifoWidth = BlkLen+StateId+Cmd;
+  localparam int BlkEncAckFifoWidth = BlkLen+InstIdWidth+CmdWidth;
   localparam int PDataFifoDepth = 1;
   localparam int PDataFifoWidth = SeedLen;
   localparam int FinalFifoDepth = 1;
-  localparam int FinalFifoWidth = KeyLen+BlkLen+StateId+Cmd;
+  localparam int FinalFifoWidth = KeyLen+BlkLen+InstIdWidth+CmdWidth;
 
   // signals
   logic [SeedLen-1:0] updated_key_and_v;
@@ -89,8 +86,8 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; #(
   logic                       sfifo_updreq_full;
   logic                       sfifo_updreq_not_empty;
   // breakout
-  logic [Cmd-1:0]             sfifo_updreq_ccmd;
-  logic [StateId-1:0]         sfifo_updreq_inst_id;
+  logic [CmdWidth-1:0]        sfifo_updreq_ccmd;
+  logic [InstIdWidth-1:0]     sfifo_updreq_inst_id;
   logic [SeedLen-1:0]         sfifo_updreq_pdata;
   logic [KeyLen-1:0]          sfifo_updreq_key;
   logic [BlkLen-1:0]          sfifo_updreq_v;
@@ -103,21 +100,21 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; #(
   logic                       sfifo_bencreq_full;
   logic                       sfifo_bencreq_not_empty;
   // breakout
-  logic [Cmd-1:0]             sfifo_bencreq_ccmd;
-  logic [StateId-1:0]         sfifo_bencreq_inst_id;
+  logic [CmdWidth-1:0]        sfifo_bencreq_ccmd;
+  logic [InstIdWidth-1:0]     sfifo_bencreq_inst_id;
   logic [KeyLen-1:0]          sfifo_bencreq_key;
   logic [BlkLen-1:0]          sfifo_bencreq_v;
 
   // blk_encrypt_ack fifo
   logic [BlkEncAckFifoWidth-1:0] sfifo_bencack_rdata;
-  logic                       sfifo_bencack_push;
   logic [BlkEncAckFifoWidth-1:0] sfifo_bencack_wdata;
+  logic                       sfifo_bencack_push;
   logic                       sfifo_bencack_pop;
   logic                       sfifo_bencack_full;
   logic                       sfifo_bencack_not_empty;
   // breakout
-  logic [Cmd-1:0]             sfifo_bencack_ccmd;
-  logic [StateId-1:0]         sfifo_bencack_inst_id;
+  logic [CmdWidth-1:0]        sfifo_bencack_ccmd;
+  logic [InstIdWidth-1:0]     sfifo_bencack_inst_id;
   logic [BlkLen-1:0]          sfifo_bencack_v;
 
   // pdata_stage fifo
@@ -137,8 +134,8 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; #(
   logic                       sfifo_final_full;
   logic                       sfifo_final_not_empty;
   // breakout
-  logic [Cmd-1:0]             sfifo_final_ccmd;
-  logic [StateId-1:0]         sfifo_final_inst_id;
+  logic [CmdWidth-1:0]        sfifo_final_ccmd;
+  logic [InstIdWidth-1:0]     sfifo_final_inst_id;
   logic [KeyLen-1:0]          sfifo_final_key;
   logic [BlkLen-1:0]          sfifo_final_v;
 
@@ -156,8 +153,8 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; #(
   logic [1:0]         interate_ctr_q, interate_ctr_d;
   logic [1:0]         concat_ctr_q, concat_ctr_d;
   logic [SeedLen-1:0] concat_outblk_q, concat_outblk_d;
-  logic [Cmd-1:0]     concat_ccmd_q, concat_ccmd_d;
-  logic [StateId-1:0] concat_inst_id_q, concat_inst_id_d;
+  logic [CmdWidth-1:0]concat_ccmd_q, concat_ccmd_d;
+  logic [InstIdWidth-1:0] concat_inst_id_q, concat_inst_id_d;
 
 // Encoding generated with:
 // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \
