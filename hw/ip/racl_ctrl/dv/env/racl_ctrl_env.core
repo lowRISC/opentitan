@@ -25,6 +25,7 @@ filesets:
       - seq_lib/racl_ctrl_base_vseq.sv: {is_include_file: true}
       - seq_lib/racl_ctrl_common_vseq.sv: {is_include_file: true}
       - seq_lib/racl_ctrl_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/racl_ctrl_stress_all_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:
