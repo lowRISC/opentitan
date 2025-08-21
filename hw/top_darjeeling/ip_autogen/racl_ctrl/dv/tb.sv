@@ -24,13 +24,18 @@ module tb;
   localparam int unsigned NumExternalSubscribingIps = 5;
 
   wire clk, rst_n, rst_shadowed_n;
+  wire intr_racl_error;
+  wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
-  clk_rst_if            clk_rst_if  (.clk(clk), .rst_n(rst_n));
-  rst_shadowed_if       rst_shad_if (.rst_n(rst_n), .rst_shadowed_n(rst_shadowed_n));
-  tl_if                 tl_if       (.clk(clk), .rst_n(rst_n));
-  racl_ctrl_policies_if policies_if ();
-  racl_error_log_if     int_err_if  (.clk_i(clk), .rst_ni(rst_n));
-  racl_error_log_if     ext_err_if  (.clk_i(clk), .rst_ni(rst_n));
+  clk_rst_if                    clk_rst_if  (.clk(clk), .rst_n(rst_n));
+  rst_shadowed_if               rst_shad_if (.rst_n(rst_n), .rst_shadowed_n(rst_shadowed_n));
+  tl_if                         tl_if       (.clk(clk), .rst_n(rst_n));
+  racl_ctrl_policies_if         policies_if ();
+  racl_error_log_if             int_err_if  (.clk_i(clk), .rst_ni(rst_n));
+  racl_error_log_if             ext_err_if  (.clk_i(clk), .rst_ni(rst_n));
+  pins_if #(NUM_MAX_INTERRUPTS) intr_if     (interrupts);
+
+  assign interrupts[0] = {intr_racl_error};
 
   // Information about the names of alerts and their indices (used by DV_ALERT_IF_CONNECT to attach
   // interfaces to the ports and register them with the config db)
@@ -53,6 +58,8 @@ module tb;
     .alert_rx_i            (alert_rx                                        ),
     .alert_tx_o            (alert_tx                                        ),
 
+    .intr_racl_error_o     (intr_racl_error                                 ),
+
     .racl_policies_o       (policies_if.policies                            ),
     .racl_error_i          (int_err_if.errors[NumSubscribingIps-1:0]        ),
     .racl_error_external_i (ext_err_if.errors[NumExternalSubscribingIps-1:0])
@@ -69,6 +76,7 @@ module tb;
     uvm_config_db#(virtual rst_shadowed_if)::set(null, "*.env", "rst_shadowed_vif", rst_shad_if);
 
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+    uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
 
     wrapper_cfg.num_subscribing_ips          = NumSubscribingIps;
     wrapper_cfg.num_external_subscribing_ips = NumExternalSubscribingIps;
