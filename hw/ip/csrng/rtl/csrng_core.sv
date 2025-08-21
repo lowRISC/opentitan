@@ -55,24 +55,15 @@ module csrng_core import csrng_pkg::*; #(
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_invalid;
 
-  // TODO Move (some of) the parameters to csrng_pkg.sv
+  localparam int unsigned NBlkEncArbReqs = 2;
+  localparam int unsigned BlkEncArbWidth = KeyLen+BlkLen+InstIdWidth+CmdWidth;
+  localparam int unsigned NUpdateArbReqs = 2;
+  localparam int unsigned UpdateArbWidth = KeyLen+BlkLen+SeedLen+InstIdWidth+CmdWidth;
 
-  localparam int AppCmdWidth = 32;
-  localparam int AppCmdFifoDepth = 2;
-  localparam int GenBitsWidth = 128;
-  
-  
-
-  localparam int NBlkEncArbReqs = 2;
-  localparam int BlkEncArbWidth = KeyLen+BlkLen+InstIdWidth+CmdWidth;
-  localparam int NUpdateArbReqs = 2;
-  localparam int UpdateArbWidth = KeyLen+BlkLen+SeedLen+InstIdWidth+CmdWidth;
-  localparam int MaxClen = 12;
-  localparam int ADataDepthWidth = SeedLen/AppCmdWidth;
-  localparam unsigned ADataDepthClog = $clog2(ADataDepthWidth)+1;
-  localparam int CsEnableCopies = 51;
-  localparam int LcHwDebugCopies = 1;
-  localparam int Flag0Copies = 3;
+  localparam int unsigned ADataDepthClog = $clog2(CmdMaxClen)+1;
+  localparam int unsigned CsEnableCopies = 51;
+  localparam int unsigned LcHwDebugCopies = 1;
+  localparam int unsigned Flag0Copies = 3;
 
   // signals
   // interrupt signals
@@ -111,7 +102,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                        state_db_wr_fips;
   logic [CmdWidth-1:0]         state_db_wr_ccmd;
 
-  logic [AppCmdWidth-1:0]      acmd_bus;
+  logic [CmdBusWidth-1:0]      acmd_bus;
 
   logic [SeedLen-1:0]          packer_adata;
   logic [ADataDepthClog-1:0]   packer_adata_depth;
@@ -302,7 +293,7 @@ module csrng_core import csrng_pkg::*; #(
 
   logic [NumApps-1:0]          cmd_stage_vld;
   logic [InstIdWidth-1:0]      cmd_stage_shid[NumApps];
-  logic [AppCmdWidth-1:0]      cmd_stage_bus[NumApps];
+  logic [CmdBusWidth-1:0]      cmd_stage_bus[NumApps];
   logic [NumApps-1:0]          cmd_stage_rdy;
   logic [NumApps-1:0]          cmd_arb_req;
   logic [NumApps-1:0]          cmd_arb_gnt;
@@ -310,17 +301,17 @@ module csrng_core import csrng_pkg::*; #(
   logic [NumApps-1:0]          cmd_arb_sop;
   logic [NumApps-1:0]          cmd_arb_mop;
   logic [NumApps-1:0]          cmd_arb_eop;
-  logic [AppCmdWidth-1:0]      cmd_arb_bus[NumApps];
+  logic [CmdBusWidth-1:0]      cmd_arb_bus[NumApps];
   logic [NumApps-1:0]          cmd_core_ack;
   csrng_cmd_sts_e [NumApps-1:0]cmd_core_ack_sts;
   logic [NumApps-1:0]          cmd_stage_ack;
   csrng_cmd_sts_e [NumApps-1:0]cmd_stage_ack_sts;
   logic [NumApps-1:0]          genbits_core_vld;
-  logic [GenBitsWidth-1:0]     genbits_core_bus[NumApps];
+  logic [BlkLen-1:0]           genbits_core_bus[NumApps];
   logic [NumApps-1:0]          genbits_core_fips;
   logic [NumApps-1:0]          genbits_stage_vld;
   logic [NumApps-1:0]          genbits_stage_fips;
-  logic [GenBitsWidth-1:0]     genbits_stage_bus[NumApps];
+  logic [BlkLen-1:0]           genbits_stage_bus[NumApps];
   logic [NumApps-1:0]          genbits_stage_rdy;
   logic                        genbits_stage_vldo_sw;
   logic                        genbits_stage_bus_rd_sw;
@@ -334,7 +325,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                        state_db_reg_rd_id_pulse;
   logic [InstIdWidth-1:0]      state_db_reg_rd_id;
   logic [31:0]                 state_db_reg_rd_val;
-  logic [NumApps-1:0]            int_state_read_enable;
+  logic [NumApps-1:0]          int_state_read_enable;
 
   logic [30:0]                 err_code_test_bit;
   logic                        ctr_drbg_upd_es_ack;
@@ -865,10 +856,7 @@ module csrng_core import csrng_pkg::*; #(
 
   for (genvar ai = 0; ai < NumApps; ai = ai+1) begin : gen_cmd_stage
 
-    csrng_cmd_stage #(
-      .CmdFifoWidth(AppCmdWidth),
-      .CmdFifoDepth(AppCmdFifoDepth)
-    ) u_csrng_cmd_stage (
+    csrng_cmd_stage u_csrng_cmd_stage (
       .clk_i                        (clk_i),
       .rst_ni                       (rst_ni),
       .cs_enable_i                  (cs_enable_fo[27]),
@@ -1202,10 +1190,10 @@ module csrng_core import csrng_pkg::*; #(
   );
 
   assign packer_adata_pop = cs_enable_fo[38] &&
-         clr_adata_packer && (packer_adata_depth == ADataDepthClog'(MaxClen));
+         clr_adata_packer && (packer_adata_depth == ADataDepthClog'(CmdMaxClen));
 
   assign packer_adata_clr = cs_enable_fo[39] &&
-         clr_adata_packer && (packer_adata_depth < ADataDepthClog'(MaxClen));
+         clr_adata_packer && (packer_adata_depth < ADataDepthClog'(CmdMaxClen));
 
   //-------------------------------------
   // csrng_state_db nstantiation

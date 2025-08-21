@@ -25,8 +25,11 @@ package csrng_pkg;
   parameter int unsigned CmdWidth = 3;
   parameter int unsigned InstIdWidth = 4;
 
+  // Width of the application command bus (matches the 32b TLUL bus width)
+  parameter int unsigned CmdBusWidth = 32;
   // Maximum number of 32b words additionally supplied on the application interfaces
-  parameter int unsigned MaxClen = 12; 
+  parameter int unsigned CmdMaxClen = 12; 
+  parameter int unsigned CmdFifoDepth = 2;
 
   //-------------------------
   // Application Interfaces
