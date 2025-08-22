@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_files")
 load("//rules:fusesoc.bzl", "fusesoc_build")
 
 # This configuration exposes fusesoc's "verilator_options" option to the
@@ -123,6 +123,7 @@ filegroup(
 pkg_files(
     name = "package",
     srcs = ["verilator_bin"],
+    attributes = pkg_attributes(mode = "0755"),
     prefix = "earlgrey/verilator",
     visibility = ["//visibility:public"],
 )
