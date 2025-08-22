@@ -57,8 +57,6 @@ module csrng_core import csrng_pkg::*; #(
 
   localparam int unsigned NBlkEncArbReqs = 2;
   localparam int unsigned BlkEncArbWidth = KeyLen+BlkLen+InstIdWidth+CmdWidth;
-  localparam int unsigned NUpdateArbReqs = 2;
-  localparam int unsigned UpdateArbWidth = KeyLen+BlkLen+SeedLen+InstIdWidth+CmdWidth;
 
   localparam int unsigned ADataDepthClog = $clog2(CmdMaxClen)+1;
   localparam int unsigned CsEnableCopies = 51;
@@ -235,42 +233,31 @@ module csrng_core import csrng_pkg::*; #(
   logic [InstIdWidth-1:0]      benblk_inst_id;
   logic [BlkLen-1:0]           benblk_v;
 
-  // update arbiter
-  logic [CmdWidth-1:0]         cmdblk_updblk_ccmd_arb_din;
-  logic [InstIdWidth-1:0]      cmdblk_updblk_id_arb_din;
-  logic [BlkLen-1:0]           cmdblk_updblk_v_arb_din;
-  logic [KeyLen-1:0]           cmdblk_updblk_key_arb_din;
-  logic [SeedLen-1:0]          cmdblk_updblk_pdata_arb_din;
-  logic                        cmdblk_updblk_arb_req;
-  logic                        updblk_cmdblk_arb_req_rdy;
-  logic                        updblk_cmdblk_ack;
-  logic                        cmdblk_updblk_ack_rdy;
+  // update unit arbiter
+  // request path
+  logic                        cmd_upd_req_vld;
+  logic                        cmd_upd_req_rdy;
+  csrng_upd_data_t             cmd_upd_req_data;
 
-  logic [CmdWidth-1:0]         genblk_updblk_ccmd_arb_din;
-  logic [InstIdWidth-1:0]      genblk_updblk_id_arb_din;
-  logic [BlkLen-1:0]           genblk_updblk_v_arb_din;
-  logic [KeyLen-1:0]           genblk_updblk_key_arb_din;
-  logic [SeedLen-1:0]          genblk_updblk_pdata_arb_din;
-  logic                        genblk_updblk_arb_req;
-  logic                        updblk_genblk_arb_req_rdy;
-  logic                        updblk_genblk_ack;
-  logic                        genblk_updblk_ack_rdy;
+  logic                        gen_upd_req_vld;
+  logic                        gen_upd_req_rdy;
+  csrng_upd_data_t             gen_upd_req_data;
 
-  logic [UpdateArbWidth-1:0]   updblk_arb_din [2];
-  logic [UpdateArbWidth-1:0]   updblk_arb_data;
-  logic [KeyLen-1:0]           updblk_arb_key;
-  logic [BlkLen-1:0]           updblk_arb_v;
-  logic [SeedLen-1:0]          updblk_arb_pdata;
-  logic [InstIdWidth-1:0]      updblk_arb_inst_id;
-  logic [CmdWidth-1:0]         updblk_arb_ccmd;
-  logic                        updblk_arb_vld;
-  logic                        updblk_ack;
-  logic                        updblk_ack_rdy;
-  logic                        updblk_arb_rdy;
-  logic [CmdWidth-1:0]         updblk_ccmd;
-  logic [InstIdWidth-1:0]      updblk_inst_id;
-  logic [KeyLen-1:0]           updblk_key;
-  logic [BlkLen-1:0]           updblk_v;
+  logic                        upd_arb_req_vld;
+  logic                        upd_arb_req_rdy;
+  csrng_upd_data_t             upd_arb_req_data;
+
+  // response path
+  logic                        cmd_upd_rsp_vld;
+  logic                        cmd_upd_rsp_rdy;
+
+  logic                        gen_upd_rsp_vld;
+  logic                        gen_upd_rsp_rdy;
+
+  logic                        upd_rsp_vld;
+  logic                        upd_rsp_rdy;
+  csrng_upd_data_t             upd_rsp_data;
+
 
   logic [2:0]                  cmd_stage_sfifo_cmd_err[NumApps];
   logic [NumApps-1:0]          cmd_stage_sfifo_cmd_err_sum;
@@ -1350,46 +1337,38 @@ module csrng_core import csrng_pkg::*; #(
     fips:    state_db_rd_fips
   }; 
 
+
   csrng_ctr_drbg_cmd u_csrng_ctr_drbg_cmd (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
+    .clk_i       ( clk_i            ),
+    .rst_ni      ( rst_ni           ),
+    .enable_i    ( cs_enable_fo[46] ),
 
-    .enable_i(cs_enable_fo[46]),
+    .cmd_data_req_vld_i          ( ctr_drbg_cmd_req      ),
+    .cmd_data_req_rdy_o          ( ctr_drbg_cmd_req_rdy  ),
+    .cmd_data_req_i              ( ctr_drbg_cmd_req_data ),
+    .cmd_data_req_entropy_i      ( cmd_entropy           ),
+    .cmd_data_req_entropy_fips_i ( cmd_entropy_fips      ),
+    .cmd_data_req_glast_i        ( gen_last_q            ),
 
-    .cmd_data_req_vld_i(ctr_drbg_cmd_req),
-    .cmd_data_req_rdy_o(ctr_drbg_cmd_req_rdy),
-    .cmd_data_req_i(ctr_drbg_cmd_req_data),
-    .cmd_data_req_entropy_i(cmd_entropy),
-    .cmd_data_req_entropy_fips_i(cmd_entropy_fips),
-    .cmd_data_req_glast_i(gen_last_q),
+    .cmd_data_rsp_vld_o          ( cmd_result_ack        ),
+    .cmd_data_rsp_rdy_i          ( cmd_result_ack_rdy    ),
+    .cmd_data_rsp_o              ( ctr_drbg_cmd_rsp_data ),
+    .cmd_data_rsp_status_o       ( cmd_result_ack_sts    ),
+    .cmd_data_rsp_glast_o        ( cmd_result_glast      ),
 
-    .cmd_data_rsp_vld_o(cmd_result_ack),
-    .cmd_data_rsp_rdy_i(cmd_result_ack_rdy),
-    .cmd_data_rsp_o(ctr_drbg_cmd_rsp_data),
-    .cmd_data_rsp_status_o(cmd_result_ack_sts),
-    .cmd_data_rsp_glast_o(cmd_result_glast),
+    // Request and response path to and from update unit
+    .cmd_upd_req_vld_o  ( cmd_upd_req_vld  ),
+    .cmd_upd_req_rdy_i  ( cmd_upd_req_rdy  ),
+    .cmd_upd_req_data_o ( cmd_upd_req_data ),
 
-    // interface to updblk from cmdblk
-    .cmd_upd_req_o(cmdblk_updblk_arb_req),
-    .upd_cmd_rdy_i(updblk_cmdblk_arb_req_rdy),
-    .cmd_upd_ccmd_o(cmdblk_updblk_ccmd_arb_din),
-    .cmd_upd_inst_id_o(cmdblk_updblk_id_arb_din),
-    .cmd_upd_pdata_o(cmdblk_updblk_pdata_arb_din),
-    .cmd_upd_key_o(cmdblk_updblk_key_arb_din),
-    .cmd_upd_v_o(cmdblk_updblk_v_arb_din),
-
-    .upd_cmd_ack_i(updblk_cmdblk_ack),
-    .cmd_upd_rdy_o(cmdblk_updblk_ack_rdy),
-    .upd_cmd_ccmd_i(updblk_ccmd),
-    .upd_cmd_inst_id_i(updblk_inst_id),
-    .upd_cmd_key_i(updblk_key),
-    .upd_cmd_v_i(updblk_v),
+    .cmd_upd_rsp_vld_i  ( cmd_upd_rsp_vld  ),
+    .cmd_upd_rsp_rdy_o  ( cmd_upd_rsp_rdy  ),
+    .cmd_upd_rsp_data_i ( upd_rsp_data     ),
 
     .ctr_drbg_cmd_sfifo_cmdreq_err_o(ctr_drbg_cmd_sfifo_cmdreq_err),
     .ctr_drbg_cmd_sfifo_rcstage_err_o(ctr_drbg_cmd_sfifo_rcstage_err),
     .ctr_drbg_cmd_sfifo_keyvrc_err_o(ctr_drbg_cmd_sfifo_keyvrc_err)
   );
-
 
   //-------------------------------------
   // csrng_ctr_drbg_upd instantiation
@@ -1408,20 +1387,13 @@ module csrng_core import csrng_pkg::*; #(
 
     .ctr_drbg_upd_enable_i(cs_enable_fo[47]),
 
-    .ctr_drbg_upd_req_i(updblk_arb_vld),
-    .ctr_drbg_upd_rdy_o(updblk_arb_rdy),
-    .ctr_drbg_upd_ccmd_i(updblk_arb_ccmd),
-    .ctr_drbg_upd_inst_id_i(updblk_arb_inst_id),
-    .ctr_drbg_upd_pdata_i(updblk_arb_pdata),
-    .ctr_drbg_upd_key_i(updblk_arb_key),
-    .ctr_drbg_upd_v_i(updblk_arb_v),
+    .req_vld_i  ( upd_arb_req_vld  ),
+    .req_rdy_o  ( upd_arb_req_rdy  ),
+    .req_data_i ( upd_arb_req_data ),
 
-    .ctr_drbg_upd_ack_o(updblk_ack),
-    .ctr_drbg_upd_rdy_i(updblk_ack_rdy),
-    .ctr_drbg_upd_ccmd_o(updblk_ccmd),
-    .ctr_drbg_upd_inst_id_o(updblk_inst_id),
-    .ctr_drbg_upd_key_o(updblk_key),
-    .ctr_drbg_upd_v_o(updblk_v),
+    .rsp_vld_o  ( upd_rsp_vld  ),
+    .rsp_rdy_i  ( upd_rsp_rdy  ),
+    .rsp_data_o ( upd_rsp_data ),
 
     // es halt interface
     .ctr_drbg_upd_es_req_i(cs_aes_halt_i.cs_aes_halt_req),
@@ -1450,38 +1422,34 @@ module csrng_core import csrng_pkg::*; #(
     .ctr_drbg_updob_sm_err_o(drbg_updob_sm_err)
   );
 
-  // update block  arbiter
+  // update unit arbiter
+
+  // local helper signals
+  csrng_upd_data_t upd_arb_din[2];
+
   prim_arbiter_ppc #(
-    .N(NUpdateArbReqs), // (cmd req and gen req)
-    .DW(UpdateArbWidth) // Data width
+    .N  ( 2            ), // (cmd req and gen req)
+    .DW ( UpdDataWidth )
   ) u_prim_arbiter_ppc_updblk_arb (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .req_chk_i(cs_enable_fo[1]),
-    .req_i({genblk_updblk_arb_req,cmdblk_updblk_arb_req}),
-    .data_i(updblk_arb_din),
-    .gnt_o({updblk_genblk_arb_req_rdy,updblk_cmdblk_arb_req_rdy}),
-    .idx_o(),
-    .valid_o(updblk_arb_vld),
-    .data_o(updblk_arb_data),
-    .ready_i(updblk_arb_rdy)
+    .clk_i  ( clk_i  ),
+    .rst_ni ( rst_ni ),
+    .req_chk_i ( cs_enable_fo[1]       ),
+    .req_i     ( {gen_upd_req_vld, cmd_upd_req_vld}),
+    .data_i    ( upd_arb_din           ),
+    .gnt_o     ( {gen_upd_req_rdy, cmd_upd_req_rdy}),
+    .idx_o     (                       ),
+    .valid_o   ( upd_arb_req_vld       ),
+    .data_o    ( upd_arb_req_data      ),
+    .ready_i   ( upd_arb_req_rdy       )
   );
 
-  assign updblk_arb_din[0] = {cmdblk_updblk_key_arb_din,cmdblk_updblk_v_arb_din,
-                              cmdblk_updblk_pdata_arb_din,
-                              cmdblk_updblk_id_arb_din,cmdblk_updblk_ccmd_arb_din};
+  assign upd_arb_din[0] = cmd_upd_req_data;
+  assign upd_arb_din[1] = gen_upd_req_data;
 
-  assign updblk_arb_din[1] = {genblk_updblk_key_arb_din,genblk_updblk_v_arb_din,
-                              genblk_updblk_pdata_arb_din,
-                              genblk_updblk_id_arb_din,genblk_updblk_ccmd_arb_din};
+  assign cmd_upd_rsp_vld = upd_rsp_vld && (upd_rsp_data.cmd != GENU);
+  assign gen_upd_rsp_vld = upd_rsp_vld && (upd_rsp_data.cmd == GENU);
 
-  assign {updblk_arb_key,updblk_arb_v,updblk_arb_pdata,
-          updblk_arb_inst_id,updblk_arb_ccmd} = updblk_arb_data;
-
-  assign updblk_cmdblk_ack = (updblk_ack && (updblk_ccmd != GENU));
-  assign updblk_genblk_ack = (updblk_ack && (updblk_ccmd == GENU));
-
-  assign updblk_ack_rdy = (updblk_ccmd == GENU) ? genblk_updblk_ack_rdy : cmdblk_updblk_ack_rdy;
+  assign upd_rsp_rdy = (upd_rsp_data.cmd == GENU) ? gen_upd_rsp_rdy : cmd_upd_rsp_rdy;
 
 
   //-------------------------------------
@@ -1610,20 +1578,13 @@ module csrng_core import csrng_pkg::*; #(
     .ctr_drbg_gen_es_ack_o(ctr_drbg_gen_es_ack),
 
     // interface to updblk from genblk
-    .gen_upd_req_o(genblk_updblk_arb_req),
-    .upd_gen_rdy_i(updblk_genblk_arb_req_rdy),
-    .gen_upd_ccmd_o(genblk_updblk_ccmd_arb_din),
-    .gen_upd_inst_id_o(genblk_updblk_id_arb_din),
-    .gen_upd_pdata_o(genblk_updblk_pdata_arb_din),
-    .gen_upd_key_o(genblk_updblk_key_arb_din),
-    .gen_upd_v_o(genblk_updblk_v_arb_din),
+    .gen_upd_req_vld_o  ( gen_upd_req_vld  ),
+    .gen_upd_req_rdy_i  ( gen_upd_req_rdy  ),
+    .gen_upd_req_data_o ( gen_upd_req_data ),
 
-    .upd_gen_ack_i(updblk_genblk_ack),
-    .gen_upd_rdy_o(genblk_updblk_ack_rdy),
-    .upd_gen_ccmd_i(updblk_ccmd),
-    .upd_gen_inst_id_i(updblk_inst_id),
-    .upd_gen_key_i(updblk_key),
-    .upd_gen_v_i(updblk_v),
+    .gen_upd_rsp_vld_i  ( gen_upd_rsp_vld  ),
+    .gen_upd_rsp_rdy_o  ( gen_upd_rsp_rdy  ),
+    .gen_upd_rsp_data_i ( upd_rsp_data     ),
 
     .block_encrypt_req_o(genblk_benblk_arb_req),
     .block_encrypt_rdy_i(genblk_benblk_arb_req_rdy),
