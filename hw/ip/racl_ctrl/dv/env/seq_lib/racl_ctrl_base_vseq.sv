@@ -139,8 +139,9 @@ task racl_ctrl_base_vseq::clear_error_log();
     if (status != UVM_IS_OK && !cfg.under_reset)
       `uvm_error(`gfn, "Failed to write error_log register")
 
-    // Pause this task if we have gone into reset
-    wait(!cfg.under_reset);
+    // Pause this task if we have gone into reset, but drop out of the pause if stopping becomes
+    // true (in which case, the clear_error_log task will stop).
+    wait(stopping || !cfg.under_reset);
   end
 
   clear_error_log_running = 1'b0;
