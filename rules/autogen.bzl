@@ -54,7 +54,6 @@ def _opentitan_ip_c_header_impl(ctx):
 
     return [
         CcInfo(compilation_context = cc_common.create_compilation_context(
-            includes = depset([header.dirname]),
             headers = depset([header]),
         )),
         DefaultInfo(files = depset([header])),
