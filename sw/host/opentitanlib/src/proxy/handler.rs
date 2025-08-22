@@ -308,12 +308,6 @@ impl<'a> TransportCommandHandler<'a> {
                         instance.write(data)?;
                         Ok(Response::Uart(UartResponse::Write))
                     }
-                    UartRequest::SupportsNonblockingRead => {
-                        let has_support = instance.supports_nonblocking_read()?;
-                        Ok(Response::Uart(UartResponse::SupportsNonblockingRead {
-                            has_support,
-                        }))
-                    }
                     UartRequest::RegisterNonblockingRead => {
                         let channel =
                             others.nonblocking_uart_init(&instance, conn_token, registry)?;

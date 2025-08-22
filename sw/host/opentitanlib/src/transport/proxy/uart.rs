@@ -2,18 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::os::unix::io::AsRawFd;
 use std::pin::Pin;
 use std::rc::Rc;
 use std::task::Poll;
 use std::time::Duration;
 
 use anyhow::{Result, bail};
-use mio::unix::SourceFd;
 use tokio::io::AsyncRead;
 
 use super::ProxyError;
-use crate::io::nonblocking_help::NonblockingHelp;
 use crate::io::uart::{FlowControl, Parity, Uart};
 use crate::proxy::protocol::{Request, Response, UartRequest, UartResponse};
 use crate::transport::proxy::{Inner, Proxy};
@@ -116,7 +113,10 @@ impl Uart for ProxyUart {
             Pin::new(&mut uart_record.pipe_receiver).poll_read(cx, &mut read_buf)
         })? {
             Poll::Ready(()) => Poll::Ready(Ok(read_buf.filled().len())),
-            Poll::Pending => Poll::Pending,
+            Poll::Pending => {
+                // `self.inner` currently does not yet support context notification.
+                crate::util::runtime::poll_later(cx, Duration::from_millis(1))
+            }
         }
     }
 
@@ -126,25 +126,5 @@ impl Uart for ProxyUart {
             UartResponse::Write => Ok(()),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
-    }
-
-    fn supports_nonblocking_read(&self) -> Result<bool> {
-        Ok(true)
-    }
-    fn register_nonblocking_read(&self, registry: &mio::Registry, token: mio::Token) -> Result<()> {
-        let mut uarts = self.inner.uarts.borrow_mut();
-        let uart_record = uarts.get_mut(&self.instance).unwrap();
-        registry.register(
-            &mut SourceFd(&uart_record.pipe_receiver.as_raw_fd()),
-            token,
-            mio::Interest::READABLE,
-        )?;
-        Ok(())
-    }
-
-    fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
-        Ok(Rc::new(super::ProxyNonblockingHelp {
-            inner: self.inner.clone(),
-        }))
     }
 }
