@@ -312,23 +312,6 @@
  */
 #define TOP_ENGLISHBREAKFAST_FLASH_CTRL_PRIM_SIZE_BYTES 0x80
 /**
- * Peripheral base address for mem device on flash_ctrl in top englishbreakfast.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_BASE_ADDR 0x20000000
-
-/**
- * Peripheral size for mem device on flash_ctrl in top englishbreakfast.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_BASE_ADDR + TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES`.
- */
-#define TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES 0x10000
-/**
  * Peripheral base address for rv_plic in top englishbreakfast.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -380,23 +363,6 @@
  */
 #define TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_REGS_SIZE_BYTES 0x40
 /**
- * Peripheral base address for ram device on sram_ctrl_main in top englishbreakfast.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_BASE_ADDR 0x10000000
-
-/**
- * Peripheral size for ram device on sram_ctrl_main in top englishbreakfast.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_BASE_ADDR + TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_SIZE_BYTES`.
- */
-#define TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_SIZE_BYTES 0x20000
-/**
  * Peripheral base address for regs device on rom_ctrl in top englishbreakfast.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -413,23 +379,6 @@
  * `TOP_ENGLISHBREAKFAST_ROM_CTRL_REGS_BASE_ADDR + TOP_ENGLISHBREAKFAST_ROM_CTRL_REGS_SIZE_BYTES`.
  */
 #define TOP_ENGLISHBREAKFAST_ROM_CTRL_REGS_SIZE_BYTES 0x80
-/**
- * Peripheral base address for rom device on rom_ctrl in top englishbreakfast.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_BASE_ADDR 0x8000
-
-/**
- * Peripheral size for rom device on rom_ctrl in top englishbreakfast.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_BASE_ADDR + TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_SIZE_BYTES`.
- */
-#define TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_SIZE_BYTES 0x8000
 /**
  * Peripheral base address for cfg device on rv_core_ibex in top englishbreakfast.
  *
