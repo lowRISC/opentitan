@@ -11,6 +11,7 @@ class racl_error_log_agent extends dv_base_agent#(.CFG_T      (racl_error_log_ag
   extern function new (string name="", uvm_component parent=null);
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
+  extern task run_phase(uvm_phase phase);
 endclass
 
 function racl_error_log_agent::new (string name="", uvm_component parent=null);
@@ -29,3 +30,15 @@ function void racl_error_log_agent::connect_phase(uvm_phase phase);
   driver.vif = cfg.vif;
   monitor.vif = cfg.vif;
 endfunction
+
+task racl_error_log_agent::run_phase(uvm_phase phase);
+  super.run_phase(phase);
+
+  // The agent is in charge of telling the sequencer to stop its sequences if a reset gets asserted.
+  // Since there isn't currently a reset agent, we have to spot resets directly.
+  forever begin
+    wait(cfg.in_reset);
+    sequencer.stop_sequences();
+    wait(!cfg.in_reset);
+  end
+endtask
