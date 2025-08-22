@@ -447,83 +447,83 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
             !is_mem_addr(item, ral_name));
   endfunction
 
-  // Checks if the TL access is valid.
+  // Return whether an A-channel access was invalid and check any D-channel response.
   //
-  // On the Addr channel, returns 1 if the item should cause a TL error.
+  // Arguments:
   //
-  // On the Data channel, this also asserts that the item's D channel integrity is correct (because
-  // the DUT should never inject errors) and that item.d_error matches the prediction (to check that
-  // the DUT correctly spots TL errors on the A channel). If TL integrity generation is enabled,
-  // this also calls update_tl_alert_field_prediction() to update the mirrored value of any "I've
-  // seen an integrity error" bit.
+  //    item:     A tl_seq_item representing the transaction. If channel points at the A channel,
+  //              this item will contain all of the "a_* fields* of the request. If channel points
+  //              at the D channel, the item will also contain the "d_* fields" of the response.
   //
-  // The following situations might cause a TL error:
+  //    channel:  The channel from which item was constructed (A or D)
   //
-  //  - unmapped address
-  //  - write address isn't word-aligned
-  //  - partial writes to a bus that does not support it
-  //  - memory write isn't a full word
-  //  - register write size is less than actual register width
-  //  - TL protocol violation
+  //    ral_name: A string naming the interface (used to get a RAL model)
   //
-  // Returns true if invalid access, else false. Caller processes the packet further if the access
-  // is valid.
-  virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
-    bit invalid_access;
-    bit exp_d_error;
+  //
+  // If the channel argument points at the D channel the function checks that the item's D channel
+  // integrity is correct (because the DUT should never inject errors). If the A-channel access was
+  // invalid, the function also checks that d_error=1 and that d_data has been blanked.
+  //
+  // Looking at the A channel transaction, any of the following problems makes the access invalid:
+  //
+  //    - Unmapped address
+  //    - Write address isn't word-aligned
+  //    - Partial writes to a bus that does not support it
+  //    - Memory write isn't a full word
+  //    - Register write size is less than actual register width
+  //    - TL protocol violation
+  protected virtual function bit predict_tl_err(tl_seq_item   item,
+                                                tl_channels_e channel,
+                                                string        ral_name);
+    bit unmapped_err   = !is_tl_access_mapped_addr(item, ral_name);
+    bit bus_intg_err   = !item.is_a_chan_intg_ok(.throw_error(0));
+    bit byte_wr_err    = is_tl_access_unsupported_byte_wr(item, ral_name);
+    bit csr_size_err   = !is_tl_csr_write_size_gte_csr_width(item, ral_name);
+    bit tl_item_err    = item.get_exp_d_error();
+    bit csr_read_err   = is_csr_fetch(item, ral_name);
 
-    bit unmapped_err, mem_access_err, bus_intg_err, byte_wr_err, csr_size_err, tl_item_err;
-    bit mem_byte_access_err, mem_wo_err, mem_ro_err, custom_err, ecc_err;
+    bit mem_access_err, mem_byte_access_err, mem_wo_err, mem_ro_err, custom_err;
 
     cip_tl_seq_item cip_item;
-    tl_intg_err_e tl_intg_err_type;
-    logic cmd_intg_err, data_intg_err;
-
-    bit write_w_instr_type_err, instr_type_err, csr_read_err;
-
-    unmapped_err = !is_tl_access_mapped_addr(item, ral_name);
-    if (unmapped_err) begin
-      exp_d_error = !cfg.ral_models[ral_name].get_unmapped_access_ok();
-    end
+    tl_intg_err_e   tl_intg_err_type;
+    logic           cmd_intg_err, data_intg_err;
+    bit             write_w_instr_type_err, instr_type_err;
 
     mem_access_err = !is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err, mem_wo_err,
                                                mem_ro_err, custom_err);
-    if (mem_access_err) begin
-      // Some memory implementations may not return an error response on invalid accesses.
-      exp_d_error |= mem_byte_access_err | mem_wo_err | mem_ro_err | custom_err;
-    end
-
-    if (is_mem_addr(item, ral_name) && cfg.tl_mem_access_gated) begin
-      exp_d_error |= cfg.tl_mem_access_gated;
-    end
-
-    bus_intg_err = !item.is_a_chan_intg_ok(.throw_error(0));
-    if (bus_intg_err) begin
-      // On bus integrity error, update the mirrored value of bus integrity alert CSR fields.
-      update_tl_alert_field_prediction();
-    end
-
-    byte_wr_err = is_tl_access_unsupported_byte_wr(item, ral_name);
-    csr_size_err = !is_tl_csr_write_size_gte_csr_width(item, ral_name);
-    tl_item_err = item.get_exp_d_error();
-    csr_read_err = is_csr_fetch(item, ral_name);
-
-    // For flash, address has to be 8byte aligned.
-    ecc_err = ecc_error_addr.exists({item.a_addr[AddrWidth-1:3],3'b0});
 
     `downcast(cip_item, item)
     cip_item.get_a_chan_err_info(tl_intg_err_type, cmd_intg_err, data_intg_err,
                                  write_w_instr_type_err, instr_type_err);
 
-    exp_d_error |= byte_wr_err | bus_intg_err | csr_size_err | tl_item_err |
-                   write_w_instr_type_err | instr_type_err |
-                   ecc_err | csr_read_err;
-
-    invalid_access = unmapped_err | mem_access_err | bus_intg_err | csr_size_err | tl_item_err |
-                     write_w_instr_type_err | instr_type_err | cfg.tl_mem_access_gated |
-                     csr_read_err;
+    if (bus_intg_err) begin
+      // On bus integrity error, update the mirrored value of bus integrity alert CSR fields.
+      update_tl_alert_field_prediction();
+    end
 
     if (channel == DataChannel) begin
+      bit exp_d_error = 1'b0;
+
+      // For flash, address has to be 8-byte aligned.
+      bit ecc_err = ecc_error_addr.exists({item.a_addr[AddrWidth-1:3], 3'b0});
+
+      if (unmapped_err) begin
+        exp_d_error = !cfg.ral_models[ral_name].get_unmapped_access_ok();
+      end
+
+      if (mem_access_err) begin
+        // Some memory implementations may not return an error response on invalid accesses.
+        exp_d_error |= mem_byte_access_err | mem_wo_err | mem_ro_err | custom_err;
+      end
+
+      if (is_mem_addr(item, ral_name) && cfg.tl_mem_access_gated) begin
+        exp_d_error |= cfg.tl_mem_access_gated;
+      end
+
+      exp_d_error |= byte_wr_err | bus_intg_err | csr_size_err | tl_item_err |
+                     write_w_instr_type_err | instr_type_err |
+                     ecc_err | csr_read_err;
+
       // integrity at d_user is from DUT, which should be always correct, except data integrity for
       // passthru memory
       void'(item.is_d_chan_intg_ok(
@@ -543,9 +543,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
               .num_enable_bytes($countones(item.a_mask)));
         end
       end
-    end
 
-    if (channel == DataChannel) begin
       `DV_CHECK_EQ(item.d_error, exp_d_error,
           $sformatf({"On interface %0s, TL item: %0s, unmapped_err: %0d, mem_access_err: %0d, ",
                     "bus_intg_err: %0d, byte_wr_err: %0d, csr_size_err: %0d, tl_item_err: %0d, ",
@@ -577,9 +575,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                                             .write_w_instr_type_err(write_w_instr_type_err),
                                             .instr_type_err(instr_type_err));
       end
-
     end
-    return invalid_access;
+
+    return (unmapped_err | mem_access_err | bus_intg_err | csr_size_err | tl_item_err |
+            write_w_instr_type_err | instr_type_err | cfg.tl_mem_access_gated | csr_read_err);
   endfunction
 
   virtual function void check_tl_read_value_after_error(tl_seq_item item, string ral_name);
