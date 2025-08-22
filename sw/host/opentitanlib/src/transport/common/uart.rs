@@ -187,20 +187,6 @@ impl Uart for SerialPortUart {
         while self.read_timeout(&mut buf, TIMEOUT)? > 0 {}
         Ok(())
     }
-
-    fn supports_nonblocking_read(&self) -> Result<bool> {
-        Ok(true)
-    }
-
-    fn register_nonblocking_read(&self, registry: &mio::Registry, token: mio::Token) -> Result<()> {
-        let port = self.port.borrow_mut();
-        registry.register(
-            &mut mio::unix::SourceFd(&port.as_raw_fd()),
-            token,
-            mio::Interest::READABLE,
-        )?;
-        Ok(())
-    }
 }
 
 /// Invoke Linux `flock()` on the given serial port, lock will be released when the file
@@ -361,13 +347,5 @@ impl<T: Uart> Uart for SoftwareFlowControl<T> {
 
         // Clear the host input buffer.
         self.inner.clear_rx_buffer()
-    }
-
-    fn supports_nonblocking_read(&self) -> Result<bool> {
-        self.inner.supports_nonblocking_read()
-    }
-
-    fn register_nonblocking_read(&self, registry: &mio::Registry, token: mio::Token) -> Result<()> {
-        self.inner.register_nonblocking_read(registry, token)
     }
 }

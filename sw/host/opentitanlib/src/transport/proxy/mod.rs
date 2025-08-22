@@ -10,7 +10,7 @@ use std::net::{TcpStream, ToSocketAddrs};
 use std::os::unix::io::AsRawFd;
 use std::rc::Rc;
 
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tokio::io::AsyncWriteExt;
@@ -303,17 +303,6 @@ impl Transport for Proxy {
         if let Some(instance) = self.inner.uarts.borrow().get(instance_name) {
             return Ok(Rc::clone(&instance.uart));
         }
-
-        // For now, only support uart that can be read non-blockingly. We will lift this soon.
-        let Response::Uart(UartResponse::SupportsNonblockingRead { has_support }) =
-            self.inner.execute_command(Request::Uart {
-                id: instance_name.to_owned(),
-                command: UartRequest::SupportsNonblockingRead,
-            })?
-        else {
-            bail!(ProxyError::UnexpectedReply())
-        };
-        ensure!(has_support);
 
         // All `Uart` instances that we create via proxy supports non-blocking.
         // This allows us to control whether UART is blocking or not by controlling if

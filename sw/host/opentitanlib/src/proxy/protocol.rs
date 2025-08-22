@@ -195,7 +195,6 @@ pub enum UartRequest {
     Write {
         data: Vec<u8>,
     },
-    SupportsNonblockingRead,
     RegisterNonblockingRead,
 }
 
@@ -211,7 +210,6 @@ pub enum UartResponse {
     GetDevicePath { path: String },
     Read { data: Vec<u8> },
     Write,
-    SupportsNonblockingRead { has_support: bool },
     RegisterNonblockingRead { channel: u32 },
 }
 
