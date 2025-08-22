@@ -1,5 +1,5 @@
 {
-  "includes": ["/__builtin__/hyperdebug_chipwhisperer.json"],
+  "includes": ["/__builtin__/hyperdebug_chipwhisperer.json5"],
   "interface": "hyper340",
   "pins": [
     {

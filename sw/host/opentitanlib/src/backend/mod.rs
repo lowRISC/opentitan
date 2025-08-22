@@ -91,46 +91,46 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
         "proxy" => (proxy::create(&args.proxy_opts)?, None),
         "verilator" => (
             verilator::create(&args.verilator_opts)?,
-            Some(Path::new("/__builtin__/opentitan_verilator.json")),
+            Some(Path::new("/__builtin__/opentitan_verilator.json5")),
         ),
         "ti50emulator" => (
             ti50emulator::create(&args.ti50emulator_opts)?,
-            Some(Path::new("/__builtin__/ti50emulator.json")),
+            Some(Path::new("/__builtin__/ti50emulator.json5")),
         ),
         "hyper310" => (
             hyperdebug::create::<ChipWhispererFlavor<Cw310>>(args)?,
-            Some(Path::new("/__builtin__/hyperdebug_cw310.json")),
+            Some(Path::new("/__builtin__/hyperdebug_cw310.json5")),
         ),
         "teacup" => (
             hyperdebug::create::<StandardFlavor>(args)?,
-            Some(Path::new("/__builtin__/hyperdebug_teacup_default.json")),
+            Some(Path::new("/__builtin__/hyperdebug_teacup_default.json5")),
         ),
         "hyper340" => (
             hyperdebug::create::<ChipWhispererFlavor<Cw340>>(args)?,
-            Some(Path::new("/__builtin__/hyperdebug_cw340.json")),
+            Some(Path::new("/__builtin__/hyperdebug_cw340.json5")),
         ),
         "hyperdebug" => (hyperdebug::create::<StandardFlavor>(args)?, None),
         "hyperdebug_dfu" => (hyperdebug::create_dfu(args)?, None),
         "c2d2" => (
             hyperdebug::create::<C2d2Flavor>(args)?,
-            Some(Path::new("/__builtin__/h1dx_devboard_c2d2.json")),
+            Some(Path::new("/__builtin__/h1dx_devboard_c2d2.json5")),
         ),
         "servo_micro" => (
             hyperdebug::create::<ServoMicroFlavor>(args)?,
-            Some(Path::new("/__builtin__/servo_micro.json")),
+            Some(Path::new("/__builtin__/servo_micro.json5")),
         ),
         "ti50" => (hyperdebug::create::<Ti50Flavor>(args)?, None),
         "cw310" => (
             chip_whisperer::create::<Cw310>(args)?,
-            Some(Path::new("/__builtin__/opentitan_cw310.json")),
+            Some(Path::new("/__builtin__/opentitan_cw310.json5")),
         ),
         "cw340" => (
             chip_whisperer::create::<Cw340>(args)?,
-            Some(Path::new("/__builtin__/opentitan_cw340.json")),
+            Some(Path::new("/__builtin__/opentitan_cw340.json5")),
         ),
         "ftdi" => (
             ftdi::create::<Ft4232hq>(args)?,
-            Some(Path::new("/__builtin__/opentitan_ftdi_voyager.json")),
+            Some(Path::new("/__builtin__/opentitan_ftdi_voyager.json5")),
         ),
         "dediprog" => {
             let dediprog: Box<dyn Transport> = Box::new(Dediprog::new(
@@ -138,7 +138,7 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
                 args.usb_pid,
                 args.usb_serial.as_deref(),
             )?);
-            (dediprog, Some(Path::new("/__builtin__/dediprog.json")))
+            (dediprog, Some(Path::new("/__builtin__/dediprog.json5")))
         }
         _ => return Err(Error::UnknownInterface(interface.to_string()).into()),
     };

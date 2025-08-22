@@ -1,5 +1,5 @@
 {
-  "includes": ["/__builtin__/opentitan.json"],
+  "includes": ["/__builtin__/opentitan.json5"],
   "interface": "verilator",
   "pins": [
       { "name": "IOB6", "alias_of": "0" },

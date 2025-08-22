@@ -3,7 +3,7 @@
  * the signals to an Earlgrey chip on a Teacup shield to be.
  */
 {
-  "includes": ["/__builtin__/hyperdebug_teacup.json"],
+  "includes": ["/__builtin__/hyperdebug_teacup.json5"],
   "interface": "teacup",
   "pins": [
     {

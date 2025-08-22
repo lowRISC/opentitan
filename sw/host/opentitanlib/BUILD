@@ -51,7 +51,7 @@ ujson_rust(
 
 filegroup(
     name = "config",
-    srcs = glob(["src/app/config/*.json"]),
+    srcs = glob(["src/app/config/*.json5"]),
 )
 
 rust_library(
