@@ -529,7 +529,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       // integrity at d_user is from DUT, which should be always correct, except data integrity for
       // passthru memory
       void'(item.is_d_chan_intg_ok(
-            .en_data_intg_chk(!is_data_intg_passthru_mem(item, ral_name) ||
+            .en_data_intg_chk(!is_data_intg_passthru_mem(item, block) ||
                               !cfg.disable_d_user_data_intg_check_for_passthru_mem),
             .throw_error(cfg.m_tl_agent_cfgs[ral_name].check_tl_errs)));
 
@@ -662,9 +662,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
             (item.a_size != 2 || item.a_mask != '1));
   endfunction
 
-  virtual function bit is_data_intg_passthru_mem(tl_seq_item item, string ral_name);
-    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
-    uvm_mem mem = cfg.ral_models[ral_name].default_map.get_mem_by_offset(addr);
+  local function bit is_data_intg_passthru_mem(tl_seq_item item, dv_base_reg_block block);
+    uvm_reg_addr_t addr = block.get_normalized_addr(item.a_addr);
+    uvm_mem mem = block.default_map.get_mem_by_offset(addr);
 
     if (mem == null) begin
       return 0;
