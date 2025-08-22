@@ -16,6 +16,9 @@ class racl_error_log_monitor extends dv_base_monitor #(.ITEM_T (racl_error_log_v
   extern function new(string name, uvm_component parent);
 
   extern task run_phase(uvm_phase phase);
+
+  extern local task watch_resets();
+  extern local task watch_logs();
 endclass
 
 function racl_error_log_monitor::new(string name, uvm_component parent);
@@ -25,6 +28,22 @@ endfunction
 task racl_error_log_monitor::run_phase(uvm_phase phase);
   if (vif == null) `uvm_fatal(`gfn, "No vif to monitor.")
 
+  fork
+    watch_resets();
+    watch_logs();
+  join
+endtask
+
+task racl_error_log_monitor::watch_resets();
+  forever begin
+    cfg.in_reset = 1'b1;
+    wait(cfg.vif.rst_ni);
+    cfg.in_reset = 1'b0;
+    wait(!cfg.vif.rst_ni);
+  end
+endtask
+
+task racl_error_log_monitor::watch_logs();
   forever begin
     logic valid = 1'b0;
 
