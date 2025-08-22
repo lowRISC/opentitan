@@ -641,7 +641,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
       csr_name = csr.get_name();
       index = get_index_from_reg_name(csr_name);
       return csr_name;
-    end else if (is_mem_addr(item, ral_name)) begin
+    end else if (is_mem_addr(item.a_addr, cfg.ral_models[ral_name])) begin
       // There is only a single memory window; it provides access to the packet buffer memory.
       uvm_mem mem = ral.default_map.get_mem_by_offset(item.a_addr);
       uvm_reg_addr_t masked_addr = item.a_addr & ral.get_addr_mask();
