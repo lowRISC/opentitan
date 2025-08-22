@@ -104,7 +104,7 @@ task racl_ctrl_base_vseq::clear_error_log();
       field_value = 1'b1;
     end
 
-    if (field_value) error_log_reg.write(status, 1);
+    if (field_value) error_log_reg.write(status, 1, .prior(100));
 
     if (status != UVM_IS_OK && !cfg.under_reset) begin
       `uvm_error(`gfn, "Failed to write error_log register")
