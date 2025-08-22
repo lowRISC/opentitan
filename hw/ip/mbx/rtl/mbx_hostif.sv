@@ -110,7 +110,7 @@ module mbx_hostif
     .EnableRacl(EnableRacl),
     .RaclErrorRsp(RaclErrorRsp),
     .RaclPolicySelVec(RaclPolicySelVecCore)
-  ) u_regs(
+  ) u_regs_core(
     .clk_i           ( clk_i           ),
     .rst_ni          ( rst_ni          ),
     .tl_i            ( tl_host_i       ),
@@ -249,6 +249,6 @@ module mbx_hostif
 
   // Assertions
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
-                                                 u_regs,
+                                                 u_regs_core,
                                                  alert_tx_o[0])
 endmodule

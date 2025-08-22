@@ -19,9 +19,9 @@
 
   clocking: [{clock: "clk_i", reset: "rst_ni", primary: true}]
   bus_interfaces: [
-    { protocol: "tlul", direction: "device", name: "core", racl_support: true }
+    { protocol: "tlul", direction: "device", name: "core", hier_path: "u_hostif.u_regs", racl_support: true }
     { protocol: "tlul", direction: "host",   name: "sram" }
-    { protocol: "tlul", direction: "device", name: "soc", racl_support: true }
+    { protocol: "tlul", direction: "device", name: "soc", hier_path: "u_sysif.u_regs", racl_support: true }
   ]
   inter_signal_list: [
     { struct:  "logic",

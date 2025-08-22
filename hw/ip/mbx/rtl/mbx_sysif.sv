@@ -95,7 +95,7 @@ module mbx_sysif
     .EnableRacl(EnableRacl),
     .RaclErrorRsp(RaclErrorRsp),
     .RaclPolicySelVec(RaclPolicySelVecSoc)
-  ) u_soc_regs (
+  ) u_regs_soc (
     .clk_i            ( clk_i               ),
     .rst_ni           ( rst_ni              ),
     .tl_i             ( tl_sys_i            ),
