@@ -18,19 +18,19 @@ RESULT_STATUS=0
 
 echo "___Starting signature verification & manifest key verification___"
 
+# If ECDSA key is provided, include it in the manifest update
+if [[ ! -z "$ECDSA_KEY" ]]; then
+  KEY_ARGS+=("--ecdsa-key=${ECDSA_KEY}")
+fi
+
+# If SPX key is provided, include it in the manifest update
+if [[ ! -z "$SPX_KEY" ]]; then
+  KEY_ARGS+=("--spx-key=${SPX_KEY}")
+fi
+
 for file in "${FILES_TO_CHECK[@]}"
 do
   # TEST 1: ECDSA key and/or SPX key integrity
-  # If ECDSA key is provided, include it in the manifest update
-  if [[ ! -z "$ECDSA_KEY" ]]; then
-    KEY_ARGS+=("--ecdsa-key=${ECDSA_KEY}")
-  fi
-
-  # If SPX key is provided, include it in the manifest update
-  if [[ ! -z "$SPX_KEY" ]]; then
-    KEY_ARGS+=("--spx-key=${SPX_KEY}")
-  fi
-
   # If there are keys to verify, perform manifest update
   if [[ ${#KEY_ARGS[@]} -ne 0 ]]; then
     echo -n "Checking key material in ${file}..."
