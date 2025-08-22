@@ -329,6 +329,33 @@ class mbx_base_vseq extends cip_base_vseq #(
     panicked   = gen_panic;
   endtask
 
+  // We use a dedicated task for reading from the SOC_STATUS register on the SoC interface
+  // because a number of its status indicator bits are aliased on the RoT interface and we should
+  // check those too.
+  // Also note that the RoT-side STATUS register contains no other information so using this task
+  // at least guarantees that reads from STATUS are performed, and thus coverage is collected.
+  task soc_status_rd(output uvm_reg_data_t data);
+    // Collect the SOC_STATUS contents as requested.
+    uvm_reg_data_t core_status;
+    csr_rd(m_mbx_soc_ral.soc_status, data);
+    // Also collect and check the alias on the RoT side.
+    csr_rd(ral.status, core_status);
+    // Check the consistency of the bits that alias the SOC_STATUS register...
+    // TODO: manually check here what we can at present; migrate into the scoreboard in time.
+    `DV_CHECK_EQ(get_field_val(ral.status.busy, core_status),
+                 get_field_val(m_mbx_soc_ral.soc_status.busy, data))
+
+    // TODO: checking within the scoreboard shall suffice in time, but presently the scoreboard is
+    // unable to model the interrupt status.
+    //`DV_CHECK_EQ(get_field_val(ral.status.sys_intr_state, core_status),
+    //            get_field_val(m_mbx_soc_ral.soc_status.doe_intr_status, data))
+    // ... and the SOC_CONTROL register.
+    `DV_CHECK_EQ(get_field_val(ral.status.sys_intr_enable, core_status),
+                 `gmv(m_mbx_soc_ral.soc_control.doe_intr_en))
+    `DV_CHECK_EQ(get_field_val(ral.status.sys_async_enable, core_status),
+                 `gmv(m_mbx_soc_ral.soc_control.doe_async_msg_en))
+  endtask
+
   virtual task body();
     `uvm_info(get_full_name(), "body -- Start", UVM_DEBUG)
 
@@ -448,7 +475,7 @@ class mbx_base_vseq extends cip_base_vseq #(
               // We know that we're not permitted to write to WDATA whilst the mailbox is BUSY,
               // which should be expected if we've ABORTed the operation.
               uvm_reg_data_t data;
-              csr_rd(m_mbx_soc_ral.soc_status, data);
+              soc_status_rd(data);
               `DV_CHECK_EQ(get_field_val(m_mbx_soc_ral.soc_status.busy, data), 1'b1,
                            "SOC_STATUS.busy not set when expected in response to Abort request")
             end
@@ -464,7 +491,7 @@ class mbx_base_vseq extends cip_base_vseq #(
           end
         end
 
-        csr_rd(m_mbx_soc_ral.soc_status, rd_data);
+        soc_status_rd(rd_data);
         obs_error = get_field_val(m_mbx_soc_ral.soc_status.error, rd_data);
 
         if (!panicked & !aborted & !obs_error) begin
@@ -536,7 +563,7 @@ class mbx_base_vseq extends cip_base_vseq #(
           do begin
             stressors(aborted, errored, panicked);
 
-            csr_rd(m_mbx_soc_ral.soc_status, rd_data);
+            soc_status_rd(rd_data);
             `uvm_info(`gfn, $sformatf("rd_data for soc_status is :'h%0h", rd_data), UVM_DEBUG)
 
             // TODO: wait_soc_interrupt here
@@ -612,7 +639,7 @@ class mbx_base_vseq extends cip_base_vseq #(
           end
         end: b_send_response
 
-        csr_rd(m_mbx_soc_ral.soc_status, rd_data);
+        soc_status_rd(rd_data);
         `uvm_info(`gfn, $sformatf("Transaction complete; SOC_STATUS 0x%0x", rd_data), UVM_MEDIUM)
 
         // Collect SoC.STATUS bits
@@ -635,7 +662,7 @@ class mbx_base_vseq extends cip_base_vseq #(
           aborted = 1'b1;
 
           // Check that the BUSY bit becomes set
-          csr_rd(m_mbx_soc_ral.soc_status, rd_data);
+          soc_status_rd(rd_data);
           obs_busy  = get_field_val(m_mbx_soc_ral.soc_status.busy,  rd_data);
           obs_error = get_field_val(m_mbx_soc_ral.soc_status.error, rd_data);
           `DV_CHECK_EQ(obs_busy, 1'b1, "BUSY bit has not become set when ABORTing")
@@ -652,7 +679,7 @@ class mbx_base_vseq extends cip_base_vseq #(
           panicked = 1'b1;
 
           // Check that the BUSY bit resets
-          csr_rd(m_mbx_soc_ral.soc_status, rd_data);
+          soc_status_rd(rd_data);
           obs_busy  = get_field_val(m_mbx_soc_ral.soc_status.busy,  rd_data);
           obs_error = get_field_val(m_mbx_soc_ral.soc_status.error, rd_data);
           `DV_CHECK_EQ(obs_busy, 1'b0, "BUSY bit cannot be cleared")

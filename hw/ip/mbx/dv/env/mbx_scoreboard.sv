@@ -252,8 +252,9 @@ class mbx_scoreboard extends cip_base_scoreboard #(
           // Our expectation of the `busy` indicator.
           void'(ral.status.busy.predict(.value(m_mbx_busy), .kind(UVM_PREDICT_READ)));
           // These fields are aliases of the SoC-side status indicators.
-          void'(ral.status.sys_intr_state.predict(
-                  .value(`gmv(m_mbx_soc_ral.soc_status.doe_intr_status)), .kind(UVM_PREDICT_READ)));
+          // TODO: We still need to model interrupts properly.
+          //void'(ral.status.sys_intr_state.predict(
+          //        .value(`gmv(m_mbx_soc_ral.soc_status.doe_intr_status)), .kind(UVM_PREDICT_READ)));
           void'(ral.status.sys_intr_enable.predict(
                   .value(`gmv(m_mbx_soc_ral.soc_control.doe_intr_en)), .kind(UVM_PREDICT_READ)));
           void'(ral.status.sys_async_enable.predict(
@@ -267,6 +268,8 @@ class mbx_scoreboard extends cip_base_scoreboard #(
               .sys_intr_enable(get_field_val(ral.status.sys_intr_enable, item.d_data)),
               .sys_async_enable(get_field_val(ral.status.busy, item.d_data)));
           end
+          // TODO: the scoreboard cannot really check this yet; requires interrupt prediction.
+          do_read_check = 1'b0;
         end
 
         "intr_state": begin
