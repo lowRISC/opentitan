@@ -91,18 +91,28 @@ package csrng_pkg;
   } csrng_cmd_t;
 
   typedef struct packed {
-    logic [InstIdWidth-1:0]  inst_id;
-    logic [CmdWidth-1:0]     cmd;
-    logic [KeyLen-1:0]       key;
-    logic [BlkLen-1:0]       v;
-    logic [SeedLen-1:0]      pdata;
+    logic  [InstIdWidth-1:0] inst_id;
+    logic     [CmdWidth-1:0] cmd;
+    logic       [KeyLen-1:0] key;
+    logic       [BlkLen-1:0] v;
+    logic      [SeedLen-1:0] pdata;
     logic [ResCntrWidth-1:0] rs_cnt;
     logic                    fips;
   } csrng_core_data_t;
 
+  typedef struct packed {
+    logic [InstIdWidth-1:0] inst_id;
+    logic    [CmdWidth-1:0] cmd;
+    logic      [KeyLen-1:0] key;
+    logic      [BlkLen-1:0] v;
+    logic     [SeedLen-1:0] pdata;
+  } csrng_upd_data_t;
+
   parameter int unsigned CoreDataWidth = $bits(csrng_core_data_t);
+  parameter int unsigned UpdDataWidth  = $bits(csrng_upd_data_t);
 
   typedef logic [CoreDataWidth-1:0] csrng_core_data_flat_t;
+  typedef logic  [UpdDataWidth-1:0] csrng_upd_data_flat_t;
 
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 3 -m 15 -n 8 \

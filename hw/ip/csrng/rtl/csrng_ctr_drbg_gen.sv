@@ -37,25 +37,20 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   output logic [BlkLen-1:0]  ctr_drbg_gen_bits_o,
   output logic               ctr_drbg_gen_fips_o,
 
-   // es_req/ack
-  input logic                ctr_drbg_gen_es_req_i,
+  // entropy source halt interface
+  // TODO rename descriptive
+  input  logic               ctr_drbg_gen_es_req_i,
   output logic               ctr_drbg_gen_es_ack_o,
 
-  // update interface
-  output logic               gen_upd_req_o,
-  input logic                upd_gen_rdy_i,
-  output logic [CmdWidth-1:0]gen_upd_ccmd_o,
-  output logic [InstIdWidth-1:0] gen_upd_inst_id_o,
-  output logic [SeedLen-1:0] gen_upd_pdata_o,
-  output logic [KeyLen-1:0]  gen_upd_key_o,
-  output logic [BlkLen-1:0]  gen_upd_v_o,
+  // update request interface
+  output logic               gen_upd_req_vld_o,
+  input  logic               gen_upd_req_rdy_i,
+  output csrng_upd_data_t    gen_upd_req_data_o,
 
-  input logic                upd_gen_ack_i,
-  output logic               gen_upd_rdy_o,
-  input logic [CmdWidth-1:0] upd_gen_ccmd_i,
-  input logic [InstIdWidth-1:0] upd_gen_inst_id_i,
-  input logic [KeyLen-1:0]   upd_gen_key_i,
-  input logic [BlkLen-1:0]   upd_gen_v_i,
+  // update response interface
+  input  logic               gen_upd_rsp_vld_i,
+  output logic               gen_upd_rsp_rdy_o,
+  input  csrng_upd_data_t    gen_upd_rsp_data_i,
 
   // block encrypt interface
   output logic               block_encrypt_req_o,
@@ -425,7 +420,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
 
     assign update_adata_vld_d[i] = ~ctr_drbg_gen_enable_i ? 1'b0 :
            capt_adata[i] && !update_adata_vld_q[i] ? 1'b1 :
-           (gen_upd_req_o && upd_gen_rdy_i && (sfifo_bencack_inst_id == i)) ? 1'b0 :
+           (gen_upd_req_vld_o && gen_upd_req_rdy_i && (sfifo_bencack_inst_id == i)) ? 1'b0 :
            update_adata_vld_q[i];
 
     assign update_adata_d[i] = ~ctr_drbg_gen_enable_i ? '0 :
@@ -476,7 +471,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   assign block_encrypt_rdy_o = !sfifo_bencack_full;
 
   assign sfifo_bencack_pop = !sfifo_rcstage_full && sfifo_bencack_not_empty &&
-                             (upd_gen_rdy_i || !adstage_glast);
+                             (gen_upd_req_rdy_i || !adstage_glast);
 
   assign {sfifo_bencack_bits,sfifo_bencack_inst_id,sfifo_bencack_ccmd} = sfifo_bencack_rdata;
 
@@ -491,12 +486,14 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   //--------------------------------------------
 
   // send to the update block
-  assign gen_upd_req_o = sfifo_bencack_not_empty && adstage_glast;
-  assign gen_upd_ccmd_o = sfifo_bencack_ccmd;
-  assign gen_upd_inst_id_o = sfifo_bencack_inst_id;
-  assign gen_upd_pdata_o = adstage_adata;
-  assign gen_upd_key_o = adstage_key;
-  assign gen_upd_v_o = adstage_v;
+  assign gen_upd_req_vld_o = sfifo_bencack_not_empty && adstage_glast;
+  assign gen_upd_req_data_o = '{
+    inst_id: sfifo_bencack_inst_id,
+    cmd:     sfifo_bencack_ccmd,
+    key:     adstage_key,
+    v:       adstage_v,
+    pdata:   adstage_adata
+  };
 
 
 
@@ -529,7 +526,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
                                 adstage_rc,adstage_fips,adstage_glast,
                                 sfifo_bencack_inst_id,sfifo_bencack_ccmd};
 
-  assign sfifo_rcstage_pop = sfifo_rcstage_not_empty && (upd_gen_ack_i || !rcstage_glast);
+  assign sfifo_rcstage_pop = sfifo_rcstage_not_empty && (gen_upd_rsp_vld_i || !rcstage_glast);
 
   assign {rcstage_key,rcstage_v,rcstage_bits,rcstage_rc,rcstage_fips,rcstage_glast,
           rcstage_inst_id,rcstage_ccmd} = sfifo_rcstage_rdata;
@@ -540,7 +537,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
           (sfifo_rcstage_pop && !sfifo_rcstage_not_empty),
           (sfifo_rcstage_full && !sfifo_rcstage_not_empty)};
 
-  assign gen_upd_rdy_o = sfifo_rcstage_not_empty && !sfifo_genbits_full;
+  assign gen_upd_rsp_rdy_o = sfifo_rcstage_not_empty && !sfifo_genbits_full;
 
 
   //--------------------------------------------
@@ -572,8 +569,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   assign rcstage_rc_plus1 = (rcstage_rc+1);
 
   assign sfifo_genbits_wdata = rcstage_glast ?
-                               {rcstage_fips,rcstage_bits,upd_gen_key_i,upd_gen_v_i,
-                                rcstage_rc_plus1,upd_gen_inst_id_i,upd_gen_ccmd_i} :
+                               {rcstage_fips,rcstage_bits,gen_upd_rsp_data_i.key,gen_upd_rsp_data_i.v,
+                                rcstage_rc_plus1,gen_upd_rsp_data_i.inst_id,gen_upd_rsp_data_i.cmd} :
                                {rcstage_fips,rcstage_bits,rcstage_key,rcstage_v,
                                 rcstage_rc,rcstage_inst_id,rcstage_ccmd};
 
