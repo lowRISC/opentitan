@@ -479,7 +479,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
     bit unmapped_err   = !is_tl_access_mapped_addr(item.a_addr, block);
     bit bus_intg_err   = !item.is_a_chan_intg_ok(.throw_error(0));
-    bit byte_wr_err    = is_tl_access_unsupported_byte_wr(item, ral_name);
+    bit byte_wr_err    = is_tl_access_unsupported_byte_wr(item, block);
     bit csr_size_err   = !is_tl_csr_write_size_gte_csr_width(item, ral_name);
     bit tl_item_err    = item.get_exp_d_error();
     bit csr_read_err   = is_csr_fetch(item, ral_name);
@@ -651,14 +651,14 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // file specifically for DV purposes, using an externally sourced specification as reference
   // (third party 'vendored-in' code). The end result is - the TL adapter prevents non-word writes
   // to the entire region. See issue #10765 for more details.
-  virtual function bit is_tl_access_unsupported_byte_wr(tl_seq_item item, string ral_name);
+  local function bit is_tl_access_unsupported_byte_wr(tl_seq_item item, dv_base_reg_block block);
     // TODO: We should infer byte enable support from the adapter attached to the interface (i.e.
     // the map) instead. To do that, more extensive changes may be needed, because we do not know
-    // which map to pick - we only know the ral_name of the interface. For now,
+    // which map to pick - we only know the register block. For now,
     // dv_base_reg_block::supports_byte_enable serves this need.
-    return !cfg.ral_models[ral_name].get_supports_byte_enable() &&
-        item.a_opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData} &&
-        (item.a_size != 2 || item.a_mask != '1);
+    return (!block.get_supports_byte_enable() &&
+            item.a_opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData} &&
+            (item.a_size != 2 || item.a_mask != '1));
   endfunction
 
   virtual function bit is_data_intg_passthru_mem(tl_seq_item item, string ral_name);
