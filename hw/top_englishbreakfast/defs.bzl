@@ -14,6 +14,7 @@ ENGLISHBREAKFAST = opentitan_top(
     top_verilator_core = ["lowrisc:dv:top_englishbreakfast_chip_verilator_sim"],
     top_verilator_binary = {"binary": ["lowrisc_dv_top_englishbreakfast_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb"]},
     top_ld = "//hw/top_englishbreakfast/sw/autogen:top_englishbreakfast_memory",
+    platform = "//hw/top_englishbreakfast:platform",
     ips = ENGLISHBREAKFAST_IPS,
     secret_cfgs = {
         "testing": "//hw/top_englishbreakfast/data/autogen:top_englishbreakfast.secrets.testing.gen.hjson",

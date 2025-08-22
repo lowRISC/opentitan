@@ -10,6 +10,7 @@ load(
     "DEFAULT_TEST_SUCCESS_MSG",
     "sim_verilator",
 )
+load("//rules/opentitan:defs.bzl", "OPENTITAN_BASE_PLATFORM")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -69,4 +70,12 @@ sim_verilator(
         --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
         no-op
     """,
+)
+
+platform(
+    name = "platform",
+    flags = [
+        "--features=-rv32_bitmanip",
+    ],
+    parents = [OPENTITAN_BASE_PLATFORM],
 )

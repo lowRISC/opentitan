@@ -28,7 +28,7 @@ build --workspace_status_command=util/get_workspace_status.sh
 
 # This enables convenient building for opentitan targets with the argument
 # --config=riscv32
-build:riscv32 --platforms=@//toolchain:opentitan_platform
+build:riscv32 --platforms=@//sw/target:opentitan_platform
 
 # These options are required to build `cc_fuzz_test` targets. Enable with
 # --config=asan-libfuzzer
