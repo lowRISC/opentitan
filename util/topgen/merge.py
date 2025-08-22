@@ -127,15 +127,28 @@ def elaborate_instance(instance, block: IpBlock):
 
         # Generate random bits or permutation, if needed
         if isinstance(param, RandParameter):
-            if param.randtype == 'data':
+            if param.randtype == "data":
                 new_default = _get_random_data_hex_literal(param.randcount)
                 # Effective width of the random vector
                 randwidth = param.randcount
-            else:
-                assert param.randtype == 'perm'
+            elif param.randtype == "perm":
                 new_default = _get_random_perm_hex_literal(param.randcount)
                 # Effective width of the random vector
                 randwidth = param.randcount * ceil(log2(param.randcount))
+            else:
+                assert param.randtype == "extdata"
+                # Default value is provided externally at a later point or has already been filled
+                # in. If this is already the case, we don't need to fill in a blank value to be
+                # filled in later.
+                fill_default = None
+                for p in instance.get("param_list", []):
+                    if p["name"] == param.name and p["default"] is not None:
+                        fill_default = p["default"]
+                        break
+                randwidth = param.randcount
+                new_default = None
+                if fill_default:
+                    new_default = fill_default
 
             new_param['default'] = new_default
             new_param['randwidth'] = randwidth
