@@ -9,7 +9,6 @@ use rusb::{Direction, Recipient, RequestType};
 use serialport::Parity;
 
 use super::UartInterface;
-use crate::io::nonblocking_help::NonblockingHelp;
 use crate::io::uart::{FlowControl, Uart, UartError};
 use crate::transport::TransportError;
 use crate::transport::common::uart::{SerialPortUart, SoftwareFlowControl};
@@ -185,17 +184,5 @@ impl Uart for HyperdebugUart {
             2 => Ok(Parity::Even),
             _ => Err(UartError::ReadError("Unknown parity value".to_string()).into()),
         }
-    }
-
-    fn supports_nonblocking_read(&self) -> Result<bool> {
-        self.serial_port.supports_nonblocking_read()
-    }
-
-    fn register_nonblocking_read(&self, registry: &mio::Registry, token: mio::Token) -> Result<()> {
-        self.serial_port.register_nonblocking_read(registry, token)
-    }
-
-    fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
-        self.serial_port.nonblocking_help()
     }
 }

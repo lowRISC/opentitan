@@ -13,7 +13,6 @@ use serde::{Deserialize, Serialize};
 pub use serialport::Parity;
 use thiserror::Error;
 
-use super::nonblocking_help::{NoNonblockingHelp, NonblockingHelp};
 use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
 use crate::io::console::ConsoleDevice;
@@ -130,26 +129,6 @@ pub trait Uart {
     fn get_parity(&self) -> Result<Parity> {
         Err(TransportError::UnsupportedOperation.into())
     }
-
-    /// Query if nonblocking mio mode is supported.
-    fn supports_nonblocking_read(&self) -> Result<bool> {
-        Ok(false)
-    }
-
-    /// Switch this `Uart` instance into nonblocking mio mode.  Going forward, `read()` should
-    /// only be called after `mio::poll()` has indicated that the given `Token` is ready.
-    fn register_nonblocking_read(
-        &self,
-        _registry: &mio::Registry,
-        _token: mio::Token,
-    ) -> Result<()> {
-        unimplemented!();
-    }
-
-    /// Get the same single `NonblockingHelp` object as from top level `Transport.nonblocking_help()`.
-    fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
-        Ok(Rc::new(NoNonblockingHelp))
-    }
 }
 
 impl Read for &dyn Uart {
@@ -173,18 +152,6 @@ impl<'a> ConsoleDevice for dyn Uart + 'a {
 
     fn set_break(&self, enable: bool) -> Result<()> {
         <Self as Uart>::set_break(self, enable)
-    }
-
-    fn supports_nonblocking_read(&self) -> Result<bool> {
-        self.supports_nonblocking_read()
-    }
-
-    fn register_nonblocking_read(&self, registry: &mio::Registry, token: mio::Token) -> Result<()> {
-        self.register_nonblocking_read(registry, token)
-    }
-
-    fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
-        self.nonblocking_help()
     }
 }
 
