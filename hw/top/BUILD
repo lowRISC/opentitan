@@ -153,8 +153,6 @@ cc_library(
         )
         for ip in ALL_IP_NAMES
     ]),
-    # Make the header accessible as "dt_<ip>.h".
-    includes = ["."],
     deps = [":dt_api"] + flatten([
         opentitan_select_ip_attr(
             ip,
