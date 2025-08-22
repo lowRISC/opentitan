@@ -437,14 +437,14 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     return 0;
   endfunction
 
-  // Check if the tl_mapped address is a csr
-  virtual function bit is_csr_fetch(tl_seq_item item, string ral_name);
+  // Return true if item is a fetch from a mapped address in the given register block
+  protected function bit is_csr_fetch(tl_seq_item item, dv_base_reg_block block);
     cip_tl_seq_item cip_item;
     `downcast(cip_item, item)
     return (item.a_opcode == tlul_pkg::Get &&
             cip_item.get_instr_type() == MuBi4True &&
-            is_tl_access_mapped_addr(item.a_addr, cfg.ral_models[ral_name]) &&
-            !is_mem_addr(item.a_addr, cfg.ral_models[ral_name]));
+            is_tl_access_mapped_addr(item.a_addr, block) &&
+            !is_mem_addr(item.a_addr, block));
   endfunction
 
   // Return whether an A-channel access was invalid and check any D-channel response.
@@ -482,7 +482,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     bit byte_wr_err    = is_tl_access_unsupported_byte_wr(item, block);
     bit csr_size_err   = !is_tl_csr_write_size_gte_csr_width(item, block);
     bit tl_item_err    = item.get_exp_d_error();
-    bit csr_read_err   = is_csr_fetch(item, ral_name);
+    bit csr_read_err   = is_csr_fetch(item, block);
 
     bit mem_access_err, mem_byte_access_err, mem_wo_err, mem_ro_err, custom_err;
 
