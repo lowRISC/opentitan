@@ -70,8 +70,6 @@ task racl_ctrl_base_vseq::body();
 endtask
 
 task racl_ctrl_base_vseq::post_start();
-  super.post_start();
-
   fork
     int_seq.request_end();
     ext_seq.request_end();
@@ -83,6 +81,8 @@ task racl_ctrl_base_vseq::post_start();
   cfg.clk_rst_vif.wait_clks_or_rst(1);
   stopping = 1'b1;
   wait(!clear_error_log_running);
+
+  super.post_start();
 endtask
 
 function uvm_sequence racl_ctrl_base_vseq::create_seq_by_name(string name);
