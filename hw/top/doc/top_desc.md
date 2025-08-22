@@ -49,6 +49,8 @@ The following attributes have a well-defined meaning in the codebase.
 - `hjson`: label string of the complete Hjson description file of the top created by `topgen`.
 - `top_lib`: label string of the top's `cc_library` created by `topgen`. This library contains all the top-specific constants.
 - `top_ld`: label string of the top's `ld_library` created by `topgen`. This library contains all the top-specific linker constants.
+- `platform`: label of the top's platform. This setting can be used to override the default bazel platform when building device code.
+  If unspecified, `//sw/target:opentitan_platform` will be used.
 
 Example for Earlgrey:
 ```py
