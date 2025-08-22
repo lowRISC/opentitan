@@ -51,12 +51,6 @@ module tlul_assert #(
   // well-formedness of the TL input.
   bit disable_sva;
 
-  // We have some assertions below about the behaviour of d2h.d_error. These aren't actually true
-  // for the xbar, since it doesn't return d_error for protocol errors. Disable these checks by
-  // passing tlul_d_error_assert_en in the UVM config db, which causes disable_d_error_sva to be set
-  // to 1.
-  bit disable_d_error_sva;
-
   logic [7:0]  a_mask, d_mask;
   logic [63:0] a_data, d_data;
   assign a_mask = 8'(h2d.a_mask);
@@ -293,13 +287,13 @@ module tlul_assert #(
           !clk_i, !rst_ni || disable_sva)
     // d2h error cases
     `ASSERT(legalAOpcodeErr_A, d_error_pre_S and legalAOpcodeErr_S |=>
-            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_d_error_sva)
+            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_sva)
     `ASSERT(sizeGTEMaskErr_A, d_error_pre_S and sizeGTEMaskErr_S |=>
-            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_d_error_sva)
+            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_sva)
     `ASSERT(sizeMatchesMaskErr_A, d_error_pre_S and sizeMatchesMaskErr_S |=>
-            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_d_error_sva)
+            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_sva)
     `ASSERT(addrSizeAlignedErr_A, d_error_pre_S and addrSizeAlignedErr_S |=>
-            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_d_error_sva)
+            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_sva)
   end else begin : gen_unknown
     initial begin : p_unknonw
       `ASSERT_I(unknownConfig_A, 0 == 1)
@@ -429,20 +423,11 @@ module tlul_assert #(
       end
       disable_sva = !tlul_assert_en;
     end
-    initial forever begin
-      bit tlul_assert_en;
-      uvm_config_db#(bit)::wait_modified(null, "%m", "tlul_d_error_assert_en");
-      if (!uvm_config_db#(bit)::get(null, "%m", "tlul_d_error_assert_en", tlul_assert_en)) begin
-        `uvm_fatal($sformatf("%m"), "Can't find tlul_d_error_assert_en")
-      end
-      disable_d_error_sva = !tlul_assert_en;
-    end
   `else
     // Set default values for the disable_*_sva signals (not disabling the assertions)
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         disable_sva <= 0;
-        disable_d_error_sva <= 0;
       end
     end
   `endif
