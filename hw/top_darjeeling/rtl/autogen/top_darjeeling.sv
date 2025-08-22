@@ -331,6 +331,8 @@ module top_darjeeling #(
   localparam int SpiHost0NumCS = 1;
   // local parameters for sram_ctrl_ret_aon
   localparam int SramCtrlRetAonOutstanding = 2;
+  // local parameters for keymgr_dpe
+  localparam bit KeymgrDpeFlopToKmac = 1'b1;
   // local parameters for entropy_src
   localparam int EntropySrcEsFifoDepth = 3;
   localparam int unsigned EntropySrcDistrFifoDepth = 26;
@@ -2001,6 +2003,7 @@ module top_darjeeling #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[61:60]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .KmacEnMasking(KeymgrDpeKmacEnMasking),
+    .FlopToKmac(KeymgrDpeFlopToKmac),
     .RndCnstLfsrSeed(RndCnstKeymgrDpeLfsrSeed),
     .RndCnstLfsrPerm(RndCnstKeymgrDpeLfsrPerm),
     .RndCnstRandPerm(RndCnstKeymgrDpeRandPerm),

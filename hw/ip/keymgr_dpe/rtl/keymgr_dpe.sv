@@ -16,6 +16,8 @@ module keymgr_dpe
   // Number of cycles a differential skew is tolerated on the alert signal
   parameter int unsigned AlertSkewCycles       = 1,
   parameter bit KmacEnMasking                  = 1'b1,
+  // Insert flops to break a potential long chain between the active key slot and KMAC
+  parameter bit FlopToKmac                     = 1'b0,
   parameter lfsr_seed_t RndCnstLfsrSeed        = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm        = RndCnstLfsrPermDefault,
   parameter rand_perm_t RndCnstRandPerm        = RndCnstRandPermDefault,
@@ -572,6 +574,10 @@ module keymgr_dpe
 
   // Keymgr DPE does not have id generation, so assign '0 to `id_en`
   assign id_en = 1'b0;
+
+  kmac_pkg::app_req_t kmac_data_o_inner;
+  kmac_pkg::app_rsp_t kmac_data_i_inner;
+
   keymgr_kmac_if #(
     .MaxAdvDataWidth(DpeAdvDataWidth)
   ) u_kmac_if (
@@ -590,8 +596,8 @@ module keymgr_dpe
     .gen_en_i(gen_en),
     .done_o(kmac_done),
     .data_o(kmac_data),
-    .kmac_data_o,
-    .kmac_data_i,
+    .kmac_data_o(kmac_data_o_inner),
+    .kmac_data_i(kmac_data_i_inner),
     .entropy_i(data_rand),
     .fsm_error_o(kmac_fsm_err),
     .kmac_error_o(kmac_op_err),
@@ -599,6 +605,44 @@ module keymgr_dpe
     .cmd_error_o(kmac_cmd_err)
   );
 
+  if (FlopToKmac) begin : gen_kmac_flopped_output
+    // We can insert a flop between keymgr and KMAC by putting a sync FIFO between the IP's
+    // kmac_data_i/kmac_data_o ports and u_kmac_if. The "data" coming out is three fields of
+    // kmac_data_o_inner (data, strb and last).
+    logic kmac_data_i_inner_ready;
+
+    prim_fifo_sync #(
+      .Width ($bits(kmac_pkg::app_req_t) - 1),
+      .Pass(1'b0),
+      .Depth(2),
+      .OutputZeroIfEmpty(1'b0),
+      .Secure(1'b0)
+    ) u_kmac_data_flop (
+      .clk_i,
+      .rst_ni,
+      .clr_i (1'b0),
+      .wvalid_i(kmac_data_o_inner.valid),
+      .wready_o(kmac_data_i_inner_ready),
+      .wdata_i({kmac_data_o_inner.data, kmac_data_o_inner.strb, kmac_data_o_inner.last}),
+      .rvalid_o(kmac_data_o.valid),
+      .rready_i(kmac_data_i.ready),
+      .rdata_o({kmac_data_o.data, kmac_data_o.strb, kmac_data_o.last}),
+      .full_o   (),
+      .depth_o  (),
+      .err_o    ()
+    );
+
+    // Note that the kmac_data_i signal from KMAC is actually two interfaces. To derive the "inner"
+    // version of the signal, we need to use the ready field from the FIFO above, but the other
+    // fields are unrelated to this timing and don't need interfering with.
+    always_comb begin
+      kmac_data_i_inner = kmac_data_i;
+      kmac_data_i_inner.ready = kmac_data_i_inner_ready;
+    end
+  end else begin : gen_kmac_direct_output
+    assign kmac_data_o = kmac_data_o_inner;
+    assign kmac_data_i_inner = kmac_data_i;
+  end
 
   /////////////////////////////////////
   //  Side load key storage
@@ -794,7 +838,7 @@ module keymgr_dpe
   `ASSERT_KNOWN(AesKeyKnownO_A,  aes_key_o)
   `ASSERT_KNOWN(KmacKeyKnownO_A, kmac_key_o)
   `ASSERT_KNOWN(OtbnKeyKnownO_A, otbn_key_o)
-  `ASSERT_KNOWN(KmacDataKnownO_A, kmac_data_o)
+  `ASSERT_KNOWN_IF(KmacDataKnownO_A, kmac_data_o, kmac_data_o.valid)
 
 
   // kmac parameter consistency

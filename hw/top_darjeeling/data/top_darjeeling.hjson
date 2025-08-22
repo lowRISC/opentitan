@@ -768,6 +768,9 @@
       base_addr: {
         hart: "0x21140000",
       },
+      param_decl: {
+        FlopToKmac: "1'b1"
+      },
     },
     { name: "csrng",
       type: "csrng",
