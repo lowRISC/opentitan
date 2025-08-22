@@ -14,14 +14,6 @@ load("//rules:actions.bzl", "OT_ACTION_LLVM_PROFDATA", "OT_ACTION_OBJDUMP")
 
 package(default_visibility = ["//visibility:public"])
 
-platform(
-    name = "opentitan_platform",
-    constraint_values = [
-        "@platforms//cpu:riscv32",
-        "@platforms//os:none",
-    ],
-)
-
 toolchain(
     name = "cc_toolchain_opentitan",
     exec_compatible_with = ["@platforms//cpu:x86_64"],
