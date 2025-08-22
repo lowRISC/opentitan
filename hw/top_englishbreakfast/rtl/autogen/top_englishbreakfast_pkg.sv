@@ -160,16 +160,6 @@ package top_englishbreakfast_pkg;
   parameter int unsigned TOP_ENGLISHBREAKFAST_FLASH_CTRL_PRIM_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for mem device on flash_ctrl in top englishbreakfast.
-   */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_BASE_ADDR = 32'h20000000;
-
-  /**
-   * Peripheral size in bytes for mem device on flash_ctrl in top englishbreakfast.
-   */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES = 32'h10000;
-
-  /**
    * Peripheral base address for rv_plic in top englishbreakfast.
    */
   parameter int unsigned TOP_ENGLISHBREAKFAST_RV_PLIC_BASE_ADDR = 32'h48000000;
@@ -200,16 +190,6 @@ package top_englishbreakfast_pkg;
   parameter int unsigned TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_REGS_SIZE_BYTES = 32'h40;
 
   /**
-   * Peripheral base address for ram device on sram_ctrl_main in top englishbreakfast.
-   */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_BASE_ADDR = 32'h10000000;
-
-  /**
-   * Peripheral size in bytes for ram device on sram_ctrl_main in top englishbreakfast.
-   */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_SIZE_BYTES = 32'h20000;
-
-  /**
    * Peripheral base address for regs device on rom_ctrl in top englishbreakfast.
    */
   parameter int unsigned TOP_ENGLISHBREAKFAST_ROM_CTRL_REGS_BASE_ADDR = 32'h411E0000;
@@ -218,16 +198,6 @@ package top_englishbreakfast_pkg;
    * Peripheral size in bytes for regs device on rom_ctrl in top englishbreakfast.
    */
   parameter int unsigned TOP_ENGLISHBREAKFAST_ROM_CTRL_REGS_SIZE_BYTES = 32'h80;
-
-  /**
-   * Peripheral base address for rom device on rom_ctrl in top englishbreakfast.
-   */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_BASE_ADDR = 32'h8000;
-
-  /**
-   * Peripheral size in bytes for rom device on rom_ctrl in top englishbreakfast.
-   */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_SIZE_BYTES = 32'h8000;
 
   /**
    * Peripheral base address for cfg device on rv_core_ibex in top englishbreakfast.
@@ -242,32 +212,32 @@ package top_englishbreakfast_pkg;
   /**
    * Memory base address for eflash in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_EFLASH_BASE_ADDR = 32'h20000000;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_BASE_ADDR = 32'h20000000;
 
   /**
    * Memory size for eflash in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_EFLASH_SIZE_BYTES = 32'h10000;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES = 32'h10000;
 
   /**
    * Memory base address for ram_main in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_RAM_MAIN_BASE_ADDR = 32'h10000000;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_BASE_ADDR = 32'h10000000;
 
   /**
    * Memory size for ram_main in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_RAM_MAIN_SIZE_BYTES = 32'h20000;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_SIZE_BYTES = 32'h20000;
 
   /**
    * Memory base address for rom in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_ROM_BASE_ADDR = 32'h8000;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_BASE_ADDR = 32'h8000;
 
   /**
    * Memory size for rom in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_ROM_SIZE_BYTES = 32'h8000;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_SIZE_BYTES = 32'h8000;
 
 
   // Number of englishbreakfast outgoing alerts

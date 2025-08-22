@@ -722,32 +722,18 @@ def get_base_and_size(name_to_block: IpBlocksT, inst: ConfigT,
     else:
         # If inst is the instantiation of some block, find the register block
         # that corresponds to ifname
-        rb = block.reg_blocks.get(ifname)
-        if rb is None:
+        if rb := block.reg_blocks.get(ifname):
+            bytes_used = 1 << rb.get_addr_width()
+        elif mem := inst["memory"].get(ifname):
+            bytes_used = int(mem["size"], 0)
+        else:
             raise RuntimeError(
                 'Cannot connect to non-existent {} device interface '
                 'on {!r} (an instance of the {!r} block).'.format(
                     'default' if ifname is None else repr(ifname),
                     inst['name'], block.name))
-        else:
-            bytes_used = 1 << rb.get_addr_width()
 
         base_addrs = deepcopy(inst['base_addrs'][ifname])
-
-        # If an instance has a nonempty "memory" field, take the memory
-        # size configuration from there.
-        if "memory" in inst:
-            if ifname in inst["memory"]:
-                memory_size = int(inst["memory"][ifname]["size"], 0)
-                if bytes_used > memory_size:
-                    raise RuntimeError(
-                        'Memory region on {} device interface '
-                        'on {!r} (an instance of the {!r} block) '
-                        'is smaller than the corresponding register block.'.
-                        format('default' if ifname is None else repr(ifname),
-                               inst['name'], block.name))
-
-                bytes_used = memory_size
 
     # Round up to next power of 2.
     size_byte = 1 << (bytes_used - 1).bit_length()
@@ -1029,7 +1015,11 @@ class TopGen:
         return ret
 
     def memories(self, addr_space) -> List[Tuple[str, MemoryRegion]]:
-        '''Return a list of MemoryRegions objects for memories on the bus
+        '''Return a list of MemoryRegions objects for memories on the bus.
+
+        The list returned is pairs (label, region) where label is the global
+        label of the memory. region is a MemoryRegion representing the memory,
+        and its name is set to the full interface name (<IP instance name>_<interface>).
 
         Parameters:
             addr_space: The address space representing the bus for generation.
@@ -1051,8 +1041,8 @@ class TopGen:
                     if addr_space not in base:
                         continue
 
-                    name = Name.from_snake_case(val["label"])
-                    region = MemoryRegion(self._top_name, name, addr_space,
+                    full_if_name = Name.from_snake_case(inst['name']) + Name.from_snake_case(if_name)
+                    region = MemoryRegion(self._top_name, full_if_name, addr_space,
                                           base[addr_space], size)
                     ret.append((val["label"], region))
 
@@ -1536,7 +1526,9 @@ class TopGen:
                 if len(split_dev) > 1:
                     if_name = split_dev[1]
 
-                ranges = get_device_ranges(self.devices(addr_space_name),
+                # Include both register blocks and memories.
+                ranges = get_device_ranges(self.devices(addr_space_name) +
+                                           self.memories(addr_space_name),
                                            dev_name)
                 if if_name:
                     # Only a single interface, if name contained an interface

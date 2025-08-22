@@ -85,6 +85,20 @@ def elaborate_instance(instance, block: IpBlock):
     # Check to see if all declared parameters exist
     param_decl_accounting = [decl for decl in instance["param_decl"].keys()]
 
+    # Merge IP and top description of the memories.
+    if "memory" not in instance:
+        instance["memory"] = {}
+    for (mem, desc) in instance["memory"].items():
+        if mem not in block.memories:
+            raise ValueError(f"Module instance {mod_name} describes a memory named {mem} "
+                             f"but IP {block.name} only has the following memories: "
+                             f"{list(block.memories.keys())}")
+        # FIXME: here we should merge stuff together
+    # Check that all memories were described.
+    for mem in block.memories.keys():
+        if mem not in instance["memory"]:
+            raise ValueError(f"Module instance {mod_name} does not describe memory {mem}")
+
     # param_list
     new_params = []
     for param in block.params.by_name.values():
@@ -95,10 +109,6 @@ def elaborate_instance(instance, block: IpBlock):
         new_param = param.as_dict()
 
         param_expose = param.expose if isinstance(param, Parameter) else False
-
-        # assign an empty entry if this is not present
-        if "memory" not in instance:
-            instance["memory"] = {}
 
         # Check for security-relevant parameters that are not exposed,
         # adding a top-level name.
@@ -239,7 +249,7 @@ def elaborate_instance(instance, block: IpBlock):
         # it's got the same set of keys as the name of the interfaces in the
         # block.
         inst_if_names = set(base_addrs.keys())
-        block_if_names = set(block.reg_blocks.keys())
+        block_if_names = set(block.reg_blocks.keys()) | set(block.memories.keys())
         if block_if_names != inst_if_names:
             log.error('Instance {!r} has a base_addrs field with keys {} '
                       'but the block it instantiates ({!r}) has device '

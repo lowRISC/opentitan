@@ -29,12 +29,10 @@ package flash_ctrl_reg_pkg;
   // Address widths within the block
   parameter int CoreAw = 9;
   parameter int PrimAw = 7;
-  parameter int MemAw = 1;
 
   // Number of registers for every interface
   parameter int NumRegsCore = 108;
   parameter int NumRegsPrim = 21;
-  parameter int NumRegsMem = 0;
 
   // Alert indices
   typedef enum int {
