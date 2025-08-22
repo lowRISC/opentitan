@@ -443,7 +443,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     `downcast(cip_item, item)
     return (item.a_opcode == tlul_pkg::Get &&
             cip_item.get_instr_type() == MuBi4True &&
-            is_tl_access_mapped_addr(item, ral_name) &&
+            is_tl_access_mapped_addr(item.a_addr, cfg.ral_models[ral_name]) &&
             !is_mem_addr(item.a_addr, cfg.ral_models[ral_name]));
   endfunction
 
@@ -477,7 +477,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                                                 string        ral_name);
     dv_base_reg_block block = cfg.ral_models[ral_name];
 
-    bit unmapped_err   = !is_tl_access_mapped_addr(item, ral_name);
+    bit unmapped_err   = !is_tl_access_mapped_addr(item.a_addr, block);
     bit bus_intg_err   = !item.is_a_chan_intg_ok(.throw_error(0));
     bit byte_wr_err    = is_tl_access_unsupported_byte_wr(item, ral_name);
     bit csr_size_err   = !is_tl_csr_write_size_gte_csr_width(item, ral_name);
@@ -587,12 +587,11 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     `DV_CHECK_EQ(item.d_data, 32'hFFFF_FFFF, "d_data mismatch when d_error = 1")
   endfunction
 
-  // check if address is mapped
-  virtual function bit is_tl_access_mapped_addr(tl_seq_item item, string ral_name);
-    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
+  // Return true if the given address is mapped in the register block
+  local function bit is_tl_access_mapped_addr(bit [AddrWidth-1:0] addr, dv_base_reg_block block);
+    uvm_reg_addr_t norm_addr = block.get_normalized_addr(addr);
     // check if it's mem addr or reg addr
-    return (is_mem_addr(item.a_addr, cfg.ral_models[ral_name]) ||
-            addr inside {cfg.ral_models[ral_name].csr_addrs});
+    return is_mem_addr(addr, block) || norm_addr inside {block.csr_addrs};
   endfunction
 
   // check if tl mem access will trigger error or not
@@ -680,7 +679,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
     dv_base_reg       csr;
     dv_base_reg_block blk;
-    if (!is_tl_access_mapped_addr(item, ral_name) ||
+    if (!is_tl_access_mapped_addr(item.a_addr, cfg.ral_models[ral_name]) ||
         is_mem_addr(item.a_addr, cfg.ral_models[ral_name])) return 1;
     // The RAL may be composed of sub-blocks each with its own settings. Find the
     // sub-block to which this address (CSR) belongs.
