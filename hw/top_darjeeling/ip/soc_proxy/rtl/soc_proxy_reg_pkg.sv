@@ -12,11 +12,9 @@ package soc_proxy_reg_pkg;
 
   // Address widths within the block
   parameter int CoreAw = 4;
-  parameter int CtnAw = 1;
 
   // Number of registers for every interface
   parameter int NumRegsCore = 4;
-  parameter int NumRegsCtn = 0;
 
   // Alert indices
   typedef enum int {

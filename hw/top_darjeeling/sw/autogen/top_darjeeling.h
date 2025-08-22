@@ -337,24 +337,6 @@ extern "C" {
 #define TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES 0x10u
 
 /**
- * Peripheral base address for ctn device on soc_proxy in top darjeeling.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR 0x40000000u
-
-/**
- * Peripheral size for ctn device on soc_proxy in top darjeeling.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR and
- * `TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR + TOP_DARJEELING_SOC_PROXY_CTN_SIZE_BYTES`.
- */
-#define TOP_DARJEELING_SOC_PROXY_CTN_SIZE_BYTES 0x80000000u
-
-/**
  * Peripheral base address for regs device on sram_ctrl_ret_aon in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -371,24 +353,6 @@ extern "C" {
  * `TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES`.
  */
 #define TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES 0x40u
-
-/**
- * Peripheral base address for ram device on sram_ctrl_ret_aon in top darjeeling.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR 0x30600000u
-
-/**
- * Peripheral size for ram device on sram_ctrl_ret_aon in top darjeeling.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR and
- * `TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES`.
- */
-#define TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES 0x1000u
 
 /**
  * Peripheral base address for regs device on rv_dm in top darjeeling.
@@ -625,24 +589,6 @@ extern "C" {
 #define TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_SIZE_BYTES 0x40u
 
 /**
- * Peripheral base address for ram device on sram_ctrl_main in top darjeeling.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR 0x10000000u
-
-/**
- * Peripheral size for ram device on sram_ctrl_main in top darjeeling.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR and
- * `TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES`.
- */
-#define TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES 0x10000u
-
-/**
  * Peripheral base address for regs device on sram_ctrl_mbox in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -659,24 +605,6 @@ extern "C" {
  * `TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_SIZE_BYTES`.
  */
 #define TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_SIZE_BYTES 0x40u
-
-/**
- * Peripheral base address for ram device on sram_ctrl_mbox in top darjeeling.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR 0x11000000u
-
-/**
- * Peripheral size for ram device on sram_ctrl_mbox in top darjeeling.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR and
- * `TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES`.
- */
-#define TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES 0x1000u
 
 /**
  * Peripheral base address for regs device on rom_ctrl0 in top darjeeling.
@@ -697,24 +625,6 @@ extern "C" {
 #define TOP_DARJEELING_ROM_CTRL0_REGS_SIZE_BYTES 0x80u
 
 /**
- * Peripheral base address for rom device on rom_ctrl0 in top darjeeling.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR 0x8000u
-
-/**
- * Peripheral size for rom device on rom_ctrl0 in top darjeeling.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR and
- * `TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR + TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES`.
- */
-#define TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES 0x8000u
-
-/**
  * Peripheral base address for regs device on rom_ctrl1 in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -731,24 +641,6 @@ extern "C" {
  * `TOP_DARJEELING_ROM_CTRL1_REGS_BASE_ADDR + TOP_DARJEELING_ROM_CTRL1_REGS_SIZE_BYTES`.
  */
 #define TOP_DARJEELING_ROM_CTRL1_REGS_SIZE_BYTES 0x80u
-
-/**
- * Peripheral base address for rom device on rom_ctrl1 in top darjeeling.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR 0x20000u
-
-/**
- * Peripheral size for rom device on rom_ctrl1 in top darjeeling.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR and
- * `TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR + TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES`.
- */
-#define TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES 0x10000u
 
 /**
  * Peripheral base address for dma in top darjeeling.
@@ -988,62 +880,62 @@ extern "C" {
 /**
  * Memory base address for ctn in top darjeeling.
  */
-#define TOP_DARJEELING_CTN_BASE_ADDR 0x40000000u
+#define TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR 0x40000000u
 
 /**
  * Memory size for ctn in top darjeeling.
  */
-#define TOP_DARJEELING_CTN_SIZE_BYTES 0x80000000u
+#define TOP_DARJEELING_SOC_PROXY_CTN_SIZE_BYTES 0x80000000u
 
 /**
  * Memory base address for ram_ret_aon in top darjeeling.
  */
-#define TOP_DARJEELING_RAM_RET_AON_BASE_ADDR 0x30600000u
+#define TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR 0x30600000u
 
 /**
  * Memory size for ram_ret_aon in top darjeeling.
  */
-#define TOP_DARJEELING_RAM_RET_AON_SIZE_BYTES 0x1000u
+#define TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES 0x1000u
 
 /**
  * Memory base address for ram_main in top darjeeling.
  */
-#define TOP_DARJEELING_RAM_MAIN_BASE_ADDR 0x10000000u
+#define TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR 0x10000000u
 
 /**
  * Memory size for ram_main in top darjeeling.
  */
-#define TOP_DARJEELING_RAM_MAIN_SIZE_BYTES 0x10000u
+#define TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES 0x10000u
 
 /**
  * Memory base address for ram_mbox in top darjeeling.
  */
-#define TOP_DARJEELING_RAM_MBOX_BASE_ADDR 0x11000000u
+#define TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR 0x11000000u
 
 /**
  * Memory size for ram_mbox in top darjeeling.
  */
-#define TOP_DARJEELING_RAM_MBOX_SIZE_BYTES 0x1000u
+#define TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES 0x1000u
 
 /**
  * Memory base address for rom0 in top darjeeling.
  */
-#define TOP_DARJEELING_ROM0_BASE_ADDR 0x8000u
+#define TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR 0x8000u
 
 /**
  * Memory size for rom0 in top darjeeling.
  */
-#define TOP_DARJEELING_ROM0_SIZE_BYTES 0x8000u
+#define TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES 0x8000u
 
 /**
  * Memory base address for rom1 in top darjeeling.
  */
-#define TOP_DARJEELING_ROM1_BASE_ADDR 0x20000u
+#define TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR 0x20000u
 
 /**
  * Memory size for rom1 in top darjeeling.
  */
-#define TOP_DARJEELING_ROM1_SIZE_BYTES 0x10000u
+#define TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES 0x10000u
 
 
 /**

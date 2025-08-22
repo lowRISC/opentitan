@@ -315,8 +315,9 @@
     core: [
       // no CSRs defined yet
     ]
-    ctn: [
-      // no CSRs defined here
-    ]
+  }
+
+  memory: {
+    ctn: {}
   }
 }
