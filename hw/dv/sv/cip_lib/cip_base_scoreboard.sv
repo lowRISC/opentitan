@@ -491,7 +491,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     logic           cmd_intg_err, data_intg_err;
     bit             write_w_instr_type_err, instr_type_err;
 
-    mem_access_err = !is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err, mem_wo_err,
+    mem_access_err = !is_tl_mem_access_allowed(item, block, mem_byte_access_err, mem_wo_err,
                                                mem_ro_err, custom_err);
 
     `downcast(cip_item, item)
@@ -597,18 +597,19 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // check if tl mem access will trigger error or not
   // `custom_err` is not set by this base class method. It can be set by the extended class
   // scoreboard to indicate additional, implementation specific errors.
-  virtual function bit is_tl_mem_access_allowed(input tl_seq_item item, input string ral_name,
-                                                output bit mem_byte_access_err,
-                                                output bit mem_wo_err,
-                                                output bit mem_ro_err,
-                                                output bit custom_err);
-    if (is_mem_addr(item.a_addr, cfg.ral_models[ral_name])) begin
+  protected virtual function bit is_tl_mem_access_allowed(tl_seq_item       item,
+                                                          dv_base_reg_block block,
+                                                          output bit        mem_byte_access_err,
+                                                          output bit        mem_wo_err,
+                                                          output bit        mem_ro_err,
+                                                          output bit        custom_err);
+    if (is_mem_addr(item.a_addr, block)) begin
       dv_base_mem mem;
       bit invalid_access;
-      uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
-      string mem_access = get_mem_access_by_addr(cfg.ral_models[ral_name], addr);
+      uvm_reg_addr_t addr = block.get_normalized_addr(item.a_addr);
+      string mem_access = get_mem_access_by_addr(block, addr);
 
-      `downcast(mem, get_mem_by_addr(cfg.ral_models[ral_name], addr))
+      `downcast(mem, get_mem_by_addr(block, addr))
 
       // Check if write isn't full word for mem that doesn't allow byte access.
       if (!mem.get_mem_partial_write_support() &&

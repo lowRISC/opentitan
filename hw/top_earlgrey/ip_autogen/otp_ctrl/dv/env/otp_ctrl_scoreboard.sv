@@ -1553,35 +1553,35 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     return digest;
   endfunction
 
-  virtual function bit is_tl_mem_access_allowed(input tl_seq_item item, input string ral_name,
-                                                output bit mem_byte_access_err,
-                                                output bit mem_wo_err,
-                                                output bit mem_ro_err,
-                                                output bit custom_err);
+  protected function bit is_tl_mem_access_allowed(tl_seq_item       item,
+                                                  dv_base_reg_block block,
+                                                  output bit        mem_byte_access_err,
+                                                  output bit        mem_wo_err,
+                                                  output bit        mem_ro_err,
+                                                  output bit        custom_err);
 
-    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
-    uvm_reg_addr_t csr_addr   = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+    uvm_reg_addr_t addr       = block.get_word_aligned_addr(item.a_addr);
     bit [TL_AW-1:0] addr_mask = ral.get_addr_mask();
-    bit [TL_AW-1:0] dai_addr = (csr_addr & addr_mask - SW_WINDOW_BASE_ADDR);
+    bit [TL_AW-1:0] dai_addr  = (addr & addr_mask - SW_WINDOW_BASE_ADDR);
 
-    bit mem_access_allowed = super.is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err,
+    bit mem_access_allowed = super.is_tl_mem_access_allowed(item, block, mem_byte_access_err,
                                                             mem_wo_err, mem_ro_err, custom_err);
 
-    if (ral_name == "otp_macro_prim_reg_block") return mem_access_allowed;
+    if (block.get_name() == "otp_macro_prim_reg_block") return mem_access_allowed;
 
     // Ensure the address is within the memory window range.
     // Also will skip checking if memory access is not allowed due to TLUL bus error.
     if (addr inside {
-        [cfg.ral_models[ral_name].mem_ranges[0].start_addr :
-         cfg.ral_models[ral_name].mem_ranges[0].end_addr]} &&
+        [block.mem_ranges[0].start_addr :
+         block.mem_ranges[0].end_addr]} &&
         mem_access_allowed) begin
 
       // If sw partition is read locked, then access policy changes from RO to no access
       if (`gmv(ral.vendor_test_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
         if (addr inside {
-            [cfg.ral_models[ral_name].mem_ranges[0].start_addr + VendorTestOffset :
-             cfg.ral_models[ral_name].mem_ranges[0].start_addr + VendorTestOffset +
+            [block.mem_ranges[0].start_addr + VendorTestOffset :
+             block.mem_ranges[0].start_addr + VendorTestOffset +
              VendorTestSize - 1]}) begin
           predict_err(OtpVendorTestErrIdx, OtpAccessError);
           custom_err = 1;
@@ -1595,8 +1595,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       if (`gmv(ral.creator_sw_cfg_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
         if (addr inside {
-            [cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgOffset :
-             cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgOffset +
+            [block.mem_ranges[0].start_addr + CreatorSwCfgOffset :
+             block.mem_ranges[0].start_addr + CreatorSwCfgOffset +
              CreatorSwCfgSize - 1]}) begin
           predict_err(OtpCreatorSwCfgErrIdx, OtpAccessError);
           custom_err = 1;
@@ -1610,8 +1610,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       if (`gmv(ral.owner_sw_cfg_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
         if (addr inside {
-            [cfg.ral_models[ral_name].mem_ranges[0].start_addr + OwnerSwCfgOffset :
-             cfg.ral_models[ral_name].mem_ranges[0].start_addr + OwnerSwCfgOffset +
+            [block.mem_ranges[0].start_addr + OwnerSwCfgOffset :
+             block.mem_ranges[0].start_addr + OwnerSwCfgOffset +
              OwnerSwCfgSize - 1]}) begin
           predict_err(OtpOwnerSwCfgErrIdx, OtpAccessError);
           custom_err = 1;
@@ -1625,8 +1625,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       if (`gmv(ral.rot_creator_auth_codesign_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
         if (addr inside {
-            [cfg.ral_models[ral_name].mem_ranges[0].start_addr + RotCreatorAuthCodesignOffset :
-             cfg.ral_models[ral_name].mem_ranges[0].start_addr + RotCreatorAuthCodesignOffset +
+            [block.mem_ranges[0].start_addr + RotCreatorAuthCodesignOffset :
+             block.mem_ranges[0].start_addr + RotCreatorAuthCodesignOffset +
              RotCreatorAuthCodesignSize - 1]}) begin
           predict_err(OtpRotCreatorAuthCodesignErrIdx, OtpAccessError);
           custom_err = 1;
@@ -1640,8 +1640,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       if (`gmv(ral.rot_creator_auth_state_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
         if (addr inside {
-            [cfg.ral_models[ral_name].mem_ranges[0].start_addr + RotCreatorAuthStateOffset :
-             cfg.ral_models[ral_name].mem_ranges[0].start_addr + RotCreatorAuthStateOffset +
+            [block.mem_ranges[0].start_addr + RotCreatorAuthStateOffset :
+             block.mem_ranges[0].start_addr + RotCreatorAuthStateOffset +
              RotCreatorAuthStateSize - 1]}) begin
           predict_err(OtpRotCreatorAuthStateErrIdx, OtpAccessError);
           custom_err = 1;
