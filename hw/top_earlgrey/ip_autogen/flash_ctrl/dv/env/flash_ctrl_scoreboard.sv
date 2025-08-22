@@ -217,13 +217,13 @@ class flash_ctrl_scoreboard #(
     if (skip_read_check) do_read_check = 0;
     // if access was to a valid csr, get the csr handle
     if ((is_mem_addr(
-            item, ral_name
+            item.a_addr, cfg.ral_models[ral_name]
         ) || (csr_addr inside {cfg.ral_models[ral_name].csr_addrs})) &&
             !cfg.dir_rd_in_progress) begin
 
       // if incoming access is a write to a valid csr, then make updates right away.
       if (addr_phase_write) begin
-        if (is_mem_addr(item, ral_name) && cfg.scb_check) begin  // prog fifo
+        if (is_mem_addr(item.a_addr, cfg.ral_models[ral_name]) && cfg.scb_check) begin  // prog fifo
           if (idx_wr == 0) begin
             csr_rd(.ptr(ral.addr), .value(data), .backdoor(1'b1));
             wr_addr = word_align_addr(get_field_val(ral.addr.start, data));
@@ -382,7 +382,8 @@ class flash_ctrl_scoreboard #(
                          "reg name: %0s", csr.get_full_name()))
           end
           void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
-        end else if (is_mem_addr(item, ral_name) && cfg.scb_check) begin  // rd fifo
+        end else if (is_mem_addr(item.a_addr, cfg.ral_models[ral_name]) && cfg.scb_check) begin
+          // rd fifo
           if (idx_rd == 0) begin
             csr_rd(.ptr(ral.addr), .value(data), .backdoor(1'b1));
             rd_addr = word_align_addr(get_field_val(ral.addr.start, data));
