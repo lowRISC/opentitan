@@ -480,7 +480,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     bit unmapped_err   = !is_tl_access_mapped_addr(item.a_addr, block);
     bit bus_intg_err   = !item.is_a_chan_intg_ok(.throw_error(0));
     bit byte_wr_err    = is_tl_access_unsupported_byte_wr(item, block);
-    bit csr_size_err   = !is_tl_csr_write_size_gte_csr_width(item, ral_name);
+    bit csr_size_err   = !is_tl_csr_write_size_gte_csr_width(item, block);
     bit tl_item_err    = item.get_exp_d_error();
     bit csr_read_err   = is_csr_fetch(item, ral_name);
 
@@ -674,29 +674,38 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     end
   endfunction
 
-  // check if csr write size greater or equal to csr width
-  virtual function bit is_tl_csr_write_size_gte_csr_width(tl_seq_item item, string ral_name);
-    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
+  // Return true unless this is a write operation on a register block (potentially a sub-block of
+  // the block argument) where sub-word writes are not allowed but a_mask only hits part of a
+  // register.
+  local function bit is_tl_csr_write_size_gte_csr_width(tl_seq_item item, dv_base_reg_block block);
+    uvm_reg_addr_t    addr;
     dv_base_reg       csr;
-    dv_base_reg_block blk;
-    if (!is_tl_access_mapped_addr(item.a_addr, cfg.ral_models[ral_name]) ||
-        is_mem_addr(item.a_addr, cfg.ral_models[ral_name])) return 1;
-    // The RAL may be composed of sub-blocks each with its own settings. Find the
-    // sub-block to which this address (CSR) belongs.
-    `downcast(csr, cfg.ral_models[ral_name].default_map.get_reg_by_offset(addr))
-    `downcast(blk, csr.get_parent())
-    if (blk.get_supports_sub_word_csr_writes()) return 1;
-    if (item.is_write()) begin
-      uint           csr_msb_pos;
-      csr_msb_pos = csr.get_msb_pos();
-      if (csr_msb_pos >= 24 && item.a_mask[3:0] != 'b1111 ||
-          csr_msb_pos >= 16 && item.a_mask[2:0] != 'b111  ||
-          csr_msb_pos >= 8  && item.a_mask[1:0] != 'b11   ||
-          item.a_mask[0] != 'b1) begin
-        return 0;
-      end
-    end
-    return 1;
+    dv_base_reg_block sub_blk;
+    int unsigned      num_byte_lanes, req_byte_lanes, missing_lanes;
+
+    if (!item.is_write()) return 1;
+
+    // If the address is not mapped, this cannot hit part of a register (it won't hit anything).
+    // Similarly, this won't be part of a register if it is actually a memory address.
+    if (!is_tl_access_mapped_addr(item.a_addr, block) || is_mem_addr(item.a_addr, block)) return 1;
+
+    // The RAL may be composed of sub-blocks each with its own settings. Find the sub-block to which
+    // this address belongs. If that sub-block supports subword writes, return 1 (even if this is a
+    // sub-word write, that's ok).
+    addr = block.get_normalized_addr(item.a_addr);
+    `downcast(csr, block.default_map.get_reg_by_offset(addr))
+    `downcast(sub_blk, csr.get_parent())
+
+    if (sub_blk.get_supports_sub_word_csr_writes()) return 1;
+
+    // We are writing to a register block that doesn't support subword writes. Check that a_mask
+    // hits all the byte lanes of the register. Do this by making a bitmask which is true for all
+    // required byte lanes. Clear the bits in a_mask. If the result is nonzero, there is a byte lane
+    // that wasn't written to.
+    num_byte_lanes = 1 + csr.get_msb_pos() / 8;
+    req_byte_lanes = (1 << num_byte_lanes) - 1;
+    missing_lanes = req_byte_lanes & ~item.a_mask;
+    return ~|missing_lanes;
   endfunction
 
   protected virtual function void reset_alert_state();
