@@ -78,21 +78,17 @@ static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
         },
         "hyper310" => Config {
             input: collection! {
-                // The commented lines represent multi-fuction pins.  These will
-                // be added back in when the hyperdebug firmware can set these
-                // multifunction pins into GPIO mode.
-
-                //PinmuxPeripheralIn::GpioGpio0 => PinmuxInsel::Ioa0,   // UART4
-                //PinmuxPeripheralIn::GpioGpio1 => PinmuxInsel::Ioa1,   // UART4
+                PinmuxPeripheralIn::GpioGpio0 => PinmuxInsel::Ioa0,
+                PinmuxPeripheralIn::GpioGpio1 => PinmuxInsel::Ioa1,
                 PinmuxPeripheralIn::GpioGpio2 => PinmuxInsel::Ioa2,
                 PinmuxPeripheralIn::GpioGpio3 => PinmuxInsel::Ioa3,
-                //PinmuxPeripheralIn::GpioGpio4 => PinmuxInsel::Ioa4,   // UART5
-                //PinmuxPeripheralIn::GpioGpio5 => PinmuxInsel::Ioa5,   // UART5
+                PinmuxPeripheralIn::GpioGpio4 => PinmuxInsel::Ioa4,
+                PinmuxPeripheralIn::GpioGpio5 => PinmuxInsel::Ioa5,
                 PinmuxPeripheralIn::GpioGpio6 => PinmuxInsel::Ioa6,
-                //PinmuxPeripheralIn::GpioGpio7 => PinmuxInsel::Ioa7,   // I2C1
-                //PinmuxPeripheralIn::GpioGpio8 => PinmuxInsel::Ioa8,   // I2C1
-                //PinmuxPeripheralIn::GpioGpio9 => PinmuxInsel::Iob4,   // UART3
-                //PinmuxPeripheralIn::GpioGpio10 => PinmuxInsel::Iob5,  // UART3
+                PinmuxPeripheralIn::GpioGpio7 => PinmuxInsel::Ioa7,
+                PinmuxPeripheralIn::GpioGpio8 => PinmuxInsel::Ioa8,
+                PinmuxPeripheralIn::GpioGpio9 => PinmuxInsel::Iob4,
+                PinmuxPeripheralIn::GpioGpio10 => PinmuxInsel::Iob5,
                 PinmuxPeripheralIn::GpioGpio11 => PinmuxInsel::Iob6,
 
                 PinmuxPeripheralIn::GpioGpio12 => PinmuxInsel::Ioc0,
@@ -116,21 +112,17 @@ static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
 
             },
             output: collection! {
-                // The commented lines represent multi-fuction pins.  These will
-                // be added back in when the hyperdebug firmware can set these
-                // multifunction pins into GPIO mode.
-
-                //PinmuxMioOut::Ioa0 => PinmuxOutsel::GpioGpio0,   // UART4
-                //PinmuxMioOut::Ioa1 => PinmuxOutsel::GpioGpio1,   // UART4
+                PinmuxMioOut::Ioa0 => PinmuxOutsel::GpioGpio0,
+                PinmuxMioOut::Ioa1 => PinmuxOutsel::GpioGpio1,
                 PinmuxMioOut::Ioa2 => PinmuxOutsel::GpioGpio2,
                 PinmuxMioOut::Ioa3 => PinmuxOutsel::GpioGpio3,
-                //PinmuxMioOut::Ioa4 => PinmuxOutsel::GpioGpio4,   // UART5
-                //PinmuxMioOut::Ioa5 => PinmuxOutsel::GpioGpio5,   // UART5
+                PinmuxMioOut::Ioa4 => PinmuxOutsel::GpioGpio4,
+                PinmuxMioOut::Ioa5 => PinmuxOutsel::GpioGpio5,
                 PinmuxMioOut::Ioa6 => PinmuxOutsel::GpioGpio6,
-                //PinmuxMioOut::Ioa7 => PinmuxOutsel::GpioGpio7,   // I2C1
-                //PinmuxMioOut::Ioa8 => PinmuxOutsel::GpioGpio8,   // I2C1
-                //PinmuxMioOut::Iob4 => PinmuxOutsel::GpioGpio9,   // UART3
-                //PinmuxMioOut::Iob5 => PinmuxOutsel::GpioGpio10,  // UART3
+                PinmuxMioOut::Ioa7 => PinmuxOutsel::GpioGpio7,
+                PinmuxMioOut::Ioa8 => PinmuxOutsel::GpioGpio8,
+                PinmuxMioOut::Iob4 => PinmuxOutsel::GpioGpio9,
+                PinmuxMioOut::Iob5 => PinmuxOutsel::GpioGpio10,
                 PinmuxMioOut::Iob6 => PinmuxOutsel::GpioGpio11,
                 PinmuxMioOut::Ioc0 => PinmuxOutsel::GpioGpio12,
                 PinmuxMioOut::Ioc1 => PinmuxOutsel::GpioGpio13,
@@ -152,21 +144,17 @@ static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
         },
         "teacup" => Config {
             input: collection! {
-                // The commented lines represent multi-fuction pins.  These will
-                // be added back in when the hyperdebug firmware can set these
-                // multifunction pins into GPIO mode.
-
-                //PinmuxPeripheralIn::GpioGpio0 => PinmuxInsel::Ioa0,   // UART4
-                //PinmuxPeripheralIn::GpioGpio1 => PinmuxInsel::Ioa1,   // UART4
-                //PinmuxPeripheralIn::GpioGpio2 => PinmuxInsel::Ioa2,   // VBUS_EN_SENSE
+                PinmuxPeripheralIn::GpioGpio0 => PinmuxInsel::Ioa0,
+                PinmuxPeripheralIn::GpioGpio1 => PinmuxInsel::Ioa1,
+                // IOA2 is the USB `VBUS_EN_SENSE` pin.
                 PinmuxPeripheralIn::GpioGpio3 => PinmuxInsel::Ioa3,
-                //PinmuxPeripheralIn::GpioGpio4 => PinmuxInsel::Ioa4,   // UART5
-                //PinmuxPeripheralIn::GpioGpio5 => PinmuxInsel::Ioa5,   // UART5
+                PinmuxPeripheralIn::GpioGpio4 => PinmuxInsel::Ioa4,
+                PinmuxPeripheralIn::GpioGpio5 => PinmuxInsel::Ioa5,
                 PinmuxPeripheralIn::GpioGpio6 => PinmuxInsel::Ioa6,
-                //PinmuxPeripheralIn::GpioGpio7 => PinmuxInsel::Ioa7,   // I2C1
-                //PinmuxPeripheralIn::GpioGpio8 => PinmuxInsel::Ioa8,   // I2C1
-                //PinmuxPeripheralIn::GpioGpio9 => PinmuxInsel::Iob4,   // UART3
-                //PinmuxPeripheralIn::GpioGpio10 => PinmuxInsel::Iob5,  // UART3
+                PinmuxPeripheralIn::GpioGpio7 => PinmuxInsel::Ioa7,
+                PinmuxPeripheralIn::GpioGpio8 => PinmuxInsel::Ioa8,
+                PinmuxPeripheralIn::GpioGpio9 => PinmuxInsel::Iob4,
+                PinmuxPeripheralIn::GpioGpio10 => PinmuxInsel::Iob5,
                 PinmuxPeripheralIn::GpioGpio11 => PinmuxInsel::Iob6,
 
                 PinmuxPeripheralIn::GpioGpio12 => PinmuxInsel::Ioc0,
@@ -190,21 +178,17 @@ static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
 
             },
             output: collection! {
-                // The commented lines represent multi-fuction pins.  These will
-                // be added back in when the hyperdebug firmware can set these
-                // multifunction pins into GPIO mode.
-
-                //PinmuxMioOut::Ioa0 => PinmuxOutsel::GpioGpio0,   // UART4
-                //PinmuxMioOut::Ioa1 => PinmuxOutsel::GpioGpio1,   // UART4
-                //PinmuxMioOut::Ioa2 => PinmuxOutsel::GpioGpio2,   // VBUS_EN_SENSE
+                PinmuxMioOut::Ioa0 => PinmuxOutsel::GpioGpio0,
+                PinmuxMioOut::Ioa1 => PinmuxOutsel::GpioGpio1,
+                // IOA2 is the USB `VBUS_EN_SENSE` pin.
                 PinmuxMioOut::Ioa3 => PinmuxOutsel::GpioGpio3,
-                //PinmuxMioOut::Ioa4 => PinmuxOutsel::GpioGpio4,   // UART5
-                //PinmuxMioOut::Ioa5 => PinmuxOutsel::GpioGpio5,   // UART5
+                PinmuxMioOut::Ioa4 => PinmuxOutsel::GpioGpio4,
+                PinmuxMioOut::Ioa5 => PinmuxOutsel::GpioGpio5,
                 PinmuxMioOut::Ioa6 => PinmuxOutsel::GpioGpio6,
-                //PinmuxMioOut::Ioa7 => PinmuxOutsel::GpioGpio7,   // I2C1
-                //PinmuxMioOut::Ioa8 => PinmuxOutsel::GpioGpio8,   // I2C1
-                //PinmuxMioOut::Iob4 => PinmuxOutsel::GpioGpio9,   // UART3
-                //PinmuxMioOut::Iob5 => PinmuxOutsel::GpioGpio10,  // UART3
+                PinmuxMioOut::Ioa7 => PinmuxOutsel::GpioGpio7,
+                PinmuxMioOut::Ioa8 => PinmuxOutsel::GpioGpio8,
+                PinmuxMioOut::Iob4 => PinmuxOutsel::GpioGpio9,
+                PinmuxMioOut::Iob5 => PinmuxOutsel::GpioGpio10,
                 PinmuxMioOut::Iob6 => PinmuxOutsel::GpioGpio11,
                 PinmuxMioOut::Ioc0 => PinmuxOutsel::GpioGpio12,
                 PinmuxMioOut::Ioc1 => PinmuxOutsel::GpioGpio13,
