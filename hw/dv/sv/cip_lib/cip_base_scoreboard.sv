@@ -201,7 +201,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       end
       if (predict_tl_err(item, DataChannel, ral_name)) return;
     end
-    if (cfg.en_scb_mem_chk && is_mem_addr(item, ral_name)) begin
+    if (cfg.en_scb_mem_chk && is_mem_addr(item.a_addr, cfg.ral_models[ral_name])) begin
       if (item.is_write()) begin
         process_mem_write(item, ral_name);
       end else begin
@@ -425,12 +425,12 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     exp_mem[ral_name].compare(addr, item.d_data, item.a_mask);
   endfunction
 
-  // check if it's mem addr
-  virtual function bit is_mem_addr(tl_seq_item item, string ral_name);
-    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
-    addr_range_t   loc_mem_ranges[$] = cfg.ral_models[ral_name].mem_ranges;
+  // Return true if the normalised version of addr is a memory address in the given reg block.
+  protected virtual function bit is_mem_addr(bit [AddrWidth-1:0] addr, dv_base_reg_block block);
+    uvm_reg_addr_t norm_addr = block.get_normalized_addr(addr);
+    addr_range_t   loc_mem_ranges[$] = block.mem_ranges;
     foreach (loc_mem_ranges[i]) begin
-      if (addr inside {[loc_mem_ranges[i].start_addr : loc_mem_ranges[i].end_addr]}) begin
+      if (norm_addr inside {[loc_mem_ranges[i].start_addr : loc_mem_ranges[i].end_addr]}) begin
         return 1;
       end
     end
@@ -444,7 +444,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     return (item.a_opcode == tlul_pkg::Get &&
             cip_item.get_instr_type() == MuBi4True &&
             is_tl_access_mapped_addr(item, ral_name) &&
-            !is_mem_addr(item, ral_name));
+            !is_mem_addr(item.a_addr, cfg.ral_models[ral_name]));
   endfunction
 
   // Return whether an A-channel access was invalid and check any D-channel response.
@@ -475,6 +475,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   protected virtual function bit predict_tl_err(tl_seq_item   item,
                                                 tl_channels_e channel,
                                                 string        ral_name);
+    dv_base_reg_block block = cfg.ral_models[ral_name];
+
     bit unmapped_err   = !is_tl_access_mapped_addr(item, ral_name);
     bit bus_intg_err   = !item.is_a_chan_intg_ok(.throw_error(0));
     bit byte_wr_err    = is_tl_access_unsupported_byte_wr(item, ral_name);
@@ -508,7 +510,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       bit ecc_err = ecc_error_addr.exists({item.a_addr[AddrWidth-1:3], 3'b0});
 
       if (unmapped_err) begin
-        exp_d_error = !cfg.ral_models[ral_name].get_unmapped_access_ok();
+        exp_d_error = !block.get_unmapped_access_ok();
       end
 
       if (mem_access_err) begin
@@ -516,7 +518,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         exp_d_error |= mem_byte_access_err | mem_wo_err | mem_ro_err | custom_err;
       end
 
-      if (is_mem_addr(item, ral_name) && cfg.tl_mem_access_gated) begin
+      if (is_mem_addr(item.a_addr, block) && cfg.tl_mem_access_gated) begin
         exp_d_error |= cfg.tl_mem_access_gated;
       end
 
@@ -534,7 +536,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       // sample covergroup
       if (cfg.en_tl_intg_err_cov) begin
         tl_intg_err_cgs_wrap[ral_name].sample(tl_intg_err_type, cmd_intg_err, data_intg_err,
-                                              is_mem_addr(item, ral_name));
+                                              is_mem_addr(item.a_addr, block));
 
         if (tl_intg_err_mem_subword_cgs_wrap.exists(ral_name)) begin
           tl_intg_err_mem_subword_cgs_wrap[ral_name].sample(
@@ -589,7 +591,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   virtual function bit is_tl_access_mapped_addr(tl_seq_item item, string ral_name);
     uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
     // check if it's mem addr or reg addr
-    return is_mem_addr(item, ral_name) || addr inside {cfg.ral_models[ral_name].csr_addrs};
+    return (is_mem_addr(item.a_addr, cfg.ral_models[ral_name]) ||
+            addr inside {cfg.ral_models[ral_name].csr_addrs});
   endfunction
 
   // check if tl mem access will trigger error or not
@@ -600,7 +603,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                                                 output bit mem_wo_err,
                                                 output bit mem_ro_err,
                                                 output bit custom_err);
-    if (is_mem_addr(item, ral_name)) begin
+    if (is_mem_addr(item.a_addr, cfg.ral_models[ral_name])) begin
       dv_base_mem mem;
       bit invalid_access;
       uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
@@ -677,7 +680,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
     dv_base_reg       csr;
     dv_base_reg_block blk;
-    if (!is_tl_access_mapped_addr(item, ral_name) || is_mem_addr(item, ral_name)) return 1;
+    if (!is_tl_access_mapped_addr(item, ral_name) ||
+        is_mem_addr(item.a_addr, cfg.ral_models[ral_name])) return 1;
     // The RAL may be composed of sub-blocks each with its own settings. Find the
     // sub-block to which this address (CSR) belongs.
     `downcast(csr, cfg.ral_models[ral_name].default_map.get_reg_by_offset(addr))
