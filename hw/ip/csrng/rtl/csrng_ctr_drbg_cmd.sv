@@ -30,21 +30,14 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   output logic               cmd_data_rsp_glast_o,
 
   // update request interface
-  output logic               cmd_upd_req_o,
-  input logic                upd_cmd_rdy_i,
-  output logic [CmdWidth-1:0]cmd_upd_ccmd_o,
-  output logic [InstIdWidth-1:0] cmd_upd_inst_id_o,
-  output logic [SeedLen-1:0] cmd_upd_pdata_o,
-  output logic [KeyLen-1:0]  cmd_upd_key_o,
-  output logic [BlkLen-1:0]  cmd_upd_v_o,
+  output logic               cmd_upd_req_vld_o,
+  input  logic               cmd_upd_req_rdy_i,
+  output csrng_upd_data_t    cmd_upd_req_data_o,
 
   // update response interface
-  input logic                upd_cmd_ack_i,
-  output logic               cmd_upd_rdy_o,
-  input logic [CmdWidth-1:0] upd_cmd_ccmd_i,
-  input logic [InstIdWidth-1:0] upd_cmd_inst_id_i,
-  input logic [KeyLen-1:0]   upd_cmd_key_i,
-  input logic [BlkLen-1:0]   upd_cmd_v_i,
+  input  logic               cmd_upd_rsp_vld_i,
+  output logic               cmd_upd_rsp_rdy_o,
+  input  csrng_upd_data_t    cmd_upd_rsp_data_i,
 
   // error status outputs
   output logic [2:0]         ctr_drbg_cmd_sfifo_cmdreq_err_o,
@@ -90,7 +83,6 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   logic [CmdreqFifoWidth-1:0] sfifo_cmdreq_rdata;
   logic                       sfifo_cmdreq_full;
   
-
   // rcstage fifo
   logic [RCStageFifoWidth-1:0] sfifo_rcstage_rdata;
   logic                        sfifo_rcstage_push;
@@ -154,14 +146,15 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
 
   assign sfifo_cmdreq_wdata = {cmd_data_req_glast_i,
                                cmd_data_req_entropy_i,
-                               csrng_core_data_flat_t'(cmd_data_req_fifo)};
+                               cmd_data_req_fifo};
 
-  assign cmdreq_data = csrng_core_data_t'(sfifo_cmdreq_rdata[CoreDataWidth-1:0]);
   assign {cmdreq_glast,
-          cmdreq_entropy} = sfifo_cmdreq_rdata[CmdreqFifoWidth-1:CoreDataWidth];
+          cmdreq_entropy,
+          cmdreq_data}   = sfifo_cmdreq_rdata;
 
   assign sfifo_cmdreq_wvld = enable_i && cmd_data_req_vld_i;
-  assign sfifo_cmdreq_rrdy = enable_i && (upd_cmd_rdy_i || gen_adata_null_q) && sfifo_cmdreq_rvld;
+  assign sfifo_cmdreq_rrdy = enable_i && (cmd_upd_req_rdy_i || gen_adata_null_q) &&
+                             sfifo_cmdreq_rvld;
   assign cmd_data_req_rdy_o = sfifo_cmdreq_wrdy;
 
   assign ctr_drbg_cmd_sfifo_cmdreq_err_o =
@@ -195,8 +188,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
          '0;
 
   assign prep_rc =
-         (cmdreq_data.cmd == INS) ? {{(CntrLen-1){1'b0}},1'b0} :
-         (cmdreq_data.cmd == RES) ? {{(CntrLen-1){1'b0}},1'b0} :
+         (cmdreq_data.cmd == INS) ? {{(CtrLen-1){1'b0}},1'b0} :
+         (cmdreq_data.cmd == RES) ? {{(CtrLen-1){1'b0}},1'b0} :
          (cmdreq_data.cmd == GEN) ? cmdreq_data.rs_ctr :
          (cmdreq_data.cmd == UPD) ? cmdreq_data.rs_ctr :
          '0;
@@ -206,14 +199,14 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   assign gen_adata_null_d = !enable_i ? '0 : prep_gen_adata_null;
 
   // send to the update block
-  assign cmd_upd_req_o = sfifo_cmdreq_rvld && !prep_gen_adata_null;
-  assign cmd_upd_ccmd_o = cmdreq_data.cmd;
-  assign cmd_upd_inst_id_o = cmdreq_data.inst_id;
-  assign cmd_upd_pdata_o = prep_seed_material;
-  assign cmd_upd_key_o = prep_key;
-  assign cmd_upd_v_o = prep_v;
-
-
+  assign cmd_upd_req_vld_o = sfifo_cmdreq_rvld && !prep_gen_adata_null;
+  assign cmd_upd_req_data_o = '{
+    inst_id: cmdreq_data.inst_id,
+    cmd:     cmdreq_data.cmd,
+    key:     prep_key,
+    v:       prep_v,
+    pdata:   prep_seed_material
+  };
 
   //--------------------------------------------
   // fifo to stage rc and command, waiting for update block to ack
@@ -242,7 +235,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   assign sfifo_rcstage_push = sfifo_cmdreq_rrdy;
   assign sfifo_rcstage_wdata = {prep_key,prep_v,cmdreq_data.inst_id,prep_rc,cmdreq_data.fips,
                                 cmdreq_data.pdata,cmdreq_glast,cmdreq_data.cmd};
-  assign sfifo_rcstage_pop = sfifo_rcstage_not_empty && (upd_cmd_ack_i || gen_adata_null_q);
+  assign sfifo_rcstage_pop = sfifo_rcstage_not_empty && (cmd_upd_rsp_vld_i || gen_adata_null_q);
   assign {rcstage_key,rcstage_v,rcstage_id,rcstage_rc,rcstage_fips,
           rcstage_adata,rcstage_glast,rcstage_ccmd} = sfifo_rcstage_rdata;
 
@@ -252,7 +245,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
           (sfifo_rcstage_pop && !sfifo_rcstage_not_empty),
           (sfifo_rcstage_full && !sfifo_rcstage_not_empty)};
 
-  assign cmd_upd_rdy_o = sfifo_rcstage_not_empty && !sfifo_keyvrc_full;
+  assign cmd_upd_rsp_rdy_o = sfifo_rcstage_not_empty && !sfifo_keyvrc_full;
 
   //--------------------------------------------
   // final cmd block processing
@@ -282,12 +275,12 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
 
   // if a UNI command, reset the state values
   assign sfifo_keyvrc_wdata = (rcstage_ccmd == UNI) ?
-         {{(KeyLen+BlkLen+CtrLen+1+SeedLen){1'b0}},rcstage_glast,upd_cmd_inst_id_i,upd_cmd_ccmd_i} :
+         {{(KeyLen+BlkLen+CtrLen+1+SeedLen){1'b0}},rcstage_glast,cmd_upd_rsp_data_i.inst_id,cmd_upd_rsp_data_i.cmd} :
          gen_adata_null_q ?
          {rcstage_key,rcstage_v,rcstage_rc,rcstage_fips,
           rcstage_adata,rcstage_glast,rcstage_id,rcstage_ccmd} :
-         {upd_cmd_key_i,upd_cmd_v_i,rcstage_rc,rcstage_fips,
-          rcstage_adata,rcstage_glast,upd_cmd_inst_id_i,upd_cmd_ccmd_i};
+         {cmd_upd_rsp_data_i.key,cmd_upd_rsp_data_i.v,rcstage_rc,rcstage_fips,
+          rcstage_adata,rcstage_glast,cmd_upd_rsp_data_i.inst_id,cmd_upd_rsp_data_i.cmd};
 
   assign sfifo_keyvrc_pop = cmd_data_rsp_rdy_i && sfifo_keyvrc_not_empty;
 

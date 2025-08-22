@@ -7,28 +7,21 @@
 // implementation using security_strength = 256
 
 module csrng_ctr_drbg_upd import csrng_pkg::*; (
-  input logic                clk_i,
-  input logic                rst_ni,
+  input  logic               clk_i,
+  input  logic               rst_ni,
 
   // update interface
-  input logic                ctr_drbg_upd_enable_i,
+  input  logic               ctr_drbg_upd_enable_i,
 
   // request in
-  input logic                ctr_drbg_upd_req_i,
-  output logic               ctr_drbg_upd_rdy_o, // ready to process the req above
-  input logic [CmdWidth-1:0] ctr_drbg_upd_ccmd_i,
-  input logic [InstIdWidth-1:0] ctr_drbg_upd_inst_id_i, // instance id
-  input logic [SeedLen-1:0]  ctr_drbg_upd_pdata_i, // provided_data
-  input logic [KeyLen-1:0]   ctr_drbg_upd_key_i,
-  input logic [BlkLen-1:0]   ctr_drbg_upd_v_i,
+  input  logic               req_vld_i,
+  output logic               req_rdy_o,
+  input  csrng_upd_data_t    req_data_i,
 
   // response out
-  output logic               ctr_drbg_upd_ack_o, // final ack when update process has been completed
-  input logic                ctr_drbg_upd_rdy_i, // ready to process the ack above
-  output logic [CmdWidth-1:0]ctr_drbg_upd_ccmd_o,
-  output logic [InstIdWidth-1:0] ctr_drbg_upd_inst_id_o,
-  output logic [KeyLen-1:0]  ctr_drbg_upd_key_o,
-  output logic [BlkLen-1:0]  ctr_drbg_upd_v_o,
+  output logic               rsp_vld_o,
+  input  logic               rsp_rdy_i,
+  output csrng_upd_data_t    rsp_data_o,
 
   // es_req/ack
   input logic                ctr_drbg_upd_es_req_i,
@@ -263,10 +256,10 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
     .err_o    ()
   );
 
-  assign sfifo_updreq_push = !sfifo_updreq_full && ctr_drbg_upd_req_i;
-  assign sfifo_updreq_wdata = {ctr_drbg_upd_key_i,ctr_drbg_upd_v_i,ctr_drbg_upd_pdata_i,
-                               ctr_drbg_upd_inst_id_i,ctr_drbg_upd_ccmd_i};
-  assign ctr_drbg_upd_rdy_o = !sfifo_updreq_full;
+  assign sfifo_updreq_push = !sfifo_updreq_full && req_vld_i;
+  assign sfifo_updreq_wdata = {req_data_i.key,req_data_i.v,req_data_i.pdata,
+                               req_data_i.inst_id,req_data_i.cmd};
+  assign req_rdy_o = !sfifo_updreq_full;
 
   assign {sfifo_updreq_key,sfifo_updreq_v,sfifo_updreq_pdata,
           sfifo_updreq_inst_id,sfifo_updreq_ccmd} = sfifo_updreq_rdata;
@@ -606,12 +599,16 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
 
   assign {sfifo_final_key,sfifo_final_v,sfifo_final_inst_id,sfifo_final_ccmd} = sfifo_final_rdata;
 
-  assign sfifo_final_pop = ctr_drbg_upd_rdy_i && sfifo_final_not_empty;
-  assign ctr_drbg_upd_ack_o = sfifo_final_pop;
-  assign ctr_drbg_upd_ccmd_o = sfifo_final_ccmd;
-  assign ctr_drbg_upd_inst_id_o = sfifo_final_inst_id;
-  assign ctr_drbg_upd_key_o = sfifo_final_key;
-  assign ctr_drbg_upd_v_o = sfifo_final_v;
+  assign sfifo_final_pop = rsp_rdy_i && sfifo_final_not_empty;
+  assign rsp_vld_o = sfifo_final_pop;
+
+  assign rsp_data_o = '{
+    inst_id: sfifo_final_inst_id,
+    cmd:     sfifo_final_ccmd,
+    key:     sfifo_final_key,
+    v:       sfifo_final_v,
+    pdata:   '0 // unused in rsp path
+  };
 
   assign ctr_drbg_upd_sfifo_final_err_o =
          {(sfifo_final_push && sfifo_final_full),
