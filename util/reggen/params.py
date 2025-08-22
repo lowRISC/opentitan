@@ -102,7 +102,7 @@ class RandParameter(BaseParam):
     def __init__(self, name: str, desc: Optional[str], param_type: str,
                  randcount: int, randtype: str):
         assert randcount > 0
-        assert randtype in ['perm', 'data']
+        assert randtype in ["perm", "data", "extdata"]
         super().__init__(name, desc, param_type, None)
         self.randcount = randcount
         self.randtype = randtype
@@ -153,7 +153,7 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
         # RandParameter.
         randtype = check_str(rd.get('randtype', 'none'),
                              'randtype field of ' + where)
-        if randtype not in ['perm', 'data']:
+        if randtype not in ["perm", "data", "extdata"]:
             raise ValueError(
                 f'At {where}, parameter {name} has a name that implies it '
                 'is a random netlist constant, which means it must specify a '
