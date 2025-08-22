@@ -34,12 +34,20 @@ module mbx_bind;
     .d2h  (soc_tl_d_o)
   );
 
-  // TODO: Revisit this
-  //bind mbx mbx_csr_assert_fpv mbx_csr_assert (
-  //   .clk_i,
-  //   .rst_ni,
-  //   .h2d (core_tl_d_i),
-  //   .d2h (core_tl_d_o)
-  //);
+  // FPV CSR read and write assertions on ROT-side config interface
+  bind mbx mbx_core_csr_assert_fpv mbx_core_csr_assert (
+     .clk_i,
+     .rst_ni,
+     .h2d (core_tl_d_i),
+     .d2h (core_tl_d_o)
+  );
+
+  // FPV CSR read and write assertions on SoC-side config interface
+  bind mbx mbx_soc_csr_assert_fpv mbx_soc_csr_assert (
+     .clk_i,
+     .rst_ni,
+     .h2d (soc_tl_d_i),
+     .d2h (soc_tl_d_o)
+  );
 
 endmodule

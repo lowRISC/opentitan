@@ -29,6 +29,7 @@ targets:
       - files_dv
     generate:
       - csr_assert_gen
+
   formal:
     <<: *default_target
     filesets:
