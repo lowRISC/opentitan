@@ -557,7 +557,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
       // In data read phase, check d_data when d_error = 1.
       if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
-        check_tl_read_value_after_error(item, ral_name);
+        check_tl_read_value_after_error(item, block);
       end
 
       // we don't have cross coverage for simultaneous errors because 1) they're not important,
@@ -583,7 +583,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
             write_w_instr_type_err | instr_type_err | cfg.tl_mem_access_gated | csr_read_err);
   endfunction
 
-  virtual function void check_tl_read_value_after_error(tl_seq_item item, string ral_name);
+  virtual function void check_tl_read_value_after_error(tl_seq_item item, dv_base_reg_block block);
     `DV_CHECK_EQ(item.d_data, 32'hFFFF_FFFF, "d_data mismatch when d_error = 1")
   endfunction
 
