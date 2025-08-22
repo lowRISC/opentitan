@@ -180,29 +180,33 @@ class mbx_base_vseq extends cip_base_vseq #(
     seq_mem_model.init();
   endtask
 
-  virtual task write_mem(int start_addr, byte q[$]);
-    `uvm_info(get_full_name(),
-      $sformatf("write_mem(start_addr='h%0h, q=%p) -- Start", start_addr, q),
-      UVM_DEBUG);
-    foreach(q[ii]) begin
-      seq_mem_model.write_byte((start_addr + ii), q[ii]);
+  // Write the supplied DWORDs into the mailbox SRAM model, starting at the specified DWORD address.
+  virtual task write_mem(bit [top_pkg::TL_AW-1:2] start_addr, const ref mbx_dword_t q[$]);
+    bit [top_pkg::TL_AW-1:0] byte_addr = {start_addr, 2'b00};
+    `uvm_info(`gfn, $sformatf("write_mem(start_addr='h%0h, q=%p) -- Start", byte_addr, q),
+              UVM_DEBUG);
+    // Write each DWORD (4 bytes) in turn into the memory at ascending addresses.
+    foreach (q[ii]) begin
+      seq_mem_model.write(byte_addr, q[ii]);
+      byte_addr += 4;
     end
-    `uvm_info(get_full_name(),
-      $sformatf("write_mem(start_addr='h%0h, q=%p) -- End", start_addr, q),
-      UVM_DEBUG);
+    `uvm_info(`gfn, $sformatf("write_mem(start_addr='h%0h, q=%p) -- End", {start_addr, 2'b00}, q),
+              UVM_DEBUG);
   endtask : write_mem
 
-  virtual task read_mem(int start_addr, int sz, ref byte q[$]);
-    `uvm_info(get_full_name(),
-      $sformatf("read_mem(start_addr='h%0h, sz=%0d) -- Start", start_addr, sz),
-      UVM_DEBUG)
+  // Read the requested number of DWORDs from the SRAM model, starting at the given DWORD address.
+  virtual task read_mem(bit [top_pkg::TL_AW-1:2] start_addr, int unsigned sz, ref mbx_dword_t q[$]);
+    bit [top_pkg::TL_AW-1:0] byte_addr = {start_addr, 2'b00};
+    `uvm_info(`gfn, $sformatf("read_mem(start_addr='h%0h, sz=%0d) -- Start", byte_addr, sz << 2),
+              UVM_DEBUG)
     q = {};
+    // Read each DWORD (4 bytes) in turn from ascending addresses within the memory.
     for (int ii = 0; ii < sz; ii++) begin
-      q[ii] = seq_mem_model.read_byte(start_addr + ii);
+      q[ii] = seq_mem_model.read(byte_addr);
+      byte_addr += 4;
     end
-    `uvm_info(get_full_name(),
-      $sformatf("read_mem(start_addr='h%0h', sz=%0d, q=%p) -- Start", start_addr, sz, q),
-      UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("read_mem(start_addr='h%0h', sz=%0d, q=%p) -- End",
+                              {start_addr, 2'b00}, sz, q), UVM_DEBUG)
   endtask : read_mem
 
   virtual task mbx_init();
@@ -365,7 +369,6 @@ class mbx_base_vseq extends cip_base_vseq #(
         bit aborted = 1'b0;
         mbx_dword_t req[$];
         mbx_dword_t rsp[$];
-        mbx_dword_t qd;
         bit obs_ready;
         bit obs_error;
         bit obs_busy;
@@ -375,11 +378,7 @@ class mbx_base_vseq extends cip_base_vseq #(
         int max_acc_delay;
         // TODO: whether to perform RDATA write accesses as blocking operations.
         bit rdata_wr_blocking = 1'b0;
-
-        // TODO: perhaps we should change read_mem/write_mem to avoid issues.
-        // The mailbox operates only on DWORD quantities.
-        // mbx_dword_t q[$];
-        byte q[$];
+        mbx_dword_t q[$];
 
         // Empty the mailbox memory model of any previous contents.
         clear_mem();
@@ -496,15 +495,15 @@ class mbx_base_vseq extends cip_base_vseq #(
 
         if (check_request) begin
           // Collect the request message from the OT mailbox memory
-          read_mem(mbx_config.ibmbx_base_addr, req_size << 2, q);
+          read_mem(mbx_config.ibmbx_base_addr[top_pkg::TL_AW-1:2], req_size, q);
 
           for(int unsigned ii = 0; ii < req_size; ii++) begin
-            qd = {q[ii*4+3],q[ii*4+2],q[ii*4+1],q[ii*4]};
-            `uvm_info(`gfn, $sformatf("Expected Request DWORD %0h got %0h", req[ii], qd), UVM_HIGH)
-            if (qd !== req[ii]) begin
+            `uvm_info(`gfn, $sformatf("Expected Request DWORD %0h got %0h", req[ii], q[ii]),
+                      UVM_HIGH)
+            if (q[ii] !== req[ii]) begin
               `uvm_error(`gfn,
                          $sformatf("Request DWORD mismatches q[%0d]('h%0h) != req[%0d]('h%0h)",
-                                   ii, qd, ii, req[ii]))
+                                   ii, q[ii], ii, req[ii]))
             end
           end
           `uvm_info(`gfn, "Request data matched expectations", UVM_MEDIUM)
@@ -514,21 +513,17 @@ class mbx_base_vseq extends cip_base_vseq #(
           // Data from ROT to R-code
           q.delete();
           `uvm_info(`gfn, $sformatf("Constructing Response of 0x%0x DWORDs", rsp_size), UVM_MEDIUM)
-          for(int unsigned ii = 0 ; ii < rsp_size; ii++) begin
+          for(int unsigned ii = 0; ii < rsp_size; ii++) begin
             mbx_dword_t data = $urandom;
             `uvm_info(`gfn, $sformatf(" - Offset 0x%0x : 0x%0x", ii, data), UVM_HIGH)
-             // TODO: replace this byte queue with DWORDs
-            q.push_back(data[7:0]);
-            q.push_back(data[15:8]);
-            q.push_back(data[23:16]);
-            q.push_back(data[31:24]);
+            q.push_back(data);
           end
 
           // --------------------------------------------------------------------------------------
           // Response from RoT to SoC
           // --------------------------------------------------------------------------------------
 
-          write_mem(mbx_config.obmbx_base_addr, q);
+          write_mem(mbx_config.obmbx_base_addr[top_pkg::TL_AW-1:2], q);
           // Writing to 'outbound_object_size' triggers the mbx to make the response available.
           csr_wr(ral.outbound_object_size, rsp_size);
 
@@ -599,13 +594,12 @@ class mbx_base_vseq extends cip_base_vseq #(
 
             if (check_response) begin
               for(int unsigned ii = 0; ii < rsp_size; ii++) begin
-                qd = {q[ii*4+3],q[ii*4+2],q[ii*4+1],q[ii*4]};
-                `uvm_info(`gfn,
-                          $sformatf("Expected Response DWORD %0h got %0h", qd, rsp[ii]), UVM_HIGH)
-                if (qd !== rsp[ii]) begin
+                `uvm_info(`gfn, $sformatf("Expected Response DWORD %0h got %0h", q[ii], rsp[ii]),
+                          UVM_HIGH)
+                if (q[ii] !== rsp[ii]) begin
                   `uvm_error(`gfn,
                              $sformatf("Response DWORD mismatches q[%0d]('h%0h) != rsp[%0d]('h%0h)",
-                                       ii, qd, ii, rsp[ii]))
+                                       ii, q[ii], ii, rsp[ii]))
                 end
               end
             end
