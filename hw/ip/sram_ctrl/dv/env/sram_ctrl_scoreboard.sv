@@ -172,7 +172,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     return super.predict_tl_err(item, channel, ral_name);
   endfunction
 
-  virtual function void check_tl_read_value_after_error(tl_seq_item item, string ral_name);
+  virtual function void check_tl_read_value_after_error(tl_seq_item item, dv_base_reg_block block);
     bit [TL_DW-1:0] exp_data;
     tlul_pkg::tl_a_user_t a_user = tlul_pkg::tl_a_user_t'(item.a_user);
 
@@ -181,8 +181,8 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     // When the access target was the memory, tlul_adapter_sram either returns
     // DataWhenInstrError ('1) or DataWhenError ('0) depending whether it was a
     // instruction type access or not.
-    uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
+    uvm_reg_addr_t csr_addr = block.get_word_aligned_addr(item.a_addr);
+    if (csr_addr inside {block.csr_addrs}) begin
       exp_data = '1;
     end else begin
       // if error occurs when it's an instruction, return all 0 since it's an illegal instruction
