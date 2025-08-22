@@ -77,5 +77,17 @@
       stage: V2
       tests: [""]
     }
+    { name: mbx_doe_intr_msg
+      desc: '''
+            Exercise the DOE_INTR_MSG_ADDR and DOE_INTR_MSG_DATA registers on the RoT- and SoC sides.
+            These two registers simply convey read only data from the SoC to the RoT.
+
+            - Supply a stream of randomized data to SOC_DOE_INTR_MSG_ADDR/DATA at a sufficiently
+              low rate that they may be reliably sampled on the RoT side.
+            - Read and check the randomized data on the RoT side.
+            '''
+      stage: V2
+      tests: ["mbx_doe_intr_msg"]
+    }
   ]
 }
