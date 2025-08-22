@@ -173,26 +173,9 @@ package otp_ctrl_part_pkg;
     ${item_type} ${item["name"].lower()};<% offset -= item['size'] %>
     % endfor
   } otp_${part["name"].lower()}_data_t;
-
-  // default value used for intermodule
-  parameter otp_${part["name"].lower()}_data_t OTP_${part["name"].upper()}_DATA_DEFAULT = '{<% offset = part['offset'] + part['size'] %>
-  % for k, item in enumerate(part["items"][::-1]):
-    % if offset != item['offset'] + item['size']:
-    unallocated: ${"{}'h{:0X}".format((offset - item['size'] - item['offset']) * 8, 0)}<% offset = item['offset'] + item['size'] %>,
-    % endif
-<%
-  if item['ismubi']:
-    item_cast_pre = "prim_mubi_pkg::mubi" + str(item["size"]*8) + "_t'("
-    item_cast_post = ")"
-  else:
-    item_cast_pre = ""
-    item_cast_post = ""
-%>\
-    ${item["name"].lower()}: ${item_cast_pre}${"{}'h{:0X}".format(item["size"] * 8, item["inv_default"])}${item_cast_post}${"," if k < len(part["items"])-1 else ""}<% offset -= item['size'] %>
-  % endfor
-  };
   % endif
 % endfor
+
   typedef struct packed {
     // This reuses the same encoding as the life cycle signals for indicating valid status.
     lc_ctrl_pkg::lc_tx_t valid;
@@ -202,24 +185,6 @@ package otp_ctrl_part_pkg;
   % endif
 % endfor
   } otp_broadcast_t;
-
-  // default value for intermodule
-<%
-  k = 0
-  num_bkout = 0
-  for part in otp_mmap["partitions"]:
-    if part["bkout_type"]:
-      num_bkout += 1
-%>\
-  parameter otp_broadcast_t OTP_BROADCAST_DEFAULT = '{
-    valid: lc_ctrl_pkg::Off,
-% for part in otp_mmap["partitions"][::-1]:
-  % if part["bkout_type"]:
-    ${part["name"].lower()}_data: OTP_${part["name"].upper()}_DATA_DEFAULT${"" if k == num_bkout-1 else ","}
-<% k+=1 %>\
-  % endif
-% endfor
-  };
 
 <% offset =  int(otp_mmap["partitions"][-1]["offset"]) + int(otp_mmap["partitions"][-1]["size"]) %>
   // OTP invalid partition default for buffered partitions.
