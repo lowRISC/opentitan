@@ -131,6 +131,7 @@ SPDX-License-Identifier | optional | string | License identifier (if using pure 
 wakeup_list | optional | name list+ | list of peripheral wakeups
 countermeasures | optional | name list | list of countermeasures in this block
 features | optional | name list | list of functional features in this block
+memory | optional | list | list of memory definitions
 
 The basic structure of a register definition file is thus:
 

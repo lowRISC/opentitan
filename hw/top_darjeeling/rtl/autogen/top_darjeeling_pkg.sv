@@ -180,16 +180,6 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES = 32'h10;
 
   /**
-   * Peripheral base address for ctn device on soc_proxy in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR = 32'h40000000;
-
-  /**
-   * Peripheral size in bytes for ctn device on soc_proxy in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_SOC_PROXY_CTN_SIZE_BYTES = 32'h80000000;
-
-  /**
    * Peripheral base address for regs device on sram_ctrl_ret_aon in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR = 32'h30500000;
@@ -198,16 +188,6 @@ package top_darjeeling_pkg;
    * Peripheral size in bytes for regs device on sram_ctrl_ret_aon in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES = 32'h40;
-
-  /**
-   * Peripheral base address for ram device on sram_ctrl_ret_aon in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR = 32'h30600000;
-
-  /**
-   * Peripheral size in bytes for ram device on sram_ctrl_ret_aon in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES = 32'h1000;
 
   /**
    * Peripheral base address for regs device on rv_dm in top darjeeling.
@@ -340,16 +320,6 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_SIZE_BYTES = 32'h40;
 
   /**
-   * Peripheral base address for ram device on sram_ctrl_main in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR = 32'h10000000;
-
-  /**
-   * Peripheral size in bytes for ram device on sram_ctrl_main in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES = 32'h10000;
-
-  /**
    * Peripheral base address for regs device on sram_ctrl_mbox in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_BASE_ADDR = 32'h211D0000;
@@ -358,16 +328,6 @@ package top_darjeeling_pkg;
    * Peripheral size in bytes for regs device on sram_ctrl_mbox in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_SIZE_BYTES = 32'h40;
-
-  /**
-   * Peripheral base address for ram device on sram_ctrl_mbox in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR = 32'h11000000;
-
-  /**
-   * Peripheral size in bytes for ram device on sram_ctrl_mbox in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES = 32'h1000;
 
   /**
    * Peripheral base address for regs device on rom_ctrl0 in top darjeeling.
@@ -380,16 +340,6 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_ROM_CTRL0_REGS_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for rom device on rom_ctrl0 in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR = 32'h8000;
-
-  /**
-   * Peripheral size in bytes for rom device on rom_ctrl0 in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES = 32'h8000;
-
-  /**
    * Peripheral base address for regs device on rom_ctrl1 in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_ROM_CTRL1_REGS_BASE_ADDR = 32'h211E1000;
@@ -398,16 +348,6 @@ package top_darjeeling_pkg;
    * Peripheral size in bytes for regs device on rom_ctrl1 in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_ROM_CTRL1_REGS_SIZE_BYTES = 32'h80;
-
-  /**
-   * Peripheral base address for rom device on rom_ctrl1 in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR = 32'h20000;
-
-  /**
-   * Peripheral size in bytes for rom device on rom_ctrl1 in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES = 32'h10000;
 
   /**
    * Peripheral base address for dma in top darjeeling.
@@ -542,72 +482,72 @@ package top_darjeeling_pkg;
   /**
    * Memory base address for ctn in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_CTN_BASE_ADDR = 32'h40000000;
+  parameter int unsigned TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR = 32'h40000000;
 
   /**
    * Memory size for ctn in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_CTN_SIZE_BYTES = 32'h80000000;
+  parameter int unsigned TOP_DARJEELING_SOC_PROXY_CTN_SIZE_BYTES = 32'h80000000;
 
   /**
   * Memory base address for ram_ctn in top darjeeling.
   */
-  parameter int unsigned TOP_DARJEELING_RAM_CTN_BASE_ADDR = 32'h41000000;
+  parameter int unsigned TOP_DARJEELING_SOC_PROXY_RAM_CTN_BASE_ADDR = 32'h41000000;
 
   /**
   * Memory size for ram_ctn in top darjeeling.
   */
-  parameter int unsigned TOP_DARJEELING_RAM_CTN_SIZE_BYTES = 32'h100000;
+  parameter int unsigned TOP_DARJEELING_SOC_PROXY_RAM_CTN_SIZE_BYTES = 32'h100000;
 
   /**
    * Memory base address for ram_ret_aon in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_RAM_RET_AON_BASE_ADDR = 32'h30600000;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR = 32'h30600000;
 
   /**
    * Memory size for ram_ret_aon in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_RAM_RET_AON_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES = 32'h1000;
 
   /**
    * Memory base address for ram_main in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_RAM_MAIN_BASE_ADDR = 32'h10000000;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR = 32'h10000000;
 
   /**
    * Memory size for ram_main in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_RAM_MAIN_SIZE_BYTES = 32'h10000;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES = 32'h10000;
 
   /**
    * Memory base address for ram_mbox in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_RAM_MBOX_BASE_ADDR = 32'h11000000;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR = 32'h11000000;
 
   /**
    * Memory size for ram_mbox in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_RAM_MBOX_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES = 32'h1000;
 
   /**
    * Memory base address for rom0 in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_ROM0_BASE_ADDR = 32'h8000;
+  parameter int unsigned TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR = 32'h8000;
 
   /**
    * Memory size for rom0 in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_ROM0_SIZE_BYTES = 32'h8000;
+  parameter int unsigned TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES = 32'h8000;
 
   /**
    * Memory base address for rom1 in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_ROM1_BASE_ADDR = 32'h20000;
+  parameter int unsigned TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR = 32'h20000;
 
   /**
    * Memory size for rom1 in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_ROM1_SIZE_BYTES = 32'h10000;
+  parameter int unsigned TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES = 32'h10000;
 
 
   // Enumeration of alert modules
