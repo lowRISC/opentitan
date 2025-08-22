@@ -40,7 +40,7 @@ task racl_ctrl_smoke_vseq::write_policy_regs();
     // Write val to the register. If the register was shadowed, we'll need to do it twice.
     repeat (regs[i].get_is_shadowed() ? 2 : 1) begin
       uvm_status_e status;
-      regs[i].write(status, val);
+      regs[i].write(status, val, .prior(50));
 
       // Unless we went into reset, we expect the write to go through
       if (cfg.under_reset) return;
