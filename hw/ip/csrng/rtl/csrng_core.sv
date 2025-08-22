@@ -117,16 +117,12 @@ module csrng_core import csrng_pkg::*; #(
 
   logic                        cmd_result_wr_req;
   logic                        cmd_result_ack;
-  csrng_cmd_sts_e              cmd_result_ack_sts;
-  logic [CmdWidth-1:0]         cmd_result_ccmd;
   logic                        cmd_result_ack_rdy;
-  logic [InstIdWidth-1:0]      cmd_result_inst_id;
+  csrng_cmd_sts_e              cmd_result_ack_sts;
   logic                        cmd_result_glast;
-  logic                        cmd_result_fips;
-  logic [SeedLen-1:0]          cmd_result_adata;
-  logic [KeyLen-1:0]           cmd_result_key;
-  logic [BlkLen-1:0]           cmd_result_v;
-  logic [CtrLen-1:0]           cmd_result_rc;
+
+  csrng_core_data_t            ctr_drbg_cmd_req_data;
+  csrng_core_data_t            ctr_drbg_cmd_rsp_data;
 
   logic                        state_db_sts_ack;
   csrng_cmd_sts_e              state_db_sts_sts;
@@ -1202,7 +1198,7 @@ module csrng_core import csrng_pkg::*; #(
   // of each csrng instance. The state
   // is updated after each command.
 
-  assign cmd_result_wr_req = cmd_result_ack && (cmd_result_ccmd != GEN);
+  assign cmd_result_wr_req = cmd_result_ack && (ctr_drbg_cmd_rsp_data.cmd != GEN);
 
   // register read access
   assign state_db_reg_rd_sel = reg2hw.int_state_val.re;
@@ -1259,12 +1255,12 @@ module csrng_core import csrng_pkg::*; #(
 
   // muxes for statedb block inputs
   assign state_db_wr_req     = gen_blk_select ? gen_result_wr_req  : cmd_result_wr_req;
-  assign state_db_wr_inst_id = gen_blk_select ? gen_result_inst_id : cmd_result_inst_id;
-  assign state_db_wr_fips    = gen_blk_select ? gen_result_fips    : cmd_result_fips;
-  assign state_db_wr_ccmd    = gen_blk_select ? gen_result_ccmd    : cmd_result_ccmd;
-  assign state_db_wr_key     = gen_blk_select ? gen_result_key     : cmd_result_key;
-  assign state_db_wr_v       = gen_blk_select ? gen_result_v       : cmd_result_v;
-  assign state_db_wr_rc      = gen_blk_select ? gen_result_rc      : cmd_result_rc;
+  assign state_db_wr_inst_id = gen_blk_select ? gen_result_inst_id : ctr_drbg_cmd_rsp_data.inst_id;
+  assign state_db_wr_fips    = gen_blk_select ? gen_result_fips    : ctr_drbg_cmd_rsp_data.fips;
+  assign state_db_wr_ccmd    = gen_blk_select ? gen_result_ccmd    : ctr_drbg_cmd_rsp_data.cmd;
+  assign state_db_wr_key     = gen_blk_select ? gen_result_key     : ctr_drbg_cmd_rsp_data.key;
+  assign state_db_wr_v       = gen_blk_select ? gen_result_v       : ctr_drbg_cmd_rsp_data.v;
+  assign state_db_wr_rc      = gen_blk_select ? gen_result_rc      : ctr_drbg_cmd_rsp_data.rs_ctr;
   assign state_db_wr_sts     = gen_blk_select ? gen_result_ack_sts : cmd_result_ack_sts;
 
   // Forward the reseed counter values to the register interface.
@@ -1344,35 +1340,34 @@ module csrng_core import csrng_pkg::*; #(
 
   assign ctr_drbg_cmd_req = cmd_req_dly_q;
 
+  assign ctr_drbg_cmd_req_data = '{
+    inst_id: shid_q,
+    cmd:     ctr_drbg_cmd_ccmd,
+    key:     state_db_rd_key,
+    v:       state_db_rd_v,
+    pdata:   packer_adata,
+    rs_ctr:  state_db_rd_rc,
+    fips:    state_db_rd_fips
+  }; 
+
   csrng_ctr_drbg_cmd u_csrng_ctr_drbg_cmd (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .ctr_drbg_cmd_enable_i(cs_enable_fo[46]),
 
-    .ctr_drbg_cmd_req_i(ctr_drbg_cmd_req),
-    .ctr_drbg_cmd_rdy_o(ctr_drbg_cmd_req_rdy),
-    .ctr_drbg_cmd_ccmd_i(ctr_drbg_cmd_ccmd),
-    .ctr_drbg_cmd_inst_id_i(shid_q),
-    .ctr_drbg_cmd_glast_i(gen_last_q),
-    .ctr_drbg_cmd_entropy_i(cmd_entropy),
-    .ctr_drbg_cmd_entropy_fips_i(cmd_entropy_fips), // send to state_db
-    .ctr_drbg_cmd_adata_i(packer_adata),
-    .ctr_drbg_cmd_key_i(state_db_rd_key),
-    .ctr_drbg_cmd_v_i(state_db_rd_v),
-    .ctr_drbg_cmd_rc_i(state_db_rd_rc),
-    .ctr_drbg_cmd_fips_i(state_db_rd_fips), // send to genbits user
+    .enable_i(cs_enable_fo[46]),
 
-    .ctr_drbg_cmd_ack_o(cmd_result_ack),
-    .ctr_drbg_cmd_rdy_i(cmd_result_ack_rdy),
-    .ctr_drbg_cmd_sts_o(cmd_result_ack_sts),
-    .ctr_drbg_cmd_ccmd_o(cmd_result_ccmd),
-    .ctr_drbg_cmd_inst_id_o(cmd_result_inst_id),
-    .ctr_drbg_cmd_glast_o(cmd_result_glast),
-    .ctr_drbg_cmd_fips_o(cmd_result_fips),
-    .ctr_drbg_cmd_adata_o(cmd_result_adata),
-    .ctr_drbg_cmd_key_o(cmd_result_key),
-    .ctr_drbg_cmd_v_o(cmd_result_v),
-    .ctr_drbg_cmd_rc_o(cmd_result_rc),
+    .cmd_data_req_vld_i(ctr_drbg_cmd_req),
+    .cmd_data_req_rdy_o(ctr_drbg_cmd_req_rdy),
+    .cmd_data_req_i(ctr_drbg_cmd_req_data),
+    .cmd_data_req_entropy_i(cmd_entropy),
+    .cmd_data_req_entropy_fips_i(cmd_entropy_fips),
+    .cmd_data_req_glast_i(gen_last_q),
+
+    .cmd_data_rsp_vld_o(cmd_result_ack),
+    .cmd_data_rsp_rdy_i(cmd_result_ack_rdy),
+    .cmd_data_rsp_o(ctr_drbg_cmd_rsp_data),
+    .cmd_data_rsp_status_o(cmd_result_ack_sts),
+    .cmd_data_rsp_glast_o(cmd_result_glast),
 
     // interface to updblk from cmdblk
     .cmd_upd_req_o(cmdblk_updblk_arb_req),
@@ -1582,7 +1577,7 @@ module csrng_core import csrng_pkg::*; #(
   // of the sequence is done by the
   // csrng_ctr_drbg_cmd block.
 
-  assign ctr_drbg_gen_req = cmd_result_ack && (cmd_result_ccmd == GEN);
+  assign ctr_drbg_gen_req = cmd_result_ack && (ctr_drbg_cmd_rsp_data.cmd == GEN);
 
   csrng_ctr_drbg_gen u_csrng_ctr_drbg_gen (
     .clk_i(clk_i),
@@ -1590,14 +1585,14 @@ module csrng_core import csrng_pkg::*; #(
     .ctr_drbg_gen_enable_i(cs_enable_fo[49]),
     .ctr_drbg_gen_req_i(ctr_drbg_gen_req),
     .ctr_drbg_gen_rdy_o(ctr_drbg_gen_req_rdy),
-    .ctr_drbg_gen_ccmd_i(cmd_result_ccmd),
-    .ctr_drbg_gen_inst_id_i(cmd_result_inst_id),
+    .ctr_drbg_gen_ccmd_i(ctr_drbg_cmd_rsp_data.cmd),
+    .ctr_drbg_gen_inst_id_i(ctr_drbg_cmd_rsp_data.inst_id),
     .ctr_drbg_gen_glast_i(cmd_result_glast),
-    .ctr_drbg_gen_fips_i(cmd_result_fips),
-    .ctr_drbg_gen_adata_i(cmd_result_adata),
-    .ctr_drbg_gen_key_i(cmd_result_key),
-    .ctr_drbg_gen_v_i(cmd_result_v),
-    .ctr_drbg_gen_rc_i(cmd_result_rc),
+    .ctr_drbg_gen_fips_i(ctr_drbg_cmd_rsp_data.fips),
+    .ctr_drbg_gen_adata_i(ctr_drbg_cmd_rsp_data.pdata),
+    .ctr_drbg_gen_key_i(ctr_drbg_cmd_rsp_data.key),
+    .ctr_drbg_gen_v_i(ctr_drbg_cmd_rsp_data.v),
+    .ctr_drbg_gen_rc_i(ctr_drbg_cmd_rsp_data.rs_ctr),
 
     .ctr_drbg_gen_ack_o(gen_result_wr_req),
     .ctr_drbg_gen_sts_o(gen_result_ack_sts),

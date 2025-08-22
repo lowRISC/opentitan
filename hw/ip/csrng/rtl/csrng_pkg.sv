@@ -19,7 +19,7 @@ package csrng_pkg;
   // Caution: Not to be confused with the reseed counter width! These two are independent.
   parameter int unsigned CtrLen = 32;
 
-  parameter int unsigned ReseedCntrWidth = 32;
+  parameter int unsigned RsCtrWidth = 32;
 
   // Commonly used internal signal widths
   parameter int unsigned CmdWidth = 3;
@@ -90,6 +90,19 @@ package csrng_pkg;
     acmd_e            acmd;
   } csrng_cmd_t;
 
+  typedef struct packed {
+    logic [InstIdWidth-1:0] inst_id;
+    logic [CmdWidth-1:0]    cmd;
+    logic [KeyLen-1:0]      key;
+    logic [BlkLen-1:0]      v;
+    logic [SeedLen-1:0]     pdata;
+    logic [RsCtrWidth-1:0]  rs_ctr;
+    logic                   fips;
+  } csrng_core_data_t;
+
+  parameter int unsigned CoreDataWidth = $bits(csrng_core_data_t);
+
+  typedef logic [CoreDataWidth-1:0] csrng_core_data_flat_t;
 
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 3 -m 15 -n 8 \
