@@ -91,6 +91,11 @@
       name: mbx_imbx_oob
       uvm_test_seq: mbx_imbx_oob_vseq
     }
+    {
+      name: mbx_doe_intr_msg
+      uvm_test_seq: mbx_doe_intr_msg_vseq
+      reseed: 5
+    }
   ]
 
   // List of regressions.
@@ -103,9 +108,6 @@
       name: stress
       tests : ["mbx_stress",
                "mbx_stress_zero_delays"
-//              "mbx_sw_access",
-//              "mbx_sw_smoke",
-//              "mbx_sw_alert_test"
       ]
     }
   ]
