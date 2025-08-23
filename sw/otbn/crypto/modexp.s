@@ -41,7 +41,7 @@ cond_swap_gprs:
    *
    *   d = (0 - b)
    */
-  csrrs x17, RND, x0
+  csrrs x17, URND, x0
   sub   x17, x0, x14
 
   /* z = (X ^ Y) & d. */
@@ -49,7 +49,7 @@ cond_swap_gprs:
   and x18, x17, x18
 
   /* Sample a random mask r and XOR it to the intermediate result: z = z ^ r. */
-  csrrs x17, RND, x0
+  csrrs x17, URND, x0
   xor x18, x17, x18
 
   /*
@@ -66,9 +66,55 @@ cond_swap_gprs:
   ret
 
 /**
+ * Constant-time exponentiation by e-1 = F4-1 = 2^16 = 65536.
+ *
+ * Calculate C = A^(e-1) mod M in constant. A is assumed to be provided in the
+ * Montgomery domain, so is the result C.
+ *
+ * @param[in]  x16: DMEM pointer to the modulus M
+ * @param[in]  x17: DMEM pointer to the base A in the Montgomery domain.
+ * @param[out] x18: DMEM pointer to the result C in the Montgomery domain.
+ * @param[in]  x30: N, number of limbs per bignum
+ * @param[in]   x8: pointer to temp reg, must be set to 4
+ * @param[in]   x9: pointer to temp reg, must be set to 3
+ * @param[in]  x10: pointer to temp reg, must be set to 4
+ * @param[in]  x11: pointer to temp reg, must be set to 2
+ * @param[in]   w1: Montgomery Constant m0'
+ * @param[in]  w31: all-zero
+ *
+ * Clobbered registers: x2 to x4, x31, w2
+ * Clobbered flag groups: FG0, FG1
+ */
+modexp_65536:
+  /* Compute (N-1). x31 <= x30 - 1 = N - 1 */
+  addi      x31, x30, -1
+
+  /* Copy A into the output location. */
+  addi      x3, x17, 0
+  addi      x4, x18, 0
+  loop      x30, 2
+    bn.lid    x11, 0(x3++)
+    bn.sid    x11, 0(x4++)
+
+  /* Perform 16 squarings to calculate A^(2^16). */
+  loopi 16, 9
+    addi      x19, x18, 0
+    addi      x20, x18, 0
+    jal       x1, montmul
+    /* Store result at output location in DMEM. */
+    addi      x2, x8, 0
+    addi      x3, x18, 0
+    loop      x30, 2
+      bn.sid    x2, 0(x3++)
+      addi      x2, x2, 1
+    nop
+
+  ret
+
+/**
  * Constant-time, boolean-masked Montgomery ladder bigint exponentiation
  *
- * Calculates: C = modexp(A, E) = A^E mod M
+ * Calculates: C = modexp(A, d) = A^d mod M
  *
  * This routine implements a constant-time modular exponentation Montgomery
  * ladder using Boolean-masked exponents in two shares (d0, d1) as proposed by
@@ -82,9 +128,13 @@ cond_swap_gprs:
  * every exponentation vertical attacks over multiple traces are mitigated as
  * well.
  *
- * TODO: The actual intermediate values are not randomized requiring an
- * additional blinding of the input. An efficient, inverse-free technique
- * was proposed by Ebeid and Lambert:
+ * The input A is blinded for each exponentiation using the inverse-free
+ * technique by technique Ebeid and Lambert where
+ *
+ *   A^d = ((A*R^e)^(d-1))*(A*R^(e-1)) mod M
+ *
+ * For more information on this blinding strategy, the reader is referred to the
+ * paper:
  *
  *   [2] https://dl.acm.org/doi/10.1145/1873548.1873556
  *
@@ -96,7 +146,7 @@ cond_swap_gprs:
  * @param[in] x24: dptr_r1, DMEM pointer to a tmp location of size 512 bytes
  * @param[in] x25: dptr_r2, DMEM pointer to a tmp location of size 512 bytes
  * @param[in] x26: dptr_d0, DMEM pointer to the first share of exponent d
- * @param[in] x27: dptr_d1, DMEM pointer to the second shrare of the exponent d
+ * @param[in] x27: dptr_d1, DMEM pointer to the second share of the exponent d
  * @param[in] x28: dptr_n,  DMEM pointer to the modulus M
  * @param[in] x29: dptr_rr, DMEM pointer to RR = R^2 mod M
  * @param[in] x30: N, number of limbs per bignum
@@ -106,7 +156,7 @@ cond_swap_gprs:
  * The buffers A, r0, r1, r2, d0 and d1 are modified over the course of this
  * routine.
  *
- * Clobbered registers: x5 to x22, x31
+ * Clobbered registers: x2 to x22, x31
  *                      w2, w3, w4 to w[4+N-1], w24 to w30
  * Clobbered flag groups: FG0, FG1
  */
@@ -121,6 +171,15 @@ modexp:
   addi      x31, x30, -1
 
   /*
+   * Since d is odd d-1 must be even, hence to have d0 XOR d1 = d-1, the first
+   * bit of the share d0 must be flipped.
+   */
+  bn.lid x11, 0(x26)
+  bn.addi w30, w31, 1
+  bn.xor w2, w2, w30
+  bn.sid x11, 0(x26)
+
+  /*
    * Convert input to Montgomery domain:
    *
    *   [w[4+N-1]:w4] = A' = modexp(A, RR)
@@ -129,6 +188,53 @@ modexp:
   addi      x19, x23, 0
   addi      x20, x29, 0
   jal       x1, montmul
+
+  /* Store mont(A) back to DMEM at location r0. */
+  addi x2, x8, 0
+  addi x3, x23, 0
+  loop x30, 2
+    bn.sid  x2, 0(x3++)
+    addi    x2, x2, 1
+
+/**********************************************************
+ * BEGIN MESSAGE BLINDING
+ **********************************************************/
+
+  /*
+   * Sample random blinding factor R of size N limbs and store it in DMEM at r1.
+   * Assume it is already in Montgomery form.
+   */
+  addi x2, x11, 0
+  addi x3, x24, 0
+  loop x30, 2
+    bn.wsrr w2, URND
+    bn.sid  x2, 0(x3++)
+
+  /* Compute R^(e-1) and store it in DMEM at location r2. */
+  addi x16, x28, 0
+  addi x17, x24, 0
+  addi x18, x25, 0
+  jal x1, modexp_65536
+
+  /* Compute A*R^(e-1) and store it in the work buffer of the scratchpad. */
+  addi x19, x23, 0
+  addi x20, x25, 0
+  jal x1, montmul
+
+  addi x2, x8, 0
+  la   x3, work_buf
+  loop x30, 2
+    bn.sid  x2, 0(x3++)
+    addi    x2, x2, 1
+
+  /* Compute [w[4+N-1]:w4] = A*R^e. */
+  addi x19, x24, 0
+  la   x20, work_buf
+  jal  x1, montmul
+
+/**********************************************************
+ * END MESSAGE BLINDING
+ **********************************************************/
 
   /* montmul clobbers the flags, clear them here. */
   bn.add w31, w31, w31, FG0
@@ -151,19 +257,58 @@ modexp:
   addi x2, x23, 0
   addi x3, x24, 0
   addi x5, x28, 0
-  loop x30, 5
+  loop x30, 4
     bn.lid  x11, 0(x5++)
     bn.subb w2, w31, w2
     bn.sid  x11, 0(x2++)
     bn.sid  x11, 0(x3++)
 
   /*
-   * Step 2 in Algorithm 2 [1]:
+   * Precomputation of the randomized indices:
    *
-   * Generate a random bit x4 = b'.
+   *   `(((b' << R) | (d1 >> 1)) ^ d1) ^ d0`.
+   *
+   * Store the result in DMEM location RR, as at this point it not needed
+   * as all the inputs have been transformed into the Montgomery form.
+   *
+   * Computes the secret indices (b' ^ bi) ^ ai in Step 5 of Algorithm 2 in [1].
    */
-  csrrs   x4, RND, x0
-  andi    x4, x4, 1
+  addi x2, x27, 0  /* d1 */
+  addi x3, x26, 0  /* d0 */
+  addi x5, x29, 0  /* rr */
+
+  /* Use w24-w26 as intermediate WDRs. */
+  addi x20, x0, 24
+  addi x21, x0, 25
+  addi x22, x0, 26
+
+  /*
+   * Iterate through n-1 limbs (starting from the LSB) and compute
+   *
+   *   ((d1 >> 1) ^ d1) ^ d0
+   */
+  loop x31, 7
+    bn.lid x20, 0(x2++)
+    bn.lid x21, 0(x2)
+    bn.lid x22, 0(x3++)
+    bn.rshi w25, w25, w24 >> 1
+    bn.xor  w24, w24, w25
+    bn.xor  w24, w24, w26
+    bn.sid  x20, 0(x5++)
+
+  /* Generate random bit b'. */
+  bn.wsrr w25, URND
+  bn.add  w26, w25, w25
+  csrrs x4, FG0, x0
+
+  /* The last iteration is special, it includes the random bit b' at the MSB. */
+  bn.rshi w25, w31, w25 >> 255
+  bn.lid x20, 0(x2)
+  bn.lid x22, 0(x3)
+  bn.rshi w25, w25, w24 >> 1
+  bn.xor  w24, w24, w25
+  bn.xor  w24, w24, w26
+  bn.sid  x20, 0(x5)
 
   /* Store the converted input back into DMEM r[b' ^ 1] = A'. */
   xori x14, x4, 1
@@ -183,7 +328,7 @@ modexp:
    * w2, x2, x3, x4 hold secret values for all the iterations. x2, x3 are shares
    * of the same secret.
    */
-  loop      x21, 42
+  loop      x21, 46
 
     /* Shift d0 and siphon the shifted out MSB into FG0, x3 = a[i] = d0[i]. */
     addi      x15, x26, 0
@@ -199,7 +344,7 @@ modexp:
      * Step 4 in Algorithm 2 [1]:
      *
      * Depending on a[i] assign the input buffers to calculate
-     * [w[4+N-1]:w4] = r[a[i]] * r[a[i] ^ 1] and store the result in r2.
+     * [w[4+N-1]:w4] = r[a[i]] * r[a[i] ^ 1] and store the result in DMEM[r2].
      */
     addi x14, x3, 0
     jal x1, cond_swap_gprs
@@ -213,7 +358,7 @@ modexp:
       bn.sid  x2, 0(x15++)
       addi x2, x2, 1
 
-    /* Shift d1 and siphon the shifted out MSB into FG0, x2 = b[i] = d1[i]. */
+    /* Shift d1 and siphon the shifted out MSB into x2 = b[i] = d1[i]. */
     addi      x15, x27, 0
     loop      x30, 3
       bn.lid    x11, 0(x15)
@@ -223,14 +368,23 @@ modexp:
     csrrs x2, FG0, x0
     andi  x2, x2, 1
 
-    /* Calculate c = (b[i] ^ b') ^ a[i] = (x2 ^ x4) ^ x3. */
-    xor x4, x2, x4
-    xor x4, x4, x3
+    /*
+     * Shift secret indices and siphon the shifted out MSB into
+     *   x4 = (b' ^ bi) ^ ai
+     */
+    addi      x15, x29, 0
+    loop      x30, 3
+      bn.lid    x11, 0(x15)
+      /* w2 <= w2 << 1 */
+      bn.addc   w2, w2, w2
+      bn.sid    x11, 0(x15++)
+    csrrs x4, FG0, x0
+    andi  x4, x4, 1
 
     /*
      * Step 5 in Algorithm 2 [1]:
      *
-     * Calculate [w[4+N-1]:w4] = r[c] * r[c].
+     * Calculate [w[4+N-1]:w4] = DMEM[r[c]] * DMEM[r[c]].
      */
     addi x14, x4, 0
     jal x1, cond_swap_gprs
@@ -240,24 +394,19 @@ modexp:
     jal x1, montmul
 
     /*
-     * Step 7 in Algorithm 2 [1]:
-     *
-     * b' = b[i] = x2
-     */
-    addi x4, x2, 0
-
-    /*
      * Step 6 in Algorithm 2 [1]:
      *
-     * Store r2 and r[c] * r[c] into DMEM depending on b[i].
+     * Store r2 and r[c] * r[c] into DMEM depending on such that
+     *  DMEM[r[a[i]]]   = r[c] * r[c]
+     *  DMEM[r[a[i]^1]] = DMEM[r2]
      */
     addi x14, x3, 0
     jal x1, cond_swap_gprs
 
-    addi x2, x8, 0
+    addi x5, x8, 0
     loop x30, 2
-      bn.sid  x2, 0(x19++)
-      addi x2, x2, 1
+      bn.sid  x5, 0(x19++)
+      addi x5, x5, 1
 
     addi x16, x25, 0
     loop x30, 2
@@ -266,12 +415,35 @@ modexp:
 
     nop
 
-  /* Make sure the output C is in r0. */
-  addi x14, x4, 0
+  /* Make sure the output (A*R^e)^(d-1) is in r0. */
+  addi x14, x2, 0
   jal x1, cond_swap_gprs
 
-  /* Convert back from Montogomery form. */
+/**********************************************************
+ * BEGIN MESSAGE UNBLINDING
+ **********************************************************/
+
+  /*
+   * Unblind ciphertext with A*R^(e-1) such that
+   *   DMEM[r0] = A^d mod M = (A*R^e)^(d-1) * A*R^(e-1) mod M
+   */
   addi x16, x28, 0
+  la  x20, work_buf
+  jal x1, montmul
+
+  addi x2, x8, 0
+  addi x3, x23, 0
+  loop x30, 2
+    bn.sid  x2, 0(x3++)
+    addi    x2, x2, 1
+
+/**********************************************************
+ * END MESSAGE UNBLINDING
+ **********************************************************/
+
+  /* Convert back from Montgomery form. */
+  addi x16, x28, 0
+  addi x19, x23, 0
   addi x21, x23, 0
   jal x1, montmul_mul1
 
