@@ -75,7 +75,11 @@ module otp_ctrl_scrmbl
   import otp_ctrl_pkg::*;
   import otp_ctrl_top_specific_pkg::*;
   import otp_ctrl_part_pkg::*;
-(
+#(
+  parameter key_array_t          RndCnstKey         = '0,
+  parameter digest_const_array_t RndCnstDigestConst = '0,
+  parameter digest_iv_array_t    RndCnstDigestIV    = '0
+) (
   input                               clk_i,
   input                               rst_ni,
   // input data and command

@@ -88,7 +88,17 @@ module tb;
   wire otp_ext_voltage_h = otp_ctrl_if.ext_voltage_h_io;
 
   // dut
-  otp_ctrl dut (
+  otp_ctrl #(
+    .RndCnstScrmblKey0(top_darjeeling_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey0),
+    .RndCnstScrmblKey1(top_darjeeling_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey1),
+    .RndCnstScrmblKey2(top_darjeeling_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey2),
+    .RndCnstScrmblKey3(top_darjeeling_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey3),
+    .RndCnstDigestConst0(top_darjeeling_rnd_cnst_pkg::RndCnstOtpCtrlDigestConst0),
+    .RndCnstDigestConst1(top_darjeeling_rnd_cnst_pkg::RndCnstOtpCtrlDigestConst1),
+    .RndCnstDigestIV0(top_darjeeling_rnd_cnst_pkg::RndCnstOtpCtrlDigestIV0),
+    .RndCnstDigestIV1(top_darjeeling_rnd_cnst_pkg::RndCnstOtpCtrlDigestIV1),
+    .RndCnstPartInvDefault(top_darjeeling_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault)
+  ) dut (
     .clk_i                      (clk        ),
     .rst_ni                     (rst_n      ),
     // edn

@@ -70,6 +70,9 @@ def _validate_scrambling(scr: Dict):
         random_or_hexvalue(prng, dig, "iv_value", scr["iv_size"] * 8)
         random_or_hexvalue(prng, dig, "cnst_value", scr["cnst_size"] * 8)
 
+    scr["num_keys"] = len(scr["keys"])
+    scr["num_digests"] = len(scr["digests"])
+
 
 # if remaining number of bytes are not perfectly aligned, truncate
 def _avail_blocks(size: int) -> int:

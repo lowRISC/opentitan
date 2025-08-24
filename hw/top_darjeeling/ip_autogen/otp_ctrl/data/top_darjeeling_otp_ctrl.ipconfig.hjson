@@ -24,34 +24,36 @@
         [
           {
             name: Secret0Key
-            value: 79261096542507317550041524418378318810
+            value: <random>
           }
           {
             name: Secret1Key
-            value: 318985785134653313354004803705056942690
+            value: <random>
           }
           {
             name: Secret2Key
-            value: 177669530988656006400383198120896388291
+            value: <random>
           }
           {
             name: Secret3Key
-            value: 253454544458117277620971692296657999195
+            value: <random>
           }
         ]
         digests:
         [
           {
             name: CnstyDigest
-            iv_value: 5573918854495152458
-            cnst_value: 298124614738804023684088847145512094502
+            iv_value: <random>
+            cnst_value: <random>
           }
           {
             name: SramDataKey
-            iv_value: 13142649492737956675
-            cnst_value: 15226184123672563655096903138034867314
+            iv_value: <random>
+            cnst_value: <random>
           }
         ]
+        num_keys: 4
+        num_digests: 2
       }
       partitions:
       [
@@ -88,7 +90,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 10810310715135719883
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -503,7 +505,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 14728343938218768996
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -728,7 +730,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 4499762633768516743
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -981,7 +983,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 11837082436279312982
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1052,7 +1054,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 5280432312436422266
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1123,7 +1125,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 234369395612291906
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1194,7 +1196,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 16327599381873551525
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1265,7 +1267,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 1581155821231578393
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1336,7 +1338,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 2324999962355908533
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1407,7 +1409,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 17905165971232536359
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1478,7 +1480,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 13543634046774891762
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1549,7 +1551,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 13698041678974836896
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1642,7 +1644,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 14153060542995762600
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1670,7 +1672,7 @@
             {
               name: DEVICE_ID
               size: 32
-              inv_default: 65486323830591328446043131873451991034742910176203639508789261283277535351707
+              inv_default: <random>
               isdigest: false
               iszer: false
               ismubi: false
@@ -1681,7 +1683,7 @@
             {
               name: MANUF_STATE
               size: 32
-              inv_default: 45106338074792724304821242469256559359553488864622296623233734261107367140478
+              inv_default: <random>
               isdigest: false
               iszer: false
               ismubi: false
@@ -1696,7 +1698,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 10140889213198706984
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1755,7 +1757,7 @@
               name: EN_CSRNG_SW_APP_READ
               size: 1
               ismubi: true
-              inv_default: 105
+              inv_default: <random>
               desc:
                 '''
                 Enablement of CSRNG software application interface. A
@@ -1773,7 +1775,7 @@
               name: EN_SRAM_IFETCH
               size: 1
               ismubi: true
-              inv_default: 105
+              inv_default: <random>
               isdigest: false
               iszer: false
               iskeymgr_creator: false
@@ -1787,7 +1789,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 12267607958787918204
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1831,7 +1833,7 @@
           [
             {
               name: TEST_UNLOCK_TOKEN
-              inv_default: 296711380900218015171120952374769035694
+              inv_default: <random>
               size: 16
               isdigest: false
               iszer: false
@@ -1842,7 +1844,7 @@
             }
             {
               name: TEST_EXIT_TOKEN
-              inv_default: 85161989055762428459190056485751105958
+              inv_default: <random>
               size: 16
               isdigest: false
               iszer: false
@@ -1858,7 +1860,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 7474818370217309020
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1901,7 +1903,7 @@
           [
             {
               name: SRAM_DATA_KEY_SEED
-              inv_default: 241483977691757977923367841809339206658
+              inv_default: <random>
               size: 16
               isdigest: false
               iszer: false
@@ -1917,7 +1919,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 503838644190341903
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1960,7 +1962,7 @@
           [
             {
               name: RMA_TOKEN
-              inv_default: 150353733052794565317978902093985221175
+              inv_default: <random>
               size: 16
               isdigest: false
               iszer: false
@@ -1971,7 +1973,7 @@
             }
             {
               name: CREATOR_ROOT_KEY_SHARE0
-              inv_default: 99410155969389534278404680059562745406179175357375916509714598543499986721841
+              inv_default: <random>
               size: 32
               iskeymgr_creator: true
               isdigest: false
@@ -1982,7 +1984,7 @@
             }
             {
               name: CREATOR_ROOT_KEY_SHARE1
-              inv_default: 7391079586881058628634247621478375370202976073106929415694865999470879218122
+              inv_default: <random>
               size: 32
               iskeymgr_creator: true
               isdigest: false
@@ -1993,7 +1995,7 @@
             }
             {
               name: CREATOR_SEED
-              inv_default: 101343852674351727018162199551656737563182757336330864139602722951993660546186
+              inv_default: <random>
               size: 32
               iskeymgr_creator: true
               isdigest: false
@@ -2009,7 +2011,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 4720744928697992353
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -2052,7 +2054,7 @@
           [
             {
               name: OWNER_SEED
-              inv_default: 94411066183681302546622452158435937172067990320926238136744201607471434110567
+              inv_default: <random>
               size: 32
               iskeymgr_owner: true
               isdigest: false
@@ -2068,7 +2070,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 4321159426593998838
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -2110,7 +2112,7 @@
           [
             {
               name: LC_TRANSITION_CNT
-              inv_default: 33022140810555236579668719714372256268318002252766629331496500220362429561986227479059320688363086585586147527154004
+              inv_default: <random>
               size: 48
               isdigest: false
               iszer: false
@@ -2121,7 +2123,7 @@
             }
             {
               name: LC_STATE
-              inv_default: 8976759128772494558324922685029952774256516170895712485227985363288402422095425232881151769395
+              inv_default: <random>
               size: 40
               isdigest: false
               iszer: false

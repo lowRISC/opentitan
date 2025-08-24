@@ -99,7 +99,18 @@ module tb;
   wire otp_ext_voltage_h = otp_ctrl_if.ext_voltage_h_io;
 
   // dut
-  otp_ctrl dut (
+  otp_ctrl #(
+  % for i in range(otp_mmap["scrambling"]["num_keys"]): 
+    .RndCnstScrmblKey${i}(top_${topname}_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey${i}),
+  % endfor
+  % for i in range(otp_mmap["scrambling"]["num_digests"]):
+    .RndCnstDigestConst${i}(top_${topname}_rnd_cnst_pkg::RndCnstOtpCtrlDigestConst${i}),
+  % endfor
+  % for i in range(otp_mmap["scrambling"]["num_digests"]):
+    .RndCnstDigestIV${i}(top_${topname}_rnd_cnst_pkg::RndCnstOtpCtrlDigestIV${i}),
+  % endfor
+    .RndCnstPartInvDefault(top_${topname}_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault)
+  ) dut (
     .clk_i                      (clk        ),
     .rst_ni                     (rst_n      ),
     // edn

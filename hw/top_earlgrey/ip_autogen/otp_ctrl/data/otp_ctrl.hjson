@@ -108,6 +108,80 @@
       randcount: "256",
       randtype:  "data", // random permutation for randcount elements
     }
+    // Scrambling Keys
+    { name:      "RndCnstScrmblKey0",
+      desc:      "Compile-time scrambling key",
+      type:      "otp_ctrl_top_specific_pkg::key_t"
+      randcount: "128",
+      randtype:  "extdata",
+    }
+    { name:      "RndCnstScrmblKey1",
+      desc:      "Compile-time scrambling key",
+      type:      "otp_ctrl_top_specific_pkg::key_t"
+      randcount: "128",
+      randtype:  "extdata",
+    }
+    { name:      "RndCnstScrmblKey2",
+      desc:      "Compile-time scrambling key",
+      type:      "otp_ctrl_top_specific_pkg::key_t"
+      randcount: "128",
+      randtype:  "extdata",
+    }
+    { name:      "RndCnstDigestConst0",
+      desc:      "Compile-time digest const",
+      type:      "otp_ctrl_top_specific_pkg::digest_const_t"
+      randcount: "128",
+      randtype:  "extdata",
+    }
+    { name:      "RndCnstDigestConst1",
+      desc:      "Compile-time digest const",
+      type:      "otp_ctrl_top_specific_pkg::digest_const_t"
+      randcount: "128",
+      randtype:  "extdata",
+    }
+    { name:      "RndCnstDigestConst2",
+      desc:      "Compile-time digest const",
+      type:      "otp_ctrl_top_specific_pkg::digest_const_t"
+      randcount: "128",
+      randtype:  "extdata",
+    }
+    { name:      "RndCnstDigestConst3",
+      desc:      "Compile-time digest const",
+      type:      "otp_ctrl_top_specific_pkg::digest_const_t"
+      randcount: "128",
+      randtype:  "extdata",
+    }
+    { name:      "RndCnstDigestIV0",
+      desc:      "Compile-time digest initial vector",
+      type:      "otp_ctrl_top_specific_pkg::digest_iv_t"
+      randcount: "64",
+      randtype:  "extdata",
+    }
+    { name:      "RndCnstDigestIV1",
+      desc:      "Compile-time digest initial vector",
+      type:      "otp_ctrl_top_specific_pkg::digest_iv_t"
+      randcount: "64",
+      randtype:  "extdata",
+    }
+    { name:      "RndCnstDigestIV2",
+      desc:      "Compile-time digest initial vector",
+      type:      "otp_ctrl_top_specific_pkg::digest_iv_t"
+      randcount: "64",
+      randtype:  "extdata",
+    }
+    { name:      "RndCnstDigestIV3",
+      desc:      "Compile-time digest initial vector",
+      type:      "otp_ctrl_top_specific_pkg::digest_iv_t"
+      randcount: "64",
+      randtype:  "extdata",
+    }
+
+    { name:      "RndCnstPartInvDefault",
+      desc:      "OTP invalid partition default for buffered partitions",
+      type:      "logic [16383:0]"
+      randcount: "16384",
+      randtype:  "extdata",
+    }
     // Normal parameters
     { name: "NumSramKeyReqSlots",
       desc: "Number of key slots",

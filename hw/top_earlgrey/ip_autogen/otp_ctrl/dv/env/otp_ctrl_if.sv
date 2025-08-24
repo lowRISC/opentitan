@@ -40,6 +40,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   import otp_ctrl_part_pkg::*;
   import otp_macro_pkg::*;
   import cip_base_pkg::*;
+  import top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault;
 
   // Output from DUT
   otp_broadcast_t    otp_broadcast_o;
@@ -330,26 +331,26 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
 
   `OTP_FATAL_ERR_ASSERT(LcDataValid_A, lc_data_o.valid == 0 && lc_data_o.error == 1)
   `OTP_FATAL_ERR_ASSERT(LcDataState_A, lc_data_o.state ==
-                        PartInvDefault[LcStateOffset*8+:LcStateSize*8])
+    RndCnstOtpCtrlPartInvDefault[LcStateOffset*8+:LcStateSize*8])
   `OTP_FATAL_ERR_ASSERT(LcDataCount_A, lc_data_o.count ==
-                        PartInvDefault[LcTransitionCntOffset*8+:LcTransitionCntSize*8])
+    RndCnstOtpCtrlPartInvDefault[LcTransitionCntOffset*8+:LcTransitionCntSize*8])
   `OTP_FATAL_ERR_ASSERT(LcDataTestUnlockToken_A, lc_data_o.test_unlock_token ==
-                        PartInvDefault[TestUnlockTokenOffset*8+:TestUnlockTokenSize*8])
+    RndCnstOtpCtrlPartInvDefault[TestUnlockTokenOffset*8+:TestUnlockTokenSize*8])
   `OTP_FATAL_ERR_ASSERT(LcDataTestExitToken_A, lc_data_o.test_exit_token ==
-                        PartInvDefault[TestExitTokenOffset*8+:TestExitTokenSize*8])
+    RndCnstOtpCtrlPartInvDefault[TestExitTokenOffset*8+:TestExitTokenSize*8])
   `OTP_FATAL_ERR_ASSERT(LcDataRmaToken_A, lc_data_o.rma_token ==
-                        PartInvDefault[RmaTokenOffset*8+:RmaTokenSize*8])
+    RndCnstOtpCtrlPartInvDefault[RmaTokenOffset*8+:RmaTokenSize*8])
 
   `OTP_FATAL_ERR_ASSERT(KeymgrKeyData_A, keymgr_key_o.creator_root_key_share0 ==
-                        PartInvDefault[CreatorRootKeyShare0Offset*8+:CreatorRootKeyShare0Size*8] &&
-                        keymgr_key_o.creator_root_key_share1 ==
-                        PartInvDefault[CreatorRootKeyShare1Offset*8+:CreatorRootKeyShare1Size*8])
+    RndCnstOtpCtrlPartInvDefault[CreatorRootKeyShare0Offset*8+:CreatorRootKeyShare0Size*8] &&
+    keymgr_key_o.creator_root_key_share1 ==
+    RndCnstOtpCtrlPartInvDefault[CreatorRootKeyShare1Offset*8+:CreatorRootKeyShare1Size*8])
 
   `OTP_FATAL_ERR_ASSERT(HwCfgOValid_A, otp_broadcast_o.valid == lc_ctrl_pkg::Off)
   `OTP_FATAL_ERR_ASSERT(HwCfg0OData_A, otp_broadcast_o.hw_cfg0_data ==
-                        PartInvDefault[HwCfg0Offset*8+:HwCfg0Size*8])
+    RndCnstOtpCtrlPartInvDefault[HwCfg0Offset*8+:HwCfg0Size*8])
   `OTP_FATAL_ERR_ASSERT(HwCfg1OData_A, otp_broadcast_o.hw_cfg1_data ==
-                        PartInvDefault[HwCfg1Offset*8+:HwCfg1Size*8])
+    RndCnstOtpCtrlPartInvDefault[HwCfg1Offset*8+:HwCfg1Size*8])
 
   `OTP_FATAL_ERR_ASSERT(LcProgAck_A, lc_prog_ack == 0)
   `OTP_FATAL_ERR_ASSERT(FlashAcks_A, flash_acks == 0)

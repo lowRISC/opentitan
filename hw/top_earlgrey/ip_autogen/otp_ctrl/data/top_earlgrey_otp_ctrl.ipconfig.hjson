@@ -24,40 +24,42 @@
         [
           {
             name: Secret0Key
-            value: 79261096542507317550041524418378318810
+            value: <random>
           }
           {
             name: Secret1Key
-            value: 318985785134653313354004803705056942690
+            value: <random>
           }
           {
             name: Secret2Key
-            value: 177669530988656006400383198120896388291
+            value: <random>
           }
         ]
         digests:
         [
           {
             name: CnstyDigest
-            iv_value: 13739798386390731029
-            cnst_value: 19387815248521063059786024249941633354
+            iv_value: <random>
+            cnst_value: <random>
           }
           {
             name: FlashDataKey
-            iv_value: 16161367748560767875
-            cnst_value: 52429663447164110622287741421444995907
+            iv_value: <random>
+            cnst_value: <random>
           }
           {
             name: FlashAddrKey
-            iv_value: 825413095277504501
-            cnst_value: 284497036978760360808556468979666055207
+            iv_value: <random>
+            cnst_value: <random>
           }
           {
             name: SramDataKey
-            iv_value: 17981827341411119748
-            cnst_value: 98543724195391010298071380840458392475
+            iv_value: <random>
+            cnst_value: <random>
           }
         ]
+        num_keys: 3
+        num_digests: 4
       }
       partitions:
       [
@@ -92,7 +94,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 5280432312436422266
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -738,7 +740,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 234369395612291906
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1268,7 +1270,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 16327599381873551525
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1538,7 +1540,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 1581155821231578393
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1666,7 +1668,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 2324999962355908533
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1709,7 +1711,7 @@
             {
               name: DEVICE_ID
               size: 32
-              inv_default: 45106338074792724304821242469256559359553488864622296623233734261107367140478
+              inv_default: <random>
               desc:
                 '''
                 Unique device identifier that is always exposed through the
@@ -1726,7 +1728,7 @@
             {
               name: MANUF_STATE
               size: 32
-              inv_default: 100965650985106319336595787448038909280859230372109746770436794677173954816422
+              inv_default: <random>
               desc:
                 '''
                 Field to capture manufacturing status. Currently unused. Set
@@ -1746,7 +1748,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 17905165971232536359
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1780,7 +1782,7 @@
               name: EN_SRAM_IFETCH
               size: 1
               ismubi: true
-              inv_default: 105
+              inv_default: <random>
               desc:
                 '''
                 Enablement of execute from SRAM switch in the sram_ctrl (see
@@ -1797,7 +1799,7 @@
               name: EN_CSRNG_SW_APP_READ
               size: 1
               ismubi: true
-              inv_default: 105
+              inv_default: <random>
               desc:
                 '''
                 Enablement of CSRNG software application interface. A
@@ -1815,7 +1817,7 @@
               name: DIS_RV_DM_LATE_DEBUG
               size: 1
               ismubi: true
-              inv_default: 105
+              inv_default: <random>
               desc:
                 '''
                 Disablement of RV_DM late debug feature (see rv_dm
@@ -1837,7 +1839,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 13543634046774891762
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1869,7 +1871,7 @@
           [
             {
               name: TEST_UNLOCK_TOKEN
-              inv_default: 241483977691757977923367841809339206658
+              inv_default: <random>
               size: 16
               isdigest: false
               iszer: false
@@ -1880,7 +1882,7 @@
             }
             {
               name: TEST_EXIT_TOKEN
-              inv_default: 150353733052794565317978902093985221175
+              inv_default: <random>
               size: 16
               isdigest: false
               iszer: false
@@ -1896,7 +1898,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 13698041678974836896
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1928,7 +1930,7 @@
           [
             {
               name: FLASH_ADDR_KEY_SEED
-              inv_default: 99410155969389534278404680059562745406179175357375916509714598543499986721841
+              inv_default: <random>
               size: 32
               isdigest: false
               iszer: false
@@ -1939,7 +1941,7 @@
             }
             {
               name: FLASH_DATA_KEY_SEED
-              inv_default: 7391079586881058628634247621478375370202976073106929415694865999470879218122
+              inv_default: <random>
               size: 32
               isdigest: false
               iszer: false
@@ -1950,7 +1952,7 @@
             }
             {
               name: SRAM_DATA_KEY_SEED
-              inv_default: 297822815773166572715338675789917702294
+              inv_default: <random>
               size: 16
               isdigest: false
               iszer: false
@@ -1966,7 +1968,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 14153060542995762600
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1998,7 +2000,7 @@
           [
             {
               name: RMA_TOKEN
-              inv_default: 197791420282250691661260177080212266122
+              inv_default: <random>
               size: 16
               isdigest: false
               iszer: false
@@ -2009,7 +2011,7 @@
             }
             {
               name: CREATOR_ROOT_KEY_SHARE0
-              inv_default: 94411066183681302546622452158435937172067990320926238136744201607471434110567
+              inv_default: <random>
               size: 32
               iskeymgr_creator: true
               isdigest: false
@@ -2020,7 +2022,7 @@
             }
             {
               name: CREATOR_ROOT_KEY_SHARE1
-              inv_default: 97043349937164487093045210023379701147105192659006254486994315071370236037145
+              inv_default: <random>
               size: 32
               iskeymgr_creator: true
               isdigest: false
@@ -2036,7 +2038,7 @@
               ismubi: false
               isdigest: true
               iszer: false
-              inv_default: 10140889213198706984
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -2068,7 +2070,7 @@
           [
             {
               name: LC_TRANSITION_CNT
-              inv_default: 24752457638992396544754265753960069142084552974894085834358048399991475854089517042067373962426813673346557748670398
+              inv_default: <random>
               size: 48
               isdigest: false
               iszer: false
@@ -2079,7 +2081,7 @@
             }
             {
               name: LC_STATE
-              inv_default: 1232459460109293830193445129566839459062644876142083683633340923439827006874097651236687620186710
+              inv_default: <random>
               size: 40
               isdigest: false
               iszer: false
