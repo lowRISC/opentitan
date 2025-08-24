@@ -25,6 +25,15 @@ module otp_ctrl
   // Number of cycles a differential skew is tolerated on the alert signal
   parameter int unsigned AlertSkewCycles = 1,
   // Compile time random constants, to be overridden by topgen.
+  parameter key_t RndCnstScrmblKey0 = '0,
+  parameter key_t RndCnstScrmblKey1 = '0,
+  parameter key_t RndCnstScrmblKey2 = '0,
+  parameter key_t RndCnstScrmblKey3 = '0,
+  parameter digest_const_t RndCnstDigestConst0 = '0,
+  parameter digest_const_t RndCnstDigestConst1 = '0,
+  parameter digest_iv_t RndCnstDigestIV0 = '0,
+  parameter digest_iv_t RndCnstDigestIV1 = '0,
+  parameter logic [131071:0] RndCnstPartInvDefault = '0,
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter scrmbl_key_init_t RndCnstScrmblKeyInit = RndCnstScrmblKeyInitDefault
@@ -97,6 +106,42 @@ module otp_ctrl
                int'(MacroEccUncorrError) == int'(otp_ctrl_macro_pkg::MacroEccUncorrError))
   `ASSERT_INIT(OtpErrorCode4_A,
                int'(MacroWriteBlankError) == int'(otp_ctrl_macro_pkg::MacroWriteBlankError))
+  // Ensure that scrambling keys and digest constants are not all zero and defaults have been
+  // overwritten with a meaningful value.
+  `ASSERT_INIT(ScrmblKeyNotAllZero_A0, RndCnstScrmblKey0 != 0)
+  `ASSERT_INIT(ScrmblKeyNotAllZero_A1, RndCnstScrmblKey1 != 0)
+  `ASSERT_INIT(ScrmblKeyNotAllZero_A2, RndCnstScrmblKey2 != 0)
+  `ASSERT_INIT(ScrmblKeyNotAllZero_A3, RndCnstScrmblKey3 != 0)
+  `ASSERT_INIT(DigestConstNotAllZero_A0, RndCnstDigestConst0 != 0)
+  `ASSERT_INIT(DigestIVNotAllZero_A0, RndCnstDigestIV0 != 0)
+  `ASSERT_INIT(DigestConstNotAllZero_A1, RndCnstDigestConst1 != 0)
+  `ASSERT_INIT(DigestIVNotAllZero_A1, RndCnstDigestIV1 != 0)
+
+  ////////////////
+  // Parameters //
+  ////////////////
+
+  // Based on the flat random constant parameters, build up arrays
+  // SEC_CM: SECRET.MEM.SCRAMBLE
+  localparam key_array_t RndCnstKey = {
+    RndCnstScrmblKey3,
+    RndCnstScrmblKey2,
+    RndCnstScrmblKey1,
+    RndCnstScrmblKey0
+  };
+
+  // SEC_CM: PART.MEM.DIGEST
+  // Note: digest set 0 is used for computing the partition digests. Constants at
+  // higher indices are used to compute the scrambling keys.
+  localparam digest_const_array_t RndCnstDigestConst = {
+    RndCnstDigestConst1,
+    RndCnstDigestConst0
+  };
+
+  localparam digest_iv_array_t RndCnstDigestIV = {
+    RndCnstDigestIV1,
+    RndCnstDigestIV0
+  };
 
   /////////////
   // Regfile //
@@ -874,7 +919,11 @@ end
 
   // SEC_CM: SECRET.MEM.SCRAMBLE
   // SEC_CM: PART.MEM.DIGEST
-  otp_ctrl_scrmbl u_otp_ctrl_scrmbl (
+  otp_ctrl_scrmbl #(
+    .RndCnstKey         ( RndCnstKey         ),
+    .RndCnstDigestConst ( RndCnstDigestConst ),
+    .RndCnstDigestIV    ( RndCnstDigestIV    )
+  ) u_otp_ctrl_scrmbl (
     .clk_i,
     .rst_ni,
     .cmd_i         ( scrmbl_req_bundle.cmd       ),
@@ -1066,7 +1115,7 @@ end
   // Partition Instances //
   /////////////////////////
 
-  logic [$bits(PartInvDefault)/8-1:0][7:0] part_buf_data;
+  logic [$bits(RndCnstPartInvDefault)/8-1:0][7:0] part_buf_data;
 
   for (genvar k = 0; k < NumPart; k ++) begin : gen_partitions
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1129,7 +1178,7 @@ end
     end else if (PartInfo[k].variant == Buffered) begin : gen_buffered
       otp_ctrl_part_buf #(
         .Info(PartInfo[k]),
-        .DataDefault(PartInvDefault[PartInfo[k].offset*8 +: PartInfo[k].size*8])
+        .DataDefault(RndCnstPartInvDefault[PartInfo[k].offset*8 +: PartInfo[k].size*8])
       ) u_part_buf (
         .clk_i,
         .rst_ni,
@@ -1188,7 +1237,7 @@ end
     end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
       otp_ctrl_part_buf #(
         .Info(PartInfo[k]),
-        .DataDefault(PartInvDefault[PartInfo[k].offset*8 +: PartInfo[k].size*8])
+        .DataDefault(RndCnstPartInvDefault[PartInfo[k].offset*8 +: PartInfo[k].size*8])
       ) u_part_buf (
         .clk_i,
         .rst_ni,
@@ -1299,6 +1348,7 @@ end
   otp_keymgr_key_t otp_keymgr_key;
   assign otp_keymgr_key = named_keymgr_key_assign(part_digest,
                                                   part_buf_data,
+                                                  RndCnstPartInvDefault,
                                                   lc_seed_hw_rd_en);
 
   // Note regarding these breakouts: named_keymgr_key_assign will tie off unused key material /

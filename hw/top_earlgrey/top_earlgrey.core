@@ -113,6 +113,7 @@ mapping:
   "lowrisc:systems:ast_pkg": "lowrisc:systems:top_earlgrey_ast_pkg"
   "lowrisc:virtual_ip:flash_ctrl_prim_reg_top": "lowrisc:earlgrey_ip:flash_ctrl_prim_reg_top"
   "lowrisc:virtual_ip:lc_ctrl_state_pkg": "lowrisc:earlgrey_constants:dev_lc_ctrl_state_pkg"
+  "lowrisc:virtual_constants:rnd_cnst_pkg": "lowrisc:earlgrey_constants:dev_rnd_cnst_pkg"
   # TODO(#27347): prim_legacy_pkg is deprecated
   "lowrisc:prim:prim_pkg": "lowrisc:prim:prim_legacy_pkg"
 

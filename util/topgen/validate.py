@@ -310,6 +310,7 @@ module_optional = {
     'plic': ['s', 'Interrupt controller managing this module\'s interrupts'],
     'targets': ['l', 'Optional list of targets for this PLIC'],
     'alert_handler': ['s', 'Alert handler managing this module\'s alerts'],
+    "otp_map": ["g", "OTP Map information for OTP Ctrl"]
 }
 
 module_added = {

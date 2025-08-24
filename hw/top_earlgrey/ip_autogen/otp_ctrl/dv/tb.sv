@@ -93,7 +93,20 @@ module tb;
   wire otp_ext_voltage_h = otp_ctrl_if.ext_voltage_h_io;
 
   // dut
-  otp_ctrl dut (
+  otp_ctrl #(
+    .RndCnstScrmblKey0(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey0),
+    .RndCnstScrmblKey1(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey1),
+    .RndCnstScrmblKey2(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey2),
+    .RndCnstDigestConst0(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlDigestConst0),
+    .RndCnstDigestConst1(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlDigestConst1),
+    .RndCnstDigestConst2(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlDigestConst2),
+    .RndCnstDigestConst3(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlDigestConst3),
+    .RndCnstDigestIV0(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlDigestIV0),
+    .RndCnstDigestIV1(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlDigestIV1),
+    .RndCnstDigestIV2(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlDigestIV2),
+    .RndCnstDigestIV3(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlDigestIV3),
+    .RndCnstPartInvDefault(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault)
+  ) dut (
     .clk_i                      (clk        ),
     .rst_ni                     (rst_n      ),
     // edn

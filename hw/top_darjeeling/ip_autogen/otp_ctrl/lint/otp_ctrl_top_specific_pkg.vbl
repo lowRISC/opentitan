@@ -3,6 +3,3 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # waiver file for OTP controller top-specific package
-
-# waive long line violations in generated code
-waive --rule=line-length --location="otp_ctrl_part_pkg.sv"

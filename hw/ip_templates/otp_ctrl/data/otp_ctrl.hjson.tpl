@@ -120,6 +120,38 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
       randcount: "256",
       randtype:  "data", // random permutation for randcount elements
     }
+    // Scrambling Keys
+  % for i in range(otp_mmap["scrambling"]["num_keys"]):
+    { name:      "RndCnstScrmblKey${i}",
+      desc:      "Compile-time scrambling key",
+      type:      "otp_ctrl_top_specific_pkg::key_t"
+      randcount: "${otp_mmap['scrambling']['key_size'] * 8}",
+      randtype:  "extdata",
+    }
+  % endfor
+  % for i in range(otp_mmap["scrambling"]["num_digests"]):
+    { name:      "RndCnstDigestConst${i}",
+      desc:      "Compile-time digest const",
+      type:      "otp_ctrl_top_specific_pkg::digest_const_t"
+      randcount: "${otp_mmap['scrambling']['cnst_size'] * 8}",
+      randtype:  "extdata",
+    }
+  % endfor
+  % for i in range(otp_mmap["scrambling"]["num_digests"]):
+    { name:      "RndCnstDigestIV${i}",
+      desc:      "Compile-time digest initial vector",
+      type:      "otp_ctrl_top_specific_pkg::digest_iv_t"
+      randcount: "${otp_mmap['scrambling']['iv_size'] * 8}",
+      randtype:  "extdata",
+    }
+  % endfor
+<% offset = int(otp_mmap["partitions"][-1]["offset"]) + int(otp_mmap["partitions"][-1]["size"]) %>
+    { name:      "RndCnstPartInvDefault",
+      desc:      "OTP invalid partition default for buffered partitions",
+      type:      "logic [${offset * 8 - 1}:0]"
+      randcount: "${offset * 8}",
+      randtype:  "extdata",
+    }
     // Normal parameters
     { name: "NumSramKeyReqSlots",
       desc: "Number of key slots",

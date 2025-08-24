@@ -135,4 +135,8 @@ package otp_ctrl_top_specific_pkg;
   localparam scrmbl_key_init_t RndCnstScrmblKeyInitDefault =
       256'hcebeb96ffe0eced795f8b2cfe23c1e519e4fa08047a6bcfb811b04f0a479006e;
 
+  typedef logic [ScrmblKeyWidth-1:0]   key_t;
+  typedef logic [ScrmblKeyWidth-1:0]   digest_const_t;
+  typedef logic [ScrmblBlockWidth-1:0] digest_iv_t;
+
 endpackage : otp_ctrl_top_specific_pkg

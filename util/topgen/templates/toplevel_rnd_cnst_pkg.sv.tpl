@@ -43,9 +43,19 @@ package top_${top["name"]}_rnd_cnst_pkg;
     % endif
   // ${p['desc']}
   parameter ${p["type"]} ${p["name_top"]} = {
-    % for block in make_blocked_sv_literal(p["default"], p["randwidth"]):
+    % if p["name"] == "RndCnstPartInvDefault":
+      % for part in p["default"]:
+    ${part["size"]}'({
+        % for item in part["items"]:
+      ${f"{item['size']}'h{item['inv_default']:X}"}${"" if loop.last else ","}${f" // {item['comment']}" if item.get("comment") else ""}
+        % endfor
+    })${"" if loop.last else ","}
+      % endfor
+    % else:
+      % for block in make_blocked_sv_literal(p["default"], p["randwidth"]):
     ${block}${"" if loop.last else ","}
-    % endfor
+      % endfor
+    % endif
   };
 
   % endfor

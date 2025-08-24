@@ -32,6 +32,215 @@ package top_darjeeling_rnd_cnst_pkg;
     256'h55176264_E55C329C_8AE4725A_EAF67281_50127AC7_55D70063_277642B5_309A1639
   };
 
+  // Compile-time scrambling key
+  parameter otp_ctrl_top_specific_pkg::key_t RndCnstOtpCtrlScrmblKey0 = {
+    128'h3BA121C5_E097DDEB_7768B4C6_66E9C3DA
+  };
+
+  // Compile-time scrambling key
+  parameter otp_ctrl_top_specific_pkg::key_t RndCnstOtpCtrlScrmblKey1 = {
+    128'hEFFA6D73_6C5EFF49_AE7B70F9_C46E5A62
+  };
+
+  // Compile-time scrambling key
+  parameter otp_ctrl_top_specific_pkg::key_t RndCnstOtpCtrlScrmblKey2 = {
+    128'h85A9E830_BC059BA9_286D6E28_56A05CC3
+  };
+
+  // Compile-time scrambling key
+  parameter otp_ctrl_top_specific_pkg::key_t RndCnstOtpCtrlScrmblKey3 = {
+    128'hBEAD91D5_FA4E0915_0E95F517_CB98955B
+  };
+
+  // Compile-time digest const
+  parameter otp_ctrl_top_specific_pkg::digest_const_t RndCnstOtpCtrlDigestConst0 = {
+    128'hE048B657_396B4B83_277195FC_471E4B26
+  };
+
+  // Compile-time digest const
+  parameter otp_ctrl_top_specific_pkg::digest_const_t RndCnstOtpCtrlDigestConst1 = {
+    128'h0B7474D6_40F8A7F5_D60822E1_FAEC5C72
+  };
+
+  // Compile-time digest initial vector
+  parameter otp_ctrl_top_specific_pkg::digest_iv_t RndCnstOtpCtrlDigestIV0 = {
+    64'h4D5A89AA_9109294A
+  };
+
+  // Compile-time digest initial vector
+  parameter otp_ctrl_top_specific_pkg::digest_iv_t RndCnstOtpCtrlDigestIV1 = {
+    64'hB6641214_B61D1B43
+  };
+
+  // OTP invalid partition default for buffered partitions
+  parameter logic [131071:0] RndCnstOtpCtrlPartInvDefault = {
+    704'({
+      320'h1136C663A36C3E3E817E760B27AE937BFCDF15A3429452A851B80674A2B6FBE93B61DE417B9FB33,
+      384'hD68C96F0B3D1FEED688098A43C33459F0279FC51CC7C626E315FD2B871D88819A0D1E90E8C9FDDFA01E46311FD36D954
+    }),
+    384'({
+      64'h0,
+      64'h3BF7D79A9FF747F6,
+      256'hD0BAC511D08ECE0E2C0DBDDEDF7A854D5E58D0AA97A0F8F6D3D58610F4851667
+    }),
+    1024'({
+      64'h0,
+      64'h41837480464544A1,
+      256'hE00E9680BD9B70291C752824C7DDC89694CD3DED94B578192A4D8B51F5D41C8A,
+      256'h105733EAA3880C5A234729143F97B62A55D0320379A0D260426D99D374E699CA,
+      256'hDBC827839FE2DCC27E17D06B5D4E0DDDDBB9844327F20FB5D396D1CE085BDC31,
+      128'h711D135F59A50322B6711DB6F5D40A37
+    }),
+    256'({
+      64'h0,
+      64'h6FDFE93D3146B0F,
+      128'hB5AC1F53D00A08C3B28B5C0FEE5F4C02
+    }),
+    384'({
+      64'h0,
+      64'h67BBE3B4555DF35C,
+      128'h40119A3C6E63CDF358840E458E4029A6,
+      128'hDF3888886BD10DC67ABB319BDA0529AE
+    }),
+    128'({
+      64'hAA3F4C71234F097C,
+      16'h0, // unallocated space
+      8'h69,
+      8'h69,
+      32'h0
+    }),
+    576'({
+      64'h8CBBAD02BB4CA928,
+      256'h63B9485A3856C417CF7A50A9A91EF7F7B3A5B4421F462370FFF698183664DC7E,
+      256'h90C7F21F6224F027F98C48B1F93772844A22D4B78FE0266FBEE3958332F2939B
+    }),
+    78912'({
+      64'hC469C593E5DC0DA8,
+      5312'h0, // unallocated space
+      73536'h0
+    }),
+    8192'({
+      8192'h0
+    }),
+    2624'({
+      64'hBE193854E9CA60A0,
+      1280'h0,
+      1280'h0
+    }),
+    2624'({
+      64'hBBF4A76885E754F2,
+      1280'h0,
+      1280'h0
+    }),
+    2624'({
+      64'hF87BED95CFBA3727,
+      1280'h0,
+      1280'h0
+    }),
+    2624'({
+      64'h20440F25BB053FB5,
+      1280'h0,
+      1280'h0
+    }),
+    2624'({
+      64'h15F164D7930C9D19,
+      1280'h0,
+      1280'h0
+    }),
+    2624'({
+      64'hE29749216775E8A5,
+      1280'h0,
+      1280'h0
+    }),
+    2624'({
+      64'h340A5B93BB19342,
+      1280'h0,
+      1280'h0
+    }),
+    2624'({
+      64'h4947DD361344767A,
+      1280'h0,
+      1280'h0
+    }),
+    11392'({
+      64'hA445C3C29F71A256,
+      32'h0, // unallocated space
+      6144'h0,
+      1280'h0,
+      1280'h0,
+      1280'h0,
+      32'h0,
+      1280'h0
+    }),
+    384'({
+      128'h0,
+      128'h0,
+      128'h0
+    }),
+    4800'({
+      64'h3E725E464F593C87,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      512'h0,
+      128'h0,
+      128'h0,
+      224'h0,
+      3360'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0
+    }),
+    2432'({
+      64'hCC6596C7174EBA64,
+      32'h0, // unallocated space
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      64'h0,
+      32'h0,
+      64'h0,
+      32'h0,
+      32'h0,
+      256'h0,
+      32'h0,
+      992'h0
+    }),
+    512'({
+      64'h9605F051E74379CB,
+      448'h0
+    })
+  };
+
   ////////////////////////////////////////////
   // lc_ctrl
   ////////////////////////////////////////////

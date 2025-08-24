@@ -14,7 +14,7 @@ import tempfile
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from pathlib import Path
-from typing import Callable, Dict, List, NamedTuple, Optional, Tuple
+from typing import Any, Callable, Dict, List, NamedTuple, Optional, Tuple
 
 import hjson
 import tlgen
@@ -683,11 +683,68 @@ def _get_otp_ctrl_params(top: ConfigT,
                       and i["name"].lower().endswith("key_seed")]
         return len(flash_keys) > 0
 
+    def get_param(name: str, param_list: List[Dict[str, Any]]) -> Dict[str, Any]:
+        for p in param_list:
+            if p["name"] == name:
+                return p
+        raise ValueError(f"Parameter {name} not found in {param_list}")
+
     """Returns the parameters extracted from the otp_mmap.hjson file."""
     otp_mmap_path = out_path / "data" / "otp" / "otp_ctrl_mmap.hjson"
     otp_mmap = OtpMemMap.from_mmap_path(otp_mmap_path, top["seed"]["otp_ctrl_seed"].value).config
     enable_flash_keys = has_flash_keys(otp_mmap["partitions"], otp_mmap_path)
     otp_ctrl = lib.find_module(top["module"], "otp_ctrl")
+
+    # Now inject the Key/digest/IV/PartInv into the "extdata" randtype params
+    # The param list might not be available on the first pass. Only propagate
+    # the values if the param list is available.
+    if "param_list" in otp_ctrl:
+        for i, key in enumerate(otp_mmap["scrambling"]["keys"]):
+            p = get_param(f"RndCnstScrmblKey{i}", otp_ctrl["param_list"])
+            p["default"] = hex(int(key["value"]))
+            key["value"] = "<random>"
+
+        for i, digest in enumerate(otp_mmap["scrambling"]["digests"]):
+            p = get_param(f"RndCnstDigestConst{i}", otp_ctrl["param_list"])
+            p["default"] = hex(int(digest["cnst_value"]))
+            digest["cnst_value"] = "<random>"
+
+        for i, digest in enumerate(otp_mmap["scrambling"]["digests"]):
+            p = get_param(f"RndCnstDigestIV{i}", otp_ctrl["param_list"])
+            p["default"] = hex(int(digest["iv_value"]))
+            digest["iv_value"] = "<random>"
+
+        # Parse the part_inv_default data from the OTP map into a simple dict that we can use
+        # when rendering the random constant package.
+        part_inv_data = []
+        rev_partitions = otp_mmap["partitions"][::-1]
+        offset = int(rev_partitions[0]["offset"]) + int(rev_partitions[0]["size"])
+        for part in rev_partitions:
+            part_data = {
+                "size": part["size"] * 8,
+                "items": []
+            }
+            for item in part["items"][::-1]:
+                if offset != item["offset"] + item["size"]:
+                    part_data["items"].append({
+                        "comment": "unallocated space",
+                        "size": (offset - item["size"] - item["offset"]) * 8,
+                        "inv_default": 0
+                    })
+                    offset = item["offset"] + item["size"]
+                part_data["items"].append({
+                    "size": item["size"] * 8,
+                    "inv_default": item["inv_default"]
+                })
+                # Sanitize the seed dependent inv_default values.
+                if item["inv_default"] != 0:
+                    item["inv_default"] = "<random>"
+                offset -= item["size"]
+            part_inv_data.append(part_data)
+
+        p = get_param("RndCnstPartInvDefault", otp_ctrl["param_list"])
+        p["default"] = part_inv_data
+
     ipgen_params = get_ipgen_params(otp_ctrl)
     ipgen_params.update({
         "otp_mmap": otp_mmap,

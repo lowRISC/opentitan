@@ -161,14 +161,14 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
           // Hwcfg_o gets data from OTP HW cfg partition
           exp_hw_cfg0_data = cfg.otp_ctrl_vif.under_error_states() ?
-                             otp_ctrl_part_pkg::PartInvDefault[HwCfg0Offset*8 +: HwCfg0Size*8] :
+                             top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault[HwCfg0Offset*8 +: HwCfg0Size*8] :
                              otp_hw_cfg0_data_t'({<<32 {otp_a[HwCfg0Offset/4 +: HwCfg0Size/4]}});
           `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_broadcast_o.valid, lc_ctrl_pkg::On)
           `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_broadcast_o.hw_cfg0_data, exp_hw_cfg0_data)
 
           // Hwcfg_o gets data from OTP HW cfg partition
           exp_hw_cfg1_data = cfg.otp_ctrl_vif.under_error_states() ?
-                             otp_ctrl_part_pkg::PartInvDefault[HwCfg1Offset*8 +: HwCfg1Size*8] :
+                             top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault[HwCfg1Offset*8 +: HwCfg1Size*8] :
                              otp_hw_cfg1_data_t'({<<32 {otp_a[HwCfg1Offset/4 +: HwCfg1Size/4]}});
           `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_broadcast_o.valid, lc_ctrl_pkg::On)
           `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_broadcast_o.hw_cfg1_data, exp_hw_cfg1_data)
@@ -224,7 +224,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                   {<<32 {otp_a[CreatorRootKeyShare0Offset/4 +: CreatorRootKeyShare0Size/4]}};
             end else begin
               exp_keymgr_data.creator_root_key_share0 =
-                  PartInvDefault[CreatorRootKeyShare0Offset*8 +: CreatorRootKeyShare0Size*8];
+                  top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault[CreatorRootKeyShare0Offset*8 +: CreatorRootKeyShare0Size*8];
             end
             // Check otp_keymgr_key_t struct by item is easier to debug.
             `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.creator_root_key_share0_valid,
@@ -235,7 +235,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                   {<<32 {otp_a[CreatorRootKeyShare1Offset/4 +: CreatorRootKeyShare1Size/4]}};
             end else begin
               exp_keymgr_data.creator_root_key_share1 =
-                  PartInvDefault[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
+                  top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
             end
             // Check otp_keymgr_key_t struct by item is easier to debug.
             `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.creator_root_key_share1_valid,

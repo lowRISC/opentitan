@@ -19,6 +19,24 @@ package otp_scrambler_pkg;
   parameter int NUM_ROUND          = 31;
   string path = "otp_scrambler_pkg";
 
+  parameter key_array_t RndCnstKey = {
+% for i in range(otp_mmap["scrambling"]["num_keys"] - 1, -1, -1):
+    top_${topname}_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey${i}${"" if loop.last else ","}
+% endfor
+  };
+
+  parameter digest_const_array_t RndCnstDigestConst = {
+% for i in range(otp_mmap["scrambling"]["num_digests"] - 1, -1, -1):
+    top_${topname}_rnd_cnst_pkg::RndCnstOtpCtrlDigestConst${i}${"" if loop.last else ","}
+% endfor
+  };
+
+  parameter digest_iv_array_t RndCnstDigestIV = {
+% for i in range(otp_mmap["scrambling"]["num_digests"] - 1, -1, -1):
+    top_${topname}_rnd_cnst_pkg::RndCnstOtpCtrlDigestIV${i}${"" if loop.last else ","}
+% endfor
+  };
+
   // When secret data write into otp_array, it will be scrambled.
   function automatic bit [SCRAMBLE_DATA_SIZE-1:0] scramble_data(
     bit [SCRAMBLE_DATA_SIZE-1:0] input_data,

@@ -11,6 +11,7 @@ filesets:
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:earlgrey_ip:otp_ctrl_macro_pkg
       - lowrisc:earlgrey_ip:otp_ctrl_top_specific_pkg
+      - lowrisc:virtual_constants:rnd_cnst_pkg
       - lowrisc:ip:otp_macro_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:all
