@@ -122,11 +122,11 @@ jobs:
       - name: Vendored files
         run: ./ci/scripts/check-vendoring.sh
       - name: Verible RTL
-        run: ./ci/scripts/verible-lint.sh rtl
+        run: ./ci/scripts/verible-lint.sh rtl earlgrey
       - name: Verible DV
-        run: ./ci/scripts/verible-lint.sh dv
+        run: ./ci/scripts/verible-lint.sh dv earlgrey
       - name: Verible FPV
-        run: ./ci/scripts/verible-lint.sh fpv
+        run: ./ci/scripts/verible-lint.sh fpv earlgrey
 
   build_docs:
     name: Build documentation
