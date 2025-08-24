@@ -60,10 +60,11 @@ warnhdr = """//
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 """
-genhdr = """// Copyright lowRISC contributors (OpenTitan project).
+lichdr = """// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-""" + warnhdr
+"""
+genhdr = lichdr + warnhdr
 
 GENCMD = ("// util/topgen.py -t hw/{top_name}/data/{top_name}.hjson \\\n"
           "//                -o hw/{top_name}/")
@@ -1698,7 +1699,9 @@ def main():
         topgen_seed = completecfg["seed"]["topgen_seed"]
         seed_mode = topgen_seed.seed_mode
         rnd_cnst_path = f"rtl/autogen/{seed_mode}"
-        rnd_cnst_file = f"{top_name}_rnd_cnst_pkg.sv"
+        rnd_cnst_file = f"{top_name}_rnd_cnst_pkg"
+        rnd_cnst_sv_file = f"{rnd_cnst_file}.sv"
+        rnd_cnst_vbl_file = f"{rnd_cnst_file}.vbl"
 
         # Determine the dependencies for the random netlist constant package. This construction
         # depends on which modules are present in the top configuration and which require random
@@ -1740,16 +1743,24 @@ def main():
         rnd_cnst_deps = sorted(list(set(rnd_cnst_deps)))
 
         render_template(TOPGEN_TEMPLATE_PATH / "toplevel_rnd_cnst_pkg.sv.tpl",
-                        out_path / rnd_cnst_path / rnd_cnst_file,
+                        out_path / rnd_cnst_path / rnd_cnst_sv_file,
                         gencmd=gencmd_rnd_cnst_sv)
+
+        # Create verible waiver file for the random constant package for long lines.
+        rnd_cnst_vbl_file_path = out_path / rnd_cnst_path / f"{rnd_cnst_file}.vbl"
+        with rnd_cnst_vbl_file_path.open(mode="w", encoding="UTF-8") as fout:
+            fout.write((lichdr + gencmd_rnd_cnst_sv).replace("//", "#") + f"""
+# These lines are too long due to templating
+waive --rule=line-length --location="{rnd_cnst_sv_file}"
+""")
         render_template(TOPGEN_TEMPLATE_PATH / "core_file.core.tpl",
-                        out_path / rnd_cnst_path /
-                        f"top_{topname}_{seed_mode}_rnd_cnst_pkg.core",
+                        out_path / rnd_cnst_path / f"top_{topname}_{seed_mode}_rnd_cnst_pkg.core",
                         package=f"lowrisc:{topname}_constants:{seed_mode}_rnd_cnst_pkg:0.1",
                         description="Random netlist constant package",
                         virtual_package="lowrisc:virtual_constants:rnd_cnst_pkg",
                         dependencies=rnd_cnst_deps,
-                        files=[rnd_cnst_file])
+                        files=[rnd_cnst_sv_file],
+                        files_veriblelint_waiver=rnd_cnst_vbl_file)
 
         racl_config = completecfg.get('racl', DEFAULT_RACL_CONFIG)
         render_template(TOPGEN_TEMPLATE_PATH / 'top_racl_pkg.sv.tpl',

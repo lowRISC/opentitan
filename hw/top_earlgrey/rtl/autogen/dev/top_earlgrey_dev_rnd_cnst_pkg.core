@@ -27,7 +27,16 @@ filesets:
       - top_earlgrey_rnd_cnst_pkg.sv
     file_type: systemVerilogSource
 
+  files_veriblelint_waiver:
+    depend:
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - top_earlgrey_rnd_cnst_pkg.vbl
+    file_type: veriblelintWaiver
+
 targets:
   default:
     filesets:
       - files_rtl
+      - tool_veriblelint ? (files_veriblelint_waiver)
