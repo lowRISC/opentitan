@@ -33,6 +33,9 @@ Within each logical partition, there are specific enforceable properties
 - Integrity Verification
   - Once a partition is write-locked by calculating and writing a non-zero [digest](#locking-a-partition) to it, it can undergo periodic verification (time-scale configurable by software).
 This verification takes two forms, partition integrity checks, and storage consistency checks.
+- Zeroizability
+  - This controls whether a particular partition can be subject to zeroization in line with FIPS and [OCP L.O.C.K.](https://www.opencompute.org/documents/ocp-l-o-c-k-0-8-1-pdf-1) requirements.
+  - A zeroized partition has all its fuses (including the digest field) blown. Currently, the OTP macro is configured to also zeroize the redundant ECC bits of each partition word.
 
 Since the OTP is memory-like in nature (it only outputs a certain number of bits per address location), some of the logical partitions are buffered in registers for instantaneous and parallel access by hardware.
 This is a critical point, since after power-up, these particular OTP contents are stored in flip flops and sourced to the system.
@@ -115,6 +118,35 @@ The contents must go through periodic integrity checks and therefore the stored 
 The life cycle partition cannot be locked and will therefore not contain a stored digest.
 Note however that only the life cycle controller has access to this partition, i.e., the Direct Access Interface (DAI) cannot read nor write from/to the life cycle partition.
 
+## Zeroizing a Partition
+
+When a partition is configured as zeroizable, software can zeroize each word in a partition individually through the Direct-Access Interface (DAI).
+In order to efficiently identify already (or in the process of being) zeroized partitions, they are equipped with a dedicated 64-bit zeroization marker field that is inserted at the end of every zeroizable partition (see [Zeroization Detection](#zeroization-detection)).
+These marker fields can be inspected in the memory as part of the [Programmer's Guide](programmers_guide.md#direct-access-memory-map).
+The zeroization flow needs to be supported by the attached OTP macro with a dedicated `ZEROIZE` command.
+Zeroizing a word in a partition is semantically different from an ordinary write request due to its side-effects related to background checks and ECC handling of subsequent reads.
+Furthermore, as software needs to verify for each word that it was successfully zeroized, the OTP macro has to return the zeroized word back to the OTP controller which will further process it before releasing it to software for inspection.
+Note that every word in a zeroizable partition is always erasable, whereas writes to locked partitions or the digest field in hardware partitions are not permitted.
+
+Zeroizing a partition affects its behavior during initialization and with respect to consistency and integrity checks (see [Partition Checks](#partition-checks) and [Design Details](#design-details)) .
+
+Note that all partition types except the `LIFE_CYCLE` partition can be configured as zeroizable.
+
+### Zeroization Detection
+
+There are two distinct cases when the OTP controller performs a zeroization detection by counting the number of set bits in a word and comparing the resulting value against predefined thresholds that account for potentially stuck-at-0 bits.
+
+  1. _Initialization_: As explained in [Checks on Zeroized Partitions](#checks-on-zeroized-partitions) the periodic consistency and integrity checks need to be disabled for a zeroized partition.
+  Furthermore when reading out the content of buffered partitions, the ECC checks need to be disabled as well.
+  This means that the zeroization marker field has to be checked first before performing the remaining initialization steps.
+  A partition is said to be in a zeroized state if and only if the number of set bits in the zeroization marker is greater or equal the macro-specific value `ZeroizationValidBound`.
+  This bound should include a margin that accounts for defects where certain fuse bits are perpetually stuck at 0.
+  2. _During Zeroization_: For compliance with OCP L.O.C.K., software needs to verify whether a word has been successfully zeroized.
+  In order to avoid releasing scrambled data to software in case of an error, the DAI releases the number of set bits in a zeroized word.
+  If a zeroized word does not meet the criterion, then firmware should continue erasing the remaining parts of a partition and retry the faulty erasure at a later point.
+  Software should trigger an escalation if repeated zeroizations fall below the `ZeroizationValidBound`.
+  The `ZeroizationValidBound` should be chosen such that the probability that a scrambled word is accidentally recognized as zeroized is as small as possible while still accounting for potentially stuck-at-0 bits.
+
 ## Secret vs Non-Secret Partitions
 
 Non-secret OTP partitions hold data that can be public; or data that has no impact on security.
@@ -129,7 +161,6 @@ The usage of a block cipher however implies that the secret partitions can only 
 Further, the contents of a particular secret partition are not readable by software once locked (other than the digest which must be always readable); while non-secret partitions are always readable unless read accessibility is explicitly removed by software.
 
 Unfortunately, secret partitions must utilize a global netlist key for the scrambling operation, as there is no other non-volatile storage to store a unique key.
-
 
 ## Partition Checks
 
@@ -165,6 +196,12 @@ Since the secret partitions are stored scrambled, this also implies the integrit
 In order to balance the amount of buffer registers needed, only the decrypted form of the secret partitions is held in buffer registers.
 Hardware calculates the digest by re-scrambling the data before passing it through the digest.
 
+### Checks on Zeroized Partitions
+
+The OTP controller detects the first successful zeroization of a word in a partition and disables any further periodic or manually triggered consistency checks.
+The integrity checks can proceed as they only act on already buffered data.
+After the OTP controller is reset both integrity and consistency checks are disabled for partitions that are marked as zeroized by way of the zeroization marker field.
+This includes the initial integrity check that is performed during the initialization procedure.
 
 ## Power-up and Sense
 
@@ -287,7 +324,8 @@ The corresponding controller FSMs are explained in more detail below.
 
 ![Unbuffered Partition FSM](otp_ctrl_unbuf_part_fsm.svg)
 
-As shown above, the unbuffered partition module has a relatively simple controller FSM that only reads out the digest value of the partition upon initialization, and then basically waits for TL-UL read transactions to its corresponding window in the CSR space.
+As shown above, the unbuffered partition module has a relatively simple controller FSM that first, if the partition is configured as zeroizable, reads out the zeroization marker.
+It then proceeds to reading out the digest value (if available and without ECC checks if zeroized) of the partition upon initialization, and then basically waits for TL-UL read transactions to its corresponding window in the CSR space.
 
 Write access through the DAI will be locked in case the digest is set to a non-zero value.
 Also, read access through the DAI and the CSR window can be locked at runtime via a CSR.
@@ -301,9 +339,10 @@ Note that unrecoverable OTP errors, ECC failures in the digest register or exter
 
 The controller FSM of the buffered partition module is more complex than the unbuffered counterpart, since it has to account for scrambling and digest calculation.
 
-Upon initialization, the controller reads out the whole partition and descrambles it on the fly if needed.
+Upon initialization, if the partition is configured as zeroizable, it first reads out the zeroization marker.
+It then proceeds to reading out the whole partition (without ECC checks if zeroized) and descrambles it on the fly if needed.
 
-Then, right after the initial readout, the partition controller jumps into the first integrity check, which behaves somewhat differently, depending on whether the partition is digest protected (or not) and/or scrambled (or not).
+Then, right after the initial readout, the partition controller jumps into the first integrity check if the partition is not zeroized, which behaves somewhat differently, depending on whether the partition is digest protected (or not) and/or scrambled (or not).
 If the partition is not digest protected, or if the digest has not yet been computed, the check completes right away, and the buffered values are released for hardware broadcast.
 Otherwise, the partition contents in the buffer registers are re-scrambled if needed, and a digest is computed on the fly.
 If the computed digest matches with the one that has been read out before, the buffered registers are released for hardware broadcast.
@@ -336,6 +375,8 @@ Digest calculation commands read out the complete contents of a particular parti
 
 Note that any unrecoverable OTP error will move the DAI into a terminal error state, where all access through the DAI will be locked.
 Also, the DAI consumes the read and write access information provided by the partition controller, and if a certain read or write access is not permitted, a recoverable error will be flagged in the status / error CSRs.
+
+Zeroization is a separate command and resembles a write followed by a read, where first the fuse bits are blown, then returned to the DAI for further processing.
 
 ### Life Cycle Interface Control
 

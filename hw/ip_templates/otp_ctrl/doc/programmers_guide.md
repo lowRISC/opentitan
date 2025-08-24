@@ -129,6 +129,32 @@ This can be done as follows:
 After the next full-system reset, the corresponding digest *CSRs* (not DAI addresses!) get populated with the digest value.
 If the partition is digest-locked, it is locked at that point.
 
+### Zeroization Sequence
+
+A partition zeroization sequence is driven by accesses through the OTP Controller's DAI interface, and resembles an ordinary in-field provisioning flow.
+
+1. The DAI has a dedicated `ZEROIZE` command through which a word (either 32-bit for software fuses or 64-bit for hardware fuses including the digest and zeroization fields) in a partition can be zeroized.
+The entire address space of a partition is zeroizable which contrasts with the other DAI commands.
+For example, the digest field is never writable through the `WRITE` command in a hardware partition.
+
+    > Side effect: The OTP controller detects the first _successful_ word zeroization and disables periodic consistency checks for the corresponding partition as these can potentially fail when interrupting an ongoing zeroization procedure.
+    Integrity checks for hardware partitions can proceed normally until the next reset as they only act on buffered data.
+
+    Although the fuses of a partition can be zeroized in any order, it is recommended to first erase the zeroization marker at the end of a partition to mark it as zeroized or in the process of being so in case the flow is interrupted and needs to be resumed at a later point.
+
+    > Side effect: A fuse macro usually signals an error if a write attempts to clear an already set data or ECC bit.
+    > Such an unintended bit flip can occur in the ECC part of a word during a zeroization (when only the data part is zeroized), hence the `ZEROIZE` command disables ECC when zeroizing a word, setting all bits in both the data and ECC part of a fuse word.
+
+2. A successful zeroization of a fuse word results in the number of set bits in the zeroized word being returned to software in the `DIRECT_ACCESS_RDATA` registers bypassing the descrambling mechanism if the word belongs to a secret partition.
+This is the only way firmware can confirm, in the absence of a malicious tampering attempt, whether a fuse has been cleared.
+The `ZEROIZE` command is idempotent, i.e., it can be retried multiple times such that a zeroization of an already zeroized word has no effect.
+
+3. When firmware determines that a partition has been sufficiently zeroized, it should reset the OTP controller such that the zeroized data is also reflected in the buffer registers.
+If the zeroization is part of a life-cycle state transition, then the reset should be done after both zeroization and the transition are triggered.
+
+     > Side effect: Upon initialization, the OTP controller will first read the zeroization field of a partition to determine whether it is in a zeroized state.
+    If so, no periodic consistency and integrity checks will be executed for the partition.
+
 ### Software Integrity Handling
 
 As opposed to buffered partitions, the digest and integrity handling of unbuffered partitions is entirely up to software.
