@@ -84,7 +84,8 @@ The memory map detailing these can be found in the [Programmer's Guide](programm
 Once the "integrity digest" is non-zero, no further updates are allowed.
 If the partition is secret, software is in addition no longer able to read its contents (see [Secret vs Non-Secret Partitions](#secret-vs-non-secret-partitions)).
 
-Note however, in all partitions, the digest itself is **ALWAYS** readable.
+In hardware partitions, the digest itself is **ALWAYS** readable.
+In partitions where read access is controlled by a READ_LOCK CSR the digest is only readable if that CSR is set.
 This gives software an opportunity to confirm that the locking operation has proceeded correctly, and if not, scrap the part immediately.
 
 Calculation of the integrity digest depends on whether the partition requires periodic background verification.
