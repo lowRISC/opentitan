@@ -30,10 +30,10 @@ echo "### Check vendored directories are up-to-date"
 ci/scripts/check-vendoring.sh
 
 echo -e "\n### Style-Lint RTL Verilog source files with Verible"
-ci/scripts/verible-lint.sh rtl
+ci/scripts/verible-lint.sh rtl earlgrey
 
 echo -e "\n### Style-Lint DV Verilog source files with Verible"
-ci/scripts/verible-lint.sh dv
+ci/scripts/verible-lint.sh dv earlgrey
 
 echo -e "\n### Style-Lint FPV Verilog source files with Verible"
-ci/scripts/verible-lint.sh fpv
+ci/scripts/verible-lint.sh fpv earlgrey
