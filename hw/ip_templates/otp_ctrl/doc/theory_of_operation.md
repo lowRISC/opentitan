@@ -34,7 +34,7 @@ Within each logical partition, there are specific enforceable properties
   - Once a partition is write-locked by calculating and writing a non-zero [digest](#locking-a-partition) to it, it can undergo periodic verification (time-scale configurable by software).
 This verification takes two forms, partition integrity checks, and storage consistency checks.
 - Zeroizability
-  - This controls whether a particular partition can be subject to zeroization in line with FIPS and [OCP L.O.C.K.](https://www.opencompute.org/documents/ocp-l-o-c-k-0-8-1-pdf-1) requirements.
+  - This controls whether a particular partition can be subject to zeroization in line with FIPS 140-3 and [OCP L.O.C.K.](https://www.opencompute.org/documents/ocp-l-o-c-k-0-8-1-pdf-1) requirements.
   - A zeroized partition has all its fuses (including the digest field and redundant ECC bits) blown.
 
 Since the OTP is memory-like in nature (it only outputs a certain number of bits per address location), some of the logical partitions are buffered in registers for instantaneous and parallel access by hardware.
@@ -84,7 +84,7 @@ The memory map detailing these can be found in the [Programmer's Guide](programm
 Once the "integrity digest" is non-zero, no further updates are allowed.
 If the partition is secret, software is in addition no longer able to read its contents (see [Secret vs Non-Secret Partitions](#secret-vs-non-secret-partitions)).
 
-Note however, in all partitions, the digest itself is **ALWAYS** readable.
+In hardware partitions, the digest itself is **ALWAYS** readable, whereas in software partitions the runtime `READ_LOCK` CSR will also render the digest unreadable.
 This gives software an opportunity to confirm that the locking operation has proceeded correctly, and if not, scrap the part immediately.
 
 Calculation of the integrity digest depends on whether the partition requires periodic background verification.
