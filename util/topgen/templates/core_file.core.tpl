@@ -24,7 +24,20 @@ filesets:
     % endfor
     file_type: systemVerilogSource
 
+  % if files_veriblelint_waiver is not UNDEFINED:
+  files_veriblelint_waiver:
+    depend:
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - ${files_veriblelint_waiver}
+    file_type: veriblelintWaiver
+
+  % endif
 targets:
   default:
     filesets:
       - files_rtl
+    % if files_veriblelint_waiver is not UNDEFINED:
+      - tool_veriblelint ? (files_veriblelint_waiver)
+    % endif
