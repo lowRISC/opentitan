@@ -50,6 +50,14 @@ d0:
   .word 0xadb9ce1b
   .word 0x8677a5f2
   .word 0x32f9e2b0
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
   .zero 8
 
 /* 2nd scalar share d1 (448-bit) */
@@ -70,6 +78,14 @@ d1:
   .word 0x13e7014a
   .word 0x9ec9b430
   .word 0x9e5dc598
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
   .zero 8
 
 /* scalar d = (d0 + d1) mod n (384-bit) */
