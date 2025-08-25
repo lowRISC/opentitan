@@ -108,7 +108,7 @@ start:
  * @param      dmem[dptr_src..dptr_src+64]: source data
  * @param[out] dmem[dptr_dst..dptr_dst+64]: copied data
  *
- * clobbered registers: x10, w10
+ * clobbered registers: x10, w10, w31
  * clobbered flag groups: none
  */
 copy_share:
@@ -121,6 +121,11 @@ copy_share:
   bn.sid   x10, 0(x14)
   bn.lid   x10, 32(x13)
   bn.sid   x10, 32(x14)
+
+  /* Write zero to the most significant 256 bits of the share. */
+  li       x10, 31
+  bn.xor   w31, w31, w31
+  bn.sid   x10, 64(x14)
   ret
 
 /**
@@ -457,8 +462,8 @@ k1:
 .globl d0
 .balign 32
 d0:
-  .zero 64
+  .zero 96
 .globl d1
 .balign 32
 d1:
-  .zero 64
+  .zero 96

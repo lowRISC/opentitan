@@ -174,9 +174,14 @@ p384_key_from_seed:
   bn.sid    x2++, 0(x20)
   bn.sid    x2++, 32(x20)
 
+  /* Write zero to the most significant 256 bits of both shares. */
+  li        x2, 31
+  bn.sid    x2, 64(x20)
+  la        x20, d1
+  bn.sid    x2, 64(x20)
+
   /* Write second 448-bit share to DMEM.
      dmem[d1] <= [w6,w5] = d1' */
-  la        x20, d1
   li        x2, 5
   bn.sid    x2++, 0(x20)
   bn.sid    x2++, 32(x20)

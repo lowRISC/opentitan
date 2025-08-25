@@ -184,6 +184,11 @@ p384_generate_random_key:
   bn.sid    x2++, 0(x21)
   bn.sid    x2++, 32(x21)
 
+  /* Write zero to the most significant 256 bits of both shares. */
+  li        x2, 31
+  bn.sid    x2, 64(x20)
+  bn.sid    x2, 64(x21)
+
   ret
 
 /**
