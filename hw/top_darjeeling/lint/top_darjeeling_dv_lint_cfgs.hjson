@@ -134,12 +134,6 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
                   rel_path: "hw/top_darjeeling/ip_autogen/otp_ctrl/dv/lint/{tool}"
              },
-             {    name: pattgen
-                  fusesoc_core: lowrisc:,dv:pattgen_sim,
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
-                  rel_path: "hw/ip/pattgen/dv/lint/{tool}"
-             },
              {    name: prim_alert
                   fusesoc_core: lowrisc:dv:prim_alert_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
