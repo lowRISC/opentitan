@@ -73,11 +73,11 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
 
   // upd_req fifo
   logic [UpdReqFifoWidth-1:0] sfifo_updreq_rdata;
-  logic                       sfifo_updreq_push;
+  logic                       sfifo_updreq_wvld;
   logic [UpdReqFifoWidth-1:0] sfifo_updreq_wdata;
-  logic                       sfifo_updreq_pop;
+  logic                       sfifo_updreq_rrdy;
   logic                       sfifo_updreq_full;
-  logic                       sfifo_updreq_not_empty;
+  logic                       sfifo_updreq_rvld;
   // breakout
   logic [CmdWidth-1:0]        sfifo_updreq_ccmd;
   logic [InstIdWidth-1:0]     sfifo_updreq_inst_id;
@@ -87,11 +87,11 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
 
   // blk_encrypt_req fifo
   logic [BlkEncReqFifoWidth-1:0] sfifo_bencreq_rdata;
-  logic                       sfifo_bencreq_push;
+  logic                       sfifo_bencreq_wvld;
   logic [BlkEncReqFifoWidth-1:0] sfifo_bencreq_wdata;
-  logic                       sfifo_bencreq_pop;
+  logic                       sfifo_bencreq_rrdy;
   logic                       sfifo_bencreq_full;
-  logic                       sfifo_bencreq_not_empty;
+  logic                       sfifo_bencreq_rvld;
   // breakout
   logic [CmdWidth-1:0]        sfifo_bencreq_ccmd;
   logic [InstIdWidth-1:0]     sfifo_bencreq_inst_id;
@@ -101,10 +101,10 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   // blk_encrypt_ack fifo
   logic [BlkEncAckFifoWidth-1:0] sfifo_bencack_rdata;
   logic [BlkEncAckFifoWidth-1:0] sfifo_bencack_wdata;
-  logic                       sfifo_bencack_push;
-  logic                       sfifo_bencack_pop;
+  logic                       sfifo_bencack_wvld;
+  logic                       sfifo_bencack_rrdy;
   logic                       sfifo_bencack_full;
-  logic                       sfifo_bencack_not_empty;
+  logic                       sfifo_bencack_rvld;
   // breakout
   logic [CmdWidth-1:0]        sfifo_bencack_ccmd;
   logic [InstIdWidth-1:0]     sfifo_bencack_inst_id;
@@ -112,20 +112,20 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
 
   // pdata_stage fifo
   logic [PDataFifoWidth-1:0]  sfifo_pdata_rdata;
-  logic                       sfifo_pdata_push;
+  logic                       sfifo_pdata_wvld;
   logic [PDataFifoWidth-1:0]  sfifo_pdata_wdata;
-  logic                       sfifo_pdata_pop;
+  logic                       sfifo_pdata_rrdy;
   logic                       sfifo_pdata_full;
-  logic                       sfifo_pdata_not_empty;
+  logic                       sfifo_pdata_rvld;
   logic [SeedLen-1:0]         sfifo_pdata_v;
 
   // key_v fifo
   logic [FinalFifoWidth-1:0]  sfifo_final_rdata;
-  logic                       sfifo_final_push;
+  logic                       sfifo_final_wvld;
   logic [FinalFifoWidth-1:0]  sfifo_final_wdata;
-  logic                       sfifo_final_pop;
+  logic                       sfifo_final_rrdy;
   logic                       sfifo_final_full;
-  logic                       sfifo_final_not_empty;
+  logic                       sfifo_final_rvld;
   // breakout
   logic [CmdWidth-1:0]        sfifo_final_ccmd;
   logic [InstIdWidth-1:0]     sfifo_final_inst_id;
@@ -245,18 +245,18 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!ctr_drbg_upd_enable_i),
-    .wvalid_i (sfifo_updreq_push),
+    .wvalid_i (sfifo_updreq_wvld),
     .wready_o (),
     .wdata_i  (sfifo_updreq_wdata),
-    .rvalid_o (sfifo_updreq_not_empty),
-    .rready_i (sfifo_updreq_pop),
+    .rvalid_o (sfifo_updreq_rvld),
+    .rready_i (sfifo_updreq_rrdy),
     .rdata_o  (sfifo_updreq_rdata),
     .full_o   (sfifo_updreq_full),
     .depth_o  (),
     .err_o    ()
   );
 
-  assign sfifo_updreq_push = !sfifo_updreq_full && req_vld_i;
+  assign sfifo_updreq_wvld = !sfifo_updreq_full && req_vld_i;
   assign sfifo_updreq_wdata = {req_data_i.key,req_data_i.v,req_data_i.pdata,
                                req_data_i.inst_id,req_data_i.cmd};
   assign req_rdy_o = !sfifo_updreq_full;
@@ -265,9 +265,9 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
           sfifo_updreq_inst_id,sfifo_updreq_ccmd} = sfifo_updreq_rdata;
 
   assign ctr_drbg_upd_sfifo_updreq_err_o =
-         {(sfifo_updreq_push && sfifo_updreq_full),
-         (sfifo_updreq_pop && !sfifo_updreq_not_empty),
-         (sfifo_updreq_full && !sfifo_updreq_not_empty)};
+         {(sfifo_updreq_wvld && sfifo_updreq_full),
+         (sfifo_updreq_rrdy && !sfifo_updreq_rvld),
+         (sfifo_updreq_full && !sfifo_updreq_rvld)};
 
   //--------------------------------------------
   // prepare value for block_encrypt step
@@ -319,9 +319,9 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
     v_ctr_load = 1'b0;
     v_ctr_inc  = 1'b0;
     interate_ctr_inc  = 1'b0;
-    sfifo_pdata_push = 1'b0;
-    sfifo_bencreq_push = 1'b0;
-    sfifo_updreq_pop = 1'b0;
+    sfifo_pdata_wvld = 1'b0;
+    sfifo_bencreq_wvld = 1'b0;
+    sfifo_updreq_rrdy = 1'b0;
     ctr_drbg_updbe_sm_err_o = 1'b0;
     ctr_drbg_upd_es_ack_o = 1'b0;
     unique case (blk_enc_state_q)
@@ -333,9 +333,9 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
           blk_enc_state_d = ESHalt;
         end else if (!ctr_drbg_upd_enable_i) begin
           blk_enc_state_d = ReqIdle;
-        end else if (sfifo_updreq_not_empty && !sfifo_bencreq_full && !sfifo_pdata_full) begin
+        end else if (sfifo_updreq_rvld && !sfifo_bencreq_full && !sfifo_pdata_full) begin
           v_ctr_load = 1'b1;
-          sfifo_pdata_push = 1'b1;
+          sfifo_pdata_wvld = 1'b1;
           blk_enc_state_d = ReqSend;
         end
       end
@@ -346,10 +346,10 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
           if (!sfifo_bencreq_full) begin
             v_ctr_inc  = 1'b1;
             interate_ctr_inc  = 1'b1;
-            sfifo_bencreq_push = 1'b1;
+            sfifo_bencreq_wvld = 1'b1;
           end
         end else begin
-          sfifo_updreq_pop = 1'b1;
+          sfifo_updreq_rrdy = 1'b1;
           blk_enc_state_d = ReqIdle;
         end
       end
@@ -382,19 +382,19 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!ctr_drbg_upd_enable_i),
-    .wvalid_i (sfifo_bencreq_push),
+    .wvalid_i (sfifo_bencreq_wvld),
     .wready_o (),
     .wdata_i  (sfifo_bencreq_wdata),
-    .rvalid_o (sfifo_bencreq_not_empty),
-    .rready_i (sfifo_bencreq_pop),
+    .rvalid_o (sfifo_bencreq_rvld),
+    .rready_i (sfifo_bencreq_rrdy),
     .rdata_o  (sfifo_bencreq_rdata),
     .full_o   (sfifo_bencreq_full),
     .depth_o  (),
     .err_o    ()
   );
 
-  assign sfifo_bencreq_pop = block_encrypt_req_o && block_encrypt_rdy_i;
-  assign block_encrypt_req_o = sfifo_bencreq_not_empty;
+  assign sfifo_bencreq_rrdy = block_encrypt_req_o && block_encrypt_rdy_i;
+  assign block_encrypt_req_o = sfifo_bencreq_rvld;
 
   assign sfifo_bencreq_wdata = {sfifo_updreq_key,v_sized,sfifo_updreq_inst_id,sfifo_updreq_ccmd};
 
@@ -408,9 +408,9 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   assign block_encrypt_ccmd_o = sfifo_bencreq_ccmd;
 
   assign ctr_drbg_upd_sfifo_bencreq_err_o =
-         {(sfifo_bencreq_push && sfifo_bencreq_full),
-          (sfifo_bencreq_pop && !sfifo_bencreq_not_empty),
-          (sfifo_bencreq_full && !sfifo_bencreq_not_empty)};
+         {(sfifo_bencreq_wvld && sfifo_bencreq_full),
+          (sfifo_bencreq_rrdy && !sfifo_bencreq_rvld),
+          (sfifo_bencreq_full && !sfifo_bencreq_rvld)};
 
   //--------------------------------------------
   // block_encrypt response fifo from block encrypt
@@ -425,27 +425,27 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!ctr_drbg_upd_enable_i),
-    .wvalid_i (sfifo_bencack_push),
+    .wvalid_i (sfifo_bencack_wvld),
     .wready_o (),
     .wdata_i  (sfifo_bencack_wdata),
-    .rvalid_o (sfifo_bencack_not_empty),
-    .rready_i (sfifo_bencack_pop),
+    .rvalid_o (sfifo_bencack_rvld),
+    .rready_i (sfifo_bencack_rrdy),
     .rdata_o  (sfifo_bencack_rdata),
     .full_o   (sfifo_bencack_full),
     .depth_o  (),
     .err_o    ()
   );
 
-  assign sfifo_bencack_push = !sfifo_bencack_full && block_encrypt_ack_i;
+  assign sfifo_bencack_wvld = !sfifo_bencack_full && block_encrypt_ack_i;
   assign sfifo_bencack_wdata = {block_encrypt_v_i,block_encrypt_inst_id_i,block_encrypt_ccmd_i};
   assign block_encrypt_rdy_o = !sfifo_bencack_full;
 
   assign {sfifo_bencack_v,sfifo_bencack_inst_id,sfifo_bencack_ccmd} = sfifo_bencack_rdata;
 
   assign ctr_drbg_upd_sfifo_bencack_err_o =
-         {(sfifo_bencack_push && sfifo_bencack_full),
-          (sfifo_bencack_pop && !sfifo_bencack_not_empty),
-          (sfifo_bencack_full && !sfifo_bencack_not_empty)};
+         {(sfifo_bencack_wvld && sfifo_bencack_full),
+          (sfifo_bencack_rrdy && !sfifo_bencack_rvld),
+          (sfifo_bencack_full && !sfifo_bencack_rvld)};
 
   //--------------------------------------------
   // fifo to stage provided_data, waiting for blk_encrypt to ack
@@ -460,11 +460,11 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!ctr_drbg_upd_enable_i),
-    .wvalid_i (sfifo_pdata_push),
+    .wvalid_i (sfifo_pdata_wvld),
     .wready_o (),
     .wdata_i  (sfifo_pdata_wdata),
-    .rvalid_o (sfifo_pdata_not_empty),
-    .rready_i (sfifo_pdata_pop),
+    .rvalid_o (sfifo_pdata_rvld),
+    .rready_i (sfifo_pdata_rrdy),
     .rdata_o  (sfifo_pdata_rdata),
     .full_o   (sfifo_pdata_full),
     .depth_o  (),
@@ -476,9 +476,9 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   assign sfifo_pdata_v = sfifo_pdata_rdata;
 
   assign ctr_drbg_upd_sfifo_pdata_err_o =
-         {(sfifo_pdata_push && sfifo_pdata_full),
-          (sfifo_pdata_pop && !sfifo_pdata_not_empty),
-          (sfifo_pdata_full && !sfifo_pdata_not_empty)};
+         {(sfifo_pdata_wvld && sfifo_pdata_full),
+          (sfifo_pdata_rrdy && !sfifo_pdata_rvld),
+          (sfifo_pdata_full && !sfifo_pdata_rvld)};
 
   //--------------------------------------------
   // shifting logic to receive values from block_encrypt
@@ -488,7 +488,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
 
   assign concat_outblk_d =
          (!ctr_drbg_upd_enable_i) ? '0 :
-         sfifo_bencack_pop ? {concat_outblk_q[SeedLen-1:BlkLen],sfifo_bencack_v} :
+         sfifo_bencack_rrdy ? {concat_outblk_q[SeedLen-1:BlkLen],sfifo_bencack_v} :
          concat_outblk_shift ? concat_outblk_shifted_value[SeedLen-1:0] :
          concat_outblk_q;
 
@@ -507,12 +507,12 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
 
   assign concat_inst_id_d =
          (!ctr_drbg_upd_enable_i) ? '0 :
-         sfifo_bencack_pop ? sfifo_bencack_inst_id :
+         sfifo_bencack_rrdy ? sfifo_bencack_inst_id :
          concat_inst_id_q;
 
   assign concat_ccmd_d =
          (!ctr_drbg_upd_enable_i) ? '0 :
-         sfifo_bencack_pop ? sfifo_bencack_ccmd :
+         sfifo_bencack_rrdy ? sfifo_bencack_ccmd :
          concat_ccmd_q;
 
   //--------------------------------------------
@@ -523,25 +523,25 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
     outblk_state_d = outblk_state_q;
     concat_ctr_inc  = 1'b0;
     concat_outblk_shift = 1'b0;
-    sfifo_pdata_pop = 1'b0;
-    sfifo_bencack_pop = 1'b0;
-    sfifo_final_push = 1'b0;
+    sfifo_pdata_rrdy = 1'b0;
+    sfifo_bencack_rrdy = 1'b0;
+    sfifo_final_wvld = 1'b0;
     ctr_drbg_updob_sm_err_o = 1'b0;
     unique case (outblk_state_q)
       // AckIdle: increment v this cycle, push in next
       AckIdle: begin
         if (!ctr_drbg_upd_enable_i) begin
           outblk_state_d = AckIdle;
-        end else if (sfifo_bencack_not_empty && sfifo_pdata_not_empty && !sfifo_final_full) begin
+        end else if (sfifo_bencack_rvld && sfifo_pdata_rvld && !sfifo_final_full) begin
           outblk_state_d = Load;
         end
       end
       Load: begin
         if (!ctr_drbg_upd_enable_i) begin
           outblk_state_d = AckIdle;
-        end else if (sfifo_bencack_not_empty) begin
+        end else if (sfifo_bencack_rvld) begin
           concat_ctr_inc  = 1'b1;
-          sfifo_bencack_pop = 1'b1;
+          sfifo_bencack_rrdy = 1'b1;
           outblk_state_d = Shift;
         end
       end
@@ -549,8 +549,8 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
         if (!ctr_drbg_upd_enable_i) begin
           outblk_state_d = AckIdle;
         end else if (concat_ctr_done) begin
-          sfifo_pdata_pop = 1'b1;
-          sfifo_final_push = 1'b1;
+          sfifo_pdata_rrdy = 1'b1;
+          sfifo_final_wvld = 1'b1;
           outblk_state_d = AckIdle;
         end else begin
           concat_outblk_shift = 1'b1;
@@ -584,11 +584,11 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!ctr_drbg_upd_enable_i),
-    .wvalid_i (sfifo_final_push),
+    .wvalid_i (sfifo_final_wvld),
     .wready_o (),
     .wdata_i  (sfifo_final_wdata),
-    .rvalid_o (sfifo_final_not_empty),
-    .rready_i (sfifo_final_pop),
+    .rvalid_o (sfifo_final_rvld),
+    .rready_i (sfifo_final_rrdy),
     .rdata_o  (sfifo_final_rdata),
     .full_o   (sfifo_final_full),
     .depth_o  (),
@@ -599,8 +599,8 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
 
   assign {sfifo_final_key,sfifo_final_v,sfifo_final_inst_id,sfifo_final_ccmd} = sfifo_final_rdata;
 
-  assign sfifo_final_pop = rsp_rdy_i && sfifo_final_not_empty;
-  assign rsp_vld_o = sfifo_final_pop;
+  assign sfifo_final_rrdy = rsp_rdy_i && sfifo_final_rvld;
+  assign rsp_vld_o = sfifo_final_rrdy;
 
   assign rsp_data_o = '{
     inst_id: sfifo_final_inst_id,
@@ -611,9 +611,9 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   };
 
   assign ctr_drbg_upd_sfifo_final_err_o =
-         {(sfifo_final_push && sfifo_final_full),
-          (sfifo_final_pop && !sfifo_final_not_empty),
-          (sfifo_final_full && !sfifo_final_not_empty)};
+         {(sfifo_final_wvld && sfifo_final_full),
+          (sfifo_final_rrdy && !sfifo_final_rvld),
+          (sfifo_final_full && !sfifo_final_rvld)};
 
   // Make sure that the two state machines have a stable error state. This means that after the
   // error state is entered it will not exit it unless a reset signal is received.
