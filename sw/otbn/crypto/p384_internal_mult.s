@@ -296,17 +296,17 @@ scalar_mult_int_p384:
     bn.lid    x2++, 160(x26)
 
     /* select either Q or Q_a
-       if M: Q = ([w30,w29], [w28,w27], [w26, w25]) <= Q else: Q <= Q_a */
-    bn.sel    w25, w25, w4, M
-    bn.sel    w26, w26, w5, M
-    bn.sel    w27, w27, w6, M
-    bn.sel    w28, w28, w7, M
-    bn.sel    w29, w29, w8, M
-    bn.sel    w30, w30, w9, M
+       if M: Q = ([w21,w20], [w19,w18], [w17,w16]) <= Q else: Q <= Q_a */
+    bn.sel    w16, w25, w4, M
+    bn.sel    w17, w26, w5, M
+    bn.sel    w18, w27, w6, M
+    bn.sel    w19, w28, w7, M
+    bn.sel    w20, w29, w8, M
+    bn.sel    w21, w30, w9, M
 
     /* store Q in dmem
-     dmem[x26] = dmem[dptr_sc+512] <= [w30:w25] */
-    li        x2, 25
+     dmem[x26] = dmem[dptr_sc+512] <= [w21:w16] */
+    li        x2, 16
     bn.sid    x2++, 0(x26)
     bn.sid    x2++, 32(x26)
     bn.sid    x2++, 64(x26)
@@ -332,16 +332,16 @@ scalar_mult_int_p384:
        (scaling each proj. coordinate by same factor results in same point) */
 
     /* get a 384-bit random number from URND */
-    bn.wsrr   w2, 2
-    bn.wsrr   w3, 2
+    bn.wsrr   w2, URND
+    bn.wsrr   w3, URND
     bn.rshi   w3, w31, w3 >> 128
 
     /* reduce random number
-      [w2, w3] = z <= [w2, w3] mod p */
-    bn.sub    w10, w2, w12
-    bn.subb   w11, w3, w13
-    bn.sel    w2, w2, w10, C
-    bn.sel    w3, w3, w11, C
+      [w3, w2] = z <= [w1, w0] mod p */
+    bn.sub    w10, w0, w12
+    bn.subb   w11, w1, w13
+    bn.sel    w2, w0, w10, C
+    bn.sel    w3, w1, w11, C
 
     /* scale all coordinates in scratchpad */
     li        x2, 16
@@ -370,6 +370,15 @@ scalar_mult_int_p384:
     jal       x1, p384_mulmod_p
     bn.sid    x2, 384(x30)
     bn.sid    x3, 416(x30)
+
+  /* Loead result Q into ([w21,w20], [w19,w18], [w17,w16]) <= Q */
+  li        x2, 25
+  bn.lid    x2++, 0(x26)
+  bn.lid    x2++, 32(x26)
+  bn.lid    x2++, 64(x26)
+  bn.lid    x2++, 96(x26)
+  bn.lid    x2++, 128(x26)
+  bn.lid    x2++, 160(x26)
 
   ret
 
