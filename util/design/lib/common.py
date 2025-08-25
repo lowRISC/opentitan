@@ -12,7 +12,7 @@ from pathlib import Path
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 
-from topgen.secure_prng import secure_prng  # noqa : E402
+from topgen.secure_prng import SecurePrng  # noqa : E402
 
 
 def wrapped_docstring():
@@ -294,7 +294,7 @@ def _parse_hex(value):
         return int(value, 16)
 
 
-def random_or_hexvalue(prng: secure_prng, dict_obj: dict, key: str, num_bits: int) -> None:
+def random_or_hexvalue(prng: SecurePrng, dict_obj: dict, key: str, num_bits: int) -> None:
     '''Convert hex value at "key" to an integer or draw a random number.'''
 
     # Initialize to default if this key does not exist.
