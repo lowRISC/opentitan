@@ -383,7 +383,7 @@ def xbar_adddevice(top: ConfigT, name_to_block: IpBlocksT, xbar: ConfigT,
     # Try to find a block or memory instance with name device_base. Object
     # names should be unique, so there should never be more than one hit.
     instances = [
-        node for node in top["module"] + top["memory"]
+        node for node in top["module"]
         if node['name'] == device_base
     ]
     assert len(instances) <= 1
@@ -657,7 +657,7 @@ def extract_clocks(top: ConfigT):
 
     exported_clks = OrderedDict()
 
-    for ep in top['module'] + top['memory'] + top['xbar']:
+    for ep in top['module'] + top['xbar']:
         clock_connections = OrderedDict()
 
         # Ensure each module has a default case

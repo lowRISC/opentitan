@@ -42,11 +42,6 @@ cpu_clk = top['clocks'].hier_paths['top'] + "clk_proc_main"
 unused_resets = lib.get_unused_resets(top)
 unused_im_defs, undriven_im_defs = lib.get_dangling_im_def(top["inter_signal"]["definitions"])
 
-has_toplevel_rom = False
-for m in top['memory']:
-  if m['type'] == 'rom':
-    has_toplevel_rom = True
-
 last_modidx_with_params = lib.idx_of_last_module_with_params(top)
 
 # plic -> {count, prefix}
