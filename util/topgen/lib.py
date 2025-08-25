@@ -941,7 +941,7 @@ class TopGen:
         device_region = defaultdict(dict)
         for inst in self.top['module']:
             block = self._name_to_block[inst['type']]
-            for if_name, rb in block.reg_blocks.items():
+            for if_name in block.reg_blocks.keys():
                 full_if = (inst['name'], if_name)
                 full_if_name = Name.from_snake_case(full_if[0])
                 if if_name is not None:
@@ -981,22 +981,9 @@ class TopGen:
         # TODO: This method is invoked in templates, as well as in the extended
         # class TopGenCTest. We could refactor and optimize the implementation
         # a bit.
-        for inst in self.top['module']:
-            block = self._name_to_block[inst['type']]
-            for if_name, rb in block.reg_blocks.items():
-                full_if = (inst['name'], if_name)
-                full_if_name = Name.from_snake_case(full_if[0])
-                if if_name is not None:
-                    full_if_name += Name.from_snake_case(if_name)
-
-                name = full_if_name
-                base, size = get_base_and_size(self._name_to_block, inst,
-                                               if_name)
-                if addr_space not in base:
-                    continue
-
-                region = MemoryRegion(self._top_name, name, addr_space,
-                                      base[addr_space], size)
+        for (inst, regions) in self.device_regions[addr_space].items():
+            for (if_name, region) in regions.items():
+                full_if = (inst, if_name)
                 ret.append((full_if, region))
 
         return ret
