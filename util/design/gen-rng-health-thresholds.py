@@ -33,7 +33,12 @@ Notes:
 - FIPS: 2048
 - Boot mode: 384
 
-`--per-bit` must be set to reflect the `RNG_BIT_ENABLE` entropy src configuration.
+`--per-line` must be set to reflect the `THRESHOLD_SCOPE` ENTROPY_SRC configuration.
+
+- 0: `THRESHOLD_SCOPE` = True
+- 1: `THRESHOLD_SCOPE` = False
+
+`--rng_bit_enable` must be set to reflect the `RNG_BIT_ENABLE` ENTROPY_SRC configuration.
 
 """
 import argparse
@@ -41,8 +46,8 @@ import enum
 import math
 import sys
 
-# Matches the `RNG_BUS_WIDTH` in entropy_src_pkg.sv
-_RNG_BUS_WIDTH = 4
+# Matches the `BucketHtDataMaxWidth` in entropy_src_pkg.sv
+_BUCKET_HT_DATA_MAX_WIDTH = 4
 
 
 # List of test windows supported by this script.
@@ -52,31 +57,43 @@ class _Test(enum.Enum):
     MARKOV = 'MARKOV'
 
 
-def threshold_calc(test: str, window_size: int, sigma: float,
-                   per_bit: bool) -> bool:
+def threshold_calc(test: str, window_size: int, rng_bus_width: int,
+                   per_line: bool, rng_bit_enable: bool, sigma: float) -> bool:
     """Calculates and prints high and low entropy health test thresholds.
 
     Args:
         test: Test name.
         window_size: Window size in bits.
+        rng_bus_width: Symbol size in bits.
+        per_line: Set to true to score adaptive proportion and Markov tests on
+        a per-line basis
+        rng_bit_enable: Set to true to make calculations assuming single bit
+        entropy.
         sigma: Number of standard deviations to provide between the range. This
         assumes that the window is large enough to treat the test as normally
         distributed.
-        per_bit: Set to true to calculate thresholds on a per RNG bit basis.
     Returns:
         False if unable to calculate the thresholds. True otherwise.
     """
+
+    bucket_ht_data_width: int = _BUCKET_HT_DATA_MAX_WIDTH if rng_bus_width \
+        >= _BUCKET_HT_DATA_MAX_WIDTH else rng_bus_width
+    num_buckets: int = 2**bucket_ht_data_width
+    num_bucket_ht_inst: int = -(rng_bus_width // -bucket_ht_data_width)
+
     n: int = 0
     p: float = 0.5
 
     if test == _Test.ADAPTP:
-        n = (window_size / _RNG_BUS_WIDTH) if per_bit else window_size
+        n = window_size if (not per_line or
+                            rng_bit_enable) else window_size / rng_bus_width
     elif test == _Test.BUCKET:
-        n = (window_size / _RNG_BUS_WIDTH)
-        p = 1.0 / float(1 << _RNG_BUS_WIDTH)
+        n = window_size / bucket_ht_data_width / num_bucket_ht_inst
+        p = 1.0 / float(num_buckets)
     elif test == _Test.MARKOV:
         half_window = window_size / 2
-        n = (half_window / _RNG_BUS_WIDTH) if per_bit else half_window
+        n = half_window if (not per_line or
+                            rng_bit_enable) else half_window / rng_bus_width
     else:
         print(f"Invalid test name {test}")
         return False
@@ -93,8 +110,8 @@ def threshold_calc(test: str, window_size: int, sigma: float,
     low = 0 if low < 0 else low
     high = n if high > n else high
 
-    print(f"{test.value}_HI: 0x{int(high):08x}")
-    print(f"{test.value}_LO: 0x{int(low):08x}")
+    print(f"{test.value}_HI: 0x{int(high):08x} {int(high):0d}")
+    print(f"{test.value}_LO: 0x{int(low):08x} {int(low):0d}")
 
     return True
 
@@ -107,8 +124,29 @@ def main():
     parser.add_argument('--window_size',
                         '-w',
                         type=int,
-                        default=2028,
+                        default=2048,
                         help='Window size in bits.')
+    parser.add_argument('--rng_bus_width',
+                        '-r',
+                        type=int,
+                        default=4,
+                        help='Symbol size in bits.')
+    parser.add_argument('--per_line',
+                        '-l',
+                        action='store_true',
+                        default=False,
+                        help='''
+                        Set to true to score adaptive proportion and Markov
+                        tests on a per-line basis.
+                        ''')
+    parser.add_argument('--rng_bit_enable',
+                        '-b',
+                        action='store_true',
+                        default=False,
+                        help='''
+                        Set to true to make calculations assuming single bit
+                        entropy.
+                        ''')
     parser.add_argument('--sigma',
                         '-s',
                         type=float,
@@ -117,22 +155,16 @@ def main():
                         Number of standard deviations to support in the test
                         window threshold.
                         ''')
-    parser.add_argument('--per_bit',
-                        '-b',
-                        action='store_true',
-                        default=False,
-                        help='''
-                        Set to true to make calculations assuming single bit
-                        entropy.
-                        ''')
     args = parser.parse_args()
 
     print(
-        f"Window size: {args.window_size:d}, per_bit: {args.per_bit}, sigma: {args.sigma:0.2f}"
-    )
+        f"Window size: {args.window_size:d}, RNG bus width: {args.rng_bus_width:d}, "
+        +
+        f"per_line: {args.per_line}, rng_bit_enable: {args.rng_bit_enable}, " +
+        f"sigma: {args.sigma:0.2f}")
     results = [
-        threshold_calc(t, args.window_size, args.sigma, args.per_bit)
-        for t in _Test
+        threshold_calc(t, args.window_size, args.rng_bus_width, args.per_line,
+                       args.rng_bit_enable, args.sigma) for t in _Test
     ]
     if not all(results):
         sys.exit("Failed to calculate one or more thresholds.")

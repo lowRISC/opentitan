@@ -150,6 +150,8 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
   // test_e        test: the test to consider (AdaptP, Bucket, or Markov)
   // bit       per_line: set to 1 if the test is being evaluated on a per_line basis
   //                     (if 0, the range applies if the results are summed over all RNG lines)
+  // bit rng_bit_enable: set to 1 if single-channel mode is enabled
+  //                     (if 0, all channels of the RNG noise source are used)
   // real desired_sigma: the number of standard deviations to provide within the range.  Assuming
   //                     the window size is large enough to treat the test as normally distributed,
   //                     the probability of the test within the range increases with the number of
@@ -170,12 +172,12 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
 
 
   virtual function void threshold_rec(int window_size, health_test_e test, bit per_line,
-                                      real desired_sigma, output int lower_threshold,
-                                      output int upper_threshold);
-    lower_threshold = ideal_threshold_recommendation(window_size, test, per_line, low_test,
-                                                     desired_sigma);
-    upper_threshold = ideal_threshold_recommendation(window_size, test, per_line, high_test,
-                                                     desired_sigma);
+                                      bit rng_bit_enable, real desired_sigma,
+                                      output int lower_threshold, output int upper_threshold);
+    lower_threshold = ideal_threshold_recommendation(window_size, test, per_line, rng_bit_enable,
+                                                     low_test, desired_sigma);
+    upper_threshold = ideal_threshold_recommendation(window_size, test, per_line, rng_bit_enable,
+                                                     high_test, desired_sigma);
   endfunction
 
 endclass

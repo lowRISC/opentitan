@@ -142,23 +142,30 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
     int hi_thresh, lo_thresh;
     mubi4_t threshold_scope = newcfg.ht_threshold_scope;
+    mubi4_t rng_bit_enable = newcfg.rng_bit_enable;
     int fips_window_size, bypass_window_size;
 
     completed = 0;
 
-    fips_window_size   = newcfg.fips_window_size;
+    // The threshold_rec() function below always expects the health test window size in bits. The
+    // bypass window is specified in bits. In contrast, the FIPS window is specified in symbols and
+    // the `rng_bit_enable` setting effectively manipulates the symbol size.
     bypass_window_size = newcfg.bypass_window_size;
+    fips_window_size   = newcfg.fips_window_size *
+                             (rng_bit_enable == MuBi4True ? 1 : `RNG_BUS_WIDTH);
 
     if (!newcfg.default_ht_thresholds) begin
       // AdaptP thresholds
       `uvm_info(`gfn, "Setting ADAPTP thresholds", UVM_DEBUG)
       m_rng_push_seq.threshold_rec(fips_window_size, adaptp_ht,
                                    threshold_scope != MuBi4True,
+                                   rng_bit_enable == MuBi4True,
                                    newcfg.adaptp_sigma, lo_thresh, hi_thresh);
       ral.adaptp_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
       ral.adaptp_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
       m_rng_push_seq.threshold_rec(bypass_window_size, adaptp_ht,
                                    threshold_scope != MuBi4True,
+                                   rng_bit_enable == MuBi4True,
                                    newcfg.adaptp_sigma, lo_thresh, hi_thresh);
       ral.adaptp_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
       ral.adaptp_lo_thresholds.bypass_thresh.set(lo_thresh[15:0]);
@@ -167,15 +174,15 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
       // Bucket thresholds
       // Disable the bucket health test if rng_bit_enable is not set to MuBi4False.
-      if (newcfg.rng_bit_enable != MuBi4False) begin
+      if (rng_bit_enable != MuBi4False) begin
         ral.bucket_thresholds.fips_thresh.set(16'hffff);
         ral.bucket_thresholds.bypass_thresh.set(16'hffff);
       end else begin
         `uvm_info(`gfn, "Setting BUCKET thresholds", UVM_DEBUG)
-        m_rng_push_seq.threshold_rec(fips_window_size, bucket_ht, 0,
+        m_rng_push_seq.threshold_rec(fips_window_size, bucket_ht, 0, 0,
                                     newcfg.bucket_sigma, lo_thresh, hi_thresh);
         ral.bucket_thresholds.fips_thresh.set(hi_thresh[15:0]);
-        m_rng_push_seq.threshold_rec(bypass_window_size, bucket_ht, 0,
+        m_rng_push_seq.threshold_rec(bypass_window_size, bucket_ht, 0, 0,
                                     newcfg.bucket_sigma, lo_thresh, hi_thresh);
         ral.bucket_thresholds.bypass_thresh.set(hi_thresh[15:0]);
       end
@@ -185,11 +192,13 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       `uvm_info(`gfn, "Setting MARKOV thresholds", UVM_DEBUG)
       m_rng_push_seq.threshold_rec(fips_window_size, markov_ht,
                                    threshold_scope != MuBi4True,
+                                   rng_bit_enable == MuBi4True,
                                    newcfg.markov_sigma, lo_thresh, hi_thresh);
       ral.markov_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
       ral.markov_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
       m_rng_push_seq.threshold_rec(bypass_window_size, markov_ht,
                                    threshold_scope != MuBi4True,
+                                   rng_bit_enable == MuBi4True,
                                    newcfg.markov_sigma, lo_thresh, hi_thresh);
       ral.markov_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
       ral.markov_lo_thresholds.bypass_thresh.set(lo_thresh[15:0]);
