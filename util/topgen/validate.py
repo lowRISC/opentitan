@@ -90,7 +90,7 @@ top_added = {
     'racl': ['g', 'the expansion of the racl_config file'],
     'wakeups':
     ['l', 'list of wakeup requests each holding name, width, and module'],
-    'cfg_path': ['s', 'Path to the folder of the toplevel HJSON file']
+    'cfg_path': ['s', 'Path to the folder of the toplevel HJSON file'],
 }
 
 # Required/optional field in top seeds hjson
@@ -318,6 +318,8 @@ module_added = {
     'incoming_interrupt': ['g', 'Parsed incoming interrupts'],
     'inter_signal_list': ['l', 'generated signal information'],
     'param_list': ['l', 'list of parameters'],
+    "otp_mmap": ["g", "Full OTP memory map configuration with secret parameters"],
+    "sanitized_otp_mmap": ["g", "OTP memory map configuration without secret parameters"]
 }
 
 memory_required = {

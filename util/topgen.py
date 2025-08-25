@@ -695,6 +695,9 @@ def _get_otp_ctrl_params(top: ConfigT,
     enable_flash_keys = has_flash_keys(otp_mmap["partitions"], otp_mmap_path)
     otp_ctrl = lib.find_module(top["module"], "otp_ctrl")
 
+    # Add the full and non-sanitized OTP map for a later dump to the secrets file.
+    otp_ctrl["otp_mmap"] = deepcopy(otp_mmap)
+
     # Now inject the Key/digest/IV/PartInv into the "extdata" randtype params
     # The param list might not be available on the first pass. Only propagate
     # the values if the param list is available.
@@ -744,6 +747,9 @@ def _get_otp_ctrl_params(top: ConfigT,
 
         p = get_param("RndCnstPartInvDefault", otp_ctrl["param_list"])
         p["default"] = part_inv_data
+
+        # Add the sanitized OTP map to the otp_ctrl module for a general dump.
+        otp_ctrl["sanitized_otp_mmap"] = otp_mmap
 
     ipgen_params = get_ipgen_params(otp_ctrl)
     ipgen_params.update({
@@ -1388,6 +1394,10 @@ def dump_completecfg(cfg: ConfigT, out_path: Path) -> None:
                 "memory": module["memory"],
                 "param_list": secret_params
             }
+            # OTP map contains secret parameters, so we need to pass it to the
+            # secrets file.
+            if module.get("otp_mmap"):
+                module_with_secret_params["otp_mmap"] = module.pop("otp_mmap")
             secret_cfg["module"].append(module_with_secret_params)
 
     genhjson_path.write_text(genhdr + GENCMD.format(top_name=top_name) + "\n" +
