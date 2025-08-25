@@ -31,7 +31,7 @@
                   rel_path: "hw/ip/mbx/lint/{tool}"
              },
              {    name: ac_range_check
-                  fusesoc_core: lowrisc:dv:ac_range_check_sim
+                  fusesoc_core: lowrisc:darjeeling_dv:ac_range_check_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
                   rel_path: "hw/top_darjeeling/ip_autogen/ac_range_check/dv/lint/{tool}"
