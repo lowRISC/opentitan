@@ -149,7 +149,7 @@ static status_t init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR);
   TRY(dif_kmac_init(base_addr, &kmac));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
   TRY(dif_lc_ctrl_init(base_addr, &lc_ctrl));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
