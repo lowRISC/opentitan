@@ -43,5 +43,7 @@ endtask
 task racl_ctrl_stress_all_vseq::run_child(string child_vseq_name);
   racl_ctrl_base_vseq child;
   `downcast(child, create_seq_by_name(child_vseq_name))
+  child.set_sequencer(p_sequencer);
+  `DV_CHECK_RANDOMIZE_FATAL(child)
   child.start(p_sequencer);
 endtask
