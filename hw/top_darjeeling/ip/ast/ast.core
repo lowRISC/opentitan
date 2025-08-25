@@ -76,6 +76,9 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
+    files:
+      - lint/ast.vbl
+    file_type: veribleLintWaiver
 
 parameters:
   SYNTHESIS:
