@@ -525,8 +525,8 @@ class OtpMemMap():
     @classmethod
     def create_partitions_table(cls, partitions: ConfigT) -> str:
         header = [
-            "Partition", "Secret", "Buffered", "Integrity", "WR Lockable",
-            "RD Lockable", "Description"
+            "Partition", "Secret", "Buffered", "Zeroizable",
+            "Integrity", "WR Lockable", "RD Lockable", "Description"
         ]
         table = [header]
         colalign = ("center", ) * len(header[:-1]) + ("left", )
@@ -535,6 +535,7 @@ class OtpMemMap():
             is_buffered = "yes" if part["variant"] in [
                 "Buffered", "LifeCycle"
             ] else "no"
+            is_zeroizable = "yes" if check_bool(part["zeroizable"]) else "no"
             wr_lockable = "no"
             if part["write_lock"].lower() in ["csr", "digest"]:
                 wr_lockable = "yes (" + part["write_lock"] + ")"
@@ -546,8 +547,8 @@ class OtpMemMap():
                 integrity = "yes"
             desc = " ".join(part.get("desc", "").split("\n"))
             row = [
-                part["name"], is_secret, is_buffered, integrity, wr_lockable,
-                rd_lockable, desc
+                part["name"], is_secret, is_buffered, is_zeroizable, integrity,
+                wr_lockable, rd_lockable, desc
             ]
             table.append(row)
 
@@ -559,8 +560,8 @@ class OtpMemMap():
     @classmethod
     def create_mmap_table(cls, partitions: ConfigT) -> str:
         header = [
-            "Index", "Partition", "Size [B]", "Access Granule", "Item",
-            "Byte Address", "Size [B]"
+            "Index", "Partition", "Size [B]", "Zeroizable",
+            "Access Granule", "Item", "Byte Address", "Size [B]"
         ]
         table = [header]
         colalign = ("center", ) * len(header)
@@ -579,10 +580,15 @@ class OtpMemMap():
                 else:
                     name = item["name"]
 
+                zeroizable = "yes" if check_bool(part["zeroizable"]) else "no"
+
                 if j == 0:
-                    row = [str(k), part["name"], str(part["size"]), granule]
+                    row = [
+                        str(k), part["name"], str(part["size"]), zeroizable,
+                        granule
+                    ]
                 else:
-                    row = ["", "", "", granule]
+                    row = ["", "", "", "", granule]
 
                 row.extend([
                     name, "0x{:03X}".format(check_int(item["offset"])),
