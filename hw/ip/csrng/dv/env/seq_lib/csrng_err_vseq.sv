@@ -20,7 +20,7 @@ class csrng_err_vseq extends csrng_base_vseq;
     string        fifo_name;
     int           first_index, last_index;
     string        fifo_base_path;
-    string        path_exts [6] = {"push", "full", "wdata", "pop", "not_empty", "rdata"};
+    string        path_exts [6] = {"wvld", "full", "wdata", "rrdy", "rvld", "rdata"};
     string        fifo_forced_paths [6];
     string        fifo_forced_path_ds;
     bit           fifo_forced_values [6] = {1'b1, 1'b1, 1'b0, 1'b1, 1'b0, 1'b0};
@@ -34,8 +34,8 @@ class csrng_err_vseq extends csrng_base_vseq;
 
     super.body();
 
-    fifo_err_path[0] = '{"write": "push", "read": "pop", "state": "full"};
-    fifo_err_path[1] = '{"write": "full", "read": "not_empty", "state": "not_empty"};
+    fifo_err_path[0] = '{"write": "wvld", "read": "rrdy", "state": "full"};
+    fifo_err_path[1] = '{"write": "full", "read": "rvld", "state": "rvld"};
     fifo_err_value[0] = '{"write": 1'b1, "read": 1'b1, "state": 1'b1};
     fifo_err_value[1] = '{"write": 1'b1, "read": 1'b0, "state": 1'b0};
 
