@@ -570,6 +570,18 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "p384_internal_mult_test",
+    srcs = [
+        "p384_internal_mult_test.s",
+    ],
+    testcase = "p384_internal_mult_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:p384_base",
+        "//sw/otbn/crypto:p384_internal_mult",
+    ],
+)
+
+otbn_sim_test(
     name = "p384_keygen_test",
     srcs = [
         "p384_keygen_test.s",
