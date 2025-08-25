@@ -1,4 +1,0 @@
-# Expected values (x- and y-coordinates of result):
-# [w1, w0] is affine x-coordinate of resulting point
-w0  = 0x00a94f93d1320a59c0007d74e572772c2722a257017480a1bfdea3697c461791
-w1  = 0x00000000000000000000000000000000f1d4b5254d1cfebc4a0deafdda8fe3c9

@@ -110,7 +110,7 @@ p384_base_mult:
 
   /* scalar multiplication in projective space
      [w30:w25] <= (x, y, z) = d * G */
-  jal       x1, scalar_mult_int_p384
+  jal       x1, scalar_mult_int_p384_reblind
 
   /* conversion into affine space
      [w28:w25] <= (x, y) */
@@ -140,13 +140,13 @@ p384_base_mult:
 .globl d0
 .weak d0
 d0:
-  .zero 64
+  .zero 96
 
 /* 2nd private key share d1 */
 .globl d1
 .weak d1
 d1:
-  .zero 64
+  .zero 96
 
 /* buffer for x-coordinate */
 .globl x
@@ -165,4 +165,4 @@ y:
 .globl scratchpad
 .weak scratchpad
 scratchpad:
-  .zero 704
+  .zero 768

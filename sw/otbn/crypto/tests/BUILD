@@ -483,7 +483,7 @@ otbn_sim_test(
     srcs = [
         "p384_ecdh_shared_key_test.s",
     ],
-    exp = "p384_ecdh_shared_key_test.exp",
+    testcase = "p384_ecdh_shared_key_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_a2b",
         "//sw/otbn/crypto:p384_base",
@@ -623,7 +623,7 @@ otbn_sim_test(
     srcs = [
         "p384_scalar_mult_test.s",
     ],
-    exp = "p384_scalar_mult_test.exp",
+    testcase = "p384_scalar_mult_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_internal_mult",

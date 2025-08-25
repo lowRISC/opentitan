@@ -279,13 +279,13 @@ r:
 s:
   .zero 64
 
-/* 1st scalar share d0 */
+/* 1st scalar share k0 */
 .globl k0
 .weak k0
 k0:
   .zero 64
 
-/* 2nd scalar share d1 */
+/* 2nd scalar share k1 */
 .globl k1
 .weak k1
 k1:
@@ -295,17 +295,17 @@ k1:
 .globl d0
 .weak d0
 d0:
-  .zero 64
+  .zero 96
 
 /* 2nd private key share d1 */
 .globl d1
 .weak d1
 d1:
-  .zero 64
+  .zero 96
 
 /* 704 bytes of scratchpad memory */
 .balign 32
 .globl scratchpad
 .weak scratchpad
 scratchpad:
-  .zero 704
+  .zero 768
