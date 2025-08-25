@@ -1,0 +1,38 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  "entrypoint": "p384_masked_scalar_reblind",
+  "input": {
+    "regs": {
+      # 1st scalar share d0 (768-bit)
+      "w0": "0x1e9d19e796d2f9e05b7d3b0f4de8344e6e0012819a0c1b763eb17c275c832a51",
+      "w1": "0x000000000000000032f9e2b08677a5f2adb9ce1be14cd8df800a4c9416f5c1ee",
+      "w2": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      # 2nd scalar share d1 (768-bit)
+      "w3": "0x4ad22b6e9cb814d944676e619ef51898ab8fb14d507568cdd31b18d533eae098",
+      "w4": "0x00000000000000009e5dc5989ec9b43013e7014aa9da1611b706d6828930f243",
+      "w5": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      # P-384 domain parameter n (order of base point)
+      "w10": "0xffffffffffffffffc7634d81f4372ddf581a0db248b0a77aecec196accc52973",
+      "w11": "0x00000000000000000000000000000000ffffffffffffffffffffffffffffffff",
+      # All zero reg
+      "w31": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    }
+  }
+
+  "output": {
+    "regs": {
+      # Expected values (shares d0 and d1 of result):
+      # [w2, w1, w0] is the first share d0 of the hidden scalar d
+      "w0": "0x4d75c90825e79c647b17f342165cfcff57dcc45b122ca7efb626e9fef9a13a28",
+      "w1": "0x8009ca6d17cd39577906e058a6a79cff6e3190072f7ed2f50cb5cf4e43819cba",
+      "w2": "0x0000000000000000000000000000000000000000000000011f4aee36c32e8179",
+      # [w5, w4, w3] is the second share d1 of the hidden scalar d
+      "w3": "0xa0f1e94d94ce24495b0cfb29f6bcf528d4d5dc33647e243c96cd6da0b4071543",
+      "w4": "0xbd759ba1ecf5b4da9a3399a776678e184b367df4bc51cb713e8a404973f58312",
+      "w5": "0x0000000000000000000000000000000000000000000000038b84ac7ec5c9a3f7",
+    }
+  }
+}
