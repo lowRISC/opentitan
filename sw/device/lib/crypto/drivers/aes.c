@@ -235,6 +235,10 @@ static status_t aes_begin(aes_key_t key, const aes_block_t *iv,
     }
   }
 
+  // Read back the AES configuration and compare to the expected configuration.
+  HARDENED_CHECK_EQ(abs_mmio_read32(kBase + AES_CTRL_SHADOWED_REG_OFFSET),
+                    launder32(ctrl_reg));
+
   // Check that AES is ready to receive input data.
   uint32_t status = abs_mmio_read32(kBase + AES_STATUS_REG_OFFSET);
   if (!bitfield_bit32_read(launder32(status), AES_STATUS_INPUT_READY_BIT)) {
