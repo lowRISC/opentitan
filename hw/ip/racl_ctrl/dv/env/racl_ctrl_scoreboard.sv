@@ -19,7 +19,7 @@ class racl_ctrl_scoreboard extends cip_base_scoreboard #(.CFG_T(racl_ctrl_env_cf
 
   // A function that looks at cfg.policies_vif and checks that its values match those requested in
   // the policy registers.
-  extern function void check_policies();
+  extern local function void check_policies();
 
   // A task that watches cfg.policies_vif continuously, checking that the values always match the
   // ones requested by the policy registers.
@@ -27,8 +27,15 @@ class racl_ctrl_scoreboard extends cip_base_scoreboard #(.CFG_T(racl_ctrl_env_cf
   // This performs a check just after each change to the output. To make sure everything stays in
   // sync, the process_tl_access task does an analogous check after each write to one of those
   // policies.
-  extern task watch_policies();
+  extern local task watch_policies();
 
+  // Watch the output of arb_predictor. When an item comes out, update the ERROR_LOG and
+  // ERROR_LOG_ADDRESS registers. Also assert the racl_error interrupt.
+  extern local task watch_arbitrated_errors();
+
+  // A model that arbitrates between errors that have been detected by the error log agents in the
+  // environment and fed through to *_errors_export above. Its output is not connected to any
+  // export, but it is consumed by the watch_arbitrated_errors task.
   local racl_ctrl_error_arb_predictor arb_predictor;
 endclass
 
@@ -59,9 +66,8 @@ task racl_ctrl_scoreboard::run_phase(uvm_phase phase);
   wait(!$isunknown(cfg.clk_rst_vif.rst_n));
   fork
     super.run_phase(phase);
-    if (cfg.en_scb) begin
-      watch_policies();
-    end
+    if (cfg.en_scb) watch_policies();
+    if (cfg.en_scb) watch_arbitrated_errors();
   join
 endtask
 
@@ -135,5 +141,14 @@ task racl_ctrl_scoreboard::watch_policies();
       join_any
       disable fork;
     end join
+  end
+endtask
+
+task racl_ctrl_scoreboard::watch_arbitrated_errors();
+  forever begin
+    racl_error_log_item item;
+    arb_predictor.merged_errors_fifo.get(item);
+
+    // TODO: Actually consume the item that has been passed up to the scoreboard here.
   end
 endtask
