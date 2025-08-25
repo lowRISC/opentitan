@@ -1,0 +1,16 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Verible waiver file for AST
+
+# Waive the always-comb rule in the various "pgd" modules. The rule is checking
+# that we don't use always @*, and suggests we use always_comb instead.
+# Unfortunately, the code in question doesn't really translate to always_comb.
+# And we don't really care about the linting rule: the code is just supposed to
+# be a behavioural model of some analog code that isn't really part of the OT
+# open-source repo. Waive the warning.
+waive --rule=always-comb --location="vcc_pgd.sv"
+waive --rule=always-comb --location="vio_pgd.sv"
+waive --rule=always-comb --location="vcaon_pgd.sv"
+waive --rule=always-comb --location="vcmain_pgd.sv"
