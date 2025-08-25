@@ -47,10 +47,6 @@ top_required = {
     'resets': ['l', 'list of resets'],
     'addr_spaces': ['g', 'list of address spaces'],
     'module': ['l', 'list of modules to instantiate'],
-    'memory': [
-        'l',
-        'list of memories. At least one memory is needed to run the software'
-    ],
     'xbar': ['l', 'List of the xbar used in the top'],
     'pinout': ['g', 'Pinout configuration'],
     'targets': ['l', ' Target configurations'],
@@ -1157,17 +1153,6 @@ def validate_alert(top, module, block, handlers, default_handler=None):
     return errors
 
 
-def check_flash(top: ConfigT):
-
-    for mem in top['memory']:
-        if mem['type'] == "eflash":
-
-            raise ValueError(
-                'top level flash memory definition not supported. Please use '
-                'the flash embedded inside flash_ctrl instead.  If there is a '
-                'need for top level flash memory, please file an issue.')
-
-
 def check_power_domains(top: ConfigT):
 
     # check that the default domain is valid
@@ -1178,7 +1163,7 @@ def check_power_domains(top: ConfigT):
     # Check that each module, xbar, memory has a power domain defined.
     # If not, give it a default.
     # If there is one defined, check that it is a valid definition
-    for end_point in top['module'] + top['memory'] + top['xbar']:
+    for end_point in top['module'] + top['xbar']:
         if 'domain' not in end_point:
             end_point['domain'] = [top['power']['default']]
 
@@ -1294,9 +1279,6 @@ def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
 
     # XBAR check
     error += check_target(top, xbar_name_to_block, Target(TargetType.XBAR))
-
-    # MEMORY check
-    check_flash(top)
 
     # Power domain check
     check_power_domains(top)

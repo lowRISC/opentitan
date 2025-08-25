@@ -85,7 +85,6 @@
 #define TOP_DARJEELING_ROM1_SIZE_BYTES 0x10000
 
 
-
 /**
  * Peripheral base address for uart0 in top darjeeling.
  *

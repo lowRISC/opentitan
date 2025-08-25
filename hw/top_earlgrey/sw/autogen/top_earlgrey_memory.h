@@ -65,7 +65,6 @@
 #define TOP_EARLGREY_ROM_SIZE_BYTES 0x8000
 
 
-
 /**
  * Peripheral base address for uart0 in top earlgrey.
  *

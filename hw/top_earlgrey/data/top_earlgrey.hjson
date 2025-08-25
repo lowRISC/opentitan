@@ -1063,9 +1063,6 @@
     },
   ],
 
-  // All memories wrapped up in relevant controllers
-  memory: [],
-
   // The port data structure is not something that should be used liberally.
   // It is used specifically to assign special attributes to specific ports.
   // For example, this allows us to designate a port as part of inter-module

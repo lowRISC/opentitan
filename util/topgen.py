@@ -866,11 +866,6 @@ def generate_top_ral(topname: str, top: ConfigT, name_to_block: IpBlocksT,
             }
             if_addrs[(inst_name, if_name)] = if_addr
 
-    # Collect up the memories to add
-    mems = []
-    for item in list(top.get("memory", [])):
-        mems.append(create_mem(item, addrsep, regwidth))
-
     # Top-level may override the mem setting. Store the new type to
     # name_to_block. If no other instance uses the original type, delete it
     original_types = set()
@@ -910,7 +905,7 @@ def generate_top_ral(topname: str, top: ConfigT, name_to_block: IpBlocksT,
 
     addr_spaces = {addr_space["name"] for addr_space in top["addr_spaces"]}
     chip = Top(topname, regwidth, addr_spaces, name_to_block, inst_to_block,
-               if_addrs, mems, attrs)
+               if_addrs, [], attrs)
 
     # generate the top ral model with template
     return gen_dv(chip, dv_base_names, str(out_path))

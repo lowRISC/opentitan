@@ -709,31 +709,21 @@ def get_base_and_size(name_to_block: IpBlocksT, inst: ConfigT,
                       ifname: Optional[str]) -> Tuple[int, int]:
 
     block = name_to_block.get(inst['type'])
-    if block is None:
-        # If inst isn't the instantiation of a block, it came from some memory.
-        # Memories have their sizes defined, so we can just look it up there.
-        bytes_used = int(inst['size'], 0)
-
-        # Memories don't have multiple or named interfaces, so this will only
-        # work if ifname is None.
-        assert ifname is None
-        base_addrs = deepcopy(inst['base_addr'])
-
+    assert block, f"No module named {inst['type']} (coming from instance {inst['name']})"
+    # If inst is the instantiation of some block, find the register block
+    # that corresponds to ifname
+    if rb := block.reg_blocks.get(ifname):
+        bytes_used = 1 << rb.get_addr_width()
+    elif mem := inst["memory"].get(ifname):
+        bytes_used = int(mem["size"], 0)
     else:
-        # If inst is the instantiation of some block, find the register block
-        # that corresponds to ifname
-        if rb := block.reg_blocks.get(ifname):
-            bytes_used = 1 << rb.get_addr_width()
-        elif mem := inst["memory"].get(ifname):
-            bytes_used = int(mem["size"], 0)
-        else:
-            raise RuntimeError(
-                'Cannot connect to non-existent {} device interface '
-                'on {!r} (an instance of the {!r} block).'.format(
-                    'default' if ifname is None else repr(ifname),
-                    inst['name'], block.name))
+        raise RuntimeError(
+            'Cannot connect to non-existent {} device interface '
+            'on {!r} (an instance of the {!r} block).'.format(
+                'default' if ifname is None else repr(ifname),
+                inst['name'], block.name))
 
-        base_addrs = deepcopy(inst['base_addrs'][ifname])
+    base_addrs = deepcopy(inst['base_addrs'][ifname])
 
     for (asid, base_addr) in base_addrs.items():
         if isinstance(base_addr, str):
@@ -1030,13 +1020,6 @@ class TopGen:
             addr_space: The address space representing the bus for generation.
         '''
         ret = []
-        for m in self.top["memory"]:
-            ret.append((m["name"],
-                        MemoryRegion(self._top_name,
-                                     Name.from_snake_case(m["name"]),
-                                     addr_space,
-                                     int(m["base_addr"][addr_space], 0),
-                                     int(m["size"], 0))))
 
         for inst in self.top['module']:
             if "memory" in inst:
