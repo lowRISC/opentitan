@@ -22,7 +22,7 @@ from typing import Any
 from Crypto.Cipher import AES
 
 
-class secure_prng():
+class SecurePrng:
 
     blocklen = 128
     keylen = 128
@@ -94,7 +94,7 @@ class secure_prng():
         # Checks if the PRNG was Instantiated before first use.
         if not self.reseed_counter:
             log.error("Seed must be provided before requesting output. " +
-                      "Use secure_prng.reseed()")
+                      "Use SecurePrng.reseed()")
             sys.exit(1)
 
         # Checks that the requested number of bits is allowed.
@@ -312,7 +312,7 @@ class SecurePrngFactory:
     This factory allows you to instantiate multiple PRNGs with different seeds
     and retrieve them later by name.
     """
-    _rngs: dict[str, secure_prng] = {}
+    _rngs: dict[str, SecurePrng] = {}
 
     @classmethod
     def create(cls, name: str, seed: Any) -> None:
@@ -322,12 +322,12 @@ class SecurePrngFactory:
         If a generator with the same name already exists, it will be
         overwritten with the new one.
         """
-        rng_instance = secure_prng()
+        rng_instance = SecurePrng()
         rng_instance.reseed(seed)
         cls._rngs[name] = rng_instance
 
     @classmethod
-    def get(cls, name: str) -> secure_prng:
+    def get(cls, name: str) -> SecurePrng:
         """
         Retrieves a previously created pseudo-random number generator by its name.
         """
