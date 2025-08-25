@@ -457,8 +457,8 @@ k1:
 .globl d0
 .balign 32
 d0:
-  .zero 64
+  .zero 96
 .globl d1
 .balign 32
 d1:
-  .zero 64
+  .zero 96
