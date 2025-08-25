@@ -606,6 +606,15 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "p384_masked_scalar_reblind_test",
+    testcase = "p384_masked_scalar_reblind_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:p384_base",
+        "//sw/otbn/crypto:p384_internal_mult",
+    ],
+)
+
+otbn_sim_test(
     name = "p384_scalar_mult_test",
     srcs = [
         "p384_scalar_mult_test.s",
