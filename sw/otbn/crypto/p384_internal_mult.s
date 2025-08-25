@@ -369,7 +369,7 @@ scalar_mult_int_p384_internal:
     bn.lid    x2++, 256(x30)
     bn.lid    x2,   544(x30)
     bn.xor    w8, w0, w1
-    /* Create conditional offeset into scratchpad.
+    /* Create conditional offset into scratchpad.
        if (s0[512] xor s1[512]) x27 <= x30 else x27 <= x30+288 */
     csrrs     x3, FG0, x0
     andi      x3, x3, 2
@@ -489,7 +489,7 @@ scalar_mult_int_p384_internal:
     bn.sid    x2, 416(x30)
     bn.sid    x3, 448(x30)
 
-  /* Loead result Q into ([w21,w20], [w19,w18], [w17,w16]) <= Q */
+  /* Load result Q into ([w21,w20], [w19,w18], [w17,w16]) <= Q */
   li        x2, 25
   bn.lid    x2++, 0(x26)
   bn.lid    x2++, 32(x26)
@@ -531,32 +531,32 @@ p384_masked_scalar_reblind:
   bn.xor    w31, w31, w31
 
   /* reblind first share of scalar d in [w1, w0]. */
-  bn.mov w16, w0
-  bn.mov w17, w1
-  bn.mov w18, w2
-  jal    x1, p384_scalar_reblind
-  bn.mov w0, w16
-  bn.mov w1, w17
-  bn.mov w2, w18
+  bn.mov    w16, w0
+  bn.mov    w17, w1
+  bn.mov    w18, w2
+  jal       x1, p384_scalar_reblind
+  bn.mov    w0, w16
+  bn.mov    w1, w17
+  bn.mov    w2, w18
 
-  /* Clear w16, w17 and w18 which contain the first share of scalar d. */
-  bn.xor w16, w16, w16
-  bn.xor w17, w17, w17
-  bn.xor w18, w18, w18
+  /* Randomize w16, w17 and w18 which contain the first share of scalar d. */
+  bn.wsrr   w16, URND
+  bn.wsrr   w17, URND
+  bn.wsrr   w18, URND
 
   /* reblind second share of scalar d in [w3, w2]. */
-  bn.mov w16, w3
-  bn.mov w17, w4
-  bn.mov w18, w5
-  jal    x1, p384_scalar_reblind
-  bn.mov w3, w16
-  bn.mov w4, w17
-  bn.mov w5, w18
+  bn.mov    w16, w3
+  bn.mov    w17, w4
+  bn.mov    w18, w5
+  jal       x1, p384_scalar_reblind
+  bn.mov    w3, w16
+  bn.mov    w4, w17
+  bn.mov    w5, w18
 
-  /* Clear w16, w17 and w18 which contain the second share of scalar d. */
-  bn.xor w16, w16, w16
-  bn.xor w17, w17, w17
-  bn.xor w18, w18, w18
+  /* Randomize w16, w17 and w18 which contain the second share of scalar d. */
+  bn.wsrr   w16, URND
+  bn.wsrr   w17, URND
+  bn.wsrr   w18, URND
 
   ret
 
