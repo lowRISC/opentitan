@@ -39,8 +39,9 @@ module tb;
   rom_ctrl #(
     .RndCnstScrNonce      (RND_CNST_SCR_NONCE),
     .RndCnstScrKey        (RND_CNST_SCR_KEY),
-    // ROM size in bytes
-    .MemSizeRom           (ROM_SIZE_BYTES)
+    .FlopToKmac           (`FLOP_TO_KMAC),
+    .MemSizeRom           (ROM_SIZE_BYTES),
+    .TwoCycleRom          (`TWO_CYCLE_ROM)
    ) dut (
     .clk_i                (clk),
     .rst_ni               (rst_n),

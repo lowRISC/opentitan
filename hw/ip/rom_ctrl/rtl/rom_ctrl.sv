@@ -25,7 +25,8 @@ module rom_ctrl
   parameter bit [127:0]           RndCnstScrKey = '0,
   // ROM size in bytes
   parameter int                   MemSizeRom = 32'h8000,
-
+  // If this parameter is set, the ROM responds in two cycles (instead of one).
+  parameter bit                   TwoCycleRom = 1'b0,
   // Disable all (de)scrambling operation. This disables both the scrambling block and the boot-time
   // checker. Don't use this in a real chip, but it's handy for small FPGA targets where we don't
   // want to spend area on unused scrambling.
@@ -86,17 +87,17 @@ module rom_ctrl
   logic                     bus_rom_rvalid, bus_rom_rvalid_raw;
 
   logic [RomIndexWidth-1:0] checker_rom_index;
-  logic                     checker_rom_req;
-  logic [DataWidth-1:0]     checker_rom_rdata, checker_rom_rdata_outer;
+  logic [DataWidth-1:0]     checker_rom_rdata;
 
   logic                     internal_alert;
 
   // Pack / unpack kmac connection data ========================================
 
-  logic [63:0]              kmac_rom_data;
+  logic [63:0]              kmac_rom_data_full;
   logic                     kmac_rom_rdy, kmac_rom_rdy_outer;
   logic                     kmac_rom_vld, kmac_rom_vld_outer;
   logic                     kmac_rom_last, kmac_rom_last_outer;
+  logic [DataWidth-1:0]     kmac_rom_data, kmac_rom_data_outer;
   logic                     kmac_done;
   logic [255:0]             kmac_digest;
   logic                     kmac_err;
@@ -128,7 +129,7 @@ module rom_ctrl
 
     // SEC_CM: MEM.DIGEST
     assign kmac_data_o = '{valid: kmac_rom_vld_outer,
-                           data: kmac_rom_data,
+                           data: kmac_rom_data_full,
                            strb: kmac_pkg::MsgStrbW'({NumBytes{1'b1}}),
                            last: kmac_rom_last_outer};
 
@@ -234,7 +235,8 @@ module rom_ctrl
 
   rom_ctrl_mux #(
     .AW (RomIndexWidth),
-    .DW (DataWidth)
+    .DW (DataWidth),
+    .TwoCycleRom(TwoCycleRom)
   ) u_mux (
     .clk_i,
     .rst_ni,
@@ -246,7 +248,9 @@ module rom_ctrl
     .bus_rdata_o       (bus_rom_rdata),
     .bus_rvalid_o      (bus_rom_rvalid_raw),
     .chk_addr_i        (checker_rom_index),
-    .chk_req_i         (checker_rom_req),
+    .chk_req_i         (1'b1), // Once the ROM has been checked after reset, the `rom_select_bus`
+                               // switches to the bus and the checker inputs including the request
+                               // signal get ignored.
     .chk_rdata_o       (checker_rom_rdata),
     .rom_rom_addr_o    (rom_rom_index),
     .rom_prince_addr_o (rom_prince_index),
@@ -278,7 +282,8 @@ module rom_ctrl
       .Width       (DataWidth),
       .Depth       (RomSizeWords),
       .ScrNonce    (RndCnstScrNonce),
-      .ScrKey      (RndCnstScrKey)
+      .ScrKey      (RndCnstScrKey),
+      .TwoCycleRom (TwoCycleRom)
     ) u_rom (
       .clk_i,
       .rst_ni,
@@ -300,7 +305,8 @@ module rom_ctrl
     prim_rom_adv #(
       .Width       (DataWidth),
       .Depth       (RomSizeWords),
-      .MemInitFile (BootRomInitFile)
+      .MemInitFile (BootRomInitFile),
+      .Latency     (TwoCycleRom ? 2 : 1)
     ) u_rom (
       .clk_i,
       .rst_ni,
@@ -321,7 +327,7 @@ module rom_ctrl
   end : gen_rom_scramble_disabled
 
   // Zero expand checker rdata to pass to KMAC
-  assign kmac_rom_data = {{64-DataWidth{1'b0}}, checker_rom_rdata_outer};
+  assign kmac_rom_data_full = {{64-DataWidth{1'b0}}, kmac_rom_data_outer};
 
   // Register block ============================================================
 
@@ -353,8 +359,10 @@ module rom_ctrl
   if (!SecDisableScrambling) begin : gen_fsm_scramble_enabled
 
     rom_ctrl_fsm #(
-      .RomDepth (RomSizeWords),
-      .TopCount (8)
+      .RomDepth   (RomSizeWords),
+      .TopCount   (8),
+      .DataWidth  (DataWidth),
+      .TwoCycleRom(TwoCycleRom)
     ) u_checker_fsm (
       .clk_i,
       .rst_ni,
@@ -370,13 +378,13 @@ module rom_ctrl
       .kmac_rom_rdy_i       (kmac_rom_rdy),
       .kmac_rom_vld_o       (kmac_rom_vld),
       .kmac_rom_last_o      (kmac_rom_last),
+      .kmac_rom_data_o      (kmac_rom_data),
       .kmac_done_i          (kmac_done),
       .kmac_digest_i        (kmac_digest),
       .kmac_err_i           (kmac_err),
       .rom_select_bus_o     (rom_select_bus),
       .rom_addr_o           (checker_rom_index),
-      .rom_req_o            (checker_rom_req),
-      .rom_data_i           (checker_rom_rdata[31:0]),
+      .rom_data_i           (checker_rom_rdata),
       .alert_o              (checker_alert)
     );
 
@@ -402,10 +410,10 @@ module rom_ctrl
         .clr_i    (1'b0),
         .wvalid_i (kmac_rom_vld),
         .wready_o (kmac_rom_rdy),
-        .wdata_i  ({kmac_rom_last, checker_rom_rdata}),
+        .wdata_i  ({kmac_rom_last, kmac_rom_data}),
         .rvalid_o (kmac_rom_vld_outer),
         .rready_i (kmac_rom_rdy_outer),
-        .rdata_o  ({kmac_rom_last_outer, checker_rom_rdata_outer}),
+        .rdata_o  ({kmac_rom_last_outer, kmac_rom_data_outer}),
         .full_o   (),
         .depth_o  (),
         .err_o    ()
@@ -414,9 +422,9 @@ module rom_ctrl
       // If there is not a flop on the output, the "_outer" version of a signal is exactly the same
       // as the underlying signal.
 
-      assign kmac_rom_vld_outer      = kmac_rom_vld;
-      assign kmac_rom_last_outer     = kmac_rom_last;
-      assign checker_rom_rdata_outer = checker_rom_rdata;
+      assign kmac_rom_vld_outer  = kmac_rom_vld;
+      assign kmac_rom_last_outer = kmac_rom_last;
+      assign kmac_rom_data_outer = kmac_rom_data;
 
       assign kmac_rom_rdy = kmac_rom_rdy_outer;
     end
@@ -447,7 +455,6 @@ module rom_ctrl
     assign rom_select_bus = MuBi4True;
 
     assign checker_rom_index = '0;
-    assign checker_rom_req = 1'b0;
     assign checker_alert = 1'b0;
 
     logic unused_fsm_inputs;
@@ -559,6 +566,11 @@ module rom_ctrl
   // struct (data, strb and last) should be known whenever the valid signal is true.
   `ASSERT_KNOWN(KmacDataOValidKnown_A, kmac_data_o.valid)
   `ASSERT_KNOWN_IF(KmacDataODataKnown_A, kmac_data_o, kmac_data_o.valid)
+
+  // Check that kmac_data_o.last is "telling the truth", so we definitely want kmac_data_o.valid to
+  // drop on the cycle after it is transferred.
+  `ASSERT(KmacLastTrue_A,
+          kmac_data_o.valid && kmac_data_i.ready && kmac_data_o.last |=> !kmac_data_o.valid)
 
   // Check that pwrmgr_data_o.good is stable when kmac_data_o.valid is asserted
   `ASSERT(StabilityChkKmac_A, kmac_data_o.valid && $past(kmac_data_o.valid)
