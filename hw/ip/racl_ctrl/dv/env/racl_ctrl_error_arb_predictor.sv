@@ -8,22 +8,29 @@
 class racl_ctrl_error_arb_predictor extends uvm_component;
   `uvm_component_utils(racl_ctrl_error_arb_predictor)
 
+  typedef uvm_tlm_analysis_fifo #(racl_error_log_item)     error_fifo_t;
+  typedef uvm_tlm_analysis_fifo #(racl_error_log_vec_item) error_vec_fifo_t;
+
   // A handle to the environment cfg
   racl_ctrl_env_cfg cfg;
 
   // Analysis fifos for messages from the monitors of the two error log agents.
-  uvm_tlm_analysis_fifo #(racl_error_log_vec_item) internal_errors_fifo;
-  uvm_tlm_analysis_fifo #(racl_error_log_vec_item) external_errors_fifo;
+  error_vec_fifo_t internal_errors_fifo;
+  error_vec_fifo_t external_errors_fifo;
 
   // An output with merged errors
-  uvm_tlm_analysis_fifo #(racl_error_log_item) merged_errors_fifo;
+  error_fifo_t merged_errors_fifo;
 
   extern function new(string name="", uvm_component parent=null);
   extern function void build_phase(uvm_phase phase);
+  extern task run_phase(uvm_phase phase);
 
   // Watch error inputs, collecting up values in the two fifos and pairing them up.
   extern local task watch_errors();
 
+  // Flush the contents of a nonempty fifo of racl_error_log_vec_item objects and return the last
+  // item that had been in there.
+  extern local function racl_error_log_vec_item flush_vec_fifo(error_vec_fifo_t fifo);
 endclass
 
 function racl_ctrl_error_arb_predictor::new(string name="", uvm_component parent=null);
@@ -35,6 +42,13 @@ function void racl_ctrl_error_arb_predictor::build_phase(uvm_phase phase);
   external_errors_fifo = new("external_errors_fifo", this);
   merged_errors_fifo = new("merged_errors_fifo", this);
 endfunction
+
+task racl_ctrl_error_arb_predictor::run_phase(uvm_phase phase);
+  fork
+    super.run_phase(phase);
+    watch_errors();
+  join
+endtask
 
 task racl_ctrl_error_arb_predictor::watch_errors();
   forever begin
@@ -64,16 +78,15 @@ task racl_ctrl_error_arb_predictor::watch_errors();
     // At this point we're just after a clock edge and we have seen an error log item on at least
     // one fifo. Pair up the last item on each of the two inputs, writing its components to items.
     if (saw_internal) begin
-      racl_error_log_vec_item vec_item;
-      while (internal_errors_fifo.try_get(vec_item)) begin end
+      racl_error_log_vec_item vec_item = flush_vec_fifo(internal_errors_fifo);
       foreach (vec_item.errors[i]) begin
         `DV_CHECK(`gfn, i < cfg.internal_error_agent_cfg.num_subscribing_ips)
         items[i] = vec_item.errors[i];
       end
     end
     if (saw_external) begin
-      racl_error_log_vec_item vec_item;
-      while (external_errors_fifo.try_get(vec_item)) begin end
+      racl_error_log_vec_item vec_item = flush_vec_fifo(external_errors_fifo);
+      `DV_CHECK_FATAL(vec_item != null)
       foreach (vec_item.errors[i]) begin
         `DV_CHECK(`gfn, i < cfg.external_error_agent_cfg.num_subscribing_ips)
         items[cfg.internal_error_agent_cfg.num_subscribing_ips + i] = vec_item.errors[i];
@@ -96,3 +109,12 @@ task racl_ctrl_error_arb_predictor::watch_errors();
     end
   end
 endtask
+
+function racl_error_log_vec_item
+  racl_ctrl_error_arb_predictor::flush_vec_fifo(error_vec_fifo_t fifo);
+
+  racl_error_log_vec_item ret;
+  while (!fifo.is_empty()) `DV_CHECK_FATAL(fifo.try_get(ret))
+  `DV_CHECK_FATAL(ret != null)
+  return ret;
+endfunction
