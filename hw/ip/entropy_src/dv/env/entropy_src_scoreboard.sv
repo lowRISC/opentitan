@@ -651,33 +651,15 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int value, minval, maxval;
     bit fail_hi, fail_lo;
     bit total_scope;
+    bit rng_bit_enable;
+    int window_size;
     int threshold_hi, threshold_lo;
     real sigma_hi, sigma_lo;
 
-    int window_size = fips_mode ? `gmv(ral.health_test_windows.fips_window) :
-                                  `gmv(ral.health_test_windows.bypass_window);
-
-    // If rng_bit_enable is set to MuBi4True, the window size is `RNG_BUS_WIDTH times as large.
-    // We need the same number of bits but only have a single lane.
-    int window_size_scaled
-      = (`gmv(ral.conf.rng_bit_enable) == MuBi4True) ? `RNG_BUS_WIDTH*window_size :
-                                                       window_size;
-
-    threshold_hi = fips_mode ? `gmv(ral.adaptp_hi_thresholds.fips_thresh) :
-                               `gmv(ral.adaptp_hi_thresholds.bypass_thresh);
-
-    threshold_lo = fips_mode ? `gmv(ral.adaptp_lo_thresholds.fips_thresh) :
-                               `gmv(ral.adaptp_lo_thresholds.bypass_thresh);
-
     total_scope = (ral.conf.threshold_scope.get_mirrored_value() == MuBi4True);
-
-    sigma_hi = ideal_threshold_to_sigma(window_size_scaled, adaptp_ht, !total_scope,
-                                        high_test, threshold_hi);
-    sigma_lo = ideal_threshold_to_sigma(window_size_scaled, adaptp_ht, !total_scope,
-                                        low_test, threshold_lo);
+    rng_bit_enable = (ral.conf.rng_bit_enable.get_mirrored_value() == MuBi4True);
 
     value = calc_adaptp_test(window, maxval, minval);
-
     update_watermark("adaptp_lo", fips_mode, total_scope ? value : minval);
     update_watermark("adaptp_hi", fips_mode, total_scope ? value : maxval);
 
@@ -687,15 +669,29 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     fail_hi = check_threshold("adaptp_hi", fips_mode, total_scope ? value : maxval);
     if (fail_hi) predict_failure_logs("adaptp_hi");
 
-
     if (ht_is_active()) begin
-      cov_vif.cg_win_ht_sample(adaptp_ht, high_test, window_size_scaled * `RNG_BUS_WIDTH, fail_hi);
-      cov_vif.cg_win_ht_sample(adaptp_ht, low_test, window_size_scaled * `RNG_BUS_WIDTH, fail_lo);
-      cov_vif.cg_win_ht_deep_threshold_sample(adaptp_ht, high_test,
-                                              window_size_scaled * `RNG_BUS_WIDTH,
+      // The ideal_threshold_to_sigma() function expects the health test window size in bits. The
+      // bypass window is specified in bits. In contrast, the FIPS window is specified in symbols
+      // and the `rng_bit_enable` setting effectively manipulates the symbol size.
+      window_size = fips_mode ?
+          `gmv(ral.health_test_windows.fips_window) * (rng_bit_enable ? 1 : `RNG_BUS_WIDTH) :
+          `gmv(ral.health_test_windows.bypass_window);
+
+      threshold_hi = fips_mode ? `gmv(ral.adaptp_hi_thresholds.fips_thresh) :
+                                 `gmv(ral.adaptp_hi_thresholds.bypass_thresh);
+      threshold_lo = fips_mode ? `gmv(ral.adaptp_lo_thresholds.fips_thresh) :
+                                 `gmv(ral.adaptp_lo_thresholds.bypass_thresh);
+
+      sigma_hi = ideal_threshold_to_sigma(window_size, adaptp_ht, !total_scope,
+                                          rng_bit_enable, high_test, threshold_hi);
+      sigma_lo = ideal_threshold_to_sigma(window_size, adaptp_ht, !total_scope,
+                                          rng_bit_enable, low_test, threshold_lo);
+
+      cov_vif.cg_win_ht_sample(adaptp_ht, high_test, window_size, fail_hi);
+      cov_vif.cg_win_ht_sample(adaptp_ht, low_test, window_size, fail_lo);
+      cov_vif.cg_win_ht_deep_threshold_sample(adaptp_ht, high_test, window_size,
                                               !total_scope, sigma_hi, fail_hi);
-      cov_vif.cg_win_ht_deep_threshold_sample(adaptp_ht, low_test,
-                                              window_size_scaled * `RNG_BUS_WIDTH,
+      cov_vif.cg_win_ht_deep_threshold_sample(adaptp_ht, low_test, window_size,
                                               !total_scope, sigma_lo, fail_lo);
     end
 
@@ -708,22 +704,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int value;
     bit fail;
     bit any_fail = 0;
+    int window_size;
     int threshold;
     real sigma;
-
-    int window_size = fips_mode ? `gmv(ral.health_test_windows.fips_window) :
-                                  `gmv(ral.health_test_windows.bypass_window);
-
-    // If rng_bit_enable is set to MuBi4True, the window size is RNG_BUS_WIDTH times as large.
-    // We need the same number of bits but only have a single lane.
-    int window_size_scaled
-      = (`gmv(ral.conf.rng_bit_enable) == MuBi4True) ? `RNG_BUS_WIDTH*window_size :
-                                                       window_size;
-
-    threshold = fips_mode ? `gmv(ral.bucket_thresholds.fips_thresh) :
-                            `gmv(ral.bucket_thresholds.bypass_thresh);
-
-    sigma = ideal_threshold_to_sigma(window_size_scaled, bucket_ht, 0, high_test, threshold);
 
     test_result = calc_bucket_test(window);
     max_value = test_result.max()[0];
@@ -743,9 +726,21 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end
 
     if (ht_is_active()) begin
-      cov_vif.cg_win_ht_sample(bucket_ht, high_test, window_size_scaled*`RNG_BUS_WIDTH, any_fail);
-      cov_vif.cg_win_ht_deep_threshold_sample(bucket_ht, high_test,
-                                              window_size_scaled*`RNG_BUS_WIDTH,
+      // The ideal_threshold_to_sigma() function expects the health test window size in bits. The
+      // bypass window is specified in bits. In contrast, the FIPS window is specified in symbols
+      // and the `rng_bit_enable` setting effectively manipulates the symbol size.
+      window_size = fips_mode ?
+          `gmv(ral.health_test_windows.fips_window) *
+              (`gmv(ral.conf.rng_bit_enable) == MuBi4True ? 1 : `RNG_BUS_WIDTH) :
+          `gmv(ral.health_test_windows.bypass_window);
+
+      threshold = fips_mode ? `gmv(ral.bucket_thresholds.fips_thresh) :
+                              `gmv(ral.bucket_thresholds.bypass_thresh);
+
+      sigma = ideal_threshold_to_sigma(window_size, bucket_ht, 0, 0, high_test, threshold);
+
+      cov_vif.cg_win_ht_sample(bucket_ht, high_test, window_size, any_fail);
+      cov_vif.cg_win_ht_deep_threshold_sample(bucket_ht, high_test, window_size,
                                               1'b0, sigma, any_fail);
     end
 
@@ -756,33 +751,15 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int value, minval, maxval;
     bit fail_hi, fail_lo;
     bit total_scope;
+    bit rng_bit_enable;
+    int window_size;
     int threshold_hi, threshold_lo;
     real sigma_hi, sigma_lo;
 
-    int window_size = fips_mode ? `gmv(ral.health_test_windows.fips_window) :
-                                  `gmv(ral.health_test_windows.bypass_window);
-
-    // If rng_bit_enable is set to MuBi4True, the window size is `RNG_BUS_WIDTH times as large.
-    // We need the same number of bits but only have a single lane.
-    int window_size_scaled =
-      (`gmv(ral.conf.rng_bit_enable) == MuBi4True) ? `RNG_BUS_WIDTH*window_size :
-                                                     window_size;
-
-    threshold_hi = fips_mode ? `gmv(ral.markov_hi_thresholds.fips_thresh) :
-                               `gmv(ral.markov_hi_thresholds.bypass_thresh);
-
-    threshold_lo = fips_mode ? `gmv(ral.markov_lo_thresholds.fips_thresh) :
-                               `gmv(ral.markov_lo_thresholds.bypass_thresh);
-
     total_scope = (ral.conf.threshold_scope.get_mirrored_value() == MuBi4True);
-
-    sigma_hi = ideal_threshold_to_sigma(window_size_scaled, markov_ht, !total_scope,
-                                        high_test, threshold_hi);
-    sigma_lo = ideal_threshold_to_sigma(window_size_scaled, markov_ht, !total_scope,
-                                        low_test, threshold_lo);
+    rng_bit_enable = (ral.conf.rng_bit_enable.get_mirrored_value() == MuBi4True);
 
     value = calc_markov_test(window, maxval, minval);
-
     update_watermark("markov_lo", fips_mode, total_scope ? value : minval);
     update_watermark("markov_hi", fips_mode, total_scope ? value : maxval);
 
@@ -793,13 +770,28 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     if (fail_hi) predict_failure_logs("markov_hi");
 
     if (ht_is_active()) begin
-      cov_vif.cg_win_ht_sample(markov_ht, high_test, window_size_scaled*`RNG_BUS_WIDTH, fail_hi);
-      cov_vif.cg_win_ht_sample(markov_ht, low_test, window_size_scaled*`RNG_BUS_WIDTH, fail_lo);
-      cov_vif.cg_win_ht_deep_threshold_sample(markov_ht, high_test,
-                                              window_size_scaled*`RNG_BUS_WIDTH,
+      // The ideal_threshold_to_sigma() function expects the health test window size in bits. The
+      // bypass window is specified in bits. In contrast, the FIPS window is specified in symbols
+      // and the `rng_bit_enable` setting effectively manipulates the symbol size.
+      window_size = fips_mode ?
+          `gmv(ral.health_test_windows.fips_window) * (rng_bit_enable ? 1 : `RNG_BUS_WIDTH) :
+          `gmv(ral.health_test_windows.bypass_window);
+
+      threshold_hi = fips_mode ? `gmv(ral.markov_hi_thresholds.fips_thresh) :
+                                 `gmv(ral.markov_hi_thresholds.bypass_thresh);
+      threshold_lo = fips_mode ? `gmv(ral.markov_lo_thresholds.fips_thresh) :
+                                 `gmv(ral.markov_lo_thresholds.bypass_thresh);
+
+      sigma_hi = ideal_threshold_to_sigma(window_size, markov_ht, !total_scope,
+                                          rng_bit_enable, high_test, threshold_hi);
+      sigma_lo = ideal_threshold_to_sigma(window_size, markov_ht, !total_scope,
+                                          rng_bit_enable, low_test, threshold_lo);
+
+      cov_vif.cg_win_ht_sample(markov_ht, high_test, window_size, fail_hi);
+      cov_vif.cg_win_ht_sample(markov_ht, low_test, window_size, fail_lo);
+      cov_vif.cg_win_ht_deep_threshold_sample(markov_ht, high_test, window_size,
                                               !total_scope, sigma_hi, fail_hi);
-      cov_vif.cg_win_ht_deep_threshold_sample(markov_ht, low_test,
-                                              window_size_scaled*`RNG_BUS_WIDTH,
+      cov_vif.cg_win_ht_deep_threshold_sample(markov_ht, low_test, window_size,
                                               !total_scope, sigma_hi, fail_lo);
     end
 

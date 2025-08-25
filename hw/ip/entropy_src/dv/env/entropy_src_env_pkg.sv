@@ -250,6 +250,62 @@ package entropy_src_env_pkg;
     return random_fail_time;
   endfunction // randomize_failure_time
 
+  // Helper function to compute the approximated parameters of the distribution of test results
+  // based on the window size, the selected test, threshold_scope, and single- or multi-channel
+  // operation.
+  function automatic void approximate_distribution(int window_size, health_test_e test,
+                                                   bit per_line, bit rng_bit_enable,
+                                                   output int n, output real p,
+                                                   output real mean, output real stddev);
+
+    // The bucket health test is performed group wise to every 4 adjacent channels.
+    // If RNG_BUS_WIDTH is  larger than 4, the bucket health test gets instantiated multiple
+    // times, once per 4 channels.
+    int BucketHtDataWidth = entropy_src_pkg::bucket_ht_data_width(`RNG_BUS_WIDTH);
+    int NumBuckets = 2**BucketHtDataWidth;
+    int unsigned NumBucketHtInst = entropy_src_pkg::num_bucket_ht_inst(`RNG_BUS_WIDTH);
+
+    case(test)
+      adaptp_ht: begin
+        // When running in single-channel mode, a single line / counter observes all the trials.
+        // When accumulating all channels into a single score, the number of trials adds up as well.
+        // In contrast, we effectively reduce the number of trials when performing the test on a
+        // per-line basis.
+        n = rng_bit_enable || !per_line ? window_size : window_size / `RNG_BUS_WIDTH;
+        p = 0.5;
+      end
+      bucket_ht: begin
+        // The bucket health test is performed group wise. But the scoring is done at the group
+        // level, i.e., every group does n trials and we don't average across groups.
+        n = window_size / BucketHtDataWidth / NumBucketHtInst;
+        p = 1.0/real'(NumBuckets);
+      end
+      markov_ht: begin
+        // When running in single-channel mode, a single channel observes all the sample pairs.
+        // When accumulating all channels into a single score, the number of pairs adds up.
+        // In contrast, we effectively reduce teh number of pairs when performing the test on a
+        // per-line basis.
+        n = rng_bit_enable || !per_line ? window_size / 2 : window_size / 2 / `RNG_BUS_WIDTH;
+        p = 0.5;
+      end
+      default: begin
+        `dv_fatal("Invalid test!", "entropy_src_env_pkg::ideal_threshold_recommendation")
+      end
+    endcase
+
+    // The RNG sequence is assumed to be uniformly distributed at random. According to the central
+    // limit theorem (CLT), the distributions of the inidividual health tests converge to normal or
+    // rather binomial distributions (as we're dealing with discrete variables) under appropriate
+    // conditions (such as the health test window being sufficiently large).
+    //
+    // For binomial distributions, the mean and standard deviation can be approximated as follows
+    // (see https://en.wikipedia.org/wiki/Binomial_distribution#Normal_approximation):
+    mean   = p * n;
+    stddev = $sqrt(p * (1 - p) * n);
+
+    return;
+  endfunction
+
   //
   // Helper function: ideal_threshold_recommendation
   //
@@ -266,6 +322,8 @@ package entropy_src_env_pkg;
   // health_test_e test: the test to consider (adaptp_ht, bucket_ht, or markov_ht)
   // bit       per_line: set to 1 if the test is being evaluated on a per_line basis
   //                     (if 0, the range applies if the results are summed over all RNG lines)
+  // bit rng_bit_enable: set to 1 if single-channel mode is enabled
+  //                     (if 0, all channels of the RNG noise source are used)
   // which_ht_e  hi_low: which threshold to calculate, upper or lower.
   // real desired_sigma: the number of standard deviations to provide within the range.  Assuming
   //                     the window size is large enough to treat the test as normally distributed,
@@ -312,33 +370,14 @@ package entropy_src_env_pkg;
   // from the tabled values particularly for smaller window sizes and at higher sigma values.
 
   function automatic int ideal_threshold_recommendation(int window_size, health_test_e test,
-                                                        bit per_line, which_ht_e hi_low,
-                                                        real desired_sigma);
+                                                        bit per_line, bit rng_bit_enable,
+                                                        which_ht_e hi_low, real desired_sigma);
     int n;
     real p, mean, stddev;
     int result, upper_threshold, lower_threshold;
     string msg;
 
-    case(test)
-      adaptp_ht: begin
-        // number of trials is equal to number of bits, either in the whole window or per line
-        n = per_line ? (window_size / `RNG_BUS_WIDTH) : window_size;
-        p = 0.5;
-      end
-      bucket_ht: begin
-        n = (window_size / `RNG_BUS_WIDTH);
-        p = 1.0/real'(1 << `RNG_BUS_WIDTH);
-      end
-      markov_ht: begin
-        n = per_line ? (window_size / `RNG_BUS_WIDTH / 2) : window_size / 2;
-        p = 0.5;
-      end
-      default: begin
-        `dv_fatal("Invalid test!", "entropy_src_env_pkg::ideal_threshold_recommendation")
-      end
-    endcase
-    mean   = p * n;
-    stddev = $sqrt(p * (1 - p) * n);
+    approximate_distribution(window_size, test, per_line, rng_bit_enable, n, p, mean, stddev);
 
     lower_threshold = (test == bucket_ht) ? 0 : $floor(mean - desired_sigma * stddev);
     upper_threshold = $ceil(mean + desired_sigma * stddev);
@@ -355,6 +394,7 @@ package entropy_src_env_pkg;
         $sformatf("window_size: %d\n", window_size),
         $sformatf("test: %s\n", test.name()),
         $sformatf("per_line: %d\n", per_line),
+        $sformatf("rng_bit_enable: %d\n", rng_bit_enable),
         $sformatf("high or low: %s\n", hi_low.name()),
         $sformatf("desired sigma: %f\n", desired_sigma),
         $sformatf("n: %d, p: %f\n", n, p),
@@ -375,32 +415,13 @@ package entropy_src_env_pkg;
   // coverpoints. This function is effectively the inverse of ideal_threshold_recommendation.
   //
   function automatic real ideal_threshold_to_sigma(int window_size, health_test_e test,
-                                                  bit per_line, which_ht_e hi_low,
-                                                  int actual_threshold);
+                                                  bit per_line, bit rng_bit_enable,
+                                                  which_ht_e hi_low, int actual_threshold);
     int n;
     real p, mean, stddev;
     real result, offset;
 
-    case(test)
-      adaptp_ht: begin
-        // number of trials is equal to number of bits, either in the whole window or per line
-        n = per_line ? (window_size / `RNG_BUS_WIDTH) : window_size;
-        p = 0.5;
-      end
-      bucket_ht: begin
-        n = (window_size / `RNG_BUS_WIDTH);
-        p = 1.0/real'(1 << `RNG_BUS_WIDTH);
-      end
-      markov_ht: begin
-        n = per_line ? (window_size / `RNG_BUS_WIDTH / 2) : window_size / 2;
-        p = 0.5;
-      end
-      default: begin
-        `dv_fatal("Invalid test!", "entropy_src_env_pkg::ideal_threshold_recommendation")
-      end
-    endcase
-    mean   = p * n;
-    stddev = $sqrt(p * (1 - p) * n);
+    approximate_distribution(window_size, test, per_line, rng_bit_enable, n, p, mean, stddev);
 
     offset = actual_threshold - mean;
 
