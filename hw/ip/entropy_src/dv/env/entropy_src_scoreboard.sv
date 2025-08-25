@@ -361,7 +361,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     parameter int unsigned NumBucketHtInst = entropy_src_pkg::num_bucket_ht_inst(`RNG_BUS_WIDTH);
 
     bucket_test_result result;
-    int sum = 0;
     int buckets [][];
 
     // Init 2D array
@@ -705,8 +704,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   function bit evaluate_bucket_test(queue_of_rng_val_t window, bit fips_mode);
     bucket_test_result test_result;
+    int max_value;
     int value;
-    int sum = 0;
     bit fail;
     bit any_fail = 0;
     int threshold;
@@ -727,11 +726,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     sigma = ideal_threshold_to_sigma(window_size_scaled, bucket_ht, 0, high_test, threshold);
 
     test_result = calc_bucket_test(window);
-
-    for (int i = 0; i < test_result.size(); i++) begin
-      sum = sum + test_result[i];
-    end
-    update_watermark("bucket", fips_mode, sum);
+    max_value = test_result.max()[0];
+    update_watermark("bucket", fips_mode, max_value);
 
     for (int i = 0; i < test_result.size(); i++) begin
       value = test_result[i];
