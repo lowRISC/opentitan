@@ -232,7 +232,7 @@ class csrng_base_vseq extends cip_base_vseq #(
     bit    val_push, val_full, val_data, val_pop, val_not_empty;
     case (case_state)
       fifo_write: begin // fifo write err
-        index1     = path_exts.find_index(x) with (x == "push");
+        index1     = path_exts.find_index(x) with (x == "wvld");
         index2     = path_exts.find_index(x) with (x == "full");
         index3     = path_exts.find_index(x) with (x == "wdata");
         path_push  = paths[index1[0]];
@@ -245,8 +245,8 @@ class csrng_base_vseq extends cip_base_vseq #(
                                  exp_data);
       end
       fifo_read: begin // fifo read err
-        index1         = path_exts.find_index(x) with (x == "pop");
-        index2         = path_exts.find_index(x) with (x == "not_empty");
+        index1         = path_exts.find_index(x) with (x == "rrdy");
+        index2         = path_exts.find_index(x) with (x == "rvld");
         index3         = path_exts.find_index(x) with (x == "rdata");
         path_pop       = paths[index1[0]];
         path_not_empty = paths[index2[0]];
@@ -258,7 +258,7 @@ class csrng_base_vseq extends cip_base_vseq #(
       end
       fifo_state: begin // fifo state err
         index1         = path_exts.find_index(x) with (x == "full");
-        index2         = path_exts.find_index(x) with (x == "not_empty");
+        index2         = path_exts.find_index(x) with (x == "rvld");
         path_full      = paths[index1[0]];
         path_not_empty = paths[index2[0]];
         val_full       = values[index1[0]];
@@ -278,7 +278,7 @@ class csrng_base_vseq extends cip_base_vseq #(
     bit    val_push, val_full, val_pop, val_not_empty;
     case (case_state)
       fifo_write: begin // fifo write err
-        index1     = path_exts.find_index(x) with (x == "push");
+        index1     = path_exts.find_index(x) with (x == "wvld");
         index2     = path_exts.find_index(x) with (x == "full");
         path_push  = paths[index1[0]];
         path_full  = paths[index2[0]];
@@ -287,8 +287,8 @@ class csrng_base_vseq extends cip_base_vseq #(
         force_fifo_err(path_push, path_full, val_push, val_full, reg_field, exp_data);
       end
       fifo_read: begin // fifo read err
-        index1         = path_exts.find_index(x) with (x == "pop");
-        index2         = path_exts.find_index(x) with (x == "not_empty");
+        index1         = path_exts.find_index(x) with (x == "rrdy");
+        index2         = path_exts.find_index(x) with (x == "rvld");
         path_pop       = paths[index1[0]];
         path_not_empty = paths[index2[0]];
         val_pop        = values[index1[0]];
@@ -298,7 +298,7 @@ class csrng_base_vseq extends cip_base_vseq #(
       end
       fifo_state: begin // fifo state err
         index1         = path_exts.find_index(x) with (x == "full");
-        index2         = path_exts.find_index(x) with (x == "not_empty");
+        index2         = path_exts.find_index(x) with (x == "rvld");
         path_full      = paths[index1[0]];
         path_not_empty = paths[index2[0]];
         val_full       = values[index1[0]];
