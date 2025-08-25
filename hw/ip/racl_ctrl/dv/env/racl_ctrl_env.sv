@@ -14,6 +14,7 @@ class racl_ctrl_env extends cip_base_env #(.CFG_T              (racl_ctrl_env_cf
 
   extern function new (string name="", uvm_component parent=null);
   extern function void build_phase(uvm_phase phase);
+  extern function void connect_phase(uvm_phase phase);
 endclass
 
 function racl_ctrl_env::new (string name="", uvm_component parent=null);
@@ -45,4 +46,11 @@ function void racl_ctrl_env::build_phase(uvm_phase phase);
   // Create tha agents
   internal_error_agent = racl_error_log_agent::type_id::create("internal_error_agent", this);
   external_error_agent = racl_error_log_agent::type_id::create("external_error_agent", this);
+endfunction
+
+function void racl_ctrl_env::connect_phase(uvm_phase phase);
+  super.connect_phase(phase);
+
+  internal_error_agent.errors_seen.connect(scoreboard.internal_errors_export);
+  external_error_agent.errors_seen.connect(scoreboard.external_errors_export);
 endfunction
