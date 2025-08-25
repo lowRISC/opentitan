@@ -48,19 +48,6 @@ header_suffix = (top["name"] + addr_space_suffix).upper()
   % endif
 % endfor
 
-% for m in top["memory"]:
-/**
- * Memory base address for ${m["name"]} in top ${top["name"]}.
- */
-#define TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR ${m["base_addr"][addr_space]}
-
-/**
- * Memory size for ${m["name"]} in top ${top["name"]}.
- */
-#define TOP_${top["name"].upper()}_${m["name"].upper()}_SIZE_BYTES ${m["size"]}
-
-% endfor
-
 % for (inst_name, if_name), region in helper.devices(addr_space):
 <%
     if_desc = inst_name if if_name is None else '{} device on {}'.format(if_name, inst_name)
