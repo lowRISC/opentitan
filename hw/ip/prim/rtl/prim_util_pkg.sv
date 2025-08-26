@@ -63,6 +63,28 @@ package prim_util_pkg;
     ceil_div = ((dividend % divisor) != 0) ? (dividend / divisor) + 1 : (dividend / divisor);
   endfunction
 
+  // The lack of parametrized function arguments in SystemVerilog means that a maximum width of the
+  // `countones` input has to be fixed.
+  parameter int MaxCountOnesWidth = 1024;
+  parameter int MaxCountOnesBits  = $clog2(MaxCountOnesWidth+1);
+
+  /**
+   * Count the number of set bits in a word.
+   *
+   * Effectively implements `$countones` which is not supported by all tools.
+   *
+   * @param word The input whose set bits are being counted
+   * @return The number of set bits in `word`.
+   */
+  function automatic logic [MaxCountOnesBits-1:0] count_ones(
+      input logic [MaxCountOnesWidth-1:0] word);
+    logic [MaxCountOnesBits-1:0] count = '0;
+    for (int i = 0; i < MaxCountOnesWidth; i++) begin
+      count = count + MaxCountOnesBits'(word[i]);
+    end
+    return count;
+  endfunction
+
 `ifdef INC_ASSERT
   // Package-scoped variable to detect the end of simulation.
   //
