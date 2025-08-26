@@ -295,7 +295,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [FullRegWidth-1:0] bucket_total_fails;
   logic [EighthRegWidth-1:0]  bucket_fail_count;
   logic [NumBucketHtInst-1:0] bucket_fail_pulse;
-  logic [prim_util_pkg::vbits(NumBucketHtInst)-1:0] bucket_fail_pulse_step;
+  logic [prim_util_pkg::vbits(NumBucketHtInst+1)-1:0] bucket_fail_pulse_step;
   logic                      bucket_fails_cntr_err;
   logic                      bucket_alert_cntr_err;
 
