@@ -112,7 +112,13 @@ function void racl_ctrl_scoreboard::check_policies();
 
   for (int unsigned i = 0; i < regs.size(); i++) begin
     logic [31:0] seen     = cfg.policies_vif.get_policy(i);
-    logic [31:0] expected = cfg.regs.get_policy(i);
+    logic [31:0] expected = regs[i].get_mirrored_value();
+
+    // If the register is currently marked as busy, that means something is currently reading or
+    // writing it. If it's a write, we may not yet have updated the prediction to match the value
+    // that is being written. Skip the check in this case. Note that we won't miss a mismatch: the
+    // watch_policies task will call us again on the next clock edge.
+    if (regs[i].is_busy()) continue;
 
     if (seen !== expected) begin
       `uvm_error(`gfn, $sformatf("Policy output mismatch for index %0d: seen %0x; expected %0x",
