@@ -413,6 +413,7 @@ cc_test(
     srcs = ["shutdown_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":shutdown"),
+        "//hw/top:dt",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
