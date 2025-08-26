@@ -278,18 +278,24 @@ status_t aes_update(aes_block_t *dest, const aes_block_t *src) {
     HARDENED_TRY(spin_until(AES_STATUS_OUTPUT_VALID_BIT));
 
     uint32_t offset = kBase + AES_DATA_OUT_0_REG_OFFSET;
-    for (size_t i = 0; i < ARRAYSIZE(dest->data); ++i) {
+    size_t i;
+    for (i = 0; launder32(i) < ARRAYSIZE(dest->data); ++i) {
       dest->data[i] = abs_mmio_read32(offset + i * sizeof(uint32_t));
     }
+    // Check that the loop ran for the correct number of iterations.
+    HARDENED_CHECK_EQ(i, ARRAYSIZE(dest->data));
   }
 
   if (src != NULL) {
     HARDENED_TRY(spin_until(AES_STATUS_INPUT_READY_BIT));
 
     uint32_t offset = kBase + AES_DATA_IN_0_REG_OFFSET;
-    for (size_t i = 0; i < ARRAYSIZE(src->data); ++i) {
+    size_t i;
+    for (i = 0; launder32(i) < ARRAYSIZE(src->data); ++i) {
       abs_mmio_write32(offset + i * sizeof(uint32_t), src->data[i]);
     }
+    // Check that the loop ran for the correct number of iterations.
+    HARDENED_CHECK_EQ(i, ARRAYSIZE(src->data));
   }
 
   return OTCRYPTO_OK;
@@ -304,9 +310,12 @@ status_t aes_end(aes_block_t *iv) {
   if (iv != NULL) {
     // Read back the current IV from the hardware.
     uint32_t iv_offset = kBase + AES_IV_0_REG_OFFSET;
-    for (size_t i = 0; i < ARRAYSIZE(iv->data); ++i) {
+    size_t i;
+    for (i = 0; launder32(i) < ARRAYSIZE(iv->data); ++i) {
       iv->data[i] = abs_mmio_read32(iv_offset + i * sizeof(uint32_t));
     }
+    // Check that the loop ran for the correct number of iterations.
+    HARDENED_CHECK_EQ(i, ARRAYSIZE(iv->data));
   }
 
   uint32_t trigger_reg = 0;
