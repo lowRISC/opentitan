@@ -58,8 +58,8 @@ testing_utilities_t *testing_utilities = NULL;
 
 void ret_sram_testutils_init(void) {
   testing_utilities =
-      (testing_utilities_t *)(dt_sram_ctrl_reg_block(kDtSramCtrlRetAon,
-                                                     kDtSramCtrlRegBlockRam) +
+      (testing_utilities_t *)(dt_sram_ctrl_memory_base(kDtSramCtrlRetAon,
+                                                       kDtSramCtrlMemoryRam) +
                               kOffsetOfTestutils);
 }
 

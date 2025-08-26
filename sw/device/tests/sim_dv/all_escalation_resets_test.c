@@ -1157,7 +1157,7 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
     // Send host request to trigger host grant from flash_ctrl.
     mmio_region_memcpy_from_mmio32(
         mmio_region_from_addr(
-            dt_flash_ctrl_reg_block(kFlashCtrlDt, kDtFlashCtrlRegBlockMem)),
+            dt_flash_ctrl_memory_base(kFlashCtrlDt, kDtFlashCtrlMemoryMem)),
         FLASH_CTRL_PARAM_BYTES_PER_BANK, &host_data, kNumTestBytes);
   }
 #elif defined(OPENTITAN_IS_DARJEELING)
@@ -1220,7 +1220,7 @@ void check_alert_dump(void) {
 bool test_main(void) {
   // Retrieve the SRAM Ret Start address from the DT
   kSramRetStart =
-      dt_sram_ctrl_reg_block(kDtSramCtrlRetAon, kDtSramCtrlRegBlockRam);
+      dt_sram_ctrl_memory_base(kDtSramCtrlRetAon, kDtSramCtrlMemoryRam);
 
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);
