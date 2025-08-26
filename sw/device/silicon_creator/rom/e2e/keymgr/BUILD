@@ -72,7 +72,7 @@ rom_e2e_keymgr_init_configs = [
             otp = ":otp_img_keymgr_{}".format(config["name"]),
             rom = "//sw/device/silicon_creator/rom:mask_rom",
         ),
-        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:sim_dv": None,

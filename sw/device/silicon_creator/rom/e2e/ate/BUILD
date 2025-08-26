@@ -17,7 +17,7 @@ opentitan_binary(
     name = "ate_gpio_toggle_test",
     testonly = True,
     srcs = ["ate_gpio_toggle_test.c"],
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
         "//hw/top_earlgrey:silicon_creator": None,

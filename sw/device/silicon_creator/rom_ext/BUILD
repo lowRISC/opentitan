@@ -33,9 +33,9 @@ signature_test(
     srcs = [
         ":signed_spx_binaries",
     ],
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
     spx_domain = "Pure",  # "Pure", "PrehashedSha256"
-    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx_key": "prod_spx_0"},
+    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
 )
 
 string_flag(
@@ -299,7 +299,7 @@ manifest(d = {
         name = "rom_ext_{}_slot_{}".format(variation_name, slot),
         testonly = True,
         # TODO(#22780): Integrate real keys for A1 flows.
-        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
         exec_env = [
             "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
@@ -313,7 +313,7 @@ manifest(d = {
         ],
         linker_script = ":ld_slot_{}".format(slot),
         manifest = ":manifest",
-        spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+        spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
         deps = [
             ":rom_ext_{}".format(variation_name),
             "//sw/device/lib/crt",
@@ -332,7 +332,7 @@ manifest(d = {
     opentitan_binary(
         name = "rom_ext_{}".format(name),
         testonly = True,
-        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
         exec_env = [
             "//hw/top_earlgrey:fpga_cw340",
             "//hw/top_earlgrey:fpga_cw310",
@@ -364,7 +364,7 @@ manifest(d = {
 opentitan_binary(
     name = "rom_ext_dice_x509_slot_a_bad_address_translation",
     testonly = True,
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "test_key_0"},
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
