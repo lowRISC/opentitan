@@ -19,10 +19,6 @@ class racl_ctrl_reg_window extends uvm_object;
   // Get the policy registers, writing them into a queue (a bit like uvm_reg_block::get_registers)
   extern function void get_policy_registers (ref dv_base_reg regs[$]);
 
-  // Get the policy with the given index, returning it as a 32-bit value (padded at the top with
-  // zeros)
-  extern function bit[31:0] get_policy(int unsigned idx);
-
   // Return true if register is one of the policy registers
   extern function bit is_policy_reg(uvm_reg register);
 endclass
@@ -72,14 +68,6 @@ endfunction
 
 function void racl_ctrl_reg_window::get_policy_registers (ref dv_base_reg regs[$]);
   foreach (policy_regs[i]) regs.push_back(policy_regs[i]);
-endfunction
-
-function bit[31:0] racl_ctrl_reg_window::get_policy(int unsigned idx);
-  if (idx >= policy_regs.size()) begin
-    `uvm_error(`gfn, $sformatf("Invalid policy index (%0d >= %0d)", idx, policy_regs.size()))
-    return 0;
-  end
-  return policy_regs[idx].get_mirrored_value();
 endfunction
 
 function bit racl_ctrl_reg_window::is_policy_reg(uvm_reg register);
