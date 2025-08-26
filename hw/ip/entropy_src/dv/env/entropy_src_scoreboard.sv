@@ -205,6 +205,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     FWOVDisable
   } reset_event_e;
 
+  typedef int bucket_test_result[$];
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -353,12 +355,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end
   endfunction
 
-  function int calc_bucket_test(queue_of_rng_val_t window);
+  function bucket_test_result calc_bucket_test(queue_of_rng_val_t window);
     parameter int BucketHtDataWidth = entropy_src_pkg::bucket_ht_data_width(`RNG_BUS_WIDTH);
     parameter int NumBuckets = 2**BucketHtDataWidth;
     parameter int unsigned NumBucketHtInst = entropy_src_pkg::num_bucket_ht_inst(`RNG_BUS_WIDTH);
 
-    int result[$];
+    bucket_test_result result;
     int sum = 0;
     int buckets [][];
 
@@ -384,14 +386,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end
     end
 
-    for (int j = 0; j < NumBucketHtInst; j++) begin
-      result = buckets[j].max();
-      sum += result[0];
+    for (int i = 0; i < NumBucketHtInst; i++) begin
+      result.push_back(buckets[i].max()[0]);
+      `uvm_info(`gfn, $sformatf("Bucket test. result[%0d] = %0d", i, result[i]), UVM_FULL)
     end
 
-    `uvm_info(`gfn, $sformatf("Bucket test. max value: %02h", sum), UVM_FULL)
-
-    return sum;
+    return result;
   endfunction
 
   function int calc_markov_test(queue_of_rng_val_t window, output int maxval, output int minval);
@@ -526,7 +526,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // this routine does not update alert_summary_fail_counts
   //
 
-  function void predict_failure_logs(string test);
+  function void predict_failure_logs(string test, bit update_alert_cnt = 1);
     string        total_fail_reg_name;
     string        total_fail_field_name;
     string        alert_cnt_reg_name;
@@ -563,7 +563,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     alert_cnt  =  alert_cnt_field.get_mirrored_value();
 
     // Update the predicted failure counters, noting that the DUT will not let these overflow
-    alert_cnt  += (&alert_cnt)  ? 0 : 1;
+    if (update_alert_cnt) begin
+      alert_cnt += (&alert_cnt) ? 0 : 1;
+    end
     fail_total += (&fail_total) ? 0 : 1;
 
     fmt = "Previous alert cnt reg: %08h";
@@ -702,8 +704,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   endfunction
 
   function bit evaluate_bucket_test(queue_of_rng_val_t window, bit fips_mode);
+    bucket_test_result test_result;
     int value;
+    int sum = 0;
     bit fail;
+    bit any_fail = 0;
     int threshold;
     real sigma;
 
@@ -721,18 +726,31 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     sigma = ideal_threshold_to_sigma(window_size_scaled, bucket_ht, 0, high_test, threshold);
 
-    value = calc_bucket_test(window);
+    test_result = calc_bucket_test(window);
 
-    update_watermark("bucket", fips_mode, value);
+    for (int i = 0; i < test_result.size(); i++) begin
+      sum = sum + test_result[i];
+    end
+    update_watermark("bucket", fips_mode, sum);
 
-    fail = check_threshold("bucket", fips_mode, value);
-    if (fail) predict_failure_logs("bucket");
+    for (int i = 0; i < test_result.size(); i++) begin
+      value = test_result[i];
+      fail = check_threshold("bucket", fips_mode, value);
+      if (fail) begin
+        // The bucket fail counter counts the total number of bucket test failures, where the
+        // results of different bucket test instances are accumulated. In contrast, the alert
+        // failure counter merges the results of the different groups together. If multiple
+        // instances fail, it just increments by one.
+        predict_failure_logs("bucket", !any_fail);
+        any_fail = 1;
+      end
+    end
 
     if (ht_is_active()) begin
-      cov_vif.cg_win_ht_sample(bucket_ht, high_test, window_size_scaled*`RNG_BUS_WIDTH, fail);
+      cov_vif.cg_win_ht_sample(bucket_ht, high_test, window_size_scaled*`RNG_BUS_WIDTH, any_fail);
       cov_vif.cg_win_ht_deep_threshold_sample(bucket_ht, high_test,
                                               window_size_scaled*`RNG_BUS_WIDTH,
-                                              1'b0, sigma, fail);
+                                              1'b0, sigma, any_fail);
     end
 
     return fail;
