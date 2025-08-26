@@ -6,6 +6,7 @@ load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "opentitan_if_ip", "opentitan_select_top")
 load("//rules:autogen.bzl", "autogen_chip_info")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
@@ -16,6 +17,7 @@ load(
     "opentitan_test",
     "verilator_params",
 )
+load("//rules/opentitan:util.bzl", "flatten")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -353,6 +355,15 @@ dual_cc_library(
         host = ["mock_shutdown.h"],
         shared = ["shutdown.h"],
     ),
+    defines = opentitan_if_ip(
+        "flash_ctrl",
+        ["HAS_FLASH_CTRL"],
+        [],
+    ) + opentitan_if_ip(
+        "keymgr",
+        ["HAS_KEYMGR"],
+        [],
+    ),
     deps = dual_inputs(
         host = [
             "//sw/device/lib/base:global_mock",
@@ -364,19 +375,17 @@ dual_cc_library(
             ":error",
             ":epmp_defs",
             ":stack_utilization",
+            "//hw/top:dt",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
-            "//hw/top:keymgr_c_regs",
             "//hw/top:lc_ctrl_c_regs",
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top:rv_core_ibex_c_regs",
             "//hw/top:sram_ctrl_c_regs",
             "//hw/top:uart_c_regs",
             "//hw/top:alert_handler_c_regs",
-            "//hw/top:flash_ctrl_c_regs",
             "//hw/top:rstmgr_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/silicon_creator/lib/drivers:retention_sram",
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:abs_mmio",
@@ -387,7 +396,15 @@ dual_cc_library(
             "//sw/device/lib/base:stdasm",
             "//sw/device/silicon_creator/lib/drivers:alert",
             "//sw/device/silicon_creator/lib/drivers:otp",
-        ],
+        ] + opentitan_if_ip(
+            "flash_ctrl",
+            [dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl")],
+            [],
+        ) + opentitan_if_ip(
+            "keymgr",
+            ["//sw/device/silicon_creator/lib/drivers:keymgr"],
+            [],
+        ),
     ),
 )
 
