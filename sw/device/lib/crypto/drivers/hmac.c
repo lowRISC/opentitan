@@ -181,10 +181,8 @@ static void clear(void) {
  * @param key_wordlen The length of the key in words.
  */
 static void key_write(const uint32_t *key, size_t key_wordlen) {
-  for (size_t i = 0; i < key_wordlen; i++) {
-    abs_mmio_write32(
-        kHmacBaseAddr + HMAC_KEY_0_REG_OFFSET + sizeof(uint32_t) * i, key[i]);
-  }
+  uint32_t key_reg = kHmacBaseAddr + HMAC_KEY_0_REG_OFFSET;
+  hardened_memcpy((uint32_t *)key_reg, key, key_wordlen);
 }
 
 /**
