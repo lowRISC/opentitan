@@ -87,22 +87,14 @@ task racl_ctrl_scoreboard::process_tl_access(tl_seq_item item,
     `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
   end
 
-  // if incoming access is a write to a valid csr, then make updates right away
-  if (addr_phase_write) begin
-    void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
-  end
-
   // If this is the D channel response for a write to one of the policy registers, check that it has
   // been applied to racl_policies_o.
   if (data_phase_write && cfg.regs.is_policy_reg(csr)) check_policies();
 
   // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
-  if (data_phase_read) begin
-    if (do_read_check) begin
-      `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
-                   $sformatf("reg name: %0s", csr.get_full_name()))
-    end
-    void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+  if (data_phase_read && do_read_check) begin
+    `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
+                 $sformatf("reg name: %0s", csr.get_full_name()))
   end
 endtask
 
