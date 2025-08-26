@@ -7,6 +7,7 @@ load(
     "doxygen",
     "doxygen_gather_cc",
     "doxygen_multitop",
+    "doxygen_tar",
 )
 load("@rules_rust_mdbook//:defs.bzl", "mdbook", "mdbook_server")
 
@@ -37,6 +38,12 @@ doxygen_gather_cc(
 doxygen_multitop(
     name = "doxygen_srcs_multitop",
     src = ":doxygen_srcs",
+)
+
+doxygen_tar(
+    name = "doxygen_gen_srcs_tar",
+    srcs = [":doxygen_srcs_multitop"],
+    only_generated = True,
 )
 
 doxygen(
