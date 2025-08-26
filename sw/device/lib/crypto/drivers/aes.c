@@ -185,26 +185,31 @@ static status_t aes_begin(aes_key_t key, const aes_block_t *iv,
 
   // Translate the key length to the hardware-encoding value and write the
   // control reg field.
+  size_t key_len_written;
   switch (key.key_len) {
     case kAesKeyWordLen128:
       ctrl_reg =
           bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
                                  AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_128);
+      key_len_written = launder32(kAesKeyWordLen128);
       break;
     case kAesKeyWordLen192:
       ctrl_reg =
           bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
                                  AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_192);
+      key_len_written = launder32(kAesKeyWordLen192);
       break;
     case kAesKeyWordLen256:
       ctrl_reg =
           bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
                                  AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_256);
+      key_len_written = launder32(kAesKeyWordLen256);
       break;
     default:
       // Invalid value.
       return OTCRYPTO_BAD_ARGS;
   }
+  HARDENED_CHECK_EQ(key_len_written, key.key_len);
 
   // Never enable manual operation.
   ctrl_reg = bitfield_bit32_write(
@@ -229,6 +234,10 @@ static status_t aes_begin(aes_key_t key, const aes_block_t *iv,
       abs_mmio_write32(iv_offset + i * sizeof(uint32_t), iv->data[i]);
     }
   }
+
+  // Read back the AES configuration and compare to the expected configuration.
+  HARDENED_CHECK_EQ(abs_mmio_read32(kBase + AES_CTRL_SHADOWED_REG_OFFSET),
+                    launder32(ctrl_reg));
 
   // Check that AES is ready to receive input data.
   uint32_t status = abs_mmio_read32(kBase + AES_STATUS_REG_OFFSET);
