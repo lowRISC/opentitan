@@ -16,6 +16,10 @@
 #ifndef ${include_guard}
 #define ${include_guard}
 
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 /**
  * @file
  * @brief Device Tables (DT) for IP ${device_name} and top ${top_name}.
@@ -272,5 +276,9 @@ dt_reset_t dt_${device_name}_reset(
 
 ## Extension
 ${helper.render_extension(Extension.DtIpPos.HeaderEnd)}
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 #endif  // ${include_guard}
