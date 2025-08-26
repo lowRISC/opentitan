@@ -113,7 +113,7 @@ static void test_kmac_key_sideload(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
 
   if (!test_phase) {
     uint32_t sram_start =
-        dt_sram_ctrl_reg_block(kDtSramCtrlRetAon, kDtSramCtrlRegBlockRam);
+        dt_sram_ctrl_memory_base(kDtSramCtrlRetAon, kDtSramCtrlMemoryRam);
     // In test phase 0, store the KMAC digest into the retention SRAM.
     for (size_t it = 0; it < ARRAYSIZE(kKmacModes); it++) {
       // Use offsetof(retention_sram_t, owner) + 4 to avoid overwriting
@@ -161,7 +161,7 @@ static void test_kmac_key_sideload(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
     // In test phase 1, read the previous KMAC digests from the retention SRAM
     // and compare them with the calculated ones.
     uint32_t sram_start =
-        dt_sram_ctrl_reg_block(kDtSramCtrlRetAon, kDtSramCtrlRegBlockRam);
+        dt_sram_ctrl_memory_base(kDtSramCtrlRetAon, kDtSramCtrlMemoryRam);
     for (size_t it = 0; it < ARRAYSIZE(kKmacModes); it++) {
       uint32_t prev_digest[kKmacOutputLen];
       memcpy(prev_digest,
