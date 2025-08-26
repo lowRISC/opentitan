@@ -21,7 +21,7 @@ signature_test(
 signature_test(
     name = "wrong_ecdsa_key_test",
     srcs = ["//sw/device/silicon_creator/rom_ext:signed_spx_binaries"],
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:dev_key_0_ecdsa_p256": "dev_key_0"},
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "dev_key_0"},
     negative_test = True,
 )
 
@@ -29,7 +29,7 @@ signature_test(
     name = "wrong_spx_key_test",
     srcs = ["//sw/device/silicon_creator/rom_ext:signed_spx_binaries"],
     negative_test = True,
-    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:dev_key_0_spx": "dev_key_0"},
+    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "dev_key_0"},
 )
 
 signature_test(
@@ -37,8 +37,8 @@ signature_test(
     srcs = [
         "//sw/device/silicon_creator/rom_ext:signed_spx_binaries",
     ],
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
     negative_test = True,
     spx_domain = "PrehashedSha256",  # "Pure", "PrehashedSha256"
-    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx_key": "prod_spx_0"},
+    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
 )

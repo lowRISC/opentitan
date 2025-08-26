@@ -269,7 +269,7 @@ cc_library(
 opentitan_test(
     name = "personalize_functest",
     srcs = ["personalize_functest.c"],
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:dev_key_0_ecdsa_p256": "dev_key_0"},
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "dev_key_0"},
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
@@ -286,7 +286,7 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/manuf/personalize_functest",
     ),
-    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:dev_key_0_spx": "dev_key_0"},
+    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "dev_key_0"},
     deps = [
         ":flash_info_fields",
         ":personalize",

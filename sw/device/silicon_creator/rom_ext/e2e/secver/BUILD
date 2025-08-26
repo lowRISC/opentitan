@@ -76,7 +76,7 @@ _TEST_ROM_EXTS = {
     opentitan_binary(
         name = "rom_ext_{}".format(name),
         testonly = True,
-        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
         exec_env = [
             "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
@@ -87,7 +87,7 @@ _TEST_ROM_EXTS = {
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_virtual",
         manifest = param["manifest"],
-        spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+        spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
         deps = [
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",

@@ -23,7 +23,7 @@ offline_presigning_artifacts(
     # This is left as a fake key so that the presigning artifacts will be
     # appropriate for the `fake_sign` rule below.
     ecdsa_key = {
-        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "fake_test_key_0",
+        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "test_key_0",
     },
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     tags = ["manual"],
@@ -46,7 +46,7 @@ offline_fake_ecdsa_sign(
     testonly = True,
     srcs = [":presigning"],
     ecdsa_key = {
-        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "fake_test_key_0",
+        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "test_key_0",
     },
     tags = ["manual"],
 )
