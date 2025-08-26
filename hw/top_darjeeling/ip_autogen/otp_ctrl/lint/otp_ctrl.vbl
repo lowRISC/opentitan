@@ -6,3 +6,4 @@
 
 # waive long line violations in generated code
 waive --rule=line-length --location="otp_ctrl_part_pkg.sv"
+waive --rule=line-length --location="top_.*_rnd_cnst_pkg.*"
