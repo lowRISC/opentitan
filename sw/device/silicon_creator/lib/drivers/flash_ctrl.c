@@ -450,7 +450,7 @@ rom_error_t flash_ctrl_data_erase_verify(uint32_t addr,
   uint32_t mask = kFlashCtrlErasedWord;
   size_t i = 0, r = byte_count - 1;
   uint32_t mem_base =
-      dt_flash_ctrl_reg_block(kFlashCtrlDt, kDtFlashCtrlRegBlockMem);
+      dt_flash_ctrl_memory_base(kFlashCtrlDt, kDtFlashCtrlMemoryMem);
   for (; launder32(i) < byte_count && launder32(r) < byte_count;
        i += sizeof(uint32_t), r -= sizeof(uint32_t)) {
     uint32_t word = abs_mmio_read32(mem_base + addr + i);

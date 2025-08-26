@@ -56,7 +56,7 @@ typedef struct {
 
 static void retention_sram_check(check_config_t config) {
   uintptr_t ret_sram_owner_addr =
-      dt_sram_ctrl_reg_block(kRetSramCtrlDt, kDtSramCtrlRegBlockRam) +
+      dt_sram_ctrl_memory_base(kRetSramCtrlDt, kDtSramCtrlMemoryRam) +
       offsetof(retention_sram_t, owner);
 
   if (config.do_write) {

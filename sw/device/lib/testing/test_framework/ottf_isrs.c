@@ -79,16 +79,10 @@ void ottf_generic_fault_print(uint32_t *exc_info, const char *reason,
     uint32_t *sp = exc_info + kExcWords;
     base_printf("\n");
     uint32_t ram_base_addr =
-        dt_sram_ctrl_reg_block(kDtSramCtrlMain, kDtSramCtrlRegBlockRam);
+        dt_sram_ctrl_memory_base(kDtSramCtrlMain, kDtSramCtrlMemoryRam);
     uint32_t *ram_start = (uint32_t *)ram_base_addr;
-    // FIXME replace this with DT when possible.
-#if defined(OPENTITAN_IS_EARLGREY)
-    uint32_t ram_size = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES;
-#elif defined(OPENTITAN_IS_DARJEELING)
-    uint32_t ram_size = TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES;
-#else
-#error unsupported top
-#endif
+    uint32_t ram_size =
+        dt_sram_ctrl_memory_size(kDtSramCtrlMain, kDtSramCtrlMemoryRam);
     uint32_t *ram_end = (uint32_t *)(ram_base_addr + ram_size);
 
     extern const char _text_start[], _text_end[];
