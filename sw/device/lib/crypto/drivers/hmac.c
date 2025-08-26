@@ -232,11 +232,14 @@ static void context_restore(hmac_ctx_t *ctx) {
 
     // For SHA-256 and HMAC-256, we do not need to write to the second half of
     // DIGEST registers, but we do it anyway to keep the driver simple.
-    for (size_t i = 0; i < kHmacMaxDigestWords; i++) {
+    size_t i = 0;
+    for (; launder32(i) < kHmacMaxDigestWords; i++) {
       abs_mmio_write32(
           kHmacBaseAddr + HMAC_DIGEST_0_REG_OFFSET + sizeof(uint32_t) * i,
           ctx->H[i]);
     }
+    // Check that the loop ran for the correct number of iterations.
+    HARDENED_CHECK_EQ(i, kHmacMaxDigestWords);
     abs_mmio_write32(kHmacBaseAddr + HMAC_MSG_LENGTH_LOWER_REG_OFFSET,
                      ctx->lower);
     abs_mmio_write32(kHmacBaseAddr + HMAC_MSG_LENGTH_UPPER_REG_OFFSET,
@@ -282,21 +285,25 @@ static void msg_fifo_write(const uint8_t *message, size_t message_len) {
   // TODO(#23191): Should we handle backpressure here?
   // Begin by writing a one byte at a time until the data is aligned.
   size_t i = 0;
-  for (; misalignment32_of((uintptr_t)(&message[i])) > 0 && i < message_len;
+  for (; misalignment32_of((uintptr_t)(&message[i])) > 0 &&
+         launder32(i) < message_len;
        i++) {
     abs_mmio_write8(kHmacBaseAddr + HMAC_MSG_FIFO_REG_OFFSET, message[i]);
   }
 
   // Write one word at a time as long as there is a full word available.
-  for (; i + sizeof(uint32_t) <= message_len; i += sizeof(uint32_t)) {
+  for (; launder32(i + sizeof(uint32_t)) <= message_len;
+       i += sizeof(uint32_t)) {
     uint32_t next_word = read_32(&message[i]);
     abs_mmio_write32(kHmacBaseAddr + HMAC_MSG_FIFO_REG_OFFSET, next_word);
   }
 
   // For the last few bytes, we need to write one byte at a time again.
-  for (; i < message_len; i++) {
+  for (; launder32(i) < message_len; i++) {
     abs_mmio_write8(kHmacBaseAddr + HMAC_MSG_FIFO_REG_OFFSET, message[i]);
   }
+  // Check that the loops ran for the correct number of iterations.
+  HARDENED_CHECK_EQ(i, message_len);
 }
 
 /**
