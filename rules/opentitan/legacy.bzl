@@ -118,14 +118,9 @@ scramble_flash_vmem = rv_rule(
     attrs = {
         "src": attr.label(allow_single_file = True),
         "otp": attr.label(allow_single_file = True),
-        "otp_mmap": attr.label(
+        "top_secret_cfg": attr.label(
             allow_single_file = True,
-            default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
-            doc = "OTP memory map configuration HJSON file.",
-        ),
-        "seed_cfg": attr.label(
-            allow_single_file = True,
-            doc = "Seed configuration file.",
+            doc = "Generated top configuration file including secrets.",
             mandatory = True,
         ),
         "otp_data_perm": attr.label(

@@ -232,10 +232,10 @@ def _otp_image(ctx):
         args.add("--stamp")
     args.add("--lc-state-def", ctx.file.lc_state_def)
     args.add("--mmap-def", ctx.file.mmap_def)
-    args.add("--seed-cfg", ctx.file.seed_cfg)
     if ctx.attr.data_perm:
         args.add("--data-perm", ctx.attr.data_perm[BuildSettingInfo].value)
     args.add("--img-cfg", ctx.file.src)
+    args.add("--top-secret-cfg", ctx.file.top_secret_cfg)
     args.add_all(ctx.files.overlays, before_each = "--add-cfg")
     args.add("--out", "{}/{}.BITWIDTH.vmem".format(output.dirname, ctx.attr.name))
     ctx.actions.run(
@@ -244,7 +244,7 @@ def _otp_image(ctx):
             ctx.file.src,
             ctx.file.lc_state_def,
             ctx.file.mmap_def,
-            ctx.file.seed_cfg,
+            ctx.file.top_secret_cfg,
         ] + ctx.files.overlays,
         arguments = [args],
         executable = ctx.executable._tool,
@@ -272,9 +272,9 @@ otp_image = rule(
             default = "//hw/top:top_otp_map",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
-        "seed_cfg": attr.label(
+        "top_secret_cfg": attr.label(
             allow_single_file = True,
-            doc = "Seed configuration file.",
+            doc = "Generated top configuration file including secrets.",
             mandatory = True,
         ),
         "data_perm": attr.label(
@@ -302,8 +302,8 @@ def _otp_image_consts_impl(ctx):
         args.add("--stamp")
     args.add("--lc-state-def", ctx.file.lc_state_def)
     args.add("--mmap-def", ctx.file.mmap_def)
-    args.add("--seed-cfg", ctx.file.seed_cfg)
     args.add("--img-cfg", ctx.file.src)
+    args.add("--top-secret-cfg", ctx.file.top_secret_cfg)
     args.add("--c-template", ctx.file.c_template)
     args.add("--c-out", "{}/{}.c".format(output.dirname, ctx.attr.name))
     args.add_all(ctx.files.overlays, before_each = "--add-cfg")
@@ -314,7 +314,7 @@ def _otp_image_consts_impl(ctx):
             ctx.file.c_template,
             ctx.file.lc_state_def,
             ctx.file.mmap_def,
-            ctx.file.seed_cfg,
+            ctx.file.top_secret_cfg,
         ] + ctx.files.overlays,
         arguments = [args],
         executable = ctx.executable._tool,
@@ -344,9 +344,9 @@ otp_image_consts = rule(
             default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
-        "seed_cfg": attr.label(
+        "top_secret_cfg": attr.label(
             allow_single_file = True,
-            doc = "Seed configuration file.",
+            doc = "Generated top configuration file including secrets.",
             mandatory = True,
         ),
         "c_template": attr.label(

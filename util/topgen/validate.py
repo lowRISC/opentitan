@@ -100,7 +100,6 @@ top_seed_required = {
 }
 
 top_seed_optional = {
-    'otp_ctrl_seed': ['int', "Seed for otp_ctrl generated random netlist constants"],
     'otp_img_seed': ['int', "Seed for OTP image generation"],
     'lc_ctrl_seed': ['int', "Seed for lc_ctrl generated random netlist constants"],
 }
@@ -1267,7 +1266,6 @@ def validate_seed_cfg(top: ConfigT, seed_cfg: ConfigT):
     # Validate seed information is here. First determine the required keys depending on the
     # top configuration
     if find_module(top["module"], "otp_ctrl"):
-        top_seed_required["otp_ctrl_seed"] = top_seed_optional["otp_ctrl_seed"]
         top_seed_required["otp_img_seed"] = top_seed_optional["otp_img_seed"]
     if find_module(top["module"], "lc_ctrl"):
         top_seed_required["lc_ctrl_seed"] = top_seed_optional["lc_ctrl_seed"]

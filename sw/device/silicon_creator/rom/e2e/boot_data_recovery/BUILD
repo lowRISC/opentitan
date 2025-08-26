@@ -115,7 +115,7 @@ BOOT_DATA_RECOVERY_CASES = [
             case["lc_state"],
             case["default_boot_data"],
         )],
-        seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
+        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
     )
     for case in BOOT_DATA_RECOVERY_CASES
 ]

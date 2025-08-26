@@ -9,7 +9,7 @@ package(default_visibility = ["//visibility:public"])
 
 lc_raw_unlock_token(
     name = "lc_raw_unlock_token",
-    seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
+    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
 )
 
 rust_library(

@@ -239,11 +239,12 @@
                    "{tool}_dpi_build_opts"]
 
   // Setup for generating OTP images.
+  gen_otp_top_secret_cfg: "{proj_root}/hw/{top_chip}/data/autogen/{top_chip}.secrets.dev.gen.hjson"
   gen_otp_images_cfg_dir: "{proj_root}/hw/top_earlgrey/data/otp"
   gen_otp_images_cmd: "{proj_root}/util/design/gen-otp-img.py"
   gen_otp_images_cmd_opts: ["--quiet",
-                            "--seed-cfg {proj_root}/hw/{top_chip}/data/{top_chip}_seed.dev.hjson",
-			                      "--mmap-def {gen_otp_images_cfg_dir}/otp_ctrl_mmap.hjson"]
+                            "--mmap-def {gen_otp_images_cfg_dir}/otp_ctrl_mmap.hjson",
+                            "--top-secret-cfg {gen_otp_top_secret_cfg}"]
 
   // TODO(lowrisc/opentitan#16689): Enable cdc instrumentation.
   run_opts: ["+cdc_instrumentation_enabled=1"]

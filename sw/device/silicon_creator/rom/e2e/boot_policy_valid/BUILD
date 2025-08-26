@@ -49,7 +49,7 @@ BOOT_POLICY_VALID_CASES = [
         name = "otp_img_boot_policy_valid_{}".format(lc_state),
         src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS,
-        seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
+        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
     )
     for lc_state, _ in get_lc_items()
 ]

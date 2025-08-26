@@ -67,12 +67,12 @@ def main():
                         help='''
                         Path to OTP memory map file in Hjson format.
                         ''')
-    parser.add_argument('--seed-cfg',
+    parser.add_argument('--top-secret-cfg',
                         type=Path,
                         metavar='<path>',
                         required=True,
                         help='''
-                        Path to the seed configuration in Hjson format.
+                        Path to the top secret configuration in Hjson format.
                         ''')
     parser.add_argument('--img-cfg',
                         type=Path,
@@ -144,13 +144,13 @@ def main():
     log.info('Loading main image configuration file {}'.format(args.img_cfg))
     with open(args.img_cfg, 'r') as infile:
         img_cfg = hjson.load(infile)
-    log.info('Loading seed configuration file {}'.format(args.seed_cfg))
-    with open(args.seed_cfg, 'r') as infile:
-        seed_cfg = hjson.load(infile)
+    log.info('Loading top secret configuration file {}'.format(args.top_secret_cfg))
+    with open(args.top_secret_cfg, 'r') as infile:
+        top_secret_cfg = hjson.load(infile)
 
     try:
         otp_mem_img = OtpMemImg(lc_state_cfg, otp_mmap_cfg, img_cfg,
-                                seed_cfg, args.data_perm)
+                                args.data_perm, top_secret_cfg)
 
         for f in args.add_cfg:
             log.info(
