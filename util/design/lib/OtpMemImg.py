@@ -20,10 +20,6 @@ from lib.LcStEnc import LcStEnc
 from lib.OtpMemMap import OtpMemMap
 from lib.Present import Present
 
-# Seed diversification constant for OtpMemImg (this enables to use
-# the same seed for different classes)
-OTP_IMG_SEED_DIVERSIFIER = 1941661965323525198146
-
 _OTP_SW_SKIP_FROM_HEADER = ('VENDOR_TEST', 'HW_CFG0', 'HW_CFG1', 'SECRET0',
                             'SECRET1', 'SECRET2', 'LIFE_CYCLE')
 _OTP_SW_WRITE_BYTE_ALIGNMENT = {
@@ -195,14 +191,25 @@ def _int_to_hex_array(val: int, size: int, alignment: int) -> List[str]:
 class OtpMemImg(OtpMemMap):
 
     def __init__(self, lc_state_config, otp_mmap_config, img_config,
-                 seed_cfg, data_perm):
+                 data_perm, top_secret_cfg: dict):
         # Initialize memory map
-        otp_ctrl_seed = common.check_int(seed_cfg["otp_ctrl_seed"])
-        super().__init__(otp_mmap_config, otp_ctrl_seed)
+        super().__init__(otp_mmap_config)
+
+        # Determine the OTP memory map configuration from the top secret configuration
+        for module in top_secret_cfg["module"]:
+            if module.get("template_type") == "otp_ctrl":
+                otp_mmap_cfg = module["otp_mmap"]
+                break
+        else:
+            log.error("OTP memory map configuration not found in top secret configuration")
+            exit(1)
+
+        # Splice the secret config into the memory map config
+        self.config["scrambling"] = otp_mmap_cfg["scrambling"]
 
         # Initialize the LC state and OTP memory map objects first, since
         # validation and image generation depends on them
-        lc_ctrl_seed = common.check_int(seed_cfg["lc_ctrl_seed"])
+        lc_ctrl_seed = common.check_int(top_secret_cfg["seed"]["lc_ctrl_seed"]["value"])
         self.lc_state = LcStEnc(lc_state_config, lc_ctrl_seed)
 
         # Validate memory image configuration
@@ -221,12 +228,12 @@ class OtpMemImg(OtpMemMap):
         if otp_width != secded_width:
             raise RuntimeError('OTP width and SECDED data width must be equal')
 
-        img_config["seed"] = seed_cfg["otp_img_seed"]
-        log.info('Seed: {0:x}'.format(img_config['seed']))
-        log.info('')
+        img_config["seed"] = common.check_int(top_secret_cfg["seed"]["otp_img_seed"]["value"])
+        log.info(f'Seed: {img_config["seed"]:x}')
+        log.info("")
 
         # Re-initialize with seed to make results reproducible.
-        SecurePrngFactory.create("otpmemimg", OTP_IMG_SEED_DIVERSIFIER + int(img_config['seed']))
+        SecurePrngFactory.create("otpmemimg", img_config["seed"])
 
         if 'partitions' not in img_config:
             raise RuntimeError('Missing partitions key in configuration.')

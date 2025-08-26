@@ -81,7 +81,7 @@ otp_json(
         name = "otp_img_sigverify_usage_constraints_{}".format(lc_state),
         src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [":otp_json_set_usage_constraint_params_overlay"],
-        seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
+        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
         visibility = ["//visibility:private"],
     )
     for lc_state, _ in get_lc_items()

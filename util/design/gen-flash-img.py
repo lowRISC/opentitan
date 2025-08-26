@@ -11,7 +11,6 @@ r"""Takes a compiled VMEM image and processes it for loading into flash.
 """
 
 import argparse
-import logging as log
 import re
 import sys
 from dataclasses import dataclass
@@ -21,7 +20,6 @@ from typing import List
 
 import hjson
 from pyfinite import ffield
-from lib.OtpMemMap import OtpMemMap
 from lib.common import (check_int,
                         inverse_permute_bits,
                         validate_data_perm_option,
@@ -142,30 +140,28 @@ def _convert_array_2_int(data_array: List[int],
     return reformatted_data
 
 
-def _get_otp_ctrl_netlist_consts(otp_mmap_file: str, otp_seed: int,
-                                 scrambling_configs: FlashScramblingConfigs):
-    # Read in the OTP memory map file to a dictionary.
-    with open(otp_mmap_file, 'r') as infile:
-        otp_mmap_config = hjson.load(infile)
-        try:
-            otp_mmap = OtpMemMap(otp_mmap_config, otp_seed)
-        except RuntimeError as err:
-            log.error(err)
-            exit(1)
+def _get_otp_ctrl_netlist_consts(top_secret_cfg: dict, scrambling_configs: FlashScramblingConfigs):
+
+    for module in top_secret_cfg["module"]:
+        if module.get("template_type") == "otp_ctrl":
+            otp_map = module["otp_mmap"]
+            break
+    else:
+        raise RuntimeError("OTP memory map configuration not found in top secret configuration")
 
     # Extract OTP secret1 partition scrambling key.
-    for key in otp_mmap.config["scrambling"]["keys"]:
+    for key in otp_map["scrambling"]["keys"]:
         if key["name"] == "Secret1Key":
-            scrambling_configs.otp_secret1_key = int(key["value"])
+            scrambling_configs.otp_secret1_key = check_int(key["value"])
 
     # Extract OTP flash scrambling key IVs.
-    for digest in otp_mmap.config["scrambling"]["digests"]:
+    for digest in otp_map["scrambling"]["digests"]:
         if digest["name"] == "FlashAddrKey":
-            scrambling_configs.addr_key_iv = digest["iv_value"]
-            scrambling_configs.addr_key_final_const = digest["cnst_value"]
+            scrambling_configs.addr_key_iv = check_int(digest["iv_value"])
+            scrambling_configs.addr_key_final_const = check_int(digest["cnst_value"])
         if digest["name"] == "FlashDataKey":
-            scrambling_configs.data_key_iv = digest["iv_value"]
-            scrambling_configs.data_key_final_const = digest["cnst_value"]
+            scrambling_configs.data_key_iv = check_int(digest["iv_value"])
+            scrambling_configs.data_key_final_const = check_int(digest["cnst_value"])
 
 
 def _get_flash_scrambling_configs(otp_vmem_file: str, otp_data_perm: list,
@@ -339,18 +335,16 @@ def main(argv: List[str]):
     parser.add_argument("--in-flash-vmem",
                         type=str,
                         help="Input VMEM file to reformat.")
-    parser.add_argument("--in-otp-mmap",
-                        type=str,
-                        help="OTP memory map HJSON file.")
+
     parser.add_argument("--in-otp-vmem",
                         type=str,
                         help="Input OTP (VMEM) file to retrieve data from.")
-    parser.add_argument('--seed-cfg',
+    parser.add_argument('--top-secret-cfg',
                         type=Path,
                         metavar='<path>',
                         required=True,
                         help='''
-                        Path to the seed configuration in Hjson format.
+                        Path to the top secret configuration in Hjson format.
                         ''')
     parser.add_argument("--out-flash-vmem", type=str, help="Output VMEM file.")
     parser.add_argument("--otp-data-perm",
@@ -380,12 +374,10 @@ def main(argv: List[str]):
     # Read flash scrambling configurations (including: enablement, otp_ctrl
     # netlist consts, address and data key seeds) directly from OTP VMEM file.
     if args.in_otp_vmem:
-        with open(args.seed_cfg, 'r') as infile:
-            seed_cfg = hjson.load(infile)
+        with open(args.top_secret_cfg, 'r') as infile:
+            top_secret_cfg = hjson.load(infile)
 
-        otp_ctrl_seed = check_int(seed_cfg["otp_ctrl_seed"])
-        _get_otp_ctrl_netlist_consts(args.in_otp_mmap, otp_ctrl_seed,
-                                     scrambling_configs)
+        _get_otp_ctrl_netlist_consts(top_secret_cfg, scrambling_configs)
         _get_flash_scrambling_configs(args.in_otp_vmem, args.otp_data_perm,
                                       scrambling_configs)
 

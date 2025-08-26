@@ -69,7 +69,7 @@ REDACT.update({"INVALID": 0x0})
         ),
         src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [":otp_json_{}_overlay".format(redact.lower())],
-        seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
+        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
         visibility = ["//visibility:private"],
     )
     for lc_state, _ in get_lc_items()

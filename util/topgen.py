@@ -691,7 +691,7 @@ def _get_otp_ctrl_params(top: ConfigT,
 
     """Returns the parameters extracted from the otp_mmap.hjson file."""
     otp_mmap_path = out_path / "data" / "otp" / "otp_ctrl_mmap.hjson"
-    otp_mmap = OtpMemMap.from_mmap_path(otp_mmap_path, top["seed"]["otp_ctrl_seed"].value).config
+    otp_mmap = OtpMemMap.from_mmap_path(otp_mmap_path, generate_fresh_keys=True).config
     enable_flash_keys = has_flash_keys(otp_mmap["partitions"], otp_mmap_path)
     otp_ctrl = lib.find_module(top["module"], "otp_ctrl")
 
@@ -1394,6 +1394,8 @@ def dump_completecfg(cfg: ConfigT, out_path: Path) -> None:
                 "memory": module["memory"],
                 "param_list": secret_params
             }
+            if module.get("template_type"):
+                module_with_secret_params["template_type"] = module["template_type"]
             # OTP map contains secret parameters, so we need to pass it to the
             # secrets file.
             if module.get("otp_mmap"):
@@ -1694,6 +1696,9 @@ def main():
         for m in completecfg["module"] if lib.is_top_reggen(m)
     }
     generate_top_only(top_only_ips, out_path, top_name, args.hjson_path)
+    # Re-set the seed because generate_full_ipgens uses the same RNG again from the beginning
+    SecurePrngFactory.create("topgen", topcfg["seed"]["topgen_seed"].value)
+
     generate_full_ipgens(args, completecfg, name_to_block, alias_cfgs,
                          cfg_path, out_path)
 

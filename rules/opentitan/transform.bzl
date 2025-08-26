@@ -167,7 +167,8 @@ def scramble_flash(ctx, **kwargs):
         src: The src File object.
         otp: The OTP settings.
         otp_mmap: The OTP memory mapping file.
-        seed_cfg: The seed configuration file.
+
+        top_secret_cfg: The secret configuration file.
         otp_data_perm: The OTP data permutation configuration.
         _tool: The flash scrambling script.
 
@@ -192,20 +193,17 @@ def scramble_flash(ctx, **kwargs):
         output.path,
     ]
 
-    # Always get seed_cfg since the tool requires it
-    seed_cfg = get_override(ctx, "file.seed_cfg", kwargs)
-    arguments.extend(["--seed-cfg", seed_cfg.path])
-    inputs.append(seed_cfg)
+    # Always get top_secret_cfg since the tool requires it
+    top_secret_cfg = get_override(ctx, "file.top_secret_cfg", kwargs)
+    arguments.extend(["--top-secret-cfg", top_secret_cfg.path])
+    inputs.append(top_secret_cfg)
 
     if otp:
-        otp_mmap = get_override(ctx, "file.otp_mmap", kwargs)
         arguments.extend([
             "--in-otp-vmem",
             otp.path,
-            "--in-otp-mmap",
-            otp_mmap.path,
         ])
-        inputs.extend([otp, otp_mmap])
+        inputs.extend([otp])
 
         otp_data_perm = get_override(ctx, "attr.otp_data_perm", kwargs)
         if otp_data_perm:

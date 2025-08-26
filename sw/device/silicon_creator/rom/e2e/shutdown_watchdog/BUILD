@@ -89,7 +89,7 @@ SHUTDOWN_WATCHDOG_CASES = [
                 t["bite_threshold"],
             ),
         ],
-        seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
+        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
     )
     for t in SHUTDOWN_WATCHDOG_CASES
 ]

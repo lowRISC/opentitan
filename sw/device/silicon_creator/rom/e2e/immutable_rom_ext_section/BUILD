@@ -181,7 +181,7 @@ IMMUTABLE_PARTITION_TEST_CASES = [
                 s["name"],
             ),
         ],
-        seed_cfg = "//hw/top_earlgrey/data:top_earlgrey_seed.dev.hjson",
+        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
         visibility = ["//visibility:private"],
     )
     for s in ROM_EXT_SLOTS

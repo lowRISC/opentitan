@@ -24,10 +24,6 @@ DIGEST_SIZE = 8
 ZER_SUFFIX = "_ZER"
 ZER_SIZE = 8
 
-# Seed diversification constant for OtpMemMap (this enables to use
-# the same seed for different classes)
-OTP_SEED_DIVERSIFIER = 177149201092001677687
-
 # This must match the rtl parameter ScrmblBlockWidth / 8
 SCRAMBLE_BLOCK_WIDTH = 8
 
@@ -43,7 +39,7 @@ def _validate_otp(otp: Dict):
     otp["byte_addr_width"] = ceil(log2(otp["size"]))
 
 
-def _validate_scrambling(scr: Dict):
+def _validate_scrambling(scr: Dict, generate_fresh_keys: bool):
     '''Validate SCrambling entry'''
     scr.setdefault("key_size", "16")
     scr.setdefault("iv_size", "8")
@@ -57,18 +53,20 @@ def _validate_scrambling(scr: Dict):
     if "digests" not in scr:
         raise RuntimeError("Missing digest configuration.")
 
-    prng = SecurePrngFactory.get("otmemmap")
     for key in scr["keys"]:
         key.setdefault("name", "unknown_key_name")
         key.setdefault("value", "<random>")
-        random_or_hexvalue(prng, key, "value", scr["key_size"] * 8)
+        if generate_fresh_keys:
+            prng = SecurePrngFactory.get("topgen")
+            random_or_hexvalue(prng, key, "value", scr["key_size"] * 8)
 
     for dig in scr["digests"]:
         dig.setdefault("name", "unknown_key_name")
         dig.setdefault("iv_value", "<random>")
         dig.setdefault("cnst_value", "<random>")
-        random_or_hexvalue(prng, dig, "iv_value", scr["iv_size"] * 8)
-        random_or_hexvalue(prng, dig, "cnst_value", scr["cnst_size"] * 8)
+        if generate_fresh_keys:
+            random_or_hexvalue(prng, dig, "iv_value", scr["iv_size"] * 8)
+            random_or_hexvalue(prng, dig, "cnst_value", scr["cnst_size"] * 8)
 
     scr["num_keys"] = len(scr["keys"])
     scr["num_digests"] = len(scr["digests"])
@@ -120,7 +118,7 @@ def _calc_size(part: Dict, size: int) -> int:
     return size
 
 
-def _validate_part(part: Dict, key_names: List[str], is_last: bool):
+def _validate_part(part: Dict, key_names: List[str], is_last: bool, generate_fresh_keys: bool):
     '''Validates a partition within the OTP memory map'''
     part.setdefault("name", "unknown_name")
     part.setdefault("variant", "Unbuffered")
@@ -197,7 +195,7 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
     # validate items and calculate partition size if necessary
     size = 0
     for item in part["items"]:
-        _validate_item(item, part["variant"] == "Buffered", part["secret"])
+        _validate_item(item, part["variant"] == "Buffered", part["secret"], generate_fresh_keys)
         # if any item has key material, we need mark the partition as such
         if item["iskeymgr_creator"]:
             part["iskeymgr_creator"] = True
@@ -222,7 +220,7 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
     elif int(part["size"]) < calc_size:
         raise RuntimeError(
             f"{part['name']} declared partition size {part['size']}B can't "
-            "fit all items, needs at least {calc_size}B")
+            f"fit all items, needs at least {calc_size}B")
     elif int(part["size"]) > calc_size:
         log.warning(
             f"{part['name']} declared partition size {part['size']}B exceeds "
@@ -239,7 +237,7 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
             f"Partition size must be {SCRAMBLE_BLOCK_WIDTH * 8}-bit aligned")
 
 
-def _validate_item(item: Dict, buffered: bool, secret: bool):
+def _validate_item(item: Dict, buffered: bool, secret: bool, generate_fresh_keys: bool):
     '''Validates an item within a partition'''
     item.setdefault("name", "unknown_name")
     item.setdefault("size", "0")
@@ -291,11 +289,12 @@ def _validate_item(item: Dict, buffered: bool, secret: bool):
     else:
         # Generate random constant to be used when partition has
         # not been initialized yet or when it is in error state.
-        prng = SecurePrngFactory.get("otmemmap")
-        random_or_hexvalue(prng, item, "inv_default", item_width)
+        if generate_fresh_keys:
+            prng = SecurePrngFactory.get("topgen")
+            random_or_hexvalue(prng, item, "inv_default", item_width)
 
 
-def _validate_mmap(config: Dict) -> Dict:
+def _validate_mmap(config: Dict, generate_fresh_keys: bool) -> Dict:
     '''Validate the memory map configuration'''
 
     # Get valid key names.
@@ -309,7 +308,7 @@ def _validate_mmap(config: Dict) -> Dict:
     # validate inputs before use
     allocated = 0
     for k, part in enumerate(config["partitions"]):
-        _validate_part(part, key_names, k == (len(config["partitions"]) - 1))
+        _validate_part(part, key_names, k == (len(config["partitions"]) - 1), generate_fresh_keys)
         allocated += part['size']
 
     # distribute unallocated bits
@@ -374,9 +373,10 @@ def _validate_mmap(config: Dict) -> Dict:
                 False
             })
             # Randomize the digest default.
-            prng = SecurePrngFactory.get("otmemmap")
-            random_or_hexvalue(prng, part["items"][-1], "inv_default",
-                               DIGEST_SIZE * 8)
+            if generate_fresh_keys:
+                prng = SecurePrngFactory.get("topgen")
+                random_or_hexvalue(prng, part["items"][-1], "inv_default",
+                                   DIGEST_SIZE * 8)
 
             # We always place the digest into the last 64bit word
             # of a partition.
@@ -473,17 +473,10 @@ class OtpMemMap():
     # This holds the partition/item index dict for fast access.
     part_dict = {}
 
-    def __init__(self, config, seed):
+    def __init__(self, config, generate_fresh_keys: bool = False):
 
         log.info('')
         log.info('Parse and translate OTP memory map.')
-        log.info('')
-
-        config["seed"] = seed
-
-        # Initialize RNG.
-        SecurePrngFactory.create("otmemmap", OTP_SEED_DIVERSIFIER + int(config['seed']))
-        log.info('Seed: {0:x}'.format(config['seed']))
         log.info('')
 
         if "otp" not in config:
@@ -496,9 +489,9 @@ class OtpMemMap():
         # Validate OTP info.
         _validate_otp(config["otp"])
         # Validate scrambling info.
-        _validate_scrambling(config["scrambling"])
+        _validate_scrambling(config["scrambling"], generate_fresh_keys)
         # Validate memory map.
-        self.part_dict = _validate_mmap(config)
+        self.part_dict = _validate_mmap(config, generate_fresh_keys)
 
         self.config = config
 
@@ -507,7 +500,7 @@ class OtpMemMap():
         log.info('')
 
     @classmethod
-    def from_mmap_path(cls, mmap_path: Path, seed: int = None) -> 'OtpMemMap':
+    def from_mmap_path(cls, mmap_path: Path, generate_fresh_keys: bool = False) -> 'OtpMemMap':
         try:
             with open(mmap_path, 'r') as infile:
                 config = hjson.load(infile)
@@ -519,7 +512,7 @@ class OtpMemMap():
             exit(1)
 
         try:
-            otp_mmap = cls(config, seed)
+            otp_mmap = cls(config, generate_fresh_keys)
         except RuntimeError as err:
             log.error(err)
             exit(1)
