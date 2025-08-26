@@ -24,6 +24,8 @@
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/cryptolib_fi_asym_commands.h"
 
+#define MODULE_ID MAKE_MODULE_ID('f', 'a', 'i')
+
 // OAEP label for testing.
 static const unsigned char kTestLabel[] = "Test label.";
 static const size_t kTestLabelLen = sizeof(kTestLabel) - 1;

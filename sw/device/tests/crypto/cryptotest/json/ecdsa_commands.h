@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#define MODULE_ID MAKE_MODULE_ID('j', 'e', 'a')
+
 #define ECDSA_CMD_MAX_MESSAGE_BYTES 64
 #define ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES 64
 #define ECDSA_CMD_MAX_COORDINATE_BYTES 64
@@ -73,6 +75,8 @@ UJSON_SERDE_STRUCT(CryptotestEcdsaPrivateKey, cryptotest_ecdsa_private_key_t, EC
     value(_, Success) \
     value(_, Failure)
 UJSON_SERDE_ENUM(CryptotestEcdsaVerifyOutput, cryptotest_ecdsa_verify_output_t, ECDSA_VERIFY_OUTPUT);
+
+#undef MODULE_ID
 
 // clang-format on
 
