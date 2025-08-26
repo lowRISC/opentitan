@@ -365,7 +365,7 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
       .key_mode = key_mode,
       .key_length = key_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelHigh,
   };
 
   // Create buffer to store key.
