@@ -201,7 +201,7 @@ opentitan_test(
     name = "sigverify_spx_prehashed_test",
     srcs = ["sigverify_spx_test.c"],
     ecdsa_key = {
-        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_1_ecdsa_p256": "prod_key_1",
+        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_1",
     },
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
@@ -210,7 +210,7 @@ opentitan_test(
         otp = ":otp_img_sigverify_spx_prod_enabled_true",
     ),
     spx_key = {
-        "//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_1_spx_key": "prod_key_1",
+        "//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_1",
     },
     deps = [
         "//hw/top:otp_ctrl_c_regs",
