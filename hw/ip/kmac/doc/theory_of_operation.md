@@ -141,7 +141,7 @@ Details are in `kmac_pkg::MsgFifoDepth` parameter.
 Default design parameters assume the system characteristics as below:
 
 - `kmac_pkg::RegLatency`: The register write takes 5 cycles.
-- `kmac_pkg::Sha3Latency`: Keccak round latency takes 96 cycles, which is the masked version of the Keccak round.
+- `kmac_pkg::Sha3Latency`: Keccak round latency takes 96 cycles for the masked version and 24 cycles for the unmasked version of the Keccak round.
 
 #### Empty and Full status
 
