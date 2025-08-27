@@ -88,7 +88,7 @@ pub const ${base_addr_name}: usize = ${hex_base_addr};
 /// `${base_addr_name} + ${size_bytes_name}`.
 pub const ${size_bytes_name}: usize = ${hex_size_bytes};
 % endfor
-% for name, region in helper.memories(addr_space):
+% for (inst_name, if_name), region in helper.memories(addr_space):
 <%
     hex_base_addr = "0x{:X}".format(region.base_addr)
     hex_size_bytes = "0x{:X}".format(region.size_bytes)
@@ -98,10 +98,10 @@ pub const ${size_bytes_name}: usize = ${hex_size_bytes};
 
 %>\
 
-/// Memory base address for ${name} in top ${top["name"]}.
+/// Memory base address for ${if_name} memory on ${inst_name} in top ${top["name"]}.
 pub const ${base_addr_name}: usize = ${hex_base_addr};
 
-/// Memory size for ${name} in top ${top["name"]}.
+/// Memory size for ${if_name} memory on ${inst_name} in top ${top["name"]}.
 pub const ${size_bytes_name}: usize = ${hex_size_bytes};
 % endfor
 % if has_plic:

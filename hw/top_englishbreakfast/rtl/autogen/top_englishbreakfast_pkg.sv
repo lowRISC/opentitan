@@ -210,32 +210,32 @@ package top_englishbreakfast_pkg;
   parameter int unsigned TOP_ENGLISHBREAKFAST_RV_CORE_IBEX_CFG_SIZE_BYTES = 32'h100;
 
   /**
-   * Memory base address for eflash in top englishbreakfast.
+   * Memory base address for mem memory on flash_ctrl in top englishbreakfast.
    */
   parameter int unsigned TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_BASE_ADDR = 32'h20000000;
 
   /**
-   * Memory size for eflash in top englishbreakfast.
+   * Memory size for mem memory on flash_ctrl in top englishbreakfast.
    */
   parameter int unsigned TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES = 32'h10000;
 
   /**
-   * Memory base address for ram_main in top englishbreakfast.
+   * Memory base address for ram memory on sram_ctrl_main in top englishbreakfast.
    */
   parameter int unsigned TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_BASE_ADDR = 32'h10000000;
 
   /**
-   * Memory size for ram_main in top englishbreakfast.
+   * Memory size for ram memory on sram_ctrl_main in top englishbreakfast.
    */
   parameter int unsigned TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_SIZE_BYTES = 32'h20000;
 
   /**
-   * Memory base address for rom in top englishbreakfast.
+   * Memory base address for rom memory on rom_ctrl in top englishbreakfast.
    */
   parameter int unsigned TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_BASE_ADDR = 32'h8000;
 
   /**
-   * Memory size for rom in top englishbreakfast.
+   * Memory size for rom memory on rom_ctrl in top englishbreakfast.
    */
   parameter int unsigned TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_SIZE_BYTES = 32'h8000;
 
