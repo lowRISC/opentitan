@@ -17,7 +17,7 @@ interface csrng_path_if
     case (fifo_name) inside
       "sfifo_cmd", "sfifo_genbits": return {core_path, $sformatf(".gen_cmd_stage[%0d]", app),
                                             ".u_csrng_cmd_stage.", fifo_name, "_", which_path};
-      "sfifo_cmdreq", "sfifo_rcstage", "sfifo_keyvrc": return {core_path, ".u_csrng_ctr_drbg_cmd.",
+      "sfifo_rcstage", "sfifo_keyvrc": return {core_path, ".u_csrng_ctr_drbg_cmd.",
                                                                fifo_name, "_", which_path};
       "sfifo_updreq", "sfifo_bencreq", "sfifo_bencack", "sfifo_pdata", "sfifo_final": return
         {core_path, ".u_csrng_ctr_drbg_upd.", fifo_name, "_", which_path};
@@ -25,7 +25,7 @@ interface csrng_path_if
         return {core_path,".u_csrng_ctr_drbg_gen.sfifo_", fifo_name.substr(7, fifo_name.len()-1),
                 "_", which_path};
       "sfifo_cmdid": return {core_path, ".u_csrng_block_encrypt.", fifo_name, "_", which_path};
-      default: `uvm_fatal("csrng_path_if", "Invalid fifo name!")
+      default: `uvm_fatal("csrng_path_if", $sformatf("%s: Invalid fifo name!", fifo_name))
     endcase // case (fifo_name.substr(6, fifo_name.len()-1))
   endfunction // fifo_err_path
 
