@@ -202,7 +202,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
       fifo_cntr_err     :/ 4};}
 
   constraint which_cntr_replicate_c {which_cntr_replicate inside {[0:`RNG_BUS_WIDTH-1]};}
-  int        num_bins = 2**`RNG_BUS_WIDTH;
+  int        num_bins = 2**entropy_src_pkg::bucket_ht_data_width(`RNG_BUS_WIDTH);
   constraint which_bin_c {which_bin inside {[0:num_bins-1]};}
   constraint which_ht_inst_c {which_ht_inst inside {
     [0:entropy_src_pkg::num_bucket_ht_inst(`RNG_BUS_WIDTH)-1]};

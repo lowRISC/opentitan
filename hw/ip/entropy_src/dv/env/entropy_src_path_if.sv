@@ -8,8 +8,6 @@
     tb.dut.u_entropy_src_core
 `define REPCNT \
     u_entropy_src_repcnt_ht.u_prim_max_tree_rep_cntr_max
-`define BUCKET \
-    u_entropy_src_bucket_ht.u_prim_max_tree_bin_cntr_max
 
 interface entropy_src_path_if ();
   import uvm_pkg::*;
@@ -116,4 +114,3 @@ endinterface // entropy_src_path_if
 
 `undef CORE
 `undef REPCNT
-`undef BUCKET
