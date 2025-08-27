@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
@@ -85,6 +86,9 @@ static status_t aes_write_key(aes_key_t key) {
     abs_mmio_write32(share1 + i * sizeof(uint32_t), ibex_rnd32_read());
   }
   HARDENED_CHECK_EQ(i, kAesKeyWordLenMax);
+
+  // Check the integrity of the key written to the AES core.
+  HARDENED_CHECK_EQ(aes_key_integrity_checksum_check(&key), kHardenedBoolTrue);
 
   return spin_until(AES_STATUS_IDLE_BIT);
 }
@@ -313,4 +317,27 @@ status_t aes_end(aes_block_t *iv) {
   abs_mmio_write32(kBase + AES_TRIGGER_REG_OFFSET, trigger_reg);
 
   return spin_until(AES_STATUS_IDLE_BIT);
+}
+
+uint32_t aes_key_integrity_checksum(const aes_key_t *key) {
+  uint32_t ctx;
+  crc32_init(&ctx);
+  crc32_add32(&ctx, key->mode);
+  crc32_add32(&ctx, key->sideload);
+  crc32_add32(&ctx, key->key_len);
+  // Compute the checksum only over a single share to avoid side-channel
+  // leakage. From a FI perspective only covering one key share is fine as
+  // (a) manipulating the second share with FI has only limited use to an
+  // adversary and (b) when manipulating the entire pointer to the key structure
+  // the checksum check fails.
+  crc32_add(&ctx, (unsigned char *)key->key_shares[0], key->key_len);
+  return crc32_finish(&ctx);
+}
+
+hardened_bool_t aes_key_integrity_checksum_check(const aes_key_t *key) {
+  if (key->checksum == launder32(aes_key_integrity_checksum(key))) {
+    HARDENED_CHECK_EQ(key->checksum, aes_key_integrity_checksum(key));
+    return kHardenedBoolTrue;
+  }
+  return kHardenedBoolFalse;
 }
