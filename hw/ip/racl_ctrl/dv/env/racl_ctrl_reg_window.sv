@@ -10,6 +10,10 @@ class racl_ctrl_reg_window extends uvm_object;
   // address (which matches the order of the racl_policies_o port on the dut).
   local dv_base_reg policy_regs[$];
 
+  // The ERROR_LOG and ERROR_LOG_ADDRESS registers
+  local dv_base_reg error_log_reg;
+  local dv_base_reg error_log_address_reg;
+
   extern function new (string name="");
 
   // Set the block variable to point at the given register block (which will have been created by
@@ -21,6 +25,12 @@ class racl_ctrl_reg_window extends uvm_object;
 
   // Return true if register is one of the policy registers
   extern function bit is_policy_reg(uvm_reg register);
+
+  // Return the ERROR_LOG register
+  extern function dv_base_reg get_error_log_reg();
+
+  // Return the ERROR_LOG_ADDRESS register
+  extern function dv_base_reg get_error_log_address_reg();
 endclass
 
 function racl_ctrl_reg_window::new (string name="");
@@ -29,6 +39,8 @@ endfunction
 
 function void racl_ctrl_reg_window::set_reg_block(uvm_reg_block ral);
   uvm_reg regs[$];
+  bit     seen_error_log, seen_error_log_address;
+
   ral.get_registers(regs);
 
   policy_regs.delete();
@@ -41,6 +53,17 @@ function void racl_ctrl_reg_window::set_reg_block(uvm_reg_block ral);
 
     if (!$cast(dv_reg, regs[i]))
       `uvm_fatal(`gfn, $sformatf("regs[%0d] was not a dv_base_reg.", i))
+
+    if (reg_name == "error_log") begin
+      error_log_reg = dv_reg;
+      seen_error_log = 1;
+      continue;
+    end
+    if (reg_name == "error_log_address") begin
+      error_log_address_reg = dv_reg;
+      seen_error_log_address = 1;
+      continue;
+    end
 
     // Policy registers start with the prefix "policy_". Skip anything that doesn't. (Note that we
     // don't have to check lengths here: if there aren't enough characters, substr() will return "")
@@ -64,6 +87,10 @@ function void racl_ctrl_reg_window::set_reg_block(uvm_reg_block ral);
                           "top_racl_pkg::NrRaclPolicies = %0d but we have %0d policy registers."},
                          top_racl_pkg::NrRaclPolicies,
                          policy_regs.size()))
+
+  // We should have seen the ERROR_LOG and ERROR_LOG_ADDRESS registers
+  if (!seen_error_log) `uvm_fatal(`gfn, "Didn't see an ERROR_LOG register")
+  if (!seen_error_log_address) `uvm_fatal(`gfn, "Didn't see an ERROR_LOG_ADDRESS register")
 endfunction
 
 function void racl_ctrl_reg_window::get_policy_registers (ref dv_base_reg regs[$]);
@@ -75,4 +102,12 @@ function bit racl_ctrl_reg_window::is_policy_reg(uvm_reg register);
     if (register == policy_regs[i]) return 1;
   end
   return 0;
+endfunction
+
+function dv_base_reg racl_ctrl_reg_window::get_error_log_reg();
+  return error_log_reg;
+endfunction
+
+function dv_base_reg racl_ctrl_reg_window::get_error_log_address_reg();
+  return error_log_address_reg;
 endfunction
