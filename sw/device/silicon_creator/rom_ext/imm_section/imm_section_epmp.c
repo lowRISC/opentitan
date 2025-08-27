@@ -26,8 +26,9 @@ static const epmp_region_t kMmioRegion = {
 };
 
 static const epmp_region_t kFlashRegion = {
-    .start = TOP_EARLGREY_EFLASH_BASE_ADDR,
-    .end = TOP_EARLGREY_EFLASH_BASE_ADDR + TOP_EARLGREY_EFLASH_SIZE_BYTES,
+    .start = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+    .end = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
+           TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES,
 };
 
 static const epmp_region_t kRvDmRegion = {

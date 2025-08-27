@@ -87,9 +87,9 @@ enum {
   kRomExtSlotBFirstPageIndex = FLASH_CTRL_PARAM_REG_PAGES_PER_BANK,
 
   // Addresses of the first words in each ROM_EXT slot.
-  kRomExtSlotAFirstAddr = TOP_EARLGREY_EFLASH_BASE_ADDR,
-  kRomExtSlotBFirstAddr =
-      TOP_EARLGREY_EFLASH_BASE_ADDR + (TOP_EARLGREY_EFLASH_SIZE_BYTES / 2),
+  kRomExtSlotAFirstAddr = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+  kRomExtSlotBFirstAddr = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
+                          (TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2),
 
   // Addresses of the manifest identifiers words in each ROM_EXT slot.
   kRomExtSlotAManifestIdAddr = kRomExtSlotAFirstAddr + kManifestIdOffest,
