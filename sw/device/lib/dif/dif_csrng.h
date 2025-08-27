@@ -93,7 +93,6 @@ typedef enum dif_csrng_cmd_status_kind {
 typedef enum dif_csrng_fifo {
   kDifCsrngFifoCmd,
   kDifCsrngFifoGenBits,
-  kDifCsrngFifoCmdReq,
   kDifCsrngFifoRcStage,
   kDifCsrngFifoKeyVrc,
   kDifCsrngFifoUpdateReq,

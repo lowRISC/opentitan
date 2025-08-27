@@ -99,7 +99,7 @@ class csrng_err_vseq extends csrng_base_vseq;
                               cfg.which_app_err_alert, fld_name), UVM_MEDIUM)
 
     case (cfg.which_err_code) inside
-      sfifo_cmd_err, sfifo_genbits_err, sfifo_cmdreq_err, sfifo_rcstage_err, sfifo_keyvrc_err,
+      sfifo_cmd_err, sfifo_genbits_err, sfifo_rcstage_err, sfifo_keyvrc_err,
       sfifo_bencreq_err, sfifo_final_err, sfifo_gbencack_err, sfifo_grcstage_err,
       sfifo_gadstage_err, sfifo_ggenbits_err, sfifo_cmdid_err, sfifo_updreq_err,
       sfifo_bencack_err, sfifo_pdata_err, sfifo_ggenreq_err: begin
@@ -303,7 +303,7 @@ class csrng_err_vseq extends csrng_base_vseq;
         csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
         cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
       end
-      sfifo_cmd_err_test, sfifo_genbits_err_test, sfifo_cmdreq_err_test, sfifo_rcstage_err_test,
+      sfifo_cmd_err_test, sfifo_genbits_err_test, sfifo_rcstage_err_test,
       sfifo_keyvrc_err_test, sfifo_updreq_err_test, sfifo_bencreq_err_test, sfifo_bencack_err_test,
       sfifo_pdata_err_test, sfifo_final_err_test, sfifo_gbencack_err_test, sfifo_grcstage_err_test,
       sfifo_ggenreq_err_test, sfifo_gadstage_err_test, sfifo_ggenbits_err_test,
