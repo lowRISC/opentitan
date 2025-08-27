@@ -988,15 +988,9 @@ class TopGen:
 
         return ret
 
-    def memories(self, addr_space, use_full_if = False) -> List[Tuple[str, MemoryRegion]]:
+    def memories(self, addr_space) -> List[Tuple[Tuple[str, str], MemoryRegion]]:
         '''Return a list of MemoryRegions objects for memories on the bus.
 
-        If `use_full_if` is False:
-        The list returned is pairs (label, region) where label is the global
-        label of the memory. region is a MemoryRegion representing the memory,
-        and its name is set to the full interface name (<IP instance name>_<interface>).
-
-        If `use_full_if` is True:
         The list returned is pairs (full_if, region) where full_if is itself a
         pair (inst_name, if_name). inst_name is the name of some IP block
         instantiation. if_name is the name of the interface. region is a
@@ -1017,13 +1011,12 @@ class TopGen:
                         continue
 
                     full_if = (inst['name'], if_name)
-                    full_if_name = Name.from_snake_case(inst['name']) + Name.from_snake_case(if_name)
+                    full_if_name = Name.from_snake_case(inst['name']) + \
+                        Name.from_snake_case(if_name)
                     region = MemoryRegion(self._top_name, full_if_name, addr_space,
                                           base[addr_space], size)
-                    if use_full_if:
-                        ret.append((full_if, region))
-                    else:
-                        ret.append((val["label"], region))
+
+                    ret.append((full_if, region))
 
         return ret
 
@@ -1507,7 +1500,7 @@ class TopGen:
 
                 # Include both register blocks and memories.
                 ranges = get_device_ranges(self.devices(addr_space_name) +
-                                           self.memories(addr_space_name, True),
+                                           self.memories(addr_space_name),
                                            dev_name)
                 if if_name:
                     # Only a single interface, if name contained an interface

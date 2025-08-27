@@ -25,6 +25,7 @@
 // Include guard for assembler
 #ifdef __ASSEMBLER__
 
+
 /**
  * Peripheral base address for dmi device on lc_ctrl in top darjeeling.
  *

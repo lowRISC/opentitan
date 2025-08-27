@@ -693,28 +693,28 @@ pub const RV_CORE_IBEX_CFG_BASE_ADDR: usize = 0x411F0000;
 /// `RV_CORE_IBEX_CFG_BASE_ADDR + RV_CORE_IBEX_CFG_SIZE_BYTES`.
 pub const RV_CORE_IBEX_CFG_SIZE_BYTES: usize = 0x100;
 
-/// Memory base address for ram_ret_aon in top earlgrey.
+/// Memory base address for ram memory on sram_ctrl_ret_aon in top earlgrey.
 pub const SRAM_CTRL_RET_AON_RAM_BASE_ADDR: usize = 0x40600000;
 
-/// Memory size for ram_ret_aon in top earlgrey.
+/// Memory size for ram memory on sram_ctrl_ret_aon in top earlgrey.
 pub const SRAM_CTRL_RET_AON_RAM_SIZE_BYTES: usize = 0x1000;
 
-/// Memory base address for eflash in top earlgrey.
+/// Memory base address for mem memory on flash_ctrl in top earlgrey.
 pub const FLASH_CTRL_MEM_BASE_ADDR: usize = 0x20000000;
 
-/// Memory size for eflash in top earlgrey.
+/// Memory size for mem memory on flash_ctrl in top earlgrey.
 pub const FLASH_CTRL_MEM_SIZE_BYTES: usize = 0x100000;
 
-/// Memory base address for ram_main in top earlgrey.
+/// Memory base address for ram memory on sram_ctrl_main in top earlgrey.
 pub const SRAM_CTRL_MAIN_RAM_BASE_ADDR: usize = 0x10000000;
 
-/// Memory size for ram_main in top earlgrey.
+/// Memory size for ram memory on sram_ctrl_main in top earlgrey.
 pub const SRAM_CTRL_MAIN_RAM_SIZE_BYTES: usize = 0x20000;
 
-/// Memory base address for rom in top earlgrey.
+/// Memory base address for rom memory on rom_ctrl in top earlgrey.
 pub const ROM_CTRL_ROM_BASE_ADDR: usize = 0x8000;
 
-/// Memory size for rom in top earlgrey.
+/// Memory size for rom memory on rom_ctrl in top earlgrey.
 pub const ROM_CTRL_ROM_SIZE_BYTES: usize = 0x8000;
 
 /// PLIC Interrupt Source Peripheral.

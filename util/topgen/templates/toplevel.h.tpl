@@ -108,7 +108,7 @@ extern "C" {
 
 % endfor
 
-% for name, region in helper.memories(addr_space):
+% for (inst_name, if_name), region in helper.memories(addr_space):
 <%
     hex_base_addr = "0x{:X}u".format(region.base_addr)
     hex_size_bytes = "0x{:X}u".format(region.size_bytes)
@@ -118,12 +118,12 @@ extern "C" {
 
 %>\
 /**
- * Memory base address for ${name} in top ${top["name"]}.
+ * Memory base address for ${if_name} memory on ${inst_name} in top ${top["name"]}.
  */
 #define ${base_addr_name} ${hex_base_addr}
 
 /**
- * Memory size for ${name} in top ${top["name"]}.
+ * Memory size for ${if_name} memory on ${inst_name} in top ${top["name"]}.
  */
 #define ${size_bytes_name} ${hex_size_bytes}
 

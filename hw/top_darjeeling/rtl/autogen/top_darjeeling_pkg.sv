@@ -480,12 +480,12 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_RV_CORE_IBEX_CFG_SIZE_BYTES = 32'h800;
 
   /**
-   * Memory base address for ctn in top darjeeling.
+   * Memory base address for ctn memory on soc_proxy in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR = 32'h40000000;
 
   /**
-   * Memory size for ctn in top darjeeling.
+   * Memory size for ctn memory on soc_proxy in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_SOC_PROXY_CTN_SIZE_BYTES = 32'h80000000;
 
@@ -500,52 +500,52 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_SOC_PROXY_RAM_CTN_SIZE_BYTES = 32'h100000;
 
   /**
-   * Memory base address for ram_ret_aon in top darjeeling.
+   * Memory base address for ram memory on sram_ctrl_ret_aon in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR = 32'h30600000;
 
   /**
-   * Memory size for ram_ret_aon in top darjeeling.
+   * Memory size for ram memory on sram_ctrl_ret_aon in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES = 32'h1000;
 
   /**
-   * Memory base address for ram_main in top darjeeling.
+   * Memory base address for ram memory on sram_ctrl_main in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR = 32'h10000000;
 
   /**
-   * Memory size for ram_main in top darjeeling.
+   * Memory size for ram memory on sram_ctrl_main in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES = 32'h10000;
 
   /**
-   * Memory base address for ram_mbox in top darjeeling.
+   * Memory base address for ram memory on sram_ctrl_mbox in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR = 32'h11000000;
 
   /**
-   * Memory size for ram_mbox in top darjeeling.
+   * Memory size for ram memory on sram_ctrl_mbox in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES = 32'h1000;
 
   /**
-   * Memory base address for rom0 in top darjeeling.
+   * Memory base address for rom memory on rom_ctrl0 in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR = 32'h8000;
 
   /**
-   * Memory size for rom0 in top darjeeling.
+   * Memory size for rom memory on rom_ctrl0 in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES = 32'h8000;
 
   /**
-   * Memory base address for rom1 in top darjeeling.
+   * Memory base address for rom memory on rom_ctrl1 in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR = 32'h20000;
 
   /**
-   * Memory size for rom1 in top darjeeling.
+   * Memory size for rom memory on rom_ctrl1 in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES = 32'h10000;
 
