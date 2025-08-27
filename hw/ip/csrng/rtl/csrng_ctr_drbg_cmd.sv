@@ -41,19 +41,15 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   input  csrng_upd_data_t    update_rsp_data_i,
 
   // Error status outputs
-  output logic         [2:0] fifo_cmdreq_err_o,
   output logic         [2:0] fifo_rcstage_err_o,
   output logic         [2:0] fifo_keyvrc_err_o
 );
 
-  localparam int CmdreqFifoWidth  = CoreDataWidth + SeedLen + 1;
   localparam int RCStageFifoWidth = CoreDataWidth + 1;
   localparam int KeyVRCFifoWidth  = CoreDataWidth + 1;
 
   // signals
-  csrng_core_data_t   cmdreq_data;
-  logic [SeedLen-1:0] cmdreq_entropy;
-  logic               cmdreq_glast;
+  csrng_core_data_t   req_data;
 
   csrng_core_data_t   rcstage_data;
   logic               rcstage_glast;
@@ -62,18 +58,10 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   logic               keyvrc_glast;
 
   logic [SeedLen-1:0] prep_seed_material;
-  logic [KeyLen-1:0]  prep_key;
-  logic [BlkLen-1:0]  prep_v;
-  logic [CtrLen-1:0]  prep_rc;
+  logic  [KeyLen-1:0] prep_key;
+  logic  [BlkLen-1:0] prep_v;
+  logic  [CtrLen-1:0] prep_rc;
   logic               prep_gen_adata_null;
-
-  // cmdreq fifo
-  logic                        sfifo_cmdreq_wvld;
-  logic                        sfifo_cmdreq_wrdy;
-  logic  [CmdreqFifoWidth-1:0] sfifo_cmdreq_wdata;
-  logic                        sfifo_cmdreq_rvld;
-  logic                        sfifo_cmdreq_rrdy;
-  logic  [CmdreqFifoWidth-1:0] sfifo_cmdreq_rdata;
 
   // rcstage fifo
   logic                        sfifo_rcstage_wvld;
@@ -102,99 +90,59 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
     end
   end
 
+
   //--------------------------------------------
-  // input request fifo for staging cmd request
+  // Prepare/mux values for update step
   //--------------------------------------------
 
-  csrng_core_data_t req_data_fifo;
-
-  prim_fifo_sync #(
-    .Width(CmdreqFifoWidth),
-    .Pass(0),
-    .Depth(1),
-    .OutputZeroIfEmpty(1'b0)
-  ) u_prim_fifo_sync_cmdreq (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .clr_i   (!enable_i),
-    .wvalid_i(sfifo_cmdreq_wvld),
-    .wready_o(sfifo_cmdreq_wrdy),
-    .wdata_i (sfifo_cmdreq_wdata),
-    .rvalid_o(sfifo_cmdreq_rvld),
-    .rready_i(sfifo_cmdreq_rrdy),
-    .rdata_o (sfifo_cmdreq_rdata),
-    .full_o  (),
-    .depth_o (),
-    .err_o   ()
-  );
+  assign req_rdy_o = enable_i && sfifo_rcstage_wrdy && (update_req_rdy_i || prep_gen_adata_null);
 
   always_comb begin
-    req_data_fifo = req_data_i;
+    req_data = req_data_i;
     // Insert the FIPS info from entropy source on instantiate and reseed commands.
     // Else, keep the existing info (from state db).
-    req_data_fifo.fips = ((req_data_i.cmd == INS) || (req_data_i.cmd == RES)) ?
-                           req_entropy_fips_i : req_data_i.fips;
+    req_data.fips = ((req_data_i.cmd == INS) || (req_data_i.cmd == RES)) ? 
+                      req_entropy_fips_i : req_data_i.fips;
   end
 
-  assign sfifo_cmdreq_wdata = {req_glast_i,
-                               req_entropy_i,
-                               req_data_fifo};
-
-  assign {cmdreq_glast,
-          cmdreq_entropy,
-          cmdreq_data}   = sfifo_cmdreq_rdata;
-
-  assign sfifo_cmdreq_wvld = enable_i && req_vld_i;
-  assign sfifo_cmdreq_rrdy = enable_i && (update_req_rdy_i || gen_adata_null_q) &&
-                             sfifo_cmdreq_rvld;
-  assign req_rdy_o = sfifo_cmdreq_wrdy;
-
-  assign fifo_cmdreq_err_o =
-         {( sfifo_cmdreq_wvld && !sfifo_cmdreq_wrdy),
-          ( sfifo_cmdreq_rrdy && !sfifo_cmdreq_rvld),
-          (!sfifo_cmdreq_wrdy && !sfifo_cmdreq_rvld)};
-
-  //--------------------------------------------
-  // Prepare (mostly: mux) values for update step
-  //--------------------------------------------
-
   assign prep_seed_material =
-         (cmdreq_data.cmd == INS) ? (cmdreq_entropy ^ cmdreq_data.pdata) :
-         (cmdreq_data.cmd == RES) ? (cmdreq_entropy ^ cmdreq_data.pdata) :
-         (cmdreq_data.cmd == GEN) ? cmdreq_data.pdata :
-         (cmdreq_data.cmd == UPD) ? cmdreq_data.pdata :
+         (req_data.cmd == INS) ? (req_entropy_i ^ req_data.pdata) :
+         (req_data.cmd == RES) ? (req_entropy_i ^ req_data.pdata) :
+         (req_data.cmd == GEN) ? req_data.pdata :
+         (req_data.cmd == UPD) ? req_data.pdata :
          '0;
 
   assign prep_key =
-         (cmdreq_data.cmd == INS) ? '0 :
-         (cmdreq_data.cmd == RES) ? cmdreq_data.key :
-         (cmdreq_data.cmd == GEN) ? cmdreq_data.key :
-         (cmdreq_data.cmd == UPD) ? cmdreq_data.key :
+         (req_data.cmd == INS) ? '0 :
+         (req_data.cmd == RES) ? req_data.key :
+         (req_data.cmd == GEN) ? req_data.key :
+         (req_data.cmd == UPD) ? req_data.key :
          '0;
 
   assign prep_v =
-         (cmdreq_data.cmd == INS) ? '0 :
-         (cmdreq_data.cmd == RES) ? cmdreq_data.v :
-         (cmdreq_data.cmd == GEN) ? cmdreq_data.v :
-         (cmdreq_data.cmd == UPD) ? cmdreq_data.v :
+         (req_data.cmd == INS) ? '0 :
+         (req_data.cmd == RES) ? req_data.v :
+         (req_data.cmd == GEN) ? req_data.v :
+         (req_data.cmd == UPD) ? req_data.v :
          '0;
 
   assign prep_rc =
-         (cmdreq_data.cmd == INS) ? '0 :
-         (cmdreq_data.cmd == RES) ? '0 :
-         (cmdreq_data.cmd == GEN) ? cmdreq_data.rs_ctr :
-         (cmdreq_data.cmd == UPD) ? cmdreq_data.rs_ctr :
+         (req_data.cmd == INS) ? '0 :
+         (req_data.cmd == RES) ? '0 :
+         (req_data.cmd == GEN) ? req_data.rs_ctr :
+         (req_data.cmd == UPD) ? req_data.rs_ctr :
          '0;
 
-  assign prep_gen_adata_null = (cmdreq_data.cmd == GEN) && (cmdreq_data.pdata == '0);
+  assign prep_gen_adata_null = (req_data.cmd == GEN) && (req_data.pdata == '0);
 
-  assign gen_adata_null_d = !enable_i ? '0 : prep_gen_adata_null;
+  assign gen_adata_null_d = !enable_i ? 1'b0 :
+                            ((req_vld_i && req_rdy_o) ? prep_gen_adata_null : gen_adata_null_q);
 
   // send to the update block
-  assign update_req_vld_o = sfifo_cmdreq_rvld && !prep_gen_adata_null;
+  assign update_req_vld_o = req_vld_i && !prep_gen_adata_null;
   assign update_req_data_o = '{
-    inst_id: cmdreq_data.inst_id,
-    cmd:     cmdreq_data.cmd,
+    inst_id: req_data.inst_id,
+    cmd:     req_data.cmd,
     key:     prep_key,
     v:       prep_v,
     pdata:   prep_seed_material
@@ -227,19 +175,19 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   );
 
   always_comb begin
-    rcstage_core_data_fifo = cmdreq_data;
+    rcstage_core_data_fifo = req_data;
     rcstage_core_data_fifo.key    = prep_key;
     rcstage_core_data_fifo.v      = prep_v;
     rcstage_core_data_fifo.rs_ctr = prep_rc;
   end
 
-  assign sfifo_rcstage_wdata = {cmdreq_glast,
+  assign sfifo_rcstage_wdata = {req_glast_i,
                                 rcstage_core_data_fifo};
 
   assign {rcstage_glast,
           rcstage_data} = sfifo_rcstage_rdata;
 
-  assign sfifo_rcstage_wvld = sfifo_cmdreq_rrdy;
+  assign sfifo_rcstage_wvld = req_vld_i && req_rdy_o;
   assign sfifo_rcstage_rrdy = sfifo_rcstage_rvld && (update_rsp_vld_i || gen_adata_null_q);
 
   assign update_rsp_rdy_o = sfifo_rcstage_rvld && sfifo_keyvrc_wrdy;

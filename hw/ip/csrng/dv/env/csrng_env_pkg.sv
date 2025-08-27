@@ -56,7 +56,6 @@ package csrng_env_pkg;
   typedef enum int {
     sfifo_cmd_error      = 0,
     sfifo_genbits_error  = 1,
-    sfifo_cmdreq_error   = 2,
     sfifo_rcstage_error  = 3,
     sfifo_keyvrc_error   = 4,
     sfifo_updreq_error   = 5,
@@ -86,7 +85,6 @@ package csrng_env_pkg;
     // ERR_CODE
     sfifo_cmd_err           = 0,
     sfifo_genbits_err       = 1,
-    sfifo_cmdreq_err        = 2,
     sfifo_rcstage_err       = 3,
     sfifo_keyvrc_err        = 4,
     sfifo_updreq_err        = 5,
@@ -113,7 +111,6 @@ package csrng_env_pkg;
     // ERR_CODE_TEST
     sfifo_cmd_err_test      = 26,
     sfifo_genbits_err_test  = 27,
-    sfifo_cmdreq_err_test   = 28,
     sfifo_rcstage_err_test  = 29,
     sfifo_keyvrc_err_test   = 30,
     sfifo_updreq_err_test   = 31,
@@ -142,7 +139,6 @@ package csrng_env_pkg;
   typedef enum int {
     SFIFO_CMD_ERR      = 0,
     SFIFO_GENBITS_ERR  = 1,
-    SFIFO_CMDREQ_ERR   = 2,
     SFIFO_RCSTAGE_ERR  = 3,
     SFIFO_KEYVRC_ERR   = 4,
     SFIFO_UPDREQ_ERR   = 5,
@@ -193,7 +189,6 @@ package csrng_env_pkg;
     sfifo_updreq   = 10,
     sfifo_keyvrc   = 11,
     sfifo_rcstage  = 12,
-    sfifo_cmdreq   = 13,
     sfifo_genbits  = 14,
     sfifo_cmd      = 15
   } which_fifo_e;
