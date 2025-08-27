@@ -3259,8 +3259,9 @@ status_t handle_ibex_fi_char_sram_read_ret(ujson_t *uj)
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  uint32_t *ret_ram = (uint32_t *)TOP_EARLGREY_RAM_RET_AON_BASE_ADDR;
-  size_t ret_ram_len = TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES / sizeof(ret_ram[0]);
+  uint32_t *ret_ram = (uint32_t *)TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR;
+  size_t ret_ram_len =
+      TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / sizeof(ret_ram[0]);
   size_t ret_ram_half_len = ret_ram_len / 2;
 
   // Write counter value into ret SRAM.

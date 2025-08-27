@@ -31,7 +31,7 @@ enum {
   // The retention SRAM testutils allocate some internal data as well as a
   // number of counters; both of which should not be overwritten by this
   // test. Hence, the actual base address is offset to account for this.
-  kRetSramBaseAddr = TOP_EARLGREY_RAM_RET_AON_BASE_ADDR +
+  kRetSramBaseAddr = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
                      offsetof(retention_sram_t, owner) +
                      4 * kRetSramTestutilsNumberOfCounters,
 
