@@ -36,5 +36,34 @@
         }
       ]
     }
-  ]
+  ],
+  "gpios": [
+    "Ioa0",
+    "Ioa1",
+    // IOA2 is `VBUS_EN_SENSE`
+    "Ioa3",
+    "Ioa4",
+    "Ioa5",
+    "Ioa6",
+    "Ioa7",
+    "Ioa8",
+    "Iob4",
+    "Iob5",
+    "Iob6",
+    "Ioc0",
+    "Ioc1",
+    "Ioc2",
+    "Ioc5",
+    "Ioc6",
+    "Ioc10",
+    "Ioc11",
+    "Ioc12",
+    "Ior5",
+    "Ior6",
+    "Ior7",
+    "Ior10",
+    "Ior11",
+    "Ior12",
+    "Ior13",
+  ],
 }
