@@ -490,42 +490,42 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_RV_CORE_IBEX_CFG_SIZE_BYTES = 32'h100;
 
   /**
-   * Memory base address for ram_ret_aon in top earlgrey.
+   * Memory base address for ram memory on sram_ctrl_ret_aon in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR = 32'h40600000;
 
   /**
-   * Memory size for ram_ret_aon in top earlgrey.
+   * Memory size for ram memory on sram_ctrl_ret_aon in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES = 32'h1000;
 
   /**
-   * Memory base address for eflash in top earlgrey.
+   * Memory base address for mem memory on flash_ctrl in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR = 32'h20000000;
 
   /**
-   * Memory size for eflash in top earlgrey.
+   * Memory size for mem memory on flash_ctrl in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES = 32'h100000;
 
   /**
-   * Memory base address for ram_main in top earlgrey.
+   * Memory base address for ram memory on sram_ctrl_main in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR = 32'h10000000;
 
   /**
-   * Memory size for ram_main in top earlgrey.
+   * Memory size for ram memory on sram_ctrl_main in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES = 32'h20000;
 
   /**
-   * Memory base address for rom in top earlgrey.
+   * Memory base address for rom memory on rom_ctrl in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR = 32'h8000;
 
   /**
-   * Memory size for rom in top earlgrey.
+   * Memory size for rom memory on rom_ctrl in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES = 32'h8000;
 
