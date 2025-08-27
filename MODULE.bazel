@@ -26,13 +26,8 @@ bazel_dep(
 )
 bazel_dep(
     name = "lowrisc_misc_linters",
+    version = "0.0.0",
     dev_dependency = True,
-)
-archive_override(
-    module_name = "lowrisc_misc_linters",
-    integrity = "sha256-eRFiSjD638NuOjDDScMuEKVYpmotDY0yX3jxYL/d3ac=",
-    strip_prefix = "misc-linters-20250217_01",
-    urls = ["https://github.com/lowRISC/misc-linters/archive/refs/tags/20250217_01.tar.gz"],
 )
 
 archive_override(
@@ -49,25 +44,6 @@ bazel_dep(name = "rules_rust", version = "0.59.2")
 bazel_dep(name = "rules_rust_bindgen", version = "0.59.2")
 bazel_dep(name = "rules_rust_mdbook", version = "0.59.2")
 bazel_dep(name = "toolchains_llvm", version = "1.1.2")
-
-# Overrides and patches:
-single_version_override(
-    module_name = "rules_rust",
-    patch_strip = 1,
-    patches = [
-        "@lowrisc_opentitan//third_party/rust/patches:rules_rust.extra_rustc_toolchain_dirs.patch",
-    ],
-    version = "0.59.2",
-)
-
-single_version_override(
-    module_name = "rules_rust_bindgen",
-    patch_strip = 3,
-    patches = [
-        "@lowrisc_opentitan//third_party/rust/patches:rules_rust.bindgen_static_lib.patch",
-    ],
-    version = "0.59.2",
-)
 
 # Rust toolchain:
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
@@ -236,18 +212,6 @@ use_repo(pip, "ot_python_deps")
 
 # Dependencies:
 bazel_dep(name = "rules_foreign_cc", version = "0.9.0")
-
-# Overrides and patches:
-single_version_override(
-    module_name = "rules_foreign_cc",
-    patches = [
-        # Patch to remove all build log file output when using rules_foreign_cc
-        # toolchains to ensure deterministic Bazel builds. See upstream issue:
-        # https://github.com/bazel-contrib/rules_foreign_cc/issues/1313
-        "@lowrisc_opentitan//third_party/foreign_cc/patches:rules_foreign_cc.remove_log_output.patch",
-    ],
-    version = "0.9.0",
-)
 
 ################### originally from //third_party/tock:tock.MODULE.bazel
 

@@ -1,0 +1,43 @@
+"""bazelbuild/rules_rust/extensions/bindgen"""
+
+module(
+    name = "rules_rust_bindgen",
+    version = "0.59.2",
+)
+
+bazel_dep(name = "rules_rust", version = "0.59.2")
+bazel_dep(name = "bazel_features", version = "1.21.0")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "platforms", version = "0.0.11")
+bazel_dep(name = "rules_cc", version = "0.1.1")
+bazel_dep(name = "llvm-project", version = "17.0.3.bcr.2")
+
+rust_ext = use_extension("//:extensions.bzl", "rust_ext")
+use_repo(
+    rust_ext,
+    "rules_rust_bindgen__bindgen-cli-0.71.1",
+    "rules_rust_bindgen_deps",
+    "rules_rust_bindgen_deps__bindgen-0.71.1",
+    "rules_rust_bindgen_deps__clang-sys-1.8.1",
+    "rules_rust_bindgen_deps__clap-4.5.32",
+    "rules_rust_bindgen_deps__clap_complete-4.5.46",
+    "rules_rust_bindgen_deps__env_logger-0.10.2",
+)
+
+register_toolchains(
+    "//:default_bindgen_toolchain",
+    dev_dependency = True,
+)
+
+bazel_dep(name = "rules_testing", version = "0.7.0", dev_dependency = True)
+bazel_dep(name = "bazel_ci_rules", version = "1.0.0", dev_dependency = True)
+
+rust_ext_dev = use_extension(
+    "//private:internal_extensions.bzl",
+    "rust_ext_dev",
+    dev_dependency = True,
+)
+use_repo(
+    rust_ext_dev,
+    "buildkite_config",
+)
