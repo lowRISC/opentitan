@@ -46,7 +46,7 @@ dependencies.
 export FPGA_TARGET=hyper310
 bazel build \
   --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_${FPGA_TARGET}_rom_with_fake_keys \
-  --//hw/bitstream/universal:otp=//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_test_unlocked0_manuf_empty \
+  --//hw/bitstream/universal:otp=//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty \
   //sw/host/provisioning/orchestrator/src:orchestrator.zip
 ```
 
