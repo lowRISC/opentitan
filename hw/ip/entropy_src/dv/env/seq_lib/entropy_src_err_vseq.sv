@@ -180,10 +180,9 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
 
         fld = csr.get_field_by_name({cfg.which_fifo.name(), "_err"});
         force_path_err(path, value, fld, 1'b1);
-        // TODO(#23988): uncomment the following lines.
-        // // Additionally check if FIFO_STATE_ERR is set.
-        // fld = csr.get_field_by_name("fifo_state_err");
-        // csr_rd_check(.ptr(fld), .compare_value(1'b1));
+        // Additionally check if FIFO_STATE_ERR is set.
+        fld = csr.get_field_by_name("fifo_state_err");
+        csr_rd_check(.ptr(fld), .compare_value(1'b1));
         cov_vif.cg_fifo_err_sample(cfg.which_fifo_err, cfg.which_fifo);
       end
       sfifo_esrng_err_test, sfifo_distr_err_test, sfifo_observe_err_test, sfifo_esfinal_err_test,
