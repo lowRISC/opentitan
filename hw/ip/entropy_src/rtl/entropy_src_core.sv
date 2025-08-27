@@ -950,16 +950,19 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign fifo_write_err_sum =
          sfifo_esrng_err[2] ||
          sfifo_observe_err[2] ||
+         sfifo_distr_err[2] ||
          sfifo_esfinal_err[2] ||
          err_code_test_bit[28];
   assign fifo_read_err_sum =
          sfifo_esrng_err[1] ||
          sfifo_observe_err[1] ||
+         sfifo_distr_err[1] ||
          sfifo_esfinal_err[1] ||
          err_code_test_bit[29];
   assign fifo_status_err_sum =
          sfifo_esrng_err[0] ||
          sfifo_observe_err[0] ||
+         sfifo_distr_err[0] ||
          sfifo_esfinal_err[0] ||
          err_code_test_bit[30];
 
