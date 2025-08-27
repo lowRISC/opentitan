@@ -15,7 +15,7 @@
 extern "C" {
 #endif  // __cplusplus
 
-static_assert((TOP_EARLGREY_EFLASH_SIZE_BYTES % 2) == 0,
+static_assert((TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES % 2) == 0,
               "Flash size is not divisible by 2");
 
 #ifdef OT_PLATFORM_RV32
@@ -28,7 +28,7 @@ static_assert((TOP_EARLGREY_EFLASH_SIZE_BYTES % 2) == 0,
  */
 OT_WARN_UNUSED_RESULT
 inline const manifest_t *rom_ext_boot_policy_manifest_a_get(void) {
-  return (const manifest_t *)(TOP_EARLGREY_EFLASH_BASE_ADDR +
+  return (const manifest_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
                               CHIP_ROM_EXT_SIZE_MAX);
 }
 
@@ -41,8 +41,8 @@ inline const manifest_t *rom_ext_boot_policy_manifest_a_get(void) {
  */
 OT_WARN_UNUSED_RESULT
 inline const manifest_t *rom_ext_boot_policy_manifest_b_get(void) {
-  return (const manifest_t *)(TOP_EARLGREY_EFLASH_BASE_ADDR +
-                              (TOP_EARLGREY_EFLASH_SIZE_BYTES / 2) +
+  return (const manifest_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
+                              (TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2) +
                               CHIP_ROM_EXT_SIZE_MAX);
 }
 #else

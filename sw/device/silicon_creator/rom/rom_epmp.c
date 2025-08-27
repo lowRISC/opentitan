@@ -40,9 +40,9 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   const epmp_region_t rom = {.start = TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR,
                              .end = TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR +
                                     TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES};
-  const epmp_region_t eflash = {
-      .start = TOP_EARLGREY_EFLASH_BASE_ADDR,
-      .end = TOP_EARLGREY_EFLASH_BASE_ADDR + TOP_EARLGREY_EFLASH_SIZE_BYTES};
+  const epmp_region_t eflash = {.start = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+                                .end = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
+                                       TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES};
   const epmp_region_t mmio = {
       .start = TOP_EARLGREY_MMIO_BASE_ADDR,
       .end = TOP_EARLGREY_MMIO_BASE_ADDR + TOP_EARLGREY_MMIO_SIZE_BYTES};
@@ -51,9 +51,9 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
                                           TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES};
   const epmp_region_t stack_guard = {.start = (uintptr_t)_stack_start,
                                      .end = (uintptr_t)_stack_start + 4};
-  const epmp_region_t ram = {.start = TOP_EARLGREY_RAM_MAIN_BASE_ADDR,
-                             .end = TOP_EARLGREY_RAM_MAIN_BASE_ADDR +
-                                    TOP_EARLGREY_RAM_MAIN_SIZE_BYTES};
+  const epmp_region_t ram = {.start = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
+                             .end = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
+                                    TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES};
 
   epmp_perm_t debug_rom_access = kEpmpPermLockedNoAccess;
   switch (launder32(lc_state)) {

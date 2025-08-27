@@ -140,8 +140,8 @@ static void erase_and_write_regions(void) {
 static void read_and_check_host_if(uint32_t addr, const uint32_t *check_data) {
   uint32_t host_data[kNumTestWords];
   mmio_region_memcpy_from_mmio32(
-      mmio_region_from_addr(TOP_EARLGREY_EFLASH_BASE_ADDR), addr, &host_data,
-      kNumTestBytes);
+      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR), addr,
+      &host_data, kNumTestBytes);
   CHECK_ARRAYS_EQ(host_data, check_data, kNumTestWords);
 }
 

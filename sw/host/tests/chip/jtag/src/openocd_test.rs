@@ -125,7 +125,7 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     // Test bulk read/writes by reading the content of the RAM, then overwrite it with
     // known values and try to read-back, we restore the content afterwards
-    let test_ram_addr = top_earlgrey::RAM_RET_AON_BASE_ADDR as u32;
+    let test_ram_addr = top_earlgrey::SRAM_CTRL_RET_AON_RAM_BASE_ADDR as u32;
     const SIZE: usize = 20;
     let mut ram = [0u8; SIZE];
     assert_eq!(jtag.read_memory(test_ram_addr, &mut ram)?, SIZE);

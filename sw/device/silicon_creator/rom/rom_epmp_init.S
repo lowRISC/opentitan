@@ -62,7 +62,7 @@ rom_epmp_init:
   csrw pmpaddr1, t0
 
   // ROM
-  li   t0, NAPOT(TOP_EARLGREY_ROM_BASE_ADDR, TOP_EARLGREY_ROM_SIZE_BYTES)
+  li   t0, NAPOT(TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR, TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES)
   csrw pmpaddr2, t0
 
   // ROM_EXT TEXT (configured after signature verification)
@@ -70,7 +70,7 @@ rom_epmp_init:
   csrw pmpaddr4, zero // ROM_EXT TEXT high
 
   // eFLASH
-  li   t0, NAPOT(TOP_EARLGREY_EFLASH_BASE_ADDR, TOP_EARLGREY_EFLASH_SIZE_BYTES)
+  li   t0, NAPOT(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR, TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES)
   csrw pmpaddr5, t0
 
   // MMIO
@@ -88,7 +88,7 @@ rom_epmp_init:
   csrw pmpaddr14, t0
 
   // RAM
-  li   t0, NAPOT(TOP_EARLGREY_RAM_MAIN_BASE_ADDR, TOP_EARLGREY_RAM_MAIN_SIZE_BYTES)
+  li   t0, NAPOT(TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR, TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES)
   csrw pmpaddr15, t0
 
   // Set PMP configuration registers.
