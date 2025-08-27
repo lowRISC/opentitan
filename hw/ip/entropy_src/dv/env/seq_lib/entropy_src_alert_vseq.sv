@@ -34,7 +34,7 @@ class entropy_src_alert_vseq extends entropy_src_base_vseq;
          create("m_rng_push_seq");
 
     // Remember that the startup seed requires twice as many samples
-    m_rng_push_seq.num_trans = (num_reqs + 1) * window_size/`RNG_BUS_WIDTH;
+    m_rng_push_seq.num_trans = (num_reqs + 1) * window_size;
 
     // Use a randomly generated but fixed rng_val through this test to make the entropy bus
     // value keep stable to induce the es_bus_cmp_alert
