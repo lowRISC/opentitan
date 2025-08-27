@@ -10,5 +10,6 @@
   import_cfgs: ["{proj_root}/hw/ip/entropy_src/dv/entropy_src_base_sim_cfg.hjson"]
 
   build_opts: ["+define+RNG_BUS_WIDTH=4",
-               "+define+RNG_BUS_BIT_SEL_WIDTH=2"]
+               "+define+RNG_BUS_BIT_SEL_WIDTH=2",
+               "+define+DISTR_FIFO_DEPTH=2"]
 }
