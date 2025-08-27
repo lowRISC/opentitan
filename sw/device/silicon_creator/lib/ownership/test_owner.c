@@ -71,6 +71,10 @@
   (owner_keydata_t) { .ecdsa = UNLOCK_ECDSA_P256 }
 #endif
 
+#ifndef TEST_OWNER_SRAM_EXEC_MODE
+#define TEST_OWNER_SRAM_EXEC_MODE kOwnerSramExecModeDisabledLocked
+#endif
+
 // The following preprocessor symbols are only relevant when
 // WITH_RESCUE_PROTOCOL is defined.
 #ifndef WITH_RESCUE_GPIO_PARAM
@@ -121,7 +125,7 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
   owner_page[0].header.length = 2048;
   owner_page[0].header.version = (struct_version_t){0, 0};
   owner_page[0].config_version = TEST_OWNER_CONFIG_VERSION;
-  owner_page[0].sram_exec_mode = kOwnerSramExecModeDisabledLocked;
+  owner_page[0].sram_exec_mode = TEST_OWNER_SRAM_EXEC_MODE;
   owner_page[0].ownership_key_alg = TEST_OWNER_KEY_ALG;
   owner_page[0].update_mode = TEST_OWNER_UPDATE_MODE;
   owner_page[0].min_security_version_bl0 = UINT32_MAX;

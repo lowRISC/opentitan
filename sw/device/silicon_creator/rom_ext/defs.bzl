@@ -52,6 +52,18 @@ TEST_OWNER_CONFIGS = {
         "owner_defines": ["TEST_OWNER_UPDATE_MODE=kOwnershipUpdateModeNewVersion"],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
     },
+    "owner_sram_exec_enabled": {
+        "owner_defines": [
+            "TEST_OWNER_SRAM_EXEC_MODE=kOwnerSramExecModeEnabled",
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
+    "owner_sram_exec_disabled": {
+        "owner_defines": [
+            "TEST_OWNER_SRAM_EXEC_MODE=kOwnerSramExecModeDisabled",
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
     "usbdfu": {
         # Enable USB-DFU triggered by SW_STRAPS value 3.
         "owner_defines": [
