@@ -29,8 +29,8 @@ use indicatif::{ProgressBar, ProgressStyle};
 
 use std::any::Any;
 use std::cell::{Cell, RefCell};
-use std::collections::HashMap;
 use std::collections::hash_map::Entry;
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::time::Duration;
@@ -205,6 +205,7 @@ pub struct TransportWrapperBuilder {
     i2c_conf_map: HashMap<String, config::I2cConfiguration>,
     strapping_conf_map: HashMap<String, Vec<(String, PinConfiguration)>>,
     io_expander_conf_map: HashMap<String, config::IoExpander>,
+    gpio_conf: HashSet<String>,
 }
 
 // This is the structure to be passed to each Command implementation,
@@ -222,6 +223,7 @@ pub struct TransportWrapper {
     spi_conf_map: HashMap<String, SpiConfiguration>,
     i2c_conf_map: HashMap<String, I2cConfiguration>,
     strapping_conf_map: HashMap<String, HashMap<String, PinConfiguration>>,
+    gpio_conf: HashSet<String>,
     //
     // Below fields are lazily populated, as instances are requested.
     //
@@ -253,6 +255,7 @@ impl TransportWrapperBuilder {
             i2c_conf_map: HashMap::new(),
             strapping_conf_map: HashMap::new(),
             io_expander_conf_map: HashMap::new(),
+            gpio_conf: HashSet::new(),
         }
     }
 
@@ -434,6 +437,9 @@ impl TransportWrapperBuilder {
                     io_expander_conf.name
                 )),
             }
+        }
+        for pin in file.gpios {
+            self.gpio_conf.insert(pin);
         }
         Ok(())
     }
@@ -645,6 +651,7 @@ impl TransportWrapperBuilder {
             spi_conf_map,
             i2c_conf_map,
             strapping_conf_map,
+            gpio_conf: self.gpio_conf,
             pin_instance_map: RefCell::new(HashMap::new()),
             spi_physical_map: RefCell::new(HashMap::new()),
             spi_logical_map: RefCell::new(HashMap::new()),
@@ -839,6 +846,10 @@ impl TransportWrapper {
             result.push(self.gpio_pin(name)?);
         }
         Ok(result)
+    }
+
+    pub fn gpios(&self) -> &HashSet<String> {
+        &self.gpio_conf
     }
 
     /// Returns a [`GpioMonitoring`] implementation.
