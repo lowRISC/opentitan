@@ -2398,7 +2398,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
       // If the distr FIFO is full we model backpressure by not doing anything.
       // Since this is a packer FIFO we need to wait until we have a full word before we pop.
-      if ((distr_fifo_q.size() >= DISTR_FIFO_DEPTH) ||
+      if ((distr_fifo_q.size() >= `DISTR_FIFO_DEPTH) ||
           (postht_fifo_q.size() < POST_HT_WIDTH/`RNG_BUS_WIDTH)) begin
         // Signal to the preceding FIFOs that we are done processing for the current cycle.
         postht_fifo_processed = 1;
