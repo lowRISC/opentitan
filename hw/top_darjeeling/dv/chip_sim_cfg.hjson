@@ -182,16 +182,16 @@
         // TODO: find where in run phase we are using this pkg. It fails during ibex TLUL integrity
         // check.
         // '''cd {proj_root} && ./util/topgen.py -t {ral_spec} \
-        //        -o hw/{top_chip} --rnd_cnst_seed {seed}
+        //        -o hw/{top_chip} --rnd_cnst_seed {long_seed}
         // ''',
         // Generate LC encoding
-        "cd {proj_root} && ./util/design/gen-lc-state-enc.py --seed {seed}",
+        "cd {proj_root} && ./util/design/gen-lc-state-enc.py --seed {long_seed}",
         // Generate OTP memory map and scrambling constants keys.
-        "cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {seed}",
+        "cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {long_seed}",
         // Use eval_cmd to save build_seed in a file and reuse that file during run phase.
         // Create the build directory first because eval_cmd runs before actual build phase command
         // execution.
-        '''{eval_cmd} mkdir -p {build_dir}; echo {seed} > {build_seed_file_path}; \
+        '''{eval_cmd} mkdir -p {build_dir}; echo {long_seed} > {build_seed_file_path}; \
            echo "echo create file {build_seed_file_path}"
         '''
       ]
