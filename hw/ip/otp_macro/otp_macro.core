@@ -15,6 +15,7 @@ filesets:
       - lowrisc:ip:otp_macro_pkg
       - lowrisc:virtual_ip:otp_ctrl_macro_pkg
       - lowrisc:virtual_constants:top_racl_pkg
+      - lowrisc:systems:ast_pkg
     files:
       - rtl/otp_macro_reg_pkg.sv
       - rtl/otp_macro_prim_reg_top.sv
