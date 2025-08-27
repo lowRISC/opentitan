@@ -993,9 +993,11 @@ class TopGen:
     def memories(self, addr_space) -> List[Tuple[str, MemoryRegion]]:
         '''Return a list of MemoryRegions objects for memories on the bus.
 
-        The list returned is pairs (label, region) where label is the global
-        label of the memory. region is a MemoryRegion representing the memory,
-        and its name is set to the full interface name (<IP instance name>_<interface>).
+        The list returned is pairs (full_if, region) where full_if is itself a
+        pair (inst_name, if_name). inst_name is the name of some IP block
+        instantiation. if_name is the name of the interface. region is a
+        MemoryRegion representing the memory, and its name is set to the full
+        interface name (<IP instance name>_<interface>).
 
         Parameters:
             addr_space: The address space representing the bus for generation.
@@ -1010,10 +1012,12 @@ class TopGen:
                     if addr_space not in base:
                         continue
 
-                    full_if_name = Name.from_snake_case(inst['name']) + Name.from_snake_case(if_name)
+                    full_if = (inst['name'], if_name)
+                    full_if_name = Name.from_snake_case(inst['name']) + \
+                        Name.from_snake_case(if_name)
                     region = MemoryRegion(self._top_name, full_if_name, addr_space,
                                           base[addr_space], size)
-                    ret.append((val["label"], region))
+                    ret.append((full_if, region))
 
         return ret
 
