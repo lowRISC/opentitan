@@ -87,6 +87,8 @@ status_t gcm_remask_key(aes_gcm_context_t *internal_ctx) {
                  internal_ctx->key.key_len);
     hardened_xor((uint32_t *)internal_ctx->key.key_shares[1], mask,
                  internal_ctx->key.key_len);
+    // Update the checksum.
+    internal_ctx->key.checksum = aes_key_integrity_checksum(&internal_ctx->key);
   } else {
     HARDENED_CHECK_EQ(internal_ctx->key.sideload, kHardenedBoolTrue);
   }
@@ -162,6 +164,9 @@ static status_t aes_gcm_key_construct(otcrypto_blinded_key_t *blinded_key,
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(aes_key->sideload, blinded_key->config.hw_backed);
+
+  // Create the checksum of the key and store it in the key structure.
+  aes_key->checksum = aes_key_integrity_checksum(aes_key);
 
   return OTCRYPTO_OK;
 }
