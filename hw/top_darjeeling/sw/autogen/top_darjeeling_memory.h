@@ -24,65 +24,66 @@
 
 // Include guard for assembler
 #ifdef __ASSEMBLER__
-/**
- * Memory base for soc_proxy_ctn in top darjeeling.
- */
-#define TOP_DARJEELING_CTN_BASE_ADDR 0x40000000
 
 /**
- * Memory size for soc_proxy_ctn in top darjeeling.
+ * Memory base for ctn memory on soc_proxy in top darjeeling.
  */
-#define TOP_DARJEELING_CTN_SIZE_BYTES 0x80000000
+#define TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR 0x40000000
 
 /**
- * Memory base for sram_ctrl_ret_aon_ram_ret_aon in top darjeeling.
+ * Memory size for ctn memory on soc_proxy in top darjeeling.
  */
-#define TOP_DARJEELING_RAM_RET_AON_BASE_ADDR 0x30600000
+#define TOP_DARJEELING_SOC_PROXY_CTN_SIZE_BYTES 0x80000000
 
 /**
- * Memory size for sram_ctrl_ret_aon_ram_ret_aon in top darjeeling.
+ * Memory base for ram memory on sram_ctrl_ret_aon in top darjeeling.
  */
-#define TOP_DARJEELING_RAM_RET_AON_SIZE_BYTES 0x1000
+#define TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR 0x30600000
 
 /**
- * Memory base for sram_ctrl_main_ram_main in top darjeeling.
+ * Memory size for ram memory on sram_ctrl_ret_aon in top darjeeling.
  */
-#define TOP_DARJEELING_RAM_MAIN_BASE_ADDR 0x10000000
+#define TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES 0x1000
 
 /**
- * Memory size for sram_ctrl_main_ram_main in top darjeeling.
+ * Memory base for ram memory on sram_ctrl_main in top darjeeling.
  */
-#define TOP_DARJEELING_RAM_MAIN_SIZE_BYTES 0x10000
+#define TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR 0x10000000
 
 /**
- * Memory base for sram_ctrl_mbox_ram_mbox in top darjeeling.
+ * Memory size for ram memory on sram_ctrl_main in top darjeeling.
  */
-#define TOP_DARJEELING_RAM_MBOX_BASE_ADDR 0x11000000
+#define TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES 0x10000
 
 /**
- * Memory size for sram_ctrl_mbox_ram_mbox in top darjeeling.
+ * Memory base for ram memory on sram_ctrl_mbox in top darjeeling.
  */
-#define TOP_DARJEELING_RAM_MBOX_SIZE_BYTES 0x1000
+#define TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR 0x11000000
 
 /**
- * Memory base for rom_ctrl0_rom0 in top darjeeling.
+ * Memory size for ram memory on sram_ctrl_mbox in top darjeeling.
  */
-#define TOP_DARJEELING_ROM0_BASE_ADDR 0x00008000
+#define TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES 0x1000
 
 /**
- * Memory size for rom_ctrl0_rom0 in top darjeeling.
+ * Memory base for rom memory on rom_ctrl0 in top darjeeling.
  */
-#define TOP_DARJEELING_ROM0_SIZE_BYTES 0x8000
+#define TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR 0x8000
 
 /**
- * Memory base for rom_ctrl1_rom1 in top darjeeling.
+ * Memory size for rom memory on rom_ctrl0 in top darjeeling.
  */
-#define TOP_DARJEELING_ROM1_BASE_ADDR 0x00020000
+#define TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES 0x8000
 
 /**
- * Memory size for rom_ctrl1_rom1 in top darjeeling.
+ * Memory base for rom memory on rom_ctrl1 in top darjeeling.
  */
-#define TOP_DARJEELING_ROM1_SIZE_BYTES 0x10000
+#define TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR 0x20000
+
+/**
+ * Memory size for rom memory on rom_ctrl1 in top darjeeling.
+ */
+#define TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES 0x10000
 
 
 /**

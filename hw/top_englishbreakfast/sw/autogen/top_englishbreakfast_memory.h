@@ -24,35 +24,36 @@
 
 // Include guard for assembler
 #ifdef __ASSEMBLER__
-/**
- * Memory base for flash_ctrl_eflash in top englishbreakfast.
- */
-#define TOP_ENGLISHBREAKFAST_EFLASH_BASE_ADDR 0x20000000
 
 /**
- * Memory size for flash_ctrl_eflash in top englishbreakfast.
+ * Memory base for mem memory on flash_ctrl in top englishbreakfast.
  */
-#define TOP_ENGLISHBREAKFAST_EFLASH_SIZE_BYTES 0x10000
+#define TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_BASE_ADDR 0x20000000
 
 /**
- * Memory base for sram_ctrl_main_ram_main in top englishbreakfast.
+ * Memory size for mem memory on flash_ctrl in top englishbreakfast.
  */
-#define TOP_ENGLISHBREAKFAST_RAM_MAIN_BASE_ADDR 0x10000000
+#define TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES 0x10000
 
 /**
- * Memory size for sram_ctrl_main_ram_main in top englishbreakfast.
+ * Memory base for ram memory on sram_ctrl_main in top englishbreakfast.
  */
-#define TOP_ENGLISHBREAKFAST_RAM_MAIN_SIZE_BYTES 0x20000
+#define TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_BASE_ADDR 0x10000000
 
 /**
- * Memory base for rom_ctrl_rom in top englishbreakfast.
+ * Memory size for ram memory on sram_ctrl_main in top englishbreakfast.
  */
-#define TOP_ENGLISHBREAKFAST_ROM_BASE_ADDR 0x00008000
+#define TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_SIZE_BYTES 0x20000
 
 /**
- * Memory size for rom_ctrl_rom in top englishbreakfast.
+ * Memory base for rom memory on rom_ctrl in top englishbreakfast.
  */
-#define TOP_ENGLISHBREAKFAST_ROM_SIZE_BYTES 0x8000
+#define TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_BASE_ADDR 0x8000
+
+/**
+ * Memory size for rom memory on rom_ctrl in top englishbreakfast.
+ */
+#define TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_SIZE_BYTES 0x8000
 
 
 /**

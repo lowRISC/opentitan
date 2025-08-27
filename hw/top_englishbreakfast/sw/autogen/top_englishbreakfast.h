@@ -391,32 +391,32 @@ extern "C" {
 
 
 /**
- * Memory base address for eflash in top englishbreakfast.
+ * Memory base address for mem memory on flash_ctrl in top englishbreakfast.
  */
 #define TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_BASE_ADDR 0x20000000u
 
 /**
- * Memory size for eflash in top englishbreakfast.
+ * Memory size for mem memory on flash_ctrl in top englishbreakfast.
  */
 #define TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES 0x10000u
 
 /**
- * Memory base address for ram_main in top englishbreakfast.
+ * Memory base address for ram memory on sram_ctrl_main in top englishbreakfast.
  */
 #define TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_BASE_ADDR 0x10000000u
 
 /**
- * Memory size for ram_main in top englishbreakfast.
+ * Memory size for ram memory on sram_ctrl_main in top englishbreakfast.
  */
 #define TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_SIZE_BYTES 0x20000u
 
 /**
- * Memory base address for rom in top englishbreakfast.
+ * Memory base address for rom memory on rom_ctrl in top englishbreakfast.
  */
 #define TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_BASE_ADDR 0x8000u
 
 /**
- * Memory size for rom in top englishbreakfast.
+ * Memory size for rom memory on rom_ctrl in top englishbreakfast.
  */
 #define TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_SIZE_BYTES 0x8000u
 

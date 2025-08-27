@@ -41,23 +41,23 @@ package top_${top["name"]}${addr_space_suffix}_pkg;
   parameter int unsigned ${region.size_bytes_name().as_c_define()} = ${hex_size_bytes};
 
 % endfor
-% for name, region in helper.memories(addr_space_name):
+% for (inst_name, if_name), region in helper.memories(addr_space_name):
 <%
     hex_base_addr = "32'h{:x}".format(region.base_addr)
     hex_size_bytes = "32'h{:x}".format(region.size_bytes)
 %>\
   /**
-   * Memory base address for ${name} in top ${top["name"]}.
+   * Memory base address for ${if_name} memory on ${inst_name} in top ${top["name"]}.
    */
   parameter int unsigned ${region.base_addr_name().as_c_define()} = ${hex_base_addr};
 
   /**
-   * Memory size for ${name} in top ${top["name"]}.
+   * Memory size for ${if_name} memory on ${inst_name} in top ${top["name"]}.
    */
   parameter int unsigned ${region.size_bytes_name().as_c_define()} = ${hex_size_bytes};
   ## TODO: we need a more holistic approach to declare memories and IPs sitting in the
   ## CTN address space. For now, we create the base and offset for the CTN SRAM with this workaround.
-  % if name == "ctn":
+  % if inst_name == "soc_proxy" and if_name == "ctn":
 <%
     hex_base_addr = "32'h{:x}".format(region.base_addr + 0x01000000)
     hex_size_bytes = "32'h{:x}".format(0x00100000)
