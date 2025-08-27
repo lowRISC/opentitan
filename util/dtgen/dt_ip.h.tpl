@@ -45,6 +45,13 @@ ${helper.inst_enum.render()}
  */
 ${helper.reg_block_enum.render()}
 
+/**
+ * List of memories.
+ *
+ * Memories are guaranteed to start at 0 and to be consecutively numbered.
+ */
+${helper.memory_enum.render()}
+
 /** Primary register block (associated with the "primary" set of registers that control the IP). */
 <%
   default_reg_block_name = (helper.reg_block_enum.name + Name(["primary"])).as_c_enum()
@@ -168,6 +175,28 @@ static inline uint32_t dt_${device_name}_primary_reg_block(
     dt_${device_name}_t dt) {
   return dt_${device_name}_reg_block(dt, ${default_reg_block_value});
 }
+
+/**
+ * Get the base address of a memory.
+ *
+ * @param dt Instance of ${device_name}.
+ * @param mem The memory requested.
+ * @return The base address of the requested memory.
+ */
+uint32_t dt_${device_name}_memory_base(
+    dt_${device_name}_t dt,
+    dt_${device_name}_memory_t mem);
+
+/**
+ * Get the size of a memory.
+ *
+ * @param dt Instance of ${device_name}.
+ * @param mem The memory requested.
+ * @return The size of the requested memory.
+ */
+uint32_t dt_${device_name}_memory_size(
+    dt_${device_name}_t dt,
+    dt_${device_name}_memory_t mem);
 
 % if helper.has_irqs():
 /**
