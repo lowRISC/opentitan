@@ -66,7 +66,7 @@ sh_test(
         "PYTHON": "$(location @python3//:python3)",
     },
     tags = [
-        "hyper310",
+        "cw310",
         "manuf",
     ],
 )
