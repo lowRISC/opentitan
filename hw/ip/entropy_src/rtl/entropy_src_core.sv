@@ -10,6 +10,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   parameter int RngBusBitSelWidth     = 2,
   parameter int HealthTestWindowWidth = 18,
   parameter int EsFifoDepth           = 3,
+  parameter bit EnCsAesHaltReqIf      = 1'b1,
   parameter int DistrFifoDepth        = 2,
   parameter int BucketHtDataWidth     = 4,
   parameter int NumBucketHtInst       = prim_util_pkg::ceil_div(RngBusWidth, BucketHtDataWidth)
@@ -441,6 +442,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [2:0]                   sha3_fsm;
   logic [32:0]                  sha3_err;
   logic                         cs_aes_halt_req;
+  logic                         cs_aes_halt_ack;
   logic [HealthTestWindowWidth-1:0] window_cntr;
   logic                         window_cntr_incr_en;
 
@@ -508,7 +510,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic        ht_failed_qq, ht_failed_q, ht_failed_d;
   logic        ht_done_pulse_qq, ht_done_pulse_q, ht_done_pulse_d;
   logic        sha3_err_q, sha3_err_d;
-  logic        cs_aes_halt_q, cs_aes_halt_d;
   logic [63:0] es_rdata_capt_q, es_rdata_capt_d;
   logic        es_rdata_capt_vld_q, es_rdata_capt_vld_d;
   mubi4_t      mubi_mod_en_dly_d, mubi_mod_en_dly_q;
@@ -525,7 +526,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
       ht_done_pulse_q        <= '0;
       ht_done_pulse_qq       <= '0;
       sha3_err_q             <= '0;
-      cs_aes_halt_q          <= '0;
       es_rdata_capt_q        <= '0;
       es_rdata_capt_vld_q    <= '0;
       fw_ov_sha3_start_pfe_q <= '0;
@@ -540,7 +540,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
       ht_done_pulse_q        <= ht_done_pulse_d;
       ht_done_pulse_qq       <= ht_done_pulse_q;
       sha3_err_q             <= sha3_err_d;
-      cs_aes_halt_q          <= cs_aes_halt_d;
       es_rdata_capt_q        <= es_rdata_capt_d;
       es_rdata_capt_vld_q    <= es_rdata_capt_vld_d;
       fw_ov_sha3_start_pfe_q <= fw_ov_sha3_start_pfe;
@@ -2830,13 +2829,46 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
     // REQ/ACK interface to avoid power spikes
     .run_req_o(cs_aes_halt_req),
-    .run_ack_i(cs_aes_halt_i.cs_aes_halt_ack),
+    .run_ack_i(cs_aes_halt_ack),
 
     .error_o (sha3_err),
     .sparse_fsm_error_o (sha3_state_error),
     .count_error_o  (sha3_count_error),
     .keccak_storage_rst_error_o (sha3_rst_storage_err)
   );
+
+  // CS AES halt request interface
+  // Coordinate activity between CSRNG's AES and ENTROPY_SRC's SHA3. The idea is that ENTROPY_SRC
+  // requests CSRNG's AES to halt and waits for CSRNG to acknowledge before it starts its SHA3.
+  // While SHA3 runs, ENTROPY_SRC keeps the request high. CSRNG may not drop the acknowledge before
+  // ENTROPY_SRC drops the request.
+  if (EnCsAesHaltReqIf) begin : gen_cs_aes_halt_req_if
+
+    // Flop the request.
+    logic cs_aes_halt_d, cs_aes_halt_q;
+    assign cs_aes_halt_d = cs_aes_halt_req;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        cs_aes_halt_q <= '0;
+      end else begin
+        cs_aes_halt_q <= cs_aes_halt_d;
+      end
+    end
+
+    // Drive the actual interface.
+    assign cs_aes_halt_o.cs_aes_halt_req = cs_aes_halt_q;
+    assign cs_aes_halt_ack               = cs_aes_halt_i.cs_aes_halt_ack;
+  end else begin : gen_no_cs_aes_halt_req_if
+
+    // Tie-off unused signals.
+    logic unused_cs_aes_halt_req_if;
+    assign unused_cs_aes_halt_req_if = cs_aes_halt_i.cs_aes_halt_ack;
+
+    // Both CSRNG's AES and ENTROPY_SRC's SHA3 are always free to process.
+    assign cs_aes_halt_o.cs_aes_halt_req = 1'b0;
+    assign cs_aes_halt_ack               = 1'b1;
+  end
 
   //--------------------------------------------
   // bypass SHA conditioner path
@@ -2919,10 +2951,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .main_sm_state_o      (es_main_sm_state),
     .main_sm_err_o        (es_main_sm_err)
   );
-
-  // es to cs halt request to reduce power spikes
-  assign cs_aes_halt_d = cs_aes_halt_req;
-  assign cs_aes_halt_o.cs_aes_halt_req = cs_aes_halt_q;
 
   //--------------------------------------------
   // Corner case masking of main_sm inputs/outputs

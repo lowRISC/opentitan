@@ -19,6 +19,7 @@ module entropy_src
   parameter int RngBusBitSelWidth                 = 2,
   parameter int HealthTestWindowWidth             = 18,
   parameter int EsFifoDepth                       = 3,
+  parameter bit EnCsAesHaltReqIf                  = 1'b1,
   parameter int DistrFifoDepth                    = 2,
   parameter bit Stub                              = 1'b0
 ) (
@@ -173,6 +174,7 @@ module entropy_src
     .RngBusBitSelWidth(RngBusBitSelWidth),
     .HealthTestWindowWidth(HealthTestWindowWidth),
     .EsFifoDepth(EsFifoDepth),
+    .EnCsAesHaltReqIf(EnCsAesHaltReqIf),
     .DistrFifoDepth(DistrFifoDepth),
     .BucketHtDataWidth(BucketHtDataWidth),
     .NumBucketHtInst(NumBucketHtInst)
