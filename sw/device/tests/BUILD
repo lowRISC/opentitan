@@ -829,7 +829,10 @@ opentitan_test(
             EARLGREY_TEST_ENVS,
             ["//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys"],
         ),
-        {"//hw/top_earlgrey:fpga_cw310_sival": None},
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
+        },
     ),
     fpga = fpga_params(
         otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_dev_manuf_personalized",
@@ -865,6 +868,7 @@ opentitan_test(
     srcs = ["clkmgr_jitter_frequency_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
@@ -1029,6 +1033,7 @@ opentitan_test(
     srcs = ["clkmgr_reset_frequency_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
@@ -1056,6 +1061,7 @@ opentitan_test(
     srcs = ["clkmgr_sleep_frequency_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
@@ -7098,6 +7104,7 @@ opentitan_test(
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
