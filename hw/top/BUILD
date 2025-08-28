@@ -11,12 +11,13 @@ load(
     "opentitan_ip_rust_header",
     "opentitan_top_dt_api",
 )
+load("//rules/opentitan:hw.bzl", "get_top_attr")
 load(
     "//hw/top:defs.bzl",
     "ALL_IP_NAMES",
+    "ALL_SEED_NAMES",
     "ALL_TOPS",
     "ALL_TOP_NAMES",
-    "ALL_SEED_NAMES",
     "opentitan_alias_top_attr",
     "opentitan_if_ip",
     "opentitan_require_ip",
@@ -81,6 +82,33 @@ opentitan_alias_top_attr(
 opentitan_alias_top_attr(
     name = "top_otp_map",
     attr_name = "otp_map",
+)
+
+# For each top, create a selecting alias for the seed.
+[
+    alias(
+        name = "top_{}_seed_secrets".format(top.name),
+        actual = select({
+            ":is_seed_{}".format(seed): secrets
+            for (seed, secrets) in get_top_attr(top, "secret_cfgs", False, {}).items()
+        }),
+        target_compatible_with = select({
+            ":is_seed_{}".format(seed): []
+            for seed in get_top_attr(top, "secret_cfgs", False, {}).keys()
+        } | {
+            "//conditions:default": ["@platforms//:incompatible"],
+        }),
+    )
+    for top in ALL_TOPS
+]
+
+# Then create an alias overall
+alias(
+    name = "secrets",
+    actual = select({
+        "@lowrisc_opentitan//hw/top:is_{}".format(top): ":top_{}_seed_secrets".format(top)
+        for top in ALL_TOP_NAMES
+    }),
 )
 
 # C register headers for all IPs.
