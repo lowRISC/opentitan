@@ -72,26 +72,33 @@ sed '/^#/d' ./apt-requirements.txt | xargs sudo apt install -y
 ## Step 3: Install Python libraries needed
 
 Some tools in this repository are written in Python and require their dependencies to be installed through `pip`.
-We recommend installing the latest version of `pip` and `setuptools` (especially if on older systems such as Ubuntu 18.04) using:
+To avoid conflicts between Python package versions required on the host system, a virtual environment for the Python dependencies is required.
 
 ```console
-python3 -m pip install --user -U pip "setuptools<66.0.0"
+sudo apt install python3-venv
 ```
 
-The `pip` installation instructions use the `--user` flag to install without root permissions.
-Binaries are installed to `~/.local/bin`; check that this directory is listed in your `PATH` by running `which pip3`.
-It should show `~/.local/bin/pip3`.
-If it doesn't, prepend `~/.local/bin` to your `PATH`, e.g. by adding the following line to your `~/.bashrc` file:
-
-```console {title=~/.bashrc}
-export PATH=~/.local/bin:$PATH
-```
-
-Now install additional Python dependencies:
+Then, create the virtual environment in the OpenTitan checkout:
 
 ```console
 cd $REPO_TOP
-pip3 install --user -r python-requirements.txt --require-hashes
+python3 -m venv .venv
+```
+
+Then, activate the virtual environment by sourcing the shell script.
+The virtual environment must be activated in every shell/terminal window that operates in the OpenTitan checkout.
+Your shell prompt will be modified by the script to indicate that the virtual environment is activated for that session.
+
+```console
+source .venv/bin/activate
+```
+
+Now install the additional Python dependencies to the virtual environment:
+
+```console
+pip3 install "setuptools<66.0.0"
+
+pip3 install -r python-requirements.txt --require-hashes
 ```
 
 ## Step 4: Set up your simulation tool or FPGA
