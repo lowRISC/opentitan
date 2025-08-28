@@ -19,11 +19,17 @@ from util import confirm, format_hex, run, resolve_runfile
 # FPGA bitstream.
 _FPGA_UNIVERSAL_SPLICE_BITSTREAM = "hw/bitstream/universal/splice.bit"
 
+# Opentitantool interface
+_OTT_FPGA_INTERFACE = {
+    "cw310": "hyper310",
+    "cw340": "cw340",
+}
+
 # CP and FT shared flags.
 _OPENOCD_BIN = "third_party/openocd/build_openocd/bin/openocd"
 _OPENOCD_ADAPTER_CONFIG = "external/openocd/tcl/interface/cmsis-dap.cfg"
 _BASE_PROVISIONING_FLAGS = """
-    --interface={target} \
+    --interface={ott_intf} \
     --openocd={openocd_bin} \
     --openocd-adapter-config={openocd_cfg} \
 """
@@ -106,6 +112,7 @@ class OtDut():
         if self.fpga:
             # Set host flags and device binary for FPGA DUT.
             host_flags = host_flags.format(target=self.fpga,
+                                           ott_intf=_OTT_FPGA_INTERFACE[self.fpga],
                                            openocd_bin=openocd_bin,
                                            openocd_cfg=openocd_cfg)
             host_flags += " --clear-bitstream"
@@ -117,6 +124,7 @@ class OtDut():
         else:
             # Set host flags and device binary for Silicon DUT.
             host_flags = host_flags.format(target="teacup",
+                                           ott_intf="teacup",
                                            openocd_bin=openocd_bin,
                                            openocd_cfg=openocd_cfg)
             host_flags += " --disable-dft-on-reset"
@@ -194,6 +202,7 @@ class OtDut():
             # No need to load another bitstream, we will take over where CP
             # stage above left off.
             host_flags = host_flags.format(target=self.fpga,
+                                           ott_intf=_OTT_FPGA_INTERFACE[self.fpga],
                                            openocd_bin=openocd_bin,
                                            openocd_cfg=openocd_cfg)
             individ_elf = individ_elf.format(
@@ -211,6 +220,7 @@ class OtDut():
         else:
             # Set host flags and device binaries for Silicon DUT.
             host_flags = host_flags.format(target="teacup",
+                                           ottf_intf="teacup",
                                            openocd_bin=openocd_bin,
                                            openocd_cfg=openocd_cfg)
             host_flags += " --disable-dft-on-reset"
