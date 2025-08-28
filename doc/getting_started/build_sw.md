@@ -295,11 +295,12 @@ For example the following command shows how to disassemble all sections of the U
 ```console
 bazel build --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf
 
-riscv32-unknown-elf-objdump --disassemble-all --headers --line-numbers --source \
+bazel run @lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-objdump -- \
+  --disassemble-all --headers --line-numbers --source \
   "$(bazel outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf)"
 ```
 
-Refer to the output of `riscv32-unknown-elf-objdump --help` for a full list of options.
+Refer to the output of the command with `--help` for a full list of options.
 
 ## Troubleshooting
 

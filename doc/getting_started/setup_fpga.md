@@ -565,7 +565,9 @@ Then a connection between OpenOCD and GDB may be established with:
 ```sh
 cd $REPO_TOP
 bazel build --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw340.elf
-riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
+
+bazel run @lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-gdb -- \
+  -ex "target extended-remote :3333" -ex "info reg" \
   "$(bazel outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw310.elf)"
 ```
 
