@@ -16,4 +16,7 @@ DARJEELING = opentitan_top(
     std_otp_overlay = DARJEELING_STD_OTP_OVERLAYS,
     otp_sigverify_fake_keys = DARJEELING_OTP_SIGVERIFY_FAKE_KEYS,
     ips = DARJEELING_IPS,
+    secret_cfgs = {
+        "testing": "//hw/top_darjeeling/data/autogen:top_darjeeling.secrets.testing.gen.hjson",
+    },
 )

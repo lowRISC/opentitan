@@ -16,4 +16,7 @@ EARLGREY = opentitan_top(
     std_otp_overlay = EARLGREY_STD_OTP_OVERLAYS,
     otp_sigverify_fake_keys = EARLGREY_OTP_SIGVERIFY_FAKE_KEYS,
     ips = EARLGREY_IPS,
+    secret_cfgs = {
+        "testing": "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
+    },
 )

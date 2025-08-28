@@ -16,6 +16,7 @@ load(
     "ALL_IP_NAMES",
     "ALL_TOPS",
     "ALL_TOP_NAMES",
+    "ALL_SEED_NAMES",
     "opentitan_alias_top_attr",
     "opentitan_if_ip",
     "opentitan_require_ip",
@@ -36,6 +37,13 @@ string_flag(
     values = ALL_TOP_NAMES,
 )
 
+# Use this flag to select the seed.
+string_flag(
+    name = "seed",
+    build_setting_default = "testing",
+    values = ALL_SEED_NAMES,
+)
+
 # Config settings to test against tops.
 [
     config_setting(
@@ -45,6 +53,17 @@ string_flag(
         },
     )
     for top in ALL_TOP_NAMES
+]
+
+# Config settings to test against seeds.
+[
+    config_setting(
+        name = "is_seed_{}".format(seed),
+        flag_values = {
+            ":seed": seed,
+        },
+    )
+    for seed in ALL_SEED_NAMES
 ]
 
 # Point to the right top library.
