@@ -242,12 +242,12 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   constraint es_route_sw_c {es_route_sw inside {MuBi4False, MuBi4True};}
 
   // We need to make sure that we can read out 1024 contiguous symbols, that's why
-  // we set the probability for 128 seeds to 40 pct (this is exactly 1024 symbols
-  // when using all 4 lanes).
+  // we set the probability for the last value to 40 pct (this is exactly 1024 symbols
+  // when using all lanes).
   constraint fw_ov_rd_cnt_c {fw_ov_rd_cnt dist {
-    1                         :/ 40,
-    [2:127]                   :/ 20,
-    128                       :/ 40 };}
+    1                              :/ 40,
+    [2:(1024*`RNG_BUS_WIDTH/32-1)] :/ 20,
+    1024*`RNG_BUS_WIDTH/32         :/ 40 };}
 
   ///////////////
   // Functions //
