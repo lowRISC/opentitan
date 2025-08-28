@@ -279,8 +279,8 @@ cc_library(
     srcs = ["keymgr.c"],
     hdrs = ["keymgr.h"],
     deps = [
+        "//hw/top:dt",
         "//hw/top:keymgr_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/runtime:hart",
@@ -295,6 +295,7 @@ cc_test(
     srcs = ["keymgr_unittest.cc"],
     deps = [
         ":keymgr",
+        "//hw/top:dt",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
