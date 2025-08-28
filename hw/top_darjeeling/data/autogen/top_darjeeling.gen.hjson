@@ -6169,7 +6169,8 @@
         RngBusWidth: "16"
         RngBusBitSelWidth: "4"
         HealthTestWindowWidth: "20"
-        DistrFifoDepth: "26"
+        EnCsAesHaltReqIf: "0"
+        DistrFifoDepth: "11"
       }
       clock_connections:
       {
@@ -6223,7 +6224,7 @@
           name: EnCsAesHaltReqIf
           desc: Enable (1) or disable (0) the CS AES halt request interface
           type: bit
-          default: "1"
+          default: "0"
           local: "true"
           expose: "true"
           name_top: EntropySrcEnCsAesHaltReqIf
@@ -6232,7 +6233,7 @@
           name: DistrFifoDepth
           desc: Number of 32-bit entries in the distr FIFO
           type: int unsigned
-          default: "26"
+          default: "11"
           local: "true"
           expose: "true"
           name_top: EntropySrcDistrFifoDepth
