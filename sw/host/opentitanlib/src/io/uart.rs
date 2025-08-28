@@ -46,7 +46,7 @@ impl UartParams {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[repr(u8)]
 pub enum FlowControl {
     // No flow control.
@@ -64,6 +64,11 @@ pub trait Uart {
 
     /// Sets the UART baudrate.  May do nothing for virtual UARTs.
     fn set_baudrate(&self, baudrate: u32) -> Result<()>;
+
+    // Returns whether software flow control is enabled for the UART `write`s.
+    fn get_flow_control(&self) -> Result<FlowControl> {
+        unimplemented!();
+    }
 
     /// Enables software flow control for `write`s.
     fn set_flow_control(&self, flow_control: bool) -> Result<()> {
@@ -106,6 +111,10 @@ pub trait Uart {
     }
 
     fn set_parity(&self, _parity: Parity) -> Result<()> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
+
+    fn get_parity(&self) -> Result<Parity> {
         Err(TransportError::UnsupportedOperation.into())
     }
 
