@@ -4,6 +4,7 @@
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
 load("//rules/opentitan:keyutils.bzl", "key_ecdsa", "key_sphincs_plus")
+load("//rules:signing.bzl", "keyset")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -182,4 +183,28 @@ pkg_filegroup(
         ":fpga_dev_files",
     ],
     prefix = "fake_keys",
+)
+
+keyset(
+    name = "ecdsa_keyset",
+    build_setting_default = "",
+    keys = {
+        "app_prod_ecdsa_p256.der": "app_prod_0",
+        "app_dev_ecdsa_p256.der": "app_dev_0",
+        "app_test_ecdsa_p256.der": "app_test_0",
+        "app_unauthorized_ecdsa_p256.der": "app_unauthorized_0",
+    },
+    profile = "local",
+    tool = "//signing/tokens:local",
+)
+
+keyset(
+    name = "spx_keyset",
+    build_setting_default = "",
+    keys = {
+        "app_prod_spx.pem": "app_prod_0",
+        "app_dev_spx.pem": "app_dev_0:domain=PreHashedSha256",
+    },
+    profile = "local",
+    tool = "//signing/tokens:local",
 )
