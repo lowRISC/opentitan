@@ -181,6 +181,7 @@ cc_test(
             ":rom_ext_boot_policy_ptrs",
             ":rom_ext_manifest",
             ":sigverify_keys",
+            "//hw/top:dt",
             "//hw/top:flash_ctrl_c_regs",
             "//hw/top:sram_ctrl_c_regs",
             "//sw/device/lib/arch:device",

@@ -189,6 +189,7 @@ cc_library(
         ":cert",
         ":cwt_template",
         ":dice_api",
+        "//hw/top:dt",
         "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/base:status",
         "//sw/device/silicon_creator/lib:attestation",

@@ -41,6 +41,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
+            "//hw/top:dt",
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top:flash_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
