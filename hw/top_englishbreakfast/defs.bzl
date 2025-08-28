@@ -12,4 +12,7 @@ ENGLISHBREAKFAST = opentitan_top(
     top_lib = "//hw/top_englishbreakfast/sw/autogen:top_englishbreakfast",
     top_ld = "//hw/top_englishbreakfast/sw/autogen:top_englishbreakfast_memory",
     ips = ENGLISHBREAKFAST_IPS,
+    secret_cfgs = {
+        "testing": "//hw/top_englishbreakfast/data/autogen:top_englishbreakfast.secrets.testing.gen.hjson",
+    },
 )

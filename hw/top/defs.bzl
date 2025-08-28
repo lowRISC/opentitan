@@ -23,6 +23,14 @@ def _all_ip_names():
 
 ALL_IP_NAMES = _all_ip_names()
 
+def _all_seed_names():
+    names = {}
+    for top in ALL_TOPS:
+        names.update(top.attrs.get("secret_cfgs", {}))
+    return sorted(names.keys())
+
+ALL_SEED_NAMES = _all_seed_names()
+
 def opentitan_if_ip(ip, obj, default):
     """
     Return a select expression that evaluate to `obj` if the ip is
