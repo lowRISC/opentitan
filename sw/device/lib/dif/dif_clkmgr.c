@@ -153,10 +153,7 @@ dif_result_t dif_clkmgr_find_gateable_clock(
     return kDifBadArg;
   }
   dt_clkmgr_t dt;
-  dif_result_t res = dif_clkmgr_get_dt(clkmgr, &dt);
-  if (res != kDifOk) {
-    return res;
-  }
+  DIF_RETURN_IF_ERROR(dif_clkmgr_get_dt(clkmgr, &dt));
   // Query the DT to find the information.
   for (size_t i = 0; i < dt_clkmgr_gateable_clock_count(dt); i++) {
     if (dt_clkmgr_gateable_clock(dt, i) == inst_id) {
@@ -208,10 +205,7 @@ dif_result_t dif_clkmgr_find_hintable_clock(
     return kDifBadArg;
   }
   dt_clkmgr_t dt;
-  dif_result_t res = dif_clkmgr_get_dt(clkmgr, &dt);
-  if (res != kDifOk) {
-    return res;
-  }
+  DIF_RETURN_IF_ERROR(dif_clkmgr_get_dt(clkmgr, &dt));
   // Query the DT to find the information.
   for (size_t i = 0; i < dt_clkmgr_hintable_clock_count(dt); i++) {
     if (dt_clkmgr_hintable_clock(dt, i) == inst_id) {
