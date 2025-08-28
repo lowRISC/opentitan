@@ -35,6 +35,7 @@ do
   if [[ ${#KEY_ARGS[@]} -ne 0 ]]; then
     echo -n "Checking key material in ${file}..."
         ${OPENTITANTOOL}  --rcfile= image manifest update \
+          --private-keys-sign=false \
           "${KEY_ARGS[@]}" \
           --output=/tmp/manifest_test_key_verify.$$ \
           ${file}
