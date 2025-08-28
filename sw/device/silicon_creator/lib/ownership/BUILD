@@ -9,6 +9,7 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
     "opentitan_test",
 )
 load(
@@ -292,4 +293,14 @@ dual_cc_library(
             "//sw/device/silicon_creator/lib:error",
         ],
     ),
+)
+
+opentitan_test(
+    name = "owner_verify_functest",
+    srcs = ["owner_verify_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    deps = [
+        ":owner_verify",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
 )

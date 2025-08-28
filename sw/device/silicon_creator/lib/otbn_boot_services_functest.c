@@ -74,6 +74,19 @@ rom_error_t sigverify_test(void) {
   return kErrorOk;
 }
 
+rom_error_t sigverify_with_bad_signature_test(void) {
+  // Hash the test message.
+  hmac_digest_t digest;
+  hmac_sha256(kTestMessage, kTestMessageLen, &digest);
+
+  uint32_t recovered_r[kEcdsaP256SignatureComponentWords];
+  ecdsa_p256_public_key_t kCorruptedKey = kEcdsaKey;
+  kCorruptedKey.x[0]++;
+  CHECK(otbn_boot_sigverify(&kCorruptedKey, &kEcdsaSignature, &digest,
+                            recovered_r) == kErrorSigverifyBadEcdsaSignature);
+  return kErrorOk;
+}
+
 rom_error_t attestation_keygen_test(void) {
   // Check that key generations with different seeds result in different keys.
   ecdsa_p256_public_key_t pk_uds;
@@ -252,6 +265,7 @@ bool test_main(void) {
   CHECK(otbn_boot_app_load() == kErrorOk);
 
   EXECUTE_TEST(result, sigverify_test);
+  EXECUTE_TEST(result, sigverify_with_bad_signature_test);
   EXECUTE_TEST(result, attestation_keygen_test);
   EXECUTE_TEST(result, attestation_advance_and_endorse_test);
   EXECUTE_TEST(result, attestation_keygen_test);
