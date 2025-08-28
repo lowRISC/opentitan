@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::cell::{Cell, RefCell};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io;
 use std::io::{BufWriter, ErrorKind, Read, Write};
 use std::net::{TcpStream, ToSocketAddrs};
-use std::os::unix::io::AsRawFd;
 use std::rc::Rc;
 
 use anyhow::{Context, Result, bail};
@@ -20,7 +19,6 @@ use crate::impl_serializable_error;
 use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
-use crate::io::nonblocking_help::NonblockingHelp;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::proxy::protocol::{
@@ -68,7 +66,6 @@ impl Proxy {
                 uarts: RefCell::new(HashMap::new()),
                 uart_channel_map: RefCell::new(HashMap::new()),
                 recv_buf: RefCell::new(Vec::new()),
-                nonblocking_help_enabled: Cell::new(false),
             }),
         })
     }
@@ -85,7 +82,6 @@ struct Inner {
     pub uarts: RefCell<HashMap<String, UartRecord>>,
     uart_channel_map: RefCell<HashMap<u32, String>>,
     recv_buf: RefCell<Vec<u8>>,
-    nonblocking_help_enabled: Cell<bool>,
 }
 
 impl Inner {
@@ -357,31 +353,5 @@ impl Transport for Proxy {
     // Create ProxyOps instance.
     fn proxy_ops(&self) -> Result<Rc<dyn ProxyOps>> {
         Ok(Rc::new(ProxyOpsImpl::new(self)?))
-    }
-
-    fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
-        Ok(Rc::new(ProxyNonblockingHelp {
-            inner: self.inner.clone(),
-        }))
-    }
-}
-
-pub struct ProxyNonblockingHelp {
-    inner: Rc<Inner>,
-}
-
-impl NonblockingHelp for ProxyNonblockingHelp {
-    fn register_nonblocking_help(&self, registry: &mio::Registry, token: mio::Token) -> Result<()> {
-        let conn: &mut std::net::TcpStream = &mut self.inner.conn.borrow_mut();
-        registry.register(
-            &mut mio::unix::SourceFd(&conn.as_raw_fd()),
-            token,
-            mio::Interest::READABLE,
-        )?;
-        self.inner.nonblocking_help_enabled.set(true);
-        Ok(())
-    }
-    fn nonblocking_help(&self) -> Result<()> {
-        self.inner.poll_for_async_data()
     }
 }

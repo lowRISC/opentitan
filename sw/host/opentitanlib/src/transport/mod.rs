@@ -15,7 +15,6 @@ use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
 use crate::io::jtag::{JtagChain, JtagParams};
-use crate::io::nonblocking_help::{NoNonblockingHelp, NonblockingHelp};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 
@@ -162,13 +161,6 @@ pub trait Transport {
     fn maintain_connection(&self) -> Result<Rc<dyn MaintainConnection>> {
         // For implementations that have not implemented any optimizations, return a no-op object.
         Ok(Rc::new(()))
-    }
-
-    /// Before nonblocking operations can be used on `Uart` or other traits, this
-    /// `NonblockingHelp` object must be invoked, in order to get the `Transport` implementation a
-    /// chance to register its internal event sources with the main event loop.
-    fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
-        Ok(Rc::new(NoNonblockingHelp))
     }
 }
 
