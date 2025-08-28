@@ -304,7 +304,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_sival": None,
     },
     fpga = fpga_params(
-        assemble = "{invalid}@0",
+        assemble = "{invalid}@{rom_ext_slot_a}",
         binaries = {
             ":imm_section_invalid": "invalid",
         },
@@ -321,7 +321,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_sival": None,
     },
     fpga = fpga_params(
-        assemble = "{invalid}@0 {valid}@0x80000",
+        assemble = "{invalid}@{rom_ext_slot_a} {valid}@{rom_ext_slot_b}",
         binaries = {
             ":imm_section_invalid": "invalid",
             ":imm_section_valid": "valid",
@@ -340,7 +340,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_sival": None,
     },
     fpga = fpga_params(
-        assemble = "{invalid}@0 {invalid}@0x80000",
+        assemble = "{invalid}@{rom_ext_slot_a} {invalid}@{rom_ext_slot_b}",
         binaries = {
             ":imm_section_invalid": "invalid",
         },

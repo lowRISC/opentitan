@@ -25,12 +25,12 @@ _POSITIONS = {
     "slot_a": {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "slot": "SlotA",
-        "rom_ext_offset": "0",
+        "rom_ext_offset": "{rom_ext_slot_a}",
     },
     "slot_b": {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_b",
         "slot": "SlotB",
-        "rom_ext_offset": "0x80000",
+        "rom_ext_offset": "{rom_ext_slot_b}",
     },
 }
 
@@ -165,6 +165,7 @@ genrule(
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
+            timeout = "long",
             assemble = "{rom_ext}@{rom_ext_offset}",
             binaries = {
                 ":boot_test_{}".format(name): "payload",
@@ -184,7 +185,7 @@ genrule(
                 # First make sure the ROM_EXT is faulting because there is no firmware
                 --exec="console --non-interactive --exit-success='BFV:' --exit-failure='PASS|FAIL'"
                 # Construct a firmware image with the bad ROM_EXT
-                --exec="image assemble --size=131072 --mirror=false --output={image_name} {bad_rom_ext}@0 {payload}@0x10000"
+                --exec="image assemble --size=524288 --mirror=false --output={image_name} {bad_rom_ext}@{rom_ext_slot_a} {payload}@{owner_slot_a}"
                 # Load firmware via rescue, including the bad ROM_EXT
                 --exec="rescue firmware --raw --slot={slot} {image_name}"
                 # Check for firmware execution
@@ -205,7 +206,7 @@ genrule(
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
-            assemble = "{rom_ext}@0 {slot_a:signed_bin}@0x10000 {slot_b:signed_bin}@0x90000",
+            assemble = "{rom_ext}@{rom_ext_slot_a} {slot_a:signed_bin}@{owner_slot_a} {slot_b:signed_bin}@{owner_slot_b}",
             binaries = {
                 ":boot_test_slot_a": "slot_a",
                 ":boot_test_slot_b": "slot_b",
@@ -244,7 +245,7 @@ genrule(
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
-            assemble = "{rom_ext}@0 {slot_a:signed_bin}@0x10000 {slot_b:signed_bin}@0x90000",
+            assemble = "{rom_ext}@{rom_ext_slot_a} {slot_a:signed_bin}@{owner_slot_a} {slot_b:signed_bin}@{owner_slot_b}",
             binaries = {
                 ":boot_test_slot_a": "slot_a",
                 ":boot_test_slot_b": "slot_b",
@@ -580,15 +581,13 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
-            assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
+            assemble = "{romext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
             binaries = {
                 config["rom_ext"]: "romext",
                 "//sw/device/silicon_creator/rom_ext/e2e/attestation:print_certs": "firmware",
             },
             changes_otp = True,
-            owner_offset = "0x10000",
             params = config["params"],
-            romext_offset = "0",
             test_cmd = """
             --clear-bitstream
             --bootstrap={firmware}
@@ -607,14 +606,12 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
-        assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
+        assemble = "{romext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
         binaries = {
             "//sw/device/silicon_creator/rom_ext:rom_ext_xmodem_rescue_disability": "romext",
             "//sw/device/silicon_creator/rom_ext/e2e/attestation:print_certs": "firmware",
         },
         changes_otp = True,
-        owner_offset = "0x10000",
-        romext_offset = "0",
         test_cmd = """
         --clear-bitstream
         --bootstrap={firmware}
@@ -631,15 +628,13 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
-        assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
+        assemble = "{romext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
         binaries = {
             "//sw/device/silicon_creator/rom_ext:rom_ext_spidfu_rescue_disability": "romext",
             "//sw/device/silicon_creator/rom_ext/e2e/attestation:print_certs": "firmware",
         },
         changes_otp = True,
-        owner_offset = "0x10000",
         params = "-p spi-dfu -t gpio -v +Ioa2",
-        romext_offset = "0",
         test_cmd = """
         --clear-bitstream
         --bootstrap={firmware}

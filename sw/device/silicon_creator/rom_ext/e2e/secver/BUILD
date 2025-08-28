@@ -108,7 +108,8 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
-        assemble = "{rom_ext}@0 {boot_test}@0x10000",
+        timeout = "long",
+        assemble = "{rom_ext}@{rom_ext_slot_a} {boot_test}@{owner_slot_a}",
         binaries = {
             ":boot_test": "boot_test",
             ":rom_ext_1": "rom_ext1",
@@ -120,9 +121,9 @@ opentitan_test(
         rom_ext = ":rom_ext_0",
         test_cmd = """
             # First, assemble the additional images we'll need for this test.
-            --exec="image assemble -s 131072 --mirror=false -o fw1.bin {rom_ext1}@0 {boot_test}@0x10000"
-            --exec="image assemble -s 131072 --mirror=false -o fw2.bin {rom_ext2}@0 {boot_test}@0x10000"
-            --exec="image assemble -s 131072 --mirror=false -o fw3.bin {rom_ext3}@0 {boot_test}@0x10000"
+            --exec="image assemble -s 524288 --mirror=false -o fw1.bin {rom_ext1}@{rom_ext_slot_a} {boot_test}@{owner_slot_a}"
+            --exec="image assemble -s 524288 --mirror=false -o fw2.bin {rom_ext2}@{rom_ext_slot_a} {boot_test}@{owner_slot_a}"
+            --exec="image assemble -s 524288 --mirror=false -o fw3.bin {rom_ext3}@{rom_ext_slot_a} {boot_test}@{owner_slot_a}"
             --exec="transport init"
             --exec="fpga clear-bitstream"
             --exec="fpga load-bitstream {bitstream}"
