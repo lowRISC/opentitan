@@ -186,8 +186,9 @@ Lastly, connect GDB using the following command (noting it needs to be altered t
 
 ```console
 cd $REPO_TOP
-riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
-  "$(./bazelisk.sh outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf)"
+bazel run @lowrisc_rv32imcb_toolchain//:/bin/riscv32-unknown-elf-gdb -- \
+  -ex "target extended-remote :3333" -ex "info reg" \
+  "$(bazel outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf)"
 ```
 
 ## SPI device test interface (optional)
