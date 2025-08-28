@@ -10,9 +10,10 @@ class racl_ctrl_reg_window extends uvm_object;
   // address (which matches the order of the racl_policies_o port on the dut).
   local dv_base_reg policy_regs[$];
 
-  // The ERROR_LOG and ERROR_LOG_ADDRESS registers
-  local dv_base_reg error_log_reg;
-  local dv_base_reg error_log_address_reg;
+  // The ERROR_LOG and ERROR_LOG_ADDRESS registers, and the INTR_STATE.RACL_ERROR field.
+  local dv_base_reg       error_log_reg;
+  local dv_base_reg       error_log_address_reg;
+  local dv_base_reg_field racl_error_fld;
 
   extern function new (string name="");
 
@@ -25,6 +26,9 @@ class racl_ctrl_reg_window extends uvm_object;
 
   // Return true if register is one of the policy registers
   extern function bit is_policy_reg(uvm_reg register);
+
+  // Return the RACL_ERROR field of the INTR_STATE register
+  extern function dv_base_reg_field get_intr_state_racl_error_fld();
 
   // Return the ERROR_LOG register
   extern function dv_base_reg get_error_log_reg();
@@ -39,7 +43,6 @@ endfunction
 
 function void racl_ctrl_reg_window::set_reg_block(uvm_reg_block ral);
   uvm_reg regs[$];
-  bit     seen_error_log, seen_error_log_address;
 
   ral.get_registers(regs);
 
@@ -56,13 +59,15 @@ function void racl_ctrl_reg_window::set_reg_block(uvm_reg_block ral);
 
     if (reg_name == "error_log") begin
       error_log_reg = dv_reg;
-      seen_error_log = 1;
       continue;
     end
     if (reg_name == "error_log_address") begin
       error_log_address_reg = dv_reg;
-      seen_error_log_address = 1;
       continue;
+    end
+    if (reg_name == "intr_state") begin
+      // There should be a (single) field called racl_error
+      racl_error_fld = dv_reg.get_field_by_name("racl_error");
     end
 
     // Policy registers start with the prefix "policy_". Skip anything that doesn't. (Note that we
@@ -88,9 +93,10 @@ function void racl_ctrl_reg_window::set_reg_block(uvm_reg_block ral);
                          top_racl_pkg::NrRaclPolicies,
                          policy_regs.size()))
 
-  // We should have seen the ERROR_LOG and ERROR_LOG_ADDRESS registers
-  if (!seen_error_log) `uvm_fatal(`gfn, "Didn't see an ERROR_LOG register")
-  if (!seen_error_log_address) `uvm_fatal(`gfn, "Didn't see an ERROR_LOG_ADDRESS register")
+  // We should have seen the ERROR_LOG, ERROR_LOG_ADDRESS and INTR_STATE registers
+  if (error_log_reg == null) `uvm_fatal(`gfn, "Didn't see an ERROR_LOG register")
+  if (error_log_address_reg == null) `uvm_fatal(`gfn, "Didn't see an ERROR_LOG_ADDRESS register")
+  if (racl_error_fld == null) `uvm_fatal(`gfn, "Didn't see the INTR_STATE.RACL_ERROR field")
 endfunction
 
 function void racl_ctrl_reg_window::get_policy_registers (ref dv_base_reg regs[$]);
@@ -102,6 +108,10 @@ function bit racl_ctrl_reg_window::is_policy_reg(uvm_reg register);
     if (register == policy_regs[i]) return 1;
   end
   return 0;
+endfunction
+
+function dv_base_reg_field racl_ctrl_reg_window::get_intr_state_racl_error_fld();
+  return racl_error_fld;
 endfunction
 
 function dv_base_reg racl_ctrl_reg_window::get_error_log_reg();
