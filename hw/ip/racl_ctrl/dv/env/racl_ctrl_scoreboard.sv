@@ -44,6 +44,9 @@ class racl_ctrl_scoreboard extends cip_base_scoreboard #(.CFG_T(racl_ctrl_env_cf
   // error_log_address_pred, waiting for the register not to be in use.
   extern local task mirror_error_log_address();
 
+  // Watch the under_reset flag. When a reset is seen, reset all modelled state.
+  extern local task track_resets();
+
   // A model that arbitrates between errors that have been detected by the error log agents in the
   // environment and fed through to *_errors_export above. Its output is not connected to any
   // export, but it is consumed by the watch_arbitrated_errors task.
@@ -102,6 +105,7 @@ task racl_ctrl_scoreboard::run_phase(uvm_phase phase);
         watch_arbitrated_errors();
         mirror_error_log();
         mirror_error_log_address();
+        track_resets();
       join
   join
 endtask
@@ -303,5 +307,20 @@ task racl_ctrl_scoreboard::mirror_error_log_address();
     // Clear the event again (because nothing has run since we last took a copy of error_log_pred),
     // so that the next iteration will only run when the prediction is updated again.
     error_log_address_pred_changed_ev.reset();
+  end
+endtask
+
+task racl_ctrl_scoreboard::track_resets();
+  dv_base_reg error_log_reg         = cfg.regs.get_error_log_reg();
+  dv_base_reg error_log_address_reg = cfg.regs.get_error_log_address_reg();
+
+  forever begin
+    wait(cfg.under_reset);
+
+    arb_predictor.on_reset();
+    error_log_pred = error_log_reg.get_reset();
+    error_log_address_pred = error_log_address_reg.get_reset();
+
+    wait(!cfg.under_reset);
   end
 endtask
