@@ -11,10 +11,11 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
-#include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/stack_utilization.h"
+
+#include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 
 #include "flash_ctrl_regs.h"
 

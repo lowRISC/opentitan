@@ -86,6 +86,8 @@ void ottf_generic_fault_print(uint32_t *exc_info, const char *reason,
     uint32_t ram_size = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES;
 #elif defined(OPENTITAN_IS_DARJEELING)
     uint32_t ram_size = TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES;
+#elif defined(OPENTITAN_IS_ENGLISHBREAKFAST)
+    uint32_t ram_size = TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_SIZE_BYTES;
 #else
 #error unsupported top
 #endif
