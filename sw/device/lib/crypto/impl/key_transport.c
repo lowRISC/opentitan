@@ -166,6 +166,9 @@ static status_t aes_kwp_key_construct(const otcrypto_blinded_key_t *key_kek,
   aes_key->key_shares[0] = share0;
   aes_key->key_shares[1] = share1;
 
+  // Create the checksum of the key and store it in the key structure.
+  aes_key->checksum = aes_key_integrity_checksum(aes_key);
+
   return OTCRYPTO_OK;
 }
 
