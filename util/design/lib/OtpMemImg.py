@@ -24,18 +24,18 @@ from lib.Present import Present
 # the same seed for different classes)
 OTP_IMG_SEED_DIVERSIFIER = 1941661965323525198146
 
-_OTP_SW_SKIP_FROM_HEADER = ('VENDOR_TEST', 'HW_CFG0', 'HW_CFG1', 'SECRET0',
-                            'SECRET1', 'SECRET2', 'LIFE_CYCLE')
+_OTP_SW_SKIP_FROM_HEADER = ("VENDOR_TEST", "HW_CFG", "SECRET", "LIFE_CYCLE")
 _OTP_SW_WRITE_BYTE_ALIGNMENT = {
-    'CREATOR_SW_CFG': 4,
-    'OWNER_SW_CFG': 4,
-    'HW_CFG0': 4,
-    'HW_CFG1': 4,
-    'ROT_CREATOR_AUTH_CODESIGN': 4,
-    'ROT_CREATOR_AUTH_STATE': 4,
-    'SECRET0': 8,
-    'SECRET1': 8,
-    'SECRET2': 8,
+    "CREATOR_SW_CFG": 4,
+    "OWNER_SW_CFG": 4,
+    "HW_CFG0": 4,
+    "HW_CFG1": 4,
+    "HW_CFG2": 4,
+    "ROT_CREATOR_AUTH_CODESIGN": 4,
+    "ROT_CREATOR_AUTH_STATE": 4,
+    "SECRET0": 8,
+    "SECRET1": 8,
+    "SECRET2": 8,
 }
 
 
@@ -544,7 +544,7 @@ class OtpMemImg(OtpMemMap):
         '''
         data = {}
         for part in self.config['partitions']:
-            if part['name'] in _OTP_SW_SKIP_FROM_HEADER:
+            if part['name'].startswith(_OTP_SW_SKIP_FROM_HEADER):
                 continue
             items = []
             for item in part["items"]:
