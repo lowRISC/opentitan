@@ -15,7 +15,7 @@ def ownership_transfer_test(
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         ecdsa_key = {
-            "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa": "app_prod",
+            "//sw/device/silicon_creator/lib/ownership/keys/dummy:ecdsa_keyset": "app_prod_0",
         },
         manifest = None,
         data = [
