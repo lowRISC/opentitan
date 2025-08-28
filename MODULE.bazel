@@ -10,8 +10,14 @@ bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "googletest", version = "1.14.0.bcr.1")
 bazel_dep(name = "platforms", version = "0.0.11")
 bazel_dep(name = "rules_cc", version = "0.1.2")
+bazel_dep(name = "rules_foreign_cc", version = "0.9.0")
 bazel_dep(name = "rules_fuzzing", version = "0.5.2")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
+bazel_dep(name = "rules_python", version = "1.2.0")
+bazel_dep(name = "rules_rust_bindgen", version = "0.59.2")
+bazel_dep(name = "rules_rust_mdbook", version = "0.59.2")
+bazel_dep(name = "rules_rust", version = "0.59.2")
+bazel_dep(name = "toolchains_llvm", version = "1.1.2")
 
 # Dev dependencies:
 bazel_dep(
@@ -28,27 +34,6 @@ bazel_dep(
     name = "lowrisc_misc_linters",
     dev_dependency = True,
 )
-archive_override(
-    module_name = "lowrisc_misc_linters",
-    integrity = "sha256-eRFiSjD638NuOjDDScMuEKVYpmotDY0yX3jxYL/d3ac=",
-    strip_prefix = "misc-linters-20250217_01",
-    urls = ["https://github.com/lowRISC/misc-linters/archive/refs/tags/20250217_01.tar.gz"],
-)
-
-archive_override(
-    module_name = "rules_multitool",
-    sha256 = "63e8b3d7999574a62ccf49d3234390c584a11ac90392eb16d63b964584c1af6c",
-    strip_prefix = "rules_multitool-temp-fork-0.4",
-    urls = ["https://github.com/jwnrt/rules_multitool/archive/refs/tags/temp-fork-0.4.tar.gz"],
-)
-
-################### originally from //third_party/rust:rust.MODULE.bazel
-
-# Dependencies:
-bazel_dep(name = "rules_rust", version = "0.59.2")
-bazel_dep(name = "rules_rust_bindgen", version = "0.59.2")
-bazel_dep(name = "rules_rust_mdbook", version = "0.59.2")
-bazel_dep(name = "toolchains_llvm", version = "1.1.2")
 
 # Overrides and patches:
 single_version_override(
@@ -67,6 +52,31 @@ single_version_override(
         "@lowrisc_opentitan//third_party/rust/patches:rules_rust.bindgen_static_lib.patch",
     ],
     version = "0.59.2",
+)
+
+single_version_override(
+    module_name = "rules_foreign_cc",
+    patches = [
+        # Patch to remove all build log file output when using rules_foreign_cc
+        # toolchains to ensure deterministic Bazel builds. See upstream issue:
+        # https://github.com/bazel-contrib/rules_foreign_cc/issues/1313
+        "@lowrisc_opentitan//third_party/foreign_cc/patches:rules_foreign_cc.remove_log_output.patch",
+    ],
+    version = "0.9.0",
+)
+
+archive_override(
+    module_name = "lowrisc_misc_linters",
+    integrity = "sha256-eRFiSjD638NuOjDDScMuEKVYpmotDY0yX3jxYL/d3ac=",
+    strip_prefix = "misc-linters-20250217_01",
+    urls = ["https://github.com/lowRISC/misc-linters/archive/refs/tags/20250217_01.tar.gz"],
+)
+
+archive_override(
+    module_name = "rules_multitool",
+    sha256 = "63e8b3d7999574a62ccf49d3234390c584a11ac90392eb16d63b964584c1af6c",
+    strip_prefix = "rules_multitool-temp-fork-0.4",
+    urls = ["https://github.com/jwnrt/rules_multitool/archive/refs/tags/temp-fork-0.4.tar.gz"],
 )
 
 # Rust toolchain:
@@ -202,10 +212,6 @@ llvm.toolchain(
 )
 use_repo(llvm, "llvm_toolchain_llvm")
 
-################### originally from "//third_party/python:python.MODULE.bazel
-
-bazel_dep(name = "rules_python", version = "1.2.0")
-
 # Python toolchain:
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
@@ -231,23 +237,6 @@ pip.parse(
     requirements_lock = "//:python-requirements.txt",
 )
 use_repo(pip, "ot_python_deps")
-
-################### originally from //third_party/foreign_cc:foreign_cc.MODULE.bazel
-
-# Dependencies:
-bazel_dep(name = "rules_foreign_cc", version = "0.9.0")
-
-# Overrides and patches:
-single_version_override(
-    module_name = "rules_foreign_cc",
-    patches = [
-        # Patch to remove all build log file output when using rules_foreign_cc
-        # toolchains to ensure deterministic Bazel builds. See upstream issue:
-        # https://github.com/bazel-contrib/rules_foreign_cc/issues/1313
-        "@lowrisc_opentitan//third_party/foreign_cc/patches:rules_foreign_cc.remove_log_output.patch",
-    ],
-    version = "0.9.0",
-)
 
 ################### originally from //third_party/tock:tock.MODULE.bazel
 
@@ -275,8 +264,6 @@ use_repo(crate, "elf2tab_index")
 
 tock = use_extension("//third_party/tock:extensions.bzl", "tock")
 use_repo(tock, "elf2tab", "libtock", "tock")
-
-###################
 
 # Repository rules:
 bitstreams_repo = use_repo_rule("//rules:bitstreams.bzl", "bitstreams_repo")
@@ -363,8 +350,10 @@ use_repo(qemu, "qemu_opentitan")
 doxygen = use_extension("//third_party/doxygen:extensions.bzl", "doxygen")
 use_repo(doxygen, "doxygen")
 
+# Hooks:
 # Extension for linking in externally managed test and provisioning customizations
 # for both secure/non-secure manufacturer domains.
+
 hooks = use_extension("//rules:extensions.bzl", "hooks")
 hooks.repo(
     name = "manufacturer_test_hooks",
@@ -393,6 +382,8 @@ use_repo(
     "rom_hooks",
     "secure_manufacturer_test_hooks",
 )
+
+# Local toolchains
 
 register_toolchains("//rules/opentitan:localtools")
 
