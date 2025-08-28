@@ -435,6 +435,31 @@ dif_result_t dif_clkmgr_measure_ctrl_get_enable(const dif_clkmgr_t *clkmgr,
                                                 dif_toggle_t *state);
 
 /**
+ * Obtain the index of a measureable clock for a DT clock.
+ *
+ * Given a clock (identified by its DT index), return the index of the
+ * measurable clock which controls this clock and can be used with the clkmgr
+ * DIF.
+ *
+ * Example (find main measurable clock):
+ * ```c
+ * dif_clkmgr_measure_clock_t clock;
+ * CHECK_DIF_OK(dif_clkmgr_find_measure_clock(
+ *     clkmgr, kDtClockMain, &clock));
+ * ```
+ *
+ * @param clkmgr A clock manager handle.
+ * @param dt_clk A DT clock.
+ * @param[out] clock The index of the clock.
+ * @return `kDifError` if this clock is not measurable,
+ * `kDifOk` otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_find_measure_clock(const dif_clkmgr_t *clkmgr,
+                                           dt_clock_t dt_clk,
+                                           dif_clkmgr_measure_clock_t *clock);
+
+/**
  * Configure count measurements.
  *
  * @param clkmgr Clock Manager Handle.
