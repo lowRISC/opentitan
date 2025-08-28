@@ -6220,6 +6220,15 @@
           name_top: EntropySrcEsFifoDepth
         }
         {
+          name: EnCsAesHaltReqIf
+          desc: Enable (1) or disable (0) the CS AES halt request interface
+          type: bit
+          default: "1"
+          local: "true"
+          expose: "true"
+          name_top: EntropySrcEnCsAesHaltReqIf
+        }
+        {
           name: DistrFifoDepth
           desc: Number of 32-bit entries in the distr FIFO
           type: int unsigned

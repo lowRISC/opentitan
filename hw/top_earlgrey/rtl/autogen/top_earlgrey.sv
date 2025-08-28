@@ -259,6 +259,7 @@ module top_earlgrey #(
   localparam int SramCtrlRetAonOutstanding = 2;
   // local parameters for entropy_src
   localparam int EntropySrcEsFifoDepth = 3;
+  localparam bit EntropySrcEnCsAesHaltReqIf = 1;
   localparam int unsigned EntropySrcDistrFifoDepth = 2;
   // local parameters for sram_ctrl_main
   localparam int SramCtrlMainOutstanding = 2;
@@ -2651,6 +2652,7 @@ module top_earlgrey #(
     .RngBusBitSelWidth(EntropySrcRngBusBitSelWidth),
     .HealthTestWindowWidth(EntropySrcHealthTestWindowWidth),
     .EsFifoDepth(EntropySrcEsFifoDepth),
+    .EnCsAesHaltReqIf(EntropySrcEnCsAesHaltReqIf),
     .DistrFifoDepth(EntropySrcDistrFifoDepth),
     .Stub(EntropySrcStub)
   ) u_entropy_src (

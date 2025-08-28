@@ -199,6 +199,13 @@
       local:   "true",
       expose:  "true"
     },
+    { name:    "EnCsAesHaltReqIf",
+      type:    "bit",
+      default: "1",
+      desc:    "Enable (1) or disable (0) the CS AES halt request interface",
+      local:   "true",
+      expose:  "true"
+    },
     { name:    "DistrFifoDepth",
       type:    "int unsigned",
       default: "2",
