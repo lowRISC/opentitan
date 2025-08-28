@@ -159,7 +159,7 @@ fpga_cw310(
     testonly = True,
     base = ":fpga_cw310_test_rom",
     ecdsa_key = select({
-        "//signing:test_keys": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+        "//signing:test_keys": {"//sw/device/silicon_creator/lib/ownership/keys/fake:owner_ecdsa_keyset": "prod_key_0"},
         # We choose key zero in the appkey's keyset, which should be app-key-prod-0.
         "//conditions:default": {"//signing:appkey": "0"},
     }),
@@ -218,7 +218,7 @@ fpga_cw310(
     name = "fpga_hyper310_rom_ext",
     testonly = True,
     base = ":fpga_hyper310_rom_with_fake_keys",
-    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:owner_ecdsa_keyset": "prod_key_0"},
     exec_env = "fpga_hyper310_rom_ext",
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
@@ -264,7 +264,7 @@ fpga_cw310(
     name = "fpga_cw310_sival_rom_ext",
     testonly = True,
     base = ":fpga_hyper310_rom_ext",
-    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:owner_ecdsa_keyset": "prod_key_0"},
     exec_env = "fpga_cw310_sival_rom_ext",
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
@@ -371,7 +371,7 @@ fpga_cw340(
     testonly = True,
     base = ":fpga_cw340_rom_with_fake_keys",
     ecdsa_key = select({
-        "//signing:test_keys": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+        "//signing:test_keys": {"//sw/device/silicon_creator/lib/ownership/keys/fake:owner_ecdsa_keyset": "prod_key_0"},
         # We choose key zero in the appkey's keyset, which should be app-key-prod-0.
         "//conditions:default": {"//signing:appkey": "0"},
     }),
@@ -423,7 +423,7 @@ fpga_cw340(
     name = "fpga_cw340_sival_rom_ext",
     testonly = True,
     base = ":fpga_cw340_rom_ext",
-    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:owner_ecdsa_keyset": "prod_key_0"},
     exec_env = "fpga_cw340_sival_rom_ext",
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
@@ -484,7 +484,7 @@ silicon(
     ],
     design = "earlgrey",
     ecdsa_key = select({
-        "//signing:test_keys": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+        "//signing:test_keys": {"//sw/device/silicon_creator/lib/ownership/keys/fake:owner_ecdsa_keyset": "prod_key_0"},
         # We choose key zero in the appkey's keyset, which should be app-key-prod-0.
         "//conditions:default": {"//signing:appkey": "0"},
     }),

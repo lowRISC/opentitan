@@ -4,6 +4,7 @@
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
 load("//rules/opentitan:keyutils.bzl", "key_ecdsa", "key_sphincs_plus")
+load("//rules:signing.bzl", "keyset")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -182,4 +183,47 @@ pkg_filegroup(
         ":fpga_dev_files",
     ],
     prefix = "fake_keys",
+)
+
+keyset(
+    name = "owner_ecdsa_keyset",
+    build_setting_default = "",
+    keys = {
+        "owner_ecdsa_p256.pub.der": "owner_key_0",
+        "owner_ecdsa_p256.der": "owner_key_0",
+        "activate_ecdsa_p256.pub.der": "activate_key_0",
+        "activate_ecdsa_p256.der": "activate_key_0",
+        "unlock_ecdsa_p256.pub.der": "unlock_key_0",
+        "unlock_ecdsa_p256.der": "unlock_key_0",
+        "app_prod_ecdsa_p256.pub.der": "prod_key_0",
+        "app_prod_ecdsa_p256.der": "prod_key_0",
+        "app_dev_ecdsa_p256.pub.der": "dev_key_0",
+        "app_dev_ecdsa_p256.der": "dev_key_0",
+        "app_test_ecdsa_p256.pub.der": "test_key_0",
+        "app_test_ecdsa_p256.der": "test_key_0",
+        "app_unauthorized_ecdsa_p256.pub.der": "unauthorized_key_0",
+        "app_unauthorized_ecdsa_p256.der": "unauthorized_key_0",
+        "no_owner_recovery_ecdsa_p256.der": "no_owner_recovery",
+    },
+    profile = "local",
+    tool = "//signing/tokens:local",
+)
+
+keyset(
+    name = "owner_spx_keyset",
+    build_setting_default = "",
+    keys = {
+        "owner_spx.pub.pem": "owner_key_0",
+        "owner_spx.pem": "owner_key_0",
+        "activate_spx.pub.pem": "activate_key_0",
+        "activate_spx.pem": "activate_key_0",
+        "unlock_spx.pub.pem": "unlock_key_0",
+        "unlock_spx.pem": "unlock_key_0",
+        "app_prod_spx.pub.pem": "prod_key_0",
+        "app_prod_spx.pem": "prod_key_0",
+        "app_dev_spx.pub.pem": "dev_key_0",
+        "app_dev_spx.pem": "dev_key_0",
+    },
+    profile = "local",
+    tool = "//signing/tokens:local",
 )
