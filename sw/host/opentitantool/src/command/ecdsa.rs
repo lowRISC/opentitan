@@ -280,8 +280,7 @@ impl CommandDispatch for EcdsaVerifyCommand {
             unreachable!();
         };
         let signature = if let Some(signature_file) = &self.signature_file {
-            let bytes = std::fs::read(signature_file)?;
-            EcdsaRawSignature::try_from(bytes.as_slice())?
+            EcdsaRawSignature::read_from_file(signature_file)?
         } else if let Some(signature) = &self.signature {
             EcdsaRawSignature::try_from(hex::decode(signature)?.as_slice())?
         } else {
