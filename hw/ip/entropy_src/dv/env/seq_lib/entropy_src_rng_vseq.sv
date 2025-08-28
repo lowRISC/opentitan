@@ -321,8 +321,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       // Without a limit, the read function might keep reading the Observe FIFO forever and time
       // out as the Observe FIFO potentially never runs empty when ast/rng runs at such
       // unrealistically high rates.
-      int max_bundles =
-          (cfg.rng_max_delay == 1) ? 2 * (4 * `gmv(ral.health_test_windows.fips_window)) / 32 : -1;
+      int max_bundles = (cfg.rng_max_delay == 1) ?
+          2 * (`RNG_BUS_WIDTH * `gmv(ral.health_test_windows.fips_window)) / 32 : -1;
       `uvm_info(`gfn, "Reading observe FIFO", UVM_DEBUG)
       // Read all currently available data
       do_entropy_data_read(.source(TlSrcObserveFIFO),
