@@ -173,7 +173,7 @@ For more guidance on using OpenOCD, see [Using OpenOCD](./using_openocd.md).
 Run the simulation with Bazel, making sure to build the device software with debug symbols using
 ```console
 cd $REPO_TOP
-bazel test --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
+bazel run --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
 ```
 
 Then, connect with OpenOCD using the following command.
