@@ -179,7 +179,7 @@ Then, connect with OpenOCD using the following command.
 
 ```console
 cd $REPO_TOP
-/tools/openocd/bin/openocd -s util/openocd -f board/lowrisc-earlgrey-verilator.cfg
+bazel run //third_party/openocd -- -s util/openocd -f board/lowrisc-earlgrey-verilator.cfg
 ```
 
 Lastly, connect GDB using the following command (noting it needs to be altered to point to the sw binary in use).
