@@ -43,7 +43,6 @@ pub struct JsonSocketServer<
     socket_token: Token,
     signals: Signals,
     signal_token: Token,
-    nonblocking_help_token: Token,
     connection_map: HashMap<Token, Connection>,
     exit_requested: bool,
     phantom: PhantomData<Msg>,
@@ -68,8 +67,6 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg, E>, E: ExtraEvent
         let signal_token = get_next_token();
         poll.registry()
             .register(&mut signals, signal_token, Interest::READABLE)?;
-        let nonblocking_help_token = get_next_token();
-        command_handler.register_nonblocking_help(poll.registry(), nonblocking_help_token)?;
         Ok(Self {
             command_handler,
             extra_event_handler,
@@ -78,7 +75,6 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg, E>, E: ExtraEvent
             socket_token,
             signals,
             signal_token,
-            nonblocking_help_token,
             connection_map: HashMap::new(),
             exit_requested: false,
             phantom: PhantomData,
@@ -100,8 +96,6 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg, E>, E: ExtraEvent
                     self.process_new_connection()?;
                 } else if event.token() == self.signal_token {
                     self.process_signals()?;
-                } else if event.token() == self.nonblocking_help_token {
-                    self.command_handler.nonblocking_help()?;
                 } else if self
                     .extra_event_handler
                     .handle_poll_event(event, &mut self.connection_map)?

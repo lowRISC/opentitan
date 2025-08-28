@@ -7,7 +7,6 @@ use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use thiserror::Error;
 
-use super::nonblocking_help::{NoNonblockingHelp, NonblockingHelp};
 use crate::impl_serializable_error;
 use crate::io::gpio::GpioPin;
 

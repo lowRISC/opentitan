@@ -24,7 +24,7 @@ use crate::bootstrap::Bootstrap;
 use crate::io::gpio::{
     BitbangEntry, DacBangEntry, GpioBitbangOperation, GpioDacBangOperation, GpioPin,
 };
-use crate::io::{i2c, nonblocking_help, spi};
+use crate::io::{i2c, spi};
 use crate::proxy::nonblocking_uart::NonblockingUartRegistry;
 use crate::transport::TransportError;
 
@@ -32,7 +32,6 @@ use crate::transport::TransportError;
 /// `Transport` implementation.
 pub struct TransportCommandHandler<'a> {
     transport: &'a TransportWrapper,
-    nonblocking_help: Rc<dyn nonblocking_help::NonblockingHelp>,
     spi_chip_select: HashMap<String, Vec<spi::AssertChipSelect>>,
     ongoing_bitbanging: Option<Box<dyn GpioBitbangOperation<'static, 'static>>>,
     ongoing_dacbanging: Option<Box<dyn GpioDacBangOperation>>,
@@ -40,10 +39,8 @@ pub struct TransportCommandHandler<'a> {
 
 impl<'a> TransportCommandHandler<'a> {
     pub fn new(transport: &'a TransportWrapper) -> Result<Self> {
-        let nonblocking_help = transport.nonblocking_help()?;
         Ok(Self {
             transport,
-            nonblocking_help,
             spi_chip_select: HashMap::new(),
             ongoing_bitbanging: None,
             ongoing_dacbanging: None,
@@ -623,14 +620,5 @@ impl<'a> CommandHandler<Message, NonblockingUartRegistry> for TransportCommandHa
             ));
         }
         bail!("Client sent non-Request to server!!!");
-    }
-
-    fn register_nonblocking_help(&self, registry: &mio::Registry, token: mio::Token) -> Result<()> {
-        self.nonblocking_help
-            .register_nonblocking_help(registry, token)
-    }
-
-    fn nonblocking_help(&self) -> Result<()> {
-        self.nonblocking_help.nonblocking_help()
     }
 }
