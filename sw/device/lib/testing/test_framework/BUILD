@@ -13,6 +13,8 @@ load(
     "opentitan_test",
     "verilator_params",
 )
+load("//rules/opentitan:util.bzl", "flatten")
+load("//hw/top:defs.bzl", "opentitan_if_ip")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -284,7 +286,6 @@ cc_library(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:rv_core_ibex",
-        "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rand_testutils",
@@ -297,18 +298,24 @@ cc_library(
     alwayslink = True,
 )
 
-cc_library(
+dual_cc_library(
     name = "ujson_ottf",
-    srcs = ["ujson_ottf.c"],
+    srcs = dual_inputs(
+        device = ["ujson_ottf.c"],
+    ),
     hdrs = ["ujson_ottf.h"],
-    deps = [
-        ":ottf_console",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:uart",
-        "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing/json:ottf",
-        "//sw/device/lib/ujson",
-    ],
+    deps = dual_inputs(
+        device = [
+            ":ottf_console",
+            "//sw/device/lib/dif:uart",
+            "//sw/device/lib/runtime:print",
+        ],
+        shared = [
+            "//sw/device/lib/base:status",
+            "//sw/device/lib/testing/json:ottf",
+            "//sw/device/lib/ujson",
+        ],
+    ),
 )
 
 cc_library(
@@ -324,40 +331,107 @@ cc_library(
     ],
 )
 
-dual_cc_library(
-    name = "ottf_console",
-    srcs = dual_inputs(
-        device = [
-            "ottf_console.c",
-            "ottf_console_uart.c",
-            "ottf_console_spi.c",
+OTTF_CONSOLE_BACKENDS = {
+    "uart": {
+        "srcs": ["ottf_console_uart.c"],
+        "hdrs": ["ottf_console_uart.h"],
+        "deps": [
+            ":ottf_isrs",
+            "//sw/device/lib/dif:uart",
+            "//sw/device/lib/dif:pinmux",
+            "//sw/device/lib/dif:rv_plic",
+            "//sw/device/lib/runtime:irq",
         ],
-    ),
+        "defines": ["OTTF_CONSOLE_HAS_UART"],
+    },
+    "spi_device": {
+        "srcs": ["ottf_console_spi.c"],
+        "hdrs": ["ottf_console_spi.h"],
+        "deps": [
+            "//sw/device/lib/dif:spi_device",
+            "//sw/device/lib/dif:pinmux",
+            "//sw/device/lib/testing:spi_device_testutils",
+        ],
+        "defines": ["OTTF_CONSOLE_HAS_SPI_DEVICE"],
+    },
+}
+
+cc_library(
+    name = "ottf_console_types",
+    hdrs = [
+        "ottf_console_types.h",
+    ],
+    deps = [
+        ":ottf_test_config",
+    ],
+)
+
+[
+    cc_library(
+        name = "ottf_console_{}_header".format(ip),
+        hdrs = cfg["hdrs"],
+        defines = cfg["defines"],
+        target_compatible_with = [OPENTITAN_CPU],
+        deps = cfg["deps"] + [
+            ":ottf_console_types",
+        ],
+    )
+    for (ip, cfg) in OTTF_CONSOLE_BACKENDS.items()
+]
+
+cc_library(
+    name = "ottf_console_headers",
     hdrs = [
         "ottf_console.h",
-        "ottf_console_internal.h",
     ],
-    deps = dual_inputs(
-        device = [
-            ":check",
-            ":ottf_isrs",
-            "//sw/device/lib/base:mmio",
-            "//sw/device/lib/runtime:print",
-            "//sw/device/lib/dif:rv_plic",
-            "//sw/device/lib/dif:gpio",
-            "//sw/device/lib/dif:pinmux",
-            "//sw/device/lib/runtime:ibex",
-            "//sw/device/lib/runtime:irq",
-            "//sw/device/lib/testing:spi_device_testutils",
-            "//hw/top:top_lib",
+    deps = flatten([
+        opentitan_if_ip(
+            ip,
+            [":ottf_console_{}_header".format(ip)],
+            [],
+        )
+        for ip in OTTF_CONSOLE_BACKENDS
+    ]) + [
+        ":ottf_console_types",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:gpio",
+    ],
+)
+
+[
+    cc_library(
+        name = "ottf_console_{}".format(ip),
+        srcs = cfg["srcs"],
+        deps = [
+            ":ottf_console_headers",
         ],
-        shared = [
-            ":ottf_test_config",
-            "//sw/device/lib/base:status",
-            "//sw/device/lib/dif:uart",
-            "//sw/device/lib/dif:spi_device",
-        ],
-    ),
+    )
+    for (ip, cfg) in OTTF_CONSOLE_BACKENDS.items()
+]
+
+cc_library(
+    name = "ottf_console",
+    srcs = [
+        "ottf_console.c",
+    ],
+    deps = [
+        ":check",
+        ":ottf_console_headers",
+        ":ottf_isrs",
+        ":ottf_test_config",
+        "//hw/top:top_lib",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:print",
+    ] + flatten([
+        opentitan_if_ip(
+            ip,
+            [":ottf_console_{}".format(ip)],
+            [],
+        )
+        for ip in OTTF_CONSOLE_BACKENDS
+    ]),
 )
 
 _FLOW_CONTROL_MESSAGE = (
@@ -431,7 +505,6 @@ cc_library(
         ":ottf_start",
         "//hw/top:dt",
         "//sw/device/lib/dif:rv_timer",
-        "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",

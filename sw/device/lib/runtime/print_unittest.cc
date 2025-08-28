@@ -15,13 +15,6 @@ extern "C" {
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_uart.h"
-
-// NOTE: This is only present so that print.c can link without pulling in
-// dif_uart.c.
-extern "C" dif_result_t dif_uart_byte_send_polled(const dif_uart *, uint8_t) {
-  return kDifOk;
-}
 
 namespace base {
 namespace {

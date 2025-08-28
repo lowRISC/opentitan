@@ -68,21 +68,6 @@ void base_set_stdout(buffer_sink_t out) {
   base_stdout = out;
 }
 
-static size_t base_dev_uart(void *data, const char *buf, size_t len) {
-  const dif_uart_t *uart = (const dif_uart_t *)data;
-  for (size_t i = 0; i < len; ++i) {
-    if (dif_uart_byte_send_polled(uart, (uint8_t)buf[i]) != kDifOk) {
-      return i;
-    }
-  }
-  return len;
-}
-
-void base_uart_stdout(const dif_uart_t *uart) {
-  base_set_stdout(
-      (buffer_sink_t){.data = (void *)uart, .sink = &base_dev_uart});
-}
-
 size_t base_printf(const char *format, ...) {
   va_list args;
   va_start(args, format);
