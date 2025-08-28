@@ -264,37 +264,37 @@ opentitan_test(
 
 _KEYS = {
     "dev": {
-        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_dev_ecdsa": "dev_key_0"},
+        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_dev_0"},
         "spx": {},
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     "dev_hybrid_spx_prehashed": {
-        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_dev_ecdsa": "dev_key_0"},
-        "spx": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_dev_spx": "dev_key_0"},
+        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_dev_0"},
+        "spx": {"//sw/device/silicon_creator/lib/ownership/keys/fake:spx_keyset": "app_dev_0"},
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     "prod": {
-        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0"},
         "spx": {},
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     "prod_hybrid_spx_pure": {
-        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
-        "spx": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_spx": "prod_key_0"},
+        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0"},
+        "spx": {"//sw/device/silicon_creator/lib/ownership/keys/fake:spx_keyset": "app_prod_0"},
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     "test": {
-        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_test_ecdsa": "test_key_0"},
+        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_test_0"},
         "spx": {},
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     "unauthorized": {
-        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_unauthorized_ecdsa": "unauthorized_key_0"},
+        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_unauthorized_0"},
         "spx": {},
         "exit_success": DEFAULT_TEST_FAILURE_MSG,
         "exit_failure": DEFAULT_TEST_SUCCESS_MSG,
@@ -351,14 +351,14 @@ manifest(d = {
 opentitan_test(
     name = "isfb_boot_test",
     srcs = [":boot_test"],
-    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0"},
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(),
     manifest = ":isfb_manifest",
-    spx_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_spx": "prod_key_0"},
+    spx_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:spx_keyset": "app_prod_0"},
     deps = [
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:ottf_main",
