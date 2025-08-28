@@ -693,3 +693,25 @@ opentitan_test(
         test_harness = "//sw/host/tests/rescue:rescue_test",
     ),
 )
+
+opentitan_test(
+    name = "xmodem_rescue_error_handling_test",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a": "romext",
+            ":boot_test_slot_a": "firmware",
+        },
+        owner_offset = "0x10000",
+        romext_offset = "0",
+        test_cmd = """
+        --clear-bitstream
+        --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/rescue:xmodem_rescue_error_handling",
+    ),
+)
