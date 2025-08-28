@@ -524,8 +524,7 @@ fn provision_certificates(
 
     // Execute extension hook.
     let t0 = Instant::now();
-    endorsed_cert_concat =
-        ft_inject_certs_ext(endorsed_cert_concat, &mut num_host_endorsed_certs)?;
+    endorsed_cert_concat = ft_inject_certs_ext(endorsed_cert_concat, &mut num_host_endorsed_certs)?;
     response.stats.log_elapsed_time("perso-ft-ext", t0);
 
     // Authenticate WAS HMAC.
