@@ -152,6 +152,7 @@ cc_library(
         ":sigverify_keys_spx",
         ":sigverify_otp_keys",
         "//hw/top:aon_timer_c_regs",
+        "//hw/top:dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
@@ -353,6 +354,7 @@ cc_library(
     srcs = ["bootstrap.c"],
     hdrs = ["bootstrap.h"],
     deps = [
+        "//hw/top:dt",
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
@@ -403,6 +405,7 @@ cc_library(
     hdrs = ["sigverify_otp_keys.h"],
     deps = [
         ":sigverify_key_types",
+        "//hw/top:dt",
         "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",

@@ -111,6 +111,7 @@ cc_library(
         ":lifecycle",
         ":otp",
         "//hw/top:ast_c_regs",
+        "//hw/top:dt",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:sensor_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -467,7 +468,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:dt",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -499,6 +500,7 @@ cc_library(
     srcs = ["pinmux.c"],
     hdrs = ["pinmux.h"],
     deps = [
+        "//hw/top:dt",
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:pinmux_c_regs",
@@ -665,6 +667,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
+            "//hw/top:dt",
             "//hw/top:rstmgr_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
@@ -764,6 +767,7 @@ cc_library(
     deps = [
         ":pwrmgr",
         "//hw/top:aon_timer_c_regs",
+        "//hw/top:dt",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -876,6 +880,7 @@ cc_library(
     deps = [
         ":lifecycle",
         ":otp",
+        "//hw/top:dt",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:sensor_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
