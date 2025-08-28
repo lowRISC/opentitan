@@ -25,6 +25,9 @@ class racl_ctrl_error_arb_predictor extends uvm_component;
   extern function void build_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
 
+  // Update the model to match a reset of racl_ctrl
+  extern task on_reset();
+
   // Watch error inputs, collecting up values in the two fifos and pairing them up.
   extern local task watch_errors();
 
@@ -48,6 +51,12 @@ task racl_ctrl_error_arb_predictor::run_phase(uvm_phase phase);
     super.run_phase(phase);
     watch_errors();
   join
+endtask
+
+task racl_ctrl_error_arb_predictor::on_reset();
+  internal_errors_fifo.flush();
+  external_errors_fifo.flush();
+  merged_errors_fifo.flush();
 endtask
 
 task racl_ctrl_error_arb_predictor::watch_errors();
