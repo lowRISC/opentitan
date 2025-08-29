@@ -94,7 +94,7 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
                                size_t word_len);
 
 /**
- * Combines two word buffers with XOR.
+ * Combines two word buffers with XOR in-place.
  *
  * Callers should ensure the entropy complex is up before calling this
  * function. The implementation uses random-order hardening primitives for
@@ -105,8 +105,8 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
  * @param word_len Length in words of each operand.
  * @return OK or error.
  */
-status_t hardened_xor(uint32_t *OT_RESTRICT x, const uint32_t *OT_RESTRICT y,
-                      size_t word_len);
+status_t hardened_xor_in_place(uint32_t *OT_RESTRICT x,
+                               const uint32_t *OT_RESTRICT y, size_t word_len);
 
 #ifdef __cplusplus
 }  // extern "C"
