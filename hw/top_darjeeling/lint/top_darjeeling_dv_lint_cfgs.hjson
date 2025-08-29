@@ -19,12 +19,12 @@
   rel_path: "hw/top_darjeeling/dv/lint/{tool}/summary"
 
   use_cfgs: [{    name: dma
-                  fusesoc_core: lowrisc:ip:dma_sim
+                  fusesoc_core: lowrisc:dv:dma_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/dma/lint/{tool}"
              },
              {    name: mbx
-                  fusesoc_core: lowrisc:ip:mbx_sim
+                  fusesoc_core: lowrisc:dv:mbx_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/mbx/lint/{tool}"
              },
