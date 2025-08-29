@@ -390,22 +390,11 @@ def _test_dispatch(ctx, exec_env, firmware):
     # Construct the test script
     script = ctx.actions.declare_file(ctx.attr.name + ".bash")
 
-    post_test_harness_path = ctx.executable.post_test_harness
-    post_test_cmd = ctx.attr.post_test_cmd.format(**param)
-
-    if post_test_harness_path != None:
-        data_files.append(post_test_harness_path)
-        post_test_harness_path = post_test_harness_path.short_path
-    else:
-        post_test_harness_path = ""
-
     ctx.actions.write(
         script,
         _TEST_SCRIPT.format(
             test_harness = test_harness.executable.short_path,
             args = args,
-            post_test_harness = post_test_harness_path,
-            post_test_cmd = post_test_cmd,
             **test_script_fmt
         ),
     )
