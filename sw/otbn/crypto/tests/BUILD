@@ -442,7 +442,7 @@ otbn_sim_test(
     srcs = [
         "p384_base_mult_test.s",
     ],
-    exp = "p384_base_mult_test.exp",
+    testcase = "p384_base_mult_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_base_mult",
@@ -509,7 +509,7 @@ otbn_sim_test(
     srcs = [
         "p384_ecdsa_sign_test.s",
     ],
-    exp = "p384_ecdsa_sign_test.exp",
+    testcase = "p384_ecdsa_sign_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_internal_mult",
@@ -525,8 +525,7 @@ otbn_sim_test(
     srcs = [
         "p384_ecdsa_verify_test.s",
     ],
-    dexp = "p384_ecdsa_verify_test.dexp",
-    exp = "p384_ecdsa_verify_test.exp",
+    testcase = "p384_ecdsa_verify_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_isoncurve",
@@ -541,7 +540,7 @@ otbn_sim_test(
     srcs = [
         "p384_isoncurve_test.s",
     ],
-    exp = "p384_isoncurve_test.exp",
+    testcase = "p384_isoncurve_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_isoncurve",
@@ -554,7 +553,7 @@ otbn_sim_test(
     srcs = [
         "p384_isoncurve_proj_test.s",
     ],
-    exp = "p384_isoncurve_proj_test.exp",
+    testcase = "p384_isoncurve_proj_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_isoncurve",
@@ -568,7 +567,7 @@ otbn_sim_test(
     srcs = [
         "p384_curve_point_valid_test.s",
     ],
-    exp = "p384_curve_point_valid_test.exp",
+    testcase = "p384_curve_point_valid_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_isoncurve",
