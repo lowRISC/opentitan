@@ -4,14 +4,14 @@
 
 use anyhow::{Result, bail};
 use handler::TransportCommandHandler;
+use mio::Registry;
 use mio::event::Event;
 use mio::net::TcpListener;
-use mio::{Registry, Token};
 use nonblocking_uart::NonblockingUartRegistry;
 use protocol::Message;
 use socket_server::{Connection, JsonSocketServer};
-use std::collections::HashMap;
 use std::net::SocketAddr;
+use std::sync::{Arc, Mutex};
 
 use crate::app::TransportWrapper;
 
@@ -26,7 +26,7 @@ mod socket_server;
 pub trait CommandHandler<Msg, E: ExtraEventHandler> {
     fn execute_cmd(
         &mut self,
-        conn_token: Token,
+        conn: &Arc<Mutex<Connection>>,
         registry: &Registry,
         extra_event_handler: &mut E,
         msg: &Msg,
@@ -34,11 +34,7 @@ pub trait CommandHandler<Msg, E: ExtraEventHandler> {
 }
 
 pub trait ExtraEventHandler {
-    fn handle_poll_event(
-        &mut self,
-        event: &Event,
-        connection_map: &mut HashMap<Token, Connection>,
-    ) -> Result<bool>;
+    fn handle_poll_event(&mut self, event: &Event) -> Result<bool>;
 }
 
 /// This is the main entry point for the session proxy.  This struct will either bind on a

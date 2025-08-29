@@ -4,10 +4,11 @@
 
 use anyhow::{Result, bail};
 
-use mio::{Registry, Token};
+use mio::Registry;
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use super::CommandHandler;
@@ -25,6 +26,7 @@ use crate::io::gpio::{
     BitbangEntry, DacBangEntry, GpioBitbangOperation, GpioDacBangOperation, GpioPin,
 };
 use crate::io::{i2c, spi};
+use crate::proxy::Connection;
 use crate::proxy::nonblocking_uart::NonblockingUartRegistry;
 use crate::transport::TransportError;
 
@@ -61,7 +63,7 @@ impl<'a> TransportCommandHandler<'a> {
     /// logging.
     fn do_execute_cmd(
         &mut self,
-        conn_token: Token,
+        conn: &Arc<Mutex<Connection>>,
         registry: &Registry,
         others: &mut NonblockingUartRegistry,
         req: &Request,
@@ -306,8 +308,7 @@ impl<'a> TransportCommandHandler<'a> {
                         Ok(Response::Uart(UartResponse::Write))
                     }
                     UartRequest::RegisterNonblockingRead => {
-                        let channel =
-                            others.nonblocking_uart_init(&instance, conn_token, registry)?;
+                        let channel = others.nonblocking_uart_init(&instance, conn, registry)?;
                         Ok(Response::Uart(UartResponse::RegisterNonblockingRead {
                             channel,
                         }))
@@ -607,7 +608,7 @@ impl<'a> CommandHandler<Message, NonblockingUartRegistry> for TransportCommandHa
     /// error message in the server log, and the connection to be terminated.
     fn execute_cmd(
         &mut self,
-        conn_token: Token,
+        conn: &Arc<Mutex<Connection>>,
         registry: &Registry,
         others: &mut NonblockingUartRegistry,
         msg: &Message,
@@ -615,7 +616,7 @@ impl<'a> CommandHandler<Message, NonblockingUartRegistry> for TransportCommandHa
         if let Message::Req(req) = msg {
             // Package either `Ok()` or `Err()` into a `Message`, to be sent via network.
             return Ok(Message::Res(
-                self.do_execute_cmd(conn_token, registry, others, req)
+                self.do_execute_cmd(conn, registry, others, req)
                     .map_err(SerializedError::from),
             ));
         }
