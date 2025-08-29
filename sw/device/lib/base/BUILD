@@ -117,7 +117,12 @@ cc_test(
     ],
     linkopts = [
         "-fsanitize=undefined",
-    ],
+    ] + select({
+        "@rules_cc//cc/compiler:clang": [
+            "-fsanitize-link-c++-runtime",
+        ],
+        "//conditions:default": [],
+    }),
     deps = [
         ":global_mock",
         "@googletest//:gtest_main",
