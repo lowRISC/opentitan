@@ -189,37 +189,3 @@ p384_scalar_mult:
   bn.sid    x2, 32(x21)
 
   ret
-
-/* scratchpad memory */
-.section .bss
-
-.balign 32
-
-/* 1st scalar share d0 */
-.globl d0
-.weak d0
-d0:
-  .zero 96
-
-/* 2nd scalar share d1 */
-.globl d1
-.weak d1
-d1:
-  .zero 96
-
-/* x-coordinate */
-.globl x
-.weak x
-x:
-  .zero 64
-
-/* y-coordinate */
-.globl y
-.weak y
-y:
-  .zero 64
-
-/* 704 bytes of scratchpad memory */
-.balign 32
-scratchpad:
-  .zero 768
