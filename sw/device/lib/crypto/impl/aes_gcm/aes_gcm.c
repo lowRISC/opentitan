@@ -195,7 +195,8 @@ static status_t aes_gcm_hash_subkey(const aes_key_t key, ghash_context_t *ctx) {
   hardened_memcpy(hash_subkey_share1.data, hash_subkey_share0.data,
                   kAesBlockNumWords);
   // TODO(#28008): make sure that we do not override shares.
-  hardened_xor(hash_subkey_share1.data, hash_subkey.data, kAesBlockNumWords);
+  hardened_xor_in_place(hash_subkey_share1.data, hash_subkey.data,
+                        kAesBlockNumWords);
 
   // Set the key for the GHASH context.
   ghash_init_subkey(hash_subkey_share0.data, ctx->tbl0);
@@ -242,8 +243,8 @@ static status_t aes_gcm_counter(const size_t iv_len, const uint32_t *iv,
     aes_block_t enc_initial_counter_block1;
     hardened_memcpy(enc_initial_counter_block1.data,
                     enc_initial_counter_block0.data, kAesBlockNumWords);
-    hardened_xor(enc_initial_counter_block1.data,
-                 enc_initial_counter_block.data, kAesBlockNumWords);
+    hardened_xor_in_place(enc_initial_counter_block1.data,
+                          enc_initial_counter_block.data, kAesBlockNumWords);
 
     // Calculate the masking correction terms and store the encrypted initial
     // counter blocks S0 and S1.
@@ -260,7 +261,8 @@ static status_t aes_gcm_counter(const size_t iv_len, const uint32_t *iv,
     // In the masking scheme, the GHASH function now actually XORs the initial
     // counter block S to the output. As we do not want to have this for J0,
     // correct the output.
-    hardened_xor(j0->data, enc_initial_counter_block.data, kAesBlockNumWords);
+    hardened_xor_in_place(j0->data, enc_initial_counter_block.data,
+                          kAesBlockNumWords);
   } else {
     // Should not happen; invalid IV length.
     return OTCRYPTO_BAD_ARGS;
@@ -362,8 +364,8 @@ static status_t aes_gcm_init(const aes_key_t key, const size_t iv_len,
   hardened_memcpy(enc_initial_counter_block1.data,
                   enc_initial_counter_block0.data, kAesBlockNumWords);
   // TODO(#28008): make sure that we do not override shares.
-  hardened_xor(enc_initial_counter_block1.data, enc_initial_counter_block.data,
-               kAesBlockNumWords);
+  hardened_xor_in_place(enc_initial_counter_block1.data,
+                        enc_initial_counter_block.data, kAesBlockNumWords);
 
   // Calculate the masking correction terms and store the encrypted initial
   // counter blocks.
