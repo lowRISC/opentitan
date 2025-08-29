@@ -127,8 +127,8 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
   return kHardenedBoolFalse;
 }
 
-status_t hardened_xor(uint32_t *restrict x, const uint32_t *restrict y,
-                      size_t word_len) {
+status_t hardened_xor_in_place(uint32_t *restrict x, const uint32_t *restrict y,
+                               size_t word_len) {
   // Generate a random ordering.
   random_order_t order;
   random_order_init(&order, word_len);
