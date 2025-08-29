@@ -154,11 +154,6 @@ status_t rsa_3072_compute_constants(const rsa_3072_public_key_t *public_key,
 status_t rsa_3072_verify_start(const rsa_3072_int_t *signature,
                                const rsa_3072_public_key_t *public_key,
                                const rsa_3072_constants_t *constants) {
-  // Only the F4 modulus is supported.
-  if (public_key->e != 65537) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
   // Reject the signature if it is too large (n <= sig): RFC 8017, section
   // 5.2.2, step 1.
   if (memrcmp(public_key->n.data, signature->data, kRsa3072NumBytes) <= 0) {
