@@ -569,8 +569,13 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   assign rcstage_rc_plus1 = (rcstage_rc+1);
 
   assign sfifo_genbits_wdata = rcstage_glast ?
-                               {rcstage_fips,rcstage_bits,gen_upd_rsp_data_i.key,gen_upd_rsp_data_i.v,
-                                rcstage_rc_plus1,gen_upd_rsp_data_i.inst_id,gen_upd_rsp_data_i.cmd} :
+                               {rcstage_fips,
+                                rcstage_bits,
+                                gen_upd_rsp_data_i.key,
+                                gen_upd_rsp_data_i.v,
+                                rcstage_rc_plus1,
+                                gen_upd_rsp_data_i.inst_id,
+                                gen_upd_rsp_data_i.cmd} :
                                {rcstage_fips,rcstage_bits,rcstage_key,rcstage_v,
                                 rcstage_rc,rcstage_inst_id,rcstage_ccmd};
 
@@ -599,4 +604,9 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   // If in error state, the error output must be high.
   `ASSERT(CsrngDrbgGenErrorOutput_A,
           !(state_q inside {ReqIdle, ReqSend, ESHalt}) |-> ctr_drbg_gen_sm_err_o)
+
+  // Unused signals
+  logic [SeedLen-1:0] unused_upd_rsp_pdata;
+  assign unused_upd_rsp_pdata = gen_upd_rsp_data_i.pdata;
+
 endmodule

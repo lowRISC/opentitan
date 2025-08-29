@@ -4,7 +4,8 @@
 //
 // Description: csrng ctr_drbg commands module
 //
-// Accepts all csrng commands
+// Decodes the command field of an operation, injects entropy to pdata if required, and performs
+// the initial call to update() for all commands where this is required and pdata != 0.
 
 `include "prim_assert.sv"
 
@@ -23,10 +24,9 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   input  logic               cmd_data_req_glast_i,
 
   // command response
-  output logic               cmd_data_rsp_vld_o, // final ack when update process has been completed
+  output logic               cmd_data_rsp_vld_o,
   input  logic               cmd_data_rsp_rdy_i,
   output csrng_core_data_t   cmd_data_rsp_o,
-  output csrng_cmd_sts_e     cmd_data_rsp_status_o,
   output logic               cmd_data_rsp_glast_o,
 
   // update request interface
@@ -40,73 +40,64 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   input  csrng_upd_data_t    cmd_upd_rsp_data_i,
 
   // error status outputs
-  output logic [2:0]         ctr_drbg_cmd_sfifo_cmdreq_err_o,
-  output logic [2:0]         ctr_drbg_cmd_sfifo_rcstage_err_o,
-  output logic [2:0]         ctr_drbg_cmd_sfifo_keyvrc_err_o
+  output logic [2:0]         fifo_cmdreq_err_o,
+  output logic [2:0]         fifo_rcstage_err_o,
+  output logic [2:0]         fifo_keyvrc_err_o
 );
 
-  localparam int CmdreqFifoWidth = CoreDataWidth + SeedLen + 1;
-  localparam int RCStageFifoDepth = 1;
-  localparam int RCStageFifoWidth = KeyLen+BlkLen+InstIdWidth+CtrLen+1+SeedLen+1+CmdWidth;
-  localparam int KeyVRCFifoDepth = 1;
-  localparam int KeyVRCFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+1+InstIdWidth+CmdWidth;
-
+  localparam int CmdreqFifoWidth  = CoreDataWidth + SeedLen + 1;
+  localparam int RCStageFifoWidth = CoreDataWidth + 1;
+  localparam int KeyVRCFifoWidth  = CoreDataWidth + 1;
 
   // signals
   csrng_core_data_t   cmdreq_data;
   logic [SeedLen-1:0] cmdreq_entropy;
   logic               cmdreq_glast;
 
-  
+  csrng_core_data_t   rcstage_data;
+  logic               rcstage_glast;
+
+  csrng_core_data_t   keyvrc_data;
+  logic               keyvrc_glast;
 
   logic [SeedLen-1:0] prep_seed_material;
   logic [KeyLen-1:0]  prep_key;
   logic [BlkLen-1:0]  prep_v;
   logic [CtrLen-1:0]  prep_rc;
   logic               prep_gen_adata_null;
-  logic [KeyLen-1:0]  rcstage_key;
-  logic [BlkLen-1:0]  rcstage_v;
-  logic [InstIdWidth-1:0] rcstage_id;
-  logic [CtrLen-1:0]  rcstage_rc;
-  logic [CmdWidth-1:0]rcstage_ccmd;
-  logic               rcstage_glast;
-  logic [SeedLen-1:0] rcstage_adata;
-  logic               rcstage_fips;
-  logic               fips_muxed;
 
   // cmdreq fifo
-  logic                       sfifo_cmdreq_wvld;
-  logic                       sfifo_cmdreq_wrdy;
-  logic [CmdreqFifoWidth-1:0] sfifo_cmdreq_wdata;
-  logic                       sfifo_cmdreq_rvld;
-  logic                       sfifo_cmdreq_rrdy;
-  logic [CmdreqFifoWidth-1:0] sfifo_cmdreq_rdata;
-  logic                       sfifo_cmdreq_full;
-  
+  logic                        sfifo_cmdreq_wvld;
+  logic                        sfifo_cmdreq_wrdy;
+  logic  [CmdreqFifoWidth-1:0] sfifo_cmdreq_wdata;
+  logic                        sfifo_cmdreq_rvld;
+  logic                        sfifo_cmdreq_rrdy;
+  logic  [CmdreqFifoWidth-1:0] sfifo_cmdreq_rdata;
+
   // rcstage fifo
-  logic [RCStageFifoWidth-1:0] sfifo_rcstage_rdata;
   logic                        sfifo_rcstage_wvld;
+  logic                        sfifo_rcstage_wrdy;
   logic [RCStageFifoWidth-1:0] sfifo_rcstage_wdata;
-  logic                        sfifo_rcstage_rrdy;
-  logic                        sfifo_rcstage_full;
   logic                        sfifo_rcstage_rvld;
+  logic                        sfifo_rcstage_rrdy;
+  logic [RCStageFifoWidth-1:0] sfifo_rcstage_rdata;
 
   // keyvrc fifo
-  logic [KeyVRCFifoWidth-1:0]  sfifo_keyvrc_rdata;
   logic                        sfifo_keyvrc_wvld;
+  logic                        sfifo_keyvrc_wrdy;
   logic [KeyVRCFifoWidth-1:0]  sfifo_keyvrc_wdata;
-  logic                        sfifo_keyvrc_rrdy;
-  logic                        sfifo_keyvrc_full;
   logic                        sfifo_keyvrc_rvld;
+  logic                        sfifo_keyvrc_rrdy;
+  logic [KeyVRCFifoWidth-1:0]  sfifo_keyvrc_rdata;
 
   // flops
   logic                        gen_adata_null_q, gen_adata_null_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      gen_adata_null_q  <= '0;
+      gen_adata_null_q <= '0;
     end else begin
-      gen_adata_null_q  <= gen_adata_null_d;
+      gen_adata_null_q <= gen_adata_null_d;
     end
   end
 
@@ -131,7 +122,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
     .rvalid_o       (sfifo_cmdreq_rvld),
     .rready_i       (sfifo_cmdreq_rrdy),
     .rdata_o        (sfifo_cmdreq_rdata),
-    .full_o         (sfifo_cmdreq_full),
+    .full_o         (),
     .depth_o        (),
     .err_o          ()
   );
@@ -140,7 +131,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
     cmd_data_req_fifo = cmd_data_req_i;
     // Insert the FIPS info from entropy source on instantiate and reseed commands.
     // Else, keep the existing info (from state db).
-    cmd_data_req_fifo.fips = ((cmd_data_req_i.cmd == INS) || (cmd_data_req_i.cmd == RES)) ? 
+    cmd_data_req_fifo.fips = ((cmd_data_req_i.cmd == INS) || (cmd_data_req_i.cmd == RES)) ?
                                cmd_data_req_entropy_fips_i : cmd_data_req_i.fips;
   end
 
@@ -157,13 +148,13 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
                              sfifo_cmdreq_rvld;
   assign cmd_data_req_rdy_o = sfifo_cmdreq_wrdy;
 
-  assign ctr_drbg_cmd_sfifo_cmdreq_err_o =
-         {(sfifo_cmdreq_wvld && sfifo_cmdreq_full),
-          (sfifo_cmdreq_rrdy && !sfifo_cmdreq_rvld),
-          (sfifo_cmdreq_full && !sfifo_cmdreq_rvld)};
+  assign fifo_cmdreq_err_o =
+         {( sfifo_cmdreq_wvld && !sfifo_cmdreq_wrdy),
+          ( sfifo_cmdreq_rrdy && !sfifo_cmdreq_rvld),
+          (!sfifo_cmdreq_wrdy && !sfifo_cmdreq_rvld)};
 
   //--------------------------------------------
-  // prepare values for update step
+  // Prepare (mostly: mux) values for update step
   //--------------------------------------------
 
   assign prep_seed_material =
@@ -174,22 +165,22 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
          '0;
 
   assign prep_key =
-         (cmdreq_data.cmd == INS) ? {KeyLen{1'b0}} :
+         (cmdreq_data.cmd == INS) ? '0 :
          (cmdreq_data.cmd == RES) ? cmdreq_data.key :
          (cmdreq_data.cmd == GEN) ? cmdreq_data.key :
          (cmdreq_data.cmd == UPD) ? cmdreq_data.key :
          '0;
 
   assign prep_v =
-         (cmdreq_data.cmd == INS) ? {BlkLen{1'b0}} :
+         (cmdreq_data.cmd == INS) ? '0 :
          (cmdreq_data.cmd == RES) ? cmdreq_data.v :
          (cmdreq_data.cmd == GEN) ? cmdreq_data.v :
          (cmdreq_data.cmd == UPD) ? cmdreq_data.v :
          '0;
 
   assign prep_rc =
-         (cmdreq_data.cmd == INS) ? {{(CtrLen-1){1'b0}},1'b0} :
-         (cmdreq_data.cmd == RES) ? {{(CtrLen-1){1'b0}},1'b0} :
+         (cmdreq_data.cmd == INS) ? '0 :
+         (cmdreq_data.cmd == RES) ? '0 :
          (cmdreq_data.cmd == GEN) ? cmdreq_data.rs_ctr :
          (cmdreq_data.cmd == UPD) ? cmdreq_data.rs_ctr :
          '0;
@@ -212,40 +203,50 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   // fifo to stage rc and command, waiting for update block to ack
   //--------------------------------------------
 
+  csrng_core_data_t rcstage_core_data_fifo;
+
   prim_fifo_sync #(
     .Width(RCStageFifoWidth),
     .Pass(0),
-    .Depth(RCStageFifoDepth),
+    .Depth(1),
     .OutputZeroIfEmpty(1'b0)
   ) u_prim_fifo_sync_rcstage (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
     .clr_i          (!enable_i),
     .wvalid_i       (sfifo_rcstage_wvld),
-    .wready_o       (),
+    .wready_o       (sfifo_rcstage_wrdy),
     .wdata_i        (sfifo_rcstage_wdata),
     .rvalid_o       (sfifo_rcstage_rvld),
     .rready_i       (sfifo_rcstage_rrdy),
     .rdata_o        (sfifo_rcstage_rdata),
-    .full_o         (sfifo_rcstage_full),
+    .full_o         (),
     .depth_o        (),
     .err_o          ()
   );
 
+  always_comb begin
+    rcstage_core_data_fifo = cmdreq_data;
+    rcstage_core_data_fifo.key    = prep_key;
+    rcstage_core_data_fifo.v      = prep_v;
+    rcstage_core_data_fifo.rs_ctr = prep_rc;
+  end
+
+  assign sfifo_rcstage_wdata = {cmdreq_glast,
+                                rcstage_core_data_fifo};
+
+  assign {rcstage_glast,
+          rcstage_data} = sfifo_rcstage_rdata;
+
   assign sfifo_rcstage_wvld = sfifo_cmdreq_rrdy;
-  assign sfifo_rcstage_wdata = {prep_key,prep_v,cmdreq_data.inst_id,prep_rc,cmdreq_data.fips,
-                                cmdreq_data.pdata,cmdreq_glast,cmdreq_data.cmd};
   assign sfifo_rcstage_rrdy = sfifo_rcstage_rvld && (cmd_upd_rsp_vld_i || gen_adata_null_q);
-  assign {rcstage_key,rcstage_v,rcstage_id,rcstage_rc,rcstage_fips,
-          rcstage_adata,rcstage_glast,rcstage_ccmd} = sfifo_rcstage_rdata;
 
+  assign cmd_upd_rsp_rdy_o = sfifo_rcstage_rvld && sfifo_keyvrc_wrdy;
 
-  assign ctr_drbg_cmd_sfifo_rcstage_err_o =
-         {(sfifo_rcstage_wvld && sfifo_rcstage_full),
-          (sfifo_rcstage_rrdy && !sfifo_rcstage_rvld),
-          (sfifo_rcstage_full && !sfifo_rcstage_rvld)};
-
-  assign cmd_upd_rsp_rdy_o = sfifo_rcstage_rvld && !sfifo_keyvrc_full;
+  assign fifo_rcstage_err_o =
+         {( sfifo_rcstage_wvld && !sfifo_rcstage_wrdy),
+          ( sfifo_rcstage_rrdy && !sfifo_rcstage_rvld),
+          (!sfifo_rcstage_wrdy && !sfifo_rcstage_rvld)};
 
   //--------------------------------------------
   // final cmd block processing
@@ -254,52 +255,61 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   prim_fifo_sync #(
     .Width(KeyVRCFifoWidth),
     .Pass(0),
-    .Depth(KeyVRCFifoDepth),
+    .Depth(1),
     .OutputZeroIfEmpty(1'b0)
   ) u_prim_fifo_sync_keyvrc (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
     .clr_i          (!enable_i),
     .wvalid_i       (sfifo_keyvrc_wvld),
-    .wready_o       (),
+    .wready_o       (sfifo_keyvrc_wrdy),
     .wdata_i        (sfifo_keyvrc_wdata),
     .rvalid_o       (sfifo_keyvrc_rvld),
     .rready_i       (sfifo_keyvrc_rrdy),
     .rdata_o        (sfifo_keyvrc_rdata),
-    .full_o         (sfifo_keyvrc_full),
+    .full_o         (),
     .depth_o        (),
     .err_o          ()
   );
 
   assign sfifo_keyvrc_wvld = sfifo_rcstage_rrdy;
 
-  // if a UNI command, reset the state values
-  assign sfifo_keyvrc_wdata = (rcstage_ccmd == UNI) ?
-         {{(KeyLen+BlkLen+CtrLen+1+SeedLen){1'b0}},rcstage_glast,cmd_upd_rsp_data_i.inst_id,cmd_upd_rsp_data_i.cmd} :
-         gen_adata_null_q ?
-         {rcstage_key,rcstage_v,rcstage_rc,rcstage_fips,
-          rcstage_adata,rcstage_glast,rcstage_id,rcstage_ccmd} :
-         {cmd_upd_rsp_data_i.key,cmd_upd_rsp_data_i.v,rcstage_rc,rcstage_fips,
-          rcstage_adata,rcstage_glast,cmd_upd_rsp_data_i.inst_id,cmd_upd_rsp_data_i.cmd};
+  always_comb begin
+    keyvrc_data  = rcstage_data;
+    keyvrc_glast = rcstage_glast;
+    if (rcstage_data.cmd == UNI) begin
+      // Zeroize everything but inst_id and cmd (?)
+      keyvrc_data = '{default: '0};
+      keyvrc_data.inst_id = rcstage_data.inst_id;
+      keyvrc_data.cmd     = rcstage_data.cmd;
+    end else if (!gen_adata_null_q) begin
+      // Update key and v with values from the update unit if
+      // non-zero pdata were provided
+      keyvrc_data.key     = cmd_upd_rsp_data_i.key;
+      keyvrc_data.v       = cmd_upd_rsp_data_i.v;
+      keyvrc_data.inst_id = cmd_upd_rsp_data_i.inst_id;
+      keyvrc_data.cmd     = cmd_upd_rsp_data_i.cmd;
+    end
+  end
+
+  assign sfifo_keyvrc_wdata = {keyvrc_glast,
+                               keyvrc_data};
 
   assign sfifo_keyvrc_rrdy = cmd_data_rsp_rdy_i && sfifo_keyvrc_rvld;
 
   // cmd response output assignments
-  assign {cmd_data_rsp_o.key,
-          cmd_data_rsp_o.v,
-          cmd_data_rsp_o.rs_ctr,
-          cmd_data_rsp_o.fips,
-          cmd_data_rsp_o.pdata,
-          cmd_data_rsp_glast_o,
-          cmd_data_rsp_o.inst_id,
-          cmd_data_rsp_o.cmd} = sfifo_keyvrc_rdata;
+  assign {cmd_data_rsp_glast_o,
+          cmd_data_rsp_o}      = sfifo_keyvrc_rdata;
 
   assign cmd_data_rsp_vld_o = sfifo_keyvrc_rrdy;
-  assign cmd_data_rsp_status_o = CMD_STS_SUCCESS;
 
-  assign ctr_drbg_cmd_sfifo_keyvrc_err_o =
-         {(sfifo_keyvrc_wvld && sfifo_keyvrc_full),
-          (sfifo_keyvrc_rrdy && !sfifo_keyvrc_rvld),
-          (sfifo_keyvrc_full && !sfifo_keyvrc_rvld)};
+  assign fifo_keyvrc_err_o =
+         {( sfifo_keyvrc_wvld && !sfifo_keyvrc_wrdy),
+          ( sfifo_keyvrc_rrdy && !sfifo_keyvrc_rvld),
+          (!sfifo_keyvrc_wrdy && !sfifo_keyvrc_rvld)};
+
+  // Unused signals
+  logic [SeedLen-1:0] unused_upd_rsp_pdata;
+  assign unused_upd_rsp_pdata = cmd_upd_rsp_data_i.pdata;
 
 endmodule

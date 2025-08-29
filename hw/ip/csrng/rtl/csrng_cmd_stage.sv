@@ -55,7 +55,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
 
   // Command FIFO.
   logic [CmdBusWidth-1:0]  sfifo_cmd_rdata;
-  logic [$clog2(CmdBusWidth):0] sfifo_cmd_depth;
+  logic [$clog2(CmdFifoDepth):0] sfifo_cmd_depth;
   logic                    sfifo_cmd_wvld;
   logic [CmdBusWidth-1:0]  sfifo_cmd_wdata;
   logic                    sfifo_cmd_rrdy;

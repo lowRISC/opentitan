@@ -116,7 +116,6 @@ module csrng_core import csrng_pkg::*; #(
   logic                        cmd_result_wr_req;
   logic                        cmd_result_ack;
   logic                        cmd_result_ack_rdy;
-  csrng_cmd_sts_e              cmd_result_ack_sts;
   logic                        cmd_result_glast;
 
   csrng_core_data_t            ctr_drbg_cmd_req_data;
@@ -948,8 +947,9 @@ module csrng_core import csrng_pkg::*; #(
   // flops for SW fips status
   assign genbits_stage_fips_sw_d =
          (!cs_enable_fo[30]) ? 1'b0 :
-         (genbits_stage_rdy[NumApps-1] && genbits_stage_vld[NumApps-1]) ? genbits_stage_fips[NumApps-1] :
-         genbits_stage_fips_sw_q;
+         (genbits_stage_rdy[NumApps-1] && genbits_stage_vld[NumApps-1]) ?
+                                          genbits_stage_fips[NumApps-1] :
+                                          genbits_stage_fips_sw_q;
 
   assign genbits_stage_fips_sw = genbits_stage_fips_sw_q;
 
@@ -1086,8 +1086,8 @@ module csrng_core import csrng_pkg::*; #(
 
   assign flag0_d =
          (!cs_enable_fo[35]) ? prim_mubi_pkg::MuBi4False :
-         (acmd_sop && ((acmd_bus[2:0] == INS) || (acmd_bus[2:0] == RES))) ? mubi4_t'(acmd_bus[11:8]) :
-         flag0_q;
+         (acmd_sop && ((acmd_bus[2:0] == INS) || (acmd_bus[2:0] == RES))) ?
+          mubi4_t'(acmd_bus[11:8]) : flag0_q;
 
   // SEC_CM: CTRL.MUBI
   mubi4_t mubi_flag0;
@@ -1248,7 +1248,7 @@ module csrng_core import csrng_pkg::*; #(
   assign state_db_wr_key     = gen_blk_select ? gen_result_key     : ctr_drbg_cmd_rsp_data.key;
   assign state_db_wr_v       = gen_blk_select ? gen_result_v       : ctr_drbg_cmd_rsp_data.v;
   assign state_db_wr_rc      = gen_blk_select ? gen_result_rc      : ctr_drbg_cmd_rsp_data.rs_ctr;
-  assign state_db_wr_sts     = gen_blk_select ? gen_result_ack_sts : cmd_result_ack_sts;
+  assign state_db_wr_sts     = gen_blk_select ? gen_result_ack_sts : CMD_STS_SUCCESS;
 
   // Forward the reseed counter values to the register interface.
   always_comb begin : reseed_counter_assign
@@ -1335,7 +1335,7 @@ module csrng_core import csrng_pkg::*; #(
     pdata:   packer_adata,
     rs_ctr:  state_db_rd_rc,
     fips:    state_db_rd_fips
-  }; 
+  };
 
 
   csrng_ctr_drbg_cmd u_csrng_ctr_drbg_cmd (
@@ -1353,7 +1353,6 @@ module csrng_core import csrng_pkg::*; #(
     .cmd_data_rsp_vld_o          ( cmd_result_ack        ),
     .cmd_data_rsp_rdy_i          ( cmd_result_ack_rdy    ),
     .cmd_data_rsp_o              ( ctr_drbg_cmd_rsp_data ),
-    .cmd_data_rsp_status_o       ( cmd_result_ack_sts    ),
     .cmd_data_rsp_glast_o        ( cmd_result_glast      ),
 
     // Request and response path to and from update unit
@@ -1365,9 +1364,9 @@ module csrng_core import csrng_pkg::*; #(
     .cmd_upd_rsp_rdy_o  ( cmd_upd_rsp_rdy  ),
     .cmd_upd_rsp_data_i ( upd_rsp_data     ),
 
-    .ctr_drbg_cmd_sfifo_cmdreq_err_o(ctr_drbg_cmd_sfifo_cmdreq_err),
-    .ctr_drbg_cmd_sfifo_rcstage_err_o(ctr_drbg_cmd_sfifo_rcstage_err),
-    .ctr_drbg_cmd_sfifo_keyvrc_err_o(ctr_drbg_cmd_sfifo_keyvrc_err)
+    .fifo_cmdreq_err_o  ( ctr_drbg_cmd_sfifo_cmdreq_err  ),
+    .fifo_rcstage_err_o ( ctr_drbg_cmd_sfifo_rcstage_err ),
+    .fifo_keyvrc_err_o  ( ctr_drbg_cmd_sfifo_keyvrc_err  )
   );
 
   //-------------------------------------
