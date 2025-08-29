@@ -39,7 +39,7 @@ typedef enum otcrypto_aes_gcm_tag_len {
  * change.
  */
 typedef struct otcrypto_aes_gcm_context {
-  uint32_t data[98];
+  uint32_t data[188];
 } otcrypto_aes_gcm_context_t;
 
 /**
