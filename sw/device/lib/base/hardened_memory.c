@@ -178,6 +178,56 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
   return kHardenedBoolFalse;
 }
 
+void hardened_xor(const uint32_t *restrict x, const uint32_t *restrict y,
+                  size_t word_len, uint32_t *restrict dest) {
+  // Randomize the content of the output buffer before writing to it.
+  hardened_memshred(dest, word_len);
+
+  // Create a random variable rand.
+  uint32_t rand[word_len];
+  hardened_memshred(rand, word_len);
+
+  // Cast pointers to `uintptr_t` to erase their provenance.
+  uintptr_t x_addr = (uintptr_t)x;
+  uintptr_t y_addr = (uintptr_t)y;
+  uintptr_t dest_addr = (uintptr_t)dest;
+  uintptr_t rand_addr = (uintptr_t)&rand;
+
+  // Generate a random ordering.
+  random_order_t order;
+  random_order_init(&order, word_len);
+  size_t count = 0;
+  size_t expected_count = random_order_len(&order);
+
+  // XOR the mask with the first share. This loop is modelled off the one in
+  // `hardened_memcpy`; see the comments there for more details.
+  for (; launderw(count) < expected_count; count = launderw(count) + 1) {
+    size_t byte_idx = launderw(random_order_advance(&order)) * sizeof(uint32_t);
+
+    // Prevent the compiler from re-ordering the loop.
+    barrierw(byte_idx);
+
+    // Calculate pointers.
+    uintptr_t xp = x_addr + byte_idx;
+    uintptr_t yp = y_addr + byte_idx;
+    uintptr_t destp = dest_addr + byte_idx;
+    uintptr_t randp = rand_addr + byte_idx;
+
+    // Set the pointers.
+    void *xv = (void *)launderw(xp);
+    void *yv = (void *)launderw(yp);
+    void *destv = (void *)launderw(destp);
+    void *randv = (void *)launderw(randp);
+
+    // Perform the XORs: dest = ((x ^ rand) ^ y) ^ rand
+    write_32(read_32(xv) ^ read_32(randv), destv);
+    write_32(read_32(destv) ^ read_32(yv), destv);
+    write_32(read_32(destv) ^ read_32(randv), destv);
+  }
+  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
+  HARDENED_CHECK_EQ(count, expected_count);
+}
+
 void hardened_xor_in_place(uint32_t *restrict x, const uint32_t *restrict y,
                            size_t word_len) {
   // Generate a random ordering.
