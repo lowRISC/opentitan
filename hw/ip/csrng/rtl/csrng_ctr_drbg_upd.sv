@@ -308,7 +308,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
              interate_ctr_inc ? (interate_ctr_q + 1) :
              interate_ctr_q;
 
-  assign interate_ctr_done = (int'(interate_ctr_q) >= SeedLen/BlkLen);
+  assign interate_ctr_done = (interate_ctr_q >= SeedLen/BlkLen);
 
   //--------------------------------------------
   // state machine to send values to block_encrypt
@@ -503,7 +503,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
          concat_ctr_inc ? (concat_ctr_q + 1) :
          concat_ctr_q;
 
-  assign concat_ctr_done = (int'(concat_ctr_q) >= (SeedLen/BlkLen));
+  assign concat_ctr_done = (concat_ctr_q >= SeedLen/BlkLen);
 
   assign concat_inst_id_d =
          (!ctr_drbg_upd_enable_i) ? '0 :
