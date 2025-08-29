@@ -30,6 +30,7 @@ package entropy_src_env_pkg;
   parameter string            LIST_OF_ALERTS[NUM_ALERTS] = {"recov_alert","fatal_alert"};
   parameter uint              OBSERVE_FIFO_DEPTH         = 32;
   parameter uint              POST_HT_WIDTH              = 32;
+  parameter uint              HALF_REG_WIDTH             = 16;
   parameter uint              PRECON_FIFO_DEPTH          = 2;
   parameter uint              BYPASS_FIFO_DEPTH          = 12;
 

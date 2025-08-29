@@ -351,7 +351,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       maxval = maxq[0];
       minq = test_cnt.min();
       minval = minq[0];
-      return test_cnt.sum();
+      result = test_cnt.sum();
+      // Saturation
+      if (result > {HALF_REG_WIDTH{1'b1}}) begin
+        result = {HALF_REG_WIDTH{1'b1}};
+      end
+      return result;
     end
   endfunction
 
@@ -398,6 +403,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   function int calc_markov_test(queue_of_rng_val_t window, output int maxval, output int minval);
     int pair_cnt[`RNG_BUS_WIDTH];
     int minq[$], maxq[$];
+    int result = '0;
     bit rng_bit_en = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
     int rng_bit_sel = `gmv(ral.conf.rng_bit_sel);
     // Round down to the highest even number.
@@ -421,7 +427,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       maxval = maxq[0];
       minq = pair_cnt.min();
       minval = minq[0];
-      return pair_cnt.sum();
+      result = pair_cnt.sum();
+      // Saturation
+      if (result > {HALF_REG_WIDTH{1'b1}}) begin
+        result = {HALF_REG_WIDTH{1'b1}};
+      end
+      return result;
     end
   endfunction
 
