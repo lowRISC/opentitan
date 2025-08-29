@@ -158,7 +158,8 @@ def _manifest_impl(ctx):
     mf["usage_constraints"] = uc
 
     if ctx.attr.extensions:
-        mf["extensions"] = ctx.attr.extensions
+        extensions = [e or None for e in ctx.attr.extensions]
+        mf["extensions"] = extensions
     else:
         mf["extensions"] = [
             "spx_key",
