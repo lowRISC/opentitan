@@ -1138,7 +1138,7 @@ module chip_${top["name"]}_${target["name"]} #(
 % if target["name"] in ["cw310", "cw340"]:
     .SecAesMasking(1'b1),
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
-    .SecAesStartTriggerDelay(0),
+    .SecAesStartTriggerDelay(320),
     .SecAesAllowForcingMasks(1'b1),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),

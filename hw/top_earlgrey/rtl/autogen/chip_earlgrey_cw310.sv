@@ -1061,7 +1061,7 @@ module chip_earlgrey_cw310 #(
   top_earlgrey #(
     .SecAesMasking(1'b1),
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
-    .SecAesStartTriggerDelay(0),
+    .SecAesStartTriggerDelay(320),
     .SecAesAllowForcingMasks(1'b1),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
