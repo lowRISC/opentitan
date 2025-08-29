@@ -13,6 +13,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:racl_ctrl_test
+      - lowrisc:dv:racl_error_log_agent
       - lowrisc:darjeeling_dv:racl_ctrl_sva
     files:
       - tb.sv

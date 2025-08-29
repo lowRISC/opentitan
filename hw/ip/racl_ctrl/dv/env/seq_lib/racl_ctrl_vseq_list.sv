@@ -5,3 +5,4 @@
 `include "racl_ctrl_base_vseq.sv"
 `include "racl_ctrl_smoke_vseq.sv"
 `include "racl_ctrl_common_vseq.sv"
+`include "racl_ctrl_stress_all_vseq.sv"
