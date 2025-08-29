@@ -29,7 +29,7 @@ from mako import exceptions
 from mako.lookup import TemplateLookup
 from mako.template import Template
 from raclgen.lib import DEFAULT_RACL_CONFIG
-from reggen import access, gen_rtl, gen_sec_cm_testplan, window
+from reggen import access, gen_rtl, gen_sec_cm_testplan, params, reg_block, window
 from reggen.countermeasure import CounterMeasure
 from reggen.ip_block import IpBlock
 from topgen import get_hjsonobj_xbars
@@ -871,33 +871,90 @@ def generate_top_ral(topname: str, top: ConfigT, name_to_block: IpBlocksT,
     original_types = set()
     for module in top["module"]:
         if "memory" in module.keys() and len(module["memory"]) > 0:
-            newtype = "{}_{}".format(module["type"], module["name"])
+            mod_name = module["name"]
+            newtype = "{}_{}".format(module["type"], mod_name)
             assert newtype not in name_to_block
 
+            # Take a copy of the block-level description of the thing that is
+            # being instantiated as mod_name (so that we can configure it).
             block = deepcopy(name_to_block[module["type"]])
+
+            # Update name_to_block and inst_to_block so that they point at the
+            # new, more specific, information about the block.
             name_to_block[newtype] = block
-            inst_to_block[module["name"]] = newtype
+            inst_to_block[mod_name] = newtype
 
             original_types.add(module["type"])
 
+            # The instantiation might have requested a specific configuration
+            # for some of the memories of the block. Apply that here.
             for mem_name, item in module["memory"].items():
-                assert block.reg_blocks[mem_name]
-                assert len(block.reg_blocks[mem_name].windows) <= 1
-                item["name"] = mem_name
+                block_mem = block.memories.get(mem_name)
+                if block_mem is None:
+                    raise ValueError(f"The definition of {block.name} "
+                                     f"(instantiated as {mod_name}) doesn't "
+                                     f"declare a memory called {mem_name}.")
 
-                win = create_mem(item, addrsep, regwidth)
-                if len(block.reg_blocks[mem_name].windows) > 0:
-                    blk_win = block.reg_blocks[mem_name].windows[0]
+                # We only support memories with at most a single window (if
+                # there are several, we don't know which one to customise)
+                if len(block_mem.windows) > 1:
+                    raise ValueError(f"The block {block.name} declares "
+                                     f"multiple windows for its {mem_name} "
+                                     f"memory, so topgen can't configure that "
+                                     "memory.")
 
-                    # Top can only add new info for mem, shouldn't overwrite
-                    # existing configuration
-                    assert win.items == blk_win.items
-                    assert win.byte_write == blk_win.byte_write
-                    assert win.data_intg_passthru == blk_win.data_intg_passthru
+                # This is the new window to use
+                win = create_mem(mem_name, item, addrsep, regwidth)
 
-                    block.reg_blocks[mem_name].windows[0] = win
+                # If the block doesn't define a window for this memory, we can
+                # just make one. If it *does* define a window we can overwrite
+                # it, but want to make sure we won't mess things up.
+                if not block_mem.windows:
+                    block_mem.windows = [win]
                 else:
-                    block.reg_blocks[mem_name].windows.append(win)
+                    blk_win = block_mem.windows[0]
+
+                    # Check we end up with the same number of "items" in the
+                    # window (the window size divided by addrsep)
+                    if win.items != blk_win.items:
+                        raise ValueError(f"The {mod_name} instance of "
+                                         f"{block.name} doesn't match number "
+                                         f"of items for {mem_name}. Instance: "
+                                         f"{win.items}; blk: {blk_win.items}")
+
+                    # Check the byte_write setting matches
+                    if win.byte_write != blk_win.byte_write:
+                        raise ValueError(f"The {mod_name} instance of "
+                                         f"{block.name} requests the memory "
+                                         f"{mem_name} with byte_write="
+                                         f"{win.byte_write}, but the block "
+                                         f"declares it {blk_win.byte_write}.")
+
+                    # Check the data_intg_passthru setting matches
+                    if win.data_intg_passthru != blk_win.data_intg_passthru:
+                        raise ValueError(f"The {mod_name} instance of "
+                                         f"{block.name} requests the memory "
+                                         f"{mem_name} with data_intg_passthru="
+                                         f"{win.data_intg_passthru}, but the "
+                                         f"block declares it as "
+                                         f"{blk_win.data_intg_passthru}.")
+
+                    # If we get here, the two definitions matched. Use the new
+                    # one.
+                    block_mem.windows[0] = win
+
+                # At the moment the RAL template does not know about memories
+                # but it knows about windows in memory blocks. Therefoe we
+                # create an empty register block for RAL.
+                if_name = mem_name
+                block.reg_blocks[if_name] = reg_block.RegBlock(regwidth, params.ReggenParams(),
+                                                               windows = block_mem.windows)
+
+                if_addr = {
+                    asid: int(addr, 0)
+                    for (asid, addr) in module["base_addrs"][if_name].items()
+                }
+                if_addrs[(mod_name, if_name)] = if_addr
 
     for t in original_types:
         if t not in inst_to_block.values():
@@ -911,16 +968,19 @@ def generate_top_ral(topname: str, top: ConfigT, name_to_block: IpBlocksT,
     return gen_dv(chip, dv_base_names, str(out_path))
 
 
-def create_mem(item, addrsep, regwidth) -> window.Window:
-    byte_write = ("byte_write" in item and
-                  item["byte_write"].lower() == "true")
-    data_intg_passthru = ("data_intg_passthru" in item and
-                          item["data_intg_passthru"].lower() == "true")
-    size_in_bytes = int(item["size"], 0)
+def create_mem(name: str, item: dict[str, object], addrsep: int, regwidth: int) -> window.Window:
+    byte_write = item.get("byte_write", "false").lower() == "true"
+    data_intg_passthru = item.get("data_intg_passthru", "false").lower() == "true"
+
+    item_size = item.get("size")
+    if item_size is None:
+        raise ValueError("Item describing memory window with no size")
+
+    size_in_bytes = int(item_size, 0)
     num_regs = size_in_bytes // addrsep
     swaccess = access.SWAccess("top-level memory", item.get("swaccess", "rw"))
 
-    return window.Window(name=item["name"],
+    return window.Window(name=name,
                          desc="(generated from top-level)",
                          unusual=False,
                          byte_write=byte_write,
