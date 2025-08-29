@@ -214,6 +214,54 @@ opentitan_test(
     ],
 )
 
+manifest(d = {
+    "name": "bad_spx_manifest",
+    "address_translation": hex(CONST.HARDENED_FALSE),
+    "identifier": hex(CONST.OWNER),
+    "visibility": ["//visibility:public"],
+    "extensions": [
+        "spx_key",
+        "",
+        "secver_write",
+        "isfb",
+        "isfb_erase",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "spx_signature",
+    ],
+})
+
+opentitan_test(
+    name = "bad_spx_manifest_test",
+    srcs = [":boot_test"],
+    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
+        # Because our bad manifest placed spx_signature in a wrong slot, we
+        # should expect kErrorManifestBadExtension from the ROM_EXT.
+        exit_success = "BFV:044d410d",
+    ),
+    manifest = ":bad_spx_manifest",
+    spx_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_spx": "prod_key_0"},
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
 _KEYS = {
     "dev": {
         "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_dev_ecdsa": "dev_key_0"},
