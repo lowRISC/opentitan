@@ -20,9 +20,7 @@ endfunction
 function void racl_error_log_agent::build_phase(uvm_phase phase);
   super.build_phase(phase);
 
-  if (!uvm_config_db#(virtual racl_error_log_if)::get(this, "", "vif", cfg.vif)) begin
-    `uvm_fatal(`gfn, "failed to get racl_ctrl_error_log_if handle from uvm_config_db")
-  end
+  if (cfg.vif == null) `uvm_fatal(`gfn, "Cannot use agent with no log interface.")
 endfunction
 
 function void racl_error_log_agent::connect_phase(uvm_phase phase);
