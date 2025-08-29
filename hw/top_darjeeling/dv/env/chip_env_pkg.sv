@@ -65,10 +65,10 @@ package chip_env_pkg;
 
   // ROM digest parameters
   localparam uint Rom0DigestDw = 256;
-  localparam uint Rom0MaxCheckAddr = top_darjeeling_pkg::TOP_DARJEELING_ROM0_SIZE_BYTES -
+  localparam uint Rom0MaxCheckAddr = top_darjeeling_pkg::TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES -
                                      (Rom0DigestDw / 8);
   localparam uint Rom1DigestDw = 256;
-  localparam uint Rom1MaxCheckAddr = top_darjeeling_pkg::TOP_DARJEELING_ROM1_SIZE_BYTES -
+  localparam uint Rom1MaxCheckAddr = top_darjeeling_pkg::TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES -
                                      (Rom1DigestDw / 8);
 
   typedef virtual sw_logger_if         sw_logger_vif;
