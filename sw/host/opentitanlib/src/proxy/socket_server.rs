@@ -6,7 +6,7 @@ use anyhow::{Result, bail};
 use mio::event::Event;
 use mio::net::TcpListener;
 use mio::net::TcpStream;
-use mio::{Events, Interest, Poll, Registry, Token};
+use mio::{Events, Interest, Poll, Token};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
@@ -18,7 +18,6 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use super::CommandHandler;
-use super::ExtraEventHandler;
 
 const BUFFER_SIZE: usize = 8192;
 const EOL_CODE: u8 = b'\n';
@@ -32,13 +31,8 @@ pub fn get_next_token() -> Token {
 /// receiving serialized JSON representations of `Msg`, passing them to the given
 /// `CommandHandler` to obtain responses to be sent as socket flow contol permits.  Note that
 /// this implementaion is not specific to (and does not refer to) any particular protocol.
-pub struct JsonSocketServer<
-    Msg: DeserializeOwned + Serialize,
-    T: CommandHandler<Msg, E>,
-    E: ExtraEventHandler,
-> {
+pub struct JsonSocketServer<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg>> {
     command_handler: T,
-    extra_event_handler: E,
     poll: Poll,
     socket: TcpListener,
     socket_token: Token,
@@ -46,21 +40,14 @@ pub struct JsonSocketServer<
     phantom: PhantomData<Msg>,
 }
 
-impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg, E>, E: ExtraEventHandler>
-    JsonSocketServer<Msg, T, E>
-{
-    pub fn new(
-        command_handler: T,
-        extra_event_handler: E,
-        mut socket: TcpListener,
-    ) -> Result<Self> {
+impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg>> JsonSocketServer<Msg, T> {
+    pub fn new(command_handler: T, mut socket: TcpListener) -> Result<Self> {
         let poll = Poll::new()?;
         let socket_token = get_next_token();
         poll.registry()
             .register(&mut socket, socket_token, Interest::READABLE)?;
         Ok(Self {
             command_handler,
-            extra_event_handler,
             poll,
             socket,
             socket_token,
@@ -70,9 +57,20 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg, E>, E: ExtraEvent
     }
 
     pub async fn run_loop(&mut self) -> Result<()> {
+        // Create a local set to allow `spawn_local`. This is needed as majority of opentitanlib is not
+        // multi-thread-safe currently.
+        let local_set = tokio::task::LocalSet::new();
+        let _local_set_guard = local_set.enter();
+
         let mut events = Events::with_capacity(1024);
         loop {
-            tokio::task::yield_now().await;
+            // Poll local jobs
+            local_set
+                .run_until(async {
+                    tokio::task::yield_now().await;
+                })
+                .await;
+
             match tokio::task::block_in_place(|| {
                 self.poll.poll(&mut events, Some(Duration::from_millis(5)))
             }) {
@@ -85,7 +83,6 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg, E>, E: ExtraEvent
             for event in events.iter() {
                 if event.token() == self.socket_token {
                     self.process_new_connection()?;
-                } else if self.extra_event_handler.handle_poll_event(event)? {
                 } else {
                     match self.process_connection(event) {
                         Ok(shutdown) => {
@@ -143,13 +140,7 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg, E>, E: ExtraEvent
                 }
                 if event.is_readable() {
                     conn.read()?;
-                    Self::process_any_requests(
-                        &mut conn,
-                        &mut self.command_handler,
-                        conn_arc,
-                        self.poll.registry(),
-                        &mut self.extra_event_handler,
-                    )?;
+                    Self::process_any_requests(&mut conn, &mut self.command_handler, conn_arc)?;
                 }
                 // Return whether this connection object should be dropped.
                 Ok((conn.rx_eof && (conn.tx_buf.is_empty())) || conn.broken)
@@ -195,13 +186,10 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg, E>, E: ExtraEvent
         conn: &mut Connection,
         command_handler: &mut T,
         conn_arc: &Arc<Mutex<Connection>>,
-        registry: &Registry,
-        extra_event_handler: &mut E,
     ) -> Result<()> {
         while let Some(request) = Self::get_complete_request(conn)? {
             // One complete request received, execute it.
-            let resp =
-                command_handler.execute_cmd(conn_arc, registry, extra_event_handler, &request)?;
+            let resp = command_handler.execute_cmd(conn_arc, &request)?;
             conn.transmit_outgoing_msg(resp)?;
         }
         Ok(())

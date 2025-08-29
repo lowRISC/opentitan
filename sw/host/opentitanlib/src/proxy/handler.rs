@@ -4,7 +4,6 @@
 
 use anyhow::{Result, bail};
 
-use mio::Registry;
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -34,6 +33,7 @@ use crate::transport::TransportError;
 /// `Transport` implementation.
 pub struct TransportCommandHandler<'a> {
     transport: &'a TransportWrapper,
+    uart_registry: NonblockingUartRegistry,
     spi_chip_select: HashMap<String, Vec<spi::AssertChipSelect>>,
     ongoing_bitbanging: Option<Box<dyn GpioBitbangOperation<'static, 'static>>>,
     ongoing_dacbanging: Option<Box<dyn GpioDacBangOperation>>,
@@ -43,6 +43,7 @@ impl<'a> TransportCommandHandler<'a> {
     pub fn new(transport: &'a TransportWrapper) -> Result<Self> {
         Ok(Self {
             transport,
+            uart_registry: NonblockingUartRegistry::new(),
             spi_chip_select: HashMap::new(),
             ongoing_bitbanging: None,
             ongoing_dacbanging: None,
@@ -61,13 +62,7 @@ impl<'a> TransportCommandHandler<'a> {
     /// by the given `Request`, and return a response to be sent to the client.  Any `Err`
     /// return from this method will be propagated to the remote client, without any server-side
     /// logging.
-    fn do_execute_cmd(
-        &mut self,
-        conn: &Arc<Mutex<Connection>>,
-        registry: &Registry,
-        others: &mut NonblockingUartRegistry,
-        req: &Request,
-    ) -> Result<Response> {
+    fn do_execute_cmd(&mut self, conn: &Arc<Mutex<Connection>>, req: &Request) -> Result<Response> {
         match req {
             Request::GetCapabilities => {
                 Ok(Response::GetCapabilities(self.transport.capabilities()?))
@@ -308,7 +303,7 @@ impl<'a> TransportCommandHandler<'a> {
                         Ok(Response::Uart(UartResponse::Write))
                     }
                     UartRequest::RegisterNonblockingRead => {
-                        let channel = others.nonblocking_uart_init(&instance, conn, registry)?;
+                        let channel = self.uart_registry.nonblocking_uart_init(&instance, conn)?;
                         Ok(Response::Uart(UartResponse::RegisterNonblockingRead {
                             channel,
                         }))
@@ -601,22 +596,16 @@ impl<'a> TransportCommandHandler<'a> {
     }
 }
 
-impl<'a> CommandHandler<Message, NonblockingUartRegistry> for TransportCommandHandler<'a> {
+impl<'a> CommandHandler<Message> for TransportCommandHandler<'a> {
     /// This method will perform whatever action on the underlying `Transport` that is requested
     /// by the given `Message`, and return a response to be sent to the client.  Any `Err`
     /// return from this method will be treated as an irrecoverable protocol error, causing an
     /// error message in the server log, and the connection to be terminated.
-    fn execute_cmd(
-        &mut self,
-        conn: &Arc<Mutex<Connection>>,
-        registry: &Registry,
-        others: &mut NonblockingUartRegistry,
-        msg: &Message,
-    ) -> Result<Message> {
+    fn execute_cmd(&mut self, conn: &Arc<Mutex<Connection>>, msg: &Message) -> Result<Message> {
         if let Message::Req(req) = msg {
             // Package either `Ok()` or `Err()` into a `Message`, to be sent via network.
             return Ok(Message::Res(
-                self.do_execute_cmd(conn, registry, others, req)
+                self.do_execute_cmd(conn, req)
                     .map_err(SerializedError::from),
             ));
         }

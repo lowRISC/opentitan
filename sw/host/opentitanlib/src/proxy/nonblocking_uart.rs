@@ -3,79 +3,46 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use mio::event::Event;
-use mio::{Interest, Registry, Token};
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::hash::{Hash, Hasher};
-use std::io::{Read, Write};
 use std::ptr::hash;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex, Weak};
-use std::task::{Context, Poll, Wake, Waker};
 
-use super::ExtraEventHandler;
-use super::socket_server::{Connection, get_next_token};
+use super::socket_server::Connection;
 use crate::io::uart::Uart;
 
 pub struct NonblockingUartRegistry {
-    pub token_map: HashMap<Token, UartKey>,
     // Set of Uart objects in "nonblocking read" mode.  Key is the address of the Uart object.
     // Once switched to nonblocking mode, they do not go back.
     pub nonblocking_uarts: HashMap<UartKey, NonblockingUart>,
 }
 
-struct UartWaker {
-    send: mio::unix::pipe::Sender,
-    recv: mio::unix::pipe::Receiver,
-}
-
-impl UartWaker {
-    fn reset(&self) {
-        loop {
-            if self.recv.try_io(|| (&self.recv).read(&mut [0])).is_err() {
-                break;
-            }
-        }
-    }
-}
-
-impl Wake for UartWaker {
-    fn wake(self: Arc<Self>) {
-        self.wake_by_ref();
-    }
-
-    fn wake_by_ref(self: &Arc<Self>) {
-        let _ = (&self.send).write(&[1]);
-    }
-}
-
 impl NonblockingUartRegistry {
     pub fn new() -> Self {
         Self {
-            token_map: HashMap::new(),
             nonblocking_uarts: HashMap::new(),
         }
     }
 
     pub fn nonblocking_uart_init(
         &mut self,
-        uart: &std::rc::Rc<dyn crate::io::uart::Uart>,
+        uart: &Rc<dyn Uart>,
         conn: &Arc<Mutex<Connection>>,
-        registry: &Registry,
     ) -> Result<u32> {
         match self.nonblocking_uarts.entry(UartKey(uart.clone())) {
             Vacant(entry) => {
-                let token = get_next_token();
-                self.token_map.insert(token, UartKey(uart.clone()));
-                let (send, mut recv) = mio::unix::pipe::new()?;
-                registry.register(&mut recv, token, Interest::READABLE)?;
-                let waker = Arc::new(UartWaker { send, recv });
-                waker.wake_by_ref();
+                pub fn get_next_channel() -> u32 {
+                    use std::sync::atomic::{AtomicU32, Ordering};
 
-                let mut nonblocking_uart = NonblockingUart::new(uart, waker, token.0 as u32);
+                    static CHANNEL_COUNTER: AtomicU32 = AtomicU32::new(0);
+                    CHANNEL_COUNTER.fetch_add(1, Ordering::Relaxed)
+                }
+
+                let channel = get_next_channel();
+                let mut nonblocking_uart = NonblockingUart::new(uart.clone(), channel);
                 nonblocking_uart.add_connection(conn);
-                let channel = nonblocking_uart.channel;
                 entry.insert(nonblocking_uart);
                 Ok(channel)
             }
@@ -88,84 +55,66 @@ impl NonblockingUartRegistry {
     }
 }
 
-impl ExtraEventHandler for NonblockingUartRegistry {
-    fn handle_poll_event(&mut self, event: &Event) -> Result<bool> {
-        match self.token_map.get(&event.token()) {
-            Some(uart_key) => {
-                if event.is_readable() {
-                    self.nonblocking_uarts
-                        .get_mut(uart_key)
-                        .unwrap()
-                        .process()?;
-                }
-                Ok(true)
-            }
-            None => Ok(false),
-        }
-    }
+struct NonblockingUartInner {
+    conn: Vec<Weak<Mutex<Connection>>>,
 }
 
 pub struct NonblockingUart {
-    conn: Vec<Weak<Mutex<Connection>>>,
-    uart: std::rc::Rc<dyn crate::io::uart::Uart>,
-    waker: Arc<UartWaker>,
+    inner: Arc<Mutex<NonblockingUartInner>>,
     channel: u32,
 }
 
 impl NonblockingUart {
-    fn new(
-        uart: &std::rc::Rc<dyn crate::io::uart::Uart>,
-        waker: Arc<UartWaker>,
-        channel: u32,
-    ) -> Self {
-        Self {
-            conn: Vec::new(),
-            uart: uart.clone(),
-            waker,
-            channel,
-        }
+    fn new(uart: Rc<dyn Uart>, channel: u32) -> Self {
+        let inner = Arc::new(Mutex::new(NonblockingUartInner { conn: Vec::new() }));
+
+        let inner_clone = inner.clone();
+        tokio::task::spawn_local(async move { Self::process(inner_clone, uart, channel).await });
+
+        Self { inner, channel }
     }
 
     pub fn add_connection(&mut self, conn: &Arc<Mutex<Connection>>) {
+        let mut inner = self.inner.lock().unwrap();
         let downgrade = Arc::downgrade(conn);
-        if self.conn.iter().any(|x| Weak::ptr_eq(x, &downgrade)) {
+        if inner.conn.iter().any(|x| Weak::ptr_eq(x, &downgrade)) {
             return;
         }
-        self.conn.push(downgrade);
+        inner.conn.push(downgrade);
     }
 
-    fn process(&mut self) -> Result<()> {
+    async fn process(
+        inner: Arc<Mutex<NonblockingUartInner>>,
+        uart: Rc<dyn Uart>,
+        channel: u32,
+    ) -> Result<()> {
         let mut buf = [0u8; 256];
-        // We need to keep reading until a read returns pending, otherwise the waker will not be notified.
-        let waker: Waker = self.waker.clone().into();
-        let mut cx = Context::from_waker(&waker);
         loop {
-            self.waker.reset();
-            let len = match self.uart.poll_read(&mut cx, &mut buf)? {
-                Poll::Pending => return Ok(()),
-                Poll::Ready(len) => len,
-            };
+            let len = std::future::poll_fn(|cx| uart.poll_read(cx, &mut buf)).await?;
 
             // Iterate through list of connections who "subscribe" to this UART instance, putting
             // data into each of their outgoing buffers.  If any connection has been closed,
             // remove the reference to it from `conn`.
-            let mut connections = Vec::with_capacity(self.conn.len());
-            self.conn.retain(|x| {
-                // Upgrade reference. If this fails, it means that the last instance is gone
-                // and we shouldn't try further.
-                if let Some(v) = x.upgrade() {
-                    connections.push(v);
-                    true
-                } else {
-                    false
-                }
-            });
+            let mut connections = Vec::new();
+            {
+                let mut inner = inner.lock().unwrap();
+                inner.conn.retain(|x| {
+                    // Upgrade reference. If this fails, it means that the last instance is gone
+                    // and we shouldn't try further.
+                    if let Some(v) = x.upgrade() {
+                        connections.push(v);
+                        true
+                    } else {
+                        false
+                    }
+                });
+            }
 
             for conn in connections.into_iter() {
                 conn.lock()
                     .unwrap()
                     .transmit_outgoing_msg(super::protocol::Message::Async {
-                        channel: self.channel,
+                        channel,
                         msg: super::protocol::AsyncMessage::UartData {
                             data: buf[0..len].to_vec(),
                         },

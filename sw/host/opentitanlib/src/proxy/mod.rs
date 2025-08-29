@@ -4,10 +4,7 @@
 
 use anyhow::{Result, bail};
 use handler::TransportCommandHandler;
-use mio::Registry;
-use mio::event::Event;
 use mio::net::TcpListener;
-use nonblocking_uart::NonblockingUartRegistry;
 use protocol::Message;
 use socket_server::{Connection, JsonSocketServer};
 use std::net::SocketAddr;
@@ -23,25 +20,15 @@ mod socket_server;
 
 /// Interface for handlers of protocol messages, responding to each message with a single
 /// instance of the same protocol message.
-pub trait CommandHandler<Msg, E: ExtraEventHandler> {
-    fn execute_cmd(
-        &mut self,
-        conn: &Arc<Mutex<Connection>>,
-        registry: &Registry,
-        extra_event_handler: &mut E,
-        msg: &Msg,
-    ) -> Result<Msg>;
-}
-
-pub trait ExtraEventHandler {
-    fn handle_poll_event(&mut self, event: &Event) -> Result<bool>;
+pub trait CommandHandler<Msg> {
+    fn execute_cmd(&mut self, conn: &Arc<Mutex<Connection>>, msg: &Msg) -> Result<Msg>;
 }
 
 /// This is the main entry point for the session proxy.  This struct will either bind on a
 /// specified port, or find an available port from a range, before entering an event loop.
 pub struct SessionHandler<'a> {
     port: u16,
-    socket_server: JsonSocketServer<Message, TransportCommandHandler<'a>, NonblockingUartRegistry>,
+    socket_server: JsonSocketServer<Message, TransportCommandHandler<'a>>,
 }
 
 impl<'a> SessionHandler<'a> {
@@ -57,11 +44,8 @@ impl<'a> SessionHandler<'a> {
                 Err(_) => port += 1,
             }
         };
-        let socket_server = JsonSocketServer::new(
-            TransportCommandHandler::new(transport)?,
-            NonblockingUartRegistry::new(),
-            socket,
-        )?;
+        let socket_server =
+            JsonSocketServer::new(TransportCommandHandler::new(transport)?, socket)?;
         Ok(Self {
             port,
             socket_server,
