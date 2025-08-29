@@ -383,8 +383,12 @@ void ghash_handle_enc_initial_counter_block(
 
 void ghash_final(ghash_context_t *ctx, uint32_t *result) {
   // Tag = (state0 + state1) + S1
+  ghash_block_t tmp_block;
   ghash_block_t final_block;
-  block_xor(&ctx->state0, &ctx->state1, &final_block);
-  block_xor(&final_block, &ctx->enc_initial_counter_block1, &final_block);
+  hardened_xor(ctx->state0.data, ctx->state1.data, kGhashBlockNumWords,
+               tmp_block.data);
+  hardened_xor(tmp_block.data, ctx->enc_initial_counter_block1.data,
+               kGhashBlockNumWords, final_block.data);
+
   memcpy(result, final_block.data, kGhashBlockNumBytes);
 }
