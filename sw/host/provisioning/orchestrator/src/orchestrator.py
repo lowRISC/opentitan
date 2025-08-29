@@ -14,7 +14,7 @@ from pathlib import Path
 import hjson
 
 import db
-from device_id import DeviceId, DeviceIdentificationNumber
+from device_id import DeviceId
 from ot_dut import OtDut
 from sku_config import SkuConfig
 from util import confirm, parse_hexstring_to_int
@@ -140,16 +140,9 @@ def main(args_in):
         sku_config_args = hjson.load(fp)
     sku_config = SkuConfig(**sku_config_args)
 
-    # Create a (unique) device identification number and device ID.
-    # TODO: update this by extracting data from the device during CP.
-    din = DeviceIdentificationNumber(
-        year=0,
-        week=0,
-        lot=0,
-        wafer=0,
-        wafer_x_coord=0,
-        wafer_y_coord=0,
-    )
+    # The device identification number is determined during CP by extracting data
+    # from the device.
+    din = None
     device_id = DeviceId(sku_config, din)
 
     # TODO: Setup remote and/or local DV connections.
@@ -170,18 +163,19 @@ def main(args_in):
                 fpga=args.fpga,
                 require_confirmation=not args.non_interactive)
     dut.run_cp()
-    if not args.cp_only:
-        dut.run_ft()
-
-        db_path = Path(args.db_path)
-        db_handle = db.DB(db.DBConfig(db_path=db_path))
-        db.DeviceRecord.create_table(db_handle)
-
-        device_record = db.DeviceRecord.from_dut(dut)
-        device_record.upsert(db_handle)
-        logging.info(f"Added DeviceRecord to database: {device_record}")
-    else:
+    if args.cp_only:
         logging.info("FT skipped since --cp-only was provided")
+        return
+
+    dut.run_ft()
+
+    db_path = Path(args.db_path)
+    db_handle = db.DB(db.DBConfig(db_path=db_path))
+    db.DeviceRecord.create_table(db_handle)
+
+    device_record = db.DeviceRecord.from_dut(dut)
+    device_record.upsert(db_handle)
+    logging.info(f"Added DeviceRecord to database: {device_record}")
 
 
 if __name__ == "__main__":

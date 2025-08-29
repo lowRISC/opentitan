@@ -5,6 +5,7 @@
 
 import struct
 from dataclasses import dataclass
+from typing import Optional
 
 import util
 from sku_config import SkuConfig
@@ -92,7 +93,8 @@ class DeviceId():
         sku_id: A 32-bit string indicating the SKU the chip was provisioned for.
     """
 
-    def __init__(self, sku_config: SkuConfig, din: DeviceIdentificationNumber):
+    def __init__(self, sku_config: SkuConfig,
+                 din: Optional[DeviceIdentificationNumber]):
         # Save string keys for easier printing.
         self._product = sku_config.product
         self._si_creator = sku_config.si_creator
@@ -116,9 +118,13 @@ class DeviceId():
         # - Wafer Y coord.
         self.din = din
 
+        din_as_int = 0
+        if self.din is not None:
+            din_as_int = self.din.to_int()
+
         # Build base unique ID.
         self._base_uid = util.bytes_to_int(
-            struct.pack("<IQI", self._hw_origin, self.din.to_int(), 0))
+            struct.pack("<IQI", self._hw_origin, din_as_int, 0))
 
         # Build SKU specific field.
         self.package_id = sku_config.package_id
@@ -204,12 +210,15 @@ class DeviceId():
             util.format_hex(self.si_creator_id, width=4), self._si_creator))
         print("Product ID:        {} ({})".format(
             util.format_hex(self.product_id, width=4), self._product))
-        print("DIN Year:          {}".format(self.din.year))
-        print("DIN Week:          {}".format(self.din.week))
-        print("DIN Lot:           {}".format(self.din.lot))
-        print("DIN Wafer:         {}".format(self.din.wafer))
-        print("DIN Wafer X Coord: {}".format(self.din.wafer_x_coord))
-        print("DIN Wafer Y Coord: {}".format(self.din.wafer_y_coord))
+        if self.din is not None:
+            print("DIN Year:          {}".format(self.din.year))
+            print("DIN Week:          {}".format(self.din.week))
+            print("DIN Lot:           {}".format(self.din.lot))
+            print("DIN Wafer:         {}".format(self.din.wafer))
+            print("DIN Wafer X Coord: {}".format(self.din.wafer_x_coord))
+            print("DIN Wafer Y Coord: {}".format(self.din.wafer_y_coord))
+        else:
+            print("DIN:               <unset>")
         print("Reserved:          {}".format(hex(0)))
         print("SKU ID:            {} ({})".format(
             util.format_hex(self.sku_id),
