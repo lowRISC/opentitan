@@ -53,7 +53,7 @@ otp_json(
         name = "otp_img_rom_ext_upgrade_interrupt_{}".format(lc_state),
         src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [":otp_json_rom_ext_upgrade_interrupt"],
-        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
+        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
         visibility = ["//visibility:private"],
     )
     for lc_state, _ in get_lc_items()

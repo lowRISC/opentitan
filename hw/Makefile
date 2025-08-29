@@ -4,7 +4,7 @@
 
 CUR_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PRJ_DIR := $(realpath ${CUR_DIR}/../)
-SEED_MODE := dev
+SEED_MODE := testing
 
 REG_OUTPUT_AUTOGEN_DIR ?= ${PRJ_DIR}/build/autogen
 

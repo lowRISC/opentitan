@@ -276,7 +276,7 @@ otp_image_consts(
     # Do not add additional overlays here. Update the `MANUF_SW_INITIALIZED`
     # OTP profile instead.
     overlays = MANUF_SW_INITIALIZED + OTP_SIGVERIFY_FAKE_KEYS,
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
+    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
 )
 
 # Library containing {CREATOR,OWNER}_SW_CFG and
@@ -298,7 +298,7 @@ cc_library(
 otp_image(
     name = "otp_img_test_unlocked0_manuf_empty",
     src = "//hw/top_earlgrey/data/otp:otp_json_test_unlocked0",
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
+    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
 )
 
 # `MANUF_INITIALIZED` configuration. This configuration will be generally used
@@ -308,7 +308,7 @@ otp_image(
     name = "otp_img_test_locked0_manuf_initialized",
     src = "//hw/top_earlgrey/data/otp:otp_json_test_locked0",
     overlays = MANUF_INITIALIZED,
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
+    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
 )
 
 # `MANUF_INITIALIZED` OTP configuration. Available on TEST_UNLOCK states 1-7.
@@ -318,7 +318,7 @@ otp_image(
         name = "otp_img_test_unlocked{}_manuf_initialized".format(i),
         src = "//hw/top_earlgrey/data/otp:otp_json_test_unlocked{}".format(i),
         overlays = MANUF_INITIALIZED,
-        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
+        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     )
     for i in range(1, 8)
 ]
@@ -333,7 +333,7 @@ otp_image(
         name = "otp_img_{}_manuf_individualized".format(lc_state),
         src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = MANUF_INDIVIDUALIZED,
-        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
+        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     )
     for lc_state, _ in get_lc_items(
         CONST.LCV.TEST_UNLOCKED1,
@@ -357,7 +357,7 @@ otp_image(
         name = "otp_img_{}_manuf_personalized".format(lc_state),
         src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = MANUF_PERSONALIZED,
-        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
+        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     )
     for lc_state, _ in LC_MISSION_STATES
 ]
@@ -366,7 +366,7 @@ otp_image(
     name = "otp_img_dev_manuf_personalized_enable_rv_dm_late_debug_enable",
     src = "//hw/top_earlgrey/data/otp:otp_json_dev",
     overlays = MANUF_PERSONALIZED + [":otp_json_hw_cfg1_enable_rv_dm_late_debug"],
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
+    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
 )
 
 # `MANUF_PERSONALIZED` configuration for RMA. Only available in secure environments.
@@ -374,5 +374,5 @@ otp_image(
     name = "otp_img_rma_manuf_personalized",
     src = "//hw/top_earlgrey/data/otp:otp_json_rma",
     overlays = MANUF_PERSONALIZED,
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
+    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
 )

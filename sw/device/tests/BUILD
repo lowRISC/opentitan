@@ -2396,7 +2396,7 @@ otp_image(
     name = "otp_ctrl_descrambling_otp_image",
     src = "//hw/top_earlgrey/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":otp_ctrl_descrambling_otp_json"],
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
+    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     visibility = ["//visibility:private"],
 )
 
@@ -5637,7 +5637,7 @@ otp_image(
     name = "power_virus_systemtest_otp_img_rma",
     src = "//hw/top_earlgrey/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":power_virus_systemtest_otp_overlay"],
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
+    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     visibility = ["//visibility:private"],
 )
 
@@ -5779,7 +5779,7 @@ otp_image(
     name = "flash_scrambling_smoketest_otp_img_rma",
     src = "//hw/top_earlgrey/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":flash_scrambling_smoketest_otp_overlay"],
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
+    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     visibility = ["//visibility:private"],
 )
 

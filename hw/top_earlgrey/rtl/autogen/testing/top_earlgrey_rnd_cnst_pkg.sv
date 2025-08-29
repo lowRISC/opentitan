@@ -9,7 +9,7 @@
 //                -o hw/top_earlgrey/
 //
 // File is generated based on the following seed configuration:
-//   hw/top_earlgrey/data/top_earlgrey_seed.dev.hjson
+//   hw/top_earlgrey/data/top_earlgrey_seed.testing.hjson
 
 
 package top_earlgrey_rnd_cnst_pkg;

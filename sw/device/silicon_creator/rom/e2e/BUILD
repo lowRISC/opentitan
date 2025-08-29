@@ -62,7 +62,7 @@ otp_image(
     name = "otp_img_default",
     src = ":otp_json_default",
     overlays = OTP_SIGVERIFY_FAKE_KEYS,
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
+    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     visibility = ["//visibility:private"],
 )
 
@@ -241,7 +241,7 @@ opentitan_test(
         name = "empty_test_slot_{}_{}_corrupted_sim_dv_scr_vmem64_signed".format(slot, key),
         testonly = True,
         src = ":empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
-        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.dev.gen.hjson",
+        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     )
     for slot in SLOTS
     for key in SIGVERIFY_LC_KEYS
