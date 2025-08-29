@@ -6,6 +6,10 @@ load(
     "//rules:certificates.bzl",
     "certificate_template",
 )
+load(
+    "//rules/opentitan:defs.bzl",
+    "opentitan_test",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -201,6 +205,22 @@ cc_library(
         "//sw/device/silicon_creator/lib/ownership:datatypes",
         "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
         "@open-dice//:cbor_reader_writer",
+    ],
+)
+
+opentitan_test(
+    name = "dice_cwt_functest",
+    srcs = ["dice_cwt_functest.c"],
+    exec_env = {"//hw/top_earlgrey:fpga_cw310_rom_ext": None},
+    deps = [
+        ":dice_cwt",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
+        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
     ],
 )
 
