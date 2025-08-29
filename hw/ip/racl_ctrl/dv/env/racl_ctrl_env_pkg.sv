@@ -36,6 +36,7 @@ package racl_ctrl_env_pkg;
 
   // package sources
   `include "racl_ctrl_reg_window.sv"
+  `include "racl_ctrl_env_wrapper_cfg.sv"
   `include "racl_ctrl_env_cfg.sv"
   `include "racl_ctrl_env_cov.sv"
   `include "racl_ctrl_virtual_sequencer.sv"
