@@ -318,27 +318,3 @@ p384_keygen_test:
   keep_w1_6:
 
   ecall
-
-.section .data
-
-.balign 32
-
-/* 1st private key share d0 (448-bit) */
-.globl d0
-d0:
-  .zero 64
-
-/* 2nd private key share d1 (448-bit) */
-.globl d1
-d1:
-  .zero 64
-
-/* 1st scalar share k0 (448-bit) */
-.globl k0
-k0:
-  .zero 64
-
-/* 2nd scalar share k1 (448-bit) */
-.globl k1
-k1:
-  .zero 64
