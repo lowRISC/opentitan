@@ -133,7 +133,7 @@ module entropy_src_markov_ht #(
 
   prim_sum_tree #(
     .NumSrc(RngBusWidth),
-    .Width(RegWidth)
+    .InWidth(RegWidth)
   ) u_sum (
     .clk_i       (clk_i),
     .rst_ni      (rst_ni),
