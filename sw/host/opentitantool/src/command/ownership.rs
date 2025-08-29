@@ -234,32 +234,62 @@ impl CommandDispatch for OwnershipVerifyCommand {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let input = std::fs::read(&self.input)?;
         let mut cursor = std::io::Cursor::new(&input);
-        let header = TlvHeader::read(&mut cursor)?;
-        let parsed_config = OwnerBlock::read(&mut cursor, header)?;
-
-        match parsed_config.ownership_key_alg {
-            OwnershipKeyAlg::EcdsaP256 => (),
-            _ => {
-                return Err(anyhow!(
-                    "The only supported verification algorithm is ECDSA"
-                ))
-            }
-        };
-
-        let ecdsa_key: EcdsaPublicKey = if let Some(key_file) = &self.signer_pub_key {
-            EcdsaPublicKey::load(key_file)?
+        let mut ecdsa_key: Option<EcdsaPublicKey> = if let Some(key_file) = &self.signer_pub_key {
+            Some(EcdsaPublicKey::load(key_file)?)
         } else {
-            // Retrieve the ECDSA key.
-            let pubk = match parsed_config.owner_key {
-                KeyMaterial::Ecdsa(ref raw_key) => raw_key,
-                _ => return Err(anyhow!("Owner key material does not match key algorithm!")),
-            };
-            pubk.try_into()?
+            None
         };
-        // Digest over the TBS section of the config.
-        let digest = Sha256Digest::hash(&input[..OwnerBlock::SIGNATURE_OFFSET]);
 
-        ecdsa_key.verify(&digest, &parsed_config.signature)?;
+        let (tbs_size, signature) = if input.len() == OwnerBlock::SIZE {
+            let header = TlvHeader::read(&mut cursor)?;
+            let parsed_config = OwnerBlock::read(&mut cursor, header)?;
+
+            match parsed_config.ownership_key_alg {
+                OwnershipKeyAlg::EcdsaP256 => (),
+                _ => {
+                    return Err(anyhow!(
+                        "The only supported verification algorithm is ECDSA"
+                    ))
+                }
+            };
+
+            if ecdsa_key.is_none() {
+                // Retrieve the ECDSA key.
+                let pubk = match parsed_config.owner_key {
+                    KeyMaterial::Ecdsa(ref raw_key) => raw_key,
+                    _ => return Err(anyhow!("Owner key material does not match key algorithm!")),
+                };
+                ecdsa_key = Some(pubk.try_into()?);
+            };
+            (
+                OwnerBlock::SIGNATURE_OFFSET,
+                parsed_config.signature.clone(),
+            )
+        } else {
+            // This is not an Owner block, maybe this is Unlock or Activate.
+            // Let's be lenient and consider the entire blob to be a TBS+ECDSA
+            // signature concatenation.
+
+            if ecdsa_key.is_none() {
+                return Err(anyhow!(
+                    "Key is required for Activation and Unlock verification"
+                ));
+            }
+
+            if input.len() <= EcdsaRawSignature::SIZE {
+                return Err(anyhow!("Input blob too short"));
+            }
+
+            // The last signature size bytes could be the signature, let's try
+            // retrieving it.
+            let sig_offset = input.len() - EcdsaRawSignature::SIZE;
+            cursor.set_position(sig_offset as u64);
+            let raw_sig = EcdsaRawSignature::read(&mut cursor)?;
+            (sig_offset, raw_sig)
+        };
+
+        let digest = Sha256Digest::hash(&input[..tbs_size]);
+        ecdsa_key.unwrap().verify(&digest, &signature)?;
         Ok(None)
     }
 }
