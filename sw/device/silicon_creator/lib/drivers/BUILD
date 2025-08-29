@@ -146,6 +146,7 @@ dual_cc_library(
         host = ["mock_flash_ctrl.h"],
         shared = ["flash_ctrl.h"],
     ),
+    visibility = ["//visibility:public"],
     deps = dual_inputs(
         device = [
             "//hw/top:otp_ctrl_c_regs",
