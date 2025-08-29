@@ -90,7 +90,7 @@ KEY_TYPE_ECDSA_TESTS = [
         "exit_failure": ECDSA_ALLOWED_IN_LC_STATES["exit_failure"][key.ecdsa.name],
         "exit_success": ECDSA_ALLOWED_IN_LC_STATES["exit_success"][key.ecdsa.name],
         "ecdsa_key": {key.ecdsa.label: key.ecdsa.name},
-        "spx_key": {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0_spx"},
+        "spx_key": {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
     }
     for key in ECDSA_SPX_KEY_STRUCTS
 ]
@@ -102,7 +102,7 @@ KEY_TYPE_SPX_TESTS = [
         "name": key.spx.name,
         "exit_failure": SPX_ALLOWED_IN_LC_STATES["exit_failure"][key.spx.name],
         "exit_success": SPX_ALLOWED_IN_LC_STATES["exit_success"][key.spx.name],
-        "ecdsa_key": {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+        "ecdsa_key": {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
         "spx_key": {key.spx.label: key.spx.name},
     }
     for key in ECDSA_SPX_KEY_STRUCTS
