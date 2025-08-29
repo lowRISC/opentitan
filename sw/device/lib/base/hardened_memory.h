@@ -91,6 +91,23 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
                                size_t word_len);
 
 /**
+ * Combines two word buffers with XOR and store the result in the dest. buffer.
+ *
+ * Performs dest = ((rand ^ x) ^ y) ^ rand
+ *
+ * Callers should ensure the entropy complex is up before calling this
+ * function. The implementation uses random-order hardening primitives for
+ * side-channel defense.
+ *
+ * @param x Pointer to the first operand.
+ * @param y Pointer to the second operand.
+ * @param word_len Length in words of each operand.
+ * @param dest[out] Pointer to the output buffer.
+ */
+void hardened_xor(const uint32_t *OT_RESTRICT x, const uint32_t *OT_RESTRICT y,
+                  size_t word_len, uint32_t *OT_RESTRICT dest);
+
+/**
  * Combines two word buffers with XOR in-place.
  *
  * Callers should ensure the entropy complex is up before calling this
