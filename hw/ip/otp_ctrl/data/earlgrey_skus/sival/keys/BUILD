@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:keyutils.bzl", "key_ecdsa")
 load("//rules:signing.bzl", "keyset")
 load("//rules:const.bzl", "CONST")
 load(
@@ -13,41 +12,6 @@ load(
 )
 
 package(default_visibility = ["//visibility:public"])
-
-key_ecdsa(
-    name = "ecdsa_prod_0",
-    method = "hsmtool",
-    pub_key = "sv00-earlgrey-a1-root-ecdsa-prod-0.pub.der",
-    type = "ProdKey",
-)
-
-key_ecdsa(
-    name = "ecdsa_prod_1",
-    method = "hsmtool",
-    pub_key = "sv00-earlgrey-a1-root-ecdsa-prod-1.pub.der",
-    type = "ProdKey",
-)
-
-key_ecdsa(
-    name = "ecdsa_prod_2",
-    method = "hsmtool",
-    pub_key = "sv00-earlgrey-a1-root-ecdsa-prod-2.pub.der",
-    type = "ProdKey",
-)
-
-key_ecdsa(
-    name = "ecdsa_test_0",
-    method = "hsmtool",
-    pub_key = "sv00-earlgrey-a1-root-ecdsa-test-0.pub.der",
-    type = "TestKey",
-)
-
-key_ecdsa(
-    name = "ca_dice_0",
-    method = "hsmtool",
-    pub_key = "sv00-earlgrey-a1-ca-dice-0.pub.der",
-    type = "TestKey",
-)
 
 # TODO(#22155, #18313): Decide on keyset vs. keyinfo for supplying signing info to the
 # offline/token signing flows.  Currently, only keyset supports tokens.
