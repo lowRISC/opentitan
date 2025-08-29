@@ -5,13 +5,13 @@
 use anyhow::Result;
 use mio::event::Event;
 use mio::{Interest, Registry, Token};
+use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
-use std::collections::{HashMap, HashSet};
 use std::hash::{Hash, Hasher};
 use std::io::{Read, Write};
 use std::ptr::hash;
 use std::rc::Rc;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, Weak};
 use std::task::{Context, Poll, Wake, Waker};
 
 use super::ExtraEventHandler;
@@ -61,7 +61,7 @@ impl NonblockingUartRegistry {
     pub fn nonblocking_uart_init(
         &mut self,
         uart: &std::rc::Rc<dyn crate::io::uart::Uart>,
-        conn_token: Token,
+        conn: &Arc<Mutex<Connection>>,
         registry: &Registry,
     ) -> Result<u32> {
         match self.nonblocking_uarts.entry(UartKey(uart.clone())) {
@@ -74,14 +74,14 @@ impl NonblockingUartRegistry {
                 waker.wake_by_ref();
 
                 let mut nonblocking_uart = NonblockingUart::new(uart, waker, token.0 as u32);
-                nonblocking_uart.add_connection(conn_token);
+                nonblocking_uart.add_connection(conn);
                 let channel = nonblocking_uart.channel;
                 entry.insert(nonblocking_uart);
                 Ok(channel)
             }
             Occupied(mut entry) => {
                 let nonblocking_uart = entry.get_mut();
-                nonblocking_uart.add_connection(conn_token);
+                nonblocking_uart.add_connection(conn);
                 Ok(nonblocking_uart.channel)
             }
         }
@@ -89,18 +89,14 @@ impl NonblockingUartRegistry {
 }
 
 impl ExtraEventHandler for NonblockingUartRegistry {
-    fn handle_poll_event(
-        &mut self,
-        event: &Event,
-        connection_map: &mut HashMap<Token, Connection>,
-    ) -> Result<bool> {
+    fn handle_poll_event(&mut self, event: &Event) -> Result<bool> {
         match self.token_map.get(&event.token()) {
             Some(uart_key) => {
                 if event.is_readable() {
                     self.nonblocking_uarts
                         .get_mut(uart_key)
                         .unwrap()
-                        .process(connection_map)?;
+                        .process()?;
                 }
                 Ok(true)
             }
@@ -110,7 +106,7 @@ impl ExtraEventHandler for NonblockingUartRegistry {
 }
 
 pub struct NonblockingUart {
-    conn_tokens: HashSet<Token>,
+    conn: Vec<Weak<Mutex<Connection>>>,
     uart: std::rc::Rc<dyn crate::io::uart::Uart>,
     waker: Arc<UartWaker>,
     channel: u32,
@@ -123,18 +119,22 @@ impl NonblockingUart {
         channel: u32,
     ) -> Self {
         Self {
-            conn_tokens: HashSet::new(),
+            conn: Vec::new(),
             uart: uart.clone(),
             waker,
             channel,
         }
     }
 
-    pub fn add_connection(&mut self, conn_token: Token) {
-        self.conn_tokens.insert(conn_token);
+    pub fn add_connection(&mut self, conn: &Arc<Mutex<Connection>>) {
+        let downgrade = Arc::downgrade(conn);
+        if self.conn.iter().any(|x| Weak::ptr_eq(x, &downgrade)) {
+            return;
+        }
+        self.conn.push(downgrade);
     }
 
-    fn process(&mut self, connection_map: &mut HashMap<Token, Connection>) -> Result<()> {
+    fn process(&mut self) -> Result<()> {
         let mut buf = [0u8; 256];
         // We need to keep reading until a read returns pending, otherwise the waker will not be notified.
         let waker: Waker = self.waker.clone().into();
@@ -148,25 +148,28 @@ impl NonblockingUart {
 
             // Iterate through list of connections who "subscribe" to this UART instance, putting
             // data into each of their outgoing buffers.  If any connection has been closed,
-            // remove the reference to it from `conn_tokens`.
-            let mut closed_connections = Vec::new();
-            for conn_token in &self.conn_tokens {
-                if let Some(conn) = connection_map.get_mut(conn_token) {
-                    conn.transmit_outgoing_msg(super::protocol::Message::Async {
+            // remove the reference to it from `conn`.
+            let mut connections = Vec::with_capacity(self.conn.len());
+            self.conn.retain(|x| {
+                // Upgrade reference. If this fails, it means that the last instance is gone
+                // and we shouldn't try further.
+                if let Some(v) = x.upgrade() {
+                    connections.push(v);
+                    true
+                } else {
+                    false
+                }
+            });
+
+            for conn in connections.into_iter() {
+                conn.lock()
+                    .unwrap()
+                    .transmit_outgoing_msg(super::protocol::Message::Async {
                         channel: self.channel,
                         msg: super::protocol::AsyncMessage::UartData {
                             data: buf[0..len].to_vec(),
                         },
                     })?
-                } else {
-                    // The particular TCP connection has been closed, and should be removed from the
-                    // list of subsribers to this `Uart`.  Keep its ID for removal when this
-                    // iteration is done.
-                    closed_connections.push(*conn_token);
-                }
-            }
-            for conn_token in closed_connections {
-                self.conn_tokens.remove(&conn_token);
             }
         }
     }
