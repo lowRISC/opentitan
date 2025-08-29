@@ -39,7 +39,7 @@ pub(crate) enum TcpTpmCommands {
 
 /// Platform hierarchy is enabled, and hardware platform functionality (such
 /// as SignalHashStart/Data/End) is available.
-const PLATFORM_AVAILABLE: u32 = 0x01;
+const _PLATFORM_AVAILABLE: u32 = 0x01;
 
 /// The device is TPM Resource Manager (TRM), rather than a raw TPM.
 /// This means context management commands are unavailable, and the handle values
@@ -54,15 +54,15 @@ const _SUPPORTS_PP: u32 = 0x08;
 
 /// Valid only with PlatformAvailable set.
 /// System and TPM power control signals (SignalPowerOn/Off) are not supported.
-const NO_POWER_CTL: u32 = 0x10;
+const _NO_POWER_CTL: u32 = 0x10;
 
 /// Valid only with tpmPlatformAvailable set.
 /// TPM locality cannot be changed.
-const NO_LOCALITY_CTL: u32 = 0x20;
+const _NO_LOCALITY_CTL: u32 = 0x20;
 
 /// Valid only with tpmPlatformAvailable set.
 /// NV control signals (SignalNvOn/Off) are not supported.
-const NO_NV_CTL: u32 = 0x40;
+const _NO_NV_CTL: u32 = 0x40;
 
 /// Serve the command port for the TPM, forwarding commands to the bus specified in `opts`.
 pub(crate) fn serve_command(stream: &mut TcpStream, tpm: &dyn Driver) -> Result<bool> {
@@ -86,7 +86,7 @@ pub(crate) fn serve_command(stream: &mut TcpStream, tpm: &dyn Driver) -> Result<
 /// Handle the requested command and send the reply on `stream`. If this it a TPM command, send it
 /// to `tpm`.
 fn handle_cmd(cmd: TcpTpmCommands, stream: &mut TcpStream, tpm: &dyn Driver) -> Result<()> {
-    const CFG: u32 = PLATFORM_AVAILABLE | NO_POWER_CTL | NO_LOCALITY_CTL | NO_NV_CTL;
+    const CFG: u32 = 0;
     log::info!("CMD {:?}", cmd);
     match cmd {
         TcpTpmCommands::RemoteHandshake => {
