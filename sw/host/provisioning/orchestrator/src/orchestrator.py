@@ -5,7 +5,6 @@
 
 import argparse
 import logging
-import os
 import shlex
 import subprocess
 import sys
@@ -17,7 +16,7 @@ import db
 from device_id import DeviceId, DeviceIdentificationNumber
 from ot_dut import OtDut
 from sku_config import SkuConfig
-from util import confirm, parse_hexstring_to_int
+from util import confirm, parse_hexstring_to_int, resolve_runfile
 
 
 def get_user_confirmation(
@@ -95,7 +94,7 @@ def main(args_in):
     )
     parser.add_argument(
         "--fpga",
-        choices=["hyper310", "cw340"],
+        choices=["cw310", "cw340"],
         help="Run flow on FPGA (instead of silicon).",
     )
     parser.add_argument(
@@ -103,11 +102,6 @@ def main(args_in):
         action="store_true",
         default=False,
         help="Skip all non-required user confirmations.",
-    )
-    parser.add_argument(
-        "--runfiles-dir",
-        type=str,
-        help="Runfiles directory to use for provisioning.",
     )
     parser.add_argument(
         "--log-dir",
@@ -130,13 +124,10 @@ def main(args_in):
     if not args.cp_only and args.db_path is None:
         parser.error("--db-path is required when --cp-only is not provided")
 
-    # All relative paths are relative to the runfiles directory.
-    if args.runfiles_dir:
-        os.chdir(args.runfiles_dir)
-
     # Load and validate a SKU configuration file.
+    sku_config_path = resolve_runfile(args.sku_config)
     sku_config_args = {}
-    with open(args.sku_config, "r") as fp:
+    with open(sku_config_path, "r") as fp:
         sku_config_args = hjson.load(fp)
     sku_config = SkuConfig(**sku_config_args)
 

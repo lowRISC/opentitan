@@ -10,6 +10,7 @@ from typing import Optional
 import hjson
 
 from ca_config import CaConfig
+from util import resolve_runfile
 
 _PRODUCT_IDS_HJSON = "sw/host/provisioning/orchestrator/data/products.hjson"
 _PACKAGE_IDS_HJSON = "sw/host/provisioning/orchestrator/data/packages/earlgrey_a1.hjson"
@@ -35,13 +36,15 @@ class SkuConfig:
             self.ext_ca = CaConfig(name="ext_ca", **self.ext_ca)
 
         # Load product IDs database.
+        product_ids_hjson = resolve_runfile(_PRODUCT_IDS_HJSON)
         self._product_ids = None
-        with open(_PRODUCT_IDS_HJSON, "r") as fp:
+        with open(product_ids_hjson, "r") as fp:
             self._product_ids = hjson.load(fp)
 
         # Load package IDs database.
+        package_ids_hjson = resolve_runfile(_PACKAGE_IDS_HJSON)
         self._package_ids = None
-        with open(_PACKAGE_IDS_HJSON, "r") as fp:
+        with open(package_ids_hjson, "r") as fp:
             self._package_ids = hjson.load(fp)
 
         # Validate inputs.
@@ -56,18 +59,23 @@ class SkuConfig:
         if self.package in self._package_ids:
             self.package_id = int(self._package_ids[self.package], 16)
 
+        if self.token_encrypt_key:
+            self.token_encrypt_key = resolve_runfile(self.token_encrypt_key)
+
     @staticmethod
     def from_ids(product_id: int, si_creator_id: int,
                  package_id: int) -> "SkuConfig":
         """Creates a SKU configuration object from product, SiliconCreator, and package IDs."""
         # Load product IDs database.
+        product_ids_hjson = resolve_runfile(_PRODUCT_IDS_HJSON)
         product_ids = None
-        with open(_PRODUCT_IDS_HJSON, "r") as fp:
+        with open(product_ids_hjson, "r") as fp:
             product_ids = hjson.load(fp)
 
         # Load package IDs database.
+        package_ids_hjson = resolve_runfile(_PACKAGE_IDS_HJSON)
         package_ids = None
-        with open(_PACKAGE_IDS_HJSON, "r") as fp:
+        with open(package_ids_hjson, "r") as fp:
             package_ids = hjson.load(fp)
 
         # Create SKU configuration object.

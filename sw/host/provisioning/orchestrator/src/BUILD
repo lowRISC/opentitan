@@ -54,7 +54,10 @@ py_library(
     name = "util",
     srcs = ["util.py"],
     imports = ["."],
-    deps = [requirement("hjson")],
+    deps = [
+        requirement("hjson"),
+        "@rules_python//python/runfiles",
+    ],
 )
 
 py_library(
@@ -76,16 +79,15 @@ filegroup(
         "//sw/device/silicon_creator/manuf/base:ft_personalize_all",
         "//sw/device/silicon_creator/manuf/base:sram_cp_provision",
         "//sw/device/silicon_creator/manuf/base:sram_ft_individualize_all",
-        "//sw/device/silicon_creator/manuf/keys/fake:dice_ca.pem",
-        "//sw/device/silicon_creator/manuf/keys/fake:ext_ca.pem",
-        "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_enc_rsa3072.pub.der",
-        "//sw/device/silicon_creator/manuf/keys/fake:sk.pkcs8.der",
+        "//sw/device/silicon_creator/manuf/keys/fake:ca_data",
+        "//sw/device/silicon_creator/manuf/keys/sival:ca_data",
         "//sw/host/provisioning/cp",
         "//sw/host/provisioning/ft:ft_all",
         "//sw/host/provisioning/orchestrator/configs/skus:sku_all",
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//third_party/openocd:jtag_olimex_cfg",
         "//third_party/openocd:openocd_bin",
+        "@sc_hsm",
     ],
 )
 

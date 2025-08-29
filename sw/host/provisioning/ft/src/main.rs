@@ -147,15 +147,15 @@ fn main() -> Result<()> {
     log::info!("Encrypted rma_unlock_token = {}", response.rma_unlock_token);
 
     // Parse and prepare individualization ujson data payload.
-    let ft_individualize_data_in = ManufFtIndividualizeData {
-        device_id: hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.device_id.as_str())?,
-    };
-    response.device_id = ft_individualize_data_in
-        .device_id
+    let mut device_id = hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.device_id.as_str())?;
+    response.device_id = device_id
         .iter()
         .map(|v| format!("{v:08X}"))
         .collect::<Vec<String>>()
         .join("");
+    // We feed the device ID to the DUT in little endian order.
+    device_id.reverse();
+    let ft_individualize_data_in = ManufFtIndividualizeData { device_id };
 
     // Parse and prepare CA key.
     let mut ca_cfgs: HashMap<String, CaConfig> = serde_annotate::from_str(

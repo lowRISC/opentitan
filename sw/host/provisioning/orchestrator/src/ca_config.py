@@ -6,6 +6,8 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+from util import resolve_runfile
+
 
 @dataclass
 class CaConfig:
@@ -18,9 +20,9 @@ class CaConfig:
 
     def __post_init__(self):
         # Update certificate and key members to Path objs if necessary.
-        self.certificate = Path(self.certificate)
+        self.certificate = Path(resolve_runfile(self.certificate))
         if self.key_type == "Raw":
-            self.key = Path(self.key)
+            self.key = Path(resolve_runfile(self.key))
         self.validate()
 
     def validate(self) -> None:
