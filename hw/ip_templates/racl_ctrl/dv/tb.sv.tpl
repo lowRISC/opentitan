@@ -59,24 +59,24 @@ module tb;
   );
 
   initial begin
+    import racl_ctrl_env_pkg::racl_ctrl_env_wrapper;
+
+    automatic racl_ctrl_env_wrapper env_wrapper = new();
+
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual rst_shadowed_if)::set(null, "*.env", "rst_shadowed_vif", rst_shad_if);
-    uvm_config_db#(virtual racl_ctrl_policies_if)::set(null, "*.env", "policies_if", policies_if);
-    uvm_config_db#(int unsigned)::set(null, "*.env",
-                                      "num_subscribing_ips", NumSubscribingIps);
-    uvm_config_db#(int unsigned)::set(null, "*.env",
-                                      "num_external_subscribing_ips", NumExternalSubscribingIps);
 
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
 
-    uvm_config_db#(virtual racl_error_log_if)::set(null,
-                                                   "*.env.internal_error_agent",
-                                                   "vif", int_err_if);
-    uvm_config_db#(virtual racl_error_log_if)::set(null,
-                                                   "*.env.external_error_agent",
-                                                   "vif", ext_err_if);
+    env_wrapper.num_subscribing_ips          = NumSubscribingIps;
+    env_wrapper.num_external_subscribing_ips = NumExternalSubscribingIps;
+    env_wrapper.policies_vif                 = policies_if;
+    env_wrapper.internal_error_vif           = int_err_if;
+    env_wrapper.external_error_vif           = ext_err_if;
+
+    uvm_config_db#(racl_ctrl_env_wrapper)::set(null, "*.env", "wrapper", env_wrapper);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();
