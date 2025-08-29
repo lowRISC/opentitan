@@ -52,6 +52,11 @@ def key_from_dict(key, attr_name):
         ksi = key[KeySetInfo]
         if ksi.selected_key:
             name = ksi.selected_key
+        elif name.isdigit():
+            # If the nickname is a number, we assume it is the index of the key in
+            # the dictionary.
+            name = int(name)
+            name = ksi.keys.keys()[name]
         return struct(
             label = key,
             file = ksi.keys[name],
