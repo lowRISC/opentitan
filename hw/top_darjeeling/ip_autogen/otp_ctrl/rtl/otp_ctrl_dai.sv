@@ -17,6 +17,7 @@ module otp_ctrl_dai
   import otp_ctrl_macro_pkg::OtpSizeWidth;
   import otp_ctrl_macro_pkg::OtpWidth;
   import otp_ctrl_top_specific_pkg::*;
+  import prim_util_pkg::*;
 (
   input                                  clk_i,
   input                                  rst_ni,
@@ -991,7 +992,7 @@ module otp_ctrl_dai
         end else if (data_sel == DaiData) begin
           data_q <= dai_wdata_i;
         end else if (data_sel == ZerData) begin
-           data_q <= countones(otp_rdata_i);
+          data_q <= ScrmblBlockWidth'(count_ones(MaxCountOnesWidth'(otp_rdata_i)));
         end else begin
           data_q <= otp_rdata_i;
         end
