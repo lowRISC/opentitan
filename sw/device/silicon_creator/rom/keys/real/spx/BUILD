@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules/opentitan:keyutils.bzl", "key_sphincs_plus")
+load("//rules:signing.bzl", "keyset")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -56,4 +57,15 @@ key_sphincs_plus(
     method = "hsmtool",
     pub_key = "prod_key_1_spx.pub.pem",
     type = "TestKey",
+)
+
+keyset(
+    name = "spx_keyset",
+    keys = {
+        "dev_key_0_spx.pub.pem": "dev_key_0",
+        "prod_key_0_spx.pub.pem": "prod_spx_0",
+        "prod_key_1_spx.pub.pem": "prod_spx_1",
+        "test_key_0_spx.pub.pem": "test__0",
+    },
+    default = "dev__0",
 )
