@@ -12,7 +12,7 @@
 
 .section .text.start
 
-p384_oncurve_test:
+p384_isoncurve_test:
   /* load domain parameter p (modulus)
      [w13, w12] = p = dmem[p384_p] */
   li        x2, 12
@@ -37,50 +37,3 @@ p384_oncurve_test:
   bn.lid    x2++, 32(x23)
 
   ecall
-
-
-.data
-
-/* buffer for right side result of Weierstrass equation */
-.globl rhs
-rhs:
-  .zero 64
-
-/* buffer for left side result of Weierstrass equation */
-.globl lhs
-lhs:
-  .zero 64
-
-/* point affine x-coordinate */
-.globl x
-x:
-  .word 0x4877f3d1
-  .word 0x7b829460
-  .word 0xb1cac609
-  .word 0x5869de54
-  .word 0xee0e2beb
-  .word 0x6c30f2d8
-  .word 0x47e80661
-  .word 0x394d8b70
-  .word 0xcf60d89e
-  .word 0x1a9ea916
-  .word 0xb439d701
-  .word 0xca230836
-  .zero 16
-
-/* point affine y-coordinate */
-.globl y
-y:
-  .word 0xc181f90f
-  .word 0xc31ef079
-  .word 0xbf3aff6e
-  .word 0xc7e55880
-  .word 0xec18818c
-  .word 0xcea028a9
-  .word 0x928c3e92
-  .word 0x82b63bf3
-  .word 0xd65e905d
-  .word 0x68eef2d1
-  .word 0x03afe2c2
-  .word 0xaaafcad2
-  .zero 16

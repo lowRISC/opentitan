@@ -1,0 +1,29 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  "entrypoint": "p384_isoncurve_proj_test",
+  "input": {
+    "dmem": {
+      # point projective x-coordinate
+      "x": "0x00000000000000000000000000000000de71dad7fe36d76b1e30ae5b4152ef025f581967d12930190a41831dfd1d90f05236e1b9b5dcf3ab95c4ddb2e1deb3e8",
+      # point projective y-coordinate
+      "y": "0x000000000000000000000000000000006a90530467b628b1138b69d6688532fe6d95ffcd9c58e190e036648e2e9047697188ff4edff5032a656dc19bed9bacf5",
+      # point projective z-coordinate
+      "z": "0x000000000000000000000000000000001a17ea81dc1bf4904cb98708a6e59ab5f54595e6fe765c32d2d04a0dc656bfa9ee62d2b2a9ce9382fff2b79bdab3335b",
+    }
+  }
+  "output": {
+    "regs": {
+      # Expected values:
+      # [w1, w0] is right side result of Weierstrass equation,
+      # [w3, w2] is left side result of Weierstrass equation.
+      # Point is on curve if [w3,w2] == [w1,w0].
+      "w0": "0x00e9787385550c0f88f54f97468d45f2d0583cfa3b497875fd6cf385a91fd763",
+      "w1": "0x00000000000000000000000000000000d34440792a17aadd1866862341ff09cd",
+      "w2": "0x00e9787385550c0f88f54f97468d45f2d0583cfa3b497875fd6cf385a91fd763",
+      "w3": "0x00000000000000000000000000000000d34440792a17aadd1866862341ff09cd",
+    }
+  }
+}
