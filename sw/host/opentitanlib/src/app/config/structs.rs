@@ -34,6 +34,16 @@ pub struct PinConfiguration {
     /// If present, this pin is not natively supported by the transport, but is to be accessed
     /// through an IO expander.  This field is mutually exclusive with `alias_of`.
     pub on_io_expander: Option<IoExpanderPin>,
+    /// If present, this pin has external characteristics that might be relevant, e.g. pullup/down.
+    pub external: Option<PinExternalConfiguration>,
+}
+
+/// External configuration of a particular pin.
+#[derive(Deserialize, Clone, Debug)]
+pub enum PinExternalConfiguration {
+    Gnd,
+    PullUp,
+    PullDown,
 }
 
 /// Declaration of a name of an IO expander and pin number on it.
@@ -145,6 +155,20 @@ pub struct I2cConfiguration {
     pub alias_of: Option<String>,
 }
 
+/// Configuration of a particular peripheral.
+#[derive(Default, Deserialize, Clone, Debug)]
+pub struct IoPeripheral {
+    /// The user-visible name of this pheripheral.
+    pub name: String,
+    /// List of pins that this peripheral is connected to.
+    pub pins: Vec<String>,
+    /// If present, this peripheral will only be enable if that particular pin is high.
+    pub enable_pin: Option<String>,
+    /// If set, the enable signal is inverted (i.e. active low).
+    #[serde(default)]
+    pub enable_invert: bool,
+}
+
 /// Representation of the complete and unresolved content of a single
 /// confguration file.
 #[derive(Deserialize, Clone, Debug)]
@@ -180,4 +204,7 @@ pub struct ConfigurationFile {
     /// List of IO expander chips.
     #[serde(default)]
     pub io_expanders: Vec<IoExpander>,
+    /// List of other peripherals.
+    #[serde(default)]
+    pub peripherals: Vec<IoPeripheral>,
 }
