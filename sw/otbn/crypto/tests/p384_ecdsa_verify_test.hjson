@@ -1,0 +1,35 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  "entrypoint": "p384_ecdsa_verify_test",
+  "input": {
+    "dmem": {
+      # Status code
+      "ok": "0x000000739",
+      # point 1 x-cooridante x
+      "x": "0x00000000000000000000000000000000ca230836b439d7011a9ea916cf60d89e394d8b7047e806616c30f2d8ee0e2beb5869de54b1cac6097b8294604877f3d1",
+      # point 1 y-cooridante y
+      "y": "0x00000000000000000000000000000000aaafcad203afe2c268eef2d1d65e905d82b63bf3928c3e92cea028a9ec18818cc7e55880bf3aff6ec31ef079c181f90f",
+      # message
+      "msg": "0x00000000000000000000000000000000555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555",
+      # signature R
+      "r": "0x00000000000000000000000000000000b2fcf95c7c0d8125b45990dbd3c4305349d29eef0235d77ec16c09de12d35b3856e186cf9a1a30fc2b23ce3ab68c28d8",
+      # signature S
+      "s": "0x000000000000000000000000000000001a72ebdde34d88c1fa9554e0f19a653d80eb391d3e7f68950016f9c3a78101eb77e415a198144c27752042f524bc1bf9",
+    }
+  }
+  "output": {
+    "dmem": {
+      # Status code
+      "ok": "0x000000739",
+    },
+    "regs": {
+      # Expected values (x-coordinate of result):
+      # [w1, w0] is x_res == sig_r
+      "w0": "0x49d29eef0235d77ec16c09de12d35b3856e186cf9a1a30fc2b23ce3ab68c28d8",
+      "w1": "0x00000000000000000000000000000000b2fcf95c7c0d8125b45990dbd3c43053",
+    }
+  }
+}
