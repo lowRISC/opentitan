@@ -57,10 +57,10 @@ def main():
             args += ["--alias", root_dir / alias_hjson]
     else:
         ral_spec = root_dir / top_hjson
-        # Extract top_name from ral spec path and create _seed.dev.hjson
+        # Extract top_name from ral spec path and create _seed.testing.hjson
         ral_path = Path(ral_spec)
         top_name = ral_path.stem
-        seed_path = ral_path.with_name(f"{top_name}_seed.dev.hjson")
+        seed_path = ral_path.with_name(f"{top_name}_seed.testing.hjson")
 
         cmd = util_path / "topgen.py"
         args = [cmd, "-r", "-o", os.getcwd(), "-t", ral_spec, "-s", seed_path]

@@ -16,7 +16,7 @@ exports_files(glob(["**"]))
 
 string_flag(
     name = "seed_cfg",
-    build_setting_default = "hw/top_earlgrey/data/top_earlgrey_seed.dev.hjson",
+    build_setting_default = "hw/top_earlgrey/data/top_earlgrey_seed.testing.hjson",
 )
 
 string_flag(

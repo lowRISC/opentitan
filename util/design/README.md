@@ -169,7 +169,7 @@ The OTP preload image generator expects at least one main image configuration fi
 ```console
 $ cd ${PROJ_ROOT}
 $ ./util/design/gen-otp-img.py --img-cfg hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson \
-                               --top-secret-cfg hw/top_earlgrey/data/autogen/top_earlgrey.secrets.dev.gen.hjson \
+                               --top-secret-cfg hw/top_earlgrey/data/autogen/top_earlgrey.secrets.testing.gen.hjson \
                                --out otp-img.mem
 ```
 
@@ -216,7 +216,7 @@ The generator script call would then look as follows:
 ```console
 $ cd ${PROJ_ROOT}
 $ ./util/design/gen-otp-img.py --img-cfg hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson \
-                               --top-secret-cfg hw/top_earlgrey/data/autogen/top_earlgrey.secrets.dev.gen.hjson \
+                               --top-secret-cfg hw/top_earlgrey/data/autogen/top_earlgrey.secrets.testing.gen.hjson \
                                --add-cfg otp_ctrl_img_sw_cfg.hjson \
                                --out otp-img.mem
 ```

@@ -3,7 +3,7 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: "lowrisc:englishbreakfast_constants:dev_rnd_cnst_pkg:0.1"
+name: "lowrisc:earlgrey_constants:testing_rnd_cnst_pkg:0.1"
 description: "Random netlist constant package"
 virtual:
   - lowrisc:virtual_constants:rnd_cnst_pkg
@@ -11,12 +11,20 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - lowrisc:englishbreakfast_ip:flash_ctrl
+      - lowrisc:earlgrey_ip:alert_handler_pkg
+      - lowrisc:earlgrey_ip:flash_ctrl
+      - lowrisc:earlgrey_ip:otp_ctrl_top_specific_pkg
       - lowrisc:ibex:ibex_pkg
       - lowrisc:ip:aes
+      - lowrisc:ip:csrng_pkg
+      - lowrisc:ip:keymgr_pkg
+      - lowrisc:ip:kmac_pkg
+      - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:ip:otbn_pkg
+      - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:sram_ctrl_pkg
     files:
-      - top_englishbreakfast_rnd_cnst_pkg.sv
+      - top_earlgrey_rnd_cnst_pkg.sv
     file_type: systemVerilogSource
 
   files_veriblelint_waiver:
@@ -24,7 +32,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - top_englishbreakfast_rnd_cnst_pkg.vbl
+      - top_earlgrey_rnd_cnst_pkg.vbl
     file_type: veriblelintWaiver
 
 targets:

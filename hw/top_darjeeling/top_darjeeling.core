@@ -72,15 +72,15 @@ filesets:
       - rtl/autogen/top_darjeeling.sv
     file_type: systemVerilogSource
 
-  files_rtl_dev:
+  files_rtl_testing:
     depend:
-      - lowrisc:darjeeling_constants:dev_rnd_cnst_pkg
-      - lowrisc:darjeeling_constants:dev_lc_ctrl_state_pkg
+      - lowrisc:darjeeling_constants:testing_rnd_cnst_pkg
+      - lowrisc:darjeeling_constants:testing_lc_ctrl_state_pkg
 
-  files_rtl_prod:
+  files_rtl_tapeout:
     depend:
-      - lowrisc:darjeeling_constants:prod_rnd_cnst_pkg
-      - lowrisc:darjeeling_constants:prod_lc_ctrl_state_pkg
+      - lowrisc:darjeeling_constants:tapeout_rnd_cnst_pkg
+      - lowrisc:darjeeling_constants:tapeout_lc_ctrl_state_pkg
 
   files_verilator_waiver:
     depend:
@@ -113,8 +113,8 @@ mapping:
   "lowrisc:virtual_constants:top_pkg": "lowrisc:darjeeling_constants:top_pkg"
   "lowrisc:virtual_constants:top_racl_pkg": "lowrisc:darjeeling_constants:top_racl_pkg"
   "lowrisc:systems:ast_pkg": "lowrisc:systems:top_darjeeling_ast_pkg"
-  "lowrisc:virtual_ip:lc_ctrl_state_pkg": "lowrisc:darjeeling_constants:dev_lc_ctrl_state_pkg"
-  "lowrisc:virtual_constants:rnd_cnst_pkg": "lowrisc:darjeeling_constants:dev_rnd_cnst_pkg"
+  "lowrisc:virtual_ip:lc_ctrl_state_pkg": "lowrisc:darjeeling_constants:testing_lc_ctrl_state_pkg"
+  "lowrisc:virtual_constants:rnd_cnst_pkg": "lowrisc:darjeeling_constants:testing_rnd_cnst_pkg"
   # TODO(#27347): prim_legacy_pkg is deprecated
   "lowrisc:prim:prim_pkg": "lowrisc:prim:prim_legacy_pkg"
 
@@ -126,19 +126,19 @@ parameters:
 targets:
   default: &default_target
     filesets:
-      - tool_verilator   ? (files_verilator_waiver)
-      - tool_ascentlint  ? (files_ascentlint_waiver)
-      - tool_veriblelint ? (files_veriblelint_waiver)
-      - fileset_prod     ? (files_rtl_prod)
-      - "!fileset_prod   ? (files_rtl_dev)"
+      - tool_verilator    ? (files_verilator_waiver)
+      - tool_ascentlint   ? (files_ascentlint_waiver)
+      - tool_veriblelint  ? (files_veriblelint_waiver)
+      - fileset_tapeout   ? (files_rtl_tapeout)
+      - "!fileset_tapeout ? (files_rtl_testing)"
       - files_rtl_generic
     toplevel: top_darjeeling
 
   sim:
     default_tool: icarus
     filesets:
-      - fileset_prod     ? (files_rtl_prod)
-      - "!fileset_prod   ? (files_rtl_dev)"
+      - fileset_tapeout   ? (files_rtl_tapeout)
+      - "!fileset_tapeout ? (files_rtl_testing)"
       - files_rtl_generic
     toplevel: top_darjeeling
 

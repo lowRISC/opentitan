@@ -9,7 +9,7 @@
 //                -o hw/top_englishbreakfast/
 //
 // File is generated based on the following seed configuration:
-//   hw/top_englishbreakfast/data/top_englishbreakfast_seed.dev.hjson
+//   hw/top_englishbreakfast/data/top_englishbreakfast_seed.testing.hjson
 
 
 package top_englishbreakfast_rnd_cnst_pkg;

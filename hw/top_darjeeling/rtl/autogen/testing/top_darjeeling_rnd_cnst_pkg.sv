@@ -9,7 +9,7 @@
 //                -o hw/top_darjeeling/
 //
 // File is generated based on the following seed configuration:
-//   hw/top_darjeeling/data/top_darjeeling_seed.dev.hjson
+//   hw/top_darjeeling/data/top_darjeeling_seed.testing.hjson
 
 
 package top_darjeeling_rnd_cnst_pkg;
