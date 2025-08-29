@@ -33,6 +33,7 @@ class MockHmac : public global_mock::GlobalMock<MockHmac> {
 }  // namespace internal
 
 using MockHmac = testing::StrictMock<internal::MockHmac>;
+using NiceMockHmac = testing::NiceMock<internal::MockHmac>;
 
 }  // namespace rom_test
 
