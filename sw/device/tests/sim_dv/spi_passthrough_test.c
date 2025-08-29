@@ -6,11 +6,11 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "dt/dt_api.h"         // Generated
-#include "dt/dt_pinmux.h"      // Generated
-#include "dt/dt_rv_plic.h"     // Generated
-#include "dt/dt_spi_device.h"  // Generated
-#include "dt/dt_spi_host.h"    // Generated
+#include "hw/top/dt/dt_api.h"         // Generated
+#include "hw/top/dt/dt_pinmux.h"      // Generated
+#include "hw/top/dt/dt_rv_plic.h"     // Generated
+#include "hw/top/dt/dt_spi_device.h"  // Generated
+#include "hw/top/dt/dt_spi_host.h"    // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"

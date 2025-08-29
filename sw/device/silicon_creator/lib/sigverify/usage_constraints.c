@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
-#include "otp_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 
 void sigverify_usage_constraints_get(
     uint32_t selector_bits, manifest_usage_constraints_t *usage_constraints) {

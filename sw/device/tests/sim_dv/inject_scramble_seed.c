@@ -19,9 +19,9 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
-#include "flash_ctrl_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
 
 static dif_rstmgr_t rstmgr;
 static dif_otp_ctrl_t otp_ctrl;

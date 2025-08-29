@@ -9,7 +9,7 @@
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 
-#include "uart_regs.h"
+#include "hw/top/uart_regs.h"
 
 /**
  * @file

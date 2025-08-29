@@ -10,10 +10,10 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
-#include "ast_regs.h"
+#include "hw/top/ast_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/sensor_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
-#include "sensor_ctrl_regs.h"
 
 #ifndef OT_PLATFORM_RV32
 // Provide a definition for off-target unit tests.

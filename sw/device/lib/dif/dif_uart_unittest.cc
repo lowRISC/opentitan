@@ -9,7 +9,7 @@
 #include "sw/device/lib/base/mock_mmio.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "uart_regs.h"  // Generated.
+#include "hw/top/uart_regs.h"  // Generated.
 
 namespace dif_uart_unittest {
 namespace {

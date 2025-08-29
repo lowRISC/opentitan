@@ -10,7 +10,7 @@
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "csrng_regs.h"  // Generated
+#include "hw/top/csrng_regs.h"  // Generated
 
 #define MODULE_ID MAKE_MODULE_ID('r', 'n', 't')
 

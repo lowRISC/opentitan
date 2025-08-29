@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "dt/dt_rstmgr.h"
-#include "dt/dt_sram_ctrl.h"
+#include "hw/top/dt/dt_rstmgr.h"
+#include "hw/top/dt/dt_sram_ctrl.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/multibits.h"
@@ -20,8 +20,8 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
-#include "rstmgr_regs.h"     // Generated.
-#include "sram_ctrl_regs.h"  // Generated.
+#include "hw/top/rstmgr_regs.h"     // Generated.
+#include "hw/top/sram_ctrl_regs.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();
 

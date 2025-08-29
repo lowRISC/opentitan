@@ -22,7 +22,7 @@
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 
-#include "flash_ctrl_regs.h"  // Generated.
+#include "hw/top/flash_ctrl_regs.h"  // Generated.
 
 enum {
   /**

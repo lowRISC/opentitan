@@ -23,7 +23,7 @@ ${autogen_banner}
 #include "sw/device/lib/base/mock_mmio.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "${ip.name_snake}_regs.h"  // Generated.
+#include "hw/top/${ip.name_snake}_regs.h"  // Generated.
 
 namespace dif_${ip.name_snake}_autogen_unittest {
 namespace {

@@ -12,8 +12,8 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
+#include "hw/top/otp_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"  // Generated.
 
 enum {
   kBase = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR,

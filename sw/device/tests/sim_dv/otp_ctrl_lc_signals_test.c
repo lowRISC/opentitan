@@ -20,8 +20,8 @@
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
+#include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
 
 static dif_lc_ctrl_t lc;
 static dif_otp_ctrl_t otp;

@@ -7,14 +7,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "dt/dt_uart.h"
+#include "hw/top/dt/dt_uart.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "uart_regs.h"  // Generated.
+#include "hw/top/uart_regs.h"  // Generated.
 
 static const dt_uart_t kUartDt = kDtUart0;
 

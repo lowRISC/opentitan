@@ -11,10 +11,10 @@
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
-#include "gpio_regs.h"
+#include "hw/top/gpio_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/pinmux_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
-#include "pinmux_regs.h"
 
 enum {
   /**

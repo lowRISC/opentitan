@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/testing/dma_testutils.h"
 
+#include "hw/top/spi_host_regs.h"  // Generated.
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-#include "spi_host_regs.h"  // Generated.
 
 static const top_darjeeling_direct_pads_t spi_host0_direct_pads[6] = {
     kTopDarjeelingDirectPadsSpiHost0Sck,   // sck

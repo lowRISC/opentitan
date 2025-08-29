@@ -29,9 +29,9 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 
+#include "hw/top/keymgr_regs.h"
+#include "hw/top/kmac_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "keymgr_regs.h"
-#include "kmac_regs.h"
 
 #define ASSERT_OK(expr_)                        \
   do {                                          \

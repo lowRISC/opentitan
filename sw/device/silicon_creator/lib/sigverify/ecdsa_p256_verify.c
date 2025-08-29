@@ -8,7 +8,7 @@
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 
-#include "otp_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 
 /*
  * Shares for producing the `kSigverifyEcdsaSuccess` value in

@@ -9,7 +9,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/runtime/hart.h"
 
-#include "pinmux_regs.h"  // Generated.
+#include "hw/top/pinmux_regs.h"  // Generated.
 
 static bool dif_pinmux_get_reg_offset(dif_pinmux_index_t index,
                                       dif_pinmux_pad_kind_t kind,

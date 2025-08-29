@@ -13,7 +13,7 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/sigverify/spx_verify.h"
 
-#include "otp_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 #endif
 
 OTTF_DEFINE_TEST_CONFIG();
