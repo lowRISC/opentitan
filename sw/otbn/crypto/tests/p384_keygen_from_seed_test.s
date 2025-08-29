@@ -92,17 +92,3 @@ p384_keygen_from_seed_test:
   bn.subb   w1, w1, w17
 
   ecall
-
-.section .data
-
-.balign 32
-
-/* 1st private key share d0 (448-bit) */
-.globl d0
-d0:
-  .zero 64
-
-/* 2nd private key share d1 (448-bit) */
-.globl d1
-d1:
-  .zero 64
