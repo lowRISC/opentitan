@@ -111,6 +111,11 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
   // Set the AES key length (in words).
   aes_key->key_len = keyblob_share_num_words(blinded_key->config);
 
+  if (aes_key->sideload == kHardenedBoolFalse) {
+    // Create the checksum of the key and store it in the key structure.
+    aes_key->checksum = aes_key_integrity_checksum(aes_key);
+  }
+
   return OTCRYPTO_OK;
 }
 
