@@ -362,6 +362,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     bucket_test_result result;
     int buckets [][];
+    int buckets_max [$];
 
     // Init 2D array
     buckets = new[NumBucketHtInst];
@@ -386,7 +387,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end
 
     for (int i = 0; i < NumBucketHtInst; i++) begin
-      result.push_back(buckets[i].max()[0]);
+      buckets_max = buckets[i].max();
+      result.push_back(buckets_max[0]);
       `uvm_info(`gfn, $sformatf("Bucket test. result[%0d] = %0d", i, result[i]), UVM_FULL)
     end
 
@@ -700,6 +702,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   function bit evaluate_bucket_test(queue_of_rng_val_t window, bit fips_mode);
     bucket_test_result test_result;
+    int test_result_max [$];
     int max_value;
     int value;
     bit fail;
@@ -709,7 +712,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     real sigma;
 
     test_result = calc_bucket_test(window);
-    max_value = test_result.max()[0];
+    test_result_max = test_result.max();
+    max_value = test_result_max[0];
     update_watermark("bucket", fips_mode, max_value);
 
     for (int i = 0; i < test_result.size(); i++) begin

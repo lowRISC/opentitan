@@ -93,10 +93,6 @@ interface entropy_src_path_if ();
     $assertoff(0, `CORE.u_entropy_src_markov_ht.u_max.ValidInImpliesValidOut_A);
     $assertoff(0, `CORE.u_sha3.u_keccak.gen_unmask_st_chk.UnmaskValidStates_A);
     $assertoff(0, `CORE.`REPCNT.ValidInImpliesValidOut_A);
-    for (int i = 0; i < entropy_src_pkg::num_bucket_ht_inst(`RNG_BUS_WIDTH); i++) begin
-      $assertoff(0, `CORE.gen_health_test[i].u_entropy_src_bucket_ht.u_prim_max_tree_bin_cntr_max
-                    .ValidInImpliesValidOut_A);
-    end
   endtask
   function automatic void disable_entroy_drop_assertions();
     // Disable assertions which expect that no entropy is dropped between the esrng,
