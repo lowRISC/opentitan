@@ -340,8 +340,12 @@ def _local_sign(ctx, tool, digest, ecdsa_key, rsa_key, spxmsg = None, spx_key = 
         key_command = "rsa"
     elif ecdsa_key:
         output_sig = ctx.actions.declare_file(paths.replace_extension(digest.basename, ".ecdsa_sig"))
-        inputs.append(ecdsa_key.info.private_key)
-        key_path = ecdsa_key.info.private_key.path
+        if ecdsa_key.info:
+            inputs.append(ecdsa_key.info.private_key)
+            key_path = ecdsa_key.info.private_key.path
+        else:
+            inputs.append(ecdsa_key.file)
+            key_path = ecdsa_key.file.path
         key_command = "ecdsa"
     else:
         fail("Expected an ECDSA or RSA key")
