@@ -6,6 +6,7 @@ package(default_visibility = ["//visibility:public"])
 
 load("@ot_python_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("//rules:qemu.bzl", "qemu_build")
 
 py_binary(
     name = "cfggen",
@@ -36,12 +37,7 @@ py_library(
     srcs = ["@qemu_opentitan//:ot"],
 )
 
-alias(
+qemu_build(
     name = "qemu-system-riscv32",
-    actual = "@qemu_opentitan//:build/qemu-system-riscv32",
-)
-
-alias(
-    name = "qemu-img",
-    actual = "@qemu_opentitan//:build/qemu-img",
+    qemu_src = "@qemu_opentitan//:qemu_src",
 )
