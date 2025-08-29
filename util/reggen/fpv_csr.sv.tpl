@@ -163,7 +163,7 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   assign regwen[${hro_map.get(hro_reg.offset)[0]}] = 1;
     % elif mubi_regwen:
   assign regwen[${hro_map.get(hro_reg.offset)[0]}] =
-                  prim_mubi_pkg::mubi${mubi_width}_test_true_strict(prim_mubi_pkg::mubi${mubi_width}_t'(`REGWEN_PATH.${regwen.lower()}_qs));
+                  mubi${mubi_width}_test_true_strict(mubi${mubi_width}_t'(`REGWEN_PATH.${regwen.lower()}_qs));
     % elif hidden_regwen:
   // Register is controlled by a REGWEN that is not 'hwo' and not supported in fpv_csr
   assign regwen[${hro_map.get(hro_reg.offset)[0]}] = 1;
