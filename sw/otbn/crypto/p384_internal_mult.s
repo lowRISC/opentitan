@@ -665,37 +665,3 @@ p384_scalar_reblind:
   bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
 
   ret
-
-.bss
-
-/* 1st scalar share d0 (768-bit) */
-.globl d0
-.balign 32
-.weak d0
-d0:
-  .zero 96
-
-/* 2nd scalar share d1 (768-bit) */
-.globl d1
-.balign 32
-.weak d1
-d1:
-  .zero 96
-
-/* x-coordinate */
-.globl x
-.weak x
-x:
-  .zero 64
-
-/* y-coordinate */
-.globl y
-.weak y
-y:
-  .zero 64
-
-/* 704 bytes of scratchpad memory */
-.balign 32
-scratchpad:
-.weak scratchpad
-  .zero 768

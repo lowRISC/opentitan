@@ -230,31 +230,3 @@ p384_generate_k:
   bn.sid    x2++, 32(x21)
 
   ret
-
-.section .data
-
-.balign 32
-
-/* 1st scalar share d0 */
-.globl k0
-.weak k0
-k0:
-  .zero 64
-
-/* 2nd scalar share d1 */
-.globl k1
-.weak k1
-k1:
-  .zero 64
-
-/* 1st private key share d0 */
-.globl d0
-.weak d0
-d0:
-  .zero 64
-
-/* 2nd private key share d1 */
-.globl d1
-.weak d1
-d1:
-  .zero 64
