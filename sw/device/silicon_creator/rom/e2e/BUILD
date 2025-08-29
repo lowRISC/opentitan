@@ -421,7 +421,7 @@ opentitan_test(
     name = "sigverify_key_auth",
     srcs = [":empty_test"],
     ecdsa_key = {
-        "//sw/device/silicon_creator/rom/keys/unauthorized/ecdsa:unauthorized_key_0_ecdsa_p256": "unauthorized_key_0",
+        "//sw/device/silicon_creator/rom/keys/unauthorized/ecdsa:ecdsa_keyset": "unauthorized_key_0",
     },
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
