@@ -646,6 +646,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       param_decl: {}
+      memory: {}
       param_list: []
       inter_signal_list:
       [
@@ -737,6 +738,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       param_decl: {}
+      memory: {}
       param_list: []
       inter_signal_list:
       [
@@ -828,6 +830,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       param_decl: {}
+      memory: {}
       param_list: []
       inter_signal_list:
       [
@@ -919,6 +922,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       param_decl: {}
+      memory: {}
       param_list: []
       inter_signal_list:
       [
@@ -1699,6 +1703,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       param_decl: {}
+      memory: {}
       param_list: []
       inter_signal_list:
       [
@@ -1750,6 +1755,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
       }
       param_decl: {}
+      memory: {}
       param_list: []
       inter_signal_list:
       [
@@ -6485,6 +6491,7 @@
         clk_aon_i: clk_aon_i
       }
       param_decl: {}
+      memory: {}
       param_list: []
       inter_signal_list:
       [
@@ -6742,6 +6749,7 @@
         clk_aon_i: clkmgr_aon_clocks.clk_aon_secure
       }
       param_decl: {}
+      memory: {}
       param_list: []
       inter_signal_list:
       [
@@ -6824,6 +6832,7 @@
         clk_aon_i: clkmgr_aon_clocks.clk_aon_peri
       }
       param_decl: {}
+      memory: {}
       param_list: []
       inter_signal_list:
       [
@@ -6910,6 +6919,7 @@
         clk_core_i: clkmgr_aon_clocks.clk_aon_peri
       }
       param_decl: {}
+      memory: {}
       param_list: []
       inter_signal_list:
       [
@@ -7464,6 +7474,7 @@
         clk_aon_i: clkmgr_aon_clocks.clk_aon_timers
       }
       param_decl: {}
+      memory: {}
       param_list: []
       inter_signal_list:
       [
@@ -7664,6 +7675,7 @@
         clk_ast_usb_i: clkmgr_aon_clocks.clk_usb_peri
       }
       param_decl: {}
+      memory: {}
       param_list: []
       inter_signal_list:
       [
@@ -7720,6 +7732,7 @@
         clk_aon_i: clkmgr_aon_clocks.clk_aon_secure
       }
       param_decl: {}
+      memory: {}
       param_list: []
       inter_signal_list:
       [
@@ -8951,6 +8964,7 @@
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       param_decl: {}
+      memory: {}
       param_list: []
       inter_signal_list:
       [
@@ -9224,6 +9238,7 @@
         clk_i: clkmgr_aon_clocks.clk_main_hmac
       }
       param_decl: {}
+      memory: {}
       param_list: []
       inter_signal_list:
       [
@@ -10508,6 +10523,7 @@
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       param_decl: {}
+      memory: {}
       param_list: []
       inter_signal_list:
       [
@@ -10594,6 +10610,7 @@
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       param_decl: {}
+      memory: {}
       param_list: []
       inter_signal_list:
       [
@@ -11850,7 +11867,6 @@
       ]
     }
   ]
-  memory: []
   port:
   [
     {
