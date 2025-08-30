@@ -62,7 +62,6 @@ otp_image(
     name = "otp_img_default",
     src = ":otp_json_default",
     overlays = OTP_SIGVERIFY_FAKE_KEYS,
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     visibility = ["//visibility:private"],
 )
 

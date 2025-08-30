@@ -165,7 +165,6 @@ opentitan_test(
             "//hw/top_earlgrey/data/otp:otp_json_fixed_secret0",
             "//hw/top_earlgrey/data/otp:otp_json_exec_disabled",
         ] + OTP_SIGVERIFY_FAKE_KEYS,
-        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
         visibility = ["//visibility:public"],
     )
     for i in range(0, 8)
@@ -462,7 +461,6 @@ opentitan_test(
 otp_image(
     name = "otp_img_otp_ctrl_functest",
     src = "//hw/top_earlgrey/data/otp:otp_json_test_unlocked0",
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     visibility = ["//visibility:private"],
 )
 
