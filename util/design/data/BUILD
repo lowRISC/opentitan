@@ -15,11 +15,6 @@ exports_files(glob(["**"]))
 # multiple seeds needed to achieve DV coverage.
 
 string_flag(
-    name = "seed_cfg",
-    build_setting_default = "hw/top_earlgrey/data/top_earlgrey_seed.testing.hjson",
-)
-
-string_flag(
     name = "data_perm",
     build_setting_default = "",
 )
