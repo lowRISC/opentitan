@@ -28,13 +28,22 @@ class mbx_env extends cip_base_env #(
     m_tl_agent_sram = tl_agent::type_id::create("m_tl_agent_sram", this);
     uvm_config_db#(tl_agent_cfg)::set(this, "m_tl_agent_sram", "cfg", cfg.m_tl_agent_sram_cfg);
 
+    cfg.m_tl_agent_sram_cfg.synchronise_ports = 1'b1;
+
   endfunction: build_phase
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
 
     virtual_sequencer.tl_sequencer_sram_h = m_tl_agent_sram.sequencer;
-    // TODO: Connect analysis ports.
+
+    // Connect tl_agent monitor ports to scoreboard analysis FIFOs.
+    m_tl_agent_sram.monitor.a_chan_port.connect(
+        scoreboard.tl_a_chan_fifos["tl_sram_a_chan"].analysis_export);
+    m_tl_agent_sram.monitor.d_chan_port.connect(
+        scoreboard.tl_d_chan_fifos["tl_sram_d_chan"].analysis_export);
+    m_tl_agent_sram.monitor.channel_dir_port.connect(
+        scoreboard.tl_dir_fifos["tl_sram_dir"].analysis_export);
   endfunction: connect_phase
 
 endclass: mbx_env
