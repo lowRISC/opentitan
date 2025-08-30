@@ -6,11 +6,7 @@
 //
 
 module csrng_block_encrypt import csrng_pkg::*; #(
-  parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut,
-  parameter int Cmd = 3,
-  parameter int StateId = 4,
-  parameter int BlkLen = 128,
-  parameter int KeyLen = 256
+  parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut
 ) (
   input logic                clk_i,
   input logic                rst_ni,
@@ -21,12 +17,13 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   output logic               block_encrypt_rdy_o,
   input logic [KeyLen-1:0]   block_encrypt_key_i,
   input logic [BlkLen-1:0]   block_encrypt_v_i,
-  input logic [Cmd-1:0]      block_encrypt_cmd_i,
-  input logic [StateId-1:0]  block_encrypt_id_i,
+  input logic [CmdWidth-1:0] block_encrypt_cmd_i,
+  input logic [InstIdWidth-1:0] block_encrypt_id_i,
+
   output logic               block_encrypt_ack_o,
   input logic                block_encrypt_rdy_i,
-  output logic [Cmd-1:0]     block_encrypt_cmd_o,
-  output logic [StateId-1:0] block_encrypt_id_o,
+  output logic [CmdWidth-1:0]block_encrypt_cmd_o,
+  output logic [InstIdWidth-1:0] block_encrypt_id_o,
   output logic [BlkLen-1:0]  block_encrypt_v_o,
   output logic               block_encrypt_quiet_o,
   output logic               block_encrypt_aes_cipher_sm_err_o,
@@ -34,20 +31,20 @@ module csrng_block_encrypt import csrng_pkg::*; #(
 );
 
   localparam int BlkEncFifoDepth = 1;
-  localparam int BlkEncFifoWidth = StateId+Cmd;
+  localparam int BlkEncFifoWidth = InstIdWidth+CmdWidth;
   localparam int NumShares = 1;
 
   // signals
   // blk_encrypt_in fifo
   logic [BlkEncFifoWidth-1:0] sfifo_blkenc_rdata;
-  logic                       sfifo_blkenc_push;
+  logic                       sfifo_blkenc_wvld;
   logic [BlkEncFifoWidth-1:0] sfifo_blkenc_wdata;
-  logic                       sfifo_blkenc_pop;
+  logic                       sfifo_blkenc_rrdy;
   logic                       sfifo_blkenc_full;
-  logic                       sfifo_blkenc_not_empty;
+  logic                       sfifo_blkenc_rvld;
   // breakout
-  logic [Cmd-1:0]             sfifo_blkenc_cmd;
-  logic [StateId-1:0]         sfifo_blkenc_id;
+  logic [CmdWidth-1:0]        sfifo_blkenc_cmd;
+  logic [InstIdWidth-1:0]     sfifo_blkenc_id;
 
   aes_pkg::sp2v_e       cipher_in_valid;
   aes_pkg::sp2v_e       cipher_in_ready;
@@ -147,23 +144,23 @@ module csrng_block_encrypt import csrng_pkg::*; #(
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!block_encrypt_enable_i),
-    .wvalid_i (sfifo_blkenc_push),
+    .wvalid_i (sfifo_blkenc_wvld),
     .wready_o (),
     .wdata_i  (sfifo_blkenc_wdata),
-    .rvalid_o (sfifo_blkenc_not_empty),
-    .rready_i (sfifo_blkenc_pop),
+    .rvalid_o (sfifo_blkenc_rvld),
+    .rready_i (sfifo_blkenc_rrdy),
     .rdata_o  (sfifo_blkenc_rdata),
     .full_o   (sfifo_blkenc_full),
     .depth_o  (),
     .err_o    ()
   );
 
-  assign sfifo_blkenc_push = block_encrypt_req_i && !sfifo_blkenc_full;
+  assign sfifo_blkenc_wvld = block_encrypt_req_i && !sfifo_blkenc_full;
   assign sfifo_blkenc_wdata = {block_encrypt_id_i,block_encrypt_cmd_i};
 
   assign block_encrypt_rdy_o = (cipher_in_ready == aes_pkg::SP2V_HIGH);
 
-  assign sfifo_blkenc_pop = block_encrypt_ack_o;
+  assign sfifo_blkenc_rrdy = block_encrypt_ack_o;
   assign {sfifo_blkenc_id,sfifo_blkenc_cmd} = sfifo_blkenc_rdata;
 
   assign block_encrypt_ack_o = block_encrypt_rdy_i && (cipher_out_valid == aes_pkg::SP2V_HIGH);
@@ -175,9 +172,9 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   assign cipher_out_ready = block_encrypt_rdy_i ? aes_pkg::SP2V_HIGH : aes_pkg::SP2V_LOW;
 
   assign block_encrypt_sfifo_blkenc_err_o =
-         {(sfifo_blkenc_push && sfifo_blkenc_full),
-          (sfifo_blkenc_pop && !sfifo_blkenc_not_empty),
-          (sfifo_blkenc_full && !sfifo_blkenc_not_empty)};
+         {(sfifo_blkenc_wvld && sfifo_blkenc_full),
+          (sfifo_blkenc_rrdy && !sfifo_blkenc_rvld),
+          (sfifo_blkenc_full && !sfifo_blkenc_rvld)};
 
   //--------------------------------------------
   // idle detection

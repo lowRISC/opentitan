@@ -5,6 +5,32 @@
 
 package csrng_pkg;
 
+  // Main design parameters
+  // We use the suffix 'Len' (as opposed to 'Width') to stick to the symbols used in the
+  // NIST SP 800-90A algorithm specification.
+
+  // Size of the generated random number blocks in bits and the internal state variable 'v'
+  parameter int unsigned BlkLen = 128;
+  // Cipher key size in bits
+  parameter int unsigned KeyLen = 256;
+  // Seed size in bits; must be equal to the sum of BlkLen and KeyLen
+  parameter int unsigned SeedLen = BlkLen + KeyLen;
+  // Width of the counter field used as input to the cipher
+  // Caution: Not to be confused with the reseed counter width! These two are independent
+  parameter int unsigned CtrLen = 32;
+
+  parameter int unsigned ResCntrWidth = 32;
+
+  // Commonly used internal signal widths
+  parameter int unsigned CmdWidth = 3;
+  parameter int unsigned InstIdWidth = 4;
+
+  // Width of the application command bus (matches the 32b TLUL bus width)
+  parameter int unsigned CmdBusWidth = 32;
+  // Maximum number of 32b words additionally supplied on the application interfaces
+  parameter int unsigned CmdMaxClen = 12;
+  parameter int unsigned CmdFifoDepth = 2;
+
   //-------------------------
   // Application Interfaces
   //-------------------------
@@ -64,6 +90,29 @@ package csrng_pkg;
     acmd_e            acmd;
   } csrng_cmd_t;
 
+  typedef struct packed {
+    logic  [InstIdWidth-1:0] inst_id;
+    logic     [CmdWidth-1:0] cmd;
+    logic       [KeyLen-1:0] key;
+    logic       [BlkLen-1:0] v;
+    logic      [SeedLen-1:0] pdata;
+    logic [ResCntrWidth-1:0] rs_cnt;
+    logic                    fips;
+  } csrng_core_data_t;
+
+  typedef struct packed {
+    logic [InstIdWidth-1:0] inst_id;
+    logic    [CmdWidth-1:0] cmd;
+    logic      [KeyLen-1:0] key;
+    logic      [BlkLen-1:0] v;
+    logic     [SeedLen-1:0] pdata;
+  } csrng_upd_data_t;
+
+  parameter int unsigned CoreDataWidth = $bits(csrng_core_data_t);
+  parameter int unsigned UpdDataWidth  = $bits(csrng_upd_data_t);
+
+  typedef logic [CoreDataWidth-1:0] csrng_core_data_flat_t;
+  typedef logic  [UpdDataWidth-1:0] csrng_upd_data_flat_t;
 
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 3 -m 15 -n 8 \

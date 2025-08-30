@@ -79,7 +79,7 @@ module csrng
 
   csrng_core #(
     .SBoxImpl(SBoxImpl),
-    .NHwApps(NHwApps),
+    .NumHwApps(NHwApps),
     .RndCnstCsKeymgrDivNonProduction(RndCnstCsKeymgrDivNonProduction),
     .RndCnstCsKeymgrDivProduction(RndCnstCsKeymgrDivProduction)
   ) u_csrng_core (
@@ -214,4 +214,8 @@ module csrng
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
+
+  // The number of application interfaces defined in the hjson must match the number of
+  // application interfaces derived from the top-level parameter NHwApps.
+  `ASSERT_INIT(CsrngNumAppsMatch_A, NumApps == NHwApps + 1)
 endmodule

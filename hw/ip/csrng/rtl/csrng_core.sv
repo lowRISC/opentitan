@@ -8,7 +8,7 @@
 
 module csrng_core import csrng_pkg::*; #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut,
-  parameter int NHwApps = 2,
+  parameter int NumHwApps = 2,
   parameter cs_keymgr_div_t RndCnstCsKeymgrDivNonProduction = CsKeymgrDivWidth'(0),
   parameter cs_keymgr_div_t RndCnstCsKeymgrDivProduction = CsKeymgrDivWidth'(0)
 ) (
@@ -18,7 +18,7 @@ module csrng_core import csrng_pkg::*; #(
   input  csrng_reg_pkg::csrng_reg2hw_t            reg2hw,
   output csrng_reg_pkg::csrng_hw2reg_t            hw2reg,
 
-  // Efuse Interface
+  // OTP Interface
   input  prim_mubi_pkg::mubi8_t                   otp_en_csrng_sw_app_read_i,
 
   // Lifecycle broadcast inputs
@@ -33,16 +33,16 @@ module csrng_core import csrng_pkg::*; #(
   output entropy_src_pkg::cs_aes_halt_rsp_t       cs_aes_halt_o,
 
   // Application Interfaces
-  input  csrng_req_t [NHwApps-1:0]                csrng_cmd_i,
-  output csrng_rsp_t [NHwApps-1:0]                csrng_cmd_o,
+  input  csrng_req_t [NumHwApps-1:0]              csrng_cmd_i,
+  output csrng_rsp_t [NumHwApps-1:0]              csrng_cmd_o,
 
   // Alerts
-
   output logic                                    recov_alert_test_o,
   output logic                                    fatal_alert_test_o,
   output logic                                    recov_alert_o,
   output logic                                    fatal_alert_o,
 
+  // Interrupts
   output logic                                    intr_cs_cmd_req_done_o,
   output logic                                    intr_cs_entropy_req_o,
   output logic                                    intr_cs_hw_inst_exc_o,
@@ -55,27 +55,13 @@ module csrng_core import csrng_pkg::*; #(
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_invalid;
 
-  localparam int NApps = NHwApps + 1;
-  localparam int NAppsLog = $clog2(NApps);
-  localparam int AppCmdWidth = 32;
-  localparam int AppCmdFifoDepth = 2;
-  localparam int GenBitsWidth = 128;
-  localparam int Cmd = 3;
-  localparam int StateId = 4;
-  localparam int KeyLen = 256;
-  localparam int BlkLen = 128;
-  localparam int SeedLen = 384;
-  localparam int CtrLen = 32;
-  localparam int NBlkEncArbReqs = 2;
-  localparam int BlkEncArbWidth = KeyLen+BlkLen+StateId+Cmd;
-  localparam int NUpdateArbReqs = 2;
-  localparam int UpdateArbWidth = KeyLen+BlkLen+SeedLen+StateId+Cmd;
-  localparam int MaxClen = 12;
-  localparam int ADataDepthWidth = SeedLen/AppCmdWidth;
-  localparam unsigned ADataDepthClog = $clog2(ADataDepthWidth)+1;
-  localparam int CsEnableCopies = 51;
-  localparam int LcHwDebugCopies = 1;
-  localparam int Flag0Copies = 3;
+  localparam int unsigned NBlkEncArbReqs = 2;
+  localparam int unsigned BlkEncArbWidth = KeyLen+BlkLen+InstIdWidth+CmdWidth;
+
+  localparam int unsigned ADataDepthClog = $clog2(CmdMaxClen)+1;
+  localparam int unsigned CsEnableCopies = 51;
+  localparam int unsigned LcHwDebugCopies = 1;
+  localparam int unsigned Flag0Copies = 3;
 
   // signals
   // interrupt signals
@@ -106,15 +92,15 @@ module csrng_core import csrng_pkg::*; #(
   logic                        gen_blk_select;
   logic                        state_db_wr_req_rdy;
   logic                        state_db_wr_req;
-  logic [StateId-1:0]          state_db_wr_inst_id;
+  logic [InstIdWidth-1:0]      state_db_wr_inst_id;
   logic [KeyLen-1:0]           state_db_wr_key;
   logic [BlkLen-1:0]           state_db_wr_v;
   logic [CtrLen-1:0]           state_db_wr_rc;
   csrng_cmd_sts_e              state_db_wr_sts;
   logic                        state_db_wr_fips;
-  logic [Cmd-1:0]              state_db_wr_ccmd;
+  logic [CmdWidth-1:0]         state_db_wr_ccmd;
 
-  logic [AppCmdWidth-1:0]      acmd_bus;
+  logic [CmdBusWidth-1:0]      acmd_bus;
 
   logic [SeedLen-1:0]          packer_adata;
   logic [ADataDepthClog-1:0]   packer_adata_depth;
@@ -129,26 +115,21 @@ module csrng_core import csrng_pkg::*; #(
 
   logic                        cmd_result_wr_req;
   logic                        cmd_result_ack;
-  csrng_cmd_sts_e              cmd_result_ack_sts;
-  logic [Cmd-1:0]              cmd_result_ccmd;
   logic                        cmd_result_ack_rdy;
-  logic [StateId-1:0]          cmd_result_inst_id;
   logic                        cmd_result_glast;
-  logic                        cmd_result_fips;
-  logic [SeedLen-1:0]          cmd_result_adata;
-  logic [KeyLen-1:0]           cmd_result_key;
-  logic [BlkLen-1:0]           cmd_result_v;
-  logic [CtrLen-1:0]           cmd_result_rc;
+
+  csrng_core_data_t            ctr_drbg_cmd_req_data;
+  csrng_core_data_t            ctr_drbg_cmd_rsp_data;
 
   logic                        state_db_sts_ack;
   csrng_cmd_sts_e              state_db_sts_sts;
-  logic [StateId-1:0]          state_db_sts_id;
+  logic [InstIdWidth-1:0]      state_db_sts_id;
 
   logic                        gen_result_wr_req;
   csrng_cmd_sts_e              gen_result_ack_sts;
   logic                        gen_result_ack_rdy;
-  logic [Cmd-1:0]              gen_result_ccmd;
-  logic [StateId-1:0]          gen_result_inst_id;
+  logic [CmdWidth-1:0]         gen_result_ccmd;
+  logic [InstIdWidth-1:0]      gen_result_inst_id;
   logic                        gen_result_fips;
   logic [KeyLen-1:0]           gen_result_key;
   logic [BlkLen-1:0]           gen_result_v;
@@ -162,7 +143,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                        update_req;
   logic                        uninstant_req;
   logic                        clr_adata_packer;
-  logic [Cmd-1:0]              ctr_drbg_cmd_ccmd;
+  logic [CmdWidth-1:0]         ctr_drbg_cmd_ccmd;
   logic                        ctr_drbg_cmd_req;
   logic                        ctr_drbg_gen_req;
   logic                        ctr_drbg_gen_req_rdy;
@@ -217,13 +198,10 @@ module csrng_core import csrng_pkg::*; #(
   logic [CtrLen-1:0]           state_db_rd_rc;
   logic                        state_db_rd_fips;
   logic [2:0]                  acmd_hold;
-  logic [3:0]                  shid;
-  logic                        gen_last;
-  mubi4_t                      flag0;
 
   // blk encrypt arbiter
-  logic [Cmd-1:0]              updblk_benblk_cmd_arb_din;
-  logic [StateId-1:0]          updblk_benblk_id_arb_din;
+  logic [CmdWidth-1:0]         updblk_benblk_cmd_arb_din;
+  logic [InstIdWidth-1:0]      updblk_benblk_id_arb_din;
   logic [BlkLen-1:0]           updblk_benblk_v_arb_din;
   logic [KeyLen-1:0]           updblk_benblk_key_arb_din;
   logic                        updblk_benblk_arb_req;
@@ -231,8 +209,8 @@ module csrng_core import csrng_pkg::*; #(
   logic                        benblk_updblk_ack;
   logic                        updblk_benblk_ack_rdy;
 
-  logic [Cmd-1:0]              genblk_benblk_cmd_arb_din;
-  logic [StateId-1:0]          genblk_benblk_id_arb_din;
+  logic [CmdWidth-1:0]         genblk_benblk_cmd_arb_din;
+  logic [InstIdWidth-1:0]      genblk_benblk_id_arb_din;
   logic [BlkLen-1:0]           genblk_benblk_v_arb_din;
   logic [KeyLen-1:0]           genblk_benblk_key_arb_din;
   logic                        genblk_benblk_arb_req;
@@ -244,90 +222,79 @@ module csrng_core import csrng_pkg::*; #(
   logic [BlkEncArbWidth-1:0]   benblk_arb_data;
   logic [KeyLen-1:0]           benblk_arb_key;
   logic [BlkLen-1:0]           benblk_arb_v;
-  logic [StateId-1:0]          benblk_arb_inst_id;
-  logic [Cmd-1:0]              benblk_arb_cmd;
+  logic [InstIdWidth-1:0]      benblk_arb_inst_id;
+  logic [CmdWidth-1:0]         benblk_arb_cmd;
   logic                        benblk_arb_vld;
   logic                        benblk_ack;
   logic                        benblk_ack_rdy;
   logic                        benblk_arb_rdy;
-  logic [Cmd-1:0]              benblk_cmd;
-  logic [StateId-1:0]          benblk_inst_id;
+  logic [CmdWidth-1:0]         benblk_cmd;
+  logic [InstIdWidth-1:0]      benblk_inst_id;
   logic [BlkLen-1:0]           benblk_v;
 
-  // update arbiter
-  logic [Cmd-1:0]              cmdblk_updblk_ccmd_arb_din;
-  logic [StateId-1:0]          cmdblk_updblk_id_arb_din;
-  logic [BlkLen-1:0]           cmdblk_updblk_v_arb_din;
-  logic [KeyLen-1:0]           cmdblk_updblk_key_arb_din;
-  logic [SeedLen-1:0]          cmdblk_updblk_pdata_arb_din;
-  logic                        cmdblk_updblk_arb_req;
-  logic                        updblk_cmdblk_arb_req_rdy;
-  logic                        updblk_cmdblk_ack;
-  logic                        cmdblk_updblk_ack_rdy;
+  // update unit arbiter
+  // request path
+  logic                        cmd_upd_req_vld;
+  logic                        cmd_upd_req_rdy;
+  csrng_upd_data_t             cmd_upd_req_data;
 
-  logic [Cmd-1:0]              genblk_updblk_ccmd_arb_din;
-  logic [StateId-1:0]          genblk_updblk_id_arb_din;
-  logic [BlkLen-1:0]           genblk_updblk_v_arb_din;
-  logic [KeyLen-1:0]           genblk_updblk_key_arb_din;
-  logic [SeedLen-1:0]          genblk_updblk_pdata_arb_din;
-  logic                        genblk_updblk_arb_req;
-  logic                        updblk_genblk_arb_req_rdy;
-  logic                        updblk_genblk_ack;
-  logic                        genblk_updblk_ack_rdy;
+  logic                        gen_upd_req_vld;
+  logic                        gen_upd_req_rdy;
+  csrng_upd_data_t             gen_upd_req_data;
 
-  logic [UpdateArbWidth-1:0]   updblk_arb_din [2];
-  logic [UpdateArbWidth-1:0]   updblk_arb_data;
-  logic [KeyLen-1:0]           updblk_arb_key;
-  logic [BlkLen-1:0]           updblk_arb_v;
-  logic [SeedLen-1:0]          updblk_arb_pdata;
-  logic [StateId-1:0]          updblk_arb_inst_id;
-  logic [Cmd-1:0]              updblk_arb_ccmd;
-  logic                        updblk_arb_vld;
-  logic                        updblk_ack;
-  logic                        updblk_ack_rdy;
-  logic                        updblk_arb_rdy;
-  logic [Cmd-1:0]              updblk_ccmd;
-  logic [StateId-1:0]          updblk_inst_id;
-  logic [KeyLen-1:0]           updblk_key;
-  logic [BlkLen-1:0]           updblk_v;
+  logic                        upd_arb_req_vld;
+  logic                        upd_arb_req_rdy;
+  csrng_upd_data_t             upd_arb_req_data;
 
-  logic [2:0]                  cmd_stage_sfifo_cmd_err[NApps];
-  logic [NApps-1:0]            cmd_stage_sfifo_cmd_err_sum;
-  logic [NApps-1:0]            cmd_stage_sfifo_cmd_err_wr;
-  logic [NApps-1:0]            cmd_stage_sfifo_cmd_err_rd;
-  logic [NApps-1:0]            cmd_stage_sfifo_cmd_err_st;
-  logic [2:0]                  cmd_stage_sfifo_genbits_err[NApps];
-  logic [NApps-1:0]            cmd_stage_sfifo_genbits_err_sum;
-  logic [NApps-1:0]            cmd_stage_sfifo_genbits_err_wr;
-  logic [NApps-1:0]            cmd_stage_sfifo_genbits_err_rd;
-  logic [NApps-1:0]            cmd_stage_sfifo_genbits_err_st;
-  logic [NApps-1:0]            cmd_gen_cnt_err;
-  logic [NApps-1:0]            cmd_stage_sm_err;
+  // response path
+  logic                        cmd_upd_rsp_vld;
+  logic                        cmd_upd_rsp_rdy;
+
+  logic                        gen_upd_rsp_vld;
+  logic                        gen_upd_rsp_rdy;
+
+  logic                        upd_rsp_vld;
+  logic                        upd_rsp_rdy;
+  csrng_upd_data_t             upd_rsp_data;
+
+
+  logic [2:0]                  cmd_stage_sfifo_cmd_err[NumApps];
+  logic [NumApps-1:0]          cmd_stage_sfifo_cmd_err_sum;
+  logic [NumApps-1:0]          cmd_stage_sfifo_cmd_err_wr;
+  logic [NumApps-1:0]          cmd_stage_sfifo_cmd_err_rd;
+  logic [NumApps-1:0]          cmd_stage_sfifo_cmd_err_st;
+  logic [2:0]                  cmd_stage_sfifo_genbits_err[NumApps];
+  logic [NumApps-1:0]          cmd_stage_sfifo_genbits_err_sum;
+  logic [NumApps-1:0]          cmd_stage_sfifo_genbits_err_wr;
+  logic [NumApps-1:0]          cmd_stage_sfifo_genbits_err_rd;
+  logic [NumApps-1:0]          cmd_stage_sfifo_genbits_err_st;
+  logic [NumApps-1:0]          cmd_gen_cnt_err;
+  logic [NumApps-1:0]          cmd_stage_sm_err;
   logic                        ctr_drbg_upd_v_ctr_err;
   logic                        ctr_drbg_gen_v_ctr_err;
 
-  logic [NApps-1:0]            cmd_stage_vld;
-  logic [StateId-1:0]          cmd_stage_shid[NApps];
-  logic [AppCmdWidth-1:0]      cmd_stage_bus[NApps];
-  logic [NApps-1:0]            cmd_stage_rdy;
-  logic [NApps-1:0]            cmd_arb_req;
-  logic [NApps-1:0]            cmd_arb_gnt;
-  logic [$clog2(NApps)-1:0]    cmd_arb_idx;
-  logic [NApps-1:0]            cmd_arb_sop;
-  logic [NApps-1:0]            cmd_arb_mop;
-  logic [NApps-1:0]            cmd_arb_eop;
-  logic [AppCmdWidth-1:0]      cmd_arb_bus[NApps];
-  logic [NApps-1:0]            cmd_core_ack;
-  csrng_cmd_sts_e [NApps-1:0]  cmd_core_ack_sts;
-  logic [NApps-1:0]            cmd_stage_ack;
-  csrng_cmd_sts_e [NApps-1:0]  cmd_stage_ack_sts;
-  logic [NApps-1:0]            genbits_core_vld;
-  logic [GenBitsWidth-1:0]     genbits_core_bus[NApps];
-  logic [NApps-1:0]            genbits_core_fips;
-  logic [NApps-1:0]            genbits_stage_vld;
-  logic [NApps-1:0]            genbits_stage_fips;
-  logic [GenBitsWidth-1:0]     genbits_stage_bus[NApps];
-  logic [NApps-1:0]            genbits_stage_rdy;
+  logic [NumApps-1:0]          cmd_stage_vld;
+  logic [InstIdWidth-1:0]      cmd_stage_shid[NumApps];
+  logic [CmdBusWidth-1:0]      cmd_stage_bus[NumApps];
+  logic [NumApps-1:0]          cmd_stage_rdy;
+  logic [NumApps-1:0]          cmd_arb_req;
+  logic [NumApps-1:0]          cmd_arb_gnt;
+  logic [$clog2(NumApps)-1:0]  cmd_arb_idx;
+  logic [NumApps-1:0]          cmd_arb_sop;
+  logic [NumApps-1:0]          cmd_arb_mop;
+  logic [NumApps-1:0]          cmd_arb_eop;
+  logic [CmdBusWidth-1:0]      cmd_arb_bus[NumApps];
+  logic [NumApps-1:0]          cmd_core_ack;
+  csrng_cmd_sts_e [NumApps-1:0]cmd_core_ack_sts;
+  logic [NumApps-1:0]          cmd_stage_ack;
+  csrng_cmd_sts_e [NumApps-1:0]cmd_stage_ack_sts;
+  logic [NumApps-1:0]          genbits_core_vld;
+  logic [BlkLen-1:0]           genbits_core_bus[NumApps];
+  logic [NumApps-1:0]          genbits_core_fips;
+  logic [NumApps-1:0]          genbits_stage_vld;
+  logic [NumApps-1:0]          genbits_stage_fips;
+  logic [BlkLen-1:0]           genbits_stage_bus[NumApps];
+  logic [NumApps-1:0]          genbits_stage_rdy;
   logic                        genbits_stage_vldo_sw;
   logic                        genbits_stage_bus_rd_sw;
   logic [31:0]                 genbits_stage_bus_sw;
@@ -338,9 +305,9 @@ module csrng_core import csrng_pkg::*; #(
   logic                        state_db_is_dump_en;
   logic                        state_db_reg_rd_sel;
   logic                        state_db_reg_rd_id_pulse;
-  logic [StateId-1:0]          state_db_reg_rd_id;
+  logic [InstIdWidth-1:0]      state_db_reg_rd_id;
   logic [31:0]                 state_db_reg_rd_val;
-  logic [NApps-1:0]            int_state_read_enable;
+  logic [NumApps-1:0]          int_state_read_enable;
 
   logic [30:0]                 err_code_test_bit;
   logic                        ctr_drbg_upd_es_ack;
@@ -350,13 +317,13 @@ module csrng_core import csrng_pkg::*; #(
   logic                        cs_rdata_capt_vld;
   logic                        cs_bus_cmp_alert;
   logic                        cmd_rdy;
-  logic [NApps-1:0]            invalid_cmd_seq_alert;
-  logic [NApps-1:0]            invalid_acmd_alert;
-  logic [NApps-1:0]            reseed_cnt_alert;
+  logic [NumApps-1:0]          invalid_cmd_seq_alert;
+  logic [NumApps-1:0]          invalid_acmd_alert;
+  logic [NumApps-1:0]          reseed_cnt_alert;
   logic                        sw_sts_ack;
   logic [1:0]                  efuse_sw_app_enable;
 
-  logic [NApps-1:0][31:0]      reseed_counter;
+  logic [NumApps-1:0][31:0]    reseed_counter;
 
   logic                        unused_err_code_test_bit;
   logic                        unused_reg2hw_genbits;
@@ -372,11 +339,11 @@ module csrng_core import csrng_pkg::*; #(
   logic [3:0]                shid_q, shid_d;
   logic                      gen_last_q, gen_last_d;
   mubi4_t                    flag0_q, flag0_d;
-  logic [$clog2(NApps)-1:0]  cmd_arb_idx_q, cmd_arb_idx_d;
+  logic [$clog2(NumApps)-1:0]cmd_arb_idx_q, cmd_arb_idx_d;
   logic                      statedb_wr_select_q, statedb_wr_select_d;
   logic                      genbits_stage_fips_sw_q, genbits_stage_fips_sw_d;
   logic                      cmd_req_dly_q, cmd_req_dly_d;
-  logic [Cmd-1:0]            cmd_req_ccmd_dly_q, cmd_req_ccmd_dly_d;
+  logic [CmdWidth-1:0]       cmd_req_ccmd_dly_q, cmd_req_ccmd_dly_d;
   logic                      cs_aes_halt_q, cs_aes_halt_d;
   logic [SeedLen-1:0]        entropy_src_seed_q, entropy_src_seed_d;
   logic                      entropy_src_fips_q, entropy_src_fips_d;
@@ -384,7 +351,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                      cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
   logic                      sw_rdy_sts_q, sw_rdy_sts_d;
   logic                      sw_sts_ack_q, sw_sts_ack_d;
-  logic [NApps-1:0]          reseed_cnt_reached_q, reseed_cnt_reached_d;
+  logic [NumApps-1:0]        reseed_cnt_reached_q, reseed_cnt_reached_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -869,13 +836,9 @@ module csrng_core import csrng_pkg::*; #(
   // and return any genbits if the command
   // is a generate command.
 
-  for (genvar ai = 0; ai < NApps; ai = ai+1) begin : gen_cmd_stage
+  for (genvar ai = 0; ai < NumApps; ai = ai+1) begin : gen_cmd_stage
 
-    csrng_cmd_stage #(
-      .CmdFifoWidth(AppCmdWidth),
-      .CmdFifoDepth(AppCmdFifoDepth),
-      .StateId(StateId)
-    ) u_csrng_cmd_stage (
+    csrng_cmd_stage u_csrng_cmd_stage (
       .clk_i                        (clk_i),
       .rst_ni                       (rst_ni),
       .cs_enable_i                  (cs_enable_fo[27]),
@@ -921,29 +884,29 @@ module csrng_core import csrng_pkg::*; #(
 
   // SW interface connection (only 1, and must be present)
   // cmd req
-  assign cmd_stage_vld[NApps-1] = reg2hw.cmd_req.qe;
-  assign cmd_stage_shid[NApps-1] = StateId'(NApps-1);
-  assign cmd_stage_bus[NApps-1] = reg2hw.cmd_req.q;
+  assign cmd_stage_vld[NumApps-1] = reg2hw.cmd_req.qe;
+  assign cmd_stage_shid[NumApps-1] = InstIdWidth'(NumApps-1);
+  assign cmd_stage_bus[NumApps-1] = reg2hw.cmd_req.q;
   assign hw2reg.sw_cmd_sts.cmd_rdy.de = 1'b1;
   assign hw2reg.sw_cmd_sts.cmd_rdy.d = cmd_rdy;
-  assign cmd_rdy = !cmd_stage_vld[NApps-1] && sw_rdy_sts_q;
+  assign cmd_rdy = !cmd_stage_vld[NumApps-1] && sw_rdy_sts_q;
   assign sw_rdy_sts_d =
          !cs_enable_fo[28] ? 1'b0 :
-         cmd_stage_vld[NApps-1] ? 1'b0 :
-         cmd_stage_rdy[NApps-1] ? 1'b1 :
+         cmd_stage_vld[NumApps-1] ? 1'b0 :
+         cmd_stage_rdy[NumApps-1] ? 1'b1 :
          sw_rdy_sts_q;
   // cmd sts ack
   assign hw2reg.sw_cmd_sts.cmd_ack.de = 1'b1;
   assign hw2reg.sw_cmd_sts.cmd_ack.d = sw_sts_ack_d;
-  assign sw_sts_ack = cmd_stage_ack[NApps-1];
+  assign sw_sts_ack = cmd_stage_ack[NumApps-1];
   assign sw_sts_ack_d =
          !cs_enable_fo[28] ? 1'b0 :
-         cmd_stage_vld[NApps-1] ? 1'b0 :
-         cmd_stage_ack[NApps-1] ? 1'b1 :
+         cmd_stage_vld[NumApps-1] ? 1'b0 :
+         cmd_stage_ack[NumApps-1] ? 1'b1 :
          sw_sts_ack_q;
   // cmd ack sts
-  assign hw2reg.sw_cmd_sts.cmd_sts.de = cmd_stage_ack[NApps-1];
-  assign hw2reg.sw_cmd_sts.cmd_sts.d = cmd_stage_ack_sts[NApps-1];
+  assign hw2reg.sw_cmd_sts.cmd_sts.de = cmd_stage_ack[NumApps-1];
+  assign hw2reg.sw_cmd_sts.cmd_sts.d = cmd_stage_ack_sts[NumApps-1];
   // genbits
   assign hw2reg.genbits_vld.genbits_vld.d = genbits_stage_vldo_sw;
   assign hw2reg.genbits_vld.genbits_fips.d = genbits_stage_fips_sw;
@@ -964,7 +927,6 @@ module csrng_core import csrng_pkg::*; #(
   );
 
   // pack the gen bits into a 32 bit register sized word
-
   prim_packer_fifo #(
     .InW(BlkLen),
     .OutW(32),
@@ -973,9 +935,9 @@ module csrng_core import csrng_pkg::*; #(
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!cs_enable_fo[29]),
-    .wvalid_i (genbits_stage_vld[NApps-1]),
-    .wdata_i  (genbits_stage_bus[NApps-1]),
-    .wready_o (genbits_stage_rdy[NApps-1]),
+    .wvalid_i (genbits_stage_vld[NumApps-1]),
+    .wdata_i  (genbits_stage_bus[NumApps-1]),
+    .wready_o (genbits_stage_rdy[NumApps-1]),
     .rvalid_o (genbits_stage_vldo_sw),
     .rdata_o  (genbits_stage_bus_sw),
     .rready_i (genbits_stage_bus_rd_sw),
@@ -985,8 +947,9 @@ module csrng_core import csrng_pkg::*; #(
   // flops for SW fips status
   assign genbits_stage_fips_sw_d =
          (!cs_enable_fo[30]) ? 1'b0 :
-         (genbits_stage_rdy[NApps-1] && genbits_stage_vld[NApps-1]) ? genbits_stage_fips[NApps-1] :
-         genbits_stage_fips_sw_q;
+         (genbits_stage_rdy[NumApps-1] && genbits_stage_vld[NumApps-1]) ?
+                                          genbits_stage_fips[NumApps-1] :
+                                          genbits_stage_fips_sw_q;
 
   assign genbits_stage_fips_sw = genbits_stage_fips_sw_q;
 
@@ -994,16 +957,15 @@ module csrng_core import csrng_pkg::*; #(
   //--------------------------------------------
   // data path integrity check
   // - a countermeasure to detect entropy bus tampering attempts
-  // - checks to make sure repeated data sets off
-  //   an alert for sw to handle
+  // - checks to make sure repeated data sets off an alert for sw to handle
   //--------------------------------------------
 
   // SEC_CM: SW_GENBITS.BUS.CONSISTENCY
 
   // capture a copy of the genbits data
-  assign cs_rdata_capt_vld = (genbits_stage_vld[NApps-1] && genbits_stage_rdy[NApps-1]);
+  assign cs_rdata_capt_vld = (genbits_stage_vld[NumApps-1] && genbits_stage_rdy[NumApps-1]);
 
-  assign cs_rdata_capt_d = cs_rdata_capt_vld ? genbits_stage_bus[NApps-1][63:0] : cs_rdata_capt_q;
+  assign cs_rdata_capt_d = cs_rdata_capt_vld ? genbits_stage_bus[NumApps-1][63:0] : cs_rdata_capt_q;
 
   assign cs_rdata_capt_vld_d =
          !cs_enable_fo[31] ? 1'b0 :
@@ -1012,7 +974,7 @@ module csrng_core import csrng_pkg::*; #(
 
   // continuous compare of the entropy data for sw port
   assign cs_bus_cmp_alert = cs_rdata_capt_vld && cs_rdata_capt_vld_q &&
-         (cs_rdata_capt_q == genbits_stage_bus[NApps-1][63:0]); // only look at 64 bits
+         (cs_rdata_capt_q == genbits_stage_bus[NumApps-1][63:0]); // only look at 64 bits
 
   assign hw2reg.recov_alert_sts.cs_bus_cmp_alert.de = cs_bus_cmp_alert;
   assign hw2reg.recov_alert_sts.cs_bus_cmp_alert.d  = cs_bus_cmp_alert;
@@ -1027,7 +989,7 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.recov_alert_sts.cmd_stage_reseed_cnt_alert.d  = |reseed_cnt_alert;
 
   // HW interface connections (up to 16, numbered 0-14)
-  for (genvar hai = 0; hai < (NApps-1); hai = hai+1) begin : gen_app_if
+  for (genvar hai = 0; hai < (NumApps-1); hai = hai+1) begin : gen_app_if
     // cmd req
     assign cmd_stage_vld[hai] = csrng_cmd_i[hai].csrng_req_valid;
     assign cmd_stage_shid[hai] = hai;
@@ -1044,17 +1006,17 @@ module csrng_core import csrng_pkg::*; #(
   end : gen_app_if
 
   // set ack status for configured instances
-  for (genvar i = 0; i < NHwApps; i = i+1) begin : gen_app_if_sts
+  for (genvar i = 0; i < NumHwApps; i = i+1) begin : gen_app_if_sts
     assign hw_exception_sts[i] = cmd_stage_ack[i] && (cmd_stage_ack_sts[i] != CMD_STS_SUCCESS);
   end : gen_app_if_sts
 
   // set ack status to zero for un-configured instances
-  for (genvar i = NHwApps; i < 16; i = i+1) begin : gen_app_if_zero_sts
+  for (genvar i = NumHwApps; i < 16; i = i+1) begin : gen_app_if_zero_sts
     assign hw_exception_sts[i] = 1'b0;
   end : gen_app_if_zero_sts
 
   // set fifo err status bits
-  for (genvar i = 0; i < NApps; i = i+1) begin : gen_fifo_sts
+  for (genvar i = 0; i < NumApps; i = i+1) begin : gen_fifo_sts
     assign cmd_stage_sfifo_cmd_err_sum[i] = (|cmd_stage_sfifo_cmd_err[i] ||
                                              err_code_test_bit[0]);
     assign cmd_stage_sfifo_cmd_err_wr[i] = cmd_stage_sfifo_cmd_err[i][2];
@@ -1084,7 +1046,7 @@ module csrng_core import csrng_pkg::*; #(
 
   prim_arbiter_ppc #(
     .EnDataPort(0),    // Ignore data port
-    .N(NApps),  // Number of request ports
+    .N(NumApps),  // Number of request ports
     .DW(1) // Data width
   ) u_prim_arbiter_ppc_acmd (
     .clk_i    (clk_i),
@@ -1099,18 +1061,14 @@ module csrng_core import csrng_pkg::*; #(
     .ready_i  (acmd_accept) // 1 fsm rdy
   );
 
-  mubi4_t mubi_acmd_flag0;
-  assign mubi_acmd_flag0 = mubi4_t'(acmd_bus[11:8]);
   assign acmd_flag0_pfa = mubi4_test_invalid(flag0_q);
   assign hw2reg.recov_alert_sts.acmd_flag0_field_alert.de = acmd_flag0_pfa;
   assign hw2reg.recov_alert_sts.acmd_flag0_field_alert.d  = acmd_flag0_pfa;
 
   // parse the command bus
   assign acmd_hold = acmd_sop ? acmd_bus[2:0] : acmd_q;
-  assign flag0 = mubi_acmd_flag0;
-  assign shid = acmd_bus[15:12];
-  assign gen_last = acmd_bus[16];
 
+  // TODO rewrite as an always_comb block
   assign acmd_d =
          (!cs_enable_fo[32]) ? '0 :
          acmd_sop ? acmd_bus[2:0] :
@@ -1118,18 +1076,18 @@ module csrng_core import csrng_pkg::*; #(
 
   assign shid_d =
          (!cs_enable_fo[33]) ? '0 :
-         acmd_sop ? shid :
+         acmd_sop ? acmd_bus[15:12] :
          shid_q;
 
   assign gen_last_d =
          (!cs_enable_fo[34]) ? '0 :
-         acmd_sop ? gen_last :
+         acmd_sop ? acmd_bus[16] :
          gen_last_q;
 
   assign flag0_d =
          (!cs_enable_fo[35]) ? prim_mubi_pkg::MuBi4False :
-         (acmd_sop && ((acmd_bus[2:0] == INS) || (acmd_bus[2:0] == RES))) ? flag0 :
-         flag0_q;
+         (acmd_sop && ((acmd_bus[2:0] == INS) || (acmd_bus[2:0] == RES))) ?
+          mubi4_t'(acmd_bus[11:8]) : flag0_q;
 
   // SEC_CM: CTRL.MUBI
   mubi4_t mubi_flag0;
@@ -1188,7 +1146,7 @@ module csrng_core import csrng_pkg::*; #(
   // entropy available
   assign cmd_entropy_avail = entropy_src_hw_if_i.es_ack;
 
-  for (genvar csi = 0; csi < NApps; csi = csi+1) begin : gen_cmd_ack
+  for (genvar csi = 0; csi < NumApps; csi = csi+1) begin : gen_cmd_ack
     assign cmd_core_ack[csi] = state_db_sts_ack && (state_db_sts_id == csi);
     assign cmd_core_ack_sts[csi] = state_db_sts_sts;
     assign genbits_core_vld[csi] = gen_result_wr_req && (gen_result_inst_id == csi);
@@ -1215,10 +1173,10 @@ module csrng_core import csrng_pkg::*; #(
   );
 
   assign packer_adata_pop = cs_enable_fo[38] &&
-         clr_adata_packer && (packer_adata_depth == ADataDepthClog'(MaxClen));
+         clr_adata_packer && (packer_adata_depth == ADataDepthClog'(CmdMaxClen));
 
   assign packer_adata_clr = cs_enable_fo[39] &&
-         clr_adata_packer && (packer_adata_depth < ADataDepthClog'(MaxClen));
+         clr_adata_packer && (packer_adata_depth < ADataDepthClog'(CmdMaxClen));
 
   //-------------------------------------
   // csrng_state_db nstantiation
@@ -1227,7 +1185,7 @@ module csrng_core import csrng_pkg::*; #(
   // of each csrng instance. The state
   // is updated after each command.
 
-  assign cmd_result_wr_req = cmd_result_ack && (cmd_result_ccmd != GEN);
+  assign cmd_result_wr_req = cmd_result_ack && (ctr_drbg_cmd_rsp_data.cmd != GEN);
 
   // register read access
   assign state_db_reg_rd_sel = reg2hw.int_state_val.re;
@@ -1237,14 +1195,7 @@ module csrng_core import csrng_pkg::*; #(
   assign state_db_is_dump_en = cs_enable_fo[40] && read_int_state && efuse_sw_app_enable[1];
   assign int_state_read_enable = reg2hw.int_state_read_enable.q;
 
-  csrng_state_db #(
-    .NApps(NApps),
-    .StateId(StateId),
-    .BlkLen(BlkLen),
-    .KeyLen(KeyLen),
-    .CtrLen(CtrLen),
-    .Cmd(Cmd)
-  ) u_csrng_state_db (
+  csrng_state_db u_csrng_state_db (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .state_db_enable_i(cs_enable_fo[41]),
@@ -1290,18 +1241,18 @@ module csrng_core import csrng_pkg::*; #(
   assign gen_result_ack_rdy = gen_blk_select && state_db_wr_req_rdy;
 
   // muxes for statedb block inputs
-  assign state_db_wr_req = gen_blk_select ? gen_result_wr_req : cmd_result_wr_req;
-  assign state_db_wr_inst_id = gen_blk_select ? gen_result_inst_id : cmd_result_inst_id;
-  assign state_db_wr_fips = gen_blk_select ? gen_result_fips : cmd_result_fips;
-  assign state_db_wr_ccmd = gen_blk_select ?  gen_result_ccmd : cmd_result_ccmd;
-  assign state_db_wr_key = gen_blk_select ? gen_result_key : cmd_result_key;
-  assign state_db_wr_v = gen_blk_select ? gen_result_v : cmd_result_v;
-  assign state_db_wr_rc = gen_blk_select ? gen_result_rc : cmd_result_rc;
-  assign state_db_wr_sts = gen_blk_select ? gen_result_ack_sts : cmd_result_ack_sts;
+  assign state_db_wr_req     = gen_blk_select ? gen_result_wr_req  : cmd_result_wr_req;
+  assign state_db_wr_inst_id = gen_blk_select ? gen_result_inst_id : ctr_drbg_cmd_rsp_data.inst_id;
+  assign state_db_wr_fips    = gen_blk_select ? gen_result_fips    : ctr_drbg_cmd_rsp_data.fips;
+  assign state_db_wr_ccmd    = gen_blk_select ? gen_result_ccmd    : ctr_drbg_cmd_rsp_data.cmd;
+  assign state_db_wr_key     = gen_blk_select ? gen_result_key     : ctr_drbg_cmd_rsp_data.key;
+  assign state_db_wr_v       = gen_blk_select ? gen_result_v       : ctr_drbg_cmd_rsp_data.v;
+  assign state_db_wr_rc      = gen_blk_select ? gen_result_rc      : ctr_drbg_cmd_rsp_data.rs_cnt;
+  assign state_db_wr_sts     = gen_blk_select ? gen_result_ack_sts : CMD_STS_SUCCESS;
 
   // Forward the reseed counter values to the register interface.
   always_comb begin : reseed_counter_assign
-    for (int i = 0; i < NApps; i++) begin
+    for (int i = 0; i < NumApps; i++) begin
       hw2reg.reseed_counter[i].d = reseed_counter[i];
     end
   end
@@ -1328,7 +1279,7 @@ module csrng_core import csrng_pkg::*; #(
   assign entropy_src_fips_d =
          // Use shid_d here such that u_csrng_ctr_drbg_cmd gets the shid_q and the proper
          // entropy_src_fips_q in the next clock cycle.
-         fips_force_enable && reg2hw.fips_force.q[shid_d[NAppsLog-1:0]] ? 1'b1 :
+         fips_force_enable && reg2hw.fips_force.q[shid_d[$clog2(NumApps)-1:0]] ? 1'b1 :
          flag0_fo[2] ? '0 : // special case where zero is used
          cmd_entropy_req && cmd_entropy_avail ? entropy_src_hw_if_i.es_fips :
          entropy_src_fips_q;
@@ -1376,63 +1327,47 @@ module csrng_core import csrng_pkg::*; #(
 
   assign ctr_drbg_cmd_req = cmd_req_dly_q;
 
-  csrng_ctr_drbg_cmd #(
-    .Cmd(Cmd),
-    .StateId(StateId),
-    .BlkLen(BlkLen),
-    .KeyLen(KeyLen),
-    .SeedLen(SeedLen),
-    .CtrLen(CtrLen)
-  ) u_csrng_ctr_drbg_cmd (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .ctr_drbg_cmd_enable_i(cs_enable_fo[46]),
-    .ctr_drbg_cmd_req_i(ctr_drbg_cmd_req),
-    .ctr_drbg_cmd_rdy_o(ctr_drbg_cmd_req_rdy),
-    .ctr_drbg_cmd_ccmd_i(ctr_drbg_cmd_ccmd),
-    .ctr_drbg_cmd_inst_id_i(shid_q),
-    .ctr_drbg_cmd_glast_i(gen_last_q),
-    .ctr_drbg_cmd_entropy_i(cmd_entropy),
-    .ctr_drbg_cmd_entropy_fips_i(cmd_entropy_fips), // send to state_db
-    .ctr_drbg_cmd_adata_i(packer_adata),
-    .ctr_drbg_cmd_key_i(state_db_rd_key),
-    .ctr_drbg_cmd_v_i(state_db_rd_v),
-    .ctr_drbg_cmd_rc_i(state_db_rd_rc),
-    .ctr_drbg_cmd_fips_i(state_db_rd_fips), // send to genbits user
+  assign ctr_drbg_cmd_req_data = '{
+    inst_id: shid_q,
+    cmd:     ctr_drbg_cmd_ccmd,
+    key:     state_db_rd_key,
+    v:       state_db_rd_v,
+    pdata:   packer_adata,
+    rs_cnt:  state_db_rd_rc,
+    fips:    state_db_rd_fips
+  };
 
-    .ctr_drbg_cmd_ack_o(cmd_result_ack),
-    .ctr_drbg_cmd_sts_o(cmd_result_ack_sts),
-    .ctr_drbg_cmd_rdy_i(cmd_result_ack_rdy),
-    .ctr_drbg_cmd_ccmd_o(cmd_result_ccmd),
-    .ctr_drbg_cmd_inst_id_o(cmd_result_inst_id),
-    .ctr_drbg_cmd_glast_o(cmd_result_glast),
-    .ctr_drbg_cmd_fips_o(cmd_result_fips),
-    .ctr_drbg_cmd_adata_o(cmd_result_adata),
-    .ctr_drbg_cmd_key_o(cmd_result_key),
-    .ctr_drbg_cmd_v_o(cmd_result_v),
-    .ctr_drbg_cmd_rc_o(cmd_result_rc),
 
-    // interface to updblk from cmdblk
-    .cmd_upd_req_o(cmdblk_updblk_arb_req),
-    .upd_cmd_rdy_i(updblk_cmdblk_arb_req_rdy),
-    .cmd_upd_ccmd_o(cmdblk_updblk_ccmd_arb_din),
-    .cmd_upd_inst_id_o(cmdblk_updblk_id_arb_din),
-    .cmd_upd_pdata_o(cmdblk_updblk_pdata_arb_din),
-    .cmd_upd_key_o(cmdblk_updblk_key_arb_din),
-    .cmd_upd_v_o(cmdblk_updblk_v_arb_din),
+  csrng_ctr_drbg_cmd u_csrng_ctr_drbg_cmd (
+    .clk_i       ( clk_i            ),
+    .rst_ni      ( rst_ni           ),
+    .cs_enable_i ( cs_enable_fo[46] ),
 
-    .upd_cmd_ack_i(updblk_cmdblk_ack),
-    .cmd_upd_rdy_o(cmdblk_updblk_ack_rdy),
-    .upd_cmd_ccmd_i(updblk_ccmd),
-    .upd_cmd_inst_id_i(updblk_inst_id),
-    .upd_cmd_key_i(updblk_key),
-    .upd_cmd_v_i(updblk_v),
+    .cmd_data_req_vld_i          ( ctr_drbg_cmd_req      ),
+    .cmd_data_req_rdy_o          ( ctr_drbg_cmd_req_rdy  ),
+    .cmd_data_req_i              ( ctr_drbg_cmd_req_data ),
+    .cmd_data_req_entropy_i      ( cmd_entropy           ),
+    .cmd_data_req_entropy_fips_i ( cmd_entropy_fips      ),
+    .cmd_data_req_glast_i        ( gen_last_q            ),
 
-    .ctr_drbg_cmd_sfifo_cmdreq_err_o(ctr_drbg_cmd_sfifo_cmdreq_err),
-    .ctr_drbg_cmd_sfifo_rcstage_err_o(ctr_drbg_cmd_sfifo_rcstage_err),
-    .ctr_drbg_cmd_sfifo_keyvrc_err_o(ctr_drbg_cmd_sfifo_keyvrc_err)
+    .cmd_data_rsp_vld_o          ( cmd_result_ack        ),
+    .cmd_data_rsp_rdy_i          ( cmd_result_ack_rdy    ),
+    .cmd_data_rsp_o              ( ctr_drbg_cmd_rsp_data ),
+    .cmd_data_rsp_glast_o        ( cmd_result_glast      ),
+
+    // Request and response path to and from update unit
+    .cmd_upd_req_vld_o  ( cmd_upd_req_vld  ),
+    .cmd_upd_req_rdy_i  ( cmd_upd_req_rdy  ),
+    .cmd_upd_req_data_o ( cmd_upd_req_data ),
+
+    .cmd_upd_rsp_vld_i  ( cmd_upd_rsp_vld  ),
+    .cmd_upd_rsp_rdy_o  ( cmd_upd_rsp_rdy  ),
+    .cmd_upd_rsp_data_i ( upd_rsp_data     ),
+
+    .fifo_cmdreq_err_o  ( ctr_drbg_cmd_sfifo_cmdreq_err  ),
+    .fifo_rcstage_err_o ( ctr_drbg_cmd_sfifo_rcstage_err ),
+    .fifo_keyvrc_err_o  ( ctr_drbg_cmd_sfifo_keyvrc_err  )
   );
-
 
   //-------------------------------------
   // csrng_ctr_drbg_upd instantiation
@@ -1445,30 +1380,19 @@ module csrng_core import csrng_pkg::*; #(
   // these two blocks.
 
 
-  csrng_ctr_drbg_upd #(
-    .Cmd(Cmd),
-    .StateId(StateId),
-    .BlkLen(BlkLen),
-    .KeyLen(KeyLen),
-    .SeedLen(SeedLen),
-    .CtrLen(CtrLen)
-  ) u_csrng_ctr_drbg_upd (
+  csrng_ctr_drbg_upd u_csrng_ctr_drbg_upd (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
+
     .ctr_drbg_upd_enable_i(cs_enable_fo[47]),
-    .ctr_drbg_upd_req_i(updblk_arb_vld),
-    .ctr_drbg_upd_rdy_o(updblk_arb_rdy),
-    .ctr_drbg_upd_ack_o(updblk_ack),
-    .ctr_drbg_upd_rdy_i(updblk_ack_rdy),
-    .ctr_drbg_upd_ccmd_i(updblk_arb_ccmd),
-    .ctr_drbg_upd_inst_id_i(updblk_arb_inst_id),
-    .ctr_drbg_upd_pdata_i(updblk_arb_pdata),
-    .ctr_drbg_upd_key_i(updblk_arb_key),
-    .ctr_drbg_upd_v_i(updblk_arb_v),
-    .ctr_drbg_upd_ccmd_o(updblk_ccmd),
-    .ctr_drbg_upd_inst_id_o(updblk_inst_id),
-    .ctr_drbg_upd_key_o(updblk_key),
-    .ctr_drbg_upd_v_o(updblk_v),
+
+    .req_vld_i  ( upd_arb_req_vld  ),
+    .req_rdy_o  ( upd_arb_req_rdy  ),
+    .req_data_i ( upd_arb_req_data ),
+
+    .rsp_vld_o  ( upd_rsp_vld  ),
+    .rsp_rdy_i  ( upd_rsp_rdy  ),
+    .rsp_data_o ( upd_rsp_data ),
 
     // es halt interface
     .ctr_drbg_upd_es_req_i(cs_aes_halt_i.cs_aes_halt_req),
@@ -1480,11 +1404,13 @@ module csrng_core import csrng_pkg::*; #(
     .block_encrypt_inst_id_o(updblk_benblk_id_arb_din),
     .block_encrypt_key_o(updblk_benblk_key_arb_din),
     .block_encrypt_v_o(updblk_benblk_v_arb_din),
+
     .block_encrypt_ack_i(benblk_updblk_ack),
     .block_encrypt_rdy_o(updblk_benblk_ack_rdy),
     .block_encrypt_ccmd_i(benblk_cmd),
     .block_encrypt_inst_id_i(benblk_inst_id),
     .block_encrypt_v_i(benblk_v),
+
     .ctr_drbg_upd_v_ctr_err_o(ctr_drbg_upd_v_ctr_err),
     .ctr_drbg_upd_sfifo_updreq_err_o(ctr_drbg_upd_sfifo_updreq_err),
     .ctr_drbg_upd_sfifo_bencreq_err_o(ctr_drbg_upd_sfifo_bencreq_err),
@@ -1495,39 +1421,37 @@ module csrng_core import csrng_pkg::*; #(
     .ctr_drbg_updob_sm_err_o(drbg_updob_sm_err)
   );
 
-  // update block  arbiter
+  // update unit arbiter
+
+  // local helper signals
+  csrng_upd_data_flat_t upd_arb_din[2];
+  csrng_upd_data_flat_t upd_arb_req_data_flat;
 
   prim_arbiter_ppc #(
-    .N(NUpdateArbReqs), // (cmd req and gen req)
-    .DW(UpdateArbWidth) // Data width
+    .N  ( 2            ), // (cmd req and gen req)
+    .DW ( UpdDataWidth )
   ) u_prim_arbiter_ppc_updblk_arb (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .req_chk_i(cs_enable_fo[1]),
-    .req_i({genblk_updblk_arb_req,cmdblk_updblk_arb_req}),
-    .data_i(updblk_arb_din),
-    .gnt_o({updblk_genblk_arb_req_rdy,updblk_cmdblk_arb_req_rdy}),
-    .idx_o(),
-    .valid_o(updblk_arb_vld),
-    .data_o(updblk_arb_data),
-    .ready_i(updblk_arb_rdy)
+    .clk_i  ( clk_i  ),
+    .rst_ni ( rst_ni ),
+    .req_chk_i ( cs_enable_fo[1]       ),
+    .req_i     ( {gen_upd_req_vld, cmd_upd_req_vld}),
+    .data_i    ( upd_arb_din           ),
+    .gnt_o     ( {gen_upd_req_rdy, cmd_upd_req_rdy}),
+    .idx_o     (                       ),
+    .valid_o   ( upd_arb_req_vld       ),
+    .data_o    ( upd_arb_req_data_flat ),
+    .ready_i   ( upd_arb_req_rdy       )
   );
 
-  assign updblk_arb_din[0] = {cmdblk_updblk_key_arb_din,cmdblk_updblk_v_arb_din,
-                              cmdblk_updblk_pdata_arb_din,
-                              cmdblk_updblk_id_arb_din,cmdblk_updblk_ccmd_arb_din};
+  assign upd_arb_din[0] = csrng_upd_data_flat_t'(cmd_upd_req_data);
+  assign upd_arb_din[1] = csrng_upd_data_flat_t'(gen_upd_req_data);
 
-  assign updblk_arb_din[1] = {genblk_updblk_key_arb_din,genblk_updblk_v_arb_din,
-                              genblk_updblk_pdata_arb_din,
-                              genblk_updblk_id_arb_din,genblk_updblk_ccmd_arb_din};
+  assign upd_arb_req_data = csrng_upd_data_t'(upd_arb_req_data_flat);
 
-  assign {updblk_arb_key,updblk_arb_v,updblk_arb_pdata,
-          updblk_arb_inst_id,updblk_arb_ccmd} = updblk_arb_data;
+  assign cmd_upd_rsp_vld = upd_rsp_vld && (upd_rsp_data.cmd != GENU);
+  assign gen_upd_rsp_vld = upd_rsp_vld && (upd_rsp_data.cmd == GENU);
 
-  assign updblk_cmdblk_ack = (updblk_ack && (updblk_ccmd != GENU));
-  assign updblk_genblk_ack = (updblk_ack && (updblk_ccmd == GENU));
-
-  assign updblk_ack_rdy = (updblk_ccmd == GENU) ? genblk_updblk_ack_rdy : cmdblk_updblk_ack_rdy;
+  assign upd_rsp_rdy = (upd_rsp_data.cmd == GENU) ? gen_upd_rsp_rdy : cmd_upd_rsp_rdy;
 
 
   //-------------------------------------
@@ -1564,11 +1488,7 @@ module csrng_core import csrng_pkg::*; #(
   // these two blocks.
 
   csrng_block_encrypt #(
-    .SBoxImpl(SBoxImpl),
-    .Cmd(Cmd),
-    .StateId(StateId),
-    .BlkLen(BlkLen),
-    .KeyLen(KeyLen)
+    .SBoxImpl(SBoxImpl)
   ) u_csrng_block_encrypt (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -1627,31 +1547,22 @@ module csrng_core import csrng_pkg::*; #(
   // of the sequence is done by the
   // csrng_ctr_drbg_cmd block.
 
-  assign ctr_drbg_gen_req = cmd_result_ack && (cmd_result_ccmd == GEN);
+  assign ctr_drbg_gen_req = cmd_result_ack && (ctr_drbg_cmd_rsp_data.cmd == GEN);
 
-
-  csrng_ctr_drbg_gen #(
-    .NApps(NApps),
-    .Cmd(Cmd),
-    .StateId(StateId),
-    .BlkLen(BlkLen),
-    .KeyLen(KeyLen),
-    .SeedLen(SeedLen),
-    .CtrLen(CtrLen)
-  ) u_csrng_ctr_drbg_gen (
+  csrng_ctr_drbg_gen u_csrng_ctr_drbg_gen (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .ctr_drbg_gen_enable_i(cs_enable_fo[49]),
     .ctr_drbg_gen_req_i(ctr_drbg_gen_req),
     .ctr_drbg_gen_rdy_o(ctr_drbg_gen_req_rdy),
-    .ctr_drbg_gen_ccmd_i(cmd_result_ccmd),
-    .ctr_drbg_gen_inst_id_i(cmd_result_inst_id),
+    .ctr_drbg_gen_ccmd_i(ctr_drbg_cmd_rsp_data.cmd),
+    .ctr_drbg_gen_inst_id_i(ctr_drbg_cmd_rsp_data.inst_id),
     .ctr_drbg_gen_glast_i(cmd_result_glast),
-    .ctr_drbg_gen_fips_i(cmd_result_fips),
-    .ctr_drbg_gen_adata_i(cmd_result_adata),
-    .ctr_drbg_gen_key_i(cmd_result_key),
-    .ctr_drbg_gen_v_i(cmd_result_v),
-    .ctr_drbg_gen_rc_i(cmd_result_rc),
+    .ctr_drbg_gen_fips_i(ctr_drbg_cmd_rsp_data.fips),
+    .ctr_drbg_gen_adata_i(ctr_drbg_cmd_rsp_data.pdata),
+    .ctr_drbg_gen_key_i(ctr_drbg_cmd_rsp_data.key),
+    .ctr_drbg_gen_v_i(ctr_drbg_cmd_rsp_data.v),
+    .ctr_drbg_gen_rc_i(ctr_drbg_cmd_rsp_data.rs_cnt),
 
     .ctr_drbg_gen_ack_o(gen_result_wr_req),
     .ctr_drbg_gen_sts_o(gen_result_ack_sts),
@@ -1669,20 +1580,13 @@ module csrng_core import csrng_pkg::*; #(
     .ctr_drbg_gen_es_ack_o(ctr_drbg_gen_es_ack),
 
     // interface to updblk from genblk
-    .gen_upd_req_o(genblk_updblk_arb_req),
-    .upd_gen_rdy_i(updblk_genblk_arb_req_rdy),
-    .gen_upd_ccmd_o(genblk_updblk_ccmd_arb_din),
-    .gen_upd_inst_id_o(genblk_updblk_id_arb_din),
-    .gen_upd_pdata_o(genblk_updblk_pdata_arb_din),
-    .gen_upd_key_o(genblk_updblk_key_arb_din),
-    .gen_upd_v_o(genblk_updblk_v_arb_din),
+    .gen_upd_req_vld_o  ( gen_upd_req_vld  ),
+    .gen_upd_req_rdy_i  ( gen_upd_req_rdy  ),
+    .gen_upd_req_data_o ( gen_upd_req_data ),
 
-    .upd_gen_ack_i(updblk_genblk_ack),
-    .gen_upd_rdy_o(genblk_updblk_ack_rdy),
-    .upd_gen_ccmd_i(updblk_ccmd),
-    .upd_gen_inst_id_i(updblk_inst_id),
-    .upd_gen_key_i(updblk_key),
-    .upd_gen_v_i(updblk_v),
+    .gen_upd_rsp_vld_i  ( gen_upd_rsp_vld  ),
+    .gen_upd_rsp_rdy_o  ( gen_upd_rsp_rdy  ),
+    .gen_upd_rsp_data_i ( upd_rsp_data     ),
 
     .block_encrypt_req_o(genblk_benblk_arb_req),
     .block_encrypt_rdy_i(genblk_benblk_arb_req_rdy),
@@ -1769,10 +1673,6 @@ module csrng_core import csrng_pkg::*; #(
   `ASSERT(CsrngUniZeroizeV_A,    state_db_zeroize -> (state_db_wr_v    == '0))
   `ASSERT(CsrngUniZeroizeRc_A,   state_db_zeroize -> (state_db_wr_rc   == '0))
   `ASSERT(CsrngUniZeroizeSts_A,  state_db_zeroize -> (state_db_wr_sts  == '0))
-
-  // The number of application interfaces defined in the hjson must match the number of
-  // application interfaces derived from the top-level parameter NHwApps.
-  `ASSERT_INIT(CsrngNumAppsMatch_A, NumApps == NApps)
 `endif
 
 endmodule // csrng_core

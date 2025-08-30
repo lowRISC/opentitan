@@ -148,7 +148,7 @@ module tb;
       $rose(`CTR_DRBG_GEN_FIFO.full_q) &&
       `BLOCK_ENCRYPT_PATH.block_encrypt_aes_cipher_sm_err_o |=>
       $past(`CTR_DRBG_GEN_FIFO.storage
-          [`CTR_DRBG_GEN.BlkEncAckFifoWidth-1 -: `CTR_DRBG_GEN.BlkLen]) !=
+          [`CTR_DRBG_GEN.BlkEncAckFifoWidth-1 -: csrng_pkg::BlkLen]) !=
       $past(`BLOCK_ENCRYPT_PATH.cipher_data_out, 2), clk, !rst_n)
 
   `define CTR_DRBG_UPD tb.dut.u_csrng_core.u_csrng_ctr_drbg_upd
@@ -158,7 +158,7 @@ module tb;
       $rose(`CTR_DRBG_UPD_FIFO.full_q) &&
       `BLOCK_ENCRYPT_PATH.block_encrypt_aes_cipher_sm_err_o |=>
       $past(`CTR_DRBG_UPD_FIFO.storage
-          [`CTR_DRBG_UPD.BlkEncAckFifoWidth-1 -: `CTR_DRBG_UPD.BlkLen]) !=
+          [`CTR_DRBG_UPD.BlkEncAckFifoWidth-1 -: csrng_pkg::BlkLen]) !=
       $past(`BLOCK_ENCRYPT_PATH.cipher_data_out, 2), clk, !rst_n)
 
   // Assertion controls
