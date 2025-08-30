@@ -8,3 +8,4 @@
 `include "mbx_smoke_vseq.sv"
 `include "mbx_stress_vseq.sv"
 `include "mbx_imbx_oob_vseq.sv"
+`include "mbx_doe_intr_msg_vseq.sv"
