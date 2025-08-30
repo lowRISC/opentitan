@@ -16,16 +16,16 @@ EXT_CA_KEY="$DICE_CA_KEY"
 
 echo "Generating fake key DICE CA cert ..."
 openssl req -new -key "$DICE_CA_KEY" -keyform der \
-        -out dice_ca.csr -config dice_ca.conf
+        -out dice_ca.csr -config ../dice_ca.conf
 openssl x509 -req -in dice_ca.csr -signkey "$DICE_CA_KEY" \
-        -keyform der -out dice_ca.pem -days 3650 -extfile dice_ca.conf \
+        -keyform der -out dice_ca.pem -days 3650 -extfile ../dice_ca.conf \
         -extensions v3_ca
 echo "Done."
 
 echo "Generating fake key Personalization Extension CA cert ..."
 openssl req -new -key "$EXT_CA_KEY" -keyform der \
-        -out ext_ca.csr -config ext_ca.conf
+        -out ext_ca.csr -config ../ext_ca.conf
 openssl x509 -req -in ext_ca.csr -signkey "$EXT_CA_KEY"  \
-        -keyform der -out ext_ca.pem -days 3650 -extfile ext_ca.conf \
+        -keyform der -out ext_ca.pem -days 3650 -extfile ../ext_ca.conf \
         -extensions v3_ca
 echo "Done."
