@@ -12,10 +12,6 @@ from design.lib.common import (check_int, ecc_encode, get_hd, hd_histogram,
                                is_valid_codeword, random_or_hexvalue, scatter_bits)
 from topgen.secure_prng import SecurePrngFactory
 
-# Seed diversification constant for LcStEnc (this enables to use
-# the same seed for different classes)
-LC_SEED_DIVERSIFIER = 1939944205722120255
-
 # State types and permissible format for entries
 # The format is index dependent, e.g. ['0', 'A1', 'B1'] for index 1
 LC_STATE_TYPES = {
@@ -287,7 +283,7 @@ class LcStEnc():
         log.info('Seed: {0:x}'.format(config['seed']))
         log.info('')
 
-        SecurePrngFactory.create("lcstenc", LC_SEED_DIVERSIFIER + int(config['seed']))
+        SecurePrngFactory.create("lcstenc", int(config['seed']))
 
         log.info('Checking SECDED.')
         _validate_secded(config)
