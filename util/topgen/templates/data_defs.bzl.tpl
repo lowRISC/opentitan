@@ -26,3 +26,9 @@ ${top_name.upper()}_IPS = [
     ${ip.upper()},
 % endfor
 ]
+
+${top_name.upper()}_ALERTS = [
+% for alert in top["alert"]:
+    "${alert["name"]}",
+% endfor
+]
