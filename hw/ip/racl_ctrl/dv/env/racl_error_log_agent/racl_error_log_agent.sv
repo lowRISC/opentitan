@@ -1,0 +1,31 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+class racl_error_log_agent extends dv_base_agent#(.CFG_T      (racl_error_log_agent_cfg),
+                                                  .DRIVER_T   (racl_error_log_driver),
+                                                  .SEQUENCER_T(racl_error_log_sequencer),
+                                                  .MONITOR_T  (racl_error_log_monitor));
+  `uvm_component_utils(racl_error_log_agent)
+
+  extern function new (string name="", uvm_component parent=null);
+  extern function void build_phase(uvm_phase phase);
+  extern function void connect_phase(uvm_phase phase);
+endclass
+
+function racl_error_log_agent::new (string name="", uvm_component parent=null);
+  super.new(name, parent);
+endfunction
+
+function void racl_error_log_agent::build_phase(uvm_phase phase);
+  super.build_phase(phase);
+
+  if (cfg.vif == null) `uvm_fatal(`gfn, "Cannot use agent with no log interface.")
+endfunction
+
+function void racl_error_log_agent::connect_phase(uvm_phase phase);
+  super.connect_phase(phase);
+
+  driver.vif = cfg.vif;
+  monitor.vif = cfg.vif;
+endfunction
