@@ -57,6 +57,7 @@ lc_raw_unlock_token = rule(
         ),
         "top_secret_cfg": attr.label(
             allow_single_file = True,
+            default = "//hw/top:secrets",
             doc = "Generated top configuration file including secrets.",
         ),
         "_tool": attr.label(
