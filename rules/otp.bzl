@@ -274,8 +274,8 @@ otp_image = rule(
         ),
         "top_secret_cfg": attr.label(
             allow_single_file = True,
+            default = "//hw/top:secrets",
             doc = "Generated top configuration file including secrets.",
-            mandatory = True,
         ),
         "data_perm": attr.label(
             default = "//util/design/data:data_perm",
@@ -341,13 +341,13 @@ otp_image_consts = rule(
         ),
         "mmap_def": attr.label(
             allow_single_file = True,
-            default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
+            default = "//hw/top:top_otp_map",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
         "top_secret_cfg": attr.label(
             allow_single_file = True,
+            default = "//hw/top:secrets",
             doc = "Generated top configuration file including secrets.",
-            mandatory = True,
         ),
         "c_template": attr.label(
             allow_single_file = True,

@@ -44,7 +44,6 @@ package(default_visibility = ["//visibility:public"])
         name = "otp_img_shutdown_output_{}".format(lc_state),
         src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS,
-        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     )
     for lc_state, _ in get_lc_items()
 ]

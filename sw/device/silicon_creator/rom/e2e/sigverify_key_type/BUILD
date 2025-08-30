@@ -129,7 +129,6 @@ otp_json(
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_enable_spx",
         ],
-        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     )
     for lc_state, _ in get_lc_items()
 ]

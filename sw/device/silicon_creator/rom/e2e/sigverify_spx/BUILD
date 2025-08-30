@@ -139,7 +139,6 @@ opentitan_binary(
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_sigverify_spx_{}".format(t["name"]),
         ],
-        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
         visibility = ["//visibility:private"],
     )
     for lc_state, _ in get_lc_items()

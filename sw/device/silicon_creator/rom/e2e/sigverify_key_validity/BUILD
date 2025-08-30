@@ -201,7 +201,6 @@ KEY_VALIDITY_TESTS = [
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_sigverify_key_validity_{}".format(test["name"]),
         ],
-        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     )
     for test in KEY_VALIDITY_TESTS
     for lc_state, _ in get_lc_items()
