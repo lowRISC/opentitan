@@ -8,10 +8,10 @@
 load(
     "//rules:const.bzl",
     "CONST",
-    "EARLGREY_ALERTS",
     "EARLGREY_LOC_ALERTS",
     "get_lc_items",
 )
+load("//hw/top_earlgrey/data/autogen:defs.bzl", "EARLGREY_ALERTS")
 load(
     "//rules:otp.bzl",
     "OTP_SIGVERIFY_FAKE_KEYS",
