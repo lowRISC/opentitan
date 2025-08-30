@@ -296,6 +296,11 @@ void flash_ctrl_init(void) {
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData1, boot_data_cfg);
 }
 
+void flash_ctrl_disable(void) {
+  // Setting DIS (rw0c) to a value other than 5 will disable flash permanently.
+  abs_mmio_write32(flash_ctrl_core_base() + FLASH_CTRL_DIS_REG_OFFSET, 0);
+}
+
 void flash_ctrl_status_get(flash_ctrl_status_t *status) {
   // Read flash controller status.
   uint32_t fc_status =

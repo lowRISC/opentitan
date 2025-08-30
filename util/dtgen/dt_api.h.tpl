@@ -23,6 +23,10 @@ include_guard = "OPENTITAN_TOP_{}_DT_API_H_".format(top["name"].upper())
 #ifndef ${include_guard}
 #define ${include_guard}
 
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 /**
  * @file
  * @brief Device Tables (DT) API for top ${top["name"]}
@@ -357,6 +361,10 @@ dt_pinmux_insel_t dt_pad_mio_insel(dt_pad_t pad);
  * either outputs or inouts. For any other pad type, the return value is unspecified.
  */
 dt_pinmux_direct_pad_t dt_pad_dio_pad_index(dt_pad_t pad);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 % endif
 #endif  // ${include_guard}

@@ -327,6 +327,11 @@ rom_error_t sc_keymgr_owner_advance(keymgr_binding_value_t *attest_binding,
                                     keymgr_binding_value_t *sealing_binding,
                                     uint32_t max_key_version);
 
+/**
+ * Disable the keymgr controller.
+ */
+void sc_keymgr_disable(void);
+
 #ifdef __cplusplus
 }
 #endif

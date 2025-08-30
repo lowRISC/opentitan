@@ -146,6 +146,7 @@ dual_cc_library(
         host = ["mock_flash_ctrl.h"],
         shared = ["flash_ctrl.h"],
     ),
+    visibility = ["//visibility:public"],
     deps = dual_inputs(
         device = [
             "//hw/top:otp_ctrl_c_regs",
@@ -279,8 +280,8 @@ cc_library(
     srcs = ["keymgr.c"],
     hdrs = ["keymgr.h"],
     deps = [
+        "//hw/top:dt",
         "//hw/top:keymgr_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/runtime:hart",

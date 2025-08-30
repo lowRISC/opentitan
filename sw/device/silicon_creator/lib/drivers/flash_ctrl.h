@@ -199,6 +199,11 @@ enum {
 void flash_ctrl_init(void);
 
 /**
+ * Permanently disable the flash controller.
+ */
+void flash_ctrl_disable(void);
+
+/**
  * Status bits.
  */
 typedef struct flash_ctrl_status {
