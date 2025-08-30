@@ -130,20 +130,24 @@ impl<'a> SpiConsoleDevice<'a> {
 }
 
 impl<'a> ConsoleDevice for SpiConsoleDevice<'a> {
-    fn console_read(&self, buf: &mut [u8], _timeout: Duration) -> Result<usize> {
+    fn console_poll_read(
+        &self,
+        cx: &mut std::task::Context<'_>,
+        buf: &mut [u8],
+    ) -> std::task::Poll<Result<usize>> {
         if self.rx_buf.borrow().is_empty() {
             if let Some(ready_pin) = self.get_tx_ready_pin()? {
                 if ready_pin.read()? {
                     if self.read_from_spi()? == 0 {
                         // If we are gated by the TX-ready pin, only perform the SPI console read if
                         // the ready pin is high.
-                        return Ok(0);
+                        return crate::util::runtime::poll_later(cx, Duration::from_millis(5));
                     }
                 } else {
-                    return Ok(0);
+                    return crate::util::runtime::poll_later(cx, Duration::from_millis(5));
                 }
             } else if self.read_from_spi()? == 0 {
-                return Ok(0);
+                return crate::util::runtime::poll_later(cx, Duration::from_millis(5));
             }
         }
 
@@ -154,7 +158,7 @@ impl<'a> ConsoleDevice for SpiConsoleDevice<'a> {
             i += 1;
         }
 
-        Ok(i)
+        std::task::Poll::Ready(Ok(i))
     }
 
     fn console_write(&self, buf: &[u8]) -> Result<()> {

@@ -7,6 +7,7 @@ use std::ops::{Deref, DerefMut};
 use std::os::fd::{AsFd, BorrowedFd};
 
 use rustix::termios::{self, Termios};
+use tokio::io::AsyncRead;
 
 /// Raw TTY wrapper over any file descriptor.
 ///
@@ -40,6 +41,17 @@ impl<T: AsFd> AsFd for RawTty<T> {
 impl<T: AsFd + Read> Read for RawTty<T> {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         self.fd.read(buf)
+    }
+}
+
+impl<T: AsFd + AsyncRead> AsyncRead for RawTty<T> {
+    fn poll_read(
+        self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+        buf: &mut tokio::io::ReadBuf<'_>,
+    ) -> std::task::Poll<Result<()>> {
+        // SAFETY: we never move `fd` out from `Self`, so it's structually pinned.
+        unsafe { self.map_unchecked_mut(|x| &mut x.fd) }.poll_read(cx, buf)
     }
 }
 

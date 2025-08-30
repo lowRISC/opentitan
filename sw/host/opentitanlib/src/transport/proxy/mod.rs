@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, bail};
-use serde::{Deserialize, Serialize};
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::io;
@@ -12,7 +10,11 @@ use std::net::{TcpStream, ToSocketAddrs};
 use std::os::unix::io::AsRawFd;
 use std::rc::Rc;
 use std::time::Duration;
+
+use anyhow::{Context, Result, bail};
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use tokio::io::AsyncWriteExt;
 
 use crate::bootstrap::BootstrapOptions;
 use crate::impl_serializable_error;
@@ -23,7 +25,8 @@ use crate::io::nonblocking_help::NonblockingHelp;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::proxy::protocol::{
-    AsyncMessage, Message, ProxyRequest, ProxyResponse, Request, Response,
+    AsyncMessage, Message, ProxyRequest, ProxyResponse, Request, Response, UartRequest,
+    UartResponse,
 };
 use crate::transport::{Capabilities, Capability, ProxyOps, Transport, TransportError};
 
@@ -74,8 +77,8 @@ impl Proxy {
 
 struct UartRecord {
     pub uart: Rc<dyn Uart>,
-    pub pipe_sender: mio::unix::pipe::Sender,
-    pub pipe_receiver: mio::unix::pipe::Receiver,
+    pub pipe_sender: tokio::io::WriteHalf<tokio::io::SimplexStream>,
+    pub pipe_receiver: tokio::io::ReadHalf<tokio::io::SimplexStream>,
 }
 
 struct Inner {
@@ -123,7 +126,9 @@ impl Inner {
             AsyncMessage::UartData { data } => {
                 if let Some(uart_instance) = self.uart_channel_map.borrow().get(&channel) {
                     if let Some(uart_record) = self.uarts.borrow_mut().get_mut(uart_instance) {
-                        uart_record.pipe_sender.write_all(&data)?;
+                        crate::util::runtime::block_on(async {
+                            uart_record.pipe_sender.write_all(&data).await
+                        })?;
                     }
                 }
             }
@@ -325,10 +330,28 @@ impl Transport for Proxy {
         if let Some(instance) = self.inner.uarts.borrow().get(instance_name) {
             return Ok(Rc::clone(&instance.uart));
         }
+
+        // All `Uart` instances that we create via proxy supports non-blocking.
+        // This allows us to control whether UART is blocking or not by controlling if
+        // `pipe_receiver` is blocking.
+        let Response::Uart(UartResponse::RegisterNonblockingRead { channel }) =
+            self.inner.execute_command(Request::Uart {
+                id: instance_name.to_owned(),
+                command: UartRequest::RegisterNonblockingRead,
+            })?
+        else {
+            bail!(ProxyError::UnexpectedReply())
+        };
+
         let instance: Rc<dyn Uart> = Rc::new(uart::ProxyUart::open(self, instance_name)?);
-        let (pipe_sender, pipe_receiver) = mio::unix::pipe::new()?;
+        let (pipe_receiver, pipe_sender) = tokio::io::simplex(65536);
+
+        self.inner
+            .uart_channel_map
+            .borrow_mut()
+            .insert(channel, instance_name.to_owned());
         self.inner.uarts.borrow_mut().insert(
-            instance_name.to_string(),
+            instance_name.to_owned(),
             UartRecord {
                 uart: Rc::clone(&instance),
                 pipe_sender,

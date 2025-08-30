@@ -3,17 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::rc::Rc;
-use std::time::Duration;
 
 use anyhow::{Context, Result};
 use rusb::{Direction, Recipient, RequestType};
 use serialport::Parity;
 
 use super::UartInterface;
-use crate::io::nonblocking_help::NonblockingHelp;
 use crate::io::uart::{FlowControl, Uart, UartError};
 use crate::transport::TransportError;
-use crate::transport::common::uart::SerialPortUart;
+use crate::transport::common::uart::{SerialPortUart, SoftwareFlowControl};
 use crate::transport::hyperdebug::Inner;
 
 const UART_BAUD: u32 = 115200;
@@ -22,7 +20,7 @@ pub struct HyperdebugUart {
     inner: Rc<Inner>,
     usb_interface: u8,
     supports_clearing_queues: bool,
-    serial_port: SerialPortUart,
+    serial_port: SoftwareFlowControl<SerialPortUart>,
 }
 
 #[allow(dead_code)]
@@ -52,13 +50,13 @@ impl HyperdebugUart {
             inner: Rc::clone(inner),
             usb_interface: uart_interface.interface,
             supports_clearing_queues,
-            serial_port: SerialPortUart::open(
+            serial_port: SoftwareFlowControl::new(SerialPortUart::open(
                 uart_interface
                     .tty
                     .to_str()
                     .ok_or(TransportError::UnicodePathError)?,
                 UART_BAUD,
-            )?,
+            )?),
         })
     }
 }
@@ -110,12 +108,12 @@ impl Uart for HyperdebugUart {
         self.serial_port.get_device_path()
     }
 
-    fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        self.serial_port.read(buf)
-    }
-
-    fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
-        self.serial_port.read_timeout(buf, timeout)
+    fn poll_read(
+        &self,
+        cx: &mut std::task::Context<'_>,
+        buf: &mut [u8],
+    ) -> std::task::Poll<Result<usize>> {
+        self.serial_port.poll_read(cx, buf)
     }
 
     fn write(&self, buf: &[u8]) -> Result<()> {
@@ -186,17 +184,5 @@ impl Uart for HyperdebugUart {
             2 => Ok(Parity::Even),
             _ => Err(UartError::ReadError("Unknown parity value".to_string()).into()),
         }
-    }
-
-    fn supports_nonblocking_read(&self) -> Result<bool> {
-        self.serial_port.supports_nonblocking_read()
-    }
-
-    fn register_nonblocking_read(&self, registry: &mio::Registry, token: mio::Token) -> Result<()> {
-        self.serial_port.register_nonblocking_read(registry, token)
-    }
-
-    fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
-        self.serial_port.nonblocking_help()
     }
 }

@@ -14,7 +14,7 @@ use crate::io::gpio::{GpioPin, PinMode};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::io::uart::UartError;
-use crate::transport::common::uart::SerialPortUart;
+use crate::transport::common::uart::{SerialPortUart, SoftwareFlowControl};
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
@@ -59,7 +59,7 @@ impl<C: Chip> Ftdi<C> {
         Ok(ftdi_dev)
     }
 
-    fn open_uart(&self, instance: u32) -> Result<SerialPortUart> {
+    fn open_uart(&self, instance: u32) -> Result<SoftwareFlowControl<SerialPortUart>> {
         let mut ports = serialport::available_ports()
             .map_err(|e| UartError::EnumerationError(e.to_string()))?;
 
@@ -76,7 +76,10 @@ impl<C: Chip> Ftdi<C> {
             TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
         })?;
 
-        SerialPortUart::open(&port.port_name, C::UART_BAUD)
+        Ok(SoftwareFlowControl::new(SerialPortUart::open(
+            &port.port_name,
+            C::UART_BAUD,
+        )?))
     }
 }
 
