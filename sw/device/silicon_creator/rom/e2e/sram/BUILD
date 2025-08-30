@@ -40,7 +40,6 @@ otp_image(
     name = "otp_img_readback_enable",
     src = "//hw/top_earlgrey/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":otp_json_readback_enable"],
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
 )
 
 _TESTS = {

@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
-load("//rules:const.bzl", "CONST", "EARLGREY_ALERTS", "EARLGREY_LOC_ALERTS")
+load("//hw/top_earlgrey/data/autogen:defs.bzl", "EARLGREY_ALERTS")
+load("//rules:const.bzl", "CONST", "EARLGREY_LOC_ALERTS")
 load(
     "//rules:otp.bzl",
     "OTP_SIGVERIFY_FAKE_KEYS",
@@ -438,7 +439,6 @@ otp_alert_digest(
 otp_image(
     name = "img_raw",
     src = ":otp_json_raw",
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
 )
 
 [
@@ -453,7 +453,6 @@ otp_image(
             ":otp_json_secret0",
             ":otp_json_creator_sw_cfg_test_unlocked",
         ] + OTP_SIGVERIFY_FAKE_KEYS,
-        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     )
     for i in range(0, 8)
 ]
@@ -466,7 +465,6 @@ otp_image(
             ":otp_json_secret0",
             ":otp_json_creator_sw_cfg_test_unlocked",
         ],
-        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     )
     for i in range(0, 7)
 ]
@@ -487,35 +485,30 @@ otp_image(
         ":otp_json_owner_sw_cfg",
         ":otp_json_alert_digest_cfg",
     ] + OTP_SIGVERIFY_FAKE_KEYS,
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
 )
 
 otp_image(
     name = "img_dev",
     src = ":otp_json_dev",
     overlays = STD_OTP_OVERLAYS,
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
 )
 
 otp_image(
     name = "img_prod",
     src = ":otp_json_prod",
     overlays = STD_OTP_OVERLAYS,
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
 )
 
 otp_image(
     name = "img_prod_end",
     src = ":otp_json_prod_end",
     overlays = STD_OTP_OVERLAYS,
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
 )
 
 otp_image(
     name = "img_rma",
     src = ":otp_json_rma",
     overlays = STD_OTP_OVERLAYS,
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
 )
 
 # Create an execution-disabling overlay
@@ -534,7 +527,6 @@ otp_image(
     name = "img_exec_disabled",
     src = ":otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":otp_json_exec_disabled"],
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
 )
 
 # Create a bootstrap-disabling overlay
@@ -553,7 +545,6 @@ otp_image(
     name = "img_bootstrap_disabled",
     src = ":otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":otp_json_bootstrap_disabled"],
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
 )
 
 filegroup(

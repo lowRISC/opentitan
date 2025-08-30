@@ -6,10 +6,10 @@ load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:const.bzl",
     "CONST",
-    "EARLGREY_ALERTS",
     "EARLGREY_LOC_ALERTS",
     "get_lc_items",
 )
+load("//hw/top_earlgrey/data/autogen:defs.bzl", "EARLGREY_ALERTS")
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
@@ -161,7 +161,6 @@ otp_alert_digest(
             ":shutdown_alert_owner_sw_cfg",
             ":shutdown_alert_digest_cfg",
         ],
-        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     )
     for lc_state, _ in ALERT_LC_STATES
 ]

@@ -11,9 +11,11 @@ load(
     "opentitan_ip_rust_header",
     "opentitan_top_dt_api",
 )
+load("//rules/opentitan:hw.bzl", "get_top_attr")
 load(
     "//hw/top:defs.bzl",
     "ALL_IP_NAMES",
+    "ALL_SEED_NAMES",
     "ALL_TOPS",
     "ALL_TOP_NAMES",
     "opentitan_alias_top_attr",
@@ -36,6 +38,13 @@ string_flag(
     values = ALL_TOP_NAMES,
 )
 
+# Use this flag to select the seed.
+string_flag(
+    name = "seed",
+    build_setting_default = "testing",
+    values = ALL_SEED_NAMES,
+)
+
 # Config settings to test against tops.
 [
     config_setting(
@@ -45,6 +54,17 @@ string_flag(
         },
     )
     for top in ALL_TOP_NAMES
+]
+
+# Config settings to test against seeds.
+[
+    config_setting(
+        name = "is_seed_{}".format(seed),
+        flag_values = {
+            ":seed": seed,
+        },
+    )
+    for seed in ALL_SEED_NAMES
 ]
 
 # Point to the right top library.
@@ -62,6 +82,45 @@ opentitan_alias_top_attr(
 opentitan_alias_top_attr(
     name = "top_otp_map",
     attr_name = "otp_map",
+)
+
+# For each top, create a selecting alias for the seed. Would probably wrap that in a macro
+[
+    alias(
+        name = "top_{}_seed_secrets".format(top.name),
+        actual = select(dict([
+            (
+                ":is_seed_{}".format(seed),
+                secrets,
+            )
+            for (seed, secrets) in get_top_attr(top, "secret_cfgs", False, {}).items()
+        ])),
+        target_compatible_with = select(dict([
+            (
+                ":is_seed_{}".format(seed),
+                [],
+            )
+            for seed in get_top_attr(top, "secret_cfgs", False, {}).keys()
+        ] + [(
+            "//conditions:default",
+            ["@platforms//:incompatible"],
+        )])),
+    )
+    for top in ALL_TOPS
+]
+
+# Then create an alias overall
+alias(
+    name = "secrets",
+    actual = select(
+        dict([
+            (
+                "@lowrisc_opentitan//hw/top:is_{}".format(top),
+                ":top_{}_seed_secrets".format(top),
+            )
+            for top in ALL_TOP_NAMES
+        ]),
+    ),
 )
 
 # C register headers for all IPs.

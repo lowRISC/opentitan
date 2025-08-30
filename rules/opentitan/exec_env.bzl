@@ -28,10 +28,9 @@ _FIELDS = {
     "data": ("attr.data", False),
     "extract_sw_logs": ("attr.extract_sw_logs", False),
     "otp_mmap": ("file.otp_mmap", False),
-    "top_secret_cfg": ("file.top_secret_cfg", True),
+    "top_secret_cfg": ("file.top_secret_cfg", False),
     "otp_data_perm": ("attr.otp_data_perm", False),
     "flash_scramble_tool": ("attr.flash_scramble_tool", False),
-    "rom_scramble_config": ("file.rom_scramble_config", False),
     "openocd": ("attr.openocd", False),
     "openocd_adapter_config": ("attr.openocd_adapter_config", False),
 }
@@ -195,6 +194,7 @@ def exec_env_common_attrs(**kwargs):
         ),
         "top_secret_cfg": attr.label(
             allow_single_file = True,
+            default = "//hw/top:secrets",
             doc = "Generated top configuration file including secrets.",
         ),
         "otp_data_perm": attr.label(
@@ -211,11 +211,6 @@ def exec_env_common_attrs(**kwargs):
             default = "//hw/ip/rom_ctrl/util:scramble_image",
             executable = True,
             cfg = "exec",
-        ),
-        "rom_scramble_config": attr.label(
-            default = kwargs.get("rom_scramble_config", None),
-            doc = "ROM scrambling config for this environment",
-            allow_single_file = True,
         ),
         "openocd": attr.label(
             doc = "OpenOCD binary for this environment",

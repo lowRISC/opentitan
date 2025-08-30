@@ -262,9 +262,9 @@ def convert_to_scrambled_rom_vmem(ctx, **kwargs):
         output: The name of the output file.  Constructed from `name` and `suffix`
                  if not specified.
         src: The src File object.
-        rom_scramble_config: The scrambling config.
         rom_scramble_tool: The scrambling tool.
         rom_scramble_mode: The scrambling mode.
+        top_secret_cfg: The secrets configuration of the top.
     Returns:
       (The transformed File, The hashfile)
     """
@@ -280,7 +280,7 @@ def convert_to_scrambled_rom_vmem(ctx, **kwargs):
 
     src = get_override(ctx, "attr.src", kwargs)
 
-    config = get_override(ctx, "file.rom_scramble_config", kwargs)
+    config = get_override(ctx, "file.top_secret_cfg", kwargs)
     tool = get_override(ctx, "executable.rom_scramble_tool", kwargs)
     mode = get_override(ctx, "attr.rom_scramble_mode", kwargs)
 

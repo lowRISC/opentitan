@@ -42,5 +42,4 @@ otp_image(
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_secret2_locked",
     ],
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
 )
