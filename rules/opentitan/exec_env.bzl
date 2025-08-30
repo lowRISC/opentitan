@@ -28,7 +28,7 @@ _FIELDS = {
     "data": ("attr.data", False),
     "extract_sw_logs": ("attr.extract_sw_logs", False),
     "otp_mmap": ("file.otp_mmap", False),
-    "top_secret_cfg": ("file.top_secret_cfg", True),
+    "top_secret_cfg": ("file.top_secret_cfg", False),
     "otp_data_perm": ("attr.otp_data_perm", False),
     "flash_scramble_tool": ("attr.flash_scramble_tool", False),
     "openocd": ("attr.openocd", False),
@@ -194,6 +194,7 @@ def exec_env_common_attrs(**kwargs):
         ),
         "top_secret_cfg": attr.label(
             allow_single_file = True,
+            default = "//hw/top:secrets",
             doc = "Generated top configuration file including secrets.",
         ),
         "otp_data_perm": attr.label(
