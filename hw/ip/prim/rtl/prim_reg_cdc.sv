@@ -220,9 +220,21 @@ module prim_reg_cdc #(
   `ASSERT_KNOWN(SrcBusyKnown_A, src_busy_o, clk_src_i, !rst_src_ni)
   `ASSERT_KNOWN(DstReqKnown_A, dst_req, clk_dst_i, !rst_dst_ni)
 
-  // If busy goes high, we must eventually see an ack
+  // If busy goes high, we must eventually see an ack.
+  //
+  // This is fundamentally a liveness property and only really useful in a formal setting (since a
+  // simulation can never give a counterexample). Unfortunately, proving liveness properties can be
+  // intractable for formal tools. This assertion bounds the time, making it a safety property that
+  // the tool can handle more easily.
+  //
+  // The required bound depends on the ratio between the two clocks. If there are N edges of
+  // clk_dst_i for each edge of clk_src_i, we can expect a bound of 4*N to suffice (because there is
+  // a 2-flop synchroniser in each direction).
+  //
+  // The possible clock ratios rely on tool configuration, but we set N=10 (which matches the
+  // configuration for the main clock and the slow aon clock in our FPV tool setup).
   `ifdef FPV_ON
-    `ASSERT(HungHandShake_A, $rose(src_req) |-> strong(##[0:$] src_ack), clk_src_i, !rst_src_ni)
+  `ASSERT(HungHandShake_A, $rose(src_req) |-> ##[0:40] src_ack, clk_src_i, !rst_src_ni)
     // TODO: #14913 check if we can add additional sim assertions.
   `endif
 endmodule // prim_subreg_cdc
