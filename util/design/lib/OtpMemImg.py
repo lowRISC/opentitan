@@ -329,6 +329,9 @@ class OtpMemImg(OtpMemMap):
             item["value"] = common.check_bool(item["value"])
             mubi_val_str += "True" if item["value"] else "False"
             item["value"] = mubi_value_as_int(item["value"], item_width)
+        elif item["value"] in ["SOC_DBG_RAW", "SOC_DBG_PRE_PROD", "SOC_DBG_PROD"]:
+            item.setdefault("value", "0x0")
+            item["value"] = self.lc_state.encode("soc_dbg_state", item["value"])
         else:
             mubi_str = ""
             mubi_val_str = ""
