@@ -41,7 +41,6 @@ otp_image(
     name = "otp_img_reset_reason",
     src = "//hw/top_earlgrey/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":otp_json_reset_reason"],
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
 )
 
 opentitan_test(
@@ -136,7 +135,6 @@ RESET_CORRUPTION_SCENARIOS = [
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_reset_reason_{}".format(t["name"]),
         ],
-        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     )
     for t in RESET_CORRUPTION_SCENARIOS
 ]

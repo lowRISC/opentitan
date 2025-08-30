@@ -219,7 +219,6 @@ otp_image_consts(
         ":otp_json_creator_sw_cfg",
         ":otp_json_owner_sw_cfg",
     ] + OTP_SIGVERIFY_FAKE_KEYS,
-    top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
 )
 
 # Library containing {CREATOR,OWNER}_SW_CFG and
@@ -258,7 +257,6 @@ LC_MISSION_STATES = get_lc_items(
             "//hw/top_earlgrey/data/otp:otp_json_secret1",
             "//hw/top_earlgrey/data/otp:otp_json_fixed_secret2",
         ] + OTP_SIGVERIFY_FAKE_KEYS,
-        top_secret_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     )
     for lc_state, _ in LC_MISSION_STATES
 ]
