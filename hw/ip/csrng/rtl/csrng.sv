@@ -19,41 +19,41 @@ module csrng
 
   localparam int unsigned NumHwApps = NumApps - 1 // derived parameter
 ) (
-  input logic         clk_i,
-  input logic         rst_ni,
+  input  logic clk_i,
+  input  logic rst_ni,
 
-  // Tilelink Bus Interface
+  // TileLink Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
-   // OTP Interface
+  // OTP Interface
   // SEC_CM: INTERSIG.MUBI
   input  prim_mubi_pkg::mubi8_t otp_en_csrng_sw_app_read_i,
 
-  // Lifecycle broadcast inputs
-  input  lc_ctrl_pkg::lc_tx_t  lc_hw_debug_en_i,
+  // Life Cycle Broadcast Inputs
+  input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
 
-  // Entropy Interface
+  // Entropy Source Interface
   output entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_o,
   input  entropy_src_pkg::entropy_src_hw_if_rsp_t entropy_src_hw_if_i,
 
-  // Entropy Interface
+  // Entropy Source Halt Interface
   input  entropy_src_pkg::cs_aes_halt_req_t cs_aes_halt_i,
   output entropy_src_pkg::cs_aes_halt_rsp_t cs_aes_halt_o,
 
   // Application Interfaces
-  input  csrng_req_t  [NumHwApps-1:0] csrng_cmd_i,
-  output csrng_rsp_t  [NumHwApps-1:0] csrng_cmd_o,
+  input  csrng_req_t [NumHwApps-1:0] csrng_cmd_i,
+  output csrng_rsp_t [NumHwApps-1:0] csrng_cmd_o,
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // Interrupts
-  output logic    intr_cs_cmd_req_done_o,
-  output logic    intr_cs_entropy_req_o,
-  output logic    intr_cs_hw_inst_exc_o,
-  output logic    intr_cs_fatal_err_o
+  output logic intr_cs_cmd_req_done_o,
+  output logic intr_cs_entropy_req_o,
+  output logic intr_cs_hw_inst_exc_o,
+  output logic intr_cs_fatal_err_o
 );
 
   csrng_reg2hw_t reg2hw;

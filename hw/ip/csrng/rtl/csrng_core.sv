@@ -401,63 +401,61 @@ module csrng_core import csrng_pkg::*; #(
   prim_intr_hw #(
     .Width(1)
   ) u_intr_hw_cs_cmd_req_done (
-    .clk_i                  (clk_i),
-    .rst_ni                 (rst_ni),
-    .event_intr_i           (event_cs_cmd_req_done),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.cs_cmd_req_done.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.cs_cmd_req_done.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.cs_cmd_req_done.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.cs_cmd_req_done.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.cs_cmd_req_done.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.cs_cmd_req_done.d),
-    .intr_o                 (intr_cs_cmd_req_done_o)
+    .clk_i                 (clk_i),
+    .rst_ni                (rst_ni),
+    .event_intr_i          (event_cs_cmd_req_done),
+    .reg2hw_intr_enable_q_i(reg2hw.intr_enable.cs_cmd_req_done.q),
+    .reg2hw_intr_test_q_i  (reg2hw.intr_test.cs_cmd_req_done.q),
+    .reg2hw_intr_test_qe_i (reg2hw.intr_test.cs_cmd_req_done.qe),
+    .reg2hw_intr_state_q_i (reg2hw.intr_state.cs_cmd_req_done.q),
+    .hw2reg_intr_state_de_o(hw2reg.intr_state.cs_cmd_req_done.de),
+    .hw2reg_intr_state_d_o (hw2reg.intr_state.cs_cmd_req_done.d),
+    .intr_o                (intr_cs_cmd_req_done_o)
   );
 
   prim_intr_hw #(
     .Width(1)
   ) u_intr_hw_cs_entropy_req (
-    .clk_i                  (clk_i),
-    .rst_ni                 (rst_ni),
-    .event_intr_i           (event_cs_entropy_req),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.cs_entropy_req.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.cs_entropy_req.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.cs_entropy_req.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.cs_entropy_req.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.cs_entropy_req.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.cs_entropy_req.d),
-    .intr_o                 (intr_cs_entropy_req_o)
+    .clk_i                 (clk_i),
+    .rst_ni                (rst_ni),
+    .event_intr_i          (event_cs_entropy_req),
+    .reg2hw_intr_enable_q_i(reg2hw.intr_enable.cs_entropy_req.q),
+    .reg2hw_intr_test_q_i  (reg2hw.intr_test.cs_entropy_req.q),
+    .reg2hw_intr_test_qe_i (reg2hw.intr_test.cs_entropy_req.qe),
+    .reg2hw_intr_state_q_i (reg2hw.intr_state.cs_entropy_req.q),
+    .hw2reg_intr_state_de_o(hw2reg.intr_state.cs_entropy_req.de),
+    .hw2reg_intr_state_d_o (hw2reg.intr_state.cs_entropy_req.d),
+    .intr_o                (intr_cs_entropy_req_o)
   );
-
 
   prim_intr_hw #(
     .Width(1)
   ) u_intr_hw_cs_hw_inst_exc (
-    .clk_i                  (clk_i),
-    .rst_ni                 (rst_ni),
-    .event_intr_i           (event_cs_hw_inst_exc),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.cs_hw_inst_exc.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.cs_hw_inst_exc.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.cs_hw_inst_exc.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.cs_hw_inst_exc.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.cs_hw_inst_exc.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.cs_hw_inst_exc.d),
-    .intr_o                 (intr_cs_hw_inst_exc_o)
+    .clk_i                 (clk_i),
+    .rst_ni                (rst_ni),
+    .event_intr_i          (event_cs_hw_inst_exc),
+    .reg2hw_intr_enable_q_i(reg2hw.intr_enable.cs_hw_inst_exc.q),
+    .reg2hw_intr_test_q_i  (reg2hw.intr_test.cs_hw_inst_exc.q),
+    .reg2hw_intr_test_qe_i (reg2hw.intr_test.cs_hw_inst_exc.qe),
+    .reg2hw_intr_state_q_i (reg2hw.intr_state.cs_hw_inst_exc.q),
+    .hw2reg_intr_state_de_o(hw2reg.intr_state.cs_hw_inst_exc.de),
+    .hw2reg_intr_state_d_o (hw2reg.intr_state.cs_hw_inst_exc.d),
+    .intr_o                (intr_cs_hw_inst_exc_o)
   );
-
 
   prim_intr_hw #(
     .Width(1)
   ) u_intr_hw_cs_fatal_err (
-    .clk_i                  (clk_i),
-    .rst_ni                 (rst_ni),
-    .event_intr_i           (event_cs_fatal_err),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.cs_fatal_err.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.cs_fatal_err.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.cs_fatal_err.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.cs_fatal_err.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.cs_fatal_err.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.cs_fatal_err.d),
-    .intr_o                 (intr_cs_fatal_err_o)
+    .clk_i                 (clk_i),
+    .rst_ni                (rst_ni),
+    .event_intr_i          (event_cs_fatal_err),
+    .reg2hw_intr_enable_q_i(reg2hw.intr_enable.cs_fatal_err.q),
+    .reg2hw_intr_test_q_i  (reg2hw.intr_test.cs_fatal_err.q),
+    .reg2hw_intr_test_qe_i (reg2hw.intr_test.cs_fatal_err.qe),
+    .reg2hw_intr_state_q_i (reg2hw.intr_state.cs_fatal_err.q),
+    .hw2reg_intr_state_de_o(hw2reg.intr_state.cs_fatal_err.de),
+    .hw2reg_intr_state_d_o (hw2reg.intr_state.cs_fatal_err.d),
+    .intr_o                (intr_cs_fatal_err_o)
   );
 
   // Counter and FSM errors are structural errors and are always active regardless of the
@@ -932,16 +930,16 @@ module csrng_core import csrng_pkg::*; #(
     .OutW(32),
     .ClearOnRead(1'b0)
   ) u_prim_packer_fifo_sw_genbits (
-    .clk_i    (clk_i),
-    .rst_ni   (rst_ni),
-    .clr_i    (!cs_enable_fo[29]),
-    .wvalid_i (genbits_stage_vld[NumApps-1]),
-    .wdata_i  (genbits_stage_bus[NumApps-1]),
-    .wready_o (genbits_stage_rdy[NumApps-1]),
-    .rvalid_o (genbits_stage_vldo_sw),
-    .rdata_o  (genbits_stage_bus_sw),
-    .rready_i (genbits_stage_bus_rd_sw),
-    .depth_o  ()
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .clr_i   (!cs_enable_fo[29]),
+    .wvalid_i(genbits_stage_vld[NumApps-1]),
+    .wdata_i (genbits_stage_bus[NumApps-1]),
+    .wready_o(genbits_stage_rdy[NumApps-1]),
+    .rvalid_o(genbits_stage_vldo_sw),
+    .rdata_o (genbits_stage_bus_sw),
+    .rready_i(genbits_stage_bus_rd_sw),
+    .depth_o ()
   );
 
   // flops for SW fips status
@@ -1111,27 +1109,27 @@ module csrng_core import csrng_pkg::*; #(
   // SEC_CM: MAIN_SM.CTR.LOCAL_ESC
   // SEC_CM: MAIN_SM.FSM.SPARSE
   csrng_main_sm u_csrng_main_sm (
-    .clk_i                  (clk_i),
-    .rst_ni                 (rst_ni),
-    .enable_i               (cs_enable_fo[36]),
-    .acmd_avail_i           (acmd_avail),
-    .acmd_accept_o          (acmd_accept),
-    .acmd_i                 (acmd_hold),
-    .acmd_eop_i             (acmd_eop),
-    .ctr_drbg_cmd_req_rdy_i (ctr_drbg_cmd_req_rdy),
-    .flag0_i                (flag0_fo[0]),
-    .cmd_entropy_req_o      (cmd_entropy_req),
-    .cmd_entropy_avail_i    (cmd_entropy_avail),
-    .instant_req_o          (instant_req),
-    .reseed_req_o           (reseed_req),
-    .generate_req_o         (generate_req),
-    .update_req_o           (update_req),
-    .uninstant_req_o        (uninstant_req),
-    .clr_adata_packer_o     (clr_adata_packer),
-    .cmd_complete_i         (state_db_wr_req),
-    .local_escalate_i       (fatal_loc_events),
-    .main_sm_state_o        (cs_main_sm_state),
-    .main_sm_err_o          (cs_main_sm_err)
+    .clk_i                 (clk_i),
+    .rst_ni                (rst_ni),
+    .enable_i              (cs_enable_fo[36]),
+    .acmd_avail_i          (acmd_avail),
+    .acmd_accept_o         (acmd_accept),
+    .acmd_i                (acmd_hold),
+    .acmd_eop_i            (acmd_eop),
+    .ctr_drbg_cmd_req_rdy_i(ctr_drbg_cmd_req_rdy),
+    .flag0_i               (flag0_fo[0]),
+    .cmd_entropy_req_o     (cmd_entropy_req),
+    .cmd_entropy_avail_i   (cmd_entropy_avail),
+    .instant_req_o         (instant_req),
+    .reseed_req_o          (reseed_req),
+    .generate_req_o        (generate_req),
+    .update_req_o          (update_req),
+    .uninstant_req_o       (uninstant_req),
+    .clr_adata_packer_o    (clr_adata_packer),
+    .cmd_complete_i        (state_db_wr_req),
+    .local_escalate_i      (fatal_loc_events),
+    .main_sm_state_o       (cs_main_sm_state),
+    .main_sm_err_o         (cs_main_sm_err)
   );
 
   // interrupt for sw app interface only
@@ -1160,16 +1158,16 @@ module csrng_core import csrng_pkg::*; #(
     .OutW(SeedLen),
     .ClearOnRead(1'b1)
   ) u_prim_packer_fifo_adata (
-    .clk_i      (clk_i),
-    .rst_ni     (rst_ni),
-    .clr_i      (!cs_enable_fo[37] || packer_adata_clr),
-    .wvalid_i   (acmd_mop),
-    .wdata_i    (acmd_bus),
-    .wready_o   (),
-    .rvalid_o   (),
-    .rdata_o    (packer_adata),
-    .rready_i   (packer_adata_pop),
-    .depth_o    (packer_adata_depth)
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .clr_i   (!cs_enable_fo[37] || packer_adata_clr),
+    .wvalid_i(acmd_mop),
+    .wdata_i (acmd_bus),
+    .wready_o(),
+    .rvalid_o(),
+    .rdata_o (packer_adata),
+    .rready_i(packer_adata_pop),
+    .depth_o (packer_adata_depth)
   );
 
   assign packer_adata_pop = cs_enable_fo[38] &&
@@ -1339,34 +1337,34 @@ module csrng_core import csrng_pkg::*; #(
 
 
   csrng_ctr_drbg_cmd u_csrng_ctr_drbg_cmd (
-    .clk_i       ( clk_i            ),
-    .rst_ni      ( rst_ni           ),
-    .enable_i    ( cs_enable_fo[46] ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .enable_i(cs_enable_fo[46]),
 
-    .cmd_data_req_vld_i          ( ctr_drbg_cmd_req      ),
-    .cmd_data_req_rdy_o          ( ctr_drbg_cmd_req_rdy  ),
-    .cmd_data_req_i              ( ctr_drbg_cmd_req_data ),
-    .cmd_data_req_entropy_i      ( cmd_entropy           ),
-    .cmd_data_req_entropy_fips_i ( cmd_entropy_fips      ),
-    .cmd_data_req_glast_i        ( gen_last_q            ),
+    .cmd_data_req_vld_i         (ctr_drbg_cmd_req),
+    .cmd_data_req_rdy_o         (ctr_drbg_cmd_req_rdy),
+    .cmd_data_req_i             (ctr_drbg_cmd_req_data),
+    .cmd_data_req_entropy_i     (cmd_entropy),
+    .cmd_data_req_entropy_fips_i(cmd_entropy_fips),
+    .cmd_data_req_glast_i       (gen_last_q),
 
-    .cmd_data_rsp_vld_o          ( cmd_result_ack        ),
-    .cmd_data_rsp_rdy_i          ( cmd_result_ack_rdy    ),
-    .cmd_data_rsp_o              ( ctr_drbg_cmd_rsp_data ),
-    .cmd_data_rsp_glast_o        ( cmd_result_glast      ),
+    .cmd_data_rsp_vld_o  (cmd_result_ack),
+    .cmd_data_rsp_rdy_i  (cmd_result_ack_rdy),
+    .cmd_data_rsp_o      (ctr_drbg_cmd_rsp_data),
+    .cmd_data_rsp_glast_o(cmd_result_glast),
 
     // Request and response path to and from update unit
-    .cmd_upd_req_vld_o  ( cmd_upd_req_vld  ),
-    .cmd_upd_req_rdy_i  ( cmd_upd_req_rdy  ),
-    .cmd_upd_req_data_o ( cmd_upd_req_data ),
+    .cmd_upd_req_vld_o (cmd_upd_req_vld),
+    .cmd_upd_req_rdy_i (cmd_upd_req_rdy),
+    .cmd_upd_req_data_o(cmd_upd_req_data),
 
-    .cmd_upd_rsp_vld_i  ( cmd_upd_rsp_vld  ),
-    .cmd_upd_rsp_rdy_o  ( cmd_upd_rsp_rdy  ),
-    .cmd_upd_rsp_data_i ( upd_rsp_data     ),
+    .cmd_upd_rsp_vld_i (cmd_upd_rsp_vld),
+    .cmd_upd_rsp_rdy_o (cmd_upd_rsp_rdy),
+    .cmd_upd_rsp_data_i(upd_rsp_data),
 
-    .fifo_cmdreq_err_o  ( ctr_drbg_cmd_sfifo_cmdreq_err  ),
-    .fifo_rcstage_err_o ( ctr_drbg_cmd_sfifo_rcstage_err ),
-    .fifo_keyvrc_err_o  ( ctr_drbg_cmd_sfifo_keyvrc_err  )
+    .fifo_cmdreq_err_o (ctr_drbg_cmd_sfifo_cmdreq_err),
+    .fifo_rcstage_err_o(ctr_drbg_cmd_sfifo_rcstage_err),
+    .fifo_keyvrc_err_o (ctr_drbg_cmd_sfifo_keyvrc_err)
   );
 
   //-------------------------------------
@@ -1386,13 +1384,13 @@ module csrng_core import csrng_pkg::*; #(
 
     .ctr_drbg_upd_enable_i(cs_enable_fo[47]),
 
-    .req_vld_i  ( upd_arb_req_vld  ),
-    .req_rdy_o  ( upd_arb_req_rdy  ),
-    .req_data_i ( upd_arb_req_data ),
+    .req_vld_i (upd_arb_req_vld),
+    .req_rdy_o (upd_arb_req_rdy),
+    .req_data_i(upd_arb_req_data),
 
-    .rsp_vld_o  ( upd_rsp_vld  ),
-    .rsp_rdy_i  ( upd_rsp_rdy  ),
-    .rsp_data_o ( upd_rsp_data ),
+    .rsp_vld_o (upd_rsp_vld),
+    .rsp_rdy_i (upd_rsp_rdy),
+    .rsp_data_o(upd_rsp_data),
 
     // es halt interface
     .ctr_drbg_upd_es_req_i(cs_aes_halt_i.cs_aes_halt_req),
@@ -1427,19 +1425,19 @@ module csrng_core import csrng_pkg::*; #(
   csrng_upd_data_t upd_arb_din[2];
 
   prim_arbiter_ppc #(
-    .N  ( 2            ), // (cmd req and gen req)
-    .DW ( UpdDataWidth )
+    .N (2), // (cmd req and gen req)
+    .DW(UpdDataWidth)
   ) u_prim_arbiter_ppc_updblk_arb (
-    .clk_i  ( clk_i  ),
-    .rst_ni ( rst_ni ),
-    .req_chk_i ( cs_enable_fo[1]       ),
-    .req_i     ( {gen_upd_req_vld, cmd_upd_req_vld}),
-    .data_i    ( upd_arb_din           ),
-    .gnt_o     ( {gen_upd_req_rdy, cmd_upd_req_rdy}),
-    .idx_o     (                       ),
-    .valid_o   ( upd_arb_req_vld       ),
-    .data_o    ( upd_arb_req_data      ),
-    .ready_i   ( upd_arb_req_rdy       )
+    .clk_i    (clk_i),
+    .rst_ni   (rst_ni),
+    .req_chk_i(cs_enable_fo[1]),
+    .req_i    ({gen_upd_req_vld, cmd_upd_req_vld}),
+    .gnt_o    ({gen_upd_req_rdy, cmd_upd_req_rdy}),
+    .data_i   (upd_arb_din),
+    .idx_o    (),
+    .valid_o  (upd_arb_req_vld),
+    .data_o   (upd_arb_req_data),
+    .ready_i  (upd_arb_req_rdy)
   );
 
   assign upd_arb_din[0] = cmd_upd_req_data;
@@ -1577,13 +1575,13 @@ module csrng_core import csrng_pkg::*; #(
     .ctr_drbg_gen_es_ack_o(ctr_drbg_gen_es_ack),
 
     // interface to updblk from genblk
-    .gen_upd_req_vld_o  ( gen_upd_req_vld  ),
-    .gen_upd_req_rdy_i  ( gen_upd_req_rdy  ),
-    .gen_upd_req_data_o ( gen_upd_req_data ),
+    .gen_upd_req_vld_o (gen_upd_req_vld),
+    .gen_upd_req_rdy_i (gen_upd_req_rdy),
+    .gen_upd_req_data_o(gen_upd_req_data),
 
-    .gen_upd_rsp_vld_i  ( gen_upd_rsp_vld  ),
-    .gen_upd_rsp_rdy_o  ( gen_upd_rsp_rdy  ),
-    .gen_upd_rsp_data_i ( upd_rsp_data     ),
+    .gen_upd_rsp_vld_i (gen_upd_rsp_vld),
+    .gen_upd_rsp_rdy_o (gen_upd_rsp_rdy),
+    .gen_upd_rsp_data_i(upd_rsp_data),
 
     .block_encrypt_req_o(genblk_benblk_arb_req),
     .block_encrypt_rdy_i(genblk_benblk_arb_req_rdy),

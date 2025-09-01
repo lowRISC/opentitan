@@ -113,18 +113,18 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
     .Depth(1),
     .OutputZeroIfEmpty(1'b0)
   ) u_prim_fifo_sync_cmdreq (
-    .clk_i          (clk_i),
-    .rst_ni         (rst_ni),
-    .clr_i          (!enable_i),
-    .wvalid_i       (sfifo_cmdreq_wvld),
-    .wready_o       (sfifo_cmdreq_wrdy),
-    .wdata_i        (sfifo_cmdreq_wdata),
-    .rvalid_o       (sfifo_cmdreq_rvld),
-    .rready_i       (sfifo_cmdreq_rrdy),
-    .rdata_o        (sfifo_cmdreq_rdata),
-    .full_o         (),
-    .depth_o        (),
-    .err_o          ()
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .clr_i   (!enable_i),
+    .wvalid_i(sfifo_cmdreq_wvld),
+    .wready_o(sfifo_cmdreq_wrdy),
+    .wdata_i (sfifo_cmdreq_wdata),
+    .rvalid_o(sfifo_cmdreq_rvld),
+    .rready_i(sfifo_cmdreq_rrdy),
+    .rdata_o (sfifo_cmdreq_rdata),
+    .full_o  (),
+    .depth_o (),
+    .err_o   ()
   );
 
   always_comb begin
@@ -211,18 +211,18 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
     .Depth(1),
     .OutputZeroIfEmpty(1'b0)
   ) u_prim_fifo_sync_rcstage (
-    .clk_i          (clk_i),
-    .rst_ni         (rst_ni),
-    .clr_i          (!enable_i),
-    .wvalid_i       (sfifo_rcstage_wvld),
-    .wready_o       (sfifo_rcstage_wrdy),
-    .wdata_i        (sfifo_rcstage_wdata),
-    .rvalid_o       (sfifo_rcstage_rvld),
-    .rready_i       (sfifo_rcstage_rrdy),
-    .rdata_o        (sfifo_rcstage_rdata),
-    .full_o         (),
-    .depth_o        (),
-    .err_o          ()
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .clr_i   (!enable_i),
+    .wvalid_i(sfifo_rcstage_wvld),
+    .wready_o(sfifo_rcstage_wrdy),
+    .wdata_i (sfifo_rcstage_wdata),
+    .rvalid_o(sfifo_rcstage_rvld),
+    .rready_i(sfifo_rcstage_rrdy),
+    .rdata_o (sfifo_rcstage_rdata),
+    .full_o  (),
+    .depth_o (),
+    .err_o   ()
   );
 
   always_comb begin
@@ -258,18 +258,18 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
     .Depth(1),
     .OutputZeroIfEmpty(1'b0)
   ) u_prim_fifo_sync_keyvrc (
-    .clk_i          (clk_i),
-    .rst_ni         (rst_ni),
-    .clr_i          (!enable_i),
-    .wvalid_i       (sfifo_keyvrc_wvld),
-    .wready_o       (sfifo_keyvrc_wrdy),
-    .wdata_i        (sfifo_keyvrc_wdata),
-    .rvalid_o       (sfifo_keyvrc_rvld),
-    .rready_i       (sfifo_keyvrc_rrdy),
-    .rdata_o        (sfifo_keyvrc_rdata),
-    .full_o         (),
-    .depth_o        (),
-    .err_o          ()
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .clr_i   (!enable_i),
+    .wvalid_i(sfifo_keyvrc_wvld),
+    .wready_o(sfifo_keyvrc_wrdy),
+    .wdata_i (sfifo_keyvrc_wdata),
+    .rvalid_o(sfifo_keyvrc_rvld),
+    .rready_i(sfifo_keyvrc_rrdy),
+    .rdata_o (sfifo_keyvrc_rdata),
+    .full_o  (),
+    .depth_o (),
+    .err_o   ()
   );
 
   assign sfifo_keyvrc_wvld = sfifo_rcstage_rrdy;

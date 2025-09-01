@@ -9,71 +9,72 @@
 // ctr_drbg cmd module.
 
 module csrng_ctr_drbg_gen import csrng_pkg::*; (
-  input logic                clk_i,
-  input logic                rst_ni,
+  input  logic clk_i,
+  input  logic rst_ni,
+
+  // global enable
+  input  logic                   ctr_drbg_gen_enable_i,
 
   // command interface
-  input logic                ctr_drbg_gen_enable_i,
+  input  logic                   ctr_drbg_gen_req_i,
+  output logic                   ctr_drbg_gen_rdy_o,     // ready to process the req above
+  input  logic [CmdWidth-1:0]    ctr_drbg_gen_ccmd_i,    // current command
+  input  logic [InstIdWidth-1:0] ctr_drbg_gen_inst_id_i, // instance id
+  input  logic                   ctr_drbg_gen_glast_i,   // gen cmd last beat
+  input  logic                   ctr_drbg_gen_fips_i,    // fips
+  input  logic [SeedLen-1:0]     ctr_drbg_gen_adata_i,   // additional data
+  input  logic [KeyLen-1:0]      ctr_drbg_gen_key_i,
+  input  logic [BlkLen-1:0]      ctr_drbg_gen_v_i,
+  input  logic [CtrLen-1:0]      ctr_drbg_gen_rc_i,
 
-  input logic                ctr_drbg_gen_req_i,
-  output logic               ctr_drbg_gen_rdy_o, // ready to process the req above
-  input logic [CmdWidth-1:0] ctr_drbg_gen_ccmd_i,    // current command
-  input logic [InstIdWidth-1:0] ctr_drbg_gen_inst_id_i, // instance id
-  input logic                ctr_drbg_gen_glast_i,   // gen cmd last beat
-  input logic                ctr_drbg_gen_fips_i,    // fips
-  input logic [SeedLen-1:0]  ctr_drbg_gen_adata_i,   // additional data
-  input logic [KeyLen-1:0]   ctr_drbg_gen_key_i,
-  input logic [BlkLen-1:0]   ctr_drbg_gen_v_i,
-  input logic [CtrLen-1:0]   ctr_drbg_gen_rc_i,
-
-  output logic               ctr_drbg_gen_ack_o, // final ack when update process has been completed
-  input logic                ctr_drbg_gen_rdy_i, // ready to process the ack above
-  output csrng_cmd_sts_e     ctr_drbg_gen_sts_o, // final ack status
-  output logic [CmdWidth-1:0]ctr_drbg_gen_ccmd_o,
+  output logic                   ctr_drbg_gen_ack_o, // final ack when update process is completed
+  input  logic                   ctr_drbg_gen_rdy_i, // ready to process the ack above
+  output csrng_cmd_sts_e         ctr_drbg_gen_sts_o, // final ack status
+  output logic [CmdWidth-1:0]    ctr_drbg_gen_ccmd_o,
   output logic [InstIdWidth-1:0] ctr_drbg_gen_inst_id_o,
-  output logic [KeyLen-1:0]  ctr_drbg_gen_key_o,
-  output logic [BlkLen-1:0]  ctr_drbg_gen_v_o,
-  output logic [CtrLen-1:0]  ctr_drbg_gen_rc_o,
-  output logic [BlkLen-1:0]  ctr_drbg_gen_bits_o,
-  output logic               ctr_drbg_gen_fips_o,
+  output logic [KeyLen-1:0]      ctr_drbg_gen_key_o,
+  output logic [BlkLen-1:0]      ctr_drbg_gen_v_o,
+  output logic [CtrLen-1:0]      ctr_drbg_gen_rc_o,
+  output logic [BlkLen-1:0]      ctr_drbg_gen_bits_o,
+  output logic                   ctr_drbg_gen_fips_o,
 
   // entropy source halt interface
   // TODO rename descriptive
-  input  logic               ctr_drbg_gen_es_req_i,
-  output logic               ctr_drbg_gen_es_ack_o,
+  input  logic                   ctr_drbg_gen_es_req_i,
+  output logic                   ctr_drbg_gen_es_ack_o,
 
   // update request interface
-  output logic               gen_upd_req_vld_o,
-  input  logic               gen_upd_req_rdy_i,
-  output csrng_upd_data_t    gen_upd_req_data_o,
+  output logic                   gen_upd_req_vld_o,
+  input  logic                   gen_upd_req_rdy_i,
+  output csrng_upd_data_t        gen_upd_req_data_o,
 
   // update response interface
-  input  logic               gen_upd_rsp_vld_i,
-  output logic               gen_upd_rsp_rdy_o,
-  input  csrng_upd_data_t    gen_upd_rsp_data_i,
+  input  logic                   gen_upd_rsp_vld_i,
+  output logic                   gen_upd_rsp_rdy_o,
+  input  csrng_upd_data_t        gen_upd_rsp_data_i,
 
   // block encrypt interface
-  output logic               block_encrypt_req_o,
-  input logic                block_encrypt_rdy_i,
-  output logic [CmdWidth-1:0]block_encrypt_ccmd_o,
+  output logic                   block_encrypt_req_o,
+  input  logic                   block_encrypt_rdy_i,
+  output logic [CmdWidth-1:0]    block_encrypt_ccmd_o,
   output logic [InstIdWidth-1:0] block_encrypt_inst_id_o,
-  output logic [KeyLen-1:0]  block_encrypt_key_o,
-  output logic [BlkLen-1:0]  block_encrypt_v_o,
+  output logic [KeyLen-1:0]      block_encrypt_key_o,
+  output logic [BlkLen-1:0]      block_encrypt_v_o,
 
-  input logic                block_encrypt_ack_i,
-  output logic               block_encrypt_rdy_o,
-  input logic [CmdWidth-1:0] block_encrypt_ccmd_i,
-  input logic [InstIdWidth-1:0]  block_encrypt_inst_id_i,
-  input logic [BlkLen-1:0]   block_encrypt_v_i,
+  input  logic                   block_encrypt_ack_i,
+  output logic                   block_encrypt_rdy_o,
+  input  logic [CmdWidth-1:0]    block_encrypt_ccmd_i,
+  input  logic [InstIdWidth-1:0] block_encrypt_inst_id_i,
+  input  logic [BlkLen-1:0]      block_encrypt_v_i,
 
   // error status signals
-  output logic               ctr_drbg_gen_v_ctr_err_o,
-  output logic [2:0]         ctr_drbg_gen_sfifo_gbencack_err_o,
-  output logic [2:0]         ctr_drbg_gen_sfifo_grcstage_err_o,
-  output logic [2:0]         ctr_drbg_gen_sfifo_ggenreq_err_o,
-  output logic [2:0]         ctr_drbg_gen_sfifo_gadstage_err_o,
-  output logic [2:0]         ctr_drbg_gen_sfifo_ggenbits_err_o,
-  output logic               ctr_drbg_gen_sm_err_o
+  output logic                   ctr_drbg_gen_v_ctr_err_o,
+  output logic [2:0]             ctr_drbg_gen_sfifo_gbencack_err_o,
+  output logic [2:0]             ctr_drbg_gen_sfifo_grcstage_err_o,
+  output logic [2:0]             ctr_drbg_gen_sfifo_ggenreq_err_o,
+  output logic [2:0]             ctr_drbg_gen_sfifo_gadstage_err_o,
+  output logic [2:0]             ctr_drbg_gen_sfifo_ggenbits_err_o,
+  output logic                   ctr_drbg_gen_sm_err_o
 );
 
   import csrng_reg_pkg::NumApps;
