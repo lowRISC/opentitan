@@ -11,5 +11,6 @@ ENGLISHBREAKFAST = opentitan_top(
     hjson = "//hw/top_englishbreakfast/data/autogen:top_englishbreakfast.gen.hjson",
     top_lib = "//hw/top_englishbreakfast/sw/autogen:top_englishbreakfast",
     top_ld = "//hw/top_englishbreakfast/sw/autogen:top_englishbreakfast_memory",
+    platform = "//hw/top_englishbreakfast:platform",
     ips = ENGLISHBREAKFAST_IPS,
 )

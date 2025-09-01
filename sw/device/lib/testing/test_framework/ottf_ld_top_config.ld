@@ -17,6 +17,6 @@ REGION_ALIAS("ottf_storage", eflash)
 #ifdef OPENTITAN_IS_ENGLISHBREAKFAST
 /* Disable non-volatile scratch region and counters if building for english
  * breakfast. This should appear before the linker script. */
-no_ottf_nv_scratch = 1
-no_ottf_nv_counter = 1
+no_ottf_nv_scratch = 1;
+no_ottf_nv_counter = 1;
 #endif

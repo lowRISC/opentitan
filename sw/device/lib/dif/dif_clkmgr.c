@@ -423,6 +423,9 @@ dif_result_t dif_clkmgr_enable_measure_counts(const dif_clkmgr_t *clkmgr,
       PICK_COUNT_CTRL_FIELDS(IO_DIV2);
 #elif defined(OPENTITAN_IS_DARJEELING)
 // Darjeeling does not have Io / IoDiv2 clock measurements
+#elif defined(OPENTITAN_IS_ENGLISHBREAKFAST)
+    case kDifClkmgrMeasureClockIo:
+      PICK_COUNT_CTRL_FIELDS(IO);
 #else
 #error "dif_clkmgr does not support this top"
 #endif
@@ -479,6 +482,10 @@ dif_result_t dif_clkmgr_disable_measure_counts(
     case kDifClkmgrMeasureClockIoDiv2:
       PICK_EN_OFFSET(IO_DIV2);
       break;
+#elif defined(OPENTITAN_IS_ENGLISHBREAKFAST)
+    case kDifClkmgrMeasureClockIo:
+      PICK_EN_OFFSET(IO);
+      break;
 #elif defined(OPENTITAN_IS_DARJEELING)
 // Darjeeling does not have Io / IoDiv2 clock measurements
 #else
@@ -523,6 +530,9 @@ dif_result_t dif_clkmgr_measure_counts_get_enable(
       PICK_EN_OFFSET(IO_DIV2);
 #elif defined(OPENTITAN_IS_DARJEELING)
 // Darjeeling does not have Io / IoDiv2 clock measurements
+#elif defined(OPENTITAN_IS_ENGLISHBREAKFAST)
+    case kDifClkmgrMeasureClockIo:
+      PICK_EN_OFFSET(IO);
 #else
 #error "dif_clkmgr does not support this top"
 #endif
@@ -566,6 +576,9 @@ dif_result_t dif_clkmgr_measure_counts_get_thresholds(
       PICK_THRESHOLD_FIELDS(IO_DIV2);
 #elif defined(OPENTITAN_IS_DARJEELING)
 // Darjeeling does not have Io / IoDiv2 clock measurements
+#elif defined(OPENTITAN_IS_ENGLISHBREAKFAST)
+    case kDifClkmgrMeasureClockIo:
+      PICK_THRESHOLD_FIELDS(IO);
 #else
 #error "dif_clkmgr does not support this top"
 #endif
