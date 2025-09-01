@@ -11,6 +11,7 @@
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/sram_ctrl_testutils.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
@@ -77,18 +78,6 @@ OTTF_DEFINE_TEST_CONFIG();
  * Initialize the dif handles required for this test.
  */
 static void init_peripheral_handles(void) {
-  // The testutils initialize the key manager and KMAC handles.
-  CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
-
-  // Reconfigure the KMAC to use the EDN entropy source as opposed to a
-  // software-provided one as is default in the testutils.
-  dif_kmac_config_t config = {
-      .entropy_mode = kDifKmacEntropyModeEdn,
-      .entropy_fast_process = true,
-      .sideload = true,
-  };
-  CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
-
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
   CHECK_DIF_OK(dif_sram_ctrl_init(
@@ -96,6 +85,10 @@ static void init_peripheral_handles(void) {
       &sram_ctrl));
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(dif_keymgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
+  CHECK_DIF_OK(
+      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
 }
 
 /**
@@ -198,7 +191,11 @@ static void derive_sw_key(const char *state_name, dif_keymgr_output_t *key) {
   // If the key version is larger than the permitted maximum version, then
   // the key generation must fail.
   params.version += 1;
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+      kTopEarlgreyAlertIdKeymgrRecovOperationErr));
   CHECK_STATUS_NOT_OK(keymgr_testutils_generate_versioned_key(&keymgr, params));
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+      kTopEarlgreyAlertIdKeymgrRecovOperationErr));
 #endif
 }
 
@@ -244,7 +241,11 @@ static void derive_sideload_otbn_key(const char *state_name,
   // If the key version is larger than the permitted maximum version, then
   // the key generation must fail.
   params.version += 1;
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+      kTopEarlgreyAlertIdKeymgrRecovOperationErr));
   CHECK_STATUS_NOT_OK(keymgr_testutils_generate_versioned_key(&keymgr, params));
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+      kTopEarlgreyAlertIdKeymgrRecovOperationErr));
 #endif
 }
 
@@ -425,6 +426,20 @@ bool test_main(void) {
   CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &reset_counter));
 
   init_peripheral_handles();
+
+  // Prepare the flash with secrets only on the first reset.
+  if (reset_info == kDifRstmgrResetInfoPor) {
+    CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
+  }
+
+  // Reconfigure the KMAC to use the EDN entropy source as opposed to a
+  // software-provided one as is default in the testutils.
+  dif_kmac_config_t config = {
+      .entropy_mode = kDifKmacEntropyModeEdn,
+      .entropy_fast_process = true,
+      .sideload = true,
+  };
+  CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
 
   test_derive_cdi(reset_counter);
 

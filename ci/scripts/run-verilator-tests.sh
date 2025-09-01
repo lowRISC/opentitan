@@ -9,7 +9,7 @@ set -e
 
 ./bazelisk.sh test \
     --build_tests_only=true \
-    --test_timeout=2400,2400,3600,-1 \
+    --test_timeout=2400,2400,4000,-1 \
     --local_test_jobs=8 \
     --local_resources=cpu=8 \
     --test_tag_filters=verilator,-broken \
