@@ -53,14 +53,31 @@ enum {
 };
 
 /**
+ * The HMAC key structure.
+ */
+typedef struct hmac_key {
+  /**
+   * The length of the key (in 32-bit words).
+   */
+  size_t key_len;
+  /**
+   * Key storage buffer.
+   */
+  uint32_t key_block[kHmacMaxBlockWords];
+  /**
+   * Checksum of this HMAC key structure.
+   */
+  uint32_t checksum;
+} hmac_key_t;
+
+/**
  * A context struct maintained for streaming operations.
  */
 typedef struct hmac_ctx {
   // A copy of `CFG` register used during resumption.
   uint32_t cfg_reg;
   // A copy of `KEY` to be used during start or resumption.
-  uint32_t key[kHmacMaxBlockWords];
-  size_t key_wordlen;
+  hmac_key_t key;
   // The internal (message) block size of SHA-2 for this operation.
   size_t msg_block_wordlen;
   size_t digest_wordlen;
@@ -112,15 +129,15 @@ status_t hmac_hash_sha512(const uint8_t *msg, size_t msg_len, uint32_t *digest);
  * The key should be pre-processed into a buffer the size of a full message
  * block, according to FIPS 198-1, section 4.
  *
- * @param key_block Input key block (`kHmacSha256BlockWords` words).
+ * @param key HMAC key.
  * @param msg Input message.
  * @param msg_len Message length in bytes.
  * @param[out] tag Authentication tag (`kHmacSha256DigestWords` bytes).
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hmac_sha256_cl(const uint32_t *key_block, const uint8_t *msg,
-                             size_t msg_len, uint32_t *tag);
+status_t hmac_hmac_sha256_cl(const hmac_key_t *key, const uint8_t *msg,
+                          size_t msg_len, uint32_t *tag);
 
 /**
  * Redundant implementation for a one-shot HMAC-SHA256 hash computation.
@@ -134,16 +151,15 @@ status_t hmac_hmac_sha256_cl(const uint32_t *key_block, const uint8_t *msg,
  * implementations, injecting two identical faults affect different parts during
  * the HMAC compuation, which can be detected.
  *
- * @param key_block Input key block (`kHmacSha256BlockWords` words).
+ * @param key HMAC key.
  * @param msg Input message.
  * @param msg_len Message length in bytes.
  * @param[out] tag Authentication tag (`kHmacSha256DigestWords` bytes).
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hmac_sha256_redundant(const uint32_t *key_block,
-                                    const uint8_t *msg, size_t msg_len,
-                                    uint32_t *tag);
+status_t hmac_hmac_sha256_redundant(const hmac_key_t *key, const uint8_t *msg,
+                                    size_t msg_len, uint32_t *tag);
 
 /**
  * One-shot HMAC-SHA384 hash computation.
@@ -151,14 +167,14 @@ status_t hmac_hmac_sha256_redundant(const uint32_t *key_block,
  * The key should be pre-processed into a buffer the size of a full message
  * block, according to FIPS 198-1, section 4.
  *
- * @param key_block Input key block (`kHmacSha384BlockWords` words).
+ * @param key HMAC key.
  * @param msg Input message.
  * @param msg_len Message length in bytes.
  * @param[out] tag Authentication tag (`kHmacSha384DigestWords` bytes).
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hmac_sha384(const uint32_t *key_block, const uint8_t *msg,
+status_t hmac_hmac_sha384(const hmac_key_t *key, const uint8_t *msg,
                           size_t msg_len, uint32_t *tag);
 
 /**
@@ -173,16 +189,15 @@ status_t hmac_hmac_sha384(const uint32_t *key_block, const uint8_t *msg,
  * implementations, injecting two identical faults affect different parts during
  * the HMAC compuation, which can be detected.
  *
- * @param key_block Input key block (`kHmacSha384BlockWords` words).
+ * @param key HMAC key.
  * @param msg Input message.
  * @param msg_len Message length in bytes.
  * @param[out] tag Authentication tag (`kHmacSha384DigestWords` bytes).
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hmac_sha384_redundant(const uint32_t *key_block,
-                                    const uint8_t *msg, size_t msg_len,
-                                    uint32_t *tag);
+status_t hmac_hmac_sha384_redundant(const hmac_key_t *key, const uint8_t *msg,
+                                    size_t msg_len, uint32_t *tag);
 
 /**
  * One-shot HMAC-SHA512 hash computation.
@@ -190,14 +205,14 @@ status_t hmac_hmac_sha384_redundant(const uint32_t *key_block,
  * The key should be pre-processed into a buffer the size of a full message
  * block, according to FIPS 198-1, section 4.
  *
- * @param key_block Input key block (`kHmacSha512BlockWords` words).
+ * @param key HMAC key.
  * @param msg Input message.
  * @param msg_len Message length in bytes.
  * @param[out] tag Authentication tag (`kHmacSha512DigestWords` bytes).
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hmac_sha512(const uint32_t *key_block, const uint8_t *msg,
+status_t hmac_hmac_sha512(const hmac_key_t *key, const uint8_t *msg,
                           size_t msg_len, uint32_t *tag);
 
 /**
@@ -212,16 +227,15 @@ status_t hmac_hmac_sha512(const uint32_t *key_block, const uint8_t *msg,
  * implementations, injecting two identical faults affect different parts during
  * the HMAC compuation, which can be detected.
  *
- * @param key_block Input key block (`kHmacSha512BlockWords` words).
+ * @param key HMAC key.
  * @param msg Input message.
  * @param msg_len Message length in bytes.
  * @param[out] tag Authentication tag (`kHmacSha512DigestWords` bytes).
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hmac_sha512_redundant(const uint32_t *key_block,
-                                    const uint8_t *msg, size_t msg_len,
-                                    uint32_t *tag);
+status_t hmac_hmac_sha512_redundant(const hmac_key_t *key, const uint8_t *msg,
+                                    size_t msg_len, uint32_t *tag);
 
 /**
  * Initializes the context for a streaming SHA256 hash computation.
@@ -250,10 +264,10 @@ void hmac_hash_sha512_init(hmac_ctx_t *ctx);
  * The key should be pre-processed into a buffer the size of a full message
  * block, according to FIPS 198-1, section 4.
  *
- * @param key_block Input key block (`kHmacSha256BlockWords` words).
+ * @param key The key used for HMAC.
  * @param[out] ctx Initialized context object.
  */
-void hmac_hmac_sha256_init_cl(const uint32_t *key_block, hmac_ctx_t *ctx);
+void hmac_hmac_sha256_init_cl(const hmac_key_t key, hmac_ctx_t *ctx);
 
 /**
  * Initializes the context for a streaming HMAC-SHA384 computation.
@@ -261,10 +275,10 @@ void hmac_hmac_sha256_init_cl(const uint32_t *key_block, hmac_ctx_t *ctx);
  * The key should be pre-processed into a buffer the size of a full message
  * block, according to FIPS 198-1, section 4.
  *
- * @param key_block Input key block (`kHmacSha384BlockWords` words).
+ * @param key The key used for HMAC.
  * @param[out] ctx Initialized context object.
  */
-void hmac_hmac_sha384_init(const uint32_t *key_block, hmac_ctx_t *ctx);
+void hmac_hmac_sha384_init(const hmac_key_t key, hmac_ctx_t *ctx);
 
 /**
  * Initializes the context for a streaming HMAC-SHA512 computation.
@@ -272,10 +286,31 @@ void hmac_hmac_sha384_init(const uint32_t *key_block, hmac_ctx_t *ctx);
  * The key should be pre-processed into a buffer the size of a full message
  * block, according to FIPS 198-1, section 4.
  *
- * @param key_block Input key block (`kHmacSha512BlockWords` words).
+ * @param key The key used for HMAC.
  * @param[out] ctx Initialized context object.
  */
-void hmac_hmac_sha512_init(const uint32_t *key_block, hmac_ctx_t *ctx);
+void hmac_hmac_sha512_init(const hmac_key_t key, hmac_ctx_t *ctx);
+
+/**
+ * Compute the checksum of an HMAC key.
+ *
+ * Call this routine after creating or modifying the HMAC key structure.
+ *
+ * @param key HMAC key.
+ * @returns Checksum value.
+ */
+uint32_t hmac_key_integrity_checksum(const hmac_key_t *key);
+
+/**
+ * Perform an integrity check on the HMAC key.
+ *
+ * Returns `kHardenedBoolTrue` if the check passed and `kHardenedBoolFalse`
+ * otherwise.
+ *
+ * @param key HMAC key.
+ * @returns Whether the integrity check passed.
+ */
+hardened_bool_t hmac_key_integrity_checksum_check(const hmac_key_t *key);
 
 /**
  * Update the context with additional messsage data.
