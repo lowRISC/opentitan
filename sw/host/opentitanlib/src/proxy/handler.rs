@@ -31,16 +31,16 @@ use crate::transport::TransportError;
 
 /// Implementation of the handling of each protocol request, by means of an underlying
 /// `Transport` implementation.
-pub struct TransportCommandHandler<'a> {
-    transport: &'a TransportWrapper,
+pub struct TransportCommandHandler {
+    transport: TransportWrapper,
     uart_registry: NonblockingUartRegistry,
     spi_chip_select: HashMap<String, Vec<spi::AssertChipSelect>>,
     ongoing_bitbanging: Option<Box<dyn GpioBitbangOperation<'static, 'static>>>,
     ongoing_dacbanging: Option<Box<dyn GpioDacBangOperation>>,
 }
 
-impl<'a> TransportCommandHandler<'a> {
-    pub fn new(transport: &'a TransportWrapper) -> Result<Self> {
+impl TransportCommandHandler {
+    pub fn new(transport: TransportWrapper) -> Result<Self> {
         Ok(Self {
             transport,
             uart_registry: NonblockingUartRegistry::new(),
@@ -573,7 +573,7 @@ impl<'a> TransportCommandHandler<'a> {
                     Ok(Response::Proxy(ProxyResponse::Provides { provides_map }))
                 }
                 ProxyRequest::Bootstrap { options, payload } => {
-                    Bootstrap::update(self.transport, options, payload)?;
+                    Bootstrap::update(&self.transport, options, payload)?;
                     Ok(Response::Proxy(ProxyResponse::Bootstrap))
                 }
                 ProxyRequest::ApplyPinStrapping { strapping_name } => {
@@ -596,7 +596,7 @@ impl<'a> TransportCommandHandler<'a> {
     }
 }
 
-impl<'a> CommandHandler<Message> for TransportCommandHandler<'a> {
+impl CommandHandler<Message> for TransportCommandHandler {
     /// This method will perform whatever action on the underlying `Transport` that is requested
     /// by the given `Message`, and return a response to be sent to the client.  Any `Err`
     /// return from this method will be treated as an irrecoverable protocol error, causing an
