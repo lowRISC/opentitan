@@ -20,9 +20,6 @@ from lib.LcStEnc import LcStEnc
 from lib.OtpMemMap import OtpMemMap
 from lib.Present import Present
 
-_OTP_SW_SKIP_FROM_HEADER = ('VENDOR_TEST', 'HW_CFG0', 'HW_CFG1', 'SECRET0',
-                            'SECRET1', 'SECRET2', 'LIFE_CYCLE')
-
 
 def _present_64bit_encrypt(plain, key):
     '''Scramble a 64bit block with PRESENT cipher'''
@@ -540,7 +537,7 @@ class OtpMemImg(OtpMemMap):
         '''
         data = {}
         for part in self.config['partitions']:
-            if part['name'] in _OTP_SW_SKIP_FROM_HEADER:
+            if part.get('skip_sw_header'):
                 continue
             items = []
             for item in part["items"]:

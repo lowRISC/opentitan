@@ -74,6 +74,7 @@
           key_sel: NoKey
           integrity: false
           bkout_type: false
+          skip_sw_header: true
           items:
           [
             {
@@ -1706,6 +1707,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: true
+          skip_sw_header: true
           items:
           [
             {
@@ -1776,6 +1778,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: true
+          skip_sw_header: true
           items:
           [
             {
@@ -1867,6 +1870,7 @@
           key_sel: Secret0Key
           integrity: true
           bkout_type: false
+          skip_sw_header: true
           items:
           [
             {
@@ -1926,6 +1930,7 @@
           key_sel: Secret1Key
           integrity: true
           bkout_type: false
+          skip_sw_header: true
           items:
           [
             {
@@ -1996,6 +2001,7 @@
           key_sel: Secret2Key
           integrity: true
           bkout_type: false
+          skip_sw_header: true
           items:
           [
             {
@@ -2066,6 +2072,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          skip_sw_header: true
           items:
           [
             {
