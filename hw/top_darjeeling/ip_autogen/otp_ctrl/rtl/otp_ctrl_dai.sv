@@ -378,9 +378,16 @@ module otp_ctrl_dai
              (PartInfo[part_idx].zeroizable &&
               otp_addr_o[OtpAddrWidth-1:2] == zeroize_addr_lut[part_idx][OtpAddrWidth-1:2]))) begin
           otp_req_o = 1'b1;
-          // Depending on the partition configuration,
-          // the wrapper is instructed to ignore integrity errors.
-          if (PartInfo[part_idx].integrity && mubi8_test_false_loose(zer_i[part_idx])) begin
+          // The `Read` OTP command takes integrity errors into account, the `ReadRaw` command
+          // ignores them. The following means integrity errors are taken into account if all of the
+          // following apply:
+          // - the partition has integrity protection enabled;
+          // - the partition has not been zeroized (based on the buffered zeroization information,
+          //   which is only updated after reset);
+          // - the read doesn't address the zeroization marker (which means the zeroization marker
+          //   can always be read without risking fatal integrity errors).
+          if (PartInfo[part_idx].integrity && mubi8_test_false_loose(zer_i[part_idx]) &&
+              !(otp_addr_o[OtpAddrWidth-1:2] == zeroize_addr_lut[part_idx][OtpAddrWidth-1:2])) begin
             otp_cmd_o = otp_ctrl_macro_pkg::Read;
           end else begin
             otp_cmd_o = otp_ctrl_macro_pkg::ReadRaw;
