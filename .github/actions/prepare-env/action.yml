@@ -88,7 +88,7 @@ runs:
     # This needs access to secrets and thus doesn't work for pull request.
     - uses: google-github-actions/auth@v2
       id: google_auth
-      if: github.event_name != 'pull_request'
+      if: github.event_name != 'pull_request' && inputs.service_account_json != ''
       with:
         credentials_json: '${{ inputs.service_account_json }}'
 
@@ -96,7 +96,7 @@ runs:
     # it. This influences with a few scripts that assume clean workspace, and introduce security risk
     # that it may be exposed when uploading to buckets.
     - name: Move Google credentials out from workspace
-      if: github.event_name != 'pull_request'
+      if: github.event_name != 'pull_request' && inputs.service_account_json != ''
       run: |
         SOURCE=${{ steps.google_auth.outputs.credentials_file_path }}
         TARGET=${{ runner.temp }}/$(basename "$SOURCE")
@@ -107,7 +107,7 @@ runs:
       shell: bash
 
     - uses: google-github-actions/setup-gcloud@v2
-      if: github.event_name != 'pull_request'
+      if: github.event_name != 'pull_request' && inputs.service_account_json != ''
 
     - name: Configure ~/.bazelrc
       if: inputs.configure-bazel == 'true'
@@ -118,7 +118,7 @@ runs:
         # See #14695 for more information.
         echo "build --remote_default_exec_properties=OSVersion=\"$(lsb_release -ds)\"" >> ~/.bazelrc
 
-        if ${{ github.event_name != 'pull_request' }}; then
+        if ${{ github.event_name != 'pull_request' && inputs.service_account_json != '' }}; then
           echo "Will upload to the cache." >&2
           echo "build --google_default_credentials" >> ~/.bazelrc
         else
