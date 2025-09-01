@@ -7,51 +7,52 @@
 // implementation using security_strength = 256
 
 module csrng_ctr_drbg_upd import csrng_pkg::*; (
-  input  logic               clk_i,
-  input  logic               rst_ni,
+  input  logic clk_i,
+  input  logic rst_ni,
+
+  // global enable
+  input  logic                   ctr_drbg_upd_enable_i,
 
   // update interface
-  input  logic               ctr_drbg_upd_enable_i,
-
   // request in
-  input  logic               req_vld_i,
-  output logic               req_rdy_o,
-  input  csrng_upd_data_t    req_data_i,
+  input  logic                   req_vld_i,
+  output logic                   req_rdy_o,
+  input  csrng_upd_data_t        req_data_i,
 
   // response out
-  output logic               rsp_vld_o,
-  input  logic               rsp_rdy_i,
-  output csrng_upd_data_t    rsp_data_o,
+  output logic                   rsp_vld_o,
+  input  logic                   rsp_rdy_i,
+  output csrng_upd_data_t        rsp_data_o,
 
   // es_req/ack
-  input logic                ctr_drbg_upd_es_req_i,
-  output logic               ctr_drbg_upd_es_ack_o,
+  input  logic                   ctr_drbg_upd_es_req_i,
+  output logic                   ctr_drbg_upd_es_ack_o,
 
   // block encrypt interfaces
   // Request interface (out to block_encrypt)
-  output logic               block_encrypt_req_o,
-  input logic                block_encrypt_rdy_i,
-  output logic [CmdWidth-1:0]block_encrypt_ccmd_o,
+  output logic                   block_encrypt_req_o,
+  input  logic                   block_encrypt_rdy_i,
+  output logic [CmdWidth-1:0]    block_encrypt_ccmd_o,
   output logic [InstIdWidth-1:0] block_encrypt_inst_id_o,
-  output logic [KeyLen-1:0]  block_encrypt_key_o,
-  output logic [BlkLen-1:0]  block_encrypt_v_o,
+  output logic [KeyLen-1:0]      block_encrypt_key_o,
+  output logic [BlkLen-1:0]      block_encrypt_v_o,
 
   // Response interface
-  input logic                block_encrypt_ack_i,
-  output logic               block_encrypt_rdy_o,
-  input logic [CmdWidth-1:0] block_encrypt_ccmd_i,
-  input logic [InstIdWidth-1:0] block_encrypt_inst_id_i,
-  input logic [BlkLen-1:0]   block_encrypt_v_i,
+  input  logic                   block_encrypt_ack_i,
+  output logic                   block_encrypt_rdy_o,
+  input  logic [CmdWidth-1:0]    block_encrypt_ccmd_i,
+  input  logic [InstIdWidth-1:0] block_encrypt_inst_id_i,
+  input  logic [BlkLen-1:0]      block_encrypt_v_i,
 
   // error status outputs
-  output logic               ctr_drbg_upd_v_ctr_err_o,
-  output logic [2:0]         ctr_drbg_upd_sfifo_updreq_err_o,
-  output logic [2:0]         ctr_drbg_upd_sfifo_bencreq_err_o,
-  output logic [2:0]         ctr_drbg_upd_sfifo_bencack_err_o,
-  output logic [2:0]         ctr_drbg_upd_sfifo_pdata_err_o,
-  output logic [2:0]         ctr_drbg_upd_sfifo_final_err_o,
-  output logic               ctr_drbg_updbe_sm_err_o,
-  output logic               ctr_drbg_updob_sm_err_o
+  output logic                   ctr_drbg_upd_v_ctr_err_o,
+  output logic [2:0]             ctr_drbg_upd_sfifo_updreq_err_o,
+  output logic [2:0]             ctr_drbg_upd_sfifo_bencreq_err_o,
+  output logic [2:0]             ctr_drbg_upd_sfifo_bencack_err_o,
+  output logic [2:0]             ctr_drbg_upd_sfifo_pdata_err_o,
+  output logic [2:0]             ctr_drbg_upd_sfifo_final_err_o,
+  output logic                   ctr_drbg_updbe_sm_err_o,
+  output logic                   ctr_drbg_updob_sm_err_o
 );
 
   localparam int UpdReqFifoDepth = 1;

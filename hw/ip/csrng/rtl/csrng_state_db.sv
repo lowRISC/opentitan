@@ -13,37 +13,39 @@ module csrng_state_db
   import csrng_pkg::*;
   import csrng_reg_pkg::NumApps;
 (
-  input logic                clk_i,
-  input logic                rst_ni,
+  input  logic clk_i,
+  input  logic rst_ni,
 
-   // read interface
-  input logic                state_db_enable_i,
-  input logic [InstIdWidth-1:0] state_db_rd_inst_id_i,
-  output logic [KeyLen-1:0]  state_db_rd_key_o,
-  output logic [BlkLen-1:0]  state_db_rd_v_o,
-  output logic [CtrLen-1:0]  state_db_rd_res_ctr_o,
-  output logic               state_db_rd_inst_st_o,
-  output logic               state_db_rd_fips_o,
+  // read interface
+  input  logic                     state_db_enable_i,
+  input  logic [InstIdWidth-1:0]   state_db_rd_inst_id_i,
+  output logic [KeyLen-1:0]        state_db_rd_key_o,
+  output logic [BlkLen-1:0]        state_db_rd_v_o,
+  output logic [CtrLen-1:0]        state_db_rd_res_ctr_o,
+  output logic                     state_db_rd_inst_st_o,
+  output logic                     state_db_rd_fips_o,
+
   // write interface
-  input logic                state_db_wr_req_i,
-  output logic               state_db_wr_req_rdy_o,
-  input logic [InstIdWidth-1:0] state_db_wr_inst_id_i,
-  input logic                state_db_wr_fips_i,
-  input logic [CmdWidth-1:0] state_db_wr_ccmd_i,
-  input logic [KeyLen-1:0]   state_db_wr_key_i,
-  input logic [BlkLen-1:0]   state_db_wr_v_i,
-  input logic [CtrLen-1:0]   state_db_wr_res_ctr_i,
-  input csrng_cmd_sts_e      state_db_wr_sts_i,
+  input  logic                     state_db_wr_req_i,
+  output logic                     state_db_wr_req_rdy_o,
+  input  logic [InstIdWidth-1:0]   state_db_wr_inst_id_i,
+  input  logic                     state_db_wr_fips_i,
+  input  logic [CmdWidth-1:0]      state_db_wr_ccmd_i,
+  input  logic [KeyLen-1:0]        state_db_wr_key_i,
+  input  logic [BlkLen-1:0]        state_db_wr_v_i,
+  input  logic [CtrLen-1:0]        state_db_wr_res_ctr_i,
+  input csrng_cmd_sts_e            state_db_wr_sts_i,
+
   // status interface
-  input logic                state_db_is_dump_en_i,
-  input logic                state_db_reg_rd_sel_i,
-  input logic                state_db_reg_rd_id_pulse_i,
-  input logic [InstIdWidth-1:0] state_db_reg_rd_id_i,
-  output logic [31:0]        state_db_reg_rd_val_o,
-  output logic               state_db_sts_ack_o,
-  output csrng_cmd_sts_e     state_db_sts_sts_o,
-  output logic [InstIdWidth-1:0] state_db_sts_id_o,
-  input logic [NumApps-1:0]  int_state_read_enable_i,
+  input  logic                     state_db_is_dump_en_i,
+  input  logic                     state_db_reg_rd_sel_i,
+  input  logic                     state_db_reg_rd_id_pulse_i,
+  input  logic [InstIdWidth-1:0]   state_db_reg_rd_id_i,
+  output logic [31:0]              state_db_reg_rd_val_o,
+  output logic                     state_db_sts_ack_o,
+  output csrng_cmd_sts_e           state_db_sts_sts_o,
+  output logic [InstIdWidth-1:0]   state_db_sts_id_o,
+  input  logic [NumApps-1:0]       int_state_read_enable_i,
 
   // The reseed counters are always readable via register interface.
   output logic [NumApps-1:0][31:0] reseed_counter_o

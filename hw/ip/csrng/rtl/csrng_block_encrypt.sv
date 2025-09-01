@@ -8,26 +8,26 @@
 module csrng_block_encrypt import csrng_pkg::*; #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut
 ) (
-  input logic                clk_i,
-  input logic                rst_ni,
+  input  logic clk_i,
+  input  logic rst_ni,
 
    // update interface
-  input logic                block_encrypt_enable_i,
-  input logic                block_encrypt_req_i,
-  output logic               block_encrypt_rdy_o,
-  input logic [KeyLen-1:0]   block_encrypt_key_i,
-  input logic [BlkLen-1:0]   block_encrypt_v_i,
-  input logic [CmdWidth-1:0] block_encrypt_cmd_i,
-  input logic [InstIdWidth-1:0] block_encrypt_id_i,
+  input  logic                   block_encrypt_enable_i,
+  input  logic                   block_encrypt_req_i,
+  output logic                   block_encrypt_rdy_o,
+  input  logic [KeyLen-1:0]      block_encrypt_key_i,
+  input  logic [BlkLen-1:0]      block_encrypt_v_i,
+  input  logic [CmdWidth-1:0]    block_encrypt_cmd_i,
+  input  logic [InstIdWidth-1:0] block_encrypt_id_i,
 
-  output logic               block_encrypt_ack_o,
-  input logic                block_encrypt_rdy_i,
-  output logic [CmdWidth-1:0]block_encrypt_cmd_o,
+  output logic                   block_encrypt_ack_o,
+  input  logic                   block_encrypt_rdy_i,
+  output logic [CmdWidth-1:0]    block_encrypt_cmd_o,
   output logic [InstIdWidth-1:0] block_encrypt_id_o,
-  output logic [BlkLen-1:0]  block_encrypt_v_o,
-  output logic               block_encrypt_quiet_o,
-  output logic               block_encrypt_aes_cipher_sm_err_o,
-  output logic [2:0]         block_encrypt_sfifo_blkenc_err_o
+  output logic [BlkLen-1:0]      block_encrypt_v_o,
+  output logic                   block_encrypt_quiet_o,
+  output logic                   block_encrypt_aes_cipher_sm_err_o,
+  output logic [2:0]             block_encrypt_sfifo_blkenc_err_o
 );
 
   localparam int BlkEncFifoDepth = 1;
