@@ -1066,7 +1066,7 @@ module csrng_core import csrng_pkg::*; #(
   // parse the command bus
   assign acmd_hold = acmd_sop ? acmd_bus[2:0] : acmd_q;
 
-  // TODO rewrite as an always_comb block
+  // TODO(#28153) rewrite as an always_comb block
   assign acmd_d =
          (!cs_enable_fo[32]) ? '0 :
          acmd_sop ? acmd_bus[2:0] :
@@ -1379,10 +1379,9 @@ module csrng_core import csrng_pkg::*; #(
 
 
   csrng_ctr_drbg_upd u_csrng_ctr_drbg_upd (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-
-    .ctr_drbg_upd_enable_i(cs_enable_fo[47]),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .enable_i(cs_enable_fo[47]),
 
     .req_vld_i (upd_arb_req_vld),
     .req_rdy_o (upd_arb_req_rdy),
@@ -1392,9 +1391,9 @@ module csrng_core import csrng_pkg::*; #(
     .rsp_rdy_i (upd_rsp_rdy),
     .rsp_data_o(upd_rsp_data),
 
-    // es halt interface
-    .ctr_drbg_upd_es_req_i(cs_aes_halt_i.cs_aes_halt_req),
-    .ctr_drbg_upd_es_ack_o(ctr_drbg_upd_es_ack),
+    // Entropy source halt interface
+    .es_halt_req_i(cs_aes_halt_i.cs_aes_halt_req),
+    .es_halt_ack_o(ctr_drbg_upd_es_ack),
 
     .block_encrypt_req_o(updblk_benblk_arb_req),
     .block_encrypt_rdy_i(updblk_benblk_arb_req_rdy),

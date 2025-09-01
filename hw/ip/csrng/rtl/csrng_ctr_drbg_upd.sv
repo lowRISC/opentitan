@@ -12,26 +12,24 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   input  logic clk_i,
   input  logic rst_ni,
 
-  // global enable
-  input  logic                   ctr_drbg_upd_enable_i,
+  // Global enable
+  input  logic enable_i,
 
-  // update interface
-  // request in
+  // Update interface request from cmd and generate stages
   input  logic                   req_vld_i,
   output logic                   req_rdy_o,
   input  csrng_upd_data_t        req_data_i,
 
-  // response out
+  // Update interface response to cmd and generate stages
   output logic                   rsp_vld_o,
   input  logic                   rsp_rdy_i,
   output csrng_upd_data_t        rsp_data_o,
 
-  // es_req/ack
-  input  logic                   ctr_drbg_upd_es_req_i,
-  output logic                   ctr_drbg_upd_es_ack_o,
+  // Halt request from entropy source
+  input  logic                   es_halt_req_i,
+  output logic                   es_halt_ack_o,
 
-  // block encrypt interfaces
-  // Request interface (out to block_encrypt)
+  // Block encrypt interface request
   output logic                   block_encrypt_req_o,
   input  logic                   block_encrypt_rdy_i,
   output logic [CmdWidth-1:0]    block_encrypt_ccmd_o,
@@ -39,14 +37,14 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   output logic [KeyLen-1:0]      block_encrypt_key_o,
   output logic [BlkLen-1:0]      block_encrypt_v_o,
 
-  // Response interface
+  // Block encrypt interface response
   input  logic                   block_encrypt_ack_i,
   output logic                   block_encrypt_rdy_o,
   input  logic [CmdWidth-1:0]    block_encrypt_ccmd_i,
   input  logic [InstIdWidth-1:0] block_encrypt_inst_id_i,
   input  logic [BlkLen-1:0]      block_encrypt_v_i,
 
-  // error status outputs
+  // Error status outputs
   output logic                   ctr_drbg_upd_v_ctr_err_o,
   output logic [2:0]             ctr_drbg_upd_sfifo_updreq_err_o,
   output logic [2:0]             ctr_drbg_upd_sfifo_bencreq_err_o,
@@ -57,8 +55,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   output logic                   ctr_drbg_updob_sm_err_o
 );
 
-  localparam int UpdReqFifoDepth = 1;
-  localparam int UpdReqFifoWidth = KeyLen+BlkLen+SeedLen+InstIdWidth+CmdWidth;
+  localparam int UpdReqFifoWidth = UpdDataWidth;
   localparam int BlkEncReqFifoDepth = 1;
   localparam int BlkEncReqFifoWidth = KeyLen+BlkLen+InstIdWidth+CmdWidth;
   localparam int BlkEncAckFifoDepth = 1;
@@ -74,19 +71,16 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   logic [BlkLen-1:0]  v_first;
   logic [BlkLen-1:0]  v_sized;
 
-  // upd_req fifo
-  logic [UpdReqFifoWidth-1:0] sfifo_updreq_rdata;
+  // updreq fifo
   logic                       sfifo_updreq_wvld;
+  logic                       sfifo_updreq_wrdy;
   logic [UpdReqFifoWidth-1:0] sfifo_updreq_wdata;
-  logic                       sfifo_updreq_rrdy;
-  logic                       sfifo_updreq_full;
   logic                       sfifo_updreq_rvld;
-  // breakout
-  logic [CmdWidth-1:0]        sfifo_updreq_ccmd;
-  logic [InstIdWidth-1:0]     sfifo_updreq_inst_id;
-  logic [SeedLen-1:0]         sfifo_updreq_pdata;
-  logic [KeyLen-1:0]          sfifo_updreq_key;
-  logic [BlkLen-1:0]          sfifo_updreq_v;
+  logic                       sfifo_updreq_rrdy;
+  logic [UpdReqFifoWidth-1:0] sfifo_updreq_rdata;
+  logic                       sfifo_updreq_full;
+
+  csrng_upd_data_t            req_data_fifo;
 
   // blk_encrypt_req fifo
   logic [BlkEncReqFifoWidth-1:0] sfifo_bencreq_rdata;
@@ -137,8 +131,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
 
   logic               v_ctr_load;
   logic               v_ctr_inc;
-  logic               interate_ctr_done;
-  logic               interate_ctr_inc;
+  logic               block_ctr_done;
   logic               concat_outblk_shift;
   logic               concat_ctr_done;
   logic               concat_ctr_inc;
@@ -146,30 +139,30 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   logic [CtrLen-1:0]         v_ctr;
 
   // flops
-  logic [1:0]         interate_ctr_q, interate_ctr_d;
+  logic [1:0]         block_ctr_q, block_ctr_d;
   logic [1:0]         concat_ctr_q, concat_ctr_d;
   logic [SeedLen-1:0] concat_outblk_q, concat_outblk_d;
   logic [CmdWidth-1:0]concat_ccmd_q, concat_ccmd_d;
   logic [InstIdWidth-1:0] concat_inst_id_q, concat_inst_id_d;
 
-// Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \
-//      -s 47328894 --language=sv
-//
-// Hamming distance histogram:
-//
-//  0: --
-//  1: --
-//  2: --
-//  3: |||||||||||||||||||| (66.67%)
-//  4: |||||||||| (33.33%)
-//  5: --
-//
-// Minimum Hamming distance: 3
-// Maximum Hamming distance: 4
-// Minimum Hamming weight: 2
-// Maximum Hamming weight: 3
-//
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \
+  //      -s 47328894 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (66.67%)
+  //  4: |||||||||| (33.33%)
+  //  5: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 4
+  // Minimum Hamming weight: 2
+  // Maximum Hamming weight: 3
+  //
 
   localparam int BlkEncStateWidth = 5;
   typedef enum logic [BlkEncStateWidth-1:0] {
@@ -185,25 +178,25 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   `PRIM_FLOP_SPARSE_FSM(u_blk_enc_state_regs, blk_enc_state_d,
       blk_enc_state_q, blk_enc_state_e, ReqIdle)
 
-// Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 6 \
-//      -s 400877681 --language=sv
-//
-// Hamming distance histogram:
-//
-//  0: --
-//  1: --
-//  2: --
-//  3: |||||||||||||||||||| (66.67%)
-//  4: ||||| (16.67%)
-//  5: --
-//  6: ||||| (16.67%)
-//
-// Minimum Hamming distance: 3
-// Maximum Hamming distance: 6
-// Minimum Hamming weight: 2
-// Maximum Hamming weight: 4
-//
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 6 \
+  //      -s 400877681 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (66.67%)
+  //  4: ||||| (16.67%)
+  //  5: --
+  //  6: ||||| (16.67%)
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 6
+  // Minimum Hamming weight: 2
+  // Maximum Hamming weight: 4
+  //
 
   localparam int OutBlkStateWidth = 6;
   typedef enum logic [OutBlkStateWidth-1:0] {
@@ -219,21 +212,21 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   `PRIM_FLOP_SPARSE_FSM(u_outblk_state_regs, outblk_state_d,
       outblk_state_q, outblk_state_e, AckIdle)
 
-  always_ff @(posedge clk_i or negedge rst_ni)
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      interate_ctr_q     <= '0;
-      concat_ctr_q       <= '0;
-      concat_outblk_q    <= '0;
-      concat_ccmd_q      <= '0;
-      concat_inst_id_q   <= '0;
+      block_ctr_q      <= '0;
+      concat_ctr_q     <= '0;
+      concat_outblk_q  <= '0;
+      concat_ccmd_q    <= '0;
+      concat_inst_id_q <= '0;
     end else begin
-      interate_ctr_q     <= interate_ctr_d;
-      concat_ctr_q       <= concat_ctr_d;
-      concat_outblk_q    <= concat_outblk_d;
-      concat_ccmd_q      <= concat_ccmd_d;
-      concat_inst_id_q   <= concat_inst_id_d;
-    end // else: !if(!rst_ni)
-
+      block_ctr_q      <= block_ctr_d;
+      concat_ctr_q     <= concat_ctr_d;
+      concat_outblk_q  <= concat_outblk_d;
+      concat_ccmd_q    <= concat_ccmd_d;
+      concat_inst_id_q <= concat_inst_id_d;
+    end
+  end
 
   //--------------------------------------------
   // input request fifo for staging update requests
@@ -242,14 +235,14 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   prim_fifo_sync #(
     .Width(UpdReqFifoWidth),
     .Pass(0),
-    .Depth(UpdReqFifoDepth),
+    .Depth(1),
     .OutputZeroIfEmpty(1'b0)
   ) u_prim_fifo_sync_updreq (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
-    .clr_i    (!ctr_drbg_upd_enable_i),
+    .clr_i    (!enable_i),
     .wvalid_i (sfifo_updreq_wvld),
-    .wready_o (),
+    .wready_o (sfifo_updreq_wrdy),
     .wdata_i  (sfifo_updreq_wdata),
     .rvalid_o (sfifo_updreq_rvld),
     .rready_i (sfifo_updreq_rrdy),
@@ -259,16 +252,14 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
     .err_o    ()
   );
 
-  assign sfifo_updreq_wvld = !sfifo_updreq_full && req_vld_i;
-  assign sfifo_updreq_wdata = {req_data_i.key,req_data_i.v,req_data_i.pdata,
-                               req_data_i.inst_id,req_data_i.cmd};
-  assign req_rdy_o = !sfifo_updreq_full;
+  assign sfifo_updreq_wvld  = sfifo_updreq_wrdy && req_vld_i;
+  assign sfifo_updreq_wdata = req_data_i;
+  assign req_rdy_o          = sfifo_updreq_wrdy;
 
-  assign {sfifo_updreq_key,sfifo_updreq_v,sfifo_updreq_pdata,
-          sfifo_updreq_inst_id,sfifo_updreq_ccmd} = sfifo_updreq_rdata;
+  assign req_data_fifo = sfifo_updreq_rdata;
 
-  assign ctr_drbg_upd_sfifo_updreq_err_o =
-         {(sfifo_updreq_wvld && sfifo_updreq_full),
+  assign ctr_drbg_upd_sfifo_updreq_err_o = {
+         (sfifo_updreq_wvld && !sfifo_updreq_wrdy),
          (sfifo_updreq_rrdy && !sfifo_updreq_rvld),
          (sfifo_updreq_full && !sfifo_updreq_rvld)};
 
@@ -278,10 +269,10 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
 
   if (CtrLen < BlkLen) begin : g_ctrlen_sm
     // for ctr_len < blocklen
-    assign v_inc = sfifo_updreq_v[CtrLen-1:0] + 1;
-    assign v_first = {sfifo_updreq_v[BlkLen-1:CtrLen],v_inc};
+    assign v_inc = req_data_fifo.v[CtrLen-1:0] + 1;
+    assign v_first = {req_data_fifo.v[BlkLen-1:CtrLen],v_inc};
   end else begin : g_ctrlen_lg
-    assign v_first = sfifo_updreq_v + 1;
+    assign v_first = req_data_fifo.v + 1;
   end
 
   // SEC_CM: DRBG_UPD.CTR.REDUN
@@ -290,7 +281,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   ) u_prim_count_ctr_drbg (
     .clk_i,
     .rst_ni,
-    .clr_i(!ctr_drbg_upd_enable_i),
+    .clr_i(!enable_i),
     .set_i(v_ctr_load),
     .set_cnt_i(v_first[CtrLen-1:0]),
     .incr_en_i(v_ctr_inc), // count up
@@ -304,14 +295,23 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
 
   assign     v_sized = {v_first[BlkLen-1:CtrLen],v_ctr};
 
-  // interation counter
-  assign     interate_ctr_d =
-             (!ctr_drbg_upd_enable_i) ? '0 :
-             interate_ctr_done ? '0 :
-             interate_ctr_inc ? (interate_ctr_q + 1) :
-             interate_ctr_q;
+  // Count the number of blocks that have been sent to block_encrypt for each call of the update
+  // function, until blocks adding to at least SeedLen bits have been sent.
+  // Counting up is done in sync with the 'main' v counter above
+  always_comb begin
+    block_ctr_d = block_ctr_q;
+    if (!enable_i) begin
+      block_ctr_d = '0;
+    end else if (block_ctr_done) begin
+      block_ctr_d = '0;
+    end else if (v_ctr_inc) begin
+      block_ctr_d = block_ctr_q + 1;
+    end
+  end
 
-  assign interate_ctr_done = (interate_ctr_q >= SeedLen/BlkLen);
+  // Doing this inside the always_comb above results in some simulator tools getting stuck at the
+  // beginning of the simulation.
+  assign block_ctr_done = (block_ctr_q >= SeedLen/BlkLen);
 
   //--------------------------------------------
   // state machine to send values to block_encrypt
@@ -321,20 +321,19 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
     blk_enc_state_d = blk_enc_state_q;
     v_ctr_load = 1'b0;
     v_ctr_inc  = 1'b0;
-    interate_ctr_inc  = 1'b0;
     sfifo_pdata_wvld = 1'b0;
     sfifo_bencreq_wvld = 1'b0;
     sfifo_updreq_rrdy = 1'b0;
     ctr_drbg_updbe_sm_err_o = 1'b0;
-    ctr_drbg_upd_es_ack_o = 1'b0;
+    es_halt_ack_o = 1'b0;
     unique case (blk_enc_state_q)
       // ReqIdle: increment v this cycle, push in next
       ReqIdle: begin
         // Prioritize halt requests from entropy_src over disable, as CSRNG would otherwise starve
         // those requests while it is idle.
-        if (ctr_drbg_upd_es_req_i) begin
+        if (es_halt_req_i) begin
           blk_enc_state_d = ESHalt;
-        end else if (!ctr_drbg_upd_enable_i) begin
+        end else if (!enable_i) begin
           blk_enc_state_d = ReqIdle;
         end else if (sfifo_updreq_rvld && !sfifo_bencreq_full && !sfifo_pdata_full) begin
           v_ctr_load = 1'b1;
@@ -343,12 +342,11 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
         end
       end
       ReqSend: begin
-        if (!ctr_drbg_upd_enable_i) begin
+        if (!enable_i) begin
           blk_enc_state_d = ReqIdle;
-        end else if (!interate_ctr_done) begin
+        end else if (!block_ctr_done) begin
           if (!sfifo_bencreq_full) begin
             v_ctr_inc  = 1'b1;
-            interate_ctr_inc  = 1'b1;
             sfifo_bencreq_wvld = 1'b1;
           end
         end else begin
@@ -357,8 +355,8 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
         end
       end
       ESHalt: begin
-        ctr_drbg_upd_es_ack_o = 1'b1;
-        if (!ctr_drbg_upd_es_req_i) begin
+        es_halt_ack_o = 1'b1;
+        if (!es_halt_req_i) begin
           blk_enc_state_d = ReqIdle;
         end
       end
@@ -384,7 +382,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   ) u_prim_fifo_sync_bencreq (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
-    .clr_i    (!ctr_drbg_upd_enable_i),
+    .clr_i    (!enable_i),
     .wvalid_i (sfifo_bencreq_wvld),
     .wready_o (),
     .wdata_i  (sfifo_bencreq_wdata),
@@ -399,7 +397,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   assign sfifo_bencreq_rrdy = block_encrypt_req_o && block_encrypt_rdy_i;
   assign block_encrypt_req_o = sfifo_bencreq_rvld;
 
-  assign sfifo_bencreq_wdata = {sfifo_updreq_key,v_sized,sfifo_updreq_inst_id,sfifo_updreq_ccmd};
+  assign sfifo_bencreq_wdata = {req_data_fifo.key,v_sized,req_data_fifo.inst_id,req_data_fifo.cmd};
 
   assign {sfifo_bencreq_key,sfifo_bencreq_v,sfifo_bencreq_inst_id,
           sfifo_bencreq_ccmd} = sfifo_bencreq_rdata;
@@ -427,7 +425,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   ) u_prim_fifo_sync_bencack (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
-    .clr_i    (!ctr_drbg_upd_enable_i),
+    .clr_i    (!enable_i),
     .wvalid_i (sfifo_bencack_wvld),
     .wready_o (),
     .wdata_i  (sfifo_bencack_wdata),
@@ -462,7 +460,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   ) u_prim_fifo_sync_pdata (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
-    .clr_i    (!ctr_drbg_upd_enable_i),
+    .clr_i    (!enable_i),
     .wvalid_i (sfifo_pdata_wvld),
     .wready_o (),
     .wdata_i  (sfifo_pdata_wdata),
@@ -474,7 +472,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
     .err_o    ()
   );
 
-  assign sfifo_pdata_wdata = sfifo_updreq_pdata;
+  assign sfifo_pdata_wdata = req_data_fifo.pdata;
 
   assign sfifo_pdata_v = sfifo_pdata_rdata;
 
@@ -490,7 +488,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   assign concat_outblk_shifted_value = {concat_outblk_q, {BlkLen{1'b0}}};
 
   assign concat_outblk_d =
-         (!ctr_drbg_upd_enable_i) ? '0 :
+         (!enable_i) ? '0 :
          sfifo_bencack_rrdy ? {concat_outblk_q[SeedLen-1:BlkLen],sfifo_bencack_v} :
          concat_outblk_shift ? concat_outblk_shifted_value[SeedLen-1:0] :
          concat_outblk_q;
@@ -501,7 +499,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
 
   // concatenation counter
   assign concat_ctr_d =
-         (!ctr_drbg_upd_enable_i) ? '0 :
+         (!enable_i) ? '0 :
          concat_ctr_done ? '0 :
          concat_ctr_inc ? (concat_ctr_q + 1) :
          concat_ctr_q;
@@ -509,12 +507,12 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   assign concat_ctr_done = (concat_ctr_q >= SeedLen/BlkLen);
 
   assign concat_inst_id_d =
-         (!ctr_drbg_upd_enable_i) ? '0 :
+         (!enable_i) ? '0 :
          sfifo_bencack_rrdy ? sfifo_bencack_inst_id :
          concat_inst_id_q;
 
   assign concat_ccmd_d =
-         (!ctr_drbg_upd_enable_i) ? '0 :
+         (!enable_i) ? '0 :
          sfifo_bencack_rrdy ? sfifo_bencack_ccmd :
          concat_ccmd_q;
 
@@ -533,14 +531,14 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
     unique case (outblk_state_q)
       // AckIdle: increment v this cycle, push in next
       AckIdle: begin
-        if (!ctr_drbg_upd_enable_i) begin
+        if (!enable_i) begin
           outblk_state_d = AckIdle;
         end else if (sfifo_bencack_rvld && sfifo_pdata_rvld && !sfifo_final_full) begin
           outblk_state_d = Load;
         end
       end
       Load: begin
-        if (!ctr_drbg_upd_enable_i) begin
+        if (!enable_i) begin
           outblk_state_d = AckIdle;
         end else if (sfifo_bencack_rvld) begin
           concat_ctr_inc  = 1'b1;
@@ -549,7 +547,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
         end
       end
       Shift: begin
-        if (!ctr_drbg_upd_enable_i) begin
+        if (!enable_i) begin
           outblk_state_d = AckIdle;
         end else if (concat_ctr_done) begin
           sfifo_pdata_rrdy = 1'b1;
@@ -586,7 +584,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   ) u_prim_fifo_sync_final (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
-    .clr_i    (!ctr_drbg_upd_enable_i),
+    .clr_i    (!enable_i),
     .wvalid_i (sfifo_final_wvld),
     .wready_o (),
     .wdata_i  (sfifo_final_wdata),
