@@ -12,7 +12,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 
-#include "uart_regs.h"  // Generated.
+#include "hw/top/uart_regs.h"  // Generated.
 
 #define UART_INTR_STATE_MASK 0xffffffffu
 

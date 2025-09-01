@@ -11,9 +11,9 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
-#include "csrng_regs.h"        // Generated
-#include "edn_regs.h"          // Generated
-#include "entropy_src_regs.h"  // Generated
+#include "hw/top/csrng_regs.h"        // Generated
+#include "hw/top/edn_regs.h"          // Generated
+#include "hw/top/entropy_src_regs.h"  // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 // Module ID for status codes.

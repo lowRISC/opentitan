@@ -31,7 +31,7 @@ ${autogen_banner}
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/autogen/dif_${ip.name_snake}_autogen.h"
 
-#include "${ip.name_snake}_regs.h"  // Generated.
+#include "hw/top/${ip.name_snake}_regs.h"  // Generated.
 
 % if ip.name_snake == "aon_timer":
   #include <assert.h>

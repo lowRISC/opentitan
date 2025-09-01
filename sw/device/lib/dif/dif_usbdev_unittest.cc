@@ -11,7 +11,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "usbdev_regs.h"  // Generated.
+#include "hw/top/usbdev_regs.h"  // Generated.
 
 namespace dif_usbdev_unittest {
 namespace {

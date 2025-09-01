@@ -17,9 +17,9 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/keymgr_regs.h"  // Generated.
+#include "hw/top/kmac_regs.h"    // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "keymgr_regs.h"  // Generated.
-#include "kmac_regs.h"    // Generated.
 
 // The KMAC dif expects a secret key, even though if the configuration is set
 // to use the sideloaded key then it will be ignored. We will write a software

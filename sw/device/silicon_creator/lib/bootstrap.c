@@ -16,7 +16,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/stack_utilization.h"
 
-#include "flash_ctrl_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
 
 enum {
   /*

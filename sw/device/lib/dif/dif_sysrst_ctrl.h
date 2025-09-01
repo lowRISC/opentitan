@@ -11,8 +11,8 @@
  * Interface Functions
  */
 
+#include "hw/top/sysrst_ctrl_regs.h"  // Generated.
 #include "sw/device/lib/dif/autogen/dif_sysrst_ctrl_autogen.h"
-#include "sysrst_ctrl_regs.h"  // Generated.
 
 #ifdef __cplusplus
 extern "C" {

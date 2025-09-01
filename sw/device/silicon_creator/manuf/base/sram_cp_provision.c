@@ -26,8 +26,8 @@
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 
+#include "hw/top/otp_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                         .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,

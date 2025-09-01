@@ -12,8 +12,8 @@
 #include "sw/device/sca/lib/simple_serial.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
+#include "hw/top/kmac_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "kmac_regs.h"
 
 /**
  * OpenTitan program for side-channel analysis of the absorb step of a KMAC128

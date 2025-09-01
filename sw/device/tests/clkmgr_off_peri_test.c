@@ -20,10 +20,10 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/spi_host_regs.h"
+#include "hw/top/uart_regs.h"
+#include "hw/top/usbdev_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "spi_host_regs.h"
-#include "uart_regs.h"
-#include "usbdev_regs.h"
 
 static const dt_pwrmgr_t kPwrmgrDt = 0;
 static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");

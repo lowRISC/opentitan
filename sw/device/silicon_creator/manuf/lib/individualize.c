@@ -21,7 +21,7 @@
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/util.h"
 
-#include "otp_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 
 typedef struct hw_cfg1_settings {
   /**

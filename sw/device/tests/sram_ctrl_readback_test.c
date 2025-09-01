@@ -14,8 +14,8 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
+#include "hw/top/sram_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "sram_ctrl_regs.h"  // Generated.
 
 // Define some amount of data we should leave in SRAM to check it gets wiped.
 enum {

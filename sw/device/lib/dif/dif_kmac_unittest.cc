@@ -16,7 +16,7 @@
 #include "sw/device/lib/base/mock_mmio.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "kmac_regs.h"  // Generated
+#include "hw/top/kmac_regs.h"  // Generated
 
 // We define global namespace == and << to make `dif_i2c_timing_params_t` work
 // nicely with EXPECT_EQ.

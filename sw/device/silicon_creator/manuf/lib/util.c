@@ -13,8 +13,8 @@
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 
+#include "hw/top/otp_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"  // Generated.
 
 static_assert(
     OTP_CTRL_PARAM_VENDOR_TEST_SIZE % sizeof(uint32_t) == 0,

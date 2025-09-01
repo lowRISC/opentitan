@@ -31,16 +31,16 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "aes_regs.h"
-#include "alert_handler_regs.h"
-#include "hmac_regs.h"
+#include "hw/top/aes_regs.h"
+#include "hw/top/alert_handler_regs.h"
+#include "hw/top/hmac_regs.h"
+#include "hw/top/i2c_regs.h"
+#include "hw/top/kmac_regs.h"
+#include "hw/top/otbn_regs.h"
+#include "hw/top/spi_host_regs.h"
+#include "hw/top/usbdev_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "i2c_regs.h"
-#include "kmac_regs.h"
-#include "otbn_regs.h"
-#include "spi_host_regs.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
-#include "usbdev_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 

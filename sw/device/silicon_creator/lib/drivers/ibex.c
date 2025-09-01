@@ -4,13 +4,13 @@
 
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 
-#include "dt/dt_rv_core_ibex.h"
+#include "hw/top/dt/dt_rv_core_ibex.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
-#include "rv_core_ibex_regs.h"
+#include "hw/top/rv_core_ibex_regs.h"
 
 static const dt_rv_core_ibex_t kRvCoreIbexDt = kDtRvCoreIbex;
 
