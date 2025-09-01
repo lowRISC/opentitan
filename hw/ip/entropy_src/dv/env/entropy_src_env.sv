@@ -41,6 +41,12 @@ class entropy_src_env extends cip_base_env #(
     cfg.m_rng_agent_cfg.zero_delays = 0;
     cfg.m_rng_agent_cfg.host_delay_min = 1;
     cfg.m_rng_agent_cfg.host_delay_max = cfg.rng_max_delay;
+    if (cfg.rng_max_delay == 1 && `RNG_BUS_WIDTH == 16) begin
+      // On Darjeeling, in the worst case, there is a new 16-bit entropy word from the RNG every
+      // 3 clock cycles.
+      cfg.m_rng_agent_cfg.host_delay_min = 2;
+      cfg.m_rng_agent_cfg.host_delay_max = 2;
+    end
     cfg.m_rng_agent_cfg.ignore_push_host_backpressure = cfg.rng_ignores_backpressure;
 
     m_csrng_agent = push_pull_agent#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))::
