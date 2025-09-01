@@ -1059,8 +1059,8 @@ module chip_earlgrey_cw310 #(
 // Also need to add AST simulation and FPGA emulation models for things like entropy source -
 // otherwise Verilator / FPGA will hang.
   top_earlgrey #(
-    .SecAesMasking(1'b1),
-    .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
+    .SecAesMasking(1'b0), // Disable AES masking on the CW310, where we are constrained by area.
+    .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
     .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b1),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
