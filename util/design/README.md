@@ -169,6 +169,7 @@ The OTP preload image generator expects at least one main image configuration fi
 ```console
 $ cd ${PROJ_ROOT}
 $ ./util/design/gen-otp-img.py --img-cfg hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson \
+                               --mmap-def hw/top_earlgrey/data/otp/otp_ctrl_mmap.hjson \
                                --top-secret-cfg hw/top_earlgrey/data/autogen/top_earlgrey.secrets.testing.gen.hjson \
                                --out otp-img.mem
 ```
