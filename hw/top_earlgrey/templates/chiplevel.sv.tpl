@@ -1135,9 +1135,14 @@ module chip_${top["name"]}_${target["name"]} #(
 // Also need to add AST simulation and FPGA emulation models for things like entropy source -
 // otherwise Verilator / FPGA will hang.
   top_${top["name"]} #(
-% if target["name"] in ["cw310", "cw340"]:
+% if target["name"] == "cw310":
+    .SecAesMasking(1'b0), // Disable AES masking on the CW310, where we are constrained by area.
+    .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
+% elif target["name"]  == "cw340":
     .SecAesMasking(1'b1),
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
+% endif
+% if target["name"] in ["cw310", "cw340"]:
     .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b1),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
