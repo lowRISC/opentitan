@@ -26,13 +26,13 @@ pub trait CommandHandler<Msg> {
 
 /// This is the main entry point for the session proxy.  This struct will either bind on a
 /// specified port, or find an available port from a range, before entering an event loop.
-pub struct SessionHandler<'a> {
+pub struct SessionHandler {
     port: u16,
-    socket_server: JsonSocketServer<Message, TransportCommandHandler<'a>>,
+    socket_server: JsonSocketServer<Message, TransportCommandHandler>,
 }
 
-impl<'a> SessionHandler<'a> {
-    pub fn init(transport: &'a TransportWrapper, listen_port: Option<u16>) -> Result<Self> {
+impl SessionHandler {
+    pub fn init(transport: TransportWrapper, listen_port: Option<u16>) -> Result<Self> {
         let mut port = listen_port.unwrap_or(9900);
         let limit = listen_port.unwrap_or(9999);
         // Find a suitable port to bind to.

@@ -158,7 +158,7 @@ fn session_child(listen_port: Option<u16>, backend_opts: &backend::BackendOpts) 
     let _maintain_connection = transport.maintain_connection()?;
 
     // Bind to TCP socket, in preparation for servicing requests from network.
-    let mut session = SessionHandler::init(&transport, listen_port)?;
+    let mut session = SessionHandler::init(transport, listen_port)?;
 
     // Instantiation of Transport backend, and binding to a socket was successful, now go
     // through the process of making this process a daemon, disconnected from the
@@ -239,7 +239,7 @@ fn main() -> Result<()> {
         rustix::process::set_parent_process_death_signal(Some(Signal::TERM))?;
 
         let transport = backend::create(&opts.backend_opts)?;
-        let mut session = SessionHandler::init(&transport, opts.listen_port)?;
+        let mut session = SessionHandler::init(transport, opts.listen_port)?;
         println!("Listening on port {}", session.get_port());
         session.run_loop()?;
         return Ok(());
