@@ -70,16 +70,17 @@
     // Note that the digest items are added automatically to the address map.
     partitions: [
         {
-            name:       "VENDOR_TEST",
-            variant:    "Unbuffered",
-            secret:     false,
-            sw_digest:  true,
-            hw_digest:  false,
-            write_lock: "Digest",
-            read_lock:  "CSR",
-            key_sel:    "NoKey",
-            integrity:  false, // Do not use integrity (ECC) on this partition.
-            bkout_type: false, // Do not generate a breakout type for this partition.
+            name:           "VENDOR_TEST",
+            variant:        "Unbuffered",
+            secret:         false,
+            sw_digest:      true,
+            hw_digest:      false,
+            write_lock:     "Digest",
+            read_lock:      "CSR",
+            key_sel:        "NoKey",
+            integrity:      false, // Do not use integrity (ECC) on this partition.
+            bkout_type:     false, // Do not generate a breakout type for this partition.
+            skip_sw_header: true,
             items: [
                 {
                     name: "SCRATCH",
@@ -949,16 +950,17 @@
                          '''
         }
         {
-            name:       "HW_CFG0",
-            variant:    "Buffered",
-            secret:     false,
-            sw_digest:  false,
-            hw_digest:  true,
-            write_lock: "Digest",
-            read_lock:  "None",
-            key_sel:    "NoKey",
-            integrity:  true,
-            bkout_type: true,
+            name:           "HW_CFG0",
+            variant:        "Buffered",
+            secret:         false,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "None",
+            key_sel:        "NoKey",
+            integrity:      true,
+            bkout_type:     true,
+            skip_sw_header: true,
             items: [
                 {
                     name:        "DEVICE_ID",
@@ -988,16 +990,17 @@
             '''
         }
         {
-            name:       "HW_CFG1",
-            variant:    "Buffered",
-            secret:     false,
-            sw_digest:  false,
-            hw_digest:  true,
-            write_lock: "Digest",
-            read_lock:  "None",
-            key_sel:    "NoKey",
-            integrity:  true,
-            bkout_type: true,
+            name:           "HW_CFG1",
+            variant:        "Buffered",
+            secret:         false,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "None",
+            key_sel:        "NoKey",
+            integrity:      true,
+            bkout_type:     true,
+            skip_sw_header: true,
             items: [
                 {
                     name:        "EN_SRAM_IFETCH",
@@ -1041,16 +1044,17 @@
             '''
         }
         {
-            name:       "SECRET0",
-            variant:    "Buffered",
-            secret:     true,
-            sw_digest:  false,
-            hw_digest:  true,
-            write_lock: "Digest",
-            read_lock:  "Digest",
-            key_sel:    "Secret0Key",
-            integrity:  true,
-            bkout_type: false,
+            name:           "SECRET0",
+            variant:        "Buffered",
+            secret:         true,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "Digest",
+            key_sel:        "Secret0Key",
+            integrity:      true,
+            bkout_type:     false,
+            skip_sw_header: true,
             items: [
                 {
                     name: "TEST_UNLOCK_TOKEN",
@@ -1071,16 +1075,17 @@
             '''
         }
         {
-            name:       "SECRET1",
-            variant:    "Buffered",
-            secret:     true,
-            sw_digest:  false,
-            hw_digest:  true,
-            write_lock: "Digest",
-            read_lock:  "Digest",
-            key_sel:    "Secret1Key",
-            integrity:  true,
-            bkout_type: false,
+            name:           "SECRET1",
+            variant:        "Buffered",
+            secret:         true,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "Digest",
+            key_sel:        "Secret1Key",
+            integrity:      true,
+            bkout_type:     false,
+            skip_sw_header: true,
             items: [
                 {
                     name: "FLASH_ADDR_KEY_SEED",
@@ -1103,16 +1108,17 @@
             '''
         }
         {
-            name:       "SECRET2",
-            variant:    "Buffered",
-            secret:     true,
-            sw_digest:  false,
-            hw_digest:  true,
-            write_lock: "Digest",
-            read_lock:  "Digest",
-            key_sel:    "Secret2Key",
-            integrity:  true,
-            bkout_type: false,
+            name:           "SECRET2",
+            variant:        "Buffered",
+            secret:         true,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "Digest",
+            key_sel:        "Secret2Key",
+            integrity:      true,
+            bkout_type:     false,
+            skip_sw_header: true,
             items: [
                 {
                     name: "RMA_TOKEN",
@@ -1137,16 +1143,17 @@
             '''
         }
         {
-            name:       "LIFE_CYCLE",
-            variant:    "LifeCycle",
-            secret:     false,
-            sw_digest:  false,
-            hw_digest:  false,
-            write_lock: "None",
-            read_lock:  "None",
-            key_sel:    "NoKey",
-            integrity:  true,
-            bkout_type: false,
+            name:           "LIFE_CYCLE",
+            variant:        "LifeCycle",
+            secret:         false,
+            sw_digest:      false,
+            hw_digest:      false,
+            write_lock:     "None",
+            read_lock:      "None",
+            key_sel:        "NoKey",
+            integrity:      true,
+            bkout_type:     false,
+            skip_sw_header: true,
             items: [
                 // The life cycle transition count is specified
                 // first such that any programming attempt of the life cycle

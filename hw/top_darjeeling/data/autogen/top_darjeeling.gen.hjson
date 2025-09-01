@@ -1496,6 +1496,7 @@
             integrity: false
             bkout_type: false
             zeroizable: false
+            skip_sw_header: true
             items:
             [
               {
@@ -3093,6 +3094,7 @@
             integrity: true
             bkout_type: true
             zeroizable: false
+            skip_sw_header: true
             items:
             [
               {
@@ -3154,6 +3156,7 @@
             integrity: true
             bkout_type: true
             zeroizable: false
+            skip_sw_header: true
             items:
             [
               {
@@ -3255,6 +3258,7 @@
             integrity: true
             bkout_type: false
             zeroizable: true
+            skip_sw_header: true
             items:
             [
               {
@@ -3325,6 +3329,7 @@
             integrity: true
             bkout_type: false
             zeroizable: true
+            skip_sw_header: true
             items:
             [
               {
@@ -3384,6 +3389,7 @@
             integrity: true
             bkout_type: false
             zeroizable: true
+            skip_sw_header: true
             items:
             [
               {
@@ -3476,6 +3482,7 @@
             integrity: true
             bkout_type: false
             zeroizable: true
+            skip_sw_header: true
             items:
             [
               {
@@ -3534,6 +3541,7 @@
             key_sel: NoKey
             integrity: true
             bkout_type: false
+            skip_sw_header: true
             items:
             [
               {
