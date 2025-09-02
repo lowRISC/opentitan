@@ -28,8 +28,18 @@ class racl_error_log_item extends uvm_sequence_item;
   rand int unsigned request_address;
 
   extern function new (string name="");
+  extern function void do_print(uvm_printer printer);
 endclass
 
 function racl_error_log_item::new(string name="");
   super.new(name);
+endfunction
+
+function void racl_error_log_item::do_print(uvm_printer printer);
+  super.do_print(printer);
+  printer.print_int("overflow",        overflow,        1);
+  printer.print_int("role",            role,            32);
+  printer.print_int("ctn_uid",         ctn_uid,         32);
+  printer.print_int("read_not_write",  read_not_write,  1);
+  printer.print_int("request_address", request_address, 32);
 endfunction
