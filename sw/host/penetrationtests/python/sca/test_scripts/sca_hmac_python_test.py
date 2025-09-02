@@ -231,7 +231,7 @@ class HmacScaTest(unittest.TestCase):
             )
             actual_result_json = json.loads(actual_result)
 
-            # Set the syncrhonized randomness
+            # Set the synchronized randomness
             batch_prng_seed = 1
             random.seed(batch_prng_seed)
 
@@ -294,7 +294,7 @@ class HmacScaTest(unittest.TestCase):
             )
             actual_result_json = json.loads(actual_result)
 
-            # Set the syncrhonized randomness
+            # Set the synchronized randomness
             batch_prng_seed = 1
             random.seed(batch_prng_seed)
 

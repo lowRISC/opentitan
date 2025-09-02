@@ -235,10 +235,10 @@ class AlertFiTest(unittest.TestCase):
                 )
 
                 if (
-                    reset_enabled
-                    and alert_enabled
-                    and enabled_class
-                    and (threshold == 0)
+                    reset_enabled and
+                    alert_enabled and
+                    enabled_class and
+                    (threshold == 0)
                 ):
                     self.assertEqual(
                         got_response,
@@ -291,8 +291,8 @@ class AlertFiTest(unittest.TestCase):
         )
 
         if reset_enabled and (
-            (sensor_ctrl_en_fatal and alert_fatal_enabled)
-            or (not sensor_ctrl_en_fatal and alert_recov_enabled)
+            (sensor_ctrl_en_fatal and alert_fatal_enabled) or
+            (not sensor_ctrl_en_fatal and alert_recov_enabled)
         ):
             self.assertEqual(
                 got_response,
