@@ -76,7 +76,13 @@ jobs:
 
           . util/build_consts.sh
           module load "xilinx/vivado/${{inputs.vivado_version }}"
-          ./bazelisk.sh build ${archive_target}
+          ./bazelisk.sh build --execution_log_compact_file=bazel_build.log ${archive_target}
+
+      - name: Upload bazel execution log
+        uses: actions/upload-artifact@v4
+        with:
+          name: bazel-build-chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}-log
+          path: bazel_build.log
 
       - name: Display synthesis & implementation logs
         if: steps.strategy.outputs.bitstreamStrategy != 'cached'
