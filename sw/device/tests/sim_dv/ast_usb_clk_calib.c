@@ -64,8 +64,7 @@ static void enable_usb_meas_get_code(dif_clkmgr_t *clkmgr,
 };
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
 
   CHECK_DIF_OK(dif_usbdev_init(
       mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));

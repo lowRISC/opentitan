@@ -40,8 +40,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(aon_timer_testutils_get_us_from_aon_cycles(
       kMeasurementsPerRound, &delay_micros));
 
-  CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
   CHECK_DIF_OK(dif_sensor_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR),
       &sensor_ctrl));
