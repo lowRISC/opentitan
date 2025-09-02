@@ -130,6 +130,7 @@ status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
   random_order_init(&order, num_words);
 
   size_t count = 0;
+  size_t expected_count = random_order_len(&order);
 
   for (; launderw(count) < num_words; count = launderw(count) + 1) {
     // The value obtained from `advance()` is laundered, to prevent
