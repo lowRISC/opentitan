@@ -226,6 +226,10 @@ module otp_ctrl_part_buf
     end
   end
 
+  ///////////////////////
+  // Zeroization Logic //
+  ///////////////////////
+
   mubi8_t is_zeroized;
 
   if (Info.zeroizable) begin : gen_zeroizable_part
@@ -237,6 +241,7 @@ module otp_ctrl_part_buf
     // Compose several individual MuBis into a larger MuBi. The resulting
     // value must always be a valid MuBi constant (either `true` or `false`).
     logic   [ZerFanout-1:0][ScrmblBlockWidth-1:0] zer_mrk_post;
+    logic   [ZerFanout-1:0][$clog2(ScrmblBlockWidth+1)-1:0] zer_mrk_cnt;
     mubi4_t [ZerFanout-1:0] is_zeroized_pre;
 
     for (genvar k = 0; k < ZerFanout; k++) begin : gen_is_zeroized_pre
@@ -247,10 +252,25 @@ module otp_ctrl_part_buf
         .out_o ( zer_mrk_post[k] )
       );
 
+      // Use the `prim_sum_tree` primitive to emulate the SystemVerilog function $countones which is
+      // not supported by all tools.
+      prim_sum_tree #(
+        .NumSrc   ( ScrmblBlockWidth ),
+        .Saturate ( 1'b0             ),
+        .InWidth  ( 1                )
+      ) u_countones (
+        .clk_i       ( clk_i                    ),
+        .rst_ni      ( rst_ni                   ),
+        .values_i    ( zer_mrk_post[k]          ),
+        .valid_i     ( {ScrmblBlockWidth{1'b1}} ),
+        .sum_value_o ( zer_mrk_cnt[k]           ),
+        .sum_valid_o (                          )
+      );
+
       // Interleave MuBi4 chunks to create higher-order MuBis.
       // Even indices: (MuBi4True, MuBi4False)
       // Odd indices:  (MuBi4False, MuBi4True)
-      assign is_zeroized_pre[k] = (check_zeroized_valid(zer_mrk_post[k]) ^~ (k % 2 == 0)) ?
+      assign is_zeroized_pre[k] = (check_zeroized_valid(zer_mrk_cnt[k]) ^~ (k % 2 == 0)) ?
                                   MuBi4True : MuBi4False;
     end
 
