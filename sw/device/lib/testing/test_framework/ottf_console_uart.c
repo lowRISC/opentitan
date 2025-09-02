@@ -19,6 +19,8 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#define MODULE_ID MAKE_MODULE_ID('o', 'c', 'u')
+
 /**
  * OTTF console configuration parameters.
  */
