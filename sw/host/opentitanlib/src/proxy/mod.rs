@@ -4,11 +4,11 @@
 
 use anyhow::{Result, bail};
 use handler::TransportCommandHandler;
-use mio::net::TcpListener;
 use protocol::Message;
 use socket_server::{Connection, JsonSocketServer};
 use std::net::SocketAddr;
 use std::sync::{Arc, Mutex};
+use tokio::net::TcpListener;
 
 use crate::app::TransportWrapper;
 
@@ -38,7 +38,7 @@ impl SessionHandler {
         // Find a suitable port to bind to.
         let socket = loop {
             let addr = SocketAddr::from(([0u8; 4], port));
-            match TcpListener::bind(addr) {
+            match crate::util::runtime::block_on(async { TcpListener::bind(addr).await }) {
                 Ok(socket) => break socket,
                 Err(e) if port >= limit => bail!(e),
                 Err(_) => port += 1,

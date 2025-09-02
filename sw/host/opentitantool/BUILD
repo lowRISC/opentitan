@@ -63,7 +63,6 @@ rust_binary(
         "@crate_index//:hex",
         "@crate_index//:humantime",
         "@crate_index//:log",
-        "@crate_index//:mio",
         "@crate_index//:regex",
         "@crate_index//:serde",
         "@crate_index//:serde_bytes",
