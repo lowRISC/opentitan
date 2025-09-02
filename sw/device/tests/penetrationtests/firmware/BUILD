@@ -122,7 +122,6 @@ FIRMWARE_DEPS_CRYPTOLIB_FI_SYM = [
 FIRMWARE_DEPS_CRYPTOLIB_FI_ASYM = [
     "//sw/device/tests/penetrationtests/firmware/sca:trigger_sca",
     "//sw/device/tests/penetrationtests/firmware/fi:cryptolib_fi_asym",
-    "//sw/device/tests/penetrationtests/firmware/lib:extclk_sca_fi",
     "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
@@ -139,8 +138,8 @@ FIRMWARE_DEPS_CRYPTOLIB_FI_ASYM = [
 FIRMWARE_DEPS_CRYPTOLIB_SCA_SYM = [
     "//sw/device/tests/penetrationtests/firmware/sca:cryptolib_sca_sym",
     "//sw/device/tests/penetrationtests/firmware/sca:trigger_sca",
-    "//sw/device/tests/penetrationtests/firmware/lib:extclk_sca_fi",
     "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+    "//sw/device/tests/penetrationtests/firmware/sca:prng_sca",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
     "//sw/device/lib/crypto/drivers:entropy",
@@ -158,6 +157,7 @@ FIRMWARE_DEPS_CRYPTOLIB_SCA_ASYM = [
     "//sw/device/tests/penetrationtests/firmware/sca:trigger_sca",
     "//sw/device/tests/penetrationtests/firmware/lib:extclk_sca_fi",
     "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+    "//sw/device/tests/penetrationtests/firmware/sca:prng_sca",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
     "//sw/device/lib/crypto/drivers:entropy",

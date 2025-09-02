@@ -26,10 +26,8 @@ extern "C" {
 // clang-format off
 
 #define CRYPTOLIBSCAASYM_SUBCOMMAND(_, value) \
-    value(_, RsaDecFvsr) \
-    value(_, RsaDecDaisy) \
-    value(_, RsaSignFvsr) \
-    value(_, RsaSignDaisy) \
+    value(_, RsaDec) \
+    value(_, RsaSign) \
     value(_, Prime) \
     value(_, P256BaseMulFvsr) \
     value(_, P256BaseMulDaisy) \
@@ -68,7 +66,6 @@ RUST_ONLY(UJSON_SERDE_ENUM(CryptoLibScaAsymSubcommand, cryptolib_sca_asym_subcom
     field(hashing, size_t) \
     field(padding, size_t) \
     field(cfg, size_t) \
-    field(num_iterations, size_t) \
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaAsymRsaDecIn, cryptolib_sca_asym_rsa_dec_in_t, CRYPTOLIBSCAASYM_RSA_DEC_IN);
 

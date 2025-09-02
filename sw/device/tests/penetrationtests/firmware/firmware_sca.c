@@ -24,17 +24,17 @@
 #include "sw/device/tests/penetrationtests/json/trigger_sca_commands.h"
 
 // Include handlers
-#include "lib/extclk_sca_fi.h"
-#include "lib/pentest_lib.h"
-#include "sca/aes_sca.h"
-#include "sca/edn_sca.h"
-#include "sca/hmac_sca.h"
-#include "sca/ibex_sca.h"
-#include "sca/kmac_sca.h"
-#include "sca/otbn_sca.h"
-#include "sca/prng_sca.h"
-#include "sca/sha3_sca.h"
-#include "sca/trigger_sca.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/extclk_sca_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/aes_sca.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/edn_sca.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/hmac_sca.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/ibex_sca.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/kmac_sca.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/otbn_sca.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/rng_sca.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/sha3_sca.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/trigger_sca.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 

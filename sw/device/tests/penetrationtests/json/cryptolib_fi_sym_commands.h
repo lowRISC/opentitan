@@ -179,11 +179,11 @@ UJSON_SERDE_STRUCT(CryptoLibFiSymDrbgReseedOut, cryptolib_fi_sym_drbg_reseed_out
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibFiSymTrngGenerateIn, cryptolib_fi_sym_trng_generate_in_t, CRYPTOLIBFISYM_TRNG_GENERATE_IN);
 
-#define CRYPTOLIBFISYM_TRNG_RESEED_IN(field, string) \
+#define CRYPTOLIBFISYM_TRNG_INIT_IN(field, string) \
     field(mode, size_t) \
     field(cfg, size_t) \
     field(trigger, size_t)
-UJSON_SERDE_STRUCT(CryptoLibFiSymTrngReseedIn, cryptolib_fi_sym_trng_reseed_in_t, CRYPTOLIBFISYM_TRNG_RESEED_IN);
+UJSON_SERDE_STRUCT(CryptoLibFiSymTrngInitIn, cryptolib_fi_sym_trng_init_in_t, CRYPTOLIBFISYM_TRNG_INIT_IN);
 
 #define CRYPTOLIBFISYM_TRNG_GENERATE_OUT(field, string) \
     field(data, uint8_t, TRNG_CMD_MAX_OUTPUT_BYTES) \
@@ -191,10 +191,10 @@ UJSON_SERDE_STRUCT(CryptoLibFiSymTrngReseedIn, cryptolib_fi_sym_trng_reseed_in_t
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibFiSymTrngGenerateOut, cryptolib_fi_sym_trng_generate_out_t, CRYPTOLIBFISYM_TRNG_GENERATE_OUT);
 
-#define CRYPTOLIBFISYM_TRNG_RESEED_OUT(field, string) \
+#define CRYPTOLIBFISYM_TRNG_INIT_OUT(field, string) \
     field(status, size_t) \
     field(cfg, size_t)
-UJSON_SERDE_STRUCT(CryptoLibFiSymTrngReseedOut, cryptolib_fi_sym_trng_reseed_out_t, CRYPTOLIBFISYM_TRNG_RESEED_OUT);
+UJSON_SERDE_STRUCT(CryptoLibFiSymTrngInitOut, cryptolib_fi_sym_trng_init_out_t, CRYPTOLIBFISYM_TRNG_INIT_OUT);
 
 #undef MODULE_ID
 

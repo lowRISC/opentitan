@@ -246,13 +246,12 @@ cc_library(
 
 cc_library(
     name = "prng_sca",
-    srcs = ["prng_sca.c"],
-    hdrs = ["prng_sca.h"],
+    srcs = ["rng_sca.c"],
+    hdrs = ["rng_sca.h"],
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:prng",
         "//sw/device/tests/penetrationtests/json:prng_sca_commands",
