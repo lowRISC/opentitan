@@ -108,6 +108,40 @@ py_binary(
     ],
 )
 
+py_binary(
+    name = "sca_sym_cryptolib_python_test",
+    testonly = True,
+    srcs = ["test_scripts/sca_sym_cryptolib_python_test.py"],
+    data = [
+        "//sw/host/opentitantool",
+    ],
+    deps = [
+        "//sw/host/penetrationtests/python/sca:sca_sym_cryptolib_commands",
+        "//sw/host/penetrationtests/python/sca:sca_sym_cryptolib_functions",
+        "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
+        "@rules_python//python/runfiles",
+        requirement("pycryptodome"),
+    ],
+)
+
+py_binary(
+    name = "sca_asym_cryptolib_python_test",
+    testonly = True,
+    srcs = ["test_scripts/sca_asym_cryptolib_python_test.py"],
+    data = [
+        "//sw/host/opentitantool",
+    ],
+    deps = [
+        "//sw/host/penetrationtests/python/sca:sca_asym_cryptolib_commands",
+        "//sw/host/penetrationtests/python/sca:sca_asym_cryptolib_functions",
+        "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
+        "@rules_python//python/runfiles",
+        requirement("pycryptodome"),
+    ],
+)
+
 py_library(
     name = "sca_ibex_functions",
     srcs = ["host_scripts/sca_ibex_functions.py"],
@@ -171,6 +205,26 @@ py_library(
 )
 
 py_library(
+    name = "sca_sym_cryptolib_functions",
+    srcs = ["host_scripts/sca_sym_cryptolib_functions.py"],
+    deps = [
+        ":sca_prng_commands",
+        ":sca_sym_cryptolib_commands",
+        "//sw/host/penetrationtests/python/util:targets",
+    ],
+)
+
+py_library(
+    name = "sca_asym_cryptolib_functions",
+    srcs = ["host_scripts/sca_asym_cryptolib_functions.py"],
+    deps = [
+        ":sca_asym_cryptolib_commands",
+        ":sca_prng_commands",
+        "//sw/host/penetrationtests/python/util:targets",
+    ],
+)
+
+py_library(
     name = "sca_ibex_commands",
     srcs = ["communication/sca_ibex_commands.py"],
     deps = ["//sw/host/penetrationtests/python/util:common_library"],
@@ -208,6 +262,18 @@ py_library(
 py_library(
     name = "sca_sha3_commands",
     srcs = ["communication/sca_sha3_commands.py"],
+    deps = ["//sw/host/penetrationtests/python/util:common_library"],
+)
+
+py_library(
+    name = "sca_sym_cryptolib_commands",
+    srcs = ["communication/sca_sym_cryptolib_commands.py"],
+    deps = ["//sw/host/penetrationtests/python/util:common_library"],
+)
+
+py_library(
+    name = "sca_asym_cryptolib_commands",
+    srcs = ["communication/sca_asym_cryptolib_commands.py"],
     deps = ["//sw/host/penetrationtests/python/util:common_library"],
 )
 
