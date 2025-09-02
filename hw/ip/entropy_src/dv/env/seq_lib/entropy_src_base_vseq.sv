@@ -456,7 +456,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
   task run_rng_host_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq);
     for (int i = 0; i < m_rng_push_seq.num_trans; i++) begin
-      rng_val =  i % 16;
+      rng_val = i % (2**`RNG_BUS_WIDTH);
       cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
     end
     m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
@@ -464,12 +464,23 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
   task repcnt_ht_fail_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                           int num_trans = m_rng_push_seq.num_trans);
+    bit fail_symbol;
+    int unsigned lane_idx;
+    rng_val_t fixed_rng_val;
+    // Shall we fail a single lane or the full symbol?
+    fail_symbol = $urandom_range(0, 1);
+    // Randomly select a lane to fail.
+    lane_idx = $urandom_range(0, `RNG_BUS_WIDTH-1);
     // Set rng_val
-    // Use randomly generated but fixed rng_val through the test to cause the repcnt health test
-    // to fail
-    `DV_CHECK_STD_RANDOMIZE_FATAL(rng_val)
+    fixed_rng_val = rng_val_t'($urandom_range(0, 2**`RNG_BUS_WIDTH-1));
     for (int i = 0; i < num_trans; i++) begin
-      cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
+      if (fail_symbol) begin
+        cfg.m_rng_agent_cfg.add_h_user_data(fixed_rng_val);
+      end else begin
+        rng_val = rng_val_t'($urandom_range(0, 2**`RNG_BUS_WIDTH-1));
+        rng_val[lane_idx] = fixed_rng_val[lane_idx];
+        cfg.m_rng_agent_cfg.add_h_user_data(fixed_rng_val);
+      end
     end
   endtask // repcnt_ht_fail_seq
 
@@ -477,6 +488,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
                           bit[15:0] fips_lo_thresh, bit[15:0] fips_hi_thresh,
                           bit[15:0] bypass_lo_thresh, bit[15:0] bypass_hi_thresh,
                           int num_trans = m_rng_push_seq.num_trans);
+    int unsigned lane_idx;
     ral.adaptp_hi_thresholds.fips_thresh.set(fips_hi_thresh);
     ral.adaptp_hi_thresholds.bypass_thresh.set(bypass_hi_thresh);
     csr_update(.csr(ral.adaptp_hi_thresholds));
@@ -485,10 +497,13 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.adaptp_lo_thresholds));
     // Turn on module_enable
     enable_dut();
+    // Randomly select a lane to fail.
+    lane_idx = $urandom_range(0, `RNG_BUS_WIDTH-1);
     // Set rng_val
     for (int i = 0; i < num_trans; i++) begin
-      rng_val = (i % 16 == 0 ? (cfg.which_ht == high_test ? 0 : 1) :
-                               (cfg.which_ht == high_test ? 1 : 0));
+      rng_val = rng_val_t'($urandom_range(0, 2**`RNG_BUS_WIDTH-1));
+      rng_val[lane_idx] = (i % 16 == 0 ? (cfg.which_ht == high_test ? 0 : 1) :
+                                         (cfg.which_ht == high_test ? 1 : 0));
       cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
     end
   endtask // adaptp_ht_fail_seq
@@ -496,14 +511,20 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   task bucket_ht_fail_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                           bit[15:0] fips_thresh, bit[15:0] bypass_thresh,
                           int num_trans = m_rng_push_seq.num_trans);
+    parameter int BucketHtDataWidth = entropy_src_pkg::bucket_ht_data_width(`RNG_BUS_WIDTH);
+    parameter int unsigned NumBucketHtInst = entropy_src_pkg::num_bucket_ht_inst(`RNG_BUS_WIDTH);
+    int unsigned group_idx;
     ral.bucket_thresholds.fips_thresh.set(fips_thresh);
     ral.bucket_thresholds.bypass_thresh.set(bypass_thresh);
     csr_update(.csr(ral.bucket_thresholds));
     // Turn on module_enable
     enable_dut();
+    // Randomly select a group to fail.
+    group_idx = $urandom_range(0, NumBucketHtInst-1);
     // Set rng_val
     for (int i = 0; i < num_trans; i++) begin
-      rng_val = (i % 2 == 0 ? 5 : 10);
+      rng_val = rng_val_t'($urandom_range(0, 2**`RNG_BUS_WIDTH-1));
+      rng_val[group_idx * BucketHtDataWidth +: BucketHtDataWidth - 1] = (i % 2 == 0 ? 5 : 10);
       cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
     end
   endtask // bucket_ht_fail_seq
@@ -512,6 +533,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
                           bit[15:0] fips_lo_thresh, bit[15:0] fips_hi_thresh,
                           bit[15:0] bypass_lo_thresh, bit[15:0] bypass_hi_thresh,
                           int num_trans = m_rng_push_seq.num_trans);
+    int unsigned lane_idx;
     ral.markov_hi_thresholds.fips_thresh.set(fips_hi_thresh);
     ral.markov_hi_thresholds.bypass_thresh.set(bypass_hi_thresh);
     csr_update(.csr(ral.markov_hi_thresholds));
@@ -520,10 +542,13 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.markov_lo_thresholds));
     // Turn on module_enable
     enable_dut();
+    // Randomly select a lane to fail.
+    lane_idx = $urandom_range(0, `RNG_BUS_WIDTH-1);
     // Set rng_val
     for (int i = 0; i < num_trans; i++) begin
-      rng_val = (i % 2 == 0 ? (cfg.which_ht == high_test ? 0 : 1) :
-                              (cfg.which_ht == high_test ? 1 : 0));
+      rng_val = rng_val_t'($urandom_range(0, 2**`RNG_BUS_WIDTH-1));
+      rng_val[lane_idx] = (i % 2 == 0 ? (cfg.which_ht == high_test ? 0 : 1) :
+                                        (cfg.which_ht == high_test ? 1 : 0));
       cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
     end
   endtask // markov_ht_fail_seq
