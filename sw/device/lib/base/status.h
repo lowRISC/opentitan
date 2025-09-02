@@ -103,45 +103,6 @@ enum ot_status_create_record_magic {
   })
 #endif /* __cplusplus */
 
-#define DIF_RESULT_INTO_STATUS(expr_)                                     \
-  ({                                                                      \
-    typeof(expr_) _val = (expr_);                                         \
-    absl_status_t code;                                                   \
-    memcpy(&code, &_val, sizeof(code));                                   \
-    status_create(code, MODULE_ID, __FILE__, code == kOk ? 0 : __LINE__); \
-  })
-
-#define ROM_ERROR_INTO_STATUS(expr_)                                          \
-  ({                                                                          \
-    typeof(expr_) ex_ = (expr_);                                              \
-    uint32_t val;                                                             \
-    memcpy(&val, &ex_, sizeof(val));                                          \
-    absl_status_t code =                                                      \
-        val == kErrorOk ? 0                                                   \
-                        : bitfield_field32_read(val, ROM_ERROR_FIELD_STATUS); \
-    int32_t arg = (int32_t)bitfield_field32_read(val, ROM_ERROR_FIELD_ERROR); \
-    uint32_t mod = bitfield_field32_read(val, ROM_ERROR_FIELD_MODULE);        \
-    uint32_t module = (mod & 0x1F) << 16 | (mod & 0x1F00) << (21 - 8);        \
-    status_create(code, module, __FILE__, code == kOk ? kErrorOk : arg);      \
-  })
-
-/**
- * Converts a value into a status_t.
- *
- * This macro uses the C11 `_Generic` feature to detect the type of the input
- * expression and apply the appropriate conversion.  Once a more thorough
- * refactoring of the DIFs is done, this can be eliminated.
- *
- * @param expr_ Either a `status_t`, `dif_result_t` or `rom_error_t`.
- * @return The `status_t` representation of the input.
- */
-// clang-format off
-  #define INTO_STATUS(expr_) _Generic((expr_),                                   \
-           status_t: (expr_),                                                   \
-        rom_error_t: ROM_ERROR_INTO_STATUS(expr_),                              \
-       dif_result_t: DIF_RESULT_INTO_STATUS(expr_))
-// clang-format on
-
 /**
  * Report an error status.
  *
@@ -151,41 +112,6 @@ enum ot_status_create_record_magic {
  * "stack trace".
  */
 void status_report(status_t value);
-
-/**
- * Report an error status at the calling site.
- *
- * Given a status_t representing an error, report a status that records
- * this error and the location of the caller of this macro. Note that
- * this overwrites the module ID and argument of the status passed.
- */
-#define STATUS_REPORT_HERE(status)                                       \
-  ({                                                                     \
-    absl_status_t err = status_err(status);                              \
-    status_t report = status_create(err, MODULE_ID, __FILE__, __LINE__); \
-    status_report(report);                                               \
-  })
-
-/**
- * Evaluates a status_t for Ok or Error status, returning the Ok value.
- *
- * This macro is like the `try!` macro (or now `?` operator) in Rust:
- * It evaluates to the contained OK value or it immediately returns from
- * the enclosing function with the error value.
- * In case of error, it will add an entry to the stack trace.
- *
- * @param expr_ An expression that can be converted to a `status_t`.
- * @return The enclosed OK value.
- */
-#define TRY(expr_)                         \
-  ({                                       \
-    status_t status_ = INTO_STATUS(expr_); \
-    if (status_.value < 0) {               \
-      STATUS_REPORT_HERE(status_);         \
-      return status_;                      \
-    }                                      \
-    status_.value;                         \
-  })
 
 // This global constant is available to all modules and is the constant zero.
 // This name intentionally violates the constant naming convention of
@@ -241,6 +167,115 @@ OT_ALWAYS_INLINE absl_status_t status_err(status_t s) {
                            OT_UNSIGNED(s.value), STATUS_FIELD_CODE)
                      : kOk;
 }
+
+/**
+ * Internal enum to represent a status type (status_t, dif_result_t, rom_error_t).
+ */
+typedef enum __status_type {
+  __kStatusTypeStatus, // A `status_t`.
+  __kStatusTypeDifResult, // A `dif_result_t`.
+  __kStatusTypeRomError, // A `rom_error_t`.
+} __status_type_t;
+
+/**
+ * Given a status, convert it to a status_t and optionally report errors.
+ *
+ * This function will take an input status code and convert it to a `status_t`.
+ * If the conversion needs to introduce some elements not initially present
+ * in the original code (such a module ID), those will be take from the arguments
+ * and passed to `status_create`.
+ *
+ * If the resulting `status_t` is an error and `report_err` is set to true,
+ * this `status_t` will be altered to keep the error code but the module_id,
+ * file and line will be overwritten by calling `status_create`. Furthermore,
+ * the resulting status will be reported using `status_report`.
+ *
+ * @param err A status code encoded as a 32-bit integer.
+ * @param type The type of the status code.
+ * @param module_id The module ID.
+ * @param filename The filename.
+ * @param line The line number.
+ * @param report_err Whether to report an error or not.#
+ */
+OT_WARN_UNUSED_RESULT
+static inline status_t __into_status(uint32_t err, __status_type_t type,
+                                     uint32_t module_id,
+                                     const char *filename, int32_t line,
+                                      bool report_err) {
+  status_t status;
+  switch (type) {
+    case __kStatusTypeStatus:
+      memcpy(&status, &err, sizeof(status));
+      break;
+    case __kStatusTypeDifResult:
+      status = status_create(err, module_id, filename, err == kOk ? 0 : line);
+      break;
+    case __kStatusTypeRomError: {
+      absl_status_t code =
+          err == kErrorOk ? 0
+                          : bitfield_field32_read(err, ROM_ERROR_FIELD_STATUS);
+      int32_t arg = (int32_t)bitfield_field32_read(err, ROM_ERROR_FIELD_ERROR);
+      uint32_t mod = bitfield_field32_read(err, ROM_ERROR_FIELD_MODULE);
+      uint32_t module = (mod & 0x1F) << 16 | (mod & 0x1F00) << (21 - 8);
+      status =
+          status_create(code, module, filename, err == kOk ? kErrorOk : arg);
+      break;
+    }
+    default:
+      status = status_create(kInternal, module_id, filename, line);
+      break;
+  }
+  if (report_err && status.value < 0) {
+    absl_status_t err = status_err(status);
+    status = status_create(err, module_id, filename, line);
+    status_report(status);
+  }
+  return status;
+}
+
+/**
+ * Converts a value into a status_t.
+ *
+ * This macro uses the C11 `_Generic` feature to detect the type of the input
+ * expression and apply the appropriate conversion.  Once a more thorough
+ * refactoring of the DIFs is done, this can be eliminated.
+ *
+ * @param expr_ Either a `status_t`, `dif_result_t` or `rom_error_t`.
+ * @return The `status_t` representation of the input.
+ */
+#define INTO_STATUS(expr_) __INTO_STATUS(expr_, false)
+
+#define __INTO_STATUS(expr_, report_err)                                     \
+  ({                                                                         \
+    __auto_type __expr = (expr_);                                            \
+    uint32_t __val;                                                          \
+    memcpy(&__val, &__expr, sizeof(__val));                                  \
+    __status_type_t __type = _Generic(__expr,                                \
+        status_t: __kStatusTypeStatus,                                       \
+        dif_result_t: __kStatusTypeDifResult,                                \
+        rom_error_t: __kStatusTypeRomError);                                 \
+    __into_status(__val, __type, MODULE_ID, __FILE__, __LINE__, report_err); \
+  })
+
+/**
+ * Evaluates a status_t for Ok or Error status, returning the Ok value.
+ *
+ * This macro is like the `try!` macro (or now `?` operator) in Rust:
+ * It evaluates to the contained OK value or it immediately returns from
+ * the enclosing function with the error value.
+ * In case of error, it will add an entry to the stack trace.
+ *
+ * @param expr_ An expression that can be converted to a `status_t`.
+ * @return The enclosed OK value.
+ */
+#define TRY(expr_)                         \
+  ({                                       \
+    status_t status_ = INTO_STATUS(expr_); \
+    if (status_.value < 0) {               \
+      return status_;                      \
+    }                                      \
+    status_.value;                         \
+  })
 
 // Create a status with an optional argument.
 // TODO(cfrantz, alphan): Figure out how we want to create statuses in
