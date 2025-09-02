@@ -314,7 +314,6 @@ rust_library(
         "@crate_index//:indicatif",
         "@crate_index//:log",
         "@crate_index//:memoffset",
-        "@crate_index//:mio",
         "@crate_index//:num-bigint-dig",
         "@crate_index//:num-traits",
         "@crate_index//:object",
