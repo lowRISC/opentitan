@@ -132,6 +132,42 @@ py_binary(
     ],
 )
 
+py_binary(
+    name = "fi_sym_cryptolib_python_test",
+    testonly = True,
+    srcs = ["test_scripts/fi_sym_cryptolib_python_test.py"],
+    data = [
+        "//sw/host/opentitantool",
+    ],
+    deps = [
+        "//sw/host/penetrationtests/python/fi:fi_sym_cryptolib_commands",
+        "//sw/host/penetrationtests/python/fi:fi_sym_cryptolib_functions",
+        "//sw/host/penetrationtests/python/util:common_library",
+        "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
+        "@rules_python//python/runfiles",
+        requirement("pycryptodome"),
+    ],
+)
+
+py_binary(
+    name = "fi_asym_cryptolib_python_test",
+    testonly = True,
+    srcs = ["test_scripts/fi_asym_cryptolib_python_test.py"],
+    data = [
+        "//sw/host/opentitantool",
+    ],
+    deps = [
+        "//sw/host/penetrationtests/python/fi:fi_asym_cryptolib_commands",
+        "//sw/host/penetrationtests/python/fi:fi_asym_cryptolib_functions",
+        "//sw/host/penetrationtests/python/util:common_library",
+        "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
+        "@rules_python//python/runfiles",
+        requirement("pycryptodome"),
+    ],
+)
+
 py_library(
     name = "fi_ibex_functions",
     srcs = ["host_scripts/fi_ibex_functions.py"],
@@ -203,6 +239,26 @@ py_library(
 )
 
 py_library(
+    name = "fi_sym_cryptolib_functions",
+    srcs = ["host_scripts/fi_sym_cryptolib_functions.py"],
+    deps = [
+        ":fi_sym_cryptolib_commands",
+        "//sw/host/penetrationtests/python/util:common_library",
+        "//sw/host/penetrationtests/python/util:targets",
+    ],
+)
+
+py_library(
+    name = "fi_asym_cryptolib_functions",
+    srcs = ["host_scripts/fi_asym_cryptolib_functions.py"],
+    deps = [
+        ":fi_asym_cryptolib_commands",
+        "//sw/host/penetrationtests/python/util:common_library",
+        "//sw/host/penetrationtests/python/util:targets",
+    ],
+)
+
+py_library(
     name = "fi_ibex_commands",
     srcs = ["communication/fi_ibex_commands.py"],
     deps = ["//sw/host/penetrationtests/python/util:common_library"],
@@ -241,5 +297,17 @@ py_library(
 py_library(
     name = "fi_alert_commands",
     srcs = ["communication/fi_alert_commands.py"],
+    deps = ["//sw/host/penetrationtests/python/util:common_library"],
+)
+
+py_library(
+    name = "fi_sym_cryptolib_commands",
+    srcs = ["communication/fi_sym_cryptolib_commands.py"],
+    deps = ["//sw/host/penetrationtests/python/util:common_library"],
+)
+
+py_library(
+    name = "fi_asym_cryptolib_commands",
+    srcs = ["communication/fi_asym_cryptolib_commands.py"],
     deps = ["//sw/host/penetrationtests/python/util:common_library"],
 )

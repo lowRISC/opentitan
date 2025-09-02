@@ -271,12 +271,28 @@ pentest_cryptolib_fi_sym(
     test_vectors = CRYPTOLIB_FI_SYM_TESTVECTOR_TARGETS,
 )
 
+pentest_cryptolib_fi_sym(
+    name = "fi_sym_cryptolib_python_test",
+    tags = [],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/fi:fi_sym_cryptolib_python_test",
+    test_vectors = [],
+)
+
 pentest_cryptolib_fi_asym(
     name = "fi_asym_cryptolib",
     tags = [],
     test_args = CRYPTOLIB_FI_ASYM_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/fi_asym_cryptolib:harness",
     test_vectors = CRYPTOLIB_FI_ASYM_TESTVECTOR_TARGETS,
+)
+
+pentest_cryptolib_fi_asym(
+    name = "fi_asym_cryptolib_python_test",
+    tags = [],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/fi:fi_asym_cryptolib_python_test",
+    test_vectors = [],
 )
 
 CRYPTOLIB_SCA_SYM_TESTVECTOR_TARGETS = [
@@ -305,12 +321,28 @@ pentest_cryptolib_sca_sym(
     test_vectors = CRYPTOLIB_SCA_SYM_TESTVECTOR_TARGETS,
 )
 
+pentest_cryptolib_sca_sym(
+    name = "sca_sym_cryptolib_python_test",
+    tags = [],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/sca:sca_sym_cryptolib_python_test",
+    test_vectors = [],
+)
+
 pentest_cryptolib_sca_asym(
     name = "sca_asym_cryptolib",
     tags = [],
     test_args = CRYPTOLIB_SCA_ASYM_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/sca_asym_cryptolib:harness",
     test_vectors = CRYPTOLIB_SCA_ASYM_TESTVECTOR_TARGETS,
+)
+
+pentest_cryptolib_sca_asym(
+    name = "sca_asym_cryptolib_python_test",
+    tags = [],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/sca:sca_asym_cryptolib_python_test",
+    test_vectors = [],
 )
 
 pentest_sca(

@@ -63,3 +63,10 @@ def int_to_array(large_int):
     for i in range(8):
         data_array[i] = (large_int >> (i * 32)) & 0xFFFFFFFF
     return data_array
+
+
+def pad_with_zeros(array, length):
+    padded_arr = list(array)
+    zeros_to_add = max(0, length - len(padded_arr))
+    padded_arr.extend([0] * zeros_to_add)
+    return padded_arr
