@@ -748,9 +748,6 @@ def _get_otp_ctrl_params(top: ConfigT,
         p = get_param("RndCnstPartInvDefault", otp_ctrl["param_list"])
         p["default"] = part_inv_data
 
-        # Add the sanitized OTP map to the otp_ctrl module for a general dump.
-        otp_ctrl["sanitized_otp_mmap"] = otp_mmap
-
     ipgen_params = get_ipgen_params(otp_ctrl)
     ipgen_params.update({
         "otp_mmap": otp_mmap,
