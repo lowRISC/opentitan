@@ -97,7 +97,7 @@ package top_englishbreakfast_pkg;
   /**
    * Peripheral size in bytes for rstmgr_aon in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_RSTMGR_AON_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_RSTMGR_AON_SIZE_BYTES = 32'h40;
 
   /**
    * Peripheral base address for clkmgr_aon in top englishbreakfast.

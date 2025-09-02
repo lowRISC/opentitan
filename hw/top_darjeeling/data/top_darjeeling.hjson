@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -1230,8 +1231,6 @@
       'pwrmgr_aon.boot_status'  : ['soc_dbg_ctrl.boot_status'],
       'keymgr_dpe.rom_digest'   : ['rom_ctrl0.keymgr_data',
                                    'rom_ctrl1.keymgr_data'],
-      'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
-
       // DMA LSIO triggers
       'dma.lsio_trigger'        : ['soc_proxy.dma_lsio_trigger'],
       'i2c0.lsio_trigger'       : ['soc_proxy.i2c_lsio_trigger'],
