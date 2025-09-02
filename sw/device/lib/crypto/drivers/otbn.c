@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/random_order.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
@@ -140,7 +141,29 @@ static void otbn_write(uint32_t dest_addr, const uint32_t *src,
 status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
                          otbn_addr_t dest) {
   HARDENED_TRY(check_offset_len(dest, num_words, kOtbnDMemSizeBytes));
-  otbn_write(kBase + OTBN_DMEM_REG_OFFSET + dest, src, num_words);
+
+  random_order_t order;
+  random_order_init(&order, num_words);
+
+  size_t count = 0;
+  size_t expected_count = random_order_len(&order);
+
+  for (; launderw(count) < expected_count; count = launderw(count) + 1) {
+    // The value obtained from `advance()` is laundered, to prevent
+    // implementation details from leaking across procedures.
+    size_t idx = launderw(random_order_advance(&order));
+    size_t idx_word = idx * sizeof(uint32_t);
+
+    // Prevent the compiler from reordering the loop; this ensures a
+    // happens-before among indices consistent with `order`.
+    barrierw(idx);
+
+    // Perform the write.
+    abs_mmio_write32(kBase + OTBN_DMEM_REG_OFFSET + dest + idx_word, src[idx]);
+  }
+  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
+  HARDENED_CHECK_EQ(count, expected_count);
+
   return OTCRYPTO_OK;
 }
 
