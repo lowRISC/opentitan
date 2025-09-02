@@ -318,7 +318,6 @@ module_added = {
     'inter_signal_list': ['l', 'generated signal information'],
     'param_list': ['l', 'list of parameters'],
     "otp_mmap": ["g", "Full OTP memory map configuration with secret parameters"],
-    "sanitized_otp_mmap": ["g", "OTP memory map configuration without secret parameters"]
 }
 
 memory_required = {
