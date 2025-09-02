@@ -16,8 +16,8 @@
 #include "sw/device/tests/penetrationtests/json/pentest_lib_commands.h"
 
 // Include handlers
-#include "fi/otbn_fi.h"
-#include "lib/pentest_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/otbn_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 

@@ -13,11 +13,13 @@
 // Include commands
 #include "sw/device/tests/penetrationtests/json/commands.h"
 #include "sw/device/tests/penetrationtests/json/cryptolib_sca_asym_commands.h"
+#include "sw/device/tests/penetrationtests/json/pentest_lib_commands.h"
+#include "sw/device/tests/penetrationtests/json/prng_sca_commands.h"
 
 // Include handlers
-#include "lib/extclk_sca_fi.h"
-#include "lib/pentest_lib.h"
-#include "sca/cryptolib_sca_asym.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/cryptolib_sca_asym.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/rng_sca.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
@@ -28,6 +30,9 @@ status_t process_cmd(ujson_t *uj) {
     switch (cmd) {
       case kPenetrationtestCommandCryptoLibScaAsym:
         RESP_ERR(uj, handle_cryptolib_sca_asym(uj));
+        break;
+      case kPenetrationtestCommandPrngSca:
+        RESP_ERR(uj, handle_prng_sca(uj));
         break;
       default:
         LOG_ERROR("Unrecognized command: %d", cmd);

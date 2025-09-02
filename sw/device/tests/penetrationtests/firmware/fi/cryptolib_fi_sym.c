@@ -26,6 +26,7 @@ status_t handle_cryptolib_fi_sym_aes(ujson_t *uj) {
   // The total size of this test can be large due to all these options.
   // Triggers are over the API calls.
   cryptolib_fi_sym_aes_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   uj_output.status = (size_t)cryptolib_fi_aes_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
@@ -44,10 +45,7 @@ status_t handle_cryptolib_fi_sym_cmac(ujson_t *uj) {
   // Triggers are over the API calls.
 
   cryptolib_fi_sym_cmac_out_t uj_output;
-  memset(uj_output.data, 0, AES_CMD_MAX_MSG_BYTES);
-  uj_output.data_len = AES_CMD_MAX_MSG_BYTES;
-  uj_output.cfg = 0;
-  uj_output.status = 0;
+  memset(&uj_output, 0, sizeof(uj_output));
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_sym_cmac_out_t, uj, &uj_output);
 
@@ -63,6 +61,7 @@ status_t handle_cryptolib_fi_sym_gcm(ujson_t *uj) {
   // Then, verify that tag again, before sending the output.
   // Trigger are over the API calls.
   cryptolib_fi_sym_gcm_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   uj_output.status = (size_t)cryptolib_fi_gcm_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
@@ -80,10 +79,7 @@ status_t handle_cryptolib_fi_sym_tdes(ujson_t *uj) {
   // Triggers are over the API calls.
 
   cryptolib_fi_sym_tdes_out_t uj_output;
-  memset(uj_output.data, 0, TDES_CMD_MAX_MSG_BYTES);
-  uj_output.data_len = TDES_CMD_MAX_MSG_BYTES;
-  uj_output.cfg = 0;
-  uj_output.status = 0;
+  memset(&uj_output, 0, sizeof(uj_output));
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_sym_tdes_out_t, uj, &uj_output);
 
@@ -98,6 +94,7 @@ status_t handle_cryptolib_fi_sym_hmac(ujson_t *uj) {
   // Perform an HMAC call.
   // Trigger are over the API calls.
   cryptolib_fi_sym_hmac_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   uj_output.status = (size_t)cryptolib_fi_hmac_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
@@ -113,6 +110,7 @@ status_t handle_cryptolib_fi_sym_drbg_generate(ujson_t *uj) {
   // Perform a DRBG call to generate random output.
   // Trigger are over the API calls.
   cryptolib_fi_sym_drbg_generate_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   uj_output.status =
       (size_t)cryptolib_fi_drbg_generate_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
@@ -129,6 +127,7 @@ status_t handle_cryptolib_fi_sym_drbg_reseed(ujson_t *uj) {
   // Perform a DRBG call to reseed/instantiate the DRBG.
   // Trigger are over the API calls.
   cryptolib_fi_sym_drbg_reseed_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   uj_output.status =
       (size_t)cryptolib_fi_drbg_reseed_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
@@ -145,9 +144,7 @@ status_t handle_cryptolib_fi_sym_trng_generate(ujson_t *uj) {
   // Perform a TRNG call to generate random output.
   // Trigger are over the API calls.
   cryptolib_fi_sym_trng_generate_out_t uj_output;
-  uj_output.cfg = 0;
-  uj_output.status = 0;
-  memset(uj_output.data, 0, TRNG_CMD_MAX_OUTPUT_BYTES);
+  memset(&uj_output, 0, sizeof(uj_output));
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_sym_trng_generate_out_t, uj, &uj_output);
@@ -155,18 +152,17 @@ status_t handle_cryptolib_fi_sym_trng_generate(ujson_t *uj) {
 }
 
 status_t handle_cryptolib_fi_sym_trng_init(ujson_t *uj) {
-  cryptolib_fi_sym_drbg_reseed_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_fi_sym_drbg_reseed_in_t(uj, &uj_input));
+  cryptolib_fi_sym_trng_init_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_fi_sym_trng_init_in_t(uj, &uj_input));
 
   /////////////// STUB START ///////////////
-  // Perform a DRBG call to reseed/instantiate the DRBG.
+  // Perform a TRNG call to instantiate the TRNG.
   // Trigger are over the API calls.
-  cryptolib_fi_sym_drbg_reseed_out_t uj_output;
-  uj_output.cfg = 0;
-  uj_output.status = 0;
+  cryptolib_fi_sym_trng_init_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   /////////////// STUB END ///////////////
 
-  RESP_OK(ujson_serialize_cryptolib_fi_sym_drbg_reseed_out_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_cryptolib_fi_sym_trng_init_out_t, uj, &uj_output);
   return OK_STATUS();
 }
 
