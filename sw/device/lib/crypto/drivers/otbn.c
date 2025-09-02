@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/random_order.h"
@@ -143,6 +144,14 @@ status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
                          otbn_addr_t dest) {
   HARDENED_TRY(check_offset_len(dest, num_words, kOtbnDMemSizeBytes));
 
+  // Reset the LOAD_CHECKSUM register.
+  abs_mmio_write32(kBase + OTBN_LOAD_CHECKSUM_REG_OFFSET, 0);
+
+  // Initialize the CRC.
+  uint32_t ctx;
+  crc32_init(&ctx);
+
+  // Setup the random order construct.
   random_order_t order;
   random_order_init(&order, num_words);
 
@@ -161,9 +170,27 @@ status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
 
     // Perform the write.
     abs_mmio_write32(kBase + OTBN_DMEM_REG_OFFSET + dest + idx_word, src[idx]);
+
+    // Update the CRC. According to the OTBN documentation, each CRC update
+    // consists of 48-bit: {imem, idx, wdata}
+    // imem: set to 0 for DMEM writes.
+    // idx: the index padded to 15b.
+    // wdata: the 32b word written into DMEM.
+    char crc_data[6];
+    memset(crc_data, 0, sizeof(crc_data));
+    uint32_t offset = ((dest + idx_word) >> 2) & 0x7FFF;
+    memcpy(crc_data, &src[idx], sizeof(uint32_t));
+    memcpy(crc_data + sizeof(uint32_t), &offset, 2);
+    crc32_add(&ctx, crc_data, sizeof(crc_data));
   }
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(count, expected_count);
+
+  // Get the computed (expected) checksum, fetch the checksum from the OTBN
+  // LOAD_CHECKSUM register, and compare both registers.
+  uint32_t checksum_expected = crc32_finish(&ctx);
+  uint32_t checksum = abs_mmio_read32(kBase + OTBN_LOAD_CHECKSUM_REG_OFFSET);
+  HARDENED_CHECK_EQ(checksum, checksum_expected);
 
   return OTCRYPTO_OK;
 }
