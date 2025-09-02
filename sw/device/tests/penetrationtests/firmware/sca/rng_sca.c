@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/tests/penetrationtests/firmware/sca/prng_sca.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/rng_sca.h"
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/test_framework/ottf_test_config.h"
-#include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/tests/penetrationtests/json/prng_sca_commands.h"

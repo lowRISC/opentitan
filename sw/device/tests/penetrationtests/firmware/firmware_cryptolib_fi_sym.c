@@ -15,9 +15,8 @@
 #include "sw/device/tests/penetrationtests/json/cryptolib_fi_sym_commands.h"
 
 // Include handlers
-#include "fi/cryptolib_fi_sym.h"
-#include "lib/extclk_sca_fi.h"
-#include "lib/pentest_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/cryptolib_fi_sym.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 

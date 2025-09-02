@@ -21,14 +21,14 @@
 #include "sw/device/tests/penetrationtests/json/rom_fi_commands.h"
 
 // Include handlers
-#include "fi/alert_fi.h"
-#include "fi/crypto_fi.h"
-#include "fi/lc_ctrl_fi.h"
-#include "fi/otp_fi.h"
-#include "fi/rng_fi.h"
-#include "fi/rom_fi.h"
-#include "lib/extclk_sca_fi.h"
-#include "lib/pentest_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/alert_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/crypto_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/lc_ctrl_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/otp_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/rng_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/rom_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/extclk_sca_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 

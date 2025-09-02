@@ -36,26 +36,12 @@ status_t trigger_cryptolib_sca_asym_rsa_dec(
   return OK_STATUS();
 }
 
-status_t handle_cryptolib_sca_asym_rsa_dec_fvsr(ujson_t *uj) {
+status_t handle_cryptolib_sca_asym_rsa_dec(ujson_t *uj) {
   cryptolib_sca_asym_rsa_dec_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_asym_rsa_dec_in_t(uj, &uj_input));
 
-  uint8_t batch_data[uj_input.num_iterations][RSA_CMD_MAX_MESSAGE_BYTES];
-
-  // First generate all FvsR data sets. When sample_fixed,
-  // the provided data is used. When
-  // not sample_fixed, random data is generated.
-  bool sample_fixed = true;
-  for (size_t it = 0; it < uj_input.num_iterations; it++) {
-    if (sample_fixed) {
-      memcpy(batch_data[it], uj_input.data, uj_input.data_len);
-    } else {
-      prng_rand_bytes(batch_data[it], uj_input.data_len);
-    }
-    sample_fixed = prng_rand_byte() & 0x1;
-  }
-
-  // Invoke RSA for each data set.
+  uint8_t datain[RSA_CMD_MAX_MESSAGE_BYTES];
+  memcpy(datain, uj_input.data, uj_input.data_len);
   uint8_t data_out_buf[RSA_CMD_MAX_MESSAGE_BYTES];
   size_t data_out_len;
   size_t cfg_out;
@@ -67,15 +53,14 @@ status_t handle_cryptolib_sca_asym_rsa_dec_fvsr(ujson_t *uj) {
   memcpy(n, uj_input.n, n_len);
   memset(d, 0, RSA_CMD_MAX_N_BYTES);
   memcpy(d, uj_input.d, n_len);
-  for (size_t it = 0; it < uj_input.num_iterations; it++) {
-    TRY(trigger_cryptolib_sca_asym_rsa_dec(
-        batch_data[it], uj_input.data_len, uj_input.mode, uj_input.e, n, d,
-        &n_len, data_out_buf, &data_out_len, uj_input.hashing, uj_input.padding,
-        uj_input.cfg, &cfg_out, &status, uj_input.trigger));
-  }
+  TRY(trigger_cryptolib_sca_asym_rsa_dec(
+      datain, uj_input.data_len, uj_input.mode, uj_input.e, n, d, &n_len,
+      data_out_buf, &data_out_len, uj_input.hashing, uj_input.padding,
+      uj_input.cfg, &cfg_out, &status, uj_input.trigger));
 
   // Send the last data_out to host via UART.
   cryptolib_sca_asym_rsa_dec_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   memcpy(uj_output.n, n, RSA_CMD_MAX_N_BYTES);
   memcpy(uj_output.d, d, RSA_CMD_MAX_N_BYTES);
   uj_output.n_len = n_len;
@@ -88,51 +73,7 @@ status_t handle_cryptolib_sca_asym_rsa_dec_fvsr(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_cryptolib_sca_asym_rsa_dec_daisy_chaining(ujson_t *uj) {
-  cryptolib_sca_asym_rsa_dec_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_sca_asym_rsa_dec_in_t(uj, &uj_input));
-
-  // Invoke RSA for each data set.
-  uint8_t data_in_buf[RSA_CMD_MAX_MESSAGE_BYTES];
-  uint8_t data_out_buf[RSA_CMD_MAX_MESSAGE_BYTES];
-  size_t data_out_len;
-  size_t cfg_out;
-  size_t status;
-  uint8_t n[RSA_CMD_MAX_N_BYTES];
-  uint8_t d[RSA_CMD_MAX_N_BYTES];
-  size_t n_len = uj_input.n_len;
-  memset(n, 0, RSA_CMD_MAX_N_BYTES);
-  memcpy(n, uj_input.n, n_len);
-  memset(d, 0, RSA_CMD_MAX_N_BYTES);
-  memcpy(d, uj_input.d, n_len);
-  memset(data_in_buf, 0, RSA_CMD_MAX_MESSAGE_BYTES);
-  memcpy(data_in_buf, uj_input.data, uj_input.data_len);
-  for (size_t it = 0; it < uj_input.num_iterations; it++) {
-    TRY(trigger_cryptolib_sca_asym_rsa_dec(
-        data_in_buf, uj_input.data_len, uj_input.mode, uj_input.e, n, d, &n_len,
-        data_out_buf, &data_out_len, uj_input.hashing, uj_input.padding,
-        uj_input.cfg, &cfg_out, &status, uj_input.trigger));
-
-    // Copy output to input
-    memset(data_in_buf, 0, uj_input.data_len);
-    memcpy(data_in_buf, data_out_buf, data_out_len);
-  }
-
-  // Send the last data_out to host via UART.
-  cryptolib_sca_asym_rsa_dec_out_t uj_output;
-  memcpy(uj_output.n, n, RSA_CMD_MAX_N_BYTES);
-  memcpy(uj_output.d, d, RSA_CMD_MAX_N_BYTES);
-  uj_output.n_len = n_len;
-  memcpy(uj_output.data, data_out_buf, RSA_CMD_MAX_MESSAGE_BYTES);
-  uj_output.data_len = data_out_len;
-  uj_output.cfg = cfg_out;
-  uj_output.status = status;
-  RESP_OK(ujson_serialize_cryptolib_sca_asym_rsa_dec_out_t, uj, &uj_output);
-
-  return OK_STATUS();
-}
-
-status_t handle_cryptolib_sca_asym_rsa_sign(
+status_t trigger_cryptolib_sca_asym_rsa_sign(
     uint8_t data[RSA_CMD_MAX_MESSAGE_BYTES], size_t data_len, uint32_t e,
     uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
     size_t *n_len, uint8_t sig[RSA_CMD_MAX_SIGNATURE_BYTES], size_t *sig_len,
@@ -151,58 +92,6 @@ status_t handle_cryptolib_sca_asym_rsa_sign(
   return OK_STATUS();
 }
 
-status_t handle_cryptolib_sca_asym_rsa_sign_fvsr(ujson_t *uj) {
-  cryptolib_sca_asym_rsa_sign_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_sca_asym_rsa_sign_in_t(uj, &uj_input));
-
-  uint8_t batch_data[uj_input.num_iterations][RSA_CMD_MAX_MESSAGE_BYTES];
-
-  // First generate all FvsR data sets. When sample_fixed,
-  // the provided data is used. When
-  // not sample_fixed, random data is generated.
-  bool sample_fixed = true;
-  for (size_t it = 0; it < uj_input.num_iterations; it++) {
-    if (sample_fixed) {
-      memcpy(batch_data[it], uj_input.data, uj_input.data_len);
-    } else {
-      prng_rand_bytes(batch_data[it], uj_input.data_len);
-    }
-    sample_fixed = prng_rand_byte() & 0x1;
-  }
-
-  // Invoke RSA for each data set.
-  uint8_t sig_buf[RSA_CMD_MAX_SIGNATURE_BYTES];
-  size_t sig_len;
-  uint8_t n[RSA_CMD_MAX_N_BYTES];
-  uint8_t d[RSA_CMD_MAX_N_BYTES];
-  size_t n_len = uj_input.n_len;
-  memset(n, 0, RSA_CMD_MAX_N_BYTES);
-  memcpy(n, uj_input.n, n_len);
-  memset(d, 0, RSA_CMD_MAX_N_BYTES);
-  memcpy(d, uj_input.d, n_len);
-  size_t cfg_out;
-  size_t status;
-  for (size_t it = 0; it < uj_input.num_iterations; it++) {
-    TRY(handle_cryptolib_sca_asym_rsa_sign(
-        batch_data[it], uj_input.data_len, uj_input.e, n, d, &n_len, sig_buf,
-        &sig_len, uj_input.hashing, uj_input.padding, uj_input.cfg, &cfg_out,
-        &status, uj_input.trigger));
-  }
-
-  // Send the last signature to host via UART.
-  cryptolib_sca_asym_rsa_sign_out_t uj_output;
-  memcpy(uj_output.n, n, RSA_CMD_MAX_N_BYTES);
-  memcpy(uj_output.d, d, RSA_CMD_MAX_N_BYTES);
-  uj_output.n_len = n_len;
-  memcpy(uj_output.sig, sig_buf, RSA_CMD_MAX_SIGNATURE_BYTES);
-  uj_output.sig_len = sig_len;
-  uj_output.cfg = cfg_out;
-  uj_output.status = status;
-  RESP_OK(ujson_serialize_cryptolib_sca_asym_rsa_sign_out_t, uj, &uj_output);
-
-  return OK_STATUS();
-}
-
 status_t handle_cryptolib_sca_asym_prime(ujson_t *uj) {
   cryptolib_sca_asym_prime_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_asym_prime_in_t(uj, &uj_input));
@@ -212,21 +101,17 @@ status_t handle_cryptolib_sca_asym_prime(ujson_t *uj) {
   // Triggers are over the API calls.
 
   cryptolib_sca_asym_prime_out_t uj_output;
-  memset(uj_output.prime, 0, RSA_CMD_MAX_N_BYTES);
-  uj_output.prime_len = RSA_CMD_MAX_N_BYTES;
-  uj_output.cfg = 0;
-  uj_output.status = 0;
+  memset(&uj_output, 0, sizeof(uj_output));
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_sca_asym_prime_out_t, uj, &uj_output);
 
   return OK_STATUS();
 }
 
-status_t handle_cryptolib_sca_asym_rsa_sign_daisy_chaining(ujson_t *uj) {
+status_t handle_cryptolib_sca_asym_rsa_sign(ujson_t *uj) {
   cryptolib_sca_asym_rsa_sign_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_asym_rsa_sign_in_t(uj, &uj_input));
 
-  // Invoke RSA for each data set.
   uint8_t data_in_buf[RSA_CMD_MAX_MESSAGE_BYTES];
   uint8_t sig_buf[RSA_CMD_MAX_SIGNATURE_BYTES];
   size_t sig_len;
@@ -241,19 +126,13 @@ status_t handle_cryptolib_sca_asym_rsa_sign_daisy_chaining(ujson_t *uj) {
   memcpy(data_in_buf, uj_input.data, uj_input.data_len);
   size_t cfg_out;
   size_t status;
-  for (size_t it = 0; it < uj_input.num_iterations; it++) {
-    TRY(handle_cryptolib_sca_asym_rsa_sign(
-        data_in_buf, uj_input.data_len, uj_input.e, n, d, &n_len, sig_buf,
-        &sig_len, uj_input.hashing, uj_input.padding, uj_input.cfg, &cfg_out,
-        &status, uj_input.trigger));
+  TRY(trigger_cryptolib_sca_asym_rsa_sign(
+      data_in_buf, uj_input.data_len, uj_input.e, n, d, &n_len, sig_buf,
+      &sig_len, uj_input.hashing, uj_input.padding, uj_input.cfg, &cfg_out,
+      &status, uj_input.trigger));
 
-    // Copy output to input
-    memset(data_in_buf, 0, uj_input.data_len);
-    memcpy(data_in_buf, sig_buf, uj_input.data_len);
-  }
-
-  // Send the last signature to host via UART.
   cryptolib_sca_asym_rsa_sign_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   memcpy(uj_output.n, n, RSA_CMD_MAX_N_BYTES);
   memcpy(uj_output.d, d, RSA_CMD_MAX_N_BYTES);
   uj_output.n_len = n_len;
@@ -315,6 +194,7 @@ status_t handle_cryptolib_sca_asym_p256_base_mul_fvsr(ujson_t *uj) {
 
   // Send the last coordinates to host via UART.
   cryptolib_sca_asym_p256_base_mul_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   memcpy(uj_output.x, x, P256_CMD_BYTES);
   memcpy(uj_output.y, y, P256_CMD_BYTES);
   uj_output.cfg = cfg_out;
@@ -348,6 +228,7 @@ status_t handle_cryptolib_sca_asym_p256_base_mul_daisy_chaining(ujson_t *uj) {
 
   // Send the last coordinates to host via UART.
   cryptolib_sca_asym_p256_base_mul_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   memcpy(uj_output.x, x, P256_CMD_BYTES);
   memcpy(uj_output.y, y, P256_CMD_BYTES);
   uj_output.cfg = cfg_out;
@@ -368,10 +249,7 @@ status_t handle_cryptolib_sca_asym_p256_point_mul(ujson_t *uj) {
   // Alice scalar. Trigger are over the API calls.
 
   cryptolib_sca_asym_p256_point_mul_out_t uj_output;
-  memset(uj_output.x, 0, P256_CMD_BYTES);
-  memset(uj_output.y, 0, P256_CMD_BYTES);
-  uj_output.cfg = 0;
-  uj_output.status = 0;
+  memset(&uj_output, 0, sizeof(uj_output));
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_sca_asym_p256_point_mul_out_t, uj,
           &uj_output);
@@ -387,6 +265,7 @@ status_t handle_cryptolib_sca_asym_p256_ecdh(ujson_t *uj) {
   // Perform ECDH in P256.
   // Trigger are over the API calls.
   cryptolib_sca_asym_p256_ecdh_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   uj_output.status =
       (size_t)cryptolib_sca_p256_ecdh_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
@@ -403,6 +282,7 @@ status_t handle_cryptolib_sca_asym_p256_sign(ujson_t *uj) {
   // Perform a P256 signature.
   // Trigger are over the API calls.
   cryptolib_sca_asym_p256_sign_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   uj_output.status =
       (size_t)cryptolib_sca_p256_sign_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
@@ -460,6 +340,7 @@ status_t handle_cryptolib_sca_asym_p384_base_mul_fvsr(ujson_t *uj) {
 
   // Send the last coordinates to host via UART.
   cryptolib_sca_asym_p384_base_mul_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   memcpy(uj_output.x, x, P384_CMD_BYTES);
   memcpy(uj_output.y, y, P384_CMD_BYTES);
   uj_output.cfg = cfg_out;
@@ -492,6 +373,7 @@ status_t handle_cryptolib_sca_asym_p384_base_mul_daisy_chaining(ujson_t *uj) {
 
   // Send the last coordinates to host via UART.
   cryptolib_sca_asym_p384_base_mul_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   memcpy(uj_output.x, x, P384_CMD_BYTES);
   memcpy(uj_output.y, y, P384_CMD_BYTES);
   uj_output.cfg = cfg_out;
@@ -512,10 +394,7 @@ status_t handle_cryptolib_sca_asym_p384_point_mul(ujson_t *uj) {
   // Alice scalar. Trigger are over the API calls.
 
   cryptolib_sca_asym_p384_point_mul_out_t uj_output;
-  memset(uj_output.x, 0, P384_CMD_BYTES);
-  memset(uj_output.y, 0, P384_CMD_BYTES);
-  uj_output.cfg = 0;
-  uj_output.status = 0;
+  memset(&uj_output, 0, sizeof(uj_output));
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_sca_asym_p384_point_mul_out_t, uj,
           &uj_output);
@@ -531,6 +410,7 @@ status_t handle_cryptolib_sca_asym_p384_ecdh(ujson_t *uj) {
   // Perform ECDH in P384.
   // Trigger are over the API calls.
   cryptolib_sca_asym_p384_ecdh_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   uj_output.status =
       (size_t)cryptolib_sca_p384_ecdh_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
@@ -547,6 +427,7 @@ status_t handle_cryptolib_sca_asym_p384_sign(ujson_t *uj) {
   // Perform a p384 signature.
   // Trigger are over the API calls.
   cryptolib_sca_asym_p384_sign_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   uj_output.status =
       (size_t)cryptolib_sca_p384_sign_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
@@ -605,6 +486,7 @@ status_t handle_cryptolib_sca_asym_secp256k1_base_mul_fvsr(ujson_t *uj) {
 
   // Send the last coordinates to host via UART.
   cryptolib_sca_asym_secp256k1_base_mul_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   memcpy(uj_output.x, x, SECP256K1_CMD_BYTES);
   memcpy(uj_output.y, y, SECP256K1_CMD_BYTES);
   uj_output.cfg = cfg_out;
@@ -639,6 +521,7 @@ status_t handle_cryptolib_sca_asym_secp256k1_base_mul_daisy_chaining(
 
   // Send the last coordinates to host via UART.
   cryptolib_sca_asym_secp256k1_base_mul_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   memcpy(uj_output.x, x, SECP256K1_CMD_BYTES);
   memcpy(uj_output.y, y, SECP256K1_CMD_BYTES);
   uj_output.cfg = cfg_out;
@@ -660,10 +543,7 @@ status_t handle_cryptolib_sca_asym_secp256k1_point_mul(ujson_t *uj) {
   // Alice scalar. Trigger are over the API calls.
 
   cryptolib_sca_asym_secp256k1_point_mul_out_t uj_output;
-  memset(uj_output.x, 0, SECP256K1_CMD_BYTES);
-  memset(uj_output.y, 0, SECP256K1_CMD_BYTES);
-  uj_output.cfg = 0;
-  uj_output.status = 0;
+  memset(&uj_output, 0, sizeof(uj_output));
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_sca_asym_secp256k1_point_mul_out_t, uj,
           &uj_output);
@@ -679,9 +559,7 @@ status_t handle_cryptolib_sca_asym_secp256k1_ecdh(ujson_t *uj) {
   // Trigger are over the API calls.
 
   cryptolib_sca_asym_secp256k1_ecdh_out_t uj_output;
-  memset(uj_output.shared_key, 0, SECP256K1_CMD_BYTES);
-  uj_output.cfg = 0;
-  uj_output.status = 0;
+  memset(&uj_output, 0, sizeof(uj_output));
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_sca_asym_secp256k1_ecdh_out_t, uj,
           &uj_output);
@@ -698,12 +576,7 @@ status_t handle_cryptolib_sca_asym_secp256k1_sign(ujson_t *uj) {
   // Trigger are over the API calls.
 
   cryptolib_sca_asym_secp256k1_sign_out_t uj_output;
-  memset(uj_output.pubx, 0, SECP256K1_CMD_BYTES);
-  memset(uj_output.puby, 0, SECP256K1_CMD_BYTES);
-  memset(uj_output.r, 0, SECP256K1_CMD_BYTES);
-  memset(uj_output.s, 0, SECP256K1_CMD_BYTES);
-  uj_output.cfg = 0;
-  uj_output.status = 0;
+  memset(&uj_output, 0, sizeof(uj_output));
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_sca_asym_secp256k1_sign_out_t, uj,
           &uj_output);
@@ -760,6 +633,7 @@ status_t handle_cryptolib_sca_asym_x25519_base_mul_fvsr(ujson_t *uj) {
 
   // Send the last coordinates to host via UART.
   cryptolib_sca_asym_x25519_base_mul_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   memcpy(uj_output.x, x, X25519_CMD_BYTES);
   memcpy(uj_output.y, y, X25519_CMD_BYTES);
   uj_output.cfg = cfg_out;
@@ -792,6 +666,7 @@ status_t handle_cryptolib_sca_asym_x25519_base_mul_daisy_chaining(ujson_t *uj) {
 
   // Send the last coordinates to host via UART.
   cryptolib_sca_asym_x25519_base_mul_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   memcpy(uj_output.x, x, X25519_CMD_BYTES);
   memcpy(uj_output.y, y, X25519_CMD_BYTES);
   uj_output.cfg = cfg_out;
@@ -813,10 +688,7 @@ status_t handle_cryptolib_sca_asym_x25519_point_mul(ujson_t *uj) {
   // Alice scalar. Trigger are over the API calls.
 
   cryptolib_sca_asym_x25519_point_mul_out_t uj_output;
-  memset(uj_output.x, 0, X25519_CMD_BYTES);
-  memset(uj_output.y, 0, X25519_CMD_BYTES);
-  uj_output.cfg = 0;
-  uj_output.status = 0;
+  memset(&uj_output, 0, sizeof(uj_output));
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_sca_asym_x25519_point_mul_out_t, uj,
           &uj_output);
@@ -832,9 +704,7 @@ status_t handle_cryptolib_sca_asym_x25519_ecdh(ujson_t *uj) {
   // Trigger are over the API calls.
 
   cryptolib_sca_asym_x25519_ecdh_out_t uj_output;
-  memset(uj_output.shared_key, 0, X25519_CMD_BYTES);
-  uj_output.cfg = 0;
-  uj_output.status = 0;
+  memset(&uj_output, 0, sizeof(uj_output));
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_sca_asym_x25519_ecdh_out_t, uj, &uj_output);
 
@@ -891,6 +761,7 @@ status_t handle_cryptolib_sca_asym_ed25519_base_mul_fvsr(ujson_t *uj) {
 
   // Send the last coordinates to host via UART.
   cryptolib_sca_asym_ed25519_base_mul_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   memcpy(uj_output.x, x, ED25519_CMD_SCALAR_BYTES);
   memcpy(uj_output.y, y, ED25519_CMD_SCALAR_BYTES);
   uj_output.cfg = cfg_out;
@@ -925,6 +796,7 @@ status_t handle_cryptolib_sca_asym_ed25519_base_mul_daisy_chaining(
 
   // Send the last coordinates to host via UART.
   cryptolib_sca_asym_ed25519_base_mul_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
   memcpy(uj_output.x, x, ED25519_CMD_SCALAR_BYTES);
   memcpy(uj_output.y, y, ED25519_CMD_SCALAR_BYTES);
   uj_output.cfg = cfg_out;
@@ -944,12 +816,7 @@ status_t handle_cryptolib_sca_asym_ed25519_sign(ujson_t *uj) {
   // Trigger are over the API calls.
 
   cryptolib_sca_asym_ed25519_sign_out_t uj_output;
-  memset(uj_output.pubx, 0, ED25519_CMD_SCALAR_BYTES);
-  memset(uj_output.puby, 0, ED25519_CMD_SCALAR_BYTES);
-  memset(uj_output.r, 0, ED25519_CMD_SIG_BYTES);
-  memset(uj_output.s, 0, ED25519_CMD_SIG_BYTES);
-  uj_output.cfg = 0;
-  uj_output.status = 0;
+  memset(&uj_output, 0, sizeof(uj_output));
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_sca_asym_ed25519_sign_out_t, uj,
           &uj_output);
@@ -1008,14 +875,10 @@ status_t handle_cryptolib_sca_asym(ujson_t *uj) {
   cryptolib_sca_asym_subcommand_t cmd;
   TRY(ujson_deserialize_cryptolib_sca_asym_subcommand_t(uj, &cmd));
   switch (cmd) {
-    case kCryptoLibScaAsymSubcommandRsaDecFvsr:
-      return handle_cryptolib_sca_asym_rsa_dec_fvsr(uj);
-    case kCryptoLibScaAsymSubcommandRsaDecDaisy:
-      return handle_cryptolib_sca_asym_rsa_dec_daisy_chaining(uj);
-    case kCryptoLibScaAsymSubcommandRsaSignFvsr:
-      return handle_cryptolib_sca_asym_rsa_sign_fvsr(uj);
-    case kCryptoLibScaAsymSubcommandRsaSignDaisy:
-      return handle_cryptolib_sca_asym_rsa_sign_daisy_chaining(uj);
+    case kCryptoLibScaAsymSubcommandRsaDec:
+      return handle_cryptolib_sca_asym_rsa_dec(uj);
+    case kCryptoLibScaAsymSubcommandRsaSign:
+      return handle_cryptolib_sca_asym_rsa_sign(uj);
     case kCryptoLibScaAsymSubcommandPrime:
       return handle_cryptolib_sca_asym_prime(uj);
     case kCryptoLibScaAsymSubcommandP256BaseMulFvsr:
