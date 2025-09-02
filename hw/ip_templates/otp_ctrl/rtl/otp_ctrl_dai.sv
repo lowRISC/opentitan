@@ -930,6 +930,30 @@ module otp_ctrl_dai
   assign addr_calc = {cnt, {$clog2(ScrmblBlockWidth/8){1'b0}}} + addr_base;
   assign otp_addr_o = OtpAddrWidth'(addr_calc >> OtpAddrShift);
 
+  ///////////////////////
+  // Zeroization Logic //
+  ///////////////////////
+
+  // Count the number of set bits in the read-out word and release it when the `ZEROIZE` command is
+  // invoked.
+
+  logic [$clog2(ScrmblBlockWidth+1)-1:0] otp_rdata_cnt;
+
+  // Use the `prim_sum_tree` primitive to emulate the SystemVerilog function $countones which is
+  // not supported by all tools.
+  prim_sum_tree #(
+    .NumSrc(ScrmblBlockWidth),
+    .Saturate(1'b0),
+    .InWidth(1)
+  ) u_countones (
+    .clk_i       (clk_i),
+    .rst_ni      (rst_ni),
+    .values_i    (otp_rdata_i),
+    .valid_i     ({ScrmblBlockWidth{1'b1}}),
+    .sum_value_o (otp_rdata_cnt),
+    .sum_valid_o ()
+  );
+
   ///////////////
   // Registers //
   ///////////////
@@ -954,7 +978,7 @@ module otp_ctrl_dai
         end else if (data_sel == DaiData) begin
           data_q <= dai_wdata_i;
         end else if (data_sel == ZerData) begin
-           data_q <= countones(otp_rdata_i);
+           data_q <= ScrmblBlockWidth'(otp_rdata_cnt);
         end else begin
           data_q <= otp_rdata_i;
         end
@@ -972,7 +996,6 @@ module otp_ctrl_dai
     .d_i(zer_trigs_d),
     .q_o({zer_trigs_o})
   );
-
 
   ////////////////
   // Assertions //

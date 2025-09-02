@@ -25,6 +25,7 @@ filesets:
       - lowrisc:prim:secded
       - lowrisc:prim:edn_req
       - lowrisc:prim:sec_anchor
+      - lowrisc:prim:sum_tree
       # TODO(#27347): prim_pkg is deprecated
       - lowrisc:prim:prim_pkg
       - lowrisc:darjeeling_ip:pwrmgr_pkg
