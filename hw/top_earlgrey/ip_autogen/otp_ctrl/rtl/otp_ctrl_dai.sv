@@ -200,43 +200,6 @@ module otp_ctrl_dai
   // after digest and write ops.
   assign dai_rdata_o   = (state_q == IdleSt) ? data_q : '0;
 
-  ///////////////////////
-  // Zeroization Check //
-  ///////////////////////
-
-  // The read-out data is is buffered and replicated, then screened for the
-  // zeroization marker. This is only relevant for the `ZEROIZE` command to
-  // prevent exposing scrambled data to software.
-
-  localparam int ZerFanout = 4;
-
-  // Compose several individual MuBis into a larger MuBi. The resulting
-  // value must always be a valid MuBi constant (either `true` or `false`).
-  logic   [ZerFanout-1:0][ScrmblBlockWidth-1:0] otp_rdata_post;
-  mubi4_t [ZerFanout-1:0] zeroized_valid_pre;
-  mubi16_t zeroized_valid;
-  for (genvar k = 0; k < ZerFanout; k++) begin : gen_zeroized_valid_pre
-    prim_buf #(
-      .Width(ScrmblBlockWidth)
-    ) u_rdata_buf (
-      .in_i  ( otp_rdata_i       ),
-      .out_o ( otp_rdata_post[k] )
-    );
-
-    // Interleave MuBi4 chunks to a create higher-order MuBis.
-    // Even indices: (MuBi4True, MuBi4False)
-    // Odd indices:  (MuBi4False, MuBi4True)
-    assign zeroized_valid_pre[k] = (check_zeroized_valid(otp_rdata_post[k]) ^~ (k % 2 == 0)) ?
-        MuBi4True : MuBi4False;
-  end
-
-  prim_sec_anchor_buf #(
-    .Width(MuBi16Width)
-  ) u_zeroized_valid_buf (
-    .in_i  ( zeroized_valid_pre ),
-    .out_o ( {zeroized_valid}   )
-  );
-
   always_comb begin : p_fsm
     state_d = state_q;
 
@@ -791,16 +754,8 @@ module otp_ctrl_dai
             state_d = IdleSt;
 
             if (otp_err == NoError) begin
-              if (PartInfo[part_idx].secret) begin
-                // Only release the zeroized fuse when the read out data reaches
-                // the valid threshold.
-                if (mubi16_test_true_strict(zeroized_valid)) begin
-                  data_en = 1'b1;
-                end
-              // For software partitions, the read out data is always released.
-              end else begin
-                data_en = 1'b1;
-              end
+              // Unconditionally release the `countones` value of the zeroized word.
+              data_en = 1'b1;
               // Flop trigger for the affected partition such that it can disable
               // periodic checks that could fail.
               zer_trigs_d[part_idx] = MuBi8True;
@@ -848,7 +803,7 @@ module otp_ctrl_dai
     // Unconditionally jump into the terminal error state when a zeroization
     // indicator takes on an invalid value.
     for (int k = 0; k < NumPart; k++) begin
-      if (mubi8_test_invalid(zer_trigs_o[k]) || mubi16_test_invalid(zeroized_valid)) begin
+      if (mubi8_test_invalid(zer_trigs_o[k])) begin
         state_d = ErrorSt;
         fsm_err_o = 1'b1;
         error_d = FsmStateError;
