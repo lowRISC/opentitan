@@ -25,7 +25,6 @@ main:
        dmem[mont_m0inv] <= (- dmem[rsa_p]) mod 2^256
        dmem[mont_rr] <= (2^1024) mod dmem[input] */
   la         x16, rsa_p
-  la         x17, mont_m0inv
   la         x18, mont_rr
   jal        x1, modload
 
