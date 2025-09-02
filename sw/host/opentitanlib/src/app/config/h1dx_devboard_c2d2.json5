@@ -1,6 +1,6 @@
 {
   "includes": [
-    "/__builtin__/h1dx_devboard.json"
+    "/__builtin__/h1dx_devboard.json5"
   ],
   "interface": "c2d2",
   "pins": [
