@@ -264,6 +264,7 @@ cc_library(
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:random_order",
         "//sw/device/lib/crypto/impl:status",
     ],
 )
