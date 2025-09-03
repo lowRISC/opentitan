@@ -405,6 +405,45 @@ ownership_transfer_test(
     ),
 )
 
+ownership_transfer_test(
+    name = "unlock_when_recovery_state_test",
+    fpga = fpga_params(
+        changes_otp = True,
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_default_ownership_state_recovery",
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --unlock-mode=Any
+            # NOTE: We use the owner recovery key to test that the unlock operation succeeds.
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:no_owner_recovery_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
+        """,
+        test_harness = "//sw/host/tests/ownership:transfer_test",
+    ),
+)
+
+ownership_transfer_test(
+    name = "unlock_with_owner_recovery_key_test",
+    fpga = fpga_params(
+        changes_otp = True,
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --unlock-mode=Any
+            # NOTE: We use the owner recovery key to test that the unlock operation succeeds.
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:no_owner_recovery_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
+        """,
+        test_harness = "//sw/host/tests/ownership:transfer_test",
+    ),
+)
+
 # rom_ext_e2e_testplan.hjson%rom_ext_e2e_bad_activate_test
 ownership_transfer_test(
     name = "bad_activate_test",
