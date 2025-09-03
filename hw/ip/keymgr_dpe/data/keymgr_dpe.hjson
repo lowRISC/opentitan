@@ -515,7 +515,7 @@ countermeasures: [
           ]
         },
 
-        { bits: "15:14",
+        { bits: "16:14",
           name: "SLOT_SRC_SEL",
           resval: "0x0"
           desc: '''
@@ -523,7 +523,7 @@ countermeasures: [
           '''
         },
 
-        { bits: "19:18",
+        { bits: "20:18",
           name: "SLOT_DST_SEL",
           resval: "0x0"
           desc: '''
