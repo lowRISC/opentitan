@@ -233,6 +233,7 @@ dual_cc_library(
             "//hw/top:rv_core_ibex_c_regs",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:csr",
+            "//sw/device/lib/base:macros",
         ],
         shared = [
             "//sw/device/lib/base:hardened",
