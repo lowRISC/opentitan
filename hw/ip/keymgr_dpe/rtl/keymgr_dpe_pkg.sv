@@ -7,7 +7,7 @@ package keymgr_dpe_pkg;
   // Most of the parameters are directly reused from keymgr_pkg
   import keymgr_pkg::*;
 
-  parameter int DpeNumSlots = 4;
+  parameter int DpeNumSlots = 8;
   parameter int DpeNumSlotsWidth = prim_util_pkg::vbits(DpeNumSlots);
 
   // keymgr and keymgr_dpe have different maximum KMAC input widths. The below widths correspond to
