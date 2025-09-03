@@ -3,6 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 OWNER_SLOTS = {
-    "a": "0x10000",
-    "b": "0x90000",
+    "a": "{owner_slot_a}",
+    "b": "{owner_slot_b}",
 }
