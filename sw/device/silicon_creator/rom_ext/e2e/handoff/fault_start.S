@@ -21,6 +21,11 @@
   .global _start_boot
   .type _start_boot, @function
 _start_boot:
+
+#ifdef RETURN_TO_ROM_EXT
+  ret
+#endif
+
   /**
    * Set up the global pointer `gp`.
    *
