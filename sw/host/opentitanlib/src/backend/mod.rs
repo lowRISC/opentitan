@@ -22,6 +22,7 @@ pub mod chip_whisperer;
 mod ftdi;
 mod hyperdebug;
 pub mod proxy;
+pub mod qemu;
 pub mod ti50emulator;
 mod ultradebug;
 pub mod verilator;
@@ -60,6 +61,9 @@ pub struct BackendOpts {
 
     #[command(flatten)]
     pub ti50emulator_opts: ti50emulator::Ti50EmulatorOpts,
+
+    #[command(flatten)]
+    pub qemu_opts: Option<qemu::QemuOpts>,
 
     /// Configuration files.
     #[arg(long, num_args = 1)]
@@ -149,6 +153,10 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
             )?);
             (dediprog, Some(Path::new("/__builtin__/dediprog.json")))
         }
+        "qemu" => (
+            qemu::create(args.qemu_opts.as_ref().unwrap())?,
+            Some(Path::new("/__builtin__/opentitan_qemu.json")),
+        ),
         _ => return Err(Error::UnknownInterface(interface.to_string()).into()),
     };
     if args.conf.is_empty() {
