@@ -42,6 +42,8 @@ ${helper.inst_enum.render()}
  * List of register blocks.
  *
  * Register blocks are guaranteed to start at 0 and to be consecutively numbered.
+ *
+ * THIS CHANGE WILL CREATE A DIFF.
  */
 ${helper.reg_block_enum.render()}
 
