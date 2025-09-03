@@ -354,7 +354,7 @@ lowrisc_rv32imcb_toolchain = use_extension("//third_party/lowrisc:extensions.bzl
 use_repo(lowrisc_rv32imcb_toolchain, "lowrisc_rv32imcb_toolchain")
 
 qemu = use_extension("//third_party/qemu:extensions.bzl", "qemu")
-use_repo(qemu, "qemu_opentitan")
+use_repo(qemu, "qemu_opentitan", "qemu_opentitan_src")
 
 doxygen = use_extension("//third_party/doxygen:extensions.bzl", "doxygen")
 use_repo(doxygen, "doxygen")
