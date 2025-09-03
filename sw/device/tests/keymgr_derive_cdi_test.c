@@ -426,9 +426,7 @@ bool test_main(void) {
   init_peripheral_handles();
 
   // Prepare the flash with secrets only on the first reset.
-  if (reset_info == kDifRstmgrResetInfoPor) {
-    CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
-  }
+  CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
 
   // Reconfigure the KMAC to use the EDN entropy source as opposed to a
   // software-provided one as is default in the testutils.
