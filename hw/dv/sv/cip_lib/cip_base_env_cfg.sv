@@ -12,6 +12,9 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   // integrity check is expected to be ignored (although it may cause an alert).
   bit en_scb_tl_err_chk = 1;
 
+  // True if the scoreboard should check that pings on the alert interface get timely responses.
+  bit en_scb_ping_chk = 1;
+
   // If this flag is set then we allow the stress_all_with_rand_reset task to apply a reset without
   // waiting for CSR accesses to complete. This will only work if the IP block's vseqs
   //
