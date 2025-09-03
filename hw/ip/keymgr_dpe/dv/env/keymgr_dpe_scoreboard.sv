@@ -71,12 +71,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
   // HW internal key, used for OP in current state
   keymgr_dpe_env_pkg::keymgr_dpe_key_slot_t current_key_slot;
-  keymgr_dpe_pkg::keymgr_dpe_slot_t current_internal_key[
-  keymgr_dpe_pkg::DpeNumSlots];
+  keymgr_dpe_pkg::keymgr_dpe_slot_t current_internal_key[keymgr_dpe_pkg::DpeNumSlots];
+  bit [keymgr_pkg::KeyWidth-1:0] old_key;
   // bit used to flag a comparison of key slot is required
   // it's set by the process_kmac_data_rsp() function, during an
   // internal key update
   bit compare_internal_key_slot;
+  bit check_key_slot_erased;
   bit post_disable_compare_key_slots;
   keymgr_dpe_cdi_type_e current_cdi;
 
@@ -520,14 +521,18 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, $sformatf("intr_state: status is %s compare_internal_key_slot %0d",
             current_op_status.name, compare_internal_key_slot), UVM_MEDIUM)
           if (current_op_status == keymgr_pkg::OpDoneSuccess && compare_internal_key_slot) begin
-              cfg.keymgr_dpe_vif.compare_internal_key_slot(
-                current_internal_key[current_key_slot.dst_slot],
-                current_internal_key[current_key_slot.src_slot],
-                current_key_slot.dst_slot,
-                current_key_slot.src_slot,
-                current_internal_key[current_key_slot.src_slot].key_policy.retain_parent
-              );
+            cfg.keymgr_dpe_vif.compare_internal_key_slot(
+              current_internal_key[current_key_slot.dst_slot],
+              current_internal_key[current_key_slot.src_slot],
+              current_key_slot.dst_slot,
+              current_key_slot.src_slot,
+              current_internal_key[current_key_slot.src_slot].key_policy.retain_parent
+            );
             compare_internal_key_slot = 0;
+          end
+          if (current_op_status == keymgr_pkg::OpDoneSuccess && check_key_slot_erased) begin
+            `DV_CHECK_NE(current_internal_key[current_key_slot.dst_slot].key, old_key)
+            check_key_slot_erased = 0;
           end
           // compare all internal key slots valid to 0, and that key
           // values in the key slots are no longer equal to the previous
@@ -753,13 +758,16 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                   end
                   keymgr_dpe_pkg::OpDpeErase: begin
                     if (!get_invalid_op()) begin
+                      old_key = current_internal_key[current_key_slot.dst_slot].key;
                       current_internal_key[current_key_slot.dst_slot] = '0;
                       current_op_status = keymgr_pkg::OpDoneSuccess;
+                      // Only check if the destination key slot has been erased instead of the full
+                      // key slot comparison
+                      check_key_slot_erased = 1;
                     end else begin
                       current_op_status = keymgr_pkg::OpDoneFail;
                       `uvm_info(`gfn, $sformatf("current_op_status set to fail 1"), UVM_MEDIUM)
                     end
-                    compare_internal_key_slot = 1;
                     void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
                   end
                   keymgr_dpe_pkg::OpDpeDisable: begin
