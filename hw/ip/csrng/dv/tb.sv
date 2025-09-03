@@ -125,6 +125,7 @@ module tb;
   // Assertions
   for (genvar i = 0; i < NUM_HW_APPS + 1; i++) begin : gen_cmd_stage_asserts
     `ASSERT(CmdStageFifoNotFullReady,
+      $past(rst_n) &&
       (tb.dut.u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.sfifo_cmd_depth != 2'h2) |->
       tb.dut.u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.cmd_stage_rdy_o,
       clk,

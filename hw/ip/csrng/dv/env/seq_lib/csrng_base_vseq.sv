@@ -228,42 +228,44 @@ class csrng_base_vseq extends cip_base_vseq #(
   task force_all_fifo_errs(string paths [6], bit values [6], string path_exts [6],
                            uvm_reg_field reg_field, bit exp_data, int case_state);
     int    index1 [$], index2 [$], index3 [$];
-    string path_push, path_full, path_data, path_pop, path_not_empty;
-    bit    val_push, val_full, val_data, val_pop, val_not_empty;
+    string path_wvld, path_wrdy, path_wdata, path_rdata, path_rrdy, path_rvld;
+    bit    val_wvld, val_wrdy, val_wdata, val_rdata, val_rrdy, val_rvld;
+
     case (case_state)
       fifo_write: begin // fifo write err
         index1     = path_exts.find_index(x) with (x == "wvld");
-        index2     = path_exts.find_index(x) with (x == "full");
+        index2     = path_exts.find_index(x) with (x == "wrdy");
         index3     = path_exts.find_index(x) with (x == "wdata");
-        path_push  = paths[index1[0]];
-        path_full  = paths[index2[0]];
-        path_data  = paths[index3[0]];
-        val_push   = values[index1[0]];
-        val_full   = values[index2[0]];
-        val_data   = values[index3[0]];
-        force_fifo_readwrite_err(path_push, path_full, path_data, 1'b1, 1'b1, 8'b0, reg_field,
-                                 exp_data);
+        path_wvld  = paths[index1[0]];
+        path_wrdy  = paths[index2[0]];
+        path_wdata = paths[index3[0]];
+        val_wvld   = values[index1[0]];
+        val_wrdy   = values[index2[0]];
+        val_wdata  = values[index3[0]];
+        force_fifo_readwrite_err(path_wvld, path_wrdy, path_wdata, val_wvld, val_wrdy, val_wdata,
+                                 reg_field, exp_data);
       end
       fifo_read: begin // fifo read err
-        index1         = path_exts.find_index(x) with (x == "rrdy");
-        index2         = path_exts.find_index(x) with (x == "rvld");
-        index3         = path_exts.find_index(x) with (x == "rdata");
-        path_pop       = paths[index1[0]];
-        path_not_empty = paths[index2[0]];
-        path_data      = paths[index3[0]];
-        val_pop        = values[index1[0]];
-        val_not_empty  = values[index2[0]];
-        force_fifo_readwrite_err(path_pop, path_not_empty, path_data, 1'b1, 1'b0, 8'b0, reg_field,
-                                 exp_data);
+        index1     = path_exts.find_index(x) with (x == "rrdy");
+        index2     = path_exts.find_index(x) with (x == "rvld");
+        index3     = path_exts.find_index(x) with (x == "rdata");
+        path_rrdy  = paths[index1[0]];
+        path_rvld  = paths[index2[0]];
+        path_rdata = paths[index3[0]];
+        val_rrdy   = values[index1[0]];
+        val_rvld   = values[index2[0]];
+        val_rdata  = values[index3[0]];
+        force_fifo_readwrite_err(path_rrdy, path_rvld, path_rdata, val_rrdy, val_rvld, val_rdata,
+                                 reg_field, exp_data);
       end
       fifo_state: begin // fifo state err
-        index1         = path_exts.find_index(x) with (x == "full");
-        index2         = path_exts.find_index(x) with (x == "rvld");
-        path_full      = paths[index1[0]];
-        path_not_empty = paths[index2[0]];
-        val_full       = values[index1[0]];
-        val_not_empty  = values[index2[0]];
-        force_fifo_err(path_full, path_not_empty, 1'b1, 1'b0, reg_field, exp_data);
+        index1    = path_exts.find_index(x) with (x == "wrdy");
+        index2    = path_exts.find_index(x) with (x == "rvld");
+        path_wrdy = paths[index1[0]];
+        path_rvld = paths[index2[0]];
+        val_wrdy  = values[index1[0]];
+        val_rvld  = values[index2[0]];
+        force_fifo_err(path_wrdy, path_rvld, val_wrdy, val_rvld, reg_field, exp_data);
       end
       default: begin
         `uvm_fatal(`gfn, "Invalid case! (bug in environment)")
@@ -274,36 +276,36 @@ class csrng_base_vseq extends cip_base_vseq #(
   task force_all_fifo_errs_exception(string paths [6], bit values [6],string path_exts [6],
                                      uvm_reg_field reg_field, bit exp_data, int case_state);
     int    index1 [$], index2 [$];
-    string path_push, path_full, path_pop, path_not_empty;
-    bit    val_push, val_full, val_pop, val_not_empty;
+    string path_wvld, path_wrdy, path_rrdy, path_rvld;
+    bit    val_wvld, val_wrdy, val_rrdy, val_rvld;
     case (case_state)
       fifo_write: begin // fifo write err
-        index1     = path_exts.find_index(x) with (x == "wvld");
-        index2     = path_exts.find_index(x) with (x == "full");
-        path_push  = paths[index1[0]];
-        path_full  = paths[index2[0]];
-        val_push   = values[index1[0]];
-        val_full   = values[index2[0]];
-        force_fifo_err(path_push, path_full, val_push, val_full, reg_field, exp_data);
+        index1    = path_exts.find_index(x) with (x == "wvld");
+        index2    = path_exts.find_index(x) with (x == "wrdy");
+        path_wvld = paths[index1[0]];
+        path_wrdy = paths[index2[0]];
+        val_wvld  = values[index1[0]];
+        val_wrdy  = values[index2[0]];
+        force_fifo_err(path_wvld, path_wrdy, val_wvld, val_wrdy, reg_field, exp_data);
       end
       fifo_read: begin // fifo read err
-        index1         = path_exts.find_index(x) with (x == "rrdy");
-        index2         = path_exts.find_index(x) with (x == "rvld");
-        path_pop       = paths[index1[0]];
-        path_not_empty = paths[index2[0]];
-        val_pop        = values[index1[0]];
-        val_not_empty  = values[index2[0]];
-        force_fifo_err_exception(path_pop, path_not_empty, val_pop, val_not_empty, 1'b0,
+        index1    = path_exts.find_index(x) with (x == "rrdy");
+        index2    = path_exts.find_index(x) with (x == "rvld");
+        path_rrdy = paths[index1[0]];
+        path_rvld = paths[index2[0]];
+        val_rrdy  = values[index1[0]];
+        val_rvld  = values[index2[0]];
+        force_fifo_err_exception(path_rrdy, path_rvld, val_rrdy, val_rvld, 1'b0,
                                  reg_field, exp_data);
       end
       fifo_state: begin // fifo state err
-        index1         = path_exts.find_index(x) with (x == "full");
-        index2         = path_exts.find_index(x) with (x == "rvld");
-        path_full      = paths[index1[0]];
-        path_not_empty = paths[index2[0]];
-        val_full       = values[index1[0]];
-        val_not_empty  = values[index2[0]];
-        force_fifo_err(path_full, path_not_empty, val_full, val_not_empty, reg_field, exp_data);
+        index1    = path_exts.find_index(x) with (x == "wrdy");
+        index2    = path_exts.find_index(x) with (x == "rvld");
+        path_wrdy = paths[index1[0]];
+        path_rvld = paths[index2[0]];
+        val_wrdy  = values[index1[0]];
+        val_rvld  = values[index2[0]];
+        force_fifo_err(path_wrdy, path_rvld, val_wrdy, val_rvld, reg_field, exp_data);
       end
       default: begin
         `uvm_fatal(`gfn, "Invalid case! (bug in environment)")

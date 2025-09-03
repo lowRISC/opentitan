@@ -30,6 +30,7 @@ package csrng_pkg;
   // Maximum number of 32b words additionally supplied on the application interfaces
   parameter int unsigned CmdMaxClen = 12;
   parameter int unsigned CmdFifoDepth = 2;
+  parameter int unsigned CmdFifoDepthLg = $clog2(CmdFifoDepth);
 
   //-------------------------
   // Application Interfaces

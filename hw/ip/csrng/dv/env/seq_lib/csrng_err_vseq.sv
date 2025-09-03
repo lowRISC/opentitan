@@ -20,10 +20,10 @@ class csrng_err_vseq extends csrng_base_vseq;
     string        fifo_name;
     int           first_index, last_index;
     string        fifo_base_path;
-    string        path_exts [6] = {"wvld", "full", "wdata", "rrdy", "rvld", "rdata"};
+    string        path_exts [6] = {"wvld", "wrdy", "wdata", "rrdy", "rvld", "rdata"};
     string        fifo_forced_paths [6];
     string        fifo_forced_path_ds;
-    bit           fifo_forced_values [6] = {1'b1, 1'b1, 1'b0, 1'b1, 1'b0, 1'b0};
+    bit           fifo_forced_values [6] = {1'b1, 1'b0, 1'b0, 1'b1, 1'b0, 1'b0};
     string        fifo_err_path [2][string];
     bit           fifo_err_value [2][string];
     string        path_key;
@@ -34,10 +34,10 @@ class csrng_err_vseq extends csrng_base_vseq;
 
     super.body();
 
-    fifo_err_path[0] = '{"write": "wvld", "read": "rrdy", "state": "full"};
-    fifo_err_path[1] = '{"write": "full", "read": "rvld", "state": "rvld"};
-    fifo_err_value[0] = '{"write": 1'b1, "read": 1'b1, "state": 1'b1};
-    fifo_err_value[1] = '{"write": 1'b1, "read": 1'b0, "state": 1'b0};
+    fifo_err_path[0] = '{"write": "wvld", "read": "rrdy", "state": "wrdy"};
+    fifo_err_path[1] = '{"write": "wrdy", "read": "rvld", "state": "rvld"};
+    fifo_err_value[0] = '{"write": 1'b1, "read": 1'b1, "state": 1'b0};
+    fifo_err_value[1] = '{"write": 1'b0, "read": 1'b0, "state": 1'b0};
 
     // Create edn host sequences
     for (int i = 0; i < NUM_HW_APPS; i++) begin
