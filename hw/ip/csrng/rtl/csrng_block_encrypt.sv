@@ -38,9 +38,9 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   // blk_encrypt_in fifo
   logic [BlkEncFifoWidth-1:0] sfifo_blkenc_rdata;
   logic                       sfifo_blkenc_wvld;
+  logic                       sfifo_blkenc_wrdy;
   logic [BlkEncFifoWidth-1:0] sfifo_blkenc_wdata;
   logic                       sfifo_blkenc_rrdy;
-  logic                       sfifo_blkenc_full;
   logic                       sfifo_blkenc_rvld;
   // breakout
   logic [CmdWidth-1:0]        sfifo_blkenc_cmd;
@@ -145,17 +145,17 @@ module csrng_block_encrypt import csrng_pkg::*; #(
     .rst_ni   (rst_ni),
     .clr_i    (!block_encrypt_enable_i),
     .wvalid_i (sfifo_blkenc_wvld),
-    .wready_o (),
+    .wready_o (sfifo_blkenc_wrdy),
     .wdata_i  (sfifo_blkenc_wdata),
     .rvalid_o (sfifo_blkenc_rvld),
     .rready_i (sfifo_blkenc_rrdy),
     .rdata_o  (sfifo_blkenc_rdata),
-    .full_o   (sfifo_blkenc_full),
+    .full_o   (),
     .depth_o  (),
     .err_o    ()
   );
 
-  assign sfifo_blkenc_wvld = block_encrypt_req_i && !sfifo_blkenc_full;
+  assign sfifo_blkenc_wvld = block_encrypt_req_i && sfifo_blkenc_wrdy;
   assign sfifo_blkenc_wdata = {block_encrypt_id_i,block_encrypt_cmd_i};
 
   assign block_encrypt_rdy_o = (cipher_in_ready == aes_pkg::SP2V_HIGH);
@@ -172,9 +172,9 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   assign cipher_out_ready = block_encrypt_rdy_i ? aes_pkg::SP2V_HIGH : aes_pkg::SP2V_LOW;
 
   assign block_encrypt_sfifo_blkenc_err_o =
-         {(sfifo_blkenc_wvld && sfifo_blkenc_full),
-          (sfifo_blkenc_rrdy && !sfifo_blkenc_rvld),
-          (sfifo_blkenc_full && !sfifo_blkenc_rvld)};
+         {( sfifo_blkenc_wvld && !sfifo_blkenc_wrdy),
+          ( sfifo_blkenc_rrdy && !sfifo_blkenc_rvld),
+          (!sfifo_blkenc_wrdy && !sfifo_blkenc_rvld)};
 
   //--------------------------------------------
   // idle detection
