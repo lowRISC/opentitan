@@ -39,8 +39,8 @@ MSG_STARTING_ROM_EXT = "ROM_EXT:[^\r\n]*\r\n"
 MSG_PASS = "PASS!"
 
 SLOTS = {
-    "a": "0x0",
-    "b": "0x80000",
+    "a": "{rom_ext_slot_a}",
+    "b": "{rom_ext_slot_b}",
 }
 
 # list of keys that will be used to build various flash images
