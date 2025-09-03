@@ -146,11 +146,12 @@ module keymgr_dpe_ctrl
   logic fsm_at_disabled;
   logic fsm_at_invalid;
 
-  logic adv_req, gen_req, erase_req, dis_req;
+  logic adv_req, gen_req, erase_req, dis_req, load_req;
   assign adv_req   = op_req & (op_i == OpDpeAdvance);
   assign gen_req   = op_req & gen_key_op;
   assign erase_req = op_req & (op_i == OpDpeErase);
   assign dis_req   = op_req & (op_i == OpDpeDisable);
+  assign load_req  = op_req & (op_i == OpDpeLoadRootKey);
 
   ///////////////////////////
   //  interaction between operation fsm and software
@@ -204,6 +205,7 @@ module keymgr_dpe_ctrl
                          op_update & dis_req                    ? SlotWipeInternalOnly :
                          op_update & (op_err | fsm_at_disabled) ? SlotUpdateIdle       :
                          op_update & adv_req                    ? SlotLoadFromKmac     :
+                         op_update & load_req                   ? SlotLoadRoot         :
                          op_update & erase_req                  ? SlotErase            :
                          SlotUpdateIdle;
 
@@ -395,6 +397,7 @@ module keymgr_dpe_ctrl
   logic invalid_advance;
   logic invalid_erase;
   logic invalid_gen;
+  logic invalid_load;
   // TODO(#384): Make sure that:
   // 1) inv_state is correctly computed
   // 2) inv_state is correctly consumed by FSM
@@ -514,7 +517,11 @@ module keymgr_dpe_ctrl
         op_req = op_start_i;
 
         // This is the operational state, most operations are valid (modulo policy violations).
-        invalid_op = invalid_advance | invalid_erase | invalid_gen | (~en_i & op_start_i);
+        invalid_op = invalid_advance |
+                     invalid_erase   |
+                     invalid_gen     |
+                     invalid_load    |
+                     (~en_i & op_start_i);
 
         // Given that the root key was latched by an earlier FSM state, we need to take care of
         // clearing the sensitive root key.
@@ -607,6 +614,7 @@ module keymgr_dpe_ctrl
     .gen_req_i(gen_req),
     .erase_req_i(erase_req),
     .dis_req_i(dis_req),
+    .load_req_i(load_req),
     .op_ack_o(op_ack),
     .op_busy_o(op_busy),
     .op_update_o(op_update),
@@ -670,6 +678,8 @@ module keymgr_dpe_ctrl
   assign invalid_erase = erase_req & ~destination_slot_valid;
 
   assign invalid_gen = gen_req & (~active_key_slot_o.valid | ~key_version_vld_o);
+
+  assign invalid_load = load_req & (~root_key_i.valid | destination_slot_valid);
 
   // This is similar to `invalid_advance` except that it does not depend on a incoming request.
   // The outer module uses `invalid_advance_o` to invalidate KMAC msg payload, when the advance

@@ -464,6 +464,13 @@ countermeasures: [
                 Moves key manager DPE to disabled state.
                 '''
             },
+            {
+              value: "5",
+              name: "Load root key",
+              desc: '''
+                Loads the root key into the key manager.
+                '''
+            }
           ],
         },
 
