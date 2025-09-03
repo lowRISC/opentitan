@@ -8,6 +8,10 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   bit en_tl_err_cov      = 1;
   bit en_tl_intg_err_cov = 1;
 
+  // True if the scoreboard should check TL transactions for integrity. A transaction that fails its
+  // integrity check is expected to be ignored (although it may cause an alert).
+  bit en_scb_tl_err_chk = 1;
+
   // If this flag is set then we allow the stress_all_with_rand_reset task to apply a reset without
   // waiting for CSR accesses to complete. This will only work if the IP block's vseqs
   //
