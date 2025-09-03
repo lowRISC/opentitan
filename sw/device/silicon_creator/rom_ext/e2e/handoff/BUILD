@@ -52,6 +52,10 @@ _FAULT_TEST_CASES = {
         "defines": ["HARDWARE_INTERRUPT=1"],
         "exit_success": "BFV:8b524902",
     },
+    "return_boot_failed": {
+        "defines": ["RETURN_TO_ROM_EXT=1"],
+        "exit_success": "BFV:01524509",  # kErrorRomExtBootFailed
+    },
 }
 
 [
