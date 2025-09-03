@@ -2,15 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 load("//rules/opentitan:hw.bzl", "get_ip_attr", "get_top_attr", "has_ip_attr", "has_top_attr")
-load("//hw/top_earlgrey:defs.bzl", "EARLGREY")
-load("//hw/top_darjeeling:defs.bzl", "DARJEELING")
-load("//hw/top_englishbreakfast:defs.bzl", "ENGLISHBREAKFAST")
+load("@tops_desc//:defs.bzl", _ALL_TOPS = "ALL_TOPS")
 
-ALL_TOPS = [
-    EARLGREY,
-    DARJEELING,
-    ENGLISHBREAKFAST,
-]
+ALL_TOPS = _ALL_TOPS
 
 ALL_TOP_NAMES = [
     top.name
