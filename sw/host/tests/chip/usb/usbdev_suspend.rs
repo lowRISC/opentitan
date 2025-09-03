@@ -24,7 +24,7 @@ use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 
-use usb::{UsbHub, UsbHubOp, UsbOpts};
+use usb::{UsbHub, UsbHubOp, UsbOpts, get_device_by_port_numbers};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -35,6 +35,13 @@ struct Opts {
     // the host, as well as iterating through a number of test phases.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "60s")]
     timeout: Duration,
+
+    // How much is given to the device to print some debugging logs at certain points
+    // of the tests. A timeout of 0 means that the test will move on with the test phases
+    // as soon as it syncs with the device, therefore the device logs may be interleave
+    // the host messages in a weird way.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "100ms")]
+    logging_duration: Duration,
 
     /// USB options.
     #[command(flatten)]
@@ -113,28 +120,48 @@ const TIME_SUSPENDING: u64 = 4;
 const TIME_RESUMING: u64 = 20;
 const TIME_RESETTING: u64 = 10;
 
-fn suspend(hub: &UsbHub, port: u8) -> Result<()> {
+fn suspend(hub: &UsbHub, port: u8, check_status: bool) -> Result<()> {
     log::info!("suspending port {}", port);
-    hub.op(UsbHubOp::Suspend, port, Duration::from_millis(100))?;
+    hub.op(UsbHubOp::Suspend, port, Duration::from_millis(1000), check_status)?;
     // Device shall suspend after 3ms of Idle state.
     delay_millis(TIME_SUSPENDING);
     log::info!("suspended");
     Ok(())
 }
 
-fn resume(hub: &UsbHub, port: u8) -> Result<()> {
+fn resume(hub: &UsbHub, port: u8, check_status: bool) -> Result<()> {
     log::info!("resuming device on port {}", port);
-    hub.op(UsbHubOp::Resume, port, Duration::from_millis(100))?;
+    hub.op(UsbHubOp::Resume, port, Duration::from_millis(1000), check_status)?;
     // Resume Signaling shall be performed for at least 20ms.
     delay_millis(TIME_RESUMING);
     log::info!("resumed");
     Ok(())
 }
 
-fn reset(hub: &UsbHub, port: u8) -> Result<()> {
+fn find_device(hub: &UsbHub, port: u8) -> Result<rusb::Device<rusb::Context>> {
+    // Build the port path to the device.
+    let mut ports = hub.device().port_numbers()?.clone();
+    ports.push(port);
+    // Try to find the device
+    get_device_by_port_numbers(&ports)
+}
+
+fn reset(hub: &UsbHub, port: u8, check_status: bool) -> Result<()> {
     log::info!("resetting device on port {}", port);
-    // Reset Signaling shall be performed for at least 10ms.
-    hub.op(UsbHubOp::Reset, port, Duration::from_millis(100))?;
+    let device = find_device(hub, port)?;
+    // Resetting the device is a tricky: if we send a hub operation, the kernel will
+    // not be aware of the reset and it will not try to configure the device afterwards.
+    // On the other hand, since we mess with the suspend/resume state of the device directly
+    // at the hub, this could also confuse the kernel and it might not succeed in sending
+    // a reset. Experimentally, we have observed however that requesting a reset from the
+    // kernel seems to work anyway and it at least trigger a re-enumeration.
+
+    let res = device.open().context("could not find device under test").and_then(
+        |dev| dev.reset().context("could not reset device via the kernel"));
+    if res.is_err() {
+        log::info!("Ignoring failed reset via the kernel: {:?}", res);
+    }
+
     delay_millis(TIME_RESETTING);
     log::info!("reset");
     Ok(())
@@ -168,6 +195,7 @@ fn usbdev_suspend(
     // - Fairly arbitrary, may be modified quite freely.
     let time_disconnected: u64 = 1000;
 
+    opts.usb.apply_strappings(transport, true)?;
     // Enable VBUS sense on the board if necessary.
     if opts.usb.vbus_control_available() {
         opts.usb.enable_vbus(transport, true)?;
@@ -194,7 +222,8 @@ fn usbdev_suspend(
 
     let _devices = opts.usb.wait_for_device(opts.timeout)?;
 
-    let hub = UsbHub::from_device(&parent).context("for this test, you need to make sure that the program has sufficient permissions to access the hub")?;
+    let hub = UsbHub::from_device(&parent).context("for this test, you need to make sure that the program has sufficient permissions to access the hub\n
+        See sw/host/tests/chip/usb/README.md for more information")?;
 
     // Collect test phases.
     let init_phase = opts.init_phase.clone();
@@ -219,16 +248,29 @@ fn usbdev_suspend(
             // of being ready to receive the stimulus within a given test phase, because we have
             // neither this harness nor the device-side code has any control over how long it takes
             // the host to detect and configure the device.
-            UartConsole::wait_for(uart, r"Phase awaiting stimulus", opts.timeout)?;
+            UartConsole::wait_for(uart, r"Phase awaiting stimulus \([^)]*\)", opts.timeout)?;
 
-            // All phase require a Suspend request and then wait for > 3 frames; some phases require
+            // All phases require a suspend request and then wait for > 3 frames; some phases require
             // a longer delay so that the device-side code decides to enter a sleep state.
-            suspend(&hub, port)?;
-            if phase == SuspendPhase::Suspend {
-                delay_millis(time_suspended_short);
-            } else {
-                // Longer Suspended state, a cue to enter the sleep state.
-                delay_millis(time_suspended_long);
+            // However do not suspend if we have reached the Shutdown phase because the device will
+            // disconnect from the bus.
+            if phase != SuspendPhase::Shutdown {
+                // If logging is enabled, a lot more messages will be printed after this sync message above.
+                // In order to keep the host and device log roughly in-order, give a chance to the device
+                // to print messages before moving-on.
+                let _ = UartConsole::wait_for(uart, r"(PASS|FAIL)!", opts.logging_duration);
+
+                suspend(&hub, port, !opts.usb.relaxed_hub_op)?;
+                if phase == SuspendPhase::Suspend {
+                    delay_millis(time_suspended_short);
+                } else {
+                    // Longer Suspended state, a cue to enter the sleep state.
+                    delay_millis(time_suspended_long);
+                }
+                // If logging is enabled, a lot more messages will be printed, for example when going to
+                // sleep. In order to keep the host and device log roughly in-order, give a chance to the device
+                // to print messages before moving-on.
+                let _ = UartConsole::wait_for(uart, r"(PASS|FAIL)!", opts.logging_duration);
             }
 
             // Next test phase; initialize to final phase (safer default than the current phase).
@@ -236,18 +278,18 @@ fn usbdev_suspend(
             match phase {
                 // Basic test of Suspend-Resume functionality without entering a sleep state.
                 SuspendPhase::Suspend => {
-                    resume(&hub, port)?;
+                    resume(&hub, port, !opts.usb.relaxed_hub_op)?;
                     delay_millis(10);
                     next_phase = SuspendPhase::SleepResume;
                 }
                 // Suspend, enter Normal Sleep, and then awaken in response to Resume signaling.
                 SuspendPhase::SleepResume => {
-                    resume(&hub, port)?;
+                    resume(&hub, port, !opts.usb.relaxed_hub_op)?;
                     next_phase = SuspendPhase::SleepReset;
                 }
                 // Suspend, enter Normal Sleep, and then awaken in response to a Bus Reset.
                 SuspendPhase::SleepReset => {
-                    reset(&hub, port)?;
+                    reset(&hub, port, !opts.usb.relaxed_hub_op)?;
                     next_phase = SuspendPhase::SleepDisconnect;
                 }
                 // Suspend, enter Normal Sleep, and then awaken in response to a VBUS Disconnection.
@@ -258,18 +300,18 @@ fn usbdev_suspend(
                         connect(&opts.usb, transport)?;
                     } else {
                         log::info!("Skipping VBUS Disconnection because support unavailable");
-                        resume(&hub, port)?;
+                        resume(&hub, port, !opts.usb.relaxed_hub_op)?;
                     }
                     next_phase = SuspendPhase::DeepResume;
                 }
                 // Suspend, enter Deep Sleep, and then awaken in response to Resume Signaling.
                 SuspendPhase::DeepResume => {
-                    resume(&hub, port)?;
+                    resume(&hub, port, !opts.usb.relaxed_hub_op)?;
                     next_phase = SuspendPhase::DeepReset;
                 }
                 // Suspend, enter Deep Sleep, and then awaken in response to a Bus Reset.
                 SuspendPhase::DeepReset => {
-                    reset(&hub, port)?;
+                    reset(&hub, port, !opts.usb.relaxed_hub_op)?;
                     next_phase = SuspendPhase::DeepDisconnect;
                 }
                 // Suspend, enter Deep Sleep, and then awaken in response to a VBUS Disconnection.
@@ -280,7 +322,7 @@ fn usbdev_suspend(
                         connect(&opts.usb, transport)?;
                     } else {
                         log::info!("Skipping VBUS Disconnection because support unavailable");
-                        resume(&hub, port)?;
+                        resume(&hub, port, !opts.usb.relaxed_hub_op)?;
                     }
                     next_phase = SuspendPhase::Shutdown;
                 }
@@ -307,6 +349,19 @@ fn usbdev_suspend(
     }
 }
 
+fn usbdev_suspend_and_drain(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    uart: &dyn Uart,
+) -> Result<(), anyhow::Error> {
+    let res = usbdev_suspend(opts, transport, uart);
+    // In case of error, drain the UART to get more message out to debug.
+    if res.is_err() {
+        let _ = UartConsole::wait_for(uart, r"(PASS|FAIL)!", Duration::from_secs(1));
+    }
+    res
+}
+
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
@@ -316,6 +371,6 @@ fn main() -> Result<()> {
     let uart = transport.uart("console")?;
     UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
-    execute_test!(usbdev_suspend, &opts, &transport, &*uart);
+    execute_test!(usbdev_suspend_and_drain, &opts, &transport, &*uart);
     Ok(())
 }

@@ -4565,6 +4565,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -4603,6 +4604,7 @@ opentitan_test(
         test_cmd = """
             --bootstrap="{firmware}"
             --timeout=30s
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -4637,6 +4639,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -4666,6 +4669,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --wake=disconnect
@@ -4701,6 +4705,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -4746,6 +4751,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --wake=reset
@@ -4769,6 +4775,7 @@ opentitan_test(
     srcs = ["usbdev_setuprx_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
@@ -4781,6 +4788,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -4805,6 +4813,7 @@ opentitan_test(
     srcs = ["usbdev_config_host_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
@@ -4817,6 +4826,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -4845,6 +4855,7 @@ opentitan_test(
     srcs = ["usbdev_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
@@ -4857,6 +4868,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -4881,6 +4893,7 @@ opentitan_test(
     srcs = ["usbdev_mem_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
@@ -4903,6 +4916,7 @@ opentitan_test(
     ],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
@@ -4915,6 +4929,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --exec=$(rootpath :usbdev_stream_host_harness)
@@ -4942,6 +4957,7 @@ opentitan_test(
     ],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
@@ -4954,6 +4970,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --exec=$(rootpath :usbdev_stream_host_harness)
@@ -4981,6 +4998,7 @@ opentitan_test(
     ],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
@@ -4993,6 +5011,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --exec=$(rootpath :usbdev_stream_host_harness)
@@ -5017,6 +5036,7 @@ opentitan_test(
     srcs = ["usbdev_toggle_restore_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
@@ -5029,6 +5049,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -5117,9 +5138,9 @@ opentitan_test(
     ),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
@@ -5129,6 +5150,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=suspend
             --init-phase=suspend
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5155,9 +5177,9 @@ opentitan_test(
     ),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
@@ -5167,6 +5189,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=sleep-resume
             --init-phase=sleep-resume
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5194,6 +5217,7 @@ opentitan_test(
     ),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
@@ -5206,6 +5230,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=sleep-reset
             --init-phase=sleep-resume
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5235,9 +5260,9 @@ opentitan_test(
     ),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
@@ -5247,6 +5272,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=deep-resume
             --init-phase=sleep-disconnect
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5274,6 +5300,7 @@ opentitan_test(
     ),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
@@ -5286,6 +5313,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=deep-resume
             --init-phase=deep-resume
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5313,6 +5341,7 @@ opentitan_test(
     ),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
@@ -5325,6 +5354,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=deep-reset
             --init-phase=deep-resume
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5342,7 +5372,7 @@ opentitan_test(
     srcs = [
         "usbdev_deep_disconnect_test.c",
     ],
-    cw310 = fpga_params(
+    fpga = fpga_params(
         test_cmd = """
             --bootstrap="{firmware}"
             --fin-phase=shutdown
@@ -5352,10 +5382,9 @@ opentitan_test(
     ),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
     ),
@@ -5364,6 +5393,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=shutdown
             --init-phase=deep-disconnect
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5394,6 +5424,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=shutdown
             --init-phase=suspend
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
