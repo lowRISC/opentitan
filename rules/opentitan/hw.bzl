@@ -43,6 +43,35 @@ def opentitan_top(name, ips, **kwargs):
         attrs = kwargs,
     )
 
+def opentitan_modify_top(top, **kwargs):
+    """
+    Return a modified top.
+
+    Supported modifications:
+    - name: change the top name
+
+    Arguments:
+    - top: top created by opentitan_top
+    - kwargs: arbitrary list of modifications
+    """
+    name = kwargs.pop("name", "")
+    if kwargs:
+        fail("unknown modifications:", kwargs)
+
+    # Convert the struct to a dictionary.
+    attrs = {
+        key: getattr(top, key)
+        for key in dir(top)
+        if key != "to_json" and key != "to_proto"
+    }
+
+    # Apply modifications.
+    if name:
+        attrs["name"] = name
+
+    # Re-create top.
+    return struct(**attrs)
+
 def has_top_attr(top, name):
     """
     Check whether a top has an attribute.
