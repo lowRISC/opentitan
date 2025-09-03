@@ -202,6 +202,38 @@
   },
   "selectedYankedVersions": {},
   "moduleExtensions": {
+    "//hw/top:extensions.bzl%top": {
+      "general": {
+        "bzlTransitiveDigest": "QfImIEoq43kXUBm6iiVr2DrJ6DfYpKKMmPL2Nbe5pUU=",
+        "usagesDigest": "Hom2+PRRv7O6cjv2zazn7RPJPwGSLYJiHNmywy5WtYg=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "tops_desc": {
+            "repoRuleId": "@@//hw/top:extensions.bzl%top_desc_repo",
+            "attributes": {
+              "bazel_files": [
+                "@@//hw/top_earlgrey:defs.bzl",
+                "@@//hw/top_darjeeling:defs.bzl",
+                "@@//hw/top_englishbreakfast:defs.bzl"
+              ],
+              "top_vars": [
+                "EARLGREY",
+                "DARJEELING",
+                "ENGLISHBREAKFAST"
+              ],
+              "top_names": [
+                "",
+                "",
+                ""
+              ]
+            }
+          }
+        },
+        "recordedRepoMappingEntries": []
+      }
+    },
     "//rules:extensions.bzl%hooks": {
       "general": {
         "bzlTransitiveDigest": "xoT+tFeFQBTE5N9oR76jK2m1sra33bj1gRgyqt+7rgg=",
