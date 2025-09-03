@@ -32,6 +32,7 @@ def ownership_transfer_test(
             "//sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key",
             "//sw/device/silicon_creator/lib/ownership/keys/fake:activate_key",
             "//sw/device/silicon_creator/lib/ownership/keys/fake:owner_key",
+            "//sw/device/silicon_creator/lib/ownership/keys/fake:no_owner_recovery_key",
             "//sw/device/silicon_creator/lib/ownership/keys/fake:owner_key_pub",
             "//sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key_spx",
             "//sw/device/silicon_creator/lib/ownership/keys/fake:activate_key_spx",
