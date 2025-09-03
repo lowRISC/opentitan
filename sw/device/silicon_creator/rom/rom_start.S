@@ -212,7 +212,7 @@ LABEL_FOR_TEST(kRomStartStoreT1ToBiteThold)
   andi t2, t0, 0xff
   bne  t2, t1, .L_skip_rstmgr_cpu_info_en
   li   t2, (1 << RSTMGR_CPU_INFO_CTRL_EN_BIT)
-  sw   t2,  RSTMGR_ALERT_INFO_CTRL_REG_OFFSET(a0)
+  sw   t2,  RSTMGR_CPU_INFO_CTRL_REG_OFFSET(a0)
 .L_skip_rstmgr_cpu_info_en:
 
 LABEL_FOR_TEST(kRomStartWatchdogEnabled)
