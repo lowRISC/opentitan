@@ -20,3 +20,11 @@ EARLGREY = opentitan_top(
         "testing": "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     },
 )
+
+EARLGREY_SLOTS = {
+    "rom_ext_slot_a": "0x0",
+    "rom_ext_slot_b": "0x80000",
+    "owner_slot_a": "0x10000",
+    "owner_slot_b": "0x90000",
+    "rom_ext_size": "0x10000",
+}
