@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::rc::Rc;
+use std::time::Duration;
+
 use anyhow::Result;
 use clap::{Args, ValueEnum};
 use humantime::parse_duration;
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
-use std::time::Duration;
 use thiserror::Error;
 
 use crate::app::{NoProgressBar, TransportWrapper};

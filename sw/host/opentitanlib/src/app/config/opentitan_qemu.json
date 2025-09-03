@@ -1,0 +1,22 @@
+{
+  "interface": "qemu",
+  "pins": [
+      // Resetting is done through the monitor on QEMU, but OpenTitanTool
+      // expects a pin. We map a pin-like interface to ID 255 which can be used
+      // to send reset commands to QEMU when pulled up and down.
+      {
+        "name": "RESET",
+        "alias_of": "255",
+        "level": true,
+      },
+  ],
+  "uarts": [
+    {
+      "name": "console",
+      "alias_of": "0"
+    }
+  ],
+  "provides": {
+    "chip": "opentitan",
+  }
+}
