@@ -60,12 +60,12 @@ parameters:
   BootRomInitFile:
     datatype: str
     description: Scrambled boot ROM initialization file in 40 bit vmem hex format
-    default: "../../../../../build-bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.scr.39.vmem"
+    default: ""
     paramtype: vlogparam
   OtpMacroMemInitFile:
     datatype: str
     description: OTP initialization file in vmem hex format
-    default: "../../../../../build-bin/sw/device/otp_img/otp_img_fpga_cw310.vmem"
+    default: ""
     paramtype: vlogparam
   # For value definition, please see ip/prim/rtl/prim_pkg.sv
   PRIM_DEFAULT_IMPL:
