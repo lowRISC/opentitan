@@ -7,7 +7,7 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   bit is_active         = 1;
   bit en_scb            = 1; // can be changed at run-time
   bit en_scb_mem_chk    = 1;
-  bit en_scb_ping_chk   = 1;
+
   bit en_cov            = 0; // Enable via plusarg, only if coverage collection is turned on.
   bit en_dv_cdc         = 0; // Enable via plusarg.
 
