@@ -55,7 +55,7 @@ class mbx_env_cfg extends cip_base_env_cfg #(
 
   endfunction: initialize
 
-  virtual function dv_base_reg_block create_ral_by_name(string name);
+  virtual protected function dv_base_reg_block create_ral_by_name(string name);
     if (name == RAL_T::type_name) begin
       return super.create_ral_by_name(name);
     end else if (name == mbx_soc_ral_name) begin
