@@ -135,6 +135,13 @@ fpga_cw310(
 
 sim_qemu(
     name = "sim_qemu_base",
+    args = [
+        "--rcfile=",
+        "--logging=info",
+        "--interface={interface}",
+        "--qemu-monitor-tty=qemu-monitor",
+        "--qemu-quit",
+    ],
     design = "earlgrey",
     exec_env = "sim_qemu_base",
     libs = [
@@ -143,8 +150,18 @@ sim_qemu(
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
+    param = {
+        "interface": "qemu",
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+    },
     rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
     slot_spec = EARLGREY_SLOTS,
+    test_cmd = """
+        --exec="transport init"
+        --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+        no-op
+    """,
 )
 
 sim_qemu(
