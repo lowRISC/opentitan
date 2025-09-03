@@ -31,7 +31,8 @@ package keymgr_dpe_pkg;
     OpDpeErase = 1,
     OpDpeGenSwOut = 2,
     OpDpeGenHwOut = 3,
-    OpDpeDisable = 4
+    OpDpeDisable = 4,
+    OpDpeLoadRootKey = 5
   } keymgr_dpe_ops_e;
 
   // Encoding generated with:

@@ -226,6 +226,7 @@ Key manager DPE operation selection
 | 0x2     | Generate SW Output | Generates a key manager output that is visible to software from the current state. |
 | 0x3     | Generate HW Output | Generates a cryptographic key that is visible only to hardware crypto blocks.      |
 | 0x4     | Disable            | Moves key manager DPE to disabled state.                                           |
+| 0x5     | Load root key      | Loads the root key into the key manager.                                           |
 
 Other values are reserved.
 
