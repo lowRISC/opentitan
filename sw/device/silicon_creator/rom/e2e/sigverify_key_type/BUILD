@@ -86,7 +86,7 @@ SPX_ALLOWED_IN_LC_STATES = {
 # LC states.
 KEY_TYPE_ECDSA_TESTS = [
     {
-        "name": key.ecdsa.name,
+        "name": "ecdsa_{}".format(key.ecdsa.name),
         "exit_failure": ECDSA_ALLOWED_IN_LC_STATES["exit_failure"][key.ecdsa.name],
         "exit_success": ECDSA_ALLOWED_IN_LC_STATES["exit_success"][key.ecdsa.name],
         "ecdsa_key": {key.ecdsa.label: key.ecdsa.name},
@@ -99,7 +99,7 @@ KEY_TYPE_ECDSA_TESTS = [
 # LC states.
 KEY_TYPE_SPX_TESTS = [
     {
-        "name": key.spx.name,
+        "name": "spx_{}".format(key.spx.name),
         "exit_failure": SPX_ALLOWED_IN_LC_STATES["exit_failure"][key.spx.name],
         "exit_success": SPX_ALLOWED_IN_LC_STATES["exit_success"][key.spx.name],
         "ecdsa_key": {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
