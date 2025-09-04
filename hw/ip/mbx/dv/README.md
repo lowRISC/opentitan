@@ -52,11 +52,27 @@ $ $REPO_TOP/util/regtool.py $REPO_TOP/hw/ip/mbx/data/mbx.hjson -s --outdir <path
 The test sequences for the MBX IP may be found in `hw/ip/mbx/dv/env/seq_lib`.
 
 #### Functional coverage
-TBD
+To ensure the quality of the constrained random stimuli, it is necessary to develop a functional coverage model.
+The following covergroups have been developed to ensure that the stimulus intent is met:
+
+* common covergroup for interrupts `hw/dv/sv/cip_lib/cip_base_env_cov.sv`: Cover interrupt value, interrupt enable, intr_test, interrupt pin
+* common covergroups for alerts `hw/dv/sv/alert_esc_agent/alert_esc_agent_cov.sv`: Cover alert handshake signaling (RoT side).
+* common covergroups for CSRs `hw/dv/sv/dv_base_reg/*cov.sv`: Cover lockable register fields (RoT side; SoC side has no REGWENs).
+* common covergroups for TL-UL accesses `hw/dv/sv/tl_agent/tl_agent_cov.sv`: Covert TL-UL A/D channel traffic (RoT and SoC registers).
+* mbx_mem_range_cg `hw/ip/mbx/dv/env/mbx_env_cov.sv`: Ensure that different Inbound and Outbound mailbox addresses have been tested.
+* mbx_rot_control_cg `hw/ip/mbx/dv/env/mbx_env_cov.sv`: Check that all control functions on the RoT side have been stimulated.
+* mbx_soc_control_cg `hw/ip/mbx/dv/env/mbx_env_cov.sv`: Ensure that all bits of the SoC-side control register have been stimulated.
+* mbx_rot_status_cg `hw/ip/mbx/dv/env/mbx_env_cov.sv`: Ensure that all status indications on the RoT side have been observed.
+* mbx_soc_status_cg `hw/ip/mbx/dv/env/mbx_env_cov.sv`: Cover all SoC-side status indications.
+* mbx_object_size_cg `hw/ip/mbx/dv/env/mbx_env_cov.sv`: Ensure that RoT responses of different sizes have been tested.
+* mbx_soc_intr_pins_cg `hw/ip/mbx/dv/env/mbx_env_cov.sv`: Check all interrupt pins on the SoC side have been stimulated.
+* mbx_doe_intr_msg_addr_cg `hw/ip/mbx/dv/env/mbx_env_cov.sv`: Cover the 32-bit `MSG_ADDR` channel from the SoC side to the RoT.
+* mbx_doe_intr_msg_data_cg `hw/ip/mbx/dv/env/mbx_env_cov.sv`: Cover the 32-bit `MSD_DATA` channel.
 
 ### Self-checking strategy
 #### Scoreboard
-TBD
+The `mbx_scoreboard` forms predictions of all memory traffic to be performed by the DUT on its SRAM interface, and checks the observed DUT traffic against those predictions. Additionally, where possible, it predicts observable changes to the register state on the two TL-UL device interfaces (RoT- and SoC-side) and checks the observed DUT register state against those predictions.
+TBD: Interrupt prediction and checking.
 
 #### Assertions
 * TLUL assertions: The `sva/mbx_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
