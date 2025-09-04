@@ -51,7 +51,6 @@ dual_cc_library(
         device = [
             "//hw/top:alert_handler_c_regs",
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -61,6 +60,7 @@ dual_cc_library(
         shared = [
             ":lifecycle",
             ":otp",
+            "//hw/top:dt",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:memory",
