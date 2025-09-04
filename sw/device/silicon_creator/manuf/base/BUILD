@@ -2,6 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load(
+    "@provisioning_exts//:cfg.bzl",
+    "EXT_SIGNED_PERSO_BINS",
+)
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
 load("//rules/opentitan:cc.bzl", "opentitan_binary_assemble")
@@ -392,9 +396,8 @@ filegroup(
            [
                ":ft_fw_bundle_{}".format(sku)
                for sku in EARLGREY_SKUS.keys()
-           ] + [
-        "//sw/device/silicon_creator/manuf/base/binaries:ft_personalize_sival",
-    ],
+           ] + ["//sw/device/silicon_creator/manuf/base/binaries:ft_personalize_sival"] +
+           EXT_SIGNED_PERSO_BINS,
 )
 
 [
@@ -421,7 +424,7 @@ filegroup(
                     ":ft_fw_bundle_{}".format(sku): "bundle",
                 },
             changes_otp = True,
-            data = config["ca_data"],
+            data = [config["ca_data"]],
             needs_jtag = True,
             otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_test_locked0_manuf_initialized",
             owner_slot_b = OWNER_SLOTS["b"],
@@ -448,7 +451,7 @@ filegroup(
                     ":ft_fw_bundle_{}".format(sku): "bundle",
                 },
             changes_otp = True,
-            data = config["ca_data"],
+            data = [config["ca_data"]],
             interface = "teacup",
             needs_jtag = True,
             owner_slot_b = OWNER_SLOTS["b"],
