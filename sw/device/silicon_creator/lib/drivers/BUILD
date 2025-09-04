@@ -581,6 +581,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             ":otp",
+            "//hw/top:dt",
             "//sw/device/lib/arch:boot_stage",
             "//sw/device/lib/base:csr",
             "//sw/device/lib/base:abs_mmio",
