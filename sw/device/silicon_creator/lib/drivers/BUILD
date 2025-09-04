@@ -855,8 +855,8 @@ cc_library(
     hdrs = ["pwrmgr.h"],
     deps = [
         ":ibex",
+        "//hw/top:dt",
         "//hw/top:pwrmgr_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
