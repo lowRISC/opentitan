@@ -797,6 +797,42 @@ jobs:
         run: |
           ./bazelisk.sh test //sw/device/tests:rom_exit_immediately_sim_qemu_base
 
+  qemu_local_dev_test:
+    name: Test QEMU local development override
+    runs-on: ubuntu-22.04
+    needs: quick_lint
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: opentitan
+      - name: Prepare environment
+        uses: ./opentitan/.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+          working-directory: opentitan
+      - uses: actions/checkout@v4
+        with:
+          repository: lowRISC/qemu
+          ref: v9.2.0-2025-02-11
+          fetch-depth: 0
+          path: qemu
+      - name: Check that overrides works
+        run: |
+          # The following packages are required to build QEMU.
+          sudo apt-get install -y ninja-build libpixman-1-dev libglib2.0-dev
+          # We need to symlink the BUILD file and create an empty REPO file.
+          ln -s $PWD/opentitan/third_party/qemu/BUILD.qemu_opentitan.bazel qemu/BUILD.bazel
+          touch qemu/REPO.bazel
+          # Just make sure all expected targets are there after building.
+          opentitan/bazelisk.sh build --override_repository="+qemu+qemu_opentitan_src=$PWD/qemu/" //third_party/qemu/...
+      - name: Upload error logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qemu-override-build-logs
+          path: qemu/build/*.log
+
   # We would like to gate PR on quick lint and merge queue on bitstream caching.
   # GitHub requires a single job name to be used for branch protection rule, so we use 2 jobs with
   # conditional names so the non-skipped ones woud be called "Merge blocker".
