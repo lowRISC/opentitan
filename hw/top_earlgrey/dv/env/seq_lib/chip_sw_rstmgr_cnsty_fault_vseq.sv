@@ -13,7 +13,7 @@ class chip_sw_rstmgr_cnsty_fault_vseq extends chip_sw_fault_base_vseq;
   `uvm_object_new
 
   function void set_fault_parameters();
-    if_path = "*rstmgr_aon.u_d0_spi_host0*";
+    if_path = "*rstmgr_aon.u_d0_spi_host0.leaf_rst_path";
     alert_id = TopEarlgreyAlertIdRstmgrAonFatalCnstyFault;
   endfunction
 endclass
