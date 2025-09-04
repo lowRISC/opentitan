@@ -9,8 +9,10 @@ load("//rules:autogen.bzl", "autogen_stamp_include")
 package(default_visibility = ["//visibility:public"])
 
 config_setting(
-    name = "opentitan_platform",
-    values = {"platforms": OPENTITAN_PLATFORM},
+    name = "on_device_platform",
+    constraint_values = [
+        "@platforms//os:none",
+    ],
 )
 
 # See stamp.bzl for explanation.
