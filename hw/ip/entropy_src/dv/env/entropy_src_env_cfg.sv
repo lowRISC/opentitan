@@ -114,7 +114,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   // When expecting an alert, the cip scoreboarding routines expect a to see the
   // alert within alert_max_delay clock cycles.
-  int      alert_max_delay;
+  int alert_max_delay = 5;
 
   // host_delay_max value for the RNG agent. This can be overwritten using a plusarg.
   int rng_max_delay = 12;
