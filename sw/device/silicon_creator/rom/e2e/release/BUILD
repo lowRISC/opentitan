@@ -33,7 +33,7 @@ otp_image(
 #     dv = dv_params(
 #         rom = "//sw/device/silicon_creator/rom:mask_rom",
 #     ),
-#     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+#     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
 #     exec_env = {
 #         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
 #         "//hw/top_earlgrey:sim_dv": None,
@@ -43,7 +43,7 @@ otp_image(
 #         otp = ":otp_img_sigverify_spx_prod",
 #     ),
 #     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
-#     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+#     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
 #     deps = [
 #         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
 #         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",

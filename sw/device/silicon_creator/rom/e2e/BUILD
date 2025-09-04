@@ -183,7 +183,7 @@ opentitan_test(
 # The following filegroup is required to allow dvsim to build the
 # empty_test_slot_* targets as the `sim_dv` execution environment is expected
 # as a suffix in the target label. For example:
-#  `//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_prod_key_0_sim_dv`
+#  `//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0_sim_dv`
 [
     filegroup(
         name = "empty_test_slot_{}_{}_sim_dv".format(slot, key),
