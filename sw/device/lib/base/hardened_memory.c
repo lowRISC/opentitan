@@ -10,8 +10,8 @@
 
 // NOTE: The three hardened_mem* functions have similar contents, but the parts
 // that are shared between them are commented only in `memcpy()`.
-void hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
-                     size_t word_len) {
+status_t hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
+                         size_t word_len) {
   random_order_t order;
   random_order_init(&order, word_len);
 
@@ -77,9 +77,11 @@ void hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
   }
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(count, expected_count);
+
+  return OTCRYPTO_OK;
 }
 
-void hardened_memshred(uint32_t *dest, size_t word_len) {
+status_t hardened_memshred(uint32_t *dest, size_t word_len) {
   random_order_t order;
   random_order_init(&order, word_len);
 
@@ -108,6 +110,8 @@ void hardened_memshred(uint32_t *dest, size_t word_len) {
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
 
   HARDENED_CHECK_EQ(count, expected_count);
+
+  return OTCRYPTO_OK;
 }
 
 hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
@@ -178,8 +182,8 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
   return kHardenedBoolFalse;
 }
 
-void hardened_xor(uint32_t *restrict x, const uint32_t *restrict y,
-                  size_t word_len) {
+status_t hardened_xor(uint32_t *restrict x, const uint32_t *restrict y,
+                      size_t word_len) {
   // Generate a random ordering.
   random_order_t order;
   random_order_init(&order, word_len);
@@ -224,4 +228,6 @@ void hardened_xor(uint32_t *restrict x, const uint32_t *restrict y,
   }
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(count, expected_count);
+
+  return OTCRYPTO_OK;
 }

@@ -297,6 +297,7 @@ cc_library(
         ":macros",
         ":memory",
         ":random_order",
+        "//sw/device/lib/crypto/impl:status",
     ],
 )
 
