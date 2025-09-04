@@ -60,7 +60,7 @@ ROM_EXT_FEATURES = [
             "$(location //sw/device/lib/crt)",
         ],
         manifest = ":manifest_sival",
-        spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+        spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
         transitive_features = ROM_EXT_FEATURES,
         deps = [
             # The sival_owner C library is included only in the "fake" ROM_EXT,
@@ -115,7 +115,7 @@ offline_presigning_artifacts(
         for slot in SLOTS
     ],
     ecdsa_key = {
-        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0_ecdsa_p256",
+        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0",
     },
     manifest = ":manifest_sival",
     tags = ["manual"],
