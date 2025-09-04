@@ -540,9 +540,9 @@ opentitan_test(
     name = "stack_utilization_test",
     cw310 = fpga_params(
         binaries = {
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_prod_key_0_fpga_cw310_rom_with_fake_keys_signed_bin": "good_a",
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_fake_ecdsa_prod_key_0_fpga_cw310_rom_with_fake_keys_signed_bin": "good_b",
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_prod_key_0_corrupted_fpga_cw310_rom_with_fake_keys_signed_bin": "bad_a",
+            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0_fpga_cw310_rom_with_fake_keys_signed_bin": "good_a",
+            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_prod_key_0_fpga_cw310_rom_with_fake_keys_signed_bin": "good_b",
+            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0_corrupted_fpga_cw310_rom_with_fake_keys_signed_bin": "bad_a",
             ":empty_flash": "empty",
         },
         stack_usage = "STK:[0-9A-Fa-f/]+\r\n",
