@@ -19,6 +19,7 @@ load(
     "dv_params",
     "fpga_params",
     "opentitan_test",
+    "qemu_params",
     "verilator_params",
 )
 
@@ -77,11 +78,18 @@ rom_e2e_keymgr_init_configs = [
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
+            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             otp = ":otp_img_keymgr_{}".format(config["name"]),
         ),
         manifest = "//sw/device/silicon_creator/rom_ext:manifest",
+        qemu = qemu_params(
+            globals = {
+                # Test uses rstmgr, keep running on fatal resets:
+                "ot-rstmgr.fatal_reset": 0,
+            },
+        ),
         verilator = verilator_params(
             timeout = "eternal",
             otp = ":otp_img_keymgr_{}".format(config["name"]),
