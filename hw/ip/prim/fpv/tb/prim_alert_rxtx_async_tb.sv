@@ -8,7 +8,9 @@
 module prim_alert_rxtx_async_tb
   import prim_alert_pkg::*;
   import prim_mubi_pkg::mubi4_t;
-(
+#(
+  parameter int unsigned SkewCycles = 1
+) (
   input        clk_i,
   input        rst_ni,
   // for sigint error and skew injection only
@@ -36,8 +38,6 @@ module prim_alert_rxtx_async_tb
   // asynchronous case
   localparam bit AsyncOn = 1'b1;
   localparam bit IsFatal = 1'b0;
-
-  localparam int unsigned SkewCycles = 1;
 
   logic ping_pd;
   logic ping_nd;
