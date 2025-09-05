@@ -420,8 +420,8 @@ module keymgr_dpe
 
   // The various arrays of inputs for each operation
   logic rom_digest_vld;
-  logic [2 ** DpeNumBootStagesWidth-1:0][DpeAdvDataWidth-1:0] adv_matrix;
-  logic [2 ** DpeNumBootStagesWidth-1:0] adv_dvalid;
+  logic [2 ** DpeBootStagesWidth-1:0][DpeAdvDataWidth-1:0] adv_matrix;
+  logic [2 ** DpeBootStagesWidth-1:0] adv_dvalid;
   logic [GenDataWidth-1:0] gen_in;
 
   // Number of times the lfsr output fits into the inputs
@@ -460,21 +460,21 @@ module keymgr_dpe
   assign owner_seed = otp_key_i.owner_seed;
 
   always_comb begin : gen_adv_matrix_all
-    adv_matrix = {(2**DpeNumBootStagesWidth){DpeAdvDataWidth'(sw_binding)}};
-    adv_dvalid = {(2**DpeNumBootStagesWidth){1'b1}};
+    adv_matrix = {(2 ** DpeBootStagesWidth){DpeAdvDataWidth'(sw_binding)}};
+    adv_dvalid = {(2 ** DpeBootStagesWidth){1'b1}};
     // For (0 = Creator) and (1 = OwnerInt), check seed validity
-    adv_matrix[Creator] = DpeAdvDataWidth'({sw_binding,
-                                        revision_seed,
-                                        otp_device_id_i,
-                                        lc_keymgr_div_i,
-                                        rom_digests,
-                                        creator_seed});
-    adv_dvalid[Creator] = creator_seed_vld &
-                          devid_vld &
-                          health_state_vld &
-                          rom_digest_vld;
-    adv_matrix[OwnerInt] = DpeAdvDataWidth'({sw_binding,owner_seed});
-    adv_dvalid[OwnerInt] = owner_seed_vld;
+    adv_matrix[BootStageCreator] = DpeAdvDataWidth'({sw_binding,
+                                                     revision_seed,
+                                                     otp_device_id_i,
+                                                     lc_keymgr_div_i,
+                                                     rom_digests,
+                                                     creator_seed});
+    adv_dvalid[BootStageCreator] = creator_seed_vld &
+                                   devid_vld        &
+                                   health_state_vld &
+                                   rom_digest_vld;
+    adv_matrix[BootStageOwner] = DpeAdvDataWidth'({sw_binding,owner_seed});
+    adv_dvalid[BootStageOwner] = owner_seed_vld;
   end
 
   // Generate output operation input construction
@@ -538,13 +538,17 @@ module keymgr_dpe
 
   // creator_seed, dev_id, health_state and rom digest are used when boot_stage is incremented from
   // 0 (= Creator) to 1 (= OwnerInt), so only latch them during consumption.
-  assign hw2reg.debug.invalid_creator_seed.de  = adv_en & active_key_slot.boot_stage == Creator;
-  assign hw2reg.debug.invalid_dev_id.de        = adv_en & active_key_slot.boot_stage == Creator;
-  assign hw2reg.debug.invalid_health_state.de  = adv_en & active_key_slot.boot_stage == Creator;
-  assign hw2reg.debug.invalid_digest.de        = adv_en & active_key_slot.boot_stage == Creator;
+  logic is_creator_boot_stage, is_owner_boot_stage;
+  assign is_creator_boot_stage = active_key_slot.boot_stage == BootStageCreator;
+  assign is_owner_boot_stage   = active_key_slot.boot_stage == BootStageOwner;
+
+  assign hw2reg.debug.invalid_creator_seed.de = adv_en & is_creator_boot_stage;
+  assign hw2reg.debug.invalid_dev_id.de       = adv_en & is_creator_boot_stage;
+  assign hw2reg.debug.invalid_health_state.de = adv_en & is_creator_boot_stage;
+  assign hw2reg.debug.invalid_digest.de       = adv_en & is_creator_boot_stage;
 
   // owner_seed is used when boot_stage is incremented from 1 (= OwnerInt) to 2 (= Owner).
-  assign hw2reg.debug.invalid_owner_seed.de    = adv_en & active_key_slot.boot_stage == OwnerInt;
+  assign hw2reg.debug.invalid_owner_seed.de    = adv_en & is_owner_boot_stage;
 
   // key validity and versions are checked regardless of the boot stage, when there is an ongoing
   // operation.
@@ -816,9 +820,6 @@ module keymgr_dpe
   // Ensure all parameters are consistent
   `ASSERT_INIT(FaultCntMatch_A, FaultLastPos == AsyncFaultLastIdx + SyncFaultLastIdx)
   `ASSERT_INIT(ErrCntMatch_A, ErrLastPos == AsyncErrLastIdx + SyncErrLastIdx)
-
-  // TODO(#384): Revisit this assertion to see if we can rewrite to capture its gist.
-  // `ASSERT_INIT(StageMatch_A, DpeNumBootStages == DisabledStage)
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrlCntAlertCheck_A, u_ctrl.u_cnt, alert_tx_o[1])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(KmacIfCntAlertCheck_A, u_kmac_if.u_cnt, alert_tx_o[1])

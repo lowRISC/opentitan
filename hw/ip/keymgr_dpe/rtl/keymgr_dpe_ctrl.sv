@@ -271,10 +271,8 @@ module keymgr_dpe_ctrl
     end
   end
 
-  logic [DpeNumBootStagesWidth-1:0] active_slot_boot_stage;
   keymgr_dpe_policy_t active_slot_policy;
   assign active_key_slot_o      = key_slots_q[slot_src_sel_i];
-  assign active_slot_boot_stage = active_key_slot_o.boot_stage;
   assign active_slot_policy     = active_key_slot_o.key_policy;
 
   assign data_valid_o = op_ack & gen_key_op & ~invalid_op;
@@ -307,7 +305,7 @@ module keymgr_dpe_ctrl
       // secret (UDS) that comes from peripheral OTP port.
       SlotLoadRoot: begin
         key_slots_d[slot_dst_sel_i].valid = 1;
-        key_slots_d[slot_dst_sel_i].boot_stage = 0;
+        key_slots_d[slot_dst_sel_i].boot_stage = BootStageCreator;
         key_slots_d[slot_dst_sel_i].key[0] ^= root_key_i.key[0];
         key_slots_d[slot_dst_sel_i].key[1] ^= root_key_i.key[1];
         key_slots_d[slot_dst_sel_i].max_key_version = max_key_version_i;
@@ -321,7 +319,8 @@ module keymgr_dpe_ctrl
         key_slots_d[slot_dst_sel_i].valid = 1;
         key_slots_d[slot_dst_sel_i].key = kmac_data_i;
         key_slots_d[slot_dst_sel_i].max_key_version = max_key_version_i;
-        key_slots_d[slot_dst_sel_i].boot_stage = active_slot_boot_stage + 1;
+        key_slots_d[slot_dst_sel_i].boot_stage =
+          (active_key_slot_o.boot_stage == BootStageCreator) ? BootStageOwner : BootStageRuntime;
         key_slots_d[slot_dst_sel_i].key_policy = slot_policy_i;
       end
 
@@ -656,9 +655,6 @@ module keymgr_dpe_ctrl
   logic invalid_allow_child;
   assign invalid_allow_child = ~active_slot_policy.allow_child;
 
-  logic invalid_max_boot_stage;
-  assign invalid_max_boot_stage = active_slot_boot_stage >= DpeNumBootStages - 1;
-
   // Check source validity
   logic invalid_src_slot;
   assign invalid_src_slot = ~active_key_slot_o.valid;
@@ -672,8 +668,9 @@ module keymgr_dpe_ctrl
                            (slot_src_sel_i == slot_dst_sel_i | destination_slot_valid) :
                            (slot_src_sel_i != slot_dst_sel_i);
 
-  assign invalid_advance = adv_req & (invalid_allow_child | invalid_max_boot_stage |
-                                      invalid_src_slot | invalid_retain_parent);
+  assign invalid_advance = adv_req & (invalid_allow_child |
+                                      invalid_src_slot    |
+                                      invalid_retain_parent);
 
   assign invalid_erase = erase_req & ~destination_slot_valid;
 
@@ -685,8 +682,7 @@ module keymgr_dpe_ctrl
   // The outer module uses `invalid_advance_o` to invalidate KMAC msg payload, when the advance
   // operation is not valid. It is better be loose here and ask to invalidate even when there is no
   // advance request.
-  assign invalid_advance_o = invalid_allow_child | invalid_max_boot_stage |
-                                      invalid_src_slot | invalid_retain_parent;
+  assign invalid_advance_o = invalid_allow_child | invalid_src_slot | invalid_retain_parent;
 
   // Exportable DPE is not yet implemented, so mark it unused for lint.
   logic unused_exportable_bit;
