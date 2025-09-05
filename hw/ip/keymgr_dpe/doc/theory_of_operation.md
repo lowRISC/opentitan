@@ -28,7 +28,7 @@ In order to address the relationships among keymgr_dpe slots and their stored DP
 
 ## Key Manager Slots
 
-Keymgr_dpe consists of `DpeNumBootStages` slots, which is a generic parameter.
+Keymgr_dpe consists of `DpeNumSlots` slots, which is a generic parameter.
 Each of these key manager slots can store a DPE context, i.e. all DICE-related information for a particular boot stage. That includes a secret key along with additional context information described below.
 The secret key size is fixed to 256-bit.
 
