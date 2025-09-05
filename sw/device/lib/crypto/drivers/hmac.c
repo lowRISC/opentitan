@@ -155,15 +155,19 @@ static status_t hmac_idle_wait(void) {
  *
  * It also clears the internal state of HMAC HWIP by overwriting sensitive
  * values with 1s.
+ *
+ * @return Result of the operation.
  */
-static void clear(void) {
+static status_t clear(void) {
   // Do not clear the config yet, we just need to deassert sha_en, see #23014.
   uint32_t cfg = abs_mmio_read32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET);
   cfg = bitfield_bit32_write(cfg, HMAC_CFG_SHA_EN_BIT, false);
   abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, cfg);
 
-  // TODO(#23191): Use a random value from EDN to wipe.
-  abs_mmio_write32(kHmacBaseAddr + HMAC_WIPE_SECRET_REG_OFFSET, UINT32_MAX);
+  // Use a random value from EDN to wipe HMAC.
+  abs_mmio_write32(kHmacBaseAddr + HMAC_WIPE_SECRET_REG_OFFSET,
+                   (uint32_t)ibex_rnd32_read());
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -179,10 +183,13 @@ static void clear(void) {
  *
  * @param key The buffer that points to the key.
  * @param key_wordlen The length of the key in words.
+ * @return Result of the operation.
  */
-static void key_write(const uint32_t *key, size_t key_wordlen) {
+static status_t key_write(const uint32_t *key, size_t key_wordlen) {
   uint32_t key_reg = kHmacBaseAddr + HMAC_KEY_0_REG_OFFSET;
   hardened_memcpy((uint32_t *)key_reg, key, key_wordlen);
+
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -208,11 +215,12 @@ static void digest_read(uint32_t *digest, size_t digest_wordlen) {
  * Resume a streaming operation from a saved context.
  *
  * @param ctx Context object from which to restore.
+ * @return Result of the operation.
  */
-static void context_restore(hmac_ctx_t *ctx) {
+static status_t context_restore(hmac_ctx_t *ctx) {
   // The previous caller should have left it clean, but it doesn't hurt to
   // clear again.
-  clear();
+  HARDENED_TRY(clear());
 
   // Restore CFG register from `ctx->cfg_reg`. We need to keep `sha_en` low
   // until context is restored, see #23014.
@@ -221,7 +229,7 @@ static void context_restore(hmac_ctx_t *ctx) {
 
   // Write to KEY registers for HMAC operations. If the operation is SHA-2,
   // `key_wordlen` is set to 0 during `ctx` initialization.
-  key_write(ctx->key, ctx->key_wordlen);
+  HARDENED_TRY(key_write(ctx->key, ctx->key_wordlen));
 
   uint32_t cmd = HMAC_CMD_REG_RESVAL;
   // Decide if we need to invoke `start` or `continue` command.
@@ -254,6 +262,8 @@ static void context_restore(hmac_ctx_t *ctx) {
   // Now we can finally write the command to the register to actually issue
   // `start` or `continue`.
   abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd);
+
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -280,8 +290,9 @@ static void context_save(hmac_ctx_t *ctx) {
  *
  * @param message The incoming message buffer to be fed into HMAC_FIFO.
  * @param message_len The length of `message` in bytes.
+ * @return Result of the operation.
  */
-static void msg_fifo_write(const uint8_t *message, size_t message_len) {
+static status_t msg_fifo_write(const uint8_t *message, size_t message_len) {
   // TODO(#23191): Should we handle backpressure here?
   // Begin by writing a one byte at a time until the data is aligned.
   size_t i = 0;
@@ -304,6 +315,8 @@ static void msg_fifo_write(const uint8_t *message, size_t message_len) {
   }
   // Check that the loops ran for the correct number of iterations.
   HARDENED_CHECK_EQ(i, message_len);
+
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -406,7 +419,7 @@ static status_t oneshot(const uint32_t cfg, const uint32_t *key,
   abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, cfg);
 
   // Write the key (no-op if the key length is 0, e.g. for hashing).
-  key_write(key, key_wordlen);
+  HARDENED_TRY(key_write(key, key_wordlen));
 
   // Read back the HMAC configuration and compare to the expected configuration.
   HARDENED_CHECK_EQ(abs_mmio_read32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET),
@@ -418,7 +431,7 @@ static status_t oneshot(const uint32_t cfg, const uint32_t *key,
   abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd);
 
   // Write the message.
-  msg_fifo_write(msg, msg_len);
+  HARDENED_TRY(msg_fifo_write(msg, msg_len));
 
   // Send the PROCESS command.
   cmd = bitfield_bit32_write(HMAC_CMD_REG_RESVAL, HMAC_CMD_HASH_PROCESS_BIT, 1);
@@ -428,7 +441,7 @@ static status_t oneshot(const uint32_t cfg, const uint32_t *key,
   HARDENED_TRY(hmac_idle_wait());
   digest_read(digest, digest_wordlen);
 
-  clear();
+  HARDENED_TRY(clear());
   return OTCRYPTO_OK;
 }
 
@@ -692,12 +705,12 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
 
   // Retore context will restore the context and also hit start or continue
   // button as necessary.
-  context_restore(ctx);
+  HARDENED_TRY(context_restore(ctx));
 
   // Write the partial block, then the new bytes.
-  msg_fifo_write((unsigned char *)ctx->partial_block,
-                 ctx->partial_block_bytelen);
-  msg_fifo_write(data, len - leftover_len);
+  HARDENED_TRY(msg_fifo_write((unsigned char *)ctx->partial_block,
+                              ctx->partial_block_bytelen));
+  HARDENED_TRY(msg_fifo_write(data, len - leftover_len));
 
   /*
    * TODO should be uncommented once the issue #24767 will be solved in the HW
@@ -724,18 +737,18 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
   ctx->partial_block_bytelen = leftover_len;
 
   // Clean up.
-  clear();
+  HARDENED_TRY(clear());
   return OTCRYPTO_OK;
 }
 
 status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest) {
   // Retore context will restore the context and also hit start or continue
   // button as necessary.
-  context_restore(ctx);
+  HARDENED_TRY(context_restore(ctx));
 
   // Feed the final leftover bytes to HMAC HWIP.
-  msg_fifo_write((unsigned char *)ctx->partial_block,
-                 ctx->partial_block_bytelen);
+  HARDENED_TRY(msg_fifo_write((unsigned char *)ctx->partial_block,
+                              ctx->partial_block_bytelen));
 
   // All message bytes are fed, now hit the process button.
   uint32_t cmd =
@@ -749,6 +762,6 @@ status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest) {
   // TODO(#23191): Destroy sensitive values in the ctx object.
 
   // Clean up.
-  clear();
+  HARDENED_TRY(clear());
   return OTCRYPTO_OK;
 }
