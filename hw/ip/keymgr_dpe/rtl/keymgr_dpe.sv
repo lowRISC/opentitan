@@ -460,21 +460,25 @@ module keymgr_dpe
   assign owner_seed = otp_key_i.owner_seed;
 
   always_comb begin : gen_adv_matrix_all
+    // One default only use SW binding
     adv_matrix = {(2 ** DpeBootStagesWidth){DpeAdvDataWidth'(sw_binding)}};
     adv_dvalid = {(2 ** DpeBootStagesWidth){1'b1}};
-    // For (0 = Creator) and (1 = OwnerInt), check seed validity
-    adv_matrix[BootStageCreator] = DpeAdvDataWidth'({sw_binding,
-                                                     revision_seed,
-                                                     otp_device_id_i,
-                                                     lc_keymgr_div_i,
-                                                     rom_digests,
-                                                     creator_seed});
-    adv_dvalid[BootStageCreator] = creator_seed_vld &
-                                   devid_vld        &
-                                   health_state_vld &
-                                   rom_digest_vld;
-    adv_matrix[BootStageOwner] = DpeAdvDataWidth'({sw_binding,owner_seed});
-    adv_dvalid[BootStageOwner] = owner_seed_vld;
+
+    if (reg2hw.control_shadowed.sw_binding_only.q == 1'b0) begin
+      // For (0 = Creator) and (1 = OwnerInt), check seed validity
+      adv_matrix[BootStageCreator] = DpeAdvDataWidth'({sw_binding,
+                                                      revision_seed,
+                                                      otp_device_id_i,
+                                                      lc_keymgr_div_i,
+                                                      rom_digests,
+                                                      creator_seed});
+      adv_dvalid[BootStageCreator] = creator_seed_vld &
+                                    devid_vld         &
+                                    health_state_vld  &
+                                    rom_digest_vld;
+      adv_matrix[BootStageOwner] = DpeAdvDataWidth'({sw_binding,owner_seed});
+      adv_dvalid[BootStageOwner] = owner_seed_vld;
+    end
   end
 
   // Generate output operation input construction
