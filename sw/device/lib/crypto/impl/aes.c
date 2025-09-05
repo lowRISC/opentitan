@@ -46,11 +46,10 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
                                   const otcrypto_aes_mode_t aes_mode,
                                   aes_key_t *aes_key) {
   // Key integrity check.
-  if (launder32(integrity_blinded_key_check(blinded_key)) !=
-      kHardenedBoolTrue) {
+  if (integrity_blinded_key_check(blinded_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(blinded_key),
+  HARDENED_CHECK_EQ(launder32(integrity_blinded_key_check(blinded_key)),
                     kHardenedBoolTrue);
 
   if (blinded_key->config.hw_backed == kHardenedBoolTrue) {
@@ -243,7 +242,7 @@ static status_t get_block(otcrypto_const_byte_buf_t input,
   // Randomize the destination buffer.
   HARDENED_TRY(hardened_memshred(block->data, ARRAYSIZE(block->data)));
 
-  if (launder32(index) < num_full_blocks) {
+  if (index < num_full_blocks) {
     HARDENED_CHECK_LT(index, num_full_blocks);
     // No need to worry about padding, just copy the data into the output
     // block.
@@ -252,7 +251,7 @@ static status_t get_block(otcrypto_const_byte_buf_t input,
            kAesBlockNumBytes);
     return OTCRYPTO_OK;
   }
-  HARDENED_CHECK_GE(index, num_full_blocks);
+  HARDENED_CHECK_GE(launder32(index), num_full_blocks);
 
   // If we get here, this block is the one with padding. It may be a partial
   // block or an empty block that will be entirely filled with padded bytes.
@@ -326,16 +325,16 @@ static otcrypto_status_t otcrypto_aes_impl(
   // Construct the IV and check its length. ECB mode will ignore the IV, so in
   // this case it is left uninitialized.
   aes_block_t aes_iv;
-  if (aes_mode == launder32(kAesCipherModeEcb)) {
-    HARDENED_CHECK_EQ(aes_mode, kAesCipherModeEcb);
+  if (aes_mode == kAesCipherModeEcb) {
+    HARDENED_CHECK_EQ(launder32(aes_mode), kAesCipherModeEcb);
   } else {
-    HARDENED_CHECK_NE(aes_mode, kAesCipherModeEcb);
+    HARDENED_CHECK_NE(launder32(aes_mode), kAesCipherModeEcb);
 
     // The IV must be exactly one block long.
-    if (launder32(iv.len) != kAesBlockNumWords) {
+    if (iv.len != kAesBlockNumWords) {
       return OTCRYPTO_BAD_ARGS;
     }
-    HARDENED_CHECK_EQ(iv.len, kAesBlockNumWords);
+    HARDENED_CHECK_EQ(launder32(iv.len), kAesBlockNumWords);
     HARDENED_TRY(hardened_memcpy(aes_iv.data, iv.data, kAesBlockNumWords));
   }
 
@@ -417,17 +416,17 @@ static otcrypto_status_t otcrypto_aes_impl(
 
   // Retrieve the output from the final `block_offset` blocks (providing no
   // input).
-  for (i = block_offset; launder32(i) > 0; --i) {
+  for (i = block_offset; i > 0; --i) {
     HARDENED_TRY(aes_update(&block_out, /*src=*/NULL));
     // TODO(#17711) Change to `hardened_memcpy`.
     memcpy(&cipher_output.data[(input_nblocks - i) * kAesBlockNumBytes],
            block_out.data, kAesBlockNumBytes);
   }
   // Check that the loop ran for the correct number of iterations.
-  HARDENED_CHECK_EQ(i, 0);
+  HARDENED_CHECK_EQ(launder32(i), 0);
 
   // Deinitialize the AES block and update the IV (in ECB mode, skip the IV).
-  if (aes_mode == launder32(kAesCipherModeEcb)) {
+  if (aes_mode == kAesCipherModeEcb) {
     HARDENED_TRY(aes_end(NULL));
   } else {
     HARDENED_TRY(aes_end(&aes_iv));
