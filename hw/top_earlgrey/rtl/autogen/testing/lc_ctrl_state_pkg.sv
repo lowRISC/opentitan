@@ -92,7 +92,6 @@ package lc_ctrl_state_pkg;
   // Note that the ECC bits are not defined in this package as they will be calculated by
   // the OTP ECC logic at runtime.
 
-  // SEC_CM: MANUF.STATE.SPARSE
   // The A/B values are used for the encoded LC state.
   parameter logic [15:0] A0 = 16'b1000110001100000; // ECC: 6'b101010
   parameter logic [15:0] B0 = 16'b1011110111101110; // ECC: 6'b101110
@@ -155,7 +154,6 @@ package lc_ctrl_state_pkg;
   parameter logic [15:0] B19 = 16'b1001101101111010; // ECC: 6'b111111
 
 
-  // SEC_CM: TRANSITION.CTR.SPARSE
   // The C/D values are used for the encoded LC transition counter.
   parameter logic [15:0] C0 = 16'b0000000011101001; // ECC: 6'b101001
   parameter logic [15:0] D0 = 16'b0101100111111111; // ECC: 6'b111001
@@ -264,7 +262,7 @@ package lc_ctrl_state_pkg;
   parameter logic [15:0] H7 = 16'b1101111101101010; // ECC: 6'b001101
 
 
-  // The I/Jvalues are used for the encoded AUTH state.
+  // The I/J values are used for the encoded AUTH state.
   parameter logic [15:0] I0 = 16'b0101110110010000; // ECC: 6'b010000
   parameter logic [15:0] J0 = 16'b1111110111010010; // ECC: 6'b111000
 

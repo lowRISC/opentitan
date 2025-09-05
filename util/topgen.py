@@ -1342,9 +1342,6 @@ def _check_countermeasures(completecfg: ConfigT, name_to_block: IpBlocksT,
                            name_to_hjson: Dict[str, Path]) -> bool:
     success = True
     for name, hjson_path in name_to_hjson.items():
-        # TODO(#26362): Enable LC Ctrl back once check countermeasures can deal with dependencies
-        if name == "lc_ctrl":
-            continue
         log.debug("name %s, hjson %s", name, hjson_path)
         sv_files = (hjson_path.parents[1] / 'rtl').glob('*.sv')
         rtl_names = CounterMeasure.search_rtl_files(sv_files)
