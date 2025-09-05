@@ -485,7 +485,7 @@ bool test_main(void) {
   mmio_region_t base_addr;
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_clkmgr_init(base_addr, &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));

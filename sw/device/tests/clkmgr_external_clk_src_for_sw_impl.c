@@ -40,8 +40,7 @@ void execute_clkmgr_external_clk_src_for_sw_test(bool fast_ext_clk) {
   CHECK_STATUS_OK(aon_timer_testutils_get_us_from_aon_cycles(
       kMeasurementsPerRound, &delay_micros));
 
-  CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
 
   CHECK_DIF_OK(dif_clkmgr_recov_err_code_clear_codes(&clkmgr, UINT32_MAX));
   CHECK_DIF_OK(dif_clkmgr_recov_err_code_get_codes(&clkmgr, &err_codes));
