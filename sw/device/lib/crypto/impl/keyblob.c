@@ -227,8 +227,8 @@ status_t keyblob_remask(otcrypto_blinded_key_t *key) {
   hardened_memshred(mask, key_share_words);
 
   // XOR each share with the mask.
-  hardened_xor(share0, mask, key_share_words);
-  hardened_xor(share1, mask, key_share_words);
+  hardened_xor_in_place(share0, mask, key_share_words);
+  hardened_xor_in_place(share1, mask, key_share_words);
 
   // Update the key checksum.
   key->checksum = integrity_blinded_checksum(key);
