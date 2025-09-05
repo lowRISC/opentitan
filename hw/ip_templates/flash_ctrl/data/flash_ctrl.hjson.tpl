@@ -2693,6 +2693,8 @@
         shadowed: "False"
       }
     ],
-    mem: []
+  }
+  memory: {
+    mem: {}
   }
 }

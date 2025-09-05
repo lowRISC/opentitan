@@ -43,8 +43,8 @@ OTTF_DEFINE_TEST_CONFIG();
 enum {
   // Search within this ROM region to find `c.jr x1`, so execution can be
   // tested.
-  kRomTestLocStart = TOP_EARLGREY_ROM_BASE_ADDR + 0x400,
-  kRomTestLocEnd = TOP_EARLGREY_ROM_BASE_ADDR + 0x500,
+  kRomTestLocStart = TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR + 0x400,
+  kRomTestLocEnd = TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR + 0x500,
   kRomTestLocContent = 0x8082,
 
   // Number of bytes per page.
@@ -118,7 +118,8 @@ static void setup_flash(void) {
       .permissions = kPmpRegionPermissionsReadWriteExecute,
   };
   pmp_region_configure_napot_result_t result = pmp_region_configure_napot(
-      8, config, TOP_EARLGREY_EFLASH_BASE_ADDR, TOP_EARLGREY_EFLASH_SIZE_BYTES);
+      8, config, TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+      TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES);
   CHECK(result == kPmpRegionConfigureNapotOk,
         "Load configuration failed, error code = %d", result);
   // When running as ROM_EXT, ROM configures the flash memory to be readonly.

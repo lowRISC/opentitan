@@ -43,7 +43,7 @@ struct Opts {
 const NUM_ACCESSES_PER_REGION: usize = 32;
 
 // The last 32 bytes of ROM (ROM digest) are not accessible.
-const ROM_ACCESSIBLE_BYTES: usize = top_earlgrey::ROM_SIZE_BYTES - 32;
+const ROM_ACCESSIBLE_BYTES: usize = top_earlgrey::ROM_CTRL_ROM_SIZE_BYTES - 32;
 
 fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let seed = opts.seed.unwrap_or_else(|| thread_rng().r#gen());
@@ -76,13 +76,13 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let rw_regions = [
         (
             "ram_ret",
-            top_earlgrey::RAM_RET_AON_BASE_ADDR as u32,
-            top_earlgrey::RAM_RET_AON_SIZE_BYTES as u32,
+            top_earlgrey::SRAM_CTRL_RET_AON_RAM_BASE_ADDR as u32,
+            top_earlgrey::SRAM_CTRL_RET_AON_RAM_SIZE_BYTES as u32,
         ),
         (
             "ram_main",
-            top_earlgrey::RAM_MAIN_BASE_ADDR as u32,
-            top_earlgrey::RAM_MAIN_SIZE_BYTES as u32,
+            top_earlgrey::SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32,
+            top_earlgrey::SRAM_CTRL_MAIN_RAM_SIZE_BYTES as u32,
         ),
         (
             "otbn_imem",
@@ -123,7 +123,7 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     {
         accesses.push((
             "rom",
-            top_earlgrey::ROM_BASE_ADDR as u32,
+            top_earlgrey::ROM_CTRL_ROM_BASE_ADDR as u32,
             offset,
             if offset as usize <= rom_data.len() {
                 u32::from_le_bytes(rom_data[offset as usize..][..4].try_into().unwrap())
