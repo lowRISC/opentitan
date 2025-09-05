@@ -25,8 +25,8 @@ rust_binary(
         "@crate_index//:clap",
         "@crate_index//:env_logger",
         "@crate_index//:log",
-        "@crate_index//:mio",
         "@crate_index//:strum",
+        "@crate_index//:tokio",
     ],
 )
 
