@@ -28,15 +28,15 @@ from .typing import IpBlocksT
 
 class CEnum(object):
 
-    def __init__(self, top_name, name, repr_type=None):
-        self.name = top_name + name
+    def __init__(self, top_name: Optional[Name], name: Name, repr_type=None):
+        self.name = top_name + name if top_name is not None else name
         self.repr_type = repr_type
         self.finalized = False
 
         self.constants = []
         self.meta_constants = []
 
-    def add_constant(self, constant_name, docstring=""):
+    def add_constant(self, constant_name: Name, docstring=""):
         assert not self.finalized
 
         full_name = self.name + constant_name

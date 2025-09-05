@@ -43,18 +43,20 @@ bool test_main(void) {
     //   - the digest of the CreatorSwCfg partition,
     //   - the digest of the OwnerSwCfg partition,
     //   - the SHA256 integrity hash of the first stage boot keys.
-    otp_dai_read(kOtpPartitionCreatorSwCfg,
-                 /*relative_address=*/
-                 kOtpPartitions[kOtpPartitionCreatorSwCfg].digest_addr -
-                     OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
-                 otp_state,
-                 /*num_words=*/2);
-    otp_dai_read(kOtpPartitionOwnerSwCfg,
-                 /*relative_address=*/
-                 kOtpPartitions[kOtpPartitionOwnerSwCfg].digest_addr -
-                     OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET,
-                 &otp_state[2],
-                 /*num_words=*/2);
+    otp_dai_read(
+        kOtpPartitionCreatorSwCfg,
+        /*relative_address=*/
+        otp_readable_partition_info(kOtpPartitionCreatorSwCfg).digest_addr -
+            OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
+        otp_state,
+        /*num_words=*/2);
+    otp_dai_read(
+        kOtpPartitionOwnerSwCfg,
+        /*relative_address=*/
+        otp_readable_partition_info(kOtpPartitionOwnerSwCfg).digest_addr -
+            OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET,
+        &otp_state[2],
+        /*num_words=*/2);
     otp_dai_read(kOtpPartitionRotCreatorAuthCodesign,
                  /*relative_address=*/
                  OTP_CTRL_PARAM_ROTCREATORAUTHCODESIGNBLOCKSHA2_256HASHOFFSET -

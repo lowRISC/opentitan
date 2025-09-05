@@ -253,7 +253,7 @@ static status_t measure_otp_partition(otp_partition_t partition,
                                       bool use_expected_values) {
   // Compute the digest.
   otp_dai_read(partition, /*address=*/0, otp_state,
-               kOtpPartitions[partition].size / sizeof(uint32_t));
+               otp_readable_partition_info(partition).size / sizeof(uint32_t));
 
   if (use_expected_values) {
     // Sets the expected values for fields in the OTP that are not provisioned
@@ -267,7 +267,8 @@ static status_t measure_otp_partition(otp_partition_t partition,
     }
   }
 
-  hmac_sha256(otp_state, kOtpPartitions[partition].size, measurement);
+  hmac_sha256(otp_state, otp_readable_partition_info(partition).size,
+              measurement);
 
   return OK_STATUS();
 }
