@@ -121,12 +121,18 @@ jobs:
         run: ./bazelisk.sh test //quality:buildifier_check
       - name: Vendored files
         run: ./ci/scripts/check-vendoring.sh
-      - name: Verible RTL
+      - name: Verible RTL earlgrey
         run: ./ci/scripts/verible-lint.sh rtl earlgrey
-      - name: Verible DV
+      - name: Verible DV earlgrey
         run: ./ci/scripts/verible-lint.sh dv earlgrey
-      - name: Verible FPV
+      - name: Verible FPV earlgrey
         run: ./ci/scripts/verible-lint.sh fpv earlgrey
+      - name: Verible RTL darjeeling
+        run: ./ci/scripts/verible-lint.sh rtl darjeeling
+      - name: Verible DV darjeeling
+        run: ./ci/scripts/verible-lint.sh dv darjeeling
+      - name: Verible FPV darjeeling
+        run: ./ci/scripts/verible-lint.sh fpv darjeeling
 
   build_docs:
     name: Build documentation
