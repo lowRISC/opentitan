@@ -73,18 +73,18 @@ static status_t aes_write_key(aes_key_t key) {
   for (; i < key.key_len; ++i) {
     abs_mmio_write32(share0 + i * sizeof(uint32_t), key.key_shares[0][i]);
   }
-  HARDENED_CHECK_EQ(i, key.key_len);
+  HARDENED_CHECK_EQ(launderw(i), key.key_len);
   for (i = 0; i < key.key_len; ++i) {
     abs_mmio_write32(share1 + i * sizeof(uint32_t), key.key_shares[1][i]);
   }
-  HARDENED_CHECK_EQ(i, key.key_len);
+  HARDENED_CHECK_EQ(launderw(i), key.key_len);
 
   // Write random words to remaining key registers.
   for (; i < kAesKeyWordLenMax; i++) {
     abs_mmio_write32(share0 + i * sizeof(uint32_t), ibex_rnd32_read());
     abs_mmio_write32(share1 + i * sizeof(uint32_t), ibex_rnd32_read());
   }
-  HARDENED_CHECK_EQ(i, kAesKeyWordLenMax);
+  HARDENED_CHECK_EQ(launderw(i), kAesKeyWordLenMax);
 
   return spin_until(AES_STATUS_IDLE_BIT);
 }
@@ -222,8 +222,8 @@ static status_t aes_begin(aes_key_t key, const aes_block_t *iv,
   HARDENED_TRY(aes_write_key(key));
 
   // All modes except ECB need to set an IV.
-  if (key.mode != launder32(kAesCipherModeEcb)) {
-    HARDENED_CHECK_NE(key.mode, kAesCipherModeEcb);
+  if (key.mode != kAesCipherModeEcb) {
+    HARDENED_CHECK_NE(launder32(key.mode), kAesCipherModeEcb);
     uint32_t iv_offset = kBase + AES_IV_0_REG_OFFSET;
     for (size_t i = 0; i < ARRAYSIZE(iv->data); ++i) {
       abs_mmio_write32(iv_offset + i * sizeof(uint32_t), iv->data[i]);
@@ -232,13 +232,13 @@ static status_t aes_begin(aes_key_t key, const aes_block_t *iv,
 
   // Check that AES is ready to receive input data.
   uint32_t status = abs_mmio_read32(kBase + AES_STATUS_REG_OFFSET);
-  if (!bitfield_bit32_read(launder32(status), AES_STATUS_INPUT_READY_BIT)) {
+  if (!bitfield_bit32_read(status, AES_STATUS_INPUT_READY_BIT)) {
     return OTCRYPTO_RECOV_ERR;
   }
-  HARDENED_CHECK_EQ(
-      bitfield_bit32_read(abs_mmio_read32(kBase + AES_STATUS_REG_OFFSET),
-                          AES_STATUS_INPUT_READY_BIT),
-      true);
+  HARDENED_CHECK_EQ(launder32(bitfield_bit32_read(
+                        abs_mmio_read32(kBase + AES_STATUS_REG_OFFSET),
+                        AES_STATUS_INPUT_READY_BIT)),
+                    true);
 
   return OTCRYPTO_OK;
 }
