@@ -483,6 +483,7 @@
     rst_ni: lc_io_div4
     export_rsts: {}
     with_alert_handler: true
+    with_cpu: true
     topname: darjeeling
     uniquified_modules: {}
     module_instance_name: rstmgr

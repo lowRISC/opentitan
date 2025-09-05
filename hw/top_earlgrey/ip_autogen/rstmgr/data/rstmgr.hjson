@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -258,7 +259,6 @@
         Low-power-group outputs used by alert handler.
       '''
     },
-
     { struct:  "alert_crashdump",
       type:    "uni",
       name:    "alert_dump",
@@ -268,7 +268,6 @@
         Alert handler crash dump information.
       '''
     },
-
     { struct:  "cpu_crash_dump",
       type:    "uni",
       name:    "cpu_dump",
@@ -278,7 +277,6 @@
         Main processing element crash dump information.
       '''
     },
-
     { struct:  "mubi4",
       type:    "uni",
       name:    "sw_rst_req",
