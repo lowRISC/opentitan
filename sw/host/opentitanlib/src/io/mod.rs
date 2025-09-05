@@ -9,6 +9,5 @@ pub mod gpio;
 pub mod i2c;
 pub mod ioexpander;
 pub mod jtag;
-pub mod nonblocking_help;
 pub mod spi;
 pub mod uart;

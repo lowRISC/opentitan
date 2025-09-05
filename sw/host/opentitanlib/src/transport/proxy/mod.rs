@@ -2,28 +2,28 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, bail};
-use serde::{Deserialize, Serialize};
-use std::cell::{Cell, RefCell};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io;
 use std::io::{BufWriter, ErrorKind, Read, Write};
 use std::net::{TcpStream, ToSocketAddrs};
-use std::os::unix::io::AsRawFd;
 use std::rc::Rc;
-use std::time::Duration;
+
+use anyhow::{Context, Result, bail};
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use tokio::io::AsyncWriteExt;
 
 use crate::bootstrap::BootstrapOptions;
 use crate::impl_serializable_error;
 use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
-use crate::io::nonblocking_help::NonblockingHelp;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::proxy::protocol::{
-    AsyncMessage, Message, ProxyRequest, ProxyResponse, Request, Response,
+    AsyncMessage, Message, ProxyRequest, ProxyResponse, Request, Response, UartRequest,
+    UartResponse,
 };
 use crate::transport::{Capabilities, Capability, ProxyOps, Transport, TransportError};
 
@@ -66,7 +66,6 @@ impl Proxy {
                 uarts: RefCell::new(HashMap::new()),
                 uart_channel_map: RefCell::new(HashMap::new()),
                 recv_buf: RefCell::new(Vec::new()),
-                nonblocking_help_enabled: Cell::new(false),
             }),
         })
     }
@@ -74,8 +73,8 @@ impl Proxy {
 
 struct UartRecord {
     pub uart: Rc<dyn Uart>,
-    pub pipe_sender: mio::unix::pipe::Sender,
-    pub pipe_receiver: mio::unix::pipe::Receiver,
+    pub pipe_sender: tokio::io::WriteHalf<tokio::io::SimplexStream>,
+    pub pipe_receiver: tokio::io::ReadHalf<tokio::io::SimplexStream>,
 }
 
 struct Inner {
@@ -83,7 +82,6 @@ struct Inner {
     pub uarts: RefCell<HashMap<String, UartRecord>>,
     uart_channel_map: RefCell<HashMap<u32, String>>,
     recv_buf: RefCell<Vec<u8>>,
-    nonblocking_help_enabled: Cell<bool>,
 }
 
 impl Inner {
@@ -103,12 +101,8 @@ impl Inner {
         }
     }
 
-    fn poll_for_async_data(&self, timeout: Option<Duration>) -> Result<()> {
-        if timeout == Some(Duration::from_millis(0)) {
-            self.recv_nonblocking()?;
-        } else {
-            self.recv_with_timeout(timeout)?;
-        }
+    fn poll_for_async_data(&self) -> Result<()> {
+        self.recv_nonblocking()?;
         while let Some(msg) = self.dequeue_json_response()? {
             match msg {
                 Message::Async { channel, msg } => self.process_async_data(channel, msg)?,
@@ -123,7 +117,9 @@ impl Inner {
             AsyncMessage::UartData { data } => {
                 if let Some(uart_instance) = self.uart_channel_map.borrow().get(&channel) {
                     if let Some(uart_record) = self.uarts.borrow_mut().get_mut(uart_instance) {
-                        uart_record.pipe_sender.write_all(&data)?;
+                        crate::util::runtime::block_on(async {
+                            uart_record.pipe_sender.write_all(&data).await
+                        })?;
                     }
                 }
             }
@@ -167,28 +163,6 @@ impl Inner {
             buf.drain(..idx - rc + newline_pos + 1);
             return Ok(result);
         }
-    }
-
-    fn recv_with_timeout(&self, timeout: Option<Duration>) -> Result<()> {
-        let mut conn = self.conn.borrow_mut();
-        conn.set_read_timeout(timeout)?;
-        let mut buf = self.recv_buf.borrow_mut();
-        let mut idx: usize = buf.len();
-        buf.resize(idx + 2048, 0);
-        match conn.read(&mut buf[idx..]) {
-            Ok(0) => {
-                anyhow::bail!(io::Error::new(
-                    ErrorKind::UnexpectedEof,
-                    "Server unexpectedly closed connection"
-                ))
-            }
-            Ok(rc) => idx += rc,
-            Err(ref e) if e.kind() == ErrorKind::WouldBlock => (),
-            Err(e) => anyhow::bail!(e),
-        }
-        buf.resize(idx, 0);
-        conn.set_read_timeout(None)?;
-        Ok(())
     }
 
     fn recv_nonblocking(&self) -> Result<()> {
@@ -325,10 +299,28 @@ impl Transport for Proxy {
         if let Some(instance) = self.inner.uarts.borrow().get(instance_name) {
             return Ok(Rc::clone(&instance.uart));
         }
+
+        // All `Uart` instances that we create via proxy supports non-blocking.
+        // This allows us to control whether UART is blocking or not by controlling if
+        // `pipe_receiver` is blocking.
+        let Response::Uart(UartResponse::RegisterNonblockingRead { channel }) =
+            self.inner.execute_command(Request::Uart {
+                id: instance_name.to_owned(),
+                command: UartRequest::RegisterNonblockingRead,
+            })?
+        else {
+            bail!(ProxyError::UnexpectedReply())
+        };
+
         let instance: Rc<dyn Uart> = Rc::new(uart::ProxyUart::open(self, instance_name)?);
-        let (pipe_sender, pipe_receiver) = mio::unix::pipe::new()?;
+        let (pipe_receiver, pipe_sender) = tokio::io::simplex(65536);
+
+        self.inner
+            .uart_channel_map
+            .borrow_mut()
+            .insert(channel, instance_name.to_owned());
         self.inner.uarts.borrow_mut().insert(
-            instance_name.to_string(),
+            instance_name.to_owned(),
             UartRecord {
                 uart: Rc::clone(&instance),
                 pipe_sender,
@@ -361,32 +353,5 @@ impl Transport for Proxy {
     // Create ProxyOps instance.
     fn proxy_ops(&self) -> Result<Rc<dyn ProxyOps>> {
         Ok(Rc::new(ProxyOpsImpl::new(self)?))
-    }
-
-    fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
-        Ok(Rc::new(ProxyNonblockingHelp {
-            inner: self.inner.clone(),
-        }))
-    }
-}
-
-pub struct ProxyNonblockingHelp {
-    inner: Rc<Inner>,
-}
-
-impl NonblockingHelp for ProxyNonblockingHelp {
-    fn register_nonblocking_help(&self, registry: &mio::Registry, token: mio::Token) -> Result<()> {
-        let conn: &mut std::net::TcpStream = &mut self.inner.conn.borrow_mut();
-        registry.register(
-            &mut mio::unix::SourceFd(&conn.as_raw_fd()),
-            token,
-            mio::Interest::READABLE,
-        )?;
-        self.inner.nonblocking_help_enabled.set(true);
-        Ok(())
-    }
-    fn nonblocking_help(&self) -> Result<()> {
-        self.inner
-            .poll_for_async_data(Some(Duration::from_millis(0)))
     }
 }

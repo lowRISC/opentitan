@@ -13,6 +13,7 @@ pub mod present;
 pub mod printer;
 pub mod raw_tty;
 pub mod rom_detect;
+pub mod runtime;
 pub mod serde;
 pub mod status;
 pub mod testing;
@@ -22,6 +23,8 @@ pub mod usr_access;
 pub mod vcd;
 pub mod vmem;
 pub mod voltage;
+
+pub use runtime::runtime;
 
 /// The `collection` macro provides syntax for hash and set literals.
 #[macro_export]

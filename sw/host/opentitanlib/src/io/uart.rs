@@ -4,6 +4,7 @@
 
 use std::io::{self, Read};
 use std::rc::Rc;
+use std::task::{Context, Poll};
 use std::time::Duration;
 
 use anyhow::Result;
@@ -12,7 +13,6 @@ use serde::{Deserialize, Serialize};
 pub use serialport::Parity;
 use thiserror::Error;
 
-use super::nonblocking_help::{NoNonblockingHelp, NonblockingHelp};
 use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
 use crate::io::console::ConsoleDevice;
@@ -84,13 +84,26 @@ pub trait Uart {
     }
 
     /// Reads UART receive data into `buf`, returning the number of bytes read.
-    /// This function _may_ block.
-    fn read(&self, buf: &mut [u8]) -> Result<usize>;
+    /// This function is blocking.
+    fn read(&self, buf: &mut [u8]) -> Result<usize> {
+        crate::util::runtime::block_on(std::future::poll_fn(|cx| self.poll_read(cx, buf)))
+    }
 
     /// Reads UART receive data into `buf`, returning the number of bytes read.
     /// The `timeout` may be used to specify a duration to wait for data.
     /// If timeout expires without any data arriving `Ok(0)` will be returned, never `Err(_)`.
-    fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize>;
+    fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
+        crate::util::runtime::block_on(async {
+            tokio::time::timeout(timeout, std::future::poll_fn(|cx| self.poll_read(cx, buf))).await
+        })
+        .unwrap_or(Ok(0))
+    }
+
+    /// Reads UART receive data into `buf`, returning the number of bytes read.
+    ///
+    /// If data is not yet ready, `Poll::Pending` will be returned and `cx` would be notified when it's available.
+    /// When this function is called with multiple wakers, all wakers should be notified instead of just the last one.
+    fn poll_read(&self, cx: &mut Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>>;
 
     /// Writes data from `buf` to the UART.
     fn write(&self, buf: &[u8]) -> Result<()>;
@@ -116,26 +129,6 @@ pub trait Uart {
     fn get_parity(&self) -> Result<Parity> {
         Err(TransportError::UnsupportedOperation.into())
     }
-
-    /// Query if nonblocking mio mode is supported.
-    fn supports_nonblocking_read(&self) -> Result<bool> {
-        Ok(false)
-    }
-
-    /// Switch this `Uart` instance into nonblocking mio mode.  Going forward, `read()` should
-    /// only be called after `mio::poll()` has indicated that the given `Token` is ready.
-    fn register_nonblocking_read(
-        &self,
-        _registry: &mio::Registry,
-        _token: mio::Token,
-    ) -> Result<()> {
-        unimplemented!();
-    }
-
-    /// Get the same single `NonblockingHelp` object as from top level `Transport.nonblocking_help()`.
-    fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
-        Ok(Rc::new(NoNonblockingHelp))
-    }
 }
 
 impl Read for &dyn Uart {
@@ -145,8 +138,12 @@ impl Read for &dyn Uart {
 }
 
 impl<'a> ConsoleDevice for dyn Uart + 'a {
-    fn console_read(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
-        self.read_timeout(buf, timeout)
+    fn console_poll_read(
+        &self,
+        cx: &mut std::task::Context<'_>,
+        buf: &mut [u8],
+    ) -> std::task::Poll<Result<usize>> {
+        self.poll_read(cx, buf)
     }
 
     fn console_write(&self, buf: &[u8]) -> Result<()> {
@@ -155,18 +152,6 @@ impl<'a> ConsoleDevice for dyn Uart + 'a {
 
     fn set_break(&self, enable: bool) -> Result<()> {
         <Self as Uart>::set_break(self, enable)
-    }
-
-    fn supports_nonblocking_read(&self) -> Result<bool> {
-        self.supports_nonblocking_read()
-    }
-
-    fn register_nonblocking_read(&self, registry: &mio::Registry, token: mio::Token) -> Result<()> {
-        self.register_nonblocking_read(registry, token)
-    }
-
-    fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
-        self.nonblocking_help()
     }
 }
 

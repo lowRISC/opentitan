@@ -15,7 +15,7 @@ use crate::io::gpio::GpioPin;
 use crate::io::spi::Target;
 use crate::io::uart::{Uart, UartError};
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
-use crate::transport::common::uart::SerialPortUart;
+use crate::transport::common::uart::{SerialPortUart, SoftwareFlowControl};
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
@@ -57,7 +57,7 @@ impl<B: Board> ChipWhisperer<B> {
         Ok(board)
     }
 
-    fn open_uart(&self, instance: u32) -> Result<SerialPortUart> {
+    fn open_uart(&self, instance: u32) -> Result<SoftwareFlowControl<SerialPortUart>> {
         if self.uart_override.is_empty() {
             let usb = self.device.borrow();
             let serial_number = usb.get_serial_number();
@@ -79,14 +79,20 @@ impl<B: Board> ChipWhisperer<B> {
             let port = ports.get(instance as usize).ok_or_else(|| {
                 TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
             })?;
-            SerialPortUart::open(&port.port_name, B::UART_BAUD)
+            Ok(SoftwareFlowControl::new(SerialPortUart::open(
+                &port.port_name,
+                B::UART_BAUD,
+            )?))
         } else {
             let instance = instance as usize;
             ensure!(
                 instance < self.uart_override.len(),
                 TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
             );
-            SerialPortUart::open(&self.uart_override[instance], B::UART_BAUD)
+            Ok(SoftwareFlowControl::new(SerialPortUart::open(
+                &self.uart_override[instance],
+                B::UART_BAUD,
+            )?))
         }
     }
 }

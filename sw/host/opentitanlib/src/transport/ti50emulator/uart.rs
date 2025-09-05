@@ -2,18 +2,21 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result};
+use anyhow::{Context as _, Result};
 
 use std::cell::{RefCell, RefMut};
-use std::io::{ErrorKind, Read, Write};
-use std::os::unix::net::UnixStream;
 use std::path::PathBuf;
+use std::pin::Pin;
 use std::rc::Rc;
-use std::time::Duration;
+use std::task::{Context, Poll, ready};
+
+use tokio::io::{AsyncRead, AsyncWriteExt};
+use tokio::net::UnixStream;
 
 use crate::io::emu::EmuState;
 use crate::io::uart::{Uart, UartError};
 use crate::transport::ti50emulator::Inner;
+use crate::util::runtime::MultiWaker;
 
 const TI50_UART_BAUDRATE: u32 = 115200;
 
@@ -23,6 +26,7 @@ pub struct Ti50Uart {
     socket: RefCell<Option<UnixStream>>,
     // full path to socket file
     path: PathBuf,
+    multi_waker: MultiWaker,
 }
 
 impl Ti50Uart {
@@ -32,6 +36,7 @@ impl Ti50Uart {
             inner: inner.clone(),
             socket: RefCell::default(),
             path: soc_path,
+            multi_waker: MultiWaker::new(),
         })
     }
 
@@ -39,7 +44,10 @@ impl Ti50Uart {
     // pipes, but before it executes any project code.
     pub fn connect(&self) -> Result<()> {
         let mut socket = self.socket.borrow_mut();
-        *socket = Some(UnixStream::connect(&self.path).context("UART reconect error")?);
+        *socket = Some(
+            crate::util::runtime::block_on(UnixStream::connect(&self.path))
+                .context("UART reconect error")?,
+        );
         Ok(())
     }
 
@@ -71,48 +79,22 @@ impl Uart for Ti50Uart {
         Ok(())
     }
 
-    /// Reads UART receive data into `buf`, returning the number of bytes read.
-    /// This function _may_ block.
-    fn read(&self, buf: &mut [u8]) -> Result<usize> {
+    fn poll_read(&self, cx: &mut Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
         match self.get_state()? {
             EmuState::On => {
                 let mut socket = self.get_socket()?;
-                socket.set_read_timeout(None)?;
-                Ok(socket.read(buf)?)
+                let mut read_buf = tokio::io::ReadBuf::new(buf);
+                ready!(
+                    self.multi_waker
+                        .poll_with(cx, |cx| Pin::new(&mut *socket).poll_read(cx, &mut read_buf))
+                )?;
+                Poll::Ready(Ok(read_buf.filled().len()))
             }
-            EmuState::Off => Ok(0),
+            EmuState::Off => Poll::Pending,
             state => Err(UartError::GenericError(format!(
                 "Operation not supported in Emulator state: {}",
                 state
-            ))
-            .into()),
-        }
-    }
-
-    /// Reads UART receive data into `buf`, returning the number of bytes read.
-    /// The `timeout` may be used to specify a duration to wait for data.
-    /// If timeout expires without any data arriving `Ok(0)` will be returned, never `Err(_)`.
-    fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
-        match self.get_state()? {
-            EmuState::On => {
-                let mut socket = self.get_socket()?;
-                socket
-                    .set_read_timeout(Some(timeout))
-                    .context("Set timeoout")?;
-                match socket.read(buf) {
-                    Ok(n) => Ok(n),
-                    Err(error) => match error.kind() {
-                        ErrorKind::TimedOut | ErrorKind::WouldBlock => Ok(0),
-                        _ => Err(error).context("UART read error?"),
-                    },
-                }
-            }
-            EmuState::Off => Ok(0),
-            state => Err(UartError::GenericError(format!(
-                "Operation not supported in Emulator state: {}",
-                state
-            ))
-            .into()),
+            )))?,
         }
     }
 
@@ -120,7 +102,8 @@ impl Uart for Ti50Uart {
     fn write(&self, buf: &[u8]) -> Result<()> {
         match self.get_state()? {
             EmuState::On => {
-                self.get_socket()?.write(buf).context("UART read error")?;
+                let mut socket = self.get_socket()?;
+                crate::util::runtime::block_on(socket.write(buf)).context("UART read error")?;
                 Ok(())
             }
             state => {
@@ -128,15 +111,5 @@ impl Uart for Ti50Uart {
                 Ok(())
             }
         }
-    }
-
-    /// Clears the UART RX buffer.
-    fn clear_rx_buffer(&self) -> Result<()> {
-        // Iterators are lazy, consume using `count()`.
-        Read::by_ref(&mut *self.get_socket()?)
-            .bytes()
-            .take_while(Result::is_ok)
-            .count();
-        Ok(())
     }
 }

@@ -31,18 +31,6 @@ pub trait CommandHandler<Msg, E: ExtraEventHandler> {
         extra_event_handler: &mut E,
         msg: &Msg,
     ) -> Result<Msg>;
-
-    fn register_nonblocking_help(
-        &self,
-        _registry: &mio::Registry,
-        _token: mio::Token,
-    ) -> Result<()> {
-        Ok(())
-    }
-
-    fn nonblocking_help(&self) -> Result<()> {
-        Ok(())
-    }
 }
 
 pub trait ExtraEventHandler {

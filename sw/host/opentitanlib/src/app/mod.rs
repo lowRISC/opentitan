@@ -16,7 +16,6 @@ use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin, PinMode, PullMode
 use crate::io::i2c::Bus;
 use crate::io::ioexpander::IoExpander;
 use crate::io::jtag::{JtagChain, JtagParams};
-use crate::io::nonblocking_help::NonblockingHelp;
 use crate::io::spi::{Target, TransferMode};
 use crate::io::uart::Uart;
 use crate::transport::{
@@ -999,10 +998,6 @@ impl TransportWrapper {
     /// Invoke non-standard functionality of some Transport implementations.
     pub fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
         self.transport.dispatch(action)
-    }
-
-    pub fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
-        self.transport.nonblocking_help()
     }
 
     /// Apply given configuration to a single pins.

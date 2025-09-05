@@ -2,22 +2,24 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Result, bail};
-use std::cell::Cell;
-use std::io::{ErrorKind, Read};
+use std::pin::Pin;
 use std::rc::Rc;
+use std::task::Poll;
 use std::time::Duration;
 
+use anyhow::{Result, bail};
+use tokio::io::AsyncRead;
+
 use super::ProxyError;
-use crate::io::nonblocking_help::NonblockingHelp;
 use crate::io::uart::{FlowControl, Parity, Uart};
 use crate::proxy::protocol::{Request, Response, UartRequest, UartResponse};
 use crate::transport::proxy::{Inner, Proxy};
+use crate::util::runtime::MultiWaker;
 
 pub struct ProxyUart {
     inner: Rc<Inner>,
     instance: String,
-    nonblocking_mode: Cell<bool>,
+    multi_waker: MultiWaker,
 }
 
 impl ProxyUart {
@@ -25,7 +27,7 @@ impl ProxyUart {
         let result = Self {
             inner: Rc::clone(&proxy.inner),
             instance: instance.to_string(),
-            nonblocking_mode: Cell::new(false),
+            multi_waker: MultiWaker::new(),
         };
         Ok(result)
     }
@@ -38,27 +40,6 @@ impl ProxyUart {
         })? {
             Response::Uart(resp) => Ok(resp),
             _ => bail!(ProxyError::UnexpectedReply()),
-        }
-    }
-
-    fn nonblocking_read(&self, buf: &mut [u8], timeout: Option<Duration>) -> Result<usize> {
-        let mut first_try = true;
-        loop {
-            {
-                let mut uarts = self.inner.uarts.borrow_mut();
-                let uart_record = uarts.get_mut(&self.instance).unwrap();
-                match uart_record.pipe_receiver.read(buf) {
-                    Ok(0) => (),
-                    Ok(n) => return Ok(n),
-                    Err(ref e) if e.kind() == ErrorKind::WouldBlock => (),
-                    Err(e) => anyhow::bail!(e),
-                }
-            }
-            if !first_try && timeout.is_some() {
-                return Ok(0); // Timeout
-            }
-            self.inner.poll_for_async_data(timeout)?;
-            first_try = false;
         }
     }
 }
@@ -122,40 +103,20 @@ impl Uart for ProxyUart {
         }
     }
 
-    /// Reads UART receive data into `buf`, returning the number of bytes read.
-    /// This function _may_ block.
-    fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        if self.nonblocking_mode.get() {
-            return self.nonblocking_read(buf, None);
-        }
-        match self.execute_command(UartRequest::Read {
-            timeout_millis: None,
-            len: buf.len() as u32,
-        })? {
-            UartResponse::Read { data } => {
-                buf[..data.len()].clone_from_slice(&data);
-                Ok(data.len())
-            }
-            _ => bail!(ProxyError::UnexpectedReply()),
-        }
-    }
+    fn poll_read(&self, cx: &mut std::task::Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
+        self.inner.poll_for_async_data()?;
 
-    /// Reads UART receive data into `buf`, returning the number of bytes read.
-    /// The `timeout` may be used to specify a duration to wait for data.
-    /// If timeout expires without any data arriving `Ok(0)` will be returned, never `Err(_)`.
-    fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
-        if self.nonblocking_mode.get() {
-            return self.nonblocking_read(buf, Some(timeout));
-        }
-        match self.execute_command(UartRequest::Read {
-            timeout_millis: Some(timeout.as_millis() as u32),
-            len: buf.len() as u32,
+        let mut uarts = self.inner.uarts.borrow_mut();
+        let uart_record = uarts.get_mut(&self.instance).unwrap();
+        let mut read_buf = tokio::io::ReadBuf::new(buf);
+        match self.multi_waker.poll_with(cx, |cx| {
+            Pin::new(&mut uart_record.pipe_receiver).poll_read(cx, &mut read_buf)
         })? {
-            UartResponse::Read { data } => {
-                buf[..data.len()].clone_from_slice(&data);
-                Ok(data.len())
+            Poll::Ready(()) => Poll::Ready(Ok(read_buf.filled().len())),
+            Poll::Pending => {
+                // `self.inner` currently does not yet support context notification.
+                crate::util::runtime::poll_later(cx, Duration::from_millis(1))
             }
-            _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
 
@@ -165,41 +126,5 @@ impl Uart for ProxyUart {
             UartResponse::Write => Ok(()),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
-    }
-
-    fn supports_nonblocking_read(&self) -> Result<bool> {
-        match self.execute_command(UartRequest::SupportsNonblockingRead)? {
-            UartResponse::SupportsNonblockingRead { has_support } => Ok(has_support),
-            _ => bail!(ProxyError::UnexpectedReply()),
-        }
-    }
-    fn register_nonblocking_read(&self, registry: &mio::Registry, token: mio::Token) -> Result<()> {
-        if !self.inner.nonblocking_help_enabled.get() {
-            bail!("Call register_nonblocking_help() before register_nonblocking_read()");
-        }
-        self.nonblocking_mode.set(true);
-        match self.execute_command(UartRequest::RegisterNonblockingRead)? {
-            UartResponse::RegisterNonblockingRead { channel } => {
-                self.inner
-                    .uart_channel_map
-                    .borrow_mut()
-                    .insert(channel, self.instance.clone());
-                let mut uarts = self.inner.uarts.borrow_mut();
-                let uart_record = uarts.get_mut(&self.instance).unwrap();
-                registry.register(
-                    &mut uart_record.pipe_receiver,
-                    token,
-                    mio::Interest::READABLE,
-                )?;
-                Ok(())
-            }
-            _ => bail!(ProxyError::UnexpectedReply()),
-        }
-    }
-
-    fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
-        Ok(Rc::new(super::ProxyNonblockingHelp {
-            inner: self.inner.clone(),
-        }))
     }
 }

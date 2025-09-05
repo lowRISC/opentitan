@@ -4,13 +4,15 @@
 
 use anyhow::Result;
 use mio::event::Event;
-use mio::{Registry, Token};
+use mio::{Interest, Registry, Token};
 use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::{HashMap, HashSet};
 use std::hash::{Hash, Hasher};
+use std::io::{Read, Write};
 use std::ptr::hash;
 use std::rc::Rc;
-use std::time::Duration;
+use std::sync::Arc;
+use std::task::{Context, Poll, Wake, Waker};
 
 use super::ExtraEventHandler;
 use super::socket_server::{Connection, get_next_token};
@@ -21,6 +23,31 @@ pub struct NonblockingUartRegistry {
     // Set of Uart objects in "nonblocking read" mode.  Key is the address of the Uart object.
     // Once switched to nonblocking mode, they do not go back.
     pub nonblocking_uarts: HashMap<UartKey, NonblockingUart>,
+}
+
+struct UartWaker {
+    send: mio::unix::pipe::Sender,
+    recv: mio::unix::pipe::Receiver,
+}
+
+impl UartWaker {
+    fn reset(&self) {
+        loop {
+            if self.recv.try_io(|| (&self.recv).read(&mut [0])).is_err() {
+                break;
+            }
+        }
+    }
+}
+
+impl Wake for UartWaker {
+    fn wake(self: Arc<Self>) {
+        self.wake_by_ref();
+    }
+
+    fn wake_by_ref(self: &Arc<Self>) {
+        let _ = (&self.send).write(&[1]);
+    }
 }
 
 impl NonblockingUartRegistry {
@@ -41,9 +68,12 @@ impl NonblockingUartRegistry {
             Vacant(entry) => {
                 let token = get_next_token();
                 self.token_map.insert(token, UartKey(uart.clone()));
-                uart.register_nonblocking_read(registry, token)?;
+                let (send, mut recv) = mio::unix::pipe::new()?;
+                registry.register(&mut recv, token, Interest::READABLE)?;
+                let waker = Arc::new(UartWaker { send, recv });
+                waker.wake_by_ref();
 
-                let mut nonblocking_uart = NonblockingUart::new(uart, token.0 as u32);
+                let mut nonblocking_uart = NonblockingUart::new(uart, waker, token.0 as u32);
                 nonblocking_uart.add_connection(conn_token);
                 let channel = nonblocking_uart.channel;
                 entry.insert(nonblocking_uart);
@@ -82,14 +112,20 @@ impl ExtraEventHandler for NonblockingUartRegistry {
 pub struct NonblockingUart {
     conn_tokens: HashSet<Token>,
     uart: std::rc::Rc<dyn crate::io::uart::Uart>,
+    waker: Arc<UartWaker>,
     channel: u32,
 }
 
 impl NonblockingUart {
-    pub fn new(uart: &std::rc::Rc<dyn crate::io::uart::Uart>, channel: u32) -> Self {
+    fn new(
+        uart: &std::rc::Rc<dyn crate::io::uart::Uart>,
+        waker: Arc<UartWaker>,
+        channel: u32,
+    ) -> Self {
         Self {
             conn_tokens: HashSet::new(),
             uart: uart.clone(),
+            waker,
             channel,
         }
     }
@@ -100,13 +136,16 @@ impl NonblockingUart {
 
     fn process(&mut self, connection_map: &mut HashMap<Token, Connection>) -> Result<()> {
         let mut buf = [0u8; 256];
-        // `mio` convention demands that we keep reading until a read returns zero bytes,
-        // otherwise next `poll()` is not guaranteed to notice more data.
+        // We need to keep reading until a read returns pending, otherwise the waker will not be notified.
+        let waker: Waker = self.waker.clone().into();
+        let mut cx = Context::from_waker(&waker);
         loop {
-            let len = self.uart.read_timeout(&mut buf, Duration::from_millis(1))?;
-            if len == 0 {
-                return Ok(());
-            }
+            self.waker.reset();
+            let len = match self.uart.poll_read(&mut cx, &mut buf)? {
+                Poll::Pending => return Ok(()),
+                Poll::Ready(len) => len,
+            };
+
             // Iterate through list of connections who "subscribe" to this UART instance, putting
             // data into each of their outgoing buffers.  If any connection has been closed,
             // remove the reference to it from `conn_tokens`.
