@@ -183,13 +183,11 @@ static status_t clear(void) {
  *
  * @param key The buffer that points to the key.
  * @param key_wordlen The length of the key in words.
- * @return Result of the operation.
+ * @return OK or error.
  */
 static status_t key_write(const uint32_t *key, size_t key_wordlen) {
   uint32_t key_reg = kHmacBaseAddr + HMAC_KEY_0_REG_OFFSET;
-  hardened_memcpy((uint32_t *)key_reg, key, key_wordlen);
-
-  return OTCRYPTO_OK;
+  return hardened_memcpy((uint32_t *)key_reg, key, key_wordlen);
 }
 
 /**
@@ -282,6 +280,34 @@ static void context_save(hmac_ctx_t *ctx) {
       abs_mmio_read32(kHmacBaseAddr + HMAC_MSG_LENGTH_LOWER_REG_OFFSET);
   ctx->upper =
       abs_mmio_read32(kHmacBaseAddr + HMAC_MSG_LENGTH_UPPER_REG_OFFSET);
+}
+
+/**
+ * Wipes the ctx struct by replacing sensitive data with randomness from the
+ * Ibex EDN interface. Non-sensitive variables are zeroized.
+ *
+ * @param[out] ctx Initialized context object for SHA2/HMAC-SHA2 operations.
+ * @return Result of the operation.
+ */
+static status_t hmac_context_wipe(hmac_ctx_t *ctx) {
+  // Ensure entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
+
+  // Randomize sensitive data.
+  HARDENED_TRY(hardened_memshred(ctx->key, kHmacMaxBlockWords));
+  HARDENED_TRY(hardened_memshred(ctx->H, kHmacMaxDigestWords));
+  HARDENED_TRY(hardened_memshred((uint32_t *)(ctx->partial_block),
+                                 kHmacMaxBlockBytes / sizeof(uint32_t)));
+  // Zero the remaining ctx fields.
+  ctx->cfg_reg = 0;
+  ctx->key_wordlen = 0;
+  ctx->msg_block_wordlen = 0;
+  ctx->digest_wordlen = 0;
+  ctx->lower = 0;
+  ctx->upper = 0;
+  ctx->partial_block_bytelen = 0;
+
+  return OTCRYPTO_OK;
 }
 
 /**

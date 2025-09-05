@@ -207,7 +207,7 @@ static status_t aes_gcm_counter(const size_t iv_len, const uint32_t *iv,
                                 ghash_context_t *ctx, aes_block_t *j0) {
   if (iv_len == 3) {
     // If the IV is 96 bits, then J0 = (IV || {0}^31 || 1).
-    hardened_memcpy(j0->data, iv, iv_len);
+    HARDENED_TRY(hardened_memcpy(j0->data, iv, iv_len));
     // Set the last word to 1 (as a big-endian integer).
     j0->data[kAesBlockNumWords - 1] = __builtin_bswap32(1);
   } else if (iv_len == 4) {
@@ -271,7 +271,7 @@ static status_t aes_gcm_get_tag(aes_gcm_context_t *ctx, size_t tag_len,
   // Truncate the tag if needed. NIST requires we take the most significant
   // bits in big-endian representation, which corresponds to the least
   // significant bits in Ibex's little-endian representation.
-  hardened_memcpy(tag, full_tag, tag_len);
+  HARDENED_TRY(hardened_memcpy(tag, full_tag, tag_len));
   return OTCRYPTO_OK;
 }
 

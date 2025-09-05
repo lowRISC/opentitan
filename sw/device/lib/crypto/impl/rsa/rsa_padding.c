@@ -342,7 +342,8 @@ static status_t mgf1(otcrypto_hash_mode_t hash_mode, const uint8_t *seed,
       // Digest won't fit in mask (last iteration). Use a temporary buffer.
       uint32_t digest[digest_wordlen];
       HARDENED_TRY(hash(hash_mode, hash_input, sizeof(hash_input), digest));
-      hardened_memcpy(mask, digest, ceil_div(mask_len, sizeof(uint32_t)));
+      HARDENED_TRY(
+          hardened_memcpy(mask, digest, ceil_div(mask_len, sizeof(uint32_t))));
       mask_len = 0;
     } else {
       HARDENED_TRY(hash(hash_mode, hash_input, sizeof(hash_input), mask));
@@ -396,9 +397,10 @@ static status_t pss_construct_h(const otcrypto_hash_digest_t message_digest,
   m_prime[1] = 0;
   uint32_t *digest_dst = &m_prime[2];
   uint32_t *salt_dst = digest_dst + message_digest.len;
-  hardened_memcpy(digest_dst, message_digest.data, message_digest.len);
+  HARDENED_TRY(
+      hardened_memcpy(digest_dst, message_digest.data, message_digest.len));
   if (salt_len > 0) {
-    hardened_memcpy(salt_dst, salt, salt_len);
+    HARDENED_TRY(hardened_memcpy(salt_dst, salt, salt_len));
   }
 
   // Construct H = Hash(M').
@@ -450,7 +452,7 @@ status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t message_digest,
   // Compute the final encoded message and reverse the byte-order.
   //   EM = maskedDB || H || 0xbc
   unsigned char *encoded_message_bytes = (unsigned char *)encoded_message;
-  hardened_memcpy(encoded_message, db, ARRAYSIZE(db));
+  HARDENED_TRY(hardened_memcpy(encoded_message, db, ARRAYSIZE(db)));
   memcpy(encoded_message_bytes + db_bytelen, h, sizeof(h));
   encoded_message_bytes[encoded_message_bytelen - 1] = 0xbc;
   reverse_bytes(encoded_message_len, encoded_message);
