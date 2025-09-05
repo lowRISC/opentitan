@@ -38,6 +38,12 @@ struct Opts {
     unlock_key_spx: Option<PathBuf>,
     #[arg(long, help = "Activate private key (SPX)")]
     activate_key_spx: Option<PathBuf>,
+    #[arg(long, help = "Unlock signature")]
+    unlock_sig: Option<PathBuf>,
+    #[arg(long, default_value_t = false, action = clap::ArgAction::Set, help = "Skip the ownership unlock request")]
+    skip_unlock: bool,
+    #[arg(long, default_value = "SlotA", help = "Which bl0 slot to activate")]
+    activate_bl0_slot: BootSlot,
 
     #[arg(long, default_value_t = OwnershipKeyAlg::EcdsaP256, help = "Current Owner key algorithm")]
     next_key_alg: OwnershipKeyAlg,
@@ -82,6 +88,10 @@ struct Opts {
     )]
     rescue_after_activate: Option<PathBuf>,
 
+    #[arg(long, default_value_t = false, action = clap::ArgAction::Set, help = "Use an invalid device id to trigger ownership unlock request")]
+    invalid_device_id: bool,
+    #[arg(long, default_value_t = false, action = clap::ArgAction::Set, help = "Use an invalid nonce to trigger ownership unlock request")]
+    invalid_nonce: bool,
     #[arg(long, default_value_t = false, action = clap::ArgAction::Set, help = "Check the firmware boots prior to ownership transfer")]
     pre_transfer_boot_check: bool,
     #[arg(long, default_value_t = true, action = clap::ArgAction::Set, help = "Check the firmware boot in dual-owner mode")]
@@ -90,6 +100,8 @@ struct Opts {
     non_transfer_update: bool,
     #[arg(long, default_value_t = false, action = clap::ArgAction::Set, help = "Check the sealing keys")]
     keygen_check: bool,
+    #[arg(long, default_value_t = false, action = clap::ArgAction::Set, help = "Enable detached sig for ownership unlock request")]
+    enable_detached_sig: bool,
 
     #[arg(long, default_value = "Any", help = "Mode of the unlock operation")]
     unlock_mode: UnlockMode,
@@ -129,23 +141,33 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     }
 
     log::info!("###### Get Boot Log (1/2) ######");
-    let (data, devid) = transfer_lib::get_device_info(transport, &rescue)?;
-    log::info!("###### Ownership Unlock ######");
-    transfer_lib::ownership_unlock(
-        transport,
-        &rescue,
-        opts.unlock_mode,
-        data.rom_ext_nonce,
-        devid.din,
-        opts.key_alg,
-        opts.unlock_key.clone(),
-        opts.unlock_key_spx.clone(),
-        if opts.unlock_mode == UnlockMode::Endorsed {
-            opts.next_owner_key_pub.as_deref()
-        } else {
-            None
-        },
-    )?;
+    let (mut data, mut devid) = transfer_lib::get_device_info(transport, &rescue)?;
+    if opts.invalid_device_id {
+        devid.din += 1;
+    }
+    if opts.invalid_nonce {
+        data.rom_ext_nonce += 1;
+    }
+    if !opts.skip_unlock {
+        log::info!("###### Ownership Unlock ######");
+        transfer_lib::ownership_unlock(
+            transport,
+            &rescue,
+            opts.unlock_mode,
+            data.rom_ext_nonce,
+            devid.din,
+            opts.key_alg,
+            opts.unlock_key.clone(),
+            opts.unlock_key_spx.clone(),
+            if opts.unlock_mode == UnlockMode::Endorsed {
+                opts.next_owner_key_pub.as_deref()
+            } else {
+                None
+            },
+            opts.unlock_sig.clone(),
+            opts.enable_detached_sig,
+        )?;
+    }
 
     log::info!("###### Get Boot Log (2/2) ######");
     let (data, _) = transfer_lib::get_device_info(transport, &rescue)?;
@@ -215,6 +237,7 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         opts.activate_key_spx
             .clone()
             .or_else(|| opts.next_activate_key_spx.clone()),
+        opts.activate_bl0_slot,
     )?;
 
     if let Some(fw) = &opts.rescue_after_activate {

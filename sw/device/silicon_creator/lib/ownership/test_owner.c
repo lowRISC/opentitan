@@ -9,6 +9,7 @@
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/activate_ecdsa_p256.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/activate_spx.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/app_dev_ecdsa_p256.h"
@@ -61,6 +62,34 @@
   }
 #endif
 
+#if defined(TEST_OWNER_KEY_ALG_SPX_PURE) || \
+    defined(TEST_OWNER_KEY_ALG_SPX_PREHASH)
+#ifdef TEST_OWNER_KEY_ALG_SPX_PURE
+#define TEST_OWNER_KEY_ALG kOwnershipKeyAlgSpxPure
+#endif
+#ifdef TEST_OWNER_KEY_ALG_HYBRID_SPX_PREHASH
+#define TEST_OWNER_KEY_ALG kOwnershipKeyAlgSpxPrehash
+#endif
+#define OWNER_KEYDATA \
+  (owner_keydata_t) { .spx = OWNER_SPX }
+#define ACTIVATE_KEYDATA \
+  (owner_keydata_t) { .spx = ACTIVATE_SPX }
+#define UNLOCK_KEYDATA \
+  (owner_keydata_t) { .spx = UNLOCK_SPX }
+#endif
+
+#if defined(TEST_OWNER_KEY_ALG_CORRUPTED)
+#ifdef TEST_OWNER_KEY_ALG_CORRUPTED
+#define TEST_OWNER_KEY_ALG 0x0
+#define OWNER_KEYDATA \
+  (owner_keydata_t) { .ecdsa = OWNER_ECDSA_P256 }
+#define ACTIVATE_KEYDATA \
+  (owner_keydata_t) { .ecdsa = ACTIVATE_ECDSA_P256 }
+#define UNLOCK_KEYDATA \
+  (owner_keydata_t) { .ecdsa = UNLOCK_ECDSA_P256 }
+#endif
+#endif
+
 #ifndef TEST_OWNER_KEY_ALG
 #define TEST_OWNER_KEY_ALG kOwnershipKeyAlgEcdsaP256
 #define OWNER_KEYDATA \
@@ -69,6 +98,10 @@
   (owner_keydata_t) { .ecdsa = ACTIVATE_ECDSA_P256 }
 #define UNLOCK_KEYDATA \
   (owner_keydata_t) { .ecdsa = UNLOCK_ECDSA_P256 }
+#endif
+
+#ifndef TEST_OWNERSHIP_STATE
+#define TEST_OWNERSHIP_STATE kOwnershipStateLockedOwner
 #endif
 
 #ifndef TEST_OWNER_SRAM_EXEC_MODE
@@ -294,7 +327,7 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
 
   // Since this module should only get linked in to FPGA builds, we can simply
   // thunk the ownership state to LockedOwner.
-  bootdata->ownership_state = kOwnershipStateLockedOwner;
+  bootdata->ownership_state = TEST_OWNERSHIP_STATE;
 
   // Write the configuration to both owner page 0.  The next boot of the ROM_EXT
   // will make a redundant copyh in page 1.

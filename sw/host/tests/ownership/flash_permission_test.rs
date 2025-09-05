@@ -187,6 +187,8 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
         } else {
             None
         },
+        None,
+        false,
     )?;
 
     log::info!("###### Get Boot Log (2/2) ######");
@@ -295,6 +297,7 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
             .clone()
             .or_else(|| opts.next_activate_key.clone()),
         None,
+        BootSlot::SlotA,
     )?;
 
     if let Some(fw) = &opts.rescue_after_activate {

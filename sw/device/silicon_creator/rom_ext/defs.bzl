@@ -47,6 +47,38 @@ TEST_OWNER_CONFIGS = {
         ],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
     },
+    "spx_pure_owner_keys": {
+        # Enable SPX+ ownership.
+        "owner_defines": ["TEST_OWNER_KEY_ALG_SPX_PURE=1"],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
+    "corrupted_owner_key_alg": {
+        # Overwrite the ownership_key_alg to 0x0.
+        "owner_defines": ["TEST_OWNER_KEY_ALG_CORRUPTED=1"],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
+    "default_ownership_state_recovery": {
+        "owner_defines": [
+            "TEST_OWNER_UPDATE_MODE=kOwnershipUpdateModeNewVersion",
+            "TEST_OWNERSHIP_STATE=kOwnershipStateRecovery",
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
+    "default_ownership_state_unlock_any": {
+        "owner_defines": [
+            "TEST_OWNER_UPDATE_MODE=kOwnershipUpdateModeNewVersion",
+            "TEST_OWNERSHIP_STATE=kOwnershipStateUnlockedAny",
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
+    "invalid_key_alg": {
+        "owner_defines": [
+            "TEST_OWNER_UPDATE_MODE=kOwnershipUpdateModeNewVersion",
+            "TEST_OWNER_KEY_ALG_CORRUPTED=1",
+            "TEST_OWNERSHIP_STATE=kOwnershipStateUnlockedAny",
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
     "owner_update_newversion": {
         # Enable the NewVersion update mode of ownership.
         "owner_defines": ["TEST_OWNER_UPDATE_MODE=kOwnershipUpdateModeNewVersion"],

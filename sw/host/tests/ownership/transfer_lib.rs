@@ -46,21 +46,24 @@ pub fn ownership_unlock(
     ecdsa_key: Option<PathBuf>,
     spx_key: Option<PathBuf>,
     next_owner: Option<&Path>,
+    signature: Option<PathBuf>,
+    enable_detached_sig: bool,
 ) -> Result<()> {
     let (unlock, detached_sig) = OwnershipUnlockParams {
         mode: Some(mode),
         nonce: Some(nonce),
         din: Some(din),
         next_owner: next_owner.map(|p| p.into()),
+        signature,
         algorithm,
         ecdsa_key,
         spx_key,
-        ..Default::default()
+        enable_detached_sig,
     }
     .apply_to(Option::<&mut std::fs::File>::None)?;
 
     rescue.enter(transport, EntryMode::Reset)?;
-    if algorithm.is_detached() {
+    if enable_detached_sig || algorithm.is_detached() {
         let sig = detached_sig.expect("algorithm is detached");
         rescue.update_firmware(BootSlot::SlotA, sig.to_vec()?.as_slice())?;
     }
@@ -68,7 +71,11 @@ pub fn ownership_unlock(
     rescue.enter(transport, EntryMode::Reboot)?;
     let result = rescue.get_boot_svc()?;
     match result.message {
-        Message::OwnershipUnlockResponse(r) => r.status.into(),
+        Message::OwnershipUnlockResponse(r) => {
+            #[cfg(feature = "ot_coverage_build")]
+            let _ = rescue.enter(transport, EntryMode::Reboot);
+            r.status.into()
+        }
         _ => Err(anyhow!("Unexpected response: {result:x?}")),
     }
 }
@@ -93,10 +100,13 @@ pub fn ownership_unlock_any(
         ecdsa_key,
         spx_key,
         None,
+        None,
+        false,
     )
 }
 
 /// Prepares an OwnershipActivate command, sends it to the chip and gets the response.
+#[allow(clippy::too_many_arguments)]
 pub fn ownership_activate(
     transport: &TransportWrapper,
     rescue: &RescueSerial,
@@ -105,10 +115,12 @@ pub fn ownership_activate(
     algorithm: OwnershipKeyAlg,
     ecdsa_key: Option<PathBuf>,
     spx_key: Option<PathBuf>,
+    bl0_slot: BootSlot,
 ) -> Result<()> {
     let (activate, detached_sig) = OwnershipActivateParams {
         nonce: Some(nonce),
         din: Some(din),
+        primary_bl0_slot: bl0_slot,
         algorithm,
         ecdsa_key,
         spx_key,
@@ -125,7 +137,11 @@ pub fn ownership_activate(
     rescue.enter(transport, EntryMode::Reboot)?;
     let result = rescue.get_boot_svc()?;
     match &result.message {
-        Message::OwnershipActivateResponse(r) => r.status.into(),
+        Message::OwnershipActivateResponse(r) => {
+            #[cfg(feature = "ot_coverage_build")]
+            let _ = rescue.enter(transport, EntryMode::Reboot);
+            r.status.into()
+        }
         _ => Err(anyhow!("Unexpected response: {result:x?}")),
     }
 }
@@ -149,6 +165,8 @@ const CFG_RESCUE_RESTRICT: u32 = 0x0000_0010;
 const CFG_APP_CONSTRAINT: u32 = 0x0000_0020;
 // Request a bad ROM_EXT flash config region.
 const CFG_FLASH_ERROR: u32 = 0x0000_0040;
+// Request an invalid owner config with a correct signature.
+const CFG_INVALID: u32 = 0x000_0080;
 
 #[repr(u32)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, ValueEnum)]
@@ -156,6 +174,7 @@ pub enum OwnerConfigKind {
     #[default]
     Basic = 0,
     Corrupt = CFG_CORRUPT,
+    Invalid = CFG_INVALID,
     WithFlash = CFG_FLASH1 | CFG_RESCUE1,
     WithFlashLocked = CFG_FLASH1 | CFG_RESCUE1 | CFG_FLASH_LOCK,
     WithFlashError = CFG_FLASH1 | CFG_RESCUE1 | CFG_FLASH_LOCK | CFG_FLASH_ERROR,
@@ -293,6 +312,11 @@ where
         })],
         ..Default::default()
     };
+
+    if cfg & CFG_INVALID != 0 {
+        owner.header.length = 0;
+    }
+
     if cfg & CFG_FLASH1 != 0 {
         let flash_config = if cfg & CFG_FLASH_ERROR != 0 {
             // It is an error set have a flash config that overlaps the ROM_EXT
