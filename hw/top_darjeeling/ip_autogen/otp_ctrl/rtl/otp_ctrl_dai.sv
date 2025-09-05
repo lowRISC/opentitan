@@ -495,10 +495,11 @@ module otp_ctrl_dai
               base_sel_q == DaiOffset &&
               otp_addr_o[OtpAddrWidth-1:2] < digest_addr_lut[part_idx][OtpAddrWidth-1:2]) ||
              // If this is a write to an unbuffered partition
-             (PartInfo[part_idx].variant != Buffered && base_sel_q == DaiOffset &&
-              !(PartInfo[part_idx].zeroizable &&
-                (otp_addr_o[OtpAddrWidth-1:2] ==
-                 zeroize_addr_lut[part_idx][OtpAddrWidth-1:2]))))) begin
+             (PartInfo[part_idx].variant != Buffered && base_sel_q == DaiOffset)) &&
+            // Don't allow DAI writes to the zeroization marker.
+            !(PartInfo[part_idx].zeroizable &&
+                (otp_addr_o[OtpAddrWidth-1:2] == zeroize_addr_lut[part_idx][OtpAddrWidth-1:2]))
+        ) begin
           otp_req_o = 1'b1;
           // Depending on the partition configuration,
           // the wrapper is instructed to ignore integrity errors.
