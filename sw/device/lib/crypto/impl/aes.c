@@ -223,7 +223,7 @@ static status_t get_block(otcrypto_const_byte_buf_t input,
   HARDENED_CHECK_LE(index, num_full_blocks + 1);
 
   // Randomize the destination buffer.
-  hardened_memshred(block->data, ARRAYSIZE(block->data));
+  HARDENED_TRY(hardened_memshred(block->data, ARRAYSIZE(block->data)));
 
   if (launder32(index) < num_full_blocks) {
     HARDENED_CHECK_LT(index, num_full_blocks);
@@ -318,7 +318,7 @@ static otcrypto_status_t otcrypto_aes_impl(
       return OTCRYPTO_BAD_ARGS;
     }
     HARDENED_CHECK_EQ(iv.len, kAesBlockNumWords);
-    hardened_memcpy(aes_iv.data, iv.data, kAesBlockNumWords);
+    HARDENED_TRY(hardened_memcpy(aes_iv.data, iv.data, kAesBlockNumWords));
   }
 
   // Parse the AES key.
@@ -380,7 +380,7 @@ static otcrypto_status_t otcrypto_aes_impl(
   // output buffer.
   for (i = block_offset; launder32(i) < input_nblocks; ++i) {
     HARDENED_TRY(get_block(cipher_input, aes_padding, i, &block_in));
-    hardened_memshred(block_out.data, ARRAYSIZE(block_out.data));
+    HARDENED_TRY(hardened_memshred(block_out.data, ARRAYSIZE(block_out.data)));
     HARDENED_TRY(aes_update(&block_out, &block_in));
     // TODO(#17711) Change to `hardened_memcpy`.
     memcpy(&cipher_output.data[(i - block_offset) * kAesBlockNumBytes],
@@ -405,7 +405,7 @@ static otcrypto_status_t otcrypto_aes_impl(
     HARDENED_TRY(aes_end(NULL));
   } else {
     HARDENED_TRY(aes_end(&aes_iv));
-    hardened_memcpy(iv.data, aes_iv.data, kAesBlockNumWords);
+    HARDENED_TRY(hardened_memcpy(iv.data, aes_iv.data, kAesBlockNumWords));
   }
 
   // In case the key was sideloaded, clear it.

@@ -205,8 +205,8 @@ static status_t internal_p256_keygen_finalize(
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
 
     // Randomize the keyblob before writing secret data.
-    hardened_memshred(private_key->keyblob,
-                      keyblob_num_words(private_key->config));
+    HARDENED_TRY(hardened_memshred(private_key->keyblob,
+                                   keyblob_num_words(private_key->config)));
 
     HARDENED_TRY(
         p256_keygen_finalize((p256_masked_scalar_t *)private_key->keyblob, pk));
@@ -529,8 +529,8 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
   // occurs after this point then the keys would be unrecoverable. This should
   // be the last potentially error-causing line before returning to the caller.
   p256_ecdh_shared_key_t ss;
-  hardened_memshred(ss.share0, ARRAYSIZE(ss.share0));
-  hardened_memshred(ss.share1, ARRAYSIZE(ss.share1));
+  HARDENED_TRY(hardened_memshred(ss.share0, ARRAYSIZE(ss.share0)));
+  HARDENED_TRY(hardened_memshred(ss.share1, ARRAYSIZE(ss.share1)));
   HARDENED_TRY(p256_ecdh_finalize(&ss));
 
   HARDENED_TRY(keyblob_from_shares(ss.share0, ss.share1, shared_secret->config,

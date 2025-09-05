@@ -47,11 +47,12 @@ enum {
  *
  * @param internal_ctx Internal context object to save.
  * @param[out] api_ctx Resulting API-facing context object.
+ * @return Result of the operation.
  */
-static inline void gcm_context_save(aes_gcm_context_t *internal_ctx,
-                                    otcrypto_aes_gcm_context_t *api_ctx) {
-  hardened_memcpy(api_ctx->data, (uint32_t *)internal_ctx,
-                  kAesGcmContextNumWords);
+static inline status_t gcm_context_save(aes_gcm_context_t *internal_ctx,
+                                        otcrypto_aes_gcm_context_t *api_ctx) {
+  return hardened_memcpy(api_ctx->data, (uint32_t *)internal_ctx,
+                         kAesGcmContextNumWords);
 }
 
 /**
@@ -59,11 +60,12 @@ static inline void gcm_context_save(aes_gcm_context_t *internal_ctx,
  *
  * @param api_ctx API-facing context object to restore from.
  * @param[out] internal_ctx Resulting internal context object.
+ * @return Result of the operation.
  */
-static inline void gcm_context_restore(otcrypto_aes_gcm_context_t *api_ctx,
-                                       aes_gcm_context_t *internal_ctx) {
-  hardened_memcpy((uint32_t *)internal_ctx, api_ctx->data,
-                  kAesGcmContextNumWords);
+static inline status_t gcm_context_restore(otcrypto_aes_gcm_context_t *api_ctx,
+                                           aes_gcm_context_t *internal_ctx) {
+  return hardened_memcpy((uint32_t *)internal_ctx, api_ctx->data,
+                         kAesGcmContextNumWords);
 }
 
 /**
@@ -80,13 +82,13 @@ status_t gcm_remask_key(aes_gcm_context_t *internal_ctx) {
 
     // Generate a fresh mask the size of one share.
     uint32_t mask[internal_ctx->key.key_len];
-    hardened_memshred(mask, internal_ctx->key.key_len);
+    HARDENED_TRY(hardened_memshred(mask, internal_ctx->key.key_len));
 
     // XOR each share with the mask.
-    hardened_xor((uint32_t *)internal_ctx->key.key_shares[0], mask,
-                 internal_ctx->key.key_len);
-    hardened_xor((uint32_t *)internal_ctx->key.key_shares[1], mask,
-                 internal_ctx->key.key_len);
+    HARDENED_TRY(hardened_xor((uint32_t *)internal_ctx->key.key_shares[0], mask,
+                              internal_ctx->key.key_len));
+    HARDENED_TRY(hardened_xor((uint32_t *)internal_ctx->key.key_shares[1], mask,
+                              internal_ctx->key.key_len));
     // Update the checksum.
     internal_ctx->key.checksum = aes_key_integrity_checksum(&internal_ctx->key);
   } else {
@@ -381,7 +383,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
   HARDENED_TRY(aes_gcm_encrypt_init(aes_key, iv.len, iv.data, &internal_ctx));
 
   // Save the context and clear the key if needed.
-  gcm_context_save(&internal_ctx, ctx);
+  HARDENED_TRY(gcm_context_save(&internal_ctx, ctx));
   HARDENED_TRY(clear_key_if_sideloaded(internal_ctx.key));
   return OTCRYPTO_OK;
 }
@@ -406,7 +408,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
   HARDENED_TRY(aes_gcm_decrypt_init(aes_key, iv.len, iv.data, &internal_ctx));
 
   // Save the context and clear the key if needed.
-  gcm_context_save(&internal_ctx, ctx);
+  HARDENED_TRY(gcm_context_save(&internal_ctx, ctx));
   HARDENED_TRY(clear_key_if_sideloaded(internal_ctx.key));
   return OTCRYPTO_OK;
 }
@@ -427,14 +429,14 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
 
   // Restore the AES-GCM context object and load the key if needed.
   aes_gcm_context_t internal_ctx;
-  gcm_context_restore(ctx, &internal_ctx);
+  HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
 
   // Call the internal update operation.
   HARDENED_TRY(aes_gcm_update_aad(&internal_ctx, aad.len, aad.data));
 
   // Save the context and clear the key if needed.
-  gcm_context_save(&internal_ctx, ctx);
+  HARDENED_TRY(gcm_context_save(&internal_ctx, ctx));
   HARDENED_TRY(clear_key_if_sideloaded(internal_ctx.key));
   return OTCRYPTO_OK;
 }
@@ -458,7 +460,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
 
   // Restore the AES-GCM context object and load the key if needed.
   aes_gcm_context_t internal_ctx;
-  gcm_context_restore(ctx, &internal_ctx);
+  HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
   // Remask the key if it is not sideloaded.
   HARDENED_TRY(gcm_remask_key(&internal_ctx));
@@ -481,7 +483,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
       &internal_ctx, input.len, input.data, output_bytes_written, output.data));
 
   // Save the context and clear the key if needed.
-  gcm_context_save(&internal_ctx, ctx);
+  HARDENED_TRY(gcm_context_save(&internal_ctx, ctx));
   HARDENED_TRY(clear_key_if_sideloaded(internal_ctx.key));
   return OTCRYPTO_OK;
 }
@@ -507,7 +509,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
 
   // Restore the AES-GCM context object and load the key if needed.
   aes_gcm_context_t internal_ctx;
-  gcm_context_restore(ctx, &internal_ctx);
+  HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
   // Remask the key if it is not sideloaded.
   HARDENED_TRY(gcm_remask_key(&internal_ctx));
@@ -525,7 +527,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
                                      ciphertext.data));
 
   // Clear the context and the key if needed.
-  hardened_memshred(ctx->data, ARRAYSIZE(ctx->data));
+  HARDENED_TRY(hardened_memshred(ctx->data, ARRAYSIZE(ctx->data)));
   HARDENED_TRY(clear_key_if_sideloaded(internal_ctx.key));
   return OTCRYPTO_OK;
 }
@@ -552,7 +554,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
 
   // Restore the AES-GCM context object and load the key if needed.
   aes_gcm_context_t internal_ctx;
-  gcm_context_restore(ctx, &internal_ctx);
+  HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
   // Remask the key if it is not sideloaded.
   HARDENED_TRY(gcm_remask_key(&internal_ctx));
@@ -570,7 +572,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
                                      success));
 
   // Clear the context and the key if needed.
-  hardened_memshred(ctx->data, ARRAYSIZE(ctx->data));
+  HARDENED_TRY(hardened_memshred(ctx->data, ARRAYSIZE(ctx->data)));
   HARDENED_TRY(clear_key_if_sideloaded(internal_ctx.key));
   return OTCRYPTO_OK;
 }

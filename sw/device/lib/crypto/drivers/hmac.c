@@ -180,13 +180,11 @@ static status_t clear(void) {
  *
  * @param key The buffer that points to the key.
  * @param key_wordlen The length of the key in words.
- * @return Result of the operation.
+ * @return OK or error.
  */
 static status_t key_write(const uint32_t *key, size_t key_wordlen) {
   uint32_t key_reg = kHmacBaseAddr + HMAC_KEY_0_REG_OFFSET;
-  hardened_memcpy((uint32_t *)key_reg, key, key_wordlen);
-
-  return OTCRYPTO_OK;
+  return hardened_memcpy((uint32_t *)key_reg, key, key_wordlen);
 }
 
 /**
@@ -293,10 +291,10 @@ static status_t hmac_context_wipe(hmac_ctx_t *ctx) {
   HARDENED_TRY(entropy_complex_check());
 
   // Randomize sensitive data.
-  hardened_memshred(ctx->key, kHmacMaxBlockWords);
-  hardened_memshred(ctx->H, kHmacMaxDigestWords);
-  hardened_memshred((uint32_t *)(ctx->partial_block),
-                    kHmacMaxBlockBytes / sizeof(uint32_t));
+  HARDENED_TRY(hardened_memshred(ctx->key, kHmacMaxBlockWords));
+  HARDENED_TRY(hardened_memshred(ctx->H, kHmacMaxDigestWords));
+  HARDENED_TRY(hardened_memshred((uint32_t *)(ctx->partial_block),
+                                 kHmacMaxBlockBytes / sizeof(uint32_t)));
   // Zero the remaining ctx fields.
   ctx->cfg_reg = 0;
   ctx->key_wordlen = 0;
