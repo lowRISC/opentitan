@@ -113,8 +113,8 @@ status_t rsa_keygen_2048_finalize(rsa_2048_public_key_t *public_key,
                                private_key->n.data, private_key->d.data));
 
   // Copy the modulus to the public key.
-  hardened_memcpy(public_key->n.data, private_key->n.data,
-                  ARRAYSIZE(private_key->n.data));
+  HARDENED_TRY(hardened_memcpy(public_key->n.data, private_key->n.data,
+                               ARRAYSIZE(private_key->n.data)));
 
   // Set the public exponent to F4, the only exponent our key generation
   // algorithm supports.
@@ -133,8 +133,8 @@ status_t rsa_keygen_3072_finalize(rsa_3072_public_key_t *public_key,
                                private_key->n.data, private_key->d.data));
 
   // Copy the modulus to the public key.
-  hardened_memcpy(public_key->n.data, private_key->n.data,
-                  ARRAYSIZE(private_key->n.data));
+  HARDENED_TRY(hardened_memcpy(public_key->n.data, private_key->n.data,
+                               ARRAYSIZE(private_key->n.data)));
 
   // Set the public exponent to F4, the only exponent our key generation
   // algorithm supports.
@@ -153,8 +153,8 @@ status_t rsa_keygen_4096_finalize(rsa_4096_public_key_t *public_key,
                                private_key->n.data, private_key->d.data));
 
   // Copy the modulus to the public key.
-  hardened_memcpy(public_key->n.data, private_key->n.data,
-                  ARRAYSIZE(private_key->n.data));
+  HARDENED_TRY(hardened_memcpy(public_key->n.data, private_key->n.data,
+                               ARRAYSIZE(private_key->n.data)));
 
   // Set the public exponent to F4, the only exponent our key generation
   // algorithm supports.
@@ -192,8 +192,8 @@ status_t rsa_keygen_from_cofactor_2048_finalize(
                                private_key->n.data, private_key->d.data));
 
   // Copy the modulus to the public key.
-  hardened_memcpy(public_key->n.data, private_key->n.data,
-                  ARRAYSIZE(private_key->n.data));
+  HARDENED_TRY(hardened_memcpy(public_key->n.data, private_key->n.data,
+                               ARRAYSIZE(private_key->n.data)));
 
   // Set the public exponent to F4, the only exponent our key generation
   // algorithm supports.
