@@ -21,7 +21,8 @@ status_t rsa_encrypt_2048_start(const rsa_2048_public_key_t *public_key,
                                 const uint8_t *label, size_t label_bytelen) {
   // Encode the message.
   rsa_2048_int_t encoded_message;
-  hardened_memshred(encoded_message.data, ARRAYSIZE(encoded_message.data));
+  HARDENED_TRY(
+      hardened_memshred(encoded_message.data, ARRAYSIZE(encoded_message.data)));
   HARDENED_TRY(rsa_padding_oaep_encode(
       hash_mode, message, message_bytelen, label, label_bytelen,
       ARRAYSIZE(encoded_message.data), encoded_message.data));
@@ -67,8 +68,9 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
       (sizeof(uint32_t) - (size_t)misalignment) % sizeof(uint32_t);
   size_t num_aligned_full_words =
       (plaintext_max_bytelen - aligned_offset) / sizeof(uint32_t);
-  hardened_memshred((uint32_t *)((uintptr_t)plaintext + aligned_offset),
-                    num_aligned_full_words);
+  HARDENED_TRY(
+      hardened_memshred((uint32_t *)((uintptr_t)plaintext + aligned_offset),
+                        num_aligned_full_words));
 
   // Call the appropriate `finalize()` operation to get the recovered encoded
   // message.
@@ -110,7 +112,8 @@ status_t rsa_encrypt_3072_start(const rsa_3072_public_key_t *public_key,
                                 const uint8_t *label, size_t label_bytelen) {
   // Encode the message.
   rsa_3072_int_t encoded_message;
-  hardened_memshred(encoded_message.data, ARRAYSIZE(encoded_message.data));
+  HARDENED_TRY(
+      hardened_memshred(encoded_message.data, ARRAYSIZE(encoded_message.data)));
   HARDENED_TRY(rsa_padding_oaep_encode(
       hash_mode, message, message_bytelen, label, label_bytelen,
       ARRAYSIZE(encoded_message.data), encoded_message.data));
@@ -138,7 +141,8 @@ status_t rsa_encrypt_4096_start(const rsa_4096_public_key_t *public_key,
                                 const uint8_t *label, size_t label_bytelen) {
   // Encode the message.
   rsa_4096_int_t encoded_message;
-  hardened_memshred(encoded_message.data, ARRAYSIZE(encoded_message.data));
+  HARDENED_TRY(
+      hardened_memshred(encoded_message.data, ARRAYSIZE(encoded_message.data)));
   HARDENED_TRY(rsa_padding_oaep_encode(
       hash_mode, message, message_bytelen, label, label_bytelen,
       ARRAYSIZE(encoded_message.data), encoded_message.data));
