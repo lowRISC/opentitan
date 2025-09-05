@@ -7,6 +7,7 @@ use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result, bail};
+use arrayvec::ArrayVec;
 use base64ct::{Base64, Encoding};
 use clap::{Args, Parser};
 use elliptic_curve::SecretKey;
@@ -192,7 +193,11 @@ fn main() -> Result<()> {
         hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.owner_measurement.as_str())?;
     let owner_security_version = opts.provisioning_data.owner_security_version;
     let dice_ca_key_id = hex_string_to_u8_arrayvec::<20>(ca_cfgs["dice"].key_id.as_str())?;
-    let ext_ca_key_id = hex_string_to_u8_arrayvec::<20>(ca_cfgs["ext"].key_id.as_str())?;
+    let ext_ca_key_id = if let Some(ext) = ca_cfgs.get("ext") {
+        hex_string_to_u8_arrayvec::<20>(ext.key_id.as_str())?
+    } else {
+        ArrayVec::<u8, 20>::new()
+    };
     let _perso_certgen_inputs = ManufCertgenInputs {
         rom_ext_measurement: rom_ext_measurement.clone(),
         rom_ext_security_version,
