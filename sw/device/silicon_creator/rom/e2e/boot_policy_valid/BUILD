@@ -87,8 +87,8 @@ BOOT_POLICY_VALID_CASES = [
             ),
             binaries = {
                 # PROD keys can sign binaries able to run across all life cycle states.
-                "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_prod_key_0{}".format(a["suffix"]): "slot_a",
-                "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_fake_ecdsa_prod_key_0{}".format(b["suffix"]): "slot_b",
+                "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0{}".format(a["suffix"]): "slot_a",
+                "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_prod_key_0{}".format(b["suffix"]): "slot_b",
             },
             bitstream = "bitstream_boot_policy_valid_{}".format(lc_state),
             exit_failure = MSG_PASS if a["desc"] == b["desc"] and a["desc"] == "bad" else DEFAULT_TEST_FAILURE_MSG,
