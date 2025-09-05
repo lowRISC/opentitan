@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
@@ -66,26 +67,14 @@ static status_t aes_write_key(aes_key_t key) {
   uint32_t share0 = kBase + AES_KEY_SHARE0_0_REG_OFFSET;
   uint32_t share1 = kBase + AES_KEY_SHARE1_0_REG_OFFSET;
 
-  // Handle key shares in two separate loops to avoid dealing with
+  // Handle key shares in two separate hardened_memcpys to avoid dealing with
   // corresponding parts too close together, which could risk power
-  // side-channel leakage in the ALU.
-  // TODO: randomize iteration order.
-  size_t i = 0;
-  for (; i < key.key_len; ++i) {
-    abs_mmio_write32(share0 + i * sizeof(uint32_t), key.key_shares[0][i]);
-  }
-  HARDENED_CHECK_EQ(i, key.key_len);
-  for (i = 0; i < key.key_len; ++i) {
-    abs_mmio_write32(share1 + i * sizeof(uint32_t), key.key_shares[1][i]);
-  }
-  HARDENED_CHECK_EQ(i, key.key_len);
-
-  // Write random words to remaining key registers.
-  for (; i < kAesKeyWordLenMax; i++) {
-    abs_mmio_write32(share0 + i * sizeof(uint32_t), ibex_rnd32_read());
-    abs_mmio_write32(share1 + i * sizeof(uint32_t), ibex_rnd32_read());
-  }
-  HARDENED_CHECK_EQ(i, kAesKeyWordLenMax);
+  // side-channel leakage in the ALU. Before writing the key shares, initialize
+  // the registers with random data.
+  hardened_memshred((uint32_t *)share0, kAesKeyWordLenMax);
+  hardened_memcpy((uint32_t *)share0, key.key_shares[0], key.key_len);
+  hardened_memshred((uint32_t *)share1, kAesKeyWordLenMax);
+  hardened_memcpy((uint32_t *)share1, key.key_shares[1], key.key_len);
 
   // Check the integrity of the key written to the AES core.
   HARDENED_CHECK_EQ(aes_key_integrity_checksum_check(&key), kHardenedBoolTrue);
