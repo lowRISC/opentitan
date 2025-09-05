@@ -200,14 +200,13 @@ module csrng_core import csrng_pkg::*; #(
   logic [2:0]                  acmd_hold;
 
   // blk encrypt arbiter
-  logic [CmdWidth-1:0]         updblk_benblk_cmd_arb_din;
-  logic [InstIdWidth-1:0]      updblk_benblk_id_arb_din;
-  logic [BlkLen-1:0]           updblk_benblk_v_arb_din;
-  logic [KeyLen-1:0]           updblk_benblk_key_arb_din;
-  logic                        updblk_benblk_arb_req;
-  logic                        updblk_benblk_arb_req_rdy;
-  logic                        benblk_updblk_ack;
-  logic                        updblk_benblk_ack_rdy;
+  csrng_benc_data_t            upd_benc_req_data;
+  logic                        upd_benc_req_vld;
+  logic                        upd_benc_req_rdy;
+  logic                        upd_benc_rsp_vld;
+  logic                        upd_benc_rsp_rdy;
+
+  csrng_benc_data_t            upd_benc_rsp_data;
 
   logic [CmdWidth-1:0]         genblk_benblk_cmd_arb_din;
   logic [InstIdWidth-1:0]      genblk_benblk_id_arb_din;
@@ -1377,6 +1376,12 @@ module csrng_core import csrng_pkg::*; #(
   // route requests and responses between
   // these two blocks.
 
+  assign upd_benc_rsp_data = '{
+    inst_id: benblk_inst_id,
+    cmd:     benblk_cmd,
+    key:     '0, // unused in rsp path
+    v:       benblk_v
+  };
 
   csrng_ctr_drbg_upd u_csrng_ctr_drbg_upd (
     .clk_i   (clk_i),
@@ -1395,27 +1400,22 @@ module csrng_core import csrng_pkg::*; #(
     .es_halt_req_i(cs_aes_halt_i.cs_aes_halt_req),
     .es_halt_ack_o(ctr_drbg_upd_es_ack),
 
-    .block_encrypt_req_o(updblk_benblk_arb_req),
-    .block_encrypt_rdy_i(updblk_benblk_arb_req_rdy),
-    .block_encrypt_ccmd_o(updblk_benblk_cmd_arb_din),
-    .block_encrypt_inst_id_o(updblk_benblk_id_arb_din),
-    .block_encrypt_key_o(updblk_benblk_key_arb_din),
-    .block_encrypt_v_o(updblk_benblk_v_arb_din),
+    .block_encrypt_req_vld_o (upd_benc_req_vld),
+    .block_encrypt_req_rdy_i (upd_benc_req_rdy),
+    .block_encrypt_req_data_o(upd_benc_req_data),
 
-    .block_encrypt_ack_i(benblk_updblk_ack),
-    .block_encrypt_rdy_o(updblk_benblk_ack_rdy),
-    .block_encrypt_ccmd_i(benblk_cmd),
-    .block_encrypt_inst_id_i(benblk_inst_id),
-    .block_encrypt_v_i(benblk_v),
+    .block_encrypt_rsp_vld_i (upd_benc_rsp_vld),
+    .block_encrypt_rsp_rdy_o (upd_benc_rsp_rdy),
+    .block_encrypt_rsp_data_i(upd_benc_rsp_data),
 
-    .ctr_drbg_upd_v_ctr_err_o(ctr_drbg_upd_v_ctr_err),
-    .ctr_drbg_upd_sfifo_updreq_err_o(ctr_drbg_upd_sfifo_updreq_err),
-    .ctr_drbg_upd_sfifo_bencreq_err_o(ctr_drbg_upd_sfifo_bencreq_err),
-    .ctr_drbg_upd_sfifo_bencack_err_o(ctr_drbg_upd_sfifo_bencack_err),
-    .ctr_drbg_upd_sfifo_pdata_err_o(ctr_drbg_upd_sfifo_pdata_err),
-    .ctr_drbg_upd_sfifo_final_err_o(ctr_drbg_upd_sfifo_final_err),
-    .ctr_drbg_updbe_sm_err_o(drbg_updbe_sm_err),
-    .ctr_drbg_updob_sm_err_o(drbg_updob_sm_err)
+    .ctr_err_o             (ctr_drbg_upd_v_ctr_err),
+    .fifo_updreq_err_o     (ctr_drbg_upd_sfifo_updreq_err),
+    .fifo_bencreq_err_o    (ctr_drbg_upd_sfifo_bencreq_err),
+    .fifo_bencack_err_o    (ctr_drbg_upd_sfifo_bencack_err),
+    .fifo_pdata_err_o      (ctr_drbg_upd_sfifo_pdata_err),
+    .fifo_final_err_o      (ctr_drbg_upd_sfifo_final_err),
+    .sm_block_enc_req_err_o(drbg_updbe_sm_err),
+    .sm_block_enc_rsp_err_o(drbg_updob_sm_err)
   );
 
   // update unit arbiter
@@ -1511,24 +1511,28 @@ module csrng_core import csrng_pkg::*; #(
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .req_chk_i(cs_enable_fo[1]),
-    .req_i({genblk_benblk_arb_req,updblk_benblk_arb_req}),
+    .req_i({genblk_benblk_arb_req, upd_benc_req_vld}),
     .data_i(benblk_arb_din),
-    .gnt_o({genblk_benblk_arb_req_rdy,updblk_benblk_arb_req_rdy}),
+    .gnt_o({genblk_benblk_arb_req_rdy, upd_benc_req_rdy}),
     .idx_o(),
     .valid_o(benblk_arb_vld),
     .data_o(benblk_arb_data),
     .ready_i(benblk_arb_rdy)
   );
 
-  assign benblk_arb_din[0] = {updblk_benblk_key_arb_din,updblk_benblk_v_arb_din,
-                              updblk_benblk_id_arb_din,updblk_benblk_cmd_arb_din};
-  assign benblk_arb_din[1] = {genblk_benblk_key_arb_din,genblk_benblk_v_arb_din,
-                              genblk_benblk_id_arb_din,genblk_benblk_cmd_arb_din};
+  assign benblk_arb_din[0] = {upd_benc_req_data.key,
+                              upd_benc_req_data.v,
+                              upd_benc_req_data.inst_id,
+                              upd_benc_req_data.cmd};
+  assign benblk_arb_din[1] = {genblk_benblk_key_arb_din,
+                              genblk_benblk_v_arb_din,
+                              genblk_benblk_id_arb_din,
+                              genblk_benblk_cmd_arb_din};
 
-  assign benblk_updblk_ack = (benblk_ack && (benblk_cmd != GENB));
+  assign upd_benc_rsp_vld  = (benblk_ack && (benblk_cmd != GENB));
   assign benblk_genblk_ack = (benblk_ack && (benblk_cmd == GENB));
 
-  assign benblk_ack_rdy = (benblk_cmd == GENB) ? genblk_benblk_ack_rdy : updblk_benblk_ack_rdy;
+  assign benblk_ack_rdy = (benblk_cmd == GENB) ? genblk_benblk_ack_rdy : upd_benc_rsp_rdy;
 
   assign {benblk_arb_key,benblk_arb_v,benblk_arb_inst_id,benblk_arb_cmd} = benblk_arb_data;
 
