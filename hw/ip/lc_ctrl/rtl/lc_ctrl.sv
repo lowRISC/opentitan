@@ -757,6 +757,8 @@ module lc_ctrl
   // LC FSM //
   ////////////
 
+  // SEC_CM: MANUF.STATE.SPARSE
+  // SEC_CM: TRANSITION.CTR.SPARSE
   lc_ctrl_fsm #(
     .NumRmaAckSigs                 ( NumRmaAckSigs                  ),
     .RndCnstLcKeymgrDivInvalid     ( RndCnstLcKeymgrDivInvalid      ),
