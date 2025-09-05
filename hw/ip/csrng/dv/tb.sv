@@ -154,12 +154,11 @@ module tb;
 
   `define CTR_DRBG_UPD tb.dut.u_csrng_core.u_csrng_ctr_drbg_upd
   `define CTR_DRBG_UPD_FIFO `CTR_DRBG_UPD.u_prim_fifo_sync_bencack.gen_singleton_fifo
-  `ASSERT_INIT(CsrngCtrDrbgUpdFifoDepth1, `CTR_DRBG_UPD.BlkEncAckFifoDepth == 1)
   `ASSERT(CsrngSecCmAesCipherDataRegLocalEscUpd,
       $rose(`CTR_DRBG_UPD_FIFO.full_q) &&
       `BLOCK_ENCRYPT_PATH.block_encrypt_aes_cipher_sm_err_o |=>
       $past(`CTR_DRBG_UPD_FIFO.storage
-          [`CTR_DRBG_UPD.BlkEncAckFifoWidth-1 -: csrng_pkg::BlkLen]) !=
+          [csrng_pkg::BencDataWidth-1 -: csrng_pkg::BlkLen]) !=
       $past(`BLOCK_ENCRYPT_PATH.cipher_data_out, 2), clk, !rst_n)
 
   // Assertion controls
