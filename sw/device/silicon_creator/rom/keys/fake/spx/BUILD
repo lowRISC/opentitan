@@ -12,27 +12,9 @@ filegroup(
     srcs = ["test_key_0_spx.pem"],
 )
 
-key_sphincs_plus(
-    name = "test_key_0_spx_key",
-    config = {"domain": "Pure"},
-    method = "local",
-    private_key = "test_key_0_spx.pem",
-    pub_key = "test_key_0_spx.pub.pem",
-    type = "TestKey",
-)
-
 filegroup(
     name = "dev_key_0_spx",
     srcs = ["dev_key_0_spx.pem"],
-)
-
-key_sphincs_plus(
-    name = "dev_key_0_spx_key",
-    config = {"domain": "Pure"},
-    method = "local",
-    private_key = "dev_key_0_spx.pem",
-    pub_key = "dev_key_0_spx.pub.pem",
-    type = "TestKey",
 )
 
 filegroup(
