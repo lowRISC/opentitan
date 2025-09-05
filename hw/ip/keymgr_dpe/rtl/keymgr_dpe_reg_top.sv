@@ -159,6 +159,10 @@ module keymgr_dpe_reg_top (
   logic [2:0] control_shadowed_slot_dst_sel_wd;
   logic control_shadowed_slot_dst_sel_storage_err;
   logic control_shadowed_slot_dst_sel_update_err;
+  logic control_shadowed_sw_binding_only_qs;
+  logic control_shadowed_sw_binding_only_wd;
+  logic control_shadowed_sw_binding_only_storage_err;
+  logic control_shadowed_sw_binding_only_update_err;
   logic sideload_clear_we;
   logic [2:0] sideload_clear_qs;
   logic [2:0] sideload_clear_wd;
@@ -647,6 +651,42 @@ module keymgr_dpe_reg_top (
     // Shadow register error conditions
     .err_update  (control_shadowed_slot_dst_sel_update_err),
     .err_storage (control_shadowed_slot_dst_sel_storage_err)
+  );
+
+  //   F[sw_binding_only]: 22:22
+  prim_subreg_shadow #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_control_shadowed_sw_binding_only (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
+
+    // from register interface
+    .re     (control_shadowed_re),
+    .we     (control_shadowed_gated_we),
+    .wd     (control_shadowed_sw_binding_only_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.control_shadowed.sw_binding_only.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (control_shadowed_sw_binding_only_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (control_shadowed_sw_binding_only_update_err),
+    .err_storage (control_shadowed_sw_binding_only_storage_err)
   );
 
 
@@ -2855,6 +2895,8 @@ module keymgr_dpe_reg_top (
   assign control_shadowed_slot_src_sel_wd = reg_wdata[16:14];
 
   assign control_shadowed_slot_dst_sel_wd = reg_wdata[20:18];
+
+  assign control_shadowed_sw_binding_only_wd = reg_wdata[22];
   assign sideload_clear_we = addr_hit[7] & reg_we & !reg_error;
 
   assign sideload_clear_wd = reg_wdata[2:0];
@@ -3108,6 +3150,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[13:12] = control_shadowed_dest_sel_qs;
         reg_rdata_next[16:14] = control_shadowed_slot_src_sel_qs;
         reg_rdata_next[20:18] = control_shadowed_slot_dst_sel_qs;
+        reg_rdata_next[22] = control_shadowed_sw_binding_only_qs;
       end
 
       addr_hit[7]: begin
@@ -3354,6 +3397,7 @@ module keymgr_dpe_reg_top (
     control_shadowed_dest_sel_storage_err,
     control_shadowed_slot_src_sel_storage_err,
     control_shadowed_slot_dst_sel_storage_err,
+    control_shadowed_sw_binding_only_storage_err,
     reseed_interval_shadowed_storage_err,
     max_key_ver_shadowed_storage_err
   };
@@ -3362,6 +3406,7 @@ module keymgr_dpe_reg_top (
     control_shadowed_dest_sel_update_err,
     control_shadowed_slot_src_sel_update_err,
     control_shadowed_slot_dst_sel_update_err,
+    control_shadowed_sw_binding_only_update_err,
     reseed_interval_shadowed_update_err,
     max_key_ver_shadowed_update_err
   };
