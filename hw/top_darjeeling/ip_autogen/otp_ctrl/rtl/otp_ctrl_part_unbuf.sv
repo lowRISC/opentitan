@@ -181,38 +181,65 @@ module otp_ctrl_part_unbuf
     end
   end
 
-  // Screen the read out data for the zeroization marker. This is only relevant
-  // to determine whether the partition is zeroized upon initialization.
+  ///////////////////////
+  // Zeroization Logic //
+  ///////////////////////
 
-  localparam int ZerFanout = 2;
-
-  // Compose several individual MuBis into a larger MuBi. The resulting
-  // value must always be a valid MuBi constant (either `true` or `false`).
-  logic   [ZerFanout-1:0][ScrmblBlockWidth-1:0] zer_mrk_post;
-  mubi4_t [ZerFanout-1:0] is_zeroized_pre;
   mubi8_t is_zeroized;
 
-  for (genvar k = 0; k < ZerFanout; k++) begin : gen_is_zeroized_pre
+  if (Info.zeroizable) begin : gen_zeroizable_part
+    // Screen the read out data for the zeroization marker. This is only relevant
+    // to determine whether the partition is zeroized upon initialization.
+
+    localparam int ZerFanout = 2;
+
+    // Compose several individual MuBis into a larger MuBi. The resulting
+    // value must always be a valid MuBi constant (either `true` or `false`).
+    logic   [ZerFanout-1:0][ScrmblBlockWidth-1:0] zer_mrk_post;
+    logic   [ZerFanout-1:0][$clog2(ScrmblBlockWidth+1)-1:0] zer_mrk_cnt;
+    mubi4_t [ZerFanout-1:0] is_zeroized_pre;
+
+    for (genvar k = 0; k < ZerFanout; k++) begin : gen_is_zeroized_pre
+      prim_sec_anchor_buf #(
+        .Width(ScrmblBlockWidth)
+      ) u_rdata_buf (
+        .in_i  ( zer_mrk         ),
+        .out_o ( zer_mrk_post[k] )
+      );
+
+      // Use the `prim_sum_tree` primitive to emulate the SystemVerilog function $countones which is
+      // not supported by all tools.
+      prim_sum_tree #(
+        .NumSrc   ( ScrmblBlockWidth ),
+        .Saturate ( 1'b0             ),
+        .InWidth  ( 1                )
+      ) u_countones (
+        .clk_i       ( clk_i                    ),
+        .rst_ni      ( rst_ni                   ),
+        .values_i    ( zer_mrk_post[k]          ),
+        .valid_i     ( {ScrmblBlockWidth{1'b1}} ),
+        .sum_value_o ( zer_mrk_cnt[k]           ),
+        .sum_valid_o (                          )
+      );
+
+      // Interleave MuBi4 chunks to create higher-order MuBis.
+      // Even indices: (MuBi4True, MuBi4False)
+      // Odd indices:  (MuBi4False, MuBi4True)
+      assign is_zeroized_pre[k] = (check_zeroized_valid(zer_mrk_cnt[k]) ^~ (k % 2 == 0)) ?
+                                  MuBi4True : MuBi4False;
+    end
+
     prim_sec_anchor_buf #(
-      .Width(ScrmblBlockWidth)
-    ) u_rdata_buf (
-      .in_i  ( zer_mrk         ),
-      .out_o ( zer_mrk_post[k] )
+      .Width(MuBi8Width)
+    ) u_is_zeroized_buf (
+      .in_i  ( is_zeroized_pre ),
+      .out_o ( {is_zeroized}   )
     );
-
-    // Interleave MuBi4 chunks to create higher-order MuBis.
-    // Even indices: (MuBi4True, MuBi4False)
-    // Odd indices:  (MuBi4False, MuBi4True)
-    assign is_zeroized_pre[k] = (check_zeroized_valid(zer_mrk_post[k]) ^~ (k % 2 == 0)) ?
-                                MuBi4True : MuBi4False;
+  end else begin : gen_not_zeroizable_part
+    logic unused_bits;
+    assign unused_bits = ^zer_mrk;
+    assign is_zeroized = MuBi8False;
   end
-
-  prim_sec_anchor_buf #(
-    .Width(MuBi8Width)
-  ) u_is_zeroized_buf (
-    .in_i  ( is_zeroized_pre ),
-    .out_o ( {is_zeroized}   )
-  );
 
   prim_mubi8_sender #(
     .AsyncOn(0)
