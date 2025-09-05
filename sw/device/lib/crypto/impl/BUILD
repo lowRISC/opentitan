@@ -5,6 +5,14 @@
 package(default_visibility = ["//visibility:public"])
 
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load(
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
+    "cw310_params",
+    "fpga_params",
+    "opentitan_test",
+    "verilator_params",
+)
 
 config_setting(
     name = "crypto_status_debug",
@@ -268,6 +276,20 @@ cc_library(
     deps = [
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+opentitan_test(
+    name = "status_functest",
+    srcs = ["status_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":status",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
