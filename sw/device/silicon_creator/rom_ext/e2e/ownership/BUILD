@@ -352,7 +352,7 @@ ownership_transfer_test(
     fpga = fpga_params(
         timeout = "long",
         # We boot on Side B since rescue will rewrite side A.
-        assemble = "{rom_ext}@0 {firmware}@0x90000",
+        assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_b}",
         changes_otp = True,
         test_cmd = """
             --clear-bitstream
