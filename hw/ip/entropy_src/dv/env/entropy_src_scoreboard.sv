@@ -759,7 +759,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                                               1'b0, sigma, any_fail);
     end
 
-    return fail;
+    return any_fail;
   endfunction
 
   function bit evaluate_markov_test(queue_of_rng_val_t window, bit fips_mode);
