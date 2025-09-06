@@ -530,6 +530,14 @@ countermeasures: [
             The destination key slot to be used for the advance and erase operations.
           '''
         },
+        {
+          bits: "22"
+          name: "SW_BINDING_ONLY"
+          resval: "0"
+          desc: '''
+            Only apply software binding as a message input to the advance operation.
+          '''
+        }
       ],
     },
 

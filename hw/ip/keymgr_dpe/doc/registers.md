@@ -176,25 +176,30 @@ Other values are reserved.
 Key manager operation controls
 - Offset: `0x18`
 - Reset default: `0x10`
-- Reset mask: `0x1df070`
+- Reset mask: `0x5df070`
 - Register enable: [`CFG_REGWEN`](#cfg_regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"bits": 4}, {"name": "OPERATION", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 5}, {"name": "DEST_SEL", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "SLOT_SRC_SEL", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "SLOT_DST_SEL", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 11}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
+{"reg": [{"bits": 4}, {"name": "OPERATION", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 5}, {"name": "DEST_SEL", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "SLOT_SRC_SEL", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "SLOT_DST_SEL", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "SW_BINDING_ONLY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 9}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                            |
-|:------:|:------:|:-------:|:------------------------------------------------|
-| 31:21  |        |         | Reserved                                        |
-| 20:18  |   rw   |   0x0   | [SLOT_DST_SEL](#control_shadowed--slot_dst_sel) |
-|   17   |        |         | Reserved                                        |
-| 16:14  |   rw   |   0x0   | [SLOT_SRC_SEL](#control_shadowed--slot_src_sel) |
-| 13:12  |   rw   |   0x0   | [DEST_SEL](#control_shadowed--dest_sel)         |
-|  11:7  |        |         | Reserved                                        |
-|  6:4   |   rw   |   0x1   | [OPERATION](#control_shadowed--operation)       |
-|  3:0   |        |         | Reserved                                        |
+|  Bits  |  Type  |  Reset  | Name                                                  |
+|:------:|:------:|:-------:|:------------------------------------------------------|
+| 31:23  |        |         | Reserved                                              |
+|   22   |   rw   |   0x0   | [SW_BINDING_ONLY](#control_shadowed--sw_binding_only) |
+|   21   |        |         | Reserved                                              |
+| 20:18  |   rw   |   0x0   | [SLOT_DST_SEL](#control_shadowed--slot_dst_sel)       |
+|   17   |        |         | Reserved                                              |
+| 16:14  |   rw   |   0x0   | [SLOT_SRC_SEL](#control_shadowed--slot_src_sel)       |
+| 13:12  |   rw   |   0x0   | [DEST_SEL](#control_shadowed--dest_sel)               |
+|  11:7  |        |         | Reserved                                              |
+|  6:4   |   rw   |   0x1   | [OPERATION](#control_shadowed--operation)             |
+|  3:0   |        |         | Reserved                                              |
+
+### CONTROL_SHADOWED . SW_BINDING_ONLY
+Only apply software binding as a message input to the advance operation.
 
 ### CONTROL_SHADOWED . SLOT_DST_SEL
 The destination key slot to be used for the advance and erase operations.
