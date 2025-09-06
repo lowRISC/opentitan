@@ -27,6 +27,14 @@ module tlul_assert #(
   import tlul_pkg::*;
   import top_pkg::*;
 
+  // To test TL-UL error cases in UVM tests, pass the tlul_assert_en argument in the UVM config db,
+  // which will cause disable_sva to be set to 1. This disables some assertions about the
+  // well-formedness of the TL input.
+  bit disable_sva;
+
+  default disable iff disable_sva || !rst_ni;
+  default clocking @(negedge clk_i); endclocking
+
   //////////////////////////////////
   // check requests and responses //
   //////////////////////////////////
@@ -45,17 +53,6 @@ module tlul_assert #(
   } pend_req_t;
 
   pend_req_t [2**TL_AIW-1:0] pend_req;
-
-  // To test TL-UL error cases in UVM tests, pass the tlul_assert_en argument in the UVM config db,
-  // which will cause disable_sva to be set to 1. This disables some assertions about the
-  // well-formedness of the TL input.
-  bit disable_sva;
-
-  // We have some assertions below about the behaviour of d2h.d_error. These aren't actually true
-  // for the xbar, since it doesn't return d_error for protocol errors. Disable these checks by
-  // passing tlul_d_error_assert_en in the UVM config db, which causes disable_d_error_sva to be set
-  // to 1.
-  bit disable_d_error_sva;
 
   logic [7:0]  a_mask, d_mask;
   logic [63:0] a_data, d_data;
@@ -260,46 +257,51 @@ module tlul_assert #(
   // in this case all signals coming from the device side have an assumed property
   if (EndpointType == "Host") begin : gen_host
     // h2d
-    `ASSERT(legalAOpcode_A,     h2d_pre_S |-> legalAOpcode_S,     !clk_i, !rst_ni || disable_sva)
-    `ASSERT(legalAParam_A,      h2d_pre_S |-> legalAParam_S,      !clk_i, !rst_ni)
-    `ASSERT(sizeGTEMask_A,      h2d_pre_S |-> sizeGTEMask_S,      !clk_i, !rst_ni || disable_sva)
-    `ASSERT(sizeMatchesMask_A,  h2d_pre_S |-> sizeMatchesMask_S,  !clk_i, !rst_ni || disable_sva)
-    `ASSERT(pendingReqPerSrc_A, h2d_pre_S |-> pendingReqPerSrc_S, !clk_i, !rst_ni)
-    `ASSERT(addrSizeAligned_A,  h2d_pre_S |-> addrSizeAligned_S,  !clk_i, !rst_ni || disable_sva)
-    `ASSERT(contigMask_A,       h2d_pre_S and contigMask_pre_S |-> contigMask_S,
-          !clk_i, !rst_ni || disable_sva)
-    `ASSERT(aDataKnown_A,       h2d_pre_S and aDataKnown_pre_S |-> aDataKnown_S, !clk_i, !rst_ni)
+    begin : gen_h2d
+      legalAOpcode_A:     assert property (h2d_pre_S |-> legalAOpcode_S);
+      legalAParam_A:      assert property (h2d_pre_S |-> legalAParam_S);
+      sizeGTEMask_A:      assert property (h2d_pre_S |-> sizeGTEMask_S);
+      sizeMatchesMask_A:  assert property (h2d_pre_S |-> sizeMatchesMask_S);
+      pendingReqPerSrc_A: assert property (h2d_pre_S |-> pendingReqPerSrc_S);
+      addrSizeAligned_A:  assert property (h2d_pre_S |-> addrSizeAligned_S);
+      contigMask_A:       assert property (h2d_pre_S and contigMask_pre_S |-> contigMask_S);
+      aDataKnown_A:       assert property (h2d_pre_S and aDataKnown_pre_S |-> aDataKnown_S);
+    end
     // d2h
-    `ASSUME(respOpcode_M,       d2h_pre_S |-> respOpcode_S,       !clk_i, !rst_ni)
-    `ASSUME(legalDParam_M,      d2h_pre_S |-> legalDParam_S,      !clk_i, !rst_ni)
-    `ASSUME(respSzEqReqSz_M,    d2h_pre_S |-> respSzEqReqSz_S,    !clk_i, !rst_ni)
-    `ASSUME(respMustHaveReq_M,  d2h_pre_S |-> respMustHaveReq_S,  !clk_i, !rst_ni)
-    `ASSUME(dDataKnown_M,       d2h_pre_S and dDataKnown_pre_S |-> dDataKnown_S,
-          !clk_i, !rst_ni || disable_sva)
+    begin : gen_d2h
+      respOpcode_M:       assume property (d2h_pre_S |-> respOpcode_S);
+      legalDParam_M:      assume property (d2h_pre_S |-> legalDParam_S);
+      respSzEqReqSz_M:    assume property (d2h_pre_S |-> respSzEqReqSz_S);
+      respMustHaveReq_M:  assume property (d2h_pre_S |-> respMustHaveReq_S);
+      dDataKnown_M:       assume property (d2h_pre_S and dDataKnown_pre_S |-> dDataKnown_S);
+    end
   // in this case all signals coming from the host side have an assumed property
   end else if (EndpointType == "Device") begin : gen_device
     // h2d
-    `ASSUME(legalAParam_M,       h2d_pre_S |-> legalAParam_S,      !clk_i, !rst_ni)
-    `ASSUME(pendingReqPerSrc_M,  h2d_pre_S |-> pendingReqPerSrc_S, !clk_i, !rst_ni)
-    `ASSUME(aDataKnown_M,        h2d_pre_S and aDataKnown_pre_S |-> aDataKnown_S, !clk_i, !rst_ni)
-    `ASSUME(contigMask_M,        h2d_pre_S and contigMask_pre_S |-> contigMask_S,
-            !clk_i, !rst_ni || disable_sva)
+    begin : gen_h2d
+      legalAParam_M:      assume property (h2d_pre_S |-> legalAParam_S);
+      pendingReqPerSrc_M: assume property (h2d_pre_S |-> pendingReqPerSrc_S);
+      aDataKnown_M:       assume property (h2d_pre_S and aDataKnown_pre_S |-> aDataKnown_S);
+      contigMask_M:       assume property (h2d_pre_S and contigMask_pre_S |-> contigMask_S);
+    end
     // d2h
-    `ASSERT(respOpcode_A,        d2h_pre_S |-> respOpcode_S,       !clk_i, !rst_ni)
-    `ASSERT(legalDParam_A,       d2h_pre_S |-> legalDParam_S,      !clk_i, !rst_ni)
-    `ASSERT(respSzEqReqSz_A,     d2h_pre_S |-> respSzEqReqSz_S,    !clk_i, !rst_ni)
-    `ASSERT(respMustHaveReq_A,   d2h_pre_S |-> respMustHaveReq_S,  !clk_i, !rst_ni)
-    `ASSERT(dDataKnown_A,        d2h_pre_S and dDataKnown_pre_S |-> dDataKnown_S,
-          !clk_i, !rst_ni || disable_sva)
-    // d2h error cases
-    `ASSERT(legalAOpcodeErr_A, d_error_pre_S and legalAOpcodeErr_S |=>
-            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_d_error_sva)
-    `ASSERT(sizeGTEMaskErr_A, d_error_pre_S and sizeGTEMaskErr_S |=>
-            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_d_error_sva)
-    `ASSERT(sizeMatchesMaskErr_A, d_error_pre_S and sizeMatchesMaskErr_S |=>
-            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_d_error_sva)
-    `ASSERT(addrSizeAlignedErr_A, d_error_pre_S and addrSizeAlignedErr_S |=>
-            s_eventually (d2h.d_valid && d2h.d_error), , !rst_ni || disable_d_error_sva)
+    begin : gen_d2h
+      respOpcode_A: assert property (d2h_pre_S |-> respOpcode_S);
+      legalDParam_A: assert property (d2h_pre_S |-> legalDParam_S);
+      respSzEqReqSz_A: assert property (d2h_pre_S |-> respSzEqReqSz_S);
+      respMustHaveReq_A: assert property (d2h_pre_S |-> respMustHaveReq_S);
+      dDataKnown_A: assert property (d2h_pre_S and dDataKnown_pre_S |-> dDataKnown_S);
+
+      // d2h error cases
+      legalAOpcodeErr_A:    assert property (d_error_pre_S and legalAOpcodeErr_S |=>
+                                             s_eventually (d2h.d_valid && d2h.d_error));
+      sizeGTEMaskErr_A:     assert property (d_error_pre_S and sizeGTEMaskErr_S |=>
+                                             s_eventually (d2h.d_valid && d2h.d_error));
+      sizeMatchesMaskErr_A: assert property (d_error_pre_S and sizeMatchesMaskErr_S |=>
+                                             s_eventually (d2h.d_valid && d2h.d_error));
+      addrSizeAlignedErr_A: assert property (d_error_pre_S and addrSizeAlignedErr_S |=>
+                                             s_eventually (d2h.d_valid && d2h.d_error));
+    end
   end else begin : gen_unknown
     initial begin : p_unknonw
       `ASSERT_I(unknownConfig_A, 0 == 1)
@@ -373,22 +375,25 @@ module tlul_assert #(
         ##0 pre_source == h2d.a_source;
   endsequence
 
-  // a channel content is changed without being accepted
-  `define TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED(NAME) \
-    sequence a_``NAME``ChangedNotAccepted_S; \
-      int pre; \
-      (h2d.a_valid && !d2h.a_ready, pre = h2d.a_``NAME``) ##1 h2d.a_valid[->1] \
-          ##0 pre != h2d.a_``NAME``; \
-    endsequence \
+  // This macro defines a sequence where a value is provided for the given signal on the A channel
+  // which isn't accepted and then a different value is provided on the next cycle (without a_valid
+  // dropping).
+  //
+  // It also defines a coverpoint for the sequence.
+  `define TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED(NAME)       \
+    sequence a_``NAME``ChangedNotAccepted_S;                  \
+      h2d.a_valid && !d2h.a_ready ##1                         \
+      h2d.a_valid && $changed(h2d.a_``NAME``);                \
+    endsequence                                               \
     `TLUL_COVER(a_``NAME``ChangedNotAccepted)
 
-  // d channel content is changed without being accepted
-  `define TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED(NAME) \
-    sequence d_``NAME``ChangedNotAccepted_S; \
-      int pre; \
-      (d2h.d_valid && !h2d.d_ready, pre = d2h.d_``NAME``) ##1 d2h.d_valid[->1] \
-          ##0 pre != d2h.d_``NAME``; \
-    endsequence \
+  // This macro is like the previous one (TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED), but applies to
+  // the D channel.
+  `define TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED(NAME)       \
+    sequence d_``NAME``ChangedNotAccepted_S;                  \
+      d2h.d_valid && !h2d.d_ready ##1                         \
+      d2h.d_valid && $changed(d2h.d_``NAME``);                \
+    endsequence                                               \
     `TLUL_COVER(d_``NAME``ChangedNotAccepted)
 
   if (EndpointType == "Host") begin : gen_host_cov // DUT is host
@@ -426,20 +431,11 @@ module tlul_assert #(
       end
       disable_sva = !tlul_assert_en;
     end
-    initial forever begin
-      bit tlul_assert_en;
-      uvm_config_db#(bit)::wait_modified(null, "%m", "tlul_d_error_assert_en");
-      if (!uvm_config_db#(bit)::get(null, "%m", "tlul_d_error_assert_en", tlul_assert_en)) begin
-        `uvm_fatal($sformatf("%m"), "Can't find tlul_d_error_assert_en")
-      end
-      disable_d_error_sva = !tlul_assert_en;
-    end
   `else
     // Set default values for the disable_*_sva signals (not disabling the assertions)
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         disable_sva <= 0;
-        disable_d_error_sva <= 0;
       end
     end
   `endif
