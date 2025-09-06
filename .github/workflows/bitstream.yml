@@ -83,20 +83,22 @@ jobs:
         run: |
           . util/build_consts.sh
 
-          vlnv_path=lowrisc_systems_chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}_0.1
+          bazel_package=//hw/bitstream/vivado
+          bitstream_target=${bazel_package}:fpga_${{ inputs.design_suffix }}
           design_name=chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}
+          logs_base=$(./bazelisk.sh cquery --output=files --output_groups=logs ${bitstream_target})
 
           echo "Synthesis log"
-          cat $OBJ_DIR/hw/top_${{ inputs.top_name }}/${design_name}/build.fpga_${{ inputs.design_suffix }}/${vlnv_path}/synth-vivado/${vlnv_path}.runs/synth_1/runme.log || true
+          cat ${logs_base}/synth_1/runme.log || true
 
           echo "Implementation log"
-          cat $OBJ_DIR/hw/top_${{ inputs.top_name }}/${design_name}/build.fpga_${{ inputs.design_suffix }}/${vlnv_path}/synth-vivado/${vlnv_path}.runs/impl_1/runme.log || true
+          cat ${logs_base}/impl_1/runme.log || true
 
           echo "Utilization report"
-          cat $OBJ_DIR/hw/top_${{ inputs.top_name }}/${design_name}/build.fpga_${{ inputs.design_suffix }}/${vlnv_path}/synth-vivado/${vlnv_path}.runs/impl_1/${design_name}_utilization_placed.rpt || true
+          cat ${logs_base}/impl_1/${design_name}_utilization_placed.rpt || true
 
           echo "Timing summary report"
-          cat $OBJ_DIR/hw/top_${{ inputs.top_name }}/${design_name}/build.fpga_${{ inputs.design_suffix }}/${vlnv_path}/synth-vivado/${vlnv_path}.runs/impl_1/${design_name}_timing_summary_routed.rpt || true
+          cat ${logs_base}/impl_1/${design_name}_timing_summary_routed.rpt || true
 
       - name: Upload step outputs
         uses: actions/upload-artifact@v4
