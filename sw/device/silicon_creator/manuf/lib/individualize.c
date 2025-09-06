@@ -90,13 +90,15 @@ status_t manuf_individualize_device_hw_cfg(
         flash_info_page_0_permissions,
         /*offset=*/NULL));
 
-    // Configure DeviceID
+    // Read CpDeviceId from flash info page 0.
     uint32_t cp_device_id_from_flash[kFlashInfoFieldCpDeviceIdSizeIn32BitWords];
     uint32_t empty_cp_device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] = {
         0};
     TRY(manuf_flash_info_field_read(flash_state, kFlashInfoFieldCpDeviceId,
                                     cp_device_id_from_flash,
                                     kFlashInfoFieldCpDeviceIdSizeIn32BitWords));
+
+    // Check if CP device ID from flash is empty.
     bool flash_cp_device_id_empty = true;
     for (size_t i = 0; flash_cp_device_id_empty &&
                        i < kFlashInfoFieldCpDeviceIdSizeIn32BitWords;
@@ -104,14 +106,37 @@ status_t manuf_individualize_device_hw_cfg(
       flash_cp_device_id_empty &= cp_device_id_from_flash[i] == 0;
     }
 
+    // Check if CP device ID provided is empty (i.e., all ones). This means CP
+    // stage was skipped or already run in the past.
+    bool provided_din_empty = true;
+    for (size_t i = 1;
+         provided_din_empty && i < kFlashInfoFieldCpDeviceIdSizeIn32BitWords;
+         ++i) {
+      provided_din_empty &= device_id[i] == 0;
+    }
+
     // If the CP device ID read from flash is non-empty, then it must match the
-    // first 128-bits of device ID provided. If the device ID read from flash is
-    // empty, we check to ensure the device ID provided is also not empty. An
+    // first 128-bits of device ID provided, unless the first 128-bits are all
+    // ones (in which case we use the CP device ID in flash).
+    //
+    // If the device ID read from flash is empty, we check to ensure the device
+    // ID provided is also not empty, and the CP portion is not all ones. An
     // empty (all zero) device ID will prevent the keymgr from advancing.
     if (!flash_cp_device_id_empty) {
-      TRY_CHECK_ARRAYS_EQ(cp_device_id_from_flash, device_id,
-                          kFlashInfoFieldCpDeviceIdSizeIn32BitWords);
+      if (!provided_din_empty) {
+        TRY_CHECK_ARRAYS_EQ(cp_device_id_from_flash, device_id,
+                            kFlashInfoFieldCpDeviceIdSizeIn32BitWords);
+      } else {
+        // Extract CP device ID from flash again.
+        memcpy(device_id, cp_device_id_from_flash,
+               kFlashInfoFieldCpDeviceIdSizeIn32BitWords * sizeof(uint32_t));
+      }
     } else {
+      // On FPGA, we expect the provided DIN to be empty and CP device ID from
+      // flash to be empty.
+      if (kDeviceType == kDeviceSilicon) {
+        TRY_CHECK(!provided_din_empty);
+      }
       TRY_CHECK_ARRAYS_NE(device_id, empty_cp_device_id,
                           kFlashInfoFieldCpDeviceIdSizeIn32BitWords);
     }
