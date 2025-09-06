@@ -5,6 +5,8 @@
 
 .section .text.start
 
+.set RSA_MODEXP_ENABLE_MESSAGE_BLINDING, 1
+
 /**
  * Standalone RSA 1024 decrypt
  *
