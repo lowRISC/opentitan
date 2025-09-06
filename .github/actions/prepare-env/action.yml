@@ -32,6 +32,9 @@ inputs:
     description: Configure Bazel to use remote cache
     required: true
     default: true
+  working-directory:
+    description: Working directory
+    default: ''
 
 runs:
   using: composite
@@ -41,6 +44,7 @@ runs:
         sudo apt update
         grep '^[^#]' apt-requirements.txt | xargs sudo apt install -y
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
 
     - uses: astral-sh/setup-uv@v6
       with:
@@ -49,6 +53,7 @@ runs:
         cache-dependency-glob: |
           pyproject.toml
           python-requirements.txt
+        working-directory: ${{ inputs.working-directory }}
 
     - name: Install Python
       shell: bash
@@ -60,11 +65,13 @@ runs:
         uv venv ~/.local/share/venv
         echo "$HOME/.local/share/venv/bin" >> "$GITHUB_PATH"
         echo "VIRTUAL_ENV=$HOME/.local/share/venv" >> "$GITHUB_ENV"
+      working-directory: ${{ inputs.working-directory }}
 
     - name: Install Python dependencies
       shell: bash
       run: |
         uv pip install -r python-requirements.txt --require-hashes
+      working-directory: ${{ inputs.working-directory }}
 
     - name: Install Verilator
       run: |
@@ -76,6 +83,7 @@ runs:
         sudo tar -C "${{ inputs.verilator-path }}" -xvzf "${{ runner.temp }}/${VERILATOR_TAR}"
         echo "${{ inputs.verilator-path }}/v${{ inputs.verilator-version }}/bin" >> "$GITHUB_PATH"
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
 
     - name: Install Verible
       if: inputs.install-verible == 'true'
@@ -90,6 +98,7 @@ runs:
         sudo chmod 755 "${{ inputs.verible-path }}/bin"
         echo "${{ inputs.verible-path }}/bin" >> "$GITHUB_PATH"
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
 
     # Log into Google Cloud using service account JSON.
     # This can't be Workload Identity Federation because Bazel performance using WIF is terrible.
@@ -134,6 +143,7 @@ runs:
           echo "build --remote_upload_local_results=false" >> ~/.bazelrc
         fi
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
 
     - name: Install merge-junit
       run: |
@@ -157,3 +167,4 @@ runs:
         echo $MERGE_JUNIT_PATH >> "$GITHUB_PATH"
         rm "${{ runner.temp }}/${MERGE_JUNIT_TAR}"
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
