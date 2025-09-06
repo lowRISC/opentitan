@@ -153,7 +153,7 @@ modexp_65536:
  * @param[in]  w1: Montgomery Constant m0'
  * @param[in] w31: all-zero
  *
- * The buffers A, r0, r1, r2, d0 and d1 are modified over the course of this
+ * The buffers A, r0, r1, and r2 are modified over the course of this
  * routine.
  *
  * Clobbered registers: x2 to x22, x31
@@ -287,12 +287,14 @@ modexp:
    *
    *   ((d1 >> 1) ^ d1) ^ d0
    */
-  loop x31, 7
+  loop x31, 9
     bn.lid x20, 0(x2++)
     bn.lid x21, 0(x2)
+    bn.xor  w31, w31, w31 /* dummy instruction */
     bn.lid x22, 0(x3++)
     bn.rshi w25, w25, w24 >> 1
     bn.xor  w24, w24, w25
+    bn.xor  w31, w31, w31 /* dummy instruction */
     bn.xor  w24, w24, w26
     bn.sid  x20, 0(x5++)
 
@@ -300,13 +302,16 @@ modexp:
   bn.wsrr w25, URND
   bn.add  w26, w25, w25
   csrrs x4, FG0, x0
+  andi  x4, x4, 1
 
   /* The last iteration is special, it includes the random bit b' at the MSB. */
   bn.rshi w25, w31, w25 >> 255
   bn.lid x20, 0(x2)
+  bn.xor  w31, w31, w31 /* dummy instruction */
   bn.lid x22, 0(x3)
   bn.rshi w25, w25, w24 >> 1
   bn.xor  w24, w24, w25
+  bn.xor  w31, w31, w31 /* dummy instruction */
   bn.xor  w24, w24, w26
   bn.sid  x20, 0(x5)
 
@@ -328,7 +333,8 @@ modexp:
    * w2, x2, x3, x4 hold secret values for all the iterations. x2, x3 are shares
    * of the same secret.
    */
-  loop      x21, 46
+  loop      x21, 43
+    bn.add w31, w31, w31
 
     /* Shift d0 and siphon the shifted out MSB into FG0, x3 = a[i] = d0[i]. */
     addi      x15, x26, 0
@@ -339,6 +345,10 @@ modexp:
       bn.sid    x11, 0(x15++)
     csrrs x3, FG0, x0
     andi x3, x3, 1
+    /* Restore the LSB. */
+    lw   x22, 0(x26)
+    or   x22, x3, x22
+    sw   x22, 0(x26)
 
     /*
      * Step 4 in Algorithm 2 [1]:
@@ -358,19 +368,9 @@ modexp:
       bn.sid  x2, 0(x15++)
       addi x2, x2, 1
 
-    /* Shift d1 and siphon the shifted out MSB into x2 = b[i] = d1[i]. */
-    addi      x15, x27, 0
-    loop      x30, 3
-      bn.lid    x11, 0(x15)
-      /* w2 <= w2 << 1 */
-      bn.addc   w2, w2, w2
-      bn.sid    x11, 0(x15++)
-    csrrs x2, FG0, x0
-    andi  x2, x2, 1
-
     /*
      * Shift secret indices and siphon the shifted out MSB into
-     *   x4 = (b' ^ bi) ^ ai
+     *   x4 = c = (b' ^ bi) ^ ai
      */
     addi      x15, x29, 0
     loop      x30, 3
@@ -416,7 +416,8 @@ modexp:
     nop
 
   /* Make sure the output (A*R^e)^(d-1) is in r0. */
-  addi x14, x2, 0
+  lw x14, 0(x27)
+  andi x14, x14, 1
   jal x1, cond_swap_gprs
 
 /**********************************************************
