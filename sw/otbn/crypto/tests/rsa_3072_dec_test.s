@@ -5,6 +5,8 @@
 
 .section .text.start
 
+.set RSA_MODEXP_ENABLE_MESSAGE_BLINDING, 1
+
 /**
  * Standalone RSA-3072 modexp with secret exponent (decryption/signing).
  */
@@ -17,21 +19,24 @@ main:
 
   /* Load pointers to modulus and Montgomery constant buffers. */
   la    x16, n
-  la    x17, m0d
   la    x18, RR
 
   /* Compute Montgomery constants. */
   jal      x1, modload
 
   /* Run exponentiation.
-       dmem[work_buf] = dmem[inout]^dmem[d] mod dmem[n] */
-  la       x14, inout
-  la       x15, d
-  la       x2, work_buf
+       dmem[r0] = dmem[r0]^dmem[d] mod dmem[n] */
+  la       x23, r0
+  la       x24, r1
+  la       x25, r2
+  la       x26, d0
+  la       x27, d1
+  la       x28, n
+  la       x29, RR
   jal      x1, modexp
 
   /* copy all limbs of result to wide reg file */
-  la       x21, work_buf
+  la       x21, r0
   li       x8, 0
   loop     x30, 2
     bn.lid   x8, 0(x21++)
