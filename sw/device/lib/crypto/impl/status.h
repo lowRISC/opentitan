@@ -58,29 +58,46 @@ extern "C" {
 
 #endif
 
-#ifndef OT_DISABLE_HARDENING
+#if !defined(OT_DISABLE_HARDENING) && defined(OT_PLATFORM_RV32)
 /**
  * Hardened version of the `TRY` macro from `status.h`.
  *
  * Returns an error if either expr_ represents an error, or if the OK code does
  * not match the expected hardened value.
  *
+ * In order to optimize for code size, branching on zero is enforced.
+ * In order to maintain security, doubling branching is performed.
+ * More specifically, in both the case where the status is OK or not
+ * an additional check is performed to stop potential fault attacks.
+ *
+ * This macro specifically uses the fact that error statuses are negative
+ * values.
+ *
  * @param expr_ An expression that evaluates to a `status_t`.
  * @return The enclosed OK value.
  */
-#define HARDENED_TRY(expr_)                                             \
-  do {                                                                  \
-    status_t status_ = expr_;                                           \
-    if (launder32(OT_UNSIGNED(status_.value)) != kHardenedBoolTrue) {   \
-      return (status_t){                                                \
-          .value = (int32_t)(OT_UNSIGNED(status_.value) | 0x80000000)}; \
-    }                                                                   \
-    HARDENED_CHECK_EQ(status_.value, kHardenedBoolTrue);                \
-    status_.value;                                                      \
+#define HARDENED_TRY(expr_)                                            \
+  do {                                                                 \
+    uint32_t status_ = OT_UNSIGNED(expr_.value);                       \
+    asm volatile("addi %[status_], %[status_], -%[kHardenedBoolTrue]"  \
+                 : [status_] "+r"(status_)                             \
+                 : [kHardenedBoolTrue] "ir"(kHardenedBoolTrue)         \
+                 :);                                                   \
+    if (status_) {                                                     \
+      asm volatile("addi %[status_], %[status_], %[kHardenedBoolTrue]" \
+                   : [status_] "+r"(status_)                           \
+                   : [kHardenedBoolTrue] "ir"(kHardenedBoolTrue)       \
+                   :);                                                 \
+      if ((int32_t)(status_) < 0) {                                    \
+        return (status_t){.value = (int32_t)(status_ | 0x80000000)};   \
+      }                                                                \
+      asm volatile("unimp");                                           \
+    }                                                                  \
+    if (launder32(status_)) {                                          \
+      asm volatile("unimp");                                           \
+    }                                                                  \
   } while (false)
-
-#else  // OT_DISABLE_HARDENING
-
+#else  // !OT_PLATFORM_RV32 || OT_DISABLE_HARDENING
 /**
  * Alternate version of HARDENED_TRY that is logically equivalent.
  *
