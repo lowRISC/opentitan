@@ -151,8 +151,8 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
   HARDENED_TRY(keymgr_wait_until_done());
 
   // Randomize the destination buffer.
-  hardened_memshred(key->share0, kKeymgrOutputShareNumWords);
-  hardened_memshred(key->share1, kKeymgrOutputShareNumWords);
+  HARDENED_TRY(hardened_memshred(key->share0, kKeymgrOutputShareNumWords));
+  HARDENED_TRY(hardened_memshred(key->share1, kKeymgrOutputShareNumWords));
 
   // Collect output.
   // TODO: for SCA hardening, randomize the order of these reads.

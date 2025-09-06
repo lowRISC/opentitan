@@ -177,10 +177,12 @@ static void clear(void) {
  *
  * @param key The buffer that points to the key.
  * @param key_wordlen The length of the key in words.
+ * @return OK or error.
  */
-static void key_write(const uint32_t *key, size_t key_wordlen) {
+static status_t key_write(const uint32_t *key, size_t key_wordlen) {
   uint32_t key_reg = kHmacBaseAddr + HMAC_KEY_0_REG_OFFSET;
-  hardened_memcpy((uint32_t *)key_reg, key, key_wordlen);
+  HARDENED_TRY(hardened_memcpy((uint32_t *)key_reg, key, key_wordlen));
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -206,8 +208,9 @@ static void digest_read(uint32_t *digest, size_t digest_wordlen) {
  * Resume a streaming operation from a saved context.
  *
  * @param ctx Context object from which to restore.
+ * @return OK or error.
  */
-static void context_restore(hmac_ctx_t *ctx) {
+static status_t context_restore(hmac_ctx_t *ctx) {
   // The previous caller should have left it clean, but it doesn't hurt to
   // clear again.
   clear();
@@ -219,7 +222,7 @@ static void context_restore(hmac_ctx_t *ctx) {
 
   // Write to KEY registers for HMAC operations. If the operation is SHA-2,
   // `key_wordlen` is set to 0 during `ctx` initialization.
-  key_write(ctx->key, ctx->key_wordlen);
+  HARDENED_TRY(key_write(ctx->key, ctx->key_wordlen));
 
   uint32_t cmd = HMAC_CMD_REG_RESVAL;
   // Decide if we need to invoke `start` or `continue` command.
@@ -252,6 +255,8 @@ static void context_restore(hmac_ctx_t *ctx) {
   // Now we can finally write the command to the register to actually issue
   // `start` or `continue`.
   abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd);
+
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -284,10 +289,10 @@ static status_t hmac_context_wipe(hmac_ctx_t *ctx) {
   HARDENED_TRY(entropy_complex_check());
 
   // Randomize sensitive data.
-  hardened_memshred(ctx->key, kHmacMaxBlockWords);
-  hardened_memshred(ctx->H, kHmacMaxDigestWords);
-  hardened_memshred((uint32_t *)(ctx->partial_block),
-                    kHmacMaxBlockBytes / sizeof(uint32_t));
+  HARDENED_TRY(hardened_memshred(ctx->key, kHmacMaxBlockWords));
+  HARDENED_TRY(hardened_memshred(ctx->H, kHmacMaxDigestWords));
+  HARDENED_TRY(hardened_memshred((uint32_t *)(ctx->partial_block),
+                                 kHmacMaxBlockBytes / sizeof(uint32_t)));
   // Zero the remaining ctx fields.
   ctx->cfg_reg = 0;
   ctx->key_wordlen = 0;
@@ -399,7 +404,7 @@ static status_t oneshot(const uint32_t cfg, const uint32_t *key,
   abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, cfg);
 
   // Write the key (no-op if the key length is 0, e.g. for hashing).
-  key_write(key, key_wordlen);
+  HARDENED_TRY(key_write(key, key_wordlen));
 
   // Read back the HMAC configuration and compare to the expected configuration.
   HARDENED_CHECK_EQ(abs_mmio_read32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET),
@@ -574,7 +579,7 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
 
   // Retore context will restore the context and also hit start or continue
   // button as necessary.
-  context_restore(ctx);
+  HARDENED_TRY(context_restore(ctx));
 
   // Write the partial block, then the new bytes.
   msg_fifo_write((unsigned char *)ctx->partial_block,
@@ -606,7 +611,7 @@ status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest) {
 
   // Retore context will restore the context and also hit start or continue
   // button as necessary.
-  context_restore(ctx);
+  HARDENED_TRY(context_restore(ctx));
 
   // Feed the final leftover bytes to HMAC HWIP.
   msg_fifo_write((unsigned char *)ctx->partial_block,

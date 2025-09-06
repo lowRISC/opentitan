@@ -15,6 +15,7 @@
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/crypto/impl/status.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,9 +44,10 @@ extern uint32_t hardened_memshred_random_word(void);
  * @param dest The destination of the copy.
  * @param src The source of the copy.
  * @param word_len The number of words to copy.
+ * @return OK or error.
  */
-void hardened_memcpy(uint32_t *OT_RESTRICT dest,
-                     const uint32_t *OT_RESTRICT src, size_t word_len);
+status_t hardened_memcpy(uint32_t *OT_RESTRICT dest,
+                         const uint32_t *OT_RESTRICT src, size_t word_len);
 
 /**
  * Fills a 32-bit aligned region of memory with random data.
@@ -63,8 +65,9 @@ void hardened_memcpy(uint32_t *OT_RESTRICT dest,
  *
  * @param dest The destination of the set.
  * @param word_len The number of words to write.
+ * @return OK or error.
  */
-void hardened_memshred(uint32_t *dest, size_t word_len);
+status_t hardened_memshred(uint32_t *dest, size_t word_len);
 
 /**
  * Compare two potentially-overlapping 32-bit aligned regions of memory for
@@ -100,9 +103,10 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
  * @param[in,out] x Pointer to the first operand (modified in-place).
  * @param y Pointer to the second operand.
  * @param word_len Length in words of each operand.
+ * @return OK or error.
  */
-void hardened_xor(uint32_t *OT_RESTRICT x, const uint32_t *OT_RESTRICT y,
-                  size_t word_len);
+status_t hardened_xor(uint32_t *OT_RESTRICT x, const uint32_t *OT_RESTRICT y,
+                      size_t word_len);
 
 #ifdef __cplusplus
 }  // extern "C"

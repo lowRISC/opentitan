@@ -98,11 +98,11 @@ status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
   HARDENED_TRY(entropy_complex_check());
 
   // Randomize the keyblob contents before writing shares.
-  hardened_memshred(keyblob, keyblob_num_words(config));
+  HARDENED_TRY(hardened_memshred(keyblob, keyblob_num_words(config)));
 
   size_t share_words = keyblob_share_num_words(config);
-  hardened_memcpy(keyblob, share0, share_words);
-  hardened_memcpy(keyblob + share_words, share1, share_words);
+  HARDENED_TRY(hardened_memcpy(keyblob, share0, share_words));
+  HARDENED_TRY(hardened_memcpy(keyblob + share_words, share1, share_words));
   return OTCRYPTO_OK;
 }
 
@@ -116,7 +116,8 @@ status_t keyblob_buffer_to_keymgr_diversification(
   HARDENED_TRY(entropy_complex_check());
 
   // Copy the remainder of the keyblob into the salt.
-  hardened_memcpy(diversification->salt, &keyblob[1], kKeymgrSaltNumWords - 1);
+  HARDENED_TRY(hardened_memcpy(diversification->salt, &keyblob[1],
+                               kKeymgrSaltNumWords - 1));
 
   // Set the key mode as the last word of the salt.
   diversification->salt[kKeymgrSaltNumWords - 1] = launder32(mode);
@@ -224,11 +225,11 @@ status_t keyblob_remask(otcrypto_blinded_key_t *key) {
   // Generate a fresh mask the size of one share.
   size_t key_share_words = keyblob_share_num_words(key->config);
   uint32_t mask[key_share_words];
-  hardened_memshred(mask, key_share_words);
+  HARDENED_TRY(hardened_memshred(mask, key_share_words));
 
   // XOR each share with the mask.
-  hardened_xor(share0, mask, key_share_words);
-  hardened_xor(share1, mask, key_share_words);
+  HARDENED_TRY(hardened_xor(share0, mask, key_share_words));
+  HARDENED_TRY(hardened_xor(share1, mask, key_share_words));
 
   // Update the key checksum.
   key->checksum = integrity_blinded_checksum(key);
