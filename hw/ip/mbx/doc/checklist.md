@@ -125,7 +125,7 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started |
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        |
 Documentation | [TESTPLAN_COMPLETED][]                | Not Started |
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
@@ -140,8 +140,8 @@ Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Done        |
 Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Done        |
 Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Done        |
 Regression    | [FPV_REGRESSION_SETUP][]              | N/A         |
-Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Not Started |
-Code Quality  | [TB_LINT_SETUP][]                     | Not Started |
+Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done        |
+Code Quality  | [TB_LINT_SETUP][]                     | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         |
 Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
 Review        | [TESTPLAN_REVIEWED][]                 | Not Started |
@@ -177,8 +177,8 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 --------------|-----------------------------------------|-------------|------------------
 Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Not Started |
 Documentation | [DV_DOC_COMPLETED][]                    | Not Started |
-Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Not Started |
-Testbench     | [ALL_INTERFACES_EXERCISED][]            | Not Started |
+Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Done        |
+Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
 Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Not Started |
 Testbench     | [SIM_TB_ENV_COMPLETED][]                | Not Started |
 Tests         | [SIM_ALL_TESTS_PASSING][]               | Not Started |

@@ -1,5 +1,9 @@
 # Theory of Operation
 
+## Block Diagram
+
+![Mailbox Block Diagram](block_diagram.svg)
+
 The integrated version of OpenTitan Root-Of-Trust may provide security services to the SoC such as:
 
 - Encryption or decryption of data blobs.
