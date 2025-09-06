@@ -171,18 +171,9 @@ modexp:
   addi      x31, x30, -1
 
   /*
-   * Since d is odd d-1 must be even, hence to have d0 XOR d1 = d-1, the first
-   * bit of the share d0 must be flipped.
-   */
-  bn.lid x11, 0(x26)
-  bn.addi w30, w31, 1
-  bn.xor w2, w2, w30
-  bn.sid x11, 0(x26)
-
-  /*
    * Convert input to Montgomery domain:
    *
-   *   [w[4+N-1]:w4] = A' = modexp(A, RR)
+   *   [w[4+N-1]:w4] = A' = montmul(A, RR)
    */
   addi      x16, x28, 0
   addi      x19, x23, 0
@@ -196,9 +187,7 @@ modexp:
     bn.sid  x2, 0(x3++)
     addi    x2, x2, 1
 
-/**********************************************************
- * BEGIN MESSAGE BLINDING
- **********************************************************/
+.ifdef RSA_MODEXP_ENABLE_MESSAGE_BLINDING
 
   /*
    * Sample random blinding factor R of size N limbs and store it in DMEM at r1.
@@ -232,9 +221,16 @@ modexp:
   la   x20, work_buf
   jal  x1, montmul
 
-/**********************************************************
- * END MESSAGE BLINDING
- **********************************************************/
+  /*
+   * Since d is odd d-1 must be even, hence to have d0 XOR d1 = d-1, the first
+   * bit of the share d0 must be flipped.
+   */
+  bn.lid x11, 0(x26)
+  bn.addi w30, w31, 1
+  bn.xor w2, w2, w30
+  bn.sid x11, 0(x26)
+
+.endif # RSA_MODEXP_ENABLE_MESSAGE_BLINDING
 
   /* montmul clobbers the flags, clear them here. */
   bn.add w31, w31, w31, FG0
@@ -420,9 +416,7 @@ modexp:
   andi x14, x14, 1
   jal x1, cond_swap_gprs
 
-/**********************************************************
- * BEGIN MESSAGE UNBLINDING
- **********************************************************/
+.ifdef RSA_MODEXP_ENABLE_MESSAGE_BLINDING
 
   /*
    * Unblind ciphertext with A*R^(e-1) such that
@@ -438,13 +432,18 @@ modexp:
     bn.sid  x2, 0(x3++)
     addi    x2, x2, 1
 
-/**********************************************************
- * END MESSAGE UNBLINDING
- **********************************************************/
+  /*  Convert d0 back such that d0 XOR d1 = d. */
+  bn.lid x11, 0(x26)
+  bn.addi w30, w31, 1
+  bn.xor w2, w2, w30
+  bn.sid x11, 0(x26)
+
+  addi x19, x23, 0
+
+.endif # RSA_MODEXP_ENABLE_MESSAGE_BLINDING
 
   /* Convert back from Montgomery form. */
   addi x16, x28, 0
-  addi x19, x23, 0
   addi x21, x23, 0
   jal x1, montmul_mul1
 

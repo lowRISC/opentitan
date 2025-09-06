@@ -5,6 +5,8 @@
 
 .section .text.start
 
+.set RSA_MODEXP_ENABLE_MESSAGE_BLINDING, 1
+
 /**
  * Standalone RSA-3072 modexp with secret exponent (decryption/signing).
  */
