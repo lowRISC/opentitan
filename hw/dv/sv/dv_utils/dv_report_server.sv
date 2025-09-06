@@ -4,6 +4,7 @@
 
 // Standardize look & feel of report phase and uvm logging messages.
 class dv_report_server extends uvm_default_report_server;
+  `uvm_object_utils(dv_report_server)
 
   bit show_file_line = 1'b1;
   // if enabled, show the relative path of the file. By default only show file name
