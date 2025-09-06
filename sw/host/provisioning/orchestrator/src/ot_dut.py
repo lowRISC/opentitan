@@ -12,7 +12,7 @@ from dataclasses import dataclass
 
 import hjson
 
-from device_id import DeviceId
+from device_id import DeviceId, DeviceIdentificationNumber
 from sku_config import SkuConfig
 from util import confirm, format_hex, run, resolve_runfile
 
@@ -159,17 +159,25 @@ class OtDut():
                 logging.warning(f"CP failed with exit code: {res.returncode}.")
                 confirm()
 
+            # Extract CP device ID.
             chip_probe_data = self._extract_json_data("CHIP_PROBE_DATA",
                                                       stdout_logfile)
+            din_from_device = None
             if "cp_device_id" not in chip_probe_data:
                 logging.error("cp_device_id not found in CHIP_PROBE_DATA.")
                 confirm()
-
+            else:
+                if chip_probe_data["cp_device_id"] == "":
+                    logging.warning(
+                        "cp_device_id empty; setting default of all zeros.")
+                    din_from_device = DeviceIdentificationNumber(0)
+                else:
+                    din_from_device = DeviceIdentificationNumber.from_int(
+                        (int(chip_probe_data["cp_device_id"], 16) >> 32) &
+                        0xFFFFFFFFFFFFFFFF)
             logging.info(
                 f"Updating device ID to: {chip_probe_data['cp_device_id']}")
-            cp_device_id = self.device_id.from_hexstr(
-                chip_probe_data["cp_device_id"])
-            self.device_id.update_base_id(cp_device_id)
+            self.device_id.update_din(din_from_device)
             self.device_id.pretty_print()
 
             self._make_log_dir()
@@ -286,4 +294,8 @@ class OtDut():
 
             self.ft_data = self._extract_json_data("PROVISIONING_DATA",
                                                    stdout_logfile)
+
+            # TODO: check device ID from device matches one constructed on host.
+            self.device_id = DeviceId.from_hexstr(self.ft_data["device_id"])
+
             logging.info("FT completed successfully.")

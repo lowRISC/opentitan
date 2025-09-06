@@ -157,10 +157,8 @@ class TestDeviceId(unittest.TestCase):
                                          wafer_y_coord=100)
         expected = DeviceId(sku_config=self.sku_config, din=din)
         hexstr = expected.to_hexstr()
-        cp_device_id = DeviceId.from_hexstr(hexstr)
-
-        self.device_id.update_base_id(cp_device_id)
-        self.assertEqual(expected.to_int(), self.device_id.to_int())
+        actual = DeviceId.from_hexstr(hexstr)
+        self.assertEqual(expected.to_int(), actual.to_int())
 
 
 if __name__ == '__main__':
