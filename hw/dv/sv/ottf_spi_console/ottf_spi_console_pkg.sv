@@ -81,8 +81,8 @@ package ottf_spi_console_pkg;
 
     // Define local macros which function like `uvm_create and `uvm_send, except using the
     // class-local handles to the parent sequence 'seq_h' and sequencer 'spi_host_sequencer_h'.
-    // verilog_lint: waive macro-name-style
     `ifndef spi_console_uvm_create
+      // verilog_lint: waive macro-name-style
       `define spi_console_uvm_create(SEQ_) \
         begin \
           uvm_object_wrapper type_var = SEQ_.get_type(); \
@@ -91,8 +91,8 @@ package ottf_spi_console_pkg;
           $cast(SEQ_, spi_console_create_item(type_var, `"SEQ_`")); \
         end
     `endif
-    // verilog_lint: waive macro-name-style
     `ifndef spi_console_uvm_send
+      // verilog_lint: waive macro-name-style
       `define spi_console_uvm_send(SEQ_) \
         begin \
           SEQ_.start(/*sequencer*/ spi_host_sequencer_h, /*parent_sequence*/ seq_h); \
