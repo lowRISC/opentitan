@@ -535,12 +535,12 @@ module otp_ctrl_dai
              (PartInfo[part_idx].variant == Buffered && PartInfo[part_idx].hw_digest &&
               base_sel_q == DaiOffset &&
               otp_addr_o[OtpAddrWidth-1:2] < digest_addr_lut[part_idx][OtpAddrWidth-1:2]) ||
-             // If this is a write to an unbuffered partition and not to the zeroized item
-             (PartInfo[part_idx].variant != Buffered && base_sel_q == DaiOffset &&
-              !(PartInfo[part_idx].zeroizable &&
-                (otp_addr_o[OtpAddrWidth-1:2] ==
-                 zeroize_addr_lut[part_idx][OtpAddrWidth-1:2]))))) begin
-
+             // If this is a write to an unbuffered partition.
+             (PartInfo[part_idx].variant != Buffered && base_sel_q == DaiOffset)) &&
+            // Don't allow DAI writes to the zeroization marker.
+            !(PartInfo[part_idx].zeroizable &&
+              (otp_addr_o[OtpAddrWidth-1:2] == zeroize_addr_lut[part_idx][OtpAddrWidth-1:2]))
+        ) begin
           if (otp_rvalid_i) begin
             // Check OTP return code. Note that non-blank errors are recoverable.
             if ((!(otp_err inside {NoError, MacroWriteBlankError}))) begin
