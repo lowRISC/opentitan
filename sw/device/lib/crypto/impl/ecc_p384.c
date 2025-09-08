@@ -212,8 +212,8 @@ static status_t internal_p384_keygen_finalize(
     // occurs after this point then the keys would be unrecoverable. This should
     // be the last potentially error-causing line before returning to the
     // caller.
-    p384_masked_scalar_t *sk = (p384_masked_scalar_t *)private_key->keyblob;
-    HARDENED_TRY(p384_keygen_finalize(sk, pk));
+    HARDENED_TRY(
+        p384_keygen_finalize((p384_masked_scalar_t *)private_key->keyblob, pk));
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -281,17 +281,26 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start(
   if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
     // Start the asynchronous signature-generation routine.
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
-    p384_masked_scalar_t *sk = (p384_masked_scalar_t *)private_key->keyblob;
-    return p384_ecdsa_sign_start(message_digest.data, sk);
+    HARDENED_TRY(p384_ecdsa_sign_start(
+        message_digest.data, (p384_masked_scalar_t *)private_key->keyblob));
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     // Load the key and start in sideloaded-key mode.
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
     HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
-    return p384_ecdsa_sideload_sign_start(message_digest.data);
+    HARDENED_TRY(p384_ecdsa_sideload_sign_start(message_digest.data));
+  } else {
+    // Invalid value for private_key->hw_backed.
+    return OTCRYPTO_BAD_ARGS;
   }
 
-  // Invalid value for private_key->hw_backed.
-  return OTCRYPTO_BAD_ARGS;
+  // To detect forgeries of the pointer to the private key that we have passed
+  // to the ECC implementation, check again its integrity. If the pointer would
+  // have been tampered with between the first integrity check we did when
+  // entering the CryptoLib and here, we would detect this now.
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(private_key),
+                    kHardenedBoolTrue);
+
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -374,7 +383,15 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
   p384_ecdsa_signature_t *sig = (p384_ecdsa_signature_t *)signature.data;
 
   // Start the asynchronous signature-verification routine.
-  return p384_ecdsa_verify_start(sig, message_digest.data, pk);
+  HARDENED_TRY(p384_ecdsa_verify_start(sig, message_digest.data, pk));
+
+  // To detect forgeries of the pointer to the public key that we have passed
+  // to the ECC implementation, check again its integrity. If the pointer would
+  // have been tampered with between the first integrity check we did when
+  // entering the CryptoLib and here, we would detect this now.
+  HARDENED_CHECK_EQ(integrity_unblinded_key_check(public_key),
+                    kHardenedBoolTrue);
+  return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_ecdsa_p384_verify_async_finalize(
@@ -461,15 +478,26 @@ otcrypto_status_t otcrypto_ecdh_p384_async_start(
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
     HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
-    return p384_sideload_ecdh_start(pk);
+    HARDENED_TRY(p384_sideload_ecdh_start(pk));
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
-    p384_masked_scalar_t *sk = (p384_masked_scalar_t *)private_key->keyblob;
-    return p384_ecdh_start(sk, pk);
+    HARDENED_TRY(
+        p384_ecdh_start((p384_masked_scalar_t *)private_key->keyblob, pk));
+  } else {
+    // Invalid value for `hw_backed`.
+    return OTCRYPTO_BAD_ARGS;
   }
 
-  // Invalid value for `hw_backed`.
-  return OTCRYPTO_BAD_ARGS;
+  // To detect forgeries of the pointers to the public and private key that we
+  // have passed to the ECC implementation, check again their integrity. If the
+  // pointers would have been tampered with between the first integrity check we
+  // did when entering the CryptoLib and here, we would detect this now.
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(private_key),
+                    kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(integrity_unblinded_key_check(public_key),
+                    kHardenedBoolTrue);
+
+  return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
