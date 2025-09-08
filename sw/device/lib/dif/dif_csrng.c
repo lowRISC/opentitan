@@ -193,9 +193,6 @@ dif_result_t dif_csrng_get_cmd_force_unhealthy_fifo(const dif_csrng_t *csrng,
     case kDifCsrngFifoUpdateReq:
       fifo_bit = CSRNG_ERR_CODE_SFIFO_UPDREQ_ERR_BIT;
       break;
-    case kDifCsrngFifoBencRec:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_BENCREQ_ERR_BIT;
-      break;
     case kDifCsrngFifoBencAck:
       fifo_bit = CSRNG_ERR_CODE_SFIFO_BENCACK_ERR_BIT;
       break;
