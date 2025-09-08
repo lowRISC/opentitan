@@ -6,11 +6,6 @@ package(default_visibility = ["//visibility:public"])
 
 load("//rules:signing.bzl", "keyset")
 
-filegroup(
-    name = "unauthorized_0_spx",
-    srcs = ["unauthorized_0_spx.pem"],
-)
-
 keyset(
     name = "spx_keyset",
     build_setting_default = "",
