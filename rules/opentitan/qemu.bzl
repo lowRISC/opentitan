@@ -292,7 +292,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
     otp = gen_otp(
         ctx,
         otptool = exec_env.otptool,
-        vmem = exec_env.otp,
+        vmem = get_fallback(ctx, "file.otp", exec_env),
     )
 
     qemu_cfg = gen_cfg(
