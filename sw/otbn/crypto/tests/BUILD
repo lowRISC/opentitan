@@ -1103,6 +1103,21 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "genprime_test",
+    timeout = "long",
+    srcs = [
+        "genprime_test.s",
+    ],
+    testcase = "genprime_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:genprime",
+        "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:run_rsa_modexp_mem",
+    ],
+)
+
+otbn_sim_test(
     name = "rsa_512_dec_test",
     timeout = "long",
     srcs = [

@@ -1,0 +1,18 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  "entrypoint": "main",
+  "input": {
+    "dmem": {
+      # Prime
+      "d0": "0xd4d3f3fe11d61a81fabed552bd02271d3256edcdc86890cd81aa93a6847f90f64d0adf2c3f155a006afc64387967c4ecd73f7f90e851a049420d92017d57cfcf",
+      #"d0": "0xf5e9429af7fcc8373a166d1c433fedf3578ea556bc43ebc8493a6515ad1e8b92c21f845a7a43812722abde15ed06e070935c78b7a8e7440fdc861f31dd01748dea12174305abd5ce0039e5258bb66e4769046c19e2690b9010dc66354a57e500b899f9de033d4d4342c713b2e0dbdf3e6ffc187c7544e466ce140d13214afa87",
+      # Not Prime
+      #"d0": "0xf4bfc945626bae98291aee7cf88a6abd484d79022bf4db6ab440b34d6498e4094e42d53291f1e57d2fb209781154077dac5b7c59d62050dce688fe13cccecab7",
+      # Psuedoprime
+      #"d0": "0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018444fdb12afb7"
+    }
+  }
+}
