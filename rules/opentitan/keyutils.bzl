@@ -259,7 +259,7 @@ SILICON_CREATOR_KEYS = struct(
     REAL = None,
     UNAUTHORIZED = struct(
         SPX = [
-            create_key_("spx_unauthorized_0", "@//sw/device/silicon_creator/rom/keys/unauthorized/spx:unauthorized_0_spx", []),
+            create_key_("unauthorized_key_0", "@//sw/device/silicon_creator/rom/keys/unauthorized/spx:spx_keyset", []),
         ],
     ),
 )
