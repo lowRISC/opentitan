@@ -59,10 +59,6 @@
         "description": "Qy",
         "type": "string"
       },
-      "d": {
-        "description": "Private value d",
-        "type": "string"
-      },
       "r": {
         "description": "r parameter",
         "type": "string"
