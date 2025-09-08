@@ -314,10 +314,6 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } sfifo_bencreq_err;
-    struct packed {
-      logic        d;
-      logic        de;
     } sfifo_updreq_err;
     struct packed {
       logic        d;
@@ -361,15 +357,15 @@ package csrng_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    csrng_hw2reg_intr_state_reg_t intr_state; // [267:260]
-    csrng_hw2reg_reseed_counter_mreg_t [2:0] reseed_counter; // [259:164]
-    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [163:156]
-    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [155:154]
-    csrng_hw2reg_genbits_reg_t genbits; // [153:122]
-    csrng_hw2reg_int_state_val_reg_t int_state_val; // [121:90]
-    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [89:73]
-    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [72:55]
-    csrng_hw2reg_err_code_reg_t err_code; // [54:7]
+    csrng_hw2reg_intr_state_reg_t intr_state; // [265:258]
+    csrng_hw2reg_reseed_counter_mreg_t [2:0] reseed_counter; // [257:162]
+    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [161:154]
+    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [153:152]
+    csrng_hw2reg_genbits_reg_t genbits; // [151:120]
+    csrng_hw2reg_int_state_val_reg_t int_state_val; // [119:88]
+    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [87:71]
+    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [70:53]
+    csrng_hw2reg_err_code_reg_t err_code; // [52:7]
     csrng_hw2reg_main_sm_state_reg_t main_sm_state; // [6:0]
   } csrng_hw2reg_t;
 

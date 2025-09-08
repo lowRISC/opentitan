@@ -219,7 +219,6 @@ module csrng_reg_top (
   logic err_code_sfifo_rcstage_err_qs;
   logic err_code_sfifo_keyvrc_err_qs;
   logic err_code_sfifo_updreq_err_qs;
-  logic err_code_sfifo_bencreq_err_qs;
   logic err_code_sfifo_bencack_err_qs;
   logic err_code_sfifo_final_err_qs;
   logic err_code_sfifo_gbencack_err_qs;
@@ -1529,33 +1528,6 @@ module csrng_reg_top (
     .qs     (err_code_sfifo_updreq_err_qs)
   );
 
-  //   F[sfifo_bencreq_err]: 6:6
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_err_code_sfifo_bencreq_err (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_code.sfifo_bencreq_err.de),
-    .d      (hw2reg.err_code.sfifo_bencreq_err.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (err_code_sfifo_bencreq_err_qs)
-  );
-
   //   F[sfifo_bencack_err]: 7:7
   prim_subreg #(
     .DW      (1),
@@ -2415,7 +2387,6 @@ module csrng_reg_top (
         reg_rdata_next[3] = err_code_sfifo_rcstage_err_qs;
         reg_rdata_next[4] = err_code_sfifo_keyvrc_err_qs;
         reg_rdata_next[5] = err_code_sfifo_updreq_err_qs;
-        reg_rdata_next[6] = err_code_sfifo_bencreq_err_qs;
         reg_rdata_next[7] = err_code_sfifo_bencack_err_qs;
         reg_rdata_next[9] = err_code_sfifo_final_err_qs;
         reg_rdata_next[10] = err_code_sfifo_gbencack_err_qs;
