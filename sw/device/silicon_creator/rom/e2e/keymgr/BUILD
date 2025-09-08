@@ -89,6 +89,7 @@ rom_e2e_keymgr_init_configs = [
                 # Test uses rstmgr, keep running on fatal resets:
                 "ot-rstmgr.fatal_reset": 0,
             },
+            otp = ":otp_img_keymgr_{}".format(config["name"]),
         ),
         verilator = verilator_params(
             timeout = "eternal",
