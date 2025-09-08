@@ -1886,6 +1886,9 @@ _FLASH_CTRL_INFO_ACCESS_LC_STATES = get_lc_items(
         fpga = fpga_params(
             otp = "//hw/top_earlgrey/data/otp:img_{}".format(lc_state),
         ),
+        qemu = qemu_params(
+            otp = "//hw/ip/otp_ctrl/data:img_{}".format(lc_state),
+        ),
         deps = [
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:mmio",
