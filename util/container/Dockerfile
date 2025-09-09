@@ -128,6 +128,17 @@ RUN curl -f -Ls -o verible.tar.gz \
     && tar -C /tools/verible -xf verible.tar.gz --strip-components=1
 ENV PATH="/tools/verible/bin:${PATH}"
 
+# Install Rust toolchain and bindgen
+# Set home directories for Rust tools to a system-wide location and add to PATH.
+ENV RUSTUP_HOME=/opt/rustup
+ENV CARGO_HOME=/opt/cargo
+ENV PATH="${CARGO_HOME}/bin:${PATH}"
+# Install rustup (the Rust toolchain manager), the nightly toolchain (for rustfmt),
+# and the bindgen-cli tool.
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path \
+    && rustup toolchain install nightly \
+    && cargo install bindgen-cli --locked
+
 # Set Locale to utf-8 everywhere
 ENV LC_ALL=en_US.UTF-8
 ENV LANG=en_US.UTF-8
