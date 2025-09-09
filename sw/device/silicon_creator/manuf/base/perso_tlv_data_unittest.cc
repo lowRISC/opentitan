@@ -217,5 +217,24 @@ TEST_F(PersoTlvDataTest, PersoTlvGetCertObjX509SanityCheckPass) {
             kErrorOk);
 }
 
+TEST_F(PersoTlvDataTest, PersoTlvGetCertObjInvalidObjType) {
+  // Build a X.509 cert object with invalid kPersoObjectTypeDeviceId type.
+  const char *name = "UDS";
+  perso_tlv_object_type_t obj_type = kPersoObjectTypeDeviceId;
+  const uint8_t *cert = kX509CertTestdata;
+  size_t cert_size = kX509CertTestdataSize;
+  size_t buf_size = kScratchBufferSize;
+
+  EXPECT_EQ(perso_tlv_cert_obj_build(name, obj_type, cert, cert_size,
+                                     scratch_buf_.data(), &buf_size),
+            kErrorOk);
+
+  perso_tlv_cert_obj_t obj;
+  size_t ltv_buf_size = buf_size;
+
+  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size, &obj),
+            kErrorPersoTlvCertObjNotFound);
+}
+
 }  // namespace
 }  // namespace perso_tlv_data_unittest
