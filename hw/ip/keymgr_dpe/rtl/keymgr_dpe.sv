@@ -294,6 +294,7 @@ module keymgr_dpe
     .prng_en_o(ctrl_lfsr_en),
     .entropy_i(ctrl_rand),
     .op_i(keymgr_dpe_ops_e'(reg2hw.control_shadowed.operation.q)),
+    .load_key_lock_i(reg2hw.load_key_lock.q),
     // TODO(#384): Add assertions to check that we are not losing some bits by casting
     // slot_src/dst_sel bits to enum type
     .slot_src_sel_i(keymgr_dpe_slot_idx_e'(reg2hw.control_shadowed.slot_src_sel.q)),
