@@ -6,17 +6,41 @@ load("@rules_cc//cc/toolchains:actions.bzl", "cc_action_type")
 load("@rules_cc//cc/toolchains:args.bzl", "cc_args")
 load("@rules_cc//cc/toolchains:args_list.bzl", "cc_args_list")
 load("@rules_cc//cc/toolchains:feature.bzl", "cc_feature")
-load("@rules_cc//cc/toolchains:feature_set.bzl", "cc_feature_set")
 load("@rules_cc//cc/toolchains:feature_constraint.bzl", "cc_feature_constraint")
-load("@rules_cc//cc/toolchains:toolchain.bzl", "cc_toolchain")
+load("@rules_cc//cc/toolchains:feature_set.bzl", "cc_feature_set")
 load("@rules_cc//cc/toolchains:tool_map.bzl", "cc_tool_map")
+load("@rules_cc//cc/toolchains:toolchain.bzl", "cc_toolchain")
 load("//rules:actions.bzl", "OT_ACTION_OBJDUMP")
+
+package(default_visibility = ["//visibility:public"])
+
+constraint_setting(
+    name = "target",
+)
+
+constraint_value(
+    name = "host",
+    constraint_setting = "target",
+)
+
+constraint_value(
+    name = "device",
+    constraint_setting = "target",
+)
+
+config_setting(
+    name = "on_device_config",
+    constraint_values = [
+        ":device",
+    ],
+)
 
 platform(
     name = "opentitan_platform",
     constraint_values = [
         "@platforms//cpu:riscv32",
         "@platforms//os:none",
+        ":device",
     ],
 )
 
