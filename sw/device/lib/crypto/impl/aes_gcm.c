@@ -183,27 +183,31 @@ static status_t aes_gcm_key_construct(otcrypto_blinded_key_t *blinded_key,
 status_t aes_gcm_check_tag_length(size_t word_len,
                                   otcrypto_aes_gcm_tag_len_t tag_len) {
   size_t bit_len = 0;
+  otcrypto_aes_gcm_tag_len_t tag_len_set = launder32(0);
   switch (launder32(tag_len)) {
     case kOtcryptoAesGcmTagLen128:
-      HARDENED_CHECK_EQ(tag_len, kOtcryptoAesGcmTagLen128);
       bit_len = 128;
+      tag_len_set = launder32(tag_len_set) | kOtcryptoAesGcmTagLen128;
       break;
     case kOtcryptoAesGcmTagLen96:
-      HARDENED_CHECK_EQ(tag_len, kOtcryptoAesGcmTagLen96);
       bit_len = 96;
+      tag_len_set = launder32(tag_len_set) | kOtcryptoAesGcmTagLen96;
       break;
     case kOtcryptoAesGcmTagLen64:
-      HARDENED_CHECK_EQ(tag_len, kOtcryptoAesGcmTagLen64);
       bit_len = 64;
+      tag_len_set = launder32(tag_len_set) | kOtcryptoAesGcmTagLen64;
       break;
     case kOtcryptoAesGcmTagLen32:
-      HARDENED_CHECK_EQ(tag_len, kOtcryptoAesGcmTagLen32);
       bit_len = 32;
+      tag_len_set = launder32(tag_len_set) | kOtcryptoAesGcmTagLen32;
       break;
     default:
       // Invalid tag length.
       return OTCRYPTO_BAD_ARGS;
   }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(tag_len_set), tag_len);
   HARDENED_CHECK_GT(bit_len, 0);
   HARDENED_CHECK_EQ(bit_len % 32, 0);
 
