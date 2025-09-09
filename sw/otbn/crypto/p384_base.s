@@ -66,6 +66,9 @@ mul384:
   bn.mulqacc.so w20.L,  w11.1, w17.0,  64
   bn.mulqacc.so w20.U,  w11.1, w17.1,   0
 
+  bn.wsrw       ACC, w31                  /* clear ACC */
+  bn.mulqacc.wo w31, w31.0, w31.0, 0, FG0 /* clear flags, dummy instruction */
+
   ret
 
 /**
@@ -101,6 +104,9 @@ mul448x128:
   bn.mulqacc            w11.1, w16.1, 0
   bn.mulqacc.so  w19.U, w11.2, w16.1, 64
   bn.mulqacc.wo    w20, w31.0, w31.0, 0
+
+  bn.wsrw       ACC, w31                  /* clear ACC */
+  bn.mulqacc.wo w31, w31.0, w31.0, 0, FG0 /* clear flags, dummy instruction */
 
   ret
 
@@ -282,6 +288,9 @@ p384_reduce_n:
   bn.mulqacc            w21.3, w14.1,   0
   bn.mulqacc.wo w24,    w21.3, w14.2,  64
 
+  bn.wsrw       ACC, w31                  /* clear ACC */
+  bn.mulqacc.wo w31, w31.0, w31.0, 0, FG0 /* clear flags, dummy instruction */
+
   /* Construct a 256-bit mask:
        w22 <= 2^256 - 1 */
   bn.not  w22, w31
@@ -311,6 +320,9 @@ p384_reduce_n:
      changing the accumulator. */
   bn.mulqacc.wo w24,    w31.0, w31.0,   0
 
+  bn.wsrw       ACC, w31                  /* clear ACC */
+  bn.mulqacc.wo w31, w31.0, w31.0, 0, FG0 /* clear flags, dummy instruction */
+
   /* Add product to the result to complete the reduction step:
        [w20:w18] = ab[383:0] + (ab[767:384] * K) */
   bn.add  w19, w19, w23
@@ -339,6 +351,9 @@ p384_reduce_n:
   bn.mulqacc            w21.1, w14.2,  64
   bn.mulqacc.so w23.U,  w21.2, w14.1,  64
   bn.mulqacc.wo w24,    w21.2, w14.2,   0
+
+  bn.wsrw       ACC, w31                  /* clear ACC */
+  bn.mulqacc.wo w31, w31.0, w31.0, 0, FG0 /* clear flags, dummy instruction */
 
   /* Isolate the lower 384 bits:
        w19 <= r[383:256] */
