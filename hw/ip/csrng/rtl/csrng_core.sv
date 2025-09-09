@@ -55,9 +55,6 @@ module csrng_core import csrng_pkg::*; #(
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_invalid;
 
-  localparam int unsigned NBlkEncArbReqs = 2;
-  localparam int unsigned BlkEncArbWidth = KeyLen+BlkLen+InstIdWidth+CmdWidth;
-
   localparam int unsigned ADataDepthClog = $clog2(CmdMaxClen)+1;
   localparam int unsigned CsEnableCopies = 51;
   localparam int unsigned LcHwDebugCopies = 1;
@@ -174,8 +171,8 @@ module csrng_core import csrng_pkg::*; #(
   logic [2:0]                  ctr_drbg_gen_sfifo_gadstage_err;
   logic                        ctr_drbg_gen_sfifo_ggenbits_err_sum;
   logic [2:0]                  ctr_drbg_gen_sfifo_ggenbits_err;
-  logic                        block_encrypt_sfifo_blkenc_err_sum;
-  logic [2:0]                  block_encrypt_sfifo_blkenc_err;
+  logic                        block_encrypt_sfifo_cmdid_err_sum;
+  logic [2:0]                  block_encrypt_sfifo_cmdid_err;
   logic                        cmd_gen_cnt_err_sum;
   logic                        cmd_stage_sm_err_sum;
   logic                        main_sm_err_sum;
@@ -187,8 +184,8 @@ module csrng_core import csrng_pkg::*; #(
   logic                        drbg_updbe_sm_err;
   logic                        drbg_updob_sm_err_sum;
   logic                        drbg_updob_sm_err;
-  logic                        aes_cipher_sm_err_sum;
-  logic                        aes_cipher_sm_err;
+  logic                        block_encrypt_sm_err_sum;
+  logic                        block_encrypt_sm_err;
   logic                        fifo_write_err_sum;
   logic                        fifo_read_err_sum;
   logic                        fifo_status_err_sum;
@@ -200,36 +197,29 @@ module csrng_core import csrng_pkg::*; #(
   logic [2:0]                  acmd_hold;
 
   // blk encrypt arbiter
-  csrng_benc_data_t            upd_benc_req_data;
+  // request path
   logic                        upd_benc_req_vld;
   logic                        upd_benc_req_rdy;
+  csrng_benc_data_t            upd_benc_req_data;
+
+  logic                        gen_benc_req_vld;
+  logic                        gen_benc_req_rdy;
+  csrng_benc_data_t            gen_benc_req_data;
+
+  logic                        block_encrypt_req_vld;
+  logic                        block_encrypt_req_rdy;
+  csrng_benc_data_t            block_encrypt_req_data;
+
+  // response path
   logic                        upd_benc_rsp_vld;
   logic                        upd_benc_rsp_rdy;
 
-  csrng_benc_data_t            upd_benc_rsp_data;
+  logic                        gen_benc_rsp_vld;
+  logic                        gen_benc_rsp_rdy;
 
-  logic [CmdWidth-1:0]         genblk_benblk_cmd_arb_din;
-  logic [InstIdWidth-1:0]      genblk_benblk_id_arb_din;
-  logic [BlkLen-1:0]           genblk_benblk_v_arb_din;
-  logic [KeyLen-1:0]           genblk_benblk_key_arb_din;
-  logic                        genblk_benblk_arb_req;
-  logic                        genblk_benblk_arb_req_rdy;
-  logic                        benblk_genblk_ack;
-  logic                        genblk_benblk_ack_rdy;
-
-  logic [BlkEncArbWidth-1:0]   benblk_arb_din [2];
-  logic [BlkEncArbWidth-1:0]   benblk_arb_data;
-  logic [KeyLen-1:0]           benblk_arb_key;
-  logic [BlkLen-1:0]           benblk_arb_v;
-  logic [InstIdWidth-1:0]      benblk_arb_inst_id;
-  logic [CmdWidth-1:0]         benblk_arb_cmd;
-  logic                        benblk_arb_vld;
-  logic                        benblk_ack;
-  logic                        benblk_ack_rdy;
-  logic                        benblk_arb_rdy;
-  logic [CmdWidth-1:0]         benblk_cmd;
-  logic [InstIdWidth-1:0]      benblk_inst_id;
-  logic [BlkLen-1:0]           benblk_v;
+  logic                        block_encrypt_rsp_vld;
+  logic                        block_encrypt_rsp_rdy;
+  csrng_benc_data_t            block_encrypt_rsp_data;
 
   // update unit arbiter
   // request path
@@ -467,7 +457,7 @@ module csrng_core import csrng_pkg::*; #(
                             drbg_gen_sm_err_sum ||
                             drbg_updbe_sm_err_sum ||
                             drbg_updob_sm_err_sum ||
-                            aes_cipher_sm_err_sum ||
+                            block_encrypt_sm_err_sum ||
                             err_code_test_bit[21];
 
   // set the interrupt sources
@@ -487,7 +477,7 @@ module csrng_core import csrng_pkg::*; #(
          ctr_drbg_gen_sfifo_ggenreq_err_sum ||
          ctr_drbg_gen_sfifo_gadstage_err_sum ||
          ctr_drbg_gen_sfifo_ggenbits_err_sum ||
-         block_encrypt_sfifo_blkenc_err_sum ||
+         block_encrypt_sfifo_cmdid_err_sum ||
          fifo_write_err_sum ||
          fifo_read_err_sum ||
          fifo_status_err_sum)) ||
@@ -522,7 +512,7 @@ module csrng_core import csrng_pkg::*; #(
          err_code_test_bit[13];
   assign ctr_drbg_gen_sfifo_ggenbits_err_sum = (|ctr_drbg_gen_sfifo_ggenbits_err) ||
          err_code_test_bit[14];
-  assign block_encrypt_sfifo_blkenc_err_sum = (|block_encrypt_sfifo_blkenc_err) ||
+  assign block_encrypt_sfifo_cmdid_err_sum = (|block_encrypt_sfifo_cmdid_err) ||
          err_code_test_bit[15];
   assign cmd_stage_sm_err_sum = (|cmd_stage_sm_err) ||
          err_code_test_bit[20];
@@ -534,12 +524,12 @@ module csrng_core import csrng_pkg::*; #(
          err_code_test_bit[23];
   assign drbg_updob_sm_err_sum = drbg_updob_sm_err ||
          err_code_test_bit[24];
-  assign aes_cipher_sm_err_sum = aes_cipher_sm_err ||
+  assign block_encrypt_sm_err_sum = block_encrypt_sm_err ||
          err_code_test_bit[25];
   assign cmd_gen_cnt_err_sum = (|cmd_gen_cnt_err) || ctr_drbg_gen_v_ctr_err ||
          ctr_drbg_upd_v_ctr_err || err_code_test_bit[26];
   assign fifo_write_err_sum =
-         block_encrypt_sfifo_blkenc_err[2] ||
+         block_encrypt_sfifo_cmdid_err[2] ||
          ctr_drbg_gen_sfifo_ggenbits_err[2] ||
          ctr_drbg_gen_sfifo_gadstage_err[2] ||
          ctr_drbg_gen_sfifo_ggenreq_err[2] ||
@@ -557,7 +547,7 @@ module csrng_core import csrng_pkg::*; #(
          (|cmd_stage_sfifo_cmd_err_wr) ||
          err_code_test_bit[28];
   assign fifo_read_err_sum =
-         block_encrypt_sfifo_blkenc_err[1] ||
+         block_encrypt_sfifo_cmdid_err[1] ||
          ctr_drbg_gen_sfifo_ggenbits_err[1] ||
          ctr_drbg_gen_sfifo_gadstage_err[1] ||
          ctr_drbg_gen_sfifo_ggenreq_err[1] ||
@@ -575,7 +565,7 @@ module csrng_core import csrng_pkg::*; #(
          (|cmd_stage_sfifo_cmd_err_rd) ||
          err_code_test_bit[29];
   assign fifo_status_err_sum =
-         block_encrypt_sfifo_blkenc_err[0] ||
+         block_encrypt_sfifo_cmdid_err[0] ||
          ctr_drbg_gen_sfifo_ggenbits_err[0] ||
          ctr_drbg_gen_sfifo_gadstage_err[0] ||
          ctr_drbg_gen_sfifo_ggenreq_err[0] ||
@@ -654,9 +644,9 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.err_code.sfifo_ggenbits_err.de = cs_enable_fo[16] &&
          ctr_drbg_gen_sfifo_ggenbits_err_sum;
 
-  assign hw2reg.err_code.sfifo_blkenc_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_blkenc_err.de = cs_enable_fo[17] &&
-         block_encrypt_sfifo_blkenc_err_sum;
+  assign hw2reg.err_code.sfifo_cmdid_err.d = 1'b1;
+  assign hw2reg.err_code.sfifo_cmdid_err.de = cs_enable_fo[17] &&
+         block_encrypt_sfifo_cmdid_err_sum;
 
   assign hw2reg.err_code.cmd_stage_sm_err.d = 1'b1;
   assign hw2reg.err_code.cmd_stage_sm_err.de = cs_enable_fo[18] &&
@@ -680,7 +670,7 @@ module csrng_core import csrng_pkg::*; #(
 
   assign hw2reg.err_code.aes_cipher_sm_err.d = 1'b1;
   assign hw2reg.err_code.aes_cipher_sm_err.de = cs_enable_fo[23] &&
-         aes_cipher_sm_err_sum;
+         block_encrypt_sm_err_sum;
 
   assign hw2reg.err_code.cmd_gen_cnt_err.d = 1'b1;
   assign hw2reg.err_code.cmd_gen_cnt_err.de = cmd_gen_cnt_err_sum;
@@ -1376,13 +1366,6 @@ module csrng_core import csrng_pkg::*; #(
   // route requests and responses between
   // these two blocks.
 
-  assign upd_benc_rsp_data = '{
-    inst_id: benblk_inst_id,
-    cmd:     benblk_cmd,
-    key:     '0, // unused in rsp path
-    v:       benblk_v
-  };
-
   csrng_ctr_drbg_upd u_csrng_ctr_drbg_upd (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1406,7 +1389,7 @@ module csrng_core import csrng_pkg::*; #(
 
     .block_encrypt_rsp_vld_i (upd_benc_rsp_vld),
     .block_encrypt_rsp_rdy_o (upd_benc_rsp_rdy),
-    .block_encrypt_rsp_data_i(upd_benc_rsp_data),
+    .block_encrypt_rsp_data_i(block_encrypt_rsp_data),
 
     .ctr_err_o             (ctr_drbg_upd_v_ctr_err),
     .fifo_updreq_err_o     (ctr_drbg_upd_sfifo_updreq_err),
@@ -1484,57 +1467,51 @@ module csrng_core import csrng_pkg::*; #(
   csrng_block_encrypt #(
     .SBoxImpl(SBoxImpl)
   ) u_csrng_block_encrypt (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .block_encrypt_enable_i(cs_enable_fo[48]),
-    .block_encrypt_req_i(benblk_arb_vld),
-    .block_encrypt_rdy_o(benblk_arb_rdy),
-    .block_encrypt_key_i(benblk_arb_key),
-    .block_encrypt_v_i(benblk_arb_v),
-    .block_encrypt_cmd_i(benblk_arb_cmd),
-    .block_encrypt_id_i(benblk_arb_inst_id),
-    .block_encrypt_ack_o(benblk_ack),
-    .block_encrypt_rdy_i(benblk_ack_rdy),
-    .block_encrypt_cmd_o(benblk_cmd),
-    .block_encrypt_id_o(benblk_inst_id),
-    .block_encrypt_v_o(benblk_v),
-    .block_encrypt_quiet_o(block_encrypt_quiet),
-    .block_encrypt_aes_cipher_sm_err_o(aes_cipher_sm_err),
-    .block_encrypt_sfifo_blkenc_err_o(block_encrypt_sfifo_blkenc_err)
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .enable_i(cs_enable_fo[48]),
+
+    .req_vld_i (block_encrypt_req_vld),
+    .req_rdy_o (block_encrypt_req_rdy),
+    .req_data_i(block_encrypt_req_data),
+
+    .rsp_vld_o (block_encrypt_rsp_vld),
+    .rsp_rdy_i (block_encrypt_rsp_rdy),
+    .rsp_data_o(block_encrypt_rsp_data),
+
+    .cipher_quiet_o  (block_encrypt_quiet),
+    .cipher_sm_err_o (block_encrypt_sm_err),
+    .fifo_cmdid_err_o(block_encrypt_sfifo_cmdid_err)
   );
 
+  // Local helper signals
+  csrng_benc_data_t block_encrypt_arb_data[2];
 
   prim_arbiter_ppc #(
-    .N(NBlkEncArbReqs), // (upd req and gen req)
-    .DW(BlkEncArbWidth) // Data width
-  ) u_prim_arbiter_ppc_benblk_arb (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
+    .N (2), // (upd req and gen req)
+    .DW(BencDataWidth)
+  ) u_prim_arbiter_ppc_benc_arb (
+    .clk_i    (clk_i),
+    .rst_ni   (rst_ni),
     .req_chk_i(cs_enable_fo[1]),
-    .req_i({genblk_benblk_arb_req, upd_benc_req_vld}),
-    .data_i(benblk_arb_din),
-    .gnt_o({genblk_benblk_arb_req_rdy, upd_benc_req_rdy}),
-    .idx_o(),
-    .valid_o(benblk_arb_vld),
-    .data_o(benblk_arb_data),
-    .ready_i(benblk_arb_rdy)
+    .req_i    ({gen_benc_req_vld, upd_benc_req_vld}),
+    .data_i   (block_encrypt_arb_data),
+    .gnt_o    ({gen_benc_req_rdy, upd_benc_req_rdy}),
+    .idx_o    (),
+    .valid_o  (block_encrypt_req_vld),
+    .data_o   (block_encrypt_req_data),
+    .ready_i  (block_encrypt_req_rdy)
   );
 
-  assign benblk_arb_din[0] = {upd_benc_req_data.key,
-                              upd_benc_req_data.v,
-                              upd_benc_req_data.inst_id,
-                              upd_benc_req_data.cmd};
-  assign benblk_arb_din[1] = {genblk_benblk_key_arb_din,
-                              genblk_benblk_v_arb_din,
-                              genblk_benblk_id_arb_din,
-                              genblk_benblk_cmd_arb_din};
+  assign block_encrypt_arb_data[0] = upd_benc_req_data;
+  assign block_encrypt_arb_data[1] = gen_benc_req_data;
 
-  assign upd_benc_rsp_vld  = (benblk_ack && (benblk_cmd != GENB));
-  assign benblk_genblk_ack = (benblk_ack && (benblk_cmd == GENB));
+  // Response valid/ready muxing, depending on the requesting unit
+  assign upd_benc_rsp_vld = (block_encrypt_rsp_vld && (block_encrypt_rsp_data.cmd != GENB));
+  assign gen_benc_rsp_vld = (block_encrypt_rsp_vld && (block_encrypt_rsp_data.cmd == GENB));
 
-  assign benblk_ack_rdy = (benblk_cmd == GENB) ? genblk_benblk_ack_rdy : upd_benc_rsp_rdy;
-
-  assign {benblk_arb_key,benblk_arb_v,benblk_arb_inst_id,benblk_arb_cmd} = benblk_arb_data;
+  assign block_encrypt_rsp_rdy = (block_encrypt_rsp_data.cmd == GENB) ? gen_benc_rsp_rdy :
+                                                                        upd_benc_rsp_rdy;
 
 
   //-------------------------------------
@@ -1586,17 +1563,18 @@ module csrng_core import csrng_pkg::*; #(
     .gen_upd_rsp_rdy_o (gen_upd_rsp_rdy),
     .gen_upd_rsp_data_i(upd_rsp_data),
 
-    .block_encrypt_req_o(genblk_benblk_arb_req),
-    .block_encrypt_rdy_i(genblk_benblk_arb_req_rdy),
-    .block_encrypt_ccmd_o(genblk_benblk_cmd_arb_din),
-    .block_encrypt_inst_id_o(genblk_benblk_id_arb_din),
-    .block_encrypt_key_o(genblk_benblk_key_arb_din),
-    .block_encrypt_v_o(genblk_benblk_v_arb_din),
-    .block_encrypt_ack_i(benblk_genblk_ack),
-    .block_encrypt_rdy_o(genblk_benblk_ack_rdy),
-    .block_encrypt_ccmd_i(benblk_cmd),
-    .block_encrypt_inst_id_i(benblk_inst_id),
-    .block_encrypt_v_i(benblk_v),
+    .block_encrypt_req_o    (gen_benc_req_vld),
+    .block_encrypt_rdy_i    (gen_benc_req_rdy),
+    .block_encrypt_ccmd_o   (gen_benc_req_data.cmd),
+    .block_encrypt_inst_id_o(gen_benc_req_data.inst_id),
+    .block_encrypt_key_o    (gen_benc_req_data.key),
+    .block_encrypt_v_o      (gen_benc_req_data.v),
+
+    .block_encrypt_ack_i    (gen_benc_rsp_vld),
+    .block_encrypt_rdy_o    (gen_benc_rsp_rdy),
+    .block_encrypt_ccmd_i   (block_encrypt_rsp_data.cmd),
+    .block_encrypt_inst_id_i(block_encrypt_rsp_data.inst_id),
+    .block_encrypt_v_i      (block_encrypt_rsp_data.v),
 
     .ctr_drbg_gen_v_ctr_err_o(ctr_drbg_gen_v_ctr_err),
     .ctr_drbg_gen_sfifo_gbencack_err_o(ctr_drbg_gen_sfifo_gbencack_err),

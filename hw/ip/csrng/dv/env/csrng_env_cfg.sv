@@ -142,14 +142,14 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   // distributions towards aes_cipher_sm_err to get away with a reasonable number of seeds.
   int num_bins_aes_cipher_sm_err = which_aes_cm.num() * Sp2VWidth;
   constraint which_fatal_err_c { which_fatal_err dist {
-      [sfifo_cmd_error : sfifo_blkenc_error]     := 3, // 3 error types per sfifo
+      [sfifo_cmd_error : sfifo_cmdid_error]      := 3, // 3 error types per sfifo
       [cmd_stage_sm_error : drbg_updob_sm_error] := 1, // 1 error type per FSM
       aes_cipher_sm_error                        := num_bins_aes_cipher_sm_err,
       cmd_gen_cnt_error                          := 3, // 3 counters feed into this bit
       [fifo_write_error : fifo_state_error]      := 1
   };}
   constraint which_err_code_c { which_err_code dist {
-      [sfifo_cmd_err : sfifo_blkenc_err]     := 3, // 3 error types per sfifo
+      [sfifo_cmd_err : sfifo_cmdid_err]      := 3, // 3 error types per sfifo
       [cmd_stage_sm_err : drbg_updob_sm_err] := 1, // 1 error type per FSM
       aes_cipher_sm_err                      := num_bins_aes_cipher_sm_err,
       cmd_gen_cnt_err                        := 3, // 3 counters feed into this bit

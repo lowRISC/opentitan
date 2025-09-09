@@ -8,51 +8,45 @@
 module csrng_block_encrypt import csrng_pkg::*; #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut
 ) (
-  input  logic clk_i,
-  input  logic rst_ni,
+  input  logic             clk_i,
+  input  logic             rst_ni,
 
-   // update interface
-  input  logic                   block_encrypt_enable_i,
-  input  logic                   block_encrypt_req_i,
-  output logic                   block_encrypt_rdy_o,
-  input  logic [KeyLen-1:0]      block_encrypt_key_i,
-  input  logic [BlkLen-1:0]      block_encrypt_v_i,
-  input  logic [CmdWidth-1:0]    block_encrypt_cmd_i,
-  input  logic [InstIdWidth-1:0] block_encrypt_id_i,
+  // Global enable
+  input  logic             enable_i,
 
-  output logic                   block_encrypt_ack_o,
-  input  logic                   block_encrypt_rdy_i,
-  output logic [CmdWidth-1:0]    block_encrypt_cmd_o,
-  output logic [InstIdWidth-1:0] block_encrypt_id_o,
-  output logic [BlkLen-1:0]      block_encrypt_v_o,
-  output logic                   block_encrypt_quiet_o,
-  output logic                   block_encrypt_aes_cipher_sm_err_o,
-  output logic [2:0]             block_encrypt_sfifo_blkenc_err_o
+  // Request from update and generate stages
+  input  logic             req_vld_i,
+  output logic             req_rdy_o,
+  input  csrng_benc_data_t req_data_i,
+
+  // Response to update and generate stages
+  output logic             rsp_vld_o,
+  input  logic             rsp_rdy_i,
+  output csrng_benc_data_t rsp_data_o,
+
+  // Status and error signals
+  output logic             cipher_quiet_o,
+  output logic             cipher_sm_err_o,
+  output logic       [2:0] fifo_cmdid_err_o
 );
 
-  localparam int BlkEncFifoDepth = 1;
-  localparam int BlkEncFifoWidth = InstIdWidth+CmdWidth;
-  localparam int NumShares = 1;
+  localparam int unsigned NumShares = 1;
+  localparam int unsigned CmdIdFifoWidth = CmdWidth + InstIdWidth;
 
-  // signals
-  // blk_encrypt_in fifo
-  logic [BlkEncFifoWidth-1:0] sfifo_blkenc_rdata;
-  logic                       sfifo_blkenc_wvld;
-  logic                       sfifo_blkenc_wrdy;
-  logic [BlkEncFifoWidth-1:0] sfifo_blkenc_wdata;
-  logic                       sfifo_blkenc_rrdy;
-  logic                       sfifo_blkenc_rvld;
-  // breakout
-  logic [CmdWidth-1:0]        sfifo_blkenc_cmd;
-  logic [InstIdWidth-1:0]     sfifo_blkenc_id;
+  // Signals
+  logic                      sfifo_cmdid_wvld;
+  logic                      sfifo_cmdid_wrdy;
+  logic [CmdIdFifoWidth-1:0] sfifo_cmdid_wdata;
+  logic                      sfifo_cmdid_rvld;
+  logic                      sfifo_cmdid_rrdy;
+  logic [CmdIdFifoWidth-1:0] sfifo_cmdid_rdata;
 
   aes_pkg::sp2v_e       cipher_in_valid;
   aes_pkg::sp2v_e       cipher_in_ready;
   aes_pkg::sp2v_e       cipher_out_valid;
   aes_pkg::sp2v_e       cipher_out_ready;
   aes_pkg::sp2v_e       cipher_crypt_busy;
-  logic [BlkLen-1:0]    cipher_data_out;
-  logic                 aes_cipher_core_enable;
+  logic    [BlkLen-1:0] cipher_data_out;
 
   logic [3:0][3:0][7:0] state_init[NumShares];
 
@@ -60,24 +54,18 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   logic [3:0][3:0][7:0] state_done[NumShares];
   logic [3:0][3:0][7:0] state_out;
 
-  assign     state_init[0] = aes_pkg::aes_transpose({<<8{block_encrypt_v_i}});
-
-  assign     key_init[0] = {<<8{block_encrypt_key_i}};
-  assign     state_out = aes_pkg::aes_transpose(state_done[0]);
-  assign     cipher_data_out = {<<8{state_out}};
-
-
-  //--------------------------------------------
-  // aes cipher core lifecycle enable
-  //--------------------------------------------
-
-  assign     aes_cipher_core_enable = block_encrypt_enable_i;
 
   //--------------------------------------------
   // aes cipher core
   //--------------------------------------------
-  assign cipher_in_valid = (aes_cipher_core_enable && block_encrypt_req_i) ?
-      aes_pkg::SP2V_HIGH : aes_pkg::SP2V_LOW;
+
+  assign state_init[0] = aes_pkg::aes_transpose({<<8{req_data_i.v}});
+  assign key_init[0]   = {<<8{req_data_i.key}};
+
+  assign state_out       = aes_pkg::aes_transpose(state_done[0]);
+  assign cipher_data_out = {<<8{state_out}};
+
+  assign cipher_in_valid = (enable_i && req_vld_i) ? aes_pkg::SP2V_HIGH : aes_pkg::SP2V_LOW;
 
   // SEC_CM: AES_CIPHER.FSM.SPARSE
   // SEC_CM: AES_CIPHER.FSM.REDUN
@@ -87,48 +75,45 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   // SEC_CM: AES_CIPHER.DATA_REG.LOCAL_ESC
 
   aes_cipher_core #(
-    .AES192Enable  ( 1'b0 ),  // AES192Enable disabled
-    .CiphOpFwdOnly ( 1'b1 ),  // Forward operation only
-    .SecMasking    ( 1'b0 ),  // Masking disable
-    .SecSBoxImpl   ( SBoxImpl )
-  ) u_aes_cipher_core   (
-    .clk_i              (clk_i),
-    .rst_ni             (rst_ni),
+    .AES192Enable (1'b0),  // AES192Enable disabled
+    .CiphOpFwdOnly(1'b1),  // Forward operation only
+    .SecMasking   (1'b0),  // Masking disable
+    .SecSBoxImpl  (SBoxImpl)
+  ) u_aes_cipher_core (
+    .clk_i (clk_i),
+    .rst_ni(rst_ni),
 
-    .cfg_valid_i          ( 1'b1                       ),
-    .in_valid_i           ( cipher_in_valid            ),
-    .in_ready_o           ( cipher_in_ready            ),
-    .out_valid_o          ( cipher_out_valid           ),
-    .out_ready_i          ( cipher_out_ready           ),
-    .op_i                 ( aes_pkg::CIPH_FWD          ),
-    .key_len_i            ( aes_pkg::AES_256           ),
-    .crypt_i              ( aes_pkg::SP2V_HIGH         ), // Enable
-    .crypt_o              ( cipher_crypt_busy          ),
-    .alert_fatal_i        ( 1'b0                       ),
-    .alert_o              ( block_encrypt_aes_cipher_sm_err_o),
-    .dec_key_gen_i        ( aes_pkg::SP2V_LOW          ), // Disable
-    .dec_key_gen_o        (                            ),
-    .prng_reseed_i        ( 1'b0                       ), // Disable
-    .prng_reseed_o        (                            ),
-    .key_clear_i          ( 1'b0                       ), // Disable
-    .key_clear_o          (                            ),
-    .data_out_clear_i     ( 1'b0                       ), // Disable
-    .data_out_clear_o     (                            ),
-    .prd_clearing_state_i ( state_init                 ), // Providing this value allows synthesis
-                                                          // to perform optimizations. We don't
-                                                          // care about SCA leakage in this context.
-    .prd_clearing_key_i   ( key_init                   ), // This input is not used. Providing this
-                                                          // value allows synthesis to perform
-                                                          // optimizations.
-    .force_masks_i        ( 1'b0                       ),
-    .data_in_mask_o       (                            ),
-    .entropy_req_o        (                            ),
-    .entropy_ack_i        ( 1'b0                       ),
-    .entropy_i            ( '0                         ),
-
-    .state_init_i         ( state_init                 ),
-    .key_init_i           ( key_init                   ),
-    .state_o              ( state_done                 )
+    .cfg_valid_i         (1'b1),
+    .in_valid_i          (cipher_in_valid),
+    .in_ready_o          (cipher_in_ready),
+    .out_valid_o         (cipher_out_valid),
+    .out_ready_i         (cipher_out_ready),
+    .op_i                (aes_pkg::CIPH_FWD),
+    .key_len_i           (aes_pkg::AES_256),
+    .crypt_i             (aes_pkg::SP2V_HIGH), // Enable
+    .crypt_o             (cipher_crypt_busy),
+    .alert_fatal_i       (1'b0),
+    .alert_o             (cipher_sm_err_o),
+    .dec_key_gen_i       (aes_pkg::SP2V_LOW), // Disable
+    .dec_key_gen_o       (),
+    .prng_reseed_i       (1'b0), // Disable
+    .prng_reseed_o       (),
+    .key_clear_i         (1'b0), // Disable
+    .key_clear_o         (),
+    .data_out_clear_i    (1'b0), // Disable
+    .data_out_clear_o    (),
+    // These two init values are provided to allow synthesis to perform optimizations.
+    // We don't care about SCA leakage in this context.
+    .prd_clearing_state_i(state_init),
+    .prd_clearing_key_i  (key_init),
+    .force_masks_i       (1'b0),
+    .data_in_mask_o      (),
+    .entropy_req_o       (),
+    .entropy_ack_i       (1'b0),
+    .entropy_i           ('0),
+    .state_init_i        (state_init),
+    .key_init_i          (key_init),
+    .state_o             (state_done)
   );
 
 
@@ -137,52 +122,51 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   //--------------------------------------------
 
   prim_fifo_sync #(
-    .Width(BlkEncFifoWidth),
-    .Pass(0),
-    .Depth(BlkEncFifoDepth)
-  ) u_prim_fifo_sync_blkenc (
-    .clk_i    (clk_i),
-    .rst_ni   (rst_ni),
-    .clr_i    (!block_encrypt_enable_i),
-    .wvalid_i (sfifo_blkenc_wvld),
-    .wready_o (sfifo_blkenc_wrdy),
-    .wdata_i  (sfifo_blkenc_wdata),
-    .rvalid_o (sfifo_blkenc_rvld),
-    .rready_i (sfifo_blkenc_rrdy),
-    .rdata_o  (sfifo_blkenc_rdata),
-    .full_o   (),
-    .depth_o  (),
-    .err_o    ()
+    .Width(CmdIdFifoWidth),
+    .Depth(1),
+    .Pass(0)
+  ) u_prim_fifo_sync_cmdid (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .clr_i   (!enable_i),
+    .wvalid_i(sfifo_cmdid_wvld),
+    .wready_o(sfifo_cmdid_wrdy),
+    .wdata_i (sfifo_cmdid_wdata),
+    .rvalid_o(sfifo_cmdid_rvld),
+    .rready_i(sfifo_cmdid_rrdy),
+    .rdata_o (sfifo_cmdid_rdata),
+    .full_o  (),
+    .depth_o (),
+    .err_o   ()
   );
 
-  assign sfifo_blkenc_wvld = block_encrypt_req_i && sfifo_blkenc_wrdy;
-  assign sfifo_blkenc_wdata = {block_encrypt_id_i,block_encrypt_cmd_i};
+  assign sfifo_cmdid_wvld  = req_vld_i && sfifo_cmdid_wrdy;
+  assign sfifo_cmdid_wdata = {req_data_i.inst_id,
+                              req_data_i.cmd};
 
-  assign block_encrypt_rdy_o = (cipher_in_ready == aes_pkg::SP2V_HIGH);
+  assign req_rdy_o = (cipher_in_ready == aes_pkg::SP2V_HIGH);
 
-  assign sfifo_blkenc_rrdy = block_encrypt_ack_o;
-  assign {sfifo_blkenc_id,sfifo_blkenc_cmd} = sfifo_blkenc_rdata;
+  assign rsp_data_o = '{
+    inst_id: sfifo_cmdid_rdata[CmdWidth +: InstIdWidth],
+    cmd:     sfifo_cmdid_rdata[0 +: CmdWidth],
+    key:     '0, // unused in rsp path
+    v:       cipher_data_out
+  };
 
-  assign block_encrypt_ack_o = block_encrypt_rdy_i && (cipher_out_valid == aes_pkg::SP2V_HIGH);
+  assign rsp_vld_o        = rsp_rdy_i && (cipher_out_valid == aes_pkg::SP2V_HIGH);
+  assign cipher_out_ready = rsp_rdy_i ? aes_pkg::SP2V_HIGH : aes_pkg::SP2V_LOW;
+  assign sfifo_cmdid_rrdy = rsp_vld_o;
 
-  assign block_encrypt_cmd_o = sfifo_blkenc_cmd;
-  assign block_encrypt_id_o = sfifo_blkenc_id;
-  assign block_encrypt_v_o = cipher_data_out;
-
-  assign cipher_out_ready = block_encrypt_rdy_i ? aes_pkg::SP2V_HIGH : aes_pkg::SP2V_LOW;
-
-  assign block_encrypt_sfifo_blkenc_err_o =
-         {( sfifo_blkenc_wvld && !sfifo_blkenc_wrdy),
-          ( sfifo_blkenc_rrdy && !sfifo_blkenc_rvld),
-          (!sfifo_blkenc_wrdy && !sfifo_blkenc_rvld)};
+  assign fifo_cmdid_err_o =
+         {( sfifo_cmdid_wvld && !sfifo_cmdid_wrdy),
+          ( sfifo_cmdid_rrdy && !sfifo_cmdid_rvld),
+          (!sfifo_cmdid_wrdy && !sfifo_cmdid_rvld)};
 
   //--------------------------------------------
-  // idle detection
+  // Cipher idle detection
   //--------------------------------------------
 
-  // simple aes cipher activity detector
-  assign block_encrypt_quiet_o =
-         ((cipher_in_valid == aes_pkg::SP2V_LOW) || (cipher_in_ready == aes_pkg::SP2V_LOW)) &&
-         (cipher_crypt_busy == aes_pkg::SP2V_LOW);
+  assign cipher_quiet_o = (cipher_crypt_busy == aes_pkg::SP2V_LOW) &&
+    ((cipher_in_valid == aes_pkg::SP2V_LOW) || (cipher_in_ready == aes_pkg::SP2V_LOW));
 
 endmodule
