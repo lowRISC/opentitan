@@ -44,20 +44,24 @@
 store_proj_randomize:
 
   /* get a 384-bit random number from URND
-    [w3, w2] = random(384) */
-  bn.wsrr   w2, 2
-  bn.wsrr   w3, 2
-  bn.rshi   w3, w31, w3 >> 128
+    [w17, w16] = random(384) */
+  bn.wsrr   w16, 2
+  bn.wsrr   w17, 2
+  bn.rshi   w17, w31, w17 >> 128
 
   /* reduce random number
-     [w2, w3] = z <= [w2, w3] mod p */
-  bn.sub   w10, w2, w12
-  bn.subb  w11, w3, w13
-  bn.sel   w2, w2, w10, C
-  bn.sel   w3, w3, w11, C
+     [w23, w22] = z <= [w17, w16] mod p */
+  bn.sub   w18, w16, w12
+  bn.subb  w19, w17, w13
+  bn.sel   w22, w16, w18, C
+  bn.sel   w23, w17, w19, C
 
-  bn.mov w10, w2
-  bn.mov w11, w3
+  /* Move z-coordinate into regs for later use
+     [w3, w2] <= z, [w11, w10] <= z */
+  bn.mov w2,  w22
+  bn.mov w3,  w23
+  bn.mov w10, w22
+  bn.mov w11, w23
 
   /* store z-coordinate
      dmem[x20+128] = [w10, w11] */
