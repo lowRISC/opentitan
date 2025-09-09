@@ -73,7 +73,6 @@ cc_library(
     ] + select({
         "//sw/device:is_english_breakfast": [],
         "//conditions:default": [
-            "//sw/device/lib/crypto/drivers:otbn",
             "//sw/device/lib/testing:entropy_testutils",
         ],
     }),
