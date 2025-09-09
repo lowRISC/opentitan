@@ -212,25 +212,25 @@ p384_isoncurve_proj:
      x^3 + axz^2  mod p = [w17,w16] <= x^3 -3xz^2 mod p
                         = [w17,w16] - [w3,w2] - [w3,w2] - [w3,w2] mod [w13,w12] */
   loopi     3, 6
-    bn.sub    w16, w16, w2
-    bn.subb   w17, w17, w3
-    bn.add    w10, w16, w12
-    bn.addc   w11, w17, w13
-    bn.sel    w16, w10, w16, C
-    bn.sel    w17, w11, w17, C
+    bn.sub    w0,  w16, w2
+    bn.subb   w1,  w17, w3
+    bn.add    w10, w0,  w12
+    bn.addc   w11, w1,  w13
+    bn.sel    w16, w10, w0, C
+    bn.sel    w17, w11, w1, C
 
   /* add domain parameter bz^3
-     x^3 + axz^2 + bz^3 mod p = [w17,w16] <= [w17,w16] + [w5,w4] mod [w13,w12] */
+     x^3 + axz^2 + bz^3 mod p = [w1,w0] <= [w17,w16] + [w5,w4] mod [w13,w12] */
   bn.add    w16, w16, w4
   bn.addc   w17, w17, w5
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
+  bn.sel    w0,  w16, w10, C
+  bn.sel    w1,  w17, w11, C
 
   /* store result (right side)
-     dmem[dptr_rhs] <= x^3 + axz^2 + bz^3 mod p = [w17,w16] */
-  li        x2, 16
+     dmem[dptr_rhs] <= x^3 + axz^2 + bz^3 mod p = [w1,w0] */
+  li        x2, 0
   bn.sid    x2++, 0(x22)
   bn.sid    x2++, 32(x22)
 
