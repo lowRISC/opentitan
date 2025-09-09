@@ -81,25 +81,40 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
   }
 
   // Set the block cipher mode based on the key mode.
+  otcrypto_key_mode_t blinded_key_mode_used = launder32(0);
   switch (blinded_key->config.key_mode) {
     case kOtcryptoKeyModeAesEcb:
       aes_key->mode = kAesCipherModeEcb;
+      blinded_key_mode_used =
+          launder32(blinded_key_mode_used) | kOtcryptoKeyModeAesEcb;
       break;
     case kOtcryptoKeyModeAesCbc:
-      aes_key->mode = kAesCipherModeCbc;
+      aes_key->mode = launder32(kAesCipherModeCbc);
+      blinded_key_mode_used =
+          launder32(blinded_key_mode_used) | kOtcryptoKeyModeAesCbc;
       break;
     case kOtcryptoKeyModeAesCfb:
-      aes_key->mode = kAesCipherModeCfb;
+      aes_key->mode = launder32(kAesCipherModeCfb);
+      blinded_key_mode_used =
+          launder32(blinded_key_mode_used) | kOtcryptoKeyModeAesCfb;
       break;
     case kOtcryptoKeyModeAesOfb:
-      aes_key->mode = kAesCipherModeOfb;
+      aes_key->mode = launder32(kAesCipherModeOfb);
+      blinded_key_mode_used =
+          launder32(blinded_key_mode_used) | kOtcryptoKeyModeAesOfb;
       break;
     case kOtcryptoKeyModeAesCtr:
-      aes_key->mode = kAesCipherModeCtr;
+      aes_key->mode = launder32(kAesCipherModeCtr);
+      blinded_key_mode_used =
+          launder32(blinded_key_mode_used) | kOtcryptoKeyModeAesCtr;
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
   }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(blinded_key_mode_used),
+                    blinded_key->config.key_mode);
 
   // Check that the key mode matches the requested block cipher mode.
   if (memcmp(&aes_key->mode, &aes_mode, sizeof(aes_key->mode)) != 0) {
@@ -144,18 +159,19 @@ static status_t aes_padding_apply(otcrypto_aes_padding_t padding_mode,
   // Pad a full block if the last block is full, otherwise just fill the last
   // block.
   size_t padding_len = kAesBlockNumBytes - partial_data_len;
-  hardened_bool_t padding_written = kHardenedBoolFalse;
+  otcrypto_aes_padding_t padding_written = launder32(0);
   switch (launder32(padding_mode)) {
     case kOtcryptoAesPaddingPkcs7:
       // Pads with value same as the number of padding bytes.
       memset(padding, (uint8_t)padding_len, padding_len);
-      padding_written = kHardenedBoolTrue;
+      padding_written = launder32(padding_written) | kOtcryptoAesPaddingPkcs7;
       break;
     case kOtcryptoAesPaddingIso9797M2:
       // Pads with 0x80 (0b10000000), followed by zero bytes.
       memset(padding, 0x0, padding_len);
       padding[0] = 0x80;
-      padding_written = kHardenedBoolTrue;
+      padding_written =
+          launder32(padding_written) | kOtcryptoAesPaddingIso9797M2;
       break;
     case kOtcryptoAesPaddingNull:
       // This routine should not be called if padding is not needed.
@@ -164,7 +180,9 @@ static status_t aes_padding_apply(otcrypto_aes_padding_t padding_mode,
       // Unrecognized padding mode.
       return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(launder32(padding_written), kHardenedBoolTrue);
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(padding_written), padding_mode);
 
   return OTCRYPTO_OK;
 }
@@ -325,16 +343,24 @@ static otcrypto_status_t otcrypto_aes_impl(
   HARDENED_TRY(aes_key_construct(key, aes_mode, &aes_key));
 
   // Start the operation (encryption or decryption).
+  otcrypto_aes_operation_t aes_operation_started = launder32(0);
   switch (aes_operation) {
     case kOtcryptoAesOperationEncrypt:
       HARDENED_TRY(aes_encrypt_begin(aes_key, &aes_iv));
+      aes_operation_started =
+          launder32(aes_operation_started) | kOtcryptoAesOperationEncrypt;
       break;
     case kOtcryptoAesOperationDecrypt:
       HARDENED_TRY(aes_decrypt_begin(aes_key, &aes_iv));
+      aes_operation_started =
+          launder32(aes_operation_started) | kOtcryptoAesOperationDecrypt;
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
   }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(aes_operation_started), aes_operation);
 
   // Perform the cipher operation for all full blocks. The input and output are
   // offset by `block_offset` number of blocks, where `block_offset` can be 1
