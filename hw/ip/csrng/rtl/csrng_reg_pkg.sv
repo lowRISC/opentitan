@@ -282,7 +282,7 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } sfifo_blkenc_err;
+    } sfifo_cmdid_err;
     struct packed {
       logic        d;
       logic        de;

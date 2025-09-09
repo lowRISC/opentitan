@@ -24,7 +24,7 @@ interface csrng_path_if
       "sfifo_gbencack", "sfifo_grcstage", "sfifo_ggenreq", "sfifo_gadstage", "sfifo_ggenbits":
         return {core_path,".u_csrng_ctr_drbg_gen.sfifo_", fifo_name.substr(7, fifo_name.len()-1),
                 "_", which_path};
-      "sfifo_blkenc": return {core_path, ".u_csrng_block_encrypt.", fifo_name, "_", which_path};
+      "sfifo_cmdid": return {core_path, ".u_csrng_block_encrypt.", fifo_name, "_", which_path};
       default: `uvm_fatal("csrng_path_if", "Invalid fifo name!")
     endcase // case (fifo_name.substr(6, fifo_name.len()-1))
   endfunction // fifo_err_path
