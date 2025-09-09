@@ -280,6 +280,8 @@ cc_args(
     ],
 )
 
+# NOTE: please keep this list of warnings in sync with the warnings in
+# `compile_flags.txt` so that `clangd` can see them.
 cc_args(
     name = "warnings",
     actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
@@ -292,12 +294,12 @@ cc_args(
         "-Winvalid-pch",
         "-Wno-covered-switch-default",
         "-Wno-error=unused-function",
+        "-Wno-gnu-empty-initializer",
         "-Wno-gnu-statement-expression-from-macro-expansion",
         "-Wno-gnu-zero-variadic-macro-arguments",
         "-Wno-missing-field-initializers",
         "-Wno-sign-compare",
         "-Wno-unused-parameter",
-        "-Wno-gnu-empty-initializer",
         "-Wno-zero-length-array",
         "-Wstrict-prototypes",
         "-Wswitch-default",

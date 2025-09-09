@@ -4,8 +4,8 @@
 
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 
-#include "dt/dt_entropy_src.h"
-#include "dt/dt_rv_core_ibex.h"
+#include "hw/top/dt/dt_entropy_src.h"
+#include "hw/top/dt/dt_rv_core_ibex.h"
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/crc32.h"
@@ -14,7 +14,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
-#include "entropy_src_regs.h"
+#include "hw/top/entropy_src_regs.h"
 #include "otp_ctrl_regs.h"
 #include "rv_core_ibex_regs.h"
 

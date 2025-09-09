@@ -8,7 +8,7 @@
 
 #include "sw/device/lib/dif/dif_base.h"
 
-#include "keymgr_regs.h"  // Generated.
+#include "hw/top/keymgr_regs.h"  // Generated.
 #include "sw/device/lib/dif/autogen/dif_keymgr_autogen.h"
 
 /**

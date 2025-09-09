@@ -4,10 +4,10 @@
 
 #include <stdbool.h>
 
-#include "dt/dt_rv_core_ibex.h"
+#include "hw/top/dt/dt_rv_core_ibex.h"
 #include "sw/device/lib/arch/device.h"
 
-#include "rv_core_ibex_regs.h"
+#include "hw/top/rv_core_ibex_regs.h"
 #include "uart_regs.h"
 
 // Use the first dt_rv_core_ibex_t enum, i.e. the first Ibex core instance.

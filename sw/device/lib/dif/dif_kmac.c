@@ -10,7 +10,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 
-#include "kmac_regs.h"  // Generated.
+#include "hw/top/kmac_regs.h"  // Generated.
 
 enum {
   /**

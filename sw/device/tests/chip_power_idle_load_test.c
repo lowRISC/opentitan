@@ -24,8 +24,8 @@
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "alert_handler_regs.h"
 #include "aon_timer_regs.h"
+#include "hw/top/alert_handler_regs.h"
 #include "pwm_regs.h"
 
 typedef void (*isr_handler)(void);

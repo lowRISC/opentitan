@@ -10,7 +10,7 @@
 #include "sw/device/lib/dif/dif_test_base.h"
 
 extern "C" {
-#include "rv_core_ibex_regs.h"  // Generated.
+#include "hw/top/rv_core_ibex_regs.h"  // Generated.
 }  // extern "C"
 
 // We define global namespace == and << to make

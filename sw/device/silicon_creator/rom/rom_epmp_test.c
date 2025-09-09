@@ -26,7 +26,7 @@
 #include "sw/device/silicon_creator/lib/epmp_test_unlock.h"
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
 
-#include "flash_ctrl_regs.h"  // Generated.
+#include "hw/top/flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /**

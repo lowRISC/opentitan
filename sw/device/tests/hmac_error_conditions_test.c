@@ -17,7 +17,7 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-#include "hmac_regs.h"
+#include "hw/top/hmac_regs.h"
 
 typedef enum hmac_err {
 

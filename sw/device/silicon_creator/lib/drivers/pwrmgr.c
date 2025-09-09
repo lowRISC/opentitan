@@ -4,12 +4,12 @@
 
 #include "sw/device/silicon_creator/lib/drivers/pwrmgr.h"
 
-#include "dt/dt_pwrmgr.h"
+#include "hw/top/dt/dt_pwrmgr.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 
-#include "pwrmgr_regs.h"
+#include "hw/top/pwrmgr_regs.h"
 
 static inline uint32_t pwrmgr_base(void) {
   return dt_pwrmgr_primary_reg_block(kDtPwrmgrAon);

@@ -11,7 +11,7 @@ ${fileheader}
 // See the following include file for details on the types used in this file.
 #include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
 
-#include "otp_ctrl_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"  // Generated.
 
 <%
   def ToPascalCase(in_str):

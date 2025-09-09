@@ -14,8 +14,8 @@
 
 #include "sw/device/lib/base/mmio.h"
 
+#include "hw/top/uart_regs.h"
 #include "sw/device/lib/dif/autogen/dif_uart_autogen.h"
-#include "uart_regs.h"
 
 #ifdef __cplusplus
 extern "C" {

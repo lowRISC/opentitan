@@ -12,7 +12,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "keymgr_regs.h"  // Generated
+#include "hw/top/keymgr_regs.h"  // Generated
 
 namespace dif_keymgr_unittest {
 namespace {

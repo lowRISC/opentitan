@@ -11,8 +11,8 @@
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
 
-#include "flash_ctrl_regs.h"  // Generated.
-#include "otp_ctrl_regs.h"    // Generated.
+#include "hw/top/flash_ctrl_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"    // Generated.
 
 /**
  * Partition 0, page 0 fields.

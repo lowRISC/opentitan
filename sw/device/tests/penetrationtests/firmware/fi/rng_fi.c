@@ -20,7 +20,7 @@
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/rng_fi_commands.h"
 
-#include "edn_regs.h"  // Generated
+#include "hw/top/edn_regs.h"  // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 enum {

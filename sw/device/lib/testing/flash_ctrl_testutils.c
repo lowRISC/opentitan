@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "dt/dt_flash_ctrl.h"  // Generated
+#include "hw/top/dt/dt_flash_ctrl.h"  // Generated
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -16,7 +16,7 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "flash_ctrl_regs.h"  // Generated
+#include "hw/top/flash_ctrl_regs.h"  // Generated
 
 #define MODULE_ID MAKE_MODULE_ID('f', 'c', 't')
 

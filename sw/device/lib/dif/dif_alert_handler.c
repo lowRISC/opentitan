@@ -9,7 +9,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 
-#include "alert_handler_regs.h"  // Generated.
+#include "hw/top/alert_handler_regs.h"  // Generated.
 
 static_assert(ALERT_HANDLER_PARAM_N_CLASSES == 4,
               "Expected four alert classes!");

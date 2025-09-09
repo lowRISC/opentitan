@@ -6,7 +6,7 @@
 
 #include "sw/device/lib/arch/device.h"
 
-#include "rv_core_ibex_regs.h"
+#include "hw/top/rv_core_ibex_regs.h"
 #include "uart_regs.h"
 
 /**

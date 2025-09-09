@@ -16,7 +16,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "pwrmgr_regs.h"
+#include "hw/top/pwrmgr_regs.h"
 
 enum {
   kPlicTarget = 0,

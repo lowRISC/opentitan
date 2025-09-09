@@ -17,8 +17,8 @@
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
+#include "hw/top/uart_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "uart_regs.h"  // Generated.
 
 #define MODULE_ID MAKE_MODULE_ID('u', 't', 'u')
 

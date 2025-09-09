@@ -6,12 +6,12 @@
 
 #include <assert.h>
 
-#include "dt/dt_lc_ctrl.h"
-#include "dt/dt_otp_ctrl.h"
-#include "dt/dt_rstmgr.h"
-#include "dt/dt_rv_core_ibex.h"
-#include "dt/dt_sram_ctrl.h"
-#include "dt/dt_uart.h"
+#include "hw/top/dt/dt_lc_ctrl.h"
+#include "hw/top/dt/dt_otp_ctrl.h"
+#include "hw/top/dt/dt_rstmgr.h"
+#include "hw/top/dt/dt_rv_core_ibex.h"
+#include "hw/top/dt/dt_sram_ctrl.h"
+#include "hw/top/dt/dt_uart.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
@@ -37,7 +37,7 @@
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #endif
 
-#include "alert_handler_regs.h"
+#include "hw/top/alert_handler_regs.h"
 #include "lc_ctrl_regs.h"
 #include "otp_ctrl_regs.h"
 #include "rstmgr_regs.h"
