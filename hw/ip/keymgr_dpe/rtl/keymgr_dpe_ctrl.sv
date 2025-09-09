@@ -31,6 +31,7 @@ module keymgr_dpe_ctrl
   // Software interface
   input op_start_i,
   input keymgr_dpe_ops_e op_i,
+  input load_key_lock_i,
   input [DpeNumSlotsWidth-1:0] slot_src_sel_i,
   input [DpeNumSlotsWidth-1:0] slot_dst_sel_i,
   input keymgr_dpe_policy_t slot_policy_i,
@@ -676,7 +677,9 @@ module keymgr_dpe_ctrl
 
   assign invalid_gen = gen_req & (~active_key_slot_o.valid | ~key_version_vld_o);
 
-  assign invalid_load = load_req & (~root_key_i.valid | destination_slot_valid);
+  assign invalid_load = load_req & (~root_key_i.valid      |
+                                    destination_slot_valid |
+                                    load_key_lock_i);
 
   // This is similar to `invalid_advance` except that it does not depend on a incoming request.
   // The outer module uses `invalid_advance_o` to invalidate KMAC msg payload, when the advance

@@ -58,6 +58,7 @@
 | keymgr_dpe.[`ERR_CODE`](#err_code)                                 | 0xc8     |        4 | Key manager error code.                                                    |
 | keymgr_dpe.[`FAULT_STATUS`](#fault_status)                         | 0xcc     |        4 | This register represents both synchronous and asynchronous fatal faults.   |
 | keymgr_dpe.[`DEBUG`](#debug)                                       | 0xd0     |        4 | The register holds some debug information that may be convenient if keymgr |
+| keymgr_dpe.[`LOAD_KEY_LOCK`](#load_key_lock)                       | 0xd4     |        4 | Register write lock for the LOAD_KEY command                               |
 
 ## INTR_STATE
 Interrupt State Register
@@ -689,6 +690,23 @@ misbehaves.
 |   2    |  rw0c  |   0x0   | INVALID_DEV_ID       | Device ID failed input checks during operation       |
 |   1    |  rw0c  |   0x0   | INVALID_OWNER_SEED   | Owner seed failed input checks during operation      |
 |   0    |  rw0c  |   0x0   | INVALID_CREATOR_SEED | Creator seed failed input checks during operation    |
+
+## LOAD_KEY_LOCK
+Register write lock for the LOAD_KEY command
+- Offset: `0xd4`
+- Reset default: `0x0`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "LOCK", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                  |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                                                     |
+|   0    |  rw1s  |   0x0   | LOCK   | Load key register write lock. Load key lock to 0, and its value cannot be altered by software until the next reset or locked. Once locked, the LOAD_KEY command is disabled. |
 
 
 <!-- END CMDGEN -->
