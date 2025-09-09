@@ -62,6 +62,23 @@ opentitan_test(
 )
 
 cc_library(
+    name = "clkmgr",
+    srcs = ["clkmgr.c"],
+    hdrs = [
+        "clkmgr.h",
+    ],
+    deps = [
+        ":entropy",
+        ":rv_core_ibex",
+        "//hw/top:clkmgr_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto/impl:status",
+    ],
+)
+
+cc_library(
     name = "keymgr",
     srcs = ["keymgr.c"],
     hdrs = [
@@ -229,6 +246,11 @@ dual_cc_library(
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//hw/top:rv_core_ibex_c_regs",
             "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/base:csr",
+        ],
+        shared = [
+            "//sw/device/lib/base:hardened",
+            "//sw/device/lib/crypto/impl:status",
         ],
     ),
 )
