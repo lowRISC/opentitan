@@ -105,7 +105,7 @@ typedef enum dif_csrng_fifo {
   kDifCsrngFifoGrcStage,
   kDifCsrngFifoGGenReq,
   kDifCsrngFifoGadStage,
-  kDifCsrngFifoBlockEnc,
+  kDifCsrngFifoCmdId,
 } dif_csrng_fifo_t;
 
 /**
