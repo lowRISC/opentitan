@@ -81,8 +81,6 @@ sim_verilator(
         "//hw/top_englishbreakfast/sw/dt:sim_verilator",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    #otp = "//hw/top_englishbreakfast/data/otp:img_rma",
-    rom_scramble_config = "//hw/top_englishbreakfast/data/autogen:top_englishbreakfast.gen.hjson",
     test_cmd = "testing-not-supported",
 )
 
@@ -95,7 +93,6 @@ sim_verilator(
         "--interface=verilator",
         "--verilator-bin=$(rootpath //hw/top_englishbreakfast:verilator_sim)",
         "--verilator-rom={rom}",
-        #"--verilator-otp={otp}",
         "--verilator-flash={firmware}",
     ],
     base = ":sim_verilator_base",
