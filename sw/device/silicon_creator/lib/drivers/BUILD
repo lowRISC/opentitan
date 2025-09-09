@@ -93,6 +93,7 @@ opentitan_test(
         ":alert",
         ":rstmgr",
         "//hw/top:alert_handler_c_regs",
+        "//hw/top:dt",
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:rstmgr_c_regs",
@@ -667,7 +668,6 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top:dt",
             "//hw/top:rstmgr_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
@@ -677,6 +677,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
+            "//hw/top:dt",
             "//hw/top:otp_ctrl_c_regs",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:macros",
@@ -805,7 +806,7 @@ opentitan_test(
         ":retention_sram",
         ":rstmgr",
         ":watchdog",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
