@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt/dt_api.h"
+#include "dt/dt_rstmgr.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/memory.h"
@@ -92,7 +94,8 @@ bool test_main(void) {
     EXECUTE_TEST(result, alert_escalate_test);
     LOG_ERROR("Test failure: should have reset before this line.");
     result = UNKNOWN();
-  } else if (bitfield_bit32_read(reason, kRstmgrReasonEscalation)) {
+  } else if (rstmgr_is_hw_reset_reason(kDtRstmgrAon, reason,
+                                       kDtInstanceIdAlertHandler, 0)) {
     CHECK(bitfield_popcount32(reason) == 1, "Expected exactly 1 reset reason.");
     LOG_INFO("Detected reset after escalation test");
   } else {
