@@ -191,6 +191,8 @@ typedef struct otbn_app {
 /**
  * Write to OTBN's data memory (DMEM)
  *
+ * To mitigate SCA, write in random order to the DMEM.
+ *
  * Only 32b-aligned 32b word accesses are allowed. If `dest` is not
  * word-aligned or if the length and offset exceed the DMEM size, this function
  * will return an error.
