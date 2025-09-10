@@ -250,6 +250,12 @@
                 '''
         }
       ]
+      tags: [
+        // Don't check this register in the CSR tests. It gets written by hardware in response to
+        // error reports (which are sent by the base sequence) and the CSR tests can't model its
+        // value.
+        "excl:CsrAllTests:CsrExclAll"
+      ]
     }
     { name: "ERROR_LOG_ADDRESS"
       desc: '''Contains the bits [top_pkg::TL_AW-1:2] of the address on which a RACL violation occurred.
@@ -268,6 +274,12 @@
                 Address on which a RACL violation occurred, shifted by 2 bits to the right.
                 '''
         }
+      ]
+      tags: [
+        // Don't check this register in the CSR tests. It gets written by hardware in response to
+        // error reports (which are sent by the base sequence) and the CSR tests can't model its
+        // value.
+        "excl:CsrAllTests:CsrExclAll"
       ]
     }
   ]
