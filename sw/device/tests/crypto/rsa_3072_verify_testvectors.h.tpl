@@ -46,7 +46,6 @@ static const rsa_3072_verify_test_vector_t rsa_3072_verify_tests[${len(tests)}] 
                               ${', '.join(t["n_hexwords"][i:i + 4])},
   % endfor
                           }},
-                .e = ${'{:#x}'.format(t["e"])},
             },
         .signature =
             {.data =
