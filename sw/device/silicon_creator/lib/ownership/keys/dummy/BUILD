@@ -1,7 +1,6 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-load("//rules/opentitan:keyutils.bzl", "key_ecdsa")
 load("//rules:signing.bzl", "keyset")
 
 package(default_visibility = ["//visibility:public"])
@@ -49,14 +48,6 @@ filegroup(
 filegroup(
     name = "app_prod_ecdsa_pub",
     srcs = ["app_prod_ecdsa_p256.pub.der"],
-)
-
-key_ecdsa(
-    name = "app_prod_ecdsa",
-    method = "local",
-    private_key = "app_prod_ecdsa_p256.der",
-    pub_key = "app_prod_ecdsa_p256.pub.der",
-    type = "ProdKey",
 )
 
 keyset(

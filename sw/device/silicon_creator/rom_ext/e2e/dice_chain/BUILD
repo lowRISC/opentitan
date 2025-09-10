@@ -197,12 +197,12 @@ opentitan_test(
 DEBUG_MODE_TESTCASES = [
     {
         "name": "off",
-        "key": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+        "key": {"//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0"},
         "defines": ["TEST_EXPECT_DEBUG_OFF=1"],
     },
     {
         "name": "on",
-        "key": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_test_ecdsa": "test_key_0"},
+        "key": {"//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_test_0"},
         "defines": ["TEST_EXPECT_DEBUG_ON=1"],
     },
 ]
