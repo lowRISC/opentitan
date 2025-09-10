@@ -16,12 +16,8 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // NOTE: These values come from the top-level instantiation. For now, we're fixing them to
-  // something reasonable, but we don't intend the testing to have an opinion about their values
-  //
-  // *These* values get passed through to the environment through the config db.
-  localparam int unsigned NumSubscribingIps = 5;
-  localparam int unsigned NumExternalSubscribingIps = 5;
+  localparam int unsigned NumSubscribingIps = ${nr_subscribing_ips};
+  localparam int unsigned NumExternalSubscribingIps = ${nr_external_subscribing_ips};
 
   wire clk, rst_n, rst_shadowed_n;
   wire intr_racl_error;
