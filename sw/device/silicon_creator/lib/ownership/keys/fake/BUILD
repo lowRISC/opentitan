@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
-load("//rules/opentitan:keyutils.bzl", "key_ecdsa", "key_sphincs_plus")
 load("//rules:signing.bzl", "keyset")
 
 package(default_visibility = ["//visibility:public"])
@@ -85,19 +84,10 @@ filegroup(
     srcs = ["unlock_spx.pem"],
 )
 
-filegroup(
-    name = "app_ecdsa_prod",
-    srcs = ["app_prod_ecdsa_p256.der"],
-)
-
+# The ownership e2e tests need access to both the app_prod_ecdsa and app_dev_pub public key files below.
 filegroup(
     name = "app_prod_ecdsa_pub",
     srcs = ["app_prod_ecdsa_p256.pub.der"],
-)
-
-filegroup(
-    name = "app_dev",
-    srcs = ["app_dev_ecdsa_p256.der"],
 )
 
 filegroup(
@@ -105,74 +95,14 @@ filegroup(
     srcs = ["app_dev_ecdsa_p256.pub.der"],
 )
 
-filegroup(
-    name = "app_spx_prod",
-    srcs = ["app_prod_spx.pem"],
-)
-
-filegroup(
-    name = "app_spx_prod_pub",
-    srcs = ["app_prod_spx.pub.pem"],
-)
-
-key_ecdsa(
-    name = "app_prod_ecdsa",
-    method = "local",
-    private_key = "app_prod_ecdsa_p256.der",
-    pub_key = "app_prod_ecdsa_p256.pub.der",
-    type = "ProdKey",
-)
-
-key_sphincs_plus(
-    name = "app_prod_spx",
-    config = {"domain": "Pure"},
-    method = "local",
-    private_key = "app_prod_spx.pem",
-    pub_key = "app_prod_spx.pub.pem",
-    type = "ProdKey",
-)
-
-key_ecdsa(
-    name = "app_dev_ecdsa",
-    method = "local",
-    private_key = "app_dev_ecdsa_p256.der",
-    pub_key = "app_dev_ecdsa_p256.pub.der",
-    type = "DevKey",
-)
-
-key_sphincs_plus(
-    name = "app_dev_spx",
-    config = {"domain": "PreHashedSha256"},
-    method = "local",
-    private_key = "app_dev_spx.pem",
-    pub_key = "app_dev_spx.pub.pem",
-    type = "DevKey",
-)
-
-key_ecdsa(
-    name = "app_test_ecdsa",
-    method = "local",
-    private_key = "app_test_ecdsa_p256.der",
-    pub_key = "app_test_ecdsa_p256.pub.der",
-    type = "TestKey",
-)
-
-key_ecdsa(
-    name = "app_unauthorized_ecdsa",
-    method = "local",
-    private_key = "app_unauthorized_ecdsa_p256.der",
-    pub_key = "app_unauthorized_ecdsa_p256.pub.der",
-    type = "TestKey",
-)
-
 pkg_files(
     name = "fpga_dev_files",
     testonly = True,
     srcs = [
-        ":app_dev",
         ":app_dev_pub",
-        ":app_ecdsa_prod",
         ":app_prod_ecdsa_pub",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:spx_keyset",
     ],
 )
 
