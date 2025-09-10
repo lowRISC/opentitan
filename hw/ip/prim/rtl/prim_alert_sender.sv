@@ -67,6 +67,8 @@ module prim_alert_sender
   output alert_tx_t alert_tx_o
 );
 
+  default clocking @(posedge clk_i); endclocking
+  default disable iff !rst_ni;
 
   /////////////////////////////////
   // decode differential signals //
@@ -303,38 +305,41 @@ module prim_alert_sender
 
   if (AsyncOn) begin : gen_async_assert
     sequence PingSigInt_S;
-      alert_rx_i.ping_p == alert_rx_i.ping_n [*2];
+      alert_rx_i.ping_p == alert_rx_i.ping_n [*(SkewCycles + 1)];
     endsequence
     sequence AckSigInt_S;
-      alert_rx_i.ping_p == alert_rx_i.ping_n [*2];
+      alert_rx_i.ping_p == alert_rx_i.ping_n [*(SkewCycles + 1)];
     endsequence
 
-  `ifndef FPV_ALERT_NO_SIGINT_ERR
-    // check propagation of sigint issues to output within three cycles, or four due to CDC
-    // shift sequence to the right to avoid reset effects.
-    `ASSERT(SigIntPing_A, ##1 PingSigInt_S |->
-        ##[SkewCycles+2:SkewCycles+3] alert_tx_o.alert_p == alert_tx_o.alert_n)
-    `ASSERT(SigIntAck_A, ##1 AckSigInt_S |->
-        ##[SkewCycles+2:SkewCycles+3] alert_tx_o.alert_p == alert_tx_o.alert_n)
-  `endif
+`ifndef FPV_ALERT_NO_SIGINT_ERR
+    // Check that any sigint issue is propagated to the output within at most four cycles (this
+    // allows three cycles for the logic plus one for CDC uncertainty).
+    SigIntPing_A: assert property (##1 PingSigInt_S |->
+                                   ##[3:4] alert_tx_o.alert_p == alert_tx_o.alert_n);
+    SigIntAck_A: assert property (##1 AckSigInt_S |->
+                                  ##[3:4] alert_tx_o.alert_p == alert_tx_o.alert_n);
+`endif
 
     // Test in-band FSM reset request (via signal integrity error)
-    `ASSERT(InBandInitFsm_A, PingSigInt_S or AckSigInt_S |->
-        ##[SkewCycles+2:SkewCycles+3] state_q == Idle)
-    `ASSERT(InBandInitPing_A, PingSigInt_S or AckSigInt_S |->
-        ##[SkewCycles+2:SkewCycles+3] !ping_set_q)
-    // output must be driven diff unless sigint issue detected
-    `ASSERT(DiffEncoding_A, (alert_rx_i.ack_p ^ alert_rx_i.ack_n) &&
-        (alert_rx_i.ping_p ^ alert_rx_i.ping_n) |->
-        ##[SkewCycles+2:SkewCycles+4] alert_tx_o.alert_p ^ alert_tx_o.alert_n)
+    InBandInitFsm_A: assert property (PingSigInt_S or AckSigInt_S |-> ##[3:4] state_q == Idle);
+    InBandInitPing_A: assert property (PingSigInt_S or AckSigInt_S |-> ##[3:4] !ping_set_q);
+
+    // Output must be driven diff unless sigint issue detected
+    DiffEncoding_A: assert property ((alert_rx_i.ack_p ^ alert_rx_i.ack_n) &&
+                                     (alert_rx_i.ping_p ^ alert_rx_i.ping_n) |->
+                                     ##[3:5] alert_tx_o.alert_p ^ alert_tx_o.alert_n);
 
     // handshakes can take indefinite time if blocked due to sigint on outgoing
     // lines (which is not visible here). thus, we only check whether the
     // handshake is correctly initiated and defer the full handshake checking to the testbench.
-    `ASSERT(PingHs_A, ##1 $changed(alert_rx_i.ping_p) &&
-        (alert_rx_i.ping_p ^ alert_rx_i.ping_n) ##2 state_q == Idle |=>
-        ##[0:1] $rose(alert_tx_o.alert_p), clk_i,
-        !rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
+    PingHs_A: assert property (disable iff (!rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
+                               ##1
+                               ($changed(alert_rx_i.ping_p) &&
+                                (alert_rx_i.ping_p ^ alert_rx_i.ping_n))
+                               ##2
+                               state_q == Idle |=>
+                               ##[0:1] $rose(alert_tx_o.alert_p));
+
   end else begin : gen_sync_assert
     sequence PingSigInt_S;
       alert_rx_i.ping_p == alert_rx_i.ping_n;
