@@ -37,6 +37,15 @@ bazel_dep(
 
 # Overrides and patches:
 single_version_override(
+    module_name = "rules_cc",
+    patch_strip = 1,
+    patches = [
+        "@lowrisc_opentitan//third_party/cc/patches:remove_gold.patch",
+    ],
+    version = "0.1.2",
+)
+
+single_version_override(
     module_name = "rules_rust",
     patch_strip = 1,
     patches = [
