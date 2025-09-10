@@ -62,6 +62,13 @@ otbn_library(
 )
 
 otbn_library(
+  name = "genprime",
+  srcs = [
+    "genprime.s",
+  ],
+)
+
+otbn_library(
     name = "modexp",
     srcs = [
         "modexp.s",
