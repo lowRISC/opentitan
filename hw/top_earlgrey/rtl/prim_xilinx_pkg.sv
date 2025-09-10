@@ -17,4 +17,12 @@ package prim_xilinx_pkg;
     return 0;
   endfunction
 
+  function automatic bit force_ram_updatemem_compat(int width, int depth);
+    // Force the OTP macro to be updatemem compatible
+    if (width == 22 && depth >= 1024) begin
+      return 1;
+    end
+    return 0;
+  endfunction
+
 endpackage : prim_xilinx_pkg

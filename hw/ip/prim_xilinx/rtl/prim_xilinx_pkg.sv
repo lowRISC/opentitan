@@ -13,4 +13,11 @@ package prim_xilinx_pkg;
     return 0;
   endfunction
 
+  // Preserves a RAM for updatemem compatibility. For architectures that
+  // support UltraRAM, for example, forces the memory primitive to be block
+  // RAMs.
+  function automatic bit force_ram_updatemem_compat(int width, int depth);
+    return 0;
+  endfunction
+
 endpackage : prim_xilinx_pkg

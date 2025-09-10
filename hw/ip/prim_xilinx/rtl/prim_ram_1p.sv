@@ -28,8 +28,9 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
 );
 
   localparam int PrimMaxWidth = prim_xilinx_pkg::get_ram_max_width(Width, Depth);
+  localparam bit UpdateMemCompat = prim_xilinx_pkg::force_ram_updatemem_compat(Width, Depth);
 
-  if (PrimMaxWidth <= 0) begin : gen_generic
+  if (PrimMaxWidth <= 0 && !UpdateMemCompat) begin : gen_generic
     // Width of internal write mask. Note wmask_i input into the module is always assumed
     // to be the full bit mask
     localparam int MaskWidth = Width / DataBitsPerMask;
@@ -65,6 +66,10 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
 
     `include "prim_util_memload.svh"
   end else begin : gen_xpm
+    // If PrimMaxWidth is basically unset, set the maximum width of the XPM
+    // macro to the maximum known value updatemem can handle.
+    localparam int XpmMaxWidth = (PrimMaxWidth <= 0)? 64 : PrimMaxWidth;
+
     logic wr_en;
     assign wr_en = write_i & wmask_i[0];
 
@@ -72,12 +77,14 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
     assign unused_signals = ^{rst_ni, cfg_i};
     assign cfg_rsp_o      = '0;
 
-    for (genvar k = 0; k < Width; k = k + PrimMaxWidth) begin : gen_split
-      localparam int PrimWidth = ((Width - k) > PrimMaxWidth) ? PrimMaxWidth : Width - k;
+    for (genvar k = 0; k < Width; k = k + XpmMaxWidth) begin : gen_split
+      localparam int PrimWidth = ((Width - k) > XpmMaxWidth) ? XpmMaxWidth : Width - k;
 
       xpm_memory_spram #(
         .ADDR_WIDTH_A(Aw),
         .BYTE_WRITE_WIDTH_A(PrimWidth), // Masks are not supported
+        .MEMORY_OPTIMIZATION(UpdateMemCompat ? "false" : "true"),
+        .MEMORY_PRIMITIVE(UpdateMemCompat ? "block" : "auto"),
         .MEMORY_INIT_FILE((MemInitFile == "") ? "none" : MemInitFile),
         .MEMORY_SIZE(Depth * PrimWidth),
         .READ_DATA_WIDTH_A(PrimWidth),
