@@ -17,15 +17,14 @@ main:
 
   /* Load pointers to modulus and Montgomery constant buffers. */
   la    x16, n
-  la    x17, m0d
   la    x18, RR
 
   /* Compute Montgomery constants. */
   jal      x1, modload
 
   /* Run exponentiation.
-       dmem[work_buf] = dmem[inout]^dmem[d] mod dmem[n] */
-  la       x14, inout
+       dmem[work_buf] = dmem[r0]^dmem[d] mod dmem[n] */
+  la       x14, r0
   la       x2, work_buf
   jal      x1, modexp_65537
 
