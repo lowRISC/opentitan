@@ -931,7 +931,10 @@ def _keyset(ctx):
         sign = _local_sign
     else:
         sign = _hsmtool_sign
-    return [KeySetInfo(keys = keys, config = config, selected_key = selected_key, profile = ctx.attr.profile, sign = sign, tool = tool)]
+    return [
+        KeySetInfo(keys = keys, config = config, selected_key = selected_key, profile = ctx.attr.profile, sign = sign, tool = tool),
+        DefaultInfo(files = depset(keys.values()), data_runfiles = ctx.runfiles(files = keys.values())),
+    ]
 
 keyset = rule(
     implementation = _keyset,

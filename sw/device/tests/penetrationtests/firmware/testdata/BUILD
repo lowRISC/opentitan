@@ -54,7 +54,7 @@ offline_presigning_artifacts(
     name = "non_signed_firmware",
     testonly = True,
     srcs = [":bl0_firmware"],
-    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0"},
     manifest = "//sw/device/silicon_owner:manifest",
     spx_key = {},
     tags = ["manual"],
