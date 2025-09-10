@@ -39,9 +39,13 @@ package racl_ctrl_env_pkg;
   `include "racl_ctrl_env_wrapper_cfg.sv"
   `include "racl_ctrl_env_cfg.sv"
   `include "racl_ctrl_env_cov.sv"
-  `include "racl_ctrl_virtual_sequencer.sv"
+
+  typedef cip_base_virtual_sequencer #(.CFG_T(racl_ctrl_env_cfg),
+                                       .COV_T(racl_ctrl_env_cov)) racl_ctrl_virtual_sequencer;
+
   `include "racl_ctrl_error_arb_predictor.sv"
   `include "racl_ctrl_scoreboard.sv"
+
   `include "racl_ctrl_env.sv"
   `include "racl_ctrl_vseq_list.sv"
 
