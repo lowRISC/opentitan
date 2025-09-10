@@ -221,12 +221,12 @@ def main() -> int:
     assert len(vmem.chunks) == 1
     words = vmem.chunks[0].words
 
-    if width == 24:
-        logger.info("Generating updatemem-compatible MEM file for OTP image.")
-        updatemem_pieces = otp_words_to_updatemem_pieces(words)
-        updatemem_line = ' '.join(updatemem_pieces)
-        args.outfile.write(updatemem_line + '\n')
-        return 0
+    # if width == 24:
+    #     logger.info("Generating updatemem-compatible MEM file for OTP image.")
+    #     updatemem_pieces = otp_words_to_updatemem_pieces(words)
+    #     updatemem_line = ' '.join(updatemem_pieces)
+    #     args.outfile.write(updatemem_line + '\n')
+    #     return 0
 
     logger.info("Generating updatemem-compatible MEM file for ROM.")
     # Loop over all words, and:
@@ -241,7 +241,8 @@ def main() -> int:
         # Generate the address.
         addr = idx * math.ceil(width / 8)
         # Convert endianness.
-        data = swap_bytes(width, word, args.swap_nibbles)
+        # data = swap_bytes(width, word, args.swap_nibbles)
+        data = word
         # Check for contiguous addresses. If any are found, omit this word's
         # address to speed up `updatemem` operation.
         toks = []
