@@ -552,6 +552,7 @@
   - [Introduction](./doc/security/README.md)
   - [Cryptography Library](./doc/security/cryptolib/README.md)
     - [API Documentation](./doc/security/cryptolib/cryptolib_api.md)
+    - [Security Hardening](./doc/security/cryptolib/security.md)
     - [Contributing](./doc/security/cryptolib/contributing.md)
   - [Implementation Guidelines](./doc/security/implementation_guidelines/README.md)
     - [Secure Hardware Design Guidelines](./doc/security/implementation_guidelines/hardware/README.md)
