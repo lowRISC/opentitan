@@ -58,16 +58,16 @@ SECTIONS {
   } > ram_main : sram_segment
 
   .text : ALIGN(4) {
-    KEEP(*(.crt))
-    KEEP(*(.text))
-    KEEP(*(.text.*))
+    *(.crt)
+    *(.text)
+    *(.text.*)
     . = ALIGN(4);
     _text_end = .;
   } > ram_main : sram_segment
 
   .rodata : ALIGN(4) {
-    KEEP(*(.rodata))
-    KEEP(*(.rodata.*))
+    *(.rodata)
+    *(.rodata.*)
     . = ALIGN(4);
     __rodata_end = .;
   } > ram_main : sram_segment
@@ -83,14 +83,14 @@ SECTIONS {
      * difference to distinguish data from small data. */
     __global_pointer$ = . + 2048;
 
-    KEEP(*(.data))
-    KEEP(*(.data.*))
+    *(.data)
+    *(.data.*)
 
     /* Place all small data sections together. */
-    KEEP(*(.srodata))
-    KEEP(*(.srodata.*))
-    KEEP(*(.sdata))
-    KEEP(*(.sdata.*))
+    *(.srodata)
+    *(.srodata.*)
+    *(.sdata)
+    *(.sdata.*)
     . = ALIGN(4);
     _crc_end = .;
   } > ram_main : sram_segment
@@ -113,6 +113,11 @@ SECTIONS {
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _bss_end = .;
+
+    ASSERT(
+      ABSOLUTE(_stack_start) >= ABSOLUTE(_bss_end),
+      "bss section overflowed to stack region");
+
   } > ram_main : sram_segment
 
   INCLUDE sw/device/info_sections.ld
