@@ -106,7 +106,7 @@ task alert_monitor::alert_and_ping_thread();
           monitor_ping();
           monitor_alerts();
           begin : thread_arbiter
-            forever @(cfg.vif.monitor_cb) begin
+            forever @(active_alert || cfg.active_ping) begin
               if (active_alert && !cfg.under_ping_handshake && !cfg.under_ping_handshake_ph_2)
                 alert_thread();
               else if (active_alert==0 && cfg.active_ping==1)
