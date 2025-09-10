@@ -43,6 +43,7 @@
                   name: ac_range_check
                   fusesoc_core: lowrisc:darjeeling_ip:ac_range_check
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
                   rel_path: "hw/top_darjeeling/ip_autogen/ac_range_check/lint/{tool}"
              },
              {    name: alert_handler
@@ -181,9 +182,10 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
                   rel_path: "hw/ip/soc_dbg_ctrl/lint/{tool}"
              },
-             {    name: soc_dbg_ctrl_decode
+             {   name: soc_dbg_ctrl_decode
                  fusesoc_core: lowrisc:ip:soc_dbg_ctrl_decode
                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                 additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
                  rel_path: "hw/ip/socdbg_ctrl/lint/{tool}"
              },
              {    name: top_darjeeling_rv_plic
@@ -198,9 +200,10 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
                   rel_path:  "hw/ip/rv_timer/lint/{tool}"
              },
-             {    name: soc_proxy
+             {   name: soc_proxy
                  fusesoc_core: lowrisc:systems:soc_proxy
                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                 additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
                  rel_path: "hw/top_darjeeling/ip/soc_proxy/lint/{tool}"
              },
              {    name: spi_device
