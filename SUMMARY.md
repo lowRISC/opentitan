@@ -397,7 +397,7 @@
     - [Checklist](./hw/ip/lc_ctrl/doc/checklist.md)
   - [Mailbox](./hw/ip/mbx/README.md)
     - [Theory of Operation](./hw/ip/mbx/doc/theory_of_operation.md)
-    - [Design Verification]()
+    - [Design Verification](./hw/ip/mbx/dv/README.md)
       - [Testplan](./hw/ip/mbx/data/mbx_testplan.hjson)
     - [Programmer's Guide](./hw/ip/mbx/doc/programmers_guide.md)
     - [Hardware Interfaces](./hw/ip/mbx/doc/interfaces.md)
