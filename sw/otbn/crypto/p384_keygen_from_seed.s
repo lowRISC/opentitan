@@ -98,6 +98,9 @@ p384_key_from_seed:
   bn.sub    w24, w10, w16
   bn.subb   w25, w11, w17
 
+  /* Clear flags. */
+  bn.sub    w31, w31, w31
+
   /* Compute d1. Because 2^384 < 2 * n, a conditional subtraction is
      sufficient to reduce. Similarly to the carry bit, the conditional bit here
      is not very sensitive because the shares are large relative to n.
@@ -166,6 +169,9 @@ p384_key_from_seed:
   /* [w23,w22] <= [w23,w22] + [w4,w3] = d0 + (RND >> 193) * n = d0' */
   bn.add    w22, w22, w3
   bn.addc   w23, w23, w4
+
+  /* Clear flags. */
+  bn.add    w31, w31, w31
 
   /* Write first 448-bit share to DMEM.
      dmem[d0] <= [w23,w22] = d0' */
