@@ -229,11 +229,7 @@ class cip_base_vseq #(
   //
   //  enable        If true, the selected interrupts will be enabled. If false, they will be
   //                disabled.
-  //
-  //  scope         If not null, a reg_block to use as a scope for looking up INTR_ENABLE.
-  extern protected task cfg_interrupts(bit [BUS_DW-1:0]  interrupts,
-                                       bit               enable = 1'b1,
-                                       dv_base_reg_block scope = null);
+  extern protected task cfg_interrupts(bit [BUS_DW-1:0] interrupts, bit enable = 1'b1);
 
   // Check that the selected interrupts have the expected values, possibly clearing them afterwards.
   //
@@ -689,13 +685,11 @@ function void cip_base_vseq::extract_common_csrs();
   end
 endfunction
 
-task cip_base_vseq::cfg_interrupts(bit [BUS_DW-1:0]  interrupts,
-                                   bit               enable = 1'b1,
-                                   dv_base_reg_block scope = null);
+task cip_base_vseq::cfg_interrupts(bit [BUS_DW-1:0] interrupts, bit enable = 1'b1);
   uvm_reg          csr;
   bit [BUS_DW-1:0] data;
 
-  csr = get_interrupt_csr("intr_enable", scope);
+  csr = get_interrupt_csr("intr_enable", null);
   data = csr.get_mirrored_value();
   if (enable) data |= interrupts;
   else        data &= ~interrupts;
