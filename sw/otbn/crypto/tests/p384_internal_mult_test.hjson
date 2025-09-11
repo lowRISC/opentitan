@@ -19,14 +19,14 @@
   "output": {
     "regs": {
       # [w26, w25] is the first x coordinate of the scalar multiplication result
-      "w25": "0xe7caf34a058f9cdf6bc33a1309c96ff866b7b220a5ff3e6838ab1b6f3897f8e5",
-      "w26": "0x000000000000000000000000000000000460749b4cbc743d26524a1f5b1a16e2",
+      "w25": "0x9e9f89c8ead58ccb629993cb50fb5bce841cffcee1d9950e17e761cd126764bf",
+      "w26": "0x000000000000000000000000000000004bb764f506509aec99cf24a802d6c1ad",
       # [w28, w27] is the first y coordinate of the scalar multiplication result
-      "w27": "0xc5bb3bb00936ce507f3fe68d83cc9aad95a5876cc6f9e5aaacbcc464cbc7c77f",
-      "w28": "0x00000000000000000000000000000000419e57057bccd7489d5664d4b977d1ad",
+      "w27": "0x3bfead3bb45bcd9de809d76ce7cddc9b32d5dd4d0da787f70bd55c28b4ff48a6",
+      "w28": "0x00000000000000000000000000000000721f3fb6267ea9db3873e01ace4a4d7b",
       # [w30, w29] is the first z coordinate of the scalar multiplication result
-      "w29": "0xb4d5aa92422cd98e0d676a980d7ad63df48c86fe560a22d5528882205988df0a",
-      "w30": "0x00000000000000000000000000000000821f5d2900c70192051d627179d74e90",
+      "w29": "0x4287042d89aafc434858369e615024896afca89770b1a91ad3a5a01538fab16e",
+      "w30": "0x00000000000000000000000000000000a4e9a06870a607e026fcb691cb7eb784",
     }
   }
 }

@@ -347,7 +347,7 @@ scalar_mult_int_p384_internal:
   bn.sid    x2, 160(x26)
 
   /* double-and-add loop with decreasing index */
-  loop      x16, 92
+  loop      x16, 94
 
     /* double point Q
        Q = ([w30,w29], [w28,w27], [w26, w25]) <= Q + dmem[x27] */
@@ -437,9 +437,16 @@ scalar_mult_int_p384_internal:
     bn.add    w0, w0, w0
     bn.addc   w1, w1, w1
     bn.addc   w2, w2, w2
+
+    /* Clear flags. */
+    bn.add    w31, w31, w31
+
     bn.add    w3, w3, w3
     bn.addc   w4, w4, w4
     bn.addc   w5, w5, w5
+
+    /* Clear flags. */
+    bn.add    w31, w31, w31
 
     /* store both shares in scratchpad */
     li        x2, 0
