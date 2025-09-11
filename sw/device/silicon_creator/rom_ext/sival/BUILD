@@ -40,6 +40,7 @@ ROM_EXT_FEATURES = [
 [
     opentitan_binary(
         name = "rom_ext_{}_fake_slot_{}".format(variation, slot),
+        collect_code_coverage = 0,
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = [
             "//hw/top_earlgrey:silicon_creator",
@@ -75,6 +76,7 @@ ROM_EXT_FEATURES = [
 [
     opentitan_binary(
         name = "rom_ext_{}_prod_slot_{}".format(variation, slot),
+        collect_code_coverage = 0,
         exec_env = [
             "//hw/top_earlgrey:silicon_creator",
             "//hw/top_earlgrey:fpga_cw310",

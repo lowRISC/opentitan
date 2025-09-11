@@ -211,6 +211,7 @@ cc_library(
 
 opentitan_binary(
     name = "mask_rom",
+    collect_code_coverage = 0,
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
