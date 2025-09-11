@@ -161,7 +161,7 @@ cc_test(
 alias(
     name = "math_builtins",
     actual = select({
-        "//sw/device:measure_coverage_on_target": "//sw/device:nothing",
+        "//rules/coverage:enabled": "//sw/device:nothing",
         "//conditions:default": ":math_polyfills",
     }),
     visibility = ["//visibility:private"],

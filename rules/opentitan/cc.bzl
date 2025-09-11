@@ -109,6 +109,9 @@ def ot_binary(ctx, **kwargs):
         "-nostdlib",
     ] + _expand(ctx, "linkopts", extra_linkopts)
 
+    if ctx.var.get("ot_coverage_enabled", "false") == "true":
+        linkopts.append("-Wl,--defsym=_ot_coverage_enabled=1")
+
     lout = cc_common.link(
         name = name + ".elf",
         actions = ctx.actions,
