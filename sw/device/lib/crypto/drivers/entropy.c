@@ -324,28 +324,40 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
   uint32_t reg;
   bool ready;
 
-  switch (cmd_type) {
+  entropy_csrng_send_app_cmd_type_t cmd_type_used = launder32(0);
+  switch (launder32(cmd_type)) {
     case kEntropyCsrngSendAppCmdTypeCsrng:
       cmd_reg_addr = base_address + CSRNG_CMD_REQ_REG_OFFSET;
       sts_reg_addr = base_address + CSRNG_SW_CMD_STS_REG_OFFSET;
       rdy_bit_offset = CSRNG_SW_CMD_STS_CMD_RDY_BIT;
       reg_rdy_bit_offset = CSRNG_SW_CMD_STS_CMD_RDY_BIT;
+      cmd_type_used =
+          launder32(cmd_type_used) | kEntropyCsrngSendAppCmdTypeCsrng;
       break;
     case kEntropyCsrngSendAppCmdTypeEdnSw:
       cmd_reg_addr = base_address + EDN_SW_CMD_REQ_REG_OFFSET;
       sts_reg_addr = base_address + EDN_SW_CMD_STS_REG_OFFSET;
       rdy_bit_offset = EDN_SW_CMD_STS_CMD_RDY_BIT;
       reg_rdy_bit_offset = EDN_SW_CMD_STS_CMD_REG_RDY_BIT;
+      cmd_type_used =
+          launder32(cmd_type_used) | kEntropyCsrngSendAppCmdTypeEdnSw;
       break;
     case kEntropyCsrngSendAppCmdTypeEdnGen:
       cmd_reg_addr = base_address + EDN_GENERATE_CMD_REG_OFFSET;
+      cmd_type_used =
+          launder32(cmd_type_used) | kEntropyCsrngSendAppCmdTypeEdnGen;
       break;
     case kEntropyCsrngSendAppCmdTypeEdnRes:
       cmd_reg_addr = base_address + EDN_RESEED_CMD_REG_OFFSET;
+      cmd_type_used =
+          launder32(cmd_type_used) | kEntropyCsrngSendAppCmdTypeEdnRes;
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
   }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(cmd_type_used), cmd_type);
 
   if ((cmd_type == kEntropyCsrngSendAppCmdTypeCsrng) ||
       (cmd_type == kEntropyCsrngSendAppCmdTypeEdnSw)) {

@@ -113,10 +113,10 @@ otcrypto_status_t otcrypto_kmac_kdf(
       hardened_memshred(output_key_material->keyblob,
                         keyblob_num_words(output_key_material->config)));
 
+  otcrypto_key_mode_t key_mode_used = launder32(0);
   switch (launder32(key_derivation_key->config.key_mode)) {
     case kOtcryptoKeyModeKdfKmac128: {
-      HARDENED_CHECK_EQ(key_derivation_key->config.key_mode,
-                        kOtcryptoKeyModeKdfKmac128);
+      key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKdfKmac128;
       // No need to further check key size against security level because
       // `kmac_key_length_check` ensures that the key is at least 128-bit.
       HARDENED_TRY(kmac_kmac_128(
@@ -126,8 +126,7 @@ otcrypto_status_t otcrypto_kmac_kdf(
       break;
     }
     case kOtcryptoKeyModeKdfKmac256: {
-      HARDENED_CHECK_EQ(key_derivation_key->config.key_mode,
-                        kOtcryptoKeyModeKdfKmac256);
+      key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKdfKmac256;
       // Check that key size matches the security strength. It should be at
       // least 256-bit.
       if (key_derivation_key->config.key_length < 256 / 8) {
@@ -142,6 +141,10 @@ otcrypto_status_t otcrypto_kmac_kdf(
     default:
       return OTCRYPTO_BAD_ARGS;
   }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(key_mode_used),
+                    key_derivation_key->config.key_mode);
 
   output_key_material->checksum =
       integrity_blinded_checksum(output_key_material);
