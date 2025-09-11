@@ -95,8 +95,8 @@ enum {
   kModeKeygenSideloadInsCnt = 1857585,
   kModeEcdhInsCnt = 1869278,
   kModeEcdhSideloadInsCnt = 1869414,
-  kModeEcdsaSignInsCnt = 1508810,
-  kModeEcdsaSignSideloadInsCnt = 1508946,
+  kModeEcdsaSignInsCnt = 1508855,
+  kModeEcdsaSignSideloadInsCnt = 1508991,
 };
 
 static status_t p384_masked_scalar_write(const p384_masked_scalar_t *src,
