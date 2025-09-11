@@ -9,6 +9,9 @@ package(default_visibility = ["//visibility:public"])
 ld_library(
     name = "info_sections",
     includes = ["info_sections.ld"],
+    deps = [
+        "//sw/device/lib/coverage:coverage_sections",
+    ],
 )
 
 # FIXME(lowRISC/opentitan#12065) This is a hack to work around currently
