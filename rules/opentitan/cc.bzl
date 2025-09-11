@@ -197,6 +197,7 @@ def _build_binary(ctx, exec_env, name, deps, kind):
     binary = obj_transform(
         ctx,
         name = name,
+        strip_llvm_prf_cnts = True,
         suffix = "bin",
         format = "binary",
         src = elf,
@@ -415,6 +416,12 @@ common_binary_attrs = {
     "slot_spec": attr.string_dict(
         default = {},
         doc = "Firmware slot spec to use in this environment",
+    ),
+    "_check_initial_coverage": attr.label(
+        doc = "Tool to check the coverage counter initialization.",
+        default = "//util/coverage:check_initial_coverage",
+        executable = True,
+        cfg = "exec",
     ),
 }
 
