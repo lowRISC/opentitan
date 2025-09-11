@@ -1525,19 +1525,14 @@ module csrng_core import csrng_pkg::*; #(
   assign ctr_drbg_gen_req = cmd_result_ack && (ctr_drbg_cmd_rsp_data.cmd == GEN);
 
   csrng_ctr_drbg_gen u_csrng_ctr_drbg_gen (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .ctr_drbg_gen_enable_i(cs_enable_fo[49]),
-    .ctr_drbg_gen_req_i(ctr_drbg_gen_req),
-    .ctr_drbg_gen_rdy_o(ctr_drbg_gen_req_rdy),
-    .ctr_drbg_gen_ccmd_i(ctr_drbg_cmd_rsp_data.cmd),
-    .ctr_drbg_gen_inst_id_i(ctr_drbg_cmd_rsp_data.inst_id),
-    .ctr_drbg_gen_glast_i(cmd_result_glast),
-    .ctr_drbg_gen_fips_i(ctr_drbg_cmd_rsp_data.fips),
-    .ctr_drbg_gen_adata_i(ctr_drbg_cmd_rsp_data.pdata),
-    .ctr_drbg_gen_key_i(ctr_drbg_cmd_rsp_data.key),
-    .ctr_drbg_gen_v_i(ctr_drbg_cmd_rsp_data.v),
-    .ctr_drbg_gen_rc_i(ctr_drbg_cmd_rsp_data.rs_ctr),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .enable_i(cs_enable_fo[49]),
+
+    .cmd_req_vld_i  (ctr_drbg_gen_req),
+    .cmd_req_rdy_o  (ctr_drbg_gen_req_rdy),
+    .cmd_req_data_i (ctr_drbg_cmd_rsp_data),
+    .cmd_req_glast_i(cmd_result_glast),
 
     .ctr_drbg_gen_ack_o(gen_result_wr_req),
     .ctr_drbg_gen_sts_o(gen_result_ack_sts),
@@ -1550,9 +1545,8 @@ module csrng_core import csrng_pkg::*; #(
     .ctr_drbg_gen_rc_o(gen_result_rc),
     .ctr_drbg_gen_bits_o(gen_result_bits),
 
-    // es halt interface
-    .ctr_drbg_gen_es_req_i(cs_aes_halt_i.cs_aes_halt_req),
-    .ctr_drbg_gen_es_ack_o(ctr_drbg_gen_es_ack),
+    .es_halt_req_i(cs_aes_halt_i.cs_aes_halt_req),
+    .es_halt_ack_o(ctr_drbg_gen_es_ack),
 
     // interface to updblk from genblk
     .gen_upd_req_vld_o (gen_upd_req_vld),
@@ -1563,12 +1557,9 @@ module csrng_core import csrng_pkg::*; #(
     .gen_upd_rsp_rdy_o (gen_upd_rsp_rdy),
     .gen_upd_rsp_data_i(upd_rsp_data),
 
-    .block_encrypt_req_o    (gen_benc_req_vld),
-    .block_encrypt_rdy_i    (gen_benc_req_rdy),
-    .block_encrypt_ccmd_o   (gen_benc_req_data.cmd),
-    .block_encrypt_inst_id_o(gen_benc_req_data.inst_id),
-    .block_encrypt_key_o    (gen_benc_req_data.key),
-    .block_encrypt_v_o      (gen_benc_req_data.v),
+    .block_encrypt_req_vld_o (gen_benc_req_vld),
+    .block_encrypt_req_rdy_i (gen_benc_req_rdy),
+    .block_encrypt_req_data_o(gen_benc_req_data),
 
     .block_encrypt_ack_i    (gen_benc_rsp_vld),
     .block_encrypt_rdy_o    (gen_benc_rsp_rdy),
@@ -1576,13 +1567,14 @@ module csrng_core import csrng_pkg::*; #(
     .block_encrypt_inst_id_i(block_encrypt_rsp_data.inst_id),
     .block_encrypt_v_i      (block_encrypt_rsp_data.v),
 
-    .ctr_drbg_gen_v_ctr_err_o(ctr_drbg_gen_v_ctr_err),
-    .ctr_drbg_gen_sfifo_gbencack_err_o(ctr_drbg_gen_sfifo_gbencack_err),
-    .ctr_drbg_gen_sfifo_grcstage_err_o(ctr_drbg_gen_sfifo_grcstage_err),
-    .ctr_drbg_gen_sfifo_ggenreq_err_o(ctr_drbg_gen_sfifo_ggenreq_err),
-    .ctr_drbg_gen_sfifo_gadstage_err_o(ctr_drbg_gen_sfifo_gadstage_err),
-    .ctr_drbg_gen_sfifo_ggenbits_err_o(ctr_drbg_gen_sfifo_ggenbits_err),
-    .ctr_drbg_gen_sm_err_o(drbg_gen_sm_err)
+    .ctr_err_o(ctr_drbg_gen_v_ctr_err),
+    .sm_err_o (drbg_gen_sm_err),
+
+    .fifo_gbencack_err_o(ctr_drbg_gen_sfifo_gbencack_err),
+    .fifo_grcstage_err_o(ctr_drbg_gen_sfifo_grcstage_err),
+    .fifo_ggenreq_err_o (ctr_drbg_gen_sfifo_ggenreq_err),
+    .fifo_gadstage_err_o(ctr_drbg_gen_sfifo_gadstage_err),
+    .fifo_ggenbits_err_o(ctr_drbg_gen_sfifo_ggenbits_err)
   );
 
 
