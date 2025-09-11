@@ -23,6 +23,7 @@ module tlul_assert #(
 
 `ifdef UVM
   import uvm_pkg::*;
+  `include "uvm_macros.svh"
 `endif
   import tlul_pkg::*;
   import top_pkg::*;
