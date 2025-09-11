@@ -484,6 +484,16 @@ opentitan_test = rv_rule(
             doc = "OpenOCD adapter configuration override for this test",
         ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
+        "_lcov_merger": attr.label(
+            default = configuration_field(fragment = "coverage", name = "output_generator"),
+            executable = True,
+            cfg = "exec",
+        ),
+        "_collect_cc_coverage": attr.label(
+            default = "//util/coverage/collect_cc_coverage",
+            executable = True,
+            cfg = "exec",
+        ),
     }.items()),
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
