@@ -10,7 +10,7 @@ load("@rules_cc//cc/toolchains:feature_constraint.bzl", "cc_feature_constraint")
 load("@rules_cc//cc/toolchains:feature_set.bzl", "cc_feature_set")
 load("@rules_cc//cc/toolchains:tool_map.bzl", "cc_tool_map")
 load("@rules_cc//cc/toolchains:toolchain.bzl", "cc_toolchain")
-load("//rules:actions.bzl", "OT_ACTION_OBJDUMP")
+load("//rules:actions.bzl", "OT_ACTION_LLVM_PROFDATA", "OT_ACTION_OBJDUMP")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -99,10 +99,17 @@ cc_tool_map(
         "@rules_cc//cc/toolchains/actions:c_compile": "@lowrisc_rv32imcb_toolchain//:clang",
         "@rules_cc//cc/toolchains/actions:cpp_compile_actions": "@lowrisc_rv32imcb_toolchain//:clang++",
         "@rules_cc//cc/toolchains/actions:link_actions": "@lowrisc_rv32imcb_toolchain//:clang",
+        "@rules_cc//cc/toolchains/actions:llvm_cov": "@lowrisc_rv32imcb_toolchain//:llvm_cov",
         "@rules_cc//cc/toolchains/actions:objcopy_embed_data": "@lowrisc_rv32imcb_toolchain//:objcopy",
         "@rules_cc//cc/toolchains/actions:strip": "@lowrisc_rv32imcb_toolchain//:strip",
+        ":action_llvm_profdata": "@lowrisc_rv32imcb_toolchain//:llvm_profdata",
         ":action_objdump": "@lowrisc_rv32imcb_toolchain//:objdump",
     },
+)
+
+cc_action_type(
+    name = "action_llvm_profdata",
+    action_name = OT_ACTION_LLVM_PROFDATA,
 )
 
 cc_action_type(
