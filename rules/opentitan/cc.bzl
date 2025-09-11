@@ -239,10 +239,13 @@ def _opentitan_binary(ctx):
     providers = []
     default_info = []
     groups = {}
+    runfiles = ctx.runfiles()
     for exec_env_target in ctx.attr.exec_env:
         exec_env = exec_env_target[ExecEnvInfo]
         name = _binary_name(ctx, exec_env)
         deps = ctx.attr.deps + exec_env.libs
+        for dep in deps:
+            runfiles = runfiles.merge(dep[DefaultInfo].default_runfiles)
 
         kind = ctx.attr.kind
         provides, signed = _build_binary(ctx, exec_env, name, deps, kind)
@@ -250,6 +253,9 @@ def _opentitan_binary(ctx):
         default_info.append(provides["default"])
         default_info.append(provides["elf"])
         default_info.append(provides["disassembly"])
+        runfiles = runfiles.merge(ctx.runfiles(files = [
+            provides["elf"],
+        ]))
 
         # FIXME(cfrantz): logs are a special case and get added into
         # the DefaultInfo provider.
@@ -269,7 +275,10 @@ def _opentitan_binary(ctx):
         groups.update(_as_group_info(exec_env.exec_env, signed))
         groups.update(_as_group_info(exec_env.exec_env, provides))
 
-    providers.append(DefaultInfo(files = depset(default_info)))
+    cc_toolchain = find_cc_toolchain(ctx)
+    runfiles = runfiles.merge(ctx.runfiles(files = cc_toolchain.all_files.to_list()))
+
+    providers.append(DefaultInfo(files = depset(default_info), runfiles = runfiles))
     providers.append(OutputGroupInfo(**groups))
     return providers
 
@@ -395,6 +404,10 @@ def _opentitan_test(ctx):
         harness_runfiles = ctx.attr.test_harness[DefaultInfo].default_runfiles
     else:
         harness_runfiles = ctx.runfiles()
+
+    cc_toolchain = find_cc_toolchain(ctx)
+    runfiles.extend(cc_toolchain.all_files.to_list())
+
     return DefaultInfo(
         executable = executable,
         runfiles = ctx.runfiles(files = runfiles).merge_all([harness_runfiles]),
