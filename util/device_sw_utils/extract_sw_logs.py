@@ -195,6 +195,8 @@ def extract_sw_logs(elf_file, logs_fields_section):
             # Ignore the debug sections.
             if section.name.startswith(".debug"):
                 continue
+            if section.name.startswith("__llvm"):
+                continue
 
             base_addr = int(section.header['sh_addr'])
             size = int(section.header['sh_size'])
