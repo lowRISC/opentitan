@@ -353,6 +353,12 @@ common_binary_attrs = {
         default = {},
         doc = "Firmware slot spec to use in this environment",
     ),
+    "_check_initial_coverage": attr.label(
+        doc = "Tool to check the coverage counter initialization.",
+        default = "//util/coverage:check_initial_coverage",
+        executable = True,
+        cfg = "exec",
+    ),
 }
 
 opentitan_binary = rv_rule(
