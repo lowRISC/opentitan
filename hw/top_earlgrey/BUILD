@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top_earlgrey:defs.bzl", "EARLGREY_SLOTS")
 load(
     "//rules:manifest.bzl",
     "manifest",
@@ -77,6 +78,7 @@ fpga_cw310(
         "//hw/top_earlgrey/sw/dt:fpga_cw310",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    slot_spec = EARLGREY_SLOTS,
     test_cmd = "testing-not-supported",
 )
 
@@ -132,6 +134,7 @@ sim_qemu(
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp = "//hw/top_earlgrey/data/otp:img_rma",
+    slot_spec = EARLGREY_SLOTS,
 )
 
 sim_qemu(
@@ -162,7 +165,7 @@ fpga_cw310(
         "interface": "hyper310",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
-        "assemble": "{rom_ext}@0 {firmware}@0x10000",
+        "assemble": "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
     },
     rom = "//sw/device/silicon_creator/rom:mask_rom",
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
@@ -224,6 +227,7 @@ fpga_cw305(
         "//sw/device/lib/arch:fpga_cw305",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    slot_spec = EARLGREY_SLOTS,
     test_cmd = "testing-not-supported",
 )
 
@@ -257,6 +261,7 @@ fpga_cw340(
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
+    slot_spec = EARLGREY_SLOTS,
     test_cmd = "testing-not-supported",
 )
 
@@ -316,7 +321,7 @@ fpga_cw340(
         "interface": "hyper340",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
-        "assemble": "{rom_ext}@0 {firmware}@0x10000",
+        "assemble": "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
     },
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
 )
@@ -390,6 +395,7 @@ silicon(
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
+    slot_spec = EARLGREY_SLOTS,
     test_cmd = """
         --exec="transport init"
         --exec="bootstrap --clear-uart=true {firmware}"
@@ -426,7 +432,7 @@ silicon(
         "interface": "teacup",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
-        "assemble": "{rom_ext}@0 {firmware}@0x10000",
+        "assemble": "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
     },
     # The //conditions:default ROM_EXT needs to be updated to use the following
     # target once available:
@@ -434,6 +440,7 @@ silicon(
         "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_dice_x509_fake_slot_a",
         "//conditions:default": "//sw/device/silicon_creator/rom_ext/sival/binaries:rom_ext_dice_x509_prod",
     }),
+    slot_spec = EARLGREY_SLOTS,
     test_cmd = """
         --exec="transport init"
         --exec="bootstrap --clear-uart=true {firmware}"
@@ -459,6 +466,7 @@ sim_verilator(
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp = "//hw/top_earlgrey/data/otp:img_rma",
+    slot_spec = EARLGREY_SLOTS,
     test_cmd = "testing-not-supported",
 )
 
@@ -521,6 +529,7 @@ sim_dv(
     otp = "//hw/top_earlgrey/data/otp:img_rma",
     otp_data_perm = "//util/design/data:data_perm",
     otp_mmap = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
+    slot_spec = EARLGREY_SLOTS,
 )
 
 sim_dv(

@@ -17,8 +17,7 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 /* Slot B starts at the half-size mark of the eFlash plus the fixed size of the
  * ROM_EXT.
  */
- /* TODO(#9045): Move ROM_EXT size to a common location. */
-_slot_start_address = ORIGIN(eflash) + (LENGTH(eflash) / 2) + 0x10000;
+_slot_start_address = ORIGIN(eflash) + (LENGTH(eflash) / 2) + _rom_ext_size;
 
 REGION_ALIAS("owner_flash", eflash);
 
