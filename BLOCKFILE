@@ -104,7 +104,6 @@ hw/top_earlgrey/data/otp/otp_ctrl_mmap.hjson
 hw/top_earlgrey/data/otp/otp_ctrl_img_test_unlocked1.hjson
 hw/top_earlgrey/data/otp/otp_ctrl_img_prod.hjson
 hw/top_earlgrey/data/otp/otp_ctrl_img_test_unlocked2.hjson
-hw/ip/pwm/data/pwm.hjson
 hw/ip/aon_timer/data/aon_timer.hjson
 
 # HJSON files for ipgen blocks
@@ -115,6 +114,7 @@ hw/top_earlgrey/ip_autogen/flash_ctrl/data/flash_ctrl.hjson
 hw/top_earlgrey/ip_autogen/otp_ctrl/data/otp_ctrl.hjson
 hw/top_earlgrey/ip_autogen/pinmux/data/pinmux.hjson
 hw/top_earlgrey/ip_autogen/pwrmgr/data/pwrmgr.hjson
+hw/top_earlgrey/ip_autogen/pwm/data/pwm.hjson
 hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson
 hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson
 hw/top_earlgrey/ip_autogen/gpio/rtl/gpio.hjson
