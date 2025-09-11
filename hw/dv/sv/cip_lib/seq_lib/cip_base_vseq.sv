@@ -241,14 +241,10 @@ class cip_base_vseq #(
   //                enabled. In either case, this check is done by looking at intr_vif and also
   //                doing a front-door read of INTR_STATE.
   //
-  //  scope         If not null, a reg_block to use as a scope for looking up INTR_ENABLE and
-  //                INTR_STATE.
-  //
   //  clear         If true and any interrupts have been asserted then write to INTR_STATE to clear
   //                those interrupts.
   extern protected task check_interrupts(bit [BUS_DW-1:0]  interrupts,
                                          bit               check_set,
-                                         dv_base_reg_block scope = null,
                                          bit [BUS_DW-1:0]  clear = '1);
 
   // Disable coverage sampling for things that aren't really tested by a CSR test
@@ -699,7 +695,6 @@ endtask
 
 task cip_base_vseq::check_interrupts(bit [BUS_DW-1:0]  interrupts,
                                      bit               check_set,
-                                     dv_base_reg_block scope = null,
                                      bit [BUS_DW-1:0]  clear = '1);
   uvm_reg          csr_intr_state, csr_intr_enable;
   bit [BUS_DW-1:0] act_pins;
@@ -710,7 +705,7 @@ task cip_base_vseq::check_interrupts(bit [BUS_DW-1:0]  interrupts,
 
   act_pins = cfg.intr_vif.sample() & interrupts;
   if (check_set) begin
-    csr_intr_enable = get_interrupt_csr("intr_enable", scope);
+    csr_intr_enable = get_interrupt_csr("intr_enable", null);
     exp_pins = interrupts & csr_intr_enable.get_mirrored_value();
     exp_intr_state = interrupts;
   end else begin
@@ -718,7 +713,7 @@ task cip_base_vseq::check_interrupts(bit [BUS_DW-1:0]  interrupts,
     exp_intr_state = ~interrupts;
   end
   `DV_CHECK_EQ(act_pins, exp_pins)
-  csr_intr_state = get_interrupt_csr("intr_state", scope);
+  csr_intr_state = get_interrupt_csr("intr_state", null);
   csr_rd_check(.ptr(csr_intr_state), .compare_value(exp_intr_state), .compare_mask(interrupts));
 
   if (check_set && |(interrupts & clear)) begin
