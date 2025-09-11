@@ -271,7 +271,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   if (CtrLen < BlkLen) begin : g_ctr_sized_lsb
     assign v_ctr_sized = {v_load[BlkLen-1:CtrLen], v_ctr};
   end else begin : g_ctr_sized_full
-    // Need to distinguish this case as the slice select above into v_load above would yield an
+    // Need to distinguish this case as the slice select into v_load above would otherwise yield an
     // incorrect range ([BlkLen-1:BlkLen])
     assign v_ctr_sized = v_ctr;
   end
