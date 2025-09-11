@@ -1375,10 +1375,16 @@ def dump_completecfg(cfg: ConfigT, out_path: Path) -> None:
 
     # Filter params list for secret params and move that to the secrets file
     for module in dump_cfg["module"]:
-        secret_params = [p for p in module["param_list"] if p.get("randtype")]
-        module["param_list"][:] = [p for p in module["param_list"] if not p.get("randtype")]
+        # Retrieve params if there is at least one secret param in the module
+        secret_params = (
+            deepcopy(module["param_list"])
+            if any(p.get("randtype") for p in module["param_list"])
+            else []
+        )
 
         if secret_params:
+            # Sanitize the original param_list and remove the secret params
+            module["param_list"][:] = [p for p in module["param_list"] if not p.get("randtype")]
             # Pass a minimal set of information of a module such that tools that
             # consume the .secret.gen.hjson have all necessary information
             module_with_secret_params = {
