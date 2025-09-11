@@ -1422,10 +1422,7 @@ endtask
 
 task cip_base_vseq::run_csr_mem_rw_vseq(int num_times);
   fork
-    begin
-      `uvm_info(`gfn, "running csr rw vseq", UVM_HIGH)
-      run_csr_vseq(.csr_test_type("rw"), .do_rand_wr_and_reset(0));
-    end
+    run_csr_vseq(.csr_test_type("rw"), .do_rand_wr_and_reset(0));
     run_mem_partial_access_vseq(num_times);
   join
 endtask
