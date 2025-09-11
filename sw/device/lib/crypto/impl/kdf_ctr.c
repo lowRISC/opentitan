@@ -39,22 +39,27 @@ static status_t check_zero_byte(const otcrypto_const_byte_buf_t buffer) {
 static status_t digest_num_words_from_key_mode(otcrypto_key_mode_t key_mode,
                                                size_t *digest_words) {
   *digest_words = 0;
+  otcrypto_key_mode_t key_mode_used = launder32(0);
   switch (launder32(key_mode)) {
     case kOtcryptoKeyModeHmacSha256:
-      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeHmacSha256);
       *digest_words = 256 / 32;
+      key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeHmacSha256;
       break;
     case kOtcryptoKeyModeHmacSha384:
-      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeHmacSha384);
       *digest_words = 384 / 32;
+      key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeHmacSha384;
       break;
     case kOtcryptoKeyModeHmacSha512:
-      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeHmacSha512);
       *digest_words = 512 / 32;
+      key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeHmacSha512;
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
   }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(key_mode_used), key_mode);
+
   HARDENED_CHECK_NE(*digest_words, 0);
   return OTCRYPTO_OK;
 }
