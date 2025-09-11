@@ -11,7 +11,6 @@ load(
     "cw310_params",
     "fpga_params",
     "opentitan_test",
-    "qemu_params",
     "verilator_params",
 )
 load(
@@ -79,12 +78,6 @@ opentitan_test(
         {
             # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-        },
-    ),
-    qemu = qemu_params(
-        globals = {
-            # Test uses rstmgr, keep running on fatal resets:
-            "ot-rstmgr.fatal_reset": 0,
         },
     ),
     verilator = verilator_params(
