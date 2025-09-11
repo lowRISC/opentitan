@@ -2264,12 +2264,6 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    qemu = qemu_params(
-        globals = {
-            # Test uses rstmgr, keep running on fatal resets:
-            "ot-rstmgr.fatal_reset": 0,
-        },
-    ),
     # Run in both Owner and non-Owner envs to test the keymgr initialization
     run_in_ci = [
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
@@ -2293,12 +2287,6 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
             "//hw/top_earlgrey:silicon_creator": None,
-        },
-    ),
-    qemu = qemu_params(
-        globals = {
-            # Test uses rstmgr, keep running on fatal resets:
-            "ot-rstmgr.fatal_reset": 0,
         },
     ),
     # Run in both Owner and non-Owner envs to test the keymgr initialization
@@ -2330,12 +2318,6 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
-        },
-    ),
-    qemu = qemu_params(
-        globals = {
-            # Test uses rstmgr, keep running on fatal resets:
-            "ot-rstmgr.fatal_reset": 0,
         },
     ),
     # Run in both Owner and non-Owner envs to test the keymgr initialization
@@ -2458,12 +2440,6 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    qemu = qemu_params(
-        globals = {
-            # Test uses rstmgr, keep running on fatal resets:
-            "ot-rstmgr.fatal_reset": 0,
-        },
-    ),
     # Run in both Owner and non-Owner envs to test the keymgr initialization
     run_in_ci = [
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
@@ -2499,12 +2475,6 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    qemu = qemu_params(
-        globals = {
-            # Test uses rstmgr, keep running on fatal resets:
-            "ot-rstmgr.fatal_reset": 0,
-        },
-    ),
     # Run in both Owner and non-Owner envs to test the keymgr initialization
     run_in_ci = [
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
@@ -2536,12 +2506,6 @@ opentitan_test(
         {
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-        },
-    ),
-    qemu = qemu_params(
-        globals = {
-            # Test uses rstmgr, keep running on fatal resets:
-            "ot-rstmgr.fatal_reset": 0,
         },
     ),
     # Run in both Owner and non-Owner envs to test the keymgr initialization
@@ -2578,12 +2542,6 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
-        },
-    ),
-    qemu = qemu_params(
-        globals = {
-            # Test uses rstmgr, keep running on fatal resets:
-            "ot-rstmgr.fatal_reset": 0,
         },
     ),
     silicon = silicon_params(tags = ["broken"]),
@@ -2764,12 +2722,6 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
-        },
-    ),
-    qemu = qemu_params(
-        globals = {
-            # Test uses rstmgr, keep running on fatal resets:
-            "ot-rstmgr.fatal_reset": 0,
         },
     ),
     verilator = verilator_params(timeout = "long"),
@@ -3807,12 +3759,6 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    qemu = qemu_params(
-        globals = {
-            # Test uses rstmgr, keep running on fatal resets:
-            "ot-rstmgr.fatal_reset": 0,
-        },
-    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -3861,12 +3807,6 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
-        },
-    ),
-    qemu = qemu_params(
-        globals = {
-            # Test uses rstmgr, keep running on fatal resets:
-            "ot-rstmgr.fatal_reset": 0,
         },
     ),
     deps = [
@@ -5505,12 +5445,6 @@ opentitan_test(
     ),
     fpga = fpga_params(
         timeout = "moderate",
-    ),
-    qemu = qemu_params(
-        globals = {
-            # Test uses rstmgr, keep running on fatal resets:
-            "ot-rstmgr.fatal_reset": 0,
-        },
     ),
     silicon = silicon_params(
         tags = ["broken"],

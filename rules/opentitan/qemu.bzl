@@ -403,8 +403,8 @@ def _test_dispatch(ctx, exec_env, firmware):
     # Scale the Ibex clock by an `icount` factor.
     qemu_args += ["-icount", "shift={}".format(param["icount"])]
 
-    # Quit QEMU immediately on rstmgr fatal resets by default.
-    qemu_args += ["-global", "ot-rstmgr.fatal_reset=1"]
+    # Do not exit QEMU on resets by default.
+    qemu_args += ["-global", "ot-rstmgr.fatal_reset=0"]
 
     # Spawn QEMU stopped and in the background so we can run OpenTitanTool.
     # The emulation will start when OpenTitanTool releases the reset pin and `cont`
