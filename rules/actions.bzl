@@ -3,3 +3,4 @@
 # SPDX-License-Identifier: Apache-2.0
 
 OT_ACTION_OBJDUMP = "objdump"
+OT_ACTION_LLVM_PROFDATA = "llvm-profdata"
