@@ -462,6 +462,9 @@ scalar_mult_int_p384_internal:
     bn.rshi   w1, w1, w0 >> 255
     bn.rshi   w0, w0, w10 >> 255
 
+    /* Clear flags. */
+    bn.add    w31, w31, w31
+
     /* store both shares in scratchpad */
     li        x2, 0
     bn.sid    x2++, 192(x30)
