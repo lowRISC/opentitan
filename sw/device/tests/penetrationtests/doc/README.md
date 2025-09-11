@@ -75,3 +75,14 @@ Use the following command to automatically test the Ibex FI tests on the CW340 F
 cd $REPO_TOP
 ./bazelisk.sh run //sw/device/tests/penetrationtests:fi_ibex_python_test_fpga_cw340_sival_rom_ext
 ```
+
+## Versioning
+
+In `//sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h`, a value PENTEST_VERSION is found with the current version of the pentest framework.
+
+The versioning has the syntax: vx.y.z (epoch.major.minor).
+
+The version number signifies the release of the pentest framework.
+- New releases providing minor changes such as patches, bugfixes, adapted functionality increase z.
+- New releases providing major breaking changes increase y.
+- x is kept for the epoch of the hardware.
