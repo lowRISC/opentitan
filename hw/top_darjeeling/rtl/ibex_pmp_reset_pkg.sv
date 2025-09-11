@@ -24,7 +24,7 @@ package ibex_pmp_reset_pkg;
     '{lock: 1'b0, mode: PMP_MODE_OFF,   exec: 1'b0, write: 1'b0, read: 1'b0}, // 10
     '{lock: 1'b1, mode: PMP_MODE_TOR,   exec: 1'b0, write: 1'b1, read: 1'b1}, // 11 [MMIO: LRW]
     '{lock: 1'b0, mode: PMP_MODE_OFF,   exec: 1'b0, write: 1'b0, read: 1'b0}, // 12
-    '{lock: 1'b1, mode: PMP_MODE_NAPOT, exec: 1'b1, write: 1'b1, read: 1'b1}, // 13 [DV_ROM: LRWX]
+    '{lock: 1'b1, mode: PMP_MODE_OFF,   exec: 1'b0, write: 1'b0, read: 1'b0}, // 13
     '{lock: 1'b0, mode: PMP_MODE_OFF,   exec: 1'b0, write: 1'b0, read: 1'b0}, // 14
     '{lock: 1'b0, mode: PMP_MODE_OFF,   exec: 1'b0, write: 1'b0, read: 1'b0}  // 15
   };
@@ -49,7 +49,7 @@ package ibex_pmp_reset_pkg;
     34'h21100000, // rgn 10 [MMIO: lo=0x2110_0000]
     34'h30601000, // rgn 11 [MMIO: hi=0x3060_1000]
     34'h00000000, // rgn 12
-    34'h000107fc, // rgn 13 [DV_ROM: base=0x0001_0000 size=0x1000 (4KiB)]
+    34'h00000000, // rgn 13
     34'h00000000, // rgn 14
     34'h00000000  // rgn 15
   };
