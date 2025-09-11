@@ -83,10 +83,10 @@ status_t gcm_remask_key(aes_gcm_context_t *internal_ctx) {
     hardened_memshred(mask, internal_ctx->key.key_len);
 
     // XOR each share with the mask.
-    hardened_xor((uint32_t *)internal_ctx->key.key_shares[0], mask,
-                 internal_ctx->key.key_len);
-    hardened_xor((uint32_t *)internal_ctx->key.key_shares[1], mask,
-                 internal_ctx->key.key_len);
+    hardened_xor_in_place((uint32_t *)internal_ctx->key.key_shares[0], mask,
+                          internal_ctx->key.key_len);
+    hardened_xor_in_place((uint32_t *)internal_ctx->key.key_shares[1], mask,
+                          internal_ctx->key.key_len);
     // Update the checksum.
     internal_ctx->key.checksum = aes_key_integrity_checksum(&internal_ctx->key);
   } else {

@@ -18,4 +18,14 @@
  */
 uint32_t ibex_rnd32_read(void);
 
+/**
+ * Write a random value into x5...x7, x9...x31.
+ *
+ * To avoid having SCA sensitive variables in the register file, this function
+ * overwrites the RF with a random value.
+ * Important: this function will hang if the entropy complex is not
+ * initialized. Callers are responsible for checking first.
+ */
+void ibex_clear_rf(void);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_DRIVERS_RV_CORE_IBEX_H_
