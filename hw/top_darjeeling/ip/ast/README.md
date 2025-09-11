@@ -832,7 +832,7 @@ that the external clock is 96MHz.</td>
 <td>Flash observe bus for debug</td>
 </tr>
 <tr class="even">
-<td>otp_bos_i</td>
+<td>otp_obs_i</td>
 <td>I</td>
 <td>8</td>
 <td>async</td>
