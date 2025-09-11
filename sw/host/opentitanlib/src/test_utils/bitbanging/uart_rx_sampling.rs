@@ -65,12 +65,55 @@ impl UartRxMonitoringDecoder {
         nanos as u64
     }
 
-    /// Without consuming any events, find the previous sample time and RX
-    /// value stored by the decoder. If no sampling has been performed
-    /// previously, synchronize with the initial falling edge.
+    /// Calculates the number of samples between two timestamps, assuming a
+    /// sample was taken at the given `from` time.
+    fn samples_since(&self, from: u64, until: u64, period_ns: u64) -> u64 {
+        let time_elapsed = until - from;
+        // Rounding division of time_elapsed / period_ns
+        (time_elapsed + period_ns / 2) / period_ns
+    }
+
+    /// Consume edge events until several identical samples are found between
+    /// edges. Lets us wait for a break condition / idle event if monitoring
+    /// starts mid-transmission. Returns `true` if in a stable state.
+    fn sample_until_stable_state<I: Iterator<Item = MonitoringEvent>>(
+        &mut self,
+        events: &mut Peekable<I>,
+        end_time: u64,
+        period_ns: u64,
+    ) -> Result<bool> {
+        let frame_bit_time = self.decoder.config.bit_time_per_frame() as u64;
+        let last_ts = match self.last_event {
+            Some(last_event) => last_event.timestamp,
+            None => self.initial_timestamp,
+        };
+        let mut last_time = self.timestamp_to_nanos(last_ts);
+
+        while let Some(event) = events.peek() {
+            let timestamp = self.timestamp_to_nanos(event.timestamp);
+            if timestamp < last_time {
+                Err(UartBitbangError::EdgesOutOfOrder)?
+            } else if self.samples_since(last_time, timestamp, period_ns) > frame_bit_time {
+                return Ok(true);
+            }
+            last_time = timestamp;
+            self.last_event = events.next();
+        }
+        Ok(self.samples_since(last_time, end_time, period_ns) > frame_bit_time)
+    }
+
+    /// Find the previous sample time and RX value stored by the decoder. If no
+    /// sampling has been performed previously, wait for a stable RX level
+    /// (no edges for >= UART frame time) and then synchronize with the initial
+    /// falling edge.
+    ///
+    /// This will consume edge events until a stable state is found, but will
+    /// not consume the event corresponding to the first falling edge.
     fn get_last_state<I: Iterator<Item = MonitoringEvent>>(
         &mut self,
         events: &mut Peekable<I>,
+        end_time: u64,
+        period_ns: u64,
     ) -> Result<Option<(u64, u8)>> {
         // If we have information stored from a previous sample, retrieve it.
         if let Some(last_sample_time) = self.last_sample_time {
@@ -84,13 +127,27 @@ impl UartRxMonitoringDecoder {
             return Ok(Some((last_sample_time, value)));
         };
 
-        // Identify & synchronize with the first falling edge.
-        // TODO: Assumes that we start monitoring when the UART is idle high,
-        // and not in the middle of a transaction.
+        // No previous sampling, so wait for a stable RX level to avoid desync
+        if !self.sample_until_stable_state(events, end_time, period_ns)? {
+            return Ok(None);
+        }
+
+        // Identify & synchronize with the first falling edge
         let Some(first_event) = events.peek() else {
             return Ok(None);
         };
-        let edge_time = self.timestamp_to_nanos(first_event.timestamp);
+
+        let edge_time = if first_event.edge == Edge::Falling {
+            self.timestamp_to_nanos(first_event.timestamp)
+        } else {
+            // If we start in a break condition, wait until the break is clear
+            // (the UART goes idle) and sync with the next (falling) edge.
+            events.next();
+            let Some(second_event) = events.peek() else {
+                return Ok(None);
+            };
+            self.timestamp_to_nanos(second_event.timestamp)
+        };
         Ok(Some((edge_time, 0x01)))
     }
 
@@ -141,8 +198,7 @@ impl UartRxMonitoringDecoder {
         }
 
         // Calculate & decode samples between edges
-        let time_elapsed = sampling_end - *last_sample_time;
-        let num_samples = (time_elapsed + period_ns / 2) / period_ns;
+        let num_samples = self.samples_since(*last_sample_time, sampling_end, period_ns);
         *last_sample_time += period_ns * num_samples;
         for _ in 0..num_samples {
             if self.decoder.is_idle() && event.edge == Edge::Falling {
@@ -183,7 +239,7 @@ impl UartRxMonitoringDecoder {
             .filter(|event| event.signal_index == signal_index)
             .peekable();
         let period_ns = period.as_nanos() as u64;
-        let last_state = self.get_last_state(&mut events_iter)?;
+        let last_state = self.get_last_state(&mut events_iter, end_time, period_ns)?;
         let Some((mut last_sample_time, mut value)) = last_state else {
             // Not enough events recorded to find a starting state.
             return Ok(decoded);
@@ -219,6 +275,9 @@ impl UartRxMonitoringDecoder {
     /// performing uniform sampling and decoding the sampled UART output.
     /// `signal_index` specifies the `MonitoringReadResponse` signal
     /// corresponding to the UART RX pin (normally 0).
+    ///
+    /// Expects at least a UART frame time of idle since the initial timestamp
+    /// before it will start sampling (any malformed data is dropped).
     ///
     /// Note: it is expected that *all* monitor responses since monitoring
     /// initialization are fed to the decoder through this function. If any
