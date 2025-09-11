@@ -13,6 +13,7 @@ load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_override")
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
+load("//rules/coverage:info.bzl", "create_cc_instrumented_files_info")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 load("//rules/opentitan:util.bzl", "assemble_for_test", "recursive_format")
 
@@ -275,6 +276,10 @@ def _opentitan_binary(ctx):
 
     providers.append(DefaultInfo(files = depset(default_info), runfiles = runfiles))
     providers.append(OutputGroupInfo(**groups))
+    providers.append(create_cc_instrumented_files_info(
+        ctx = ctx,
+        metadata_files = [],
+    ))
     return providers
 
 common_binary_attrs = {
