@@ -4,6 +4,8 @@
 
 package ibex_pmp_reset_pkg;
   import ibex_pkg::*;
+  import top_darjeeling_pkg::TOP_DARJEELING_MMIO_BASE_ADDR;
+  import top_darjeeling_pkg::TOP_DARJEELING_MMIO_SIZE_BYTES;
 
   // Default reset values for PMP CSRs. Where the number of regions
   // (PMPNumRegions) is less than 16 the reset values for the higher numbered
@@ -46,8 +48,8 @@ package ibex_pmp_reset_pkg;
     34'h00000000, // rgn 7
     34'h00000000, // rgn 8
     34'h00000000, // rgn 9
-    34'h21100000, // rgn 10 [MMIO: lo=0x2110_0000]
-    34'h30601000, // rgn 11 [MMIO: hi=0x3060_1000]
+    TOP_DARJEELING_MMIO_BASE_ADDR,                                   // rgn: 10
+    TOP_DARJEELING_MMIO_BASE_ADDR + TOP_DARJEELING_MMIO_SIZE_BYTES,  // rgn: 11
     34'h00000000, // rgn 12
     34'h00000000, // rgn 13
     34'h00000000, // rgn 14
