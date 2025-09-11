@@ -27,37 +27,6 @@ filegroup(
 )
 
 cc_library(
-    name = "coverage_none",
-    srcs = ["coverage_none.c"],
-    hdrs = ["coverage.h"],
-)
-
-cc_library(
-    name = "coverage_llvm",
-    srcs = [
-        "coverage_llvm.c",
-    ],
-    hdrs = ["coverage.h"],
-    linkopts = ["-lgcc"],
-    deps = [
-        "//sw/device/lib/base:crc32",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
-        "//third_party/llvm_compiler_rt",
-    ],
-)
-
-alias(
-    name = "coverage",
-    actual = select({
-        "//sw/device:measure_coverage_on_target": ":coverage_llvm",
-        "//conditions:default": ":coverage_none",
-    }),
-    visibility = ["//visibility:private"],
-)
-
-cc_library(
     name = "status",
     srcs = ["status.c"],
     hdrs = ["status.h"],
@@ -275,7 +244,6 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":check",
-        ":coverage",
         ":freertos_port",
         ":ottf_console",
         ":ottf_start",
