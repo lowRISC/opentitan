@@ -750,4 +750,9 @@ class SignConverter {
   })
 #endif
 
+/**
+ * Attribute on function declarations to disable coverage instrumentation.
+ */
+#define OT_NO_COVERAGE __attribute__((no_profile_instrument_function))
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_
