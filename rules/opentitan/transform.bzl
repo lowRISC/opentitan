@@ -9,7 +9,7 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_override")
 load("//rules:actions.bzl", "OT_ACTION_OBJDUMP")
 
-def obj_transform(ctx, **kwargs):
+def obj_transform(ctx, strip_llvm_prf_cnts = False, **kwargs):
     """Transform an object file via objcopy.
 
     Args:
@@ -19,6 +19,7 @@ def obj_transform(ctx, **kwargs):
                  if not specified.
         src: The src File object.
         format: The objcopy output-format.
+        strip_llvm_prf_cnts: Whether to strip the llvm coverage counter section.
     Returns:
       The transformed File.
     """
@@ -44,17 +45,51 @@ def obj_transform(ctx, **kwargs):
     src = get_override(ctx, "file.src", kwargs)
     out_format = get_override(ctx, "attr.format", kwargs)
 
+    transform_inputs = [src]
+    transform_flags = ["--output-target", out_format]
+
+    if strip_llvm_prf_cnts:
+        # Extract the initial contents of the `__llvm_prf_cnts` section.
+        prf_cnts = ctx.actions.declare_file("{}.prf_cnts".format(output))
+        ctx.actions.run(
+            outputs = [prf_cnts],
+            inputs = [src] + cc_toolchain.all_files.to_list(),
+            arguments = [
+                "--output-target",
+                out_format,
+                "--only-section",
+                "__llvm_prf_cnts",
+                "--gap-fill",
+                "0xa5",
+                src.path,
+                prf_cnts.path,
+            ],
+            executable = objcopy,
+        )
+
+        # Checks the initial contents of the `__llvm_prf_cnts` section.
+        prf_cnts_res = ctx.actions.declare_file("{}.prf_cnts_res".format(output))
+        ctx.actions.run(
+            outputs = [prf_cnts_res],
+            inputs = [prf_cnts],
+            arguments = [prf_cnts.path, prf_cnts_res.path],
+            executable = ctx.executable._check_initial_coverage,
+        )
+
+        transform_inputs.append(prf_cnts_res)
+        transform_flags.extend(["--remove-section", "__llvm_prf_cnts"])
+
+    # Transforms the firmware format.
     ctx.actions.run(
         outputs = [output],
-        inputs = [src] + cc_toolchain.all_files.to_list(),
-        arguments = [
-            "--output-target",
-            out_format,
+        inputs = transform_inputs + cc_toolchain.all_files.to_list(),
+        arguments = transform_flags + [
             src.path,
             output.path,
         ],
         executable = objcopy,
     )
+
     return output
 
 def obj_disassemble(ctx, **kwargs):
