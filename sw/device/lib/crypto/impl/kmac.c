@@ -87,22 +87,28 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
     return OTCRYPTO_BAD_ARGS;
   }
 
-  switch (key->config.key_mode) {
+  otcrypto_key_mode_t key_mode_used = launder32(0);
+  switch (launder32(key->config.key_mode)) {
     case kOtcryptoKeyModeKmac128:
       HARDENED_TRY(kmac_kmac_128(
           &kmac_key, /*masked_digest=*/kHardenedBoolFalse, input_message.data,
           input_message.len, customization_string.data,
           customization_string.len, tag.data, tag.len));
+      key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKmac128;
       break;
     case kOtcryptoKeyModeKmac256:
       HARDENED_TRY(kmac_kmac_256(
           &kmac_key, /*masked_digest=*/kHardenedBoolFalse, input_message.data,
           input_message.len, customization_string.data,
           customization_string.len, tag.data, tag.len));
+      key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKmac256;
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
   }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(key_mode_used), key->config.key_mode);
 
   if (key->config.hw_backed == kHardenedBoolTrue) {
     HARDENED_TRY(keymgr_sideload_clear_kmac());
