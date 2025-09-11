@@ -212,9 +212,8 @@ class cip_base_vseq #(
                         tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
                         input                   tl_intg_err_e tl_intg_err_type = TlIntgErrNone);
 
-  // Return a named CSR as a dv_base_reg. If scope is not null, use that as the register block.
-  extern local function dv_base_reg get_interrupt_csr(string            csr_name,
-                                                      dv_base_reg_block scope = null);
+  // Return a named CSR as a dv_base_reg.
+  extern local function dv_base_reg get_interrupt_csr(string csr_name);
 
   // Set up the all_csrs queue of CSRs across all register blocks, where each register has the more
   // specific type dv_base_reg. Also, set up the intr_state_csrs queue, with all the interrupt state
@@ -657,14 +656,8 @@ task cip_base_vseq::tl_access_sub(
   saw_err = rsp.d_error;
 endtask
 
-function dv_base_reg cip_base_vseq::get_interrupt_csr(string            csr_name,
-                                                      dv_base_reg_block scope = null);
-  // check within scope first, if supplied
-  if (scope != null) begin
-    get_interrupt_csr = scope.get_dv_base_reg_by_name(csr_name);
-  end else begin
-    get_interrupt_csr = ral.get_dv_base_reg_by_name(csr_name);
-  end
+function dv_base_reg cip_base_vseq::get_interrupt_csr(string csr_name);
+  return ral.get_dv_base_reg_by_name(csr_name);
 endfunction
 
 function void cip_base_vseq::extract_common_csrs();
@@ -685,7 +678,7 @@ task cip_base_vseq::cfg_interrupts(bit [BUS_DW-1:0] interrupts, bit enable = 1'b
   uvm_reg          csr;
   bit [BUS_DW-1:0] data;
 
-  csr = get_interrupt_csr("intr_enable", null);
+  csr = get_interrupt_csr("intr_enable");
   data = csr.get_mirrored_value();
   if (enable) data |= interrupts;
   else        data &= ~interrupts;
@@ -705,7 +698,7 @@ task cip_base_vseq::check_interrupts(bit [BUS_DW-1:0]  interrupts,
 
   act_pins = cfg.intr_vif.sample() & interrupts;
   if (check_set) begin
-    csr_intr_enable = get_interrupt_csr("intr_enable", null);
+    csr_intr_enable = get_interrupt_csr("intr_enable");
     exp_pins = interrupts & csr_intr_enable.get_mirrored_value();
     exp_intr_state = interrupts;
   end else begin
@@ -713,7 +706,7 @@ task cip_base_vseq::check_interrupts(bit [BUS_DW-1:0]  interrupts,
     exp_intr_state = ~interrupts;
   end
   `DV_CHECK_EQ(act_pins, exp_pins)
-  csr_intr_state = get_interrupt_csr("intr_state", null);
+  csr_intr_state = get_interrupt_csr("intr_state");
   csr_rd_check(.ptr(csr_intr_state), .compare_value(exp_intr_state), .compare_mask(interrupts));
 
   if (check_set && |(interrupts & clear)) begin
