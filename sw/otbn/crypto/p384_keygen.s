@@ -119,6 +119,9 @@ p384_random_scalar:
   bn.mov    w20, w31
   jal       x1, p384_reduce_n
 
+  /* Clear flags. */
+  bn.add    w31, w31, w31
+
   /* Compare w16 to 0. */
   bn.cmp    w16, w31
 
