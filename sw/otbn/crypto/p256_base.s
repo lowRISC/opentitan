@@ -1340,8 +1340,9 @@ scalar_mult_int:
      in sequential instructions.
 
      w0,w1 <= [w0, w1] << 191 = k0 << 191 */
+  bn.wsrr   w20, URND
   bn.rshi   w1, w1, w0 >> 65
-  bn.rshi   w0, w0, w31 >> 65
+  bn.rshi   w0, w0, w20 >> 65
 
   /* init double-and-add with point in infinity
      Q = (w8, w9, w10) <= (0, 1, 0) */
@@ -1354,10 +1355,10 @@ scalar_mult_int:
 
      w2,w3 <= [w2, w3] << 191 = k1 << 191 */
   bn.rshi   w3, w3, w2 >> 65
-  bn.rshi   w2, w2, w31 >> 65
+  bn.rshi   w2, w2, w20 >> 65
 
   /* double-and-add loop with decreasing index */
-  loopi     321, 42
+  loopi     321, 64
 
     /* double point Q
        Q = (w8, w9, w10) <= 2*(w8, w9, w10) = 2*Q */
@@ -1379,13 +1380,8 @@ scalar_mult_int:
          discarded later
 
        w26 <= MSb(k1) */
-    bn.rshi   w26, w31, w3 >> 255
-    bn.xor    w20, w7, w26
-
-    /* init regs with random numbers from URND */
-    bn.wsrr   w11, URND
-    bn.wsrr   w12, URND
-    bn.wsrr   w13, URND
+    bn.wsrr   w20, URND
+    bn.rshi   w26, w20, w3 >> 255
 
     /* N.B. The L bit here is secret. For side channel protection in the
        selects below, it is vital that neither option is equal to the
@@ -1393,20 +1389,47 @@ scalar_mult_int:
        hamming distance from the destination's previous value to its new value
        will be 0 in one of the cases and potentially reveal L.
 
-       Note that the randomized XOR instruction before the bn.sel
-       instructions below acts both to randomize the low bits of k0 for use in a
-       MSb check, as well as to clear flags.
+       The select itself is split in two shares, i.e., if L = L0 xor L1, then
+       L ? a : b = L1 ? (L0 ? b : a) : (L0 ? a : b).
+       Thus, we calculate a select over L0 (the LSB of w7) and over L1 (the LSB of w26).
 
        P = (w11, w12, w13)
         <= (w0[255] xor w1[255])?P=(w14, w15, w16):2P=(w4, w5, w6) */
-    bn.sel    w11, w14, w4, L
-    bn.sel    w12, w15, w5, L
-    bn.sel    w13, w16, w6, L
 
-    /* prepare a mostly-randomized word with LSb matching the MSb of k0 for
-       performing a MSb check on k0 and k1 after the following call. */
+    /* init regs with random numbers from URND */
     bn.wsrr   w20, URND
-    bn.rshi   w7, w20, w1 >> 255
+    bn.wsrr   w21, URND
+    bn.wsrr   w22, URND
+
+    /* (L0 ? a : b) */
+    bn.or     w7, w7, w31
+    bn.sel    w20, w14, w4, L
+    bn.sel    w21, w15, w5, L
+    bn.sel    w22, w16, w6, L
+
+    /* init regs with random numbers from URND */
+    bn.wsrr   w23, URND
+    bn.wsrr   w24, URND
+    bn.wsrr   w25, URND
+
+    /* (L0 ? b : a) */
+    bn.sel    w23, w4, w14, L
+    bn.sel    w24, w5, w15, L
+    bn.sel    w25, w6, w16, L
+
+    /* init regs with random numbers from URND */
+    bn.wsrr   w11, URND
+    bn.wsrr   w12, URND
+    bn.wsrr   w13, URND
+
+    /* wipe the L flag */
+    bn.or     w12, w12, w31
+
+    /* L1 ? (L0 ? b : a) : (L0 ? a : b) */
+    bn.or     w26, w26, w31
+    bn.sel    w11, w23, w20, L
+    bn.sel    w12, w24, w21, L
+    bn.sel    w13, w25, w22, L
 
     /* add points
        Q+P = (w11, w12, w13) <= (w11, w12, w13) + (w8, w9, w10) */
@@ -1414,29 +1437,49 @@ scalar_mult_int:
 
     /* probe if MSb of either one or both of the two
        scalars (k0 or k1) is 1.*/
-    bn.or     w20, w7, w26
 
     /* duplicate point P to allow distinct source/destination registers for
        the select instructions below.
-       Q = (w7, w26, w30) <= (w8, w9, w10) */
-    bn.mov    w7, w8
-    bn.mov    w26, w9
-    bn.mov    w30, w10
+       Q = (w20, w21, w22) <= (w8, w9, w10) */
+    bn.mov    w20, w8
+    bn.mov    w21, w9
+    bn.mov    w22, w10
+
+    /* init destination registers with random numbers from URND */
+    bn.wsrr   w23, URND
+    bn.wsrr   w24, URND
+    bn.wsrr   w25, URND
+
+    /* N.B. The select instructions below must use distinct
+       source/destination registers and source and destination must not be
+       equal for any source and destination pair to avoid revealing L.
+
+       The select is split in two shares, i.e., if L = L0 or L1, then
+       L ? a : b = L0 ? a : (L1 ? a : b). Thus, we calculate a select
+       over L0 (the LSB of w7) and over L1 (the LSB of w26).
+
+       Select doubling result (Q) or addition result (Q+P)
+         Q = w0[255] or w1[255]?Q+P=(w11, w12, w13):Q=(w20, w21, w22) */
+    bn.or     w7, w7, w31
+    bn.sel    w23, w11, w20, L
+    bn.sel    w24, w12, w21, L
+    bn.sel    w25, w13, w22, L
 
     /* init destination registers with random numbers from URND */
     bn.wsrr   w8, URND
     bn.wsrr   w9, URND
     bn.wsrr   w10, URND
 
-    /* N.B. The select instructions below must use distinct
-       source/destination registers and source and destination must not be
-       equal for any source and destination pair to avoid revealing L.
+    /* wipe the L flag */
+    bn.or     w10, w10, w31
 
-       Select doubling result (Q) or addition result (Q+P)
-         Q = w0[255] or w1[255]?Q+P=(w11, w12, w13):Q=(w7, w26, w30) */
-    bn.sel    w8, w11, w7, L
-    bn.sel    w9, w12, w26, L
-    bn.sel    w10, w13, w30, L
+    bn.or     w26, w26, w31
+    bn.sel    w8, w11, w23, L
+    bn.sel    w9, w12, w24, L
+    bn.sel    w10, w13, w25, L
+
+    /* Load random to pad the shift and re-randomize the coordinates of Q. */
+    bn.wsrr   w7, URND
 
     /* Shift k0 left 1 bit.
 
@@ -1444,12 +1487,7 @@ scalar_mult_int:
      to avoid potential transient side channel leakage from accessing k0 and k1
      in sequential instructions. */
     bn.rshi   w1, w1, w0 >> 255
-    bn.rshi   w0, w0, w31 >> 255
-
-    /* get a fresh random number from URND and scale the coordinates of
-       2P = (w4, w5, w6) (scaling each projective coordinate with same
-       factor results in same point) */
-    bn.wsrr   w7, URND
+    bn.rshi   w0, w0, w7 >> 255
 
     /* w4 = w4 * w7 */
     bn.mov    w24, w4
@@ -1471,7 +1509,7 @@ scalar_mult_int:
 
     /* Shift k1 left 1 bit. */
     bn.rshi   w3, w3, w2 >> 255
-    bn.rshi   w2, w2, w31 >> 255
+    bn.rshi   w2, w2, w7 >> 255
 
   /* Check if the z-coordinate of Q is 0. If so, fail; this represents the
      point at infinity and means the scalar was zero mod n, which likely
