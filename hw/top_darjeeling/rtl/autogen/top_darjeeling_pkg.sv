@@ -1203,6 +1203,11 @@ package top_darjeeling_pkg;
     PeripheralCount
   } peripheral_e;
 
+  // MMIO Region
+  //
+  parameter int unsigned TOP_DARJEELING_MMIO_BASE_ADDR = 32'h21100000;
+  parameter int unsigned TOP_DARJEELING_MMIO_SIZE_BYTES = 32'hF501000;
+
   // TODO: Enumeration for PLIC Interrupt source peripheral.
 
 // MACROs for AST analog simulation support

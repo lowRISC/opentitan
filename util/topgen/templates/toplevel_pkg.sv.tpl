@@ -278,6 +278,13 @@ package top_${top["name"]}${addr_space_suffix}_pkg;
     ${lib.Name.from_snake_case("peripheral_count").as_camel_case()}
   } peripheral_e;
 
+% for (subspace_name, description, subspace_range) in helper.subranges[addr_space_name]:
+  // ${subspace_name.upper()} Region
+  //
+  parameter int unsigned ${subspace_range.base_addr_name().as_c_define()} = ${"32'h{:X}".format(subspace_range.base_addr)};
+  parameter int unsigned ${subspace_range.size_bytes_name().as_c_define()} = ${"32'h{:X}".format(subspace_range.size_bytes)};
+% endfor
+
   // TODO: Enumeration for PLIC Interrupt source peripheral.
 
 // MACROs for AST analog simulation support
