@@ -15,6 +15,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/coverage/api.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
@@ -131,6 +132,7 @@ static void report_test_status(bool result) {
     }
   }
 
+  coverage_report();
   test_status_set(result ? kTestStatusPassed : kTestStatusFailed);
 }
 

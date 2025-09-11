@@ -64,6 +64,7 @@ ld_library(
     includes = ["ottf_common.ld"],
     deps = [
         "//sw/device:info_sections",
+        "//sw/device/lib/coverage:coverage_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
     ],
 )
@@ -208,6 +209,8 @@ cc_library(
         "//hw/top:top_lib",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/coverage:api_asm",
+        "//sw/device/lib/coverage:ottf_runtime",
         "//sw/device/lib/crt",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -253,6 +256,8 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/coverage:api",
+        "//sw/device/lib/coverage:ottf_runtime",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
