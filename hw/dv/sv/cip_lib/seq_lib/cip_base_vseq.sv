@@ -684,7 +684,7 @@ function void cip_base_vseq::extract_common_csrs();
   foreach (all_csrs[i]) begin
     string csr_name = all_csrs[i].get_name();
     if (!uvm_re_match("intr_state*", csr_name)) begin
-      intr_state_csrs.push_back(get_interrupt_csr(csr_name));
+      intr_state_csrs.push_back(all_csrs[i]);
     end
   end
 endfunction
