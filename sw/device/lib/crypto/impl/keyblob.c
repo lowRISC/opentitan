@@ -159,21 +159,22 @@ status_t keyblob_ensure_xor_masked(const otcrypto_key_config_t config) {
   otcrypto_key_type_t key_type =
       (otcrypto_key_type_t)(launder32((uint32_t)config.key_mode) >> 16);
   int32_t result = (int32_t)launder32((uint32_t)(OTCRYPTO_OK.value ^ key_type));
+  otcrypto_key_type_t key_type_used = launder32(0);
   switch (launder32(key_type)) {
     case kOtcryptoKeyTypeAes:
-      HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeAes);
+      key_type_used = launder32(key_type_used) | kOtcryptoKeyTypeAes;
       result ^= launder32(kOtcryptoKeyTypeAes);
       break;
     case kOtcryptoKeyTypeHmac:
-      HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeHmac);
+      key_type_used = launder32(key_type_used) | kOtcryptoKeyTypeHmac;
       result ^= launder32(kOtcryptoKeyTypeHmac);
       break;
     case kOtcryptoKeyTypeKmac:
-      HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeKmac);
+      key_type_used = launder32(key_type_used) | kOtcryptoKeyTypeKmac;
       result ^= launder32(kOtcryptoKeyTypeKmac);
       break;
     case kOtcryptoKeyTypeKdf:
-      HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeKdf);
+      key_type_used = launder32(key_type_used) | kOtcryptoKeyTypeKdf;
       result ^= launder32(kOtcryptoKeyTypeKdf);
       break;
     case kOtcryptoKeyTypeEcc:
@@ -186,6 +187,10 @@ status_t keyblob_ensure_xor_masked(const otcrypto_key_config_t config) {
       // Unrecognized key type.
       return OTCRYPTO_BAD_ARGS;
   }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(key_type_used), key_type);
+
   HARDENED_CHECK_NE(config.key_mode >> 16, kOtcryptoKeyTypeEcc);
   HARDENED_CHECK_NE(config.key_mode >> 16, kOtcryptoKeyTypeRsa);
 

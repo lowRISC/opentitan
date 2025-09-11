@@ -104,12 +104,16 @@ static status_t keymgr_wait_until_done(void) {
   // idle after an operation has been started by the caller.
   switch (status) {
     case KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS:
+      HARDENED_CHECK_EQ(launder32(status),
+                        KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
       return OTCRYPTO_OK;
     case KEYMGR_OP_STATUS_STATUS_VALUE_DONE_ERROR: {
       // Clear the ERR_CODE register before returning.
       uint32_t err_code =
           abs_mmio_read32(kBaseAddr + KEYMGR_ERR_CODE_REG_OFFSET);
       abs_mmio_write32(kBaseAddr + KEYMGR_ERR_CODE_REG_OFFSET, err_code);
+      HARDENED_CHECK_EQ(launder32(status),
+                        KEYMGR_OP_STATUS_STATUS_VALUE_DONE_ERROR);
       return OTCRYPTO_RECOV_ERR;
     }
   }
