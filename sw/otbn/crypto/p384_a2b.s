@@ -79,6 +79,9 @@ p384_arithmetic_to_boolean_mod:
   bn.sub    w11, w11, w13
   bn.subb   w12, w12, w14
 
+  /* Clear flags. */
+  bn.sub    w31, w31, w31
+
   /* Call 385-bit A2B function.
 
      N.B. To avoid leaking the MSB of the second A2B result below, we move the
@@ -154,6 +157,9 @@ p384_arithmetic_to_boolean:
   bn.rshi   w4, w4, w31 >> 129
   bn.rshi   w4, w31, w4 >> 127
 
+  /* Clear flags. */
+  bn.add    w31, w31, w31
+
   /* [w21,w20] = x'     <= [w2,w1] ^ [w19,w18] = gamma ^ r
 
      N.B. The dummy instruction below is to clear the flags from performing
@@ -203,7 +209,7 @@ p384_arithmetic_to_boolean:
   bn.xor    w6, w6, w2
 
   /* Loop for k = 1 to K - 1 = 385 - 1 */
-  loopi     384, 14
+  loopi     384, 15
 
     /* [w2,w1] = gamma  <= [w4,w3] & [w19,w18] = T & r
 
@@ -235,6 +241,9 @@ p384_arithmetic_to_boolean:
     bn.addc   w4, w2, w2
     bn.rshi   w4, w4, w31 >> 129
     bn.rshi   w4, w31, w4 >> 127
+
+    /* Clear flags. */
+    bn.add    w31, w31, w31
 
   /* [w21,w20] = x'     <= [w21,w20] ^ [w4,w3] = x' ^ T
 
