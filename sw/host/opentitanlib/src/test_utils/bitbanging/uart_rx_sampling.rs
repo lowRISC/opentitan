@@ -299,3 +299,341 @@ impl UartRxMonitoringDecoder {
         )
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    use once_cell::sync::Lazy;
+    use serialport::Parity;
+
+    use crate::test_utils::bitbanging::uart::{UartBitbangConfig, UartStopBits};
+
+    static CLOCK_NATURE: ClockNature = ClockNature::Wallclock {
+        resolution: 1_000_000,
+        offset: None,
+    };
+    static BAUD_RATE: u32 = 57600;
+    static START_RESPONSE: Lazy<MonitoringStartResponse> = Lazy::new(|| MonitoringStartResponse {
+        timestamp: 0,
+        initial_levels: vec![true],
+    });
+    // Example UART RX waveform taken from a bitbanging test sample
+    static EVENT_TIMESTAMPS: [u64; 112] = [
+        5889252340, 5889252358, 5889252375, 5889252392, 5889252410, 5889252427, 5889252445,
+        5889252462, 5889252479, 5889252497, 5889252514, 5889252532, 5889252549, 5889252636,
+        5889252654, 5889252671, 5889252688, 5889252723, 5889252740, 5889252775, 5889252793,
+        5889252810, 5889252827, 5889252845, 5889252862, 5889252914, 5889252932, 5889252949,
+        5889252967, 5889252984, 5889253001, 5889253019, 5889253036, 5889253141, 5889253158,
+        5889253193, 5889253210, 5889253245, 5889253263, 5889253315, 5889253349, 5889253367,
+        5889253386, 5889253402, 5889253419, 5889253454, 5889253471, 5889253489, 5889253523,
+        5889253541, 5889253558, 5889253610, 5889253628, 5889253645, 5889253697, 5889253715,
+        5889253732, 5889253767, 5889253784, 5889253837, 5889253871, 5889253889, 5889253906,
+        5889253924, 5889253941, 5889254011, 5889254046, 5889254063, 5889254080, 5889254115,
+        5889254167, 5889254185, 5889254219, 5889254238, 5889254254, 5889254272, 5889254324,
+        5889254359, 5889254393, 5889254411, 5889254428, 5889254533, 5889254550, 5889254585,
+        5889254603, 5889254655, 5889254672, 5889254689, 5889254741, 5889254759, 5889254776,
+        5889254794, 5889254811, 5889254828, 5889254846, 5889254881, 5889254915, 5889254933,
+        5889254950, 5889254968, 5889255002, 5889255037, 5889255089, 5889255107, 5889255124,
+        5889255176, 5889255194, 5889255211, 5889255264, 5889255281, 5889255298, 5889255455,
+    ];
+    static READ_RESPONSE_TIMESTAMP: u64 = 5889262827;
+    static EXPECTED_RESPONSE: &str = "UART bitbang test\0";
+
+    // A helper to compactly construct `MonitoringEvent` edges.
+    fn edge(signal_index: u8, edge: Edge, timestamp: u64) -> MonitoringEvent {
+        MonitoringEvent {
+            signal_index,
+            edge,
+            timestamp,
+        }
+    }
+
+    fn sample_and_decode(
+        decoder: UartBitbangDecoder,
+        start_idle: bool,
+        start_response: MonitoringStartResponse,
+        edge_timestamps: &[u64],
+        read_timestamp: u64,
+        baud_rate: u32,
+        expected: String,
+    ) -> Result<()> {
+        let edges = if start_idle {
+            [Edge::Falling, Edge::Rising]
+        } else {
+            [Edge::Rising, Edge::Falling]
+        };
+        let events = edge_timestamps
+            .iter()
+            .enumerate()
+            .map(|(i, t)| edge(0, edges[i % 2], *t))
+            .collect::<Vec<_>>();
+        let read_response = MonitoringReadResponse {
+            events,
+            timestamp: read_timestamp,
+        };
+
+        let mut response_decoder =
+            UartRxMonitoringDecoder::new(decoder, CLOCK_NATURE, start_response)?;
+        let decoded = response_decoder.decode_response(read_response, 0, baud_rate)?;
+        assert_eq!(String::from_utf8(decoded), Ok(expected));
+        Ok(())
+    }
+
+    #[test]
+    fn smoke() -> Result<()> {
+        // Decode against a known sample test string
+        let config = UartBitbangConfig::new(8, UartStopBits::Stop1, 2, Parity::None)?;
+        let decoder = UartBitbangDecoder::new(config);
+        sample_and_decode(
+            decoder,
+            true,
+            START_RESPONSE.clone(),
+            &EVENT_TIMESTAMPS,
+            READ_RESPONSE_TIMESTAMP,
+            BAUD_RATE,
+            EXPECTED_RESPONSE.into(),
+        )
+    }
+
+    #[test]
+    fn baud_rates() -> Result<()> {
+        // Check we can sample at different baud rates
+        fn modify_timestamp(timestamp: u64, first_edge_timestamp: u64, divider: u32) -> u64 {
+            let delta = timestamp - first_edge_timestamp;
+            let new_delta = delta * divider as u64;
+            first_edge_timestamp + new_delta
+        }
+
+        let config = UartBitbangConfig::new(8, UartStopBits::Stop1, 2, Parity::None)?;
+        let first_edge_timestamp = EVENT_TIMESTAMPS[0];
+        for divider in 1..=10u32 {
+            let modified_timestamps = EVENT_TIMESTAMPS
+                .iter()
+                .map(|timestamp| modify_timestamp(*timestamp, first_edge_timestamp, divider))
+                .collect::<Vec<_>>();
+            let modified_baud = BAUD_RATE / divider;
+            let modified_response_timestamp =
+                modify_timestamp(READ_RESPONSE_TIMESTAMP, first_edge_timestamp, divider);
+            let decoder = UartBitbangDecoder::new(config.clone());
+            sample_and_decode(
+                decoder,
+                true,
+                START_RESPONSE.clone(),
+                &modified_timestamps,
+                modified_response_timestamp,
+                modified_baud,
+                EXPECTED_RESPONSE.into(),
+            )?;
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn clock_jitter_and_skew() -> Result<()> {
+        // Check we can tolerate some small +-5% jitters or skews
+        // Use a smaller baud rate to allow more accurate jitters
+        const BAUD_DIVIDER: u32 = 8;
+
+        fn modify_timestamp(
+            timestamp: u64,
+            first_edge_timestamp: u64,
+            period_ns: u64,
+            skew_pc: i32,
+            jitter_pc: i32,
+        ) -> u64 {
+            let delta = timestamp - first_edge_timestamp;
+            let new_delta = delta * BAUD_DIVIDER as u64;
+            let skew_delta = new_delta * ((100i32 + skew_pc) as u64) / 100u64;
+            let jittered_delta =
+                (skew_delta as i64) + ((period_ns as i64) * jitter_pc as i64) / 100i64;
+            (first_edge_timestamp as i64 + jittered_delta) as u64
+        }
+
+        fn clock_test(skew_pc: i32, jitter_pc: i32) -> Result<()> {
+            let config = UartBitbangConfig::new(8, UartStopBits::Stop1, 2, Parity::None)?;
+            let modified_baud = BAUD_RATE / BAUD_DIVIDER;
+            let period_ns = 1_000_000_000u64 / modified_baud as u64;
+            let first_edge_timestamp = EVENT_TIMESTAMPS[0];
+
+            let modified_timestamps = EVENT_TIMESTAMPS
+                .iter()
+                .map(|timestamp| {
+                    modify_timestamp(
+                        *timestamp,
+                        first_edge_timestamp,
+                        period_ns,
+                        skew_pc,
+                        jitter_pc,
+                    )
+                })
+                .collect::<Vec<_>>();
+            let modified_response_timestamp = modify_timestamp(
+                READ_RESPONSE_TIMESTAMP,
+                first_edge_timestamp,
+                period_ns,
+                skew_pc,
+                jitter_pc,
+            );
+            let decoder = UartBitbangDecoder::new(config.clone());
+            sample_and_decode(
+                decoder,
+                true,
+                START_RESPONSE.clone(),
+                &modified_timestamps,
+                modified_response_timestamp,
+                modified_baud,
+                EXPECTED_RESPONSE.into(),
+            )?;
+            Ok(())
+        }
+
+        // Test -20% -> 20% jitter (unidirectional only for now)
+        for jitter_pc in -20..=20i32 {
+            clock_test(0i32, jitter_pc)?;
+        }
+
+        // UART frame time = 1 start bit + 8 data bits + 1 stop bit = 10 samples
+        // Rounding gives up to a 50% tolerance, so realistically we can test a
+        // max of -4 -> 4% skew
+        for skew_pc in -4..=4i32 {
+            clock_test(skew_pc, 0i32)?;
+        }
+
+        // Test with small jitter (-5 -> 5%) & skew (-2 -> 2%)
+        for jitter_pc in -5..=5i32 {
+            for skew_pc in -2..=2i32 {
+                clock_test(skew_pc, jitter_pc)?;
+            }
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn start_during_break() -> Result<()> {
+        // Check that we can handle starting monitoring during a break
+        let config = UartBitbangConfig::new(8, UartStopBits::Stop1, 2, Parity::None)?;
+        let decoder = UartBitbangDecoder::new(config);
+
+        // Insert an extra edge just before, an start in a break condition (RX = 0)
+        let bit_time = EVENT_TIMESTAMPS[1] - EVENT_TIMESTAMPS[0];
+        let before_timestamp = EVENT_TIMESTAMPS[0] - bit_time;
+        let mut events = vec![before_timestamp];
+        events.extend_from_slice(&EVENT_TIMESTAMPS);
+        sample_and_decode(
+            decoder,
+            false,
+            START_RESPONSE.clone(),
+            &events,
+            READ_RESPONSE_TIMESTAMP,
+            BAUD_RATE,
+            EXPECTED_RESPONSE.into(),
+        )
+    }
+
+    #[test]
+    fn start_mid_transmission() -> Result<()> {
+        // Check that we can handle starting monitoring mid-transmission
+        let config = UartBitbangConfig::new(8, UartStopBits::Stop1, 2, Parity::None)?;
+        let decoder = UartBitbangDecoder::new(config.clone());
+
+        // Insert some spurious edges a couple of UART frames before,
+        // corresponding to the end of some partial UART transmission.
+        // The decoder should ignore this and read as normal.
+        let bit_time = EVENT_TIMESTAMPS[1] - EVENT_TIMESTAMPS[0];
+        let start_response = MonitoringStartResponse {
+            timestamp: EVENT_TIMESTAMPS[0] - bit_time * 24,
+            initial_levels: vec![true],
+        };
+        let mut events = vec![
+            EVENT_TIMESTAMPS[0] - bit_time * 23,
+            EVENT_TIMESTAMPS[0] - bit_time * 21,
+            EVENT_TIMESTAMPS[0] - bit_time * 20,
+        ];
+        events.extend_from_slice(&EVENT_TIMESTAMPS);
+        sample_and_decode(
+            decoder,
+            false,
+            start_response,
+            &events,
+            READ_RESPONSE_TIMESTAMP,
+            BAUD_RATE,
+            EXPECTED_RESPONSE.into(),
+        )?;
+
+        // Insert some spurious edges just before, corresponding to the end
+        // of some partial UART transmission. The decoder should decode nothing
+        // (instead of garbage) because it cannot find a stable state.
+        let decoder = UartBitbangDecoder::new(config);
+        let start_response = MonitoringStartResponse {
+            timestamp: EVENT_TIMESTAMPS[0] - bit_time * 5,
+            initial_levels: vec![true],
+        };
+        let mut events = vec![
+            EVENT_TIMESTAMPS[0] - bit_time * 4,
+            EVENT_TIMESTAMPS[0] - bit_time * 2,
+            EVENT_TIMESTAMPS[0] - bit_time,
+        ];
+        events.extend_from_slice(&EVENT_TIMESTAMPS);
+        let empty_response = String::new();
+        sample_and_decode(
+            decoder,
+            false,
+            start_response,
+            &events,
+            READ_RESPONSE_TIMESTAMP,
+            BAUD_RATE,
+            empty_response,
+        )
+    }
+
+    #[test]
+    fn partial_responses() -> Result<()> {
+        // Check that we can decode the data over several partial monitor reads
+        let config = UartBitbangConfig::new(8, UartStopBits::Stop1, 2, Parity::None)?;
+        let decoder = UartBitbangDecoder::new(config.clone());
+        let edges = [Edge::Falling, Edge::Rising];
+        let events = EVENT_TIMESTAMPS
+            .iter()
+            .enumerate()
+            .map(|(i, t)| edge(0, edges[i % 2], *t))
+            .collect::<Vec<_>>();
+        let mut response_decoder =
+            UartRxMonitoringDecoder::new(decoder, CLOCK_NATURE, START_RESPONSE.clone())?;
+
+        // Decode the first 60 edges 3 edges at a time
+        let mut decoded = Vec::new();
+        for partial_edges in events[..60].chunks(3) {
+            // "read" a response at last edge + 1 ns
+            let timestamp = partial_edges.last().unwrap().timestamp + 1;
+            let read_response = MonitoringReadResponse {
+                events: Vec::from(partial_edges),
+                timestamp,
+            };
+            decoded.extend(response_decoder.decode_response(read_response, 0, BAUD_RATE)?);
+        }
+
+        // Decode the remaining edges with up to 20 at a time
+        for partial_edges in events[60..].chunks(20) {
+            let timestamp = partial_edges.last().unwrap().timestamp + 1;
+            let read_response = MonitoringReadResponse {
+                events: Vec::from(partial_edges),
+                timestamp,
+            };
+            decoded.extend(response_decoder.decode_response(read_response, 0, BAUD_RATE)?);
+        }
+
+        // Final read response containing the end timestamp
+        let read_response = MonitoringReadResponse {
+            events: Vec::new(),
+            timestamp: READ_RESPONSE_TIMESTAMP,
+        };
+        decoded.extend(response_decoder.decode_response(read_response, 0, BAUD_RATE)?);
+        assert_eq!(
+            String::from_utf8(decoded),
+            Ok(String::from(EXPECTED_RESPONSE))
+        );
+        Ok(())
+    }
+}
