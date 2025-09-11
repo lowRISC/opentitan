@@ -1127,28 +1127,6 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "coverage_test",
-    srcs = ["coverage_test.c"],
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            "//hw/top_earlgrey:silicon_creator": None,
-        },
-        DARJEELING_TEST_ENVS,
-    ),
-    verilator = verilator_params(timeout = "long"),
-    deps = [
-        "//hw/top/dt",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_test(
     name = "crt_test",
     srcs = ["crt_test.c"],
     exec_env = dicts.add(

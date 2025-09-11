@@ -23,7 +23,6 @@
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/coverage.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
@@ -135,7 +134,6 @@ static void report_test_status(bool result) {
     }
   }
 
-  coverage_send_buffer();
   test_status_set(result ? kTestStatusPassed : kTestStatusFailed);
 }
 
