@@ -143,12 +143,18 @@ scalar_mult_int_p384:
 
   /* Left align both shares for probing of MSB in loop body. */
   /* Zeroize w0 and w5 since they are not needed without reblinding. */
+
+  /* Get some randomness to pad the shares. */
+  bn.wsrr   w6, URND
   bn.rshi   w2, w2, w1 >> 192
-  bn.rshi   w1, w1, w31 >> 192
-  bn.xor    w0, w0, w0
+  bn.rshi   w1, w1, w6 >> 192
+  bn.rshi   w0, w6, w31 >> 192
+
+  /* Get some randomness to pad the shares. */
+  bn.wsrr   w6, URND
   bn.rshi   w5, w5, w4 >> 192
-  bn.rshi   w4, w4, w31 >> 192
-  bn.xor    w3, w3, w3
+  bn.rshi   w4, w4, w6 >> 192
+  bn.rshi   w3, w6, w31 >> 192
 
   /* Set the loop iteration variable for the multiplication. */
   addi      x16, x0, 448
@@ -206,16 +212,18 @@ scalar_mult_int_p384_reblind:
   jal       x1, p384_masked_scalar_reblind
 
   /* left align both shares for probing of MSB in loop body */
+
+  /* Get some randomness to pad the shares. */
+  bn.wsrr   w6, URND
   bn.rshi   w2, w2, w1 >> 66
   bn.rshi   w1, w1, w0 >> 66
-  bn.rshi   w0, w0, w31 >> 66
+  bn.rshi   w0, w0, w6 >> 66
 
-  /* Dummy instruction to avoid consecutive share access. */
-  bn.xor    w31, w31, w31
-
+  /* Get some randomness to pad the shares. */
+  bn.wsrr   w6, URND
   bn.rshi   w5, w5, w4 >> 66
   bn.rshi   w4, w4, w3 >> 66
-  bn.rshi   w3, w3, w31 >> 66
+  bn.rshi   w3, w3, w6 >> 66
 
   /* Set the loop iteration variable for the multiplication. */
   addi      x16, x0, 578
