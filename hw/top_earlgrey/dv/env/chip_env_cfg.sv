@@ -114,6 +114,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // The JTAG RV debugger model.
   jtag_rv_debugger debugger;
 
+  ottf_spi_console ottf_spi_console_h;
+
   // Run small page rma
   bit   en_small_rma = 0;
 
