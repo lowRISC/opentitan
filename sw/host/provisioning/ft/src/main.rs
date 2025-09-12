@@ -40,6 +40,9 @@ pub struct ManufFtProvisioningDataInput {
     #[arg(long)]
     pub device_id: String,
 
+    #[arg(long)]
+    pub use_ext_clk_during_individualize: bool,
+
     /// TestUnlock token; a 128-bit hex string.
     #[arg(long)]
     pub test_unlock_token: String,
@@ -156,7 +159,10 @@ fn main() -> Result<()> {
         .join("");
     // We feed the device ID to the DUT in little endian order.
     device_id.reverse();
-    let ft_individualize_data_in = ManufFtIndividualizeData { device_id };
+    let ft_individualize_data_in = ManufFtIndividualizeData {
+        use_ext_clk: opts.provisioning_data.use_ext_clk_during_individualize,
+        device_id,
+    };
 
     // Parse and prepare CA key.
     let mut ca_cfgs: HashMap<String, CaConfig> = serde_annotate::from_str(
