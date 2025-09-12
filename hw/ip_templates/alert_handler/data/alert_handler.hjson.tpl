@@ -157,7 +157,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     { name: "N_LOC_ALERT",
       desc: "Number of local alerts",
       type: "int",
-      default: "7",
+      default: "${n_loc_alert}",
       local: "true"
     },
     { name: "EscPingCountWidth",
