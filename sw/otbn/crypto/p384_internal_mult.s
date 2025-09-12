@@ -202,6 +202,9 @@ scalar_mult_int_p384_reblind:
   bn.lid    x2++, 32(x17)
   bn.lid    x2++, 64(x17)
 
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
+
   /* fetch 2nd share of scalar from dmem
      s1 = [w5, w4, w3] <= dmem[dptr_k1] = k1 */
   bn.lid    x2++, 0(x19)
@@ -215,6 +218,10 @@ scalar_mult_int_p384_reblind:
   bn.rshi   w2, w2, w1 >> 66
   bn.rshi   w1, w1, w0 >> 66
   bn.rshi   w0, w0, w31 >> 66
+
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
+
   bn.rshi   w5, w5, w4 >> 66
   bn.rshi   w4, w4, w3 >> 66
   bn.rshi   w3, w3, w31 >> 66
@@ -328,6 +335,10 @@ scalar_mult_int_p384_internal:
   bn.sid    x2++, 192(x30)
   bn.sid    x2++, 224(x30)
   bn.sid    x2++, 256(x30)
+
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
+
   bn.sid    x2++, 480(x30)
   bn.sid    x2++, 512(x30)
   bn.sid    x2,   544(x30)
