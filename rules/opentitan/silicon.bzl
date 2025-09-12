@@ -58,6 +58,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             src = elf,
             suffix = "39.scr.vmem",
             rom_scramble_tool = ctx.executable.rom_scramble_tool,
+            top_gen_hjson = exec_env.top_gen_hjson,
             top_secret_cfg = exec_env.top_secret_cfg,
         )
         default = rom

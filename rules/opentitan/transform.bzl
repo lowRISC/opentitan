@@ -280,15 +280,17 @@ def convert_to_scrambled_rom_vmem(ctx, **kwargs):
 
     src = get_override(ctx, "attr.src", kwargs)
 
-    config = get_override(ctx, "file.top_secret_cfg", kwargs)
+    top_config = get_override(ctx, "file.top_gen_hjson", kwargs)
+    secrets = get_override(ctx, "file.top_secret_cfg", kwargs)
     tool = get_override(ctx, "executable.rom_scramble_tool", kwargs)
     mode = get_override(ctx, "attr.rom_scramble_mode", kwargs)
 
     ctx.actions.run(
         outputs = [output, hashfile],
-        inputs = [src, tool, config],
+        inputs = [src, tool, top_config, secrets],
         arguments = [
-            config.path,
+            top_config.path,
+            secrets.path,
             mode,
             src.path,
             output.path,
