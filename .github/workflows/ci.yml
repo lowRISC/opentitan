@@ -699,11 +699,11 @@ jobs:
             --target_pattern_file="$target_pattern_file"
       - name: Run software unit tests
         run: |
-          ./bazelisk.sh test                                          \
-            --build_tests_only=false                                  \
-            --test_output=errors                                      \
-            --define DISABLE_VERILATOR_BUILD=true                     \
-            --test_tag_filters=-broken,-cw310,-verilator,-dv,-silicon \
+          ./bazelisk.sh test                                                \
+            --build_tests_only=false                                        \
+            --test_output=errors                                            \
+            --define DISABLE_VERILATOR_BUILD=true                           \
+            --test_tag_filters=-broken,-cw310,-verilator,-dv,-silicon,-qemu \
             --target_pattern_file="$target_pattern_file"
       - name: Publish Bazel test results
         uses: ./.github/actions/publish-bazel-test-results
