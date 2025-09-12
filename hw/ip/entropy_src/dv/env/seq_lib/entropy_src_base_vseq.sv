@@ -381,12 +381,8 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   // For the entropy_data register a bundle consists of CSRNG_BUS_WIDTH (=384) bits
   // and this it takes CSRNG_BUS_WIDTH/TL_DW (=12) reads to fetch a whole bundle.
   //
-  // When accessing the observe_fifo via the FW_OV_RD_DATA register the bundle size is
-  // programmable and set to be equal to the value set in the OBSERVE_FIFO_DEPTH register
-  // TODO(#18837): What happens if the depth is zero?
-  //
-  // a. max_bundles bundles have been read
-  // b. The intr_state register indicates no more data in entropy_data
+  // When accessing the observe FIFO via the FW_OV_RD_DATA register, the bundle size is TL_DW (=32)
+  // bits.
   //
   // If max_bundles < 0, simply reads all available bundles.
   //
@@ -395,11 +391,13 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   // FIFO is contiguous.
   task do_entropy_data_read(tl_data_source_e source = TlSrcEntropyDataReg,
                             int max_bundles = -1,
+                            int timeout_ns = 250us / 1ns,
                             bit check_overflow = 0,
                             output int bundles_found);
     bit intr_status;
     bit done;
-    int cnt_per_interrupt;
+    bit read_max = 0;
+    int num_words_to_read = 1;
     uvm_reg_field intr_field;
     uvm_reg       data_reg;
 
@@ -409,49 +407,83 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       TlSrcEntropyDataReg: begin
         intr_field        = ral.intr_state.es_entropy_valid;
         data_reg          = ral.entropy_data;
-        cnt_per_interrupt = entropy_src_pkg::CSRNG_BUS_WIDTH / TL_DW;
       end
       TlSrcObserveFIFO: begin
         intr_field        = ral.intr_state.es_observe_fifo_ready;
         data_reg          = ral.fw_ov_rd_data;
-        csr_rd(.ptr(ral.observe_fifo_thresh), .value(cnt_per_interrupt));
       end
       default: begin
         `uvm_fatal(`gfn, "Invalid source for accessing TL entropy (environment error)")
       end
     endcase
+
     `DV_SPINWAIT(
       do begin
         `uvm_info(`gfn, "READING INTERRUPT STS", UVM_DEBUG)
         csr_rd(.ptr(intr_field), .value(intr_status));
         if (intr_status) begin
-          // Check that the Observe FIFO hasn't overflown yet.
-          // By checking for overflows before and after reading the observe FIFO we can make sure,
-          // that the data we are reading is contiguous.
-          if (check_overflow && (source == TlSrcObserveFIFO)) begin
-            csr_rd_check(.ptr(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow),
-                        .compare_value('0));
+
+          // How many words shall we read in one go?
+          if (source == TlSrcEntropyDataReg) begin
+            // The seed length (CSRNG_BUS_WIDTH) is an integer multiple of the bus width.
+            num_words_to_read = entropy_src_pkg::CSRNG_BUS_WIDTH / TL_DW;
+          end else begin
+            // Check that the Observe FIFO hasn't overflown yet.
+            // By checking for overflows before and after reading the observe FIFO we can make sure
+            // that the data we are reading is contiguous.
+            if (check_overflow) begin
+              csr_rd_check(.ptr(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow),
+                           .compare_value('0));
+            end
+            // Define how many words we're going to read from the Observe FIFO. For efficiency,
+            // firmware will always read the maximum number of available words. But to reach
+            // coverage and to have the FIFO overflow from time to time, we sometimes just read few
+            // elements only.
+            read_max = $urandom_range(0, 9) > 0;
+            if (read_max) begin
+              cfg.clk_rst_vif.wait_n_clks(2);
+              num_words_to_read = `gmv(ral.observe_fifo_depth);
+            end else begin
+              csr_rd(.ptr(ral.observe_fifo_thresh), .value(num_words_to_read));
+            end
+            if ((max_bundles >= 0) && (num_words_to_read >= max_bundles)) begin
+              num_words_to_read = max_bundles;
+            end
           end
-          // Read and check entropy
-          `uvm_info(`gfn, $sformatf("Reading %d words", cnt_per_interrupt), UVM_HIGH)
-          for (int i = 0; i < cnt_per_interrupt; i++) begin
-            bit [TL_DW-1:0] entropy_tlul;
-            csr_rd(.ptr(data_reg), .value(entropy_tlul), .blocking(1'b1));
-          end
-          if (check_overflow && (source == TlSrcObserveFIFO)) begin
+
+          do begin
+            // Read and check the entropy.
+            for (int i = 0; i < num_words_to_read; i++) begin
+              bit [TL_DW-1:0] entropy_tlul;
+              csr_rd(.ptr(data_reg), .value(entropy_tlul), .blocking(1'b1));
+            end
+            bundles_found += (source == TlSrcObserveFIFO ? num_words_to_read : 1);
+            num_words_to_read = 0;
+
             // Check whether no overflow occurred while reading the observe FIFO and we are
             // still reading out contiguous data.
-            csr_rd_check(.ptr(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow),
-                        .compare_value('0));
-          end
+            if ((source == TlSrcObserveFIFO) && check_overflow) begin
+              csr_rd_check(.ptr(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow),
+                           .compare_value('0));
+            end
+
+            // Shall we continue reading more data?
+            if (read_max) begin
+              cfg.clk_rst_vif.wait_n_clks(2);
+              num_words_to_read = `gmv(ral.observe_fifo_depth);
+              if ((max_bundles >= 0) && (num_words_to_read >= max_bundles)) begin
+                num_words_to_read = max_bundles;
+              end
+            end
+            done = (max_bundles >= 0) && (bundles_found >= max_bundles);
+          end while (num_words_to_read > 0 && !done);
+
           // Clear the appropriate interrupt bit
           `uvm_info(`gfn, "CLEARING FIFO INTERRUPT", UVM_DEBUG)
           csr_wr(.ptr(intr_field), .value(1'b1), .blocking(1'b1));
-          bundles_found++;
         end
-        done = (max_bundles >= 0) && (bundles_found >= max_bundles);
       end while (intr_status && !done);, // do begin
-    $sformatf("Timeout encountered while reading %s", source.name()), 250us/1ns)
+    $sformatf("Timeout encountered while reading %s", source.name()), timeout_ns)
   endtask
 
   task run_rng_host_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq);

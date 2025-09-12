@@ -314,19 +314,30 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // handle the Observe FIFO first as that will have no impact on other features
     if (intr_status[ObserveFifoReady]) begin
       int bundles_found;
-      // When running ast/rng at the maximum rate (this is an unrealistic scenario primarily used
-      // for reaching coverage metrics), we limit the number of bits read from the Observe FIFO per
-      // call to 2 health test windows.
-      //
-      // Without a limit, the read function might keep reading the Observe FIFO forever and time
-      // out as the Observe FIFO potentially never runs empty when ast/rng runs at such
-      // unrealistically high rates.
-      int max_bundles = (cfg.rng_max_delay == 1) ?
-          2 * (`RNG_BUS_WIDTH * `gmv(ral.health_test_windows.fips_window)) / 32 : -1;
+      int max_bundles;
+      int timeout_ns;
+      if (cfg.rng_max_delay == 1 || `RNG_BUS_WIDTH == 16) begin
+        // When running ast/rng at the maximum rate (this is an unrealistic scenario primarily used
+        // for reaching coverage metrics) or when using larger symbol sizes, we limit the number of
+        // bits read from the Observe FIFO per call to 2 health test windows.
+        //
+        // Without a limit, the read function might keep reading the Observe FIFO forever and time
+        // out as the Observe FIFO potentially never runs empty.
+        max_bundles = 2 * (`RNG_BUS_WIDTH * `gmv(ral.health_test_windows.fips_window)) / 32;
+
+        // Also the timeout needs adjusting in this case, especially for larger symbol sizes. Assume
+        // a symbol every 10 clock cycles at most to have some ample time.
+        timeout_ns =
+            max_bundles * (32 / `RNG_BUS_WIDTH) * 10 * (cfg.clk_rst_vif.clk_period_ps / 1000);
+      end else begin
+        max_bundles = -1;
+        timeout_ns = 250us / 1ns;
+      end
       `uvm_info(`gfn, "Reading observe FIFO", UVM_DEBUG)
       // Read all currently available data
       do_entropy_data_read(.source(TlSrcObserveFIFO),
                            .max_bundles(max_bundles),
+                           .timeout_ns(timeout_ns),
                            .bundles_found(bundles_found));
       `uvm_info(`gfn, $sformatf("Found %d observe FIFO bundles", bundles_found), UVM_FULL)
     end
