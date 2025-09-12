@@ -235,19 +235,3 @@ p384_isoncurve_proj:
   bn.sid    x2++, 32(x22)
 
   ret
-
-.data
-
-/* x-coordinate */
-.globl x
-.weak x
-.balign 32
-x:
-  .zero 64
-
-/* y-coordinate */
-.globl y
-.weak y
-.balign 32
-y:
-  .zero 64
