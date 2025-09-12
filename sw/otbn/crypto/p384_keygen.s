@@ -61,6 +61,8 @@ p384_random_scalar:
   /* Obtain 1024 bits of randomness from RND. */
   bn.wsrr   w6, RND
   bn.wsrr   w7, RND
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
   bn.wsrr   w8, RND
   bn.wsrr   w9, RND
 
@@ -70,6 +72,8 @@ p384_random_scalar:
   bn.xor    w6, w6, w5
   bn.wsrr   w5, URND
   bn.xor    w7, w7, w5
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
   bn.wsrr   w5, URND
   bn.xor    w8, w8, w5
   bn.wsrr   w5, URND
@@ -80,6 +84,8 @@ p384_random_scalar:
      w7 <= w7[192:0]
      w9 <= w9[192:0] */
   bn.rshi   w7, w31, w7 >> 64
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
   bn.rshi   w9, w31, w9 >> 64
 
   /* Compute Solinas constant k for modulus n (we know it is only 191 bits, so
@@ -182,6 +188,9 @@ p384_generate_random_key:
   bn.sid    x2++, 0(x20)
   bn.sid    x2++, 32(x20)
 
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
+
   /* Write second share to DMEM.
      dmem[d1] <= [w9,w8] = d1 */
   bn.sid    x2++, 0(x21)
@@ -226,6 +235,9 @@ p384_generate_k:
   li        x2, 6
   bn.sid    x2++, 0(x20)
   bn.sid    x2++, 32(x20)
+
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
 
   /* Write second share to DMEM.
      dmem[k1] <= [w9,w8] = k1 */
