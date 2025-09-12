@@ -438,14 +438,15 @@ class Scrambler:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument('hjson')
+    parser.add_argument('top_hjson')
+    parser.add_argument('secrets_hjson')
     parser.add_argument('mode')
     parser.add_argument('infile', type=argparse.FileType('rb'))
     parser.add_argument('outfile', type=argparse.FileType('w'))
     parser.add_argument('hashfile', type=argparse.FileType('w'))
 
     args = parser.parse_args()
-    scrambler = Scrambler.from_hjson_path(args.hjson, args.mode, args.hashfile)
+    scrambler = Scrambler.from_hjson_path(args.secrets_hjson, args.mode, args.hashfile)
 
     # Load the input ELF file
     clr_mem = MemFile.load_elf32(args.infile, scrambler.rom_base)
