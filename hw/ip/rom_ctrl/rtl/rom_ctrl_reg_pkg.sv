@@ -11,11 +11,9 @@ package rom_ctrl_reg_pkg;
 
   // Address widths within the block
   parameter int RegsAw = 7;
-  parameter int RomAw = 1;
 
   // Number of registers for every interface
   parameter int NumRegsRegs = 18;
-  parameter int NumRegsRom = 0;
 
   // Alert indices
   typedef enum int {

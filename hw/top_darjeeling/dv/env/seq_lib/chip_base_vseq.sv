@@ -390,9 +390,9 @@ class chip_base_vseq #(
         mem_wr(.ptr(mem), .offset(offset), .data(wdata));
       end else begin  // if (mem.get_access() == "RW")
         int byte_addr = offset * 4;
-        if (byte_addr >= top_darjeeling_pkg::TOP_DARJEELING_ROM0_BASE_ADDR &&
-            byte_addr <  (top_darjeeling_pkg::TOP_DARJEELING_ROM0_BASE_ADDR +
-                          top_darjeeling_pkg::TOP_DARJEELING_ROM0_SIZE_BYTES)) begin
+        if (byte_addr >= top_darjeeling_pkg::TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR &&
+            byte_addr <  (top_darjeeling_pkg::TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR +
+                          top_darjeeling_pkg::TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES)) begin
           // deposit random data to rom
           rom0.rom_encrypt_write32_integ(.addr(byte_addr), .data(wdata),
                                          .key(RndCnstRomCtrl0ScrKey),

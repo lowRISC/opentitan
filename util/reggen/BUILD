@@ -146,6 +146,7 @@ py_library(
         ":clocking",
         ":field",
         ":lib",
+        ":memory",
         ":multi_register",
         ":params",
         ":register",
@@ -187,6 +188,16 @@ py_library(
     deps = [
         ":bits",
         ":lib",
+    ],
+)
+
+py_library(
+    name = "memory",
+    srcs = ["memory.py"],
+    deps = [
+        ":access",
+        ":lib",
+        ":params",
     ],
 )
 

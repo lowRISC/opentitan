@@ -39,13 +39,13 @@ enum { kOffsetOfTestutils = offsetof(retention_sram_t, owner) };
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static_assert(kOffsetOfTestutils + sizeof(testing_utilities_t) <
-                  TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES,
+                  TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES,
               "Testing utilities spill out of retention SRAM");
 #elif defined(OPENTITAN_IS_DARJEELING)
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static_assert(kOffsetOfTestutils + sizeof(testing_utilities_t) <
-                  TOP_DARJEELING_RAM_RET_AON_SIZE_BYTES,
+                  TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES,
               "Testing utilities spill out of retention SRAM");
 #else
 #error "ret_sram_testutils does not support this top"
@@ -58,8 +58,8 @@ testing_utilities_t *testing_utilities = NULL;
 
 void ret_sram_testutils_init(void) {
   testing_utilities =
-      (testing_utilities_t *)(dt_sram_ctrl_reg_block(kDtSramCtrlRetAon,
-                                                     kDtSramCtrlRegBlockRam) +
+      (testing_utilities_t *)(dt_sram_ctrl_memory_base(kDtSramCtrlRetAon,
+                                                       kDtSramCtrlMemoryRam) +
                               kOffsetOfTestutils);
 }
 

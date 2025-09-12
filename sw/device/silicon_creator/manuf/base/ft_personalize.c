@@ -189,8 +189,8 @@ static void log_self_hash(void) {
  * Return a pointer to the ROM_EXT manifest located in the slot b.
  */
 static const manifest_t *rom_ext_manifest_b_get(void) {
-  return (const manifest_t *)(TOP_EARLGREY_EFLASH_BASE_ADDR +
-                              (TOP_EARLGREY_EFLASH_SIZE_BYTES / 2));
+  return (const manifest_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
+                              (TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2));
 }
 
 extern const uint32_t kCreatorSwCfgManufStateValue;
