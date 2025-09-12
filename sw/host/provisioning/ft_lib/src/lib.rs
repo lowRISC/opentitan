@@ -11,7 +11,7 @@ use std::time::{Duration, Instant};
 
 use anyhow::{bail, Result};
 use arrayvec::ArrayVec;
-use zerocopy::AsBytes;
+use zerocopy::IntoBytes;
 
 use bindgen::sram_program::SRAM_MAGIC_SP_EXECUTION_DONE;
 use cert_lib::{

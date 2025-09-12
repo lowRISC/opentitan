@@ -472,11 +472,7 @@ fn write_params(uart: &dyn Uart, syms: &Symbols, params: &PattGenParams) -> Resu
     Ok(())
 }
 
-fn read_symbol<'data: 'file, 'file, T: Object<'data, 'file>>(
-    elf: &'file T,
-    name: &str,
-    size: usize,
-) -> Result<u32> {
+fn read_symbol<'data, T: Object<'data>>(elf: &T, name: &str, size: usize) -> Result<u32> {
     let symbol = elf
         .symbols()
         .find(|symbol| symbol.name() == Ok(name))
@@ -489,16 +485,12 @@ fn read_symbol<'data: 'file, 'file, T: Object<'data, 'file>>(
     Ok(symbol.address() as u32)
 }
 
-fn read_backdoor_symbol<'data: 'file, 'file, T: Object<'data, 'file>>(
-    elf: &'file T,
-    name: &str,
-    size: usize,
-) -> Result<u32> {
+fn read_backdoor_symbol<'data, T: Object<'data>>(elf: &T, name: &str, size: usize) -> Result<u32> {
     read_symbol(elf, &format!("{name}Real"), size)
 }
 
-fn read_channel_symbol<'data: 'file, 'file, T: Object<'data, 'file>>(
-    elf: &'file T,
+fn read_channel_symbol<'data, T: Object<'data>>(
+    elf: &T,
     name: &str,
     idx: usize,
     size: usize,
@@ -506,10 +498,7 @@ fn read_channel_symbol<'data: 'file, 'file, T: Object<'data, 'file>>(
     read_backdoor_symbol(elf, &format!("{name}{idx}"), size)
 }
 
-fn read_channel_symbols<'data: 'file, 'file, T: Object<'data, 'file>>(
-    elf: &'file T,
-    idx: usize,
-) -> Result<ChannelSymbols> {
+fn read_channel_symbols<'data, T: Object<'data>>(elf: &T, idx: usize) -> Result<ChannelSymbols> {
     let dummy_params = PattGenChannelParams::default();
 
     Ok(ChannelSymbols {
@@ -549,8 +538,8 @@ fn read_channel_symbols<'data: 'file, 'file, T: Object<'data, 'file>>(
     })
 }
 
-fn read_channels_symbols<'data: 'file, 'file, T: Object<'data, 'file>>(
-    elf: &'file T,
+fn read_channels_symbols<'data, T: Object<'data>>(
+    elf: &T,
 ) -> Result<[ChannelSymbols; CHANNEL_COUNT]> {
     let chans = (0..CHANNEL_COUNT)
         .map(|i| read_channel_symbols(elf, i))
