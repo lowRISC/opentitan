@@ -108,6 +108,12 @@ p384_key_from_seed:
   bn.sel    w5, w10, w24, FG0.C
   bn.sel    w6, w11, w25, FG0.C
 
+  /* Clear w25 before over writing it with a different share. */
+  bn.xor    w25, w25, w25
+
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
+
   /* Isolate the carry bit and shift it back into position.
        w25 <= x0[384] << 128 */
   bn.rshi   w25, w31, w21 >> 128
@@ -153,6 +159,12 @@ p384_key_from_seed:
   jal       x1, mul384
   bn.mov    w1, w18
   bn.mov    w2, w19
+
+  /* Clear regs. */
+  bn.xor    w10, w10, w10
+  bn.xor    w11, w11, w11
+  bn.xor    w18, w18, w18
+  bn.xor    w19, w19, w19
 
   /* [w6,w5] <= [w6,w5] + [w2,w1] = d1 + (RND >> 193) * n = d1' */
   bn.add    w5, w5, w1
