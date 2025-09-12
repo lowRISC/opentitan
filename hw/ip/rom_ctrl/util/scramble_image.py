@@ -28,6 +28,8 @@ _UDict = Dict[object, object]
 
 
 class MemoryController:
+    PARAM_VALUE = "__value"
+
     def __init__(
             self, mem_ctrl: _UDict, ctrl_name: str, memory_type: str, mode: str):
         '''A memory controller constructor
@@ -66,12 +68,26 @@ class MemoryController:
     def _get_params(module: _UDict) -> Dict[str, _UDict]:
         params = module.get('param_list')
         assert isinstance(params, list)
+        param_decl = module.get('param_decl', {})
+        assert isinstance(param_decl, dict)
 
         named_params = {}  # type: Dict[str, _UDict]
         for param in params:
             name = param.get('name')
             assert isinstance(name, str)
             assert name not in named_params
+
+            # If we find a correspond parameter declaration, we add it
+            # to returned dictionary.
+            if name in param_decl:
+                param["param_decl"] = param_decl[name]
+                value = param_decl[name]
+            else:
+                value = param.get('default')
+            # Create a new field in the dictionary holding the value (ie param_decl
+            # or default if not provided).
+            assert MemoryController.PARAM_VALUE not in param
+            param[MemoryController.PARAM_VALUE] = value
             named_params[name] = param
 
         return named_params
@@ -81,9 +97,9 @@ class MemoryController:
         param = params.get(name)
         assert isinstance(param, dict)
 
-        default = param.get("default")
-        assert isinstance(default, str)
-        val = int(default, 0)
+        val = param.get(MemoryController.PARAM_VALUE)
+        assert isinstance(val, str)
+        val = int(val, 0)
 
         width = param.get("randwidth")
         assert isinstance(width, int)
