@@ -97,7 +97,12 @@ class entropy_src_env extends cip_base_env #(
     // reaching coverage metrics) we reduce the maximum d_ready delay of the TL-UL host to speed up
     // e.g. the reading out of the Observe FIFO.
     if (cfg.rng_max_delay == 1) begin
-      cfg.m_tl_agent_cfg.d_ready_delay_max = 5;
+      if (`RNG_BUS_WIDTH == 16) begin
+        cfg.m_tl_agent_cfg.a_valid_delay_max = 6;
+        cfg.m_tl_agent_cfg.d_ready_delay_max = 0;
+      end else begin
+        cfg.m_tl_agent_cfg.d_ready_delay_max = 5;
+      end
     end
 
     if (!uvm_config_db#(virtual entropy_subsys_fifo_exception_if#(1))::get(this, "",
