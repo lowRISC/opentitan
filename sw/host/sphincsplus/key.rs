@@ -56,7 +56,10 @@ impl SpxDomain {
         match self {
             Self::None => message.into(),
             Self::Pure => [&[0u8, 0u8], message].concat().into(),
-            Self::PreHashedSha256 => [&Self::SHA256_DOMAIN, message].concat().into(),
+            Self::PreHashedSha256 => {
+                assert_eq!(message.len(), 32);
+                [&Self::SHA256_DOMAIN, message].concat().into()
+            }
         }
     }
 }
