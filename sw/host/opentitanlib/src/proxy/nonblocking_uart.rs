@@ -29,7 +29,7 @@ impl NonblockingUartRegistry {
     pub fn nonblocking_uart_init(
         &mut self,
         uart: &Rc<dyn Uart>,
-        conn: &Arc<Mutex<Connection>>,
+        conn: &Arc<Connection>,
     ) -> Result<u32> {
         match self.nonblocking_uarts.entry(UartKey(uart.clone())) {
             Vacant(entry) => {
@@ -56,7 +56,7 @@ impl NonblockingUartRegistry {
 }
 
 struct NonblockingUartInner {
-    conn: Vec<Weak<Mutex<Connection>>>,
+    conn: Vec<Weak<Connection>>,
 }
 
 pub struct NonblockingUart {
@@ -74,7 +74,7 @@ impl NonblockingUart {
         Self { inner, channel }
     }
 
-    pub fn add_connection(&mut self, conn: &Arc<Mutex<Connection>>) {
+    pub fn add_connection(&mut self, conn: &Arc<Connection>) {
         let mut inner = self.inner.lock().unwrap();
         let downgrade = Arc::downgrade(conn);
         if inner.conn.iter().any(|x| Weak::ptr_eq(x, &downgrade)) {
@@ -111,14 +111,12 @@ impl NonblockingUart {
             }
 
             for conn in connections.into_iter() {
-                conn.lock()
-                    .unwrap()
-                    .transmit_outgoing_msg(super::protocol::Message::Async {
-                        channel,
-                        msg: super::protocol::AsyncMessage::UartData {
-                            data: buf[0..len].to_vec(),
-                        },
-                    })?
+                conn.transmit_outgoing_msg(super::protocol::Message::Async {
+                    channel,
+                    msg: super::protocol::AsyncMessage::UartData {
+                        data: buf[0..len].to_vec(),
+                    },
+                })?
             }
         }
     }
