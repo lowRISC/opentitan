@@ -135,25 +135,25 @@ p384_isoncurve:
      x^3 + ax  mod p = [w17,w16] <= x^3 -3 x mod p
                      = [w17,w16] - [w1,w0] - [w1,w0] - [w1,w0] mod [w13,w12] */
   loopi     3, 6
-    bn.sub    w16, w16, w0
-    bn.subb   w17, w17, w1
-    bn.add    w10, w16, w12
-    bn.addc   w11, w17, w13
-    bn.sel    w16, w10, w16, C
-    bn.sel    w17, w11, w17, C
+    bn.sub    w2,  w16, w0
+    bn.subb   w3,  w17, w1
+    bn.add    w10, w2,  w12
+    bn.addc   w11, w3,  w13
+    bn.sel    w16, w10, w2, C
+    bn.sel    w17, w11, w3, C
 
   /* add domain parameter b
-     x^3 + ax + b mod p = [w17,w16] <= [w17,w16] + [w5,w4] mod [w13,w12] */
+     x^3 + ax + b mod p = [w3,w2] <= [w17,w16] + [w5,w4] mod [w13,w12] */
   bn.add    w16, w16, w4
   bn.addc   w17, w17, w5
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
+  bn.sel    w2, w16, w10, C
+  bn.sel    w3, w17, w11, C
 
   /* store result (right side)
-     dmem[dptr_rhs] <= x^3 + ax + b mod p = [w17,w16] */
-  li        x2, 16
+     dmem[dptr_rhs] <= x^3 + ax + b mod p = [w3,w2] */
+  li        x2, 2
   bn.sid    x2++, 0(x22)
   bn.sid    x2++, 32(x22)
 
@@ -323,40 +323,3 @@ p384_invalid_input:
 
   /* End the program. */
   ecall
-
-.bss
-
-/* Success code for basic validity checks on the public key and signature.
-   Should be HARDENED_BOOL_TRUE or HARDENED_BOOL_FALSE. */
-.balign 4
-.weak ok
-ok:
-  .zero 4
-
-/* x-coordinate */
-.globl x
-.weak x
-.balign 32
-x:
-  .zero 64
-
-/* y-coordinate */
-.globl y
-.weak y
-.balign 32
-y:
-  .zero 64
-
-/* Right side of Weierstrass equation */
-.globl rhs
-.weak rhs
-.balign 32
-rhs:
-  .zero 64
-
-/* Left side of Weierstrass equation */
-.globl lhs
-.weak lhs
-.balign 32
-lhs:
-  .zero 64

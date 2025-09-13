@@ -110,7 +110,7 @@ p384_base_mult:
 
   /* scalar multiplication in projective space
      [w30:w25] <= (x, y, z) = d * G */
-  jal       x1, scalar_mult_int_p384
+  jal       x1, scalar_mult_int_p384_reblind
 
   /* conversion into affine space
      [w28:w25] <= (x, y) */
@@ -130,39 +130,3 @@ p384_base_mult:
   bn.sid    x2++, 32(x21)
 
   ret
-
-/* variables and scratchpad memory */
-.section .bss
-
-.balign 32
-
-/* 1st private key share d0 */
-.globl d0
-.weak d0
-d0:
-  .zero 64
-
-/* 2nd private key share d1 */
-.globl d1
-.weak d1
-d1:
-  .zero 64
-
-/* buffer for x-coordinate */
-.globl x
-.weak x
-x:
-  .zero 64
-
-/* buffer for y-coordinate */
-.globl y
-.weak y
-y:
-  .zero 64
-
-/* 704 bytes of scratchpad memory */
-.balign 32
-.globl scratchpad
-.weak scratchpad
-scratchpad:
-  .zero 704
