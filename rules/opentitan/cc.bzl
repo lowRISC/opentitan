@@ -101,6 +101,9 @@ def ot_binary(ctx, **kwargs):
         "-nostdlib",
     ] + _expand(ctx, "linkopts", extra_linkopts)
 
+    if ctx.var.get("ot_coverage_enabled", "false") == "true":
+        linkopts.append("-Wl,--defsym=_ot_coverage_enabled=1")
+
     lout = cc_common.link(
         name = name + ".elf",
         actions = ctx.actions,
@@ -236,10 +239,13 @@ def _opentitan_binary(ctx):
     providers = []
     default_info = []
     groups = {}
+    runfiles = ctx.runfiles()
     for exec_env_target in ctx.attr.exec_env:
         exec_env = exec_env_target[ExecEnvInfo]
         name = _binary_name(ctx, exec_env)
         deps = ctx.attr.deps + exec_env.libs
+        for dep in deps:
+            runfiles = runfiles.merge(dep[DefaultInfo].default_runfiles)
 
         kind = ctx.attr.kind
         provides, signed = _build_binary(ctx, exec_env, name, deps, kind)
@@ -247,6 +253,9 @@ def _opentitan_binary(ctx):
         default_info.append(provides["default"])
         default_info.append(provides["elf"])
         default_info.append(provides["disassembly"])
+        runfiles = runfiles.merge(ctx.runfiles(files = [
+            provides["elf"],
+        ]))
 
         # FIXME(cfrantz): logs are a special case and get added into
         # the DefaultInfo provider.
@@ -266,7 +275,10 @@ def _opentitan_binary(ctx):
         groups.update(_as_group_info(exec_env.exec_env, signed))
         groups.update(_as_group_info(exec_env.exec_env, provides))
 
-    providers.append(DefaultInfo(files = depset(default_info)))
+    cc_toolchain = find_cc_toolchain(ctx)
+    runfiles = runfiles.merge(ctx.runfiles(files = cc_toolchain.all_files.to_list()))
+
+    providers.append(DefaultInfo(files = depset(default_info), runfiles = runfiles))
     providers.append(OutputGroupInfo(**groups))
     return providers
 
@@ -341,6 +353,12 @@ common_binary_attrs = {
         default = {},
         doc = "Firmware slot spec to use in this environment",
     ),
+    "_check_initial_coverage": attr.label(
+        doc = "Tool to check the coverage counter initialization.",
+        default = "//util/coverage:check_initial_coverage",
+        executable = True,
+        cfg = "exec",
+    ),
 }
 
 opentitan_binary = rv_rule(
@@ -392,6 +410,10 @@ def _opentitan_test(ctx):
         harness_runfiles = ctx.attr.test_harness[DefaultInfo].default_runfiles
     else:
         harness_runfiles = ctx.runfiles()
+
+    cc_toolchain = find_cc_toolchain(ctx)
+    runfiles.extend(cc_toolchain.all_files.to_list())
+
     return DefaultInfo(
         executable = executable,
         runfiles = ctx.runfiles(files = runfiles).merge_all([harness_runfiles]),
@@ -462,6 +484,16 @@ opentitan_test = rv_rule(
             doc = "OpenOCD adapter configuration override for this test",
         ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
+        "_lcov_merger": attr.label(
+            default = configuration_field(fragment = "coverage", name = "output_generator"),
+            executable = True,
+            cfg = "exec",
+        ),
+        "_collect_cc_coverage": attr.label(
+            default = "//util/coverage/collect_cc_coverage",
+            executable = True,
+            cfg = "exec",
+        ),
     }.items()),
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],

@@ -18,7 +18,7 @@ use std::iter::IntoIterator;
 use std::path::Path;
 use thiserror::Error;
 
-use zerocopy::AsBytes;
+use zerocopy::IntoBytes;
 
 #[derive(Debug, Error)]
 pub enum ManifestError {

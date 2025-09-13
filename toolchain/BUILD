@@ -10,7 +10,7 @@ load("@rules_cc//cc/toolchains:feature_constraint.bzl", "cc_feature_constraint")
 load("@rules_cc//cc/toolchains:feature_set.bzl", "cc_feature_set")
 load("@rules_cc//cc/toolchains:tool_map.bzl", "cc_tool_map")
 load("@rules_cc//cc/toolchains:toolchain.bzl", "cc_toolchain")
-load("//rules:actions.bzl", "OT_ACTION_OBJDUMP")
+load("//rules:actions.bzl", "OT_ACTION_LLVM_PROFDATA", "OT_ACTION_OBJDUMP")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -79,6 +79,7 @@ cc_toolchain(
         "@rules_cc//cc/toolchains/args:experimental_replace_legacy_action_config_features",
         ":feat_warnings_as_errors",
         ":feat_guards",
+        ":feat_coverage",
         ":feat_use_lld",
         ":feat_lto",
         ":feat_minsize",
@@ -99,10 +100,17 @@ cc_tool_map(
         "@rules_cc//cc/toolchains/actions:c_compile": "@lowrisc_rv32imcb_toolchain//:clang",
         "@rules_cc//cc/toolchains/actions:cpp_compile_actions": "@lowrisc_rv32imcb_toolchain//:clang++",
         "@rules_cc//cc/toolchains/actions:link_actions": "@lowrisc_rv32imcb_toolchain//:clang",
+        "@rules_cc//cc/toolchains/actions:llvm_cov": "@lowrisc_rv32imcb_toolchain//:llvm_cov",
         "@rules_cc//cc/toolchains/actions:objcopy_embed_data": "@lowrisc_rv32imcb_toolchain//:objcopy",
         "@rules_cc//cc/toolchains/actions:strip": "@lowrisc_rv32imcb_toolchain//:strip",
+        ":action_llvm_profdata": "@lowrisc_rv32imcb_toolchain//:llvm_profdata",
         ":action_objdump": "@lowrisc_rv32imcb_toolchain//:objdump",
     },
+)
+
+cc_action_type(
+    name = "action_llvm_profdata",
+    action_name = OT_ACTION_LLVM_PROFDATA,
 )
 
 cc_action_type(
@@ -365,6 +373,57 @@ cc_args(
     name = "guards",
     actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
     args = ["-mguards"],
+)
+
+cc_feature(
+    name = "feat_coverage",
+    args = [
+        ":coverage_indicator_cc",
+        ":coverage_indicator_ld",
+        ":coverage_profile",
+        ":coverage_single_byte",
+        ":sha1_build_id",
+    ],
+    overrides = "@rules_cc//cc/toolchains/features/legacy:coverage",
+)
+
+cc_args(
+    name = "coverage_single_byte",
+    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
+    args = [
+        "-mllvm",
+        "--enable-single-byte-coverage",
+    ],
+)
+
+cc_args(
+    name = "coverage_profile",
+    actions = [
+        "@rules_cc//cc/toolchains/actions:compile_actions",
+        "@rules_cc//cc/toolchains/actions:link_actions",
+    ],
+    args = [
+        "-fprofile-instr-generate",
+        "-fcoverage-mapping",
+    ],
+)
+
+cc_args(
+    name = "coverage_indicator_cc",
+    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
+    args = ["-DOT_COVERAGE_INSTRUMENTED=1"],
+)
+
+cc_args(
+    name = "coverage_indicator_ld",
+    actions = ["@rules_cc//cc/toolchains/actions:link_actions"],
+    args = ["-Wl,--defsym=_ot_coverage_instrumented=1"],
+)
+
+cc_args(
+    name = "sha1_build_id",
+    actions = ["@rules_cc//cc/toolchains/actions:link_actions"],
+    args = ["-Wl,--build-id=sha1"],
 )
 
 cc_feature(

@@ -29,6 +29,18 @@ exports_files(glob(["**"]))
     ]
 ]
 
+[
+    cc_tool(
+        name = "llvm_{}".format(tool),
+        src = ":bin/llvm-{}".format(tool),
+        data = [":root"],
+    )
+    for tool in [
+        "profdata",
+        "cov",
+    ]
+]
+
 directory(
     name = "root",
     srcs = glob(["**/*"]),

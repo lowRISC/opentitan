@@ -9,6 +9,9 @@ package(default_visibility = ["//visibility:public"])
 ld_library(
     name = "info_sections",
     includes = ["info_sections.ld"],
+    deps = [
+        "//sw/device/lib/coverage:coverage_sections",
+    ],
 )
 
 # FIXME(lowRISC/opentitan#12065) This is a hack to work around currently
@@ -20,10 +23,11 @@ config_setting(
     values = {"copt": "-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_"},
 )
 
+# Deprecated: Please use //rules/coverage:enabled instead.
 config_setting(
     name = "measure_coverage_on_target",
     define_values = {
-        "measure_coverage_on_target": "true",
+        "ot_coverage_enabled": "true",
     },
 )
 

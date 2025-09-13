@@ -43,17 +43,40 @@ def obj_transform(ctx, **kwargs):
     output = ctx.actions.declare_file(output)
     src = get_override(ctx, "file.src", kwargs)
     out_format = get_override(ctx, "attr.format", kwargs)
+    checker = ctx.executable._check_initial_coverage
 
-    ctx.actions.run(
+    ctx.actions.run_shell(
         outputs = [output],
         inputs = [src] + cc_toolchain.all_files.to_list(),
-        arguments = [
-            "--output-target",
-            out_format,
-            src.path,
-            output.path,
-        ],
-        executable = objcopy,
+        command = """
+            set -euo pipefail
+
+            # Check if prf_cnts is all zeros, so we can put it in bss.
+            PRF_CNTS="$(mktemp prf_cnts_XXXXXX)"
+            {objcopy} \
+                --output-target {out_format} \
+                --only-section __llvm_prf_cnts \
+                --gap-fill 0xa5 \
+                {src_path} \
+                "$PRF_CNTS"
+            {_check_initial_coverage} "$PRF_CNTS"
+
+            # Flatten the firmware
+            {objcopy} \
+                --output-target {out_format} \
+                --remove-section __llvm_prf_cnts \
+                --remove-section __llvm_prf_data \
+                --remove-section __llvm_prf_names \
+                {src_path} \
+                {output_path}
+        """.format(
+            objcopy = objcopy,
+            out_format = out_format,
+            src_path = src.path,
+            output_path = output.path,
+            _check_initial_coverage = checker.path,
+        ),
+        tools = [checker],
     )
     return output
 

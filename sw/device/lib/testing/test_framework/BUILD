@@ -17,37 +17,6 @@ load(
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "coverage_none",
-    srcs = ["coverage_none.c"],
-    hdrs = ["coverage.h"],
-)
-
-cc_library(
-    name = "coverage_llvm",
-    srcs = [
-        "coverage_llvm.c",
-    ],
-    hdrs = ["coverage.h"],
-    linkopts = ["-lgcc"],
-    deps = [
-        "//sw/device/lib/base:crc32",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
-        "//third_party/llvm_compiler_rt",
-    ],
-)
-
-alias(
-    name = "coverage",
-    actual = select({
-        "//sw/device:measure_coverage_on_target": ":coverage_llvm",
-        "//conditions:default": ":coverage_none",
-    }),
-    visibility = ["//visibility:private"],
-)
-
-cc_library(
     name = "status",
     srcs = ["status.c"],
     hdrs = ["status.h"],
@@ -85,6 +54,7 @@ ld_library(
     includes = ["ottf_common.ld"],
     deps = [
         "//sw/device:info_sections",
+        "//sw/device/lib/coverage:coverage_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
     ],
 )
@@ -223,6 +193,8 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/coverage:api_asm",
+        "//sw/device/lib/coverage:ottf_runtime",
         "//sw/device/lib/crt",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -278,7 +250,6 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":check",
-        ":coverage",
         ":freertos_port",
         ":ottf_console",
         ":ottf_start",
@@ -288,6 +259,8 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/coverage:api",
+        "//sw/device/lib/coverage:ottf_runtime",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",

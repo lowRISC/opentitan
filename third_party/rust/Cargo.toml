@@ -60,7 +60,7 @@ mio-signals = "0.2.0"
 num-bigint-dig = "0.8"
 num-traits = "0.2.14"
 num_enum = "0.7"
-object = "0.32.0"
+object = "0.36.0"
 once_cell = "1.17"
 openssl = "0.10.64"
 openssl-sys = "0.9.102"
@@ -93,7 +93,7 @@ thiserror = "1.0"
 tiny-keccak = {version = "2.0.2", features = ["cshake"]}
 typetag = "0.2"
 x509-cert = "0.2.5"
-zerocopy = { version = "0.7.1", features = ["derive"] }
+zerocopy = { version = "0.8", features = ["derive"] }
 zeroize = "1.8.1"
 
 # hsmtool dependencies
