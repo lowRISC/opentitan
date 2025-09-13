@@ -326,21 +326,42 @@
                  "+accelerate_regulators_power_up_time=2"]
     }
     {
+      // Format SW image names into output file names separated by commas to feed into
+      // +sw_images plusarg. Image names are just Bazel labels concatenated with an index
+      // and/or flags.
+      // The input is a space-seperated list in the variable 'sw_images'.
+      // The result is saved to the same variable 'sw_images'.
+      //
+      // For example, for an input of:
+      // [
+      //   "//sw/device/tests:uart_tx_rx_test:1",
+      //   "//sw/device/lib/testing/test_rom:test_rom:0"
+      // ]
+      //
+      // ..then the result will be:
+      //
+      //   "uart_tx_rx_test:1,test_rom:0".
+      //
+      name: format_sw_images
+      run_opts: [
+        "+sw_build_device={sw_build_device}",
+        '''
+          +sw_images={eval_cmd} \
+            reformatted_sw_images=; \
+            for image in {sw_images}; do \
+              reformatted_sw_images="$reformatted_sw_images `echo $image | cut -d: -f2-`"; \
+            done; \
+            echo $reformatted_sw_images | sed -E 's/\s+/,/g'
+        '''
+      ]
+    }
+    {
+      name: sw_test_mode_base
+      en_run_modes: ["format_sw_images"]
+    }
+    {
       name: sw_test_mode_common
-      run_opts: ["+sw_build_device={sw_build_device}",
-                 // Format SW image names (which are Bazel labels concatenated with an index
-                 // and/or flags, see below) into output file names separated by commas to feed into
-                 // +sw_images plusarg. For example, if the input list of SW images is
-                 // ["//sw/device/tests:uart_tx_rx_test:1",
-                 //  "//sw/device/lib/testing/test_rom:test_rom:0"], then the output of this eval_cmd
-                 // will be: "uart_tx_rx_test:1,test_rom:0".
-                 '''+sw_images={eval_cmd} \
-                 reformatted_sw_images=; \
-                 for image in {sw_images}; do \
-                   reformatted_sw_images="$reformatted_sw_images `echo $image | cut -d: -f2-`"; \
-                 done; \
-                 echo $reformatted_sw_images | sed -E 's/\s+/,/g' ''']
-      en_run_modes: ["gen_otp_images_mode"]
+      en_run_modes: ["sw_test_mode_base", "gen_otp_images_mode"]
     }
     {
       name: sw_test_mode_test_rom
