@@ -110,28 +110,28 @@ module csrng_core import csrng_pkg::*; #(
   logic                        cmd_entropy_fips;
   logic [SeedLen-1:0]          cmd_entropy;
 
-  logic                        cmd_result_wr_req;
-  logic                        cmd_result_ack;
-  logic                        cmd_result_ack_rdy;
-  logic                        cmd_result_glast;
-
-  csrng_core_data_t            ctr_drbg_cmd_req_data;
+  logic                        ctr_drbg_cmd_rsp_vld;
+  logic                        ctr_drbg_cmd_rsp_rdy;
   csrng_core_data_t            ctr_drbg_cmd_rsp_data;
+  logic                        ctr_drbg_cmd_rsp_glast;
+  logic                        ctr_drbg_cmd_rsp_wr;
+
+  logic                        ctr_drbg_cmd_req_vld;
+  logic                        ctr_drbg_cmd_req_rdy;
+  csrng_core_data_t            ctr_drbg_cmd_req_data;
+
+  logic                        ctr_drbg_gen_req_vld;
+  logic                        ctr_drbg_gen_req_rdy;
+
+  logic                        ctr_drbg_gen_rsp_vld;
+  logic                        ctr_drbg_gen_rsp_rdy;
+  csrng_core_data_t            ctr_drbg_gen_rsp_data;
+  logic [BlkLen-1:0]           ctr_drbg_gen_rsp_bits;
+  csrng_cmd_sts_e              ctr_drbg_gen_rsp_sts;
 
   logic                        state_db_sts_ack;
   csrng_cmd_sts_e              state_db_sts_sts;
   logic [InstIdWidth-1:0]      state_db_sts_id;
-
-  logic                        gen_result_wr_req;
-  csrng_cmd_sts_e              gen_result_ack_sts;
-  logic                        gen_result_ack_rdy;
-  logic [CmdWidth-1:0]         gen_result_ccmd;
-  logic [InstIdWidth-1:0]      gen_result_inst_id;
-  logic                        gen_result_fips;
-  logic [KeyLen-1:0]           gen_result_key;
-  logic [BlkLen-1:0]           gen_result_v;
-  logic [CtrLen-1:0]           gen_result_rc;
-  logic [BlkLen-1:0]           gen_result_bits;
 
   logic                        acmd_accept;
   logic                        instant_req;
@@ -140,11 +140,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                        update_req;
   logic                        uninstant_req;
   logic                        clr_adata_packer;
-  logic [CmdWidth-1:0]         ctr_drbg_cmd_ccmd;
-  logic                        ctr_drbg_cmd_req;
-  logic                        ctr_drbg_gen_req;
-  logic                        ctr_drbg_gen_req_rdy;
-  logic                        ctr_drbg_cmd_req_rdy;
+
   logic                        ctr_drbg_cmd_sfifo_cmdreq_err_sum;
   logic [2:0]                  ctr_drbg_cmd_sfifo_cmdreq_err;
   logic                        ctr_drbg_cmd_sfifo_rcstage_err_sum;
@@ -173,6 +169,10 @@ module csrng_core import csrng_pkg::*; #(
   logic [2:0]                  ctr_drbg_gen_sfifo_ggenbits_err;
   logic                        block_encrypt_sfifo_cmdid_err_sum;
   logic [2:0]                  block_encrypt_sfifo_cmdid_err;
+  logic                        fifo_write_err_sum;
+  logic                        fifo_read_err_sum;
+  logic                        fifo_status_err_sum;
+
   logic                        cmd_gen_cnt_err_sum;
   logic                        cmd_stage_sm_err_sum;
   logic                        main_sm_err_sum;
@@ -186,9 +186,6 @@ module csrng_core import csrng_pkg::*; #(
   logic                        drbg_updob_sm_err;
   logic                        block_encrypt_sm_err_sum;
   logic                        block_encrypt_sm_err;
-  logic                        fifo_write_err_sum;
-  logic                        fifo_read_err_sum;
-  logic                        fifo_status_err_sum;
 
   logic [KeyLen-1:0]           state_db_rd_key;
   logic [BlkLen-1:0]           state_db_rd_v;
@@ -313,11 +310,6 @@ module csrng_core import csrng_pkg::*; #(
   logic [1:0]                  efuse_sw_app_enable;
 
   logic [NumApps-1:0][31:0]    reseed_counter;
-
-  logic                        unused_err_code_test_bit;
-  logic                        unused_reg2hw_genbits;
-  logic                        unused_int_state_val;
-  logic                        unused_reseed_interval;
 
   prim_mubi_pkg::mubi8_t [1:0] en_csrng_sw_app_read;
   prim_mubi_pkg::mubi4_t [CsEnableCopies-1:0] mubi_cs_enable_fanout;
@@ -1136,9 +1128,9 @@ module csrng_core import csrng_pkg::*; #(
   for (genvar csi = 0; csi < NumApps; csi = csi+1) begin : gen_cmd_ack
     assign cmd_core_ack[csi] = state_db_sts_ack && (state_db_sts_id == csi);
     assign cmd_core_ack_sts[csi] = state_db_sts_sts;
-    assign genbits_core_vld[csi] = gen_result_wr_req && (gen_result_inst_id == csi);
-    assign genbits_core_bus[csi] = gen_result_bits;
-    assign genbits_core_fips[csi] = gen_result_fips;
+    assign genbits_core_vld[csi] = ctr_drbg_gen_rsp_vld && (ctr_drbg_gen_rsp_data.inst_id == csi);
+    assign genbits_core_bus[csi] = ctr_drbg_gen_rsp_bits;
+    assign genbits_core_fips[csi] = ctr_drbg_gen_rsp_data.fips;
   end : gen_cmd_ack
 
 
@@ -1172,7 +1164,7 @@ module csrng_core import csrng_pkg::*; #(
   // of each csrng instance. The state
   // is updated after each command.
 
-  assign cmd_result_wr_req = cmd_result_ack && (ctr_drbg_cmd_rsp_data.cmd != GEN);
+  assign ctr_drbg_cmd_rsp_wr = ctr_drbg_cmd_rsp_vld && (ctr_drbg_cmd_rsp_data.cmd != GEN);
 
   // register read access
   assign state_db_reg_rd_sel = reg2hw.int_state_val.re;
@@ -1224,18 +1216,18 @@ module csrng_core import csrng_pkg::*; #(
   assign gen_blk_select =  statedb_wr_select_q;
 
   // return to requesting block
-  assign cmd_result_ack_rdy = (cmd_blk_select && state_db_wr_req_rdy) && ctr_drbg_gen_req_rdy;
-  assign gen_result_ack_rdy = gen_blk_select && state_db_wr_req_rdy;
+  assign ctr_drbg_cmd_rsp_rdy = (cmd_blk_select && state_db_wr_req_rdy) && ctr_drbg_gen_req_rdy;
+  assign ctr_drbg_gen_rsp_rdy = gen_blk_select && state_db_wr_req_rdy;
 
   // muxes for statedb block inputs
-  assign state_db_wr_req     = gen_blk_select ? gen_result_wr_req  : cmd_result_wr_req;
-  assign state_db_wr_inst_id = gen_blk_select ? gen_result_inst_id : ctr_drbg_cmd_rsp_data.inst_id;
-  assign state_db_wr_fips    = gen_blk_select ? gen_result_fips    : ctr_drbg_cmd_rsp_data.fips;
-  assign state_db_wr_ccmd    = gen_blk_select ? gen_result_ccmd    : ctr_drbg_cmd_rsp_data.cmd;
-  assign state_db_wr_key     = gen_blk_select ? gen_result_key     : ctr_drbg_cmd_rsp_data.key;
-  assign state_db_wr_v       = gen_blk_select ? gen_result_v       : ctr_drbg_cmd_rsp_data.v;
-  assign state_db_wr_rc      = gen_blk_select ? gen_result_rc      : ctr_drbg_cmd_rsp_data.rs_ctr;
-  assign state_db_wr_sts     = gen_blk_select ? gen_result_ack_sts : CMD_STS_SUCCESS;
+  assign state_db_wr_req     = gen_blk_select ? ctr_drbg_gen_rsp_vld          : ctr_drbg_cmd_rsp_wr;
+  assign state_db_wr_inst_id = gen_blk_select ? ctr_drbg_gen_rsp_data.inst_id : ctr_drbg_cmd_rsp_data.inst_id;
+  assign state_db_wr_fips    = gen_blk_select ? ctr_drbg_gen_rsp_data.fips    : ctr_drbg_cmd_rsp_data.fips;
+  assign state_db_wr_ccmd    = gen_blk_select ? ctr_drbg_gen_rsp_data.cmd     : ctr_drbg_cmd_rsp_data.cmd;
+  assign state_db_wr_key     = gen_blk_select ? ctr_drbg_gen_rsp_data.key     : ctr_drbg_cmd_rsp_data.key;
+  assign state_db_wr_v       = gen_blk_select ? ctr_drbg_gen_rsp_data.v       : ctr_drbg_cmd_rsp_data.v;
+  assign state_db_wr_rc      = gen_blk_select ? ctr_drbg_gen_rsp_data.rs_ctr  : ctr_drbg_cmd_rsp_data.rs_ctr;
+  assign state_db_wr_sts     = gen_blk_select ? ctr_drbg_gen_rsp_sts          : CMD_STS_SUCCESS;
 
   // Forward the reseed counter values to the register interface.
   always_comb begin : reseed_counter_assign
@@ -1249,8 +1241,7 @@ module csrng_core import csrng_pkg::*; #(
   //--------------------------------------------
   // Basic interface logic with the entropy_src block
 
-  assign entropy_src_hw_if_o.es_req = cs_enable_fo[43] &&
-         cmd_entropy_req;
+  assign entropy_src_hw_if_o.es_req = cs_enable_fo[43] && cmd_entropy_req;
 
 
   // SEC_CM: CONSTANTS.LC_GATED
@@ -1299,24 +1290,17 @@ module csrng_core import csrng_pkg::*; #(
   //  inputs:  416b K,V,RC, 384b adata
   //  outputs: 416b K,V,RC
 
-
-
-  assign cmd_req_ccmd_dly_d =
-         (!cs_enable_fo[44]) ? '0 :
-         acmd_hold;
-
-  assign ctr_drbg_cmd_ccmd = cmd_req_ccmd_dly_q;
-
-
   assign cmd_req_dly_d =
          (!cs_enable_fo[45]) ? '0 :
          (instant_req || reseed_req || generate_req || update_req || uninstant_req);
 
-  assign ctr_drbg_cmd_req = cmd_req_dly_q;
+  assign ctr_drbg_cmd_req_vld = cmd_req_dly_q;
+
+  assign cmd_req_ccmd_dly_d = (!cs_enable_fo[44]) ? '0 : acmd_hold;
 
   assign ctr_drbg_cmd_req_data = '{
     inst_id: shid_q,
-    cmd:     ctr_drbg_cmd_ccmd,
+    cmd:     cmd_req_ccmd_dly_q,
     key:     state_db_rd_key,
     v:       state_db_rd_v,
     pdata:   packer_adata,
@@ -1330,17 +1314,17 @@ module csrng_core import csrng_pkg::*; #(
     .rst_ni  (rst_ni),
     .enable_i(cs_enable_fo[46]),
 
-    .cmd_data_req_vld_i         (ctr_drbg_cmd_req),
+    .cmd_data_req_vld_i         (ctr_drbg_cmd_req_vld),
     .cmd_data_req_rdy_o         (ctr_drbg_cmd_req_rdy),
     .cmd_data_req_i             (ctr_drbg_cmd_req_data),
     .cmd_data_req_entropy_i     (cmd_entropy),
     .cmd_data_req_entropy_fips_i(cmd_entropy_fips),
     .cmd_data_req_glast_i       (gen_last_q),
 
-    .cmd_data_rsp_vld_o  (cmd_result_ack),
-    .cmd_data_rsp_rdy_i  (cmd_result_ack_rdy),
+    .cmd_data_rsp_vld_o  (ctr_drbg_cmd_rsp_vld),
+    .cmd_data_rsp_rdy_i  (ctr_drbg_cmd_rsp_rdy),
     .cmd_data_rsp_o      (ctr_drbg_cmd_rsp_data),
-    .cmd_data_rsp_glast_o(cmd_result_glast),
+    .cmd_data_rsp_glast_o(ctr_drbg_cmd_rsp_glast),
 
     // Request and response path to and from update unit
     .cmd_upd_req_vld_o (cmd_upd_req_vld),
@@ -1522,50 +1506,42 @@ module csrng_core import csrng_pkg::*; #(
   // of the sequence is done by the
   // csrng_ctr_drbg_cmd block.
 
-  assign ctr_drbg_gen_req = cmd_result_ack && (ctr_drbg_cmd_rsp_data.cmd == GEN);
+  assign ctr_drbg_gen_req_vld = ctr_drbg_cmd_rsp_vld && (ctr_drbg_cmd_rsp_data.cmd == GEN);
 
   csrng_ctr_drbg_gen u_csrng_ctr_drbg_gen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
     .enable_i(cs_enable_fo[49]),
 
-    .cmd_req_vld_i  (ctr_drbg_gen_req),
+    .cmd_req_vld_i  (ctr_drbg_gen_req_vld),
     .cmd_req_rdy_o  (ctr_drbg_gen_req_rdy),
     .cmd_req_data_i (ctr_drbg_cmd_rsp_data),
-    .cmd_req_glast_i(cmd_result_glast),
+    .cmd_req_glast_i(ctr_drbg_cmd_rsp_glast),
 
-    .ctr_drbg_gen_ack_o(gen_result_wr_req),
-    .ctr_drbg_gen_sts_o(gen_result_ack_sts),
-    .ctr_drbg_gen_rdy_i(gen_result_ack_rdy),
-    .ctr_drbg_gen_ccmd_o(gen_result_ccmd),
-    .ctr_drbg_gen_inst_id_o(gen_result_inst_id),
-    .ctr_drbg_gen_fips_o(gen_result_fips),
-    .ctr_drbg_gen_key_o(gen_result_key),
-    .ctr_drbg_gen_v_o(gen_result_v),
-    .ctr_drbg_gen_rc_o(gen_result_rc),
-    .ctr_drbg_gen_bits_o(gen_result_bits),
+    .cmd_rsp_vld_o (ctr_drbg_gen_rsp_vld),
+    .cmd_rsp_rdy_i (ctr_drbg_gen_rsp_rdy),
+    .cmd_rsp_data_o(ctr_drbg_gen_rsp_data),
+    .cmd_rsp_bits_o(ctr_drbg_gen_rsp_bits),
+    .cmd_rsp_sts_o (ctr_drbg_gen_rsp_sts),
 
     .es_halt_req_i(cs_aes_halt_i.cs_aes_halt_req),
     .es_halt_ack_o(ctr_drbg_gen_es_ack),
 
-    // interface to updblk from genblk
-    .gen_upd_req_vld_o (gen_upd_req_vld),
-    .gen_upd_req_rdy_i (gen_upd_req_rdy),
-    .gen_upd_req_data_o(gen_upd_req_data),
+    .update_req_vld_o (gen_upd_req_vld),
+    .update_req_rdy_i (gen_upd_req_rdy),
+    .update_req_data_o(gen_upd_req_data),
 
-    .gen_upd_rsp_vld_i (gen_upd_rsp_vld),
-    .gen_upd_rsp_rdy_o (gen_upd_rsp_rdy),
-    .gen_upd_rsp_data_i(upd_rsp_data),
+    .update_rsp_vld_i (gen_upd_rsp_vld),
+    .update_rsp_rdy_o (gen_upd_rsp_rdy),
+    .update_rsp_data_i(upd_rsp_data),
 
     .block_encrypt_req_vld_o (gen_benc_req_vld),
     .block_encrypt_req_rdy_i (gen_benc_req_rdy),
     .block_encrypt_req_data_o(gen_benc_req_data),
 
-    .block_encrypt_ack_i    (gen_benc_rsp_vld),
-    .block_encrypt_rdy_o    (gen_benc_rsp_rdy),
-    .block_encrypt_ccmd_i   (block_encrypt_rsp_data.cmd),
-    .block_encrypt_inst_id_i(block_encrypt_rsp_data.inst_id),
-    .block_encrypt_v_i      (block_encrypt_rsp_data.v),
+    .block_encrypt_rsp_vld_i (gen_benc_rsp_vld),
+    .block_encrypt_rsp_rdy_o (gen_benc_rsp_rdy),
+    .block_encrypt_rsp_data_i(block_encrypt_rsp_data),
 
     .ctr_err_o(ctr_drbg_gen_v_ctr_err),
     .sm_err_o (drbg_gen_sm_err),
@@ -1601,10 +1577,17 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.hw_exc_sts.d  = hw_exception_sts;
 
   // unused signals
+  logic                        unused_err_code_test_bit;
+  logic                        unused_reg2hw_genbits;
+  logic                        unused_int_state_val;
+  logic                        unused_reseed_interval;
+  logic          [SeedLen-1:0] unused_gen_rsp_pdata;
+
   assign unused_err_code_test_bit = (|err_code_test_bit[19:16]) || (|err_code_test_bit[27:26]);
   assign unused_reg2hw_genbits = (|reg2hw.genbits.q);
   assign unused_int_state_val = (|reg2hw.int_state_val.q);
   assign unused_reseed_interval = reg2hw.reseed_interval.qe;
+  assign unused_gen_rsp_pdata = ctr_drbg_gen_rsp_data.pdata;
 
   //--------------------------------------------
   // Assertions
