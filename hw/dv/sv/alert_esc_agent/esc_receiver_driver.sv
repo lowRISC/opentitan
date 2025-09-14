@@ -15,11 +15,6 @@ class esc_receiver_driver extends dv_base_driver#(alert_esc_seq_item, alert_esc_
 
   extern function new (string name, uvm_component parent);
 
-  // This task runs forever calls do_reset at the start of every reset.
-  //
-  // Overridden from dv_base_driver.
-  extern virtual task reset_signals();
-
   // This task runs forever. It works by running rsp_escalator (which consumes and drives items from
   // seq_item_port) and esc_ping_detector (which responds to ping requests).
   //
@@ -56,22 +51,13 @@ class esc_receiver_driver extends dv_base_driver#(alert_esc_seq_item, alert_esc_
   extern virtual task wait_esc_complete();
   extern virtual task wait_esc();
   // Set the values driven through resp_p / resp_n to 0/1 and clear the is_ping flag
-  extern virtual task do_reset();
+  extern task on_enter_reset();
 
 endclass : esc_receiver_driver
 
 function esc_receiver_driver::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
-
-task esc_receiver_driver::reset_signals();
-  do_reset();
-  forever begin
-    wait (cfg.in_reset);
-    do_reset();
-    wait (!cfg.in_reset);
-  end
-endtask : reset_signals
 
 task esc_receiver_driver::get_and_drive();
   fork
@@ -229,8 +215,8 @@ task esc_receiver_driver::wait_esc();
   while (cfg.vif.esc_tx.esc_p === 1'b0 && cfg.vif.esc_tx.esc_n === 1'b1) @(cfg.vif.receiver_cb);
 endtask : wait_esc
 
-task esc_receiver_driver::do_reset();
+task esc_receiver_driver::on_enter_reset();
   cfg.vif.esc_rx_int.resp_p <= 1'b0;
   cfg.vif.esc_rx_int.resp_n <= 1'b1;
   is_ping = 0;
-endtask : do_reset
+endtask : on_enter_reset

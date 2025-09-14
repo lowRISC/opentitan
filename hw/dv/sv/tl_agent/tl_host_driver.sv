@@ -15,12 +15,13 @@ class tl_host_driver extends tl_base_driver;
   // Drive items received from the sequencer. This implements a task declared in dv_base_driver.
   extern task get_and_drive();
 
-  // Clear output signals and internal state whenever a reset happens. This task runs forever,
-  // looping over resets.
-  //
-  // This also controls an internal reset_asserted flag, which is used by other tasks in the class
-  // to detect resets. This implements a task declared in dv_base_driver.
-  extern task reset_signals();
+  // Called at the start of a reset. Clear output signals and internal state. This implements a task
+  // declared in dv_base_driver.
+  extern task on_enter_reset();
+
+  // Called at the end of a reset. Make sure that all sequence items have been properly flushed
+  // while we were in reset.
+  extern function void on_leave_reset();
 
   // Wait for the next edge of host_cb. Stops early if reset is asserted.
   extern protected task wait_clk_or_rst();
@@ -98,34 +99,25 @@ task tl_host_driver::get_and_drive();
   join_none
 endtask
 
-task tl_host_driver::reset_signals();
-  forever begin
-    // At the start of the loop body, we should either be at the start of the simulation or have
-    // just entered reset. Invalidate all signals and mark ourselves as not ready on the D channel.
-    invalidate_a_channel();
-    cfg.vif.h2d_int.d_ready <= 1'b0;
-
-    // Now wait to come out of reset. Note that if the simulation didn't start in reset then this
-    // first wait will take zero time.
-    wait(!cfg.in_reset);
-
-    // When we were in reset, we should have flushed all sequence items immediately. To check this
-    // has worked correctly, the following things should be true when we leave reset:
-    //
-    //  - The pending_a_req queue should be empty (d_channel_thread should have sent responses and
-    //    flushed the requests).
-    //
-    //  - The sequencer shouldn't have any items available through seq_item_port. If an item had
-    //    been available, we should have taken it immediately in get_and_drive.
-    `DV_CHECK_EQ(pending_a_req.size(), 0)
-    `DV_CHECK_EQ(seq_item_port.has_do_available(), 0)
-
-    // At this point, we're in the main part of the simulation and the get_and_drive task will be
-    // driving sequence items over the bus. Wait until reset is asserted before going back to the
-    // start of the loop.
-    wait(cfg.in_reset);
-  end
+task tl_host_driver::on_enter_reset();
+  // Since we've just started a period of reset, invalidate all signals and mark ourselves as not
+  // ready on the D channel.
+  invalidate_a_channel();
+  cfg.vif.h2d_int.d_ready <= 1'b0;
 endtask
+
+function void tl_host_driver::on_leave_reset();
+  // We should have flushed all sequence items immediately when we were in reset. To check this has
+  // worked correctly, the following things should be true when we leave reset:
+  //
+  //  - The pending_a_req queue should be empty (d_channel_thread should have sent responses and
+  //    flushed the requests).
+  //
+  //  - The sequencer shouldn't have any items available through seq_item_port. If an item had been
+  //    available, we should have taken it immediately in get_and_drive.
+  `DV_CHECK_EQ(pending_a_req.size(), 0)
+  `DV_CHECK_EQ(seq_item_port.has_do_available(), 0)
+endfunction
 
 task tl_host_driver::wait_clk_or_rst();
   `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);, wait(cfg.in_reset);)

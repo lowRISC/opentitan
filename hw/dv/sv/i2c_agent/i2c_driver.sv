@@ -15,15 +15,14 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   // get an array with unique read data
   constraint rd_data_c { unique { rd_data }; }
 
-  virtual task reset_signals();
-    forever begin
-      @(negedge cfg.vif.rst_ni);
-      `uvm_info(`gfn, "\ndriver in reset progress", UVM_DEBUG)
-      release_bus();
-      @(posedge cfg.vif.rst_ni);
-      `uvm_info(`gfn, "\ndriver out of reset", UVM_DEBUG)
-    end
-  endtask : reset_signals
+  task on_enter_reset();
+    `uvm_info(`gfn, "\ndriver in reset progress", UVM_DEBUG)
+    release_bus();
+  endtask
+
+  function void on_leave_reset();
+    `uvm_info(`gfn, "\ndriver out of reset", UVM_DEBUG)
+  endfunction
 
   virtual task run_phase(uvm_phase phase);
     fork
@@ -215,15 +214,15 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   virtual task process_reset();
     @(negedge cfg.vif.rst_ni);
-    release_bus();
+    on_enter_reset();
     `uvm_info(`gfn, "\n  driver is reset", UVM_DEBUG)
   endtask : process_reset
 
-  virtual task release_bus();
+  function void release_bus();
     `uvm_info(`gfn, "Driver released the bus", UVM_DEBUG)
     cfg.vif.scl_o = 1'b1;
     cfg.vif.sda_o = 1'b1;
-  endtask : release_bus
+  endfunction : release_bus
 
   task drive_scl();
     // This timeout is extremely long since read transactions will stretch
