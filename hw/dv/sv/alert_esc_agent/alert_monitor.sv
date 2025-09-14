@@ -25,7 +25,7 @@ class alert_monitor extends alert_esc_base_monitor;
   extern virtual task reset_thread();
   extern virtual task alert_init_thread();
   // Block until alert initialisation happens, but exit early on a reset. When alert initialisation
-  // is complete, clear under_reset and set alert_init_done.
+  // is complete, set alert_init_done.
   //
   // Alert initialisation is normally tracked by the p/n signals becoming equal and then different
   // again. As a special case, we also consider alert initialisation to have happened when
@@ -101,7 +101,7 @@ task alert_monitor::alert_and_ping_thread();
     fork
       begin : iso_fork
         fork
-          wait (under_reset);
+          wait (cfg.in_reset);
           // monitor_* threads keep track of whether there's been a ping/alert
           monitor_ping();
           monitor_alerts();
@@ -117,25 +117,23 @@ task alert_monitor::alert_and_ping_thread();
         disable fork;
       end : iso_fork
     join
-    wait(!under_reset);
+    wait(!cfg.in_reset);
   end
 endtask : alert_and_ping_thread
 
 task alert_monitor::reset_thread();
-  under_reset = 1;
-  forever begin
-    @(negedge cfg.vif.rst_n);
-    under_reset         = 1;
-    active_alert        = 1'b0;
-    cfg.active_ping     = 1'b0;
-    cfg.alert_init_done = 0;
-    cfg.under_ping_handshake = 0;
-    cfg.under_ping_handshake_ph_2 = 0;
-    @(posedge cfg.vif.rst_n);
-    // Reset signals at posedge rst_n to avoid race condition at negedge rst_n
-    reset_signals();
-  end
-endtask : reset_thread
+  fork
+    super.reset_thread();
+    forever begin
+      wait(cfg.in_reset);
+      active_alert        = 1'b0;
+      cfg.active_ping     = 1'b0;
+      cfg.alert_init_done = 0;
+      cfg.under_ping_handshake = 0;
+      cfg.under_ping_handshake_ph_2 = 0;
+    end
+  join
+endtask
 
 task alert_monitor::alert_init_thread();
   wait_alert_init_done();
@@ -147,6 +145,7 @@ endtask : alert_init_thread
 task alert_monitor::wait_alert_init_done();
   fork begin : isolation_fork
     fork
+      wait(cfg.in_reset);
       begin
         wait (cfg.vif.monitor_cb.alert_tx_final.alert_p ==
               cfg.vif.monitor_cb.alert_tx_final.alert_n);
@@ -154,19 +153,11 @@ task alert_monitor::wait_alert_init_done();
               cfg.vif.monitor_cb.alert_tx_final.alert_n);
         @(cfg.vif.monitor_cb);
         `uvm_info($sformatf("%m"), "Alert init done!", UVM_HIGH)
-        cfg.alert_init_done = 1;
-        under_reset = 0;
       end
-      begin
-        @(negedge cfg.vif.rst_n);
-      end
-      begin
-        wait (cfg.en_alert_lpg == 1);
-        cfg.alert_init_done = 1;
-        under_reset = 0;
-      end
+      wait(cfg.en_alert_lpg);
     join_any
     disable fork;
+    if (!cfg.in_reset) cfg.alert_init_done = 1;
   end : isolation_fork
   join
 endtask : wait_alert_init_done
@@ -203,20 +194,20 @@ task alert_monitor::ping_thread();
             cfg.under_ping_handshake_ph_2 = 1;
           end
           begin
-            wait (under_reset || cfg.en_alert_lpg);
+            wait (cfg.in_reset || cfg.en_alert_lpg);
           end
         join_any
         // Wait 1ps in case 'wait_ping_handshake' and 'wait_ping_timeout' thread finish at
         // the same clock cycle, and give 1ps to make sure both threads are able to update
         // info.
-        if (!under_reset) #1ps;
+        if (!cfg.in_reset) #1ps;
         disable fork;
       end : isolation_fork
     join
 
     `uvm_info(`gfn, $sformatf("[%s]: handshake status is %s",req.alert_esc_type.name(),
                               req.alert_handshake_sta.name()), UVM_HIGH)
-    if (!under_reset && !cfg.en_alert_lpg) begin
+    if (!cfg.in_reset && !cfg.en_alert_lpg) begin
       `uvm_info(`gfn, $sformatf("%m - Sending req: \n%0s",req.sprint), UVM_DEBUG)
       alert_esc_port.write(req);
       if (cfg.en_cov && cfg.en_ping_cov) cov.m_alert_trans_cg.sample(req.alert_esc_type);
@@ -245,7 +236,7 @@ task alert_monitor::alert_thread();
     cov.m_alert_lpg_cg.sample(cfg.en_alert_lpg);
   end
 
-  if (!cfg.en_alert_lpg && !cfg.under_reset) begin
+  if (!cfg.en_alert_lpg && !cfg.in_reset) begin
     alert_esc_seq_item req;
     req = alert_esc_seq_item::type_id::create("req");
     req.alert_esc_type = AlertEscSigTrans;
@@ -280,7 +271,7 @@ task alert_monitor::alert_thread();
             active_alert = 0;
           end
           begin
-            wait (under_reset || cfg.en_alert_lpg);
+            wait (cfg.in_reset || cfg.en_alert_lpg);
           end
         join_any
         disable fork;
@@ -289,7 +280,7 @@ task alert_monitor::alert_thread();
 
     `uvm_info(`gfn, $sformatf("[%s]: handshake status is %s", req.alert_esc_type.name(),
                               req.alert_handshake_sta.name()), UVM_HIGH)
-    if (!under_reset && !cfg.en_alert_lpg) begin
+    if (!cfg.in_reset && !cfg.en_alert_lpg) begin
       `uvm_info(`gfn, $sformatf("%m - Sending req on 'alert_esc_port': \n%0s",req.sprint),
                 UVM_DEBUG)
       alert_esc_port.write(req);
@@ -298,7 +289,7 @@ task alert_monitor::alert_thread();
       cov.m_alert_handshake_complete_cg.sample(req.alert_esc_type, req.alert_handshake_sta);
       if (cfg.en_ping_cov) cov.m_alert_trans_cg.sample(req.alert_esc_type);
     end
-  end // if (!cfg.en_alert_lpg && !cfg.under_reset)
+  end // if (!cfg.en_alert_lpg && !cfg.in_reset)
 endtask : alert_thread
 
 task alert_monitor::int_fail_thread();
@@ -306,7 +297,7 @@ task alert_monitor::int_fail_thread();
   bit prev_err;
   forever @(cfg.vif.monitor_cb) begin
     // use prev_err to exclude the async clk skew
-    if (!under_reset && !cfg.en_alert_lpg && is_sig_int_err() &&
+    if (!cfg.in_reset && !cfg.en_alert_lpg && is_sig_int_err() &&
         (!cfg.is_async || prev_err != 0)) begin
       fork
         begin
@@ -327,7 +318,7 @@ task alert_monitor::wait_ping_thread();
     alert_esc_seq_item req = alert_esc_seq_item::type_id::create("req");
     logic ping_p_value;
     req.alert_esc_type = AlertEscPingTrans;
-    wait (!under_reset && !cfg.en_alert_lpg);
+    wait (!cfg.in_reset && !cfg.en_alert_lpg);
 
     `DV_SPINWAIT_EXIT(
                       ping_p_value = cfg.vif.monitor_cb.alert_rx_final.ping_p;
@@ -339,7 +330,7 @@ task alert_monitor::wait_ping_thread();
                                 UVM_DEBUG)
 
                       req_analysis_port.write(req);,
-                      wait (under_reset || cfg.en_alert_lpg);)
+                      wait (cfg.in_reset || cfg.en_alert_lpg);)
     @(cfg.vif.monitor_cb);
   end
 endtask : wait_ping_thread

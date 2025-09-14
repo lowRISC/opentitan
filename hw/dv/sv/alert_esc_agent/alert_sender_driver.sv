@@ -50,11 +50,9 @@ function alert_sender_driver::new (string name="", uvm_component parent=null);
 endfunction : new
 
 task alert_sender_driver::reset_signals();
-  under_reset = 1;
   do_reset();
   forever begin
     @(negedge cfg.vif.rst_n);
-    under_reset = 1;
     do_reset();
     @(posedge cfg.vif.rst_n);
     alert_atomic = new(1);
@@ -84,7 +82,7 @@ endtask : alert_init_thread
 task alert_sender_driver::send_alert();
   forever begin
     alert_esc_seq_item req, rsp;
-    wait (s_alert_send_q.size() > 0 && !under_reset);
+    wait (s_alert_send_q.size() > 0 && cfg.alert_init_done);
     req = s_alert_send_q.pop_front();
     `downcast(rsp, req.clone());
     rsp.set_id_info(req);
@@ -100,7 +98,7 @@ task alert_sender_driver::send_alert();
             alert_atomic.put(1);
           end
           begin
-            wait (under_reset);
+            wait (cfg.in_reset);
           end
         join_any
         disable fork;
@@ -117,7 +115,7 @@ endtask : send_alert
 task alert_sender_driver::rsp_ping();
   forever begin
     alert_esc_seq_item req, rsp;
-    wait (s_alert_ping_rsp_q.size() > 0 && !under_reset && !cfg.en_alert_lpg);
+    wait (s_alert_ping_rsp_q.size() > 0 && cfg.alert_init_done && !cfg.en_alert_lpg);
     req = s_alert_ping_rsp_q.pop_front();
     `downcast(rsp, req.clone());
     rsp.set_id_info(req);
@@ -133,7 +131,7 @@ task alert_sender_driver::rsp_ping();
                       repeat (cfg.ping_timeout_cycle) wait_sender_clk();
                       end
                       alert_atomic.put(1);,
-                      wait (under_reset || cfg.en_alert_lpg);)
+                      wait (cfg.in_reset || cfg.en_alert_lpg);)
 
     `uvm_info(`gfn,
               $sformatf("finished sending sender item, alert_send=%0b, ping_rsp=%0b, int_err=%0b",
@@ -170,10 +168,10 @@ endtask : drive_alert_pins
 
 task alert_sender_driver::set_alert_pins(int alert_delay);
   repeat (alert_delay + 1) begin
-    if (under_reset) return;
+    if (cfg.in_reset) return;
     else wait_sender_clk();
   end
-  set_alert();
+  if (cfg.alert_init_done) set_alert();
 endtask : set_alert_pins
 
 task alert_sender_driver::reset_alert_pins(int ack_delay);
@@ -203,7 +201,7 @@ endtask : reset_alert_pins
 task alert_sender_driver::random_drive_int_fail(int int_err_cyc);
   repeat (req.int_err_cyc) begin
     wait_sender_clk();
-    if (under_reset) break;
+    if (cfg.in_reset) break;
     randcase
       1: drive_alerts_low();
       1: drive_alerts_high();
@@ -244,24 +242,17 @@ endtask : do_reset
 task alert_sender_driver::do_alert_tx_init();
   fork begin
     fork
+      wait(cfg.in_reset);
+      // Skip alert initialisation when en_alert_lpg is on: alert_sender can still send alerts,
+      // and alert_handler should ignore the alert_tx request.
+      wait(cfg.en_alert_lpg);
       begin
         wait (cfg.vif.alert_rx.ack_p == cfg.vif.alert_rx.ack_n);
         cfg.vif.alert_tx_int.alert_n <= 1'b0;
         wait (cfg.vif.alert_rx.ack_p != cfg.vif.alert_rx.ack_n);
         cfg.vif.alert_tx_int.alert_n <= 1'b1;
-        under_reset = 0;
-      end
-      begin
-        @(negedge cfg.vif.rst_n);
-      end
-      begin
-        // Clear `under_reset` when en_alert_lpg is on, because alert_sender can still send
-        // alerts, and alert_handler should ignore the alert_tx request.
-        wait (cfg.en_alert_lpg == 1);
-        under_reset = 0;
       end
     join_any
     disable fork;
-  end
-  join
+  end join
 endtask : do_alert_tx_init

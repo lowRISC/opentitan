@@ -26,11 +26,9 @@ endfunction : new
 task esc_sender_driver::reset_signals();
   do_reset();
   forever begin
-    @(negedge cfg.vif.rst_n);
-    under_reset = 1;
+    wait(cfg.in_reset);
     do_reset();
-    @(posedge cfg.vif.rst_n);
-    under_reset = 0;
+    wait(!cfg.in_reset);
   end
 endtask : reset_signals
 
@@ -45,7 +43,7 @@ task esc_sender_driver::drive_esc();
   // LC_CTRL uses virtual interface to directly drive escalation requests.
   // Other escalation handshakes are checked in prim_esc direct sequence.
   // So this task is not implemented.
-  wait(!under_reset);
+  wait(!cfg.in_reset);
 endtask : drive_esc
 
 task esc_sender_driver::do_reset();
