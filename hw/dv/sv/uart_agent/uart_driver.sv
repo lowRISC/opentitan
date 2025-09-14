@@ -7,11 +7,6 @@ class uart_driver extends dv_base_driver #(uart_item, uart_agent_cfg);
 
   `uvm_component_new
 
-  task run_phase(uvm_phase phase);
-    reset_signals();
-    get_and_drive();
-  endtask
-
   // Resets signals.
   virtual task reset_signals();
     cfg.vif.reset_uart_rx();

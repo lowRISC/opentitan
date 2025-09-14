@@ -27,15 +27,10 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   virtual task run_phase(uvm_phase phase);
     fork
-      reset_signals();
-      get_and_drive();
-      begin
-        if (cfg.if_mode == Host) drive_scl();
-      end
-      begin
-        if (cfg.if_mode == Host) host_scl_pause_ctrl();
-      end
-    join_none
+      super.run_phase(phase);
+      if (cfg.if_mode == Host) drive_scl();
+      if (cfg.if_mode == Host) host_scl_pause_ctrl();
+    join
   endtask
 
   virtual task get_and_drive();
