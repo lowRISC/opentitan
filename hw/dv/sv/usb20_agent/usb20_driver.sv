@@ -24,14 +24,6 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     end
   endfunction
 
-  virtual task run_phase(uvm_phase phase);
-    super.run_phase(phase);
-    reset_signals();
-    forever begin
-      get_and_drive();
-    end
-  endtask
-
   // get_and_drive Task
   // -------------------------------
   virtual task get_and_drive();
