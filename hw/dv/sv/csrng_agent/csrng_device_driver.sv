@@ -9,11 +9,6 @@ class csrng_device_driver extends csrng_driver;
   uint   cmd_ack_dly;
   bit    rsp_sts;
 
-  virtual task run_phase(uvm_phase phase);
-    // base class forks off reset_signals() and get_and_drive() tasks
-    super.run_phase(phase);
-  endtask
-
   virtual task reset_signals();
     cfg.vif.cmd_rsp_int.csrng_rsp_ack <= 1'b0;
     cfg.vif.cmd_rsp_int.csrng_rsp_sts <= CMD_STS_SUCCESS;
