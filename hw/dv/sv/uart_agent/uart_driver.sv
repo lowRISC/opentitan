@@ -7,10 +7,9 @@ class uart_driver extends dv_base_driver #(uart_item, uart_agent_cfg);
 
   `uvm_component_new
 
-  // Resets signals.
-  virtual task reset_signals();
+  function void on_enter_reset();
     cfg.vif.reset_uart_rx();
-  endtask
+  endfunction
 
   // Sets the value of rx after randomly glitching for 10% of uart clk
   task set_rx(input bit val);

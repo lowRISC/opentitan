@@ -9,11 +9,6 @@ class csrng_host_driver extends csrng_driver;
   // Break down the data and send it to push_pull_host_driver through its sequencer
   csrng_sequencer   m_csrng_sequencer;
 
-  // reset signals
-  virtual task reset_signals();
-//    `uvm_fatal(`gtn, "FIXME")
-  endtask
-
   // drive trans received from sequencer
   virtual task get_and_drive();
     forever begin

@@ -5,10 +5,8 @@
 // Virtual base class used for alert_sender_driver and alert_receiver_driver
 
 virtual class alert_base_driver extends dv_base_driver#(alert_esc_seq_item, alert_esc_agent_cfg);
-  alert_esc_seq_item r_alert_ping_send_q[$], r_alert_rsp_q[$],
-                     s_alert_send_q[$], s_alert_ping_rsp_q[$];
-
-  `uvm_component_utils(alert_base_driver)
+  protected uvm_tlm_analysis_fifo #(alert_esc_seq_item) m_sender_requests;
+  protected uvm_tlm_analysis_fifo #(alert_esc_seq_item) m_receiver_requests;
 
   extern function new (string name, uvm_component parent);
 
@@ -28,6 +26,8 @@ endclass
 
 function alert_base_driver::new (string name, uvm_component parent);
   super.new(name, parent);
+  m_sender_requests = new("m_sender_requests", this);
+  m_receiver_requests = new("m_receiver_requests", this);
 endfunction : new
 
 task alert_base_driver::get_and_drive();
@@ -45,11 +45,9 @@ task alert_base_driver::get_req();
     `downcast(req_clone, req.clone());
     req_clone.set_id_info(req);
     // receiver mode
-    if (req.r_alert_ping_send) r_alert_ping_send_q.push_back(req_clone);
-    if (req.r_alert_rsp)       r_alert_rsp_q.push_back(req_clone);
+    if (req.r_alert_ping_send || req.r_alert_rsp) m_receiver_requests.write(req_clone);
     // sender mode
-    if (req.s_alert_send)      s_alert_send_q.push_back(req_clone);
-    if (req.s_alert_ping_rsp)  s_alert_ping_rsp_q.push_back(req_clone);
+    if (req.s_alert_send || req.s_alert_ping_rsp) m_sender_requests.write(req_clone);
 
     if (req.r_esc_rsp) begin
       `uvm_error(get_full_name(), "Alert driver cannot drive an esc item")

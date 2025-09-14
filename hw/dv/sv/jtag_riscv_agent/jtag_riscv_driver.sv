@@ -12,21 +12,28 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
     super.new(name, parent);
   endfunction
 
-  virtual task reset_signals();
-    forever begin
-      wait (cfg.in_reset == 1);
-      `uvm_info(`gfn, "reset_signals: cfg.in_reset=1'b1", UVM_MEDIUM)
-
-      do_hard_reset = 1;
-      // Assert JTAG TRST
-      // This clears the DMI Request and Response FIFOs.
-      cfg.m_jtag_agent_cfg.vif.do_trst_n(2);
-      cfg.rv_dm_activated = 0;
-
-      wait (cfg.in_reset == 0);
-      `uvm_info(`gfn, "reset_signals: cfg.in_reset=1'b0", UVM_MEDIUM)
-    end
+  task reset_signals();
+    fork
+      super.reset_signals();
+      forever begin
+        wait(cfg.in_reset);
+        // Assert JTAG TRST
+        // This clears the DMI Request and Response FIFOs.
+        cfg.m_jtag_agent_cfg.vif.do_trst_n(2);
+        wait(!cfg.in_reset);
+      end
+    join
   endtask
+
+  function void on_enter_reset();
+    `uvm_info(`gfn, "on_enter_reset: cfg.in_reset=1'b1", UVM_MEDIUM)
+    do_hard_reset = 1;
+    cfg.rv_dm_activated = 0;
+  endfunction
+
+  function void on_leave_reset();
+    `uvm_info(`gfn, "on_leave_reset: cfg.in_reset=1'b0", UVM_MEDIUM)
+  endfunction
 
   // drive trans received from sequencer
   virtual task get_and_drive();

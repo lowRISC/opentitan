@@ -8,23 +8,13 @@ class esc_sender_driver extends dv_base_driver#(alert_esc_seq_item, alert_esc_ag
   `uvm_component_utils(esc_sender_driver)
 
   extern function new (string name, uvm_component parent);
-  extern virtual task reset_signals();
   extern virtual task get_and_drive();
-
-  extern local task do_reset();
+  extern virtual function void on_enter_reset();
 endclass : esc_sender_driver
 
 function esc_sender_driver::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
-
-task esc_sender_driver::reset_signals();
-  forever begin
-    do_reset();
-    wait(!cfg.in_reset);
-    wait(cfg.in_reset);
-  end
-endtask : reset_signals
 
 task esc_sender_driver::get_and_drive();
   // LC_CTRL uses virtual interface to directly drive escalation requests.
@@ -33,7 +23,7 @@ task esc_sender_driver::get_and_drive();
   wait(!cfg.in_reset);
 endtask : get_and_drive
 
-task esc_sender_driver::do_reset();
+function void esc_sender_driver::on_enter_reset();
   cfg.vif.esc_tx_int.esc_p <= 1'b0;
   cfg.vif.esc_tx_int.esc_n <= 1'b1;
-endtask : do_reset
+endfunction

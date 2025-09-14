@@ -184,6 +184,16 @@ interface alert_esc_if(input clk, input rst_n);
     end while (cycle_cnt > 1 || rst_n != 1'b1);
   endtask : wait_esc_ping
 
+  // Set the alert pins to the requested value (either 1;0 or 0;1) when the interface is active and
+  // configured to act as the alert sender.
+  //
+  // This uses a clocking drive to update the version of the signal in sender_cb (causing the update
+  // to have a lasting effect, and also to be synchronoised with the next clock edge).
+  task force_alert(bit alert_p, bit alert_n);
+    sender_cb.alert_tx_int.alert_p <= alert_p;
+    sender_cb.alert_tx_int.alert_n <= alert_n;
+  endtask
+
   // Return true if the current state is PingSt
   //
   // This rather trivial function is needed because we want to use the interface through a virtual

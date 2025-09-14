@@ -10,10 +10,6 @@ class ${name}_host_driver extends ${name}_driver;
 
   `uvm_component_new
 
-  // reset signals
-  virtual task reset_signals();
-  endtask
-
   // drive trans received from sequencer
   virtual task get_and_drive();
     forever begin

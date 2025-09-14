@@ -6,11 +6,9 @@ class kmac_app_device_driver extends kmac_app_driver;
   `uvm_component_utils(kmac_app_device_driver)
   `uvm_component_new
 
-
-  // reset signals
-  virtual task reset_signals();
+  function void on_enter_reset();
     invalidate_signals();
-  endtask
+  endfunction
 
   virtual function void invalidate_signals();
     cfg.vif.device_cb.rsp_done          <= 0;
