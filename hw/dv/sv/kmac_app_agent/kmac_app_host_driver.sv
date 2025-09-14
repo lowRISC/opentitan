@@ -6,9 +6,6 @@ class kmac_app_host_driver extends kmac_app_driver;
   `uvm_component_utils(kmac_app_host_driver)
   `uvm_component_new
 
-  virtual task reset_signals();
-  endtask
-
   virtual task get_and_drive();
   endtask
 

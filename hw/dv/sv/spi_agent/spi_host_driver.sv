@@ -16,21 +16,13 @@ class spi_host_driver extends spi_driver;
     join
   endtask
 
-  // Resets signals
-  virtual task reset_signals();
-    forever begin
-      @(negedge cfg.vif.rst_n or negedge cfg.vif.disconnected);
-      if (cfg.vif.disconnected) continue;
-      under_reset = 1'b1;
-      active_csb  = 1'b0;
-      cfg.vif.sck <= cfg.sck_polarity[0];
-      cfg.vif.sio_out <= 'x;
-      cfg.vif.csb <= '1;
-      sck_pulses = 0;
-      @(posedge cfg.vif.rst_n);
-      under_reset = 1'b0;
-    end
-  endtask
+  function void on_enter_reset();
+    active_csb  = 1'b0;
+    cfg.vif.sck <= cfg.sck_polarity[0];
+    cfg.vif.sio_out <= 'x;
+    cfg.vif.csb <= '1;
+    sck_pulses = 0;
+  endfunction
 
   // generate sck
   task gen_sck();

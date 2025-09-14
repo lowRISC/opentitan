@@ -380,16 +380,15 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     end
   endtask
 
-  // RESET signals  Task
-  // -------------------------------
-  virtual task reset_signals();
+  // Clear all bus signals, setting outputs to a high-impedance state, because this is the start of
+  // a reset. An implementation of dv_base_driver::on_enter_reset.
+  function void on_enter_reset();
     // Bus is unpowered and inactive.
     cfg.bif.drive_vbus = 1'b0;
     cfg.bif.usb_rx_d_i = 1'b0;
     cfg.bif.drive_p    = 1'bZ;
     cfg.bif.drive_n    = 1'bZ;
-    @(posedge cfg.bif.rst_ni);
-  endtask
+  endfunction
 
   // USB Bus Reset
   //

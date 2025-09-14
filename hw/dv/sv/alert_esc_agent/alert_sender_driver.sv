@@ -14,7 +14,8 @@ class alert_sender_driver extends alert_esc_base_driver;
   local semaphore alert_atomic = new(1);
 
   extern function new (string name="", uvm_component parent=null);
-  extern virtual task reset_signals();
+  extern function void on_enter_reset();
+  extern function void on_leave_reset();
   // alert_sender drive responses by sending the alert_p and alert_n
   // one alert sent by sequence driving the alert_send signal
   // another alert sent by responding to the ping signal
@@ -36,7 +37,6 @@ class alert_sender_driver extends alert_esc_base_driver;
   extern virtual task drive_alerts_high();
   extern virtual task drive_alerts_low();
   extern virtual task wait_sender_clk();
-  extern virtual task do_reset();
   // This task handles alert init request.
   //
   // After alert_receiver is reset, it will send a signal integrity fail via `ping_n` and `ack_n`,
@@ -49,15 +49,14 @@ function alert_sender_driver::new (string name="", uvm_component parent=null);
   super.new(name, parent);
 endfunction : new
 
-task alert_sender_driver::reset_signals();
-  do_reset();
-  forever begin
-    @(negedge cfg.vif.rst_n);
-    do_reset();
-    @(posedge cfg.vif.rst_n);
-    alert_atomic = new(1);
-  end
-endtask
+function void alert_sender_driver::on_enter_reset();
+  cfg.vif.alert_tx_int.alert_p <= 1'b0;
+  cfg.vif.alert_tx_int.alert_n <= 1'b1;
+endfunction
+
+function void alert_sender_driver::on_leave_reset();
+  alert_atomic = new(1);
+endfunction
 
 task alert_sender_driver::drive_req();
   fork
@@ -233,11 +232,6 @@ endtask : drive_alerts_low
 task alert_sender_driver::wait_sender_clk();
   @(cfg.vif.sender_cb);
 endtask : wait_sender_clk
-
-task alert_sender_driver::do_reset();
-  cfg.vif.alert_tx_int.alert_p <= 1'b0;
-  cfg.vif.alert_tx_int.alert_n <= 1'b1;
-endtask : do_reset
 
 task alert_sender_driver::do_alert_tx_init();
   fork begin

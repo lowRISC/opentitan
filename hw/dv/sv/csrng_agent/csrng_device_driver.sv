@@ -9,10 +9,10 @@ class csrng_device_driver extends csrng_driver;
   uint   cmd_ack_dly;
   bit    rsp_sts;
 
-  virtual task reset_signals();
+  function void on_enter_reset();
     cfg.vif.cmd_rsp_int.csrng_rsp_ack <= 1'b0;
     cfg.vif.cmd_rsp_int.csrng_rsp_sts <= CMD_STS_SUCCESS;
-  endtask
+  endfunction
 
   // drive trans received from sequencer
   virtual task get_and_drive();
@@ -55,7 +55,7 @@ class csrng_device_driver extends csrng_driver;
         seq_item_port.item_done(rsp);
       end
 
-      // Write ack bit again in case the race condition with `reset_signals`.
+      // Write ack bit again to avoid a race with reset tracking
       if (cfg.in_reset) cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_ack <= 1'b0;
 
     end

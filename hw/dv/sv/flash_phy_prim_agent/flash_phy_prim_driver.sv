@@ -11,10 +11,6 @@ class flash_phy_prim_driver extends dv_base_driver #(.ITEM_T(flash_phy_prim_item
 
   `uvm_component_new
 
-  // reset signals
-  virtual task reset_signals();
-  endtask
-
   // drive trans received from sequencer
   virtual task get_and_drive();
     forever begin

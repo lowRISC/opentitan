@@ -12,7 +12,7 @@ class alert_receiver_driver extends alert_esc_base_driver;
   extern function new(string name="", uvm_component parent=null);
 
   extern task drive_req();
-  extern task reset_signals();
+  extern function void on_enter_reset();
   extern task alert_init_thread();
   extern task send_ping(alert_esc_seq_item req);
 
@@ -63,11 +63,10 @@ class alert_receiver_driver extends alert_esc_base_driver;
   extern task set_ping();
   extern task wait_alert();
   extern task reset_ping();
-  extern task do_reset();
   extern task do_alert_rx_init();
   // Clears the items in queues `r_alert_rsp_q` and `r_alert_ping_send_q`.
-  // This gets used in the task `reset_signals` to clear the queues on reset
-  // This task prevents the scenario of accidentally driving ACK after reset
+  // This gets used in the `on_enter_reset` function to clear the queues on reset.
+  // This task prevents the scenario of accidentally driving ACK after reset.
   extern function void clear_item_queues();
   extern task ping_and_alert_thread();
 
@@ -108,16 +107,15 @@ task alert_receiver_driver::ping_and_alert_thread();
   end
 endtask
 
-task alert_receiver_driver::reset_signals();
-  do_reset();
-  forever begin
-    @(negedge cfg.vif.rst_n);
-    clear_item_queues();
-    working_on_alert = 0;
-    do_reset();
-    @(posedge cfg.vif.rst_n);
-  end
-endtask
+function void alert_receiver_driver::on_enter_reset();
+  clear_item_queues();
+  working_on_alert = 0;
+
+  cfg.vif.alert_rx_int.ping_p <= 1'b0;
+  cfg.vif.alert_rx_int.ping_n <= 1'b1;
+  cfg.vif.alert_rx_int.ack_p <= 1'b0;
+  cfg.vif.alert_rx_int.ack_n <= 1'b1;
+endfunction
 
 task alert_receiver_driver::alert_init_thread();
   do_alert_rx_init();
@@ -381,13 +379,6 @@ endtask : wait_alert
 task alert_receiver_driver::reset_ping();
   cfg.vif.receiver_cb.alert_rx_int.ping_p <= 1'b0;
   cfg.vif.receiver_cb.alert_rx_int.ping_n <= 1'b1;
-endtask
-
-task alert_receiver_driver::do_reset();
-  cfg.vif.alert_rx_int.ping_p <= 1'b0;
-  cfg.vif.alert_rx_int.ping_n <= 1'b1;
-  cfg.vif.alert_rx_int.ack_p <= 1'b0;
-  cfg.vif.alert_rx_int.ack_n <= 1'b1;
 endtask
 
 function void alert_receiver_driver::clear_item_queues();
