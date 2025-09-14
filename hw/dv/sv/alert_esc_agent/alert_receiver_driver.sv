@@ -92,7 +92,7 @@ endtask : drive_req
 // and the handshake would look the same either way.
 task alert_receiver_driver::ping_and_alert_thread();
   forever begin
-    wait( ((r_alert_ping_send_q.size() > 0) || (r_alert_rsp_q.size() > 0)) && !under_reset);
+    wait( ((r_alert_ping_send_q.size() > 0) || (r_alert_rsp_q.size() > 0)) && !cfg.in_reset);
     `uvm_info(`gfn, $sformatf({"%m - Queues: r_alert_ping_send_q.size=%0d | ",
                                "r_alert_rsp_q.size()=%0d"}, r_alert_ping_send_q.size,
                                r_alert_rsp_q.size()), UVM_DEBUG)
@@ -112,7 +112,6 @@ task alert_receiver_driver::reset_signals();
   do_reset();
   forever begin
     @(negedge cfg.vif.rst_n);
-    under_reset = 1;
     clear_item_queues();
     working_on_alert = 0;
     do_reset();
@@ -149,7 +148,7 @@ task alert_receiver_driver::send_ping(alert_esc_seq_item req);
             end
             drive_alert_ping(req.ping_delay, req.ack_delay, req.ack_stable, item_not_driven);
           end
-          wait(under_reset);
+          wait(cfg.in_reset);
         join_any
         disable fork;
       end
@@ -186,7 +185,7 @@ task alert_receiver_driver::rsp_alert(alert_esc_seq_item req);
   fork
     begin : isolation_fork_1
       fork
-        wait(under_reset);
+        wait(cfg.in_reset);
         fork
           // Wait for num_iter cycles on the slower of the two clocks (by
           // waiting for both of them in parallel).
@@ -211,7 +210,7 @@ task alert_receiver_driver::rsp_alert(alert_esc_seq_item req);
     end  : isolation_fork_1
   join
 
-  if (!under_reset) begin
+  if (!cfg.in_reset) begin
     // If we haven't gone into reset, we have an item and have waited a bit for the alert to be
     // visible. Check that it really has arrived.
     working_on_alert = 1;
@@ -226,24 +225,24 @@ task alert_receiver_driver::rsp_alert(alert_esc_seq_item req);
       begin : isolation_fork_2
         fork
           set_ack_pins(req.ack_delay, req.ack_stable);
-          wait(under_reset);
+          wait(cfg.in_reset);
         join_any
         disable fork;
       end : isolation_fork_2
     join
-  end // if (!under_reset)
+  end // if (!cfg.in_reset)
 
 
   `uvm_info(`gfn,
             $sformatf("%0s rsp_alert item (ping_send=%0b, alert_rsp=%0b, int_fail=%0b)",
-                      under_reset ? "aborting" : "finished",
+                      cfg.in_reset ? "aborting" : "finished",
                       req.r_alert_ping_send, req.r_alert_rsp, req.int_err),
             UVM_DEBUG)
 
   fork
     begin : isolation_fork_3
       fork
-        wait (under_reset);
+        wait (cfg.in_reset);
         repeat (10) begin
           if (cfg.vif.receiver_cb.alert_tx.alert_p) begin
             unset_working_on_alerts = 1;
@@ -440,7 +439,6 @@ task alert_receiver_driver::do_alert_rx_init();
       wait (cfg.vif.receiver_cb.alert_tx.alert_p == cfg.vif.receiver_cb.alert_tx.alert_n);
       repeat ($urandom_range(1, 10)) @(cfg.vif.receiver_cb);
       cfg.vif.alert_rx_int.ack_n  <= 1'b1;
-      wait (cfg.vif.receiver_cb.alert_tx.alert_p != cfg.vif.receiver_cb.alert_tx.alert_n);
-      under_reset = 0;,
-      @(negedge cfg.vif.rst_n);)
+      wait (cfg.vif.receiver_cb.alert_tx.alert_p != cfg.vif.receiver_cb.alert_tx.alert_n);,
+      wait (cfg.in_reset);)
 endtask
