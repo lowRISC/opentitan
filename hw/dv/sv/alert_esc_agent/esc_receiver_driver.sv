@@ -15,7 +15,7 @@ class esc_receiver_driver extends dv_base_driver#(alert_esc_seq_item, alert_esc_
 
   extern function new (string name, uvm_component parent);
 
-  // This task runs forever and maintains dv_base_driver::under_reset.
+  // This task runs forever calls do_reset at the start of every reset.
   //
   // Overridden from dv_base_driver.
   extern virtual task reset_signals();
@@ -67,11 +67,9 @@ endfunction : new
 task esc_receiver_driver::reset_signals();
   do_reset();
   forever begin
-    @(negedge cfg.vif.rst_n);
-    under_reset = 1;
+    wait (cfg.in_reset);
     do_reset();
-    @(posedge cfg.vif.rst_n);
-    under_reset = 0;
+    wait (!cfg.in_reset);
   end
 endtask : reset_signals
 
@@ -84,10 +82,10 @@ endtask : get_and_drive
 
 task esc_receiver_driver::esc_ping_detector();
   forever begin
-    wait(!under_reset);
+    wait (!cfg.in_reset);
     fork begin : isolation_fork
       fork
-        wait(under_reset);
+        wait (cfg.in_reset);
         begin
           int cnt;
 
@@ -126,7 +124,7 @@ task esc_receiver_driver::rsp_escalator();
       begin : non_blocking_fork
         fork
           drive_esc_resp(req);
-          wait(under_reset);
+          wait (cfg.in_reset);
         join_any
         disable fork;
         `uvm_info(`gfn, $sformatf("finished sending receiver item esc_rsp=%0b int_fail=%0b",
