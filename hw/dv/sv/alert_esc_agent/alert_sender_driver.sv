@@ -91,14 +91,11 @@ function alert_sender_driver::new (string name, uvm_component parent);
 endfunction : new
 
 task alert_sender_driver::reset_signals();
-  under_reset = 1;
   set_alert(1'b0);
   forever begin
-    wait(!cfg.vif.rst_n);
-    under_reset = 1;
+    wait(!cfg.in_reset);
+    wait(cfg.in_reset);
     set_alert(1'b0);
-    wait(cfg.vif.rst_n);
-    under_reset = 0;
   end
 endtask
 
@@ -106,11 +103,11 @@ task alert_sender_driver::drive_req();
   forever begin
     // Wait until we are out of reset. Until that happens, respond instantly to any sequence items
     // that come in.
-    while (under_reset) begin
+    while (cfg.in_reset) begin
       fork : isolation_fork begin
         alert_esc_seq_item item;
         fork
-          wait (!under_reset);
+          wait (!cfg.in_reset);
           begin
             wait(s_alert_send_q.size());
             item = s_alert_send_q.pop_front();
@@ -130,7 +127,7 @@ task alert_sender_driver::drive_req();
       end join
     end
 
-    while(!under_reset) begin
+    while(!cfg.in_reset) begin
       bit en_alert_lpg = cfg.en_alert_lpg;
 
       // If LPG is not enabled, initialise the alert interface
@@ -154,7 +151,7 @@ task alert_sender_driver::drive_reqs_with_lpg_mode(bit en_alert_lpg);
     fork : isolation_fork begin
       fork
         wait (cfg.en_alert_lpg != en_alert_lpg);
-        wait (under_reset);
+        wait (cfg.in_reset);
         begin
           wait(s_alert_send_q.size());
           item = s_alert_send_q.pop_front();
@@ -190,7 +187,7 @@ task alert_sender_driver::send_item(bit is_ping_rsp, alert_esc_seq_item item);
                       item.s_alert_send, item.s_alert_ping_rsp, item.int_err), UVM_HIGH)
   fork : isolation_fork begin
     fork
-      wait (under_reset);
+      wait (cfg.in_reset);
       if (!is_ping_rsp || !cfg.ping_timeout) begin
         drive_alert_pins(item);
       end else begin
@@ -277,7 +274,7 @@ endtask
 task alert_sender_driver::do_alert_tx_init();
   fork : isolation_fork begin
     fork
-      wait (under_reset || cfg.en_alert_lpg);
+      wait (cfg.in_reset || cfg.en_alert_lpg);
       begin
         wait (cfg.vif.alert_rx.ack_p == cfg.vif.alert_rx.ack_n);
         drive_invalid_alert(1'b0);
