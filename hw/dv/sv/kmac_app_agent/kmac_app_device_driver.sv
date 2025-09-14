@@ -6,9 +6,7 @@ class kmac_app_device_driver extends kmac_app_driver;
   `uvm_component_utils(kmac_app_device_driver)
   `uvm_component_new
 
-
-  // reset signals
-  virtual task reset_signals();
+  task on_enter_reset();
     invalidate_signals();
   endtask
 
