@@ -144,11 +144,10 @@ module tb;
   `define BLOCK_ENCRYPT_PATH tb.dut.u_csrng_core.u_csrng_block_encrypt
   `define CTR_DRBG_GEN tb.dut.u_csrng_core.u_csrng_ctr_drbg_gen
   `define CTR_DRBG_GEN_FIFO `CTR_DRBG_GEN.u_prim_fifo_sync_bencack.gen_singleton_fifo
-  `ASSERT_INIT(CsrngCtrDrbgGenFifoDepth1, `CTR_DRBG_GEN.BlkEncAckFifoDepth == 1)
   `ASSERT(CsrngSecCmAesCipherDataRegLocalEscGen,
       $rose(`CTR_DRBG_GEN_FIFO.full_q) && `BLOCK_ENCRYPT_PATH.cipher_sm_err_o |=>
       $past(`CTR_DRBG_GEN_FIFO.storage
-          [`CTR_DRBG_GEN.BlkEncAckFifoWidth-1 -: csrng_pkg::BlkLen]) !=
+          [csrng_pkg::BencDataWidth-1 -: csrng_pkg::BlkLen]) !=
       $past(`BLOCK_ENCRYPT_PATH.cipher_data_out, 2), clk, !rst_n)
 
   `define CTR_DRBG_UPD tb.dut.u_csrng_core.u_csrng_ctr_drbg_upd
