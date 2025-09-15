@@ -5,6 +5,8 @@
 // Description: UART core module
 //
 
+`include "prim_assert.sv"
+
 module uart_core (
   input                  clk_i,
   input                  rst_ni,
