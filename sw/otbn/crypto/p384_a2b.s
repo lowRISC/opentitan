@@ -50,6 +50,7 @@ p384_arithmetic_to_boolean_mod:
      [w26,w25] <= [w12,w11] = A */
   bn.mov    w23, w18
   bn.mov    w24, w19
+  bn.xor    w31, w31, w31 /* Dummy instruction to avoid consecutive share access. */
   bn.mov    w25, w11
   bn.mov    w26, w12
 
@@ -68,6 +69,7 @@ p384_arithmetic_to_boolean_mod:
      prepare input for 385-bit A2B function. */
   bn.mov    w18, w23
   bn.mov    w19, w24
+  bn.xor    w31, w31, w31 /* Dummy instruction to avoid consecutive share access. */
   bn.mov    w11, w25
   bn.mov    w12, w26
 
@@ -78,6 +80,9 @@ p384_arithmetic_to_boolean_mod:
   bn.add    w12, w12, w10 << 128
   bn.sub    w11, w11, w13
   bn.subb   w12, w12, w14
+
+  /* Clear flags. */
+  bn.sub    w31, w31, w31
 
   /* Call 385-bit A2B function.
 
@@ -90,13 +95,6 @@ p384_arithmetic_to_boolean_mod:
   bn.mov    w1, w20
   bn.mov    w2, w21
 
-  /* Restore initial mask input of w19 for consistency
-     in calling functions.
-     w18 <= w23
-     w19 <= w24 */
-  bn.mov    w18, w23
-  bn.mov    w19, w24
-
   /* Check MSB (carry bit) of second A2B result for true or false. */
   bn.cmp    w31, w21 >> 128
 
@@ -106,6 +104,13 @@ p384_arithmetic_to_boolean_mod:
   bn.sel    w20, w1, w27, FG0.Z
   bn.sel    w21, w2, w28, FG0.Z
   bn.cmp    w31, w31  /* dummy instruction to clear flags */
+
+  /* Restore initial mask input of w19 for consistency
+     in calling functions.
+     w18 <= w23
+     w19 <= w24 */
+  bn.mov    w18, w23
+  bn.mov    w19, w24
 
   ret
 
@@ -154,6 +159,9 @@ p384_arithmetic_to_boolean:
   bn.rshi   w4, w4, w31 >> 129
   bn.rshi   w4, w31, w4 >> 127
 
+  /* Clear flags. */
+  bn.add    w31, w31, w31
+
   /* [w21,w20] = x'     <= [w2,w1] ^ [w19,w18] = gamma ^ r
 
      N.B. The dummy instruction below is to clear the flags from performing
@@ -165,6 +173,7 @@ p384_arithmetic_to_boolean:
   /* [w6,w5] = omega    <= [w2,w1] & [w21,w20] = gamma & x' */
   bn.and    w5, w1, w20
   bn.and    w6, w2, w21
+  bn.and    w31, w31, w31  /* dummy instruction to clear flags */
 
   /* [w21,w20] = x'     <= [w4,w3] ^ [w12,w11] = T ^ A
 
@@ -235,6 +244,9 @@ p384_arithmetic_to_boolean:
     bn.addc   w4, w2, w2
     bn.rshi   w4, w4, w31 >> 129
     bn.rshi   w4, w31, w4 >> 127
+
+    /* Clear flags. */
+    bn.add    w31, w31, w31
 
   /* [w21,w20] = x'     <= [w21,w20] ^ [w4,w3] = x' ^ T
 
