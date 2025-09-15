@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "prim_assert.sv"
+
 module otp_macro
   import otp_ctrl_macro_pkg::*;
   import otp_macro_reg_pkg::*;
