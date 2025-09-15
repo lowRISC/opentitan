@@ -5,7 +5,7 @@
 // Life cycle interface for performing life cycle transitions in OTP.
 //
 
-`include "prim_flop_macros.sv"
+`include "prim_assert.sv"
 
 module otp_ctrl_lci
   import otp_ctrl_pkg::*;
