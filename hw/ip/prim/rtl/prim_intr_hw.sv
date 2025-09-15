@@ -14,6 +14,8 @@
 // - INTR_STATE  : the current state of the interrupt (may be RO or W1C depending on "IntrT")
 // - INTR_TEST   : sw-access-only register which asserts the interrupt for testing purposes
 
+`include "prim_assert.sv"
+
 module prim_intr_hw # (
   // This module can be instantiated once per interrupt field (Width == 1), or
   // "bussified" with all fields of the interrupt vector (Width == $width(vec)).
