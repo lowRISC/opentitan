@@ -1,0 +1,203 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: sysrst_ctrl
+  testpoints: [
+    {
+      name: chip_sw_sysrst_ctrl_reset
+      desc: '''Verify the SYSRST ctrl can reset the chip from normal state.
+
+            - Read the reset cause register in rstmgr to confirm we are in POR reset phase.
+            - Program one of the com_sel_ctl_* CSRs to choose a set of inputs to be detected as
+              the chip reset signal.
+            - Program the associated detection timer.
+            - Program the detection outcome CSR's (com_out_ctl) chip reset bit to 1.
+            - After some time, set the SYSRST ctrl inputs at the chip IOs to the programmed
+              combination for the duration of the detection timer.
+            - The pwrmgr will power cycle the chip once it receives the chip reset input.
+            - Check that ec_rst_l and flash_wp_l (on pads IOR8 and IOR9) are asserted right after
+              the pwrmgr has power cycled the system.
+            - Read the reset cause register after boot up to confirm peripheral reset phase.
+            - Read the pwrmgr reset status register to confirm chip reset.
+            - Read the com_sel_ctl_* CSR in SYSRST ctrl we programmed earlier - it should have been
+              reset.
+            '''
+      features: ["SYSRST_CTRL.COMBO_DETECT"]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_pwrmgr_sysrst_ctrl_reset", "chip_sw_sysrst_ctrl_reset"]
+      bazel: ["//sw/device/tests:sysrst_ctrl_reset_test"]
+    }
+    {
+      name: chip_sw_sysrst_ctrl_inputs
+      desc: '''Verify that the SYSRST ctrl input pin values can be read.
+
+            - Drive a known value on ac_reset, ec_rst_l, flash_wp_l, pwrb, lid_open and key* pins at
+              the chip inputs.
+            - Read the pin_in_value CSR to check for correctness.
+            '''
+      features: ["SYSRST_CTRL.PIN_INPUT_VALUE_ACCESS"]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_sysrst_ctrl_inputs"]
+      bazel: ["//sw/device/tests:sysrst_ctrl_inputs_test"]
+    }
+    {
+      name: chip_sw_sysrst_ctrl_outputs
+      desc: '''Verify that the SYSRST ctrl output pin values can be set.
+
+            - Drive a known value on ac_reset, ec_rst_l, flash_wp_l, pwrb, lid_open and key* pins
+              at the chip inputs.
+            - Verify that SYSRST ctrl correctly loops them back to the chip outputs.
+            - Write the pin_allowed_ctl register to allow some of the pins to be overridden with
+              either 0 or 1 or both.
+            - Write the pin_out_ctl register to enable the override on some of the pins.
+            - Write the pin_out_value register to set known values on those pins.
+            - Verify that at the chip outputs, pins on which override should be active is
+              reflecting the overridden values. All others should reflect the values driven on chip
+              inputs.
+            - Via assertion checks (or equivalent) verify that the transitions at the inputs
+              immediately reflect at the outputs, if not intercepted / debounced by sysrst_ctrl.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_sysrst_ctrl_outputs"]
+      bazel: ["//sw/device/tests:sysrst_ctrl_outputs_test"]
+    }
+    {
+      name: chip_sw_sysrst_ctrl_in_irq
+      desc: '''Verify the SYSRST ctrl can detect an input combination to signal an interrupt.
+
+            - Program a specific combination of transitions on pwrb, key*, ac_present and ec_reset_l
+              pins to trigger an interrupt by writing to key_intr_ctl register.
+            - Program the key_intr_debounce_ctl register to debounce an appropriate time.
+            - Enable the interrupt at SYSRST ctrl as well as at the PLIC.
+            - Create glitches only for some time less than detection time and check that there is no
+            - interrupt triggered.
+            - Glitch the inputs at the chip IOs before stabilizing on the programmed transitions.
+            - SW services the interrupt when triggered, verifies the pin input value and
+              key_intr_status for correctness and clears the interrupt status.
+            - Verify separately, each key combination successfully generates an interrupt.
+            '''
+      features: ["SYSRST_CTRL.INPUT_TRIGGERED_INTERRUPT"]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_sysrst_ctrl_in_irq"]
+      bazel: ["//sw/device/tests:sysrst_ctrl_in_irq_test"]
+    }
+    {
+      name: chip_sw_sysrst_ctrl_sleep_wakeup
+      desc: '''Verify the SYSRST ctrl can wake up the chip from deep sleep.
+
+            - Read the reset cause register in rstmgr to confirm we are in POR reset phase.
+            - Program one of the com_sel_ctl_* CSRs to choose a set of inputs to be detected as
+              a low power wakeup signal for the pwrmgr.
+            - Program the associated detection timer.
+            - Program the detection outcome CSR's (com_out_ctl) interrupt bit to 1.
+            - Program the pwrmgr to put the chip in deep sleep state and wake up on chip wake up
+              event.
+            - Issue a WFI to bring the chip in low power state.
+            - After the chip has entered low power mode, set the SYSRST ctrl inputs at the chip IOs
+              to the programmed combination for the duration of the detection timer.
+            - Read the reset cause register to confirm wake up from low power exit phase.
+            - Read the pwrmgr wake up status register to confirm chip wake up.
+            - Read the pin input value and the combo_intr_status CSRs to verify the correct
+              combination on inputs woke up the chip from sleep.
+            '''
+      features: ["SYSRST_CTRL.ULTRA_LOW_POWER_WAKEUP"]
+      stage: V2
+      si_stage:SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_sysrst_ctrl_reset"]
+      bazel: ["//sw/device/tests:sysrst_ctrl_reset_test"]
+    }
+    {
+      name: chip_sw_sysrst_ctrl_sleep_reset
+      desc: '''Verify the SYSRST ctrl can reset the chip from deep sleep.
+
+            - Read the reset cause register in rstmgr to confirm we are in POR reset phase.
+            - Program one of the com_sel_ctl_* CSRs to choose a set of inputs to be detected as
+              the chip reset signal.
+            - Program the associated detection timer.
+            - Program the detection outcome CSR's (com_out_ctl) chip reset bit to 1.
+            - Program the pwrmgr to put the chip in deep sleep state and allow it to be reset by the
+              chip reset bit.
+            - Issue a WFI to bring the chip in low power state.
+            - After the chip has entered low power mode, set the SYSRST ctrl inputs at the chip IOs
+              to the programmed combination for the duration of the detection timer.
+            - The pwrmgr will power cycle the chip from the deep sleep state once it receives the
+              chip reset input.
+            - Read the reset cause register after boot up to confirm peripheral reset phase.
+            - Read the pwrmgr reset status register to confirm chip reset.
+            - Read the com_sel_ctl_* CSR in SYSRST ctrl we programmed earlier - it should have been
+              reset.
+            '''
+      features: ["SYSRST_CTRL.ULTRA_LOW_POWER_RESET"]
+      stage: V2
+      si_stage:SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_sysrst_ctrl_reset"]
+      bazel: ["//sw/device/tests:sysrst_ctrl_reset_test"]
+    }
+    {
+      name: chip_sw_sysrst_ctrl_ec_rst_l
+      desc: '''Verify that the ec_rst_l stays asserted on power-on-reset until SW can control it.
+
+            - Verify that ec_rst_l stays asserted as the chip is brought out of reset.
+            - Verify that the pin continues to remain low until SW is alive.
+            - Have the SW write to pin_allowed|out_ctrl CSRs to control the ec_rst_l value and
+              verify the value at the chip output.
+            - Optionally, also verify ec_rst_l pulse stretching by setting the ec_rst_ctl register
+              with a suitable pulse width.
+            '''
+      features: ["SYSRST_CTRL.EC_RESET_POR"]
+      stage: V2
+      si_stage:SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_sysrst_ctrl_ec_rst_l"]
+      bazel: ["//sw/device/tests:sysrst_ctrl_ec_rst_l_test"]
+    }
+    {
+      name: chip_sw_sysrst_ctrl_flash_wp_l
+      desc: '''Verify that the flash_wp_l stays asserted on power-on-reset until SW can control it.
+
+            - Exactly the same as chip_sysrst_ctrl_ec_rst_l, but covers the flash_wp_l pin.
+            '''
+      features: ["SYSRST_CTRL.FLASH_WP_POR"]
+      stage: V2
+      si_stage:SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_sysrst_ctrl_ec_rst_l"]
+      bazel: ["//sw/device/tests:sysrst_ctrl_ec_rst_l_test"]
+    }
+    {
+      name: chip_sw_sysrst_ctrl_ulp_z3_wakeup
+      desc: '''Verify the z3_wakeup signaling.
+
+            - Start off with ac_present = 0, lid_open = 0 and pwrb = 0 at the chip inputs.
+            - Program the ulp_ac|lid|pwrb_debounce_ctl registers to debounce these inputs for an
+              appropriate time.
+            - Enable the ULP wakeup feature by writing to the ulp_ctl register.
+            - Read the ulp_wakeup register and verify that no wakeup event is detected, after some
+              amount of delay.
+            - Glitch the lid_open input at the chip IOs before stabilizing on value 1.
+            - Read the ulp_wakeup register to verify that the wakeup event is detected this time.
+            - Verify that the z3_wakeup output at the chip IOs is reflecting the value of 1.
+            '''
+      features: ["SYSRST_CTRL.ULTRA_LOW_POWER_WAKEUP"]
+      stage: V2
+      si_stage:SV3
+      lc_states: ["PROD"]
+      tests: [
+        "chip_sw_adc_ctrl_sleep_debug_cable_wakeup",
+        "chip_sw_sysrst_ctrl_ulp_z3_wakeup"
+      ]
+      bazel: ["//sw/device/tests:sysrst_ctrl_ulp_z3_wakeup_test"]
+    }
+  ]
+}

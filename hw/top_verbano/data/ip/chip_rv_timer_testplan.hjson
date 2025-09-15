@@ -1,0 +1,64 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: rv_timer
+  testpoints: [
+    {
+      name: chip_sw_timer
+      desc: '''Verify the timeout interrupt assertion.
+
+            - Configure RV_TIMER to generate an interrupt after a set timeout.
+            - Issue a WFI to wait for the interrupt to trigger.
+            - Service the interrupt when it triggers; verify that it came from rv_timer.
+            - Verify that the interrupt triggered only after the timeout elapsed.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: ["RV_TIMER.ENABLE", "RV_TIMER.CONFIG", "RV_TIMER.COMPARE", "RV_TIMER.INTERRUPT",
+                 "RV_TIMER.COUNTER"]
+      tests: ["chip_sw_rv_timer_irq"]
+      bazel: ["//sw/device/tests:rv_timer_smoketest"]
+    }
+    {
+      name: tick_configuration
+      desc: '''Verify that the timer can be configured to generate a system tick.
+
+            - Configure the timer to generate a tick of `T` microseconds long.
+            - Enable the timer.
+            - Start a busy loop of 5 milliseconds based on the `mcycleh` CSR.
+            - Read the number of ticks `n`.
+            - Verify that `n * T ~= 5 milliseconds` within 3% of tolerance.
+            - Repeat for T in:
+                [1, 5, 25, 100, 125]
+            '''
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: ["RV_TIMER.ENABLE", "RV_TIMER.CONFIG", "RV_TIMER.COMPARE"]
+      tests: ["chip_sw_rv_timer_systick_test"]
+      bazel: ["//sw/device/tests:rv_timer_systick_test"]
+    }
+    {
+      name: counter_wrap
+      desc: '''Verify that the timer counter will wrap to zero when the limit is reached.
+
+            - Enable interrupts.
+            - Set the counter to `UINT64_MAX - 5 milliseconds`.
+            - Set the compare register to UINT64_MAX.
+            - Enable the timer.
+            - Start a busy loop of 5 milliseconds based on the `mcycleh` CSR.
+            - Verify that the counter has wrapped around by reading `mtime`.
+            - Verify that the interrupt has fired.
+            '''
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: ["RV_TIMER.ENABLE", "RV_TIMER.CONFIG", "RV_TIMER.COMPARE", "RV_TIMER.INTERRUPT",
+                 "RV_TIMER.COUNTER", "RV_TIMER.RISCV_CSRS_INTEGRATION"]
+      tests: ["chip_sw_rv_timer_systick_test"]
+      bazel: ["//sw/device/tests:rv_timer_systick_test"]
+    }
+  ]
+}

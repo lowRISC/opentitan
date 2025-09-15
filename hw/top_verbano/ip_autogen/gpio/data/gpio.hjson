@@ -1,0 +1,453 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name:               "gpio",
+  human_name:         "General-Purpose I/O Controller",
+  one_line_desc:      "General-purpose I/O pin control interface for software",
+  one_paragraph_desc: '''
+  General-Purpose Input/Output (GPIO) Controller allows software to communicate through general-purpose I/O pins in a flexible manner.
+  It supports up to 32 GPIO ports and each of these ports can be written as peripheral outputs in two modes: either with direct access to each GPIO value using direct write, allowing software to control all GPIO ports simultaneously, or with masked writes to half of the bits at a time, allowing software to affect the output value of a subset of the bits without requiring a read-modify-write.
+  In the input direction, software can read the contents of any of the GPIO peripheral inputs, and it can request the detection of an interrupt event for any of the 32 bits in a configurable manner for detecting rising edge, falling edge, or active low/high input.
+  A noise filter is available through configuration for any of the inputs.
+  '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "9",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_gpio",
+  revisions: [
+    {
+      version:            "1.0.0",
+      life_stage:         "L2",
+      design_stage:       "D3",
+      verification_stage: "V3",
+      commit_id:          "c1be7eb2b7265cd5ba6ceb026c28acf8e371151a",
+      notes:              "",
+    }
+    {
+      version:            "1.2.0",
+      life_stage:         "L1",
+      design_stage:       "D3",
+      verification_stage: "V2S",
+      dif_stage:          "S2",
+      notes:              ""
+    }
+  ]
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device", racl_support: true }
+  ],
+  available_inout_list: [
+    { name: "gpio",
+      width: 32,
+      desc: "GPIO inout to/from PAD"
+    }
+  ],
+  interrupt_list: [
+    { name: "gpio",
+      width: 32,
+      desc: "raised if any of GPIO pin detects configured interrupt mode"
+      auto_split: "true"
+    }
+  ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+      '''
+    }
+  ],
+  param_list: [
+    { name:    "GpioAsyncOn",
+      type:    "bit",
+      default: "1'b1",
+      desc:    '''
+      Instantiates 2-flop synchronizers on all GPIO inputs if set to 1.
+      '''
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "GpioAsHwStrapsEn",
+      type:    "bit",
+      default: "1'b1",
+      desc:    '''
+      Enable HW straps sampling logic for GPIO inputs at initial cold boot
+      '''
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "NumIOs",
+      type:    "int",
+      default: "32",
+      desc:    '''Number of I/Os.
+                  If you change this, also change the width of `gpio` in `available_inout_list` and `interrupt_list`.
+                  Values >= 17 and <= 32 should be supported without RTL changes, although only 32 has been verified.
+                  Values outside that range would likely require significant RTL changes.
+               '''
+      local:   "true",
+    },
+    { name:    "NumInpPeriodCounters",
+      type:    "int",
+      default: "0",
+      desc:    "Number of input period counters.",
+      local:   "true",
+    },
+  ]
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
+  features: [
+    {
+      name: "GPIO.IN.INTR_CTRL"
+      desc: '''Input interrupts can be triggered identified by detecting either level or edge.
+      There are four detection modes available: rising edge, falling edge, high-level, and low-level.
+      '''
+    }
+    {
+      name: "GPIO.IN.FILTER"
+      desc: '''GPIO module provides noise filter control.
+      It can be enabled with programing GPIO.CTRL_EN_INPUT_FILTER.
+      Once it enables, input value must be stable for 16cycles before transitioning
+      '''
+    }
+    {
+      name: "GPIO.OUT.MASK"
+      desc: 'Masked output access enables to modify either upper or lower 16bits of output register  without a Read-Modify-Write.'
+    }
+  ]
+  inter_signal_list: [
+    { struct:  "logic",
+      type:    "uni",
+      name:    "strap_en",
+      act:     "rcv",
+      package: "",
+      desc:    '''
+               The strap enable signal tells gpio to take a snapshot of the input pins.
+               The behaviour of this signal after that event will have no effect.
+               ''',
+      default: "1'b0"
+    },
+    { struct:  "gpio_straps",
+      type:    "uni",
+      name:    "sampled_straps",
+      act:     "req",
+      package: "gpio_pkg",
+      desc:    '''
+               This vector contains the sampled strap values.
+               ''',
+      default: "'0"
+    },
+    { struct:  "racl_policy_vec",
+      type:    "uni",
+      name:    "racl_policies",
+      act:     "rcv",
+      package: "top_racl_pkg",
+      desc:    '''
+        Incoming RACL policy vector from a racl_ctrl instance.
+        The policy selection vector (parameter) selects the policy for each register.
+      '''
+    }
+    { struct:  "racl_error_log",
+      type:    "uni",
+      name:    "racl_error",
+      act:     "req",
+      width:   "1"
+      package: "top_racl_pkg",
+      desc:    '''
+        RACL error log information of this module.
+      '''
+    }
+  ]
+
+
+  regwidth: "32",
+  registers: [
+    { name: "DATA_IN",
+      desc: "GPIO Input data read value",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      tags: [// data_in is ro register, so exclude its readback check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"],
+      fields: [
+        { bits: "31:0",
+          resval: "x"
+        }
+      ],
+    },
+    { name: "DIRECT_OUT",
+      desc: "GPIO direct output data write value",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+    { name: "MASKED_OUT_LOWER",
+      desc: '''GPIO write data lower with mask.
+
+            Masked write for DATA_OUT[15:0].
+
+            Upper 16 bits of this register are used as mask. Writing
+            lower 16 bits of the register changes DATA_OUT[15:0] value
+            if mask bits are set.
+
+            Read-back of this register returns upper 16 bits as zero
+            and lower 16 bits as DATA_OUT[15:0].
+            '''
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of masked_* registers yield a different value than written
+             // avoid writing to masked_out* registers as they affect direct_out value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "15:0",
+          name: "data",
+          desc: '''Write data value[15:0].
+
+                Value to write into DATA_OUT[i], valid in the presence of mask[i]==1
+                '''
+        },
+        { bits: "31:16",
+          name: "mask",
+          desc: '''Write data mask[15:0].
+
+                A value of 1 in mask[i] allows the updating of DATA_OUT[i], 0 <= i <= 15
+                '''
+          swaccess: "wo"
+        },
+      ],
+    },
+    { name: "MASKED_OUT_UPPER",
+      desc: '''GPIO write data upper with mask.
+
+            Masked write for DATA_OUT[31:16].
+
+            Upper 16 bits of this register are used as mask. Writing
+            lower 16 bits of the register changes DATA_OUT[31:16] value
+            if mask bits are set.
+
+            Read-back of this register returns upper 16 bits as zero
+            and lower 16 bits as DATA_OUT[31:16].
+            '''
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of masked_* registers yield a different value than written
+             // avoid writing to masked_out* registers as they affect direct_out value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "15:0",
+          name: "data",
+          desc: '''Write data value[31:16].
+
+                   Value to write into DATA_OUT[i], valid in the presence of mask[i]==1
+                '''
+        },
+        { bits: "31:16",
+          name: "mask",
+          desc: '''Write data mask[31:16].
+
+                A value of 1 in mask[i] allows the updating of DATA_OUT[i], 16 <= i <= 31
+                '''
+          swaccess: "wo"
+        },
+      ],
+    },
+    { name: "DIRECT_OE",
+      desc: '''GPIO Output Enable.
+
+            Setting direct_oe[i] to 1 enables output mode for GPIO[i]
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "31:0",
+          auto_split: "true"
+        }
+      ],
+    },
+    { name: "MASKED_OE_LOWER",
+      desc: '''GPIO write Output Enable lower with mask.
+
+            Masked write for DATA_OE[15:0], the register that controls
+            output mode for GPIO pins [15:0].
+
+            Upper 16 bits of this register are used as mask. Writing
+            lower 16 bits of the register changes DATA_OE[15:0] value
+            if mask bits are set.
+
+            Read-back of this register returns upper 16 bits as zero
+            and lower 16 bits as DATA_OE[15:0].
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of masked_* registers yield a different value than written
+             // avoid writing to masked_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "15:0",
+          name: "data",
+          desc: '''Write OE value[15:0].
+
+                Value to write into DATA_OE[i], valid in the presence of mask[i]==1
+                ''',
+        },
+        { name: "mask",
+          desc: '''Write OE mask[15:0].
+
+                A value of 1 in mask[i] allows the updating of DATA_OE[i], 0 <= i <= 15
+                ''',
+          bits: "31:16"
+        },
+      ],
+    },
+    { name: "MASKED_OE_UPPER",
+      desc: '''GPIO write Output Enable upper with mask.
+
+            Masked write for DATA_OE[31:16], the register that controls
+            output mode for GPIO pins [31:16].
+
+            Upper 16 bits of this register are used as mask. Writing
+            lower 16 bits of the register changes DATA_OE[31:16] value
+            if mask bits are set.
+
+            Read-back of this register returns upper 16 bits as zero
+            and lower 16 bits as DATA_OE[31:16].
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of masked_* registers yield a different value than written
+             // avoid writing to masked_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "15:0",
+          name: "data",
+          desc: '''Write OE value[31:16].
+
+                Value to write into DATA_OE[i], valid in the presence of mask[i]==1
+                ''',
+        },
+        { name: "mask",
+          desc: '''Write OE mask[31:16].
+
+                A value of 1 in mask[i] allows the updating of DATA_OE[i], 16 <= i <= 31
+                ''',
+          bits: "31:16"
+        },
+      ],
+    },
+
+    { name: "INTR_CTRL_EN_RISING",
+      desc: '''GPIO interrupt enable for GPIO, rising edge.
+
+            If !!INTR_ENABLE[i] is true, a value of 1 on !!INTR_CTRL_EN_RISING[i]
+            enables rising-edge interrupt detection on GPIO[i].
+            ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+    { name: "INTR_CTRL_EN_FALLING",
+      desc: '''GPIO interrupt enable for GPIO, falling edge.
+
+            If !!INTR_ENABLE[i] is true, a value of 1 on !!INTR_CTRL_EN_FALLING[i]
+            enables falling-edge interrupt detection on GPIO[i].
+            ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+    { name: "INTR_CTRL_EN_LVLHIGH",
+      desc: '''GPIO interrupt enable for GPIO, level high.
+
+            If !!INTR_ENABLE[i] is true, a value of 1 on !!INTR_CTRL_EN_LVLHIGH[i]
+            enables level high interrupt detection on GPIO[i].
+            ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+    { name: "INTR_CTRL_EN_LVLLOW",
+      desc: '''GPIO interrupt enable for GPIO, level low.
+
+            If !!INTR_ENABLE[i] is true, a value of 1 on !!INTR_CTRL_EN_LVLLOW[i]
+            enables level low interrupt detection on GPIO[i].
+            ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+    { name: "CTRL_EN_INPUT_FILTER",
+      desc: '''filter enable for GPIO input bits.
+
+            If !!CTRL_EN_INPUT_FILTER[i] is true, a value of input bit [i]
+            must be stable for 16 cycles before transitioning.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+    { name: "HW_STRAPS_DATA_IN_VALID",
+      desc: "Indicates whether the data in !!HW_STRAPS_DATA_IN is valid.",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      tags: [// Value in the register is determined by GPIO pin values that are sampled
+             // at system boot time (typically triggered by the power manager). Hence,
+             // we exclude both init and non-init checks here.
+             "excl:CsrAllTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          resval: "0"
+        }
+      ],
+    },
+    { name: "HW_STRAPS_DATA_IN",
+      desc: '''
+        GPIO input data that was sampled as straps at most once after the block
+        came out of reset.
+
+        The behavior of this register depends on the GpioAsHwStrapsEn parameter.
+        - If the parameter is false then the register reads as zero.
+        - If the parameter is true then GPIO input data is sampled after reset
+          on the first cycle where the strap_en_i input is high. The
+          sampled data is then stored in this register.
+      ''',
+      swaccess: "ro",
+      hwaccess: "hrw",
+      tags: [// Value in the register is determined by GPIO pin values that are sampled
+             // at system boot time (typically triggered by the power manager). Hence,
+             // we exclude both init and non-init checks here.
+             "excl:CsrAllTests:CsrExclAll"],
+      fields: [
+        { bits: "31:0",
+          resval: "0"
+        }
+      ],
+    },
+  ],
+}

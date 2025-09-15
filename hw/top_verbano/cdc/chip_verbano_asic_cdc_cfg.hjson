@@ -1,0 +1,36 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Top level dut name (sv module).
+  name: chip_verbano_asic
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:systems:chip_verbano_asic:0.1
+
+  import_cfgs: [// Project wide common synthesis config file
+                "{proj_root}/hw/cdc/tools/dvsim/common_cdc_cfg.hjson"]
+
+  tool: meridiancdc
+
+  // Timing constraints for this module
+  sdc_file: [
+    "{proj_root}/hw/top_verbano/syn/ot.sdc_setup.tcl",
+    "{proj_root}/hw/top_verbano/syn/chip_verbano_asic.sdc",
+  ]
+
+  // Main CDC waiver file
+  cdc_waiver_file: ""
+
+  // CDC customized env file
+  cdc_env_file: "{proj_root}/hw/top_verbano/cdc/user_intent.env"
+
+  // CDC customized configuration file (to be sourced after customized env)
+  cdc_config_file: "{proj_root}/hw/top_verbano/cdc/user_configuration.tcl"
+
+  // Technology path for this module (empty for open-source runs)
+  foundry_root: ""
+
+  // Technology specific timing constraints for this module (empty for open-source runs)
+  foundry_sdc_file: ""
+}

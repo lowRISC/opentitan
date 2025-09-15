@@ -1,0 +1,168 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: uart
+  testpoints: [
+    {
+      name: chip_sw_uart_tx_rx
+      desc: '''Verify transmission of data over the TX and RX port.
+
+            SW test sends a known payload over the TX port. The testbench, at the same time
+            sends a known payload over RX. On reception, both payloads are checked for integrity.
+            SW validates the reception of TX watermark, RX watermark, and the TX empty interrupts.
+            Choosing the max supported baud rate for the UART is sufficient.
+
+            Verify each UART instance at the chip level independently. Verify there is no aliasing
+            on all UART ports across the instances.
+            '''
+      stage: V1
+      si_stage: SV2
+      lc_states: ["PROD"]
+      features: ["UART.FIFO_INTERRUPTS"]
+      tests: ["chip_sw_uart_tx_rx"]
+      tags: ["gls"]
+      bazel: ["//sw/device/tests:uart_tx_rx_test"]
+    }
+    {
+      name: chip_sw_uart_rx_overflow
+      desc: '''Verify the RX overflow interrupt.
+
+            The testbench sends a random payload of size greater than the RX fifo size (32). The SW
+            ignores the received the data to allow the RX overflow interrupt to assert.
+
+            Verify each UART instance at the chip level independently. Verify there is no aliasing
+            on all UART ports across the instances.
+            '''
+      stage: V1
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: ["UART.FIFO_INTERRUPTS"]
+      tests: ["chip_sw_uart_tx_rx", "chip_sw_uart_tx_rx_idx1", "chip_sw_uart_tx_rx_idx2",
+              "chip_sw_uart_tx_rx_idx3"]
+      bazel: ["//sw/device/tests:uart_tx_rx_test"]
+    }
+    {
+      name: chip_sw_uart_baud_rate
+      desc: '''Verify UART transmission of data at various speeds.
+
+            Test data transfer in both directions for each UART instance configured for each of
+            these baud rates: 9600Bd, 115200Bd, 230400Bd, 128kBd, 256kBd, 1MBd, 1.5MBd.
+            '''
+      stage: V1
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: ["UART.BAUD_RATE_CONTROL"]
+      tests: ["chip_sw_uart_rand_baudrate"]
+      bazel: ["//sw/device/tests:uart_baud_rate_test"]
+    }
+    {
+      name: chip_sw_uart_tx_rx_alt_clk_freq
+      desc: '''Verify the transmission of UART via using external clock as uart core clock.
+
+            Extend from chip_sw_uart_rand_baudrate with following added settings.
+            - Configure LC to RMA state, so that it allows clkmgr to use external clock.
+            - Configure clkmgr to select external clock.
+            - Randomize `HI_SPEED_SEL`, so that uart core clock frequency can be either
+              ext_clk_freq / 4 or ext_clk_freq / 2.
+
+            Notes for silicon targets:
+
+            - This testpoint currently has an empty list of associated features, because the choice
+              of clock is really a clkmgr/chip-level feature, rather than a feature of the UART
+              block.
+
+            '''
+      stage: V1
+      si_stage: NA
+      features: []
+      tests: ["chip_sw_uart_tx_rx_alt_clk_freq", "chip_sw_uart_tx_rx_alt_clk_freq_low_speed"]
+    }
+    {
+      name: chip_sw_uart_parity
+      desc: '''Verify transmission of data in both directions with parity enabled.
+
+            This is very similar to chip_sw_uart_tx_rx except that parity (generation and checking)
+            should be enabled. Control expected word parity by configuring CTRL.PARITY_ODD register.
+
+            Test the rx_parity_err interrupt by sending a word with incorrect parity.
+
+            '''
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: ["UART.PARITY"]
+      tests: []
+      bazel: ["//sw/device/tests:uart_parity_break_test"]
+    }
+    {
+      name: chip_sw_uart_line_loopback
+      desc: '''Verify UART line loopback feature.
+
+            Configure the UART to enable RX, TX and line loopback. Send it some data and check that
+            the bits appear on its TX side.
+
+            '''
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: ["UART.LINE_LOOPBACK"]
+      tests: []
+      bazel: ["//sw/device/tests:uart_loopback_test"]
+    },
+    {
+      name: chip_sw_uart_system_loopback
+      desc: '''Verify UART system loopback feature.
+
+            Configure the UART to enable RX, TX and system loopback. Transmit some data and check
+            that the data that was transmitted also appears on the RX side.
+
+            '''
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: ["UART.SYSTEM_LOOPBACK"]
+      tests: []
+      bazel: ["//sw/device/tests:uart_loopback_test"]
+    },
+    {
+      name: chip_sw_uart_line_break
+      desc: '''Check that the UART can detect line breaks.
+
+            Enable RX and configure the line break threshold. On the host side, send data but hold
+            the signal low for enough characters that this should be detected as a line break. Check
+            that the rx_break_err interrupt was asserted.
+
+            Repeat with parity enabled and with different line break thresholds (controlled by
+            CTRL.RXBLVL).
+
+            '''
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: ["UART.LINE_BREAK"]
+      tests: []
+      bazel: ["//sw/device/tests:uart_parity_break_test"]
+    },
+    {
+      name: chip_sw_uart_watermarks
+      desc: '''Observe UART watermark interrupts.
+
+            Transmit data from the host and receive it on the OT side by servicing the rx_watermark
+            interrupt. Check that the data matches the sequence that the host was expected to send.
+
+            Send the data back from OT to the host, refilling the TX FIFO on reception of the
+            tx_watermark interrupt. On the host side, check that the data that came back matches the
+            sequence that was sent in the first place.
+
+            '''
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: ["UART.FIFO_INTERRUPTS"]
+      tests: ["chip_sw_uart_tx_rx"]
+      bazel: ["//sw/device/tests:uart_tx_rx_test"]
+    },
+
+  ]
+}

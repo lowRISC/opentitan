@@ -1,0 +1,393 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+# SENSOR_CTRL register template
+#
+{
+  name:               "sensor_ctrl",
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "35",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_sensor_ctrl",
+  revisions: [
+    {
+      version:            "2.0.0",
+      life_stage:         "L1",
+      design_stage:       "D3",
+      // block level verification not planned
+      verification_stage: "N/A",
+      notes:              "Verified at the top-level."
+    }
+  ]
+  clocking: [{clock: "clk_i", reset: "rst_ni", primary: true},
+             {clock: "clk_aon_i", reset: "rst_aon_ni"}],
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+  available_output_list: [
+    { name: "ast_debug_out",
+      desc: "ast debug outputs to pinmux",
+      width: "9"
+    }
+  ],
+  interrupt_list: [
+    { name: "io_status_change",
+      desc: "io power status has changed",
+    }
+    { name: "init_status_change",
+      desc: "ast init status has changed",
+    }
+  ],
+  regwidth: "32",
+  param_list: [
+    { name:    "NumAlertEvents",
+      type:    "int",
+      default: "11",
+      desc:    "Number of alert events from ast",
+      local:   "true"
+    },
+    { name:    "NumLocalEvents",
+      type:    "int",
+      default: "1",
+      desc:    "Number of local events",
+      local:   "true"
+    },
+    { name:    "NumAlerts",
+      type:    "int",
+      default: "2",
+      desc:    "Number of alerts sent from sensor control",
+      local:   "true"
+    },
+    { name:    "NumIoRails",
+      type:    "int",
+      default: "2",
+      desc:    "Number of IO rails",
+      local:   "true"
+    },
+    { name:    "NumAttrPads",
+      type:    "int",
+      default: "4",
+      desc:    "Number of pads for which sensor control manages attributes",
+      local:   "true"
+    },
+  ],
+
+  wakeup_list: [
+    { name: "wkup_req",
+      desc: "Raised if an alert event is seen during low power"
+    },
+  ],
+
+  alert_list: [
+    { name: "recov_alert",
+      desc: "recoverable sensor_ctrl alerts",
+    },
+    { name: "fatal_alert",
+      desc: "fatal sensor_ctrl alerts",
+    }
+  ]
+
+
+  // Define ast_struct package
+  inter_signal_list: [
+    { struct:  "ast_alert",
+      type:    "req_rsp",
+      name:    "ast_alert",
+      act:     "rsp",
+      package: "ast_pkg",
+    },
+
+    { struct:  "ast_status",
+      type:    "uni",
+      name:    "ast_status",
+      act:     "rcv",
+      package: "ast_pkg",
+    },
+
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "ast_init_done",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4True"
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "ast2pinmux",
+      act:     "rcv",
+      width:   9,
+      package: ""
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "wkup_req",
+      act:     "req",
+      package: ""
+    },
+
+    { struct:  "pad_attr",
+      width:   "4", // keep this equal to `NumAttrPads` (above)
+      type:    "uni",
+      name:    "manual_pad_attr",
+      act:     "req",
+      package: "prim_pad_wrapper_pkg",
+      default: "'0",
+    },
+  ],
+
+registers: [
+    { name: "CFG_REGWEN",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      desc: '''
+      Controls the configurability of !!FATAL_ALERT_EN register.
+      ''',
+
+      fields: [
+        { bits: "0",
+          name: "EN",
+          desc: '''
+            Configuration enable.
+          ''',
+          resval: "1",
+        },
+      ]
+    },
+
+    { multireg: {
+        cname: "SENSOR_CTRL",
+        name: "ALERT_TRIG",
+        desc: "Alert trigger test",
+        count: "NumAlertEvents",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "0",
+              name: "VAL",
+              desc: '''
+                Alert trigger for testing
+                0 No alerts triggered
+                1 Continuously trigger alert until disabled
+                For bit mapping, please see !!ALERT_TEST
+              ''',
+              resval: "0"
+            },
+        ],
+        tags: [// This register triggers alerts to fire and should be a directed test
+               "excl:CsrNonInitTests:CsrExclWrite"]
+      },
+    },
+
+    { multireg: {
+        cname: "SENSOR_CTRL",
+        name: "ALERT_EN",
+        regwen: "CFG_REGWEN",
+        desc: '''
+          Each multibit value enables a corresponding alert.
+        ''',
+        count: "NumAlertEvents",
+        swaccess: "rw",
+        hwaccess: "hro",
+        compact: "false",
+        fields: [
+            { bits: "3:0",
+              name: "VAL",
+              mubi: "true"
+              desc: '''
+                kMultiBitBool4True - An alert event is enabled.
+                kMultiBitBool4False - An alert event is disabled.
+
+                At reset, all alerts are enabled.
+                This is by design so that no alerts get missed unless they get disabled explicitly.
+                Firmware can disable alerts that may be problematic for the designated use case.
+              ''',
+              resval: "True"
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "SENSOR_CTRL",
+        name: "FATAL_ALERT_EN",
+        regwen: "CFG_REGWEN",
+        desc: '''
+          Each bit marks a corresponding alert as fatal or recoverable.
+
+          Note that alerts are ignored if they are not enabled in !!ALERT_EN.
+        ''',
+        count: "NumAlertEvents",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "0",
+              name: "VAL",
+              desc: '''
+                1 - An alert event is fatal.
+                0 - An alert event is recoverable.
+
+                At reset, all alerts are recoverable.
+                This is by design so that a false-positive alert event early in the reset sequence doesn't jam the alert until the next reset.
+                Firmware can define alerts that are critical for the designated use case as fatal.
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "SENSOR_CTRL",
+        name: "RECOV_ALERT",
+        desc: '''
+          Each bit represents a recoverable alert that has been triggered by AST.
+          Since these are recoverable alerts, they can be cleared by software.
+        ''',
+        count: "NumAlertEvents",
+        swaccess: "rw1c",
+        hwaccess: "hrw",
+        fields: [
+            { bits: "0",
+              name: "VAL",
+              desc: '''
+                1 - An alert event has been set
+                0 - No alert event has been set
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "SENSOR_CTRL",
+        name: "FATAL_ALERT",
+        desc: '''
+          Each bit represents a fatal alert that has been triggered by AST.
+          Since these registers represent fatal alerts, they cannot be cleared.
+
+          The lower bits are used for ast alert events.
+          The upper bits are used for local events.
+        ''',
+        count: "NumAlertEvents+NumLocalEvents",
+        swaccess: "ro",
+        hwaccess: "hrw",
+        fields: [
+            { bits: "0",
+              name: "VAL",
+              desc: '''
+                1 - An alert event has been set
+                0 - No alert event has been set
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { name: "STATUS",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      desc: '''
+        Status readback for ast
+      ''',
+
+      fields: [
+        { bits: "0",
+          name: "ast_init_done",
+          desc: '''
+            AST has finished initializing
+          ''',
+          resval: "0",
+        },
+        { bits: "NumIoRails:1",
+          name: "io_pok",
+          desc: '''
+            IO power is ready
+          ''',
+          resval: "0",
+        },
+      ],
+      tags: [// The status readback depends on state of ast and do not always have a set value
+        "excl:CsrAllTests:CsrExclCheck"]
+    },
+
+    { multireg: { name:     "MANUAL_PAD_ATTR_REGWEN",
+                  desc:     "Register write enable for attributes of manual pads",
+                  count:    "NumAttrPads",
+                  compact:  "false",
+                  swaccess: "rw0c",
+                  hwaccess: "none",
+                  cname:    "MANUAL_PAD",
+                  fields: [
+                    { bits:   "0",
+                      name:   "EN",
+                      desc:   '''
+                              Register write enable bit.
+                              If this is cleared to 0, the corresponding !!MANUAL_PAD_ATTR is not writable anymore.
+                              ''',
+                      resval: "1",
+                    }
+                  ]
+                }
+    },
+    { multireg: { name:         "MANUAL_PAD_ATTR",
+                  desc:         '''
+                                Attributes of manual pads.
+                                This register has WARL behavior since not every pad may support each attribute.
+                                The mapping of registers to pads is as follows (only supported for targets that instantiate `chip_verbano_asic`):
+                                - MANUAL_PAD_ATTR_0: CC1
+                                - MANUAL_PAD_ATTR_1: CC2
+                                - MANUAL_PAD_ATTR_2: FLASH_TEST_MODE0
+                                - MANUAL_PAD_ATTR_3: FLASH_TEST_MODE1
+                                ''',
+                  count:        "NumAttrPads",
+                  compact:      "false",
+                  swaccess:     "rw",
+                  hwaccess:     "hrw",
+                  hwext:        "true",
+                  hwqe:         "true",
+                  regwen:       "MANUAL_PAD_ATTR_REGWEN",
+                  regwen_multi: "true",
+                  cname:        "MANUAL_PAD",
+                  resval:       0
+                  fields: [ // keep this a bit-compatible subset of pinmux's pad attributes
+                    { bits: "2",
+                      name: "pull_en",
+                      desc: "Enable pull-up or pull-down resistor."
+                    },
+                    { bits: "3",
+                      name: "pull_select",
+                      desc: "Pull select (0: pull-down, 1: pull-up)."
+                      enum: [
+                        { value: "0",
+                          name:  "pull_down",
+                          desc:  "Select the pull-down resistor."
+                        },
+                        { value: "1",
+                          name:  "pull_up",
+                          desc:  "Select the pull-up resistor."
+                        }
+                      ]
+                    },
+                    { bits: "7",
+                      name: "input_disable",
+                      desc: '''
+                            Disable input drivers.
+                            Setting this to 1 for pads that are not used as input can reduce their leakage current.
+                            '''
+                    },
+                  ],
+                  // These CSRs have WARL behavior and may not read back the same value that was
+                  // written to them.  Furthermore, they have hardware side effects since they drive
+                  // pad attributes, and hence no random values should be written to them.
+                  tags: ["excl:CsrAllTests:CsrExclWrite"]
+                }
+    },
+  ]
+}

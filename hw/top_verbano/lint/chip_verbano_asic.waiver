@@ -1,0 +1,151 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for chip_verbano_asic
+
+waive -rules {MULTI_DRIVEN} -location {chip_verbano_asic.sv} -regexp {'(IOA2|IOA3)' has 2 drivers, also driven at} \
+      -comment "These two pads are shorted to AST, hence this multiple driver warning is OK."
+
+waive -rules {COMBO_LOOP} -location {chip_verbano_asic.sv} \
+      -regexp {port 'u_passthrough.host_s_i.*' driven in module 'spi_device'} \
+      -comment "In the passthrough mode, SPI 4 lines are connected from pads to pads."
+
+waive -rules {CLOCK_DRIVER} -location {chip_verbano_asic.sv} \
+      -msg {'mio_in_raw[28]' is driven by instance 'u_padring' of module 'padring', and used as a clock 'clk_ast_ext_i' at ast_dft} \
+      -comment "This is due to the external clock input pin."
+
+waive -rules {CLOCK_DRIVER} -location {chip_verbano_asic.sv} \
+      -msg {'mio_in_raw_o[28]' driven in module 'padring' by port 'gen_mio_pads[28].u_mio_pad.in_raw_o' at padring} \
+      -comment "This is due to the external clock input pin."
+
+waive -rules {CLOCK_DRIVER} -location {chip_verbano_asic.sv} \
+      -msg {'in_raw_o' driven in module 'prim_pad_wrapper' by port 'gen_.*.u_impl_.*.in_raw_o' at prim_pad_wrapper} \
+      -comment "This is due to the external clock input pin."
+
+waive -rules {CLOCK_DRIVER} -location {chip_verbano_asic.sv} \
+      -msg {'in_raw_o' driven in module 'prim_.*_pad_wrapper' by port} \
+      -comment "This is due to the external clock input pin."
+
+waive -rules {CLOCK_DRIVER} -location {chip_verbano_asic.sv} \
+      -msg {'ast_base_clks.clk_io' is driven by instance 'u_ast' of module 'ast', and used as a clock} \
+      -comment "This is a clock source."
+
+waive -rules {CLOCK_DRIVER} -location {chip_verbano_asic.sv} \
+      -msg {'clk_src_io_o' driven in module 'ast' by port 'u_ast_dft.clk_src_io_o' at ast} \
+      -comment "This is a clock source."
+
+waive -rules {CLOCK_DRIVER} -location {chip_verbano_asic.sv} \
+      -msg {'clk_src_io_o' driven in module 'ast_dft' at ast_dft} \
+      -comment "This is a clock source."
+
+waive -rules {CLOCK_DRIVER} -location {chip_verbano_asic.sv} \
+      -regexp {'dio_in\[12\]' is driven by instance 'u_padring' of module 'padring', and used as a clock} \
+      -comment "'DioSpiDeviceSck' is the dedicated IO for the spi_device clock signal."
+
+waive -rules {CLOCK_MUX} -location {chip_verbano_asic.sv} \
+      -regexp {Clock 'dio_in\[12\]' reaches a multiplexer here, used as a clock}
+      -comment "'DioSpiDeviceSck' is the dedicated IO for the spi_device clock signal. Inside spi_device, it's fed into a clock mux."
+
+waive -rules {CLOCK_USE} -location {chip_verbano_asic.sv} \
+      -regexp {'sck_monitor' is connected to 'ast' port 'sns_spi_ext_clk_i', and used as a clock} \
+      -comment "'DioSpiDeviceSck' is the dedicated IO for the spi_device clock signal. Inside spi_device, it's connected to 'sck_monitor' which is fed into ast for monitoring."
+
+waive -rules {CLOCK_DRIVER} -location {chip_verbano_asic.sv} \
+      -regexp {'dio_in\[13\]' is driven by instance 'u_padring' of module 'padring', and used as a clock 'csb_i' at spid_csb_sync.sv} \
+      -comment "'DioSpiDeviceCsb' is the dedicated IO for the spi_device chip select signal. Inside spi_device, it's used as a clock for detecting toggles."
+
+waive -rules {CLOCK_USE} -location {chip_verbano_asic.sv} \
+      -msg {'mio_in_raw[28]' is used for some other purpose, and as clock 'clk_ast_ext_i' at ast_dft} \
+      -comment "This is due to the external clock input pin."
+
+waive -rules {CLOCK_USE} -location {chip_verbano_asic.sv} \
+      -msg {'mio_in_raw[28]' is used for some other purpose, and as clock 'clk_i' at prim_flop} \
+      -comment "This is due to the external clock input pin."
+
+waive -rules {CLOCK_USE} -location {chip_verbano_asic.sv} \
+      -msg {'clks_ast.clk_ast_usbdev_usb_peri' is connected to 'ast' port 'clk_ast_usb_i', and used as a clock} \
+      -comment "This is a valid clock signal."
+
+waive -rules {CLOCK_USE} -location {chip_verbano_asic.sv} \
+      -msg {'clks_ast.clk_ast_usbdev_usb_peri' is connected to 'ast' port 'clk_ast_usb_i', and used as a clock} \
+      -comment "This is a valid clock signal."
+
+waive -rules {CLOCK_USE} -location {ast.sv} \
+      -msg {'clk_ast_usb_i' is used for some other purpose, and as clock 'clk_i' at prim_flop.sv} \
+      -comment "This is a valid clock signal."
+
+waive -rules {RESET_DRIVER} -location {chip_verbano_asic.sv} \
+      -msg {'scan_rst_n' is driven by instance 'u_ast' of module 'ast', and used as an asynchronous reset} \
+      -comment "This is a valid reset signal."
+
+waive -rules {RESET_DRIVER} -location {chip_verbano_asic.sv} \
+      -msg {'scan_reset_no' driven in module 'ast' at ast} \
+      -comment "This is a valid reset signal."
+
+waive -rules {RESET_DRIVER} -location {ast.sv} \
+      -msg {'rst_sys_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_flop.sv} \
+      -comment "This is a valid reset signal."
+
+waive -rules {RESET_DRIVER} -location {ast.sv} \
+      -msg {'rst_usb_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_flop.sv} \
+      -comment "This is a valid reset signal."
+
+waive -rules {RESET_DRIVER} -location {ast.sv} \
+      -msg {'rst_io_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_flop.sv} \
+      -comment "This is a valid reset signal."
+
+# Combo loops through uart loopback can be ignored
+waive -rules {COMBO_LOOP} -location {chip_verbano_asic.sv} -regexp {'tx' driven in module 'uart_core' by 'rx' at uart_core.sv} \
+      -comment "there is technically a loopback path through uart, however RX / TX should never be configured to the same pin"
+
+# Combo loops through sysrst_ctrl inversion can be ignored
+waive -rules {COMBO_LOOP} -location {chip_verbano_asic.sv} -regexp {'outputs\[[0-9]+\]' driven in module 'sysrst_ctrl_pin' by 'inputs\[[0-9]+\]' at sysrst_ctrl_pin} \
+      -comment "sysrst_ctrl creates a feed through path directly for certain muxed pins"
+
+# External clock
+waive -rules {CLOCK_DRIVER} -location {chip_verbano_asic.sv}  -regexp {'(attr_padring_o|mio_attr)\[28\].pull_select' driven in module} \
+      -comment "MioPadIoc6 at index 28 may serve as an external clock input, hence the warnings"
+
+waive -rules {CLOCK_USE} -location {chip_verbano_asic.sv}  -msg {'mio_in_raw[28]' is used for some other purpose, and as clock 'clk_ast_ext_scn'} \
+      -comment "MioPadIoc6 at index 28 may serve as an external clock input, hence the warnings"
+
+# Unused power OK signals
+waive -rules {HIER_NET_NOT_READ NOT_READ} -location {chip_verbano_asic.sv} -regexp {(Signal|Net) 'ast_pwst(\.vcc_pok|_h\.io_pok|_h\.main_pok|_h\.vcc_pok)' is not read from in module 'chip_verbano_asic'} \
+      -comment "Not all POK signals are used inside top_verbano"
+
+# Clock / reset connections going back into AST
+waive -rules {CLOCK_USE} -location {chip_verbano_asic.sv} -regexp {'clkmgr_aon_clocks..*' is connected to 'ast' port '(sns_clks_i..*|clk_ast_usb_i)', and used as a clock} \
+      -comment "This is a clock struct that is fed back into AST."
+
+waive -rules {CLOCK_MUX} -location {chip_verbano_asic.sv} -regexp {Clock 'ast_base_clks.clk_io' reaches a multiplexer here, used as a clock 'clk_i' at} \
+      -comment "This is a clock signal that is fed back into AST."
+
+waive -rules {CLOCK_MUX} -location {chip_verbano_asic.sv} -regexp {Clock 'clkmgr_aon_clocks.clk_io_div4_secure' is driven by a multiplexer here, used as a clock 'clk_i' at} \
+      -comment "This is a clock signal that is fed back into AST."
+
+waive -rules {CLOCK_MUX} -location {chip_verbano_asic.sv} -regexp {Clock 'clkmgr_aon_clocks.clk_io_div4_infra' is driven by a multiplexer here, used as a clock 'clk_i' at} \
+      -comment "This is a clock signal that is fed back into AST."
+
+waive -rules {RESET_USE} -location {chip_verbano_asic.sv} -regexp {'rstmgr_aon_resets..*' is connected to 'ast' port 'sns_rsts_i..*', and used as an asynchronous reset or set} \
+      -comment "This is a reset struct that is fed back into AST."
+
+waive -rules {RESET_USE} -location {ast.sv} \
+      -regexp {'rst_ast_usb_ni' is used for some other purpose, and as asynchronous reset 'rst_ni' at prim_flop.sv} \
+      -comment "This is a reset struct that is fed back into AST."
+
+waive -rules {RESET_USE} -location {usb_clk.sv} \
+      -regexp {'rst_usb_clk_ni' is used for some other purpose, and as asynchronous reset 'rst_ni' at prim_flop.sv} \
+      -comment "This is a reset struct that is fed back into AST."
+
+waive -rules {RESET_MUX} -location {chip_verbano_asic.sv} -regexp {Asynchronous reset 'rstmgr_aon_resets..*' is driven by a multiplexer here, used as a reset} \
+      -comment "This is a reset struct that is fed back into AST."
+
+waive -rules {RESET_MUX} -location {usb_clk.sv} \
+      -regexp {Asynchronous reset 'rst_n' is driven by a multiplexer here, used as a reset 'rst_ni' at prim_flop.sv} \
+      -comment "This is reset generation logic, hence reset muxes are allowed."
+
+# See https://github.com/lowRISC/opentitan/issues/15674
+waive -rules {LHS_TOO_SHORT} -location {aes_prng_masking.sv} \
+      -regexp {Bitlength mismatch between 'unused_assert_static_lint_error' length 1 and 'AesSecAllowForcingMasksNonDefault'\(1'b1\)' length 2} \
+      -comment "We want to be able to switch off the masking inside AES, see https://github.com/lowRISC/opentitan/issues/14240."

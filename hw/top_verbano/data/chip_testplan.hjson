@@ -1,0 +1,801 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "chip"
+
+  // TODO: remove the common testplans if not applicable
+  import_testplans: [
+    "hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+    // TODO #5484, comment these 2 lines out because spi host memory is dummy
+    // "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
+    // Integrity error is tested in a SW test.
+    "hw/dv/tools/dvsim/testplans/tl_device_access_types_wo_intg_testplan.hjson",
+    "hw/ip/tlul/data/tlul_testplan.hjson",
+    "sw/device/silicon_creator/rom/data/rom_e2e_testplan.hjson",
+    "hw/top_verbano/data/chip_conn_testplan.hjson",
+
+    // Manufacturing test cases are part of the Silicon Validation (SiVal) test plan.
+    "sw/device/silicon_creator/manuf/data/manuf_testplan.hjson"
+
+    // Cryptolib tests are also part of silicon validation.
+    "sw/device/lib/crypto/data/crypto_testplan.hjson"
+
+    // IP block specific top level test plans.
+    "hw/top_verbano/data/ip/chip_adc_ctrl_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_aes_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_alert_handler_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_aon_timer_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_clkmgr_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_csrng_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_edn_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_entropy_src_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_flash_ctrl_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_gpio_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_hmac_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_i2c_testplan.hjson"
+    "hw/top_verbano/data/ip/chip_keymgr_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_kmac_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_lc_ctrl_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_otbn_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_otp_ctrl_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_pwm_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_pwrmgr_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_rom_ctrl_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_rstmgr_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_rv_core_ibex_testplan.hjson"
+    "hw/top_verbano/data/ip/chip_rv_dm_testplan.hjson"
+    "hw/top_verbano/data/ip/chip_rv_plic_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_rv_timer_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_spi_device_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_spi_host_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_sram_ctrl_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_sysrst_ctrl_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_uart_testplan.hjson",
+    "hw/top_verbano/data/ip/chip_usbdev_testplan.hjson",
+  ]
+
+  testpoints: [
+    ///////////////////////////////////////////////////////////////////////////
+    // IO Peripherals                                                        //
+    // I2C, SPIDEV, USB, PINMUX & PADCTRL, PATTGEN, PWM                      //
+    ///////////////////////////////////////////////////////////////////////////
+
+
+    // USB (pre-verified IP) integration tests:
+    {
+      name: chip_sw_usb_suspend
+      desc: '''Verify that the USB device can detect the presence of VBUS from the USB host.
+
+            - This test extends from `chip_usb_fs_df_tx_rx`, add below at the end of the sequence.
+            - Configure USB device to enter `Suspend` state and ensure `link_suspend` interrupt is
+              triggered.
+            - Test these 2 power modes.
+              - Normal sleep:
+                - Configure pwrmgr to enter normal sleep mode, then clocks are disable while powers
+                  are kept on.
+                - Resume the device through pinmux and check the `link_resume` interrupt.
+                - Ensure that previously enumerated information is kept.
+              - Deep sleep:
+                - Before entering deep sleep, store previously enumerated information in retention
+                  RAM. (optional)
+                - Configure pwrmgr to enter deep sleep mode, and powers are turned off.
+                - Resume the device through pinmux and check the `link_resume` interrupt.
+                - Ensure that previously enumerated information and configuration (non-default
+                  values) are wiped, as USB has been reset before wakeup.
+                - Restore previously enumerated information (if it's stored) or re-enumerate the
+                  USB.
+            - Re-enable data transfer and ensure data correctness.
+            '''
+      stage: V3
+      si_stage: NA
+      tests: []
+    }
+
+    // PINMUX & PADRING (pre-verified IP) integration tests:
+    {
+      name: chip_pin_mux
+      desc: '''Verify the MIO muxing at input and output sides.
+
+            - Enable `stub_cpu` mode.
+            - Add a forcing interface to pinmux's pad-facing DIO and MIO ports, including the output
+              enables; and a sampling interface for the peripheral facing DIO and MIO ports.
+            - Similarly, add a driving / sampling interface for all DIOs and MIOs at the chip pads.
+            - In the output direction:
+              - Program all MIO outsel and pad attribute registers to random values.
+              - Force the pad-facing pinmux MIO ports and output enables to random values.
+              - Verify all MIO pad values for correctness.
+            - For the input direction:
+              - Program all MIO insel and pad attribute registers to random values.
+              - Drive the MIO pads to random values.
+              - Probe and sample the peripheral facing MIO ports of the pinmux and verify the values
+                for correctness.
+            - Follow a similar testing procedure for DIOs.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_padctrl_attributes"]
+      bazel: ["//sw/device/tests:gpio_pinmux_test"]
+    }
+    {
+      name: chip_padctrl_attributes
+      desc: '''Verify pad attribute settings for all MIO and DIO pads.
+
+            - Follow the same procedure as the `chip_pin_mux` test, ensuring the padctrl attribute
+              registers for all MIOs and DIOs are also randomized when verifying the outcomes.
+            - Verify weak pull enable, output inversion and virtual open drain and drive strength
+              (bit 0) signaling in the output direction.
+            - Verify weak pull enable and input inversion in the input direction.
+            - Verify multiple pad attributes for each pad set at the same time through
+              randomization.
+
+            Cross-references the `chip_pin_mux` test.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_padctrl_attributes"]
+      bazel: ["//sw/device/tests:gpio_pinmux_test"]
+    }
+    {
+      name: chip_sw_sleep_pin_mio_dio_val
+      desc: '''Verify the MIO output values in any sleep states.
+
+            - Pick between normal sleep and deep sleep randomly
+            - Pick between tie-0, tie-1, or High-Z randomly for all muxed,
+              dedicated outputs coming from non-AON IPs.
+
+            SW programs the MIO OUTSEL CSRs to ensure that in sleep it randomly picks
+            between tie-0, tie-1 or hi-Z for all muxed outputs coming from non-AON IPs. If an AON
+            peripheral output is muxed, then that peripheral's output is selected to ensure in deep
+            sleep the peripheral can continue its signaling even in deep sleep. The testbench
+            verifies the correctness of the reflected values once the chip goes into deep sleep.
+            This is replicated for DIO pins as well.
+
+            In this test, passthrough feature is not tested. The feature is
+            covered in other tests such as chip_sw_sleep_pwm_pulses.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_sleep_pin_mio_dio_val"]
+      bazel: ["//sw/device/tests:sleep_pin_mio_dio_val_test"]
+    }
+    {
+      name: chip_sw_sleep_pin_wake
+      desc: '''Verify pin wake up from any sleep states.
+
+            Verify one of the 8 possible MIO or DIO pad inputs (randomly configured) can cause the
+            chip to wake up from sleep state. Verifying wake on posedge is sufficient for the chip
+            level integration testing. Upon wake up, SW reads the wake cause CSR to verify
+            correctness.
+
+            For V3, enhance this test to configure all wakeup detectors rather than configure only
+            one, then have the host randomly pick one of the IOs configured for wakeup in one of
+            those detectors. Also, randomize and test all wakeup modes and enable debounce filter.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_sleep_pin_wake"],
+      bazel: ["//sw/device/tests:sleep_pin_wake_test"]
+    }
+    {
+      name: chip_sw_sleep_pin_retention
+      desc: '''Verify the retention logic in pinmux that is activated during deep sleep.
+
+            - Pick a pin (such as GPIO0) and enable it in output mode. Set a known value to it (0 or
+              1) and verify the correctness of the value on the chip IO.
+            - Program the pin's retention value during deep sleep to be opposite of the active power
+              value programmed in the previous step.
+            - Reuse an existing deep sleep / low power wake up test, such as
+              `chip_sw_sleep_pin_wake` test to enter low power.
+            - Once the chip enters the deep sleep state, verify that this pin holds the correct
+              retention value throughout the low power state.
+            - Wake up the chip from sleep using the chosen method.
+            - Verify the pin value at the chip IOs is no longer holding the retention value once the
+              chip is back in active power.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_sleep_pin_retention"]
+      bazel: ["//sw/device/tests:sleep_pin_retention_test"],
+    }
+    {
+      name: chip_sw_tap_strap_sampling
+      desc: '''Verify tap accesses in different LC states.
+
+            Verify pinmux can select the life_cycle, RISC-V, and DFT taps after reset.
+            Verify that in TEST_UNLOCKED* and RMA states, pinmux can switch between the three TAPs
+            without issuing reset.
+            Verify in PROD state, only the LC tap can be selected.
+            Verify in DEV state, only the LC tap and RISC-V taps can be selected.
+            Verify DFT test mode straps are sampled and output to AST via
+            top_verbano.dft_strap_test_o in TEST_UNLOCKED* and RMA states.
+            Verify top_verbano.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED*
+            and RMA, regardless of the value on DFT SW straps.
+            Verify loss of DFT functionality when DFT straps are deasserted on the next POR cycle.
+
+            Note: these tests require the ROM init stage to complete. So a test ROM image is loaded,
+            but the software does not test anything. The CPU boots and runs to completion while the
+            host (SV testbench) performs these stimulus / checks.
+            '''
+      stage: V2
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "RMA"]
+      tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma",
+              "chip_tap_straps_testunlock0"]
+      bazel: ["//sw/device/tests:rv_dm_jtag_tap_sel_test_unlocked1",
+              "//sw/device/tests:rv_dm_jtag_tap_sel_dev",
+              "//sw/device/tests:rv_dm_jtag_tap_sel_prod",
+              "//sw/device/tests:rv_dm_jtag_tap_sel_rma"],
+    }
+
+    // PATTGEN (pre-verified IP) integration tests:
+    {
+      name: chip_sw_pattgen_ios
+      desc: '''Verify pattern generation to chip output pads.
+
+            - Program the pattgen to generate a known pattern in each lane.
+            - Program the pinmux to route the chosen output to the chip IOs.
+            - Verify that the correct pattern is seen on the IOs by hooking up the pattgen monitor.
+            - Validate the reception of the done interrupt.
+            - Verify both pattgen channels independently.
+
+            Notes for silicon targets:
+            - Repeat the above test for different patterns and lengths.
+            - Repeat the above test for different clock divider.
+            - Repeat the above test for different repeat values.
+            - Repeat the above test with the clock inverted.
+            - Repeat the above test while using both channels at the same time.
+            - Monitor the clock and data pins on the silicon test setup.
+            '''
+      features: [
+        "PATTGEN.CHANNEL.ONE",
+        "PATTGEN.CHANNEL.TWO",
+        "PATTGEN.CONFIG.PATTERN",
+        "PATTGEN.CONFIG.DIVIDER",
+        "PATTGEN.CONFIG.REPEAT",
+        "PATTGEN.CONFIG.POLARITY",
+        "PATTGEN.COMPLETE"
+      ]
+      stage: V2
+      si_stage: SV2
+      lc_states: ["PROD"]
+      tests: ["chip_sw_pattgen_ios"]
+      bazel: ["//sw/device/tests:pattgen_ios_test"]
+    }
+
+    // PWM (pre-verified IP) integration tests:
+    {
+      name: chip_sw_sleep_pwm_pulses
+      desc: '''Verify PWM signaling to chip output pads during deep sleep.
+
+            - Program each PWM output to pulse in a known pattern.
+            - Program the pinmux to route the chosen PWM output to the chip IOs.
+            - Program the pwrmgr to go to deep sleep state, with AON timer wakeup.
+            - Initiate the sleep state by issuing a WFI.
+            - Verify that in the sleep state, the PWM signals are active and pulsing correctly, by
+              hooking up the PWM monitor.
+            - Repeat the steps for all 6 PWM signals.
+
+            Notes for silicon targets:
+            - Instead of using the PWM monitor, the PWM signals should be tested by measuring the actual output pins.
+            - The sampling frequency should be high enough to measure the duty cycle accurately.
+            - Repeat this test with:
+              - At least two different values of the duty cycle.
+              - All channels set to blinking.
+              - All channels set to heartbeat.
+              - All channels set to reverse polarity.
+              - At least two different values of the clock divider.
+              - Each odd PWM channel set to be 180 degrees out of phase of the even ones.
+            '''
+      features: [
+        "PWM.DUTYCYCLE",
+        "PWM.BLINK",
+        "PWM.HEARTBEAT",
+        "PWM.POLARITY",
+        "PWM.CLOCKDIVIDER",
+        "PWM.PHASEDELAY"
+      ]
+      stage: V2
+      si_stage: SV2
+      lc_states: ["PROD"]
+      tests: ["chip_sw_sleep_pwm_pulses"]
+      bazel: ["//sw/device/tests:sleep_pwm_pulses_test"]
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    // System Peripherals                                                               //
+    // XBAR, RV_DM, RV_TIMER, AON_TIMER, PLIC, CLK/RST/PWR MGR, ALERT_HANDLER,          //
+    // SYSRST_CTRL                                                                      //
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    // XBAR (pre-verified IP) tests:
+    {
+      name: chip_sw_data_integrity
+      desc: '''
+            Verify the alert signaling mechanism due to integrity violations of load ops.
+
+            An SW test which performs the following on main and retention SRAMs to verify the memory
+            end-to-end integrity scheme:
+            - Corrupt a random data / integrity bit in the memory using SV force.
+            - SW reads that address and the corrupted data is sent to ibex.
+            - Verify that ibex detects the integrity violation and triggers an alert.
+            - Check the alert up to the NMI phase and make sure that the alert cause is from Ibex.
+            '''
+      stage: V2
+      si_stage: NA
+      tests: ["chip_sw_data_integrity_escalation"]
+    }
+    {
+      name: chip_sw_instruction_integrity
+      desc: '''
+            Verify the alert signaling mechanism due to integrity violations of instruction fetches.
+
+            An SW test which performs the following on main SRAM to verify the memory end-to-end
+            integrity scheme:
+            - Corrupt a data / integrity bit in a test function in the main SRAM using SV force.
+            - SW jumps to that test function in the main SRAM.
+            - Verify that ibex detects the integrity violation and triggers an alert.
+            - Check the alert up to the NMI phase and make sure that the alert cause is from Ibex.
+            '''
+      stage: V2
+      si_stage: NA
+      tests: ["chip_sw_data_integrity_escalation"]
+    }
+
+    ////////////////////////
+    // Analog Peripherals //
+    // AST, SENSOR_CTRL   //
+    ////////////////////////
+
+    // AST (pre-verified IP) integration tests:
+    {
+      name: chip_sw_ast_clk_outputs
+      desc: '''Verify that the AST generates the 4 clocks when requested by the clkmgr.
+
+            Verify the clock frequencies are reasonably accurate. Bring the chip to deep sleep,
+            and verify that upon wakeup reset the clock counters are turned off, measure ctrl
+            regwen is enabled, and errors are not cleared.
+            '''
+      stage: V2
+      si_stage: NA
+      tests: ["chip_sw_ast_clk_outputs"]
+    }
+    {
+      name: chip_sw_ast_clk_rst_inputs
+      desc: '''Verify the clk and rst inputs to AST (from `clkmgr`).
+
+            Create different scenarios that affect the clocks and resets and see that the AST features
+            (RNG, entropy, alert, ADC) that use those clocks/resets behave correctly.
+            sequence:
+            1. Check that AST RNG generates data and fills the entropy source fifo
+            2. Create AST alerts
+            3. Activate ADC conversion
+            4. EDN entropy supply to AST
+            Enter sleep/deep sleep/ stop IO/USB clocks
+            Repeat 1-4 to check it is ok.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_ast_clk_rst_inputs"]
+      bazel: []
+    }
+    {
+      name: chip_sw_ast_sys_clk_jitter
+      desc: '''Verify that the AST sys clk jitter control.
+
+            X-ref with chip_sw_clkmgr_jitter
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_clkmgr_jitter",
+              "chip_sw_flash_ctrl_ops_jitter_en",
+              "chip_sw_flash_ctrl_access_jitter_en",
+              "chip_sw_otbn_ecdsa_op_irq_jitter_en",
+              "chip_sw_aes_enc_jitter_en",
+              "chip_sw_hmac_enc_jitter_en",
+              "chip_sw_keymgr_key_derivation_jitter_en",
+              "chip_sw_kmac_mode_kmac_jitter_en",
+              "chip_sw_sram_ctrl_scrambled_access_jitter_en",
+              "chip_sw_edn_entropy_reqs_jitter"]
+      bazel: []
+    }
+    {
+      name: chip_sw_ast_usb_clk_calib
+      desc: '''Verify the USB clk calibration signaling.
+
+            - First place the AST into a mode where usb clock frequency significantly deviates from
+              the ideal.
+            - Verify the clock is "off" using the clkmgr measurement mechanism.
+            - Then, turn on the usb sof calibration machinery and wait a few mS.
+            - Afterwards, measure the usb clock again using the clkmgr measurement controls, at this
+              point the clock should be significantly more accurate.
+            - Note, while the above is ideal, usbdev chip level testing is not yet ready and this
+              test fakes the usb portion through DV forces.
+            - Note also the real AST calibration logic is not available, so the sof testing in the
+              open source is effectively short-circuited.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_usb_ast_clk_calib"]
+      bazel: []
+    }
+
+    // SENSOR_CTRL tests:
+    {
+      name: chip_sw_sensor_ctrl_ast_alerts
+      desc: '''Verify the alerts from AST aggregating into the sensor_ctrl.
+
+               Check that each AST event can be triggered from sensor_ctrl.
+               Configure alert handler to reset for both fatal and recoverable
+               alerts. Configure each alert source as fatal or recoverable,
+               and as enabled or disabled checking against resets.
+             '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup",
+              "chip_sw_sensor_ctrl_alert"]
+      bazel: ["//sw/device/tests:sensor_ctrl_alert_test", "//sw/device/tests:sensor_ctrl_wakeup_test"]
+    }
+    {
+      name: chip_sw_sensor_ctrl_ast_status
+      desc: '''Verify the io power ok status from AST.
+
+               Check that when the IO POK status changes, an interrupt is triggered
+               from sensor_ctrl.  After triggering, the IO status can be read
+               from a sensor_ctrl register.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_sensor_ctrl_status"]
+      bazel: []
+    }
+    {
+      name: chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup
+      desc: '''Verify the sensor control is able to wake the device
+               from sleep mode when an alert event is triggered from
+               AST. X-ref'ed chip_sw_pwrmgr_sleep_all_wake_ups.
+             '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup"]
+      bazel: ["//sw/device/tests:sensor_ctrl_alert_test", "//sw/device/tests:sensor_ctrl_wakeup_test"]
+    }
+
+    ////////////////////////////
+    // System level scenarios //
+    ////////////////////////////
+    {
+      name: chip_sw_example_tests
+      desc: '''Provide example tests for different testing scenarios / needs.
+
+            These tests do not verify the hardware. They are meant to serve as a guide for
+            developing actual tests under different testing scenarios. These example tests
+            demonstrate the capabilities of the DV infrastructure which enables these scenarios:
+
+            1. Implement test in the ROM stage itself
+            2. Implement test in the flash stage, using test ROM
+            3. Implement test in the flash stage, using production ROM
+            4. Enable external manufacturer hooks in existing tests developed in the open source
+            5. Enable concurrent threads in tests
+            '''
+      stage: V1
+      si_stage: NA
+      tests: ["chip_sw_example_rom",
+              "chip_sw_example_flash",
+              "chip_sw_example_manufacturer",
+              "chip_sw_example_concurrency"
+              ]
+    }
+    {
+      name: chip_sw_smoketest
+      desc: '''Run smoke tests developed for each IP.
+
+            The smoke tests are developed by the SW team to test each IP is
+            alive, and can be actuated by the DIF. We need to ensure that they
+            work in DV as well.
+            '''
+      stage: V2
+      si_stage: SV2
+      lc_states: ["PROD"]
+      tests: ["chip_sw_aes_smoketest",
+              "chip_sw_aon_timer_smoketest",
+              "chip_sw_clkmgr_smoketest",
+              "chip_sw_csrng_smoketest",
+              "chip_sw_entropy_src_smoketest",
+              "chip_sw_gpio_smoketest",
+              "chip_sw_hmac_smoketest",
+              "chip_sw_kmac_smoketest",
+              "chip_sw_otbn_smoketest",
+              "chip_sw_pwrmgr_smoketest",
+              "chip_sw_pwrmgr_usbdev_smoketest",
+              "chip_sw_rv_plic_smoketest",
+              "chip_sw_rv_timer_smoketest",
+              "chip_sw_rstmgr_smoketest",
+              "chip_sw_sram_ctrl_smoketest",
+              "chip_sw_uart_smoketest",
+              "chip_sw_flash_scrambling_smoketest",
+            ]
+      bazel: [
+        "//sw/device/tests:aes_smoketest",
+        "//sw/device/tests:aon_timer_smoketest",
+        "//sw/device/tests:clkmgr_smoketest",
+        "//sw/device/tests:csrng_smoketest",
+        "//sw/device/tests:entropy_src_smoketest",
+        "//sw/device/tests:gpio_smoketest",
+        "//sw/device/tests:hmac_smoketest",
+        "//sw/device/tests:kmac_smoketest",
+        "//sw/device/tests:otbn_smoketest",
+        "//sw/device/tests:pmp_smoketest_napot",
+        "//sw/device/tests:pmp_smoketest_tor",
+        "//sw/device/tests:pwrmgr_smoketest",
+        "//sw/device/tests:rstmgr_smoketest",
+        "//sw/device/tests:rv_plic_smoketest",
+        "//sw/device/tests:rv_timer_smoketest",
+        "//sw/device/tests:pwrmgr_usbdev_smoketest",
+        "//sw/device/tests:spi_host_smoketest",
+        "//sw/device/tests:sram_ctrl_smoketest",
+        "//sw/device/tests:uart_smoketest",
+      ]
+    }
+    {
+      name: chip_sw_otp_smoketest
+      desc: '''Run smoke tests developed for OTP.
+
+            This smoketest is separated from the chip_sw_smoketest since it
+            cannot be executed in silicon owner stage.
+            '''
+      stage: V2
+      si_stage: SV2
+      lc_states: ["PROD"],
+      boot_stages: ["rom_ext"],
+      tests: ["chip_sw_otp_ctrl_smoketest"],
+      bazel: ["//sw/device/tests:otp_ctrl_smoketest"],
+    }
+    {
+      name: chip_sw_rom_functests
+      desc: '''Run some ROM functional tests with test ROM.
+
+            ROM functional tests test ROM drivers and libraries by exercising
+            these components in the flash stage, launched via the test ROM. They
+            primarily are tested on the FPGA, however, we ensure they run in DV
+            as well.
+            '''
+      stage: V2
+      si_stage: NA
+      tests: ["rom_keymgr_functest"]
+    }
+    {
+      name: chip_sw_coremark
+      desc: '''Run the coremark benchmark on the full chip.'''
+      stage: V3
+      si_stage: SV4
+      lc_states: ["PROD"]
+      tests: ["chip_sw_coremark"]
+      bazel: ["//third_party/coremark/top_verbano:coremark_test"]
+    }
+    {
+      name: chip_sw_boot
+      desc: '''Verify the full flash image download with bootstrap signal set.
+
+            - SW puts the SPI device in firmware mode
+            - Load a firmware image (bootstrap) through spi input pin to the spi_device memory.
+            - SW verifies the integrity of the image upon reception by reading the spi_device
+              memory.
+            - Ensure the image is executed correctly
+
+             Note: This flow will be replaced by using spi_device flash mode.
+             For detail, refer to chip_spi_device_flash_mode
+             '''
+      stage: V2
+      si_stage: NA
+      tests: ["chip_sw_uart_tx_rx_bootstrap"]
+    }
+    {
+      name: chip_sw_secure_boot
+      desc: '''Verify the secure boot flow.
+
+             X-ref rom_e2e_smoke.
+             In reality this can be any rom based test, which requires secure boot.
+             '''
+      stage: V2
+      si_stage: NA
+      tests: ["rom_e2e_smoke"]
+    }
+    {
+      name: chip_sw_rom_raw_unlock
+      desc: '''Configure RAW_UNLOCK via LC TAP interface and enable CPU execution.
+
+            This test characterizes the DUT initial state before RAW unlock operation, and
+            switches to external clock via clkmgr to ensure the system clock can be switched
+            right after transition into test_unlocked0 state. The test also verifies that
+            AST is not initialized while CPU is executing code.
+
+             - Pre-load OTP image with RAW lc_state.
+             - Initiate the LC transition to test_unlocked0 state using the
+               RAW_UNLOCK mode of operation.
+             - Switch TAP interface to rv_dm and configure the ROM_EXEC_EN OTP to enable ROM
+               execution.
+             - If running with the production ROM, enable signature verification via OTBN to
+               improve simulation time.
+             - Perform POR to apply OTP changes.
+             - With rv_dm TAP still selected, switch to external clock via clkmgr using extclk
+               slow mode configuration.
+             - Wait for ROM to start executing code.
+             - Check AST init done equal to 0 via sensor_ctrl.
+             '''
+      stage: V2
+      si_stage: NA
+      tests: ["rom_raw_unlock"]
+    }
+    {
+      name: chip_sw_power_max_load
+      desc: '''Concurrency test modeling maximum load conditions.
+
+      This concurrency test runs multiple blocks at the same time, to simulate
+      maximum load ("power virus test"). Should be combined with low power
+      entry and exit scenarios.
+
+      The test should be made configurable so that the type of power state and
+      the time spent in a particular power state can be configured via a
+      flag (or similar). This will make it easier to reuse the test for power
+      simulation and characterization later on.
+
+      The test should set a GPIO (mapped to the IOA2 pin) to high while the power
+      state of interest is active.
+
+      Blocks / functionality to run simultaneously in this test:
+
+        - The ADC is continuously sampling new data
+        - Staggered activation of OTBN, aes, KMAC/HMAC.
+          - KMAC / aes would need to take turns being fed data
+          - KMAC activation should be a combination of otp background, key
+            manager background and software
+          - for OTBN, any signature verification / signing event is sufficient
+        - Entropy complex ongoing
+          - reseed / update operation ongoing
+        - Flash scramble ongoing (ideally both instruction and data, but data should be sufficient
+          for now)
+          - instruction scrambling gated by script availability
+        - Simultaneous IO toggling as defined below
+          - ideally for digital activity, 3xUART / I2C modules should be activated
+            - for first pass simplicity can activate IO portion only for now through GPIO
+          - for dedicated pins, focus on SPI device quad activity
+          - USB activity should be activated
+            - for first pass simplicity activate IO portion only for now via pin forcing in usbdev.
+        - Ongoing cpu activity (icache / SRAM scrambling both activated)
+          - servicing ongoing threads and random read/write data to memory
+          - icache needs to be activated, otherwise the system may spend most of its time fetching
+            code
+        - Background checks enabled wherever possible
+          - rstmgr background checks
+          - alert_handler ping checks
+          - OTP background checks
+        - The test should be run both with / without external clock
+
+      This test should leverage the OTTF test framework for supporting
+      concurrency in a FreeRTOS environment. See also the design docs linked
+      in #14095 for more details on how to approach the implementation.
+      '''
+      stage: V3
+      si_stage: SV2
+      lc_states: ["PROD"]
+      tests: ["chip_sw_power_virus"]
+      bazel: ["//sw/device/tests:power_virus_systemtest"]
+    }
+    {
+      name: chip_sw_power_idle_load
+      desc: '''Concurrency test modeling load conditions in idle state
+
+      This concurrency test models an average idle scenarios.
+
+      The test should be made configurable so that the type of power state and
+      the time spent in a particular power state can be configured via a
+      flag (or similar). This will make it easier to reuse the test for power
+      simulation and characterization later on.
+
+      The test should set a GPIO (mapped to the IOA2 pin) to high while the power
+      state of interest is active.
+
+      The test should cover the following scenarios:
+
+        - Processor polls for nmi interrupt
+        - Background checks enabled wherever possible
+          - rstmgr background checks
+          - alert_handler ping checks
+          - OTP background checks
+        - Timers (regular and AON) are active
+        - Check whether transactional clocks should be enabled or disabled
+        - Check whether PWM should be active
+      '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_power_idle_load"]
+      bazel: ["//sw/device/tests:chip_power_idle_load_test"]
+    }
+    {
+      name: chip_sw_power_sleep_load
+      desc: '''Concurrency test modeling load conditions in idle state
+
+      This concurrency test models average sleep scenarios.
+
+      The test should be made configurable so that the type of power state and
+      the time spent in a particular power state can be configured via a
+      flag (or similar). This will make it easier to reuse the test for power
+      simulation and characterization later on.
+
+      The test should cover the following scenarios:
+
+        - System can be in deep or light sleep
+        - The system has the following AON / IO activity:
+          - aon_timer active
+          - adc_ctrl active in low power mode
+          - TBD: check whether sysrst_ctrl and pinmux wakeup detectors should be active
+          - TBD: check whether PWM should be active
+
+      This test should leverage the OTTF test framework for supporting
+      concurrency in a FreeRTOS environment. See also the design docs linked
+      in #14095 for more details on how to approach the implementation.
+      '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_power_sleep_load"]
+      bazel: ["//sw/device/tests:chip_power_sleep_load_test"]
+    }
+
+    {
+      name: chip_sw_exit_test_unlocked_bootstrap
+      desc: '''End to end test to ensure rom boot strap can be performed after
+      transitioning from TEST state to PROD state.
+
+      - Pre-load the device into TEST_UNLOCKED state and ROM_EXEC_EN = 0.
+      - In the same power cycle, advance device to PROD, PROD_END or DEV through LC JTAG request and
+        set ROM_EXEC_EN in OTP to logically true.
+      - Reboot the device and perform boot strap of a simple image, (e.g Hello World).
+      - Ensure boot strap succeeds.
+
+      X-ref'ed with manuf_ft_exit_token from manufacturing test plan.
+      '''
+      stage: V2
+      si_stage: NA
+      tests: ["chip_sw_exit_test_unlocked_bootstrap"]
+    }
+
+    {
+      name: chip_sw_inject_scramble_seed
+      desc: '''End to end test to ensure boot strap can succeed after injecting scramble seeds.
+
+      - Pre-load the device into PROD, PROD_END or DEV state.
+      - Backdoor load an unscrambled value into flash isolated partition.
+      - In the test program, populate the scramble seeds (flash / sram).
+      - In the test program, populate OTP entries to inform ROM to scramble flash upon next boot.
+      - Reboot the device and perform boot strap of the same test image, ROM should now program
+        the flash image with scramble enabled.
+      - Upon successful boot strap, ROM jumps to the newly programmed image and de-scrambles the
+        instructions.
+      - In the test program, check whether the OTP partition containing the scramble seeds is
+        locked. Also check that the unscrambled value programmed into flash isolated partition
+        can be correctly read back when the region is set to scramble disable.
+      - If either of the above checks is incorrect, return error.
+
+
+      X-ref'ed with manuf_ft_sku_individualization from manufacturing test plan.
+      '''
+      stage: V2
+      si_stage: NA
+      tests: ["chip_sw_inject_scramble_seed"]
+    }
+  ]
+}

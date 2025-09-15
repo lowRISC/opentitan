@@ -1,0 +1,30 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Top level dut name (sv module).
+  name: chip_verbano_asic
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:systems:chip_verbano_asic:0.1
+
+  import_cfgs: [// Project wide common synthesis config file
+                "{proj_root}/hw/syn/tools/dvsim/common_syn_cfg.hjson"]
+
+  // Overrides
+  overrides: [
+    // Since this synthesizes the design at chip level,
+    // we need to instruct the parser script to explicitly
+    // expand the top_verbano submodule.
+    {
+      name: expand_modules
+      value: "top_verbano"
+    }
+  ]
+
+  // Timing constraints for this module
+  sdc_file: "{proj_root}/hw/top_verbano/syn/chip_verbano_asic.sdc"
+
+  // Technology specific timing constraints for this module
+  foundry_sdc_file: "{foundry_root}/top_verbano/syn/foundry.constraints.sdc"
+}

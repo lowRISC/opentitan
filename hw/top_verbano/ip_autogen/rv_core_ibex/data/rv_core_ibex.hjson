@@ -1,0 +1,1089 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name:               "rv_core_ibex",
+  human_name:         "RISC-V Core Wrapper for Ibex",
+  one_line_desc:      "Dual-core lockstep 32-bit RISC-V processor running application and control software",
+  one_paragraph_desc: '''
+  Ibex is a production-quality open source 32-bit RISC-V CPU core serving as main processor onto which OpenTitan application and control software is deployed.
+  The configuration used in OpenTitan implements the RV32IMCB ISA with a 3-stage pipeline and a single-cycle multiplier, user and machine execution modes, PMP+Smepmp, and a 4 KiB instruction cache with 2 ways and low-latency scrambling.
+  Further security features include dual-core lockstep operation, bus and register file integrity, PC hardening, data independent timing, and dummy instruction insertion.
+  Ibex integrates into OpenTitan through RISC-V Core Wrapper for Ibex, which wraps Ibex's data and instruction memory interfaces to TileLink Uncached Light (TL-UL) host interfaces and providing a set of configuration and status register for supporting simple address translation and access to random numbers provided by CSRNG.
+  In addition, RISC-V Core Wrapper for Ibex handles the forwarding of crash dump data.
+  Debug support is enabled through RISC-V Debug Module.
+  '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "23",
+  design_spec:        "../doc",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_rv_core_ibex",
+  dv_doc:             "../doc/dv",
+  version:            "2.1.0",
+  life_stage:         "L1",
+  design_stage:       "D2S",
+  verification_stage: "V2S",
+  dif_stage:          "S2",
+  notes:              "Ibex Verification is tracked in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html)."
+  clocking: [{clock: "clk_i", reset: "rst_ni", primary: true},
+             {clock: "clk_edn_i", reset: "rst_edn_ni"}
+             {clock: "clk_esc_i", reset: "rst_esc_ni"},
+             {clock: "clk_otp_i", reset: "rst_otp_ni"},
+            ],
+  bus_interfaces: [
+    { protocol: "tlul", direction: "host",   name: "corei" }
+    { protocol: "tlul", direction: "host",   name: "cored" }
+    { protocol: "tlul", direction: "device", name: "cfg" }
+  ],
+  scan: "true",       // Enable `scanmode_i` port
+  scan_reset: "true", // Enable `scan_rst_ni` port
+  interrupt_list: [],
+  alert_list: [
+    { name: "fatal_sw_err",
+      desc: "Software triggered alert for fatal faults",
+    },
+    { name: "recov_sw_err",
+      desc: "Software triggered Alert for recoverable faults",
+    },
+    { name: "fatal_hw_err",
+      desc: '''
+        Triggered when
+          - Ibex raises `alert_major_internal_o`
+          - Ibex raises `alert_major_bus_o`
+          - A double fault is seen (Ibex raises `double_fault_seen_o`)
+          - A bus integrity error is seen
+      '''
+    },
+    { name: "recov_hw_err",
+      desc: "Triggered when Ibex raises `alert_minor_o`",
+    },
+  ],
+
+  inter_signal_list: [
+    { struct:  "logic",
+      type:    "uni",
+      name:    "rst_cpu_n",
+      act:     "req",
+      package: "",
+    },
+
+    { struct:  "ram_1p_cfg",
+      type:    "uni",
+      name:    "ram_cfg_icache_tag",
+      act:     "rcv",
+      package: "prim_ram_1p_pkg",
+    },
+
+    { struct:  "ram_1p_cfg_rsp",
+      type:    "uni",
+      name:    "ram_cfg_rsp_icache_tag",
+      width:   "ICacheNWays",
+      act:     "req",
+      package: "prim_ram_1p_pkg",
+    },
+
+    { struct:  "ram_1p_cfg",
+      type:    "uni",
+      name:    "ram_cfg_icache_data",
+      act:     "rcv",
+      package: "prim_ram_1p_pkg",
+    },
+
+    { struct:  "ram_1p_cfg_rsp",
+      type:    "uni",
+      name:    "ram_cfg_rsp_icache_data",
+      width:   "ICacheNWays",
+      act:     "req",
+      package: "prim_ram_1p_pkg",
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "hart_id",
+      act:     "rcv",
+      package: "",
+      width:   "32",
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "boot_addr",
+      act:     "rcv",
+      package: "",
+      width:   "32",
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "irq_software",
+      act:     "rcv",
+      package: "",
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "irq_timer",
+      act:     "rcv",
+      package: "",
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "irq_external",
+      act:     "rcv",
+      package: "",
+    },
+
+    { struct:  "esc_tx",
+      type:    "uni",
+      name:    "esc_tx",
+      act:     "rcv",
+      package: "prim_esc_pkg",
+    },
+
+    { struct:  "esc_rx",
+      type:    "uni",
+      name:    "esc_rx",
+      act:     "req",
+      package: "prim_esc_pkg",
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "debug_req",
+      act:     "rcv",
+      package: "",
+    },
+
+    { struct:  "cpu_crash_dump",
+      type:    "uni",
+      name:    "crash_dump",
+      act:     "req",
+      package: "rv_core_ibex_pkg",
+    },
+
+    { struct:  "lc_tx",
+      type:    "uni",
+      name:    "lc_cpu_en",
+      act:     "rcv",
+      package: "lc_ctrl_pkg",
+      default: "lc_ctrl_pkg::On",
+    },
+
+    { struct:  "lc_tx",
+      type:    "uni",
+      name:    "pwrmgr_cpu_en",
+      act:     "rcv",
+      package: "lc_ctrl_pkg",
+    },
+
+    { struct:  "cpu_pwrmgr",
+      type:    "uni",
+      name:    "pwrmgr",
+      act:     "req",
+      package: "rv_core_ibex_pkg",
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "nmi_wdog",
+      act:     "rcv",
+      package: "",
+    },
+
+    { struct:  "edn",
+      type:    "req_rsp",
+      name:    "edn",
+      act:     "req",
+      package: "edn_pkg",
+    },
+
+    { struct:  "sram_otp_key",
+      type:    "req_rsp",
+      name:    "icache_otp_key",
+      act:     "req",
+      package: "otp_ctrl_pkg",
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "fpga_info",
+      act:     "rcv",
+      width:   "32",
+      package: "",
+    },
+
+  ],
+  param_list: [
+    # Random netlist constants
+    { name:    "RndCnstLfsrSeed",
+      type:    "ibex_pkg::lfsr_seed_t",
+      desc:    "Default seed of the PRNG used for random instructions."
+      randcount: "32",
+      randtype:  "data"
+    },
+    { name:    "RndCnstLfsrPerm",
+      type:    "ibex_pkg::lfsr_perm_t",
+      desc:    "Permutation applied to the LFSR of the PRNG used for random instructions."
+      randcount: "32",
+      randtype:  "perm"
+    },
+    { name:    "RndCnstIbexKeyDefault",
+      type:    "logic [ibex_pkg::SCRAMBLE_KEY_W-1:0]",
+      desc:    "Default icache scrambling key"
+      randcount: "128",
+      randtype:  "data"
+    },
+    { name:    "RndCnstIbexNonceDefault",
+      type:    "logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0]",
+      desc:    "Default icache scrambling nonce"
+      randcount: "64",
+      randtype:  "data"
+    },
+
+    { name:    "NEscalationSeverities"
+      type:    "int unsigned"
+      default: "4"
+      desc:    "Number of escalation severities"
+      local:   "false"
+    },
+
+    { name:    "WidthPingCounter"
+      type:    "int unsigned"
+      default: "16"
+      desc:    "Width of the ping counter"
+      local:   "false"
+    },
+
+    { name:    "PMPEnable"
+      type:    "bit"
+      default: "1'b0"
+      desc:    "Enable PMP"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "PMPGranularity"
+      type:    "int unsigned"
+      default: "0"
+      desc:    "PMP Granularity"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "PMPNumRegions"
+      type:    "int unsigned"
+      default: "4"
+      desc:    "PMP number of regions"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "MHPMCounterNum"
+      type:    "int unsigned"
+      default: "10"
+      desc:    "Number of the MHPM counter "
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "MHPMCounterWidth"
+      type:    "int unsigned"
+      default: "32"
+      desc:    "Width of the MHPM Counter "
+      local:   "false"
+      expose:  "true"
+    },
+    { name:                "PMPRstCfg"
+      type:                "ibex_pkg::pmp_cfg_t"
+      default:             "ibex_pkg::PmpCfgRst"
+      desc:                "Reset value of PMP config CSRs"
+      local:               "false"
+      expose:              "true"
+      unpacked_dimensions: "[16]"
+    },
+    { name:                "PMPRstAddr"
+      type:                "logic [33:0]"
+      default:             "ibex_pkg::PmpAddrRst"
+      desc:                "Reset value of PMP address CSRs"
+      local:               "false"
+      expose:              "true"
+      unpacked_dimensions: "[16]"
+    },
+    { name:          "PMPRstMsecCfg"
+      type:          "ibex_pkg::pmp_mseccfg_t"
+      default:       "ibex_pkg::PmpMseccfgRst"
+      desc:          "Reset value of MSECCFG CSR"
+      local:         "false"
+      expose:        "true"
+    },
+    { name:    "RV32E"
+      type:    "bit"
+      default: "0"
+      desc:    "RV32E"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "RV32M"
+      type:    "ibex_pkg::rv32m_e"
+      default: "ibex_pkg::RV32MSingleCycle"
+      desc:    "RV32M"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "RV32B"
+      type:    "ibex_pkg::rv32b_e"
+      default: "ibex_pkg::RV32BNone"
+      desc:    "RV32B"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "RegFile"
+      type:    "ibex_pkg::regfile_e"
+      default: "ibex_pkg::RegFileFF"
+      desc:    "Reg file"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "BranchTargetALU"
+      type:    "bit"
+      default: "1'b1"
+      desc:    "Branch target ALU"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "WritebackStage"
+      type:    "bit"
+      default: "1'b1"
+      desc:    "Write back stage"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "ICache"
+      type:    "bit"
+      default: "0"
+      desc:    "Instruction cache"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "ICacheECC"
+      type:    "bit"
+      default: "0"
+      desc:    "Instruction cache ECC"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "ICacheScramble"
+      type:    "bit"
+      default: "0"
+      desc:    "Scramble instruction cach"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "ICacheNWays"
+      type:    "int unsigned"
+      default: "2"
+      desc:    "Number of instruction cache ways"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "BranchPredictor"
+      type:    "bit"
+      default: "0"
+      desc:    "Branch predictor"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "DbgTriggerEn"
+      type:    "bit"
+      default: "1"
+      desc:    "Enable degug trigger"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "DbgHwBreakNum"
+      type:    "int"
+      default: "1"
+      desc:    "Number of debug hardware break"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "SecureIbex"
+      type:    "bit"
+      default: "0"
+      desc:    "Width of the MHPM Counter "
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "DmBaseAddr"
+      type:    "int unsigned"
+      default: "437321728" //"32'h1A110000"
+      desc:    "Base address of Debug Module"
+      local:   "false"
+      expose:  "true"
+    }
+
+    { name:    "DmAddrMask"
+      type:    "int unsigned"
+      default: "4095" //"32'h00000FFF"
+      desc:    "Adress mask of Debug Module"
+      local:   "false"
+      expose:  "true"
+    }
+
+    { name:    "DmHaltAddr"
+      type:    "int unsigned"
+      default: "437323776" //"32'h1A110800"
+      desc:    "Halt address"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "DmExceptionAddr"
+      type:    "int unsigned"
+      default: "437323784" //"32'h1A110808"
+      desc:    "Exception address"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "PipeLine"
+      type:    "bit"
+      default: "1'b0"
+      desc:    "Pipe line"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name: "NumSwAlerts",
+      desc: "Number of software triggerable alerts",
+      type: "int",
+      default: "2",
+      local: "true"
+    },
+
+    { name: "NumRegions",
+      desc: "Number of translatable regions per ibex bus",
+      type: "int",
+      default: "2",
+      local: "true"
+    },
+    { name:    "NumScratchWords",
+      type:    "int",
+      desc:    "Number of scratch words maintained."
+      default: "8"
+    },
+    { name:    "TlulHostUserRsvdBits"
+      type:    "logic [tlul_pkg::RsvdWidth-1:0]"
+      default: "'0"
+      desc:    "TLUL user bits sent on outgoing transfers."
+      local:   "false"
+      expose:  "true"
+    },
+    { name:  "CsrMvendorId"
+      type:  "logic [31:0]"
+      desc: '''
+        mvendorid: encoding of manufacturer/provider
+        0 indicates this field is not implemented.
+        Ibex implementors may wish to set their own JEDEC ID here.
+      '''
+      default: "'0"
+      local:   "false"
+      expose:  "true"
+    },
+    { name:  "CsrMimpId"
+      type:  "logic [31:0]"
+      desc: '''
+        mimpid: encoding of processor implementation version
+        0 indicates this field is not implemented.
+        Ibex implementors may wish to indicate an RTL/netlist version here using their own unique encoding (e.g. 32 bits of the git hash of the implemented commit).
+      '''
+      default: "'0"
+      local:   "false"
+      expose:  "true"
+    }
+    { name:    "InstructionPipeline"
+      type:    "bit"
+      default: "1'b0"
+      desc:    "Add a pipeline stage in the instruction interface between Ibex and the address translation"
+      local:   "true"
+      expose:  "true"
+    },
+  ],
+  features: [
+    {
+      name: "RV_CORE_IBEX.CPU.ISA",
+      desc: '''
+        Implements a RISC-V core capable of executing RV32ICMB instructions (a subset of bitmanip is
+        implemented, see the Ibex core documentation for details).
+      '''
+    },
+    {
+      name: "RV_CORE_IBEX.CPU.EPMP",
+      desc: '''
+        The RISC-V core implements the ePMP scheme specified in the RISC-V privileged architecture
+        specification, 16 regions are available for use.
+      '''
+    },
+    {
+      name: "RV_CORE_IBEX.CPU.ICACHE"
+      desc: '''
+        The RISC-V core implements an instruction caches that utilizes scrambling. The scrambling
+        key is rotated on a FENCE.I instruction being executed.
+      '''
+    }
+    {
+      name: "RV_CORE_IBEX.CPU.MEMORY"
+      desc: '''
+        The RISC-V core can send transactions on the TL-UL interconnect and access all of the
+        address space that is available
+      '''
+    }
+    {
+      name: "RV_CORE_IBEX.CPU.INTERRUPTS"
+      desc: '''
+        The RISC-V core has a number of interrupt sources:
+          - Software interrupt, controlled by a memory mapped PLIC register
+          - External interrupt, from interrupts prioritise by the PLIC
+          - Timer interrupt, from rv_timer module
+          - Non-maskable interrupt, triggered by watchdog or alert handler
+      '''
+    }
+    {
+      name: "RV_CORE_IBEX.RND"
+      desc: '''
+        The core wrapper has a connection to the EDN that provides 32-bit random numbers via a
+        memory mapped register.
+      '''
+    }
+    {
+      name: "RV_CORE_IBEX.ADDRESS_TRANSLATION"
+      desc: '''
+        The core wrapper implements address translation. RISC-V core memory accesses that match a
+        given range will have an offset applied before being sent to the memory system
+      '''
+    }
+    {
+      name: "RV_CORE_IBEX.CRASH_DUMP"
+      desc: '''
+        The core wrapper provides a 'crash dump' to rstmgr providing information on what was being
+        executed and most recent exception taken on a reset event. Where the RISC-V core has
+        detected a double fault a crash dump will be stored for when the double fault was detect as
+        well as the crash dump at reset.
+      '''
+    }
+  ],
+
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+    { name: "SCRAMBLE.KEY.SIDELOAD",
+      desc: "The scrambling key for the icache is sideloaded from OTP and thus unreadable by SW."
+    }
+    { name: "CORE.DATA_REG_SW.SCA",
+      desc: "Data independent timing."
+    }
+    { name: "PC.CTRL_FLOW.CONSISTENCY"
+      desc: "Correct PC increment check."
+    }
+    { name: "CTRL_FLOW.UNPREDICTABLE"
+      desc: "Randomized dummy instruction insertion."
+    }
+    { name: "DATA_REG_SW.INTEGRITY"
+      desc: '''
+        Register file integrity checking. Note that whilst the core itself is
+        duplicated (see LOGIC.SHADOW) the register file is not. Protection is
+        provided by an ECC.
+      '''
+    }
+    { name: "DATA_REG_SW.GLITCH_DETECT"
+      desc: '''
+        This countermeasure augments DATA_REG_SW.INTEGRITY and checks for spurious
+        write-enable signals on the register file by monitoring the one-hot0 property
+        of the individual write-enable strobes.
+      '''
+    }
+    { name: "LOGIC.SHADOW"
+      desc: '''
+        Shadow core run in lockstep to crosscheck CPU behaviour. This provides
+        broad protection for all assets with the Ibex core.
+      '''
+    }
+    { name: "FETCH.CTRL.LC_GATED"
+      desc: "Fetch enable so core execution can be halted."
+    }
+    { name: "EXCEPTION.CTRL_FLOW.LOCAL_ESC"
+      desc: '''
+        A mechanism to detect and act on double faults. Local escalation shuts
+        down the core when a double fault is seen.
+      '''
+    }
+    { name: "EXCEPTION.CTRL_FLOW.GLOBAL_ESC"
+      desc:  '''
+        A mechanism to detect and act on double faults. Global escalation
+        sends a fatal alert when a double fault is seen.
+      '''
+    }
+    { name: "ICACHE.MEM.SCRAMBLE"
+      desc: "ICache memory scrambling."
+    }
+    { name: "ICACHE.MEM.INTEGRITY"
+      desc: "ICache memory integrity checking."
+    }
+  ]
+
+  regwidth: "32",
+  registers: {
+    cfg: [
+      { name: "SW_RECOV_ERR",
+        desc: '''
+          Software recoverable error
+        ''',
+        swaccess: "rw",
+        hwaccess: "hrw",
+        fields: [
+          { bits: "3:0",
+            mubi: true,
+            name: "VAL",
+            resval: false,
+            desc: '''
+              Software recoverable alert.
+              When set to any value other than kMultiBitBool4False, a recoverable alert is sent.
+              Once the alert is sent, the field is then reset to kMultiBitBool4False.
+            '''
+          },
+        ],
+        tags: [// This register will self clear when set
+        "excl:CsrNonInitTests:CsrExclWriteCheck"],
+      },
+
+      { name: "SW_FATAL_ERR",
+        desc: '''
+          Software fatal error
+        ''',
+        swaccess: "rw1s",
+        hwaccess: "hro",
+        fields: [
+          { bits: "3:0",
+            mubi: true,
+            name: "VAL",
+            resval: false,
+            desc: '''
+              Software fatal alert.
+              When set to any value other than kMultiBitBool4False, a fatal alert is sent.
+              Note, this field once cleared cannot be set and will continuously cause alert events.
+            '''
+          },
+        ]
+        tags: [// This register is sticky and cannot be cleared after being set
+        "excl:CsrNonInitTests:CsrExclWrite"],
+      },
+
+      { multireg: {
+          cname: "IBUS_REGWEN",
+          name: "IBUS_REGWEN",
+          desc: "Ibus address control regwen.",
+          count: "NumRegions",
+          swaccess: "rw0c",
+          hwaccess: "none",
+          compact: false,
+          fields: [
+            { bits: "0",
+              name: "EN",
+              resval: "1",
+              desc: "Ibus address controls write enable.  Once set to 0, it can longer be configured to 1",
+              enum: [
+                { value: "0",
+                  name: "locked",
+                  desc: '''
+                          Address controls can no longer be configured until next reset.
+                          '''
+                },
+                { value: "1",
+                  name: "enabled",
+                  desc: '''
+                          Address controls can still be configured.
+                          '''
+                },
+              ]
+            },
+          ],
+        },
+      },
+
+      { multireg: {
+          cname: "IBUS_ADDR_CFG",
+          name: "IBUS_ADDR_EN",
+          regwen: "IBUS_REGWEN",
+          regwen_multi: true,
+          desc: '''
+                Enable Ibus address matching
+                ''',
+                  count: "NumRegions",
+          compact: false,
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+            { bits: "0",
+              name: "EN",
+              desc: '''
+                    Enable ibus address matching.
+                    ''',
+                      resval: "0"
+            },
+          ],
+        },
+      },
+
+      { multireg: {
+          cname: "IBUS_ADDR_MATCHING",
+          name: "IBUS_ADDR_MATCHING",
+          regwen: "IBUS_REGWEN",
+          regwen_multi: true,
+          desc: '''
+                  Matching region programming for ibus.
+
+                  The value programmed is done at power-of-2 alignment.
+                  For example, if the intended matching region is 0x8000_0000 to 0x8000_FFFF, the value programmed is 0x8000_7FFF.
+
+                  The value programmed can be determined from the translation granule.
+                  Assume the user wishes to translate a specific 64KB block to a different address:
+                  64KB has a hex value of 0x10000.
+                  Subtract 1 from this value and then right shift by one to obtain 0x7FFF.
+                  This value is then logically OR'd with the upper address bits that would select which 64KB to translate.
+
+                  In this example, the user wishes to translate the 0x8000-th 64KB block.
+                  The value programmed is then 0x8000_7FFF.
+
+                  If the user were to translate the 0x8001-th 64KB block, the value programmed would be 0x8001_7FFF.
+          ''',
+          count: "NumRegions",
+          compact: false,
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+            { bits: "31:0",
+              name: "VAL",
+              desc: '''
+                      Matching region value
+                      ''',
+                      resval: "0"
+            },
+          ],
+        },
+      },
+
+      { multireg: {
+          cname: "IBUS_REMAP_ADDR",
+          name: "IBUS_REMAP_ADDR",
+          regwen: "IBUS_REGWEN",
+          regwen_multi: true,
+          desc: '''
+                  The remap address after a match has been made.
+                  The remap bits apply only to top portion of address bits not covered by the matching region.
+
+                  For example, if the translation region is 64KB, the remapped address applies only to the upper
+                  address bits that select which 64KB to be translated.
+                ''',
+          count: "NumRegions",
+          compact: false,
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+            { bits: "31:0",
+              name: "VAL",
+              desc: '''
+                      Remap addr value
+                      ''',
+                      resval: "0"
+            },
+          ],
+        },
+      },
+
+      { multireg: {
+          cname: "DBUS_REGWEN",
+          name: "DBUS_REGWEN",
+          desc: "Dbus address control regwen.",
+          count: "NumRegions",
+          swaccess: "rw0c",
+          hwaccess: "none",
+          compact: false,
+          fields: [
+            { bits: "0",
+              name: "EN",
+              resval: "1",
+              desc: "Ibus address controls write enable.  Once set to 0, it can longer be configured to 1",
+              enum: [
+                { value: "0",
+                  name: "locked",
+                  desc: '''
+                          Address controls can no longer be configured until next reset.
+                          '''
+                },
+                { value: "1",
+                  name: "enabled",
+                  desc: '''
+                          Address controls can still be configured.
+                          '''
+                },
+              ]
+            },
+          ],
+        },
+      },
+
+      { multireg: {
+          cname: "DBUS_ADDR_CFG",
+          name: "DBUS_ADDR_EN",
+          regwen: "DBUS_REGWEN",
+          regwen_multi: true,
+          desc: '''
+                Enable dbus address matching
+                ''',
+          count: "NumRegions",
+          compact: false,
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+            { bits: "0",
+              name: "EN",
+              desc: '''
+                    Enable dbus address matching.
+                    ''',
+              resval: "0"
+            },
+          ],
+        },
+      },
+
+      { multireg: {
+          cname: "DBUS_ADDR_MATCHING",
+          name: "DBUS_ADDR_MATCHING",
+          regwen: "DBUS_REGWEN",
+          regwen_multi: true,
+          desc: '''
+                See !!IBUS_ADDR_MATCHING_0 for detailed description.
+                ''',
+          count: "NumRegions",
+          compact: false,
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+            { bits: "31:0",
+              name: "VAL",
+              desc: '''
+                      Matching region value
+                      ''',
+                      resval: "0"
+            },
+          ],
+        },
+      },
+
+      { multireg: {
+          cname: "DBUS_REMAP_ADDR",
+          name: "DBUS_REMAP_ADDR",
+          regwen: "DBUS_REGWEN",
+          regwen_multi: true,
+          desc: '''
+                See !!IBUS_REMAP_ADDR_0 for a detailed description.
+                ''',
+          count: "NumRegions",
+          compact: false,
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+            { bits: "31:0",
+              name: "VAL",
+              desc: '''
+                      Remap addr value
+                      ''',
+                      resval: "0"
+            },
+          ],
+        },
+      },
+
+      { name: "NMI_ENABLE",
+        desc: '''
+          Enable mask for NMI.
+          Once an enable mask is set, it cannot be disabled.
+        ''',
+        swaccess: "rw1s",
+        hwaccess: "hro",
+        fields: [
+          { bits: "0",
+            name: "ALERT_EN",
+            resval: "0x0",
+            desc: "Enable mask for alert NMI"
+          },
+          { bits: "1",
+            name: "WDOG_EN",
+            resval: "0x0",
+            desc: "Enable mask for watchdog NMI"
+          },
+        ]
+      },
+
+      { name: "NMI_STATE",
+        desc: '''
+          Current NMI state
+        ''',
+        swaccess: "rw1c",
+        hwaccess: "hrw",
+        fields: [
+          { bits: "0",
+            name: "ALERT",
+            resval: "0x0",
+            desc: "Current state for alert NMI"
+          },
+          { bits: "1",
+            name: "WDOG",
+            resval: "0x0",
+            desc: "Current state for watchdog NMI"
+          },
+        ]
+        tags: [// nmi could be updated by HW
+        "excl:CsrNonInitTests:CsrExclWriteCheck"],
+      },
+
+      { name: "ERR_STATUS",
+        desc: "error status",
+        swaccess: "rw1c",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "0",
+            name: "REG_INTG_ERR",
+            resval: "0x0"
+            desc: '''
+              rv_core_ibex_peri detected a register transmission integrity error
+            '''
+          },
+          { bits: "8",
+            name: "FATAL_INTG_ERR",
+            resval: "0x0"
+            desc: '''
+              rv_core_ibex detected a response integrity error
+            '''
+          },
+          { bits: "9",
+            name: "FATAL_CORE_ERR",
+            resval: "0x0"
+            desc: '''
+              rv_core_ibex detected a fatal internal error
+              (``alert_major_internal_o`` from Ibex seen)
+            '''
+          },
+          { bits: "10",
+            name: "RECOV_CORE_ERR",
+            resval: "0x0"
+            desc: '''
+              rv_core_ibex detected a recoverable internal error
+              (``alert_minor`` from Ibex seen)
+            '''
+          },
+        ]
+      },
+
+      { name: "RND_DATA",
+        desc: "Random data from EDN",
+        swaccess: "ro",
+        hwaccess: "hrw",
+        hwext: "true",
+        hwre: "true",
+        fields: [
+          { bits: "31:0",
+            name: "DATA",
+            resval: "0x0",
+            desc:  '''
+              Random bits taken from the EDN. !!RND_STATUS.RND_DATA_VALID
+              indicates if this data is valid. When valid, reading from this
+              register invalidates the data and requests new data from the EDN.
+              The register becomes valid again when the EDN provides new data.
+              When invalid the register value will read as 0x0 with an EDN
+              request for new data pending. Upon reset the data will be invalid
+              with a new EDN request pending.
+            '''
+          },
+        ]
+      },
+
+      { name: "RND_STATUS",
+        desc: "Status of random data in !!RND_DATA",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true",
+        fields: [
+          { bits: "0",
+            resval: "0",
+            name: "RND_DATA_VALID",
+            desc: '''
+              When set, the data in !!RND_DATA is valid. When clear an EDN
+              request for new data for !!RND_DATA is pending.
+            '''
+          },
+          { bits: "1",
+            resval: "0",
+            name: "RND_DATA_FIPS",
+            desc: '''
+              When !!RND_STATUS.RND_DATA_VALID is 1, this bit indicates whether
+              !!RND_DATA is fips quality.
+
+              When !!RND_STATUS.RND_DATA_VALID is 0, this bit has no meaning.
+            '''
+          },
+        ]
+      },
+
+      { name: "FPGA_INFO",
+        desc: '''
+          FPGA build timestamp info.
+          This register only contains valid data for fpga, for all other variants it is simply 0.
+        ''',
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true"
+        fields: [
+          { bits: "31:0",
+            name: "VAL",
+            resval: "0x0"
+            desc: '''
+              FPGA build timestamp information.
+            '''
+          },
+        ]
+      },
+
+      // dv simulation window
+      { window: {
+          name: "DV_SIM_WINDOW",
+          items: "NumScratchWords",
+          validbits: "32",
+          byte-write: "true",
+          swaccess: "rw",
+          unusual: "true"
+          desc: '''
+            Exposed tlul window for DV only purposes.
+          '''
+        },
+      },
+
+    ],
+  },
+}

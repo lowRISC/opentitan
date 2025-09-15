@@ -1,0 +1,117 @@
+   0        1 Pullup change to DP Pulled up SingleEnded
+mon:     8224 --     8336: (H) SOP, PID SOF 001 (CRC5 1d OK), EOP
+mon:     8376 --     8488: (H) SOP, PID SETUP 0.0 (CRC5 02 OK), EOP
+mon:     8520 --     8892: (H) SOP, PID DATA0, EOP
+mon:     h->d: 00, 05, 02, 00, ff, 00, 00, 00, db, 02 CRCOK
+mon:     8928 --     8972: (D) SOP, PID ACK EOP
+mon:    11060 --    11172: (H) SOP, PID IN 0.0 (CRC5 02 OK), EOP
+mon:    11208 --    11316: (D) SOP, PID DATA1 00, 00 (NULL), EOP
+mon:    11360 --    11408: (H) SOP, PID ACK EOP
+mon:    16416 --    16528: (H) SOP, PID SOF 002 (CRC5 15 OK), EOP
+mon:    16568 --    16680: (H) SOP, PID SETUP 2.0 (CRC5 15 OK), EOP
+mon:    16712 --    17080: (H) SOP, PID DATA0, EOP
+mon:     h->d: 80, 06, 00, 01, 00, 00, 12, 00, e0, f4 CRCOK
+mon:    17116 --    17160: (D) SOP, PID ACK EOP
+mon:    19248 --    19360: (H) SOP, PID IN 2.0 (CRC5 15 OK), EOP
+mon:    19396 --    20080: (D) SOP, PID DATA1, EOP
+mon:     d->h: 12, 01, 00, 02, 00, 00, 00, 40, d1, 18, 3a, 50, 00, 01, 00, 00
+mon:           00, 01, 7d, 34 CRCOK
+mon:    20124 --    20236: (H) SOP, PID ACK 02, a8 (CRC5 OK), EOP
+mon:    20928 --    21040: (H) SOP, PID OUT 2.0 (CRC5 15 OK), EOP
+mon:    24608 --    24720: (H) SOP, PID SOF 003 (CRC5 0a OK), EOP
+mon:    32800 --    32912: (H) SOP, PID SOF 004 (CRC5 05 OK), EOP
+mon:    40992 --    41104: (H) SOP, PID SOF 005 (CRC5 1a OK), EOP
+mon:    41144 --    41256: (H) SOP, PID IN 2.1 (CRC5 03 OK), EOP
+mon:    41292 --    41336: (D) SOP, PID NAK EOP
+mon:    49184 --    49296: (H) SOP, PID SOF 006 (CRC5 12 OK), EOP
+mon:    49336 --    49448: (H) SOP, PID IN 2.1 (CRC5 03 OK), EOP
+mon:    49484 --    49528: (D) SOP, PID NAK EOP
+mon:    57376 --    57488: (H) SOP, PID SOF 007 (CRC5 0d OK), EOP
+mon:    57528 --    57640: (H) SOP, PID IN 2.1 (CRC5 03 OK), EOP
+mon:    57676 --    57720: (D) SOP, PID NAK EOP
+mon:    65568 --    65680: (H) SOP, PID SOF 008 (CRC5 0c OK), EOP
+mon:    65720 --    65832: (H) SOP, PID IN 2.1 (CRC5 03 OK), EOP
+mon:    65868 --    65912: (D) SOP, PID NAK EOP
+mon:    73760 --    73872: (H) SOP, PID SOF 009 (CRC5 13 OK), EOP
+mon:    73912 --    74024: (H) SOP, PID IN 2.1 (CRC5 03 OK), EOP
+mon:    74060 --    74104: (D) SOP, PID NAK EOP
+mon:    74148 --    74260: (H) SOP, PID OUT 2.1 (CRC5 03 OK), EOP
+mon:    74292 --    74500: (H) SOP, PID DATA0, EOP
+mon:     h->d: 48, 69, 21, e0, 61 CRCOK
+mon:          Hi!
+mon:    74536 --    74580: (D) SOP, PID ACK EOP
+mon:    81952 --    82064: (H) SOP, PID SOF 00a (CRC5 1b OK), EOP
+mon:    82104 --    82216: (H) SOP, PID SETUP 2.1 (CRC5 03 OK), EOP
+mon:    82248 --    82616: (H) SOP, PID DATA0, EOP
+mon:     h->d: c2, 02, 00, 00, 00, 00, 02, 00, 10, dd CRCOK
+mon:    82784 --    82896: (H) SOP, PID IN 2.1 (CRC5 03 OK), EOP
+mon:    82932 --    83552: (D) SOP, PID DATA1, EOP
+mon:     d->h: 48, 65, 6c, 6c, 6f, 20, 55, 53, 42, 20, 57, 6f, 72, 6c, 64, 21
+mon:           a6, 9c CRCOK
+mon:          Hello USB World!
+mon:    83736 --    83784: (H) SOP, PID ACK EOP
+mon:    83824 --    83936: (H) SOP, PID OUT 2.1 (CRC5 03 OK), EOP
+mon:    83968 --    84080: (H) SOP, PID DATA1 00, 00 (NULL), EOP
+mon:    84112 --    84156: (D) SOP, PID ACK EOP
+mon:    90144 --    90256: (H) SOP, PID SOF 00b (CRC5 04 OK), EOP
+mon:    90296 --    90408: (H) SOP, PID IN 2.1 (CRC5 03 OK), EOP
+mon:    90444 --    91064: (D) SOP, PID DATA1, EOP
+mon:     d->h: 48, 65, 6c, 6c, 6f, 20, 55, 53, 42, 20, 57, 6f, 72, 6c, 64, 21
+mon:           a6, 9c CRCOK
+mon:          Hello USB World!
+mon:    98336 --    98448: (H) SOP, PID SOF 00c (CRC5 0b OK), EOP
+mon:    98488 --    98600: (H) SOP, PID IN 2.1 (CRC5 03 OK), EOP
+mon:    98636 --    99256: (D) SOP, PID DATA1, EOP
+mon:     d->h: 48, 65, 6c, 6c, 6f, 20, 55, 53, 42, 20, 57, 6f, 72, 6c, 64, 21
+mon:           a6, 9c CRCOK
+mon:          Hello USB World!
+mon:   106528 --   106640: (H) SOP, PID SOF 00d (CRC5 14 OK), EOP
+mon:   106680 --   106792: (H) SOP, PID IN 2.1 (CRC5 03 OK), EOP
+mon:   106828 --   107448: (D) SOP, PID DATA1, EOP
+mon:     d->h: 48, 65, 6c, 6c, 6f, 20, 55, 53, 42, 20, 57, 6f, 72, 6c, 64, 21
+mon:           a6, 9c CRCOK
+mon:          Hello USB World!
+mon:   114720 --   114832: (H) SOP, PID SOF 00e (CRC5 1c OK), EOP
+mon:   114872 --   114984: (H) SOP, PID IN 2.1 (CRC5 03 OK), EOP
+mon:   115020 --   115640: (D) SOP, PID DATA1, EOP
+mon:     d->h: 48, 65, 6c, 6c, 6f, 20, 55, 53, 42, 20, 57, 6f, 72, 6c, 64, 21
+mon:           a6, 9c CRCOK
+mon:          Hello USB World!
+mon:   115684 --   115796: (H) SOP, PID OUT 2.1 (CRC5 03 OK), EOP
+mon:   115828 --   116036: (H) SOP, PID DATA0, EOP
+mon:     h->d: 48, 69, 21, e0, 61 CRCOK
+mon:          Hi!
+mon:   116072 --   116116: (D) SOP, PID ACK EOP
+mon:   122912 --   123024: (H) SOP, PID SOF 00f (CRC5 03 OK), EOP
+mon:   123064 --   123176: (H) SOP, PID SETUP 2.1 (CRC5 03 OK), EOP
+mon:   123208 --   123576: (H) SOP, PID DATA0, EOP
+mon:     h->d: 42, 03, 60, 00, 00, 00, 00, 00, 00, bd CRCOK
+mon:   123744 --   123856: (H) SOP, PID IN 2.1 (CRC5 03 OK), EOP
+mon:   123892 --   124512: (D) SOP, PID DATA1, EOP
+mon:     d->h: 48, 65, 6c, 6c, 6f, 20, 55, 53, 42, 20, 57, 6f, 72, 6c, 64, 21
+mon:           a6, 9c CRCOK
+mon:          Hello USB World!
+mon:   124556 --   124604: (H) SOP, PID ACK EOP
+mon:   131104 --   131216: (H) SOP, PID SOF 010 (CRC5 1e OK), EOP
+mon:   131256 --   131368: (H) SOP, PID IN 2.1 (CRC5 03 OK), EOP
+mon:   131404 --   131448: (D) SOP, PID NAK EOP
+mon:   139296 --   139408: (H) SOP, PID SOF 011 (CRC5 01 OK), EOP
+mon:   139448 --   139560: (H) SOP, PID OUT 2.3 (CRC5 06 OK), EOP
+mon:   139592 --   139960: (H) SOP, PID DATA0, EOP
+mon:     h->d: 42, 03, 60, 00, 00, 00, 00, 00, 00, bd CRCOK
+mon:   140128 --   140240: (H) SOP, PID IN 2.3 (CRC5 06 OK), EOP
+mon:   147488 --   147600: (H) SOP, PID SOF 012 (CRC5 09 OK), EOP
+mon:   147640 --   147752: (H) SOP, PID OUT 2.3 (CRC5 06 OK), EOP
+mon:   147784 --   148152: (H) SOP, PID DATA0, EOP
+mon:     h->d: 42, 03, 60, 00, 00, 00, 00, 00, 00, bd CRCOK
+mon:   148320 --   148432: (H) SOP, PID IN 2.3 (CRC5 06 OK), EOP
+mon:   155680 --   155792: (H) SOP, PID SOF 013 (CRC5 16 OK), EOP
+mon:   155832 --   155944: (H) SOP, PID IN 2.1 (CRC5 03 OK), EOP
+mon:   155980 --   156024: (D) SOP, PID NAK EOP
+mon:   163876 --   163988: (H) SOP, PID SETUP 2.15 (CRC5 18 OK), EOP
+mon:   164020 --   164392: (H) SOP, PID DATA0, EOP
+mon:     h->d: 00, 05, 02, 00, ff, 00, 00, 00, db, 02 CRCOK
+mon:   172068 --   172180: (H) SOP, PID OUT 2.15 (CRC5 18 OK), EOP
+mon:   172212 --   172584: (H) SOP, PID DATA0, EOP
+mon:     h->d: 00, 05, 02, 00, ff, 00, 00, 00, db, 02 CRCOK
+mon:   180260 --   180372: (H) SOP, PID IN 2.15 (CRC5 18 OK), EOP

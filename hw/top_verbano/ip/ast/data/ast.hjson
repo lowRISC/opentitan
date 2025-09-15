@@ -1,0 +1,621 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//#############################################################################
+// *Name: ast
+// *Module Description: Analog Sensors Top Registers
+//#############################################################################
+{ name:               "ast",
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "34",
+  design_spec:        "../doc",
+  dv_doc:             "",
+  hw_checklist:       "",
+  sw_checklist:       "",
+  version:            "1.0.0",
+  life_stage:         "L1",
+  design_stage:       "D2",
+  verification_stage: "V2S",
+  dif_stage:          "",
+  clocking: [
+    { clock: "clk_ast_tlul_i",  reset: "rst_ast_tlul_ni", primary: true },
+    { clock: "clk_ast_adc_i",   reset: "rst_ast_adc_ni"},
+    { clock: "clk_ast_alert_i", reset: "rst_ast_alert_ni"},
+    { clock: "clk_ast_es_i",    reset: "rst_ast_es_ni"},
+    { clock: "clk_ast_rng_i",   reset: "rst_ast_rng_ni"},
+    { clock: "clk_ast_usb_i",   reset: "rst_ast_usb_ni"},
+  ],
+  bus_interfaces: [
+    { protocol: "tlul",
+      direction: "device"
+    }
+  ],
+  no_auto_alert_regs: "True",
+  param_list: [
+    { name:    "NumRegsB",
+      desc: "Number of registers in the Array-B",
+      type:    "int",
+      default: "5",
+      local:   "true",
+    },
+    { name: "NumUsbBeaconPulses",
+      desc: "Number of USB valid beacon pulses for clock to re-calibrate",
+      type: "int",
+      default: "8",
+      local: "true"
+    },
+  ],
+  regwidth: "32",
+  registers: [
+    { name: "REGA0",
+      desc: "AST Register 0 for OTP/ROM Write Testing",
+      swaccess: "ro",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclAll" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x00",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA1",
+      desc: "AST 1 Register for OTP/ROM Write Testing",
+      swaccess: "ro",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclAll" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x01",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA2",
+      desc: "AST 2 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x02",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA3",
+      desc: "AST 3 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x03",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA4",
+      desc: "AST 4 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x04",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA5",
+      desc: "AST 5 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x05",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA6",
+      desc: "AST 6 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x06",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA7",
+      desc: "AST 7 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x07",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA8",
+      desc: "AST 8 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x08",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA9",
+      desc: "AST 9 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x09",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA10",
+      desc: "AST 10 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x0A",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA11",
+      desc: "AST 11 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x0B",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA12",
+      desc: "AST 13 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x0C",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA13",
+      desc: "AST 13 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x0D",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA14",
+      desc: "AST 14 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x0E",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA15",
+      desc: "AST 15 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x0F",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA16",
+      desc: "AST 16 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x10",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA17",
+      desc: "AST 17 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x11",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA18",
+      desc: "AST 18 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x12",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA19",
+      desc: "AST 19 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x13",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA20",
+      desc: "AST 20 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x14",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA21",
+      desc: "AST 21 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x15",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA22",
+      desc: "AST 22 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x16",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA23",
+      desc: "AST 23 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x17",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA24",
+      desc: "AST 24 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x18",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA25",
+      desc: "AST 25 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x19",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA26",
+      desc: "AST 26 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x1A",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA27",
+      desc: "AST 27 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x1B",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA28",
+      desc: "AST 28 Register for OTP/ROM Write Testing",
+      swaccess: "ro",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x1C",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA29",
+      desc: "AST 29 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x1D",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA30",
+      desc: "AST 30 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x1E",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA31",
+      desc: "AST 31 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x1F",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA32",
+      desc: "AST 32 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x20",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA33",
+      desc: "AST 33 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x21",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA34",
+      desc: "AST 34 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x22",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA35",
+      desc: "AST 35 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x23",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA36",
+      desc: "AST 36 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x24",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGA37",
+      desc: "AST 37 Register for OTP/ROM Write Testing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclWrite" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x25",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    { name: "REGAL",
+      desc: "AST Last Register for OTP/ROM Write Testing",
+      swaccess: "wo",
+      hwaccess: "hrw",
+      hwext:    "true",
+      hwqe:     "true",
+      tags: [ // don't write random data to any of the AST registers
+              "excl:CsrAllTests:CsrExclAll" ],
+      fields: [
+        { bits: "31:0",
+          name: "reg32",
+          desc: "32-bit Register",
+          resval: "0x26",
+        },
+      ],
+    }, //----------------------------------------------------------------------
+    ///////////////////////////////////////////////////////////////////////////
+    { skipto: "0x200" }
+    ///////////////////////////////////////////////////////////////////////////
+    { multireg:
+      {
+        name: "REGB",
+        desc: "AST Registers Array-B to set address space size",
+        count: "NumRegsB",
+        cname: "REGB",
+        swaccess: "rw",
+        hwaccess: "hro",
+        tags: [ // don't write random data to any of the AST registers
+                "excl:CsrAllTests:CsrExclAll" ],
+        fields: [
+          { bits: "31:0",
+            name: "reg32",
+            desc: "32-bit Register",
+            resval: "0",
+          },
+        ],
+      },
+    }, //----------------------------------------------------------------------
+  ],
+}

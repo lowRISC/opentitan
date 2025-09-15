@@ -1,0 +1,167 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:top_verbano:0.1"
+description: "Technology-independent Verbano toplevel"
+filesets:
+  files_rtl_generic:
+    depend:
+      # Place the autogen packages first to avoid conflicts
+      - lowrisc:verbano_constants:top_racl_pkg
+      - lowrisc:verbano_ip:alert_handler_reg
+      - lowrisc:verbano_ip:otp_ctrl_macro_pkg
+      - lowrisc:verbano_ip:otp_ctrl_top_specific_pkg
+      - lowrisc:verbano_ip:pwrmgr_pkg
+      - lowrisc:ip:uart:0.1
+      - lowrisc:ip:rv_dm
+      - lowrisc:ip:rv_timer
+      - lowrisc:ip:tlul
+      - lowrisc:ip:spi_device
+      - lowrisc:ip:spi_host
+      - lowrisc:ip:i2c
+      - lowrisc:ip:pattgen
+      - lowrisc:ip:aes
+      - lowrisc:ip:entropy_src
+      - lowrisc:ip:csrng
+      - lowrisc:ip:edn
+      - lowrisc:ip:hmac
+      - lowrisc:ip:kmac
+      - lowrisc:ip:otbn
+      - lowrisc:prim:ram_1p_scr
+      - lowrisc:prim:flash
+      - lowrisc:ip:sram_ctrl
+      - lowrisc:ip:keymgr
+      - lowrisc:verbano_constants:top_pkg
+      - lowrisc:constants:top_verbano_jtag_id_pkg
+      - lowrisc:constants:top_verbano_ibex_pmp_reset_pkg
+      - lowrisc:ip:lc_ctrl
+      - lowrisc:ip:usbdev
+      - lowrisc:top_verbano:xbar_main
+      - lowrisc:top_verbano:xbar_peri
+      - lowrisc:verbano_ip:alert_handler
+      - lowrisc:verbano_ip:clkmgr
+      - lowrisc:verbano_ip:flash_ctrl
+      - lowrisc:verbano_ip:gpio
+      - lowrisc:verbano_ip:otp_ctrl
+      - lowrisc:verbano_ip:pinmux
+      - lowrisc:verbano_ip:pwm
+      - lowrisc:verbano_ip:pwrmgr
+      - lowrisc:verbano_ip:rstmgr
+      - lowrisc:verbano_ip:rv_plic
+      - lowrisc:verbano_ip:rv_core_ibex
+      - lowrisc:ip:aon_timer
+      - lowrisc:ip:adc_ctrl
+      - lowrisc:ip:sysrst_ctrl
+      - lowrisc:ip:rom_ctrl
+      - lowrisc:systems:top_verbano_sensor_ctrl
+      - lowrisc:tlul:headers
+      - lowrisc:prim:all
+      - lowrisc:prim:usb_diff_rx
+      - lowrisc:prim:mubi
+      - lowrisc:systems:top_verbano_pkg
+      # TODO(#27347): prim_pkg is deprecated
+      - lowrisc:prim:prim_legacy_pkg
+      - "fileset_partner  ? (partner:systems:top_verbano_ast_pkg)"
+      - "!fileset_partner ? (lowrisc:systems:top_verbano_ast_pkg)"
+      - "fileset_partner  ? (partner:ip:otp_macro)"
+      - "!fileset_partner ? (lowrisc:ip:otp_macro)"
+    files:
+      - rtl/autogen/top_verbano.sv
+    file_type: systemVerilogSource
+
+  files_rtl_testing:
+    depend:
+      - lowrisc:verbano_constants:testing_rnd_cnst_pkg
+      - lowrisc:verbano_constants:testing_lc_ctrl_state_pkg
+
+  files_rtl_tapeout:
+    depend:
+      - lowrisc:verbano_constants:tapeout_rnd_cnst_pkg
+      - lowrisc:verbano_constants:tapeout_lc_ctrl_state_pkg
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/top_verbano.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/top_verbano.waiver
+    file_type: waiver
+
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/top_verbano.vbl
+    file_type: veribleLintWaiver
+
+mapping:
+  "lowrisc:virtual_constants:top_pkg": "lowrisc:verbano_constants:top_pkg"
+  "lowrisc:virtual_constants:top_racl_pkg": "lowrisc:verbano_constants:top_racl_pkg"
+  "lowrisc:systems:ast_pkg": "lowrisc:systems:top_verbano_ast_pkg"
+  "lowrisc:virtual_ip:flash_ctrl_prim_reg_top": "lowrisc:verbano_ip:flash_ctrl_prim_reg_top"
+  "lowrisc:virtual_ip:lc_ctrl_state_pkg": "lowrisc:verbano_constants:testing_lc_ctrl_state_pkg"
+  "lowrisc:virtual_constants:rnd_cnst_pkg": "lowrisc:verbano_constants:testing_rnd_cnst_pkg"
+  # TODO(#27347): prim_legacy_pkg is deprecated
+  "lowrisc:prim:prim_pkg": "lowrisc:prim:prim_legacy_pkg"
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator    ? (files_verilator_waiver)
+      - tool_ascentlint   ? (files_ascentlint_waiver)
+      - tool_veriblelint  ? (files_veriblelint_waiver)
+      - fileset_tapeout   ? (files_rtl_tapeout)
+      - "!fileset_tapeout ? (files_rtl_testing)"
+      - files_rtl_generic
+    toplevel: top_verbano
+
+  sim:
+    default_tool: icarus
+    filesets:
+      - fileset_tapeout   ? (files_rtl_tapeout)
+      - "!fileset_tapeout ? (files_rtl_testing)"
+      - files_rtl_generic
+    toplevel: top_verbano
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
+  syn:
+    <<: *default_target
+    # TODO: set default to DC once
+    # this option is available
+    # olofk/edalize#89
+    default_tool: icarus
+    parameters:
+      - SYNTHESIS=true
+    toplevel: top_verbano
+
+  formal:
+    <<: *default_target
+    toplevel: top_verbano

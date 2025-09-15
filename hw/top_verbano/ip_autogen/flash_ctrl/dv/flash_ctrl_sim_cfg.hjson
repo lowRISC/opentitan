@@ -1,0 +1,18 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// We want to use a different tool in another flash_ctrl env, but overriding `tool` doesn't work, as
+// it needs to first import all the included hjson to know what to override, but some sim_cfg hjson
+// files depends on the `tool` variable, such as {tool}.hjson.
+// To solve this issue, split out the sim_cfg file into 2 files. the base contains everything except
+// `tool`, the other one includes the base and set the `tool`.
+//
+// In this file, only `tool` can be set. Tests or other configuration should be add in
+// flash_ctrl_base_sim_cfg.hjson.
+{
+  // Simulator used to sign off this block
+  tool: vcs
+
+  import_cfgs: ["{self_dir}/flash_ctrl_base_sim_cfg.hjson"]
+}

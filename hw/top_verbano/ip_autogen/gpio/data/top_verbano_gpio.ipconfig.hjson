@@ -1,0 +1,22 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_verbano_gpio
+  param_values:
+  {
+    module_instance_name: gpio
+    topname: verbano
+    uniquified_modules: {}
+    num_inp_period_counters: 0
+  }
+  dtgen:
+  {
+    num_inp_period_counters:
+    {
+      type: uint8
+      name: input_period_counter_count
+      doc: number of input period counters
+    }
+  }
+}

@@ -1,0 +1,22 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_verbano_pinmux
+  param_values:
+  {
+    n_wkup_detect: 8
+    wkup_cnt_width: 8
+    n_mio_pads: 47
+    n_mio_periph_in: 57
+    n_mio_periph_out: 75
+    n_dio_pads: 16
+    n_dio_periph_in: 14
+    n_dio_periph_out: 14
+    enable_usb_wakeup: true
+    enable_strap_sampling: true
+    topname: verbano
+    uniquified_modules: {}
+    module_instance_name: pinmux
+  }
+}

@@ -1,0 +1,15 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // This is an elaboration-only target that is based on the main synthesis flow.
+  import_cfgs: ["{proj_root}/hw/top_verbano/syn/chip_verbano_asic_syn_cfg.hjson"]
+
+  overrides: [
+    // Run the flow up until after the elab stage.
+    {
+      name: termination_stage
+      value: "elab"
+    }
+  ]
+}

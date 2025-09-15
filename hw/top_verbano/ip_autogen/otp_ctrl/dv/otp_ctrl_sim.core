@@ -1,0 +1,39 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: lowrisc:verbano_dv:otp_ctrl_sim:0.1
+description: "OTP_CTRL DV sim target"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:verbano_ip:otp_ctrl_macro_pkg
+      - lowrisc:verbano_ip:otp_ctrl
+      - lowrisc:ip:otp_macro
+
+  files_dv:
+    depend:
+      - lowrisc:dv:mem_bkdr_util
+      - lowrisc:verbano_dv:otp_ctrl_test
+      - lowrisc:verbano_dv:otp_ctrl_sva
+      - lowrisc:verbano_dv:otp_ctrl_cov
+      # TODO(#27347): prim_pkg is deprecated
+      - lowrisc:prim:prim_pkg
+    files:
+      - tb.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    toplevel: tb
+    filesets:
+      - files_rtl
+      - files_dv
+
+  sim:
+    <<: *default_target
+    default_tool: vcs
+
+  lint:
+    <<: *default_target

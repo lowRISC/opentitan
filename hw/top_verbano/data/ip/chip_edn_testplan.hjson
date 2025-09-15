@@ -1,0 +1,172 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: edn
+  testpoints: [
+    // EDN (pre-verified IP) integration tests:
+    {
+      name: chip_sw_edn_entropy_reqs
+      desc: '''Verify the entropy requests from all peripherals.
+
+            Verify that there are no misconnects between each peripheral requesting entropy.
+            TODO: system level scenario: have all entropy sources request entropy in the same test
+            one after to show boot to post boot load, cycling all entropy blocks off and on again.
+            Ensure there are no deadlocks and everything works as expected.
+            X'ref'ed with each IP test that requests entropy from EDN.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_edn_entropy_reqs",
+              "chip_sw_csrng_edn_concurrency",
+              "chip_sw_entropy_src_ast_rng_req",]
+      bazel: ["//sw/device/tests:entropy_src_edn_reqs_test",
+              "//sw/device/tests:csrng_edn_concurrency_test",
+              "//sw/device/tests:entropy_src_ast_rng_req_test",]
+    },
+    {
+      name: chip_sw_edn_boot_mode
+      desc: '''Verify EDN operation in boot-time request mode.
+
+            Verify that EDN delivers entropy in boot-time request mode and that the `edn_fips` bit correctly signals to endpoints whether the delivered entropy is derived from a FIPS/CC compliant seed or not.
+
+            Procedure:
+            - Disable the entropy complex.
+            - Enable ENTROPY_SRC in boot-time mode, e.g., by setting CONF.FIPS_ENABLE to kMultiBitBool4False.
+            - Enable CSRNG.
+            - Enable EDN1 (the one connected to OTBN RND) in boot-time request mode.
+            - Disable ENTROPY_SRC.
+            - Since EDN1 provides entropy only to the OTBN, CSRNG will be idle.
+            - Enable ENTROPY_SRC in FIPS mode.
+            - Enable EDN0 (the one connected to OTBN URND and other endpoints) in auto request mode.
+            - Launch an OTBN program consuming entropy via both the RND and the URND interface.
+            - Verify that the OTBN program completes (entropy available) and that OTBN sets ERR_BITS.RND_FIPS_CHK_FAIL to indicate the reception of non-FIPS/CC-compliant entropy over the RND interface.
+            - Consume entropy through rv_core_ibex.RND_DATA and verify, using rv_core_ibex.RND_STATUS, that the received bits are FIPS compliant.
+            - Disable the entropy complex.
+            - Enable ENTROPY_SRC in FIPS mode.
+            - Enable CSRNG.
+            - Enable EDN1 (the one connected to OTBN RND) in auto request mode.
+            - Disable ENTROPY_SRC.
+            - Enable ENTROPY_SRC in boot-time mode.
+            - Enable EDN0 (the one connected to OTBN URND and other endpoints) in boot-time request mode.
+            - Launch an OTBN program consuming entropy via both the RND and the URND interface.
+            - Verify that the OTBN program completes (entropy available) and that OTBN does not set ERR_BITS.RND_FIPS_CHK_FAIL.
+            - Consume entropy through rv_core_ibex.RND_DATA and verify, using rv_core_ibex.RND_STATUS, that the received bits are FIPS NON-compliant.
+            - Disable the entropy complex.
+            - Enable ENTROPY_SRC in FIPS mode.
+            - Enable CSRNG.
+            - Enable EDN1 and EDN0 in auto request mode and with non-deterministic seeds (flag0 = kMultiBitBool4False for Instantiate and Reseed commands).
+            - Re-launch the OTBN program.
+            - Verify that the OTBN program completes (entropy available) and that OTBN does not set ERR_BITS.RND_FIPS_CHK_FAIL.
+            - Consume entropy through rv_core_ibex.RND_DATA and verify, using rv_core_ibex.RND_STATUS, that the received bits are FIPS compliant.
+            '''
+      features: [
+        EDN.MODE.BOOT,
+        EDN.MODE.AUTO,
+        EDN.TRACK_SEED_COMPLIANCE
+      ]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_edn_boot_mode"]
+      bazel: ["//sw/device/tests:edn_boot_mode"]
+    },
+    {
+      name: chip_sw_edn_auto_mode
+      desc: '''Verify EDN operation in auto request mode.
+
+            Verify that EDN delivers entropy in auto request mode.
+
+            Procedure:
+            - Disable the entropy complex.
+            - Enable ENTROPY_SRC in FIPS mode.
+            - Enable CSRNG.
+            - Enable EDN0 and EDN1 in auto request mode and with non-deterministic seeds (flag0 = kMultiBitBool4False for Instantiate and Reseed commands).
+            - Trigger the execution of various cryptographic hardware blocks consuming entropy to stress test the EDNs.
+            - Verify that all entropy consuming endpoints can finish their operations and do not hang.
+            - Repeat the procedure with different EDN configurations.
+              In particular, modify:
+              - The command length or amount of optional additional data.
+              - The generate length parameter.
+              - The MAX_NUM_REQS_BETWEEN_RESEEDS register.
+            '''
+      features: [
+        EDN.MODE.AUTO
+      ]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_edn_auto_mode"]
+      bazel: ["//sw/device/tests:edn_auto_mode"]
+    },
+    {
+      name: chip_sw_edn_sw_mode
+      desc: '''Verify EDN operation in software port mode.
+
+            Verify that EDN delivers entropy in software port mode.
+
+            Procedure:
+            - Disable the entropy complex.
+            - Enable ENTROPY_SRC in FIPS mode.
+            - Enable CSRNG.
+            - Enable EDN1 in auto request mode.
+            - Enable EDN0 in software port mode.
+            - Trigger the execution of a cryptographic hardware block consuming entropy (e.g., AES) to test EDN0.
+            - Verify that the entropy consuming endpoint hangs.
+            - Provide the required commands to EDN0 via SW_CMD_REQ register to start generating and delivering entropy to consumers.
+            - Verify that the entropy consuming endpoint can finish its operations and does not hang.
+            '''
+      features: [
+        EDN.MODE.SW
+      ]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_edn_sw_mode"]
+      bazel: ["//sw/device/tests:edn_sw_mode"]
+    },
+    {
+      name: chip_sw_edn_kat
+      desc: '''Perform a Known-Answer Test with EDN.
+
+            Verify that EDN delivers the expected entropy bits when running CSRNG in fully deterministic mode.
+
+            Procedure:
+            - Disable the entropy complex.
+            - Enable ENTROPY_SRC in FIPS mode.
+            - Enable CSRNG.
+            - Enable EDN1 in auto request mode.
+            - Enable EDN0 in auto request mode with the following configuration:
+              - Use deterministic seeds (set flag0 = kMultiBitBool4True in all instantiate/reseed application command headers sent to CSRNG).
+                This causes CSRNG to ignore the seed provided by ENTROPY_SRC and exclusively use the optional additional data provided by EDN.
+              - Set the command length or amount of optional additional data for the Instantiate and Reseed commands to 12 words.
+              - Set the generate length parameter for the Generate command to 4 blocks.
+              - Provide the correct seed material for the Instantiate and Reseed commands.
+              - For an example, refer to `chip_sw_csrng_kat_test`.
+            - Verify that EDN0 delivers the expected entropy bits using the rv_core_ibex.RND_DATA and rv_core_ibex.RND_STATUS registers.
+            - Disable the entropy complex.
+            - Enable ENTROPY_SRC in FIPS mode.
+            - Enable CSRNG.
+            - Enable EDN1 in auto request mode.
+            - Enable EDN0 in auto request mode with the following configuration:
+              - Use deterministic seeds (set flag0 = kMultiBitBool4True in all instantiate/reseed application command headers sent to CSRNG).
+              - Set the command length or amount of optional additional data for the Instantiate and Reseed commands to 12 words.
+              - Set the generate length parameter for the Generate command to 1 block.
+              - Set the max_num_reqs_between_reseeds parameter for the Generate command to 1.
+              - Provide the correct seed material for the Instantiate and Reseed commands.
+              - For an example, refer to `chip_sw_aes_masking_off_test`.
+            - Verify that EDN0 triggers a recoverable alert and sets the RECOV_ALERT_STS.EDN_BUS_CMP_ALERT bit as more entropy is consumed via rv_core_ibex.RND_DATA and CSRNG continues to provide the same entropy bits to EDN0.
+            '''
+      features: [
+        EDN.MODE.AUTO,
+        EDN.BUS_CMP_ALERT
+      ]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_edn_kat"]
+      bazel: ["//sw/device/tests:edn_kat"]
+    },
+  ]
+}

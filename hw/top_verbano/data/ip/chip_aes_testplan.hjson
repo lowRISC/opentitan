@@ -1,0 +1,410 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: aes
+  testpoints: [
+    {
+      name: chip_sw_aes_enc
+      desc: '''Verify the AES operation.
+
+            Procedure:
+            -Set up the desired operation, ECB mode, 256b key length, and set the engine to
+            manual operation. Set mask_reseeding to 1 per block.
+            -Trigger the encryption by loading the plaintext.
+            -Wait for the AES operation to complete by polling the status register and read the
+            result.
+
+            -The above procedure should be performed twice. First for encryption. Second for
+            decryption of the result using the same key.
+            -Check that the decryption result matches the original plaintext.
+            '''
+      features: [
+        "AES.MODE.ECB",
+        "AES.KEY_LEN.256",
+        "AES.MANUAL_OPERATION",
+      ]
+      stage: V2
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "PROD"]
+      tests: ["chip_sw_aes_enc",
+              "chip_sw_aes_enc_jitter_en"]
+      bazel: [
+        "//sw/device/tests:aes_smoketest",
+        "//sw/device/tests/crypto:aes_kwp_kat_functest",
+        "//sw/device/tests/crypto:aes_kwp_functest"
+      ]
+    }
+    {
+      name: chip_sw_aes_multi_block
+      desc: '''Verify the AES operations on multi-block messages.
+            This test should be performed for all supported modes (ECB, CBC, CFB-128, OFB and CTR)
+            and all supported key lengths (128/192/256).
+
+            Note: The number of message blocks has to be at least 4.
+
+            Note: AES should start this test using the automatic (default) operation. This means
+                  that the MANUAL_OPERATION bit in CTRL_SHADOWED register is set to 0.
+
+            Procedure:
+            -Configure the desired operation, mode, key length, and set the engine to automatic
+             operation. Configure the IV for modes that require it.
+            -Using dif_aes_start()  and dif_aes_process_data(), encrypt the message.
+            -Check the output for correctness against the expected value.
+
+            -The above procedure should be performed twice. First for encryption. Second for
+            decryption of the result using the same key (and same IV if needed).
+            -Check that the decryption result matches the original plaintext.
+            '''
+      features: [
+        "AES.MODE.ECB",
+        "AES.MODE.CBC",
+        "AES.MODE.CFB-128",
+        "AES.MODE.OFB",
+        "AES.MODE.CTR",
+        "AES.KEY_LEN.128",
+        "AES.KEY_LEN.192",
+        "AES.KEY_LEN.256",
+      ]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: [
+        "//sw/device/tests/crypto:aes_functest",
+      ]
+    }
+    {
+      name: chip_sw_aes_interrupt_encryption
+      desc: '''Verify that a multi-block encryption can be interrupted and continued.
+
+            This test should:
+              - start the encryption of a four-block message.
+              - interrupt it after two blocks by reading back the IV register.
+              - perform an encryption of a different message using a different key.
+              - re-store and complete the original encryption
+
+            Note: AES should start this test using the automatic (default) operation. This means
+                  that the MANUAL_OPERATION bit in CTRL_SHADOWED register is set to 0.
+
+            Procedure:
+            -Configure encryption using the desired mode, key length, IV, and set the engine to
+            automatic operation.
+            -Using dif_aes_process_data, encrypt the first two blocks.
+            -Using dif_aes_read_iv read the IV. Note that AES has automatically updated the content
+             of this register. This IV will be needed later to continue this encryption.
+            -De-initialize automatic operation. This step is necessary to clear all registers.
+            -Perform an encryption using a different data and key. Message size, key size and mode
+             can be chosen arbitrarily.
+            -Continue the original encryption:
+                -Configure the operation using the previously read IV
+                -Process the remaining plaintext blocks using dif_aes_process_data
+            -Decrypt the result (using the original key and IV)
+            -Check that the decryption result matches the original plaintext.
+            '''
+      features: [
+        "AES.MODE.CBC",
+        "AES.MODE.CFB-128",
+        "AES.MODE.OFB",
+        "AES.MODE.CTR",
+      ]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: ["//sw/device/tests:aes_interrupt_encryption_test"]
+    }
+    {
+      name: chip_sw_aes_entropy
+      desc: '''Verify the AES entropy input used by the internal PRNGs.
+
+            - Configure encryption using the CBC mode, key length 256, and set the engine to
+              manual operation.
+            - Write the initial key share, IV and data in CSRs (known combinations).
+            - Write the PRNG_RESEED bit to reseed the internal state of the PRNG.
+            - Poll the status idle bit to ensure reseed operation is complete.
+            - Trigger the AES operation to run and wait for it to complete.
+            - Check the ciphertext against the expected value.
+            - Write the KEY_IV_DATA_IN_CLEAR and DATA_OUT_CLEAR trigger bits to 1 and wait for it to
+              complete by polling the status idle bit.
+            - Read back the data out CSRs - they should all read garbage values.
+            - Assertion check verifies that the IV are also garbage, i.e. different from the
+              originally written values.
+            '''
+      features: [
+        "AES.MODE.CBC",
+        "AES.CLEAR.DATA_OUT",
+        "AES.CLEAR.KEY_IV_DATA_IN",
+      ]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_aes_entropy"]
+      bazel: ["//sw/device/tests:aes_entropy_test"]
+    }
+    {
+      name: chip_sw_aes_prng_reseed
+      desc: ''' Verify that the AES module halts when a PRNG reseed is
+            required but the entropy complex is disabled, and resumes
+            encryption once the entropy complex is re-enabled.
+
+            Procedure:
+            - After proper initialization of the AES and entropy modules,
+              configure the AES encryption operation to process a number of
+              blocks with:
+              - Operation: Encrypt
+              - Mode: ECB
+              - Key Length: 128 bits
+              - Key Provider: Software-provided key
+              - Manual Operation: Disabled (Automatic operation)
+              - Mask Reseeding: Reseed per 64 blocks
+                (`kDifAesReseedPer64Block`)
+              - Reseed on Key Change: Enabled
+              - Force Masks: Disabled
+
+            - Generate AES key.
+
+            - Initialize the AES module and start the AES operation using
+              `dif_aes_start()`.
+
+            - Process blocks using the following steps:
+              - Disable entropy for a block fewer than 64.
+              - For each block,
+                  - Continue encrypting blocks (fewer than 64 blocks)
+                  - Once processing reaches the block where the entropy complex
+                    is disabled
+                    - Disable the entire entropy complex using
+                      `entropy_testutils_stop_all()`.
+                    - This will halt the AES module when a PRNG reseed is
+                      required (i.e after 64 blocks).
+                  - Re-enable the entropy complex to resume encryption:
+                    - Verify that the AES module is halted by checking that
+                      `kDifAesStatusOutputValid` is not set for the 63rd block
+                    - Re-enable the entropy complex using
+                      `entropy_testutils_auto_mode_init()`.
+                    - Wait for some time for the entropy complex to stabilize.
+                    - Wait for the AES module to produce output valid
+                      (`kDifAesStatusOutputValid`).
+                    - Read the encrypted output data using
+                      `dif_aes_read_output()`.
+
+            - Finish the AES encryption operation by calling `dif_aes_end()`.
+
+            - Verify that the AES module is idle at the end of the encryption
+              operation (`kDifAesStatusIdle`).
+            - Repeat the test for a reseed rate kDifAesReseedPer8kBlock and
+              a message longer than 8K blocks.
+
+            Expected Outcome:
+            - The AES module halts when a PRNG reseed is required but the
+              entropy complex is disabled.
+            - After re-enabling the entropy complex, the AES module resumes
+              encryption and produces the expected output.
+            - The test verifies that the AES module correctly handles halting
+              and resuming based on the availability of entropy and the
+              configured mask reseeding rate.
+            '''
+      features: [
+        "AES.MODE.ECB",
+        "AES.PRNG.RESEED_RATE",
+      ]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: ["//sw/device/tests:aes_prng_reseed_test"]
+    }
+    {
+      name: chip_sw_aes_force_prng_reseed
+      desc: '''Verify that the AES module stalls/halts when the entropy
+            complex is disabled before starting encryption and enables
+            output of encryption once the entropy complex is re-enabled.
+
+            Procedure:
+            - After proper initialization of AES and entropy modules, disable
+              the entire entropy complex using `entropy_testutils_stop_all()`.
+              - Configure the AES encryption operation to process some number of
+                blocks with:
+                - Operation: Encrypt
+                - Mode: ECB
+                - Key Length: 128 bits
+                - Key Provider: Software-provided key
+                - Manual Operation: Enabled
+                - Mask Reseeding: Reseed per block
+                - Reseed on Key Change: Enabled (When KEY_TOUCH_FORCES_RESEED is
+                  set, the PRNG reseed is triggered every time a key changes)
+                - Force Masks: Enabled
+              - Generate AES key.
+              - At this point dif_aes_start() will write the key register which
+                will trigger reseed request.
+              - This request will stall the output of the encrypted data until
+                entropy is re-enabled.
+              - Verify that the AES module is halted by checking that
+                `kDifAesStatusOutputValid` is not set.
+              - Re-enable the entropy complex using
+                `entropy_testutils_auto_mode_init()`.
+              - Wait for some time for the entropy complex to stabilize.
+              - Wait for the AES module to produce output valid
+                (`kDifAesStatusOutputValid`).
+              - Read the encrypted output data using `dif_aes_read_output()`.
+              - Process all the blocks and ensure AES completes encryption
+                operation.
+                - Verify that the AES module is idle at the end of encryption
+                  operation (`kDifAesStatusIdle`).
+
+              Expected Outcome:
+              - The AES module halts output when the entropy complex is disabled
+                before starting encryption.
+              - After re-enabling the entropy complex, the AES module resumes
+                encryption and produces the expected output.
+              - The test verifies that the AES module correctly handles halting
+                and resuming based on the availability of entropy.
+            '''
+      features: [
+        "AES.MODE.ECB",
+        "AES.PRNG.KEY_TOUCH_FORCES_RESEED",
+      ]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: ["//sw/device/tests:aes_force_prng_reseed_test"]
+    }
+    {
+      name: chip_sw_aes_stall_test
+      desc: '''Verify that the AES module's stall bit assertion
+            when multiple input blocks are loaded without reading
+            output data, and resumes encryption once the output data is read.
+
+            Procedure:
+            - Initialize the AES.
+            - Configure the AES encryption operation with the following settings:
+              - Operation: Encrypt
+              - Mode: ECB
+              - Key Length: 128 bits
+              - Key Provider: Software-provided key
+              - Mask Reseeding: Reseed per block
+              - Manual Operation: Auto
+              - Reseed on Key Change: Enabled
+              - Force Masks: Enabled
+            - Generate an AES key and load it for encryption.
+            - Prepare input blocks with random plaintext data.
+            - Load multiple blocks into AES without reading output data to simulate
+              a stall condition.
+              - Verify that `kDifAesStatusStall` is set.
+            - Once the AES is stalled, read the output blocks one by one.
+              - Verify that reading the output clears the stall condition.
+            - Ensure the AES encryption operation completes successfully
+              and that the AES module reaches the idle state at the end of the test.
+
+            Expected Outcome:
+            - AES enters a stall condition when multiple input blocks are loaded without
+              reading output.
+            - Reading the output clears the stall condition, allowing AES to resume
+              encryption.
+            - The test verifies correct handling of the stall condition and that
+              the AES operation completes as expected.
+            '''
+      features: [
+        "AES.MODE.ECB",
+        "AES.STATUS.STALL",
+      ]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: ["//sw/device/tests:aes_stall_test"]
+    }
+    {
+      name: chip_sw_aes_idle
+      desc: '''Verify AES idle signaling to clkmgr.
+
+            - Write the AES clk hint to 0 within clkmgr to indicate AES clk can be gated and
+              verify that the AES clk hint status within clkmgr reads 0 (AES is disabled).
+            - Write the AES clk hint to 1 within clkmgr to indicate AES clk can be enabled.
+            - Initiate an AES operation with a known key, plain text and digest, write AES clk
+              hint to 0 and verify that the AES clk hint status within clkmgr now reads 1 (AES
+              is enabled), before the AES operation is complete.
+            - After the AES operation is complete verify that the AES clk hint status within
+              clkmgr now reads 0 again (AES is disabled).
+            - Write the AES clk hint to 1, read and check the AES output for correctness.
+            '''
+      features: [
+        "AES.MODE.ECB",
+      ]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_aes_idle"]
+      bazel: ["//sw/device/tests:aes_idle_test"]
+    }
+    {
+      name: chip_sw_aes_sideload
+      desc: '''Verify the AES sideload mechanism.
+
+            - Configure the keymgr to generate an aes key.
+            - Configure the AES to use the sideloaded key.
+            - Load the plaintext into the AES.
+            - Trigger the AES encryption and wait for it to complete.
+            - Verify that the ciphertext is different from the plaintext.
+            - Load the ciphertext into the AES.
+            - Trigger the AES decryption and wait for it to complete.
+            - Verify that the output is equal to the plain text.
+            - Clear the key in the keymgr and decrypt the ciphertext again.
+            - Verify that output is not equal to the plain text.
+            '''
+      features: [
+        "AES.MODE.ECB",
+        "AES.KEY.SIDELOAD",
+      ]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD", "DEV"]
+      tests: ["chip_sw_keymgr_sideload_aes"]
+      bazel: [
+        "//sw/device/tests/crypto:aes_sideload_functest",
+        "//sw/device/tests/crypto:aes_kwp_sideload_functest",
+        "//sw/device/tests:keymgr_sideload_aes_test",
+      ]
+    }
+    {
+      name: chip_sw_aes_masking_off
+      desc: '''Verify the AES masking off feature for ES.
+
+            - Perform known-answer test using CSRNG SW application interface.
+            - Verify CSRNG produces the deterministic seed leading to an all-zero output of the AES
+              masking PRNG.
+            - Configure EDN to perform a CSRNG instantiate followed by repeated generate and reseed
+              commands using the maximum amount of additional data and no entropy input in automatic
+              mode.
+            - Let CSRNG produce and forward to EDN the deterministic seed leading to an all-zero
+              output of the AES masking PRNG.
+            - Initialize AES and set the force_masks configuration bit.
+            - Configure an AES key of which the second share is zero.
+            - Trigger a reseed operation of the masking PRNG inside AES to load the deterministic
+              seed produced by CSRNG and distributed by EDN.
+            - Verify that the masking PRNG outputs an all-zero vector. (Note: This may not be
+              possible to verify in silicon.)
+            - Encrypt a message of multiple blocks using AES.
+            - Verify that the second share of the initial, intermediate and output state is zero.
+            - Verify that the second share of the SubBytes input and output is zero. (Note: This
+              may not possible to verify in silicon.)
+            - Verify that the produced cipher text is correct.
+            - Repeat the entire procedure with PRNG_RESEED_RATE set to PER_1. Verify that the
+              second share of intermediate and output state is not zero.
+
+            Notes for silicon targets:
+            - The AES.PRNG.FORCE_MASKS feature is relevant for penetration testing only and a SCA evaluation setup is required for its verification.
+              This is done using other routines as part of the experimental setup for penetration testing.
+              The only thing that can be tested on silicon / FPGA for SiVal is the known-answer test using the CSRNG SW application interface for which a dedicated SiVal test exists.
+              For this reason, the chip_sw_aes_masking_off test is run in simulation only.
+            '''
+      features: [
+        "AES.PRNG.FORCE_MASKS"
+      ]
+      stage: V2S
+      si_stage: NA
+      tests: ["chip_sw_aes_masking_off"]
+     }
+  ]
+}

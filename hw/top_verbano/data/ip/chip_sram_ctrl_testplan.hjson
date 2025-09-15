@@ -1,0 +1,192 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: sram_ctrl
+  testpoints: [
+    // SRAM (pre-verified IP) integration tests:
+    {
+      name: chip_sw_sram_scrambled_access
+      desc: '''Verify scrambled memory accesses to both main and retention SRAMs.
+
+            - Initialize the entropy_src subsystem to enable OTP_CTRL fetch random data (already
+              done by the test_rom startup code).
+            - Trigger both SRAMs to fetch a new key and nonce from the OTP_CTRL
+            - Drive the CPU to perform random accesses to both RAMs and verify these operations
+              complete successfully by using the backdoor interface
+            - Fetch a new key from the OTP_CTRL and ensure that the previous contents cannot be
+              read anymore.
+            - Verify the validity of EDN's output to OTP_CTRL via assertions
+              (unique, non-zero data).
+
+            Note: In simulation, this uses a backdoor interface. However, most of the test should be
+                  possible on a silicon target (with no EDN assertions, and no backdoor accesses to
+                  check operations).
+            '''
+      features: ["SRAM_CTRL.SCRAMBLED"]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_sram_ctrl_scrambled_access",
+              "chip_sw_sram_ctrl_scrambled_access_jitter_en"]
+      bazel: ["//sw/device/tests:sram_ctrl_scrambled_access_test"]
+    }
+    {
+      name: chip_sw_sleep_sram_ret_contents
+      desc: '''Verify that the data within the retention SRAM survives low power entry-exit and reset.
+
+            Ensure that the data within the retention SRAM survives as described in this table.
+              |             Mode             | Scrambled | Data Preserved |
+              |:----------------------------:|:---------:|:--------------:|
+              |          Normal sleep        |    No     |       Yes      |
+              |           Deep sleep         |    No     |       Yes      |
+              | Reset due to a reset request |    No     |       Yes      |
+              |          Normal sleep        |    Yes    |       Yes      |
+              |           Deep sleep         |    Yes    |       Yes      |
+              | Reset due to a reset request |    Yes    |       No       |
+
+            Notes for silicon targets:
+            - This test has an empty list of associated "features" because those list block-level
+              features and this is really testing a chip-level property.
+            '''
+      features: []
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: [
+        "chip_sw_sleep_sram_ret_contents_no_scramble",
+        "chip_sw_sleep_sram_ret_contents_scramble",
+      ]
+      bazel: [
+        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_no_scramble_test",
+        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_scramble_test",
+      ]
+    }
+    {
+      name: chip_sw_sram_execution
+      desc: '''Verify that CPU can fetch instructions from SRAM if enabled.
+
+            - Create the following combinations of 8 scenarios:
+              - The fetch enable bit in the HW_CFG1 partition of OTP controller set and not set.
+              - A life cycle state that enables (TEST_UNLOCKED, DEV or RMA) and disables (PROD)
+                hardware debug.
+              - The execution CSR programmed to be enabled and disabled.
+
+            - For both, main and the retention SRAM in each of these 8 scenarios:
+              - Load instruction data into the SRAMs.
+              - If the instruction execution is enabled, verify that the CPU can fetch and execute
+                the instruction from the SRAM correctly.
+              - If the instruction execution is not enabled, verify that the SRAM throws an error
+                response via an exception handler.
+
+            The following table indicates in which of these scenarios should the instruction
+            execution be enabled, for both, main and the retention SRAM instances.
+
+              | OTP HW_CFG1[IFETCH] | HW_DEBUG_EN via LC state | EXEC CSR | MAIN SRAM | RET SRAM |
+              |:------------------:|:------------------------:|:--------:|:---------:|:--------:|
+              |          0         |             0            |     0    |  disabled | disabled |
+              |          0         |             0            |     1    |  disabled | disabled |
+              |          0         |             1            |     0    |  enabled  | disabled |
+              |          0         |             1            |     1    |  enabled  | disabled |
+              |          1         |             0            |     0    |  disabled | disabled |
+              |          1         |             0            |     1    |  enabled  | disabled |
+              |          1         |             1            |     0    |  disabled | disabled |
+              |          1         |             1            |     1    |  enabled  | disabled |
+
+            For the retention SRAM, instruction fetch is completely disabled via design parameter.
+
+            Notes for silicon targets:
+
+            - This test will be reasonably trivial for silicon validation, because the behaviour
+              depends on lifecycle state and we're expecting to do these tests on PROD silicon,
+              where execution from SRAM is disallowed.
+
+            '''
+      features: ["SRAM_CTRL.FETCH_ALLOW"]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_sram_ctrl_execution_main"]
+      bazel: ["//sw/device/tests:sram_ctrl_execution_test"]
+    }
+    {
+      name: chip_sw_sram_lc_escalation
+      desc: '''Verify the LC escalation path to the SRAMs.
+
+            - Configure the LC_CTRL to trigger an escalation request to the SRAMs.
+            - Verify that the SRAMs stop accepting and responding to new memory requests.
+            - Reset the system to exit the terminal escalation state.
+            - Re-initialize the SRAMs and verify that they can now respond correctly to
+              any further memory requests.
+
+            X-ref with chip_sw_all_escalation_resets and chip_sw_data_integrity.
+            '''
+      features: ["SRAM_CTRL.LOCK_ON_ERROR"]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["RMA"]
+      tests: ["chip_sw_all_escalation_resets",
+              "chip_sw_data_integrity_escalation"]
+      bazel: ["//sw/device/tests:sram_ctrl_lc_escalation_test"]
+    }
+
+    {
+      name: chip_sw_sram_memset
+      desc: '''Use the LFSR-based initialisation mechanism to wipe the contents of SRAM.
+
+             - Write some known data to the main SRAM and read it back to make sure the write worked
+               as expected.
+             - Use the INIT CSR for the relevant sram_ctrl to request that the memory is filled with
+               pseudo-random data.
+             - Read the location from the SRAM and check that the data has been wiped.
+             - Repeat the steps above for the retention SRAM.
+
+             '''
+      features: ["SRAM_CTRL.MEMSET"]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: ["//sw/device/tests:sram_ctrl_memset_test"]
+    }
+    {
+      name: chip_sw_sram_readback
+      desc: '''Enable the SRAM readback feature and write and read data from and to the SRAM.
+
+             - Enable the SRAM readback feature.
+             - Write some known data to the ret. SRAM and read it back to make sure the write worked
+               as expected.
+             - Use the INIT CSR for the relevant sram_ctrl to request that the memory is filled with
+               pseudo-random data.
+             - Read the location from the SRAM and check that the data has been wiped.
+             - Repeat the steps above with the disabled SRAM readback feature.
+             - Lock the SRAM readback configuration register and try to set it.
+
+             '''
+      features: ["SRAM_CTRL.READBACK"]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: ["//sw/device/tests:sram_ctrl_readback_test"]
+    }
+    {
+      name: chip_sw_sram_subword_access
+      desc: '''Check that subword access works for each SRAM.
+
+             - Initialise a region of the SRAM with known patterns.
+             - Read subwords (each length from one byte upwards; each address modulo 8) and check
+               they have the expected values.
+             - Write subwords (same list as above) and read back the whole word that we touch in
+               each case. Check that only the expected bytes have been changed.
+
+             '''
+      features: ["SRAM_CTRL.SUBWORD_ACCESS"]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: ["//sw/device/tests:sram_ctrl_subword_access_test"]
+    }
+  ]
+}

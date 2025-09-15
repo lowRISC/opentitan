@@ -1,0 +1,375 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: rv_dm
+  testpoints: [
+    // RV_DM (JTAG) tests:
+    {
+      name: chip_jtag_csr_rw
+      desc: '''
+            Verify accessibility of all the CSRs in the chip over JTAG.
+
+            - Shuffle the list of CSRs first to remove the effect of ordering.
+            - Write all CSRs via JTAG interface with a random value.
+            - Shuffle the list of CSRs yet again.
+            - Read all CSRs back and check their values for correctness while adhering to the CSR's
+              access policies.
+            - Accesses to CSRs external to `rv_dm` go through RV_DM SBA interface into the `xbar`.
+
+            For silicon validation, instead of randomised testing to all CSRs, one CSR for each IP is tested.
+            '''
+      stage: V2
+      si_stage: SV3
+      tests: ["chip_jtag_csr_rw"]
+      bazel: ["//sw/device/tests:rv_dm_csr_rw_test_unlocked1",
+              "//sw/device/tests:rv_dm_csr_rw_dev_rv_dm_default_enabled",
+              "//sw/device/tests:rv_dm_csr_rw_dev_rv_dm_delayed_enabled",
+              "//sw/device/tests:rv_dm_csr_rw_rma"],
+      lc_states: ["DEV"]
+      host_support: true
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM"
+      ]
+    }
+    {
+      name: chip_jtag_mem_access
+      desc: '''
+            Verify accessibility of all the memories in the chip over JTAG.
+
+            This test will target the following memories in the chip:
+              sram_main, sram_ret, otbn i|dmem, ROM
+
+            - Shuffle the list of memories first to remove the effect of ordering.
+            - Write a location in a randomly chosen set of addresses within each memory via JTAG
+              interface with random values.
+            - For read-only memories:
+               - In simulation preload the memory with random data via backdoor.
+               - For silicon choose some known values and addresses in these memories and shuffle
+                 these to choose one from each for the test.
+            - Shuffle the list of memories again.
+            - Read the previously written addresses in the memories back again and check the read
+              value for correctness. Pick some random addresses to verify in case of read-only
+              memories.
+            '''
+      stage: V2
+      si_stage: SV3
+      tests: ["chip_jtag_mem_access"]
+      bazel: ["//sw/device/tests:rv_dm_mem_access_test_unlocked1",
+              "//sw/device/tests:rv_dm_mem_access_dev_rv_dm_default_enabled",
+              "//sw/device/tests:rv_dm_mem_access_dev_rv_dm_delayed_enabled",
+              "//sw/device/tests:rv_dm_mem_access_rma"],
+      lc_states: ["DEV"]
+      host_support: true
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM",
+        "RV_DM.DBG.SBA"
+      ]
+    }
+    {
+      name: chip_rv_dm_perform_debug
+      desc: '''
+            - X-ref'ed with rom_e2e_jtag_debug from rom testplan.
+
+            Verify that ROM can be debugged in appropriate life cycle states.
+
+            `CREATOR_SW_CFG_ROM_EXEC_EN` should be set to `0`.
+
+            - Verify that ROM can be debugged in TEST, DEV, and RMA life cycle states.
+              - Test debugging with commands to GDB connected via OpenOCD and JTAG (or the
+                SystemVerilog based JTAG debugger model in case of DV simulations).
+              - Read back GDB responses to check they match expected behaviour
+              - Connect a debugger and verify that ROM halts very early in `rom_start.S`.
+              - Trial the following activities within GDB, ensuring the correct
+                behaviour is seen:
+                - Halting execution and resetting
+                - Setting, hitting and deleting breakpoints using all available hardware breakpoints
+                - Single stepping
+                  - In particular single step over `wfi`
+                - Reading and writing all registers
+                - Reading all CSRs and writing some (write set TBD)
+                - Reading and writing memory (both SRAM and device)
+                - Setting the PC to jump to some location
+                - Executing code from GDB (using the call command)
+              - Verify that ROM fails to boot with `BFV:0142500d`.
+            '''
+      stage: V3
+      si_stage: SV3
+      tests: ["rom_e2e_jtag_debug_test_unlocked0", "rom_e2e_jtag_debug_dev",
+              "rom_e2e_jtag_debug_rma"]
+      bazel: [
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_dev",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_prod",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_prod_end",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_rma",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_test_unlocked0"
+      ],
+      lc_states: ["DEV"]
+      host_support: true
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM",
+        "RV_DM.DBG.GDB"
+      ]
+    }
+    {
+      name: chip_rv_dm_ndm_reset_req
+      desc: '''Verify non-debug reset request initiated from RV_DM when the chip is awake.
+
+            - Program some CSRs / mem that are under life cycle reset tree and system reset tree.
+            - Configure RV_DM to send NDM reset request to reset system reset tree.
+            - While NDM reset is ongoing, ensure the RV_DM debug module registers can still be
+              accessed.
+            - Read the programmed CSRs / mem to ensure that everything under system reset tree is
+              reset to the original values, while values under life cycle reset will be preserved.
+            - Read CSRs / mem in the debug domain to ensure that the values survive the reset.
+            '''
+      stage: V2
+      si_stage: SV2
+      tests: ["chip_rv_dm_ndm_reset_req"]
+      bazel: ["//sw/device/tests:rv_dm_ndm_reset_req_test_unlocked1",
+              "//sw/device/tests:rv_dm_ndm_reset_req_dev",
+              "//sw/device/tests:rv_dm_ndm_reset_req_rma"],
+      lc_states: ["DEV"]
+      host_support: true
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM",
+        "RV_DM.DBG.NDM_RESET"
+      ]
+    }
+    {
+      name: chip_sw_rv_dm_ndm_reset_req_when_cpu_halted
+      desc: '''Verify non-debug reset request initiated from RV_DM when the CPU  is in halted state.
+
+            - Initialize the DUT in a HW-debug enabled life cycle state.
+            - Activate the RISCV debug module.
+            - Run some SW test on the CPU.
+            - Initiate a CPU halt request via JTAG.
+            - Wait for the CPU to be in halted state via JTAG by polling dmstatus.anyhalted.
+            - Deassert the CPU haltreq and verify that we are still in halted state.
+            - (Optional) Using the abstract command, read the dcsr register to verify the cause
+              reflects the debug halt request.
+            - Issue an NDM reset request. All non-debug parts of the chip should reset. Read the
+              dmstatus.anyhalted / dvstatus.allhalted and verify that they are cleared.
+            - Verify that the debug logic is fully accessible during this time, while the NDM reset
+              is being processed and the chip is rebooted, by continuously accessing the DMI
+              register space in `rv_dm` over JTAG.
+            - De-assert the NDM reset request and wait for the CPU to reboot and finish the post-NDM
+              reset phase of the test.
+            '''
+      stage: V2
+      si_stage: SV3
+      tests: ["chip_sw_rv_dm_ndm_reset_req_when_cpu_halted"]
+      bazel: ["//sw/device/tests:rv_dm_ndm_reset_req_when_cpu_halted_test_unlocked1",
+              "//sw/device/tests:rv_dm_ndm_reset_req_when_cpu_halted_dev",
+              "//sw/device/tests:rv_dm_ndm_reset_req_when_cpu_halted_rma"],
+      lc_states: ["DEV"]
+      host_support: true
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM",
+        "RV_DM.DBG.NDM_RESET"
+      ]
+    }
+    {
+      name: chip_rv_dm_access_after_wakeup
+      desc: '''Verify RV_DM works after wakes up from sleep.
+
+            - Put the chip into sleep mode and then wake up (both deep sleep and normal sleep).
+            - If waking up from normal sleep, an activation should not be required for RV_DM CSR
+              accesses to work.
+            - If waking up from deep sleep, an activation is required for RV_DM CSR accesses to work.
+            '''
+      stage: V2
+      si_stage: SV3
+      tests: ["chip_sw_rv_dm_access_after_wakeup"]
+      bazel: ["//sw/device/tests:rv_dm_access_after_wakeup_test_unlocked1",
+              "//sw/device/tests:rv_dm_access_after_wakeup_dev",
+              "//sw/device/tests:rv_dm_access_after_wakeup_rma"],
+      lc_states: ["DEV"]
+      host_support: true
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM"
+      ]
+    }
+    {
+      name: chip_sw_rv_dm_access_after_hw_reset
+      desc: '''Verify RV_DM works after a watchdog or escalated reset.
+
+            - Access some RV_DM CSRs both before and after resets.
+            - An activation would be required, as the tap strap would also be sampled again.
+            '''
+      stage: V3
+      si_stage: SV3
+      tests: ["chip_sw_rv_dm_access_after_escalation_reset"]
+      bazel: ["//sw/device/tests:rv_dm_access_after_hw_reset_test_unlocked1",
+              "//sw/device/tests:rv_dm_access_after_hw_reset_dev",
+              "//sw/device/tests:rv_dm_access_after_hw_reset_rma"],
+      lc_states: ["DEV"]
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM"
+      ]
+    }
+    {
+      name: chip_sw_rv_dm_jtag_tap_sel
+      desc: '''Verify ability to select all available TAPs.
+
+            - Put life cycle on Test or RMA state, so that TAPs can be selected between life cycle
+              RV_DM and DFT.
+            - Verify the TAP is selected correctly.
+            - X-ref'ed with chip_sw_tap_strap_sampling.
+            '''
+      stage: V2
+      si_stage: SV2
+      tests: ["chip_tap_straps_rma"]
+      bazel: ["//sw/device/tests:rv_dm_jtag_tap_sel_test_unlocked1",
+              "//sw/device/tests:rv_dm_jtag_tap_sel_dev",
+              "//sw/device/tests:rv_dm_jtag_tap_sel_prod",
+              "//sw/device/tests:rv_dm_jtag_tap_sel_rma"],
+      lc_states: ["DEV"]
+      host_support: true
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM"
+      ]
+    }
+    {
+      name: chip_rv_dm_lc_disabled
+      desc: '''Verify that the debug capabilities are disabled in certain life cycle stages.
+
+            ## Procedure
+
+            - Put life cycle in a random life cycle state.
+            - Verify that the rv_dm bus device is inaccessible from the CPU as well as external JTAG
+              if the life cycle state is not in TEST_UNLOCKED*, DEV or RMA.
+            - The bus access check is performed by randomly reading or writing a CSR inside the
+              RV_DM and checking whether the TL-UL bus errors out.
+            - The JTAG access check is performed by writing and then reading a register that is
+              accessible via the TAP/DMI inside the RV_DM. If the JTAG wires are gated, it is
+              expected that the RV_DM returns all-zero instead of the written value.
+            - X-ref'ed with `chip_tap_strap_sampling`
+
+            ### Late debug enable
+            - In DEV life cycle stage test the following scenarios:
+              - rv_dm is accessible via CPU and JTAG when OTP DIS_RV_DM_LATE_DEBUG is set to true.
+              - rv_dm is accessible via CPU only when OTP DIS_RV_DM_LATE_DEBUG is set to false and
+                the late_debug_enable register is set to false.
+              - rv_dm is accessible via CPU and JTAG when OTP DIS_RV_DM_LATE_DEBUG is set to false
+                and the late_debug_enable register is set to true.
+
+            ## Silicon validation
+
+            - For post silicon validation the test cannot change lifecycle mode. Instead it must
+              discover the lifecycle of the device it is being run against and act appropriately
+              (noting in particular it will not be able to execute code on Ibex in some life cycle
+              states).
+            '''
+      stage: V2
+      si_stage: SV2
+      tests: ["chip_rv_dm_lc_disabled"],
+      bazel: [
+        "//sw/device/tests:rv_dm_lc_disabled_tl_test_unlocked1",
+        "//sw/device/tests:rv_dm_lc_disabled_tl_dev",
+        "//sw/device/tests:rv_dm_lc_disabled_tl_prod",
+        "//sw/device/tests:rv_dm_lc_disabled_tl_prod_end",
+        "//sw/device/tests:rv_dm_lc_disabled_tl_rma",
+        "//sw/device/tests:rv_dm_lc_disabled_jtag_test_unlocked1",
+        "//sw/device/tests:rv_dm_lc_disabled_jtag_test_locked0",
+        "//sw/device/tests:rv_dm_lc_disabled_jtag_dev",
+        "//sw/device/tests:rv_dm_lc_disabled_jtag_prod",
+        "//sw/device/tests:rv_dm_lc_disabled_jtag_prod_end",
+        "//sw/device/tests:rv_dm_lc_disabled_jtag_rma",
+      ],
+      lc_states: ["RAW", "TEST_LOCKED", "TEST_UNLOCKED", "DEV", "RMA", "PROD",
+        "PROD_END", "SCRAP"]
+      host_support: true
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM"
+      ]
+    }
+    {
+      name: chip_rv_dm_jtag
+      desc: '''Verify basic JTAG functionality
+                - Read IDCODE, check it is the expected value
+                - Attempt to write IDCODE, check the expected value remains
+                  after a read
+                - Check functionality of BYPASS
+                - Read DTMCS ensure value is as expected
+            '''
+      stage: V2
+      si_stage: SV3
+      tests: []
+      bazel: [
+        "//sw/device/tests:rv_dm_jtag_test_unlocked1",
+        "//sw/device/tests:rv_dm_jtag_dev",
+        "//sw/device/tests:rv_dm_jtag_rma",
+      ],
+      lc_states: ["DEV"]
+      host_support: true
+      features: [
+        "RV_DM.JTAG.FSM",
+      ]
+    }
+    {
+      name: chip_rv_dm_dtm
+      desc: '''Verify basic DTM functionality
+                - Select Ibex CPU with write to hartsel
+                - Read hartinfo and check value is as expected
+                - Write random values to data0 and data1
+                - Read back the values from data0 and data1 and check it matches
+                  the written value
+            '''
+      stage: V2
+      si_stage: SV3
+      tests: []
+      bazel: ["//sw/device/tests:rv_dm_dtm_test_unlocked1",
+              "//sw/device/tests:rv_dm_dtm_dev",
+              "//sw/device/tests:rv_dm_dtm_rma"],
+      lc_states: ["DEV"]
+      host_support: true
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM",
+        "RV_DM.DBG.HARTINFO_REG",
+        "RV_DM.DBG.DATA_REGS"
+      ]
+    }
+    {
+      name: chip_rv_dm_control_status
+      desc: '''Verify the functionality of dmcontrol/dmstatus
+                - Write 0 to hartsel (select Ibex)
+                - Check dmstatus indicates havereset for Ibex (power-on reset)
+                - Write 1 to ackhavereset
+                - Check dmstatus does not indicate havereset for Ibex
+                - Write all 1s to hartsel
+                - Read back hartsel and check value is 0 (hartsel is WARL)
+                - Halt Ibex with a write to haltreq
+                - Check dmstatus reflects halted status
+                - Resume Ibex for a write to resumereq
+                - Check dmstatus reflects halted status
+
+                NDM reset behaviour covered by chip_rv_dm_ndm_reset_req
+            '''
+      stage: V2
+      si_stage: SV3
+      tests: []
+      bazel: ["//sw/device/tests:rv_dm_control_status_test_unlocked1",
+              "//sw/device/tests:rv_dm_control_status_dev",
+              "//sw/device/tests:rv_dm_control_status_rma"],
+      lc_states: ["DEV"]
+      host_support: true
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM",
+        "RV_DM.DBG.DMSTATUS_REG",
+        "RV_DM.DBG.DMCONTROL_REG"
+      ]
+    }
+  ]
+}

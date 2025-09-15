@@ -1,0 +1,392 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: clkmgr
+  testpoints: [
+    // CLKMGR tests:
+    {
+      name: chip_sw_clkmgr_idle_trans
+      desc: '''Verify the ability to turn off the transactional clock via SW.
+
+            Ensure that the clock to transactional units will be turned off after any activity
+            completes in the transactional IP.  Verify it is off via spinwait in hints_status CSR.
+            Verify that turning off this clock does not affect the other derived clocks.
+
+            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+            This tests already run in CW310.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: [
+        "CLKMGR.HINT.AES",
+        "CLKMGR.HINT.HMAC",
+        "CLKMGR.HINT.KMAC",
+        "CLKMGR.HINT.OTBN",
+      ]
+      tests: [
+        "chip_sw_aes_idle",
+        "chip_sw_hmac_enc_idle",
+        "chip_sw_kmac_idle",
+        "chip_sw_otbn_randomness",
+      ]
+      bazel: [
+        "//sw/device/tests:aes_idle_test",
+        "//sw/device/tests:hmac_enc_idle_test",
+        "//sw/device/tests:kmac_idle_test",
+        "//sw/device/tests:otbn_randomness_test",
+      ]
+    }
+    {
+      name: chip_sw_clkmgr_off_trans
+      desc: '''Verify the turned off transactional units.
+
+            Verify CSR accesses do not complete in units that are off.  Using the watchdog timers,
+            turn off a transactional unit's clock, issue a CSR access to that unit, verify a
+            watchdog event results, verify the rstmgr crash dump info records the CSR address,
+            and the execution pc is close enough to the address that performs the hung access.
+
+            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+            This tests already run in CW310.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: [
+        "CLKMGR.HINT.AES",
+        "CLKMGR.HINT.HMAC",
+        "CLKMGR.HINT.KMAC",
+        "CLKMGR.HINT.OTBN",
+      ]
+      tests: [
+        "chip_sw_clkmgr_off_aes_trans",
+        "chip_sw_clkmgr_off_hmac_trans",
+        "chip_sw_clkmgr_off_kmac_trans",
+        "chip_sw_clkmgr_off_otbn_trans",
+      ]
+      bazel: [
+        "//sw/device/tests:clkmgr_off_aes_trans_test",
+        "//sw/device/tests:clkmgr_off_hmac_trans_test",
+        "//sw/device/tests:clkmgr_off_kmac_trans_test",
+        "//sw/device/tests:clkmgr_off_otbn_trans_test",
+      ]
+    }
+    {
+      name: chip_sw_clkmgr_off_peri
+      desc: '''Verify the ability to turn off the peripheral clock via SW.
+
+            Verify CSR accesses do not complete in peripherals that are off.  Using the watchdog
+            timers, turn off a peripheral's clock, issue a CSR access to that peripheral, verify a
+            watchdog event results, and verify the rstmgr crash dump info records the CSR address,
+           and the execution pc is close enough to the address that performs the hung access.
+
+            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+            This tests already run in CW310.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: [
+        "CLKMGR.ENABLE.IO",
+        "CLKMGR.ENABLE.IO_DIV2",
+        "CLKMGR.ENABLE.IO_DIV4",
+        "CLKMGR.ENABLE.USB",
+      ]
+      tests: ["chip_sw_clkmgr_off_peri"]
+      bazel: ["//sw/device/tests:clkmgr_off_peri_test"]
+    }
+    {
+      name: chip_sw_clkmgr_div
+      desc: '''Verify clk division logic is working correctly.
+
+            The IP level checks the divided clocks via SVA, and these are also bound at chip level.
+            Connectivity tests check peripherals are connected to the clock they expect.
+            Use the clkmgr count measurement feature to verify clock division.
+
+            SiVal: These tests should be run after clock calibration is completed.
+            Any LC cycle stage after calibration is done.
+            '''
+      stage: V2
+      si_stage: SV2
+      features: [
+        "CLKMGR.MEAS_CTRL.REGWEN",
+        "CLKMGR.MEAS_CTRL.IO",
+        "CLKMGR.MEAS_CTRL.IO_DIV2",
+        "CLKMGR.MEAS_CTRL.IO_DIV4",
+        "CLKMGR.MEAS_CTRL.MAIN",
+        "CLKMGR.MEAS_CTRL.USB",
+      ]
+      lc_states: [
+        "TEST_UNLOCKED0",
+        "DEV",
+      ]
+      tests: [
+        "chip_sw_ast_clk_outputs",
+        "chip_sw_clkmgr_external_clk_src_for_sw_fast_test_unlocked0",
+        "chip_sw_clkmgr_external_clk_src_for_sw_slow_test_unlocked0",
+        "chip_sw_clkmgr_external_clk_src_for_sw_fast_dev",
+        "chip_sw_clkmgr_external_clk_src_for_sw_slow_dev",
+        "chip_sw_clkmgr_external_clk_src_for_sw_fast_rma",
+        "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma",
+      ]
+      bazel: [
+        "//sw/device/tests:ast_clk_outs_test",
+        "//sw/device/tests:clkmgr_external_clk_src_for_sw_fast_test",
+        "//sw/device/tests:clkmgr_external_clk_src_for_sw_slow_test",
+      ]
+    }
+    {
+      name: chip_sw_clkmgr_external_clk_src_for_lc
+      desc: '''Verify the clkmgr requests ext clk src during certain LC states.
+
+            On POR lc asserts lc_clk_byp_req on some LC states, and de-asserts
+            it when lc_program completes. This also triggers divided clocks to step down. It may be
+            best to verify this via SVA, unless we implement clock cycle counters.
+            SiVal: This is implicitly tested by the success of OTP updates for calibration.
+            '''
+      stage: V2
+      si_stage: NA
+      tests: ["chip_sw_clkmgr_external_clk_src_for_lc"]
+      bazel: []
+    }
+    {
+      name: chip_sw_clkmgr_external_clk_src_for_sw
+      desc: '''Verify SW causes the clkmgr requests ext clk src during certain LC states.
+
+            In DEV, TEST_UNLOCKED, and RMA lc states the external clock is enabled in response to
+            `extclk_ctrl.sel` CSR writes. In addition `extclk_ctrl.hi_speed_sel` CSR causes the
+            divided clocks to step down. Verify this via SVA bound to clkmgr, and clock cycle
+            counters.
+
+            Disable external clock source and verify the AST reliably falls back to the internal
+            clock. Ensure the chip operates normally.
+            X-ref with chip_sw_uart_tx_rx_alt_clk_freq, which needs to deal with this as well.
+            SiVal: The only necessary test is that the internal clocks are running
+            with the right frequency after calibration. There are a few such tests already.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: [
+        "DEV",
+      ]
+      tests: [
+        "chip_sw_clkmgr_external_clk_src_for_sw_fast_dev",
+        "chip_sw_clkmgr_external_clk_src_for_sw_slow_dev",
+      ]
+      bazel: [
+        "//sw/device/tests:clkmgr_sleep_frequency_test",
+        "//sw/device/tests:clkmgr_reset_frequency_test",
+      ]
+    }
+    {
+      name: chip_sw_clkmgr_jitter
+      desc: '''Verify the clock jitter functionality.
+
+            Enable clock jitter setting the clkmgr `jitter_enable` CSR high. This causes the
+            jitter_o clkmgr output to toggle. Verify this output is connected to AST's
+            clk_src_sys_jen_i input using formal.
+
+            If jitter_regwen is enabled check that jitter_enable can be toggled.
+            If jitter_regwen is disabled check that jitter_enable cannot be changed.
+            X-ref with various specific jitter enable tests.
+            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+            '''
+      stage: V2
+      si_stage: SV3
+      tests: [
+        "chip_sw_clkmgr_jitter",
+        "chip_sw_flash_ctrl_ops_jitter_en",
+        "chip_sw_flash_ctrl_access_jitter_en",
+        "chip_sw_otbn_ecdsa_op_irq_jitter_en",
+        "chip_sw_aes_enc_jitter_en",
+        "chip_sw_hmac_enc_jitter_en",
+        "chip_sw_keymgr_key_derivation_jitter_en",
+        "chip_sw_kmac_mode_kmac_jitter_en",
+        "chip_sw_sram_ctrl_scrambled_access_jitter_en",
+        "chip_sw_edn_entropy_reqs_jitter",
+      ]
+      bazel: ["//sw/device/tests:clkmgr_jitter_test"]
+    }
+    {
+      name: chip_sw_clkmgr_jitter_cycle_measurements
+      desc: '''Verify jitter via clock cycle measurements after calibration.
+            The clock count thresholds for main clk need to be set wider than when jitter is disabled.
+
+            Check when jitter is enabled:
+            - using jitter thresholds no errors are detected
+            - using normal thresholds results in recoverable errors
+            - don't test normal thresholds for FPGAs since they don't support jitter and no errors will occur
+            Check when jitter is disabled:
+            - using either sets of thresholds result in no errors
+
+            The test flow should depend on jitter enable lock:
+            - if it is locked only tests for the given jitter configuration
+            - if it is unlocked test for both jitter enabled and disabled
+
+            SiVal: This is only useful on real silicon since FPGAs don't support jitter.
+            Should be done after clock calibration.
+            '''
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: [
+        "CLKMGR.JITTER.REGWEN",
+        "CLKMGR.JITTER.ENABLE",
+        "CLKMGR.MEAS_CTRL.REGWEN",
+        "CLKMGR.MEAS_CTRL.IO",
+        "CLKMGR.MEAS_CTRL.IO_DIV2",
+        "CLKMGR.MEAS_CTRL.IO_DIV4",
+        "CLKMGR.MEAS_CTRL.MAIN",
+        "CLKMGR.MEAS_CTRL.USB",
+      ]
+      tests: ["chip_sw_clkmgr_jitter_frequency"]
+      bazel: ["//sw/device/tests:clkmgr_jitter_frequency_test"]
+    }
+    {
+      name: chip_sw_clkmgr_extended_range
+      desc: '''Verify that the system can run at a reduced, calibrated clock frequency.
+
+            This test should check that the system can run at a reduced, calibrated clock frequency
+            (70MHz) with jitter enabled (which can lower the frequency down to ~55 MHz
+            momentarily). This option is intended as a fall-back in case there are issues running
+            the system with at 100MHz (calibrated).
+
+            This testpoint can be covered by extending the DV environment to support the extended
+            range clock option via a flag, and running several existing chip-level tests with that
+            option.
+
+            Test the following functionalities with reduced clock:
+
+            - flash_ctrl initialization
+            - flash_ctrl program, read and erase operations
+            - AES, HMAC, KMAC and OTBN operations
+            - Keymgr key derivation
+            - Scramble-enabled access from the main SRAM
+            - Csrng edn concurrency
+            SiVal: This can be executed if we detect problems running at nominal frequencies.
+            It may be implemented as the system running specific tests with an external cLock.
+            No specific work may be needed other than configuring external clocks.
+            '''
+      stage: V2
+      si_stage: NA
+      tests: [
+        "chip_sw_clkmgr_jitter_reduced_freq",
+        "chip_sw_flash_ctrl_ops_jitter_en_reduced_freq",
+        "chip_sw_flash_ctrl_access_jitter_en_reduced_freq",
+        "chip_sw_otbn_ecdsa_op_irq_jitter_en_reduced_freq",
+        "chip_sw_aes_enc_jitter_en_reduced_freq",
+        "chip_sw_hmac_enc_jitter_en_reduced_freq",
+        "chip_sw_keymgr_key_derivation_jitter_en_reduced_freq",
+        "chip_sw_kmac_mode_kmac_jitter_en_reduced_freq",
+        "chip_sw_sram_ctrl_scrambled_access_jitter_en_reduced_freq",
+        "chip_sw_flash_init_reduced_freq",
+        "chip_sw_csrng_edn_concurrency_reduced_freq",
+      ]
+    }
+    {
+      name: chip_sw_clkmgr_deep_sleep_frequency
+      desc: '''Verify the frequency measurement through deep sleep.
+
+            Enable clock cycle counts. Put the chip in deep sleep. Upon wakeup reset the
+            clock measurements should be off, but the recoverable fault status should not
+            be cleared.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: [
+        "CLKMGR.MEAS_CTRL.REGWEN",
+        "CLKMGR.MEAS_CTRL.IO",
+        "CLKMGR.MEAS_CTRL.IO_DIV2",
+        "CLKMGR.MEAS_CTRL.IO_DIV4",
+        "CLKMGR.MEAS_CTRL.MAIN",
+        "CLKMGR.MEAS_CTRL.USB",
+        "CLKMGR.MEAS_CTRL.RECOV_ERR",
+      ]
+      tests: ["chip_sw_ast_clk_outputs"]
+      bazel: ["//sw/device/tests:ast_clk_outs_test"]
+    }
+    {
+      name: chip_sw_clkmgr_sleep_frequency
+      desc: '''Verify the frequency measurement through shallow sleep.
+
+            Enable clock cycle counts. Put the chip in shallow sleep with pwrmgr's CONTROL CSR
+            keeping some clocks disabled. Upon wakeup the clock measurements should be on, and the
+            recoverable fault status should show no errors for the disabled clocks.
+            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+            This tests already run in CW310.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: [
+        "CLKMGR.MEAS_CTRL.REGWEN",
+        "CLKMGR.MEAS_CTRL.IO",
+        "CLKMGR.MEAS_CTRL.IO_DIV2",
+        "CLKMGR.MEAS_CTRL.IO_DIV4",
+        "CLKMGR.MEAS_CTRL.MAIN",
+        "CLKMGR.MEAS_CTRL.USB",
+        "CLKMGR.MEAS_CTRL.RECOV_ERR",
+      ]
+      tests: ["chip_sw_clkmgr_sleep_frequency"]
+      bazel: ["//sw/device/tests:clkmgr_sleep_frequency_test"]
+    }
+    {
+      name: chip_sw_clkmgr_reset_frequency
+      desc: '''Verify the frequency measurement through reset.
+
+            Enable clock cycle counts, configured to cause errors. Trigger a chip reset via SW.
+            After reset the clock measurements should be off and the recoverable fault status
+            should be cleared.
+            SiVal: CPU must be enabled and clocks must be calibrated, but no other OTP or
+            lifecycle dependencies. This tests already run in CW310.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: [
+        "CLKMGR.MEAS_CTRL.REGWEN",
+        "CLKMGR.MEAS_CTRL.IO",
+        "CLKMGR.MEAS_CTRL.IO_DIV2",
+        "CLKMGR.MEAS_CTRL.IO_DIV4",
+        "CLKMGR.MEAS_CTRL.MAIN",
+        "CLKMGR.MEAS_CTRL.USB",
+        "CLKMGR.MEAS_CTRL.RECOV_ERR",
+      ]
+      tests: ["chip_sw_clkmgr_reset_frequency"]
+      bazel: ["//sw/device/tests:clkmgr_reset_frequency_test"]
+    }
+    {
+      name: chip_sw_clkmgr_escalation_reset
+      desc: '''Verify the clock manager resets to a clean state after an escalation reset.
+
+            Trigger an internal fatal fault for the regfile onehot checker and let it escalate to
+            reset. Upon alert escalation reset, the internal status should be clear and clkmgr
+            should not attempt to send out more alerts.
+            SiVal: This is tested by other unit's escalation tests. They will need to
+            add extra checks for specific units having been reset.
+            '''
+      stage: V2
+      si_stage: NA
+      tests: ["chip_sw_all_escalation_resets"]
+    }
+    {
+      name: chip_sw_clkmgr_alert_handler_clock_enables
+      desc: '''Verify the clock manager sends the correct information to the alert handler
+            regarding individual clocks being active so it can ignore missing ping responses
+            from them and avoid triggering spurious escalation. This scenario is caused by
+            peripheral and transactional clocks being disabled among others. The check is
+            that spurious escalation is not triggered.
+            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+            This tests already run in CW310.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      features: ["CLKMGR.ALERT_HANDLER.CLOCK_STATUS"]
+      tests: ["chip_sw_alert_handler_lpg_clkoff"]
+      bazel: ["//sw/device/tests:alert_handler_lpg_clkoff_test"]
+    }
+  ]
+}

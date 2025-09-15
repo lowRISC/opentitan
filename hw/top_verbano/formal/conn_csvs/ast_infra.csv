@@ -1,0 +1,48 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_verbano/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+#################################
+# Pad connections to/from AST
+#################################
+CONNECTION, AST_PAD0,            u_ast,                      ast2pad_t0_ao,                                       , IOA2,
+CONNECTION, AST_PAD1,            u_ast,                      ast2pad_t1_ao,                                       , IOA3,
+CONNECTION, AST_PINMUX,          u_ast,                      ast2padmux_o,              top_verbano.u_sensor_ctrl_aon, ast2pinmux_i,
+CONNECTION, PAD_AST,                  ,                      "{IOC3, IOC2, IOC1, IOB2, IOB1, IOB0, IOA5, IOA4}", u_ast, padmux2ast_i,
+# The inputs of above pads can be disabled using the mio_attr[25:23, 11:9, 5:4] control signals driven by pinmux.
+# Whenever pinmux is in reset, the inputs of these pads must be enabled.
+# Below conditions evaluate to: (mio_attr[x] == 1'b1 && rst_ni == 1'b1) || (rst_ni == 1'b0)
+CONDITION,                            ,                      "{mio_attr[25], mio_attr[24], mio_attr[23], mio_attr[11], mio_attr[10], mio_attr[9], mio_attr[5], mio_attr[4]}",    1'b1
+CONDITION,   top_verbano.u_pinmux_aon,                      rst_ni,                    1'b1,                    1'b0
+
+#################################
+# Other clocks
+#################################
+CONNECTION, AST_CLK_SPI_SNS_IN,       ,                      SPI_DEV_CLK,               u_ast,                   sns_spi_ext_clk_i
+CONNECTION, AST_CLK_EXT_IN,           ,                      IOC6,                      u_ast,                   clk_ast_ext_i
+# The input of the IOC6 pad can be disabled using the mio_attr[28] control bit driven by pinmux.
+# Whenever pinmux is in reset, the input of the IOC6 pad must be enabled.
+# Below conditions evaluate to: (mio_attr[28] == 1'b1 && rst_ni == 1'b1) || (rst_ni == 1'b0)
+CONDITION,                            ,                      mio_attr[28],              1'b1,
+CONDITION,   top_verbano.u_pinmux_aon,                      rst_ni,                    1'b1,                    1'b0
+
+#################################
+# Other resets
+#################################
+CONNECTION, AST_RST_POR_IN,           ,                      POR_N,                     u_ast,                   por_ni
+
+#################################
+# Other power related signals
+#################################
+
+CONNECTION, AST_USB_REF_IN,      top_verbano.u_usbdev,      usb_ref_pulse_o,           u_ast,                   usb_ref_pulse_i
+CONNECTION, AST_USB_REF_VAL_IN,  top_verbano.u_usbdev,      usb_ref_val_o,             u_ast,                   usb_ref_val_i
+CONNECTION, AST_OTP_PWR_SEQ_IN,  top_verbano.u_otp_ctrl,    otp_ast_pwr_seq_o,         u_ast,                   otp_power_seq_i
+CONNECTION, AST_MAIN_PD_IN,      top_verbano.u_pwrmgr_aon,  pwr_ast_o.main_pd_n,       u_ast,                   main_pd_ni
+CONNECTION, AST_MAIN_ISO_EN_IN,  top_verbano.u_pwrmgr_aon,  pwr_ast_o.pwr_clamp_env,   u_ast,                   main_env_iso_en_i
+CONNECTION, AST_OTP_PWR_SEQ_OUT, u_ast,                      otp_power_seq_h_o,         top_verbano.u_otp_ctrl, otp_ast_pwr_seq_h_i

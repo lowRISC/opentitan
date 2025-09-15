@@ -1,0 +1,180 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:top_verbano_chip_env:0.1"
+description: "CHIP DV UVM environment"
+
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:opentitan:bus_params_pkg
+      - lowrisc:systems:top_verbano_pkg
+      - lowrisc:systems:top_verbano
+      - lowrisc:ip:spi_device
+      - lowrisc:ip:kmac_pkg
+      - lowrisc:ip:aes
+      - lowrisc:dv:cip_lib
+      - lowrisc:dv:digestpp_dpi
+      - lowrisc:dv:aes_model_dpi
+      - lowrisc:ip:jtag_pkg
+      - lowrisc:dv:jtag_riscv_agent
+      - lowrisc:dv:jtag_dmi_agent
+      - lowrisc:dv:lc_ctrl_dv_utils
+      - lowrisc:verbano_dv:flash_ctrl_bkdr_util
+      - lowrisc:verbano_dv:otp_ctrl_mem_bkdr_util
+      - lowrisc:dv:ralgen
+      - lowrisc:dv:spi_agent
+      - lowrisc:dv:spi_host_sva
+      - lowrisc:dv:str_utils
+      - lowrisc:dv:sw_test_status
+      - lowrisc:dv:sw_logger_if
+      - lowrisc:dv:uart_agent
+      - lowrisc:dv:pwm_monitor
+      - lowrisc:dv:i2c_agent
+      - lowrisc:dv:pattgen_agent
+      - lowrisc:ip:otp_ctrl_pkg
+      - lowrisc:verbano_ip:pwrmgr_pkg
+      - lowrisc:dv:lc_ctrl_dv_utils
+      - "!fileset_partner ? (lowrisc:systems:top_verbano_ast_pkg)"
+      - "fileset_partner ? (partner:systems:top_verbano_ast_pkg)"
+    files:
+      - chip_common_pkg.sv
+      - chip_if.sv
+      - chip_env_pkg.sv
+      - chip_env_cfg.sv: {is_include_file: true}
+      - chip_env_cov.sv: {is_include_file: true}
+      - chip_env.sv: {is_include_file: true}
+      - chip_virtual_sequencer.sv: {is_include_file: true}
+      - chip_scoreboard.sv: {is_include_file: true}
+      - seq_lib/chip_vseq_list.sv: {is_include_file: true}
+      - seq_lib/chip_base_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_stub_cpu_base_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_common_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_jtag_csr_rw_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_jtag_mem_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_prim_tl_access_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_tap_straps_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_base_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_uart_tx_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_lc_base_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_uart_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_jtag_base_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_alert_handler_entropy_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_alert_handler_escalation_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_alert_handler_shorten_ping_wait_cycle_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_alert_handler_lpg_clkoff_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_all_escalation_resets_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_fault_base_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rstmgr_cnsty_fault_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_data_integrity_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_full_aon_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_deep_power_glitch_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_main_power_glitch_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_random_power_glitch_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sysrst_ctrl_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_deep_sleep_all_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sleep_por_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sleep_pin_mio_dio_val_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_spi_device_pinmux_sleep_retention_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sleep_pin_wake_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sleep_pin_retention_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_pwm_pulses_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_uart_tx_rx_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_uart_rand_baudrate_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sysrst_ctrl_inputs_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sysrst_ctrl_in_irq_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sysrst_ctrl_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sysrst_ctrl_outputs_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sysrst_ctrl_ec_rst_l_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_gpio_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_gpio_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_flash_ctrl_lc_rw_en_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_flash_init_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_flash_rma_unlocked_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_inject_scramble_seed_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_exit_test_unlocked_bootstrap_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_lc_ctrl_transition_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_lc_ctrl_scrap_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_lc_walkthrough_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_lc_raw_unlock_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_lc_volatile_raw_unlock_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_lc_walkthrough_testunlocks_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_lc_ctrl_program_error_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_otp_ctrl_vendor_test_csr_access_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_otp_ctrl_escalation_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_otp_ctrl_vendor_test_ecc_error_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_spi_host_tx_rx_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_spi_passthrough_collision_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_spi_passthrough_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rom_ctrl_integrity_check_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sram_ctrl_execution_main_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sram_ctrl_scrambled_access_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_keymgr_key_derivation_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_keymgr_sideload_kmac_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_keymgr_sideload_aes_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_ast_clk_outputs_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sensor_ctrl_status_intr_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rv_dm_access_after_wakeup_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_pwrmgr_sensor_ctrl_deep_sleep_wake_up_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_repeat_reset_wkup_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_rv_dm_ndm_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rv_dm_access_after_escalation_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_rv_dm_lc_disabled_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_callback_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_entropy_src_fuse_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_csrng_lc_hw_debug_en_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_usb_ast_clk_calib_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_usbdev_dpi_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_usbdev_stream_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_i2c_tx_rx_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_i2c_host_tx_rx_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_spi_device_tpm_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_i2c_device_tx_rx_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_patt_ios_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rv_core_ibex_lockstep_glitch_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rv_core_ibex_icache_invalidate_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_aes_masking_off_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_flash_host_gnt_err_inj_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_padctrl_attributes_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rom_e2e_base_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rom_e2e_shutdown_exception_c_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rom_e2e_shutdown_output_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rom_e2e_asm_init_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rom_e2e_jtag_debug_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rom_e2e_jtag_inject_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rom_e2e_self_hash_gls_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_power_idle_load_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_power_sleep_load_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_power_virus_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_ast_clk_rst_inputs_vseq.sv: {is_include_file: true}
+      - autogen/chip_env_pkg__params.sv: {is_include_file: true}
+      - alerts_if.sv
+      - ast_ext_clk_if.sv
+      - ast_supply_if.sv
+      - pwrmgr_low_power_if.sv
+      - rstmgr_cnsty_fault_if.sv
+      - flash_ctrl_host_gnt_fault_if.sv
+      - tb_dpi_if.sv
+      - top_verbano_error_injection_ifs_bind.sv
+    file_type: systemVerilogSource
+
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: chip
+      top_hjson: ../../data/top_verbano.hjson
+    position: prepend
+
+targets:
+  default:
+    filesets:
+      - files_dv
+    generate:
+      - "!skip_ral_gen ? (ral)"

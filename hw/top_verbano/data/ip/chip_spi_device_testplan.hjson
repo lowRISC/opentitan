@@ -1,0 +1,176 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  name: spi_device
+  testpoints: [
+    // SPI_DEVICE (pre-verified IP) integration tests:
+    {
+      name: chip_sw_spi_device_flash_mode
+      desc: '''Verify the SPI device in flash mode.
+
+            - SW puts the SPI device in flash mode.
+            - Load a firmware image (bootstrap) through flash commands to the spi_device memory.
+            - SW verifies the integrity of the image upon reception by reading the spi_device memory.
+            - Ensure the image is executed correctly.
+            - Verify the LAST_READ_ADDR.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: [ "PROD" ]
+      features: [
+        "SPI_DEVICE.MODE.FLASH_EMULATION",
+        "SPI_DEVICE.MODE.FLASH_EMULATION.COMMANDS",
+        "SPI_DEVICE.MODE.FLASH_EMULATION.READ_COMMAND_PROCESSOR",
+        "SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS",
+        "SPI_DEVICE.HW.LAST_READ_ADDR",
+      ]
+      tests: ["rom_e2e_smoke"]
+      bazel: ["//sw/device/silicon_creator/rom/e2e:rom_e2e_smoke", "//sw/device/tests:spi_device_flash_smoketest"]
+    }
+    {
+      name: chip_sw_spi_device_pass_through
+      desc: '''Verify the passthrough mode from an end-to-end perspective.
+
+            - Configure the SPI device and host in passthrough mode.
+            - Program the cmd_filter_* CSRs to filter out random commands.
+            - Configure and enable both spi_host0 and spi_host1.
+            - Send random flash commands over the SPI device interface (chip IOs) from the
+              testbench.
+            - Verify the flash commands which pass through spi_host0 are received on chip IOs.
+            - Verify that only the payloads that are not filtered show up on the SPI host interface
+              at chip IOs.
+            - Verify spi_host1 doesn't send out any data from spi_device.
+            - Run with min (6MHz), typical (24Mhz) and max (30MHz) SPI clk frequencies.
+            - Run with single, dual and quad SPI modes.
+            - Testbench should test the following commands:
+              - Read Normal
+              - Fast Read
+              - Fast Dual
+              - Fast Quad
+              - Chip Erase
+              - Program
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: [ "PROD" ]
+      features: [
+        "SPI_DEVICE.MODE.PASSTHROUGH",
+        "SPI_DEVICE.HW.LANES",
+        "SPI_DEVICE.MODE.PASSTHROUGH.CMD_FILTER",
+      ]
+      tests: ["chip_sw_spi_device_pass_through"]
+      bazel: ["//sw/device/tests:spi_passthru_test"]
+    }
+    {
+      name: chip_sw_spi_device_pass_through_flash_model
+      desc: '''Verify the command filtering mechanism in passthrough mode.
+
+            - Extend the chip_spi_device_pass_through test.
+            - Connect with a real flash model on spi_host.
+            - Verify that the flash commands are received and interpreted correctly in the flash
+              model.
+            '''
+      stage: V3
+      si_stage: SV3
+      features: [
+        "SPI_DEVICE.MODE.PASSTHROUGH",
+        "SPI_DEVICE.HW.LANES",
+        "SPI_DEVICE.MODE.PASSTHROUGH.CMD_FILTER",
+      ]
+      tests: []
+      bazel: ["//sw/device/tests:spi_passthru_test"]
+    }
+    {
+      name: chip_sw_spi_device_pass_through_collision
+      desc: '''Verify the collisions on driving spi_host is handled properly.
+
+            - Enable upload-related interrupts and configure the spi_device in passthrough mode.
+            - Configure a command slot to enable upload for a flash program/erase command.
+            - Execute two parallel threads:
+              1. Upstream SPI host agent.
+                - Send a flash program/erase, then keep sending read_status to poll the busy bit.
+                - When the busy bit is low, issue a read command to read data from the downstream
+                  SPI port, and check data correctness.
+              2. A SW process.
+                - Receives an upload interrupt, then reads the command in the upload fifo to check.
+                - Configures the SPI host that shows the same downstream port to send the
+                  uploaded command to the downstream SPI port.
+                - Clears the busy bit to allow the upstream SPI host to proceed to the next command.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: [ "PROD" ]
+      features: [
+        "SPI_DEVICE.MODE.PASSTHROUGH",
+        "SPI_DEVICE.HW.CMDINFOS",
+        "SPI_DEVICE.HW.COMMAND_UPLOAD",
+        "SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS",
+        "SPI_DEVICE.MODE.PASSTHROUGH.INTERCEPT_EN",
+      ]
+      tests: ["chip_sw_spi_device_pass_through_collision"]
+      bazel: ["//sw/device/tests:spi_passthru_test"]
+    }
+    {
+      name: chip_sw_spi_device_tpm
+      desc: '''Verify the basic operation of the spi_device in TPM mode.
+
+            - The testbench sends a known payload to the spi_device TPM input port.
+            - The testbench sends a read command.
+            - The software test should playback the data received in the write command as the read
+              response.
+            - The testbench should check if the written and read data match.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: [ "PROD" ]
+      features: [
+        "SPI_DEVICE.MODE.TPM",
+        "SPI_DEVICE.MODE.TPM.READ_FIFO_MODE",
+      ]
+      tests: ["chip_sw_spi_device_tpm"]
+      bazel: ["//sw/device/tests:spi_device_tpm_tx_rx_test"]
+    }
+    {
+      // This test is more a pinmux/padctrl test than a spi_device one. Consider reclassification.
+      name: chip_sw_spi_device_output_when_disabled_or_sleeping
+      desc: '''Verify spi_device output values when spi_device is disabled or the chip is sleeping.
+
+               SW needs to be able to set the SPI output value when spi_device is disabled or the
+               chip is sleeping, to either all-zeros or all-ones, depending on integration
+               requirements.  The following scenarios have to be verified:
+
+               After power-on reset:
+               - SW to configure pinmux retention logic so that the chip pins connected to
+                 spi_device outputs are (a) always zero or (b) always one (SW needs to be able to
+                 choose between a and b).
+               - DV environment to check that SPI outputs match configuration by SW.
+
+               Going to sleep:
+               - SW to disable spi_device, wait until CSb is high, configure pinmux retention logic
+                 as it would after POR, and put chip to sleep.
+               - DV environment to check that SPI outputs match configuration by SW.
+
+               Wake up from sleep:
+               - DV environment to wake chip from sleep.
+               - SW to enable spi_device and disable retention logic.
+               - DV environment to check that SPI transactions work as usual.
+
+               Notes for silicon targets:
+               This test currently does not exercise any features of the spi_device block itself,
+               which is why the "features" list is empty. It may be reclassified in the future.
+             '''
+      stage: V3
+      si_stage: SV3
+      lc_states: [ "PROD" ]
+      features: ["SPI_DEVICE.CFG",
+                 "SPI_DEVICE.JEDEC_CC",
+                 "SPI_DEVICE.JEDEC_ID",
+                 "SPI_DEVICE.CMD_INFO",
+      ]
+      tests: ["chip_sw_spi_device_pinmux_sleep_retention"]
+      bazel: ["//sw/device/tests:spi_device_sleep_test"]
+    }
+  ]
+}

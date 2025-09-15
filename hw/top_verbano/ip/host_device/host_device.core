@@ -1,0 +1,45 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:top_integrated_host_device:0.1"
+description: "Host device"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:tlul:0.1
+      - lowrisc:top_verbano:xbar_peri:0.1
+    files:
+      - rtl/host_device.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    file_type: vlt
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator  ? (files_verilator_waiver)
+      - files_rtl
+    toplevel: host_device
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

@@ -49,7 +49,7 @@ IPS ?= aes           \
        uart          \
        usbdev
 
-TOPS ?= top_darjeeling top_earlgrey top_englishbreakfast
+TOPS ?= top_darjeeling top_earlgrey top_englishbreakfast top_verbano
 
 USE_BUFFER ?= 0
 

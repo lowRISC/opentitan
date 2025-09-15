@@ -1,0 +1,89 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: rom_ctrl
+  testpoints: [
+    {
+      name: chip_sw_rom_access
+      desc: '''Verify that the CPU can access the rom contents.
+
+            - Verify that the CPU can fetch instructions from the ROM.
+            '''
+      features: ["ROM_CTRL.SCRAMBLED"]
+      stage: V2
+      si_stage: SV1
+      bazel: [
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_dev",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_prod",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_prod_end",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_rma",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_test_unlocked0"
+      ]
+      lc_states: ["PROD"]
+      tests: ["chip_sw_rom_ctrl_integrity_check"]
+    }
+    {
+      name: chip_sw_rom_ctrl_integrity_check
+      desc: '''Verify that the ROM ctrl performs the integrity check of the ROM on power up.
+
+            - In non-PROD LC state, the computed digest does not have to match the top 8 words in
+              the ROM. Verify that we can successfully power up the chip in this case.
+            - In PROD LC state, verify that the pwrmgr does not fully power up if the computed
+              digest does not match the top 8 words of the ROM.
+
+            Notes for silicon targets:
+
+            - The only thing that this test can do at the SiVal stage
+              is to ensure that the expected and measured digests are
+              readable and have the values we expect.
+
+            - That (simpler) check is done in the separate
+              chip_sw_rom_ctrl_digests test, so this test doesn't have
+              any SiVal stage.
+
+            '''
+      features: ["ROM_CTRL.DIGESTS", "ROM_CTRL.EXP_DIGESTS"]
+      stage: V2
+      si_stage: NA
+      tests: ["chip_sw_rom_ctrl_integrity_check"]
+    }
+    {
+      name: chip_sw_rom_ctrl_kmac_error
+      desc: '''
+            Verify the effect of KMAC reporting an error during ROM digest computation.
+
+            - Backdoor load a valid test ROM image and bring the DUT out of reset.
+            - During the ROM checker pwrmgr FSM state, while the ROM controller is actively sending
+              data to KMAC for the digest computation, glitch the KMAC app sparse FSM to trigger a
+              fault.
+            - Verify that KMAC returns an error signal to the ROM controller.
+            - Verify that the ROM controller itself transitions to invalid state and the chip is
+              effectively dead.
+            SiVal: Creating a glitch is not feasible, so this is not a sival test.
+            '''
+      stage: V3
+      si_stage: NA
+      tests: []
+    }
+    {
+      name: chip_sw_rom_ctrl_digests
+      desc: '''
+
+        Check that the (real and expected) ROM digests are accessible
+        through CSRs.
+
+        - Read the DIGEST_* and EXP_DIGEST_* CSRs and check they match
+          (if they differed, we wouldn't be running!)
+        - Check that they also match the digest words that we expect.
+
+      '''
+      features: ["ROM_CTRL.DIGESTS", "ROM_CTRL.EXP_DIGESTS"]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: ["//sw/device/tests:kmac_app_rom_test"]
+    }
+  ]
+}

@@ -25,7 +25,7 @@ filegroup(
         "//hw/ip:doc_files",
         "//hw/top:doc_files",
         "//hw/top_darjeeling:doc_files",
-        "//hw/top_earlgrey:doc_files",
+        "//hw/top_verbano:doc_files",
     ],
 )
 
@@ -101,7 +101,7 @@ fusesoc_build(
     data = ["//hw/ip/otbn:rtl_files"],
     make_options = ":make_options",
     output_groups = {
-        "binary": ["lowrisc_dv_top_earlgrey_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb"],
+        "binary": ["lowrisc_dv_top_verbano_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb"],
     },
     systems = ["lowrisc:dv:chip_verilator_sim"],
     tags = [
@@ -177,7 +177,7 @@ filegroup(
         # dv_macros are needed by Ibex, so include this back in.
         "//hw/dv/sv:dv_macros",
         "//hw/ip:rtl_files",
-        "//hw/top_earlgrey:rtl_files",
+        "//hw/top_verbano:rtl_files",
     ],
     visibility = ["//visibility:public"],
 )
@@ -185,6 +185,6 @@ filegroup(
 pkg_files(
     name = "package",
     srcs = ["verilator_bin"],
-    prefix = "earlgrey/verilator",
+    prefix = "verbano/verilator",
     visibility = ["//visibility:public"],
 )

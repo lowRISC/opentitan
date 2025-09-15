@@ -1,0 +1,996 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// util/topgen.py -t hw/top_verbano/data/top_verbano.hjson -o hw/top_verbano/
+
+{
+  name: peri
+  clock_srcs:
+  {
+    clk_peri_i: io_div4
+  }
+  clock_group: infra
+  reset: rst_peri_ni
+  reset_connections:
+  {
+    rst_peri_ni:
+    {
+      name: lc_io_div4
+      domain: "0"
+    }
+  }
+  clock_connections:
+  {
+    clk_peri_i: clkmgr_aon_clocks.clk_io_div4_infra
+  }
+  domain:
+  [
+    "0"
+  ]
+  connections:
+  {
+    main:
+    [
+      uart0
+      uart1
+      uart2
+      uart3
+      i2c0
+      i2c1
+      i2c2
+      pattgen
+      gpio
+      spi_device
+      rv_timer
+      pwrmgr_aon
+      rstmgr_aon
+      clkmgr_aon
+      pinmux_aon
+      otp_ctrl.core
+      otp_macro.prim
+      lc_ctrl.regs
+      sensor_ctrl_aon
+      alert_handler
+      ast
+      sram_ctrl_ret_aon.ram
+      sram_ctrl_ret_aon.regs
+      aon_timer_aon
+      adc_ctrl_aon
+      sysrst_ctrl_aon
+      pwm_aon
+    ]
+  }
+  nodes:
+  [
+    {
+      name: main
+      type: host
+      addr_space: hart
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      xbar: true
+      pipeline: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: uart0
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: uart
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40000000
+          }
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: uart1
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: uart
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40010000
+          }
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: uart2
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: uart
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40020000
+          }
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: uart3
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: uart
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40030000
+          }
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: i2c0
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: i2c
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40080000
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: i2c1
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: i2c
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40090000
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: i2c2
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: i2c
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x400a0000
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: pattgen
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: pattgen
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x400e0000
+          }
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: pwm_aon
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: pwm
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40450000
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: gpio
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: gpio
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40040000
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: spi_device
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: spi_device
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40050000
+          }
+          size_byte: 0x2000
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: rv_timer
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: rv_timer
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40100000
+          }
+          size_byte: 0x200
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: pwrmgr_aon
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: pwrmgr
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40400000
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: rstmgr_aon
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: rstmgr
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40410000
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: clkmgr_aon
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: clkmgr
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40420000
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: pinmux_aon
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: pinmux
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40460000
+          }
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: otp_ctrl.core
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: otp_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40130000
+          }
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: otp_macro.prim
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: otp_macro
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40138000
+          }
+          size_byte: 0x20
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: lc_ctrl.regs
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: lc_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40140000
+          }
+          size_byte: 0x100
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: sensor_ctrl_aon
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: sensor_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40490000
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: alert_handler
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: alert_handler
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40150000
+          }
+          size_byte: 0x800
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: sram_ctrl_ret_aon.regs
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: sram_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40500000
+          }
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: sram_ctrl_ret_aon.ram
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: sram_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40600000
+          }
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: aon_timer_aon
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: aon_timer
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40470000
+          }
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: sysrst_ctrl_aon
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: sysrst_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40430000
+          }
+          size_byte: 0x100
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: adc_ctrl_aon
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: adc_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40440000
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: ast
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: ast
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40480000
+          }
+          size_byte: 0x400
+        }
+      ]
+      xbar: false
+      stub: true
+      req_fifo_pass: true
+    }
+  ]
+  addr_spaces:
+  [
+    hart
+  ]
+  clock: clk_peri_i
+  type: xbar
+  inter_signal_list:
+  [
+    {
+      name: tl_main
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: rsp
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: main_tl_peri
+      index: -1
+    }
+    {
+      name: tl_uart0
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: uart0_tl
+      index: -1
+    }
+    {
+      name: tl_uart1
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: uart1_tl
+      index: -1
+    }
+    {
+      name: tl_uart2
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: uart2_tl
+      index: -1
+    }
+    {
+      name: tl_uart3
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: uart3_tl
+      index: -1
+    }
+    {
+      name: tl_i2c0
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: i2c0_tl
+      index: -1
+    }
+    {
+      name: tl_i2c1
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: i2c1_tl
+      index: -1
+    }
+    {
+      name: tl_i2c2
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: i2c2_tl
+      index: -1
+    }
+    {
+      name: tl_pattgen
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: pattgen_tl
+      index: -1
+    }
+    {
+      name: tl_pwm_aon
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: pwm_aon_tl
+      index: -1
+    }
+    {
+      name: tl_gpio
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: gpio_tl
+      index: -1
+    }
+    {
+      name: tl_spi_device
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: spi_device_tl
+      index: -1
+    }
+    {
+      name: tl_rv_timer
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: rv_timer_tl
+      index: -1
+    }
+    {
+      name: tl_pwrmgr_aon
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: pwrmgr_aon_tl
+      index: -1
+    }
+    {
+      name: tl_rstmgr_aon
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: rstmgr_aon_tl
+      index: -1
+    }
+    {
+      name: tl_clkmgr_aon
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: clkmgr_aon_tl
+      index: -1
+    }
+    {
+      name: tl_pinmux_aon
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: pinmux_aon_tl
+      index: -1
+    }
+    {
+      name: tl_otp_ctrl__core
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: otp_ctrl_core_tl
+      index: -1
+    }
+    {
+      name: tl_otp_macro__prim
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: otp_macro_prim_tl
+      index: -1
+    }
+    {
+      name: tl_lc_ctrl__regs
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: lc_ctrl_regs_tl
+      index: -1
+    }
+    {
+      name: tl_sensor_ctrl_aon
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: sensor_ctrl_aon_tl
+      index: -1
+    }
+    {
+      name: tl_alert_handler
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: alert_handler_tl
+      index: -1
+    }
+    {
+      name: tl_sram_ctrl_ret_aon__regs
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: sram_ctrl_ret_aon_regs_tl
+      index: -1
+    }
+    {
+      name: tl_sram_ctrl_ret_aon__ram
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: sram_ctrl_ret_aon_ram_tl
+      index: -1
+    }
+    {
+      name: tl_aon_timer_aon
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: aon_timer_aon_tl
+      index: -1
+    }
+    {
+      name: tl_sysrst_ctrl_aon
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: sysrst_ctrl_aon_tl
+      index: -1
+    }
+    {
+      name: tl_adc_ctrl_aon
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: adc_ctrl_aon_tl
+      index: -1
+    }
+    {
+      name: tl_ast
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      external: true
+      top_signame: ast_tl
+      conn_type: false
+      index: -1
+    }
+  ]
+}
