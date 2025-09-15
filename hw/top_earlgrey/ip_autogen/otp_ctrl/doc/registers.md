@@ -585,7 +585,7 @@ Runtime read lock for the ROT_CREATOR_AUTH_STATE partition.
 
 ## VENDOR_TEST_DIGEST
 Integrity digest for the VENDOR_TEST partition.
-The integrity digest is 0 by default. Software must write this
+The integrity digest is 0 by default. Software must write a non-zero
 digest value via the direct access interface in order to lock the partition.
 After a reset, write access to the VENDOR_TEST partition is locked and
 the digest becomes visible in this CSR.
@@ -612,7 +612,7 @@ the digest becomes visible in this CSR.
 
 ## CREATOR_SW_CFG_DIGEST
 Integrity digest for the CREATOR_SW_CFG partition.
-The integrity digest is 0 by default. Software must write this
+The integrity digest is 0 by default. Software must write a non-zero
 digest value via the direct access interface in order to lock the partition.
 After a reset, write access to the CREATOR_SW_CFG partition is locked and
 the digest becomes visible in this CSR.
@@ -639,7 +639,7 @@ the digest becomes visible in this CSR.
 
 ## OWNER_SW_CFG_DIGEST
 Integrity digest for the OWNER_SW_CFG partition.
-The integrity digest is 0 by default. Software must write this
+The integrity digest is 0 by default. Software must write a non-zero
 digest value via the direct access interface in order to lock the partition.
 After a reset, write access to the OWNER_SW_CFG partition is locked and
 the digest becomes visible in this CSR.
@@ -666,7 +666,7 @@ the digest becomes visible in this CSR.
 
 ## ROT_CREATOR_AUTH_CODESIGN_DIGEST
 Integrity digest for the ROT_CREATOR_AUTH_CODESIGN partition.
-The integrity digest is 0 by default. Software must write this
+The integrity digest is 0 by default. Software must write a non-zero
 digest value via the direct access interface in order to lock the partition.
 After a reset, write access to the ROT_CREATOR_AUTH_CODESIGN partition is locked and
 the digest becomes visible in this CSR.
@@ -693,7 +693,7 @@ the digest becomes visible in this CSR.
 
 ## ROT_CREATOR_AUTH_STATE_DIGEST
 Integrity digest for the ROT_CREATOR_AUTH_STATE partition.
-The integrity digest is 0 by default. Software must write this
+The integrity digest is 0 by default. Software must write a non-zero
 digest value via the direct access interface in order to lock the partition.
 After a reset, write access to the ROT_CREATOR_AUTH_STATE partition is locked and
 the digest becomes visible in this CSR.
