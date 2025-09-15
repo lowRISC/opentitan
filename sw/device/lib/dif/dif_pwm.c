@@ -11,8 +11,6 @@
 
 #include "pwm_regs.h"  // Generated.
 
-static_assert(PWM_PARAM_N_OUTPUTS == 6,
-              "Expected six PWM channels. May need to update `dif_pwm.h`.");
 static_assert(PWM_CFG_DC_RESN_MASK == 0xf,
               "Expected duty cycle configuration register to be 4 bits.");
 
