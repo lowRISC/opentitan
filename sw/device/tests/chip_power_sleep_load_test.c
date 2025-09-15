@@ -292,10 +292,6 @@ bool test_main(void) {
       .blink_parameter_x = 0,
       .blink_parameter_y = 0,
   };
-  const dif_pwm_channel_t kPwmChannel[PWM_PARAM_N_OUTPUTS] = {
-      kDifPwmChannel0, kDifPwmChannel1, kDifPwmChannel2,
-      kDifPwmChannel3, kDifPwmChannel4, kDifPwmChannel5,
-  };
   // Duty cycle (arbitrary) values (in the beats).
   const uint16_t kPwmDutycycle[PWM_PARAM_N_OUTPUTS] = {
       6, 11, 27, 8, 17, 7,
@@ -314,14 +310,14 @@ bool test_main(void) {
 
   CHECK_DIF_OK(dif_pwm_configure(&pwm, kConfig_));
 
-    CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, 1 << kPwmChannel[i],
+  // Configure each of the PWM channels:
+  dif_pwm_channel_config_t channel_config_ = kDefaultChCfg_;
+  for (size_t i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
+    CHECK_DIF_OK(
         dif_pwm_channels_set_enabled(&pwm, 1 << i, kDifToggleDisabled));
     channel_config_.duty_cycle_a = kPwmDutycycle[i];
     CHECK_DIF_OK(dif_pwm_configure_channel(&pwm, i, channel_config_));
     CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, 1 << i, kDifToggleEnabled));
-        dif_pwm_configure_channel(&pwm, kPwmChannel[i], channel_config_));
-    CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, 1 << kPwmChannel[i],
-                                              kDifToggleEnabled));
   }
 
   // Enable all PWM channels.

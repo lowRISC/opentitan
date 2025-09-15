@@ -62,11 +62,6 @@ static const dif_pinmux_index_t kPinmuxMioOut[PWM_PARAM_N_OUTPUTS] = {
     kTopEarlgreyPinmuxMioOutIoc11, kTopEarlgreyPinmuxMioOutIoc12,
 };
 
-static const dif_pwm_channel_t kPwmChannel[PWM_PARAM_N_OUTPUTS] = {
-    kDifPwmChannel0, kDifPwmChannel1, kDifPwmChannel2,
-    kDifPwmChannel3, kDifPwmChannel4, kDifPwmChannel5,
-};
-
 // Duty cycle in the unit of beat
 // These are random numbers betwen [1,beats_per_pulse_cycle)
 // make 'static volatile' to overwrite from
@@ -98,14 +93,14 @@ static const dif_pwm_channel_config_t default_ch_cfg_ = {
 
 // Configure pwm channel register for all 6 channels.
 // This also contain disable and enable each channel.
-    CHECK_DIF_OK(dif_pwm_channels_set_enabled(pwm, 1 << i, kDifToggleDisabled));
+void config_pwm_channels(dif_pwm_t *pwm) {
+  dif_pwm_channel_config_t channel_config_ = default_ch_cfg_;
 
+  for (size_t i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
+    CHECK_DIF_OK(dif_pwm_channels_set_enabled(pwm, 1 << i, kDifToggleDisabled));
+    channel_config_.duty_cycle_a = kPwmDutycycle[i];
     CHECK_DIF_OK(dif_pwm_configure_channel(pwm, i, channel_config_));
     CHECK_DIF_OK(dif_pwm_channels_set_enabled(pwm, 1 << i, kDifToggleEnabled));
-    CHECK_DIF_OK(
-        dif_pwm_configure_channel(pwm, kPwmChannel[i], channel_config_));
-    CHECK_DIF_OK(dif_pwm_channels_set_enabled(pwm, 1 << kPwmChannel[i],
-                                              kDifToggleEnabled));
   }
 }
 

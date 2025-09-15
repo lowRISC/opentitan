@@ -237,8 +237,7 @@ bool test_main(void) {
       .blink_parameter_y = 0,
   };
   static const dif_pwm_channel_t kPwmChannel[PWM_PARAM_N_OUTPUTS] = {
-      kDifPwmChannel0, kDifPwmChannel1, kDifPwmChannel2,
-      kDifPwmChannel3, kDifPwmChannel4, kDifPwmChannel5,
+      0, 1, 2, 3, 4, 5,
   };
   // Duty cycle (arbitrary) values (in the beats)
   static volatile const uint16_t kPwmDutycycle[PWM_PARAM_N_OUTPUTS] = {

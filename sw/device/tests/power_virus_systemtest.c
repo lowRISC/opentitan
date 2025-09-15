@@ -91,10 +91,6 @@ static const dif_uart_t *uart_handles[] = {&uart_1, &uart_2, &uart_3};
 static dif_kmac_operation_state_t kmac_operation_state;
 static const dif_pattgen_channel_t pattgen_channels[] = {kDifPattgenChannel0,
                                                          kDifPattgenChannel1};
-static const dif_pwm_channel_t pwm_channels[PWM_PARAM_N_OUTPUTS] = {
-    kDifPwmChannel0, kDifPwmChannel1, kDifPwmChannel2,
-    kDifPwmChannel3, kDifPwmChannel4, kDifPwmChannel5,
-};
 
 /**
  * Test configuration parameters.
@@ -1016,7 +1012,7 @@ void configure_pwm(void) {
       &pwm, (1u << PWM_PARAM_N_OUTPUTS) - 1, kDifToggleDisabled));
   for (size_t i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
     CHECK_DIF_OK(
-        dif_pwm_configure_channel(&pwm, pwm_channels[i],
+        dif_pwm_configure_channel(&pwm, i,
                                   (dif_pwm_channel_config_t){
                                       .duty_cycle_a = kPwmOnBeats,
                                       .duty_cycle_b = 0,  // unused
