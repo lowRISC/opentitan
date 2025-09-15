@@ -48,7 +48,7 @@ def opentitan_if_ip(ip, obj, default):
                 break
 
     return select({
-        "//hw/top:is_{}".format(top): obj
+        "@lowrisc_opentitan//hw/top:is_{}".format(top): obj
         for top in compatible_tops
     } | {
         "//conditions:default": default,
