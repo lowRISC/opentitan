@@ -54,8 +54,6 @@ filesets:
       - lowrisc:darjeeling_ip:racl_ctrl
       - lowrisc:darjeeling_ip:gpio
       - lowrisc:ip:aon_timer
-      - lowrisc:ip:adc_ctrl
-      - lowrisc:ip:sysrst_ctrl
       - lowrisc:ip:rom_ctrl
       - lowrisc:ip:soc_dbg_ctrl
       - lowrisc:systems:soc_proxy
