@@ -103,8 +103,8 @@ class rv_timer_random_vseq extends rv_timer_base_vseq;
   task body();
     // This task will run timers and wait until they raise an interrupt. This timeout gives an upper
     // bound on how long to wait.
-    int unsigned spinwait_timeout_ns = delay * 2 + (max_clks_until_expiry *
-                                                    (cfg.clk_rst_vif.clk_period_ps / 1000.0));
+    int unsigned intr_timeout_ns = delay * 2 + (max_clks_until_expiry *
+                                                (cfg.clk_rst_vif.clk_period_ps / 1000.0));
 
     for (int trans = 1; trans <= num_trans; trans++) begin
       `uvm_info(`gfn, $sformatf("Running test iteration %0d/%0d", trans, num_trans), UVM_LOW)
@@ -137,14 +137,19 @@ class rv_timer_random_vseq extends rv_timer_base_vseq;
             for (int i = 0; i < NUM_HARTS; i++) begin
               automatic int a_i = i;
               fork
-                // Poll intr_status continuously until it reads the expected value. The delay value
-                // set for the `timeout_ns` arg is multiplied by two due to `intr_state_spinwait`
-                // task: if the interrupt is set right after csr_rd, then in the worst case, the
-                // code will wait for two `spinwait_delay_ns` before hitting the break statement.
                 if (en_harts[a_i]) begin
+                  // Poll intr_status continuously until it reads the expected value. If the
+                  // interrupt will happen in intr_timeout nanoseconds and we happen to read the
+                  // state just beforehand, we'll see the high value on the next read (delay
+                  // nanoseconds later). As such, we set the spinwait timeout to the sum of the two
+                  // numbers plus an extra 100ns for a few extra clock ticks.
+                  int unsigned actual_timeout_ns;
+
                   `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
+
+                  actual_timeout_ns = 100 + delay + intr_timeout_ns;
                   intr_state_spinwait(.hart(a_i), .exp_data(en_timers),
-                                      .spinwait_delay_ns(delay), .timeout_ns(spinwait_timeout_ns));
+                                      .spinwait_delay_ns(delay), .timeout_ns(actual_timeout_ns));
                 end
               join_none
             end
