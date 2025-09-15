@@ -18,6 +18,7 @@ filesets:
       - lowrisc:prim_xilinx:prim_xilinx_pkg
       - lowrisc:prim_generic:ram_1p_pkg
       - lowrisc:prim:util_memload
+      - lowrisc:ip:bkdr_loader
     files:
       - rtl/prim_ram_1p.sv
     file_type: systemVerilogSource

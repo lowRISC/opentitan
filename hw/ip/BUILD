@@ -17,6 +17,7 @@ filegroup(
         "//hw/ip/adc_ctrl:rtl_files",
         "//hw/ip/aes:rtl_files",
         "//hw/ip/aon_timer:rtl_files",
+        "//hw/ip/bkdr_loader:rtl_files",
         "//hw/ip/csrng:rtl_files",
         "//hw/ip/dma:rtl_files",
         "//hw/ip/edn:rtl_files",

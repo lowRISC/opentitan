@@ -8,6 +8,7 @@
 | [`aes`]          | AES encryption and decryption engine with SCA and FI countermeasures                                                              |
 | [`aon_timer`]    | Wakeup and watchdog timers running on a low-power, always-on clock                                                                |
 | [`ascon`]        | Ascon authenticated encryption and decryption engine                                                                              |
+| [`bkdr_loader`]  | Provides FPGA-only indirect programming to RAMs                                                                                   |
 | [`csrng`]        | Takes entropy bits to produce cryptographically secure random numbers for consumption by hardware blocks and by software          |
 | [`dma`]          | DMA Controller for the integrated OpenTitan.                                                                                      |
 | [`edn`]          | Distributes random numbers produced by CSRNG to hardware blocks                                                                   |
@@ -40,6 +41,7 @@
 [`aes`]: ./aes/README.md
 [`aon_timer`]: ./aon_timer/README.md
 [`ascon`]: ./ascon/README.md
+[`bkdr_loader`]: ./bkdr_loader/README.md
 [`csrng`]: ./csrng/README.md
 [`dma`]: ./dma/README.md
 [`edn`]: ./edn/README.md

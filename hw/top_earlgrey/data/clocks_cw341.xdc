@@ -113,7 +113,7 @@ create_generated_clock -name rv_jtag_tck -source [get_ports IOR3] -divide_by 1 \
 set_output_delay -add_delay -clock jtag_tck -max 10.0 [get_ports IOR1]
 set_output_delay -add_delay -clock jtag_tck -min -5.0 [get_ports IOR1]
 set_input_delay  -add_delay -clock_fall -clock jtag_tck -min  0.0 [get_ports {IOR0 IOR2}]
-set_input_delay  -add_delay -clock_fall -clock jtag_tck -max 15.0 [get_ports {IOR0 IOR2}]
+set_input_delay  -add_delay -clock_fall -clock jtag_tck -max 12.5 [get_ports {IOR0 IOR2}]
 
 ## SPI clocks
 set spi_dev_period 80.00

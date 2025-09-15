@@ -27,79 +27,69 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
   output ram_1p_cfg_rsp_t  cfg_rsp_o
 );
 
-  localparam int PrimMaxWidth = prim_xilinx_pkg::get_ram_max_width(Width, Depth);
 
-  if (PrimMaxWidth <= 0) begin : gen_generic
-    // Width of internal write mask. Note wmask_i input into the module is always assumed
-    // to be the full bit mask
-    localparam int MaskWidth = Width / DataBitsPerMask;
+  // Width of internal write mask. Note wmask_i input into the module is always assumed
+  // to be the full bit mask
+  localparam int MaskWidth = Width / DataBitsPerMask;
 
-    logic [Width-1:0]     mem [Depth];
-    logic [MaskWidth-1:0] wmask;
+  logic [Width-1:0]     mem [Depth];
+  logic [MaskWidth-1:0] wmask;
 
-    for (genvar k = 0; k < MaskWidth; k++) begin : gen_wmask
-      assign wmask[k] = &wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
+  for (genvar k = 0; k < MaskWidth; k++) begin : gen_wmask
+    assign wmask[k] = &wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
 
-      // Ensure that all mask bits within a group have the same value for a write
-      `ASSERT(MaskCheck_A, req_i && write_i |->
-          wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
-          clk_i, '0)
-    end
+    // Ensure that all mask bits within a group have the same value for a write
+    `ASSERT(MaskCheck_A, req_i && write_i |->
+        wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
+        clk_i, '0)
+  end
 
-    // using always instead of always_ff to avoid 'ICPD  - illegal combination of drivers' error
-    // thrown when using $readmemh system task to backdoor load an image
-    always @(posedge clk_i) begin
-      if (req_i) begin
-        if (write_i) begin
-          for (int i=0; i < MaskWidth; i = i + 1) begin
-            if (wmask[i]) begin
-              mem[addr_i][i*DataBitsPerMask +: DataBitsPerMask] <=
-                wdata_i[i*DataBitsPerMask +: DataBitsPerMask];
-            end
+  // using always instead of always_ff to avoid 'ICPD  - illegal combination of drivers' error
+  // thrown when using $readmemh system task to backdoor load an image
+  always @(posedge clk_i) begin
+    if (req_i) begin
+      if (write_i) begin
+        for (int i = 0; i < MaskWidth; i = i + 1) begin
+          if (wmask[i]) begin
+            mem[addr_i][i*DataBitsPerMask +: DataBitsPerMask] <=
+              wdata_i[i*DataBitsPerMask +: DataBitsPerMask];
           end
-        end else begin
-          rdata_o <= mem[addr_i];
         end
+      end else begin
+        rdata_o <= mem[addr_i];
       end
     end
+  end
 
-    `include "prim_util_memload.svh"
-  end else begin : gen_xpm
-    logic wr_en;
-    assign wr_en = write_i & wmask_i[0];
+  // Backdoor loading
+  bkdr_loader_pkg::bkdr_req_t bkdr_req;
+  bkdr_loader_pkg::bkdr_rsp_t bkdr_rsp;
 
-    logic unused_signals;
-    assign unused_signals = ^{rst_ni, cfg_i};
-    assign cfg_rsp_o      = '0;
+  logic [Aw-1:0]    addr_bkdr;
+  logic [Width-1:0] wdata_bkdr;
+  logic [Width-1:0] rdata_bkdr;
 
-    for (genvar k = 0; k < Width; k = k + PrimMaxWidth) begin : gen_split
-      localparam int PrimWidth = ((Width - k) > PrimMaxWidth) ? PrimMaxWidth : Width - k;
+  logic unused_bkdr;
 
-      xpm_memory_spram #(
-        .ADDR_WIDTH_A(Aw),
-        .BYTE_WRITE_WIDTH_A(PrimWidth), // Masks are not supported
-        .MEMORY_INIT_FILE((MemInitFile == "") ? "none" : MemInitFile),
-        .MEMORY_SIZE(Depth * PrimWidth),
-        .READ_DATA_WIDTH_A(PrimWidth),
-        .READ_LATENCY_A(1),
-        .USE_MEM_INIT_MMI(1),
-        .WRITE_DATA_WIDTH_A(PrimWidth)
-      ) u_ram_1p (
-        .clka(clk_i),
-        .addra(addr_i),
-        .dbiterra(),
-        .dina(wdata_i[k +: PrimWidth]),
-        .douta(rdata_o[k +: PrimWidth]),
-        .ena(req_i),
-        .injectdbiterra(1'b0),
-        .injectsbiterra(1'b0),
-        .regcea(1'b1),
-        .rsta(1'b0),
-        .sbiterra(),
-        .sleep(1'b0),
-        .wea(wr_en)
-      );
+  assign addr_bkdr            = bkdr_req.addr;
+  assign wdata_bkdr           = bkdr_req.wdata;
+  assign bkdr_rsp.rdata       = {'0, rdata_bkdr};
+  assign bkdr_rsp.param_width = Width;
+  assign bkdr_rsp.param_depth = Depth;
+
+  always @(posedge bkdr_req.clk) begin
+    if (bkdr_req.active) begin
+      if (bkdr_req.write) begin
+        mem[addr_bkdr] <= wdata_bkdr;
+      end else begin
+        rdata_bkdr <= mem[addr_bkdr];
+      end
     end
   end
+
+  assign unused_bkdr = ^{bkdr_req, bkdr_rsp};
+
+  `include "prim_util_memload.svh"
+
 
 endmodule

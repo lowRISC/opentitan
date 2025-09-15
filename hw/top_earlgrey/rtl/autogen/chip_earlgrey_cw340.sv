@@ -9,7 +9,10 @@
 //                -o hw/top_earlgrey/
 
 
+`include "bkdr_loader.svh"
+
 module chip_earlgrey_cw340 #(
+  parameter bit BkdrLoaderEn = 1'b1,
   // Path to a VMEM file containing the contents of the boot ROM, which will be
   // baked into the FPGA bitstream.
   parameter BootRomInitFile = "test_rom_fpga_cw340.32.vmem",
@@ -272,6 +275,11 @@ module chip_earlgrey_cw340 #(
 
 
   logic [3:0] mux_iob_sel;
+
+  pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_bkdr_attr;
+  logic [pinmux_reg_pkg::NMioPads-1:0]      mio_bkdr_out;
+  logic [pinmux_reg_pkg::NMioPads-1:0]      mio_bkdr_oe;
+  logic [pinmux_reg_pkg::NMioPads-1:0]      mio_bkdr_in;
 
   pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr;
   pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr;
@@ -856,6 +864,7 @@ module chip_earlgrey_cw340 #(
   assign ext_clk = '0;
   assign pad2ast = '0;
 
+  logic bkdr_rst_n;
   logic clk_main, clk_io, clk_usb_48mhz, clk_aon, rst_n;
   clkgen_xil_ultrascale # (
     .AddClkBuf(0)
@@ -866,7 +875,7 @@ module chip_earlgrey_cw340 #(
     .clk_io_o(clk_io),
     .clk_48MHz_o(clk_usb_48mhz),
     .clk_aon_o(clk_aon),
-    .rst_no(rst_n)
+    .rst_no(bkdr_rst_n)
   );
 
   logic [31:0] fpga_info;
@@ -1011,6 +1020,91 @@ module chip_earlgrey_cw340 #(
   );
 
 
+  /////////////////////
+  // Memory Backdoor //
+  /////////////////////
+
+  if (BkdrLoaderEn) begin : gen_bkdr
+
+    // Get TAP strap signals from pad frame
+    logic tap_strap0;
+    logic tap_strap1;
+    logic bkdr_ena;
+
+    // Main JTAG port
+    jtag_pkg::jtag_req_t jtag_req_i;
+    jtag_pkg::jtag_rsp_t jtag_rsp_o;
+
+    // D/S JTAG port
+    jtag_pkg::jtag_req_t jtag_req_o;
+    jtag_pkg::jtag_rsp_t jtag_rsp_i;
+
+    // Backdoor ports
+    bkdr_loader_pkg::bkdr_req_t [bkdr_loader_reg_pkg::NumBkdrTgts-1:0] bkdr_req;
+    bkdr_loader_pkg::bkdr_rsp_t [bkdr_loader_reg_pkg::NumBkdrTgts-1:0] bkdr_rsp;
+
+    bkdr_loader i_bkdr_loader (
+      .clk_i      (clk_main),
+      .rst_ni     (bkdr_rst_n),
+      .bkdr_ena_i (bkdr_ena),
+      .jtag_req_i (jtag_req_i),
+      .jtag_rsp_o (jtag_rsp_o),
+      .jtag_req_o (jtag_req_o),
+      .jtag_rsp_i (jtag_rsp_i),
+      .fpga_info_i(fpga_info),
+      .bkdr_req_o (bkdr_req),
+      .bkdr_rsp_i (bkdr_rsp),
+      .rst_no     (rst_n)
+    );
+
+    // Connect requests
+    `BKDR_LOADER_CONNECT_REQS
+
+    // Connect responses
+    `BKDR_LOADER_CONNECT_RSPS
+
+    always_comb begin : proc_conn_bkdr
+
+      // Through-connection
+      mio_attr    = mio_bkdr_attr;
+      mio_out     = mio_bkdr_out;
+      mio_oe      = mio_bkdr_oe;
+      mio_bkdr_in = mio_in;
+
+      // Connect backdoor JTAG input
+      jtag_req_i.tck      = mio_in[TckPadIdx];
+      jtag_req_i.tms      = mio_in[TmsPadIdx];
+      jtag_req_i.trst_n   = mio_in[TrstNPadIdx];
+      jtag_req_i.tdi      = mio_in[TdiPadIdx];
+      mio_out[TdoPadIdx]  = jtag_rsp_o.tdo;
+      mio_oe[TdoPadIdx]   = jtag_rsp_o.tdo_oe;
+      mio_attr[TdoPadIdx] = '0;
+
+      // Connect backdoor JTAG output
+      mio_bkdr_in[TckPadIdx]   = jtag_req_o.tck;
+      mio_bkdr_in[TmsPadIdx]   = jtag_req_o.tms;
+      mio_bkdr_in[TrstNPadIdx] = jtag_req_o.trst_n;
+      mio_bkdr_in[TdiPadIdx]   = jtag_req_o.tdi;
+      jtag_rsp_i.tdo           = mio_bkdr_out[TdoPadIdx];
+      jtag_rsp_i.tdo_oe        = mio_bkdr_oe[TdoPadIdx];
+    end
+
+    // Connect TAP strap signals to pad frame
+    assign tap_strap0 = mio_in[Tap0PadIdx];
+    assign tap_strap1 = mio_in[Tap1PadIdx];
+
+    // Bkdr loader is activated if both tap_strap signals are set to 1'b1.
+    assign bkdr_ena = tap_strap0 && tap_strap1;
+
+
+  end else begin : gen_no_bkdr
+    assign mio_attr    = mio_bkdr_attr;
+    assign mio_out     = mio_bkdr_out;
+    assign mio_oe      = mio_bkdr_oe;
+    assign mio_bkdr_in = mio_in;
+    assign bkdr_rst_n  = manual_in_por_n;
+  end
+
   //////////////////
   // PLL for FPGA //
   //////////////////
@@ -1126,10 +1220,10 @@ module chip_earlgrey_cw340 #(
     .usbdev_usb_ref_val_o         (usb_ref_val        ),
     .usbdev_usb_ref_pulse_o       (usb_ref_pulse      ),
 
-    // Multiplexed I/O
-    .mio_in_i (mio_in ),
-    .mio_out_o(mio_out),
-    .mio_oe_o (mio_oe ),
+    // Multiplexed I/O to backdoor
+    .mio_in_i (mio_bkdr_in ),
+    .mio_out_o(mio_bkdr_out),
+    .mio_oe_o (mio_bkdr_oe ),
 
     // Dedicated I/O
     .dio_in_i (dio_in ),
@@ -1137,7 +1231,7 @@ module chip_earlgrey_cw340 #(
     .dio_oe_o (dio_oe ),
 
     // Pad attributes
-    .mio_attr_o(mio_attr),
+    .mio_attr_o(mio_bkdr_attr),
     .dio_attr_o(dio_attr)
   );
 
