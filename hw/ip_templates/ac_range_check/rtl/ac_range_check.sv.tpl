@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "prim_assert.sv"
+
 module ${module_instance_name}
   import tlul_pkg::*;
   import ${module_instance_name}_reg_pkg::*;
