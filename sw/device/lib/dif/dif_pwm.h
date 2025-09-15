@@ -55,8 +55,7 @@ extern "C" {
  * Helper macro for defining a `dif_pwm_channel_t` enumeration constant.
  * @channel_ PWM channel of the enumeration constant.
  */
-#define PWM_CHANNEL_ENUM_INIT_(channel_) \
-  kDifPwmChannel##channel_ = 1U << channel_,
+#define PWM_CHANNEL_ENUM_INIT_(channel_) kDifPwmChannel##channel_ = channel_,
 
 /**
  * A PWM channel.
@@ -273,15 +272,15 @@ dif_result_t dif_pwm_phase_cntr_get_enabled(const dif_pwm_t *pwm,
  * Sets the enablement states of one or more PWM channels.
  *
  * @param pwm A PWM handle.
- * @param channels The channels to enable (one or more `dif_pmw_channel_t`s
- *                 ORed together.)
+ * @param channels The channels to enable (bitmask, the i-th bit corresponds to
+ * the i-th channel).
  * @param enabled The enablement state to set.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_pwm_channel_set_enabled(const dif_pwm_t *pwm,
-                                         uint32_t channels,
-                                         dif_toggle_t enabled);
+dif_result_t dif_pwm_channels_set_enabled(const dif_pwm_t *pwm,
+                                          uint32_t channels,
+                                          dif_toggle_t enabled);
 
 /**
  * Gets the enablement state of one PWM channel.

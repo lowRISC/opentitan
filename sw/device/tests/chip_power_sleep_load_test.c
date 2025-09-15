@@ -314,16 +314,14 @@ bool test_main(void) {
 
   CHECK_DIF_OK(dif_pwm_configure(&pwm, kConfig_));
 
-  // Configure each of the PWM channels:
-  dif_pwm_channel_config_t channel_config_ = kDefaultChCfg_;
-  for (size_t i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
-    CHECK_DIF_OK(
-        dif_pwm_channel_set_enabled(&pwm, kPwmChannel[i], kDifToggleDisabled));
+    CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, 1 << kPwmChannel[i],
+        dif_pwm_channels_set_enabled(&pwm, 1 << i, kDifToggleDisabled));
     channel_config_.duty_cycle_a = kPwmDutycycle[i];
-    CHECK_DIF_OK(
+    CHECK_DIF_OK(dif_pwm_configure_channel(&pwm, i, channel_config_));
+    CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, 1 << i, kDifToggleEnabled));
         dif_pwm_configure_channel(&pwm, kPwmChannel[i], channel_config_));
-    CHECK_DIF_OK(
-        dif_pwm_channel_set_enabled(&pwm, kPwmChannel[i], kDifToggleEnabled));
+    CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, 1 << kPwmChannel[i],
+                                              kDifToggleEnabled));
   }
 
   // Enable all PWM channels.

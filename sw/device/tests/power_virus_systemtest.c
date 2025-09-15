@@ -1012,7 +1012,7 @@ void configure_pwm(void) {
                                   .clock_divisor = kPwmClockDivisor,
                                   .beats_per_pulse_cycle = kPwmBeatsPerCycle,
                               }));
-  CHECK_DIF_OK(dif_pwm_channel_set_enabled(
+  CHECK_DIF_OK(dif_pwm_channels_set_enabled(
       &pwm, (1u << PWM_PARAM_N_OUTPUTS) - 1, kDifToggleDisabled));
   for (size_t i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
     CHECK_DIF_OK(
@@ -1030,7 +1030,7 @@ void configure_pwm(void) {
 
   // Enable all the PWM channels. The outputs will start toggling
   // after the phase counter is enabled (i.e, PWM_CFG_REG.CNTR_EN = 1).
-  CHECK_DIF_OK(dif_pwm_channel_set_enabled(
+  CHECK_DIF_OK(dif_pwm_channels_set_enabled(
       &pwm,
       /*channels*/ (1u << PWM_PARAM_N_OUTPUTS) - 1, kDifToggleEnabled));
 }
