@@ -98,17 +98,14 @@ static const dif_pwm_channel_config_t default_ch_cfg_ = {
 
 // Configure pwm channel register for all 6 channels.
 // This also contain disable and enable each channel.
-void config_pwm_channels(dif_pwm_t *pwm) {
-  dif_pwm_channel_config_t channel_config_ = default_ch_cfg_;
+    CHECK_DIF_OK(dif_pwm_channels_set_enabled(pwm, 1 << i, kDifToggleDisabled));
 
-  for (int i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
-    CHECK_DIF_OK(
-        dif_pwm_channel_set_enabled(pwm, kPwmChannel[i], kDifToggleDisabled));
-    channel_config_.duty_cycle_a = kPwmDutycycle[i];
+    CHECK_DIF_OK(dif_pwm_configure_channel(pwm, i, channel_config_));
+    CHECK_DIF_OK(dif_pwm_channels_set_enabled(pwm, 1 << i, kDifToggleEnabled));
     CHECK_DIF_OK(
         dif_pwm_configure_channel(pwm, kPwmChannel[i], channel_config_));
-    CHECK_DIF_OK(
-        dif_pwm_channel_set_enabled(pwm, kPwmChannel[i], kDifToggleEnabled));
+    CHECK_DIF_OK(dif_pwm_channels_set_enabled(pwm, 1 << kPwmChannel[i],
+                                              kDifToggleEnabled));
   }
 }
 

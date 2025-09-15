@@ -82,16 +82,16 @@ bool test_main(void) {
       } while (not_sampling);
 
       CHECK_DIF_OK(dif_pwm_phase_cntr_set_enabled(&pwm, kDifToggleEnabled));
-      CHECK_DIF_OK(dif_pwm_channel_set_enabled(&pwm, kDifPwmChannel0,
-                                               kDifToggleEnabled));
+      CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, 1 << kDifPwmChannel0,
+                                                kDifToggleEnabled));
 
       // The goes high when the host stop sampling.
       do {
         CHECK_DIF_OK(dif_gpio_read(&gpio, 0, &not_sampling));
       } while (!not_sampling);
 
-      CHECK_DIF_OK(dif_pwm_channel_set_enabled(&pwm, kDifPwmChannel0,
-                                               kDifToggleDisabled));
+      CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, 1 << kDifPwmChannel0,
+                                                kDifToggleDisabled));
       CHECK_DIF_OK(dif_pwm_phase_cntr_set_enabled(&pwm, kDifToggleDisabled));
     }
   }

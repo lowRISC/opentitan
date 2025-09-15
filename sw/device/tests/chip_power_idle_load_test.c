@@ -261,13 +261,13 @@ bool test_main(void) {
   // Confugure each of the PWM channels:
   dif_pwm_channel_config_t channel_config_ = default_ch_cfg_;
   for (int i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
-    CHECK_DIF_OK(
-        dif_pwm_channel_set_enabled(&pwm, kPwmChannel[i], kDifToggleDisabled));
+    CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, 1 << kPwmChannel[i],
+                                              kDifToggleDisabled));
     channel_config_.duty_cycle_a = kPwmDutycycle[i];
     CHECK_DIF_OK(
         dif_pwm_configure_channel(&pwm, kPwmChannel[i], channel_config_));
-    CHECK_DIF_OK(
-        dif_pwm_channel_set_enabled(&pwm, kPwmChannel[i], kDifToggleEnabled));
+    CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, 1 << kPwmChannel[i],
+                                              kDifToggleEnabled));
   }
 
   // Enable all PWM channels
