@@ -5,6 +5,8 @@
 // This adapter module allows using a single-port SRAM like a FIFO.  It has been written for I2C,
 // but it could later be generalized into a prim.
 
+`include "prim_assert.sv"
+
 module i2c_fifo_sync_sram_adapter #(
   // Width of each entry (in bits)
   parameter int unsigned Width = 1,
