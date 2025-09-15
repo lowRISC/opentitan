@@ -4,118 +4,93 @@
 
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 
+#include "hw/top/dt/dt_api.h"
+#include "hw/top/dt/dt_pinmux.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
-#include "sw/device/silicon_creator/lib/drivers/otp.h"
 
-#include "hw/top/gpio_regs.h"
-#include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/pinmux_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-enum {
-  /**
-   * Base address of the pinmux registers.
-   */
-  kBase = TOP_EARLGREY_PINMUX_AON_BASE_ADDR,
-};
-
-/**
- * A peripheral input and MIO pad to link it to.
- */
-typedef struct pinmux_input {
-  top_earlgrey_pinmux_peripheral_in_t periph;
-  top_earlgrey_pinmux_insel_t insel;
-  top_earlgrey_muxed_pads_t pad;
-} pinmux_input_t;
-
-/**
- * An MIO pad and a peripheral output to link it to.
- */
-typedef struct pinmux_output {
-  top_earlgrey_pinmux_mio_out_t mio;
-  top_earlgrey_pinmux_outsel_t outsel;
-  top_earlgrey_muxed_pads_t pad;
-} pinmux_output_t;
-
-/**
- * UART RX pin.
- */
-static const pinmux_input_t kInputUart0 = {
-    .periph = kTopEarlgreyPinmuxPeripheralInUart0Rx,
-    .insel = kTopEarlgreyPinmuxInselIoc3,
-    .pad = kTopEarlgreyMuxedPadsIoc3,
-};
-
-/**
- * UART TX pin.
- */
-static const pinmux_output_t kOutputUart0 = {
-    .mio = kTopEarlgreyPinmuxMioOutIoc4,
-    .outsel = kTopEarlgreyPinmuxOutselUart0Tx,
-    .pad = kTopEarlgreyMuxedPadsIoc4,
-};
-
-/**
- * SW strap pins.
- */
-#define PINMUX_ASSERT_EQ_(a, b) \
-  static_assert((a) == (b), "Unexpected software strap configuration.")
-
-PINMUX_ASSERT_EQ_(SW_STRAP_0_PERIPH, kTopEarlgreyPinmuxPeripheralInGpioGpio22);
-PINMUX_ASSERT_EQ_(SW_STRAP_0_INSEL, kTopEarlgreyPinmuxInselIoc0);
-PINMUX_ASSERT_EQ_(SW_STRAP_0_PAD, kTopEarlgreyMuxedPadsIoc0);
-static const pinmux_input_t kInputSwStrap0 = {
-    .periph = SW_STRAP_0_PERIPH,
-    .insel = SW_STRAP_0_INSEL,
-    .pad = SW_STRAP_0_PAD,
-};
-
-PINMUX_ASSERT_EQ_(SW_STRAP_1_PERIPH, kTopEarlgreyPinmuxPeripheralInGpioGpio23);
-PINMUX_ASSERT_EQ_(SW_STRAP_1_INSEL, kTopEarlgreyPinmuxInselIoc1);
-PINMUX_ASSERT_EQ_(SW_STRAP_1_PAD, kTopEarlgreyMuxedPadsIoc1);
-static const pinmux_input_t kInputSwStrap1 = {
-    .periph = SW_STRAP_1_PERIPH,
-    .insel = SW_STRAP_1_INSEL,
-    .pad = SW_STRAP_1_PAD,
-};
-
-PINMUX_ASSERT_EQ_(SW_STRAP_2_PERIPH, kTopEarlgreyPinmuxPeripheralInGpioGpio24);
-PINMUX_ASSERT_EQ_(SW_STRAP_2_INSEL, kTopEarlgreyPinmuxInselIoc2);
-PINMUX_ASSERT_EQ_(SW_STRAP_2_PAD, kTopEarlgreyMuxedPadsIoc2);
-static const pinmux_input_t kInputSwStrap2 = {
-    .periph = SW_STRAP_2_PERIPH,
-    .insel = SW_STRAP_2_INSEL,
-    .pad = SW_STRAP_2_PAD,
-};
-
-/**
- * Sets the input pad for the specified peripheral input.
- *
- * @param input A peripheral input and MIO pad to link it to.
- */
-static void configure_input(pinmux_input_t input) {
-  abs_mmio_write32(kBase + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET +
-                       input.periph * sizeof(uint32_t),
-                   input.insel);
+static inline uint32_t pinmux_base(void) {
+  return dt_pinmux_primary_reg_block(kDtPinmuxAon);
 }
 
-/**
- * Enables or disables pull-up/pull-down for the specified pad.
- *
- * @param pad A MIO pad.
- * @param enable Whether the internal pull resistor should be enabled.
- * @param up Whether the pull resistor should pull up(true) or down(false).
- */
-static void enable_pull(top_earlgrey_muxed_pads_t pad, bool enable, bool up) {
-  uint32_t reg = 0;
-  reg = bitfield_bit32_write(reg, PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, enable);
-  reg = bitfield_bit32_write(reg, PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT, up);
-  abs_mmio_write32(
-      kBase + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET + pad * sizeof(uint32_t), reg);
+#define REGWEN_CHECK(regwen, register)                          \
+  (((regwen) & (1 << PINMUX_##register##_REGWEN_0_EN_0_BIT)) != \
+   PINMUX_##register##_REGWEN_0_REG_RESVAL);
+
+OT_WARN_UNUSED_RESULT
+static rom_error_t pad_reg_addr(dt_pad_t pad, uintptr_t base_mio_reg_addr,
+                                uintptr_t base_dio_reg_addr,
+                                uintptr_t *reg_addr) {
+  dt_pad_type_t pad_type = dt_pad_type(pad);
+  if (pad_type == kDtPadTypeUnspecified) {
+    return kErrorPinMuxInvalidPad;
+  }
+
+  switch (pad_type) {
+    case kDtPadTypeMio:
+      *reg_addr = pinmux_base() + base_mio_reg_addr +
+                  (dt_pad_mio_pad_index(pad) * sizeof(uint32_t));
+      break;
+    case kDtPadTypeDio:
+      *reg_addr = pinmux_base() + base_dio_reg_addr +
+                  (dt_pad_dio_pad_index(pad) * sizeof(uint32_t));
+      break;
+    default:
+      return kErrorPinMuxInvalidPad;
+  }
+
+  return kErrorOk;
+}
+
+OT_WARN_UNUSED_RESULT
+static rom_error_t pad_attr_reg_addr(dt_pad_t pad, uintptr_t *reg_addr) {
+  return pad_reg_addr(pad, PINMUX_MIO_PAD_ATTR_0_REG_OFFSET,
+                      PINMUX_DIO_PAD_ATTR_0_REG_OFFSET, reg_addr);
+}
+
+OT_WARN_UNUSED_RESULT
+static rom_error_t pad_attr_regwen_reg_addr(dt_pad_t pad, uintptr_t *reg_addr) {
+  return pad_reg_addr(pad, PINMUX_MIO_PAD_ATTR_REGWEN_0_REG_OFFSET,
+                      PINMUX_DIO_PAD_ATTR_REGWEN_0_REG_OFFSET, reg_addr);
+}
+
+OT_WARN_UNUSED_RESULT
+static bool pad_attr_is_locked(dt_pad_t pad) {
+  uintptr_t reg_addr;
+
+  HARDENED_RETURN_IF_ERROR(pad_attr_regwen_reg_addr(pad, &reg_addr));
+
+  uint32_t regwen = abs_mmio_read32(reg_addr);
+
+  return REGWEN_CHECK(regwen, DIO_PAD_ATTR);
+}
+
+OT_WARN_UNUSED_RESULT
+static bool pad_outsel_is_locked(dt_pad_t pad) {
+  dt_pinmux_mio_out_t mio_pad_output = dt_pad_mio_out(pad);
+  uintptr_t reg_addr = pinmux_base() + PINMUX_MIO_OUTSEL_REGWEN_0_REG_OFFSET +
+                       (mio_pad_output * sizeof(uint32_t));
+  uint32_t regwen = abs_mmio_read32(reg_addr);
+
+  return REGWEN_CHECK(regwen, MIO_OUTSEL);
+}
+
+OT_WARN_UNUSED_RESULT
+static bool periph_insel_is_locked(dt_periph_io_t periph_io) {
+  dt_pinmux_peripheral_in_t periph_input =
+      dt_periph_io_mio_periph_input(periph_io);
+
+  uintptr_t reg_addr = pinmux_base() +
+                       PINMUX_MIO_PERIPH_INSEL_REGWEN_0_REG_OFFSET +
+                       (periph_input * sizeof(uint32_t));
+  uint32_t regwen = abs_mmio_read32(reg_addr);
+
+  return REGWEN_CHECK(regwen, MIO_PERIPH_INSEL);
 }
 
 /**
@@ -131,75 +106,137 @@ static void pinmux_prop_delay(void) {
   } while (mcycle < PINMUX_PAD_ATTR_PROP_CYCLES);
 }
 
-/**
- * Read a single strap pin considering weak/strong pull resistors.
- *
- * @param input The input pin to read.
- * @return The value of the pin.
- */
-static uint32_t read_strap_pin(pinmux_input_t input) {
-  // First, disable all pull resistors and read the state of the pin.
-  enable_pull(input.pad, false, false);
-  pinmux_prop_delay();
-  uint32_t val =
-      abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
-  uint32_t state = bitfield_bit32_read(val, input.periph);
-  uint32_t res = state ? 2 : 0;
-
-  // Then, enable the opposite pull to the observed state.
-  // If the external signal is weak, the internal pull resistor will win; if
-  // the external signal is strong, the external resistor will win.
-  enable_pull(input.pad, true, !state);
-  pinmux_prop_delay();
-
-  val = abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
-  state = bitfield_bit32_read(val, input.periph);
-  res += state ? 1 : 0;
-  return res;
-}
-
-/**
- * Sets the peripheral output for each specified output pad.
- *
- * @param output An MIO pad and a peripheral output to link it to.
- */
-static void configure_output(pinmux_output_t output) {
-  abs_mmio_write32(
-      kBase + PINMUX_MIO_OUTSEL_0_REG_OFFSET + output.mio * sizeof(uint32_t),
-      output.outsel);
-}
-
-void pinmux_init_uart0_tx(void) { configure_output(kOutputUart0); }
-
-void pinmux_init(void) {
-  uint32_t bootstrap_dis =
-      otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET);
-  if (launder32(bootstrap_dis) != kHardenedBoolTrue) {
-    HARDENED_CHECK_NE(bootstrap_dis, kHardenedBoolTrue);
-    // Note: attributes should be configured before the pinmux matrix to avoid
-    // "undesired electrical behavior and/or contention at the pads".
-    enable_pull(kInputSwStrap0.pad, /*enable=*/true, /*up=*/false);
-    enable_pull(kInputSwStrap1.pad, /*enable=*/true, /*up=*/false);
-    enable_pull(kInputSwStrap2.pad, /*enable=*/true, /*up=*/false);
-    // Wait for pull downs to propagate to the physical pads.
-    pinmux_prop_delay();
-
-    configure_input(kInputSwStrap0);
-    configure_input(kInputSwStrap1);
-    configure_input(kInputSwStrap2);
+OT_WARN_UNUSED_RESULT
+static rom_error_t pinmux_configure_pull(dt_pad_t pad, bool enable, bool up) {
+  if (pad_attr_is_locked(pad)) {
+    return kErrorPinMuxLockedPad;
   }
 
-  // Pull the UART_RX line high (idle state for UART).  This prevents a
-  // floating UART_RX from incorrectly triggering serial break.
-  enable_pull(kInputUart0.pad, /*enable=*/true, /*up=*/true);
-  configure_input(kInputUart0);
-  configure_output(kOutputUart0);
+  uintptr_t reg_addr;
+  uint32_t reg_value = 0;
+
+  reg_value = bitfield_bit32_write(reg_value,
+                                   PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, enable);
+  reg_value = bitfield_bit32_write(reg_value,
+                                   PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT, up);
+
+  HARDENED_RETURN_IF_ERROR(pad_attr_reg_addr(pad, &reg_addr));
+
+  abs_mmio_write32(reg_addr, reg_value);
+
+  pinmux_prop_delay();
+
+  return kErrorOk;
 }
 
-uint32_t pinmux_read_straps(void) {
-  uint32_t value = 0;
-  value |= read_strap_pin(kInputSwStrap0);
-  value |= read_strap_pin(kInputSwStrap1) << 2;
-  value |= read_strap_pin(kInputSwStrap2) << 4;
-  return value;
+OT_WARN_UNUSED_RESULT
+static rom_error_t periph_select_input(dt_periph_io_t periph_io, dt_pad_t pad) {
+  dt_pinmux_peripheral_in_t periph_input =
+      dt_periph_io_mio_periph_input(periph_io);
+  dt_pinmux_insel_t mio_pad_insel = dt_pad_mio_insel(pad);
+
+  if (periph_input >= PINMUX_PARAM_N_MIO_PERIPH_IN) {
+    return kErrorPinMuxInvalidPeriphIo;
+  }
+
+  if (mio_pad_insel == 0) {
+    return kErrorPinMuxInvalidPad;
+  }
+
+  if (periph_insel_is_locked(periph_io)) {
+    return kErrorPinMuxLockedPeriphIo;
+  }
+
+  uintptr_t reg_addr = pinmux_base() + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET +
+                       (periph_input * sizeof(uint32_t));
+  uint32_t reg_value = bitfield_field32_write(
+      0, PINMUX_MIO_PERIPH_INSEL_0_IN_0_FIELD, mio_pad_insel);
+
+  abs_mmio_write32(reg_addr, reg_value);
+
+  return kErrorOk;
+}
+
+OT_WARN_UNUSED_RESULT
+static rom_error_t pad_select_output(dt_periph_io_t periph_io, dt_pad_t pad) {
+  dt_pinmux_outsel_t periph_output = dt_periph_io_mio_outsel(periph_io);
+  dt_pinmux_mio_out_t mio_pad_output = dt_pad_mio_out(pad);
+
+  if (periph_output >= (3 + PINMUX_PARAM_N_MIO_PERIPH_OUT)) {
+    return kErrorPinMuxInvalidPeriphIo;
+  }
+
+  if (pad_outsel_is_locked(pad)) {
+    return kErrorPinMuxLockedPad;
+  }
+
+  uintptr_t reg_addr = pinmux_base() + PINMUX_MIO_OUTSEL_0_REG_OFFSET +
+                       (mio_pad_output * sizeof(uint32_t));
+  uint32_t reg_value =
+      bitfield_field32_write(0, PINMUX_MIO_OUTSEL_0_OUT_0_FIELD, periph_output);
+
+  abs_mmio_write32(reg_addr, reg_value);
+
+  return kErrorOk;
+}
+
+OT_WARN_UNUSED_RESULT
+rom_error_t pinmux_enable_pull_up(dt_pad_t pad) {
+  return pinmux_configure_pull(pad, true, true);
+}
+
+OT_WARN_UNUSED_RESULT
+rom_error_t pinmux_enable_pull_down(dt_pad_t pad) {
+  return pinmux_configure_pull(pad, true, false);
+}
+
+OT_WARN_UNUSED_RESULT
+rom_error_t pinmux_disable_pull(dt_pad_t pad) {
+  return pinmux_configure_pull(pad, false, false);
+}
+
+OT_WARN_UNUSED_RESULT
+rom_error_t pinmux_connect(dt_periph_io_t periph_io, dt_pad_t pad,
+                           dt_periph_io_dir_t dir) {
+  switch (dt_periph_io_type(periph_io)) {
+    case kDtPeriphIoTypeMio:
+      if (dt_pad_type(pad) != kDtPadTypeMio) {
+        return kErrorPinMuxInvalidPad;
+      }
+
+      // Input configuration
+      if (dir == kDtPeriphIoDirIn || dir == kDtPeriphIoDirInout) {
+        HARDENED_RETURN_IF_ERROR(periph_select_input(periph_io, pad));
+      }
+
+      // Output configuration
+      if (dir == kDtPeriphIoDirOut || dir == kDtPeriphIoDirInout) {
+        HARDENED_RETURN_IF_ERROR(pad_select_output(periph_io, pad));
+      } else if (dt_periph_io_dir(periph_io) == kDtPeriphIoDirInout) {
+        // Set output to high-Z for input only peripherals.
+        HARDENED_RETURN_IF_ERROR(
+            pad_select_output(kDtPeriphIoConstantHighZ, pad));
+      }
+      return kErrorOk;
+    case kDtPeriphIoTypeDio:
+      // Nothing to do but to check that the pad and the peripheral IO are
+      // connected.
+      if (dt_pad_type(pad) != kDtPadTypeDio) {
+        return kErrorPinMuxInvalidPad;
+      }
+
+      if (dt_periph_io_dio_pad(periph_io) != pad) {
+        return kErrorPinMuxInvalidPeriphIo;
+      }
+
+      // Make sure that the directions are compatible.
+      dt_periph_io_dir_t io_dir = dt_periph_io_dir(periph_io);
+      if ((io_dir == kDtPeriphIoDirIn || io_dir == kDtPeriphIoDirOut) &&
+          dir != io_dir) {
+        return kErrorPinMuxInvalidPeriphIo;
+      }
+      return kErrorOk;
+    default:
+      return kErrorPinMuxInvalidPeriphIo;
+  }
 }

@@ -7,45 +7,74 @@
 
 #include <stdint.h>
 
+#include "hw/top/dt/dt_api.h"
+#include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/error.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- * Driver for the Pin Multiplexer (pinmux).
+ * Enables pull-up for the specified pad.
  *
- * The pinmux connects peripheral input and output signals to the Padring
- * MIO pad input and output signals.
+ * @param pad A MIO or DIO pad.
+ * @return `kErrorOk` if the operation succeeded, a `kModulePinMux` error
+ * otherwise.
  */
+OT_WARN_UNUSED_RESULT
+rom_error_t pinmux_enable_pull_up(dt_pad_t pad);
 
 /**
- * Initialize the pinmux with the configuration required for the ROM.
+ * Enables pull-down for the specified pad.
+ *
+ * @param pad A MIO or DIO pad.
+ * @return `kErrorOk` if the operation succeeded, a `kModulePinMux` error
+ * otherwise.
  */
-void pinmux_init(void);
+OT_WARN_UNUSED_RESULT
+rom_error_t pinmux_enable_pull_down(dt_pad_t pad);
 
 /**
- * Initialize the pinmux with output UART0 only.
+ * Disables the internal pull resistor for the specified pad.
+ *
+ * @param pad A MIO or DIO pad.
+ * @return `kErrorOk` if the operation succeeded, a `kModulePinMux` error
+ * otherwise.
  */
-void pinmux_init_uart0_tx(void);
+OT_WARN_UNUSED_RESULT
+rom_error_t pinmux_disable_pull(dt_pad_t pad);
 
 /**
- * Read the SW_STRAP value.
+ * Connect a peripheral I/O to a pad.
  *
- * The straping value is encoded with two bits per pin and encodes the
- * strength of the external pull resistors in the returned value.
+ * This will try connect a peripheral I/O to a pad. More precisely,
+ * the behaviour depends on the type of the I/O and pad:
+ * - If both the peripheral I/O and the pad are of MIO type, this
+ *   function will configure the MIO to connect them. Depending on the
+ *   direction indicated by the `dir` argument, it will connect the input,
+ *   output or both. If the MIO pad is an input/output but the requested
+ *   direction is only an input, the MIO output will be configured as
+ *   high-Z.
+ * - If both are of DIO type, this function will not do anything but
+ *   it will check that this peripheral I/O is indeed directly connected
+ *   to this pad.
+ * - Any other combination will produce an error.
  *
- * Each 2-bit field encodes the following values:
- * - 0: Strong pull down
- * - 1: Weak pull down
- * - 2: Weak pull up
- * - 3: Strong pull up
+ * In all cases, this function will return an error if the direction(s)
+ * passed as argument are incompatible with the direction(s) of the
+ * peripheral I/O and the pad.
  *
- * The values of the 3 strapping pins are concatenated together, yielding a
- * 6-bit strapping value.
- *
- * @return The strapping value 0-63.
+ * @param periph_io A peripheral I/O.
+ * @param pad A pad.
+ * @param dir Direction(s) to configure.
+ * @return `kErrorOk` if the operation succeeded, a `kModulePinMux` error
+ * otherwise.
  */
-uint32_t pinmux_read_straps(void);
+OT_WARN_UNUSED_RESULT
+rom_error_t pinmux_connect(dt_periph_io_t periph_io, dt_pad_t pad,
+                           dt_periph_io_dir_t dir);
 
 #ifdef __cplusplus
 }
