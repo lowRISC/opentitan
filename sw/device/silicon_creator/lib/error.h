@@ -56,6 +56,7 @@ enum module_ {
   kModuleOwnership =       MODULE_CODE('O', 'W'),
   kModulePersoTlv =        MODULE_CODE('P', 'T'),
   kModuleDice =            MODULE_CODE('D', 'C'),
+  kModulePinMux =          MODULE_CODE('P', 'M'),
   // clang-format on
 };
 
@@ -237,6 +238,12 @@ enum module_ {
   X(kErrorDiceCwtCoseKeyNotFound,     ERROR_(1, kModuleDice, kNotFound)), \
   X(kErrorDiceCwtCoseKeyBadSize,      ERROR_(1, kModuleDice, kInternal)), \
   X(kErrorDiceCwtKeyCoordsNotFound,   ERROR_(2, kModuleDice, kNotFound)), \
+  \
+  X(kErrorPinMuxInternal,             ERROR_(0, kModulePinMux, kInternal)), \
+  X(kErrorPinMuxInvalidPad,           ERROR_(1, kModulePinMux, kInvalidArgument)), \
+  X(kErrorPinMuxLockedPad,            ERROR_(2, kModulePinMux, kInvalidArgument)), \
+  X(kErrorPinMuxInvalidPeriphIo,      ERROR_(3, kModulePinMux, kInvalidArgument)), \
+  X(kErrorPinMuxLockedPeriphIo,       ERROR_(4, kModulePinMux, kInvalidArgument)), \
   \
   /* This comment prevent clang from trying to format the macro. */
 
