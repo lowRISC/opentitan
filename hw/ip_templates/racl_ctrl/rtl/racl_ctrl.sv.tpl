@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "prim_assert.sv"
+
 module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn              = {NumAlerts{1'b1}},
   // Number of cycles a differential skew is tolerated on the alert signal
