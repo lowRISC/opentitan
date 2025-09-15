@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "prim_assert.sv"
+
 /**
  * 256b General Purpose Register File (GPRs) with integrity code detecting triple bit errors on a
  * 32-bit granule (312 bits total).
