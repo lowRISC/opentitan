@@ -39,32 +39,11 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Helper X macro for defining enums and case statements related to PWM
- * channels. If an additional channel is ever added to the hardware, this list
- * can be updated.
- */
-#define DIF_PWM_CHANNEL_LIST(X) \
-  X(0)                          \
-  X(1)                          \
-  X(2)                          \
-  X(3)                          \
-  X(4)                          \
-  X(5)
-
-/**
- * Helper macro for defining a `dif_pwm_channel_t` enumeration constant.
- * @channel_ PWM channel of the enumeration constant.
- */
-#define PWM_CHANNEL_ENUM_INIT_(channel_) kDifPwmChannel##channel_ = channel_,
-
-/**
  * A PWM channel.
+ *
+ * Channels are numbered 0 to N-1, where N is the number of channels.
  */
-typedef enum dif_pwm_channel {
-  DIF_PWM_CHANNEL_LIST(PWM_CHANNEL_ENUM_INIT_)
-} dif_pwm_channel_t;
-
-#undef PWM_CHANNEL_ENUM_INIT_
+typedef size_t dif_pwm_channel_t;
 
 /**
  * Runtime configuration for PWM.
