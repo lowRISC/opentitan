@@ -6,6 +6,8 @@
 /*
 */
 
+`include "prim_assert.sv"
+
 module spi_tpm
   import spi_device_pkg::*;
   import spi_device_reg_pkg::NumLocality;

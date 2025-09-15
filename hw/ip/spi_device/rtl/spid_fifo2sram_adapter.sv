@@ -9,6 +9,8 @@
   (empty/ full).
 */
 
+`include "prim_assert.sv"
+
 module spid_fifo2sram_adapter #(
   parameter int unsigned FifoWidth = 8,
   parameter int unsigned FifoDepth = 256,
