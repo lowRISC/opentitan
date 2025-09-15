@@ -8,6 +8,8 @@
 // It takes in the key, v, and reseed counter values processed by the
 // ctr_drbg cmd module.
 
+`include "prim_assert.sv"
+
 module csrng_ctr_drbg_gen import csrng_pkg::*; (
   input  logic clk_i,
   input  logic rst_ni,

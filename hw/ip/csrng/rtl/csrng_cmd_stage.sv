@@ -4,6 +4,7 @@
 //
 // Description: CSRNG command staging module.
 //
+`include "prim_assert.sv"
 
 module csrng_cmd_stage import csrng_pkg::*; (
   input logic                        clk_i,
