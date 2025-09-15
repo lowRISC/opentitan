@@ -4,6 +4,8 @@
 //
 // Description: I2C core module
 
+`include "prim_assert.sv"
+
 module i2c_core import i2c_pkg::*;
 #(
   parameter int unsigned InputDelayCycles = 0

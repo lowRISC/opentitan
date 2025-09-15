@@ -4,6 +4,8 @@
 //
 // Description: I2C finite state machine
 
+`include "prim_assert.sv"
+
 module i2c_target_fsm import i2c_pkg::*;
 #(
   parameter int AcqFifoDepth = 64,
