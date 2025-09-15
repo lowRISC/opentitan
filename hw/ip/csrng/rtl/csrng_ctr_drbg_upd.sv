@@ -6,6 +6,8 @@
 //
 // implementation using security_strength = 256
 
+`include "prim_assert.sv"
+
 module csrng_ctr_drbg_upd import csrng_pkg::*; (
   input  logic clk_i,
   input  logic rst_ni,
