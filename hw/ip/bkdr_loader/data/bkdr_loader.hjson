@@ -1,0 +1,241 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name:               "bkdr_loader",
+  human_name:         "Memory Backdoor Loader",
+  one_line_desc:      "Provides FPGA-only indirect programming to RAMs",
+  one_paragraph_desc: '''
+  The BKDR_LOADER intercepts the reset and JTAG signals between the FPGA pad array and the top-level
+  OpenTitan instance. On reset, the IP samples the tap strap pins and becomes active if both straps
+  signals are high (DFT mode on the ASIC). When active, the module keeps the reset to both the AST
+  and OpenTitan asserted to prevent any access to non-initialized memory regions. It presents an
+  internal RISC-V DTM over which the loader's internal register can be accessed. The BKDR_LOADER
+  presents both the number of targets and key target information through its register space.
+  After completing preloading and data validation, the loader is deactivated until the next
+  button reset via the control register. In this case, the JTAG signals are forwarded to OpenTitan
+  and the reset to the AST and OpenTitan is de-asserted.
+  '''
+  // This IP does not have a valid unique comportable IP identifier (CIP_ID) as it cannot be
+  // instantiated using `topgen`.
+  cip_id:             "0xffff",
+  design_spec:        "../doc",
+  hw_checklist:       "../doc/checklist",
+  version:            "0.1.0",
+  life_stage:         "L1",
+  design_stage:       "D1",
+  verification_stage: "V0",
+  dif_stage:          "S0",
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+  ]
+
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device", name: "regs", racl_support: false }
+  ],
+
+  ////////////////
+  // Parameters //
+  ////////////////
+  param_list: [
+    { name:      "NumBkdrTgts",
+      desc:      "Number of RAM Targets",
+      type:      "int unsigned",
+      default:   "12",
+    }
+    { name:      "MaxWordWidthDiv32",
+      desc:      "Max bit width of a word / 32",
+      type:      "int unsigned",
+      default:   "8",
+    }
+  ]
+
+  regwidth: "32",
+  registers: {
+    regs: [
+      ////////////////////////
+      // Ctrl / Status CSRs //
+      ////////////////////////
+      { name: "STATUS",
+        desc: "Status register",
+        swaccess: "rc",
+        hwaccess: "hwo",
+        hwext:    "true",
+        hwqe:     "true",
+        fields: [
+          { bits: "0"
+            name: "ERROR"
+            swaccess: "ro",
+            hwaccess: "hwo",
+            desc: '''
+                  Whether an error happened on the last access. Clear on read.
+                  ''',
+          }
+        ]
+      }
+      { name: "CONTROL",
+        desc: "Control register",
+        swaccess: "wo",
+        hwaccess: "hro",
+        hwqe:     "true",
+        fields: [
+          { bits: "0"
+            name: "DONE"
+            swaccess: "wo",
+            hwaccess: "hro",
+            desc: '''
+                  Write 1'b1 switches bkdr loader to mission mode.
+                  ''',
+          },
+          { bits: "1"
+            name: "WRITE_ENA"
+            swaccess: "wo",
+            hwaccess: "hro",
+            desc: '''
+                  If set, a bkdr write is launched when writing to the index register.
+                  ''',
+          },
+          { bits: "15:8"
+            name: "TARGET_IDX"
+            swaccess: "wo",
+            hwaccess: "hro",
+            desc: '''
+                  The bkdr memory index to write to.
+                  ''',
+          },
+        ]
+      }
+      { name: "NUM_BKDR_TARGETS",
+        desc: "Number of bkdr targets available.",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext:    "true",
+        fields: [
+          { bits: "31:0"
+            name: "VAL"
+            swaccess: "ro",
+            hwaccess: "hwo",
+            desc: '''
+                  ''',
+          }
+        ]
+      }
+      { name: "USR_ACCESS_TIMESTAMP",
+        desc: "TIMESTAMP value written to the USR_ACCESS register during bitstream generation.",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext:    "true",
+        fields: [
+          { bits: "31:0"
+            name: "VAL"
+            swaccess: "ro",
+            hwaccess: "hwo",
+            desc: '''
+                  ''',
+          }
+        ]
+      }
+      { skipto: "0x100" }
+      { multireg: {
+        name: "TARGET_INFO",
+        desc: "ASCII 4-character string values (big endian) identifying each bkdr target memory.",
+        count: "NumBkdrTgts",
+        cname: "VAL",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext:    "true",
+        fields: [
+          { bits: "31:0"
+            name: "VAL"
+            desc: '''
+                  ''',
+          }
+        ]
+      } },
+      { skipto: "0x200" }
+      { multireg: {
+        name: "WIDTH_INFO",
+        desc: "The SRAM word width of a given bkdr target memory.",
+        count: "NumBkdrTgts",
+        cname: "VAL",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext:    "true",
+        fields: [
+          { bits: "31:0"
+            name: "VAL"
+            desc: '''
+                  ''',
+          }
+        ]
+      } },
+      { skipto: "0x300" }
+      { multireg: {
+        name: "DEPTH_INFO",
+        desc: "The number of SRAM words of a given bkdr target memory.",
+        count: "NumBkdrTgts",
+        cname: "VAL",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext:    "true",
+        fields: [
+          { bits: "31:0"
+            name: "VAL"
+            desc: '''
+                  ''',
+          }
+        ]
+      } },
+      { skipto: "0x400" }
+      { multireg: {
+        name: "READ_DATA",
+        desc: "Value to be read from the target memory.",
+        count: "MaxWordWidthDiv32",
+        cname: "VAL",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext:    "true",
+        fields: [
+          { bits: "31:0",
+            name: "VAL",
+            desc: '''
+                  ''',
+            resval: 0x0
+          },
+        ]
+      } },
+      { skipto: "0x500" }
+      { multireg: {
+        name: "WRITE_DATA",
+        desc: "Value to be written to the target memory.",
+        count: "MaxWordWidthDiv32",
+        cname: "VAL",
+        swaccess: "wo",
+        hwaccess: "hro",
+        fields: [
+          { bits: "31:0",
+            name: "VAL",
+            desc: '''
+                  ''',
+            resval: 0x0
+          },
+        ]
+      } },
+      { skipto: "0x600" }
+      { name: "INDEX",
+        desc: "Index address of the SRAM word to be accessed.",
+        swaccess: "wo",
+        hwaccess: "hro",
+        hwqe:     "true",
+        fields: [
+          { bits: "31:0",
+            name: "VAL",
+            desc: '''
+                  ''',
+            resval: 0x0
+          },
+        ]
+      },
+    ],
+  }
+}

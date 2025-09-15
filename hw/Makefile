@@ -22,6 +22,7 @@ endif
 IPS ?= aes           \
        adc_ctrl      \
        aon_timer     \
+       bkdr_loader   \
        csrng         \
        dma           \
        edn           \

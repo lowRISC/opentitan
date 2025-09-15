@@ -6264,6 +6264,13 @@ _RV_DM_TAP_SEL_LC_STATES = get_lc_items(
             EARLGREY_SILICON_OWNER_ROM_EXT_ENVS if lc_state == "prod" else {},
             {
                 "//hw/top_earlgrey:fpga_cw310_sival": None,
+                # TODO: (#30294) Adapt for bkdr_loader: in DEV state the DFT TAP strapping
+                # triggers PRELOAD mode, presenting the bkdr_loader JTAG TAP instead
+                # of the chip DFT TAP. The test must be updated to account for the
+                # bkdr_loader's IDCODE and its done-register handshake before the
+                # downstream DFT TAP becomes visible.
+            } if lc_state == "dev" else {
+                "//hw/top_earlgrey:fpga_cw310_sival": None,
                 "//hw/top_earlgrey:fpga_cw340_sival": None,
             },
         ),
