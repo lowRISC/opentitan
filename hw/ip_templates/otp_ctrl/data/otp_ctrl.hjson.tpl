@@ -1145,7 +1145,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
           name:     "${part["name"]}_DIGEST",
           desc:     '''
                     Integrity digest for the ${part["name"]} partition.
-                    The integrity digest is 0 by default. Software must write this
+                    The integrity digest is 0 by default. Software must write a non-zero
                     digest value via the direct access interface in order to lock the partition.
                     After a reset, write access to the ${part["name"]} partition is locked and
                     the digest becomes visible in this CSR.
