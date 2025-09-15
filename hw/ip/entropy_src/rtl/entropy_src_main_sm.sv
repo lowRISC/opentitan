@@ -6,6 +6,8 @@
 //
 //   determines when new entropy is ready to be forwarded
 
+`include "prim_assert.sv"
+
 module entropy_src_main_sm
   import entropy_src_main_sm_pkg::*;
 (
