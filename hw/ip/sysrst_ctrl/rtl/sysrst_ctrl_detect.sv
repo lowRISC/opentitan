@@ -19,6 +19,8 @@
 // and enabled again in order to reset the internal FSM into its idle state.
 //
 
+`include "prim_assert.sv"
+
 module sysrst_ctrl_detect
   import sysrst_ctrl_pkg::*;
 #(
