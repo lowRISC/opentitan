@@ -400,6 +400,14 @@
       reseed: 1
     }
     {
+      name: usbdev_phy_config_tx_pkt_test_mode
+      uvm_test_seq: usbdev_phy_config_tx_pkt_test_mode_vseq
+      // Monitor/scoreboard would fault the transmitted packet as a violation
+      // of the USB Protocol Specification.
+      run_opts: ["+en_scb=0"]
+      reseed: 1
+    }
+    {
       name: usbdev_phy_config_tx_use_d_se0
       uvm_test_seq: usbdev_smoke_vseq
       reseed: 1
