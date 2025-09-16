@@ -272,8 +272,10 @@ module prim_alert_receiver
   ////////////////
 
 `ifdef INC_ASSERT
+  default clocking @(posedge clk_i); endclocking
+  default disable iff !rst_ni;
+
   import prim_mubi_pkg::mubi4_test_false_loose;
-`endif
 
   // check whether all outputs have a good known state after reset
   `ASSERT_KNOWN(PingOkKnownO_A, ping_ok_o)
@@ -303,28 +305,26 @@ module prim_alert_receiver
 
   if (AsyncOn) begin : gen_async_assert
     // signal integrity check propagation
-    `ASSERT(SigInt_A,
-        alert_tx_i.alert_p == alert_tx_i.alert_n [*2] ##2
-        !(state_q inside {InitReq, InitAckWait}) &&
-        mubi4_test_false_loose(init_trig_i)
-        |->
-        ##[0:SkewCycles] integ_fail_o)
-    `ASSERT(PingResponse1_A,
-        ##1 $rose(alert_tx_i.alert_p) &&
-        (alert_tx_i.alert_p ^ alert_tx_i.alert_n) ##2
-        state_q == Idle && ping_pending_q
-        |->
-        ##[0:SkewCycles] ping_ok_o,
-        clk_i, !rst_ni || integ_fail_o || mubi4_test_true_strict(init_trig_i))
+    SigInt_A: assert property (alert_tx_i.alert_p == alert_tx_i.alert_n [*(SkewCycles + 1)] ##2
+                               (!(state_q inside {InitReq, InitAckWait}) &&
+                                mubi4_test_false_loose(init_trig_i))
+                               |->
+                               ##[0:1] integ_fail_o);
+    PingResponse1_A: assert property (disable iff (!rst_ni || integ_fail_o ||
+                                                   mubi4_test_true_strict(init_trig_i))
+                                      ##1 $rose(alert_tx_i.alert_p) &&
+                                      (alert_tx_i.alert_p ^ alert_tx_i.alert_n) ##2
+                                      state_q == Idle && ping_pending_q
+                                      |->
+                                      ##[0:1] ping_ok_o);
     // alert
-    `ASSERT(Alert_A,
-        ##1 $rose(alert_tx_i.alert_p) &&
-        (alert_tx_i.alert_p ^ alert_tx_i.alert_n) ##2
-        state_q == Idle &&
-        !ping_pending_q
-        |->
-        ##[0:SkewCycles] alert_o,
-        clk_i, !rst_ni || integ_fail_o || mubi4_test_true_strict(init_trig_i))
+    Alert_A: assert property (disable iff (!rst_ni || integ_fail_o ||
+                                           mubi4_test_true_strict(init_trig_i))
+                              ##1 $rose(alert_tx_i.alert_p) &&
+                              (alert_tx_i.alert_p ^ alert_tx_i.alert_n) ##2
+                              state_q == Idle && !ping_pending_q
+                              |->
+                              ##[0:1] alert_o);
   end else begin : gen_sync_assert
     // signal integrity check propagation
     `ASSERT(SigInt_A,
@@ -387,5 +387,6 @@ module prim_alert_receiver
       mubi4_test_true_strict(init_trig_i)
       |->
       ping_ok_o)
+`endif // ifdef INC_ASSERT
 
 endmodule : prim_alert_receiver
