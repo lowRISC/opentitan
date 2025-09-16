@@ -180,4 +180,7 @@ pub struct ConfigurationFile {
     /// List of IO expander chips.
     #[serde(default)]
     pub io_expanders: Vec<IoExpander>,
+    /// List of GPIO pins.
+    #[serde(default)]
+    pub gpios: Vec<String>,
 }
