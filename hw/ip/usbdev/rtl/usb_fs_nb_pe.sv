@@ -35,6 +35,7 @@ module usb_fs_nb_pe #(
   input  logic                   cfg_pinflip_i, // 1: USB-side D+ and D- pins are flipped.
                                                 // Change values in logic to accommodate.
   input  logic                   tx_osc_test_mode_i, // Oscillator test mode (constantly output JK)
+  input  logic                   tx_pkt_test_mode_i, // Packet transmission test mode
   output logic [NumOutEps-1:0]   out_data_toggle_o, // Current state of OUT data toggles
   input  logic                   out_datatog_we_i, // OUT data toggles write strobe from software
   input  logic [NumOutEps-1:0]   out_datatog_status_i, // New state of selected OUT data toggles
@@ -184,6 +185,9 @@ module usb_fs_nb_pe #(
     .link_reset_i          (link_reset_i),
     .link_active_i         (link_active_i),
     .dev_addr_i            (dev_addr_i),
+
+    // Packet transmission test mode (repeatedly send packet from IN Endpoint Zero).
+    .tx_pkt_test_mode_i    (tx_pkt_test_mode_i),
 
     // transaction starting
     .in_xact_starting_o    (in_xact_starting_o),
