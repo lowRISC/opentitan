@@ -24,7 +24,7 @@
 #include "hw/top/aes_regs.h"
 #include "hw/top/hmac_regs.h"
 #include "hw/top/kmac_regs.h"
-#include "otbn_regs.h"
+#include "hw/top/otbn_regs.h"
 
 static_assert(kDtAesCount >= 1, "This test requires at least one AES instance");
 static_assert(kDtAonTimerCount >= 1,

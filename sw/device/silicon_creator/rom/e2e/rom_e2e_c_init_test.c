@@ -18,8 +18,8 @@
 
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/pinmux_regs.h"
+#include "hw/top/uart_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "uart_regs.h"
 
 enum {
   /**

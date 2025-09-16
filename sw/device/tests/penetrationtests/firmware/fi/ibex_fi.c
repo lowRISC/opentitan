@@ -27,17 +27,17 @@
 #include "sw/device/tests/penetrationtests/json/ibex_fi_commands.h"
 
 // Generated
-#include "csrng_regs.h"
-#include "edn_regs.h"
-#include "entropy_src_regs.h"
-#include "hmac_regs.h"
 #include "hw/top/aes_regs.h"
 #include "hw/top/alert_handler_regs.h"
+#include "hw/top/csrng_regs.h"
+#include "hw/top/edn_regs.h"
+#include "hw/top/entropy_src_regs.h"
+#include "hw/top/hmac_regs.h"
 #include "hw/top/keymgr_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/rv_core_ibex_regs.h"
+#include "hw/top/sram_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "rv_core_ibex_regs.h"
-#include "sram_ctrl_regs.h"
 
 enum {
   /**
