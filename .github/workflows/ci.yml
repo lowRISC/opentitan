@@ -681,13 +681,6 @@ jobs:
           context: .
           file: util/container/Dockerfile
         continue-on-error: true
-      - name: Build Documentation Redirector Container
-        uses: docker/build-push-action@v6
-        env:
-          DOCKER_BUILD_SUMMARY: false
-          DOCKER_BUILD_RECORD_UPLOAD: false
-        with:
-          context: site/redirector/landing
 
   sw_build_test:
     name: Build and test software
