@@ -22,7 +22,7 @@
 #include "hw/top/adc_ctrl_regs.h"
 #include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/keymgr_regs.h"
-#include "sysrst_ctrl_regs.h"
+#include "hw/top/sysrst_ctrl_regs.h"
 #elif defined(OPENTITAN_IS_DARJEELING)
 #include "hw/top/dt/dt_keymgr_dpe.h"  // Generated
 

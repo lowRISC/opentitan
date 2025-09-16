@@ -6,13 +6,13 @@
 #include "sw/device/lib/base/multibits_asm.h"
 #include "hw/top/ast_regs.h"
 #include "hw/top/clkmgr_regs.h"
-#include "csrng_regs.h"
-#include "edn_regs.h"
-#include "sram_ctrl_regs.h"
+#include "hw/top/csrng_regs.h"
+#include "hw/top/edn_regs.h"
+#include "hw/top/sram_ctrl_regs.h"
 
 #if defined(OPENTITAN_IS_ENGLISHBREAKFAST)
-#include "otp_ctrl_regs.h"
-#include "sensor_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/sensor_ctrl_regs.h"
 #include "hw/top_englishbreakfast/sw/autogen/top_englishbreakfast_memory.h"
 #define OTP_CTRL_CORE_BASE_ADDR             TOP_ENGLISHBREAKFAST_OTP_CTRL_CORE_BASE_ADDR
 #define AST_BASE_ADDR                       TOP_ENGLISHBREAKFAST_AST_BASE_ADDR

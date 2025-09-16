@@ -24,8 +24,8 @@
 #include "hw/top/alert_handler_regs.h"
 #include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/lc_ctrl_regs.h"
-#include "otp_ctrl_regs.h"
-#include "rv_core_ibex_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/rv_core_ibex_regs.h"
 
 namespace shutdown_unittest {
 

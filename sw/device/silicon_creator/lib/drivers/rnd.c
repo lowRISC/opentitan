@@ -16,7 +16,7 @@
 
 #include "hw/top/entropy_src_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
-#include "rv_core_ibex_regs.h"
+#include "hw/top/rv_core_ibex_regs.h"
 
 enum {
   // This covers the health threshold registers which are contiguous. The alert

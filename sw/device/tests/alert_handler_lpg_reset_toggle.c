@@ -30,9 +30,9 @@
 #include "hw/top/alert_handler_regs.h"
 #include "hw/top/i2c_regs.h"
 #include "hw/top/spi_device_regs.h"
+#include "hw/top/spi_host_regs.h"
 #include "hw/top/usbdev_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "spi_host_regs.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();

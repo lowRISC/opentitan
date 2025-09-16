@@ -19,9 +19,9 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 
-#include "entropy_src_regs.h"
 #include "hw/top/csrng_regs.h"
 #include "hw/top/edn_regs.h"
+#include "hw/top/entropy_src_regs.h"
 #include "hw/top/lc_ctrl_regs.h"  // Generated.
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/sensor_ctrl_regs.h"

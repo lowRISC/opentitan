@@ -39,11 +39,11 @@
 
 #include "hw/top/alert_handler_regs.h"
 #include "hw/top/lc_ctrl_regs.h"
-#include "otp_ctrl_regs.h"
-#include "rstmgr_regs.h"
-#include "rv_core_ibex_regs.h"
-#include "sram_ctrl_regs.h"
-#include "uart_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/rstmgr_regs.h"
+#include "hw/top/rv_core_ibex_regs.h"
+#include "hw/top/sram_ctrl_regs.h"
+#include "hw/top/uart_regs.h"
 
 static_assert(ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT <=
                   OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION_SIZE / 4,
