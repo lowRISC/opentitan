@@ -20,6 +20,7 @@ def main() -> int:
     # Run the process streaming (echoing) `stdout` and `stderr`.
     proc = subprocess.Popen(
         " ".join([qemu_bin] + sys.argv[1:]),
+        stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         bufsize=1,
