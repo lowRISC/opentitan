@@ -409,8 +409,6 @@ def opentitan_top_dt_api(name, deps = None):
         srcs = [":{}_src".format(name)],
         hdrs = [":{}_hdr".format(name)],
         deps = deps,
-        # Make the dt_api.h header accessible as "dt/dt_api.h".
-        includes = ["."],
     )
 
 def _opentitan_autogen_testutils_gen(ctx):
