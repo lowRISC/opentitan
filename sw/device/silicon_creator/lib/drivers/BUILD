@@ -868,6 +868,7 @@ cc_library(
         "//hw/top:dt",
         "//hw/top:pwrmgr_c_regs",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )

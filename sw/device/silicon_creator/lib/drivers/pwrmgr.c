@@ -4,10 +4,12 @@
 
 #include "sw/device/silicon_creator/lib/drivers/pwrmgr.h"
 
+#include "hw/top/dt/dt_api.h"
 #include "hw/top/dt/dt_pwrmgr.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
+#include "sw/device/silicon_creator/lib/error.h"
 
 #include "hw/top/pwrmgr_regs.h"
 
@@ -18,6 +20,35 @@ static inline uint32_t pwrmgr_base(void) {
 enum {
   kSyncConfig = (1 << PWRMGR_CFG_CDC_SYNC_SYNC_BIT),
 };
+
+OT_WARN_UNUSED_RESULT
+rom_error_t pwrmgr_find_request_source(pwr_mgr_req_type_t req_type,
+                                       dt_instance_id_t inst_id,
+                                       size_t signal_idx, size_t *source_idx) {
+  dt_pwrmgr_t dt = kDtPwrmgrAon;
+
+  if (req_type == kPwrmgrReqTypeWakeup) {
+    for (size_t idx = 0; idx < dt_pwrmgr_wakeup_src_count(dt); idx++) {
+      dt_pwrmgr_wakeup_src_t src = dt_pwrmgr_wakeup_src(dt, idx);
+      if (src.inst_id == inst_id && src.wakeup == signal_idx) {
+        *source_idx = idx;
+        return kErrorOk;
+      }
+    }
+    return kErrorPwrmgrUnknownRequestSource;
+  } else if (req_type == kPwrmgrReqTypeReset) {
+    for (size_t idx = 0; idx < dt_pwrmgr_reset_request_src_count(dt); idx++) {
+      dt_pwrmgr_reset_req_src_t src = dt_pwrmgr_reset_request_src(dt, idx);
+      if (src.inst_id == inst_id && src.reset_req == signal_idx) {
+        *source_idx = idx;
+        return kErrorOk;
+      }
+    }
+    return kErrorPwrmgrUnknownRequestSource;
+  } else {
+    return kErrorPwrmgrInvalidRequestType;
+  }
+}
 
 void pwrmgr_cdc_sync(uint32_t n) {
   // We want to timeout if the CDC bit doesn't self clear.  It should take
