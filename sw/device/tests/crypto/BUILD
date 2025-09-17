@@ -146,6 +146,7 @@ cc_library(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/tests/crypto/lib:crypto_test_lib",
     ],
 )
 
