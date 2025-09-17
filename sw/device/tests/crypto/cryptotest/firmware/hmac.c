@@ -11,10 +11,10 @@
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/tests/crypto/cryptotest/json/hmac_commands.h"
+#include "sw/device/tests/crypto/lib/crypto_test_lib.h"
 
 const unsigned int kOtcryptoHmacTagBytesSha256 = 32;
 const unsigned int kOtcryptoHmacTagBytesSha384 = 48;
@@ -34,13 +34,6 @@ static const uint32_t kTestMask[48] = {
     0x20182AAE, 0x4476F6F4, 0x7C4A0A31, 0x7D2809BA, 0x367B29B9, 0x42444BEA,
     0xDFD6025C, 0x1E665207, 0x18E0895B, 0x20D435DB, 0xC509A6D6, 0x8CC19AB1,
     0xA5D39BD2, 0xAB479AD5, 0x5786D029, 0x2E4B7CD7, 0xB77A3D76, 0xE2A09962,
-};
-
-// Available security levels. The test randomly chooses one.
-static const otcrypto_key_security_level_t security_level[3] = {
-    kOtcryptoKeySecurityLevelLow,
-    kOtcryptoKeySecurityLevelMedium,
-    kOtcryptoKeySecurityLevelHigh,
 };
 
 status_t handle_hmac(ujson_t *uj) {
@@ -72,16 +65,18 @@ status_t handle_hmac(ujson_t *uj) {
       LOG_ERROR("Unsupported HMAC key mode: %d", uj_hash_alg);
       return INVALID_ARGUMENT();
   }
+
   // Select a random security level.
-  size_t sec_lvl_idx = rand_testutils_gen32_range(
-      /*min=*/0, /*max=*/ARRAYSIZE(security_level) - 1);
+  otcrypto_key_security_level_t sec_level;
+  TRY(determine_security_level(&sec_level));
+
   // Build the key configuration
   otcrypto_key_config_t config = {
       .version = kOtcryptoLibVersion1,
       .key_mode = key_mode,
       .key_length = uj_key.key_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = security_level[sec_lvl_idx],
+      .security_level = sec_level,
   };
   // Create key shares.
   uint32_t key_buf[ceil_div(uj_key.key_len, sizeof(uint32_t))];
