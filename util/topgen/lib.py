@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging as log
+import os
 import re
 import sys
 from collections import OrderedDict, defaultdict
@@ -1556,3 +1557,30 @@ class TopGen:
                 (subspace['name'], subspace['desc'], subspace_region))
 
         self.subranges[addr_space_name] = subspace_regions
+
+
+def write_file_secure(file_path: Path, content: str,
+                      mode: int = 0o600) -> None:
+    """
+    Write content to a file with secure permissions.
+
+    For secure files, uses os.open() with O_CREAT | O_EXCL to atomically create
+    the file with the correct permissions from the start. This prevents race
+    conditions in shared NFS environments without needing temporary files.
+
+    Args:
+        file_path: Path where the file should be written
+        content: Content to write to the file
+        mode: File permissions to set (default: 0o600 for owner read/write only)
+    """
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # First delete file if it exists so that we can securely create it
+    if file_path.exists():
+        file_path.unlink()
+
+    # For sensitive files: atomically create with correct permissions
+    flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
+    file_descriptor = os.open(file_path, flags, mode)
+    with os.fdopen(file_descriptor, "w", encoding="UTF-8") as fout:
+        fout.write(content)
