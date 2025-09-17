@@ -41,7 +41,7 @@ from topgen.c_test import TopGenCTest
 from topgen.clocks import Clocks
 from topgen.gen_dv import gen_dv
 from topgen.gen_top_docs import gen_top_docs
-from topgen.lib import find_module, find_modules, load_cfg
+from topgen.lib import find_module, find_modules, load_cfg, write_file_secure
 from topgen.merge import (
     amend_alert, amend_interrupt, amend_pinmux_io, amend_racl,
     amend_reset_request, amend_resets, amend_wkup, commit_alert_modules,
@@ -1399,9 +1399,10 @@ def dump_completecfg(cfg: ConfigT, out_path: Path) -> None:
     genhjson_path.write_text(genhdr + GENCMD.format(top_name=top_name) + "\n" +
                              hjson.dumps(dump_cfg, for_json=True, default=vars) +
                              '\n')
-    secretgenhjson_path.write_text(genhdr + GENCMD.format(top_name=top_name) + "\n" +
-                                   hjson.dumps(secret_cfg, for_json=True, default=vars) +
-                                   '\n')
+    # Write secrets file with secure permissions
+    secrets_content = (genhdr + GENCMD.format(top_name=top_name) + "\n" +
+                       hjson.dumps(secret_cfg, for_json=True, default=vars) + '\n')
+    write_file_secure(secretgenhjson_path, secrets_content)
 
 
 def main():
@@ -1728,13 +1729,17 @@ def main():
     if not args.no_top or args.top_only:
 
         def render_template(template_path: str, rendered_path: Path,
-                            **other_info):
+                            secure: bool = False, **other_info):
+            """Render template to file, optionally with secure permissions for sensitive files"""
             template_contents = generate_top(completecfg, name_to_block,
                                              str(template_path), **other_info)
 
-            rendered_path.parent.mkdir(exist_ok=True, parents=True)
-            with rendered_path.open(mode="w", encoding="UTF-8") as fout:
-                fout.write(template_contents)
+            if secure:
+                # Use the write_file_secure for writting file with restricted file permissions
+                write_file_secure(rendered_path, template_contents)
+            else:
+                rendered_path.parent.mkdir(exist_ok=True, parents=True)
+                rendered_path.write_text(template_contents, encoding="UTF-8")
 
         # Header for SV files
         gencmd_sv = warnhdr + "//\n" + GENCMD.format(top_name=top_name) + "\n"
@@ -1810,7 +1815,7 @@ def main():
 
         render_template(TOPGEN_TEMPLATE_PATH / "toplevel_rnd_cnst_pkg.sv.tpl",
                         out_path / rnd_cnst_path / rnd_cnst_sv_file,
-                        gencmd=gencmd_rnd_cnst_sv)
+                        secure=True, gencmd=gencmd_rnd_cnst_sv)
 
         # Create verible waiver file for the random constant package for long lines.
         rnd_cnst_vbl_file_path = out_path / rnd_cnst_path / f"{rnd_cnst_file}.vbl"
@@ -1849,7 +1854,7 @@ waive --rule=line-length --location="{rnd_cnst_sv_file}"
             lc_st_enc_file = "lc_ctrl_state_pkg.sv"
             render_template(IP_RAW_PATH / "lc_ctrl" / "rtl" / "lc_ctrl_state_pkg.sv.tpl",
                             out_path / lc_st_enc_path / lc_st_enc_file,
-                            lc_st_enc=lc_st_enc)
+                            secure=True, lc_st_enc=lc_st_enc)
             render_template(TOPGEN_TEMPLATE_PATH / "core_file.core.tpl",
                             out_path / lc_st_enc_path /
                             f"top_{topname}_{lc_seed.seed_mode}_lc_ctrl_state_pkg.core",
