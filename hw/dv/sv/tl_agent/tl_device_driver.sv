@@ -19,21 +19,15 @@ class tl_device_driver extends tl_base_driver;
       a_channel_thread();
       d_channel_thread();
     join_none
- endtask
+  endtask
 
-  // reset signals every time reset occurs.
-  virtual task reset_signals();
+  function void on_enter_reset();
     invalidate_d_channel();
     cfg.vif.d2h_int.a_ready <= 1'b0;
-    forever begin
-      @(negedge cfg.vif.rst_n);
-      invalidate_d_channel();
-      cfg.vif.d2h_int.a_ready <= 1'b0;
-      // Check for seq_item_port FIFO is empty when coming out of reset
-      `DV_CHECK_EQ(seq_item_port.has_do_available(), 0);
-      @(posedge cfg.vif.rst_n);
-    end
-  endtask
+
+    // Make sure that seq_item_port FIFO will be empty when coming out of reset
+    `DV_CHECK_EQ(seq_item_port.has_do_available(), 0);
+  endfunction
 
   virtual task a_channel_thread();
     int unsigned ready_delay;
