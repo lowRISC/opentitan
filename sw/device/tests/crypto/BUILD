@@ -866,72 +866,6 @@ opentitan_test(
     ],
 )
 
-autogen_cryptotest_header(
-    name = "rsa_3072_verify_testvectors_wycheproof_header",
-    hjson = "//sw/device/tests/crypto/testvectors:rsa_3072_verify_testvectors_wycheproof",
-    template = ":rsa_3072_verify_testvectors.h.tpl",
-    tool = "//sw/device/tests/crypto:rsa_3072_verify_set_testvectors",
-)
-
-opentitan_test(
-    name = "rsa_3072_verify_functest_wycheproof",
-    srcs = ["rsa_3072_verify_functest.c"],
-    exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-        },
-    ),
-    fpga = fpga_params(
-        timeout = "moderate",
-    ),
-    verilator = verilator_params(
-        timeout = "eternal",
-        # This test can take > 60 minutes, so mark it manual as it shouldn't
-        # run in CI/nightlies.
-        tags = ["manual"],
-    ),
-    deps = [
-        ":rsa_3072_verify_testvectors_wycheproof_header",
-        "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/crypto/drivers:hmac",
-        "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl/rsa:rsa_3072_verify",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-autogen_cryptotest_header(
-    name = "rsa_3072_verify_testvectors_hardcoded_header",
-    hjson = "//sw/device/tests/crypto/testvectors:rsa_3072_verify_testvectors_hardcoded",
-    template = ":rsa_3072_verify_testvectors.h.tpl",
-    tool = "//sw/device/tests/crypto:rsa_3072_verify_set_testvectors",
-)
-
-opentitan_test(
-    name = "rsa_3072_verify_functest_hardcoded",
-    srcs = ["rsa_3072_verify_functest.c"],
-    exec_env = CRYPTOTEST_EXEC_ENVS,
-    verilator = verilator_params(
-        timeout = "long",
-        # This test can take > 60 minutes, so mark it manual as it shouldn't
-        # run in CI/nightlies.
-        tags = ["manual"],
-    ),
-    deps = [
-        ":rsa_3072_verify_testvectors_hardcoded_header",
-        "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl:sha2",
-        "//sw/device/lib/crypto/impl/rsa:rsa_3072_verify",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
 opentitan_test(
     name = "sha384_functest",
     srcs = ["sha384_functest.c"],
@@ -1048,17 +982,6 @@ opentitan_test(
 )
 
 py_binary(
-    name = "rsa_3072_verify_set_testvectors",
-    srcs = ["rsa_3072_verify_set_testvectors.py"],
-    imports = ["."],
-    deps = [
-        "//util/design/lib:common",
-        requirement("hjson"),
-        requirement("mako"),
-    ],
-)
-
-py_binary(
     name = "kdf_set_testvectors",
     srcs = ["kdf_set_testvectors.py"],
     imports = ["."],
@@ -1145,7 +1068,6 @@ filegroup(
     name = "template_files",
     srcs = [
         "ecdsa_p256_verify_testvectors.h.tpl",
-        "rsa_3072_verify_testvectors.h.tpl",
     ],
 )
 
@@ -1178,8 +1100,6 @@ test_suite(
         ":rsa_3072_encryption_functest",
         ":rsa_3072_keygen_functest",
         ":rsa_3072_signature_functest",
-        ":rsa_3072_verify_functest_hardcoded",
-        ":rsa_3072_verify_functest_wycheproof",
         ":rsa_4096_encryption_functest",
         ":rsa_4096_keygen_functest",
         ":rsa_4096_signature_functest",

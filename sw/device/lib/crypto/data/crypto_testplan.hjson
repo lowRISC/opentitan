@@ -83,8 +83,6 @@
         "//sw/device/tests/crypto:rsa_2048_signature_functest",
         "//sw/device/tests/crypto:rsa_3072_encryption_functest",
         "//sw/device/tests/crypto:rsa_3072_signature_functest",
-        "//sw/device/tests/crypto:rsa_3072_verify_functest_hardcoded",
-        "//sw/device/tests/crypto:rsa_3072_verify_functest_wycheproof",
         "//sw/device/tests/crypto:rsa_4096_encryption_functest",
         "//sw/device/tests/crypto:rsa_4096_signature_functest",
       ]

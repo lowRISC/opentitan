@@ -12,11 +12,6 @@ filegroup(
 )
 
 filegroup(
-    name = "rsa_3072_verify_testvectors_hardcoded",
-    srcs = ["rsa_3072_verify_hardcoded.hjson"],
-)
-
-filegroup(
     name = "kmac_testvectors_hardcoded",
     srcs = ["kmac_hardcoded.hjson"],
 )
@@ -39,12 +34,6 @@ filegroup(
 filegroup(
     name = "kdf_testvectors_random",
     srcs = ["kdf_testvectors_random.hjson"],
-)
-
-autogen_cryptotest_hjson_external(
-    name = "rsa_3072_verify_testvectors_wycheproof",
-    src = "@wycheproof//testvectors:rsa_signature_3072_sha256_test.json",
-    parser = "//sw/device/tests/crypto/testvectors/wycheproof:rsa_3072_verify_parse_testvectors",
 )
 
 exports_files([
