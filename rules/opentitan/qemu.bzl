@@ -442,6 +442,10 @@ def _test_dispatch(ctx, exec_env, firmware):
     qemu_args += ["-device", "ot-i2c_host_proxy,bus=ot-i2c1,chardev=i2c1"]
     qemu_args += ["-device", "ot-i2c_host_proxy,bus=ot-i2c2,chardev=i2c2"]
 
+    # Create a chardev for the GPIO:
+    qemu_args += ["-chardev", "pty,id=gpio"]
+    qemu_args += ["-global", "ot-gpio-eg.chardev=gpio"]
+
     # Scale the Ibex clock by an `icount` factor.
     qemu_args += ["-icount", "shift={}".format(param["icount"])]
 
