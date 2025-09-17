@@ -92,6 +92,8 @@ def disqualified_for_signing(name, data):
         return True
     if "emulation" in name:
         return True
+    if not data["ecdsa_key"] and not data["spx_key"]:
+        return True
     if "em00" in data["otp"]:
         return True
     return False
