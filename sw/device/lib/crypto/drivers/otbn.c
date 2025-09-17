@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/otbn.h"
 
+#include "hw/top/dt/dt_otbn.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/crc32.h"
@@ -14,16 +15,17 @@
 #include "sw/device/lib/crypto/impl/status.h"
 
 #include "hw/top/otbn_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('d', 'b', 'n')
 
+static const dt_otbn_t kOtbnDt = kDtOtbn;
+
+static inline uint32_t otbn_base(void) {
+  return dt_otbn_primary_reg_block(kOtbnDt);
+}
+
 enum {
-  /**
-   * Base address for OTBN.
-   */
-  kBase = TOP_EARLGREY_OTBN_BASE_ADDR,
   /**
    * DMEM size in bytes.
    */
@@ -103,11 +105,11 @@ static status_t otbn_assert_idle(void) {
   uint32_t status = launder32(~(uint32_t)kOtbnStatusIdle);
   status_t res = (status_t){
       .value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value ^ status)};
-  status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
+  status = abs_mmio_read32(otbn_base() + OTBN_STATUS_REG_OFFSET);
   res.value ^= ~status;
   if (launder32(OT_UNSIGNED(res.value)) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(res.value, kHardenedBoolTrue);
-    HARDENED_CHECK_EQ(abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET),
+    HARDENED_CHECK_EQ(abs_mmio_read32(otbn_base() + OTBN_STATUS_REG_OFFSET),
                       kOtbnStatusIdle);
     return res;
   }
@@ -144,7 +146,7 @@ status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
   HARDENED_TRY(check_offset_len(dest, num_words, kOtbnDMemSizeBytes));
 
   // Reset the LOAD_CHECKSUM register.
-  abs_mmio_write32(kBase + OTBN_LOAD_CHECKSUM_REG_OFFSET, 0);
+  abs_mmio_write32(otbn_base() + OTBN_LOAD_CHECKSUM_REG_OFFSET, 0);
 
   // Initialize the CRC.
   uint32_t ctx;
@@ -168,7 +170,8 @@ status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
     barrierw(idx);
 
     // Perform the write.
-    abs_mmio_write32(kBase + OTBN_DMEM_REG_OFFSET + dest + idx_word, src[idx]);
+    abs_mmio_write32(otbn_base() + OTBN_DMEM_REG_OFFSET + dest + idx_word,
+                     src[idx]);
 
     // Update the CRC. According to the OTBN documentation, each CRC update
     // consists of 48-bit: {imem, idx, wdata}
@@ -188,7 +191,8 @@ status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
   // Get the computed (expected) checksum, fetch the checksum from the OTBN
   // LOAD_CHECKSUM register, and compare both registers.
   uint32_t checksum_expected = crc32_finish(&ctx);
-  uint32_t checksum = abs_mmio_read32(kBase + OTBN_LOAD_CHECKSUM_REG_OFFSET);
+  uint32_t checksum =
+      abs_mmio_read32(otbn_base() + OTBN_LOAD_CHECKSUM_REG_OFFSET);
   HARDENED_CHECK_EQ(checksum, checksum_expected);
 
   return OTCRYPTO_OK;
@@ -199,6 +203,7 @@ status_t otbn_dmem_set(size_t num_words, const uint32_t src, otbn_addr_t dest) {
 
   // No need to randomize here, since all the values are the same.
   size_t i = 0;
+  const uint32_t kBase = otbn_base();
   for (; launder32(i) < num_words; ++i) {
     abs_mmio_write32(kBase + OTBN_DMEM_REG_OFFSET + dest + i * sizeof(uint32_t),
                      src);
@@ -212,6 +217,7 @@ status_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest) {
   HARDENED_TRY(check_offset_len(src, num_words, kOtbnDMemSizeBytes));
 
   size_t i = 0;
+  const uint32_t kBase = otbn_base();
   for (; launder32(i) < num_words; ++i) {
     dest[i] = abs_mmio_read32(kBase + OTBN_DMEM_REG_OFFSET + src +
                               i * sizeof(uint32_t));
@@ -225,12 +231,13 @@ status_t otbn_execute(void) {
   // Ensure OTBN is idle before attempting to run a command.
   HARDENED_TRY(otbn_assert_idle());
 
-  abs_mmio_write32(kBase + OTBN_CMD_REG_OFFSET, kOtbnCmdExecute);
+  abs_mmio_write32(otbn_base() + OTBN_CMD_REG_OFFSET, kOtbnCmdExecute);
   return OTCRYPTO_OK;
 }
 
 status_t otbn_busy_wait_for_done(void) {
   uint32_t status = launder32(UINT32_MAX);
+  const uint32_t kBase = otbn_base();
   status_t res = (status_t){
       .value = (int32_t)launder32((uint32_t)kHardenedBoolTrue ^ status)};
   do {
@@ -263,23 +270,23 @@ status_t otbn_busy_wait_for_done(void) {
 }
 
 uint32_t otbn_err_bits_get(void) {
-  return abs_mmio_read32(kBase + OTBN_ERR_BITS_REG_OFFSET);
+  return abs_mmio_read32(otbn_base() + OTBN_ERR_BITS_REG_OFFSET);
 }
 
 uint32_t otbn_instruction_count_get(void) {
-  return abs_mmio_read32(kBase + OTBN_INSN_CNT_REG_OFFSET);
+  return abs_mmio_read32(otbn_base() + OTBN_INSN_CNT_REG_OFFSET);
 }
 
 status_t otbn_imem_sec_wipe(void) {
   HARDENED_TRY(otbn_assert_idle());
-  abs_mmio_write32(kBase + OTBN_CMD_REG_OFFSET, kOtbnCmdSecWipeImem);
+  abs_mmio_write32(otbn_base() + OTBN_CMD_REG_OFFSET, kOtbnCmdSecWipeImem);
   HARDENED_TRY(otbn_busy_wait_for_done());
   return OTCRYPTO_OK;
 }
 
 status_t otbn_dmem_sec_wipe(void) {
   HARDENED_TRY(otbn_assert_idle());
-  abs_mmio_write32(kBase + OTBN_CMD_REG_OFFSET, kOtbnCmdSecWipeDmem);
+  abs_mmio_write32(otbn_base() + OTBN_CMD_REG_OFFSET, kOtbnCmdSecWipeDmem);
   HARDENED_TRY(otbn_busy_wait_for_done());
   return OTCRYPTO_OK;
 }
@@ -297,7 +304,7 @@ status_t otbn_set_ctrl_software_errs_fatal(bool enable) {
     new_ctrl = 0;
   }
 
-  abs_mmio_write32(kBase + OTBN_CTRL_REG_OFFSET, new_ctrl);
+  abs_mmio_write32(otbn_base() + OTBN_CTRL_REG_OFFSET, new_ctrl);
 
   return OTCRYPTO_OK;
 }
@@ -343,7 +350,7 @@ status_t otbn_load_app(const otbn_app_t app) {
   HARDENED_TRY(otbn_dmem_sec_wipe());
 
   // Reset the LOAD_CHECKSUM register.
-  abs_mmio_write32(kBase + OTBN_LOAD_CHECKSUM_REG_OFFSET, 0);
+  abs_mmio_write32(otbn_base() + OTBN_LOAD_CHECKSUM_REG_OFFSET, 0);
 
   // Ensure that the IMEM section fits in IMEM and the data section fits in
   // DMEM.
@@ -354,7 +361,7 @@ status_t otbn_load_app(const otbn_app_t app) {
   otbn_addr_t imem_offset = 0;
   HARDENED_TRY(
       check_offset_len(imem_offset, imem_num_words, kOtbnIMemSizeBytes));
-  uint32_t imem_start_addr = kBase + OTBN_IMEM_REG_OFFSET + imem_offset;
+  uint32_t imem_start_addr = otbn_base() + OTBN_IMEM_REG_OFFSET + imem_offset;
   uint32_t i = 0;
   for (; launder32(i) < imem_num_words; i++) {
     HARDENED_CHECK_LT(i, imem_num_words);
@@ -366,7 +373,7 @@ status_t otbn_load_app(const otbn_app_t app) {
   otbn_addr_t data_offset = app.dmem_data_start_addr;
   HARDENED_TRY(
       check_offset_len(data_offset, data_num_words, kOtbnDMemSizeBytes));
-  uint32_t data_start_addr = kBase + OTBN_DMEM_REG_OFFSET + data_offset;
+  uint32_t data_start_addr = otbn_base() + OTBN_DMEM_REG_OFFSET + data_offset;
   i = 0;
   for (; launder32(i) < data_num_words; i++) {
     HARDENED_CHECK_LT(i, data_num_words);
@@ -376,7 +383,8 @@ status_t otbn_load_app(const otbn_app_t app) {
   HARDENED_CHECK_EQ(i, data_num_words);
 
   // Ensure that the checksum matches expectations.
-  uint32_t checksum = abs_mmio_read32(kBase + OTBN_LOAD_CHECKSUM_REG_OFFSET);
+  uint32_t checksum =
+      abs_mmio_read32(otbn_base() + OTBN_LOAD_CHECKSUM_REG_OFFSET);
   if (launder32(checksum) != app.checksum) {
     return OTCRYPTO_FATAL_ERR;
   }
