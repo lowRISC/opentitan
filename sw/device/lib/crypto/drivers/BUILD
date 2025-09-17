@@ -165,7 +165,7 @@ cc_library(
     deps = [
         ":entropy",
         "//hw/top:csrng_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt_csrng",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
