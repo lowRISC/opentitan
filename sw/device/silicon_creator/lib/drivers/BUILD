@@ -439,7 +439,6 @@ cc_library(
     deps = [
         "//hw/top:dt",
         "//hw/top:otbn_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/silicon_creator/lib:error",
@@ -599,7 +598,6 @@ dual_cc_library(
             "//hw/top:entropy_src_c_regs",
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top:rv_core_ibex_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:crc32",
         ],
         host = [
@@ -670,7 +668,6 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/top:rstmgr_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
