@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 
+#include "hw/top/dt/dt_rv_core_ibex.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/csr.h"
@@ -11,10 +12,14 @@
 #include "sw/device/lib/crypto/impl/status.h"
 
 #include "hw/top/rv_core_ibex_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+static const dt_rv_core_ibex_t kRvCoreIbexDt = kDtRvCoreIbex;
+
+static inline uint32_t rv_core_ibex_base(void) {
+  return dt_rv_core_ibex_primary_reg_block(kRvCoreIbexDt);
+}
 
 enum {
-  kBaseAddr = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR,
   /**
    * CSR_REG_CPUCTRL[0] is the iCache configuration field.
    */
@@ -26,8 +31,8 @@ enum {
  */
 static void wait_rnd_valid(void) {
   while (true) {
-    uint32_t reg =
-        abs_mmio_read32(kBaseAddr + RV_CORE_IBEX_RND_STATUS_REG_OFFSET);
+    uint32_t reg = abs_mmio_read32(rv_core_ibex_base() +
+                                   RV_CORE_IBEX_RND_STATUS_REG_OFFSET);
     if (bitfield_bit32_read(reg, RV_CORE_IBEX_RND_STATUS_RND_DATA_VALID_BIT)) {
       return;
     }
@@ -65,7 +70,8 @@ void ibex_restore_icache(hardened_bool_t icache_enabled) {
 
 uint32_t ibex_rnd32_read(void) {
   wait_rnd_valid();
-  return abs_mmio_read32(kBaseAddr + RV_CORE_IBEX_RND_DATA_REG_OFFSET);
+  return abs_mmio_read32(rv_core_ibex_base() +
+                         RV_CORE_IBEX_RND_DATA_REG_OFFSET);
 }
 
 // Provides the source of randomness for `hardened_memshred` (see
