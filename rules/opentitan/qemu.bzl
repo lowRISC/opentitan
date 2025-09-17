@@ -457,6 +457,10 @@ def _test_dispatch(ctx, exec_env, firmware):
     # Create a chardev for the SPI device:
     qemu_args += ["-chardev", "pty,id=spidev"]
 
+    # Create a chardev for the GPIO:
+    qemu_args += ["-chardev", "pty,id=gpio"]
+    qemu_args += ["-global", "ot-gpio-eg.chardev=gpio"]
+
     # Scale the Ibex clock by an `icount` factor.
     qemu_args += ["-icount", "shift={}".format(param["icount"])]
 
