@@ -304,6 +304,7 @@ manifest(d = {
             "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
             "//hw/top_earlgrey:sim_dv_base",
+            "//hw/top_earlgrey:sim_qemu_base",
             "//hw/top_earlgrey:sim_verilator_base",
             "//hw/top_earlgrey:silicon_creator",
         ],
@@ -369,6 +370,7 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
+        "//hw/top_earlgrey:sim_qemu_base",
         "//hw/top_earlgrey:sim_verilator_base",
     ],
     extra_bazel_features = [
