@@ -33,7 +33,7 @@ cc_library(
         ":entropy",
         ":rv_core_ibex",
         "//hw/top:aes_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt_aes",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:crc32",
