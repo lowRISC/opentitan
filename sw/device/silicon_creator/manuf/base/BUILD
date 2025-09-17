@@ -24,10 +24,6 @@ load(
     "SLOTS",
 )
 load(
-    "//sw/device/silicon_creator/rom_ext:defs.bzl",
-    "ROM_EXT_VERSION",
-)
-load(
     "//sw/device/silicon_creator/rom_ext/e2e:defs.bzl",
     "OWNER_SLOTS",
 )
@@ -296,8 +292,8 @@ manifest(d = {
     "manuf_state_creator": hex(CONST.MANUF_STATE.PERSO_INITIAL),
     "visibility": ["//visibility:private"],
     "version_major": "0",
-    # Release: 2025-08-20-RC00
-    "version_minor": "2025082000",
+    # Release: 2025-09-16-RC00
+    "version_minor": "2025091600",
     "security_version": "0xFFFFFFFF",
 })
 
