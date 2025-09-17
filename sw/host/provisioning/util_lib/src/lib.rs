@@ -14,7 +14,7 @@ use rsa::traits::PaddingScheme;
 use rsa::RsaPublicKey;
 use std::path::Path;
 use tiny_keccak::{CShake, Hasher};
-use zerocopy::AsBytes;
+use zerocopy::IntoBytes;
 
 pub mod response;
 
