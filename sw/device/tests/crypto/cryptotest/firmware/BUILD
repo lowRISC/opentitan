@@ -22,10 +22,10 @@ cc_library(
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/tests/crypto/cryptotest/json:aes_commands",
+        "//sw/device/tests/crypto/lib:crypto_test_lib",
     ],
 )
 
@@ -137,10 +137,10 @@ cc_library(
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/tests/crypto/cryptotest/json:hmac_commands",
+        "//sw/device/tests/crypto/lib:crypto_test_lib",
     ],
 )
 
