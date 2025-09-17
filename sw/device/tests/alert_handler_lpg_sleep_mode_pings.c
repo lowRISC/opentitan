@@ -93,23 +93,36 @@ static void init_peripherals(void) {
  */
 void wait_enough_for_alert_ping(void) {
   // wait enough
-  if (kDeviceType == kDeviceFpgaCw310) {
-    // 2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
-    // 2*4*(2**16)*(400ns) = 0.2s
-    busy_spin_micros(1000 * 200);
-  } else if (kDeviceType == kDeviceSimDV) {
-    // NUM_ALERTS*2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
-    // 2*4*(2**3)*(40ns) = 3us
-    busy_spin_micros(3);
-  } else {
-    // Verilator
-    // 2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
-    // 2*4*(2**16)*(8us) = 4s
-    // This seems to be impractical for the current clock frequency config
-    // of the Verilator tests (kClockFreqPeripheralHz = 125K).
-    LOG_FATAL("SUPPORTED PLATFORMS: DV and FPGA");
-    LOG_FATAL("TO SUPPORT THE PLATFORM %d, COMPUTE THE RIGHT WAIT-TIME",
-              kDeviceType);
+  switch (kDeviceType) {
+    case kDeviceFpgaCw310:
+    case kDeviceFpgaCw340:
+      // 2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
+      // 2*4*(2**16)*(400ns) = 0.2s
+      busy_spin_micros(1000 * 200);
+      break;
+    case kDeviceSilicon:
+      // 2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
+      // 2*4*(2**16)*(42ns) = 22ms
+      busy_spin_micros(1000 * 22);
+      break;
+    case kDeviceSimDV:
+      // NUM_ALERTS*2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
+      // 2*4*(2**16)*(42ns) = 22ms
+      busy_spin_micros(1000 * 22);
+      break;
+    case kDeviceSimVerilator:
+      // Verilator
+      // 2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
+      // 2*4*(2**16)*(8us) = 4s
+      // This seems to be impractical for the current clock frequency config
+      // of the Verilator tests (kClockFreqPeripheralHz = 125K).
+      OT_FALLTHROUGH_INTENDED;
+    default:
+      LOG_FATAL("SUPPORTED PLATFORMS: DV and FPGA");
+      LOG_FATAL("TO SUPPORT THE PLATFORM %d, COMPUTE THE RIGHT WAIT-TIME",
+                kDeviceType);
+      test_status_set(kTestStatusFailed);
+      abort();
   }
 }
 
