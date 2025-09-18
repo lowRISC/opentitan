@@ -38,7 +38,7 @@
  *
  * @param[in]  w28: m0, the lowest 256 bit limb of the modulus M
  * @param[in]  w31: all-zero.
- * @param[out] w29: m0', negative of inverse of m0 in GF(2^256)
+ * @param[out]  w1: m0', negative of inverse of m0 in GF(2^256)
  *
  * clobbered registers: w0, w1, w29
  * clobbered flag groups: FG0
@@ -88,6 +88,9 @@ m0inv:
   /* finally, compute m0' (negative of inverse)
      w29 = m0' = -(m0^-1) mod 2^256 = -y_255 = 0 - y_255 = w31 - w29 */
   bn.sub    w29, w31, w29
+
+  /* Permanently store m0' in a wide register. */
+  bn.mov  w1, w29
 
   ret
 
@@ -402,8 +405,8 @@ cond_sub_to_reg:
  * @param[in]  x16: dmem pointer to first limb of modulus M
  * @param[in]  x19: dmem pointer to first limb operand A
  * @param[in]  x31: N-1, number of limbs minus one
- * @param[in]  w2:  current limb of operand B, b_i
- * @param[in]  w3:  Montgomery constant m0'
+ * @param[in]   w1: Montgomery constant m0'
+ * @param[in]   w2: current limb of operand B, b_i
  * @param[in]  w31: all-zero
  * @param[in]  [w[4+N-1]:w4] intermediate result A
  * @param[out] [w[4+N-1]:w4] intermediate result A
@@ -443,7 +446,7 @@ mont_loop:
   bn.addc   w29, w26, w31
 
   /* w25 = w3 = m0' */
-  bn.mov    w25, w3
+  bn.mov    w25, w1
 
   /* multiply by m0', this concludes Step 2.1 of HAC 14.36 */
   /* [_, u_i] = [w26, w27] = w30*w25 = (y[0]*x_i + A[0])*m0'*/
@@ -561,10 +564,11 @@ mont_loop:
  * @param[in]  x17: dptr_m0d, dmem pointer to Montgomery Constant m0'
  * @param[in]  x19: dptr_a, dmem pointer to first limb of operand A
  * @param[in]  x20: dptr_b, dmem pointer to first limb of operand B
+ * @param[in]   w1: Montgomery Constant m0'
  * @param[in]  w31: all-zero
  * @param[in]  x30: N, number of limbs
  * @param[in]  x31: N-1, number of limbs minus one
- * @param[in]  x9: pointer to temp reg, must be set to 3
+ * @param[in]   x9: pointer to temp reg, must be set to 3
  * @param[in]  x10: pointer to temp reg, must be set to 4
  * @param[in]  x11: pointer to temp reg, must be set to 2
  * @param[out] [w[4+N-1]:w4]: result C
@@ -574,9 +578,6 @@ mont_loop:
  * clobbered Flag Groups: FG0, FG1
  */
 montmul:
-  /* load Montgomery constant: w3 = dmem[x17] = dmem[dptr_m0d] = m0' */
-  bn.lid    x9, 0(x17)
-
   /* init regfile bigint buffer with zeros */
   bn.mov    w2, w31
   loop      x30, 1
@@ -619,11 +620,10 @@ montmul:
  * Needs to be executed once per constant Modulus.
  *
  * @param[in]  x16: dptr_M, dmem pointer to first limb of modulus M
- * @param[in]  x17: dptr_m0d, dmem pointer to buffer for m0'
  * @param[in]  x18: dptr_RR, dmem pointer to buffer for RR
  * @param[in]  x30: N, number of limbs per bignum
  * @param[in]  w31: all-zero
- * @param[out] [dmem[dptr_m0d+31]:dmem[dptr_m0d]] computed m0'
+ * @param[out]  w1: computed m0'
  * @param[out] [dmem[dptr_RR+N*32-1]:dmem[dptr_RR]] computed RR
  */
 modload:
@@ -637,10 +637,6 @@ modload:
 
   /* Compute Montgomery constant */
   jal      x1, m0inv
-
-  /* Store Montgomery constant in dmem */
-  li       x9, 29
-  bn.sid   x9, 0(x17)
 
   /* Compute square of Montgomery modulus */
   jal      x1, compute_rr
