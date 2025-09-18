@@ -60,7 +60,7 @@ single_version_override(
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
 rust.repository_set(
     name = "rust_host",
-    edition = "2021",
+    edition = "2024",
     exec_triple = "x86_64-unknown-linux-gnu",
     sha256s = {
         "2025-01-03/rustc-nightly-x86_64-unknown-linux-gnu.tar.xz": "a7e713b2c38d2c16a2025d228480909a2281c91ad8fd225b1dacc3eda933724c",
