@@ -127,17 +127,7 @@ status_t rsa_modexp_consttime_2048_start(const rsa_2048_int_t *base,
 }
 
 status_t rsa_modexp_vartime_2048_start(const rsa_2048_int_t *base,
-                                       const uint32_t exp,
                                        const rsa_2048_int_t *modulus) {
-  if (exp != kExponentF4) {
-    // TODO for other exponents, we temporarily fall back to the constant-time
-    // implementation until a variable-time implementation is supported.
-    rsa_2048_int_t exp_rsa;
-    memset(exp_rsa.data, 0, kRsa2048NumWords * sizeof(uint32_t));
-    exp_rsa.data[0] = exp;
-    return rsa_modexp_consttime_2048_start(base, &exp_rsa, modulus);
-  }
-
   // Load the OTBN app. Fails if OTBN is not idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaModexp));
 
@@ -177,17 +167,7 @@ status_t rsa_modexp_consttime_3072_start(const rsa_3072_int_t *base,
 }
 
 status_t rsa_modexp_vartime_3072_start(const rsa_3072_int_t *base,
-                                       const uint32_t exp,
                                        const rsa_3072_int_t *modulus) {
-  if (exp != kExponentF4) {
-    // TODO for other exponents, we temporarily fall back to the constant-time
-    // implementation until a variable-time implementation is supported.
-    rsa_3072_int_t exp_rsa;
-    memset(exp_rsa.data, 0, kRsa3072NumWords * sizeof(uint32_t));
-    exp_rsa.data[0] = exp;
-    return rsa_modexp_consttime_3072_start(base, &exp_rsa, modulus);
-  }
-
   // Load the OTBN app. Fails if OTBN is not idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaModexp));
 
@@ -227,17 +207,7 @@ status_t rsa_modexp_consttime_4096_start(const rsa_4096_int_t *base,
 }
 
 status_t rsa_modexp_vartime_4096_start(const rsa_4096_int_t *base,
-                                       const uint32_t exp,
                                        const rsa_4096_int_t *modulus) {
-  if (exp != kExponentF4) {
-    // TODO for other exponents, we temporarily fall back to the constant-time
-    // implementation until a variable-time implementation is supported.
-    rsa_4096_int_t exp_rsa;
-    memset(exp_rsa.data, 0, kRsa4096NumWords * sizeof(uint32_t));
-    exp_rsa.data[0] = exp;
-    return rsa_modexp_consttime_4096_start(base, &exp_rsa, modulus);
-  }
-
   // Load the OTBN app. Fails if OTBN is not idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaModexp));
 
