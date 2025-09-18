@@ -122,8 +122,8 @@ cc_library(
     deps = [
         ":entropy",
         ":rv_core_ibex",
+        "//hw/top:dt_kmac",
         "//hw/top:kmac_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
