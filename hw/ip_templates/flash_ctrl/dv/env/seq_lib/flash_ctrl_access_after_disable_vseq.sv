@@ -50,7 +50,7 @@ class flash_ctrl_access_after_disable_vseq extends flash_ctrl_otf_base_vseq;
                       .addr(tl_addr), .write(1'b0), .completed(completed),
                       .saw_err(saw_err),
                       .tl_access_timeout_ns(cfg.seq_cfg.erase_timeout_ns),
-                      .data(rdata), .check_rsp(1'b0), .blocking(1),
+                      .data(rdata), .check_err_rsp(1'b0), .blocking(1),
                       .tl_intg_err_type(intg_err),
                       .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.flash_ral_name]));
 

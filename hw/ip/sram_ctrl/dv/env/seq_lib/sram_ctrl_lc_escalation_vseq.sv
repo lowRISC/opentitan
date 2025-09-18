@@ -47,7 +47,7 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
         begin
           // lc_esc happens in parallel, some rsp may fail, skipping check it in vseq.
           do_rand_ops(.num_ops($urandom_range(10, 100)), .blocking(0), .abort(0),
-                      .wait_complete(1), .check_rsp(0));
+                      .wait_complete(1), .check_err_rsp(0));
         end
         begin
           cfg.clk_rst_vif.wait_clks($urandom_range(1, 100));

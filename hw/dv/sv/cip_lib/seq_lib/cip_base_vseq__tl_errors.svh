@@ -531,7 +531,7 @@ virtual task test_intg_err_in_passthru_mem(const ref dv_base_mem mems[$]);
     ral_name = mems[i].get_parent().get_name();
     // Before inject faults, this read should have correct integrity
     tl_access_sub(.addr(addr), .write(0), .data(data), .completed(completed), .saw_err(saw_err),
-                  .check_rsp(1),  .rsp(tl_access_rsp),
+                  .check_err_rsp(1),  .rsp(tl_access_rsp),
                   .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
     `DV_CHECK_EQ(completed, 1)
     `DV_CHECK_EQ(saw_err, 0)
@@ -545,7 +545,7 @@ virtual task test_intg_err_in_passthru_mem(const ref dv_base_mem mems[$]);
 
     // Issue a read on the address that has been injected with integrity error
     tl_access_sub(.addr(addr), .write(0), .data(data), .completed(completed), .saw_err(saw_err),
-                  .check_rsp(1),  .rsp(tl_access_rsp),
+                  .check_err_rsp(1),  .rsp(tl_access_rsp),
                   .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
     `DV_CHECK_EQ(completed, 1)
     `DV_CHECK_EQ(saw_err, 0)
