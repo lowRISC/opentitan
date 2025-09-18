@@ -54,7 +54,7 @@ fn test(jtag: &mut dyn Jtag, base: usize, offset: u32) -> Result<()> {
 }
 
 fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let seed = opts.seed.unwrap_or_else(|| thread_rng().gen());
+    let seed = opts.seed.unwrap_or_else(|| thread_rng().r#gen());
     log::info!("Random number generator seed is {:x}", seed);
     let mut rng = rand_chacha::ChaCha12Rng::seed_from_u64(seed);
 
