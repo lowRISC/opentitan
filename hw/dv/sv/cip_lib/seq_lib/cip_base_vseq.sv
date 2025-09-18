@@ -111,12 +111,12 @@ class cip_base_vseq #(
   //
   //  mask                   The byte-enable mask used in the generated A channel transaction.
   //
-  //  check_rsp              If this is true, the d_error signal in the response reported by the
+  //  check_err_rsp          If this is true, the d_error signal in the response reported by the
   //                         driver are checked against exp_err_rsp (the next argument). On a
   //                         mismatch, an error is raised.
   //
-  //  exp_err_rsp            Only used if check_rsp is true. If so, this is the expected value of
-  //                         the d_error signal in the response.
+  //  exp_err_rsp            Only used if check_err_rsp is true. If so, this is the expected value
+  //                         of the d_error signal in the response.
   //
   //  exp_data               Only used if check_exp_data is true. If so, this is the expected value
   //                         of the d_data response for all bits that are set in compare_mask.
@@ -146,7 +146,7 @@ class cip_base_vseq #(
                         inout bit [BUS_DW-1:0]  data,
                         input uint              tl_access_timeout_ns = cfg.tl_access_timeout_ns,
                         input bit [BUS_DBW-1:0] mask = '1,
-                        input bit               check_rsp = 1'b1,
+                        input bit               check_err_rsp = 1'b1,
                         input bit               exp_err_rsp = 1'b0,
                         input bit [BUS_DW-1:0]  exp_data = 0,
                         input bit [BUS_DW-1:0]  compare_mask = '1,
@@ -178,7 +178,7 @@ class cip_base_vseq #(
                         output bit              saw_err,
                         input uint              tl_access_timeout_ns = cfg.tl_access_timeout_ns,
                         input bit [BUS_DBW-1:0] mask = '1,
-                        input bit               check_rsp = 1'b1,
+                        input bit               check_err_rsp = 1'b1,
                         input bit               exp_err_rsp = 1'b0,
                         input bit [BUS_DW-1:0]  exp_data = 0,
                         input bit [BUS_DW-1:0]  compare_mask = '1,
@@ -202,7 +202,7 @@ class cip_base_vseq #(
                         output                  cip_tl_seq_item rsp,
                         input uint              tl_access_timeout_ns = cfg.tl_access_timeout_ns,
                         input bit [BUS_DBW-1:0] mask = '1,
-                        input bit               check_rsp = 1'b1,
+                        input bit               check_err_rsp = 1'b1,
                         input bit               exp_err_rsp = 1'b0,
                         input bit [BUS_DW-1:0]  exp_data = 0,
                         input bit [BUS_DW-1:0]  compare_mask = '1,
@@ -527,7 +527,7 @@ task cip_base_vseq::tl_access(
     inout bit [BUS_DW-1:0]  data,
     input uint              tl_access_timeout_ns = cfg.tl_access_timeout_ns,
     input bit [BUS_DBW-1:0] mask = '1,
-    input bit               check_rsp = 1'b1,
+    input bit               check_err_rsp = 1'b1,
     input bit               exp_err_rsp = 1'b0,
     input bit [BUS_DW-1:0]  exp_data = 0,
     input bit [BUS_DW-1:0]  compare_mask = '1,
@@ -538,9 +538,9 @@ task cip_base_vseq::tl_access(
     input tl_intg_err_e     tl_intg_err_type = TlIntgErrNone);
 
   bit completed, saw_err;
-  tl_access_w_abort(addr, write, data, completed, saw_err, tl_access_timeout_ns, mask, check_rsp,
-                    exp_err_rsp, exp_data, compare_mask, check_exp_data, blocking, instr_type,
-                    tl_sequencer_h, tl_intg_err_type);
+  tl_access_w_abort(addr, write, data, completed, saw_err, tl_access_timeout_ns, mask,
+                    check_err_rsp, exp_err_rsp, exp_data, compare_mask, check_exp_data, blocking,
+                    instr_type, tl_sequencer_h, tl_intg_err_type);
 endtask
 
 task cip_base_vseq::tl_access_w_abort(
@@ -551,7 +551,7 @@ task cip_base_vseq::tl_access_w_abort(
     output bit              saw_err,
     input uint              tl_access_timeout_ns = cfg.tl_access_timeout_ns,
     input bit [BUS_DBW-1:0] mask = '1,
-    input bit               check_rsp = 1'b1,
+    input bit               check_err_rsp = 1'b1,
     input bit               exp_err_rsp = 1'b0,
     input bit [BUS_DW-1:0]  exp_data = 0,
     input bit [BUS_DW-1:0]  compare_mask = '1,
@@ -566,12 +566,12 @@ task cip_base_vseq::tl_access_w_abort(
 
   if (blocking) begin
     tl_access_sub(addr, write, data, completed, saw_err, rsp, tl_access_timeout_ns, mask,
-                  check_rsp, exp_err_rsp, exp_data, compare_mask, check_exp_data, req_abort_pct,
+                  check_err_rsp, exp_err_rsp, exp_data, compare_mask, check_exp_data, req_abort_pct,
                   instr_type, tl_sequencer_h, tl_intg_err_type);
   end else begin
     fork
       tl_access_sub(addr, write, data, completed, saw_err, rsp, tl_access_timeout_ns, mask,
-                    check_rsp, exp_err_rsp, exp_data, compare_mask, check_exp_data,
+                    check_err_rsp, exp_err_rsp, exp_data, compare_mask, check_exp_data,
                     req_abort_pct, instr_type, tl_sequencer_h, tl_intg_err_type);
     join_none
     // Add #0 to ensure that this thread starts executing before any subsequent call
@@ -588,7 +588,7 @@ task cip_base_vseq::tl_access_sub(
     output                  cip_tl_seq_item rsp,
     input                   uint tl_access_timeout_ns = cfg.tl_access_timeout_ns,
     input bit [BUS_DBW-1:0] mask = '1,
-    input bit               check_rsp = 1'b1,
+    input bit               check_err_rsp = 1'b1,
     input bit               exp_err_rsp = 1'b0,
     input bit [BUS_DW-1:0]  exp_data = 0,
     input bit [BUS_DW-1:0]  compare_mask = '1,
@@ -642,7 +642,7 @@ task cip_base_vseq::tl_access_sub(
       `DV_CHECK_EQ(masked_data, exp_data, $sformatf("addr 0x%0h read out mismatch", addr))
     end
   end
-  if (check_rsp && !cfg.under_reset && tl_intg_err_type == TlIntgErrNone) begin
+  if (check_err_rsp && !cfg.under_reset && tl_intg_err_type == TlIntgErrNone) begin
     `DV_CHECK_EQ(rsp.d_error, exp_err_rsp,
                  $sformatf("unexpected error response for addr: 0x%x", rsp.a_addr))
   end
@@ -1379,12 +1379,13 @@ task cip_base_vseq::run_mem_partial_access_vseq_sub(int num_times, string ral_na
               if (mem.get_mem_partial_write_support()) mask = get_rand_contiguous_mask();
               else                                     mask = '1;
               data = $urandom;
-              // set check_rsp to 0 to skip checking rsp in sequence, as there could be a mem
+              // set check_err_rsp to 0 to skip checking rsp in sequence, as there could be a mem
               // which always returns d_error = 1. scb will be overridden to handle it and check
               // the d_error.
               tl_access_w_abort(.addr(addr), .write(1), .data(data),
-                                .completed(write_completed), .saw_err(write_error), .check_rsp(0),
-                                .mask(mask), .blocking(1), .req_abort_pct($urandom_range(0, 100)),
+                                .completed(write_completed), .saw_err(write_error),
+                                .check_err_rsp(0), .mask(mask), .blocking(1),
+                                .req_abort_pct($urandom_range(0, 100)),
                                 .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
 
               if (!cfg.under_reset && write_completed && !write_error) begin
@@ -1403,10 +1404,10 @@ task cip_base_vseq::run_mem_partial_access_vseq_sub(int num_times, string ral_na
             if (get_mem_access_by_addr(local_ral, addr) != "WO") begin
               bit completed, saw_err;
               mask = get_rand_contiguous_mask(addr_mask.mask);
-              // set check_rsp to 0 due to a reason above (in the write section)
+              // set check_err_rsp to 0 due to a reason above (in the write section)
               tl_access_w_abort(.addr(addr), .write(0), .data(data),
                                 .completed(completed), .saw_err(saw_err),
-                                .mask(mask), .blocking(1), .check_rsp(0),
+                                .mask(mask), .blocking(1), .check_err_rsp(0),
                                 .req_abort_pct($urandom_range(0, 100)),
                                 .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
             end

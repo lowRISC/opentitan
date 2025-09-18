@@ -214,7 +214,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
           uvm_reg_addr_t tlul_addr = cfg.ral.get_addr_from_offset(get_sw_window_offset(dai_addr));
           // tlul error rsp is checked in scoreboard
           do_otp_rd = 1;
-          tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1), .check_rsp(0));
+          tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1), .check_err_rsp(0));
         end
 
         // Backdoor restore injected ECC error, but should not affect fatal alerts.
