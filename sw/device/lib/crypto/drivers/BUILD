@@ -188,7 +188,7 @@ opentitan_test(
     deps = [
         ":entropy",
         ":entropy_kat",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt_otbn",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:otbn",
@@ -251,7 +251,6 @@ opentitan_test(
     deps = [
         ":rv_core_ibex",
         "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:status",
