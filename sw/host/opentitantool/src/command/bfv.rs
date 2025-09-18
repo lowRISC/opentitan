@@ -16,7 +16,7 @@ pub struct BfvCommand {
     bfv: Vec<String>,
 }
 
-extern "C" {
+unsafe extern "C" {
     fn bfv_decoder(bfv: u32, buf: *mut u8, buf_size: usize) -> usize;
 }
 

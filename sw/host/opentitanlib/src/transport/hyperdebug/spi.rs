@@ -880,7 +880,7 @@ impl Target for HyperdebugSpiTarget {
                         self.eeprom_transmit(None, cmd, &[], &mut [], false, stream_state)?;
                     transactions = rest;
                 }
-                [eeprom::Transaction::Read(cmd, ref mut rbuf), rest @ ..] => {
+                [eeprom::Transaction::Read(cmd, rbuf), rest @ ..] => {
                     stream_state =
                         self.eeprom_transmit(None, cmd, &[], rbuf, false, stream_state)?;
                     transactions = rest;
