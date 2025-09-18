@@ -46,7 +46,7 @@ const NUM_ACCESSES_PER_REGION: usize = 32;
 const ROM_ACCESSIBLE_BYTES: usize = top_earlgrey::ROM_SIZE_BYTES - 32;
 
 fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let seed = opts.seed.unwrap_or_else(|| thread_rng().gen());
+    let seed = opts.seed.unwrap_or_else(|| thread_rng().r#gen());
     log::info!("Random number generator seed is {:x}", seed);
     let mut rng = rand_chacha::ChaCha12Rng::seed_from_u64(seed);
 
@@ -104,7 +104,7 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
                 .step_by(4)
                 .choose_multiple(&mut rng, NUM_ACCESSES_PER_REGION)
                 .into_iter()
-                .map(|offset| (name, base, offset, rng.gen::<u32>())),
+                .map(|offset| (name, base, offset, rng.r#gen::<u32>())),
         );
     }
 

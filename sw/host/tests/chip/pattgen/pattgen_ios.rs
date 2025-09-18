@@ -112,8 +112,8 @@ impl PattGenChannelParams {
             patt_inactive_level_pda: rng.gen_range(0..=1),
             patt_inactive_level_pcl: rng.gen_range(0..=1),
             patt_div: rng.gen_range(PATTGEN_MIN_DIV..=PATTGEN_MAX_DIV),
-            patt_lower: rng.gen(),
-            patt_upper: rng.gen(),
+            patt_lower: rng.r#gen(),
+            patt_upper: rng.r#gen(),
             patt_len: rng.gen_range(1..=64),
             patt_rep: rng.gen_range(1..=PATTGEN_MAX_REP),
         }
