@@ -8,17 +8,22 @@ use std::any::Any;
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{Read, Write};
+use std::io::Read;
 use std::rc::Rc;
 use std::str::FromStr;
 use std::time::Duration;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::io::gpio::{ClockNature, Edge, GpioPin, PinMode, PullMode};
+use opentitanlib::io::gpio::{
+    ClockNature, Edge, GpioPin, MonitoringReadResponse, MonitoringStartResponse, PinMode, PullMode,
+};
 use opentitanlib::transport::Capability;
 use opentitanlib::util::file;
 use opentitanlib::util::raw_tty::RawTty;
+use opentitanlib::util::vcd::{
+    dump_vcd_wire_vardefs, Header, ScalarValue, ValueChangeItem, ValueChangeSection, VcdWriter,
+};
 use opentitanlib::util::voltage::Voltage;
 
 #[derive(Debug, Args)]
@@ -241,6 +246,10 @@ pub enum GpioMonitoringCommand {
 pub struct GpioMonitoringStart {
     /// The list of GPIO pins to monitor (space separated).
     pub pins: Vec<String>,
+
+    /// Location of optional output file to record the vcd header information.
+    #[arg(short, long)]
+    pub outfile: Option<String>,
 }
 
 #[derive(serde::Serialize)]
@@ -275,6 +284,12 @@ impl CommandDispatch for GpioMonitoringStart {
                 .map(Rc::borrow)
                 .collect::<Vec<&dyn GpioPin>>(),
         )?;
+
+        // If vcd output file was was provided, record results there.
+        if let Some(file) = &self.outfile {
+            write_vcd_header(file, &self.pins, clock_nature, &resp)?;
+        }
+
         Ok(Some(Box::new(GpioMonitoringStartResult {
             clock_nature,
             initial_levels: resp
@@ -300,6 +315,11 @@ pub struct GpioMonitoringRead {
 
     #[arg(long)]
     pub continue_monitoring: bool,
+
+    /// Optional vcd file to append data to. Note it is important that the gpios are in the same
+    /// order from the gpio start command where the vcd header was written.
+    #[arg(short, long)]
+    outfile: Option<String>,
 }
 
 #[derive(serde::Serialize)]
@@ -338,6 +358,10 @@ impl CommandDispatch for GpioMonitoringRead {
                 .collect::<Vec<&dyn GpioPin>>(),
             self.continue_monitoring,
         )?;
+        // If vcd output file was specified, write data there.
+        if let Some(file) = &self.outfile {
+            append_vcd_data(file, &resp, !self.continue_monitoring)?;
+        }
         Ok(Some(Box::new(GpioMonitoringReadResult {
             events: resp
                 .events
@@ -351,6 +375,90 @@ impl CommandDispatch for GpioMonitoringRead {
             timestamp: resp.timestamp,
         })))
     }
+}
+
+/// Write the VCD header data with the given inputs
+fn write_vcd_header(
+    file: &str,
+    pins: &[String],
+    clock_nature: ClockNature,
+    start_response: &MonitoringStartResponse,
+) -> Result<()> {
+    let file = File::create(file)?;
+    let mut writer = VcdWriter::new(file);
+    let version = super::version::VersionResponse::default();
+    let version_str = format!(
+        "opentitantool {} {}",
+        version.version.as_ref().map_or("<unknown>", String::as_str),
+        match version.clean {
+            Some(true) => "clean",
+            Some(false) => "modified",
+            None => "<unknown>",
+        }
+    );
+    let timescale_ps = match clock_nature {
+        ClockNature::Wallclock { resolution, .. } => {
+            Some(1_000_000_000_000u128 / resolution as u128)
+        }
+        ClockNature::Unspecified => None,
+    };
+    writer.write_header(&Header {
+        timescale_ps,
+        date: None,
+        version: Some(version_str),
+    })?;
+    let pin_info = pins
+        .iter()
+        .enumerate()
+        .map(|(n, name)| (format!("'{}", n), Some(name.to_string())))
+        .collect::<Vec<_>>();
+    writer.write_vardefs(&dump_vcd_wire_vardefs(String::from("logic"), pin_info))?;
+    let mut changes = vec![ValueChangeItem::Timestamp {
+        step: start_response.timestamp as u128,
+    }];
+    for (n, v) in start_response.initial_levels.iter().enumerate() {
+        let value = if *v {
+            ScalarValue::One
+        } else {
+            ScalarValue::Zero
+        };
+        changes.push(ValueChangeItem::Scalar {
+            identifier: format!("'{}", n),
+            value,
+        });
+    }
+    writer.write_value_change_section(&ValueChangeSection { changes }, 0u128)?;
+    writer.flush()?;
+    Ok(())
+}
+
+/// Appends the VCD data to the end of the file specified. Note the order of the gpios should
+/// be consistent between calls and match the order from the gpio start command.
+fn append_vcd_data(file: &str, read_response: &MonitoringReadResponse, last: bool) -> Result<()> {
+    let file = std::fs::OpenOptions::new().append(true).open(file)?;
+    let mut writer = VcdWriter::new(file);
+    let mut changes = Vec::new();
+    for event in &read_response.events {
+        changes.push(ValueChangeItem::Timestamp {
+            step: event.timestamp as u128,
+        });
+        let identifier = format!("'{}", event.signal_index);
+        let value = match event.edge {
+            Edge::Rising => ScalarValue::One,
+            Edge::Falling => ScalarValue::Zero,
+        };
+        changes.push(ValueChangeItem::Scalar { identifier, value });
+    }
+    // Output timestamp of final reading (all signals remained stable from the last edge until
+    // this time.)
+    if last {
+        writer.write_value_change_item(&ValueChangeItem::Timestamp {
+            step: read_response.timestamp as u128,
+        })?;
+    }
+    writer.write_value_change_section(&ValueChangeSection { changes }, 0u128)?;
+    writer.flush()?;
+    Ok(())
 }
 
 #[derive(Debug, Args)]
@@ -384,7 +492,6 @@ impl CommandDispatch for GpioMonitoringVcd {
             .ok()?;
         let gpio_monitoring = transport.gpio_monitoring()?;
         let gpio_pins = transport.gpio_pins(&self.pins)?;
-        let mut file = File::create(&self.outfile)?;
 
         if !self.quiet {
             eprintln!("Dumping events to {}", &self.outfile);
@@ -398,50 +505,15 @@ impl CommandDispatch for GpioMonitoringVcd {
 
         // Inform the transport that we want to monitor a set of pins, and write a file header
         // with the names of each of the monitored signals.
-        let clock_nature = gpio_monitoring.get_clock_nature()?;
         let initial = gpio_monitoring.monitoring_start(
             &gpio_pins
                 .iter()
                 .map(Rc::borrow)
                 .collect::<Vec<&dyn GpioPin>>(),
         )?;
-        writeln!(&mut file, "$version")?;
-        let version = super::version::VersionResponse::default();
-        writeln!(
-            &mut file,
-            "   opentitantool {} {}",
-            version.version.unwrap_or("<unknown>".into()),
-            if let Some(clean) = version.clean {
-                if clean {
-                    "clean"
-                } else {
-                    "modified"
-                }
-            } else {
-                "<unknown>"
-            }
-        )?;
-        writeln!(&mut file, "$end")?;
-        match clock_nature {
-            ClockNature::Wallclock { resolution, .. } => {
-                writeln!(
-                    &mut file,
-                    "$timescale {}ps $end",
-                    1000000000000u64 / resolution
-                )?;
-            }
-            ClockNature::Unspecified => (),
-        }
-        writeln!(&mut file, "$scope module logic $end")?;
-        for (n, pin) in self.pins.iter().enumerate() {
-            writeln!(&mut file, "$var wire 1 '{} {} $end", n, pin)?;
-        }
-        writeln!(&mut file, "$upscope $end")?;
-        writeln!(&mut file, "$enddefinitions $end")?;
-        writeln!(&mut file, "#{}", initial.timestamp)?;
-        for (n, v) in initial.initial_levels.iter().enumerate() {
-            writeln!(&mut file, "{}'{}", if *v { 1 } else { 0 }, n)?;
-        }
+
+        let clock_nature = gpio_monitoring.get_clock_nature()?;
+        write_vcd_header(&self.outfile, &self.pins, clock_nature, &initial)?;
 
         // Now loop indefinitely, retrieving events from the internal queue of the transport and
         // printing them to the output file.
@@ -454,18 +526,7 @@ impl CommandDispatch for GpioMonitoringVcd {
                     .collect::<Vec<&dyn GpioPin>>(),
                 true,
             )?;
-            for event in &resp.events {
-                writeln!(&mut file, "#{}", event.timestamp)?;
-                writeln!(
-                    &mut file,
-                    "{}'{}",
-                    match event.edge {
-                        Edge::Rising => 1,
-                        Edge::Falling => 0,
-                    },
-                    event.signal_index
-                )?;
-            }
+            append_vcd_data(&self.outfile, &resp, false)?;
             eprint!("\u{8}{}", ['/', '-', '\\', '|'][loop_count & 3usize]);
             let delay = if resp.events.is_empty() {
                 Duration::from_millis(10)
@@ -492,21 +553,7 @@ impl CommandDispatch for GpioMonitoringVcd {
                 .collect::<Vec<&dyn GpioPin>>(),
             false,
         )?;
-        for event in &resp.events {
-            writeln!(&mut file, "#{}", event.timestamp)?;
-            writeln!(
-                &mut file,
-                "{}'{}",
-                match event.edge {
-                    Edge::Rising => 1,
-                    Edge::Falling => 0,
-                },
-                event.signal_index
-            )?;
-        }
-        // Output timestamp of final reading (all signals remained stable from the last edge until
-        // this time.)
-        writeln!(&mut file, "#{}", resp.timestamp)?;
+        append_vcd_data(&self.outfile, &resp, true)?;
         eprintln!("\r");
         Ok(None)
     }
