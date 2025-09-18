@@ -7656,8 +7656,8 @@ opentitan_test(
     kind = "rom",
     linker_script = "//sw/device/lib/testing/test_rom:linker_script",
     qemu = qemu_params(
-        # This test doesn't print `PASS!`, just check the exit code.
-        test_harness = "//third_party/qemu:qemu-system-riscv32",
+        # This test doesn't print `PASS!`, just writes the test status.
+        test_harness = "//sw/host/tests/qemu:test_status",
     ),
     deps = [":rom_exit_immediately_lib"],
 )
