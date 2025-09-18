@@ -12,21 +12,6 @@ PreSigningBinaryInfo = provider(fields = ["files"])
 SigningToolInfo = provider(fields = ["tool", "data", "env", "location"])
 KeySetInfo = provider(fields = ["keys", "config", "selected_key", "profile", "sign", "tool"])
 
-KeyInfo = provider(
-    """Key Information.
-
-    Used to capture all required information about a key.
-    """,
-    fields = {
-        "id": "Identifier used by the consumers of the provider to determine the key algorithm.",
-        "config": "The config of the key. Specific to the key algorithm.",
-        "method": "Mechanism used to access the key. Can be local or hsmtool.",
-        "pub_key": "Public key `file`.",
-        "private_key": "Private key `file`. May be None when method is set to hsmtool.",
-        "type": "The type of the key. Can be TestKey, DevKey or ProdKey.",
-    },
-)
-
 def _label_str(label):
     return "@{}//{}:{}".format(label.workspace_name, label.package, label.name)
 
@@ -63,15 +48,6 @@ def key_from_dict(key, attr_name):
             name = name,
             info = None,
             config = ksi.config[name],
-        )
-    elif KeyInfo in key:
-        key_info = key[KeyInfo]
-        return struct(
-            label = key,
-            file = key_info.pub_key,
-            name = name,
-            info = key_info,
-            config = key_info.config,
         )
     elif DefaultInfo in key:
         key_file = key[DefaultInfo].files.to_list()
@@ -172,21 +148,7 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key,
 
     ecdsa_or_rsa_args = []
     if ecdsa_key:
-        # Check if the provider is KeyInfo or KeySetInfo
-        info = getattr(ecdsa_key, "info", None)
         selected_ecdsa_key = getattr(ecdsa_key, "file", None)
-        if info:
-            # Provider is KeyInfo; get the public key file.
-            if info.pub_key:
-                selected_ecdsa_key = ecdsa_key.info.pub_key
-            else:
-                fail("Expected an ECDSA key with a private_key or pub_key attributes.")
-        elif selected_ecdsa_key:
-            # Provider is KeySetInfo; we already have the key file.
-            pass
-        else:
-            fail("Expected either KeyInfo or KeySetInfo; got neither")
-
         ecdsa_or_rsa_args.append("--ecdsa-key={}".format(selected_ecdsa_key.path))
         inputs.append(selected_ecdsa_key)
     elif rsa_key:
@@ -197,21 +159,7 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key,
     spx_domain = None
     if spx_key:
         spx_domain = spx_key.config.get("domain", "Pure")
-
-        # Check if the provider is KeyInfo or KeySetInfo
-        info = getattr(spx_key, "info", None)
         selected_spx_key = getattr(spx_key, "file", None)
-        if info:
-            # Provider is KeyInfo; get the key public file.
-            if info.pub_key:
-                selected_spx_key = spx_key.info.pub_key
-            else:
-                fail("Expected a SPHINCS+ key with a private_key or pub_key attributes.")
-        elif selected_spx_key:
-            # Provider is KeySetInfo; we already have the key file.
-            pass
-        else:
-            fail("Expected either KeyInfo or KeySetInfo; got neither")
         spx_args.append("--spx-key={}".format(selected_spx_key.path))
         inputs.append(selected_spx_key)
     ctx.actions.run(
@@ -340,12 +288,8 @@ def _local_sign(ctx, tool, digest, ecdsa_key, rsa_key, spxmsg = None, spx_key = 
         key_command = "rsa"
     elif ecdsa_key:
         output_sig = ctx.actions.declare_file(paths.replace_extension(digest.basename, ".ecdsa_sig"))
-        if ecdsa_key.info:
-            inputs.append(ecdsa_key.info.private_key)
-            key_path = ecdsa_key.info.private_key.path
-        else:
-            inputs.append(ecdsa_key.file)
-            key_path = ecdsa_key.file.path
+        inputs.append(ecdsa_key.file)
+        key_path = ecdsa_key.file.path
         key_command = "ecdsa"
     else:
         fail("Expected an ECDSA or RSA key")
@@ -368,14 +312,7 @@ def _local_sign(ctx, tool, digest, ecdsa_key, rsa_key, spxmsg = None, spx_key = 
 
     spx_sig = None
     if spxmsg and spx_key:
-        info = getattr(spx_key, "info", None)
-        if info:
-            # Provider is KeyInfo; get the private key file.
-            private_key = info.private_key
-        elif spx_key.file:
-            private_key = spx_key.file
-        else:
-            fail("Expected either KeyInfo or KeySetInfo; got neither")
+        private_key = spx_key.file
         spx_sig = ctx.actions.declare_file(paths.replace_extension(spxmsg.basename, ".spx_sig"))
         domain = spx_key.config.get("domain", "Pure")
         rev = spx_key.config.get("byte-reversal-bug", "false")
@@ -743,9 +680,6 @@ def _clear_if_none_key(key_attr):
         return None
 
     key, _ = key_attr.items()[0]
-
-    if KeyInfo in key:
-        return key_attr
 
     if key.label.name == "none_key":
         return None
