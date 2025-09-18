@@ -36,21 +36,24 @@ def get_user_confirmation(
 SKU:      {sku_config.name}
 LC State: {sku_config.target_lc_state}
 
+[OTHER]
+fpga:          {args.fpga}
+> commit hash: {commit_hash}
+
 [DICE CA]
 certificate: {sku_config.dice_ca.certificate}
 key:         {sku_config.dice_ca.key}
 key type:    {sku_config.dice_ca.key_type}
 key ID:      {sku_config.dice_ca.key_id}
+""")
+    if sku_config.ext_ca:
+        print(f"""
 
 [EXTENSION CA]
 certificate: {sku_config.ext_ca.certificate}
 key:         {sku_config.ext_ca.key}
 key type:    {sku_config.ext_ca.key_type}
 key ID:      {sku_config.ext_ca.key_id}
-
-[OTHER]
-fpga:          {args.fpga}
-> commit hash: {commit_hash}
 """)
     if not args.non_interactive:
         confirm()
