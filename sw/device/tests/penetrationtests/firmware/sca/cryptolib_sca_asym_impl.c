@@ -32,7 +32,7 @@ static const size_t kTestLabelLen = sizeof(kTestLabel) - 1;
 
 status_t cryptolib_sca_rsa_dec_impl(
     uint8_t data[RSA_CMD_MAX_MESSAGE_BYTES], size_t data_len, size_t mode,
-    uint32_t e, uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
+    uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
     size_t *n_len, uint8_t data_out[RSA_CMD_MAX_MESSAGE_BYTES],
     size_t *data_out_len, size_t hashing, size_t padding, size_t cfg_in,
     size_t *cfg_out, size_t trigger) {
@@ -143,7 +143,7 @@ status_t cryptolib_sca_rsa_dec_impl(
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, e, d_share0,
+  TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, d_share0,
                                               d_share1, &private_key));
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
@@ -270,7 +270,7 @@ status_t cryptolib_sca_p256_ecdh_impl(
 }
 
 status_t cryptolib_sca_rsa_sign_impl(
-    uint8_t data[RSA_CMD_MAX_MESSAGE_BYTES], size_t data_len, uint32_t e,
+    uint8_t data[RSA_CMD_MAX_MESSAGE_BYTES], size_t data_len,
     uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
     size_t *n_len, uint8_t sig[RSA_CMD_MAX_SIGNATURE_BYTES], size_t *sig_len,
     size_t hashing, size_t padding, size_t cfg_in, size_t *cfg_out,
@@ -383,7 +383,7 @@ status_t cryptolib_sca_rsa_sign_impl(
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, e, d_share0,
+  TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, d_share0,
                                               d_share1, &private_key));
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
