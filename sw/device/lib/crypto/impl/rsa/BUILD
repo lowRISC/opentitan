@@ -90,20 +90,3 @@ cc_library(
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
     ],
 )
-
-cc_library(
-    name = "rsa_3072_verify",
-    srcs = ["rsa_3072_verify.c"],
-    hdrs = ["rsa_3072_verify.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":rsa_datatypes",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/crypto/drivers:hmac",
-        "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/drivers:rv_core_ibex",
-        "//sw/otbn/crypto:run_rsa_verify_3072",
-    ],
-)
