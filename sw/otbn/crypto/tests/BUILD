@@ -1231,52 +1231,6 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
-    name = "rsa_verify_test",
-    srcs = [
-        "rsa_verify_test.s",
-    ],
-    exp = "rsa_verify_test.exp",
-    deps = [
-        "//sw/otbn/crypto:rsa_verify",
-    ],
-)
-
-otbn_sim_test(
-    name = "rsa_verify_exp3_test",
-    srcs = [
-        "rsa_verify_exp3_test.s",
-    ],
-    exp = "rsa_verify_exp3_test.exp",
-    deps = [
-        "//sw/otbn/crypto:rsa_verify",
-    ],
-)
-
-otbn_sim_test(
-    name = "rsa_verify_3072_consts_test",
-    srcs = [
-        "rsa_verify_3072_consts_test.s",
-    ],
-    exp = "rsa_verify_3072_consts_test.exp",
-    deps = [
-        "//sw/otbn/crypto:rsa_verify_3072",
-        "//sw/otbn/crypto:rsa_verify_3072_m0inv",
-        "//sw/otbn/crypto:rsa_verify_3072_rr",
-    ],
-)
-
-otbn_sim_test(
-    name = "rsa_verify_3072_test",
-    srcs = [
-        "rsa_verify_3072_test.s",
-    ],
-    exp = "rsa_verify_3072_test.exp",
-    deps = [
-        "//sw/otbn/crypto:rsa_verify_3072",
-    ],
-)
-
-otbn_sim_test(
     name = "sha256_test",
     srcs = [
         "sha256_test.s",
