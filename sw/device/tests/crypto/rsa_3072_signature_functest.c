@@ -68,7 +68,6 @@ static uint32_t kTestPrivateExponent[kRsa3072NumWords] = {
     0x31837e6a, 0xb02d0228, 0x9be7eb6e, 0xe1746942, 0xb6b48e76, 0xbf8c79d3,
     0xd81b2383, 0x9e277621, 0x8c4ca670, 0xcfa2b928, 0xd60f0279, 0x2e1fdefe,
 };
-static uint32_t kTestPublicExponent = 65537;
 
 // Message data for testing.
 static const unsigned char kTestMessage[] = "Test message.";
@@ -174,9 +173,8 @@ static status_t run_rsa_3072_sign(const uint8_t *msg, size_t msg_len,
       .data = kTestModulus,
       .len = ARRAYSIZE(kTestModulus),
   };
-  TRY(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize3072, modulus,
-                                              kTestPublicExponent, d_share0,
-                                              d_share1, &private_key));
+  TRY(otcrypto_rsa_private_key_from_exponents(
+      kOtcryptoRsaSize3072, modulus, d_share0, d_share1, &private_key));
 
   // Hash the message.
   otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
@@ -242,7 +240,7 @@ static status_t run_rsa_3072_verify(const uint8_t *msg, size_t msg_len,
       .key = public_key_data,
   };
   TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize3072, modulus,
-                                        kTestPublicExponent, &public_key));
+                                        &public_key));
 
   // Hash the message.
   otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};

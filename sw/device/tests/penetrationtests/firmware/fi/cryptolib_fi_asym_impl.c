@@ -120,8 +120,7 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
         .key_length = public_key_bytes,
         .key = public_key_data,
     };
-    TRY(otcrypto_rsa_public_key_construct(rsa_size, modulus, uj_input.e,
-                                          &public_key));
+    TRY(otcrypto_rsa_public_key_construct(rsa_size, modulus, &public_key));
 
     // Create input message.
     uint8_t msg_buf[num_words];
@@ -198,8 +197,8 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     if (uj_input.trigger & kPentestTrigger1) {
       pentest_set_trigger_high();
     }
-    TRY(otcrypto_rsa_private_key_from_exponents(
-        rsa_size, modulus, uj_input.e, d_share0, d_share1, &private_key));
+    TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, d_share0,
+                                                d_share1, &private_key));
     if (uj_input.trigger & kPentestTrigger1) {
       pentest_set_trigger_low();
     }
@@ -359,8 +358,8 @@ status_t cryptolib_fi_rsa_sign_impl(
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_private_key_from_exponents(
-      rsa_size, modulus, uj_input.e, d_share0, d_share1, &private_key));
+  TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, d_share0,
+                                              d_share1, &private_key));
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
@@ -511,8 +510,7 @@ status_t cryptolib_fi_rsa_verify_impl(
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_public_key_construct(rsa_size, modulus, uj_input.e,
-                                        &public_key));
+  TRY(otcrypto_rsa_public_key_construct(rsa_size, modulus, &public_key));
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();

@@ -210,16 +210,17 @@ typedef struct otcrypto_interface_t {
                                   otcrypto_blinded_key_t *);
   otcrypto_status_t (*rsa_public_key_construct)(otcrypto_rsa_size_t,
                                                 otcrypto_const_word32_buf_t,
-                                                uint32_t,
                                                 otcrypto_unblinded_key_t *);
   otcrypto_status_t (*rsa_private_key_from_exponents)(
-      otcrypto_rsa_size_t, otcrypto_const_word32_buf_t, uint32_t,
+      otcrypto_rsa_size_t, otcrypto_const_word32_buf_t,
       otcrypto_const_word32_buf_t, otcrypto_const_word32_buf_t,
       otcrypto_blinded_key_t *);
-  otcrypto_status_t (*rsa_keypair_from_cofactor)(
-      otcrypto_rsa_size_t, otcrypto_const_word32_buf_t, uint32_t,
-      otcrypto_const_word32_buf_t, otcrypto_const_word32_buf_t,
-      otcrypto_unblinded_key_t *, otcrypto_blinded_key_t *);
+  otcrypto_status_t (*rsa_keypair_from_cofactor)(otcrypto_rsa_size_t,
+                                                 otcrypto_const_word32_buf_t,
+                                                 otcrypto_const_word32_buf_t,
+                                                 otcrypto_const_word32_buf_t,
+                                                 otcrypto_unblinded_key_t *,
+                                                 otcrypto_blinded_key_t *);
   otcrypto_status_t (*rsa_sign)(const otcrypto_blinded_key_t *,
                                 const otcrypto_hash_digest_t,
                                 otcrypto_rsa_padding_t, otcrypto_word32_buf_t);
@@ -242,7 +243,7 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*rsa_keygen_async_finalize)(otcrypto_unblinded_key_t *,
                                                  otcrypto_blinded_key_t *);
   otcrypto_status_t (*rsa_keypair_from_cofactor_async_start)(
-      otcrypto_rsa_size_t, otcrypto_const_word32_buf_t, uint32_t,
+      otcrypto_rsa_size_t, otcrypto_const_word32_buf_t,
       otcrypto_const_word32_buf_t cofactor_share0,
       otcrypto_const_word32_buf_t cofactor_share1);
   otcrypto_status_t (*rsa_keypair_from_cofactor_async_finalize)(
