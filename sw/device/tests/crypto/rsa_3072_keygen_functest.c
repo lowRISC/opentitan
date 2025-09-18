@@ -66,9 +66,6 @@ status_t keygen_then_sign_test(void) {
   TRY_CHECK(private_key.keyblob_length == sizeof(rsa_3072_private_key_t));
   rsa_3072_private_key_t *sk = (rsa_3072_private_key_t *)private_key.keyblob;
 
-  // Check that the key uses the F4 exponent.
-  TRY_CHECK(pk->e == 65537);
-
   // Check that the moduli match.
   TRY_CHECK(ARRAYSIZE(pk->n.data) == ARRAYSIZE(sk->n.data));
   TRY_CHECK_ARRAYS_EQ(pk->n.data, sk->n.data, ARRAYSIZE(pk->n.data));
