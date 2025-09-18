@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_empty.h"
-
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_next_boot_bl0_slot.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/rom_ext/e2e/boot_svc/boot_svc_test_lib.h"
@@ -16,43 +15,38 @@ OTTF_DEFINE_TEST_CONFIG();
 
 static status_t initialize(retention_sram_t *retram, boot_svc_retram_t *state) {
   boot_svc_msg_t msg = {0};
-  boot_svc_empty_req_init(&msg.empty);
+  // Intentionally request a bad primary slot of 'ZZZZ'.
+  boot_svc_next_boot_bl0_slot_req_init(
+      /*primary_slot=*/0x5a5a5a5a,
+      /*next_slot=*/kBootSlotB, &msg.next_boot_bl0_slot_req);
   retram->creator.boot_svc_msg = msg;
-  state->state = kBootSvcTestStateCheckEmpty;
+  state->state = kBootSvcTestStateNextSideB;
   rstmgr_reset();
   return INTERNAL();
 }
 
-static status_t check_empty(retention_sram_t *retram,
-                            boot_svc_retram_t *state) {
+static status_t check_side_b(retention_sram_t *retram,
+                             boot_svc_retram_t *state) {
   boot_svc_msg_t msg = retram->creator.boot_svc_msg;
   TRY(boot_svc_header_check(&msg.header));
-  TRY_CHECK(msg.header.type == kBootSvcEmptyResType);
-  state->state = kBootSvcTestStateEmptyRes;
+  TRY_CHECK(msg.header.type == kBootSvcNextBl0SlotResType);
+  TRY_CHECK(msg.next_boot_bl0_slot_res.status == kErrorBootSvcBadSlot);
+  TRY_CHECK(state->primary_side == 'A');
+  TRY_CHECK(state->current_side == 'B');
+  state->state = kBootSvcTestStateReturnSideA;
+  rstmgr_reset();
+  return INTERNAL();
+}
+
+static status_t check_return_side_a(retention_sram_t *retram,
+                                    boot_svc_retram_t *state) {
+  TRY_CHECK(state->primary_side == 'A');
+  TRY_CHECK(state->current_side == 'A');
+  state->state = kBootSvcTestStateFinal;
   return OK_STATUS();
 }
 
-static status_t send_empty_res(retention_sram_t *retram,
-                               boot_svc_retram_t *state) {
-  boot_svc_msg_t msg = {0};
-  boot_svc_empty_res_init(&msg.empty);
-  retram->creator.boot_svc_msg = msg;
-  state->state = kBootSvcTestStateInvalidMsg;
-  rstmgr_reset();
-  return INTERNAL();
-}
-
-static status_t send_invalid_msg(retention_sram_t *retram,
-                                 boot_svc_retram_t *state) {
-  boot_svc_msg_t msg = {0};
-  boot_svc_header_finalize(0x1234, sizeof(boot_svc_msg_t), &msg.header);
-  retram->creator.boot_svc_msg = msg;
-  state->state = kBootSvcTestStateFinal;
-  rstmgr_reset();
-  return INTERNAL();
-}
-
-static status_t empty_message_test(void) {
+static status_t bad_next_slot_test(void) {
   retention_sram_t *retram = retention_sram_get();
   TRY(boot_svc_test_init(retram, kBootSvcTestEmpty));
   boot_svc_retram_t *state = (boot_svc_retram_t *)&retram->owner;
@@ -63,28 +57,26 @@ static status_t empty_message_test(void) {
       case kBootSvcTestStateInit:
         TRY(initialize(retram, state));
         break;
-      case kBootSvcTestStateCheckEmpty:
-        TRY(check_empty(retram, state));
+      case kBootSvcTestStateNextSideB:
+        TRY(check_side_b(retram, state));
         break;
-      case kBootSvcTestStateEmptyRes:
-        TRY(send_empty_res(retram, state));
-        break;
-      case kBootSvcTestStateInvalidMsg:
-        TRY(send_invalid_msg(retram, state));
+      case kBootSvcTestStateReturnSideA:
+        TRY(check_return_side_a(retram, state));
         break;
       case kBootSvcTestStateFinal:
         LOG_INFO("FinalBootLog: %d:%s", state->boots, state->partition);
         return OK_STATUS();
       default:
+        LOG_ERROR("Unknown state: %d", state->state);
         return UNKNOWN();
     }
   }
 }
 
 bool test_main(void) {
-  status_t sts = empty_message_test();
+  status_t sts = bad_next_slot_test();
   if (status_err(sts)) {
-    LOG_ERROR("empty_message_test: %r", sts);
+    LOG_ERROR("bad_next_slot_test: %r", sts);
   }
   return status_ok(sts);
 }
