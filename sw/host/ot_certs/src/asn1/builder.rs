@@ -72,7 +72,7 @@ pub trait Builder {
         &mut self,
         name_hint: Option<String>,
         tag: &Tag,
-        gen: impl FnOnce(&mut Self) -> Result<()>,
+        build: impl FnOnce(&mut Self) -> Result<()>,
     ) -> Result<()>;
 
     /// Push a tagged octet string into the ASN1 output. The closure can use any available function of the builder
@@ -80,9 +80,9 @@ pub trait Builder {
     fn push_octet_string(
         &mut self,
         name_hint: Option<String>,
-        gen: impl FnOnce(&mut Self) -> Result<()>,
+        build: impl FnOnce(&mut Self) -> Result<()>,
     ) -> Result<()> {
-        self.push_tag(name_hint, &Tag::OctetString, |builder| gen(builder))
+        self.push_tag(name_hint, &Tag::OctetString, build)
     }
 
     /// Push a sequence into the ASN1 output. The closure can use any available function of the builder
@@ -90,9 +90,9 @@ pub trait Builder {
     fn push_seq(
         &mut self,
         name_hint: Option<String>,
-        gen: impl FnOnce(&mut Self) -> Result<()>,
+        build: impl FnOnce(&mut Self) -> Result<()>,
     ) -> Result<()> {
-        self.push_tag(name_hint, &Tag::Sequence, gen)
+        self.push_tag(name_hint, &Tag::Sequence, build)
     }
 
     /// Push a sequence into the ASN1 output. The closure can use any available function of the builder
@@ -100,9 +100,9 @@ pub trait Builder {
     fn push_set(
         &mut self,
         name_hint: Option<String>,
-        gen: impl FnOnce(&mut Self) -> Result<()>,
+        build: impl FnOnce(&mut Self) -> Result<()>,
     ) -> Result<()> {
-        self.push_tag(name_hint, &Tag::Set, gen)
+        self.push_tag(name_hint, &Tag::Set, build)
     }
 
     /// Push tagged content into the ASN1 output as a bitstring. The closure can use any available function of the builder
@@ -112,7 +112,7 @@ pub trait Builder {
         name_hint: Option<String>,
         tag: &Tag,
         unused_bits: usize,
-        gen: impl FnOnce(&mut Self) -> Result<()>,
+        build: impl FnOnce(&mut Self) -> Result<()>,
     ) -> Result<()> {
         self.push_tag(name_hint, tag, |builder| {
             ensure!(
@@ -120,7 +120,7 @@ pub trait Builder {
                 "unused bits value must be in the range 0 to 7"
             );
             builder.push_byte(unused_bits as u8)?;
-            gen(builder)
+            build(builder)
         })
     }
 
