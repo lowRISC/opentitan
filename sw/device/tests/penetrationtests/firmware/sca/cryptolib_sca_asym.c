@@ -19,7 +19,7 @@
 
 status_t trigger_cryptolib_sca_asym_rsa_dec(
     uint8_t data[RSA_CMD_MAX_MESSAGE_BYTES], size_t data_len, size_t mode,
-    uint32_t e, uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
+    uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
     size_t *n_len, uint8_t data_out[RSA_CMD_MAX_MESSAGE_BYTES],
     size_t *data_out_len, size_t hashing, size_t padding, size_t cfg_in,
     size_t *cfg_out, size_t *status, size_t trigger) {
@@ -28,7 +28,7 @@ status_t trigger_cryptolib_sca_asym_rsa_dec(
   // Adjust the hashing and the padding mode.
   // Triggers are over the API calls.
   *status = (size_t)cryptolib_sca_rsa_dec_impl(
-                data, data_len, mode, e, n, d, n_len, data_out, data_out_len,
+                data, data_len, mode, n, d, n_len, data_out, data_out_len,
                 hashing, padding, cfg_in, cfg_out, trigger)
                 .value;
   /////////////// STUB END ///////////////
@@ -54,9 +54,9 @@ status_t handle_cryptolib_sca_asym_rsa_dec(ujson_t *uj) {
   memset(d, 0, RSA_CMD_MAX_N_BYTES);
   memcpy(d, uj_input.d, n_len);
   TRY(trigger_cryptolib_sca_asym_rsa_dec(
-      datain, uj_input.data_len, uj_input.mode, uj_input.e, n, d, &n_len,
-      data_out_buf, &data_out_len, uj_input.hashing, uj_input.padding,
-      uj_input.cfg, &cfg_out, &status, uj_input.trigger));
+      datain, uj_input.data_len, uj_input.mode, n, d, &n_len, data_out_buf,
+      &data_out_len, uj_input.hashing, uj_input.padding, uj_input.cfg, &cfg_out,
+      &status, uj_input.trigger));
 
   // Send the last data_out to host via UART.
   cryptolib_sca_asym_rsa_dec_out_t uj_output;
@@ -74,7 +74,7 @@ status_t handle_cryptolib_sca_asym_rsa_dec(ujson_t *uj) {
 }
 
 status_t trigger_cryptolib_sca_asym_rsa_sign(
-    uint8_t data[RSA_CMD_MAX_MESSAGE_BYTES], size_t data_len, uint32_t e,
+    uint8_t data[RSA_CMD_MAX_MESSAGE_BYTES], size_t data_len,
     uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
     size_t *n_len, uint8_t sig[RSA_CMD_MAX_SIGNATURE_BYTES], size_t *sig_len,
     size_t hashing, size_t padding, size_t cfg_in, size_t *cfg_out,
@@ -83,7 +83,7 @@ status_t trigger_cryptolib_sca_asym_rsa_sign(
   // Perform an RSA sign.
   // Adjust the hashing and the padding mode.
   // Triggers are over the API calls.
-  *status = (size_t)cryptolib_sca_rsa_sign_impl(data, data_len, e, n, d, n_len,
+  *status = (size_t)cryptolib_sca_rsa_sign_impl(data, data_len, n, d, n_len,
                                                 sig, sig_len, hashing, padding,
                                                 cfg_in, cfg_out, trigger)
                 .value;
@@ -127,9 +127,9 @@ status_t handle_cryptolib_sca_asym_rsa_sign(ujson_t *uj) {
   size_t cfg_out;
   size_t status;
   TRY(trigger_cryptolib_sca_asym_rsa_sign(
-      data_in_buf, uj_input.data_len, uj_input.e, n, d, &n_len, sig_buf,
-      &sig_len, uj_input.hashing, uj_input.padding, uj_input.cfg, &cfg_out,
-      &status, uj_input.trigger));
+      data_in_buf, uj_input.data_len, n, d, &n_len, sig_buf, &sig_len,
+      uj_input.hashing, uj_input.padding, uj_input.cfg, &cfg_out, &status,
+      uj_input.trigger));
 
   cryptolib_sca_asym_rsa_sign_out_t uj_output;
   memset(&uj_output, 0, sizeof(uj_output));
