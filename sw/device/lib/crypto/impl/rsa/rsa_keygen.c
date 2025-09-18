@@ -112,10 +112,6 @@ status_t rsa_keygen_2048_finalize(rsa_2048_public_key_t *public_key,
   HARDENED_TRY(hardened_memcpy(public_key->n.data, private_key->n.data,
                                ARRAYSIZE(private_key->n.data)));
 
-  // Set the public exponent to F4, the only exponent our key generation
-  // algorithm supports.
-  public_key->e = kFixedPublicExponent;
-
   return OTCRYPTO_OK;
 }
 
@@ -131,10 +127,6 @@ status_t rsa_keygen_3072_finalize(rsa_3072_public_key_t *public_key,
   // Copy the modulus to the public key.
   HARDENED_TRY(hardened_memcpy(public_key->n.data, private_key->n.data,
                                ARRAYSIZE(private_key->n.data)));
-
-  // Set the public exponent to F4, the only exponent our key generation
-  // algorithm supports.
-  public_key->e = kFixedPublicExponent;
 
   return OTCRYPTO_OK;
 }
@@ -152,21 +144,12 @@ status_t rsa_keygen_4096_finalize(rsa_4096_public_key_t *public_key,
   HARDENED_TRY(hardened_memcpy(public_key->n.data, private_key->n.data,
                                ARRAYSIZE(private_key->n.data)));
 
-  // Set the public exponent to F4, the only exponent our key generation
-  // algorithm supports.
-  public_key->e = kFixedPublicExponent;
-
   return OTCRYPTO_OK;
 }
 
 status_t rsa_keygen_from_cofactor_2048_start(
     const rsa_2048_public_key_t *public_key,
     const rsa_2048_cofactor_t *cofactor) {
-  // Only the exponent F4 is supported.
-  if (public_key->e != kFixedPublicExponent) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
   // Load the RSA key generation app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaKeygen));
 
@@ -190,10 +173,6 @@ status_t rsa_keygen_from_cofactor_2048_finalize(
   // Copy the modulus to the public key.
   HARDENED_TRY(hardened_memcpy(public_key->n.data, private_key->n.data,
                                ARRAYSIZE(private_key->n.data)));
-
-  // Set the public exponent to F4, the only exponent our key generation
-  // algorithm supports.
-  public_key->e = kFixedPublicExponent;
 
   return OTCRYPTO_OK;
 }
