@@ -13,8 +13,6 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
-# TODO(#22155, #18313): Decide on keyset vs. keyinfo for supplying signing info to the
-# offline/token signing flows.  Currently, only keyset supports tokens.
 keyset(
     name = "keyset",
     build_setting_default = "",
