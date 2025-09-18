@@ -6,7 +6,7 @@ use anyhow::{bail, Result};
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
-use zerocopy::AsBytes;
+use zerocopy::{Immutable, IntoBytes};
 
 use crate::app::TransportWrapper;
 use crate::chip::rom_error::RomError;
@@ -17,7 +17,7 @@ use crate::spiflash::sfdp::Sdfu;
 use crate::spiflash::SpiFlash;
 
 #[repr(C)]
-#[derive(Default, Debug, AsBytes)]
+#[derive(Default, Debug, Immutable, IntoBytes)]
 struct SetupData {
     request_type: u8,
     request: u8,
