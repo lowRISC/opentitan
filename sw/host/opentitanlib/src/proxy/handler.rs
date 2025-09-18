@@ -261,9 +261,23 @@ impl<'a> TransportCommandHandler<'a> {
                         instance.set_break(*enable)?;
                         Ok(Response::Uart(UartResponse::SetBreak))
                     }
+                    UartRequest::GetParity => {
+                        let parity = instance.get_parity()?;
+                        Ok(Response::Uart(UartResponse::GetParity { parity }))
+                    }
                     UartRequest::SetParity(parity) => {
                         instance.set_parity(*parity)?;
                         Ok(Response::Uart(UartResponse::SetParity))
+                    }
+                    UartRequest::GetFlowControl => {
+                        let flow_control = instance.get_flow_control()?;
+                        Ok(Response::Uart(UartResponse::GetFlowControl {
+                            flow_control,
+                        }))
+                    }
+                    UartRequest::SetFlowControl(flow_control) => {
+                        instance.set_flow_control(*flow_control)?;
+                        Ok(Response::Uart(UartResponse::SetFlowControl))
                     }
                     UartRequest::GetDevicePath => {
                         let path = instance.get_device_path()?;
