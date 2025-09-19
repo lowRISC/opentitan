@@ -667,9 +667,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     tl_access_w_abort(.addr(addr), .write(1'b0), .completed(completed), .saw_err(saw_err),
                       .tl_access_timeout_ns(cfg.seq_cfg.erase_timeout_ns), .mask(mask),
-                      .data(rdata), .exp_err_rsp(exp_err_rsp), .exp_data(exp_rdata),
-                      .compare_mask(mask), .check_exp_data(check_rdata), .blocking(blocking),
-                      .instr_type(instr_type),
+                      .data(rdata), .exp_err_rsp(exp_err_rsp),
+                      .check_exp_data(check_rdata), .exp_data(exp_rdata),
+                      .compare_mask(mask), .blocking(blocking), .instr_type(instr_type),
                       .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.flash_ral_name]));
   endtask : do_direct_read
 

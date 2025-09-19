@@ -118,15 +118,15 @@ class cip_base_vseq #(
   //  exp_err_rsp            Only used if check_err_rsp is true. If so, this is the expected value
   //                         of the d_error signal in the response.
   //
+  //  check_exp_data         If this is true, the d_data signal in the response reported by the
+  //                         driver are checked against exp_data, when masked with compare_mask. On
+  //                         a mismatch, an error is raised.
+  //
   //  exp_data               Only used if check_exp_data is true. If so, this is the expected value
   //                         of the d_data response for all bits that are set in compare_mask.
   //
   //  compare_mask           Only used if check_exp_data is true. A mask of the bits of the d_data
   //                         response that are compared with exp_data.
-  //
-  //  check_exp_data         If this is true, the d_data signal in the response reported by the
-  //                         driver are checked against exp_data, when masked with compare_mask. On
-  //                         a mismatch, an error is raised.
   //
   //  blocking               If this is true, the task doesn't complete until the access finishes.
   //                         If it is false, the access is run in a separate process and this task
@@ -148,9 +148,9 @@ class cip_base_vseq #(
                         input bit [BUS_DBW-1:0] mask = '1,
                         input bit               check_err_rsp = 1'b1,
                         input bit               exp_err_rsp = 1'b0,
+                        input bit               check_exp_data = 1'b0,
                         input bit [BUS_DW-1:0]  exp_data = 0,
                         input bit [BUS_DW-1:0]  compare_mask = '1,
-                        input bit               check_exp_data = 1'b0,
                         input bit               blocking = csr_utils_pkg::default_csr_blocking,
                         input mubi4_t           instr_type = MuBi4False,
                         tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
@@ -180,9 +180,9 @@ class cip_base_vseq #(
                         input bit [BUS_DBW-1:0] mask = '1,
                         input bit               check_err_rsp = 1'b1,
                         input bit               exp_err_rsp = 1'b0,
+                        input bit               check_exp_data = 1'b0,
                         input bit [BUS_DW-1:0]  exp_data = 0,
                         input bit [BUS_DW-1:0]  compare_mask = '1,
-                        input bit               check_exp_data = 1'b0,
                         input bit               blocking = csr_utils_pkg::default_csr_blocking,
                         input                   mubi4_t instr_type = MuBi4False,
                         tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
@@ -204,9 +204,9 @@ class cip_base_vseq #(
                         input bit [BUS_DBW-1:0] mask = '1,
                         input bit               check_err_rsp = 1'b1,
                         input bit               exp_err_rsp = 1'b0,
+                        input bit               check_exp_data = 1'b0,
                         input bit [BUS_DW-1:0]  exp_data = 0,
                         input bit [BUS_DW-1:0]  compare_mask = '1,
-                        input bit               check_exp_data = 1'b0,
                         input int               req_abort_pct = 0,
                         input                   mubi4_t instr_type = MuBi4False,
                         tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
@@ -529,9 +529,9 @@ task cip_base_vseq::tl_access(
     input bit [BUS_DBW-1:0] mask = '1,
     input bit               check_err_rsp = 1'b1,
     input bit               exp_err_rsp = 1'b0,
+    input bit               check_exp_data = 1'b0,
     input bit [BUS_DW-1:0]  exp_data = 0,
     input bit [BUS_DW-1:0]  compare_mask = '1,
-    input bit               check_exp_data = 1'b0,
     input bit               blocking = csr_utils_pkg::default_csr_blocking,
     input mubi4_t           instr_type = MuBi4False,
     tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
@@ -539,7 +539,7 @@ task cip_base_vseq::tl_access(
 
   bit completed, saw_err;
   tl_access_w_abort(addr, write, data, completed, saw_err, tl_access_timeout_ns, mask,
-                    check_err_rsp, exp_err_rsp, exp_data, compare_mask, check_exp_data, blocking,
+                    check_err_rsp, exp_err_rsp, check_exp_data, exp_data, compare_mask, blocking,
                     instr_type, tl_sequencer_h, tl_intg_err_type);
 endtask
 
@@ -553,9 +553,9 @@ task cip_base_vseq::tl_access_w_abort(
     input bit [BUS_DBW-1:0] mask = '1,
     input bit               check_err_rsp = 1'b1,
     input bit               exp_err_rsp = 1'b0,
+    input bit               check_exp_data = 1'b0,
     input bit [BUS_DW-1:0]  exp_data = 0,
     input bit [BUS_DW-1:0]  compare_mask = '1,
-    input bit               check_exp_data = 1'b0,
     input bit               blocking = csr_utils_pkg::default_csr_blocking,
     input                   mubi4_t instr_type = MuBi4False,
     tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
@@ -566,12 +566,12 @@ task cip_base_vseq::tl_access_w_abort(
 
   if (blocking) begin
     tl_access_sub(addr, write, data, completed, saw_err, rsp, tl_access_timeout_ns, mask,
-                  check_err_rsp, exp_err_rsp, exp_data, compare_mask, check_exp_data, req_abort_pct,
+                  check_err_rsp, exp_err_rsp, check_exp_data, exp_data, compare_mask, req_abort_pct,
                   instr_type, tl_sequencer_h, tl_intg_err_type);
   end else begin
     fork
       tl_access_sub(addr, write, data, completed, saw_err, rsp, tl_access_timeout_ns, mask,
-                    check_err_rsp, exp_err_rsp, exp_data, compare_mask, check_exp_data,
+                    check_err_rsp, exp_err_rsp, check_exp_data, exp_data, compare_mask,
                     req_abort_pct, instr_type, tl_sequencer_h, tl_intg_err_type);
     join_none
     // Add #0 to ensure that this thread starts executing before any subsequent call
@@ -590,9 +590,9 @@ task cip_base_vseq::tl_access_sub(
     input bit [BUS_DBW-1:0] mask = '1,
     input bit               check_err_rsp = 1'b1,
     input bit               exp_err_rsp = 1'b0,
+    input bit               check_exp_data = 1'b0,
     input bit [BUS_DW-1:0]  exp_data = 0,
     input bit [BUS_DW-1:0]  compare_mask = '1,
-    input bit               check_exp_data = 1'b0,
     input int               req_abort_pct = 0,
     input                   mubi4_t instr_type = MuBi4False,
     tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
@@ -1275,7 +1275,7 @@ task cip_base_vseq::run_same_csr_outstanding_vseq(int num_times);
           if ($urandom_range(0, 1) &&
               !csr_excl.is_excl(csrs[i], CsrExclWriteCheck, csr_test_type)) begin
             tl_access(.addr(csrs[i].get_address()), .write(0), .data(rd_data),
-                      .exp_data(exp_data), .check_exp_data(1), .compare_mask(rd_mask),
+                      .check_exp_data(1), .exp_data(exp_data), .compare_mask(rd_mask),
                       .blocking(0), .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
           end
           // do write, exclude CsrExclWrite
