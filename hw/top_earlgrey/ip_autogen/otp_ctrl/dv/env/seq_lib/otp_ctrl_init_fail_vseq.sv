@@ -72,7 +72,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
       // If write sw partitions, check tlul window
       if (is_sw_part(dai_addr)) begin
         uvm_reg_addr_t tlul_addr = cfg.ral.get_addr_from_offset(get_sw_window_offset(dai_addr));
-        tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1), .check_rsp(0));
+        tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1), .check_err_rsp(0));
       end
 
       if (i == num_to_lock_digests) begin

@@ -251,7 +251,7 @@ class sram_ctrl_base_vseq #(
                 .data(data),
                 .mask(get_rand_mask(write)),
                 .write(write),
-                .check_rsp(!en_ifetch),
+                .check_err_rsp(!en_ifetch),
                 .blocking(1'b0),
                 .instr_type(instr_type),
                 .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.sram_ral_name]));
@@ -274,7 +274,7 @@ class sram_ctrl_base_vseq #(
                            bit wait_complete = 1,
                            bit not_use_last_addr = 0,
                            bit exp_err_rsp = 0,
-                           bit check_rsp = 1);
+                           bit check_err_rsp = 1);
     bit [TL_DW-1:0] data;
     bit [TL_AW-1:0] addr;
     mubi4_t instr_type;
@@ -305,7 +305,7 @@ class sram_ctrl_base_vseq #(
                         .mask(get_rand_mask(write)),
                         .write(write),
                         .blocking(blocking),
-                        .check_rsp(!en_ifetch & check_rsp),
+                        .check_err_rsp(!en_ifetch & check_err_rsp),
                         .exp_err_rsp(exp_err_rsp),
                         .instr_type(instr_type),
                         .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.sram_ral_name]),

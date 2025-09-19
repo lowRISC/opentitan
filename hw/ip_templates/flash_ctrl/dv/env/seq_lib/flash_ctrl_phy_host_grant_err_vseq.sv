@@ -75,7 +75,7 @@ class flash_ctrl_phy_host_grant_err_vseq extends flash_ctrl_err_base_vseq;
                           .addr(tl_addr), .write(1'b0), .completed(completed),
                           .saw_err(saw_err),
                           .tl_access_timeout_ns(cfg.seq_cfg.erase_timeout_ns),
-                          .data(rdata), .check_rsp(1'b0), .blocking(1),
+                          .data(rdata), .check_err_rsp(1'b0), .blocking(1),
                           .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.flash_ral_name]));
 
       join_none

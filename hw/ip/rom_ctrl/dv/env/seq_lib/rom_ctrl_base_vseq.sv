@@ -88,7 +88,7 @@ task rom_ctrl_base_vseq::do_rand_ops(int num_ops, bit read_only = 0);
                       .mask(get_rand_contiguous_mask('1)),
                       .write(write),
                       .blocking(1'b0),
-                      .check_rsp(1'b0),
+                      .check_err_rsp(1'b0),
                       .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"]),
                       .req_abort_pct(do_rom_error_req ? 50 : 0),
                       .tl_access_timeout_ns(cfg.tl_access_timeout_ns));

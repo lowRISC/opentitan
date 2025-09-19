@@ -70,8 +70,8 @@ class chip_prim_tl_access_vseq extends chip_stub_cpu_base_vseq;
     exp_data = gated ? '1 : `gmv(csr);
     `uvm_info(`gfn, $sformatf("%s: Write addr %0h, write adata %0h, expect data %0h gated:%0b",
               csr.get_full_name(), addr, data, exp_data, gated), UVM_MEDIUM);
-    tl_access(.addr(addr), .write(0), .data(data), .exp_err_rsp(gated), .exp_data(exp_data),
-              .check_exp_data(1));
+    tl_access(.addr(addr), .write(0), .data(data), .exp_err_rsp(gated),
+              .check_exp_data(1), .exp_data(exp_data));
   endtask
 
   virtual task rand_rw_prim_regs(uvm_reg prim_regs[$], bit gated);

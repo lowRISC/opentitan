@@ -189,7 +189,7 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
       `DV_CHECK_EQ(rdata1, 0)
       if (is_sw_part(dai_addr)) begin
         uvm_reg_addr_t tlul_addr = cfg.ral.get_addr_from_offset(get_sw_window_offset(dai_addr));
-        tl_access(.addr(tlul_addr), .write(0), .data(rdata0), .blocking(1), .check_rsp(1),
+        tl_access(.addr(tlul_addr), .write(0), .data(rdata0), .blocking(1), .check_err_rsp(1),
                   .exp_err_rsp(1), .exp_data('1));
       end
       cal_hw_digests();
