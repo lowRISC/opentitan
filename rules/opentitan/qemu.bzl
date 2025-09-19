@@ -23,6 +23,11 @@ load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 _TEST_SCRIPT = """#!/bin/bash
 set -e
 
+cleanup() {{
+    rm -f {mutable_otp} {mutable_flash}
+}}
+trap cleanup EXIT
+
 # QEMU requires mutable flash and OTP files but Bazel only provides RO
 # files so we have to create copies unique to this test run.
 cp {otp} {mutable_otp} && chmod +w {mutable_otp}
