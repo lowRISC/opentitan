@@ -112,8 +112,11 @@ deploy_staging () {
     _upload_br "${BUCKET}"
 
     # Finally, invalidate the CDN cache
-    LOAD_BALANCER_NAME="staging-dot-opentitan-dot-org"
-    gcloud compute url-maps invalidate-cdn-cache "${LOAD_BALANCER_NAME}" --path "/*" --async
+    LOAD_BALANCER_NAME="opentitan-dot-org"
+    gcloud compute url-maps invalidate-cdn-cache "${LOAD_BALANCER_NAME}" \
+        --host "staging.opentitan.org" \
+        --path "/*" \
+        --async
 }
 
 deploy_prod () {
@@ -134,7 +137,10 @@ deploy_prod () {
 
     # Finally, invalidate the CDN cache
     LOAD_BALANCER_NAME="opentitan-dot-org"
-    gcloud compute url-maps invalidate-cdn-cache "${LOAD_BALANCER_NAME}" --path "/*" --async
+    gcloud compute url-maps invalidate-cdn-cache "${LOAD_BALANCER_NAME}" \
+        --host "opentitan.org" \
+        --path "/*" \
+        --async
 }
 
 _upload_br () {
