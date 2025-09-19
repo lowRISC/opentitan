@@ -23,8 +23,9 @@ config_setting(
 config_setting(
     name = "measure_coverage_on_target",
     define_values = {
-        "measure_coverage_on_target": "true",
+        "ot_coverage_enabled": "true",
     },
+    deprecation = "Please use //rules/coverage:enabled instead.",
 )
 
 cc_library(
