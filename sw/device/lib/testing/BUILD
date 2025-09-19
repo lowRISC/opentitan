@@ -523,8 +523,8 @@ cc_library(
     hdrs = ["uart_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//hw/top:dt",
         "//hw/top:uart_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:ibex",
@@ -629,7 +629,6 @@ TESTUTILS_EXCEPTIONS = [
     "aes",
     "csrng",
     "i2c",
-    "uart",
     "rstmgr",
 ]
 
