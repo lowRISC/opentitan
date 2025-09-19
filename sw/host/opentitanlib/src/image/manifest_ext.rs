@@ -31,6 +31,7 @@ with_unknown! {
         secver_write = MANIFEST_EXT_ID_SECVER_WRITE,
         isfb = MANIFEST_EXT_ID_ISFB,
         isfb_erase = MANIFEST_EXT_ID_ISFB_ERASE,
+        image_type = MANIFEST_EXT_ID_IMAGE_TYPE,
     }
 }
 
@@ -82,6 +83,9 @@ pub enum ManifestExtEntrySpec {
     #[serde(alias = "isfb_erase_policy")]
     IsfbErasePolicy { erase_allowed: bool },
 
+    #[serde(alias = "image_type")]
+    ImageType { image_type: u32 },
+
     #[serde(alias = "raw")]
     Raw {
         name: HexEncoded<u32>,
@@ -99,6 +103,7 @@ pub enum ManifestExtEntry {
     SecVerWrite(ManifestExtSecVerWrite),
     Isfb(ManifestExtIsfb),
     IsfbErasePolicy(ManifestExtIsfbErasePolicy),
+    ImageType(ManifestExtImageType),
     Raw {
         header: ManifestExtHeader,
         data: Vec<u8>,
@@ -231,6 +236,16 @@ impl ManifestExtEntry {
         }))
     }
 
+    pub fn new_image_type_entry(image_type: u32) -> Result<Self> {
+        Ok(ManifestExtEntry::ImageType(ManifestExtImageType {
+            header: ManifestExtHeader {
+                identifier: MANIFEST_EXT_ID_IMAGE_TYPE,
+                name: MANIFEST_EXT_NAME_IMAGE_TYPE,
+            },
+            image_type,
+        }))
+    }
+
     /// Creates a new manifest extension from a given `spec`.
     pub fn from_spec(spec: &ManifestExtEntrySpec) -> Result<Self> {
         Ok(match spec {
@@ -267,6 +282,9 @@ impl ManifestExtEntry {
                 strike_mask,
                 product_expr,
             } => ManifestExtEntry::new_isfb_entry(**strike_mask, product_expr.to_vec())?,
+            ManifestExtEntrySpec::ImageType { image_type } => {
+                ManifestExtEntry::new_image_type_entry(*image_type)?
+            }
             ManifestExtEntrySpec::Raw {
                 name,
                 identifier,
@@ -291,6 +309,7 @@ impl ManifestExtEntry {
             ManifestExtEntry::SecVerWrite(sv) => &sv.header,
             ManifestExtEntry::Isfb(isfb) => &isfb.header,
             ManifestExtEntry::IsfbErasePolicy(erase) => &erase.header,
+            ManifestExtEntry::ImageType(image_type) => &image_type.header,
             ManifestExtEntry::Raw { header, data: _ } => header,
         }
     }
@@ -304,6 +323,7 @@ impl ManifestExtEntry {
             ManifestExtEntry::SecVerWrite(sv) => sv.as_bytes().to_vec(),
             ManifestExtEntry::Isfb(isfb) => isfb.to_vec().unwrap(),
             ManifestExtEntry::IsfbErasePolicy(erase) => erase.as_bytes().to_vec(),
+            ManifestExtEntry::ImageType(image_type) => image_type.as_bytes().to_vec(),
             ManifestExtEntry::Raw { header, data } => {
                 header.as_bytes().iter().chain(data).copied().collect()
             }
