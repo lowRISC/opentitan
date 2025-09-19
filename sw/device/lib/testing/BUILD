@@ -47,7 +47,6 @@ cc_library(
         "//hw/top:dt",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing/test_framework:check",
     ],
@@ -214,7 +213,6 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top:i2c_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:i2c",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:ibex",
