@@ -45,11 +45,13 @@ pub const MANIFEST_EXT_ID_SPX_SIGNATURE: u32 = 0xad77f84a;
 pub const MANIFEST_EXT_ID_SECVER_WRITE: u32 = 0x3f086a41;
 pub const MANIFEST_EXT_ID_ISFB: u32 = 0x42465349;
 pub const MANIFEST_EXT_ID_ISFB_ERASE: u32 = 0x45465349;
+pub const MANIFEST_EXT_ID_IMAGE_TYPE: u32 = 0x494d4754;
 pub const MANIFEST_EXT_NAME_SPX_KEY: u32 = 0x30545845;
 pub const MANIFEST_EXT_NAME_SPX_SIGNATURE: u32 = 0x31545845;
 pub const MANIFEST_EXT_NAME_SECVER_WRITE: u32 = 0x56434553;
 pub const MANIFEST_EXT_NAME_ISFB: u32 = 0x42465349;
 pub const MANIFEST_EXT_NAME_ISFB_ERASE: u32 = 0x45465349;
+pub const MANIFEST_EXT_NAME_IMAGE_TYPE: u32 = 0x494d4754;
 pub const CHIP_ROM_EXT_IDENTIFIER: u32 = 0x4552544f;
 pub const CHIP_BL0_IDENTIFIER: u32 = 0x3042544f;
 pub const CHIP_ROM_EXT_SIZE_MIN: u32 = 8788;
@@ -210,6 +212,13 @@ impl ManifestExtIsfb {
 pub struct ManifestExtIsfbErasePolicy {
     pub header: ManifestExtHeader,
     pub erase_allowed: u32,
+}
+
+#[repr(C)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default)]
+pub struct ManifestExtImageType {
+    pub header: ManifestExtHeader,
+    pub image_type: u32,
 }
 
 /// A type that holds the 256-bit device identifier.
