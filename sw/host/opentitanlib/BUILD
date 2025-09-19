@@ -218,6 +218,7 @@ rust_library(
         "src/transport/qemu/mod.rs",
         "src/transport/qemu/monitor.rs",
         "src/transport/qemu/reset.rs",
+        "src/transport/qemu/spi.rs",
         "src/transport/ti50emulator/emu.rs",
         "src/transport/ti50emulator/gpio.rs",
         "src/transport/ti50emulator/i2c.rs",
