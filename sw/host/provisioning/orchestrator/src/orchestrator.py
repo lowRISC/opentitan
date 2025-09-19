@@ -13,7 +13,7 @@ from pathlib import Path
 import hjson
 
 import db
-from device_id import DeviceId
+from device_id import DeviceId, DeviceIdentificationNumber
 from ot_dut import OtDut
 from sku_config import SkuConfig
 from util import confirm, parse_hexstring_to_int, resolve_runfile
@@ -98,6 +98,17 @@ def main(args_in):
         help="Run flow on FPGA (instead of silicon).",
     )
     parser.add_argument(
+        "--fpga-dont-clear-bitstream",
+        action="store_true",
+        help="If set, the FPGA bitsream will not be cleared before CP.",
+    )
+    parser.add_argument(
+        "--enable-alerts",
+        action="store_true",
+        default=False,
+        help="Enable all alerts during FT individualize step.",
+    )
+    parser.add_argument(
         "--use-ext-clk",
         action="store_true",
         default=False,
@@ -139,10 +150,10 @@ def main(args_in):
 
     # The device identification number is determined during CP by extracting data
     # from the device.
-    din = None
+    din = DeviceIdentificationNumber(0)
     device_id = DeviceId(sku_config, din)
 
-    # TODO: Setup remote and/or local DV connections.
+    # TODO: Setup remote and/or local DB connections.
     # TODO: Check if the device ID is present in the DB.
 
     # Generate commit hash of current provisioning run.
@@ -158,19 +169,28 @@ def main(args_in):
                 test_unlock_token=args.test_unlock_token,
                 test_exit_token=args.test_exit_token,
                 fpga=args.fpga,
+                fpga_dont_clear_bitstream=args.fpga_dont_clear_bitstream,
+                enable_alerts=args.enable_alerts,
                 use_ext_clk=args.use_ext_clk,
                 require_confirmation=not args.non_interactive)
     dut.run_cp()
     if args.cp_only:
         logging.info("FT skipped since --cp-only was provided")
         return
-
     dut.run_ft()
 
+    # Open the local SQLite registry database.
     db_path = Path(args.db_path)
     db_handle = db.DB(db.DBConfig(db_path=db_path))
     db.DeviceRecord.create_table(db_handle)
 
+    # Check device ID exists in the database.
+    if db.DeviceRecord.query(db_handle, dut.device_id.to_hexstr()) is not None:
+        logging.warning(
+            "DeviceId already exists in database. Overwrite record?")
+        confirm()
+
+    # Register the DUT in the database.
     device_record = db.DeviceRecord.from_dut(dut)
     device_record.upsert(db_handle)
     logging.info(f"Added DeviceRecord to database: {device_record}")

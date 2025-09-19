@@ -17,11 +17,14 @@
 namespace ibex_unittest {
 namespace {
 
-class AddressTranslationTest : public rom_test::RomTest {
+class IbexTest : public rom_test::RomTest {
  protected:
   uint32_t base_ = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR;
   rom_test::MockSecMmio sec_;
+  rom_test::MockAbsMmio mmio_;
 };
+
+class AddressTranslationTest : public IbexTest {};
 
 TEST_F(AddressTranslationTest, Slot0Sucess) {
   uint32_t matching_addr = 0x9000000;
@@ -64,5 +67,38 @@ TEST_F(AddressTranslationTest, Slot1Sucess) {
 
   ibex_addr_remap_1_set(matching_addr, remap_addr, size);
 }
+
+class NmiEnableTest : public IbexTest {};
+
+TEST_F(NmiEnableTest, AllNmis) {
+  // Enable alert NMIs.
+  EXPECT_ABS_WRITE32(base_ + RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, 1);
+  ibex_enable_nmi(kIbexNmiSourceAlert);
+
+  // Enable watchdog NMIs.
+  EXPECT_ABS_WRITE32(base_ + RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, 2);
+  ibex_enable_nmi(kIbexNmiSourceWdog);
+
+  // Enable all NMIs.
+  EXPECT_ABS_WRITE32(base_ + RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, 3);
+  ibex_enable_nmi(kIbexNmiSourceAll);
+}
+
+class NmiClearTest : public IbexTest {};
+
+TEST_F(NmiClearTest, AllNmis) {
+  // Clear alert NMIs.
+  EXPECT_ABS_WRITE32(base_ + RV_CORE_IBEX_NMI_STATE_REG_OFFSET, 1);
+  ibex_clear_nmi(kIbexNmiSourceAlert);
+
+  // Clear watchdog NMIs.
+  EXPECT_ABS_WRITE32(base_ + RV_CORE_IBEX_NMI_STATE_REG_OFFSET, 2);
+  ibex_clear_nmi(kIbexNmiSourceWdog);
+
+  // Clear all NMIs.
+  EXPECT_ABS_WRITE32(base_ + RV_CORE_IBEX_NMI_STATE_REG_OFFSET, 3);
+  ibex_clear_nmi(kIbexNmiSourceAll);
+}
+
 }  // namespace
 }  // namespace ibex_unittest
