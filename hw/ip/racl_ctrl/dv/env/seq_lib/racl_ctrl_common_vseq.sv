@@ -11,7 +11,10 @@ class racl_ctrl_common_vseq extends racl_ctrl_base_vseq;
   `uvm_object_new
 
   virtual task body();
-    run_common_vseq_wrapper(num_trans);
+    fork
+      super.body();
+      run_common_vseq_wrapper(num_trans);
+    join
   endtask : body
 
 endclass
