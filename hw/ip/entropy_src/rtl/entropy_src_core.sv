@@ -2830,6 +2830,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
       PipelineDepthW'(sfifo_distr_depth) +
       PipelineDepthW'(pfifo_precon_depth);
 
+  // We only ever push full 64-bit words into the conditioner and for this reason, we just track
+  // the number of full 64-bit words that still have to be absorbed before triggering the final
+  // processing. In the worst case, the pipeline is completely full when the health-test done
+  // pulse is signaled, meaning there are 1 (postht FIFO) + DistrFifoDepth + 2 (precon FIFO)
+  // number of 32-bit words in the pipeline. As a consequence, this number needs to be divisible
+  // by two and the distribution FIFO depth needs to be an odd number.
+  `ASSERT_INIT(DistrFifoDepthOdd_A, DistrFifoDepth % 2 == 1)
+
   logic                      pipeline_depth_cntr_set;
   logic                      pipeline_depth_cntr_decr_en;
   logic [PipelineDepthW-1:0] pipeline_depth_cntr_set_cnt;

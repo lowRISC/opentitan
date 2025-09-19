@@ -20,7 +20,7 @@ module entropy_src
   parameter int HealthTestWindowWidth             = 18,
   parameter int EsFifoDepth                       = 3,
   parameter bit EnCsAesHaltReqIf                  = 1'b1,
-  parameter int DistrFifoDepth                    = 2,
+  parameter int DistrFifoDepth                    = 3,
   parameter bit Stub                              = 1'b0
 ) (
   input logic clk_i,
