@@ -284,6 +284,7 @@ impl CommandDispatch for ManifestUpdateCommand {
                 ManifestExtId::secver_write.into(),
                 ManifestExtId::isfb.into(),
                 ManifestExtId::isfb_erase.into(),
+                ManifestExtId::image_type.into(),
             ])
             .collect::<HashSet<u32>>();
         image.update_signed_region(&signed_ids)?;
