@@ -36,6 +36,7 @@ package csrng_pkg;
   // Application Interfaces
   //-------------------------
 
+  parameter int unsigned NumAppsLg = $clog2(csrng_reg_pkg::NumApps);
   parameter int unsigned GENBITS_BUS_WIDTH = 128;
   parameter int unsigned CSRNG_CMD_WIDTH = 32;
   parameter int unsigned FIPS_GENBITS_BUS_WIDTH = entropy_src_pkg::FIPS_BUS_WIDTH +
@@ -118,9 +119,20 @@ package csrng_pkg;
     logic      [BlkLen-1:0] v;
   } csrng_benc_data_t;
 
+  // Do not reorder these fields - software expects them in this order when doing the raw
+  // state readout through the register interface.
+  typedef struct packed {
+    logic                  fips;
+    logic                  inst_state;
+    logic     [KeyLen-1:0] key;
+    logic     [BlkLen-1:0] v;
+    logic [RsCtrWidth-1:0] rs_ctr;
+  } csrng_state_t;
+
   parameter int unsigned CoreDataWidth = $bits(csrng_core_data_t);
   parameter int unsigned UpdDataWidth  = $bits(csrng_upd_data_t);
   parameter int unsigned BencDataWidth = $bits(csrng_benc_data_t);
+  parameter int unsigned StateWidth    = $bits(csrng_state_t);
 
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 3 -m 15 -n 8 \
