@@ -260,7 +260,7 @@ module top_earlgrey #(
   // local parameters for entropy_src
   localparam int EntropySrcEsFifoDepth = 3;
   localparam bit EntropySrcEnCsAesHaltReqIf = 1;
-  localparam int unsigned EntropySrcDistrFifoDepth = 2;
+  localparam int unsigned EntropySrcDistrFifoDepth = 3;
   // local parameters for sram_ctrl_main
   localparam int SramCtrlMainOutstanding = 2;
   // local parameters for rom_ctrl
