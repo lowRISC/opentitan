@@ -67,6 +67,11 @@ string_flag(
     for seed in ALL_SEED_NAMES
 ]
 
+opentitan_alias_top_attr(
+    name = "top_gen_hjson",
+    attr_name = "hjson",
+)
+
 # Point to the right top library.
 opentitan_alias_top_attr(
     name = "top_lib",
