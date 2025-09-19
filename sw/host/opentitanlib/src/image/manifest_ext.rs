@@ -26,6 +26,7 @@ with_unknown! {
     pub enum ManifestExtId: u32 {
         spx_key = MANIFEST_EXT_ID_SPX_KEY,
         spx_signature = MANIFEST_EXT_ID_SPX_SIGNATURE,
+        image_type = MANIFEST_EXT_ID_IMAGE_TYPE,
     }
 }
 
@@ -60,6 +61,11 @@ pub enum ManifestExtEntrySpec {
         /// spec.
         spx_signature: PathBuf,
     },
+
+    #[serde(alias = "image_type")]
+    ImageType { image_type: u32 },
+
+    #[serde(alias = "raw")]
     Raw {
         name: HexEncoded<u32>,
         identifier: HexEncoded<u32>,
@@ -71,6 +77,7 @@ pub enum ManifestExtEntrySpec {
 pub enum ManifestExtEntry {
     SpxKey(ManifestExtSpxKey),
     SpxSignature(Box<ManifestExtSpxSignature>),
+    ImageType(ManifestExtImageType),
     Raw {
         header: ManifestExtHeader,
         data: Vec<u8>,
@@ -106,6 +113,7 @@ impl ManifestExtEntrySpec {
                 identifier,
                 value: _,
             } => **identifier,
+            ManifestExtEntrySpec::ImageType { image_type: _ } => MANIFEST_EXT_ID_IMAGE_TYPE,
         }
     }
 }
@@ -139,6 +147,16 @@ impl ManifestExtEntry {
         )))
     }
 
+    pub fn new_image_type_entry(image_type: u32) -> Result<Self> {
+        Ok(ManifestExtEntry::ImageType(ManifestExtImageType {
+            header: ManifestExtHeader {
+                identifier: MANIFEST_EXT_ID_IMAGE_TYPE,
+                name: MANIFEST_EXT_NAME_IMAGE_TYPE,
+            },
+            image_type,
+        }))
+    }
+
     /// Creates a new manifest extension from a given `spec`.
     ///
     /// For extensions that reference other resources, such as SPHINCS+ keys or signatures, this
@@ -153,6 +171,9 @@ impl ManifestExtEntry {
                 ManifestExtEntry::new_spx_signature_entry(&std::fs::read(
                     relative_path.join(spx_signature),
                 )?)?
+            }
+            ManifestExtEntrySpec::ImageType { image_type } => {
+                ManifestExtEntry::new_image_type_entry(*image_type)?
             }
             ManifestExtEntrySpec::Raw {
                 name,
@@ -173,6 +194,7 @@ impl ManifestExtEntry {
         match self {
             ManifestExtEntry::SpxKey(key) => &key.header,
             ManifestExtEntry::SpxSignature(sig) => &sig.header,
+            ManifestExtEntry::ImageType(image_type) => &image_type.header,
             ManifestExtEntry::Raw { header, data: _ } => header,
         }
     }
@@ -182,6 +204,7 @@ impl ManifestExtEntry {
         match self {
             ManifestExtEntry::SpxKey(key) => key.as_bytes().to_vec(),
             ManifestExtEntry::SpxSignature(sig) => sig.as_bytes().to_vec(),
+            ManifestExtEntry::ImageType(image_type) => image_type.as_bytes().to_vec(),
             ManifestExtEntry::Raw { header, data } => {
                 header.as_bytes().iter().chain(data).copied().collect()
             }
