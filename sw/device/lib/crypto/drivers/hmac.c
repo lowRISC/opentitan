@@ -529,10 +529,12 @@ status_t hmac_hmac_sha256_redundant(const hmac_key_t *key, const uint8_t *msg,
   memset(i_key_pad, 0, kHmacSha256BlockBytes);
 
   // XOR the key K with the outer (opad) and inner (ipad) padding.
-  for (size_t it = 0; it < kHmacSha256BlockWords; it++) {
-    o_key_pad[it] = key->key_block[it] ^ 0x5c5c5c5c;
-    i_key_pad[it] = key->key_block[it] ^ 0x36363636;
-  }
+  uint32_t opad[kHmacSha256BlockWords];
+  uint32_t ipad[kHmacSha256BlockWords];
+  memset(opad, 0x5c5c5c5c, kHmacSha256BlockBytes);
+  memset(ipad, 0x36363636, kHmacSha256BlockBytes);
+  TRY(hardened_xor(key->key_block, opad, kHmacSha256BlockWords, o_key_pad));
+  TRY(hardened_xor(key->key_block, ipad, kHmacSha256BlockWords, i_key_pad));
 
   // Concatenate the message with the inner padded key.
   uint8_t i_key_pad_msg[kHmacSha256BlockBytes + msg_len];
