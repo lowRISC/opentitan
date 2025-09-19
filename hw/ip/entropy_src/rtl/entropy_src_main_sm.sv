@@ -18,6 +18,7 @@ module entropy_src_main_sm
   input logic                   fw_ov_ent_insert_i,
   input logic                   fw_ov_sha3_start_i,
   input logic                   ht_done_pulse_i,
+  input logic                   pd_cntr_zero_i,
   input logic                   ht_fail_pulse_i,
   input logic                   alert_thresh_fail_i,
   output logic                  rst_alert_cntr_o,
@@ -231,9 +232,12 @@ module entropy_src_main_sm
         end
       end
       Sha3Process: begin
-        // Trigger the final absorption operation of the SHA3 engine.
-        sha3_process_o = 1'b1;
-        state_d = Sha3Valid;
+        // Wait for words belonging to the current window to flow into the conditioner before
+        // triggering the final absorption operation of the SHA3 engine.
+        if (pd_cntr_zero_i) begin
+          sha3_process_o = 1'b1;
+          state_d = Sha3Valid;
+        end
       end
       Sha3Valid: begin
         if (sha3_state_vld_i) begin

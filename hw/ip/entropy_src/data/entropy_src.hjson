@@ -208,7 +208,7 @@
     },
     { name:    "DistrFifoDepth",
       type:    "int unsigned",
-      default: "2",
+      default: "3",
       desc:    "Number of 32-bit entries in the distr FIFO",
       local:   "true",
       expose:  "true"

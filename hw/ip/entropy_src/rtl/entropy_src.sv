@@ -20,7 +20,7 @@ module entropy_src
   parameter int HealthTestWindowWidth             = 18,
   parameter int EsFifoDepth                       = 3,
   parameter bit EnCsAesHaltReqIf                  = 1'b1,
-  parameter int DistrFifoDepth                    = 2,
+  parameter int DistrFifoDepth                    = 3,
   parameter bit Stub                              = 1'b0
 ) (
   input logic clk_i,
@@ -364,6 +364,9 @@ module entropy_src
     u_entropy_src_core.u_entropy_src_ack_sm.u_state_regs,
     alert_tx_o[1])
 
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PipelineDepthCheck_A,
+    u_entropy_src_core.u_prim_count_pipeline_depth, alert_tx_o[1])
+
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3FsmCheck_A,
     u_entropy_src_core.u_sha3.u_state_regs, alert_tx_o[1])
 
@@ -372,7 +375,6 @@ module entropy_src
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3padFsmCheck_A,
     u_entropy_src_core.u_sha3.u_pad.u_state_regs, alert_tx_o[1])
-
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SentMsgCountCheck_A,
     u_entropy_src_core.u_sha3.u_pad.u_sentmsg_count, alert_tx_o[1])
