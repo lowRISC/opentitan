@@ -474,6 +474,9 @@ def _test_dispatch(ctx, exec_env, firmware):
     qemu_args += ["-chardev", "pty,id=log"]
     qemu_args += ["-global", "ot-ibex_wrapper.logdev=log"]
 
+    # Create a chardev for the SPI device:
+    qemu_args += ["-chardev", "pty,id=spidev"]
+
     # Scale the Ibex clock by an `icount` factor.
     qemu_args += ["-icount", "shift={}".format(param["icount"])]
 
