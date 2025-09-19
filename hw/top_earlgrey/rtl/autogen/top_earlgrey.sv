@@ -91,7 +91,7 @@ module top_earlgrey #(
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
   // parameters for entropy_src
   parameter int EntropySrcEsFifoDepth = 3,
-  parameter int unsigned EntropySrcDistrFifoDepth = 2,
+  parameter int unsigned EntropySrcDistrFifoDepth = 3,
   parameter bit EntropySrcStub = 0,
   // parameters for edn0
   // parameters for edn1
