@@ -74,7 +74,7 @@ status_t keygen_then_sign_test(void) {
   // ensuring that the most significant half is nonzero.
   bool d_large_enough = false;
   for (size_t i = kRsa2048NumWords / 2; i < kRsa2048NumWords; i++) {
-    if (sk->d.data[i] != 0) {
+    if (sk->d0.data[i] != 0) {
       d_large_enough = true;
     }
   }
