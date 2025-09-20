@@ -15,7 +15,6 @@
 
 #include "hw/top/keymgr_regs.h"  // Generated.
 #include "hw/top/kmac_regs.h"    // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_kmac_t kmac;
 static dif_keymgr_t keymgr;
@@ -178,7 +177,7 @@ status_t test_err_wait_timer_expired(void) {
   LOG_INFO("Testing ErrWaitTimerExpired error.");
 
   // Init the KMAC block.
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
 
   const dif_kmac_config_t config = (dif_kmac_config_t){
       .entropy_mode = kDifKmacEntropyModeEdn,
@@ -267,7 +266,7 @@ status_t test_err_incorrect_entropy_mode(void) {
   LOG_INFO("Testing ErrIncorrectEntropyMode error.");
 
   // Re-init KMAC for the test.
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
 
   // Write configuration register.
   uint32_t cfg_reg = 0;
@@ -307,7 +306,7 @@ status_t test_err_incorrect_entropy_mode(void) {
 status_t test_err_sw_hashing_without_entropy_ready(void) {
   LOG_INFO("Testing ErrSwHashingWithoutEntropyReady error.");
 
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
 
   // Manually init the KMAC block and do not set entropy_ready bit.
   // Write entropy period register.
@@ -402,7 +401,7 @@ status_t test_err_sw_hashing_without_entropy_ready(void) {
 status_t test_err_incorrect_fnc_name(void) {
   LOG_INFO("Testing kDifErrorIncorrectFunctionName error.");
   // Re-init KMAC for the test.
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
   TRY(kmac_testutils_config(&kmac, false));
 
   // Configure cSHAKE mode with the given strength and enable KMAC mode.
@@ -468,7 +467,7 @@ status_t test_err_incorrect_fnc_name(void) {
 status_t test_err_key_not_valid(void) {
   LOG_INFO("Testing ErrKeyNotValid error.");
   // Re-init KMAC for the test.
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
   // Configure KMAC to use the sideloaded key.
   TRY(kmac_testutils_config(&kmac, true));
 
@@ -496,7 +495,7 @@ status_t test_err_shadow_reg_update(void) {
   LOG_INFO("Testing shadow register update error.");
 
   // Init the KMAC block.
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
 
   // Configure KMAC hardware.
   TRY(kmac_testutils_config(&kmac, false));
@@ -547,8 +546,7 @@ status_t test_err_sw_cmd_sequence(void) {
 
   for (int it = 0; it < ARRAYSIZE(cmds); it++) {
     // Re-init KMAC for the test.
-    TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR),
-                      &kmac));
+    TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
     // Configure KMAC hardware (using software key and software entropy).
     TRY(kmac_testutils_config(&kmac, false));
 
@@ -582,8 +580,7 @@ status_t test_err_unexpected_mode_strength(void) {
 
   for (int it = 0; it < ARRAYSIZE(mode); it++) {
     // Re-init KMAC for the test.
-    TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR),
-                      &kmac));
+    TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
     TRY(kmac_testutils_config(&kmac, false));
 
     uint32_t cfg_reg =
