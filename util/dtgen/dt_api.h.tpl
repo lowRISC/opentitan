@@ -232,6 +232,12 @@ static const dt_pinmux_outsel_t kDtPinmuxOutselConstantOne = k${top_name.as_came
 /** Tie constantly to high-Z. */
 static const dt_pinmux_outsel_t kDtPinmuxOutselConstantHighZ = k${top_name.as_camel_case()}PinmuxOutselConstantHighZ;
 
+/** Tie constantly to zero. */
+static const dt_pinmux_insel_t kDtPinmuxInselConstantZero = k${top_name.as_camel_case()}PinmuxInselConstantZero;
+
+/** Tie constantly to one. */
+static const dt_pinmux_insel_t kDtPinmuxInselConstantOne = k${top_name.as_camel_case()}PinmuxInselConstantOne;
+
 /**
  * Return the peripheral input for an MIO peripheral I/O.
  *
