@@ -2722,6 +2722,7 @@ opentitan_test(
     srcs = ["kmac_error_conditions_test.c"],
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        DARJEELING_TEST_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw340_sival": None,
@@ -2731,7 +2732,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:keymgr",
