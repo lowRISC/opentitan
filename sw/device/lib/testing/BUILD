@@ -104,6 +104,7 @@ cc_library(
     hdrs = ["csrng_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//hw/top:csrng_c_regs",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:check",
@@ -637,8 +638,6 @@ cc_library(
 
 # Some testutils are not multitop yet.
 TESTUTILS_EXCEPTIONS = [
-    "aes",
-    "csrng",
     "uart",
     "rstmgr",
 ]
