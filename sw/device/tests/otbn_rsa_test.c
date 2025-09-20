@@ -11,8 +11,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 /**
  * End-to-end RSA encryption and decryption test using OTBN.
  *
@@ -120,8 +118,7 @@ static void rsa_roundtrip(uint32_t size_bytes, const uint8_t *modulus,
 
   // Initialize
   uint64_t t_start = profile_start();
-  CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(dif_otbn_init_from_dt(kDtOtbn, &otbn));
   CHECK_STATUS_OK(otbn_testutils_rsa_load(&otbn));
   profile_end_and_print(t_start, "Initialization");
 
