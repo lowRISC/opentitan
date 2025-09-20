@@ -3132,6 +3132,7 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        DARJEELING_TEST_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
@@ -3139,7 +3140,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/otbn/dv/smoke:smoke_test",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:otbn_testutils",

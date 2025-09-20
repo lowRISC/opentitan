@@ -8,8 +8,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 /**
  * This test runs every instruction in OTBN's ISA and checks the result.
  *
@@ -116,8 +114,7 @@ bool test_main(void) {
   // Initialise the entropy source and OTBN
   dif_otbn_t otbn;
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
-  CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(dif_otbn_init_from_dt(kDtOtbn, &otbn));
 
   // Load the Smoke Test App
   CHECK_STATUS_OK(otbn_testutils_load_app(&otbn, kAppSmokeTest));
