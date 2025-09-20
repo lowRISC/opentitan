@@ -13,8 +13,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 /**
  * ECDSA sign and verify test with the NIST P-256 curve using OTBN.
  *
@@ -318,8 +316,7 @@ static void test_ecdsa_p256_roundtrip(void) {
 
   // Initialize
   uint64_t t_start_init = profile_start();
-  CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(dif_otbn_init_from_dt(kDtOtbn, &otbn));
   otbn_init_irq();
   CHECK_STATUS_OK(otbn_testutils_load_app(&otbn, kOtbnAppP256Ecdsa));
   profile_end_and_print(t_start_init, "Initialization");
