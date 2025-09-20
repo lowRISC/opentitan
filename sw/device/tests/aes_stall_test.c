@@ -18,8 +18,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/sca/lib/simple_serial.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_aes_t aes;
@@ -54,7 +52,7 @@ status_t execute_test(void) {
   bool output_valid = false;
 
   // Initialize AES
-  TRY(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+  TRY(dif_aes_init_from_dt(kDtAes, &aes));
   TRY(dif_aes_reset(&aes));
 
   // Generate key with index 0

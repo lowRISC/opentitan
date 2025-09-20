@@ -146,6 +146,7 @@ opentitan_test(
     name = "aes_interrupt_encryption_test",
     srcs = ["aes_interrupt_encryption_test.c"],
     exec_env = dicts.add(
+        DARJEELING_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:sim_verilator": None,
@@ -157,7 +158,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -214,6 +215,7 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        DARJEELING_TEST_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:sim_verilator": None,
@@ -226,7 +228,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -246,6 +248,7 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        DARJEELING_TEST_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:sim_verilator": None,
@@ -258,7 +261,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -280,6 +283,7 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        DARJEELING_TEST_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:sim_verilator": None,
@@ -292,7 +296,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
