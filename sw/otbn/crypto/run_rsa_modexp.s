@@ -138,7 +138,7 @@ do_modexp:
   /* Run exponentiation.
        dmem[work_buf] = dmem[inout]^dmem[d] mod dmem[n] */
   la       x14, inout
-  la       x15, d
+  la       x15, d0
   la       x2, work_buf
   jal      x1, modexp
 
