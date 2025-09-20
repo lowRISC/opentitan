@@ -14,14 +14,13 @@
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/sca/lib/simple_serial.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -110,7 +109,7 @@ status_t execute_test(aes_test_config_t *config) {
       config->kAesNumBlocks, config->kAesNumBlocks - 1,
       config->disable_entropy_after_block - 1);
   // Initialize AES
-  TRY(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+  TRY(dif_aes_init_from_dt(kDtAes, &aes));
   TRY(dif_aes_reset(&aes));
   // Initialize EDN0, EDN1, CSRNG and Entropy Source
   TRY(dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn0));
