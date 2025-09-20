@@ -2751,6 +2751,7 @@ opentitan_test(
     srcs = ["kmac_entropy_stress_test.c"],
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        DARJEELING_TEST_ENVS,
         {
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
@@ -2758,7 +2759,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "eternal"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",

@@ -10,7 +10,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/kmac_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -175,7 +174,7 @@ status_t test_kmac_config(dif_kmac_config_t *test_case) {
       kHashCntMax);
 
   dif_kmac_t kmac;
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
 
   // Handle customization string
   dif_kmac_customization_string_t cust_str;
