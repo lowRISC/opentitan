@@ -14,10 +14,22 @@
 rsa_n:
 .zero 512
 
-/* RSA private exponent d (up to 4096 bits). */
+/*
+ * RSA first Boolean share of the private exponent (d) for decryption and
+ * signing, up to 4096 bits.
+ */
+.globl rsa_d0
 .balign 32
-.globl rsa_d
-rsa_d:
+rsa_d0:
+.zero 512
+
+/*
+ * RSA second Boolean share of the private exponent (d) for decryption and
+ * signing, up to 4096 bits.
+ */
+.globl rsa_d1
+.balign 32
+rsa_d1:
 .zero 512
 
 /* Prime cofactor for n for `rsa_key_from_cofactor`; also used as a temporary
