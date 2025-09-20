@@ -72,9 +72,9 @@ enum {
    * to change. This is the length that the caller should set in
    * `keyblob_length` and allocate for the `keyblob` buffer in blinded keys.
    */
-  kOtcryptoRsa2048PrivateKeyblobBytes = 512,
-  kOtcryptoRsa3072PrivateKeyblobBytes = 768,
-  kOtcryptoRsa4096PrivateKeyblobBytes = 1024,
+  kOtcryptoRsa2048PrivateKeyblobBytes = 768,
+  kOtcryptoRsa3072PrivateKeyblobBytes = 1152,
+  kOtcryptoRsa4096PrivateKeyblobBytes = 1536,
 };
 
 /**
