@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/dt_otbn.h"     // Generated
+#include "hw/top/dt/dt_rv_plic.h"  // Generated
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/ibex.h"
@@ -12,13 +14,13 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 OTBN_DECLARE_APP_SYMBOLS(err_test);
 
 static const otbn_app_t kAppErrTest = OTBN_APP_T_INIT(err_test);
 
 OTTF_DEFINE_TEST_CONFIG();
+
+static const uint32_t kPlicTarget = 0;
 
 static dif_rv_plic_t plic;
 static volatile bool otbn_finished;
@@ -98,22 +100,19 @@ static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
  * Initialize PLIC and enable OTBN interrupt.
  */
 static void plic_init_with_irqs(void) {
-  mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &plic));
 
-  dif_rv_plic_irq_id_t irq_id = kTopEarlgreyPlicIrqIdOtbnDone;
+  dif_rv_plic_irq_id_t irq_id = dt_otbn_irq_to_plic_id(kDtOtbn, kDtOtbnIrqDone);
 
   // Set interrupt priority to be positive
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(&plic, irq_id, 0x1));
 
   // Enable the interrupt
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &plic, irq_id, kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&plic, irq_id, kPlicTarget,
+                                           kDifToggleEnabled));
 
   // Set the threshold for Ibex to 0.
-  CHECK_DIF_OK(dif_rv_plic_target_set_threshold(
-      &plic, kTopEarlgreyPlicTargetIbex0, 0x0));
+  CHECK_DIF_OK(dif_rv_plic_target_set_threshold(&plic, kPlicTarget, 0x0));
 }
 
 /**
@@ -124,18 +123,17 @@ static void plic_init_with_irqs(void) {
 void ottf_external_isr(uint32_t *exc_info) {
   // Find which interrupt fired at PLIC by claiming it.
   dif_rv_plic_irq_id_t irq_id;
-  CHECK_DIF_OK(
-      dif_rv_plic_irq_claim(&plic, kTopEarlgreyPlicTargetIbex0, &irq_id));
+  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
   // Check it was from OTBN
-  top_earlgrey_plic_peripheral_t peri =
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
-  CHECK(peri == kTopEarlgreyPlicPeripheralOtbn,
+  dt_instance_id_t peri = dt_plic_id_to_instance_id(irq_id);
+  CHECK(peri == dt_otbn_instance_id(kDtOtbn),
         "Interrupt from incorrect peripheral: (exp: %d, obs: %s)",
-        kTopEarlgreyPlicPeripheralOtbn, peri);
+        dt_otbn_instance_id(kDtOtbn), peri);
 
   // Check this is the interrupt we expected
-  CHECK(irq_id == kTopEarlgreyPlicIrqIdOtbnDone);
+  dt_otbn_irq_t otbn_irq = dt_otbn_irq_from_plic_id(kDtOtbn, irq_id);
+  CHECK(otbn_irq == kDtOtbnIrqDone);
 
   // otbn_finished should currently be false (we're supposed to clear it before
   // starting OTBN)
@@ -153,10 +151,8 @@ bool test_main(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
-
   dif_otbn_t otbn;
-  CHECK_DIF_OK(dif_otbn_init(base_addr, &otbn));
+  CHECK_DIF_OK(dif_otbn_init_from_dt(kDtOtbn, &otbn));
 
   run_test_with_irqs(&otbn, kAppErrTest, kDifOtbnStatusIdle,
                      kDifOtbnErrBitsBadDataAddr, 1);
