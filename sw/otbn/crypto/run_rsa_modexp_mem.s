@@ -20,10 +20,16 @@ mode:
 n:
 .zero 512
 
-/* RSA private exponent (d) for signing, up to 4096 bits. */
-.globl d
+/* RSA first private exponent share (d) for signing, up to 4096 bits. */
+.globl d0
 .balign 32
-d:
+d0:
+.zero 512
+
+/* RSA second private exponent share (d) for signing, up to 4096 bits. */
+.globl d1
+.balign 32
+d1:
 .zero 512
 
 /**

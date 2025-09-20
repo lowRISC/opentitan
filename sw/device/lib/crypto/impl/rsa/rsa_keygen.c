@@ -18,13 +18,17 @@ static const otbn_app_t kOtbnAppRsaKeygen = OTBN_APP_T_INIT(run_rsa_keygen);
 // Declare offsets for input and output buffers.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, mode);          // Application mode.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_n);         // Public exponent n.
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_d);         // Private exponent d.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_d0);        // Private exponent d0.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_d1);        // Private exponent d1.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_cofactor);  // Cofactor p or q.
 
 static const otbn_addr_t kOtbnVarRsaMode =
     OTBN_ADDR_T_INIT(run_rsa_keygen, mode);
 static const otbn_addr_t kOtbnVarRsaN = OTBN_ADDR_T_INIT(run_rsa_keygen, rsa_n);
-static const otbn_addr_t kOtbnVarRsaD = OTBN_ADDR_T_INIT(run_rsa_keygen, rsa_d);
+static const otbn_addr_t kOtbnVarRsaD0 =
+    OTBN_ADDR_T_INIT(run_rsa_keygen, rsa_d0);
+static const otbn_addr_t kOtbnVarRsaD1 =
+    OTBN_ADDR_T_INIT(run_rsa_keygen, rsa_d1);
 static const otbn_addr_t kOtbnVarRsaCofactor =
     OTBN_ADDR_T_INIT(run_rsa_keygen, rsa_cofactor);
 
@@ -81,7 +85,7 @@ static status_t keygen_start(uint32_t mode) {
  * @return OK or error.
  */
 static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
-                                uint32_t *n, uint32_t *d) {
+                                uint32_t *n, uint32_t *d0, uint32_t *d1) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
 
@@ -96,8 +100,11 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   // Read the public modulus (n) from OTBN dmem.
   HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(num_words, kOtbnVarRsaN, n));
 
-  // Read the private exponent (d) from OTBN dmem.
-  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(num_words, kOtbnVarRsaD, d));
+  // Read the first share of the private exponent (d) from OTBN dmem.
+  HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaD0, d0));
+
+  // Read the second share of the private exponent (d) from OTBN dmem.
+  HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaD1, d1));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
@@ -110,7 +117,8 @@ status_t rsa_keygen_2048_start(void) {
 status_t rsa_keygen_2048_finalize(rsa_2048_public_key_t *public_key,
                                   rsa_2048_private_key_t *private_key) {
   HARDENED_TRY(keygen_finalize(kOtbnRsaModeGen2048, kRsa2048NumWords,
-                               private_key->n.data, private_key->d.data));
+                               private_key->n.data, private_key->d0.data,
+                               private_key->d1.data));
 
   // Copy the modulus to the public key.
   HARDENED_TRY(hardened_memcpy(public_key->n.data, private_key->n.data,
@@ -126,7 +134,8 @@ status_t rsa_keygen_3072_start(void) {
 status_t rsa_keygen_3072_finalize(rsa_3072_public_key_t *public_key,
                                   rsa_3072_private_key_t *private_key) {
   HARDENED_TRY(keygen_finalize(kOtbnRsaModeGen3072, kRsa3072NumWords,
-                               private_key->n.data, private_key->d.data));
+                               private_key->n.data, private_key->d0.data,
+                               private_key->d1.data));
 
   // Copy the modulus to the public key.
   HARDENED_TRY(hardened_memcpy(public_key->n.data, private_key->n.data,
@@ -142,7 +151,8 @@ status_t rsa_keygen_4096_start(void) {
 status_t rsa_keygen_4096_finalize(rsa_4096_public_key_t *public_key,
                                   rsa_4096_private_key_t *private_key) {
   HARDENED_TRY(keygen_finalize(kOtbnRsaModeGen4096, kRsa4096NumWords,
-                               private_key->n.data, private_key->d.data));
+                               private_key->n.data, private_key->d0.data,
+                               private_key->d1.data));
 
   // Copy the modulus to the public key.
   HARDENED_TRY(hardened_memcpy(public_key->n.data, private_key->n.data,
@@ -172,7 +182,8 @@ status_t rsa_keygen_from_cofactor_2048_start(
 status_t rsa_keygen_from_cofactor_2048_finalize(
     rsa_2048_public_key_t *public_key, rsa_2048_private_key_t *private_key) {
   HARDENED_TRY(keygen_finalize(kOtbnRsaModeCofactor2048, kRsa2048NumWords,
-                               private_key->n.data, private_key->d.data));
+                               private_key->n.data, private_key->d0.data,
+                               private_key->d1.data));
 
   // Copy the modulus to the public key.
   HARDENED_TRY(hardened_memcpy(public_key->n.data, private_key->n.data,
