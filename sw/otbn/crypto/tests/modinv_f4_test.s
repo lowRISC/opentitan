@@ -17,7 +17,7 @@ main:
 
   /* Load DMEM pointers. */
   la        x12, rsa_n
-  la        x13, mont_m0inv
+  la        x13, rsa_d
   la        x14, tmp0
   la        x15, tmp2
 

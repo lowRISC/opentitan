@@ -1033,10 +1033,9 @@ check_p:
   bn.sid   x20, 0(x16)
 
   /* Load Montgomery constants for p.
-       dmem[mont_m0inv] <= Montgomery constant m0'
+                  w1 <= Montgomery constant m0'
        dmem[mont_rr] <= Montgomery constant RR */
-  la       x17, mont_m0inv
-  la       x18, mont_rr
+  la       x17, mont_rr
   jal      x1, modload
 
   /* Load pointers to temporary buffers for Miller-Rabin. Each buffer needs to
