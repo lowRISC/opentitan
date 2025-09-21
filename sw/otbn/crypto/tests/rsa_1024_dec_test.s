@@ -23,8 +23,7 @@
 
   /* Load pointers to modulus and Montgomery constant buffers. */
   la    x16, n
-  la    x17, m0d
-  la    x18, RR
+  la    x17, RR
 
   /* Compute Montgomery constants. */
   jal      x1, modload

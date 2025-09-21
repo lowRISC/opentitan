@@ -23,11 +23,10 @@ main:
   li        x31, 1
 
   /* Compute Montgomery constants for the candidate prime.
-       dmem[mont_m0inv] <= (- dmem[rsa_p]) mod 2^256
+                  w1 <= (- dmem[rsa_p]) mod 2^256
        dmem[mont_rr] <= (2^1024) mod dmem[rsa_p] */
   la         x16, rsa_p
-  la         x17, mont_m0inv
-  la         x18, mont_rr
+  la         x17, mont_rr
   jal        x1, modload
 
 
@@ -42,15 +41,5 @@ main:
   /* Call primality test.
        w21 <= all 1s if dmem[rsa_p] is probably prime, otherwise 0 */
   jal        x1, miller_rabin
-
-  /* Load Mont constants.
-       w0 <= m0_inv
-       w1, w2 <= rr */
-  la         x17, mont_m0inv
-  la         x18, mont_rr
-  li         x2, 0
-  bn.lid     x2++, 0(x17)
-  bn.lid     x2++, 0(x18)
-  bn.lid     x2++, 32(x18)
 
   ecall

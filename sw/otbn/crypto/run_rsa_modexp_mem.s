@@ -37,14 +37,6 @@ d:
 inout:
 .zero 512
 
-
-/* Montgomery constant m0'. Filled by `modload`. */
-/* Note: m0' could go in scratchpad if there was space. */
-.balign 32
-.globl m0d
-m0d:
-.zero 32
-
 .section .scratchpad
 
 /* Montgomery constant RR. Filled by `modload`. */
