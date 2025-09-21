@@ -129,8 +129,7 @@ rsa_4096_modexp_f4:
 do_modexp:
   /* Load pointers to modulus and Montgomery constant buffers. */
   la    x16, n
-  la    x17, m0d
-  la    x18, RR
+  la    x17, RR
 
   /* Compute Montgomery constants. */
   jal      x1, modload
@@ -165,8 +164,7 @@ do_modexp:
 do_modexp_f4:
   /* Load pointers to modulus and Montgomery constant buffers. */
   la    x16, n
-  la    x17, m0d
-  la    x18, RR
+  la    x17, RR
 
   /* Compute Montgomery constants. */
   jal      x1, modload

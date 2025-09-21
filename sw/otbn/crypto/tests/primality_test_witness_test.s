@@ -26,8 +26,7 @@ main:
   la         x14, tmp0 /* witness */
   la         x15, tmp2 /* tmp buffer */
   la         x16, rsa_p
-  la         x17, mont_m0inv
-  la         x18, mont_rr
+  la         x17, mont_rr
   jal        x1, test_witness
 
   /* Load the value from the working buffer into registers. Since the candidate
