@@ -39,12 +39,6 @@ rsa_d1:
 rsa_cofactor:
 .zero 512
 
-/* Montgomery constant m0' (256 bits). */
-.balign 32
-.globl mont_m0inv
-mont_m0inv:
-.zero 32
-
 /* Montgomery constant R^2 (up to 2048 bits). */
 .balign 32
 .globl mont_rr
