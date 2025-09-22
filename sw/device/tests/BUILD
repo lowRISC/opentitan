@@ -1586,11 +1586,12 @@ opentitan_test(
         {
             "//hw/top_earlgrey:silicon_creator": None,
         },
+        DARJEELING_TEST_ENVS,
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
         ":otbn_randomness_impl",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
