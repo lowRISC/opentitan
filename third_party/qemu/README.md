@@ -41,6 +41,7 @@ The currently supported parameters are:
 
 * `icount` (`int`): scale for Ibex's reported execution speed (`1GHz >> icount`) (defaults to 6).
 * `globals` (`dict[str, str]`): global properties for the QEMU machine.
+* `traces` (`[str]`): globs of QEMU traces to enable for debugging purposes.
 * `qemu_args` (`[str]`): additional command line flags to pass to QEMU.
 
 Example:
@@ -59,6 +60,9 @@ opentitan_test(
       qemu_args = {
         "-s", # spawn GDB server
       },
+      traces = [
+        "ot_spi_device*",
+      ],
     ),
     # ...
 )

@@ -63,14 +63,17 @@ def qemu_params(
         defines = [],
         icount = 6,
         globals = {},
+        traces = [],
         qemu_args = [],
         **kwargs):
     extra_params = {
         "icount": str(icount),
+        "qemu_args": json.encode(qemu_args),
         # We have to stringify this dictionary here because `_opentitan_test` only accepts
         # a dict with string values, not more dicts.
         "globals": json.encode(globals),
-        "qemu_args": json.encode(qemu_args),
+        # The same goes for this array of strings:
+        "traces": json.encode(traces),
     }
 
     return struct(
@@ -419,6 +422,11 @@ def _test_dispatch(ctx, exec_env, firmware):
     qemu_args += ["-D", "qemu.log"]
     qemu_args += ["-d", "guest_errors"]
     qemu_args += ["-d", "unimp"]
+
+    if param["traces"]:
+        traces = json.decode(param["traces"])
+        for trace in traces:
+            qemu_args += ["-d", "trace:{}".format(trace)]
 
     # By default QEMU will exit when the test status register is written.
     # OpenTitanTool expects to be able to do multiple resets, for example after
