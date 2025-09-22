@@ -144,7 +144,7 @@ impl Transport for Qemu {
             "0" => Ok(Rc::clone(
                 self.console.as_ref().context("uart 0 not connected")?,
             )),
-            "log" => Ok(Rc::clone(
+            "LOG" => Ok(Rc::clone(
                 self.log.as_ref().context("QEMU log not connected")?,
             )),
             _ => Err(TransportError::InvalidInstance(
