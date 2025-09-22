@@ -25,7 +25,7 @@ set -e
 
 cleanup() {{
     rm -f {mutable_otp} {mutable_flash}
-    rm -f qemu-monitor
+    rm -f qemu-monitor qemu.log
 }}
 trap cleanup EXIT
 
@@ -35,6 +35,10 @@ cp {otp} {mutable_otp} && chmod +w {mutable_otp}
 if [ ! -z {flash} ]; then
     cp {flash} {mutable_flash} && chmod +w {mutable_flash}
 fi
+
+# QEMU disconnects from `stdout` when it daemonizes so we need to stream
+# the log through a pipe:
+mkfifo qemu.log && cat qemu.log &
 
 echo "Starting QEMU: {qemu} {qemu_args}"
 {qemu} {qemu_args}
@@ -410,6 +414,9 @@ def _test_dispatch(ctx, exec_env, firmware):
     # The emulation will start when OpenTitanTool releases the reset pin and `cont`
     # is sent over the monitor.
     qemu_args += ["-daemonize", "-S"]
+
+    # Write any QEMU log messages to a file to be read at the end of the test.
+    qemu_args += ["-D", "qemu.log"]
 
     # By default QEMU will exit when the test status register is written.
     # OpenTitanTool expects to be able to do multiple resets, for example after
