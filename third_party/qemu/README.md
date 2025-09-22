@@ -34,6 +34,36 @@ In particular, the content of the `build/` directory will be used to support inc
 The content of this directory can change when you run Bazel command.
 Bazel will automatically watch all files in the QEMU repository so that it can rebuild it if it changes.
 
+## Test parameters
+
+Tests with a `sim_qemu_*` execution environment can be further configured by adding `qemu_params` to the test target.
+The currently supported parameters are:
+
+* `icount` (`int`): scale for Ibex's reported execution speed (`1GHz >> icount`) (defaults to 6).
+* `globals` (`dict[str, str]`): global properties for the QEMU machine.
+* `qemu_args` (`[str]`): additional command line flags to pass to QEMU.
+
+Example:
+
+```python
+opentitan_test(
+    name = "my_test",
+    exec_env = {
+      "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+    },
+    qemu = qemu_params(
+      icount = 5,
+      globals = {
+        "ot-aes.fast-mode": "false",
+      },
+      qemu_args = {
+        "-s", # spawn GDB server
+      },
+    ),
+    # ...
+)
+```
+
 ## Troubleshooting
 
 ### Bazel tells me that `+qemu+qemu_opentitan_src` is not a valid repository name
