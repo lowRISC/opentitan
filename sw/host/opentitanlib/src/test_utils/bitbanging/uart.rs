@@ -97,11 +97,11 @@ pub enum UartTransfer {
 
 /// An encoder for creating UART bitbanging samples for transmission. `TX` is
 /// the bit in the output sample bitfield to use for TX transmissions.
-pub struct UartBitbangEncoder<const TX: u8> {
+pub struct UartBitbangEncoder {
     pub config: UartBitbangConfig,
 }
 
-impl<const TX: u8> UartBitbangEncoder<TX> {
+impl UartBitbangEncoder {
     pub fn new(config: UartBitbangConfig) -> Self {
         Self { config }
     }
@@ -110,10 +110,10 @@ impl<const TX: u8> UartBitbangEncoder<TX> {
     /// sample, to be used on the TX pin.
     pub fn encode_break(&self, samples: &mut Vec<u8>) {
         for _ in 0..self.config.break_bit_time() {
-            samples.push(0x00 << TX);
+            samples.push(0x00);
         }
         for _ in 0..self.config.stop_bit_time() {
-            samples.push(0x01 << TX);
+            samples.push(0x01);
         }
     }
 
@@ -122,22 +122,22 @@ impl<const TX: u8> UartBitbangEncoder<TX> {
     // LSBs of `data` will be used.
     pub fn encode_character(&self, data: u8, samples: &mut Vec<u8>) {
         // Start bit
-        samples.push(0x00 << TX);
+        samples.push(0x00);
         // Data bits
         for bit_index in 0..self.config.data_bits {
             let bit = (data >> bit_index) & 0x01;
-            samples.push(bit << TX);
+            samples.push(bit);
         }
         // Parity bit (if applicable)
         let parity = compute_parity(data, None);
         match self.config.parity {
-            Parity::Even => samples.push((parity as u8) << TX),
-            Parity::Odd => samples.push((!parity as u8) << TX),
+            Parity::Even => samples.push(parity as u8),
+            Parity::Odd => samples.push(!parity as u8),
             Parity::None => (),
         }
         // Stop bits
         for _ in 0..self.config.stop_bit_time() {
-            samples.push(0x01 << TX);
+            samples.push(0x01);
         }
     }
 
@@ -210,12 +210,12 @@ enum DecodingState {
 
 /// A decoder for decoding UART samples. `RX` is the bit in the input sample
 /// bitfield to use for RX transmissions.
-pub struct UartBitbangDecoder<const RX: u8> {
+pub struct UartBitbangDecoder {
     pub config: UartBitbangConfig,
     state: DecodingState,
 }
 
-impl<const RX: u8> UartBitbangDecoder<RX> {
+impl UartBitbangDecoder {
     pub fn new(config: UartBitbangConfig) -> Self {
         Self {
             config,
@@ -287,7 +287,7 @@ impl<const RX: u8> UartBitbangDecoder<RX> {
     /// UART decoder state based on the contents of the sample. If the sample
     /// is the final stop bit, return the decoded UART transfer.
     pub fn decode_sample(&mut self, sample: u8) -> Result<Option<UartTransfer>> {
-        let rx = (sample >> RX) & 0x1;
+        let rx = sample & 0x1;
         match self.state {
             DecodingState::Idle => {
                 if rx == 0 {
@@ -402,8 +402,8 @@ mod test {
     }
 
     fn uart_encode_decode(config: UartBitbangConfig, message: Option<&[u8]>) -> Result<()> {
-        let encoder = UartBitbangEncoder::<0>::new(config.clone());
-        let mut decoder = UartBitbangDecoder::<0>::new(config);
+        let encoder = UartBitbangEncoder::new(config.clone());
+        let mut decoder = UartBitbangDecoder::new(config);
         let msg = message.unwrap_or(b"Hello, this is a simple UART test message.");
         let mut samples = Vec::new();
         encoder.encode_characters(msg, &mut samples);
@@ -424,7 +424,7 @@ mod test {
         uart_encode_decode(config.clone(), Some(b"12345"))?;
 
         // Check bitbang encoding against a known sample.
-        let encoder = UartBitbangEncoder::<0>::new(config);
+        let encoder = UartBitbangEncoder::new(config);
         let bytes = [0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF];
         let mut samples = Vec::new();
         encoder.encode_characters(&bytes, &mut samples);
@@ -436,38 +436,6 @@ mod test {
         ];
         assert_eq!(samples, expected);
         Ok(())
-    }
-
-    #[test]
-    fn bit_indexes() -> Result<()> {
-        // Check we can use different bit indexes correctly
-        let config = UartBitbangConfig::new(8, UartStopBits::Stop2, 1, Parity::None)?;
-        let encoder_1 = UartBitbangEncoder::<1>::new(config.clone());
-        let encoder_5 = UartBitbangEncoder::<5>::new(config.clone());
-        let mut decoder_1 = UartBitbangDecoder::<1>::new(config.clone());
-        let mut decoder_5 = UartBitbangDecoder::<5>::new(config.clone());
-        let msg = b"UART bit test message";
-        let mut samples_1 = Vec::new();
-        let mut samples_5 = Vec::new();
-        encoder_1.encode_characters(msg, &mut samples_1);
-        encoder_5.encode_characters(msg, &mut samples_5);
-        assert_eq!(samples_1.len(), samples_5.len());
-        let samples = samples_1.iter().zip(samples_5.iter());
-        for (sample_1, sample_5) in samples {
-            assert!((sample_1 >> 1) & 0x1 == (sample_5 >> 5) & 0x1);
-            assert_eq!(sample_1 & !(0x1 << 1), 0x00);
-            assert_eq!(sample_5 & !(0x1 << 5), 0x00);
-        }
-        let decoded_1 = decoder_1
-            .decode_samples(&samples_1)
-            .expect("Should have decoded the bitbanged message");
-        assert!(decoder_1.is_idle());
-        let decoded_5 = decoder_5
-            .decode_samples(&samples_5)
-            .expect("Should have decoded the bitbanged message");
-        assert!(decoder_5.is_idle());
-        compare_decoded_result(&decoded_1, msg)?;
-        compare_decoded_result(&decoded_5, msg)
     }
 
     #[test]
@@ -501,7 +469,7 @@ mod test {
         }
         // Check stop bits are being applied correctly
         let mut samples = Vec::new();
-        UartBitbangEncoder::<0>::new(UartBitbangConfig::new(
+        UartBitbangEncoder::new(UartBitbangConfig::new(
             8,
             UartStopBits::Stop1,
             1,
@@ -510,7 +478,7 @@ mod test {
         .encode_character(0xA5, &mut samples);
         assert_eq!(&samples, &[0, 1, 0, 1, 0, 0, 1, 0, 1, 1]);
         samples.clear();
-        UartBitbangEncoder::<0>::new(UartBitbangConfig::new(
+        UartBitbangEncoder::new(UartBitbangConfig::new(
             8,
             UartStopBits::Stop2,
             1,
@@ -520,7 +488,7 @@ mod test {
         assert_eq!(&samples, &[0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1]);
         // Check error on incorrect number of stop bits
         assert_eq!(
-            UartBitbangDecoder::<0>::new(UartBitbangConfig::new(
+            UartBitbangDecoder::new(UartBitbangConfig::new(
                 8,
                 UartStopBits::Stop2,
                 1,
@@ -552,13 +520,13 @@ mod test {
             // Check the parity bit is calculated correctly
             let config = UartBitbangConfig::new(8, UartStopBits::Stop2, 1, parity)?;
             let mut samples = Vec::new();
-            UartBitbangEncoder::<0>::new(config.clone()).encode_character(0xA5, &mut samples);
+            UartBitbangEncoder::new(config.clone()).encode_character(0xA5, &mut samples);
             assert_eq!(&samples, &expected);
             // Check single parity errors are caught by the decoder.
             if parity == Parity::None {
                 continue;
             }
-            let mut decoder = UartBitbangDecoder::<0>::new(config.clone());
+            let mut decoder = UartBitbangDecoder::new(config.clone());
             let mut invalid_samples = expected.clone();
             // Introduce an error on the parity bit
             invalid_samples[9] = !invalid_samples[9] & 0x01;
@@ -602,8 +570,8 @@ mod test {
         for break_cycles in 1..=5 {
             let config =
                 UartBitbangConfig::new(8, UartStopBits::Stop2, break_cycles, Parity::None)?;
-            let encoder = UartBitbangEncoder::<0>::new(config.clone());
-            let mut decoder = UartBitbangDecoder::<0>::new(config.clone());
+            let encoder = UartBitbangEncoder::new(config.clone());
+            let mut decoder = UartBitbangDecoder::new(config.clone());
             let mut samples = Vec::new();
             encoder.encode_transfers(&break_transfer, &mut samples)?;
             assert!(
@@ -617,7 +585,7 @@ mod test {
         }
         // Check error on incorrect break time when decoding
         assert_eq!(
-            UartBitbangDecoder::<0>::new(UartBitbangConfig::new(
+            UartBitbangDecoder::new(UartBitbangConfig::new(
                 8,
                 UartStopBits::Stop2,
                 2,
@@ -637,7 +605,7 @@ mod test {
     fn partial_transfers() -> Result<()> {
         // Check that the UART decoder is stateful, and correctly handles
         // input samples of partial UART transfers.
-        let mut decoder = UartBitbangDecoder::<0>::new(UartBitbangConfig::new(
+        let mut decoder = UartBitbangDecoder::new(UartBitbangConfig::new(
             8,
             UartStopBits::Stop2,
             1,
