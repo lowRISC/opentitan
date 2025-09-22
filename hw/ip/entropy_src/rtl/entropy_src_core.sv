@@ -3094,7 +3094,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .req_i            (es_hw_if_req),
     .ack_o            (es_hw_if_ack),
     .fifo_not_empty_i (sfifo_esfinal_not_empty && !es_route_to_sw),
-    .local_escalate_i (es_cntr_err),
+    .local_escalate_i (fatal_loc_events),
     .fifo_pop_o       (es_hw_if_fifo_pop),
     .ack_sm_err_o     (es_ack_sm_err)
   );

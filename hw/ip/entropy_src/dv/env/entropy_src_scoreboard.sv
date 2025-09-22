@@ -1985,12 +1985,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               msg = $sformatf("Predicted value of ERR_CODE: %08x", err_code);
               `uvm_info(`gfn, msg, UVM_MEDIUM)
               case(bit_num)
-                22: begin // es_cntr_err
+                20, 21, 22, 23, 24: begin
+                  // Counter and FSM errors are structural errors and are always active.
                   is_fatal = 1;
                   is_logged = 1;
                   main_sm_escalates = 1;
                 end
-                0, 1, 2, 20, 21, 28, 29, 30: begin // other valid err_code bits
+                0, 1, 2, 3, 28, 29, 30: begin // other valid err_code bits
                   // These test bits correspond to events that are always logged
                   // in err_code, but only create fatal alerts if they occur
                   // when the DUT is enabled
@@ -2013,11 +2014,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               end
               fork
                 // Implementation timing detail:
-                // If a particular error is escalated it also becomes a main_sm error.
+                // If a particular error is escalated it also becomes a main_sm and an ack_sm error.
                 if (main_sm_escalates) begin
-                  int main_sm_err_mask = 1 << 21;
+                  int sm_err_mask = 1 << 21 | 1 << 20;
                   cfg.clk_rst_vif.wait_clks(1);
-                  err_code |= main_sm_err_mask;
+                  err_code |= sm_err_mask;
                   `DV_CHECK_FATAL(ral.err_code.predict(.value(err_code), .kind(UVM_PREDICT_READ)));
                 end
               join_none
