@@ -6,7 +6,7 @@
 //! a DER output. This module only supports literal values for variables
 //! since it needs to know the concrete values to produce the output.
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use num_bigint_dig::BigUint;
 
 use crate::asn1::builder::Builder;

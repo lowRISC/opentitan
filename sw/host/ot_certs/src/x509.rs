@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{Context, Result, bail, ensure};
 use indexmap::IndexMap;
 use num_bigint_dig::BigUint;
 
@@ -14,7 +14,7 @@ use openssl::ecdsa::EcdsaSig;
 use openssl::nid::Nid;
 use openssl::pkey::PKey;
 use openssl::pkey::Public;
-use openssl::x509::{X509NameRef, X509};
+use openssl::x509::{X509, X509NameRef};
 
 use crate::asn1::der;
 use crate::asn1::x509;

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use clap::{Args, Subcommand};
 use regex::Regex;
 use serde_annotate::Annotate;
@@ -12,8 +12,8 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::crypto::ecdsa::{
     EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature,
 };
@@ -141,7 +141,9 @@ impl CommandDispatch for EcdsaKeyExportCommand {
         // which would overwrite it. This will not detect situations where there is a symlink
         // involved so this will only catch "obvious" mistakes.
         if self.der_file == output_path {
-            bail!("the output file is the same as the key file, this would overwrite the key, not allowing this")
+            bail!(
+                "the output file is the same as the key file, this would overwrite the key, not allowing this"
+            )
         }
         println!("exporting key to {}", output_path.display());
 

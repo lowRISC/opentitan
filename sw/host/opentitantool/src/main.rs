@@ -7,7 +7,7 @@ use clap::{Parser, ValueEnum};
 use directories::ProjectDirs;
 use log::LevelFilter;
 use serde_annotate::ColorProfile;
-use std::env::{args_os, ArgsOs};
+use std::env::{ArgsOs, args_os};
 use std::ffi::OsString;
 use std::io::ErrorKind;
 use std::io::IsTerminal;
@@ -16,8 +16,8 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 mod command;
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::backend;
 
 #[allow(clippy::large_enum_variant)]

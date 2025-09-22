@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use clap::Parser;
 use rand::prelude::*;
 use std::path::PathBuf;
@@ -14,7 +14,7 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 
 use rusb::{Direction, Recipient, RequestType};
-use usb::{port_path_string, UsbDeviceHandle, UsbOpts};
+use usb::{UsbDeviceHandle, UsbOpts, port_path_string};
 
 #[derive(Debug, Parser)]
 struct Opts {

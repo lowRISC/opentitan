@@ -6,7 +6,7 @@ use std::fmt;
 use std::io::{Read, Write};
 use std::rc::Rc;
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::convert::TryFrom;
 use std::os::unix::net::UnixStream;
@@ -96,7 +96,7 @@ impl<'de> Deserialize<'de> for Logic {
                 return Err(serde::de::Error::custom(format!(
                     "Unrecognized logic level: {}",
                     val
-                )))
+                )));
             }
         })
     }

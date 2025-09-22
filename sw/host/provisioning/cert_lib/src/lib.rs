@@ -8,23 +8,23 @@ use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::process::Command;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use base64ct::{Base64, Encoding};
 use elliptic_curve::SecretKey;
 use hwtrust::dice::ChainForm;
 use hwtrust::session::Session;
 use num_bigint_dig::BigUint;
 use openssl::ecdsa::EcdsaSig;
-use p256::ecdsa::SigningKey;
 use p256::NistP256;
+use p256::ecdsa::SigningKey;
 use serde::{Deserialize, Serialize, Serializer};
 
 use opentitanlib::crypto::sha256::Sha256Digest;
 use opentitanlib::util::tmpfilename;
+use ot_certs::CertFormat;
 use ot_certs::cbor;
 use ot_certs::template::{EcdsaSignature, Signature, Value};
 use ot_certs::x509::generate_certificate_from_tbs;
-use ot_certs::CertFormat;
 
 /// Certificate Authority key type.
 #[derive(Debug, Clone, Deserialize)]

@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::time::Duration;
 
-use anyhow::{ensure, Context, Result};
+use anyhow::{Context, Result, ensure};
 use bindgen::sram_program::{
     SRAM_MAGIC_SP_CRC_ERROR, SRAM_MAGIC_SP_CRC_SKIPPED, SRAM_MAGIC_SP_EXECUTION_DONE,
 };

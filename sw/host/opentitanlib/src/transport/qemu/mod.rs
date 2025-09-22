@@ -9,7 +9,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::str::FromStr;
 
-use anyhow::{bail, Context};
+use anyhow::{Context, bail};
 
 use crate::backend::qemu::QemuOpts;
 use crate::io::gpio::{GpioError, GpioPin};

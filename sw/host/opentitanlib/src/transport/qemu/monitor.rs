@@ -6,7 +6,7 @@ use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use anyhow::{bail, ensure, Context};
+use anyhow::{Context, bail, ensure};
 use serde::Deserialize;
 use serialport::TTYPort;
 

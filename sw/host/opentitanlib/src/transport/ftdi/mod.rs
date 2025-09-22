@@ -5,8 +5,8 @@
 use anyhow::Result;
 use std::any::Any;
 use std::cell::RefCell;
-use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::collections::hash_map::Entry;
 use std::rc::Rc;
 
 use crate::io::gpio::{GpioPin, PinMode};

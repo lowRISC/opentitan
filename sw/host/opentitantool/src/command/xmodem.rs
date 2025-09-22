@@ -7,8 +7,8 @@ use clap::{Args, Subcommand};
 use opentitanlib::io::uart::UartParams;
 use std::any::Any;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::rescue::xmodem::Xmodem;
 
 #[derive(Debug, Args)]

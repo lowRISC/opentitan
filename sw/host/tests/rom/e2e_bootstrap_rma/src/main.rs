@@ -12,7 +12,7 @@ use std::io;
 use std::iter;
 use std::time::Duration;
 
-use anyhow::{bail, Context};
+use anyhow::{Context, bail};
 use clap::Parser;
 use regex::Regex;
 

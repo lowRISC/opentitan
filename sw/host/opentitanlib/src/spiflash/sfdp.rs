@@ -609,11 +609,7 @@ impl JedecParams {
     ];
 
     fn pow2_size(shift: u8) -> u32 {
-        if shift == 0 {
-            0
-        } else {
-            1u32 << shift
-        }
+        if shift == 0 { 0 } else { 1u32 << shift }
     }
 }
 

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use clap::{Args, Subcommand};
 use regex::Regex;
 use std::any::Any;
@@ -11,10 +11,10 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::str::FromStr;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::crypto::rsa::{
-    Exponent, Modulus, N0Inv, RsaPrivateKey, RsaPublicKey, Signature, RR,
+    Exponent, Modulus, N0Inv, RR, RsaPrivateKey, RsaPublicKey, Signature,
 };
 use opentitanlib::crypto::sha256::Sha256Digest;
 use opentitanlib::util::parse_int::ParseInt;
@@ -196,7 +196,9 @@ impl CommandDispatch for RsaKeyExportCommand {
         // which would overwrite it. This will not detect situations where there is a symlink
         // involved so this will only catch "obvious" mistakes.
         if self.der_file == output_path {
-            bail!("the output file is the same as the key file, this would overwrite the key, not allowing this")
+            bail!(
+                "the output file is the same as the key file, this would overwrite the key, not allowing this"
+            )
         }
         println!("exporting key to {}", output_path.display());
 

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
@@ -13,8 +13,8 @@ use crate::chip::rom_error::RomError;
 use crate::io::spi::Target;
 use crate::rescue::dfu::*;
 use crate::rescue::{EntryMode, Rescue, RescueError, RescueMode, RescueParams};
-use crate::spiflash::sfdp::Sdfu;
 use crate::spiflash::SpiFlash;
+use crate::spiflash::sfdp::Sdfu;
 
 #[repr(C)]
 #[derive(Default, Debug, Immutable, IntoBytes)]

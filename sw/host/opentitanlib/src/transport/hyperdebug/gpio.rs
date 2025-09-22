@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -17,8 +17,8 @@ use crate::io::gpio::{
     GpioDacBangOperation, GpioError, GpioMonitoring, GpioPin, MonitoringEvent,
     MonitoringReadResponse, MonitoringStartResponse, PinMode, PullMode,
 };
-use crate::transport::hyperdebug::{BulkInterface, Inner};
 use crate::transport::TransportError;
+use crate::transport::hyperdebug::{BulkInterface, Inner};
 
 pub struct HyperdebugGpioPin {
     inner: Rc<Inner>,

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use std::borrow::Borrow;
 use std::rc::Rc;
 
@@ -234,7 +234,9 @@ impl Drop for GpioMon<'_> {
         };
         if self.dump_on_drop {
             if error {
-                log::error!("an error occured when reading the monitoring events, some events have been lost");
+                log::error!(
+                    "an error occured when reading the monitoring events, some events have been lost"
+                );
             }
             log::info!(
                 "====[ VCD dump ]====\n{}\n====[ end dump ]====",

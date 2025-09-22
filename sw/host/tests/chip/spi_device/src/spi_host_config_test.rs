@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use clap::Parser;
 use regex::Regex;
 use std::time::Duration;
@@ -113,7 +113,9 @@ fn spi_host_config_test(
     let decoded = decoder.run(samples.to_owned())?;
     assert_eq!(
         decoded,
-        vec![0x06, 0x02, 0x00, 0x00, 0x00, 0xab, 0xcd, 0xef, 0xab, 0x05, 0x80,]
+        vec![
+            0x06, 0x02, 0x00, 0x00, 0x00, 0xab, 0xcd, 0xef, 0xab, 0x05, 0x80,
+        ]
     );
     println!("decoded: {:?}", decoded);
 

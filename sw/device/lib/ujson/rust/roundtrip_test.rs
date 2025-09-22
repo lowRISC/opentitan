@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use crc::{Crc, CRC_32_ISO_HDLC};
+use crc::{CRC_32_ISO_HDLC, Crc};
 use opentitanlib::test_utils::status::Status;
 use opentitanlib::with_unknown;
 use std::io::{Read, Write};

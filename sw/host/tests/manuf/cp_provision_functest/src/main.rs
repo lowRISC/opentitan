@@ -11,7 +11,7 @@ use clap::Parser;
 use rand::RngCore;
 use zerocopy::IntoBytes;
 
-use cp_lib::{reset_and_lock, run_sram_cp_provision, unlock_raw, CpResponse};
+use cp_lib::{CpResponse, reset_and_lock, run_sram_cp_provision, unlock_raw};
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};

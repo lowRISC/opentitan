@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(clippy::bool_assert_comparison)]
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::ValueEnum;
 use sphincsplus::{DecodeKey, SpxPublicKey, SpxSecretKey};
 use std::path::{Path, PathBuf};

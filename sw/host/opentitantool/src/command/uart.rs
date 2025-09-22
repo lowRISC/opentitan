@@ -6,8 +6,8 @@ use anyhow::Result;
 use clap::{Args, Subcommand};
 use std::any::Any;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::io::uart::UartParams;
 
 /// Outputs `"/dev/ttyUSBn"` or similar OS device path usable by external programs for directly

@@ -5,7 +5,7 @@
 use regex::Regex;
 use std::time::Duration;
 
-use anyhow::{anyhow, bail, Context, Result};
+use anyhow::{Context, Result, anyhow, bail};
 use clap::Parser;
 
 use opentitanlib::app::TransportWrapper;

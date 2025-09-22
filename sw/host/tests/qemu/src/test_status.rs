@@ -13,8 +13,8 @@ use std::time::Duration;
 use anyhow::anyhow;
 use clap::Parser;
 use opentitanlib::backend::qemu::QemuOpts;
-use opentitanlib::transport::qemu::Qemu;
 use opentitanlib::transport::Transport;
+use opentitanlib::transport::qemu::Qemu;
 use opentitanlib::uart::console::UartConsole;
 
 #[derive(Debug, Parser)]

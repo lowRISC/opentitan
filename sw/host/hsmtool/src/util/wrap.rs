@@ -9,7 +9,7 @@
 use anyhow::{Ok, Result};
 use clap::ValueEnum;
 use cryptoki::mechanism::rsa::{PkcsMgfType, PkcsOaepParams, PkcsOaepSource};
-use cryptoki::mechanism::vendor_defined::{VendorDefinedMechanism, CKM_VENDOR_DEFINED};
+use cryptoki::mechanism::vendor_defined::{CKM_VENDOR_DEFINED, VendorDefinedMechanism};
 use cryptoki::mechanism::{Mechanism, MechanismType};
 use cryptoki::object::{Attribute, ObjectHandle};
 use cryptoki::session::Session;

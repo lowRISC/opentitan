@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use base64ct::Encoding;
 use num_bigint_dig::BigUint;
-use num_traits::cast::FromPrimitive;
 use num_traits::Num;
+use num_traits::cast::FromPrimitive;
 
 use ot_certs::asn1::der::Der;
 use ot_certs::template::{

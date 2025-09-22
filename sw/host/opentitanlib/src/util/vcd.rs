@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use std::io;
 use thiserror::Error;
 
@@ -475,7 +475,7 @@ impl<R: io::BufRead> VcdParser<R> {
                         scope_type,
                         identifier,
                         items,
-                    })
+                    });
                 }
                 _ => (),
             }

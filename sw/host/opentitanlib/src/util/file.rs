@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
+use anyhow::{Result, ensure};
 use pem_rfc7468::{Decoder, Encoder, LineEnding};
 use thiserror::Error;
 
@@ -117,7 +117,7 @@ mod tests {
     use super::*;
     use anyhow::bail;
     use rustix::io::{read, write};
-    use rustix::net::{socketpair, AddressFamily, SocketFlags, SocketType};
+    use rustix::net::{AddressFamily, SocketFlags, SocketType, socketpair};
 
     #[test]
     fn test_data_ready() -> Result<()> {

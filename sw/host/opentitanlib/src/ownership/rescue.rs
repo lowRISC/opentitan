@@ -9,8 +9,8 @@ use serde_annotate::Annotate;
 use std::convert::TryFrom;
 use std::io::{Read, Write};
 
-use super::misc::{TlvHeader, TlvTag};
 use super::GlobalFlags;
+use super::misc::{TlvHeader, TlvTag};
 use crate::chip::boot_svc::BootSvcKind;
 use crate::with_unknown;
 

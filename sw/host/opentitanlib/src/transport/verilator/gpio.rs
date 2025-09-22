@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Context, Result};
+use anyhow::{Context, Result, ensure};
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
@@ -11,8 +11,8 @@ use std::rc::Rc;
 use std::time::Duration;
 
 use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
-use crate::transport::verilator::transport::Inner;
 use crate::transport::TransportError;
+use crate::transport::verilator::transport::Inner;
 use crate::util::file;
 
 pub struct VerilatorGpioPin {

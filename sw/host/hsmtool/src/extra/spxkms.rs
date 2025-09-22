@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use acorn::{GenerateFlags, KeyEntry, KeyInfo, SpxInterface};
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use base64ct::{Base64, Encoding};
 use indexmap::IndexMap;
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use serde_json::Value;
 use sphincsplus::{SphincsPlus, SpxDomain, SpxPublicKey};
 use std::process::Command;
@@ -159,7 +159,9 @@ impl SpxKms {
             let keyring = params.get("keyring").ok_or(HsmError::Unsupported(
                 "KMS requires a keyring parameter".into(),
             ))?;
-            let url = format!("https://cloudkms.googleapis.com/v1/projects/{project}/locations/{location}/keyRings/{keyring}/");
+            let url = format!(
+                "https://cloudkms.googleapis.com/v1/projects/{project}/locations/{location}/keyRings/{keyring}/"
+            );
             log::info!("keyring url: {url}");
             Ok(Box::new(Self {
                 keyring: Url::parse(&url)?,
