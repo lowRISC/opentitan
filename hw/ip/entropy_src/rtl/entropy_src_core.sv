@@ -1601,6 +1601,12 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   // Window wrap condition
+  // The counter is incremented with every tested symbol and when we've tested sufficiently many
+  // symbols, we decide whether the current window passed or failed the tests. Using the
+  // health_test_done_pulse, we then restart the counter, we update the watermark registers, and
+  // we clear the window-based health tests to get ready for the next window. This means, we can't
+  // actually test another symbol in this cycle, i.e., the maximum rate of the noise source is
+  // limited to one symbol every two clock cycles.
   assign health_test_done_pulse = (window_cntr >= health_test_window);
 
   // Summary of counter errors
