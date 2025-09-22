@@ -109,18 +109,17 @@ impl UartBitbangEncoder {
     /// Encode the transmission of a UART break condition into a bitbanging
     /// sample, to be used on the TX pin.
     pub fn encode_break(&self, samples: &mut Vec<u8>) {
-        for _ in 0..self.config.break_bit_time() {
-            samples.push(0x00);
-        }
-        for _ in 0..self.config.stop_bit_time() {
-            samples.push(0x01);
-        }
+        let break_bits = self.config.break_bit_time() as usize;
+        let stop_bits = self.config.stop_bit_time() as usize;
+        samples.extend(std::iter::repeat(0x00).take(break_bits));
+        samples.extend(std::iter::repeat(0x01).take(stop_bits));
     }
 
     /// Encode the transmission of a character into UART bitbanging samples, to
     /// be used on the TX pin. When configured to use X data bits, only the X
     // LSBs of `data` will be used.
     pub fn encode_character(&self, data: u8, samples: &mut Vec<u8>) {
+        samples.reserve(self.config.bit_time_per_frame() as usize);
         // Start bit
         samples.push(0x00);
         // Data bits
