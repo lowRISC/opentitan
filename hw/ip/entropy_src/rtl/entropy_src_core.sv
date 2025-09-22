@@ -217,7 +217,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     es_route_to_sw;
   logic                     es_bypass_to_sw;
   logic                     es_bypass_mode;
-  logic                     rst_alert_cntr;
+  logic                     alert_cntr_clr_ok;
   logic                     threshold_scope;
   logic                     threshold_scope_pfe;
   logic                     threshold_scope_pfa;
@@ -2213,7 +2213,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // summary and alert registers
   //--------------------------------------------
 
-  assign alert_cntrs_clr = health_test_clr || rst_alert_cntr;
+  // We clear the alert counters when clearing the health tests (upon module enable), and...
+  assign alert_cntrs_clr = health_test_clr ||
+      // ...whenever a health test window ends without a failure (and when the main state machine
+      // actually allows the clearing).
+      (health_test_done_pulse && !ht_failed_d && alert_cntr_clr_ok);
 
   // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
@@ -2236,10 +2240,19 @@ module entropy_src_core import entropy_src_pkg::*; #(
          markov_hi_fail_pulse || markov_lo_fail_pulse ||
          extht_hi_fail_pulse || extht_lo_fail_pulse;
 
+  // The failure pulses of the window-based health tests are aligned with the
+  // health_test_done_pulse. In contrast, the continous health tests (repcnt and repcnts) can
+  // signal failures at any point in time and we have to latch these.
   assign ht_failed_d =
-         (!es_enable_fo[6]) ? 1'b0 :
+         // The ht_failed_d/q/qq pulses get consumed together with ht_done_pulse_d/q/qq. Hence, we
+         // clear them together.
          ht_done_pulse_q ? 1'b0 :
+         // Latch continuous health test failures which can happen at any point point in a window.
          any_fail_pulse ? 1'b1 :
+         // Eventually clear when disabling. Note, it may be possible that the last symbol tested
+         // before disabling triggers a failure. We want to record this failure. Thus, the clearing
+         // has the lowest priority and the delayed enable signal is used as well.
+         !(es_enable_fo[6] || es_delayed_enable) ? 1'b0 :
          ht_failed_q;
 
 
@@ -3038,7 +3051,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .pd_cntr_zero_i       (pipeline_depth_cntr_zero),
     .ht_fail_pulse_i      (main_sm_ht_failed),
     .alert_thresh_fail_i  (alert_threshold_fail),
-    .rst_alert_cntr_o     (rst_alert_cntr),
+    .alert_cntr_clr_ok_o  (alert_cntr_clr_ok),
     .bypass_mode_i        (es_bypass_mode),
     .bypass_stage_rdy_i   (pfifo_bypass_not_empty),
     .sha3_state_vld_i     (sha3_state_vld),
