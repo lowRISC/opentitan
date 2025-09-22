@@ -1669,6 +1669,7 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
+        DARJEELING_TEST_ENVS,
     ),
     # This test uses carefully tuned health test threshold values to trigger health test alerts
     # inside ENTROPY_SRC. Due to the probabilistic nature of the analog noise source producing the
@@ -1684,7 +1685,7 @@ opentitan_test(
     verilator = verilator_params(timeout = "long"),
     deps = [
         ":otbn_randomness_impl",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
