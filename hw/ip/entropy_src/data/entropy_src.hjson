@@ -1229,6 +1229,8 @@
             Alert threshold register
 
             This register determines during how many subsequent health test windows one or more health test failures can occur before a recoverable alert is raised and the ENTROPY_SRC block stops operating.
+            Note that continuous health tests such as the repetition count test or the repetition count symbol test can trigger multiple test failures within a single window.
+            Each symbol for which at least one continuous health test fails counts separately towards the threshold.
             In case the configured threshold is reached, firmware needs to disable/re-enable the block to restart operation including the startup health testing.
 
             Note that when reaching the threshold while running in Firmware Override: Extract & Insert mode, the recoverable alert is not raised nor does the block stop operating.
@@ -1263,6 +1265,8 @@
 
             This register holds the total number of subsequent health test windows during which one or more health test failures occurred.
             For information on which health tests failed specifically, refer to !!ALERT_FAIL_COUNTS and !!EXTHT_FAIL_COUNTS.
+            Note that continuous health tests such as the repetition count test or the repetition count symbol test can trigger multiple test failures within a single window.
+            Each symbol for which at least one continuous health test fails is counted separately.
 
             If the value of this register reaches the value configured in the !!ALERT_THRESHOLD register, a recoverable alert is raised and the ENTROPY_SRC block stops operating.
             If an alert is signaled, the value persists until it is cleared by firmware.
@@ -1288,7 +1292,7 @@
 
             This register holds the number of health test failures since the last passing health test window.
             The values are reported on a per-test basis.
-            Note that if multiple health tests fail for a certain window, the value in !!ALERT_SUMMARY_FAIL_COUNTS is incremented by just one whereas multiple fields in this register may get incremented.
+            Note that if multiple health tests fail for a certain symbol or window, the value in !!ALERT_SUMMARY_FAIL_COUNTS is incremented by just one whereas multiple fields in this register may get incremented.
 
             All fields of this register are automatically cleared after every passing health test window unless the ENTROPY_SRC is configured in Firmware Override: Extract & Insert mode.
             The fields are also cleared after re-enabling the block.
@@ -1300,7 +1304,7 @@
         { bits: "7:4",
           name: "REPCNT_FAIL_COUNT",
           desc: '''
-                The number of health test windows during which this test failed since the last passing health test window.
+                The number of symbols during which this test failed since the last passing health test window.
                 '''
         }
         { bits: "11:8",
@@ -1336,7 +1340,7 @@
         { bits: "31:28",
           name: "REPCNTS_FAIL_COUNT",
           desc: '''
-                The number of health test windows during which this test failed since the last passing health test window.
+                The number of symbols during which this test failed since the last passing health test window.
                 '''
         }
       ]
@@ -1347,7 +1351,7 @@
 
             This register holds the number of external health test failures since the last passing health test window.
             The values are reported on a per-test basis.
-            Note that if multiple health tests fail for a certain window, the value in !!ALERT_SUMMARY_FAIL_COUNTS is incremented by just one whereas multiple fields in this register may get incremented.
+            Note that if multiple health tests fail for a certain symbol or window, the value in !!ALERT_SUMMARY_FAIL_COUNTS is incremented by just one whereas multiple fields in this register may get incremented.
 
             All fields of this register are automatically cleared after every passing health test window unless the ENTROPY_SRC is configured in Firmware Override: Extract & Insert mode.
             The fields are also cleared after re-enabling the block.
@@ -1359,13 +1363,13 @@
         { bits: "3:0",
           name: "EXTHT_HI_FAIL_COUNT",
           desc: '''
-                The number of health test windows during which this test failed since the last passing health test window.
+                The number of symbols for continuous tests or health test windows for window-based tests during which this test failed since the last passing health test window.
                 '''
         }
         { bits: "7:4",
           name: "EXTHT_LO_FAIL_COUNT",
           desc: '''
-                The number of health test windows during which this test failed since the last passing health test window.
+                The number of symbols for continuous tests or health test windows for window-based tests during which this test failed since the last passing health test window.
                 '''
         }
       ]
