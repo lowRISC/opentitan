@@ -7360,6 +7360,7 @@ opentitan_test(
         {
             "//hw/top_earlgrey:silicon_creator": None,
         },
+        DARJEELING_TEST_ENVS,
     ),
     # This takes around 2 hours to run on Verilator, and so should only be
     # run manually for debugging purposes.
@@ -7367,7 +7368,7 @@ opentitan_test(
     deps = [
         ":otbn_randomness_impl",
         "//hw/top:entropy_src_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
