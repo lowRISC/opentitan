@@ -9,6 +9,8 @@ package(default_visibility = ["//visibility:public"])
 rust_library(
     name = "hwtrust",
     srcs = glob(["src/**/*.rs"]),
+    # compile hwtrust with Rust 2021, as it doesn't adhere to 2024 match ergonomics
+    edition = "2021",
     tags = [
         "noclippy",
         "norustfmt",
