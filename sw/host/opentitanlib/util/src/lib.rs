@@ -1,7 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-use pem_rfc7468::{LineEnding, BASE64_WRAP_WIDTH};
+use pem_rfc7468::{BASE64_WRAP_WIDTH, LineEnding};
 
 /// Cleans PEM-like byte slices for parsing, attempting to handle non-standard formats.
 ///

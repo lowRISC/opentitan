@@ -4,14 +4,14 @@
 
 use anyhow::Result;
 use clap::{Args, Subcommand};
-use serde_annotate::{serialize, Base};
+use serde_annotate::{Base, serialize};
 use std::any::Any;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::otp::alert_handler::AlertRegs;
 use opentitanlib::otp::lc_state::LcStateVal;
 use opentitanlib::otp::otp_img::{OtpImg, OtpImgItem, OtpImgPartition, OtpImgValue};

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use super::Bit;
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use arrayvec::ArrayVec;
 
 #[derive(Debug, PartialEq)]

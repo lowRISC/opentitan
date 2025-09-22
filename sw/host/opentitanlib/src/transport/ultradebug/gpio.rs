@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Context, Result};
+use anyhow::{Context, Result, ensure};
 use once_cell::sync::Lazy;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -10,8 +10,8 @@ use std::rc::Rc;
 
 use crate::collection;
 use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
-use crate::transport::ultradebug::mpsse;
 use crate::transport::ultradebug::Ultradebug;
+use crate::transport::ultradebug::mpsse;
 use crate::util::parse_int::ParseInt;
 
 /// Represents the Ultradebug GPIO pins.

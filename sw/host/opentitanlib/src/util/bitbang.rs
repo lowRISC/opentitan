@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use std::collections::HashMap;
 use std::iter::Peekable;
 use std::ops::Mul;
@@ -368,8 +368,14 @@ pub fn parse_dac_sequence<'a, 'wr>(
     loop {
         match tokens {
             [Token::Numeric(_), Token::Alphabetic(_), rest @ ..]
-            | [Token::Linear, Token::LParen, Token::Numeric(_), Token::Alphabetic(_), Token::RParen, rest @ ..] =>
-            {
+            | [
+                Token::Linear,
+                Token::LParen,
+                Token::Numeric(_),
+                Token::Alphabetic(_),
+                Token::RParen,
+                rest @ ..,
+            ] => {
                 if needed_entries > run_start {
                     let run_length = needed_entries - run_start;
                     ensure!(
@@ -415,8 +421,14 @@ pub fn parse_dac_sequence<'a, 'wr>(
                 result.push(DacBangEntry::Delay(parse_delay(num, time_unit, clock)?));
                 tokens = rest;
             }
-            [Token::Linear, Token::LParen, Token::Numeric(num), Token::Alphabetic(time_unit), Token::RParen, rest @ ..] =>
-            {
+            [
+                Token::Linear,
+                Token::LParen,
+                Token::Numeric(num),
+                Token::Alphabetic(time_unit),
+                Token::RParen,
+                rest @ ..,
+            ] => {
                 result.push(DacBangEntry::Linear(parse_delay(num, time_unit, clock)?));
                 tokens = rest;
             }

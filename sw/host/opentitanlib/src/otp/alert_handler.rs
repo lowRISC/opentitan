@@ -6,7 +6,7 @@ use crate::otp::alert_handler_regs::*;
 use crate::otp::lc_state::LcStateVal;
 use crate::otp::otp_img::OtpRead;
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use bitvec::prelude::*;
 use crc::{Crc, Digest};
 use num_enum::TryFromPrimitive;

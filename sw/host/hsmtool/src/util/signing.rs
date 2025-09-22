@@ -6,9 +6,9 @@ use anyhow::Result;
 use cryptoki::mechanism::Mechanism;
 use rsa::pkcs1v15::Pkcs1v15Sign;
 use serde::{Deserialize, Serialize};
-use sha2::digest::const_oid::AssociatedOid;
-use sha2::digest::Digest;
 use sha2::Sha256;
+use sha2::digest::Digest;
+use sha2::digest::const_oid::AssociatedOid;
 use sphincsplus::SpxDomain;
 use std::str::FromStr;
 
@@ -206,7 +206,8 @@ mod tests {
             KeyType::Rsa,
             b"The quick brown fox jumped over the lazy dog",
         )?;
-        assert_eq!(hex::encode(result),
+        assert_eq!(
+            hex::encode(result),
             "3031300d0609608648016503040201050004207d38b5cd25a2baf85ad3bb5b9311383e671a8a142eb302b324d4a5fba8748c69"
         );
 
@@ -224,7 +225,8 @@ mod tests {
         let input =
             hex::decode("7d38b5cd25a2baf85ad3bb5b9311383e671a8a142eb302b324d4a5fba8748c69")?;
         let result = SignData::Sha256Hash.prepare(KeyType::Rsa, &input)?;
-        assert_eq!(hex::encode(result),
+        assert_eq!(
+            hex::encode(result),
             "3031300d0609608648016503040201050004207d38b5cd25a2baf85ad3bb5b9311383e671a8a142eb302b324d4a5fba8748c69"
         );
 

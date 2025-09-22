@@ -14,7 +14,7 @@
 // The above are sub-sections of the following full sequence test:
 // - usbdev_suspend_full_test
 
-use anyhow::{anyhow, bail, ensure, Context, Result};
+use anyhow::{Context, Result, anyhow, bail, ensure};
 use clap::{Parser, ValueEnum};
 use std::time::Duration;
 

@@ -7,8 +7,8 @@ use std::path::PathBuf;
 use anyhow::Result;
 use clap::Args;
 
-use crate::transport::qemu::Qemu;
 use crate::transport::Transport;
+use crate::transport::qemu::Qemu;
 
 #[derive(Clone, Debug, Args)]
 pub struct QemuOpts {

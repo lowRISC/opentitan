@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs::File;
 use std::path::PathBuf;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::chip::boot_svc::BootSlot;
 use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
 use opentitanlib::image::image::Image;
@@ -70,7 +70,10 @@ impl CommandDispatch for Firmware {
                 .ok_or_else(|| anyhow!("No application image in {:?}", self.filename))?;
             log::info!("Found application image at offset {:#x}", subimage.offset);
             if self.slot != BootSlot::SlotA && self.offset.is_none() {
-                log::warn!("Rescuing to {} may produce unexpected results.  Use `--offset` to select the desired application image.", self.slot);
+                log::warn!(
+                    "Rescuing to {} may produce unexpected results.  Use `--offset` to select the desired application image.",
+                    self.slot
+                );
             }
             subimage.data
         };
@@ -299,7 +302,10 @@ impl CommandDispatch for OwnershipUnlock {
             .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
 
         if self.unlock.algorithm.is_detached() && signature.is_some() {
-            log::warn!("The algorithm {} requires a detached signature, but rescue cannot deliver the detached signature as part of boot services.", self.unlock.algorithm);
+            log::warn!(
+                "The algorithm {} requires a detached signature, but rescue cannot deliver the detached signature as part of boot services.",
+                self.unlock.algorithm
+            );
         }
         let context = context.downcast_ref::<RescueCommand>().unwrap();
         let rescue = context.params.create(transport)?;
@@ -354,7 +360,10 @@ impl CommandDispatch for OwnershipActivate {
             .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
 
         if self.activate.algorithm.is_detached() && signature.is_some() {
-            log::warn!("The algorithm {} requires a detached signature, but rescue cannot deliver the detached signature as part of boot services.", self.activate.algorithm);
+            log::warn!(
+                "The algorithm {} requires a detached signature, but rescue cannot deliver the detached signature as part of boot services.",
+                self.activate.algorithm
+            );
         }
         let context = context.downcast_ref::<RescueCommand>().unwrap();
         let rescue = context.params.create(transport)?;
@@ -520,7 +529,9 @@ impl CommandDispatch for EraseOwner {
             }
             Ok(None)
         } else {
-            Err(anyhow!("The owner may only be erased on DEV lifecycle-state chips with a ROM_EXT configured to permit owner erasing.\n\nUse the `--really` flag to send the command."))
+            Err(anyhow!(
+                "The owner may only be erased on DEV lifecycle-state chips with a ROM_EXT configured to permit owner erasing.\n\nUse the `--really` flag to send the command."
+            ))
         }
     }
 }

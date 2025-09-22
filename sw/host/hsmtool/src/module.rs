@@ -25,8 +25,7 @@ pub enum SpxModule {
 }
 
 impl SpxModule {
-    pub const HELP: &'static str =
-        "Type of sphincs+ module [allowed values: acorn:<libpath>, cloud-kms:<keyring-params>, pkcs11-ef]";
+    pub const HELP: &'static str = "Type of sphincs+ module [allowed values: acorn:<libpath>, cloud-kms:<keyring-params>, pkcs11-ef]";
 }
 
 impl FromStr for SpxModule {

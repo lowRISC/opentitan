@@ -8,8 +8,8 @@ use serde_annotate::Annotate;
 use std::any::Any;
 use std::path::PathBuf;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use sphincsplus::{
     DecodeKey, EncodeKey, SphincsPlus, SpxDomain, SpxPublicKey, SpxRawSignature, SpxSecretKey,
 };

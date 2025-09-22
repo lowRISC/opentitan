@@ -13,8 +13,8 @@ use std::rc::Rc;
 use std::str::FromStr;
 use std::time::Duration;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::io::gpio::{
     ClockNature, Edge, GpioPin, MonitoringReadResponse, MonitoringStartResponse, PinMode, PullMode,
 };
@@ -22,7 +22,7 @@ use opentitanlib::transport::Capability;
 use opentitanlib::util::file;
 use opentitanlib::util::raw_tty::RawTty;
 use opentitanlib::util::vcd::{
-    dump_vcd_wire_vardefs, Header, ScalarValue, ValueChangeItem, ValueChangeSection, VcdWriter,
+    Header, ScalarValue, ValueChangeItem, ValueChangeSection, VcdWriter, dump_vcd_wire_vardefs,
 };
 use opentitanlib::util::voltage::Voltage;
 

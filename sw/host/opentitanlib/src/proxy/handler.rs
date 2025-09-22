@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 
 use mio::{Registry, Token};
 use std::borrow::Borrow;
@@ -10,6 +10,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use std::time::Duration;
 
+use super::CommandHandler;
 use super::errors::SerializedError;
 use super::protocol::{
     BitbangEntryRequest, BitbangEntryResponse, DacBangEntryRequest, EmuRequest, EmuResponse,
@@ -18,7 +19,6 @@ use super::protocol::{
     I2cTransferResponse, Message, ProxyRequest, ProxyResponse, Request, Response, SpiRequest,
     SpiResponse, SpiTransferRequest, SpiTransferResponse, UartRequest, UartResponse,
 };
-use super::CommandHandler;
 use crate::app::TransportWrapper;
 use crate::bootstrap::Bootstrap;
 use crate::io::gpio::{

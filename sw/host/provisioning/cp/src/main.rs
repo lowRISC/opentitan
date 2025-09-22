@@ -8,7 +8,7 @@ use anyhow::Result;
 use clap::Parser;
 use zerocopy::AsBytes;
 
-use cp_lib::{reset_and_lock, run_sram_cp_provision, CpResponse, ManufCpProvisioningDataInput};
+use cp_lib::{CpResponse, ManufCpProvisioningDataInput, reset_and_lock, run_sram_cp_provision};
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::io::gpio::{PinMode, PullMode};

@@ -5,7 +5,7 @@
 //! This module defines substitution data that can be used to replace the
 //! variables in a template by actual values.
 
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{Context, Result, bail, ensure};
 use hex::{FromHex, ToHex};
 use indexmap::IndexMap;
 use num_bigint_dig::{BigUint, ToBigUint};
@@ -233,7 +233,10 @@ impl ConvertValue<Vec<u8>> for SubstValue {
         let SubstValue::ByteArray(bytes) = val else {
             bail!("cannot substitute a byte-array field with value {:?}", self);
         };
-        ensure!(convert.is_none(), "substitution of a byte-array field with a byte-array value cannot specify a conversion");
+        ensure!(
+            convert.is_none(),
+            "substitution of a byte-array field with a byte-array value cannot specify a conversion"
+        );
         Ok(bytes.clone())
     }
 
@@ -252,10 +255,11 @@ impl ConvertValue<BigUint> for SubstValue {
             SubstValue::ByteArray(bytes) => {
                 // No conversion means big-endian.
                 match convert {
-                    None | Some(Conversion::BigEndian) => {
-                        Ok(BigUint::from_bytes_be(&bytes))
-                    }
-                    _ => bail!("substitution of an integer field with a byte-array cannot specify conversion {:?}", convert)
+                    None | Some(Conversion::BigEndian) => Ok(BigUint::from_bytes_be(&bytes)),
+                    _ => bail!(
+                        "substitution of an integer field with a byte-array cannot specify conversion {:?}",
+                        convert
+                    ),
                 }
             }
             _ => bail!("cannot substitute an integer field with value {:?}", self),
@@ -273,17 +277,19 @@ impl ConvertValue<String> for SubstValue {
         match self {
             SubstValue::String(x) => {
                 // No conversion supported.
-                ensure!(convert.is_none(), "substitution of a string field with a string value cannot specify a conversion");
+                ensure!(
+                    convert.is_none(),
+                    "substitution of a string field with a string value cannot specify a conversion"
+                );
                 Ok(x.clone())
-            },
-            SubstValue::ByteArray(bytes) => {
-                match convert {
-                    Some(Conversion::LowercaseHex) => {
-                        Ok(bytes.encode_hex::<String>())
-                    }
-                    _ => bail!("substitution of a string field with a byte-array cannot specify conversion {:?}", convert)
-                }
             }
+            SubstValue::ByteArray(bytes) => match convert {
+                Some(Conversion::LowercaseHex) => Ok(bytes.encode_hex::<String>()),
+                _ => bail!(
+                    "substitution of a string field with a byte-array cannot specify conversion {:?}",
+                    convert
+                ),
+            },
             _ => bail!("cannot substitute a string field with value {:?}", self),
         }
     }
@@ -599,19 +605,23 @@ mod tests {
                 .unwrap(),
             byte_array
         );
-        assert!(byte_array
-            .parse(&VariableType::ByteArray {
-                size: SizeRange::ExactSize(3),
-                tweak_msb: None
-            })
-            .is_err());
+        assert!(
+            byte_array
+                .parse(&VariableType::ByteArray {
+                    size: SizeRange::ExactSize(3),
+                    tweak_msb: None
+                })
+                .is_err()
+        );
         // Size must match exactly.
-        assert!(byte_array
-            .parse(&VariableType::ByteArray {
-                size: SizeRange::ExactSize(5),
-                tweak_msb: None
-            })
-            .is_err());
+        assert!(
+            byte_array
+                .parse(&VariableType::ByteArray {
+                    size: SizeRange::ExactSize(5),
+                    tweak_msb: None
+                })
+                .is_err()
+        );
 
         // Strings are interpreted as hexstrings.
         let byte_array_str = SubstValue::String("deadbeef".into());
@@ -634,19 +644,23 @@ mod tests {
                 .unwrap(),
             byte_array
         );
-        assert!(byte_array_str
-            .parse(&VariableType::ByteArray {
-                size: SizeRange::ExactSize(3),
-                tweak_msb: None
-            })
-            .is_err());
+        assert!(
+            byte_array_str
+                .parse(&VariableType::ByteArray {
+                    size: SizeRange::ExactSize(3),
+                    tweak_msb: None
+                })
+                .is_err()
+        );
         // Size must match exactly.
-        assert!(byte_array_str
-            .parse(&VariableType::ByteArray {
-                size: SizeRange::ExactSize(5),
-                tweak_msb: None
-            })
-            .is_err());
+        assert!(
+            byte_array_str
+                .parse(&VariableType::ByteArray {
+                    size: SizeRange::ExactSize(5),
+                    tweak_msb: None
+                })
+                .is_err()
+        );
     }
 
     /// Test parsing of integers.
@@ -690,11 +704,12 @@ mod tests {
                 byte_array
             );
             // Too small size in an error.
-            assert!(val
-                .parse(&VariableType::Integer {
+            assert!(
+                val.parse(&VariableType::Integer {
                     size: SizeRange::ExactSize(3),
                 })
-                .is_err());
+                .is_err()
+            );
         }
     }
 
@@ -726,11 +741,12 @@ mod tests {
             .unwrap(),
             s
         );
-        assert!(s
-            .parse(&VariableType::String {
+        assert!(
+            s.parse(&VariableType::String {
                 size: SizeRange::ExactSize(8),
             })
-            .is_err());
+            .is_err()
+        );
     }
 
     /// Test parsing of booleans.

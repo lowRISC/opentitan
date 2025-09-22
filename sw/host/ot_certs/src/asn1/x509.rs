@@ -6,7 +6,7 @@ use anyhow::Result;
 use num_bigint_dig::BigUint;
 use num_traits::FromPrimitive;
 
-use crate::asn1::builder::{concat_suffix, Builder};
+use crate::asn1::builder::{Builder, concat_suffix};
 use crate::asn1::{Oid, Tag};
 use crate::template::{
     AttributeType, BasicConstraints, Certificate, CertificateExtension, EcCurve, EcPublicKeyInfo,

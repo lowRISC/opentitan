@@ -5,7 +5,7 @@
 use std::io::{Read, Write};
 use std::time::{Duration, Instant};
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use bitflags::bitflags;
 use log;
 use thiserror::Error;

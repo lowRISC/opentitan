@@ -9,7 +9,7 @@ use crate::util::known_keys::KNOWN_KEYS;
 use crate::util::num_de::HexEncoded;
 use crate::util::parse_int::ParseInt;
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
 use std::convert::{TryFrom, TryInto};

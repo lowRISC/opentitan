@@ -9,10 +9,10 @@ use earlgrey::chip_config::EarlGreyConfig;
 use kernel::debug;
 use kernel::debug::IoWrite;
 
-use crate::ChipConfig;
 use crate::CHIP;
-use crate::PROCESSES;
+use crate::ChipConfig;
 use crate::PROCESS_PRINTER;
+use crate::PROCESSES;
 
 struct Writer {}
 

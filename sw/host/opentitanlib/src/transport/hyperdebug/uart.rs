@@ -13,9 +13,9 @@ use serialport::Parity;
 use super::UartInterface;
 use crate::io::nonblocking_help::NonblockingHelp;
 use crate::io::uart::Uart;
+use crate::transport::TransportError;
 use crate::transport::common::uart::SerialPortUart;
 use crate::transport::hyperdebug::Inner;
-use crate::transport::TransportError;
 
 const UART_BAUD: u32 = 115200;
 

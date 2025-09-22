@@ -4,7 +4,7 @@
 
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, Data, DataEnum, DeriveInput, Error, Fields, Ident, Result, Variant};
+use syn::{Data, DataEnum, DeriveInput, Error, Fields, Ident, Result, Variant, parse_macro_input};
 
 /// Derives the `CommandDispatch` trait for a NewType enum.
 ///

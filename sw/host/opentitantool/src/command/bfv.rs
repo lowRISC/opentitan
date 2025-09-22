@@ -6,8 +6,8 @@ use anyhow::{Context, Result};
 use clap::Args;
 use std::any::Any;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 
 #[derive(Debug, Args)]
 /// Decode a raw status. Optionally accepts an ELF file to recover the filename.

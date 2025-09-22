@@ -8,8 +8,8 @@ use std::rc::Rc;
 
 use crate::io::gpio;
 use crate::io::spi::{AssertChipSelect, MaxSizes, SpiError, Target, Transfer, TransferMode};
-use crate::transport::chip_whisperer::usb::Backend;
 use crate::transport::TransportError;
+use crate::transport::chip_whisperer::usb::Backend;
 
 use super::board::Board;
 

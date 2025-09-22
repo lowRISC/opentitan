@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #![allow(clippy::bool_assert_comparison)]
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use clap::Parser;
 use humantime::parse_duration;
 use regex::Regex;
@@ -15,7 +15,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::spi::Transfer;
 use opentitanlib::spiflash::{
-    sfdp, BlockEraseSize, SpiFlash, SupportedAddressModes, WriteGranularity,
+    BlockEraseSize, SpiFlash, SupportedAddressModes, WriteGranularity, sfdp,
 };
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};

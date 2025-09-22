@@ -10,8 +10,8 @@ use crate::io::spi::{
     AssertChipSelect, ClockPolarity, MaxSizes, SpiError, Target, TargetChipDeassert, Transfer,
     TransferMode,
 };
-use crate::transport::ultradebug::mpsse;
 use crate::transport::ultradebug::Ultradebug;
+use crate::transport::ultradebug::mpsse;
 
 struct Inner {
     mode: TransferMode,

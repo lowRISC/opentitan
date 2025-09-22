@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
@@ -10,11 +10,11 @@ use sphincsplus::{SpxDomain, SpxSecretKey};
 use std::io::{Read, Write};
 use std::path::Path;
 
-use super::misc::{OwnershipKeyAlg, TlvHeader, TlvTag};
 use super::GlobalFlags;
+use super::misc::{OwnershipKeyAlg, TlvHeader, TlvTag};
+use crate::crypto::Error;
 use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaRawSignature};
 use crate::crypto::sha256::Sha256Digest;
-use crate::crypto::Error;
 
 #[derive(Debug, Serialize, Deserialize, Annotate)]
 pub struct DetachedSignature {

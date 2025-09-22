@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, ensure, Result};
+use anyhow::{Result, anyhow, ensure};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
@@ -10,14 +10,14 @@ use sphincsplus::SpxSecretKey;
 use std::convert::TryFrom;
 use std::io::{Read, Write};
 
-use super::misc::{KeyMaterial, OwnershipKeyAlg, TlvHeader, TlvTag};
 use super::GlobalFlags;
+use super::misc::{KeyMaterial, OwnershipKeyAlg, TlvHeader, TlvTag};
 use super::{
     DetachedSignature, OwnerApplicationKey, OwnerFlashConfig, OwnerFlashInfoConfig,
     OwnerIsfbConfig, OwnerRescueConfig,
 };
-use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaRawSignature};
 use crate::crypto::Error as CryptoError;
+use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaRawSignature};
 use crate::with_unknown;
 
 with_unknown! {

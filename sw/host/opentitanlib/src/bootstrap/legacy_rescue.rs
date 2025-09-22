@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use sha2::{Digest, Sha256};
 use std::time::{Duration, Instant};
 use thiserror::Error;
@@ -260,7 +260,7 @@ impl LegacyRescue {
             eprint!("Resetting...");
             container.reset_pin.write(false)?; // Low active
             uart.write(&[3])?; // Send a character to ensure that HyperDebug UART->USB
-                               // forwarding has "woken up", see issue #19564.
+            // forwarding has "woken up", see issue #19564.
             self.flush_rx(uart, container.reset_delay);
             container.reset_pin.write(true)?; // Release reset
 
