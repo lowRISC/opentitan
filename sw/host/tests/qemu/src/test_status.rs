@@ -40,7 +40,7 @@ fn main() -> anyhow::Result<()> {
 
     monitor.cont()?;
 
-    let log = qemu.uart("log")?;
+    let log = qemu.uart("LOG")?;
     let res = UartConsole::wait_for(&*log, "PASSED|FAILED", Duration::from_secs(60))?;
     match res[0].as_str() {
         "PASSED" => Ok(()),
