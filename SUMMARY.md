@@ -17,6 +17,7 @@
   - [FPGA Setup](./doc/getting_started/setup_fpga.md)
   - [Verilator Setup](./doc/getting_started/setup_verilator.md)
   - [Installing Vivado](./doc/getting_started/install_vivado/README.md)
+  - [QEMU setup](./third_party/qemu/README.md)
 
 - [Unofficial Guides](./doc/getting_started/unofficial/README.md)
   - [RedHat/Fedora](./doc/getting_started/unofficial/fedora.md)
