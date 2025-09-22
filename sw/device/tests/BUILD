@@ -2279,9 +2279,10 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
         },
+        DARJEELING_TEST_ENVS,
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:hmac",
