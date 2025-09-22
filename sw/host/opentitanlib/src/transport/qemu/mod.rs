@@ -21,6 +21,7 @@ use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
 
+/// ID of the fake pin we use to model resets.
 const QEMU_RESET_PIN_IDX: u8 = u8::MAX;
 
 /// Represents a connection to a running QEMU emulation.
