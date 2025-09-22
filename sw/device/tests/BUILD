@@ -1406,13 +1406,14 @@ opentitan_test(
         {
             "//hw/top_earlgrey:silicon_creator": None,
         },
+        DARJEELING_TEST_ENVS,
     ),
     silicon = silicon_params(
         tags = ["broken"],
     ),
     verilator = verilator_params(tags = ["broken"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:base",
