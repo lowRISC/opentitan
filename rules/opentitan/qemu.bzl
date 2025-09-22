@@ -417,6 +417,7 @@ def _test_dispatch(ctx, exec_env, firmware):
 
     # Write any QEMU log messages to a file to be read at the end of the test.
     qemu_args += ["-D", "qemu.log"]
+    qemu_args += ["-d", "guest_errors"]
 
     # By default QEMU will exit when the test status register is written.
     # OpenTitanTool expects to be able to do multiple resets, for example after
