@@ -223,6 +223,10 @@ The following waveform shows an example of what the PTRNG timing looks like.
 ]}
 ```
 
+Whenever the `rng_enable` signal is asserted, the ENTROPY_SRC accepts every `rng_b` value marked by an asserted `rng_valid` bit.
+`rng_b` values get ignored whenever the `rng_valid` bit is de-asserted.
+The maximum rate at which the ENTROPY_SRC can operate is one `rng_b` value (i.e. a symbol) every two clock cycles.
+
 ### Repetition Count Test
 The following waveform shows how a sampling of a data pattern will be tested by the Repetition Count test.
 Operating on each bit stream, this test will count when a signal is at a stuck level.
