@@ -24,6 +24,11 @@ use crate::transport::{
 /// ID of the fake pin we use to model resets.
 const QEMU_RESET_PIN_IDX: u8 = u8::MAX;
 
+/// Baudrate for QEMU's consoles. These are PTYs so it currently doesn't matter,
+/// but we must use a non-zero value because the pacing calculations divide by
+/// this number.
+const CONSOLE_BAUDRATE: u32 = 115200;
+
 /// Represents a connection to a running QEMU emulation.
 pub struct Qemu {
     /// Connection to the QEMU monitor which can control the emulator.
@@ -69,7 +74,7 @@ impl Qemu {
         let console = match find_chardev(&chardevs, "console") {
             Some(ChardevKind::Pty { path }) => {
                 let uart: Rc<dyn Uart> = Rc::new(
-                    SerialPortUart::open_pseudo(path.to_str().unwrap(), 0)
+                    SerialPortUart::open_pseudo(path.to_str().unwrap(), CONSOLE_BAUDRATE)
                         .context("failed to open QEMU console PTY")?,
                 );
                 Some(uart)
@@ -84,7 +89,7 @@ impl Qemu {
         let log = match find_chardev(&chardevs, "log") {
             Some(ChardevKind::Pty { path }) => {
                 let log: Rc<dyn Uart> = Rc::new(
-                    SerialPortUart::open_pseudo(path.to_str().unwrap(), 0)
+                    SerialPortUart::open_pseudo(path.to_str().unwrap(), CONSOLE_BAUDRATE)
                         .context("failed to open QEMU log PTY")?,
                 );
                 Some(log)
