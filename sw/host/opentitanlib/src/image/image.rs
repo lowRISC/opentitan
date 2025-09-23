@@ -10,7 +10,7 @@ use std::collections::HashSet;
 use std::convert::TryInto;
 use std::fs::File;
 use std::io::{Read, Write};
-use std::mem::{align_of, size_of};
+use std::mem::size_of;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 use zerocopy::FromBytes;
@@ -301,72 +301,48 @@ impl Image {
 
     /// Adds an extension to the end of this `Image`.
     pub fn add_manifest_extension(&mut self, entry: ManifestExtEntry) -> Result<()> {
-        let manifest = self.borrow_manifest()?;
-
-        // A copy of the extension table since we can't borrow as mutable.
-        let mut ext_table = manifest.extensions.entries;
-
         let entry_id = entry.header().identifier;
-
-        // Update the offset in the extension table.
-        let ext_table_entry = ext_table
-            .iter_mut()
-            .find(|e| e.identifier == entry_id)
-            .ok_or(ImageError::NoExtensionTableEntry(entry_id))?;
-
-        // If the extension already exists, overwrite it, else append it to the end of the
-        // image.
-        let offset = if ext_table_entry.offset != 0 {
-            ext_table_entry.offset
-        } else {
-            ensure!(
-                self.size % align_of::<u32>() == 0,
-                ImageError::BadExtensionAlignment(entry_id)
-            );
-            self.size.try_into()?
-        };
-        ext_table_entry.offset = offset;
-
-        // Write the extension to the end of the image.
         let ext_bytes = entry.to_vec();
-        let end_index = offset
-            .checked_add(ext_bytes.len().try_into()?)
-            .ok_or(ImageError::ExtensionOverflow)?;
-        let extension_slice = self
-            .data
+        let offset = self.allocate_manifest_extension(entry_id, ext_bytes.len())?;
+        self.data
             .bytes
-            .get_mut(offset as usize..end_index as usize)
-            .ok_or(ImageError::ExtensionOverflow)?;
-        extension_slice.copy_from_slice(ext_bytes.as_slice());
-        self.size = std::cmp::max(end_index as usize, self.size);
-
-        let manifest = self.borrow_manifest_mut()?;
-        manifest.extensions.entries = ext_table;
-
+            .get_mut(offset..offset + ext_bytes.len())
+            .ok_or(ImageError::ExtensionOverflow)?
+            .copy_from_slice(ext_bytes.as_slice());
         Ok(())
     }
 
-    /// Allocates space for a manifest extension and sets the offset in the extension table.
-    ///
-    /// This function is similar to `add_manifest_extension`, but doesn't populate any data for the
-    /// extension. This is necessary to properly set the `length` field of the manifest and the
-    /// `offset` field of the manifest extension entry for signing.
-    pub fn allocate_manifest_extension(&mut self, id: u32, len: usize) -> Result<()> {
-        let offset = self.size as u32;
-        self.borrow_manifest_mut()?
+    /// Allocates space for a manifest extension and sets the offset in the extension table if
+    /// is doesn't already exist. Returns the offset of extension data.
+    pub fn allocate_manifest_extension(&mut self, id: u32, len: usize) -> Result<usize> {
+        // Get the next potential u32 align offset at the end of this image.
+        const U32_ALIGN_MASK: usize = size_of::<u32>() - 1;
+        let offset = (self.size + U32_ALIGN_MASK) & !U32_ALIGN_MASK;
+        let entry = self
+            .borrow_manifest_mut()?
             .extensions
             .entries
             .iter_mut()
             .find(|e| e.identifier == id)
-            .ok_or(ImageError::NoExtensionTableEntry(id))?
-            .offset = offset;
-
-        self.size = self
-            .size
-            .checked_add(len)
-            .ok_or(ImageError::ExtensionOverflow)?;
-
-        Ok(())
+            .ok_or(ImageError::NoExtensionTableEntry(id))?;
+        if entry.offset != 0 {
+            // Manifest extension data has already been allocated
+            return Ok(entry.offset as usize);
+        }
+        // Extension data not present yet, so extend image to contain extension data.
+        // For smaller extensions (i.e. extension data is less than 128 bytes), ensure that the
+        // full extension data is contained within a single storage page.
+        const PAGE_ALIGN_MASK: usize = 2047; // 2KB page - 1
+        let page_of = |addr| addr & !PAGE_ALIGN_MASK;
+        let offset = if len < 128 && page_of(offset) != page_of(offset + len - 1) {
+            (offset + PAGE_ALIGN_MASK) & !PAGE_ALIGN_MASK
+        } else {
+            offset
+        };
+        // Update manifest table and size if we extended image
+        entry.offset = offset as u32;
+        self.size = std::cmp::max(self.size, offset + len);
+        Ok(offset)
     }
 
     /// Clears any entry in the manifest extension table that doesn't have an offset.
@@ -751,5 +727,84 @@ mod tests {
             .read_to_end(&mut res_bytes)
             .unwrap();
         assert_eq!(orig_bytes, res_bytes);
+    }
+
+    #[test]
+    fn test_extension_addition_small_boundary() {
+        // Read and write back image.
+        let mut image = Image::read_from_file(&testdata("image/test_image.bin")).unwrap();
+
+        // Adjust size to be right before a page boundary
+        const PAGE_SIZE: usize = 2048;
+        const FAKE_EXTENSION_ID: u32 = 0x12345678;
+        const SMALL_EXTENSION_SIZE: usize = 16;
+
+        let offset = image.size % PAGE_SIZE;
+        image.size += (PAGE_SIZE - offset) - 12;
+        image.borrow_manifest_mut().unwrap().extensions.entries[0].identifier = FAKE_EXTENSION_ID;
+
+        let offset = image
+            .allocate_manifest_extension(FAKE_EXTENSION_ID, SMALL_EXTENSION_SIZE)
+            .unwrap();
+
+        assert_eq!(offset % PAGE_SIZE, 0, "Should be page aligned");
+        assert_eq!(
+            image.size % PAGE_SIZE,
+            SMALL_EXTENSION_SIZE,
+            "Size should be full 16 bytes after page"
+        );
+    }
+
+    #[test]
+    fn test_extension_addition_small_no_boundary() {
+        // Read and write back image.
+        let mut image = Image::read_from_file(&testdata("image/test_image.bin")).unwrap();
+
+        // Adjust size to be right before a page boundary
+        const PAGE_SIZE: usize = 2048;
+        const FAKE_EXTENSION_ID: u32 = 0x12345678;
+        const SMALL_EXTENSION_SIZE: usize = 16;
+
+        let offset = image.size % PAGE_SIZE;
+        image.size += (PAGE_SIZE - offset) - SMALL_EXTENSION_SIZE;
+        image.borrow_manifest_mut().unwrap().extensions.entries[0].identifier = FAKE_EXTENSION_ID;
+        image
+            .allocate_manifest_extension(FAKE_EXTENSION_ID, SMALL_EXTENSION_SIZE)
+            .unwrap();
+
+        assert_eq!(
+            image.size % PAGE_SIZE,
+            0,
+            "Size should be exactly a full page"
+        );
+    }
+
+    #[test]
+    fn test_extension_addition_large_boundary() {
+        // Read and write back image.
+        let mut image = Image::read_from_file(&testdata("image/test_image.bin")).unwrap();
+
+        // Adjust size to be right before a page boundary
+        const PAGE_SIZE: usize = 2048;
+        const FAKE_EXTENSION_ID: u32 = 0x12345678;
+        const LARGE_EXTENSION_SIZE: usize = 256;
+
+        let offset = image.size % PAGE_SIZE;
+        image.size += (PAGE_SIZE - offset) - 12;
+        let previous_size = image.size;
+        image.borrow_manifest_mut().unwrap().extensions.entries[0].identifier = FAKE_EXTENSION_ID;
+        let offset = image
+            .allocate_manifest_extension(FAKE_EXTENSION_ID, LARGE_EXTENSION_SIZE)
+            .unwrap();
+
+        assert_eq!(
+            offset, previous_size,
+            "No boundary bumping for large extension"
+        );
+        assert_eq!(
+            image.size,
+            previous_size + LARGE_EXTENSION_SIZE,
+            "No boundary wrapping"
+        );
     }
 }
