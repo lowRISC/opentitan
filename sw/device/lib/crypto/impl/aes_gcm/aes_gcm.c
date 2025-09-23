@@ -79,6 +79,10 @@ static status_t aes_encrypt_block(
     HARDENED_TRY(aes_update(/*dest=*/NULL, input));
     HARDENED_TRY(aes_update(output, /*src=*/NULL));
 
+    // Verify the CTRL and CTRL_AUX registers of the encryption.
+    HARDENED_TRY(aes_verify_ctrl_reg(key, kHardenedBoolTrue));
+    HARDENED_TRY(aes_verify_ctrl_aux_reg());
+
     // Second AES operation. Decrypt the output of the first AES operation and
     // check whether the same input is retrieved.
     aes_block_t input_recalculated = (aes_block_t){.data = {0}};
@@ -91,6 +95,7 @@ static status_t aes_encrypt_block(
         hardened_memeq((const uint32_t *)input_recalculated.data,
                        (const uint32_t *)input->data, kAesBlockNumWords),
         kHardenedBoolTrue);
+
     return OTCRYPTO_OK;
   }
 }

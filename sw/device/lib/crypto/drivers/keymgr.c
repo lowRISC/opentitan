@@ -56,7 +56,7 @@ static status_t keymgr_is_idle(void) {
  *
  * @param diversification Diversification input for the key derivation.
  */
-static void keymgr_start(keymgr_diversification_t diversification) {
+static status_t keymgr_start(keymgr_diversification_t diversification) {
   const uint32_t kBase = keymgr_base();
   // Set the version.
   abs_mmio_write32(kBase + KEYMGR_KEY_VERSION_REG_OFFSET,
@@ -69,6 +69,8 @@ static void keymgr_start(keymgr_diversification_t diversification) {
 
   // Issue the start command.
   abs_mmio_write32(kBase + KEYMGR_START_REG_OFFSET, 1 << KEYMGR_START_EN_BIT);
+
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -139,6 +141,27 @@ static status_t keymgr_wait_until_done(void) {
         keymgr_base() + KEYMGR_CONTROL_SHADOWED_REG_OFFSET, ctrl);             \
   } while (false);
 
+/**
+ * Verify the control register of the key manager.
+ *
+ * @param dest (NONE, AES, OTBN, or KMAC)
+ * @param operation (GENERATE_SW or GENERATE_HW)
+ */
+#define VERIFY_CTRL(dest, operation)                                           \
+  do {                                                                         \
+    uint32_t ctrl =                                                            \
+        bitfield_field32_write(0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD,      \
+                               KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_##dest); \
+    ctrl = bitfield_bit32_write(ctrl, KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT,     \
+                                false);                                        \
+    ctrl = bitfield_field32_write(                                             \
+        ctrl, KEYMGR_CONTROL_SHADOWED_OPERATION_FIELD,                         \
+        KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_##operation##_OUTPUT);         \
+    HARDENED_CHECK_EQ(                                                         \
+        abs_mmio_read32(keymgr_base() + KEYMGR_CONTROL_SHADOWED_REG_OFFSET),   \
+        ctrl);                                                                 \
+  } while (false);
+
 status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
                                 keymgr_output_t *key) {
   // Ensure that the entropy complex has been initialized and keymgr is idle.
@@ -149,8 +172,11 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
   WRITE_CTRL(NONE, GENERATE_SW);
 
   // Start the operation and wait for it to complete.
-  keymgr_start(diversification);
+  HARDENED_TRY(keymgr_start(diversification));
   HARDENED_TRY(keymgr_wait_until_done());
+
+  // Check the control register.
+  VERIFY_CTRL(NONE, GENERATE_SW);
 
   // Collect the output. To avoid side-channel lekage, first randomize the
   // destination buffers using memshred. Then copy the key using a hardened
@@ -176,8 +202,12 @@ status_t keymgr_generate_key_aes(keymgr_diversification_t diversification) {
   WRITE_CTRL(AES, GENERATE_HW);
 
   // Start the operation and wait for it to complete.
-  keymgr_start(diversification);
-  return keymgr_wait_until_done();
+  HARDENED_TRY(keymgr_start(diversification));
+  HARDENED_TRY(keymgr_wait_until_done());
+  // Check the control register.
+  VERIFY_CTRL(AES, GENERATE_HW);
+
+  return OTCRYPTO_OK;
 }
 
 status_t keymgr_generate_key_kmac(keymgr_diversification_t diversification) {
@@ -189,8 +219,11 @@ status_t keymgr_generate_key_kmac(keymgr_diversification_t diversification) {
   WRITE_CTRL(KMAC, GENERATE_HW);
 
   // Start the operation and wait for it to complete.
-  keymgr_start(diversification);
-  return keymgr_wait_until_done();
+  HARDENED_TRY(keymgr_start(diversification));
+  HARDENED_TRY(keymgr_wait_until_done());
+  // Check the control register.
+  VERIFY_CTRL(KMAC, GENERATE_HW);
+  return OTCRYPTO_OK;
 }
 
 status_t keymgr_generate_key_otbn(keymgr_diversification_t diversification) {
@@ -202,8 +235,11 @@ status_t keymgr_generate_key_otbn(keymgr_diversification_t diversification) {
   WRITE_CTRL(OTBN, GENERATE_HW);
 
   // Start the operation and wait for it to complete.
-  keymgr_start(diversification);
-  return keymgr_wait_until_done();
+  HARDENED_TRY(keymgr_start(diversification));
+  HARDENED_TRY(keymgr_wait_until_done());
+  // Check the control register.
+  VERIFY_CTRL(OTBN, GENERATE_HW);
+  return OTCRYPTO_OK;
 }
 
 /**
