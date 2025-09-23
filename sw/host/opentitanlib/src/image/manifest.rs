@@ -215,7 +215,7 @@ pub struct ManifestExtIsfbErasePolicy {
 }
 
 #[repr(C)]
-#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default)]
+#[derive(Immutable, IntoBytes, FromBytes, Debug, Default)]
 pub struct ManifestExtImageType {
     pub header: ManifestExtHeader,
     pub image_type: u32,
