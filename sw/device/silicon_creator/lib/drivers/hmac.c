@@ -8,10 +8,18 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "hmac_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+enum {
+  /* Temporary delay linked to issue #24767, which should be equivalent to at
+   * least 80 clock cycles of the HMAC clock plus a margin.
+   */
+  kHmacTmpDelay = 200,
+};
 
 static void hmac_configure(bool big_endian_digest, bool hmac_mode) {
   // Clear the config, stopping the SHA engine.
@@ -147,11 +155,28 @@ void hmac_hmac_sha256(const void *data, size_t len, hmac_key_t key,
 }
 
 void hmac_sha256_save(hmac_context_t *ctx) {
+#ifndef OT_COVERAGE_INSTRUMENTED
   // Issue the STOP command to halt the operation and compute the intermediate
   // digest.
   uint32_t cmd = bitfield_bit32_write(0, HMAC_CMD_HASH_STOP_BIT, true);
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, cmd);
   wait_for_done();
+#else  // OT_COVERAGE_INSTRUMENTED
+  /**
+   * Workaround linked to issue #24767
+   *
+   * The HMAC HWIP is not told to stop. This will cause the HW to be in an
+   * unexpected state, which could be exited by trigerring a simple HASH process
+   * operation. Before doing that, the context should be saved (message length
+   * and digest). This context is only available after a duration equivalent to
+   * 64 clock cycles in SHA2-256 and 80 clock cycles in SHA2-384/512, after the
+   * message length is on a block boundary (512 for SHA2-256 or 1024 bits for
+   * SHA2-384/512).
+   */
+  uint32_t start = ibex_mcycle32();
+  while (ibex_mcycle32() - start < kHmacTmpDelay)
+    ;
+#endif
 
   // Read the digest registers. Note that endianness does not matter here,
   // because we will simply restore the registers in the same order as we saved
@@ -167,6 +192,18 @@ void hmac_sha256_save(hmac_context_t *ctx) {
                                        HMAC_MSG_LENGTH_LOWER_REG_OFFSET);
   ctx->msg_len_upper = abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR +
                                        HMAC_MSG_LENGTH_UPPER_REG_OFFSET);
+
+#ifdef OT_COVERAGE_INSTRUMENTED
+  // Workaround linked to issue #24767
+  // Trigger hash_process
+  uint32_t cmd_reg =
+      abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET);
+  cmd_reg = bitfield_bit32_write(cmd_reg, HMAC_CMD_HASH_PROCESS_BIT, true);
+  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, cmd_reg);
+
+  // Wait for HMAC HWIP operation to be completed.
+  wait_for_done();
+#endif
 
   // Momentarily clear the `sha_en` bit, which clears the digest.
   uint32_t cfg =

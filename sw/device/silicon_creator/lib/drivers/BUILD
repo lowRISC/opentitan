@@ -204,6 +204,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
+            ":ibex",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:hardened",
