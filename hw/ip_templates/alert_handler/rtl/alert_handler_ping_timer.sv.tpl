@@ -49,7 +49,7 @@ module ${module_instance_name}_ping_timer import ${module_instance_name}_pkg::*;
   output logic                     esc_ping_fail_o     // any of the esc senders failed
 );
 
-  localparam int unsigned IdDw = $clog2(NAlerts);
+  localparam int unsigned IdDw = prim_util_pkg::vbits(NAlerts + 1);
 
   // Entropy reseeding is triggered every time this counter expires.
   // The expected wait time between pings is 2**(PING_CNT_DW-1) on average.
