@@ -9,19 +9,14 @@ class csrng_device_driver extends csrng_driver;
   uint   cmd_ack_dly;
   bit    rsp_sts;
 
-  virtual task run_phase(uvm_phase phase);
-    // base class forks off reset_signals() and get_and_drive() tasks
-    super.run_phase(phase);
-  endtask
-
-  virtual task reset_signals();
+  function void on_enter_reset();
     cfg.vif.cmd_rsp_int.csrng_rsp_ack <= 1'b0;
     cfg.vif.cmd_rsp_int.csrng_rsp_sts <= CMD_STS_SUCCESS;
-  endtask
+  endfunction
 
   // drive trans received from sequencer
   virtual task get_and_drive();
-    wait (cfg.under_reset == 0);
+    wait (cfg.in_reset == 0);
     forever begin
       // Wait until the next request is ready or the acknowledgement is forced.
       `DV_SPINWAIT_EXIT(
@@ -54,14 +49,14 @@ class csrng_device_driver extends csrng_driver;
             @(cfg.vif.device_cb);
             cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_ack <= 1'b0;
             cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_sts <= CMD_STS_SUCCESS;,
-            wait (cfg.under_reset == 1);)
+            wait (cfg.in_reset == 1);)
 
-        `uvm_info(`gfn, cfg.under_reset ? "item sent during reset" : "item sent", UVM_HIGH)
+        `uvm_info(`gfn, cfg.in_reset ? "item sent during reset" : "item sent", UVM_HIGH)
         seq_item_port.item_done(rsp);
       end
 
-      // Write ack bit again in case the race condition with `reset_signals`.
-      if (cfg.under_reset) cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_ack <= 1'b0;
+      // Write ack bit again to avoid a race with reset tracking
+      if (cfg.in_reset) cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_ack <= 1'b0;
 
     end
   endtask

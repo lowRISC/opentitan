@@ -24,17 +24,9 @@ class spi_device_driver extends spi_driver;
 
   bit [CSB_WIDTH-1:0] active_csb = 0;
 
-  virtual task reset_signals();
-    forever begin
-      @(negedge cfg.vif.rst_n);
-      `uvm_info(`gfn, "\n  dev_drv: in reset progress", UVM_DEBUG)
-      under_reset = 1'b1;
-      cfg.vif.sio_out = 'z;
-      @(posedge cfg.vif.rst_n);
-      under_reset = 1'b0;
-      `uvm_info(`gfn, "\n  dev_drv: out of reset", UVM_DEBUG)
-    end
-  endtask
+  function void on_enter_reset();
+    cfg.vif.sio_out = 'z;
+  endfunction
 
   virtual task get_and_drive();
     spi_item req, rsp;
@@ -52,7 +44,7 @@ class spi_device_driver extends spi_driver;
       // it filled out.
       rsp.payload_q.delete();
 
-      wait (!under_reset && !cfg.vif.csb[active_csb]);
+      wait (!cfg.in_reset && !cfg.vif.csb[active_csb]);
       fork
         begin: iso_fork
           fork

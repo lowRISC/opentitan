@@ -6,16 +6,9 @@ class kmac_app_device_driver extends kmac_app_driver;
   `uvm_component_utils(kmac_app_device_driver)
   `uvm_component_new
 
-
-  virtual task run_phase(uvm_phase phase);
-    // base class forks off reset_signals() and get_and_drive() tasks
-    super.run_phase(phase);
-  endtask
-
-  // reset signals
-  virtual task reset_signals();
+  function void on_enter_reset();
     invalidate_signals();
-  endtask
+  endfunction
 
   virtual function void invalidate_signals();
     cfg.vif.device_cb.rsp_done          <= 0;

@@ -37,8 +37,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     selected_ir_len = 0;
   endfunction
 
-  // do reset signals (function)
-  virtual function void do_reset_signals();
+  function void on_enter_reset();
     `DV_CHECK_FATAL(cfg.if_mode == Host, "Only Host mode is supported", "jtag_driver")
 
     reset_internal_state();
@@ -79,16 +78,11 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     end join_none
   endtask
 
-  virtual task reset_signals();
+  // Overriding the task from dv_base_driver. That tracks cfg.in_reset (which, in turn, follows
+  // cfg.vif.trst_n), but we also want to trigger a reset when jtag_if_connected is triggered.
+  task reset_signals();
     fork
-      begin
-        do_reset_signals();
-        forever begin
-          @(negedge cfg.vif.trst_n);
-          do_reset_signals();
-          @(posedge cfg.vif.trst_n);
-        end
-      end
+      super.reset_signals();
       forever begin
         cfg.jtag_if_connected.wait_trigger();
         reset_internal_state();

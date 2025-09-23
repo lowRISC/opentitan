@@ -53,7 +53,7 @@ endtask : run_phase
 task esc_monitor::esc_thread();
   alert_esc_seq_item req, req_clone;
   forever @(cfg.vif.monitor_cb) begin
-    if (!under_reset && get_esc() === 1'b1) begin
+    if (!cfg.in_reset && get_esc() === 1'b1) begin
       req = alert_esc_seq_item::type_id::create("req");
       req.sig_cycle_cnt++;
       if (is_sig_int_err()) req.esc_handshake_sta = EscIntFail;
@@ -70,12 +70,12 @@ task esc_monitor::esc_thread();
         while (req.esc_handshake_sta != EscRespComplete &&
                ping_cnter < cfg.ping_timeout_cycle &&
                !cfg.get_esc_en() &&
-               !under_reset) begin
+               !cfg.in_reset) begin
           @(cfg.vif.monitor_cb);
           check_esc_resp(.req(req), .is_ping(1), .ping_triggered(1));
           ping_cnter ++;
         end
-        if (under_reset) continue;
+        if (cfg.in_reset) continue;
         if (ping_cnter >= cfg.ping_timeout_cycle) begin
           alert_esc_seq_item req_clone;
           `downcast(req_clone, req.clone());
@@ -136,7 +136,7 @@ task esc_monitor::unexpected_resp_thread();
     while (get_esc() === 1'b0 && !cfg.under_ping_handshake) begin
       @(cfg.vif.monitor_cb);
       if (cfg.vif.monitor_cb.esc_rx.resp_p === 1'b1 &&
-          cfg.vif.monitor_cb.esc_rx.resp_n === 1'b0 && !under_reset) begin
+          cfg.vif.monitor_cb.esc_rx.resp_n === 1'b0 && !cfg.in_reset) begin
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscIntFail;
         alert_esc_port.write(req);
@@ -148,7 +148,7 @@ endtask : unexpected_resp_thread
 task esc_monitor::sig_int_fail_thread();
   alert_esc_seq_item req;
   forever @(cfg.vif.monitor_cb) begin
-    if (is_sig_int_err() && !under_reset) begin
+    if (is_sig_int_err() && !cfg.in_reset) begin
       req = alert_esc_seq_item::type_id::create("req");
       req.alert_esc_type = AlertEscIntFail;
       alert_esc_port.write(req);
