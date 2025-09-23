@@ -44,7 +44,8 @@ class SimCfg(FlowCfg):
 
     # TODO: Find a way to set these in sim cfg instead
     ignored_wildcards = [
-        "build_mode", "index", "test", "seed", "svseed", "uvm_test", "uvm_test_seq",
+        "build_mode", "index", "test", "seed", "short_seed", "long_seed",
+        "uvm_test", "uvm_test_seq",
         "cov_db_dirs", "sw_images", "sw_build_device", "sw_build_cmd",
         "sw_build_opts"
     ]
@@ -707,7 +708,7 @@ class SimCfg(FlowCfg):
                     frs = []
                     for test, line, context in test_runs:
                         frs.append({
-                            'seed': str(test.seed),
+                            'seed': str(test.short_seed),
                             'failure_message': {
                                 'log_file_path': test.get_log_path(),
                                 'log_file_line_num': line,
