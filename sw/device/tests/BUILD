@@ -1403,13 +1403,14 @@ opentitan_test(
         {
             "//hw/top_earlgrey:silicon_creator": None,
         },
+        DARJEELING_TEST_ENVS,
     ),
     silicon = silicon_params(
         tags = ["broken"],
     ),
     verilator = verilator_params(tags = ["broken"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:base",
@@ -1514,13 +1515,14 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
+        DARJEELING_TEST_ENVS,
     ),
     verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
         ":otbn_randomness_impl",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:base",
@@ -1548,17 +1550,19 @@ opentitan_test(
         {
             "//hw/top_earlgrey:silicon_creator": None,
         },
+        DARJEELING_TEST_ENVS,
     ),
     # This test can take > 40 minutes, so mark it manual as it shouldn't run
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
+        "//hw/top:dt",
         "//hw/top:entropy_src_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
@@ -1579,11 +1583,12 @@ opentitan_test(
         {
             "//hw/top_earlgrey:silicon_creator": None,
         },
+        DARJEELING_TEST_ENVS,
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
         ":otbn_randomness_impl",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -1620,11 +1625,12 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
+        DARJEELING_TEST_ENVS,
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
         ":otbn_randomness_impl",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -1660,6 +1666,7 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
+        DARJEELING_TEST_ENVS,
     ),
     # This test uses carefully tuned health test threshold values to trigger health test alerts
     # inside ENTROPY_SRC. Due to the probabilistic nature of the analog noise source producing the
@@ -1675,7 +1682,7 @@ opentitan_test(
     verilator = verilator_params(timeout = "long"),
     deps = [
         ":otbn_randomness_impl",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -7363,6 +7370,7 @@ opentitan_test(
         {
             "//hw/top_earlgrey:silicon_creator": None,
         },
+        DARJEELING_TEST_ENVS,
     ),
     # This takes around 2 hours to run on Verilator, and so should only be
     # run manually for debugging purposes.
@@ -7370,7 +7378,7 @@ opentitan_test(
     deps = [
         ":otbn_randomness_impl",
         "//hw/top:entropy_src_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
