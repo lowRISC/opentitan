@@ -927,9 +927,11 @@ class TopGen:
             self._init_clkmgr_clocks()
 
         self.device_regions = defaultdict(dict)
+        self.device_memories = defaultdict(dict)
         self.subranges = defaultdict(dict)
         for addr_space in top_info['addr_spaces']:
             self._init_device_regions(addr_space['name'])
+            self._init_device_memories(addr_space['name'])
             self._init_subranges(addr_space['name'])
 
     def _init_device_regions(self, addr_space):
@@ -967,12 +969,15 @@ class TopGen:
     def devices(
             self, addr_space
     ) -> List[Tuple[Tuple[str, Optional[str]], MemoryRegion]]:
-        '''Return a list of MemoryRegion objects for devices on the bus
+        '''Return a list of MemoryRegion objects for devices on the bus.
 
         The list returned is pairs (full_if, region) where full_if is itself a
         pair (inst_name, if_name). inst_name is the name of some IP block
         instantiation. if_name is the name of the interface (may be None).
         region is a MemoryRegion object representing the device.
+
+        Note that this list only includes register bloks. Use `memories()`
+        to access the list of memories.
 
         Parameters:
             addr_space: The address space representing the bus for generation.
@@ -988,6 +993,31 @@ class TopGen:
 
         return ret
 
+    def _init_device_memories(self, addr_space):
+        '''Initialize the device_memories dictionary.
+
+        The dictionary entry maps memories to MemoryRegions for the given
+        addr_space.
+        '''
+        device_memories = defaultdict(dict)
+
+        for inst in self.top['module']:
+            if "memory" in inst:
+                for if_name, val in inst["memory"].items():
+                    base, size = get_base_and_size(self._name_to_block, inst,
+                                                   if_name)
+                    if addr_space not in base:
+                        continue
+
+                    full_if_name = Name.from_snake_case(inst['name']) + \
+                        Name.from_snake_case(if_name)
+                    region = MemoryRegion(self._top_name, full_if_name, addr_space,
+                                          base[addr_space], size)
+
+                    device_memories[inst['name']].update({if_name: region})
+
+        self.device_memories[addr_space] = device_memories
+
     def memories(self, addr_space) -> List[Tuple[Tuple[str, str], MemoryRegion]]:
         '''Return a list of MemoryRegions objects for memories on the bus.
 
@@ -1002,21 +1032,10 @@ class TopGen:
         '''
         ret = []
 
-        for inst in self.top['module']:
-            if "memory" in inst:
-                for if_name, val in inst["memory"].items():
-                    base, size = get_base_and_size(self._name_to_block, inst,
-                                                   if_name)
-                    if addr_space not in base:
-                        continue
-
-                    full_if = (inst['name'], if_name)
-                    full_if_name = Name.from_snake_case(inst['name']) + \
-                        Name.from_snake_case(if_name)
-                    region = MemoryRegion(self._top_name, full_if_name, addr_space,
-                                          base[addr_space], size)
-
-                    ret.append((full_if, region))
+        for (inst, regions) in self.device_memories[addr_space].items():
+            for (if_name, region) in regions.items():
+                full_if = (inst, if_name)
+                ret.append((full_if, region))
 
         return ret
 
