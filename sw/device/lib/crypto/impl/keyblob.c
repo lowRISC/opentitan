@@ -232,9 +232,8 @@ status_t keyblob_key_unmask(const otcrypto_blinded_key_t *key,
   uint32_t *share1;
   HARDENED_TRY(keyblob_to_shares(key, &share0, &share1));
 
-  for (size_t i = 0; i < unmasked_key_len; i++) {
-    unmasked_key[i] = share0[i] ^ share1[i];
-  }
+  HARDENED_TRY(hardened_xor(share0, share1, unmasked_key_len, unmasked_key));
+
   return OTCRYPTO_OK;
 }
 
