@@ -433,10 +433,6 @@ static status_t oneshot(const uint32_t cfg, const hmac_key_t *key,
   // Write the key (no-op if the key length is 0, e.g. for hashing).
   HARDENED_TRY(key_write(key));
 
-  // Read back the HMAC configuration and compare to the expected configuration.
-  HARDENED_CHECK_EQ(abs_mmio_read32(hmac_base() + HMAC_CFG_REG_OFFSET),
-                    launder32(cfg));
-
   // Send the START command.
   uint32_t cmd =
       bitfield_bit32_write(HMAC_CMD_REG_RESVAL, HMAC_CMD_HASH_START_BIT, 1);
@@ -452,6 +448,10 @@ static status_t oneshot(const uint32_t cfg, const hmac_key_t *key,
   // Wait for the digest to be ready, then read it.
   HARDENED_TRY(hmac_idle_wait());
   digest_read(digest, digest_wordlen);
+
+  // Read back the HMAC configuration and compare to the expected configuration.
+  HARDENED_CHECK_EQ(abs_mmio_read32(hmac_base() + HMAC_CFG_REG_OFFSET),
+                    launder32(cfg));
 
   HARDENED_TRY(clear());
   return OTCRYPTO_OK;
