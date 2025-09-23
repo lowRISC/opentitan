@@ -889,7 +889,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     if (failure) begin : test_failure
       if (main_sm_exp_alert_cond) begin
-        if (!fw_ov_insert && !threshold_alert_active && !main_sm_escalates) begin
+        if (!fw_ov_insert && !threshold_alert_active && !main_sm_escalates &&
+            dut_pipeline_enabled) begin
           if (dut_phase == STARTUP) begin
             fmt =  "New alert anticpated with >= 2 failing windows." +
                    "(supercedes count/threshold of %01d/%01d)";
