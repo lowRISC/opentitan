@@ -425,6 +425,16 @@ static otcrypto_status_t otcrypto_aes_impl(
   // Check that the loop ran for the correct number of iterations.
   HARDENED_CHECK_EQ(launder32(i), 0);
 
+  // Verify the CTRL and CTRL_AUX registers.
+
+  // Since this is a checking mechanism itself, we do not add extra redundancy
+  // to the if loop.
+  hardened_bool_t encrypt = kHardenedBoolTrue;
+  if (aes_operation == kOtcryptoAesOperationDecrypt)
+    encrypt = kHardenedBoolFalse;
+  HARDENED_TRY(aes_verify_ctrl_reg(aes_key, encrypt));
+  HARDENED_TRY(aes_verify_ctrl_aux_reg());
+
   // Deinitialize the AES block and update the IV (in ECB mode, skip the IV).
   if (aes_mode == kAesCipherModeEcb) {
     HARDENED_TRY(aes_end(NULL));
