@@ -233,9 +233,12 @@ def _build_binary(ctx, exec_env, name, deps, kind):
     return provides, signed
 
 def _opentitan_binary(ctx):
+    tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
+
     providers = []
     default_info = []
     groups = {}
+    validations = []
     for exec_env_target in ctx.attr.exec_env:
         exec_env = exec_env_target[ExecEnvInfo]
         name = _binary_name(ctx, exec_env)
@@ -265,6 +268,32 @@ def _opentitan_binary(ctx):
 
         groups.update(_as_group_info(exec_env.exec_env, signed))
         groups.update(_as_group_info(exec_env.exec_env, provides))
+
+        # Module ID checks:
+        #
+        # We create a file that will not contain anything: this is just to create a "link"
+        # between the run action and validation group.
+        generated_file = ctx.actions.declare_file("{}.mod-id".format(name))
+
+        # Call bash script that will run opentitantool and capture the output. We want to avoid
+        # printing anything if the test is successful but by default opentitantool prints
+        # unnecessary information that pollutes the output.
+        ctx.actions.run(
+            executable = ctx.executable._modid_check,
+            arguments = [
+                tc.tools.opentitantool.executable.path,
+                generated_file.path,
+                provides["elf"].path,
+            ],
+            inputs = [provides["elf"]],
+            tools = [tc.tools.opentitantool],
+            outputs = [generated_file],
+            progress_message = "Checking module IDs for %{label}",
+        )
+        validations.append(generated_file)
+
+    # Validation group.
+    groups["_validation"] = depset(validations)
 
     providers.append(DefaultInfo(files = depset(default_info)))
     providers.append(OutputGroupInfo(**groups))
@@ -351,9 +380,14 @@ opentitan_binary = rv_rule(
             doc = "List of execution environments for this target.",
         ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
+        "_modid_check": attr.label(
+            default = "//rules/scripts:modid_check",
+            executable = True,
+            cfg = "exec",
+        ),
     }.items()),
     fragments = ["cpp"],
-    toolchains = ["@rules_cc//cc:toolchain_type"],
+    toolchains = ["@rules_cc//cc:toolchain_type", LOCALTOOLS_TOOLCHAIN],
 )
 
 def _testing_bitstream_impl(settings, attr):
@@ -462,9 +496,14 @@ opentitan_test = rv_rule(
             doc = "OpenOCD adapter configuration override for this test",
         ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
+        "_modid_check": attr.label(
+            default = "//rules/scripts:modid_check",
+            executable = True,
+            cfg = "exec",
+        ),
     }.items()),
     fragments = ["cpp"],
-    toolchains = ["@rules_cc//cc:toolchain_type"],
+    toolchains = ["@rules_cc//cc:toolchain_type", LOCALTOOLS_TOOLCHAIN],
     test = True,
 )
 
