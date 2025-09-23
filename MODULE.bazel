@@ -59,6 +59,7 @@ single_version_override(
     patch_strip = 3,
     patches = [
         "@lowrisc_opentitan//third_party/rust/patches:rules_rust.bindgen_static_lib.patch",
+        "@lowrisc_opentitan//third_party/rust/patches:rules_rust.bindgen_cc_lib_transition.patch",
     ],
     version = "0.59.2",
 )

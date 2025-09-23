@@ -4,6 +4,7 @@
 
 load("@rules_rust_bindgen//:defs.bzl", "rust_bindgen_library")
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_PLATFORM")
 
 package(default_visibility = ["//visibility:public"])
 

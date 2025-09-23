@@ -4,6 +4,7 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_library")
 load("@rules_rust_bindgen//:defs.bzl", "rust_bindgen", "rust_bindgen_library")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_PLATFORM")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -69,6 +70,7 @@ rust_bindgen_library(
         "--allowlist-type=AlertEscalate",
     ],
     cc_lib = "//sw/device/silicon_creator/lib/drivers:alert",
+    cc_lib_platform = OPENTITAN_PLATFORM,
     header = "//sw/device/silicon_creator/lib/drivers:alert.h",
     rustc_flags = [
         "--allow=non_snake_case",
@@ -122,6 +124,7 @@ rust_bindgen_library(
         "--allowlist-var=USBDEV_.*_REG_OFFSET",
     ],
     cc_lib = ":difs",
+    cc_lib_platform = OPENTITAN_PLATFORM,
     clang_flags = [
         "-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_",
     ] if _TOPLEVEL == "englishbreakfast" else [
@@ -152,6 +155,7 @@ rust_bindgen_library(
         "--allowlist-type=top_earlgrey_hintable_clocks",
     ],
     cc_lib = "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+    cc_lib_platform = OPENTITAN_PLATFORM,
     header = "//hw/top_earlgrey/sw/autogen:top_earlgrey.h",
     rustc_flags = [
         "--allow=non_snake_case",
@@ -167,6 +171,7 @@ rust_bindgen_library(
         "--allowlist-type=hardened_byte_bool",
     ],
     cc_lib = "//sw/device/lib/base:hardened",
+    cc_lib_platform = OPENTITAN_PLATFORM,
     header = "//sw/device/lib/base:hardened.h",
     rustc_flags = [
         "--allow=non_snake_case",
@@ -181,6 +186,7 @@ rust_bindgen_library(
         "--allowlist-type=multi_bit_bool",
     ],
     cc_lib = "//sw/device/lib/base:multibits",
+    cc_lib_platform = OPENTITAN_PLATFORM,
     header = "//sw/device/lib/base:multibits.h",
     rustc_flags = [
         "--allow=non_snake_case",
@@ -198,6 +204,7 @@ rust_bindgen(
         "--allowlist-type=rom_error_t",
     ],
     cc_lib = "//sw/device/silicon_creator/lib:error",
+    cc_lib_platform = OPENTITAN_PLATFORM,
     header = "//sw/device/silicon_creator/lib:error.h",
 )
 
@@ -232,6 +239,7 @@ rust_bindgen_library(
         "--allowlist-var=SRAM_MAGIC_SP_.*",
     ],
     cc_lib = "//sw/device/silicon_creator/manuf/lib:sram_start_headers",
+    cc_lib_platform = OPENTITAN_PLATFORM,
     header = "//sw/device/silicon_creator/manuf/lib:sram_start.h",
     rustc_flags = [
         "--allow=non_snake_case",
@@ -259,6 +267,7 @@ rust_bindgen_library(
         "--with-derive-custom=ot_status_create_record=zerocopy::FromBytes",
     ],
     cc_lib = "//sw/device/lib/base:status",
+    cc_lib_platform = OPENTITAN_PLATFORM,
     header = "//sw/device/lib/base:status.h",
     rustc_flags = [
         "--allow=non_snake_case",
@@ -276,6 +285,7 @@ rust_bindgen_library(
         "--allowlist-type=test_status_t",
     ],
     cc_lib = "//sw/device/lib/testing/test_framework:status_headers",
+    cc_lib_platform = OPENTITAN_PLATFORM,
     header = "//sw/device/lib/testing/test_framework:status.h",
     rustc_flags = [
         "--allow=non_snake_case",

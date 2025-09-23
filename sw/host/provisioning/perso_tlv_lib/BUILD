@@ -4,6 +4,7 @@
 
 load("@rules_rust_bindgen//:defs.bzl", "rust_bindgen_library")
 load("@rules_rust//rust:defs.bzl", "rust_library")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_PLATFORM")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -18,6 +19,7 @@ rust_bindgen_library(
         "--allowlist-type=perso_tlv_cert_header_fields_t",
     ],
     cc_lib = "//sw/device/silicon_creator/manuf/base:perso_tlv_headers",
+    cc_lib_platform = OPENTITAN_PLATFORM,
     header = "//sw/device/silicon_creator/manuf/base:perso_tlv_data.h",
     rustc_flags = [
         "--allow=non_snake_case",
