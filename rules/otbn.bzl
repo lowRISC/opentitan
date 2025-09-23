@@ -267,6 +267,8 @@ def _otbn_consttime_test_impl(ctx):
     script_content = "{} {} --verbose".format(ctx.executable._checker.short_path, elf.short_path)
     if ctx.attr.subroutine:
         script_content += " --subroutine {}".format(ctx.attr.subroutine)
+    if ctx.attr.ignore:
+        script_content += " --ignore {}".format(" ".join(ctx.attr.ignore))
     if ctx.attr.secrets:
         script_content += " --secrets {}".format(" ".join(ctx.attr.secrets))
     if ctx.attr.initial_constants:
@@ -513,6 +515,7 @@ otbn_consttime_test = rule(
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = [OutputGroupInfo]),
         "subroutine": attr.string(),
+        "ignore": attr.string_list(),
         "secrets": attr.string_list(),
         "initial_constants": attr.string_list(),
         "_checker": attr.label(
