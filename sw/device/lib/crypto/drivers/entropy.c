@@ -477,6 +477,21 @@ static void csrng_configure(void) {
 }
 
 /**
+ * Verify the CTRL register from the CSRNG.
+ */
+static void csrng_verify(void) {
+  uint32_t reg =
+      bitfield_field32_write(0, CSRNG_CTRL_ENABLE_FIELD, kMultiBitBool4True);
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_SW_APP_ENABLE_FIELD,
+                               kMultiBitBool4True);
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_READ_INT_STATE_FIELD,
+                               kMultiBitBool4True);
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_FIPS_FORCE_ENABLE_FIELD,
+                               kMultiBitBool4False);
+  HARDENED_CHECK_EQ(abs_mmio_read32(kBaseCsrng + CSRNG_CTRL_REG_OFFSET), reg);
+}
+
+/**
  * Stops a given EDN instance.
  *
  * It also resets the EDN CSRNG command buffer to avoid synchronization issues
@@ -945,6 +960,9 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len,
       }
     }
   }
+
+  // Check the CTRL register from the CSRNG to protect against fault attacks.
+  csrng_verify();
 
   return res;
 }
