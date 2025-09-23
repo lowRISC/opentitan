@@ -36,14 +36,12 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
 
     env = ENV_T::type_id::create("env", this);
     cfg = CFG_T::type_id::create("cfg", this);
-    void'($value$plusargs("use_jtag_dmi=%0b", cfg.use_jtag_dmi));
     cfg.initialize();
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     uvm_config_db#(CFG_T)::set(this, "env", "cfg", cfg);
 
     // Enable scoreboard (and sub-scoreboard checks) via plusarg.
     void'($value$plusargs("en_scb=%0b", cfg.en_scb));
-    void'($value$plusargs("en_scb_tl_err_chk=%0b", cfg.en_scb_tl_err_chk));
     void'($value$plusargs("en_scb_mem_chk=%0b", cfg.en_scb_mem_chk));
     // Enable fastest design performance by configuring zero delays in all agents.
     void'($value$plusargs("zero_delays=%0b", cfg.zero_delays));
