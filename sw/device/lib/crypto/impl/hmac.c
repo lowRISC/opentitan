@@ -63,21 +63,93 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
     otcrypto_hmac_key_mode_t used_key_mode;
     switch (key->config.key_mode) {
       case kOtcryptoKeyModeHmacSha256:
-        HARDENED_TRY(hmac_hash_sha256((unsigned char *)unmasked_key,
-                                      key->config.key_length,
-                                      hmac_key->key_block));
+        if (key->config.security_level == kOtcryptoKeySecurityLevelHigh) {
+          // Create an inverted copy of the input key and run the real sha and
+          // inverted one in a random order.
+          uint32_t key_copy[key_block_wordlen];
+          uint32_t random_unmasked_key[unmasked_key_len];
+          HARDENED_TRY(
+              hardened_memshred(random_unmasked_key, unmasked_key_len));
+
+          bool swap = ibex_rnd32_read() & 0x1;
+          if (swap) {
+            HARDENED_TRY(hmac_hash_sha256((unsigned char *)random_unmasked_key,
+                                          key->config.key_length, key_copy));
+            HARDENED_TRY(hmac_hash_sha256((unsigned char *)unmasked_key,
+                                          key->config.key_length,
+                                          hmac_key->key_block));
+          } else {
+            HARDENED_TRY(hmac_hash_sha256((unsigned char *)unmasked_key,
+                                          key->config.key_length,
+                                          hmac_key->key_block));
+            HARDENED_TRY(hmac_hash_sha256((unsigned char *)random_unmasked_key,
+                                          key->config.key_length, key_copy));
+          }
+        } else {
+          HARDENED_TRY(hmac_hash_sha256((unsigned char *)unmasked_key,
+                                        key->config.key_length,
+                                        hmac_key->key_block));
+        }
         used_key_mode = launder32(kOtcryptoKeyModeHmacSha256);
         break;
       case kOtcryptoKeyModeHmacSha384:
-        HARDENED_TRY(hmac_hash_sha384((unsigned char *)unmasked_key,
-                                      key->config.key_length,
-                                      hmac_key->key_block));
+        if (key->config.security_level == kOtcryptoKeySecurityLevelHigh) {
+          // Create an inverted copy of the input key and run the real sha and
+          // inverted one in a random order.
+          uint32_t key_copy[key_block_wordlen];
+          uint32_t random_unmasked_key[unmasked_key_len];
+          HARDENED_TRY(
+              hardened_memshred(random_unmasked_key, unmasked_key_len));
+
+          bool swap = ibex_rnd32_read() & 0x1;
+          if (swap) {
+            HARDENED_TRY(hmac_hash_sha384((unsigned char *)random_unmasked_key,
+                                          key->config.key_length, key_copy));
+            HARDENED_TRY(hmac_hash_sha384((unsigned char *)unmasked_key,
+                                          key->config.key_length,
+                                          hmac_key->key_block));
+          } else {
+            HARDENED_TRY(hmac_hash_sha384((unsigned char *)unmasked_key,
+                                          key->config.key_length,
+                                          hmac_key->key_block));
+            HARDENED_TRY(hmac_hash_sha384((unsigned char *)random_unmasked_key,
+                                          key->config.key_length, key_copy));
+          }
+        } else {
+          HARDENED_TRY(hmac_hash_sha384((unsigned char *)unmasked_key,
+                                        key->config.key_length,
+                                        hmac_key->key_block));
+        }
         used_key_mode = launder32(kOtcryptoKeyModeHmacSha384);
         break;
       case kOtcryptoKeyModeHmacSha512:
-        HARDENED_TRY(hmac_hash_sha512((unsigned char *)unmasked_key,
-                                      key->config.key_length,
-                                      hmac_key->key_block));
+        if (key->config.security_level == kOtcryptoKeySecurityLevelHigh) {
+          // Create an inverted copy of the input key and run the real sha and
+          // inverted one in a random order.
+          uint32_t key_copy[key_block_wordlen];
+          uint32_t random_unmasked_key[unmasked_key_len];
+          HARDENED_TRY(
+              hardened_memshred(random_unmasked_key, unmasked_key_len));
+
+          bool swap = ibex_rnd32_read() & 0x1;
+          if (swap) {
+            HARDENED_TRY(hmac_hash_sha512((unsigned char *)random_unmasked_key,
+                                          key->config.key_length, key_copy));
+            HARDENED_TRY(hmac_hash_sha512((unsigned char *)unmasked_key,
+                                          key->config.key_length,
+                                          hmac_key->key_block));
+          } else {
+            HARDENED_TRY(hmac_hash_sha512((unsigned char *)unmasked_key,
+                                          key->config.key_length,
+                                          hmac_key->key_block));
+            HARDENED_TRY(hmac_hash_sha512((unsigned char *)random_unmasked_key,
+                                          key->config.key_length, key_copy));
+          }
+        } else {
+          HARDENED_TRY(hmac_hash_sha512((unsigned char *)unmasked_key,
+                                        key->config.key_length,
+                                        hmac_key->key_block));
+        }
         used_key_mode = launder32(kOtcryptoKeyModeHmacSha512);
         break;
       default:
