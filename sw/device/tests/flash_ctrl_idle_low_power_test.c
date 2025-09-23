@@ -22,7 +22,7 @@
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
-
+static uint32_t flash_region_index;
 static dif_rv_plic_t plic;
 static dif_aon_timer_t aon;
 static dif_rv_core_ibex_t rv_core_ibex;
@@ -43,7 +43,8 @@ static top_earlgrey_plic_peripheral_t peripheral_serviced;
 static dif_aon_timer_irq_t irq_serviced;
 
 enum {
-  kFlashDataRegion = 2,  // The ROM_EXT protects itself using regions 0-1.
+  //  kFlashDataRegion = 7,  // The ROM_EXT protects itself using regions 0-1.
+  kFlashCtrlParamNumRegions = 7,
   kRegionBasePageIndex =
       256 + 32,  // First non-ROM_EXT page in bank 1 (avoids program code.)
   kPartitionId = 0,
@@ -126,8 +127,20 @@ bool test_main(void) {
   rstmgr_reset_info = rstmgr_testutils_reason_get();
 
   uint32_t address = 0;
+
+  for (uint32_t region = 0; region < kFlashCtrlParamNumRegions + 1; region++) {
+    bool locked;
+    LOG_INFO("Testing  REGION 0x%x", region);
+    CHECK_DIF_OK(dif_flash_ctrl_data_region_is_locked(&flash, region, &locked));
+    if (!locked) {
+      flash_region_index = region;
+      LOG_INFO("This region is unlocked REGION 0x%x", region);
+      break;
+    }
+  }
+
   CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
-      &flash, kRegionBasePageIndex, kFlashDataRegion, kRegionSize, &address));
+      &flash, kRegionBasePageIndex, flash_region_index, kRegionSize, &address));
 
   if (rstmgr_reset_info == kDifRstmgrResetInfoPor) {
     // Create data. Random data will be different than
