@@ -17,7 +17,6 @@ filesets:
       - racl_ctrl_env_wrapper_cfg.sv: {is_include_file: true}
       - racl_ctrl_env_cfg.sv: {is_include_file: true}
       - racl_ctrl_env_cov.sv: {is_include_file: true}
-      - racl_ctrl_virtual_sequencer.sv: {is_include_file: true}
       - racl_ctrl_scoreboard.sv: {is_include_file: true}
       - racl_ctrl_error_arb_predictor.sv: {is_include_file: true}
       - racl_ctrl_env.sv: {is_include_file: true}
