@@ -21,7 +21,7 @@
 
 /**
  * Mode magic values generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 6 -n 11 \
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 10 -n 11 \
  *      -s 544077332 --avoid-zero
 
  *
@@ -33,16 +33,28 @@
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.
  */
-.equ MODE_RSA_2048_MODEXP, 0x76b
-.equ MODE_RSA_2048_MODEXP_F4, 0x565
-.equ MODE_RSA_3072_MODEXP, 0x378
-.equ MODE_RSA_3072_MODEXP_F4, 0x6d1
-.equ MODE_RSA_4096_MODEXP, 0x70b
-.equ MODE_RSA_4096_MODEXP_F4, 0x0ee
+
+# Testing only! These key lengths are not supported.
+.equ MODE_RSA_512_MODEXP, 0x59c
+.equ MODE_RSA_512_MODEXP_F4, 0x6a5
+.equ MODE_RSA_1024_MODEXP, 0x732
+.equ MODE_RSA_1024_MODEXP_F4, 0x569
+
+# Supported key lengths.
+.equ MODE_RSA_2048_MODEXP, 0x6ca
+.equ MODE_RSA_2048_MODEXP_F4, 0x457
+.equ MODE_RSA_3072_MODEXP, 0x1e6
+.equ MODE_RSA_3072_MODEXP_F4, 0x3d1
+.equ MODE_RSA_4096_MODEXP, 0x0bb
+.equ MODE_RSA_4096_MODEXP_F4, 0x30f
 
 /**
  * Make the mode constants visible to Ibex.
  */
+.globl MODE_RSA_512_MODEXP
+.globl MODE_RSA_512_MODEXP_F4
+.globl MODE_RSA_1024_MODEXP
+.globl MODE_RSA_1024_MODEXP_F4
 .globl MODE_RSA_2048_MODEXP
 .globl MODE_RSA_2048_MODEXP_F4
 .globl MODE_RSA_3072_MODEXP
@@ -58,6 +70,18 @@ start:
   /* Read the mode and tail-call the requested operation. */
   la      x2, mode
   lw      x2, 0(x2)
+
+  addi    x3, x0, MODE_RSA_512_MODEXP
+  beq     x2, x3, rsa_512_modexp
+
+  addi    x3, x0, MODE_RSA_512_MODEXP_F4
+  beq     x2, x3, rsa_512_modexp_f4
+
+  addi    x3, x0, MODE_RSA_1024_MODEXP
+  beq     x2, x3, rsa_1024_modexp
+
+  addi    x3, x0, MODE_RSA_1024_MODEXP_F4
+  beq     x2, x3, rsa_1024_modexp_f4
 
   addi    x3, x0, MODE_RSA_2048_MODEXP
   beq     x2, x3, rsa_2048_modexp
@@ -81,6 +105,34 @@ start:
   unimp
   unimp
   unimp
+
+rsa_512_modexp:
+  /* Set the number of limbs for the modulus (2048 / 256 = 8). */
+  li      x30, 2
+
+  /* Tail-call modexp. */
+  jal     x0, do_modexp
+
+rsa_512_modexp_f4:
+  /* Set the number of limbs for the modulus (2048 / 256 = 8). */
+  li      x30, 2
+
+  /* Tail-call modexp_f4. */
+  jal     x0, do_modexp_f4
+
+rsa_1024_modexp:
+  /* Set the number of limbs for the modulus (2048 / 256 = 8). */
+  li      x30, 4
+
+  /* Tail-call modexp. */
+  jal     x0, do_modexp
+
+rsa_1024_modexp_f4:
+  /* Set the number of limbs for the modulus (2048 / 256 = 8). */
+  li      x30, 4
+
+  /* Tail-call modexp_f4. */
+  jal     x0, do_modexp_f4
 
 rsa_2048_modexp:
   /* Set the number of limbs for the modulus (2048 / 256 = 8). */
