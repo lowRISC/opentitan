@@ -74,20 +74,25 @@ static const otbn_addr_t kOtbnAppKeySideloadkl =
 static const otbn_addr_t kOtbnAppKeySideloadkh =
     OTBN_ADDR_T_INIT(otbn_key_sideload_sca, k_h);
 
-// RSA OTBN App.
-OTBN_DECLARE_APP_SYMBOLS(rsa);
-OTBN_DECLARE_SYMBOL_ADDR(rsa, mode);
-OTBN_DECLARE_SYMBOL_ADDR(rsa, n_limbs);
-OTBN_DECLARE_SYMBOL_ADDR(rsa, inout);
-OTBN_DECLARE_SYMBOL_ADDR(rsa, modulus);
-OTBN_DECLARE_SYMBOL_ADDR(rsa, exp);
+// RSA-512 OTBN App.
+OTBN_DECLARE_APP_SYMBOLS(run_rsa_modexp);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, mode);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, inout);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, n);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, d0);
 
-static const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(rsa);
-static const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(rsa, mode);
-static const otbn_addr_t kOtbnVarRsaNLimbs = OTBN_ADDR_T_INIT(rsa, n_limbs);
-static const otbn_addr_t kOtbnVarRsaInOut = OTBN_ADDR_T_INIT(rsa, inout);
-static const otbn_addr_t kOtbnVarRsaModulus = OTBN_ADDR_T_INIT(rsa, modulus);
-static const otbn_addr_t kOtbnVarRsaExp = OTBN_ADDR_T_INIT(rsa, exp);
+static const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(run_rsa_modexp);
+static const otbn_addr_t kOtbnVarRsaMode =
+    OTBN_ADDR_T_INIT(run_rsa_modexp, mode);
+static const otbn_addr_t kOtbnVarRsaInOut =
+    OTBN_ADDR_T_INIT(run_rsa_modexp, inout);
+static const otbn_addr_t kOtbnVarRsaModulus =
+    OTBN_ADDR_T_INIT(run_rsa_modexp, n);
+static const otbn_addr_t kOtbnVarRsaD0 = OTBN_ADDR_T_INIT(run_rsa_modexp, d0);
+
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_512_MODEXP);
+static const uint32_t kMode512Modexp =
+    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_512_MODEXP);
 
 // p256_ecdsa_sca has randomization removed.
 OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa_sca);
@@ -770,16 +775,12 @@ status_t handle_otbn_sca_rsa512_decrypt(ujson_t *uj) {
   TRY(ujson_deserialize_penetrationtest_otbn_sca_rsa512_dec_t(uj, &uj_data));
   otbn_load_app(kOtbnAppRsa);
 
-  uint32_t mode = 2;  // Decrypt.
-  // RSA512 configuration.
-  uint32_t n_limbs = 2;
-
   // Write data into OTBN DMEM.
-  TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaMode, &mode, sizeof(mode)));
-  TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaNLimbs, &n_limbs, sizeof(n_limbs)));
+  TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaMode, &kMode512Modexp,
+                          sizeof(uint32_t)));
   TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaModulus, uj_data.modu,
                           sizeof(uj_data.modu)));
-  TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaExp, uj_data.exp,
+  TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaD0, uj_data.exp,
                           sizeof(uj_data.exp)));
   TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaInOut, uj_data.msg,
                           sizeof(uj_data.msg)));

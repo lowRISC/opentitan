@@ -222,17 +222,6 @@ otbn_library(
     ],
 )
 
-otbn_binary(
-    name = "rsa",
-    srcs = [
-        "rsa.s",
-    ],
-    deps = [
-        ":modexp",
-        ":montmul",
-    ],
-)
-
 otbn_library(
     name = "run_rsa_modexp_mem",
     srcs = [
