@@ -158,7 +158,9 @@ bool test_main(void) {
   busy_spin_micros(500000);
   uint32_t address;
   CHECK_DIF_OK(dif_spi_device_get_last_read_address(&spid, &address));
-  CHECK(address == (kSpiDeviceFlashAddress + kSpiDeviceDatasetSize - 1));
+  CHECK(address == (kSpiDeviceFlashAddress + kSpiDeviceDatasetSize - 1),
+        "address != expected (0x%08x != 0x%08x)", address,
+        kSpiDeviceFlashAddress + kSpiDeviceDatasetSize - 1);
 
   return true;
 }
