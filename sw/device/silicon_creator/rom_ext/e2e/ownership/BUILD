@@ -354,6 +354,7 @@ ownership_transfer_test(
         # We boot on Side B since rescue will rewrite side A.
         assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_b}",
         changes_otp = True,
+        tags = ["slow_test"],
         test_cmd = """
             --clear-bitstream
             --bootstrap={firmware}
