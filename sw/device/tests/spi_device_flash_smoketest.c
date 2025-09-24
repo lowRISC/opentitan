@@ -152,7 +152,7 @@ bool test_main(void) {
       &spid, kDifSpiDeviceFlashBufferTypeEFlash, 0, ARRAYSIZE(kSpiTxData),
       kSpiTxData));
 
-  LOG_INFO("Waiting for read");
+  LOG_INFO("SYNC: Waiting for read");
   CHECK_DIF_OK(dif_spi_device_set_flash_status_registers(&spid, 0x00));
 
   busy_spin_micros(500000);
