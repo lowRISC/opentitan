@@ -298,7 +298,7 @@ cc_library(
         ":otbn_testutils",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otbn",
-        "//sw/otbn/crypto:rsa",
+        "//sw/otbn/crypto:run_rsa_modexp",
     ],
 )
 
