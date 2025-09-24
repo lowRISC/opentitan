@@ -171,59 +171,18 @@ FIRMWARE_DEPS_CRYPTOLIB_SCA_ASYM = [
     "//sw/device/tests/penetrationtests/json:commands",
 ]
 
-opentitan_binary(
-    name = "firmware_cryptolib_fi_sym",
-    testonly = True,
-    srcs = [":firmware_cryptolib_fi_sym.c"],
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
-    ],
-    deps = FIRMWARE_DEPS_CRYPTOLIB_FI_SYM,
-)
+# Note that the targets below are only to build the software, to run tests, see the BUILD from penetrationtests
 
-opentitan_binary(
-    name = "firmware_cryptolib_fi_asym",
-    testonly = True,
-    srcs = [":firmware_cryptolib_fi_asym.c"],
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
-    ],
-    deps = FIRMWARE_DEPS_CRYPTOLIB_FI_ASYM,
-)
-
-opentitan_binary(
-    name = "firmware_cryptolib_sca_sym",
-    testonly = True,
-    srcs = [":firmware_cryptolib_sca_sym.c"],
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
-    ],
-    deps = FIRMWARE_DEPS_CRYPTOLIB_SCA_SYM,
-)
-
-opentitan_binary(
-    name = "firmware_cryptolib_sca_asym",
-    testonly = True,
-    srcs = [":firmware_cryptolib_sca_asym.c"],
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
-    ],
-    deps = FIRMWARE_DEPS_CRYPTOLIB_SCA_ASYM,
-)
-
+# Not an actual test, only for building purposes
 opentitan_test(
     name = "pen_test_fi",
     srcs = [":firmware_fi.c"],
     exec_env = PENTEST_EXEC_ENVS,
-    fpga = fpga_params(tags = ["skip_in_ci"]),
+    # Tags are manual since these are not actually tests, but these create binaries to run the pentest framework
+    fpga = fpga_params(tags = [
+        "manual",
+        "skip_in_ci",
+    ]),
     silicon = silicon_params(
         tags = [
             "manual",
@@ -233,11 +192,16 @@ opentitan_test(
     deps = FIRMWARE_DEPS_FI,
 )
 
+# Not an actual test, only for building purposes
 opentitan_test(
     name = "pen_test_fi_ibex",
     srcs = [":firmware_fi_ibex.c"],
     exec_env = PENTEST_EXEC_ENVS,
-    fpga = fpga_params(tags = ["skip_in_ci"]),
+    # Tags are manual since these are not actually tests, but these create binaries to run the pentest framework
+    fpga = fpga_params(tags = [
+        "manual",
+        "skip_in_ci",
+    ]),
     silicon = silicon_params(
         tags = [
             "manual",
@@ -247,11 +211,16 @@ opentitan_test(
     deps = FIRMWARE_DEPS_FI_IBEX,
 )
 
+# Not an actual test, only for building purposes
 opentitan_test(
     name = "pen_test_fi_otbn",
     srcs = [":firmware_fi_otbn.c"],
     exec_env = PENTEST_EXEC_ENVS,
-    fpga = fpga_params(tags = ["skip_in_ci"]),
+    # Tags are manual since these are not actually tests, but these create binaries to run the pentest framework
+    fpga = fpga_params(tags = [
+        "manual",
+        "skip_in_ci",
+    ]),
     silicon = silicon_params(
         tags = [
             "manual",
@@ -261,11 +230,16 @@ opentitan_test(
     deps = FIRMWARE_DEPS_FI_OTBN,
 )
 
+# Not an actual test, only for building purposes
 opentitan_test(
     name = "pen_test_sca",
     srcs = [":firmware_sca.c"],
     exec_env = PENTEST_EXEC_ENVS,
-    fpga = fpga_params(tags = ["skip_in_ci"]),
+    # Tags are manual since these are not actually tests, but these create binaries to run the pentest framework
+    fpga = fpga_params(tags = [
+        "manual",
+        "skip_in_ci",
+    ]),
     silicon = silicon_params(
         tags = [
             "manual",
@@ -275,11 +249,16 @@ opentitan_test(
     deps = FIRMWARE_DEPS_SCA,
 )
 
+# Not an actual test, only for building purposes
 opentitan_test(
     name = "pen_test_cryptolib_fi_sym",
     srcs = [":firmware_cryptolib_fi_sym.c"],
     exec_env = PENTEST_EXEC_ENVS,
-    fpga = fpga_params(tags = ["skip_in_ci"]),
+    # Tags are manual since these are not actually tests, but these create binaries to run the pentest framework
+    fpga = fpga_params(tags = [
+        "manual",
+        "skip_in_ci",
+    ]),
     silicon = silicon_params(
         tags = [
             "manual",
@@ -289,11 +268,16 @@ opentitan_test(
     deps = FIRMWARE_DEPS_CRYPTOLIB_FI_SYM,
 )
 
+# Not an actual test, only for building purposes
 opentitan_test(
     name = "pen_test_cryptolib_fi_asym",
     srcs = [":firmware_cryptolib_fi_asym.c"],
     exec_env = PENTEST_EXEC_ENVS,
-    fpga = fpga_params(tags = ["skip_in_ci"]),
+    # Tags are manual since these are not actually tests, but these create binaries to run the pentest framework
+    fpga = fpga_params(tags = [
+        "manual",
+        "skip_in_ci",
+    ]),
     silicon = silicon_params(
         tags = [
             "manual",
@@ -303,11 +287,16 @@ opentitan_test(
     deps = FIRMWARE_DEPS_CRYPTOLIB_FI_ASYM,
 )
 
+# Not an actual test, only for building purposes
 opentitan_test(
     name = "pen_test_cryptolib_sca_sym",
     srcs = [":firmware_cryptolib_sca_sym.c"],
     exec_env = PENTEST_EXEC_ENVS,
-    fpga = fpga_params(tags = ["skip_in_ci"]),
+    # Tags are manual since these are not actually tests, but these create binaries to run the pentest framework
+    fpga = fpga_params(tags = [
+        "manual",
+        "skip_in_ci",
+    ]),
     silicon = silicon_params(
         tags = [
             "manual",
@@ -317,11 +306,16 @@ opentitan_test(
     deps = FIRMWARE_DEPS_CRYPTOLIB_SCA_SYM,
 )
 
+# Not an actual test, only for building purposes
 opentitan_test(
     name = "pen_test_cryptolib_sca_asym",
     srcs = [":firmware_cryptolib_sca_asym.c"],
     exec_env = PENTEST_EXEC_ENVS,
-    fpga = fpga_params(tags = ["skip_in_ci"]),
+    # Tags are manual since these are not actually tests, but these create binaries to run the pentest framework
+    fpga = fpga_params(tags = [
+        "manual",
+        "skip_in_ci",
+    ]),
     silicon = silicon_params(
         tags = [
             "manual",
