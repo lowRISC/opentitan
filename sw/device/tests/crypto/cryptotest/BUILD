@@ -337,6 +337,10 @@ cryptotest(
 HMAC_SHA256_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_hmac_sha256.json",
     "//sw/host/cryptotest/testvectors/data:nist_cavp_hmac_sha256_fips_198_1_json",
+] + [
+    "//sw/host/cryptotest/testvectors/data:random_hmac_64_sha256",
+    "//sw/host/cryptotest/testvectors/data:random_hmac_512_sha256",
+    "//sw/host/cryptotest/testvectors/data:random_hmac_520_sha256",
 ]
 
 HMAC_SHA256_TESTVECTOR_ARGS = " ".join([
@@ -355,6 +359,10 @@ cryptotest(
 HMAC_SHA384_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_hmac_sha384.json",
     "//sw/host/cryptotest/testvectors/data:nist_cavp_hmac_sha384_fips_198_1_json",
+] + [
+    "//sw/host/cryptotest/testvectors/data:random_hmac_64_sha384",
+    "//sw/host/cryptotest/testvectors/data:random_hmac_1024_sha384",
+    "//sw/host/cryptotest/testvectors/data:random_hmac_1032_sha384",
 ]
 
 HMAC_SHA384_TESTVECTOR_ARGS = " ".join([
@@ -373,6 +381,10 @@ cryptotest(
 HMAC_SHA512_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_hmac_sha512.json",
     "//sw/host/cryptotest/testvectors/data:nist_cavp_hmac_sha512_fips_198_1_json",
+] + [
+    "//sw/host/cryptotest/testvectors/data:random_hmac_64_sha512",
+    "//sw/host/cryptotest/testvectors/data:random_hmac_1024_sha512",
+    "//sw/host/cryptotest/testvectors/data:random_hmac_1032_sha512",
 ]
 
 HMAC_SHA512_TESTVECTOR_ARGS = " ".join([
