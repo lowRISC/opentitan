@@ -19,8 +19,8 @@ out_file="$2"
 # forget first two arguments so we can access elf files
 shift 2
 
-# run tool, capture output to avoid polutting the CI log
-if ! "$ott" status lint "$@" >"$out_file" 2>&1; then
+# run tool, capture output to avoid polluting the CI log
+if ! "$ott" --rcfile= status lint "$@" >"$out_file" 2>&1; then
     if ! cat "$out_file"; then
         echo "Unable to print the output log, something is very wrong"
         exit 43
