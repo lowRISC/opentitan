@@ -654,7 +654,7 @@ jobs:
         if: success() || failure()
         run: |
           # Find and display tests that did not run:
-          ./ci/scripts/run-bazel-test-query.sh all_fpga.txt fpga,-manual,-broken,-skip_in_ci //... @manufacturer_test_hooks//...
+          ./ci/scripts/run-bazel-test-query.sh all_fpga.txt fpga,-manual,-broken,-slow_test,-skip_in_ci //... @manufacturer_test_hooks//...
           sort -o all_fpga.txt all_fpga.txt
           pattern_files=$(find verify_fpga_jobs -name target_pattern_file.txt)
           sort $pattern_files > all_run.txt
