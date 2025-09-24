@@ -3957,6 +3957,12 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/spi_device:spi_device_flash_smoketest",
     ),
+    qemu = qemu_params(
+        test_cmd = """
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_device:spi_device_flash_smoketest",
+    ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap={firmware}
