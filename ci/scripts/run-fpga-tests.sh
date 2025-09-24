@@ -51,7 +51,6 @@ trap './bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga}
     --run_under=//ci/scripts:run_test \
     --define DISABLE_VERILATOR_BUILD=true \
     --nokeep_going \
-    --test_timeout_filters=short,moderate \
     --test_output=all \
     --build_tests_only \
     --define "$fpga"=lowrisc \
