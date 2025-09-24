@@ -5138,7 +5138,10 @@ opentitan_test(
     },
     fpga = fpga_params(
         timeout = "eternal",
-        tags = ["manual"],
+        tags = [
+            "manual",
+            "slow_test",
+        ],
     ),
     verilator = verilator_params(
         timeout = "long",
@@ -5307,7 +5310,10 @@ opentitan_test(
     ],
     cw310 = fpga_params(
         timeout = "eternal",
-        tags = ["manual"],
+        tags = [
+            "manual",
+            "slow_test",
+        ],
         test_cmd = """
             --bootstrap="{firmware}"
             --fin-phase=deep-resume
@@ -5796,6 +5802,7 @@ opentitan_test(
     ),
     fpga = fpga_params(
         timeout = "long",
+        tags = ["slow_test"],
         test_cmd = """
             --bootstrap="{firmware}"
             "{firmware:elf}"

@@ -92,6 +92,7 @@ ECDH_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "ecdh_kat",
+    slow_test = True,
     test_args = ECDH_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/ecdh_kat:harness",
     test_vectors = ECDH_TESTVECTOR_TARGETS,
@@ -183,6 +184,7 @@ SHA3_224_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "sha3_224_kat",
+    slow_test = True,
     test_args = SHA3_224_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
     test_vectors = SHA3_224_TESTVECTOR_TARGETS,
@@ -316,6 +318,7 @@ CSHAKE_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "cshake_kat",
+    slow_test = True,
     test_args = CSHAKE_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
     test_vectors = CSHAKE_TESTVECTOR_TARGETS,
@@ -408,6 +411,7 @@ KMAC_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "kmac_kat",
+    slow_test = True,
     test_args = KMAC_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/kmac_kat:harness",
     test_vectors = KMAC_TESTVECTOR_TARGETS,
