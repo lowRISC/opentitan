@@ -91,12 +91,12 @@ enum {
   /*
    * The expected instruction counts for constant time functions.
    */
-  kModeKeygenInsCnt = 1444125,
-  kModeKeygenSideloadInsCnt = 1444039,
-  kModeEcdhInsCnt = 1455729,
-  kModeEcdhSideloadInsCnt = 1455868,
-  kModeEcdsaSignInsCnt = 1505653,
-  kModeEcdsaSignSideloadInsCnt = 1505792,
+  kModeKeygenInsCnt = 1857677,
+  kModeKeygenSideloadInsCnt = 1857585,
+  kModeEcdhInsCnt = 1869278,
+  kModeEcdhSideloadInsCnt = 1869414,
+  kModeEcdsaSignInsCnt = 1508855,
+  kModeEcdsaSignSideloadInsCnt = 1508991,
 };
 
 static status_t p384_masked_scalar_write(const p384_masked_scalar_t *src,
