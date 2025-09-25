@@ -12,7 +12,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
   virtual edn_cov_if   cov_vif;
 
   // Specialized `push_pull_item`s
-  typedef push_pull_item#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH)) cs_cmd_item_t;
+  typedef push_pull_item#(.HostDataWidth(csrng_pkg::CmdBusWidth)) cs_cmd_item_t;
   typedef push_pull_item#(.HostDataWidth(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)) genbits_item_t;
   typedef push_pull_item#(.HostDataWidth(FIPS_ENDPOINT_BUS_WIDTH)) endpoint_item_t;
 
@@ -390,7 +390,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
     forever begin
       cs_cmd_fifo.get(cs_cmd_item);
-      cs_cmd = cs_cmd_item.h_data[csrng_pkg::CSRNG_CMD_WIDTH-1:0];
+      cs_cmd = cs_cmd_item.h_data[csrng_pkg::CmdBusWidth-1:0];
       predict_sts = 1'b1;
 
       // Check if EDN is disabled

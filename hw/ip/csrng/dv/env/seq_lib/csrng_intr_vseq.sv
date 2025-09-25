@@ -352,7 +352,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     super.body();
     // Create EDN host sequences.
     for (int i = 0; i < NUM_HW_APPS; i++) begin
-      m_edn_push_seq[i] = push_pull_host_seq#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::create
+      m_edn_push_seq[i] = push_pull_host_seq#(csrng_pkg::CmdBusWidth)::type_id::create
                                               ($sformatf("m_edn_push_seq[%0d]", i));
     end
 

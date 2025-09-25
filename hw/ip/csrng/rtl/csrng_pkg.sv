@@ -5,6 +5,8 @@
 
 package csrng_pkg;
 
+  parameter int unsigned NumAppsLg = $clog2(csrng_reg_pkg::NumApps);
+
   // Main design parameters
   // We use the suffix 'Len' (as opposed to 'Width') to stick to the symbols used in the
   // NIST SP 800-90A algorithm specification.
@@ -18,7 +20,6 @@ package csrng_pkg;
   // Width of the counter field used as input to the cipher
   // Caution: Not to be confused with the reseed counter width! These two are independent
   parameter int unsigned CtrLen = 32;
-
   parameter int unsigned RsCtrWidth = 32;
 
   // Commonly used internal signal widths
@@ -27,31 +28,29 @@ package csrng_pkg;
 
   // Width of the application command bus (matches the 32b TLUL bus width)
   parameter int unsigned CmdBusWidth = 32;
+
   // Maximum number of 32b words additionally supplied on the application interfaces
   parameter int unsigned CmdMaxClen = 12;
   parameter int unsigned CmdFifoDepth = 2;
   parameter int unsigned CmdFifoDepthLg = $clog2(CmdFifoDepth);
 
-  //-------------------------
-  // Application Interfaces
-  //-------------------------
-
-  parameter int unsigned NumAppsLg = $clog2(csrng_reg_pkg::NumApps);
-  parameter int unsigned GENBITS_BUS_WIDTH = 128;
-  parameter int unsigned CSRNG_CMD_WIDTH = 32;
+  parameter int unsigned GENBITS_BUS_WIDTH = BlkLen;
   parameter int unsigned FIPS_GENBITS_BUS_WIDTH = entropy_src_pkg::FIPS_BUS_WIDTH +
                          GENBITS_BUS_WIDTH;
-  parameter int unsigned MainSmStateWidth = 8;
-  parameter int unsigned CSRNG_CMD_STS_WIDTH = 3;
 
-  // instantiation interface
+  //-------------------------
+  // Application Interface
+  //-------------------------
+
   typedef struct packed {
-    logic                       csrng_req_valid;
-    logic [CSRNG_CMD_WIDTH-1:0] csrng_req_bus;
-    logic                       genbits_ready;
+    logic                   csrng_req_valid;
+    logic [CmdBusWidth-1:0] csrng_req_bus;
+    logic                   genbits_ready;
   } csrng_req_t;
 
-  typedef enum logic [CSRNG_CMD_STS_WIDTH-1:0] {
+  parameter int unsigned CmdStatusWidth = 3;
+
+  typedef enum logic [CmdStatusWidth-1:0] {
     CMD_STS_SUCCESS              = 'h0,
     CMD_STS_INVALID_ACMD         = 'h1,
     CMD_STS_INVALID_GEN_CMD      = 'h2,
@@ -72,7 +71,7 @@ package csrng_pkg;
   parameter csrng_req_t CSRNG_REQ_DEFAULT = '{default: '0};
   parameter csrng_rsp_t CSRNG_RSP_DEFAULT = '0;
 
-  typedef enum logic [2:0] {
+  typedef enum logic [CmdWidth-1:0] {
     INV  = 3'h0,
     INS  = 3'h1,
     RES  = 3'h2,
@@ -91,6 +90,10 @@ package csrng_pkg;
     logic        gap; // acmd is defined as 4 bits wide but only 3 are used
     acmd_e       acmd;
   } csrng_cmd_t;
+
+  //------------------------------------------
+  // Struct data types for the core data path
+  //------------------------------------------
 
   // Keep these structs identical in the LSBs and add less frequently used fields toward the MSBs
   // to allow for easy assigns/conversions from smaller to more complex data types.
@@ -133,6 +136,8 @@ package csrng_pkg;
   parameter int unsigned UpdDataWidth  = $bits(csrng_upd_data_t);
   parameter int unsigned BencDataWidth = $bits(csrng_benc_data_t);
   parameter int unsigned StateWidth    = $bits(csrng_state_t);
+
+  parameter int unsigned MainSmStateWidth = 8;
 
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 3 -m 15 -n 8 \
