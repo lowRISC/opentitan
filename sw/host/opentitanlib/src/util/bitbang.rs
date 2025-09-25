@@ -103,7 +103,7 @@ fn get_token<'a>(
     }
 }
 
-fn get_all_tokens(input: &str) -> Result<Vec<Token>> {
+fn get_all_tokens(input: &str) -> Result<Vec<Token<'_>>> {
     let mut char_indices = input.char_indices().peekable();
     let mut all_tokens = Vec::new();
     loop {

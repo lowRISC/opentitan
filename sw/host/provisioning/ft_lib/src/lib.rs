@@ -207,7 +207,7 @@ fn get_obj_header(data: &[u8]) -> Result<ObjHeader> {
 }
 
 // Extract certificate payload header from the input buffer.
-fn get_cert(data: &[u8]) -> Result<CertHeader> {
+fn get_cert(data: &[u8]) -> Result<CertHeader<'_>> {
     let header_len = std::mem::size_of::<CertHeaderType>();
 
     if data.len() < header_len {

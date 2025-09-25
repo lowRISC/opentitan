@@ -85,7 +85,7 @@ struct BitstreamTypeOneHeaders<'a> {
 }
 
 impl<'a> BitstreamTypeOneHeaders<'a> {
-    fn from_bitstream(bitstream: &[u8]) -> BitstreamTypeOneHeaders {
+    fn from_bitstream(bitstream: &[u8]) -> BitstreamTypeOneHeaders<'_> {
         BitstreamTypeOneHeaders {
             bitstream,
             offset: 0,
