@@ -43,7 +43,7 @@ TEST_F(AddressTranslationTest, Slot0Sucess) {
   EXPECT_SEC_WRITE32(base_ + RV_CORE_IBEX_IBUS_ADDR_EN_0_REG_OFFSET, 1);
   EXPECT_SEC_WRITE32(base_ + RV_CORE_IBEX_DBUS_ADDR_EN_0_REG_OFFSET, 1);
 
-  ibex_addr_remap_0_set(matching_addr, remap_addr, size);
+  ibex_addr_remap_set(0, matching_addr, remap_addr, size);
 }
 
 TEST_F(AddressTranslationTest, Slot1Sucess) {
@@ -65,7 +65,7 @@ TEST_F(AddressTranslationTest, Slot1Sucess) {
   EXPECT_SEC_WRITE32(base_ + RV_CORE_IBEX_IBUS_ADDR_EN_1_REG_OFFSET, 1);
   EXPECT_SEC_WRITE32(base_ + RV_CORE_IBEX_DBUS_ADDR_EN_1_REG_OFFSET, 1);
 
-  ibex_addr_remap_1_set(matching_addr, remap_addr, size);
+  ibex_addr_remap_set(1, matching_addr, remap_addr, size);
 }
 
 class NmiEnableTest : public IbexTest {};
