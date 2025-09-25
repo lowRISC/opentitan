@@ -7,7 +7,7 @@ use handler::TransportCommandHandler;
 use protocol::Message;
 use socket_server::{Connection, JsonSocketServer};
 use std::net::SocketAddr;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use tokio::net::TcpListener;
 
 use crate::app::TransportWrapper;
@@ -21,7 +21,7 @@ mod socket_server;
 /// Interface for handlers of protocol messages, responding to each message with a single
 /// instance of the same protocol message.
 pub trait CommandHandler<Msg> {
-    fn execute_cmd(&mut self, conn: &Arc<Mutex<Connection>>, msg: &Msg) -> Result<Msg>;
+    fn execute_cmd(&mut self, conn: &Arc<Connection>, msg: &Msg) -> Result<Msg>;
 }
 
 /// This is the main entry point for the session proxy.  This struct will either bind on a
