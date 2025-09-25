@@ -243,6 +243,7 @@ cc_library(
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/coverage:api_asm",
     ],
 )
 
@@ -267,7 +268,8 @@ cc_library(
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:memory",
             "//sw/device/lib/base:stdasm",
-            "//sw/device/lib/coverage:api_asm",
+            "//sw/device/lib/coverage:api",
+            "//sw/device/lib/coverage:uart_runtime",
             "//sw/device/lib/runtime:hart",
             "//sw/device/silicon_creator/lib:boot_data",
             "//sw/device/silicon_creator/lib:boot_log",
