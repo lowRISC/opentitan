@@ -13,36 +13,37 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   input  logic               clk_i,
   input  logic               rst_ni,
 
+  // Global enable
   input  logic               enable_i,
 
-  // command request
-  input  logic               cmd_data_req_vld_i,
-  output logic               cmd_data_req_rdy_o,
-  input  csrng_core_data_t   cmd_data_req_i,
-  input  logic [SeedLen-1:0] cmd_data_req_entropy_i,
-  input  logic               cmd_data_req_entropy_fips_i,
-  input  logic               cmd_data_req_glast_i,
+  // Command interface request, arbitrated from command stages
+  input  logic               req_vld_i,
+  output logic               req_rdy_o,
+  input  csrng_core_data_t   req_data_i,
+  input  logic [SeedLen-1:0] req_entropy_i,
+  input  logic               req_entropy_fips_i,
+  input  logic               req_glast_i,
 
-  // command response
-  output logic               cmd_data_rsp_vld_o,
-  input  logic               cmd_data_rsp_rdy_i,
-  output csrng_core_data_t   cmd_data_rsp_o,
-  output logic               cmd_data_rsp_glast_o,
+  // Command interface response to update unit or state db
+  output logic               rsp_vld_o,
+  input  logic               rsp_rdy_i,
+  output csrng_core_data_t   rsp_data_o,
+  output logic               rsp_glast_o,
 
-  // update request interface
-  output logic               cmd_upd_req_vld_o,
-  input  logic               cmd_upd_req_rdy_i,
-  output csrng_upd_data_t    cmd_upd_req_data_o,
+  // Update interface request
+  output logic               update_req_vld_o,
+  input  logic               update_req_rdy_i,
+  output csrng_upd_data_t    update_req_data_o,
 
-  // update response interface
-  input  logic               cmd_upd_rsp_vld_i,
-  output logic               cmd_upd_rsp_rdy_o,
-  input  csrng_upd_data_t    cmd_upd_rsp_data_i,
+  // Update interface response
+  input  logic               update_rsp_vld_i,
+  output logic               update_rsp_rdy_o,
+  input  csrng_upd_data_t    update_rsp_data_i,
 
-  // error status outputs
-  output logic [2:0]         fifo_cmdreq_err_o,
-  output logic [2:0]         fifo_rcstage_err_o,
-  output logic [2:0]         fifo_keyvrc_err_o
+  // Error status outputs
+  output logic         [2:0] fifo_cmdreq_err_o,
+  output logic         [2:0] fifo_rcstage_err_o,
+  output logic         [2:0] fifo_keyvrc_err_o
 );
 
   localparam int CmdreqFifoWidth  = CoreDataWidth + SeedLen + 1;
@@ -105,7 +106,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   // input request fifo for staging cmd request
   //--------------------------------------------
 
-  csrng_core_data_t cmd_data_req_fifo;
+  csrng_core_data_t req_data_fifo;
 
   prim_fifo_sync #(
     .Width(CmdreqFifoWidth),
@@ -128,25 +129,25 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   );
 
   always_comb begin
-    cmd_data_req_fifo = cmd_data_req_i;
+    req_data_fifo = req_data_i;
     // Insert the FIPS info from entropy source on instantiate and reseed commands.
     // Else, keep the existing info (from state db).
-    cmd_data_req_fifo.fips = ((cmd_data_req_i.cmd == INS) || (cmd_data_req_i.cmd == RES)) ?
-                               cmd_data_req_entropy_fips_i : cmd_data_req_i.fips;
+    req_data_fifo.fips = ((req_data_i.cmd == INS) || (req_data_i.cmd == RES)) ?
+                           req_entropy_fips_i : req_data_i.fips;
   end
 
-  assign sfifo_cmdreq_wdata = {cmd_data_req_glast_i,
-                               cmd_data_req_entropy_i,
-                               cmd_data_req_fifo};
+  assign sfifo_cmdreq_wdata = {req_glast_i,
+                               req_entropy_i,
+                               req_data_fifo};
 
   assign {cmdreq_glast,
           cmdreq_entropy,
           cmdreq_data}   = sfifo_cmdreq_rdata;
 
-  assign sfifo_cmdreq_wvld = enable_i && cmd_data_req_vld_i;
-  assign sfifo_cmdreq_rrdy = enable_i && (cmd_upd_req_rdy_i || gen_adata_null_q) &&
+  assign sfifo_cmdreq_wvld = enable_i && req_vld_i;
+  assign sfifo_cmdreq_rrdy = enable_i && (update_req_rdy_i || gen_adata_null_q) &&
                              sfifo_cmdreq_rvld;
-  assign cmd_data_req_rdy_o = sfifo_cmdreq_wrdy;
+  assign req_rdy_o = sfifo_cmdreq_wrdy;
 
   assign fifo_cmdreq_err_o =
          {( sfifo_cmdreq_wvld && !sfifo_cmdreq_wrdy),
@@ -190,8 +191,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   assign gen_adata_null_d = !enable_i ? '0 : prep_gen_adata_null;
 
   // send to the update block
-  assign cmd_upd_req_vld_o = sfifo_cmdreq_rvld && !prep_gen_adata_null;
-  assign cmd_upd_req_data_o = '{
+  assign update_req_vld_o = sfifo_cmdreq_rvld && !prep_gen_adata_null;
+  assign update_req_data_o = '{
     inst_id: cmdreq_data.inst_id,
     cmd:     cmdreq_data.cmd,
     key:     prep_key,
@@ -239,9 +240,9 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
           rcstage_data} = sfifo_rcstage_rdata;
 
   assign sfifo_rcstage_wvld = sfifo_cmdreq_rrdy;
-  assign sfifo_rcstage_rrdy = sfifo_rcstage_rvld && (cmd_upd_rsp_vld_i || gen_adata_null_q);
+  assign sfifo_rcstage_rrdy = sfifo_rcstage_rvld && (update_rsp_vld_i || gen_adata_null_q);
 
-  assign cmd_upd_rsp_rdy_o = sfifo_rcstage_rvld && sfifo_keyvrc_wrdy;
+  assign update_rsp_rdy_o = sfifo_rcstage_rvld && sfifo_keyvrc_wrdy;
 
   assign fifo_rcstage_err_o =
          {( sfifo_rcstage_wvld && !sfifo_rcstage_wrdy),
@@ -285,23 +286,23 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
     end else if (!gen_adata_null_q) begin
       // Update key and v with values from the update unit if
       // non-zero pdata were provided
-      keyvrc_data.key     = cmd_upd_rsp_data_i.key;
-      keyvrc_data.v       = cmd_upd_rsp_data_i.v;
-      keyvrc_data.inst_id = cmd_upd_rsp_data_i.inst_id;
-      keyvrc_data.cmd     = cmd_upd_rsp_data_i.cmd;
+      keyvrc_data.key     = update_rsp_data_i.key;
+      keyvrc_data.v       = update_rsp_data_i.v;
+      keyvrc_data.inst_id = update_rsp_data_i.inst_id;
+      keyvrc_data.cmd     = update_rsp_data_i.cmd;
     end
   end
 
   assign sfifo_keyvrc_wdata = {keyvrc_glast,
                                keyvrc_data};
 
-  assign sfifo_keyvrc_rrdy = cmd_data_rsp_rdy_i && sfifo_keyvrc_rvld;
+  assign sfifo_keyvrc_rrdy = rsp_rdy_i && sfifo_keyvrc_rvld;
 
   // cmd response output assignments
-  assign {cmd_data_rsp_glast_o,
-          cmd_data_rsp_o}      = sfifo_keyvrc_rdata;
+  assign {rsp_glast_o,
+          rsp_data_o} = sfifo_keyvrc_rdata;
 
-  assign cmd_data_rsp_vld_o = sfifo_keyvrc_rrdy;
+  assign rsp_vld_o = sfifo_keyvrc_rrdy;
 
   assign fifo_keyvrc_err_o =
          {( sfifo_keyvrc_wvld && !sfifo_keyvrc_wrdy),
@@ -310,6 +311,6 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
 
   // Unused signals
   logic [SeedLen-1:0] unused_upd_rsp_pdata;
-  assign unused_upd_rsp_pdata = cmd_upd_rsp_data_i.pdata;
+  assign unused_upd_rsp_pdata = update_rsp_data_i.pdata;
 
 endmodule
