@@ -19,7 +19,7 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
     m_rng_push_seq = push_pull_host_seq#(`RNG_BUS_WIDTH)::type_id::
                      create("m_rng_push_seq");
 
-    m_rng_push_seq.num_trans = 96;
+    m_rng_push_seq.num_trans = entropy_src_pkg::CSRNG_BUS_WIDTH/`RNG_BUS_WIDTH;
     begin
       m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
       fork
