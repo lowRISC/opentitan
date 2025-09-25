@@ -295,7 +295,7 @@ impl Codegen<'_> {
         } else {
             let nbytes = Self::tag_size(max_size) - 2;
             len_enc.push(0x80 | (nbytes as u8));
-            len_enc.extend(std::iter::repeat(0).take(nbytes));
+            len_enc.extend(std::iter::repeat_n(0, nbytes));
         }
 
         Ok(len_enc)
@@ -696,7 +696,7 @@ impl Builder for Codegen<'_> {
             .collect::<Vec<_>>();
         // See X.690 spec section 8.6 for encoding details.
         // Note: the encoding of an empty bitstring must be the number of unused bits to 0 and have no content.
-        let nr_bytes = (bit_consts.len() + 7) / 8;
+        let nr_bytes = bit_consts.len().div_ceil(8);
         let mut bytes = vec![0u8; nr_bytes];
         for (i, bit) in bit_consts.iter().enumerate() {
             bytes[i / 8] |= (**bit as u8) << (7 - (i % 8));

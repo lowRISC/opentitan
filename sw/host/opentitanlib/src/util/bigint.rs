@@ -90,7 +90,7 @@ impl<const BIT_LEN: usize, const EXACT_LEN: bool> FixedSizeBigInt<BIT_LEN, EXACT
         let mut v = self.0.to_bytes_be();
         assert!(Self::BYTE_LEN >= v.len());
         // Prepend since `v` is big-endian.
-        v.splice(0..0, iter::repeat(0).take(Self::BYTE_LEN - v.len()));
+        v.splice(0..0, iter::repeat_n(0, Self::BYTE_LEN - v.len()));
         v
     }
 

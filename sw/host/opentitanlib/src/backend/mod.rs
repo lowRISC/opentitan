@@ -142,10 +142,10 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
         }
         _ => return Err(Error::UnknownInterface(interface.to_string()).into()),
     };
-    if args.conf.is_empty() {
-        if let Some(conf_file) = default_conf {
-            process_config_file(&mut env, conf_file)?
-        }
+    if args.conf.is_empty()
+        && let Some(conf_file) = default_conf
+    {
+        process_config_file(&mut env, conf_file)?
     }
     env.set_openocd_adapter_config(&args.openocd_adapter_config);
     env.build(backend)

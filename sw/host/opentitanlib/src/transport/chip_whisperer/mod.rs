@@ -65,10 +65,10 @@ impl<B: Board> ChipWhisperer<B> {
             let mut ports = serialport::available_ports()
                 .map_err(|e| UartError::EnumerationError(e.to_string()))?;
             ports.retain(|port| {
-                if let SerialPortType::UsbPort(info) = &port.port_type {
-                    if info.serial_number.as_deref() == Some(serial_number) {
-                        return true;
-                    }
+                if let SerialPortType::UsbPort(info) = &port.port_type
+                    && info.serial_number.as_deref() == Some(serial_number)
+                {
+                    return true;
                 }
                 false
             });

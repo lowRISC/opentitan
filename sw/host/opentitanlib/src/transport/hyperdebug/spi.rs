@@ -556,7 +556,7 @@ impl HyperdebugSpiTarget {
         req.data[idx..idx + address_bytes.len()].clone_from_slice(address_bytes);
         idx += address_bytes.len();
         if cmd.get_switch() == eeprom::Switch::Mode111
-            && cmd.get_dummy_cycles() % 8 == 0
+            && cmd.get_dummy_cycles().is_multiple_of(8)
             && addr_len + cmd.get_dummy_cycles() / 8 <= 7
         {
             // In cases when the number of dummy cycles is divisible by 8, stuff a number of

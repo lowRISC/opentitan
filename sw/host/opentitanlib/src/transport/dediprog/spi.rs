@@ -154,7 +154,7 @@ impl DediprogSpi {
         }
 
         ensure!(
-            rbuf.len() % Self::READ_CHUNK_SIZE == 0,
+            rbuf.len().is_multiple_of(Self::READ_CHUNK_SIZE),
             SpiError::InvalidTransferMode(format!(
                 "Read length {} not multiple of {}",
                 rbuf.len(),
@@ -193,7 +193,7 @@ impl DediprogSpi {
         _wait_for_busy_clear: bool,
     ) -> Result<()> {
         ensure!(
-            wbuf.len() % Self::WRITE_CHUNK_SIZE == 0,
+            wbuf.len().is_multiple_of(Self::WRITE_CHUNK_SIZE),
             SpiError::InvalidTransferMode(format!(
                 "Write length {} not multiple of {}",
                 wbuf.len(),

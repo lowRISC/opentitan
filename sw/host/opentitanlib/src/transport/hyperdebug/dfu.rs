@@ -69,11 +69,7 @@ impl HyperdebugDfu {
         // version.
         let config_desc = usb_backend.active_config_descriptor()?;
         let current_firmware_version = if let Some(idx) = config_desc.description_string_index() {
-            if let Ok(current_firmware_version) = usb_backend.read_string_descriptor_ascii(idx) {
-                Some(current_firmware_version)
-            } else {
-                None
-            }
+            usb_backend.read_string_descriptor_ascii(idx).ok()
         } else {
             None
         };
@@ -185,16 +181,14 @@ pub fn update_firmware(
         OFFICIAL_FIRMWARE.ok_or_else(|| anyhow!("No build-in firmware, use --filename"))?
     };
 
-    if !force {
-        if let Some(current_version) = current_firmware_version {
-            let new_version = get_hyperdebug_firmware_version(firmware)?;
-            if new_version == current_version {
-                log::warn!(
-                    "HyperDebug already running firmware version {}.  Consider --force.",
-                    new_version,
-                );
-                return Ok(None);
-            }
+    if !force && let Some(current_version) = current_firmware_version {
+        let new_version = get_hyperdebug_firmware_version(firmware)?;
+        if new_version == current_version {
+            log::warn!(
+                "HyperDebug already running firmware version {}.  Consider --force.",
+                new_version,
+            );
+            return Ok(None);
         }
     }
 

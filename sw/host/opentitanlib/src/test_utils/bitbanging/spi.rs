@@ -448,12 +448,12 @@ impl<const D0: u8, const D1: u8, const D2: u8, const D3: u8, const CLK: u8, cons
                     decoded_bits += 4;
                 }
             }
-            if decoded_bits % 8 == 0 {
+            if decoded_bits.is_multiple_of(8) {
                 word.push(byte);
                 byte = 0x00;
             }
         }
-        if decoded_bits % 8 != 0 {
+        if !decoded_bits.is_multiple_of(8) {
             // For < 8 bits per word, we shift partial data back into the MSBs
             byte <<= 8 - (decoded_bits % 8);
             word.push(byte);

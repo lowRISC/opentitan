@@ -120,7 +120,7 @@ impl MultiWaker {
     ///
     /// When registration eventually happens, it is treated as if the registration happens at this point in time.
     /// This is a cheap operation compared to the actual registration of the waker.
-    pub fn register(&self) -> MultiWakerRegistration {
+    pub fn register(&self) -> MultiWakerRegistration<'_> {
         MultiWakerRegistration {
             generation: self.inner.generation.load(Ordering::Relaxed),
             waker: &self.inner,

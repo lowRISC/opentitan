@@ -103,7 +103,7 @@ fn get_token<'a>(
     }
 }
 
-fn get_all_tokens(input: &str) -> Result<Vec<Token>> {
+fn get_all_tokens(input: &str) -> Result<Vec<Token<'_>>> {
     let mut char_indices = input.char_indices().peekable();
     let mut all_tokens = Vec::new();
     loop {
@@ -379,7 +379,7 @@ pub fn parse_dac_sequence<'a, 'wr>(
                 if needed_entries > run_start {
                     let run_length = needed_entries - run_start;
                     ensure!(
-                        run_length % num_pins == 0,
+                        run_length.is_multiple_of(num_pins),
                         "Unexpected number of samples {}, should be multiple of the number of pins {}",
                         run_length,
                         num_pins,
@@ -400,7 +400,7 @@ pub fn parse_dac_sequence<'a, 'wr>(
     if needed_entries > run_start {
         let run_length = needed_entries - run_start;
         ensure!(
-            run_length % num_pins == 0,
+            run_length.is_multiple_of(num_pins),
             "Unexpected number of samples {}, should be multiple of the number of pins {}",
             run_length,
             num_pins,

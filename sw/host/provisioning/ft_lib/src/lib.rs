@@ -207,7 +207,7 @@ fn get_obj_header(data: &[u8]) -> Result<ObjHeader> {
 }
 
 // Extract certificate payload header from the input buffer.
-fn get_cert(data: &[u8]) -> Result<CertHeader> {
+fn get_cert(data: &[u8]) -> Result<CertHeader<'_>> {
     let header_len = std::mem::size_of::<CertHeaderType>();
 
     if data.len() < header_len {
@@ -467,7 +467,10 @@ fn provision_certificates(
             ext_ca_cert
         );
         for sku_specific_cert in sku_specific_certs.iter() {
-            validate_cert_chain(ext_ca_cert.to_str().unwrap(), &[sku_specific_cert.clone()])?;
+            validate_cert_chain(
+                ext_ca_cert.to_str().unwrap(),
+                std::slice::from_ref(sku_specific_cert),
+            )?;
         }
         log::info!("Success.");
     }

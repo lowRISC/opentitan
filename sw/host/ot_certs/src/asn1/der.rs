@@ -188,7 +188,7 @@ impl Builder for Der {
             .collect::<Result<Vec<_>>>()?;
         // See X.690 spec section 8.6 for encoding details.
         // Note: the encoding of an empty bitstring must be the number of unused bits to 0 and have no content.
-        let nr_bytes = (bits.len() + 7) / 8;
+        let nr_bytes = bits.len().div_ceil(8);
         let mut bytes = vec![0u8; nr_bytes];
         for (i, bit) in bits.iter().enumerate() {
             bytes[i / 8] |= (**bit as u8) << (7 - (i % 8));

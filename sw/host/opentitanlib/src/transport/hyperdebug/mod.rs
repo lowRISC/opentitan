@@ -161,23 +161,20 @@ impl<T: Flavor> Hyperdebug<T> {
         let mut uart_interfaces: HashMap<String, UartInterface> = HashMap::new();
 
         let config_desc = device.active_config_descriptor()?;
-        let current_firmware_version = if let Some(idx) = config_desc.description_string_index() {
-            if let Ok(current_firmware_version) = device.read_string_descriptor_ascii(idx) {
-                if let Some(released_firmware_version) = dfu::official_firmware_version()? {
-                    if T::perform_initial_fw_check()
-                        && current_firmware_version != released_firmware_version
-                    {
-                        log::warn!(
-                            "Current HyperDebug firmware version is {}, newest release is {}, Consider running `opentitantool transport update-firmware`",
-                            current_firmware_version,
-                            released_firmware_version,
-                        );
-                    }
-                }
-                Some(current_firmware_version)
-            } else {
-                None
+        let current_firmware_version = if let Some(idx) = config_desc.description_string_index()
+            && let Ok(current_firmware_version) = device.read_string_descriptor_ascii(idx)
+        {
+            if let Some(released_firmware_version) = dfu::official_firmware_version()?
+                && T::perform_initial_fw_check()
+                && current_firmware_version != released_firmware_version
+            {
+                log::warn!(
+                    "Current HyperDebug firmware version is {}, newest release is {}, Consider running `opentitantool transport update-firmware`",
+                    current_firmware_version,
+                    released_firmware_version,
+                );
             }
+            Some(current_firmware_version)
         } else {
             None
         };
@@ -319,10 +316,10 @@ impl<T: Flavor> Hyperdebug<T> {
     fn find_tty(path: &Path) -> Result<PathBuf> {
         for entry in fs::read_dir(path).context(format!("find TTY: read_dir({:?})", path))? {
             let entry = entry.context(format!("find TTY: entity {:?}", path))?;
-            if let Ok(filename) = entry.file_name().into_string() {
-                if filename.starts_with("tty") {
-                    return Ok(PathBuf::from("/dev").join(entry.file_name()));
-                }
+            if let Ok(filename) = entry.file_name().into_string()
+                && filename.starts_with("tty")
+            {
+                return Ok(PathBuf::from("/dev").join(entry.file_name()));
             }
         }
         Err(TransportError::CommunicationError("Did not find ttyUSBn device".to_string()).into())

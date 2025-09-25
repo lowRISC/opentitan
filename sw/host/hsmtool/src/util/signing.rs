@@ -141,7 +141,7 @@ impl SignData {
     }
 
     /// Return the `Mechanism` needed during signing or verification.
-    pub fn mechanism(&self, keytype: KeyType) -> Result<Mechanism> {
+    pub fn mechanism(&self, keytype: KeyType) -> Result<Mechanism<'_>> {
         match keytype {
             KeyType::Rsa => match self {
                 SignData::PlainText => Ok(Mechanism::RsaPkcs),

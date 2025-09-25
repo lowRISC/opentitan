@@ -68,15 +68,15 @@ impl SpxInterface for SpxEf {
     fn list_keys(&self) -> Result<Vec<KeyEntry>> {
         let mut result = Vec::new();
         for file in ElementaryFile::list(&self.session)? {
-            if let Some(app) = file.application {
-                if let Some((Self::APPLICATION, algo)) = app.split_once(':') {
-                    result.push(KeyEntry {
-                        alias: file.name.clone(),
-                        hash: None,
-                        algorithm: algo.into(),
-                        ..Default::default()
-                    });
-                }
+            if let Some(app) = file.application
+                && let Some((Self::APPLICATION, algo)) = app.split_once(':')
+            {
+                result.push(KeyEntry {
+                    alias: file.name.clone(),
+                    hash: None,
+                    algorithm: algo.into(),
+                    ..Default::default()
+                });
             }
         }
         Ok(result)

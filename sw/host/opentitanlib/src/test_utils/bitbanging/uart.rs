@@ -73,7 +73,7 @@ impl UartBitbangConfig {
 /// Return `true` if there is an even number of 1s, and `false` otherwise.
 #[inline]
 pub fn compute_parity(data: u8, parity_bit: Option<bool>) -> bool {
-    let data_parity = (data.count_ones() % 2) != 0;
+    let data_parity = !data.count_ones().is_multiple_of(2);
     if let Some(bit) = parity_bit {
         data_parity ^ bit
     } else {
@@ -111,8 +111,8 @@ impl UartBitbangEncoder {
     pub fn encode_break(&self, samples: &mut Vec<u8>) {
         let break_bits = self.config.break_bit_time() as usize;
         let stop_bits = self.config.stop_bit_time() as usize;
-        samples.extend(std::iter::repeat(0x00).take(break_bits));
-        samples.extend(std::iter::repeat(0x01).take(stop_bits));
+        samples.extend(std::iter::repeat_n(0x00, break_bits));
+        samples.extend(std::iter::repeat_n(0x01, stop_bits));
     }
 
     /// Encode the transmission of a character into UART bitbanging samples, to

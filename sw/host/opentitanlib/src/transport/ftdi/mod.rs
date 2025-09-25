@@ -64,10 +64,11 @@ impl<C: Chip> Ftdi<C> {
             .map_err(|e| UartError::EnumerationError(e.to_string()))?;
 
         ports.retain(|port| {
-            if let SerialPortType::UsbPort(info) = &port.port_type {
-                if info.vid == C::VENDOR_ID && info.pid == C::PRODUCT_ID {
-                    return true;
-                }
+            if let SerialPortType::UsbPort(info) = &port.port_type
+                && info.vid == C::VENDOR_ID
+                && info.pid == C::PRODUCT_ID
+            {
+                return true;
             }
             false
         });

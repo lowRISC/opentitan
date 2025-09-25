@@ -320,7 +320,7 @@ impl Image {
             ext_table_entry.offset
         } else {
             ensure!(
-                self.size % align_of::<u32>() == 0,
+                self.size.is_multiple_of(align_of::<u32>()),
                 ImageError::BadExtensionAlignment(entry_id)
             );
             self.size.try_into()?
@@ -374,9 +374,9 @@ impl Image {
     /// This allows a manifest definition with a populated extension table to be used even when
     /// extensions aren't provided.
     pub fn drop_null_extensions(&mut self) -> Result<()> {
-        let manifest = self.borrow_manifest()?;
+        let manifest = self.borrow_manifest_mut()?;
 
-        manifest.extensions.entries.map(|mut e| {
+        manifest.extensions.entries.iter_mut().for_each(|e| {
             if e.offset == 0 {
                 e.identifier = 0;
             }

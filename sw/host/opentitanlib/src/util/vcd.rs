@@ -817,7 +817,7 @@ impl UniformVcdSampler {
             value_changes: vcd.value_changes.changes.into_iter(),
             current_timestamp: 0u128,
             next_timestamp: 0u128,
-            current_values: std::iter::repeat(0x00).take(num_bytes).collect::<Vec<_>>(),
+            current_values: std::iter::repeat_n(0x00, num_bytes).collect::<Vec<_>>(),
             depleted: false,
         }
     }
@@ -897,7 +897,7 @@ pub fn vcd_to_edges(
     let mut current_time: u128 = 0;
     let num_bytes = pin_vars.len().div_ceil(8);
     // Assume all values are initialized at 0 if not given a value at t=0.
-    let mut current_values: Vec<u8> = std::iter::repeat(0x00).take(num_bytes).collect();
+    let mut current_values: Vec<u8> = std::iter::repeat_n(0x00, num_bytes).collect();
 
     for change in &vcd.value_changes.changes {
         match change {
