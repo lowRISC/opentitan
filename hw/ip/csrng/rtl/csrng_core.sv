@@ -1280,26 +1280,26 @@ module csrng_core import csrng_pkg::*; #(
     .rst_ni  (rst_ni),
     .enable_i(cs_enable_fo[46]),
 
-    .cmd_data_req_vld_i         (ctr_drbg_cmd_req_vld),
-    .cmd_data_req_rdy_o         (ctr_drbg_cmd_req_rdy),
-    .cmd_data_req_i             (ctr_drbg_cmd_req_data),
-    .cmd_data_req_entropy_i     (cmd_entropy),
-    .cmd_data_req_entropy_fips_i(cmd_entropy_fips),
-    .cmd_data_req_glast_i       (gen_last_q),
+    .req_vld_i         (ctr_drbg_cmd_req_vld),
+    .req_rdy_o         (ctr_drbg_cmd_req_rdy),
+    .req_data_i        (ctr_drbg_cmd_req_data),
+    .req_entropy_i     (cmd_entropy),
+    .req_entropy_fips_i(cmd_entropy_fips),
+    .req_glast_i       (gen_last_q),
 
-    .cmd_data_rsp_vld_o  (ctr_drbg_cmd_rsp_vld),
-    .cmd_data_rsp_rdy_i  (ctr_drbg_cmd_rsp_rdy),
-    .cmd_data_rsp_o      (ctr_drbg_cmd_rsp_data),
-    .cmd_data_rsp_glast_o(ctr_drbg_cmd_rsp_glast),
+    .rsp_vld_o  (ctr_drbg_cmd_rsp_vld),
+    .rsp_rdy_i  (ctr_drbg_cmd_rsp_rdy),
+    .rsp_data_o (ctr_drbg_cmd_rsp_data),
+    .rsp_glast_o(ctr_drbg_cmd_rsp_glast),
 
     // Request and response path to and from update unit
-    .cmd_upd_req_vld_o (cmd_upd_req_vld),
-    .cmd_upd_req_rdy_i (cmd_upd_req_rdy),
-    .cmd_upd_req_data_o(cmd_upd_req_data),
+    .update_req_vld_o (cmd_upd_req_vld),
+    .update_req_rdy_i (cmd_upd_req_rdy),
+    .update_req_data_o(cmd_upd_req_data),
 
-    .cmd_upd_rsp_vld_i (cmd_upd_rsp_vld),
-    .cmd_upd_rsp_rdy_o (cmd_upd_rsp_rdy),
-    .cmd_upd_rsp_data_i(upd_rsp_data),
+    .update_rsp_vld_i (cmd_upd_rsp_vld),
+    .update_rsp_rdy_o (cmd_upd_rsp_rdy),
+    .update_rsp_data_i(upd_rsp_data),
 
     .fifo_cmdreq_err_o (ctr_drbg_cmd_sfifo_cmdreq_err),
     .fifo_rcstage_err_o(ctr_drbg_cmd_sfifo_rcstage_err),
@@ -1329,7 +1329,6 @@ module csrng_core import csrng_pkg::*; #(
     .rsp_rdy_i (upd_rsp_rdy),
     .rsp_data_o(upd_rsp_data),
 
-    // Entropy source halt interface
     .es_halt_req_i(cs_aes_halt_i.cs_aes_halt_req),
     .es_halt_ack_o(ctr_drbg_upd_es_ack),
 
