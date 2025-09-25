@@ -63,3 +63,17 @@ rust_binary(
         "@lowrisc_serde_annotate//serde_annotate",
     ],
 )
+
+rust_binary(
+    name = "dfu_rescue_error_handling",
+    srcs = ["dfu_rescue_error_handling.rs"],
+    deps = [
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@crate_index//:regex",
+        "@lowrisc_serde_annotate//serde_annotate",
+    ],
+)
