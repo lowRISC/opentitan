@@ -225,13 +225,13 @@ pub mod decoder {
                     return Ok(None); // No symbol found.
                 }
                 // If sda transitioned with the scl high it either means a stop or start symbol.
-                if let Some(previous) = previous {
-                    if previous.sda() != sample.sda() {
-                        return Ok(Some(match sample.sda() {
-                            Bit::High => Symbol::Stop,
-                            Bit::Low => Symbol::Start,
-                        }));
-                    }
+                if let Some(previous) = previous
+                    && previous.sda() != sample.sda()
+                {
+                    return Ok(Some(match sample.sda() {
+                        Bit::High => Symbol::Stop,
+                        Bit::Low => Symbol::Start,
+                    }));
                 }
                 previous = Some(sample);
             }

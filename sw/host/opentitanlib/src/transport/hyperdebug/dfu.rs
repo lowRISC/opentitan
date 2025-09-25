@@ -181,16 +181,14 @@ pub fn update_firmware(
         OFFICIAL_FIRMWARE.ok_or_else(|| anyhow!("No build-in firmware, use --filename"))?
     };
 
-    if !force {
-        if let Some(current_version) = current_firmware_version {
-            let new_version = get_hyperdebug_firmware_version(firmware)?;
-            if new_version == current_version {
-                log::warn!(
-                    "HyperDebug already running firmware version {}.  Consider --force.",
-                    new_version,
-                );
-                return Ok(None);
-            }
+    if !force && let Some(current_version) = current_firmware_version {
+        let new_version = get_hyperdebug_firmware_version(firmware)?;
+        if new_version == current_version {
+            log::warn!(
+                "HyperDebug already running firmware version {}.  Consider --force.",
+                new_version,
+            );
+            return Ok(None);
         }
     }
 
