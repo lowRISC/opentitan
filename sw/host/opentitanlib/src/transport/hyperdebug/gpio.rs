@@ -110,10 +110,10 @@ impl GpioPin for HyperdebugGpioPin {
         pull: Option<PullMode>,
         volts: Option<f32>,
     ) -> Result<()> {
-        if let Some(v) = volts {
-            if !(0.0..=3.3).contains(&v) {
-                return Err(GpioError::UnsupportedPinVoltage(v).into());
-            }
+        if let Some(v) = volts
+            && !(0.0..=3.3).contains(&v)
+        {
+            return Err(GpioError::UnsupportedPinVoltage(v).into());
         }
         self.inner.cmd_no_output(&format!(
             "gpio multiset {} {} {} {} {}",

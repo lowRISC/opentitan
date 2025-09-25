@@ -69,10 +69,10 @@ impl UsbBackend {
                     continue;
                 }
             };
-            if let Some(sn) = &usb_serial {
-                if &serial_number != sn {
-                    continue;
-                }
+            if let Some(sn) = &usb_serial
+                && &serial_number != sn
+            {
+                continue;
             }
             devices.push((device, serial_number));
         }
