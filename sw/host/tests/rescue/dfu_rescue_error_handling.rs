@@ -9,9 +9,11 @@ use clap::{Args, Parser, Subcommand, ValueEnum};
 use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::io::eeprom::{AddressMode, Transaction, MODE_111};
 use opentitanlib::io::spi::SpiParams;
 use opentitanlib::rescue::dfu::{DfuOperations, DfuRequestType};
 use opentitanlib::rescue::{EntryMode, Rescue, RescueMode, RescueParams, SpiDfu};
+use opentitanlib::spiflash::SpiFlash;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 
@@ -46,6 +48,7 @@ enum Commands {
 pub enum DfuRescueTestActions {
     SpiDfuStateTransitions,
     InvalidSpiDfuRequests,
+    InvalidSpiFlashTransaction,
 }
 
 const SET_INTERFACE: u8 = 0x0b;
@@ -253,6 +256,57 @@ fn invalid_spi_dfu_requests(params: &RescueParams, transport: &TransportWrapper)
     Ok(())
 }
 
+fn invalid_spi_flash_transaction(
+    params: &RescueParams,
+    transport: &TransportWrapper,
+) -> Result<()> {
+    let spi_params = SpiParams::default();
+    let spi = spi_params.create(transport, "BOOTSTRAP")?;
+    let rescue = SpiDfu::new(spi.clone(), params.clone());
+    rescue.enter(transport, EntryMode::Reset)?;
+
+    // Send an unsupported flash op code (CHIP_ERASE). The `rescue_protocol` on
+    // the device will report `kErrorUsbBadSetup` in the mailbox.
+    spi.run_eeprom_transactions(&mut [
+        Transaction::Command(MODE_111.cmd(SpiFlash::RESET_ENABLE)),
+        Transaction::Command(MODE_111.cmd(SpiFlash::CHIP_ERASE)),
+    ])?;
+
+    let sfdp = SpiFlash::read_sfdp(&*spi)?;
+    let address_mode = AddressMode::from(sfdp.jedec.address_modes);
+
+    // Send a packet where the offset (2040) + payload (256) exceeds the
+    // device's 2KB buffer. The `rescue_protocol` should truncate the write.
+    let payload = [0u8; 256];
+    spi.run_eeprom_transactions(&mut [
+        Transaction::Command(MODE_111.cmd(SpiFlash::WRITE_ENABLE)),
+        Transaction::Write(
+            MODE_111.cmd_addr(SpiFlash::PAGE_PROGRAM, 2040, address_mode),
+            &payload,
+        ),
+        Transaction::WaitForBusyClear,
+    ])?;
+
+    // Send a payload of 300 bytes, which is larger than the SPI device's
+    // maximum of 256 bytes.
+    let payload_overflow = [0u8; 300];
+    spi.run_eeprom_transactions(&mut [
+        Transaction::Command(MODE_111.cmd(SpiFlash::WRITE_ENABLE)),
+        Transaction::Write(
+            MODE_111.cmd_addr(SpiFlash::PAGE_PROGRAM, 0, address_mode),
+            &payload_overflow,
+        ),
+        Transaction::WaitForBusyClear,
+    ])?;
+
+    rescue.reboot()?;
+
+    let uart = transport.uart("console")?;
+    UartConsole::wait_for(&*uart, r"Finished", Duration::from_secs(5))?;
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
@@ -265,6 +319,9 @@ fn main() -> Result<()> {
             }
             DfuRescueTestActions::InvalidSpiDfuRequests => {
                 invalid_spi_dfu_requests(&rescue.params, &transport)?
+            }
+            DfuRescueTestActions::InvalidSpiFlashTransaction => {
+                invalid_spi_flash_transaction(&rescue.params, &transport)?
             }
         },
     }
