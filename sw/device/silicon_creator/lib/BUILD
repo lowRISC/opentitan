@@ -408,6 +408,7 @@ dual_cc_library(
             "//hw/top/dt",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
+            "//sw/device/lib/coverage:api",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//hw/top:lc_ctrl_c_regs",
             "//hw/top:otp_ctrl_c_regs",
