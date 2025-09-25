@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/stdasm.h"
+#include "sw/device/lib/coverage/api.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
@@ -369,7 +370,10 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
 
   // Jump to OWNER entry point.
   dbg_printf("entry: 0x%x\r\n", (unsigned int)entry_point);
+  coverage_report();
+  coverage_invalidate();
   ((owner_stage_entry_point *)entry_point)();
+  coverage_init();  // re-init after invalidate.
 
   return kErrorRomExtBootFailed;
 }
