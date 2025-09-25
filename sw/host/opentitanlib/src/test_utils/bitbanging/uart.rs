@@ -111,8 +111,8 @@ impl UartBitbangEncoder {
     pub fn encode_break(&self, samples: &mut Vec<u8>) {
         let break_bits = self.config.break_bit_time() as usize;
         let stop_bits = self.config.stop_bit_time() as usize;
-        samples.extend(std::iter::repeat(0x00).take(break_bits));
-        samples.extend(std::iter::repeat(0x01).take(stop_bits));
+        samples.extend(std::iter::repeat_n(0x00, break_bits));
+        samples.extend(std::iter::repeat_n(0x01, stop_bits));
     }
 
     /// Encode the transmission of a character into UART bitbanging samples, to
