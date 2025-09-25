@@ -1906,20 +1906,23 @@ waive --rule=line-length --location="{rnd_cnst_sv_file}"
             lc_seed = topcfg["seed"]["lc_ctrl_seed"]
             lc_st_enc = LcStEnc(lc_state_def_file, lc_seed.value)
             lc_st_enc_path = f"rtl/autogen/{lc_seed.seed_mode}"
-            lc_st_enc_file = "lc_ctrl_state_pkg.sv"
+            lc_st_enc_file = "lc_ctrl_token_pkg.sv"
             render_template(IP_RAW_PATH / "lc_ctrl" / "rtl" / "lc_ctrl_state_pkg.sv.tpl",
+                            IP_RAW_PATH / "lc_ctrl" / "rtl" / "lc_ctrl_state_pkg.sv",
+                            lc_st_enc=lc_st_enc)
+            render_template(IP_RAW_PATH / "lc_ctrl" / "rtl" / "lc_ctrl_token_pkg.sv.tpl",
                             out_path / lc_st_enc_path / lc_st_enc_file,
                             secure=True, lc_st_enc=lc_st_enc)
             render_template(TOPGEN_TEMPLATE_PATH / "core_file.core.tpl",
                             out_path / lc_st_enc_path /
-                            f"top_{topname}_{lc_seed.seed_mode}_lc_ctrl_state_pkg.core",
+                            f"top_{topname}_{lc_seed.seed_mode}_lc_ctrl_token_pkg.core",
                             package=(
                                 f"lowrisc:{topname}_constants:"
-                                f"{lc_seed.seed_mode}_lc_ctrl_state_pkg:0.1"
+                                f"{lc_seed.seed_mode}_lc_ctrl_token_pkg:0.1"
                             ),
-                            description="LC Controller State Encoding Package",
-                            virtual_package="lowrisc:virtual_ip:lc_ctrl_state_pkg",
-                            dependencies=["lowrisc:prim:util"],
+                            description="LC Controller Token Package",
+                            virtual_package="lowrisc:virtual_constants:lc_ctrl_token_pkg",
+                            dependencies=["lowrisc:ip:lc_ctrl_state_pkg"],
                             files=[lc_st_enc_file])
 
         # The C / SV file needs some complex information, so we initialize this

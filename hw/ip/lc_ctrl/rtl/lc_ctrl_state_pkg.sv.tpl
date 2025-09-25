@@ -220,18 +220,7 @@ ${_print_state_enum('AuthSt', 'auth_state', lc_st_enc.config)}
 
   typedef logic [DecLcCountWidth-1:0] dec_lc_cnt_t;
 
-
-  ///////////////////////////////////////////
-  // Hashed RAW unlock and all-zero tokens //
-  ///////////////////////////////////////////
-
   parameter int LcTokenWidth = ${lc_st_enc.config['token_size']};
   typedef logic [LcTokenWidth-1:0] lc_token_t;
-<% token_size = lc_st_enc.config['token_size'] %>
-% for token in lc_st_enc.config['tokens']:
-  parameter lc_token_t ${token['name']} = {
-    ${"{0:}'h{1:0X}".format(token_size, token['value'])}
-  };
-% endfor
 
 endpackage : lc_ctrl_state_pkg

@@ -518,8 +518,8 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     lc_ctrl_state_pkg::lc_token_t token_err_inj;
     kmac_pkg::rsp_digest_t kmac_digest;
 
-    tokens_a[ZeroTokenIdx]       = lc_ctrl_state_pkg::AllZeroTokenHashed;
-    tokens_a[RawUnlockTokenIdx]  = lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed;
+    tokens_a[ZeroTokenIdx]       = lc_ctrl_token_pkg::AllZeroTokenHashed;
+    tokens_a[RawUnlockTokenIdx]  = lc_ctrl_token_pkg::RndCnstRawUnlockTokenHashed;
     tokens_a[TestUnlockTokenIdx] = cfg.lc_ctrl_vif.otp_i.test_unlock_token;
     tokens_a[TestExitTokenIdx]   = cfg.lc_ctrl_vif.otp_i.test_exit_token;
     tokens_a[RmaTokenIdx]        = cfg.lc_ctrl_vif.otp_i.rma_token;
