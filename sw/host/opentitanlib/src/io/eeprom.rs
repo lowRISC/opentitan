@@ -187,7 +187,7 @@ impl Cmd {
     /// used in cases where the transport backend does not have specialied EEPROM/Flash
     /// communication primitives.
     pub fn to_bytes(&self) -> Result<&[u8]> {
-        if self.mode.switch == Switch::Mode111 && self.mode.dummy_cycles % 8 == 0 {
+        if self.mode.switch == Switch::Mode111 && self.mode.dummy_cycles.is_multiple_of(8) {
             Ok(&self.data
                 [0..(self.opcode_len + self.addr_len + self.mode.dummy_cycles / 8) as usize])
         } else {

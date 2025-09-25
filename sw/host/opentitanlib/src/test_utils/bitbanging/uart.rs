@@ -73,7 +73,7 @@ impl UartBitbangConfig {
 /// Return `true` if there is an even number of 1s, and `false` otherwise.
 #[inline]
 pub fn compute_parity(data: u8, parity_bit: Option<bool>) -> bool {
-    let data_parity = (data.count_ones() % 2) != 0;
+    let data_parity = !data.count_ones().is_multiple_of(2);
     if let Some(bit) = parity_bit {
         data_parity ^ bit
     } else {
