@@ -37,7 +37,7 @@ class lc_ctrl_volatile_unlock_smoke_vseq extends lc_ctrl_smoke_vseq;
     lc_cnt_int = dec_lc_cnt(lc_cnt);
     if (lc_cnt != LcCnt24) begin
       int exp_lc_cnt = lc_cnt_int == 0 ? 1 : lc_cnt_int;
-      lc_ctrl_state_pkg::lc_token_t token_val = lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed;
+      lc_ctrl_state_pkg::lc_token_t token_val = lc_ctrl_token_pkg::RndCnstRawUnlockTokenHashed;
       csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
       csr_wr(ral.transition_ctrl.volatile_raw_unlock, 1);
       csr_wr(ral.transition_target, {DecLcStateNumRep{next_state[DecLcStateWidth-1:0]}});

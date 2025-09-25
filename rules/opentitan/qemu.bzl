@@ -260,8 +260,7 @@ sim_qemu = rule(
         ),
         "lc_sv": attr.label(
             allow_single_file = True,
-            # TODO: should we really use Earl Grey as the default?
-            default = Label("//hw/top_earlgrey:rtl/autogen/testing/lc_ctrl_state_pkg.sv"),
+            default = Label("//hw/ip/lc_ctrl:rtl/lc_ctrl_state_pkg.sv"),
         ),
         "top_hjson": attr.label(
             allow_single_file = True,

@@ -12,6 +12,11 @@ from design.lib.common import (check_int, ecc_encode, get_hd, hd_histogram,
                                is_valid_codeword, random_or_hexvalue, scatter_bits)
 from topgen.secure_prng import SecurePrngFactory
 
+# This seed is used to generate the non-secure life cycle state encodings.
+# Use a common seed for all tops and selected seed types.
+lc_ctrl_non_secure_seed = 0x517ecf3166f4323433e4ad760d6f8e2fdf45244002ce54be8ca3cb7747c21bb
+
+
 # State types and permissible format for entries
 # The format is index dependent, e.g. ['0', 'A1', 'B1'] for index 1
 LC_STATE_TYPES = {
@@ -73,7 +78,7 @@ def _get_incremental_codewords(config, base_ecc, existing_words):
 
 def _get_new_state_word_pair(config, existing_words):
     '''Randomly generate a new incrementally writable word pair'''
-    prng = SecurePrngFactory.get("lcstenc")
+    prng = SecurePrngFactory.get("lc_non_secure")
     while 1:
         # Draw a random number and check whether it is unique and whether
         # the Hamming weight is in range.
@@ -189,7 +194,7 @@ def _validate_tokens(config):
     num_bytes = config['token_size'] // 8
 
     hashed_tokens = []
-    prng = SecurePrngFactory.get("lcstenc")
+    prng = SecurePrngFactory.get("lc_secure")
     for token in config['tokens']:
         random_or_hexvalue(prng, token, 'value', config['token_size'])
         hashed_token = OrderedDict()
@@ -283,7 +288,8 @@ class LcStEnc():
         log.info('Seed: {0:x}'.format(config['seed']))
         log.info('')
 
-        SecurePrngFactory.create("lcstenc", int(config['seed']))
+        SecurePrngFactory.create("lc_secure", int(config["seed"]))
+        SecurePrngFactory.create("lc_non_secure", lc_ctrl_non_secure_seed)
 
         log.info('Checking SECDED.')
         _validate_secded(config)

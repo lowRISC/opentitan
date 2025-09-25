@@ -110,6 +110,7 @@ module lc_ctrl_fsm
   // State group diversification value for keymgr
   output lc_keymgr_div_t        lc_keymgr_div_o
 );
+  import lc_ctrl_token_pkg::*;
 
   /////////////////////////////
   // Synchronizers / Buffers //
