@@ -128,9 +128,9 @@ jobs:
       - name: Verible FPV
         run: ./ci/scripts/verible-lint.sh fpv earlgrey
       - name: Validate alert classification for Earl Grey
-        run: ./ci/scripts/validate_alert_classification.sh hw/top_earlgrey/ip_autogen/alert_handler/data/top_earlgrey_alert_handler.ipconfig.hjson hw/top_earlgrey/data/otp/otp_ctrl_img_owner_sw_cfg.hjson
+        run: ./ci/scripts/validate_alert_classification.py hw/top_earlgrey/ip_autogen/alert_handler/data/top_earlgrey_alert_handler.ipconfig.hjson hw/top_earlgrey/data/otp/otp_ctrl_img_owner_sw_cfg.hjson
       - name: Validate alert classification for Darjeeling
-        run: ./ci/scripts/validate_alert_classification.sh hw/top_darjeeling/ip_autogen/alert_handler/data/top_darjeeling_alert_handler.ipconfig.hjson hw/top_darjeeling/data/otp/otp_ctrl_img_owner_sw_cfg.hjson
+        run: ./ci/scripts/validate_alert_classification.py hw/top_darjeeling/ip_autogen/alert_handler/data/top_darjeeling_alert_handler.ipconfig.hjson hw/top_darjeeling/data/otp/otp_ctrl_img_owner_sw_cfg.hjson
 
   build_docs:
     name: Build documentation
