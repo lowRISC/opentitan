@@ -320,7 +320,7 @@ impl Image {
             ext_table_entry.offset
         } else {
             ensure!(
-                self.size % align_of::<u32>() == 0,
+                self.size.is_multiple_of(align_of::<u32>()),
                 ImageError::BadExtensionAlignment(entry_id)
             );
             self.size.try_into()?

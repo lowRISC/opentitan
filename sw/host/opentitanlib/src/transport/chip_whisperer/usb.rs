@@ -366,7 +366,12 @@ impl<B: Board> Backend<B> {
         // Then, we need to extend the buffer a little to make sure we send
         // enough clocks at the end to finish programming.  Apparently, we
         // cannot end with a multiple of 64 bytes.
-        let newlen = stream.len() + if stream.len() % 32 != 0 { 32 } else { 33 };
+        let newlen = stream.len()
+            + if stream.len().is_multiple_of(32) {
+                33
+            } else {
+                32
+            };
         stream.resize(newlen, 0xFF);
 
         progress.new_stage("", stream.len());
