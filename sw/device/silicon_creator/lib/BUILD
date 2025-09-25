@@ -377,6 +377,7 @@ dual_cc_library(
             ":stack_utilization",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
+            "//sw/device/lib/coverage:api",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//hw/ip/keymgr/data:keymgr_c_regs",
             "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
