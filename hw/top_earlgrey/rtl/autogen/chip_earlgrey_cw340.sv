@@ -12,10 +12,10 @@
 module chip_earlgrey_cw340 #(
   // Path to a VMEM file containing the contents of the boot ROM, which will be
   // baked into the FPGA bitstream.
-  parameter BootRomInitFile = "test_rom_fpga_cw340.32.vmem",
+  parameter BootRomInitFile = "",
   // Path to a VMEM file containing the contents of the emulated OTP, which will be
   // baked into the FPGA bitstream.
-  parameter OtpMacroMemInitFile = "otp_img_fpga_cw340.vmem"
+  parameter OtpMacroMemInitFile = ""
 ) (
   // Dedicated Pads
   inout POR_N, // Manual Pad
