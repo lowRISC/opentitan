@@ -624,8 +624,6 @@ cc_library(
 
 # Some testutils are not multitop yet.
 TESTUTILS_EXCEPTIONS = [
-    "aes",
-    "csrng",
     "i2c",
     "uart",
     "rstmgr",
