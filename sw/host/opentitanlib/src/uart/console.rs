@@ -208,7 +208,7 @@ impl UartConsole {
         }
     }
 
-    pub fn captures(&self, status: ExitStatus) -> Option<Captures> {
+    pub fn captures(&self, status: ExitStatus) -> Option<Captures<'_>> {
         match status {
             ExitStatus::ExitSuccess => self
                 .exit_success

@@ -98,7 +98,7 @@ pub enum Int {
 
 impl Int {
     /// Parses an `Int` from its C name.
-    pub fn from_name(name: &str) -> Result<Self, Error> {
+    pub fn from_name(name: &str) -> Result<Self, Error<'_>> {
         match name {
             "bool" => Ok(Int::Bool),
             "uint8_t" => Ok(Int::U8),
@@ -198,7 +198,7 @@ pub enum Error<'c> {
 impl Struct {
     /// Parses a `Struct` from the given C file. This will only parse the first
     /// `cryptolib:struct` encountered.
-    pub fn parse(mut c_file: &str) -> Result<Struct, Error> {
+    pub fn parse(mut c_file: &str) -> Result<Struct, Error<'_>> {
         // First, find the struct.
         let struct_start = c_file.find(STRUCT_COMMENT).ok_or(Error::NoStructFound)?;
         c_file = &c_file[struct_start..];
@@ -315,7 +315,7 @@ fn munch_comments<'a>(c_file: &mut &'a str) -> Vec<&'a str> {
     }
 }
 
-fn parse_annotation(comment: &str) -> Result<Option<Annotation>, Error> {
+fn parse_annotation(comment: &str) -> Result<Option<Annotation>, Error<'_>> {
     let comment = match comment.strip_prefix("// cryptotest:") {
         Some(comment) => comment,
         None => return Ok(None),
