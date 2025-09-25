@@ -210,7 +210,6 @@ rust_library(
         "src/transport/ti50emulator/gpio.rs",
         "src/transport/ti50emulator/i2c.rs",
         "src/transport/ti50emulator/mod.rs",
-        "src/transport/ti50emulator/spi.rs",
         "src/transport/ti50emulator/uart.rs",
         "src/transport/verilator/gpio.rs",
         "src/transport/verilator/mod.rs",

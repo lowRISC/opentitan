@@ -24,7 +24,6 @@ use crate::transport::{
 mod emu;
 mod gpio;
 mod i2c;
-mod spi;
 mod uart;
 
 use crate::transport::ti50emulator::emu::{EmulatorImpl, EmulatorProcess, ResetPin};
@@ -33,8 +32,6 @@ use crate::transport::ti50emulator::i2c::Ti50I2cBus;
 use crate::transport::ti50emulator::uart::Ti50Uart;
 
 pub struct Ti50Emulator {
-    /// Mapping of SPI handles to their symbolic names.
-    spi_map: HashMap<String, Rc<dyn Target>>,
     /// Mapping of GPIO pins handles to their symbolic names.
     gpio_map: HashMap<String, Rc<dyn GpioPin>>,
     /// Mapping of I2C handles to their symbolic names.
@@ -102,7 +99,6 @@ impl Ti50Emulator {
             i2c_map.insert(name.to_uppercase(), Rc::clone(&i2c));
         }
         let ti50_emu = Ti50Emulator {
-            spi_map: HashMap::new(),
             gpio_map,
             i2c_map,
             uart_map,
@@ -147,9 +143,10 @@ impl Transport for Ti50Emulator {
 
     // Returns one of existing SPI instance.
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
-        Ok(Rc::clone(self.spi_map.get(instance).ok_or_else(|| {
-            TransportError::InvalidInstance(TransportInterfaceType::Spi, instance.to_string())
-        })?))
+        Err(TransportError::InvalidInstance(
+            TransportInterfaceType::Spi,
+            instance.to_string(),
+        ))?
     }
 
     // Returns one of existing I2C instance.
