@@ -71,6 +71,43 @@ alias(
     }),
 )
 
+cc_library(
+    name = "uart_runtime_real",
+    srcs = ["uart_runtime.c"],
+    features = ["-coverage"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":printer",
+        "//sw/device/lib/arch:device",
+        "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib/drivers:pinmux",
+        "//sw/device/silicon_creator/lib/drivers:uart",
+    ],
+    alwayslink = True,  # replacing weak symbol
+)
+
+cc_library(
+    name = "uart_runtime_skip",
+    srcs = ["uart_runtime_skip.c"],
+    features = ["-coverage"],
+    deps = [
+        "//sw/device/lib/arch:device",
+        "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib/drivers:pinmux",
+        "//sw/device/silicon_creator/lib/drivers:uart",
+    ],
+    alwayslink = True,  # replacing weak symbol
+)
+
+alias(
+    name = "uart_runtime",
+    actual = select({
+        "//rules/coverage:instrumented": ":uart_runtime_real",
+        "//rules/coverage:enabled": ":uart_runtime_skip",
+        "//conditions:default": "//sw/device:nothing",
+    }),
+)
+
 ld_library(
     name = "coverage_sections",
     includes = [
