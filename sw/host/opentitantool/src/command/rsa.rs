@@ -44,15 +44,6 @@ pub struct RsaKeyInfo {
     pub rr: RR,
 }
 
-#[derive(serde::Serialize)]
-pub struct RsaKeyInfoInWords {
-    pub key_num_bits: usize,
-    pub modulus: Vec<String>,
-    pub public_exponent: Vec<String>,
-    pub n0_inv: Vec<String>,
-    pub rr: Vec<String>,
-}
-
 /// Show public information of a private or public RSA key
 #[derive(Debug, Args)]
 pub struct RsaKeyShowCommand {
