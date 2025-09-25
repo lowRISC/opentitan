@@ -37,7 +37,6 @@ manifest(d = {
 [
     opentitan_binary(
         name = "rom_ext_{}_fake_slot_{}".format(variation, slot),
-        collect_code_coverage = 0,
         ecdsa_key = select({
             "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
             "//conditions:default": {"//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-test-0"},
@@ -78,7 +77,6 @@ manifest(d = {
 [
     opentitan_binary(
         name = "rom_ext_{}_prod_slot_{}".format(variation, slot),
-        collect_code_coverage = 0,
         exec_env = [
             "//hw/top_earlgrey:silicon_creator",
             "//hw/top_earlgrey:fpga_cw310",
