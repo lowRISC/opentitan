@@ -12,7 +12,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::io::eeprom::{AddressMode, Transaction, MODE_111};
 use opentitanlib::io::spi::SpiParams;
 use opentitanlib::rescue::dfu::{DfuOperations, DfuRequestType};
-use opentitanlib::rescue::{EntryMode, Rescue, RescueMode, RescueParams, SpiDfu};
+use opentitanlib::rescue::{EntryMode, Rescue, RescueMode, RescueParams, SpiDfu, UsbDfu};
 use opentitanlib::spiflash::SpiFlash;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
@@ -49,6 +49,7 @@ pub enum DfuRescueTestActions {
     SpiDfuStateTransitions,
     InvalidSpiDfuRequests,
     InvalidSpiFlashTransaction,
+    UsbDfuOutChunkTooBig,
 }
 
 const SET_INTERFACE: u8 = 0x0b;
@@ -307,6 +308,25 @@ fn invalid_spi_flash_transaction(
     Ok(())
 }
 
+fn usb_dfu_out_chunk_too_big(params: &RescueParams, transport: &TransportWrapper) -> Result<()> {
+    let rescue = UsbDfu::new(params.clone());
+    rescue.enter(transport, EntryMode::Reset)?;
+    rescue.set_mode(RescueMode::Rescue)?;
+    let data = vec![0u8; 4096];
+    let result = rescue.download(&data);
+
+    if result.is_ok() {
+        return Err(anyhow!("USB transaction should fail"));
+    }
+
+    rescue.reboot()?;
+
+    let uart = transport.uart("console")?;
+    UartConsole::wait_for(&*uart, r"Finished", Duration::from_secs(5))?;
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
@@ -322,6 +342,9 @@ fn main() -> Result<()> {
             }
             DfuRescueTestActions::InvalidSpiFlashTransaction => {
                 invalid_spi_flash_transaction(&rescue.params, &transport)?
+            }
+            DfuRescueTestActions::UsbDfuOutChunkTooBig => {
+                usb_dfu_out_chunk_too_big(&rescue.params, &transport)?
             }
         },
     }
