@@ -20,7 +20,7 @@ interface csrng_if (input clk, input rst_n);
   csrng_rsp_t   cmd_rsp_int;
 
   // interface pins used in driver/monitor
-  push_pull_if #(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH))
+  push_pull_if #(.HostDataWidth(csrng_pkg::CmdBusWidth))
        cmd_push_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.HostDataWidth(csrng_pkg::FIPS_GENBITS_BUS_WIDTH))
        genbits_push_if(.clk(clk), .rst_n(rst_n));

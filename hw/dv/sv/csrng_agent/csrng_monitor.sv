@@ -17,7 +17,7 @@ class csrng_monitor extends dv_base_monitor #(
   // Analysis port for the csrng_rsp_sts.
   uvm_analysis_port #(csrng_rsp_t) rsp_sts_ap;
 
-  uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH)))
+  uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(csrng_pkg::CmdBusWidth)))
       csrng_cmd_fifo;
 
   `uvm_component_new
@@ -58,7 +58,7 @@ class csrng_monitor extends dv_base_monitor #(
       wait (cfg.under_reset == 0);
 
       `DV_SPINWAIT_EXIT(
-          push_pull_item#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH))  item;
+          push_pull_item#(.HostDataWidth(csrng_pkg::CmdBusWidth)) item;
           csrng_item   cs_item = csrng_item::type_id::create("cs_item");
           for (int i = 0; i <= cs_item.clen; i++) begin
             csrng_cmd_fifo.get(item);

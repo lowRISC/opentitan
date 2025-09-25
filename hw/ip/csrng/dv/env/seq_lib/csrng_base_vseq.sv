@@ -18,7 +18,7 @@ class csrng_base_vseq extends cip_base_vseq #(
 
   push_pull_device_seq#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
       m_entropy_src_pull_seq;
-  push_pull_host_seq#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH))
+  push_pull_host_seq#(.HostDataWidth(csrng_pkg::CmdBusWidth))
       m_edn_push_seq[NUM_HW_APPS];
   push_pull_host_seq#(.HostDataWidth(1))   m_aes_halt_pull_seq;
 
@@ -97,7 +97,7 @@ class csrng_base_vseq extends cip_base_vseq #(
 
   task send_cmd_req(uint app, csrng_item cs_item, bit await_response=1'b1, bit edn_rst_as_ack=1'b1,
                     csrng_pkg::csrng_cmd_sts_e exp_sts=CMD_STS_SUCCESS, bit await_genbits=1'b1);
-    bit [csrng_pkg::CSRNG_CMD_WIDTH-1:0]   cmd;
+    bit [csrng_pkg::CmdBusWidth-1:0] cmd;
     // Gen cmd_req
     if ((cs_item.acmd != INS) && (cs_item.acmd != RES)) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(alt_flags)
