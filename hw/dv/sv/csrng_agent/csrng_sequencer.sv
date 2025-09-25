@@ -8,8 +8,8 @@ class csrng_sequencer extends dv_base_sequencer #(
 );
   `uvm_component_param_utils(csrng_sequencer)
 
-  push_pull_sequencer#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH))          m_cmd_push_sequencer;
-  push_pull_sequencer#(.HostDataWidth(csrng_pkg::FIPS_GENBITS_BUS_WIDTH))   m_genbits_push_sequencer;
+  push_pull_sequencer#(.HostDataWidth(csrng_pkg::CmdBusWidth))            m_cmd_push_sequencer;
+  push_pull_sequencer#(.HostDataWidth(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)) m_genbits_push_sequencer;
 
   `uvm_component_new
 

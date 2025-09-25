@@ -7,8 +7,8 @@ class csrng_agent_cfg extends dv_base_agent_cfg;
   // interface handle used by driver, monitor & the sequencer, via cfg handle
   virtual csrng_if vif;
 
-  push_pull_agent_cfg#(csrng_pkg::CSRNG_CMD_WIDTH)          m_cmd_push_agent_cfg;
-  push_pull_agent_cfg#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)   m_genbits_push_agent_cfg;
+  push_pull_agent_cfg#(csrng_pkg::CmdBusWidth)            m_cmd_push_agent_cfg;
+  push_pull_agent_cfg#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH) m_genbits_push_agent_cfg;
 
   `uvm_object_utils_begin(csrng_agent_cfg)
   `uvm_object_utils_end

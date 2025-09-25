@@ -44,7 +44,7 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   rand mubi4_t   enable, boot_req_mode, auto_req_mode, cmd_fifo_rst;
   rand uint      num_endpoints, num_boot_reqs;
   rand bit       force_disable;
-  rand bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0]   boot_ins_cmd, boot_gen_cmd;
+  rand bit [csrng_pkg::CmdBusWidth - 1:0] boot_ins_cmd, boot_gen_cmd;
 
   rand fatal_err_e                    which_fatal_err;
   rand err_code_e                     which_err_code;

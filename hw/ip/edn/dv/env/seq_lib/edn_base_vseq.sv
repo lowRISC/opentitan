@@ -17,7 +17,7 @@ class edn_base_vseq extends cip_base_vseq #(
   mubi4_t                                       flags;
   bit [3:0]                                     clen, additional_data;
   bit [11:0]                                    glen;
-  bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0]        cmd_data;
+  bit [csrng_pkg::CmdBusWidth - 1:0]            cmd_data;
 
   rand bit                                      write_reserved_err_code_test_reg;
   virtual edn_cov_if                            cov_vif;
@@ -146,7 +146,7 @@ class edn_base_vseq extends cip_base_vseq #(
 
   virtual task wr_cmd(edn_env_pkg::cmd_type_e cmd_type, csrng_pkg::acmd_e acmd = csrng_pkg::INV,
                       bit[3:0] clen = '0, bit[3:0] flags = MuBi4False, bit[17:0] glen = '0,
-                      bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0] cmd_data = '0,
+                      bit [csrng_pkg::CmdBusWidth - 1:0] cmd_data = '0,
                       edn_env_pkg::hw_req_mode_e mode, bit wait_for_ack = 1);
 
     if (!additional_data) begin
