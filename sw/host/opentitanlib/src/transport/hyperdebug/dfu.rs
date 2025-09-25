@@ -69,11 +69,7 @@ impl HyperdebugDfu {
         // version.
         let config_desc = usb_backend.active_config_descriptor()?;
         let current_firmware_version = if let Some(idx) = config_desc.description_string_index() {
-            if let Ok(current_firmware_version) = usb_backend.read_string_descriptor_ascii(idx) {
-                Some(current_firmware_version)
-            } else {
-                None
-            }
+            usb_backend.read_string_descriptor_ascii(idx).ok()
         } else {
             None
         };

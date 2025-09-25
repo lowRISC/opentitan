@@ -496,7 +496,10 @@ fn provision_certificates(
             ext_ca_cert
         );
         for sku_specific_cert in sku_specific_certs.iter() {
-            validate_cert_chain(ext_ca_cert.to_str().unwrap(), &[sku_specific_cert.clone()])?;
+            validate_cert_chain(
+                ext_ca_cert.to_str().unwrap(),
+                std::slice::from_ref(sku_specific_cert),
+            )?;
         }
         log::info!("Success.");
     }
