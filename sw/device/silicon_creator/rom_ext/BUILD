@@ -245,6 +245,7 @@ ld_library(
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:memory",
             "//sw/device/lib/base:stdasm",
+            "//sw/device/lib/coverage:api_asm",
             "//sw/device/lib/runtime:hart",
             "//sw/device/silicon_creator/lib:boot_data",
             "//sw/device/silicon_creator/lib:boot_log",
