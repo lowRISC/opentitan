@@ -45,15 +45,22 @@ enum Commands {
 #[derive(ValueEnum, Debug, Clone, Copy, PartialEq)]
 pub enum DfuRescueTestActions {
     SpiDfuStateTransitions,
+    InvalidSpiDfuRequests,
 }
 
 const SET_INTERFACE: u8 = 0x0b;
+const INVALID_INTERFACE: u8 = 0xff;
+
+const DFU_REQUEST_TYPE_INTERFACE: u8 = 0x01;
 
 const DFU_REQ_DN_LOAD: u8 = 0x01;
 const DFU_REQ_CLR_STATUS: u8 = 0x04;
 const DFU_REQ_GET_STATE: u8 = 0x05;
 const DFU_REQ_ABORT: u8 = 0x06;
 const DFU_REQ_INVALID: u8 = 0xff;
+
+const USB_SETUP_REQ_GET_INTERFACE: u8 = 0x0A;
+const USB_SETUP_REQ_SET_INTERFACE: u8 = 0x0B;
 
 fn expect_usb_bad_mode_write_control(
     rescue: &SpiDfu,
@@ -179,6 +186,73 @@ fn spi_dfu_state_transitions(params: &RescueParams, transport: &TransportWrapper
     Ok(())
 }
 
+fn invalid_spi_dfu_requests(params: &RescueParams, transport: &TransportWrapper) -> Result<()> {
+    let spi_params = SpiParams::default();
+    let spi = spi_params.create(transport, "BOOTSTRAP")?;
+    let rescue = SpiDfu::new(spi.clone(), params.clone());
+    rescue.enter(transport, EntryMode::Reset)?;
+
+    let setting = u32::from_be_bytes(*b"INVA");
+    // Test an invalid rescue mode with a vendor SET_INTERFACE request.
+    expect_usb_bad_mode_write_control(
+        &rescue,
+        DfuRequestType::Vendor.into(),
+        SET_INTERFACE,
+        (setting >> 16) as u16,
+        setting as u16,
+    )?;
+    // Test an invalid vendor request.
+    expect_usb_bad_mode_write_control(
+        &rescue,
+        DfuRequestType::Vendor.into(),
+        INVALID_INTERFACE,
+        (setting >> 16) as u16,
+        setting as u16,
+    )?;
+    // Test an invalid rescue mode with a standard SET_INTERFACE request.
+    expect_usb_bad_mode_write_control(
+        &rescue,
+        DFU_REQUEST_TYPE_INTERFACE,
+        USB_SETUP_REQ_SET_INTERFACE,
+        (setting >> 16) as u16,
+        setting as u16,
+    )?;
+
+    // Test an invalid interface request.
+    expect_usb_bad_mode_write_control(
+        &rescue,
+        DFU_REQUEST_TYPE_INTERFACE,
+        0_u8,
+        (setting >> 16) as u16,
+        setting as u16,
+    )?;
+
+    // Test a valid GET_INTERFACE request.
+    rescue.write_control(
+        DFU_REQUEST_TYPE_INTERFACE,
+        USB_SETUP_REQ_GET_INTERFACE,
+        (setting >> 16) as u16,
+        setting as u16,
+        &[],
+    )?;
+
+    // Test an unsupported setup request type.
+    expect_usb_bad_mode_write_control(
+        &rescue,
+        0_u8,
+        USB_SETUP_REQ_GET_INTERFACE,
+        (setting >> 16) as u16,
+        setting as u16,
+    )?;
+
+    rescue.reboot()?;
+
+    let uart = transport.uart("console")?;
+    UartConsole::wait_for(&*uart, r"Finished", Duration::from_secs(5))?;
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
@@ -188,6 +262,9 @@ fn main() -> Result<()> {
         Commands::Rescue(rescue) => match rescue.action {
             DfuRescueTestActions::SpiDfuStateTransitions => {
                 spi_dfu_state_transitions(&rescue.params, &transport)?
+            }
+            DfuRescueTestActions::InvalidSpiDfuRequests => {
+                invalid_spi_dfu_requests(&rescue.params, &transport)?
             }
         },
     }
