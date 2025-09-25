@@ -89,7 +89,7 @@ November 19, 1863
         let xmodem = XmodemFirmware::new();
         let gettysburg = GETTYSBURG.as_bytes();
         let result = xmodem.send(&child, gettysburg);
-        assert_eq!(child.wait()?.success(), false);
+        assert!(!child.wait()?.success());
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().to_string(), "Protocol");
         Ok(())

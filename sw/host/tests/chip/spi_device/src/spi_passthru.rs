@@ -203,7 +203,7 @@ fn test_chip_erase(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     })?;
 
     assert_eq!(info.opcode, SpiFlash::CHIP_ERASE);
-    assert_eq!(info.has_address, false);
+    assert!(!info.has_address);
     assert_eq!(info.data_len, 0);
     assert_eq!(
         info.flash_status & FLASH_STATUS_STD_BITS,
@@ -281,7 +281,7 @@ fn test_sector_erase(
     })?;
 
     assert_eq!(info.opcode, expected_opcode);
-    assert_eq!(info.has_address, true);
+    assert!(info.has_address);
     assert_eq!(info.addr_4b, mode == AddressMode::Mode4b);
     assert_eq!(info.address, address);
     assert_eq!(info.data_len, 0);
@@ -315,7 +315,7 @@ fn test_page_program(opts: &Opts, transport: &TransportWrapper, address: u32) ->
     })?;
 
     assert_eq!(info.opcode, SpiFlash::PAGE_PROGRAM);
-    assert_eq!(info.has_address, true);
+    assert!(info.has_address);
     assert_eq!(info.addr_4b, mode == AddressMode::Mode4b);
     assert_eq!(info.address, address);
     assert_eq!(info.data_len as usize, data.len());
@@ -337,7 +337,7 @@ fn test_write_status(opts: &Opts, transport: &TransportWrapper, opcode: u8) -> R
     })?;
 
     assert_eq!(info.opcode, opcode);
-    assert_eq!(info.has_address, false);
+    assert!(!info.has_address);
     assert_eq!(info.data_len, 0);
     assert_eq!(info.flash_status & FLASH_STATUS_STD_BITS, FLASH_STATUS_WIP);
     Ok(())

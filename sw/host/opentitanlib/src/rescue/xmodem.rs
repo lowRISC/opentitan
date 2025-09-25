@@ -318,7 +318,7 @@ November 19, 1863
         let xmodem = Xmodem::new();
         let gettysburg = GETTYSBURG.as_bytes();
         let result = xmodem.send(&child, gettysburg);
-        assert_eq!(child.wait()?.success(), false);
+        assert!(!child.wait()?.success());
         assert!(result.is_err());
         let err = result.unwrap_err().downcast::<XmodemError>().unwrap();
         assert_eq!(err.to_string(), "Unsupported mode: standard checksums");
