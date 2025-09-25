@@ -752,3 +752,25 @@ opentitan_test(
         test_harness = "//sw/host/tests/rescue:dfu_rescue_error_handling",
     ),
 )
+
+opentitan_test(
+    name = "spidfu_invalid_flash_transaction",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        assemble = "{romext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_spidfu": "romext",
+            ":boot_test_slot_a": "firmware",
+        },
+        params = "-p spi-dfu -t gpio -v +Ioa2",
+        test_cmd = """
+        --clear-bitstream
+        --bootstrap={firmware}
+        rescue {params} --action=invalid-spi-flash-transaction
+        """,
+        test_harness = "//sw/host/tests/rescue:dfu_rescue_error_handling",
+    ),
+)
