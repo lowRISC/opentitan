@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::util::bitfield::BitField;
 use crate::with_unknown;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -24,6 +25,39 @@ pub enum RstmgrReg {
     SwRstCtrlN0 = bindgen::dif::RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET,
     SwRstCtrlN1 = bindgen::dif::RSTMGR_SW_RST_CTRL_N_1_REG_OFFSET,
     ErrCode = bindgen::dif::RSTMGR_ERR_CODE_REG_OFFSET,
+}
+
+/// BitFields for the CPU_INFO_CTRL register.
+pub struct RstmgrCpuRegwen;
+
+impl RstmgrCpuRegwen {
+    pub const EN: u32 = 0b1 << bindgen::dif::RSTMGR_CPU_REGWEN_EN_BIT;
+}
+
+/// BitFields for the CPU_INFO_CTRL register.
+pub struct RstmgrCpuInfoCtrl;
+
+impl RstmgrCpuInfoCtrl {
+    pub const EN: u32 = 0b1 << bindgen::dif::RSTMGR_CPU_INFO_CTRL_EN_BIT;
+
+    pub const INDEX: BitField = BitField {
+        offset: bindgen::dif::RSTMGR_CPU_INFO_CTRL_INDEX_OFFSET,
+        // Relies on mask being continuous
+        size: bindgen::dif::RSTMGR_CPU_INFO_CTRL_INDEX_MASK.count_ones(),
+    };
+}
+
+/// BitFields for the ALERT_INFO_CTRL register.
+pub struct RstmgrAlertInfoCtrl;
+
+impl RstmgrAlertInfoCtrl {
+    pub const EN: u32 = 0b1 << bindgen::dif::RSTMGR_ALERT_INFO_CTRL_EN_BIT;
+
+    pub const INDEX: BitField = BitField {
+        offset: bindgen::dif::RSTMGR_ALERT_INFO_CTRL_INDEX_OFFSET,
+        // Relies on mask being continuous
+        size: bindgen::dif::RSTMGR_ALERT_INFO_CTRL_INDEX_MASK.count_ones(),
+    };
 }
 
 with_unknown! {

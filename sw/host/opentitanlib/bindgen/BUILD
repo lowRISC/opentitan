@@ -112,6 +112,8 @@ rust_bindgen_library(
         "--allowlist-var=PWRMGR_.*_REG_OFFSET",
         "--allowlist-type=dif_rstmgr_reset_info",
         "--allowlist-var=RSTMGR_.*_OFFSET",
+        "--allowlist-var=RSTMGR_.*_BIT",
+        "--allowlist-var=RSTMGR_.*_MASK",
         "--allowlist-var=RV_TIMER_.*_REG_OFFSET",
         "--allowlist-var=SENSOR_CTRL_.*_REG_OFFSET",
         "--allowlist-var=SPI_DEVICE_.*_REG_OFFSET",

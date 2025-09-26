@@ -6,9 +6,10 @@ use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::PathBuf;
+use std::thread;
 use std::time::{Duration, Instant};
 
-use anyhow::{Result, bail};
+use anyhow::{Result, anyhow, bail};
 use arrayvec::ArrayVec;
 use zerocopy::IntoBytes;
 
@@ -18,6 +19,9 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
+use opentitanlib::test_utils::crashdump::{
+    read_alert_crashdump_data, read_cpu_crashdump_data, read_reset_reason,
+};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
 use opentitanlib::test_utils::load_sram_program::{
@@ -36,6 +40,10 @@ use util_lib::hash_lc_token;
 
 pub mod response;
 use response::*;
+
+// After seeing 10 alert NMIs, this is the time to wait after disconnecting JTAG
+// before capturing crashdump information.
+const FT_NMI_CRASHDUMP_DELAY_MILLIS: u64 = 10000; // 10 seconds
 
 pub fn test_unlock(
     transport: &TransportWrapper,
@@ -112,13 +120,34 @@ pub fn run_sram_ft_individualize(
     // Inject provisioning data into the device.
     ft_individualize_data_in.send(spi_console)?;
 
-    // Wait for provisioning operations to complete.
-    let _ = UartConsole::wait_for(spi_console, r"FT SRAM provisioning done.", timeout)?;
-
-    jtag.disconnect()?;
-    transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
-
-    Ok(())
+    // Wait for provisioning operations to complete. If we see at least 10 NMIs, we know it is time
+    // to capture crashdump information.
+    let console_text = UartConsole::wait_for(
+        spi_console,
+        r"FT SRAM provisioning done.|Processing Alert NMI 10 ...",
+        timeout,
+    )?;
+    match console_text[0].as_str() {
+        "FT SRAM provisioning done." => {
+            jtag.disconnect()?;
+            transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
+            Ok(())
+        }
+        "Processing Alert NMI 10 ..." => {
+            transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
+            jtag.disconnect()?;
+            log::info!(
+                "10 NMIs detected, waiting {:?} before capturing crashdump information",
+                Duration::from_millis(FT_NMI_CRASHDUMP_DELAY_MILLIS)
+            );
+            thread::sleep(Duration::from_millis(FT_NMI_CRASHDUMP_DELAY_MILLIS));
+            read_reset_reason(transport, jtag_params)?;
+            read_cpu_crashdump_data(transport, jtag_params)?;
+            read_alert_crashdump_data(transport, jtag_params)?;
+            Ok(())
+        }
+        _ => Err(anyhow!("Unexpected console_text: {:?}", console_text)),
+    }
 }
 
 pub fn test_exit(
