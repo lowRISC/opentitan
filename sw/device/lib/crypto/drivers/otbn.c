@@ -157,9 +157,8 @@ status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
   random_order_init(&order, num_words);
 
   size_t count = 0;
-  size_t expected_count = random_order_len(&order);
 
-  for (; launderw(count) < expected_count; count = launderw(count) + 1) {
+  for (; launderw(count) < num_words; count = launderw(count) + 1) {
     // The value obtained from `advance()` is laundered, to prevent
     // implementation details from leaking across procedures.
     size_t idx = launderw(random_order_advance(&order));
@@ -186,7 +185,7 @@ status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
     crc32_add(&ctx, crc_data, sizeof(crc_data));
   }
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
-  HARDENED_CHECK_EQ(count, expected_count);
+  HARDENED_CHECK_EQ(count, num_words);
 
   // Get the computed (expected) checksum, fetch the checksum from the OTBN
   // LOAD_CHECKSUM register, and compare both registers.
