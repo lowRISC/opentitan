@@ -247,7 +247,7 @@ To create a technology library follow these steps:
    `mytech` will be used as a placeholder name in the examples.
 2. Create a directory in `hw/ip` with the prefix `prim_` followed by the name of your technology library.
 3. Copy `hw/ip/prim_generic/prim_generic.core` into the new directory renaming it to match your primitive library, e.g. `hw/ip/prim_mytech/prim_mytech.core`
-   Change the vendor and name in this file, e.g. `lowrisc:prim_generic` would become `partner:mytech` where your organisation's name can be used in the place of 'partner'.
+   Change the vendor and name in this file, e.g. `lowrisc:prim_generic` would become `partner:prim_mytech` where your organisation's name can be used in the place of 'partner'.
    Also, edit the description to better describe the specific implementation.
 4. For every primitive implemented by your library:
    1. Copy across the generic implementation into your library, e.g. `cp hw/ip/prim_generic/rtl/prim_flop.sv hw/ip/prim_mytech/rtl/prim_flop.sv`.
@@ -310,3 +310,59 @@ fusesoc \
     --mapping partner:prim_mytech:all \    # Select alternate implementation via mappings
     lowrisc:systems:chip_earlgrey_asic
 ```
+### prim_asap7 example
+
+ [ASAP7](https://github.com/The-OpenROAD-Project/asap7) is an open-source standard-cell library.
+ It serves as an example for partners to integrate their own technology specific prim library.
+
+The steps in [creating a tech library](#creating-a-technology-library) were followed to create this prim library.
+
+Each standard-cell instance name is prefixed with a `u_size_only_` such that these instances can be easily identified during synthesis and preserved.
+
+### Important synthesis constraints to keep important redundant constructs
+
+The basic prim instances cannot be removed or merged with other cells through logic optimization or constant propagation as this would remove important security countermeasures from the design.
+
+All instantiated basic gates (`buf`, `mux2`, `inv`, `clock_gating`, `and2`, `xor2`, `xnor2`, `flop`) should be instantiated with a name prefix of `u_size_only_` such that preserve attributes can be set during synthesis.
+The syntax to set a preserved attribute varies across tool providers.
+To make sure the right constraints are applied, a simple example design (`prim_sdc_example`) is provided.
+This design can be synthesized, and its netlist can be analyzed to verify that the correct constraints are applied and all important cells are preserved.
+
+The required files for synthesis can be generated with the following command:
+
+```shell
+fusesoc  --cores-root . \
+		 run \
+		 --target=syn \
+		 --flag fileset_partner \
+		 --mapping lowrisc:prim_asap7:all \
+		 --setup \
+		 --build-root build lowrisc:prim:sdc_example
+```
+
+By setting the `fileset_partner` flag, the generic prim implementation is not used, and the one provided through the mapping argument is used instead.
+Please note, on designs with other technology dependent files, the `fileset_partner` flag also selects other technology specific implementations (e.g. OTP, Flash, JTAG, AST, pads).
+If those are not used, they can be mapped to the generic implementations.
+
+#### Checks on the generated netlist
+
+After synthesizing the top module `prim_sdc_example` the following checks should be performed on the netlist:
+
+1. In the synthesized netlist, the following number of size_only instances must be present:
+
+| cell names |  buf  | and2 |  xor  |  xnor  | flop | clock_mux2 | clock_gating |
+| -----------|  ---- |------|-----  |------  |------|------------|--------------|
+| #instances |  328  |  56  |  120  |  56    |  252 |  2         |  2           |
+
+2. None of the test_*_o signals can be driven by a constant 0 or 1.
+The instantiated `size_only` instances must prevent logic optimizations and keep the output comparators.
+This can be checked with the synthesis tool, e.g. `check_design -constant`
+
+3. None of the buffers or flip flops in this example design are unloaded if constraints are applied correctly.
+This can be checked by the synthesis tool, e.g. `check_design -unloaded_comb/-unloaded_seqs`
+
+4. `lc_en_o`, `mubi_o` signals cannot be driven to a constant value because optimization or constant propagation across preserved instances is not allowed.
+
+5. `lc_en_i`, `mubi_i` signals can only be connected to variables, or legal values (`MuBi4True`, `MuBi4False`, `On`, `Off`)
+
+If all checks are successful, the same constraints can be applied to the full design.
