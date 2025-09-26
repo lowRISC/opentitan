@@ -1168,6 +1168,20 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "rsa_512_dec_test",
+    timeout = "long",
+    srcs = [
+        "rsa_512_dec_test.s",
+    ],
+    testcase = "rsa_512_dec_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:run_rsa_modexp_mem",
+    ],
+)
+
+otbn_sim_test(
     name = "rsa_1024_dec_test",
     timeout = "long",
     srcs = [
