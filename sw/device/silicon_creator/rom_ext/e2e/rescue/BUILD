@@ -643,3 +643,91 @@ opentitan_test(
         test_harness = "//sw/host/tests/rescue:rescue_test",
     ),
 )
+
+opentitan_test(
+    name = "spidfu_dfu_state_transitions",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        assemble = "{romext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_spidfu_flash_limit_zero": "romext",
+            ":boot_test_slot_a": "firmware",
+        },
+        params = "-p spi-dfu -t gpio -v +Ioa2",
+        test_cmd = """
+        --clear-bitstream
+        --bootstrap={firmware}
+        rescue {params} --action=spi-dfu-state-transitions
+        """,
+        test_harness = "//sw/host/tests/rescue:dfu_rescue_error_handling",
+    ),
+)
+
+opentitan_test(
+    name = "spidfu_invalid_dfu_requests",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        assemble = "{romext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_spidfu": "romext",
+            ":boot_test_slot_a": "firmware",
+        },
+        params = "-p spi-dfu -t gpio -v +Ioa2",
+        test_cmd = """
+        --clear-bitstream
+        --bootstrap={firmware}
+        rescue {params} --action=invalid-spi-dfu-requests
+        """,
+        test_harness = "//sw/host/tests/rescue:dfu_rescue_error_handling",
+    ),
+)
+
+opentitan_test(
+    name = "spidfu_invalid_flash_transaction",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        assemble = "{romext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_spidfu": "romext",
+            ":boot_test_slot_a": "firmware",
+        },
+        params = "-p spi-dfu -t gpio -v +Ioa2",
+        test_cmd = """
+        --clear-bitstream
+        --bootstrap={firmware}
+        rescue {params} --action=invalid-spi-flash-transaction
+        """,
+        test_harness = "//sw/host/tests/rescue:dfu_rescue_error_handling",
+    ),
+)
+
+opentitan_test(
+    name = "usbdfu_out_chunk_too_big",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        assemble = "{romext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_usbdfu": "romext",
+            ":boot_test_slot_a": "firmware",
+        },
+        params = "-p usb-dfu -t strap -v 3",
+        test_cmd = """
+        --clear-bitstream
+        --bootstrap={firmware}
+        rescue {params} --action=usb-dfu-out-chunk-too-big
+        """,
+        test_harness = "//sw/host/tests/rescue:dfu_rescue_error_handling",
+    ),
+)
