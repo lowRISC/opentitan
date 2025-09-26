@@ -344,9 +344,8 @@
         }
       }
     ],
-
-    rom: [
-      // no CSRs defined here.
-    ]
+  }
+  memory: {
+    rom: {}
   }
 }

@@ -379,7 +379,7 @@ module tb;
           .depth ($size(`RAM_MAIN_MEM_HIER)),
           .n_bits($bits(`RAM_MAIN_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_MAIN_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR));
       m_mem_bkdr_util[RamMain0] = ram_main0;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamMain0], `RAM_MAIN_MEM_HIER)
 
@@ -390,7 +390,7 @@ module tb;
           .depth ($size(`RAM_RET_MEM_HIER)),
           .n_bits($bits(`RAM_RET_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_RET_AON_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR));
       m_mem_bkdr_util[RamRet0] = ram_ret0;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamRet0], `RAM_RET_MEM_HIER)
 
@@ -401,7 +401,7 @@ module tb;
           .depth ($size(`RAM_MBOX_MEM_HIER)),
           .n_bits($bits(`RAM_MBOX_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_MBOX_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR));
       m_mem_bkdr_util[RamMbox0] = ram_mbox0;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamMbox0], `RAM_MBOX_MEM_HIER)
 
@@ -412,7 +412,7 @@ module tb;
           .depth ($size(`RAM_CTN_MEM_HIER)),
           .n_bits($bits(`RAM_CTN_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_CTN_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_SOC_PROXY_RAM_CTN_BASE_ADDR));
       m_mem_bkdr_util[RamCtn0] = ram_ctn0;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamCtn0], `RAM_CTN_MEM_HIER)
 
@@ -429,7 +429,7 @@ module tb;
 `endif
           .key   (top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrKey),
           .nonce (top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrNonce),
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM0_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR));
       m_mem_bkdr_util[Rom0] = rom0;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom0], `ROM0_MEM_HIER)
 
@@ -446,7 +446,7 @@ module tb;
 `endif
           .key   (top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrKey),
           .nonce (top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrNonce),
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM0_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR));
       m_mem_bkdr_util[Rom1] = rom1;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom1], `ROM1_MEM_HIER)
 
