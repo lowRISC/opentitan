@@ -23,6 +23,7 @@ static const otbn_addr_t kOtbnVarRsaInOut =
 static const otbn_addr_t kOtbnVarRsaModulus =
     OTBN_ADDR_T_INIT(run_rsa_modexp, n);
 static const otbn_addr_t kOtbnVarRsaD0 = OTBN_ADDR_T_INIT(run_rsa_modexp, d0);
+static const otbn_addr_t kOtbnVarRsaD1 = OTBN_ADDR_T_INIT(run_rsa_modexp, d1);
 
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_512_MODEXP);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_512_MODEXP_F4);
@@ -104,8 +105,8 @@ status_t otbn_testutils_rsa_modexp_f4_start(dif_otbn_t *otbn,
 }
 
 status_t otbn_testutils_rsa_modexp_consttime_start(
-    dif_otbn_t *otbn, const uint8_t *modulus, const uint8_t *private_exponent,
-    const uint8_t *in, size_t size_bytes) {
+    dif_otbn_t *otbn, const uint8_t *modulus, const uint8_t *d_share0,
+    const uint8_t *d_share1, const uint8_t *in, size_t size_bytes) {
   if (otbn == NULL || size_bytes % kOtbnWideWordBytes != 0) {
     return INVALID_ARGUMENT();
   }
@@ -135,8 +136,8 @@ status_t otbn_testutils_rsa_modexp_consttime_start(
   TRY(otbn_testutils_write_data(otbn, sizeof(uint32_t), &mode,
                                 kOtbnVarRsaMode));
   TRY(otbn_testutils_write_data(otbn, size_bytes, modulus, kOtbnVarRsaModulus));
-  TRY(otbn_testutils_write_data(otbn, size_bytes, private_exponent,
-                                kOtbnVarRsaD0));
+  TRY(otbn_testutils_write_data(otbn, size_bytes, d_share0, kOtbnVarRsaD0));
+  TRY(otbn_testutils_write_data(otbn, size_bytes, d_share1, kOtbnVarRsaD1));
   TRY(otbn_testutils_write_data(otbn, size_bytes, in, kOtbnVarRsaInOut));
 
   // Call OTBN to start the operation.
