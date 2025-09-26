@@ -80,6 +80,7 @@ OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, mode);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, inout);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, n);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, d0);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, d1);
 
 static const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(run_rsa_modexp);
 static const otbn_addr_t kOtbnVarRsaMode =
@@ -89,6 +90,7 @@ static const otbn_addr_t kOtbnVarRsaInOut =
 static const otbn_addr_t kOtbnVarRsaModulus =
     OTBN_ADDR_T_INIT(run_rsa_modexp, n);
 static const otbn_addr_t kOtbnVarRsaD0 = OTBN_ADDR_T_INIT(run_rsa_modexp, d0);
+static const otbn_addr_t kOtbnVarRsaD1 = OTBN_ADDR_T_INIT(run_rsa_modexp, d1);
 
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_512_MODEXP);
 static const uint32_t kMode512Modexp =
@@ -775,6 +777,8 @@ status_t handle_otbn_sca_rsa512_decrypt(ujson_t *uj) {
   TRY(ujson_deserialize_penetrationtest_otbn_sca_rsa512_dec_t(uj, &uj_data));
   otbn_load_app(kOtbnAppRsa);
 
+  const uint8_t zero[64] = {0};
+
   // Write data into OTBN DMEM.
   TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaMode, &kMode512Modexp,
                           sizeof(uint32_t)));
@@ -782,6 +786,7 @@ status_t handle_otbn_sca_rsa512_decrypt(ujson_t *uj) {
                           sizeof(uj_data.modu)));
   TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaD0, uj_data.exp,
                           sizeof(uj_data.exp)));
+  TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaD1, zero, sizeof(uj_data.exp)));
   TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaInOut, uj_data.msg,
                           sizeof(uj_data.msg)));
 
