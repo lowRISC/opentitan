@@ -189,26 +189,50 @@ def gen_flash(ctx, **kwargs):
     name = get_override(ctx, "label.name", kwargs)
     out = ctx.actions.declare_file(name + ".qemu_bin")
 
-    firmware_bin = get_override(ctx, "file.firmware_bin", kwargs)
-    firmware_elf = get_override(ctx, "file.firmware_elf", kwargs)
+    exec_bin = get_override(ctx, "file.exec_bin", kwargs)
+    exec_elf = get_override(ctx, "file.exec_elf", kwargs)
+
+    boot_bin = get_override(ctx, "file.boot_bin", kwargs)
+    boot_elf = get_override(ctx, "file.boot_elf", kwargs)
+
+    check_elfs = get_override(ctx, "file.check_elfs", kwargs)
 
     flashgen = get_override(ctx, "executable.flashgen", kwargs)
 
     flashgen_inputs = []
     flashgen_args = []
 
-    if firmware_bin:
-        flashgen_inputs += [firmware_bin]
-        flashgen_args += ["-x", firmware_bin.path]
-        if firmware_elf:
-            flashgen_inputs += [firmware_elf]
-            flashgen_args += ["-X", firmware_elf.path]
+    # Add the "exec" binary, which is placed at 0x0. This is either the
+    # firmware binary, or the ROM_EXT if using a ROM_EXT env.
+    if exec_bin:
+        flashgen_inputs += [exec_bin]
+        flashgen_args += ["-x", exec_bin.path]
 
-    # Skip `flashgen`'s ELF/binary mtime checks - it will fail if the
-    # binary is older than the ELF which usually suggests that the
-    # binary has not been regenerated, however Bazel often messes with
-    # mtimes causing false negatives.
-    flashgen_args += ["--ignore-time"]
+        # Attach the exec ELF for debug symbol support within QEMU
+        if exec_elf:
+            flashgen_inputs += [exec_elf]
+            flashgen_args += ["-X", exec_elf.path]
+
+    # Add the "boot" binary, which is an (optional) firmware binary to boot
+    # into from ROM_EXT if ROM_EXT is given as the "exec" binary. Flashgen
+    # currently hardcodes this at an offset of 0x10000.
+    if boot_bin:
+        flashgen_inputs += [boot_bin]
+        flashgen_args += ["-b", boot_bin.path]
+
+        # Attach the boot ELF for debug symbol support within QEMU
+        if boot_elf:
+            flashgen_inputs += [boot_elf]
+            flashgen_args += ["-B", boot_elf.path]
+
+    if check_elfs:
+        # Skip `flashgen`'s ELF/binary mtime checks - it will fail if the
+        # binary is older than the ELF which usually suggests that the
+        # binary has not been regenerated, however Bazel often messes with
+        # mtimes causing false negatives.
+        flashgen_args += ["--ignore-time"]
+    else:
+        flashgen_args += ["--unsafe-elf"]
 
     flashgen_args += [out.path]
 
@@ -224,13 +248,25 @@ def gen_flash(ctx, **kwargs):
 qemu_flash = rule(
     implementation = lambda ctx: [DefaultInfo(files = depset([gen_flash(ctx)]))],
     attrs = {
-        "firmware_bin": attr.label(
+        "exec_bin": attr.label(
             allow_single_file = True,
             doc = "Binary firmware to be run after the ROM, usually signed",
         ),
-        "firmware_elf": attr.label(
+        "exec_elf": attr.label(
             allow_single_file = True,
-            doc = "ELF version of the `firmware_bin` attribute for symbol tracking",
+            doc = "ELF version of the `exec_bin` attribute for symbol tracking",
+        ),
+        "boot_bin": attr.label(
+            allow_single_file = True,
+            doc = "Binary firmware to be run after `exec_bin` when using a ROM_EXT",
+        ),
+        "boot_elf": attr.label(
+            allow_single_file = True,
+            doc = "ELF version of the `boot_bin` attribute for symbol tracking",
+        ),
+        "check_elfs": attr.bool(
+            default = True,
+            doc = "Whether to sanity check ELF sizes against binaries. Should be `false` if using signed binaries.",
         ),
         "flashgen": attr.label(
             executable = True,
@@ -386,18 +422,21 @@ def _test_dispatch(ctx, exec_env, firmware):
     }
 
     # Generate the flash backend image for QEMU emulation
-    firmware_bin = None
-    firmware_elf = None
+    exec_bin = None
+    exec_elf = None
     if ctx.attr.kind == "flash":
         # The image should only contain flash binaries, not e.g. ROM blobs
-        firmware_bin = firmware.signed_bin or firmware.default
-        firmware_elf = firmware.elf
+        exec_bin = firmware.signed_bin or firmware.default
+        exec_elf = firmware.elf
 
     flash_image = gen_flash(
         ctx,
         flashgen = exec_env.flashgen,
-        firmware_bin = firmware_bin,
-        firmware_elf = firmware_elf,
+        exec_bin = exec_bin,
+        exec_elf = exec_elf,
+        boot_bin = None,
+        boot_elf = None,
+        check_elfs = True,
     )
     data_files += [flash_image]
     qemu_args += ["-drive", "if=mtd,id=eflash,bus=2,file=flash_img.bin,format=raw"]
