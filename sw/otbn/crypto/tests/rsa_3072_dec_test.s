@@ -12,6 +12,9 @@ main:
   /* Init all-zero register. */
   bn.xor  w31, w31, w31
 
+  /* Enable message blinding. */
+  li x29, 1
+
   /* Load number of limbs. */
   li    x30, 12
 
@@ -23,14 +26,11 @@ main:
   jal      x1, modload
 
   /* Run exponentiation.
-       dmem[work_buf] = dmem[inout]^dmem[d] mod dmem[n] */
-  la       x14, inout
-  la       x15, d0
-  la       x2, work_buf
+       dmem[inout] = dmem[inout]^dmem[d] mod dmem[n] */
   jal      x1, modexp
 
   /* copy all limbs of result to wide reg file */
-  la       x21, work_buf
+  la       x21, r0
   li       x8, 0
   loop     x30, 2
     bn.lid   x8, 0(x21++)

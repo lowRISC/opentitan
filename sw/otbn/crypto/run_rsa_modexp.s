@@ -107,6 +107,9 @@ start:
   unimp
 
 rsa_512_modexp:
+  /* Enable message blinding. */
+  li x29, 1
+
   /* Set the number of limbs for the modulus (2048 / 256 = 8). */
   li      x30, 2
 
@@ -121,6 +124,9 @@ rsa_512_modexp_f4:
   jal     x0, do_modexp_f4
 
 rsa_1024_modexp:
+  /* Enable message blinding. */
+  li x29, 1
+
   /* Set the number of limbs for the modulus (2048 / 256 = 8). */
   li      x30, 4
 
@@ -135,6 +141,9 @@ rsa_1024_modexp_f4:
   jal     x0, do_modexp_f4
 
 rsa_2048_modexp:
+  /* Enable message blinding. */
+  li x29, 1
+
   /* Set the number of limbs for the modulus (2048 / 256 = 8). */
   li      x30, 8
 
@@ -149,6 +158,9 @@ rsa_2048_modexp_f4:
   jal     x0, do_modexp_f4
 
 rsa_3072_modexp:
+  /* Enable message blinding. */
+  li x29, 1
+
   /* Set the number of limbs for the modulus (3072 / 256 = 12). */
   li      x30, 12
 
@@ -163,6 +175,9 @@ rsa_3072_modexp_f4:
   jal     x0, do_modexp_f4
 
 rsa_4096_modexp:
+  /* Enable message blinding. */
+  li x29, 1
+
   /* Set the number of limbs for the modulus (4096 / 256 = 16). */
   li      x30, 16
 
@@ -189,6 +204,10 @@ rsa_4096_modexp_f4:
  * @param[out] dmem[inout]: result, a^d mod n
  */
 do_modexp:
+  # Save mode indicator in register.
+  la x16, mode
+  lw x28, 0(x16)
+
   /* Load pointers to modulus and Montgomery constant buffers. */
   la    x16, n
   la    x17, RR
@@ -197,18 +216,12 @@ do_modexp:
   jal      x1, modload
 
   /* Run exponentiation.
-       dmem[work_buf] = dmem[inout]^dmem[d] mod dmem[n] */
-  la       x14, inout
-  la       x15, d0
-  la       x2, work_buf
+       dmem[inout] = dmem[inout]^dmem[d] mod dmem[n] */
   jal      x1, modexp
 
-  /* Copy final result to the output buffer. */
-  la    x3, work_buf
-  la    x4, inout
-  loop  x30, 2
-    bn.lid x0, 0(x3++)
-    bn.sid x0, 0(x4++)
+  # Restore mode indicator in DMEM.
+  la x16, mode
+  sw x28, 0(x16)
 
   ecall
 
