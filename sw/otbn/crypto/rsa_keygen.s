@@ -1353,57 +1353,204 @@ relprime_f4:
 
   ret
 
-.section .scratchpad
+/**
+ * Check if a large number is divisible by a few small primes.
+ *
+ * Returns 0 if x is divisible by a small prime, 2^256 - 1 otherwise.
+ *
+ * In this implementation, we check the primes 3, 5, 7, 11, 17, and 31.
+ * These primes have special properties that allow us to compute the residue
+ * quickly:
+ *   - p = {3,5,17} have the property that (2^8) mod p = 1
+ *   - p = {7,11,31} have the property that (2^32) mod p = 4
+ *
+ * Testing for these primes will catch approximately:
+ *   1 - ((1 - 1/3) * (1 - 1/5) * ... * (1 - 1/31))
+ *   = 62.1% of composite numbers.
+ *
+ * Quick intuition for the estimate above: the multiplications calculate the
+ * proportion of composites we will *fail* to catch. At each multiplication
+ * step, we multiply the proportion of composites we still haven't caught by
+ * the proportion that the next small prime will *not* catch (e.g. 4/5 of
+ * numbers will not be multiples of 5).
+ *
+ * This routine is constant-time relative to x if x is not divisible by any
+ * small primes, but exits early if it finds that x is divisible by a small
+ * prime.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  x16: dptr_x, pointer to first limb of x in dmem
+ * @param[in]  x30: n, number of 256-bit limbs for x
+ * @param[in]  w31: all-zero
+ * @param[out] w22: result, 0 if x is divisible by a small prime
+ *
+ * clobbered registers: x2, w22, w23, w24, w25, w26
+ * clobbered flag groups: FG0
+ */
+relprime_small_primes:
+  /* Generate a 256-bit mask.
+       w24 <= 2^256 - 1 */
+  bn.not   w24, w31
 
-/* Extra label marking the start of p || q in memory. The `derive_d` function
-   uses this to get a 512-byte working buffer, which means p and q must be
-   continuous in memory. In addition, `rsa_key_from_cofactor` uses the
-   larger buffer for division and depends on the order of `p` and `q`. */
-.balign 32
-rsa_pq:
+  /* Fold the bignum to get a 35-bit number r such that r mod m = x mod m for
+     all m such that 2^32 mod m == 1.
+       w23 <= r */
+  jal      x1, fold_bignum
 
-/* Secret RSA `p` parameter (prime). Up to 2048 bits. */
-.globl rsa_p
-rsa_p:
-.zero 256
+  /* Isolate the lower 16 bits of the 35-bit working sum.
+       w22 <= w23[15:0] */
+  bn.and   w22, w23, w24 >> 240
 
-/* Secret RSA `q` parameter (prime). Up to 2048 bits. */
-.globl rsa_q
-rsa_q:
-.zero 256
+  /* Add the lower 16 bits to the higher 19 bits to get a 20-bit result.
+       w23 <= w22 + (w23 >> 16) */
+  bn.add   w23, w22, w23 >> 16
 
-/* Temporary working buffer (4096 bits). */
-.balign 32
-tmp_scratchpad:
-.zero 512
+  /* Isolate the lower 8 bits of the 20-bit working sum.
+       w22 <= w23[7:0] */
+  bn.and   w22, w23, w24 >> 248
 
-.bss
+  /* Add the lower 8 bits to the higher 12 bits to get a 13-bit result.
+       w23 <= w22 + (w23 >> 8) */
+  bn.add   w23, w22, w23 >> 8
 
-/* RSA modulus n = p*q (up to 4096 bits). */
-.balign 32
-.globl rsa_n
-rsa_n:
-.zero 512
+  /* Isolate the lower 8 bits of the 13-bit working sum.
+       w22 <= w23[7:0] */
+  bn.and   w22, w23, w24 >> 248
 
-/* RSA private exponent d (up to 4096 bits). */
-.balign 32
-.globl rsa_d
-rsa_d:
-.zero 512
+  /* Add the lower 8 bits to the higher 5 bits to get a 9-bit result.
+       w23 <= w22 + (w23 >> 8) */
+  bn.add   w23, w22, w23 >> 8
 
-/* Prime cofactor for n for `rsa_key_from_cofactor`; also used as a temporary
- * work buffer. */
-.balign 32
-.globl rsa_cofactor
-rsa_cofactor:
-.zero 512
+  /* Load the bit-length for `is_zero_mod_small_prime`. */
+  li       x10, 9
 
-/* Montgomery constant m0' (256 bits). */
-.balign 32
-mont_m0inv:
-.zero 32
+  /* Check the residue modulo 3.
+       x2 <= if (w23 mod 3) == 0 then 8 else 0 */
+  bn.addi  w26, w31, 3
+  jal      x1, is_zero_mod_small_prime
 
-/* Montgomery constant R^2 (up to 2048 bits). */
-.balign 32
-mont_rr:
-.zero 256
+  /* If x2 != 0, exit early. */
+  bne      x2, x0, __relprime_small_primes_fail
+
+  /* Check the residue modulo 5.
+       x2 <= if (w23 mod 5) == 0 then 8 else 0 */
+  bn.addi  w26, w31, 5
+  jal      x1, is_zero_mod_small_prime
+
+  /* If x2 != 0, exit early. */
+  bne      x2, x0, __relprime_small_primes_fail
+
+  /* Check the residue modulo 17.
+       x2 <= if (w23 mod 17) == 0 then 8 else 0 */
+  bn.addi  w26, w31, 17
+  jal      x1, is_zero_mod_small_prime
+
+  /* If x2 != 0, exit early. */
+  bne      x2, x0, __relprime_small_primes_fail
+
+  /* We didn't find any divisors among the primes p such that 2^8 mod p == 1;
+     now let's try primes such that 2^32 mod p == 4. This includes 7, 11, and
+     31. */
+
+  /* Fold the bignum to get a 33-bit number r such that r mod m = x mod m for
+     all m such that 2^32 mod m == 4.
+       w23 <= r */
+  jal      x1, fold_bignum_pow2_32_equiv_4
+
+  /* Load the bit-length for `is_zero_mod_small_prime`. */
+  li       x10, 33
+
+  /* Check the residue modulo 7.
+       x2 <= if (w23 mod 7) == 0 then 8 else 0 */
+  bn.addi  w26, w31, 7
+  jal      x1, is_zero_mod_small_prime
+
+  /* If x2 != 0, exit early. */
+  bne      x2, x0, __relprime_small_primes_fail
+
+  /* Check the residue modulo 11.
+       x2 <= if (w23 mod 5) == 0 then 8 else 0 */
+  bn.addi  w26, w31, 11
+  jal      x1, is_zero_mod_small_prime
+
+  /* If x2 != 0, exit early. */
+  bne      x2, x0, __relprime_small_primes_fail
+
+  /* Check the residue modulo 31.
+       x2 <= if (w23 mod 17) == 0 then 8 else 0 */
+  bn.addi  w26, w31, 31
+  jal      x1, is_zero_mod_small_prime
+
+  /* If x2 != 0, exit early. */
+  bne      x2, x0, __relprime_small_primes_fail
+
+  /* No small prime divisors found; return 2^256 - 1. */
+  bn.not   w22, w31
+  ret
+
+__relprime_small_primes_fail:
+  /* Small prime divisor found; return 0. */
+  bn.sub   w22, w22, w22
+  ret
+
+/**
+ * Reduce input modulo a small number with conditional subtractions.
+ *
+ * Returns r = 8 if a mod m = 0, otherwise r = 0.
+ *
+ * Helper function for `relprime_small_primes`. This routine takes time linear
+ * in the number of bits of the input, so it's slow for large numbers and
+ * should only be used as a last step once the bit-bound is low.
+ *
+ * The sum of the bit-length of the input and the modulus should not exceed
+ * 256.
+ *
+ * This function runs in constant time.
+ *
+ * @param[in]  x10: len, max. number of bits in input, 1 < len
+ * @param[in]  w23: a, input, a < 2^len.
+ * @param[in]  w26: m, modulus, 2 < m < 2^(256-len).
+ * @param[in]  w31: all-zero
+ * @param[out] x2: result, 8 if a mod m = 0 and otherwise 0
+ *
+ * clobbered registers: x2, w22, w25, w26
+ * clobbered flag groups: FG0
+ */
+is_zero_mod_small_prime:
+  /* Copy input. */
+  bn.mov  w25, w23
+
+  /* Initialize shifted modulus for loop.
+       w26 <= m << (len - 1) */
+  li       x2, 1
+  sub      x2, x10, x2
+  loop     x2, 1
+    bn.add   w26, w26, w26
+
+  /* Repeatedly reduce using conditional subtractions.
+
+     Loop invariant (i=len-1 to 0):
+       w26 = m << i
+       w25 < 2*(m << i)
+       w25 mod m = a mod m
+  */
+  loop     x10, 3
+    /* w22 <= w25 - w26 */
+    bn.sub   w22, w25, w26
+    /* Select the subtraction only if it did not underflow.
+         w25 <= FG0.C ? w25 : w22 */
+    bn.sel   w25, w25, w22, FG0.C
+    /* w26 <= w26 >> 1 */
+    bn.rshi  w26, w31, w26 >> 1
+
+  /* Check if w25 is 0.
+       FG0.Z <= w25 == 0 */
+  bn.cmp   w25, w31
+
+  /* Get the FG0.Z flag into a register and return.
+       x2 <= CSRs[FG0] & 8 = FG0.Z << 3 */
+  csrrs    x2, FG0, x0
+  andi     x2, x2, 8
+
+  ret
