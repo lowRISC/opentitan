@@ -32,10 +32,27 @@
 .equ MODE_COFACTOR_RSA_3072, 0x0db
 .equ MODE_COFACTOR_RSA_4096, 0x794
 
+/**
+ * Make the mode constants visible to Ibex.
+ */
+.globl MODE_GEN_RSA_2048
+.globl MODE_COFACTOR_RSA_2048
+.globl MODE_GEN_RSA_3072
+.globl MODE_COFACTOR_RSA_3072
+.globl MODE_GEN_RSA_4096
+.globl MODE_COFACTOR_RSA_4096
+
 .section .text.start
 start:
   /* Init all-zero register. */
   bn.xor  w31, w31, w31
+
+  /* Initialize the second key share to 0.
+     TODO: Remove once hardened keygen has arrived. */
+  la x2, rsa_d1
+  li x3, 31
+  loopi 16, 1
+    bn.sid x3, 0(x2++)
 
   /* Read the mode and tail-call the requested operation. */
   la      x2, mode
