@@ -47,6 +47,13 @@ start:
   /* Init all-zero register. */
   bn.xor  w31, w31, w31
 
+  /* Initialize the second key share to 0.
+     TODO: Remove once hardened keygen has arrived. */
+  la x2, rsa_d1
+  li x3, 31
+  loopi 16, 1
+    bn.sid x3, 0(x2++)
+
   /* Read the mode and tail-call the requested operation. */
   la      x2, mode
   lw      x2, 0(x2)
