@@ -174,6 +174,29 @@ sim_qemu(
     rom = "//sw/device/silicon_creator/rom:mask_rom",
 )
 
+sim_qemu(
+    name = "sim_qemu_sival_rom_ext",
+    testonly = True,
+    base = ":sim_qemu_base",
+    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0"},
+    exec_env = "sim_qemu_sival_rom_ext",
+    libs = [
+        "//sw/device/lib/arch:boot_stage_owner",
+        "//sw/device/lib/arch:sim_qemu",
+    ],
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+    manifest = "//sw/device/silicon_owner:manifest",
+    otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_prod_manuf_personalized",
+    param = {
+        "interface": "qemu",
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+        "assemble": "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
+    },
+    rom = "//sw/device/silicon_creator/rom:mask_rom",
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
+)
+
 fpga_cw310(
     name = "fpga_cw310_rom_ext",
     testonly = True,

@@ -19,6 +19,7 @@ load(
     "EARLGREY_TEST_ENVS",
     "fpga_params",
     "opentitan_test",
+    "qemu_params",
     "silicon_params",
     "verilator_params",
 )
@@ -318,8 +319,10 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
             # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:sim_qemu_sival_rom_ext": "qemu_broken",
         },
     ),
+    qemu_broken = qemu_params(tags = ["broken"]),
     verilator = verilator_params(
         timeout = "long",
     ),
