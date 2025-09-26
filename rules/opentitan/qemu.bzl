@@ -317,21 +317,6 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
     else:
         fail("Not implemented: kind == ", ctx.attr.kind)
 
-    otp = gen_otp(
-        ctx,
-        otptool = exec_env.otptool,
-        vmem = get_fallback(ctx, "file.otp", exec_env),
-    )
-
-    qemu_cfg = gen_cfg(
-        ctx,
-        cfggen = exec_env.cfggen,
-        otp_sv = exec_env.otp_sv,
-        lc_sv = exec_env.lc_sv,
-        top_hjson = exec_env.top_hjson,
-        top_name = exec_env.design,
-    )
-
     return {
         "elf": elf,
         "binary": binary,
@@ -342,8 +327,6 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         "disassembly": disassembly,
         "mapfile": mapfile,
         "hashfile": None,
-        "qemu_cfg": qemu_cfg,
-        "otp": otp,
     }
 
 def _test_dispatch(ctx, exec_env, firmware):
@@ -359,8 +342,26 @@ def _test_dispatch(ctx, exec_env, firmware):
 
     test_harness, data_labels, data_files, param, action_param = common_test_setup(ctx, exec_env, firmware)
 
-    data_files += [firmware.qemu_cfg, firmware.otp, exec_env.qemu]
-    test_script_fmt = {}
+    data_files += [exec_env.qemu]
+
+    # Generate the OpenTitan machine config for QEMU emulation
+    qemu_cfg = gen_cfg(
+        ctx,
+        cfggen = exec_env.cfggen,
+        otp_sv = exec_env.otp_sv,
+        lc_sv = exec_env.lc_sv,
+        top_hjson = exec_env.top_hjson,
+        top_name = exec_env.design,
+    )
+    data_files += [qemu_cfg]
+
+    # Generate the OTP backend image for QEMU emulation
+    otp_image = gen_otp(
+        ctx,
+        otptool = exec_env.otptool,
+        vmem = get_fallback(ctx, "file.otp", exec_env),
+    )
+    data_files += [otp_image]
 
     # Get the pre-test_cmd args.
     args = get_fallback(ctx, "attr.args", exec_env)
@@ -369,18 +370,19 @@ def _test_dispatch(ctx, exec_env, firmware):
 
     # Add arguments to pass directly to QEMU.
     qemu_args = []
+    test_script_fmt = {}
 
     qemu_args += ["-display", "none"]
     qemu_args += ["-M", "ot-{}".format(exec_env.design)]
 
     # Provide top-specific files.
-    qemu_args += ["-readconfig", "{}".format(firmware.qemu_cfg.short_path)]
+    qemu_args += ["-readconfig", "{}".format(qemu_cfg.short_path)]
     qemu_args += ["-object", "ot-rom_img,id=rom,file={}".format(firmware.rom.short_path)]
 
     qemu_args += ["-drive", "if=pflash,file=otp_img.raw,format=raw"]
     test_script_fmt |= {
         "mutable_otp": "otp_img.raw",
-        "otp": firmware.otp.short_path,
+        "otp": otp_image.short_path,
     }
 
     if firmware.signed_bin != None and firmware.binary != None:
