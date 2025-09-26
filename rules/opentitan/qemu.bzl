@@ -424,19 +424,31 @@ def _test_dispatch(ctx, exec_env, firmware):
     # Generate the flash backend image for QEMU emulation
     exec_bin = None
     exec_elf = None
+    boot_bin = None
+    boot_elf = None
     if ctx.attr.kind == "flash":
         # The image should only contain flash binaries, not e.g. ROM blobs
-        exec_bin = firmware.signed_bin or firmware.default
-        exec_elf = firmware.elf
+        if exec_env.rom_ext:
+            rom_ext_env = exec_env.rom_ext[SimQemuBinaryInfo]
+            exec_bin = rom_ext_env.signed_bin or rom_ext_env.default
+            exec_elf = rom_ext_env.elf
+            boot_bin = firmware.signed_bin or firmware.default
+            boot_elf = firmware.elf
+        else:
+            exec_bin = firmware.signed_bin or firmware.default
+            exec_elf = firmware.elf
 
     flash_image = gen_flash(
         ctx,
         flashgen = exec_env.flashgen,
         exec_bin = exec_bin,
         exec_elf = exec_elf,
-        boot_bin = None,
-        boot_elf = None,
-        check_elfs = True,
+        boot_bin = boot_bin,
+        boot_elf = boot_elf,
+        # Do not sanity check ELFs, because we do not expect the binary to
+        # match the ELF because of the added manifest extensions (e.g. SPX
+        # signatures) present in the signed binary.
+        check_elfs = False,
     )
     data_files += [flash_image]
     qemu_args += ["-drive", "if=mtd,id=eflash,bus=2,file=flash_img.bin,format=raw"]
