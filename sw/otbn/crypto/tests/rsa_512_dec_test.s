@@ -5,15 +5,23 @@
 
 .section .text.start
 
+.set RSA_MODEXP_ENABLE_MESSAGE_BLINDING, 1
+
 /**
- * Standalone RSA-3072 modexp with secret exponent (decryption/signing).
+ * Standalone RSA 512 decrypt
+ *
+ * Uses OTBN modexp bignum lib to decrypt the message from the .data segment
+ * in this file with the private key contained in .data segment of this file.
+ *
+ * Copies the decrypted message to wide registers for comparison (starting at
+ * w0). See comment at the end of the file for expected values.
  */
-main:
+ main:
   /* Init all-zero register. */
   bn.xor  w31, w31, w31
 
   /* Load number of limbs. */
-  li    x30, 12
+  li    x30, 2
 
   /* Load pointers to modulus and Montgomery constant buffers. */
   la    x16, n
@@ -23,7 +31,7 @@ main:
   jal      x1, modload
 
   /* Run exponentiation.
-       dmem[inout] = dmem[inout]^dmem[d] mod dmem[n] */
+       dmem[r0] = dmem[r0]^dmem[d] mod dmem[n] */
   jal      x1, modexp
 
   /* copy all limbs of result to wide reg file */

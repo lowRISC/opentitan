@@ -189,6 +189,9 @@ rsa_4096_modexp_f4:
  * @param[out] dmem[inout]: result, a^d mod n
  */
 do_modexp:
+  la x16, mode
+  lw x29, 0(x16)
+
   /* Load pointers to modulus and Montgomery constant buffers. */
   la    x16, n
   la    x17, RR
@@ -197,18 +200,11 @@ do_modexp:
   jal      x1, modload
 
   /* Run exponentiation.
-       dmem[work_buf] = dmem[inout]^dmem[d] mod dmem[n] */
-  la       x14, inout
-  la       x15, d0
-  la       x2, work_buf
+       dmem[inout] = dmem[inout]^dmem[d] mod dmem[n] */
   jal      x1, modexp
 
-  /* Copy final result to the output buffer. */
-  la    x3, work_buf
-  la    x4, inout
-  loop  x30, 2
-    bn.lid x0, 0(x3++)
-    bn.sid x0, 0(x4++)
+  la x16, mode
+  sw x29, 0(x16)
 
   ecall
 
