@@ -20,10 +20,10 @@ class csrng_err_vseq extends csrng_base_vseq;
     string        fifo_name;
     int           first_index, last_index;
     string        fifo_base_path;
-    string        path_exts [6] = {"wvld", "full", "wdata", "rrdy", "rvld", "rdata"};
+    string        path_exts [6] = {"wvld", "wrdy", "wdata", "rrdy", "rvld", "rdata"};
     string        fifo_forced_paths [6];
     string        fifo_forced_path_ds;
-    bit           fifo_forced_values [6] = {1'b1, 1'b1, 1'b0, 1'b1, 1'b0, 1'b0};
+    bit           fifo_forced_values [6] = {1'b1, 1'b0, 1'b0, 1'b1, 1'b0, 1'b0};
     string        fifo_err_path [2][string];
     bit           fifo_err_value [2][string];
     string        path_key;
@@ -34,14 +34,14 @@ class csrng_err_vseq extends csrng_base_vseq;
 
     super.body();
 
-    fifo_err_path[0] = '{"write": "wvld", "read": "rrdy", "state": "full"};
-    fifo_err_path[1] = '{"write": "full", "read": "rvld", "state": "rvld"};
-    fifo_err_value[0] = '{"write": 1'b1, "read": 1'b1, "state": 1'b1};
-    fifo_err_value[1] = '{"write": 1'b1, "read": 1'b0, "state": 1'b0};
+    fifo_err_path[0] = '{"write": "wvld", "read": "rrdy", "state": "wrdy"};
+    fifo_err_path[1] = '{"write": "wrdy", "read": "rvld", "state": "rvld"};
+    fifo_err_value[0] = '{"write": 1'b1, "read": 1'b1, "state": 1'b0};
+    fifo_err_value[1] = '{"write": 1'b0, "read": 1'b0, "state": 1'b0};
 
     // Create edn host sequences
     for (int i = 0; i < NUM_HW_APPS; i++) begin
-      m_edn_push_seq[i] = push_pull_host_seq#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::create
+      m_edn_push_seq[i] = push_pull_host_seq#(csrng_pkg::CmdBusWidth)::type_id::create
                                               ($sformatf("m_edn_push_seq[%0d]", i));
     end
 
@@ -101,7 +101,7 @@ class csrng_err_vseq extends csrng_base_vseq;
     case (cfg.which_err_code) inside
       sfifo_cmd_err, sfifo_genbits_err, sfifo_cmdreq_err, sfifo_rcstage_err, sfifo_keyvrc_err,
       sfifo_bencreq_err, sfifo_final_err, sfifo_gbencack_err, sfifo_grcstage_err,
-      sfifo_gadstage_err, sfifo_ggenbits_err, sfifo_blkenc_err, sfifo_updreq_err,
+      sfifo_gadstage_err, sfifo_ggenbits_err, sfifo_cmdid_err, sfifo_updreq_err,
       sfifo_bencack_err, sfifo_pdata_err, sfifo_ggenreq_err: begin
         fld = csr.get_field_by_name(fld_name);
         fifo_base_path = fld_name.substr(0, last_index-1);
@@ -307,7 +307,7 @@ class csrng_err_vseq extends csrng_base_vseq;
       sfifo_keyvrc_err_test, sfifo_updreq_err_test, sfifo_bencreq_err_test, sfifo_bencack_err_test,
       sfifo_pdata_err_test, sfifo_final_err_test, sfifo_gbencack_err_test, sfifo_grcstage_err_test,
       sfifo_ggenreq_err_test, sfifo_gadstage_err_test, sfifo_ggenbits_err_test,
-      sfifo_blkenc_err_test, cmd_stage_sm_err_test, main_sm_err_test, drbg_gen_sm_err_test,
+      sfifo_cmdid_err_test, cmd_stage_sm_err_test, main_sm_err_test, drbg_gen_sm_err_test,
       drbg_updbe_sm_err_test, drbg_updob_sm_err_test, aes_cipher_sm_err_test, cmd_gen_cnt_err_test,
       fifo_write_err_test, fifo_read_err_test, fifo_state_err_test: begin
         fld = csr.get_field_by_name(fld_name.substr(0, last_index-1));

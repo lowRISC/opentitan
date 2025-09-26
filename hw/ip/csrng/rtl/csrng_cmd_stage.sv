@@ -58,6 +58,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
   logic [CmdBusWidth-1:0]  sfifo_cmd_rdata;
   logic [$clog2(CmdFifoDepth):0] sfifo_cmd_depth;
   logic                    sfifo_cmd_wvld;
+  logic                    sfifo_cmd_wrdy;
   logic [CmdBusWidth-1:0]  sfifo_cmd_wdata;
   logic                    sfifo_cmd_rrdy;
   logic [2:0]              sfifo_cmd_err;
@@ -67,10 +68,10 @@ module csrng_cmd_stage import csrng_pkg::*; (
   // Genbits FIFO.
   logic [GenBitsFifoWidth-1:0] sfifo_genbits_rdata;
   logic                        sfifo_genbits_wvld;
+  logic                        sfifo_genbits_wrdy;
   logic [GenBitsFifoWidth-1:0] sfifo_genbits_wdata;
   logic                        sfifo_genbits_rrdy;
   logic [2:0]                  sfifo_genbits_err;
-  logic                        sfifo_genbits_full;
   logic                        sfifo_genbits_rvld;
 
   // Command signals.
@@ -136,7 +137,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
     .rst_ni         (rst_ni),
     .clr_i          (!cs_enable_i),
     .wvalid_i       (sfifo_cmd_wvld),
-    .wready_o       (),
+    .wready_o       (sfifo_cmd_wrdy),
     .wdata_i        (sfifo_cmd_wdata),
     .rvalid_o       (sfifo_cmd_rvld),
     .rready_i       (sfifo_cmd_rrdy),
@@ -162,9 +163,9 @@ module csrng_cmd_stage import csrng_pkg::*; (
   assign cmd_stage_rdy_o = !sfifo_cmd_full;
 
   assign sfifo_cmd_err =
-         {(sfifo_cmd_wvld && sfifo_cmd_full),
-          (sfifo_cmd_rrdy && !sfifo_cmd_rvld),
-          (sfifo_cmd_full && !sfifo_cmd_rvld)};
+         {( sfifo_cmd_wvld && !sfifo_cmd_wrdy),
+          ( sfifo_cmd_rrdy && !sfifo_cmd_rvld),
+          (!sfifo_cmd_wrdy && !sfifo_cmd_rvld)};
 
 
   // State machine controls.
@@ -417,7 +418,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
           // Flag set if a gen request.
           if (cmd_gen_flag_q) begin
             // Must stall if genbits fifo is not clear.
-            if (!sfifo_genbits_full) begin
+            if (sfifo_genbits_wrdy) begin
               if (cmd_gen_cnt == '0) begin
                 cmd_final_ack = 1'b1;
                 state_d = Idle;
@@ -471,12 +472,12 @@ module csrng_cmd_stage import csrng_pkg::*; (
     .rst_ni         (rst_ni),
     .clr_i          (!cs_enable_i),
     .wvalid_i       (sfifo_genbits_wvld),
-    .wready_o       (),
+    .wready_o       (sfifo_genbits_wrdy),
     .wdata_i        (sfifo_genbits_wdata),
     .rvalid_o       (sfifo_genbits_rvld),
     .rready_i       (sfifo_genbits_rrdy),
     .rdata_o        (sfifo_genbits_rdata),
-    .full_o         (sfifo_genbits_full),
+    .full_o         (),
     .depth_o        (), // sfifo_genbits_depth)
     .err_o          ()
   );
@@ -502,12 +503,12 @@ module csrng_cmd_stage import csrng_pkg::*; (
   assign {genbits_fips_o, genbits_bus_o} = sfifo_genbits_rdata;
 
   assign sfifo_genbits_err =
-         {(sfifo_genbits_wvld && sfifo_genbits_full),
-          (sfifo_genbits_rrdy && !sfifo_genbits_rvld),
-          (sfifo_genbits_full && !sfifo_genbits_rvld)};
+         {( sfifo_genbits_wvld && !sfifo_genbits_wrdy),
+          ( sfifo_genbits_rrdy && !sfifo_genbits_rvld),
+          (!sfifo_genbits_wrdy && !sfifo_genbits_rvld)};
 
   // We're only allowed to request more bits if the genbits FIFO has indeed space.
-  `ASSERT(CsrngCmdStageGenbitsFifoFull_A, state_q == GenSOP |-> !sfifo_genbits_full)
+  `ASSERT(CsrngCmdStageGenbitsFifoFull_A, state_q == GenSOP |-> sfifo_genbits_wrdy)
 
   // Pushes to the genbits FIFO outside of the GenCmdChk and CmdAck states or while handling a
   // command other than Generate are not allowed.

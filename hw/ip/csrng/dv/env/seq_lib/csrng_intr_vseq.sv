@@ -11,7 +11,6 @@ class csrng_intr_vseq extends csrng_base_vseq;
   `uvm_object_new
 
   csrng_item   cs_item;
-  string       path1, path2, path3, path4, path_push, path_full, path_pop, path_not_empty, path;
   bit [31:0]   backdoor_err_code_val;
 
   task release_ack_and_ack_sts(int inst_idx);
@@ -197,17 +196,17 @@ class csrng_intr_vseq extends csrng_base_vseq;
     string        fifo_name, fld_name;
     int           first_index, last_index;
     string        fifo_base_path;
-    string        path_exts [6] = {"wvld", "full", "wdata", "rrdy", "rvld", "rdata"};
+    string        path_exts [6] = {"wvld", "wrdy", "wdata", "rrdy", "rvld", "rdata"};
     string        fifo_forced_paths [6];
-    bit           fifo_forced_values [6] = {1'b1, 1'b1, 1'b0, 1'b1, 1'b0, 1'b0};
+    bit           fifo_forced_values [6] = {1'b1, 1'b0, 1'b0, 1'b1, 1'b0, 1'b0};
     string        fifo_err_path [2][string];
     bit           fifo_err_value [2][string];
     string        path_key;
 
-    fifo_err_path[0] = '{"write": "wvld", "read": "rrdy", "state": "full"};
-    fifo_err_path[1] = '{"write": "full", "read": "rvld", "state": "rvld"};
-    fifo_err_value[0] = '{"write": 1'b1, "read": 1'b1, "state": 1'b1};
-    fifo_err_value[1] = '{"write": 1'b1, "read": 1'b0, "state": 1'b0};
+    fifo_err_path[0] = '{"write": "wvld", "read": "rrdy", "state": "wrdy"};
+    fifo_err_path[1] = '{"write": "wrdy", "read": "rvld", "state": "rvld"};
+    fifo_err_value[0] = '{"write": 1'b1, "read": 1'b1, "state": 1'b0};
+    fifo_err_value[1] = '{"write": 1'b0, "read": 1'b0, "state": 1'b0};
 
     // Turn off some SVAs which are likely triggering when injecting fatal errors.
     `define CMD_STAGE_0 tb.dut.u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage
@@ -233,7 +232,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
       sfifo_cmd_error, sfifo_genbits_error, sfifo_cmdreq_error, sfifo_rcstage_error,
       sfifo_keyvrc_error, sfifo_bencreq_error, sfifo_final_error, sfifo_gbencack_error,
       sfifo_grcstage_error, sfifo_gadstage_error, sfifo_ggenbits_error,
-      sfifo_blkenc_error, sfifo_updreq_error, sfifo_bencack_error, sfifo_pdata_error,
+      sfifo_cmdid_error, sfifo_updreq_error, sfifo_bencack_error, sfifo_pdata_error,
       sfifo_ggenreq_error: begin
         fifo_base_path = fld_name.substr(0, last_index-1);
 
@@ -325,7 +324,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
            ((cfg.which_fifo == sfifo_ggenreq) || (cfg.which_fifo == sfifo_pdata) ||
             (cfg.which_fifo == sfifo_bencack) || (cfg.which_fifo == sfifo_updreq)))
         begin
-          force_fifo_err_exception(path1, path2, 1'b1, 1'b0, 1'b0, ral.intr_state.cs_fatal_err,
+          force_fifo_err_exception(path1, path2, value1, value2, 1'b0, ral.intr_state.cs_fatal_err,
                                    1'b1);
         end else begin
           force_fifo_err(path1, path2, value1, value2, ral.intr_state.cs_fatal_err, 1'b1);
@@ -353,7 +352,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     super.body();
     // Create EDN host sequences.
     for (int i = 0; i < NUM_HW_APPS; i++) begin
-      m_edn_push_seq[i] = push_pull_host_seq#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::create
+      m_edn_push_seq[i] = push_pull_host_seq#(csrng_pkg::CmdBusWidth)::type_id::create
                                               ($sformatf("m_edn_push_seq[%0d]", i));
     end
 

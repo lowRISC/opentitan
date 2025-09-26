@@ -229,7 +229,7 @@ module csrng_reg_top (
   logic err_code_sfifo_ggenreq_err_qs;
   logic err_code_sfifo_gadstage_err_qs;
   logic err_code_sfifo_ggenbits_err_qs;
-  logic err_code_sfifo_blkenc_err_qs;
+  logic err_code_sfifo_cmdid_err_qs;
   logic err_code_cmd_stage_sm_err_qs;
   logic err_code_main_sm_err_qs;
   logic err_code_drbg_gen_sm_err_qs;
@@ -1801,13 +1801,13 @@ module csrng_reg_top (
     .qs     (err_code_sfifo_ggenbits_err_qs)
   );
 
-  //   F[sfifo_blkenc_err]: 15:15
+  //   F[sfifo_cmdid_err]: 15:15
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_err_code_sfifo_blkenc_err (
+  ) u_err_code_sfifo_cmdid_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -1816,8 +1816,8 @@ module csrng_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.err_code.sfifo_blkenc_err.de),
-    .d      (hw2reg.err_code.sfifo_blkenc_err.d),
+    .de     (hw2reg.err_code.sfifo_cmdid_err.de),
+    .d      (hw2reg.err_code.sfifo_cmdid_err.d),
 
     // to internal hardware
     .qe     (),
@@ -1825,7 +1825,7 @@ module csrng_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (err_code_sfifo_blkenc_err_qs)
+    .qs     (err_code_sfifo_cmdid_err_qs)
   );
 
   //   F[cmd_stage_sm_err]: 20:20
@@ -2481,7 +2481,7 @@ module csrng_reg_top (
         reg_rdata_next[12] = err_code_sfifo_ggenreq_err_qs;
         reg_rdata_next[13] = err_code_sfifo_gadstage_err_qs;
         reg_rdata_next[14] = err_code_sfifo_ggenbits_err_qs;
-        reg_rdata_next[15] = err_code_sfifo_blkenc_err_qs;
+        reg_rdata_next[15] = err_code_sfifo_cmdid_err_qs;
         reg_rdata_next[20] = err_code_cmd_stage_sm_err_qs;
         reg_rdata_next[21] = err_code_main_sm_err_qs;
         reg_rdata_next[22] = err_code_drbg_gen_sm_err_qs;

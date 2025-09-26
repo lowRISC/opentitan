@@ -15,8 +15,8 @@ class csrng_agent extends dv_base_agent #(
   `uvm_component_utils(csrng_agent)
   `uvm_component_new
 
-  push_pull_agent#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH))          m_cmd_push_agent;
-  push_pull_agent#(.HostDataWidth(csrng_pkg::FIPS_GENBITS_BUS_WIDTH))   m_genbits_push_agent;
+  push_pull_agent#(.HostDataWidth(csrng_pkg::CmdBusWidth))            m_cmd_push_agent;
+  push_pull_agent#(.HostDataWidth(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)) m_genbits_push_agent;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -26,9 +26,9 @@ class csrng_agent extends dv_base_agent #(
     end
 
     // create agents, agent_cfgs
-    m_cmd_push_agent = push_pull_agent#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::
+    m_cmd_push_agent = push_pull_agent#(csrng_pkg::CmdBusWidth)::type_id::
                        create("m_cmd_push_agent", this);
-    cfg.m_cmd_push_agent_cfg = push_pull_agent_cfg#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::
+    cfg.m_cmd_push_agent_cfg = push_pull_agent_cfg#(csrng_pkg::CmdBusWidth)::type_id::
                                create("m_cmd_push_agent.cfg");
     cfg.m_cmd_push_agent_cfg.is_active   = cfg.is_active;
     cfg.m_cmd_push_agent_cfg.agent_type  = PushAgent;
@@ -55,12 +55,12 @@ class csrng_agent extends dv_base_agent #(
     cfg.vif.if_mode = cfg.if_mode;
 
     // pass cfg and vif
-    uvm_config_db#(push_pull_agent_cfg#(csrng_pkg::CSRNG_CMD_WIDTH))::set(this,
+    uvm_config_db#(push_pull_agent_cfg#(csrng_pkg::CmdBusWidth))::set(this,
          "m_cmd_push_agent*", "cfg", cfg.m_cmd_push_agent_cfg);
     uvm_config_db#(push_pull_agent_cfg#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH))::set(this,
          "m_genbits_push_agent*", "cfg", cfg.m_genbits_push_agent_cfg);
 
-    uvm_config_db#(virtual push_pull_if#(csrng_pkg::CSRNG_CMD_WIDTH))::set(this,
+    uvm_config_db#(virtual push_pull_if#(csrng_pkg::CmdBusWidth))::set(this,
          "m_cmd_push_agent*", "vif", cfg.vif.cmd_push_if);
     uvm_config_db#(virtual push_pull_if#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH))::set(this,
          "m_genbits_push_agent*", "vif", cfg.vif.genbits_push_if);
