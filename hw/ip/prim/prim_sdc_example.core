@@ -1,0 +1,34 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim:sdc_example"
+description: "Example module to verify constraints to keep redundant security features. This module is only used for synthesis"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:all
+      - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:prim:clock_gating
+      - lowrisc:prim:lc_sender
+      - lowrisc:prim:lc_sync
+    files:
+      - rtl/prim_sdc_example.sv
+    file_type: systemVerilogSource
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+  syn:
+    <<: *default_target
+    default_tool: icarus
+    parameters:
+      - SYNTHESIS=true
+    toplevel: prim_sdc_example
