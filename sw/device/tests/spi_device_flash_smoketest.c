@@ -152,13 +152,15 @@ bool test_main(void) {
       &spid, kDifSpiDeviceFlashBufferTypeEFlash, 0, ARRAYSIZE(kSpiTxData),
       kSpiTxData));
 
-  LOG_INFO("Waiting for read");
+  LOG_INFO("SYNC: Waiting for read");
   CHECK_DIF_OK(dif_spi_device_set_flash_status_registers(&spid, 0x00));
 
   busy_spin_micros(500000);
   uint32_t address;
   CHECK_DIF_OK(dif_spi_device_get_last_read_address(&spid, &address));
-  CHECK(address == (kSpiDeviceFlashAddress + kSpiDeviceDatasetSize - 1));
+  CHECK(address == (kSpiDeviceFlashAddress + kSpiDeviceDatasetSize - 1),
+        "address != expected (0x%08x != 0x%08x)", address,
+        kSpiDeviceFlashAddress + kSpiDeviceDatasetSize - 1);
 
   return true;
 }

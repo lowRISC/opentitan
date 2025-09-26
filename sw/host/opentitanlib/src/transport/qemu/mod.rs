@@ -4,8 +4,12 @@
 
 pub mod monitor;
 pub mod reset;
+pub mod spi;
 
 use std::cell::RefCell;
+use std::fs::File;
+use std::io::Read;
+use std::path::PathBuf;
 use std::rc::Rc;
 use std::str::FromStr;
 
@@ -14,9 +18,12 @@ use anyhow::{Context, bail};
 use crate::backend::qemu::QemuOpts;
 use crate::io::gpio::{GpioError, GpioPin};
 use crate::io::uart::Uart;
+use crate::spiflash::SpiFlash;
 use crate::transport::common::uart::SerialPortUart;
 use crate::transport::qemu::monitor::{Chardev, ChardevKind, Monitor};
 use crate::transport::qemu::reset::QemuReset;
+use crate::transport::qemu::spi::QemuSpi;
+use crate::transport::{Bootstrap, Target};
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
@@ -39,6 +46,9 @@ pub struct Qemu {
 
     /// Console UART.
     console: Option<Rc<dyn Uart>>,
+
+    /// SPI device.
+    spi: Option<Rc<dyn Target>>,
 
     /// QEMU log modelled as a UART.
     log: Option<Rc<dyn Uart>>,
@@ -100,6 +110,19 @@ impl Qemu {
             }
         };
 
+        // If there's a chardev called `spidev`, configure it as a PTY and use as the SPI bus.
+        let spi = match find_chardev(&chardevs, "spidev") {
+            Some(ChardevKind::Pty { path }) => {
+                let spi = QemuSpi::new(path).context("failed to connect to QEMU SPI PTY")?;
+                let spi: Rc<dyn Target> = Rc::new(spi);
+                Some(spi)
+            }
+            _ => {
+                log::info!("could not find pty chardev with id=spidev, skipping SPI");
+                None
+            }
+        };
+
         let monitor = Rc::new(RefCell::new(monitor));
 
         // Resetting is done over the monitor, but we model it like a pin to enable strapping it.
@@ -111,6 +134,7 @@ impl Qemu {
             reset,
             console,
             log,
+            spi,
             quit: options.qemu_quit,
         })
     }
@@ -134,6 +158,10 @@ impl Transport for Qemu {
 
         if self.console.is_some() || self.log.is_some() {
             cap |= Capability::UART;
+        }
+
+        if self.spi.is_some() {
+            cap |= Capability::SPI;
         }
 
         Ok(Capabilities::new(cap))
@@ -165,5 +193,9 @@ impl Transport for Qemu {
         } else {
             Err(GpioError::InvalidPinNumber(pin).into())
         }
+    }
+
+    fn spi(&self, _instance: &str) -> anyhow::Result<Rc<dyn Target>> {
+        Ok(Rc::clone(self.spi.as_ref().unwrap()))
     }
 }
