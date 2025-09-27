@@ -136,8 +136,8 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
       HARDENED_CHECK_EQ(key->config.key_mode, kOtcryptoKeyModeHmacSha256);
       uint32_t key_block[kHmacSha256BlockWords];
       HARDENED_TRY(key_block_get(key, ARRAYSIZE(key_block), key_block));
-      return hmac_hmac_sha256(key_block, input_message.data, input_message.len,
-                              tag.data);
+      return hmac_hmac_sha256_cl(key_block, input_message.data,
+                                 input_message.len, tag.data);
     }
     case kOtcryptoKeyModeHmacSha384: {
       HARDENED_CHECK_EQ(key->config.key_mode, kOtcryptoKeyModeHmacSha384);
@@ -178,7 +178,7 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
     case kOtcryptoKeyModeHmacSha256:
       HARDENED_CHECK_EQ(key->config.key_mode, kOtcryptoKeyModeHmacSha256);
       HARDENED_TRY(key_block_get(key, kHmacSha256BlockWords, key_block));
-      hmac_hmac_sha256_init(key_block, &hmac_ctx);
+      hmac_hmac_sha256_init_cl(key_block, &hmac_ctx);
       break;
     case kOtcryptoKeyModeHmacSha384:
       HARDENED_CHECK_EQ(key->config.key_mode, kOtcryptoKeyModeHmacSha384);

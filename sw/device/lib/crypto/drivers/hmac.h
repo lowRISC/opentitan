@@ -119,8 +119,8 @@ status_t hmac_hash_sha512(const uint8_t *msg, size_t msg_len, uint32_t *digest);
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hmac_sha256(const uint32_t *key_block, const uint8_t *msg,
-                          size_t msg_len, uint32_t *tag);
+status_t hmac_hmac_sha256_cl(const uint32_t *key_block, const uint8_t *msg,
+                             size_t msg_len, uint32_t *tag);
 
 /**
  * One-shot HMAC-SHA384 hash computation.
@@ -184,7 +184,7 @@ void hmac_hash_sha512_init(hmac_ctx_t *ctx);
  * @param key_block Input key block (`kHmacSha256BlockWords` words).
  * @param[out] ctx Initialized context object.
  */
-void hmac_hmac_sha256_init(const uint32_t *key_block, hmac_ctx_t *ctx);
+void hmac_hmac_sha256_init_cl(const uint32_t *key_block, hmac_ctx_t *ctx);
 
 /**
  * Initializes the context for a streaming HMAC-SHA384 computation.
