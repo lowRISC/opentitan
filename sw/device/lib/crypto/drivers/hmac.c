@@ -447,8 +447,8 @@ status_t hmac_hash_sha512(const uint8_t *msg, size_t msg_len,
                  kHmacSha512DigestWords, digest);
 }
 
-status_t hmac_hmac_sha256(const uint32_t *key_block, const uint8_t *msg,
-                          size_t msg_len, uint32_t *tag) {
+status_t hmac_hmac_sha256_cl(const uint32_t *key_block, const uint8_t *msg,
+                             size_t msg_len, uint32_t *tag) {
   // Always configure the key length as the underlying message block size.
   uint32_t cfg = cfg_get(/*hmac_en=*/true, kDigestLengthSha256, kKeyLength512);
   return oneshot(cfg, key_block, kHmacSha256BlockWords, msg, msg_len,
@@ -526,7 +526,7 @@ void hmac_hash_sha512_init(hmac_ctx_t *ctx) {
   sha2_init(kDigestLengthSha512, ctx);
 }
 
-void hmac_hmac_sha256_init(const uint32_t *key_block, hmac_ctx_t *ctx) {
+void hmac_hmac_sha256_init_cl(const uint32_t *key_block, hmac_ctx_t *ctx) {
   ctx->msg_block_wordlen = kHmacSha256BlockWords,
   ctx->digest_wordlen = kHmacSha256DigestWords,
   ctx->key_wordlen = kHmacSha256BlockWords;
