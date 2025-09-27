@@ -324,6 +324,10 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
                                plaintext.data, aad.len, aad.data, auth_tag.len,
                                auth_tag.data, ciphertext.data));
 
+  // Verify the CTRL and CTRL_AUX registers.
+  HARDENED_TRY(aes_verify_ctrl_reg(aes_key, kHardenedBoolTrue));
+  HARDENED_TRY(aes_verify_ctrl_aux_reg());
+
   HARDENED_TRY(clear_key_if_sideloaded(aes_key));
 
   // Enable the iCache if it was previously enabled.
@@ -376,6 +380,10 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
   HARDENED_TRY(aes_gcm_decrypt(aes_key, iv.len, iv.data, ciphertext.len,
                                ciphertext.data, aad.len, aad.data, auth_tag.len,
                                auth_tag.data, plaintext.data, success));
+
+  // Verify the CTRL and CTRL_AUX registers.
+  HARDENED_TRY(aes_verify_ctrl_reg(aes_key, kHardenedBoolFalse));
+  HARDENED_TRY(aes_verify_ctrl_aux_reg());
 
   HARDENED_TRY(clear_key_if_sideloaded(aes_key));
 

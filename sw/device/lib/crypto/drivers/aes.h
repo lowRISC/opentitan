@@ -81,6 +81,22 @@ typedef struct aes_key {
 } aes_key_t;
 
 /**
+ * Verify the ctrl register value for the given parameters.
+ *
+ * @param key AES key.
+ * @param encrypt True for encryption, false for decryption.
+ * @return result, OK or error.
+ */
+status_t aes_verify_ctrl_reg(aes_key_t key, hardened_bool_t encrypt);
+
+/**
+ * Verify the ctrl aux register value whether it is at the reset state.
+ *
+ * @return result, OK or error.
+ */
+status_t aes_verify_ctrl_aux_reg(void);
+
+/**
  * Prepares the AES hardware to perform an encryption operation.
  *
  * If `key.sideload` is true, then this routine does not load the key; the
