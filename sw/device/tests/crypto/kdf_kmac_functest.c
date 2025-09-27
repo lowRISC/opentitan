@@ -49,7 +49,7 @@ static status_t run_test_vector(void) {
   current_test_vector->key_derivation_key.checksum =
       integrity_blinded_checksum(&current_test_vector->key_derivation_key);
 
-  TRY(otcrypto_kmac_kdf(current_test_vector->key_derivation_key,
+  TRY(otcrypto_kmac_kdf(&current_test_vector->key_derivation_key,
                         current_test_vector->label,
                         current_test_vector->context, &output_key_material));
 
@@ -60,7 +60,7 @@ static status_t run_test_vector(void) {
   uint32_t km_share0[km_num_words];
   uint32_t km_share1[km_num_words];
   TRY(otcrypto_export_blinded_key(
-      output_key_material,
+      &output_key_material,
       (otcrypto_word32_buf_t){.data = km_share0, .len = ARRAYSIZE(km_share0)},
       (otcrypto_word32_buf_t){.data = km_share1, .len = ARRAYSIZE(km_share1)}));
 

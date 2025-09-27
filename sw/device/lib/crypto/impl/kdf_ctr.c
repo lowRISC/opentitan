@@ -60,19 +60,19 @@ static status_t digest_num_words_from_key_mode(otcrypto_key_mode_t key_mode,
 }
 
 otcrypto_status_t otcrypto_kdf_ctr_hmac(
-    const otcrypto_blinded_key_t key_derivation_key,
+    const otcrypto_blinded_key_t *key_derivation_key,
     const otcrypto_const_byte_buf_t label,
     const otcrypto_const_byte_buf_t context,
     otcrypto_blinded_key_t *output_key_material) {
   // Check NULL pointers.
   if (output_key_material == NULL || output_key_material->keyblob == NULL ||
-      key_derivation_key.keyblob == NULL) {
+      key_derivation_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   if (launder32(output_key_material->config.security_level) !=
           kOtcryptoKeySecurityLevelLow ||
-      launder32(key_derivation_key.config.security_level) !=
+      launder32(key_derivation_key->config.security_level) !=
           kOtcryptoKeySecurityLevelLow) {
     // The underlying HMAC implementation is not currently hardened.
     return OTCRYPTO_NOT_IMPLEMENTED;
@@ -89,7 +89,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   }
 
   // Check the private key checksum.
-  if (integrity_blinded_key_check(&key_derivation_key) != kHardenedBoolTrue) {
+  if (integrity_blinded_key_check(key_derivation_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -101,7 +101,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   // Infer the digest size.
   size_t digest_word_len = 0;
   HARDENED_TRY(digest_num_words_from_key_mode(
-      key_derivation_key.config.key_mode, &digest_word_len));
+      key_derivation_key->config.key_mode, &digest_word_len));
 
   // Ensure that the derived key is a symmetric key masked with XOR and is not
   // supposed to be hardware-backed.
@@ -156,7 +156,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
 
   for (uint32_t i = 0; i < num_iterations; i++) {
     otcrypto_hmac_context_t ctx;
-    HARDENED_TRY(otcrypto_hmac_init(&ctx, &key_derivation_key));
+    HARDENED_TRY(otcrypto_hmac_init(&ctx, key_derivation_key));
     uint32_t counter_be = __builtin_bswap32(i + 1);
     HARDENED_TRY(otcrypto_hmac_update(
         &ctx, (otcrypto_const_byte_buf_t){

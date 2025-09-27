@@ -133,7 +133,7 @@ static status_t run_test(kdf_test_vector_t *test) {
     case kOtcryptoKeyModeHmacSha256:
     case kOtcryptoKeyModeHmacSha384:
     case kOtcryptoKeyModeHmacSha512:
-      TRY(otcrypto_kdf_ctr_hmac(kdk, label, context, &km));
+      TRY(otcrypto_kdf_ctr_hmac(&kdk, label, context, &km));
       break;
     default:
       LOG_INFO("Should never end up here.");

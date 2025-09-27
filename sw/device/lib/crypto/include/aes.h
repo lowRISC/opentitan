@@ -102,7 +102,7 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(
  * @param[out] cipher_output Output data after cipher operation.
  * @return The result of the cipher operation.
  */
-otcrypto_status_t otcrypto_aes(const otcrypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
                                otcrypto_word32_buf_t iv,
                                otcrypto_aes_mode_t aes_mode,
                                otcrypto_aes_operation_t aes_operation,

@@ -45,20 +45,20 @@ static status_t digest_num_words_from_key_mode(otcrypto_key_mode_t key_mode,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t ikm,
+otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t *ikm,
                                 otcrypto_const_byte_buf_t salt,
                                 otcrypto_const_byte_buf_t info,
                                 otcrypto_blinded_key_t *okm) {
   // Infer the digest length.
   size_t digest_wordlen;
   HARDENED_TRY(
-      digest_num_words_from_key_mode(ikm.config.key_mode, &digest_wordlen));
+      digest_num_words_from_key_mode(ikm->config.key_mode, &digest_wordlen));
   size_t digest_bytelen = digest_wordlen * sizeof(uint32_t);
 
   // Construct a blinded key struct for the intermediate key.
   otcrypto_key_config_t prk_config = {
       .version = kOtcryptoLibVersion1,
-      .key_mode = ikm.config.key_mode,
+      .key_mode = ikm->config.key_mode,
       .key_length = digest_bytelen,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
@@ -74,7 +74,7 @@ otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t ikm,
 
   // Call extract and expand.
   HARDENED_TRY(otcrypto_hkdf_extract(ikm, salt, &prk));
-  return otcrypto_hkdf_expand(prk, info, okm);
+  return otcrypto_hkdf_expand(&prk, info, okm);
 }
 
 /**
@@ -117,11 +117,11 @@ static status_t hkdf_check_prk(size_t digest_words,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t ikm,
+otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
                                         otcrypto_const_byte_buf_t salt,
                                         otcrypto_blinded_key_t *prk) {
   // Check for null pointers.
-  if (ikm.keyblob == NULL || prk == NULL || prk->keyblob == NULL) {
+  if (ikm->keyblob == NULL || prk == NULL || prk->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (salt.data == NULL && salt.len != 0) {
@@ -129,29 +129,29 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t ikm,
   }
 
   // Check the private key checksum.
-  if (integrity_blinded_key_check(&ikm) != kHardenedBoolTrue) {
+  if (integrity_blinded_key_check(ikm) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (launder32(ikm.config.security_level) != kOtcryptoKeySecurityLevelLow ||
+  if (launder32(ikm->config.security_level) != kOtcryptoKeySecurityLevelLow ||
       launder32(prk->config.security_level) != kOtcryptoKeySecurityLevelLow) {
     // The underlying HMAC implementation is not currently hardened.
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
-  HARDENED_CHECK_EQ(ikm.config.security_level, kOtcryptoKeySecurityLevelLow);
+  HARDENED_CHECK_EQ(ikm->config.security_level, kOtcryptoKeySecurityLevelLow);
   HARDENED_CHECK_EQ(prk->config.security_level, kOtcryptoKeySecurityLevelLow);
 
   // Ensure the key modes match.
-  if (launder32(prk->config.key_mode) != launder32(ikm.config.key_mode)) {
+  if (launder32(prk->config.key_mode) != launder32(ikm->config.key_mode)) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(prk->config.key_mode, ikm.config.key_mode);
+  HARDENED_CHECK_EQ(prk->config.key_mode, ikm->config.key_mode);
 
   // Infer the digest size. This step also ensures that the key mode is
   // supported.
   size_t digest_words = 0;
   HARDENED_TRY(
-      digest_num_words_from_key_mode(ikm.config.key_mode, &digest_words));
+      digest_num_words_from_key_mode(ikm->config.key_mode, &digest_words));
 
   // Validate the PRK configuration.
   HARDENED_TRY(hkdf_check_prk(digest_words, prk));
@@ -174,14 +174,14 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t ikm,
   // Unmask the input key.
   uint32_t *ikm_share0;
   uint32_t *ikm_share1;
-  HARDENED_TRY(keyblob_to_shares(&ikm, &ikm_share0, &ikm_share1));
-  uint32_t unmasked_ikm_data[keyblob_share_num_words(ikm.config)];
+  HARDENED_TRY(keyblob_to_shares(ikm, &ikm_share0, &ikm_share1));
+  uint32_t unmasked_ikm_data[keyblob_share_num_words(ikm->config)];
   for (size_t i = 0; i < ARRAYSIZE(unmasked_ikm_data); i++) {
     unmasked_ikm_data[i] = ikm_share0[i] ^ ikm_share1[i];
   }
   otcrypto_const_byte_buf_t unmasked_ikm = {
       .data = (unsigned char *)unmasked_ikm_data,
-      .len = ikm.config.key_length,
+      .len = ikm->config.key_length,
   };
 
   // Package the salt value in a blinded key, using an all-zero mask because
@@ -190,7 +190,7 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t ikm,
   memset(salt_mask, 0, sizeof(salt_mask));
   otcrypto_key_config_t salt_key_config = {
       .version = kOtcryptoLibVersion1,
-      .key_mode = ikm.config.key_mode,
+      .key_mode = ikm->config.key_mode,
       .key_length = salt_bytelen,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
@@ -221,10 +221,10 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t ikm,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t prk,
+otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
                                        otcrypto_const_byte_buf_t info,
                                        otcrypto_blinded_key_t *okm) {
-  if (okm == NULL || okm->keyblob == NULL || prk.keyblob == NULL) {
+  if (okm == NULL || okm->keyblob == NULL || prk->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (info.data == NULL && info.len != 0) {
@@ -232,7 +232,7 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t prk,
   }
 
   if (launder32(okm->config.security_level) != kOtcryptoKeySecurityLevelLow ||
-      launder32(prk.config.security_level) != kOtcryptoKeySecurityLevelLow) {
+      launder32(prk->config.security_level) != kOtcryptoKeySecurityLevelLow) {
     // The underlying HMAC implementation is not currently hardened.
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
@@ -240,10 +240,10 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t prk,
   // Infer the digest size.
   size_t digest_words = 0;
   HARDENED_TRY(
-      digest_num_words_from_key_mode(prk.config.key_mode, &digest_words));
+      digest_num_words_from_key_mode(prk->config.key_mode, &digest_words));
 
   // Check the PRK configuration.
-  HARDENED_TRY(hkdf_check_prk(digest_words, &prk));
+  HARDENED_TRY(hkdf_check_prk(digest_words, prk));
 
   // Ensure that the derived key is a symmetric key masked with XOR and is not
   // supposed to be hardware-backed.
@@ -282,7 +282,7 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t prk,
   for (uint8_t i = 0; i < num_iterations; i++) {
     info_and_counter_data[info.len] = i + 1;
     otcrypto_hmac_context_t ctx;
-    HARDENED_TRY(otcrypto_hmac_init(&ctx, &prk));
+    HARDENED_TRY(otcrypto_hmac_init(&ctx, prk));
     if (launder32(i) != 0) {
       otcrypto_const_byte_buf_t t_bytes = {
           .data = (unsigned char *)t_data,

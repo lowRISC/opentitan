@@ -42,7 +42,7 @@ extern "C" {
  * @param[out] okm Blinded output keying material.
  * @return Result of the key derivation operation.
  */
-otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t ikm,
+otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t *ikm,
                                 otcrypto_const_byte_buf_t salt,
                                 otcrypto_const_byte_buf_t info,
                                 otcrypto_blinded_key_t *okm);
@@ -66,7 +66,7 @@ otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t ikm,
  * @param[out] prk Extracted pseudo-random key.
  * @return Result of the key derivation operation.
  */
-otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t ikm,
+otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
                                         otcrypto_const_byte_buf_t salt,
                                         otcrypto_blinded_key_t *prk);
 
@@ -84,7 +84,7 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t ikm,
  * @param[out] okm Blinded output key material.
  * @return Result of the key derivation operation.
  */
-otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t prk,
+otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
                                        otcrypto_const_byte_buf_t info,
                                        otcrypto_blinded_key_t *okm);
 
