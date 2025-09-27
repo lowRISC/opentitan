@@ -238,13 +238,16 @@ static status_t internal_p384_keygen_finalize(
     // Randomize the keyblob before writing secret data.
     HARDENED_TRY(hardened_memshred(private_key->keyblob,
                                    keyblob_num_words(private_key->config)));
-
+    p384_masked_scalar_t private_scalar;
+    HARDENED_TRY(keyblob_to_shares(private_key, &private_scalar.share0,
+                                   &private_scalar.share1));
+    private_scalar->checksum =
+        p384_masked_scalar_integrity_checksum(private_scalar);
     // Note: This operation wipes DMEM after retrieving the keys, so if an error
     // occurs after this point then the keys would be unrecoverable. This should
     // be the last potentially error-causing line before returning to the
     // caller.
-    HARDENED_TRY(
-        p384_keygen_finalize((p384_masked_scalar_t *)private_key->keyblob, pk));
+    HARDENED_TRY(p384_keygen_finalize(&private_scalar, pk));
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -314,8 +317,12 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start(
     // Start the asynchronous signature-generation routine.
     HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
                       kHardenedBoolFalse);
-    HARDENED_TRY(p384_ecdsa_sign_start(
-        message_digest.data, (p384_masked_scalar_t *)private_key->keyblob));
+    p384_masked_scalar_t private_scalar;
+    HARDENED_TRY(keyblob_to_shares(private_key, &private_scalar.share0,
+                                   &private_scalar.share1));
+    private_scalar->checksum =
+        p384_masked_scalar_integrity_checksum(private_scalar);
+    HARDENED_TRY(p384_ecdsa_sign_start(message_digest.data, &private_scalar));
   } else if (private_key->config.hw_backed == kHardenedBoolTrue) {
     // Load the key and start in sideloaded-key mode.
     HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
@@ -518,8 +525,12 @@ otcrypto_status_t otcrypto_ecdh_p384_async_start(
   } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
                       kHardenedBoolFalse);
-    HARDENED_TRY(
-        p384_ecdh_start((p384_masked_scalar_t *)private_key->keyblob, pk));
+    p384_masked_scalar_t private_scalar;
+    HARDENED_TRY(keyblob_to_shares(private_key, &private_scalar.share0,
+                                   &private_scalar.share1));
+    private_scalar->checksum =
+        p384_masked_scalar_integrity_checksum(private_scalar);
+    HARDENED_TRY(p384_ecdh_start(&private_scalar, pk));
   } else {
     // Invalid value for `hw_backed`.
     return OTCRYPTO_BAD_ARGS;
@@ -580,6 +591,10 @@ otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
 
   // Set the checksum.
   shared_secret->checksum = integrity_blinded_checksum(shared_secret);
+
+  // Verify the checksum from the shared key to check everything went securely.
+  HARDENED_CHECK_EQ(p384_ecdh_shared_key_integrity_checksum_check(&ss),
+                    kHardenedBoolTrue);
 
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
   return keymgr_sideload_clear_otbn();

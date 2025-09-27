@@ -25,6 +25,7 @@ cc_library(
     hdrs = ["ghash.h"],
     deps = [
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:crc32",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",

@@ -73,6 +73,10 @@ typedef struct p384_masked_scalar {
    * Second share of the secret scalar.
    */
   uint32_t share1[kP384MaskedScalarShareWords];
+  /**
+   * Checksum of the structure.
+   */
+  uint32_t checksum;
 } p384_masked_scalar_t;
 
 /**
@@ -107,7 +111,56 @@ typedef struct p384_ecdsa_signature_t {
 typedef struct p384_ecdh_shared_key {
   uint32_t share0[kP384CoordWords];
   uint32_t share1[kP384CoordWords];
+  uint32_t checksum;
 } p384_ecdh_shared_key_t;
+
+/**
+ * Compute the checksum of a p384 masked scalar.
+ *
+ * Call this routine after creating or modifying the key structure.
+ *
+ * @param scalar p384 scalar.
+ * @returns Checksum value.
+ */
+uint32_t p384_masked_scalar_integrity_checksum(
+    const p384_masked_scalar_t *scalar);
+
+/**
+ * Perform an integrity check on the p384 masked scalar.
+ *
+ * Returns `kHardenedBoolTrue` if the check passed and `kHardenedBoolFalse`
+ * otherwise.
+ *
+ * @param scalar p384 scalar.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t p384_masked_scalar_integrity_checksum_check(
+    const p384_masked_scalar_t *scalar);
+
+/**
+ * Compute the checksum of a p384 key.
+ *
+ * Call this routine after creating or modifying the key structure.
+ *
+ * @param key p384 key.
+ * @returns Checksum value.
+ */
+uint32_t p384_ecdh_shared_key_integrity_checksum(
+    const p384_ecdh_shared_key_t *key);
+
+/**
+ * Perform an integrity check on the p384 key.
+ *
+ * Returns `kHardenedBoolTrue` if the check passed and `kHardenedBoolFalse`
+ * otherwise.
+ *
+ * @param key p384 key.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t p384_ecdh_shared_key_integrity_checksum_check(
+    const p384_ecdh_shared_key_t *key);
 
 /**
  * Start an async P-384 keypair generation operation on OTBN.

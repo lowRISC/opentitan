@@ -14,6 +14,7 @@ cc_library(
     deps = [
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:crc32",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:status",
@@ -29,6 +30,7 @@ cc_library(
     deps = [
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:crc32",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:status",
