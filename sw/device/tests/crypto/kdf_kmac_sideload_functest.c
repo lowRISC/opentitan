@@ -360,7 +360,7 @@ static status_t run_test_vector(void) {
   uint32_t km_share0[km_keyblob_share_len];
   uint32_t km_share1[km_keyblob_share_len];
   TRY(otcrypto_export_blinded_key(
-      keying_material1,
+      &keying_material1,
       (otcrypto_word32_buf_t){.data = km_share0, .len = ARRAYSIZE(km_share0)},
       (otcrypto_word32_buf_t){.data = km_share1, .len = ARRAYSIZE(km_share1)}));
 
@@ -398,7 +398,7 @@ static status_t run_test_vector(void) {
 
   // Export the second derived blinded key
   TRY(otcrypto_export_blinded_key(
-      keying_material2,
+      &keying_material2,
       (otcrypto_word32_buf_t){.data = km_share0, .len = ARRAYSIZE(km_share0)},
       (otcrypto_word32_buf_t){.data = km_share1, .len = ARRAYSIZE(km_share1)}));
 
