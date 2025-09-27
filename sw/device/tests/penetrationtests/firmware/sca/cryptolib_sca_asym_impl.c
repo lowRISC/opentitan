@@ -251,7 +251,7 @@ status_t cryptolib_sca_p256_ecdh_impl(
   uint32_t share1[kPentestP256Words];
   uint32_t ss[kPentestP256Words];
   TRY(otcrypto_export_blinded_key(
-      shared_secret,
+      &shared_secret,
       (otcrypto_word32_buf_t){.data = share0, .len = ARRAYSIZE(share0)},
       (otcrypto_word32_buf_t){.data = share1, .len = ARRAYSIZE(share1)}));
   for (size_t i = 0; i < kPentestP256Words; i++) {
@@ -589,7 +589,7 @@ status_t cryptolib_sca_p384_ecdh_impl(
   uint32_t share1[kPentestP384Words];
   uint32_t ss[kPentestP384Words];
   TRY(otcrypto_export_blinded_key(
-      shared_secret,
+      &shared_secret,
       (otcrypto_word32_buf_t){.data = share0, .len = ARRAYSIZE(share0)},
       (otcrypto_word32_buf_t){.data = share1, .len = ARRAYSIZE(share1)}));
   for (size_t i = 0; i < kPentestP384Words; i++) {
