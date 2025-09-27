@@ -7,6 +7,7 @@
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/crypto/include/kmac_kdf.h"
 #include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/runtime/log.h"

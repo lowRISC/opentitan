@@ -79,6 +79,7 @@ cc_library(
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/include:crypto_hdrs",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",

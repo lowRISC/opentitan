@@ -187,17 +187,6 @@ void hmac_hash_sha512_init(hmac_ctx_t *ctx);
 void hmac_hmac_sha256_init(const uint32_t *key_block, hmac_ctx_t *ctx);
 
 /**
- * Initializes the context for a streaming HMAC-SHA256 computation.
- *
- * The key should be pre-processed into a buffer the size of a full message
- * block, according to FIPS 198-1, section 4.
- *
- * @param key_block Input key block (`kHmacSha256BlockWords` words).
- * @param[out] ctx Initialized context object.
- */
-void hmac_hmac_sha256_init(const uint32_t *key_block, hmac_ctx_t *ctx);
-
-/**
  * Initializes the context for a streaming HMAC-SHA384 computation.
  *
  * The key should be pre-processed into a buffer the size of a full message
