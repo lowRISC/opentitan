@@ -239,8 +239,14 @@ static status_t internal_p256_keygen_finalize(
     HARDENED_TRY(hardened_memshred(private_key->keyblob,
                                    keyblob_num_words(private_key->config)));
 
-    HARDENED_TRY(
-        p256_keygen_finalize((p256_masked_scalar_t *)private_key->keyblob, pk));
+    p256_masked_scalar_t private_scalar;
+    HARDENED_TRY(keyblob_to_shares(private_key, &private_scalar.share0,
+                                   &private_scalar.share1));
+    HARDENED_TRY(p256_keygen_finalize(&private_scalar, pk));
+    // Verify the checksum going out.
+    HARDENED_CHECK_EQ(
+        p256_masked_scalar_integrity_checksum_check(&private_scalar),
+        kHardenedBoolTrue);
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -310,8 +316,12 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
     // Start the asynchronous signature-generation routine.
     HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
                       kHardenedBoolFalse);
-    HARDENED_TRY(p256_ecdsa_sign_start(
-        message_digest.data, (p256_masked_scalar_t *)private_key->keyblob));
+    p256_masked_scalar_t private_scalar;
+    HARDENED_TRY(keyblob_to_shares(private_key, &private_scalar.share0,
+                                   &private_scalar.share1));
+    private_scalar->checksum =
+        p256_masked_scalar_integrity_checksum(private_scalar);
+    HARDENED_TRY(p256_ecdsa_sign_start(message_digest.data, &private_scalar));
   } else if (private_key->config.hw_backed == kHardenedBoolTrue) {
     // Load the key and start in sideloaded-key mode.
     HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
@@ -515,8 +525,13 @@ otcrypto_status_t otcrypto_ecdh_p256_async_start(
   } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
                       kHardenedBoolFalse);
-    HARDENED_TRY(
-        p256_ecdh_start((p256_masked_scalar_t *)private_key->keyblob, pk));
+    p256_masked_scalar_t private_scalar;
+    HARDENED_TRY(keyblob_to_shares(private_key, &private_scalar.share0,
+                                   &private_scalar.share1));
+    private_scalar->checksum =
+        p256_masked_scalar_integrity_checksum(private_scalar);
+
+    HARDENED_TRY(p256_ecdh_start(&private_scalar, pk));
   } else {
     // Invalid value for `hw_backed`.
     return OTCRYPTO_BAD_ARGS;
@@ -577,6 +592,10 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
 
   // Set the checksum.
   shared_secret->checksum = integrity_blinded_checksum(shared_secret);
+
+  // Verify the checksum from the shared key to check everything went securely.
+  HARDENED_CHECK_EQ(p256_ecdh_shared_key_integrity_checksum_check(&ss),
+                    kHardenedBoolTrue);
 
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
   return keymgr_sideload_clear_otbn();

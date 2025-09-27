@@ -71,7 +71,34 @@ typedef struct ghash_context {
    * Number of processed ghash blocks.
    */
   size_t ghash_block_cnt;
+  /**
+   * Checksum of the structure.
+   */
+  uint32_t checksum;
 } ghash_context_t;
+
+/**
+ * Compute the checksum of a ghash context.
+ *
+ * Call this routine after creating or modifying the structure.
+ *
+ * @param ghash_ctx ghash context.
+ * @returns Checksum value.
+ */
+uint32_t ghash_context_integrity_checksum(const ghash_context_t *ghash_ctx);
+
+/**
+ * Perform an integrity check on the ghash context.
+ *
+ * Returns `kHardenedBoolTrue` if the check passed and `kHardenedBoolFalse`
+ * otherwise.
+ *
+ * @param ghash_ctx ghash context.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t ghash_context_integrity_checksum_check(
+    const ghash_context_t *ghash_ctx);
 
 /**
  * Precompute hash subkey information for GHASH.

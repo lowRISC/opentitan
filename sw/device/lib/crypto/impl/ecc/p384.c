@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/impl/ecc/p384.h"
 
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
@@ -99,7 +100,7 @@ enum {
   kModeEcdsaSignSideloadInsCnt = 1509844,
 };
 
-static status_t p384_masked_scalar_write(const p384_masked_scalar_t *src,
+static status_t p384_masked_scalar_write(p384_masked_scalar_t *src,
                                          const otbn_addr_t share0_addr,
                                          const otbn_addr_t share1_addr) {
   HARDENED_TRY(
@@ -107,12 +108,63 @@ static status_t p384_masked_scalar_write(const p384_masked_scalar_t *src,
   HARDENED_TRY(
       otbn_dmem_write(kP384MaskedScalarShareWords, src->share1, share1_addr));
 
+  HARDENED_CHECK_EQ(p384_masked_scalar_integrity_checksum_check(src->checksum),
+                    kHardenedBoolTrue);
+
   // Write trailing 0s so that OTBN's 384-bit read of the second share does not
   // cause an error.
   HARDENED_TRY(otbn_dmem_set(kMaskedScalarPaddingWords, 0,
                              share0_addr + kP384MaskedScalarShareBytes));
   return otbn_dmem_set(kMaskedScalarPaddingWords, 0,
                        share1_addr + kP384MaskedScalarShareBytes);
+}
+
+uint32_t p384_masked_scalar_integrity_checksum(
+    const p384_masked_scalar_t *key) {
+  uint32_t ctx;
+  crc32_init(&ctx);
+  // Compute the checksum only over a single share to avoid side-channel
+  // leakage. From a FI perspective only covering one key share is fine as
+  // (a) manipulating the second share with FI has only limited use to an
+  // adversary and (b) when manipulating the entire pointer to the key structure
+  // the checksum check fails.
+  crc32_add(&ctx, (unsigned char *)key->share0, kP384MaskedScalarShareBytes);
+  return crc32_finish(&ctx);
+}
+
+hardened_bool_t p384_masked_scalar_integrity_checksum_check(
+    const p384_masked_scalar_t *key) {
+  if (key->checksum ==
+      launder32(p384_ecdh_shared_key_integrity_checksum(key))) {
+    HARDENED_CHECK_EQ(key->checksum,
+                      p384_ecdh_shared_key_integrity_checksum(key));
+    return kHardenedBoolTrue;
+  }
+  return kHardenedBoolFalse;
+}
+
+uint32_t p384_ecdh_shared_key_integrity_checksum(
+    const p384_ecdh_shared_key_t *key) {
+  uint32_t ctx;
+  crc32_init(&ctx);
+  // Compute the checksum only over a single share to avoid side-channel
+  // leakage. From a FI perspective only covering one key share is fine as
+  // (a) manipulating the second share with FI has only limited use to an
+  // adversary and (b) when manipulating the entire pointer to the key structure
+  // the checksum check fails.
+  crc32_add(&ctx, (unsigned char *)key->share0, kP384CoordBytes);
+  return crc32_finish(&ctx);
+}
+
+hardened_bool_t p384_ecdh_shared_key_integrity_checksum_check(
+    const p384_ecdh_shared_key_t *key) {
+  if (key->checksum ==
+      launder32(p384_ecdh_shared_key_integrity_checksum(key))) {
+    HARDENED_CHECK_EQ(key->checksum,
+                      p384_ecdh_shared_key_integrity_checksum(key));
+    return kHardenedBoolTrue;
+  }
+  return kHardenedBoolFalse;
 }
 
 /**
@@ -181,6 +233,8 @@ status_t p384_keygen_finalize(p384_masked_scalar_t *private_key,
                                         private_key->share0));
   HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(kP384MaskedScalarShareWords, kOtbnVarD1,
                                         private_key->share1));
+
+  private_key->checksum = p384_masked_scalar_integrity_checksum(private_key);
 
   // Read the public key from OTBN dmem.
   HARDENED_TRY_WIPE_DMEM(
@@ -373,6 +427,8 @@ status_t p384_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
       otbn_dmem_read(kP384CoordWords, kOtbnVarX, shared_key->share0));
   HARDENED_TRY_WIPE_DMEM(
       otbn_dmem_read(kP384CoordWords, kOtbnVarY, shared_key->share1));
+
+  shared_key->checksum = p384_ecdh_shared_key_integrity_checksum(shared_key);
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
