@@ -745,7 +745,6 @@ uint32_t hmac_key_integrity_checksum(const hmac_key_t *key) {
 
 hardened_bool_t hmac_key_integrity_checksum_check(const hmac_key_t *key) {
   if (key->checksum == launder32(hmac_key_integrity_checksum(key))) {
-    HARDENED_CHECK_EQ(key->checksum, hmac_key_integrity_checksum(key));
     return kHardenedBoolTrue;
   }
   return kHardenedBoolFalse;
