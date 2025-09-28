@@ -212,6 +212,7 @@ cc_library(
     hdrs = ["i2c_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//hw/top:dt",
         "//hw/top:i2c_c_regs",
         "//sw/device/lib/dif:i2c",
         "//sw/device/lib/dif:pinmux",
@@ -626,7 +627,6 @@ cc_library(
 TESTUTILS_EXCEPTIONS = [
     "aes",
     "csrng",
-    "i2c",
     "uart",
     "rstmgr",
 ]
