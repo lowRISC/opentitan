@@ -380,7 +380,6 @@ uint32_t aes_key_integrity_checksum(const aes_key_t *key) {
 
 hardened_bool_t aes_key_integrity_checksum_check(const aes_key_t *key) {
   if (key->checksum == launder32(aes_key_integrity_checksum(key))) {
-    HARDENED_CHECK_EQ(key->checksum, aes_key_integrity_checksum(key));
     return kHardenedBoolTrue;
   }
   return kHardenedBoolFalse;

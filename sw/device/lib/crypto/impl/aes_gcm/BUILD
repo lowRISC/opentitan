@@ -24,6 +24,7 @@ cc_library(
     srcs = ["ghash.c"],
     hdrs = ["ghash.h"],
     deps = [
+        "//sw/device/lib/base:crc32",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -36,6 +37,7 @@ cc_test(
     srcs = ["ghash_unittest.cc"],
     deps = [
         ":ghash",
+        "//sw/device/lib/base:crc32",
         "@googletest//:gtest_main",
     ],
 )
