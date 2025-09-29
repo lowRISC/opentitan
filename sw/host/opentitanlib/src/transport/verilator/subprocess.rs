@@ -16,9 +16,11 @@ pub struct Options {
     /// The verilator executable.
     pub executable: String,
     /// The ROM image used to boot the CPU.
-    pub rom_image: String,
+    pub rom_images: Vec<String>,
     /// The flash images stored in internal flash memory, one file per bank.
     pub flash_images: Vec<String>,
+    /// The image to load into CTN RAM.
+    pub ctn_ram_image: String,
     /// The OTP settings.
     pub otp_image: String,
     /// Any extra arguments to verilator.
@@ -38,8 +40,17 @@ impl Subprocess {
         let mut command = Command::new(&options.executable);
         let mut args = Vec::new();
 
-        if !options.rom_image.is_empty() {
-            args.push(format!("--meminit=rom,{}", options.rom_image));
+        if !options.rom_images.is_empty() {
+            let re = Regex::new(r"^(?P<fname>.*?)(:(?P<slot>\d+))?$").unwrap();
+            for image in options.rom_images.iter() {
+                let groups = re.captures(image).unwrap();
+                let image_file = groups.name("fname").unwrap().as_str();
+                let slot = match groups.name("slot") {
+                    Some(x) => x.as_str().parse::<u8>().unwrap(),
+                    None => 0,
+                };
+                args.push(format!("--meminit=rom{},{}", slot, image_file));
+            }
         }
         if !options.flash_images.is_empty() {
             let re = Regex::new(r"^(?P<fname>.*?)(:(?P<slot>\d+))?$").unwrap();
@@ -52,6 +63,9 @@ impl Subprocess {
                 };
                 args.push(format!("--meminit=flash{},{}", slot, image_file));
             }
+        }
+        if !options.ctn_ram_image.is_empty() {
+            args.push(format!("--meminit=ctn_ram,{}", options.ctn_ram_image));
         }
         if !options.otp_image.is_empty() {
             args.push(format!("--meminit=otp,{}", options.otp_image));
@@ -126,9 +140,10 @@ mod test {
     fn echo_subprocess() -> Result<Subprocess> {
         let options = Options {
             executable: "/bin/echo".to_owned(),
-            rom_image: "".to_owned(),
+            rom_images: vec!["/dev/null:1".to_owned()],
             flash_images: vec!["/dev/null:1".to_owned()],
             otp_image: "".to_owned(),
+            ctn_ram_image: "".to_owned(),
             extra_args: vec!["abc 123 def 456".to_owned()],
             timeout: Duration::from_secs(5),
         };
