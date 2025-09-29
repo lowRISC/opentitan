@@ -12,6 +12,18 @@ filegroup(
 )
 
 filegroup(
+    name = "rtl_files",
+    srcs = glob(
+        ["**"],
+        exclude = [
+            "dv/**",
+            "doc/**",
+            "README.md",
+        ],
+    ),
+)
+
+filegroup(
     name = "doc_files",
     srcs = glob(["**/*.md"]),
 )

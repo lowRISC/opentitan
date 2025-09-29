@@ -5,13 +5,6 @@
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
-    name = "all_files",
-    srcs = glob(["**"]) + [
-        "//hw/top_darjeeling/ip/ast/data:all_files",
-    ],
-)
-
-filegroup(
     name = "rtl_files",
     srcs = glob(
         ["**"],
@@ -20,13 +13,7 @@ filegroup(
             "doc/**",
             "README.md",
         ],
-    ),
-)
-
-filegroup(
-    name = "doc_files",
-    srcs = glob([
-        "**/*.md",
-        "**/*.png",
-    ]),
+    ) + [
+        "//hw/top_darjeeling/ip/xbar_peri/data:all_files",
+    ],
 )
