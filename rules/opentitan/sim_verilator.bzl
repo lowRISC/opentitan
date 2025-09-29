@@ -76,12 +76,24 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             word_size = 32,
         )
     elif ctx.attr.kind == "flash":
-        vmem = convert_to_vmem(
-            ctx,
-            name = name,
-            src = signed_bin if signed_bin else binary,
-            word_size = 64,
-        )
+        # FIXME: We need to separate the concept of a software component from
+        # the physical device and its properties; software test images are
+        # usually loaded into flash memory for English Breakfast and Earl Grey
+        # but they are stored in the ConTrol Network RAM on Darjeeling targets.
+        if exec_env.design == "darjeeling":
+            vmem = convert_to_vmem(
+                ctx,
+                name = name,
+                src = signed_bin if signed_bin else binary,
+                word_size = 32,
+            )
+        else:
+            vmem = convert_to_vmem(
+                ctx,
+                name = name,
+                src = signed_bin if signed_bin else binary,
+                word_size = 64,
+            )
         default = vmem
         rom = None
         rom32 = None
