@@ -5,6 +5,7 @@
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//rules:fusesoc.bzl", "fusesoc_build")
 load("@rules_python//python:defs.bzl", "py_library")
+load("//hw/top:defs.bzl", "opentitan_select_top_attr")
 
 # This configuration exposes fusesoc's "verilator_options" option to the
 # command line. This is intended to allow CI to specifically build a single
@@ -100,9 +101,7 @@ fusesoc_build(
     ],
     data = ["//hw/ip/otbn:rtl_files"],
     make_options = ":make_options",
-    output_groups = {
-        "binary": ["lowrisc_dv_top_earlgrey_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb"],
-    },
+    output_groups = opentitan_select_top_attr("top_verilator_binary"),
     systems = ["lowrisc:dv:chip_verilator_sim"],
     tags = [
         "manual",
@@ -177,7 +176,7 @@ filegroup(
         # dv_macros are needed by Ibex, so include this back in.
         "//hw/dv/sv:dv_macros",
         "//hw/ip:rtl_files",
-        "//hw/top_earlgrey:rtl_files",
+        "//hw/top:rtl_files",
     ],
     visibility = ["//visibility:public"],
 )
