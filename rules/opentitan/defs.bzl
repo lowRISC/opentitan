@@ -141,6 +141,7 @@ EARLGREY_CW340_TEST_ENVS = {
 # The default set of test environments for Darjeeling.
 DARJEELING_TEST_ENVS = {
     "//hw/top_darjeeling:sim_dv": None,
+    "//hw/top_darjeeling:sim_verilator": None,
 }
 
 # Messages we expect for possible test outcomes.
