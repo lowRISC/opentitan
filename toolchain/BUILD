@@ -312,6 +312,7 @@ cc_args(
         "-Wstrict-prototypes",
         "-Wswitch-default",
         "-Wtype-limits",
+        "-Wno-gnu-auto-type",
     ],
 )
 
