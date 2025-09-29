@@ -7,6 +7,7 @@ load(
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "sim_dv",
+    "sim_verilator",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -36,6 +37,55 @@ filegroup(
         "//hw/top_darjeeling/ip_autogen/rv_core_ibex:doc_files",
         "//hw/top_darjeeling/ip_autogen/rv_plic:doc_files",
     ],
+)
+
+###########################################################################
+# Sim Verilator Environments
+#
+# The sim_verilator_base target is only meant to be used for building ROMs
+# and other items without `testonly=True`.
+###########################################################################
+sim_verilator(
+    name = "sim_verilator_base",
+    design = "darjeeling",
+    exec_env = "sim_verilator",
+    libs = [
+        "//sw/device/lib/arch:boot_stage_rom_ext",
+        "//sw/device/lib/arch:sim_verilator",
+        "//hw/top_darjeeling/sw/dt:sim_verilator",
+    ],
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    otp = "//hw/top_darjeeling/data/otp:img_rma",
+    test_cmd = "testing-not-supported",
+)
+
+sim_verilator(
+    name = "sim_verilator",
+    testonly = True,
+    args = [
+        "--rcfile=",
+        "--logging=info",
+        "--interface=verilator",
+        "--verilator-bin=$(rootpath //hw:verilator)",
+        "--verilator-rom={rom}",
+        "--verilator-otp={otp}",
+        "--verilator-ctn-ram={firmware}",
+    ],
+    base = ":sim_verilator_base",
+    data = [
+        "//hw:fusesoc_ignore",
+        "//hw:verilator",
+    ],
+    exec_env = "sim_verilator",
+    param = {
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+    },
+    rom = "//sw/device/lib/testing/test_rom:test_rom",
+    test_cmd = """
+        --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+        no-op
+    """,
 )
 
 ###########################################################################
