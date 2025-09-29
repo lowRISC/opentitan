@@ -13,6 +13,16 @@ load(
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
+    name = "rtl_files",
+    srcs = glob(["**"]) + [
+        "//hw/top_darjeeling/data:all_files",
+        "//hw/top_darjeeling/dv/verilator:all_files",
+        "//hw/top_darjeeling/ip:rtl_files",
+        "//hw/top_darjeeling/sw:all_files",
+    ],
+)
+
+filegroup(
     name = "doc_files",
     srcs = glob(["**/*.md"]) + [
         "//hw/top_darjeeling/ip_autogen/ac_range_check:doc_files",
