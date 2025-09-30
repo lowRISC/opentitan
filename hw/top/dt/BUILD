@@ -21,3 +21,21 @@ py_library(
         "//util/topgen",
     ],
 )
+
+py_library(
+    name = "rstmgr_ipconfig",
+    srcs = ["rstmgr_ipconfig.py"],
+    deps = [
+        "//util/ipgen",
+    ],
+)
+
+py_library(
+    name = "rstmgr_binding",
+    srcs = ["rstmgr_binding.py"],
+    deps = [
+        ":rstmgr_ipconfig",
+        "//util/dtgen:helper",
+        "//util/topgen",
+    ],
+)
