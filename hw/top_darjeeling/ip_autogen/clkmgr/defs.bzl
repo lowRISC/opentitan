@@ -7,7 +7,7 @@ CLKMGR = opentitan_ip(
     name = "clkmgr",
     hjson = "//hw/top_darjeeling/ip_autogen/clkmgr/data:clkmgr.hjson",
     ipconfig = "//hw/top_darjeeling/ip_autogen/clkmgr/data:top_darjeeling_clkmgr.ipconfig.hjson",
-    extension = "//hw/top_darjeeling/ip_autogen/clkmgr/util:dt",
+    extension = "//hw/top/dt:clkmgr_binding",
     dt_hdr_deps = ["//sw/device/lib/base:bitfield"],
     dt_src_deps = ["//hw/top:clkmgr_c_regs"],
 )
