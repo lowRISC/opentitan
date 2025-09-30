@@ -313,6 +313,7 @@ rust_library(
         "@crate_index//:humantime",
         "@crate_index//:humantime-serde",
         "@crate_index//:indicatif",
+        "@crate_index//:inventory",
         "@crate_index//:log",
         "@crate_index//:memoffset",
         "@crate_index//:num-bigint-dig",
