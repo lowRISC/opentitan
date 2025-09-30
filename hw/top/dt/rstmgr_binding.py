@@ -11,7 +11,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-from ipconfig import IpConfig  # noqa: E402
+from rstmgr_ipconfig import IpConfig  # noqa: E402
 
 HEADER_EXT_TEMPLATE = """
 /**

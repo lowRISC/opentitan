@@ -7,5 +7,5 @@ RSTMGR = opentitan_ip(
     name = "rstmgr",
     hjson = "//hw/top_englishbreakfast/ip_autogen/rstmgr/data:rstmgr.hjson",
     ipconfig = "//hw/top_englishbreakfast/ip_autogen/rstmgr/data:top_englishbreakfast_rstmgr.ipconfig.hjson",
-    extension = "//hw/top_englishbreakfast/ip_autogen/rstmgr/util:dt",
+    extension = "//hw/top/dt:rstmgr_binding",
 )
