@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('g', 'h', 'a')
@@ -292,14 +293,16 @@ static void ghash_process_block(ghash_context_t *ctx, ghash_block_t *block) {
     hardened_xor_in_place(ctx->state0.data, ctx->correction_term0.data,
                           kGhashBlockNumWords);
 
-    // TODO(#28013): randomize register file content before processing the
-    // second share.
+    // Clear the RF before operating on the second share to avoid leakage
+    // between both shares.
+    ibex_clear_rf();
 
     // Process share 1.
     // share1_tmp = (S1 + T0) * H1
     hardened_memcpy(s1_tmp.data, block->data, kGhashBlockNumWords);
     hardened_xor_in_place(s1_tmp.data, ctx->enc_initial_counter_block1.data,
                           kGhashBlockNumWords);
+    ibex_clear_rf();
     s1_tmp = galois_mul_state_key(s1_tmp, ctx->tbl1);
 
     // Apply the correction terms for state share 1.
