@@ -4,9 +4,9 @@
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
 
-#include "hw/top/dt/dt_csrng.h"
-#include "hw/top/dt/dt_edn.h"
-#include "hw/top/dt/dt_entropy_src.h"
+#include "hw/top/dt/csrng.h"
+#include "hw/top/dt/edn.h"
+#include "hw/top/dt/entropy_src.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/math.h"

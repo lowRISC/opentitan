@@ -206,7 +206,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":check",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:rv_plic",
@@ -503,7 +503,7 @@ cc_library(
         ":check",
         ":freertos_config",
         ":ottf_start",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/dif:rv_timer",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:irq",

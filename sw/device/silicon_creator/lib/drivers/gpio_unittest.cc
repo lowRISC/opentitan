@@ -7,7 +7,7 @@
 #include <array>
 
 #include "gtest/gtest.h"
-#include "hw/top/dt/dt_gpio.h"
+#include "hw/top/dt/gpio.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"

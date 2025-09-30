@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "hw/top/dt/dt_lc_ctrl.h"
+#include "hw/top/dt/lc_ctrl.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"

@@ -4,7 +4,7 @@
 
 #include <stdbool.h>
 
-#include "hw/top/dt/dt_rv_core_ibex.h"
+#include "hw/top/dt/rv_core_ibex.h"
 #include "sw/device/lib/arch/device.h"
 
 #include "hw/top/rv_core_ibex_regs.h"

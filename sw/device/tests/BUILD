@@ -72,7 +72,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -96,7 +96,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -158,7 +158,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -199,7 +199,7 @@ opentitan_test(
     ],
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -228,7 +228,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -261,7 +261,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -296,7 +296,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -359,7 +359,7 @@ opentitan_test(
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -604,7 +604,7 @@ opentitan_test(
         {"//hw/top_earlgrey:silicon_creator": None},
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aon_timer",
@@ -628,7 +628,7 @@ opentitan_test(
         DARJEELING_TEST_ENVS,
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/runtime:hart",
@@ -700,7 +700,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -957,7 +957,7 @@ cc_library(
     srcs = ["clkmgr_off_trans_impl.c"],
     hdrs = ["clkmgr_off_trans_impl.h"],
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:aon_timer",
@@ -1108,7 +1108,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:clkmgr",
@@ -1129,7 +1129,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
@@ -1150,7 +1150,7 @@ opentitan_test(
         DARJEELING_TEST_ENVS,
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:stdasm",
@@ -1190,7 +1190,7 @@ opentitan_test(
     ),
     deps = [
         ":otbn_randomness_impl",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -1248,7 +1248,7 @@ opentitan_test(
     ),
     silicon = silicon_params(tags = ["broken"]),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
@@ -1277,8 +1277,8 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top:dt",
         "//hw/top:edn_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/dif:aes",
@@ -1314,8 +1314,8 @@ opentitan_test(
         timeout = "eternal",
     ),
     deps = [
-        "//hw/top:dt",
         "//hw/top:edn_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:edn",
@@ -1356,8 +1356,8 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top:dt",
         "//hw/top:edn_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:csrng",
@@ -1388,8 +1388,8 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
-        "//hw/top:dt",
         "//hw/top:edn_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:csrng_shared",
@@ -1422,7 +1422,7 @@ opentitan_test(
     ),
     verilator = verilator_params(tags = ["broken"]),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:base",
@@ -1464,7 +1464,7 @@ opentitan_test(
     ),
     deps = [
         ":entropy_src_kat_impl",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
@@ -1484,7 +1484,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:base",
@@ -1508,7 +1508,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:entropy_src",
@@ -1534,7 +1534,7 @@ opentitan_test(
     ),
     deps = [
         ":otbn_randomness_impl",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:base",
@@ -1568,8 +1568,8 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top:dt",
         "//hw/top:entropy_src_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:base",
@@ -1600,7 +1600,7 @@ opentitan_test(
     verilator = verilator_params(timeout = "long"),
     deps = [
         ":otbn_randomness_impl",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -1642,7 +1642,7 @@ opentitan_test(
     verilator = verilator_params(timeout = "long"),
     deps = [
         ":otbn_randomness_impl",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -1694,7 +1694,7 @@ opentitan_test(
     verilator = verilator_params(timeout = "long"),
     deps = [
         ":otbn_randomness_impl",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -1792,7 +1792,7 @@ opentitan_test(
     kind = "rom",
     linker_script = "//sw/device/lib/testing/test_rom:linker_script",
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:uart",
@@ -1867,7 +1867,7 @@ opentitan_test(
     srcs = ["flash_ctrl_info_access_lc.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:lc_ctrl",
@@ -1910,7 +1910,7 @@ _FLASH_CTRL_INFO_ACCESS_LC_STATES = get_lc_items(
             otp = "//hw/top_earlgrey/data/otp:img_{}".format(lc_state),
         ),
         deps = [
-            "//hw/top:dt",
+            "//hw/top/dt",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/dif:flash_ctrl",
             "//sw/device/lib/dif:lc_ctrl",
@@ -2231,7 +2231,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/runtime:log",
@@ -2254,7 +2254,7 @@ opentitan_test(
         DARJEELING_TEST_ENVS,
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:hmac",
@@ -2280,7 +2280,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:hmac",
@@ -2303,7 +2303,7 @@ opentitan_test(
         DARJEELING_TEST_ENVS,
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:hmac",
@@ -2327,7 +2327,7 @@ opentitan_test(
         DARJEELING_TEST_ENVS,
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:hmac",
@@ -2714,7 +2714,7 @@ _KMAC_APP_ROM_LIST = [
             for top in tops
         },
         deps = [
-            "//hw/top:dt",
+            "//hw/top/dt",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/dif:rom_ctrl",
             "//sw/device/lib/runtime:log",
@@ -2744,7 +2744,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -2768,7 +2768,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:irq",
@@ -2793,7 +2793,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:keymgr",
@@ -2818,7 +2818,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "eternal"),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
@@ -2839,8 +2839,8 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top:dt",
         "//hw/top:top_lib",
+        "//hw/top/dt",
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
@@ -2868,7 +2868,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/dif:kmac",
@@ -2897,7 +2897,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -2919,7 +2919,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -2942,7 +2942,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:kmac",
@@ -2981,7 +2981,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
@@ -3010,7 +3010,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:ibex",
@@ -3038,7 +3038,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/dif:rv_core_ibex",
@@ -3106,7 +3106,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "eternal"),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
@@ -3131,7 +3131,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
@@ -3157,7 +3157,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/otbn/dv/smoke:smoke_test",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:otbn_testutils",
@@ -3209,7 +3209,7 @@ opentitan_test(
         changes_otp = True,
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -3232,7 +3232,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:math",
         "//sw/device/lib/dif:rv_plic",
@@ -3252,7 +3252,7 @@ opentitan_test(
         DARJEELING_TEST_ENVS,
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:irq",
@@ -3270,7 +3270,7 @@ opentitan_test(
         DARJEELING_TEST_ENVS,
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:irq",
@@ -3609,8 +3609,8 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     visibility = ["//sw/device/tests:__pkg__"],
     deps = [
-        "//hw/top:dt",
         "//hw/top:pwrmgr_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pwrmgr",
@@ -3823,7 +3823,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
@@ -3899,7 +3899,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing:rstmgr_testutils",
@@ -3923,7 +3923,7 @@ opentitan_test(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -3957,7 +3957,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rstmgr_testutils",
@@ -3984,10 +3984,10 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top:dt",
         "//hw/top:i2c_c_regs",
         "//hw/top:spi_device_c_regs",
         "//hw/top:spi_host_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -4023,7 +4023,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:uart",
@@ -4047,7 +4047,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/dif:rv_timer",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
@@ -4503,7 +4503,7 @@ opentitan_test(
         ["//hw/top_earlgrey:sim_qemu_rom_with_fake_keys"],
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:sram_ctrl",
@@ -4648,7 +4648,7 @@ opentitan_test(
         DARJEELING_TEST_ENVS,
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -4671,7 +4671,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -4695,7 +4695,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:uart",
@@ -5601,7 +5601,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
@@ -5679,7 +5679,7 @@ opentitan_test(
         "//hw/top_darjeeling:sim_dv": None,
     },
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -5706,7 +5706,7 @@ opentitan_test(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:rv_core_ibex",
@@ -5820,7 +5820,6 @@ opentitan_test(
         "//hw/top:adc_ctrl_c_regs",
         "//hw/top:aes_c_regs",
         "//hw/top:csrng_c_regs",
-        "//hw/top:dt",
         "//hw/top:entropy_src_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:hmac_c_regs",
@@ -5830,6 +5829,7 @@ opentitan_test(
         "//hw/top:pwm_c_regs",
         "//hw/top:spi_host_c_regs",
         "//hw/top:uart_c_regs",
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:multibits",
@@ -6280,9 +6280,9 @@ test_suite(
             test_harness = "//sw/host/tests/chip/rv_dm:ndm_reset_req",
         ),
         deps = [
-            "//hw/top:dt",
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top:pinmux_c_regs",
+            "//hw/top/dt",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/dif:rstmgr",
             "//sw/device/lib/runtime:hart",
@@ -6337,7 +6337,7 @@ test_suite(
             test_harness = "//sw/host/tests/chip/rv_dm:ndm_reset_req_when_cpu_halted",
         ),
         deps = [
-            "//hw/top:dt",
+            "//hw/top/dt",
             "//sw/device/lib/dif:rstmgr",
             "//sw/device/lib/runtime:hart",
             "//sw/device/lib/runtime:log",
@@ -6518,7 +6518,7 @@ test_suite(
             test_harness = "//sw/host/tests/chip/rv_dm:access_after_hw_reset",
         ),
         deps = [
-            "//hw/top:dt",
+            "//hw/top/dt",
             "//sw/device/lib/dif:rstmgr",
             "//sw/device/lib/runtime:hart",
             "//sw/device/lib/runtime:log",
@@ -6814,7 +6814,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_outputs",
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:sysrst_ctrl",
@@ -6991,7 +6991,7 @@ opentitan_test(
         DARJEELING_TEST_ENVS,
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -7011,7 +7011,7 @@ opentitan_test(
         DARJEELING_TEST_ENVS,
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -7169,7 +7169,7 @@ opentitan_binary(
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/runtime:log",
@@ -7220,9 +7220,9 @@ opentitan_test(
     verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top:clkmgr_c_regs",
-        "//hw/top:dt",
         "//hw/top:lc_ctrl_c_regs",
         "//hw/top:pinmux_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:lc_ctrl",
@@ -7449,8 +7449,8 @@ opentitan_test(
     verilator = verilator_params(tags = ["manual"]),
     deps = [
         ":otbn_randomness_impl",
-        "//hw/top:dt",
         "//hw/top:entropy_src_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -7505,7 +7505,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:uart",
@@ -7605,7 +7605,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/sram_ctrl:sram_ctrl_lc_escalation",
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -7758,7 +7758,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:hmac",
@@ -7798,7 +7798,7 @@ opentitan_test(
     srcs = ["dma_inline_hashing.c"],
     exec_env = DARJEELING_TEST_ENVS,
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:dma",
@@ -7818,7 +7818,7 @@ opentitan_test(
     srcs = ["dma_abort.c"],
     exec_env = DARJEELING_TEST_ENVS,
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:dma",
@@ -7836,7 +7836,7 @@ opentitan_test(
     srcs = ["keymgr_dpe_key_derivation_test.c"],
     exec_env = DARJEELING_TEST_ENVS,
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:keymgr_dpe",

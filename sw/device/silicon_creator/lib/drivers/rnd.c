@@ -4,8 +4,8 @@
 
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 
-#include "hw/top/dt/dt_entropy_src.h"
-#include "hw/top/dt/dt_rv_core_ibex.h"
+#include "hw/top/dt/entropy_src.h"
+#include "hw/top/dt/rv_core_ibex.h"
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/crc32.h"

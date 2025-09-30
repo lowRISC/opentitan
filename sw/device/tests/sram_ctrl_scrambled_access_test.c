@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "hw/top/dt/dt_rstmgr.h"
-#include "hw/top/dt/dt_sram_ctrl.h"
+#include "hw/top/dt/rstmgr.h"
+#include "hw/top/dt/sram_ctrl.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/multibits.h"

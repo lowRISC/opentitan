@@ -8,7 +8,7 @@
 //! The test currently only checks the retention SRAM so that it can be run out
 //! of executable main SRAM on silicon.
 
-#include "hw/top/dt/dt_sram_ctrl.h"  // Generated
+#include "hw/top/dt/sram_ctrl.h"  // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"

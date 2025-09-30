@@ -6,7 +6,7 @@
 
 #include <assert.h>
 
-#include "hw/top/dt/dt_flash_ctrl.h"
+#include "hw/top/dt/flash_ctrl.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"

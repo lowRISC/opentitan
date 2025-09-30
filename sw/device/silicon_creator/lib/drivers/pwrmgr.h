@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "hw/top/dt/dt_api.h"
+#include "hw/top/dt/api.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/error.h"
 

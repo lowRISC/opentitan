@@ -6,8 +6,8 @@
 
 #include <assert.h>
 
-#include "hw/top/dt/dt_api.h"
-#include "hw/top/dt/dt_rstmgr.h"
+#include "hw/top/dt/api.h"
+#include "hw/top/dt/rstmgr.h"
 #include "rstmgr.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"

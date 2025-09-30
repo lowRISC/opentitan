@@ -33,7 +33,7 @@
 #endif
 
 #ifdef HAS_FLASH_CTRL
-#include "hw/top/dt/dt_flash_ctrl.h"
+#include "hw/top/dt/flash_ctrl.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
@@ -42,13 +42,13 @@
 #endif
 
 #ifdef HAS_OTP_CTRL
-#include "hw/top/dt/dt_otp_ctrl.h"
+#include "hw/top/dt/otp_ctrl.h"
 
 #include "hw/top/otp_ctrl_regs.h"
 #endif
 
 #ifdef OPENTITAN_IS_DARJEELING
-#include "hw/top/dt/dt_soc_proxy.h"
+#include "hw/top/dt/soc_proxy.h"
 #endif
 
 static const dt_pinmux_t kPinmuxDt = kDtPinmuxAon;

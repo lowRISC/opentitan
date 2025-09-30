@@ -245,7 +245,7 @@ cc_library(
         "flash_ctrl",
         [
             "//hw/top:flash_ctrl_c_regs",
-            "//hw/top:dt_flash_ctrl",
+            "//hw/top/dt:flash_ctrl",
             "//sw/device/lib/dif:flash_ctrl",
             "//sw/device/lib/testing:flash_ctrl_testutils",
         ],
@@ -258,7 +258,7 @@ cc_library(
         "otp_ctrl",
         [
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top:dt_otp_ctrl",
+            "//hw/top/dt:otp_ctrl",
         ],
         [],
     ),

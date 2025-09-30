@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/ip/aes/model/aes_modes.h"
-#include "hw/top/dt/dt_api.h"  // Generated
+#include "hw/top/dt/api.h"  // Generated
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"

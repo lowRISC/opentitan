@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "hw/top/dt/dt_flash_ctrl.h"  // Generated
+#include "hw/top/dt/flash_ctrl.h"  // Generated
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
