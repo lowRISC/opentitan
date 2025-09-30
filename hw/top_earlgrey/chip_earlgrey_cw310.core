@@ -67,11 +67,6 @@ parameters:
     description: OTP initialization file in vmem hex format
     default: "../../../../../build-bin/sw/device/otp_img/otp_img_fpga_cw310.vmem"
     paramtype: vlogparam
-  # For value definition, please see ip/prim/rtl/prim_pkg.sv
-  PRIM_DEFAULT_IMPL:
-    datatype: str
-    paramtype: vlogdefine
-    description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
   AST_BYPASS_CLK:
     datatype: bool
     paramtype: vlogdefine
@@ -95,7 +90,6 @@ targets:
     parameters:
       - BootRomInitFile
       - OtpMacroMemInitFile
-      - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
       - AST_BYPASS_CLK=true
     tools:
       vivado:

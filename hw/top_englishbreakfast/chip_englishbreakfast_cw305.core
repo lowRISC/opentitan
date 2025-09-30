@@ -53,11 +53,6 @@ parameters:
     description: Boot ROM initialization file in 32 bit vmem hex format
     default: ""
     paramtype: vlogparam
-  # For value definition, please see ip/prim/rtl/prim_pkg.sv
-  PRIM_DEFAULT_IMPL:
-    datatype: str
-    paramtype: vlogdefine
-    description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
   AST_BYPASS_CLK:
     datatype: bool
     paramtype: vlogdefine
@@ -77,7 +72,6 @@ targets:
     toplevel: chip_englishbreakfast_cw305
     parameters:
       - BootRomInitFile
-      - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
       - AST_BYPASS_CLK=true
     tools:
       vivado:
