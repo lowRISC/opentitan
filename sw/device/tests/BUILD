@@ -7700,6 +7700,10 @@ opentitan_test(
         exit_failure = "FAIL!",
         exit_success = "Alert 3 is asserted",
     ),
+    silicon = silicon_params(
+        exit_failure = "FAIL!",
+        exit_success = "Alert 3 is asserted",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:alert_handler",
