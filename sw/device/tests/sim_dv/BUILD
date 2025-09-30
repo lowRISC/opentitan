@@ -252,7 +252,7 @@ opentitan_test(
         "//hw/top_darjeeling:sim_dv": None,
     },
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -311,7 +311,7 @@ opentitan_test(
         "//hw/top_darjeeling:sim_dv": None,
     },
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -491,7 +491,7 @@ opentitan_test(
         "//hw/top_darjeeling:sim_dv": None,
     },
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:lc_ctrl",
@@ -529,7 +529,7 @@ opentitan_test(
         "//hw/top_darjeeling:sim_dv": None,
     },
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:mmio",

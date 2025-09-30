@@ -139,7 +139,7 @@ def main():
     )
 
     args = parser.parse_args()
-    outdir = Path(args.outdir) / "dt"
+    outdir = Path(args.outdir)
     outdir.mkdir(parents = True, exist_ok = True)
 
     name_to_block = {}
@@ -168,13 +168,13 @@ def main():
 
         render_template(
             TOPGEN_TEMPLATE_PATH / "dt_api.h.tpl",
-            outdir / "dt_api.h",
+            outdir / "api.h",
             helper = top_helper,
             top_lib_header = top_lib_header,
         )
         render_template(
             TOPGEN_TEMPLATE_PATH / "dt_api.c.tpl",
-            outdir / "dt_api.c",
+            outdir / "api.c",
             helper = top_helper,
         )
 
@@ -202,12 +202,12 @@ def main():
 
             render_template(
                 TOPGEN_TEMPLATE_PATH / "dt_ip.h.tpl",
-                outdir / "dt_{}.h".format(ipname),
+                outdir / "{}.h".format(ipname),
                 helper = helper,
             )
             render_template(
                 TOPGEN_TEMPLATE_PATH / "dt_ip.c.tpl",
-                outdir / "dt_{}.c".format(ipname),
+                outdir / "{}.c".format(ipname),
                 helper = helper,
             )
 

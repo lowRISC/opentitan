@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/bootstrap.h"
 
-#include "hw/top/dt/dt_gpio.h"
+#include "hw/top/dt/gpio.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"

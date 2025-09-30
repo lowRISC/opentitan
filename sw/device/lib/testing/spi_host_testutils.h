@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "hw/top/dt/dt_api.h"  // Generated
+#include "hw/top/dt/api.h"  // Generated
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_spi_host.h"

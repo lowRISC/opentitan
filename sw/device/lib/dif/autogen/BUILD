@@ -12,7 +12,7 @@ package(default_visibility = ["//visibility:public"])
         name = ip,
         ip = ip,
         deps = [
-            "//hw/top:dt_{}".format(ip),
+            "//hw/top/dt:{}".format(ip),
             "//hw/top:{}_c_regs".format(ip),
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/dif:base",

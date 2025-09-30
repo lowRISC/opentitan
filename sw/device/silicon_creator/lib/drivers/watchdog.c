@@ -4,9 +4,9 @@
 
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 
-#include "hw/top/dt/dt_aon_timer.h"
-#include "hw/top/dt/dt_api.h"
-#include "hw/top/dt/dt_pwrmgr.h"
+#include "hw/top/dt/aon_timer.h"
+#include "hw/top/dt/api.h"
+#include "hw/top/dt/pwrmgr.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"

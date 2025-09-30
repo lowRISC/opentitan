@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/testing/keymgr_testutils.h"
 
-#include "hw/top/dt/dt_otp_ctrl.h"
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_keymgr.h"

@@ -33,7 +33,7 @@ opentitan_test(
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
     },
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/examples/teacup_demos/data:bitmaps",
         "//sw/device/lib/arch:device",

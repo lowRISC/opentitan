@@ -17,9 +17,9 @@
  * through the debug module.
  */
 
-#include "hw/top/dt/dt_alert_handler.h"  // Generated
-#include "hw/top/dt/dt_lc_ctrl.h"        // Generated
-#include "hw/top/dt/dt_sram_ctrl.h"      // Generated
+#include "hw/top/dt/alert_handler.h"  // Generated
+#include "hw/top/dt/lc_ctrl.h"        // Generated
+#include "hw/top/dt/sram_ctrl.h"      // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"

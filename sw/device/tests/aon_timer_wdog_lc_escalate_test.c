@@ -7,11 +7,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "hw/top/dt/dt_alert_handler.h"
-#include "hw/top/dt/dt_aon_timer.h"
-#include "hw/top/dt/dt_pwrmgr.h"
-#include "hw/top/dt/dt_rstmgr.h"
-#include "hw/top/dt/dt_rv_plic.h"
+#include "hw/top/dt/alert_handler.h"
+#include "hw/top/dt/aon_timer.h"
+#include "hw/top/dt/pwrmgr.h"
+#include "hw/top/dt/rstmgr.h"
+#include "hw/top/dt/rv_plic.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"

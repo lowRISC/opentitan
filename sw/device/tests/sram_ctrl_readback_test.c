@@ -5,7 +5,7 @@
 //! This test is identical to the sram_ctrl_memset_test except that the SRAM
 //! readack mode gets enabled.
 
-#include "hw/top/dt/dt_sram_ctrl.h"  // Generated
+#include "hw/top/dt/sram_ctrl.h"  // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
