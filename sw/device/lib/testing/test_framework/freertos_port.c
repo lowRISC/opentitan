@@ -5,7 +5,7 @@
 #include "external/freertos/include/FreeRTOS.h"
 #include "external/freertos/include/task.h"
 #include "external/freertos/portable/GCC/RISC-V/portmacro.h"
-#include "hw/top/dt/dt_rv_timer.h"
+#include "hw/top/dt/rv_timer.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/runtime/irq.h"

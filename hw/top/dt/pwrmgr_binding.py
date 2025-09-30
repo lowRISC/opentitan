@@ -221,7 +221,7 @@ class PwrmgrExt(Extension):
         elif pos == Extension.DtIpPos.SourceIncludes:
             includes = ""
             for ip in self._extra_includes:
-                includes += f"#include \"dt_{ip}.h\"\n"
+                includes += f"#include \"hw/top/dt/{ip}.h\"\n"
             return includes
         elif pos == Extension.DtIpPos.SourceEnd:
             subs = {

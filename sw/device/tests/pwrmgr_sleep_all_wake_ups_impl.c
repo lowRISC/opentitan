@@ -7,7 +7,7 @@
 
 #include "sw/device/tests/pwrmgr_sleep_all_wake_ups_impl.h"
 
-#include "hw/top/dt/dt_aon_timer.h"
+#include "hw/top/dt/aon_timer.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
@@ -18,21 +18,21 @@
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 
 #ifdef HAS_ADC_CTRL
-#include "hw/top/dt/dt_adc_ctrl.h"
+#include "hw/top/dt/adc_ctrl.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
 #endif
 #ifdef HAS_SENSOR_CTRL
-#include "hw/top/dt/dt_sensor_ctrl.h"
+#include "hw/top/dt/sensor_ctrl.h"
 #include "sw/device/lib/dif/dif_sensor_ctrl.h"
 
 #include "hw/top/sensor_ctrl_regs.h"
 #endif
 #ifdef HAS_SYSRST_CTRL
-#include "hw/top/dt/dt_sysrst_ctrl.h"
+#include "hw/top/dt/sysrst_ctrl.h"
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #endif
 #ifdef HAS_USBDEV
-#include "hw/top/dt/dt_usbdev.h"
+#include "hw/top/dt/usbdev.h"
 #include "sw/device/lib/dif/dif_usbdev.h"
 #endif
 
