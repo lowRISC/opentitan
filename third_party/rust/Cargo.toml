@@ -47,6 +47,7 @@ hex = { version = "0.4.3", features = ["serde"] }
 humantime = "2.1.0"
 humantime-serde = "1.1"
 indicatif = "0.18"
+inventory = "0.3"
 itertools = "0.14.0"
 log = "0.4"
 memchr = "2.6.4"
