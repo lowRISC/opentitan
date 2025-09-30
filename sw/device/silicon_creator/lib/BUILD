@@ -47,7 +47,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top:dt",
+            "//hw/top/dt",
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top:flash_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -382,7 +382,7 @@ dual_cc_library(
             ":error",
             ":epmp_defs",
             ":stack_utilization",
-            "//hw/top:dt",
+            "//hw/top/dt",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
@@ -420,7 +420,7 @@ cc_test(
     srcs = ["shutdown_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":shutdown"),
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],

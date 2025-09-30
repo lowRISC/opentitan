@@ -7,8 +7,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "hw/top/dt/dt_alert_handler.h"
-#include "hw/top/dt/dt_rv_plic.h"
+#include "hw/top/dt/alert_handler.h"
+#include "hw/top/dt/rv_plic.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"

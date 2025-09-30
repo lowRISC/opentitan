@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top/dt/dt_rstmgr.h"  // Generated
+#include "hw/top/dt/rstmgr.h"  // Generated
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"

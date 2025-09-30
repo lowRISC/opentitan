@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/aes.h"
 
-#include "hw/top/dt/dt_aes.h"
+#include "hw/top/dt/aes.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/crc32.h"

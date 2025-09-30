@@ -8,7 +8,7 @@
 #include <limits>
 
 #include "gtest/gtest.h"
-#include "hw/top/dt/dt_keymgr.h"
+#include "hw/top/dt/keymgr.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"

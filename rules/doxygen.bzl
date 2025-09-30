@@ -174,9 +174,9 @@ def _doxygen_multitop_impl(ctx):
                 # under a single prefix like bazel-out/bin which we want to remove.
                 if not added_special_strip:
                     # The full path of `out` will be (for example):
-                    #   bazel-out/k8-fastbuild/bin/doc/<earlgrey>/hw/top/dt/dt_adc_ctrl.c
+                    #   bazel-out/k8-fastbuild/bin/doc/<earlgrey>/hw/top/dt/adc_ctrl.c
                     # The short path of `out` will:
-                    #   doc/(earlgrey)/hw/top/dt/dt_adc_ctrl.c
+                    #   doc/(earlgrey)/hw/top/dt/adc_ctrl.c
                     # The package of the ctx.label will be:
                     #   doc
                     # Therefore we want to remove the short path from the full path to get:

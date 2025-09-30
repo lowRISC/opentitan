@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "hw/top/dt/dt_adc_ctrl.h"
+#include "hw/top/dt/adc_ctrl.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"

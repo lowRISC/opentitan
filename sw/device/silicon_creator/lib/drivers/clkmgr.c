@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/clkmgr.h"
 
-#include "hw/top/dt/dt_clkmgr.h"
+#include "hw/top/dt/clkmgr.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/multibits.h"
 

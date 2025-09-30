@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "hw/top/dt/dt_gpio.h"
+#include "hw/top/dt/gpio.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
