@@ -39,3 +39,21 @@ py_library(
         "//util/topgen",
     ],
 )
+
+py_library(
+    name = "pwrmgr_ipconfig",
+    srcs = ["rstmgr_ipconfig.py"],
+    deps = [
+        "//util/ipgen",
+    ],
+)
+
+py_library(
+    name = "pwrmgr_binding",
+    srcs = ["pwrmgr_binding.py"],
+    deps = [
+        ":pwrmgr_ipconfig",
+        "//util/dtgen:helper",
+        "//util/topgen",
+    ],
+)
