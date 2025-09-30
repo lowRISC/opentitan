@@ -196,6 +196,34 @@ TEST_OWNER_CONFIGS = {
         ],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_spidfu"],
     },
+    "rescue_config_module_mismatch": {
+        "owner_defines": [
+            # 0x53 is 'S'pi.
+            "WITH_RESCUE_PROTOCOL=0x53",
+            # Timeout: 0x80=enter_on_fail, 0x05 = 5 seconds.
+            "WITH_RESCUE_TIMEOUT=0x85",
+        ],
+        # Set a rescue module that is not matched with the specified rescue protocol.
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
+    "spidfu_rescue_boot_svc_req_disability": {
+        "owner_defines": [
+            # 0x53 is 'S'pi.
+            "WITH_RESCUE_PROTOCOL=0x53",
+            # Trigger 3 is GPIO pin.
+            "WITH_RESCUE_TRIGGER=3",
+            # When the trigger is GPIO, the index is the MuxedPad to us as the sense
+            # input. Index 2 is kTopEarlgreyMuxedPadsIoa2.
+            "WITH_RESCUE_INDEX=2",
+            # GPIO param 3 means enable the internal pull resistor and trigger
+            # rescue when the GPIO is high.
+            "WITH_RESCUE_GPIO_PARAM=3",
+            # Timeout: 0x80=enter_on_fail, 0x05 = 5 seconds.
+            "WITH_RESCUE_TIMEOUT=0x85",
+            "WITH_RESCUE_COMMAND_ALLOW=kRescueModeBootSvcReq",
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_spidfu"],
+    },
     "spidfu_flash_limit_zero": {
         "owner_defines": [
             # 0x53 is 'S'pi.
