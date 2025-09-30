@@ -5,18 +5,18 @@
 package(default_visibility = ["//visibility:public"])
 
 py_library(
-    name = "ipconfig",
-    srcs = ["ipconfig.py"],
+    name = "clkmgr_ipconfig",
+    srcs = ["clkmgr_ipconfig.py"],
     deps = [
         "//util/ipgen",
     ],
 )
 
 py_library(
-    name = "dt",
-    srcs = ["dt.py"],
+    name = "clkmgr_binding",
+    srcs = ["clkmgr_binding.py"],
     deps = [
-        ":ipconfig",
+        ":clkmgr_ipconfig",
         "//util/dtgen:helper",
         "//util/topgen",
     ],
