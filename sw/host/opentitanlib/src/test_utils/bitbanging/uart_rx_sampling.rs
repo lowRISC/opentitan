@@ -304,7 +304,8 @@ impl UartRxMonitoringDecoder {
 mod test {
     use super::*;
 
-    use once_cell::sync::Lazy;
+    use std::sync::LazyLock;
+
     use serialport::Parity;
 
     use crate::test_utils::bitbanging::uart::{UartBitbangConfig, UartStopBits};
@@ -314,10 +315,11 @@ mod test {
         offset: None,
     };
     static BAUD_RATE: u32 = 57600;
-    static START_RESPONSE: Lazy<MonitoringStartResponse> = Lazy::new(|| MonitoringStartResponse {
-        timestamp: 0,
-        initial_levels: vec![true],
-    });
+    static START_RESPONSE: LazyLock<MonitoringStartResponse> =
+        LazyLock::new(|| MonitoringStartResponse {
+            timestamp: 0,
+            initial_levels: vec![true],
+        });
     // Example UART RX waveform taken from a bitbanging test sample
     static EVENT_TIMESTAMPS: [u64; 112] = [
         5889252340, 5889252358, 5889252375, 5889252392, 5889252410, 5889252427, 5889252445,

@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::sync::LazyLock;
+use std::time::Duration;
+
 use anyhow::{Context, Result, bail, ensure};
 use clap::Parser;
-use once_cell::sync::Lazy;
-use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
@@ -35,7 +36,7 @@ struct Params<'a> {
     config: &'a Config,
 }
 
-static CONFIG: Lazy<Config> = Lazy::new(|| {
+static CONFIG: LazyLock<Config> = LazyLock::new(|| {
     Config {
         // key0_in, key1_in
         output_pins: vec!["IOR6", "IOR7"],

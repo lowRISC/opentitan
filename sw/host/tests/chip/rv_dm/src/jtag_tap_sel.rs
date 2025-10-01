@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::sync::LazyLock;
+
 use anyhow::{Context, Result};
 use clap::Parser;
-use once_cell::sync::Lazy;
 use regex::Regex;
 
 use opentitanlib::app::TransportWrapper;
@@ -106,8 +107,8 @@ fn test_jtag_tap_sel(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         // Perform JTAG initialisation and capture the result.
         let init_result = openocd.execute("capture \"jtag init\"")?;
 
-        static ID_REGEX: Lazy<Regex> =
-            Lazy::new(|| Regex::new(r"tap/device found: 0x([0-9A-Fa-f]+) \(").unwrap());
+        static ID_REGEX: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"tap/device found: 0x([0-9A-Fa-f]+) \(").unwrap());
         let idcode = if init_result.contains("JTAG scan chain interrogation failed") {
             None
         } else {

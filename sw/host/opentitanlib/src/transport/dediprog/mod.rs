@@ -4,16 +4,17 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
-use anyhow::{Result, bail, ensure};
-use once_cell::sync::Lazy;
-use regex::Regex;
-use serde_annotate::Annotate;
-use serialport::SerialPortType;
 use std::any::Any;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::rc::Rc;
+use std::sync::LazyLock;
+
+use anyhow::{Result, bail, ensure};
+use regex::Regex;
+use serde_annotate::Annotate;
+use serialport::SerialPortType;
 
 use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
 use crate::io::spi::Target;
@@ -382,5 +383,5 @@ impl GpioPin for VoltagePin {
     }
 }
 
-static DEDIPROG_VERSION_REGEX: Lazy<Regex> =
-    Lazy::new(|| Regex::new("^([^ ]+) +V:([0-9]+)\\.([0-9]+)\\.([0-9]+)").unwrap());
+static DEDIPROG_VERSION_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new("^([^ ]+) +V:([0-9]+)\\.([0-9]+)\\.([0-9]+)").unwrap());

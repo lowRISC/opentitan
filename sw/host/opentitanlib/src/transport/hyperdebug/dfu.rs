@@ -4,12 +4,13 @@
 
 // Firmware update protocol for HyperDebug
 
-use anyhow::{Result, anyhow, bail};
-use once_cell::sync::Lazy;
-use regex::Regex;
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::cell::RefCell;
+use std::sync::LazyLock;
+
+use anyhow::{Result, anyhow, bail};
+use regex::Regex;
+use serde_annotate::Annotate;
 
 use crate::transport::{
     Capabilities, Capability, ProgressIndicator, Transport, TransportError, UpdateFirmware,
@@ -409,7 +410,7 @@ fn scan_usb_descriptor(usb_device: &UsbBackend) -> Result<DfuDescriptor> {
             if extra_bytes.len() >= 9 {
                 xfer_size = extra_bytes[5] as u32 | (extra_bytes[6] as u32) << 8;
             }
-            static DFU_SECTION_REGEX: Lazy<Regex> = Lazy::new(|| {
+            static DFU_SECTION_REGEX: LazyLock<Regex> = LazyLock::new(|| {
                 Regex::new("^@([^/]*)/0x([0-9a-fA-F]+)/([0-9]+)\\*([0-9]+)(..)").unwrap()
             });
             let Some(captures) = DFU_SECTION_REGEX.captures(&interface_name) else {

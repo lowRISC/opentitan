@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Result, ensure};
-use once_cell::sync::Lazy;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::sync::LazyLock;
+
+use anyhow::{Result, ensure};
 
 use crate::collection;
 use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
@@ -78,7 +79,7 @@ impl GpioPin for DediprogPin {
     }
 }
 
-static PIN_NAMES: Lazy<HashMap<&'static str, u8>> = Lazy::new(|| {
+static PIN_NAMES: LazyLock<HashMap<&'static str, u8>> = LazyLock::new(|| {
     collection! {
         "IO2" => 0,
         "IO1" => 1,

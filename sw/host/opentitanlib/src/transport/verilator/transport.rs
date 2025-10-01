@@ -2,14 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, ensure};
-use once_cell::sync::Lazy;
-use regex::Regex;
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::sync::LazyLock;
 use std::time::{Duration, Instant};
+
+use anyhow::{Context, Result, ensure};
+use regex::Regex;
+use serde_annotate::Annotate;
 
 use crate::io::gpio::{GpioError, GpioPin};
 use crate::io::uart::Uart;
@@ -42,14 +43,14 @@ pub struct Verilator {
 impl Verilator {
     /// Creates a verilator subprocess-hosting transport from `options`.
     pub fn from_options(options: Options) -> Result<Self> {
-        static UART: Lazy<Regex> =
-            Lazy::new(|| Regex::new("UART: Created ([^ ]+) for uart0").unwrap());
-        static SPI: Lazy<Regex> =
-            Lazy::new(|| Regex::new("SPI: Created ([^ ]+) for spi0").unwrap());
-        static GPIO_RD: Lazy<Regex> = Lazy::new(|| {
+        static UART: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("UART: Created ([^ ]+) for uart0").unwrap());
+        static SPI: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("SPI: Created ([^ ]+) for spi0").unwrap());
+        static GPIO_RD: LazyLock<Regex> = LazyLock::new(|| {
             Regex::new(r"GPIO: FIFO pipes created at ([^ ]+) \(read\) and [^ ]+ \(write\) for 32-bit wide GPIO.").unwrap()
         });
-        static GPIO_WR: Lazy<Regex> = Lazy::new(|| {
+        static GPIO_WR: LazyLock<Regex> = LazyLock::new(|| {
             Regex::new(r"GPIO: FIFO pipes created at [^ ]+ \(read\) and ([^ ]+) \(write\) for 32-bit wide GPIO.").unwrap()
         });
 

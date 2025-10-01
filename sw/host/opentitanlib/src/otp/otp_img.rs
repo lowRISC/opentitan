@@ -176,10 +176,9 @@ impl std::str::FromStr for OtpImg {
 mod tests {
     use super::*;
     use std::str::FromStr;
+    use std::sync::LazyLock;
 
     use serde_annotate::serialize;
-
-    use once_cell::sync::Lazy;
 
     const TEST_OTP_JSON: &str = r#"
         {
@@ -212,7 +211,7 @@ mod tests {
             ]
         }"#;
 
-    static TEST_OTP: Lazy<OtpImg> = Lazy::new(|| OtpImg {
+    static TEST_OTP: LazyLock<OtpImg> = LazyLock::new(|| OtpImg {
         seed: None,
         partitions: vec![OtpImgPartition {
             name: "CREATOR_SW_CFG".to_owned(),

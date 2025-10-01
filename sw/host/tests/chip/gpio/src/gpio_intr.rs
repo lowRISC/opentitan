@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashMap;
+use std::sync::LazyLock;
+use std::time::Duration;
+
 use anyhow::Result;
 use clap::Parser;
-use once_cell::sync::Lazy;
-use std::collections::HashMap;
-use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::io::gpio::PinMode;
@@ -36,7 +37,7 @@ struct Config {
     output: HashMap<PinmuxMioOut, PinmuxOutsel>,
 }
 
-static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
+static CONFIG: LazyLock<HashMap<&'static str, Config>> = LazyLock::new(|| {
     collection! {
          // from:https://github.com/lowRISC/opentitan/
          // blob/master/hw/top_earlgrey/data/pins_cw310_hyperdebug.xdc

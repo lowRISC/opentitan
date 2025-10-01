@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
-use clap::Parser;
-use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::LazyLock;
 use std::time::Duration;
+
+use anyhow::Result;
+use clap::Parser;
 
 use object::{Object, ObjectSymbol};
 use opentitanlib::app::TransportWrapper;
@@ -35,7 +36,7 @@ struct Opts {
     firmware_elf: PathBuf,
 }
 
-static CONFIG: Lazy<Config> = Lazy::new(|| {
+static CONFIG: LazyLock<Config> = LazyLock::new(|| {
     Config {
         // key0, key1, key2, pwrb_in, ac_present_in, lid_open, ec_rst, flash_wp
         output_pins: vec![
