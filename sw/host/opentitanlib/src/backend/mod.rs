@@ -9,12 +9,6 @@ use thiserror::Error;
 
 use crate::app::config::process_config_file;
 use crate::app::{TransportWrapper, TransportWrapperBuilder};
-use crate::transport::chip_whisperer::board::{Cw310, Cw340};
-use crate::transport::dediprog::Dediprog;
-use crate::transport::ftdi::chip::Ft4232hq;
-use crate::transport::hyperdebug::{
-    C2d2Flavor, ChipWhispererFlavor, ServoMicroFlavor, StandardFlavor, Ti50Flavor,
-};
 use crate::transport::{EmptyTransport, Transport};
 use crate::util::parse_int::ParseInt;
 
@@ -24,6 +18,92 @@ mod hyperdebug;
 mod proxy;
 mod ti50emulator;
 mod verilator;
+
+pub trait Backend {
+    /// Additional backend-specific arguments in addition to `BackendOpts`.
+    type Opts: Args;
+
+    /// Create a transport with the provided arguments.
+    fn create_transport(common: &BackendOpts, opts: &Self::Opts) -> Result<Box<dyn Transport>>;
+}
+
+#[doc(hidden)]
+pub use inventory::submit;
+
+#[doc(hidden)]
+pub struct InterfaceRegistration {
+    pub name: &'static str,
+    pub augment_args: fn(clap::Command) -> clap::Command,
+    pub create_transport: fn(&BackendOpts, &clap::ArgMatches) -> Result<Box<dyn Transport>>,
+    pub config: Option<&'static str>,
+}
+inventory::collect!(InterfaceRegistration);
+
+#[macro_export]
+macro_rules! define_interface {
+    ($name: literal, $backend: ty) => {
+        $crate::backend::define_interface!($name, $backend, None);
+    };
+    ($name: literal, $backend: ty, $config: literal) => {
+        $crate::backend::define_interface!($name, $backend, Some($config));
+    };
+    ($name: literal, $backend: ty, $config: expr) => {
+        $crate::backend::submit!($crate::backend::InterfaceRegistration {
+            name: $name,
+            augment_args: |command| {
+                let id = <<$backend as $crate::backend::Backend>::Opts as clap::Args>::group_id();
+
+                // Filter duplicates with id, in case backend is registered multiple times.
+                if command.get_groups().any(|x| Some(x.get_id()) == id.as_ref()) {
+                    return command;
+                }
+
+                <<$backend as $crate::backend::Backend>::Opts as clap::Args>::augment_args(command)
+            },
+            create_transport: |common, arg_matches| {
+                let opts = <<$backend as $crate::backend::Backend>::Opts as clap::FromArgMatches>::from_arg_matches(arg_matches)?;
+                <$backend as $crate::backend::Backend>::create_transport(common, &opts)
+            },
+            config: $config,
+        });
+    }
+}
+pub use crate::define_interface;
+
+struct TransportSpecificOpts {
+    matches: clap::ArgMatches,
+}
+
+impl std::fmt::Debug for TransportSpecificOpts {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        fmt.debug_struct("TransportSpecificOpts").finish()
+    }
+}
+
+impl clap::FromArgMatches for TransportSpecificOpts {
+    fn from_arg_matches(matches: &clap::ArgMatches) -> Result<Self, clap::Error> {
+        Ok(Self {
+            matches: matches.clone(),
+        })
+    }
+
+    fn update_from_arg_matches(&mut self, _matches: &clap::ArgMatches) -> Result<(), clap::Error> {
+        unreachable!()
+    }
+}
+
+impl Args for TransportSpecificOpts {
+    fn augment_args(mut cmd: clap::Command) -> clap::Command {
+        for reg in inventory::iter::<InterfaceRegistration> {
+            cmd = (reg.augment_args)(cmd);
+        }
+        cmd
+    }
+
+    fn augment_args_for_update(_: clap::Command) -> clap::Command {
+        unreachable!()
+    }
+}
 
 #[derive(Debug, Args)]
 pub struct BackendOpts {
@@ -49,16 +129,7 @@ pub struct BackendOpts {
     pub usb_serial: Option<String>,
 
     #[command(flatten)]
-    pub opts: chip_whisperer::ChipWhispererOpts,
-
-    #[command(flatten)]
-    pub verilator_opts: verilator::VerilatorOpts,
-
-    #[command(flatten)]
-    pub proxy_opts: proxy::ProxyOpts,
-
-    #[command(flatten)]
-    pub ti50emulator_opts: ti50emulator::Ti50EmulatorOpts,
+    transport_specific_opts: TransportSpecificOpts,
 
     /// Configuration files.
     #[arg(long, num_args = 1)]
@@ -86,62 +157,21 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
     for conf_file in &args.conf {
         process_config_file(&mut env, conf_file.as_ref())?
     }
-    let (backend, default_conf) = match env.get_interface() {
-        "" => (create_empty_transport()?, None),
-        "proxy" => (proxy::create(&args.proxy_opts)?, None),
-        "verilator" => (
-            verilator::create(&args.verilator_opts)?,
-            Some(Path::new("/__builtin__/opentitan_verilator.json5")),
-        ),
-        "ti50emulator" => (
-            ti50emulator::create(&args.ti50emulator_opts)?,
-            Some(Path::new("/__builtin__/ti50emulator.json5")),
-        ),
-        "hyper310" => (
-            hyperdebug::create::<ChipWhispererFlavor<Cw310>>(args)?,
-            Some(Path::new("/__builtin__/hyperdebug_cw310.json5")),
-        ),
-        "teacup" => (
-            hyperdebug::create::<StandardFlavor>(args)?,
-            Some(Path::new("/__builtin__/hyperdebug_teacup_default.json5")),
-        ),
-        "hyper340" => (
-            hyperdebug::create::<ChipWhispererFlavor<Cw340>>(args)?,
-            Some(Path::new("/__builtin__/hyperdebug_cw340.json5")),
-        ),
-        "hyperdebug" => (hyperdebug::create::<StandardFlavor>(args)?, None),
-        "hyperdebug_dfu" => (hyperdebug::create_dfu(args)?, None),
-        "c2d2" => (
-            hyperdebug::create::<C2d2Flavor>(args)?,
-            Some(Path::new("/__builtin__/h1dx_devboard_c2d2.json5")),
-        ),
-        "servo_micro" => (
-            hyperdebug::create::<ServoMicroFlavor>(args)?,
-            Some(Path::new("/__builtin__/servo_micro.json5")),
-        ),
-        "ti50" => (hyperdebug::create::<Ti50Flavor>(args)?, None),
-        "cw310" => (
-            chip_whisperer::create::<Cw310>(args)?,
-            Some(Path::new("/__builtin__/opentitan_cw310.json5")),
-        ),
-        "cw340" => (
-            chip_whisperer::create::<Cw340>(args)?,
-            Some(Path::new("/__builtin__/opentitan_cw340.json5")),
-        ),
-        "ftdi" => (
-            ftdi::create::<Ft4232hq>(args)?,
-            Some(Path::new("/__builtin__/opentitan_ftdi_voyager.json5")),
-        ),
-        "dediprog" => {
-            let dediprog: Box<dyn Transport> = Box::new(Dediprog::new(
-                args.usb_vid,
-                args.usb_pid,
-                args.usb_serial.as_deref(),
-            )?);
-            (dediprog, Some(Path::new("/__builtin__/dediprog.json5")))
+
+    let interface = env.get_interface();
+
+    let (backend, default_conf) = 'done: {
+        for reg in inventory::iter::<InterfaceRegistration> {
+            if interface == reg.name {
+                let transport =
+                    (reg.create_transport)(args, &args.transport_specific_opts.matches)?;
+                break 'done (transport, reg.config.map(Path::new));
+            }
         }
-        _ => return Err(Error::UnknownInterface(interface.to_string()).into()),
+
+        Err(Error::UnknownInterface(interface.to_string()))?
     };
+
     if args.conf.is_empty()
         && let Some(conf_file) = default_conf
     {
@@ -154,3 +184,15 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
 pub fn create_empty_transport() -> Result<Box<dyn Transport>> {
     Ok(Box::new(EmptyTransport))
 }
+
+struct EmptyBackend;
+
+impl Backend for EmptyBackend {
+    type Opts = ();
+
+    fn create_transport(_: &BackendOpts, _: &()) -> Result<Box<dyn Transport>> {
+        Ok(Box::new(EmptyTransport))
+    }
+}
+
+define_interface!("", EmptyBackend);
