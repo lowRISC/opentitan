@@ -31,6 +31,7 @@ DEFAULT_FILES = list(
     map(
         Path,
         [
+            'sw/device/lib/crt/crt.S',
         ],
     )
 )
