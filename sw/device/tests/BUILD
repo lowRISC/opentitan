@@ -1086,6 +1086,7 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -1094,6 +1095,8 @@ opentitan_test(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:stdasm",
+        "//sw/device/lib/coverage:api",
+        "//sw/device/lib/coverage:ottf_runtime",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
