@@ -25,6 +25,10 @@ extern char _build_id_end[];
 
 #define BUILD_ID ((uint8_t *)_build_id_end - kBuildIdSize)
 
+// The `build_id | 1` indicates the coverage data in the RAM is valid for the
+// binary with this build ID.
+#define VALID_COVERAGE ((*(uint32_t *)BUILD_ID) | 1)
+
 OT_SET_BSS_SECTION(
     "__ot_coverage_bss",
 
@@ -40,8 +44,8 @@ OT_SET_BSS_SECTION(
     /**
      * Stores the current coverage counters validity.
      *
-     * The `coverage_status` field stores the `build_id` if the coverage report
-     * is valid. It gets cleared when the coverage report is invalidated.
+     * The `coverage_status` field stores the `build_id | 1` if the coverage
+     * report is valid. It gets cleared when the coverage report is invalidated.
      */
     static uint32_t coverage_status;
 
@@ -55,12 +59,18 @@ OT_SET_BSS_SECTION(
      */
 );
 
-void coverage_printer_sink_with_crc(const void *buf, size_t size) {
+static void coverage_printer_sink_with_crc(const void *buf, size_t size) {
   crc32_add(&coverage_crc, buf, size);
   coverage_printer_sink(buf, size);
 }
 
-void coverage_compress_rle(uint8_t tag, uint32_t size) {
+/**
+ * Compresses and send a span of `size` bytes of `tag` using RLE.
+ *
+ * @param tag The byte value that is being compressed (0x00 or 0xff).
+ * @param size The size of the span.
+ */
+static void coverage_compress_rle(uint8_t tag, uint32_t size) {
   // assumption: the device is little-endian.
   uint32_t buf[2] = {0, size};
   if (size <= 0xfd) {
@@ -81,7 +91,15 @@ void coverage_compress_rle(uint8_t tag, uint32_t size) {
   }
 }
 
-void coverage_compress(unsigned char *data, size_t size) {
+/**
+ * Compresses and send the `data` buffer using RLE and bit-packing.
+ *
+ * It assumes `data` only contains 0x00 and 0xff bytes.
+ *
+ * @param data The buffer to compress.
+ * @param size The size of the buffer.
+ */
+static void coverage_compress(unsigned char *data, size_t size) {
   size_t i = 0;
 
   // assumption: `coverage_is_valid` checks all bytes are either 0x00 or 0xff.
@@ -89,8 +107,9 @@ void coverage_compress(unsigned char *data, size_t size) {
     // Find next span.
     size_t start = i;
     uint8_t tag = data[i++];
-    while (i < size && data[i] == tag)
+    while (i < size && data[i] == tag) {
       i++;
+    }
     size_t span_size = i - start;
 
     // Check for fast alternating sequence
@@ -110,6 +129,8 @@ void coverage_compress(unsigned char *data, size_t size) {
 
 void coverage_init(void) {
   if (!coverage_is_valid()) {
+    // Initialize all coverage counter bytes to 0xff (uncovered).
+    //
     // The linker script ensure the prf cnts section is aligned to 4-byte
     // boundary.
     uint32_t *ptr = (uint32_t *)__llvm_prf_cnts_start;
@@ -118,7 +139,7 @@ void coverage_init(void) {
     }
 
     // Set the report as valid.
-    coverage_status = *(uint32_t *)BUILD_ID;
+    coverage_status = VALID_COVERAGE;
   }
 }
 
@@ -138,14 +159,21 @@ void coverage_printer_run(void) {
   coverage_printer_sink(&coverage_crc, sizeof(coverage_crc));
 }
 
-void coverage_invalidate(void) { coverage_status = 0x42; }
+void coverage_invalidate(void) {
+  // Set to any even value (i.e., without LSB).
+  coverage_status = 0;
+}
 
 bool coverage_is_valid(void) {
-  if (coverage_status != *(uint32_t *)BUILD_ID) {
+  if (coverage_status != VALID_COVERAGE) {
     return false;
   }
 
   // Ensures all coverage counters are either 0x00 or 0xff.
+  //
+  // We use Clang's single-byte coverage mode. Each counter byte is a boolean
+  // representing whether the corresponding region is either covered (0x00) or
+  // uncovered (0xff).
   uint8_t *ptr = (uint8_t *)__llvm_prf_cnts_start;
   while (ptr < (uint8_t *)__llvm_prf_cnts_end) {
     uint8_t counter = *ptr++;
