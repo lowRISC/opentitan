@@ -271,6 +271,7 @@ pub struct Chardev {
 #[derive(Clone, Debug)]
 pub enum ChardevKind {
     Pty { path: PathBuf },
+    Socket { path: PathBuf },
     Other,
 }
 
@@ -281,6 +282,13 @@ impl TryFrom<ChardevJson> for Chardev {
         let kind = if let Some(path) = json.filename.strip_prefix("pty:") {
             let path = PathBuf::from(path);
             ChardevKind::Pty { path }
+        } else if let Some(sock) = json.filename.strip_prefix("disconnected:unix:") {
+            let path = sock
+                .split(',')
+                .next()
+                .with_context(|| format!("bad socket path format: {sock}"))?;
+            let path = PathBuf::from(path);
+            ChardevKind::Socket { path }
         } else {
             ChardevKind::Other
         };
