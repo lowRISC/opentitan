@@ -64,3 +64,19 @@ py_binary(
         ":parser",
     ],
 )
+
+py_library(
+    name = "encoding",
+    srcs = ["encoding.py"],
+    deps = [":parser"],
+)
+
+py_binary(
+    name = "generate_mapping",
+    srcs = ["generate_mapping.py"],
+    deps = [
+        ":basic_block",
+        ":encoding",
+        ":parser",
+    ],
+)
