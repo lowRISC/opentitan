@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(clippy::bool_assert_comparison)]
-use anyhow::{Context, Result, anyhow};
+use anyhow::{anyhow, Context, Result};
 use base64ct::{Base64, Decoder};
 use clap::{Args, Parser, Subcommand, ValueEnum};
 
@@ -42,6 +42,14 @@ struct Opts {
     // the device's UART console.
     #[arg(long)]
     owner_block: Option<PathBuf>,
+
+    /// Path to the ROM_EXT binary, for use with GetBootLog.
+    #[arg(long)]
+    rom_ext: Option<PathBuf>,
+
+    /// Expected ROM_EXT boot slot (SlotA or SlotB). Defaults to SlotA.
+    #[arg(long, value_enum, default_value_t = BootSlot::SlotA)]
+    expected_rom_ext_boot_slot: BootSlot,
 
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "10s")]
@@ -103,6 +111,7 @@ fn get_device_id_test(
 
 fn get_boot_log_test(
     binary: &Path,
+    expected_rom_ext_boot_slot: BootSlot,
     params: &RescueParams,
     transport: &TransportWrapper,
 ) -> Result<()> {
@@ -150,10 +159,10 @@ fn get_boot_log_test(
         ));
     }
 
-    if boot_log.rom_ext_slot != BootSlot::SlotA {
+    if boot_log.rom_ext_slot != expected_rom_ext_boot_slot {
         return Err(anyhow!(
             "rom_ext_slot mismatch. Expected: {}, but got: {}",
-            BootSlot::SlotA,
+            expected_rom_ext_boot_slot,
             boot_log.rom_ext_slot
         ));
     }
@@ -437,8 +446,14 @@ fn main() -> Result<()> {
                     .bootstrap
                     .bootstrap
                     .as_ref()
+                    .or(opts.rom_ext.as_ref())
                     .ok_or_else(|| anyhow!("No RV32 test binary provided"))?;
-                get_boot_log_test(binary, &rescue.params, &transport)?;
+                get_boot_log_test(
+                    binary,
+                    opts.expected_rom_ext_boot_slot,
+                    &rescue.params,
+                    &transport,
+                )?;
             }
             RescueTestActions::GetOwnerPage => {
                 let owner_block = load_owner_block(opts.owner_block.as_deref(), &transport)?;
