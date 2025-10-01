@@ -54,7 +54,3 @@ As a whole, the community resolves hundreds of pull requests and issues monthly.
 > [Start of OpenTitan](https://lowrisc.org/news/announcing-opentitan-the-first-transparent-silicon-root-of-trust/)
 >
 > OpenTitan, the First Transparent Silicon Root of Trust, announced.
-
-
-
-
