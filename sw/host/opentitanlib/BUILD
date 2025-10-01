@@ -65,6 +65,7 @@ rust_library(
         "src/app/mod.rs",
         "src/app/spi.rs",
         "src/backend/chip_whisperer.rs",
+        "src/backend/dediprog.rs",
         "src/backend/ftdi.rs",
         "src/backend/hyperdebug.rs",
         "src/backend/mod.rs",
