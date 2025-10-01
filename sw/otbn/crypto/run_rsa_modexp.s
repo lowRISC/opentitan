@@ -21,7 +21,7 @@
 
 /**
  * Mode magic values generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 6 -n 11 \
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 10 -n 11 \
  *      -s 544077332 --avoid-zero
 
  *
@@ -33,12 +33,34 @@
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.
  */
-.equ MODE_RSA_2048_MODEXP, 0x76b
-.equ MODE_RSA_2048_MODEXP_F4, 0x565
-.equ MODE_RSA_3072_MODEXP, 0x378
-.equ MODE_RSA_3072_MODEXP_F4, 0x6d1
-.equ MODE_RSA_4096_MODEXP, 0x70b
-.equ MODE_RSA_4096_MODEXP_F4, 0x0ee
+
+# Testing only! These key lengths are not supported.
+.equ MODE_RSA_512_MODEXP, 0x59c
+.equ MODE_RSA_512_MODEXP_F4, 0x6a5
+.equ MODE_RSA_1024_MODEXP, 0x732
+.equ MODE_RSA_1024_MODEXP_F4, 0x569
+
+# Supported key lengths.
+.equ MODE_RSA_2048_MODEXP, 0x6ca
+.equ MODE_RSA_2048_MODEXP_F4, 0x457
+.equ MODE_RSA_3072_MODEXP, 0x1e6
+.equ MODE_RSA_3072_MODEXP_F4, 0x3d1
+.equ MODE_RSA_4096_MODEXP, 0x0bb
+.equ MODE_RSA_4096_MODEXP_F4, 0x30f
+
+/**
+ * Make the mode constants visible to Ibex.
+ */
+.globl MODE_RSA_512_MODEXP
+.globl MODE_RSA_512_MODEXP_F4
+.globl MODE_RSA_1024_MODEXP
+.globl MODE_RSA_1024_MODEXP_F4
+.globl MODE_RSA_2048_MODEXP
+.globl MODE_RSA_2048_MODEXP_F4
+.globl MODE_RSA_3072_MODEXP
+.globl MODE_RSA_3072_MODEXP_F4
+.globl MODE_RSA_4096_MODEXP
+.globl MODE_RSA_4096_MODEXP_F4
 
 .section .text.start
 start:
@@ -48,6 +70,18 @@ start:
   /* Read the mode and tail-call the requested operation. */
   la      x2, mode
   lw      x2, 0(x2)
+
+  addi    x3, x0, MODE_RSA_512_MODEXP
+  beq     x2, x3, rsa_512_modexp
+
+  addi    x3, x0, MODE_RSA_512_MODEXP_F4
+  beq     x2, x3, rsa_512_modexp_f4
+
+  addi    x3, x0, MODE_RSA_1024_MODEXP
+  beq     x2, x3, rsa_1024_modexp
+
+  addi    x3, x0, MODE_RSA_1024_MODEXP_F4
+  beq     x2, x3, rsa_1024_modexp_f4
 
   addi    x3, x0, MODE_RSA_2048_MODEXP
   beq     x2, x3, rsa_2048_modexp
@@ -71,6 +105,34 @@ start:
   unimp
   unimp
   unimp
+
+rsa_512_modexp:
+  /* Set the number of limbs for the modulus (2048 / 256 = 8). */
+  li      x30, 2
+
+  /* Tail-call modexp. */
+  jal     x0, do_modexp
+
+rsa_512_modexp_f4:
+  /* Set the number of limbs for the modulus (2048 / 256 = 8). */
+  li      x30, 2
+
+  /* Tail-call modexp_f4. */
+  jal     x0, do_modexp_f4
+
+rsa_1024_modexp:
+  /* Set the number of limbs for the modulus (2048 / 256 = 8). */
+  li      x30, 4
+
+  /* Tail-call modexp. */
+  jal     x0, do_modexp
+
+rsa_1024_modexp_f4:
+  /* Set the number of limbs for the modulus (2048 / 256 = 8). */
+  li      x30, 4
+
+  /* Tail-call modexp_f4. */
+  jal     x0, do_modexp_f4
 
 rsa_2048_modexp:
   /* Set the number of limbs for the modulus (2048 / 256 = 8). */
@@ -129,8 +191,7 @@ rsa_4096_modexp_f4:
 do_modexp:
   /* Load pointers to modulus and Montgomery constant buffers. */
   la    x16, n
-  la    x17, m0d
-  la    x18, RR
+  la    x17, RR
 
   /* Compute Montgomery constants. */
   jal      x1, modload
@@ -138,7 +199,7 @@ do_modexp:
   /* Run exponentiation.
        dmem[work_buf] = dmem[inout]^dmem[d] mod dmem[n] */
   la       x14, inout
-  la       x15, d
+  la       x15, d0
   la       x2, work_buf
   jal      x1, modexp
 
@@ -165,8 +226,7 @@ do_modexp:
 do_modexp_f4:
   /* Load pointers to modulus and Montgomery constant buffers. */
   la    x16, n
-  la    x17, m0d
-  la    x18, RR
+  la    x17, RR
 
   /* Compute Montgomery constants. */
   jal      x1, modload
@@ -185,53 +245,3 @@ do_modexp_f4:
     bn.sid x0, 0(x4++)
 
   ecall
-
-.bss
-
-/* Operational mode. */
-.globl mode
-.balign 4
-mode:
-.zero 4
-
-/* RSA modulus (n), up to 4096 bits. */
-.globl n
-.balign 32
-n:
-.zero 512
-
-/* RSA private exponent (d) for signing, up to 4096 bits. */
-.globl d
-.balign 32
-d:
-.zero 512
-
-/**
- * Buffer used for both input and output, up to 4096 bits.
- *
- * - Input: Base for exponentiation (a), e.g. message digest or signature.
- * - Output: Modular exponentiation result.
- */
-.balign 32
-.globl inout
-inout:
-.zero 512
-
-
-/* Montgomery constant m0'. Filled by `modload`. */
-/* Note: m0' could go in scratchpad if there was space. */
-.balign 32
-m0d:
-.zero 32
-
-.section .scratchpad
-
-/* Montgomery constant RR. Filled by `modload`. */
-.balign 32
-RR:
-.zero 512
-
-/* Scratchpad working buffer. */
-.balign 32
-work_buf:
-.zero 512

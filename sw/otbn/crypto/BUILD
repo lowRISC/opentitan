@@ -222,14 +222,10 @@ otbn_library(
     ],
 )
 
-otbn_binary(
-    name = "rsa",
+otbn_library(
+    name = "run_rsa_modexp_mem",
     srcs = [
-        "rsa.s",
-    ],
-    deps = [
-        ":modexp",
-        ":montmul",
+        "run_rsa_modexp_mem.s",
     ],
 )
 
@@ -241,6 +237,14 @@ otbn_binary(
     deps = [
         ":modexp",
         ":montmul",
+        ":run_rsa_modexp_mem",
+    ],
+)
+
+otbn_library(
+    name = "run_rsa_keygen_mem",
+    srcs = [
+        "run_rsa_keygen_mem.s",
     ],
 )
 
@@ -264,57 +268,7 @@ otbn_binary(
         ":mul",
         ":primality",
         ":rsa_keygen",
-    ],
-)
-
-otbn_library(
-    name = "rsa_verify",
-    srcs = [
-        "rsa_verify.s",
-    ],
-)
-
-otbn_library(
-    name = "rsa_verify_3072",
-    srcs = [
-        "//sw/vendor:veri-titan/gen/otbn_modexp.s",
-    ],
-)
-
-otbn_library(
-    name = "rsa_verify_3072_m0inv",
-    srcs = [
-        "rsa_verify_3072_m0inv.s",
-    ],
-)
-
-otbn_library(
-    name = "rsa_verify_3072_rr",
-    srcs = [
-        "rsa_verify_3072_rr.s",
-    ],
-)
-
-otbn_binary(
-    name = "run_rsa_verify_3072",
-    srcs = [
-        "run_rsa_verify_3072.s",
-    ],
-    deps = [
-        ":rsa_verify_3072",
-        ":rsa_verify_3072_m0inv",
-        ":rsa_verify_3072_rr",
-    ],
-)
-
-otbn_binary(
-    name = "run_rsa_verify_3072_rr_modexp",
-    srcs = [
-        "run_rsa_verify_3072_rr_modexp.s",
-    ],
-    deps = [
-        ":rsa_verify_3072",
-        ":rsa_verify_3072_rr",
+        ":run_rsa_keygen_mem",
     ],
 )
 

@@ -12,14 +12,16 @@
 OTBN_DECLARE_APP_SYMBOLS(run_rsa_modexp);         // The OTBN RSA modexp binary.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, mode);   // Application mode.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, n);      // Public modulus n.
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, d);      // Private exponent d.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, d0);     // Private exponent d0.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, d1);     // Private exponent d1.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, inout);  // Input/output buffer.
 
 static const otbn_app_t kOtbnAppRsaModexp = OTBN_APP_T_INIT(run_rsa_modexp);
 static const otbn_addr_t kOtbnVarRsaMode =
     OTBN_ADDR_T_INIT(run_rsa_modexp, mode);
 static const otbn_addr_t kOtbnVarRsaN = OTBN_ADDR_T_INIT(run_rsa_modexp, n);
-static const otbn_addr_t kOtbnVarRsaD = OTBN_ADDR_T_INIT(run_rsa_modexp, d);
+static const otbn_addr_t kOtbnVarRsaD0 = OTBN_ADDR_T_INIT(run_rsa_modexp, d0);
+static const otbn_addr_t kOtbnVarRsaD1 = OTBN_ADDR_T_INIT(run_rsa_modexp, d1);
 static const otbn_addr_t kOtbnVarRsaInOut =
     OTBN_ADDR_T_INIT(run_rsa_modexp, inout);
 
@@ -104,7 +106,8 @@ static status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
 }
 
 status_t rsa_modexp_consttime_2048_start(const rsa_2048_int_t *base,
-                                         const rsa_2048_int_t *exp,
+                                         const rsa_2048_int_t *exp0,
+                                         const rsa_2048_int_t *exp1,
                                          const rsa_2048_int_t *modulus) {
   // Load the OTBN app. Fails if OTBN is not idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaModexp));
@@ -116,24 +119,15 @@ status_t rsa_modexp_consttime_2048_start(const rsa_2048_int_t *base,
   // Set the base, the modulus n and private exponent d.
   HARDENED_TRY(otbn_dmem_write(kRsa2048NumWords, base->data, kOtbnVarRsaInOut));
   HARDENED_TRY(otbn_dmem_write(kRsa2048NumWords, modulus->data, kOtbnVarRsaN));
-  HARDENED_TRY(otbn_dmem_write(kRsa2048NumWords, exp->data, kOtbnVarRsaD));
+  HARDENED_TRY(otbn_dmem_write(kRsa2048NumWords, exp0->data, kOtbnVarRsaD0));
+  HARDENED_TRY(otbn_dmem_write(kRsa2048NumWords, exp1->data, kOtbnVarRsaD1));
 
   // Start OTBN.
   return otbn_execute();
 }
 
 status_t rsa_modexp_vartime_2048_start(const rsa_2048_int_t *base,
-                                       const uint32_t exp,
                                        const rsa_2048_int_t *modulus) {
-  if (exp != kExponentF4) {
-    // TODO for other exponents, we temporarily fall back to the constant-time
-    // implementation until a variable-time implementation is supported.
-    rsa_2048_int_t exp_rsa;
-    memset(exp_rsa.data, 0, kRsa2048NumWords * sizeof(uint32_t));
-    exp_rsa.data[0] = exp;
-    return rsa_modexp_consttime_2048_start(base, &exp_rsa, modulus);
-  }
-
   // Load the OTBN app. Fails if OTBN is not idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaModexp));
 
@@ -154,7 +148,8 @@ status_t rsa_modexp_2048_finalize(rsa_2048_int_t *result) {
 }
 
 status_t rsa_modexp_consttime_3072_start(const rsa_3072_int_t *base,
-                                         const rsa_3072_int_t *exp,
+                                         const rsa_3072_int_t *exp0,
+                                         const rsa_3072_int_t *exp1,
                                          const rsa_3072_int_t *modulus) {
   // Load the OTBN app. Fails if OTBN is not idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaModexp));
@@ -166,24 +161,15 @@ status_t rsa_modexp_consttime_3072_start(const rsa_3072_int_t *base,
   // Set the base, the modulus n and private exponent d.
   HARDENED_TRY(otbn_dmem_write(kRsa3072NumWords, base->data, kOtbnVarRsaInOut));
   HARDENED_TRY(otbn_dmem_write(kRsa3072NumWords, modulus->data, kOtbnVarRsaN));
-  HARDENED_TRY(otbn_dmem_write(kRsa3072NumWords, exp->data, kOtbnVarRsaD));
+  HARDENED_TRY(otbn_dmem_write(kRsa3072NumWords, exp0->data, kOtbnVarRsaD0));
+  HARDENED_TRY(otbn_dmem_write(kRsa3072NumWords, exp1->data, kOtbnVarRsaD1));
 
   // Start OTBN.
   return otbn_execute();
 }
 
 status_t rsa_modexp_vartime_3072_start(const rsa_3072_int_t *base,
-                                       const uint32_t exp,
                                        const rsa_3072_int_t *modulus) {
-  if (exp != kExponentF4) {
-    // TODO for other exponents, we temporarily fall back to the constant-time
-    // implementation until a variable-time implementation is supported.
-    rsa_3072_int_t exp_rsa;
-    memset(exp_rsa.data, 0, kRsa3072NumWords * sizeof(uint32_t));
-    exp_rsa.data[0] = exp;
-    return rsa_modexp_consttime_3072_start(base, &exp_rsa, modulus);
-  }
-
   // Load the OTBN app. Fails if OTBN is not idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaModexp));
 
@@ -204,7 +190,8 @@ status_t rsa_modexp_3072_finalize(rsa_3072_int_t *result) {
 }
 
 status_t rsa_modexp_consttime_4096_start(const rsa_4096_int_t *base,
-                                         const rsa_4096_int_t *exp,
+                                         const rsa_4096_int_t *exp0,
+                                         const rsa_4096_int_t *exp1,
                                          const rsa_4096_int_t *modulus) {
   // Load the OTBN app. Fails if OTBN is not idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaModexp));
@@ -216,24 +203,15 @@ status_t rsa_modexp_consttime_4096_start(const rsa_4096_int_t *base,
   // Set the base, the modulus n and private exponent d.
   HARDENED_TRY(otbn_dmem_write(kRsa4096NumWords, base->data, kOtbnVarRsaInOut));
   HARDENED_TRY(otbn_dmem_write(kRsa4096NumWords, modulus->data, kOtbnVarRsaN));
-  HARDENED_TRY(otbn_dmem_write(kRsa4096NumWords, exp->data, kOtbnVarRsaD));
+  HARDENED_TRY(otbn_dmem_write(kRsa4096NumWords, exp0->data, kOtbnVarRsaD0));
+  HARDENED_TRY(otbn_dmem_write(kRsa4096NumWords, exp1->data, kOtbnVarRsaD1));
 
   // Start OTBN.
   return otbn_execute();
 }
 
 status_t rsa_modexp_vartime_4096_start(const rsa_4096_int_t *base,
-                                       const uint32_t exp,
                                        const rsa_4096_int_t *modulus) {
-  if (exp != kExponentF4) {
-    // TODO for other exponents, we temporarily fall back to the constant-time
-    // implementation until a variable-time implementation is supported.
-    rsa_4096_int_t exp_rsa;
-    memset(exp_rsa.data, 0, kRsa4096NumWords * sizeof(uint32_t));
-    exp_rsa.data[0] = exp;
-    return rsa_modexp_consttime_4096_start(base, &exp_rsa, modulus);
-  }
-
   // Load the OTBN app. Fails if OTBN is not idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaModexp));
 

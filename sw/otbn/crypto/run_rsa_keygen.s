@@ -37,6 +37,13 @@ start:
   /* Init all-zero register. */
   bn.xor  w31, w31, w31
 
+  /* Initialize the second key share to 0.
+     TODO: Remove once hardened keygen has arrived. */
+  la x2, rsa_d1
+  li x3, 31
+  loopi 16, 1
+    bn.sid x3, 0(x2++)
+
   /* Read the mode and tail-call the requested operation. */
   la      x2, mode
   lw      x2, 0(x2)
@@ -111,11 +118,3 @@ rsa_key_from_cofactor_4096:
   /* Generate a key (results in dmem[rsa_n] and dmem[rsa_d]). */
   jal     x1, rsa_key_from_cofactor
   ecall
-
-.bss
-
-/* Operational mode. */
-.globl mode
-.balign 4
-mode:
-.zero 4

@@ -154,8 +154,8 @@ status_t rsa_signature_generate_2048_start(
                               encoded_message.data));
 
   // Start computing (encoded_message ^ d) mod n.
-  return rsa_modexp_consttime_2048_start(&encoded_message, &private_key->d,
-                                         &private_key->n);
+  return rsa_modexp_consttime_2048_start(&encoded_message, &private_key->d0,
+                                         &private_key->d1, &private_key->n);
 }
 
 status_t rsa_signature_generate_2048_finalize(rsa_2048_int_t *signature) {
@@ -165,8 +165,7 @@ status_t rsa_signature_generate_2048_finalize(rsa_2048_int_t *signature) {
 status_t rsa_signature_verify_2048_start(
     const rsa_2048_public_key_t *public_key, const rsa_2048_int_t *signature) {
   // Start computing (sig ^ e) mod n with a variable-time exponentiation.
-  return rsa_modexp_vartime_2048_start(signature, public_key->e,
-                                       &public_key->n);
+  return rsa_modexp_vartime_2048_start(signature, &public_key->n);
 }
 
 status_t rsa_signature_verify_finalize(
@@ -222,8 +221,8 @@ status_t rsa_signature_generate_3072_start(
                               encoded_message.data));
 
   // Start computing (encoded_message ^ d) mod n.
-  return rsa_modexp_consttime_3072_start(&encoded_message, &private_key->d,
-                                         &private_key->n);
+  return rsa_modexp_consttime_3072_start(&encoded_message, &private_key->d0,
+                                         &private_key->d1, &private_key->n);
 }
 
 status_t rsa_signature_generate_3072_finalize(rsa_3072_int_t *signature) {
@@ -233,8 +232,7 @@ status_t rsa_signature_generate_3072_finalize(rsa_3072_int_t *signature) {
 status_t rsa_signature_verify_3072_start(
     const rsa_3072_public_key_t *public_key, const rsa_3072_int_t *signature) {
   // Start computing (sig ^ e) mod n with a variable-time exponentiation.
-  return rsa_modexp_vartime_3072_start(signature, public_key->e,
-                                       &public_key->n);
+  return rsa_modexp_vartime_3072_start(signature, &public_key->n);
 }
 
 status_t rsa_signature_generate_4096_start(
@@ -248,8 +246,8 @@ status_t rsa_signature_generate_4096_start(
                               encoded_message.data));
 
   // Start computing (encoded_message ^ d) mod n.
-  return rsa_modexp_consttime_4096_start(&encoded_message, &private_key->d,
-                                         &private_key->n);
+  return rsa_modexp_consttime_4096_start(&encoded_message, &private_key->d0,
+                                         &private_key->d1, &private_key->n);
 }
 
 status_t rsa_signature_generate_4096_finalize(rsa_4096_int_t *signature) {
@@ -259,6 +257,5 @@ status_t rsa_signature_generate_4096_finalize(rsa_4096_int_t *signature) {
 status_t rsa_signature_verify_4096_start(
     const rsa_4096_public_key_t *public_key, const rsa_4096_int_t *signature) {
   // Start computing (sig ^ e) mod n with a variable-time exponentiation.
-  return rsa_modexp_vartime_4096_start(signature, public_key->e,
-                                       &public_key->n);
+  return rsa_modexp_vartime_4096_start(signature, &public_key->n);
 }

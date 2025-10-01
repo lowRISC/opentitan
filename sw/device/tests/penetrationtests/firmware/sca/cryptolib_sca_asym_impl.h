@@ -15,7 +15,6 @@
  * @param data Input data.
  * @param data_len Input data length.
  * @param mode Mode.
- * @param e RSA public exponent.
  * @param n RSA modulus.
  * @param d RSA private key.
  * @param[out] n_len RSA length.
@@ -30,7 +29,7 @@
  */
 status_t cryptolib_sca_rsa_dec_impl(
     uint8_t data[RSA_CMD_MAX_MESSAGE_BYTES], size_t data_len, size_t mode,
-    uint32_t e, uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
+    uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
     size_t *n_len, uint8_t data_out[RSA_CMD_MAX_MESSAGE_BYTES],
     size_t *data_out_len, size_t hashing, size_t padding, size_t cfg_in,
     size_t *cfg_out, size_t trigger);
@@ -40,7 +39,6 @@ status_t cryptolib_sca_rsa_dec_impl(
  *
  * @param data Input data.
  * @param data_len Input data length.
- * @param e RSA public exponent.
  * @param n RSA modulus.
  * @param d RSA private key.
  * @param[out] n_len RSA length.
@@ -54,7 +52,7 @@ status_t cryptolib_sca_rsa_dec_impl(
  * @return OK or error.
  */
 status_t cryptolib_sca_rsa_sign_impl(
-    uint8_t data[RSA_CMD_MAX_MESSAGE_BYTES], size_t data_len, uint32_t e,
+    uint8_t data[RSA_CMD_MAX_MESSAGE_BYTES], size_t data_len,
     uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
     size_t *n_len, uint8_t sig[RSA_CMD_MAX_SIGNATURE_BYTES], size_t *sig_len,
     size_t hashing, size_t padding, size_t cfg_in, size_t *cfg_out,
