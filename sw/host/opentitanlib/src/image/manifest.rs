@@ -215,8 +215,7 @@ pub struct ManifestExtTable {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use memoffset::offset_of;
-    use std::mem::size_of;
+    use std::mem::{offset_of, size_of};
 
     /// Checks the layout of the manifest struct.
     ///
