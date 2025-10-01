@@ -12,6 +12,7 @@
 use anyhow::{bail, Context, Result};
 use byteorder::{LittleEndian, ReadBytesExt};
 use object::{Object, ObjectSection};
+use runfiles::{rlocation, Runfiles};
 use std::collections::HashMap;
 use std::env;
 use std::fs;
@@ -63,25 +64,6 @@ pub fn path_from_env(name: &str) -> PathBuf {
         panic!("Environment variable `{name}` cannot be empty.");
     }
     path
-}
-
-/// Retrieves the runfiles directory, resolving it to an absolute path.
-///
-/// This function determines the absolute path to the runfiles directory.
-/// It uses the `ROOT` and `RUNFILES_DIR` environment variables. If `RUNFILES_DIR`
-/// is not absolute, it's resolved relative to `ROOT`.
-pub fn get_runfiles_dir() -> PathBuf {
-    let execroot = path_from_env("ROOT");
-    let mut runfiles_dir = path_from_env("RUNFILES_DIR");
-
-    if !runfiles_dir.is_absolute() {
-        runfiles_dir = execroot.join(runfiles_dir);
-    }
-
-    debug_log!("ROOT: {}", execroot.display());
-    debug_log!("RUNFILES_DIR: {}", runfiles_dir.display());
-
-    runfiles_dir
 }
 
 /// Searches a directory and its subdirectories for files with a specific extension.
@@ -331,7 +313,7 @@ impl ProfileRegistry {
     /// Loads all available `ProfileData` from ELF files found in the runfiles directory
     /// and indexes them by their build ID.
     pub fn load() -> Result<ProfileRegistry> {
-        let runfiles_dir = get_runfiles_dir();
+        let runfiles_dir = runfiles::find_runfiles_dir().unwrap();
         debug_log!("runfiles_dir: {:?}", runfiles_dir);
 
         // Collect all elf files in the runfiles.
@@ -374,14 +356,14 @@ impl ProfileRegistry {
 }
 
 fn find_tool(file_name: &str) -> Result<PathBuf> {
-    let path = get_runfiles_dir()
-        .join("+lowrisc_rv32imcb_toolchain+lowrisc_rv32imcb_toolchain/bin")
-        .join(file_name);
-    debug_log!("Testing {file_name} path: {}", path.display());
-    if path.exists() {
-        return Ok(path);
-    }
-
+    let r = Runfiles::create().unwrap();
+    let path = PathBuf::from("lowrisc_rv32imcb_toolchain/bin").join(file_name);
+    if let Some(path) = rlocation!(r, path) {
+        debug_log!("Testing {file_name} path: {}", path.display());
+        if path.exists() {
+            return Ok(path);
+        }
+    };
     bail!("ERROR: missing {file_name} tool.");
 }
 

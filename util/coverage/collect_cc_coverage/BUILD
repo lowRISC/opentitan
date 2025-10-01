@@ -19,6 +19,7 @@ rust_library(
         "@crate_index//:object",
         "@crate_index//:rand",
         "@crate_index//:zerocopy",
+        "@rules_rust//rust/runfiles",
     ],
 )
 
