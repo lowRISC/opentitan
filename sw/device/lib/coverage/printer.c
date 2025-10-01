@@ -60,6 +60,12 @@ void coverage_printer_sink_with_crc(const void *buf, size_t size) {
   coverage_printer_sink(buf, size);
 }
 
+/**
+ * Compresses and send a span of `size` bytes of `tag` using RLE.
+ *
+ * @param tag The byte value that is being compressed (0x00 or 0xff).
+ * @param size The size of the span.
+ */
 void coverage_compress_rle(uint8_t tag, uint32_t size) {
   // assumption: the device is little-endian.
   uint32_t buf[2] = {0, size};
@@ -81,6 +87,14 @@ void coverage_compress_rle(uint8_t tag, uint32_t size) {
   }
 }
 
+/**
+ * Compresses and send the `data` buffer using RLE and bit-packing.
+ *
+ * It assumes `data` only contains 0x00 and 0xff bytes.
+ *
+ * @param data The buffer to compress.
+ * @param size The size of the buffer.
+ */
 void coverage_compress(unsigned char *data, size_t size) {
   size_t i = 0;
 
@@ -89,8 +103,9 @@ void coverage_compress(unsigned char *data, size_t size) {
     // Find next span.
     size_t start = i;
     uint8_t tag = data[i++];
-    while (i < size && data[i] == tag)
+    while (i < size && data[i] == tag) {
       i++;
+    }
     size_t span_size = i - start;
 
     // Check for fast alternating sequence
@@ -110,6 +125,8 @@ void coverage_compress(unsigned char *data, size_t size) {
 
 void coverage_init(void) {
   if (!coverage_is_valid()) {
+    // Initialize all coverage counter bytes to 0xff (uncovered).
+    //
     // The linker script ensure the prf cnts section is aligned to 4-byte
     // boundary.
     uint32_t *ptr = (uint32_t *)__llvm_prf_cnts_start;
@@ -146,6 +163,10 @@ bool coverage_is_valid(void) {
   }
 
   // Ensures all coverage counters are either 0x00 or 0xff.
+  //
+  // We use Clang's single-byte coverage mode. Each counter byte is a boolean
+  // representing whether the corresponding region is either covered (0x00) or
+  // uncovered (0xff).
   uint8_t *ptr = (uint8_t *)__llvm_prf_cnts_start;
   while (ptr < (uint8_t *)__llvm_prf_cnts_end) {
     uint8_t counter = *ptr++;
