@@ -5,9 +5,13 @@
 package(default_visibility = ["//visibility:public"])
 
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//rules/coverage:asm.bzl", "asm_library_with_coverage")
 
-cc_library(
+asm_library_with_coverage(
     name = "crt",
     srcs = ["crt.S"],
     target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/coverage:api_asm",
+    ],
 )
