@@ -24,6 +24,7 @@ To ensure the commands shown in this tutorial work for any supported board, we u
 ```sh
 export BOARD=cw340
 ```
+
 ### Download a Pre-built Bitstream
 
 If you are using the ChipWhisperer CW340 board with the Xilinx XCKU095-1FFVA1156C Kintex UltraScale or the CW310 board with the Xilinx Kintex 7 XC7K410T FPGA, you can download the latest passing [pre-built bitstream](https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz) from our public bitstream cache GCS bucket.
@@ -129,7 +130,8 @@ This behavior is helpful to create reproducible builds and avoids Vivado modifyi
 But during debugging this behavior is not helpful.
 The `--no-export` option of FuseSoC disables copying the source files into the staging area, and `--setup` instructs fusesoc to not start the synthesis process.
 
-**Only create Vivado project directory by using FuseSoC directly (skipping Bazel invocation).**
+##### Only create Vivado project directory by using FuseSoC directly (skipping Bazel invocation).
+
 ```sh
 cd $REPO_TOP
 fusesoc --cores-root hw run --target=synth --no-export --setup lowrisc:systems:chip_earlgrey_${BOARD}
@@ -204,7 +206,7 @@ To this end:
 4. Use a USB-C cable to connect your PC (*host*) with the *USB-C* connector (*J28*) in the lower left corner on the board.
 5. Set the jumpers *JP1* and *JP2* to select the UART0 routing:
    1. If set to FTDI the UART0 will (likely) be routed to `/dev/ttyUSB2`.
-   1. If set to SAM the UART0 will be routed to `/dev/ttyACM0`.
+   2. If set to SAM the UART0 will be routed to `/dev/ttyACM0`.
 6a. If you are connecting a HyperDebug board to your CW340 base board, follow the below instruction.
 6b. Otherwise, move the *Control Power* switch (top left corner, *SW7*) to the left (towards the barrel jack) to power on the board.
 
@@ -213,7 +215,7 @@ To this end:
 If you have a HyperDebug board, you can connect it to your CW340 board to enable executing more advanced test cases (such as test cases that drive various communication peripherals on OpenTitan).
 Below we describe how to:
 1. flash firmware onto your HyperDebug board, and
-1. connect it to you CW340 board
+2. connect it to you CW340 board
 
 ![HyperDebug Setup](hyperdebug_setup.png)
 
@@ -221,11 +223,11 @@ Below we describe how to:
 
 *BEFORE* connecting your HyperDebug board to the CW340 base board ST Zio connectors, do the following to install the firmware on it for the first time:
 1. Move jumper JP6 to select `5V_USB_C`.
-1. Move jumper JP4 to select `3.3V` mode (_this will be changed before connecting to CW340_).
-1. Use a USB-C cable to connect your PC with the `USB1` power and data connector near the blue and black push buttons.
-1. Using a jumper wire, connect pins 5 and 7 on bank CN11, and hit the black `RESET` push button to put the device in DFU mode.
-1. Remove the jumper wire, the red and blue LEDs should both remain on, indicating the board is in DFU mode.
-1. Flash the firmware by running `cd $REPO_TOP && ./bazelisk.sh run //sw/host/opentitantool -- --interface=hyperdebug_dfu transport update-firmware`.
+2. Move jumper JP4 to select `3.3V` mode (_this will be changed before connecting to CW340_).
+3. Use a USB-C cable to connect your PC with the `USB1` power and data connector near the blue and black push buttons.
+4. Using a jumper wire, connect pins 5 and 7 on bank CN11, and hit the black `RESET` push button to put the device in DFU mode.
+5. Remove the jumper wire, the red and blue LEDs should both remain on, indicating the board is in DFU mode.
+6. Flash the firmware by running `cd $REPO_TOP && ./bazelisk.sh run //sw/host/opentitantool -- --interface=hyperdebug_dfu transport update-firmware`.
 
 Note: after flashing the HyperDebug firmware for the first time, it can be updated (*without* needing to put the board into DFU mode) by running the same command used above to flash the firmware for the first time.
 
@@ -233,28 +235,29 @@ Note: after flashing the HyperDebug firmware for the first time, it can be updat
 
 On your HyperDebug board:
 1. Disconnect the PC USB-C cable from your HyperDebug board.
-1. Move jumper JP4 to select `1.8V` mode.
+2. Move jumper JP4 to select `1.8V` mode.
 
 On your CW340 base board (the red board):
 1. Move the following single pin-to-pin jumpers in the bottom right corner of the board to `HD` (for "HyperDebug").
     1. UART0 RX/TX (OpenTitan pins IOC3/4): JP1 & JP2
-    1. UART1 RX/TX (OpenTitan pins IOA0/1): JP3 & JP4
-    1. JTAG TAP select straps (OpenTitan pins IOC5/8): JP11 & JP12
-1. Connect the following blue socket-to-socket jumpers in the middle of the board to `HD` (for "HyperDebug").
+    2. UART1 RX/TX (OpenTitan pins IOA0/1): JP3 & JP4
+    3. JTAG TAP select straps (OpenTitan pins IOC5/8): JP11 & JP12
+2. Connect the following blue socket-to-socket jumpers in the middle of the board to `HD` (for "HyperDebug").
     1. SPI Device: connect J23 to J25
-    1. JTAG: connect J12 to J13
+    2. JTAG: connect J12 to J13
 
 ##### Connecting HyperDebug to the CW340 Base Board
 
 1. Ensure the CW340 FPGA base board is:
     1. Powered off (the *Control Power* switch in the top left corner, *SW7*, is set to the right towards the OpenTitan logo).
-    1. Connected via USB-C to your PC (described above).
-1. Ensure the HyperDebug jumper JP4 is set to select `1.8V`.
-1. Connect the HyperDebug board to the ST Zio connectors in the bottom left of the board.
-1. Connect the PC USB-C cable back to your HyperDebug board.
-1. Power on the CW340 by setting the *Control Power* switch in the top left corner, *SW7*, to the left towards the barrel jack.
+    2. Connected via USB-C to your PC (described above).
+2. Ensure the HyperDebug jumper JP4 is set to select `1.8V`.
+3. Connect the HyperDebug board to the ST Zio connectors in the bottom left of the board.
+4. Connect the PC USB-C cable back to your HyperDebug board.
+5. Power on the CW340 by setting the *Control Power* switch in the top left corner, *SW7*, to the left towards the barrel jack.
 
 ### Detecting the PC Connections to the Board(s)
+
 To detect if you PC has successfully connected to you FPGA and/or HyperDebug boards, you can use the following command to monitor output from dmesg:
 ```sh
 sudo dmesg -Hw
@@ -262,8 +265,8 @@ sudo dmesg -Hw
 This should show which serial ports have been assigned, or if the boards are having trouble connecting to USB.
 If `dmesg` reports a problem you can:
 1. trigger a reset of your CW310 with *USB_RST* on *SW5*,
-1. trigger a reset of your CW340 with *Control Power* on *SW7*, and/or
-1. trigger a reset of your HyperDebug with the black *RESET* button on *B2*.
+2. trigger a reset of your CW340 with *Control Power* on *SW7*, and/or
+3. trigger a reset of your HyperDebug with the black *RESET* button on *B2*.
 When properly connected, `dmesg` should identify each board, not show any errors.
 The serial ports identified should be named `'/dev/ttyACM*'` for CW310 and `/dev/ttyACM*` + `/dev/ttyUSB*` + for CW340 depending on the jumpers *JP1* and *JP2* described above.
  >e.g. `/dev/ttyACM1`.
@@ -358,12 +361,12 @@ For CW310.
 
 To flash the bitstream onto the FPGA using `opentitantool`, use the following command:
 
-**If you downloaded the bitstream from the Internet:**
+##### If you downloaded the bitstream from the Internet:
 ```sh
 cd $REPO_TOP
 ./bazelisk.sh run //sw/host/opentitantool -- fpga load-bitstream /tmp/bitstream-latest/lowrisc_systems_chip_earlgrey_${BOARD}_0.1.bit.orig
 ```
-**if you built the bitstream yourself:**
+##### if you built the bitstream yourself:
 ```sh
 cd $REPO_TOP
 ./bazelisk.sh run //sw/host/opentitantool -- fpga load-bitstream $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_${BOARD}_rom_with_fake_keys)
@@ -427,24 +430,15 @@ If the firmware load fails, try pressing the "USR-RST" button before loading the
 
 ## Debugging with JTAG
 
-### Tap Straps
-
-After bootstrapping the firmware, the TAP straps may need to be set.
-As of this writing, the FPGA images are typically programmed to be in the RMA lifecycle state, and the TAP straps are sampled continuously in that state.
-To connect the JTAG chain to the CPU's TAP, adjust the strap values with opentitantool.
-Assuming opentitantool has been built and that the current directory is the root of the workspace, run these commands:
-
-```sh
-./bazel-bin/sw/host/opentitantool/opentitantool --interface cw340 \
-        --exec "gpio write TAP_STRAP0 false" \
-        --exec "gpio write TAP_STRAP1 true" \
-        no-op
-```
-
 ### CW340 Board
 
 The CW340 supports JTAG-based debugging with OpenOCD and GDB via the FTDI Chip embedded on the board or via HyperDebug (if you connected one to your board above).
 No external JTAG adapter is needed.
+
+#### TAP Straps
+
+After bootstrapping the firmware, the TAP straps may need to be set.
+The FTDI Chip has IOs that correctly set the TAP straps, but for that to work the jumpers JP11 (IOC5) and JP12 (IOC8) should be configured as described [above](#Before-Connecting-HyperDebug-to-the-CW340-Base-Board).
 
 ### CW310 Board
 
@@ -457,7 +451,7 @@ For the `Olimex ARM-USB-TINY-H`, use the classic ARM JTAG header (J13) and make 
 Depending on the adapter's default state, OpenTitan may be held in reset when the adapter is initially connected.
 This reset will come under software control once OpenOCD initializes the driver.
 
-**Device permissions: udev rules**
+#### Device permissions: udev rules
 
 The JTAG adapter's device node in `/dev` must have read-write permissions.
 Otherwise, OpenOCD will fail because it's unable to open the USB device.
@@ -484,11 +478,25 @@ sudo udevadm trigger --verbose --type=subsystems --action=add --subsystem-match=
 stat --dereference -c '%a' /dev/jtag_adapter_arm_usb_tiny_h
 ```
 
+#### TAP Straps
+
+After bootstrapping the firmware, the TAP straps may need to be set.
+At the time of writing, the FPGA images are typically programmed to be in the RMA lifecycle state, and the TAP straps are sampled continuously in that state.
+To connect the JTAG chain to the CPU's TAP, adjust the strap values with opentitantool.
+
+```sh
+./bazelisk.sh run //sw/host/opentitantool -- --interface ${BOARD} \
+              --exec "gpio write TAP_STRAP0 false" \
+              --exec "gpio write TAP_STRAP1 true" \
+              no-op
+```
+
 ### Connecting OpenOCD
 The command below tells OpenOCD to connect to the ChipWhisperer FPGA board via an JTAG adapter.
 (Note that a different JTAG adapter will require a different config file `//third_party/openocd:jtag_*_cfg`.)
 
-**CW340 - FTDI adapter**
+#### CW340 - FTDI adapter
+
 ```sh
 cd $REPO_TOP
 ./bazelisk.sh run //third_party/openocd -- \
@@ -497,7 +505,8 @@ cd $REPO_TOP
     -f util/openocd/target/lowrisc-earlgrey.cfg
 ```
 
-**CW310 - Olimex adapter**
+#### CW310 - Olimex adapter
+
 ```sh
 cd $REPO_TOP
 ./bazelisk.sh run //third_party/openocd -- \
@@ -549,15 +558,15 @@ First, make sure the device software has been built with debug symbols (by defau
 For example, to build and test the UART smoke test with debug symbols, you can add `--copt=-g` flag to the `./bazelisk.sh test ...` command:
 ```sh
 cd $REPO_TOP
-./bazelisk.sh test --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw340_rom_with_fake_keys
+./bazelisk.sh test --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
 ```
 
 Then a connection between OpenOCD and GDB may be established with:
 ```sh
 cd $REPO_TOP
-./bazelisk.sh build --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw340.elf
+./bazelisk.sh build --config=riscv32 //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
 riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
-  "$(./bazelisk.sh outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw310.elf)"
+  "$(./bazelisk.sh outquery --config=riscv32 //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys | sed 's/bash/elf/g')"
 ```
 
 The above will print out the contents of the registers upon success.
