@@ -7,13 +7,16 @@ pub mod reset;
 pub mod spi;
 
 use std::cell::RefCell;
+use std::path::PathBuf;
 use std::rc::Rc;
 use std::str::FromStr;
 
 use anyhow::{Context, bail};
 
 use crate::backend::qemu::QemuOpts;
+use crate::debug::openocd::OpenOcdJtagChain;
 use crate::io::gpio::{GpioError, GpioPin};
+use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::uart::Uart;
 use crate::transport::Target;
 use crate::transport::common::uart::SerialPortUart;
@@ -48,6 +51,9 @@ pub struct Qemu {
 
     /// QEMU log modelled as a UART.
     log: Option<Rc<dyn Uart>>,
+
+    /// Debug module JTAG.
+    jtag_sock: Option<PathBuf>,
 
     /// Whether to quit QEMU when dropped.
     quit: bool,
@@ -119,6 +125,15 @@ impl Qemu {
             }
         };
 
+        // Debug module JTAG tap:
+        let jtag_sock = match find_chardev(&chardevs, "taprbb") {
+            Some(ChardevKind::Socket { path }) => Some(path.clone()),
+            _ => {
+                log::info!("could not find socket chardev with id=taprbb, skipping JTAG");
+                None
+            }
+        };
+
         let monitor = Rc::new(RefCell::new(monitor));
 
         // Resetting is done over the monitor, but we model it like a pin to enable strapping it.
@@ -131,6 +146,7 @@ impl Qemu {
             console,
             log,
             spi,
+            jtag_sock,
             quit: options.qemu_quit,
         })
     }
@@ -193,5 +209,17 @@ impl Transport for Qemu {
 
     fn spi(&self, _instance: &str) -> anyhow::Result<Rc<dyn Target>> {
         Ok(Rc::clone(self.spi.as_ref().unwrap()))
+    }
+
+    fn jtag(&self, opts: &JtagParams) -> anyhow::Result<Box<dyn JtagChain>> {
+        let jtag = OpenOcdJtagChain::new(
+            &format!(
+                "adapter driver remote_bitbang; remote_bitbang port 0; remote_bitbang host {sock}",
+                sock = self.jtag_sock.as_ref().unwrap().display(),
+            ),
+            opts,
+        )?;
+
+        Ok(Box::new(jtag))
     }
 }
