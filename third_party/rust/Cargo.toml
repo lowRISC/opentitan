@@ -26,7 +26,7 @@ chrono = "0.4"
 # is a dependency of RustCrypto crates. The version cannot be upgraded because
 # it needs to match other crates.
 const-oid = { version = "0.9.6", features=["std"] }
-clap = { version = "4.4", features = ["derive", "env", "deprecated"] }
+clap = { version = "4.5.47", features = ["derive", "env", "deprecated"] }
 crc = "3.0"
 der = { version = "0.7.8", features = ["alloc"] }
 deser-hjson = "2.0.0"
@@ -47,6 +47,7 @@ hex = { version = "0.4.3", features = ["serde"] }
 humantime = "2.1.0"
 humantime-serde = "1.1"
 indicatif = "0.18"
+inventory = "0.3"
 itertools = "0.14.0"
 log = "0.4"
 memchr = "2.6.4"

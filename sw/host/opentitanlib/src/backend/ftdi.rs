@@ -4,11 +4,23 @@
 
 use anyhow::Result;
 
-use crate::backend::BackendOpts;
+use super::{Backend, BackendOpts, define_interface};
 use crate::transport::Transport;
 use crate::transport::ftdi::Ftdi;
-use crate::transport::ftdi::chip::Chip;
+use crate::transport::ftdi::chip::{Chip, Ft4232hq};
 
-pub fn create<C: Chip + 'static>(_args: &BackendOpts) -> Result<Box<dyn Transport>> {
-    Ok(Box::new(Ftdi::<C>::new()?))
+struct FtdiBackend<C>(C);
+
+impl<C: Chip + 'static> Backend for FtdiBackend<C> {
+    type Opts = ();
+
+    fn create_transport(_: &BackendOpts, _: &()) -> Result<Box<dyn Transport>> {
+        Ok(Box::new(Ftdi::<C>::new()?))
+    }
 }
+
+define_interface!(
+    "ftdi",
+    FtdiBackend<Ft4232hq>,
+    "/__builtin__/opentitan_ftdi_voyager.json5"
+);
