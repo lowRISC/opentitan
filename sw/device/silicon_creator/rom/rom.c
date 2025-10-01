@@ -580,8 +580,8 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
   switch (launder32(manifest->address_translation)) {
     case kHardenedBoolTrue:
       HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
-      ibex_addr_remap_0_set((uintptr_t)_rom_ext_virtual_start_address,
-                            (uintptr_t)manifest, (size_t)_rom_ext_virtual_size);
+      ibex_addr_remap_set(0, (uintptr_t)_rom_ext_virtual_start_address,
+                          (uintptr_t)manifest, (size_t)_rom_ext_virtual_size);
       SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
 
       // Unlock read-only for the whole rom_ext virtual memory.
