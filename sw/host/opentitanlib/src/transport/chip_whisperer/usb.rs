@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, ensure};
-use once_cell::sync::Lazy;
 use std::cmp;
 use std::collections::HashMap;
-use std::convert::TryFrom;
-use std::convert::TryInto;
+use std::convert::{TryFrom, TryInto};
 use std::marker::PhantomData;
+use std::sync::LazyLock;
 use std::time::Duration;
+
+use anyhow::{Context, Result, ensure};
 
 use super::board::Board;
 use crate::collection;
@@ -653,7 +653,7 @@ impl<B: Board> Backend<B> {
 }
 
 // Mapping of SAM3 pin names to pin numbers.
-static SAM3X_PIN_NAMES: Lazy<HashMap<&'static str, u8>> = Lazy::new(|| {
+static SAM3X_PIN_NAMES: LazyLock<HashMap<&'static str, u8>> = LazyLock::new(|| {
     collection! {
         "PA0" =>  0,
         "PA1" =>  1,
@@ -762,7 +762,7 @@ static SAM3X_PIN_NAMES: Lazy<HashMap<&'static str, u8>> = Lazy::new(|| {
     }
 });
 // Mapping of schematic pin names to SAM3 pin names.
-static SCHEMATIC_PIN_NAMES: Lazy<HashMap<&'static str, &'static str>> = Lazy::new(|| {
+static SCHEMATIC_PIN_NAMES: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|| {
     collection! {
         "USBSPARE0" => "PC10",
         "USBSPARE1" => "PC11",

@@ -9,10 +9,10 @@ use std::net::TcpStream;
 use std::os::unix::process::CommandExt;
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
+use std::sync::LazyLock;
 use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result, bail, ensure};
-use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -115,7 +115,7 @@ impl OpenOcd {
         if log_stdio {
             log::info!("Waiting for OpenOCD to be ready to accept a TCL connection...");
         }
-        static READY_REGEX: Lazy<Regex> = Lazy::new(|| {
+        static READY_REGEX: LazyLock<Regex> = LazyLock::new(|| {
             Regex::new("Info : Listening on port ([0-9]+) for tcl connections").unwrap()
         });
         let mut buf = String::new();

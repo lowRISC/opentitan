@@ -2,23 +2,22 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, bail, ensure};
-use once_cell::sync::Lazy;
-use regex::Regex;
-use serde_annotate::Annotate;
-use serialport::TTYPort;
 use std::any::Any;
-use std::cell::Cell;
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::fs;
-use std::io::Read;
-use std::io::Write;
+use std::io::{Read, Write};
 use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
 use std::rc::{Rc, Weak};
+use std::sync::LazyLock;
 use std::time::Duration;
+
+use anyhow::{Context, Result, bail, ensure};
+use regex::Regex;
+use serde_annotate::Annotate;
+use serialport::TTYPort;
 
 use crate::debug::openocd::OpenOcdJtagChain;
 use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
@@ -1014,5 +1013,5 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
     }
 }
 
-static SPI_REGEX: Lazy<Regex> =
-    Lazy::new(|| Regex::new("^ +([0-9]+) ([^ ]+) ([0-9]+) bps(?: ([hd])[^ ]*)?").unwrap());
+static SPI_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new("^ +([0-9]+) ([^ ]+) ([0-9]+) bps(?: ([hd])[^ ]*)?").unwrap());

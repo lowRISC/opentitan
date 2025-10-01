@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::collections::HashSet;
+use std::sync::LazyLock;
 
 use bindgen::dif;
 use bitflags::bitflags;
-use once_cell::sync::Lazy;
 
 use crate::collection;
 
@@ -186,7 +186,7 @@ impl Partition {
 /// Set of partitions that are secret.
 ///
 /// A secret partition is scrambled and not readable after it is locked.
-pub static SECRET_PARTITIONS: Lazy<HashSet<Partition>> = Lazy::new(|| {
+pub static SECRET_PARTITIONS: LazyLock<HashSet<Partition>> = LazyLock::new(|| {
     collection! {
         Partition::SECRET0, Partition::SECRET1, Partition::SECRET2,
     }

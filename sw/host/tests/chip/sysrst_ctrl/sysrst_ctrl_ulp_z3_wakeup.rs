@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::sync::LazyLock;
+use std::time::Duration;
+
 use anyhow::{Context, Result, bail, ensure};
 use clap::Parser;
-use once_cell::sync::Lazy;
-use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
@@ -42,7 +43,7 @@ enum TestPhase {
 // Keep this consistent with device code.
 const DEBOUNCE_SW_VALUE_USEC: u64 = 100;
 
-static CONFIG: Lazy<Config> = Lazy::new(|| {
+static CONFIG: LazyLock<Config> = LazyLock::new(|| {
     Config {
         // pwrb_in_i, ac_present_i, lid_open_i
         output_pins: vec!["IOR10", "IOR11", "IOR12"],

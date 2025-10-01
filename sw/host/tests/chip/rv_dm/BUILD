@@ -66,7 +66,6 @@ rust_binary(
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:log",
-        "@crate_index//:once_cell",
         "@crate_index//:regex",
     ],
 )

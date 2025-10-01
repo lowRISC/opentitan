@@ -2,14 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashSet;
+use std::str::FromStr;
+use std::sync::LazyLock;
+
 use anyhow::Result;
 use cryptoki::object::{Attribute, AttributeInfo, ObjectHandle};
 use cryptoki::session::Session;
 use indexmap::IndexMap;
-use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
-use std::str::FromStr;
 use strum::IntoEnumIterator;
 
 use super::AttributeError;
@@ -246,16 +247,15 @@ impl AttributeMap {
     ///
     /// This function only generates the list of known attributes once.
     pub fn all() -> &'static [cryptoki::object::AttributeType] {
-        static VALID_TYPES: OnceCell<Vec<cryptoki::object::AttributeType>> = OnceCell::new();
-        VALID_TYPES
-            .get_or_init(|| {
-                AttributeType::iter()
-                    .map(|a| Ok(a.try_into()?))
-                    .filter(|a| a.is_ok())
-                    .collect::<Result<Vec<_>>>()
-                    .unwrap()
-            })
-            .as_slice()
+        static VALID_TYPES: LazyLock<Vec<cryptoki::object::AttributeType>> = LazyLock::new(|| {
+            AttributeType::iter()
+                .map(|a| Ok(a.try_into()?))
+                .filter(|a| a.is_ok())
+                .collect::<Result<Vec<_>>>()
+                .unwrap()
+        });
+
+        VALID_TYPES.as_slice()
     }
 
     /// Inserts a `key`/`value` pair into the mapping, returing the

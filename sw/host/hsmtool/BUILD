@@ -172,7 +172,6 @@ rust_library(
         "@crate_index//:hex",
         "@crate_index//:indexmap",
         "@crate_index//:log",
-        "@crate_index//:once_cell",
         "@crate_index//:p256",
         "@crate_index//:pem-rfc7468",
         "@crate_index//:rand",

@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
-use clap::Parser;
-use once_cell::sync::Lazy;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::LazyLock;
 use std::time::Duration;
+
+use anyhow::Result;
+use clap::Parser;
 
 use object::{Object, ObjectSymbol};
 use opentitanlib::app::TransportWrapper;
@@ -34,7 +35,7 @@ struct Opts {
     firmware_elf: PathBuf,
 }
 
-static CONFIG: Lazy<Config> = Lazy::new(|| {
+static CONFIG: LazyLock<Config> = LazyLock::new(|| {
     Config {
         /* The order of those pins must match the order in the DV's set_pad
          * function, that is:  power button, key0, key1, key2, AC, EC, WP. */
