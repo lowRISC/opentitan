@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Result, bail, ensure};
-use memoffset::offset_of;
-use sphincsplus::{SphincsPlus, SpxDomain, SpxPublicKey};
 use std::borrow::Cow;
 use std::collections::HashSet;
 use std::convert::TryInto;
 use std::fs::File;
 use std::io::{Read, Write};
-use std::mem::{align_of, size_of};
+use std::mem::{align_of, offset_of, size_of};
 use std::path::{Path, PathBuf};
+
+use anyhow::{Result, bail, ensure};
+use sphincsplus::{SphincsPlus, SpxDomain, SpxPublicKey};
 use thiserror::Error;
 use zerocopy::FromBytes;
 
