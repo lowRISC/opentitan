@@ -218,6 +218,64 @@ doxygen_multitop = rule(
             ),
         ),
     },
+    doc = """
+Gather a copy of inputs for each top.
+
+The files gathered by `doxygen_gather_cc` are for the current configuration.
+In a multit-top setting, we want to gather one copy for each top since they can be different.
+This rule takes as input a set of dependencies and evaluate them for each top using a transition
+on `//hw/top`. The resulting files are presented using symlinks include readable top names instead
+of configuration hashes so that the result is more readable under Doxygen.
+""",
+)
+
+def _doxygen_tar_impl(ctx):
+    all_infos = _merge_doxygen_cc_input_infos([src[DoxygenCcInputInfo] for src in ctx.attr.srcs])
+    files = []
+    mapping = {}
+    for f in all_infos.files.to_list():
+        if ctx.attr.only_generated and f.is_source:
+            continue
+        files.append(f)
+        mapping[f.short_path] = f.path
+
+    tar = ctx.actions.declare_file(ctx.label.name + ".tar")
+    tar_spec = ctx.actions.declare_file(ctx.label.name + ".json")
+
+    ctx.actions.write(tar_spec, json.encode({"files": mapping}))
+
+    ctx.actions.run(
+        outputs = [tar],
+        inputs = files + [tar_spec],
+        executable = ctx.executable._tar_writer,
+        arguments = [
+            "-o",
+            tar.path,
+            "--spec",
+            tar_spec.path,
+        ],
+    )
+
+    return [DefaultInfo(files = depset([tar]))]
+
+doxygen_tar = rule(
+    implementation = _doxygen_tar_impl,
+    attrs = {
+        "srcs": attr.label_list(
+            mandatory = True,
+            doc = "Targets containing the files to include",
+            providers = [DoxygenCcInputInfo],
+        ),
+        "only_generated": attr.bool(
+            default = False,
+            doc = "If set to True, only generated (i.e. non-source) files will be included",
+        ),
+        "_tar_writer": attr.label(
+            default = "//rules/scripts:tar_writer",
+            executable = True,
+            cfg = "exec",
+        ),
+    },
 )
 
 def _doxygen_impl(ctx):
