@@ -8,6 +8,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/stdasm.h"
+#include "sw/device/lib/coverage/api.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/ibex.h"
@@ -284,6 +285,8 @@ void _ottf_main(void) {
   // Unit test CRT utility functions.
   test_crt_section_clear();
   test_crt_section_copy();
+
+  coverage_report();
 
   test_status_set(kTestStatusPassed);
 }
