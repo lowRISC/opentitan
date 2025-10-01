@@ -25,6 +25,10 @@ extern char _build_id_end[];
 
 #define BUILD_ID ((uint8_t *)_build_id_end - kBuildIdSize)
 
+// The `build_id | 1` indicates the coverage data in the RAM is valid for the
+// binary with this build ID.
+#define VALID_COVERAGE ((*(uint32_t *)BUILD_ID) | 1)
+
 OT_SET_BSS_SECTION(
     "__ot_coverage_bss",
 
@@ -40,8 +44,8 @@ OT_SET_BSS_SECTION(
     /**
      * Stores the current coverage counters validity.
      *
-     * The `coverage_status` field stores the `build_id` if the coverage report
-     * is valid. It gets cleared when the coverage report is invalidated.
+     * The `coverage_status` field stores the `build_id | 1` if the coverage
+     * report is valid. It gets cleared when the coverage report is invalidated.
      */
     static uint32_t coverage_status;
 
@@ -135,7 +139,7 @@ void coverage_init(void) {
     }
 
     // Set the report as valid.
-    coverage_status = *(uint32_t *)BUILD_ID;
+    coverage_status = VALID_COVERAGE;
   }
 }
 
@@ -155,10 +159,13 @@ void coverage_printer_run(void) {
   coverage_printer_sink(&coverage_crc, sizeof(coverage_crc));
 }
 
-void coverage_invalidate(void) { coverage_status = 0x42; }
+void coverage_invalidate(void) {
+  // Set to any even value (i.e., without LSB).
+  coverage_status = 0;
+}
 
 bool coverage_is_valid(void) {
-  if (coverage_status != *(uint32_t *)BUILD_ID) {
+  if (coverage_status != VALID_COVERAGE) {
     return false;
   }
 
