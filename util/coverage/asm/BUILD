@@ -42,3 +42,19 @@ py_binary(
         ":tokenizer",
     ],
 )
+
+py_library(
+    name = "encoding",
+    srcs = ["encoding.py"],
+    deps = [":tokenizer"],
+)
+
+py_binary(
+    name = "generate_mapping",
+    srcs = ["generate_mapping.py"],
+    deps = [
+        ":basic_block",
+        ":encoding",
+        ":tokenizer",
+    ],
+)
