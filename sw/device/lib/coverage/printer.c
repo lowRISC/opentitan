@@ -55,7 +55,7 @@ OT_SET_BSS_SECTION(
      */
 );
 
-void coverage_printer_sink_with_crc(const void *buf, size_t size) {
+static void coverage_printer_sink_with_crc(const void *buf, size_t size) {
   crc32_add(&coverage_crc, buf, size);
   coverage_printer_sink(buf, size);
 }
@@ -66,7 +66,7 @@ void coverage_printer_sink_with_crc(const void *buf, size_t size) {
  * @param tag The byte value that is being compressed (0x00 or 0xff).
  * @param size The size of the span.
  */
-void coverage_compress_rle(uint8_t tag, uint32_t size) {
+static void coverage_compress_rle(uint8_t tag, uint32_t size) {
   // assumption: the device is little-endian.
   uint32_t buf[2] = {0, size};
   if (size <= 0xfd) {
@@ -95,7 +95,7 @@ void coverage_compress_rle(uint8_t tag, uint32_t size) {
  * @param data The buffer to compress.
  * @param size The size of the buffer.
  */
-void coverage_compress(unsigned char *data, size_t size) {
+static void coverage_compress(unsigned char *data, size_t size) {
   size_t i = 0;
 
   // assumption: `coverage_is_valid` checks all bytes are either 0x00 or 0xff.
