@@ -14,6 +14,13 @@
  * what these functions
  */
 
+#include "sw/device/lib/coverage/api_asm.h"
+
+  // The ROM calls these CRT functions before SRAM scramble. Therefore, we need
+  // to place the counters in the restorable `__llvm_prf_cnts_head` section.
+  // PRAGMA_COVERAGE: section(__llvm_prf_cnts_head)
+  // PRAGMA_COVERAGE: autogen start
+
   // NOTE: The "ax" flag below is necessary to ensure that this section
   // is allocated space in ROM by the linker.
   .section .crt, "ax", @progbits
