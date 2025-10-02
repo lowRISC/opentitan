@@ -10,6 +10,7 @@
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/security_config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
 // Module ID for status codes.
@@ -112,6 +113,9 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_start(
   if (private_key == NULL || private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Check the security config of the device.
+  HARDENED_TRY(security_config_check(private_key->config.security_level));
 
   // Check the key mode.
   if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256) {
@@ -284,6 +288,9 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
       message_digest.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Check the security config of the device.
+  HARDENED_TRY(security_config_check(private_key->config.security_level));
 
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());

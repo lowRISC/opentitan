@@ -11,6 +11,7 @@
 #include "sw/device/lib/crypto/impl/rsa/rsa_encryption.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_keygen.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_signature.h"
+#include "sw/device/lib/crypto/impl/security_config.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
@@ -650,6 +651,9 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
     return OTCRYPTO_BAD_ARGS;
   }
 
+  // Check the security config of the device.
+  HARDENED_TRY(security_config_check(private_key->config.security_level));
+
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
@@ -927,6 +931,9 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
       ciphertext.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Check the security config of the device.
+  HARDENED_TRY(security_config_check(private_key->config.security_level));
 
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
