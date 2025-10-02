@@ -189,6 +189,7 @@ ld_library(
     includes = ["rom_ext_common.ld"],
     deps = [
         "//sw/device:info_sections",
+        "//sw/device/lib/coverage:coverage_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
         "//sw/device/silicon_creator/lib/base:static_dice_sections",
     ],
@@ -244,6 +245,9 @@ ld_library(
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:memory",
             "//sw/device/lib/base:stdasm",
+            "//sw/device/lib/coverage:api",
+            "//sw/device/lib/coverage:api_asm",
+            "//sw/device/lib/coverage:uart_runtime",
             "//sw/device/lib/runtime:hart",
             "//sw/device/silicon_creator/lib:boot_data",
             "//sw/device/silicon_creator/lib:boot_log",
@@ -298,7 +302,6 @@ manifest(d = {
     opentitan_binary(
         name = "rom_ext_{}_slot_{}".format(variation_name, slot),
         testonly = True,
-        collect_code_coverage = 0,
         # TODO(#22780): Integrate real keys for A1 flows.
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
         exec_env = [
