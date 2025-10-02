@@ -168,7 +168,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         HARDENED_CHECK_EQ(key->config.security_level,
                           kOtcryptoKeySecurityLevelLow);
         return hmac_hmac_sha256_cl(&hmac_key, input_message.data,
-                                input_message.len, tag.data);
+                                   input_message.len, tag.data);
       } else if (launder32(key->config.security_level) ==
                  kOtcryptoKeySecurityLevelMedium) {
         // Call the HMAC core twice and compare both tags. This serves as a FI
@@ -177,14 +177,15 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         HARDENED_CHECK_EQ(key->config.security_level,
                           kOtcryptoKeySecurityLevelMedium);
         HARDENED_TRY(hmac_hmac_sha256_cl(&hmac_key, input_message.data,
-                                      input_message.len, tag.data));
+                                         input_message.len, tag.data));
         // Second HMAC computation using the HMAC core.
         uint32_t tag_redundant[tag.len];
         hmac_key_t hmac_key_redundant;
         HARDENED_TRY(hmac_key_construct(key, kHmacSha256BlockWords,
                                         &hmac_key_redundant));
-        HARDENED_TRY(hmac_hmac_sha256_cl(&hmac_key_redundant, input_message.data,
-                                      input_message.len, tag_redundant));
+        HARDENED_TRY(hmac_hmac_sha256_cl(&hmac_key_redundant,
+                                         input_message.data, input_message.len,
+                                         tag_redundant));
         // Comparison of both tags.
         HARDENED_CHECK_EQ(
             hardened_memeq(&tag.data[0], &tag_redundant[0], tag.len),
@@ -198,7 +199,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                           kOtcryptoKeySecurityLevelHigh);
         // First HMAC computation using the HMAC core.
         HARDENED_TRY(hmac_hmac_sha256_cl(&hmac_key, input_message.data,
-                                      input_message.len, tag.data));
+                                         input_message.len, tag.data));
         // Second HMAC computation without using the HMAC core.
         uint32_t tag_redundant[tag.len];
         hmac_key_t hmac_key_redundant;

@@ -515,7 +515,7 @@ status_t hmac_hash_sha512(const uint8_t *msg, size_t msg_len,
 }
 
 status_t hmac_hmac_sha256_cl(const hmac_key_t *key, const uint8_t *msg,
-                          size_t msg_len, uint32_t *tag) {
+                             size_t msg_len, uint32_t *tag) {
   // Always configure the key length as the underlying message block size.
   uint32_t cfg = cfg_get(/*hmac_en=*/true, kDigestLengthSha256, kKeyLength512);
   return oneshot(cfg, key, msg, msg_len, kHmacSha256DigestWords, tag);
