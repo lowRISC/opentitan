@@ -496,7 +496,7 @@ def _test_dispatch(ctx, exec_env, firmware):
     if param["traces"]:
         traces = json.decode(param["traces"])
         for trace in traces:
-            qemu_args += ["-d", "trace:{}".format(trace)]
+            qemu_args += ["--trace", "{}".format(trace)]
 
     # By default QEMU will exit when the test status register is written.
     # OpenTitanTool expects to be able to do multiple resets, for example after
