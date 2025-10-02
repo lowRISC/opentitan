@@ -1,14 +1,43 @@
 {
   "interface": "qemu",
+  // QEMU's ROM currently runs slowly due to a hot loop (`sec_mmio` reads and
+  // writes) being placed in a mis-aligned ePMP region. We must set a long
+  // reset delay so that operations like bootstrapping do not try to use IOs
+  // like the SPI before the ROM has set them up.
+  "reset_delay": "1000ms",
   "pins": [
-      // Resetting is done through the monitor on QEMU, but OpenTitanTool
-      // expects a pin. We map a pin-like interface to ID 255 which can be used
-      // to send reset commands to QEMU when pulled up and down.
-      {
-        "name": "RESET",
-        "alias_of": "255",
-        "level": true,
-      },
+    // Resetting is done through the monitor on QEMU, but OpenTitanTool
+    // expects a pin. We map a pin-like interface to ID 255 which can be used
+    // to send reset commands to QEMU when pulled up and down.
+    {
+      "name": "RESET",
+      "alias_of": "255",
+      "level": true,
+    },
+    // NOTE: these pins are actually going directly to GPIOs, not through pins.
+    // This is okay for straps which have a fixed GPIO, but should not be used
+    // for muxed GPIOs.
+    {
+      "name": "SW_STRAP0",
+      "mode": "PushPull",
+      "level": false,
+      "pull_mode": "None",
+      "alias_of": "22"
+    },
+    {
+      "name": "SW_STRAP1",
+      "mode": "PushPull",
+      "level": false,
+      "pull_mode": "None",
+      "alias_of": "23"
+    },
+    {
+      "name": "SW_STRAP2",
+      "mode": "PushPull",
+      "level": false,
+      "pull_mode": "None",
+      "alias_of": "24"
+    },
   ],
   "strappings": [
     {
@@ -19,7 +48,24 @@
           "level": false
         }
       ]
-    }
+    },
+    {
+      "name": "ROM_BOOTSTRAP",
+      "pins": [
+        {
+          "name": "SW_STRAP0",
+          "level": true
+        },
+        {
+          "name": "SW_STRAP1",
+          "level": true
+        },
+        {
+          "name": "SW_STRAP2",
+          "level": true
+        }
+      ]
+    },
   ],
   "uarts": [
     {
