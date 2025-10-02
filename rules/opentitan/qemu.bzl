@@ -8,8 +8,10 @@ load(
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:util.bzl",
+    "assemble_for_test",
     "get_fallback",
     "get_override",
+    "recursive_format",
 )
 load(
     "//rules/opentitan:exec_env.bzl",
@@ -189,11 +191,8 @@ def gen_flash(ctx, **kwargs):
     name = get_override(ctx, "label.name", kwargs)
     out = ctx.actions.declare_file(name + ".qemu_bin")
 
-    exec_bin = get_override(ctx, "file.exec_bin", kwargs)
-    exec_elf = get_override(ctx, "file.exec_elf", kwargs)
-
-    boot_bin = get_override(ctx, "file.boot_bin", kwargs)
-    boot_elf = get_override(ctx, "file.boot_elf", kwargs)
+    firmware_bin = get_override(ctx, "file.firmware_bin", kwargs)
+    firmware_elf = get_override(ctx, "file.firmware_elf", kwargs)
 
     check_elfs = get_override(ctx, "file.check_elfs", kwargs)
 
@@ -202,28 +201,14 @@ def gen_flash(ctx, **kwargs):
     flashgen_inputs = []
     flashgen_args = []
 
-    # Add the "exec" binary, which is placed at 0x0. This is either the
-    # firmware binary, or the ROM_EXT if using a ROM_EXT env.
-    if exec_bin:
-        flashgen_inputs += [exec_bin]
-        flashgen_args += ["-x", exec_bin.path]
-
-        # Attach the exec ELF for debug symbol support within QEMU
-        if exec_elf:
-            flashgen_inputs += [exec_elf]
-            flashgen_args += ["-X", exec_elf.path]
-
-    # Add the "boot" binary, which is an (optional) firmware binary to boot
-    # into from ROM_EXT if ROM_EXT is given as the "exec" binary. Flashgen
-    # currently hardcodes this at an offset of 0x10000.
-    if boot_bin:
-        flashgen_inputs += [boot_bin]
-        flashgen_args += ["-b", boot_bin.path]
-
-        # Attach the boot ELF for debug symbol support within QEMU
-        if boot_elf:
-            flashgen_inputs += [boot_elf]
-            flashgen_args += ["-B", boot_elf.path]
+    # Add the firmware binary, which will be placed at 0x0 and as such
+    # should contain relevant padding to offset from the start of flash.
+    # Firmware binaries can be placed across flash banks, i.e. they can
+    # be mirrored.
+    if firmware_bin:
+        flashgen_inputs += [firmware_bin]
+        flashgen_args += ["-t", "{}@0x0".format(firmware_bin.path)]
+        # TODO: currently firmware_elf is unused due to lacking support in QEMU
 
     if check_elfs:
         # Skip `flashgen`'s ELF/binary mtime checks - it will fail if the
@@ -248,25 +233,17 @@ def gen_flash(ctx, **kwargs):
 qemu_flash = rule(
     implementation = lambda ctx: [DefaultInfo(files = depset([gen_flash(ctx)]))],
     attrs = {
-        "exec_bin": attr.label(
+        "firmware_bin": attr.label(
             allow_single_file = True,
-            doc = "Binary firmware to be run after the ROM, usually signed",
+            doc = "Binary firmware to be run after the ROM, usually signed, placed at the start of flash",
         ),
-        "exec_elf": attr.label(
+        "firmware_elf": attr.label(
             allow_single_file = True,
-            doc = "ELF version of the `exec_bin` attribute for symbol tracking",
-        ),
-        "boot_bin": attr.label(
-            allow_single_file = True,
-            doc = "Binary firmware to be run after `exec_bin` when using a ROM_EXT",
-        ),
-        "boot_elf": attr.label(
-            allow_single_file = True,
-            doc = "ELF version of the `boot_bin` attribute for symbol tracking",
+            doc = "ELF version of the `firmware_bin` attribute for symbol tracking",
         ),
         "check_elfs": attr.bool(
             default = True,
-            doc = "Whether to sanity check ELF sizes against binaries. Should be `false` if using signed binaries.",
+            doc = "Whether to sanity check ELF sizes against binaries. Should be `false` if using signed binaries",
         ),
         "flashgen": attr.label(
             executable = True,
@@ -380,6 +357,26 @@ def _test_dispatch(ctx, exec_env, firmware):
 
     test_harness, data_labels, data_files, param, action_param = common_test_setup(ctx, exec_env, firmware)
 
+    # If the test requested an assembled image, then use opentitantool to
+    # assemble the image.  Replace the firmware param with the newly assembled
+    # image.
+    if "assemble" in param:
+        assemble = param.get("assemble")
+        assemble = recursive_format(assemble, action_param)
+        assemble = ctx.expand_location(assemble, data_labels)
+        image = assemble_for_test(
+            ctx,
+            name = ctx.attr.name,
+            spec = assemble.strip().split(" "),
+            data_files = data_files,
+            opentitantool = exec_env._opentitantool,
+        )
+        param["firmware"] = image.short_path
+        action_param["firmware"] = image.path
+        data_files.append(image)
+    else:
+        image = firmware.signed_bin or firmware.default
+
     data_files += [exec_env.qemu]
 
     # Add arguments to pass directly to QEMU.
@@ -418,29 +415,16 @@ def _test_dispatch(ctx, exec_env, firmware):
     }
 
     # Generate the flash backend image for QEMU emulation
-    exec_bin = None
-    exec_elf = None
-    boot_bin = None
-    boot_elf = None
-    if ctx.attr.kind == "flash":
-        # The image should only contain flash binaries, not e.g. ROM blobs
-        if exec_env.rom_ext:
-            rom_ext_env = exec_env.rom_ext[SimQemuBinaryInfo]
-            exec_bin = rom_ext_env.signed_bin or rom_ext_env.default
-            exec_elf = rom_ext_env.elf
-            boot_bin = firmware.signed_bin or firmware.default
-            boot_elf = firmware.elf
-        else:
-            exec_bin = firmware.signed_bin or firmware.default
-            exec_elf = firmware.elf
-
+    # TODO: when bootstrapping is available, this should always create a blank
+    # flash image and bootstrap the data. Ideally, relevant info pages would
+    # be spliced in at this step, but that is not yet supported by either
+    # flashgen or by Bazel.
     flash_image = gen_flash(
         ctx,
         flashgen = exec_env.flashgen,
-        exec_bin = exec_bin,
-        exec_elf = exec_elf,
-        boot_bin = boot_bin,
-        boot_elf = boot_elf,
+        firmware_bin = image,
+        # TODO: no support for convenience debug symbols from ELFs for now
+        firmware_elf = None,
         # Do not sanity check ELFs, because we do not expect the binary to
         # match the ELF because of the added manifest extensions (e.g. SPX
         # signatures) present in the signed binary.
