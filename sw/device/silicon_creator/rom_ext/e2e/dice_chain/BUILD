@@ -10,6 +10,7 @@ load(
     "fpga_params",
     "opentitan_binary",
     "opentitan_test",
+    "qemu_params",
 )
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
@@ -33,8 +34,14 @@ package(default_visibility = ["//visibility:public"])
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_earlgrey:sim_qemu_rom_ext": None,
         },
         fpga = fpga_params(
+            exit_failure = "Rebooting[\\s\\S]*CDI_1 certificate not valid[\\s\\S]*Rebooted",
+            exit_success = "Rebooted\r\n",
+            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation),
+        ),
+        qemu = qemu_params(
             exit_failure = "Rebooting[\\s\\S]*CDI_1 certificate not valid[\\s\\S]*Rebooted",
             exit_success = "Rebooted\r\n",
             rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation),
@@ -64,6 +71,7 @@ opentitan_binary(
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = ":owner_manifest",
@@ -88,6 +96,7 @@ opentitan_binary(
         exec_env = [
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys",
         ],
     )
     for variation in ROM_EXT_VARIATIONS.keys()
@@ -110,6 +119,7 @@ _VARIATION_INTEROP_TEST_CASES = [
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             binaries = {
@@ -119,6 +129,18 @@ _VARIATION_INTEROP_TEST_CASES = [
             otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
             test_cmd = """
                 --clear-bitstream
+                --bootstrap={firmware}
+                --second-bootstrap={second}
+            """,
+            test_harness = "//sw/host/tests/rom_ext/e2e_variation_interop",
+        ),
+        qemu = qemu_params(
+            binaries = {
+                ":dice_{}_rom_ext_owner_bundle".format(tc["second"]): "second",
+                ":dice_{}_rom_ext_owner_bundle".format(tc["first"]): "firmware",
+            },
+            otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
+            test_cmd = """
                 --bootstrap={firmware}
                 --second-bootstrap={second}
             """,
@@ -145,6 +167,7 @@ opentitan_binary(
     srcs = ["modify_digest.c"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+        "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys",
     ],
     deps = [
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
@@ -158,33 +181,45 @@ opentitan_binary(
     ],
 )
 
+CORRUPTED_DIGEST_TEST_CMDS = """
+    --exec="no-op --info='##### Prepare CDI cert page'"
+    --exec="bootstrap --clear-uart=true {firmware}"
+    --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}' --timeout=10s"
+    --exec="no-op --info='##### Corrupt CDI cert page'"
+    --exec="bootstrap --clear-uart=true {modify_digest}"
+    --exec="console --non-interactive --exit-success='PASS!' --timeout=10s"
+    --exec="bootstrap --clear-uart=true {firmware}"
+    --exec="no-op --info='##### Corruption should be detected and reboot'"
+    --exec="console --non-interactive --exit-success='BFV:03444303' --exit-failure='{exit_success}' --timeout=10s"
+    --exec="no-op --info='##### Corruption fixed in the second boot'"
+    --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}' --timeout=10s"
+    no-op
+"""
+
 opentitan_test(
     name = "corrupted_digest_test",
     srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
     },
     fpga = fpga_params(
         binaries = {
             ":modify_digest": "modify_digest",
         },
-        test_cmd = """
+        test_cmd = ("""
             --exec="transport init"
             --exec="fpga clear-bitstream"
             --exec="fpga load-bitstream {bitstream}"
-            --exec="no-op --info='##### Prepare CDI cert page'"
-            --exec="bootstrap --clear-uart=true {firmware}"
-            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}' --timeout=10s"
-            --exec="no-op --info='##### Corrupt CDI cert page'"
-            --exec="bootstrap --clear-uart=true {modify_digest}"
-            --exec="console --non-interactive --exit-success='PASS!' --timeout=10s"
-            --exec="bootstrap --clear-uart=true {firmware}"
-            --exec="no-op --info='##### Corruption should be detected and reboot'"
-            --exec="console --non-interactive --exit-success='BFV:03444303' --exit-failure='{exit_success}' --timeout=10s"
-            --exec="no-op --info='##### Corruption fixed in the second boot'"
-            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}' --timeout=10s"
-            no-op
-        """,
+        """ + CORRUPTED_DIGEST_TEST_CMDS),
+    ),
+    qemu = qemu_params(
+        binaries = {
+            ":modify_digest": "modify_digest",
+        },
+        test_cmd = ("""
+            --exec="transport init"
+        """ + CORRUPTED_DIGEST_TEST_CMDS),
     ),
     deps = [
         "//sw/device/lib/base:status",
@@ -219,8 +254,12 @@ DEBUG_MODE_TESTCASES = [
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_earlgrey:sim_qemu_rom_ext": None,
         },
         fpga = fpga_params(
+            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation),
+        ),
+        qemu = qemu_params(
             rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation),
         ),
         deps = [
