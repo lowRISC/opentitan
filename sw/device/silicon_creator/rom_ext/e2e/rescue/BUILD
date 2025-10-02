@@ -690,6 +690,81 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "rescue_user_error",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        assemble = "",
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
+        test_cmd = """
+            --exec="transport init"
+            --exec="fpga clear-bitstream"
+            --exec="fpga load-bitstream {bitstream}"
+            --exec="bootstrap --clear-uart=true {rom_ext}"
+            # Trigger rescue and make sure we can get the device ID.
+            --exec="rescue get-device-id --reboot=false"
+            # Send Invalid rescue command.
+            --exec="console --non-interactive --send='XYZ\r' --exit-success='error: unrecognized mode'"
+            # Try the `REBO` mode and make sure we reboot without crash.
+            --exec="console --non-interactive --send='REBO\r' --exit-success='ROM:' --exit-failure='BFV:.*\r\n'"
+            no-op
+        """,
+    ),
+)
+
+opentitan_test(
+    name = "rescue_config_module_mismatch",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        assemble = "{romext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_rescue_config_module_mismatch": "romext",
+            ":boot_test_slot_a": "firmware",
+        },
+        test_cmd = """
+            --exec="transport init"
+            --exec="fpga clear-bitstream"
+            --exec="fpga load-bitstream {bitstream}"
+            --exec="bootstrap --clear-uart=true {firmware}"
+            --exec="console --non-interactive --exit-success='warning: rescue' --exit-failure='{exit_failure}'"
+            # Trigger rescue and make sure we can get the device ID even if the protocol specified in the rescue
+            # config doesn't match the ROM_EXT implementation.
+            --exec="rescue get-device-id --reboot=false"
+            # Try the `REBO` mode and make sure we reboot without crash.
+            --exec="console --non-interactive --send='REBO\r' --exit-success='Finished' --exit-failure='BFV:.*\r\n'"
+            no-op
+        """,
+    ),
+)
+
+opentitan_test(
+    name = "spidfu_rescue_boot_svc_req_disability",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        assemble = "{romext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_spidfu_rescue_boot_svc_req_disability": "romext",
+            "//sw/device/silicon_creator/rom_ext/e2e/attestation:print_certs": "firmware",
+        },
+        params = "-p spi-dfu -t gpio -v +Ioa2",
+        test_cmd = """
+        --clear-bitstream
+        --bootstrap={firmware}
+        rescue {params} --action=disability
+        """,
+        test_harness = "//sw/host/tests/rescue:rescue_test",
+    ),
+)
+
+opentitan_test(
     name = "xmodem_rescue_error_handling_test",
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
