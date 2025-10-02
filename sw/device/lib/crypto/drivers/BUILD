@@ -53,6 +53,7 @@ opentitan_test(
     ),
     deps = [
         ":aes",
+        ":rv_core_ibex",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/impl:status",
@@ -228,6 +229,8 @@ dual_cc_library(
             "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:csr",
+        ],
+        shared = [
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/crypto/impl:status",
         ],

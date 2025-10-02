@@ -137,7 +137,7 @@ status_t hmac_hash_sha512(const uint8_t *msg, size_t msg_len, uint32_t *digest);
  */
 OT_WARN_UNUSED_RESULT
 status_t hmac_hmac_sha256_cl(const hmac_key_t *key, const uint8_t *msg,
-                          size_t msg_len, uint32_t *tag);
+                             size_t msg_len, uint32_t *tag);
 
 /**
  * Redundant implementation for a one-shot HMAC-SHA256 hash computation.
