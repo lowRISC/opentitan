@@ -402,11 +402,7 @@ def _test_dispatch(ctx, exec_env, firmware):
     qemu_args += ["-readconfig", "{}".format(qemu_cfg.short_path)]
 
     # Attach the ROM that QEMU should run
-    if firmware.rom:
-        rom = firmware.rom
-    else:
-        rom = exec_env.rom[SimQemuBinaryInfo].rom
-    qemu_args += ["-object", "ot-rom_img,id=rom,file={}".format(rom.short_path)]
+    qemu_args += ["-object", "ot-rom_img,id=rom,file={}".format(param["rom"])]
 
     # Generate the OTP backend image for QEMU emulation
     otp_image = gen_otp(
