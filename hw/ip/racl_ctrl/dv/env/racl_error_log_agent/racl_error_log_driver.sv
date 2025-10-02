@@ -18,10 +18,6 @@ class racl_error_log_driver extends dv_base_driver #(.ITEM_T (racl_error_log_vec
   // dv_base_driver.
   extern task get_and_drive();
 
-  // Watch for resets, clearing the error log signals when one is asserted. This runs forever
-  // implementing a task declared in dv_base_driver.
-  extern task reset_signals();
-
   // Drive this item over the interface.
   //
   // If this task starts in reset, it clears the error log input, then waits until reset is cleared
@@ -33,7 +29,7 @@ class racl_error_log_driver extends dv_base_driver #(.ITEM_T (racl_error_log_vec
   //
   // This is used on reset so drives the interface signals directly (instead of using a clocking
   // block)
-  extern local task reset_lines();
+  extern function void on_enter_reset();
 
   // Clear the error log signal from subscriber i
   //
@@ -59,14 +55,6 @@ task racl_error_log_driver::get_and_drive();
   end
 endtask
 
-task racl_error_log_driver::reset_signals();
-  forever begin
-    wait(!vif.rst_ni);
-    reset_lines();
-    wait(vif.rst_ni);
-  end
-endtask
-
 task racl_error_log_driver::drive_item(racl_error_log_vec_driver_item item);
   if (!vif.rst_ni) begin
     vif.subscriber_cb.errors <= '0;
@@ -89,7 +77,7 @@ task racl_error_log_driver::drive_item(racl_error_log_vec_driver_item item);
   for (int i = 0; i < 63; i++) clear_line(i);
 endtask
 
-task racl_error_log_driver::reset_lines();
+function void racl_error_log_driver::on_enter_reset();
   // Reset the signals through subscriber_cb as well as the raw signals. This ensures that we clear
   // any "pending value" that was written on the final clock edge before reset.
 
@@ -100,7 +88,7 @@ task racl_error_log_driver::reset_lines();
     vif.errors[i].valid <= 1'b0;
     vif.subscriber_cb.errors[i].valid <= 1'b0;
   end
-endtask
+endfunction
 
 task racl_error_log_driver::clear_line(int unsigned i);
   vif.subscriber_cb.errors[i] <= 'x;

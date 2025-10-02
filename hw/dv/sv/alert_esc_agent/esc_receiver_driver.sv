@@ -17,11 +17,6 @@ class esc_receiver_driver extends alert_esc_base_driver;
 
   extern function new (string name="", uvm_component parent=null);
 
-  // This task runs forever and maintains dv_base_driver::under_reset.
-  //
-  // Overridden from dv_base_driver.
-  extern virtual task reset_signals();
-
   // Run rsp_escalator and esc_ping_detector. Does not terminate.
   //
   // Overridden from alert_esc_base_driver.
@@ -57,24 +52,13 @@ class esc_receiver_driver extends alert_esc_base_driver;
   extern virtual task wait_esc_complete();
   extern virtual task wait_esc();
   // Set the values driven through resp_p / resp_n to 0/1 and clear the is_ping flag
-  extern virtual task do_reset();
+  extern function void on_enter_reset();
 
 endclass : esc_receiver_driver
 
 function esc_receiver_driver::new (string name="", uvm_component parent=null);
   super.new(name, parent);
 endfunction : new
-
-task esc_receiver_driver::reset_signals();
-  do_reset();
-  forever begin
-    @(negedge cfg.vif.rst_n);
-    under_reset = 1;
-    do_reset();
-    @(posedge cfg.vif.rst_n);
-    under_reset = 0;
-  end
-endtask : reset_signals
 
 task esc_receiver_driver::drive_req();
   fork
@@ -85,10 +69,10 @@ endtask : drive_req
 
 task esc_receiver_driver::esc_ping_detector();
   forever begin
-    wait(!under_reset);
+    wait(!cfg.in_reset);
     fork begin : isolation_fork
       fork
-        wait(under_reset);
+        wait(cfg.in_reset);
         begin
           int cnt;
 
@@ -116,7 +100,7 @@ endtask : esc_ping_detector
 task esc_receiver_driver::rsp_escalator();
   forever begin
     alert_esc_seq_item req, rsp;
-    wait(r_esc_rsp_q.size() > 0 && !under_reset);
+    wait(r_esc_rsp_q.size() > 0 && !cfg.in_reset);
     req = r_esc_rsp_q.pop_front();
     `downcast(rsp, req.clone());
     rsp.set_id_info(req);
@@ -126,7 +110,7 @@ task esc_receiver_driver::rsp_escalator();
       begin : non_blocking_fork
         fork
           drive_esc_resp(req);
-          wait(under_reset);
+          wait(cfg.in_reset);
         join_any
         disable fork;
         `uvm_info(`gfn, $sformatf("finished sending receiver item esc_rsp=%0b int_fail=%0b",
@@ -231,8 +215,8 @@ task esc_receiver_driver::wait_esc();
   while (cfg.vif.esc_tx.esc_p === 1'b0 && cfg.vif.esc_tx.esc_n === 1'b1) @(cfg.vif.receiver_cb);
 endtask : wait_esc
 
-task esc_receiver_driver::do_reset();
+function void esc_receiver_driver::on_enter_reset();
   cfg.vif.esc_rx_int.resp_p <= 1'b0;
   cfg.vif.esc_rx_int.resp_n <= 1'b1;
   is_ping = 0;
-endtask : do_reset
+endfunction : on_enter_reset
