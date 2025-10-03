@@ -494,6 +494,12 @@ def _test_dispatch(ctx, exec_env, firmware):
     # to run, finish, and exit, which we don't want to happen.
     qemu_args += ["-global", "ot-ibex_wrapper.dv-sim-status-exit=off"]
 
+    # To enable limited support for UART rescue in the ROM_EXT, we need to
+    # be able to toggle break signals on/off in QEMU's UART and mock this
+    # in the oversampled `VAL` register.
+    qemu_args += ["-global", "ot-uart.oversample-break=true"]
+    qemu_args += ["-global", "ot-uart.toggle-break=true"]
+
     # Add parameter-specified globals.
     if param["globals"]:
         globals = json.decode(param["globals"])
