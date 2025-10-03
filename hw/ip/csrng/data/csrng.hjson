@@ -975,12 +975,12 @@
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
-        { bits: "7:0",
+        { bits: "5:0",
           name: "MAIN_SM_STATE",
           desc: '''This is the state of the CSRNG main state machine.
                 See the RTL file `csrng_main_sm` for the meaning of the values.
                 '''
-          resval: 0x4e
+          resval: 0x37
         }
       ]
     },

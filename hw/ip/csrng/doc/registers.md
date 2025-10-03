@@ -781,19 +781,19 @@ an interrupt or an alert.
 ## MAIN_SM_STATE
 Main state machine state debug register
 - Offset: `0x5c`
-- Reset default: `0x4e`
-- Reset mask: `0xff`
+- Reset default: `0x37`
+- Reset mask: `0x3f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "MAIN_SM_STATE", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "MAIN_SM_STATE", "bits": 6, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name          | Description                                                                                                        |
 |:------:|:------:|:-------:|:--------------|:-------------------------------------------------------------------------------------------------------------------|
-|  31:8  |        |         |               | Reserved                                                                                                           |
-|  7:0   |   ro   |  0x4e   | MAIN_SM_STATE | This is the state of the CSRNG main state machine. See the RTL file `csrng_main_sm` for the meaning of the values. |
+|  31:6  |        |         |               | Reserved                                                                                                           |
+|  5:0   |   ro   |  0x37   | MAIN_SM_STATE | This is the state of the CSRNG main state machine. See the RTL file `csrng_main_sm` for the meaning of the values. |
 
 
 <!-- END CMDGEN -->
