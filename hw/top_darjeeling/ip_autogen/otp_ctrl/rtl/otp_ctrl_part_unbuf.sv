@@ -566,7 +566,7 @@ module otp_ctrl_part_unbuf
   ) u_prim_mubi8_sender_write_lock_pre (
     .clk_i,
     .rst_ni,
-    .mubi_i(mubi8_and_lo(init_locked, access_i.write_lock)),
+    .mubi_i(mubi8_or_hi(init_locked, access_i.write_lock)),
     .mubi_o(access_pre.write_lock)
   );
   prim_mubi8_sender #(
@@ -574,7 +574,7 @@ module otp_ctrl_part_unbuf
   ) u_prim_mubi8_sender_read_lock_pre (
     .clk_i,
     .rst_ni,
-    .mubi_i(mubi8_and_lo(init_locked, access_i.read_lock)),
+    .mubi_i(mubi8_or_hi(init_locked, access_i.read_lock)),
     .mubi_o(access_pre.read_lock)
   );
 
@@ -589,7 +589,7 @@ module otp_ctrl_part_unbuf
     ) u_prim_mubi8_sender_write_lock (
       .clk_i,
       .rst_ni,
-      .mubi_i(mubi8_and_lo(access_pre.write_lock, digest_locked)),
+      .mubi_i(mubi8_or_hi(access_pre.write_lock, digest_locked)),
       .mubi_o(access_o.write_lock)
     );
 
@@ -609,7 +609,7 @@ module otp_ctrl_part_unbuf
     ) u_prim_mubi8_sender_read_lock (
       .clk_i,
       .rst_ni,
-      .mubi_i(mubi8_and_lo(access_pre.read_lock, digest_locked)),
+      .mubi_i(mubi8_or_hi(access_pre.read_lock, digest_locked)),
       .mubi_o(access_o.read_lock)
     );
 
