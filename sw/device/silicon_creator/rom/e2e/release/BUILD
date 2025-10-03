@@ -51,7 +51,7 @@ otp_image(
 #         "//sw/device/lib/runtime:print",
 #         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
 #         "//sw/device/lib/testing/test_framework:ottf_main",
-#         "//sw/device/silicon_creator/lib:chip_info",
+#         "//sw/device/silicon_creator/lib:build_info",
 #         "//sw/device/silicon_creator/lib/drivers:hmac",
 #     ],
 # )

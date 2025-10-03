@@ -2,7 +2,7 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-"""Generates chip_info.c for ROM build."""
+"""Generates build_info.c for ROM build."""
 
 import argparse
 import logging as log
@@ -11,8 +11,8 @@ from pathlib import Path
 import version_file
 
 
-def generate_chip_info_c_source(scm_revision: int) -> str:
-    """Return the contents of a C source file that defines `kChipInfo`.
+def generate_build_info_c_source(scm_revision: int) -> str:
+    """Return the contents of a C source file that defines `kBuildInfo`.
 
     Args:
         scm_revision: SHA1 sum identifying the current SCM revision.
@@ -30,18 +30,18 @@ def generate_chip_info_c_source(scm_revision: int) -> str:
 //
 // --------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! ---------//
 
-#include "sw/device/silicon_creator/lib/chip_info.h"
+#include "sw/device/silicon_creator/lib/build_info.h"
 
 #include "sw/device/lib/base/macros.h"
 
 OT_USED
-OT_SECTION(".chip_info")
-const chip_info_t kChipInfo = {{
-  .scm_revision = (chip_info_scm_revision_t){{
+OT_SECTION(".build_info")
+const build_info_t kBuildInfo = {{
+  .scm_revision = (build_info_scm_revision_t){{
     .scm_revision_low = {scm_revision_low:#010x},
     .scm_revision_high = {scm_revision_high:#010x},
   }},
-  .version = (uint32_t)kChipInfoVersion1,
+  .version = (uint32_t)kBuildInfoVersion1,
 }};
 """
 
@@ -59,9 +59,9 @@ def read_version_file(version_info_path, default_version) -> int:
 
 
 def write_source_file(outdir: Path, contents: str) -> Path:
-    """Creates chip_info.c in `outdir`. Returns the path to the new file."""
+    """Creates build_info.c in `outdir`. Returns the path to the new file."""
 
-    source_out_path = outdir / "chip_info.c"
+    source_out_path = outdir / "build_info.c"
 
     outdir.mkdir(parents=True, exist_ok=True)
     with source_out_path.open(mode='w', encoding='utf-8') as fout:
@@ -73,7 +73,7 @@ def write_source_file(outdir: Path, contents: str) -> Path:
 def main():
     log.basicConfig(format="%(levelname)s: %(message)s")
 
-    parser = argparse.ArgumentParser(prog="rom_chip_info")
+    parser = argparse.ArgumentParser(prog="rom_build_info")
     parser.add_argument('--outdir',
                         '-o',
                         required=True,
@@ -92,7 +92,7 @@ def main():
     version = read_version_file(args.ot_version_file, args.default_version)
     log.info("Version: %x" % (version, ))
 
-    generated_source = generate_chip_info_c_source(version)
+    generated_source = generate_build_info_c_source(version)
     out_path = write_source_file(args.outdir, generated_source)
     log.info("Generated new source file: %s" % (out_path))
 
