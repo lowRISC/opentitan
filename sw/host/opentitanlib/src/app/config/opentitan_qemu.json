@@ -1,14 +1,63 @@
 {
   "interface": "qemu",
   "pins": [
-      // Resetting is done through the monitor on QEMU, but OpenTitanTool
-      // expects a pin. We map a pin-like interface to ID 255 which can be used
-      // to send reset commands to QEMU when pulled up and down.
-      {
-        "name": "RESET",
-        "alias_of": "255",
-        "level": true,
-      },
+    // Resetting is done through the monitor on QEMU, but OpenTitanTool
+    // expects a pin. We map a pin-like interface to ID 255 which can be used
+    // to send reset commands to QEMU when pulled up and down.
+    {
+      "name": "RESET",
+      "alias_of": "255",
+      "level": true,
+    },
+    {
+      "name": "SW_STRAP0",
+      "mode": "PushPull",
+      "level": false,
+      "pull_mode": "None",
+      "alias_of": "22"
+    },
+    {
+      "name": "SW_STRAP1",
+      "mode": "PushPull",
+      "level": false,
+      "pull_mode": "None",
+      "alias_of": "23"
+    },
+    {
+      "name": "SW_STRAP2",
+      "mode": "PushPull",
+      "level": false,
+      "pull_mode": "None",
+      "alias_of": "24"
+    },
+  ],
+  "strappings": [
+    {
+      "name": "RESET",
+      "pins": [
+        {
+          "name": "RESET",
+          "level": false
+        }
+      ]
+    },
+    {
+      "name": "ROM_BOOTSTRAP",
+      "pins": [
+        {
+          "name": "SW_STRAP0",
+          "level": true
+        },
+        {
+          "name": "SW_STRAP1",
+          "level": true
+        },
+        {
+          "name": "SW_STRAP2",
+          "level": true
+        }
+      ]
+    },
   ],
   "uarts": [
     {
