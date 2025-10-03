@@ -352,7 +352,18 @@ filegroup(
     ],
 )
 
-autogen_chip_info(name = "chip_info")
+cc_library(
+    name = "chip_info",
+    hdrs = ["chip_info.h"],
+)
+
+autogen_chip_info(
+    name = "chip_info_data",
+    deps = [
+        ":chip_info",
+        "//sw/device/lib/base:macros",
+    ],
+)
 
 dual_cc_library(
     name = "shutdown",

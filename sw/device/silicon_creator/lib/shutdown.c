@@ -413,10 +413,11 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
 
   // Print the error message and the raw life cycle state as reported by the
   // hardware.
+  const chip_info_t *rom_chip_info = (const chip_info_t *)_chip_info_start;
   shutdown_print(kShutdownLogPrefixBootFault, redacted_error);
   shutdown_print(kShutdownLogPrefixLifecycle, raw_state);
   shutdown_print(kShutdownLogPrefixVersion,
-                 kChipInfo.scm_revision.scm_revision_high);
+                 rom_chip_info->scm_revision.scm_revision_high);
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_software_escalate(void)) {
