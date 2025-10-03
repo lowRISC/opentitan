@@ -35,7 +35,7 @@ struct Opts {
 /// to perform firmware rescue.
 fn firmware_update_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
-    let rescue = RescueSerial::new(Rc::clone(&uart));
+    let rescue = RescueSerial::new(Rc::clone(&uart), None);
 
     // It would be even cooler to do this in a python script or shell script, but
     // opentitanlib is just too convenient for manipulating our test infrastructure.
@@ -69,7 +69,7 @@ fn firmware_update_test(opts: &Opts, transport: &TransportWrapper) -> Result<()>
 /// to perform get the BootLog from the chip.
 fn get_boot_log_test(_opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
-    let rescue = RescueSerial::new(Rc::clone(&uart));
+    let rescue = RescueSerial::new(Rc::clone(&uart), None);
 
     // It would be even cooler to do this in a python script or shell script, but
     // opentitanlib is just too convenient for manipulating our test infrastructure.

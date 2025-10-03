@@ -56,6 +56,8 @@ struct Opts {
         help = "Load a firmware payload via rescue after activating ownership"
     )]
     rescue_after_activate: Option<PathBuf>,
+    #[arg(long, value_parser = humantime::parse_duration, help = "Max timeout to enter rescue mode")]
+    rescue_enter_delay: Option<Duration>,
     #[arg(long, default_value = "SlotA", help = "Which slot to rescue into")]
     rescue_slot: BootSlot,
     #[arg(
@@ -168,7 +170,7 @@ fn flash_info_check(info: &[FlashRegion<'_>], unlocked: bool) -> Result<()> {
 
 fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
-    let rescue = RescueSerial::new(Rc::clone(&uart));
+    let rescue = RescueSerial::new(Rc::clone(&uart), opts.rescue_enter_delay);
 
     log::info!("###### Get Boot Log (1/2) ######");
     let (data, devid) = transfer_lib::get_device_info(transport, &rescue)?;
