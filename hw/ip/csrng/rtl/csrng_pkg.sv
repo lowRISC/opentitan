@@ -137,45 +137,36 @@ package csrng_pkg;
   parameter int unsigned BencDataWidth = $bits(csrng_benc_data_t);
   parameter int unsigned StateWidth    = $bits(csrng_state_t);
 
-  parameter int unsigned MainSmStateWidth = 8;
+  parameter int unsigned MainSmStateWidth = 6;
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 15 -n 8 \
-  //      -s 1300573258 --language=sv
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 6 \
+  //     -s 137328258 --language=sv
   //
   // Hamming distance histogram:
   //
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||| (32.38%)
-  //  4: |||||||||||||||||||| (35.24%)
-  //  5: |||||||| (15.24%)
-  //  6: |||||| (11.43%)
-  //  7: ||| (5.71%)
-  //  8: --
+  //  3: |||||||||||||||||||| (57.14%)
+  //  4: ||||||||||||||| (42.86%)
+  //  5: --
+  //  6: --
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 7
+  // Maximum Hamming distance: 4
   // Minimum Hamming weight: 1
-  // Maximum Hamming weight: 7
+  // Maximum Hamming weight: 5
   //
   typedef enum logic [MainSmStateWidth-1:0] {
-    MainSmIdle          = 8'b01001110, // idle
-    MainSmParseCmd      = 8'b10111011, // parse the cmd
-    MainSmInstantPrep   = 8'b11000001, // instantiate prep
-    MainSmInstantReq    = 8'b01010100, // instantiate request (takes adata or entropy)
-    MainSmReseedPrep    = 8'b11011101, // reseed prep
-    MainSmReseedReq     = 8'b01011011, // reseed request (takes adata and entropy and Key,V,RC)
-    MainSmGeneratePrep  = 8'b11101111, // generate request (takes adata? and Key,V,RC)
-    MainSmGenerateReq   = 8'b00100100, // generate request (takes adata? and Key,V,RC)
-    MainSmUpdatePrep    = 8'b00110001, // update prep
-    MainSmUpdateReq     = 8'b10010000, // update request (takes adata and Key,V,RC)
-    MainSmUninstantPrep = 8'b11110110, // uninstantiate prep
-    MainSmUninstantReq  = 8'b01100011, // uninstantiate request
-    MainSmClrAData      = 8'b00000010, // clear out the additional data packer fifo
-    MainSmCmdCompWait   = 8'b10111100, // wait for command to complete
-    MainSmError         = 8'b01111000  // error state, results in fatal alert
+    MainSmIdle        = 6'b110111, // idle
+    MainSmParseCmd    = 6'b011101, // parse the cmd
+    MainSmEntropyReq  = 6'b001110, // request entropy if necessary
+    MainSmCmdPrep     = 6'b000011, // delay cycle for command request (?)
+    MainSmCmdVld      = 6'b010000, // command request to core data path
+    MainSmClrAData    = 6'b111010, // clear out the additional data packer fifo
+    MainSmCmdCompWait = 6'b100100, // wait for command to complete
+    MainSmError       = 6'b101001  // error state, results in fatal alert
   } main_sm_state_e;
 
   parameter int CsKeymgrDivWidth = 384;

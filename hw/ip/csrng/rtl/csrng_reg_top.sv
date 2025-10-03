@@ -243,7 +243,7 @@ module csrng_reg_top (
   logic err_code_test_we;
   logic [4:0] err_code_test_qs;
   logic [4:0] err_code_test_wd;
-  logic [7:0] main_sm_state_qs;
+  logic [5:0] main_sm_state_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -2144,9 +2144,9 @@ module csrng_reg_top (
 
   // R[main_sm_state]: V(False)
   prim_subreg #(
-    .DW      (8),
+    .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (8'h4e),
+    .RESVAL  (6'h37),
     .Mubi    (1'b0)
   ) u_main_sm_state (
     .clk_i   (clk_i),
@@ -2499,7 +2499,7 @@ module csrng_reg_top (
       end
 
       addr_hit[23]: begin
-        reg_rdata_next[7:0] = main_sm_state_qs;
+        reg_rdata_next[5:0] = main_sm_state_qs;
       end
 
       default: begin

@@ -95,7 +95,7 @@ module csrng_core import csrng_pkg::*; #(
   csrng_state_t                state_db_rd_data;
 
   logic [CmdBusWidth-1:0]      acmd_bus;
-  logic [2:0]                  acmd_hold;
+  acmd_e                       acmd_hold;
 
   logic [SeedLen-1:0]          packer_adata;
   logic [ADataDepthClog-1:0]   packer_adata_depth;
@@ -132,11 +132,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [InstIdWidth-1:0]      state_db_sts_id;
 
   logic                        acmd_accept;
-  logic                        instant_req;
-  logic                        reseed_req;
-  logic                        generate_req;
-  logic                        update_req;
-  logic                        uninstant_req;
+  logic                        main_sm_cmd_vld;
   logic                        clr_adata_packer;
 
   logic                        ctr_drbg_cmd_sfifo_cmdreq_err_sum;
@@ -303,14 +299,13 @@ module csrng_core import csrng_pkg::*; #(
   prim_mubi_pkg::mubi4_t    [Flag0Copies-1:0] mubi_flag0_fanout;
 
   // flops
-  logic [2:0]           acmd_q, acmd_d;
+  acmd_e                acmd_q, acmd_d;
   logic [3:0]           shid_q, shid_d;
   logic                 gen_last_q, gen_last_d;
   mubi4_t               flag0_q, flag0_d;
   logic [NumAppsLg-1:0] cmd_arb_idx_q, cmd_arb_idx_d;
   logic                 statedb_wr_select_q, statedb_wr_select_d;
   logic                 genbits_stage_fips_sw_q, genbits_stage_fips_sw_d;
-  logic                 cmd_req_dly_q, cmd_req_dly_d;
   logic [CmdWidth-1:0]  cmd_req_ccmd_dly_q, cmd_req_ccmd_dly_d;
   logic                 cs_aes_halt_q, cs_aes_halt_d;
   logic [SeedLen-1:0]   entropy_src_seed_q, entropy_src_seed_d;
@@ -323,14 +318,13 @@ module csrng_core import csrng_pkg::*; #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      acmd_q                  <= '0;
+      acmd_q                  <= INV;
       shid_q                  <= '0;
       gen_last_q              <= '0;
       flag0_q                 <= prim_mubi_pkg::MuBi4False;
       cmd_arb_idx_q           <= '0;
       statedb_wr_select_q     <= '0;
       genbits_stage_fips_sw_q <= '0;
-      cmd_req_dly_q           <= '0;
       cmd_req_ccmd_dly_q      <= '0;
       cs_aes_halt_q           <= '0;
       entropy_src_seed_q      <= '0;
@@ -348,7 +342,6 @@ module csrng_core import csrng_pkg::*; #(
       cmd_arb_idx_q           <= cmd_arb_idx_d;
       statedb_wr_select_q     <= statedb_wr_select_d;
       genbits_stage_fips_sw_q <= genbits_stage_fips_sw_d;
-      cmd_req_dly_q           <= cmd_req_dly_d;
       cmd_req_ccmd_dly_q      <= cmd_req_ccmd_dly_d;
       cs_aes_halt_q           <= cs_aes_halt_d;
       entropy_src_seed_q      <= entropy_src_seed_d;
@@ -1032,12 +1025,12 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.recov_alert_sts.acmd_flag0_field_alert.d  = acmd_flag0_pfa;
 
   // parse the command bus
-  assign acmd_hold = acmd_sop ? acmd_bus[2:0] : acmd_q;
+  assign acmd_hold = acmd_sop ? acmd_e'(acmd_bus[CmdWidth-1:0]) : acmd_q;
 
   // TODO(#28153) rewrite as an always_comb block
   assign acmd_d =
-         (!cs_enable_fo[32]) ? '0 :
-         acmd_sop ? acmd_bus[2:0] :
+         (!cs_enable_fo[32]) ? INV :
+         acmd_sop ? acmd_e'(acmd_bus[CmdWidth-1:0]) :
          acmd_q;
 
   assign shid_d =
@@ -1084,15 +1077,11 @@ module csrng_core import csrng_pkg::*; #(
     .acmd_accept_o         (acmd_accept),
     .acmd_i                (acmd_hold),
     .acmd_eop_i            (acmd_eop),
-    .ctr_drbg_cmd_req_rdy_i(ctr_drbg_cmd_req_rdy),
     .flag0_i               (flag0_fo[0]),
     .cmd_entropy_req_o     (cmd_entropy_req),
     .cmd_entropy_avail_i   (cmd_entropy_avail),
-    .instant_req_o         (instant_req),
-    .reseed_req_o          (reseed_req),
-    .generate_req_o        (generate_req),
-    .update_req_o          (update_req),
-    .uninstant_req_o       (uninstant_req),
+    .cmd_vld_o             (main_sm_cmd_vld),
+    .cmd_rdy_i             (ctr_drbg_cmd_req_rdy),
     .clr_adata_packer_o    (clr_adata_packer),
     .cmd_complete_i        (state_db_wr_vld),
     .local_escalate_i      (fatal_loc_events),
@@ -1229,8 +1218,7 @@ module csrng_core import csrng_pkg::*; #(
          cmd_entropy_req && cmd_entropy_avail ? entropy_src_hw_if_i.es_fips :
          entropy_src_fips_q;
 
-  assign cmd_entropy = entropy_src_seed_q;
-
+  assign cmd_entropy      = entropy_src_seed_q;
   assign cmd_entropy_fips = entropy_src_fips_q;
 
   //-------------------------------------
@@ -1257,13 +1245,8 @@ module csrng_core import csrng_pkg::*; #(
   //  inputs:  416b K,V,RC, 384b adata
   //  outputs: 416b K,V,RC
 
-  assign cmd_req_dly_d =
-         (!cs_enable_fo[45]) ? '0 :
-         (instant_req || reseed_req || generate_req || update_req || uninstant_req);
-
-  assign ctr_drbg_cmd_req_vld = cmd_req_dly_q;
-
-  assign cmd_req_ccmd_dly_d = (!cs_enable_fo[44]) ? '0 : acmd_hold;
+  assign ctr_drbg_cmd_req_vld = !cs_enable_fo[45] ? 1'b0 : main_sm_cmd_vld;
+  assign cmd_req_ccmd_dly_d   = !cs_enable_fo[44] ?   '0 : acmd_hold;
 
   assign ctr_drbg_cmd_req_data = '{
     inst_id: shid_q,
