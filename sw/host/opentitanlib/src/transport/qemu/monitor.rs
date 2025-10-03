@@ -66,42 +66,42 @@ impl Monitor {
 
         // Negotiate capabilities.
         // We don't need any, but the protocol requires us to do this.
-        monitor.send_cmd("qmp_capabilities")?;
+        monitor.send_cmd("qmp_capabilities", None)?;
 
         Ok(monitor)
     }
 
     /// Send a continue command either starting or resuming the emulation.
     pub fn cont(&mut self) -> anyhow::Result<()> {
-        self.send_cmd("cont")?;
+        self.send_cmd("cont", None)?;
 
         Ok(())
     }
 
     /// Stop the emulation (resumable, does not quit QEMU).
     pub fn stop(&mut self) -> anyhow::Result<()> {
-        self.send_cmd("stop")?;
+        self.send_cmd("stop", None)?;
 
         Ok(())
     }
 
     /// Reset the system within the emulation.
     pub fn reset(&mut self) -> anyhow::Result<()> {
-        self.send_cmd("system_reset")?;
+        self.send_cmd("system_reset", None)?;
 
         Ok(())
     }
 
     /// Gracefully shut down QEMU and terminate the process.
     pub fn quit(&mut self) -> anyhow::Result<()> {
-        self.send_cmd("quit")?;
+        self.send_cmd("quit", None)?;
 
         Ok(())
     }
 
     /// List the IDs of the currently configured `chardev`s.
     pub fn query_chardevs(&mut self) -> anyhow::Result<Vec<Chardev>> {
-        let response = self.send_cmd("query-chardev")?;
+        let response = self.send_cmd("query-chardev", None)?;
         let serde_json::Value::Array(response) = response else {
             bail!("expected array of chardevs");
         };
@@ -125,13 +125,17 @@ impl Monitor {
     ///
     /// We only support synchronous commands, i.e. we wait for a response before
     /// sending anything new.
-    fn send_cmd(&mut self, cmd: &str) -> anyhow::Result<serde_json::Value> {
+    fn send_cmd(&mut self, cmd: &str, args: Option<&str>) -> anyhow::Result<serde_json::Value> {
         let id = self.id_counter;
 
-        writeln!(
-            self.tty.get_mut(),
-            r#"{{ "execute": "{cmd}", "id": {id} }}"#
-        )?;
+        let command = match args {
+            Some(arguments) => {
+                format!(r#"{{ "execute": "{cmd}", "arguments": {arguments}, "id": {id} }}"#)
+            }
+            None => format!(r#"{{ "execute": "{cmd}", "id": {id} }}"#),
+        };
+
+        writeln!(self.tty.get_mut(), "{}", command.as_str())?;
 
         // Increment the ID for the next message.
         self.id_counter += 1;
