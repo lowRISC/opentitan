@@ -472,3 +472,20 @@ opentitan_test(
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
     ],
 )
+
+opentitan_test(
+    name = "rom_e2e_chip_info",
+    srcs = ["chip_info_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_test_rom": None,
+    },
+    deps = [
+        "//sw/device/lib/testing:ret_sram_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:build_info",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
