@@ -348,7 +348,7 @@ fn main() -> Result<()> {
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
     let uart = transport.uart("console")?;
-    let rescue = RescueSerial::new(Rc::clone(&uart));
+    let rescue = RescueSerial::new(Rc::clone(&uart), None);
     send_packet_timeout(&transport, &*uart, &rescue)?;
     send_data_timeout(&transport, &*uart, &rescue)?;
     send_crc_timeout(&transport, &*uart, &rescue)?;

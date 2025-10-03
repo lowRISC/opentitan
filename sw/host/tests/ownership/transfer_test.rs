@@ -87,6 +87,8 @@ struct Opts {
         help = "Load a firmware payload via rescue after activating ownership"
     )]
     rescue_after_activate: Option<PathBuf>,
+    #[arg(long, value_parser = humantime::parse_duration, help = "Max timeout to enter rescue mode")]
+    rescue_enter_delay: Option<Duration>,
 
     #[arg(long, default_value_t = false, action = clap::ArgAction::Set, help = "Use an invalid device id to trigger ownership unlock request")]
     invalid_device_id: bool,
@@ -121,7 +123,7 @@ fn remember(haystack: &str, re: &str, memory: &mut Vec<String>) -> bool {
 
 fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
-    let rescue = RescueSerial::new(Rc::clone(&uart));
+    let rescue = RescueSerial::new(Rc::clone(&uart), opts.rescue_enter_delay);
 
     let mut keygen = Vec::new();
 
