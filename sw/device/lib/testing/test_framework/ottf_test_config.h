@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_TEST_CONFIG_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_TEST_CONFIG_H_
 
-#include "hw/top/dt/dt_api.h"
+#include "hw/top/dt/api.h"
 
 /**
  * Communication interfaces that can be used as the OTTF console.

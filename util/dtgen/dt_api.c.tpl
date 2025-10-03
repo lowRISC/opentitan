@@ -21,7 +21,7 @@ else:
  * @brief Device Tables (DT) API for top ${helper.top["name"]}
  */
 
-#include "hw/top/dt/dt_api.h"
+#include "hw/top/dt/api.h"
 #include "hw/top_${helper.top["name"]}/sw/autogen/top_${helper.top["name"]}.h"
 #include <stdint.h>
 

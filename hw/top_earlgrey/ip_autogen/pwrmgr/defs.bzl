@@ -7,5 +7,5 @@ PWRMGR = opentitan_ip(
     name = "pwrmgr",
     hjson = "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr.hjson",
     ipconfig = "//hw/top_earlgrey/ip_autogen/pwrmgr/data:top_earlgrey_pwrmgr.ipconfig.hjson",
-    extension = "//hw/top_earlgrey/ip_autogen/pwrmgr/util:dt",
+    extension = "//hw/top/dt:pwrmgr_binding",
 )
