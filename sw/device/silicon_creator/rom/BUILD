@@ -123,6 +123,8 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:multibits",
         "//sw/device/silicon_creator/lib/base:chip",
+        # This embeds the chip info into the binary.
+        "//sw/device/silicon_creator/lib:chip_info_data",
     ],
     alwayslink = True,
 )

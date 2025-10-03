@@ -184,7 +184,7 @@ autogen_chip_info_src = rule(
     } | stamp_attr(-1, "//rules:stamp_flag"),
 )
 
-def autogen_chip_info(name):
+def autogen_chip_info(name, deps = []):
     """Generates a cc_library named `name` that defines chip info."""
 
     # Generate a C source file that defines the chip info struct. This is an
@@ -198,10 +198,7 @@ def autogen_chip_info(name):
     native.cc_library(
         name = name,
         srcs = [chip_info_src_target],
-        hdrs = ["//sw/device/silicon_creator/lib:chip_info.h"],
-        deps = [
-            "//sw/device/lib/base:macros",
-        ],
+        deps = deps,
     )
 
 def _cryptotest_hjson_external(ctx):
