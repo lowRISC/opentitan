@@ -24,11 +24,14 @@ pub struct Monitor {
 
     /// Incrementing ID attached to each command and checked with each response.
     id_counter: usize,
+
+    /// Whether to quit QEMU when dropped.
+    quit_qemu: bool,
 }
 
 impl Monitor {
     /// Connect to the QEMU monitor over a given TTY.
-    pub fn new<P: AsRef<Path>>(tty_path: P) -> anyhow::Result<Self> {
+    pub fn new<P: AsRef<Path>>(tty_path: P, quit_qemu: bool) -> anyhow::Result<Self> {
         let tty = serialport::new(
             tty_path.as_ref().to_str().context("TTY path not UTF8")?,
             115200,
@@ -55,7 +58,11 @@ impl Monitor {
             micro = version.qemu.micro
         );
 
-        let mut monitor = Monitor { tty, id_counter: 0 };
+        let mut monitor = Monitor {
+            tty,
+            id_counter: 0,
+            quit_qemu,
+        };
 
         // Negotiate capabilities.
         // We don't need any, but the protocol requires us to do this.
@@ -160,6 +167,15 @@ impl Monitor {
                 bail!("monitor returned error: {error:#?}");
             }
             MonitorResponse::Event { .. } => unreachable!("should have been skipped"),
+        }
+    }
+}
+
+impl Drop for Monitor {
+    fn drop(&mut self) {
+        // Quit QEMU when dropped if requested.
+        if self.quit_qemu {
+            self.quit().ok();
         }
     }
 }
