@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/include/rsa.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_encryption.h"
@@ -87,7 +88,7 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
       }
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
       pk->e = exponent;
-      hardened_memcpy(pk->n.data, modulus.data, modulus.len);
+      HARDENED_TRY(hardened_memcpy(pk->n.data, modulus.data, modulus.len));
       break;
     }
     case kOtcryptoRsaSize3072: {
@@ -97,7 +98,7 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
       }
       rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
       pk->e = exponent;
-      hardened_memcpy(pk->n.data, modulus.data, modulus.len);
+      HARDENED_TRY(hardened_memcpy(pk->n.data, modulus.data, modulus.len));
       break;
     }
     case kOtcryptoRsaSize4096: {
@@ -107,7 +108,7 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
       }
       rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
       pk->e = exponent;
-      hardened_memcpy(pk->n.data, modulus.data, modulus.len);
+      HARDENED_TRY(hardened_memcpy(pk->n.data, modulus.data, modulus.len));
       break;
     }
     default:
@@ -201,6 +202,11 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
   // Check the mode and lengths for the private key.
   HARDENED_TRY(private_key_structural_check(size, private_key));
 
+  // Randomize the keyblob.
+  HARDENED_TRY(hardened_memshred(
+      private_key->keyblob,
+      ceil_div(private_key->keyblob_length, sizeof(uint32_t))));
+
   switch (size) {
     case kOtcryptoRsaSize2048: {
       if (private_key->keyblob_length != sizeof(rsa_2048_private_key_t) ||
@@ -209,8 +215,8 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
       }
       rsa_2048_private_key_t *sk =
           (rsa_2048_private_key_t *)private_key->keyblob;
-      hardened_memcpy(sk->n.data, modulus.data, modulus.len);
-      hardened_memcpy(sk->d.data, d_share0.data, d_share0.len);
+      HARDENED_TRY(hardened_memcpy(sk->n.data, modulus.data, modulus.len));
+      HARDENED_TRY(hardened_memcpy(sk->d.data, d_share0.data, d_share0.len));
       // TODO: RSA keys are currently unblinded, so combine the shares.
       for (size_t i = 0; i < d_share1.len; i++) {
         sk->d.data[i] ^= d_share1.data[i];
@@ -224,8 +230,8 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
       }
       rsa_3072_private_key_t *sk =
           (rsa_3072_private_key_t *)private_key->keyblob;
-      hardened_memcpy(sk->n.data, modulus.data, modulus.len);
-      hardened_memcpy(sk->d.data, d_share0.data, d_share0.len);
+      HARDENED_TRY(hardened_memcpy(sk->n.data, modulus.data, modulus.len));
+      HARDENED_TRY(hardened_memcpy(sk->d.data, d_share0.data, d_share0.len));
       // TODO: RSA keys are currently unblinded, so combine the shares.
       for (size_t i = 0; i < d_share1.len; i++) {
         sk->d.data[i] ^= d_share1.data[i];
@@ -239,8 +245,8 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
       }
       rsa_4096_private_key_t *sk =
           (rsa_4096_private_key_t *)private_key->keyblob;
-      hardened_memcpy(sk->n.data, modulus.data, modulus.len);
-      hardened_memcpy(sk->d.data, d_share0.data, d_share0.len);
+      HARDENED_TRY(hardened_memcpy(sk->n.data, modulus.data, modulus.len));
+      HARDENED_TRY(hardened_memcpy(sk->d.data, d_share0.data, d_share0.len));
       // TODO: RSA keys are currently unblinded, so combine the shares.
       for (size_t i = 0; i < d_share1.len; i++) {
         sk->d.data[i] ^= d_share1.data[i];
@@ -460,6 +466,11 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
   // Check the caller-provided private key buffer.
   HARDENED_TRY(private_key_structural_check(size, private_key));
 
+  // Randomize the keyblob memory.
+  HARDENED_TRY(hardened_memshred(
+      private_key->keyblob,
+      ceil_div(private_key->keyblob_length, sizeof(uint32_t))));
+
   // Call the required finalize() operation.
   switch (size) {
     case kOtcryptoRsaSize2048: {
@@ -530,7 +541,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
         cf->data[i] ^= cofactor_share1.data[i];
       }
       rsa_2048_public_key_t pk;
-      hardened_memcpy(pk.n.data, modulus.data, modulus.len);
+      HARDENED_TRY(hardened_memcpy(pk.n.data, modulus.data, modulus.len));
       pk.e = e;
       return rsa_keygen_from_cofactor_2048_start(&pk, cf);
     }
@@ -569,6 +580,11 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
 
   // Check the caller-provided private key buffer.
   HARDENED_TRY(private_key_structural_check(size, private_key));
+
+  // Randomize the keyblob memory.
+  HARDENED_TRY(hardened_memshred(
+      private_key->keyblob,
+      ceil_div(private_key->keyblob_length, sizeof(uint32_t))));
 
   // Call the required finalize() operation.
   switch (size) {

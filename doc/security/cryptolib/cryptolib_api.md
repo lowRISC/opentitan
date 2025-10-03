@@ -357,10 +357,12 @@ For ECDSA, the cryptography library supports keypair generation, signing, and si
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_keygen }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign_verify }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_verify }}
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_keygen }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign_verify }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_verify }}
 
 #### ECDH

@@ -22,7 +22,7 @@ enum {
    * We assert that this value is large enough to host the internal HMAC driver
    * struct.
    */
-  kOtcryptoSha2CtxStructWords = 87,
+  kOtcryptoSha2CtxStructWords = 88,
 };
 
 /**
