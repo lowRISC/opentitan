@@ -115,6 +115,15 @@ impl Monitor {
         Ok(chardevs)
     }
 
+    pub fn send_chardev_break(&mut self, id: &str) -> anyhow::Result<()> {
+        self.send_cmd(
+            "chardev-send-break",
+            Some(format!(r#"{{"id": "{id}"}}"#).as_str()),
+        )?;
+
+        Ok(())
+    }
+
     /// Send a command over the JSON QMP interface.
     ///
     /// The protocol goes:
