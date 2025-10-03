@@ -21,15 +21,15 @@ py_binary(
 )
 
 py_binary(
-    name = "rom_chip_info",
-    srcs = ["rom_chip_info.py"],
+    name = "build_info",
+    srcs = ["build_info.py"],
 )
 
 py_test(
-    name = "rom_chip_info_test",
+    name = "build_info_test",
     srcs = [
-        "rom_chip_info.py",
-        "rom_chip_info_test.py",
+        "build_info.py",
+        "build_info_test.py",
     ],
 )
 

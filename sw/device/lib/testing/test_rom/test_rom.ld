@@ -134,7 +134,7 @@ SECTIONS {
    * Immutable chip_info data, containing build-time-recorded information.
    */
   .chip_info _chip_info_start : ALIGN(4) {
-    KEEP(*(.chip_info))
+    KEEP(*(.build_info))
   } > rom
 
   /**

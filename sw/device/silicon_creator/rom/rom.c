@@ -21,8 +21,8 @@
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
+#include "sw/device/silicon_creator/lib/build_info.h"
 #include "sw/device/silicon_creator/lib/cfi.h"
-#include "sw/device/silicon_creator/lib/chip_info.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
@@ -246,7 +246,7 @@ static rom_error_t rom_init(void) {
   boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
   memset(boot_log, 0, sizeof(*boot_log));
   boot_log->identifier = kBootLogIdentifier;
-  boot_log->chip_version = kChipInfo.scm_revision;
+  boot_log->chip_version = kBuildInfo.scm_revision;
   boot_log->retention_ram_initialized =
       reset_reasons & reset_mask ? kHardenedBoolTrue : kHardenedBoolFalse;
 

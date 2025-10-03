@@ -140,7 +140,7 @@ autogen_hjson_rust_header = rule(
     } | stamp_attr(-1, "//rules:stamp_flag"),
 )
 
-def _chip_info_src(ctx):
+def _build_info_src(ctx):
     stamp_args = []
     stamp_files = []
     if stamping_enabled(ctx):
@@ -148,13 +148,13 @@ def _chip_info_src(ctx):
         stamp_args.append("--ot_version_file")
         stamp_args.append(ctx.version_file.path)
     else:
-        print("NOTE: stamping is disabled, the chip_info section will use a fixed version string")
+        print("NOTE: stamping is disabled, the build_info section will use a fixed version string")
         stamp_args.append("--default_version")
 
         # The script expects a 20-character long hash: "OpenTitanOpenTitanOT"
         stamp_args.append("4f70656e546974616e4f70656e546974616e4f54")
 
-    out_source = ctx.actions.declare_file("chip_info.c")
+    out_source = ctx.actions.declare_file("build_info.c")
     ctx.actions.run(
         outputs = [
             out_source,
@@ -173,32 +173,32 @@ def _chip_info_src(ctx):
         DefaultInfo(files = depset([out_source])),
     ]
 
-autogen_chip_info_src = rule(
-    implementation = _chip_info_src,
+autogen_build_info_src = rule(
+    implementation = _build_info_src,
     attrs = {
         "_tool": attr.label(
-            default = "//util:rom_chip_info",
+            default = "//util:build_info",
             executable = True,
             cfg = "exec",
         ),
     } | stamp_attr(-1, "//rules:stamp_flag"),
 )
 
-def autogen_chip_info(name):
-    """Generates a cc_library named `name` that defines chip info."""
+def autogen_build_info(name):
+    """Generates a cc_library named `name` that defines the build ID."""
 
-    # Generate a C source file that defines the chip info struct. This is an
+    # Generate a C source file that defines the build ID struct. This is an
     # implementation detail and should not be depended on externally.
-    chip_info_src_target = name + "_gen_src"
-    autogen_chip_info_src(name = chip_info_src_target)
+    build_info_src_target = name + "_gen_src"
+    autogen_build_info_src(name = build_info_src_target)
 
     # Package up the generated source file with its corresponding header file
-    # and dependencies. Any target that wants access to the chip info should
+    # and dependencies. Any target that wants access to the build ID should
     # depend on this.
     native.cc_library(
         name = name,
-        srcs = [chip_info_src_target],
-        hdrs = ["//sw/device/silicon_creator/lib:chip_info.h"],
+        srcs = [build_info_src_target],
+        hdrs = ["//sw/device/silicon_creator/lib:build_info.h"],
         deps = [
             "//sw/device/lib/base:macros",
         ],

@@ -151,8 +151,8 @@ cc_library(
         "//sw/device/lib/crt",
         "//sw/device/lib/runtime:hart",
         "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib:build_info",
         "//sw/device/silicon_creator/lib:cfi",
-        "//sw/device/silicon_creator/lib:chip_info",
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:irq_asm",
@@ -515,13 +515,13 @@ genrule(
         echo $$f >> $@
         size=$$(stat -L -c %s $$f)
         full=$$(sha256sum $$f | cut -f1 -d' ')
-        without_chip_info=$$(head -c -12 $$f | sha256sum | cut -f1 -d' ')
-        code=$$(echo $$without_chip_info | sed -E s'/(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})/0x\\8,0x\\7,0x\\6,0x\\5,0x\\4,0x\\3,0x\\2,0x\\1,/g')
+        without_build_info=$$(head -c -12 $$f | sha256sum | cut -f1 -d' ')
+        code=$$(echo $$without_build_info | sed -E s'/(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})/0x\\8,0x\\7,0x\\6,0x\\5,0x\\4,0x\\3,0x\\2,0x\\1,/g')
 
         echo "              size: $$size" >> $@
         echo "     complete hash: $$full" >> $@
-        echo " without chip_info: $$without_chip_info" >> $@
-        echo "w/o chip_info le32: $$code" >> $@
+        echo " without build_info: $$without_build_info" >> $@
+        echo "w/o build_info le32: $$code" >> $@
         echo >> $@
         fi
     done
