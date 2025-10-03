@@ -1326,5 +1326,23 @@
       si_stage: NA
       tests: ["rom_e2e_self_hash"]
     }
+
+    {
+      name: rom_e2e_chip_info
+      desc: '''Verify that ROM correctly embeds the chip information and stores it in the boot log
+
+            - Load a ROM_EXT image that will
+              - Print the content of the ROM's chip_info section.
+                - When running as the ROM_EXT, the ROM is still readable, the chip_info is located
+                  at the end of the ROM.
+              - Print the content of the boot log's chip info.
+              - Verify that the two are identical.
+              - Verify that the chip_info's version is the expected one.
+            '''
+      tags: ["rom", "dv", "fpga", "silicon"]
+      stage: V3
+      si_stage: SV2
+      tests: []
+    }
   ]
 }
