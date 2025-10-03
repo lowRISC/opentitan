@@ -102,6 +102,7 @@ opentitan_test(
         exec_env = [
             "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:sim_dv",
+            "//hw/top_earlgrey:sim_qemu_base",
             "//hw/top_earlgrey:sim_verilator",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
@@ -139,6 +140,7 @@ opentitan_test(
         exec_env = [
             "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:sim_dv",
+            "//hw/top_earlgrey:sim_qemu_base",
             "//hw/top_earlgrey:sim_verilator",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
@@ -162,6 +164,7 @@ opentitan_test(
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
             "//hw/top_earlgrey:sim_verilator": None,
         },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
@@ -206,6 +209,7 @@ opentitan_test(
     for key in SIGVERIFY_LC_KEYS
     for group in [
         "fpga_cw310_rom_with_fake_keys",
+        "sim_qemu_rom_with_fake_keys",
         "sim_dv",
     ]
 ]
@@ -227,6 +231,7 @@ opentitan_test(
     for key in SIGVERIFY_LC_KEYS
     for group in [
         "fpga_cw310_rom_with_fake_keys",
+        "sim_qemu_rom_with_fake_keys",
         "sim_dv",
     ]
 ]
