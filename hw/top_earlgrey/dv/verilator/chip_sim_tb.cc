@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 
   MemArea rom(top_scope + (".u_rom_ctrl.gen_rom_scramble_enabled.u_rom.u_rom."
                            "u_prim_rom"),
-              0x4000 / 4, 4);
+              0x8000 / 4, 4);
   MemArea ram(top_scope + ".u_ram1p_ram_main." + ram1p_adv_scope, 0x20000 / 4,
               4);
   // Only handle the lower bank of flash for now.
