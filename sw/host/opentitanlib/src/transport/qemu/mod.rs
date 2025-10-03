@@ -48,9 +48,6 @@ pub struct Qemu {
 
     /// QEMU log modelled as a UART.
     log: Option<Rc<dyn Uart>>,
-
-    /// Whether to quit QEMU when dropped.
-    quit: bool,
 }
 
 impl Qemu {
@@ -66,7 +63,7 @@ impl Qemu {
     /// to a device using one of the flags in the list above. The kind must
     /// match what OpenTitanLib expects to be accepted.
     pub fn from_options(options: QemuOpts) -> anyhow::Result<Self> {
-        let mut monitor = Monitor::new(options.qemu_monitor_tty.unwrap())?;
+        let mut monitor = Monitor::new(options.qemu_monitor_tty.unwrap(), options.qemu_quit)?;
 
         // Get list of configured chardevs from QEMU.
         let chardevs = monitor.query_chardevs()?;
@@ -131,17 +128,7 @@ impl Qemu {
             console,
             log,
             spi,
-            quit: options.qemu_quit,
         })
-    }
-}
-
-impl Drop for Qemu {
-    fn drop(&mut self) {
-        // Quit QEMU when dropped if requested.
-        if self.quit {
-            self.monitor.borrow_mut().quit().ok();
-        }
     }
 }
 
