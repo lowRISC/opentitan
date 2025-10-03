@@ -199,6 +199,9 @@ def autogen_chip_info(name, deps = []):
         name = name,
         srcs = [chip_info_src_target],
         deps = deps,
+        # Make sure to participate in linking so that the symbol is not discarded
+        # (since it is not meant to be directly used).
+        alwayslink = True,
     )
 
 def _cryptotest_hjson_external(ctx):
