@@ -202,6 +202,9 @@ def autogen_chip_info(name):
         deps = [
             "//sw/device/lib/base:macros",
         ],
+        # Make sure to participate in linking so that the symbol is not discarded
+        # (since it is not meant to be directly used).
+        alwayslink = True,
     )
 
 def _cryptotest_hjson_external(ctx):

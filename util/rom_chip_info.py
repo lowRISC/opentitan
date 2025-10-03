@@ -34,6 +34,7 @@ def generate_chip_info_c_source(scm_revision: int) -> str:
 
 #include "sw/device/lib/base/macros.h"
 
+OT_USED
 OT_SECTION(".chip_info")
 const chip_info_t kChipInfo = {{
   .scm_revision = (chip_info_scm_revision_t){{
