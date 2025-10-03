@@ -23,6 +23,7 @@ load(
     "DEFAULT_TEST_SUCCESS_MSG",
     "fpga_params",
     "opentitan_test",
+    "qemu_params",
 )
 load(
     "//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl",
@@ -155,6 +156,7 @@ _POSITIONS = {
         exec_env = {
             "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_earlgrey:sim_qemu_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
@@ -168,6 +170,17 @@ _POSITIONS = {
             romext_offset = position["romext_offset"],
         ),
         linker_script = position["linker_script"],
+        qemu = qemu_params(
+            assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
+            binaries = {
+                position["romext"]: "romext",
+            },
+            exit_failure = position.get("failure", DEFAULT_TEST_FAILURE_MSG),
+            exit_success = position["success"],
+            otp = position["otp_img"],
+            owner_offset = position["owner_offset"],
+            romext_offset = position["romext_offset"],
+        ),
         deps = [
             "//sw/device/lib/base:status",
             "//sw/device/lib/testing/test_framework:ottf_main",
@@ -198,6 +211,7 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
     },
     fpga = fpga_params(
         exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
@@ -206,6 +220,10 @@ opentitan_test(
         exit_success = "BFV:054d410d",
     ),
     manifest = ":bad_manifest",
+    qemu = qemu_params(
+        exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
+        exit_success = "BFV:054d410d",
+    ),
     deps = [
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -245,6 +263,7 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
     },
     fpga = fpga_params(
         exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
@@ -253,6 +272,10 @@ opentitan_test(
         exit_success = "BFV:044d410d",
     ),
     manifest = ":bad_spx_manifest",
+    qemu = qemu_params(
+        exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
+        exit_success = "BFV:044d410d",
+    ),
     spx_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:spx_keyset": "app_prod_0"},
     deps = [
         "//sw/device/lib/base:status",
@@ -309,8 +332,13 @@ _KEYS = {
         exec_env = {
             "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_earlgrey:sim_qemu_rom_ext": None,
         },
         fpga = fpga_params(
+            exit_failure = keyinfo["exit_failure"],
+            exit_success = keyinfo["exit_success"],
+        ),
+        qemu = qemu_params(
             exit_failure = keyinfo["exit_failure"],
             exit_success = keyinfo["exit_success"],
         ),
@@ -355,6 +383,7 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
     },
     fpga = fpga_params(),
     manifest = ":isfb_manifest",
