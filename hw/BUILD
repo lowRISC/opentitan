@@ -5,6 +5,7 @@
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//rules:fusesoc.bzl", "fusesoc_build")
 load("@rules_python//python:defs.bzl", "py_library")
+load("//hw/top:defs.bzl", "opentitan_select_top")
 
 # This configuration exposes fusesoc's "verilator_options" option to the
 # command line. This is intended to allow CI to specifically build a single
@@ -100,9 +101,10 @@ fusesoc_build(
     ],
     data = ["//hw/ip/otbn:rtl_files"],
     make_options = ":make_options",
-    output_groups = {
-        "binary": ["lowrisc_dv_top_earlgrey_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb"],
-    },
+    output_groups = opentitan_select_top({
+        "earlgrey": {"binary":["lowrisc_dv_top_earlgrey_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb"]},
+        "darjeeling": {"binary":["lowrisc_dv_top_darjeeling_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb"]},
+    }, {"binary":[]}),
     systems = ["lowrisc:dv:chip_verilator_sim"],
     tags = [
         "manual",
@@ -159,6 +161,14 @@ genrule(
     visibility = ["//visibility:public"],
 )
 
+alias(
+    name = "top_rtl_files",
+    actual = opentitan_select_top({
+        "earlgrey": "//hw/top_earlgrey:rtl_files",
+        "darjeeling": "//hw/top_darjeeling:rtl_files",
+    }, "@platforms//:incompatible")
+)
+
 # TODO(lowRISC/opentitan#7972): Globbing all of the //hw/... hierarchy together
 # is a bit of a hack.  Longer term, we need proper rules for expressing the
 # relationships between verilog components.
@@ -177,7 +187,7 @@ filegroup(
         # dv_macros are needed by Ibex, so include this back in.
         "//hw/dv/sv:dv_macros",
         "//hw/ip:rtl_files",
-        "//hw/top_earlgrey:rtl_files",
+        ":top_rtl_files",
     ],
     visibility = ["//visibility:public"],
 )
