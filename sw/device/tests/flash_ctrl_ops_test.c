@@ -171,7 +171,7 @@ static void compare_and_clear_irq_variables(void) {
  */
 static void read_and_check_host_if(uint32_t addr, const uint32_t *check_data) {
   mmio_region_t flash_addr =
-      mmio_region_from_addr(TOP_EARLGREY_EFLASH_BASE_ADDR + addr);
+      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + addr);
   uint32_t host_data[kDataSize];
   for (int i = 0; i < kDataSize; ++i) {
     host_data[i] =
