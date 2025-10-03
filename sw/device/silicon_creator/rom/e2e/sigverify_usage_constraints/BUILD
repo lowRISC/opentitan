@@ -9,6 +9,7 @@ load(
     "ecdsa_key_for_lc_state",
     "fpga_params",
     "opentitan_test",
+    "qemu_params",
 )
 load(
     "//rules:const.bzl",
@@ -271,6 +272,7 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             exit_failure = t["exit_failure"],
@@ -285,6 +287,11 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
                 address_translation = hex(CONST.HARDENED_FALSE),
                 identifier = hex(CONST.ROM_EXT),
             ),
+        ),
+        qemu = qemu_params(
+            exit_failure = t["exit_failure"],
+            exit_success = t["exit_success"],
+            otp = t["otp"],
         ),
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_main",
