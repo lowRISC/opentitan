@@ -181,6 +181,8 @@ rust_library(
         "src/transport/common/fpga.rs",
         "src/transport/common/mod.rs",
         "src/transport/common/uart.rs",
+        "src/transport/qemu/mod.rs",
+        "src/transport/qemu/spi.rs",
         "src/transport/dediprog/gpio.rs",
         "src/transport/dediprog/mod.rs",
         "src/transport/dediprog/spi.rs",
