@@ -478,6 +478,16 @@ def _test_dispatch(ctx, exec_env, firmware):
         for trace in traces:
             qemu_args += ["--trace", "{}".format(trace)]
 
+    # Because flash info pages are not spliced and QEMU does not currently
+    # support flash scrambling/ECCs, any uninitialised seeds read from the flash
+    # creator/owner secret pages will be all `0xFF...`. This will cause the
+    # keymgr to error when advancing to the OwnerIntermediate state, preventing
+    # further use. Temporarily disable the relevant keymgr data validity check
+    # via an opt-in QEMU property.
+    # TODO: remove this property when either QEMU flash info page splicing
+    # is available, or the QEMU `flash_ctrl` implements scrambling & ECC support.
+    qemu_args += ["-global", "ot-keymgr.disable-flash-seed-check=true"]
+
     # By default QEMU will exit when the test status register is written.
     # OpenTitanTool expects to be able to do multiple resets, for example after
     # bootstrapping, and then execute the test. Resetting could cause the test
