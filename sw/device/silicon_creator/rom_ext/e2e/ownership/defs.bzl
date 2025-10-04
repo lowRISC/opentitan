@@ -4,8 +4,11 @@
 
 load(
     "//rules/opentitan:defs.bzl",
+    "fpga_params",
     "opentitan_test",
+    "qemu_params",
 )
+load("@bazel_skylib//lib:structs.bzl", "structs")
 
 def ownership_transfer_test(
         name,
@@ -13,6 +16,7 @@ def ownership_transfer_test(
         exec_env = {
             "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_earlgrey:sim_qemu_rom_ext": None,
         },
         ecdsa_key = {
             "//sw/device/silicon_creator/lib/ownership/keys/dummy:ecdsa_keyset": "app_prod_0",
@@ -49,7 +53,55 @@ def ownership_transfer_test(
             "//sw/device/silicon_creator/lib/drivers:retention_sram",
             "//sw/device/silicon_creator/lib/ownership:datatypes",
         ],
+        fpga = None,
+        qemu = None,
+        shared_params = None,
         **kwargs):
+    # Construct `fpga_params` from shared and FPGA-specific parameters
+    if shared_params:
+        override_params = dict(shared_params)
+        if fpga:
+            override_params.update(fpga)
+
+        # FPGA should always clear the bitstream & bootstrap first, so
+        # add these to every FPGA test cmd unless overridden
+        if not fpga or "test_cmd" not in fpga:
+            override_params["test_cmd"] = """
+                --clear-bitstream
+            """ + override_params["test_cmd"]
+        fpga = fpga_params(**override_params)
+    else:
+        fpga = fpga_params(**fpga)
+
+    # Construct `qemu_params` from shared and QEMU-specific parameters
+    if shared_params:
+        override_params = dict(shared_params)
+        if qemu:
+            override_params.update(qemu)
+
+        # QEMU takes longer to emulate entering rescue due to slow
+        # emulation of the ROM, as a result of the `sec_mmio` code hot
+        # loops falling in a misaligned EPMP region that effectively
+        # disables QEMU's TCG TLB optimisations. As such, we always
+        # increase the delay to enter rescue to 20s on QEMU targets.
+        # This is likely much larger than needed, but should give some
+        # lenience for tests being run in parallel or on slower hosts.
+        if not qemu or "test_cmd" not in qemu:
+            override_params["test_cmd"] = """
+                --rescue-enter-delay=20s
+            """ + override_params["test_cmd"]
+
+        # XModem-CRC transfer as part of the rescue flow uses somewhat
+        # tight timing based on the UART baud rate, which depends on
+        # the performance & load of the host. Change the icount shift
+        # used to make timing more lenient on QEMU, albeit at the cost
+        # of longer test executions.
+        if not qemu or "icount" not in qemu:
+            override_params["icount"] = "5"
+        qemu = qemu_params(**override_params)
+    else:
+        qemu = qemu_params(**qemu)
+
     opentitan_test(
         name = name,
         srcs = srcs,
@@ -59,5 +111,7 @@ def ownership_transfer_test(
         data = data,
         defines = defines,
         deps = deps,
+        fpga = fpga,
+        qemu = qemu,
         **kwargs
     )
