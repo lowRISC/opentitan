@@ -358,6 +358,7 @@ manifest(d = {
         exec_env = [
             "//hw/top_earlgrey:fpga_cw340",
             "//hw/top_earlgrey:fpga_cw310",
+            "//hw/top_earlgrey:sim_qemu_base",
         ],
         extra_bazel_features = [
             "minsize",
