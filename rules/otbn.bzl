@@ -87,7 +87,7 @@ def _otbn_binary(ctx, additional_srcs = []):
     # Declare output files.
     elf = ctx.actions.declare_file(ctx.attr.name + ".elf")
     rv32embed = ctx.actions.declare_file(ctx.attr.name + ".rv32embed.o")
-    archive = ctx.actions.declare_file(ctx.attr.name + ".rv32embed.a")
+    archive = ctx.actions.declare_file("lib" + ctx.attr.name + ".rv32embed.a")
 
     deps = [f for dep in ctx.attr.deps for f in dep.files.to_list()]
 
