@@ -1973,6 +1973,22 @@
           index: -1
         }
         {
+          name: lc_rma_sw_rd_override_en
+          desc:
+            '''
+            SW read enable override enable coming from life cycle controller.
+            This signal enables SW read access to (read-locked) partitions in the RMA state.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
           name: lc_check_byp_en
           desc:
             '''
@@ -2911,6 +2927,17 @@
           end_idx: -1
           top_type: broadcast
           top_signame: lc_ctrl_lc_seed_hw_rd_en
+          index: -1
+        }
+        {
+          name: lc_rma_sw_rd_override_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: lc_ctrl
           index: -1
         }
         {
@@ -19721,6 +19748,22 @@
         index: -1
       }
       {
+        name: lc_rma_sw_rd_override_en
+        desc:
+          '''
+          SW read enable override enable coming from life cycle controller.
+          This signal enables SW read access to (read-locked) partitions in the RMA state.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
         name: lc_check_byp_en
         desc:
           '''
@@ -20405,6 +20448,17 @@
         end_idx: -1
         top_type: broadcast
         top_signame: lc_ctrl_lc_seed_hw_rd_en
+        index: -1
+      }
+      {
+        name: lc_rma_sw_rd_override_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: lc_ctrl
         index: -1
       }
       {

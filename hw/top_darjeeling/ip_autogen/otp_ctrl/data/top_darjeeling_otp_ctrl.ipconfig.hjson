@@ -107,6 +107,7 @@
             '''
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 64
           offset: 0
         }
@@ -519,6 +520,7 @@
             '''
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 304
           offset: 64
         }
@@ -745,6 +747,7 @@
             '''
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 600
           offset: 368
         }
@@ -854,6 +857,7 @@
             '''
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 48
           offset: 968
         }
@@ -992,6 +996,7 @@
           desc: Software managed creator partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 1424
           offset: 1016
         }
@@ -1063,6 +1068,7 @@
           desc: Software managed owner slot 0 partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 328
           offset: 2440
         }
@@ -1134,6 +1140,7 @@
           desc: Software managed owner slot 1 partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 328
           offset: 2768
         }
@@ -1205,6 +1212,7 @@
           desc: Software managed platform integrator slot 0 partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 328
           offset: 3096
         }
@@ -1276,6 +1284,7 @@
           desc: Software managed platform integrator slot 1 partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 328
           offset: 3424
         }
@@ -1347,6 +1356,7 @@
           desc: Software managed platform owner slot 0 partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 328
           offset: 3752
         }
@@ -1418,6 +1428,7 @@
           desc: Software managed platform owner slot 1 partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 328
           offset: 4080
         }
@@ -1489,6 +1500,7 @@
           desc: Software managed platform owner slot 2 partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 328
           offset: 4408
         }
@@ -1560,6 +1572,7 @@
           desc: Software managed platform owner slot 3 partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 328
           offset: 4736
         }
@@ -1601,6 +1614,7 @@
           desc: Anti-replay protection Strike Counters partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 1024
           offset: 5064
         }
@@ -1653,6 +1667,7 @@
           desc: ROM Patch Code section. May contain multiple signed ROM2 patches.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 9864
           offset: 6088
         }
@@ -1715,6 +1730,7 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 72
           offset: 15952
         }
@@ -1817,6 +1833,7 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 16
           offset: 16024
         }
@@ -1828,6 +1845,7 @@
           hw_digest: true
           write_lock: Digest
           read_lock: Digest
+          ignore_read_lock_in_rma: true
           key_sel: Secret0Key
           integrity: true
           bkout_type: false
@@ -1899,6 +1917,7 @@
           hw_digest: true
           write_lock: Digest
           read_lock: Digest
+          ignore_read_lock_in_rma: true
           key_sel: Secret1Key
           integrity: true
           bkout_type: false
@@ -1959,6 +1978,7 @@
           hw_digest: true
           write_lock: Digest
           read_lock: Digest
+          ignore_read_lock_in_rma: true
           key_sel: Secret2Key
           integrity: true
           bkout_type: false
@@ -2101,6 +2121,7 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: true
+          ignore_read_lock_in_rma: false
           size: 48
           offset: 16248
         }
@@ -2157,6 +2178,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           zeroizable: false
+          ignore_read_lock_in_rma: false
           size: 88
           offset: 16296
         }

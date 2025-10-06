@@ -4,6 +4,7 @@
     <td><strong>CREATOR_SEED_SW_RW_EN</strong></td>
     <td><strong>OWNER_SEED_SW_RW_EN</strong></td>
     <td><strong>SEED_HW_RD_EN</strong></td>
+    <td><strong>RMA_SW_RD_OVERRIDE_EN</strong></td>
     <td><strong>ISO_PART_SW_RD_EN</strong></td>
     <td><strong>ISO_PART_SW_WR_EN</strong></td>
   </tr>
