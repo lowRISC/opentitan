@@ -194,6 +194,7 @@ module tb;
     .lc_iso_part_sw_rd_en_o    (lc_ctrl_if.lc_iso_part_sw_rd_en_o),
     .lc_iso_part_sw_wr_en_o    (lc_ctrl_if.lc_iso_part_sw_wr_en_o),
     .lc_seed_hw_rd_en_o        (lc_ctrl_if.lc_seed_hw_rd_en_o),
+    .lc_rma_state_o            (lc_ctrl_if.lc_rma_state_o),
     .lc_keymgr_en_o            (lc_ctrl_if.lc_keymgr_en_o),
     .lc_escalate_en_o          (lc_ctrl_if.lc_escalate_en_o),
     .lc_check_byp_en_o         (lc_ctrl_if.lc_check_byp_en_o),

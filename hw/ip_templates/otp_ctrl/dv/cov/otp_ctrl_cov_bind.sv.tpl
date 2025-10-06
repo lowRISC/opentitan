@@ -53,6 +53,11 @@ module otp_ctrl_cov_bind;
     .val    (lc_seed_hw_rd_en_i)
   );
 
+  bind otp_ctrl cip_lc_tx_cov_if u_lc_rma_state_cov_if (
+    .rst_ni (rst_ni),
+    .val    (lc_rma_state_i)
+  );
+
   bind otp_macro cip_lc_tx_cov_if u_lc_dft_en_cov_if (
     .rst_ni (rst_ni),
     .val    (lc_dft_en_i)

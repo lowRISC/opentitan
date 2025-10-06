@@ -463,6 +463,13 @@
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
     }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_rma_state"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
     // LC state diversification value for keymgr
     { struct:  "lc_keymgr_div"
       type:    "uni"

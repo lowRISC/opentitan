@@ -772,6 +772,9 @@ interface chip_if;
       LcCtrlSignalIsoRdEn:      return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_iso_part_sw_rd_en_o);
       LcCtrlSignalIsoWrEn:      return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_iso_part_sw_wr_en_o);
       LcCtrlSignalSeedRdEn:     return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_seed_hw_rd_en_o);
+      LcCtrlSignalRmaState: begin
+        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_rma_state_o);
+      end
       LcCtrlSignalKeyMgrEn:     return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_keymgr_en_o);
       LcCtrlSignalEscEn:        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_escalate_en_o);
       LcCtrlSignalCheckBypEn:   return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_check_byp_en_o);

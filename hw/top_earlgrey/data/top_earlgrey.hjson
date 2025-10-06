@@ -1295,6 +1295,7 @@
       'lc_ctrl.lc_iso_part_sw_wr_en'       : ['flash_ctrl.lc_iso_part_sw_wr_en'],
       'lc_ctrl.lc_seed_hw_rd_en'           : ['otp_ctrl.lc_seed_hw_rd_en',
                                               'flash_ctrl.lc_seed_hw_rd_en'],
+      'lc_ctrl.lc_rma_state'               : ['otp_ctrl.lc_rma_state'],
 
       // OTP OTP_MACRO connections
       'otp_ctrl.otp_macro'                 : ['otp_macro.otp'],

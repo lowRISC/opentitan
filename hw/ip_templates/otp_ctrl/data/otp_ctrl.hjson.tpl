@@ -354,6 +354,17 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     }
     { struct:  "lc_tx"
       type:    "uni"
+      name:    "lc_rma_state"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    '''
+               This signal states whether the current life cycle is RMA.
+               It is used to enable SW read access to (read-locked) partitions in the RMA state.
+               '''
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
       name:    "lc_check_byp_en"
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"

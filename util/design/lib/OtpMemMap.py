@@ -132,6 +132,7 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool, generate_fre
     part.setdefault("iskeymgr_creator", False)
     part.setdefault("iskeymgr_owner", False)
     part.setdefault("zeroizable", False)
+    part.setdefault("ignore_read_lock_in_rma", False)
     log.info("Validating partition {}".format(part["name"]))
 
     # Make sure these are boolean types (simplifies the mako templates)
@@ -141,6 +142,7 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool, generate_fre
     part["bkout_type"] = check_bool(part["bkout_type"])
     part["integrity"] = check_bool(part["integrity"])
     part["zeroizable"] = check_bool(part["zeroizable"])
+    part["ignore_read_lock_in_rma"] = check_bool(part["ignore_read_lock_in_rma"])
 
     # basic checks
     if part["variant"] not in ["Unbuffered", "Buffered", "LifeCycle"]:

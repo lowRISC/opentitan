@@ -113,6 +113,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           zeroizable: false
+          ignore_read_lock_in_rma: false
           size: 64
           offset: 0
         }
@@ -755,6 +756,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           zeroizable: false
+          ignore_read_lock_in_rma: false
           size: 368
           offset: 64
         }
@@ -1286,6 +1288,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           zeroizable: false
+          ignore_read_lock_in_rma: false
           size: 712
           offset: 432
         }
@@ -1557,6 +1560,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           zeroizable: false
+          ignore_read_lock_in_rma: false
           size: 472
           offset: 1144
         }
@@ -1693,6 +1697,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           zeroizable: false
+          ignore_read_lock_in_rma: false
           size: 40
           offset: 1616
         }
@@ -1764,6 +1769,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           zeroizable: false
+          ignore_read_lock_in_rma: false
           size: 72
           offset: 1656
         }
@@ -1856,6 +1862,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           zeroizable: false
+          ignore_read_lock_in_rma: false
           size: 16
           offset: 1728
         }
@@ -1867,6 +1874,7 @@
           hw_digest: true
           write_lock: Digest
           read_lock: Digest
+          ignore_read_lock_in_rma: true
           key_sel: Secret0Key
           integrity: true
           bkout_type: false
@@ -1927,6 +1935,7 @@
           hw_digest: true
           write_lock: Digest
           read_lock: Digest
+          ignore_read_lock_in_rma: true
           key_sel: Secret1Key
           integrity: true
           bkout_type: false
@@ -1998,6 +2007,7 @@
           hw_digest: true
           write_lock: Digest
           read_lock: Digest
+          ignore_read_lock_in_rma: true
           key_sel: Secret2Key
           integrity: true
           bkout_type: false
@@ -2114,6 +2124,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           zeroizable: false
+          ignore_read_lock_in_rma: false
           size: 88
           offset: 1960
         }

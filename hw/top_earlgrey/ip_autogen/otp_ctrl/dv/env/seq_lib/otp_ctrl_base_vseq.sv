@@ -87,6 +87,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     cfg.otp_ctrl_vif.drive_lc_creator_seed_sw_rw_en(lc_ctrl_pkg::On);
     cfg.otp_ctrl_vif.drive_lc_owner_seed_sw_rw_en(lc_ctrl_pkg::On);
     cfg.otp_ctrl_vif.drive_lc_seed_hw_rd_en(get_rand_lc_tx_val());
+    cfg.otp_ctrl_vif.drive_lc_rma_state(lc_ctrl_pkg::Off);
     cfg.otp_ctrl_vif.drive_lc_dft_en(get_rand_lc_tx_val(.t_weight(0)));
     cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
     cfg.otp_ctrl_vif.drive_pwr_otp_init(0);

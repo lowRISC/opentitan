@@ -207,6 +207,11 @@ For more a list of the collateral in Flash and OTP and an explanation of how tha
 The SEED_HW_RD_EN signal controls whether the owner and creator root keys can be accessed by hardware.
 This signal is dependent on the personalization state of the device and will only be enabled if the device has been personalized (i.e., when the OTP partition holding the root key has been locked down).
 
+#### RMA_STATE
+
+The RMA_STATE signal states whether the current life cycle state is RMA or not.
+The signal is set to `On` when in the RMA state and otherwise to `Off`.
+
 #### ISO_PART_SW_RD_EN and ISO_PART_SW_WR_EN
 
 These signals control whether the isolated flash partition holding additional manufacturing details can be accessed.

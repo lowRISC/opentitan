@@ -1321,6 +1321,7 @@
       'lc_ctrl.lc_creator_seed_sw_rw_en'   : ['otp_ctrl.lc_creator_seed_sw_rw_en'],
       'lc_ctrl.lc_owner_seed_sw_rw_en'     : ['otp_ctrl.lc_owner_seed_sw_rw_en'],
       'lc_ctrl.lc_seed_hw_rd_en'           : ['otp_ctrl.lc_seed_hw_rd_en'],
+      'lc_ctrl.lc_rma_state'               : ['otp_ctrl.lc_rma_state'],
 
       // OTP PRIM_OTP connections
       'otp_ctrl.otp_macro'         : ['otp_macro.otp'],

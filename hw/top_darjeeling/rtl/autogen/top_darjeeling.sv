@@ -609,6 +609,7 @@ module top_darjeeling #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_creator_seed_sw_rw_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_owner_seed_sw_rw_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_seed_hw_rd_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_rma_state;
   otp_ctrl_macro_pkg::otp_ctrl_macro_req_t       otp_ctrl_otp_macro_req;
   otp_ctrl_macro_pkg::otp_ctrl_macro_rsp_t       otp_ctrl_otp_macro_rsp;
   logic       rv_plic_msip;
@@ -1251,6 +1252,7 @@ module top_darjeeling #(
       .lc_creator_seed_sw_rw_en_i(lc_ctrl_lc_creator_seed_sw_rw_en),
       .lc_owner_seed_sw_rw_en_i(lc_ctrl_lc_owner_seed_sw_rw_en),
       .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
+      .lc_rma_state_i(lc_ctrl_lc_rma_state),
       .lc_check_byp_en_i(lc_ctrl_lc_check_byp_en),
       .otp_keymgr_key_o(otp_ctrl_otp_keymgr_key),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_req),
@@ -1367,6 +1369,7 @@ module top_darjeeling #(
       .lc_iso_part_sw_rd_en_o(),
       .lc_iso_part_sw_wr_en_o(),
       .lc_seed_hw_rd_en_o(lc_ctrl_lc_seed_hw_rd_en),
+      .lc_rma_state_o(lc_ctrl_lc_rma_state),
       .lc_keymgr_div_o(lc_ctrl_lc_keymgr_div),
       .otp_device_id_i(lc_ctrl_otp_device_id),
       .otp_manuf_state_i(lc_ctrl_otp_manuf_state),
