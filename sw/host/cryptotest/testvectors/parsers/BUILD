@@ -116,6 +116,16 @@ py_binary(
 )
 
 py_binary(
+    name = "random_hmac_generator",
+    srcs = ["random_hmac_generator.py"],
+    deps = [
+        ":cryptotest_util",
+        requirement("jsonschema"),
+        requirement("pycryptodome"),
+    ],
+)
+
+py_binary(
     name = "wycheproof_hmac_parser",
     srcs = ["wycheproof_hmac_parser.py"],
     deps = [
