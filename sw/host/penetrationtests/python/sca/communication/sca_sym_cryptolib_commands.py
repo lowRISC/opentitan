@@ -284,7 +284,7 @@ class OTSymCrypto:
         self.target.write(json.dumps(input_data).encode("ascii"))
 
     def handle_hmac_fvsr_plaintext(
-        self, data, data_len, key, key_len, padding, mode, cfg, trigger, num_iterations
+        self, data, data_len, key, key_len, hash_mode, mode, cfg, trigger, num_iterations
     ) -> None:
         """Call the cryptolib HMAC.
 
@@ -293,7 +293,7 @@ class OTSymCrypto:
             data_len: Input data length.
             key: Array of max 192 bytes of key data.
             key_len: Input key length.
-            padding: integer specifying the padding mode.
+            hash_mode: integer specifying the hash mode.
             mode: integer specifying the mode of operations.
             cfg: Integer for configuration.
             trigger: Integer specifying which triggers to set.
@@ -306,7 +306,7 @@ class OTSymCrypto:
             "data_len": data_len,
             "key": key,
             "key_len": key_len,
-            "padding": padding,
+            "hash_mode": hash_mode,
             "mode": mode,
             "cfg": cfg,
             "trigger": trigger,
@@ -315,7 +315,7 @@ class OTSymCrypto:
         self.target.write(json.dumps(input_data).encode("ascii"))
 
     def handle_hmac_daisy(
-        self, data, data_len, key, key_len, padding, mode, cfg, trigger, num_iterations
+        self, data, data_len, key, key_len, hash_mode, mode, cfg, trigger, num_iterations
     ) -> None:
         """Call the cryptolib HMAC.
 
@@ -324,7 +324,7 @@ class OTSymCrypto:
             data_len: Input data length.
             key: Array of max 192 bytes of key data.
             key_len: Input key length.
-            padding: integer specifying the padding mode.
+            hash_mode: integer specifying the hash mode.
             mode: integer specifying the mode of operations.
             cfg: Integer for configuration.
             trigger: Integer specifying which triggers to set.
@@ -337,7 +337,7 @@ class OTSymCrypto:
             "data_len": data_len,
             "key": key,
             "key_len": key_len,
-            "padding": padding,
+            "hash_mode": hash_mode,
             "mode": mode,
             "cfg": cfg,
             "trigger": trigger,
