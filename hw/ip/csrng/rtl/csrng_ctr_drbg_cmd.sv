@@ -95,13 +95,13 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   // Prepare/mux values for update step
   //--------------------------------------------
 
-  assign req_rdy_o = enable_i && (update_req_rdy_i || gen_adata_null_q);
+  assign req_rdy_o = enable_i && (update_req_rdy_i || prep_gen_adata_null);
 
   always_comb begin
     req_data = req_data_i;
     // Insert the FIPS info from entropy source on instantiate and reseed commands.
     // Else, keep the existing info (from state db).
-    req_data.fips = ((req_data_i.cmd == INS) || (req_data_i.cmd == RES)) ? 
+    req_data.fips = ((req_data_i.cmd == INS) || (req_data_i.cmd == RES)) ?
                       req_entropy_fips_i : req_data_i.fips;
   end
 
@@ -135,8 +135,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
 
   assign prep_gen_adata_null = (req_data.cmd == GEN) && (req_data.pdata == '0);
 
-  assign gen_adata_null_d = !enable_i ? '0 : 
-                             (req_vld_i ? prep_gen_adata_null : gen_adata_null_q);
+  assign gen_adata_null_d = !enable_i ? 1'b0 :
+                            (req_vld_i ? prep_gen_adata_null : gen_adata_null_q);
 
   // send to the update block
   assign update_req_vld_o = req_vld_i && !prep_gen_adata_null;
