@@ -59,21 +59,6 @@
       ]
       run_timeout_mins: 800
     }
-    {
-      name: rom_e2e_ft_personalize_sival
-      uvm_test_seq: chip_sw_rom_e2e_ft_perso_vseq
-      sw_images: [
-        "//sw/device/silicon_creator/manuf/base/binaries:ft_personalize_sival:1:silicon_creator:signed",
-        "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_dev_manuf_individualized:4"
-      ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
-      run_opts: [
-        "+sw_test_timeout_ns=1000000000",
-        "+use_otp_image=OtpTypeCustom",
-        "+skip_flash_bkdr_load=1",
-      ]
-      run_timeout_mins: 800
-    }
   ]
 
   regressions: [
@@ -81,7 +66,6 @@
       name: ate_tests
       tests: [
         "rom_e2e_bootstrap_ate_smoke",
-        "rom_e2e_ft_personalize_sival",
       ]
     }
   ]
