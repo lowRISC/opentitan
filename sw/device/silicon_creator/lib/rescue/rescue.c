@@ -397,7 +397,8 @@ void rescue_skip_next_boot(void) {
   boot_svc_enter_rescue_req_init(kHardenedBoolTrue, &msg->enter_rescue_req);
 }
 
-hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config) {
+hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config,
+                                    uint32_t reset_reasons) {
   switch (rescue_requested) {
     case kRescueRequestEnter:
       return kHardenedBoolTrue;
@@ -410,16 +411,24 @@ hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config) {
   rescue_detect_t detect = kRescueDetectBreak;
   uint32_t index = 0;
   uint32_t gpio_val = 0;
+  uint32_t wdt_enable = 0;
   if ((hardened_bool_t)config != kHardenedBoolFalse) {
     protocol = config->protocol;
     detect = bitfield_field32_read(config->detect, RESCUE_DETECT);
     index = bitfield_field32_read(config->detect, RESCUE_DETECT_INDEX);
     gpio_val = bitfield_bit32_read(config->gpio, RESCUE_MISC_GPIO_VALUE_BIT);
+    wdt_enable = bitfield_bit32_read(config->gpio,
+                                     RESCUE_MISC_GPIO_WATCHDOG_TIMEOUT_EN_BIT);
   }
   dbg_printf("info: rescue protocol %c\r\n", rescue_type);
   if (protocol != rescue_type) {
     dbg_printf("warning: rescue configured for protocol %c\r\n", protocol);
   }
+
+  if (wdt_enable && bitfield_bit32_read(reset_reasons, kRstmgrReasonWatchdog)) {
+    return kHardenedBoolTrue;
+  }
+
   switch (detect) {
     case kRescueDetectNone:
       break;
