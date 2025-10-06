@@ -132,6 +132,7 @@ module tb;
     .lc_creator_seed_sw_rw_en_i (otp_ctrl_if.lc_creator_seed_sw_rw_en_i),
     .lc_owner_seed_sw_rw_en_i   (otp_ctrl_if.lc_owner_seed_sw_rw_en_i),
     .lc_seed_hw_rd_en_i         (otp_ctrl_if.lc_seed_hw_rd_en_i),
+    .lc_rma_state_i             (otp_ctrl_if.lc_rma_state_i),
     .lc_escalate_en_i           (otp_ctrl_if.lc_escalate_en_i),
     .lc_check_byp_en_i          (otp_ctrl_if.lc_check_byp_en_i),
     .otp_lc_data_o              (otp_ctrl_if.lc_data_o),

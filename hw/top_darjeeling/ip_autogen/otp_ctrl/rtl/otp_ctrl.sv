@@ -69,6 +69,7 @@ module otp_ctrl
   input                               lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_i,
   input                               lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
   input                               lc_ctrl_pkg::lc_tx_t lc_check_byp_en_i,
+  input                               lc_ctrl_pkg::lc_tx_t lc_rma_state_i,
   // OTP broadcast outputs
   // SEC_CM: TOKEN_VALID.CTRL.MUBI
   output otp_lc_data_t                               otp_lc_data_o,
@@ -175,8 +176,9 @@ module otp_ctrl
   // Life Cycle Signal Synchronization //
   ///////////////////////////////////////
 
-  lc_ctrl_pkg::lc_tx_t       lc_creator_seed_sw_rw_en, lc_owner_seed_sw_rw_en,
-                             lc_seed_hw_rd_en, lc_check_byp_en;
+  lc_ctrl_pkg::lc_tx_t lc_creator_seed_sw_rw_en, lc_owner_seed_sw_rw_en,
+                       lc_seed_hw_rd_en, lc_check_byp_en;
+  lc_ctrl_pkg::lc_tx_t [1:0] lc_rma_state;
   // NumAgents + lfsr timer and scrambling datapath.
   lc_ctrl_pkg::lc_tx_t [NumAgentsIdx+1:0] lc_escalate_en, lc_escalate_en_synced;
   // Single wire for gating assertions in arbitration and CDC primitives.
@@ -225,6 +227,15 @@ module otp_ctrl
     .rst_ni,
     .lc_en_i(lc_check_byp_en_i),
     .lc_en_o({lc_check_byp_en})
+  );
+
+  prim_lc_sync #(
+    .NumCopies(2)
+  ) u_prim_lc_sync_rma_state (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_rma_state_i),
+    .lc_en_o({lc_rma_state})
   );
 
   /////////////////////////////////////
@@ -345,6 +356,7 @@ module otp_ctrl
 
   // SEC_CM: ACCESS.CTRL.MUBI
   part_access_t [NumPart-1:0] part_access_pre, part_access;
+  part_access_t [NumPart-1:0] part_access_dai_pre, part_access_dai, part_access_dai_buf;
   always_comb begin : p_access_control
     // Assigns default and extracts named CSR read enables for SW_CFG partitions.
     // SEC_CM: PART.MEM.REGREN
@@ -372,7 +384,25 @@ module otp_ctrl
         end
       end
     end
+
+    // Final DAI access override: Allow read if in RMA life cycle.
+    // Note: This also allows read access when the partition is not fully initialized.
+    //       E.g., when there was a (digest) error during initialization.
+    for (int k = 0; k < NumPart; k++) begin
+      part_access_dai[k] = part_access_dai_pre[k];
+      if (PartInfo[k].ignore_read_lock_in_rma) begin
+        if(lc_ctrl_pkg::lc_tx_test_true_strict(lc_rma_state[0])) begin
+          part_access_dai[k].read_lock = lc_ctrl_pkg::lc_to_mubi8(
+            lc_ctrl_pkg::lc_tx_inv(lc_rma_state[1])
+          );
+        end
+      end
+    end
   end
+
+  // This stops lint from complaining about unused signals.
+  logic unused_lc_rma_state;
+  assign unused_lc_rma_state = ^lc_rma_state;
 
   // This prevents the synthesis tool from optimizing the multibit signals.
   for (genvar k = 0; k < NumPart; k++) begin : gen_bufs
@@ -391,6 +421,22 @@ module otp_ctrl
       .rst_ni,
       .mubi_i(part_access_pre[k].read_lock),
       .mubi_o(part_access[k].read_lock)
+    );
+    prim_mubi8_sender #(
+      .AsyncOn(0)
+    ) u_prim_mubi8_sender_dai_write_lock (
+      .clk_i,
+      .rst_ni,
+      .mubi_i(part_access_dai[k].write_lock),
+      .mubi_o(part_access_dai_buf[k].write_lock)
+    );
+    prim_mubi8_sender #(
+      .AsyncOn(0)
+    ) u_prim_mubi8_sender_dai_read_lock (
+      .clk_i,
+      .rst_ni,
+      .mubi_i(part_access_dai[k].read_lock),
+      .mubi_o(part_access_dai_buf[k].read_lock)
     );
   end
 
@@ -952,7 +998,6 @@ end
 
   logic                           part_init_req;
   logic [NumPart-1:0]             part_init_done;
-  part_access_t [NumPart-1:0]     part_access_dai;
   mubi8_t [NumPart-1:0]           part_zer_trigs;
   mubi8_t [NumPart-1:0]           part_is_zer;
 
@@ -989,7 +1034,7 @@ end
     .escalate_en_i    ( lc_escalate_en[DaiIdx]                ),
     .error_o          ( part_error[DaiIdx]                    ),
     .fsm_err_o        ( part_fsm_err[DaiIdx]                  ),
-    .part_access_i    ( part_access_dai                       ),
+    .part_access_i    ( part_access_dai_buf                   ),
     .dai_addr_i       ( dai_addr                              ),
     .dai_cmd_i        ( dai_cmd                               ),
     .dai_req_i        ( dai_req                               ),
@@ -1131,7 +1176,7 @@ end
         .error_o       ( part_error[k]                ),
         .fsm_err_o     ( part_fsm_err[k]              ),
         .access_i      ( part_access[k]               ),
-        .access_o      ( part_access_dai[k]           ),
+        .access_o      ( part_access_dai_pre[k]       ),
         .digest_o      ( part_digest[k]               ),
         .tlul_req_i    ( part_tlul_req[k]             ),
         .tlul_gnt_o    ( part_tlul_gnt[k]             ),
@@ -1194,7 +1239,7 @@ end
         .error_o           ( part_error[k]                   ),
         .fsm_err_o         ( part_fsm_err[k]                 ),
         .access_i          ( part_access[k]                  ),
-        .access_o          ( part_access_dai[k]              ),
+        .access_o          ( part_access_dai_pre[k]          ),
         .digest_o          ( part_digest[k]                  ),
         .data_o            ( part_buf_data[PartInfo[k].offset +: PartInfo[k].size] ),
         .otp_req_o         ( part_otp_arb_req[k]             ),
@@ -1255,7 +1300,7 @@ end
         .error_o           ( part_error[k]                   ),
         .fsm_err_o         ( part_fsm_err[k]                 ),
         .access_i          ( part_access[k]                  ),
-        .access_o          ( part_access_dai[k]              ),
+        .access_o          ( part_access_dai_pre[k]          ),
         .digest_o          ( part_digest[k]                  ),
         .data_o            ( part_buf_data[PartInfo[k].offset +: PartInfo[k].size] ),
         .otp_req_o         ( part_otp_arb_req[k]             ),

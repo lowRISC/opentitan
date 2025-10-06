@@ -73,22 +73,24 @@ package otp_ctrl_part_pkg;
     logic iskeymgr_creator; // Whether the partition has any creator key material
     logic iskeymgr_owner;   // Whether the partition has any owner key material
     logic zeroizable;       // Whether the partition can be zeroized
+    logic ignore_read_lock_in_rma; // Whether the partition can always be read in the RMA LC state
   } part_info_t;
 
   parameter part_info_t PartInfoDefault = '{
-      variant:          Unbuffered,
-      offset:           '0,
-      size:             OtpByteAddrWidth'('hFF),
-      key_sel:          key_sel_e'('0),
-      secret:           1'b0,
-      sw_digest:        1'b0,
-      hw_digest:        1'b0,
-      write_lock:       1'b0,
-      read_lock:        1'b0,
-      integrity:        1'b0,
-      iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0
+      variant:                 Unbuffered,
+      offset:                  '0,
+      size:                    OtpByteAddrWidth'('hFF),
+      key_sel:                 key_sel_e'('0),
+      secret:                  1'b0,
+      sw_digest:               1'b0,
+      hw_digest:               1'b0,
+      write_lock:              1'b0,
+      read_lock:               1'b0,
+      integrity:               1'b0,
+      iskeymgr_creator:        1'b0,
+      iskeymgr_owner:          1'b0,
+      zeroizable:              1'b0,
+      ignore_read_lock_in_rma: 1'b0
   };
 
   ////////////////////////
@@ -110,7 +112,8 @@ package otp_ctrl_part_pkg;
       integrity:        1'b0,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0
+      zeroizable:       1'b0,
+      ignore_read_lock_in_rma: 1'b0
     },
     // CREATOR_SW_CFG
     '{
@@ -126,7 +129,8 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0
+      zeroizable:       1'b0,
+      ignore_read_lock_in_rma: 1'b0
     },
     // OWNER_SW_CFG
     '{
@@ -142,7 +146,8 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0
+      zeroizable:       1'b0,
+      ignore_read_lock_in_rma: 1'b0
     },
     // ROT_CREATOR_AUTH_CODESIGN
     '{
@@ -158,7 +163,8 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0
+      zeroizable:       1'b0,
+      ignore_read_lock_in_rma: 1'b0
     },
     // ROT_CREATOR_AUTH_STATE
     '{
@@ -174,7 +180,8 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0
+      zeroizable:       1'b0,
+      ignore_read_lock_in_rma: 1'b0
     },
     // HW_CFG0
     '{
@@ -190,7 +197,8 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0
+      zeroizable:       1'b0,
+      ignore_read_lock_in_rma: 1'b0
     },
     // HW_CFG1
     '{
@@ -206,7 +214,8 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0
+      zeroizable:       1'b0,
+      ignore_read_lock_in_rma: 1'b0
     },
     // SECRET0
     '{
@@ -222,7 +231,8 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0
+      zeroizable:       1'b0,
+      ignore_read_lock_in_rma: 1'b1
     },
     // SECRET1
     '{
@@ -238,7 +248,8 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0
+      zeroizable:       1'b0,
+      ignore_read_lock_in_rma: 1'b1
     },
     // SECRET2
     '{
@@ -254,7 +265,8 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b1,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0
+      zeroizable:       1'b0,
+      ignore_read_lock_in_rma: 1'b1
     },
     // LIFE_CYCLE
     '{
@@ -270,7 +282,8 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0
+      zeroizable:       1'b0,
+      ignore_read_lock_in_rma: 1'b0
     }
   };
 

@@ -67,6 +67,7 @@ class lc_ctrl_common_vseq extends lc_ctrl_base_vseq;
       `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_iso_part_sw_rd_en_o, lc_ctrl_pkg::Off)
       `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_iso_part_sw_wr_en_o, lc_ctrl_pkg::Off)
       `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_seed_hw_rd_en_o, lc_ctrl_pkg::Off)
+      `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_rma_state_o, lc_ctrl_pkg::Off)
       `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_keymgr_en_o, lc_ctrl_pkg::Off)
       `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_escalate_en_o, lc_ctrl_pkg::On)
       `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_check_byp_en_o, lc_ctrl_pkg::Off)

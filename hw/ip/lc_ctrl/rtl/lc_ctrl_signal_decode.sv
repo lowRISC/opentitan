@@ -42,6 +42,7 @@ module lc_ctrl_signal_decode
   output lc_tx_t         lc_iso_part_sw_rd_en_o,
   output lc_tx_t         lc_iso_part_sw_wr_en_o,
   output lc_tx_t         lc_seed_hw_rd_en_o,
+  output lc_tx_t         lc_rma_state_o,
   output lc_tx_t         lc_keymgr_en_o,
   output lc_tx_t         lc_escalate_en_o,
   // State group diversification value for keymgr
@@ -57,6 +58,7 @@ module lc_ctrl_signal_decode
           lc_escalate_en;
   lc_tx_t lc_creator_seed_sw_rw_en, lc_owner_seed_sw_rw_en, lc_iso_part_sw_rd_en;
   lc_tx_t lc_iso_part_sw_wr_en, lc_seed_hw_rd_en;
+  lc_tx_t lc_rma_state;
   lc_keymgr_div_t lc_keymgr_div_d, lc_keymgr_div_q;
 
   always_comb begin : p_lc_signal_decode
@@ -72,6 +74,7 @@ module lc_ctrl_signal_decode
     lc_iso_part_sw_rd_en     = Off;
     lc_iso_part_sw_wr_en     = Off;
     lc_seed_hw_rd_en         = Off;
+    lc_rma_state             = Off;
     lc_keymgr_en             = Off;
     // This ensures that once escalation has been triggered, it cannot go back to Off.
     lc_escalate_en           = lc_tx_or_hi(Off, lc_escalate_en_o);
@@ -189,6 +192,7 @@ module lc_ctrl_signal_decode
               lc_iso_part_sw_wr_en     = On;
               lc_iso_part_sw_rd_en     = On;
               lc_seed_hw_rd_en         = On;
+              lc_rma_state             = On;
               lc_keymgr_div_d          = RndCnstLcKeymgrDivRma;
             end
             ///////////////////////////////////////////////////////////////////
@@ -300,6 +304,12 @@ module lc_ctrl_signal_decode
     .lc_en_i(lc_seed_hw_rd_en),
     .lc_en_o(lc_seed_hw_rd_en_o)
   );
+  prim_lc_sender u_prim_lc_sender_rma_state (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_rma_state),
+    .lc_en_o(lc_rma_state_o)
+  );
   prim_lc_sender u_prim_lc_sender_keymgr_en (
     .clk_i,
     .rst_ni,
@@ -364,6 +374,7 @@ module lc_ctrl_signal_decode
       lc_tx_test_false_strict(lc_iso_part_sw_rd_en_o) &&
       lc_tx_test_false_strict(lc_iso_part_sw_wr_en_o) &&
       lc_tx_test_false_strict(lc_seed_hw_rd_en_o) &&
+      lc_tx_test_false_strict(lc_rma_state_o) &&
       lc_tx_test_false_strict(lc_keymgr_en_o) &&
       lc_tx_test_false_strict(lc_dft_en_o) &&
       lc_keymgr_div_o == RndCnstLcKeymgrDivInvalid)

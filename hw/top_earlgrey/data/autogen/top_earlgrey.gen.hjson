@@ -1973,6 +1973,23 @@
           index: -1
         }
         {
+          name: lc_rma_state
+          desc:
+            '''
+            This signal states whether the current life cycle is RMA.
+            It is used to enable SW read access to (read-locked) partitions in the RMA state.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: otp_ctrl
+          top_signame: lc_ctrl_lc_rma_state
+          index: -1
+        }
+        {
           name: lc_check_byp_en
           desc:
             '''
@@ -2911,6 +2928,20 @@
           end_idx: -1
           top_type: broadcast
           top_signame: lc_ctrl_lc_seed_hw_rd_en
+          index: -1
+        }
+        {
+          name: lc_rma_state
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: lc_ctrl
+          end_idx: -1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_rma_state
           index: -1
         }
         {
@@ -10193,6 +10224,10 @@
       [
         otp_ctrl.lc_seed_hw_rd_en
         flash_ctrl.lc_seed_hw_rd_en
+      ]
+      lc_ctrl.lc_rma_state:
+      [
+        otp_ctrl.lc_rma_state
       ]
       otp_ctrl.otp_macro:
       [
@@ -19721,6 +19756,23 @@
         index: -1
       }
       {
+        name: lc_rma_state
+        desc:
+          '''
+          This signal states whether the current life cycle is RMA.
+          It is used to enable SW read access to (read-locked) partitions in the RMA state.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: otp_ctrl
+        top_signame: lc_ctrl_lc_rma_state
+        index: -1
+      }
+      {
         name: lc_check_byp_en
         desc:
           '''
@@ -20405,6 +20457,20 @@
         end_idx: -1
         top_type: broadcast
         top_signame: lc_ctrl_lc_seed_hw_rd_en
+        index: -1
+      }
+      {
+        name: lc_rma_state
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: lc_ctrl
+        end_idx: -1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_rma_state
         index: -1
       }
       {
@@ -26998,6 +27064,17 @@
         package: lc_ctrl_pkg
         struct: lc_tx
         signame: lc_ctrl_lc_seed_hw_rd_en
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_rma_state
         width: 1
         type: uni
         end_idx: -1

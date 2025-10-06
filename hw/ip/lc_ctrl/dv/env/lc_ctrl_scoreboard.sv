@@ -79,6 +79,11 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
           exp_lc_o.lc_seed_hw_rd_en_o = lc_ctrl_pkg::Off;
         end
 
+        // lc_rma_state_o is OFF when not in RMA state
+        if (lc_state != DecLcStRma) begin
+          exp_lc_o.lc_rma_state_o = lc_ctrl_pkg::Off;
+        end
+
         // lc_seed_hw_rd_en copies otp_secrets_valid in certain states
         if (cfg.err_inj.otp_secrets_valid_mubi_err && lc_state_e'(cfg.lc_ctrl_vif.otp_i.state)
             inside {LcStProd, LcStProdEnd, LcStDev}) begin
@@ -245,6 +250,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_iso_part_sw_rd_en_o, exp_o.lc_iso_part_sw_rd_en_o, msg)
     `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_iso_part_sw_wr_en_o, exp_o.lc_iso_part_sw_wr_en_o, msg)
     `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_seed_hw_rd_en_o, exp_o.lc_seed_hw_rd_en_o, msg)
+    `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_rma_state_o, exp_o.lc_rma_state_o, msg)
     `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_creator_seed_sw_rw_en_o, exp_o.lc_creator_seed_sw_rw_en_o, msg)
     `DV_CHECK_EQ(cfg.lc_ctrl_vif.clk_byp_req_o, exp_clk_byp_req, msg)
     `DV_CHECK_EQ(cfg.lc_ctrl_vif.keymgr_div_o, exp_div_o, msg)

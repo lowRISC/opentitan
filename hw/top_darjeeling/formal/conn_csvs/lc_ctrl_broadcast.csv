@@ -57,6 +57,7 @@ CONNECTION, LC_CHECK_BYP_EN_OTP,  top_darjeeling.u_lc_ctrl,  lc_check_byp_en_o, 
 # Verify lc_ctrl's access control modulation signals are correctly connected to flash and OTP.
 CONNECTION, LC_CREATOR_SEED_SW_RW_EN_OTP,   top_darjeeling.u_lc_ctrl, lc_creator_seed_sw_rw_en_o, top_darjeeling.u_otp_ctrl,   lc_creator_seed_sw_rw_en_i
 CONNECTION, LC_SEED_HW_RD_EN_OTP,           top_darjeeling.u_lc_ctrl, lc_seed_hw_rd_en_o,         top_darjeeling.u_otp_ctrl,   lc_seed_hw_rd_en_i
+CONNECTION, LC_RMA_STATE_OTP,               top_darjeeling.u_lc_ctrl, lc_rma_state_o,             top_darjeeling.u_otp_ctrl,   lc_rma_state_i
 CONNECTION, LC_CREATOR_SEED_SW_RW_EN_FLASH, top_darjeeling.u_lc_ctrl, lc_creator_seed_sw_rw_en_o, top_darjeeling.u_flash_ctrl, lc_creator_seed_sw_rw_en_i
 CONNECTION, LC_SEED_HW_RD_EN_FLASH,         top_darjeeling.u_lc_ctrl, lc_seed_hw_rd_en_o,         top_darjeeling.u_flash_ctrl, lc_seed_hw_rd_en_i
 CONNECTION, LC_OWNER_SEED_SW_RW_EN_FLASH,   top_darjeeling.u_lc_ctrl, lc_owner_seed_sw_rw_en_o,   top_darjeeling.u_flash_ctrl, lc_owner_seed_sw_rw_en_i

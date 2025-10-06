@@ -99,6 +99,7 @@ module lc_ctrl
   output lc_tx_t                                     lc_iso_part_sw_rd_en_o,
   output lc_tx_t                                     lc_iso_part_sw_wr_en_o,
   output lc_tx_t                                     lc_seed_hw_rd_en_o,
+  output lc_tx_t                                     lc_rma_state_o,
   output lc_tx_t                                     lc_keymgr_en_o,
   output lc_tx_t                                     lc_escalate_en_o,
   output lc_tx_t                                     lc_check_byp_en_o,
@@ -824,6 +825,7 @@ module lc_ctrl
     .lc_iso_part_sw_rd_en_o,
     .lc_iso_part_sw_wr_en_o,
     .lc_seed_hw_rd_en_o,
+    .lc_rma_state_o,
     .lc_keymgr_en_o,
     .lc_escalate_en_o,
     .lc_check_byp_en_o,
@@ -853,6 +855,7 @@ module lc_ctrl
   `ASSERT_KNOWN(LcIsoSwRwEn_A,          lc_iso_part_sw_rd_en_o     )
   `ASSERT_KNOWN(LcIsoSwWrEn_A,          lc_iso_part_sw_wr_en_o     )
   `ASSERT_KNOWN(LcSeedHwRdEn_A,         lc_seed_hw_rd_en_o         )
+  `ASSERT_KNOWN(LcRmaState_A,           lc_rma_state_o             )
   `ASSERT_KNOWN(LcKeymgrEnKnown_A,      lc_keymgr_en_o             )
   `ASSERT_KNOWN(LcEscalateEnKnown_A,    lc_escalate_en_o           )
   `ASSERT_KNOWN(LcCheckBypassEnKnown_A, lc_check_byp_en_o          )
