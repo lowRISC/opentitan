@@ -437,7 +437,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
           end else begin
             sw_images[i] = $sformatf("%0s_%0s", sw_images[i], sw_build_device);
           end
-        end else if (i inside {SwTypeTestSlotA, SwTypeTestSlotB}) begin
+        end else if (i inside {SwTypeTestSlotA, SwTypeTestSlotB, SwTypeMultiSlot}) begin
           // If the tag `silicon_creator` is inside the list of flags, we want
           // to use a flash image built for the `silicon_creator` device. This
           // is used for GLS tests that integrate the ROM macro, which is built
