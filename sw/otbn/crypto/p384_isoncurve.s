@@ -23,31 +23,35 @@
  * abort the OTBN program. If the flag is 1, the routine will essentially do
  * nothing.
  *
- * NOTE: Be careful when calling this routine that the FG0.Z flag is not/**
- * Trigger a fault if the FG0.Z flag is 0.
+ * NOTE: Be careful when calling this routine that the FG0.Z flag is not
+ * sensitive; since aborting the program will be quicker than completing it,
+ * the flag's value is likely clearly visible to an attacker through timing.
  *
  * @param[in]    w31: all-zero
  * @param[in]  FG0.Z: boolean indicating fault condition
  *
- * clobbered registers: x2
+ * clobbered registers: x2, x3
  * clobbered flag groups: none
  */
- .globl trigger_fault_if_fg0_not_z
+.globl trigger_fault_if_fg0_not_z
 trigger_fault_if_fg0_not_z:
-  /* Fail if FG0.Z is false. */
-  csrrs     x2, FG0, x0
-  srli      x2, x2, 3
-  andi      x2, x2, 1
-  bne       x2, x0, _pt_reg_valid
-  jal       x0, p384_invalid_input
+  /* Read the FG0.Z flag (position 3).
+       x2 <= FG0.Z */
+  csrrw     x2, FG0, x0
+  andi      x2, x2, 8
+  slli      x2, x2, 3
 
-  /* Extra unimps in case an attacker tries to skip the jump, since this one is
-     especially critical. */
-  unimp
-  unimp
-  unimp
+  /* The `bn.lid` instruction causes an `BAD_DATA_ADDR` error if the
+     memory address is out of bounds. Therefore, if FG0.Z is 1, this
+     instruction causes an error, but if FG0.Z is 0 it simply loads the word at
+     address 0 into w31. */
+  li         x3, 31
+  bn.lid     x3, 0(x2)
 
-  _pt_reg_valid:
+  /* If we get here, the flag must have been 1. Restore w31 to zero and return.
+       w31 <= 0 */
+  bn.xor     w31, w31, w31
+
   ret
 
 /**
@@ -208,16 +212,11 @@ p384_isoncurve_check:
 
   /* Compare the two sides of the equation.
        FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
-  bn.sub    w0, w4, w6
-  bn.subb   w1, w5, w7
-
-  bn.cmp    w0, w31
-
+  bn.cmp    w4, w6
   /* Fail if FG0.Z is false. */
   jal       x1, trigger_fault_if_fg0_not_z
 
-  bn.cmp    w1, w31
-
+  bn.cmp    w5, w7
   /* Fail if FG0.Z is false. */
   jal       x1, trigger_fault_if_fg0_not_z
 
@@ -303,8 +302,63 @@ p384_check_public_key:
   unimp
 
   _y_valid:
-  jal       x1, p384_isoncurve_check
+  /* Fill gpp registers with pointers to variables */
+  la        x22, rhs
+  la        x23, lhs
 
+  /* Compute both sides of the Weierstrauss equation.
+       dmem[rhs] <= (x^3 + ax + b) mod p
+       dmem[lhs] <= (y^2) mod p */
+  jal       x1, p384_isoncurve
+
+  /* Load both sides of the equation.
+       [w7, w6] <= dmem[rhs]
+       [w5, w4] <= dmem[lhs] */
+  li        x2, 6
+  bn.lid    x2++, 0(x22)
+  bn.lid    x2, 32(x22)
+  li        x2, 4
+  bn.lid    x2++, 0(x23)
+  bn.lid    x2, 32(x23)
+
+  /* Compare the two sides of the equation.
+       FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
+  bn.cmp    w4, w6
+  /* Fail if FG0.Z is false. */
+  jal       x1, trigger_input_error_if_fg0_not_z
+
+  bn.cmp    w5, w7
+  /* Fail if FG0.Z is false. */
+  jal       x1, trigger_input_error_if_fg0_not_z
+
+  ret
+
+
+/**
+ * If the flag is 0, then this routine will sets `ok` to false and end the
+ * execution of the OTBN program. If the flag is 1, the routine will
+ * essentially do nothing.
+ *
+ * @param[in]  FG0.Z: boolean indicating fault condition
+ *
+ * clobbered registers: x2
+ * clobbered flag groups: none
+ */
+trigger_input_error_if_fg0_not_z:
+  /* Fail if FG0.Z is false. */
+  csrrs     x2, FG0, x0
+  srli      x2, x2, 3
+  andi      x2, x2, 1
+  bne       x2, x0, _pt_reg_valid
+  jal       x0, p384_invalid_input
+
+  /* Extra unimps in case an attacker tries to skip the jump, since this one is
+     especially critical. */
+  unimp
+  unimp
+  unimp
+
+  _pt_reg_valid:
   ret
 
 /**
