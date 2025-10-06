@@ -4,6 +4,9 @@
 
 #include "sw/device/silicon_creator/lib/rescue/rescue.h"
 
+#include "hw/top/dt/aon_timer.h"
+#include "hw/top/dt/api.h"
+#include "hw/top/dt/rstmgr.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
@@ -397,7 +400,8 @@ void rescue_skip_next_boot(void) {
   boot_svc_enter_rescue_req_init(kHardenedBoolTrue, &msg->enter_rescue_req);
 }
 
-hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config) {
+hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config,
+                                    uint32_t reset_reasons) {
   switch (rescue_requested) {
     case kRescueRequestEnter:
       return kHardenedBoolTrue;
@@ -410,16 +414,26 @@ hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config) {
   rescue_detect_t detect = kRescueDetectBreak;
   uint32_t index = 0;
   uint32_t gpio_val = 0;
+  uint32_t wdt_enable = 0;
   if ((hardened_bool_t)config != kHardenedBoolFalse) {
     protocol = config->protocol;
     detect = bitfield_field32_read(config->detect, RESCUE_DETECT);
     index = bitfield_field32_read(config->detect, RESCUE_DETECT_INDEX);
     gpio_val = bitfield_bit32_read(config->gpio, RESCUE_MISC_GPIO_VALUE_BIT);
+    wdt_enable = bitfield_bit32_read(config->gpio,
+                                     RESCUE_MISC_GPIO_WATCHDOG_TIMEOUT_EN_BIT);
   }
   dbg_printf("info: rescue protocol %c\r\n", rescue_type);
   if (protocol != rescue_type) {
     dbg_printf("warning: rescue configured for protocol %c\r\n", protocol);
   }
+
+  if (wdt_enable && rstmgr_is_hw_reset_reason(kDtRstmgrAon, reset_reasons,
+                                              kDtInstanceIdAonTimerAon,
+                                              kDtAonTimerResetReqAonTimer)) {
+    return kHardenedBoolTrue;
+  }
+
   switch (detect) {
     case kRescueDetectNone:
       break;
