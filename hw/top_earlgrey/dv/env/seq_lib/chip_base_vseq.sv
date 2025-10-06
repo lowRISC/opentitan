@@ -266,6 +266,36 @@ class chip_base_vseq #(
     end
   endtask
 
+  // Monitor items received from the UART console, whenever a EOL-sequence is received (CR)LF, print
+  // all received bytes as a string and clear the item queue.
+  task print_uart_console_items(int uart_idx = 0);
+    byte byte_q[$];
+    bit [7:0] CR = 8'hd;
+    bit [7:0] LF = 8'ha;
+    `uvm_info(`gfn, $sformatf("Monitoring console messages on UART%0d...", uart_idx), UVM_LOW)
+    forever begin
+      uart_item item;
+      p_sequencer.uart_tx_fifos[uart_idx].get(item);
+      `uvm_info(`gfn, $sformatf("Agent received UART%0d byte: 8'h%0h / %0s",
+        uart_idx, item.data, item.data), UVM_FULL)
+      byte_q.push_back(item.data);
+      // If we're at the EOL, print
+      if (byte_q[$] == LF) begin
+        // Drop LF (and CR if present) before printing
+        byte_q.pop_back();
+        if (byte_q[$] == CR) byte_q.pop_back();
+        // Print the console message
+        begin
+          string str = "";
+          for (int i = 0; i < byte_q.size(); i++) $sformat(str, "%s%0s", str, byte_q[i]);
+          `uvm_info(`gfn, $sformatf("UART%0d sent console msg: %0s", uart_idx, str), UVM_MEDIUM);
+        end
+        // Clear the queue, ready for the next message
+        byte_q.delete();
+      end
+    end
+  endtask
+
   // Shorten the alert handler ping timer wait cycles.
   //
   // This is done to speed up the simulation while achieving coverage on alert pings to various
