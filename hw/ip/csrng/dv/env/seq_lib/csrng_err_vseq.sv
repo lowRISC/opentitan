@@ -101,7 +101,7 @@ class csrng_err_vseq extends csrng_base_vseq;
     case (cfg.which_err_code) inside
       sfifo_cmd_err, sfifo_genbits_err, sfifo_rcstage_err, sfifo_keyvrc_err,
       sfifo_final_err, sfifo_gbencack_err, sfifo_grcstage_err,
-      sfifo_gadstage_err, sfifo_ggenbits_err, sfifo_cmdid_err, sfifo_updreq_err,
+      sfifo_gadstage_err, sfifo_ggenbits_err, sfifo_cmdid_err,
       sfifo_bencack_err, sfifo_ggenreq_err: begin
         fld = csr.get_field_by_name(fld_name);
         fifo_base_path = fld_name.substr(0, last_index-1);
@@ -114,8 +114,8 @@ class csrng_err_vseq extends csrng_base_vseq;
         `uvm_info(`gfn, $sformatf("Forcing this FIFO error type %s", cfg.which_fifo_err.name()),
                   UVM_MEDIUM)
 
-        if (cfg.which_err_code == sfifo_updreq_err || cfg.which_err_code == sfifo_bencack_err ||
-            cfg.which_err_code == sfifo_ggenreq_err) begin
+        if (cfg.which_err_code == sfifo_ggenreq_err ||
+            cfg.which_err_code == sfifo_bencack_err) begin
           force_all_fifo_errs_exception(fifo_forced_paths, fifo_forced_values, path_exts, fld,
                                         1'b1, cfg.which_fifo_err);
 
@@ -263,9 +263,7 @@ class csrng_err_vseq extends csrng_base_vseq;
         value2 = fifo_err_value[1][path_key];
 
         if (cfg.which_err_code == fifo_read_error &&
-           ((cfg.which_fifo == sfifo_ggenreq) || (cfg.which_fifo == sfifo_bencack) ||
-            (cfg.which_fifo == sfifo_updreq)))
-        begin
+           ((cfg.which_fifo == sfifo_ggenreq) || (cfg.which_fifo == sfifo_bencack))) begin
           force_fifo_err_exception(path1, path2, 1'b1, 1'b0, 1'b0, fld, 1'b1);
 
         // For sfifo_gadstage the down stream FIFO also takes inputs from sources other than
@@ -304,7 +302,7 @@ class csrng_err_vseq extends csrng_base_vseq;
         cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
       end
       sfifo_cmd_err_test, sfifo_genbits_err_test, sfifo_rcstage_err_test,
-      sfifo_keyvrc_err_test, sfifo_updreq_err_test, sfifo_bencack_err_test,
+      sfifo_keyvrc_err_test, sfifo_bencack_err_test,
       sfifo_final_err_test, sfifo_gbencack_err_test, sfifo_grcstage_err_test,
       sfifo_ggenreq_err_test, sfifo_gadstage_err_test, sfifo_ggenbits_err_test,
       sfifo_cmdid_err_test, cmd_stage_sm_err_test, main_sm_err_test, drbg_gen_sm_err_test,
