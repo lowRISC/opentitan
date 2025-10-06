@@ -571,8 +571,10 @@ rom_error_t owner_block_info_isfb_erase_enable(
 rom_error_t owner_block_rescue_apply(const owner_rescue_config_t *rescue) {
   rescue_detect_t detect = bitfield_field32_read(rescue->detect, RESCUE_DETECT);
   uint32_t index = bitfield_field32_read(rescue->detect, RESCUE_DETECT_INDEX);
-  bool pull_en = bitfield_bit32_read(rescue->gpio, RESCUE_GPIO_PULL_EN_BIT);
-  bool gpio_value = bitfield_bit32_read(rescue->gpio, RESCUE_GPIO_VALUE_BIT);
+  bool pull_en =
+      bitfield_bit32_read(rescue->gpio, RESCUE_MISC_GPIO_PULL_EN_BIT);
+  bool gpio_value =
+      bitfield_bit32_read(rescue->gpio, RESCUE_MISC_GPIO_VALUE_BIT);
   switch (detect) {
     case kRescueDetectGpio:
       if (index <= kTopEarlgreyMuxedPadsLast) {

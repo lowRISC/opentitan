@@ -110,8 +110,8 @@
 
 // The following preprocessor symbols are only relevant when
 // WITH_RESCUE_PROTOCOL is defined.
-#ifndef WITH_RESCUE_GPIO_PARAM
-#define WITH_RESCUE_GPIO_PARAM 0
+#ifndef WITH_RESCUE_MISC_GPIO_PARAM
+#define WITH_RESCUE_MISC_GPIO_PARAM 0
 #endif
 #ifndef WITH_RESCUE_INDEX
 #define WITH_RESCUE_INDEX 0
@@ -279,7 +279,7 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
               .length = sizeof(owner_rescue_config_t),
           },
       .protocol = WITH_RESCUE_PROTOCOL,
-      .gpio = WITH_RESCUE_GPIO_PARAM,
+      .gpio = WITH_RESCUE_MISC_GPIO_PARAM,
       .timeout = WITH_RESCUE_TIMEOUT,
       .detect = (WITH_RESCUE_TRIGGER << 6) | WITH_RESCUE_INDEX,
       .start = WITH_RESCUE_START,

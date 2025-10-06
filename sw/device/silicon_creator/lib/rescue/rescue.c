@@ -414,7 +414,7 @@ hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config) {
     protocol = config->protocol;
     detect = bitfield_field32_read(config->detect, RESCUE_DETECT);
     index = bitfield_field32_read(config->detect, RESCUE_DETECT_INDEX);
-    gpio_val = bitfield_bit32_read(config->gpio, RESCUE_GPIO_VALUE_BIT);
+    gpio_val = bitfield_bit32_read(config->gpio, RESCUE_MISC_GPIO_VALUE_BIT);
   }
   dbg_printf("info: rescue protocol %c\r\n", rescue_type);
   if (protocol != rescue_type) {
