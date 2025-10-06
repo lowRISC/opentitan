@@ -58,16 +58,11 @@ p384_isoncurve_proj_check:
 
   /* Compare the two sides of the equation.
        FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
-  bn.sub    w0, w4, w2
-  bn.subb   w1, w5, w3
-
-  bn.cmp    w0, w31
-
+  bn.cmp    w4, w2
   /* Fail if FG0.Z is false. */
   jal       x1, trigger_fault_if_fg0_not_z
 
-  bn.cmp    w1, w31
-
+  bn.cmp    w5, w3
   /* Fail if FG0.Z is false. */
   jal       x1, trigger_fault_if_fg0_not_z
 
