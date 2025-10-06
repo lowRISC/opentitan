@@ -140,13 +140,16 @@
   reseed: 3
 
   // exports: [
+  //
   //   Uncomment if using manufacturer tests / test hooks that live somewhere
   //   else on your system, outside of $REPO_TOP. See
   //   sw/device/tests/closed_source/README.md for more details.
   //   {MANUFACTURER_HOOKS_DIR: "/path/to/manufacturer_hooks_dir"},
+  //
   //   Uncomment if you are using the `--data-perm` OTP image generation flag,
   //   when building OTP images with Bazel.
   //   {BAZEL_OTP_DATA_PERM_FLAG: "[15:0],[23:16]"},
+  //
   // ]
 
   // Default UVM test and seq class name.
@@ -171,26 +174,37 @@
       build_opts: ["+define+PADTEST"]
       is_sim_mode: 1
     }
-    // Sim mode that enables build randomization. See the `build_seed` mode
-    // defined in `hw/dv/tools/dvsim/common_modes.hjson` for more details.
+    // build/sim_mode that enables build randomization.
     {
       name: build_seed
       pre_build_cmds: [
-        // TODO: find where in run phase we are using this pkg. It fails during ibex TLUL integrity
-        // check.
-        // '''cd {proj_root} && ./util/topgen.py -t {ral_spec} \
-        //        -o hw/top_earlgrey --rnd_cnst_seed {seed}
+        // Save build_seed in a file, so it can be re-used in the run phase.
+        // (Create the build directory first because eval_cmd runs before actual
+        // build phase command execution.)
+        // This is only necessary for passing the build_seed through to the
+        // 'gen_otp_images_cmd', which occurs in the 'run' phase.
+        '''{eval_cmd} \
+           mkdir -p {build_dir}; \
+           echo {seed} > {build_seed_file_path}; \
+           echo "echo \"#########################################\" && \
+                 echo \"### ENABLED build mode - [build_seed] ###\" && \
+                 echo \"#########################################\" && \
+                 echo \"build_seed      : {seed}\" && \
+                 echo \"build_seed file : {build_seed_file_path}\""
+        ''',
+        // TODO(#16719): find where in run phase we are using this pkg.
+        // It fails during ibex TLUL integrity check.
+        // '''
+        //    cd {proj_root} && \
+        //      ./util/topgen.py \
+        //        -t {ral_spec} \
+        //        -o hw/top_earlgrey \
+        //        --rnd_cnst_seed {seed}
         // ''',
-        // Generate LC encoding
+        // Generate SV package containing LC state encodings.
         "cd {proj_root} && ./util/design/gen-lc-state-enc.py --seed {seed}",
-        // Generate OTP memory map and scrambling constants keys.
+        // Generate SV package containing OTP memory map and scrambling seeds.
         "cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {seed}",
-        // Use eval_cmd to save build_seed in a file and reuse that file during run phase.
-        // Create the build directory first because eval_cmd runs before actual build phase command
-        // execution.
-        '''{eval_cmd} mkdir -p {build_dir}; echo {seed} > {build_seed_file_path}; \
-           echo "echo create file {build_seed_file_path}"
-        '''
       ]
       is_sim_mode: 1
     }
@@ -234,16 +248,27 @@
   gen_otp_images_cfg_dir: "{proj_root}/hw/ip/otp_ctrl/data"
   gen_otp_images_cmd: "{proj_root}/util/design/gen-otp-img.py"
   gen_otp_images_cmd_opts: ["--quiet",
+                            // Overwrite the default seed to fix randomization for reproducibility
+                            //
+                            // --img-seed {seed}   # Overrides the default seed from the otp_ctrl_img_{LC}.hjson file
+                            //
                             "--img-seed {seed}",
-                            // Only provide `--otp-seed` argument if the file to store build_seed
-                            // is found. Set this option at the end of the list to avoid `eval_cmd`
-                            // take other options as eval_cmd.
-                            '''{eval_cmd} file=`echo {build_seed_file_path}`; \
+                            // If a {build_seed} was passed in the build phase (via --build-seed),
+                            // reload it from the on-disk file, and pass the value into the OTP
+                            // preload image generation script.
+                            //
+                            // --otp-seed {build_seed}    # Overrides the default seed from the mmap.hjson file
+                            // --lc-seed {build_seed}     # Overrides the default seed from the lc_ctrl_state.hjson file
+                            //
+                            '''{eval_cmd} \
+                               file=`echo {build_seed_file_path}`; \
                                if [ -f $file ]; then \
-                                 while read line; do \
-                                   echo "--otp-seed $line --lc-seed $line"; \
+                                 while read build_seed; do \
+                                   echo "--otp-seed $build_seed --lc-seed $build_seed"; \
                                  done < $file; \
-                               fi ''']
+                               fi
+                            '''
+                           ]
 
   // TODO(lowrisc/opentitan#16689): Enable cdc instrumentation.
   run_opts: ["+cdc_instrumentation_enabled=1"]

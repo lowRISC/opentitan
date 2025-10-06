@@ -14,7 +14,15 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Write logs from sw test to separate log file as well, in addition to the simulator log file.
   bit                 write_sw_logs_to_file = 1'b1;
 
-  // use spi or backdoor to load bootstrap on the next boot
+  // When set, bootstrap a flash image on the next boot using either:
+  // - ROM SPI bootstrap routine, or
+  // - Backdoor memory model access
+  // If frontdoor-loading via the ROM SPI bootstrap mechanism, the sw_straps will be set at the
+  // point the test_rom begins executing, and cleared after the bootstrap has completed.
+  // This config knob is cleared after a ROM SPI bootstrap has completed, and hence setting it to
+  // 1 via the plusarg +use_spi_load_bootstrap=1 will only enable the bootstrap process for the
+  // first boot. To re-use this mechanism for subsequent boots in the same simulation, the stimulus
+  // sequence should set this bit again before applying reset.
   bit                 use_spi_load_bootstrap = 0;
 
   // skip ROM backdoor loading (when using ROM macro block)
@@ -229,17 +237,17 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
     // By default, assume these OTP image paths.
     // A customized OTP image may be specified loaded via the `sw_images` plusarg.
-    otp_images[OtpTypeLcStRaw] = "otp_ctrl_img_raw.vmem";
-    otp_images[OtpTypeLcStDev] = "otp_ctrl_img_dev.vmem";
-    otp_images[OtpTypeLcStProd] = "otp_ctrl_img_prod.vmem";
-    otp_images[OtpTypeLcStRma] = "otp_ctrl_img_rma.vmem";
+    otp_images[OtpTypeLcStRaw]           = "otp_ctrl_img_raw.vmem";
+    otp_images[OtpTypeLcStDev]           = "otp_ctrl_img_dev.vmem";
+    otp_images[OtpTypeLcStProd]          = "otp_ctrl_img_prod.vmem";
+    otp_images[OtpTypeLcStRma]           = "otp_ctrl_img_rma.vmem";
     otp_images[OtpTypeLcStTestUnlocked0] = "otp_ctrl_img_test_unlocked0.vmem";
     otp_images[OtpTypeLcStTestUnlocked1] = "otp_ctrl_img_test_unlocked1.vmem";
     otp_images[OtpTypeLcStTestUnlocked2] = "otp_ctrl_img_test_unlocked2.vmem";
-    otp_images[OtpTypeLcStTestLocked0] = "otp_ctrl_img_test_locked0.vmem";
-    otp_images[OtpTypeLcStTestLocked1] = "otp_ctrl_img_test_locked1.vmem";
-    otp_images[OtpTypeCustom] = "";
-    otp_images[OtpNone] = "";
+    otp_images[OtpTypeLcStTestLocked0]   = "otp_ctrl_img_test_locked0.vmem";
+    otp_images[OtpTypeLcStTestLocked1]   = "otp_ctrl_img_test_locked1.vmem";
+    otp_images[OtpTypeCustom]            = "";
+    otp_images[OtpNone]                  = "";
 
     `DV_CHECK_LE_FATAL(num_ram_main_tiles, 16)
     `DV_CHECK_LE_FATAL(num_ram_ret_tiles, 16)
