@@ -41,7 +41,6 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
 
   // Error status outputs
   output logic             ctr_err_o,
-  output logic       [2:0] fifo_updreq_err_o,
   output logic       [2:0] fifo_bencack_err_o,
   output logic       [2:0] fifo_final_err_o,
   output logic             sm_block_enc_req_err_o,
@@ -49,16 +48,6 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
 );
 
   // signals
-  // updreq fifo
-  logic                     sfifo_updreq_wvld;
-  logic                     sfifo_updreq_wrdy;
-  logic  [UpdDataWidth-1:0] sfifo_updreq_wdata;
-  logic                     sfifo_updreq_rvld;
-  logic                     sfifo_updreq_rrdy;
-  logic  [UpdDataWidth-1:0] sfifo_updreq_rdata;
-
-  csrng_upd_data_t          req_data_fifo;
-
   // blk_encrypt_ack fifo
   logic                     sfifo_bencack_wvld;
   logic                     sfifo_bencack_wrdy;
@@ -182,41 +171,6 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   end
 
   //--------------------------------------------
-  // input request fifo for staging update requests
-  //--------------------------------------------
-
-  prim_fifo_sync #(
-    .Width(UpdDataWidth),
-    .Pass(0),
-    .Depth(1),
-    .OutputZeroIfEmpty(1'b0)
-  ) u_prim_fifo_sync_updreq (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .clr_i   (!enable_i),
-    .wvalid_i(sfifo_updreq_wvld),
-    .wready_o(sfifo_updreq_wrdy),
-    .wdata_i (sfifo_updreq_wdata),
-    .rvalid_o(sfifo_updreq_rvld),
-    .rready_i(sfifo_updreq_rrdy),
-    .rdata_o (sfifo_updreq_rdata),
-    .full_o  (),
-    .depth_o (),
-    .err_o   ()
-  );
-
-  assign sfifo_updreq_wvld  = sfifo_updreq_wrdy && req_vld_i;
-  assign sfifo_updreq_wdata = req_data_i;
-  assign req_rdy_o          = sfifo_updreq_wrdy;
-
-  assign req_data_fifo = sfifo_updreq_rdata;
-
-  assign fifo_updreq_err_o = {
-         ( sfifo_updreq_wvld && !sfifo_updreq_wrdy),
-         ( sfifo_updreq_rrdy && !sfifo_updreq_rvld),
-         (!sfifo_updreq_wrdy && !sfifo_updreq_rvld)};
-
-  //--------------------------------------------
   // prepare value for block_encrypt step
   //--------------------------------------------
 
@@ -224,10 +178,10 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   // violates the redundant counter encoding listed as a SEC_CM below.
   if (CtrLen < BlkLen) begin : g_ctr_load_lsb
     logic [CtrLen-1:0] v_inc;
-    assign v_inc  = req_data_fifo.v[CtrLen-1:0] + 1;
-    assign v_load = {req_data_fifo.v[BlkLen-1:CtrLen], v_inc};
+    assign v_inc  = req_data_i.v[CtrLen-1:0] + 1;
+    assign v_load = {req_data_i.v[BlkLen-1:CtrLen], v_inc};
   end else begin : g_ctr_load_full
-    assign v_load = req_data_fifo.v + 1;
+    assign v_load = req_data_i.v + 1;
   end
 
   // SEC_CM: DRBG_UPD.CTR.REDUN
@@ -298,7 +252,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
           blk_enc_state_d = ESHalt;
         end else if (!enable_i) begin
           blk_enc_state_d = ReqIdle;
-        end else if (sfifo_updreq_rvld) begin
+        end else if (req_vld_i) begin
           v_ctr_load = 1'b1;
           blk_enc_state_d = ReqSend;
         end
@@ -313,7 +267,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
           end
         end else begin
           // Wait for completion on the benc_rsp path
-          if (sfifo_updreq_rvld && sfifo_updreq_rrdy) begin
+          if (req_vld_i && req_rdy_o) begin
             blk_enc_state_d = ReqIdle;
           end else begin
             blk_enc_state_d = ReqWait;
@@ -323,7 +277,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
       ReqWait: begin
         if (!enable_i) begin
           blk_enc_state_d = ReqIdle;
-        end else if (sfifo_updreq_rvld && sfifo_updreq_rrdy) begin
+        end else if (req_vld_i && req_rdy_o) begin
           // Wait for completion on the benc_rsp path
           blk_enc_state_d = ReqIdle;
         end
@@ -345,9 +299,9 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   end
 
   // Forward the upstream data together with the current counter value to block_encrypt
-  assign block_encrypt_req_data_o = {req_data_fifo.inst_id,
-                                     req_data_fifo.cmd,
-                                     req_data_fifo.key,
+  assign block_encrypt_req_data_o = {req_data_i.inst_id,
+                                     req_data_i.cmd,
+                                     req_data_i.key,
                                      v_ctr_sized};
 
   //--------------------------------------------
@@ -434,7 +388,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
     concat_outblk_shift = 1'b0;
     sfifo_bencack_rrdy = 1'b0;
     sfifo_final_wvld = 1'b0;
-    sfifo_updreq_rrdy = 1'b0;
+    req_rdy_o = 1'b0;
     sm_block_enc_rsp_err_o = 1'b0;
     unique case (outblk_state_q)
       // AckIdle: increment v this cycle, push in next
@@ -458,7 +412,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
         if (!enable_i) begin
           outblk_state_d = AckIdle;
         end else if (concat_ctr_done) begin
-          sfifo_updreq_rrdy = 1'b1;
+          req_rdy_o = 1'b1;
           sfifo_final_wvld  = 1'b1;
           outblk_state_d = AckIdle;
         end else begin
@@ -482,7 +436,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
   //--------------------------------------------
 
   // XOR the additional data with the new key and value from block encryption
-  assign updated_key_and_v = concat_outblk_q ^ req_data_fifo.pdata;
+  assign updated_key_and_v = concat_outblk_q ^ req_data_i.pdata;
 
   prim_fifo_sync #(
     .Width(BencDataWidth),
