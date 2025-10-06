@@ -116,7 +116,6 @@ module csrng_block_encrypt import csrng_pkg::*; #(
     .state_o             (state_done)
   );
 
-
   //--------------------------------------------
   // cmd / id tracking fifo
   //--------------------------------------------
@@ -144,8 +143,6 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   assign sfifo_cmdid_wdata = {req_data_i.inst_id,
                               req_data_i.cmd};
 
-  assign req_rdy_o = (cipher_in_ready == aes_pkg::SP2V_HIGH);
-
   assign rsp_data_o = '{
     inst_id: sfifo_cmdid_rdata[CmdWidth +: InstIdWidth],
     cmd:     sfifo_cmdid_rdata[0 +: CmdWidth],
@@ -153,9 +150,15 @@ module csrng_block_encrypt import csrng_pkg::*; #(
     v:       cipher_data_out
   };
 
-  assign rsp_vld_o        = rsp_rdy_i && (cipher_out_valid == aes_pkg::SP2V_HIGH);
+  // The cipher determines whether the response is ready for consumption
+  assign rsp_vld_o = (cipher_out_valid == aes_pkg::SP2V_HIGH);
+
+  // Type conversion for AES compatibility
+  assign req_rdy_o = (cipher_in_ready == aes_pkg::SP2V_HIGH);
   assign cipher_out_ready = rsp_rdy_i ? aes_pkg::SP2V_HIGH : aes_pkg::SP2V_LOW;
-  assign sfifo_cmdid_rrdy = rsp_vld_o;
+
+  // Empty the cmdid FIFO when the data response is consumed
+  assign sfifo_cmdid_rrdy = rsp_rdy_i && rsp_vld_o;
 
   assign fifo_cmdid_err_o =
          {( sfifo_cmdid_wvld && !sfifo_cmdid_wrdy),

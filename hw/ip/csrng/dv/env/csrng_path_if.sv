@@ -19,8 +19,7 @@ interface csrng_path_if
                                             ".u_csrng_cmd_stage.", fifo_name, "_", which_path};
       "sfifo_rcstage", "sfifo_keyvrc": return {core_path, ".u_csrng_ctr_drbg_cmd.",
                                                                fifo_name, "_", which_path};
-      "sfifo_bencack", "sfifo_final": return
-        {core_path, ".u_csrng_ctr_drbg_upd.", fifo_name, "_", which_path};
+      "sfifo_final": return {core_path, ".u_csrng_ctr_drbg_upd.", fifo_name, "_", which_path};
       "sfifo_gbencack", "sfifo_grcstage", "sfifo_ggenreq", "sfifo_gadstage", "sfifo_ggenbits":
         return {core_path,".u_csrng_ctr_drbg_gen.sfifo_", fifo_name.substr(7, fifo_name.len()-1),
                 "_", which_path};

@@ -41,24 +41,12 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
 
   // Error status outputs
   output logic             ctr_err_o,
-  output logic       [2:0] fifo_bencack_err_o,
   output logic       [2:0] fifo_final_err_o,
   output logic             sm_block_enc_req_err_o,
   output logic             sm_block_enc_rsp_err_o
 );
 
   // signals
-  // blk_encrypt_ack fifo
-  logic                     sfifo_bencack_wvld;
-  logic                     sfifo_bencack_wrdy;
-  logic [BencDataWidth-1:0] sfifo_bencack_wdata;
-  logic                     sfifo_bencack_rvld;
-  logic                     sfifo_bencack_rrdy;
-  logic [BencDataWidth-1:0] sfifo_bencack_rdata;
-
-  csrng_benc_data_t         benc_rsp_data_fifo;
-
-  // key_v fifo
   logic                     sfifo_final_wvld;
   logic                     sfifo_final_wrdy;
   logic [BencDataWidth-1:0] sfifo_final_wdata;
@@ -305,41 +293,6 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
                                      v_ctr_sized};
 
   //--------------------------------------------
-  // block_encrypt response fifo from block encrypt
-  //--------------------------------------------
-
-  prim_fifo_sync #(
-    .Width(BencDataWidth),
-    .Pass(0),
-    .Depth(1),
-    .OutputZeroIfEmpty(1'b0)
-  ) u_prim_fifo_sync_bencack (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .clr_i   (!enable_i),
-    .wvalid_i(sfifo_bencack_wvld),
-    .wready_o(sfifo_bencack_wrdy),
-    .wdata_i (sfifo_bencack_wdata),
-    .rvalid_o(sfifo_bencack_rvld),
-    .rready_i(sfifo_bencack_rrdy),
-    .rdata_o (sfifo_bencack_rdata),
-    .full_o  (),
-    .depth_o (),
-    .err_o   ()
-  );
-
-  assign sfifo_bencack_wvld  = block_encrypt_rsp_vld_i && sfifo_bencack_wrdy;
-  assign sfifo_bencack_wdata = block_encrypt_rsp_data_i;
-  assign block_encrypt_rsp_rdy_o = sfifo_bencack_wrdy;
-
-  assign benc_rsp_data_fifo = sfifo_bencack_rdata;
-
-  assign fifo_bencack_err_o =
-         {( sfifo_bencack_wvld && !sfifo_bencack_wrdy),
-          ( sfifo_bencack_rrdy && !sfifo_bencack_rvld),
-          (!sfifo_bencack_wrdy && !sfifo_bencack_rvld)};
-
-  //--------------------------------------------
   // shifting logic to receive values from block_encrypt
   //--------------------------------------------
 
@@ -351,12 +304,12 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
       concat_inst_id_d = '0;
       concat_ccmd_d    = '0;
       concat_outblk_d  = '0;
-    end else if (sfifo_bencack_rrdy) begin
-      concat_inst_id_d = benc_rsp_data_fifo.inst_id;
-      concat_ccmd_d    = benc_rsp_data_fifo.cmd;
+    end else if (block_encrypt_rsp_vld_i && block_encrypt_rsp_rdy_o) begin
+      concat_inst_id_d = block_encrypt_rsp_data_i.inst_id;
+      concat_ccmd_d    = block_encrypt_rsp_data_i.cmd;
       // Replace LSBs of shift value with data from block_encrypt
       concat_outblk_d  = {concat_outblk_q[SeedLen-1:BlkLen],
-                          benc_rsp_data_fifo.v};
+                          block_encrypt_rsp_data_i.v};
     end else if (concat_outblk_shift) begin
       // Shift value left by BlkLen bits
       concat_outblk_d  = {concat_outblk_q[SeedLen-BlkLen-1:0], {BlkLen{1'b0}}};
@@ -386,7 +339,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
     outblk_state_d = outblk_state_q;
     concat_ctr_inc  = 1'b0;
     concat_outblk_shift = 1'b0;
-    sfifo_bencack_rrdy = 1'b0;
+    block_encrypt_rsp_rdy_o = 1'b0;
     sfifo_final_wvld = 1'b0;
     req_rdy_o = 1'b0;
     sm_block_enc_rsp_err_o = 1'b0;
@@ -394,18 +347,23 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
       // AckIdle: increment v this cycle, push in next
       AckIdle: begin
         if (!enable_i) begin
+          // There is no "clear" on the AES cipher, so just flush out any outstanding responses
+          // Otherwise, there will be erroneous handshakes when re-enabling the CSRNG
+          block_encrypt_rsp_rdy_o = 1'b1;
           outblk_state_d = AckIdle;
-        end else if (sfifo_bencack_rvld && sfifo_final_wrdy) begin
+        end else if (sfifo_final_wrdy) begin
           outblk_state_d = Load;
         end
       end
       Load: begin
         if (!enable_i) begin
           outblk_state_d = AckIdle;
-        end else if (sfifo_bencack_rvld) begin
-          concat_ctr_inc  = 1'b1;
-          sfifo_bencack_rrdy = 1'b1;
-          outblk_state_d = Shift;
+        end else begin
+          block_encrypt_rsp_rdy_o = 1'b1;
+          if (block_encrypt_rsp_vld_i) begin
+            concat_ctr_inc = 1'b1;
+            outblk_state_d = Shift;
+          end
         end
       end
       Shift: begin
@@ -473,8 +431,8 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
           (!sfifo_final_wrdy && !sfifo_final_rvld)};
 
   // Unused signals
-  logic [KeyLen-1:0] unused_benc_rsp_data_fifo_key;
-  assign unused_benc_rsp_data_fifo_key = benc_rsp_data_fifo.key;
+  logic [KeyLen-1:0] unused_block_encrypt_rsp_data_key;
+  assign unused_block_encrypt_rsp_data_key = block_encrypt_rsp_data_i.key;
 
   // Make sure that the two state machines have a stable error state. This means that after the
   // error state is entered it will not exit it unless a reset signal is received.
