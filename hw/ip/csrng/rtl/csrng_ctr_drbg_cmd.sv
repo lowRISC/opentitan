@@ -101,7 +101,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
     req_data = req_data_i;
     // Insert the FIPS info from entropy source on instantiate and reseed commands.
     // Else, keep the existing info (from state db).
-    req_data.fips = ((req_data_i.cmd == INS) || (req_data_i.cmd == RES)) ? 
+    req_data.fips = ((req_data_i.cmd == INS) || (req_data_i.cmd == RES)) ?
                       req_entropy_fips_i : req_data_i.fips;
   end
 
