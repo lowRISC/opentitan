@@ -796,3 +796,69 @@ opentitan_test(
         test_harness = "//sw/host/tests/rescue:dfu_rescue_error_handling",
     ),
 )
+
+# Check that when we are not configured to rescue on watchdog timeout that
+# a watchdog timeout event simply boots the firmware normally.
+opentitan_test(
+    name = "rescue_watchdog_disabled_test",
+    srcs = [
+        "watchdog_test.c",
+    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        changes_otp = True,
+        exit_failure = "(FAIL|BFV:|mode: RESQ).*",
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
+        test_cmd = """
+            --exec="transport init"
+            --exec="fpga clear-bitstream"
+            --exec="fpga load-bitstream {bitstream}"
+            --exec="bootstrap --clear-uart=true {firmware}"
+            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+            no-op
+        """,
+    ),
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:watchdog",
+    ],
+)
+
+# Check that when we are configured to rescue on watchdog timeout that
+# a watchdog timeout event triggers rescue mode.
+opentitan_test(
+    name = "rescue_watchdog_enabled_test",
+    srcs = [
+        "watchdog_test.c",
+    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        changes_otp = True,
+        exit_success = "mode: RESQ",
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_xmodem_enter_on_watchdog",
+        test_cmd = """
+            --exec="transport init"
+            --exec="fpga clear-bitstream"
+            --exec="fpga load-bitstream {bitstream}"
+            --exec="bootstrap --clear-uart=true {firmware}"
+            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+            no-op
+        """,
+    ),
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:watchdog",
+    ],
+)

@@ -147,6 +147,16 @@ TEST_OWNER_CONFIGS = {
         ],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
     },
+    "xmodem_enter_on_watchdog": {
+        # Enable Xmodem rescue with enter-on-fail and a timeout.
+        "owner_defines": [
+            # 0x58 is 'X'modem.
+            "WITH_RESCUE_PROTOCOL=0x58",
+            # misc_gpio: 0x80=enter_on_watchdog.
+            "WITH_RESCUE_MISC_GPIO_PARAM=0x80",
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
     "spidfu_restricted_commands": {
         # Enable USB-DFU triggered by SW_STRAPS value 3.
         "owner_defines": [

@@ -588,9 +588,10 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(ownership_seal_clear());
 
   // We don't want to enter rescue mode if this is a low-power wakeup.
-  hardened_bool_t want_rescue = waking_from_low_power != kHardenedBoolTrue
-                                    ? rescue_detect_entry(owner_config.rescue)
-                                    : kHardenedBoolFalse;
+  hardened_bool_t want_rescue =
+      waking_from_low_power != kHardenedBoolTrue
+          ? rescue_detect_entry(owner_config.rescue, reset_reasons)
+          : kHardenedBoolFalse;
   hardened_bool_t boot_attempted = kHardenedBoolFalse;
 
   if (want_rescue == kHardenedBoolFalse) {
