@@ -45,8 +45,6 @@ otp_json(
                 # sw/device/silicon_creator/lib/sigverify/spx_verify.h for
                 # details on how to disable this feature.
                 "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0x0),
-                # Enable flash data page scrambling and ECC.
-                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
                 "CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG": otp_hex(0x0),
                 "CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE": otp_hex(0x0),
                 # Disable use of entropy for countermeasures. See the definition
@@ -99,6 +97,20 @@ otp_json(
 
                 # Disable the use of the ROM_EXT immutable section.
                 "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_FALSE),
+            },
+        ),
+    ],
+)
+
+otp_json(
+    name = "otp_json_creator_sw_cfg_flash_data_default_cfg_personalized",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                # This will only be enabled during personalization after SECRET1 / flash scrambling key seeds
+                # have been provisioned.
+                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
             },
         ),
     ],
@@ -263,6 +275,7 @@ MANUF_INDIVIDUALIZED = MANUF_INITIALIZED + MANUF_SW_INITIALIZED + OTP_SIGVERIFY_
 # partitions. It also includes the `MANUF_INDIVIDUALIZED` profile. It represents
 # the OTP state of a device that has completed all provisioning steps.
 MANUF_PERSONALIZED = MANUF_INDIVIDUALIZED + [
+    ":otp_json_creator_sw_cfg_flash_data_default_cfg_personalized",
     "//hw/ip/otp_ctrl/data:otp_json_secret1",
     "//hw/ip/otp_ctrl/data:otp_json_fixed_secret2",
 ]
@@ -274,7 +287,9 @@ otp_image_consts(
     src = "//hw/ip/otp_ctrl/data:otp_json_baseline",
     # Do not add additional overlays here. Update the `MANUF_SW_INITIALIZED`
     # OTP profile instead.
-    overlays = MANUF_SW_INITIALIZED + OTP_SIGVERIFY_FAKE_KEYS,
+    overlays = MANUF_SW_INITIALIZED + OTP_SIGVERIFY_FAKE_KEYS + [
+        ":otp_json_creator_sw_cfg_flash_data_default_cfg_personalized",
+    ],
 )
 
 # Library containing {CREATOR,OWNER}_SW_CFG and
