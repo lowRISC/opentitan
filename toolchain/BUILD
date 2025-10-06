@@ -46,6 +46,7 @@ cc_toolchain(
         ":symbol_garbage_collection",
         ":constructor_destructor",
         ":nostdinc",
+        ":discard_locals",
     ],
     enabled_features = [
         "@rules_cc//cc/toolchains/args:experimental_replace_legacy_action_config_features",
@@ -456,6 +457,13 @@ cc_args(
         # Instantiate global variables only once.
         "-fno-common",
     ],
+)
+
+# Strip local `.L` symbols at link time:
+cc_args(
+    name = "discard_locals",
+    actions = ["@rules_cc//cc/toolchains/actions:link_actions"],
+    args = ["-Wl,--discard-locals"],
 )
 
 filegroup(
