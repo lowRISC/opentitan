@@ -139,8 +139,6 @@ module csrng_core import csrng_pkg::*; #(
   logic [2:0]                  ctr_drbg_cmd_sfifo_rcstage_err;
   logic                        ctr_drbg_cmd_sfifo_keyvrc_err_sum;
   logic [2:0]                  ctr_drbg_cmd_sfifo_keyvrc_err;
-  logic                        ctr_drbg_upd_sfifo_updreq_err_sum;
-  logic [2:0]                  ctr_drbg_upd_sfifo_updreq_err;
   logic                        ctr_drbg_upd_sfifo_bencack_err_sum;
   logic [2:0]                  ctr_drbg_upd_sfifo_bencack_err;
   logic                        ctr_drbg_upd_sfifo_final_err_sum;
@@ -432,7 +430,6 @@ module csrng_core import csrng_pkg::*; #(
          (|cmd_stage_sfifo_genbits_err_sum) ||
          ctr_drbg_cmd_sfifo_rcstage_err_sum ||
          ctr_drbg_cmd_sfifo_keyvrc_err_sum ||
-         ctr_drbg_upd_sfifo_updreq_err_sum ||
          ctr_drbg_upd_sfifo_bencack_err_sum ||
          ctr_drbg_upd_sfifo_final_err_sum ||
          ctr_drbg_gen_sfifo_gbencack_err_sum ||
@@ -453,8 +450,6 @@ module csrng_core import csrng_pkg::*; #(
          err_code_test_bit[3];
   assign ctr_drbg_cmd_sfifo_keyvrc_err_sum = (|ctr_drbg_cmd_sfifo_keyvrc_err) ||
          err_code_test_bit[4];
-  assign ctr_drbg_upd_sfifo_updreq_err_sum = (|ctr_drbg_upd_sfifo_updreq_err) ||
-         err_code_test_bit[5];
   assign ctr_drbg_upd_sfifo_bencack_err_sum = (|ctr_drbg_upd_sfifo_bencack_err) ||
          err_code_test_bit[7];
   assign ctr_drbg_upd_sfifo_final_err_sum = (|ctr_drbg_upd_sfifo_final_err) ||
@@ -494,7 +489,6 @@ module csrng_core import csrng_pkg::*; #(
          ctr_drbg_gen_sfifo_gbencack_err[2] ||
          ctr_drbg_upd_sfifo_final_err[2] ||
          ctr_drbg_upd_sfifo_bencack_err[2] ||
-         ctr_drbg_upd_sfifo_updreq_err[2] ||
          ctr_drbg_cmd_sfifo_keyvrc_err[2] ||
          ctr_drbg_cmd_sfifo_rcstage_err[2] ||
          (|cmd_stage_sfifo_genbits_err_wr) ||
@@ -509,7 +503,6 @@ module csrng_core import csrng_pkg::*; #(
          ctr_drbg_gen_sfifo_gbencack_err[1] ||
          ctr_drbg_upd_sfifo_final_err[1] ||
          ctr_drbg_upd_sfifo_bencack_err[1] ||
-         ctr_drbg_upd_sfifo_updreq_err[1] ||
          ctr_drbg_cmd_sfifo_keyvrc_err[1] ||
          ctr_drbg_cmd_sfifo_rcstage_err[1] ||
          (|cmd_stage_sfifo_genbits_err_rd) ||
@@ -524,7 +517,6 @@ module csrng_core import csrng_pkg::*; #(
          ctr_drbg_gen_sfifo_gbencack_err[0] ||
          ctr_drbg_upd_sfifo_final_err[0] ||
          ctr_drbg_upd_sfifo_bencack_err[0] ||
-         ctr_drbg_upd_sfifo_updreq_err[0] ||
          ctr_drbg_cmd_sfifo_keyvrc_err[0] ||
          ctr_drbg_cmd_sfifo_rcstage_err[0] ||
          (|cmd_stage_sfifo_genbits_err_st) ||
@@ -547,10 +539,6 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.err_code.sfifo_keyvrc_err.d = 1'b1;
   assign hw2reg.err_code.sfifo_keyvrc_err.de = cs_enable_fo[6] &&
          ctr_drbg_cmd_sfifo_keyvrc_err_sum;
-
-  assign hw2reg.err_code.sfifo_updreq_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_updreq_err.de = cs_enable_fo[7] &&
-         ctr_drbg_upd_sfifo_updreq_err_sum;
 
   assign hw2reg.err_code.sfifo_bencack_err.d = 1'b1;
   assign hw2reg.err_code.sfifo_bencack_err.de = cs_enable_fo[9] &&
@@ -1287,7 +1275,6 @@ module csrng_core import csrng_pkg::*; #(
     .block_encrypt_rsp_data_i(block_encrypt_rsp_data),
 
     .ctr_err_o             (ctr_drbg_upd_v_ctr_err),
-    .fifo_updreq_err_o     (ctr_drbg_upd_sfifo_updreq_err),
     .fifo_bencack_err_o    (ctr_drbg_upd_sfifo_bencack_err),
     .fifo_final_err_o      (ctr_drbg_upd_sfifo_final_err),
     .sm_block_enc_req_err_o(drbg_updbe_sm_err),
@@ -1500,9 +1487,9 @@ module csrng_core import csrng_pkg::*; #(
   logic               unused_state_db_inst_state;
 
   assign unused_err_code_test_bit = (|err_code_test_bit[19:16]) || (|err_code_test_bit[27:26]) ||
-                                    err_code_test_bit[8] || err_code_test_bit[6] ||
+                                    err_code_test_bit[8] || (|err_code_test_bit[6:5]) ||
                                     err_code_test_bit[2];
-  assign unused_enable_fo = cs_enable_fo[10] || cs_enable_fo[8] || cs_enable_fo[4];
+  assign unused_enable_fo = cs_enable_fo[10] || (|cs_enable_fo[8:7]) || cs_enable_fo[4];
   assign unused_reg2hw_genbits = (|reg2hw.genbits.q);
   assign unused_int_state_val = (|reg2hw.int_state_val.q);
   assign unused_reseed_interval = reg2hw.reseed_interval.qe;
