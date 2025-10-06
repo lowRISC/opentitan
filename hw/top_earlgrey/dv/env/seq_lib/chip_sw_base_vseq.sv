@@ -130,9 +130,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
       cfg.mem_bkdr_util_h[chip_mem_e'(RamRet0 + ram_idx)].randomize_mem();
     end
 
-    `uvm_info(`gfn, "Initializing ROM", UVM_MEDIUM)
-    // Backdoor load memories with sw images.
-    if (cfg.skip_rom_bkdr_load == 0) begin
+    // (Optionally) Backdoor load memories with pre-built binary images.
+
+    if (!cfg.skip_rom_bkdr_load) begin
+      `uvm_info(`gfn, "Initializing ROM via backdoor.", UVM_MEDIUM)
 `ifdef DISABLE_ROM_INTEGRITY_CHECK
       cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".32.vmem"});
 `else
@@ -140,21 +141,31 @@ class chip_sw_base_vseq extends chip_base_vseq;
 `endif
     end
 
-    if (cfg.skip_flash_bkdr_load == 0) begin
-      if (cfg.sw_images.exists(SwTypeTestSlotA)) begin
-        if (cfg.use_spi_load_bootstrap) begin
-          `uvm_info(`gfn, "Initializing SPI flash bootstrap", UVM_MEDIUM)
-          spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".64.vmem"});
-          cfg.use_spi_load_bootstrap = 1'b0;
-        end else begin
+    if (!cfg.skip_flash_bkdr_load) begin
+      `uvm_info(`gfn, "Initializing Flash with binary image.", UVM_MEDIUM)
+
+      // If cfg.use_spi_load_bootstrap is set, then load SlotA via the ROM SPI-Bootstrap routine.
+      // If it is not set, then load via the backdoor.
+
+      if (cfg.use_spi_load_bootstrap) begin
+        // TODO: support bootstrapping entire flash address space, not just SlotA.
+        `DV_CHECK_FATAL(cfg.sw_images.exists(SwTypeTestSlotA))
+
+        `uvm_info(`gfn, "SPI-Bootstrapping Flash SlotA...", UVM_MEDIUM)
+        spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".64.vmem"});
+        `uvm_info(`gfn, "SPI-Bootstrapping Flash SlotA complete.", UVM_MEDIUM)
+
+      end else begin
+        // Backdoor-load both slots if images are provided to the simulation.
+        `uvm_info(`gfn, "Backdoor-loading FLASH slots now.", UVM_MEDIUM)
+        if (cfg.sw_images.exists(SwTypeTestSlotA)) begin
           cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(
-              {cfg.sw_images[SwTypeTestSlotA], ".64.scr.vmem"});
+            {cfg.sw_images[SwTypeTestSlotA], ".64.scr.vmem"});
         end
-      end
-      if (cfg.sw_images.exists(SwTypeTestSlotB)) begin
-        // TODO: support bootstrapping entire flash address space, not just slot A.
-        cfg.mem_bkdr_util_h[FlashBank1Data].load_mem_from_file(
+        if (cfg.sw_images.exists(SwTypeTestSlotB)) begin
+          cfg.mem_bkdr_util_h[FlashBank1Data].load_mem_from_file(
             {cfg.sw_images[SwTypeTestSlotB], ".64.scr.vmem"});
+        end
       end
     end
 
