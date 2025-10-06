@@ -405,6 +405,15 @@ status_t p384_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
   }
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
+  // OTBN returned the status code OK, so check for the expected instr. count.
+  uint32_t ins_cnt;
+  ins_cnt = otbn_instruction_count_get();
+  if (launder32(ins_cnt) == kModeEcdhSideloadInsCnt) {
+    HARDENED_CHECK_EQ(ins_cnt, kModeEcdhSideloadInsCnt);
+  } else {
+    HARDENED_CHECK_EQ(ins_cnt, kModeEcdhInsCnt);
+  }
+
   // Read the shares of the key from OTBN dmem (at vars x and y).
   HARDENED_TRY_WIPE_DMEM(
       otbn_dmem_read(kP384CoordWords, kOtbnVarX, shared_key->share0));
