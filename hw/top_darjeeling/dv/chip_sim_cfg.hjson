@@ -1475,7 +1475,7 @@
     }
     {
       name: chip_sw_ast_clk_outputs
-      uvm_test_seq: chip_sw_ast_clk_outputs_vseq
+      uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:ast_clk_outs_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
