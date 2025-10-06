@@ -1237,7 +1237,7 @@ proj_double:
  *
  *
  * Each share k0/k1 is 320 bits, even though it represents a 256-bit value.
- * This is a side-channel protection measure.
+ * This allows for blinded scalars as a side-channel protection measure.
  *
  * @param[in]  x21: dptr_x, pointer to affine x-coordinate in dmem
  * @param[in]  x22: dptr_y, pointer to affine y-coordinate in dmem
@@ -1282,7 +1282,7 @@ scalar_mult_int:
 
   /* Init 2P, this will be used for the addition part in the double-and-add
      loop when the bit at the current index is 1 for both shares of the scalar.
-     2P = (w4, w5, w6) <= (w11, w12, w13) <= 2*(w8, w9, w10) = 2*P */
+     2P = (w4, w5, w6) <= (w8, w8, w10) <= 2*(w8, w9, w10) = 2*P */
   jal       x1, proj_double
   bn.mov    w4, w8
   bn.mov    w5, w9
@@ -1313,7 +1313,7 @@ scalar_mult_int:
   bn.rshi   w2, w2, w31 >> 64
 
   /* double-and-add loop with decreasing index */
-  loopi     320, 39
+  loopi     320, 42
 
     /* double point Q
        Q = (w8, w9, w10) <= 2*(w8, w9, w10) = 2*Q */
@@ -1338,13 +1338,18 @@ scalar_mult_int:
     bn.rshi   w26, w31, w3 >> 255
     bn.xor    w20, w7, w26
 
+    /* init regs with random numbers from URND */
+    bn.wsrr   w11, URND
+    bn.wsrr   w12, URND
+    bn.wsrr   w13, URND
+
     /* N.B. The L bit here is secret. For side channel protection in the
        selects below, it is vital that neither option is equal to the
-       destionation register (e.g. bn.sel w0, w0, w1). In this case, the
+       destination register (e.g. bn.sel w0, w0, w1). In this case, the
        hamming distance from the destination's previous value to its new value
        will be 0 in one of the cases and potentially reveal L.
 
-       Note that the randomized XOR instruction following the bn.sel
+       Note that the randomized XOR instruction before the bn.sel
        instructions below acts both to randomize the low bits of k0 for use in a
        MSb check, as well as to clear flags.
 
@@ -1374,11 +1379,17 @@ scalar_mult_int:
     bn.mov    w26, w9
     bn.mov    w30, w10
 
-    /* N.B. As before, the select instructions below must use distinct
-       source/destination registers to avoid revealing L.
+    /* init destination registers with random numbers from URND */
+    bn.wsrr   w8, URND
+    bn.wsrr   w9, URND
+    bn.wsrr   w10, URND
+
+    /* N.B. The select instructions below must use distinct
+       source/destination registers and source and destination must not be
+       equal for any source and destination pair to avoid revealing L.
 
        Select doubling result (Q) or addition result (Q+P)
-         Q = w0[255] or w1[255]?Q_a=(w11, w12, w13):Q=(w7, w26, w30) */
+         Q = w0[255] or w1[255]?Q+P=(w11, w12, w13):Q=(w7, w26, w30) */
     bn.sel    w8, w11, w7, L
     bn.sel    w9, w12, w26, L
     bn.sel    w10, w13, w30, L
@@ -1391,17 +1402,8 @@ scalar_mult_int:
     bn.rshi   w1, w1, w0 >> 255
     bn.rshi   w0, w0, w31 >> 255
 
-    /* init regs with random numbers from URND */
-    bn.wsrr   w11, URND
-    bn.wsrr   w12, URND
-    bn.wsrr   w13, URND
-
-    /* Shift k1 left 1 bit. */
-    bn.rshi   w3, w3, w2 >> 255
-    bn.rshi   w2, w2, w31 >> 255
-
     /* get a fresh random number from URND and scale the coordinates of
-       2P = (w3, w4, w5) (scaling each projective coordinate with same
+       2P = (w4, w5, w6) (scaling each projective coordinate with same
        factor results in same point) */
     bn.wsrr   w7, URND
 
@@ -1422,6 +1424,10 @@ scalar_mult_int:
     bn.mov    w25, w7
     jal       x1, mul_modp
     bn.mov    w6, w19
+
+    /* Shift k1 left 1 bit. */
+    bn.rshi   w3, w3, w2 >> 255
+    bn.rshi   w2, w2, w31 >> 255
 
   /* Check if the z-coordinate of Q is 0. If so, fail; this represents the
      point at infinity and means the scalar was zero mod n, which likely
