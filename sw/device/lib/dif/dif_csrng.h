@@ -95,7 +95,6 @@ typedef enum dif_csrng_fifo {
   kDifCsrngFifoGenBits,
   kDifCsrngFifoRcStage,
   kDifCsrngFifoKeyVrc,
-  kDifCsrngFifoBencAck,
   kDifCsrngFifoFinal,
   kDifCsrngFifoGBencAck,
   kDifCsrngFifoGrcStage,
