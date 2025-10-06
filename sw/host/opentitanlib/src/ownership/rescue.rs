@@ -76,6 +76,9 @@ pub struct OwnerRescueConfig {
     /// The GPIO trigger value (only if trigger is GPIO).
     #[serde(default)]
     pub gpio_value: bool,
+    /// Enter rescue mode if the reboot reason is watchdog timeout.
+    #[serde(default)]
+    pub enter_on_watchdog: bool,
     /// Enter rescue mode if boot fails.
     pub enter_on_failure: bool,
     /// The inactivity timeout in seconds (zero means disabled).
@@ -95,6 +98,7 @@ impl Default for OwnerRescueConfig {
             protocol: RescueProtocol::default(),
             gpio_pull_en: false,
             gpio_value: false,
+            enter_on_watchdog: false,
             enter_on_failure: false,
             timeout: 0,
             trigger: RescueTrigger::default(),
@@ -108,8 +112,9 @@ impl Default for OwnerRescueConfig {
 
 impl OwnerRescueConfig {
     const BASE_SIZE: usize = 16;
-    const GPIO_PULL_BIT: u8 = 0x02;
-    const GPIO_VALUE_BIT: u8 = 0x01;
+    const MISC_GPIO_WATCHDOG_TIMEOUT_EN_BIT: u8 = 0x80;
+    const MISC_GPIO_PULL_BIT: u8 = 0x02;
+    const MISC_GPIO_VALUE_BIT: u8 = 0x01;
     const ENTER_ON_FAIL_BIT: u8 = 0x80;
     const TIMEOUT_MASK: u8 = 0x7f;
     const TRIGGER_SHIFT: u8 = 6;
@@ -133,8 +138,9 @@ impl OwnerRescueConfig {
         Ok(Self {
             header,
             protocol,
-            gpio_pull_en: gpio & Self::GPIO_PULL_BIT != 0,
-            gpio_value: gpio & Self::GPIO_VALUE_BIT != 0,
+            gpio_pull_en: gpio & Self::MISC_GPIO_PULL_BIT != 0,
+            gpio_value: gpio & Self::MISC_GPIO_VALUE_BIT != 0,
+            enter_on_watchdog: gpio & Self::MISC_GPIO_WATCHDOG_TIMEOUT_EN_BIT != 0,
             enter_on_failure: timeout & Self::ENTER_ON_FAIL_BIT != 0,
             timeout: timeout & Self::TIMEOUT_MASK,
             trigger: RescueTrigger(trigger >> Self::TRIGGER_SHIFT),
@@ -153,12 +159,16 @@ impl OwnerRescueConfig {
         header.write(dest)?;
         dest.write_u8(u8::from(self.protocol))?;
         dest.write_u8(
-            if self.gpio_pull_en {
-                Self::GPIO_PULL_BIT
+            if self.enter_on_watchdog {
+                Self::MISC_GPIO_WATCHDOG_TIMEOUT_EN_BIT
+            } else {
+                0
+            } | if self.gpio_pull_en {
+                Self::MISC_GPIO_PULL_BIT
             } else {
                 0
             } | if self.gpio_value {
-                Self::GPIO_VALUE_BIT
+                Self::MISC_GPIO_VALUE_BIT
             } else {
                 0
             },
@@ -219,7 +229,7 @@ mod test {
     use crate::util::hexdump::{hexdump_parse, hexdump_string};
 
     const OWNER_RESCUE_CONFIG_BIN: &str = "\
-00000000: 52 45 53 51 4c 00 00 00 58 00 00 40 20 00 64 00  RESQL...X..@ .d.\n\
+00000000: 52 45 53 51 4c 00 00 00 58 80 00 40 20 00 64 00  RESQL...X..@ .d.\n\
 00000010: 45 4d 50 54 4d 53 45 43 4e 45 58 54 55 4e 4c 4b  EMPTMSECNEXTUNLK\n\
 00000020: 41 43 54 56 51 53 45 52 42 53 45 52 47 4f 4c 42  ACTVQSERBSERGOLB\n\
 00000030: 51 45 52 42 50 53 52 42 52 4e 57 4f 30 47 50 4f  QERBPSRBRNWO0GPO\n\
@@ -231,6 +241,7 @@ mod test {
   trigger_index: 0,
   gpio_pull_en: false,
   gpio_value: false,
+  enter_on_watchdog: true,
   enter_on_failure: false,
   timeout: 0,
   start: 32,
@@ -260,6 +271,7 @@ mod test {
             header: TlvHeader::default(),
             protocol: RescueProtocol::Xmodem,
             trigger: RescueTrigger::UartBreak,
+            enter_on_watchdog: true,
             start: 32,
             size: 100,
             command_allow: vec![
