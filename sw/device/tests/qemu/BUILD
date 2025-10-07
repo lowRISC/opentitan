@@ -46,3 +46,29 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_test(
+    name = "i2c_qemu_target_device_test",
+    srcs = ["i2c_qemu_target_device_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:sim_qemu_sival_rom_ext": None,
+    },
+    qemu = qemu_params(
+        test_harness = "//sw/host/tests/qemu:i2c_target",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:i2c",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:i2c_testutils",
+        "//sw/device/lib/testing:rv_core_ibex_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
