@@ -22,6 +22,9 @@ package csrng_pkg;
   parameter int unsigned CtrLen = 32;
   parameter int unsigned RsCtrWidth = 32;
 
+  // Width of the counter in the command stages to count the amount of generated random bits
+  parameter int unsigned GenBitsCtrWidth = 12;
+
   // Commonly used internal signal widths
   parameter int unsigned CmdWidth = 3;
   parameter int unsigned InstIdWidth = 4;

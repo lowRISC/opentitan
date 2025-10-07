@@ -52,7 +52,6 @@ module csrng_cmd_stage import csrng_pkg::*; (
   // Genbits parameters.
   localparam int GenBitsFifoWidth = 1 + BlkLen;
   localparam int GenBitsFifoDepth = 1;
-  localparam int GenBitsCntrWidth = 12;
 
   // Command FIFO.
   logic      [CmdBusWidth-1:0] sfifo_cmd_rdata;
@@ -84,7 +83,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
   logic                        cmd_gen_cnt_last;
   logic                        cmd_final_ack;
   logic                        cmd_err_ack;
-  logic [GenBitsCntrWidth-1:0] cmd_gen_cnt;
+  logic  [GenBitsCtrWidth-1:0] cmd_gen_cnt;
   csrng_cmd_sts_e              err_sts;
   logic                        reseed_cnt_exceeded;
   logic                        invalid_cmd_seq;
@@ -193,17 +192,17 @@ module csrng_cmd_stage import csrng_pkg::*; (
 
   // SEC_CM: GEN_CMD.CTR.REDUN
   prim_count #(
-    .Width(GenBitsCntrWidth),
-    .ResetValue({GenBitsCntrWidth{1'b1}})
+    .Width(GenBitsCtrWidth),
+    .ResetValue({GenBitsCtrWidth{1'b1}})
   ) u_prim_count_cmd_gen_cntr (
     .clk_i,
     .rst_ni,
     .clr_i(!cs_enable_i),
     .set_i(cmd_gen_1st_req),
-    .set_cnt_i(sfifo_cmd_rdata[12+:GenBitsCntrWidth]),
+    .set_cnt_i(sfifo_cmd_rdata[12 +: GenBitsCtrWidth]),
     .incr_en_i(1'b0),
     .decr_en_i(cmd_gen_cnt_dec), // Count down.
-    .step_i(GenBitsCntrWidth'(1)),
+    .step_i(GenBitsCtrWidth'(1)),
     .commit_i(1'b1),
     .cnt_o(cmd_gen_cnt),
     .cnt_after_commit_o(),
@@ -375,7 +374,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
           cmd_gen_1st_req = 1'b1;
           cmd_arb_sop_o = 1'b1;
           cmd_fifo_pop = 1'b1;
-          if (sfifo_cmd_rdata[12+:GenBitsCntrWidth] == GenBitsCntrWidth'(1)) begin
+          if (sfifo_cmd_rdata[12 +: GenBitsCtrWidth] == GenBitsCtrWidth'(1)) begin
             cmd_gen_cnt_last = 1'b1;
           end
           if (cmd_len == '0) begin
@@ -443,7 +442,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
           cmd_gen_inc_req = 1'b1;
           state_d = GenCmdChk;
           // Check for final genbits beat.
-          if (cmd_gen_cnt == GenBitsCntrWidth'(1)) begin
+          if (cmd_gen_cnt == GenBitsCtrWidth'(1)) begin
             cmd_gen_cnt_last = 1'b1;
           end
         end
