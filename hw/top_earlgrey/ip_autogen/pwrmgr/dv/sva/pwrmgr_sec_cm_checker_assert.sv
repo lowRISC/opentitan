@@ -39,9 +39,41 @@ module pwrmgr_sec_cm_checker_assert
   bit esc_reset_or_disable;
   bit slow_reset_or_disable;
 
+  bit       clk_esc_tgl;
+  bit       clk_esc_edge;
+  bit [2:0] clk_esc_tgl_sync;
+  bit [7:0] clk_esc_dead_cnt;
+
   always_comb reset_or_disable = !rst_ni || disable_sva;
   always_comb esc_reset_or_disable = !rst_esc_ni || disable_sva;
   always_comb slow_reset_or_disable = !rst_slow_ni || disable_sva;
+
+  // clk_esc heartbeat
+  always_ff @(posedge clk_esc_i or negedge rst_ni) begin
+   if (!rst_ni)
+     clk_esc_tgl <= 1'b0;
+   else
+     clk_esc_tgl <= ~clk_esc_tgl;
+  end
+
+
+  // sync clk_esc heartbeat to clk_i and detect edges
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni)
+      clk_esc_tgl_sync <= 3'b000;
+    else
+      clk_esc_tgl_sync <= {clk_esc_tgl_sync[1:0], clk_esc_tgl};
+  end
+
+  assign clk_esc_edge = clk_esc_tgl_sync[2] ^ clk_esc_tgl_sync[1];
+
+  // clk_esc dead counter
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni || !io_clk_en || clk_esc_edge || clk_esc_dead_cnt == 8'd138)
+      clk_esc_dead_cnt <= 0;
+    else
+      clk_esc_dead_cnt <= clk_esc_dead_cnt + 1;
+  end
 
   // rom_intg_chk_dis only allows two states.
   // Note that lc_dft_en_i and lc_hw_debug_en_i are already synchronized to clk_i at this
@@ -116,14 +148,15 @@ module pwrmgr_sec_cm_checker_assert
           reset_or_disable)
 
   // For testpoints sec_cm_esc_rx_clk_bkgn_chk, sec_cm_esc_rx_clk_local_esc.
-  // If the escalation clock (clk_esc_i) stops for too many cycles and is not
-  // disabled, an escalation timeout should be requested until rst_lc_ni goes
-  // active.
+  // If the escalation clock (clk_esc_i) stops
+  // for too many cycles and is not disabled, an escalation timeout should be
+  // requested until rst_lc_ni goes active.
   // The bound of cycles is 128 cycles for the counter, 8 cycles maximum for the
-  // counter to engage, and 2 cycles for a synchronizer. Use negedge of clk_i
-  // to sample clk_esc_i as 1 when active, and 0 when inactive.
-  `ASSERT(EscClkStopEscTimeout_A, !clk_esc_i && io_clk_en [* (128 + 8 + 2)] |=>
-          esc_timeout || !rst_lc_ni, !clk_i, reset_or_disable)
+  // counter to engage, and 2 cycles for a synchronizer.
+  // wihtout knowing precise relationship between clk_i and clk_esc_i,
+  // it'd be difficult to model asynchronous properties checking clock itself!
+  `ASSERT(EscClkStopEscTimeout_A, (clk_esc_dead_cnt == 8'd138) |=>
+          esc_timeout || !rst_lc_ni, clk_i, reset_or_disable)
 
   // For testpoints sec_cm_esc_rx_clk_bkgn_chk, sec_cm_esc_rx_clk_local_esc.
   // Escalation timeout should not be requested when rst_nc_ni is active.
