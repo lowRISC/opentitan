@@ -732,6 +732,14 @@ See the definition in [datatypes.h](../../lib/ownership/datatypes.h).
 ### Rescue Configuration
 
 The rescue configuration describes the owner's desired configuration of the ROM\_EXT rescue protocol.
+- The owner may configure desired rescue protocol: Xmodem, USB-DFU or SPI-DFU.
+- The owner may configure desired rescue trigger: UART break, Strapping combination or GPIO pin.
+  - When the trigger is UART break, at least 350us of the break condition must be observed on the UART RX line to trigger the rescue protocol.
+  - When the trigger is a strapping combination, the desired strap pattern must be configured (e.g. a value 0-61).
+  - When the trigger is a GPIO pin, the desired IO pin as well as the sense of the pin and whether or not to enable the internal pull-up/down resistor must be configured.
+- The owner may configure rescue to be triggered by failure to boot an owner payload.
+- The owner may configure rescue to be triggered by a watchdog timeout as the reset reason.
+- The owner may configure rescue to automatically exit after a specific timeout of no activity.
 - The owner may configure the region of flash to be erased and reprogrammed during firmware rescue.
 - The owner may configure the allowed interactions with the rescue protocol.
    - Allowed rescue modes permit whether the rescue client can upload firmware or interact with the boot log and boot services.
@@ -753,21 +761,31 @@ typedef struct owner_rescue_config {
    */
   uint8_t protocol;
   /**
-   * The gpio configuration (if relevant, depending on `detect`).
+   * The miscellaneous and gpio configuration (if relevant, depending on `detect`).
    *
-   *  7             2       1       0
+   *      7 6       2       1       0
    * +---------------+--------+-------+
-   * | Reserved      | PullEn | Value |
+   * | WDT | Resv'd  | PullEn | Value |
    * +---------------+--------+-------+
+   *
+   * WDT: Enter rescue if the reset reason is watchdog timeout.
+   * PullEn: When GPIO is the trigger, enable the internal pullup in the
+   *         opposite direction of Value.
+   * Value: When GPIO is the trigger, the GPIO value which signifies entry
+   *        into rescue mode.
    */
   uint8_t gpio;
   /**
-   * The timeout configuration (not implemented yet).
+   * The timeout configuration.
    *
    *     7  6                        0
    * +-----+--------------------------+
    * | EoF |                  Timeout |
    * +-----+--------------------------+
+   *
+   * EoF: Enter rescue on failure to boot.
+   * Timeout: After `timeout` seconds of no activity, exit rescue mode and
+   *          reboot.
    */
   uint8_t timeout;
   /**
@@ -777,6 +795,12 @@ typedef struct owner_rescue_config {
    * +--------+-----------------------+
    * | Detect |                 Index |
    * +--------+-----------------------+
+   *
+   * Detect and Index:
+   *  0 - None; index is meaningless.
+   *  1 - UART Break; index is meaningless.
+   *  2 - Strapping pins; index is the strapping value.
+   *  3 - GPIO; index is the pin to sample.
    */
   uint8_t detect;
   /** The start offset of the rescue region in flash (in pages). */
