@@ -27,6 +27,7 @@ module pwrmgr_sec_cm_checker_assert
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
   input esc_timeout,
+  input esc_timeout_lc_q,
   input slow_esc_rst_req,
   input slow_mp_rst_req,
   input main_pd_ni,
@@ -34,14 +35,58 @@ module pwrmgr_sec_cm_checker_assert
   input prim_mubi_pkg::mubi4_t rom_ctrl_good_i
 );
 
+  // The upper bound of clk_esc_i being dead is 138 cycles calculated as 128 cycles for the counter,
+  // 8 cycles maximum for the counter to engage, and 2 cycles for a synchronizer.
+  localparam int ESC_CLK_DEAD_CNT = 138;
+
   bit disable_sva;
   bit reset_or_disable;
   bit esc_reset_or_disable;
   bit slow_reset_or_disable;
 
+  bit       clk_esc_tgl;
+  bit       clk_esc_edge;
+  bit [2:0] clk_esc_tgl_sync;
+  bit [7:0] clk_esc_dead_cnt;
+
   always_comb reset_or_disable = !rst_ni || disable_sva;
   always_comb esc_reset_or_disable = !rst_esc_ni || disable_sva;
   always_comb slow_reset_or_disable = !rst_slow_ni || disable_sva;
+
+  // clk_esc heartbeat
+  always_ff @(posedge clk_esc_i or negedge rst_ni) begin
+   if (!rst_ni)
+     clk_esc_tgl <= 1'b0;
+   else
+     clk_esc_tgl <= ~clk_esc_tgl;
+  end
+
+
+  // clk_esc_tgl is synchronised to clk_i using a two stage synchronizer
+  // this way assertions are synthesizable & they can be used in
+  // formal or hardware as well!
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni)
+      clk_esc_tgl_sync <= 3'b000;
+    else
+      clk_esc_tgl_sync <= {clk_esc_tgl_sync[1:0], clk_esc_tgl};
+  end
+
+  // we use the outputs from both stages of synchroniser to detect edges.
+  assign clk_esc_edge = clk_esc_tgl_sync[2] ^ clk_esc_tgl_sync[1];
+
+  // clk_esc dead counter - this counts the number of clk_i cycles for which clk_esc_i hasn't
+  // toggled. If it reaches ESC_CLK_DEAD_CNT then clk_esc_i is considered dead. At that point, assertion
+  // EscClkStopEscTimeout_A expects esc_timeout_lc_q to be set until rst_lc_ni goes active.
+  //
+  // The counter is reset when rst_ni is low, io_clk_en is low, clk_esc_edge is high (indicating clk_esc_i is alive)
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni || !io_clk_en || clk_esc_edge)
+      clk_esc_dead_cnt <= 0;
+    else if (clk_esc_dead_cnt < ESC_CLK_DEAD_CNT) begin
+      clk_esc_dead_cnt <= clk_esc_dead_cnt + 1;
+    end
+  end
 
   // rom_intg_chk_dis only allows two states.
   // Note that lc_dft_en_i and lc_hw_debug_en_i are already synchronized to clk_i at this
@@ -116,14 +161,11 @@ module pwrmgr_sec_cm_checker_assert
           reset_or_disable)
 
   // For testpoints sec_cm_esc_rx_clk_bkgn_chk, sec_cm_esc_rx_clk_local_esc.
-  // If the escalation clock (clk_esc_i) stops for too many cycles and is not
-  // disabled, an escalation timeout should be requested until rst_lc_ni goes
-  // active.
-  // The bound of cycles is 128 cycles for the counter, 8 cycles maximum for the
-  // counter to engage, and 2 cycles for a synchronizer. Use negedge of clk_i
-  // to sample clk_esc_i as 1 when active, and 0 when inactive.
-  `ASSERT(EscClkStopEscTimeout_A, !clk_esc_i && io_clk_en [* (128 + 8 + 2)] |=>
-          esc_timeout || !rst_lc_ni, !clk_i, reset_or_disable)
+  // If clk_esc_i stops for so many cycles that clk_esc_dead_cnt reaches ESC_CLK_DEAD_CNT,
+  // an escalation timeout should be requested until rst_lc_ni goes active.
+  `ASSERT(EscClkStopEscTimeout_A,
+          $rose(clk_esc_dead_cnt == ESC_CLK_DEAD_CNT) |=> esc_timeout_lc_q until !rst_lc_ni,
+          clk_i, reset_or_disable)
 
   // For testpoints sec_cm_esc_rx_clk_bkgn_chk, sec_cm_esc_rx_clk_local_esc.
   // Escalation timeout should not be requested when rst_nc_ni is active.
