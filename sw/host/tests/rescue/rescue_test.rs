@@ -5,16 +5,16 @@
 #![allow(clippy::bool_assert_comparison)]
 use anyhow::{anyhow, Context, Result};
 use base64ct::{Base64, Decoder};
+
 use clap::{Args, Parser, Subcommand, ValueEnum};
 
-use std::io::Cursor;
+use regex::Regex;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boot_log::OwnershipState;
 use opentitanlib::chip::boot_svc::{BootSlot, OwnershipActivateRequest, OwnershipUnlockRequest};
-use opentitanlib::chip::device_id::DeviceId;
 use opentitanlib::image::image::{self};
 use opentitanlib::ownership::{
     CommandTag, OwnerBlock, OwnerConfigItem, OwnerRescueConfig, TlvHeader,
@@ -79,35 +79,43 @@ pub enum RescueTestActions {
 }
 
 fn get_device_id_test(
-    expected_device_id_hex: &String,
+    expected_device_id_regex: &String,
     params: &RescueParams,
     transport: &TransportWrapper,
 ) -> Result<()> {
     let rescue = params.create(transport)?;
     rescue.enter(transport, EntryMode::Reset)?;
     let actual_device_id_from_rescue = rescue.get_device_id()?;
-    let mut bytes_from_hex = hex::decode(expected_device_id_hex).map_err(|e| {
+    let mut actual_id_bytes = Vec::new();
+    actual_device_id_from_rescue.write(&mut actual_id_bytes)?;
+    // Reverse the entire byte sequence to match the expected hex string format.
+    actual_id_bytes.reverse();
+    let actual_device_id_hex = hex::encode(actual_id_bytes);
+
+    let re = Regex::new(expected_device_id_regex).map_err(|e| {
         anyhow!(
-            "Failed to decode hex string '{}': {}",
-            expected_device_id_hex,
+            "Failed to parse regex string '{}': {}",
+            expected_device_id_regex,
             e
         )
     })?;
-    // This reversal is to swap the byte order of the entire decoded hex sequence
-    // to match the endianness expectation of the DeviceId::read function.
-    bytes_from_hex.reverse();
-    let mut cursor = Cursor::new(bytes_from_hex);
-    let parsed_expected_device_id = DeviceId::read(&mut cursor).unwrap();
-    if parsed_expected_device_id == actual_device_id_from_rescue {
+
+    if re.is_match(&actual_device_id_hex) {
+        log::info!(
+            "Device ID '{}' successfully matched regex '{}'.",
+            actual_device_id_hex,
+            expected_device_id_regex
+        );
         Ok(())
     } else {
         Err(anyhow!(
-            "Device ID mismatch. Expected: {:?}, but got: {:?}",
-            parsed_expected_device_id,
-            actual_device_id_from_rescue
+            "Device ID mismatch. Regex '{}' did not match actual device ID '{}'",
+            expected_device_id_regex,
+            actual_device_id_hex
         ))
     }
 }
+
 
 fn get_boot_log_test(
     binary: &Path,
