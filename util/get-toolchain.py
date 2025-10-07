@@ -32,6 +32,7 @@ RELEASES_URL_BASE = 'https://api.github.com/repos/lowRISC/lowrisc-toolchains/rel
 INSTALL_DIR = '/tools/riscv'
 TOOLCHAIN_VERSION = 'latest'
 TOOLCHAIN_KIND = 'combined'
+TOOLCHAIN_ARCHS = ["x86_64", "aarch64"]
 
 FILE_PATTERNS_TO_REWRITE = [
     "riscv32-unknown-elf-*.cmake",
@@ -39,8 +40,9 @@ FILE_PATTERNS_TO_REWRITE = [
 ]
 
 
-def get_available_toolchain_info(version, kind):
+def get_available_toolchain_info(version, kind, arch):
     assert kind in ASSET_PREFIXES
+    assert arch in TOOLCHAIN_ARCHS
 
     if version == 'latest':
         releases_url = '%s/%s' % (RELEASES_URL_BASE, version)
@@ -59,19 +61,24 @@ def get_available_toolchain_info(version, kind):
         log.error("Request to %s failed after retries: %s", releases_url, str(e))
         sys.exit(1)
 
-    for asset in release_info["assets"]:
-        if (asset["name"].startswith(ASSET_PREFIXES[kind]) and
-                asset["name"].endswith(ASSET_SUFFIX)):
-            return {
-                'download_url': asset['browser_download_url'],
-                'name': asset['name'],
-                'version': release_info['tag_name'],
-                'kind': kind
-            }
+    # Search for the desired asset. Newer releases have builds for different architectures whereas
+    # older releases don't specify an architecture. To maintain compatibility we first search for
+    # an architecture specific asset. If none is found, we repeat the search without the
+    # architecture flag.
+    for name in [ASSET_PREFIXES[kind] + arch, ASSET_PREFIXES[kind]]:
+        for asset in release_info["assets"]:
+            if (asset["name"].startswith(name) and
+                    asset["name"].endswith(ASSET_SUFFIX)):
+                return {
+                    'download_url': asset['browser_download_url'],
+                    'name': asset['name'],
+                    'version': release_info['tag_name'],
+                    'kind': kind
+                }
 
     # No matching asset found for the toolchain kind requested
-    log.error("No available downloads found for %s toolchain version: %s",
-              kind, release_info['tag_name'])
+    log.error("No available downloads found for %s toolchain version: %s for architecture %s",
+              kind, release_info['tag_name'], arch)
     raise SystemExit(1)
 
 
@@ -219,6 +226,11 @@ def main():
                         default=TOOLCHAIN_KIND,
                         choices=ASSET_PREFIXES.keys(),
                         help="Toolchain kind (default: %(default)s)")
+    parser.add_argument('--arch',
+                        required=False,
+                        default=TOOLCHAIN_ARCHS[0],
+                        choices=TOOLCHAIN_ARCHS,
+                        help="Specify the toolchain architecture (default: %(default)s)")
     parser.add_argument(
         '--update',
         '-u',
@@ -229,7 +241,8 @@ def main():
     args = parser.parse_args()
 
     available_toolchain = get_available_toolchain_info(args.release_version,
-                                                       args.kind)
+                                                       args.kind,
+                                                       args.arch)
 
     if args.download_only and args.update:
         print('specify only one of --download-only and --update')
