@@ -17,7 +17,7 @@ TARGETS = [
             "{}.c".format(target),
         ],
         deps = [
-            "//hw/top:dt_api",
+            "//hw/top/dt:api",
             "//sw/device/lib/base:macros",
         ],
     )

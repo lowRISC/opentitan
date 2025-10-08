@@ -364,8 +364,8 @@ def opentitan_ip_dt(name, ip, target_compatible_with = []):
         name = "{}_gen".format(name),
         gen_ips = [ip],
         output_groups = {
-            "hdr": ["dt/dt_{}.h".format(ip)],
-            "src": ["dt/dt_{}.c".format(ip)],
+            "hdr": ["{}.h".format(ip)],
+            "src": ["{}.c".format(ip)],
         },
         target_compatible_with = target_compatible_with,
     )
@@ -391,8 +391,8 @@ def opentitan_top_dt_api(name, deps = None):
         name = "{}_gen".format(name),
         gen_top = True,
         output_groups = {
-            "hdr": ["dt/dt_api.h"],
-            "src": ["dt/dt_api.c"],
+            "hdr": ["api.h"],
+            "src": ["api.c"],
         },
     )
 

@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/testing/pinmux_testutils.h"
 
-#include "hw/top/dt/dt_pinmux.h"
-#include "hw/top/dt/dt_uart.h"
+#include "hw/top/dt/pinmux.h"
+#include "hw/top/dt/uart.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/status.h"

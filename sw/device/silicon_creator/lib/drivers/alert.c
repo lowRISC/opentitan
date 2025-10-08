@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 
-#include "hw/top/dt/dt_alert_handler.h"
+#include "hw/top/dt/alert_handler.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/macros.h"

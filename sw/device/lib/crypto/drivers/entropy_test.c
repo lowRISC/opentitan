@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/crypto/drivers/entropy.h"
 
-#include "hw/top/dt/dt_otbn.h"
+#include "hw/top/dt/otbn.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy_kat.h"

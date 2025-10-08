@@ -12,7 +12,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-from ipconfig import PwrmgrIpConfig  # noqa: E402
+from pwrmgr_ipconfig import PwrmgrIpConfig  # noqa: E402
 
 HEADER_EXT_TEMPLATE = """
 /**
@@ -221,7 +221,7 @@ class PwrmgrExt(Extension):
         elif pos == Extension.DtIpPos.SourceIncludes:
             includes = ""
             for ip in self._extra_includes:
-                includes += f"#include \"dt_{ip}.h\"\n"
+                includes += f"#include \"hw/top/dt/{ip}.h\"\n"
             return includes
         elif pos == Extension.DtIpPos.SourceEnd:
             subs = {

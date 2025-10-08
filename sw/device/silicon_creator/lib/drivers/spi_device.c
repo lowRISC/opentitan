@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
 
-#include "hw/top/dt/dt_spi_device.h"
+#include "hw/top/dt/spi_device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
