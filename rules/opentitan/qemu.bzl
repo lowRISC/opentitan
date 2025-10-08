@@ -39,6 +39,7 @@ def qemu_params(
         globals = {},
         traces = [],
         qemu_args = [],
+        bootstrap = False,
         **kwargs):
     extra_params = {
         "icount": str(icount),
@@ -48,6 +49,8 @@ def qemu_params(
         "globals": json.encode(globals),
         # The same goes for this array of strings:
         "traces": json.encode(traces),
+        # And these Booleans:
+        "bootstrap": json.encode(bootstrap),
     }
 
     return struct(
@@ -394,27 +397,35 @@ def _test_dispatch(ctx, exec_env, firmware):
         "otp": otp_image.short_path,
     }
 
-    # Generate the flash backend image for QEMU emulation
-    # TODO: when bootstrapping is available, this should always create a blank
-    # flash image and bootstrap the data. Ideally, relevant info pages would
-    # be spliced in at this step, but that is not yet supported by either
-    # flashgen or by Bazel.
-    flash_image = gen_flash(
-        ctx,
-        flashgen = exec_env.flashgen,
-        firmware_bin = image,
-        # TODO: no support for convenience debug symbols from ELFs for now
-        firmware_elf = None,
-        # Do not sanity check ELFs, because we do not expect the binary to
-        # match the ELF because of the added manifest extensions (e.g. SPX
-        # signatures) present in the signed binary.
-        check_elfs = False,
-    )
-    data_files += [flash_image]
-    qemu_args += ["-drive", "if=mtd,id=eflash,bus=2,file=flash_img.bin,format=raw"]
-    test_script_fmt |= {
-        "flash": flash_image.short_path,
-    }
+    # If real bootstrapping is requested then prepare the correct command, otherwise we need
+    # to prepare a QEMU drive containing flash contents.
+    # Ideally, relevant info pages would be spliced in at this step, but that is
+    # not yet supported by either flashgen or by Bazel.
+    if param["bootstrap"] and json.decode(param["bootstrap"]):
+        if ctx.attr.test_harness:
+            fail("cannot specify both `bootstrap = True` and a test harness (harnesses bootstrap manually)")
+        test_script_fmt |= {"flash": ""}
+        bootstrap_cmd = "bootstrap --clear-uart=true {firmware}".format(**param)
+        param["bootstrap_cmd"] = '--exec="{}"'.format(bootstrap_cmd)
+    else:
+        # Generate the flash backend image for QEMU emulation
+        flash_image = gen_flash(
+            ctx,
+            flashgen = exec_env.flashgen,
+            firmware_bin = image,
+            # TODO: no support for convenience debug symbols from ELFs for now
+            firmware_elf = None,
+            # Do not sanity check ELFs, because we do not expect the binary to
+            # match the ELF because of the added manifest extensions (e.g. SPX
+            # signatures) present in the signed binary.
+            check_elfs = False,
+        )
+        data_files += [flash_image]
+        qemu_args += ["-drive", "if=mtd,id=eflash,bus=2,file=flash_img.bin,format=raw"]
+        test_script_fmt |= {
+            "flash": flash_image.short_path,
+        }
+        param["bootstrap_cmd"] = '--exec="no-op" # SKIPPING BOOTSTRAP'
 
     # Get the pre-test_cmd args.
     args = get_fallback(ctx, "attr.args", exec_env)
