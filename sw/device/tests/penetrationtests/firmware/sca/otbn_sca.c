@@ -75,26 +75,23 @@ static const otbn_addr_t kOtbnAppKeySideloadkh =
     OTBN_ADDR_T_INIT(otbn_key_sideload_sca, k_h);
 
 // RSA-512 OTBN App.
-OTBN_DECLARE_APP_SYMBOLS(run_rsa_modexp);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, mode);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, inout);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, n);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, d0);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, d1);
+OTBN_DECLARE_APP_SYMBOLS(run_rsa);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, mode);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, inout);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_n);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_d0);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_d1);
 
-static const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(run_rsa_modexp);
-static const otbn_addr_t kOtbnVarRsaMode =
-    OTBN_ADDR_T_INIT(run_rsa_modexp, mode);
-static const otbn_addr_t kOtbnVarRsaInOut =
-    OTBN_ADDR_T_INIT(run_rsa_modexp, inout);
-static const otbn_addr_t kOtbnVarRsaModulus =
-    OTBN_ADDR_T_INIT(run_rsa_modexp, n);
-static const otbn_addr_t kOtbnVarRsaD0 = OTBN_ADDR_T_INIT(run_rsa_modexp, d0);
-static const otbn_addr_t kOtbnVarRsaD1 = OTBN_ADDR_T_INIT(run_rsa_modexp, d1);
+static const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(run_rsa);
+static const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(run_rsa, mode);
+static const otbn_addr_t kOtbnVarRsaInOut = OTBN_ADDR_T_INIT(run_rsa, inout);
+static const otbn_addr_t kOtbnVarRsaModulus = OTBN_ADDR_T_INIT(run_rsa, rsa_n);
+static const otbn_addr_t kOtbnVarRsaD0 = OTBN_ADDR_T_INIT(run_rsa, rsa_d0);
+static const otbn_addr_t kOtbnVarRsaD1 = OTBN_ADDR_T_INIT(run_rsa, rsa_d1);
 
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_512_MODEXP);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_512_MODEXP);
 static const uint32_t kMode512Modexp =
-    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_512_MODEXP);
+    OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_512_MODEXP);
 
 // p256_ecdsa_sca has randomization removed.
 OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa_sca);
