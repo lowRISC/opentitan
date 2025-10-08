@@ -1,3 +1,7 @@
+/* Copyright zeroRISC Inc. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
 /* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
@@ -39,7 +43,11 @@ trigger_fault_if_fg0_not_z:
        x2 <= FG0.Z */
   csrrw     x2, FG0, x0
   andi      x2, x2, 8
-  slli      x2, x2, 3
+  srli      x2, x2, 3
+
+  /* Subtract 1 from FG0.Z.
+       x2 <= x2 - 1 = FG0.Z ? 0 : 2^32 - 1 */
+  addi      x2, x2, -1
 
   /* The `bn.lid` instruction causes an `BAD_DATA_ADDR` error if the
      memory address is out of bounds. Therefore, if FG0.Z is 1, this
