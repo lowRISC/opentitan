@@ -25,9 +25,6 @@
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.
  */
-.equ MODE_GEN_RSA_2048, 0x137
-.equ MODE_GEN_RSA_3072, 0x4e5
-.equ MODE_GEN_RSA_4096, 0x63a
 .equ MODE_COFACTOR_RSA_2048, 0x34e
 .equ MODE_COFACTOR_RSA_3072, 0x0db
 .equ MODE_COFACTOR_RSA_4096, 0x794
@@ -35,11 +32,8 @@
 /**
  * Make the mode constants visible to Ibex.
  */
-.globl MODE_GEN_RSA_2048
 .globl MODE_COFACTOR_RSA_2048
-.globl MODE_GEN_RSA_3072
 .globl MODE_COFACTOR_RSA_3072
-.globl MODE_GEN_RSA_4096
 .globl MODE_COFACTOR_RSA_4096
 
 .section .text.start
@@ -58,15 +52,6 @@ start:
   la      x2, mode
   lw      x2, 0(x2)
 
-  addi    x3, x0, MODE_GEN_RSA_2048
-  beq     x2, x3, rsa_keygen_2048
-
-  addi    x3, x0, MODE_GEN_RSA_3072
-  beq     x2, x3, rsa_keygen_3072
-
-  addi    x3, x0, MODE_GEN_RSA_4096
-  beq     x2, x3, rsa_keygen_4096
-
   addi    x3, x0, MODE_COFACTOR_RSA_2048
   beq     x2, x3, rsa_key_from_cofactor_2048
 
@@ -80,30 +65,6 @@ start:
   unimp
   unimp
   unimp
-
-rsa_keygen_2048:
-  /* Set the number of limbs for the primes (2048 / 2 / 256). */
-  li      x30, 4
-
-  /* Generate a key (results in dmem[rsa_n] and dmem[rsa_d]). */
-  jal     x1, rsa_keygen
-  ecall
-
-rsa_keygen_3072:
-  /* Set the number of limbs for the primes (3072 / 2 / 256). */
-  li      x30, 6
-
-  /* Generate a key (results in dmem[rsa_n] and dmem[rsa_d]). */
-  jal     x1, rsa_keygen
-  ecall
-
-rsa_keygen_4096:
-  /* Set the number of limbs for the primes (4096 / 2 / 256). */
-  li      x30, 8
-
-  /* Generate a key (results in dmem[rsa_n] and dmem[rsa_d]). */
-  jal     x1, rsa_keygen
-  ecall
 
 rsa_key_from_cofactor_2048:
   /* Set the number of limbs for the primes (2048 / 2 / 256). */

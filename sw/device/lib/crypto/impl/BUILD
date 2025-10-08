@@ -214,8 +214,8 @@ cc_library(
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl/rsa:rsa_encryption",
-        "//sw/device/lib/crypto/impl/rsa:rsa_keygen",
         "//sw/device/lib/crypto/impl/rsa:rsa_signature",
+        "//sw/device/lib/crypto/impl/rsa:run_rsa_key_from_cofactor",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )

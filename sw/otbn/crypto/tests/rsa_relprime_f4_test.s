@@ -30,8 +30,8 @@ simple_positive_test:
   li        x30, 4
 
   /* w22 <= 0 if dmem[tmp0] is NOT relatively prime to F4 */
-  la        x16, tmp0
-  jal       x1, relprime_f4
+  la        x16, r0
+  jal       x1, relprime_f4_test
 
   /* w23 <= ~w31 = 2^256-1 (failure value) */
   bn.not    w23, w31
@@ -50,8 +50,8 @@ simple_negative_test:
   li        x30, 4
 
   /* w22 <= 0 if dmem[tmp2] is NOT relatively prime to F4 */
-  la        x16, tmp2
-  jal       x1, relprime_f4
+  la        x16, r1
+  jal       x1, relprime_f4_test
 
   /* w23 <= ~w31 = 2^256-1 (failure value) */
   bn.not    w23, w31
@@ -70,8 +70,8 @@ edge_case_test:
   li        x30, 4
 
   /* w22 <= 0 if dmem[tmp4] is NOT relatively prime to F4 */
-  la        x16, tmp4
-  jal       x1, relprime_f4
+  la        x16, r2
+  jal       x1, relprime_f4_test
 
   /* w23 <= ~w31 = 2^256-1 (failure value) */
   bn.not    w23, w31
