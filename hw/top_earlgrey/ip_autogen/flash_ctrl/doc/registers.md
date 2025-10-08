@@ -2118,5 +2118,5 @@ All values are reserved.
 
 All values are reserved.
 
-This interface does not expose any registers.
+
 <!-- END CMDGEN -->

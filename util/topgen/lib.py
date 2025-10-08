@@ -709,45 +709,21 @@ def get_base_and_size(name_to_block: IpBlocksT, inst: ConfigT,
                       ifname: Optional[str]) -> Tuple[int, int]:
 
     block = name_to_block.get(inst['type'])
-    if block is None:
-        # If inst isn't the instantiation of a block, it came from some memory.
-        # Memories have their sizes defined, so we can just look it up there.
-        bytes_used = int(inst['size'], 0)
-
-        # Memories don't have multiple or named interfaces, so this will only
-        # work if ifname is None.
-        assert ifname is None
-        base_addrs = deepcopy(inst['base_addr'])
-
+    assert block, f"No module named {inst['type']} (coming from instance {inst['name']})"
+    # If inst is the instantiation of some block, find the register block
+    # that corresponds to ifname
+    if rb := block.reg_blocks.get(ifname):
+        bytes_used = 1 << rb.get_addr_width()
+    elif mem := inst["memory"].get(ifname):
+        bytes_used = int(mem["size"], 0)
     else:
-        # If inst is the instantiation of some block, find the register block
-        # that corresponds to ifname
-        rb = block.reg_blocks.get(ifname)
-        if rb is None:
-            raise RuntimeError(
-                'Cannot connect to non-existent {} device interface '
-                'on {!r} (an instance of the {!r} block).'.format(
-                    'default' if ifname is None else repr(ifname),
-                    inst['name'], block.name))
-        else:
-            bytes_used = 1 << rb.get_addr_width()
+        raise RuntimeError(
+            'Cannot connect to non-existent {} device interface '
+            'on {!r} (an instance of the {!r} block).'.format(
+                'default' if ifname is None else repr(ifname),
+                inst['name'], block.name))
 
-        base_addrs = deepcopy(inst['base_addrs'][ifname])
-
-        # If an instance has a nonempty "memory" field, take the memory
-        # size configuration from there.
-        if "memory" in inst:
-            if ifname in inst["memory"]:
-                memory_size = int(inst["memory"][ifname]["size"], 0)
-                if bytes_used > memory_size:
-                    raise RuntimeError(
-                        'Memory region on {} device interface '
-                        'on {!r} (an instance of the {!r} block) '
-                        'is smaller than the corresponding register block.'.
-                        format('default' if ifname is None else repr(ifname),
-                               inst['name'], block.name))
-
-                bytes_used = memory_size
+    base_addrs = deepcopy(inst['base_addrs'][ifname])
 
     # Round up to next power of 2.
     size_byte = 1 << (bytes_used - 1).bit_length()
@@ -954,9 +930,11 @@ class TopGen:
             self._init_clkmgr_clocks()
 
         self.device_regions = defaultdict(dict)
+        self.device_memories = defaultdict(dict)
         self.subranges = defaultdict(dict)
         for addr_space in top_info['addr_spaces']:
             self._init_device_regions(addr_space['name'])
+            self._init_device_memories(addr_space['name'])
             self._init_subranges(addr_space['name'])
 
     def _init_device_regions(self, addr_space):
@@ -968,7 +946,7 @@ class TopGen:
         device_region = defaultdict(dict)
         for inst in self.top['module']:
             block = self._name_to_block[inst['type']]
-            for if_name, rb in block.reg_blocks.items():
+            for if_name in block.reg_blocks.keys():
                 full_if = (inst['name'], if_name)
                 full_if_name = Name.from_snake_case(full_if[0])
                 if if_name is not None:
@@ -994,12 +972,15 @@ class TopGen:
     def devices(
             self, addr_space
     ) -> List[Tuple[Tuple[str, Optional[str]], MemoryRegion]]:
-        '''Return a list of MemoryRegion objects for devices on the bus
+        '''Return a list of MemoryRegion objects for devices on the bus.
 
         The list returned is pairs (full_if, region) where full_if is itself a
         pair (inst_name, if_name). inst_name is the name of some IP block
         instantiation. if_name is the name of the interface (may be None).
         region is a MemoryRegion object representing the device.
+
+        Note that this list only includes register bloks. Use `memories()`
+        to access the list of memories.
 
         Parameters:
             addr_space: The address space representing the bus for generation.
@@ -1008,40 +989,20 @@ class TopGen:
         # TODO: This method is invoked in templates, as well as in the extended
         # class TopGenCTest. We could refactor and optimize the implementation
         # a bit.
-        for inst in self.top['module']:
-            block = self._name_to_block[inst['type']]
-            for if_name, rb in block.reg_blocks.items():
-                full_if = (inst['name'], if_name)
-                full_if_name = Name.from_snake_case(full_if[0])
-                if if_name is not None:
-                    full_if_name += Name.from_snake_case(if_name)
-
-                name = full_if_name
-                base, size = get_base_and_size(self._name_to_block, inst,
-                                               if_name)
-                if addr_space not in base:
-                    continue
-
-                region = MemoryRegion(self._top_name, name, addr_space,
-                                      base[addr_space], size)
+        for (inst, regions) in self.device_regions[addr_space].items():
+            for (if_name, region) in regions.items():
+                full_if = (inst, if_name)
                 ret.append((full_if, region))
 
         return ret
 
-    def memories(self, addr_space) -> List[Tuple[str, MemoryRegion]]:
-        '''Return a list of MemoryRegions objects for memories on the bus
+    def _init_device_memories(self, addr_space):
+        '''Initialize the device_memories dictionary.
 
-        Parameters:
-            addr_space: The address space representing the bus for generation.
+        The dictionary entry maps memories to MemoryRegions for the given
+        addr_space.
         '''
-        ret = []
-        for m in self.top["memory"]:
-            ret.append((m["name"],
-                        MemoryRegion(self._top_name,
-                                     Name.from_snake_case(m["name"]),
-                                     addr_space,
-                                     int(m["base_addr"][addr_space], 0),
-                                     int(m["size"], 0))))
+        device_memories = defaultdict(dict)
 
         for inst in self.top['module']:
             if "memory" in inst:
@@ -1051,10 +1012,33 @@ class TopGen:
                     if addr_space not in base:
                         continue
 
-                    name = Name.from_snake_case(val["label"])
-                    region = MemoryRegion(self._top_name, name, addr_space,
+                    full_if_name = Name.from_snake_case(inst['name']) + \
+                        Name.from_snake_case(if_name)
+                    region = MemoryRegion(self._top_name, full_if_name, addr_space,
                                           base[addr_space], size)
-                    ret.append((val["label"], region))
+
+                    device_memories[inst['name']].update({if_name: region})
+
+        self.device_memories[addr_space] = device_memories
+
+    def memories(self, addr_space) -> List[Tuple[str, MemoryRegion]]:
+        '''Return a list of MemoryRegions objects for memories on the bus.
+
+        The list returned is pairs (full_if, region) where full_if is itself a
+        pair (inst_name, if_name). inst_name is the name of some IP block
+        instantiation. if_name is the name of the interface. region is a
+        MemoryRegion representing the memory, and its name is set to the full
+        interface name (<IP instance name>_<interface>).
+
+        Parameters:
+            addr_space: The address space representing the bus for generation.
+        '''
+        ret = []
+
+        for (inst, regions) in self.device_memories[addr_space].items():
+            for (if_name, region) in regions.items():
+                full_if = (inst, if_name)
+                ret.append((full_if, region))
 
         return ret
 
@@ -1536,7 +1520,9 @@ class TopGen:
                 if len(split_dev) > 1:
                     if_name = split_dev[1]
 
-                ranges = get_device_ranges(self.devices(addr_space_name),
+                # Include both register blocks and memories.
+                ranges = get_device_ranges(self.devices(addr_space_name) +
+                                           self.memories(addr_space_name),
                                            dev_name)
                 if if_name:
                     # Only a single interface, if name contained an interface
