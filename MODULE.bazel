@@ -81,6 +81,16 @@ archive_override(
     urls = ["https://github.com/lowRISC/misc-linters/archive/refs/tags/20250217_01.tar.gz"],
 )
 
+# Support ChromeOS SDK environment as a Debian variant
+single_version_override(
+    module_name = "toolchains_llvm",
+    patch_strip = 1,
+    patches = [
+        "@lowrisc_opentitan//third_party/toolchains_llvm/patches:toolchains_llvm-distroname.patch",
+    ],
+    version = "1.1.2",
+)
+
 # Rust toolchain:
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
 rust.repository_set(
