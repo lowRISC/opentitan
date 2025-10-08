@@ -29,5 +29,6 @@ rust_binary(
     deps = [
         ":coverage_lib",
         "@crate_index//:anyhow",
+        "@crate_index//:clap",
     ],
 )
