@@ -199,7 +199,8 @@ def get_toggle_excl_bits(addr_ranges: List[List[int]],
     toggle_bits = 0
     for addr in addr_ranges:
         # The size of the address range should be power of 2
-        assert is_pow2(addr[1] - addr[0] + 1)
+        if not is_pow2(addr[1] - addr[0] + 1):
+            return []
 
         toggle_bits |= addr[0]
         toggle_bits |= addr[1] - addr[0]
