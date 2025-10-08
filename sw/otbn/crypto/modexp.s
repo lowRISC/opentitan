@@ -161,7 +161,7 @@ modexp:
   # Convert input to Montgomery domain:
   #
   #   [w[4+N-1]:w4] = A' = montmul(A, RR)
-  la  x16, n
+  la  x16, rsa_n
   la  x19, r0
   la  x20, RR
   jal x1, montmul
@@ -188,7 +188,7 @@ modexp:
     bn.sid  x2, 0(x3++)
 
   # Compute R^(e-1) and store it in DMEM at location r2.
-  la x16, n
+  la x16, rsa_n
   la x17, r1
   la x18, r2
   jal x1, modexp_65536
@@ -211,7 +211,7 @@ modexp:
 
   # Since d is odd d-1 must be even, hence to have d0 XOR d1 = d-1, the first
   # bit of the share d0 must be flipped.
-  la      x16, d0
+  la      x16, rsa_d0
   bn.lid  x11, 0(x16)
   bn.addi w30, w31, 1
   bn.xor  w2, w2, w30
@@ -241,7 +241,7 @@ _message_blinding_prologue_end:
   # Montgomery domain over Z/MZ which congruent to -M in Z/RZ.
   la  x2, r0
   la  x3, r1
-  la  x5, n
+  la  x5, rsa_n
   loop x30, 4
     bn.lid  x11, 0(x5++)
     bn.subb w2, w31, w2
@@ -256,8 +256,8 @@ _message_blinding_prologue_end:
   # as all the inputs have been transformed into the Montgomery form.
   #
   # Computes the secret indices (b' ^ bi) ^ ai in Step 5 of Algorithm 2 in [1].
-  la x2, d1
-  la x3, d0
+  la x2, rsa_d1
+  la x3, rsa_d0
   addi x5, x25, 0
 
   # Use w24-w26 as intermediate WDRs.
@@ -314,7 +314,7 @@ _message_blinding_prologue_end:
     bn.add w31, w31, w31
 
     # Shift d0 and siphon the shifted out MSB into FG0, x3 = a[i] = d0[i].
-    la   x15, d0
+    la   x15, rsa_d0
     loop x30, 3
       bn.lid x11, 0(x15)
       # w2 <= w2 << 1
@@ -323,7 +323,7 @@ _message_blinding_prologue_end:
     csrrs x3, FG0, x0
     andi x3, x3, 1
     # Restore the LSB.
-    la   x15, d0
+    la   x15, rsa_d0
     lw   x22, 0(x15)
     or   x22, x3, x22
     sw   x22, 0(x15)
@@ -337,7 +337,7 @@ _message_blinding_prologue_end:
     addi x14, x3, 0
     jal  x1, cond_swap_gprs
 
-    la x16, n
+    la x16, rsa_n
     jal x1, montmul
 
     addi x2, x8, 0
@@ -372,7 +372,7 @@ _message_blinding_prologue_end:
     addi x14, x4, 0
     jal x1, cond_swap_gprs
 
-    la   x16, n
+    la   x16, rsa_n
     addi x20, x19, 0
     jal x1, montmul
 
@@ -401,7 +401,7 @@ _message_blinding_prologue_end:
   # Make sure the output (A*R^e)^(d-1) is in r0.
   la   x23, r0
   la   x24, r1
-  la   x14, d1
+  la   x14, rsa_d1
   lw   x14, 0(x14)
   andi x14, x14, 1
   jal  x1, cond_swap_gprs
@@ -410,7 +410,7 @@ _message_blinding_prologue_end:
 
   # Unblind ciphertext with A*R^(e-1) such that
   #   DMEM[r0] = A^d mod M = (A*R^e)^(d-1) * A*R^(e-1) mod M
-  la x16, n
+  la x16, rsa_n
   la x20, work_buf
   jal x1, montmul
 
@@ -421,7 +421,7 @@ _message_blinding_prologue_end:
     addi    x2, x2, 1
 
   # Convert d0 back such that d0 XOR d1 = d.
-  la x12, d0
+  la x12, rsa_d0
   bn.lid x11, 0(x12)
   bn.addi w30, w31, 1
   bn.xor w2, w2, w30
@@ -432,7 +432,7 @@ _message_blinding_prologue_end:
 _message_blinding_epilogue_end:
 
   # Convert back from Montgomery form.
-  la  x16, n
+  la  x16, rsa_n
   la  x21, r0
   jal x1, montmul_mul1
 

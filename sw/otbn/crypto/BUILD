@@ -238,35 +238,16 @@ otbn_library(
 )
 
 otbn_library(
-    name = "primality",
+    name = "rsa_primality",
     srcs = [
-        "primality.s",
+        "rsa_primality.s",
     ],
 )
 
 otbn_library(
-    name = "run_rsa_modexp_mem",
+    name = "run_rsa_mem",
     srcs = [
-        "run_rsa_modexp_mem.s",
-    ],
-)
-
-otbn_binary(
-    name = "run_rsa_modexp",
-    srcs = [
-        "run_rsa_modexp.s",
-    ],
-    deps = [
-        ":modexp",
-        ":montmul",
-        ":run_rsa_modexp_mem",
-    ],
-)
-
-otbn_library(
-    name = "run_rsa_keygen_mem",
-    srcs = [
-        "run_rsa_keygen_mem.s",
+        "run_rsa_mem.s",
     ],
 )
 
@@ -277,10 +258,46 @@ otbn_library(
     ],
 )
 
-otbn_binary(
-    name = "run_rsa_keygen",
+otbn_library(
+    name = "rsa_modinv_f4",
     srcs = [
-        "run_rsa_keygen.s",
+        "rsa_modinv_f4.s",
+    ],
+)
+
+otbn_binary(
+    name = "run_rsa",
+    srcs = [
+        "gcd.s",
+        "modexp.s",
+        "montmul.s",
+        "mul.s",
+        "rsa_keygen.s",
+        "rsa_modinv_f4.s",
+        "rsa_primality.s",
+        "run_rsa.s",
+        "run_rsa_mem.s",
+    ],
+)
+
+otbn_library(
+    name = "run_rsa_key_from_cofactor_mem",
+    srcs = [
+        "run_rsa_key_from_cofactor_mem.s",
+    ],
+)
+
+otbn_library(
+    name = "rsa_key_from_cofactor",
+    srcs = [
+        "rsa_key_from_cofactor.s",
+    ],
+)
+
+otbn_binary(
+    name = "run_rsa_key_from_cofactor",
+    srcs = [
+        "run_rsa_key_from_cofactor.s",
     ],
     deps = [
         ":div",
@@ -288,9 +305,9 @@ otbn_binary(
         ":lcm",
         ":montmul",
         ":mul",
-        ":primality",
-        ":rsa_keygen",
-        ":run_rsa_keygen_mem",
+        ":rsa_key_from_cofactor",
+        ":rsa_modinv_f4",
+        ":run_rsa_key_from_cofactor_mem",
     ],
 )
 
