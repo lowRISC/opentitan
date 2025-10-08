@@ -8,53 +8,50 @@
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
 
-OTBN_DECLARE_APP_SYMBOLS(run_rsa_modexp);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, mode);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, inout);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, n);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, d0);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, d1);
+OTBN_DECLARE_APP_SYMBOLS(run_rsa);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, mode);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, inout);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_n);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_d0);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_d1);
 
-static const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(run_rsa_modexp);
-static const otbn_addr_t kOtbnVarRsaMode =
-    OTBN_ADDR_T_INIT(run_rsa_modexp, mode);
-static const otbn_addr_t kOtbnVarRsaInOut =
-    OTBN_ADDR_T_INIT(run_rsa_modexp, inout);
-static const otbn_addr_t kOtbnVarRsaModulus =
-    OTBN_ADDR_T_INIT(run_rsa_modexp, n);
-static const otbn_addr_t kOtbnVarRsaD0 = OTBN_ADDR_T_INIT(run_rsa_modexp, d0);
-static const otbn_addr_t kOtbnVarRsaD1 = OTBN_ADDR_T_INIT(run_rsa_modexp, d1);
+static const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(run_rsa);
+static const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(run_rsa, mode);
+static const otbn_addr_t kOtbnVarRsaInOut = OTBN_ADDR_T_INIT(run_rsa, inout);
+static const otbn_addr_t kOtbnVarRsaModulus = OTBN_ADDR_T_INIT(run_rsa, rsa_n);
+static const otbn_addr_t kOtbnVarRsaD0 = OTBN_ADDR_T_INIT(run_rsa, rsa_d0);
+static const otbn_addr_t kOtbnVarRsaD1 = OTBN_ADDR_T_INIT(run_rsa, rsa_d1);
 
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_512_MODEXP);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_512_MODEXP_F4);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_1024_MODEXP);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_1024_MODEXP_F4);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_2048_MODEXP);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_2048_MODEXP_F4);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_3072_MODEXP);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_3072_MODEXP_F4);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_4096_MODEXP);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa_modexp, MODE_RSA_4096_MODEXP_F4);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_512_MODEXP);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_512_MODEXP_F4);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_1024_MODEXP);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_1024_MODEXP_F4);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_2048_MODEXP);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_2048_MODEXP_F4);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_3072_MODEXP);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_3072_MODEXP_F4);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_4096_MODEXP);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_4096_MODEXP_F4);
 static const uint32_t kMode512Modexp =
-    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_512_MODEXP);
+    OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_512_MODEXP);
 static const uint32_t kMode512ModexpF4 =
-    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_512_MODEXP_F4);
+    OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_512_MODEXP_F4);
 static const uint32_t kMode1024Modexp =
-    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_1024_MODEXP);
+    OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_1024_MODEXP);
 static const uint32_t kMode1024ModexpF4 =
-    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_1024_MODEXP_F4);
+    OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_1024_MODEXP_F4);
 static const uint32_t kMode2048Modexp =
-    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_2048_MODEXP);
+    OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_MODEXP);
 static const uint32_t kMode2048ModexpF4 =
-    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_2048_MODEXP_F4);
+    OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_MODEXP_F4);
 static const uint32_t kMode3072Modexp =
-    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_3072_MODEXP);
+    OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_MODEXP);
 static const uint32_t kMode3072ModexpF4 =
-    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_3072_MODEXP_F4);
+    OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_MODEXP_F4);
 static const uint32_t kMode4096Modexp =
-    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_4096_MODEXP);
+    OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_MODEXP);
 static const uint32_t kMode4096ModexpF4 =
-    OTBN_ADDR_T_INIT(run_rsa_modexp, MODE_RSA_4096_MODEXP_F4);
+    OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_MODEXP_F4);
 
 enum { kOtbnWideWordBytes = 256 / 8 };
 

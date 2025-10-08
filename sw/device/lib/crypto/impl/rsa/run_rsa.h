@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_RSA_RSA_MODEXP_H_
-#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_RSA_RSA_MODEXP_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_RSA_RUN_RSA_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_RSA_RUN_RSA_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -168,8 +168,80 @@ status_t rsa_modexp_vartime_4096_start(const rsa_4096_int_t *base,
  */
 status_t rsa_modexp_4096_finalize(rsa_4096_int_t *result);
 
+/**
+ * Starts an RSA-2048 key generation operation; returns immediately.
+ *
+ * The key exponent is always F4=65537; no other exponents are supported.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @return Result of the operation (OK or error).
+ */
+status_t rsa_keygen_2048_start(void);
+
+/**
+ * Waits for an RSA-2048 key generation to complete.
+ *
+ * Should be invoked only after `rsa_keygen_2048_start`. Blocks until OTBN is
+ * done processing.
+ *
+ * @param[out] public_key Generated public key (n, e).
+ * @param[out] private_key Generated private key (d, e).
+ * @return Result of the operation (OK or error).
+ */
+status_t rsa_keygen_2048_finalize(rsa_2048_public_key_t *public_key,
+                                  rsa_2048_private_key_t *private_key);
+
+/**
+ * Starts an RSA-3072 key generation operation; returns immediately.
+ *
+ * The key exponent is always F4=65537; no other exponents are supported.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @return Result of the operation (OK or error).
+ */
+status_t rsa_keygen_3072_start(void);
+
+/**
+ * Waits for an RSA-3072 key generation to complete.
+ *
+ * Should be invoked only after `rsa_keygen_3072_start`. Blocks until OTBN is
+ * done processing.
+ *
+ * @param[out] public_key Generated public key (n, e).
+ * @param[out] private_key Generated private key (d, e).
+ * @return Result of the operation (OK or error).
+ */
+status_t rsa_keygen_3072_finalize(rsa_3072_public_key_t *public_key,
+                                  rsa_3072_private_key_t *private_key);
+
+/**
+ * Starts an RSA-4096 key generation operation; returns immediately.
+ *
+ * The key exponent is always F4=65537; no other exponents are supported.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @return Result of the operation (OK or error).
+ */
+status_t rsa_keygen_4096_start(void);
+
+/**
+ * Waits for an RSA-4096 key generation to complete.
+ *
+ * Should be invoked only after `rsa_keygen_4096_start`. Blocks until OTBN is
+ * done processing.
+ *
+ * @param[out] public_key Generated public key (n, e).
+ * @param[out] private_key Generated private key (d, e).
+ * @return Result of the operation (OK or error).
+ */
+status_t rsa_keygen_4096_finalize(rsa_4096_public_key_t *public_key,
+                                  rsa_4096_private_key_t *private_key);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_RSA_RSA_MODEXP_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_RSA_RUN_RSA_H_

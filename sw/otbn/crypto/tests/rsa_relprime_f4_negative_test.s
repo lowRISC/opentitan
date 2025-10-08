@@ -3,10 +3,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Ensure that a nonprime value for p fails RSA keygen checks.
- *
- * Uses the test data from `rsa_keygen_checkp_not_prime_test.hjson`, which is
- * sized for RSA-2048.
+ * Ensure that a multiple of F4 fails RSA keygen checks for p.
  */
 
 .section .text.start
@@ -17,15 +14,10 @@ main:
 
   /* Load the number of limbs for this test. */
   li        x30, 4
-  li        x31, 3
 
-  /* Load required constants. */
-  li        x20, 20
-  li        x21, 21
-
-  /* Check a value of p that is nonprime.
+  /* Check a value of p that is not relatively prime to F4.
        w24 <= 2^256-1 if the check passed, otherwise 0 */
-  la        x16, rsa_p
-  jal       x1, check_p
+  la        x16, rsa_n
+  jal       x1, relprime_f4_test
 
   ecall
