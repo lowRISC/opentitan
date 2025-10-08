@@ -25,17 +25,20 @@ load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 _TEST_SCRIPT = """#!/bin/bash
 set -e
 
+mutable_otp="otp_img.raw"
+mutable_flash="flash_img.bin"
+
 cleanup() {{
-    rm -f {mutable_otp} {mutable_flash}
+    rm -f "$mutable_otp" "$mutable_flash"
     rm -f qemu-monitor qemu.log
 }}
 trap cleanup EXIT
 
 # QEMU requires mutable flash and OTP files but Bazel only provides RO
 # files so we have to create copies unique to this test run.
-cp {otp} {mutable_otp} && chmod +w {mutable_otp}
+cp {otp} "$mutable_otp" && chmod +w "$mutable_otp"
 if [ ! -z {flash} ]; then
-    cp {flash} {mutable_flash} && chmod +w {mutable_flash}
+    cp {flash} "$mutable_flash" && chmod +w "$mutable_flash"
 fi
 
 # QEMU disconnects from `stdout` when it daemonizes so we need to stream
@@ -358,8 +361,7 @@ def _test_dispatch(ctx, exec_env, firmware):
     test_harness, data_labels, data_files, param, action_param = common_test_setup(ctx, exec_env, firmware)
 
     # If the test requested an assembled image, then use opentitantool to
-    # assemble the image.  Replace the firmware param with the newly assembled
-    # image.
+    # assemble the image.
     if "assemble" in param:
         assemble = param.get("assemble")
         assemble = recursive_format(assemble, action_param)
@@ -371,11 +373,13 @@ def _test_dispatch(ctx, exec_env, firmware):
             data_files = data_files,
             opentitantool = exec_env._opentitantool,
         )
-        param["firmware"] = image.short_path
-        action_param["firmware"] = image.path
         data_files.append(image)
     else:
         image = firmware.signed_bin or firmware.default
+
+    # Replace the firmware param with the newly assembled image.
+    param["firmware"] = image.short_path
+    action_param["firmware"] = image.path
 
     data_files += [exec_env.qemu]
 
@@ -410,7 +414,6 @@ def _test_dispatch(ctx, exec_env, firmware):
     data_files += [otp_image]
     qemu_args += ["-drive", "if=pflash,file=otp_img.raw,format=raw"]
     test_script_fmt |= {
-        "mutable_otp": "otp_img.raw",
         "otp": otp_image.short_path,
     }
 
