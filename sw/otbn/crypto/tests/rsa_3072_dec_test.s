@@ -19,7 +19,7 @@ main:
   li    x30, 12
 
   /* Load pointers to modulus and Montgomery constant buffers. */
-  la    x16, n
+  la    x16, rsa_n
   la    x17, RR
 
   /* Compute Montgomery constants. */

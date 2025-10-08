@@ -28,12 +28,12 @@
   "entrypoint": "main",
   "input": {
     "dmem": {
-      "rsa_p": "0xd10b3338d7d2cca85be7b76c5497f2fe89a9f9b73e613262565636dbc5901c386b1df3c7b8eb3ac8548a9062a5958b33c84dfe0fa9e2c61250d75683be1585008f926d5cfc4d3a3f003746a3beefcc71d287133768fc0268e1f84cb791be8e6dfc48b706ee0515089ff618c0a648854d6a93e9a0452552e93720ffa2021fd53b"
+      "rsa_n": "0xd10b3338d7d2cca85be7b76c5497f2fe89a9f9b73e613262565636dbc5901c386b1df3c7b8eb3ac8548a9062a5958b33c84dfe0fa9e2c61250d75683be1585008f926d5cfc4d3a3f003746a3beefcc71d287133768fc0268e1f84cb791be8e6dfc48b706ee0515089ff618c0a648854d6a93e9a0452552e93720ffa2021fd53b"
     }
   }
   "output": {
     "regs": {
-      "w24": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      "x2": "0x00000001"
     }
   }
 }
