@@ -18,8 +18,8 @@ main:
   /* Load DMEM pointers. */
   la        x12, rsa_n
   la        x13, rsa_d0
-  la        x14, tmp0
-  la        x15, tmp2
+  la        x14, r1
+  la        x15, r2
 
   /* Load required constants. */
   li        x20, 20
