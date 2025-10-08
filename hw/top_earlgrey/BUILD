@@ -159,7 +159,7 @@ sim_qemu(
     slot_spec = EARLGREY_SLOTS,
     test_cmd = """
         --exec="transport init"
-        --exec="bootstrap --clear-uart=true {firmware}"
+        {bootstrap_cmd}
         --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
         no-op
     """,
