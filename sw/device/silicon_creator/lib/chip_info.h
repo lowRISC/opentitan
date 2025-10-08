@@ -51,10 +51,9 @@ enum {
 };
 
 /**
- * Extern declaration for the `kChipInfo` instance placed at the end of ROM.
- *
- * The actual definition is in an auto-generated file.
+ * The chip information is placed at the end of ROM and is accessible using
+ * the following symbol.
  */
-extern const chip_info_t kChipInfo;
+extern const char _chip_info_start[];
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CHIP_INFO_H_

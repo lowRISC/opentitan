@@ -244,9 +244,10 @@ static rom_error_t rom_init(void) {
 
   // Initialize boot_log
   boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
+  const chip_info_t *rom_chip_info = (const chip_info_t *)_chip_info_start;
   memset(boot_log, 0, sizeof(*boot_log));
   boot_log->identifier = kBootLogIdentifier;
-  boot_log->chip_version = kChipInfo.scm_revision;
+  boot_log->chip_version = rom_chip_info->scm_revision;
   boot_log->retention_ram_initialized =
       reset_reasons & reset_mask ? kHardenedBoolTrue : kHardenedBoolFalse;
 
