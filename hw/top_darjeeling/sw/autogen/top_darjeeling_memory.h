@@ -32,7 +32,7 @@
 /**
  * Memory size for soc_proxy_ctn in top darjeeling.
  */
-#define TOP_DARJEELING_CTN_SIZE_BYTES 0x40000000
+#define TOP_DARJEELING_CTN_SIZE_BYTES 0x80000000
 
 /**
  * Memory base for sram_ctrl_ret_aon_ram_ret_aon in top darjeeling.
@@ -391,7 +391,7 @@
  * address between #TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR and
  * `TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR + TOP_DARJEELING_SOC_PROXY_CTN_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_SOC_PROXY_CTN_SIZE_BYTES 0x40000000
+#define TOP_DARJEELING_SOC_PROXY_CTN_SIZE_BYTES 0x80000000
 /**
  * Peripheral base address for regs device on sram_ctrl_ret_aon in top darjeeling.
  *

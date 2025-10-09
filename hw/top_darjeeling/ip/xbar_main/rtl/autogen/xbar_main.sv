@@ -1188,8 +1188,8 @@ module xbar_main (
                   ~(ADDR_MASK_SRAM_CTRL_MAIN__RAM)) == ADDR_SPACE_SRAM_CTRL_MAIN__RAM) begin
       dev_sel_s1n_49 = 3'd3;
 
-    end else if ((tl_s1n_49_us_h2d.a_address &
-                  ~(ADDR_MASK_SOC_PROXY__CTN)) == ADDR_SPACE_SOC_PROXY__CTN) begin
+    end else if (((tl_s1n_49_us_h2d.a_address < (ADDR_SPACE_SOC_PROXY__CTN + ADDR_SIZE_SOC_PROXY__CTN)) &&
+       (tl_s1n_49_us_h2d.a_address >= ADDR_SPACE_SOC_PROXY__CTN))) begin
       dev_sel_s1n_49 = 3'd4;
 end
   end
@@ -1285,8 +1285,8 @@ end
                   ~(ADDR_MASK_SRAM_CTRL_MBOX__REGS)) == ADDR_SPACE_SRAM_CTRL_MBOX__REGS) begin
       dev_sel_s1n_55 = 6'd21;
 
-    end else if ((tl_s1n_55_us_h2d.a_address &
-                  ~(ADDR_MASK_SOC_PROXY__CTN)) == ADDR_SPACE_SOC_PROXY__CTN) begin
+    end else if (((tl_s1n_55_us_h2d.a_address < (ADDR_SPACE_SOC_PROXY__CTN + ADDR_SIZE_SOC_PROXY__CTN)) &&
+       (tl_s1n_55_us_h2d.a_address >= ADDR_SPACE_SOC_PROXY__CTN))) begin
       dev_sel_s1n_55 = 6'd22;
 
     end else if ((tl_s1n_55_us_h2d.a_address &
@@ -1430,8 +1430,8 @@ end
                   ~(ADDR_MASK_SRAM_CTRL_MBOX__REGS)) == ADDR_SPACE_SRAM_CTRL_MBOX__REGS) begin
       dev_sel_s1n_87 = 6'd21;
 
-    end else if ((tl_s1n_87_us_h2d.a_address &
-                  ~(ADDR_MASK_SOC_PROXY__CTN)) == ADDR_SPACE_SOC_PROXY__CTN) begin
+    end else if (((tl_s1n_87_us_h2d.a_address < (ADDR_SPACE_SOC_PROXY__CTN + ADDR_SIZE_SOC_PROXY__CTN)) &&
+       (tl_s1n_87_us_h2d.a_address >= ADDR_SPACE_SOC_PROXY__CTN))) begin
       dev_sel_s1n_87 = 6'd22;
 
     end else if ((tl_s1n_87_us_h2d.a_address &
@@ -1515,8 +1515,8 @@ end
                   ~(ADDR_MASK_KMAC)) == ADDR_SPACE_KMAC) begin
       dev_sel_s1n_88 = 4'd6;
 
-    end else if ((tl_s1n_88_us_h2d.a_address &
-                  ~(ADDR_MASK_SOC_PROXY__CTN)) == ADDR_SPACE_SOC_PROXY__CTN) begin
+    end else if (((tl_s1n_88_us_h2d.a_address < (ADDR_SPACE_SOC_PROXY__CTN + ADDR_SIZE_SOC_PROXY__CTN)) &&
+       (tl_s1n_88_us_h2d.a_address >= ADDR_SPACE_SOC_PROXY__CTN))) begin
       dev_sel_s1n_88 = 4'd7;
 
     end else if ((tl_s1n_88_us_h2d.a_address &

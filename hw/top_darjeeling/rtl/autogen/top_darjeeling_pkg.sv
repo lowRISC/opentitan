@@ -187,7 +187,7 @@ package top_darjeeling_pkg;
   /**
    * Peripheral size in bytes for ctn device on soc_proxy in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_SOC_PROXY_CTN_SIZE_BYTES = 32'h40000000;
+  parameter int unsigned TOP_DARJEELING_SOC_PROXY_CTN_SIZE_BYTES = 32'h80000000;
 
   /**
    * Peripheral base address for regs device on sram_ctrl_ret_aon in top darjeeling.
@@ -547,7 +547,7 @@ package top_darjeeling_pkg;
   /**
    * Memory size for ctn in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_CTN_SIZE_BYTES = 32'h40000000;
+  parameter int unsigned TOP_DARJEELING_CTN_SIZE_BYTES = 32'h80000000;
 
   /**
   * Memory base address for ram_ctn in top darjeeling.
