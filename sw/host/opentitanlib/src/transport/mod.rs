@@ -24,7 +24,6 @@ pub mod dediprog;
 pub mod ftdi;
 pub mod hyperdebug;
 pub mod ioexpander;
-pub mod proxy;
 pub mod ti50emulator;
 pub mod verilator;
 

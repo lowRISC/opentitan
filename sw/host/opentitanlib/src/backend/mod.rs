@@ -15,7 +15,6 @@ use crate::util::parse_int::ParseInt;
 mod chip_whisperer;
 mod ftdi;
 mod hyperdebug;
-mod proxy;
 mod ti50emulator;
 mod verilator;
 

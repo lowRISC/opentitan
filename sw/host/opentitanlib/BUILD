@@ -54,8 +54,11 @@ filegroup(
     srcs = glob(["src/app/config/*.json5"]),
 )
 
+# This is the catch-all "everything" crate.
+# Before adding things here, consider if it can be made a separate crate instead.
+# This should eventually be break down into multiple smaller crates.
 rust_library(
-    name = "opentitanlib",
+    name = "opentitanlib_base",
     srcs = [
         "src/app/command.rs",
         "src/app/config/mod.rs",
@@ -69,7 +72,6 @@ rust_library(
         "src/backend/ftdi.rs",
         "src/backend/hyperdebug.rs",
         "src/backend/mod.rs",
-        "src/backend/proxy.rs",
         "src/backend/ti50emulator.rs",
         "src/backend/verilator.rs",
         "src/bootstrap/eeprom.rs",
@@ -202,12 +204,6 @@ rust_library(
         "src/transport/ioexpander/mod.rs",
         "src/transport/ioexpander/sx1503.rs",
         "src/transport/mod.rs",
-        "src/transport/proxy/emu.rs",
-        "src/transport/proxy/gpio.rs",
-        "src/transport/proxy/i2c.rs",
-        "src/transport/proxy/mod.rs",
-        "src/transport/proxy/spi.rs",
-        "src/transport/proxy/uart.rs",
         "src/transport/ti50emulator/emu.rs",
         "src/transport/ti50emulator/gpio.rs",
         "src/transport/ti50emulator/i2c.rs",
@@ -274,6 +270,7 @@ rust_library(
         "//sw/device:is_english_breakfast": ["english_breakfast"],
         "//conditions:default": [],
     }),
+    crate_name = "opentitanlib",
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
@@ -343,6 +340,24 @@ rust_library(
     ],
 )
 
+# To avoid having all existing `opentitanlib` to carry dependency of individual splitted crates,
+# re-export everything under the original `opentitanlib` name.
+rust_library(
+    name = "opentitanlib",
+    srcs = [
+        "reexport.rs",
+    ],
+    aliases = {
+        # The `:opentitanlib_base` has crate name of `opentitanlib`.
+        # Rename it before re-exporting to avoid conflicts.
+        ":opentitanlib_base": "opentitanlib_base",
+    },
+    deps = [
+        ":opentitanlib_base",
+        "//sw/host/ot_transports/proxy",
+    ],
+)
+
 rust_test(
     name = "opentitanlib_test",
     compile_data = [
@@ -352,7 +367,7 @@ rust_test(
         "src/bootstrap/simple.bin",
         "src/spiflash/SFDP_MX66L1G.bin",
     ],
-    crate = ":opentitanlib",
+    crate = ":opentitanlib_base",
     data = glob(["testdata/**"]) + [
         ":e2e_command",
         ":gpio",
@@ -371,7 +386,7 @@ rust_test(
 
 rust_doc(
     name = "opentitanlib_doc",
-    crate = ":opentitanlib",
+    crate = ":opentitanlib_base",
 )
 
 filegroup(

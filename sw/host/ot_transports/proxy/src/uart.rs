@@ -10,11 +10,11 @@ use std::time::Duration;
 use anyhow::{Result, bail};
 use tokio::io::AsyncRead;
 
-use super::ProxyError;
-use crate::io::uart::{FlowControl, Parity, Uart};
-use crate::proxy::protocol::{Request, Response, UartRequest, UartResponse};
-use crate::transport::proxy::{Inner, Proxy};
-use crate::util::runtime::MultiWaker;
+use opentitanlib::io::uart::{FlowControl, Parity, Uart};
+use opentitanlib::proxy::protocol::{Request, Response, UartRequest, UartResponse};
+use opentitanlib::util::runtime::MultiWaker;
+
+use super::{Inner, Proxy, ProxyError};
 
 pub struct ProxyUart {
     inner: Rc<Inner>,
@@ -115,7 +115,7 @@ impl Uart for ProxyUart {
             Poll::Ready(()) => Poll::Ready(Ok(read_buf.filled().len())),
             Poll::Pending => {
                 // `self.inner` currently does not yet support context notification.
-                crate::util::runtime::poll_later(cx, Duration::from_millis(1))
+                opentitanlib::util::runtime::poll_later(cx, Duration::from_millis(1))
             }
         }
     }
