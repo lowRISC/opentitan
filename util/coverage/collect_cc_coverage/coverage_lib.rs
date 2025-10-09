@@ -5,13 +5,13 @@
 //! This module provides utilities to handle coverage profiles for OpenTitan.
 //!
 //! This module assumes the following environment variables are set:
-//! - `ROOT`: Location from where the code coverage collection was invoked.
 //! - `RUNFILES_DIR`: Location of the test's runfiles.
 //! - `VERBOSE_COVERAGE`: Print debug info from the coverage scripts
 
 use anyhow::{bail, Context, Result};
 use byteorder::{LittleEndian, ReadBytesExt};
 use object::{Object, ObjectSection};
+use runfiles::{rlocation, Runfiles};
 use std::collections::HashMap;
 use std::env;
 use std::fs;
@@ -63,25 +63,6 @@ pub fn path_from_env(name: &str) -> PathBuf {
         panic!("Environment variable `{name}` cannot be empty.");
     }
     path
-}
-
-/// Retrieves the runfiles directory, resolving it to an absolute path.
-///
-/// This function determines the absolute path to the runfiles directory.
-/// It uses the `ROOT` and `RUNFILES_DIR` environment variables. If `RUNFILES_DIR`
-/// is not absolute, it's resolved relative to `ROOT`.
-pub fn get_runfiles_dir() -> PathBuf {
-    let execroot = path_from_env("ROOT");
-    let mut runfiles_dir = path_from_env("RUNFILES_DIR");
-
-    if !runfiles_dir.is_absolute() {
-        runfiles_dir = execroot.join(runfiles_dir);
-    }
-
-    debug_log!("ROOT: {}", execroot.display());
-    debug_log!("RUNFILES_DIR: {}", runfiles_dir.display());
-
-    runfiles_dir
 }
 
 /// Searches a directory and its subdirectories for files with a specific extension.
@@ -330,12 +311,17 @@ impl ProfileData {
 impl ProfileRegistry {
     /// Loads all available `ProfileData` from ELF files found in the runfiles directory
     /// and indexes them by their build ID.
-    pub fn load() -> Result<ProfileRegistry> {
-        let runfiles_dir = get_runfiles_dir();
+    pub fn load_from_runfiles() -> Result<ProfileRegistry> {
+        let runfiles_dir = runfiles::find_runfiles_dir().unwrap();
         debug_log!("runfiles_dir: {:?}", runfiles_dir);
+        Self::load_from_dir(&runfiles_dir)
+    }
 
+    /// Loads all available `ProfileData` from ELF files found in the given directory
+    /// and indexes them by their build ID.
+    pub fn load_from_dir(dir: &PathBuf) -> Result<ProfileRegistry> {
         // Collect all elf files in the runfiles.
-        let elf_files: Vec<PathBuf> = search_by_extension(&runfiles_dir, "elf");
+        let elf_files: Vec<PathBuf> = search_by_extension(dir, "elf");
 
         debug_log!("elf_files: {:?}", elf_files);
 
@@ -374,14 +360,14 @@ impl ProfileRegistry {
 }
 
 fn find_tool(file_name: &str) -> Result<PathBuf> {
-    let path = get_runfiles_dir()
-        .join("+lowrisc_rv32imcb_toolchain+lowrisc_rv32imcb_toolchain/bin")
-        .join(file_name);
-    debug_log!("Testing {file_name} path: {}", path.display());
-    if path.exists() {
-        return Ok(path);
-    }
-
+    let r = Runfiles::create().unwrap();
+    let path = PathBuf::from("lowrisc_rv32imcb_toolchain/bin").join(file_name);
+    if let Some(path) = rlocation!(r, path) {
+        debug_log!("Testing {file_name} path: {}", path.display());
+        if path.exists() {
+            return Ok(path);
+        }
+    };
     bail!("ERROR: missing {file_name} tool.");
 }
 
@@ -424,7 +410,6 @@ pub fn llvm_profdata_merge(profraw_file: &PathBuf, profdata_file: &PathBuf) {
 ///     -instr-profile "${profdata_file}" \
 ///     -ignore-filename-regex='.*external/.+' \
 ///     -ignore-filename-regex='^/tmp/.+' \
-///     -path-equivalence=.,"${ROOT}" \
 ///     "${elf}" \
 ///   | sed 's#/proc/self/cwd/##' > "${output_file}"
 pub fn llvm_cov_export(
@@ -433,7 +418,6 @@ pub fn llvm_cov_export(
     elf: &PathBuf,
     output_file: &PathBuf,
 ) {
-    let execroot = path_from_env("ROOT");
     let llvm_cov = find_tool("llvm-cov").unwrap();
 
     let mut llvm_cov_cmd = process::Command::new(llvm_cov);
@@ -444,7 +428,6 @@ pub fn llvm_cov_export(
         .arg(profdata_file)
         .arg("-ignore-filename-regex='.*external/.+'")
         .arg("-ignore-filename-regex='/tmp/.+'")
-        .arg(format!("-path-equivalence=.,'{}'", execroot.display()))
         .arg(elf)
         .stdout(process::Stdio::piped());
 
@@ -459,8 +442,7 @@ pub fn llvm_cov_export(
     debug_log!("Parsing llvm-cov output");
     let mut report_str = std::str::from_utf8(&output.stdout)
         .expect("Failed to parse llvm-cov output")
-        .replace("/proc/self/cwd/", "")
-        .replace(&execroot.display().to_string(), "");
+        .replace("/proc/self/cwd/", "");
 
     if format == "lcov" {
         report_str = merge_lcov_count_copies(&report_str).unwrap();
