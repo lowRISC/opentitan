@@ -7,5 +7,6 @@ extern crate ot_transport_dediprog;
 extern crate ot_transport_ftdi;
 extern crate ot_transport_proxy;
 extern crate ot_transport_ti50emulator;
+extern crate ot_transport_verilator;
 
 pub use opentitanlib_base::*;

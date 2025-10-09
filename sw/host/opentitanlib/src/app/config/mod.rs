@@ -54,4 +54,3 @@ builtin_file!("hyperdebug_cw310.json5");
 builtin_file!("hyperdebug_cw340.json5");
 builtin_file!("hyperdebug_teacup.json5");
 builtin_file!("hyperdebug_teacup_default.json5");
-builtin_file!("opentitan_verilator.json5");

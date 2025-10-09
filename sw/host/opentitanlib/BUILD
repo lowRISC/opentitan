@@ -70,7 +70,6 @@ rust_library(
         "src/backend/chip_whisperer.rs",
         "src/backend/hyperdebug.rs",
         "src/backend/mod.rs",
-        "src/backend/verilator.rs",
         "src/bootstrap/eeprom.rs",
         "src/bootstrap/legacy.rs",
         "src/bootstrap/legacy_rescue.rs",
@@ -194,10 +193,6 @@ rust_library(
         "src/transport/ioexpander/mod.rs",
         "src/transport/ioexpander/sx1503.rs",
         "src/transport/mod.rs",
-        "src/transport/verilator/gpio.rs",
-        "src/transport/verilator/mod.rs",
-        "src/transport/verilator/subprocess.rs",
-        "src/transport/verilator/transport.rs",
         "src/uart/console.rs",
         "src/uart/mod.rs",
         "src/util/bigint.rs",
@@ -339,6 +334,7 @@ rust_library(
         "//sw/host/ot_transports/ftdi",
         "//sw/host/ot_transports/proxy",
         "//sw/host/ot_transports/ti50emulator",
+        "//sw/host/ot_transports/verilator",
     ],
 )
 

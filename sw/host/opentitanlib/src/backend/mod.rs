@@ -14,7 +14,6 @@ use crate::util::parse_int::ParseInt;
 
 mod chip_whisperer;
 mod hyperdebug;
-mod verilator;
 
 pub trait Backend {
     /// Additional backend-specific arguments in addition to `BackendOpts`.

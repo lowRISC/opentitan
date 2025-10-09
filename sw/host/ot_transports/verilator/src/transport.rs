@@ -12,15 +12,16 @@ use anyhow::{Context, Result, ensure};
 use regex::Regex;
 use serde_annotate::Annotate;
 
-use crate::io::gpio::{GpioError, GpioPin};
-use crate::io::uart::Uart;
-use crate::transport::common::uart::{SerialPortUart, SoftwareFlowControl};
-use crate::transport::verilator::gpio::{GpioInner, VerilatorGpioPin};
-use crate::transport::verilator::subprocess::{Options, Subprocess};
-use crate::transport::{
+use opentitanlib::io::gpio::{GpioError, GpioPin};
+use opentitanlib::io::uart::Uart;
+use opentitanlib::transport::common::uart::{SerialPortUart, SoftwareFlowControl};
+use opentitanlib::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
-use crate::util::parse_int::ParseInt;
+use opentitanlib::util::parse_int::ParseInt;
+
+use super::gpio::{GpioInner, VerilatorGpioPin};
+use super::subprocess::{Options, Subprocess};
 
 const UART_BAUD: u32 = 40;
 

@@ -22,7 +22,6 @@ pub mod chip_whisperer;
 pub mod common;
 pub mod hyperdebug;
 pub mod ioexpander;
-pub mod verilator;
 
 // Export custom error types
 mod errors;
