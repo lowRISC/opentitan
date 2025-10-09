@@ -7,9 +7,16 @@ use clap::Args;
 use humantime::parse_duration;
 use std::time::Duration;
 
-use super::{Backend, BackendOpts, define_interface};
-use crate::transport::Transport;
-use crate::transport::verilator::{Options, Verilator};
+use opentitanlib::backend::{Backend, BackendOpts, define_interface};
+use opentitanlib::transport::Transport;
+use opentitanlib::util::fs::builtin_file;
+
+pub mod gpio;
+pub mod subprocess;
+pub mod transport;
+
+pub use subprocess::Options;
+pub use transport::Verilator;
 
 #[derive(Debug, Args)]
 pub struct VerilatorOpts {
@@ -56,4 +63,8 @@ define_interface!(
     "verilator",
     VerilatorBackend,
     "/__builtin__/opentitan_verilator.json5"
+);
+builtin_file!(
+    "opentitan_verilator.json5",
+    include_str!("../config/opentitan_verilator.json5")
 );
