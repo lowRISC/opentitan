@@ -146,12 +146,8 @@ cc_test(
 )
 
 cc_library(
-    name = "rom_ext_isrs",
-    srcs = [
-        "rom_ext_isrs.c",
-        "//sw/device/silicon_creator/lib:flash_exc_handler",
-    ],
-    hdrs = ["rom_ext_isrs.h"],
+    name = "rom_ext_flash_exc_handler",
+    srcs = ["//sw/device/silicon_creator/lib:flash_exc_handler"],
     defines = [
         "INTERRUPT_HANDLER=rom_ext_interrupt_handler",
     ],
@@ -159,6 +155,18 @@ cc_library(
     deps = [
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+    ],
+)
+
+cc_library(
+    name = "rom_ext_isrs",
+    srcs = ["rom_ext_isrs.c"],
+    hdrs = ["rom_ext_isrs.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":rom_ext_flash_exc_handler",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:dbg_print",
@@ -221,13 +229,21 @@ ld_library(
     ],
 )
 
+cc_library(
+    name = "rom_ext_start",
+    srcs = ["rom_ext_start.S"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:hardened",
+    ],
+)
+
 [
     cc_library(
         name = "rom_ext_{}".format(variation_name),
-        srcs = [
-            "rom_ext.c",
-            "rom_ext_start.S",
-        ],
+        srcs = ["rom_ext.c"],
         hdrs = ["rom_ext.h"],
         target_compatible_with = [OPENTITAN_CPU],
         deps = [
@@ -236,6 +252,7 @@ ld_library(
             ":rom_ext_boot_services",
             ":rom_ext_isrs",
             ":rom_ext_manifest",
+            ":rom_ext_start",
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
             "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
