@@ -1,3 +1,7 @@
+/* Copyright zeroRISC Inc. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
 /* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
@@ -441,7 +445,7 @@ modinv_f4:
   addi     x31, x31, 17
 
   /* Main loop. */
-  loop     x31, 120
+  loop     x31, 122
     /* Load the least significant limb of v.
          w20 <= dmem[dptr_v] = v[255:0] */
     bn.lid   x20, 0(x15)
@@ -535,10 +539,13 @@ modinv_f4:
       /* FG1.C <= w23 <? m[i] + FG1.C */
       bn.cmpb  w23, w20, FG1
 
-    /* Capture FG1.C as a mask that is all 1s if we should subtract the modulus.
-         w26 <= FG1.C ? 0 : 2^256 - 1 */
+    /* Capture ~FG0.C & FG1.C as a mask that is all 1s if we should subtract
+       the modulus.
+         w26 <= (~FG0.C & FG1.C) ? 0 : 2^256 - 1 */
+    bn.subb  w23, w31, w31, FG0
     bn.subb  w26, w31, w31, FG1
     bn.not   w26, w26
+    bn.or    w26, w23, w26
 
     /* Clear flags for both groups. */
     bn.sub   w31, w31, w31, FG0
