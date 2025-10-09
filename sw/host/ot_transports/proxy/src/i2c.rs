@@ -7,13 +7,13 @@ use std::cell::Cell;
 use std::rc::Rc;
 use std::time::Duration;
 
-use super::ProxyError;
-use crate::io::gpio;
-use crate::io::i2c::{Bus, DeviceStatus, I2cError, Mode, Transfer};
-use crate::proxy::protocol::{
+use opentitanlib::io::gpio;
+use opentitanlib::io::i2c::{Bus, DeviceStatus, I2cError, Mode, Transfer};
+use opentitanlib::proxy::protocol::{
     I2cRequest, I2cResponse, I2cTransferRequest, I2cTransferResponse, Request, Response,
 };
-use crate::transport::proxy::{Inner, Proxy};
+
+use super::{Inner, Proxy, ProxyError};
 
 pub struct ProxyI2c {
     inner: Rc<Inner>,

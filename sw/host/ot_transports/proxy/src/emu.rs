@@ -6,10 +6,10 @@ use anyhow::{Result, bail};
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use super::ProxyError;
-use crate::io::emu::{EmuState, EmuValue, Emulator};
-use crate::proxy::protocol::{EmuRequest, EmuResponse, Request, Response};
-use crate::transport::proxy::{Inner, Proxy};
+use opentitanlib::io::emu::{EmuState, EmuValue, Emulator};
+use opentitanlib::proxy::protocol::{EmuRequest, EmuResponse, Request, Response};
+
+use super::{Inner, Proxy, ProxyError};
 
 pub struct ProxyEmu {
     inner: Rc<Inner>,

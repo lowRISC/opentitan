@@ -10,22 +10,24 @@ use std::net::{TcpStream, ToSocketAddrs};
 use std::rc::Rc;
 
 use anyhow::{Context, Result, bail};
+use clap::Args;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tokio::io::AsyncWriteExt;
 
-use crate::bootstrap::BootstrapOptions;
-use crate::impl_serializable_error;
-use crate::io::emu::Emulator;
-use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
-use crate::io::i2c::Bus;
-use crate::io::spi::Target;
-use crate::io::uart::Uart;
-use crate::proxy::protocol::{
+use opentitanlib::backend::{Backend, BackendOpts, define_interface};
+use opentitanlib::bootstrap::BootstrapOptions;
+use opentitanlib::impl_serializable_error;
+use opentitanlib::io::emu::Emulator;
+use opentitanlib::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
+use opentitanlib::io::i2c::Bus;
+use opentitanlib::io::spi::Target;
+use opentitanlib::io::uart::Uart;
+use opentitanlib::proxy::protocol::{
     AsyncMessage, Message, ProxyRequest, ProxyResponse, Request, Response, UartRequest,
     UartResponse,
 };
-use crate::transport::{Capabilities, Capability, ProxyOps, Transport, TransportError};
+use opentitanlib::transport::{Capabilities, Capability, ProxyOps, Transport, TransportError};
 
 mod emu;
 mod gpio;
@@ -118,7 +120,7 @@ impl Inner {
                 if let Some(uart_instance) = self.uart_channel_map.borrow().get(&channel)
                     && let Some(uart_record) = self.uarts.borrow_mut().get_mut(uart_instance)
                 {
-                    crate::util::runtime::block_on(async {
+                    opentitanlib::util::runtime::block_on(async {
                         uart_record.pipe_sender.write_all(&data).await
                     })?;
                 }
@@ -355,3 +357,23 @@ impl Transport for Proxy {
         Ok(Rc::new(ProxyOpsImpl::new(self)?))
     }
 }
+
+#[derive(Debug, Args)]
+pub struct ProxyOpts {
+    #[arg(long)]
+    proxy: Option<String>,
+    #[arg(long, default_value = "9900")]
+    port: u16,
+}
+
+struct ProxyBackend;
+
+impl Backend for ProxyBackend {
+    type Opts = ProxyOpts;
+
+    fn create_transport(_: &BackendOpts, args: &ProxyOpts) -> Result<Box<dyn Transport>> {
+        Ok(Box::new(Proxy::open(args.proxy.as_deref(), args.port)?))
+    }
+}
+
+define_interface!("proxy", ProxyBackend);
