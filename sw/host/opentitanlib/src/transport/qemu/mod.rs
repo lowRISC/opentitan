@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+pub mod i2c;
 pub mod monitor;
 pub mod reset;
 pub mod spi;
@@ -16,8 +17,10 @@ use anyhow::{Context, bail};
 use crate::backend::qemu::QemuOpts;
 use crate::io::gpio::{GpioError, GpioPin};
 use crate::io::uart::Uart;
+use crate::transport::Bus;
 use crate::transport::Target;
 use crate::transport::common::uart::SerialPortUart;
+use crate::transport::qemu::i2c::QemuI2c;
 use crate::transport::qemu::monitor::{Chardev, ChardevKind, Monitor};
 use crate::transport::qemu::reset::QemuReset;
 use crate::transport::qemu::spi::QemuSpi;
@@ -47,6 +50,9 @@ pub struct Qemu {
 
     /// SPI device.
     spi: Option<Rc<dyn Target>>,
+
+    /// I2C device.
+    i2c: Option<Rc<dyn Bus>>,
 
     /// QEMU log modelled as a UART.
     log: Option<Rc<dyn Uart>>,
@@ -122,6 +128,18 @@ impl Qemu {
             }
         };
 
+        let i2c = match find_chardev(&chardevs, "i2c0tp") {
+            Some(ChardevKind::Pty { path }) => {
+                let i2c = QemuI2c::new(path).context("failed to connect to QEMU I2C PTY")?;
+                let i2c: Rc<dyn Bus> = Rc::new(i2c);
+                Some(i2c)
+            }
+            _ => {
+                log::info!("could not find i2c chardev with id=i2c0tp, skipping I2C");
+                None
+            }
+        };
+
         // Resetting is done over the monitor, but we model it like a pin to enable strapping it.
         let reset = QemuReset::new(Rc::clone(&monitor));
         let reset = Rc::new(reset);
@@ -132,6 +150,7 @@ impl Qemu {
             console,
             log,
             spi,
+            i2c,
         })
     }
 }
@@ -164,6 +183,19 @@ impl Transport for Qemu {
             )),
             _ => Err(TransportError::InvalidInstance(
                 TransportInterfaceType::Uart,
+                instance.to_string(),
+            )
+            .into()),
+        }
+    }
+
+    fn i2c(&self, instance: &str) -> anyhow::Result<Rc<dyn Bus>> {
+        match instance {
+            "0" => Ok(Rc::clone(
+                self.i2c.as_ref().context("QEMU I2C 0 not connected")?,
+            )),
+            _ => Err(TransportError::InvalidInstance(
+                TransportInterfaceType::I2c,
                 instance.to_string(),
             )
             .into()),
