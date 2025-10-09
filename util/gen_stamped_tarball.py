@@ -27,7 +27,7 @@ def main(args):
     if commit_status != 'clean':
         package_dir += f'-{commit_status}'
 
-    with tarfile.open(args.out, 'w') as tar:
+    with tarfile.open(args.out, 'w', dereference=True) as tar:
         for path in args.files:
             path = Path(path)
             tar.add(path, arcname=f'{package_dir}/{path.name}')
