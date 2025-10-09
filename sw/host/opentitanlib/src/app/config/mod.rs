@@ -46,7 +46,6 @@ builtin_file!("dediprog.json5");
 builtin_file!("h1dx_devboard.json5");
 builtin_file!("h1dx_devboard_c2d2.json5");
 builtin_file!("servo_micro.json5");
-builtin_file!("ti50emulator.json5");
 builtin_file!("opentitan_cw310.json5");
 builtin_file!("opentitan_cw340.json5");
 builtin_file!("opentitan_ftdi_voyager.json5");
