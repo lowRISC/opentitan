@@ -2,31 +2,31 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
-use serde_annotate::Annotate;
-use std::any::Any;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::rc::Rc;
 
-use crate::io::gpio::{GpioPin, PinMode};
-use crate::io::spi::Target;
-use crate::io::uart::Uart;
-use crate::io::uart::UartError;
-use crate::transport::common::uart::{SerialPortUart, SoftwareFlowControl};
-use crate::transport::{
-    Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
-};
-use crate::util::parse_int::ParseInt;
+use anyhow::Result;
 use serialport::SerialPortType;
 
-use chip::Chip;
-use ftdi_embedded_hal as ftdi_hal;
+use opentitanlib::backend::{Backend, BackendOpts, define_interface};
+use opentitanlib::io::gpio::{GpioPin, PinMode};
+use opentitanlib::io::spi::Target;
+use opentitanlib::io::uart::Uart;
+use opentitanlib::io::uart::UartError;
+use opentitanlib::transport::common::uart::{SerialPortUart, SoftwareFlowControl};
+use opentitanlib::transport::{
+    Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
+};
+use opentitanlib::util::fs::builtin_file;
+use opentitanlib::util::parse_int::ParseInt;
 
 pub mod chip;
 pub mod gpio;
 pub mod spi;
+
+use chip::{Chip, Ft4232hq};
 
 #[derive(Default)]
 struct Inner {
@@ -36,7 +36,8 @@ struct Inner {
 }
 
 pub struct Ftdi<C: Chip> {
-    pub(crate) ftdi_interfaces: Rc<HashMap<ftdi::Interface, ftdi_hal::FtHal<ftdi::Device>>>,
+    pub(crate) ftdi_interfaces:
+        Rc<HashMap<ftdi::Interface, ftdi_embedded_hal::FtHal<ftdi::Device>>>,
     inner: RefCell<Inner>,
     phantom: std::marker::PhantomData<C>,
 }
@@ -48,7 +49,10 @@ impl<C: Chip> Ftdi<C> {
             let device = ftdi::find_by_vid_pid(C::VENDOR_ID, C::PRODUCT_ID)
                 .interface(*interface)
                 .open()?;
-            ftdi_interfaces.insert(*interface, ftdi_hal::FtHal::init_freq(device, 8_000_000)?);
+            ftdi_interfaces.insert(
+                *interface,
+                ftdi_embedded_hal::FtHal::init_freq(device, 8_000_000)?,
+            );
         }
 
         let ftdi_dev = Ftdi {
@@ -129,14 +133,24 @@ impl<C: Chip> Transport for Ftdi<C> {
         }
         Ok(Rc::clone(inner.spi.as_ref().unwrap()))
     }
+}
 
-    fn dispatch(&self, _action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
-        Err(TransportError::UnsupportedOperation.into())
+struct FtdiBackend<C>(C);
+
+impl<C: Chip + 'static> Backend for FtdiBackend<C> {
+    type Opts = ();
+
+    fn create_transport(_: &BackendOpts, _: &()) -> Result<Box<dyn Transport>> {
+        Ok(Box::new(Ftdi::<C>::new()?))
     }
 }
 
-/// Command for Transport::dispatch().
-pub struct SetPll {}
-
-/// Command for Transport::dispatch(). Resets the Chip whisperer board's SAM3X chip.
-pub struct ResetSam3x {}
+define_interface!(
+    "ftdi",
+    FtdiBackend<Ft4232hq>,
+    "/__builtin__/opentitan_ftdi_voyager.json5"
+);
+builtin_file!(
+    "opentitan_ftdi_voyager.json5",
+    include_str!("../config/opentitan_ftdi_voyager.json5")
+);

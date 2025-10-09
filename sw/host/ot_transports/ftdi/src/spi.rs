@@ -2,32 +2,25 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::io::spi::Transfer;
-use anyhow::Result;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use anyhow::Result;
 use embedded_hal::spi::SpiBus;
 
-use ftdi_embedded_hal as ftdi_hal;
-
-use crate::io::gpio;
-use crate::io::spi::AssertChipSelect;
-use crate::io::spi::MaxSizes;
-use crate::io::spi::SpiError;
-use crate::io::spi::TransferMode;
-use crate::transport::Target;
-use crate::transport::TransportError;
+use opentitanlib::io::gpio;
+use opentitanlib::io::spi::{AssertChipSelect, MaxSizes, SpiError, Target, Transfer, TransferMode};
+use opentitanlib::transport::TransportError;
 
 pub struct Spi<T> {
-    spi: Rc<RefCell<ftdi_hal::Spi<ftdi::Device>>>,
+    spi: Rc<RefCell<ftdi_embedded_hal::Spi<ftdi::Device>>>,
     cs: T,
 }
 
 impl<T: gpio::GpioPin> Spi<T> {
     pub fn open(
-        ftdi_interfaces: &Rc<HashMap<ftdi::Interface, ftdi_hal::FtHal<ftdi::Device>>>,
+        ftdi_interfaces: &Rc<HashMap<ftdi::Interface, ftdi_embedded_hal::FtHal<ftdi::Device>>>,
         cs: T,
     ) -> Result<Self> {
         let hal = ftdi_interfaces
