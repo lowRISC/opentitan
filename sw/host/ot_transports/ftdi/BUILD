@@ -19,7 +19,6 @@ rust_library(
     deps = [
         "//sw/host/opentitanlib:opentitanlib_base",
         "@crate_index//:anyhow",
-        "@crate_index//:clap",
         "@crate_index//:embedded-hal",
         "@crate_index//:ftdi",
         "@crate_index//:ftdi-embedded-hal",
