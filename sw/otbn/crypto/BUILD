@@ -104,6 +104,13 @@ otbn_library(
 )
 
 otbn_library(
+    name = "p256_isoncurve_proj",
+    srcs = [
+        "p256_isoncurve_proj.s",
+    ],
+)
+
+otbn_library(
     name = "p256_sign",
     srcs = [
         "p256_sign.s",
@@ -125,6 +132,7 @@ otbn_binary(
     deps = [
         ":p256_base",
         ":p256_isoncurve",
+        ":p256_isoncurve_proj",
         ":p256_shared_key",
         ":p256_sign",
         ":p256_verify",
@@ -156,6 +164,20 @@ otbn_library(
     name = "p384_isoncurve",
     srcs = [
         "p384_isoncurve.s",
+    ],
+)
+
+otbn_library(
+    name = "p384_isoncurve_proj",
+    srcs = [
+        "p384_isoncurve_proj.s",
+    ],
+)
+
+otbn_library(
+    name = "p384_mem",
+    srcs = [
+        "p384_mem.s",
     ],
 )
 
@@ -338,6 +360,7 @@ otbn_binary(
     ],
     deps = [
         ":p256_base",
+        ":p256_isoncurve",
     ],
 )
 
@@ -348,6 +371,7 @@ otbn_binary(
     ],
     deps = [
         ":p256_base",
+        ":p256_isoncurve",
     ],
 )
 
@@ -359,6 +383,8 @@ otbn_binary(
     deps = [
         ":p384_base",
         ":p384_internal_mult",
+        ":p384_isoncurve",
+        ":p384_mem",
         ":p384_modinv",
         ":p384_sign",
     ],
@@ -376,8 +402,10 @@ otbn_binary(
         ":p384_base_mult",
         ":p384_internal_mult",
         ":p384_isoncurve",
+        ":p384_isoncurve_proj",
         ":p384_keygen",
         ":p384_keygen_from_seed",
+        ":p384_mem",
         ":p384_modinv",
         ":p384_scalar_mult",
         ":p384_sign",

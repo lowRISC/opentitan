@@ -15,7 +15,9 @@
 .globl p256_generate_k
 .globl p256_generate_random_key
 .globl p256_key_from_seed
+.globl p256_masked_scalar_reblind
 .globl trigger_fault_if_fg0_z
+.globl trigger_fault_if_fg0_not_z
 .globl mul_modp
 .globl setup_modp
 .globl mod_mul_256x256
@@ -66,6 +68,43 @@ trigger_fault_if_fg0_z:
   bn.lid     x3, 0(x2)
 
   /* If we get here, the flag must have been 0. Restore w31 to zero and return.
+       w31 <= 0 */
+  bn.xor     w31, w31, w31
+
+  ret
+
+/**
+ * Trigger a fault if the FG0.Z flag is 0.
+ *
+ * If the flag is 0, then this routine will trigger an `ILLEGAL_INSN` error and
+ * abort the OTBN program. If the flag is 1, the routine will essentially do
+ * nothing.
+ *
+ * NOTE: Be careful when calling this routine that the FG0.Z flag is not
+ * sensitive; since aborting the program will be quicker than completing it,
+ * the flag's value is likely clearly visible to an attacker through timing.
+ *
+ * @param[in]    w31: all-zero
+ * @param[in]  FG0.Z: boolean indicating fault condition
+ *
+ * clobbered registers: x2
+ * clobbered flag groups: none
+ */
+trigger_fault_if_fg0_not_z:
+  /* Read the FG0.Z flag (position 3).
+       x2 <= FG0.Z */
+  csrrw     x2, FG0, x0
+  andi      x2, x2, 8
+  slli      x2, x2, 3
+
+  /* The `bn.lid` instruction causes an `BAD_DATA_ADDR` error if the
+     memory address is out of bounds. Therefore, if FG0.Z is 1, this
+     instruction causes an error, but if FG0.Z is 0 it simply loads the word at
+     address 0 into w31. */
+  li         x3, 31
+  bn.lid     x3, 0(x2)
+
+  /* If we get here, the flag must have been 1. Restore w31 to zero and return.
        w31 <= 0 */
   bn.xor     w31, w31, w31
 
@@ -1236,15 +1275,20 @@ proj_double:
  *    Q = if (k0[i] | k1[i]) then B else Q
  *
  *
- * Each share k0/k1 is 320 bits, even though it represents a 256-bit value.
- * This is a side-channel protection measure.
+ * Each share k0/k1 is 321 bits, even though it represents a 256-bit value.
+ * This allows for blinded scalars as a side-channel protection measure.
+ *
+ * 321 bit shares mean that we have 65 bits of blinding for each share. This
+ * is the minimal number of bits to protect against window attacks mentioned
+ * in Schindler.
+ * https://csrc.nist.gov/csrc/media/events/workshop-on-elliptic-curve-cryptography-standards/documents/papers/session6-schindler-werner.pdf
  *
  * @param[in]  x21: dptr_x, pointer to affine x-coordinate in dmem
  * @param[in]  x22: dptr_y, pointer to affine y-coordinate in dmem
  * @param[in]  w0: lower 256 bits of k0, first share of scalar
- * @param[in]  w1: upper 64 bits of k0, first share of scalar
+ * @param[in]  w1: upper 65 bits of k0, first share of scalar
  * @param[in]  w2: lower 256 bits of k1, second share of scalar
- * @param[in]  w3: upper 64 bits of k1, second share of scalar
+ * @param[in]  w3: upper 65 bits of k1, second share of scalar
  * @param[in]  w27: b, curve domain parameter
  * @param[in]  w31: all-zero
  * @param[in]  MOD: p, modulus, 2^256 > p > 2^255.
@@ -1282,7 +1326,7 @@ scalar_mult_int:
 
   /* Init 2P, this will be used for the addition part in the double-and-add
      loop when the bit at the current index is 1 for both shares of the scalar.
-     2P = (w4, w5, w6) <= (w11, w12, w13) <= 2*(w8, w9, w10) = 2*P */
+     2P = (w4, w5, w6) <= (w8, w8, w10) <= 2*(w8, w9, w10) = 2*P */
   jal       x1, proj_double
   bn.mov    w4, w8
   bn.mov    w5, w9
@@ -1295,9 +1339,9 @@ scalar_mult_int:
      to avoid potential transient side channel leakage from accessing k0 and k1
      in sequential instructions.
 
-     w0,w1 <= [w0, w1] << 192 = k0 << 192 */
-  bn.rshi   w1, w1, w0 >> 64
-  bn.rshi   w0, w0, w31 >> 64
+     w0,w1 <= [w0, w1] << 191 = k0 << 191 */
+  bn.rshi   w1, w1, w0 >> 65
+  bn.rshi   w0, w0, w31 >> 65
 
   /* init double-and-add with point in infinity
      Q = (w8, w9, w10) <= (0, 1, 0) */
@@ -1308,12 +1352,12 @@ scalar_mult_int:
   /* Shift second share of k so its MSB is in the most significant position of a
      word as well.
 
-     w2,w3 <= [w2, w3] << 192 = k1 << 192 */
-  bn.rshi   w3, w3, w2 >> 64
-  bn.rshi   w2, w2, w31 >> 64
+     w2,w3 <= [w2, w3] << 191 = k1 << 191 */
+  bn.rshi   w3, w3, w2 >> 65
+  bn.rshi   w2, w2, w31 >> 65
 
   /* double-and-add loop with decreasing index */
-  loopi     320, 39
+  loopi     321, 42
 
     /* double point Q
        Q = (w8, w9, w10) <= 2*(w8, w9, w10) = 2*Q */
@@ -1338,13 +1382,18 @@ scalar_mult_int:
     bn.rshi   w26, w31, w3 >> 255
     bn.xor    w20, w7, w26
 
+    /* init regs with random numbers from URND */
+    bn.wsrr   w11, URND
+    bn.wsrr   w12, URND
+    bn.wsrr   w13, URND
+
     /* N.B. The L bit here is secret. For side channel protection in the
        selects below, it is vital that neither option is equal to the
-       destionation register (e.g. bn.sel w0, w0, w1). In this case, the
+       destination register (e.g. bn.sel w0, w0, w1). In this case, the
        hamming distance from the destination's previous value to its new value
        will be 0 in one of the cases and potentially reveal L.
 
-       Note that the randomized XOR instruction following the bn.sel
+       Note that the randomized XOR instruction before the bn.sel
        instructions below acts both to randomize the low bits of k0 for use in a
        MSb check, as well as to clear flags.
 
@@ -1374,11 +1423,17 @@ scalar_mult_int:
     bn.mov    w26, w9
     bn.mov    w30, w10
 
-    /* N.B. As before, the select instructions below must use distinct
-       source/destination registers to avoid revealing L.
+    /* init destination registers with random numbers from URND */
+    bn.wsrr   w8, URND
+    bn.wsrr   w9, URND
+    bn.wsrr   w10, URND
+
+    /* N.B. The select instructions below must use distinct
+       source/destination registers and source and destination must not be
+       equal for any source and destination pair to avoid revealing L.
 
        Select doubling result (Q) or addition result (Q+P)
-         Q = w0[255] or w1[255]?Q_a=(w11, w12, w13):Q=(w7, w26, w30) */
+         Q = w0[255] or w1[255]?Q+P=(w11, w12, w13):Q=(w7, w26, w30) */
     bn.sel    w8, w11, w7, L
     bn.sel    w9, w12, w26, L
     bn.sel    w10, w13, w30, L
@@ -1391,17 +1446,8 @@ scalar_mult_int:
     bn.rshi   w1, w1, w0 >> 255
     bn.rshi   w0, w0, w31 >> 255
 
-    /* init regs with random numbers from URND */
-    bn.wsrr   w11, URND
-    bn.wsrr   w12, URND
-    bn.wsrr   w13, URND
-
-    /* Shift k1 left 1 bit. */
-    bn.rshi   w3, w3, w2 >> 255
-    bn.rshi   w2, w2, w31 >> 255
-
     /* get a fresh random number from URND and scale the coordinates of
-       2P = (w3, w4, w5) (scaling each projective coordinate with same
+       2P = (w4, w5, w6) (scaling each projective coordinate with same
        factor results in same point) */
     bn.wsrr   w7, URND
 
@@ -1422,6 +1468,10 @@ scalar_mult_int:
     bn.mov    w25, w7
     jal       x1, mul_modp
     bn.mov    w6, w19
+
+    /* Shift k1 left 1 bit. */
+    bn.rshi   w3, w3, w2 >> 255
+    bn.rshi   w2, w2, w31 >> 255
 
   /* Check if the z-coordinate of Q is 0. If so, fail; this represents the
      point at infinity and means the scalar was zero mod n, which likely
@@ -1447,18 +1497,24 @@ scalar_mult_int:
  * where:
  *   d = (d0 + d1) mod n
  *
- * The shares d0 and d1 are up to 320 bits each to provide extra redundancy.
+ * The shares d0 and d1 are up to 321 bits each to provide extra redundancy.
+ *
+ * 321 bit shares mean that we have 65 bits of blinding for each share. This
+ * is the minimal number of bits to protect against window attacks mentioned
+ * in Schindler.
+ * https://csrc.nist.gov/csrc/media/events/workshop-on-elliptic-curve-cryptography-standards/documents/papers/session6-schindler-werner.pdf
+ *
  *
  * This routine runs in constant time.
  *
- * @param[in]   dmem[d0]:  first share of scalar d (320 bits)
- * @param[in]   dmem[d1]:  second share of scalar d (320 bits)
+ * @param[in]   dmem[d0]:  first share of scalar d (321 bits)
+ * @param[in]   dmem[d1]:  second share of scalar d (321 bits)
  * @param[out]  dmem[x]:   affine x-coordinate (256 bits)
  * @param[out]  dmem[y]:   affine y-coordinate (256 bits)
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * clobbered registers: x2, x3, x16, x17, x21, x22, w0 to w26
+ * clobbered registers: x2, x3, x16, x17, x19, x20, x21, x22, w0 to w29
  * clobbered flag groups: FG0
  */
 p256_base_mult:
@@ -1482,6 +1538,9 @@ p256_base_mult:
   li        x2, 3
   bn.lid    x2, 0(x16)
 
+  /* Hide the secret key before running the scalar multiplication. */
+  jal       x1, p256_masked_scalar_reblind
+
   /* call internal scalar multiplication routine
      R = (x_p, y_p, z_p) = (w8, w9, w10) <= d*P = (w0 + w1)*P */
   la        x21, p256_gx
@@ -1500,6 +1559,18 @@ p256_base_mult:
   bn.sid    x2++, 0(x21)
   la        x22, y
   bn.sid    x2, 0(x22)
+
+  /* Compute both sides of the Weierstrauss equation.
+       w18 <= (x^3 + ax + b) mod p
+       w19 <= (y^2) mod p */
+  jal      x1, p256_isoncurve
+
+  /* Compare the two sides of the equation to check if the result
+     is a valid point as an FI countermeasure.
+     The check fails if both sides are not equal.
+     FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
+  bn.cmp   w18, w19
+  jal      x1, trigger_fault_if_fg0_not_z
 
   ret
 
@@ -1962,6 +2033,115 @@ p256_key_from_seed:
   bn.sel    w20, w20, w26, FG0.C
   bn.sel    w21, w21, w27, FG0.C
   bn.sub    w23, w23, w23  /* dummy instruction to clear flags */
+
+  ret
+
+/**
+ * Routine to hide a masked scalar.
+ *
+ * Adds a multiple of the curve order n to both shares of the
+ * secret scalar d.
+ *
+ * For each share s a 65 bit random number r is generated and added
+ * to the s as follows:
+ *
+ * s = (s + r * n) mod (n << 65)
+ *
+ * @param[in]           w31: all-zero
+ * @param[in,out]  [w1, w0]: first share of scalar d (321 bits)
+ * @param[in,out]  [w3, w2]: first share of scalar d (321 bits)
+ *
+ * clobbered registers: x10-x11, w0-w5, w19-w23
+ * clobbered flag groups: FG0
+ */
+p256_masked_scalar_reblind:
+  /* Initialize all-zero register. */
+  bn.xor    w31, w31, w31
+
+  /* Hide first share of scalar d in [w1, w0]. */
+  bn.mov w4, w0
+  bn.mov w5, w1
+  jal    x1, p256_scalar_reblind
+  bn.mov w0, w20
+  bn.mov w1, w21
+
+  /* Clear w4 and w5 which contain the first share of scalar d. */
+  bn.xor w4, w4, w4
+  bn.xor w5, w5, w5
+
+  /* Hide second share of scalar d in [w3, w2]. */
+  bn.mov w4, w2
+  bn.mov w5, w3
+  jal    x1, p256_scalar_reblind
+  bn.mov w2, w20
+  bn.mov w3, w21
+
+  /* Clear w4 and w5 which contain the second share of scalar d. */
+  bn.xor w4, w4, w4
+  bn.xor w5, w5, w5
+
+  ret
+
+/**
+ * Helper routine to hide a scalar.
+ *
+ * Adds a multiple of the curve order n to the secret scalar d.
+ *
+ * A 65 bit random number r is generated and added
+ * to d as follows:
+ *
+ * d = (d + r * n) mod (n << 65)
+ *
+ * @param[in]         w31: all-zero
+ * @param[in]    [w5, w4]: scalar d (321 bits)
+ * @param[out] [w21, w20]: hidden scalar d (321 bits)
+ *
+ * clobbered registers: x10-x11, w19-w23
+ * clobbered flag groups: FG0
+ */
+p256_scalar_reblind:
+
+  /* Zero out multiplication registers. */
+  bn.xor w22, w22, w22
+  bn.xor w23, w23, w23
+
+  /* Get a fresh 65-bit random value r from URND.
+       w20 = URND() */
+  bn.wsrr   w20, URND
+  bn.rshi   w20, w31, w20 >> 191
+
+  /* Load curve order n from DMEM.
+       w19 <= dmem[p256_n] = n */
+  la        x10, p256_n
+  li        x11, 19
+  bn.lid    x11, 0(x10)
+
+  /* [w23,w22] <= m = r * n */
+  bn.mulqacc.z          w20.0, w19.0,  0
+  bn.mulqacc            w20.1, w19.0, 64
+  bn.mulqacc.so  w22.L, w20.0, w19.1, 64
+  bn.mulqacc            w20.1, w19.1,  0
+  bn.mulqacc            w20.0, w19.2,  0
+  bn.mulqacc            w20.1, w19.2, 64
+  bn.mulqacc.so  w22.U, w20.0, w19.3, 64
+  bn.mulqacc.so  w23.L, w20.1, w19.3,  0
+
+  /* [w21,w20] <= d + m */
+  bn.add    w20, w4, w22
+  bn.addc   w21, w5, w23
+  bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
+
+  /* [w22,w23] <= n << 65 */
+  bn.rshi   w22, w19, w31 >> 191
+  bn.rshi   w23, w31, w19 >> 191
+
+  /* Reduce d + m modulo (n << 65) with a conditional subtraction.
+       [w20,w21] <= d + m mod (n << 65) */
+  bn.sub    w22, w20, w22
+  bn.subb   w23, w21, w23
+  bn.sel    w20, w20, w22, FG0.C
+  bn.sel    w21, w21, w23, FG0.C
+  bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
 
   ret
 

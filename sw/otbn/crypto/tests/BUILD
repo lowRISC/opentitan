@@ -201,6 +201,7 @@ otbn_sim_test(
     exp = "p256_base_mult_test.exp",
     deps = [
         "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_isoncurve",
     ],
 )
 
@@ -236,6 +237,7 @@ otbn_sim_test(
     exp = "p256_key_from_seed_test.exp",
     deps = [
         "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_isoncurve",
     ],
 )
 
@@ -247,6 +249,7 @@ otbn_sim_test(
     exp = "p256_mul_modp_test.exp",
     deps = [
         "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_isoncurve",
     ],
 )
 
@@ -255,6 +258,18 @@ otbn_consttime_test(
     subroutine = "proj_add",
     deps = [
         "//sw/otbn/crypto:run_p256",
+    ],
+)
+
+otbn_sim_test(
+    name = "p256_scalar_reblind_test",
+    srcs = [
+        "p256_scalar_reblind_test.s",
+    ],
+    exp = "p256_scalar_reblind_test.exp",
+    deps = [
+        "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_isoncurve",
     ],
 )
 
@@ -288,6 +303,7 @@ otbn_sim_test(
     exp = "p256_ecdsa_sign_test.exp",
     deps = [
         "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_isoncurve",
         "//sw/otbn/crypto:p256_sign",
     ],
 )
@@ -318,6 +334,19 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "p256_isoncurve_proj_test",
+    srcs = [
+        "p256_isoncurve_proj_test.s",
+    ],
+    exp = "p256_isoncurve_proj_test.exp",
+    deps = [
+        "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_isoncurve",
+        "//sw/otbn/crypto:p256_isoncurve_proj",
+    ],
+)
+
+otbn_sim_test(
     name = "p256_proj_add_test",
     srcs = [
         "p256_proj_add_test.s",
@@ -325,6 +354,7 @@ otbn_sim_test(
     exp = "p256_proj_add_test.exp",
     deps = [
         "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_isoncurve",
     ],
 )
 
@@ -336,6 +366,7 @@ otbn_sim_test(
     exp = "p256_proj_double_test.exp",
     deps = [
         "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_isoncurve",
     ],
 )
 
@@ -347,6 +378,7 @@ otbn_sim_test(
     exp = "p256_scalar_mult_test.exp",
     deps = [
         "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_isoncurve",
     ],
 )
 
@@ -358,6 +390,8 @@ otbn_sim_test(
     exp = "p256_ecdh_shared_key_test.exp",
     deps = [
         "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_isoncurve",
+        "//sw/otbn/crypto:p256_isoncurve_proj",
         "//sw/otbn/crypto:p256_shared_key",
     ],
 )
@@ -370,6 +404,8 @@ otbn_sim_test(
     exp = "p256_arithmetic_to_boolean_test.exp",
     deps = [
         "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_isoncurve",
+        "//sw/otbn/crypto:p256_isoncurve_proj",
         "//sw/otbn/crypto:p256_shared_key",
     ],
 )
@@ -382,6 +418,8 @@ otbn_sim_test(
     exp = "p256_arithmetic_to_boolean_mod_test.exp",
     deps = [
         "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_isoncurve",
+        "//sw/otbn/crypto:p256_isoncurve_proj",
         "//sw/otbn/crypto:p256_shared_key",
     ],
 )
@@ -404,11 +442,13 @@ otbn_sim_test(
     srcs = [
         "p384_base_mult_test.s",
     ],
-    exp = "p384_base_mult_test.exp",
+    testcase = "p384_base_mult_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_base_mult",
         "//sw/otbn/crypto:p384_internal_mult",
+        "//sw/otbn/crypto:p384_isoncurve",
+        "//sw/otbn/crypto:p384_mem",
     ],
 )
 
@@ -452,11 +492,14 @@ otbn_sim_test(
     srcs = [
         "p384_ecdh_shared_key_test.s",
     ],
-    exp = "p384_ecdh_shared_key_test.exp",
+    testcase = "p384_ecdh_shared_key_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_a2b",
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_internal_mult",
+        "//sw/otbn/crypto:p384_isoncurve",
+        "//sw/otbn/crypto:p384_isoncurve_proj",
+        "//sw/otbn/crypto:p384_mem",
         "//sw/otbn/crypto:p384_scalar_mult",
     ],
 )
@@ -466,10 +509,12 @@ otbn_sim_test(
     srcs = [
         "p384_ecdsa_sign_test.s",
     ],
-    exp = "p384_ecdsa_sign_test.exp",
+    testcase = "p384_ecdsa_sign_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_internal_mult",
+        "//sw/otbn/crypto:p384_isoncurve",
+        "//sw/otbn/crypto:p384_mem",
         "//sw/otbn/crypto:p384_modinv",
         "//sw/otbn/crypto:p384_sign",
     ],
@@ -480,11 +525,11 @@ otbn_sim_test(
     srcs = [
         "p384_ecdsa_verify_test.s",
     ],
-    dexp = "p384_ecdsa_verify_test.dexp",
-    exp = "p384_ecdsa_verify_test.exp",
+    testcase = "p384_ecdsa_verify_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_isoncurve",
+        "//sw/otbn/crypto:p384_mem",
         "//sw/otbn/crypto:p384_modinv",
         "//sw/otbn/crypto:p384_verify",
     ],
@@ -495,10 +540,25 @@ otbn_sim_test(
     srcs = [
         "p384_isoncurve_test.s",
     ],
-    exp = "p384_isoncurve_test.exp",
+    testcase = "p384_isoncurve_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_isoncurve",
+        "//sw/otbn/crypto:p384_mem",
+    ],
+)
+
+otbn_sim_test(
+    name = "p384_isoncurve_proj_test",
+    srcs = [
+        "p384_isoncurve_proj_test.s",
+    ],
+    testcase = "p384_isoncurve_proj_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:p384_base",
+        "//sw/otbn/crypto:p384_isoncurve",
+        "//sw/otbn/crypto:p384_isoncurve_proj",
+        "//sw/otbn/crypto:p384_mem",
     ],
 )
 
@@ -507,10 +567,24 @@ otbn_sim_test(
     srcs = [
         "p384_curve_point_valid_test.s",
     ],
-    exp = "p384_curve_point_valid_test.exp",
+    testcase = "p384_curve_point_valid_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_isoncurve",
+        "//sw/otbn/crypto:p384_mem",
+    ],
+)
+
+otbn_sim_test(
+    name = "p384_internal_mult_test",
+    srcs = [
+        "p384_internal_mult_test.s",
+    ],
+    testcase = "p384_internal_mult_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:p384_base",
+        "//sw/otbn/crypto:p384_internal_mult",
+        "//sw/otbn/crypto:p384_mem",
     ],
 )
 
@@ -523,6 +597,7 @@ otbn_sim_test(
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_keygen",
+        "//sw/otbn/crypto:p384_mem",
     ],
 )
 
@@ -536,6 +611,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:p384_b2a",
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_keygen_from_seed",
+        "//sw/otbn/crypto:p384_mem",
     ],
 )
 
@@ -551,14 +627,27 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "p384_masked_scalar_reblind_test",
+    testcase = "p384_masked_scalar_reblind_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:p384_base",
+        "//sw/otbn/crypto:p384_internal_mult",
+        "//sw/otbn/crypto:p384_mem",
+    ],
+)
+
+otbn_sim_test(
     name = "p384_scalar_mult_test",
     srcs = [
         "p384_scalar_mult_test.s",
     ],
-    exp = "p384_scalar_mult_test.exp",
+    testcase = "p384_scalar_mult_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_internal_mult",
+        "//sw/otbn/crypto:p384_isoncurve",
+        "//sw/otbn/crypto:p384_isoncurve_proj",
+        "//sw/otbn/crypto:p384_mem",
         "//sw/otbn/crypto:p384_scalar_mult",
     ],
 )
@@ -584,6 +673,9 @@ otbn_consttime_test(
 
 otbn_consttime_test(
     name = "p384_scalar_mult_consttime",
+    ignore = [
+        "trigger_fault_if_fg0_not_z",
+    ],
     subroutine = "p384_scalar_mult",
     deps = [
         ":p384_scalar_mult_test",

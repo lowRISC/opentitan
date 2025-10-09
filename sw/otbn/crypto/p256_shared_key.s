@@ -57,12 +57,39 @@ p256_shared_key:
   li        x2, 3
   bn.lid    x2, 0(x16)
 
+  /* Reblind the secret key before running the scalar multiplication. */
+  jal       x1, p256_masked_scalar_reblind
+
   /* Call internal scalar multiplication routine.
      Returns point in projective coordinates.
      R = (x, y, z) = (w8, w9, w10) <= d*P = ([w0,w1] + [w2,w3])*P */
   la        x21, x
   la        x22, y
   jal       x1, scalar_mult_int
+
+  /* store result (affine coordinates) in dmem
+     dmem[x] <= x = w8
+     dmem[y] <= y = w9
+     dmem[z] <= z = w10 */
+  li        x2, 8
+  la        x21, x
+  bn.sid    x2++, 0(x21)
+  la        x22, y
+  bn.sid    x2++, 0(x22)
+  la        x21, z
+  bn.sid    x2, 0(x21)
+
+  /* Compute both sides of the Weierstrauss equation.
+       w18 <= (x^3 + ax + b) mod p
+       w19 <= (y^2) mod p */
+  jal      x1, p256_isoncurve_proj
+
+  /* Compare the two sides of the equation to check if the result
+     is a valid point as an FI countermeasure.
+     The check fails if both sides are not equal.
+     FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
+  bn.cmp   w18, w19
+  jal      x1, trigger_fault_if_fg0_not_z
 
   /* Arithmetic masking:
    1. Generate a random mask

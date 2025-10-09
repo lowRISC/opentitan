@@ -108,7 +108,7 @@ start:
  * @param      dmem[dptr_src..dptr_src+64]: source data
  * @param[out] dmem[dptr_dst..dptr_dst+64]: copied data
  *
- * clobbered registers: x10, w10
+ * clobbered registers: x10, w10, w31
  * clobbered flag groups: none
  */
 copy_share:
@@ -121,6 +121,11 @@ copy_share:
   bn.sid   x10, 0(x14)
   bn.lid   x10, 32(x13)
   bn.sid   x10, 32(x14)
+
+  /* Write zero to the most significant 256 bits of the share. */
+  li       x10, 31
+  bn.xor   w31, w31, w31
+  bn.sid   x10, 64(x14)
   ret
 
 /**
@@ -139,7 +144,7 @@ copy_share:
  * @param[out]   dmem[x]: Public key x-coordinate
  * @param[out]   dmem[y]: Public key y-coordinate
  *
- * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30, w0 to w30
+ * clobbered registers: x2, x3, x9 to x13, x18 to x23, x26 to x30, w0 to w30
  * clobbered flag groups: FG0
  */
 keypair_random:
@@ -151,7 +156,7 @@ keypair_random:
   /* Generate public key d*G.
        dmem[x] <= (d*G).x
        dmem[y] <= (d*G).y */
-  jal       x1, p384_base_mult
+  jal       x1, p384_base_mult_checked
 
   /* Copy the secret key shares into Ibex-visible memory.
        dmem[d0_io] <= dmem[d0]
@@ -202,6 +207,10 @@ ecdsa_sign_sideloaded:
        w10,w11 <= seed1 */
   bn.wsrr   w20, KEY_S0_L
   bn.wsrr   w21, KEY_S0_H
+
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
+
   bn.wsrr   w10, KEY_S1_L
   bn.wsrr   w11, KEY_S1_H
 
@@ -320,7 +329,7 @@ shared_key:
  * @param[out]  dmem[x]: Public key x-coordinate
  * @param[out]  dmem[y]: Public key y-coordinate
  *
- * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30, w0 to w30
+ * clobbered registers: x2, x3, x9 to x13, x18 to x23, x26 to x30, w0 to w30
  * clobbered flag groups: FG0
  */
 keypair_from_seed:
@@ -329,6 +338,10 @@ keypair_from_seed:
        w10,w11 <= seed1 */
   bn.wsrr   w20, KEY_S0_L
   bn.wsrr   w21, KEY_S0_H
+
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
+
   bn.wsrr   w10, KEY_S1_L
   bn.wsrr   w11, KEY_S1_H
 
@@ -340,7 +353,7 @@ keypair_from_seed:
   /* Generate public key d*G.
        dmem[x] <= (d*G).x
        dmem[y] <= (d*G).y */
-  jal       x1, p384_base_mult
+  jal       x1, p384_base_mult_checked
 
   ecall
 
@@ -368,6 +381,10 @@ shared_key_from_seed:
        w10,w11 <= seed1 */
   bn.wsrr   w20, KEY_S0_L
   bn.wsrr   w21, KEY_S0_H
+
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
+
   bn.wsrr   w10, KEY_S1_L
   bn.wsrr   w11, KEY_S1_H
 
@@ -378,87 +395,3 @@ shared_key_from_seed:
 
   /* Jump to shared key computation. */
   jal       x0, shared_key
-
-
-.bss
-
-/* Operational mode. */
-.globl mode
-.balign 4
-mode:
-  .zero 4
-
-/* Success code for basic validity checks on the public key and signature. */
-.globl ok
-.balign 4
-ok:
-  .zero 4
-
-/* Message digest. */
-.globl msg
-.balign 32
-msg:
-  .zero 64
-
-/* Signature R. */
-.globl r
-.balign 32
-r:
-  .zero 64
-
-/* Signature S. */
-.globl s
-.balign 32
-s:
-  .zero 64
-
-/* Public key x-coordinate. */
-.globl x
-.balign 32
-x:
-  .zero 64
-
-/* Public key y-coordinate. */
-.globl y
-.balign 32
-y:
-  .zero 64
-
-/* Private key input/output buffer. */
-.globl d0_io
-.balign 32
-d0_io:
-  .zero 64
-.globl d1_io
-.balign 32
-d1_io:
-  .zero 64
-
-/* Verification result x_r (aka x_1). */
-.globl x_r
-.balign 32
-x_r:
-  .zero 64
-
-.section .scratchpad
-
-/* Secret scalar (k) in two shares: k = (k0 + k1) mod n */
-.globl k0
-.balign 32
-k0:
-  .zero 64
-
-.globl k1
-.balign 32
-k1:
-  .zero 64
-
-/* Private key (d) in two shares: d = (d0 + d1) mod n. */
-.globl d0
-.balign 32
-d0:
-  .zero 64
-.globl d1
-.balign 32
-d1:
-  .zero 64

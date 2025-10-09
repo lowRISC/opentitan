@@ -41,7 +41,7 @@
  * @param[out]     w18: lhs, left side of equation = (x^3 + ax + b) mod p
  * @param[out]     w19: rhs, right side of equation = y^2 mod p
  *
- * clobbered registers: x2, x3, x19, x20, w0, w19 to w29
+ * clobbered registers: x2, x3, x19, x20, w0, w18 to w29
  * clobbered flag groups: FG0
  */
 p256_isoncurve:
@@ -113,7 +113,7 @@ p256_isoncurve:
  * @param[in] dmem[y]: Public key y-coordinate.
  * @param[out] dmem[ok]: success/failure of basic checks (32 bits)
  *
- * clobbered registers: x2, x3, x19, x20, w0, w2, w19 to w29
+ * clobbered registers: x2, x3, x19, x20, w0, w2, w18 to w29
  * clobbered flag groups: FG0
  */
 p256_check_public_key:
