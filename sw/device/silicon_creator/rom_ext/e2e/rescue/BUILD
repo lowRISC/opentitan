@@ -47,6 +47,17 @@ _RESCUE_ROMEXT_RESULTS = {
     },
 }
 
+# For tests which use a GPIO trigger, select a pin that doesn't have another
+# use in CI.  We choose Ioc6 because on the Teacup board, that pin is reserved
+# for EXT_CLK.  EXT_CLK is only used for silicon bringup and should have no
+# other use for FPGA-based tests.  Furthermore, IoC6 is not routed to any of
+# the Teacup PMOD connectors, so it should not interfere with any attached
+# periphreals.
+#
+# This pin needs to be consistent with the pin configuration for the spi-dfu
+# ROM_EXT in //sw/device/silicon_creator/rom_ext/defs.bzl.
+_GPIO_PIN = "Ioc6"
+
 _CONFIGS = {
     "xmodem": {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
@@ -65,8 +76,8 @@ _CONFIGS = {
     "spidfu": {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_spidfu",
         # Use spi-dfu, trigger with GPIO IOA2 high.
-        "params": "-p spi-dfu -t gpio -v +Ioa2",
-        "setup": "--exec=\"gpio set --mode OpenDrain Ioa2\"",
+        "params": "-p spi-dfu -t gpio -v +{}".format(_GPIO_PIN),
+        "setup": "--exec=\"gpio set --mode OpenDrain {}\"".format(_GPIO_PIN),
         "tags": [],
     },
 }
@@ -438,6 +449,7 @@ opentitan_test(
     },
     fpga = fpga_params(
         changes_otp = True,
+        gpio_pin = _GPIO_PIN,
         # We configure OTP to preserve the reset reason and set the watchdog timeout
         # to one second.
         otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_preserve_reset_prod",
@@ -450,7 +462,7 @@ opentitan_test(
             --exec="fpga load-bitstream {bitstream}"
             --exec="bootstrap --clear-uart=true {firmware}"
             # Set the trigger with gpio command to simulate the trigger being jammed.
-            --exec="gpio set --mode PushPull --value true Ioa2"
+            --exec="gpio set --mode PushPull --value true {gpio_pin}"
             # Check for firmware execution.  We'll enter rescue, timeout,
             # then reboot and execute firmware.
             --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
@@ -515,9 +527,9 @@ opentitan_test(
     },
     fpga = fpga_params(
         changes_otp = True,
-        params = "-p spi-dfu -t gpio -v +Ioa2",
+        params = "-p spi-dfu -t gpio -v +{}".format(_GPIO_PIN),
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_spidfu_restricted_commands",
-        setup = "--exec=\"gpio set --mode OpenDrain Ioa2\"",
+        setup = "--exec=\"gpio set --mode OpenDrain {}\"".format(_GPIO_PIN),
         test_cmd = """
             --exec="transport init"
             --exec="fpga clear-bitstream"

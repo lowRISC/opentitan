@@ -117,8 +117,8 @@ TEST_OWNER_CONFIGS = {
             # Trigger 3 is GPIO pin.
             "WITH_RESCUE_TRIGGER=3",
             # When the trigger is GPIO, the index is the MuxedPad to us as the sense
-            # input. Index 2 is kTopEarlgreyMuxedPadsIoa2.
-            "WITH_RESCUE_INDEX=2",
+            # input. Index 28 is kTopEarlgreyMuxedPadsIoc6.
+            "WITH_RESCUE_INDEX=28",
             # GPIO param 3 means enable the internal pull resistor and trigger
             # rescue when the GPIO is high.
             "WITH_RESCUE_MISC_GPIO_PARAM=3",
