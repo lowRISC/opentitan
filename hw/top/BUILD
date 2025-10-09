@@ -89,6 +89,11 @@ opentitan_alias_top_attr(
     attr_name = "otp_map",
 )
 
+opentitan_alias_top_attr(
+    name = "rtl_files",
+    attr_name = "top_rtl",
+)
+
 # For each top, create a selecting alias for the seed.
 [
     alias(
