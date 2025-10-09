@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+pub mod i2c;
 pub mod monitor;
 pub mod reset;
 pub mod spi;
@@ -16,8 +17,10 @@ use anyhow::{Context, bail};
 use crate::backend::qemu::QemuOpts;
 use crate::io::gpio::{GpioError, GpioPin};
 use crate::io::uart::Uart;
+use crate::transport::Bus;
 use crate::transport::Target;
 use crate::transport::common::uart::SerialPortUart;
+use crate::transport::qemu::i2c::QemuI2c;
 use crate::transport::qemu::monitor::{Chardev, ChardevKind, Monitor};
 use crate::transport::qemu::reset::QemuReset;
 use crate::transport::qemu::spi::QemuSpi;
@@ -34,6 +37,9 @@ const QEMU_RESET_PIN_IDX: u8 = u8::MAX;
 /// this number.
 const CONSOLE_BAUDRATE: u32 = 115200;
 
+/// Number of I2Cs.
+const NUM_I2CS: usize = 3;
+
 /// Represents a connection to a running QEMU emulation.
 pub struct Qemu {
     /// Connection to the QEMU monitor which can control the emulator.
@@ -47,6 +53,9 @@ pub struct Qemu {
 
     /// SPI device.
     spi: Option<Rc<dyn Target>>,
+
+    /// I2C devices.
+    i2cs: [Option<Rc<dyn Bus>>; NUM_I2CS],
 
     /// QEMU log modelled as a UART.
     log: Option<Rc<dyn Uart>>,
@@ -122,6 +131,26 @@ impl Qemu {
             }
         };
 
+        // Try connecting to each of the I2C buses.
+        let mut i2cs = [const { None }; NUM_I2CS];
+        for (idx, i2cn) in i2cs.iter_mut().enumerate() {
+            let chardev_id = format!("i2c{}", idx);
+            *i2cn = match find_chardev(&chardevs, &chardev_id) {
+                Some(ChardevKind::Pty { path }) => {
+                    let i2c = QemuI2c::new(path).context("failed to connect to QEMU I2C PTY")?;
+                    let i2c: Rc<dyn Bus> = Rc::new(i2c);
+                    Some(i2c)
+                }
+                _ => {
+                    log::info!(
+                        "could not find pty chardev with id={}, skipping this I2C bus",
+                        &chardev_id
+                    );
+                    None
+                }
+            };
+        }
+
         // Resetting is done over the monitor, but we model it like a pin to enable strapping it.
         let reset = QemuReset::new(Rc::clone(&monitor));
         let reset = Rc::new(reset);
@@ -132,6 +161,7 @@ impl Qemu {
             console,
             log,
             spi,
+            i2cs,
         })
     }
 }
@@ -164,6 +194,25 @@ impl Transport for Qemu {
             )),
             _ => Err(TransportError::InvalidInstance(
                 TransportInterfaceType::Uart,
+                instance.to_string(),
+            )
+            .into()),
+        }
+    }
+
+    fn i2c(&self, instance: &str) -> anyhow::Result<Rc<dyn Bus>> {
+        match instance {
+            "0" => Ok(Rc::clone(
+                self.i2cs[0].as_ref().context("QEMU I2C 0 not connected")?,
+            )),
+            "1" => Ok(Rc::clone(
+                self.i2cs[1].as_ref().context("QEMU I2C 1 not connected")?,
+            )),
+            "2" => Ok(Rc::clone(
+                self.i2cs[2].as_ref().context("QEMU I2C 2 not connected")?,
+            )),
+            _ => Err(TransportError::InvalidInstance(
+                TransportInterfaceType::I2c,
                 instance.to_string(),
             )
             .into()),
