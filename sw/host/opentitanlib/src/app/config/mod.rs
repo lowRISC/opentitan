@@ -42,7 +42,6 @@ pub fn process_config_file(env: &mut TransportWrapperBuilder, conf_file: &Path) 
     env.add_configuration_file(res)
 }
 
-builtin_file!("dediprog.json5");
 builtin_file!("h1dx_devboard.json5");
 builtin_file!("h1dx_devboard_c2d2.json5");
 builtin_file!("servo_micro.json5");

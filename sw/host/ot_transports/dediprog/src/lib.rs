@@ -1,10 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-#![allow(dead_code)]
-#![allow(unused_imports)]
 
-use std::any::Any;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
@@ -13,19 +10,15 @@ use std::sync::LazyLock;
 
 use anyhow::{Result, bail, ensure};
 use regex::Regex;
-use serde_annotate::Annotate;
-use serialport::SerialPortType;
 
-use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
-use crate::io::spi::Target;
-use crate::io::uart::{Uart, UartError};
-use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
-use crate::transport::common::uart::SerialPortUart;
-use crate::transport::{
+use opentitanlib::backend::{Backend, BackendOpts, define_interface};
+use opentitanlib::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
+use opentitanlib::io::spi::Target;
+use opentitanlib::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
-use crate::util::parse_int::ParseInt;
-use crate::util::usb::UsbBackend;
+use opentitanlib::util::fs::builtin_file;
+use opentitanlib::util::usb::UsbBackend;
 
 pub mod gpio;
 pub mod spi;
@@ -238,6 +231,8 @@ impl Dediprog {
             &mut device_id_bytes,
         )?;
         let device_id_str = std::str::from_utf8(&device_id_bytes)?;
+        static DEDIPROG_VERSION_REGEX: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("^([^ ]+) +V:([0-9]+)\\.([0-9]+)\\.([0-9]+)").unwrap());
         let Some(captures) = DEDIPROG_VERSION_REGEX.captures(device_id_str) else {
             return Err(TransportError::UsbOpenError(format!(
                 "Unrecognized Dediprog version: {}",
@@ -383,5 +378,19 @@ impl GpioPin for VoltagePin {
     }
 }
 
-static DEDIPROG_VERSION_REGEX: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new("^([^ ]+) +V:([0-9]+)\\.([0-9]+)\\.([0-9]+)").unwrap());
+struct DediprogBackend;
+
+impl Backend for DediprogBackend {
+    type Opts = ();
+
+    fn create_transport(args: &BackendOpts, _: &()) -> Result<Box<dyn Transport>> {
+        Ok(Box::new(Dediprog::new(
+            args.usb_vid,
+            args.usb_pid,
+            args.usb_serial.as_deref(),
+        )?))
+    }
+}
+
+define_interface!("dediprog", DediprogBackend, "/__builtin__/dediprog.json5");
+builtin_file!("dediprog.json5", include_str!("../config/dediprog.json5"));

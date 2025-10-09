@@ -2,25 +2,24 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Result, bail, ensure};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::io::eeprom;
-use crate::io::eeprom::Transaction::{Read, WaitForBusyClear, Write};
-use crate::io::spi::{
-    AssertChipSelect, ClockPolarity, MaxSizes, SpiError, Target, TargetChipDeassert, Transfer,
-    TransferMode,
-};
-use crate::spiflash::flash::SpiFlash;
-use crate::transport::dediprog::{ClockSpeed, Command, Inner};
-use crate::util::voltage::Voltage;
+use opentitanlib::io::eeprom;
+use opentitanlib::io::eeprom::Transaction::{Read, WaitForBusyClear, Write};
+use opentitanlib::io::spi::{AssertChipSelect, MaxSizes, SpiError, Target, Transfer, TransferMode};
+use opentitanlib::spiflash::flash::SpiFlash;
+use opentitanlib::util::voltage::Voltage;
+
+use super::{ClockSpeed, Command, Inner};
 
 pub struct DediprogSpi {
     inner: Rc<RefCell<Inner>>,
     max_chunk_size: usize,
 }
 
+#[allow(dead_code, reason = "unused variants")]
 #[repr(u8)]
 enum ReadMode {
     ReadStandard = 1,
@@ -30,6 +29,7 @@ enum ReadMode {
     Read4bAddrFast0x0c = 5,
 }
 
+#[allow(dead_code, reason = "unused variants")]
 #[repr(u8)]
 enum WriteMode {
     WritePageProgram = 1,
