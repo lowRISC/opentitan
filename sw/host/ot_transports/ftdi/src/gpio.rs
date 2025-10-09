@@ -2,34 +2,34 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use anyhow::Result;
 use embedded_hal::digital::{InputPin, OutputPin};
-use ftdi_embedded_hal as ftdi_hal;
 
-use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
-use crate::transport::ftdi::Chip;
+use opentitanlib::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
+
+use super::Chip;
 
 #[derive(Default)]
 enum PinType {
-    Output(ftdi_hal::OutputPin<ftdi::Device>),
-    Input(ftdi_hal::InputPin<ftdi::Device>),
+    Output(ftdi_embedded_hal::OutputPin<ftdi::Device>),
+    Input(ftdi_embedded_hal::InputPin<ftdi::Device>),
     #[default]
     None,
 }
 
 pub struct Pin {
     pin: RefCell<PinType>,
-    ftdi: Rc<HashMap<ftdi::Interface, ftdi_hal::FtHal<ftdi::Device>>>,
+    ftdi: Rc<HashMap<ftdi::Interface, ftdi_embedded_hal::FtHal<ftdi::Device>>>,
     pinname: String,
 }
 
 impl Pin {
     pub fn open<C: Chip>(
-        ftdi: &Rc<HashMap<ftdi::Interface, ftdi_hal::FtHal<ftdi::Device>>>,
+        ftdi: &Rc<HashMap<ftdi::Interface, ftdi_embedded_hal::FtHal<ftdi::Device>>>,
         pinname: String,
     ) -> Result<Self> {
         Ok(Self {
@@ -39,7 +39,7 @@ impl Pin {
         })
     }
 
-    fn map_outpin(&self) -> Result<ftdi_hal::OutputPin<ftdi::Device>> {
+    fn map_outpin(&self) -> Result<ftdi_embedded_hal::OutputPin<ftdi::Device>> {
         let pinname = self.pinname.to_lowercase();
         let interface = match &pinname[0..1] {
             "a" => ftdi::Interface::A,
@@ -67,7 +67,7 @@ impl Pin {
         Ok(pin)
     }
 
-    fn map_inpin(&self) -> Result<ftdi_hal::InputPin<ftdi::Device>> {
+    fn map_inpin(&self) -> Result<ftdi_embedded_hal::InputPin<ftdi::Device>> {
         let pinname = self.pinname.to_lowercase();
         let interface = match &pinname[0..1] {
             "a" => ftdi::Interface::A,
