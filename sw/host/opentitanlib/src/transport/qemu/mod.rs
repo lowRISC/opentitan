@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+pub mod gpio;
 pub mod monitor;
 pub mod reset;
 pub mod spi;
@@ -18,6 +19,7 @@ use crate::io::gpio::{GpioError, GpioPin};
 use crate::io::uart::Uart;
 use crate::transport::Target;
 use crate::transport::common::uart::SerialPortUart;
+use crate::transport::qemu::gpio::{QemuGpio, QemuGpioPin};
 use crate::transport::qemu::monitor::{Chardev, ChardevKind, Monitor};
 use crate::transport::qemu::reset::QemuReset;
 use crate::transport::qemu::spi::QemuSpi;
@@ -47,6 +49,9 @@ pub struct Qemu {
 
     /// SPI device.
     spi: Option<Rc<dyn Target>>,
+
+    /// GPIO pins (not including reset pin).
+    gpio: Option<Rc<RefCell<QemuGpio>>>,
 
     /// QEMU log modelled as a UART.
     log: Option<Rc<dyn Uart>>,
@@ -122,6 +127,19 @@ impl Qemu {
             }
         };
 
+        // If there's a chardev called `gpio`, configure it as a PTY and use as the GPIO pins.
+        let gpio = match find_chardev(&chardevs, "gpio") {
+            Some(ChardevKind::Pty { path }) => {
+                let gpio = QemuGpio::new(path).context("failed to connect to QEMU GPIO PTY")?;
+                let gpio = Rc::new(RefCell::new(gpio));
+                Some(gpio)
+            }
+            _ => {
+                log::info!("could not find pty chardev with id=gpio, skipping GPIO");
+                None
+            }
+        };
+
         // Resetting is done over the monitor, but we model it like a pin to enable strapping it.
         let reset = QemuReset::new(Rc::clone(&monitor));
         let reset = Rc::new(reset);
@@ -132,6 +150,7 @@ impl Qemu {
             console,
             log,
             spi,
+            gpio,
         })
     }
 }
@@ -174,7 +193,17 @@ impl Transport for Qemu {
         let pin = u8::from_str(instance).with_context(|| format!("can't convert {instance:?}"))?;
 
         if pin < 32 {
-            bail!("GPIO interface not currently supported");
+            let Some(ref gpio) = self.gpio else {
+                bail!("GPIO interface not connected");
+            };
+
+            let mut gpio = gpio.borrow_mut();
+            let gpio = gpio
+                .pins
+                .entry(pin)
+                .or_insert_with(|| QemuGpioPin::new(Rc::clone(self.gpio.as_ref().unwrap()), pin));
+
+            Ok(Rc::clone(gpio))
         } else if pin == QEMU_RESET_PIN_IDX {
             Ok(Rc::clone(&self.reset))
         } else {
