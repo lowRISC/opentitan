@@ -2,34 +2,39 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process;
 use std::rc::{Rc, Weak};
+use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
 use std::vec::Vec;
 
-use crate::io::emu::Emulator;
-use crate::io::gpio::GpioPin;
-use crate::io::i2c::Bus;
-use crate::io::spi::Target;
-use crate::io::uart::Uart;
-use crate::transport::{
+use anyhow::{Context, Result};
+use clap::Args;
+
+use opentitanlib::backend::{Backend, BackendOpts, define_interface};
+use opentitanlib::io::emu::Emulator;
+use opentitanlib::io::gpio::GpioPin;
+use opentitanlib::io::i2c::Bus;
+use opentitanlib::io::spi::Target;
+use opentitanlib::io::uart::Uart;
+use opentitanlib::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
+use opentitanlib::util::fs::builtin_file;
 
 mod emu;
 mod gpio;
 mod i2c;
 mod uart;
 
-use crate::transport::ti50emulator::emu::{EmulatorImpl, EmulatorProcess, ResetPin};
-use crate::transport::ti50emulator::gpio::Ti50GpioPin;
-use crate::transport::ti50emulator::i2c::Ti50I2cBus;
-use crate::transport::ti50emulator::uart::Ti50Uart;
+use crate::emu::{EmulatorImpl, EmulatorProcess, ResetPin};
+use crate::gpio::Ti50GpioPin;
+use crate::i2c::Ti50I2cBus;
+use crate::uart::Ti50Uart;
 
 pub struct Ti50Emulator {
     /// Mapping of GPIO pins handles to their symbolic names.
@@ -175,3 +180,39 @@ impl Transport for Ti50Emulator {
         Ok(self.emu.clone())
     }
 }
+
+#[derive(Debug, Args)]
+pub struct Ti50EmulatorOpts {
+    #[arg(long, default_value = "ti50")]
+    instance_prefix: String,
+
+    #[arg(long, value_parser = PathBuf::from_str, default_value = "")]
+    executable_directory: PathBuf,
+
+    #[arg(long, default_value = "")]
+    executable: String,
+}
+
+struct Ti50EmulatorBackend;
+
+impl Backend for Ti50EmulatorBackend {
+    type Opts = Ti50EmulatorOpts;
+
+    fn create_transport(_: &BackendOpts, args: &Ti50EmulatorOpts) -> Result<Box<dyn Transport>> {
+        Ok(Box::new(Ti50Emulator::open(
+            &args.executable_directory,
+            &args.executable,
+            &args.instance_prefix,
+        )?))
+    }
+}
+
+builtin_file!(
+    "ti50emulator.json5",
+    include_str!("../config/ti50emulator.json5")
+);
+define_interface!(
+    "ti50emulator",
+    Ti50EmulatorBackend,
+    "/__builtin__/ti50emulator.json5"
+);

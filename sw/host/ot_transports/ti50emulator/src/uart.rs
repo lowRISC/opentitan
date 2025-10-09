@@ -2,21 +2,21 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context as _, Result};
-
 use std::cell::{RefCell, RefMut};
 use std::path::PathBuf;
 use std::pin::Pin;
 use std::rc::Rc;
 use std::task::{Context, Poll, ready};
 
+use anyhow::{Context as _, Result};
 use tokio::io::{AsyncRead, AsyncWriteExt};
 use tokio::net::UnixStream;
 
-use crate::io::emu::EmuState;
-use crate::io::uart::{Uart, UartError};
-use crate::transport::ti50emulator::Inner;
-use crate::util::runtime::MultiWaker;
+use opentitanlib::io::emu::EmuState;
+use opentitanlib::io::uart::{Uart, UartError};
+use opentitanlib::util::runtime::MultiWaker;
+
+use super::Inner;
 
 const TI50_UART_BAUDRATE: u32 = 115200;
 
@@ -45,7 +45,7 @@ impl Ti50Uart {
     pub fn connect(&self) -> Result<()> {
         let mut socket = self.socket.borrow_mut();
         *socket = Some(
-            crate::util::runtime::block_on(UnixStream::connect(&self.path))
+            opentitanlib::util::runtime::block_on(UnixStream::connect(&self.path))
                 .context("UART reconect error")?,
         );
         Ok(())
@@ -103,7 +103,8 @@ impl Uart for Ti50Uart {
         match self.get_state()? {
             EmuState::On => {
                 let mut socket = self.get_socket()?;
-                crate::util::runtime::block_on(socket.write(buf)).context("UART read error")?;
+                opentitanlib::util::runtime::block_on(socket.write(buf))
+                    .context("UART read error")?;
                 Ok(())
             }
             state => {

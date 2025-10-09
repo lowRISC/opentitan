@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, bail};
-use log;
-
 use std::cell::{Cell, RefCell};
 use std::io::{Read, Write};
 use std::os::unix::net::UnixStream;
@@ -12,11 +9,14 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
-use crate::io::emu::EmuState;
-use crate::io::i2c::{Bus, I2cError, Transfer};
-use crate::transport::TransportError;
-use crate::transport::ti50emulator::Inner;
-use crate::transport::ti50emulator::emu::EMULATOR_INVALID_ID;
+use anyhow::{Context, Result, bail};
+
+use opentitanlib::io::emu::EmuState;
+use opentitanlib::io::i2c::{Bus, I2cError, Transfer};
+use opentitanlib::transport::TransportError;
+
+use super::Inner;
+use super::emu::EMULATOR_INVALID_ID;
 
 const MAX_READ_TIMEOUT: Duration = Duration::from_millis(35);
 const MAX_WRITE_TIMEOUT: Duration = Duration::from_millis(35);

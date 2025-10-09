@@ -24,7 +24,6 @@ pub mod dediprog;
 pub mod ftdi;
 pub mod hyperdebug;
 pub mod ioexpander;
-pub mod ti50emulator;
 pub mod verilator;
 
 // Export custom error types
@@ -61,7 +60,7 @@ pub struct Capabilities {
 impl Capabilities {
     /// Create a new Capabilities object representing a provider of
     /// capabilities specified by `cap`.
-    fn new(cap: Capability) -> Self {
+    pub fn new(cap: Capability) -> Self {
         Self { capabilities: cap }
     }
 

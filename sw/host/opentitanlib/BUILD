@@ -72,7 +72,6 @@ rust_library(
         "src/backend/ftdi.rs",
         "src/backend/hyperdebug.rs",
         "src/backend/mod.rs",
-        "src/backend/ti50emulator.rs",
         "src/backend/verilator.rs",
         "src/bootstrap/eeprom.rs",
         "src/bootstrap/legacy.rs",
@@ -204,11 +203,6 @@ rust_library(
         "src/transport/ioexpander/mod.rs",
         "src/transport/ioexpander/sx1503.rs",
         "src/transport/mod.rs",
-        "src/transport/ti50emulator/emu.rs",
-        "src/transport/ti50emulator/gpio.rs",
-        "src/transport/ti50emulator/i2c.rs",
-        "src/transport/ti50emulator/mod.rs",
-        "src/transport/ti50emulator/uart.rs",
         "src/transport/verilator/gpio.rs",
         "src/transport/verilator/mod.rs",
         "src/transport/verilator/subprocess.rs",
@@ -355,6 +349,7 @@ rust_library(
     deps = [
         ":opentitanlib_base",
         "//sw/host/ot_transports/proxy",
+        "//sw/host/ot_transports/ti50emulator",
     ],
 )
 

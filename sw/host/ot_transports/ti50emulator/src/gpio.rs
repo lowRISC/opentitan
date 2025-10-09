@@ -1,6 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+
 use std::cell::{Cell, RefCell};
 use std::fmt;
 use std::io::{Read, Write};
@@ -12,9 +13,10 @@ use std::convert::TryFrom;
 use std::os::unix::net::UnixStream;
 use std::path::PathBuf;
 
-use crate::io::emu::EmuState;
-use crate::io::gpio::{self, GpioError, GpioPin, PinMode, PullMode};
-use crate::transport::ti50emulator::Inner;
+use opentitanlib::io::emu::EmuState;
+use opentitanlib::io::gpio::{self, GpioError, GpioPin, PinMode, PullMode};
+
+use super::Inner;
 
 const GPIO_BUF_SIZE: usize = 16;
 
