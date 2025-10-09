@@ -4,6 +4,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #include "sw/device/lib/base/hardened_asm.h"
+#include "sw/device/lib/coverage/api_asm.h"
 #include "otp_ctrl_regs.h"
 
 /**
@@ -188,6 +189,9 @@ _rom_ext_start_boot:
    */
   la   t0, (_rom_ext_interrupt_vector + 1)
   csrw mtvec, t0
+
+  COVERAGE_ASM_INIT()
+  COVERAGE_ASM_TRANSPORT_INIT()
 
   /**
    * Jump to C Code
