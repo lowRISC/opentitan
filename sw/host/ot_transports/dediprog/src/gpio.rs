@@ -9,11 +9,11 @@ use std::sync::LazyLock;
 
 use anyhow::{Result, ensure};
 
-use crate::collection;
-use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
-use crate::transport::dediprog::Inner;
-use crate::util::parse_int::ParseInt;
+use opentitanlib::collection;
+use opentitanlib::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
+use opentitanlib::util::parse_int::ParseInt;
 
+use super::Inner;
 pub struct DediprogPin {
     inner: Rc<RefCell<Inner>>,
     index: u8,
