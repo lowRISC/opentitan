@@ -54,7 +54,7 @@ package tl_main_pkg;
     32'h 007fffff
   };
   localparam logic [31:0] ADDR_MASK_SOC_PROXY__CORE      = 32'h 0000000f;
-  localparam logic [31:0] ADDR_MASK_SOC_PROXY__CTN       = 32'h 3fffffff;
+  localparam logic [31:0] ADDR_SIZE_SOC_PROXY__CTN       = 32'h 80000000;
   localparam logic [31:0] ADDR_MASK_HMAC                 = 32'h 00001fff;
   localparam logic [31:0] ADDR_MASK_KMAC                 = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_AES                  = 32'h 000000ff;

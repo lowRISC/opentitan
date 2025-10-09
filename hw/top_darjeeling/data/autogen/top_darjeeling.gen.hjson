@@ -3886,7 +3886,7 @@
           data_intg_passthru: "true"
           exec: True
           byte_write: True
-          size: 0x40000000
+          size: 0x80000000
         }
       }
       clock_connections:
@@ -12370,7 +12370,7 @@
               {
                 hart: 0x40000000
               }
-              size_byte: 0x40000000
+              size_byte: 0x80000000
             }
           ]
           xbar: false
