@@ -101,6 +101,18 @@ rhs:
 lhs:
   .zero 64
 
+/* Temporary storage for P or 2P used in scalar point mult. */
+.globl p_temp1
+.balign 32
+p_temp1:
+  .zero 192
+
+/* Temporary storage for P or 2P used in scalar point mult. */
+.globl p_temp2
+.balign 32
+p_temp2:
+  .zero 192
+
 .section .scratchpad
 /* 704 bytes of scratchpad memory */
 .balign 32
