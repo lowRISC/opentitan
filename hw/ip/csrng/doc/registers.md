@@ -555,12 +555,12 @@ Writing a zero resets this status bit.
 Hardware detection of error conditions status register
 - Offset: `0x54`
 - Reset default: `0x0`
-- Reset mask: `0x77f0fe1b`
+- Reset mask: `0x7ff0fe13`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "SFIFO_CMD_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GENBITS_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "SFIFO_RCSTAGE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_KEYVRC_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 4}, {"name": "SFIFO_FINAL_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GBENCACK_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GRCSTAGE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GGENREQ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GADSTAGE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GGENBITS_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_CMDID_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 4}, {"name": "CMD_STAGE_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "MAIN_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DRBG_GEN_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DRBG_UPDBE_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DRBG_UPDOB_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "AES_CIPHER_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_GEN_CNT_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "FIFO_WRITE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_READ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_STATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
+{"reg": [{"name": "SFIFO_CMD_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GENBITS_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 2}, {"name": "SFIFO_KEYVRC_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 4}, {"name": "SFIFO_FINAL_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GBENCACK_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GRCSTAGE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GGENREQ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GADSTAGE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GGENBITS_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_CMDID_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 4}, {"name": "CMD_STAGE_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "MAIN_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DRBG_GEN_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DRBG_UPDBE_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DRBG_UPDOB_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "AES_CIPHER_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_GEN_CNT_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DRBG_CMD_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_WRITE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_READ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_STATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                |
@@ -569,7 +569,7 @@ Hardware detection of error conditions status register
 |   30   |   ro   |   0x0   | [FIFO_STATE_ERR](#err_code--fifo_state_err)         |
 |   29   |   ro   |   0x0   | [FIFO_READ_ERR](#err_code--fifo_read_err)           |
 |   28   |   ro   |   0x0   | [FIFO_WRITE_ERR](#err_code--fifo_write_err)         |
-|   27   |        |         | Reserved                                            |
+|   27   |   ro   |   0x0   | [DRBG_CMD_SM_ERR](#err_code--drbg_cmd_sm_err)       |
 |   26   |   ro   |   0x0   | [CMD_GEN_CNT_ERR](#err_code--cmd_gen_cnt_err)       |
 |   25   |   ro   |   0x0   | [AES_CIPHER_SM_ERR](#err_code--aes_cipher_sm_err)   |
 |   24   |   ro   |   0x0   | [DRBG_UPDOB_SM_ERR](#err_code--drbg_updob_sm_err)   |
@@ -587,8 +587,7 @@ Hardware detection of error conditions status register
 |   9    |   ro   |   0x0   | [SFIFO_FINAL_ERR](#err_code--sfifo_final_err)       |
 |  8:5   |        |         | Reserved                                            |
 |   4    |   ro   |   0x0   | [SFIFO_KEYVRC_ERR](#err_code--sfifo_keyvrc_err)     |
-|   3    |   ro   |   0x0   | [SFIFO_RCSTAGE_ERR](#err_code--sfifo_rcstage_err)   |
-|   2    |        |         | Reserved                                            |
+|  3:2   |        |         | Reserved                                            |
 |   1    |   ro   |   0x0   | [SFIFO_GENBITS_ERR](#err_code--sfifo_genbits_err)   |
 |   0    |   ro   |   0x0   | [SFIFO_CMD_ERR](#err_code--sfifo_cmd_err)           |
 
@@ -608,6 +607,12 @@ This bit will stay set until the next reset.
 This bit will be set to one when any of the source bits (bits 0 through 15 of this
 this register) are asserted as a result of an error pulse generated from
 any full FIFO that has been received a write pulse.
+This bit will stay set until the next reset.
+
+### ERR_CODE . DRBG_CMD_SM_ERR
+This bit will be set when the state machine in the ctr_drbg_cmd unit has entered
+an illegal state.
+This error will signal a fatal alert, and also an interrupt, if enabled.
 This bit will stay set until the next reset.
 
 ### ERR_CODE . CMD_GEN_CNT_ERR
@@ -698,12 +703,6 @@ This bit will stay set until the next reset.
 ### ERR_CODE . SFIFO_KEYVRC_ERR
 This bit will be set to one when an error has been detected for the
 keyvrc FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_RCSTAGE_ERR
-This bit will be set to one when an error has been detected for the
-rcstage FIFO. The type of error is reflected in the type status
 bits (bits 28 through 30 of this register).
 This bit will stay set until the next reset.
 

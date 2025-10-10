@@ -67,6 +67,17 @@
       tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
+      name: sec_cm_updrsp_fsm_sparse
+      desc: '''
+            Verify the countermeasure(s) UPDRSP.FSM.SPARSE.
+            The csrng_intr and csrng_err tests verify that if the FSM state is forced to an illegal state encoding 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
+            They currently don't check whether the DUT actually triggers a fatal alert.
+            Alert connection and triggering are verified through automated FPV.
+            '''
+      stage: V2S
+      tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
+    }
+    {
       name: sec_cm_update_fsm_sparse
       desc: '''
             Verify the countermeasure(s) UPDATE.FSM.SPARSE.

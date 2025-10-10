@@ -254,6 +254,10 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } drbg_cmd_sm_err;
+    struct packed {
+      logic        d;
+      logic        de;
     } cmd_gen_cnt_err;
     struct packed {
       logic        d;
@@ -311,10 +315,6 @@ package csrng_reg_pkg;
       logic        d;
       logic        de;
     } sfifo_keyvrc_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_rcstage_err;
     struct packed {
       logic        d;
       logic        de;

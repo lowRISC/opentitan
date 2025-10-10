@@ -99,7 +99,11 @@ module csrng_main_sm import csrng_pkg::*; (
         end
         MainSmClrAData: begin
           clr_adata_packer_o = 1'b1;
-          state_d = MainSmCmdCompWait;
+          if (cmd_complete_i) begin
+            state_d = MainSmIdle;
+          end else begin
+            state_d = MainSmCmdCompWait;
+          end
         end
         MainSmCmdCompWait: begin
           if (cmd_complete_i) begin
