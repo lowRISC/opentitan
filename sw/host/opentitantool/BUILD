@@ -53,6 +53,8 @@ rust_binary(
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/ot_certs",
+        "//sw/host/ot_transports/chipwhisperer",
+        "//sw/host/ot_transports/verilator",
         "//sw/host/sphincsplus",
         "//util:bfv_decoder",
         "@crate_index//:anyhow",

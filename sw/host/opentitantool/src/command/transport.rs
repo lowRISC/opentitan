@@ -18,7 +18,6 @@ use opentitanlib::io::jtag::JtagParams;
 use opentitanlib::transport::Capability;
 use opentitanlib::transport::SetJtagPins;
 use opentitanlib::transport::UpdateFirmware;
-use opentitanlib::transport::verilator::transport::Watch;
 
 /// Initialize state of a transport debugger device to fit the device under test.  This
 /// typically involves setting pins as input/output, open drain, etc. according to configuration
@@ -128,7 +127,7 @@ impl CommandDispatch for VerilatorWatch {
         _context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let watch = Watch {
+        let watch = ot_transport_verilator::transport::Watch {
             regex: Regex::new(&self.regex)?,
             timeout: self.timeout,
         };

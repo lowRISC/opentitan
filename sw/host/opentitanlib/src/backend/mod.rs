@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use clap::Args;
+use clap::{Args, FromArgMatches};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
@@ -11,13 +11,6 @@ use crate::app::config::process_config_file;
 use crate::app::{TransportWrapper, TransportWrapperBuilder};
 use crate::transport::{EmptyTransport, Transport};
 use crate::util::parse_int::ParseInt;
-
-mod chip_whisperer;
-mod ftdi;
-mod hyperdebug;
-mod proxy;
-mod ti50emulator;
-mod verilator;
 
 pub trait Backend {
     /// Additional backend-specific arguments in addition to `BackendOpts`.
@@ -37,6 +30,33 @@ pub struct InterfaceRegistration {
     pub create_transport: fn(&BackendOpts, &clap::ArgMatches) -> Result<Box<dyn Transport>>,
     pub config: Option<&'static str>,
 }
+
+impl InterfaceRegistration {
+    pub const fn of<T: Backend>(name: &'static str, config: Option<&'static str>) -> Self {
+        Self {
+            name,
+            augment_args: |command| {
+                let id = T::Opts::group_id();
+
+                // Filter duplicates with id, in case backend is registered multiple times.
+                if command
+                    .get_groups()
+                    .any(|x| Some(x.get_id()) == id.as_ref())
+                {
+                    return command;
+                }
+
+                T::Opts::augment_args(command)
+            },
+            create_transport: |common, arg_matches| {
+                let opts = T::Opts::from_arg_matches(arg_matches)?;
+                T::create_transport(common, &opts)
+            },
+            config,
+        }
+    }
+}
+
 inventory::collect!(InterfaceRegistration);
 
 #[macro_export]
@@ -48,25 +68,10 @@ macro_rules! define_interface {
         $crate::backend::define_interface!($name, $backend, Some($config));
     };
     ($name: literal, $backend: ty, $config: expr) => {
-        $crate::backend::submit!($crate::backend::InterfaceRegistration {
-            name: $name,
-            augment_args: |command| {
-                let id = <<$backend as $crate::backend::Backend>::Opts as clap::Args>::group_id();
-
-                // Filter duplicates with id, in case backend is registered multiple times.
-                if command.get_groups().any(|x| Some(x.get_id()) == id.as_ref()) {
-                    return command;
-                }
-
-                <<$backend as $crate::backend::Backend>::Opts as clap::Args>::augment_args(command)
-            },
-            create_transport: |common, arg_matches| {
-                let opts = <<$backend as $crate::backend::Backend>::Opts as clap::FromArgMatches>::from_arg_matches(arg_matches)?;
-                <$backend as $crate::backend::Backend>::create_transport(common, &opts)
-            },
-            config: $config,
-        });
-    }
+        $crate::backend::submit!($crate::backend::InterfaceRegistration::of::<$backend>(
+            $name, $config
+        ));
+    };
 }
 pub use crate::define_interface;
 
