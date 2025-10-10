@@ -1,0 +1,24 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  "entrypoint": "main",
+  "input": {
+    "dmem": {
+      # A 1024-bit value that *is* relatively prime to F4:
+      "r0": "0xf473d9ff366276da71a73afbf03ff01f8ec9148a71798d74dc6f44d961bef880927cc05f07243ce92f5350972532b38bf63efbb65a272de2e9faa34f3bb3520b25e2269c231eb09b0a2b5cb604cfc7e016a2f1a20be61ac1251e0b34b589bb08d1d4542c39ef080b96e60aebb6a37039c84c5591d288465d47e7bc30bf36fc34",
+      # A 1024-bit value that is NOT relatively prime to F4:
+      "r1": "0xfe050192e57dc8199fa8556c8104b345b1e7a0cf3701f496ea8b89a35be53ed653b50c070e9683dad6d83c72430ac46131c49506ec3c23752f6c6cadad058d7188dfc7b666b7aed729ad2e207e503c205eb284fcc501de09a2fb78c905bb0def63ac03fcc55fab5282f925064e3888eda64db2120ce8691b5bd5cd42437ed723",
+      #  A 1024-bit value that is equal to (F4-1) modulo F4:
+      "r2": "0xfe050192e57dc8199fa8556c8104b345b1e7a0cf3701f496ea8b89a35be53ed653b50c070e9683dad6d83c72430ac46131c49506ec3c23752f6c6cadad058d7188dfc7b666b7aed729ad2e207e503c205eb284fcc501de09a2fb78c905bb0def63ac03fcc55fab5282f925064e3888eda64db2120ce8691b5bd5cd42437ed722"
+    }
+  }
+  "output": {
+    "regs": {
+      "w0": "0x0",
+      "w1": "0x0",
+      "w2": "0x0"
+    }
+  }
+}

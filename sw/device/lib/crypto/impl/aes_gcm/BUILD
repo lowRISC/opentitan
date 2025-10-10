@@ -15,6 +15,7 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:aes",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/crypto/include:datatypes",
     ],
 )
 
@@ -23,8 +24,10 @@ cc_library(
     srcs = ["ghash.c"],
     hdrs = ["ghash.h"],
     deps = [
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
     ],
 )
 

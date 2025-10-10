@@ -6,8 +6,11 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/runtime/ibex.h"
@@ -155,15 +158,19 @@ static status_t hmac_idle_wait(void) {
  *
  * It also clears the internal state of HMAC HWIP by overwriting sensitive
  * values with 1s.
+ *
+ * @return Result of the operation.
  */
-static void clear(void) {
+static status_t clear(void) {
   // Do not clear the config yet, we just need to deassert sha_en, see #23014.
   uint32_t cfg = abs_mmio_read32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET);
   cfg = bitfield_bit32_write(cfg, HMAC_CFG_SHA_EN_BIT, false);
   abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, cfg);
 
-  // TODO(#23191): Use a random value from EDN to wipe.
-  abs_mmio_write32(kHmacBaseAddr + HMAC_WIPE_SECRET_REG_OFFSET, UINT32_MAX);
+  // Use a random value from EDN to wipe HMAC.
+  abs_mmio_write32(kHmacBaseAddr + HMAC_WIPE_SECRET_REG_OFFSET,
+                   (uint32_t)ibex_rnd32_read());
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -174,17 +181,32 @@ static void clear(void) {
  * caller must ensure that HMAC HWIP is in an idle state that accepts writing
  * key words.
  *
- * The key may be NULL if `key_wordlen` is zero; in that case this function is
- * a no-op.
+ * The key may be NULL.
  *
- * @param key The buffer that points to the key.
- * @param key_wordlen The length of the key in words.
+ * @param key The buffer that points to the hmac_key_t key structure.
+ * @return Result of the operation.
  */
-static void key_write(const uint32_t *key, size_t key_wordlen) {
-  for (size_t i = 0; i < key_wordlen; i++) {
-    abs_mmio_write32(
-        kHmacBaseAddr + HMAC_KEY_0_REG_OFFSET + sizeof(uint32_t) * i, key[i]);
+static status_t key_write(const hmac_key_t *key) {
+  if (key != NULL) {
+    uint32_t key_reg = kHmacBaseAddr + HMAC_KEY_0_REG_OFFSET;
+    HARDENED_TRY(
+        hardened_memcpy((uint32_t *)key_reg, key->key_block, key->key_len));
+    // We only check the integrity of the key when entering the CryptoLib. This
+    // check here will catch any manipulations of the key or the pointer to the
+    // key that might have happend in the meanwhile. We do it at this point as
+    // the key just got written into the HMAC core in the `hardened_memcpy()`
+    // above.
+    if (launder32(key->key_len) != 0) {
+      HARDENED_CHECK_EQ(hmac_key_integrity_checksum_check(key),
+                        kHardenedBoolTrue);
+    } else {
+      HARDENED_CHECK_EQ(key->key_len, 0);
+    }
+  } else {
+    HARDENED_CHECK_EQ(key, NULL);
   }
+
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -210,11 +232,12 @@ static void digest_read(uint32_t *digest, size_t digest_wordlen) {
  * Resume a streaming operation from a saved context.
  *
  * @param ctx Context object from which to restore.
+ * @return Result of the operation.
  */
-static void context_restore(hmac_ctx_t *ctx) {
+static status_t context_restore(hmac_ctx_t *ctx) {
   // The previous caller should have left it clean, but it doesn't hurt to
   // clear again.
-  clear();
+  HARDENED_TRY(clear());
 
   // Restore CFG register from `ctx->cfg_reg`. We need to keep `sha_en` low
   // until context is restored, see #23014.
@@ -223,7 +246,7 @@ static void context_restore(hmac_ctx_t *ctx) {
 
   // Write to KEY registers for HMAC operations. If the operation is SHA-2,
   // `key_wordlen` is set to 0 during `ctx` initialization.
-  key_write(ctx->key, ctx->key_wordlen);
+  HARDENED_TRY(key_write(&ctx->key));
 
   uint32_t cmd = HMAC_CMD_REG_RESVAL;
   // Decide if we need to invoke `start` or `continue` command.
@@ -234,11 +257,14 @@ static void context_restore(hmac_ctx_t *ctx) {
 
     // For SHA-256 and HMAC-256, we do not need to write to the second half of
     // DIGEST registers, but we do it anyway to keep the driver simple.
-    for (size_t i = 0; i < kHmacMaxDigestWords; i++) {
+    size_t i = 0;
+    for (; launder32(i) < kHmacMaxDigestWords; i++) {
       abs_mmio_write32(
           kHmacBaseAddr + HMAC_DIGEST_0_REG_OFFSET + sizeof(uint32_t) * i,
           ctx->H[i]);
     }
+    // Check that the loop ran for the correct number of iterations.
+    HARDENED_CHECK_EQ(i, kHmacMaxDigestWords);
     abs_mmio_write32(kHmacBaseAddr + HMAC_MSG_LENGTH_LOWER_REG_OFFSET,
                      ctx->lower);
     abs_mmio_write32(kHmacBaseAddr + HMAC_MSG_LENGTH_UPPER_REG_OFFSET,
@@ -253,6 +279,8 @@ static void context_restore(hmac_ctx_t *ctx) {
   // Now we can finally write the command to the register to actually issue
   // `start` or `continue`.
   abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd);
+
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -274,31 +302,67 @@ static void context_save(hmac_ctx_t *ctx) {
 }
 
 /**
+ * Wipes the ctx struct by replacing sensitive data with randomness from the
+ * Ibex EDN interface. Non-sensitive variables are zeroized.
+ *
+ * @param[out] ctx Initialized context object for SHA2/HMAC-SHA2 operations.
+ * @return Result of the operation.
+ */
+static status_t hmac_context_wipe(hmac_ctx_t *ctx) {
+  // Ensure entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
+
+  // Randomize sensitive data.
+  HARDENED_TRY(hardened_memshred(ctx->key.key_block, kHmacMaxBlockWords));
+  HARDENED_TRY(hardened_memshred(ctx->H, kHmacMaxDigestWords));
+  HARDENED_TRY(hardened_memshred((uint32_t *)(ctx->partial_block),
+                                 kHmacMaxBlockBytes / sizeof(uint32_t)));
+  // Zero the remaining ctx fields.
+  ctx->cfg_reg = 0;
+  ctx->key.key_len = 0;
+  ctx->key.checksum = 0;
+  ctx->msg_block_wordlen = 0;
+  ctx->digest_wordlen = 0;
+  ctx->lower = 0;
+  ctx->upper = 0;
+  ctx->partial_block_bytelen = 0;
+
+  return OTCRYPTO_OK;
+}
+
+/**
  * Write given byte array into the `MSG_FIFO`. This function should only be
  * called when HMAC HWIP is already running and expecting further message bytes.
  *
  * @param message The incoming message buffer to be fed into HMAC_FIFO.
  * @param message_len The length of `message` in bytes.
+ * @return Result of the operation.
  */
-static void msg_fifo_write(const uint8_t *message, size_t message_len) {
+static status_t msg_fifo_write(const uint8_t *message, size_t message_len) {
   // TODO(#23191): Should we handle backpressure here?
   // Begin by writing a one byte at a time until the data is aligned.
   size_t i = 0;
-  for (; misalignment32_of((uintptr_t)(&message[i])) > 0 && i < message_len;
+  for (; misalignment32_of((uintptr_t)(&message[i])) > 0 &&
+         launder32(i) < message_len;
        i++) {
     abs_mmio_write8(kHmacBaseAddr + HMAC_MSG_FIFO_REG_OFFSET, message[i]);
   }
 
   // Write one word at a time as long as there is a full word available.
-  for (; i + sizeof(uint32_t) <= message_len; i += sizeof(uint32_t)) {
+  for (; launder32(i + sizeof(uint32_t)) <= message_len;
+       i += sizeof(uint32_t)) {
     uint32_t next_word = read_32(&message[i]);
     abs_mmio_write32(kHmacBaseAddr + HMAC_MSG_FIFO_REG_OFFSET, next_word);
   }
 
   // For the last few bytes, we need to write one byte at a time again.
-  for (; i < message_len; i++) {
+  for (; launder32(i) < message_len; i++) {
     abs_mmio_write8(kHmacBaseAddr + HMAC_MSG_FIFO_REG_OFFSET, message[i]);
   }
+  // Check that the loops ran for the correct number of iterations.
+  HARDENED_CHECK_EQ(i, message_len);
+
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -385,14 +449,13 @@ static status_t ensure_idle(void) {
  *
  * @param cfg HMAC block configuration register.
  * @param key Key input for HMAC (may be NULL if `key_wordlen` is 0).
- * @param key_wordlen Length of key input in words.
  * @param msg Message data.
  * @param msg_len Length of message data in bytes.
  * @param digest_wordlen Digest length in 32-bit words.
  * @param[out] digest Buffer for the digest.
  */
-static status_t oneshot(const uint32_t cfg, const uint32_t *key,
-                        size_t key_wordlen, const uint8_t *msg, size_t msg_len,
+static status_t oneshot(const uint32_t cfg, const hmac_key_t *key,
+                        const uint8_t *msg, size_t msg_len,
                         size_t digest_wordlen, uint32_t *digest) {
   // Check that the block is idle.
   HARDENED_TRY(ensure_idle());
@@ -401,7 +464,11 @@ static status_t oneshot(const uint32_t cfg, const uint32_t *key,
   abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, cfg);
 
   // Write the key (no-op if the key length is 0, e.g. for hashing).
-  key_write(key, key_wordlen);
+  HARDENED_TRY(key_write(key));
+
+  // Read back the HMAC configuration and compare to the expected configuration.
+  HARDENED_CHECK_EQ(abs_mmio_read32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET),
+                    launder32(cfg));
 
   // Send the START command.
   uint32_t cmd =
@@ -409,7 +476,7 @@ static status_t oneshot(const uint32_t cfg, const uint32_t *key,
   abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd);
 
   // Write the message.
-  msg_fifo_write(msg, msg_len);
+  HARDENED_TRY(msg_fifo_write(msg, msg_len));
 
   // Send the PROCESS command.
   cmd = bitfield_bit32_write(HMAC_CMD_REG_RESVAL, HMAC_CMD_HASH_PROCESS_BIT, 1);
@@ -419,7 +486,7 @@ static status_t oneshot(const uint32_t cfg, const uint32_t *key,
   HARDENED_TRY(hmac_idle_wait());
   digest_read(digest, digest_wordlen);
 
-  clear();
+  HARDENED_TRY(clear());
   return OTCRYPTO_OK;
 }
 
@@ -427,48 +494,158 @@ status_t hmac_hash_sha256(const uint8_t *msg, size_t msg_len,
                           uint32_t *digest) {
   uint32_t cfg =
       cfg_get(/*hmac_en=*/false, kDigestLengthSha256, kKeyLengthNone);
-  return oneshot(cfg, /*key=*/NULL, /*key_wordlen=*/0, msg, msg_len,
-                 kHmacSha256DigestWords, digest);
+  return oneshot(cfg, /*key=*/NULL, msg, msg_len, kHmacSha256DigestWords,
+                 digest);
 }
 
 status_t hmac_hash_sha384(const uint8_t *msg, size_t msg_len,
                           uint32_t *digest) {
   uint32_t cfg =
       cfg_get(/*hmac_en=*/false, kDigestLengthSha384, kKeyLengthNone);
-  return oneshot(cfg, /*key=*/NULL, /*key_wordlen=*/0, msg, msg_len,
-                 kHmacSha384DigestWords, digest);
+  return oneshot(cfg, /*key=*/NULL, msg, msg_len, kHmacSha384DigestWords,
+                 digest);
 }
 
 status_t hmac_hash_sha512(const uint8_t *msg, size_t msg_len,
                           uint32_t *digest) {
   uint32_t cfg =
       cfg_get(/*hmac_en=*/false, kDigestLengthSha512, kKeyLengthNone);
-  return oneshot(cfg, /*key=*/NULL, /*key_wordlen=*/0, msg, msg_len,
-                 kHmacSha512DigestWords, digest);
+  return oneshot(cfg, /*key=*/NULL, msg, msg_len, kHmacSha512DigestWords,
+                 digest);
 }
 
-status_t hmac_hmac_sha256_cl(const uint32_t *key_block, const uint8_t *msg,
+status_t hmac_hmac_sha256_cl(const hmac_key_t *key, const uint8_t *msg,
                              size_t msg_len, uint32_t *tag) {
   // Always configure the key length as the underlying message block size.
   uint32_t cfg = cfg_get(/*hmac_en=*/true, kDigestLengthSha256, kKeyLength512);
-  return oneshot(cfg, key_block, kHmacSha256BlockWords, msg, msg_len,
-                 kHmacSha256DigestWords, tag);
+  return oneshot(cfg, key, msg, msg_len, kHmacSha256DigestWords, tag);
 }
 
-status_t hmac_hmac_sha384(const uint32_t *key_block, const uint8_t *msg,
+status_t hmac_hmac_sha256_redundant(const hmac_key_t *key, const uint8_t *msg,
+                                    size_t msg_len, uint32_t *tag) {
+  uint32_t o_key_pad[kHmacSha256BlockWords];
+  uint32_t i_key_pad[kHmacSha256BlockWords];
+  memset(o_key_pad, 0, kHmacSha256BlockBytes);
+  memset(i_key_pad, 0, kHmacSha256BlockBytes);
+
+  // XOR the key K with the outer (opad) and inner (ipad) padding.
+  uint32_t opad[kHmacSha256BlockWords];
+  uint32_t ipad[kHmacSha256BlockWords];
+  memset(opad, 0x5c5c5c5c, kHmacSha256BlockBytes);
+  memset(ipad, 0x36363636, kHmacSha256BlockBytes);
+  TRY(hardened_xor(key->key_block, opad, kHmacSha256BlockWords, o_key_pad));
+  TRY(hardened_xor(key->key_block, ipad, kHmacSha256BlockWords, i_key_pad));
+
+  // Concatenate the message with the inner padded key.
+  uint8_t i_key_pad_msg[kHmacSha256BlockBytes + msg_len];
+  memset(i_key_pad_msg, 0, sizeof(i_key_pad_msg));
+  memcpy(i_key_pad_msg, i_key_pad, kHmacSha256BlockBytes);
+  memcpy(i_key_pad_msg + kHmacSha256BlockBytes, msg, msg_len);
+
+  // h_i_key_pad_msg = H(i_key_pad || m).
+  uint32_t h_i_key_pad_msg[kHmacSha256DigestWords];
+  memset(h_i_key_pad_msg, 0, sizeof(h_i_key_pad_msg));
+  HARDENED_TRY(hmac_hash_sha256(i_key_pad_msg, kHmacSha256BlockBytes + msg_len,
+                                h_i_key_pad_msg));
+
+  // Concatenate the outer padded key with h_i_key_pad_msg.
+  uint8_t o_key_pad_hash[kHmacSha256BlockBytes + kHmacSha256DigestBytes];
+  memset(o_key_pad_hash, 0, sizeof(o_key_pad_hash));
+  memcpy(o_key_pad_hash, o_key_pad, kHmacSha256BlockBytes);
+  memcpy(o_key_pad_hash + kHmacSha256BlockBytes, h_i_key_pad_msg,
+         kHmacSha256DigestBytes);
+
+  // hmac = H(o_key_pad || h_i_key_pad_msg).
+  return hmac_hash_sha256(o_key_pad_hash,
+                          kHmacSha256BlockBytes + kHmacSha256DigestBytes, tag);
+}
+
+status_t hmac_hmac_sha384(const hmac_key_t *key, const uint8_t *msg,
                           size_t msg_len, uint32_t *tag) {
   // Always configure the key length as the underlying message block size.
   uint32_t cfg = cfg_get(/*hmac_en=*/true, kDigestLengthSha384, kKeyLength1024);
-  return oneshot(cfg, key_block, kHmacSha384BlockWords, msg, msg_len,
-                 kHmacSha384DigestWords, tag);
+  return oneshot(cfg, key, msg, msg_len, kHmacSha384DigestWords, tag);
 }
 
-status_t hmac_hmac_sha512(const uint32_t *key_block, const uint8_t *msg,
+status_t hmac_hmac_sha384_redundant(const hmac_key_t *key, const uint8_t *msg,
+                                    size_t msg_len, uint32_t *tag) {
+  uint32_t o_key_pad[kHmacSha384BlockWords];
+  uint32_t i_key_pad[kHmacSha384BlockWords];
+  memset(o_key_pad, 0, kHmacSha384BlockBytes);
+  memset(i_key_pad, 0, kHmacSha384BlockBytes);
+
+  // XOR the key K with the outer (opad) and inner (ipad) padding.
+  for (size_t it = 0; it < kHmacSha384BlockWords; it++) {
+    o_key_pad[it] = key->key_block[it] ^ 0x5c5c5c5c;
+    i_key_pad[it] = key->key_block[it] ^ 0x36363636;
+  }
+
+  // Concatenate the message with the inner padded key.
+  uint8_t i_key_pad_msg[kHmacSha384BlockBytes + msg_len];
+  memset(i_key_pad_msg, 0, sizeof(i_key_pad_msg));
+  memcpy(i_key_pad_msg, i_key_pad, kHmacSha384BlockBytes);
+  memcpy(i_key_pad_msg + kHmacSha384BlockBytes, msg, msg_len);
+
+  // h_i_key_pad_msg = H(i_key_pad || m).
+  uint32_t h_i_key_pad_msg[kHmacSha384DigestWords];
+  memset(h_i_key_pad_msg, 0, sizeof(h_i_key_pad_msg));
+  HARDENED_TRY(hmac_hash_sha384(i_key_pad_msg, kHmacSha384BlockBytes + msg_len,
+                                h_i_key_pad_msg));
+
+  // Concatenate the outer padded key with h_i_key_pad_msg.
+  uint8_t o_key_pad_hash[kHmacSha384BlockBytes + kHmacSha384DigestBytes];
+  memset(o_key_pad_hash, 0, sizeof(o_key_pad_hash));
+  memcpy(o_key_pad_hash, o_key_pad, kHmacSha384BlockBytes);
+  memcpy(o_key_pad_hash + kHmacSha384BlockBytes, h_i_key_pad_msg,
+         kHmacSha384DigestBytes);
+
+  // hmac = H(o_key_pad || h_i_key_pad_msg).
+  return hmac_hash_sha384(o_key_pad_hash,
+                          kHmacSha384BlockBytes + kHmacSha384DigestBytes, tag);
+}
+
+status_t hmac_hmac_sha512(const hmac_key_t *key, const uint8_t *msg,
                           size_t msg_len, uint32_t *tag) {
   // Always configure the key length as the underlying message block size.
   uint32_t cfg = cfg_get(/*hmac_en=*/true, kDigestLengthSha512, kKeyLength1024);
-  return oneshot(cfg, key_block, kHmacSha512BlockWords, msg, msg_len,
-                 kHmacSha512DigestWords, tag);
+  return oneshot(cfg, key, msg, msg_len, kHmacSha512DigestWords, tag);
+}
+
+status_t hmac_hmac_sha512_redundant(const hmac_key_t *key, const uint8_t *msg,
+                                    size_t msg_len, uint32_t *tag) {
+  uint32_t o_key_pad[kHmacSha512BlockWords];
+  uint32_t i_key_pad[kHmacSha512BlockWords];
+  memset(o_key_pad, 0, kHmacSha512BlockBytes);
+  memset(i_key_pad, 0, kHmacSha512BlockBytes);
+
+  // XOR the key K with the outer (opad) and inner (ipad) padding.
+  for (size_t it = 0; it < kHmacSha512BlockWords; it++) {
+    o_key_pad[it] = key->key_block[it] ^ 0x5c5c5c5c;
+    i_key_pad[it] = key->key_block[it] ^ 0x36363636;
+  }
+
+  // Concatenate the message with the inner padded key.
+  uint8_t i_key_pad_msg[kHmacSha512BlockBytes + msg_len];
+  memset(i_key_pad_msg, 0, sizeof(i_key_pad_msg));
+  memcpy(i_key_pad_msg, i_key_pad, kHmacSha512BlockBytes);
+  memcpy(i_key_pad_msg + kHmacSha512BlockBytes, msg, msg_len);
+
+  // h_i_key_pad_msg = H(i_key_pad || m).
+  uint32_t h_i_key_pad_msg[kHmacSha512DigestWords];
+  memset(h_i_key_pad_msg, 0, sizeof(h_i_key_pad_msg));
+  HARDENED_TRY(hmac_hash_sha512(i_key_pad_msg, kHmacSha512BlockBytes + msg_len,
+                                h_i_key_pad_msg));
+
+  // Concatenate the outer padded key with h_i_key_pad_msg.
+  uint8_t o_key_pad_hash[kHmacSha512BlockBytes + kHmacSha512DigestBytes];
+  memset(o_key_pad_hash, 0, sizeof(o_key_pad_hash));
+  memcpy(o_key_pad_hash, o_key_pad, kHmacSha512BlockBytes);
+  memcpy(o_key_pad_hash + kHmacSha512BlockBytes, h_i_key_pad_msg,
+         kHmacSha512DigestBytes);
+
+  // hmac = H(o_key_pad || h_i_key_pad_msg).
+  return hmac_hash_sha512(o_key_pad_hash,
+                          kHmacSha512BlockBytes + kHmacSha512DigestBytes, tag);
 }
 
 /**
@@ -484,7 +661,8 @@ status_t hmac_hmac_sha512(const uint32_t *key_block, const uint8_t *msg,
  */
 static void sha2_init(hmac_digest_length_t digest_len, hmac_ctx_t *ctx) {
   ctx->cfg_reg = cfg_get(/*hmac_en=*/false, digest_len, kKeyLengthNone);
-  ctx->key_wordlen = 0;
+  ctx->key.key_len = 0;
+  ctx->key.checksum = 0;
   ctx->lower = 0;
   ctx->upper = 0;
   ctx->partial_block_bytelen = 0;
@@ -526,28 +704,47 @@ void hmac_hash_sha512_init(hmac_ctx_t *ctx) {
   sha2_init(kDigestLengthSha512, ctx);
 }
 
-void hmac_hmac_sha256_init_cl(const uint32_t *key_block, hmac_ctx_t *ctx) {
+void hmac_hmac_sha256_init_cl(const hmac_key_t key, hmac_ctx_t *ctx) {
   ctx->msg_block_wordlen = kHmacSha256BlockWords,
-  ctx->digest_wordlen = kHmacSha256DigestWords,
-  ctx->key_wordlen = kHmacSha256BlockWords;
-  memcpy(ctx->key, key_block, ctx->key_wordlen * sizeof(uint32_t));
+  ctx->digest_wordlen = kHmacSha256DigestWords;
+  ctx->key.key_len = key.key_len;
+  ctx->key.checksum = key.checksum;
+  hardened_memcpy(ctx->key.key_block, key.key_block, key.key_len);
   hmac_init(kKeyLength512, kDigestLengthSha256, ctx);
 }
 
-void hmac_hmac_sha384_init(const uint32_t *key_block, hmac_ctx_t *ctx) {
+void hmac_hmac_sha384_init(const hmac_key_t key, hmac_ctx_t *ctx) {
   ctx->msg_block_wordlen = kHmacSha384BlockWords,
-  ctx->digest_wordlen = kHmacSha384DigestWords,
-  ctx->key_wordlen = kHmacSha384BlockWords;
-  memcpy(ctx->key, key_block, ctx->key_wordlen * sizeof(uint32_t));
+  ctx->digest_wordlen = kHmacSha384DigestWords;
+  ctx->key.key_len = key.key_len;
+  ctx->key.checksum = key.checksum;
+  hardened_memcpy(ctx->key.key_block, key.key_block, key.key_len);
   hmac_init(kKeyLength1024, kDigestLengthSha384, ctx);
 }
 
-void hmac_hmac_sha512_init(const uint32_t *key_block, hmac_ctx_t *ctx) {
+void hmac_hmac_sha512_init(const hmac_key_t key, hmac_ctx_t *ctx) {
   ctx->msg_block_wordlen = kHmacSha512BlockWords,
-  ctx->digest_wordlen = kHmacSha512DigestWords,
-  ctx->key_wordlen = kHmacSha512BlockWords;
-  memcpy(ctx->key, key_block, ctx->key_wordlen * sizeof(uint32_t));
+  ctx->digest_wordlen = kHmacSha512DigestWords;
+  ctx->key.key_len = key.key_len;
+  ctx->key.checksum = key.checksum;
+  hardened_memcpy(ctx->key.key_block, key.key_block, key.key_len);
   hmac_init(kKeyLength1024, kDigestLengthSha512, ctx);
+}
+
+uint32_t hmac_key_integrity_checksum(const hmac_key_t *key) {
+  uint32_t ctx;
+  crc32_init(&ctx);
+  crc32_add32(&ctx, key->key_len);
+  crc32_add(&ctx, (unsigned char *)key->key_block, key->key_len);
+  return crc32_finish(&ctx);
+}
+
+hardened_bool_t hmac_key_integrity_checksum_check(const hmac_key_t *key) {
+  if (key->checksum == launder32(hmac_key_integrity_checksum(key))) {
+    HARDENED_CHECK_EQ(key->checksum, hmac_key_integrity_checksum(key));
+    return kHardenedBoolTrue;
+  }
+  return kHardenedBoolFalse;
 }
 
 status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
@@ -569,12 +766,12 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
 
   // Retore context will restore the context and also hit start or continue
   // button as necessary.
-  context_restore(ctx);
+  HARDENED_TRY(context_restore(ctx));
 
   // Write the partial block, then the new bytes.
-  msg_fifo_write((unsigned char *)ctx->partial_block,
-                 ctx->partial_block_bytelen);
-  msg_fifo_write(data, len - leftover_len);
+  HARDENED_TRY(msg_fifo_write((unsigned char *)ctx->partial_block,
+                              ctx->partial_block_bytelen));
+  HARDENED_TRY(msg_fifo_write(data, len - leftover_len));
 
   /*
    * TODO should be uncommented once the issue #24767 will be solved in the HW
@@ -601,18 +798,18 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
   ctx->partial_block_bytelen = leftover_len;
 
   // Clean up.
-  clear();
+  HARDENED_TRY(clear());
   return OTCRYPTO_OK;
 }
 
 status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest) {
   // Retore context will restore the context and also hit start or continue
   // button as necessary.
-  context_restore(ctx);
+  HARDENED_TRY(context_restore(ctx));
 
   // Feed the final leftover bytes to HMAC HWIP.
-  msg_fifo_write((unsigned char *)ctx->partial_block,
-                 ctx->partial_block_bytelen);
+  HARDENED_TRY(msg_fifo_write((unsigned char *)ctx->partial_block,
+                              ctx->partial_block_bytelen));
 
   // All message bytes are fed, now hit the process button.
   uint32_t cmd =
@@ -626,6 +823,6 @@ status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest) {
   // TODO(#23191): Destroy sensitive values in the ctx object.
 
   // Clean up.
-  clear();
+  HARDENED_TRY(clear());
   return OTCRYPTO_OK;
 }

@@ -71,7 +71,8 @@ status_t otbn_testutils_rsa_modexp_f4_finalize(dif_otbn_t *otbn, uint8_t *out,
  *
  * @param otbn The OTBN context object.
  * @param modulus The modulus (n).
- * @param private_exponent The private exponent (d).
+ * @param d_share0 First share of the private exponent (d).
+ * @param d_share1 Second share of the private exponent (d).
  * @param in The encrypted message.
  * @param out The decrypted (plaintext) message.
  * @param size_bytes The size of all buffers in bytes, i.e. the key/modulus
@@ -79,8 +80,8 @@ status_t otbn_testutils_rsa_modexp_f4_finalize(dif_otbn_t *otbn, uint8_t *out,
  *                   32 byte-steps (i.e. RSA 256 to RSA 4096).
  */
 status_t otbn_testutils_rsa_modexp_consttime_start(
-    dif_otbn_t *otbn, const uint8_t *modulus, const uint8_t *private_exponent,
-    const uint8_t *in, size_t size_bytes);
+    dif_otbn_t *otbn, const uint8_t *modulus, const uint8_t *d_share0,
+    const uint8_t *d_share1, const uint8_t *in, size_t size_bytes);
 /**
  * Finish modular exponentiation with the exponent 65537.
  *

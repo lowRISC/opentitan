@@ -82,25 +82,40 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
   }
 
   // Set the block cipher mode based on the key mode.
+  otcrypto_key_mode_t blinded_key_mode_used = launder32(0);
   switch (blinded_key->config.key_mode) {
     case kOtcryptoKeyModeAesEcb:
       aes_key->mode = kAesCipherModeEcb;
+      blinded_key_mode_used =
+          launder32(blinded_key_mode_used) | kOtcryptoKeyModeAesEcb;
       break;
     case kOtcryptoKeyModeAesCbc:
-      aes_key->mode = kAesCipherModeCbc;
+      aes_key->mode = launder32(kAesCipherModeCbc);
+      blinded_key_mode_used =
+          launder32(blinded_key_mode_used) | kOtcryptoKeyModeAesCbc;
       break;
     case kOtcryptoKeyModeAesCfb:
-      aes_key->mode = kAesCipherModeCfb;
+      aes_key->mode = launder32(kAesCipherModeCfb);
+      blinded_key_mode_used =
+          launder32(blinded_key_mode_used) | kOtcryptoKeyModeAesCfb;
       break;
     case kOtcryptoKeyModeAesOfb:
-      aes_key->mode = kAesCipherModeOfb;
+      aes_key->mode = launder32(kAesCipherModeOfb);
+      blinded_key_mode_used =
+          launder32(blinded_key_mode_used) | kOtcryptoKeyModeAesOfb;
       break;
     case kOtcryptoKeyModeAesCtr:
-      aes_key->mode = kAesCipherModeCtr;
+      aes_key->mode = launder32(kAesCipherModeCtr);
+      blinded_key_mode_used =
+          launder32(blinded_key_mode_used) | kOtcryptoKeyModeAesCtr;
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
   }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(blinded_key_mode_used),
+                    blinded_key->config.key_mode);
 
   // Check that the key mode matches the requested block cipher mode.
   if (memcmp(&aes_key->mode, &aes_mode, sizeof(aes_key->mode)) != 0) {
@@ -110,6 +125,11 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
 
   // Set the AES key length (in words).
   aes_key->key_len = keyblob_share_num_words(blinded_key->config);
+
+  if (aes_key->sideload == kHardenedBoolFalse) {
+    // Create the checksum of the key and store it in the key structure.
+    aes_key->checksum = aes_key_integrity_checksum(aes_key);
+  }
 
   return OTCRYPTO_OK;
 }
@@ -140,18 +160,19 @@ static status_t aes_padding_apply(otcrypto_aes_padding_t padding_mode,
   // Pad a full block if the last block is full, otherwise just fill the last
   // block.
   size_t padding_len = kAesBlockNumBytes - partial_data_len;
-  hardened_bool_t padding_written = kHardenedBoolFalse;
+  otcrypto_aes_padding_t padding_written = launder32(0);
   switch (launder32(padding_mode)) {
     case kOtcryptoAesPaddingPkcs7:
       // Pads with value same as the number of padding bytes.
       memset(padding, (uint8_t)padding_len, padding_len);
-      padding_written = kHardenedBoolTrue;
+      padding_written = launder32(padding_written) | kOtcryptoAesPaddingPkcs7;
       break;
     case kOtcryptoAesPaddingIso9797M2:
       // Pads with 0x80 (0b10000000), followed by zero bytes.
       memset(padding, 0x0, padding_len);
       padding[0] = 0x80;
-      padding_written = kHardenedBoolTrue;
+      padding_written =
+          launder32(padding_written) | kOtcryptoAesPaddingIso9797M2;
       break;
     case kOtcryptoAesPaddingNull:
       // This routine should not be called if padding is not needed.
@@ -160,7 +181,9 @@ static status_t aes_padding_apply(otcrypto_aes_padding_t padding_mode,
       // Unrecognized padding mode.
       return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(padding_written, kHardenedBoolTrue);
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(padding_written), padding_mode);
 
   return OTCRYPTO_OK;
 }
@@ -197,6 +220,9 @@ static status_t num_padded_blocks_get(size_t plaintext_len,
 /**
  * Return the block at index i for the given input and padding mode.
  *
+ * Uses hardening primitives internally that consume entropy; check the entropy
+ * complex is up before calling.
+ *
  * @param input Input data buffer.
  * @param padding Padding mode.
  * @param index Block index.
@@ -213,6 +239,9 @@ static status_t get_block(otcrypto_const_byte_buf_t input,
   // The index should never be more than `num_full_blocks` + 1, even including
   // padding.
   HARDENED_CHECK_LE(index, num_full_blocks + 1);
+
+  // Randomize the destination buffer.
+  HARDENED_TRY(hardened_memshred(block->data, ARRAYSIZE(block->data)));
 
   if (launder32(index) < num_full_blocks) {
     HARDENED_CHECK_LT(index, num_full_blocks);
@@ -245,21 +274,29 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
-                               otcrypto_word32_buf_t iv,
-                               otcrypto_aes_mode_t aes_mode,
-                               otcrypto_aes_operation_t aes_operation,
-                               otcrypto_const_byte_buf_t cipher_input,
-                               otcrypto_aes_padding_t aes_padding,
-                               otcrypto_byte_buf_t cipher_output) {
+/**
+ * Performs the AES operation.
+ *
+ * @param key Pointer to the blinded key struct with key shares.
+ * @param iv Initialization vector, used for CBC, CFB, OFB, CTR modes. May be
+ *           NULL if mode is ECB.
+ * @param aes_mode Required AES mode of operation.
+ * @param aes_operation Required AES operation (encrypt or decrypt).
+ * @param cipher_input Input data to be ciphered.
+ * @param aes_padding Padding scheme to be used for the data.
+ * @param[out] cipher_output Output data after cipher operation.
+ * @return The result of the cipher operation.
+ */
+static otcrypto_status_t otcrypto_aes_impl(
+    otcrypto_blinded_key_t *key, otcrypto_word32_buf_t iv,
+    otcrypto_aes_mode_t aes_mode, otcrypto_aes_operation_t aes_operation,
+    otcrypto_const_byte_buf_t cipher_input, otcrypto_aes_padding_t aes_padding,
+    otcrypto_byte_buf_t cipher_output) {
   // Check for NULL pointers in input pointers and data buffers.
   if (key == NULL || (aes_mode != kOtcryptoAesModeEcb && iv.data == NULL) ||
       cipher_input.data == NULL || cipher_output.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
 
   // Calculate the number of blocks for the input, including the padding for
   // encryption.
@@ -299,7 +336,7 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
       return OTCRYPTO_BAD_ARGS;
     }
     HARDENED_CHECK_EQ(iv.len, kAesBlockNumWords);
-    hardened_memcpy(aes_iv.data, iv.data, kAesBlockNumWords);
+    HARDENED_TRY(hardened_memcpy(aes_iv.data, iv.data, kAesBlockNumWords));
   }
 
   // Parse the AES key.
@@ -307,16 +344,24 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
   HARDENED_TRY(aes_key_construct(key, aes_mode, &aes_key));
 
   // Start the operation (encryption or decryption).
+  otcrypto_aes_operation_t aes_operation_started = launder32(0);
   switch (aes_operation) {
     case kOtcryptoAesOperationEncrypt:
       HARDENED_TRY(aes_encrypt_begin(aes_key, &aes_iv));
+      aes_operation_started =
+          launder32(aes_operation_started) | kOtcryptoAesOperationEncrypt;
       break;
     case kOtcryptoAesOperationDecrypt:
       HARDENED_TRY(aes_decrypt_begin(aes_key, &aes_iv));
+      aes_operation_started =
+          launder32(aes_operation_started) | kOtcryptoAesOperationDecrypt;
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
   }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(aes_operation_started), aes_operation);
 
   // Perform the cipher operation for all full blocks. The input and output are
   // offset by `block_offset` number of blocks, where `block_offset` can be 1
@@ -352,7 +397,7 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
   // cipher.
   for (i = 0; launder32(i) < block_offset; ++i) {
     HARDENED_TRY(get_block(cipher_input, aes_padding, i, &block_in));
-    TRY(aes_update(/*dest=*/NULL, &block_in));
+    HARDENED_TRY(aes_update(/*dest=*/NULL, &block_in));
   }
   // Check that the loop ran for the correct number of iterations.
   HARDENED_CHECK_EQ(i, block_offset);
@@ -361,7 +406,8 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
   // output buffer.
   for (i = block_offset; launder32(i) < input_nblocks; ++i) {
     HARDENED_TRY(get_block(cipher_input, aes_padding, i, &block_in));
-    TRY(aes_update(&block_out, &block_in));
+    HARDENED_TRY(hardened_memshred(block_out.data, ARRAYSIZE(block_out.data)));
+    HARDENED_TRY(aes_update(&block_out, &block_in));
     // TODO(#17711) Change to `hardened_memcpy`.
     memcpy(&cipher_output.data[(i - block_offset) * kAesBlockNumBytes],
            block_out.data, kAesBlockNumBytes);
@@ -385,12 +431,86 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
     HARDENED_TRY(aes_end(NULL));
   } else {
     HARDENED_TRY(aes_end(&aes_iv));
-    hardened_memcpy(iv.data, aes_iv.data, kAesBlockNumWords);
+    HARDENED_TRY(hardened_memcpy(iv.data, aes_iv.data, kAesBlockNumWords));
   }
 
-  // If the key was sideloaded, clear it.
-  if (key->config.hw_backed == kHardenedBoolTrue) {
-    HARDENED_TRY(keymgr_sideload_clear_aes());
+  // In case the key was sideloaded, clear it.
+  return keymgr_sideload_clear_aes();
+}
+
+otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
+                               otcrypto_word32_buf_t iv,
+                               otcrypto_aes_mode_t aes_mode,
+                               otcrypto_aes_operation_t aes_operation,
+                               otcrypto_const_byte_buf_t cipher_input,
+                               otcrypto_aes_padding_t aes_padding,
+                               otcrypto_byte_buf_t cipher_output) {
+  // Check for NULL pointers in input pointers and data buffers.
+  if (key == NULL || (aes_mode != kOtcryptoAesModeEcb && iv.data == NULL) ||
+      cipher_input.data == NULL || cipher_output.data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Ensure the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
+
+  if (launder32(key->config.security_level) == kOtcryptoKeySecurityLevelLow) {
+    HARDENED_CHECK_EQ(key->config.security_level, kOtcryptoKeySecurityLevelLow);
+    // No additional FI protection.
+    return otcrypto_aes_impl(key, iv, aes_mode, aes_operation, cipher_input,
+                             aes_padding, cipher_output);
+  } else {
+    HARDENED_CHECK_NE(key->config.security_level, kOtcryptoKeySecurityLevelLow);
+    // Protect the AES computation against faults. Recomputes the ciphertext or
+    // plaintexts after the actual AES operation and compares it to the input.
+
+    // Copy the IV for the second AES computation.
+    uint32_t iv_data[iv.len];
+    memcpy(iv_data, iv.data, sizeof(iv_data));
+    otcrypto_word32_buf_t iv_redundant = {
+        .data = iv_data,
+        .len = iv.len,
+    };
+
+    // First AES operation using the intended AES mode (encryption or
+    // decryption).
+    HARDENED_TRY(otcrypto_aes_impl(key, iv, aes_mode, aes_operation,
+                                   cipher_input, aes_padding, cipher_output));
+
+    // Second AES operation using the counterpart of the AES mode (decryption or
+    // encryption).
+    otcrypto_aes_operation_t aes_operation_inverse;
+    size_t len_bytes;
+    if (aes_operation == kOtcryptoAesOperationEncrypt) {
+      aes_operation_inverse = kOtcryptoAesOperationDecrypt;
+      len_bytes = cipher_output.len;
+    } else {
+      aes_operation_inverse = kOtcryptoAesOperationEncrypt;
+      TRY(otcrypto_aes_padded_plaintext_length(cipher_output.len, aes_padding,
+                                               &len_bytes));
+    }
+
+    // Create the input buffer that contains the cipher_output of the first AES
+    // operation.
+    otcrypto_const_byte_buf_t cipher_input_redundant = {
+        .data = cipher_output.data,
+        .len = cipher_output.len,
+    };
+    // Create the output buffer.
+    uint32_t output_buf[len_bytes / sizeof(uint32_t)];
+    otcrypto_byte_buf_t cipher_input_recomputed = {
+        .data = (unsigned char *)output_buf,
+        .len = len_bytes,
+    };
+    HARDENED_TRY(otcrypto_aes_impl(
+        key, iv_redundant, aes_mode, aes_operation_inverse,
+        cipher_input_redundant, aes_padding, cipher_input_recomputed));
+
+    // Comparison.
+    HARDENED_CHECK_EQ(
+        hardened_memeq((const uint32_t *)cipher_input.data, output_buf,
+                       cipher_input.len / sizeof(uint32_t)),
+        kHardenedBoolTrue);
   }
 
   return OTCRYPTO_OK;

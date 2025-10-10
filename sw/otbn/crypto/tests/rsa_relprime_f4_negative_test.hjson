@@ -1,0 +1,31 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+//  An 1024-bit value that doesn't satisfy relative primality with 65537.
+//
+//  This number is selected to be larger than the lower bound and prime, so it
+//  doesn't fail any other checks than GCD(p-1,e)=1.
+//
+//  Python script for generating the test data (using PyCryptoDome's
+//  Crypto.Util.number package for the primality check):
+//  while True:
+//    y = random.randrange(lower_bound, (1 << 1024))
+//    y -= (y % 65537)
+//    if (y & 1 == 0) and number.isPrime(y+1):
+//      break
+//  not_relprime = y+1
+
+{
+  "entrypoint": "main",
+  "input": {
+    "dmem": {
+      "rsa_n": "0xf36b245b0051285df9f46be79c821a95584a00007b907c4102578d6c8c5d459c4328a174859c703e66bc706a9224e20f387da68e80a362fb1f0f36a912df95c26dc8b40902bff546d3aff671eea79a86df507180e0fba265c0ab601e582580f9fb18a62f9ff4e92d8d698408be08d7c24507244c6d3859be3804f2a7d9f16866"
+    }
+  }
+  "output": {
+    "regs": {
+      "x2": "0x000000000"
+    }
+  }
+}

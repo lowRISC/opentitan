@@ -195,8 +195,10 @@ cc_library(
         ":integrity",
         ":keyblob",
         ":status",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:math",
         "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -212,8 +214,8 @@ cc_library(
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl/rsa:rsa_encryption",
-        "//sw/device/lib/crypto/impl/rsa:rsa_keygen",
         "//sw/device/lib/crypto/impl/rsa:rsa_signature",
+        "//sw/device/lib/crypto/impl/rsa:run_rsa_key_from_cofactor",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -301,6 +303,7 @@ cc_library(
         ":sha2",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
     ],
