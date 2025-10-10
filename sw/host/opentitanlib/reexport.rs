@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Use `extern crate` to force linking of these libraries, so `inventory` registration inside is collected.
+extern crate ot_transport_chipwhisperer;
 extern crate ot_transport_dediprog;
 extern crate ot_transport_ftdi;
 extern crate ot_transport_hyperdebug;

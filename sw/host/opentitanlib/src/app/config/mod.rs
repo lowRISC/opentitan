@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use thiserror::Error;
 
 use crate::app::TransportWrapperBuilder;
-use crate::util::fs::{builtin_file, read_to_string};
+use crate::util::fs::read_to_string;
 
 mod structs;
 pub use structs::*;
@@ -41,7 +41,3 @@ pub fn process_config_file(env: &mut TransportWrapperBuilder, conf_file: &Path) 
     }
     env.add_configuration_file(res)
 }
-
-builtin_file!("opentitan_cw310.json5");
-builtin_file!("opentitan_cw340.json5");
-builtin_file!("opentitan.json5");

@@ -33,6 +33,7 @@ rust_library(
     },
     deps = [
         "//sw/host/opentitanlib:opentitanlib_base",
+        "//sw/host/ot_transports/chipwhisperer",
         "@crate_index//:anyhow",
         "@crate_index//:byteorder",
         "@crate_index//:log",
