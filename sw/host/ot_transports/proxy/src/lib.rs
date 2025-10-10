@@ -103,6 +103,14 @@ impl Inner {
         }
     }
 
+    // Convenience method for issuing Proxy-only commands via proxy protocol.
+    fn execute_proxy_command(&self, command: ProxyRequest) -> Result<ProxyResponse> {
+        match self.execute_command(Request::Proxy(command))? {
+            Response::Proxy(resp) => Ok(resp),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
     fn poll_for_async_data(&self) -> Result<()> {
         self.recv_nonblocking()?;
         while let Some(msg) = self.dequeue_json_response()? {
@@ -202,36 +210,19 @@ impl Inner {
     }
 }
 
-pub struct ProxyOpsImpl {
-    inner: Rc<Inner>,
-}
-
-impl ProxyOpsImpl {
-    pub fn new(proxy: &Proxy) -> Result<Self> {
-        Ok(Self {
-            inner: Rc::clone(&proxy.inner),
-        })
-    }
-
-    // Convenience method for issuing Proxy-only commands via proxy protocol.
-    fn execute_command(&self, command: ProxyRequest) -> Result<ProxyResponse> {
-        match self.inner.execute_command(Request::Proxy(command))? {
-            Response::Proxy(resp) => Ok(resp),
-            _ => bail!(ProxyError::UnexpectedReply()),
-        }
-    }
-}
-
-impl ProxyOps for ProxyOpsImpl {
+impl ProxyOps for Proxy {
     fn provides_map(&self) -> Result<HashMap<String, String>> {
-        match self.execute_command(ProxyRequest::Provides {})? {
+        match self
+            .inner
+            .execute_proxy_command(ProxyRequest::Provides {})?
+        {
             ProxyResponse::Provides { provides_map } => Ok(provides_map),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
 
     fn bootstrap(&self, options: &BootstrapOptions, payload: &[u8]) -> Result<()> {
-        match self.execute_command(ProxyRequest::Bootstrap {
+        match self.inner.execute_proxy_command(ProxyRequest::Bootstrap {
             options: options.clone(),
             payload: payload.to_vec(),
         })? {
@@ -241,27 +232,33 @@ impl ProxyOps for ProxyOpsImpl {
     }
 
     fn apply_pin_strapping(&self, strapping_name: &str) -> Result<()> {
-        match self.execute_command(ProxyRequest::ApplyPinStrapping {
-            strapping_name: strapping_name.to_string(),
-        })? {
+        match self
+            .inner
+            .execute_proxy_command(ProxyRequest::ApplyPinStrapping {
+                strapping_name: strapping_name.to_string(),
+            })? {
             ProxyResponse::ApplyPinStrapping => Ok(()),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
 
     fn remove_pin_strapping(&self, strapping_name: &str) -> Result<()> {
-        match self.execute_command(ProxyRequest::RemovePinStrapping {
-            strapping_name: strapping_name.to_string(),
-        })? {
+        match self
+            .inner
+            .execute_proxy_command(ProxyRequest::RemovePinStrapping {
+                strapping_name: strapping_name.to_string(),
+            })? {
             ProxyResponse::RemovePinStrapping => Ok(()),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
 
     fn apply_default_configuration_with_strap(&self, strapping_name: &str) -> Result<()> {
-        match self.execute_command(ProxyRequest::ApplyDefaultConfigurationWithStrapping {
-            strapping_name: strapping_name.to_string(),
-        })? {
+        match self.inner.execute_proxy_command(
+            ProxyRequest::ApplyDefaultConfigurationWithStrapping {
+                strapping_name: strapping_name.to_string(),
+            },
+        )? {
             ProxyResponse::ApplyDefaultConfigurationWithStrapping => Ok(()),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
@@ -353,8 +350,8 @@ impl Transport for Proxy {
     }
 
     // Create ProxyOps instance.
-    fn proxy_ops(&self) -> Result<Rc<dyn ProxyOps>> {
-        Ok(Rc::new(ProxyOpsImpl::new(self)?))
+    fn proxy_ops(&self) -> Result<&dyn ProxyOps> {
+        Ok(self)
     }
 }
 

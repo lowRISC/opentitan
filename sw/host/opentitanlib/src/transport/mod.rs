@@ -139,7 +139,7 @@ pub trait Transport {
     }
 
     /// Methods available only on Proxy implementation.
-    fn proxy_ops(&self) -> Result<Rc<dyn ProxyOps>> {
+    fn proxy_ops(&self) -> Result<&dyn ProxyOps> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::ProxyOps).into())
     }
 

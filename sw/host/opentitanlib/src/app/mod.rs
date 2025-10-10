@@ -972,7 +972,7 @@ impl TransportWrapper {
 
     pub fn pin_strapping(&self, name: &str) -> Result<PinStrapping> {
         let proxy = if self.capabilities()?.request(Capability::PROXY).ok().is_ok() {
-            Some(self.proxy_ops()?)
+            Some(self.transport.clone())
         } else {
             None
         };
@@ -1001,7 +1001,7 @@ impl TransportWrapper {
     }
 
     /// Methods available only on Proxy implementation.
-    pub fn proxy_ops(&self) -> Result<Rc<dyn ProxyOps>> {
+    pub fn proxy_ops(&self) -> Result<&dyn ProxyOps> {
         self.transport.proxy_ops()
     }
 
@@ -1189,7 +1189,7 @@ impl GpioPin for NullPin {
 /// configuration files under a given strapping name.
 pub struct PinStrapping {
     name: String,
-    proxy: Option<Rc<dyn ProxyOps>>,
+    proxy: Option<Rc<dyn Transport>>,
     pins: Vec<StrappedPin>,
 }
 
@@ -1203,10 +1203,10 @@ impl PinStrapping {
     /// Configure the set of pins as strong/weak pullup/pulldown as declared in configuration
     /// files under a given strapping name.
     pub fn apply(&self) -> Result<()> {
-        if let Some(ref proxy_ops) = self.proxy {
+        if let Some(ref transport) = self.proxy {
             // The transport happens to be connected to a remote opentitan session.  First, pass
             // the request to the remote server.
-            if let Err(e) = proxy_ops.apply_pin_strapping(&self.name) {
+            if let Err(e) = transport.proxy_ops()?.apply_pin_strapping(&self.name) {
                 match e.downcast_ref::<TransportError>() {
                     Some(TransportError::InvalidStrappingName(_)) => {
                         if self.pins.is_empty() {
@@ -1232,10 +1232,10 @@ impl PinStrapping {
     /// configuration, that is, to the level declared in the "pins" section of configuration
     /// files, outside of any "strappings" section.
     pub fn remove(&self) -> Result<()> {
-        if let Some(ref proxy_ops) = self.proxy {
+        if let Some(ref transport) = self.proxy {
             // The transport happens to be connection to a remote opentitan session.  Pass
             // request to the remote server.
-            if let Err(e) = proxy_ops.remove_pin_strapping(&self.name) {
+            if let Err(e) = transport.proxy_ops()?.remove_pin_strapping(&self.name) {
                 match e.downcast_ref::<TransportError>() {
                     Some(TransportError::InvalidStrappingName(_)) => {
                         if self.pins.is_empty() {
