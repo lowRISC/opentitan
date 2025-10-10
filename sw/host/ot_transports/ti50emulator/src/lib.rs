@@ -31,7 +31,7 @@ mod gpio;
 mod i2c;
 mod uart;
 
-use crate::emu::{EmulatorImpl, EmulatorProcess, ResetPin};
+use crate::emu::{EmulatorProcess, ResetPin};
 use crate::gpio::Ti50GpioPin;
 use crate::i2c::Ti50I2cBus;
 use crate::uart::Ti50Uart;
@@ -43,8 +43,7 @@ pub struct Ti50Emulator {
     i2c_map: HashMap<String, Rc<dyn Bus>>,
     /// Mapping of UART handles to their symbolic names.
     uart_map: HashMap<String, Rc<dyn Uart>>,
-    /// Struct implementing the Emulator trait
-    emu: Rc<EmulatorImpl>,
+    inner: Rc<Inner>,
 }
 
 impl Ti50Emulator {
@@ -107,7 +106,7 @@ impl Ti50Emulator {
             gpio_map,
             i2c_map,
             uart_map,
-            emu: Rc::new(EmulatorImpl::open(&inner)?),
+            inner,
         };
         Ok(ti50_emu)
     }
@@ -176,8 +175,8 @@ impl Transport for Ti50Emulator {
     }
 
     // Create Emulator instance, or return one from a cache of previously created instances.
-    fn emulator(&self) -> Result<Rc<dyn Emulator>> {
-        Ok(self.emu.clone())
+    fn emulator(&self) -> Result<&dyn Emulator> {
+        Ok(self)
     }
 }
 

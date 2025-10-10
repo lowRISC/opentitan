@@ -996,7 +996,7 @@ impl TransportWrapper {
     }
 
     /// Returns a [`Emulator`] implementation.
-    pub fn emulator(&self) -> Result<Rc<dyn Emulator>> {
+    pub fn emulator(&self) -> Result<&dyn Emulator> {
         self.transport.emulator()
     }
 

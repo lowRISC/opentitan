@@ -4,43 +4,32 @@
 
 use anyhow::{Result, bail};
 use std::collections::HashMap;
-use std::rc::Rc;
 
 use opentitanlib::io::emu::{EmuState, EmuValue, Emulator};
 use ot_proxy_proto::{EmuRequest, EmuResponse, Request, Response};
 
 use super::{Inner, Proxy, ProxyError};
 
-pub struct ProxyEmu {
-    inner: Rc<Inner>,
-}
-
-impl ProxyEmu {
-    pub fn open(proxy: &Proxy) -> Result<Self> {
-        Ok(Self {
-            inner: Rc::clone(&proxy.inner),
-        })
-    }
-
+impl Inner {
     // Convenience method for issuing EMU commands via proxy protocol.
-    fn execute_command(&self, command: EmuRequest) -> Result<EmuResponse> {
-        match self.inner.execute_command(Request::Emu { command })? {
+    fn execute_emu_command(&self, command: EmuRequest) -> Result<EmuResponse> {
+        match self.execute_command(Request::Emu { command })? {
             Response::Emu(resp) => Ok(resp),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
 }
 
-impl Emulator for ProxyEmu {
+impl Emulator for Proxy {
     fn get_state(&self) -> Result<EmuState> {
-        match self.execute_command(EmuRequest::GetState)? {
+        match self.inner.execute_emu_command(EmuRequest::GetState)? {
             EmuResponse::GetState { state } => Ok(state),
             _ => Err(ProxyError::UnexpectedReply().into()),
         }
     }
 
     fn start(&self, factory_reset: bool, args: &HashMap<String, EmuValue>) -> Result<()> {
-        match self.execute_command(EmuRequest::Start {
+        match self.inner.execute_emu_command(EmuRequest::Start {
             factory_reset,
             args: args.clone(),
         })? {
@@ -50,7 +39,7 @@ impl Emulator for ProxyEmu {
     }
 
     fn stop(&self) -> Result<()> {
-        match self.execute_command(EmuRequest::Stop)? {
+        match self.inner.execute_emu_command(EmuRequest::Stop)? {
             EmuResponse::Stop => Ok(()),
             _ => Err(ProxyError::UnexpectedReply().into()),
         }

@@ -134,7 +134,7 @@ pub trait Transport {
         Err(TransportError::InvalidInterface(TransportInterfaceType::GpioBitbanging).into())
     }
     /// Returns a [`Emulator`] implementation.
-    fn emulator(&self) -> Result<Rc<dyn Emulator>> {
+    fn emulator(&self) -> Result<&dyn Emulator> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::Emulator).into())
     }
 
