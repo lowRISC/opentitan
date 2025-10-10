@@ -11,7 +11,6 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use super::CommandHandler;
-use super::errors::SerializedError;
 use super::protocol::{
     BitbangEntryRequest, BitbangEntryResponse, DacBangEntryRequest, EmuRequest, EmuResponse,
     GpioBitRequest, GpioBitResponse, GpioDacRequest, GpioDacResponse, GpioMonRequest,
@@ -28,6 +27,7 @@ use crate::io::{i2c, spi};
 use crate::proxy::Connection;
 use crate::proxy::nonblocking_uart::NonblockingUartRegistry;
 use crate::transport::TransportError;
+use crate::util::serializable_error::SerializedError;
 
 /// Implementation of the handling of each protocol request, by means of an underlying
 /// `Transport` implementation.

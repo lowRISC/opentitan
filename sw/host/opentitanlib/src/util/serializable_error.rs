@@ -14,7 +14,7 @@ pub struct SerializableErrorRegistration {
 inventory::collect!(SerializableErrorRegistration);
 
 /// `SerializableError` is a trait which represents an error type that can
-/// be sent over the wire by the proxy protocol.
+/// be sent over the wire.
 #[typetag::serde(tag = "error_type")]
 pub trait SerializableError: Serialize + std::error::Error + std::fmt::Debug + Send + Sync {
     fn as_anyhow_error(self: Box<Self>) -> anyhow::Error;
@@ -27,14 +27,14 @@ macro_rules! impl_serializable_error {
     ($t:ty) => {
         const _: () = {
             #[typetag::serde]
-            impl $crate::proxy::errors::SerializableError for $t {
+            impl $crate::util::serializable_error::SerializableError for $t {
                 fn as_anyhow_error(self: Box<$t>) -> anyhow::Error {
                     self.into()
                 }
             }
 
-            $crate::proxy::errors::submit! {
-                $crate::proxy::errors::SerializableErrorRegistration {
+            $crate::util::serializable_error::submit! {
+                $crate::util::serializable_error::SerializableErrorRegistration {
                     try_convert: |err| {
                         if !err.is::<$t>() {
                             return Err(err);
@@ -43,7 +43,7 @@ macro_rules! impl_serializable_error {
                         let description = err.to_string();
                         let backtrace = format!("{:#?}", err.backtrace());
                         let downcast = err.downcast::<$t>().unwrap();
-                        Ok($crate::proxy::errors::SerializedError {
+                        Ok($crate::util::serializable_error::SerializedError {
                             description,
                             backtrace,
                             error: Some(Box::new(downcast)),
@@ -55,7 +55,7 @@ macro_rules! impl_serializable_error {
     };
 }
 
-/// `SerializedError` is the wire form of errors that can be sent through the proxy.
+/// `SerializedError` is the wire form of errors that can be sent through network.
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct SerializedError {
     pub description: String,

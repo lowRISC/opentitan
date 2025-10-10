@@ -12,7 +12,6 @@ use tokio::net::TcpListener;
 
 use crate::app::TransportWrapper;
 
-pub mod errors;
 mod handler;
 mod nonblocking_uart;
 pub mod protocol;

@@ -13,8 +13,8 @@ use crate::io::gpio::{
 use crate::io::i2c::DeviceStatus;
 use crate::io::spi::{MaxSizes, TransferMode};
 use crate::io::uart::{FlowControl, Parity};
-use crate::proxy::errors::SerializedError;
 use crate::transport::Capabilities;
+use crate::util::serializable_error::SerializedError;
 use crate::util::voltage::Voltage;
 
 #[derive(Serialize, Deserialize)]
