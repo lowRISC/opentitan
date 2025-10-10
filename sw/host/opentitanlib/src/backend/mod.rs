@@ -13,7 +13,6 @@ use crate::transport::{EmptyTransport, Transport};
 use crate::util::parse_int::ParseInt;
 
 mod chip_whisperer;
-mod hyperdebug;
 
 pub trait Backend {
     /// Additional backend-specific arguments in addition to `BackendOpts`.

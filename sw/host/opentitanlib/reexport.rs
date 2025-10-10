@@ -5,6 +5,7 @@
 // Use `extern crate` to force linking of these libraries, so `inventory` registration inside is collected.
 extern crate ot_transport_dediprog;
 extern crate ot_transport_ftdi;
+extern crate ot_transport_hyperdebug;
 extern crate ot_transport_proxy;
 extern crate ot_transport_ti50emulator;
 extern crate ot_transport_verilator;

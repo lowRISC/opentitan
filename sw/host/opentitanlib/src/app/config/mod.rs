@@ -42,15 +42,6 @@ pub fn process_config_file(env: &mut TransportWrapperBuilder, conf_file: &Path) 
     env.add_configuration_file(res)
 }
 
-builtin_file!("h1dx_devboard.json5");
-builtin_file!("h1dx_devboard_c2d2.json5");
-builtin_file!("servo_micro.json5");
 builtin_file!("opentitan_cw310.json5");
 builtin_file!("opentitan_cw340.json5");
 builtin_file!("opentitan.json5");
-builtin_file!("hyperdebug.json5");
-builtin_file!("hyperdebug_chipwhisperer.json5");
-builtin_file!("hyperdebug_cw310.json5");
-builtin_file!("hyperdebug_cw340.json5");
-builtin_file!("hyperdebug_teacup.json5");
-builtin_file!("hyperdebug_teacup_default.json5");

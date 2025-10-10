@@ -12,10 +12,10 @@ use anyhow::{Result, anyhow, bail};
 use regex::Regex;
 use serde_annotate::Annotate;
 
-use crate::transport::{
+use opentitanlib::transport::{
     Capabilities, Capability, ProgressIndicator, Transport, TransportError, UpdateFirmware,
 };
-use crate::util::usb::UsbBackend;
+use opentitanlib::util::usb::UsbBackend;
 
 const VID_ST_MICROELECTRONICS: u16 = 0x0483;
 const PID_DFU_BOOTLOADER: u16 = 0xdf11;

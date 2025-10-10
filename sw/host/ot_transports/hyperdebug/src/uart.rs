@@ -8,11 +8,11 @@ use anyhow::{Context, Result};
 use rusb::{Direction, Recipient, RequestType};
 use serialport::Parity;
 
-use super::UartInterface;
-use crate::io::uart::{FlowControl, Uart, UartError};
-use crate::transport::TransportError;
-use crate::transport::common::uart::{SerialPortUart, SoftwareFlowControl};
-use crate::transport::hyperdebug::Inner;
+use opentitanlib::io::uart::{FlowControl, Uart, UartError};
+use opentitanlib::transport::TransportError;
+use opentitanlib::transport::common::uart::{SerialPortUart, SoftwareFlowControl};
+
+use super::{Inner, UartInterface};
 
 const UART_BAUD: u32 = 115200;
 

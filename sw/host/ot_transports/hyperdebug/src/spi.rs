@@ -2,21 +2,23 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Result, bail, ensure};
-use rusb::{Direction, Recipient, RequestType};
 use std::cell::Cell;
 use std::mem::size_of;
 use std::rc::Rc;
 use std::time::Duration;
+
+use anyhow::{Result, bail, ensure};
+use rusb::{Direction, Recipient, RequestType};
 use zerocopy::{FromBytes, Immutable, IntoBytes};
 
-use crate::io::eeprom;
-use crate::io::gpio::GpioPin;
-use crate::io::spi::{
+use opentitanlib::io::eeprom;
+use opentitanlib::io::gpio::GpioPin;
+use opentitanlib::io::spi::{
     AssertChipSelect, MaxSizes, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
 };
-use crate::transport::TransportError;
-use crate::transport::hyperdebug::{BulkInterface, Inner};
+use opentitanlib::transport::TransportError;
+
+use super::{BulkInterface, Inner};
 
 pub struct HyperdebugSpiTarget {
     inner: Rc<Inner>,

@@ -19,22 +19,25 @@ use regex::Regex;
 use serde_annotate::Annotate;
 use serialport::TTYPort;
 
-use crate::debug::openocd::OpenOcdJtagChain;
-use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
-use crate::io::i2c::Bus;
-use crate::io::jtag::{JtagChain, JtagParams};
-use crate::io::spi::Target;
-use crate::io::uart::Uart;
-use crate::transport::MaintainConnection;
-use crate::transport::chip_whisperer::ChipWhisperer;
-use crate::transport::chip_whisperer::board::Board;
-use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
-use crate::transport::common::uart::flock_serial;
-use crate::transport::{
+use opentitanlib::backend::{Backend, BackendOpts, define_interface};
+use opentitanlib::debug::openocd::OpenOcdJtagChain;
+use opentitanlib::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
+use opentitanlib::io::i2c::Bus;
+use opentitanlib::io::jtag::{JtagChain, JtagParams};
+use opentitanlib::io::spi::Target;
+use opentitanlib::io::uart::Uart;
+use opentitanlib::transport::MaintainConnection;
+use opentitanlib::transport::chip_whisperer::ChipWhisperer;
+use opentitanlib::transport::chip_whisperer::board::Board;
+use opentitanlib::transport::chip_whisperer::board::{Cw310, Cw340};
+use opentitanlib::transport::common::fpga::{ClearBitstream, FpgaProgram};
+use opentitanlib::transport::common::uart::flock_serial;
+use opentitanlib::transport::{
     Capabilities, Capability, SetJtagPins, Transport, TransportError, TransportInterfaceType,
     UpdateFirmware,
 };
-use crate::util::usb::UsbBackend;
+use opentitanlib::util::fs::builtin_file;
+use opentitanlib::util::usb::UsbBackend;
 
 pub mod c2d2;
 pub mod dfu;
@@ -911,6 +914,9 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
 /// A `StandardFlavor` is a plain Hyperdebug board.
 pub struct StandardFlavor;
 
+static SPI_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new("^ +([0-9]+) ([^ ]+) ([0-9]+) bps(?: ([hd])[^ ]*)?").unwrap());
+
 impl Flavor for StandardFlavor {
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         Ok(Rc::new(gpio::HyperdebugGpioPin::open(inner, pinname)?))
@@ -1006,5 +1012,105 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
     }
 }
 
-static SPI_REGEX: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new("^ +([0-9]+) ([^ ]+) ([0-9]+) bps(?: ([hd])[^ ]*)?").unwrap());
+struct HyperdebugBackend<T>(T);
+
+impl<T: Flavor + 'static> Backend for HyperdebugBackend<T> {
+    type Opts = ();
+
+    fn create_transport(args: &BackendOpts, _: &()) -> Result<Box<dyn Transport>> {
+        Ok(Box::new(Hyperdebug::<T>::open(
+            args.usb_vid,
+            args.usb_pid,
+            args.usb_serial.as_deref(),
+        )?))
+    }
+}
+
+define_interface!(
+    "hyper310",
+    HyperdebugBackend<ChipWhispererFlavor<Cw310>>,
+    "/__builtin__/hyperdebug_cw310.json5"
+);
+builtin_file!(
+    "hyperdebug.json5",
+    include_str!("../config/hyperdebug.json5")
+);
+builtin_file!(
+    "hyperdebug_chipwhisperer.json5",
+    include_str!("../config/hyperdebug_chipwhisperer.json5")
+);
+builtin_file!(
+    "hyperdebug_cw310.json5",
+    include_str!("../config/hyperdebug_cw310.json5")
+);
+
+define_interface!(
+    "hyper340",
+    HyperdebugBackend<ChipWhispererFlavor<Cw340>>,
+    "/__builtin__/hyperdebug_cw340.json5"
+);
+builtin_file!(
+    "hyperdebug_cw340.json5",
+    include_str!("../config/hyperdebug_cw340.json5")
+);
+
+builtin_file!(
+    "hyperdebug_teacup_default.json5",
+    include_str!("../config/hyperdebug_teacup_default.json5")
+);
+define_interface!(
+    "teacup",
+    HyperdebugBackend<StandardFlavor>,
+    "/__builtin__/hyperdebug_teacup_default.json5"
+);
+builtin_file!(
+    "hyperdebug_teacup.json5",
+    include_str!("../config/hyperdebug_teacup.json5")
+);
+builtin_file!(
+    "hyperdebug_teacup_default.json5",
+    include_str!("../config/hyperdebug_teacup_default.json5")
+);
+
+define_interface!("hyperdebug", HyperdebugBackend<StandardFlavor>);
+define_interface!(
+    "c2d2",
+    HyperdebugBackend<C2d2Flavor>,
+    "/__builtin__/h1dx_devboard_c2d2.json5"
+);
+builtin_file!(
+    "h1dx_devboard.json5",
+    include_str!("../config/h1dx_devboard.json5")
+);
+builtin_file!(
+    "h1dx_devboard_c2d2.json5",
+    include_str!("../config/h1dx_devboard_c2d2.json5")
+);
+
+define_interface!(
+    "servo_micro",
+    HyperdebugBackend<ServoMicroFlavor>,
+    "/__builtin__/servo_micro.json5"
+);
+builtin_file!(
+    "servo_micro.json5",
+    include_str!("../config/servo_micro.json5")
+);
+
+define_interface!("ti50", HyperdebugBackend<Ti50Flavor>);
+
+struct HyperdebugDfuBackend;
+
+impl Backend for HyperdebugDfuBackend {
+    type Opts = ();
+
+    fn create_transport(args: &BackendOpts, _: &()) -> Result<Box<dyn Transport>> {
+        Ok(Box::new(HyperdebugDfu::open(
+            args.usb_vid,
+            args.usb_pid,
+            args.usb_serial.as_deref(),
+        )?))
+    }
+}
+
+define_interface!("hyperdebug_dfu", HyperdebugDfuBackend);
