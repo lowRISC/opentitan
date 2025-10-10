@@ -53,27 +53,3 @@ subdirectory(
     parent = ":root",
     path = "lib/clang/16/include",
 )
-
-subdirectory(
-    name = "riscv32-unknown-elf-include",
-    parent = ":root",
-    path = "riscv32-unknown-elf/include",
-)
-
-subdirectory(
-    name = "cxx-include",
-    parent = ":root",
-    path = "riscv32-unknown-elf/include/c++/10.2.0",
-)
-
-subdirectory(
-    name = "cxx-backward",
-    parent = ":root",
-    path = "riscv32-unknown-elf/include/c++/10.2.0/backward",
-)
-
-subdirectory(
-    name = "cxx-riscv32-unknown-elf",
-    parent = ":root",
-    path = "riscv32-unknown-elf/include/c++/10.2.0/riscv32-unknown-elf",
-)
