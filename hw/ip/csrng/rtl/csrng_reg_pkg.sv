@@ -310,19 +310,7 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } sfifo_pdata_err;
-    struct packed {
-      logic        d;
-      logic        de;
     } sfifo_bencack_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_bencreq_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_updreq_err;
     struct packed {
       logic        d;
       logic        de;
@@ -334,10 +322,6 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } sfifo_cmdreq_err;
-    struct packed {
-      logic        d;
-      logic        de;
     } sfifo_genbits_err;
     struct packed {
       logic        d;
@@ -346,7 +330,7 @@ package csrng_reg_pkg;
   } csrng_hw2reg_err_code_reg_t;
 
   typedef struct packed {
-    logic [7:0]  d;
+    logic [5:0]  d;
     logic        de;
   } csrng_hw2reg_main_sm_state_reg_t;
 
@@ -369,16 +353,16 @@ package csrng_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    csrng_hw2reg_intr_state_reg_t intr_state; // [273:266]
-    csrng_hw2reg_reseed_counter_mreg_t [2:0] reseed_counter; // [265:170]
-    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [169:162]
-    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [161:160]
-    csrng_hw2reg_genbits_reg_t genbits; // [159:128]
-    csrng_hw2reg_int_state_val_reg_t int_state_val; // [127:96]
-    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [95:79]
-    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [78:61]
-    csrng_hw2reg_err_code_reg_t err_code; // [60:9]
-    csrng_hw2reg_main_sm_state_reg_t main_sm_state; // [8:0]
+    csrng_hw2reg_intr_state_reg_t intr_state; // [263:256]
+    csrng_hw2reg_reseed_counter_mreg_t [2:0] reseed_counter; // [255:160]
+    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [159:152]
+    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [151:150]
+    csrng_hw2reg_genbits_reg_t genbits; // [149:118]
+    csrng_hw2reg_int_state_val_reg_t int_state_val; // [117:86]
+    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [85:69]
+    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [68:51]
+    csrng_hw2reg_err_code_reg_t err_code; // [50:7]
+    csrng_hw2reg_main_sm_state_reg_t main_sm_state; // [6:0]
   } csrng_hw2reg_t;
 
   // Register offsets
