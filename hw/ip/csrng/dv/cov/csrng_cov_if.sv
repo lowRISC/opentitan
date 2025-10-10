@@ -243,15 +243,15 @@ interface csrng_cov_if (
       // If ERR_CODE register has SFIFO related field set, it also needs to set at least one
       // FIFO_*_ERR field.
       illegal_bins illegal = !binsof(cp_err_codes) intersect { CMD_STAGE_SM_ERR, MAIN_SM_ERR,
-                                                               DRBG_GEN_SM_ERR, DRBG_UPDBE_SM_ERR,
-                                                               DRBG_UPDOB_SM_ERR, AES_CIPHER_SM_ERR,
-                                                               CMD_GEN_CNT_ERR } &&
-                             binsof(cp_fifo_err_type) intersect { 0 };
+                                                               DRBG_CMD_SM_ERR, DRBG_GEN_SM_ERR,
+                                                               DRBG_UPDBE_SM_ERR, DRBG_UPDOB_SM_ERR,
+                                                               AES_CIPHER_SM_ERR, CMD_GEN_CNT_ERR }
+                             && binsof(cp_fifo_err_type) intersect { 0 };
 
       ignore_bins ignore = binsof(cp_err_codes) intersect { CMD_STAGE_SM_ERR, MAIN_SM_ERR,
-                                                            DRBG_GEN_SM_ERR, DRBG_UPDBE_SM_ERR,
-                                                            DRBG_UPDOB_SM_ERR, AES_CIPHER_SM_ERR,
-                                                            CMD_GEN_CNT_ERR };
+                                                            DRBG_CMD_SM_ERR, DRBG_GEN_SM_ERR,
+                                                            DRBG_UPDBE_SM_ERR, DRBG_UPDOB_SM_ERR,
+                                                            AES_CIPHER_SM_ERR, CMD_GEN_CNT_ERR };
     }
 
     cp_csrng_aes_fsm_err: coverpoint

@@ -130,8 +130,6 @@ module csrng_core import csrng_pkg::*; #(
   logic                        main_sm_cmd_vld;
   logic                        clr_adata_packer;
 
-  logic                        ctr_drbg_cmd_sfifo_rcstage_err_sum;
-  logic [2:0]                  ctr_drbg_cmd_sfifo_rcstage_err;
   logic                        ctr_drbg_cmd_sfifo_keyvrc_err_sum;
   logic [2:0]                  ctr_drbg_cmd_sfifo_keyvrc_err;
   logic                        ctr_drbg_upd_sfifo_final_err_sum;
@@ -157,6 +155,8 @@ module csrng_core import csrng_pkg::*; #(
   logic                        main_sm_err_sum;
   logic                        cs_main_sm_err;
   logic [MainSmStateWidth-1:0] cs_main_sm_state;
+  logic                        drbg_cmd_sm_err_sum;
+  logic                        drbg_cmd_sm_err;
   logic                        drbg_gen_sm_err_sum;
   logic                        drbg_gen_sm_err;
   logic                        drbg_updbe_sm_err_sum;
@@ -408,6 +408,7 @@ module csrng_core import csrng_pkg::*; #(
   logic fatal_loc_events;
   assign fatal_loc_events = cmd_gen_cnt_err_sum ||
                             cmd_stage_sm_err_sum ||
+                            drbg_cmd_sm_err_sum ||
                             drbg_gen_sm_err_sum ||
                             drbg_updbe_sm_err_sum ||
                             drbg_updob_sm_err_sum ||
@@ -418,7 +419,6 @@ module csrng_core import csrng_pkg::*; #(
   assign event_cs_fatal_err = (cs_enable_fo[1]  && (
          (|cmd_stage_sfifo_cmd_err_sum) ||
          (|cmd_stage_sfifo_genbits_err_sum) ||
-         ctr_drbg_cmd_sfifo_rcstage_err_sum ||
          ctr_drbg_cmd_sfifo_keyvrc_err_sum ||
          ctr_drbg_upd_sfifo_final_err_sum ||
          ctr_drbg_gen_sfifo_gbencack_err_sum ||
@@ -435,8 +435,6 @@ module csrng_core import csrng_pkg::*; #(
          fatal_loc_events;
 
   // set fifo errors that are single instances of source
-  assign ctr_drbg_cmd_sfifo_rcstage_err_sum = (|ctr_drbg_cmd_sfifo_rcstage_err) ||
-         err_code_test_bit[3];
   assign ctr_drbg_cmd_sfifo_keyvrc_err_sum = (|ctr_drbg_cmd_sfifo_keyvrc_err) ||
          err_code_test_bit[4];
   assign ctr_drbg_upd_sfifo_final_err_sum = (|ctr_drbg_upd_sfifo_final_err) ||
@@ -453,18 +451,13 @@ module csrng_core import csrng_pkg::*; #(
          err_code_test_bit[14];
   assign block_encrypt_sfifo_cmdid_err_sum = (|block_encrypt_sfifo_cmdid_err) ||
          err_code_test_bit[15];
-  assign cmd_stage_sm_err_sum = (|cmd_stage_sm_err) ||
-         err_code_test_bit[20];
-  assign main_sm_err_sum = cs_main_sm_err ||
-         err_code_test_bit[21];
-  assign drbg_gen_sm_err_sum = drbg_gen_sm_err ||
-         err_code_test_bit[22];
-  assign drbg_updbe_sm_err_sum = drbg_updbe_sm_err ||
-         err_code_test_bit[23];
-  assign drbg_updob_sm_err_sum = drbg_updob_sm_err ||
-         err_code_test_bit[24];
-  assign block_encrypt_sm_err_sum = block_encrypt_sm_err ||
-         err_code_test_bit[25];
+  assign cmd_stage_sm_err_sum     = (|cmd_stage_sm_err)  || err_code_test_bit[20];
+  assign main_sm_err_sum          = cs_main_sm_err       || err_code_test_bit[21];
+  assign drbg_gen_sm_err_sum      = drbg_gen_sm_err      || err_code_test_bit[22];
+  assign drbg_updbe_sm_err_sum    = drbg_updbe_sm_err    || err_code_test_bit[23];
+  assign drbg_updob_sm_err_sum    = drbg_updob_sm_err    || err_code_test_bit[24];
+  assign block_encrypt_sm_err_sum = block_encrypt_sm_err || err_code_test_bit[25];
+  assign drbg_cmd_sm_err_sum      = drbg_cmd_sm_err      || err_code_test_bit[27];
   assign cmd_gen_cnt_err_sum = (|cmd_gen_cnt_err) || ctr_drbg_gen_v_ctr_err ||
          ctr_drbg_upd_v_ctr_err || err_code_test_bit[26];
   assign fifo_write_err_sum =
@@ -476,7 +469,6 @@ module csrng_core import csrng_pkg::*; #(
          ctr_drbg_gen_sfifo_gbencack_err[2] ||
          ctr_drbg_upd_sfifo_final_err[2] ||
          ctr_drbg_cmd_sfifo_keyvrc_err[2] ||
-         ctr_drbg_cmd_sfifo_rcstage_err[2] ||
          (|cmd_stage_sfifo_genbits_err_wr) ||
          (|cmd_stage_sfifo_cmd_err_wr) ||
          err_code_test_bit[28];
@@ -489,7 +481,6 @@ module csrng_core import csrng_pkg::*; #(
          ctr_drbg_gen_sfifo_gbencack_err[1] ||
          ctr_drbg_upd_sfifo_final_err[1] ||
          ctr_drbg_cmd_sfifo_keyvrc_err[1] ||
-         ctr_drbg_cmd_sfifo_rcstage_err[1] ||
          (|cmd_stage_sfifo_genbits_err_rd) ||
          (|cmd_stage_sfifo_cmd_err_rd) ||
          err_code_test_bit[29];
@@ -502,7 +493,6 @@ module csrng_core import csrng_pkg::*; #(
          ctr_drbg_gen_sfifo_gbencack_err[0] ||
          ctr_drbg_upd_sfifo_final_err[0] ||
          ctr_drbg_cmd_sfifo_keyvrc_err[0] ||
-         ctr_drbg_cmd_sfifo_rcstage_err[0] ||
          (|cmd_stage_sfifo_genbits_err_st) ||
          (|cmd_stage_sfifo_cmd_err_st) ||
          err_code_test_bit[30];
@@ -515,10 +505,6 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.err_code.sfifo_genbits_err.d = 1'b1;
   assign hw2reg.err_code.sfifo_genbits_err.de = cs_enable_fo[3] &&
          (|cmd_stage_sfifo_genbits_err_sum);
-
-  assign hw2reg.err_code.sfifo_rcstage_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_rcstage_err.de = cs_enable_fo[5] &&
-         ctr_drbg_cmd_sfifo_rcstage_err_sum;
 
   assign hw2reg.err_code.sfifo_keyvrc_err.d = 1'b1;
   assign hw2reg.err_code.sfifo_keyvrc_err.de = cs_enable_fo[6] &&
@@ -559,6 +545,10 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.err_code.main_sm_err.d = 1'b1;
   assign hw2reg.err_code.main_sm_err.de = cs_enable_fo[19] &&
          main_sm_err_sum;
+
+  assign hw2reg.err_code.drbg_cmd_sm_err.d = 1'b1;
+  assign hw2reg.err_code.drbg_cmd_sm_err.de = cs_enable_fo[10] &&
+         drbg_cmd_sm_err_sum;
 
   assign hw2reg.err_code.drbg_gen_sm_err.d = 1'b1;
   assign hw2reg.err_code.drbg_gen_sm_err.de = cs_enable_fo[20] &&
@@ -1216,7 +1206,7 @@ module csrng_core import csrng_pkg::*; #(
     .update_rsp_rdy_o (cmd_upd_rsp_rdy),
     .update_rsp_data_i(upd_rsp_data),
 
-    .fifo_rcstage_err_o(ctr_drbg_cmd_sfifo_rcstage_err),
+    .sm_err_o          (drbg_cmd_sm_err),
     .fifo_keyvrc_err_o (ctr_drbg_cmd_sfifo_keyvrc_err)
   );
 
@@ -1463,9 +1453,9 @@ module csrng_core import csrng_pkg::*; #(
   logic [SeedLen-1:0] unused_gen_rsp_pdata;
   logic               unused_state_db_inst_state;
 
-  assign unused_err_code_test_bit = err_code_test_bit[27] || (|err_code_test_bit[19:16]) ||
-                                    (|err_code_test_bit[8:5]) || err_code_test_bit[2];
-  assign unused_enable_fo = cs_enable_fo[42] || (|cs_enable_fo[10:7]) || cs_enable_fo[4];
+  assign unused_err_code_test_bit = (|err_code_test_bit[19:16]) || (|err_code_test_bit[8:5]) ||
+                                    (|err_code_test_bit[3:2]);
+  assign unused_enable_fo = cs_enable_fo[42] || (|cs_enable_fo[9:7]) || |(cs_enable_fo[5:4]);
   assign unused_reg2hw_genbits = (|reg2hw.genbits.q);
   assign unused_int_state_val = (|reg2hw.int_state_val.q);
   assign unused_reseed_interval = reg2hw.reseed_interval.qe;

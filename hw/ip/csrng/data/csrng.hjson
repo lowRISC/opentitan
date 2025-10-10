@@ -178,6 +178,9 @@
     { name: "MAIN_SM.FSM.SPARSE"
       desc: "The CSRNG main state machine uses a sparse state encoding."
     }
+    { name: "UPDRSP.FSM.SPARSE"
+      desc: "The CSRNG update response state machine uses a sparse state encoding."
+    }
     { name: "UPDATE.FSM.SPARSE"
       desc: "The CSRNG update state machine uses a sparse state encoding."
     }
@@ -188,13 +191,13 @@
       desc: "The CSRNG block output state machine uses a sparse state encoding."
     }
     { name: "GEN_CMD.CTR.REDUN"
-     desc: "The generate command uses a counter that is protected by a second counter that counts in the opposite direction."
+      desc: "The generate command uses a counter that is protected by a second counter that counts in the opposite direction."
     }
     { name: "DRBG_UPD.CTR.REDUN"
-     desc: "The ctr_drbg update algorithm uses a counter that is protected by a second counter that counts in the opposite direction."
+      desc: "The ctr_drbg update algorithm uses a counter that is protected by a second counter that counts in the opposite direction."
     }
     { name: "DRBG_GEN.CTR.REDUN"
-     desc: "The ctr_drbg generate algorithm uses a counter that is protected by a second counter that counts in the opposite direction."
+      desc: "The ctr_drbg generate algorithm uses a counter that is protected by a second counter that counts in the opposite direction."
     }
     { name: "CTRL.MUBI"
       desc: "Multi-bit field used for selection control."
@@ -728,15 +731,6 @@
                 This bit will stay set until the next reset.
                 '''
         }
-        { bits: "3",
-          name: "SFIFO_RCSTAGE_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                rcstage FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
         { bits: "4",
           name: "SFIFO_KEYVRC_ERR",
           desc: '''
@@ -870,6 +864,15 @@
                 has been detected.
                 This error will signal a fatal alert, and also
                 an interrupt if enabled.
+                This bit will stay set until the next reset.
+                '''
+        }
+        { bits: "27",
+          name: "DRBG_CMD_SM_ERR",
+          desc: '''
+                This bit will be set when the state machine in the ctr_drbg_cmd unit has entered
+                an illegal state.
+                This error will signal a fatal alert, and also an interrupt, if enabled.
                 This bit will stay set until the next reset.
                 '''
         }

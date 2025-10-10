@@ -220,7 +220,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     last_index = find_index("_", fld_name, "last");
 
     case (cfg.which_fatal_err) inside
-      sfifo_cmd_error, sfifo_genbits_error, sfifo_rcstage_error,
+      sfifo_cmd_error, sfifo_genbits_error,
       sfifo_keyvrc_error, sfifo_final_error, sfifo_gbencack_error,
       sfifo_grcstage_error, sfifo_gadstage_error, sfifo_ggenbits_error,
       sfifo_cmdid_error, sfifo_ggenreq_error: begin
@@ -238,7 +238,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
                               ral.intr_state.cs_fatal_err, 1'b1, cfg.which_fifo_err);
         end
       end
-      cmd_stage_sm_error, main_sm_error, drbg_gen_sm_error, drbg_updbe_sm_error,
+      cmd_stage_sm_error, main_sm_error, drbg_cmd_sm_error, drbg_gen_sm_error, drbg_updbe_sm_error,
       drbg_updob_sm_error: begin
         path = cfg.csrng_path_vif.sm_err_path(fld_name.substr(0, last_index-1), cfg.NHwApps);
         force_path_err(path, 8'b0, ral.intr_state.cs_fatal_err, 1'b1);
@@ -377,7 +377,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     csr_wr(.ptr(ral.intr_state), .value(32'd15));
     cfg.clk_rst_vif.wait_clks(100);
 
-    if (cfg.which_fatal_err inside {cmd_stage_sm_err, main_sm_err,
+    if (cfg.which_fatal_err inside {cmd_stage_sm_err, main_sm_err, drbg_cmd_sm_err,
                                     drbg_gen_sm_err, drbg_updbe_sm_err, drbg_updob_sm_err,
                                     aes_cipher_sm_err,
                                     cmd_gen_cnt_err, cmd_gen_cnt_err_test}) begin
