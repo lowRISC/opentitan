@@ -21,8 +21,8 @@ use opentitanlib::io::emu::{EmuError, EmuState, EmuValue, Emulator};
 use opentitanlib::io::gpio::{self, GpioError, PinMode, PullMode};
 use opentitanlib::util::file;
 
-use super::Inner;
 use super::gpio::Logic;
+use super::{Inner, Ti50Emulator};
 
 const SPAWN_TIMEOUT: Duration = Duration::from_secs(10);
 const TIMEOUT: Duration = Duration::from_millis(1000);
@@ -487,21 +487,7 @@ impl EmulatorProcess {
     }
 }
 
-/// Structure representing `Emulator` sub-process based on TockOS host-emulation architecture.
-pub struct EmulatorImpl {
-    inner: Rc<Inner>,
-}
-
-impl EmulatorImpl {
-    /// Create a new `EmulatorImpl` instance.
-    pub fn open(inner: &Rc<Inner>) -> Result<Self> {
-        Ok(Self {
-            inner: Rc::clone(inner),
-        })
-    }
-}
-
-impl Emulator for EmulatorImpl {
+impl Emulator for Ti50Emulator {
     /// Simple function with return `EmuState` representing current state of Emulator instance.
     fn get_state(&self) -> Result<EmuState> {
         let mut process = self.inner.process.borrow_mut();

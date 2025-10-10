@@ -345,8 +345,8 @@ impl Transport for Proxy {
     }
 
     // Create Emulator instance, or return one from a cache of previously created instances.
-    fn emulator(&self) -> Result<Rc<dyn Emulator>> {
-        Ok(Rc::new(emu::ProxyEmu::open(self)?))
+    fn emulator(&self) -> Result<&dyn Emulator> {
+        Ok(self)
     }
 
     // Create ProxyOps instance.
