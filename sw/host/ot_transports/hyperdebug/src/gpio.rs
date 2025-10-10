@@ -13,13 +13,14 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use regex::Regex;
 use zerocopy::FromBytes;
 
-use crate::io::gpio::{
+use opentitanlib::io::gpio::{
     BitbangEntry, ClockNature, DacBangEntry, Edge, GpioBitbangOperation, GpioBitbanging,
     GpioDacBangOperation, GpioError, GpioMonitoring, GpioPin, MonitoringEvent,
     MonitoringReadResponse, MonitoringStartResponse, PinMode, PullMode,
 };
-use crate::transport::TransportError;
-use crate::transport::hyperdebug::{BulkInterface, Inner};
+use opentitanlib::transport::TransportError;
+
+use super::{BulkInterface, Inner};
 
 pub struct HyperdebugGpioPin {
     inner: Rc<Inner>,

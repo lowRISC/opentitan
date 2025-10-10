@@ -5,10 +5,11 @@
 use anyhow::{Result, bail};
 use std::rc::Rc;
 
-use crate::io::gpio::GpioPin;
-use crate::transport::hyperdebug::i2c::Mode;
-use crate::transport::hyperdebug::{Flavor, Inner, StandardFlavor, VID_GOOGLE};
-use crate::transport::{TransportError, TransportInterfaceType};
+use opentitanlib::io::gpio::GpioPin;
+use opentitanlib::transport::{TransportError, TransportInterfaceType};
+
+use super::i2c::Mode;
+use super::{Flavor, Inner, StandardFlavor, VID_GOOGLE};
 
 // The GSC has some capability to control GPIO lines inside a Chromebook, and to program the AP
 // firmware flash chip via SPI.  This "flavor" allows OpenTitanTool to access those capabilities.

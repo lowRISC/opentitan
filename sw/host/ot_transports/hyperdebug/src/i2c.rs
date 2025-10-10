@@ -2,17 +2,21 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Result, bail, ensure};
 use std::cell::Cell;
 use std::cmp;
 use std::rc::Rc;
 use std::time::Duration;
+
+use anyhow::{Result, bail, ensure};
 use zerocopy::{FromBytes, Immutable, IntoBytes};
 
-use crate::io::gpio::GpioPin;
-use crate::io::i2c::{self, Bus, DeviceStatus, DeviceTransfer, I2cError, ReadStatus, Transfer};
-use crate::transport::hyperdebug::{BulkInterface, Inner};
-use crate::transport::{TransportError, TransportInterfaceType};
+use opentitanlib::io::gpio::GpioPin;
+use opentitanlib::io::i2c::{
+    self, Bus, DeviceStatus, DeviceTransfer, I2cError, ReadStatus, Transfer,
+};
+use opentitanlib::transport::{TransportError, TransportInterfaceType};
+
+use super::{BulkInterface, Inner};
 
 pub struct HyperdebugI2cBus {
     inner: Rc<Inner>,

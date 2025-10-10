@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Result, bail};
 use std::rc::Rc;
 
-use crate::io::gpio::{GpioPin, PinMode, PullMode};
-use crate::transport::hyperdebug::{Flavor, Inner, StandardFlavor, VID_GOOGLE};
-use crate::transport::{TransportError, TransportInterfaceType};
+use anyhow::{Result, bail};
+
+use opentitanlib::io::gpio::{GpioPin, PinMode, PullMode};
+use opentitanlib::transport::{TransportError, TransportInterfaceType};
+
+use super::{Flavor, Inner, StandardFlavor, VID_GOOGLE};
 
 /// The C2D2 (Case Closed Debugging Debugger) is used to bring up OT and EC chips sitting
 /// inside a computing device, such that those OT chips can provide Case Closed Debugging

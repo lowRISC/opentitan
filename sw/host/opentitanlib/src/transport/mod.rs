@@ -20,7 +20,6 @@ use crate::io::uart::Uart;
 
 pub mod chip_whisperer;
 pub mod common;
-pub mod hyperdebug;
 pub mod ioexpander;
 
 // Export custom error types
