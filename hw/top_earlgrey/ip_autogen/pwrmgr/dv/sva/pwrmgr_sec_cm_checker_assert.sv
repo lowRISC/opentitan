@@ -116,14 +116,15 @@ module pwrmgr_sec_cm_checker_assert
           reset_or_disable)
 
   // For testpoints sec_cm_esc_rx_clk_bkgn_chk, sec_cm_esc_rx_clk_local_esc.
-  // If the escalation clock (clk_esc_i) stops for too many cycles and is not
-  // disabled, an escalation timeout should be requested until rst_lc_ni goes
-  // active.
+  // If the escalation clock (clk_esc_i) stops
+  // for too many cycles and is not disabled, an escalation timeout should be
+  // requested until rst_lc_ni goes active.
   // The bound of cycles is 128 cycles for the counter, 8 cycles maximum for the
-  // counter to engage, and 2 cycles for a synchronizer. Use negedge of clk_i
-  // to sample clk_esc_i as 1 when active, and 0 when inactive.
-  `ASSERT(EscClkStopEscTimeout_A, !clk_esc_i && io_clk_en [* (128 + 8 + 2)] |=>
-          esc_timeout || !rst_lc_ni, !clk_i, reset_or_disable)
+  // counter to engage, and 2 cycles for a synchronizer.
+  // wihtout knowing precise relationship between clk_i and clk_esc_i,
+  // it'd be difficult to model asynchronous properties checking clock itself!
+  `ASSERT(EscClkStopEscTimeout_A, (!clk_esc_i && io_clk_en)[* (128 + 8 + 2)] |=>
+          esc_timeout || !rst_lc_ni, clk_i, reset_or_disable)
 
   // For testpoints sec_cm_esc_rx_clk_bkgn_chk, sec_cm_esc_rx_clk_local_esc.
   // Escalation timeout should not be requested when rst_nc_ni is active.
