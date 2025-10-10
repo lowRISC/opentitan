@@ -17,3 +17,15 @@ rust_binary(
         "@crate_index//:clap",
     ],
 )
+
+rust_binary(
+    name = "i2c_target",
+    srcs = [
+        "src/i2c_target.rs",
+    ],
+    deps = [
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+    ],
+)
