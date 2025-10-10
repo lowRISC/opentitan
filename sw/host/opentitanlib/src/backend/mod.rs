@@ -12,8 +12,6 @@ use crate::app::{TransportWrapper, TransportWrapperBuilder};
 use crate::transport::{EmptyTransport, Transport};
 use crate::util::parse_int::ParseInt;
 
-mod chip_whisperer;
-
 pub trait Backend {
     /// Additional backend-specific arguments in addition to `BackendOpts`.
     type Opts: Args;

@@ -27,9 +27,6 @@ use opentitanlib::io::jtag::{JtagChain, JtagParams};
 use opentitanlib::io::spi::Target;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::transport::MaintainConnection;
-use opentitanlib::transport::chip_whisperer::ChipWhisperer;
-use opentitanlib::transport::chip_whisperer::board::Board;
-use opentitanlib::transport::chip_whisperer::board::{Cw310, Cw340};
 use opentitanlib::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use opentitanlib::transport::common::uart::flock_serial;
 use opentitanlib::transport::{
@@ -38,6 +35,9 @@ use opentitanlib::transport::{
 };
 use opentitanlib::util::fs::builtin_file;
 use opentitanlib::util::usb::UsbBackend;
+use ot_transport_chipwhisperer::ChipWhisperer;
+use ot_transport_chipwhisperer::board::Board;
+use ot_transport_chipwhisperer::board::{Cw310, Cw340};
 
 pub mod c2d2;
 pub mod dfu;

@@ -9,7 +9,6 @@ use std::any::Any;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::transport::chip_whisperer;
 
 /// Resets the SAM3X chip on the Chip Whisperer FPGA board.
 #[derive(Debug, Args)]
@@ -22,7 +21,7 @@ impl CommandDispatch for Reset {
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         log::info!("Resetting the SAM3X chip");
-        transport.dispatch(&chip_whisperer::ResetSam3x {})
+        transport.dispatch(&ot_transport_chipwhisperer::ResetSam3x {})
     }
 }
 
@@ -36,6 +35,6 @@ impl CommandDispatch for GetFwVersion {
         _context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        transport.dispatch(&chip_whisperer::GetSam3xFwVersion {})
+        transport.dispatch(&ot_transport_chipwhisperer::GetSam3xFwVersion {})
     }
 }

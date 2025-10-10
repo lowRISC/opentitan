@@ -2,30 +2,35 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Result, ensure};
-use serde_annotate::Annotate;
-use serialport::SerialPortType;
 use std::any::Any;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::rc::Rc;
 
-use crate::io::gpio::GpioPin;
-use crate::io::spi::Target;
-use crate::io::uart::{Uart, UartError};
-use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
-use crate::transport::common::uart::{SerialPortUart, SoftwareFlowControl};
-use crate::transport::{
+use anyhow::{Result, ensure};
+use clap::Args;
+use serde_annotate::Annotate;
+use serialport::SerialPortType;
+
+use opentitanlib::backend::{Backend, BackendOpts, define_interface};
+use opentitanlib::io::gpio::GpioPin;
+use opentitanlib::io::spi::Target;
+use opentitanlib::io::uart::{Uart, UartError};
+use opentitanlib::transport::common::fpga::{ClearBitstream, FpgaProgram};
+use opentitanlib::transport::common::uart::{SerialPortUart, SoftwareFlowControl};
+use opentitanlib::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
-use crate::util::parse_int::ParseInt;
-use board::Board;
+use opentitanlib::util::fs::builtin_file;
+use opentitanlib::util::parse_int::ParseInt;
 
 pub mod board;
 pub mod gpio;
 pub mod spi;
 pub mod usb;
+
+use board::{Board, Cw310, Cw340};
 
 #[derive(Default)]
 struct Inner {
@@ -199,3 +204,56 @@ pub struct ResetSam3x {}
 
 /// Command for Transport::dispatch(). Returns the SAM3X firmware version.
 pub struct GetSam3xFwVersion {}
+
+#[derive(Debug, Args)]
+pub struct ChipWhispererOpts {
+    /// Comma-separated list of Chip Whisperer board UARTs for non-udev environments. List the console uart first.
+    #[arg(long, alias = "cw310-uarts")]
+    pub uarts: Option<String>,
+}
+
+struct ChipWhispererBackend<B>(B);
+
+impl<B: Board + 'static> Backend for ChipWhispererBackend<B> {
+    type Opts = ChipWhispererOpts;
+
+    fn create_transport(
+        args: &BackendOpts,
+        cw_args: &ChipWhispererOpts,
+    ) -> Result<Box<dyn Transport>> {
+        let uarts = cw_args
+            .uarts
+            .as_ref()
+            .map(|v| v.split(',').collect::<Vec<&str>>())
+            .unwrap_or_default();
+
+        Ok(Box::new(ChipWhisperer::<B>::new(
+            args.usb_vid,
+            args.usb_pid,
+            args.usb_serial.as_deref(),
+            &uarts,
+        )?))
+    }
+}
+
+builtin_file!("opentitan.json5", include_str!("../config/opentitan.json5"));
+
+define_interface!(
+    "cw310",
+    ChipWhispererBackend<Cw310>,
+    "/__builtin__/opentitan_cw310.json5"
+);
+builtin_file!(
+    "opentitan_cw310.json5",
+    include_str!("../config/opentitan_cw310.json5")
+);
+
+define_interface!(
+    "cw340",
+    ChipWhispererBackend<Cw340>,
+    "/__builtin__/opentitan_cw340.json5"
+);
+builtin_file!(
+    "opentitan_cw340.json5",
+    include_str!("../config/opentitan_cw340.json5")
+);

@@ -49,11 +49,6 @@ ujson_rust(
     defines = ["opentitanlib=crate"],
 )
 
-filegroup(
-    name = "config",
-    srcs = glob(["src/app/config/*.json5"]),
-)
-
 # This is the catch-all "everything" crate.
 # Before adding things here, consider if it can be made a separate crate instead.
 # This should eventually be break down into multiple smaller crates.
@@ -67,7 +62,6 @@ rust_library(
         "src/app/i2c.rs",
         "src/app/mod.rs",
         "src/app/spi.rs",
-        "src/backend/chip_whisperer.rs",
         "src/backend/mod.rs",
         "src/bootstrap/eeprom.rs",
         "src/bootstrap/legacy.rs",
@@ -171,11 +165,6 @@ rust_library(
         "src/tpm/driver.rs",
         "src/tpm/mod.rs",
         "src/tpm/status.rs",
-        "src/transport/chip_whisperer/board.rs",
-        "src/transport/chip_whisperer/gpio.rs",
-        "src/transport/chip_whisperer/mod.rs",
-        "src/transport/chip_whisperer/spi.rs",
-        "src/transport/chip_whisperer/usb.rs",
         "src/transport/common/fpga.rs",
         "src/transport/common/mod.rs",
         "src/transport/common/uart.rs",
@@ -220,7 +209,6 @@ rust_library(
         ],
     }),
     compile_data = [
-        ":config",
         ":gpio",
         ":i2c_target",
         ":mem",
@@ -314,6 +302,7 @@ rust_library(
     },
     deps = [
         ":opentitanlib_base",
+        "//sw/host/ot_transports/chipwhisperer",
         "//sw/host/ot_transports/dediprog",
         "//sw/host/ot_transports/ftdi",
         "//sw/host/ot_transports/hyperdebug",

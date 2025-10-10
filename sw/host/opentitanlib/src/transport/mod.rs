@@ -18,7 +18,6 @@ use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 
-pub mod chip_whisperer;
 pub mod common;
 pub mod ioexpander;
 
