@@ -85,7 +85,7 @@ pub trait Flavor {
     fn load_bitstream(_fpga_program: &FpgaProgram) -> Result<()> {
         Err(TransportError::UnsupportedOperation.into())
     }
-    fn clear_bitstream(_clear: &ClearBitstream) -> Result<()> {
+    fn clear_bitstream() -> Result<()> {
         Err(TransportError::UnsupportedOperation.into())
     }
     fn perform_initial_fw_check() -> bool {
@@ -869,8 +869,8 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
             }
         } else if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
             T::load_bitstream(fpga_program).map(|_| None)
-        } else if let Some(clear) = action.downcast_ref::<ClearBitstream>() {
-            T::clear_bitstream(clear).map(|_| None)
+        } else if action.downcast_ref::<ClearBitstream>().is_some() {
+            T::clear_bitstream().map(|_| None)
         } else {
             Err(TransportError::UnsupportedOperation.into())
         }
@@ -993,22 +993,15 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
         StandardFlavor::get_default_usb_pid()
     }
     fn load_bitstream(fpga_program: &FpgaProgram) -> Result<()> {
-        // First, try to establish a connection to the native Chip Whisperer interface
+        // Try to establish a connection to the native Chip Whisperer interface
         // which we will use for bitstream loading.
         let board = ChipWhisperer::<B>::new(None, None, None, &[])?;
-
-        // Program the FPGA bitstream.
-        log::info!("Programming the FPGA bitstream.");
-        let usb = board.device.borrow();
-        usb.spi1_enable(false)?;
-        usb.fpga_program(&fpga_program.bitstream, fpga_program.progress.as_ref())?;
+        board.load_bitstream(fpga_program)?;
         Ok(())
     }
-    fn clear_bitstream(_clear: &ClearBitstream) -> Result<()> {
+    fn clear_bitstream() -> Result<()> {
         let board = ChipWhisperer::<B>::new(None, None, None, &[])?;
-        let usb = board.device.borrow();
-        usb.spi1_enable(false)?;
-        usb.clear_bitstream()?;
+        board.clear_bitstream()?;
         Ok(())
     }
 }
