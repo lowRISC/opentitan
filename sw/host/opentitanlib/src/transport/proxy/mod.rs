@@ -5,14 +5,16 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io;
-use std::io::{BufWriter, ErrorKind, Read, Write};
-use std::net::{TcpStream, ToSocketAddrs};
+use std::io::ErrorKind;
 use std::rc::Rc;
 
 use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use tokio::io::AsyncWriteExt;
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
+use tokio::net::TcpStream;
+use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
+use tokio::task::AbortHandle;
 
 use crate::bootstrap::BootstrapOptions;
 use crate::impl_serializable_error;
@@ -53,21 +55,56 @@ pub struct Proxy {
 impl Proxy {
     /// Establish connection with a running session process.
     pub fn open(host: Option<&str>, port: u16) -> Result<Self> {
+        let _enter_guard = crate::util::runtime().enter();
+
         let host = host.unwrap_or("localhost");
-        let addr = ToSocketAddrs::to_socket_addrs(&(host, port))
-            .map_err(|e| TransportError::ProxyLookupError(host.to_string(), e.to_string()))?
-            .next()
-            .unwrap();
-        let conn = TcpStream::connect(addr)
-            .map_err(|e| TransportError::ProxyConnectError(addr.to_string(), e.to_string()))?;
+        let conn = crate::util::runtime::block_on(TcpStream::connect(&(host, port)))
+            .map_err(|e| TransportError::ProxyConnectError(host.to_string(), e.to_string()))?;
+        // Disable Nagle's algorithm to ensure reasonable communication latency.
+        conn.set_nodelay(true)?;
+
+        // Launch a new task for receiver messages.
+        // We do not just poll messages when we have a pending request, as there are asynchronous
+        // messages that we want to handle ASAP.
+        let (conn_rx, conn_tx) = conn.into_split();
+        let (resp_send, resp_recv) = tokio::sync::mpsc::channel(32);
+        let recv_task = tokio::task::spawn(async move {
+            if let Err(err) = Self::recv_messages(conn_rx, resp_send).await {
+                log::warn!("Receving failed with {err}");
+            }
+        });
+
         Ok(Self {
             inner: Rc::new(Inner {
-                conn: RefCell::new(conn),
+                conn_tx: RefCell::new(conn_tx),
+                resp_recv: RefCell::new(resp_recv),
                 uarts: RefCell::new(HashMap::new()),
                 uart_channel_map: RefCell::new(HashMap::new()),
-                recv_buf: RefCell::new(Vec::new()),
+                recv_task: recv_task.abort_handle(),
             }),
         })
+    }
+
+    async fn recv_messages(
+        conn_rx: OwnedReadHalf,
+        resp_send: tokio::sync::mpsc::Sender<Message>,
+    ) -> Result<()> {
+        let mut conn_rx = tokio::io::BufReader::new(conn_rx);
+        let mut buf = Vec::new();
+
+        loop {
+            buf.clear();
+            let len = conn_rx.read_until(b'\n', &mut buf).await?;
+            if len == 0 {
+                bail!(io::Error::new(
+                    ErrorKind::UnexpectedEof,
+                    "Server unexpectedly closed connection"
+                ));
+            }
+
+            let msg = serde_json::from_slice::<Message>(&buf)?;
+            resp_send.send(msg).await.context("sender closed")?;
+        }
     }
 }
 
@@ -78,10 +115,17 @@ struct UartRecord {
 }
 
 struct Inner {
-    conn: RefCell<TcpStream>,
+    conn_tx: RefCell<OwnedWriteHalf>,
+    resp_recv: RefCell<tokio::sync::mpsc::Receiver<Message>>,
     pub uarts: RefCell<HashMap<String, UartRecord>>,
     uart_channel_map: RefCell<HashMap<u32, String>>,
-    recv_buf: RefCell<Vec<u8>>,
+    recv_task: AbortHandle,
+}
+
+impl Drop for Inner {
+    fn drop(&mut self) {
+        self.recv_task.abort()
+    }
 }
 
 impl Inner {
@@ -90,7 +134,9 @@ impl Inner {
     fn execute_command(&self, req: Request) -> Result<Response> {
         self.send_json_request(req).context("json encoding")?;
         loop {
-            match self.recv_json_response().context("json decoding")? {
+            match crate::util::runtime::block_on(self.resp_recv.borrow_mut().recv())
+                .context("dequeueing")?
+            {
                 Message::Res(res) => match res {
                     Ok(value) => return Ok(value),
                     Err(e) => return Err(anyhow::Error::from(e)),
@@ -102,8 +148,7 @@ impl Inner {
     }
 
     fn poll_for_async_data(&self) -> Result<()> {
-        self.recv_nonblocking()?;
-        while let Some(msg) = self.dequeue_json_response()? {
+        while let Ok(msg) = self.resp_recv.borrow_mut().try_recv() {
             match msg {
                 Message::Async { channel, msg } => self.process_async_data(channel, msg)?,
                 _ => bail!(ProxyError::UnexpectedReply()),
@@ -128,75 +173,17 @@ impl Inner {
     }
 
     /// Send a one-line JSON encoded requests, terminated with one newline.
+    #[expect(clippy::await_holding_refcell_ref)] // false positive
     fn send_json_request(&self, req: Request) -> Result<()> {
-        let conn: &mut std::net::TcpStream = &mut self.conn.borrow_mut();
-        let mut writer = BufWriter::new(conn);
-        serde_json::to_writer(&mut writer, &Message::Req(req))?;
-        writer.write_all(b"\n")?;
-        writer.flush()?;
-        Ok(())
-    }
+        let mut vec = serde_json::to_vec(&Message::Req(req))?;
+        vec.push(b'\n');
 
-    /// Decode one JSON response, possibly waiting for more network data.
-    fn recv_json_response(&self) -> Result<Message> {
-        if let Some(msg) = self.dequeue_json_response()? {
-            return Ok(msg);
-        }
-        let mut conn = self.conn.borrow_mut();
-        let mut buf = self.recv_buf.borrow_mut();
-        let mut idx: usize = buf.len();
-        loop {
-            buf.resize(idx + 2048, 0);
-            let rc = conn.read(&mut buf[idx..])?;
-            if rc == 0 {
-                anyhow::bail!(io::Error::new(
-                    ErrorKind::UnexpectedEof,
-                    "Server unexpectedly closed connection"
-                ))
-            }
-            idx += rc;
-            let Some(newline_pos) = buf[idx - rc..idx].iter().position(|b| *b == b'\n') else {
-                continue;
-            };
-            let result = serde_json::from_slice::<Message>(&buf[..idx - rc + newline_pos])?;
-            buf.resize(idx, 0u8);
-            buf.drain(..idx - rc + newline_pos + 1);
-            return Ok(result);
-        }
-    }
-
-    fn recv_nonblocking(&self) -> Result<()> {
-        let mut conn = self.conn.borrow_mut();
-        conn.set_nonblocking(true)?;
-        let mut buf = self.recv_buf.borrow_mut();
-        let mut idx: usize = buf.len();
-        loop {
-            buf.resize(idx + 2048, 0);
-            match conn.read(&mut buf[idx..]) {
-                Ok(0) => {
-                    anyhow::bail!(io::Error::new(
-                        ErrorKind::UnexpectedEof,
-                        "Server unexpectedly closed connection"
-                    ))
-                }
-                Ok(rc) => idx += rc,
-                Err(ref e) if e.kind() == ErrorKind::WouldBlock => break,
-                Err(e) => anyhow::bail!(e),
-            }
-        }
-        buf.resize(idx, 0);
-        conn.set_nonblocking(false)?;
-        Ok(())
-    }
-
-    fn dequeue_json_response(&self) -> Result<Option<Message>> {
-        let mut buf = self.recv_buf.borrow_mut();
-        let Some(newline_pos) = buf.iter().position(|b| *b == b'\n') else {
-            return Ok(None);
-        };
-        let result = serde_json::from_slice::<Message>(&buf[..newline_pos])?;
-        buf.drain(..newline_pos + 1);
-        Ok(Some(result))
+        crate::util::runtime::block_on(async {
+            let mut conn = self.conn_tx.borrow_mut();
+            conn.write_all(&vec).await?;
+            conn.flush().await?;
+            Ok(())
+        })
     }
 }
 
