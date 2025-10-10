@@ -35,7 +35,7 @@ struct Inner {
 }
 
 pub struct ChipWhisperer<B: Board> {
-    pub(crate) device: Rc<RefCell<usb::Backend<B>>>,
+    device: Rc<RefCell<usb::Backend<B>>>,
     uart_override: Vec<String>,
     inner: RefCell<Inner>,
 }
@@ -95,6 +95,22 @@ impl<B: Board> ChipWhisperer<B> {
             )?))
         }
     }
+
+    pub fn load_bitstream(&self, fpga_program: &FpgaProgram) -> Result<()> {
+        // Program the FPGA bitstream.
+        log::info!("Programming the FPGA bitstream.");
+        let usb = self.device.borrow();
+        usb.spi1_enable(false)?;
+        usb.fpga_program(&fpga_program.bitstream, fpga_program.progress.as_ref())?;
+        Ok(())
+    }
+
+    pub fn clear_bitstream(&self) -> Result<()> {
+        let usb = self.device.borrow();
+        usb.spi1_enable(false)?;
+        usb.clear_bitstream()?;
+        Ok(())
+    }
 }
 
 impl<B: Board + 'static> Transport for ChipWhisperer<B> {
@@ -147,11 +163,7 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
 
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
         if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
-            // Program the FPGA bitstream.
-            log::info!("Programming the FPGA bitstream.");
-            let usb = self.device.borrow();
-            usb.spi1_enable(false)?;
-            usb.fpga_program(&fpga_program.bitstream, fpga_program.progress.as_ref())?;
+            self.load_bitstream(fpga_program)?;
             Ok(None)
         } else if action.downcast_ref::<ResetSam3x>().is_some() {
             self.device.borrow().reset_sam3x()?;
@@ -168,9 +180,7 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
             usb.pll_write_defaults()?;
             Ok(None)
         } else if action.downcast_ref::<ClearBitstream>().is_some() {
-            let usb = self.device.borrow();
-            usb.spi1_enable(false)?;
-            usb.clear_bitstream()?;
+            self.clear_bitstream()?;
             Ok(None)
         } else if action.downcast_ref::<GetSam3xFwVersion>().is_some() {
             let usb = self.device.borrow();
