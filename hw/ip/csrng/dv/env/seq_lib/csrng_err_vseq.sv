@@ -100,7 +100,7 @@ class csrng_err_vseq extends csrng_base_vseq;
                               cfg.which_app_err_alert, fld_name), UVM_MEDIUM)
 
     case (cfg.which_err_code) inside
-      sfifo_cmd_err, sfifo_genbits_err, sfifo_rcstage_err, sfifo_keyvrc_err,
+      sfifo_cmd_err, sfifo_genbits_err, sfifo_keyvrc_err,
       sfifo_final_err, sfifo_gbencack_err, sfifo_grcstage_err,
       sfifo_gadstage_err, sfifo_ggenbits_err, sfifo_cmdid_err, sfifo_ggenreq_err: begin
         fld = csr.get_field_by_name(fld_name);
@@ -153,7 +153,8 @@ class csrng_err_vseq extends csrng_base_vseq;
         csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
         cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
       end
-      cmd_stage_sm_err, main_sm_err, drbg_gen_sm_err, drbg_updbe_sm_err, drbg_updob_sm_err: begin
+      cmd_stage_sm_err, main_sm_err, drbg_cmd_sm_err, drbg_gen_sm_err, drbg_updbe_sm_err,
+      drbg_updob_sm_err: begin
         fld = csr.get_field_by_name(fld_name);
         path = cfg.csrng_path_vif.sm_err_path(fld_name.substr(0, last_index-1),
                                               cfg.which_app_err_alert);
@@ -299,12 +300,12 @@ class csrng_err_vseq extends csrng_base_vseq;
         csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
         cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
       end
-      sfifo_cmd_err_test, sfifo_genbits_err_test, sfifo_rcstage_err_test, sfifo_keyvrc_err_test,
+      sfifo_cmd_err_test, sfifo_genbits_err_test, sfifo_keyvrc_err_test,
       sfifo_final_err_test, sfifo_gbencack_err_test, sfifo_grcstage_err_test,
       sfifo_ggenreq_err_test, sfifo_gadstage_err_test, sfifo_ggenbits_err_test,
-      sfifo_cmdid_err_test, cmd_stage_sm_err_test, main_sm_err_test, drbg_gen_sm_err_test,
-      drbg_updbe_sm_err_test, drbg_updob_sm_err_test, aes_cipher_sm_err_test, cmd_gen_cnt_err_test,
-      fifo_write_err_test, fifo_read_err_test, fifo_state_err_test: begin
+      sfifo_cmdid_err_test, cmd_stage_sm_err_test, main_sm_err_test, drbg_cmd_sm_err_test,
+      drbg_gen_sm_err_test, drbg_updbe_sm_err_test, drbg_updob_sm_err_test, aes_cipher_sm_err_test,
+      cmd_gen_cnt_err_test, fifo_write_err_test, fifo_read_err_test, fifo_state_err_test: begin
         fld = csr.get_field_by_name(fld_name.substr(0, last_index-1));
         err_code_test_bit = fld.get_lsb_pos();
         csr_wr(.ptr(ral.err_code_test.err_code_test), .value(err_code_test_bit));
@@ -336,6 +337,7 @@ class csrng_err_vseq extends csrng_base_vseq;
 
     if (cfg.which_err_code inside {cmd_stage_sm_err, cmd_stage_sm_err_test,
                                    main_sm_err, main_sm_err_test,
+                                   drbg_cmd_sm_err, drbg_cmd_sm_err_test,
                                    drbg_gen_sm_err, drbg_gen_sm_err_test,
                                    drbg_updbe_sm_err, drbg_updbe_sm_err_test,
                                    drbg_updob_sm_err, drbg_updob_sm_err_test,

@@ -187,6 +187,10 @@ module csrng
     u_csrng_core.u_csrng_main_sm.u_state_regs,
     alert_tx_o[1])
 
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgCmdFsmCheck_A,
+    u_csrng_core.u_csrng_ctr_drbg_cmd.u_state_regs,
+    alert_tx_o[1])
+
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgGenFsmCheck_A,
     u_csrng_core.u_csrng_ctr_drbg_gen.u_state_regs,
     alert_tx_o[1])
