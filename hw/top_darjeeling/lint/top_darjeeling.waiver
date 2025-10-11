@@ -8,13 +8,6 @@
 set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
 set_clock_drivers prim_clock_buf prim_clock_mux2
 
-# TODO #25411: remove these waivers later when the USB clock was removed from the integrated system
-# in a clean way. Right now there are some dangling signals that we have to keep in order
-# to not disrupt the RTL structure and associated DV.
-waive -rules {HIER_BRANCH_NOT_READ INPUT_NOT_READ} -location {xbar_main.sv} \
-      -regexp {'(clk_usb_i|rst_usb_ni)' is not read from in module 'xbar_main'} \
-      -comment "Temporary waiver for dangling USB clocks and resets."
-
 # All leaf resets have a reset multiplex
 waive -rules RESET_MUX -location {top_darjeeling.sv} -regexp {Asynchronous reset .*rstmgr_aon_resets\.rst.* is driven by a multiplexer} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
