@@ -52,6 +52,8 @@ static status_t aes_kwp_wrap_kat(const uint32_t *kek, size_t kek_words,
                                  const uint32_t *ctext, size_t ctext_words) {
   // Construct an AES key.
   aes_key_t aes_kek = make_aes_key(kek, kek_words);
+  // Create the checksum of the key and store it in the key structure.
+  aes_kek.checksum = aes_key_integrity_checksum(&aes_kek);
 
   // Run key wrapping and check the result.
   uint32_t act_ctext[ctext_words + 1];
@@ -87,6 +89,8 @@ static status_t aes_kwp_unwrap_kat(const uint32_t *kek, size_t kek_words,
                                    size_t ptext_bytes) {
   // Construct an AES key.
   aes_key_t aes_kek = make_aes_key(kek, kek_words);
+  // Create the checksum of the key and store it in the key structure.
+  aes_kek.checksum = aes_key_integrity_checksum(&aes_kek);
 
   // Run key unwrapping.
   size_t ptext_words = (ptext_bytes + sizeof(uint32_t) - 1) / sizeof(uint32_t);

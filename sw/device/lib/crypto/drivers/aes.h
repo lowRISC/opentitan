@@ -73,6 +73,11 @@ typedef struct aes_key {
    * of sufficient length.
    */
   const uint32_t *key_shares[2];
+
+  /**
+   * The checksum of the key structure.
+   */
+  uint32_t checksum;
 } aes_key_t;
 
 /**
@@ -151,6 +156,28 @@ status_t aes_update(aes_block_t *dest, const aes_block_t *src);
  */
 OT_WARN_UNUSED_RESULT
 status_t aes_end(aes_block_t *iv);
+
+/**
+ * Compute the checksum of an AES key.
+ *
+ * Call this routine after creating or modifying the aes key structure.
+ *
+ * @param key AES key.
+ * @returns Checksum value.
+ */
+uint32_t aes_key_integrity_checksum(const aes_key_t *key);
+
+/**
+ * Perform an integrity check on the AES key.
+ *
+ * Returns `kHardenedBoolTrue` if the check passed and `kHardenedBoolFalse`
+ * otherwise.
+ *
+ * @param key AES key.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t aes_key_integrity_checksum_check(const aes_key_t *key);
 
 #ifdef __cplusplus
 }

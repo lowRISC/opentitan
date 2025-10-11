@@ -84,8 +84,8 @@ status_t sign_then_verify_test(void) {
 
   // Generate a signature for the message.
   LOG_INFO("Signing...");
-  CHECK_STATUS_OK(otcrypto_ecdsa_p384_sign(
-      &private_key, msg_digest,
+  CHECK_STATUS_OK(otcrypto_ecdsa_p384_sign_verify(
+      &private_key, &public_key, msg_digest,
       (otcrypto_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)}));
 
   // Verify the signature.
