@@ -37,7 +37,9 @@
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
     {clock: "clk_aon_i", reset: "rst_aon_ni"},
+  % if enable_strap_sampling:
     {reset: "rst_sys_ni"}
+  % endif
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }

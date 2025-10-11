@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-<% sorted_clks = sorted(list(clk_freqs.keys())) %>\
+<% 
+sorted_clks = sorted(list(clk_freqs.keys())) 
+has_sys_io_div4 = any(d.get('name') == 'sys_io_div4' for d in output_rsts) if output_rsts else False
+%>\
 // This has assertions that check the reset outputs of rstmgr cascade properly.
 // This means higher level resets always cause the lower level ones to assert.
 // The hierarchy is
@@ -151,11 +154,13 @@ interface rstmgr_cascading_sva_if (
     // The latter is checked independently in pwrmgr_rstmgr_sva_if.
     `CASCADED_ASSERTS(CascadeLcToSys, lc_rst_or_sys_req_n[pd], rst_sys_src_n[pd], SysCycles, clk_i)
 
+% if has_sys_io_div4:
     // Controlled by rst_sys_src_n.
     if (pd == rstmgr_pkg::DomainAonSel) begin : gen_sys_io_div4_chk
       `CASCADED_ASSERTS(CascadeSysToSysIoDiv4, rst_sys_src_n[pd], resets_o.rst_sys_io_div4_n[pd],
                         SysCycles, clk_io_div4_i)
     end
+% endif
   end
 
   // Aon to POR

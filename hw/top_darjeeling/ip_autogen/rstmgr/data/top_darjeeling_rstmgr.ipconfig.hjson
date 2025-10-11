@@ -223,20 +223,6 @@
         clock: main
       }
       {
-        name: sys_io_div4
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_sys_io_div4_n
-        parent: sys_src
-        clock: io_div4
-      }
-      {
         name: spi_device
         gen: true
         type: top
@@ -422,20 +408,6 @@
         path: rstmgr_aon_resets.rst_sys_n
         parent: sys_src
         clock: main
-      }
-      {
-        name: sys_io_div4
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_sys_io_div4_n
-        parent: sys_src
-        clock: io_div4
       }
       {
         name: spi_device
