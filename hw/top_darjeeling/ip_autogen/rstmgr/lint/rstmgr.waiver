@@ -15,6 +15,9 @@ waive -rules TERMINAL_STATE -location {rstmgr_cnsty_chk.sv} -regexp {Terminal st
 waive -rules RESET_MUX -location {rstmgr.sv rstmgr_por.sv rstmgr_ctrl.sv} -regexp {Asynchronous reset '(resets_o\.)?rst_[A-Za-z_0-9]+_n(\[[0-9:]+\])?' is driven by a multiplexer} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
 
+waive -rules RESET_MUX -location {rstmgr.sv} -regexp {Asynchronous reset 'scan_rst_ni' reaches a multiplexer here, used as a reset 'rst_dst_ni' at} \
+      -comment "This is dedicated reset infrastructure, and hence permissible"
+
 waive -rules RESET_MUX -location {rstmgr_leaf_rst.sv} -regexp {Asynchronous reset 'leaf_rst_o' is driven by a multiplexer} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
 
