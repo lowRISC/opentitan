@@ -40,6 +40,8 @@ task soc_dbg_ctrl_base_vseq::dut_init(string reset_kind = "HARD");
   cfg.misc_vif.set_lc_dft_en_off();
   cfg.misc_vif.set_lc_hw_debug_en_off();
   cfg.misc_vif.set_lc_raw_test_rma_off();
+  cfg.misc_vif.set_lc_cpu_en_off();
+  cfg.misc_vif.set_lc_rma_state_off();
   cfg.misc_vif.init_boot_status();
   cfg.misc_vif.enable_halt_cpu_boot();
 

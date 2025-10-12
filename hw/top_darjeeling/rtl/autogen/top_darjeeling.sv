@@ -2744,6 +2744,8 @@ module top_darjeeling #(
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .lc_dft_en_i(lc_ctrl_lc_dft_en),
       .lc_raw_test_rma_i(lc_ctrl_lc_raw_test_rma),
+      .lc_cpu_en_i(lc_ctrl_lc_cpu_en),
+      .lc_rma_state_i(lc_ctrl_lc_rma_state),
       .halt_cpu_boot_i(debug_halt_cpu_boot_i),
       .continue_cpu_boot_o(pwrmgr_aon_rom_ctrl[2]),
       .core_tl_i(soc_dbg_ctrl_core_tl_req),

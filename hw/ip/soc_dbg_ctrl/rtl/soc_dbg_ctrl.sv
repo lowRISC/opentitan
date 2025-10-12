@@ -33,6 +33,8 @@ module soc_dbg_ctrl
   input  lc_ctrl_pkg::lc_tx_t                       lc_dft_en_i,
   input  lc_ctrl_pkg::lc_tx_t                       lc_hw_debug_en_i,
   input  lc_ctrl_pkg::lc_tx_t                       lc_raw_test_rma_i,
+  input lc_ctrl_pkg::lc_tx_t                        lc_cpu_en_i,
+  input lc_ctrl_pkg::lc_tx_t                        lc_rma_state_i,
   input  pwrmgr_pkg::pwr_boot_status_t              boot_status_i,
   // Boot information from the pwrmgr
   // Halts CPU boot in early lifecycle stages after reset based on an external signal
@@ -202,10 +204,24 @@ module soc_dbg_ctrl
       // In Soc_DbgStProd, the debug policy is driven by the RoT according to the negotiated or
       // authorized policy
       lc_ctrl_state_pkg::SocDbgStProd: begin
-        soc_dbg_policy_d.category = dbg_category_e'(core_hw2reg.debug_policy_category_shadowed.d);
-        soc_dbg_policy_d.valid    =
-          prim_mubi_pkg::mubi4_t'(core_reg2hw.debug_policy_valid_shadowed.q);
-        soc_dbg_policy_d.relocked = prim_mubi_pkg::mubi4_t'(core_reg2hw.debug_policy_relocked.q);
+        // Only allow the SW-based debug policy to be set when not in RMA state and if the CPU is
+        // running. For RMA state, the debug policy is enabled to the highest category. In this
+        // state also the ROT DM is enabled. For other states, where the debug control is set to
+        // prod but the life cycle is not yet in a state where the CPU is running
+        // (eg., TEST_LOCKED or RAW), the debug policy is locked.
+        if (lc_tx_test_true_strict(lc_rma_state_i)) begin
+          soc_dbg_policy_d.category = DbgCategory4;
+          soc_dbg_policy_d.valid    = prim_mubi_pkg::MuBi4True;
+          soc_dbg_policy_d.relocked = prim_mubi_pkg::MuBi4False;
+        end else if (lc_tx_test_true_strict(lc_cpu_en_i)) begin
+          soc_dbg_policy_d.category = dbg_category_e'(core_hw2reg.debug_policy_category_shadowed.d);
+          soc_dbg_policy_d.valid    = prim_mubi_pkg::MuBi4True;
+          soc_dbg_policy_d.relocked = prim_mubi_pkg::mubi4_t'(core_reg2hw.debug_policy_relocked.q);
+        end else begin
+          soc_dbg_policy_d.category = DbgCategoryLocked;
+          soc_dbg_policy_d.valid    = prim_mubi_pkg::mubi4_bool_to_mubi(boot_status_i.lc_done);
+          soc_dbg_policy_d.relocked = prim_mubi_pkg::MuBi4False;
+        end
       end
 
       default: begin

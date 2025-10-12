@@ -9808,6 +9808,40 @@
           index: -1
         }
         {
+          name: lc_cpu_en
+          desc:
+            '''
+            CPU enable qualifier coming from life cycle controller.
+            Indication from life cycle controller that the CPU is running.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: soc_dbg_ctrl
+          top_signame: lc_ctrl_lc_cpu_en
+          index: -1
+        }
+        {
+          name: lc_rma_state
+          desc:
+            '''
+            RMA state qualifier coming from life cycle controller.
+            Indication from life cycle controller that the RMA state is active.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: soc_dbg_ctrl
+          top_signame: lc_ctrl_lc_rma_state
+          index: -1
+        }
+        {
           name: halt_cpu_boot
           desc: External request to halt the CPU until a JTAG command allows the boot process to continue.
           struct: logic
@@ -11383,6 +11417,7 @@
       lc_ctrl.lc_cpu_en:
       [
         rv_core_ibex.lc_cpu_en
+        soc_dbg_ctrl.lc_cpu_en
       ]
       lc_ctrl.lc_keymgr_en:
       [
@@ -11428,6 +11463,7 @@
       lc_ctrl.lc_rma_state:
       [
         otp_ctrl.lc_rma_state
+        soc_dbg_ctrl.lc_rma_state
       ]
       otp_ctrl.otp_macro:
       [
@@ -27123,6 +27159,40 @@
         default: lc_ctrl_pkg::Off
         inst_name: soc_dbg_ctrl
         top_signame: lc_ctrl_lc_raw_test_rma
+        index: -1
+      }
+      {
+        name: lc_cpu_en
+        desc:
+          '''
+          CPU enable qualifier coming from life cycle controller.
+          Indication from life cycle controller that the CPU is running.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: soc_dbg_ctrl
+        top_signame: lc_ctrl_lc_cpu_en
+        index: -1
+      }
+      {
+        name: lc_rma_state
+        desc:
+          '''
+          RMA state qualifier coming from life cycle controller.
+          Indication from life cycle controller that the RMA state is active.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: soc_dbg_ctrl
+        top_signame: lc_ctrl_lc_rma_state
         index: -1
       }
       {

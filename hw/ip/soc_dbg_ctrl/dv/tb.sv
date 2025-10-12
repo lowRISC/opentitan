@@ -47,6 +47,8 @@ module tb;
     .lc_dft_en_i              (misc_if.lc_dft_en          ),
     .lc_hw_debug_en_i         (misc_if.lc_hw_debug_en     ),
     .lc_raw_test_rma_i        (misc_if.lc_raw_test_rma    ),
+    .lc_cpu_en_i              (misc_if.lc_cpu_en          ),
+    .lc_rma_state_i           (misc_if.lc_rma_state       ),
     .boot_status_i            (misc_if.boot_status        ),
     // Boot information from the pwrmgr
     // Halts CPU boot in early lifecycle stages after reset based on an external signal
