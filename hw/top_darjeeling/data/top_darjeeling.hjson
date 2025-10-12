@@ -1298,7 +1298,8 @@
                                       'clkmgr_aon.lc_hw_debug_en',
                                       'pwrmgr_aon.lc_hw_debug_en',
                                       'soc_dbg_ctrl.lc_hw_debug_en'],
-      'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en'],
+      'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en',
+                                      'soc_dbg_ctrl.lc_cpu_en'],
       'lc_ctrl.lc_keymgr_en'       : ['keymgr_dpe.lc_keymgr_en'],
       'lc_ctrl.lc_escalate_en'     : ['aes.lc_escalate_en',
                                       'kmac.lc_escalate_en',
@@ -1319,7 +1320,8 @@
       'lc_ctrl.lc_creator_seed_sw_rw_en'   : ['otp_ctrl.lc_creator_seed_sw_rw_en'],
       'lc_ctrl.lc_owner_seed_sw_rw_en'     : ['otp_ctrl.lc_owner_seed_sw_rw_en'],
       'lc_ctrl.lc_seed_hw_rd_en'           : ['otp_ctrl.lc_seed_hw_rd_en'],
-      'lc_ctrl.lc_rma_state'               : ['otp_ctrl.lc_rma_state'],
+      'lc_ctrl.lc_rma_state'               : ['otp_ctrl.lc_rma_state',
+                                              'soc_dbg_ctrl.lc_rma_state'],
 
       // OTP PRIM_OTP connections
       'otp_ctrl.otp_macro'         : ['otp_macro.otp'],

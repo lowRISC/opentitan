@@ -114,6 +114,28 @@
                This signals enables RAW, TEST and RMA mode accesses.
                '''
     }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_cpu_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    '''
+               CPU enable qualifier coming from life cycle controller.
+               Indication from life cycle controller that the CPU is running.
+               '''
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_rma_state"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    '''
+               RMA state qualifier coming from life cycle controller.
+               Indication from life cycle controller that the RMA state is active.
+               '''
+    }
     { struct:  'logic'
       type:    'uni'
       name:    'halt_cpu_boot'

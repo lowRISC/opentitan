@@ -36,6 +36,8 @@ interface soc_dbg_ctrl_misc_io_if();
   lc_tx_t           lc_dft_en;
   lc_tx_t           lc_hw_debug_en;
   lc_tx_t           lc_raw_test_rma;
+  lc_tx_t           lc_cpu_en;
+  lc_tx_t           lc_rma_state;
   pwr_boot_status_t boot_status;
   logic             halt_cpu_boot;
   pwrmgr_data_t     continue_cpu_boot;
@@ -96,6 +98,24 @@ interface soc_dbg_ctrl_misc_io_if();
   function automatic void set_lc_raw_test_rma_off();
     lc_raw_test_rma = Off;
   endfunction : set_lc_raw_test_rma_off
+
+  // Methods to manage lc_cpu_en
+  function automatic void set_lc_cpu_en_on();
+    lc_cpu_en = On;
+  endfunction : set_lc_cpu_en_on
+
+  function automatic void set_lc_cpu_en_off();
+    lc_cpu_en = Off;
+  endfunction : set_lc_cpu_en_off
+
+  // Methods to manage lc_rma_state
+  function automatic void set_lc_rma_state_on();
+    lc_rma_state = On;
+  endfunction : set_lc_rma_state_on
+
+  function automatic void set_lc_rma_state_off();
+    lc_rma_state = Off;
+  endfunction : set_lc_rma_state_off
 
   // Methods to manage boot_status
   function automatic void init_boot_status();
