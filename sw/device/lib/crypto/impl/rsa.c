@@ -54,12 +54,15 @@ otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
  * @return OK if the mode is for RSA, OTCRYPTO_BAD_ARGS otherwise.
  */
 static status_t rsa_mode_check(const otcrypto_key_mode_t mode) {
-  switch (mode) {
+  switch (launder32(mode)) {
     case kOtcryptoKeyModeRsaSignPkcs:
+      HARDENED_CHECK_EQ(mode, kOtcryptoKeyModeRsaSignPkcs);
       return OTCRYPTO_OK;
     case kOtcryptoKeyModeRsaSignPss:
+      HARDENED_CHECK_EQ(mode, kOtcryptoKeyModeRsaSignPss);
       return OTCRYPTO_OK;
     case kOtcryptoKeyModeRsaEncryptOaep:
+      HARDENED_CHECK_EQ(mode, kOtcryptoKeyModeRsaEncryptOaep);
       return OTCRYPTO_OK;
     default:
       return OTCRYPTO_BAD_ARGS;
@@ -424,12 +427,15 @@ otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size) {
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
-  switch (size) {
+  switch (launder32(size)) {
     case kOtcryptoRsaSize2048:
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
       return rsa_keygen_2048_start();
     case kOtcryptoRsaSize3072:
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
       return rsa_keygen_3072_start();
     case kOtcryptoRsaSize4096:
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
       return rsa_keygen_4096_start();
     default:
       return OTCRYPTO_BAD_ARGS;
@@ -467,6 +473,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
       ceil_div(private_key->keyblob_length, sizeof(uint32_t))));
 
   // Call the required finalize() operation.
+  otcrypto_rsa_size_t size_used = launder32(0);
   switch (size) {
     case kOtcryptoRsaSize2048: {
       // Finalize the keygen operation and retrieve the keys.
@@ -474,6 +481,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
       rsa_2048_private_key_t *sk =
           (rsa_2048_private_key_t *)private_key->keyblob;
       HARDENED_TRY(rsa_keygen_2048_finalize(pk, sk));
+      size_used = launder32(size_used) | kOtcryptoRsaSize2048;
       break;
     }
     case kOtcryptoRsaSize3072: {
@@ -482,6 +490,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
       rsa_3072_private_key_t *sk =
           (rsa_3072_private_key_t *)private_key->keyblob;
       HARDENED_TRY(rsa_keygen_3072_finalize(pk, sk));
+      size_used = launder32(size_used) | kOtcryptoRsaSize2048;
       break;
     }
     case kOtcryptoRsaSize4096: {
@@ -490,12 +499,18 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
       rsa_4096_private_key_t *sk =
           (rsa_4096_private_key_t *)private_key->keyblob;
       HARDENED_TRY(rsa_keygen_4096_finalize(pk, sk));
+      size_used = launder32(size_used) | kOtcryptoRsaSize2048;
       break;
     }
     default:
       // Invalid key size.
       return OTCRYPTO_BAD_ARGS;
   }
+
+  // Check if we landed in the correct case statement.
+  // Use ORs for this to avoid that multiple cases were
+  // executed.
+  HARDENED_CHECK_EQ(launder32(size_used), size);
 
   // Construct checksums for the new keys.
   public_key->checksum = integrity_unblinded_checksum(public_key);
@@ -671,20 +686,23 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
   }
 
   // Start the appropriate signature generation routine.
-  switch (size) {
+  switch (launder32(size)) {
     case kOtcryptoRsaSize2048: {
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
       rsa_2048_private_key_t *sk =
           (rsa_2048_private_key_t *)private_key->keyblob;
       return rsa_signature_generate_2048_start(
           sk, message_digest, (rsa_signature_padding_t)padding_mode);
     }
     case kOtcryptoRsaSize3072: {
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
       rsa_3072_private_key_t *sk =
           (rsa_3072_private_key_t *)private_key->keyblob;
       return rsa_signature_generate_3072_start(
           sk, message_digest, (rsa_signature_padding_t)padding_mode);
     }
     case kOtcryptoRsaSize4096: {
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
       rsa_4096_private_key_t *sk =
           (rsa_4096_private_key_t *)private_key->keyblob;
       return rsa_signature_generate_4096_start(
@@ -712,14 +730,17 @@ otcrypto_status_t otcrypto_rsa_sign_async_finalize(
   HARDENED_TRY(entropy_complex_check());
 
   // Determine the size based on the signature buffer length.
-  switch (signature.len) {
+  switch (launder32(signature.len)) {
     case kRsa2048NumWords:
+      HARDENED_CHECK_EQ(signature.len, kRsa2048NumWords);
       return rsa_signature_generate_2048_finalize(
           (rsa_2048_int_t *)signature.data);
     case kRsa3072NumWords:
+      HARDENED_CHECK_EQ(signature.len, kRsa3072NumWords);
       return rsa_signature_generate_3072_finalize(
           (rsa_3072_int_t *)signature.data);
     case kRsa4096NumWords:
+      HARDENED_CHECK_EQ(signature.len, kRsa4096NumWords);
       return rsa_signature_generate_4096_finalize(
           (rsa_4096_int_t *)signature.data);
     default:

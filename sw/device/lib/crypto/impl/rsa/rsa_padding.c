@@ -66,26 +66,33 @@ static const uint8_t kSha3_512DigestIdentifier[] = {
 OT_WARN_UNUSED_RESULT
 static status_t digest_info_length_get(const otcrypto_hash_mode_t hash_mode,
                                        size_t *len) {
-  switch (hash_mode) {
+  switch (launder32(hash_mode)) {
     case kOtcryptoHashModeSha256:
+      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha256);
       *len = sizeof(kSha256DigestIdentifier) + kHmacSha256DigestBytes;
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha384:
+      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha384);
       *len = sizeof(kSha384DigestIdentifier) + kHmacSha384DigestBytes;
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha512:
+      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha512);
       *len = sizeof(kSha512DigestIdentifier) + kHmacSha512DigestBytes;
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha3_224:
+      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_224);
       *len = sizeof(kSha3_224DigestIdentifier) + kKmacSha3224DigestBytes;
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha3_256:
+      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_256);
       *len = sizeof(kSha3_256DigestIdentifier) + kKmacSha3256DigestBytes;
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha3_384:
+      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_384);
       *len = sizeof(kSha3_384DigestIdentifier) + kKmacSha3384DigestBytes;
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha3_512:
+      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_512);
       *len = sizeof(kSha512DigestIdentifier) + kKmacSha3512DigestBytes;
       return OTCRYPTO_OK;
     default:
@@ -234,29 +241,41 @@ OT_WARN_UNUSED_RESULT
 static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode,
                                    size_t *num_words) {
   *num_words = 0;
+  otcrypto_hash_mode_t hash_mode_used = launder32(0);
   switch (hash_mode) {
     case kOtcryptoHashModeSha3_224:
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha3_224;
       *num_words = 224 / 32;
       break;
     case kOtcryptoHashModeSha256:
-      OT_FALLTHROUGH_INTENDED;
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha256;
+      *num_words = 256 / 32;
+      break;
     case kOtcryptoHashModeSha3_256:
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha3_256;
       *num_words = 256 / 32;
       break;
     case kOtcryptoHashModeSha384:
-      OT_FALLTHROUGH_INTENDED;
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha384;
+      *num_words = 384 / 32;
+      break;
     case kOtcryptoHashModeSha3_384:
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha3_384;
       *num_words = 384 / 32;
       break;
     case kOtcryptoHashModeSha512:
-      OT_FALLTHROUGH_INTENDED;
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha512;
+      *num_words = 512 / 32;
+      break;
     case kOtcryptoHashModeSha3_512:
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha3_512;
       *num_words = 512 / 32;
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_GT(num_words, 0);
+  HARDENED_CHECK_EQ(launder32(hash_mode_used), hash_mode);
 
   return OTCRYPTO_OK;
 }
