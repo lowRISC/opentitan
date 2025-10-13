@@ -390,6 +390,24 @@ void ghash_update(ghash_context_t *ctx, size_t input_len,
   }
 }
 
+void ghash_update_redundant(ghash_context_t *ctx, size_t input_len,
+                            const uint8_t *input) {
+  // Copy ctx.
+  ghash_context_t ctx_redundant;
+  memcpy(&ctx_redundant, ctx, sizeof(ctx_redundant));
+
+  ghash_update(ctx, input_len, input);
+
+  ghash_update(&ctx_redundant, input_len, input);
+
+  // Compare the GHASH state. Do this only at a single share to avoid
+  // introducing SCA leakage. Use consttime_memeq_byte() to avoid DFA.
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(&ctx->state0.data, ctx_redundant.state0.data,
+                           kGhashBlockNumBytes),
+      kHardenedBoolTrue);
+}
+
 void ghash_handle_enc_initial_counter_block(
     const uint32_t *enc_initial_counter_block0,
     const uint32_t *enc_initial_counter_block1, ghash_context_t *ctx) {
