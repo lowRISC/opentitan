@@ -113,6 +113,7 @@ static status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
     HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_FATAL_ERR;
   }
+  HARDENED_CHECK_EQ(launder32(num_words), num_words_inferred);
 
   // Read the result.
   HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(num_words, kOtbnVarRsaInOut, result));
@@ -290,6 +291,7 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
     HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_FATAL_ERR;
   }
+  HARDENED_CHECK_EQ(launder32(act_mode), exp_mode);
 
   // Read the public modulus (n) from OTBN dmem.
   HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(num_words, kOtbnVarRsaN, n));

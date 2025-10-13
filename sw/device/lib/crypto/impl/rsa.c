@@ -293,12 +293,13 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
       return OTCRYPTO_BAD_ARGS;
   }
 
-  if (modulus_eq != kHardenedBoolTrue) {
+  if (launder32(modulus_eq) != kHardenedBoolTrue) {
     // This likely means that the cofactor/modulus combination was invalid,
     // for example the modulus was not divisible by the cofactor, or the
     // cofactor was too small.
     return OTCRYPTO_BAD_ARGS;
   }
+  HARDENED_CHECK_EQ(modulus_eq, kHardenedBoolTrue);
   return OTCRYPTO_OK;
 }
 
