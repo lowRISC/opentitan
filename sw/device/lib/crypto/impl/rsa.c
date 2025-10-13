@@ -597,8 +597,9 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
       ceil_div(private_key->keyblob_length, sizeof(uint32_t))));
 
   // Call the required finalize() operation.
-  switch (size) {
+  switch (launder32(size)) {
     case kOtcryptoRsaSize2048: {
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
       rsa_2048_private_key_t *sk =
           (rsa_2048_private_key_t *)private_key->keyblob;
@@ -606,9 +607,11 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
       break;
     }
     case kOtcryptoRsaSize3072: {
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
       return OTCRYPTO_NOT_IMPLEMENTED;
     }
     case kOtcryptoRsaSize4096: {
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
       return OTCRYPTO_NOT_IMPLEMENTED;
     }
     default:
