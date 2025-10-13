@@ -186,8 +186,9 @@ class ottf_spi_console extends uvm_component;
   // Wait until the DEVICE signals it is awaiting a write, then perform one or more console write
   // operations. This task tries to write all given payloads successively before waiting for the
   // device to clear the sideband flow_control signal, and cannot short-circuit or early return.
-  extern task host_spi_console_write_when_ready(input bit [7:0] bytes[][],
-                                                uint timeout_ns = write_completion_timeout_ns);
+  extern task host_spi_console_write_when_ready(
+    input bit [7:0] bytes[][],
+    uint            timeout_ns = write_completion_timeout_ns);
 
 endclass : ottf_spi_console
 
@@ -233,12 +234,12 @@ endfunction
 task ottf_spi_console::await_flow_ctrl_signal(flow_ctrl_idx_e idx,
                                               bit val = 1'b1,
                                               uint timeout_ns = await_flow_ctrl_timeout_ns);
-  `uvm_info(`gfn, $sformatf("Waiting for pin:%0d to be %0d now...", idx, val), UVM_HIGH)
+  `uvm_info(`gfn, $sformatf("Waiting for pin:'%0s' to be %0d now...", idx.name(), val), UVM_HIGH)
   `DV_WAIT(
     /*WAIT_COND_*/  flow_ctrl_vif.pins[idx] == val,
-    /*MSG_*/        $sformatf("Timed out waiting for pin '%0s' to be 1'b%0b.", idx.name(), val),
+    /*MSG_*/        $sformatf("Timed out waiting for pin:'%0s' to be 1'b%0b.", idx.name(), val),
     /*TIMEOUT_NS_*/ timeout_ns)
-  `uvm_info(`gfn, $sformatf("Saw idx:%0d as %0d now!", idx, val), UVM_HIGH)
+  `uvm_info(`gfn, $sformatf("Saw pin:'%0s' as %0d now!", idx.name(), val), UVM_HIGH)
 endtask: await_flow_ctrl_signal
 
 //////////////////
@@ -354,9 +355,7 @@ task ottf_spi_console::host_spi_console_read_payload(output bit [7:0] outbuf[],
   int       len_ctr = 0;
   `uvm_info(`gfn, $sformatf("Awaiting read_payload. (max %0d bytes)", max_len), UVM_LOW)
 
-  `uvm_info(`gfn, "Waiting for the DEVICE to set 'tx_ready' (IOA5)", UVM_HIGH)
   await_flow_ctrl_signal(tx_ready, 1'b1);
-  `uvm_info(`gfn, "DEVICE set 'tx_ready' now.", UVM_HIGH)
 
   // Keep getting spi console frames until we determine the payload has completed by length.
   while (len_ctr < max_len) begin
@@ -374,13 +373,10 @@ task ottf_spi_console::host_spi_console_read_payload(output bit [7:0] outbuf[],
           len_ctr, max_len), UVM_MEDIUM)
       end
       // The DEVICE will de-assert tx_ready after the first CSB edge, knowing that both sides
-      // understand that two full spi transfers need to complete (header + data). It won't
-      // re-assert tx_ready until after the 4th CSB edge (the end of the second transfer)
-      begin : await_tx_ready_deassert
-        `uvm_info(`gfn, "Waiting for the DEVICE to clear 'tx_ready' (IOA5)", UVM_HIGH)
-        await_flow_ctrl_signal(tx_ready, 1'b0);
-        `uvm_info(`gfn, "DEVICE cleared 'tx_ready' now.", UVM_HIGH)
-      end
+      // understand that two full spi transfers are needed to complete the frame (header + data).
+      // It won't be reasserted for another frame until after the 4th CSB edge (the end of the
+      // second transfer)
+      await_flow_ctrl_signal(tx_ready, 1'b0);
     join
 
     // If the frame is any less than the maximum size, assume this is the end of the
@@ -521,22 +517,16 @@ endtask : host_spi_console_write
 
 task ottf_spi_console::host_spi_console_write_when_ready(
   input bit [7:0] bytes[][],
-  uint timeout_ns = write_completion_timeout_ns
+  uint            timeout_ns = write_completion_timeout_ns
 );
 
-  `uvm_info(`gfn, "Waiting for the DEVICE to set 'rx_ready' (IOA6)", UVM_HIGH)
   await_flow_ctrl_signal(rx_ready, 1'b1);
-  `uvm_info(`gfn, "DEVICE set 'rx_ready' now.", UVM_HIGH)
-
   `DV_SPINWAIT(
     /* WAIT_ */       foreach (bytes[i]) host_spi_console_write(bytes[i]);,
     /* MSG_ */        "Timeout waiting for spi_console_write_when_ready() to complete.",
     /* TIMEOUT_NS_ */ timeout_ns
   )
-
-  `uvm_info(`gfn, "Waiting for the DEVICE to clear 'rx_ready' (IOA6)", UVM_HIGH)
   await_flow_ctrl_signal(rx_ready, 1'b0);
-  `uvm_info(`gfn, "DEVICE cleared 'rx_ready' now.", UVM_HIGH)
 
 endtask : host_spi_console_write_when_ready
 
