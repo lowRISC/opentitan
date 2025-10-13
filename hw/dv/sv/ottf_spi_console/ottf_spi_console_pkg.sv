@@ -40,10 +40,10 @@ package ottf_spi_console_pkg;
   // require tuning for significantly different use cases.
   // Note that this stimulus may be timing-sensitive due to interactions with the software running
   // the DEVICE-side of the OTTF SPI Console, so test appropriately if changing these values.
-  uint await_flow_ctrl_timeout_ns  = 200_000_000; // 200ms
-  uint wait_on_busy_timeout_ns     = 200_000_000; // 200ms
-  uint write_completion_timeout_ns = 200_000_000; // 200ms
-  uint min_interval_ns             =       3_000; //   3us
+  uint await_flow_ctrl_timeout_ns  = 1_000_000_000; // 1s
+  uint wait_on_busy_timeout_ns     =   200_000_000; // 200ms
+  uint write_completion_timeout_ns =   200_000_000; // 200ms
+  uint min_interval_ns             =         3_000; //   3us
 
   // Typical opcodes used by SPI NOR-flash devices.
   // Ensure that both parties are using the same encodings.
