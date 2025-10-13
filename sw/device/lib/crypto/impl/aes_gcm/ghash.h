@@ -167,6 +167,21 @@ void ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
 void ghash_update(ghash_context_t *ctx, size_t input_len, const uint8_t *input);
 
 /**
+ * Redundant version of ghash_update().
+ *
+ * Creates a copy of ctx and executes ghash_update() twice.
+ * Compares the GHASH state stored in ctx after the redundant comparison.
+ * The comparison is done on share s0 to avoid introducing SCA leakage.
+ * If the comparison fails, trap.
+ *
+ * @param ctx Context object.
+ * @param input_len Number of bytes in the input.
+ * @param input Pointer to input buffer.
+ */
+void ghash_update_redundant(ghash_context_t *ctx, size_t input_len,
+                            const uint8_t *input);
+
+/**
  * Computes the correction terms needed for the masking scheme.
  *
  * correction_term0 = S0 * (H0 + 1).
