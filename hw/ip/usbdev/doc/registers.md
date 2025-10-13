@@ -91,6 +91,7 @@ This interrupt is directly tied to the FIFO status, so the Available SETUP Buffe
 ### INTR_STATE . link_out_err
 Raised if a packet to an OUT endpoint started to be received but was then dropped due to an error.
 This error is raised if the data toggle, token, packet and/or CRC are invalid, or if the appropriate Available OUT Buffer FIFO is empty and/or the Received Buffer FIFO is full when a packet should have been received.
+Attempting to perform an OUT transaction to an endpoint that is stalled, i.e. its control bit in `out_stall` is set, will also cause this error to be raised.
 
 ### INTR_STATE . powered
 Raised if VBUS is applied.
@@ -139,7 +140,7 @@ Raised if the link is at SE0 longer than 3 us indicating a link reset (host asse
 Raised if link is active but SOF was not received from host for 4.096 ms. The SOF should be every 1 ms.
 
 ### INTR_STATE . disconnected
-Raised if VBUS is lost, thus the link is disconnected.
+Raised if VBUS is lost or the pullup is disabled, thus the link is disconnected.
 
 ### INTR_STATE . pkt_sent
 Raised if a packet was sent as part of an IN transaction.
@@ -367,7 +368,7 @@ These buffers are available for receiving OUT DATA packets.
 ### usbstat . sense
 Reflects the state of the sense pin.
 1 indicates that the host is providing VBUS.
-Note that this bit always shows the state of the actual pin and does not take account of the override control.
+Note that this bit always shows the state of the actual pin and is unaffected by the direct pin driving in phy_pins_drive.
 
 ### usbstat . link_state
 State of USB link, decoded from line.
