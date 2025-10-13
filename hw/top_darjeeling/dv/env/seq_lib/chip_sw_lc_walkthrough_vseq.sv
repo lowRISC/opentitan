@@ -32,7 +32,6 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
     // enough time to configure the TAP interface before any JTAG agents send
     // any commands.
     wait_rom_check_done();
-    set_otp_creator_sw_cfg_rom_exec_en(1);
   endtask
 
   virtual task body();

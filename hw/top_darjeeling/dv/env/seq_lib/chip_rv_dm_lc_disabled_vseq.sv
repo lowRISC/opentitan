@@ -84,7 +84,6 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
 
   virtual function void initialize_otp_sig_verify();
     backdoor_override_otp();
-    super.initialize_otp_sig_verify();
   endfunction
 
   // Returns true if the RV_DM is accessible in a certain life cycle state.

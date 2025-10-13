@@ -71,24 +71,6 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
       `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRomHalt)
     end
 
-    // Use the frontend interface to configure the RomExecEn OTP value. A
-    // reset is required to have otp_ctrl sample the new OTP value.
-    `uvm_info(`gfn, "Configuring RomExecEn", UVM_LOW)
-    jtag_dm_activation_seq.start(p_sequencer.jtag_sequencer_h);
-    `uvm_info(`gfn, $sformatf("rv_dm_activated: %0d", cfg.m_jtag_riscv_agent_cfg.rv_dm_activated),
-              UVM_LOW)
-    cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 1;
-    jtag_otp_program32(otp_ctrl_reg_pkg::CreatorSwCfgRomExecEnOffset, 1);
-
-    if (rom_prod_mode) begin
-      // Use otbn mod_exp implementation for signature verification. See the
-      // definition of `hardened_bool_t` in sw/lib/sw/device/base/hardened.h.
-      jtag_otp_program32(otp_ctrl_reg_pkg::CreatorSwCfgSigverifyRsaModExpIbexEnOffset, 32'h1d4);
-    end
-
-    apply_reset();
-    reset_jtag_tap();
-
     // Wait for `rom_ctrl` to complete the ROM check. This will give the dut
     // enough time to configure the TAP interface before any JTAG agents send
     // any commands.

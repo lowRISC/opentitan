@@ -25,13 +25,16 @@ class chip_sw_sram_ctrl_execution_main_vseq extends chip_sw_base_vseq;
     end
     otp_write_hw_cfg0_partition(
         .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
-        .device_id(DEVICE_ID), .manuf_state(MANUF_STATE));
-    // This means SOC_DEBUG won't block debug access.
+        .device_id(DEVICE_ID));
     otp_write_hw_cfg1_partition(
         .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
-        .soc_dbg_state(SOC_DBG_RAW),
         .en_csrng_sw_app_read(EN_CSRNG_SW_APP_READ),
         .en_sram_ifetch(en_sram_ifetch));
+    // This means SOC_DEBUG won't block debug access.
+    otp_write_hw_cfg2_partition(
+        .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
+        .soc_dbg_state(SOC_DBG_RAW),
+        .manuf_state(MANUF_STATE));
 
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
