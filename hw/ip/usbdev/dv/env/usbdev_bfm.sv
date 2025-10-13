@@ -409,8 +409,12 @@ class usbdev_bfm extends uvm_component;
   // VBUS/SENSE connection event.
   function void bus_connect();
     sense = 1'b1;
-    if (powered && enable) link_state = LinkPowered;
-    intr_state[IntrPowered] = 1'b1;
+    if (powered) begin
+      // The 'powered' link state reflects VBUS assertion with pullup enabled.
+      if (enable) link_state = LinkPowered;
+      // An interrupt is raised when VBUS becomes asserted, irrespective of the pullup state.
+      intr_state[IntrPowered] = 1'b1;
+    end
   endfunction
 
   // VBUS/SENSE disconnection event.
