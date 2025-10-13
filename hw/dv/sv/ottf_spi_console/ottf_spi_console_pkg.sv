@@ -11,7 +11,8 @@
 // the OpenTitan spi_host UVC (spi_host_sequencer_h).
 //
 // After configuration, the primary interface for sequences to make use of this are the methods:
-// - host_spi_console_read_wait_for()
+// - host_spi_console_poll_reads()
+// - host_spi_console_read_wait_for_polled_str()
 // - host_spi_console_read_payload()
 // - host_spi_console_write_when_ready()
 //
