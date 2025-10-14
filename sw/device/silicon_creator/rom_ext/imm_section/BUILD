@@ -25,15 +25,24 @@ load(
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "main_lib",
-    srcs = [
-        "imm_section.c",
-        "imm_section_start.S",
+    name = "imm_section_start",
+    srcs = ["imm_section_start.S"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/coverage:api_asm",
     ],
+)
+
+cc_library(
+    name = "main_lib",
+    srcs = ["imm_section.c"],
     hdrs = ["imm_section.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":imm_section_epmp",
+        ":imm_section_start",
         ":imm_section_version_def",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//sw/device/lib/arch:device",
