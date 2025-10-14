@@ -7,6 +7,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/coverage/api.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/cert/dice_chain.h"
@@ -70,6 +71,9 @@ void imm_section_main(void) {
   // If there's an error, this hardened check will trigger the irq handler
   // in ROM to shutdown.
   HARDENED_CHECK_EQ(error, kErrorOk);
+
+  coverage_report();
+  coverage_invalidate();
 
   // Go back to ROM / Mutable ROM_EXT.
   return;

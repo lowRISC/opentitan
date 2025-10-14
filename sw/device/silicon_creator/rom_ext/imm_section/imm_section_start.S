@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "sw/device/lib/coverage/api_asm.h"
 #include "sw/device/lib/base/hardened_asm.h"
 
   /**
@@ -37,6 +38,9 @@ _imm_section_start_boot:
    */
   addi sp, sp, -8
   sw ra, 4(sp)
+
+  // NOTE: Coverage transport isn't re-initialized to reuse ROM's settings.
+  COVERAGE_ASM_INIT()
 
   /**
    * Disable Interrupts.
