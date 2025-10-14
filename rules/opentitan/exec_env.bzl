@@ -314,7 +314,13 @@ def update_file_attr(ctx, name, attr, exec_env, data_files, param, action_param 
             fail("attr must be a single item")
     if type(attr) == "File":
         _update(name, attr, data_files, param, action_param)
-    elif OpenTitanBinaryInfo in attr:
+        return
+
+    # Propagate runfiles
+    if DefaultInfo in attr:
+        data_files.extend(attr[DefaultInfo].default_runfiles.files.to_list() or [])
+
+    if OpenTitanBinaryInfo in attr:
         # This target was built by opentitan_binary, so make a few sanity check to make
         # sure that it contains a binary for the right target.
         if exec_env == None:
