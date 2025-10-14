@@ -22,7 +22,7 @@ __ot_coverage_bss (NOLOAD) : ALIGN(8) {
   ASSERT(
     DEFINED(_ot_coverage_enabled) || SIZEOF(__ot_coverage_bss) == 0,
     "__ot_coverage_bss section must be empty when coverage is disabled.");
-} > ram_main
+} > ram_main :NONE
 
 /* LLVM coverage counters. */
 . = ALIGN(8);
@@ -45,4 +45,4 @@ __llvm_prf_cnts : AT(0x0) ALIGN(8) {
   ASSERT(
     DEFINED(_ot_coverage_enabled) || SIZEOF(__llvm_prf_cnts) == 0,
     "__llvm_prf_cnts section must be empty when coverage is disabled.");
-} > ram_main
+} > ram_main :NONE
