@@ -23,8 +23,8 @@ module i2c
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t ram_cfg_rsp_o,
 
   // Bus Interface
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
+  input  tlul_pkg::tl_h2d_t tl_i, //tl_h2d_t is a typedef which is used to send data form tl-ul to device (i2c). h2d -> host(tl-ul) to device(i2c)
+  output tlul_pkg::tl_d2h_t tl_o, //d2h -> device(i2c) to host(tl-ul) 
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,

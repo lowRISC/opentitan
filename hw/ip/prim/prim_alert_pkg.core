@@ -1,0 +1,15 @@
+CAPI=2:
+
+name: "lowrisc:prim:prim_alert_pkg:0.1"
+description: "Alert handler package (synthesizable)"
+filesets:
+  files_rtl:
+    files:
+      - rtl/prim_alert_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
+
