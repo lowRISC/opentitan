@@ -19,6 +19,8 @@ _dv_log_offset = 0x10000;
 
 ENTRY(_imm_section_start_boot)
 
+REGION_ALIAS("coverage_flash", rom_ext_flash);
+
 SECTIONS {
   /**
    * Ibex interrupt vector.
@@ -76,6 +78,8 @@ SECTIONS {
     *(.rodata)
     *(.rodata.*)
   } > rom_ext_flash
+
+  INCLUDE sw/device/lib/coverage/rodata.ld
 
   /**
    * Critical static data that is accessible by both the ROM and the ROM
@@ -151,6 +155,8 @@ SECTIONS {
     . = ALIGN(4);
     _bss_end = .;
   } > ram_main
+
+  INCLUDE sw/device/lib/coverage/bss.ld
 
   INCLUDE sw/device/info_sections.ld
 
