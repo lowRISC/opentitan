@@ -96,10 +96,10 @@ pub fn search_by_extension(dir: &PathBuf, extension: &str) -> Vec<PathBuf> {
             let path = entry.path();
             if path.is_dir() {
                 paths.extend(search_by_extension(&path, extension));
-            } else if let Some(ext) = path.extension() {
-                if ext == extension {
-                    paths.push(path);
-                }
+            } else if let Some(ext) = path.extension()
+                && ext == extension
+            {
+                paths.push(path);
             }
         }
     }
