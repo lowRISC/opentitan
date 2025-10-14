@@ -15,6 +15,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/coverage/api.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
@@ -23,7 +24,6 @@
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/coverage.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
@@ -132,7 +132,7 @@ static void report_test_status(bool result) {
     }
   }
 
-  coverage_send_buffer();
+  coverage_report();
   test_status_set(result ? kTestStatusPassed : kTestStatusFailed);
 }
 

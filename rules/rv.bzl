@@ -19,9 +19,13 @@ PER_DEVICE_DEPS = {
 }
 
 def _opentitan_transition_impl(settings, attr):
+    coverage = settings["//command_line_option:collect_code_coverage"]
+    if attr.collect_code_coverage != -1:
+        coverage = bool(attr.collect_code_coverage)
     return {
         "//command_line_option:platforms": attr.platform,
         "//command_line_option:copt": settings["//command_line_option:copt"],
+        "//command_line_option:collect_code_coverage": coverage,
         "//hw/bitstream/universal:rom": "//hw/bitstream/universal:none",
         "//hw/bitstream/universal:otp": "//hw/bitstream/universal:none",
         "//hw/bitstream/universal:env": "//hw/bitstream/universal:none",
@@ -36,10 +40,12 @@ opentitan_transition = transition(
     #   present in the englishbreakfast rv32i implementation.
     inputs = [
         "//command_line_option:copt",
+        "//command_line_option:collect_code_coverage",
     ],
     outputs = [
         "//command_line_option:platforms",
         "//command_line_option:copt",
+        "//command_line_option:collect_code_coverage",
         "//hw/bitstream/universal:rom",
         "//hw/bitstream/universal:otp",
         "//hw/bitstream/universal:env",
@@ -55,6 +61,16 @@ def rv_rule(**kwargs):
     attrs = kwargs.pop("attrs", {})
     if "platform" not in attrs:
         attrs["platform"] = attr.string(default = OPENTITAN_PLATFORM)
+    if "collect_code_coverage" not in attrs:
+        attrs["collect_code_coverage"] = attr.int(
+            default = -1,
+            doc = """Whether to collect coverage for this target.
+
+            When set to -1 (the default), the decision is inherited from the global setting.
+            When set to 0, coverage collection is always disabled for this target.
+            When set to 1, coverage collection is always enabled for this target.
+            """,
+        )
     attrs["_allowlist_function_transition"] = attr.label(
         default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
     )
