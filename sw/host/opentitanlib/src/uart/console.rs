@@ -120,12 +120,13 @@ impl UartConsole {
         r
     }
 
-    /// Returns `true` if any regular expressions are used to match the streamed output.  If so,
+    /// Returns `true` if any conditions are used to match the streamed output.  If so,
     /// then this struct will keep a window of the most recent output, and take care not to read
-    /// any more characters from the underlying stream should one of the regular expressions
-    /// match.
-    fn uses_regex(&self) -> bool {
-        self.exit_success.is_some() || self.exit_failure.is_some()
+    /// any more characters from the underlying stream should one of the conditions match.
+    fn matching_mode(&self) -> bool {
+        self.exit_success.is_some()
+            || self.exit_failure.is_some()
+            || cfg!(feature = "ot_coverage_enabled")
     }
 
     // Returns a reference to the currently active buffer (normal or coverage).
@@ -253,7 +254,7 @@ impl UartConsole {
         T: ConsoleDevice + ?Sized,
     {
         let mut buf = [0u8; 1024];
-        let effective_buf = if self.uses_regex() {
+        let effective_buf = if self.matching_mode() {
             // Read one byte at a time when matching, to avoid the risk of consuming output past a
             // match.
             &mut buf[..1]
@@ -282,7 +283,7 @@ impl UartConsole {
                 .as_mut()
                 .map_or(Ok(()), |f| f.write_all(&buf[..len]))?;
         }
-        if self.uses_regex() {
+        if self.matching_mode() {
             self.append_buffer(&buf[..len]);
         }
         Ok(())
