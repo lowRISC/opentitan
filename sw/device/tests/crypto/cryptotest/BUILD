@@ -26,6 +26,25 @@ cryptotest(
     test_vectors = AES_TESTVECTOR_TARGETS,
 )
 
+AES_GCM_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_aes_gcm_{}_{}_json".format(operation, key_len)
+    for operation in ("encryptextiv", "decrypt")
+    for key_len in ("128", "192", "256")
+]
+
+AES_GCM_TESTVECTOR_ARGS = " ".join([
+    "--aes-gcm-json=\"$(rootpath {})\"".format(target)
+    for target in AES_GCM_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "aes_gcm_kat",
+    slow_test = True,
+    test_args = AES_GCM_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/aes_gcm_nist_kat:harness",
+    test_vectors = AES_GCM_TESTVECTOR_TARGETS,
+)
+
 ECDSA_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_ecdsa_{}.json".format(config)
     for config in [
