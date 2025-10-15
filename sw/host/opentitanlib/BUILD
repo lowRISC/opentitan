@@ -236,6 +236,8 @@ rust_library(
         "src/transport/verilator/subprocess.rs",
         "src/transport/verilator/transport.rs",
         "src/uart/console.rs",
+        "src/uart/console_plugin.rs",
+        "src/uart/coverage_plugin.rs",
         "src/uart/mod.rs",
         "src/util/bigint.rs",
         "src/util/bitbang.rs",

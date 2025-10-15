@@ -14,6 +14,8 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant, SystemTime};
 
 use crate::io::console::{ConsoleDevice, ConsoleError};
+use crate::uart::console_plugin::ConsolePlugin;
+use crate::uart::coverage_plugin::CoveragePlugin;
 use crate::util::file;
 
 const COVERAGE_START_ANCHOR: &str = "== COVERAGE PROFILE START ==\r\n";
@@ -41,6 +43,7 @@ pub struct UartConsole {
     pub newline: bool,
     pub carriage_return: bool,
     pub break_en: bool,
+    pub coverage_plugin: CoveragePlugin,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -285,6 +288,10 @@ impl UartConsole {
     }
 
     fn process_buffer(&mut self) -> Result<Option<ExitStatus>> {
+        if let Some(status) = self.coverage_plugin.exit_status() {
+            return Ok(Some(status));
+        }
+
         let exit_result = self.process_exit_regex();
         self.process_coverage_anchor()?;
         Ok(exit_result)
@@ -305,6 +312,15 @@ impl UartConsole {
         if len == 0 {
             return Ok(false);
         }
+
+        // Process the received bytes through plugin chain.
+        let buf = buf[..len].to_vec();
+        let buf = self.coverage_plugin.process_bytes(buf)?;
+        let len = buf.len();
+        if len == 0 {
+            return Ok(true);
+        }
+
         if self.buffer_mode == BufferMode::Normal {
             for i in 0..len {
                 if self.timestamp && self.newline {
@@ -459,10 +475,20 @@ impl UartConsole {
     where
         T: ConsoleDevice + ?Sized,
     {
-        let anchor =
-            regex::escape(COVERAGE_END_ANCHOR) + "|" + &regex::escape(COVERAGE_SKIP_ANCHOR);
-
-        Self::wait_for(device, &anchor, timeout)?;
-        Ok(())
+        let mut console = UartConsole {
+            timestamp: true,
+            newline: true,
+            timeout: Some(timeout),
+            coverage_plugin: CoveragePlugin::default().stop_after_report(),
+            ..Default::default()
+        };
+        let mut stdout = std::io::stdout();
+        let result = console.interact(device, None, Some(&mut stdout))?;
+        println!();
+        match result {
+            ExitStatus::ExitSuccess => Ok(()),
+            ExitStatus::Timeout => Err(ConsoleError::GenericError("Timed Out".into()).into()),
+            _ => Err(anyhow!("Impossible result: {:?}", result)),
+        }
     }
 }

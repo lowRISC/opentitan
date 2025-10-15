@@ -3,3 +3,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub mod console;
+pub mod console_plugin;
+pub mod coverage_plugin;
