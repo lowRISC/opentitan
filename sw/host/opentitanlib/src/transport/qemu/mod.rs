@@ -8,6 +8,7 @@ pub mod monitor;
 pub mod reset;
 pub mod spi;
 pub mod uart;
+pub mod usbdev;
 
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -30,12 +31,16 @@ use crate::transport::qemu::monitor::{Chardev, ChardevKind, Monitor};
 use crate::transport::qemu::reset::QemuReset;
 use crate::transport::qemu::spi::QemuSpi;
 use crate::transport::qemu::uart::QemuUart;
+use crate::transport::qemu::usbdev::QemuVbusSense;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
 
 /// ID of the fake pin we use to model resets.
 const QEMU_RESET_PIN_IDX: u8 = u8::MAX;
+/* Until we have a more complete model of the pinmux, we need to model this
+ * MIO directly. */
+const QEMU_VBUS_SENSE_PIN_IDX: u8 = u8::MAX - 1;
 
 /// Baudrate for QEMU's consoles. These are PTYs so it currently doesn't matter,
 /// but we must use a non-zero value because the pacing calculations divide by
@@ -61,6 +66,9 @@ pub struct Qemu {
 
     /// GPIO pins (not including reset pin).
     gpio: Option<Rc<RefCell<QemuGpio>>>,
+
+    /// VBUS sense pin (actually goes via the `usbdev-cmd` chardev).
+    vbus_sense: Option<Rc<dyn GpioPin>>,
 
     /// QEMU log modelled as a UART.
     log: Option<Rc<dyn Uart>>,
@@ -118,6 +126,25 @@ impl Qemu {
                 "could not find pty chardevs with ids starting with `uart`, UART support disabled"
             );
         }
+
+        // USBDEV control:
+        let vbus_sense = match find_chardev(&chardevs, "usbdev-cmd") {
+            Some(ChardevKind::Pty { path }) => {
+                let tty = serialport::new(
+                    path.to_str().context("TTY path not UTF8")?,
+                    CONSOLE_BAUDRATE,
+                )
+                .open_native()
+                .context("failed to open QEMU usbdev-cmd PTY")?;
+
+                let vbus_sense: Rc<dyn GpioPin> = Rc::new(QemuVbusSense::new(tty));
+                Some(vbus_sense)
+            }
+            _ => {
+                log::info!("could not find pty chardev with id=usbdev, skipping USBDEV");
+                None
+            }
+        };
 
         // QEMU log, not really a UART but modelled as one:
         let log = match find_chardev(&chardevs, "log") {
@@ -194,6 +221,7 @@ impl Qemu {
             monitor,
             reset,
             uarts,
+            vbus_sense,
             log,
             spi,
             i2cs,
@@ -269,6 +297,8 @@ impl Transport for Qemu {
             Ok(Rc::clone(gpio))
         } else if pin == QEMU_RESET_PIN_IDX {
             Ok(Rc::clone(&self.reset))
+        } else if pin == QEMU_VBUS_SENSE_PIN_IDX && self.vbus_sense.is_some() {
+            Ok(Rc::clone(self.vbus_sense.as_ref().unwrap()))
         } else {
             Err(GpioError::InvalidPinNumber(pin).into())
         }
