@@ -18,6 +18,11 @@ ujson_rust(
 )
 
 ujson_rust(
+    name = "aes_gcm_commands_rust",
+    srcs = ["//sw/device/tests/crypto/cryptotest/json:aes_gcm_commands"],
+)
+
+ujson_rust(
     name = "drbg_commands_rust",
     srcs = ["//sw/device/tests/crypto/cryptotest/json:drbg_commands"],
 )
@@ -56,6 +61,7 @@ rust_library(
     name = "cryptotest_commands",
     srcs = [
         "src/aes_commands.rs",
+        "src/aes_gcm_commands.rs",
         "src/commands.rs",
         "src/drbg_commands.rs",
         "src/ecdh_commands.rs",
@@ -69,6 +75,7 @@ rust_library(
     compile_data = [
         ":commands_rust",
         ":aes_commands_rust",
+        ":aes_gcm_commands_rust",
         ":ecdh_commands_rust",
         ":drbg_commands_rust",
         ":ecdsa_commands_rust",
@@ -80,6 +87,7 @@ rust_library(
     rustc_env = {
         "commands_loc": "$(execpath :commands_rust)",
         "aes_commands_loc": "$(execpath :aes_commands_rust)",
+        "aes_gcm_commands_loc": "$(execpath :aes_gcm_commands_rust)",
         "ecdh_commands_loc": "$(execpath :ecdh_commands_rust)",
         "drbg_commands_loc": "$(execpath :drbg_commands_rust)",
         "ecdsa_commands_loc": "$(execpath :ecdsa_commands_rust)",
