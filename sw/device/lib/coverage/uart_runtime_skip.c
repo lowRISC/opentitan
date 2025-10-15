@@ -19,7 +19,7 @@ void coverage_transport_init(void) {
 void coverage_init(void) {}
 
 void coverage_report(void) {
-  dbg_puts("== COVERAGE PROFILE SKIP ==\r\n");
+  dbg_puts("\x10== COVERAGE PROFILE SKIP ==\r\n");
 
   // Wait until the report is sent.
   while (!uart_tx_idle()) {

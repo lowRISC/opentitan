@@ -10,9 +10,9 @@ use rand::Rng;
 use crate::uart::console::ExitStatus;
 use crate::uart::console_plugin::ConsolePlugin;
 
-const COVERAGE_START_ANCHOR: &[u8] = b"== COVERAGE PROFILE START ==\r\n";
-const COVERAGE_END_ANCHOR: &[u8] = b"== COVERAGE PROFILE END ==\r\n";
-const COVERAGE_SKIP_ANCHOR: &[u8] = b"== COVERAGE PROFILE SKIP ==\r\n";
+const COVERAGE_START_ANCHOR: &[u8] = b"\x10== COVERAGE PROFILE START ==\r\n";
+const COVERAGE_END_ANCHOR: &[u8] = b"\x10== COVERAGE PROFILE END ==\r\n";
+const COVERAGE_SKIP_ANCHOR: &[u8] = b"\x10== COVERAGE PROFILE SKIP ==\r\n";
 
 #[derive(Default)]
 pub struct CoveragePlugin {
