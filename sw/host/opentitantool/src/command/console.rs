@@ -14,6 +14,7 @@ use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::io::uart::UartParams;
 use opentitanlib::transport::Capability;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
+use opentitanlib::uart::logging_plugin::LoggingPlugin;
 use opentitanlib::util::raw_tty::RawTty;
 
 #[derive(Debug, Args)]
@@ -63,7 +64,6 @@ impl CommandDispatch for Console {
 
         // Set up resources specified by the command line parameters.
         let mut console = UartConsole {
-            logfile: self.logfile.as_ref().map(File::create).transpose()?,
             timeout: self.timeout,
             exit_success: self
                 .exit_success
@@ -75,8 +75,9 @@ impl CommandDispatch for Console {
                 .as_ref()
                 .map(|s| Regex::new(s.as_str()))
                 .transpose()?,
-            timestamp: self.timestamp,
-            newline: true,
+            logging_plugin: LoggingPlugin::default()
+                .logfile(self.logfile.as_ref().map(File::create).transpose()?)
+                .timestamp(self.timestamp),
             ..Default::default()
         };
 

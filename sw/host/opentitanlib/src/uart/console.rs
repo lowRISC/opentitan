@@ -9,11 +9,12 @@ use std::fs::File;
 use std::io::{ErrorKind, Read, Write};
 use std::os::fd::{AsFd, AsRawFd};
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::time::{Duration, Instant, SystemTime};
+use std::time::{Duration, Instant};
 
 use crate::io::console::{ConsoleDevice, ConsoleError};
 use crate::uart::console_plugin::ConsolePlugin;
 use crate::uart::coverage_plugin::CoveragePlugin;
+use crate::uart::logging_plugin::LoggingPlugin;
 use crate::util::file;
 
 #[derive(Default)]
@@ -29,6 +30,7 @@ pub struct UartConsole {
     pub carriage_return: bool,
     pub break_en: bool,
     pub coverage_plugin: CoveragePlugin,
+    pub logging_plugin: LoggingPlugin,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -54,7 +56,7 @@ impl UartConsole {
         &mut self,
         device: &T,
         mut stdin: Option<&mut dyn ReadAsFd>,
-        mut stdout: Option<&mut dyn Write>,
+        mut _stdout: Option<&mut dyn Write>,
     ) -> Result<ExitStatus>
     where
         T: ConsoleDevice + ?Sized,
@@ -63,10 +65,10 @@ impl UartConsole {
             self.deadline = Some(Instant::now() + *timeout);
         }
         if device.supports_nonblocking_read()? {
-            return self.interact_mio(device, stdin, stdout);
+            return self.interact_mio(device, stdin);
         }
         loop {
-            match self.interact_once(device, &mut stdin, &mut stdout)? {
+            match self.interact_once(device, &mut stdin)? {
                 ExitStatus::None => {}
                 status => return Ok(status),
             }
@@ -79,7 +81,6 @@ impl UartConsole {
         &mut self,
         device: &T,
         mut stdin: Option<&mut dyn ReadAsFd>,
-        mut stdout: Option<&mut dyn Write>,
     ) -> Result<ExitStatus>
     where
         T: ConsoleDevice + ?Sized,
@@ -88,13 +89,13 @@ impl UartConsole {
             // For compatibility with non-mio implementation, an `exit_success` regexp which
             // matches the empty string will result in a single read to clear any buffered
             // characters.
-            self.uart_read(device, Duration::from_millis(10), &mut stdout)?;
+            self.uart_read(device, Duration::from_millis(10))?;
             return Ok(ExitStatus::ExitSuccess);
         }
 
         // HACK(nbdd0121): do a nonblocking read because the UART buffer may still have data in it.
         // If we wait for mio event now, we might be blocking forever.
-        while self.uart_read(device, Duration::from_millis(0), &mut stdout)? {
+        while self.uart_read(device, Duration::from_millis(0))? {
             if let Some(exit_status) = self.exit_status() {
                 return Ok(exit_status);
             }
@@ -144,7 +145,7 @@ impl UartConsole {
                 } else if event.token() == uart_token {
                     // `mio` convention demands that we keep reading until a read returns zero
                     // bytes, otherwise next `poll()` is not guaranteed to notice more data.
-                    while self.uart_read(device, Duration::from_millis(1), &mut stdout)? {
+                    while self.uart_read(device, Duration::from_millis(1))? {
                         if let Some(exit_status) = self.exit_status() {
                             return Ok(exit_status);
                         }
@@ -191,17 +192,15 @@ impl UartConsole {
         if let Some(status) = self.coverage_plugin.exit_status() {
             return Some(status);
         }
+        if let Some(status) = self.logging_plugin.exit_status() {
+            return Some(status);
+        }
 
         self.process_exit_regex()
     }
 
     // Read from the console device and process the data read.
-    fn uart_read<T>(
-        &mut self,
-        device: &T,
-        timeout: Duration,
-        stdout: &mut Option<&mut dyn Write>,
-    ) -> Result<bool>
+    fn uart_read<T>(&mut self, device: &T, timeout: Duration) -> Result<bool>
     where
         T: ConsoleDevice + ?Sized,
     {
@@ -214,35 +213,12 @@ impl UartConsole {
         // Process the received bytes through plugin chain.
         let buf = buf[..len].to_vec();
         let buf = self.coverage_plugin.process_bytes(buf)?;
+        let buf = self.logging_plugin.process_bytes(buf)?;
         let len = buf.len();
         if len == 0 {
             return Ok(true);
         }
 
-        for i in 0..len {
-            if self.timestamp && self.newline {
-                let t = humantime::format_rfc3339_millis(SystemTime::now());
-                stdout.as_mut().map_or(Ok(()), |out| {
-                    out.write_fmt(format_args!("[{}  console]", t))
-                })?;
-                self.newline = false;
-            }
-            self.newline = buf[i] == b'\n';
-            stdout.as_mut().map_or(Ok(()), |out| {
-                out.write_all(if self.newline && !self.carriage_return {
-                    b"\r\n"
-                } else {
-                    &buf[i..i + 1]
-                })
-            })?;
-            self.carriage_return = buf[i] == b'\r';
-        }
-        stdout.as_mut().map_or(Ok(()), |out| out.flush())?;
-
-        // If we're logging, save it to the logfile.
-        self.logfile
-            .as_mut()
-            .map_or(Ok(()), |f| f.write_all(&buf[..len]))?;
         self.append_buffer(&buf[..len]);
         Ok(true)
     }
@@ -291,7 +267,6 @@ impl UartConsole {
         &mut self,
         device: &T,
         stdin: &mut Option<&mut (dyn ReadAsFd)>,
-        stdout: &mut Option<&mut dyn Write>,
     ) -> Result<ExitStatus>
     where
         T: ConsoleDevice + ?Sized,
@@ -313,7 +288,7 @@ impl UartConsole {
         // better way to approach waiting on the UART and keyboard.
 
         // Check for input on the uart.
-        self.uart_read(device, Duration::from_millis(10), stdout)?;
+        self.uart_read(device, Duration::from_millis(10))?;
         if let Some(exit_status) = self.exit_status() {
             return Ok(exit_status);
         }

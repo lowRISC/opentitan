@@ -9,6 +9,7 @@ use std::time::Instant;
 
 use crate::io::uart::Uart;
 use crate::uart::console::{ExitStatus, UartConsole};
+use crate::uart::logging_plugin::LoggingPlugin;
 use crate::util::usr_access::usr_access_get;
 
 pub struct RomDetect {
@@ -22,6 +23,7 @@ impl RomDetect {
             usr_access: usr_access_get(bitstream)?,
             console: UartConsole {
                 timeout,
+                logging_plugin: LoggingPlugin::default().quiet(true),
                 exit_success: Some(Regex::new(r"(\w*ROM):([^\r\n]+)[\r\n]").unwrap()),
                 ..Default::default()
             },
