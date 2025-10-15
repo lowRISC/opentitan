@@ -95,7 +95,14 @@ module csrng_main_sm import csrng_pkg::*; (
         end
         MainSmCmdVld: begin
           cmd_vld_o = 1'b1;
-          if (cmd_rdy_i) state_d = MainSmClrAData;
+          if (cmd_rdy_i) begin
+            if (cmd_complete_i) begin
+              clr_adata_packer_o = 1'b1;
+              state_d = MainSmIdle;
+            end else begin
+              state_d = MainSmClrAData;
+            end
+          end
         end
         MainSmClrAData: begin
           clr_adata_packer_o = 1'b1;

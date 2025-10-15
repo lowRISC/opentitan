@@ -41,31 +41,18 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   input  csrng_upd_data_t    update_rsp_data_i,
 
   // Error status outputs
-  output logic               sm_err_o,
-  output logic         [2:0] fifo_keyvrc_err_o
+  output logic               sm_err_o
 );
-
-  localparam int KeyVRCFifoWidth  = CoreDataWidth + 1;
 
   // signals
   csrng_core_data_t   req_data;
   csrng_core_data_t   prep_core_data;
-  csrng_core_data_t   keyvrc_data;
-  logic               keyvrc_glast;
 
   logic [SeedLen-1:0] prep_seed_material;
   logic  [KeyLen-1:0] prep_key;
   logic  [BlkLen-1:0] prep_v;
   logic  [CtrLen-1:0] prep_rc;
   logic               bypass_upd;
-
-  // keyvrc fifo
-  logic                        sfifo_keyvrc_wvld;
-  logic                        sfifo_keyvrc_wrdy;
-  logic [KeyVRCFifoWidth-1:0]  sfifo_keyvrc_wdata;
-  logic                        sfifo_keyvrc_rvld;
-  logic                        sfifo_keyvrc_rrdy;
-  logic [KeyVRCFifoWidth-1:0]  sfifo_keyvrc_rdata;
 
 
   // Encoding generated with:
@@ -97,7 +84,6 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
 
   // SEC_CM: UPDRSP.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, ReqIdle)
-
 
   //--------------------------------------------
   // Prepare/mux values for update step
@@ -169,9 +155,9 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   always_comb begin
     state_d = state_q;
     req_rdy_o = 1'b0;
+    rsp_vld_o = 1'b0;
     update_req_vld_o = 1'b0;
     update_rsp_rdy_o = 1'b0;
-    sfifo_keyvrc_wvld = 1'b0;
     sm_err_o = 1'b0;
 
     unique case (state_q)
@@ -179,8 +165,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
         if (bypass_upd) begin
           // The update unit is not required for the command at hand and we can
           // complete the request handshake internally.
-          req_rdy_o = enable_i && sfifo_keyvrc_wrdy;
-          sfifo_keyvrc_wvld = req_vld_i;
+          req_rdy_o = enable_i && rsp_rdy_i;
+          rsp_vld_o = req_vld_i;
         end else begin
           // Update unit is required - complete first the request and then the
           // response handshake before asserting the upstrem ready.
@@ -193,8 +179,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
       RspPend: begin
         // We get here after having done a request handshake with the update unit.
         // Now, wait for the response handshake to complete the transaction.
-        sfifo_keyvrc_wvld = update_rsp_vld_i;
-        update_rsp_rdy_o  = sfifo_keyvrc_wrdy;
+        rsp_vld_o = update_rsp_vld_i;
+        update_rsp_rdy_o = rsp_rdy_i;
         if (update_rsp_vld_i && update_rsp_rdy_o) begin
           req_rdy_o = 1'b1;
           state_d = ReqIdle;
@@ -210,65 +196,24 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
     endcase
   end
 
-
-  //--------------------------------------------
-  // final cmd block processing
-  //--------------------------------------------
-
-  prim_fifo_sync #(
-    .Width(KeyVRCFifoWidth),
-    .Pass(0),
-    .Depth(1),
-    .OutputZeroIfEmpty(1'b0)
-  ) u_prim_fifo_sync_keyvrc (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .clr_i   (!enable_i),
-    .wvalid_i(sfifo_keyvrc_wvld),
-    .wready_o(sfifo_keyvrc_wrdy),
-    .wdata_i (sfifo_keyvrc_wdata),
-    .rvalid_o(sfifo_keyvrc_rvld),
-    .rready_i(sfifo_keyvrc_rrdy),
-    .rdata_o (sfifo_keyvrc_rdata),
-    .full_o  (),
-    .depth_o (),
-    .err_o   ()
-  );
-
-  // Route either data from request input or update response into keyvrc FIFO
+  // Route either data from request input or update response to response output
   always_comb begin
-    keyvrc_data  = prep_core_data;
-    keyvrc_glast = req_glast_i;
-    if (prep_core_data.cmd == UNI) begin
+    rsp_data_o  = prep_core_data;
+    rsp_glast_o = req_glast_i;
+    if (req_data_i.cmd == UNI) begin
       // Zeroize everything but inst_id and cmd (?)
-      keyvrc_data = '{default: '0};
-      keyvrc_data.inst_id = prep_core_data.inst_id;
-      keyvrc_data.cmd     = prep_core_data.cmd;
+      rsp_data_o = '{default: '0};
+      rsp_data_o.inst_id = req_data_i.inst_id;
+      rsp_data_o.cmd     = req_data_i.cmd;
     end else if (!bypass_upd) begin
       // Update key and v with values from the update unit if
       // non-zero pdata were provided
-      keyvrc_data.key     = update_rsp_data_i.key;
-      keyvrc_data.v       = update_rsp_data_i.v;
-      keyvrc_data.inst_id = update_rsp_data_i.inst_id;
-      keyvrc_data.cmd     = update_rsp_data_i.cmd;
+      rsp_data_o.key     = update_rsp_data_i.key;
+      rsp_data_o.v       = update_rsp_data_i.v;
+      rsp_data_o.inst_id = update_rsp_data_i.inst_id;
+      rsp_data_o.cmd     = update_rsp_data_i.cmd;
     end
   end
-
-  assign sfifo_keyvrc_wdata = {keyvrc_glast,
-                               keyvrc_data};
-
-  assign sfifo_keyvrc_rrdy = rsp_rdy_i && sfifo_keyvrc_rvld;
-
-  // cmd response output assignments
-  assign {rsp_glast_o,
-          rsp_data_o} = sfifo_keyvrc_rdata;
-
-  assign rsp_vld_o = sfifo_keyvrc_rrdy;
-
-  assign fifo_keyvrc_err_o =
-         {( sfifo_keyvrc_wvld && !sfifo_keyvrc_wrdy),
-          ( sfifo_keyvrc_rrdy && !sfifo_keyvrc_rvld),
-          (!sfifo_keyvrc_wrdy && !sfifo_keyvrc_rvld)};
 
   // Unused signals
   logic [SeedLen-1:0] unused_upd_rsp_pdata;
