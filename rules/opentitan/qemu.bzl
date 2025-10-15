@@ -351,8 +351,10 @@ def _test_dispatch(ctx, exec_env, firmware):
         param["firmware"] = image.short_path
         action_param["firmware"] = image.path
         data_files.append(image)
-    else:
+    elif firmware:
         image = firmware.signed_bin or firmware.default
+    else:
+        image = None
 
     data_files += [exec_env.qemu]
 
