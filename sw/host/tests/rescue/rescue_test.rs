@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(clippy::bool_assert_comparison)]
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use base64ct::{Base64, Decoder};
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
@@ -115,7 +115,6 @@ fn get_device_id_test(
         ))
     }
 }
-
 
 fn get_boot_log_test(
     binary: &Path,
