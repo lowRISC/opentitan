@@ -14,6 +14,13 @@
       "alias_of": "255",
       "level": true,
     },
+    // VBUS control currently has to go through a special QEMU chardev because
+    // QEMU does not yet implement a real pinmux.
+    {
+      "name": "VBUS_SENSE_EN",
+      "alias_of": "254",
+      "level": false,
+    },
     // NOTE: these pins are actually going directly to GPIOs, not through pins.
     // This is okay for straps which have a fixed GPIO, but should not be used
     // for muxed GPIOs.
