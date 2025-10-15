@@ -85,11 +85,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                        acmd_mop;
   logic                        acmd_eop;
 
-  logic                        cmd_blk_select;
-  logic                        gen_blk_select;
-
   logic                        state_db_wr_vld;
-  logic                        state_db_wr_rdy;
   csrng_core_data_t            state_db_wr_data;
   csrng_cmd_sts_e              state_db_wr_sts;
   csrng_state_t                state_db_rd_data;
@@ -112,7 +108,6 @@ module csrng_core import csrng_pkg::*; #(
   logic                        ctr_drbg_cmd_rsp_rdy;
   csrng_core_data_t            ctr_drbg_cmd_rsp_data;
   logic                        ctr_drbg_cmd_rsp_glast;
-  logic                        ctr_drbg_cmd_rsp_wr;
 
   logic                        ctr_drbg_cmd_req_vld;
   logic                        ctr_drbg_cmd_req_rdy;
@@ -296,7 +291,6 @@ module csrng_core import csrng_pkg::*; #(
   logic                 gen_last_q, gen_last_d;
   mubi4_t               flag0_q, flag0_d;
   logic [NumAppsLg-1:0] cmd_arb_idx_q, cmd_arb_idx_d;
-  logic                 statedb_wr_select_q, statedb_wr_select_d;
   logic                 genbits_stage_fips_sw_q, genbits_stage_fips_sw_d;
   logic [CmdWidth-1:0]  cmd_req_ccmd_dly_q, cmd_req_ccmd_dly_d;
   logic                 cs_aes_halt_q, cs_aes_halt_d;
@@ -315,7 +309,6 @@ module csrng_core import csrng_pkg::*; #(
       gen_last_q              <= '0;
       flag0_q                 <= prim_mubi_pkg::MuBi4False;
       cmd_arb_idx_q           <= '0;
-      statedb_wr_select_q     <= '0;
       genbits_stage_fips_sw_q <= '0;
       cmd_req_ccmd_dly_q      <= '0;
       cs_aes_halt_q           <= '0;
@@ -332,7 +325,6 @@ module csrng_core import csrng_pkg::*; #(
       gen_last_q              <= gen_last_d;
       flag0_q                 <= flag0_d;
       cmd_arb_idx_q           <= cmd_arb_idx_d;
-      statedb_wr_select_q     <= statedb_wr_select_d;
       genbits_stage_fips_sw_q <= genbits_stage_fips_sw_d;
       cmd_req_ccmd_dly_q      <= cmd_req_ccmd_dly_d;
       cs_aes_halt_q           <= cs_aes_halt_d;
@@ -786,10 +778,9 @@ module csrng_core import csrng_pkg::*; #(
 
     // Set reseed_cnt_reached_d to true if the max number of generate requests between reseeds
     // has been reached for the respective counter.
-    assign reseed_cnt_reached_d[ai] =
-        state_db_wr_vld && state_db_wr_rdy && (state_db_wr_data.inst_id == ai) ?
-            (state_db_wr_data.rs_ctr >= reg2hw.reseed_interval.q) :
-            reseed_cnt_reached_q[ai];
+    assign reseed_cnt_reached_d[ai] = (state_db_wr_vld && (state_db_wr_data.inst_id == ai)) ?
+                                      (state_db_wr_data.rs_ctr >= reg2hw.reseed_interval.q) :
+                                       reseed_cnt_reached_q[ai];
 
   end : gen_cmd_stage
 
@@ -1092,7 +1083,6 @@ module csrng_core import csrng_pkg::*; #(
   // of each csrng instance. The state
   // is updated after each command.
 
-  assign ctr_drbg_cmd_rsp_wr  = ctr_drbg_cmd_rsp_vld && (ctr_drbg_cmd_rsp_data.cmd != GEN);
   assign state_db_reg_read_en = cs_enable_fo[40] && read_int_state && otp_sw_app_read_en[1];
 
   csrng_state_db u_csrng_state_db (
@@ -1104,7 +1094,6 @@ module csrng_core import csrng_pkg::*; #(
     .rd_state_o  (state_db_rd_data),
 
     .wr_vld_i   (state_db_wr_vld),
-    .wr_rdy_o   (state_db_wr_rdy),
     .wr_data_i  (state_db_wr_data),
     .wr_status_i(state_db_wr_sts),
 
@@ -1123,19 +1112,35 @@ module csrng_core import csrng_pkg::*; #(
     .reseed_counter_o(reseed_counter)
   );
 
-  assign statedb_wr_select_d = (!cs_enable_fo[42]) ? 1'b0 : !statedb_wr_select_q;
 
-  assign cmd_blk_select = !statedb_wr_select_q;
-  assign gen_blk_select =  statedb_wr_select_q;
+  always_comb begin
+    // default: ctr_drbg_gen req <-- ctr_drbg_cmd rsp
+    ctr_drbg_gen_req_vld = ctr_drbg_cmd_rsp_vld;
+    ctr_drbg_cmd_rsp_rdy = ctr_drbg_gen_req_rdy;
+    // default: ctr_drbg_gen rsp --> state_db write
+    state_db_wr_vld  = ctr_drbg_gen_rsp_vld;
+    state_db_wr_data = ctr_drbg_gen_rsp_data;
+    state_db_wr_sts  = ctr_drbg_gen_rsp_sts;
+    ctr_drbg_gen_rsp_rdy = 1'b1; // "state_db_wr_rdy"
 
-  // return to requesting block
-  assign ctr_drbg_cmd_rsp_rdy = (cmd_blk_select && state_db_wr_rdy) && ctr_drbg_gen_req_rdy;
-  assign ctr_drbg_gen_rsp_rdy = gen_blk_select && state_db_wr_rdy;
-
-  // Mux either generate or command stage result to state db
-  assign state_db_wr_vld  = gen_blk_select ? ctr_drbg_gen_rsp_vld  : ctr_drbg_cmd_rsp_wr;
-  assign state_db_wr_data = gen_blk_select ? ctr_drbg_gen_rsp_data : ctr_drbg_cmd_rsp_data;
-  assign state_db_wr_sts  = gen_blk_select ? ctr_drbg_gen_rsp_sts  : CMD_STS_SUCCESS;
+    if (ctr_drbg_cmd_rsp_data.cmd != GEN) begin
+      // If ctr_drbg_cmd needs to access state_db, always grant it
+      ctr_drbg_cmd_rsp_rdy = 1'b1; // "state_db_wr_rdy"
+      if (ctr_drbg_cmd_rsp_vld) begin
+        // Only switch the default routing once an actual transaction from
+        // ctr_drbg_cmd to state_db takes place. Important: To avoid comb loops,
+        // ctr_drbg_cmd_rsp_rdy cannot depend on ctr_drbg_cmd_rsp_vld!
+        // route ctr_drbg_cmd rsp to state_db write
+        state_db_wr_vld  = ctr_drbg_cmd_rsp_vld;
+        state_db_wr_data = ctr_drbg_cmd_rsp_data;
+        state_db_wr_sts  = CMD_STS_SUCCESS;
+        // ctr_drbg_gen must wait (only in theory, in reality two concurrent
+        // requests to state db cannot happen anyways)
+        ctr_drbg_gen_rsp_rdy = 1'b0;
+        ctr_drbg_gen_req_vld = 1'b0;
+      end
+    end
+  end
 
   // Forward the reseed counter values to the register interface.
   always_comb begin : reseed_counter_assign
@@ -1407,8 +1412,6 @@ module csrng_core import csrng_pkg::*; #(
   // of the sequence is done by the
   // csrng_ctr_drbg_cmd block.
 
-  assign ctr_drbg_gen_req_vld = ctr_drbg_cmd_rsp_vld && (ctr_drbg_cmd_rsp_data.cmd == GEN);
-
   csrng_ctr_drbg_gen u_csrng_ctr_drbg_gen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1486,10 +1489,11 @@ module csrng_core import csrng_pkg::*; #(
   logic [SeedLen-1:0] unused_gen_rsp_pdata;
   logic               unused_state_db_inst_state;
 
-  assign unused_err_code_test_bit = (|err_code_test_bit[19:16]) || (|err_code_test_bit[27:26]) ||
+  assign unused_err_code_test_bit = err_code_test_bit[27] || (|err_code_test_bit[19:16]) ||
                                     err_code_test_bit[8] || (|err_code_test_bit[6:5]) ||
                                     err_code_test_bit[2];
-  assign unused_enable_fo = cs_enable_fo[10] || (|cs_enable_fo[8:7]) || cs_enable_fo[4];
+  assign unused_enable_fo = cs_enable_fo[42] || cs_enable_fo[10] || (|cs_enable_fo[8:7]) ||
+                            cs_enable_fo[4];
   assign unused_reg2hw_genbits = (|reg2hw.genbits.q);
   assign unused_int_state_val = (|reg2hw.int_state_val.q);
   assign unused_reseed_interval = reg2hw.reseed_interval.qe;
