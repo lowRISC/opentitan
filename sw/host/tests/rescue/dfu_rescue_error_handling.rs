@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(clippy::bool_assert_comparison)]
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::{Args, Parser, Subcommand, ValueEnum};
 
 use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::io::eeprom::{AddressMode, Transaction, MODE_111};
+use opentitanlib::io::eeprom::{AddressMode, MODE_111, Transaction};
 use opentitanlib::io::spi::SpiParams;
 use opentitanlib::rescue::dfu::{DfuOperations, DfuRequestType};
 use opentitanlib::rescue::{EntryMode, Rescue, RescueMode, RescueParams, SpiDfu, UsbDfu};

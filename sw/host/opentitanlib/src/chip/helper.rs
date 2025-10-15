@@ -9,7 +9,9 @@ use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
 
-use crate::chip::boot_svc::{OwnershipActivateRequest, OwnershipUnlockRequest, UnlockMode, BootSlot};
+use crate::chip::boot_svc::{
+    BootSlot, OwnershipActivateRequest, OwnershipUnlockRequest, UnlockMode,
+};
 use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
 use crate::ownership::{DetachedSignature, OwnershipKeyAlg};
 use crate::util::parse_int::ParseInt;
