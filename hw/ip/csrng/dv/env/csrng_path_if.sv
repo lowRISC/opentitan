@@ -17,8 +17,6 @@ interface csrng_path_if
     case (fifo_name) inside
       "sfifo_cmd", "sfifo_genbits": return {core_path, $sformatf(".gen_cmd_stage[%0d]", app),
                                             ".u_csrng_cmd_stage.", fifo_name, "_", which_path};
-      "sfifo_keyvrc": return {core_path, ".u_csrng_ctr_drbg_cmd.",
-                                                               fifo_name, "_", which_path};
       "sfifo_final": return {core_path, ".u_csrng_ctr_drbg_upd.", fifo_name, "_", which_path};
       "sfifo_gbencack", "sfifo_grcstage", "sfifo_ggenreq", "sfifo_gadstage", "sfifo_ggenbits":
         return {core_path,".u_csrng_ctr_drbg_gen.sfifo_", fifo_name.substr(7, fifo_name.len()-1),
