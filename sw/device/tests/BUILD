@@ -4603,6 +4603,18 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
+    qemu = qemu_params(
+        globals = {
+            # We do not need a full host for this test so just drive VBUS
+            # in override mode.
+            "ot-usbdev.vbus-override": "true",
+        },
+        test_cmd = """
+            --vbus-sense-en=VBUS_SENSE_EN
+            --no-wait-for-usb-device
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usb_harness",
+    ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
@@ -4782,6 +4794,14 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
+    qemu = qemu_params(
+        # Require the PHY_PINS_SENSE register.
+        tags = ["broken"],
+        test_cmd = """
+            --no-wait-for-usb-device
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usb_harness",
+    ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
@@ -4814,6 +4834,12 @@ opentitan_test(
     fpga = fpga_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --no-wait-for-usb-device
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usb_harness",
+    ),
+    qemu = qemu_params(
+        test_cmd = """
             --no-wait-for-usb-device
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
