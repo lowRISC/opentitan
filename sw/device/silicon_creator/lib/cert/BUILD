@@ -211,7 +211,10 @@ cc_library(
 opentitan_test(
     name = "dice_cwt_functest",
     srcs = ["dice_cwt_functest.c"],
-    exec_env = {"//hw/top_earlgrey:fpga_cw310_rom_ext": None},
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
+    },
     deps = [
         ":dice_cwt",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
