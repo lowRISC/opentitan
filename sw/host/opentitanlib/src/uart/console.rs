@@ -5,7 +5,6 @@
 use anyhow::{Result, anyhow, bail};
 use mio::{Events, Interest, Poll, Token};
 use regex::{Captures, Regex};
-use std::fs::File;
 use std::io::{ErrorKind, Read, Write};
 use std::os::fd::{AsFd, AsRawFd};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -19,15 +18,11 @@ use crate::util::file;
 
 #[derive(Default)]
 pub struct UartConsole {
-    pub logfile: Option<File>,
     pub timeout: Option<Duration>,
     pub deadline: Option<Instant>,
     pub exit_success: Option<Regex>,
     pub exit_failure: Option<Regex>,
-    pub timestamp: bool,
     pub buffer: String,
-    pub newline: bool,
-    pub carriage_return: bool,
     pub break_en: bool,
     pub coverage_plugin: CoveragePlugin,
     pub logging_plugin: LoggingPlugin,
@@ -314,8 +309,6 @@ impl UartConsole {
         T: ConsoleDevice + ?Sized,
     {
         let mut console = UartConsole {
-            timestamp: true,
-            newline: true,
             timeout: Some(timeout),
             exit_success: Some(Regex::new(rx)?),
             ..Default::default()
@@ -346,8 +339,6 @@ impl UartConsole {
         T: ConsoleDevice + ?Sized,
     {
         let mut console = UartConsole {
-            timestamp: true,
-            newline: true,
             timeout: Some(timeout),
             coverage_plugin: CoveragePlugin::default().stop_after_report(),
             ..Default::default()

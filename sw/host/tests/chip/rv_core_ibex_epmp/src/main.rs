@@ -67,7 +67,6 @@ fn ibex_epmp_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         timeout: Some(opts.timeout),
         exit_success: Some(Regex::new(r"PASS.*\n")?),
         exit_failure: Some(Regex::new(r"(FAIL|FAULT).*\n")?),
-        newline: true,
         ..Default::default()
     };
 
