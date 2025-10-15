@@ -121,7 +121,8 @@ package chip_env_pkg;
     OtpTypeLcStTestUnlocked2, // Base OTP image in TestUnlocked2 lifecycle state.
     OtpTypeLcStTestLocked0, // Base OTP image in TestUnlocked0 lifecycle state.
     OtpTypeLcStTestLocked1, // Base OTP image in TestUnlocked0 lifecycle state.
-    OtpTypeCustom             // Custom OTP image specified via `sw_images` plusarg.
+    OtpTypeCustom,            // Custom OTP image specified via `sw_images` plusarg.
+    OtpNone // No image provided or pre-loaded
   } otp_type_e;
 
   // Two status for LC JTAG to identify if LC state transition is successful.
