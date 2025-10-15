@@ -447,8 +447,7 @@ def _test_dispatch(ctx, exec_env, firmware):
 
     # Write any QEMU log messages to a file to be read at the end of the test.
     qemu_args += ["-D", "qemu.log"]
-    qemu_args += ["-d", "guest_errors"]
-    qemu_args += ["-d", "unimp"]
+    qemu_args += ["-d", "guest_errors,unimp"]
 
     if param["traces"]:
         traces = json.decode(param["traces"])
