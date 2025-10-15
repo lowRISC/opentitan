@@ -13,6 +13,7 @@ use std::time::{Duration, Instant};
 use crate::io::console::{ConsoleDevice, ConsoleError};
 use crate::uart::console_plugin::ConsolePlugin;
 use crate::uart::coverage_plugin::CoveragePlugin;
+use crate::uart::exit_plugin::ExitPlugin;
 use crate::uart::logging_plugin::LoggingPlugin;
 use crate::util::file;
 
@@ -22,10 +23,10 @@ pub struct UartConsole {
     pub deadline: Option<Instant>,
     pub exit_success: Option<Regex>,
     pub exit_failure: Option<Regex>,
-    pub buffer: String,
     pub break_en: bool,
     pub coverage_plugin: CoveragePlugin,
     pub logging_plugin: LoggingPlugin,
+    pub exit_plugin: ExitPlugin,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -44,7 +45,6 @@ impl<T: Read + AsFd> ReadAsFd for T {}
 impl UartConsole {
     const CTRL_B: u8 = 2;
     const CTRL_C: u8 = 3;
-    const BUFFER_LEN: usize = 32768;
 
     // Runs an interactive console until CTRL_C is received.
     pub fn interact<T>(
@@ -56,6 +56,13 @@ impl UartConsole {
     where
         T: ConsoleDevice + ?Sized,
     {
+        // Migrate to new plugin-based interface
+        if self.exit_success.is_some() || self.exit_failure.is_some() {
+            self.exit_plugin = ExitPlugin::default()
+                .exit_success(self.exit_success.clone())
+                .exit_failure(self.exit_failure.clone());
+        }
+
         if let Some(timeout) = &self.timeout {
             self.deadline = Some(Instant::now() + *timeout);
         }
@@ -80,14 +87,6 @@ impl UartConsole {
     where
         T: ConsoleDevice + ?Sized,
     {
-        if self.exit_success.as_ref().map(|rx| rx.is_match("")) == Some(true) {
-            // For compatibility with non-mio implementation, an `exit_success` regexp which
-            // matches the empty string will result in a single read to clear any buffered
-            // characters.
-            self.uart_read(device, Duration::from_millis(10))?;
-            return Ok(ExitStatus::ExitSuccess);
-        }
-
         // HACK(nbdd0121): do a nonblocking read because the UART buffer may still have data in it.
         // If we wait for mio event now, we might be blocking forever.
         while self.uart_read(device, Duration::from_millis(0))? {
@@ -155,34 +154,6 @@ impl UartConsole {
         Token(TOKEN_COUNTER.fetch_add(1, Ordering::Relaxed))
     }
 
-    // Maintain a buffer for the exit regexes to match against.
-    fn append_buffer(&mut self, data: &[u8]) {
-        self.buffer.push_str(&String::from_utf8_lossy(data));
-        while self.buffer.len() > UartConsole::BUFFER_LEN {
-            self.buffer.remove(0);
-        }
-    }
-
-    fn process_exit_regex(&self) -> Option<ExitStatus> {
-        if self
-            .exit_success
-            .as_ref()
-            .map(|rx| rx.is_match(&self.buffer))
-            == Some(true)
-        {
-            return Some(ExitStatus::ExitSuccess);
-        }
-        if self
-            .exit_failure
-            .as_ref()
-            .map(|rx| rx.is_match(&self.buffer))
-            == Some(true)
-        {
-            return Some(ExitStatus::ExitFailure);
-        }
-        None
-    }
-
     fn exit_status(&mut self) -> Option<ExitStatus> {
         if let Some(status) = self.coverage_plugin.exit_status() {
             return Some(status);
@@ -190,8 +161,10 @@ impl UartConsole {
         if let Some(status) = self.logging_plugin.exit_status() {
             return Some(status);
         }
-
-        self.process_exit_regex()
+        if let Some(status) = self.exit_plugin.exit_status() {
+            return Some(status);
+        }
+        None
     }
 
     // Read from the console device and process the data read.
@@ -209,12 +182,7 @@ impl UartConsole {
         let buf = buf[..len].to_vec();
         let buf = self.coverage_plugin.process_bytes(buf)?;
         let buf = self.logging_plugin.process_bytes(buf)?;
-        let len = buf.len();
-        if len == 0 {
-            return Ok(true);
-        }
-
-        self.append_buffer(&buf[..len]);
+        let _buf = self.exit_plugin.process_bytes(buf)?;
         Ok(true)
     }
 
@@ -291,17 +259,7 @@ impl UartConsole {
     }
 
     pub fn captures(&self, status: ExitStatus) -> Option<Captures> {
-        match status {
-            ExitStatus::ExitSuccess => self
-                .exit_success
-                .as_ref()
-                .and_then(|rx| rx.captures(&self.buffer)),
-            ExitStatus::ExitFailure => self
-                .exit_failure
-                .as_ref()
-                .and_then(|rx| rx.captures(&self.buffer)),
-            _ => None,
-        }
+        self.exit_plugin.captures(status)
     }
 
     pub fn wait_for<T>(device: &T, rx: &str, timeout: Duration) -> Result<Vec<String>>
@@ -310,7 +268,7 @@ impl UartConsole {
     {
         let mut console = UartConsole {
             timeout: Some(timeout),
-            exit_success: Some(Regex::new(rx)?),
+            exit_plugin: ExitPlugin::default().exit_success(Some(Regex::new(rx)?)),
             ..Default::default()
         };
         let mut stdout = std::io::stdout();

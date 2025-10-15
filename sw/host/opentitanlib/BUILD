@@ -238,6 +238,7 @@ rust_library(
         "src/uart/console.rs",
         "src/uart/console_plugin.rs",
         "src/uart/coverage_plugin.rs",
+        "src/uart/exit_plugin.rs",
         "src/uart/logging_plugin.rs",
         "src/uart/mod.rs",
         "src/util/bigint.rs",
