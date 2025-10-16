@@ -11,8 +11,8 @@ use anyhow::{Result, bail};
 use tokio::io::AsyncRead;
 
 use opentitanlib::io::uart::{FlowControl, Parity, Uart};
-use opentitanlib::proxy::protocol::{Request, Response, UartRequest, UartResponse};
 use opentitanlib::util::runtime::MultiWaker;
+use ot_proxy_proto::{Request, Response, UartRequest, UartResponse};
 
 use super::{Inner, Proxy, ProxyError};
 

@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use opentitanlib::io::emu::{EmuState, EmuValue, Emulator};
-use opentitanlib::proxy::protocol::{EmuRequest, EmuResponse, Request, Response};
+use ot_proxy_proto::{EmuRequest, EmuResponse, Request, Response};
 
 use super::{Inner, Proxy, ProxyError};
 

@@ -2,19 +2,20 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Result, bail};
-use handler::TransportCommandHandler;
-use protocol::Message;
-use socket_server::{Connection, JsonSocketServer};
 use std::net::SocketAddr;
 use std::sync::{Arc, Mutex};
+
+use anyhow::{Result, bail};
 use tokio::net::TcpListener;
 
-use crate::app::TransportWrapper;
+use opentitanlib::app::TransportWrapper;
+use ot_proxy_proto::Message;
+
+use handler::TransportCommandHandler;
+use socket_server::{Connection, JsonSocketServer};
 
 mod handler;
 mod nonblocking_uart;
-pub mod protocol;
 mod socket_server;
 
 /// Interface for handlers of protocol messages, responding to each message with a single
@@ -37,7 +38,7 @@ impl SessionHandler {
         // Find a suitable port to bind to.
         let socket = loop {
             let addr = SocketAddr::from(([0u8; 4], port));
-            match crate::util::runtime::block_on(async { TcpListener::bind(addr).await }) {
+            match opentitanlib::util::runtime::block_on(async { TcpListener::bind(addr).await }) {
                 Ok(socket) => break socket,
                 Err(e) if port >= limit => bail!(e),
                 Err(_) => port += 1,
@@ -56,7 +57,7 @@ impl SessionHandler {
     }
 
     pub fn run_loop(&mut self) -> Result<()> {
-        crate::util::runtime::block_on(crate::util::runtime::with_graceful_shutdown(
+        opentitanlib::util::runtime::block_on(opentitanlib::util::runtime::with_graceful_shutdown(
             self.socket_server.run_loop(),
         ))
     }

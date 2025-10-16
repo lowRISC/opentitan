@@ -7,16 +7,14 @@ load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_library", "rust_test")
 package(default_visibility = ["//visibility:public"])
 
 rust_library(
-    name = "proxy",
+    name = "server",
     srcs = [
-        "src/emu.rs",
-        "src/gpio.rs",
-        "src/i2c.rs",
+        "src/handler.rs",
         "src/lib.rs",
-        "src/spi.rs",
-        "src/uart.rs",
+        "src/nonblocking_uart.rs",
+        "src/socket_server.rs",
     ],
-    crate_name = "ot_transport_proxy",
+    crate_name = "ot_proxy",
     deps = [
         "//sw/host/opentitanlib:opentitanlib_base",
         "//sw/host/ot_proxy/proto",
@@ -32,11 +30,11 @@ rust_library(
 )
 
 rust_doc(
-    name = "proxy_doc",
-    crate = ":proxy",
+    name = "server_doc",
+    crate = ":server",
 )
 
 rust_test(
-    name = "proxy_test",
-    crate = ":proxy",
+    name = "server_test",
+    crate = ":server",
 )

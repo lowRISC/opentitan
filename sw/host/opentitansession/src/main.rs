@@ -19,7 +19,7 @@ use std::str::FromStr;
 use std::time::Duration;
 
 use opentitanlib::backend;
-use opentitanlib::proxy::SessionHandler;
+use ot_proxy::SessionHandler;
 
 #[derive(Debug, Parser)]
 #[command(
