@@ -312,7 +312,13 @@ def update_file_attr(name, attr, provider, data_files, param, action_param = Non
             fail("attr must be a single item")
     if type(attr) == "File":
         _update(name, attr, data_files, param, action_param)
-    elif provider and provider in attr:
+        return
+
+    # Propagate runfiles
+    if DefaultInfo in attr:
+        data_files.extend(attr[DefaultInfo].default_runfiles.files.to_list() or [])
+
+    if provider and provider in attr:
         update_file_provider(name, attr[provider], data_files, param, action_param, default)
     elif DefaultInfo in attr:
         # Filter out disassembly files.
