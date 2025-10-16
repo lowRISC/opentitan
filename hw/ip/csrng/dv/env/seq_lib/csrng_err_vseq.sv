@@ -101,7 +101,7 @@ class csrng_err_vseq extends csrng_base_vseq;
 
     case (cfg.which_err_code) inside
       sfifo_cmd_err, sfifo_genbits_err, sfifo_final_err, sfifo_gbencack_err, sfifo_grcstage_err,
-      sfifo_gadstage_err, sfifo_ggenbits_err, sfifo_cmdid_err, sfifo_ggenreq_err: begin
+      sfifo_gadstage_err, sfifo_ggenbits_err, sfifo_cmdid_err: begin
         fld = csr.get_field_by_name(fld_name);
         fifo_base_path = fld_name.substr(0, last_index-1);
 
@@ -113,17 +113,12 @@ class csrng_err_vseq extends csrng_base_vseq;
         `uvm_info(`gfn, $sformatf("Forcing this FIFO error type %s", cfg.which_fifo_err.name()),
                   UVM_MEDIUM)
 
-        if (cfg.which_err_code == sfifo_ggenreq_err) begin
-          force_all_fifo_errs_exception(fifo_forced_paths, fifo_forced_values, path_exts, fld,
-                                        1'b1, cfg.which_fifo_err);
-
         // For sfifo_gadstage_err the down stream FIFO also takes inputs from sources other than
         // sfifo_gadstage. To avoid the propagation of undefined data through CSRNG we need to
         // force the input of sfifo_gbencack to zero. Otherwise this will cause a lot of assertions
         // to trigger and eventually CSRNG will output undefined bits which causes some tlul checks
         // to fail.
-        end else if ((cfg.which_err_code == sfifo_gadstage_err) &&
-                     (cfg.which_fifo_err == fifo_read)) begin
+        if ((cfg.which_err_code == sfifo_gadstage_err) && (cfg.which_fifo_err == fifo_read)) begin
           fifo_forced_path_ds = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert,
                                                                  "sfifo_gbencack", "rdata");
           uvm_hdl_force(fifo_forced_path_ds, 'b0);
@@ -251,26 +246,20 @@ class csrng_err_vseq extends csrng_base_vseq;
         path2 = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert, fifo_name,
                                                  fifo_err_path[1][path_key]);
         if (cfg.which_err_code == fifo_write_err) begin
-          path3 = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert, fifo_name,
-                                                   "wdata");
+          path3 = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert, fifo_name, "wdata");
         end else if (cfg.which_err_code == fifo_read_err) begin
-          path3 = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert, fifo_name,
-                                                   "rdata");
+          path3 = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert, fifo_name, "rdata");
         end
 
         value1 = fifo_err_value[0][path_key];
         value2 = fifo_err_value[1][path_key];
-
-        if ((cfg.which_err_code == fifo_read_error) && (cfg.which_fifo == sfifo_ggenreq)) begin
-          force_fifo_err_exception(path1, path2, 1'b1, 1'b0, 1'b0, fld, 1'b1);
 
         // For sfifo_gadstage the down stream FIFO also takes inputs from sources other than
         // sfifo_gadstage. To avoid the propagation of undefined data through CSRNG we need to
         // force the input of sfifo_gbencack to zero. Otherwise this will cause a lot of assertions
         // to trigger and eventually CSRNG will output undefined bits which causes some tlul checks
         // to fail.
-        end else if ((cfg.which_err_code == fifo_read_error) &&
-                     (cfg.which_fifo == sfifo_gadstage)) begin
+        if ((cfg.which_err_code == fifo_read_error) && (cfg.which_fifo == sfifo_gadstage)) begin
           fifo_forced_path_ds = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert,
                                                                  "sfifo_gbencack", "rdata");
           uvm_hdl_force(fifo_forced_path_ds, 'b0);
@@ -299,10 +288,10 @@ class csrng_err_vseq extends csrng_base_vseq;
         csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
         cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
       end
-      sfifo_cmd_err_test, sfifo_genbits_err_test,
-      sfifo_final_err_test, sfifo_gbencack_err_test, sfifo_grcstage_err_test,
-      sfifo_ggenreq_err_test, sfifo_gadstage_err_test, sfifo_ggenbits_err_test,
-      sfifo_cmdid_err_test, cmd_stage_sm_err_test, main_sm_err_test, drbg_cmd_sm_err_test,
+      sfifo_cmd_err_test, sfifo_genbits_err_test, sfifo_final_err_test,
+      sfifo_gbencack_err_test, sfifo_grcstage_err_test, sfifo_gadstage_err_test,
+      sfifo_ggenbits_err_test, sfifo_cmdid_err_test,
+      cmd_stage_sm_err_test, main_sm_err_test, drbg_cmd_sm_err_test,
       drbg_gen_sm_err_test, drbg_updbe_sm_err_test, drbg_updob_sm_err_test, aes_cipher_sm_err_test,
       cmd_gen_cnt_err_test, fifo_write_err_test, fifo_read_err_test, fifo_state_err_test: begin
         fld = csr.get_field_by_name(fld_name.substr(0, last_index-1));

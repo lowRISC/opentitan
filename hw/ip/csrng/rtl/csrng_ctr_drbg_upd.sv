@@ -421,7 +421,7 @@ module csrng_ctr_drbg_upd import csrng_pkg::*; (
                               updated_key_and_v};
 
   assign sfifo_final_rrdy = rsp_rdy_i && sfifo_final_rvld;
-  assign rsp_vld_o  = sfifo_final_rrdy;
+  assign rsp_vld_o  = sfifo_final_rvld;
   // pdata (in the MSBs) is unused in rsp path
   assign rsp_data_o = csrng_upd_data_t'({{SeedLen{1'b0}}, sfifo_final_rdata});
 
