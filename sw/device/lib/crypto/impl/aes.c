@@ -508,8 +508,7 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
 
     // Comparison.
     HARDENED_CHECK_EQ(
-        hardened_memeq((const uint32_t *)cipher_input.data, output_buf,
-                       cipher_input.len / sizeof(uint32_t)),
+        consttime_memeq_byte(cipher_input.data, output_buf, cipher_input.len),
         kHardenedBoolTrue);
   }
 
