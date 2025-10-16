@@ -124,6 +124,41 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
   return kHardenedBoolFalse;
 }
 
+hardened_bool_t consttime_memeq_byte(const void *lhs, const void *rhs,
+                                     size_t len) {
+  uint32_t zeros = 0;
+  uint32_t ones = UINT32_MAX;
+
+  size_t it = 0;
+  const unsigned char *lh = (const unsigned char *)lhs;
+  const unsigned char *rh = (const unsigned char *)rhs;
+  for (; it < len; ++it, ++lh, ++rh) {
+    const unsigned char a = *lh;
+    const unsigned char b = *rh;
+
+    // Launder one of the operands, so that the compiler cannot cache the result
+    // of the xor for use in the next operation.
+    //
+    // We launder `zeroes` so that compiler cannot learn that `zeroes` has
+    // strictly more bits set at the end of the loop.
+    zeros = launder32(zeros) | (launder32((uint32_t)a) ^ b);
+
+    // Same as above. The compiler can cache the value of `a[offset]`, but it
+    // has no chance to strength-reduce this operation.
+    ones = launder32(ones) & (launder32((uint32_t)a) ^ ~b);
+  }
+
+  HARDENED_CHECK_EQ(it, len);
+
+  if (launder32(zeros) == 0) {
+    HARDENED_CHECK_EQ(ones, UINT32_MAX);
+    return kHardenedBoolTrue;
+  }
+
+  HARDENED_CHECK_NE(ones, UINT32_MAX);
+  return kHardenedBoolFalse;
+}
+
 status_t hardened_xor(const uint32_t *restrict x, const uint32_t *restrict y,
                       size_t word_len, uint32_t *restrict dest) {
   // Randomize the content of the output buffer before writing to it.
