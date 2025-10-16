@@ -38,10 +38,3 @@ sh_binary(
     name = "modid_check",
     srcs = ["modid_check.sh"],
 )
-
-py_binary(
-    name = "qemu_pass",
-    srcs = ["qemu_pass.py"],
-    data = ["//third_party/qemu:qemu-system-riscv32"],
-    deps = ["@rules_python//python/runfiles"],
-)
