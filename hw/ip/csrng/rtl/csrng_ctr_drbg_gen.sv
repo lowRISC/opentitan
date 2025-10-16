@@ -59,7 +59,6 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   output logic              sm_err_o,
   output logic        [2:0] fifo_gbencack_err_o,
   output logic        [2:0] fifo_grcstage_err_o,
-  output logic        [2:0] fifo_ggenreq_err_o,
   output logic        [2:0] fifo_gadstage_err_o,
   output logic        [2:0] fifo_ggenbits_err_o
 );
@@ -69,19 +68,11 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   // FIFO widths. All are 1-element deep.
   // Note: Often, the full width is not utilized but only declared to be able to
   // convienently make use of common struct data types for read- and write data.
-  localparam int GenreqFifoWidth  = CoreDataWidth + 1;
   localparam int AdstageFifoWidth = KeyLen + BlkLen + CtrLen + 2;
   localparam int RCStageFifoWidth = CoreDataWidth + BlkLen + 1;
   localparam int GenbitsFifoWidth = CoreDataWidth + BlkLen;
 
-  // FIFO signals. Five stages in total
-  logic                        sfifo_genreq_wvld;
-  logic                        sfifo_genreq_wrdy;
-  logic  [GenreqFifoWidth-1:0] sfifo_genreq_wdata;
-  logic                        sfifo_genreq_rvld;
-  logic                        sfifo_genreq_rrdy;
-  logic  [GenreqFifoWidth-1:0] sfifo_genreq_rdata;
-
+  // FIFO signals. Four stages in total
   logic                        sfifo_adstage_wvld;
   logic                        sfifo_adstage_wrdy;
   logic [AdstageFifoWidth-1:0] sfifo_adstage_wdata;
@@ -111,15 +102,11 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   logic [GenbitsFifoWidth-1:0] sfifo_genbits_rdata;
 
   // Helper/breakout signals between the FIFO stages
-  logic               genreq_glast;
-  csrng_core_data_t   genreq_data;
-
   logic  [KeyLen-1:0] adstage_key;
   logic  [BlkLen-1:0] adstage_v;
   logic  [CtrLen-1:0] adstage_rs_ctr;
   logic               adstage_fips;
   logic               adstage_glast;
-  logic [SeedLen-1:0] adstage_adata;
 
   logic  [BlkLen-1:0] rcstage_bits;
   logic               rcstage_glast;
@@ -178,52 +165,6 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
     end
   end
 
-  //--------------------------------------------
-  // input request fifo for staging gen request
-  //--------------------------------------------
-
-  csrng_core_data_t cmd_req_data_fifo;
-
-  prim_fifo_sync #(
-    .Width(GenreqFifoWidth),
-    .Pass(0),
-    .Depth(1),
-    .OutputZeroIfEmpty(1'b0)
-  ) u_prim_fifo_sync_genreq (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .clr_i   (!enable_i),
-    .wvalid_i(sfifo_genreq_wvld),
-    .wready_o(sfifo_genreq_wrdy),
-    .wdata_i (sfifo_genreq_wdata),
-    .rvalid_o(sfifo_genreq_rvld),
-    .rready_i(sfifo_genreq_rrdy),
-    .rdata_o (sfifo_genreq_rdata),
-    .full_o  (),
-    .depth_o (),
-    .err_o   ()
-  );
-
-  // Change the command code to an internal one for proper routing in csrng_core
-  always_comb begin
-    cmd_req_data_fifo = cmd_req_data_i;
-    cmd_req_data_fifo.cmd = (cmd_req_data_i.cmd == GEN) ? GENB : INV;
-  end
-
-  assign sfifo_genreq_wdata = {cmd_req_glast_i,
-                               cmd_req_data_fifo};
-
-  assign sfifo_genreq_wvld = enable_i && cmd_req_vld_i;
-  assign cmd_req_rdy_o = sfifo_genreq_wrdy;
-
-  assign {genreq_glast,
-          genreq_data} = sfifo_genreq_rdata;
-
-  assign fifo_ggenreq_err_o =
-         {( sfifo_genreq_wvld && !sfifo_genreq_wrdy),
-          ( sfifo_genreq_rrdy && !sfifo_genreq_rvld),
-          (!sfifo_genreq_wrdy && !sfifo_genreq_rvld)};
-
 
   //--------------------------------------------
   // prepare value for block_encrypt step
@@ -233,10 +174,10 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   // violates the redundant counter encoding listed as a SEC_CM below.
   if (CtrLen < BlkLen) begin : g_ctr_load_lsb
     logic [CtrLen-1:0] v_inc;
-    assign v_inc  = genreq_data.v[CtrLen-1:0] + 1;
-    assign v_load = {genreq_data.v[BlkLen-1:CtrLen], v_inc};
+    assign v_inc  = cmd_req_data_i.v[CtrLen-1:0] + 1;
+    assign v_load = {cmd_req_data_i.v[BlkLen-1:CtrLen], v_inc};
   end else begin : g_ctr_load_full
-    assign v_load = genreq_data.v + 1;
+    assign v_load = cmd_req_data_i.v + 1;
   end
 
   // SEC_CM: DRBG_GEN.CTR.REDUN
@@ -273,11 +214,12 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   // state machine to send values to block_encrypt
   //--------------------------------------------
 
-  // Send genreq data with the altered v
+  // Send genreq data with the altered v, and change the command code
+  // to an internal one for proper routing in csrng_core
   assign block_encrypt_req_data_o = '{
-    inst_id: genreq_data.inst_id,
-    cmd:     genreq_data.cmd,
-    key:     genreq_data.key,
+    inst_id: cmd_req_data_i.inst_id,
+    cmd:     (cmd_req_data_i.cmd == GEN) ? GENB : INV,
+    key:     cmd_req_data_i.key,
     v:       v_ctr_sized
   };
 
@@ -286,7 +228,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
     v_ctr_load = 1'b0;
     v_ctr_inc  = 1'b0;
     sfifo_adstage_wvld = 1'b0;
-    sfifo_genreq_rrdy = 1'b0;
+    cmd_req_rdy_o = 1'b0;
     block_encrypt_req_vld_o = 1'b0;
     sm_err_o = 1'b0;
     es_halt_ack_o = 1'b0;
@@ -299,7 +241,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
           state_d = ESHalt;
         end else if (!enable_i) begin
           state_d = ReqIdle;
-        end else if (sfifo_genreq_rvld && sfifo_adstage_wrdy) begin
+        end else if (cmd_req_vld_i && sfifo_adstage_wrdy) begin
           v_ctr_load = 1'b1;
           state_d = ReqSend;
         end
@@ -312,7 +254,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
           if (block_encrypt_req_rdy_i) begin
             // Write to adstage and empty the genreq FIFO
             sfifo_adstage_wvld = 1'b1;
-            sfifo_genreq_rrdy  = 1'b1;
+            cmd_req_rdy_o = 1'b1;
             // Increment v & back to idle
             v_ctr_inc = 1'b1;
             state_d   = ReqIdle;
@@ -360,11 +302,11 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
     .err_o   ()
   );
 
-  assign sfifo_adstage_wdata = {genreq_glast,
-                                genreq_data.key,
+  assign sfifo_adstage_wdata = {cmd_req_glast_i,
+                                cmd_req_data_i.key,
                                 v_ctr_sized,
-                                genreq_data.rs_ctr,
-                                genreq_data.fips};
+                                cmd_req_data_i.rs_ctr,
+                                cmd_req_data_i.fips};
 
   assign sfifo_adstage_rrdy = sfifo_adstage_rvld && sfifo_bencack_rrdy;
   assign {adstage_glast,
@@ -383,7 +325,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   // - Write from genreq stage if not currently valid
   // - Clear valid upon sending request to update unit (== last generate beat done)
   for (genvar i = 0; i < NumApps; i++) begin : gen_adata
-    assign capt_adata[i] = (sfifo_adstage_wvld && (genreq_data.inst_id == i));
+    assign capt_adata[i] = (sfifo_adstage_wvld && (cmd_req_data_i.inst_id == i));
 
     always_comb begin
       update_adata_vld_d[i] = update_adata_vld_q[i];
@@ -394,15 +336,12 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
         update_adata_d[i]     = '0;
       end else if (capt_adata[i] && !update_adata_vld_q[i]) begin
         update_adata_vld_d[i] = 1'b1;
-        update_adata_d[i]     = genreq_data.pdata;
+        update_adata_d[i]     = cmd_req_data_i.pdata;
       end else if (update_req_vld_o && update_req_rdy_i && (sfifo_bencack_rdata.inst_id == i)) begin
         update_adata_vld_d[i] = 1'b0;
       end
     end
   end
-
-  // Use the number of bits from inst_id actually required to address NumApps to avoid Lint errors
-  assign adstage_adata = update_adata_q[genreq_data.inst_id[$clog2(NumApps)-1:0]];
 
   //--------------------------------------------
   // block_encrypt response fifo from block encrypt
@@ -456,7 +395,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
     cmd:     sfifo_bencack_rdata.cmd,
     key:     adstage_key,
     v:       adstage_v,
-    pdata:   adstage_adata
+    pdata:   update_adata_q[sfifo_bencack_rdata.inst_id[NumAppsLg-1:0]]
   };
 
   //--------------------------------------------
