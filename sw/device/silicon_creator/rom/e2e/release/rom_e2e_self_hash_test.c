@@ -9,7 +9,7 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/lib/chip_info.h"
+#include "sw/device/silicon_creator/lib/build_info.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -38,7 +38,7 @@ enum {
  *    report.
  */
 
-const size_t kGoldenRomSizeBytes = 32652 - sizeof(chip_info_t);
+const size_t kGoldenRomSizeBytes = 32652 - sizeof(build_info_t);
 const uint32_t kSimDvGoldenRomHash[kSha256HashSizeIn32BitWords] = {
     0x25c5b824, 0x428a20dc, 0xc139cfb8, 0xb0b03a5a,
     0xda61df49, 0x00bdab5f, 0x565f383e, 0x58234921,
@@ -67,14 +67,14 @@ status_t hash_rom(void) {
               rom_hash.digest[7], rom_hash.digest[6], rom_hash.digest[5],
               rom_hash.digest[4], rom_hash.digest[3], rom_hash.digest[2],
               rom_hash.digest[1], rom_hash.digest[0]);
-  chip_info_t *rom_chip_info = (chip_info_t *)_chip_info_start;
-  LOG_INFO("rom_chip_info @ %p:", rom_chip_info);
+  build_info_t *rom_build_info = (build_info_t *)_chip_info_start;
+  LOG_INFO("rom_build_info @ %p:", rom_build_info);
   LOG_INFO("scm_revision = %08x%08x",
-           rom_chip_info->scm_revision.scm_revision_high,
-           rom_chip_info->scm_revision.scm_revision_low);
-  LOG_INFO("version = %08x", rom_chip_info->version);
+           rom_build_info->scm_revision.scm_revision_high,
+           rom_build_info->scm_revision.scm_revision_low);
+  LOG_INFO("version = %08x", rom_build_info->version);
 
-  // TODO(#18868) Add checks for the chip_info values we expect to see in the
+  // TODO(#18868) Add checks for the build_info values we expect to see in the
   // released ROM binary.
 
   if (kDeviceType == kDeviceSimDV) {

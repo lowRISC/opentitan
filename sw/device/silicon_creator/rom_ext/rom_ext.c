@@ -524,7 +524,7 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(dice_chain_rom_ext_check());
 
   // Initialize the boot_log in retention RAM.
-  const chip_info_t *rom_chip_info = (const chip_info_t *)_chip_info_start;
+  const build_info_t *rom_chip_info = (const build_info_t *)_chip_info_start;
   boot_log_check_or_init(boot_log, rom_ext_current_slot(), rom_chip_info);
   boot_log->rom_ext_major = self->version_major;
   boot_log->rom_ext_minor = self->version_minor;

@@ -22,7 +22,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/chip_info.h"
+#include "sw/device/silicon_creator/lib/build_info.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #if !OT_IS_ENGLISH_BREAKFAST
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
@@ -155,7 +155,7 @@ bool rom_test_main(void) {
   }
 
   // Print the chip version information
-  LOG_INFO("kChipInfo: scm_revision=%x", kChipInfo.scm_revision);
+  LOG_INFO("kBuildInfo: scm_revision=%x", kBuildInfo.scm_revision);
 
   // Skip sram_init for test_rom
   dif_rstmgr_reset_info_bitfield_t reset_reasons;
