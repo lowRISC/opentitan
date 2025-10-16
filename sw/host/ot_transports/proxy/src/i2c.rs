@@ -9,7 +9,7 @@ use std::time::Duration;
 
 use opentitanlib::io::gpio;
 use opentitanlib::io::i2c::{Bus, DeviceStatus, I2cError, Mode, Transfer};
-use opentitanlib::proxy::protocol::{
+use ot_proxy_proto::{
     I2cRequest, I2cResponse, I2cTransferRequest, I2cTransferResponse, Request, Response,
 };
 

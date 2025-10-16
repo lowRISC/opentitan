@@ -23,11 +23,11 @@ use opentitanlib::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
 use opentitanlib::io::i2c::Bus;
 use opentitanlib::io::spi::Target;
 use opentitanlib::io::uart::Uart;
-use opentitanlib::proxy::protocol::{
+use opentitanlib::transport::{Capabilities, Capability, ProxyOps, Transport, TransportError};
+use ot_proxy_proto::{
     AsyncMessage, Message, ProxyRequest, ProxyResponse, Request, Response, UartRequest,
     UartResponse,
 };
-use opentitanlib::transport::{Capabilities, Capability, ProxyOps, Transport, TransportError};
 
 mod emu;
 mod gpio;

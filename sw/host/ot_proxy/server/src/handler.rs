@@ -10,24 +10,24 @@ use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use super::CommandHandler;
-use super::protocol::{
+use opentitanlib::app::TransportWrapper;
+use opentitanlib::bootstrap::Bootstrap;
+use opentitanlib::io::gpio::{
+    BitbangEntry, DacBangEntry, GpioBitbangOperation, GpioDacBangOperation, GpioPin,
+};
+use opentitanlib::io::{i2c, spi};
+use opentitanlib::transport::TransportError;
+use opentitanlib::util::serializable_error::SerializedError;
+use ot_proxy_proto::{
     BitbangEntryRequest, BitbangEntryResponse, DacBangEntryRequest, EmuRequest, EmuResponse,
     GpioBitRequest, GpioBitResponse, GpioDacRequest, GpioDacResponse, GpioMonRequest,
     GpioMonResponse, GpioRequest, GpioResponse, I2cRequest, I2cResponse, I2cTransferRequest,
     I2cTransferResponse, Message, ProxyRequest, ProxyResponse, Request, Response, SpiRequest,
     SpiResponse, SpiTransferRequest, SpiTransferResponse, UartRequest, UartResponse,
 };
-use crate::app::TransportWrapper;
-use crate::bootstrap::Bootstrap;
-use crate::io::gpio::{
-    BitbangEntry, DacBangEntry, GpioBitbangOperation, GpioDacBangOperation, GpioPin,
-};
-use crate::io::{i2c, spi};
-use crate::proxy::Connection;
-use crate::proxy::nonblocking_uart::NonblockingUartRegistry;
-use crate::transport::TransportError;
-use crate::util::serializable_error::SerializedError;
+
+use super::nonblocking_uart::NonblockingUartRegistry;
+use super::{CommandHandler, Connection};
 
 /// Implementation of the handling of each protocol request, by means of an underlying
 /// `Transport` implementation.

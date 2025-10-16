@@ -11,7 +11,7 @@ use opentitanlib::io::gpio::{
     GpioDacBangOperation, GpioError, GpioMonitoring, GpioPin, MonitoringReadResponse,
     MonitoringStartResponse, PinMode, PullMode,
 };
-use opentitanlib::proxy::protocol::{
+use ot_proxy_proto::{
     BitbangEntryRequest, BitbangEntryResponse, DacBangEntryRequest, GpioBitRequest,
     GpioBitResponse, GpioDacRequest, GpioDacResponse, GpioMonRequest, GpioMonResponse, GpioRequest,
     GpioResponse, Request, Response,

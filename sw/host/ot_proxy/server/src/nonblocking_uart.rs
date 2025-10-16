@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
 use std::collections::HashMap;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::hash::{Hash, Hasher};
@@ -10,8 +9,11 @@ use std::ptr::hash;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex, Weak};
 
+use anyhow::Result;
+
+use opentitanlib::io::uart::Uart;
+
 use super::socket_server::Connection;
-use crate::io::uart::Uart;
 
 pub struct NonblockingUartRegistry {
     // Set of Uart objects in "nonblocking read" mode.  Key is the address of the Uart object.
@@ -113,9 +115,9 @@ impl NonblockingUart {
             for conn in connections.into_iter() {
                 conn.lock()
                     .unwrap()
-                    .transmit_outgoing_msg(super::protocol::Message::Async {
+                    .transmit_outgoing_msg(ot_proxy_proto::Message::Async {
                         channel,
-                        msg: super::protocol::AsyncMessage::UartData {
+                        msg: ot_proxy_proto::AsyncMessage::UartData {
                             data: buf[0..len].to_vec(),
                         },
                     })?

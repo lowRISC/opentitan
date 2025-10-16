@@ -2,20 +2,21 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::bootstrap::BootstrapOptions;
-use crate::io::emu::{EmuState, EmuValue};
-use crate::io::gpio::{
+use serde::{Deserialize, Serialize};
+
+use opentitanlib::bootstrap::BootstrapOptions;
+use opentitanlib::io::emu::{EmuState, EmuValue};
+use opentitanlib::io::gpio::{
     ClockNature, MonitoringReadResponse, MonitoringStartResponse, PinMode, PullMode,
 };
-use crate::io::i2c::DeviceStatus;
-use crate::io::spi::{MaxSizes, TransferMode};
-use crate::io::uart::{FlowControl, Parity};
-use crate::transport::Capabilities;
-use crate::util::serializable_error::SerializedError;
-use crate::util::voltage::Voltage;
+use opentitanlib::io::i2c::DeviceStatus;
+use opentitanlib::io::spi::{MaxSizes, TransferMode};
+use opentitanlib::io::uart::{FlowControl, Parity};
+use opentitanlib::transport::Capabilities;
+use opentitanlib::util::serializable_error::SerializedError;
+use opentitanlib::util::voltage::Voltage;
 
 #[derive(Serialize, Deserialize)]
 pub enum Message {

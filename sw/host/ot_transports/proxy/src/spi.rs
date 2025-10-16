@@ -9,10 +9,10 @@ use opentitanlib::io::gpio;
 use opentitanlib::io::spi::{
     AssertChipSelect, MaxSizes, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
 };
-use opentitanlib::proxy::protocol::{
+use opentitanlib::util::voltage::Voltage;
+use ot_proxy_proto::{
     Request, Response, SpiRequest, SpiResponse, SpiTransferRequest, SpiTransferResponse,
 };
-use opentitanlib::util::voltage::Voltage;
 
 use super::{Inner, Proxy, ProxyError};
 
