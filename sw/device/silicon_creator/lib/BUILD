@@ -6,7 +6,7 @@ load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
-load("//hw/top:defs.bzl", "ALL_IP_NAMES", "opentitan_if_ip", "opentitan_select_top")
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "opentitan_alias_top_attr", "opentitan_if_ip", "opentitan_select_top")
 load("//rules:autogen.bzl", "autogen_chip_info")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
@@ -20,6 +20,12 @@ load(
 load("//rules/opentitan:util.bzl", "flatten")
 
 package(default_visibility = ["//visibility:public"])
+
+opentitan_alias_top_attr(
+    name = "silicon_creator_hooks",
+    attr_name = "silicon_creator_hooks",
+    required = True,
+)
 
 cc_library(
     name = "boot_data_header",
@@ -501,6 +507,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":attestation",
+        ":silicon_creator_hooks",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:dbg_print",
