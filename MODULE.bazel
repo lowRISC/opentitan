@@ -95,19 +95,18 @@ rust.repository_set(
     edition = "2024",
     exec_triple = "x86_64-unknown-linux-gnu",
     sha256s = {
-        "2025-08-01/rustc-nightly-x86_64-unknown-linux-gnu.tar.xz": "9bbeaf5d3fc7247d31463a9083aa251c995cc50662c8219e7a2254d76a72a9a4",
-        "2025-08-01/clippy-nightly-x86_64-unknown-linux-gnu.tar.xz": "9ae5f3cd8f557c4f6df522597c69d14398cf604cfaed2b83e767c4b77a7eaaf6",
-        "2025-08-01/cargo-nightly-x86_64-unknown-linux-gnu.tar.xz": "106463c284e48e4904c717471eeec2be5cc83a9d2cae8d6e948b52438cad2e69",
-        "2025-08-01/llvm-tools-nightly-x86_64-unknown-linux-gnu.tar.xz": "e342e305d7927cc288d386983b2bc253cfad3776b113386e903d0b302648ef47",
-        "2025-08-01/rust-std-nightly-x86_64-unknown-linux-gnu.tar.xz": "3c0ceb46a252647a1d4c7116d9ccae684fa5e42aaf3296419febd2c962c3b41d",
+        "rustc-1.90.0-x86_64-unknown-linux-gnu.tar.xz": "48c2a42de9e92fcae8c24568f5fe40d5734696a6f80e83cc6d46eef1a78f13c9",
+        "clippy-1.90.0-x86_64-unknown-linux-gnu.tar.xz": "5b6466419693a05365827378145014a37ae74fb2948fab390d5210a524792ed8",
+        "cargo-1.90.0-x86_64-unknown-linux-gnu.tar.xz": "9853db03d68578a30972e2755c89c66aec035fec641cf8f3a7117c81eec2578d",
+        "llvm-tools-1.90.0-x86_64-unknown-linux-gnu.tar.xz": "1376ef6021578fcfe94fad66396f7ca6d2f19bda5a417f8746a2b32ccf3f4470",
+        "rust-std-1.90.0-x86_64-unknown-linux-gnu.tar.xz": "663f4ab7945b392d5e5294dec1b050a66820a20e86f084ec37eeb0f2f7ff5569",
     },
     target_compatible_with = [
         "@platforms//cpu:x86_64",
         "@platforms//os:linux",
     ],
     target_triple = "x86_64-unknown-linux-gnu",
-    # Use nightly that Rust 1.90 branches from.
-    versions = ["nightly/2025-08-01"],
+    versions = ["1.90.0"],
 )
 rust.repository_set(
     name = "rust_tock",
