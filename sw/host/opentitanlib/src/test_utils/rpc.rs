@@ -12,6 +12,7 @@ use std::time::Duration;
 use crate::io::console::{ConsoleDevice, ConsoleError};
 use crate::test_utils::status::Status;
 use crate::uart::console::{ExitStatus, UartConsole};
+use crate::uart::logging_plugin::LoggingPlugin;
 
 // Bring in the auto-generated sources.
 include!(env!("ottf"));
@@ -109,8 +110,7 @@ where
     {
         let mut console = UartConsole {
             timeout: Some(timeout),
-            timestamp: true,
-            newline: true,
+            logging_plugin: LoggingPlugin::default().timestamp(true).quiet(quiet),
             exit_success: Some(Regex::new(r"RESP_OK:(.*) CRC:([0-9]+)\n")?),
             exit_failure: Some(Regex::new(r"RESP_ERR:(.*) CRC:([0-9]+)\n")?),
             ..Default::default()
