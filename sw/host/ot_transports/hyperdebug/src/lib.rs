@@ -25,8 +25,8 @@ use opentitanlib::io::i2c::Bus;
 use opentitanlib::io::jtag::{JtagChain, JtagParams};
 use opentitanlib::io::spi::Target;
 use opentitanlib::io::uart::Uart;
+use opentitanlib::io::uart::serial::flock_serial;
 use opentitanlib::transport::common::fpga::{ClearBitstream, FpgaProgram};
-use opentitanlib::transport::common::uart::flock_serial;
 use opentitanlib::transport::{
     Capabilities, Capability, SetJtagPins, Transport, TransportError, TransportInterfaceType,
     UpdateFirmware,
