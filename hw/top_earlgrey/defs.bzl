@@ -19,6 +19,6 @@ EARLGREY_SLOTS_COVERAGE = {
 }
 
 EARLGREY_SLOTS = select({
-    "//rules/coverage:enabled": EARLGREY_SLOTS_COVERAGE,
+    "@lowrisc_opentitan//rules/coverage:enabled": EARLGREY_SLOTS_COVERAGE,
     "//conditions:default": EARLGREY_SLOTS_NORMAL,
 })
