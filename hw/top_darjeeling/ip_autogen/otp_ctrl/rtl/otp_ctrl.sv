@@ -599,17 +599,52 @@ module otp_ctrl
     hw2reg.direct_access_rdata = dai_rdata;
     // ANDing this state with dai_idle write-protects all DAI regs during pending operations.
     hw2reg.direct_access_regwen.d = direct_access_regwen_q & dai_idle;
-    // Report partition errors in the status register; relies upon the field ordering and the
-    // presence of only the scalar signal 'd' in each partition-specific field.
-    hw2reg.status = otp_ctrl_hw2reg_status_reg_t'(part_errors_reduced);
-    // Overwrite the other fields of the status register with specific error conditions.
-    hw2reg.status.timeout_error.d = chk_timeout;
-    hw2reg.status.lfsr_fsm_error.d = lfsr_fsm_err;
+    // Assign these to the status register. Note that the upper most 2 bits of part_errors_reduced
+    // contain the DAI/LCI error. They are treated as normal erorrs and not part of the dedicated
+    // partition status register.
+    hw2reg.status.partition_error.d      = |part_errors_reduced[$bits(part_errors_reduced)-3:0];
+    hw2reg.status.dai_error.d            = part_errors_reduced[DaiIdx];
+    hw2reg.status.lci_error.d            = part_errors_reduced[LciIdx];
+    hw2reg.status.timeout_error.d        = chk_timeout;
+    hw2reg.status.lfsr_fsm_error.d       = lfsr_fsm_err;
     hw2reg.status.scrambling_fsm_error.d = scrmbl_fsm_err;
-    hw2reg.status.key_deriv_fsm_error.d = part_fsm_err[KdiIdx];
-    hw2reg.status.bus_integ_error.d = fatal_bus_integ_error_q;
-    hw2reg.status.dai_idle.d = dai_idle;
-    hw2reg.status.check_pending.d = chk_pending;
+    hw2reg.status.key_deriv_fsm_error.d  = part_fsm_err[KdiIdx];
+    hw2reg.status.bus_integ_error.d      = fatal_bus_integ_error_q;
+    hw2reg.status.dai_idle.d             = dai_idle;
+    hw2reg.status.check_pending.d        = chk_pending;
+
+    // Assign partition status
+    hw2reg.partition_status_0.vendor_test_error.d = part_errors_reduced[VendorTestIdx];
+    hw2reg.partition_status_0.creator_sw_cfg_error.d = part_errors_reduced[CreatorSwCfgIdx];
+    hw2reg.partition_status_0.owner_sw_cfg_error.d = part_errors_reduced[OwnerSwCfgIdx];
+    hw2reg.partition_status_0.ownership_slot_state_error.d =
+      part_errors_reduced[OwnershipSlotStateIdx];
+    hw2reg.partition_status_0.rot_creator_auth_error.d = part_errors_reduced[RotCreatorAuthIdx];
+    hw2reg.partition_status_0.rot_owner_auth_slot0_error.d =
+      part_errors_reduced[RotOwnerAuthSlot0Idx];
+    hw2reg.partition_status_0.rot_owner_auth_slot1_error.d =
+      part_errors_reduced[RotOwnerAuthSlot1Idx];
+    hw2reg.partition_status_0.plat_integ_auth_slot0_error.d =
+      part_errors_reduced[PlatIntegAuthSlot0Idx];
+    hw2reg.partition_status_0.plat_integ_auth_slot1_error.d =
+      part_errors_reduced[PlatIntegAuthSlot1Idx];
+    hw2reg.partition_status_0.plat_owner_auth_slot0_error.d =
+      part_errors_reduced[PlatOwnerAuthSlot0Idx];
+    hw2reg.partition_status_0.plat_owner_auth_slot1_error.d =
+      part_errors_reduced[PlatOwnerAuthSlot1Idx];
+    hw2reg.partition_status_0.plat_owner_auth_slot2_error.d =
+      part_errors_reduced[PlatOwnerAuthSlot2Idx];
+    hw2reg.partition_status_0.plat_owner_auth_slot3_error.d =
+      part_errors_reduced[PlatOwnerAuthSlot3Idx];
+    hw2reg.partition_status_0.ext_nvm_error.d = part_errors_reduced[ExtNvmIdx];
+    hw2reg.partition_status_0.rom_patch_error.d = part_errors_reduced[RomPatchIdx];
+    hw2reg.partition_status_0.hw_cfg0_error.d = part_errors_reduced[HwCfg0Idx];
+    hw2reg.partition_status_0.hw_cfg1_error.d = part_errors_reduced[HwCfg1Idx];
+    hw2reg.partition_status_0.secret0_error.d = part_errors_reduced[Secret0Idx];
+    hw2reg.partition_status_0.secret1_error.d = part_errors_reduced[Secret1Idx];
+    hw2reg.partition_status_0.secret2_error.d = part_errors_reduced[Secret2Idx];
+    hw2reg.partition_status_0.secret3_error.d = part_errors_reduced[Secret3Idx];
+    hw2reg.partition_status_0.life_cycle_error.d = part_errors_reduced[LifeCycleIdx];
     // Error code registers.
     hw2reg.err_code = part_error;
     // Interrupt signals
