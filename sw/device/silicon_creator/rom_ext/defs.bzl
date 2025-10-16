@@ -227,7 +227,7 @@ TEST_OWNER_CONFIGS = {
             "WITH_RESCUE_INDEX=2",
             # GPIO param 3 means enable the internal pull resistor and trigger
             # rescue when the GPIO is high.
-            "WITH_RESCUE_GPIO_PARAM=3",
+            "WITH_RESCUE_MISC_GPIO_PARAM=3",
             # Timeout: 0x80=enter_on_fail, 0x05 = 5 seconds.
             "WITH_RESCUE_TIMEOUT=0x85",
             "WITH_RESCUE_COMMAND_ALLOW=kRescueModeBootSvcReq",
