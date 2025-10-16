@@ -13,9 +13,9 @@ use serialport::SerialPortType;
 use opentitanlib::backend::{Backend, BackendOpts, define_interface};
 use opentitanlib::io::gpio::{GpioPin, PinMode};
 use opentitanlib::io::spi::Target;
-use opentitanlib::io::uart::Uart;
-use opentitanlib::io::uart::UartError;
-use opentitanlib::transport::common::uart::{SerialPortUart, SoftwareFlowControl};
+use opentitanlib::io::uart::flow::SoftwareFlowControl;
+use opentitanlib::io::uart::serial::SerialPortUart;
+use opentitanlib::io::uart::{Uart, UartError};
 use opentitanlib::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };

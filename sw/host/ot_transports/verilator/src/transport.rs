@@ -13,7 +13,8 @@ use regex::Regex;
 
 use opentitanlib::io::gpio::{GpioError, GpioPin};
 use opentitanlib::io::uart::Uart;
-use opentitanlib::transport::common::uart::{SerialPortUart, SoftwareFlowControl};
+use opentitanlib::io::uart::flow::SoftwareFlowControl;
+use opentitanlib::io::uart::serial::SerialPortUart;
 use opentitanlib::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };

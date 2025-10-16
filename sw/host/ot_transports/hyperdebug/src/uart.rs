@@ -8,9 +8,10 @@ use anyhow::{Context, Result};
 use rusb::{Direction, Recipient, RequestType};
 use serialport::Parity;
 
+use opentitanlib::io::uart::flow::SoftwareFlowControl;
+use opentitanlib::io::uart::serial::SerialPortUart;
 use opentitanlib::io::uart::{FlowControl, Uart, UartError};
 use opentitanlib::transport::TransportError;
-use opentitanlib::transport::common::uart::{SerialPortUart, SoftwareFlowControl};
 
 use super::{Inner, UartInterface};
 
