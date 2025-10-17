@@ -356,10 +356,12 @@
               - Force the alert via its peripheral-specific DIF.
               - Enter a `wait_for_interrupt` (WFI) state.
               - Verify that the correct alert IRQ is serviced by the ISR.
-              - Confirm that the Class A alert state becomes "stuck" and cannot
-                be cleared by software.
-              - Trigger a watchdog reset to clear the alert handler state and
-                proceed to the next alert.
+              - Acknowledge the alert.
+              - Verify that attempting to clear the alert class with
+                a single write fails.
+              - Clear the alert class using the shadowed write mechanism.
+              - Verify the class state becomes IDLE. 
+              - Trigger a watchdog reset to proceed to the next alert.
 
             **Phase 2: Reset Test**
             - After completing all IRQ tests, trigger a software reset to transition
@@ -375,7 +377,7 @@
                   was forced as the cause of the reset.
               - Proceed to the next alert in the sequence.
             '''
-      features: ["ALERT_HANDLER.ESCALATION", "ALERT_HANDLER.INTERRUPT"]
+      features: ["ALERT_HANDLER.ESCALATION", "ALERT_HANDLER.INTERRUPT", "ALERT_HANDLER.SHADOWED_REGS"],
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]

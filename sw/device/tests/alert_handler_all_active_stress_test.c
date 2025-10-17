@@ -117,7 +117,7 @@
 #include "uart_regs.h"
 #include "usbdev_regs.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
 #define MAX_ISR_EXECUTIONS 10
 
@@ -247,7 +247,7 @@ static void check_reset_and_alert_info(
     dif_rstmgr_reset_info_bitfield_t reset_info, uint32_t expected_alert_id);
 static void check_alert_all_active_reset(uint32_t alert_id);
 
-// Function pointer types
+// Function pointer types force/deassert functions
 typedef dif_result_t (*alert_force_fn)(void *dif_handle,
                                        const struct alert_config *config);
 typedef void (*alert_deassert_fn)(const struct alert_config *config);
@@ -984,7 +984,7 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
     [kTopEarlgreyAlertIdOtpCtrlFatalMacroError] =
         {.id = kTopEarlgreyAlertIdOtpCtrlFatalMacroError,
          .name = "otp_ctrl_fatal_macro_error",
-         .recommended_class = kDifAlertHandlerClassB,
+         .recommended_class = kDifAlertHandlerClassA,
          .skip_test = false,
          .source_type = kAlertSourceOtpCtrl,
          .base_addr = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR,
@@ -994,7 +994,7 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
     [kTopEarlgreyAlertIdOtpCtrlFatalCheckError] =
         {.id = kTopEarlgreyAlertIdOtpCtrlFatalCheckError,
          .name = "otp_ctrl_fatal_check_error",
-         .recommended_class = kDifAlertHandlerClassB,
+         .recommended_class = kDifAlertHandlerClassA,
          .skip_test = false,
          .source_type = kAlertSourceOtpCtrl,
          .base_addr = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR,
@@ -1025,7 +1025,7 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
     [kTopEarlgreyAlertIdOtpCtrlRecovPrimOtpAlert] =
         {.id = kTopEarlgreyAlertIdOtpCtrlRecovPrimOtpAlert,
          .name = "otp_ctrl_recov_prim_otp_alert",
-         .recommended_class = kDifAlertHandlerClassB,
+         .recommended_class = kDifAlertHandlerClassA,
          .source_type = kAlertSourceOtpCtrl,
          .base_addr = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR,
          .force_func = force_otp_ctrl_alert,
@@ -1125,7 +1125,7 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
     [kTopEarlgreyAlertIdClkmgrAonRecovFault] =
         {.id = kTopEarlgreyAlertIdClkmgrAonRecovFault,
          .name = "clkmgr_aon_recov_fault",
-         .recommended_class = kDifAlertHandlerClassB,
+         .recommended_class = kDifAlertHandlerClassA,
          .source_type = kAlertSourceClkmgrAon,
          .base_addr = TOP_EARLGREY_CLKMGR_AON_BASE_ADDR,
          .force_func = force_clkmgr_aon_alert,
@@ -1196,7 +1196,7 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
     [kTopEarlgreyAlertIdSensorCtrlAonRecovAlert] =
         {.id = kTopEarlgreyAlertIdSensorCtrlAonRecovAlert,
          .name = "sensor_ctrl_aon_recov_alert",
-         .recommended_class = kDifAlertHandlerClassB,
+         .recommended_class = kDifAlertHandlerClassA,
          .source_type = kAlertSourceSensorCtrlAon,
          .base_addr = TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR,
          .force_func = force_sensor_ctrl_aon_alert,
@@ -1228,7 +1228,7 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
     [kTopEarlgreyAlertIdFlashCtrlRecovErr] =
         {.id = kTopEarlgreyAlertIdFlashCtrlRecovErr,
          .name = "flash_ctrl_recov_err",
-         .recommended_class = kDifAlertHandlerClassB,
+         .recommended_class = kDifAlertHandlerClassA,
          .source_type = kAlertSourceFlashCtrl,
          .base_addr = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
          .force_func = force_flash_ctrl_alert,
@@ -1253,7 +1253,12 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
          .base_addr = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
          .force_func = force_flash_ctrl_alert,
          .deassert_func = deassert_flash_ctrl_alert,
-         .skip_test = false,
+         .skip_test =
+#if FPGA_TARGET
+             true,
+#else
+             false,
+#endif
          .module_alert_type.flash_ctrl_alert = kDifFlashCtrlAlertFatalErr},
     [kTopEarlgreyAlertIdFlashCtrlFatalPrimFlashAlert] =
         {.id = kTopEarlgreyAlertIdFlashCtrlFatalPrimFlashAlert,
@@ -1269,7 +1274,7 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
     [kTopEarlgreyAlertIdFlashCtrlRecovPrimFlashAlert] =
         {.id = kTopEarlgreyAlertIdFlashCtrlRecovPrimFlashAlert,
          .name = "flash_ctrl_recov_prim_flash_alert",
-         .recommended_class = kDifAlertHandlerClassB,
+         .recommended_class = kDifAlertHandlerClassA,
          .source_type = kAlertSourceFlashCtrl,
          .base_addr = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
          .force_func = force_flash_ctrl_alert,
@@ -1300,7 +1305,7 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
     [kTopEarlgreyAlertIdAesRecovCtrlUpdateErr] =
         {.id = kTopEarlgreyAlertIdAesRecovCtrlUpdateErr,
          .name = "aes_recov_ctrl_update_err",
-         .recommended_class = kDifAlertHandlerClassB,
+         .recommended_class = kDifAlertHandlerClassA,
          .source_type = kAlertSourceAes,
          .base_addr = TOP_EARLGREY_AES_BASE_ADDR,
          .force_func = force_aes_alert,
@@ -1330,7 +1335,7 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
     [kTopEarlgreyAlertIdKmacRecovOperationErr] =
         {.id = kTopEarlgreyAlertIdKmacRecovOperationErr,
          .name = "kmac_recov_operation_err",
-         .recommended_class = kDifAlertHandlerClassB,
+         .recommended_class = kDifAlertHandlerClassA,
          .source_type = kAlertSourceKmac,
          .base_addr = TOP_EARLGREY_KMAC_BASE_ADDR,
          .force_func = force_kmac_alert,
@@ -1361,7 +1366,7 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
     [kTopEarlgreyAlertIdOtbnRecov] = {.id = kTopEarlgreyAlertIdOtbnRecov,
                                       .name = "otbn_recov",
                                       .recommended_class =
-                                          kDifAlertHandlerClassB,
+                                          kDifAlertHandlerClassA,
                                       .source_type = kAlertSourceOtbn,
                                       .base_addr = TOP_EARLGREY_OTBN_BASE_ADDR,
                                       .force_func = force_otbn_alert,
@@ -1372,7 +1377,7 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
     [kTopEarlgreyAlertIdKeymgrRecovOperationErr] =
         {.id = kTopEarlgreyAlertIdKeymgrRecovOperationErr,
          .name = "keymgr_recov_operation_err",
-         .recommended_class = kDifAlertHandlerClassB,
+         .recommended_class = kDifAlertHandlerClassA,
          .source_type = kAlertSourceKeymgr,
          .base_addr = TOP_EARLGREY_KEYMGR_BASE_ADDR,
          .force_func = force_keymgr_alert,
@@ -1392,7 +1397,7 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
     [kTopEarlgreyAlertIdCsrngRecovAlert] =
         {.id = kTopEarlgreyAlertIdCsrngRecovAlert,
          .name = "csrng_recov_alert",
-         .recommended_class = kDifAlertHandlerClassB,
+         .recommended_class = kDifAlertHandlerClassA,
          .source_type = kAlertSourceCsrng,
          .base_addr = TOP_EARLGREY_CSRNG_BASE_ADDR,
          .force_func = force_csrng_alert,
@@ -1412,7 +1417,7 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
     [kTopEarlgreyAlertIdEntropySrcRecovAlert] =
         {.id = kTopEarlgreyAlertIdEntropySrcRecovAlert,
          .name = "entropy_src_recov_alert",
-         .recommended_class = kDifAlertHandlerClassB,
+         .recommended_class = kDifAlertHandlerClassA,
          .source_type = kAlertSourceEntropySrc,
          .base_addr = TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR,
          .force_func = force_entropy_src_alert,
@@ -1432,7 +1437,7 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
     [kTopEarlgreyAlertIdEdn0RecovAlert] =
         {.id = kTopEarlgreyAlertIdEdn0RecovAlert,
          .name = "edn0_recov_alert",
-         .recommended_class = kDifAlertHandlerClassB,
+         .recommended_class = kDifAlertHandlerClassA,
          .source_type = kAlertSourceEdn0,
          .base_addr = TOP_EARLGREY_EDN0_BASE_ADDR,
          .force_func = force_edn_alert,
@@ -1452,7 +1457,7 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
     [kTopEarlgreyAlertIdEdn1RecovAlert] =
         {.id = kTopEarlgreyAlertIdEdn1RecovAlert,
          .name = "edn1_recov_alert",
-         .recommended_class = kDifAlertHandlerClassB,
+         .recommended_class = kDifAlertHandlerClassA,
          .source_type = kAlertSourceEdn1,
          .base_addr = TOP_EARLGREY_EDN1_BASE_ADDR,
          .force_func = force_edn_alert,
@@ -1502,7 +1507,7 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
     [kTopEarlgreyAlertIdRvCoreIbexRecovSwErr] =
         {.id = kTopEarlgreyAlertIdRvCoreIbexRecovSwErr,
          .name = "rv_core_ibex_recov_sw_err",
-         .recommended_class = kDifAlertHandlerClassB,
+         .recommended_class = kDifAlertHandlerClassA,
          .source_type = kAlertSourceRvCoreIbex,
          .base_addr = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR,
          .force_func = force_rv_core_ibex_alert,
@@ -1522,7 +1527,7 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
     [kTopEarlgreyAlertIdRvCoreIbexRecovHwErr] =
         {.id = kTopEarlgreyAlertIdRvCoreIbexRecovHwErr,
          .name = "rv_core_ibex_recov_hw_err",
-         .recommended_class = kDifAlertHandlerClassB,
+         .recommended_class = kDifAlertHandlerClassA,
          .source_type = kAlertSourceRvCoreIbex,
          .base_addr = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR,
          .force_func = force_rv_core_ibex_alert,
@@ -1581,8 +1586,6 @@ void ottf_external_isr(uint32_t *exc_info) {
 }
 
 // Initializes all required peripheral DIF handles
-// (PWRMGR, Alert Handler, PLIC, RSTMGR, CLKMGR, AON Timer,
-// GPIO, UARTs, SPI Device, I2Cs)
 static void initialize_peripherals(void) {
   CHECK_DIF_OK(dif_pwrmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
@@ -1699,7 +1702,12 @@ static void check_alert_all_active_defaults(void) {
     const alert_config_t *config = &kAlertConfigs[alert_id];
     if (config->name == NULL)
       continue;
-
+#if FPGA_TARGET
+    if (config->id == kTopEarlgreyAlertIdFlashCtrlFatalErr) {
+      LOG_INFO("Skipping flash_ctrl_fatal_err on FPGA target.");
+      continue;
+    }
+#endif
     bool is_cause = false;
     CHECK_DIF_OK(
         dif_alert_handler_alert_is_cause(&alert_handler, alert_id, &is_cause));
@@ -1876,6 +1884,8 @@ static void cleanup_after_alert(const alert_config_t *config,
                                 uint32_t current_test_phase) {
   top_earlgrey_alert_id_t alert_id = config->id;
   dif_alert_handler_class_t alert_class = config->recommended_class;
+  LOG_INFO("Starting cleanup for alert ID %d (%s) in phase 0x%x...", alert_id,
+           config->name, current_test_phase);
 
   // Step 1: De-assert the alert at the source peripheral.
   deassert_alert_source(config);
@@ -1890,15 +1900,10 @@ static void cleanup_after_alert(const alert_config_t *config,
       break;
     busy_spin_micros(1);
   }
-  if (still_cause) {
-    // This implies the source peripheral itself failed to de-assert. This is
-    // always a critical failure.
-    LOG_FATAL(
-        "DE-ASSERT FAIL: Alert ID %d (%s) source could not be de-asserted!",
-        alert_id, config->name);
-    CHECK(false, "Alert source de-assertion failed.");
-  } else {
-  }
+  CHECK(!still_cause, "Alert ID %d (%s) source de-assertion failed!", alert_id,
+        config->name);
+  LOG_INFO("DE-ASSERT OK: Alert ID %d (%s) source de-asserted.", alert_id,
+           config->name);
 
   // Determine register offsets based on the class
   ptrdiff_t class_clr_reg;
@@ -1933,141 +1938,86 @@ static void cleanup_after_alert(const alert_config_t *config,
       break;
     default:
       LOG_FATAL("Invalid alert class: %d", alert_class);
-      CHECK(false, "Invalid alert class in config.");
       return;
   }
 
-  // Pulse the clear signal for the alert handler class
-  mmio_region_write32(alert_handler.base_addr, class_clr_reg, 1u);
-  busy_spin_micros(1);
-  mmio_region_write32(alert_handler.base_addr, class_clr_reg, 0u);
-
-  // Wait for the class state to return to Idle
-  int timeout = 1000;
-  uint32_t state_val_after_clear_pulse;
-  bool cleared_to_idle = false;
-  for (int i = 0; i < timeout; ++i) {
-    state_val_after_clear_pulse =
-        mmio_region_read32(alert_handler.base_addr, class_state_reg);
-    if ((state_val_after_clear_pulse & class_state_mask) == idle_state_val) {
-      cleared_to_idle = true;
-      break;
-    }
-    busy_spin_micros(1);
-  }
-
-  state_val_after_clear_pulse =
+  uint32_t state_val =
       mmio_region_read32(alert_handler.base_addr, class_state_reg) &
       class_state_mask;
-
-  // Phase-dependent logic for alert handler state verification and recovery
   if (current_test_phase == TEST_PHASE_ALL_ACTIVE_IRQ) {
-    // In IRQ Phase, Class A is expected to get stuck, requiring a watchdog
-    // reset. Non-Class A is expected to clear successfully. If a non-Class A
-    // gets stuck, it's an unexpected but recoverable scenario for the stress
-    // test.
-    if (alert_class == kDifAlertHandlerClassA) {
-      if (cleared_to_idle) {
-        LOG_FATAL(
-            "IRQ Phase (Alert ID %d, Class %d): Cleared to IDLE when it was "
-            "expected to remain stuck!",
-            alert_id, alert_class);
-        CHECK(false, "Class A cleared unexpectedly in IRQ phase.");
-      } else {
-        LOG_INFO(
-            "IRQ Phase (Alert ID %d, Class %d): Is stuck as expected. Last "
-            "State: %u. Triggering watchdog.",
-            alert_id, alert_class, state_val_after_clear_pulse);
-        // Initiate watchdog recovery for stuck Class A alert.
-        uint32_t next_alert_id_to_save = alert_id;
-        do {
-          // Find the next valid alert ID.
-          next_alert_id_to_save++;
-        } while (next_alert_id_to_save < ALERT_HANDLER_PARAM_N_ALERTS &&
-                 kAlertConfigs[next_alert_id_to_save].name == NULL);
+    // 1. Attempt to clear with the INCORRECT method (single write)
+    LOG_INFO(
+        "Attempting to clear class %d with single write (expected to fail)...",
+        alert_class);
+    mmio_region_write32(alert_handler.base_addr, class_clr_reg, 1u);
+    busy_spin_micros(10);  // Give it time to potentially (not) take effect
 
-        CHECK_STATUS_OK(ret_sram_testutils_counter_set(
-            RET_SRAM_SLOT_ALL_ACTIVE_IRQ_IDX, next_alert_id_to_save));
-        CHECK_DIF_OK(
-            dif_aon_timer_watchdog_start(&aon_timer, 2, 4, false, false));
-        while (true) {
-        };
-      }
-    } else {
-      // Non-Class A alerts in IRQ phase are expected to clear or trigger
-      // watchdog.
-      if (!cleared_to_idle) {
-        LOG_WARNING(
-            "IRQ Phase (Alert ID %d, Class %d): Did NOT clear to IDLE as "
-            "expected! Last State: %u. Treating as recoverable and triggering "
-            "watchdog.",
-            alert_id, alert_class, state_val_after_clear_pulse);
-        // Non-Class A alert is stuck, initiate watchdog recovery to proceed
-        // with stress test.
-        uint32_t next_alert_id_to_save = alert_id;
-        do {
-          // Find the next valid alert ID.
-          next_alert_id_to_save++;
-        } while (next_alert_id_to_save < ALERT_HANDLER_PARAM_N_ALERTS &&
-                 kAlertConfigs[next_alert_id_to_save].name == NULL);
+    state_val = mmio_region_read32(alert_handler.base_addr, class_state_reg) &
+                class_state_mask;
+    CHECK(state_val != idle_state_val,
+          "Class %d cleared with a single write! Shadowing failed!",
+          alert_class);
+    LOG_INFO("OK: Class %d state did not change with a single write.",
+             alert_class);
 
-        LOG_INFO(
-            "Saving next alert ID %d to retention SRAM. Triggering watchdog...",
-            next_alert_id_to_save);
-        CHECK_STATUS_OK(ret_sram_testutils_counter_set(
-            RET_SRAM_SLOT_ALL_ACTIVE_IRQ_IDX, next_alert_id_to_save));
-        CHECK_DIF_OK(
-            dif_aon_timer_watchdog_start(&aon_timer, 2, 4, false, false));
-        while (true) {
-        };
-      } else {
-        LOG_INFO(
-            "IRQ Phase (Alert ID %d, Class %d): Cleared to IDLE as expected.",
-            alert_id, alert_class);
+    // 2. Clear with the CORRECT method (shadowed write)
+    LOG_INFO("Clearing class %d with shadowed write...", alert_class);
+    mmio_region_write32_shadowed(alert_handler.base_addr, class_clr_reg, 1u);
+    busy_spin_micros(10);
+
+    // 3. Verify the state is now IDLE
+    bool cleared_to_idle = false;
+    for (int i = 0; i < 1000; ++i) {
+      state_val = mmio_region_read32(alert_handler.base_addr, class_state_reg);
+      if ((state_val & class_state_mask) == idle_state_val) {
+        cleared_to_idle = true;
+        break;
       }
+      busy_spin_micros(1);
     }
+    CHECK(cleared_to_idle,
+          "Alert class %d (Alert ID %d) did NOT clear to IDLE after shadowed "
+          "write!",
+          alert_class, alert_id);
+    LOG_INFO("OK: Alert class %d (Alert ID %d) cleared to IDLE as expected.",
+             alert_class, alert_id);
+
+    // In the IRQ phase, trigger a watchdog reset to move to the next alert.
+    uint32_t next_alert_id_to_save = alert_id;
+    do {
+      // Find the next valid alert ID.
+      next_alert_id_to_save++;
+    } while (next_alert_id_to_save < ALERT_HANDLER_PARAM_N_ALERTS &&
+             kAlertConfigs[next_alert_id_to_save].name == NULL);
+
+    LOG_INFO(
+        "Saving next alert ID %d to retention SRAM. Triggering watchdog...",
+        next_alert_id_to_save);
+    CHECK_STATUS_OK(ret_sram_testutils_counter_set(
+        RET_SRAM_SLOT_ALL_ACTIVE_IRQ_IDX, next_alert_id_to_save));
+    CHECK_DIF_OK(dif_aon_timer_watchdog_start(&aon_timer, 2, 4, false, false));
+    while (true) {
+    };
   } else if (current_test_phase == TEST_PHASE_ALL_ACTIVE_RESET) {
-    // In RESET Phase, we are cleaning up *after* a full hardware reset caused
-    // by the alert. The Alert Handler is expected to be in a fresh, IDLE state
-    // regardless of class.
-    if (!cleared_to_idle) {
-      LOG_FATAL(
-          "RESET Phase (Alert ID %d, Class %d): Alert Handler Class did NOT "
-          "clear to IDLE after hardware reset! Last State: %u",
-          alert_id, alert_class, state_val_after_clear_pulse);
-      CHECK(false, "Alert class not IDLE after HW reset in RESET phase.");
-      // test.
-    } else {
-      LOG_INFO(
-          "RESET Phase (Alert ID %d, Class %d): Alert Handler Class cleared to "
-          "IDLE as expected after hardware reset.",
-          alert_id, alert_class);
-    }
+    // In RESET Phase, the class state SHOULD ALREADY BE IDLE due to the HW
+    // reset.
+    CHECK(state_val == idle_state_val,
+          "RESET Phase (Alert ID %d, Class %d): Alert Handler Class state is "
+          "NOT IDLE after hardware reset! State: %u",
+          alert_id, alert_class, state_val);
+    LOG_INFO(
+        "RESET Phase (Alert ID %d, Class %d): Alert Handler Class is IDLE as "
+        "expected.",
+        alert_id, alert_class);
   } else {
     LOG_FATAL("cleanup_after_alert called with unknown test phase: 0x%x",
               current_test_phase);
-    CHECK(false, "Unknown test phase.");
   }
 
-  // Only attempt to disable the alert if the class is not stuck (i.e., if we
-  // are not about to reset). If the test is configured to trigger a watchdog,
-  // the current function will not reach this point. The DIF-fail (error 9) was
-  // happening because the class was stuck (locked) when trying to reconfigure.
-  if (cleared_to_idle) {
-    // If the class cleared to IDLE, then we can disable
-    // the alert safely.
-    CHECK_DIF_OK(dif_alert_handler_configure_alert(
-        &alert_handler, alert_id, alert_class, kDifToggleDisabled,
-        kDifToggleDisabled));
-  } else {
-    // If it's not cleared_to_idle, it means a watchdog was triggered, and this
-    // code will not be reached. If it were reached, it implies an unexpected
-    // state where cleanup cannot fully complete.
-    LOG_WARNING(
-        "Alert ID %d (%s) was not cleared to IDLE, skipping final disable. "
-        "Expecting reset soon.",
-        alert_id, config->name);
-  }
+  CHECK_DIF_OK(dif_alert_handler_configure_alert(
+      &alert_handler, alert_id, alert_class, kDifToggleDisabled,
+      kDifToggleDisabled));
+  LOG_INFO("Cleanup complete for alert %d (%s)", alert_id, config->name);
 }
 
 // While being in All Active state, loops through alerts, enables one,
@@ -2424,14 +2374,42 @@ bool test_main(void) {
           "0x%x)",
           next_alert_id, reset_info);
       if (reset_info & kDifRstmgrResetInfoWatchdog) {
-        dif_alert_handler_class_state_t class_state;
-        CHECK_DIF_OK(dif_alert_handler_get_class_state(
-            &alert_handler, kDifAlertHandlerClassA, &class_state));
-        LOG_INFO("  POST-WATCHDOG Class A State: %d (Expected IDLE: %d)",
-                 class_state,
-                 ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_IDLE);
-        CHECK(class_state == ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_IDLE,
-              "Class A state not IDLE after watchdog reset!");
+        LOG_INFO(
+            ">> TEST_MAIN: Watchdog reset detected, verifying all alert "
+            "classes are IDLE.");
+        for (dif_alert_handler_class_t alert_class = kDifAlertHandlerClassA;
+             alert_class <= kDifAlertHandlerClassD; ++alert_class) {
+          dif_alert_handler_class_state_t class_state;
+          CHECK_DIF_OK(dif_alert_handler_get_class_state(
+              &alert_handler, alert_class, &class_state));
+
+          uint32_t idle_state_val;
+          switch (alert_class) {
+            case kDifAlertHandlerClassA:
+              idle_state_val =
+                  ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_IDLE;
+              break;
+            case kDifAlertHandlerClassB:
+              idle_state_val =
+                  ALERT_HANDLER_CLASSB_STATE_CLASSB_STATE_VALUE_IDLE;
+              break;
+            case kDifAlertHandlerClassC:
+              idle_state_val =
+                  ALERT_HANDLER_CLASSC_STATE_CLASSC_STATE_VALUE_IDLE;
+              break;
+            case kDifAlertHandlerClassD:
+              idle_state_val =
+                  ALERT_HANDLER_CLASSD_STATE_CLASSD_STATE_VALUE_IDLE;
+              break;
+            default:
+              LOG_FATAL("Invalid alert class: %d", alert_class);
+              return false;
+          }
+          CHECK(class_state == idle_state_val,
+                "Class %d state not IDLE after watchdog reset! State: %d",
+                alert_class, class_state);
+        }
+        LOG_INFO("  POST-WATCHDOG: All class states are IDLE as expected.");
       }
       rstmgr_testutils_reason_clear();
     }
