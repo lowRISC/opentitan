@@ -11,12 +11,13 @@ set -e
 qemu=__qemu__
 qemu_args=( __qemu_args__  )
 test_harness="__test_harness__"
-mutable_flash="__mutable_flash__"
-mutable_otp="__mutable_otp__"
 otp="__otp__"
 flash="__flash__"
 test_cmd=( __test_cmd__ )
 args=( __args__ )
+
+mutable_flash="flash_img.bin"
+mutable_otp="otp_img.raw"
 
 test_args=( "$@" )
 qemu_test_args=()
