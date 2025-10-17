@@ -8,7 +8,7 @@ use anyhow::Result;
 use clap::Parser;
 use regex::Regex;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::chip::boolean::MultiBitBool8;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::execute_test;
@@ -24,12 +24,12 @@ struct Opts {
     init: InitializeTest,
 }
 
-fn reset(transport: &TransportWrapper, strappings: &[&str], reset_delay: Duration) -> Result<()> {
+fn reset_target(transport: &TransportWrapper, strappings: &[&str]) -> Result<()> {
     log::info!("Resetting target...");
     for strapping in strappings.iter() {
         transport.pin_strapping(strapping)?.apply()?;
     }
-    transport.reset_target(reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     // we want to hold the strapping configuration here because in some life cycle states,
     // the tap multiplexing is dynamic so remove the tap strap would actually change the tap
     Ok(())
@@ -39,7 +39,7 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Reset the device
     let uart = transport.uart("console")?;
 
-    reset(transport, &[], opts.init.bootstrap.options.reset_delay)?;
+    reset_target(transport, &[])?;
     const CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
 
     let mut console = UartConsole {
@@ -53,11 +53,7 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     //
     // Test the RISC-V TAP
     //
-    reset(
-        transport,
-        &["PINMUX_TAP_RISCV"],
-        opts.init.bootstrap.options.reset_delay,
-    )?;
+    reset_target(transport, &["PINMUX_TAP_RISCV"])?;
 
     let mut jtag = opts
         .init
@@ -181,11 +177,7 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     //
     // Test the LC TAP
     //
-    reset(
-        transport,
-        &["PINMUX_TAP_LC"],
-        opts.init.bootstrap.options.reset_delay,
-    )?;
+    reset_target(transport, &["PINMUX_TAP_LC"])?;
 
     let mut jtag = opts
         .init

@@ -11,7 +11,7 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use object::{Object, ObjectSymbol};
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::uart::{Parity, Uart};
 use opentitanlib::test_utils;
@@ -66,7 +66,7 @@ fn main() -> Result<()> {
     let uart_console = transport.uart("console")?;
 
     for uart_id in 0..4 {
-        transport.reset_target(Duration::from_millis(500), true)?;
+        transport.reset_with_delay(UartRx::Clear, Duration::from_millis(500))?;
 
         let test_data = TestData {
             tx_rx_data: &tx_rx_data,

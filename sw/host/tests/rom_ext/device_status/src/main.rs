@@ -6,7 +6,7 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use std::time::Duration;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
@@ -41,7 +41,7 @@ struct Opts {
 fn check_device_status(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Reset the chip, select the LC TAP, and connect to it.
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let mut jtag = opts
         .init
         .jtag_params

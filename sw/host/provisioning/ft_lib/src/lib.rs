@@ -19,7 +19,7 @@ use cert_lib::{
     validate_cwt_dice_chain,
 };
 use ft_ext_lib::{ft_inject_certs_ext, ft_post_boot_ext};
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::io::jtag::{JtagParams, JtagTap, RiscvGpr, RiscvReg};
@@ -44,12 +44,11 @@ use util_lib::response::*;
 pub fn test_unlock(
     transport: &TransportWrapper,
     jtag_params: &JtagParams,
-    reset_delay: Duration,
     test_unlock_token: &ArrayVec<u32, 4>,
 ) -> Result<()> {
     // Connect to LC TAP.
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
-    transport.reset_target(reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let mut jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
 
     // Check that LC state is currently `TEST_LOCKED0`.
@@ -65,7 +64,6 @@ pub fn test_unlock(
         Some(test_unlock_token.clone().into_inner().unwrap()),
         /*use_external_clk=*/
         false, // AST will be calibrated by now, so no need for ext_clk.
-        reset_delay,
         /*reset_tap_straps=*/ Some(JtagTap::LcTap),
     )?;
 
@@ -85,7 +83,6 @@ pub fn test_unlock(
 pub fn run_sram_ft_individualize(
     transport: &TransportWrapper,
     jtag_params: &JtagParams,
-    reset_delay: Duration,
     sram_program: &SramProgramParams,
     ft_individualize_data_in: &ManufFtIndividualizeData,
     spi_console: &SpiConsoleDevice,
@@ -97,7 +94,7 @@ pub fn run_sram_ft_individualize(
 
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let mut jtag = jtag_params.create(transport)?.connect(JtagTap::RiscvTap)?;
 
     // Reset and halt the CPU to ensure we are in a known state, and clear out any ROM messages
@@ -152,7 +149,6 @@ pub fn run_sram_ft_individualize(
 pub fn test_exit(
     transport: &TransportWrapper,
     jtag_params: &JtagParams,
-    reset_delay: Duration,
     test_exit_token: &ArrayVec<u32, 4>,
     target_mission_mode_lc_state: DifLcCtrlState,
 ) -> Result<()> {
@@ -196,7 +192,6 @@ pub fn test_exit(
         Some(test_exit_token.clone().into_inner().unwrap()),
         /*use_external_clk=*/
         false, // AST will be calibrated by now, so no need for ext_clk.
-        reset_delay,
         /*reset_tap_straps=*/ None,
     )?;
 
@@ -677,12 +672,11 @@ pub fn run_ft_personalize(
 
 pub fn check_slot_b_boot_up(
     transport: &TransportWrapper,
-    init: &InitializeTest,
     timeout: Duration,
     response: &mut PersonalizeResponse,
     owner_fw_success_string: Option<String>,
 ) -> Result<()> {
-    transport.reset_target(init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let uart_console = transport.uart("console")?;
 
     // The ROM_EXT used to print "Starting ROM_EXT 0.1", but we cleaned up the
