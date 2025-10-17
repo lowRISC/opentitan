@@ -1086,25 +1086,46 @@ impl TransportWrapper {
     }
 
     pub fn reset_target(&self, reset_delay: Duration, clear_uart_rx: bool) -> Result<()> {
+        let uart_rx = match clear_uart_rx {
+            true => UartRx::Clear,
+            false => UartRx::Keep,
+        };
+        self.reset_with_delay(uart_rx, reset_delay)
+    }
+
+    /// Reset the target, optionally clearing the console UART RX.
+    pub fn reset(&self, uart_rx: UartRx) -> Result<()> {
+        self.reset_with_delay(uart_rx, Duration::from_millis(100))
+    }
+
+    /// Reset the target with some delay, optionally clearing the console UART RX.
+    pub fn reset_with_delay(&self, uart_rx: UartRx, delay: Duration) -> Result<()> {
         log::info!("Asserting the reset signal");
+
         if self.disable_dft_on_reset.get() {
             self.pin_strapping("PRERESET_DFT_DISABLE")?.apply()?;
         }
+
         self.pin_strapping("RESET")?.apply()?;
-        std::thread::sleep(reset_delay);
-        if clear_uart_rx {
+        std::thread::sleep(delay);
+
+        if uart_rx == UartRx::Clear {
             log::info!("Clearing the UART RX buffer");
             self.uart("console")?.clear_rx_buffer()?;
         }
+
         log::info!("Deasserting the reset signal");
         self.pin_strapping("RESET")?.remove()?;
+
         if self.disable_dft_on_reset.get() {
             std::thread::sleep(Duration::from_millis(10));
             // We remove the DFT strapping after waiting some time, as the DFT straps should have been
             // sampled by then and we can resume our desired pin configuration.
             self.pin_strapping("PRERESET_DFT_DISABLE")?.remove()?;
         }
-        std::thread::sleep(reset_delay);
+
+        std::thread::sleep(delay);
+
         Ok(())
     }
 
@@ -1123,6 +1144,12 @@ impl TransportWrapper {
         }))?;
         Ok(ret.unwrap())
     }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum UartRx {
+    Clear,
+    Keep,
 }
 
 /// Given an pin/uart/spi/i2c port name, if the name is a known alias, return the underlying
