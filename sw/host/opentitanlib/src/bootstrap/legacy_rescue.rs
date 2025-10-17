@@ -254,16 +254,17 @@ impl LegacyRescue {
 
     /// Reset the chip and send the magic 'r' character at the opportune moment during boot in
     /// order to enter rescue more, repeat if necessary.
-    fn enter_rescue_mode(&self, container: &Bootstrap, uart: &dyn Uart) -> Result<()> {
+    fn enter_rescue_mode(
+        &self,
+        transport: &TransportWrapper,
+        container: &Bootstrap,
+        uart: &dyn Uart,
+    ) -> Result<()> {
         // Attempt getting the attention of the bootloader.
         let timeout = Duration::from_millis(2000);
         for _ in 0..Self::MAX_CONSECUTIVE_ERRORS {
             eprint!("Resetting...");
-            container.reset_pin.write(false)?; // Low active
-            uart.write(&[3])?; // Send a character to ensure that HyperDebug UART->USB
-            // forwarding has "woken up", see issue #19564.
-            self.flush_rx(uart, container.reset_delay);
-            container.reset_pin.write(true)?; // Release reset
+            transport.reset_target(container.reset_delay, true)?;
 
             let stopwatch = Instant::now();
             while stopwatch.elapsed() < timeout {
@@ -321,7 +322,7 @@ impl UpdateProtocol for LegacyRescue {
         let frames = Frame::from_payload(payload)?;
         let uart = container.uart_params.create(transport)?;
 
-        self.enter_rescue_mode(container, &*uart)?;
+        self.enter_rescue_mode(transport, container, &*uart)?;
 
         // Send frames one at a time.
         progress.new_stage("", frames.len() * Frame::DATA_LEN);
@@ -364,11 +365,12 @@ impl UpdateProtocol for LegacyRescue {
         }
 
         // Reset, in order to leave rescue mode.
-        container.reset_pin.write(false)?; // Low active
-        if !container.leave_in_reset {
-            std::thread::sleep(container.reset_delay);
-            container.reset_pin.write(true)?; // Release reset
+        if container.leave_in_reset {
+            container.reset_pin.write(false)?; // Low active
+        } else {
+            transport.reset_target(container.reset_delay, false)?;
         }
+
         progress.progress(frames.len() * Frame::DATA_LEN);
         eprintln!("Success!");
         Ok(())
