@@ -73,7 +73,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_or_hi;
-  import prim_mubi_pkg::mubi4_and_hi;
   import lc_ctrl_pkg::lc_tx_and_hi;
   import lc_ctrl_pkg::lc_tx_test_true_strict;
 
@@ -253,8 +252,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
   mubi4_t rom_intg_chk_done;
   mubi4_t rom_intg_chk_good;
-  assign rom_intg_chk_done = mubi4_or_hi(mubi4_and_hi(rom_intg_chk_dis, rom_ctrl_done_i),
-                                         rom_ctrl_done_i);
+  assign rom_intg_chk_done = rom_ctrl_done_i;
   assign rom_intg_chk_good = mubi4_or_hi(rom_intg_chk_dis, rom_ctrl_good_i);
 
   always_comb begin
