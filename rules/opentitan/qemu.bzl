@@ -348,12 +348,15 @@ def _test_dispatch(ctx, exec_env, firmware):
             opentitantool = exec_env._opentitantool,
         )
         data_files.append(image)
-    else:
+    elif firmware:
         image = firmware.signed_bin or firmware.default
+    else:
+        image = None
 
     # Replace the firmware param with the newly assembled image.
-    param["firmware"] = image.short_path
-    action_param["firmware"] = image.path
+    if image:
+        param["firmware"] = image.short_path
+        action_param["firmware"] = image.path
 
     data_files += [exec_env.qemu]
 
