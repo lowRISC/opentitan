@@ -37,11 +37,11 @@ impl RescueSerial {
     const BAUD_1M33: [u8; 4] = *b"1M33";
     const BAUD_1M50: [u8; 4] = *b"1M50";
 
-    pub fn new(uart: Rc<dyn Uart>) -> Self {
+    pub fn new(uart: Rc<dyn Uart>, enter_delay: Option<Duration>) -> Self {
         RescueSerial {
             uart,
             reset_delay: Duration::from_millis(50),
-            enter_delay: Duration::from_secs(5),
+            enter_delay: enter_delay.unwrap_or(Duration::from_secs(5)),
             version: Cell::default(),
         }
     }

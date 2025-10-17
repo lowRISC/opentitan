@@ -103,7 +103,10 @@ impl RescueParams {
                 self.value
             ))
         );
-        Ok(Box::new(RescueSerial::new(self.uart.create(transport)?)))
+        Ok(Box::new(RescueSerial::new(
+            self.uart.create(transport)?,
+            None,
+        )))
     }
 
     fn create_usbdfu(&self, _transport: &TransportWrapper) -> Result<Box<dyn Rescue>> {

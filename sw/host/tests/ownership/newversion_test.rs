@@ -49,6 +49,9 @@ struct Opts {
     #[arg(long, help = "Next Owner unlock private key (SPX)")]
     next_unlock_key_spx: Option<PathBuf>,
 
+    #[arg(long, value_parser = humantime::parse_duration, help = "Max timeout to enter rescue mode")]
+    rescue_enter_delay: Option<Duration>,
+
     #[arg(
         long,
         default_value_t = transfer_lib::TEST_OWNER_CONFIG_VERSION,
@@ -79,7 +82,7 @@ struct Opts {
 
 fn newversion_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
-    let rescue = RescueSerial::new(Rc::clone(&uart));
+    let rescue = RescueSerial::new(Rc::clone(&uart), opts.rescue_enter_delay);
 
     log::info!("###### Get Device Info ######");
     rescue.enter(transport, EntryMode::Reset)?;
