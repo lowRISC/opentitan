@@ -12444,7 +12444,7 @@
     },
     "@@toolchains_llvm+//toolchain/extensions:llvm.bzl%llvm": {
       "general": {
-        "bzlTransitiveDigest": "gIValQjM+EWFJiJontPjnV18YMBMwraBayY+hWCfPzA=",
+        "bzlTransitiveDigest": "HxwEOKblzgkrBdJaod2DqZgHCmDnoIAnw4pLFpW2a/4=",
         "usagesDigest": "Jb6PotMQZN8Bkcci0RaeWREszi3XXYBWBTFcB5sQmMw=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
