@@ -22,6 +22,7 @@
 #include "sw/device/tests/crypto/cryptotest/json/hash_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/hmac_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/kmac_commands.h"
+#include "sw/device/tests/crypto/cryptotest/json/rsa_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/sphincsplus_commands.h"
 
 // Include handlers
@@ -33,6 +34,7 @@
 #include "hash.h"
 #include "hmac.h"
 #include "kmac.h"
+#include "rsa.h"
 #include "sphincsplus.h"
 
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
@@ -67,6 +69,9 @@ status_t process_cmd(ujson_t *uj) {
         break;
       case kCryptotestCommandKmac:
         RESP_ERR(uj, handle_kmac(uj));
+        break;
+      case kCryptotestCommandRsa:
+        RESP_ERR(uj, handle_rsa(uj));
         break;
       case kCryptotestCommandSphincsPlus:
         RESP_ERR(uj, handle_sphincsplus(uj));
