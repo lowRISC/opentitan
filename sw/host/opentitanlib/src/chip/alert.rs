@@ -6,29 +6,29 @@ use crate::with_unknown;
 
 with_unknown! {
     pub enum AlertClass: u8 {
-        A = bindgen::alert::AlertClass_kAlertClassA as u8,
-        B = bindgen::alert::AlertClass_kAlertClassB as u8,
-        C = bindgen::alert::AlertClass_kAlertClassC as u8,
-        D = bindgen::alert::AlertClass_kAlertClassD as u8,
-        X = bindgen::alert::AlertClass_kAlertClassX as u8,
+        A = ot_bindgen_alert::AlertClass_kAlertClassA as u8,
+        B = ot_bindgen_alert::AlertClass_kAlertClassB as u8,
+        C = ot_bindgen_alert::AlertClass_kAlertClassC as u8,
+        D = ot_bindgen_alert::AlertClass_kAlertClassD as u8,
+        X = ot_bindgen_alert::AlertClass_kAlertClassX as u8,
     }
 }
 
 with_unknown! {
     pub enum AlertEnable: u8 {
-        None = bindgen::alert::AlertEnable_kAlertEnableNone as u8,
-        Enabled = bindgen::alert::AlertEnable_kAlertEnableEnabled as u8,
-        Locked = bindgen::alert::AlertEnable_kAlertEnableLocked as u8,
+        None = ot_bindgen_alert::AlertEnable_kAlertEnableNone as u8,
+        Enabled = ot_bindgen_alert::AlertEnable_kAlertEnableEnabled as u8,
+        Locked = ot_bindgen_alert::AlertEnable_kAlertEnableLocked as u8,
     }
 }
 
 with_unknown! {
     pub enum AlertEscalate: u8 {
-        None = bindgen::alert::AlertEscalate_kAlertEscalateNone as u8,
-        Phase0 = bindgen::alert::AlertEscalate_kAlertEscalatePhase0 as u8,
-        Phase1 = bindgen::alert::AlertEscalate_kAlertEscalatePhase1 as u8,
-        Phase2 = bindgen::alert::AlertEscalate_kAlertEscalatePhase2 as u8,
-        Phase3 = bindgen::alert::AlertEscalate_kAlertEscalatePhase3 as u8,
+        None = ot_bindgen_alert::AlertEscalate_kAlertEscalateNone as u8,
+        Phase0 = ot_bindgen_alert::AlertEscalate_kAlertEscalatePhase0 as u8,
+        Phase1 = ot_bindgen_alert::AlertEscalate_kAlertEscalatePhase1 as u8,
+        Phase2 = ot_bindgen_alert::AlertEscalate_kAlertEscalatePhase2 as u8,
+        Phase3 = ot_bindgen_alert::AlertEscalate_kAlertEscalatePhase3 as u8,
     }
 }
 

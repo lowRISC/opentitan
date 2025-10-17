@@ -10,30 +10,30 @@ use crate::with_unknown;
 
 with_unknown! {
     pub enum DifLcCtrlState: u32 [default = Self::StateInvalid] {
-        Raw = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateRaw ,
-        TestUnlocked0 = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateTestUnlocked0 ,
-        TestLocked0 = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateTestLocked0 ,
-        TestUnlocked1 = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateTestUnlocked1 ,
-        TestLocked1 = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateTestLocked1 ,
-        TestUnlocked2 = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateTestUnlocked2 ,
-        TestLocked2 = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateTestLocked2 ,
-        TestUnlocked3 = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateTestUnlocked3 ,
-        TestLocked3 = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateTestLocked3 ,
-        TestUnlocked4 = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateTestUnlocked4 ,
-        TestLocked4 = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateTestLocked4 ,
-        TestUnlocked5 = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateTestUnlocked5 ,
-        TestLocked5 = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateTestLocked5 ,
-        TestUnlocked6 = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateTestUnlocked6 ,
-        TestLocked6 = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateTestLocked6 ,
-        TestUnlocked7 = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateTestUnlocked7 ,
-        Dev = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateDev ,
-        Prod = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateProd ,
-        ProdEnd = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateProdEnd ,
-        Rma = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateRma ,
-        Scrap = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateScrap ,
-        PostTransition = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStatePostTransition ,
-        Escalate = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateEscalate ,
-        StateInvalid = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateInvalid ,
+        Raw = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateRaw ,
+        TestUnlocked0 = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateTestUnlocked0 ,
+        TestLocked0 = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateTestLocked0 ,
+        TestUnlocked1 = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateTestUnlocked1 ,
+        TestLocked1 = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateTestLocked1 ,
+        TestUnlocked2 = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateTestUnlocked2 ,
+        TestLocked2 = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateTestLocked2 ,
+        TestUnlocked3 = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateTestUnlocked3 ,
+        TestLocked3 = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateTestLocked3 ,
+        TestUnlocked4 = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateTestUnlocked4 ,
+        TestLocked4 = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateTestLocked4 ,
+        TestUnlocked5 = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateTestUnlocked5 ,
+        TestLocked5 = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateTestLocked5 ,
+        TestUnlocked6 = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateTestUnlocked6 ,
+        TestLocked6 = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateTestLocked6 ,
+        TestUnlocked7 = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateTestUnlocked7 ,
+        Dev = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateDev ,
+        Prod = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateProd ,
+        ProdEnd = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateProdEnd ,
+        Rma = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateRma ,
+        Scrap = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateScrap ,
+        PostTransition = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStatePostTransition ,
+        Escalate = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateEscalate ,
+        StateInvalid = ot_bindgen_dif::dif_lc_ctrl_state_kDifLcCtrlStateInvalid ,
     }
 }
 
@@ -280,11 +280,11 @@ impl DifLcCtrlState {
 }
 
 #[derive(Copy, Clone)]
-pub struct DifLcCtrlToken(bindgen::dif::dif_lc_ctrl_token);
+pub struct DifLcCtrlToken(ot_bindgen_dif::dif_lc_ctrl_token);
 
 impl From<[u8; 16]> for DifLcCtrlToken {
     fn from(bytes: [u8; 16]) -> Self {
-        DifLcCtrlToken(bindgen::dif::dif_lc_ctrl_token { data: bytes })
+        DifLcCtrlToken(ot_bindgen_dif::dif_lc_ctrl_token { data: bytes })
     }
 }
 
@@ -344,40 +344,40 @@ impl DifLcCtrlToken {
 #[strum(serialize_all = "snake_case")]
 #[repr(u32)]
 pub enum LcCtrlReg {
-    AlertTest = bindgen::dif::LC_CTRL_ALERT_TEST_REG_OFFSET,
-    Status = bindgen::dif::LC_CTRL_STATUS_REG_OFFSET,
-    ClaimTransitionIf = bindgen::dif::LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET,
-    TransitionRegwen = bindgen::dif::LC_CTRL_TRANSITION_REGWEN_REG_OFFSET,
-    TransitionCmd = bindgen::dif::LC_CTRL_TRANSITION_CMD_REG_OFFSET,
-    TransitionCtrl = bindgen::dif::LC_CTRL_TRANSITION_CTRL_REG_OFFSET,
-    TransitionToken0 = bindgen::dif::LC_CTRL_TRANSITION_TOKEN_0_REG_OFFSET,
-    TransitionToken1 = bindgen::dif::LC_CTRL_TRANSITION_TOKEN_1_REG_OFFSET,
-    TransitionToken2 = bindgen::dif::LC_CTRL_TRANSITION_TOKEN_2_REG_OFFSET,
-    TransitionToken3 = bindgen::dif::LC_CTRL_TRANSITION_TOKEN_3_REG_OFFSET,
-    TransitionTarget = bindgen::dif::LC_CTRL_TRANSITION_TARGET_REG_OFFSET,
-    OtpVendorTestCtrl = bindgen::dif::LC_CTRL_OTP_VENDOR_TEST_CTRL_REG_OFFSET,
-    OtpVendorTestStatus = bindgen::dif::LC_CTRL_OTP_VENDOR_TEST_STATUS_REG_OFFSET,
-    LcState = bindgen::dif::LC_CTRL_LC_STATE_REG_OFFSET,
-    LcTransitionCnt = bindgen::dif::LC_CTRL_LC_TRANSITION_CNT_REG_OFFSET,
-    LcIdState = bindgen::dif::LC_CTRL_LC_ID_STATE_REG_OFFSET,
-    HwRevision0 = bindgen::dif::LC_CTRL_HW_REVISION0_REG_OFFSET,
-    HwRevision1 = bindgen::dif::LC_CTRL_HW_REVISION1_REG_OFFSET,
-    DeviceId0 = bindgen::dif::LC_CTRL_DEVICE_ID_0_REG_OFFSET,
-    DeviceId1 = bindgen::dif::LC_CTRL_DEVICE_ID_1_REG_OFFSET,
-    DeviceId2 = bindgen::dif::LC_CTRL_DEVICE_ID_2_REG_OFFSET,
-    DeviceId3 = bindgen::dif::LC_CTRL_DEVICE_ID_3_REG_OFFSET,
-    DeviceId4 = bindgen::dif::LC_CTRL_DEVICE_ID_4_REG_OFFSET,
-    DeviceId5 = bindgen::dif::LC_CTRL_DEVICE_ID_5_REG_OFFSET,
-    DeviceId6 = bindgen::dif::LC_CTRL_DEVICE_ID_6_REG_OFFSET,
-    DeviceId7 = bindgen::dif::LC_CTRL_DEVICE_ID_7_REG_OFFSET,
-    ManufState0 = bindgen::dif::LC_CTRL_MANUF_STATE_0_REG_OFFSET,
-    ManufState1 = bindgen::dif::LC_CTRL_MANUF_STATE_1_REG_OFFSET,
-    ManufState2 = bindgen::dif::LC_CTRL_MANUF_STATE_2_REG_OFFSET,
-    ManufState3 = bindgen::dif::LC_CTRL_MANUF_STATE_3_REG_OFFSET,
-    ManufState4 = bindgen::dif::LC_CTRL_MANUF_STATE_4_REG_OFFSET,
-    ManufState5 = bindgen::dif::LC_CTRL_MANUF_STATE_5_REG_OFFSET,
-    ManufState6 = bindgen::dif::LC_CTRL_MANUF_STATE_6_REG_OFFSET,
-    ManufState7 = bindgen::dif::LC_CTRL_MANUF_STATE_7_REG_OFFSET,
+    AlertTest = ot_bindgen_dif::LC_CTRL_ALERT_TEST_REG_OFFSET,
+    Status = ot_bindgen_dif::LC_CTRL_STATUS_REG_OFFSET,
+    ClaimTransitionIf = ot_bindgen_dif::LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET,
+    TransitionRegwen = ot_bindgen_dif::LC_CTRL_TRANSITION_REGWEN_REG_OFFSET,
+    TransitionCmd = ot_bindgen_dif::LC_CTRL_TRANSITION_CMD_REG_OFFSET,
+    TransitionCtrl = ot_bindgen_dif::LC_CTRL_TRANSITION_CTRL_REG_OFFSET,
+    TransitionToken0 = ot_bindgen_dif::LC_CTRL_TRANSITION_TOKEN_0_REG_OFFSET,
+    TransitionToken1 = ot_bindgen_dif::LC_CTRL_TRANSITION_TOKEN_1_REG_OFFSET,
+    TransitionToken2 = ot_bindgen_dif::LC_CTRL_TRANSITION_TOKEN_2_REG_OFFSET,
+    TransitionToken3 = ot_bindgen_dif::LC_CTRL_TRANSITION_TOKEN_3_REG_OFFSET,
+    TransitionTarget = ot_bindgen_dif::LC_CTRL_TRANSITION_TARGET_REG_OFFSET,
+    OtpVendorTestCtrl = ot_bindgen_dif::LC_CTRL_OTP_VENDOR_TEST_CTRL_REG_OFFSET,
+    OtpVendorTestStatus = ot_bindgen_dif::LC_CTRL_OTP_VENDOR_TEST_STATUS_REG_OFFSET,
+    LcState = ot_bindgen_dif::LC_CTRL_LC_STATE_REG_OFFSET,
+    LcTransitionCnt = ot_bindgen_dif::LC_CTRL_LC_TRANSITION_CNT_REG_OFFSET,
+    LcIdState = ot_bindgen_dif::LC_CTRL_LC_ID_STATE_REG_OFFSET,
+    HwRevision0 = ot_bindgen_dif::LC_CTRL_HW_REVISION0_REG_OFFSET,
+    HwRevision1 = ot_bindgen_dif::LC_CTRL_HW_REVISION1_REG_OFFSET,
+    DeviceId0 = ot_bindgen_dif::LC_CTRL_DEVICE_ID_0_REG_OFFSET,
+    DeviceId1 = ot_bindgen_dif::LC_CTRL_DEVICE_ID_1_REG_OFFSET,
+    DeviceId2 = ot_bindgen_dif::LC_CTRL_DEVICE_ID_2_REG_OFFSET,
+    DeviceId3 = ot_bindgen_dif::LC_CTRL_DEVICE_ID_3_REG_OFFSET,
+    DeviceId4 = ot_bindgen_dif::LC_CTRL_DEVICE_ID_4_REG_OFFSET,
+    DeviceId5 = ot_bindgen_dif::LC_CTRL_DEVICE_ID_5_REG_OFFSET,
+    DeviceId6 = ot_bindgen_dif::LC_CTRL_DEVICE_ID_6_REG_OFFSET,
+    DeviceId7 = ot_bindgen_dif::LC_CTRL_DEVICE_ID_7_REG_OFFSET,
+    ManufState0 = ot_bindgen_dif::LC_CTRL_MANUF_STATE_0_REG_OFFSET,
+    ManufState1 = ot_bindgen_dif::LC_CTRL_MANUF_STATE_1_REG_OFFSET,
+    ManufState2 = ot_bindgen_dif::LC_CTRL_MANUF_STATE_2_REG_OFFSET,
+    ManufState3 = ot_bindgen_dif::LC_CTRL_MANUF_STATE_3_REG_OFFSET,
+    ManufState4 = ot_bindgen_dif::LC_CTRL_MANUF_STATE_4_REG_OFFSET,
+    ManufState5 = ot_bindgen_dif::LC_CTRL_MANUF_STATE_5_REG_OFFSET,
+    ManufState6 = ot_bindgen_dif::LC_CTRL_MANUF_STATE_6_REG_OFFSET,
+    ManufState7 = ot_bindgen_dif::LC_CTRL_MANUF_STATE_7_REG_OFFSET,
 }
 
 impl LcCtrlReg {
@@ -398,18 +398,18 @@ bitflags! {
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Deserialize, Serialize)]
     #[serde(transparent)]
     pub struct LcCtrlStatus: u32 {
-        const INITIALIZED            = 0b1 << bindgen::dif::LC_CTRL_STATUS_INITIALIZED_BIT;
-        const READY                  = 0b1 << bindgen::dif::LC_CTRL_STATUS_READY_BIT;
-        const EXT_CLOCK_SWITCHED     = 0b1 << bindgen::dif::LC_CTRL_STATUS_EXT_CLOCK_SWITCHED_BIT;
-        const TRANSITION_SUCCESSFUL  = 0b1 << bindgen::dif::LC_CTRL_STATUS_TRANSITION_SUCCESSFUL_BIT;
-        const TRANSITION_COUNT_ERROR = 0b1 << bindgen::dif::LC_CTRL_STATUS_TRANSITION_COUNT_ERROR_BIT;
-        const TRANSITION_ERROR       = 0b1 << bindgen::dif::LC_CTRL_STATUS_TRANSITION_ERROR_BIT;
-        const TOKEN_ERROR            = 0b1 << bindgen::dif::LC_CTRL_STATUS_TOKEN_ERROR_BIT;
-        const FLASH_RMA_ERROR        = 0b1 << bindgen::dif::LC_CTRL_STATUS_FLASH_RMA_ERROR_BIT;
-        const OTP_ERROR              = 0b1 << bindgen::dif::LC_CTRL_STATUS_OTP_ERROR_BIT;
-        const STATE_ERROR            = 0b1 << bindgen::dif::LC_CTRL_STATUS_STATE_ERROR_BIT;
-        const BUS_INTEG_ERROR        = 0b1 << bindgen::dif::LC_CTRL_STATUS_BUS_INTEG_ERROR_BIT;
-        const OTP_PARTITION_ERROR    = 0b1 << bindgen::dif::LC_CTRL_STATUS_OTP_PARTITION_ERROR_BIT;
+        const INITIALIZED            = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_INITIALIZED_BIT;
+        const READY                  = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_READY_BIT;
+        const EXT_CLOCK_SWITCHED     = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_EXT_CLOCK_SWITCHED_BIT;
+        const TRANSITION_SUCCESSFUL  = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_TRANSITION_SUCCESSFUL_BIT;
+        const TRANSITION_COUNT_ERROR = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_TRANSITION_COUNT_ERROR_BIT;
+        const TRANSITION_ERROR       = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_TRANSITION_ERROR_BIT;
+        const TOKEN_ERROR            = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_TOKEN_ERROR_BIT;
+        const FLASH_RMA_ERROR        = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_FLASH_RMA_ERROR_BIT;
+        const OTP_ERROR              = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_OTP_ERROR_BIT;
+        const STATE_ERROR            = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_STATE_ERROR_BIT;
+        const BUS_INTEG_ERROR        = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_BUS_INTEG_ERROR_BIT;
+        const OTP_PARTITION_ERROR    = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_OTP_PARTITION_ERROR_BIT;
 
         const ERRORS =
             Self::TRANSITION_COUNT_ERROR.bits() |
@@ -427,7 +427,7 @@ bitflags! {
     /// Bits of the lc_ctrl.TRANSITION_REGWEN register, aka [LcCtrlReg::TransitionRegwen].
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
     pub struct LcCtrlTransitionRegwen: u32 {
-        const TRANSITION_REGWEN = 0b1 << bindgen::dif::LC_CTRL_TRANSITION_REGWEN_TRANSITION_REGWEN_BIT;
+        const TRANSITION_REGWEN = 0b1 << ot_bindgen_dif::LC_CTRL_TRANSITION_REGWEN_TRANSITION_REGWEN_BIT;
     }
 }
 
@@ -435,7 +435,7 @@ bitflags! {
     /// Bits of the lc_ctrl.TRANSITION_CMD register, aka [LcCtrlReg::TransitionCmd].
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
     pub struct LcCtrlTransitionCmd: u32 {
-        const START = 0b1 << bindgen::dif::LC_CTRL_TRANSITION_CMD_START_BIT;
+        const START = 0b1 << ot_bindgen_dif::LC_CTRL_TRANSITION_CMD_START_BIT;
     }
 }
 
@@ -443,8 +443,8 @@ bitflags! {
     /// Bits of the lc_ctrl.TRANSITION_CTRL register, aka [LcCtrlReg::TransitionCtrl].
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
     pub struct LcCtrlTransitionCtrl: u32 {
-        const EXT_CLOCK_EN = 0b1 << bindgen::dif::LC_CTRL_TRANSITION_CTRL_EXT_CLOCK_EN_BIT;
-        const VOLATILE_RAW_UNLOCK = 0b1 << bindgen::dif::LC_CTRL_TRANSITION_CTRL_VOLATILE_RAW_UNLOCK_BIT;
+        const EXT_CLOCK_EN = 0b1 << ot_bindgen_dif::LC_CTRL_TRANSITION_CTRL_EXT_CLOCK_EN_BIT;
+        const VOLATILE_RAW_UNLOCK = 0b1 << ot_bindgen_dif::LC_CTRL_TRANSITION_CTRL_VOLATILE_RAW_UNLOCK_BIT;
     }
 }
 
@@ -485,7 +485,7 @@ mod tests {
 
     #[test]
     fn lc_ctrl_register_offsets() {
-        let offset = bindgen::dif::LC_CTRL_LC_STATE_REG_OFFSET;
+        let offset = ot_bindgen_dif::LC_CTRL_LC_STATE_REG_OFFSET;
         assert_eq!(LcCtrlReg::LcState.byte_offset(), offset);
         assert_eq!(LcCtrlReg::LcState.word_offset(), offset / 4);
     }

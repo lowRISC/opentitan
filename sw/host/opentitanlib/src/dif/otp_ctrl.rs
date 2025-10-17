@@ -5,8 +5,9 @@
 use std::collections::HashSet;
 use std::sync::LazyLock;
 
-use bindgen::dif;
 use bitflags::bitflags;
+
+use ot_bindgen_dif as dif;
 
 use crate::collection;
 

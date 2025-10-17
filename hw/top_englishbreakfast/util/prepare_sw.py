@@ -168,7 +168,7 @@ def main():
         (old.parent / new.name).write_text(text)
 
     # Hack to make bindgen generate less for English Breakfast.
-    new = REPO_TOP / 'sw/host/opentitanlib/bindgen/BUILD'
+    new = REPO_TOP / 'sw/host/ot_hal/bindgen/BUILD'
     text = new.read_text()
     text = text.replace('_TOPLEVEL = "earlgrey"', '_TOPLEVEL = "englishbreakfast"')
     new.write_text(text)

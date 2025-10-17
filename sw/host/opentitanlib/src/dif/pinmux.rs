@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use bindgen::dif;
 use bitflags::bitflags;
+
+use ot_bindgen_dif as dif;
 
 bitflags! {
     #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]

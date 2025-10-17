@@ -389,7 +389,7 @@ pub fn prepare_epmp(jtag: &mut dyn Jtag) -> Result<()> {
 /// Set up the sram_ctrl to execute code.
 pub fn prepare_sram_ctrl(jtag: &mut dyn Jtag) -> Result<()> {
     const SRAM_CTRL_EXEC_REG_OFFSET: u32 = (top_earlgrey::SRAM_CTRL_MAIN_REGS_BASE_ADDR as u32)
-        + bindgen::dif::SRAM_CTRL_EXEC_REG_OFFSET;
+        + ot_bindgen_dif::SRAM_CTRL_EXEC_REG_OFFSET;
     log::info!("Enabling execution from SRAM.");
     let mut sram_ctrl_exec = [0];
     jtag.read_memory32(SRAM_CTRL_EXEC_REG_OFFSET, &mut sram_ctrl_exec)?;
