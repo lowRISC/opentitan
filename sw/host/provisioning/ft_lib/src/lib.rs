@@ -17,7 +17,6 @@ use cert_lib::{CaConfig, CaKey, EndorsedCert, parse_and_endorse_x509_cert, valid
 use ft_ext_lib::ft_ext;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::console::spi::SpiConsoleDevice;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
 use opentitanlib::test_utils::crashdump::{
     read_alert_crashdump_data, read_cpu_crashdump_data, read_reset_reason,
@@ -31,6 +30,7 @@ use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
 use ot_certs::CertFormat;
 use ot_certs::x509::parse_certificate;
+use ot_hal::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use perso_tlv_lib::perso_tlv_get_field;
 use perso_tlv_lib::{CertHeader, CertHeaderType, ObjHeader, ObjHeaderType, ObjType};
 use ujson_lib::provisioning_data::{

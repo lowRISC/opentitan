@@ -14,7 +14,7 @@ use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{JtagTap, RiscvGpr};
 use opentitanlib::test_utils::init::InitializeTest;
 
-use top_earlgrey::top_earlgrey;
+use ot_hal::top::earlgrey as top_earlgrey;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -57,7 +57,7 @@ fn asm_watchdog_bite(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // There's no label before BARK_THOLD is stored, so we need to override the stored value.
     dbg.write_u32(
         top_earlgrey::AON_TIMER_AON_BASE_ADDR as u32
-            + opentitanlib::dif::aon_timer::AonTimerReg::WdogBarkThold as u32,
+            + ot_hal::dif::aon_timer::AonTimerReg::WdogBarkThold as u32,
         0xFFFFFFFF,
     )?;
 
@@ -68,7 +68,7 @@ fn asm_watchdog_bite(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Clear RESET_INFO.
     dbg.write_u32(
         top_earlgrey::RSTMGR_AON_BASE_ADDR as u32
-            + opentitanlib::dif::rstmgr::RstmgrReg::ResetInfo as u32,
+            + ot_hal::dif::rstmgr::RstmgrReg::ResetInfo as u32,
         0,
     )?;
 
@@ -98,12 +98,12 @@ fn asm_watchdog_bite(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Check the reset reason as well
     let reset_info = dbg.read_u32(
         top_earlgrey::RSTMGR_AON_BASE_ADDR as u32
-            + opentitanlib::dif::rstmgr::RstmgrReg::ResetInfo as u32,
+            + ot_hal::dif::rstmgr::RstmgrReg::ResetInfo as u32,
     )?;
 
     // Check that the reset is caused by watchdog.
     log::info!("RESET_INFO={:#x}", reset_info);
-    assert!(reset_info & u32::from(opentitanlib::dif::rstmgr::DifRstmgrResetInfo::Watchdog) != 0);
+    assert!(reset_info & u32::from(ot_hal::dif::rstmgr::DifRstmgrResetInfo::Watchdog) != 0);
 
     dbg.disconnect()?;
     Ok(())

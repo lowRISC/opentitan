@@ -12,8 +12,8 @@ rust_binary(
         "src/main.rs",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
+        "//sw/host/ot_hal",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:log",

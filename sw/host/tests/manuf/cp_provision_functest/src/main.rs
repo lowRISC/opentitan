@@ -14,7 +14,6 @@ use zerocopy::IntoBytes;
 use cp_lib::{CpResponse, reset_and_lock, run_sram_cp_provision, unlock_raw};
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::console::spi::SpiConsoleDevice;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition;
@@ -23,6 +22,7 @@ use opentitanlib::test_utils::load_sram_program::{
 };
 use opentitanlib::test_utils::rpc::ConsoleSend;
 use opentitanlib::uart::console::UartConsole;
+use ot_hal::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use ujson_lib::provisioning_data::{ManufCpProvisioningData, ManufCpTestData};
 use util_lib::hash_lc_token;
 

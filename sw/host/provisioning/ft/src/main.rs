@@ -21,10 +21,10 @@ use ft_lib::{
 };
 use opentitanlib::backend;
 use opentitanlib::console::spi::SpiConsoleDevice;
-use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc::{read_device_id, read_lc_state};
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
+use ot_hal::dif::lc_ctrl::DifLcCtrlState;
 use ujson_lib::provisioning_data::{ManufCertgenInputs, ManufFtIndividualizeData};
 use util_lib::{
     encrypt_token, hex_string_to_u8_arrayvec, hex_string_to_u32_arrayvec, load_rsa_public_key,

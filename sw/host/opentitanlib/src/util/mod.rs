@@ -4,7 +4,6 @@
 
 pub mod bigint;
 pub mod bitbang;
-pub mod bitfield;
 pub mod file;
 pub mod fs;
 pub mod hexdump;
@@ -19,12 +18,13 @@ pub mod serde;
 pub mod serializable_error;
 pub mod status;
 pub mod testing;
-pub mod unknown;
 pub mod usb;
 pub mod usr_access;
 pub mod vcd;
 pub mod vmem;
 pub mod voltage;
+
+pub use ot_hal::util::bitfield;
 
 pub use runtime::runtime;
 

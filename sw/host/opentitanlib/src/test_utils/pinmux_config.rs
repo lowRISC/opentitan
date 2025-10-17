@@ -8,15 +8,26 @@ use std::time::Duration;
 
 use anyhow::Result;
 
-use crate::chip::autogen::earlgrey::{PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn};
-use crate::dif::pinmux::PinmuxPadAttr;
+use ot_hal::dif::pinmux::PinmuxPadAttr;
+use ot_hal::top::earlgrey::{PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn};
+
 use crate::io::uart::Uart;
 use crate::test_utils::e2e_command::TestCommand;
 use crate::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use crate::test_utils::status::Status;
 
+// Create aliases for the C names of these types so that the ujson
+// created structs can access these structures by their C names.
+#[allow(non_camel_case_types)]
+type pinmux_peripheral_in_t = PinmuxPeripheralIn;
+#[allow(non_camel_case_types)]
+type pinmux_insel_t = PinmuxInsel;
+#[allow(non_camel_case_types)]
+type pinmux_mio_out_t = PinmuxMioOut;
+#[allow(non_camel_case_types)]
+type pinmux_outsel_t = PinmuxOutsel;
+
 // Bring in the auto-generated sources.
-use crate::chip::autogen::earlgrey::ujson_alias::*;
 include!(env!("pinmux_config"));
 
 /// Capacity of a single configuration message.

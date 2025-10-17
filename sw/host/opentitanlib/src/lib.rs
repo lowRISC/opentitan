@@ -9,7 +9,6 @@ pub mod chip;
 pub mod console;
 pub mod crypto;
 pub mod debug;
-pub mod dif;
 pub mod image;
 pub mod io;
 pub mod otp;
@@ -21,3 +20,5 @@ pub mod tpm;
 pub mod transport;
 pub mod uart;
 pub mod util;
+
+pub use ot_hal::with_unknown;
