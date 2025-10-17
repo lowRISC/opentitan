@@ -8,7 +8,7 @@ use std::rc::Rc;
 use std::time::{Duration, Instant};
 use zerocopy::{Immutable, IntoBytes};
 
-use crate::app::TransportWrapper;
+use crate::app::{TransportWrapper, UartRx};
 use crate::chip::rom_error::RomError;
 use crate::io::spi::Target;
 use crate::rescue::dfu::*;
@@ -75,9 +75,7 @@ impl Rescue for SpiDfu {
         );
         self.params.set_trigger(transport, true)?;
         match mode {
-            EntryMode::Reset => {
-                transport.reset_target(self.reset_delay, /*clear_uart=*/ false)?
-            }
+            EntryMode::Reset => transport.reset_with_delay(UartRx::Keep, self.reset_delay)?,
             EntryMode::Reboot => {
                 self.reboot()?;
                 // Give the chip a chance to reset before attempting to re-read

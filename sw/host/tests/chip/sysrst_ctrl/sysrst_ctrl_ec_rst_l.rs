@@ -7,7 +7,7 @@ use clap::Parser;
 use once_cell::sync::Lazy;
 use std::time::Duration;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::gpio::{Edge, MonitoringEvent, PinMode};
 use opentitanlib::io::uart::Uart;
@@ -74,9 +74,7 @@ fn chip_sw_sysrst_ctrl_input(params: &Params) -> Result<()> {
 
     // Reset target now so that we can be sure that the pins are in the right
     // configuration before running the test.
-    params
-        .transport
-        .reset_target(params.opts.init.bootstrap.options.reset_delay, true)?;
+    params.transport.reset(UartRx::Clear)?;
 
     // Wait until device has setup pins and is waiting for combo.
     sync_with_sw(params)?;

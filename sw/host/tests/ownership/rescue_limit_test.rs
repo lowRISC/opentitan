@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use std::time::Duration;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::chip::boot_svc::{BootSlot, UnlockMode};
 use opentitanlib::chip::rom_error::RomError;
 use opentitanlib::ownership::OwnershipKeyAlg;
@@ -141,7 +141,7 @@ fn flash_limit_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // firmware segment and the first word of the filesystem segment and
     // verify that the firmware segement is programmed (value 0) and the
     // filesystem segment remains unprogramed (value ffffffff).
-    transport.reset_target(Duration::from_millis(50), /*clear_uart=*/ true)?;
+    transport.reset_with_delay(UartRx::Clear, Duration::from_millis(50))?;
     let capture = UartConsole::wait_for(
         &*uart,
         r"(?msR)flash 0x2006f800 = (\w+)$.*flash 0x20070000 = (\w+)$.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
