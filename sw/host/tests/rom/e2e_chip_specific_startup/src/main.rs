@@ -3,11 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(clippy::bool_assert_comparison)]
+
+use std::time::Duration;
+
 use anyhow::Result;
 use clap::Parser;
+
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::chip::boolean::MultiBitBool4;
-use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::execute_test;
 use opentitanlib::test_utils::e2e_command::TestCommand;
 use opentitanlib::test_utils::epmp::constants::*;
@@ -15,7 +17,8 @@ use opentitanlib::test_utils::epmp::{Epmp, EpmpAddressRange, EpmpEntry, EpmpRegi
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
-use std::time::Duration;
+use ot_hal::dif::lc_ctrl::DifLcCtrlState;
+use ot_hal::util::multibits::MultiBitBool4;
 
 mod chip_specific_startup;
 use chip_specific_startup::ChipStartup;

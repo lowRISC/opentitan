@@ -9,11 +9,11 @@ use anyhow::Context;
 use clap::Parser;
 
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::dif::otp_ctrl::{DaiParam, Partition};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::otp_ctrl::{OtpParam, OtpPartition};
+use ot_hal::dif::otp_ctrl::{DaiParam, Partition};
 
 #[derive(Debug, Parser)]
 struct Opts {

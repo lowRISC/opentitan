@@ -16,13 +16,13 @@ use object::{Object, ObjectSection, ObjectSegment, SectionKind};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::chip::boolean::MultiBitBool4;
+use ot_hal::top::earlgrey as top_earlgrey;
+use ot_hal::util::multibits::MultiBitBool4;
+
 use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, RiscvCsr, RiscvGpr, RiscvReg};
 use crate::util::parse_int::ParseInt;
 use crate::util::vmem::Vmem;
-
-use top_earlgrey::top_earlgrey;
 
 /// Command-line parameters.
 #[derive(Debug, Args, Clone, Default)]
@@ -389,7 +389,7 @@ pub fn prepare_epmp(jtag: &mut dyn Jtag) -> Result<()> {
 /// Set up the sram_ctrl to execute code.
 pub fn prepare_sram_ctrl(jtag: &mut dyn Jtag) -> Result<()> {
     const SRAM_CTRL_EXEC_REG_OFFSET: u32 = (top_earlgrey::SRAM_CTRL_MAIN_REGS_BASE_ADDR as u32)
-        + bindgen::dif::SRAM_CTRL_EXEC_REG_OFFSET;
+        + ot_bindgen_dif::SRAM_CTRL_EXEC_REG_OFFSET;
     log::info!("Enabling execution from SRAM.");
     let mut sram_ctrl_exec = [0];
     jtag.read_memory32(SRAM_CTRL_EXEC_REG_OFFSET, &mut sram_ctrl_exec)?;

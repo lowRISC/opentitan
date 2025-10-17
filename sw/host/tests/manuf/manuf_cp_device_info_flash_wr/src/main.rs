@@ -10,7 +10,6 @@ use regex::Regex;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::backend;
-use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -19,6 +18,7 @@ use opentitanlib::test_utils::load_sram_program::{
     ExecutionMode, ExecutionResult, SramProgramParams,
 };
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
+use ot_hal::dif::lc_ctrl::DifLcCtrlState;
 
 #[derive(Debug, Parser)]
 struct Opts {

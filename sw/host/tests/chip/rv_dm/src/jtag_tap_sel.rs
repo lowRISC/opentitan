@@ -9,13 +9,13 @@ use clap::Parser;
 use regex::Regex;
 
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::util::parse_int::ParseInt;
+use ot_hal::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 
-use top_earlgrey::top_earlgrey;
+use ot_hal::top::earlgrey as top_earlgrey;
 
 #[derive(Debug, Parser)]
 struct Opts {

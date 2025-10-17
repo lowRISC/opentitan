@@ -4,13 +4,13 @@
 
 use anyhow::{Result, bail};
 
-use crate::app::TransportWrapper;
-use crate::dif::rstmgr::{
+use ot_hal::dif::rstmgr::{
     DifRstmgrResetInfo, RstmgrAlertInfoCtrl, RstmgrCpuInfoCtrl, RstmgrCpuRegwen, RstmgrReg,
 };
-use crate::io::jtag::{JtagParams, JtagTap};
+use ot_hal::top::earlgrey as top_earlgrey;
 
-use top_earlgrey::top_earlgrey;
+use crate::app::TransportWrapper;
+use crate::io::jtag::{JtagParams, JtagTap};
 
 /// Reads out CPU crashdump info over JTAG.
 ///

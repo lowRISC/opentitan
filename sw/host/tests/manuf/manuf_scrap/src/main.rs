@@ -6,11 +6,11 @@ use anyhow::Result;
 use clap::Parser;
 
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
+use ot_hal::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 
 #[derive(Debug, Parser)]
 struct Opts {

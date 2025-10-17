@@ -4,8 +4,6 @@
 
 use thiserror::Error;
 
-pub mod alert;
-pub mod autogen;
 pub mod boolean;
 pub mod boot_log;
 pub mod boot_svc;

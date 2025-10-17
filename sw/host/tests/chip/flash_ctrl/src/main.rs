@@ -2,26 +2,24 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
-use clap::Parser;
-
-use anyhow::Context;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, DifLcCtrlToken, LcCtrlReg, LcCtrlStatus};
-use opentitanlib::test_utils::lc_transition;
-
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use std::time::Duration;
 
+use anyhow::{Context, Result};
+use clap::Parser;
 use object::{Object, ObjectSymbol};
+
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::test_utils::lc_transition;
 use opentitanlib::test_utils::load_sram_program::{ExecutionMode, SramProgramParams};
 use opentitanlib::test_utils::mem::{MemRead32Req, MemWrite32Req};
 use opentitanlib::uart::console::UartConsole;
+use ot_hal::dif::lc_ctrl::{DifLcCtrlState, DifLcCtrlToken, LcCtrlReg, LcCtrlStatus};
 
 #[derive(Debug, Parser)]
 struct Opts {

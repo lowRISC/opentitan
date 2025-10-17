@@ -1026,7 +1026,7 @@ def generate_rust(topname, completecfg, name_to_block, out_path, version_stamp,
                         helper=rs_helper)
 
         # Generate Rust host-side files
-        rsformat_dir = src_tree_top / 'sw/host/opentitanlib/src/chip/autogen'
+        rsformat_dir = src_tree_top / 'sw/host/ot_hal/src/top/autogen'
         rsformat_dir.mkdir(parents=True, exist_ok=True)
         render_template(topgen_template_path / 'host_toplevel.rs.tpl',
                         rsformat_dir / f"{topname}{addr_space_suffix}.rs",

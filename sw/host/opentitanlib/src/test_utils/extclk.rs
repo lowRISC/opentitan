@@ -8,10 +8,10 @@ use std::time::Duration;
 
 use thiserror::Error;
 
-use top_earlgrey::top_earlgrey;
+use ot_hal::dif::clkmgr::{ClkmgrExtclkCtrl, ClkmgrReg};
+use ot_hal::top::earlgrey as top_earlgrey;
+use ot_hal::util::multibits::MultiBitBool4;
 
-use crate::chip::boolean::MultiBitBool4;
-use crate::dif::clkmgr::{ClkmgrExtclkCtrl, ClkmgrReg};
 use crate::io::jtag::Jtag;
 use crate::test_utils::poll;
 

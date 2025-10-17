@@ -10,10 +10,10 @@ use zerocopy::IntoBytes;
 
 use cp_lib::{CpResponse, ManufCpProvisioningDataInput, reset_and_lock, run_sram_cp_provision};
 use opentitanlib::console::spi::SpiConsoleDevice;
-use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc::read_lc_state;
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
+use ot_hal::dif::lc_ctrl::DifLcCtrlState;
 use ujson_lib::provisioning_data::ManufCpProvisioningData;
 use util_lib::{hash_lc_token, hex_string_to_u32_arrayvec};
 

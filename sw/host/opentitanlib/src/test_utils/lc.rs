@@ -7,8 +7,9 @@ use std::time::Duration;
 use anyhow::Result;
 use arrayvec::ArrayVec;
 
+use ot_hal::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
+
 use crate::app::TransportWrapper;
-use crate::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
 use crate::io::jtag::{JtagParams, JtagTap};
 use crate::test_utils::lc_transition::wait_for_status;
 

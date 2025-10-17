@@ -6,7 +6,7 @@ use std::time::Instant;
 
 use cert_lib::EndorsedCert;
 use indexmap::IndexMap;
-use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
+use ot_hal::dif::lc_ctrl::DifLcCtrlState;
 use serde::Serialize;
 
 #[derive(Clone, Debug, Serialize)]

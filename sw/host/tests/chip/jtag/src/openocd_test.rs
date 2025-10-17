@@ -9,14 +9,13 @@ use clap::Parser;
 use regex::Regex;
 
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::chip::boolean::MultiBitBool8;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{JtagTap, RiscvCsr, RiscvGpr, RiscvReg};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
-
-use top_earlgrey::top_earlgrey;
+use ot_hal::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
+use ot_hal::top::earlgrey as top_earlgrey;
+use ot_hal::util::multibits::MultiBitBool8;
 
 #[derive(Debug, Parser)]
 struct Opts {

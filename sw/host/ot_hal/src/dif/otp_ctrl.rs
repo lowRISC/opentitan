@@ -5,10 +5,9 @@
 use std::collections::HashSet;
 use std::sync::LazyLock;
 
-use bindgen::dif;
 use bitflags::bitflags;
 
-use crate::collection;
+use ot_bindgen_dif as dif;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[repr(u32)]
@@ -186,11 +185,8 @@ impl Partition {
 /// Set of partitions that are secret.
 ///
 /// A secret partition is scrambled and not readable after it is locked.
-pub static SECRET_PARTITIONS: LazyLock<HashSet<Partition>> = LazyLock::new(|| {
-    collection! {
-        Partition::SECRET0, Partition::SECRET1, Partition::SECRET2,
-    }
-});
+pub static SECRET_PARTITIONS: LazyLock<HashSet<Partition>> =
+    LazyLock::new(|| [Partition::SECRET0, Partition::SECRET1, Partition::SECRET2].into());
 
 /// Granularities of memory accesses.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]

@@ -10,7 +10,6 @@ use clap::Parser;
 use zerocopy::IntoBytes;
 
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -18,6 +17,7 @@ use opentitanlib::test_utils::lc::read_lc_state;
 use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
 use opentitanlib::test_utils::rpc::ConsoleSend;
 use opentitanlib::uart::console::UartConsole;
+use ot_hal::dif::lc_ctrl::DifLcCtrlState;
 use util_lib::hash_lc_token;
 
 mod provisioning_data;

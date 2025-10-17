@@ -159,14 +159,3 @@ with_unknown! {
         End = 12,
     }
 }
-
-#[allow(non_camel_case_types)]
-pub mod ujson_alias {
-    use super::*;
-    // Create aliases for the C names of these types so that the ujson
-    // created structs can access these structures by their C names.
-    pub type pinmux_peripheral_in_t = PinmuxPeripheralIn;
-    pub type pinmux_insel_t = PinmuxInsel;
-    pub type pinmux_mio_out_t = PinmuxMioOut;
-    pub type pinmux_outsel_t = PinmuxOutsel;
-}
