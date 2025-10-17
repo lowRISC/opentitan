@@ -14,7 +14,7 @@ rust_binary(
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
-        "//sw/host/opentitanlib/bindgen",
+        "//sw/host/ot_hal/bindgen:dif",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:humantime",
@@ -32,7 +32,7 @@ rust_binary(
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
-        "//sw/host/opentitanlib/bindgen",
+        "//sw/host/ot_hal/bindgen:dif",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:humantime",

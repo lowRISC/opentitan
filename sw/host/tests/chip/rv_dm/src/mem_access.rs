@@ -16,7 +16,7 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 use opentitanlib::util::parse_int::ParseInt;
 
-use bindgen::dif;
+use ot_bindgen_dif as dif;
 use top_earlgrey::top_earlgrey;
 
 #[derive(Debug, Parser)]

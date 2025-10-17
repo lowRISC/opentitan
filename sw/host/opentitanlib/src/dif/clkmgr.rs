@@ -4,7 +4,7 @@
 
 use bitflags::bitflags;
 
-use bindgen::dif;
+use ot_bindgen_dif as dif;
 
 use crate::util::bitfield::BitField;
 
