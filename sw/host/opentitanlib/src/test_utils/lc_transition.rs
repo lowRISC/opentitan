@@ -9,7 +9,7 @@ use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::app::TransportWrapper;
+use crate::app::{TransportWrapper, UartRx};
 use crate::chip::boolean::MultiBitBool8;
 use crate::dif::lc_ctrl::{
     DifLcCtrlState, LcCtrlReg, LcCtrlStatus, LcCtrlTransitionCmd, LcCtrlTransitionCtrl,
@@ -142,7 +142,7 @@ fn setup_lc_transition(
 /// tap_lc_strapping.apply().expect("failed to apply strapping");
 ///
 /// // Reset into the new strapping.
-/// transport.reset_target(init.bootstrap.options.reset_delay, true).unwrap();
+/// transport.reset(UartRx::Clear).unwrap();
 ///
 /// // Connect to the LC controller TAP.
 /// let mut jtag = transport
@@ -159,7 +159,6 @@ fn setup_lc_transition(
 ///     DifLcCtrlState::Prod,
 ///     Some(test_exit_token.into_register_values()),
 ///     true,
-///     init.bootstrap.options.reset_delay,
 ///     Some(JtagTap::LcTap),
 /// ).expect("failed to trigger transition to prod");
 ///
@@ -180,7 +179,6 @@ pub fn trigger_lc_transition(
     target_lc_state: DifLcCtrlState,
     token: Option<[u32; 4]>,
     use_external_clk: bool,
-    reset_delay: Duration,
     reset_tap_straps: Option<JtagTap>,
 ) -> Result<()> {
     // Wait for the lc_ctrl to become initialized, claim the mutex, and program the target state
@@ -222,7 +220,7 @@ pub fn trigger_lc_transition(
             JtagTap::RiscvTap => transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?,
         }
     }
-    transport.reset_target(reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     Ok(())
 }

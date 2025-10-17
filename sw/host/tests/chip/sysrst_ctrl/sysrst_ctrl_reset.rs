@@ -8,7 +8,7 @@ use once_cell::sync::Lazy;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::gpio::PinMode;
 use opentitanlib::io::uart::Uart;
@@ -101,7 +101,7 @@ fn chip_sw_sysrst_ctrl_reset(
     set_test_phase(transport, TestPhase::CheckComboReset)?;
     set_pins(transport, config, PADS_VALUE_INIT)?;
     // Reset target.
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     // Wait until target has prepared for the test.
     UartConsole::wait_for(uart, &TestStatus::InWfi.wait_pattern(), opts.timeout)?;

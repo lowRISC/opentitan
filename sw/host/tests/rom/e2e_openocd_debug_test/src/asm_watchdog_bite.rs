@@ -8,7 +8,7 @@ use std::time::Duration;
 use anyhow::Result;
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::debug::elf_debugger::ElfSymbols;
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{JtagTap, RiscvGpr};
@@ -35,7 +35,7 @@ fn asm_watchdog_bite(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     // This test requires RV_DM access so first strap and reset.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     let jtag = opts
         .init

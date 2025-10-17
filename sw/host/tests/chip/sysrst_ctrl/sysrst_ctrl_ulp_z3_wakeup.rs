@@ -7,7 +7,7 @@ use clap::Parser;
 use once_cell::sync::Lazy;
 use std::time::Duration;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::gpio::{Edge, MonitoringEvent, PinMode};
 use opentitanlib::io::uart::Uart;
@@ -103,7 +103,7 @@ fn chip_sw_sysrst_ctrl_ulp_z3_wakeup(
     set_test_phase(transport, TestPhase::Init)?;
 
     // Reset target.
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     // Set pins to zero.
     set_pins(transport, config, pins_initial)?;
 

@@ -7,7 +7,7 @@ use std::time::Duration;
 use anyhow::Result;
 use arrayvec::ArrayVec;
 
-use crate::app::TransportWrapper;
+use crate::app::{TransportWrapper, UartRx};
 use crate::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
 use crate::io::jtag::{JtagParams, JtagTap};
 use crate::test_utils::lc_transition::wait_for_status;
@@ -15,14 +15,13 @@ use crate::test_utils::lc_transition::wait_for_status;
 pub fn read_lc_state(
     transport: &TransportWrapper,
     jtag_params: &JtagParams,
-    reset_delay: Duration,
 ) -> Result<DifLcCtrlState> {
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
 
     // Apply bootstrap pin to be able to connect to JTAG when ROM execution is
     // enabled.
     transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
-    transport.reset_target(reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let mut jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
     // We must wait for the lc_ctrl to initialize before the LC state is exposed.
     wait_for_status(
@@ -40,14 +39,13 @@ pub fn read_lc_state(
 pub fn read_device_id(
     transport: &TransportWrapper,
     jtag_params: &JtagParams,
-    reset_delay: Duration,
 ) -> Result<ArrayVec<u32, 8>> {
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
 
     // Apply bootstrap pin to be able to connect to JTAG when ROM execution is
     // enabled.
     transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
-    transport.reset_target(reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let mut jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
     // We must wait for the lc_ctrl to initialize before the LC state is exposed.
     wait_for_status(

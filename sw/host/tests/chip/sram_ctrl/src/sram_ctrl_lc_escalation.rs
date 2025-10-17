@@ -15,7 +15,7 @@ use std::time::Duration;
 use anyhow::{Context, Result, ensure};
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{Jtag, JtagTap};
 use opentitanlib::io::uart::Uart;
@@ -115,7 +115,7 @@ fn lc_escalation(
 
     // Reset the chip and try again - the SRAMs should now be unlocked.
     jtag.disconnect()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let mut jtag = opts
         .init
         .jtag_params
