@@ -30,6 +30,25 @@ cc_library(
 )
 
 cc_library(
+    name = "aes_gcm",
+    srcs = ["aes_gcm.c"],
+    hdrs = ["aes_gcm.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:aes_gcm",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:aes_gcm_commands",
+    ],
+)
+
+cc_library(
     name = "ecdsa",
     srcs = ["ecdsa.c"],
     hdrs = ["ecdsa.h"],
@@ -163,6 +182,7 @@ cc_library(
 
 FIRMWARE_DEPS = [
     ":aes",
+    ":aes_gcm",
     ":drbg",
     ":ecdh",
     ":ecdsa",
