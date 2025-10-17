@@ -434,6 +434,10 @@ def _test_dispatch(ctx, exec_env, firmware):
     # Create a chardev for the SPI device:
     qemu_args += ["-chardev", "pty,id=spidev"]
 
+    # Create a chardev for the USBDEV control:
+    qemu_args += ["-chardev", "pty,id=usbdev-cmd"]
+    qemu_args += ["-chardev", "pty,id=usbdev-host"]
+
     # Scale the Ibex clock by an `icount` factor.
     qemu_args += ["-icount", "shift={}".format(param["icount"])]
 

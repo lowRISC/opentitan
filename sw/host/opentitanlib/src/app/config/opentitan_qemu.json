@@ -9,6 +9,13 @@
         "alias_of": "255",
         "level": true,
       },
+      // VBUS control currently has to go through a special QEMU chardev because
+      // QEMU does not yet implement a real pinmux.
+      {
+        "name": "VBUS_SENSE_EN",
+        "alias_of": "254",
+        "level": false,
+      }
   ],
   "strappings": [
     {
