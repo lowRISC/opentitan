@@ -98,6 +98,70 @@ cryptotest(
     test_vectors = ECDH_TESTVECTOR_TARGETS,
 )
 
+RSA_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_pkcs1_1.5_2048_{}.json".format(hash)
+    for hash in [
+        "sha256",
+        "sha384",
+        "sha512",
+        "sha3_256",
+        "sha3_384",
+        "sha3_512",
+    ]
+] + [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_pkcs1_1.5_3072_{}.json".format(hash)
+    for hash in [
+        "sha256",
+        "sha384",
+        "sha512",
+        "sha3_256",
+        "sha3_384",
+        "sha3_512",
+    ]
+] + [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_pkcs1_1.5_4096_{}.json".format(hash)
+    for hash in [
+        "sha256",
+        "sha384",
+        "sha512",
+    ]
+] + [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_pss_2048_{}.json".format(hash)
+    for hash in [
+        "sha256_mgf1_0",
+        "sha256_mgf1_32",
+        "sha384_mgf1_48",
+    ]
+] + [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_pss_3072_{}.json".format(hash)
+    for hash in [
+        "sha256_mgf1_32",
+        "shake128",
+    ]
+] + [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_pss_4096_{}.json".format(hash)
+    for hash in [
+        "sha256_mgf1_32",
+        "sha384_mgf1_48",
+        "sha512_mgf1_32",
+        "sha512_mgf1_64",
+        "shake256",
+    ]
+]
+
+RSA_TESTVECTOR_ARGS = " ".join([
+    "--rsa-json=\"$(rootpath {})\"".format(target)
+    for target in RSA_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "rsa_kat",
+    slow_test = True,
+    test_args = RSA_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/rsa_kat:harness",
+    test_vectors = RSA_TESTVECTOR_TARGETS,
+)
+
 SHA256_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_sha2_fips_180_4_sha256_{}_json".format(
         msg_type.lower(),
