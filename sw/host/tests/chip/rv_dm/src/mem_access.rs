@@ -17,7 +17,7 @@ use opentitanlib::uart::console::UartConsole;
 use opentitanlib::util::parse_int::ParseInt;
 
 use ot_bindgen_dif as dif;
-use top_earlgrey::top_earlgrey;
+use ot_hal::top::earlgrey as top_earlgrey;
 
 #[derive(Debug, Parser)]
 struct Opts {

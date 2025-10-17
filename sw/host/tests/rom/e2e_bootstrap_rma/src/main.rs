@@ -17,17 +17,17 @@ use clap::Parser;
 use regex::Regex;
 
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::chip::boolean::MultiBitBool8;
-use opentitanlib::dif::lc_ctrl::{
-    DifLcCtrlState, DifLcCtrlToken, LcCtrlReg, LcCtrlStatus, LcCtrlTransitionCmd,
-    LcCtrlTransitionRegwen,
-};
-use opentitanlib::dif::rstmgr::DifRstmgrResetInfo;
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
+use ot_hal::dif::lc_ctrl::{
+    DifLcCtrlState, DifLcCtrlToken, LcCtrlReg, LcCtrlStatus, LcCtrlTransitionCmd,
+    LcCtrlTransitionRegwen,
+};
+use ot_hal::dif::rstmgr::DifRstmgrResetInfo;
+use ot_hal::util::multibits::MultiBitBool8;
 
 /// Timeout waiting for the chip to reset and perform an RMA
 /// transition.

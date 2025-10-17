@@ -9,16 +9,16 @@ use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::app::TransportWrapper;
-use crate::chip::boolean::MultiBitBool8;
-use crate::dif::lc_ctrl::{
+use ot_hal::dif::lc_ctrl::{
     DifLcCtrlState, LcCtrlReg, LcCtrlStatus, LcCtrlTransitionCmd, LcCtrlTransitionCtrl,
 };
+use ot_hal::top::earlgrey as top_earlgrey;
+use ot_hal::util::multibits::MultiBitBool8;
+
+use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, JtagParams, JtagTap};
 use crate::test_utils::poll;
-
-use top_earlgrey::top_earlgrey;
 
 /// Errors related to performing an LcTransition.
 #[derive(Error, Debug, Deserialize, Serialize)]

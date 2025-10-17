@@ -14,13 +14,13 @@ use anyhow::{Context, Result};
 use clap::Parser;
 
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::extclk::{ClockSpeed, ExternalClock};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::wait_for_status;
-use top_earlgrey::top_earlgrey;
+use ot_hal::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
+use ot_hal::top::earlgrey as top_earlgrey;
 
 #[derive(Debug, Parser)]
 struct Opts {

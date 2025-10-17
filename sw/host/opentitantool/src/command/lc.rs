@@ -12,9 +12,9 @@ use humantime::parse_duration;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, DifLcCtrlToken, LcCtrlReg, LcCtrlStatus};
 use opentitanlib::io::jtag::{Jtag, JtagParams, JtagTap};
 use opentitanlib::test_utils::lc_transition::{trigger_lc_transition, trigger_volatile_raw_unlock};
+use ot_hal::dif::lc_ctrl::{DifLcCtrlState, DifLcCtrlToken, LcCtrlReg, LcCtrlStatus};
 
 #[derive(serde::Serialize)]
 pub struct LcStateReadResult {

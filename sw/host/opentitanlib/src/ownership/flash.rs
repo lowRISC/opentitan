@@ -8,9 +8,10 @@ use serde::Deserialize;
 use serde_annotate::Annotate;
 use std::io::{Read, Write};
 
+use ot_hal::util::multibits::MultiBitBool4;
+
 use super::GlobalFlags;
 use super::misc::{TlvHeader, TlvTag};
-use crate::chip::boolean::MultiBitBool4;
 
 /// Describes the proprerties of a flash region.
 #[derive(Debug, Default, Clone, Copy, Deserialize, Annotate)]

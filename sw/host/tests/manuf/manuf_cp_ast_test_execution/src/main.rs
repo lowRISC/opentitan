@@ -9,7 +9,6 @@ use anyhow::{Context, Result, anyhow, bail};
 use clap::Parser;
 
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::dif::otp_ctrl::DaiParam;
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{Jtag, JtagTap};
 use opentitanlib::test_utils::init::InitializeTest;
@@ -18,6 +17,7 @@ use opentitanlib::test_utils::load_sram_program::{
 };
 use opentitanlib::test_utils::otp_ctrl::OtpParam;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
+use ot_hal::dif::otp_ctrl::DaiParam;
 
 #[derive(Debug, Parser)]
 struct Opts {

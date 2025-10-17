@@ -12,8 +12,8 @@ rust_binary(
         "src/asm_interrupt_handler.rs",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
+        "//sw/host/ot_hal",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:humantime",
@@ -28,8 +28,8 @@ rust_binary(
         "src/shutdown_execution_asm.rs",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
+        "//sw/host/ot_hal",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:humantime",
@@ -44,8 +44,8 @@ rust_binary(
         "src/asm_watchdog_bark.rs",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
+        "//sw/host/ot_hal",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:humantime",
@@ -60,8 +60,8 @@ rust_binary(
         "src/asm_watchdog_bite.rs",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
+        "//sw/host/ot_hal",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:humantime",
@@ -76,8 +76,8 @@ rust_binary(
         "src/debug_test.rs",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
+        "//sw/host/ot_hal",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:humantime",

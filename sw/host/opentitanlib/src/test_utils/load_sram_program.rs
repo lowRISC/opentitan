@@ -16,13 +16,13 @@ use object::{Object, ObjectSection, ObjectSegment, SectionKind};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::chip::boolean::MultiBitBool4;
+use ot_hal::top::earlgrey as top_earlgrey;
+use ot_hal::util::multibits::MultiBitBool4;
+
 use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, RiscvCsr, RiscvGpr, RiscvReg};
 use crate::util::parse_int::ParseInt;
 use crate::util::vmem::Vmem;
-
-use top_earlgrey::top_earlgrey;
 
 /// Command-line parameters.
 #[derive(Debug, Args, Clone, Default)]

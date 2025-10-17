@@ -19,6 +19,7 @@ rust_library(
     ],
     deps = [
         "//sw/host/opentitanlib",
+        "//sw/host/ot_hal",
         "//sw/host/provisioning/ujson_lib",
         "@crate_index//:anyhow",
         "@crate_index//:clap",

@@ -17,10 +17,7 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::pinmux_config::PinmuxConfig;
 use opentitanlib::uart::console::UartConsole;
 use opentitanlib::{collection, execute_test};
-
-use opentitanlib::chip::autogen::earlgrey::{
-    PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn,
-};
+use ot_hal::top::earlgrey::{PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn};
 
 #[derive(Debug, Parser)]
 struct Opts {

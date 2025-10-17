@@ -18,6 +18,7 @@ package(default_visibility = ["//visibility:public"])
         deps = [
             "//sw/host/opentitanlib",
             "//sw/host/ot_certs",
+            "//sw/host/ot_hal",
             "//sw/host/provisioning/cert_lib",
             "//sw/host/provisioning/perso_tlv_lib",
             "//sw/host/provisioning/perso_tlv_lib:perso_tlv_objects",

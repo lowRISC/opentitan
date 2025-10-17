@@ -17,7 +17,8 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::dif::lc_ctrl::LcCtrlReg;
+use ot_hal::dif::lc_ctrl::LcCtrlReg;
+
 use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, JtagChain, JtagError, JtagParams, JtagTap, RiscvReg};
 use crate::util::parse_int::ParseInt;

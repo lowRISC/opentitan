@@ -16,6 +16,7 @@ package(default_visibility = ["//visibility:public"])
         srcs = ["src/main.rs"],
         deps = [
             "//sw/host/opentitanlib",
+            "//sw/host/ot_hal",
             "//sw/host/provisioning/ft_lib:ft_lib_{}".format(sku),
             "//sw/host/provisioning/cert_lib",
             "//sw/host/provisioning/ujson_lib",
