@@ -12,7 +12,7 @@ use rand::RngCore;
 use zerocopy::IntoBytes;
 
 use cp_lib::{CpResponse, reset_and_lock, run_sram_cp_provision, unlock_raw};
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::io::gpio::{PinMode, PullMode};
@@ -65,18 +65,13 @@ fn cp_provision(
     run_sram_cp_provision(
         transport,
         &opts.init.jtag_params,
-        opts.init.bootstrap.options.reset_delay,
         &provisioning_sram_program,
         provisioning_data,
         spi_console,
         response,
         opts.timeout,
     )?;
-    reset_and_lock(
-        transport,
-        &opts.init.jtag_params,
-        opts.init.bootstrap.options.reset_delay,
-    )?;
+    reset_and_lock(transport, &opts.init.jtag_params)?;
     Ok(())
 }
 
@@ -87,7 +82,7 @@ fn test_unlock(
 ) -> Result<()> {
     // Connect to LC TAP.
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let mut jtag = opts
         .init
         .jtag_params
@@ -106,7 +101,6 @@ fn test_unlock(
         DifLcCtrlState::TestUnlocked1,
         test_unlock_token,
         /*use_external_clk=*/ true,
-        opts.init.bootstrap.options.reset_delay,
         /*reset_tap_straps=*/ Some(JtagTap::LcTap),
     )?;
 
@@ -141,7 +135,7 @@ fn prep_flash_for_cp_init(
 
     // Set the TAP straps for the CPU and reset.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     // Connect to the RISCV TAP via JTAG.
     let mut jtag = opts
@@ -191,7 +185,7 @@ fn check_cp_provisioning(
 
     // Set the TAP straps for the CPU and reset.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     // Connect to the RISCV TAP via JTAG.
     let mut jtag = opts
@@ -241,11 +235,7 @@ fn main() -> Result<()> {
     )?;
 
     // Transition from RAW to TEST_UNLOCKED0.
-    unlock_raw(
-        &transport,
-        &opts.init.jtag_params,
-        opts.init.bootstrap.options.reset_delay,
-    )?;
+    unlock_raw(&transport, &opts.init.jtag_params)?;
 
     // Generate random test wafer data.
     let test_data = ManufCpTestData {

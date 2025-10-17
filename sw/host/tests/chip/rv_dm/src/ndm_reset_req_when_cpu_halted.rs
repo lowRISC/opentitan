@@ -7,7 +7,7 @@ use std::time::Duration;
 use anyhow::Result;
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{JtagTap, RiscvCsr};
 use opentitanlib::test_utils::init::InitializeTest;
@@ -31,7 +31,7 @@ const DCSR_CAUSE_HALTREQ: u32 = 0x3 << DCSR_CAUSE_SHIFT;
 fn test_ndm_reset_req_when_halted(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // This test requires RV_DM access so first strap and reset.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     // Enable console and wait for the message.
     let uart = transport.uart("console")?;

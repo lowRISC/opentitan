@@ -10,7 +10,7 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::uart::{Parity, Uart};
 use opentitanlib::test_utils;
@@ -69,7 +69,7 @@ fn main() -> Result<()> {
     // Test all four UARTs with both parities.
     for uart_id in 0..4 {
         for parity in [Parity::Odd, Parity::Even, Parity::None] {
-            transport.reset_target(Duration::from_millis(500), true)?;
+            transport.reset_with_delay(UartRx::Clear, Duration::from_millis(500))?;
 
             let test_data = TestData {
                 uart_id,

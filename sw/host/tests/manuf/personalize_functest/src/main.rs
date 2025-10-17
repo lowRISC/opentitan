@@ -63,11 +63,7 @@ fn send_rma_unlock_token(opts: &Opts, transport: &TransportWrapper) -> Result<()
         opts.timeout,
     )?;
     // Check the LC state is Dev or Prod.
-    let current_lc_state = read_lc_state(
-        transport,
-        &opts.init.jtag_params,
-        opts.init.bootstrap.options.reset_delay,
-    )?;
+    let current_lc_state = read_lc_state(transport, &opts.init.jtag_params)?;
     let valid_lc_states = HashSet::from([DifLcCtrlState::Dev, DifLcCtrlState::Prod]);
     assert!(
         valid_lc_states.contains(&current_lc_state),
@@ -88,7 +84,6 @@ fn send_rma_unlock_token(opts: &Opts, transport: &TransportWrapper) -> Result<()
         DifLcCtrlState::Rma,
         Some(rma_unlock_token),
         /*use_external_clk=*/ false,
-        opts.init.bootstrap.options.reset_delay,
         /*reset_tap_straps=*/ None,
     )?;
     transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
@@ -96,11 +91,7 @@ fn send_rma_unlock_token(opts: &Opts, transport: &TransportWrapper) -> Result<()
 
     // Check the LC state is RMA.
     assert_eq!(
-        read_lc_state(
-            transport,
-            &opts.init.jtag_params,
-            opts.init.bootstrap.options.reset_delay,
-        )?,
+        read_lc_state(transport, &opts.init.jtag_params)?,
         DifLcCtrlState::Rma,
         "Did not transition to RMA.",
     );

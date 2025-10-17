@@ -8,7 +8,7 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::gpio::PinMode;
 use opentitanlib::io::jtag::JtagTap;
@@ -37,7 +37,7 @@ fn test_access_after_wakeup(
     software_barrier_addr: u32,
 ) -> Result<()> {
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     let power_button = transport.gpio_pin("Ior13")?;
     power_button.set_mode(PinMode::PushPull)?;
