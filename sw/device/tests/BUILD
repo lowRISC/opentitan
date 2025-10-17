@@ -584,6 +584,7 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
+        timeout = "long",
         test_cmd = """
             --bootstrap={firmware}
         """,

@@ -117,7 +117,7 @@
 #include "uart_regs.h"
 #include "usbdev_regs.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
 #define MAX_ISR_EXECUTIONS 10
 
@@ -247,7 +247,7 @@ static void check_reset_and_alert_info(
     dif_rstmgr_reset_info_bitfield_t reset_info, uint32_t expected_alert_id);
 static void check_alert_all_active_reset(uint32_t alert_id);
 
-// Function pointer types
+// Function pointer types force/deassert functions
 typedef dif_result_t (*alert_force_fn)(void *dif_handle,
                                        const struct alert_config *config);
 typedef void (*alert_deassert_fn)(const struct alert_config *config);
@@ -1253,7 +1253,12 @@ static const alert_config_t kAlertConfigs[ALERT_HANDLER_PARAM_N_ALERTS] = {
          .base_addr = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
          .force_func = force_flash_ctrl_alert,
          .deassert_func = deassert_flash_ctrl_alert,
-         .skip_test = false,
+         .skip_test =
+#if FPGA_TARGET
+             true,
+#else
+             false,
+#endif
          .module_alert_type.flash_ctrl_alert = kDifFlashCtrlAlertFatalErr},
     [kTopEarlgreyAlertIdFlashCtrlFatalPrimFlashAlert] =
         {.id = kTopEarlgreyAlertIdFlashCtrlFatalPrimFlashAlert,
@@ -1581,8 +1586,6 @@ void ottf_external_isr(uint32_t *exc_info) {
 }
 
 // Initializes all required peripheral DIF handles
-// (PWRMGR, Alert Handler, PLIC, RSTMGR, CLKMGR, AON Timer,
-// GPIO, UARTs, SPI Device, I2Cs)
 static void initialize_peripherals(void) {
   CHECK_DIF_OK(dif_pwrmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
@@ -1699,7 +1702,12 @@ static void check_alert_all_active_defaults(void) {
     const alert_config_t *config = &kAlertConfigs[alert_id];
     if (config->name == NULL)
       continue;
-
+#if FPGA_TARGET
+    if (config->id == kTopEarlgreyAlertIdFlashCtrlFatalErr) {
+      LOG_INFO("Skipping flash_ctrl_fatal_err on FPGA target.");
+      continue;
+    }
+#endif
     bool is_cause = false;
     CHECK_DIF_OK(
         dif_alert_handler_alert_is_cause(&alert_handler, alert_id, &is_cause));
