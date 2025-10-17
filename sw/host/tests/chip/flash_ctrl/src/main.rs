@@ -11,7 +11,7 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use object::{Object, ObjectSymbol};
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -72,7 +72,7 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         .context("failed to apply ROM_BOOTSTRAP strapping")?;
 
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     log::info!("Connecting to RISC-V TAP");
     let mut jtag = opts
@@ -112,7 +112,7 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
         .context("failed to apply PINMUX_TAP_LC strapping")?;
 
     transport
-        .reset_target(opts.init.bootstrap.options.reset_delay, true)
+        .reset(UartRx::Clear)
         .context("failed to reset target")?;
 
     log::info!("Connecting to JTAG interface");
@@ -147,7 +147,6 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
         DifLcCtrlState::Rma,
         Some(rma_unlock_token.into_register_values()),
         /*use_external_clk=*/ false,
-        opts.init.bootstrap.options.reset_delay,
         Some(JtagTap::LcTap),
     )
     .expect("failed to trigger transition to rma");

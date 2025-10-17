@@ -13,7 +13,7 @@ use serde::Deserialize;
 use pentest_commands::commands::PenetrationtestCommand;
 use pentest_commands::fi_rng_commands::RngFiSubcommand;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -174,7 +174,7 @@ fn test_fi_rng(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         let fi_rng_tests: Vec<FiRngTestCase> = serde_json::from_str(&raw_json)?;
         for fi_rng_test in &fi_rng_tests {
             if fi_rng_test.reset {
-                transport.reset_target(Duration::from_millis(750), true)?;
+                transport.reset_with_delay(UartRx::Clear, Duration::from_millis(750))?;
             } else {
                 test_counter += 1;
                 log::info!("Test counter: {}", test_counter);

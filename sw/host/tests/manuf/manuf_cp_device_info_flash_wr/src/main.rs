@@ -8,7 +8,7 @@ use anyhow::{Result, anyhow};
 use clap::Parser;
 use regex::Regex;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::backend;
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
@@ -40,7 +40,7 @@ struct Opts {
 fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let mut jtag = opts
         .init
         .jtag_params
@@ -96,7 +96,6 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
         opts.target_lc_state,
         Some(TEST_EXIT_TOKEN),
         /*use_external_clk=*/ true,
-        opts.init.bootstrap.options.reset_delay,
         /*reset_tap_straps=*/ None,
     )?;
 

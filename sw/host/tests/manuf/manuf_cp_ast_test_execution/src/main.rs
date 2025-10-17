@@ -8,7 +8,7 @@ use std::time::Duration;
 use anyhow::{Context, Result, anyhow, bail};
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{Jtag, JtagTap};
 use opentitanlib::test_utils::init::InitializeTest;
@@ -46,9 +46,7 @@ fn connect_riscv_jtag<'t>(
         .pin_strapping("PINMUX_TAP_RISCV")?
         .apply()
         .context("failed to apply RISCV TAP strapping")?;
-    transport
-        .reset_target(opts.init.bootstrap.options.reset_delay, true)
-        .context("failed to reset")?;
+    transport.reset(UartRx::Clear).context("failed to reset")?;
 
     log::info!("Connecting to RISC-V TAP");
     let mut jtag = opts

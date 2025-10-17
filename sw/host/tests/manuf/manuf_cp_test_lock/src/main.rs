@@ -10,7 +10,7 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{Jtag, JtagTap};
 use opentitanlib::test_utils::init::InitializeTest;
@@ -81,9 +81,7 @@ fn provision_token(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
 
     // Reset after locking to allow the token to be used for transitions.
-    transport
-        .reset_target(opts.init.bootstrap.options.reset_delay, true)
-        .context("failed to reset")?;
+    transport.reset(UartRx::Clear).context("failed to reset")?;
 
     Ok(())
 }
@@ -105,7 +103,6 @@ fn test_lock(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<()> {
         DifLcCtrlState::TestLocked0,
         None,
         true,
-        opts.init.bootstrap.options.reset_delay,
         Some(JtagTap::LcTap),
     )
     .context("failed to trigger transition to TEST_LOCKED0")?;
@@ -142,7 +139,6 @@ fn test_unlock(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<()> 
         DifLcCtrlState::TestUnlocked1,
         Some(TEST_UNLOCK_TOKEN_PREIMAGE),
         true,
-        opts.init.bootstrap.options.reset_delay,
         Some(JtagTap::LcTap),
     )
     .context("failed to trigger transition to TEST_UNLOCKED1")?;
@@ -180,9 +176,7 @@ fn reset_to_tap<'t>(
         .pin_strapping(strapping)?
         .apply()
         .with_context(|| format!("failed to apply {strapping} strapping"))?;
-    transport
-        .reset_target(opts.init.bootstrap.options.reset_delay, true)
-        .context("failed to reset")?;
+    transport.reset(UartRx::Clear).context("failed to reset")?;
 
     let jtag = opts
         .init

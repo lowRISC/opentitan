@@ -8,7 +8,7 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use regex::Regex;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -33,7 +33,7 @@ fn test_jtag_tap_sel(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     // Test the LC TAP
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     let mut jtag = opts
         .init
@@ -64,7 +64,7 @@ fn test_jtag_tap_sel(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Test RISC-V TAP
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     if needs_reset {
-        transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+        transport.reset(UartRx::Clear)?;
     }
 
     let jtag = opts
@@ -91,7 +91,7 @@ fn test_jtag_tap_sel(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Test DFT TAP
     transport.pin_strapping("PINMUX_TAP_DFT")?.apply()?;
     if needs_reset {
-        transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+        transport.reset(UartRx::Clear)?;
     }
 
     // If RV-DM is disabled, strapping DFT tap will result in LC TAP being selected.
@@ -131,7 +131,7 @@ fn test_jtag_tap_sel(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     transport.pin_strapping("PINMUX_TAP_DFT")?.remove()?;
     if needs_reset {
-        transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+        transport.reset(UartRx::Clear)?;
     }
 
     // Now check that there's no JTAG TAP present.
