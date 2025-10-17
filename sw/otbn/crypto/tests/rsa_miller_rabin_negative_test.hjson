@@ -1,0 +1,20 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  "entrypoint": "main",
+  "input": {
+    "dmem": {
+      # Candidate prime (Wycheproof test #39):
+      # Note: this prime is a worst-case test for Miller-Rabin, since it has a high
+      # probability of producing false positives if the number of rounds is too low.
+      "rsa_n": "0xf67307e54779cfe9120bf862afc5466c5d6d0783d12df5215c0c981c51e4bfc098e9afd574f51b18c820259b692ec0bf7c9d6e56e9bb99fbd3b7ecc4082146a9d7a5b7bc6519d476c4a9975d9c3e3b12bee45b7accb07a6a68ea583ac2523ef32ee6d01bc766b59c43031f9c6980c9b4317da6825be9f7c5db03283d04c13323"
+    }
+  }
+  "output": {
+    "regs": {
+      "x2": "0x00000000"
+    }
+  }
+}

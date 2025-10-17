@@ -238,31 +238,16 @@ otbn_library(
 )
 
 otbn_library(
-    name = "primality",
+    name = "rsa_primality",
     srcs = [
-        "primality.s",
+        "rsa_primality.s",
     ],
 )
 
-otbn_binary(
-    name = "rsa",
+otbn_library(
+    name = "run_rsa_mem",
     srcs = [
-        "rsa.s",
-    ],
-    deps = [
-        ":modexp",
-        ":montmul",
-    ],
-)
-
-otbn_binary(
-    name = "run_rsa_modexp",
-    srcs = [
-        "run_rsa_modexp.s",
-    ],
-    deps = [
-        ":modexp",
-        ":montmul",
+        "run_rsa_mem.s",
     ],
 )
 
@@ -273,10 +258,46 @@ otbn_library(
     ],
 )
 
-otbn_binary(
-    name = "run_rsa_keygen",
+otbn_library(
+    name = "rsa_modinv_f4",
     srcs = [
-        "run_rsa_keygen.s",
+        "rsa_modinv_f4.s",
+    ],
+)
+
+otbn_binary(
+    name = "run_rsa",
+    srcs = [
+        "gcd.s",
+        "modexp.s",
+        "montmul.s",
+        "mul.s",
+        "rsa_keygen.s",
+        "rsa_modinv_f4.s",
+        "rsa_primality.s",
+        "run_rsa.s",
+        "run_rsa_mem.s",
+    ],
+)
+
+otbn_library(
+    name = "run_rsa_key_from_cofactor_mem",
+    srcs = [
+        "run_rsa_key_from_cofactor_mem.s",
+    ],
+)
+
+otbn_library(
+    name = "rsa_key_from_cofactor",
+    srcs = [
+        "rsa_key_from_cofactor.s",
+    ],
+)
+
+otbn_binary(
+    name = "run_rsa_key_from_cofactor",
+    srcs = [
+        "run_rsa_key_from_cofactor.s",
     ],
     deps = [
         ":div",
@@ -284,59 +305,9 @@ otbn_binary(
         ":lcm",
         ":montmul",
         ":mul",
-        ":primality",
-        ":rsa_keygen",
-    ],
-)
-
-otbn_library(
-    name = "rsa_verify",
-    srcs = [
-        "rsa_verify.s",
-    ],
-)
-
-otbn_library(
-    name = "rsa_verify_3072",
-    srcs = [
-        "//sw/vendor:veri-titan/gen/otbn_modexp.s",
-    ],
-)
-
-otbn_library(
-    name = "rsa_verify_3072_m0inv",
-    srcs = [
-        "rsa_verify_3072_m0inv.s",
-    ],
-)
-
-otbn_library(
-    name = "rsa_verify_3072_rr",
-    srcs = [
-        "rsa_verify_3072_rr.s",
-    ],
-)
-
-otbn_binary(
-    name = "run_rsa_verify_3072",
-    srcs = [
-        "run_rsa_verify_3072.s",
-    ],
-    deps = [
-        ":rsa_verify_3072",
-        ":rsa_verify_3072_m0inv",
-        ":rsa_verify_3072_rr",
-    ],
-)
-
-otbn_binary(
-    name = "run_rsa_verify_3072_rr_modexp",
-    srcs = [
-        "run_rsa_verify_3072_rr_modexp.s",
-    ],
-    deps = [
-        ":rsa_verify_3072",
-        ":rsa_verify_3072_rr",
+        ":rsa_key_from_cofactor",
+        ":rsa_modinv_f4",
+        ":run_rsa_key_from_cofactor_mem",
     ],
 )
 

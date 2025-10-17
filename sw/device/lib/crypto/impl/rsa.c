@@ -9,8 +9,9 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_encryption.h"
-#include "sw/device/lib/crypto/impl/rsa/rsa_keygen.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_signature.h"
+#include "sw/device/lib/crypto/impl/rsa/run_rsa.h"
+#include "sw/device/lib/crypto/impl/rsa/run_rsa_key_from_cofactor.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
@@ -71,7 +72,7 @@ static status_t rsa_mode_check(const otcrypto_key_mode_t mode) {
 
 otcrypto_status_t otcrypto_rsa_public_key_construct(
     otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus,
-    uint32_t exponent, otcrypto_unblinded_key_t *public_key) {
+    otcrypto_unblinded_key_t *public_key) {
   if (modulus.data == NULL || public_key == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -87,7 +88,6 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
-      pk->e = exponent;
       HARDENED_TRY(hardened_memcpy(pk->n.data, modulus.data, modulus.len));
       break;
     }
@@ -97,7 +97,6 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
-      pk->e = exponent;
       HARDENED_TRY(hardened_memcpy(pk->n.data, modulus.data, modulus.len));
       break;
     }
@@ -107,7 +106,6 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
-      pk->e = exponent;
       HARDENED_TRY(hardened_memcpy(pk->n.data, modulus.data, modulus.len));
       break;
     }
@@ -175,7 +173,7 @@ static status_t private_key_structural_check(
 }
 
 otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus,
     otcrypto_const_word32_buf_t d_share0, otcrypto_const_word32_buf_t d_share1,
     otcrypto_blinded_key_t *private_key) {
   if (modulus.data == NULL || d_share0.data == NULL || d_share1.data == NULL ||
@@ -190,12 +188,6 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
   // Ensure that the length of the private exponent shares matches the length
   // of the modulus.
   if (d_share0.len != modulus.len || d_share1.len != modulus.len) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Check the public exponent is odd and greater than 2^16 (see FIPS 186-5,
-  // section A.1.1).
-  if ((e & 1) != 1 || e >> 16 == 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -216,10 +208,11 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
       rsa_2048_private_key_t *sk =
           (rsa_2048_private_key_t *)private_key->keyblob;
       HARDENED_TRY(hardened_memcpy(sk->n.data, modulus.data, modulus.len));
-      HARDENED_TRY(hardened_memcpy(sk->d.data, d_share0.data, d_share0.len));
+      HARDENED_TRY(hardened_memcpy(sk->d0.data, d_share0.data, d_share0.len));
       // TODO: RSA keys are currently unblinded, so combine the shares.
       for (size_t i = 0; i < d_share1.len; i++) {
-        sk->d.data[i] ^= d_share1.data[i];
+        sk->d0.data[i] ^= d_share1.data[i];
+        sk->d1.data[i] = 0x0;
       }
       break;
     }
@@ -231,10 +224,11 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
       rsa_3072_private_key_t *sk =
           (rsa_3072_private_key_t *)private_key->keyblob;
       HARDENED_TRY(hardened_memcpy(sk->n.data, modulus.data, modulus.len));
-      HARDENED_TRY(hardened_memcpy(sk->d.data, d_share0.data, d_share0.len));
+      HARDENED_TRY(hardened_memcpy(sk->d0.data, d_share0.data, d_share0.len));
       // TODO: RSA keys are currently unblinded, so combine the shares.
       for (size_t i = 0; i < d_share1.len; i++) {
-        sk->d.data[i] ^= d_share1.data[i];
+        sk->d0.data[i] ^= d_share1.data[i];
+        sk->d1.data[i] = 0x0;
       }
       break;
     }
@@ -246,10 +240,11 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
       rsa_4096_private_key_t *sk =
           (rsa_4096_private_key_t *)private_key->keyblob;
       HARDENED_TRY(hardened_memcpy(sk->n.data, modulus.data, modulus.len));
-      HARDENED_TRY(hardened_memcpy(sk->d.data, d_share0.data, d_share0.len));
+      HARDENED_TRY(hardened_memcpy(sk->d0.data, d_share0.data, d_share0.len));
       // TODO: RSA keys are currently unblinded, so combine the shares.
       for (size_t i = 0; i < d_share1.len; i++) {
-        sk->d.data[i] ^= d_share1.data[i];
+        sk->d0.data[i] ^= d_share1.data[i];
+        sk->d1.data[i] = 0x0;
       }
       break;
     }
@@ -262,12 +257,12 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
 }
 
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus,
     otcrypto_const_word32_buf_t cofactor_share0,
     otcrypto_const_word32_buf_t cofactor_share1,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
   HARDENED_TRY(otcrypto_rsa_keypair_from_cofactor_async_start(
-      size, modulus, e, cofactor_share0, cofactor_share1));
+      size, modulus, cofactor_share0, cofactor_share1));
   HARDENED_TRY(otcrypto_rsa_keypair_from_cofactor_async_finalize(public_key,
                                                                  private_key));
 
@@ -510,7 +505,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
 }
 
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus,
     otcrypto_const_word32_buf_t cofactor_share0,
     otcrypto_const_word32_buf_t cofactor_share1) {
   if (modulus.data == NULL || cofactor_share0.data == NULL ||
@@ -542,7 +537,6 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
       }
       rsa_2048_public_key_t pk;
       HARDENED_TRY(hardened_memcpy(pk.n.data, modulus.data, modulus.len));
-      pk.e = e;
       return rsa_keygen_from_cofactor_2048_start(&pk, cf);
     }
     case kOtcryptoRsaSize3072: {
