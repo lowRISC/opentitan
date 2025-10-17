@@ -13,7 +13,7 @@ use serde::Deserialize;
 use pentest_commands::commands::PenetrationtestCommand;
 use pentest_commands::fi_ibex_commands::IbexFiSubcommand;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -172,7 +172,7 @@ fn test_fi_ibex(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         let fi_ibex_tests: Vec<FiIbexTestCase> = serde_json::from_str(&raw_json)?;
         for fi_ibex_test in &fi_ibex_tests {
             if fi_ibex_test.reset {
-                transport.reset_target(Duration::from_millis(750), true)?;
+                transport.reset_with_delay(UartRx::Clear, Duration::from_millis(750))?;
             } else {
                 test_counter += 1;
                 log::info!("Test counter: {}", test_counter);

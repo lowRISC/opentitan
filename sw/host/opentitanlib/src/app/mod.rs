@@ -1094,6 +1094,7 @@ impl TransportWrapper {
         Ok(())
     }
 
+    #[deprecated = "use [`reset`] or [`reset_with_delay`]"]
     pub fn reset_target(&self, reset_delay: Duration, clear_uart_rx: bool) -> Result<()> {
         let uart_rx = match clear_uart_rx {
             true => UartRx::Clear,

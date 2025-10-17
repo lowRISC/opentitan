@@ -7,7 +7,7 @@ use std::time::Duration;
 use anyhow::{Context, Result, bail};
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -33,7 +33,7 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper, corrupt: bool) -> R
     // Connect to the RISC-V TAP
     //
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     log::info!("Connecting to RISC-V TAP");
     let mut jtag = opts

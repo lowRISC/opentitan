@@ -8,7 +8,7 @@ use clap::Parser;
 use regex::Regex;
 use std::time::Duration;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::spiflash::SpiFlash;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -38,7 +38,7 @@ fn test_bootstrap_disabled_requested(opts: &Opts, transport: &TransportWrapper) 
     log::info!("Applying pin strapping");
     transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
     log::info!("Resetting target");
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     // Now watch the console for the exit conditions.
     let result = console.interact(&*uart, false)?;
@@ -66,7 +66,7 @@ fn test_bootstrap_disabled_not_requested(opts: &Opts, transport: &TransportWrapp
     log::info!("Not applying pin strapping");
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     log::info!("Resetting target");
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     // Now watch the console for the exit conditions.
     let result = console.interact(&*uart, false)?;

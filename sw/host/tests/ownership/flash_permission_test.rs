@@ -9,7 +9,7 @@ use regex::Regex;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::chip::boot_svc::{BootSlot, UnlockMode};
 use opentitanlib::chip::rom_error::RomError;
 use opentitanlib::rescue::serial::RescueSerial;
@@ -187,7 +187,7 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
         //
         // The flash configuration will be the previous owner in Side A and
         // the new owner in SideB.
-        transport.reset_target(Duration::from_millis(50), /*clear_uart=*/ true)?;
+        transport.reset_with_delay(UartRx::Clear, Duration::from_millis(50))?;
         let capture = UartConsole::wait_for_bytes(
             &*uart,
             r"(?msR)Running(.*)Finished.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
@@ -270,7 +270,7 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
 
     log::info!("###### Boot After Transfer Complete ######");
     // After the activate command, the device should report the ownership state as `OWND`.
-    transport.reset_target(Duration::from_millis(50), /*clear_uart=*/ true)?;
+    transport.reset_with_delay(UartRx::Clear, Duration::from_millis(50))?;
     let capture = UartConsole::wait_for_bytes(
         &*uart,
         r"(?msR)Running(.*)Finished.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
