@@ -6,7 +6,7 @@ use anyhow::Result;
 use std::rc::Rc;
 use std::time::Duration;
 
-use crate::app::TransportWrapper;
+use crate::app::{TransportWrapper, UartRx};
 use crate::chip::boot_log::BootLog;
 use crate::chip::boot_svc::{BootSlot, BootSvc, OwnershipActivateRequest, OwnershipUnlockRequest};
 use crate::chip::device_id::DeviceId;
@@ -58,7 +58,7 @@ impl RescueSerial {
         log::info!("Setting serial break to trigger rescue mode.");
         self.uart.set_break(true)?;
         if reset_target {
-            transport.reset_target(self.reset_delay, /*clear_uart=*/ true)?;
+            transport.reset_with_delay(UartRx::Clear, self.reset_delay)?;
         }
         (&self.uart)
             .logged()

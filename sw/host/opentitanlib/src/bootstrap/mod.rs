@@ -10,7 +10,7 @@ use std::rc::Rc;
 use std::time::Duration;
 use thiserror::Error;
 
-use crate::app::{NoProgressBar, TransportWrapper};
+use crate::app::{NoProgressBar, TransportWrapper, UartRx};
 use crate::impl_serializable_error;
 use crate::io::gpio::GpioPin;
 use crate::io::spi::SpiParams;
@@ -85,9 +85,6 @@ pub struct BootstrapOptions {
     /// Whether to reset target and clear UART RX buffer after bootstrap. For Chip Whisperer board only.
     #[arg(long)]
     pub clear_uart: Option<bool>,
-    /// Duration of the reset pulse.
-    #[arg(long, value_parser = parse_duration, default_value = "100ms")]
-    pub reset_delay: Duration,
     /// If set, keep the bootstrap strapping applied and do not perform the post-bootstrap reset
     /// sequence.
     #[arg(long)]
@@ -110,7 +107,6 @@ pub struct Bootstrap<'a> {
     pub uart_params: &'a UartParams,
     pub spi_params: &'a SpiParams,
     reset_pin: Rc<dyn GpioPin>,
-    reset_delay: Duration,
     leave_in_reset: bool,
     leave_in_bootstrap: bool,
 }
@@ -163,7 +159,6 @@ impl<'a> Bootstrap<'a> {
             uart_params: &options.uart_params,
             spi_params: &options.spi_params,
             reset_pin: transport.gpio_pin("RESET")?,
-            reset_delay: options.reset_delay,
             leave_in_reset: options.leave_in_reset,
             leave_in_bootstrap: options.leave_in_bootstrap,
         }
@@ -184,7 +179,11 @@ impl<'a> Bootstrap<'a> {
         if perform_bootstrap_reset {
             log::info!("Asserting bootstrap pins...");
             rom_boot_strapping.apply()?;
-            transport.reset_target(self.reset_delay, self.clear_uart_rx)?;
+            let uart_rx = match self.clear_uart_rx {
+                true => UartRx::Clear,
+                false => UartRx::Keep,
+            };
+            transport.reset(uart_rx)?;
             log::info!("Performing bootstrap...");
         }
         let result = updater.update(self, transport, payload, progress);
@@ -203,7 +202,7 @@ impl<'a> Bootstrap<'a> {
                 rom_boot_strapping.remove()?;
                 // Don't clear the UART RX buffer after bootstrap to preserve the bootstrap
                 // output.
-                transport.reset_target(self.reset_delay, false)?;
+                transport.reset(UartRx::Keep)?;
             }
         }
         result

@@ -13,7 +13,7 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::extclk::{ClockSpeed, ExternalClock};
@@ -42,7 +42,7 @@ fn manuf_cp_yield_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
         .pin_strapping("PINMUX_TAP_RISCV")?
         .apply()
         .context("failed to apply RISCV TAP strapping")?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let mut jtag = opts
         .init
         .jtag_params

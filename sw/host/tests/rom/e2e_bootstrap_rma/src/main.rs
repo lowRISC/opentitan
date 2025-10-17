@@ -15,7 +15,7 @@ use anyhow::{Context, bail};
 use clap::Parser;
 use regex::Regex;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -52,7 +52,7 @@ fn main() -> anyhow::Result<()> {
         .init_target()
         .context("failed to initialise target")?;
 
-    execute_test!(test_no_rma_command, &opts, &transport);
+    execute_test!(test_no_rma_command, &transport);
     execute_test!(test_rma_command, &opts, &transport);
 
     Ok(())
@@ -63,7 +63,7 @@ fn main() -> anyhow::Result<()> {
 /// Verifies that the ROM times out on spin cycles, automatically resets the
 /// device, and logs the expected reset reasons. Does not issue the life cycle
 /// RMA command.
-fn test_no_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<()> {
+fn test_no_rma_command(transport: &TransportWrapper) -> anyhow::Result<()> {
     let uart = transport.uart("console").context("failed to get UART")?;
 
     let rma_bootstrap_strapping = transport.pin_strapping("RMA_BOOTSTRAP")?;
@@ -73,7 +73,7 @@ fn test_no_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Res
         .context("failed to apply RMA_BOOTSTRAP strapping")?;
 
     transport
-        .reset_target(opts.init.bootstrap.options.reset_delay, true)
+        .reset(UartRx::Clear)
         .context("failed to reset target")?;
 
     // Remove the RMA_BOOTSTRAP strapping to bring the device out of the RMA spin loop.
@@ -127,7 +127,7 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
         .context("failed to apply PINMUX_TAP_LC strapping")?;
 
     transport
-        .reset_target(opts.init.bootstrap.options.reset_delay, true)
+        .reset(UartRx::Clear)
         .context("failed to reset target")?;
 
     log::info!("Connecting to JTAG interface");
@@ -253,7 +253,7 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
     let uart = transport.uart("console").context("failed to get console")?;
 
     transport
-        .reset_target(opts.init.bootstrap.options.reset_delay, true)
+        .reset(UartRx::Clear)
         .context("failed to reset target")?;
 
     let rma_state = DifLcCtrlState::Rma.redundant_encoding();

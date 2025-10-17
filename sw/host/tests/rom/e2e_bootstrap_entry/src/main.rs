@@ -11,7 +11,7 @@ use std::matches;
 use std::ops::Drop;
 use std::time::Duration;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::spi::Transfer;
 use opentitanlib::spiflash::{
@@ -55,23 +55,19 @@ struct Opts {
 /// erased when the returned struct is dropped, typically at the end of the test point.
 struct BootstrapTest<'a> {
     transport: &'a TransportWrapper,
-    reset_delay: Duration,
 }
 
 impl<'a> BootstrapTest<'a> {
-    pub fn start(transport: &'a TransportWrapper, reset_delay: Duration) -> Result<Self> {
-        let b = BootstrapTest {
-            transport,
-            reset_delay,
-        };
+    pub fn start(transport: &'a TransportWrapper) -> Result<Self> {
+        let b = BootstrapTest { transport };
         transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
-        transport.reset_target(b.reset_delay, true)?;
+        transport.reset(UartRx::Clear)?;
         let spi = transport.spi("BOOTSTRAP").unwrap();
         SpiFlash::from_spi(&*spi)
             .unwrap()
             .chip_erase(&*spi)
             .unwrap();
-        transport.reset_target(reset_delay, true).unwrap();
+        transport.reset(UartRx::Clear).unwrap();
         Ok(b)
     }
 }
@@ -80,19 +76,19 @@ impl<'a> Drop for BootstrapTest<'a> {
     fn drop(&mut self) {
         let bootstrapping = self.transport.pin_strapping("ROM_BOOTSTRAP").unwrap();
         bootstrapping.apply().unwrap();
-        self.transport.reset_target(self.reset_delay, true).unwrap();
+        self.transport.reset(UartRx::Clear).unwrap();
         let spi = self.transport.spi("BOOTSTRAP").unwrap();
         SpiFlash::from_spi(&*spi)
             .unwrap()
             .chip_erase(&*spi)
             .unwrap();
         bootstrapping.remove().unwrap();
-        self.transport.reset_target(self.reset_delay, true).unwrap();
+        self.transport.reset(UartRx::Clear).unwrap();
     }
 }
 
 fn test_bootstrap_enabled_requested(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+    let _bs = BootstrapTest::start(transport)?;
 
     // TODO: Should really `opts.init.uart_params.create()` here, but we need to refactor
     // BootstrapOptions first.
@@ -105,7 +101,7 @@ fn test_bootstrap_enabled_requested(opts: &Opts, transport: &TransportWrapper) -
     );
 
     transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     // Now watch the console for the exit conditions.
     let result = console.interact(&*uart, false)?;
@@ -130,7 +126,7 @@ fn test_bootstrap_enabled_not_requested(opts: &Opts, transport: &TransportWrappe
         Some(Regex::new(r"bootstrap:1\r\n")?),
     );
 
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     // Now watch the console for the exit conditions.
     let result = console.interact(&*uart, false)?;
@@ -154,7 +150,7 @@ fn test_bootstrap_enabled_not_requested(opts: &Opts, transport: &TransportWrappe
 }
 
 fn test_jedec_id(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+    let _bs = BootstrapTest::start(transport)?;
 
     let spi = transport.spi("BOOTSTRAP")?;
     let id = SpiFlash::read_jedec_id(&*spi, 16)?;
@@ -175,8 +171,8 @@ fn test_jedec_id(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     Ok(())
 }
 
-fn test_write_enable_disable(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+fn test_write_enable_disable(transport: &TransportWrapper) -> Result<()> {
+    let _bs = BootstrapTest::start(transport)?;
 
     let spi = transport.spi("BOOTSTRAP")?;
 
@@ -192,7 +188,7 @@ fn test_write_enable_disable(opts: &Opts, transport: &TransportWrapper) -> Resul
 }
 
 fn test_sfdp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+    let _bs = BootstrapTest::start(transport)?;
 
     let spi = transport.spi("BOOTSTRAP")?;
     let sfdp = SpiFlash::read_sfdp(&*spi)?;
@@ -287,13 +283,8 @@ fn test_sfdp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     Ok(())
 }
 
-fn test_bootstrap_shutdown(
-    opts: &Opts,
-    transport: &TransportWrapper,
-    cmd: u8,
-    bfv: &str,
-) -> Result<()> {
-    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+fn test_bootstrap_shutdown(transport: &TransportWrapper, cmd: u8, bfv: &str) -> Result<()> {
+    let _bs = BootstrapTest::start(transport)?;
 
     let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
@@ -330,8 +321,8 @@ fn test_bootstrap_shutdown(
     Ok(())
 }
 
-fn test_bootstrap_phase1_reset(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+fn test_bootstrap_phase1_reset(transport: &TransportWrapper) -> Result<()> {
+    let _bs = BootstrapTest::start(transport)?;
 
     let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
@@ -348,8 +339,8 @@ fn test_bootstrap_phase1_reset(opts: &Opts, transport: &TransportWrapper) -> Res
     Ok(())
 }
 
-fn test_bootstrap_phase1_page_program(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+fn test_bootstrap_phase1_page_program(transport: &TransportWrapper) -> Result<()> {
+    let _bs = BootstrapTest::start(transport)?;
 
     let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
@@ -366,7 +357,7 @@ fn test_bootstrap_phase1_page_program(opts: &Opts, transport: &TransportWrapper)
         .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     // We should see the expected BFV.
     let result = console.interact(&*uart, false)?;
@@ -377,12 +368,8 @@ fn test_bootstrap_phase1_page_program(opts: &Opts, transport: &TransportWrapper)
     Ok(())
 }
 
-fn test_bootstrap_phase1_erase(
-    opts: &Opts,
-    transport: &TransportWrapper,
-    erase_cmd: u8,
-) -> Result<()> {
-    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+fn test_bootstrap_phase1_erase(transport: &TransportWrapper, erase_cmd: u8) -> Result<()> {
+    let _bs = BootstrapTest::start(transport)?;
     let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
     let spiflash = SpiFlash::from_spi(&*spi)?;
@@ -406,7 +393,7 @@ fn test_bootstrap_phase1_erase(
 
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
@@ -414,11 +401,11 @@ fn test_bootstrap_phase1_erase(
 
     // Put the chip into bootstrap mode again and erase.
     transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     erase()?;
     uart.clear_rx_buffer()?;
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
@@ -427,8 +414,8 @@ fn test_bootstrap_phase1_erase(
     Ok(())
 }
 
-fn test_bootstrap_phase1_read(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+fn test_bootstrap_phase1_read(transport: &TransportWrapper) -> Result<()> {
+    let _bs = BootstrapTest::start(transport)?;
     let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
     let mut console = UartConsole::new(
@@ -446,14 +433,14 @@ fn test_bootstrap_phase1_read(opts: &Opts, transport: &TransportWrapper) -> Resu
 
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     }
 
     transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     assert_eq!(SpiFlash::read_status(&*spi)?, 0x00);
     let mut buf: [u8; 8] = [0xa5; 8];
     SpiFlash::from_spi(&*spi)?.read(&*spi, 0x80330, &mut buf)?;
@@ -463,8 +450,8 @@ fn test_bootstrap_phase1_read(opts: &Opts, transport: &TransportWrapper) -> Resu
     Ok(())
 }
 
-fn test_bootstrap_phase2_reset(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+fn test_bootstrap_phase2_reset(transport: &TransportWrapper) -> Result<()> {
+    let _bs = BootstrapTest::start(transport)?;
 
     let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
@@ -497,8 +484,8 @@ fn test_bootstrap_phase2_reset(opts: &Opts, transport: &TransportWrapper) -> Res
     Ok(())
 }
 
-fn test_bootstrap_phase2_page_program(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+fn test_bootstrap_phase2_page_program(transport: &TransportWrapper) -> Result<()> {
+    let _bs = BootstrapTest::start(transport)?;
     let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
     SpiFlash::from_spi(&*spi)?
@@ -515,7 +502,7 @@ fn test_bootstrap_phase2_page_program(opts: &Opts, transport: &TransportWrapper)
     );
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
@@ -524,12 +511,8 @@ fn test_bootstrap_phase2_page_program(opts: &Opts, transport: &TransportWrapper)
     Ok(())
 }
 
-fn test_bootstrap_phase2_erase(
-    opts: &Opts,
-    transport: &TransportWrapper,
-    erase_cmd: u8,
-) -> Result<()> {
-    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+fn test_bootstrap_phase2_erase(transport: &TransportWrapper, erase_cmd: u8) -> Result<()> {
+    let _bs = BootstrapTest::start(transport)?;
     let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
     let spiflash = SpiFlash::from_spi(&*spi)?;
@@ -555,7 +538,7 @@ fn test_bootstrap_phase2_erase(
     );
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
@@ -564,8 +547,8 @@ fn test_bootstrap_phase2_erase(
     Ok(())
 }
 
-fn test_bootstrap_phase2_read(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+fn test_bootstrap_phase2_read(transport: &TransportWrapper) -> Result<()> {
+    let _bs = BootstrapTest::start(transport)?;
     let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
     let mut read_buf = [0u8; 8];
@@ -589,7 +572,7 @@ fn test_bootstrap_phase2_read(opts: &Opts, transport: &TransportWrapper) -> Resu
     );
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
@@ -598,8 +581,8 @@ fn test_bootstrap_phase2_read(opts: &Opts, transport: &TransportWrapper) -> Resu
     Ok(())
 }
 
-fn test_bootstrap_watchdog_check(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+fn test_bootstrap_watchdog_check(transport: &TransportWrapper) -> Result<()> {
+    let _bs = BootstrapTest::start(transport)?;
     let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
     let mut console = UartConsole::new(
@@ -635,28 +618,28 @@ fn main() -> Result<()> {
     execute_test!(test_bootstrap_enabled_requested, &opts, &transport);
     execute_test!(test_jedec_id, &opts, &transport);
     execute_test!(test_sfdp, &opts, &transport);
-    execute_test!(test_write_enable_disable, &opts, &transport);
+    execute_test!(test_write_enable_disable, &transport);
     for (cmd, bfv) in [
         // `kErrorBootstrapEraseAddress` (01425303) is defined in `error.h`.
         (SpiFlash::SECTOR_ERASE, "01425303"),
         // `kErrorBootstrapProgramAddress` (02425303) is defined in `error.h`.
         (SpiFlash::PAGE_PROGRAM, "02425303"),
     ] {
-        execute_test!(test_bootstrap_shutdown, &opts, &transport, cmd, bfv);
+        execute_test!(test_bootstrap_shutdown, &transport, cmd, bfv);
     }
-    execute_test!(test_bootstrap_phase1_reset, &opts, &transport);
-    execute_test!(test_bootstrap_phase1_page_program, &opts, &transport);
+    execute_test!(test_bootstrap_phase1_reset, &transport);
+    execute_test!(test_bootstrap_phase1_page_program, &transport);
     for erase_cmd in [SpiFlash::SECTOR_ERASE, SpiFlash::CHIP_ERASE] {
-        execute_test!(test_bootstrap_phase1_erase, &opts, &transport, erase_cmd);
+        execute_test!(test_bootstrap_phase1_erase, &transport, erase_cmd);
     }
-    execute_test!(test_bootstrap_phase1_read, &opts, &transport);
-    execute_test!(test_bootstrap_phase2_reset, &opts, &transport);
-    execute_test!(test_bootstrap_phase2_page_program, &opts, &transport);
+    execute_test!(test_bootstrap_phase1_read, &transport);
+    execute_test!(test_bootstrap_phase2_reset, &transport);
+    execute_test!(test_bootstrap_phase2_page_program, &transport);
     for erase_cmd in [SpiFlash::SECTOR_ERASE, SpiFlash::CHIP_ERASE] {
-        execute_test!(test_bootstrap_phase2_erase, &opts, &transport, erase_cmd);
+        execute_test!(test_bootstrap_phase2_erase, &transport, erase_cmd);
     }
-    execute_test!(test_bootstrap_phase2_read, &opts, &transport);
-    execute_test!(test_bootstrap_watchdog_check, &opts, &transport);
+    execute_test!(test_bootstrap_phase2_read, &transport);
+    execute_test!(test_bootstrap_watchdog_check, &transport);
 
     Ok(())
 }

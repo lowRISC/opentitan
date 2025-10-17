@@ -9,7 +9,7 @@ use regex::Regex;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::chip::rom_error::RomError;
 use opentitanlib::rescue::serial::RescueSerial;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -94,7 +94,7 @@ fn newversion_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     )?;
 
     log::info!("###### Boot After Update Complete ######");
-    transport.reset_target(Duration::from_millis(50), /*clear_uart=*/ true)?;
+    transport.reset_with_delay(UartRx::Clear, Duration::from_millis(50))?;
     let capture = UartConsole::wait_for_bytes(
         &*uart,
         r"(?msR)Running.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
