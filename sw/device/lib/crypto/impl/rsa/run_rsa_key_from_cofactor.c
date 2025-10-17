@@ -82,6 +82,7 @@ status_t rsa_keygen_from_cofactor_2048_finalize(
     HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_FATAL_ERR;
   }
+  HARDENED_CHECK_EQ(launder32(act_mode), kOtbnRsaModeCofactor2048);
 
   // Read the public modulus (n) from OTBN dmem.
   HARDENED_TRY_WIPE_DMEM(

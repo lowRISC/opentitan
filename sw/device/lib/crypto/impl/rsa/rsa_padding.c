@@ -66,36 +66,39 @@ static const uint8_t kSha3_512DigestIdentifier[] = {
 OT_WARN_UNUSED_RESULT
 static status_t digest_info_length_get(const otcrypto_hash_mode_t hash_mode,
                                        size_t *len) {
+  *len = 0;
   switch (hash_mode) {
     case kOtcryptoHashModeSha256:
       *len = sizeof(kSha256DigestIdentifier) + kHmacSha256DigestBytes;
-      return OTCRYPTO_OK;
+      break;
     case kOtcryptoHashModeSha384:
       *len = sizeof(kSha384DigestIdentifier) + kHmacSha384DigestBytes;
-      return OTCRYPTO_OK;
+      break;
     case kOtcryptoHashModeSha512:
       *len = sizeof(kSha512DigestIdentifier) + kHmacSha512DigestBytes;
-      return OTCRYPTO_OK;
+      break;
     case kOtcryptoHashModeSha3_224:
       *len = sizeof(kSha3_224DigestIdentifier) + kKmacSha3224DigestBytes;
-      return OTCRYPTO_OK;
+      break;
     case kOtcryptoHashModeSha3_256:
       *len = sizeof(kSha3_256DigestIdentifier) + kKmacSha3256DigestBytes;
-      return OTCRYPTO_OK;
+      break;
     case kOtcryptoHashModeSha3_384:
       *len = sizeof(kSha3_384DigestIdentifier) + kKmacSha3384DigestBytes;
-      return OTCRYPTO_OK;
+      break;
     case kOtcryptoHashModeSha3_512:
       *len = sizeof(kSha512DigestIdentifier) + kKmacSha3512DigestBytes;
-      return OTCRYPTO_OK;
+      break;
     default:
       // Unsupported or unrecognized hash function.
       return OTCRYPTO_BAD_ARGS;
   };
 
+  // Check if the length was set in the switch case statements.
+  HARDENED_CHECK_NE(*len, 0);
+
   // Unreachable.
-  HARDENED_TRAP();
-  return OTCRYPTO_FATAL_ERR;
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -163,12 +166,14 @@ static status_t digest_info_write(const otcrypto_hash_digest_t message_digest,
   HARDENED_CHECK_EQ(message_digest.len, digest_wordlen);
 
   // Copy the digest into the encoding, reversing the order of bytes.
-  for (size_t i = 0; i < ceil_div(message_digest.len, 2); i++) {
+  size_t i;
+  for (i = 0; launder32(i) < ceil_div(message_digest.len, 2); i++) {
     encoding[i] =
         __builtin_bswap32(message_digest.data[message_digest.len - 1 - i]);
     encoding[message_digest.len - 1 - i] =
         __builtin_bswap32(message_digest.data[i]);
   }
+  HARDENED_CHECK_EQ(i, ceil_div(message_digest.len, 2));
 
   return OTCRYPTO_OK;
 }
@@ -234,29 +239,41 @@ OT_WARN_UNUSED_RESULT
 static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode,
                                    size_t *num_words) {
   *num_words = 0;
+  otcrypto_hash_mode_t hash_mode_used = launder32(0);
   switch (hash_mode) {
     case kOtcryptoHashModeSha3_224:
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha3_224;
       *num_words = 224 / 32;
       break;
     case kOtcryptoHashModeSha256:
-      OT_FALLTHROUGH_INTENDED;
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha256;
+      *num_words = 256 / 32;
+      break;
     case kOtcryptoHashModeSha3_256:
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha3_256;
       *num_words = 256 / 32;
       break;
     case kOtcryptoHashModeSha384:
-      OT_FALLTHROUGH_INTENDED;
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha384;
+      *num_words = 384 / 32;
+      break;
     case kOtcryptoHashModeSha3_384:
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha3_384;
       *num_words = 384 / 32;
       break;
     case kOtcryptoHashModeSha512:
-      OT_FALLTHROUGH_INTENDED;
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha512;
+      *num_words = 512 / 32;
+      break;
     case kOtcryptoHashModeSha3_512:
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha3_512;
       *num_words = 512 / 32;
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_GT(num_words, 0);
+  HARDENED_CHECK_EQ(launder32(hash_mode_used), hash_mode);
 
   return OTCRYPTO_OK;
 }
@@ -506,9 +523,11 @@ status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t message_digest,
                     db_bytelen, mask));
 
   // Compute maskedDB = DB ^ mask.
-  for (size_t i = 0; i < ARRAYSIZE(db); i++) {
+  size_t i;
+  for (i = 0; launder32(i) < ARRAYSIZE(db); i++) {
     db[i] ^= mask[i];
   }
+  HARDENED_CHECK_EQ(i, ARRAYSIZE(db));
 
   // Set the most significant bit of the first byte of maskedDB to 0. This
   // ensures the encoded message is less than the modulus. Corresponds to RFC
@@ -572,9 +591,11 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
   }
 
   // Unmask the "DB" value.
-  for (size_t i = 0; i < ARRAYSIZE(db); i++) {
+  size_t i;
+  for (i = 0; launder32(i) < ARRAYSIZE(db); i++) {
     db[i] ^= mask[i];
   }
+  HARDENED_CHECK_EQ(i, ARRAYSIZE(db));
 
   // Set the most significant bit of the first byte of maskedDB to 0.
   // Corresponds to RFC 8017, section 9.1.2 step 9 (emBits is modLen - 1).
@@ -672,15 +693,19 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
   // all-zero (step 2f). By computing the mask first, we can simply XOR with
   // lhash, 0x01, and M, skipping PS because XOR with zero is the identity
   // function.
-  for (size_t i = 0; i < ARRAYSIZE(lhash); i++) {
+  size_t i;
+  for (i = 0; launder32(i) < ARRAYSIZE(lhash); i++) {
     db[i] ^= lhash[i];
   }
+  HARDENED_CHECK_EQ(i, ARRAYSIZE(lhash));
+
   size_t message_start_idx = db_bytelen - message_bytelen;
   unsigned char *db_bytes = (unsigned char *)db;
   db_bytes[message_start_idx - 1] ^= 0x01;
-  for (size_t i = 0; i < message_bytelen; i++) {
+  for (i = 0; launder32(i) < message_bytelen; i++) {
     db_bytes[message_start_idx + i] ^= message[i];
   }
+  HARDENED_CHECK_EQ(i, message_bytelen);
 
   // Compute seedMask = MGF(maskedDB, hLen) (step 2g).
   uint32_t seed_mask[digest_wordlen];
@@ -688,9 +713,10 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
                     seed_mask));
 
   // Construct maskedSeed = seed XOR seedMask (step 2h).
-  for (size_t i = 0; i < ARRAYSIZE(seed); i++) {
+  for (i = 0; launder32(i) < ARRAYSIZE(seed); i++) {
     seed[i] ^= seed_mask[i];
   }
+  HARDENED_CHECK_EQ(i, ARRAYSIZE(seed));
 
   // Construct EM = 0x00 || maskedSeed || maskedDB (step 2i).
   unsigned char *encoded_message_bytes = (unsigned char *)encoded_message;
@@ -738,9 +764,11 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
                     seed_mask));
 
   // Construct seed = maskedSeed XOR seedMask (step 3d).
-  for (size_t i = 0; i < ARRAYSIZE(seed); i++) {
+  size_t i;
+  for (i = 0; launder32(i) < ARRAYSIZE(seed); i++) {
     seed[i] ^= seed_mask[i];
   }
+  HARDENED_CHECK_EQ(i, ARRAYSIZE(seed));
 
   // Generate dbMask = MGF(seed, k - hLen - 1) (step 3e).
   uint32_t db_mask[db_wordlen];
@@ -755,9 +783,10 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   }
 
   // Construct DB = dbMask XOR maskedDB.
-  for (size_t i = 0; i < ARRAYSIZE(db); i++) {
+  for (i = 0; launder32(i) < ARRAYSIZE(db); i++) {
     db[i] ^= db_mask[i];
   }
+  HARDENED_CHECK_EQ(i, ARRAYSIZE(db));
 
   // Hash the label (step 3a).
   uint32_t lhash[digest_wordlen];
