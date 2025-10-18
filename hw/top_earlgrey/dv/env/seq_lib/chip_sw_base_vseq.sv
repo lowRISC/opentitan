@@ -22,6 +22,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
   virtual task pre_start();
     super.pre_start();
 
+    // Apply initial drive to begin with the sw_straps unset.
+    cfg.chip_vif.sw_straps_if.drive(3'h0);
     // (Forever) apply drive to sw_strap pins when the current SwTestStatus changes.
     fork set_and_release_sw_strap(); join_none
 
