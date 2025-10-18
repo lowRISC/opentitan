@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/ujson/ujson.h"
 
+status_t handle_rsa_decrypt(ujson_t *uj);
 status_t handle_rsa_verify(ujson_t *uj);
 status_t handle_rsa(ujson_t *uj);
 
