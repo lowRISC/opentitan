@@ -12,7 +12,8 @@ use serde::Deserialize;
 
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::rsa_commands::{
-    CryptotestRsaVerify, CryptotestRsaVerifyResp, RsaSubcommand,
+    CryptotestRsaDecrypt, CryptotestRsaDecryptResp, CryptotestRsaVerify, CryptotestRsaVerifyResp,
+    RsaSubcommand,
 };
 
 use opentitanlib::app::TransportWrapper;
@@ -38,14 +39,22 @@ struct Opts {
 #[derive(Debug, Deserialize)]
 struct RsaTestCase {
     algorithm: String,
+    operation: String,
     padding: String,
     security_level: usize,
     hash_alg: String,
     message: Vec<u8>,
     n: Vec<u8>,
     e: u32,
-    signature: Vec<u8>,
     result: bool,
+    #[serde(default)]
+    signature: Vec<u8>,
+    #[serde(default)]
+    d: Vec<u8>,
+    #[serde(default)]
+    label: Vec<u8>,
+    #[serde(default)]
+    ciphertext: Vec<u8>,
 }
 
 fn run_rsa_testcase(
@@ -54,8 +63,6 @@ fn run_rsa_testcase(
     spi_console: &SpiConsoleDevice,
 ) -> Result<()> {
     assert_eq!(test_case.algorithm.as_str(), "rsa");
-    CryptotestCommand::Rsa.send(spi_console)?;
-    RsaSubcommand::RsaVerify.send(spi_console)?;
 
     // Configure hashing.
     let hashing = match test_case.hash_alg.as_str() {
@@ -74,28 +81,80 @@ fn run_rsa_testcase(
     let padding = match test_case.padding.as_str() {
         "pkcs1_1.5" => 0,
         "pss" => 1,
+        "oaep" => 2,
         _ => panic!("Invalid padding mode"),
     };
 
     // Convert the inputs into the expected format for the CL.
     let n: Vec<_> = test_case.n.iter().copied().rev().collect();
-    let signature: Vec<_> = test_case.signature.iter().copied().rev().collect();
 
-    CryptotestRsaVerify {
-        msg: ArrayVec::try_from(test_case.message.as_slice()).unwrap(),
-        msg_len: test_case.message.len(),
-        e: test_case.e,
-        n: ArrayVec::try_from(n.as_slice()).unwrap(),
-        security_level: test_case.security_level,
-        sig: ArrayVec::try_from(signature.as_slice()).unwrap(),
-        sig_len: test_case.signature.len(),
-        hashing,
-        padding,
-    }
-    .send(spi_console)?;
+    CryptotestCommand::Rsa.send(spi_console)?;
+    let _operation = &match test_case.operation.as_str() {
+        "verify" => {
+            // Send RsaVerify command.
+            RsaSubcommand::RsaVerify.send(spi_console)?;
 
-    let rsa_verify_resp = CryptotestRsaVerifyResp::recv(spi_console, opts.timeout, false, false)?;
-    assert_eq!(rsa_verify_resp.result, test_case.result);
+            // Convert the inputs into the expected format for the CL.
+            let signature: Vec<_> = test_case.signature.iter().copied().rev().collect();
+
+            // Assemble the input.
+            CryptotestRsaVerify {
+                msg: ArrayVec::try_from(test_case.message.as_slice()).unwrap(),
+                msg_len: test_case.message.len(),
+                e: test_case.e,
+                n: ArrayVec::try_from(n.as_slice()).unwrap(),
+                security_level: test_case.security_level,
+                sig: ArrayVec::try_from(signature.as_slice()).unwrap(),
+                sig_len: test_case.signature.len(),
+                hashing,
+                padding,
+            }
+            .send(spi_console)?;
+
+            // Get and evaluate the response.
+            let rsa_verify_resp =
+                CryptotestRsaVerifyResp::recv(spi_console, opts.timeout, false, false)?;
+            assert_eq!(rsa_verify_resp.result, test_case.result);
+        }
+        "decrypt" => {
+            // Send RsaDecrypt command.
+            RsaSubcommand::RsaDecrypt.send(spi_console)?;
+
+            // Convert the inputs into the expected format for the CL.
+            let d: Vec<_> = test_case.d.iter().copied().rev().collect();
+            let ctx: Vec<_> = test_case.ciphertext.iter().copied().rev().collect();
+
+            // Assemble the input.
+            CryptotestRsaDecrypt {
+                ciphertext: ArrayVec::try_from(ctx.as_slice()).unwrap(),
+                ciphertext_len: test_case.ciphertext.len(),
+                e: test_case.e,
+                d: ArrayVec::try_from(d.as_slice()).unwrap(),
+                n: ArrayVec::try_from(n.as_slice()).unwrap(),
+                security_level: test_case.security_level,
+                label: ArrayVec::try_from(test_case.label.as_slice()).unwrap(),
+                label_len: test_case.label.len(),
+                hashing,
+                padding,
+            }
+            .send(spi_console)?;
+
+            // Get and evaluate the response.
+            let rsa_decrypt_resp =
+                CryptotestRsaDecryptResp::recv(spi_console, opts.timeout, false, false)?;
+            // Check if the decryption was successful.
+            assert_eq!(rsa_decrypt_resp.result, test_case.result);
+
+            if test_case.result {
+                // Only check plaintext if the response is valid.
+                assert_eq!(
+                    rsa_decrypt_resp.plaintext[0..test_case.message.len()],
+                    test_case.message[0..test_case.message.len()]
+                );
+            }
+        }
+        _ => panic!("Invalid operation"),
+    };
 
     Ok(())
 }
