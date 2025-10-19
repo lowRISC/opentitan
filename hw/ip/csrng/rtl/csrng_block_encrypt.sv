@@ -145,7 +145,7 @@ module csrng_block_encrypt import csrng_pkg::*; #(
 
   assign rsp_data_o = '{
     inst_id: sfifo_cmdid_rdata[CmdWidth +: InstIdWidth],
-    cmd:     sfifo_cmdid_rdata[0 +: CmdWidth],
+    cmd:     acmd_e'(sfifo_cmdid_rdata[CmdWidth-1:0]),
     key:     '0, // unused in rsp path
     v:       cipher_data_out
   };

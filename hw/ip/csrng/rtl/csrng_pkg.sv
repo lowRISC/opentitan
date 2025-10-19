@@ -81,8 +81,8 @@ package csrng_pkg;
     GEN  = 3'h3,
     UPD  = 3'h4,
     UNI  = 3'h5,
-    GENB = 3'h6,
-    GENU = 3'h7
+    GENB = 3'h6, // Rsp routing for block encrypt
+    GENU = 3'h7  // Rsp routing for update unit
   } acmd_e;
 
   typedef struct packed {
@@ -105,7 +105,7 @@ package csrng_pkg;
     logic  [RsCtrWidth-1:0] rs_ctr;
     logic     [SeedLen-1:0] pdata;
     logic [InstIdWidth-1:0] inst_id;
-    logic    [CmdWidth-1:0] cmd;
+    acmd_e                  cmd;
     logic      [KeyLen-1:0] key;
     logic      [BlkLen-1:0] v;
   } csrng_core_data_t;
@@ -113,14 +113,14 @@ package csrng_pkg;
   typedef struct packed {
     logic     [SeedLen-1:0] pdata;
     logic [InstIdWidth-1:0] inst_id;
-    logic    [CmdWidth-1:0] cmd;
+    acmd_e                  cmd;
     logic      [KeyLen-1:0] key;
     logic      [BlkLen-1:0] v;
   } csrng_upd_data_t;
 
   typedef struct packed {
     logic [InstIdWidth-1:0] inst_id;
-    logic    [CmdWidth-1:0] cmd;
+    acmd_e                  cmd;
     logic      [KeyLen-1:0] key;
     logic      [BlkLen-1:0] v;
   } csrng_benc_data_t;
