@@ -166,6 +166,25 @@ RSA_TESTVECTOR_TARGETS = [
         "sha512_mgf1_64",
         "shake256",
     ]
+] + [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_oaep_2048_{}.json".format(hash)
+    for hash in [
+        "sha256_mgf1sha256",
+        "sha384_mgf1sha384",
+        "sha512_mgf1sha512",
+    ]
+] + [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_oaep_3072_{}.json".format(hash)
+    for hash in [
+        "sha256_mgf1sha256",
+        "sha512_mgf1sha512",
+    ]
+] + [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_oaep_4096_{}.json".format(hash)
+    for hash in [
+        "sha256_mgf1sha256",
+        "sha512_mgf1sha512",
+    ]
 ]
 
 RSA_TESTVECTOR_ARGS = " ".join([

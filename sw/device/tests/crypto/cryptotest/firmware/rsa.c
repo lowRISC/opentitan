@@ -51,6 +51,140 @@ enum {
   kCryptotestRsaShake256 = 7,
 };
 
+status_t handle_rsa_encrypt(ujson_t *uj) {
+  cryptotest_rsa_encrypt_t uj_input;
+  TRY(ujson_deserialize_cryptotest_rsa_encrypt_t(uj, &uj_input));
+
+  if (uj_input.padding != kCryptotestRsaPaddingOaep) {
+    LOG_ERROR("Unsupported RSA padding: %d", uj_input.padding);
+    return INVALID_ARGUMENT();
+  }
+
+  if (uj_input.e != kCryptotestRsaSupportedE) {
+    LOG_ERROR("Unsupported RSA public exponent e: %d", uj_input.e);
+    return INVALID_ARGUMENT();
+  }
+
+  size_t rsa_num_words;
+  size_t public_key_bytes;
+  otcrypto_rsa_size_t rsa_size;
+  size_t n_bytes = uj_input.security_level / 8;
+  switch (n_bytes) {
+    case kOtcryptoRsa2048PublicKeyBytes:
+      rsa_size = kOtcryptoRsaSize2048;
+      rsa_num_words = kCryptotestRsa2048NumWords;
+      public_key_bytes = kOtcryptoRsa2048PublicKeyBytes;
+      break;
+    case kOtcryptoRsa3072PublicKeyBytes:
+      rsa_size = kOtcryptoRsaSize3072;
+      rsa_num_words = kCryptotestRsa3072NumWords;
+      public_key_bytes = kOtcryptoRsa3072PublicKeyBytes;
+      break;
+    case kOtcryptoRsa4096PublicKeyBytes:
+      rsa_size = kOtcryptoRsaSize4096;
+      rsa_num_words = kCryptotestRsa4096NumWords;
+      public_key_bytes = kOtcryptoRsa4096PublicKeyBytes;
+      break;
+    default:
+      LOG_ERROR("Unsupported RSA security_level: %d", uj_input.security_level);
+      return INVALID_ARGUMENT();
+  }
+
+  otcrypto_hash_mode_t hash_mode;
+  switch (uj_input.hashing) {
+    case kCryptotestRsaSha256:
+      hash_mode = kOtcryptoHashModeSha256;
+      break;
+    case kCryptotestRsaSha384:
+      hash_mode = kOtcryptoHashModeSha384;
+      break;
+    case kCryptotestRsaSha512:
+      hash_mode = kOtcryptoHashModeSha512;
+      break;
+    case kCryptotestRsaSha3_256:
+      hash_mode = kOtcryptoHashModeSha3_256;
+      break;
+    case kCryptotestRsaSha3_384:
+      hash_mode = kOtcryptoHashModeSha3_384;
+      break;
+    case kCryptotestRsaSha3_512:
+      hash_mode = kOtcryptoHashModeSha3_512;
+      break;
+    case kCryptotestRsaShake128:
+      hash_mode = kOtcryptoHashXofModeShake128;
+      break;
+    case kCryptotestRsaShake256:
+      hash_mode = kOtcryptoHashXofModeShake256;
+      break;
+    default:
+      LOG_ERROR("Unsupported RSA hash mode: %d", uj_input.hashing);
+      return INVALID_ARGUMENT();
+  }
+
+  // Create the modulus N buffer.
+  uint32_t n_buf[rsa_num_words];
+  memset(n_buf, 0, sizeof(n_buf));
+  memcpy(n_buf, uj_input.n, n_bytes);
+
+  otcrypto_const_word32_buf_t modulus = {
+      .data = n_buf,
+      .len = rsa_num_words,
+  };
+
+  // Construct the public key.
+  uint32_t public_key_data[ceil_div(public_key_bytes, sizeof(uint32_t))];
+
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
+      .key_length = public_key_bytes,
+      .key = public_key_data,
+  };
+
+  TRY(otcrypto_rsa_public_key_construct(rsa_size, modulus, &public_key));
+
+  // Create input message.
+  uint8_t msg_buf[rsa_num_words];
+  memset(msg_buf, 0, sizeof(msg_buf));
+  memcpy(msg_buf, uj_input.plaintext, uj_input.plaintext_len);
+  otcrypto_const_byte_buf_t input_message = {
+      .len = uj_input.plaintext_len,
+      .data = msg_buf,
+  };
+
+  // Create label.
+  uint8_t label_buf[uj_input.label_len];
+  memset(label_buf, 0, sizeof(label_buf));
+  memcpy(label_buf, uj_input.label, uj_input.label_len);
+  otcrypto_const_byte_buf_t label = {
+      .data = label_buf,
+      .len = uj_input.label_len,
+  };
+
+  // Output buffer.
+  uint32_t ciphertext_buf[rsa_num_words];
+  otcrypto_word32_buf_t ciphertext = {
+      .data = ciphertext_buf,
+      .len = rsa_num_words,
+  };
+
+  bool status_resp = true;
+  otcrypto_status_t status = otcrypto_rsa_encrypt(
+      &public_key, hash_mode, input_message, label, ciphertext);
+  if (status.value != kOtcryptoStatusValueOk) {
+    status_resp = false;
+  }
+
+  // Return ciphertext and the status back to host.
+  cryptotest_rsa_encrypt_resp_t uj_output;
+  memset(uj_output.ciphertext, 0, RSA_CMD_MAX_MESSAGE_BYTES);
+  memcpy(uj_output.ciphertext, ciphertext_buf, n_bytes);
+  uj_output.ciphertext_len = n_bytes;
+  uj_output.result = status_resp;
+
+  RESP_OK(ujson_serialize_cryptotest_rsa_encrypt_resp_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
 status_t handle_rsa_decrypt(ujson_t *uj) {
   cryptotest_rsa_decrypt_t uj_input;
   TRY(ujson_deserialize_cryptotest_rsa_decrypt_t(uj, &uj_input));
@@ -408,6 +542,8 @@ status_t handle_rsa(ujson_t *uj) {
   rsa_subcommand_t cmd;
   TRY(ujson_deserialize_rsa_subcommand_t(uj, &cmd));
   switch (cmd) {
+    case kRsaSubcommandRsaEncrypt:
+      return handle_rsa_encrypt(uj);
     case kRsaSubcommandRsaDecrypt:
       return handle_rsa_decrypt(uj);
     case kRsaSubcommandRsaVerify:
