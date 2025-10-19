@@ -12,8 +12,8 @@ use serde::Deserialize;
 
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::rsa_commands::{
-    CryptotestRsaDecrypt, CryptotestRsaDecryptResp, CryptotestRsaVerify, CryptotestRsaVerifyResp,
-    RsaSubcommand,
+    CryptotestRsaDecrypt, CryptotestRsaDecryptResp, CryptotestRsaEncrypt, CryptotestRsaEncryptResp,
+    CryptotestRsaVerify, CryptotestRsaVerifyResp, RsaSubcommand,
 };
 
 use opentitanlib::app::TransportWrapper;
@@ -151,6 +151,76 @@ fn run_rsa_testcase(
                     rsa_decrypt_resp.plaintext[0..test_case.message.len()],
                     test_case.message[0..test_case.message.len()]
                 );
+            }
+        }
+        "encrypt" => {
+            // Send RsaEncrypt command.
+            RsaSubcommand::RsaEncrypt.send(spi_console)?;
+
+            // Convert the inputs into the expected format for the CL.
+            let ptx: Vec<_> = test_case.message.iter().copied().rev().collect();
+
+            // Assemble the input.
+            CryptotestRsaEncrypt {
+                plaintext: ArrayVec::try_from(ptx.as_slice()).unwrap(),
+                plaintext_len: test_case.message.len(),
+                e: test_case.e,
+                n: ArrayVec::try_from(n.as_slice()).unwrap(),
+                security_level: test_case.security_level,
+                label: ArrayVec::try_from(test_case.label.as_slice()).unwrap(),
+                label_len: test_case.label.len(),
+                hashing,
+                padding,
+            }
+            .send(spi_console)?;
+
+            // Get and evaluate the response.
+            let rsa_encrypt_resp =
+                CryptotestRsaEncryptResp::recv(spi_console, opts.timeout, false, false)?;
+            // Check if the encryption was successful.
+            assert_eq!(rsa_encrypt_resp.result, test_case.result);
+
+            // Use the received ciphertext, decrypt it, and compare it to the
+            // plaintext in the test vector.
+            if test_case.result {
+                // Decrypt it again and check if the plaintext matches.
+                // Send RsaDecrypt command.
+                CryptotestCommand::Rsa.send(spi_console)?;
+                RsaSubcommand::RsaDecrypt.send(spi_console)?;
+
+                // Convert the inputs into the expected format for the CL.
+                let d: Vec<_> = test_case.d.iter().copied().rev().collect();
+                let ctx: Vec<_> =
+                    Vec::from(&rsa_encrypt_resp.ciphertext[..rsa_encrypt_resp.ciphertext_len]);
+
+                // Assemble the input.
+                CryptotestRsaDecrypt {
+                    ciphertext: ArrayVec::try_from(ctx.as_slice()).unwrap(),
+                    ciphertext_len: rsa_encrypt_resp.ciphertext_len,
+                    e: test_case.e,
+                    d: ArrayVec::try_from(d.as_slice()).unwrap(),
+                    n: ArrayVec::try_from(n.as_slice()).unwrap(),
+                    security_level: test_case.security_level,
+                    label: ArrayVec::try_from(test_case.label.as_slice()).unwrap(),
+                    label_len: test_case.label.len(),
+                    hashing,
+                    padding,
+                }
+                .send(spi_console)?;
+
+                // Get and evaluate the response.
+                let rsa_decrypt_resp =
+                    CryptotestRsaDecryptResp::recv(spi_console, opts.timeout, false, false)?;
+                // Check if the decryption was successful.
+                assert_eq!(rsa_decrypt_resp.result, test_case.result);
+
+                if test_case.result {
+                    // Only check plaintext if the response is valid.
+                    assert_eq!(
+                        rsa_decrypt_resp.plaintext[0..test_case.message.len()],
+                        test_case.message[0..test_case.message.len()]
+                    );
+                }
             }
         }
         _ => panic!("Invalid operation"),
