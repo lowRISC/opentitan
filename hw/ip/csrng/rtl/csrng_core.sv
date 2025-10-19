@@ -286,7 +286,7 @@ module csrng_core import csrng_pkg::*; #(
   mubi4_t               flag0_q, flag0_d;
   logic [NumAppsLg-1:0] cmd_arb_idx_q, cmd_arb_idx_d;
   logic                 genbits_stage_fips_sw_q, genbits_stage_fips_sw_d;
-  logic [CmdWidth-1:0]  cmd_req_ccmd_dly_q, cmd_req_ccmd_dly_d;
+  acmd_e                cmd_req_ccmd_dly_q, cmd_req_ccmd_dly_d;
   logic                 cs_aes_halt_q, cs_aes_halt_d;
   logic [SeedLen-1:0]   entropy_src_seed_q, entropy_src_seed_d;
   logic                 entropy_src_fips_q, entropy_src_fips_d;
@@ -304,7 +304,7 @@ module csrng_core import csrng_pkg::*; #(
       flag0_q                 <= prim_mubi_pkg::MuBi4False;
       cmd_arb_idx_q           <= '0;
       genbits_stage_fips_sw_q <= '0;
-      cmd_req_ccmd_dly_q      <= '0;
+      cmd_req_ccmd_dly_q      <= INV;
       cs_aes_halt_q           <= '0;
       entropy_src_seed_q      <= '0;
       entropy_src_fips_q      <= '0;
@@ -1144,7 +1144,7 @@ module csrng_core import csrng_pkg::*; #(
   //  outputs: 416b K,V,RC
 
   assign ctr_drbg_cmd_req_vld = !cs_enable_fo[45] ? 1'b0 : main_sm_cmd_vld;
-  assign cmd_req_ccmd_dly_d   = !cs_enable_fo[44] ?   '0 : acmd_hold;
+  assign cmd_req_ccmd_dly_d   = !cs_enable_fo[44] ?  INV : acmd_hold;
 
   assign ctr_drbg_cmd_req_data = '{
     inst_id: shid_q,
