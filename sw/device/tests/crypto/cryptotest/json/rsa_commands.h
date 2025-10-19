@@ -18,6 +18,7 @@ extern "C" {
 // clang-format off
 
 #define RSA_SUBCOMMAND(_, value) \
+    value(_, RsaEncrypt) \
     value(_, RsaDecrypt) \
     value(_, RsaVerify)
 UJSON_SERDE_ENUM(RsaSubcommand, rsa_subcommand_t, RSA_SUBCOMMAND);
@@ -47,6 +48,18 @@ UJSON_SERDE_STRUCT(CryptotestRsaVerify, cryptotest_rsa_verify_t, RSA_VERIFY);
     field(padding, size_t)
 UJSON_SERDE_STRUCT(CryptotestRsaDecrypt, cryptotest_rsa_decrypt_t, RSA_DECRYPT);
 
+#define RSA_ENCRYPT(field, string) \
+    field(plaintext, uint8_t, RSA_CMD_MAX_MESSAGE_BYTES) \
+    field(plaintext_len, size_t) \
+    field(e, uint32_t) \
+    field(n, uint8_t, RSA_CMD_MAX_N_BYTES) \
+    field(security_level, size_t) \
+    field(label, uint8_t, RSA_CMD_MAX_MESSAGE_BYTES) \
+    field(label_len, size_t) \
+    field(hashing, size_t) \
+    field(padding, size_t)
+UJSON_SERDE_STRUCT(CryptotestRsaEncrypt, cryptotest_rsa_encrypt_t, RSA_ENCRYPT);
+
 #define RSA_VERIFY_RESP(field, string) \
     field(result, bool)
 UJSON_SERDE_STRUCT(CryptotestRsaVerifyResp, cryptotest_rsa_verify_resp_t, RSA_VERIFY_RESP);
@@ -56,6 +69,12 @@ UJSON_SERDE_STRUCT(CryptotestRsaVerifyResp, cryptotest_rsa_verify_resp_t, RSA_VE
     field(plaintext_len, size_t) \
     field(result, bool)
 UJSON_SERDE_STRUCT(CryptotestRsaDecryptResp, cryptotest_rsa_decrypt_resp_t, RSA_DECRYPT_RESP);
+
+#define RSA_ENCRYPT_RESP(field, string) \
+    field(ciphertext, uint8_t, RSA_CMD_MAX_MESSAGE_BYTES) \
+    field(ciphertext_len, size_t) \
+    field(result, bool)
+UJSON_SERDE_STRUCT(CryptotestRsaEncryptResp, cryptotest_rsa_encrypt_resp_t, RSA_ENCRYPT_RESP);
 
 #undef MODULE_ID
 
