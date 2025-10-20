@@ -51,7 +51,7 @@ pub struct Qemu {
     reset: Rc<dyn GpioPin>,
 
     /// Console UART.
-    console: Option<Rc<dyn Uart>>,
+    uarts: HashMap<String, Rc<dyn Uart>>,
 
     /// SPI device.
     spi: Option<Rc<dyn Target>>,
@@ -72,7 +72,7 @@ impl Qemu {
     /// The transport will configure capabilities that it can find from the running QEMU instance.
     /// It looks for the following chardevs which should be connected to QEMU devices:
     ///
-    /// * `console` (pty) - connect to UART using `-serial chardev:console`.
+    /// * `uart{n}` (pty) - connect to UARTs in order using `-serial chardev:uart{n}`.
     /// * `log`     (pty) - connect to QEMU's log using `-global ot-ibex_wrapper.logdev=log`.
     /// * `spidev`  (pty) - automatically connected to QEMU spi device.
     /// * `i2c{n}`  (pty) - connect to I2C bus using `-device ot-i2c_host_proxy,bus=ot-i2c{n},chardev=i2c{n}`.
@@ -95,21 +95,29 @@ impl Qemu {
                 .find_map(|c| (c.id == id).then_some(&c.kind))
         }
 
-        // Console UART:
-        let console = match find_chardev(&chardevs, "console") {
-            Some(ChardevKind::Pty { path }) => {
-                let serial_port =
-                    SerialPortUart::open_pseudo(path.to_str().unwrap(), CONSOLE_BAUDRATE)
-                        .context("failed to open QEMU console PTY")?;
-                let uart: Rc<dyn Uart> =
-                    Rc::new(QemuUart::new(Rc::clone(&monitor), "console", serial_port));
-                Some(uart)
-            }
-            _ => {
-                log::info!("could not find pty chardev with id=console, skipping UART");
-                None
-            }
-        };
+        // UARTs:
+        let mut uarts = HashMap::new();
+        for chardev in &chardevs {
+            let Some(id) = chardev.id.strip_prefix("uart") else {
+                continue;
+            };
+
+            let ChardevKind::Pty { ref path } = chardev.kind else {
+                continue;
+            };
+
+            let serial_port = SerialPortUart::open_pseudo(path.to_str().unwrap(), CONSOLE_BAUDRATE)
+                .context("failed to open QEMU console PTY")?;
+            let uart: Rc<dyn Uart> =
+                Rc::new(QemuUart::new(Rc::clone(&monitor), "console", serial_port));
+
+            uarts.insert(id.to_string(), uart);
+        }
+        if uarts.is_empty() {
+            log::info!(
+                "could not find pty chardevs with ids starting with `uart`, UART support disabled"
+            );
+        }
 
         // QEMU log, not really a UART but modelled as one:
         let log = match find_chardev(&chardevs, "log") {
@@ -121,7 +129,7 @@ impl Qemu {
                 Some(log)
             }
             _ => {
-                log::info!("could not find pty chardev with id=log, skipping QEMU log");
+                log::info!("could not find pty chardev with id=log, QEMU log unavailable");
                 None
             }
         };
@@ -134,7 +142,7 @@ impl Qemu {
                 Some(spi)
             }
             _ => {
-                log::info!("could not find pty chardev with id=spidev, skipping SPI");
+                log::info!("could not find pty chardev with id=spidev, SPI support disabled");
                 None
             }
         };
@@ -157,9 +165,9 @@ impl Qemu {
         }
         if i2cs.is_empty() {
             log::info!(
-                "could not find pty chardevs with ids starting with `i2c`, skipping I2C bus"
-            );
                 "could not find pty chardevs with ids starting with `i2c`, I2C support disabled"
+            );
+        }
 
         // If there's a chardev called `gpio`, configure it as a PTY and use as the GPIO pins.
         let gpio = match find_chardev(&chardevs, "gpio") {
@@ -169,7 +177,7 @@ impl Qemu {
                 Some(gpio)
             }
             _ => {
-                log::info!("could not find pty chardev with id=gpio, skipping GPIO");
+                log::info!("could not find pty chardev with id=gpio, GPIO support disabled");
                 None
             }
         };
@@ -185,7 +193,7 @@ impl Qemu {
         Ok(Qemu {
             monitor,
             reset,
-            console,
+            uarts,
             log,
             spi,
             i2cs,
@@ -201,7 +209,7 @@ impl Transport for Qemu {
         // GPIO pin in `.gpio_pin` will cause an error if GPIO isn't connected.
         let mut cap = Capability::GPIO;
 
-        if self.console.is_some() || self.log.is_some() {
+        if !self.uarts.is_empty() || self.log.is_some() {
             cap |= Capability::UART;
         }
 
@@ -217,14 +225,15 @@ impl Transport for Qemu {
     }
 
     fn uart(&self, instance: &str) -> anyhow::Result<Rc<dyn Uart>> {
-        match instance {
-            "0" => Ok(Rc::clone(
-                self.console.as_ref().context("uart 0 not connected")?,
-            )),
-            "LOG" => Ok(Rc::clone(
+        if instance == "LOG" {
+            return Ok(Rc::clone(
                 self.log.as_ref().context("QEMU log not connected")?,
-            )),
-            _ => Err(TransportError::InvalidInstance(
+            ));
+        }
+
+        match self.uarts.get(instance) {
+            Some(uart) => Ok(Rc::clone(uart)),
+            None => Err(TransportError::InvalidInstance(
                 TransportInterfaceType::Uart,
                 instance.to_string(),
             )

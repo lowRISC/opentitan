@@ -436,9 +436,15 @@ def _test_dispatch(ctx, exec_env, firmware):
     qemu_args += ["-chardev", "pty,id=monitor,path=qemu-monitor"]
     qemu_args += ["-mon", "chardev=monitor,mode=control"]
 
-    # Create a chardev for the console UART:
-    qemu_args += ["-chardev", "pty,id=console"]
-    qemu_args += ["-serial", "chardev:console"]
+    # Create chardevs for each UART:
+    qemu_args += ["-chardev", "pty,id=uart0"]
+    qemu_args += ["-chardev", "pty,id=uart1"]
+    qemu_args += ["-chardev", "pty,id=uart2"]
+    qemu_args += ["-chardev", "pty,id=uart3"]
+    qemu_args += ["-serial", "chardev:uart0"]
+    qemu_args += ["-serial", "chardev:uart1"]
+    qemu_args += ["-serial", "chardev:uart2"]
+    qemu_args += ["-serial", "chardev:uart3"]
 
     # Create a chardev for the log device:
     qemu_args += ["-chardev", "pty,id=log"]
