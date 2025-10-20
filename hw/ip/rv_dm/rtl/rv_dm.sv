@@ -91,7 +91,6 @@ module rv_dm
   // Parameter Definitions //
   ///////////////////////////
 
-  import prim_mubi_pkg::mubi4_bool_to_mubi;
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi8_test_true_strict;
   import prim_mubi_pkg::mubi32_test_true_strict;
@@ -628,7 +627,7 @@ module rv_dm
 
   prim_mubi_pkg::mubi4_t en_ifetch;
   // SEC_CM: DM_EN.CTRL.LC_GATED, EXEC.CTRL.MUBI
-  assign en_ifetch = mubi4_bool_to_mubi(lc_tx_test_true_strict(lc_hw_debug_en_gated[LcEnFetch]));
+  assign en_ifetch = lc_ctrl_pkg::lc_to_mubi4(lc_hw_debug_en_gated[LcEnFetch]);
 
   tlul_adapter_reg #(
     .CmdIntgCheck     (1),
