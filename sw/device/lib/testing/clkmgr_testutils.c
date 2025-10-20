@@ -234,7 +234,9 @@ status_t clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
 status_t clkmgr_testutils_check_measurement_enables(
     const dif_clkmgr_t *clkmgr, dif_toggle_t expected_status) {
   bool success = true;
-  for (int i = 0; i < kDifClkmgrMeasureClockCount; ++i) {
+  dt_clkmgr_t clkmgr_dt;
+  TRY(dif_clkmgr_get_dt(clkmgr, &clkmgr_dt));
+  for (size_t i = 0; i < dt_clkmgr_measurable_clock_count(clkmgr_dt); ++i) {
     dif_clkmgr_measure_clock_t clock = (dif_clkmgr_measure_clock_t)i;
     dif_toggle_t actual_status;
     TRY(dif_clkmgr_measure_counts_get_enable(clkmgr, clock, &actual_status));
@@ -249,7 +251,9 @@ status_t clkmgr_testutils_check_measurement_enables(
 
 status_t clkmgr_testutils_disable_clock_counts(const dif_clkmgr_t *clkmgr) {
   LOG_INFO("Disabling all clock count measurements");
-  for (int i = 0; i < kDifClkmgrMeasureClockCount; ++i) {
+  dt_clkmgr_t clkmgr_dt;
+  TRY(dif_clkmgr_get_dt(clkmgr, &clkmgr_dt));
+  for (size_t i = 0; i < dt_clkmgr_measurable_clock_count(clkmgr_dt); ++i) {
     dif_clkmgr_measure_clock_t clock = (dif_clkmgr_measure_clock_t)i;
     TRY(dif_clkmgr_disable_measure_counts(clkmgr, clock));
   }

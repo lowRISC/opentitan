@@ -40,38 +40,7 @@ typedef uint32_t dif_clkmgr_gateable_clock_t;
  */
 typedef uint32_t dif_clkmgr_hintable_clock_t;
 
-typedef enum dif_clkmgr_measure_clock {
-#if defined(OPENTITAN_IS_EARLGREY)
-  /**
-   * The Io clock.
-   */
-  kDifClkmgrMeasureClockIo,
-  /**
-   * The Io_div2 clock.
-   */
-  kDifClkmgrMeasureClockIoDiv2,
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling doesn't have Io / Io_div2 clock measurements.
-#else
-#error "dif_clkmgr does not support this top"
-#endif
-  /**
-   * The Io div4 clock.
-   */
-  kDifClkmgrMeasureClockIoDiv4,
-  /**
-   * The Main clock.
-   */
-  kDifClkmgrMeasureClockMain,
-  /**
-   * The Usb clock.
-   */
-  kDifClkmgrMeasureClockUsb,
-  /**
-   * Total number of clock measurements.
-   */
-  kDifClkmgrMeasureClockCount,
-} dif_clkmgr_measure_clock_t;
+typedef uint32_t dif_clkmgr_measure_clock_t;
 
 typedef enum dif_clkmgr_recov_err_type {
 #if defined(OPENTITAN_IS_EARLGREY)
