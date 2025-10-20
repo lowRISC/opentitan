@@ -76,6 +76,9 @@ impl Qemu {
     ///
     /// * `console` (pty) - connect to UART using `-serial chardev:console`.
     /// * `log`     (pty) - connect to QEMU's log using `-global ot-ibex_wrapper.logdev=log`.
+    /// * `spidev`  (pty) - automatically connected to QEMU spi device.
+    /// * `i2c{n}`  (pty) - connect to I2C bus using `-device ot-i2c_host_proxy,bus=ot-i2c{n},chardev=i2c{n}`.
+    /// * `gpio`    (pty) - connect to GPIO block using `global ot-gpio-{eg,dj}.chardev=gpio`
     ///
     /// You can create a chardev with `-chardev <kind>,id=<id>` and connect it
     /// to a device using one of the flags in the list above. The kind must
