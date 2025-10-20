@@ -30,6 +30,7 @@ interface lc_ctrl_if #(
   lc_token_t hashed_token;
   prim_mubi_pkg::mubi4_t scanmode_i = prim_mubi_pkg::MuBi4False;
   logic scan_rst_ni = 1;
+  lc_tx_t lc_init_done_o;
   lc_tx_t lc_dft_en_o;
   lc_tx_t lc_nvm_debug_en_o;
   lc_tx_t lc_hw_debug_en_o;

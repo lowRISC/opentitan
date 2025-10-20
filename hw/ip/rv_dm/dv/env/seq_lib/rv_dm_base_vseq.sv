@@ -25,6 +25,9 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   // whether the JTAG interface is connected.
   rand bit pinmux_hw_debug_en;
 
+  // This flag controls whether the lc_init_done_i signal is set to On.
+  rand bit lc_init_done;
+
   // This flag controls whether the lc_hw_debug_clr_i signal is set to On.
   rand bit lc_hw_debug_clr;
 
@@ -68,6 +71,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   constraint debug_enabled_c {
     lc_hw_debug_clr == 1'b0;
     lc_hw_debug_en == 1'b1;
+    lc_init_done == 1'b1;
   }
 
   // A constraint that asserts pinmux_hw_debug_en_i will be On. Similarly to how it uses the
@@ -149,6 +153,9 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     // Drive the lc_hw_debug_en_i pin to match the lc_hw_debug_en bit, avoiding assertions that get
     // triggered in prim_lc_sync if the input is 'x.
     upd_lc_hw_debug_en();
+
+    // Drive the lc_init_done_i pin to match the lc_init_done bit
+    upd_lc_init_done();
 
     super.pre_start();
   endtask
@@ -391,6 +398,11 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   // Update the pinmux_hw_debug_en_i pin to match the bit in pinmux_hw_debug_en
   function void upd_pinmux_hw_debug_en();
     cfg.rv_dm_vif.pinmux_hw_debug_en <= bool_to_lc_tx_t(pinmux_hw_debug_en);
+  endfunction
+
+  // Update the lc_init_done_i pin to match the bit in lc_init_done
+  function void upd_lc_init_done();
+    cfg.rv_dm_vif.lc_init_done <= bool_to_lc_tx_t(lc_init_done);
   endfunction
 
   // Update the lc_hw_debug_clr_i and lc_hw_debug_en_i pins to match the bit in lc_hw_debug_clr and

@@ -313,6 +313,17 @@
     // Life cycle broadcast signals
     { struct:  "lc_tx"
       type:    "uni"
+      name:    "lc_init_done"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    '''
+               A signal that is On after lifecycle initialization is done.
+               This signal is On when lifecycle initialization is complete and life cycle controller broadcast signals are valid.
+               '''
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
       name:    "lc_raw_test_rma"
       act:     "req"
       default: "lc_ctrl_pkg::Off"

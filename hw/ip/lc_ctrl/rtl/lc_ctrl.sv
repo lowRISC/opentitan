@@ -88,6 +88,7 @@ module lc_ctrl
   input  otp_ctrl_pkg::otp_lc_data_t                 otp_lc_data_i,
   // Life cycle broadcast outputs (all of them are registered).
   // SEC_CM: INTERSIG.MUBI
+  output lc_tx_t                                     lc_init_done_o,
   output lc_tx_t                                     lc_dft_en_o,
   output lc_tx_t                                     lc_raw_test_rma_o,
   output lc_tx_t                                     lc_nvm_debug_en_o,
@@ -815,6 +816,7 @@ module lc_ctrl
     .otp_prog_error_o       ( otp_prog_error_d                 ),
     .state_invalid_error_o  ( state_invalid_error_d            ),
     .lc_raw_test_rma_o      ( lc_raw_test_rma                  ),
+    .lc_init_done_o,
     .lc_dft_en_o,
     .lc_nvm_debug_en_o,
     .lc_hw_debug_clr_o,
@@ -851,6 +853,7 @@ module lc_ctrl
   `ASSERT_KNOWN(VendorTestReqKnown_A,   lc_otp_vendor_test_o       )
   `ASSERT_KNOWN(LcOtpProgramKnown_A,    lc_otp_program_o           )
   `ASSERT_KNOWN(LcOtpTokenKnown_A,      kmac_data_o                )
+  `ASSERT_KNOWN(LcInitDoneKnown_A,      lc_init_done_o             )
   `ASSERT_KNOWN(LcDftEnKnown_A,         lc_dft_en_o                )
   `ASSERT_KNOWN(LcRawTestRmaKnown_A,    lc_raw_test_rma_o          )
   `ASSERT_KNOWN(LcNvmDebugEnKnown_A,    lc_nvm_debug_en_o          )

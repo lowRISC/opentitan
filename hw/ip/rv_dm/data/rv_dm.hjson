@@ -107,6 +107,16 @@
     },
     { struct:  "lc_tx"
       type:    "uni"
+      name:    "lc_init_done"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    '''
+               Lifecycle initialization done signal coming from life cycle controller.
+               '''
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
       name:    "lc_hw_debug_clr"
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"

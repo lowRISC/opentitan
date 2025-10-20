@@ -86,6 +86,7 @@ module lc_ctrl_fsm
   // Local life cycle signal
   output lc_tx_t                lc_raw_test_rma_o,
   // Life cycle broadcast outputs.
+  output lc_tx_t                lc_init_done_o,
   output lc_tx_t                lc_dft_en_o,
   output lc_tx_t                lc_nvm_debug_en_o,
   output lc_tx_t                lc_hw_debug_clr_o,
@@ -802,6 +803,7 @@ module lc_ctrl_fsm
     .lc_state_i         ( lc_state_q       ),
     .secrets_valid_i,
     .fsm_state_i        ( fsm_state_q      ),
+    .lc_init_done_o,
     .lc_raw_test_rma_o,
     .lc_dft_en_o,
     .lc_nvm_debug_en_o,

@@ -1261,6 +1261,7 @@
       'lc_ctrl.lc_nvm_debug_en'    : ['flash_ctrl.lc_nvm_debug_en'],
       'lc_ctrl.lc_hw_debug_clr'    : ['pinmux_aon.lc_hw_debug_clr',
                                       'rv_dm.lc_hw_debug_clr'],
+      'lc_ctrl.lc_init_done'       : ['rv_dm.lc_init_done'],
       'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',
                                       'pinmux_aon.lc_hw_debug_en',
                                       'csrng.lc_hw_debug_en',

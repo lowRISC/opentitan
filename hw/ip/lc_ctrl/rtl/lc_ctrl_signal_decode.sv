@@ -32,6 +32,7 @@ module lc_ctrl_signal_decode
   // Local life cycle signal
   output lc_tx_t         lc_raw_test_rma_o,
   // Life cycle broadcast outputs.
+  output lc_tx_t         lc_init_done_o,
   output lc_tx_t         lc_dft_en_o,
   output lc_tx_t         lc_nvm_debug_en_o,
   output lc_tx_t         lc_hw_debug_clr_o,
@@ -53,7 +54,7 @@ module lc_ctrl_signal_decode
   // Signal Decoder Logic //
   //////////////////////////
 
-  lc_tx_t lc_raw_test_rma;
+  lc_tx_t lc_init_done, lc_raw_test_rma;
   lc_tx_t lc_dft_en, lc_nvm_debug_en, lc_hw_debug_clr, lc_hw_debug_en, lc_cpu_en, lc_keymgr_en,
           lc_escalate_en;
   lc_tx_t lc_creator_seed_sw_rw_en, lc_owner_seed_sw_rw_en, lc_iso_part_sw_rd_en;
@@ -63,6 +64,7 @@ module lc_ctrl_signal_decode
 
   always_comb begin : p_lc_signal_decode
     // Life cycle control signal defaults
+    lc_init_done             = Off;
     lc_raw_test_rma          = Off;
     lc_dft_en                = Off;
     lc_nvm_debug_en          = Off;
@@ -98,6 +100,9 @@ module lc_ctrl_signal_decode
       TokenCheck1St,
       TransProgSt: begin
         if (lc_state_valid_i) begin
+          // After this, all life cycle controller broadcast signals are valid and based on the
+          // OTP LC state.
+          lc_init_done = On;
           unique case (lc_state_i)
             ///////////////////////////////////////////////////////////////////
             // Only enable life cycle TAP register for OTP test mechanisms.
@@ -213,6 +218,9 @@ module lc_ctrl_signal_decode
       // states below, with the exception that escalate_en is NOT asserted,
       // since that could trigger unwanted alerts / escalations and system resets.
       PostTransSt: begin
+        // At this point, all life cycle controller broadcast signals are valid and based on the
+        // OTP LC state
+        lc_init_done = On;
         // Explicitly clear any flops holding the lc_hw_debug_en signal. Those flops would retain
         // their state if just the lc_hw_debug_en signal is switched off, in order to let debug
         // connections survive a reset of lc_ctrl.
@@ -224,7 +232,10 @@ module lc_ctrl_signal_decode
       ScrapSt,
       EscalateSt,
       InvalidSt: begin
-        lc_escalate_en = On;
+        // At this point, all life cycle controller broadcast signals are valid and based on the
+        // OTP LC state.
+        lc_init_done    = On;
+        lc_escalate_en  = On;
         lc_hw_debug_clr = On;
       end
       default: begin
@@ -238,6 +249,12 @@ module lc_ctrl_signal_decode
   // Control signal output flops //
   /////////////////////////////////
 
+  prim_lc_sender u_prim_lc_sender_init_done (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_init_done),
+    .lc_en_o(lc_init_done_o)
+  );
   prim_lc_sender u_prim_lc_sender_raw_test_rma (
     .clk_i,
     .rst_ni,
