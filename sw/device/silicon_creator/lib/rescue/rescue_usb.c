@@ -39,7 +39,7 @@ static const usb_device_descriptor_t device_desc = {
 };
 
 #define DFU_INTERFACE_DSCR(alt)                          \
-  USB_INTERFACE_DSCR(/*inum=*/1, /*alt=*/alt, /*nep=*/0, \
+  USB_INTERFACE_DSCR(/*inum=*/0, /*alt=*/alt, /*nep=*/0, \
                      /*class=*/kDfuDeviceClass,          \
                      /*subclass=*/kDfuDeviceSubClass,    \
                      /*protocol=*/kDfuDeviceProtocol, /*iint=*/4 + alt)
