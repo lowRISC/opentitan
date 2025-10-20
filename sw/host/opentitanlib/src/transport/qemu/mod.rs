@@ -10,6 +10,7 @@ pub mod spi;
 pub mod uart;
 
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
 use std::str::FromStr;
 use std::thread;
@@ -41,9 +42,6 @@ const QEMU_RESET_PIN_IDX: u8 = u8::MAX;
 /// this number.
 const CONSOLE_BAUDRATE: u32 = 115200;
 
-/// Number of I2Cs.
-const NUM_I2CS: usize = 3;
-
 /// Represents a connection to a running QEMU emulation.
 pub struct Qemu {
     /// Connection to the QEMU monitor which can control the emulator.
@@ -59,7 +57,7 @@ pub struct Qemu {
     spi: Option<Rc<dyn Target>>,
 
     /// I2C devices.
-    i2cs: [Option<Rc<dyn Bus>>; NUM_I2CS],
+    i2cs: HashMap<String, Rc<dyn Bus>>,
 
     /// GPIO pins (not including reset pin).
     gpio: Option<Rc<RefCell<QemuGpio>>>,
@@ -142,24 +140,26 @@ impl Qemu {
         };
 
         // Try connecting to each of the I2C buses.
-        let mut i2cs = [const { None }; NUM_I2CS];
-        for (idx, i2cn) in i2cs.iter_mut().enumerate() {
-            let chardev_id = format!("i2c{}", idx);
-            *i2cn = match find_chardev(&chardevs, &chardev_id) {
-                Some(ChardevKind::Pty { path }) => {
-                    let i2c = QemuI2c::new(path).context("failed to connect to QEMU I2C PTY")?;
-                    let i2c: Rc<dyn Bus> = Rc::new(i2c);
-                    Some(i2c)
-                }
-                _ => {
-                    log::info!(
-                        "could not find pty chardev with id={}, skipping this I2C bus",
-                        &chardev_id
-                    );
-                    None
-                }
+        let mut i2cs = HashMap::new();
+        for chardev in &chardevs {
+            let Some(id) = chardev.id.strip_prefix("i2c") else {
+                continue;
             };
+
+            let ChardevKind::Pty { ref path } = chardev.kind else {
+                continue;
+            };
+
+            let i2c = QemuI2c::new(path).context("failed to connect to QEMU I2C PTY")?;
+            let i2c: Rc<dyn Bus> = Rc::new(i2c);
+
+            i2cs.insert(id.to_string(), i2c);
         }
+        if i2cs.is_empty() {
+            log::info!(
+                "could not find pty chardevs with ids starting with `i2c`, skipping I2C bus"
+            );
+                "could not find pty chardevs with ids starting with `i2c`, I2C support disabled"
 
         // If there's a chardev called `gpio`, configure it as a PTY and use as the GPIO pins.
         let gpio = match find_chardev(&chardevs, "gpio") {
@@ -229,17 +229,9 @@ impl Transport for Qemu {
     }
 
     fn i2c(&self, instance: &str) -> anyhow::Result<Rc<dyn Bus>> {
-        match instance {
-            "0" => Ok(Rc::clone(
-                self.i2cs[0].as_ref().context("QEMU I2C 0 not connected")?,
-            )),
-            "1" => Ok(Rc::clone(
-                self.i2cs[1].as_ref().context("QEMU I2C 1 not connected")?,
-            )),
-            "2" => Ok(Rc::clone(
-                self.i2cs[2].as_ref().context("QEMU I2C 2 not connected")?,
-            )),
-            _ => Err(TransportError::InvalidInstance(
+        match self.i2cs.get(instance) {
+            Some(i2c) => Ok(Rc::clone(i2c)),
+            None => Err(TransportError::InvalidInstance(
                 TransportInterfaceType::I2c,
                 instance.to_string(),
             )
