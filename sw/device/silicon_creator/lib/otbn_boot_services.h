@@ -200,6 +200,30 @@ rom_error_t otbn_boot_sigverify(const ecdsa_p256_public_key_t *key,
                                 const hmac_digest_t *digest,
                                 uint32_t *recovered_r);
 
+/**
+ * Retrieve an additional attestation key generation seed.
+ *
+ * This function retrieves an optional, secondary key seed to be loaded it into
+ * the OTBN data memory (DMEM). This seed complements the primary seed
+ * side-loaded from the `keymgr` used by OTBN for generating the attestation
+ * key.
+ *
+ * This implementation is **top-specific** because the seed's origin, storage
+ * location and availability vary across OpenTitan hardware configurations.
+ *
+ * Tops that do not require or provide a secondary seed must indicate this by
+ * setting the `seed` parameter to zero and returning 'kErrorOk'.
+ *
+ * @param seed_idx The index of the seed, if multiple are stored.
+ * @param seed The retrieved 32-bit seed. Set to zero if not provided.
+ * @return An `error.h` defined error if retrieval fails. Returns `kErrorOk`
+ * if the seed is successfully retrieved, or if no seed is required/available
+ * by the hardware top (in which case `seed` must be zeroed).
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t otbn_boot_attestation_keygen_seed(uint32_t seed_idx,
+                                              uint32_t *seed);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
