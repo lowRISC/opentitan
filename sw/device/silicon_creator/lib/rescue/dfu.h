@@ -241,7 +241,7 @@ enum {
    * rescue mode.
    */
   kUsbVendorGoogle = 0x18d1,
-  kUsbProuctRomExt = 0x023a,
+  kUsbProductRomExt = 0x023a,
 
   /**
    * A proprietary vendor request to set the DFU mode using a FourCC code
