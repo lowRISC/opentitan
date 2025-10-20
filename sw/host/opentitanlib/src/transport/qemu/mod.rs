@@ -209,6 +209,10 @@ impl Transport for Qemu {
             cap |= Capability::SPI;
         }
 
+        if !self.i2cs.is_empty() {
+            cap |= Capability::I2C;
+        }
+
         Ok(Capabilities::new(cap))
     }
 
