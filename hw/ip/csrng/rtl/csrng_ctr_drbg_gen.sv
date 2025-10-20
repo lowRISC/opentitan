@@ -58,7 +58,6 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   output logic              ctr_err_o,
   output logic              sm_err_o,
   output logic        [2:0] fifo_gbencack_err_o,
-  output logic        [2:0] fifo_grcstage_err_o,
   output logic        [2:0] fifo_gadstage_err_o,
   output logic        [2:0] fifo_ggenbits_err_o
 );
@@ -69,7 +68,6 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   // Note: Often, the full width is not utilized but only declared to be able to
   // convienently make use of common struct data types for read- and write data.
   localparam int AdstageFifoWidth = KeyLen + BlkLen + CtrLen + 2;
-  localparam int RCStageFifoWidth = CoreDataWidth + BlkLen + 1;
   localparam int GenbitsFifoWidth = CoreDataWidth + BlkLen;
 
   // FIFO signals. Four stages in total
@@ -87,13 +85,6 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   logic                        sfifo_bencack_rrdy;
   csrng_benc_data_t            sfifo_bencack_rdata;
 
-  logic                        sfifo_rcstage_wvld;
-  logic                        sfifo_rcstage_wrdy;
-  logic [RCStageFifoWidth-1:0] sfifo_rcstage_wdata;
-  logic                        sfifo_rcstage_rvld;
-  logic                        sfifo_rcstage_rrdy;
-  logic [RCStageFifoWidth-1:0] sfifo_rcstage_rdata;
-
   logic                        sfifo_genbits_wvld;
   logic                        sfifo_genbits_wrdy;
   logic [GenbitsFifoWidth-1:0] sfifo_genbits_wdata;
@@ -108,9 +99,6 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   logic               adstage_fips;
   logic               adstage_glast;
 
-  logic  [BlkLen-1:0] rcstage_bits;
-  logic               rcstage_glast;
-
   // Control and data signals, mostly for the v counter
   logic  [BlkLen-1:0] v_load;
   logic  [BlkLen-1:0] v_ctr_sized;
@@ -124,30 +112,33 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   logic [NumApps-1:0] update_adata_vld_q, update_adata_vld_d;
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \
-  //      -s 2651202796 --language=sv
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 7 -n 6 \
+  //     -s 12450626389 --language=sv
   //
   // Hamming distance histogram:
   //
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (66.67%)
-  //  4: |||||||||| (33.33%)
+  //  3: |||||||||||||||||||| (57.14%)
+  //  4: ||||||||||||||| (42.86%)
   //  5: --
+  //  6: --
   //
   // Minimum Hamming distance: 3
   // Maximum Hamming distance: 4
   // Minimum Hamming weight: 2
   // Maximum Hamming weight: 3
   //
-
-  localparam int StateWidth = 5;
+  localparam int StateWidth = 6;
   typedef enum logic [StateWidth-1:0] {
-    ReqIdle  = 5'b01101,
-    ReqSend  = 5'b00011,
-    ESHalt   = 5'b11000,
-    ReqError = 5'b10110
+    ReqIdle     = 6'b010101,
+    ReqSend     = 6'b111000,
+    ESHalt      = 6'b010010,
+    ReqError    = 6'b100100,
+    BencRspWait = 6'b100011,
+    UpdRspWait  = 6'b001110,
+    UpdESHalt   = 6'b001001
   } state_e;
 
   state_e state_d, state_q;
@@ -211,7 +202,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   end
 
   //--------------------------------------------
-  // state machine to send values to block_encrypt
+  // state machine to control conditional requests/responses to/from update unit
   //--------------------------------------------
 
   // Send genreq data with the altered v, and change the command code
@@ -228,8 +219,12 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
     v_ctr_load = 1'b0;
     v_ctr_inc  = 1'b0;
     sfifo_adstage_wvld = 1'b0;
+    sfifo_bencack_rrdy = 1'b0;
+    sfifo_adstage_rrdy = 1'b0;
+    sfifo_genbits_wvld = 1'b0;
     cmd_req_rdy_o = 1'b0;
     block_encrypt_req_vld_o = 1'b0;
+    update_req_vld_o = 1'b0;
     sm_err_o = 1'b0;
     es_halt_ack_o = 1'b0;
     unique case (state_q)
@@ -257,14 +252,56 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
             cmd_req_rdy_o = 1'b1;
             // Increment v & back to idle
             v_ctr_inc = 1'b1;
-            state_d   = ReqIdle;
+            state_d   = BencRspWait;
           end
+        end
+      end
+      BencRspWait: begin
+        if (!enable_i) begin
+          state_d = ReqIdle;
+        end else if (sfifo_bencack_rvld) begin
+          if (adstage_glast) begin
+            update_req_vld_o = 1'b1;
+            // Wait for update unit
+            if (update_req_rdy_i) begin
+              state_d = UpdRspWait;
+            end
+            // Abort the process in case of a halt request, as the
+            // update unit won't answer them until the halt ack
+            if (es_halt_req_i) begin
+              state_d = UpdESHalt;
+            end
+          end else begin
+            sfifo_bencack_rrdy = 1'b1;
+            sfifo_adstage_rrdy = 1'b1;
+            sfifo_genbits_wvld = 1'b1;
+            state_d = ReqIdle;
+          end
+        end
+      end
+      UpdRspWait: begin
+        if (!enable_i) begin
+          state_d = ReqIdle;
+        end else if (update_rsp_vld_i) begin
+          sfifo_bencack_rrdy = 1'b1;
+          sfifo_adstage_rrdy = 1'b1;
+          sfifo_genbits_wvld = 1'b1;
+          state_d = ReqIdle;
         end
       end
       ESHalt: begin
         es_halt_ack_o = 1'b1;
         if (!es_halt_req_i) begin
           state_d = ReqIdle;
+        end
+      end
+      UpdESHalt: begin
+        es_halt_ack_o = 1'b1;
+        // We have to keep the update_req_vld high, else we get
+        // the arbiter asserts firing
+        update_req_vld_o = 1'b1;
+        if (!es_halt_req_i) begin
+          state_d = BencRspWait;
         end
       end
       ReqError: begin
@@ -308,7 +345,6 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
                                 cmd_req_data_i.rs_ctr,
                                 cmd_req_data_i.fips};
 
-  assign sfifo_adstage_rrdy = sfifo_adstage_rvld && sfifo_bencack_rrdy;
   assign {adstage_glast,
           adstage_key,
           adstage_v,
@@ -376,9 +412,6 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
 
   assign block_encrypt_rsp_rdy_o = sfifo_bencack_wrdy;
 
-  assign sfifo_bencack_rrdy = sfifo_bencack_rvld && sfifo_rcstage_wrdy &&
-                             (update_req_rdy_i || !adstage_glast);
-
   assign fifo_gbencack_err_o =
          {( sfifo_bencack_wvld && !sfifo_bencack_wrdy),
           ( sfifo_bencack_rrdy && !sfifo_bencack_rvld),
@@ -389,7 +422,6 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   // prepare values for update step
   //--------------------------------------------
 
-  assign update_req_vld_o = sfifo_bencack_rvld && adstage_glast;
   assign update_req_data_o = '{
     inst_id: sfifo_bencack_rdata.inst_id,
     cmd:     sfifo_bencack_rdata.cmd,
@@ -403,7 +435,6 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   //--------------------------------------------
 
   csrng_core_data_t adstage_core_data;
-  csrng_core_data_t rcstage_core_data;
 
   assign adstage_core_data = '{
     inst_id: sfifo_bencack_rdata.inst_id,
@@ -415,44 +446,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
     fips:    adstage_fips
   };
 
-  prim_fifo_sync #(
-    .Width(RCStageFifoWidth),
-    .Pass(0),
-    .Depth(1),
-    .OutputZeroIfEmpty(1'b0)
-  ) u_prim_fifo_sync_rcstage (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .clr_i   (!enable_i),
-    .wvalid_i(sfifo_rcstage_wvld),
-    .wready_o(sfifo_rcstage_wrdy),
-    .wdata_i (sfifo_rcstage_wdata),
-    .rvalid_o(sfifo_rcstage_rvld),
-    .rready_i(sfifo_rcstage_rrdy),
-    .rdata_o (sfifo_rcstage_rdata),
-    .full_o  (),
-    .depth_o (),
-    .err_o   ()
-  );
-
-  assign sfifo_rcstage_wvld = sfifo_adstage_rrdy;
-  assign sfifo_rcstage_wdata = {sfifo_bencack_rdata.v,
-                                adstage_glast,
-                                adstage_core_data};
-
-  assign sfifo_rcstage_rrdy = sfifo_rcstage_rvld && (update_rsp_vld_i || !rcstage_glast);
-
-  assign {rcstage_bits,
-          rcstage_glast,
-          rcstage_core_data} = sfifo_rcstage_rdata;
-
-  assign fifo_grcstage_err_o =
-         {( sfifo_rcstage_wvld && !sfifo_rcstage_wrdy),
-          ( sfifo_rcstage_rrdy && !sfifo_rcstage_rvld),
-          (!sfifo_rcstage_wrdy && !sfifo_rcstage_rvld)};
-
-  assign update_rsp_rdy_o = sfifo_rcstage_rvld && sfifo_genbits_wrdy;
-
+  assign update_rsp_rdy_o = sfifo_genbits_wrdy;
 
   //--------------------------------------------
   // final cmd block processing
@@ -480,19 +474,18 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
     .err_o   ()
   );
 
-  assign sfifo_genbits_wvld  = sfifo_rcstage_rrdy;
-  assign sfifo_genbits_wdata = {rcstage_bits, genbits_core_data};
+  assign sfifo_genbits_wdata = {sfifo_bencack_rdata.v, genbits_core_data};
 
   always_comb begin
-    genbits_core_data = rcstage_core_data;
+    genbits_core_data = adstage_core_data;
     // On the last gen beat, splice in the updated key & v values from the
     // update unit, and increase the reseed counter by one.
-    if (rcstage_glast) begin
+    if (adstage_glast) begin
       genbits_core_data.inst_id = update_rsp_data_i.inst_id;
       genbits_core_data.cmd     = update_rsp_data_i.cmd;
       genbits_core_data.key     = update_rsp_data_i.key;
       genbits_core_data.v       = update_rsp_data_i.v;
-      genbits_core_data.rs_ctr  = rcstage_core_data.rs_ctr + 1;
+      genbits_core_data.rs_ctr  = adstage_core_data.rs_ctr + 1;
     end
   end
 
@@ -517,7 +510,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   `ASSERT(CsrngDrbgGenErrorStStable_A, state_q == ReqError |=> $stable(state_q))
   // If in error state, the error output must be high.
   `ASSERT(CsrngDrbgGenErrorOutput_A,
-          !(state_q inside {ReqIdle, ReqSend, ESHalt}) |-> sm_err_o)
+          !(state_q inside {ReqIdle, ReqSend, ESHalt, BencRspWait, UpdRspWait, UpdESHalt})
+          |-> sm_err_o)
 
   // Unused signals
   logic [SeedLen-1:0] unused_upd_rsp_pdata;
