@@ -660,6 +660,7 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_nvm_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_clr;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_init_done;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_cpu_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_keymgr_en;
@@ -1652,6 +1653,7 @@ module top_earlgrey #(
       .lc_otp_program_i(lc_ctrl_lc_otp_program_rsp),
       .kmac_data_o(kmac_app_req[1]),
       .kmac_data_i(kmac_app_rsp[1]),
+      .lc_init_done_o(lc_ctrl_lc_init_done),
       .lc_raw_test_rma_o(),
       .lc_dft_en_o(lc_ctrl_lc_dft_en),
       .lc_nvm_debug_en_o(lc_ctrl_lc_nvm_debug_en),
@@ -2374,6 +2376,7 @@ module top_earlgrey #(
       .next_dm_addr_i('0),
       .jtag_i(pinmux_aon_rv_jtag_req),
       .jtag_o(pinmux_aon_rv_jtag_rsp),
+      .lc_init_done_i(lc_ctrl_lc_init_done),
       .lc_hw_debug_clr_i(lc_ctrl_lc_hw_debug_clr),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .lc_dft_en_i(lc_ctrl_lc_dft_en),

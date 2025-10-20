@@ -599,6 +599,7 @@ module top_darjeeling #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_raw_test_rma;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_clr;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_init_done;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_cpu_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_keymgr_en;
@@ -1346,6 +1347,7 @@ module top_darjeeling #(
       .lc_otp_program_i(lc_ctrl_lc_otp_program_rsp),
       .kmac_data_o(kmac_app_req[1]),
       .kmac_data_i(kmac_app_rsp[1]),
+      .lc_init_done_o(lc_ctrl_lc_init_done),
       .lc_raw_test_rma_o(lc_ctrl_lc_raw_test_rma),
       .lc_dft_en_o(lc_ctrl_lc_dft_en),
       .lc_nvm_debug_en_o(),
@@ -1804,6 +1806,7 @@ module top_darjeeling #(
       .next_dm_addr_i(rv_dm_next_dm_addr_i),
       .jtag_i(jtag_pkg::JTAG_REQ_DEFAULT),
       .jtag_o(),
+      .lc_init_done_i(lc_ctrl_lc_init_done),
       .lc_hw_debug_clr_i(lc_ctrl_lc_hw_debug_clr),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .lc_dft_en_i(lc_ctrl_lc_dft_en),

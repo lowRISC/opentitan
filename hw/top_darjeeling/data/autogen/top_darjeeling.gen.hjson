@@ -1988,6 +1988,25 @@
           index: 1
         }
         {
+          name: lc_init_done
+          desc:
+            '''
+            A signal that is On after lifecycle initialization is done.
+            This signal is On when lifecycle initialization is complete and life cycle controller broadcast signals are valid.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: lc_ctrl
+          end_idx: -1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_init_done
+          index: -1
+        }
+        {
           name: lc_raw_test_rma
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -4667,6 +4686,19 @@
           act: rsp
           width: 1
           inst_name: rv_dm
+          index: -1
+        }
+        {
+          name: lc_init_done
+          desc: Lifecycle initialization done signal coming from life cycle controller.
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: rv_dm
+          top_signame: lc_ctrl_lc_init_done
           index: -1
         }
         {
@@ -11422,6 +11454,10 @@
       lc_ctrl.lc_hw_debug_clr:
       [
         rv_dm.lc_hw_debug_clr
+      ]
+      lc_ctrl.lc_init_done:
+      [
+        rv_dm.lc_init_done
       ]
       lc_ctrl.lc_hw_debug_en:
       [
@@ -22220,6 +22256,25 @@
         index: 1
       }
       {
+        name: lc_init_done
+        desc:
+          '''
+          A signal that is On after lifecycle initialization is done.
+          This signal is On when lifecycle initialization is complete and life cycle controller broadcast signals are valid.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: lc_ctrl
+        end_idx: -1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_init_done
+        index: -1
+      }
+      {
         name: lc_raw_test_rma
         struct: lc_tx
         package: lc_ctrl_pkg
@@ -24007,6 +24062,19 @@
         act: rsp
         width: 1
         inst_name: rv_dm
+        index: -1
+      }
+      {
+        name: lc_init_done
+        desc: Lifecycle initialization done signal coming from life cycle controller.
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: rv_dm
+        top_signame: lc_ctrl_lc_init_done
         index: -1
       }
       {
@@ -31054,6 +31122,17 @@
         package: lc_ctrl_pkg
         struct: lc_tx
         signame: lc_ctrl_lc_hw_debug_clr
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_init_done
         width: 1
         type: uni
         end_idx: -1

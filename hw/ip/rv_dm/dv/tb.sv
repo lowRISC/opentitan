@@ -73,6 +73,7 @@ module tb;
     .next_dm_addr_i            ('0),
 
     // the strapping behavior of lc_hw_debug_en_i will be tested at the top-level.
+    .lc_init_done_i            (rv_dm_if.lc_init_done             ),
     .lc_hw_debug_clr_i         (rv_dm_if.lc_hw_debug_clr          ),
     .lc_hw_debug_en_i          (rv_dm_if.lc_hw_debug_en           ),
     .pinmux_hw_debug_en_i      (rv_dm_if.pinmux_hw_debug_en       ),
