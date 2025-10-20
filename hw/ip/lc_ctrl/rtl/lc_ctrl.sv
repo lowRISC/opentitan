@@ -842,12 +842,19 @@ module lc_ctrl
 
   `ASSERT_KNOWN(RegsTlOKnown,           regs_tl_o                  )
   `ASSERT_KNOWN(DmiTlOKnown,            dmi_tl_o                   )
+  `ASSERT_KNOWN(JtagTDOKnown_A,         jtag_o                     )
   `ASSERT_KNOWN(AlertTxKnown_A,         alert_tx_o                 )
+  `ASSERT_KNOWN(EscScrapState0Known_A,  esc_scrap_state0_rx_o      )
+  `ASSERT_KNOWN(EscScrapState1Known_A,  esc_scrap_state1_rx_o      )
   `ASSERT_KNOWN(PwrLcKnown_A,           pwr_lc_o                   )
+  `ASSERT_KNOWN(StrapEnOverrideKnown_A, strap_en_override_o        )
+  `ASSERT_KNOWN(VendorTestReqKnown_A,   lc_otp_vendor_test_o       )
   `ASSERT_KNOWN(LcOtpProgramKnown_A,    lc_otp_program_o           )
   `ASSERT_KNOWN(LcOtpTokenKnown_A,      kmac_data_o                )
   `ASSERT_KNOWN(LcDftEnKnown_A,         lc_dft_en_o                )
+  `ASSERT_KNOWN(LcRawTestRmaKnown_A,    lc_raw_test_rma_o          )
   `ASSERT_KNOWN(LcNvmDebugEnKnown_A,    lc_nvm_debug_en_o          )
+  `ASSERT_KNOWN(LcHwDebugClrKnown_A,    lc_hw_debug_clr_o          )
   `ASSERT_KNOWN(LcHwDebugEnKnown_A,     lc_hw_debug_en_o           )
   `ASSERT_KNOWN(LcCpuEnKnown_A,         lc_cpu_en_o                )
   `ASSERT_KNOWN(LcCreatorSwRwEn_A,      lc_creator_seed_sw_rw_en_o )
@@ -863,6 +870,7 @@ module lc_ctrl
   `ASSERT_KNOWN(LcFlashRmaSeedKnown_A,  lc_flash_rma_seed_o        )
   `ASSERT_KNOWN(LcFlashRmaReqKnown_A,   lc_flash_rma_req_o         )
   `ASSERT_KNOWN(LcKeymgrDiv_A,          lc_keymgr_div_o            )
+  `ASSERT_KNOWN(HwRevKnown_A,           hw_rev_o                   )
 
   // Alert assertions for sparse FSMs.
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcFsmCheck_A,
