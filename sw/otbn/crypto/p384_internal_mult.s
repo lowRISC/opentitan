@@ -330,7 +330,7 @@ scalar_mult_int_p384_reblind_ret:
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
  *
- * clobbered registers: x2, x10, x11 to x13, x18, x26, x27, w0 to w30
+ * clobbered registers: x2, x7, x8, x10 to x13, x18, x26, x27, w0 to w30
  * clobbered flag groups: FG0
  */
 scalar_mult_int_p384_internal:
@@ -341,6 +341,8 @@ scalar_mult_int_p384_internal:
   li        x23, 11
   li        x24, 16
   li        x25, 17
+  la        x7, p_temp1
+  la        x8, p_temp2
 
    /* store shares in scratchpad */
   li        x2, 0
@@ -389,7 +391,7 @@ scalar_mult_int_p384_internal:
   bn.sid    x2, 160(x26)
 
   /* double-and-add loop with decreasing index */
-  loop      x16, 94
+  loop      x16, 157
 
     /* double point Q
        Q = ([w30,w29], [w28,w27], [w26, w25]) <= Q + dmem[x27] */
@@ -410,19 +412,98 @@ scalar_mult_int_p384_internal:
        is 1.
        If only one MSb is set, select P for addition.
        If both MSbs are set, select 2P for addition.
-       (If neither MSB is set, 2P will be selected but result discarded.) */
+       (If neither MSB is set, 2P will be selected but result discarded.)
+       This is done based on both shares of d separately as follows:
+       (d0 ^ d1) ? P : 2P = d0 ? (d1 ? 2P : P) : (d1 ? P : 2P). */
+
+    /* Load the MSB of d0.
+       M <= MSB(d0) */
     li        x2, 0
-    bn.lid    x2++, 256(x30)
-    bn.lid    x2,   544(x30)
-    bn.xor    w8, w0, w1
-    /* Create conditional offset into scratchpad.
-       if (s0[512] xor s1[512]) x27 <= x30 else x27 <= x30+288 */
+    bn.lid    x2, 256(x30)
+    bn.or     w8, w0, w31
+    bn.wsrr   w8, URND
+
+    /* Load point P
+       ([w11,w10], [w9,w8], [w7, w6]) <= P */
+    li        x2, 6
+    bn.lid    x2++, 0(x30)
+    bn.lid    x2++, 32(x30)
+    bn.lid    x2++, 64(x30)
+    bn.lid    x2++, 96(x30)
+    bn.lid    x2++, 128(x30)
+    bn.lid    x2,   160(x30)
+
+    /* Load point 2P
+       ([w30,w29], [w28,w27], [w26, w25]) <= 2P */
+    li        x2, 25
+    bn.lid    x2++, 288(x30)
+    bn.lid    x2++, 320(x30)
+    bn.lid    x2++, 352(x30)
+    bn.lid    x2++, 384(x30)
+    bn.lid    x2++, 416(x30)
+    bn.lid    x2,   448(x30)
+
+    /* Select whether P or 2P will be stored in dmem[p_temp1].
+       ([w21,w20], [w19,w18], [w17, w16]) <= M ? 2P : P */
+    bn.sel    w16, w25, w6, M
+    bn.sel    w17, w26, w7, M
+    bn.sel    w18, w27, w8, M
+    bn.sel    w19, w28, w9, M
+    bn.sel    w20, w29, w10, M
+    bn.sel    w21, w30, w11, M
+
+    /* Store point 2P or P based on M
+       dmem[p_temp1] <= ([w21,w20], [w19,w18], [w17, w16]) <= 2P or P */
+    li        x2, 16
+    bn.sid    x2++, 0(x7)
+    bn.sid    x2++, 32(x7)
+    bn.sid    x2++, 64(x7)
+    bn.sid    x2++, 96(x7)
+    bn.sid    x2++, 128(x7)
+    bn.sid    x2,   160(x7)
+
+    /* Randomize registers before using them again. */
+    bn.wsrr   w16, URND
+    bn.wsrr   w17, URND
+    bn.wsrr   w18, URND
+    bn.wsrr   w19, URND
+    bn.wsrr   w20, URND
+    bn.wsrr   w21, URND
+
+    /* Select whether P or 2P will be stored in dmem[p_temp2].
+       ([w21,w20], [w19,w18], [w17, w16]) <= M ? P : 2P */
+    bn.sel    w16, w6,  w25, M
+    bn.sel    w17, w7,  w26, M
+    bn.sel    w18, w8,  w27, M
+    bn.sel    w19, w9,  w28, M
+    bn.sel    w20, w10, w29, M
+    bn.sel    w21, w11, w30, M
+
+    /* Store point P or 2P based on M
+       dmem[p_temp2] <= ([w21,w20], [w19,w18], [w17, w16]) <= P or 2P */
+    li        x2, 16
+    bn.sid    x2++, 0(x8)
+    bn.sid    x2++, 32(x8)
+    bn.sid    x2++, 64(x8)
+    bn.sid    x2++, 96(x8)
+    bn.sid    x2++, 128(x8)
+    bn.sid    x2,   160(x8)
+
+    /* Load the MSB of d1.
+       M <= MSB(d1) */
+    li        x2, 1
+    bn.lid    x2, 544(x30)
+    bn.or     w8, w1, w31
+
+    /* Select whether p_temp1 or p_temp2 will be stored in x27.
+       x27 <= M ? p_temp1 : p_temp2 */
     csrrs     x3, FG0, x0
     andi      x3, x3, 2
-    slli      x3, x3, 3
-    li        x27, 288
-    sra       x27, x27, x3
-    add       x27, x27, x30
+    srli      x3, x3, 1
+    sub       x2, x0, x3
+    xor       x27, x7, x8
+    and       x27, x27, x2
+    xor       x27, x27, x8
 
     /* Reload randomized projective coodinates for curve point P.
        P = (x_p, y_p, z_p) = dmem[dptr_sp] <= (x*z mod p, y*z mod p, z) */
@@ -442,8 +523,8 @@ scalar_mult_int_p384_internal:
     bn.lid    x2++, 512(x30)
     bn.lid    x2,   544(x30)
 
-    /* M = s0[511] | s1[511] */
-    bn.or     w8, w2, w5
+    /* M = s0[511] */
+    bn.or     w8, w2, w31
 
     /* load q from scratchpad
         Q = ([w11,w10], [w9,w8], [w7,w6]) <= dmem[x26] */
@@ -456,7 +537,7 @@ scalar_mult_int_p384_internal:
     bn.lid    x2,   160(x26)
 
     /* select either Q or Q_a
-       if M: Q = ([w21,w20], [w19,w18], [w17,w16]) <= Q else: Q <= Q_a */
+       if M: Q_temp = ([w21,w20], [w19,w18], [w17,w16]) <= Q_a else: Q_temp <= Q */
     bn.sel    w16, w25, w6, M
     bn.sel    w17, w26, w7, M
     bn.sel    w18, w27, w8, M
@@ -464,9 +545,29 @@ scalar_mult_int_p384_internal:
     bn.sel    w20, w29, w10, M
     bn.sel    w21, w30, w11, M
 
+    /* Randomize registers before using them again. */
+    bn.wsrr   w6, URND
+    bn.wsrr   w7, URND
+    bn.wsrr   w8, URND
+    bn.wsrr   w9, URND
+    bn.wsrr   w10, URND
+    bn.wsrr   w11, URND
+
+    /* M = s1[511] */
+    bn.or     w8, w5, w31
+
+    /* select either Q_temp or Q_a
+       if M: Q = ([w21,w20], [w19,w18], [w17,w16]) <= Q_a else: Q <= Q_temp */
+    bn.sel    w6, w25, w16, M
+    bn.sel    w7, w26, w17, M
+    bn.sel    w8, w27, w18, M
+    bn.sel    w9, w28, w19, M
+    bn.sel    w10, w29, w20, M
+    bn.sel    w11, w30, w21, M
+
     /* store Q in dmem
      dmem[x26] = dmem[dptr_sc+512] <= [w21:w16] */
-    li        x2, 16
+    li        x2, 6
     bn.sid    x2++, 0(x26)
     bn.sid    x2++, 32(x26)
     bn.sid    x2++, 64(x26)
