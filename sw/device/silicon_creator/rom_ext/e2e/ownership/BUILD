@@ -757,9 +757,10 @@ ownership_transfer_test(
 )
 
 # Test that the `sku_creator_owner_init` function responsible for installing the test owner on
-# FPGA builds will automatically update from an older owner block.
+# unprovisioned builds without flash info page splicing (e.g. FPGA, QEMU) will automatically
+# update from an older owner block.
 ownership_transfer_test(
-    name = "fpga_owner_upgrade_test",
+    name = "install_owner_upgrade_test",
     ecdsa_key = {
         "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0",
     },
