@@ -7,7 +7,7 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -36,9 +36,7 @@ fn volatile_raw_unlock_with_reconnection_to_lc_tap(
         .pin_strapping("PINMUX_TAP_LC")?
         .apply()
         .context("failed to apply LC TAP strapping")?;
-    transport
-        .reset_target(opts.init.bootstrap.options.reset_delay, true)
-        .context("failed to reset")?;
+    transport.reset(UartRx::Clear).context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
     let mut jtag = opts
@@ -87,9 +85,7 @@ fn volatile_raw_unlock_with_reconnection_to_rv_tap(
         .pin_strapping("PINMUX_TAP_LC")?
         .apply()
         .context("failed to apply LC TAP strapping")?;
-    transport
-        .reset_target(opts.init.bootstrap.options.reset_delay, true)
-        .context("failed to reset")?;
+    transport.reset(UartRx::Clear).context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
     let mut jtag = opts

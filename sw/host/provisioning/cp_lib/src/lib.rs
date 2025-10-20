@@ -8,7 +8,7 @@ use anyhow::{Context, Result};
 use clap::Args;
 use serde::Serialize;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
 use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
@@ -44,19 +44,13 @@ pub struct CpResponse {
     pub cp_device_id: String,
 }
 
-pub fn unlock_raw(
-    transport: &TransportWrapper,
-    jtag_params: &JtagParams,
-    reset_delay: Duration,
-) -> Result<()> {
+pub fn unlock_raw(transport: &TransportWrapper, jtag_params: &JtagParams) -> Result<()> {
     // Set the TAP straps for the lifecycle controller and reset.
     transport
         .pin_strapping("PINMUX_TAP_LC")?
         .apply()
         .context("failed to apply LC TAP strapping")?;
-    transport
-        .reset_target(reset_delay, true)
-        .context("failed to reset")?;
+    transport.reset(UartRx::Clear).context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
     let mut jtag = jtag_params
@@ -77,7 +71,6 @@ pub fn unlock_raw(
         Some(token_words),
         /*use_external_clk=*/
         true, // AST will NOT be calibrated yet, so we need ext_clk.
-        reset_delay,
         Some(JtagTap::LcTap),
     )
     .context("failed to transition to TEST_UNLOCKED0.")?;
@@ -97,7 +90,6 @@ pub fn unlock_raw(
 pub fn run_sram_cp_provision(
     transport: &TransportWrapper,
     jtag_params: &JtagParams,
-    reset_delay: Duration,
     sram_program: &SramProgramParams,
     data_in: &ManufCpProvisioningData,
     spi_console: &SpiConsoleDevice,
@@ -106,7 +98,7 @@ pub fn run_sram_cp_provision(
 ) -> Result<()> {
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let mut jtag = jtag_params.create(transport)?.connect(JtagTap::RiscvTap)?;
 
     // Reset and halt the CPU to ensure we are in a known state, and clear out any ROM messages
@@ -149,19 +141,13 @@ pub fn run_sram_cp_provision(
     Ok(())
 }
 
-pub fn reset_and_lock(
-    transport: &TransportWrapper,
-    jtag_params: &JtagParams,
-    reset_delay: Duration,
-) -> Result<()> {
+pub fn reset_and_lock(transport: &TransportWrapper, jtag_params: &JtagParams) -> Result<()> {
     // Set the TAP straps for the lifecycle controller and reset.
     transport
         .pin_strapping("PINMUX_TAP_LC")?
         .apply()
         .context("failed to apply LC TAP strapping")?;
-    transport
-        .reset_target(reset_delay, true)
-        .context("failed to reset")?;
+    transport.reset(UartRx::Clear).context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
     let mut jtag = jtag_params
@@ -178,7 +164,6 @@ pub fn reset_and_lock(
         None,
         /*use_external_clk=*/
         false, // AST will be calibrated by now, so no need for ext_clk.
-        reset_delay,
         Some(JtagTap::LcTap),
     )
     .context("failed to transition to TEST_LOCKED0.")?;
