@@ -24,15 +24,16 @@ use crate::io::i2c::Bus;
 use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
+use crate::io::usb::{UsbContext, UsbDevice};
 use crate::transport::chip_whisperer::ChipWhisperer;
 use crate::transport::chip_whisperer::board::Board;
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use crate::transport::common::uart::flock_serial;
+use crate::transport::common::usb::RusbContext;
 use crate::transport::{
     Capabilities, Capability, SetJtagPins, Transport, TransportError, TransportInterfaceType,
     UpdateFirmware,
 };
-use crate::util::usb::UsbBackend;
 
 pub mod c2d2;
 pub mod dfu;
@@ -142,7 +143,8 @@ impl<T: Flavor> Hyperdebug<T> {
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
     ) -> Result<Self> {
-        let device = UsbBackend::new(
+        let usb_context = RusbContext::new();
+        let device = usb_context.device_by_id(
             usb_vid.unwrap_or_else(T::get_default_usb_vid),
             usb_pid.unwrap_or_else(T::get_default_usb_pid),
             usb_serial,
@@ -299,7 +301,7 @@ impl<T: Flavor> Hyperdebug<T> {
                 console_tty: console_tty.ok_or_else(|| {
                     TransportError::CommunicationError("Missing console interface".to_string())
                 })?,
-                usb_device: RefCell::new(device),
+                usb_device: device,
                 selected_spi: Cell::new(0),
             }),
             current_firmware_version,
@@ -382,7 +384,6 @@ impl<T: Flavor> Hyperdebug<T> {
         }
         self.inner
             .usb_device
-            .borrow_mut()
             .claim_interface(cmsis_interface.interface)?;
         let cmd = [
             Self::CMSIS_DAP_CUSTOM_COMMAND_GOOGLE_INFO,
@@ -390,13 +391,11 @@ impl<T: Flavor> Hyperdebug<T> {
         ];
         self.inner
             .usb_device
-            .borrow()
             .write_bulk(cmsis_interface.out_endpoint, &cmd)?;
         let mut resp = [0u8; 64];
         let bytecount = self
             .inner
             .usb_device
-            .borrow()
             .read_bulk(cmsis_interface.in_endpoint, &mut resp)?;
         let resp = &resp[..bytecount];
         // First byte of response is echo of the request header, second byte indicates the number
@@ -409,7 +408,6 @@ impl<T: Flavor> Hyperdebug<T> {
         self.cmsis_google_capabilities.set(Some(capabilities));
         self.inner
             .usb_device
-            .borrow_mut()
             .release_interface(cmsis_interface.interface)?;
         Ok(capabilities)
     }
@@ -420,7 +418,7 @@ impl<T: Flavor> Hyperdebug<T> {
 /// even if the caller lets the outer Hyperdebug struct run out of scope.
 pub struct Inner {
     console_tty: PathBuf,
-    usb_device: RefCell<UsbBackend>,
+    usb_device: Rc<dyn UsbDevice>,
     selected_spi: Cell<u8>,
 }
 
@@ -593,7 +591,8 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 | Capability::SPI_DUAL
                 | Capability::SPI_QUAD
                 | Capability::I2C
-                | Capability::JTAG,
+                | Capability::JTAG
+                | Capability::USB,
         ))
     }
 
@@ -706,6 +705,10 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         }
     }
 
+    fn usb(&self) -> Result<Rc<dyn UsbContext>> {
+        Ok(Rc::new(RusbContext::new()))
+    }
+
     // Create GpioPin instance, or return one from a cache of previously created instances.
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         Ok(
@@ -764,10 +767,10 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
 
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         if let Some(update_firmware_action) = action.downcast_ref::<UpdateFirmware>() {
-            let usb_vid = self.inner.usb_device.borrow().get_vendor_id();
-            let usb_pid = self.inner.usb_device.borrow().get_product_id();
+            let usb_vid = self.inner.usb_device.get_vendor_id();
+            let usb_pid = self.inner.usb_device.get_product_id();
             dfu::update_firmware(
-                &self.inner.usb_device.borrow(),
+                &*self.inner.usb_device,
                 self.current_firmware_version.as_deref(),
                 &update_firmware_action.firmware,
                 update_firmware_action.progress.as_ref(),
@@ -817,7 +820,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         );
         // Tell OpenOCD to use its CMSIS-DAP driver, and to connect to the same exact USB
         // HyperDebug device that we are.
-        let usb_device = self.inner.usb_device.borrow();
+        let usb_device = &self.inner.usb_device;
         let new_jtag = Box::new(OpenOcdJtagChain::new(
             &format!(
                 "{}; cmsis_dap_vid_pid 0x{:04x} 0x{:04x}; adapter serial \"{}\";",
