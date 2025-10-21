@@ -2,7 +2,9 @@
 
 For instructions on setting up QEMU for local development and troubleshooting steps, see the [setup guide](./setup.md).
 
-## Test parameters
+## Testing
+
+### Test parameters
 
 Tests with a `sim_qemu_*` execution environment can be further configured by adding `qemu_params` to the test target.
 The currently supported parameters are:
@@ -37,4 +39,17 @@ opentitan_test(
     ),
     # ...
 )
+```
+
+### Command-line arguments
+
+It can often be inconvenient to manually modify test targets to contain the desired list of QEMU arguments whilst debugging.
+In particular, manually adding and removing traces can quickly become unwieldy.
+
+Instead, you can pass in arguments to QEMU as command-line arguments using the form `--qemu-arg="X"` or `--qemu-args="X Y Z"`.
+The former forwards a single argument `X` to QEMU, whereas the latter forwards `X`, `Y` and `Z` each as _different_ arguments to QEMU.
+
+For example, to manually add some traces for the USB device and alert updates whilst debugging a test, you might run:
+```
+./bazelisk.sh test //path_to_qemu_test:my_test --test_arg=--qemu-args="--trace ot_usbdev* --trace ot*update_alert*"
 ```
