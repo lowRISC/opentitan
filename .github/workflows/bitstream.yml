@@ -87,16 +87,16 @@ jobs:
           design_name=chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}
 
           echo "Synthesis log"
-          cat $OBJ_DIR/hw/top_${{ inputs.top_name }}/${design_name}/build.fpga_${{ inputs.design_suffix }}/${vlnv_path}/synth-vivado/${vlnv_path}.runs/synth_1/runme.log || true
+          cat $OBJ_DIR/hw/top_${{ inputs.top_name }}/${design_name}/${vlnv_path}.runs/synth_1/runme.log || true
 
           echo "Implementation log"
-          cat $OBJ_DIR/hw/top_${{ inputs.top_name }}/${design_name}/build.fpga_${{ inputs.design_suffix }}/${vlnv_path}/synth-vivado/${vlnv_path}.runs/impl_1/runme.log || true
+          cat $OBJ_DIR/hw/top_${{ inputs.top_name }}/${design_name}/${vlnv_path}.runs/impl_1/runme.log || true
 
           echo "Utilization report"
-          cat $OBJ_DIR/hw/top_${{ inputs.top_name }}/${design_name}/build.fpga_${{ inputs.design_suffix }}/${vlnv_path}/synth-vivado/${vlnv_path}.runs/impl_1/${design_name}_utilization_placed.rpt || true
+          cat $OBJ_DIR/hw/top_${{ inputs.top_name }}/${design_name}/${vlnv_path}.runs/impl_1/${design_name}_utilization_placed.rpt || true
 
           echo "Timing summary report"
-          cat $OBJ_DIR/hw/top_${{ inputs.top_name }}/${design_name}/build.fpga_${{ inputs.design_suffix }}/${vlnv_path}/synth-vivado/${vlnv_path}.runs/impl_1/${design_name}_timing_summary_routed.rpt || true
+          cat $OBJ_DIR/hw/top_${{ inputs.top_name }}/${design_name}/${vlnv_path}.runs/impl_1/${design_name}_timing_summary_routed.rpt || true
 
       - name: Upload step outputs
         uses: actions/upload-artifact@v4
