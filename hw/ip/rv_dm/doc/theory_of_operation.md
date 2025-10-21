@@ -39,5 +39,5 @@ The life cycle gating mechanism explained in the previous section cuts the conne
 In order to prevent this from happening during a non-debug-module (NDM) reset request, the TAP/JTAG-side gating logic is modulated using a latched version of the debug enable signal.
 When using a dedicated JTAG TAP in the debug module, e.g., in Earlgrey, the debug enable signal that comes from the strap sampling module inside the pinmux.
 The pinmux basically ensures that that signal is latched and kept stable while an NDM reset is taking place.
-See also [pinmux documentation](../../../ip_templates/pinmux/doc/theory_of_operation.md#non-debug-module-reset).
+See also [pinmux documentation](../../../top_earlgrey/ip_autogen/pinmux/doc/theory_of_operation.md#strap-sampling-and-tap-isolation).
 When using the debug module with the DMI interface, e.g., in Darjeeling, the debug module itself latches the debug enable signal while the NDM reset is taking place.
