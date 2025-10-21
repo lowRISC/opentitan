@@ -1,0 +1,48 @@
+lowRISC CIC - OpenTitan Project ("Project")
+Corporate Contributor License Agreement ("Agreement") v1.0
+
+This version of the Agreement allows an entity ("Corporation") to submit Contributions to the Project and/or to authorise Contributions submitted to the Project by its designated employees.
+
+Please complete and sign, in the presence of an independent witness who also signs, in the space below and then scan and return a pdf of the full file of this Agreement (including your signature) to legal@lowrisc.org.
+
+You accept and agree to the following terms and conditions for Your present and future Contributions, and those present and future Contributions made by Your designated employees,  submitted to the Project.
+
+Except for the license granted herein to the Project and recipients of hardware, software and/or related works, documentation and/or products (including, without limitation, design files, digital video and tests) distributed by the Project, You reserve all right, title, and interest in and to Your Contributions and any right, title and/or interest You have in Contributions made by Your designated employees.
+
+1. Definitions.
+  "You" (or "Your") shall mean the copyright owner or legal entity authorized by the copyright owner that is making this Agreement with lowRISC C.I.C. on behalf of the Project.
+  For legal entities (including the Corporation), the entity making a Contribution and all other entities that control, are controlled by, or are under common control with that entity are considered to be a single Contributor.
+  For the purposes of this definition, "control" means (i) the power, direct or indirect, to cause the direction or management of such entity, whether by contract or otherwise, or (ii) ownership of fifty percent (50%) or more of the outstanding shares, or (iii) beneficial ownership of such entity.
+  "Contribution" shall mean any original work of authorship, including any modifications or additions to an existing work, that is intentionally submitted by You or one of Your designated employees to the Project for inclusion in, or documentation of, any of the products owned or managed by the Project (the "Work").
+  For the purposes of this definition, "submitted" means any form of electronic, verbal, or written communication sent to the Project or its representatives, including but not limited to communication on electronic mailing lists, source code control systems, and issue tracking systems that are managed by, or on behalf of, the Project for the purpose of discussing and improving the Work, but excluding communication that is conspicuously marked or otherwise designated in writing by You or one of Your designated employees as "Not a Contribution."
+
+  "designated employee(s)" has the meaning given to it in clause 4 below.
+  "Individual Collaborators" means individuals that have a legally-binding agreement in place with the lowRISC C.I.C. in respect of the Project to be an individual collaborator for and to the Project.
+
+2. Grant of Copyright License.
+  Subject to the terms and conditions of this Agreement, You hereby grant to the Project and to recipients of hardware, software and/or related works, documentation and/or products (including, without limitation, design files, digital video, and tests) distributed by the Project a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright license to reproduce, prepare derivative works of, publicly display, publicly perform, sublicense, and distribute Your Contributions and those made by Your designated employee(s) and such derivative works.
+
+3. Grant of Patent License.
+  Subject to the terms and conditions of this Agreement, You hereby grant to the Project and to recipients of the Work distributed by the Project a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable (except as stated in this section) patent license to make, have made, use, offer to sell, sell, import, and otherwise transfer the Work, where such license applies only to those patent claims licensable by You that are necessarily infringed by Your Contribution(s) or those made by Your designated employee(s) alone or by combination of Your Contribution(s) or those made by Your designated employee(s) with the Work to which such Contribution(s) was submitted. If any entity institutes patent litigation against You or any other entity (including a cross-claim or counterclaim in a lawsuit) alleging that Your Contribution or one made by Your designated employee(s), or the Work to which You or one of Your designated employee(s) have contributed, constitutes direct or contributory patent infringement, then any patent licenses granted to that entity under this Agreement for that Contribution or Work shall terminate as of the date such litigation is filed.
+
+4. You represent that You are legally entitled to grant the above licenses.
+  You represent further that each employee of the Corporation designated in Schedule 1 below (and/or such other employee(s) as You and lowRISC C.I.C. agree, in writing, from time to time, whether by subsequent written modification to that Schedule or otherwise) (each a "designated employee") is and are authorised to:
+  (a) submit Contributions on behalf of the Corporation or on their own behalf as Individual Collaborators to the Project; and
+  (b) enter into legally-binding agreements with the lowRISC C.I.C. in respect of the Project to be an Individual Collaborator for and to the Project.
+
+5. You represent that each of Your Contributions and/or and those made by Your designated Employee(s) is Your original creation (see section 7 for submissions on behalf of others). You represent that Your Contribution submissions and those made by Your designated employee(s) include complete details of any third-party license or other restriction (including, but not limited to, related patents and trademarks) of which You are personally aware and which are associated with any part of Your Contributions and/or those made by Your designated employee(s).
+
+6. You agree that:
+  (a) You will not (and will ensure that none of Your designated employees(s) will) export, directly or indirectly, including by submitting a Contribution, any technology, software, hardware, technical data or other material in breach of any applicable laws or regulations governing exports or other transfers ("Export Control Laws") to any country for which an export licence or other governmental approval is required, without first obtaining such licence or approval and providing a copy of it to lowRISC C.I.C;
+  (b) You will (and will ensure that Your designated employees(s) will) notify lowRISC C.I.C. prior to submitting a Contribution whether any technical data in that Contribution requires an export licence or other governmental approval;
+  (c) You will (and will ensure that Your designated employees(s) will) if requested, provide lowRISC C.I.C. with such reasonable assistance, at lowRISC C.I.C.'s reasonable cost, to enable it to perform any activity required by any competent government or agency in any relevant jurisdiction for the purpose of compliance with any Export Control Laws;
+  (d) lowRISC C.I.C. may reject or refuse a Contribution to the Project where it reasonably believes that the relevant submission will or may breach any Export Control Laws.
+
+7. You are not expected to provide support for Your Contributions or those made by Your designated employee(s), except to the extent You desire to provide support.
+  You may provide support for free, for a fee, or not at all. For the avoidance of doubt, nothing in these terms and conditions shall be construed as an agreement by any person to pay a fee for such support which is subject to separate agreement and contract.
+  Unless required by applicable law or agreed to in writing, You provide Your Contributions and those made by Your designated employee(s) on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+
+8. Should You wish to submit work whether directly Yourself or by one of Your designated employee(s) that is not Your original creation, You may submit it, whether directly Yourself or by one of Your designated employee(s), to the Project separately from any Contribution, identifying the complete details of its source and of any license or other restriction (including, but not limited to, related patents, trademarks, and license agreements) of which you are personally aware, and conspicuously marking the work as "Submitted on behalf of a third-party: [named here]".
+
+9. You agree to notify the Project of any facts or circumstances of which you become aware that would make these representations inaccurate in any respect.
+  It is your responsibility to notify the lowRISC C.I.C. when any change is required to the list of designated employee(s) authorised to submit Contributions on behalf of the Corporation, or to the Corporation's Point of Contact with lowRISC C.I.C.
