@@ -40,6 +40,7 @@ def qemu_params(
         traces = [],
         qemu_args = [],
         bootstrap = False,
+        needs_jtag = False,
         **kwargs):
     extra_params = {
         "icount": str(icount),
@@ -63,10 +64,13 @@ def qemu_params(
         rom_ext = rom_ext,
         otp = otp,
         bitstream = bitstream,
-        test_cmd = test_cmd,
+        test_cmd = ("""
+            {jtag_test_cmd}
+        """ if needs_jtag else "") + test_cmd,
         data = data,
         param = kwargs | extra_params,
         defines = defines,
+        needs_jtag = needs_jtag,
     )
 
 def gen_cfg(ctx, **kwargs):
