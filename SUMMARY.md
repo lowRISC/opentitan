@@ -12,12 +12,13 @@
   - [Building (and Testing) Software](./doc/getting_started/build_sw.md)
   - [Building Documentation](./doc/getting_started/build_docs.md)
   - [Using OpenOCD](./doc/getting_started/using_openocd.md)
+  - [Using QEMU](./third_party/qemu/README.md)
 
 - [Tools Setup](./doc/getting_started/tools-setup.md)
   - [FPGA Setup](./doc/getting_started/setup_fpga.md)
   - [Verilator Setup](./doc/getting_started/setup_verilator.md)
   - [Installing Vivado](./doc/getting_started/install_vivado/README.md)
-  - [QEMU setup](./third_party/qemu/README.md)
+  - [QEMU setup](./third_party/qemu/setup.md)
 
 - [Unofficial Guides](./doc/getting_started/unofficial/README.md)
   - [RedHat/Fedora](./doc/getting_started/unofficial/fedora.md)
