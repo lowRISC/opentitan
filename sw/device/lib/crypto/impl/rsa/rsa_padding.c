@@ -1,3 +1,7 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
@@ -562,6 +566,14 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
   uint32_t h[message_digest.len];
   memcpy(h, encoded_message_bytes + db_bytelen, sizeof(h));
 
+  // Ensure the most significant bit of maskedDB is 0.
+  // Corresponds to RFC 8017, section 9.1.2 step 6 (emBits is modLen - 1).
+  unsigned char *masked_db_bytes = (unsigned char *)db;
+  if ((masked_db_bytes[0] & 0x80) != 0) {
+    *result = kHardenedBoolFalse;
+    return OTCRYPTO_OK;
+  }
+
   // Compute the mask = MFG(H, emLen - hLen - 1). Zero the last bytes if
   // needed.
   uint32_t mask[ARRAYSIZE(db)];
@@ -576,7 +588,7 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
     db[i] ^= mask[i];
   }
 
-  // Set the most significant bit of the first byte of maskedDB to 0.
+  // Set the most significant bit of the first byte of DB to 0.
   // Corresponds to RFC 8017, section 9.1.2 step 9 (emBits is modLen - 1).
   unsigned char *db_bytes = (unsigned char *)db;
   db_bytes[0] &= 0x7f;
