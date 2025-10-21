@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -35,8 +36,17 @@ static status_t seed_material_construct(
   seed_material->len = nwords;
 
   // Copy seed data.
-  // TODO(#17711) Change to `hardened_memcpy`.
-  memcpy(seed_material->data, value.data, value.len);
+  if (misalignment32_of((uintptr_t)&value.data) == 0 &&
+      value.len % sizeof(uint32_t)) {
+    // The data buffer is word-aligned and the data length is a multiple of the
+    // word size. We can use the SCA hardened memcpy.
+    HARDENED_TRY(hardened_memcpy(
+        seed_material->data, (const uint32_t *)value.data, seed_material->len));
+  } else {
+    // The data buffer is not word-aligned. We need to use the SCA
+    // unprotected memcpy.
+    memcpy(seed_material->data, value.data, value.len);
+  }
 
   // Set any unset bytes to zero.
   size_t unset_bytes = nwords * sizeof(uint32_t) - value.len;
