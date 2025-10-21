@@ -4,6 +4,7 @@
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_list_flag")
 load("//rules:fusesoc.bzl", "fusesoc_build")
+load("//hw/top:defs.bzl", "opentitan_select_top_attr")
 
 filegroup(
     name = "rtl_files",
@@ -29,9 +30,7 @@ fusesoc_build(
     ],
     data = ["//hw/ip/otbn:rtl_files"],
     make_options = ":make_options",
-    output_groups = {
-        "binary": ["lowrisc_systems_chip_englishbreakfast_verilator_0.1/sim-verilator/Vchip_englishbreakfast_verilator"],
-    },
+    output_groups = opentitan_select_top_attr("top_verilator_binary"),
     systems = ["lowrisc:systems:chip_englishbreakfast_verilator"],
     tags = [
         "manual",
