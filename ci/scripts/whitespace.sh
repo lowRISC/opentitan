@@ -27,6 +27,7 @@ git diff --name-only --diff-filter=ACMRTUXB "$merge_base" -- \
         ':!signing/softhsm/tokens/*' \
         ':!sw/device/silicon_creator/rom/e2e/ate/binaries/*' \
         ':!sw/device/silicon_creator/rom/e2e/ate/signatures/*' \
+        ':!hw/top_earlgrey/dv/data/ft_personalize_orch_emu_cw340/*' \
         ':!*/testdata/*' \
         ':!*/vendor/*' | \
     xargs -r util/fix_trailing_whitespace.py --dry-run || {

@@ -560,6 +560,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   sc_keymgr_advance_state();
   TRY(sc_keymgr_state_check(kScKeymgrStateInit));
   sc_keymgr_advance_state();
+  TRY(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
 
   // Measure OTP partitions.
   //
@@ -1023,14 +1024,6 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
   return OK_STATUS();
 }
 
-static status_t send_final_hash(ujson_t *uj, serdes_sha256_hash_t *hash) {
-  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleTxReady, true));
-  TRY(RESP_OK_PADDED_NO_CRC(ujson_serialize_with_padding_serdes_sha256_hash_t,
-                            uj, hash, kSerdesSha256HashSerializedMaxSize));
-  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleTxReady, false));
-  return OK_STATUS();
-}
-
 /**
  * Compare the OTP measurement used during certificate generation with the OTP
  * measurment calculated from the final OTP values. Ensure that the UDS
@@ -1167,7 +1160,9 @@ static status_t provision(ujson_t *uj) {
   serdes_sha256_hash_t hash;
   hmac_sha256_process();
   hmac_sha256_final((hmac_digest_t *)&hash);
-  TRY(send_final_hash(uj, &hash));
+  // Send the final hash back to the provisioning appliance.
+  TRY(RESP_OK_PADDED_NO_CRC(ujson_serialize_with_padding_serdes_sha256_hash_t,
+                            uj, &hash, kSerdesSha256HashSerializedMaxSize));
 
   // Complete any remaining OTP programming.
   TRY(finalize_otp_partitions());
