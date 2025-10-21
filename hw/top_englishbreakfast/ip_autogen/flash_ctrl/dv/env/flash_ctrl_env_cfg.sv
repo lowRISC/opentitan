@@ -699,7 +699,6 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       `uvm_create_obj(flash_otf_item, item)
       flash_mem_otf_read(flash_op, item.fq);
       flash_op.otf_addr = flash_op.addr;
-      flash_op.otf_addr[BusAddrByteW-2:OTFHostId] = 'h0;
 
       item.region.scramble_en = MuBi4True;
       item.region.ecc_en = (ecc_en)? MuBi4True : MuBi4False;
