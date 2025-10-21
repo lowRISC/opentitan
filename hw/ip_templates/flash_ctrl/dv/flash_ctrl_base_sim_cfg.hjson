@@ -477,6 +477,11 @@
                  "+otf_num_hr=100", "+en_always_read=1"]
       reseed: 3
     }
+    {
+      name: flash_ctrl_basic_rw
+      uvm_test_seq: flash_ctrl_basic_rw_vseq
+      reseed: 3
+    }
  ]
 
   // List of regressions.
