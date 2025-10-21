@@ -1,10 +1,12 @@
 - [About OpenTitan](./doc/sections/opentitan.md)
 
   - [Introduction](./README.md)
+  - [OpenTitan News](./doc/project_governance/news.md))
   - [Product Architecture](./doc/productarchitecture.md)
   - [History](./doc/project_governance/history.md)
-  - [Glossary](./doc/glossary.md)
+  - [OpenTitan updates - RFCs](./doc/project_governance/rfc_approved.md)
   - [lowRISC CIC](./doc/project_governance/lowRISC.md)
+  - [Glossary](./doc/glossary.md)
 
 - [Governance and Policies](./doc/sections/governance.md)
 
@@ -12,6 +14,8 @@
   - [Governing Board](./doc/project_governance/governing_board.md)
   - [Technical Committee](./doc/project_governance/technical_committee.md)
   - [Working Groups](./doc/project_governance/working_group.md)
+  - [User accounts](./doc/project_governance/useraccounts.md)
+  - [Trademarks](./doc/project_governance/trademark.md)
   - [Code of Conduct](./doc/project_governance/code_of_conduct.md)
   - [Communication Policy](./doc/project_governance/communications.md)
 

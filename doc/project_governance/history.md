@@ -13,44 +13,14 @@ The project partners are deeply engaged in this process, ensuring that the final
 OpenTitan also has a large and growing community of contributors beyond its formal partners.
 As a whole, the community resolves hundreds of pull requests and issues monthly.
 
-## 2025
-
-### February
-
-> [Production begins](https://lowrisc.org/news/the-worlds-first-open-source-security-chip-hits-production-with-google/)
->
-> Fabrication started on production OpenTitan silicon based on the Earl Grey top level design by Nuvoton Technology Corporation
-
-## 2024
-
-### May
-
-> [OpenTitan to be in Chromebooks](https://lowrisc.org/news/nuvoton-develops-opentitan-based-security-chip-as-next-gen-security-solution-for-chromebooks/)
->
-> Nuvoton Technology Corporation announces plans to use the first commercial chip built on the OpenTitan® open source secure silicon design.
-
-### February
-
-> [Validated silicon](https://lowrisc.org/news/opentitan-commercial-availability/)
->
-> OpenTitan becomes the first open-source silicon project to reach commercial availability with validated chips.
-
-### November
-
-> [Earl Grey tapeout](https://lowrisc.org/news/opentitan-partnership-announces-first-public-secure-execution-environment-for-integrated/)
->
-> The early release of the first SoC secure execution environment, including root of trust (RoT) functionality.
-
-### June
-
-> [Earl Grey RTL freeze](https://lowrisc.org/news/opentitans-rtl-freeze-leveraging-transparency-to-create-trustworthy-computing/)
->
-> RTL Freeze for the Earl Grey discrete, the first OpenTitan chip tapeout.
-
-## 2019
-
-### November
-
-> [Start of OpenTitan](https://lowrisc.org/news/announcing-opentitan-the-first-transparent-silicon-root-of-trust/)
->
-> OpenTitan, the First Transparent Silicon Root of Trust, announced.
+  Date | Milestone | Description
+ ----- | --------- | -----------
+ **2025** | |
+ February | [Production begins](https://lowrisc.org/news/the-worlds-first-open-source-security-chip-hits-production-with-google/) | Fabrication started on production OpenTitan silicon based on the Earl Grey top level design by Nuvoton Technology Corporation
+ **2024** | |
+ May | [OpenTitan to be in Chromebooks](https://lowrisc.org/news/nuvoton-develops-opentitan-based-security-chip-as-next-gen-security-solution-for-chromebooks/) | Nuvoton Technology Corporation announces plans to use the first commercial chip built on the OpenTitan® open source secure silicon design.
+ February | [Validated silicon](https://lowrisc.org/news/opentitan-commercial-availability/) | OpenTitan becomes the first open-source silicon project to reach commercial availability with validated chips.
+ November | [Earl Grey tapeout](https://lowrisc.org/news/opentitan-partnership-announces-first-public-secure-execution-environment-for-integrated/) | The early release of the first SoC secure execution environment, including root of trust (RoT) functionality.
+ June | [Earl Grey RTL freeze](https://lowrisc.org/news/opentitans-rtl-freeze-leveraging-transparency-to-create-trustworthy-computing/) | RTL Freeze for the Earl Grey discrete, the first OpenTitan chip tapeout.
+ **2019** | |
+ November | [Start of OpenTitan](https://lowrisc.org/news/announcing-opentitan-the-first-transparent-silicon-root-of-trust/) | OpenTitan, the First Transparent Silicon Root of Trust, announced.
