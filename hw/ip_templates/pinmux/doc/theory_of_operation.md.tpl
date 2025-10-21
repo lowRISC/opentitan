@@ -1,6 +1,6 @@
 # Theory of Operation
 
-## Block Diagram and Overview
+${"##"} Block Diagram and Overview
 
 The `pinmux` peripheral is a programmable module designed to wire arbitrary peripheral inputs and outputs to arbitrary multiplexable chip bidirectional pins.
 It gives much flexibility at the top level of the device, allowing most data pins to be flexibly wired and controlled by many peripherals.
@@ -10,7 +10,7 @@ The chip-level module `padring` instantiates the bidirectional pads and connects
 
 ![Pinmux Block Diagram](../doc/pinmux_overview_block_diagram.svg)
 
-### MIO and DIO Signal Categories
+${"###"} MIO and DIO Signal Categories
 
 The `pinmux` supports two different IO signal categories:
 Muxed IO (MIO) signals that are routed through the `pinmux` matrix, and dedicated IO (DIO) signals that bypass the `pinmux` matrix.
@@ -28,7 +28,7 @@ In addition to wiring programmability, each muxed peripheral input can be set co
 
 See the [muxing matrix](#muxing-matrix) section for more details about the mux implementation.
 
-### Retention and Wakeup Features
+${"###"} Retention and Wakeup Features
 
 The retention logic allows SW to specify a certain behavior during sleep for each muxed and dedicated output.
 Legal behaviors are tie low, tie high, high-Z, keeping the previous state, or driving the current value (useful for peripherals that are always on).
@@ -41,18 +41,22 @@ However, only the wakeup detector logic will be actively clocked during sleep in
 
 See the [retention logic](#retention-logic) and [wakeup detectors](#wakeup-detectors) sections for more details about the mux implementation.
 
-### USB Wakeup Detection Module
+% if enable_usb_wakeup:
+${"###"} USB Wakeup Detection Module
 
 The USB device in the Earlgrey top-level is not in the AON power domain and hence the associated wakeup detection module is placed inside the pinmux IP in that top-level.
 The USB wakeup module is not connected to any pinmux infrastructure or CSRs except for the `usb_wkup_req` signal going to the power manager.
 See [USB device documentation](../../../../ip/usbdev/README.md) for more information on the USB wakeup mechanism.
 
-### Test and Debug Access
+% endif
+% if enable_strap_sampling:
+${"###"} Test and Debug Access
 
 The hardware strap sampling and TAP isolation logic provides test and debug access to the chip during specific life cycle states.
 This mechanism is explained in more detail in the [strap sampling and TAP isolation](#strap-sampling-and-tap-isolation) section.
 
-### Pad Attributes
+% endif
+${"###"} Pad Attributes
 
 Additional pad-specific features such as inversion, pull-up, pull-down, virtual open-drain, drive-strength and input/output inversion etc. can be exercise via the pad attribute CSRs.
 The `pinmux` module supports a comprehensive set of such pad attributes, but it is permissible that some of them may not be supported by the underlying pad implementation.
@@ -60,7 +64,7 @@ For example, certain ASIC libraries may not provide open-drain outputs, and FPGA
 See the [generic pad wrapper](#generic-pad-wrapper) section below for more details.
 Note that static pad attributes for FPGAs are currently not covered in this specification.
 
-## Muxing Matrix
+${"##"} Muxing Matrix
 
 The diagram below shows connectivity between four arbitrary chip pins, named `MIO0` .. `MIO3`, and several muxed peripheral inputs and outputs.
 This shows the connectivity available in all directions, as well as the control registers described later in this document.
@@ -73,7 +77,7 @@ Note that apart from selecting a specific input pad, the `periph_insel[*]` signa
 Likewise, the output select signals `mio_outsel[*]` can also be used to constantly drive an output pin to 0/1 or to put it into high-Z state (default).
 The output enable and the associated data signal (i.e. `periph_to_mio` and `periph_to_mio_oe`) are indexed with the same select signal to allow the peripheral hardware to determine the pad direction instead of demoting that control to SW.
 
-## Retention Logic
+${"##"} Retention Logic
 
 As illustrated in the picture above, all muxing matrix and DIO outputs are routed through the retention logic, which essentially consists of a set of multiplexors and two retention registers per output (one register is for the output data and one for the output enable).
 This multiplexor can be configured to be automatically activated upon sleep entry in order to either drive the output low, high, high-Z or to the last seen value (keep).
@@ -83,7 +87,7 @@ The sleep behavior of all outputs is activated in parallel via a trigger signal 
 Once activated, it is the task of SW to disable the sleep behavior for each individual pin when waking up from sleep.
 This ensures that the output values remain stable until the system and its peripherals have been re-initialized.
 
-## Wakeup Detectors
+${"##"} Wakeup Detectors
 
 The `pinmux` contains eight programmable wakeup detector modules that can listen on any of the MIO or DIO pins.
 Each detector contains a debounce filter and an 8bit counter running on the AON clock domain.
@@ -103,7 +107,7 @@ If a pattern is detected, the wakeup detector will send a wakeup request to the 
 Note that the wkup detector should be disabled by setting [`WKUP_DETECTOR_EN_0`](registers.md#wkup_detector_en) before changing the detection mode.
 The reason for that is that the pulse width counter is NOT cleared upon a mode change while the detector is enabled.
 
-## Strap Sampling and TAP Isolation
+${"##"} Strap Sampling and TAP Isolation
 
 The `pinmux` contains a set of dedicated HW "straps", which are essentially signals that are multiplexed onto fixed MIO pad locations.
 Depending on the life cycle state, these straps are either continuously sampled, or latched right after POR.
@@ -145,8 +149,9 @@ Also, it should be noted that the pad attributes of all JTAG IOs will be gated t
 This is to ensure that any functional attributes like inversion or pull-ups / pull-downs do not interfere with the JTAG while it is in use.
 
 For more information about the life cycle states, see [Life Cycle Controller Specification](../../../../ip/lc_ctrl/README.md) and the [Life Cycle Definition Table](../../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states).
+% if enable_strap_sampling:
 
-### Non-debug Module Reset
+${"###"} Non-debug Module Reset
 
 The only parts of the system that are not reset as part of a non-debug module (NDM) reset are in this strap sampling and TAP selection module, and in the `rv_dm`, power, reset and clock managers.
 Hence, in order to keep a `rv_dm` JTAG debug session alive during an NDM reset, the `lc_hw_debug_en` state needs to be memorized.
@@ -161,8 +166,9 @@ This ensures that the sampled `lc_hw_debug_en` value does not survive a life cyc
 Finally, note that there is secondary gating on the `rv_dm` and DFT TAPs that is always consuming live `lc_hw_debug_en` and `lc_dft_en` signals for added protection.
 
 See also [rv_dm documentation](../../../../ip/rv_dm/doc/theory_of_operation.md#non-debug-module-reset-support).
+% endif
 
-## Generic Pad Wrapper
+${"##"} Generic Pad Wrapper
 
 <center>
 <img src="generic_pad_wrapper.svg" width="50%">

@@ -342,7 +342,7 @@ The figure below provides more context about how the life cycle controller is in
 ![LC Controller Block Diagram](../doc/lc_ctrl_system_view.svg)
 
 Although technically a life cycle feature, the sampling of the strap pins and JTAG / TAP isolation is performed in the pinmux after the life cycle controller has initialized.
-See the [pinmux documentation](../../../ip_templates/pinmux/doc/theory_of_operation.md#strap-sampling-and-tap-isolation) and the detailed selection listed in [Life Cycle Definition Table](../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states).
+See the [pinmux documentation](../../../top_earlgrey/ip_autogen/pinmux/doc/theory_of_operation.md#strap-sampling-and-tap-isolation) and the detailed selection listed in [Life Cycle Definition Table](../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states).
 
 ### Life Cycle Manufacturing State Encodings
 
@@ -490,4 +490,4 @@ Then, the debugger can issue a CSR read or write operation via the 0x11 register
 
 As currently defined, the life cycle controller TAP is a separate entity from the main SOC DFT TAP and the processor TAP.
 This physical separation aids in logical isolation, as the SOC DFT tap can be disabled by DFT_EN, while the processor TAP can be disabled by DEBUG_EN.
-The TAP isolation and multiplexing is implemented in the pinmux IP as [described here](../../../ip_templates/pinmux/doc/theory_of_operation.md#strap-sampling-and-tap-isolation).
+The TAP isolation and multiplexing is implemented in the pinmux IP as [described here](../../../top_earlgrey/ip_autogen/pinmux/doc/theory_of_operation.md#strap-sampling-and-tap-isolation).

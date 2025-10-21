@@ -75,7 +75,7 @@ There are two HW_DEBUG_EN signal inputs in the `rv_dm` module:
 ```
 
 The first one comes directly from the life cycle controller and is a "live" value, decoded from the current life cycle state.
-When using a dedicated JTAG TAP in the debug module, e.g., in Earlgrey, the second signal is a latched version coming from the [strap sampling and TAP selection logic inside the pinmux](../../../ip_templates/pinmux/doc/theory_of_operation.md#strap-sampling-and-tap-isolation).
+When using a dedicated JTAG TAP in the debug module, e.g., in Earlgrey, the second signal is a latched version coming from the [strap sampling and TAP selection logic inside the pinmux](../../../top_earlgrey/ip_autogen/pinmux/doc/theory_of_operation.md#strap-sampling-and-tap-isolation).
 When using the debug module with the DMI interface, e.g., in Darjeeling, the debug module itself latches the debug enable signal while the NDM reset is taking place.
 When NDM reset is triggered the life cycle controller is reset, but the debug module is not, so the latched variant of the signal keeps the JTAG side and its gating of the debug module operational.
 
