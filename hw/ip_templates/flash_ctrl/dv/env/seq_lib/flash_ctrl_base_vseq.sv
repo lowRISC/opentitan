@@ -331,26 +331,26 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     update_mp_region_cfg_mubifalse(region_cfg);
     data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].en, data,
                                           region_cfg.en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].rd_en, data,
-                                                 region_cfg.read_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].prog_en, data,
-                                                 region_cfg.program_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].erase_en, data,
-                                                 region_cfg.erase_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].scramble_en,
-                                                 data, region_cfg.scramble_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].ecc_en, data,
-                                                 region_cfg.ecc_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].he_en, data,
-                                                 region_cfg.he_en);
+    data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].rd_en, data,
+                                          region_cfg.read_en);
+    data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].prog_en, data,
+                                          region_cfg.program_en);
+    data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].erase_en, data,
+                                          region_cfg.erase_en);
+    data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].scramble_en,
+                                          data, region_cfg.scramble_en);
+    data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].ecc_en, data,
+                                          region_cfg.ecc_en);
+    data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].he_en, data,
+                                          region_cfg.he_en);
     csr_wr(.ptr(ral.mp_region_cfg[index]), .value(data));
 
     // reset for base/size register
     data = 0;
     data = get_csr_val_with_updated_field(ral.mp_region[index].base, data,
                                           region_cfg.start_page);
-    data = data | get_csr_val_with_updated_field(ral.mp_region[index].size, data,
-                                                 region_cfg.num_pages);
+    data = get_csr_val_with_updated_field(ral.mp_region[index].size, data,
+                                          region_cfg.num_pages);
     csr_wr(.ptr(ral.mp_region[index]), .value(data));
   endtask : flash_ctrl_mp_region_cfg
 
@@ -372,14 +372,11 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     cfg.default_region_cfg.he_en = he_en;
 
     data = get_csr_val_with_updated_field(ral.default_region.rd_en, data, read_en);
-    data = data |
-        get_csr_val_with_updated_field(ral.default_region.prog_en, data, program_en);
-    data = data |
-        get_csr_val_with_updated_field(ral.default_region.erase_en, data, erase_en);
-    data = data |
-        get_csr_val_with_updated_field(ral.default_region.scramble_en, data, scramble_en);
-    data = data | get_csr_val_with_updated_field(ral.default_region.ecc_en, data, ecc_en);
-    data = data | get_csr_val_with_updated_field(ral.default_region.he_en, data, he_en);
+    data = get_csr_val_with_updated_field(ral.default_region.prog_en, data, program_en);
+    data = get_csr_val_with_updated_field(ral.default_region.erase_en, data, erase_en);
+    data = get_csr_val_with_updated_field(ral.default_region.scramble_en, data, scramble_en);
+    data = get_csr_val_with_updated_field(ral.default_region.ecc_en, data, ecc_en);
+    data = get_csr_val_with_updated_field(ral.default_region.he_en, data, he_en);
     csr_wr(.ptr(ral.default_region), .value(data));
   endtask : flash_ctrl_default_region_cfg
 
@@ -401,19 +398,20 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_info("mp_info_page_cfg", $sformatf("%s: %p", csr_name, page_cfg), UVM_DEBUG)
     csr = ral.get_reg_by_name(csr_name);
     update_mp_info_cfg_mubifalse(page_cfg);
-    data = get_csr_val_with_updated_field(csr.get_field_by_name("en"), data, page_cfg.en);
-    data = data |
-        get_csr_val_with_updated_field(csr.get_field_by_name("rd_en"), data, page_cfg.read_en);
-    data = data |
-        get_csr_val_with_updated_field(csr.get_field_by_name("prog_en"), data, page_cfg.program_en);
-    data = data |
-        get_csr_val_with_updated_field(csr.get_field_by_name("erase_en"), data, page_cfg.erase_en);
-    data = data | get_csr_val_with_updated_field(csr.get_field_by_name("scramble_en"), data,
-                                                 page_cfg.scramble_en);
-    data = data |
-        get_csr_val_with_updated_field(csr.get_field_by_name("ecc_en"), data, page_cfg.ecc_en);
-    data = data |
-        get_csr_val_with_updated_field(csr.get_field_by_name("he_en"), data, page_cfg.he_en);
+    data = get_csr_val_with_updated_field(csr.get_field_by_name("en"),
+                                          data, page_cfg.en);
+    data = get_csr_val_with_updated_field(csr.get_field_by_name("rd_en"),
+                                          data, page_cfg.read_en);
+    data = get_csr_val_with_updated_field(csr.get_field_by_name("prog_en"),
+                                          data, page_cfg.program_en);
+    data = get_csr_val_with_updated_field(csr.get_field_by_name("erase_en"),
+                                          data, page_cfg.erase_en);
+    data = get_csr_val_with_updated_field(csr.get_field_by_name("scramble_en"),
+                                          data, page_cfg.scramble_en);
+    data = get_csr_val_with_updated_field(csr.get_field_by_name("ecc_en"),
+                                          data, page_cfg.ecc_en);
+    data = get_csr_val_with_updated_field(csr.get_field_by_name("he_en"),
+                                          data, page_cfg.he_en);
     csr_wr(.ptr(csr), .value(data));
   endtask : flash_ctrl_mp_info_page_cfg
 
@@ -509,12 +507,12 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     partition_sel = flash_part_e'(|flash_op.partition);
     info_sel = flash_op.partition >> 1;
     data = get_csr_val_with_updated_field(ral.control.start, data, 1'b1);
-    data = data | get_csr_val_with_updated_field(ral.control.op, data, flash_op.op);
-    data = data | get_csr_val_with_updated_field(ral.control.prog_sel, data, flash_op.prog_sel);
-    data = data | get_csr_val_with_updated_field(ral.control.erase_sel, data, flash_op.erase_type);
-    data = data | get_csr_val_with_updated_field(ral.control.partition_sel, data, partition_sel);
-    data = data | get_csr_val_with_updated_field(ral.control.info_sel, data, info_sel);
-    data = data | get_csr_val_with_updated_field(ral.control.num, data, flash_op.num_words - 1);
+    data = get_csr_val_with_updated_field(ral.control.op, data, flash_op.op);
+    data = get_csr_val_with_updated_field(ral.control.prog_sel, data, flash_op.prog_sel);
+    data = get_csr_val_with_updated_field(ral.control.erase_sel, data, flash_op.erase_type);
+    data = get_csr_val_with_updated_field(ral.control.partition_sel, data, partition_sel);
+    data = get_csr_val_with_updated_field(ral.control.info_sel, data, info_sel);
+    data = get_csr_val_with_updated_field(ral.control.num, data, flash_op.num_words - 1);
     csr_wr(.ptr(ral.control), .value(data));
   endtask : flash_ctrl_start_op
 
@@ -1168,7 +1166,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     if (cfg.seq_cfg.check_mem_post_tran) begin
       flash_op_copy.otf_addr = flash_op_copy.addr;
-      flash_op_copy.otf_addr[BusAddrByteW-2:OTFHostId] = 'h0;
       cfg.flash_mem_bkdr_read_check(flash_op_copy, exp_data, check_match, scr_en, ecc_en);
     end
   endtask : flash_ctrl_write_extra
