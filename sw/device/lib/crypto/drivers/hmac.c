@@ -823,7 +823,8 @@ status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest) {
   HARDENED_TRY(hmac_idle_wait());
   digest_read(digest, ctx->digest_wordlen);
 
-  // TODO(#23191): Destroy sensitive values in the ctx object.
+  // Destroy sensitive values in the ctx object.
+  HARDENED_TRY(hmac_context_wipe(ctx));
 
   // Clean up.
   HARDENED_TRY(clear());
