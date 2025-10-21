@@ -94,6 +94,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.chip_vif.aon_clk_por_rst_if.wait_clks(clks);
     // Deactivate external reset request.
     void'(cfg.chip_vif.signal_probe_soc_rst_req_async(.kind(dv_utils_pkg::SignalProbeRelease)));
+    // Wait for at least 5 AON clock cycles to ensure the reset request is deasserted.
+    cfg.chip_vif.aon_clk_por_rst_if.wait_clks(clks);
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
