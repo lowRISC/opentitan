@@ -9,8 +9,11 @@ The currently supported parameters are:
 
 * `icount` (`int`): scale for Ibex's reported execution speed (`1GHz >> icount`) (defaults to 6).
 * `globals` (`dict[str, str]`): global properties for the QEMU machine.
-* `traces` (`[str]`): globs of QEMU traces to enable for debugging purposes.
+* `traces` (`[str]`): globs of [QEMU traces](https://qemu-project.gitlab.io/qemu/devel/tracing.html) to enable for debugging purposes.
+QEMU accepts different trace event patterns with support for wildcard matching with an `"*"`.
 * `qemu_args` (`[str]`): additional command line flags to pass to QEMU.
+* `bootstrap` (`bool`): by setting to `True`, bootstrap test firmware instead of splicing a flash image.
+Mutually exclusive with specifying a custom test harness.
 
 Example:
 
