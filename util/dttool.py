@@ -182,8 +182,11 @@ def main():
         for (ipname, ip) in name_to_block.items():
             default_node = args.default_node
             if default_node is None:
-                # Pick the first one.
-                default_node = list(ip.reg_blocks.keys())[0]
+                if len(ip.reg_blocks) == 0:
+                    default_node = None
+                else:
+                    # Pick the first one.
+                    default_node = list(ip.reg_blocks.keys())[0]
                 if len(ip.reg_blocks) > 1:
                     logging.warning(f"IP {ipname} has more than one register block node " +
                                     f"but no default was specified, will use {default_node}")
@@ -200,13 +203,11 @@ def main():
             render_template(
                 TOPGEN_TEMPLATE_PATH / "dt_ip.h.tpl",
                 outdir / "dt_{}.h".format(ipname),
-                default_node = default_node,
                 helper = helper,
             )
             render_template(
                 TOPGEN_TEMPLATE_PATH / "dt_ip.c.tpl",
                 outdir / "dt_{}.c".format(ipname),
-                default_node = default_node,
                 helper = helper,
             )
 

@@ -675,8 +675,10 @@ class IpHelper:
             else:
                 reg_blocks.append(rb)
 
-        assert self.default_node in reg_blocks, \
-            "default node ({}) is invalid".format(self.default_node)
+        # If there are no register blocks, we don't need to validate default_node
+        if reg_blocks:
+            assert self.default_node in reg_blocks, \
+                "default node ({}) is invalid".format(self.default_node)
 
         self.reg_block_enum = self._enum_type(
             Name([]), Name(["dt"]) + self.ip_name + Name(["reg", "block"]))
@@ -881,6 +883,9 @@ class IpHelper:
                 self.inst_enum.add_first_constant("First instance")
             self.inst_enum.add_count_constant("Number of instances")
 
+    def has_reg_blocks(self):
+        return len(self.ip.reg_blocks) > 0
+
     def has_features(self):
         return len(self.ip.features) > 0
 
@@ -897,15 +902,16 @@ class IpHelper:
             field_type = ScalarType(TopHelper.DT_INSTANCE_ID_NAME),
             docstring = "Instance ID"
         )
-        self.inst_struct.add_field(
-            name = self.REG_BLOCK_ADDR_FIELD_NAME,
-            field_type = ArrayMapType(
-                elem_type = ScalarType("uint32_t"),
-                index_type = ScalarType(self.reg_block_enum.name),
-                length = Name(["count"]),
-            ),
-            docstring = "Base address of each register block"
-        )
+        if self.has_reg_blocks():
+            self.inst_struct.add_field(
+                name = self.REG_BLOCK_ADDR_FIELD_NAME,
+                field_type = ArrayMapType(
+                    elem_type = ScalarType("uint32_t"),
+                    index_type = ScalarType(self.reg_block_enum.name),
+                    length = Name(["count"]),
+                ),
+                docstring = "Base address of each register block"
+            )
         self.inst_struct.add_field(
             name = self.MEM_ADDR_FIELD_NAME,
             field_type = ArrayMapType(
@@ -997,19 +1003,20 @@ This value is undefined if the block is not connected to the Alert Handler."""
         # Instance ID.
         inst_desc[self.INST_ID_FIELD_NAME] = Name.from_snake_case(modname)
         # Reg block address map.
-        reg_block_map = OrderedDict()
-        for rb in self.ip.reg_blocks.keys():
-            rb_key = rb
-            if rb is None:
-                rb = self.UNNAMED_REG_BLOCK_NAME
-                rb_key = "null"  # Due to json serializing, None appears as null.
-            rb = Name.from_snake_case(rb)
-            # It is possible that this module is not accessible in this
-            # address space. In this case, return a dummy value.
-            # FIXME Maybe find a better way of doing this.
-            assert rb_key in m["base_addrs"]
-            reg_block_map[rb] = m["base_addrs"][rb_key].get(self._addr_space, "0xffffffff")
-        inst_desc[self.REG_BLOCK_ADDR_FIELD_NAME] = reg_block_map
+        if self.has_reg_blocks():
+            reg_block_map = OrderedDict()
+            for rb in self.ip.reg_blocks.keys():
+                rb_key = rb
+                if rb is None:
+                    rb = self.UNNAMED_REG_BLOCK_NAME
+                    rb_key = "null"  # Due to json serializing, None appears as null.
+                rb = Name.from_snake_case(rb)
+                # It is possible that this module is not accessible in this
+                # address space. In this case, return a dummy value.
+                # FIXME Maybe find a better way of doing this.
+                assert rb_key in m["base_addrs"]
+                reg_block_map[rb] = m["base_addrs"][rb_key].get(self._addr_space, "0xffffffff")
+            inst_desc[self.REG_BLOCK_ADDR_FIELD_NAME] = reg_block_map
         # Memories.
         mem_addr_map = OrderedDict()
         mem_size_map = OrderedDict()
