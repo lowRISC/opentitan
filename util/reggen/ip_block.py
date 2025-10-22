@@ -87,9 +87,6 @@ REQUIRED_FIELDS = {
     'cip_id': ['d', "unique comportable IP identifier"],
     'clocking': ['l', "clocking for the device"],
     'bus_interfaces': ['l', "bus interfaces for the device"],
-    'registers':
-    ['l', "list of register definition groups and "
-     "offset control groups"]
 }
 
 OPTIONAL_FIELDS = {
@@ -130,6 +127,9 @@ OPTIONAL_FIELDS = {
         "Otherwise this defaults to false."
     ],
     'param_list': ['lp', "list of parameters of the IP"],
+    'registers':
+    ['l', "list of register definition groups and "
+     "offset control groups"],
     'regwidth': ['d', "width of registers in bits (default 32)"],
     'reset_request_list': ['l', 'list of signals requesting reset'],
     'scan': ['pb', 'Indicates the module have `scanmode_i`'],
@@ -191,7 +191,7 @@ class IpBlock:
     alias_impl: str | None = None
 
     def __post_init__(self) -> None:
-        assert self.reg_blocks
+        assert isinstance(self.reg_blocks, dict)
 
         # Filter the interfaces and reg_blocks if request to build only for a
         # specific reg_block node.
@@ -348,8 +348,12 @@ class IpBlock:
         clocking = Clocking.from_raw(rd['clocking'],
                                      'clocking field of ' + what)
 
-        reg_blocks = RegBlock.build_blocks(init_block, rd['registers'],
-                                           bus_interfaces, clocking, False)
+        # Build register block if IP really defined registers.
+        if rd.get("registers"):
+            reg_blocks = RegBlock.build_blocks(init_block, rd["registers"],
+                                               bus_interfaces, clocking, False)
+        else:
+            reg_blocks = {}
 
         memories = {
             name: Memory.from_raw(desc)
