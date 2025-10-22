@@ -4471,13 +4471,14 @@ opentitan_test(
     exec_env = dicts.omit(
         dicts.add(
             EARLGREY_TEST_ENVS,
+            DARJEELING_TEST_ENVS,
             EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         ),
         # TODO (#26100): QEMU's `flashgen.py` script does not like this test.
         ["//hw/top_earlgrey:sim_qemu_rom_with_fake_keys"],
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:sram_ctrl",
