@@ -31,9 +31,6 @@ _rom_ext_virtual_size = LENGTH(rom_ext_virtual);
 ASSERT((_rom_ext_virtual_size <= (LENGTH(eflash) / 2)),
   "Error: rom ext flash is bigger than slot.");
 
-_rom_digest_size = 32;
-_chip_info_start = ORIGIN(rom) + LENGTH(rom) - _rom_digest_size - _chip_info_size;
-
 /* DV Log offset (has to be different to other boot stages). */
 _dv_log_offset = 0x0;
 
