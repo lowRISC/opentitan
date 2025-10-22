@@ -60,6 +60,7 @@ dt_instance_id_t dt_${device_name}_instance_id(
   return TRY_GET_DT(dt, kDtInstanceIdUnknown)->inst_id;
 }
 
+% if helper.has_reg_blocks():
 uint32_t dt_${device_name}_reg_block(
     dt_${device_name}_t dt,
     dt_${device_name}_reg_block_t reg_block) {
@@ -67,6 +68,7 @@ uint32_t dt_${device_name}_reg_block(
   return TRY_GET_DT(dt, 0xdeadbeef)->reg_addr[reg_block];
 }
 
+% endif
 uint32_t dt_${device_name}_memory_base(
     dt_${device_name}_t dt,
     dt_${device_name}_memory_t mem) {

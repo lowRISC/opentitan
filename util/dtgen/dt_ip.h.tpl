@@ -38,6 +38,7 @@ ${helper.render_extension(Extension.DtIpPos.HeaderIncludes)}
  */
 ${helper.inst_enum.render()}
 
+% if helper.has_reg_blocks():
 /**
  * List of register blocks.
  *
@@ -45,19 +46,20 @@ ${helper.inst_enum.render()}
  */
 ${helper.reg_block_enum.render()}
 
-/**
- * List of memories.
- *
- * Memories are guaranteed to start at 0 and to be consecutively numbered.
- */
-${helper.memory_enum.render()}
-
 /** Primary register block (associated with the "primary" set of registers that control the IP). */
 <%
   default_reg_block_name = (helper.reg_block_enum.name + Name(["primary"])).as_c_enum()
   default_reg_block_value = (helper.reg_block_enum.name + Name.from_snake_case(helper.default_node)).as_c_enum()
 %>\
 static const ${helper.reg_block_enum.name.as_c_type()} ${default_reg_block_name} = ${default_reg_block_value};
+
+% endif
+/**
+ * List of memories.
+ *
+ * Memories are guaranteed to start at 0 and to be consecutively numbered.
+ */
+${helper.memory_enum.render()}
 
 % if helper.has_irqs():
 /**
@@ -151,6 +153,7 @@ dt_${device_name}_t dt_${device_name}_from_instance_id(dt_instance_id_t inst_id)
  */
 dt_instance_id_t dt_${device_name}_instance_id(dt_${device_name}_t dt);
 
+% if helper.has_reg_blocks():
 /**
  * Get the register base address of an instance.
  *
@@ -176,6 +179,7 @@ static inline uint32_t dt_${device_name}_primary_reg_block(
   return dt_${device_name}_reg_block(dt, ${default_reg_block_value});
 }
 
+% endif
 /**
  * Get the base address of a memory.
  *
