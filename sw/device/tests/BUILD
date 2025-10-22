@@ -6296,6 +6296,7 @@ test_suite(
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_darjeeling:sim_dv": None,
         },
         fpga = fpga_params(
             needs_jtag = True,
@@ -6309,7 +6310,7 @@ test_suite(
             test_harness = "//sw/host/tests/chip/rv_dm:ndm_reset_req_when_cpu_halted",
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:dt",
             "//sw/device/lib/dif:rstmgr",
             "//sw/device/lib/runtime:hart",
             "//sw/device/lib/runtime:log",
