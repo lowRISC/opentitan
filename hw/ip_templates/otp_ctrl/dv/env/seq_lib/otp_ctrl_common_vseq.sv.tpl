@@ -77,7 +77,7 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     clear_seq_flags();
   endtask
 
-  virtual task wait_to_issue_reset(uint reset_delay_bound);
+  protected virtual task wait_to_issue_reset(uint reset_delay_bound);
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(reset_drive_cond)
     case (reset_drive_cond)
       DriveRandomly: begin
