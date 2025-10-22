@@ -109,7 +109,7 @@ impl Qemu {
             let serial_port = SerialPortUart::open_pseudo(path.to_str().unwrap(), CONSOLE_BAUDRATE)
                 .context("failed to open QEMU console PTY")?;
             let uart: Rc<dyn Uart> =
-                Rc::new(QemuUart::new(Rc::clone(&monitor), "console", serial_port));
+                Rc::new(QemuUart::new(Rc::clone(&monitor), &chardev.id, serial_port));
 
             uarts.insert(id.to_string(), uart);
         }
