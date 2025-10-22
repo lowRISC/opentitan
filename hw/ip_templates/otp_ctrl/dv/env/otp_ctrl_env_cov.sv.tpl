@@ -339,7 +339,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     case (part_idx)
 % for part in otp_mmap["partitions"]:
 <% part_name_camel = Name.to_camel_case(part["name"]) %>\
-      Otp${part_name_camel}ErrIdx: begin
+      OtpPartition${part_name_camel}ErrIdx: begin
   % if part in unbuffered_parts:
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
   % elif part in buffered_parts:
