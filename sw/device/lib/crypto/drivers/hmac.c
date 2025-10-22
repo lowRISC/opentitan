@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/hmac.h"
 
-#include "hw/top/dt/dt_hmac.h"
+#include "hw/top/dt/hmac.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/crc32.h"

@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/keymgr.h"
 
-#include "hw/top/dt/dt_keymgr.h"
+#include "hw/top/dt/keymgr.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened_memory.h"

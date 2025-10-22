@@ -28,7 +28,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:csrng_shared",
         "//sw/device/lib/dif:edn",
@@ -44,7 +44,7 @@ cc_library(
     hdrs = ["alert_handler_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:rstmgr",
@@ -58,7 +58,7 @@ cc_library(
     hdrs = ["aon_timer_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:math",
         "//sw/device/lib/dif:aon_timer",
@@ -150,8 +150,8 @@ cc_library(
     hdrs = ["flash_ctrl_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top:dt",
         "//hw/top:flash_ctrl_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
@@ -315,7 +315,7 @@ cc_library(
     hdrs = ["pinmux_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:gpio",
@@ -455,7 +455,7 @@ cc_library(
     hdrs = ["spi_device_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:spi_device",
@@ -471,7 +471,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":pinmux_testutils",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:spi_host",
@@ -609,8 +609,8 @@ cc_library(
         ":kmac_testutils",
         ":otp_ctrl_testutils",
         ":rstmgr_testutils",
-        "//hw/top:dt",
         "//hw/top:keymgr_dpe_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:keymgr_dpe",

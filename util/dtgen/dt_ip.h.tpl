@@ -27,7 +27,7 @@ extern "C" {
  * This file contains the type definitions and global functions of the ${device_name}.
  */
 
-#include "hw/top/dt/dt_api.h"
+#include "hw/top/dt/api.h"
 #include <stdint.h>
 
 ## Extension

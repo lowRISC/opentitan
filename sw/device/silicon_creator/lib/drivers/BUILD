@@ -60,7 +60,7 @@ dual_cc_library(
         shared = [
             ":lifecycle",
             ":otp",
-            "//hw/top:dt",
+            "//hw/top/dt",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:memory",
@@ -93,10 +93,10 @@ opentitan_test(
         ":alert",
         ":rstmgr",
         "//hw/top:alert_handler_c_regs",
-        "//hw/top:dt",
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:rstmgr_c_regs",
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
@@ -112,9 +112,9 @@ cc_library(
         ":lifecycle",
         ":otp",
         "//hw/top:ast_c_regs",
-        "//hw/top:dt",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:sensor_ctrl_c_regs",
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
@@ -159,7 +159,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
-            "//hw/top:dt",
+            "//hw/top/dt",
             "//hw/top:flash_ctrl_c_regs",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
@@ -196,7 +196,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/top:hmac_c_regs",
-            "//hw/top:dt",
+            "//hw/top/dt",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -255,7 +255,7 @@ dual_cc_library(
     deps = dual_inputs(
         shared = [
             "//hw/top:rv_core_ibex_c_regs",
-            "//hw/top:dt",
+            "//hw/top/dt",
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:csr",
@@ -282,8 +282,8 @@ cc_library(
     srcs = ["keymgr.c"],
     hdrs = ["keymgr.h"],
     deps = [
-        "//hw/top:dt",
         "//hw/top:keymgr_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/runtime:hart",
@@ -298,7 +298,7 @@ cc_test(
     srcs = ["keymgr_unittest.cc"],
     deps = [
         ":keymgr",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
@@ -355,8 +355,8 @@ cc_library(
     srcs = ["kmac.c"],
     hdrs = ["kmac.h"],
     deps = [
-        "//hw/top:dt",
         "//hw/top:kmac_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
@@ -403,7 +403,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/top:lc_ctrl_c_regs",
-            "//hw/top:dt",
+            "//hw/top/dt",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -437,8 +437,8 @@ cc_library(
     srcs = ["otbn.c"],
     hdrs = ["otbn.h"],
     deps = [
-        "//hw/top:dt",
         "//hw/top:otbn_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/silicon_creator/lib:error",
@@ -469,7 +469,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top:dt",
+            "//hw/top/dt",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -501,10 +501,10 @@ cc_library(
     srcs = ["pinmux.c"],
     hdrs = ["pinmux.h"],
     deps = [
-        "//hw/top:dt",
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:pinmux_c_regs",
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
@@ -536,9 +536,9 @@ cc_library(
     srcs = ["retention_sram.c"],
     hdrs = ["retention_sram.h"],
     deps = [
-        "//hw/top:dt",
         "//hw/top:sram_ctrl_c_regs",
         "//hw/top:top_lib",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -590,7 +590,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             ":otp",
-            "//hw/top:dt",
+            "//hw/top/dt",
             "//sw/device/lib/arch:boot_stage",
             "//sw/device/lib/base:csr",
             "//sw/device/lib/base:abs_mmio",
@@ -675,7 +675,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
-            "//hw/top:dt",
+            "//hw/top/dt",
             "//hw/top:otp_ctrl_c_regs",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:macros",
@@ -724,8 +724,8 @@ cc_library(
     hdrs = ["uart.h"],
     deps = [
         ":ibex",
-        "//hw/top:dt",
         "//hw/top:uart_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -766,9 +766,9 @@ cc_library(
     deps = [
         ":pwrmgr",
         "//hw/top:aon_timer_c_regs",
-        "//hw/top:dt",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:pwrmgr_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
@@ -803,7 +803,7 @@ opentitan_test(
         ":retention_sram",
         ":rstmgr",
         ":watchdog",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -826,7 +826,7 @@ dual_cc_library(
         device = [
             "//hw/top:flash_ctrl_c_regs",
             "//hw/top:spi_device_c_regs",
-            "//hw/top:dt",
+            "//hw/top/dt",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -864,8 +864,8 @@ cc_library(
     hdrs = ["pwrmgr.h"],
     deps = [
         ":ibex",
-        "//hw/top:dt",
         "//hw/top:pwrmgr_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -879,9 +879,9 @@ cc_library(
     deps = [
         ":lifecycle",
         ":otp",
-        "//hw/top:dt",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:sensor_ctrl_c_regs",
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",

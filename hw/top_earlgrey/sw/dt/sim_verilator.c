@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-#include "hw/top/dt/dt_api.h"  // Generated
+#include "hw/top/dt/api.h"  // Generated
 
 // FIXME Are those really fixed in DV? Does it matter?
 static const uint32_t clock_freqs[kDtClockCount] = {
