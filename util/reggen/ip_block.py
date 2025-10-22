@@ -68,7 +68,7 @@ KNOWN_CIP_IDS = {
     41: 'ac_range_check',
     42: 'soc_dbg_ctrl',
     43: 'racl_ctrl',
-    44: 'prim_otp',
+    44: 'otp_macro',
 }
 
 REQUIRED_ALIAS_FIELDS = {
