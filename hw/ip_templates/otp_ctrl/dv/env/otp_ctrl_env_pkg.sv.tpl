@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
+import math
 from topgen.lib import Name
 
 parts_without_lc = [part for part in otp_mmap["partitions"] if
@@ -126,13 +127,8 @@ package otp_ctrl_env_pkg;
     NumOtpCtrlIntr
   } otp_intr_e;
 
-  typedef enum bit [5:0] {
-% for part in otp_mmap["partitions"]:
-<%
-  part_name_camel = Name.to_camel_case(part["name"])
-%>\
-    Otp${part_name_camel}ErrIdx,
-% endfor
+  typedef enum bit [3:0] {
+    OtpPartitionErrorIdx,
     OtpDaiErrIdx,
     OtpLciErrIdx,
     OtpTimeoutErrIdx,
@@ -144,6 +140,16 @@ package otp_ctrl_env_pkg;
     OtpCheckPendingIdx,
     OtpStatusFieldSize
   } otp_status_e;
+
+  typedef enum int {
+% for part in otp_mmap["partitions"]:
+<%
+  part_name_camel = Name.to_camel_case(part["name"])
+%>\
+    OtpPartition${part_name_camel}Idx${"" if loop.last else ","}
+% endfor
+  } otp_partition_e;
+
 
   typedef enum bit [2:0] {
     OtpNoError,

@@ -366,88 +366,90 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
 
   // Collect coverage for err_code when it is a compact multi-reg. For DAI error it uses the given
   // access_part_idx as the target of the DAI access.
-  function void collect_compact_err_code_cov(bit [TL_DW-1:0] val, int access_part_idx = DaiIdx);
+  function void collect_compact_err_code_cov(bit [TL_DW-1:0] val,
+                                             otp_partition_e access_part_idx = otp_partition_e'(0));
     dv_base_reg_field err_code_flds[$];
     cfg.ral.err_code[0].get_dv_base_reg_fields(err_code_flds);
     foreach (err_code_flds[part]) begin
-      collect_err_code_cov(part, get_field_val(err_code_flds[part], val), access_part_idx);
+      collect_err_code_cov(part_idx_e'(part), get_field_val(err_code_flds[part], val),
+                           access_part_idx);
     end
   endfunction
 
   // Collect coverage for a given partition error_code. For DAI error it uses the given
   // access_part_idx as the target of the DAI access.
-  function void collect_err_code_cov(int part_idx, bit [TL_DW-1:0] val,
-                                     int access_part_idx = DaiIdx);
+  function void collect_err_code_cov(part_idx_e part_idx, bit [TL_DW-1:0] val,
+                                     otp_partition_e access_part_idx = otp_partition_e'(0));
     case (part_idx)
-      OtpVendorTestErrIdx: begin
+      VendorTestIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpCreatorSwCfgErrIdx: begin
+      CreatorSwCfgIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpOwnerSwCfgErrIdx: begin
+      OwnerSwCfgIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpOwnershipSlotStateErrIdx: begin
+      OwnershipSlotStateIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpRotCreatorAuthErrIdx: begin
+      RotCreatorAuthIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpRotOwnerAuthSlot0ErrIdx: begin
+      RotOwnerAuthSlot0Idx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpRotOwnerAuthSlot1ErrIdx: begin
+      RotOwnerAuthSlot1Idx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpPlatIntegAuthSlot0ErrIdx: begin
+      PlatIntegAuthSlot0Idx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpPlatIntegAuthSlot1ErrIdx: begin
+      PlatIntegAuthSlot1Idx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpPlatOwnerAuthSlot0ErrIdx: begin
+      PlatOwnerAuthSlot0Idx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpPlatOwnerAuthSlot1ErrIdx: begin
+      PlatOwnerAuthSlot1Idx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpPlatOwnerAuthSlot2ErrIdx: begin
+      PlatOwnerAuthSlot2Idx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpPlatOwnerAuthSlot3ErrIdx: begin
+      PlatOwnerAuthSlot3Idx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpExtNvmErrIdx: begin
+      ExtNvmIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpRomPatchErrIdx: begin
+      RomPatchIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpHwCfg0ErrIdx: begin
+      HwCfg0Idx: begin
         buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
       end
-      OtpHwCfg1ErrIdx: begin
+      HwCfg1Idx: begin
         buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
       end
-      OtpSecret0ErrIdx: begin
+      Secret0Idx: begin
         buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
       end
-      OtpSecret1ErrIdx: begin
+      Secret1Idx: begin
         buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
       end
-      OtpSecret2ErrIdx: begin
+      Secret2Idx: begin
         buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
       end
-      OtpSecret3ErrIdx: begin
+      Secret3Idx: begin
         buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
       end
-      OtpLifeCycleErrIdx: begin
+      LifeCycleIdx: begin
       end
-      OtpDaiErrIdx: begin
+      DaiIdx: begin
         dai_err_code_cg.sample(val, access_part_idx);
       end
-      OtpLciErrIdx: begin
+      LciIdx: begin
         lci_err_code_cg.sample(val);
       end
       default: begin

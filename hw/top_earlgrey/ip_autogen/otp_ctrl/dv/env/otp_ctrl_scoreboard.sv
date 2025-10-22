@@ -38,6 +38,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   // Status related variables
   bit under_chk, under_dai_access;
   bit [TL_DW-1:0] exp_status, status_mask;
+  // Partition status registers - one register per 32 partitions
+  bit [TL_DW-1:0] exp_partition_status[1];
+  bit [TL_DW-1:0] partition_status_mask[1];
 
   otp_alert_e exp_alert = OtpNoAlert;
 
@@ -283,6 +286,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         exp_status[OtpDaiIdleIdx] = 0;
       end else begin
         exp_status = '0;
+        foreach (exp_partition_status[i]) begin
+          exp_partition_status[i] = '0;
+        end
         // Only lc_esc_on will set these bits to 1.
         exp_status[OtpDerivKeyFsmErrIdx:OtpLfsrFsmErrIdx] = '1;
       end
@@ -290,8 +296,22 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       // Update status bits.
       foreach (FATAL_EXP_STATUS[i]) begin
         if (FATAL_EXP_STATUS[i]) begin
-          predict_err(.status_err_idx(otp_status_e'(i)), .err_code(OtpFsmStateError),
-                      .update_esc_err(1));
+          // The first error entries are for partitions (one per partition); the error entries after
+          // the partitions are for DAI and LCI.
+          case (i)
+            DaiIdx:  predict_err(.status_err_idx(OtpDaiErrIdx),
+                                  .partition_idx(otp_partition_e'(0)),
+                                  .err_code(OtpFsmStateError),
+                                  .update_esc_err(1));
+            LciIdx:  predict_err(.status_err_idx(OtpLciErrIdx),
+                                  .partition_idx(otp_partition_e'(0)),
+                                  .err_code(OtpFsmStateError),
+                                  .update_esc_err(1));
+            default: predict_err(.status_err_idx(OtpPartitionErrorIdx),
+                                  .partition_idx(otp_partition_e'(i)),
+                                  .err_code(OtpFsmStateError),
+                                  .update_esc_err(1));
+          endcase
         end
       end
 
@@ -338,7 +358,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         else                                         exp_err_bit = 1;
       end
 
-      if (exp_err_bit) predict_err(OtpLciErrIdx, OtpMacroWriteBlankError);
+      if (exp_err_bit) predict_err(OtpLciErrIdx, otp_partition_e'(0), OtpMacroWriteBlankError);
       else             predict_no_err(OtpLciErrIdx);
 
       // LC program request data is valid means no OTP macro error.
@@ -600,7 +620,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         // ECC uncorrectable errors are gated by `is_tl_mem_access_allowed` function.
         if (ecc_err != OtpNoEccErr && part_has_integrity(part_idx)) begin
 
-          predict_err(otp_status_e'(part_idx), OtpMacroEccCorrError);
+          predict_err(OtpPartitionErrorIdx,
+                      otp_partition_e'(part_idx),
+                      OtpMacroEccCorrError);
           if (ecc_err == OtpEccCorrErr) begin
              `DV_CHECK_EQ(item.d_data, otp_a[otp_addr],
                          $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
@@ -619,12 +641,12 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           `DV_CHECK_EQ(item.d_data, read_out,
                       $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
                       csr_addr, dai_addr))
-          predict_no_err(otp_status_e'(part_idx));
+          predict_no_err(OtpPartitionErrorIdx, otp_partition_e'(part_idx));
         end else if (ecc_err == OtpNoEccErr) begin
           `DV_CHECK_EQ(item.d_data, otp_a[otp_addr],
                       $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
                       csr_addr, dai_addr))
-          predict_no_err(otp_status_e'(part_idx));
+          predict_no_err(OtpPartitionErrorIdx, otp_partition_e'(part_idx));
         end
       end
       return;
@@ -714,7 +736,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
           // LC partition cannot be access via DAI
           if (part_idx == LifeCycleIdx) begin
-            predict_err(OtpDaiErrIdx, OtpAccessError);
+            predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpAccessError);
             if (item.a_data == DaiRead) predict_rdata(is_secret(dai_addr), 0, 0);
           end else begin
             // Collect coverage.
@@ -748,7 +770,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                     // disable, then return access error.
                     (PartInfo[part_idx].iskeymgr_creator && !is_digest(dai_addr) &&
                      cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
-                  predict_err(OtpDaiErrIdx, OtpAccessError);
+                  predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpAccessError);
                   predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
                 end else if (sw_read_lock ||
                     // Secret partitions cal digest can also lock read access.
@@ -759,7 +781,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                     // then return access error.
                     (PartInfo[part_idx].iskeymgr_owner && !is_digest(dai_addr) &&
                      cfg.otp_ctrl_vif.lc_owner_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
-                  predict_err(OtpDaiErrIdx, OtpAccessError);
+                  predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpAccessError);
                   predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
 
                 end else begin
@@ -798,11 +820,11 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                   end
 
                   if (ecc_err == OtpEccCorrErr && part_has_integrity(part_idx)) begin
-                    predict_err(OtpDaiErrIdx, OtpMacroEccCorrError);
+                    predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpMacroEccCorrError);
                     backdoor_update_otp_array(dai_addr);
                     predict_rdata(is_64_bit_fuse, otp_a[otp_addr], otp_a[otp_addr+1]);
                   end else if (ecc_err == OtpEccUncorrErr && part_has_integrity(part_idx)) begin
-                    predict_err(OtpDaiErrIdx, OtpMacroEccUncorrError);
+                    predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpMacroEccUncorrError);
                     // Max wait 20 clock cycles because scb did not know when exactly OTP will
                     // finish reading and reporting the uncorrectable error.
                     set_exp_alert("fatal_macro_error", 1, 20);
@@ -835,11 +857,11 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                 if (is_write_locked || (PartInfo[part_idx].iskeymgr_creator &&
                     !is_digest(dai_addr) &&
                     cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
-                  predict_err(OtpDaiErrIdx, OtpAccessError);
+                  predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpAccessError);
                 end else if (is_write_locked || (PartInfo[part_idx].iskeymgr_owner &&
                              !is_digest(dai_addr) &&
                              cfg.otp_ctrl_vif.lc_owner_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
-                  predict_err(OtpDaiErrIdx, OtpAccessError);
+                  predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpAccessError);
                 end else begin
                   predict_no_err(OtpDaiErrIdx);
                   // write digest
@@ -853,10 +875,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                     if ((prev_digest & curr_digest) == prev_digest) begin
                       update_digest_to_otp(part_idx, curr_digest);
                     end else begin
-                      predict_err(OtpDaiErrIdx, OtpMacroWriteBlankError);
+                      predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpMacroWriteBlankError);
                     end
                   end else if (is_digest(dai_addr)) begin
-                    predict_err(OtpDaiErrIdx, OtpAccessError);
+                    predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpAccessError);
                   // write OTP memory
                   end else begin
                     dai_wr_ip = 1;
@@ -867,7 +889,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                         otp_a[otp_addr] = wr_data;
                         check_otp_idle(.val(0), .wait_clks(3));
                       end else begin
-                        predict_err(OtpDaiErrIdx, OtpMacroWriteBlankError);
+                        predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpMacroWriteBlankError);
                       end
                     end else begin
                       bit [SCRAMBLE_DATA_SIZE-1:0] secret_data = {otp_a[otp_addr + 1],
@@ -882,7 +904,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                         // wait until secret scrambling is done
                         check_otp_idle(.val(0), .wait_clks(34));
                       end else begin
-                        predict_err(OtpDaiErrIdx, OtpMacroWriteBlankError);
+                        predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpMacroWriteBlankError);
                       end
                     end
                   end
@@ -956,6 +978,26 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         // checked in this block above
         do_read_check = 0;
       end
+      "partition_status_0": begin
+        if (addr_phase_read) begin
+          void'(ral.partition_status_0.predict(.value(exp_partition_status[0]),
+                                                  .kind(UVM_PREDICT_READ)));
+
+          // update partition status mask
+          partition_status_mask[0] = 0;
+          // No masking needed for partition status as it's more predictable
+        end else if (data_phase_read) begin
+          // PARTITION_STATUS_0 register check with mask
+          if (do_read_check) begin
+            `DV_CHECK_EQ((csr.get_mirrored_value() | partition_status_mask[0]),
+                         (item.d_data | partition_status_mask[0]),
+                         $sformatf("reg name: partition_status_0, compare_mask %0h",
+                                   partition_status_mask[0]))
+          end
+        end
+        // checked in this block above
+        do_read_check = 0;
+      end
       "check_trigger": begin
         if (addr_phase_write && cfg.en_cov && cfg.otp_ctrl_vif.alert_reqs) begin
           cov.issue_checks_after_alert_cg.sample(item.a_data);
@@ -973,11 +1015,15 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             if (get_field_val(ral.check_trigger.consistency, item.a_data)) begin
               foreach (cfg.ecc_chk_err[i]) begin
                 if (cfg.ecc_chk_err[i] == OtpEccCorrErr && part_has_integrity(i)) begin
-                  predict_err(otp_status_e'(i), OtpMacroEccCorrError);
+                  predict_err(OtpPartitionErrorIdx,
+                              otp_partition_e'(i),
+                              OtpMacroEccCorrError);
                 end else if (cfg.ecc_chk_err[i] == OtpEccUncorrErr &&
                              part_has_integrity(i)) begin
                   set_exp_alert("fatal_macro_error", 1, 40_000);
-                  predict_err(otp_status_e'(i), OtpMacroEccUncorrError);
+                  predict_err(OtpPartitionErrorIdx,
+                              otp_partition_e'(i),
+                              OtpMacroEccUncorrError);
                 end
               end
             end
@@ -1001,7 +1047,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         if (cfg.en_cov && do_read_check && data_phase_read) begin
           bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int access_part_idx = get_part_index(dai_addr);
-          cov.collect_err_code_cov(0, item.d_data, access_part_idx);
+          cov.collect_err_code_cov(part_idx_e'(0), item.d_data,
+                                   otp_partition_e'(access_part_idx));
         end
       end
       "err_code_1": begin
@@ -1009,7 +1056,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         if (cfg.en_cov && do_read_check && data_phase_read) begin
           bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int access_part_idx = get_part_index(dai_addr);
-          cov.collect_err_code_cov(1, item.d_data, access_part_idx);
+          cov.collect_err_code_cov(part_idx_e'(1), item.d_data,
+                                   otp_partition_e'(access_part_idx));
         end
       end
       "err_code_2": begin
@@ -1017,7 +1065,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         if (cfg.en_cov && do_read_check && data_phase_read) begin
           bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int access_part_idx = get_part_index(dai_addr);
-          cov.collect_err_code_cov(2, item.d_data, access_part_idx);
+          cov.collect_err_code_cov(part_idx_e'(2), item.d_data,
+                                   otp_partition_e'(access_part_idx));
         end
       end
       "err_code_3": begin
@@ -1025,7 +1074,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         if (cfg.en_cov && do_read_check && data_phase_read) begin
           bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int access_part_idx = get_part_index(dai_addr);
-          cov.collect_err_code_cov(3, item.d_data, access_part_idx);
+          cov.collect_err_code_cov(part_idx_e'(3), item.d_data,
+                                   otp_partition_e'(access_part_idx));
         end
       end
       "err_code_4": begin
@@ -1033,7 +1083,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         if (cfg.en_cov && do_read_check && data_phase_read) begin
           bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int access_part_idx = get_part_index(dai_addr);
-          cov.collect_err_code_cov(4, item.d_data, access_part_idx);
+          cov.collect_err_code_cov(part_idx_e'(4), item.d_data,
+                                   otp_partition_e'(access_part_idx));
         end
       end
       "err_code_5": begin
@@ -1041,7 +1092,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         if (cfg.en_cov && do_read_check && data_phase_read) begin
           bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int access_part_idx = get_part_index(dai_addr);
-          cov.collect_err_code_cov(5, item.d_data, access_part_idx);
+          cov.collect_err_code_cov(part_idx_e'(5), item.d_data,
+                                   otp_partition_e'(access_part_idx));
         end
       end
       "err_code_6": begin
@@ -1049,7 +1101,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         if (cfg.en_cov && do_read_check && data_phase_read) begin
           bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int access_part_idx = get_part_index(dai_addr);
-          cov.collect_err_code_cov(6, item.d_data, access_part_idx);
+          cov.collect_err_code_cov(part_idx_e'(6), item.d_data,
+                                   otp_partition_e'(access_part_idx));
         end
       end
       "err_code_7": begin
@@ -1057,7 +1110,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         if (cfg.en_cov && do_read_check && data_phase_read) begin
           bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int access_part_idx = get_part_index(dai_addr);
-          cov.collect_err_code_cov(7, item.d_data, access_part_idx);
+          cov.collect_err_code_cov(part_idx_e'(7), item.d_data,
+                                   otp_partition_e'(access_part_idx));
         end
       end
       "err_code_8": begin
@@ -1065,7 +1119,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         if (cfg.en_cov && do_read_check && data_phase_read) begin
           bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int access_part_idx = get_part_index(dai_addr);
-          cov.collect_err_code_cov(8, item.d_data, access_part_idx);
+          cov.collect_err_code_cov(part_idx_e'(8), item.d_data,
+                                   otp_partition_e'(access_part_idx));
         end
       end
       "err_code_9": begin
@@ -1073,7 +1128,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         if (cfg.en_cov && do_read_check && data_phase_read) begin
           bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int access_part_idx = get_part_index(dai_addr);
-          cov.collect_err_code_cov(9, item.d_data, access_part_idx);
+          cov.collect_err_code_cov(part_idx_e'(9), item.d_data,
+                                   otp_partition_e'(access_part_idx));
         end
       end
       "err_code_10": begin
@@ -1081,7 +1137,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         if (cfg.en_cov && do_read_check && data_phase_read) begin
           bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int access_part_idx = get_part_index(dai_addr);
-          cov.collect_err_code_cov(10, item.d_data, access_part_idx);
+          cov.collect_err_code_cov(part_idx_e'(10), item.d_data,
+                                   otp_partition_e'(access_part_idx));
         end
       end
       "err_code_11": begin
@@ -1089,7 +1146,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         if (cfg.en_cov && do_read_check && data_phase_read) begin
           bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int access_part_idx = get_part_index(dai_addr);
-          cov.collect_err_code_cov(11, item.d_data, access_part_idx);
+          cov.collect_err_code_cov(part_idx_e'(11), item.d_data,
+                                   otp_partition_e'(access_part_idx));
         end
       end
       "err_code_12": begin
@@ -1097,7 +1155,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         if (cfg.en_cov && do_read_check && data_phase_read) begin
           bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int access_part_idx = get_part_index(dai_addr);
-          cov.collect_err_code_cov(12, item.d_data, access_part_idx);
+          cov.collect_err_code_cov(part_idx_e'(12), item.d_data,
+                                   otp_partition_e'(access_part_idx));
         end
       end
       "vendor_test_digest_0", "vendor_test_digest_1",
@@ -1225,6 +1284,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     under_dai_access      = 0;
     ignore_digest_chk     = 0;
     exp_status            = `gmv(ral.status);
+    exp_partition_status[0] = `gmv(ral.partition_status_0);
     exp_alert             = OtpNoAlert;
 
     edn_data_q.delete();
@@ -1366,15 +1426,15 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     if (cfg.otp_ctrl_vif.under_error_states()) return;
 
     if (!part_has_hw_digest(part_idx) || get_digest_reg_val(part_idx) != 0) begin
-      predict_err(OtpDaiErrIdx, OtpAccessError);
+      predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpAccessError);
       return;
     end else if (PartInfo[part_idx].iskeymgr_creator &&
                  cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On) begin
-      predict_err(OtpDaiErrIdx, OtpAccessError);
+      predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpAccessError);
       return;
     end else if (PartInfo[part_idx].iskeymgr_owner &&
                  cfg.otp_ctrl_vif.lc_owner_seed_sw_rw_en_i != lc_ctrl_pkg::On) begin
-      predict_err(OtpDaiErrIdx, OtpAccessError);
+      predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpAccessError);
       return;
     end else begin
       predict_no_err(OtpDaiErrIdx);
@@ -1448,24 +1508,49 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     get_scb_otp_addr = normalize_dai_addr(dai_addr) >> 2;
   endfunction
 
+  function int status_err_idx_to_err_code_idx(otp_status_e status_err_idx,
+                                              otp_partition_e partition_idx = otp_partition_e'(0));
+    int err_code_idx;
+    case (status_err_idx)
+      OtpPartitionErrorIdx: err_code_idx = partition_idx;
+      OtpDaiErrIdx:         err_code_idx = DaiIdx;
+      OtpLciErrIdx:         err_code_idx = LciIdx;
+      default: begin
+        `uvm_fatal(`gfn, $sformatf("Invalid status_err_idx: %d", status_err_idx))
+      end
+    endcase
+    return err_code_idx;
+  endfunction
+
   // This function predict OTP error related registers: intr_state, status, and err_code
+  // The partition_idx argument is only considered if status_err_idx == `OtpPartitionErrorIdx`.
   virtual function void predict_err(otp_status_e   status_err_idx,
+                                    otp_partition_e partition_idx = otp_partition_e'(0),
                                     otp_err_code_e err_code = OtpNoError,
                                     bit            update_esc_err = 0);
     if (cfg.otp_ctrl_vif.under_error_states() && !update_esc_err) return;
 
     // Update intr_state
     void'(ral.intr_state.otp_error.predict(.value(1), .kind(UVM_PREDICT_READ)));
-    // Update status
-    exp_status[status_err_idx] = 1;
 
-    // Only first status errors up to the LCI have corresponding err_code
-    if (status_err_idx <= OtpLciErrIdx) begin
+    // Update status and if necessary per-partition status
+    exp_status[status_err_idx] = 1;
+    if (status_err_idx == OtpPartitionErrorIdx) begin
+      // Partition errors go to partition status register
+      int partition_reg_idx = partition_idx / 32;
+      int partition_bit_idx = partition_idx % 32;
+      exp_partition_status[partition_reg_idx][partition_bit_idx] = 1;
+    end
+
+    // Only partitions, LCI, and DAI have an err_code.
+    if (status_err_idx inside {OtpPartitionErrorIdx, OtpDaiErrIdx, OtpLciErrIdx}) begin
       dv_base_reg_field err_code_flds[$];
+      int err_code_idx;
       if (err_code == OtpNoError) begin
         `uvm_error(`gfn, $sformatf("please set status error: %0s error code", status_err_idx.name))
       end
-      ral.err_code[status_err_idx].get_dv_base_reg_fields(err_code_flds);
+      err_code_idx = status_err_idx_to_err_code_idx(status_err_idx, partition_idx);
+      ral.err_code[err_code_idx].get_dv_base_reg_fields(err_code_flds);
 
       if (`gmv(err_code_flds[0]) inside {OTP_TERMINAL_ERRS}) begin
         `uvm_info(`gfn, "terminal error cannot be updated", UVM_HIGH)
@@ -1479,15 +1564,36 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
   endfunction
 
-  virtual function void predict_no_err(otp_status_e status_err_idx);
+  virtual function void predict_no_err(otp_status_e status_err_idx,
+                                       otp_partition_e partition_idx = otp_partition_e'(0));
     if (cfg.otp_ctrl_vif.under_error_states()) return;
 
-    exp_status[status_err_idx] = 0;
-    if (status_err_idx == OtpDaiErrIdx) exp_status[OtpDaiIdleIdx] = 1;
+    // Update appropriate status register based on error type
+    if (status_err_idx == OtpPartitionErrorIdx) begin
+      // Check if any partition errors remain, if not clear general partition error bit
+      bit any_partition_error = 0;
+      // Partition errors go to partition status register
+      int partition_reg_idx = partition_idx / 32;
+      int partition_bit_idx = partition_idx % 32;
+      exp_partition_status[partition_reg_idx][partition_bit_idx] = 0;
+      foreach (exp_partition_status[i]) begin
+        any_partition_error |= |exp_partition_status[i];
+      end
+      if(!any_partition_error) begin
+        exp_status[OtpPartitionErrorIdx] = 0;
+      end
+    end else begin
+      // Non-partition errors go to main status register
+      exp_status[status_err_idx] = 0;
+      if (status_err_idx == OtpDaiErrIdx) exp_status[OtpDaiIdleIdx] = 1;
+    end
 
-    if (status_err_idx <= OtpLciErrIdx) begin
+    // Only partitions, LCI, and DAI have an err_code.
+    if (status_err_idx inside {OtpPartitionErrorIdx, OtpDaiErrIdx, OtpLciErrIdx}) begin
       dv_base_reg_field err_code_flds[$];
-      ral.err_code[status_err_idx].get_dv_base_reg_fields(err_code_flds);
+      int err_code_idx;
+      err_code_idx = status_err_idx_to_err_code_idx(status_err_idx, partition_idx);
+      ral.err_code[err_code_idx].get_dv_base_reg_fields(err_code_flds);
       void'(err_code_flds[0].predict(OtpNoError));
     end
   endfunction
@@ -1597,7 +1703,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             [block.mem_ranges[0].start_addr + VendorTestOffset :
              block.mem_ranges[0].start_addr + VendorTestOffset +
              VendorTestSize - 1]}) begin
-          predict_err(OtpVendorTestErrIdx, OtpAccessError);
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionVendorTestIdx,
+                      OtpAccessError);
           custom_err = 1;
           if (cfg.en_cov) begin
             cov.unbuf_access_lock_cg_wrap[VendorTestIdx].sample(.read_lock(1),
@@ -1612,7 +1720,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             [block.mem_ranges[0].start_addr + CreatorSwCfgOffset :
              block.mem_ranges[0].start_addr + CreatorSwCfgOffset +
              CreatorSwCfgSize - 1]}) begin
-          predict_err(OtpCreatorSwCfgErrIdx, OtpAccessError);
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionCreatorSwCfgIdx,
+                      OtpAccessError);
           custom_err = 1;
           if (cfg.en_cov) begin
             cov.unbuf_access_lock_cg_wrap[CreatorSwCfgIdx].sample(.read_lock(1),
@@ -1627,7 +1737,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             [block.mem_ranges[0].start_addr + OwnerSwCfgOffset :
              block.mem_ranges[0].start_addr + OwnerSwCfgOffset +
              OwnerSwCfgSize - 1]}) begin
-          predict_err(OtpOwnerSwCfgErrIdx, OtpAccessError);
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionOwnerSwCfgIdx,
+                      OtpAccessError);
           custom_err = 1;
           if (cfg.en_cov) begin
             cov.unbuf_access_lock_cg_wrap[OwnerSwCfgIdx].sample(.read_lock(1),
@@ -1642,7 +1754,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             [block.mem_ranges[0].start_addr + RotCreatorAuthCodesignOffset :
              block.mem_ranges[0].start_addr + RotCreatorAuthCodesignOffset +
              RotCreatorAuthCodesignSize - 1]}) begin
-          predict_err(OtpRotCreatorAuthCodesignErrIdx, OtpAccessError);
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionRotCreatorAuthCodesignIdx,
+                      OtpAccessError);
           custom_err = 1;
           if (cfg.en_cov) begin
             cov.unbuf_access_lock_cg_wrap[RotCreatorAuthCodesignIdx].sample(.read_lock(1),
@@ -1657,7 +1771,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             [block.mem_ranges[0].start_addr + RotCreatorAuthStateOffset :
              block.mem_ranges[0].start_addr + RotCreatorAuthStateOffset +
              RotCreatorAuthStateSize - 1]}) begin
-          predict_err(OtpRotCreatorAuthStateErrIdx, OtpAccessError);
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartitionRotCreatorAuthStateIdx,
+                      OtpAccessError);
           custom_err = 1;
           if (cfg.en_cov) begin
             cov.unbuf_access_lock_cg_wrap[RotCreatorAuthStateIdx].sample(.read_lock(1),
@@ -1673,7 +1789,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         bit [TL_DW-1:0] read_out;
         int ecc_err = read_a_word_with_ecc(dai_addr, read_out);
         if (ecc_err == OtpEccUncorrErr && part_has_integrity(part_idx)) begin
-           predict_err(otp_status_e'(part_idx), OtpMacroEccUncorrError);
+           predict_err(OtpPartitionErrorIdx,
+                       otp_partition_e'(part_idx),
+                       OtpMacroEccUncorrError);
            set_exp_alert("fatal_macro_error", 1, 20);
            custom_err = 1;
            return 0;
@@ -1684,7 +1802,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     return mem_access_allowed;
   endfunction
 
-  virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
+  protected virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
     if (ral_name == "otp_macro_prim_reg_block" &&
         cfg.otp_ctrl_vif.lc_dft_en_i != lc_ctrl_pkg::On) begin
       if (channel == DataChannel) begin
