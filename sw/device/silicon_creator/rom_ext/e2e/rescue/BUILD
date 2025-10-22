@@ -98,6 +98,11 @@ _CONFIGS = {
     for name, position in _POSITIONS.items()
 ]
 
+# Important note: many of the tests in this file modify the owner
+# configuration and/or expect an empty owner configuration when
+# starting the test. Currently, the only way to clear this configuration
+# is to clear the bitstream.
+
 [
     opentitan_test(
         name = "rescue_firmware_{}_{}".format(name, protocol),
@@ -110,7 +115,7 @@ _CONFIGS = {
             binaries = {
                 ":boot_test_{}".format(name): "payload",
             },
-            changes_otp = True,
+            changes_otp = True,  # See important note at the top
             params = config["params"],
             rom_ext = config["rom_ext"],
             setup = config["setup"],
@@ -170,7 +175,7 @@ genrule(
                 ":boot_test_{}".format(name): "payload",
                 ":bad_rom_ext": "bad_rom_ext",
             },
-            changes_otp = True,
+            changes_otp = True,  # See important note at the top
             exit_failure = _RESCUE_ROMEXT_RESULTS[name == rxslot]["failure"],
             exit_success = _RESCUE_ROMEXT_RESULTS[name == rxslot]["success"].format(slot = name),
             image_name = "/tmp/rescue_rom_ext_{}.img".format(name),
@@ -210,7 +215,7 @@ genrule(
                 ":boot_test_slot_a": "slot_a",
                 ":boot_test_slot_b": "slot_b",
             },
-            changes_otp = True,
+            changes_otp = True,  # See important note at the top
             params = config["params"],
             rom_ext = config["rom_ext"],
             setup = config["setup"],
@@ -250,7 +255,7 @@ genrule(
                 ":boot_test_slot_a": "slot_a",
                 ":boot_test_slot_b": "slot_b",
             },
-            changes_otp = True,
+            changes_otp = True,  # See important note at the top
             params = config["params"],
             rom_ext = config["rom_ext"],
             setup = config["setup"],
@@ -292,7 +297,7 @@ genrule(
             binaries = {
                 ":boot_test_slot_a": "payload",
             },
-            changes_otp = True,
+            changes_otp = True,  # See important note at the top
             rate = rate,
             test_cmd = """
                 --exec="transport init"
@@ -327,7 +332,7 @@ genrule(
             binaries = {
                 ":boot_test_slot_a": "payload",
             },
-            changes_otp = True,
+            changes_otp = True,  # See important note at the top
             rate = rate,
             test_cmd = """
                 --exec="transport init"
@@ -362,7 +367,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
+        changes_otp = True,  # See important note at the top
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_xmodem_timeout",
         test_cmd = """
             --exec="transport init"
@@ -404,7 +409,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
+        changes_otp = True,  # See important note at the top
         # We configure OTP to preserve the reset reason and set the watchdog timeout
         # to one second.
         otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_preserve_reset_prod",
@@ -443,7 +448,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
+        changes_otp = True,  # See important note at the top
         exit_failure = "ok: ",
         exit_success = "error: mode not allowed",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_xmodem_restricted_commands",
@@ -481,7 +486,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
+        changes_otp = True,  # See important note at the top
         params = "-p spi-dfu -t gpio -v +Ioa2",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_spidfu_restricted_commands",
         setup = "--exec=\"gpio set --mode OpenDrain Ioa2\"",
@@ -513,7 +518,7 @@ opentitan_test(
         },
         fpga = fpga_params(
             assemble = "",
-            changes_otp = True,
+            changes_otp = True,  # See important note at the top
             exit_success = "BFV:05524304\r\n",
             rom_ext = config.get(
                 "alt_rom_ext",
@@ -546,6 +551,7 @@ opentitan_test(
         },
         fpga = fpga_params(
             assemble = "",
+            changes_otp = True,  # See important note at the top
             params = config["params"],
             rom_ext = config["rom_ext"],
             test_cmd = """
@@ -568,6 +574,7 @@ opentitan_test(
         },
         fpga = fpga_params(
             assemble = "",
+            changes_otp = True,  # See important note at the top
             device_id = DEVICE_ID,
             params = config["params"],
             rom_ext = config["rom_ext"],
@@ -597,6 +604,7 @@ opentitan_test(
                 "//sw/device/silicon_creator/rom_ext/e2e/attestation:print_certs": "firmware",
             },
             owner_offset = "0x10000",
+            changes_otp = True,  # See important note at the top
             params = config["params"],
             romext_offset = "0",
             test_cmd = """
@@ -624,6 +632,7 @@ opentitan_test(
         },
         owner_offset = "0x10000",
         romext_offset = "0",
+        changes_otp = True,  # See important note at the top
         test_cmd = """
         --clear-bitstream
         --bootstrap={firmware}
@@ -646,6 +655,7 @@ opentitan_test(
             "//sw/device/silicon_creator/rom_ext/e2e/attestation:print_certs": "firmware",
         },
         owner_offset = "0x10000",
+        changes_otp = True,  # See important note at the top
         params = "-p spi-dfu -t gpio -v +Ioa2",
         romext_offset = "0",
         test_cmd = """
@@ -852,7 +862,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
+        changes_otp = True,  # See important note at the top
         exit_failure = "(FAIL|BFV:|mode: RESQ).*",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
         test_cmd = """
@@ -885,7 +895,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
+        changes_otp = True,  # See important note at the top
         exit_success = "mode: RESQ",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_xmodem_enter_on_watchdog",
         test_cmd = """
