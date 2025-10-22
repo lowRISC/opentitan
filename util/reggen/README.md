@@ -96,7 +96,6 @@ name | required | string | name of the component
 cip_id | required | int | unique comportable IP identifier
 clocking | required | list | clocking for the device
 bus_interfaces | required | list | bus interfaces for the device
-registers | required | list | list of register definition groups and offset control groups
 human_name | optional | string | human-readable name of the component
 one_line_desc | optional | string | one-line description of the component
 one_paragraph_desc | optional | string | one-paragraph description of the component
@@ -122,6 +121,7 @@ inter_signal_list | optional | list | list of inter-module signals
 no_auto_alert_regs | optional | string | Set to true to suppress automatic generation of alert test registers. Defaults to true if no alert_list is present. Otherwise this defaults to false.
 no_auto_intr_regs | optional | string | Set to true to suppress automatic generation of interrupt registers. Defaults to true if no interrupt_list is present. Otherwise this defaults to false.
 param_list | optional | parameter list | list of parameters of the IP
+registers | optional | list | list of register definition groups and offset control groups
 regwidth | optional | int | width of registers in bits (default 32)
 reset_request_list | optional | list | list of signals requesting reset
 scan | optional | python Bool | Indicates the module have `scanmode_i`

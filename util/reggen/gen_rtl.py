@@ -44,7 +44,7 @@ def get_addr_widths(block: IpBlock) -> Dict[Optional[str], Tuple[str, int]]:
     the more general parameter name "BlockAw".
 
     '''
-    assert block.reg_blocks
+    assert isinstance(block.reg_blocks, dict)
     if len(block.reg_blocks) == 1 and None in block.reg_blocks:
         return {None: ('BlockAw', block.reg_blocks[None].get_addr_width())}
 
