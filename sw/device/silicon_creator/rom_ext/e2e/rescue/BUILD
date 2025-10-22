@@ -221,6 +221,7 @@ genrule(
                 --exec="fpga clear-bitstream"
                 --exec="fpga load-bitstream {bitstream}"
                 --exec="bootstrap --clear-uart=true {firmware}"
+                --exec="console --non-interactive --timeout=100ms"
                 {setup}
                 --exec="no-op --info='##### Set next slot via the rescue protocol'"
                 --exec="rescue {params} boot-svc set-next-bl0-slot --next=SlotB --get-response=false"
