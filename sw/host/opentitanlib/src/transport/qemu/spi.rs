@@ -11,7 +11,9 @@ use anyhow::{Context, ensure};
 use serialport::TTYPort;
 
 use crate::io::gpio;
-use crate::io::spi::{AssertChipSelect, MaxSizes, Target, Transfer, TransferMode};
+use crate::io::spi::{
+    AssertChipSelect, MaxSizes, Target, TargetChipDeassert, Transfer, TransferMode,
+};
 use crate::transport::TransportError;
 use crate::util::voltage::Voltage;
 
@@ -205,7 +207,8 @@ impl Target for QemuSpi {
     fn assert_cs(self: Rc<Self>) -> anyhow::Result<AssertChipSelect> {
         // Could potentially be implemented by sending an empty packet that
         // holds the CS and another which deasserts when dropped.
-        Err(TransportError::UnsupportedOperation.into())
+        log::warn!("TODO: Implement CS for Qemu");
+        Ok(AssertChipSelect::new(self))
     }
 
     fn set_voltage(&self, _voltage: Voltage) -> anyhow::Result<()> {
@@ -215,4 +218,8 @@ impl Target for QemuSpi {
     fn get_flashrom_programmer(&self) -> anyhow::Result<String> {
         Err(TransportError::UnsupportedOperation.into())
     }
+}
+
+impl TargetChipDeassert for QemuSpi {
+    fn deassert_cs(&self) {}
 }

@@ -79,6 +79,9 @@
       // For now we model this strap as a no-op without any pins.
       "pins": [],
     },
+    {
+      "name": "SPI_TPM"
+    }
   ],
   "uarts": [
     {
