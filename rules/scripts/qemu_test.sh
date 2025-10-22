@@ -41,7 +41,16 @@ for this_arg in "${test_args[@]}"; do
     fi
 done
 
+qemu_pid=""
+
 cleanup() {
+    set +e
+    echo "Stopping QEMU: $qemu_pid"
+    # Ask nicely QEMU to stop and then kill it after one second.
+    ( sleep 1 ; echo "Killing QEMU"; kill -KILL "$qemu_pid" ) &
+    kill "$qemu_pid"
+    wait "$qemu_pid"
+
     rm -f "${mutable_otp}" "${mutable_flash}"
     rm -f qemu-monitor qemu.log
 }
@@ -60,6 +69,7 @@ mkfifo qemu.log && cat qemu.log &
 
 echo "Starting QEMU: ${qemu} ${qemu_test_args[*]} ${qemu_args[*]}"
 "${qemu}" "${qemu_test_args[@]}" "${qemu_args[@]}"
+qemu_pid=$!
 
 echo "Invoking test: ${test_harness} ${args[*]} ${harness_test_args[*]} ${test_cmd[*]}"
 "${test_harness}" "${args[@]}" "${harness_test_args[@]}" "${test_cmd[@]}"
