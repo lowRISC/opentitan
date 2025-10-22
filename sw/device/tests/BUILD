@@ -4639,13 +4639,14 @@ opentitan_test(
     srcs = ["sram_ctrl_subword_access_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        DARJEELING_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
