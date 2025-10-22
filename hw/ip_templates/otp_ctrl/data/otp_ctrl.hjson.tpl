@@ -50,7 +50,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
       notes:              "",
     }
     {
-      version:            "2.1.0",
+      version:            "3.0.0",
       life_stage:         "L1",
       design_stage:       "D1",
       verification_stage: "V1",
