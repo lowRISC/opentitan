@@ -14,7 +14,7 @@ load(
     "verilator_params",
 )
 load("//rules/opentitan:util.bzl", "flatten")
-load("//hw/top:defs.bzl", "opentitan_if_ip")
+load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_select_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -185,12 +185,16 @@ cc_library(
     alwayslink = True,
 )
 
+# alias(
+#     name = "test_framework_manifest_def",
+#     actual = opentitan_select_top({
+#         "englishbreakfast": ":english_breakfast_test_framework_manifest_def",
+#     }, "//sw/device/silicon_creator/lib:manifest_def"),
+# )
+
 alias(
     name = "test_framework_manifest_def",
-    actual = select({
-        "//sw/device:is_english_breakfast": ":english_breakfast_test_framework_manifest_def",
-        "//conditions:default": "//sw/device/silicon_creator/lib:manifest_def",
-    }),
+    actual = "//sw/device/silicon_creator/lib:manifest_def",
 )
 
 cc_library(
@@ -237,14 +241,7 @@ cc_library(
         ":ottf_isrs",
         ":test_framework_manifest_def",
         "//hw/top:top_lib",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:macros",
         "//sw/device/lib/crt",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/runtime:log",
         "//sw/device/silicon_creator/lib/base:static_critical",
     ],
 )
@@ -285,6 +282,7 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",

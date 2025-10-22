@@ -424,14 +424,6 @@ extern "C++" {
 #endif
 
 /**
- * A macro indicating whether software should assume reduced hardware
- * support (for the `top_englishbreakafst` toplevel).
- */
-#ifdef OT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
-#define OT_IS_ENGLISH_BREAKFAST 1
-#endif
-
-/**
  * Attribute for functions which return errors that must be acknowledged.
  *
  * This attribute must be used to mark all DIFs which return an error value of

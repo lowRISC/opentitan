@@ -6,7 +6,6 @@ load(
     "@lowrisc_opentitan//rules:rv.bzl",
     "rv_rule",
     _OPENTITAN_CPU = "OPENTITAN_CPU",
-    _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
     _opentitan_transition = "opentitan_transition",
 )
 load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
