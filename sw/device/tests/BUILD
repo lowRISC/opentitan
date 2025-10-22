@@ -3912,6 +3912,8 @@ opentitan_test(
             "//hw/top_earlgrey:sim_verilator": None,
             "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:sim_qemu_sival_rom_ext": None,
         },
     ),
     fpga = fpga_params(
@@ -3919,6 +3921,12 @@ opentitan_test(
         tags = ["manual"],
         test_cmd = """
             --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_device:spi_device_tpm_test",
+    ),
+    qemu = qemu_params(
+        test_cmd = """
             "{firmware:elf}"
         """,
         test_harness = "//sw/host/tests/chip/spi_device:spi_device_tpm_test",

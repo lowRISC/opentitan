@@ -277,6 +277,7 @@ impl SpiDriver {
                 if Instant::now().duration_since(start_time) > TIMEOUT {
                     bail!(TpmError::Timeout)
                 }
+                thread::sleep(Duration::from_millis(1));
             }
         }
         Ok(())
