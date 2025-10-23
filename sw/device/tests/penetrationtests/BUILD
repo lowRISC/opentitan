@@ -295,6 +295,17 @@ pentest_cryptolib_fi_asym(
     test_vectors = [],
 )
 
+pentest_cryptolib_fi_asym(
+    name = "fi_asym_cryptolib_python_gdb_test",
+    tags = [
+        "manual",
+        "skip_in_ci",
+    ],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/fi:fi_asym_cryptolib_python_gdb_test",
+    test_vectors = [],
+)
+
 CRYPTOLIB_SCA_SYM_TESTVECTOR_TARGETS = [
     "//sw/host/penetrationtests/testvectors/data:sca_sym_cryptolib",
 ]
