@@ -282,6 +282,9 @@ use_repo(xkcp, "xkcp")
 hsm = use_extension("//third_party/hsm:extensions.bzl", "hsm")
 use_repo(hsm, "cloud_kms_hsm", "opensc", "sc_hsm", "softhsm2")
 
+system_libs = use_extension("//third_party/system_libs:extensions.bzl", "system_libs")
+use_repo(system_libs, "libudev_zero")
+
 nist_cavp = use_extension("//third_party/nist_cavp_testvectors:extensions.bzl", "nist_cavp")
 use_repo(
     nist_cavp,

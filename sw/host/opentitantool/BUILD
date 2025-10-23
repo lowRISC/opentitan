@@ -4,8 +4,21 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 
 package(default_visibility = ["//visibility:public"])
+
+bool_flag(
+    name = "static_link",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "static_link_enabled",
+    flag_values = {
+        ":static_link": "True",
+    },
+)
 
 rust_binary(
     name = "opentitantool",
@@ -48,6 +61,10 @@ rust_binary(
     rustc_env_files = [
         "stamp-env.txt",
     ],
+    rustc_flags = select({
+        ":static_link_enabled": ["--codegen=target-feature=+crt-static"],
+        "//conditions:default": [],
+    }),
     # stamping is necessary because opentitantool builds version.rs that needs it
     stamp = -1,
     deps = [
@@ -72,7 +89,10 @@ rust_binary(
         "@crate_index//:shellwords",
         "@crate_index//:thiserror",
         "@lowrisc_serde_annotate//serde_annotate",
-    ],
+    ] + select({
+        ":static_link_enabled": ["@libudev_zero"],
+        "//conditions:default": [],
+    }),
 )
 
 pkg_files(
