@@ -1,3 +1,7 @@
+/* Copyright zeroRISC Inc. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
 /* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
@@ -98,9 +102,6 @@ p384_key_from_seed:
   bn.sub    w24, w10, w16
   bn.subb   w25, w11, w17
 
-  /* Clear flags. */
-  bn.sub    w31, w31, w31
-
   /* Compute d1. Because 2^384 < 2 * n, a conditional subtraction is
      sufficient to reduce. Similarly to the carry bit, the conditional bit here
      is not very sensitive because the shares are large relative to n.
@@ -108,7 +109,7 @@ p384_key_from_seed:
   bn.sel    w5, w10, w24, FG0.C
   bn.sel    w6, w11, w25, FG0.C
 
-  /* Clear w25 before over writing it with a different share. */
+  /* Clear w25 before over writing it with a different share and clear flags. */
   bn.xor    w25, w25, w25
 
   /* Dummy instruction to avoid consecutive share access. */
