@@ -558,7 +558,7 @@
                 When 1: Source address wraps back to the starting address when finishing a chunk.
                 '''
         }
-        { bits: 0
+        { bits: "0"
           name: "increment"
           resval: 0x0
           desc: '''
