@@ -207,6 +207,73 @@ def autogen_build_info(name):
         alwayslink = True,
     )
 
+def _cryptolib_build_info_src(ctx):
+    stamp_args = []
+    stamp_files = []
+    if stamping_enabled(ctx):
+        stamp_files = [ctx.version_file]
+        stamp_args.append("--ot_version_file")
+        stamp_args.append(ctx.version_file.path)
+    else:
+        print("NOTE: stamping is disabled, the build_info section will use a fixed version string")
+        stamp_args.append("--default_version")
+
+        # The script expects a 20-character long hash: "OpenTitanOpenTitanOT"
+        stamp_args.append("4f70656e546974616e4f70656e546974616e4f54")
+
+    out_source = ctx.actions.declare_file("cryptolib_build_info.c")
+    ctx.actions.run(
+        outputs = [
+            out_source,
+        ],
+        inputs = [
+            ctx.executable._tool,
+        ] + stamp_files,
+        arguments = [
+            "-o",
+            out_source.dirname,
+        ] + stamp_args,
+        executable = ctx.executable._tool,
+    )
+
+    return [
+        DefaultInfo(files = depset([out_source])),
+    ]
+
+autogen_cryptolib_build_info_src = rule(
+    implementation = _cryptolib_build_info_src,
+    attrs = {
+        "_tool": attr.label(
+            default = "//util:cryptolib_build_info",
+            executable = True,
+            cfg = "exec",
+        ),
+    } | stamp_attr(-1, "//rules:stamp_flag"),
+)
+
+def autogen_cryptolib_build_info(name):
+    """Generates a cc_library named `name` that defines the cryptolib ID."""
+
+    # Generate a C source file that defines the build ID struct. This is an
+    # implementation detail and should not be depended on externally.
+    cryptolib_build_info_src_target = name + "_gen_src"
+    autogen_cryptolib_build_info_src(name = cryptolib_build_info_src_target)
+
+    # Package up the generated source file with its corresponding header file
+    # and dependencies. Any target that wants access to the build ID should
+    # depend on this.
+    native.cc_library(
+        name = name,
+        srcs = [cryptolib_build_info_src_target],
+        hdrs = ["//sw/device/lib/crypto/drivers:cryptolib_build_info.h"],
+        deps = [
+            "//sw/device/lib/crypto/include:datatypes",
+        ],
+        # Make sure to participate in linking so that the symbol is not discarded
+        # (since it is not meant to be directly used).
+        alwayslink = True,
+    )
+
 def _cryptotest_hjson_external(ctx):
     """
     Implementation of the Bazel rule for parsing externally-sourced test vectors.
