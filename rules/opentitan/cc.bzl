@@ -240,10 +240,13 @@ def _opentitan_binary(ctx):
     providers = []
     default_info = []
     groups = {}
+    runfiles = ctx.runfiles()
     for exec_env_target in ctx.attr.exec_env:
         exec_env = exec_env_target[ExecEnvInfo]
         name = _binary_name(ctx, exec_env)
         deps = ctx.attr.deps + exec_env.libs
+        for dep in deps:
+            runfiles = runfiles.merge(dep[DefaultInfo].default_runfiles)
 
         kind = ctx.attr.kind
         provides, signed = _build_binary(ctx, exec_env, name, deps, kind)
@@ -270,7 +273,7 @@ def _opentitan_binary(ctx):
         groups.update(_as_group_info(exec_env.exec_env, signed))
         groups.update(_as_group_info(exec_env.exec_env, provides))
 
-    providers.append(DefaultInfo(files = depset(default_info)))
+    providers.append(DefaultInfo(files = depset(default_info), runfiles = runfiles))
     providers.append(OutputGroupInfo(**groups))
     return providers
 
