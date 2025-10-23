@@ -37,6 +37,10 @@ _FIELDS = {
     "slot_spec": ("attr.slot_spec", False),
 }
 
+_NESTED_FIELDS = {
+    "param": True,
+}
+
 ExecEnvInfo = provider(
     doc = "Execution Environment Info",
 )
@@ -85,14 +89,20 @@ def exec_env_as_dict(ctx):
     }
     for field, (path, required) in _FIELDS.items():
         val = getattr_path(ctx, path)
-        if not val and base:
+        if _NESTED_FIELDS.get(field, False) and base:
+            merged_val = dict(getattr(base, field) or {})
+            merged_val.update(val or {})
+            val = merged_val
+        elif not val and base:
             # If the value doesn't exist in the context object, get the value
             # from the base provider (if present).
             val = getattr(base, field)
 
         if required and not val:
             fail("No value for required field {} in {}".format(field, ctx.attr.name))
+
         result[field] = val
+
     return result
 
 def exec_env_common_attrs(**kwargs):
