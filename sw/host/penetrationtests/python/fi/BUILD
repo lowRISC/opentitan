@@ -151,6 +151,28 @@ py_binary(
 )
 
 py_binary(
+    name = "fi_sym_cryptolib_python_gdb_test",
+    testonly = True,
+    srcs = ["gdb_testing/fi_sym_cryptolib_python_gdb_test.py"],
+    data = [
+        "//sw/host/opentitantool",
+        "//third_party/openocd:openocd_bin",
+        "//util/openocd/board:cw340_ftdi.cfg",
+        "//util/openocd/target:lowrisc-earlgrey.cfg",
+        "@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-gdb",
+    ],
+    deps = [
+        "//sw/host/penetrationtests/python/fi:fi_sym_cryptolib_commands",
+        "//sw/host/penetrationtests/python/util:common_library",
+        "//sw/host/penetrationtests/python/util:dis_parser",
+        "//sw/host/penetrationtests/python/util:gdb_controller",
+        "//sw/host/penetrationtests/python/util:targets",
+        "@rules_python//python/runfiles",
+        requirement("pycryptodome"),
+    ],
+)
+
+py_binary(
     name = "fi_asym_cryptolib_python_test",
     testonly = True,
     srcs = ["test_scripts/fi_asym_cryptolib_python_test.py"],
@@ -163,6 +185,28 @@ py_binary(
         "//sw/host/penetrationtests/python/util:common_library",
         "//sw/host/penetrationtests/python/util:targets",
         "//sw/host/penetrationtests/python/util:utils",
+        "@rules_python//python/runfiles",
+        requirement("pycryptodome"),
+    ],
+)
+
+py_binary(
+    name = "fi_asym_cryptolib_python_gdb_test",
+    testonly = True,
+    srcs = ["gdb_testing/fi_asym_cryptolib_python_gdb_test.py"],
+    data = [
+        "//sw/host/opentitantool",
+        "//third_party/openocd:openocd_bin",
+        "//util/openocd/board:cw340_ftdi.cfg",
+        "//util/openocd/target:lowrisc-earlgrey.cfg",
+        "@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-gdb",
+    ],
+    deps = [
+        "//sw/host/penetrationtests/python/fi:fi_asym_cryptolib_commands",
+        "//sw/host/penetrationtests/python/util:common_library",
+        "//sw/host/penetrationtests/python/util:dis_parser",
+        "//sw/host/penetrationtests/python/util:gdb_controller",
+        "//sw/host/penetrationtests/python/util:targets",
         "@rules_python//python/runfiles",
         requirement("pycryptodome"),
     ],
