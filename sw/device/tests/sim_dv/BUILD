@@ -247,9 +247,12 @@ opentitan_test(
 opentitan_test(
     name = "lc_ctrl_volatile_raw_unlock_test",
     srcs = ["lc_ctrl_volatile_raw_unlock_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
