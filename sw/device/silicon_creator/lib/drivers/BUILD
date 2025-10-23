@@ -999,9 +999,6 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap={firmware}
-        """,
         test_harness = "//sw/host/tests/chip/usb:silicon_creator_harness",
     ),
     silicon = silicon_params(

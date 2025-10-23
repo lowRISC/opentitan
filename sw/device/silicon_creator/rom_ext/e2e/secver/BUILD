@@ -116,7 +116,6 @@ opentitan_test(
             ":rom_ext_2": "rom_ext2",
             ":rom_ext_3": "rom_ext3",
         },
-        changes_otp = True,
         exit_success = "BFV:{}".format(hex_digits(CONST.BFV.BOOT_POLICY.ROLLBACK)),
         rom_ext = ":rom_ext_0",
         test_cmd = """
@@ -124,12 +123,8 @@ opentitan_test(
             --exec="image assemble -s 524288 --mirror=false -o fw1.bin {rom_ext1}@{rom_ext_slot_a} {boot_test}@{owner_slot_a}"
             --exec="image assemble -s 524288 --mirror=false -o fw2.bin {rom_ext2}@{rom_ext_slot_a} {boot_test}@{owner_slot_a}"
             --exec="image assemble -s 524288 --mirror=false -o fw3.bin {rom_ext3}@{rom_ext_slot_a} {boot_test}@{owner_slot_a}"
-            --exec="transport init"
-            --exec="fpga clear-bitstream"
-            --exec="fpga load-bitstream {bitstream}"
 
-            # Bootstrap the initial version 0 into SlotA
-            --exec="bootstrap --clear-uart=true {firmware}"
+            # Check the initial version 0 has been bootstrapped into SlotA
             --exec="console --non-interactive --exit-success='rom_ext_min_sec_ver = 0'"
 
             # Rescue and update to SlotB.  We expect to update the secver.
@@ -149,6 +144,8 @@ opentitan_test(
             --exec="console --non-interactive --exit-success='{exit_success}' --timeout=10s"
             no-op
         """,
+        testopt_clear_after_test = "True",
+        testopt_clear_before_test = "True",
     ),
 )
 

@@ -49,6 +49,7 @@ opentitan_test(
             --bootstrap={firmware}
         """,
         test_harness = "//sw/host/tests/attestation:attestation_test",
+        testopt_bootstrap = "False",
     ),
     qemu = qemu_params(
         binaries = {

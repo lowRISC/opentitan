@@ -78,9 +78,6 @@ opentitan_test(
         changes_otp = True,
         needs_jtag = True,
         otp = "otp_img_bootstrap_rma",
-        test_cmd = """
-            --bootstrap="{firmware}"
-        """,
         test_harness = "//sw/host/tests/rom/e2e_bootstrap_rma",
     ),
     deps = [
@@ -106,6 +103,7 @@ opentitan_test(
         },
         otp = "//hw/ip/otp_ctrl/data:img_bootstrap_disabled",
         test_harness = "//sw/host/tests/rom/e2e_bootstrap_disabled",
+        testopt_bootstrap = "False",
     ),
     manifest = None,
 )
