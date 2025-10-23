@@ -31,9 +31,16 @@ load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 _TEST_SCRIPT = """#!/bin/bash
 set -e
 
+TEST_SETUP_CMD=({test_setup_cmd})
+TEST_CMD=({test_cmd})
+POST_TEST_CMD=({post_test_cmd})
+TEST_CLEANUP_CMD=({test_cleanup_cmd})
+
+export RUST_BACKTRACE=1
+
 function cleanup {{
-  echo "cleanup: {post_test_harness} {post_test_cmd}"
-  {post_test_harness} {post_test_cmd}
+  {post_test_harness} "${{POST_TEST_CMD[@]}}"
+  {opentitantool} {args} "${{TEST_CLEANUP_CMD[@]}}" no-op
 }}
 
 # Bazel will send a SIGTERM when the timeout expires and will
@@ -42,9 +49,10 @@ function cleanup {{
 # on timeout.
 trap cleanup EXIT
 
-TEST_CMD=({test_cmd})
-echo Invoking test: {test_harness} {args} "$@" "${{TEST_CMD[@]}}"
-RUST_BACKTRACE=1 {test_harness} {args} "$@" "${{TEST_CMD[@]}}"
+set -x
+
+{opentitantool} {args} "${{TEST_SETUP_CMD[@]}}" no-op
+{test_harness} {args} "$@" "${{TEST_CMD[@]}}"
 """
 
 def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfile):
@@ -105,6 +113,53 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         "hashfile": hashfile,
     }
 
+def _get_bool(param, name, default = "False"):
+    value = param.get(name, default).lower()
+    if value == "true":
+        return True
+    if value == "false":
+        return False
+    fail("Invalid boolean value {} for field {}".format(name, value))
+
+def _process_testopt(param):
+    """Process the testopt flags to generate test setup and cleanup commands.
+
+    Param Fields:
+      testopt_bootstrap: If True, bootstrap the firmware before test.
+      testopt_clear_before_test: If True, clear the bitstream before test.
+      testopt_clear_after_test: If True, clear the bitstream after test.
+      bitstream: The bitstream to load before test.
+      firmware: The firmware to load with bootstrap.
+
+    Args:
+      param: A dictionary of key-value test parameters.
+
+    Returns:
+      (string, string) A tuple of (test_setup_cmd, test_cleanup_cmd), which are
+      opentitantool arguments.
+    """
+
+    # Construct the opentitantool test setup commands
+    test_setup_cmd = ['--exec="transport init"']
+    if _get_bool(param, "testopt_clear_before_test"):
+        test_setup_cmd.append('--exec="fpga clear-bitstream"')
+    if "bitstream" in param:
+        test_setup_cmd.append('--exec="fpga load-bitstream {bitstream}"')
+    if _get_bool(param, "testopt_bootstrap") and "firmware" in param:
+        test_setup_cmd.append('--exec="bootstrap --leave-in-reset --clear-uart=true {firmware}"')
+    test_setup_cmd = "\n".join(test_setup_cmd)
+    test_setup_cmd = test_setup_cmd.format(**param)
+
+    # Construct the opentitantool test cleanup commands
+    test_cleanup_cmd = []
+    if _get_bool(param, "testopt_clear_after_test"):
+        test_cleanup_cmd.append('--exec="fpga clear-bitstream"')
+
+    test_cleanup_cmd = "\n".join(test_cleanup_cmd)
+    test_cleanup_cmd = test_cleanup_cmd.format(**param)
+
+    return test_setup_cmd, test_cleanup_cmd
+
 def _test_dispatch(ctx, exec_env, firmware):
     """Dispatch a test for the fpga_cw3{05,10,40} environment.
 
@@ -150,8 +205,10 @@ def _test_dispatch(ctx, exec_env, firmware):
     args = " ".join(args).format(**param)
     args = ctx.expand_location(args, data_labels)
 
-    # Construct the test script
-    script = ctx.actions.declare_file(ctx.attr.name + ".bash")
+    # Construct the opentitantool test env commands
+    test_setup_cmd, test_cleanup_cmd = _process_testopt(param)
+
+    # Construct the post test commands
     post_test_harness_path = ctx.executable.post_test_harness
     post_test_cmd = ctx.attr.post_test_cmd.format(**param)
     if post_test_harness_path != None:
@@ -159,6 +216,9 @@ def _test_dispatch(ctx, exec_env, firmware):
         post_test_harness_path = post_test_harness_path.short_path
     else:
         post_test_harness_path = ""
+
+    # Construct the test script
+    script = ctx.actions.declare_file(ctx.attr.name + ".bash")
     ctx.actions.write(
         script,
         _TEST_SCRIPT.format(
@@ -167,9 +227,13 @@ def _test_dispatch(ctx, exec_env, firmware):
             test_cmd = test_cmd,
             post_test_harness = post_test_harness_path,
             post_test_cmd = post_test_cmd,
+            test_setup_cmd = test_setup_cmd,
+            test_cleanup_cmd = test_cleanup_cmd,
+            opentitantool = exec_env._opentitantool.executable.short_path,
         ),
         is_executable = True,
     )
+
     return script, data_files
 
 def _fpga_cw310(ctx):
@@ -231,6 +295,8 @@ def fpga_params(
         test_cmd = "",
         data = [],
         defines = [],
+        post_test_cmd = "",
+        post_test_harness = None,
         **kwargs):
     """A macro to create CW3{05,10,40} parameters for OpenTitan tests.
 
@@ -257,8 +323,8 @@ def fpga_params(
         bitstream = "@//hw/bitstream/universal:splice"
 
     # Clear bitstream after the test if it changes the OTP.
-    post_test_harness = "//sw/host/opentitantool" if changes_otp else None
-    post_test_cmd = "--rcfile= --logging=info --interface={interface} fpga clear-bitstream" if changes_otp else ""
+    if changes_otp:
+        kwargs["testopt_clear_after_test"] = "True"
     return struct(
         # We do not yet know what FPGA platform the test will target (as this is
         # defined in the execution environment), so we do not know that tag
@@ -274,8 +340,6 @@ def fpga_params(
         bitstream = bitstream,
         needs_jtag = needs_jtag,
         test_cmd = ("""
-            --bitstream={bitstream}
-        """ if test_harness != None else "") + ("""
             {jtag_test_cmd}
         """ if needs_jtag else "") + test_cmd,
         data = data,
