@@ -1664,10 +1664,7 @@ opentitan_test(
         EARLGREY_CW340_TEST_ENVS,
     ),
     fpga = fpga_params(
-        test_cmd = " ".join([
-            "--bootstrap=\"{firmware}\"",
-            "\"{firmware:elf}\"",
-        ]),
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/mem",
     ),
     verilator = verilator_params(
@@ -2028,6 +2025,7 @@ opentitan_test(
             " \"{firmware}\"",
         ]),
         test_harness = "//sw/host/tests/chip/flash_ctrl:host_rma_test",
+        testopt_bootstrap = "False",
     ),
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
@@ -2085,9 +2083,6 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-        """,
         test_harness = "//sw/host/tests/chip/gpio:gpio_pinmux",
     ),
     silicon = silicon_params(
@@ -2118,9 +2113,6 @@ opentitan_test(
     ),
     fpga = fpga_params(
         timeout = "moderate",
-        test_cmd = """
-            --bootstrap="{firmware}"
-        """,
         test_harness = "//sw/host/tests/chip/gpio:gpio_intr",
     ),
     silicon = silicon_params(
@@ -3130,10 +3122,7 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/pwm_smoketest",
     ),
     silicon = silicon_params(
@@ -3200,9 +3189,6 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap={firmware}
-        """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
     ),
     silicon = silicon_params(
@@ -3239,9 +3225,6 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap={firmware}
-        """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
     ),
     silicon = silicon_params(
@@ -3282,7 +3265,6 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = "--bootstrap={firmware}",
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
     ),
     silicon = silicon_params(
@@ -3317,7 +3299,6 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
-        test_cmd = "--bootstrap={firmware}",
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
     ),
     silicon = silicon_params(
@@ -3355,9 +3336,6 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap={firmware}
-        """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_por",
     ),
     silicon = silicon_params(
@@ -3396,9 +3374,6 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap={firmware}
-        """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_por",
     ),
     silicon = silicon_params(
@@ -3438,9 +3413,6 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap={firmware}
-        """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
     silicon = silicon_params(
@@ -3479,9 +3451,6 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap={firmware}
-        """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
     silicon = silicon_params(
@@ -3522,9 +3491,6 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap={firmware}
-        """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
     silicon = silicon_params(
@@ -3570,9 +3536,6 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap={firmware}
-        """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
     silicon = silicon_params(
@@ -3611,10 +3574,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/gpio:sleep_pin_wake",
     ),
     silicon = silicon_params(
@@ -3922,10 +3882,7 @@ opentitan_test(
     ),
     fpga = fpga_params(
         # This test requires the spi full duplex on the hyperdebug board.
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/spi_device:spi_device_tpm_test",
     ),
     qemu = qemu_params(
@@ -3969,10 +3926,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/spi_device:spi_device_flash_smoketest",
     ),
     qemu = qemu_params(
@@ -4019,10 +3973,7 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/spi_device_ujson_console_test",
     ),
     deps = [
@@ -4050,9 +4001,6 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-        """,
         test_harness = "//sw/host/tests/chip/spi_device:spi_device_sleep_test",
     ),
     silicon = silicon_params(
@@ -4176,10 +4124,7 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/spi_device:spi_host_config_test",
     ),
     silicon = silicon_params(
@@ -4394,12 +4339,9 @@ opentitan_test(
         # is not run in CI which causes a CI error ("Verify FPGA Jobs" check
         # will fail).
         tags = ["manuf"],
-        test_cmd = """
-            --clear-bitstream
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/ottf_console_with_gpio_tx_indicator",
+        testopt_clear_before_test = "True",
     ),
     qemu = qemu_params(
         test_cmd = """
@@ -4432,10 +4374,7 @@ opentitan_test(
         EARLGREY_CW340_TEST_ENVS,
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/spi_device_ottf_console",
     ),
     qemu = qemu_params(
@@ -4465,9 +4404,6 @@ opentitan_test(
         EARLGREY_CW340_TEST_ENVS,
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-        """,
         test_harness = "//sw/host/tests/chip/ottf_dual_console",
     ),
     deps = [
@@ -4635,7 +4571,6 @@ opentitan_test(
     ),
     fpga = fpga_params(
         test_cmd = """
-            --bootstrap="{firmware}"
             --no-wait-for-usb-device
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
@@ -4683,7 +4618,6 @@ opentitan_test(
     ),
     fpga = fpga_params(
         test_cmd = """
-            --bootstrap="{firmware}"
             --no-wait-for-usb-device
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
@@ -4749,7 +4683,6 @@ opentitan_test(
     ),
     fpga = fpga_params(
         test_cmd = """
-            --bootstrap="{firmware}"
             --no-wait-for-usb-device
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
@@ -4795,7 +4728,6 @@ opentitan_test(
     fpga = fpga_params(
         tags = ["manual"],
         test_cmd = """
-            --bootstrap="{firmware}"
             --wake=reset
         """,
         test_harness = "//sw/host/tests/chip/usb:usbdev_aon_wake",
@@ -4832,7 +4764,6 @@ opentitan_test(
     ),
     fpga = fpga_params(
         test_cmd = """
-            --bootstrap="{firmware}"
             --no-wait-for-usb-device
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
@@ -4878,7 +4809,6 @@ opentitan_test(
     ),
     fpga = fpga_params(
         test_cmd = """
-            --bootstrap="{firmware}"
             --no-wait-for-usb-device
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
@@ -4926,9 +4856,6 @@ opentitan_test(
     ),
     fpga = fpga_params(
         tags = ["manual"],
-        test_cmd = """
-            --bootstrap="{firmware}"
-        """,
         test_harness = "//sw/host/tests/chip/usb:usbdev_smoketest",
     ),
     silicon = silicon_params(
@@ -4987,7 +4914,6 @@ opentitan_test(
     ),
     fpga = fpga_params(
         test_cmd = """
-            --bootstrap="{firmware}"
             --exec=$(rootpath :usbdev_stream_host_harness)
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
@@ -5028,7 +4954,6 @@ opentitan_test(
     ),
     fpga = fpga_params(
         test_cmd = """
-            --bootstrap="{firmware}"
             --exec=$(rootpath :usbdev_stream_host_harness)
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
@@ -5069,7 +4994,6 @@ opentitan_test(
     ),
     fpga = fpga_params(
         test_cmd = """
-            --bootstrap="{firmware}"
             --exec=$(rootpath :usbdev_stream_host_harness)
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
@@ -5107,7 +5031,6 @@ opentitan_test(
     ),
     fpga = fpga_params(
         test_cmd = """
-            --bootstrap="{firmware}"
             --no-wait-for-usb-device
         """,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
@@ -5196,7 +5119,6 @@ opentitan_test(
     ],
     cw310 = fpga_params(
         test_cmd = """
-            --bootstrap="{firmware}"
             --fin-phase=suspend
             --init-phase=suspend
         """,
@@ -5235,7 +5157,6 @@ opentitan_test(
     ],
     cw310 = fpga_params(
         test_cmd = """
-            --bootstrap="{firmware}"
             --fin-phase=sleep-resume
             --init-phase=sleep-resume
         """,
@@ -5275,7 +5196,6 @@ opentitan_test(
     ],
     cw310 = fpga_params(
         test_cmd = """
-            --bootstrap="{firmware}"
             --fin-phase=sleep-reset
             --init-phase=sleep-resume
         """,
@@ -5318,7 +5238,6 @@ opentitan_test(
         timeout = "eternal",
         tags = ["manual"],
         test_cmd = """
-            --bootstrap="{firmware}"
             --fin-phase=deep-resume
             --init-phase=sleep-disconnect
         """,
@@ -5358,7 +5277,6 @@ opentitan_test(
     ],
     cw310 = fpga_params(
         test_cmd = """
-            --bootstrap="{firmware}"
             --fin-phase=deep-resume
             --init-phase=deep-resume
         """,
@@ -5399,7 +5317,6 @@ opentitan_test(
     ],
     cw310 = fpga_params(
         test_cmd = """
-            --bootstrap="{firmware}"
             --fin-phase=deep-reset
             --init-phase=deep-resume
         """,
@@ -5459,7 +5376,6 @@ opentitan_test(
     ),
     fpga = fpga_params(
         test_cmd = """
-            --bootstrap="{firmware}"
             --fin-phase=shutdown
             --init-phase=deep-disconnect
         """,
@@ -5740,9 +5656,6 @@ opentitan_test(
     ),
     fpga = fpga_params(
         otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_prod_manuf_personalized",
-        test_cmd = """
-            --bootstrap="{firmware}"
-        """,
         test_harness = "//sw/host/tests/chip/power_virus",
     ),
     silicon = silicon_params(
@@ -5811,18 +5724,12 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/spi_device:spi_passthru",
     ),
     hyper310 = fpga_params(
         tags = ["manual"],  # TODO: QE bit handling
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/spi_device:spi_passthru",
     ),
     qemu = qemu_params(
@@ -5949,7 +5856,6 @@ _RV_DM_TEST_CONFIGURATIONS = [
                 "lc_{}".format(test_cfg["lc_state"]),
             ],
             test_cmd = """
-                --bootstrap="{firmware}"
                 {rv_dm_delayed_en}
             """,
             test_harness = "//sw/host/tests/chip/rv_dm:csr_rw",
@@ -6009,7 +5915,6 @@ test_suite(
             ],
             test_cmd = """
                 --rom={rom:binary}
-                --bootstrap="{firmware}"
                 {rv_dm_delayed_en}
             """,
             test_harness = "//sw/host/tests/chip/rv_dm:mem_access",
@@ -6199,6 +6104,7 @@ test_suite(
             ],
             test_cmd = " --expect-fail" if lc_state_val in _LC_STATES_DEBUG_DISALLOWED else "",
             test_harness = "//sw/host/tests/chip/rv_dm:lc_disabled",
+            testopt_bootstrap = "False",
         ),
         silicon = silicon_params(
             needs_jtag = True,
@@ -6236,9 +6142,6 @@ test_suite(
             tags = [
                 "lc_{}".format(lc_state),
             ],
-            test_cmd = """
-                --bootstrap="{firmware}"
-            """,
             test_harness = "//sw/host/tests/chip/rv_dm:ndm_reset_req",
         ),
         deps = [
@@ -6290,9 +6193,6 @@ test_suite(
             tags = [
                 "lc_{}".format(lc_state),
             ],
-            test_cmd = """
-                --bootstrap="{firmware}"
-            """,
             test_harness = "//sw/host/tests/chip/rv_dm:ndm_reset_req_when_cpu_halted",
         ),
         deps = [
@@ -6331,9 +6231,6 @@ test_suite(
             tags = [
                 "lc_{}".format(lc_state),
             ],
-            test_cmd = """
-                --bootstrap="{firmware}"
-            """,
             test_harness = "//sw/host/tests/chip/rv_dm:dtm",
         ),
         deps = [
@@ -6372,9 +6269,6 @@ test_suite(
             tags = [
                 "lc_{}".format(lc_state),
             ],
-            test_cmd = """
-                --bootstrap="{firmware}"
-            """,
             test_harness = "//sw/host/tests/chip/rv_dm:control_status",
         ),
         deps = [
@@ -6414,7 +6308,6 @@ test_suite(
                 "lc_{}".format(lc_state),
             ],
             test_cmd = """
-                --bootstrap="{firmware}"
                 --firmware-elf=\"{firmware:elf}\"
             """,
             test_harness = "//sw/host/tests/chip/rv_dm:access_after_wakeup",
@@ -6472,7 +6365,6 @@ test_suite(
                 "lc_{}".format(lc_state),
             ],
             test_cmd = """
-                --bootstrap="{firmware}"
                 --firmware-elf=\"{firmware:elf}\"
             """,
             test_harness = "//sw/host/tests/chip/rv_dm:access_after_hw_reset",
@@ -6512,9 +6404,6 @@ opentitan_test(
         otp = "//hw/ip/otp_ctrl/data:img_test_unlocked0",
         # TODO(#22823): Remove "broken" tag once the test is fixed.
         tags = ["broken"],
-        test_cmd = """
-            --bootstrap="{firmware}"
-        """,
         test_harness = "//sw/host/tests/chip/jtag:openocd_test",
     ),
     deps = [
@@ -6532,10 +6421,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_sival": None,
     },
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/i2c_target:i2c_target_smbus_arp",
     ),
     deps = [
@@ -6564,10 +6450,7 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/i2c_host_override",
     ),
     silicon = silicon_params(
@@ -6607,9 +6490,6 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-        """,
         test_harness = "//sw/host/tests/chip/i2c_target",
     ),
     silicon = silicon_params(
@@ -6698,10 +6578,7 @@ opentitan_test(
         "//hw/top_earlgrey:sim_verilator": None,
     },
     fpga = fpga_params(
-        test_cmd = " ".join([
-            "--bootstrap=\"{firmware}\"",
-            "\"{firmware:elf}\"",
-        ]),
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/example_sival",
     ),
     # This test can take > 40 minutes, so mark it manual as it shouldn't run
@@ -6724,10 +6601,7 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_inputs",
     ),
     silicon = silicon_params(
@@ -6761,10 +6635,7 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_outputs",
     ),
     silicon = silicon_params(
@@ -6799,10 +6670,7 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_in_irq",
     ),
     silicon = silicon_params(
@@ -6838,9 +6706,6 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-        """,
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_ec_rst_l",
     ),
     silicon = silicon_params(
@@ -6876,9 +6741,6 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-        """,
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_ulp_z3_wakeup",
     ),
     silicon = silicon_params(
@@ -6918,10 +6780,7 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_reset",
     ),
     silicon = silicon_params(
@@ -7008,6 +6867,7 @@ opentitan_test(
         otp = "//sw/device/silicon_creator/manuf/tests:otp_img_rom_exec_disabled_test_unlocked0",
         test_cmd = "--elf={sram_program}",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_isa",
+        testopt_bootstrap = "False",
     ),
     silicon = silicon_params(
         needs_jtag = True,
@@ -7097,6 +6957,7 @@ opentitan_test(
         tags = ["manual"],
         test_cmd = "--elf={sram_program}",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
+        testopt_bootstrap = "False",
     ),
     silicon = silicon_params(
         needs_jtag = True,
@@ -7158,10 +7019,7 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = " ".join([
-            "--bootstrap=\"{firmware}\"",
-            "--firmware-elf=\"{firmware:elf}\"",
-        ]),
+        test_cmd = "--firmware-elf={firmware:elf}",
         test_harness = "//sw/host/tests/chip/uart:uart_tx_rx",
     ),
     silicon = silicon_params(
@@ -7218,6 +7076,7 @@ opentitan_test(
         otp = "//sw/device/silicon_creator/manuf/tests:otp_img_rom_exec_disabled_test_unlocked0",
         test_cmd = "--elf={sram_program}",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
+        testopt_bootstrap = "False",
     ),
     silicon = silicon_params(
         binaries = {
@@ -7312,10 +7171,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
-        test_cmd = " ".join([
-            "--bootstrap=\"{firmware}\"",
-            "--firmware-elf=\"{firmware:elf}\"",
-        ]),
+        test_cmd = "--firmware-elf={firmware:elf}",
         test_harness = "//sw/host/tests/chip/uart:uart_baud_rate",
     ),
     silicon = silicon_params(
@@ -7356,10 +7212,7 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = " ".join([
-            "--bootstrap=\"{firmware}\"",
-            "--firmware-elf=\"{firmware:elf}\"",
-        ]),
+        test_cmd = "--firmware-elf={firmware:elf}",
         test_harness = "//sw/host/tests/chip/uart:uart_loopback",
     ),
     silicon = silicon_params(
@@ -7438,10 +7291,7 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = " ".join([
-            "--bootstrap=\"{firmware}\"",
-            "--firmware-elf=\"{firmware:elf}\"",
-        ]),
+        test_cmd = "--firmware-elf={firmware:elf}",
         test_harness = "//sw/host/tests/chip/uart:uart_parity_break",
     ),
     silicon = silicon_params(
@@ -7548,10 +7398,7 @@ opentitan_test(
         timeout = "moderate",
         needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_rma_manuf_personalized",
-        test_cmd = " ".join([
-            "--bootstrap=\"{firmware}\"",
-            "--firmware-elf=\"{firmware:elf}\"",
-        ]),
+        test_cmd = "--firmware-elf={firmware:elf}",
         test_harness = "//sw/host/tests/chip/sram_ctrl:sram_ctrl_lc_escalation",
     ),
     deps = [
@@ -7581,9 +7428,6 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-        """,
         test_harness = "//sw/host/tests/chip/gpio:sleep_pin_mio_dio_val",
     ),
     silicon = silicon_params(
@@ -7625,9 +7469,6 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-        """,
         test_harness = "//sw/host/tests/chip/gpio:sleep_pin_retention",
     ),
     silicon = silicon_params(
@@ -7668,10 +7509,7 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap={firmware}
-            --firmware-elf=\"{firmware:elf}\"
-        """,
+        test_cmd = "--firmware-elf={firmware:elf}",
         test_harness = "//sw/host/tests/chip/pattgen:pattgen_ios",
     ),
     silicon = silicon_params(

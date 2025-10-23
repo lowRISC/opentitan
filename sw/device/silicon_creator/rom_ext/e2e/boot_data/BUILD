@@ -19,14 +19,7 @@ opentitan_test(
     },
     fpga = fpga_params(
         # Clear the FPGA so the boot data is empty which needs redundancy fix.
-        test_cmd = """
-            --exec="transport init"
-            --exec="fpga clear-bitstream"
-            --exec="fpga load-bitstream {bitstream}"
-            --exec="bootstrap --clear-uart=true {firmware}"
-            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
-            no-op
-        """,
+        testopt_clear_before_test = "True",
     ),
     deps = [
         "//sw/device/lib/base:bitfield",

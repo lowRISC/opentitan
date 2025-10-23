@@ -561,9 +561,6 @@ opentitan_test(
             # This is a manual test.  Run it with:
             #     --test_output=streamed --copt=-DSTACK_UTILIZATION_CHECK
             ###########################################################################'"
-            --exec="transport init"
-            --exec="fpga load-bitstream {bitstream}"
-
             --exec="no-op --info '### Measuring stack utilization for bootstrap slot A'"
             --exec="bootstrap --clear-uart=true --leave-in-bootstrap {good_a}"
             --exec="console --non-interactive --exit-success='{stack_usage}' --exit-failure='{exit_failure}'"
@@ -605,6 +602,7 @@ opentitan_test(
             --exec="console --non-interactive --exit-success='{stack_usage}' --exit-failure='PASS|FAIL'"
             no-op
         """,
+        testopt_bootstrap = "False",
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
