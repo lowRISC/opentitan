@@ -225,6 +225,7 @@ opentitan_test(
             --bootstrap={firmware}
         """,
         test_harness = "//sw/host/tests/manuf/individualize_sw_cfg_functest",
+        testopt_bootstrap = "False",
     ),
     qemu = qemu_params(
         otp = "//hw/ip/otp_ctrl/data:img_test_unlocked1",
@@ -297,6 +298,7 @@ opentitan_test(
             --bootstrap={firmware}
         """,
         test_harness = "//sw/host/tests/manuf/personalize_functest",
+        testopt_bootstrap = "False",
     ),
     qemu = qemu_params(
         needs_jtag = True,
