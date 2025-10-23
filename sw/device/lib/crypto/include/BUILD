@@ -25,6 +25,7 @@ cc_library(
     hdrs = [
         "aes.h",
         "aes_gcm.h",
+        "cryptolib_build_info.h",
         "datatypes.h",
         "drbg.h",
         "ecc_curve25519.h",
@@ -58,6 +59,7 @@ cc_library(
     hdrs = [
         "aes.h",
         "aes_gcm.h",
+        "cryptolib_build_info.h",
         "datatypes.h",
         "drbg.h",
         "ecc_curve25519.h",

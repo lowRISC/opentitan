@@ -4,6 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
+load("//rules:autogen.bzl", "autogen_cryptolib_build_info")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 load(
     "//rules:cross_platform.bzl",
@@ -24,6 +25,8 @@ load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
+
+autogen_cryptolib_build_info(name = "cryptolib_build_info")
 
 cc_library(
     name = "aes",
