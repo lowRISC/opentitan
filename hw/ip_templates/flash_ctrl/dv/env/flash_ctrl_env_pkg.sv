@@ -408,10 +408,7 @@ package flash_ctrl_env_pkg;
     bit [FlashDataWidth-1:0]                                    masked_data;
     bit [FlashNumRoundsHalf-1:0][FlashDataWidth-1:0]            scrambled_data;
 
-    // These parameters will be removed once it is included in mem_bkdr_util.sv
-    int                                                         addr_lsb = 3;
-
-    word_addr = byte_addr >> addr_lsb;
+    word_addr = byte_addr >> FlashDataByteWidth;
     mask = flash_galois_multiply(flash_addr_key, word_addr);
     masked_data = data ^ mask;
     crypto_dpi_prince_pkg::sv_dpi_prince_encrypt(.plaintext(masked_data), .key(flash_data_key),
