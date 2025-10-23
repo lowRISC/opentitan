@@ -1,14 +1,5 @@
 # OpenTitan user accounts
 
-## OpenTitan accounts
-OpenTitan accounts (an opentitan.org google account with associated project permisisons) are required for most OpenTitan activity.
-This includes:
-- **Contribution**.  Only OpenTitan accounts can be used to contribute code on GitHub
-- **Mailing Lists**.  Only OpenTitan accounts can be used on mailing lists
-- **Groups**.  Governing Board, Technical Committee and Working Group memberships can only use OpenTitan accounts
-
-This page outlines how accounts are obtained and managed.
-
 ## Contributor License Agreement (CLA)
 
 All contributions to the project are under the terms of the [Contributor License Agreement](https://github.com/lowRISC/opentitan/blob/master/CLA) (CLA) which is referenced on every commit.
@@ -22,9 +13,9 @@ Copyright is therefore indicated in OpenTitan files by a generic header:
 `Copyright lowRISC contributors (OpenTitan project).`
 
 Detailed and up-to-date attribution for all contributions is available via the Git version control system:
-- `git shortlog --author "<your name>"` lists all contributions under your name
+- `git shortlog --author "<your name>"` lists all contributions under your name.
 - `git shortlog --author "<organization's domain>"` lists all contributions by an organization.
-- `git shortlog -- <path>` lists all contributors for a file or directory tree
+- `git shortlog -- <path>` lists all contributors for a file or directory tree.
 
 ## Project Participants
 
