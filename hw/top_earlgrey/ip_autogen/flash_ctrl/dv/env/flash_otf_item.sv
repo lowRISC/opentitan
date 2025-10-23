@@ -139,6 +139,7 @@ class flash_otf_item extends uvm_object;
       data = raw_fq[i][FlashDataWidth-1:0];
       if (ecc_en) begin
         data_with_icv = prim_secded_pkg::prim_secded_hamming_72_64_enc(raw_fq[i][63:0]);
+        `uvm_info("icv", $sformatf("ICV:%4b", data_with_icv[67:64]), UVM_DEBUG)
         if (add_icv_err) begin
           `uvm_info("icv_debug", $sformatf("before:%4b after:%4b",
                     data_with_icv[67:64], ~data_with_icv[67:64]), UVM_DEBUG)
