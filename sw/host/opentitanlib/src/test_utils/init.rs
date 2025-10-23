@@ -29,6 +29,10 @@ pub struct InitializeTest {
     #[arg(long, default_value = "off")]
     pub logging: LevelFilter,
 
+    /// De-assert reset signal before executing commands.
+    #[arg(short, long)]
+    drop_reset: bool,
+
     #[command(flatten)]
     pub backend_opts: backend::BackendOpts,
 
@@ -139,6 +143,10 @@ impl InitializeTest {
 
         // Set up the default pin configurations as specified in the transport's config file.
         transport.apply_default_configuration(None)?;
+
+        if self.drop_reset {
+            transport.pin_strapping("RESET")?.remove()?;
+        }
 
         // Create the UART first to initialize the desired parameters.
         let _uart = self.bootstrap.options.uart_params.create(&transport)?;
