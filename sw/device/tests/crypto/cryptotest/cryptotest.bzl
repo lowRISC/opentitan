@@ -66,18 +66,14 @@ def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False):
             timeout = "long",
             data = test_vectors,
             tags = tags,
-            test_cmd = """
-                --bootstrap={firmware}
-            """ + test_args,
+            test_cmd = test_args,
             test_harness = test_harness,
         ),
         fpga_cw340 = fpga_params(
             timeout = "long",
             tags = tags,
             data = test_vectors,
-            test_cmd = """
-                --bootstrap={firmware}
-            """ + test_args,
+            test_cmd = test_args,
             test_harness = test_harness,
         ),
         exec_env = CRYPTOTEST_EXEC_ENVS,
