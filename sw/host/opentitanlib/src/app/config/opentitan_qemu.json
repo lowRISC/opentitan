@@ -73,6 +73,10 @@
         }
       ]
     },
+    {
+      "name": "PINMUX_TAP_RISCV",
+      "pins": [],
+    },
   ],
   "uarts": [
     {

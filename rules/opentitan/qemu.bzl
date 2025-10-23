@@ -40,6 +40,7 @@ def qemu_params(
         traces = [],
         qemu_args = [],
         bootstrap = False,
+        needs_jtag = False,
         **kwargs):
     extra_params = {
         "icount": str(icount),
@@ -63,10 +64,13 @@ def qemu_params(
         rom_ext = rom_ext,
         otp = otp,
         bitstream = bitstream,
-        test_cmd = test_cmd,
+        test_cmd = ("""
+            {jtag_test_cmd}
+        """ if needs_jtag else "") + test_cmd,
         data = data,
         param = kwargs | extra_params,
         defines = defines,
+        needs_jtag = needs_jtag,
     )
 
 def gen_cfg(ctx, **kwargs):
@@ -468,6 +472,9 @@ def _test_dispatch(ctx, exec_env, firmware):
     # Create a chardev for the USBDEV control:
     qemu_args += ["-chardev", "pty,id=usbdev-cmd"]
     qemu_args += ["-chardev", "pty,id=usbdev-host"]
+
+    # Create a chardev for the RV_DM JTAG TAP:
+    qemu_args += ["-chardev", "socket,id=taprbb,path=qemu-jtag.sock,server=on,wait=off"]
 
     # Scale the Ibex clock by an `icount` factor.
     qemu_args += ["-icount", "shift={}".format(param["icount"])]
