@@ -53,3 +53,10 @@ For example, to manually add some traces for the USB device and alert updates wh
 ```
 ./bazelisk.sh test //path_to_qemu_test:my_test --test_arg=--qemu-args="--trace ot_usbdev* --trace ot*update_alert*"
 ```
+
+### Logging
+
+When executing a test in a QEMU execution environment, the default behavior is that the QEMU log output stream is combined with the regular UART console output stream.
+When both interfaces are simultaneously written, it is possible that output may be disrupted by the characters interleaved from both streams.
+When tracing in particular, the QEMU log can be written much faster than regular console output, causing this behavior to appear.
+These outputs are not currently buffered by line breaks before combining the streams, meaning that it is possible for one line of console output to be split across multiple QEMU log lines.
