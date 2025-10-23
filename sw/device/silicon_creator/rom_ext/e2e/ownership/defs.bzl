@@ -59,16 +59,15 @@ def ownership_transfer_test(
         **kwargs):
     # Construct `fpga_params` from shared and FPGA-specific parameters
     if shared_params:
-        override_params = dict(shared_params)
-        if fpga:
-            override_params.update(fpga)
-
         # FPGA should always clear the bitstream & bootstrap first, so
         # add these to every FPGA test cmd unless overridden
-        if not fpga or "test_cmd" not in fpga:
-            override_params["test_cmd"] = """
-                --clear-bitstream
-            """ + override_params["test_cmd"]
+        override_params = {
+            "testopt_clear_before_test": "True",
+            "testopt_bootstrap": "True",
+        }
+        override_params.update(shared_params)
+        if fpga:
+            override_params.update(fpga)
         fpga = fpga_params(**override_params)
     else:
         fpga = fpga_params(**fpga)
@@ -86,10 +85,10 @@ def ownership_transfer_test(
         # increase the delay to enter rescue to 20s on QEMU targets.
         # This is likely much larger than needed, but should give some
         # lenience for tests being run in parallel or on slower hosts.
-        if not qemu or "test_cmd" not in qemu:
-            override_params["test_cmd"] = """
-                --rescue-enter-delay=20s
-            """ + override_params["test_cmd"]
+        override_params["test_cmd"] = """
+            --rescue-enter-delay=20s
+            --bootstrap={firmware}
+        """ + override_params["test_cmd"]
 
         # XModem-CRC transfer as part of the rescue flow uses somewhat
         # tight timing based on the UART baud rate, which depends on

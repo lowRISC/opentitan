@@ -128,11 +128,10 @@ _VARIATION_INTEROP_TEST_CASES = [
             },
             otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
             test_cmd = """
-                --clear-bitstream
-                --bootstrap={firmware}
                 --second-bootstrap={second}
             """,
             test_harness = "//sw/host/tests/rom_ext/e2e_variation_interop",
+            testopt_clear_before_test = "True",
         ),
         qemu = qemu_params(
             binaries = {
@@ -207,11 +206,9 @@ opentitan_test(
         binaries = {
             ":modify_digest": "modify_digest",
         },
-        test_cmd = ("""
-            --exec="transport init"
-            --exec="fpga clear-bitstream"
-            --exec="fpga load-bitstream {bitstream}"
-        """ + CORRUPTED_DIGEST_TEST_CMDS),
+        test_cmd = CORRUPTED_DIGEST_TEST_CMDS,
+        testopt_bootstrap = "False",
+        testopt_clear_before_test = "True",
     ),
     qemu = qemu_params(
         binaries = {

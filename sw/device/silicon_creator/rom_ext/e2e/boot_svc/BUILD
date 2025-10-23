@@ -81,9 +81,6 @@ opentitan_test(
         exit_failure = "BFV|PASS|FAIL",
         exit_success = "mode: RESQ\r\n",
         test_cmd = """
-            --exec="transport init"
-            --exec="fpga load-bitstream {bitstream}"
-            --exec="bootstrap --clear-uart=true {firmware}"
             --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
             # Try the `REBO` mode and make sure it works.
             --exec="rescue no-op --reset-target=reboot"
@@ -162,14 +159,7 @@ opentitan_test(
         assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
         changes_otp = True,
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_boot_svc_after_wakeup",
-        test_cmd = """
-            --exec="transport init"
-            --exec="fpga clear-bitstream"
-            --exec="fpga load-bitstream {bitstream}"
-            --exec="bootstrap --clear-uart=true {firmware}"
-            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
-            no-op
-        """,
+        testopt_clear_before_test = "True",
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
@@ -244,14 +234,7 @@ opentitan_test(
         assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a} {firmware}@{owner_slot_b}",
         exit_failure = "BFV:.*|PASS|FAIL",
         exit_success = "FinalBootLog: 5:ABBBA\r\n",
-        test_cmd = """
-            --exec="transport init"
-            --exec="fpga clear-bitstream"
-            --exec="fpga load-bitstream {bitstream}"
-            --exec="bootstrap --clear-uart=true {firmware}"
-            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
-            no-op
-        """,
+        testopt_clear_before_test = "True",
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     qemu = qemu_params(
@@ -398,15 +381,8 @@ MIN_SEC_VER_SLOTS = [
             binaries = {
                 ":min_sec_ver_5": "min_sec_ver_5",
             },
-            test_cmd = """
-                --exec="transport init"
-                --exec="fpga clear-bitstream"
-                --exec="fpga load-bitstream {bitstream}"
-                --exec="bootstrap --clear-uart=true {firmware}"
-                --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
-                --exec="fpga clear-bitstream"
-                no-op
-            """,
+            testopt_clear_after_test = "True",
+            testopt_clear_before_test = "True",
             v0_slot = "{{owner_slot_{}}}".format(slots[0]),
             v5_slot = "{{owner_slot_{}}}".format(slots[1]),
         ),
