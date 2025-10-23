@@ -34,6 +34,11 @@ py_test(
 )
 
 py_binary(
+    name = "cryptolib_build_info",
+    srcs = ["cryptolib_build_info.py"],
+)
+
+py_binary(
     name = "regtool",
     srcs = ["regtool.py"],
     deps = [
