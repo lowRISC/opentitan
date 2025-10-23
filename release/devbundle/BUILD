@@ -5,6 +5,7 @@
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules/opentitan:splice.bzl", "bitstream_splice")
+load("//rules:flags.bzl", "build_with_flags")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -62,6 +63,22 @@ pkg_files(
     },
 )
 
+build_with_flags(
+    name = "opentitantool",
+    flags = {
+        "//rules:static_link_host_tools": "True",
+    },
+    target = "//sw/host/opentitantool:package",
+)
+
+build_with_flags(
+    name = "hsmtool",
+    flags = {
+        "//rules:static_link_host_tools": "True",
+    },
+    target = "//sw/host/hsmtool:package",
+)
+
 # TODO(cfrantz): Implement release automation so we don't have to publish the artifact manually.
 # Upload this to the GCS bucket `artifacts.opentitan.org` and name the file
 # with a date tag (e.g. devbundle-YYYYMMDD.tar.xz).
@@ -77,12 +94,13 @@ pkg_tar(
     srcs = [
         ":bazel",
         ":bitstreams_pkg",
+        ":hsmtool",
+        ":opentitantool",
         "//hw:package",
         "//hw/ip/otp_ctrl/data:package",
         "//sw/device/lib/testing/test_rom:package",
         "//sw/device/silicon_creator/lib/ownership/keys/fake:fpga_dev_pkg",
         "//sw/device/silicon_creator/rom_ext:fpga_dev_pkg",
-        "//sw/host/opentitantool:package",
     ],
     extension = "tar.xz",
     tags = ["manual"],

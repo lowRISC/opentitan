@@ -5,6 +5,7 @@
 load("//rules:autogen.bzl", "autogen_stamp_include")
 load("//rules:stamp.bzl", "stamp_flag")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_PLATFORM")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -27,4 +28,16 @@ stamp_flag(name = "stamp_flag")
 # file should be included in srcs instead of deps.
 autogen_stamp_include(
     name = "autogen_stamp_include",
+)
+
+bool_flag(
+    name = "static_link_host_tools",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "static_link_host_tools_enabled",
+    flag_values = {
+        ":static_link_host_tools": "True",
+    },
 )

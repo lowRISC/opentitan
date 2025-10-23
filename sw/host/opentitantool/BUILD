@@ -48,6 +48,10 @@ rust_binary(
     rustc_env_files = [
         "stamp-env.txt",
     ],
+    rustc_flags = select({
+        "//rules:static_link_host_tools_enabled": ["--codegen=target-feature=+crt-static"],
+        "//conditions:default": [],
+    }),
     # stamping is necessary because opentitantool builds version.rs that needs it
     stamp = -1,
     deps = [
@@ -72,7 +76,10 @@ rust_binary(
         "@crate_index//:shellwords",
         "@crate_index//:thiserror",
         "@lowrisc_serde_annotate//serde_annotate",
-    ],
+    ] + select({
+        "//rules:static_link_host_tools_enabled": ["@libudev_zero"],
+        "//conditions:default": [],
+    }),
 )
 
 pkg_files(
