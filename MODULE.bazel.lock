@@ -911,6 +911,33 @@
         ]
       }
     },
+    "//third_party/system_libs:extensions.bzl%system_libs": {
+      "general": {
+        "bzlTransitiveDigest": "zMoxpiyRS2Rv6cOvWrtkp+EYTpPPjatluTZ4qABqcts=",
+        "usagesDigest": "qjd0+Tgdi27wMz5qse8P7OKE8M5wWJ1wy1s+GXHmsiE=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "libudev_zero": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "build_file": "@@//third_party/system_libs:BUILD.libudev_zero.bazel",
+              "url": "https://github.com/illiliti/libudev-zero/archive/refs/tags/1.0.3.tar.gz",
+              "strip_prefix": "libudev-zero-1.0.3",
+              "sha256": ""
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "",
+            "bazel_tools",
+            "bazel_tools"
+          ]
+        ]
+      }
+    },
     "//third_party/tock:extensions.bzl%tock": {
       "general": {
         "bzlTransitiveDigest": "C2f4NtX52o14R9TtkJwTl1wZ63j5YYUiTHoJdz0DUHE=",

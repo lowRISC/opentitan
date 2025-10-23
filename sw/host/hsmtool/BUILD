@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_doc", "rust_library", "rust_test")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -116,6 +117,10 @@ rust_library(
 rust_binary(
     name = "hsmtool",
     srcs = ["src/hsmtool.rs"],
+    rustc_flags = select({
+        "//rules:static_link_host_tools_enabled": ["--codegen=target-feature=+crt-static"],
+        "//conditions:default": [],
+    }),
     deps = [
         ":hsmlib",
         "@crate_index//:anyhow",
@@ -141,4 +146,18 @@ rust_test(
 rust_doc(
     name = "hsmlib_doc",
     crate = ":hsmlib",
+)
+
+pkg_files(
+    name = "binary",
+    srcs = [":hsmtool"],
+    attributes = pkg_attributes(mode = "0755"),
+)
+
+pkg_filegroup(
+    name = "package",
+    srcs = [
+        ":binary",
+    ],
+    prefix = "hsmtool",
 )

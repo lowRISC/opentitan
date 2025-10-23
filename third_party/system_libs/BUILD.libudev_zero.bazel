@@ -1,0 +1,18 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_foreign_cc//foreign_cc:make.bzl", "make")
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "all_srcs",
+    srcs = glob(["**"]),
+)
+
+make(
+    name = "libudev_zero",
+    lib_source = ":all_srcs",
+    out_static_libs = ["libudev.a"],
+)
