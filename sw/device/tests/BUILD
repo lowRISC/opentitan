@@ -5853,8 +5853,22 @@ _RV_DM_TEST_CONFIGURATIONS = [
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
+            needs_jtag = True,
+            otp = test_cfg["otp"],
+            rv_dm_delayed_en = test_cfg["rv_dm_delayed_en"],
+            tags = [
+                "lc_{}".format(test_cfg["lc_state"]),
+            ],
+            test_cmd = """
+                --bootstrap="{firmware}"
+                {rv_dm_delayed_en}
+            """,
+            test_harness = "//sw/host/tests/chip/rv_dm:csr_rw",
+        ),
+        qemu = qemu_params(
             needs_jtag = True,
             otp = test_cfg["otp"],
             rv_dm_delayed_en = test_cfg["rv_dm_delayed_en"],
