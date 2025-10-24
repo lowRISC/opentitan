@@ -76,7 +76,7 @@ build_with_flags(
 # with a date tag (e.g. devbundle-YYYYMMDD.tar.xz).
 #
 # For example:
-# $ gcloud --acount=foo@opentitan.org \
+# $ gcloud --account=foo@opentitan.org \
 #       storage cp \
 #           bazel-bin/release/devbundle/devbundle.tar.xz \
 #           gs://artifacts.opentitan.org/dev_bundle/devbundle-20250718.tar.xz
