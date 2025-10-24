@@ -7395,6 +7395,7 @@ opentitan_test(
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:sram_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
