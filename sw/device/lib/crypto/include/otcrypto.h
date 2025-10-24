@@ -7,6 +7,7 @@
 
 #include "aes.h"
 #include "aes_gcm.h"
+#include "cryptolib_build_info.h"
 #include "datatypes.h"
 #include "drbg.h"
 #include "ecc_p256.h"

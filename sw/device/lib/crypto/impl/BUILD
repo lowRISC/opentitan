@@ -47,6 +47,17 @@ cc_library(
 )
 
 cc_library(
+    name = "cryptolib_build_info",
+    srcs = ["cryptolib_build_info.c"],
+    hdrs = ["//sw/device/lib/crypto/include:cryptolib_build_info.h"],
+    deps = [
+        ":status",
+        "//sw/device/lib/crypto/drivers:cryptolib_build_info",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
     name = "drbg",
     srcs = ["drbg.c"],
     hdrs = ["//sw/device/lib/crypto/include:drbg.h"],
