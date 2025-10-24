@@ -307,7 +307,7 @@
     },
     "//third_party/hsm:extensions.bzl%hsm": {
       "general": {
-        "bzlTransitiveDigest": "j2GwGdc7Oxlja02plc7IXvFl0HZEyDDmWbrXkP9J/ns=",
+        "bzlTransitiveDigest": "2vzJYK+vywiCbF9s0lHu/wrZWmgeAz0wXuHdAO2k+5w=",
         "usagesDigest": "uEk6dTktgdMfLQN5bAE4Sorkuuxcz3nEbPEKZLUjpak=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -350,9 +350,9 @@
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
               "build_file": "@@//third_party/hsm:BUILD.cloud_kms_hsm.bazel",
-              "url": "https://github.com/GoogleCloudPlatform/kms-integrations/releases/download/pkcs11-v1.2/libkmsp11-1.2-linux-amd64.tar.gz",
-              "strip_prefix": "libkmsp11-1.2-linux-amd64",
-              "sha256": "81fff58d5835f05d550ff86c88fa6fb92a733bde8b232e1482d85a3cf07c6396"
+              "url": "https://github.com/GoogleCloudPlatform/kms-integrations/releases/download/pkcs11-v1.8/libkmsp11-1.8-linux-amd64.tar.gz",
+              "strip_prefix": "libkmsp11-1.8-linux-amd64",
+              "sha256": "3b932f22a8abb631442c3276e9c309554c81855526b74fbc9edaddcb57a557f7"
             }
           }
         },
