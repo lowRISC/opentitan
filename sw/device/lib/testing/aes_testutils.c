@@ -173,7 +173,7 @@ status_t aes_testutils_csrng_kat(const dif_csrng_t *csrng) {
   memcpy(expected_state_generate.v, kCsrngVGenerate, sizeof(kCsrngVGenerate));
   memcpy(expected_state_generate.key, kCsrngKeyGenerate,
          sizeof(kCsrngKeyGenerate));
-  TRY(csrng_testutils_kat_generate(csrng, 1, kCsrngBlockLen,
+  TRY(csrng_testutils_kat_generate(csrng, 1, kCsrngBlockLen, NULL,
                                    kAesMaskingPrngZeroOutputSeed,
                                    &expected_state_generate));
 
@@ -198,7 +198,7 @@ status_t aes_testutils_csrng_kat(const dif_csrng_t *csrng) {
 
   // Generate one block containing the required seed for the AES masking PRNG
   // to output an all-zero vector.
-  TRY(csrng_testutils_kat_generate(csrng, 1, kCsrngBlockLen,
+  TRY(csrng_testutils_kat_generate(csrng, 1, kCsrngBlockLen, NULL,
                                    kAesMaskingPrngZeroOutputSeed,
                                    &expected_state_generate));
   return OK_STATUS();

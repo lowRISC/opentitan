@@ -487,7 +487,7 @@ status_t handle_rng_fi_csrng_bias(ujson_t *uj) {
   if (uj_data.all_trigger || uj_data.start_trigger) {
     pentest_set_trigger_high();
   }
-  TRY(dif_csrng_generate_start(&csrng, kCsrngExpectedOutputLen));
+  TRY(dif_csrng_generate_start(&csrng, NULL, kCsrngExpectedOutputLen));
   if (uj_data.start_trigger) {
     pentest_set_trigger_low();
   }
@@ -598,7 +598,7 @@ status_t handle_rng_fi_csrng_bias_fw_override(ujson_t *uj, bool static_seed) {
   CHECK_DIF_OK(dif_csrng_instantiate(&csrng, kDifCsrngEntropySrcToggleEnable,
                                      &kEmptySeedMaterial));
 
-  CHECK_STATUS_OK(csrng_testutils_cmd_generate_run(&csrng, received_data,
+  CHECK_STATUS_OK(csrng_testutils_cmd_generate_run(&csrng, NULL, received_data,
                                                    ARRAYSIZE(received_data)));
 
   asm volatile(NOP30);

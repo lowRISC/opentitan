@@ -98,7 +98,9 @@ dif_result_t dif_csrng_update(const dif_csrng_t *csrng,
                             });
 }
 
-dif_result_t dif_csrng_generate_start(const dif_csrng_t *csrng, size_t len) {
+dif_result_t dif_csrng_generate_start(
+    const dif_csrng_t *csrng, const dif_csrng_seed_material_t *additional_data,
+    size_t len) {
   if (csrng == NULL || len == 0) {
     return kDifBadArg;
   }
@@ -109,6 +111,7 @@ dif_result_t dif_csrng_generate_start(const dif_csrng_t *csrng, size_t len) {
   return csrng_send_app_cmd(csrng->base_addr, kCsrngAppCmdTypeCsrng,
                             (csrng_app_cmd_t){
                                 .id = kCsrngAppCmdGenerate,
+                                .seed_material = additional_data,
                                 .generate_len = num_128bit_blocks,
                             });
 }

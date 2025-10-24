@@ -79,10 +79,11 @@ status_t csrng_testutils_cmd_ready_wait(const dif_csrng_t *csrng) {
   return OK_STATUS();
 }
 
-status_t csrng_testutils_cmd_generate_run(const dif_csrng_t *csrng,
-                                          uint32_t *output, size_t output_len) {
+status_t csrng_testutils_cmd_generate_run(
+    const dif_csrng_t *csrng, const dif_csrng_seed_material_t *additional_data,
+    uint32_t *output, size_t output_len) {
   TRY(csrng_testutils_cmd_ready_wait(csrng));
-  TRY(dif_csrng_generate_start(csrng, output_len));
+  TRY(dif_csrng_generate_start(csrng, additional_data, output_len));
 
   dif_csrng_output_status_t output_status;
   do {
@@ -135,6 +136,7 @@ status_t csrng_testutils_kat_instantiate(
 
 status_t csrng_testutils_kat_generate(
     const dif_csrng_t *csrng, size_t num_generates, size_t output_len,
+    const dif_csrng_seed_material_t *additional_data,
     const uint32_t *expected_output,
     const dif_csrng_internal_state_t *expected_state) {
   LOG_INFO("CSRNG KAT generate");
@@ -142,9 +144,13 @@ status_t csrng_testutils_kat_generate(
   // Run the generate and check the output.
   uint32_t got[kNumOutputWordsMax];
   for (int i = 0; i < num_generates; ++i) {
-    TRY(csrng_testutils_cmd_generate_run(csrng, got, output_len));
+    TRY(csrng_testutils_cmd_generate_run(csrng, additional_data, got,
+                                         output_len));
   }
-  TRY_CHECK(memcmp(got, expected_output, output_len) == 0);
+
+  if (expected_output != NULL) {
+    TRY_CHECK(memcmp(got, expected_output, output_len) == 0);
+  }
 
   // Check the internal state.
   return csrng_testutils_check_internal_state(csrng, expected_state);
@@ -179,7 +185,15 @@ status_t csrng_testutils_fips_instantiate_kat(const dif_csrng_t *csrng,
   // The number format in this docstring follows the CAVP format to simplify
   // auditing of this test case.
   //
-  // Test vector: CTR_DRBG AES-256 no DF.
+  // Test vector: CTR_DRBG AES-256 no DF from
+  // drbgvectors_no_reseed.zip/CTR_DRBG.txt with parameters
+  // - PredictionResistance = False
+  // - EntropyInputLen = 384
+  // - NonceLen = 0
+  // - PersonalizationStringLen = 0
+  // - AdditionalInputLen = 0
+  // - ReturnedBitsLen = 512
+  // - COUNT = 0
   //
   // - EntropyInput =
   // df5d73faa468649edda33b5cca79b0b05600419ccb7a879ddfec9db32ee494e5531b51de16a30f769262474c73bec010
@@ -238,8 +252,121 @@ status_t csrng_testutils_fips_generate_kat(const dif_csrng_t *csrng) {
       .instantiated = true,
       .fips_compliance = false,
   };
-  return csrng_testutils_kat_generate(csrng, 2, kExpectedOutputLen,
+  return csrng_testutils_kat_generate(csrng, 2, kExpectedOutputLen, NULL,
                                       kExpectedOutput, &kExpectedState);
+}
+
+status_t csrng_testutils_fips_instantiate_kat_adata(const dif_csrng_t *csrng,
+                                                    bool fail_expected) {
+  // CTR_DRBG Known-Answer-Tests (KATs).
+  //
+  // Test vector sourced from NIST's CAVP website:
+  // https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/random-number-generators
+  //
+  // The number format in this docstring follows the CAVP format to simplify
+  // auditing of this test case.
+  //
+  // Test vector: CTR_DRBG AES-256 no DF from
+  // drbgvectors_no_reseed.zip/CTR_DRBG.txt with parameters
+  // - PredictionResistance = False
+  // - EntropyInputLen = 384
+  // - NonceLen = 0
+  // - PersonalizationStringLen = 0
+  // - AdditionalInputLen = 384
+  // - ReturnedBitsLen = 512
+  // - COUNT = 0
+  //
+  // - EntropyInput =
+  // f45e9d040c1456f1c7f26e7f146469fbe3973007fe037239ad57623046e7ec52221b22eec208b22ac4cf4ca8d6253874
+  // - Nonce = EMPTY
+  // - PersonalizationString = EMPTY
+  //
+  // Command: Instantiate
+  // - Key = a75117ffcb5160486e91da8ed0af1a702d30703ab3631957aa19a7e3fc14714a
+  // - V   = 507b2124f5ae985e156db926a3230dfa
+  //
+  // - AdditionalInput =
+  // 28819bc79b92fc8790ebdc99812cdcea5c96e6feab32801ec1851b9f46e80eb6800028e61fbccb6ccbe42b06bf5a0864
+  // Command: Generate (first call):
+  // - Key = d75e41010982abd243b4d75642b86ce07e13b3652a3725aad011b1097c32957a
+  // - V   = 939fbb584e0103982d2e73e05779849f
+  //
+  // - AdditionalInput =
+  // 418ca848027e1b3c84d66717e6f31bf89684d5db94cd2d579233f716ac70ab66cc7b01a6f9ab8c7665fcc37dba4af1ad
+  // Command: Generate (second call):
+  // - Key = b0f80df4b33e5d2e3d72c8667ba9da1aa64a3a4936a3fdabf2c980d3104dfa13
+  // - V   = 433abd3907feddce66cbcb216d5d833e
+  // - ReturnedBits =
+  // 4f11406bd303c104243441a8f828bf0293cb20ac39392061429c3f56c1f426239f8f0c687b69897a2c7c8c2b4fb520b62741ffdd29f038b7c82a9d00a890a3ed
+
+  const dif_csrng_seed_material_t kEntropyInput = {
+      .seed_material = {0xd6253874, 0xc4cf4ca8, 0xc208b22a, 0x221b22ee,
+                        0x46e7ec52, 0xad576230, 0xfe037239, 0xe3973007,
+                        0x146469fb, 0xc7f26e7f, 0x0c1456f1, 0xf45e9d04},
+      .seed_material_len = 12,
+  };
+  const dif_csrng_internal_state_t kExpectedState = {
+      .reseed_counter = 0,
+      .v = {0xa3230dfa, 0x156db926, 0xf5ae985e, 0x507b2124},
+      .key = {0xfc14714a, 0xaa19a7e3, 0xb3631957, 0x2d30703a, 0xd0af1a70,
+              0x6e91da8e, 0xcb516048, 0xa75117ff},
+      .instantiated = true,
+      .fips_compliance = false,
+  };
+  return csrng_testutils_kat_instantiate(csrng, fail_expected, &kEntropyInput,
+                                         &kExpectedState);
+}
+
+status_t csrng_testutils_fips_generate_kat_adata1(const dif_csrng_t *csrng) {
+  enum {
+    kExpectedOutputLen = 16,
+  };
+  const dif_csrng_seed_material_t kAdditionalData = {
+      .seed_material = {0xbf5a0864, 0xcbe42b06, 0x1fbccb6c, 0x800028e6,
+                        0x46e80eb6, 0xc1851b9f, 0xab32801e, 0x5c96e6fe,
+                        0x812cdcea, 0x90ebdc99, 0x9b92fc87, 0x28819bc7},
+      .seed_material_len = 12,
+  };
+  const dif_csrng_internal_state_t kExpectedState = {
+      .reseed_counter = 1,
+      .v = {0x5779849f, 0x2d2e73e0, 0x4e010398, 0x939fbb58},
+      .key = {0x7c32957a, 0xd011b109, 0x2a3725aa, 0x7e13b365, 0x42b86ce0,
+              0x43b4d756, 0x0982abd2, 0xd75e4101},
+      .instantiated = true,
+      .fips_compliance = false,
+  };
+  return csrng_testutils_kat_generate(csrng, 1, kExpectedOutputLen,
+                                      &kAdditionalData, NULL, &kExpectedState);
+}
+
+status_t csrng_testutils_fips_generate_kat_adata2(const dif_csrng_t *csrng) {
+  enum {
+    kExpectedOutputLen = 16,
+  };
+  const dif_csrng_seed_material_t kAdditionalData = {
+      .seed_material = {0xba4af1ad, 0x65fcc37d, 0xf9ab8c76, 0xcc7b01a6,
+                        0xac70ab66, 0x9233f716, 0x94cd2d57, 0x9684d5db,
+                        0xe6f31bf8, 0x84d66717, 0x027e1b3c, 0x418ca848},
+      .seed_material_len = 12,
+  };
+  // TODO(#13342): csrng does not provide a linear output order. For example,
+  // note the test vector output word order: 12,13,14,15 8,9,10,11 4,5,6,7
+  // 0,1,2,3.
+  const uint32_t kExpectedOutput[kExpectedOutputLen] = {
+      0xf828bf02, 0x243441a8, 0xd303c104, 0x4f11406b, 0xc1f42623, 0x429c3f56,
+      0x39392061, 0x93cb20ac, 0x4fb520b6, 0x2c7c8c2b, 0x7b69897a, 0x9f8f0c68,
+      0xa890a3ed, 0xc82a9d00, 0x29f038b7, 0x2741ffdd};
+  const dif_csrng_internal_state_t kExpectedState = {
+      .reseed_counter = 2,
+      .v = {0x6d5d833e, 0x66cbcb21, 0x07feddce, 0x433abd39},
+      .key = {0x104dfa13, 0xf2c980d3, 0x36a3fdab, 0xa64a3a49, 0x7ba9da1a,
+              0x3d72c866, 0xb33e5d2e, 0xb0f80df4},
+      .instantiated = true,
+      .fips_compliance = false,
+  };
+  return csrng_testutils_kat_generate(csrng, 1, kExpectedOutputLen,
+                                      &kAdditionalData, kExpectedOutput,
+                                      &kExpectedState);
 }
 
 status_t csrng_testutils_cmd_status_check(const dif_csrng_t *csrng) {

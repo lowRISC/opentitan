@@ -141,8 +141,8 @@ static void irq_block_wait(irq_flag_id_t isr_id) {
  */
 static void csrng_generate_output_check(void) {
   uint32_t output[kTestParamFifoBufferSize] = {0};
-  CHECK_STATUS_OK(
-      csrng_testutils_cmd_generate_run(&csrng, output, ARRAYSIZE(output)));
+  CHECK_STATUS_OK(csrng_testutils_cmd_generate_run(&csrng, NULL, output,
+                                                   ARRAYSIZE(output)));
 
   uint32_t prev_data = 0;
   for (size_t i = 0; i < ARRAYSIZE(output); ++i) {
