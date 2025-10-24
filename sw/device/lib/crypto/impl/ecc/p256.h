@@ -54,6 +54,25 @@ enum {
    * Length of masked secret scalar share in words.
    */
   kP256MaskedScalarShareWords = kP256MaskedScalarShareBytes / sizeof(uint32_t),
+  /**
+   * Number of shares for the scalar.
+   */
+  kP256MaskedScalarNumShares = 2,
+  /**
+   * Length of the full masked secret scalar share in bits.
+   */
+  kP256MaskedScalarTotalShareBits =
+      kP256MaskedScalarNumShares * kP256MaskedScalarShareBits,
+  /**
+   * Length of the full masked secret scalar share in bytes.
+   */
+  kP256MaskedScalarTotalShareBytes =
+      kP256MaskedScalarNumShares * kP256MaskedScalarShareBytes,
+  /**
+   * Length of the full masked secret scalar share in words.
+   */
+  kP256MaskedScalarTotalShareWords =
+      kP256MaskedScalarNumShares * kP256MaskedScalarShareWords,
 };
 
 /**
@@ -73,6 +92,10 @@ typedef struct p256_masked_scalar {
    * Second share of the secret scalar.
    */
   uint32_t share1[kP256MaskedScalarShareWords];
+  /**
+   * Checksum over share0.
+   */
+  uint32_t checksum;
 } p256_masked_scalar_t;
 
 /**
@@ -107,7 +130,55 @@ typedef struct p256_ecdsa_signature_t {
 typedef struct p256_ecdh_shared_key {
   uint32_t share0[kP256CoordWords];
   uint32_t share1[kP256CoordWords];
+  // Checksum over share0.
+  uint32_t checksum;
 } p256_ecdh_shared_key_t;
+
+/**
+ * Compute the checksum of an p256 masked scalar.
+ *
+ * Call this routine after creating or modifying the p256 scalar structure.
+ *
+ * @param key p256 masked scalar.
+ * @returns Checksum value.
+ */
+uint32_t p256_masked_scalar_checksum(const p256_masked_scalar_t *scalar);
+
+/**
+ * Perform an integrity check on the p256 masked scalar.
+ *
+ * Returns `kHardenedBoolTrue` if the check passed and `kHardenedBoolFalse`
+ * otherwise.
+ *
+ * @param key p256 masked scalar.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t p256_masked_scalar_checksum_check(
+    const p256_masked_scalar_t *scalar);
+
+/**
+ * Compute the checksum of an p256 ecdh key.
+ *
+ * Call this routine after creating or modifying the p256 key structure.
+ *
+ * @param key p256 ecdh shared key.
+ * @returns Checksum value.
+ */
+uint32_t p256_ecdh_shared_key_checksum(const p256_ecdh_shared_key_t *key);
+
+/**
+ * Perform an integrity check on the p256 ecdh key.
+ *
+ * Returns `kHardenedBoolTrue` if the check passed and `kHardenedBoolFalse`
+ * otherwise.
+ *
+ * @param key p256 ecdh shared key.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t p256_ecdh_shared_key_checksum_check(
+    const p256_ecdh_shared_key_t *key);
 
 /**
  * Start an async P-256 keypair generation operation on OTBN.
@@ -170,7 +241,7 @@ status_t p256_sideload_keygen_finalize(p256_point_t *public_key);
  */
 OT_WARN_UNUSED_RESULT
 status_t p256_ecdsa_sign_start(const uint32_t digest[kP256ScalarWords],
-                               const p256_masked_scalar_t *private_key);
+                               p256_masked_scalar_t *private_key);
 
 /**
  * Start an async ECDSA/P-256 signature generation operation on OTBN.
@@ -249,7 +320,7 @@ status_t p256_ecdsa_verify_finalize(const p256_ecdsa_signature_t *signature,
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t p256_ecdh_start(const p256_masked_scalar_t *private_key,
+status_t p256_ecdh_start(p256_masked_scalar_t *private_key,
                          const p256_point_t *public_key);
 
 /**

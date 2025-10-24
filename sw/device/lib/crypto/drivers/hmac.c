@@ -486,6 +486,10 @@ static status_t oneshot(const uint32_t cfg, const hmac_key_t *key,
   HARDENED_TRY(hmac_idle_wait());
   digest_read(digest, digest_wordlen);
 
+  // Read back the HMAC configuration and compare to the expected configuration.
+  HARDENED_CHECK_EQ(abs_mmio_read32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET),
+                    launder32(cfg));
+
   HARDENED_TRY(clear());
   return OTCRYPTO_OK;
 }
@@ -741,7 +745,6 @@ uint32_t hmac_key_integrity_checksum(const hmac_key_t *key) {
 
 hardened_bool_t hmac_key_integrity_checksum_check(const hmac_key_t *key) {
   if (key->checksum == launder32(hmac_key_integrity_checksum(key))) {
-    HARDENED_CHECK_EQ(key->checksum, hmac_key_integrity_checksum(key));
     return kHardenedBoolTrue;
   }
   return kHardenedBoolFalse;
@@ -820,7 +823,8 @@ status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest) {
   HARDENED_TRY(hmac_idle_wait());
   digest_read(digest, ctx->digest_wordlen);
 
-  // TODO(#23191): Destroy sensitive values in the ctx object.
+  // Destroy sensitive values in the ctx object.
+  HARDENED_TRY(hmac_context_wipe(ctx));
 
   // Clean up.
   HARDENED_TRY(clear());

@@ -73,23 +73,30 @@ otcrypto_status_t otcrypto_sha2_init(otcrypto_hash_mode_t hash_mode,
   }
 
   hmac_ctx_t hmac_ctx;
-  switch (hash_mode) {
+  otcrypto_hash_mode_t hash_mode_used = launder32(0);
+  switch (launder32(hash_mode)) {
     case kOtcryptoHashModeSha256: {
       hmac_hash_sha256_init(&hmac_ctx);
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha256;
       break;
     }
     case kOtcryptoHashModeSha384: {
       hmac_hash_sha384_init(&hmac_ctx);
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha384;
       break;
     }
     case kOtcryptoHashModeSha512: {
       hmac_hash_sha512_init(&hmac_ctx);
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha512;
       break;
     }
     default:
       // Unrecognized or unsupported hash mode.
       return OTCRYPTO_BAD_ARGS;
   }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(hash_mode_used), hash_mode);
 
   memcpy(ctx->data, &hmac_ctx, sizeof(hmac_ctx));
   return OTCRYPTO_OK;
@@ -147,19 +154,26 @@ otcrypto_status_t otcrypto_sha2_final(otcrypto_sha2_context_t *ctx,
   HARDENED_CHECK_EQ(digest->len, hmac_ctx->digest_wordlen);
 
   // Infer the mode from the digest length.
-  switch (digest->len) {
+  size_t len_used = launder32(0);
+  switch (launder32(digest->len)) {
     case kHmacSha256DigestWords:
       digest->mode = kOtcryptoHashModeSha256;
+      len_used = launder32(len_used) | kHmacSha256DigestWords;
       break;
     case kHmacSha384DigestWords:
       digest->mode = kOtcryptoHashModeSha384;
+      len_used = launder32(len_used) | kHmacSha384DigestWords;
       break;
     case kHmacSha512DigestWords:
       digest->mode = kOtcryptoHashModeSha512;
+      len_used = launder32(len_used) | kHmacSha512DigestWords;
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
   }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(len_used), digest->len);
 
   return hmac_final(hmac_ctx, digest->data);
 }

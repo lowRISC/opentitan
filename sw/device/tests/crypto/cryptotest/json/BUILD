@@ -10,12 +10,14 @@ cc_library(
     hdrs = ["commands.h"],
     deps = [
         ":aes_commands",
+        ":aes_gcm_commands",
         ":drbg_commands",
         ":ecdh_commands",
         ":ecdsa_commands",
         ":hash_commands",
         ":hmac_commands",
         ":kmac_commands",
+        ":rsa_commands",
         "//sw/device/lib/ujson",
     ],
 )
@@ -24,6 +26,13 @@ cc_library(
     name = "aes_commands",
     srcs = ["aes_commands.c"],
     hdrs = ["aes_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "aes_gcm_commands",
+    srcs = ["aes_gcm_commands.c"],
+    hdrs = ["aes_gcm_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -66,6 +75,13 @@ cc_library(
     name = "kmac_commands",
     srcs = ["kmac_commands.c"],
     hdrs = ["kmac_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "rsa_commands",
+    srcs = ["rsa_commands.c"],
+    hdrs = ["rsa_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 

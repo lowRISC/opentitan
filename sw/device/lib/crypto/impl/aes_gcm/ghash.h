@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/hardened.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -71,7 +73,33 @@ typedef struct ghash_context {
    * Number of processed ghash blocks.
    */
   size_t ghash_block_cnt;
+  /**
+   * Checksum of the structure.
+   */
+  uint32_t checksum;
 } ghash_context_t;
+
+/**
+ * Compute the checksum of a ghash context.
+ *
+ * Call this routine after creating or modifying the structure.
+ *
+ * @param ghash_ctx ghash context.
+ * @returns Checksum value.
+ */
+uint32_t ghash_context_integrity_checksum(const ghash_context_t *ghash_ctx);
+
+/**
+ * Perform an integrity check on the ghash context.
+ *
+ * Returns `kHardenedBoolTrue` if the check passed and `kHardenedBoolFalse`
+ * otherwise.
+ *
+ * @param ghash_ctx ghash context.
+ * @returns Whether the integrity check passed.
+ */
+hardened_bool_t ghash_context_integrity_checksum_check(
+    const ghash_context_t *ghash_ctx);
 
 /**
  * Precompute hash subkey information for GHASH.
@@ -137,6 +165,21 @@ void ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
  * @param input Pointer to input buffer.
  */
 void ghash_update(ghash_context_t *ctx, size_t input_len, const uint8_t *input);
+
+/**
+ * Redundant version of ghash_update().
+ *
+ * Creates a copy of ctx and executes ghash_update() twice.
+ * Compares the GHASH state stored in ctx after the redundant comparison.
+ * The comparison is done on share s0 to avoid introducing SCA leakage.
+ * If the comparison fails, trap.
+ *
+ * @param ctx Context object.
+ * @param input_len Number of bytes in the input.
+ * @param input Pointer to input buffer.
+ */
+void ghash_update_redundant(ghash_context_t *ctx, size_t input_len,
+                            const uint8_t *input);
 
 /**
  * Computes the correction terms needed for the masking scheme.

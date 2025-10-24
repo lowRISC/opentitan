@@ -12,6 +12,7 @@ cc_library(
     hdrs = ["p256.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//sw/device/lib/base:crc32",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
@@ -27,6 +28,7 @@ cc_library(
     hdrs = ["p384.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//sw/device/lib/base:crc32",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",

@@ -14,6 +14,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/tests/crypto/cryptotest/json/hmac_commands.h"
+#include "sw/device/tests/crypto/lib/crypto_test_lib.h"
 
 const unsigned int kOtcryptoHmacTagBytesSha256 = 32;
 const unsigned int kOtcryptoHmacTagBytesSha384 = 48;
@@ -64,13 +65,18 @@ status_t handle_hmac(ujson_t *uj) {
       LOG_ERROR("Unsupported HMAC key mode: %d", uj_hash_alg);
       return INVALID_ARGUMENT();
   }
+
+  // Select a random security level.
+  otcrypto_key_security_level_t sec_level;
+  TRY(determine_security_level(&sec_level));
+
   // Build the key configuration
   otcrypto_key_config_t config = {
       .version = kOtcryptoLibVersion1,
       .key_mode = key_mode,
       .key_length = uj_key.key_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = sec_level,
   };
   // Create key shares.
   uint32_t key_buf[ceil_div(uj_key.key_len, sizeof(uint32_t))];

@@ -16,7 +16,6 @@ status_t hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
   random_order_init(&order, word_len);
 
   size_t count = 0;
-  size_t expected_count = random_order_len(&order);
 
   // Immediately convert `src` and `dest` to addresses, which erases their
   // provenance and causes their addresses to be exposed (in the provenance
@@ -26,7 +25,7 @@ status_t hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
 
   // We need to launder `count`, so that the SW.LOOP-COMPLETION check is not
   // deleted by the compiler.
-  for (; launderw(count) < expected_count; count = launderw(count) + 1) {
+  for (; launderw(count) < word_len; count = launderw(count) + 1) {
     // The order values themselves are in units of words, but we need `byte_idx`
     // to be in units of bytes.
     //
@@ -46,7 +45,7 @@ status_t hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
     write_32(read_32(src), dest);
   }
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
-  HARDENED_CHECK_EQ(count, expected_count);
+  HARDENED_CHECK_EQ(count, word_len);
 
   return OTCRYPTO_OK;
 }
@@ -56,11 +55,10 @@ status_t hardened_memshred(uint32_t *dest, size_t word_len) {
   random_order_init(&order, word_len);
 
   size_t count = 0;
-  size_t expected_count = random_order_len(&order);
 
   uintptr_t data_addr = (uintptr_t)dest;
 
-  for (; count < expected_count; count = launderw(count) + 1) {
+  for (; count < word_len; count = launderw(count) + 1) {
     size_t byte_idx = launderw(random_order_advance(&order)) * sizeof(uint32_t);
     barrierw(byte_idx);
 
@@ -72,7 +70,7 @@ status_t hardened_memshred(uint32_t *dest, size_t word_len) {
   }
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
 
-  HARDENED_CHECK_EQ(count, expected_count);
+  HARDENED_CHECK_EQ(count, word_len);
 
   return OTCRYPTO_OK;
 }
@@ -83,7 +81,6 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
   random_order_init(&order, word_len);
 
   size_t count = 0;
-  size_t expected_count = random_order_len(&order);
 
   uintptr_t lhs_addr = (uintptr_t)lhs;
   uintptr_t rhs_addr = (uintptr_t)rhs;
@@ -93,7 +90,7 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
 
   // The loop is almost token-for-token the one above, but the copy is
   // replaced with something else.
-  for (; count < expected_count; count = launderw(count) + 1) {
+  for (; count < word_len; count = launderw(count) + 1) {
     size_t byte_idx = launderw(random_order_advance(&order)) * sizeof(uint32_t);
     barrierw(byte_idx);
 
@@ -117,7 +114,42 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
   }
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
 
-  HARDENED_CHECK_EQ(count, expected_count);
+  HARDENED_CHECK_EQ(count, word_len);
+  if (launder32(zeros) == 0) {
+    HARDENED_CHECK_EQ(ones, UINT32_MAX);
+    return kHardenedBoolTrue;
+  }
+
+  HARDENED_CHECK_NE(ones, UINT32_MAX);
+  return kHardenedBoolFalse;
+}
+
+hardened_bool_t consttime_memeq_byte(const void *lhs, const void *rhs,
+                                     size_t len) {
+  uint32_t zeros = 0;
+  uint32_t ones = UINT32_MAX;
+
+  size_t it = 0;
+  const unsigned char *lh = (const unsigned char *)lhs;
+  const unsigned char *rh = (const unsigned char *)rhs;
+  for (; it < len; ++it, ++lh, ++rh) {
+    const unsigned char a = *lh;
+    const unsigned char b = *rh;
+
+    // Launder one of the operands, so that the compiler cannot cache the result
+    // of the xor for use in the next operation.
+    //
+    // We launder `zeroes` so that compiler cannot learn that `zeroes` has
+    // strictly more bits set at the end of the loop.
+    zeros = launder32(zeros) | (launder32((uint32_t)a) ^ b);
+
+    // Same as above. The compiler can cache the value of `a[offset]`, but it
+    // has no chance to strength-reduce this operation.
+    ones = launder32(ones) & (launder32((uint32_t)a) ^ ~b);
+  }
+
+  HARDENED_CHECK_EQ(it, len);
+
   if (launder32(zeros) == 0) {
     HARDENED_CHECK_EQ(ones, UINT32_MAX);
     return kHardenedBoolTrue;
@@ -146,11 +178,10 @@ status_t hardened_xor(const uint32_t *restrict x, const uint32_t *restrict y,
   random_order_t order;
   random_order_init(&order, word_len);
   size_t count = 0;
-  size_t expected_count = random_order_len(&order);
 
   // XOR the mask with the first share. This loop is modelled off the one in
   // `hardened_memcpy`; see the comments there for more details.
-  for (; launderw(count) < expected_count; count = launderw(count) + 1) {
+  for (; launderw(count) < word_len; count = launderw(count) + 1) {
     size_t byte_idx = launderw(random_order_advance(&order)) * sizeof(uint32_t);
 
     // Prevent the compiler from re-ordering the loop.
@@ -174,7 +205,7 @@ status_t hardened_xor(const uint32_t *restrict x, const uint32_t *restrict y,
     write_32(read_32(destv) ^ read_32(randv), destv);
   }
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
-  HARDENED_CHECK_EQ(count, expected_count);
+  HARDENED_CHECK_EQ(count, word_len);
 
   return OTCRYPTO_OK;
 }
@@ -185,7 +216,6 @@ status_t hardened_xor_in_place(uint32_t *restrict x, const uint32_t *restrict y,
   random_order_t order;
   random_order_init(&order, word_len);
   size_t count = 0;
-  size_t expected_count = random_order_len(&order);
 
   // Cast pointers to `uintptr_t` to erase their provenance.
   uintptr_t x_addr = (uintptr_t)x;
@@ -193,7 +223,7 @@ status_t hardened_xor_in_place(uint32_t *restrict x, const uint32_t *restrict y,
 
   // XOR the mask with the first share. This loop is modelled off the one in
   // `hardened_memcpy`; see the comments there for more details.
-  for (; launderw(count) < expected_count; count = launderw(count) + 1) {
+  for (; launderw(count) < word_len; count = launderw(count) + 1) {
     size_t byte_idx = launderw(random_order_advance(&order)) * sizeof(uint32_t);
 
     // Prevent the compiler from re-ordering the loop.
@@ -207,7 +237,7 @@ status_t hardened_xor_in_place(uint32_t *restrict x, const uint32_t *restrict y,
     write_32(read_32(xv) ^ read_32(yv), xv);
   }
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
-  HARDENED_CHECK_EQ(count, expected_count);
+  HARDENED_CHECK_EQ(count, word_len);
 
   return OTCRYPTO_OK;
 }

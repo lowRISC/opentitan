@@ -4,9 +4,11 @@
 
 #include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
 
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('g', 'h', 'a')
@@ -144,6 +146,32 @@ static uint8_t reverse_bits(uint8_t byte) {
   return out;
 }
 
+uint32_t ghash_context_integrity_checksum(const ghash_context_t *ghash_ctx) {
+  uint32_t ctx;
+  crc32_init(&ctx);
+  // Compute the checksum only over a single share to avoid side-channel
+  // leakage. From a FI perspective only covering one key share is fine as
+  // (a) manipulating the second share with FI has only limited use to an
+  // adversary and (b) when manipulating the entire pointer to the key structure
+  // the checksum check fails.
+  crc32_add(&ctx, (unsigned char *)ghash_ctx->tbl0, sizeof(ghash_ctx->tbl0));
+  crc32_add(&ctx, (unsigned char *)&ghash_ctx->correction_term0,
+            sizeof(ghash_ctx->correction_term0));
+  crc32_add(&ctx, (unsigned char *)&ghash_ctx->enc_initial_counter_block0,
+            sizeof(ghash_ctx->enc_initial_counter_block0));
+  // Note that we do not calculate the crc over the state.
+  return crc32_finish(&ctx);
+}
+
+hardened_bool_t ghash_context_integrity_checksum_check(
+    const ghash_context_t *ghash_ctx) {
+  if (ghash_ctx->checksum ==
+      launder32(ghash_context_integrity_checksum(ghash_ctx))) {
+    return kHardenedBoolTrue;
+  }
+  return kHardenedBoolFalse;
+}
+
 void ghash_init_subkey(const uint32_t *hash_subkey, ghash_block_t *tbl) {
   // Initialize 0 * H = 0.
   memset(tbl[0].data, 0, kGhashBlockNumBytes);
@@ -171,6 +199,8 @@ void ghash_init(ghash_context_t *ctx) {
   hardened_memshred(ctx->state1.data, kGhashBlockNumWords);
   // Initialize the ghash block counter.
   ctx->ghash_block_cnt = 0;
+
+  ctx->checksum = ghash_context_integrity_checksum(ctx);
 }
 
 /**
@@ -248,6 +278,7 @@ static ghash_block_t galois_mul_state_key(ghash_block_t state,
 static void ghash_process_block(ghash_context_t *ctx, ghash_block_t *block) {
   ghash_block_t s0_tmp;
   ghash_block_t s1_tmp;
+
   if (ctx->ghash_block_cnt == 0) {
     // Process share 0.
     // share0_tmp = (S0 + T0) * H0
@@ -262,14 +293,16 @@ static void ghash_process_block(ghash_context_t *ctx, ghash_block_t *block) {
     hardened_xor_in_place(ctx->state0.data, ctx->correction_term0.data,
                           kGhashBlockNumWords);
 
-    // TODO(#28013): randomize register file content before processing the
-    // second share.
+    // Clear the RF before operating on the second share to avoid leakage
+    // between both shares.
+    ibex_clear_rf();
 
     // Process share 1.
     // share1_tmp = (S1 + T0) * H1
     hardened_memcpy(s1_tmp.data, block->data, kGhashBlockNumWords);
     hardened_xor_in_place(s1_tmp.data, ctx->enc_initial_counter_block1.data,
                           kGhashBlockNumWords);
+    ibex_clear_rf();
     s1_tmp = galois_mul_state_key(s1_tmp, ctx->tbl1);
 
     // Apply the correction terms for state share 1.
@@ -304,6 +337,10 @@ static void ghash_process_block(ghash_context_t *ctx, ghash_block_t *block) {
     hardened_xor_in_place(ctx->state1.data, ctx->correction_term1.data,
                           kGhashBlockNumWords);
   }
+
+  // Check that the context's checksum is correct.
+  HARDENED_CHECK_EQ(ghash_context_integrity_checksum_check(ctx),
+                    kHardenedBoolTrue);
 
   // Increment the number of processed ghash block counter.
   ctx->ghash_block_cnt++;
@@ -356,6 +393,24 @@ void ghash_update(ghash_context_t *ctx, size_t input_len,
   }
 }
 
+void ghash_update_redundant(ghash_context_t *ctx, size_t input_len,
+                            const uint8_t *input) {
+  // Copy ctx.
+  ghash_context_t ctx_redundant;
+  memcpy(&ctx_redundant, ctx, sizeof(ctx_redundant));
+
+  ghash_update(ctx, input_len, input);
+
+  ghash_update(&ctx_redundant, input_len, input);
+
+  // Compare the GHASH state. Do this only at a single share to avoid
+  // introducing SCA leakage. Use consttime_memeq_byte() to avoid DFA.
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(&ctx->state0.data, ctx_redundant.state0.data,
+                           kGhashBlockNumBytes),
+      kHardenedBoolTrue);
+}
+
 void ghash_handle_enc_initial_counter_block(
     const uint32_t *enc_initial_counter_block0,
     const uint32_t *enc_initial_counter_block1, ghash_context_t *ctx) {
@@ -379,9 +434,16 @@ void ghash_handle_enc_initial_counter_block(
                   enc_initial_counter_block0, kGhashBlockNumWords);
   hardened_memcpy(ctx->enc_initial_counter_block1.data,
                   enc_initial_counter_block1, kGhashBlockNumWords);
+
+  // Update the checksum.
+  ctx->checksum = ghash_context_integrity_checksum(ctx);
 }
 
 void ghash_final(ghash_context_t *ctx, uint32_t *result) {
+  // Check that the context's checksum is correct.
+  HARDENED_CHECK_EQ(ghash_context_integrity_checksum_check(ctx),
+                    kHardenedBoolTrue);
+
   // Tag = (state0 + state1) + S1
   ghash_block_t tmp_block;
   ghash_block_t final_block;

@@ -27,29 +27,41 @@
 OT_WARN_UNUSED_RESULT
 static status_t digest_check(const otcrypto_hash_digest_t digest) {
   size_t num_words = 0;
+  otcrypto_hash_mode_t used_mode = launder32(0);
   switch (digest.mode) {
     case kOtcryptoHashModeSha3_224:
+      used_mode = launder32(used_mode) | kOtcryptoHashModeSha3_224;
       num_words = 224 / 32;
       break;
     case kOtcryptoHashModeSha256:
-      OT_FALLTHROUGH_INTENDED;
+      used_mode = launder32(used_mode) | kOtcryptoHashModeSha256;
+      num_words = 256 / 32;
+      break;
     case kOtcryptoHashModeSha3_256:
+      used_mode = launder32(used_mode) | kOtcryptoHashModeSha3_256;
       num_words = 256 / 32;
       break;
     case kOtcryptoHashModeSha384:
-      OT_FALLTHROUGH_INTENDED;
+      used_mode = launder32(used_mode) | kOtcryptoHashModeSha384;
+      num_words = 384 / 32;
+      break;
     case kOtcryptoHashModeSha3_384:
+      used_mode = launder32(used_mode) | kOtcryptoHashModeSha3_384;
       num_words = 384 / 32;
       break;
     case kOtcryptoHashModeSha512:
-      OT_FALLTHROUGH_INTENDED;
+      used_mode = launder32(used_mode) | kOtcryptoHashModeSha512;
+      num_words = 512 / 32;
+      break;
     case kOtcryptoHashModeSha3_512:
+      used_mode = launder32(used_mode) | kOtcryptoHashModeSha3_512;
       num_words = 512 / 32;
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_GT(num_words, 0);
+  HARDENED_CHECK_EQ(launder32(used_mode), digest.mode);
 
   if (num_words != digest.len) {
     return OTCRYPTO_BAD_ARGS;
@@ -182,8 +194,9 @@ status_t rsa_signature_verify_finalize(
 
   // Call the appropriate `finalize()` operation to get the recovered encoded
   // message.
-  switch (num_words) {
+  switch (launder32(num_words)) {
     case kRsa2048NumWords: {
+      HARDENED_CHECK_EQ(num_words, kRsa2048NumWords);
       rsa_2048_int_t recovered_message;
       HARDENED_TRY(rsa_modexp_2048_finalize(&recovered_message));
       return encoded_message_verify(
@@ -191,6 +204,7 @@ status_t rsa_signature_verify_finalize(
           ARRAYSIZE(recovered_message.data), verification_result);
     }
     case kRsa3072NumWords: {
+      HARDENED_CHECK_EQ(num_words, kRsa3072NumWords);
       rsa_3072_int_t recovered_message;
       HARDENED_TRY(rsa_modexp_3072_finalize(&recovered_message));
       return encoded_message_verify(
@@ -198,6 +212,7 @@ status_t rsa_signature_verify_finalize(
           ARRAYSIZE(recovered_message.data), verification_result);
     }
     case kRsa4096NumWords: {
+      HARDENED_CHECK_EQ(num_words, kRsa4096NumWords);
       rsa_4096_int_t recovered_message;
       HARDENED_TRY(rsa_modexp_4096_finalize(&recovered_message));
       return encoded_message_verify(

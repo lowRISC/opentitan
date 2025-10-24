@@ -42,7 +42,7 @@ void crc32_add32(uint32_t *ctx, uint32_t word);
  *
  * @param[in, out] ctx Context variable.
  * @param buf A buffer, little-endian.
- * @param len Size of the buffer.
+ * @param len Byte length of the buffer.
  */
 void crc32_add(uint32_t *ctx, const void *buf, size_t len);
 

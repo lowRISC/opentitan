@@ -27,12 +27,14 @@ CRYPTOTEST_EXEC_ENVS = {
 
 FIRMWARE_DEPS = [
     "//sw/device/tests/crypto/cryptotest/firmware:aes",
+    "//sw/device/tests/crypto/cryptotest/firmware:aes_gcm",
     "//sw/device/tests/crypto/cryptotest/firmware:drbg",
     "//sw/device/tests/crypto/cryptotest/firmware:ecdh",
     "//sw/device/tests/crypto/cryptotest/firmware:ecdsa",
     "//sw/device/tests/crypto/cryptotest/firmware:hash",
     "//sw/device/tests/crypto/cryptotest/firmware:hmac",
     "//sw/device/tests/crypto/cryptotest/firmware:kmac",
+    "//sw/device/tests/crypto/cryptotest/firmware:rsa",
     "//sw/device/tests/crypto/cryptotest/firmware:sphincsplus",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",

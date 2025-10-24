@@ -88,10 +88,24 @@ status_t hardened_memshred(uint32_t *dest, size_t word_len);
  *
  * @param lhs The first buffer to compare.
  * @param rhs The second buffer to compare.
- * @param word_len The number of words to write.
+ * @param word_len The number of words to compare.
  */
 hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
                                size_t word_len);
+
+/**
+ * Constant time memeq implementation that can also handle non 32-bit aligned
+ * buffers.
+ *
+ * Important: not hardened against SCA leakage, only guarantees constant time
+ * execution.
+ *
+ * @param lhs The first buffer to compare.
+ * @param rhs The second buffer to compare.
+ * @param word_len The number of bytes to compare.
+ */
+hardened_bool_t consttime_memeq_byte(const void *lhs, const void *rhs,
+                                     size_t len);
 
 /**
  * Combines two word buffers with XOR and store the result in the dest. buffer.

@@ -23,7 +23,9 @@ extern "C" {
  * input automatically from the entropy source.
  *
  * The personalization string may empty, and may be up to 48 bytes long; any
- * longer will result in an error.
+ * longer will result in an error. If the string is word aligned and the size
+ * is a multiple of the word length (32-bit), it is handled using SCA hardened
+ * memory operations. If not, a non SCA hardened fallback is used.
  *
  * @param perso_string Pointer to personalization bitstring.
  * @return Result of the DRBG instantiate operation.
@@ -52,7 +54,9 @@ otcrypto_status_t otcrypto_drbg_reseed(
  *
  * The entropy input must be exactly 384 bits long (48 bytes). The
  * personalization string must not be longer than the entropy input, and may be
- * empty.
+ * empty. If the string is word aligned and the size is a multiple of the word
+ * length (32-bit), it is handled using SCA hardened memory operations. If not,
+ * a non SCA hardened fallback is used.
  *
  * @param entropy Pointer to the user defined entropy value.
  * @param personalization_string Pointer to personalization bitstring.

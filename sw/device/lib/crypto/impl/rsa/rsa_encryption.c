@@ -73,8 +73,9 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
 
   // Call the appropriate `finalize()` operation to get the recovered encoded
   // message.
-  switch (num_words) {
+  switch (launder32(num_words)) {
     case kRsa2048NumWords: {
+      HARDENED_CHECK_EQ(num_words, kRsa2048NumWords);
       rsa_2048_int_t recovered_message;
       HARDENED_TRY(rsa_modexp_2048_finalize(&recovered_message));
       return rsa_padding_oaep_decode(
@@ -82,6 +83,7 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
           ARRAYSIZE(recovered_message.data), plaintext, plaintext_len);
     }
     case kRsa3072NumWords: {
+      HARDENED_CHECK_EQ(num_words, kRsa3072NumWords);
       rsa_3072_int_t recovered_message;
       HARDENED_TRY(rsa_modexp_3072_finalize(&recovered_message));
       return rsa_padding_oaep_decode(
@@ -89,6 +91,7 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
           ARRAYSIZE(recovered_message.data), plaintext, plaintext_len);
     }
     case kRsa4096NumWords: {
+      HARDENED_CHECK_EQ(num_words, kRsa4096NumWords);
       rsa_4096_int_t recovered_message;
       HARDENED_TRY(rsa_modexp_4096_finalize(&recovered_message));
       return rsa_padding_oaep_decode(

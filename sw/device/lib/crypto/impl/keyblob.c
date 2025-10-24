@@ -159,21 +159,22 @@ status_t keyblob_ensure_xor_masked(const otcrypto_key_config_t config) {
   otcrypto_key_type_t key_type =
       (otcrypto_key_type_t)(launder32((uint32_t)config.key_mode) >> 16);
   int32_t result = (int32_t)launder32((uint32_t)(OTCRYPTO_OK.value ^ key_type));
+  otcrypto_key_type_t key_type_used = launder32(0);
   switch (launder32(key_type)) {
     case kOtcryptoKeyTypeAes:
-      HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeAes);
+      key_type_used = launder32(key_type_used) | kOtcryptoKeyTypeAes;
       result ^= launder32(kOtcryptoKeyTypeAes);
       break;
     case kOtcryptoKeyTypeHmac:
-      HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeHmac);
+      key_type_used = launder32(key_type_used) | kOtcryptoKeyTypeHmac;
       result ^= launder32(kOtcryptoKeyTypeHmac);
       break;
     case kOtcryptoKeyTypeKmac:
-      HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeKmac);
+      key_type_used = launder32(key_type_used) | kOtcryptoKeyTypeKmac;
       result ^= launder32(kOtcryptoKeyTypeKmac);
       break;
     case kOtcryptoKeyTypeKdf:
-      HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeKdf);
+      key_type_used = launder32(key_type_used) | kOtcryptoKeyTypeKdf;
       result ^= launder32(kOtcryptoKeyTypeKdf);
       break;
     case kOtcryptoKeyTypeEcc:
@@ -186,6 +187,10 @@ status_t keyblob_ensure_xor_masked(const otcrypto_key_config_t config) {
       // Unrecognized key type.
       return OTCRYPTO_BAD_ARGS;
   }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(key_type_used), key_type);
+
   HARDENED_CHECK_NE(config.key_mode >> 16, kOtcryptoKeyTypeEcc);
   HARDENED_CHECK_NE(config.key_mode >> 16, kOtcryptoKeyTypeRsa);
 
@@ -202,11 +207,7 @@ status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
   // share0 = key ^ mask, share1 = mask
   size_t key_words = keyblob_share_num_words(config);
   uint32_t share0[key_words];
-  size_t i = 0;
-  for (; launder32(i) < key_words; i++) {
-    share0[i] = key[i] ^ mask[i];
-  }
-  HARDENED_CHECK_EQ(i, key_words);
+  HARDENED_TRY(hardened_xor(key, mask, key_words, share0));
 
   return keyblob_from_shares(share0, mask, config, keyblob);
 }
@@ -249,9 +250,8 @@ status_t keyblob_key_unmask(const otcrypto_blinded_key_t *key,
   uint32_t *share1;
   HARDENED_TRY(keyblob_to_shares(key, &share0, &share1));
 
-  for (size_t i = 0; i < unmasked_key_len; i++) {
-    unmasked_key[i] = share0[i] ^ share1[i];
-  }
+  HARDENED_TRY(hardened_xor(share0, share1, unmasked_key_len, unmasked_key));
+
   return OTCRYPTO_OK;
 }
 
