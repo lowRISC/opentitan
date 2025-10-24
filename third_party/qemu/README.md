@@ -1,48 +1,112 @@
 # QEMU
 
-By default, the build system will download a pre-built release of our [QEMU fork](https://github.com/lowRISC/qemu/).
-In order to support local development and testing, the build system also supports a way to build QEMU from source.
-See instructions below.
+For instructions on setting up QEMU for local development and troubleshooting steps, see the [setup guide](./setup.md).
 
-## Building from source using Bazel
+## Introduction
 
-To perform local development, you first need to check out a copy of [QEMU fork](https://github.com/lowRISC/qemu/) and switch to the correct branch.
+[QEMU](https://www.qemu.org/) is an open-source project primarily supporting virtualization, user-mode emulation and full-system (machine) emulation.
+OpenTitan is an example of full-system emulation, where we emulate an OpenTitan RISC-V 32-bit machine (equivalent to a "top") to allow anyone to run OpenTitan programs on any generic supported host machine, such as an x86-64 PC.
 
-The following step must only be done once:
-```bash
-# Run the following commands at the root of your QEMU checkout.
-touch REPO.bazel
-ln -s "/path/to/your/opentitan/repo/third_party/qemu/BUILD.qemu_opentitan.bazel" "BUILD.bazel"
-```
+The predominant advantage of emulating with QEMU is its speed: QEMU internally uses a dynamic translation backend called [TCG](https://www.qemu.org/docs/master/devel/tcg.html) (_Tiny Code Generator_) which optimizes translation of blocks of guest (e.g. RISC-V) instructions to equivalent host (e.g. x86-64) instructions to execute.
+By using the QEMU emulator, tests and custom software stacks for OpenTitan can be executed and tested by integrators, all running on a single host device without requiring specialized hardware.
+This can often be done at faster speeds than hardware simulation and in parallel, at the cost of completely accurate behavior.
 
-Once done, every time you compile something using QEMU in OpenTitan, you need to tell Bazel to use your QEMU repository instead of downloading a release archive.
-This is done by passing the following command-line argument to bazel:
-```
---override_repository="+qemu+qemu_opentitan_src=/path/to/your/qemu/repo/"
-```
-For example:
-```bash
-./bazelisk.sh cquery --override_repository=... @qemu_opentitan//:build/qemu-system-riscv32
-```
-Since this can become quite tedious, you also have the option of adding this to your local bazelrc file. The recommended way of doing is to create a `.bazelrc-site` file at the root of the repo (if does not exists) and add:
-```
-common --override_repository=...
-```
+OpenTitan's emulated machines are currently developed on a [fork](https://github.com/lowRISC/qemu) of upstream QEMU to better facilitate the implementation of non-standard Ibex and OpenTitan features.
+There are currently two main emulation targets: Earlgrey 1.0.0, and Darjeeling (targeting the moving `master` branch).
+Refer to the QEMU repository's documentation for more information on the development and usage of the QEMU OpenTitan machines - this page instead focuses on details on integrating QEMU for testing SW.
 
-**Important note:** when using this override, Bazel will essentially share your QEMU source repository.
-In particular, the content of the `build/` directory will be used to support incremental compilation in Bazel.
-The content of this directory can change when you run Bazel command.
-Bazel will automatically watch all files in the QEMU repository so that it can rebuild it if it changes.
+## Scope
 
-## Test parameters
+A more comprehensive description of supported features and devices can be found in the relevant [Earlgrey](https://github.com/lowRISC/qemu/blob/ot-9.2.0/docs/opentitan/earlgrey.md) and [Darjeeling](https://github.com/lowRISC/qemu/blob/ot-9.2.0/docs/opentitan/darjeeling.md) QEMU documentation pages.
+Note that these may not be up-to-date compared to the implementation, and as such the source files should be treated as the root source of truth.
+Note also that we pin a specific QEMU release in Bazel, and so the supported features may differ compared to when this release was taken (see the [setup guide](./setup.md)).
+
+Currently, only the Earlgrey machine (`ot-earlgrey`) has any support within OpenTitanLib for test integration, primarily on the `earlgrey_1.0.0` branch. As of the time of writing, a **non-exhaustive** list of some of the major features not emulated by QEMU include:
+* Mostly or entirely unimplemented devices: AST, pattgen, PWM, sensor_ctrl, sysrst_ctrl, usbdev.
+* Power manager slow FSM is bypassed, with no support for low power entry / deep sleeps.
+* A pinmux block is implemented, but all connections currently go via a CharDev and do not interact with pinmux.
+* Non-Maskable Interrupts (NMIs) are not implemented due to Ibex's use of non-standard NMIs.
+* Key masking (AES, KMAC, etc.) is not implemented.
+* Entropy FSMs & scheduling for entropy consumers (e.g. KMAC, keymgr) are broadly unimplemented.
+* Synchronous (e.g. I2C) or timing-based (UART) communication peripherals are often limited in support due to the inherent inaccuracy of QEMU's emulation.
+* Many other implemented features across all IPs, such as flash ECCs & scrambling, clkmgr gating and jitter, aon_timer pauses, alert emulation for several devices, etc.
+
+## Considerations & Constraints
+
+### Timing and Cycle Accuracy
+
+QEMU is _not_ a cycle-accurate emulator, as its main goal is emulation speed.
+The instruction count reported in `mcycle` will not accurately reflect the number of instructions that have been executed.
+When using a hardware timer (e.g. the `aon_timer` or `rv_timer`), the timer will expire after _approximately_ the correct amount of time, but will not be exactly accurate.
+
+QEMU has mechanisms for pacing the virtual CPU to match hardware timers, but in general it should be expected that both hardware timers and instruction counts are not correct in QEMU.
+This can be a particular challenge for security countermeasures or software mechanisms that opt to set tighter timing thresholds.
+One potential solution is modifying the `icount` shift parameter, which informs the TCG's instruction counting feature when performing system emulation.
+When providing an icount shift of `N`, the virtual CPU will execute one instruction every `2^N` nanoseconds of virtual time, meaning that changing this parameter can potentially allow emulation to "pass" tighter timing checks at the cost of less accurate timing generally.
+By default, an `icount` of 6 is used to align execution time with wall-clock time.
+
+### The TLB and ePMP
+
+Hardware will often use a Translation Lookaside Buffer (TLB) as a high-speed cache to accelerate translation from virtual addresses to physical addresses.
+QEMU mimics this concept with its own address translation cache that it calls the [TLB](https://www.qemu.org/docs/master/devel/tcg.html#mmu-emulation), which speeds up translation from guest virtual addresses to either virtual addresses of host RAM or MMIO operations for emulated devices.
+
+When developing, it is worth being aware that partially or entirely invalidating the TLB (via mechanisms such as self-modifying flash code, or writes to ePMP CSRs) can therefore decrease performance, as QEMU will temporarily lose the speedup from cached address translations.
+
+One particularly important note is that for RISC-V target emulation, 4 KiB pages are used for caching.
+When a PMP configuration is used that is not aligned to this page size, any address translation that falls within the misaligned region will not be cached nor make use of the TLB, due to the possibility of more granular PMP regions splitting a page with different permissions.
+As a result, any code that falls in a misaligned PMP region will be executed with a _significant_ slowdown compared to regular execution.
+
+Earlgrey's current ePMP configurations tend to make use of fine-grained ranges for permissions to increase security posture, which means more potential for QEMU emulation to be slowed.
+In particular, Earlgrey's ROM & ROM_EXT text sections (containing the executable code) and owner firmware are all delineated using fine-grained PMP ranges, meaning code at the end (and start, if starting at a misaligned offset) will see performance decreases.
+The 4 byte stack guard placed at the top of stack may also cause issues when using all available stack.
+For any hot loops in the code, this can result in a substantial increase in emulation time.
+For example, the `sec_mmio` checks often cause large slowdown in the ROM.
+
+### Host Performance and Parallelism
+
+As QEMU emulates by translating guest code to host instructions, the performance of QEMU will depend on the performance characteristics and processing load of the host device.
+Although QEMU has mechanisms for pacing, this can mean that different behaviors or outcomes are observed when executing QEMU on different host devices - particularly with regards to timing.
+One major advantage of QEMU is that tests can be executed in parallel, but doing so will also increase host processing load and may exacerbate timing differences.
+Hence, if the most reliable performance is required, instances of QEMU should be serially executed (e.g. passing `--test_output=streamed` or using `-j 1` for Bazel testing).
+
+Currently, much OpenTitan code has been designed to only execute on FPGA or silicon environments, or perhaps in cycle-accurate simulation.
+As such, there may be many areas of code which make implicit timing assumptions that no longer hold true when emulating in QEMU.
+As such, it may be required to conditionally change these timing assumptions on QEMU environments, or to modify the [`icount` parameter](#timing-and-cycle-accuracy) for a test to be able to meet timing checks.
+Where possible, the host and device will ideally synchronize without implicit timing assumptions.
+
+### Host Communication
+
+For communication between host and device (e.g. via UART, SPI, GPIO, etc.) QEMU allows for the creation of [CharDevs](https://www.qemu.org/docs/master/system/device-emulation.html).
+CharDevs are generic and flexible interfaces for communication, introducing an abstraction layer that supports a variety of protocols.
+Host-device communication in OpenTitanTool mainly uses PTYs (pseudo serial ports) and TCP sockets.
+
+Importantly, QEMU's lack of accurate cycle & timing emulation can limit the features that are possible to emulate for these communication interfaces.
+For example, all UART communication goes via the CharDev and is not based on sampling at timing intervals, and so it is not possible to support the [UART oversampling](https://opentitan.org/book/hw/ip/uart/doc/theory_of_operation.html#reception) mechanism.
+
+### Flash Images and Bootstrapping
+
+Earlgrey emulation and OpenTitanLib QEMU support are developed enough to support flows that require bootstrapping firmware.
+In spite of this, [slow emulation of the ROM](#the-tlb-and-epmp) means that we generally prefer to splice firmware into the initial flash image and avoid bootstrapping entirely.
+This avoids the delay of bootstrapping and additional boot times from resetting, which can compound to a large increase in execution time across multiple test runs.
+
+For software flows where it is genuinely desired to bootstrap firmware, appropriate [test parameters](#test-parameters) can be configured to use the bootstrapping flow instead, or a custom host harness or test command can be used.
+
+## Testing
+
+From the perspective of OpenTitan testing, QEMU is treated as a separate set of execution environments (e.g. `sim_qemu_rom_ext`) which use the QEMU transport interface in OpenTitanLib, allowing communication between the the host Rust code and the emulated QEMU OpenTitan device.
+
+### Test parameters
 
 Tests with a `sim_qemu_*` execution environment can be further configured by adding `qemu_params` to the test target.
 The currently supported parameters are:
 
 * `icount` (`int`): scale for Ibex's reported execution speed (`1GHz >> icount`) (defaults to 6).
 * `globals` (`dict[str, str]`): global properties for the QEMU machine.
-* `traces` (`[str]`): globs of QEMU traces to enable for debugging purposes.
+* `traces` (`[str]`): globs of [QEMU traces](https://qemu-project.gitlab.io/qemu/devel/tracing.html) to enable for debugging purposes.
+QEMU accepts different trace event patterns with support for wildcard matching with an `"*"`.
 * `qemu_args` (`[str]`): additional command line flags to pass to QEMU.
+* `bootstrap` (`bool`): by setting to `True`, bootstrap test firmware instead of splicing a flash image.
+Mutually exclusive with specifying a custom test harness.
 
 Example:
 
@@ -68,25 +132,22 @@ opentitan_test(
 )
 ```
 
-## Troubleshooting
+### Command-line arguments
 
-### Bazel tells me that `+qemu+qemu_opentitan_src` is not a valid repository name
+It can often be inconvenient to manually modify test targets to contain the desired list of QEMU arguments whilst debugging.
+In particular, manually adding and removing traces can quickly become unwieldy.
 
-Unfortunately bazel requires the canonical name of the repository to be given on the command line and this name may change in the future.
-If this happens, you can run the following commands to figure out the canonical name:
-```bash
-./bazelisk.sh mod dump_repo_mapping "" | jq .qemu_opentitan_src
+Instead, you can pass in arguments to QEMU as command-line arguments using the form `--qemu-arg="X"` or `--qemu-args="X Y Z"`.
+The former forwards a single argument `X` to QEMU, whereas the latter forwards `X`, `Y` and `Z` each as _different_ arguments to QEMU.
+
+For example, to manually add some traces for the USB device and alert updates whilst debugging a test, you might run:
 ```
-If the opentitan repository is not the root repository,
-you will need to update the above command to pass the canonical name of the opentitan repository
-instead of `""`.
+./bazelisk.sh test //path_to_qemu_test:my_test --test_arg=--qemu-args="--trace ot_usbdev* --trace ot*update_alert*"
+```
 
-### How does it work?
+### Logging
 
-When passing `--override_repository="+qemu+qemu_opentitan_src=/path/to/your/qemu/repo/"`, the `qemu_bazel_build_or_forward` repository rules
-detect the override by looking for a specific marker file which is added to the release archive.
-If an override is detected, the repository rule will run the `build_qemu.sh` script inside the user's QEMU source directory.
-This script configures QEMU if necessary and then builds everything using ninja.
-Finally, it uses the OpenTitan release script to create a fake release archive.
-The repository rule then extracts this archive into the repository so that the content looks identical to normal, downloaded release.
-Finally, the repository rule also asks Bazel to watch all the files in the QEMU source directory, except for the `build/` directory.
+When executing a test in a QEMU execution environment, the default behavior is that the QEMU log output stream is combined with the regular UART console output stream.
+When both interfaces are simultaneously written, it is possible that output may be disrupted by the characters interleaved from both streams.
+When tracing in particular, the QEMU log can be written much faster than regular console output, causing this behavior to appear.
+These outputs are not currently buffered by line breaks before combining the streams, meaning that it is possible for one line of console output to be split across multiple QEMU log lines.
