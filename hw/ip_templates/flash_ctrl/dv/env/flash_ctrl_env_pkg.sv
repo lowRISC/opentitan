@@ -361,11 +361,11 @@ package flash_ctrl_env_pkg;
            bit [FlashKeySize-1:0]   flash_addr_key, bit [FlashKeySize-1:0] flash_data_key,
            bit dis = 1);
     bit [FlashDataWidth-1:0] masked_data;
+    bit [FlashAddrWidth-1:0] word_addr = byte_addr >> FlashDataByteWidth;
 
-    masked_data = flash_ctrl_bkdr_util::flash_create_masked_data(data, byte_addr, flash_addr_key,
+    masked_data = flash_ctrl_bkdr_util::flash_create_masked_data(data, word_addr, flash_addr_key,
                                                                  flash_data_key);
     if (dis) begin
-      bit [FlashAddrWidth-1:0] word_addr = byte_addr >> FlashDataByteWidth;
       `uvm_info("SCR_DBG", $sformatf("addr:%x  mask:%x  din:%x dout:%x",
                                      word_addr,
                                      flash_ctrl_bkdr_util::flash_galois_multiply(flash_addr_key,

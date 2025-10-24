@@ -96,6 +96,7 @@ filesets:
       - seq_lib/flash_ctrl_hw_read_seed_err_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_hw_prog_rma_wipe_err_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_rd_ooo_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_basic_rw_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

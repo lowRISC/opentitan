@@ -344,7 +344,7 @@
       name: flash_ctrl_rw_evict_all_en
       uvm_test_seq: flash_ctrl_rw_evict_vseq
       run_opts: ["+scb_otf_en=1", "+ecc_mode=1", "+en_always_read=1",
-                 "+en_always_prog=1", "en_rnd_data=0"]
+                 "+en_always_prog=1", "+en_rnd_data=0"]
       reseed: 40
     }
     {
@@ -471,6 +471,11 @@
       uvm_test_seq: flash_ctrl_host_addr_infection_vseq
       run_opts: ["+scb_otf_en=1", "+ecc_mode=1",
                  "+otf_num_hr=100", "+en_always_read=1"]
+      reseed: 3
+    }
+    {
+      name: flash_ctrl_basic_rw
+      uvm_test_seq: flash_ctrl_basic_rw_vseq
       reseed: 3
     }
  ]
