@@ -42,8 +42,8 @@ status_t test_ctr_drbg_ctr0_smoke(const dif_csrng_t *csrng) {
                                      &kEntropyInput));
 
   uint32_t got[kExpectedOutputLen];
-  TRY(csrng_testutils_cmd_generate_run(csrng, got, kExpectedOutputLen));
-  TRY(csrng_testutils_cmd_generate_run(csrng, got, kExpectedOutputLen));
+  TRY(csrng_testutils_cmd_generate_run(csrng, NULL, got, kExpectedOutputLen));
+  TRY(csrng_testutils_cmd_generate_run(csrng, NULL, got, kExpectedOutputLen));
 
   const uint32_t kExpectedOutput[kExpectedOutputLen] = {
       0xe48bb8cb, 0x1012c84c, 0x5af8a7f1, 0xd1c07cd9, 0xdf82ab22, 0x771c619b,

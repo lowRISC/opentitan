@@ -18,6 +18,13 @@ status_t test_ctr_drbg_ctr0(const dif_csrng_t *csrng) {
   TRY(dif_csrng_uninstantiate(csrng));
   TRY(csrng_testutils_fips_instantiate_kat(csrng, /*fail_expected=*/false));
   TRY(csrng_testutils_fips_generate_kat(csrng));
+
+  // Additional test with adata supplied
+  TRY(dif_csrng_uninstantiate(csrng));
+  TRY(csrng_testutils_fips_instantiate_kat_adata(csrng, false));
+  TRY(csrng_testutils_fips_generate_kat_adata1(csrng));
+  TRY(csrng_testutils_fips_generate_kat_adata2(csrng));
+
   return OK_STATUS();
 }
 

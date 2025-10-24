@@ -294,19 +294,19 @@ TEST_F(CommandTest, GenerateOk) {
                 {{CSRNG_SW_CMD_STS_CMD_RDY_BIT, true}});
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET,
                  0x00004003 | kMultiBitBool4False << 8);
-  EXPECT_DIF_OK(dif_csrng_generate_start(&csrng_, /*len=*/16));
+  EXPECT_DIF_OK(dif_csrng_generate_start(&csrng_, nullptr, /*len=*/16));
 
   // 576bits = 18 x 32bit = 5 x 128bit blocks (rounded up)
   EXPECT_READ32(CSRNG_SW_CMD_STS_REG_OFFSET,
                 {{CSRNG_SW_CMD_STS_CMD_RDY_BIT, true}});
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET,
                  0x00005003 | kMultiBitBool4False << 8);
-  EXPECT_DIF_OK(dif_csrng_generate_start(&csrng_, /*len=*/18));
+  EXPECT_DIF_OK(dif_csrng_generate_start(&csrng_, nullptr, /*len=*/18));
 }
 
 TEST_F(CommandTest, GenerateBadArgs) {
-  EXPECT_DIF_BADARG(dif_csrng_generate_start(nullptr, /*len=*/1));
-  EXPECT_DIF_BADARG(dif_csrng_generate_start(&csrng_, /*len=*/0));
+  EXPECT_DIF_BADARG(dif_csrng_generate_start(nullptr, nullptr, /*len=*/1));
+  EXPECT_DIF_BADARG(dif_csrng_generate_start(&csrng_, nullptr, /*len=*/0));
 }
 
 TEST_F(CommandTest, GenerateOutOfRange) {
@@ -316,7 +316,7 @@ TEST_F(CommandTest, GenerateOutOfRange) {
     kGenerateLenOutOfRange = 0x800 * 4 + 1,
   };
   EXPECT_DIF_OUTOFRANGE(
-      dif_csrng_generate_start(&csrng_, kGenerateLenOutOfRange));
+      dif_csrng_generate_start(&csrng_, nullptr, kGenerateLenOutOfRange));
 }
 
 TEST_F(CommandTest, UninstantiateOk) {
