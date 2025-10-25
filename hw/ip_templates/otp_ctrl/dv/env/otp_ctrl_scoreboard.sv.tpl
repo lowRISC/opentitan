@@ -14,6 +14,8 @@ secret_parts = [part for part in otp_mmap["partitions"] if
                 part["secret"]]
 ## Partitions + LCI + DAI
 num_err_code = len(otp_mmap["partitions"]) + 2
+## Number of partition status registers (32 bits per register)
+num_partition_status_regs = (len(otp_mmap["partitions"]) + 31) // 32
 %>\
 class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   extends cip_base_scoreboard #(
@@ -52,6 +54,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   // Status related variables
   bit under_chk, under_dai_access;
   bit [TL_DW-1:0] exp_status, status_mask;
+  // Partition status registers - one register per 32 partitions
+  bit [TL_DW-1:0] exp_partition_status[${num_partition_status_regs}], partition_status_mask[${num_partition_status_regs}];
 
   otp_alert_e exp_alert = OtpNoAlert;
 
@@ -613,7 +617,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         // ECC uncorrectable errors are gated by `is_tl_mem_access_allowed` function.
         if (ecc_err != OtpNoEccErr && part_has_integrity(part_idx)) begin
 
-          predict_err(otp_status_e'(part_idx), OtpMacroEccCorrError);
+          predict_err(OtpPartitionErrorIdx,
+                      otp_partition_status_e'(part_idx),
+                      OtpMacroEccCorrError);
           if (ecc_err == OtpEccCorrErr) begin
              `DV_CHECK_EQ(item.d_data, otp_a[otp_addr],
                          $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
@@ -632,12 +638,12 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           `DV_CHECK_EQ(item.d_data, read_out,
                       $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
                       csr_addr, dai_addr))
-          predict_no_err(otp_status_e'(part_idx));
+          predict_no_err(OtpPartitionErrorIdx, otp_partition_status_e'(part_idx));
         end else if (ecc_err == OtpNoEccErr) begin
           `DV_CHECK_EQ(item.d_data, otp_a[otp_addr],
                       $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
                       csr_addr, dai_addr))
-          predict_no_err(otp_status_e'(part_idx));
+          predict_no_err(OtpPartitionErrorIdx, otp_partition_status_e'(part_idx));
         end
       end
       return;
@@ -956,6 +962,28 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         // checked in this block above
         do_read_check = 0;
       end
+% for i in range(num_partition_status_regs):
+      "partition_status_${i}": begin
+        if (addr_phase_read) begin
+          void'(ral.partition_status_${i}.predict(.value(exp_partition_status[${i}]),
+                                                  .kind(UVM_PREDICT_READ)));
+
+          // update partition status mask
+          partition_status_mask[${i}] = 0;
+          // No masking needed for partition status as it's more predictable
+        end else if (data_phase_read) begin
+          // PARTITION_STATUS_${i} register check with mask
+          if (do_read_check) begin
+            `DV_CHECK_EQ((csr.get_mirrored_value() | partition_status_mask[${i}]),
+                         (item.d_data & partition_status_mask[${i}]),
+                         $sformatf("reg name: partition_status_${i}, compare_mask %0h",
+                                   partition_status_mask[${i}]))
+          end
+        end
+        // checked in this block above
+        do_read_check = 0;
+      end
+% endfor
       "check_trigger": begin
         if (addr_phase_write && cfg.en_cov && cfg.otp_ctrl_vif.alert_reqs) begin
           cov.issue_checks_after_alert_cg.sample(item.a_data);
@@ -973,11 +1001,15 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             if (get_field_val(ral.check_trigger.consistency, item.a_data)) begin
               foreach (cfg.ecc_chk_err[i]) begin
                 if (cfg.ecc_chk_err[i] == OtpEccCorrErr && part_has_integrity(i)) begin
-                  predict_err(otp_status_e'(i), OtpMacroEccCorrError);
+                  predict_err(OtpPartitionErrorIdx,
+                              otp_partition_status_e'(i),
+                              OtpMacroEccCorrError);
                 end else if (cfg.ecc_chk_err[i] == OtpEccUncorrErr &&
                              part_has_integrity(i)) begin
                   set_exp_alert("fatal_macro_error", 1, 40_000);
-                  predict_err(otp_status_e'(i), OtpMacroEccUncorrError);
+                  predict_err(OtpPartitionErrorIdx,
+                              otp_partition_status_e'(i),
+                              OtpMacroEccUncorrError);
                 end
               end
             end
@@ -1130,6 +1162,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     under_dai_access      = 0;
     ignore_digest_chk     = 0;
     exp_status            = `gmv(ral.status);
+% for i in range(num_partition_status_regs):
+    exp_partition_status[${i}] = `gmv(ral.partition_status_${i});
+% endfor
     exp_alert             = OtpNoAlert;
 
     edn_data_q.delete();
@@ -1301,14 +1336,26 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
   // This function predict OTP error related registers: intr_state, status, and err_code
   virtual function void predict_err(otp_status_e   status_err_idx,
+                                    otp_partition_status_e partition_status_err_idx = 0,
                                     otp_err_code_e err_code = OtpNoError,
                                     bit            update_esc_err = 0);
     if (cfg.otp_ctrl_vif.under_error_states() && !update_esc_err) return;
 
     // Update intr_state
     void'(ral.intr_state.otp_error.predict(.value(1), .kind(UVM_PREDICT_READ)));
-    // Update status
-    exp_status[status_err_idx] = 1;
+
+    // Update appropriate status register based on error type
+    if (status_err_idx == OtpPartitionErrorIdx) begin
+      // Partition errors go to partition status register
+      int partition_reg_idx = partition_status_err_idx / 32;
+      int partition_bit_idx = partition_status_err_idx % 32;
+      exp_partition_status[partition_reg_idx][partition_bit_idx] = 1;
+      // Also set the general partition error bit in main status
+      exp_status[OtpPartitionErrorIdx] = 1;
+    end else begin
+      // Non-partition errors go to main status register
+      exp_status[status_err_idx] = 1;
+    end
 
     // Only first status errors up to the LCI have corresponding err_code
     if (status_err_idx <= OtpLciErrIdx) begin
@@ -1330,11 +1377,32 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
   endfunction
 
-  virtual function void predict_no_err(otp_status_e status_err_idx);
+  virtual function void predict_no_err(otp_status_e status_err_idx,
+                                       otp_partition_status_e partition_status_err_idx = 0);
     if (cfg.otp_ctrl_vif.under_error_states()) return;
 
-    exp_status[status_err_idx] = 0;
-    if (status_err_idx == OtpDaiErrIdx) exp_status[OtpDaiIdleIdx] = 1;
+    // Update appropriate status register based on error type
+    if (status_err_idx == OtpPartitionErrorIdx) begin
+      // Check if any partition errors remain, if not clear general partition error bit
+      bit any_partition_error = 0;
+      // Partition errors go to partition status register
+      int partition_reg_idx = partition_status_err_idx / 32;
+      int partition_bit_idx = partition_status_err_idx % 32;
+      exp_partition_status[partition_reg_idx][partition_bit_idx] = 0;
+      for (int i = 0; i < ${num_partition_status_regs}; i++) begin
+        if (exp_partition_status[i] != 0) begin
+          any_partition_error = 1;
+          break;
+        end
+      end
+      if (!any_partition_error) begin
+        exp_status[OtpPartitionErrorIdx] = 0;
+      end
+    end else begin
+      // Non-partition errors go to main status register
+      exp_status[status_err_idx] = 0;
+      if (status_err_idx == OtpDaiErrIdx) exp_status[OtpDaiIdleIdx] = 1;
+    end
 
     if (status_err_idx <= OtpLciErrIdx) begin
       dv_base_reg_field err_code_flds[$];
@@ -1423,7 +1491,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             [cfg.ral_models[ral_name].mem_ranges[0].start_addr + ${part_name_camel}Offset :
              cfg.ral_models[ral_name].mem_ranges[0].start_addr + ${part_name_camel}Offset +
              ${part_name_camel}Size - 1]}) begin
-          predict_err(Otp${part_name_camel}ErrIdx, OtpAccessError);
+          predict_err(OtpPartitionErrorIdx,
+                      OtpPartition${part_name_camel}ErrIdx,
+                      OtpAccessError);
           custom_err = 1;
           if (cfg.en_cov) begin
   % if part["write_lock"] == "Digest":
@@ -1447,7 +1517,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         bit [TL_DW-1:0] read_out;
         int ecc_err = read_a_word_with_ecc(dai_addr, read_out);
         if (ecc_err == OtpEccUncorrErr && part_has_integrity(part_idx)) begin
-           predict_err(otp_status_e'(part_idx), OtpMacroEccUncorrError);
+           predict_err(OtpPartitionErrorIdx,
+                       otp_partition_status_e'(part_idx),
+                       OtpMacroEccUncorrError);
            set_exp_alert("fatal_macro_error", 1, 20);
            custom_err = 1;
            return 0;

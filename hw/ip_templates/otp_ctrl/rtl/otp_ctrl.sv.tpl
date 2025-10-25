@@ -4,7 +4,10 @@
 //
 // OTP Controller top.
 //
-
+<% 
+  import math 
+  from topgen.lib import Name
+%>
 `include "prim_assert.sv"
 
 module otp_ctrl
@@ -605,17 +608,36 @@ module otp_ctrl
     hw2reg.direct_access_rdata = dai_rdata;
     // ANDing this state with dai_idle write-protects all DAI regs during pending operations.
     hw2reg.direct_access_regwen.d = direct_access_regwen_q & dai_idle;
-    // Report partition errors in the status register; relies upon the field ordering and the
-    // presence of only the scalar signal 'd' in each partition-specific field.
-    hw2reg.status = otp_ctrl_hw2reg_status_reg_t'(part_errors_reduced);
-    // Overwrite the other fields of the status register with specific error conditions.
-    hw2reg.status.timeout_error.d = chk_timeout;
-    hw2reg.status.lfsr_fsm_error.d = lfsr_fsm_err;
+    // Assign these to the status register. Note that the upper most 2 bits of part_errors_reduced
+    // contain the DAI/LCI error. They are treated as normal erorrs and not part of the dedicated
+    // partition status register.
+    hw2reg.status.partition_error.d      = |part_errors_reduced[$bits(part_errors_reduced)-3:0];
+    hw2reg.status.dai_error.d            = part_errors_reduced[DaiIdx];
+    hw2reg.status.lci_error.d            = part_errors_reduced[LciIdx];
+    hw2reg.status.timeout_error.d        = chk_timeout;
+    hw2reg.status.lfsr_fsm_error.d       = lfsr_fsm_err;
     hw2reg.status.scrambling_fsm_error.d = scrmbl_fsm_err;
-    hw2reg.status.key_deriv_fsm_error.d = part_fsm_err[KdiIdx];
-    hw2reg.status.bus_integ_error.d = fatal_bus_integ_error_q;
-    hw2reg.status.dai_idle.d = dai_idle;
-    hw2reg.status.check_pending.d = chk_pending;
+    hw2reg.status.key_deriv_fsm_error.d  = part_fsm_err[KdiIdx];
+    hw2reg.status.bus_integ_error.d      = fatal_bus_integ_error_q;
+    hw2reg.status.dai_idle.d             = dai_idle;
+    hw2reg.status.check_pending.d        = chk_pending;
+
+    // Assign partition status
+% for r in range(int(math.ceil(len(otp_mmap["partitions"]) / 32))):
+  % for k, part in enumerate(otp_mmap["partitions"][r*32 : (r+1)*32]):
+<% 
+  assignment_target = f"hw2reg.partition_status_{r}.{part['name'].lower()}_error.d"
+  assignment_value = f"part_errors_reduced[{Name.from_snake_case(part['name']).as_camel_case()}Idx];"
+  potential_length = 4 + len(assignment_target) + len(" = ") + len(assignment_value)
+%>\
+    % if potential_length > 100:
+    ${assignment_target} =
+      ${assignment_value}
+    % else:
+    ${assignment_target} = ${assignment_value}
+    % endif
+  % endfor
+% endfor
     // Error code registers.
     hw2reg.err_code = part_error;
     // Interrupt signals
