@@ -9,7 +9,7 @@
 module i2c_target_fsm import i2c_pkg::*;
 #(
   parameter int AcqFifoDepth = 64,
-  localparam int AcqFifoDepthWidth = $clog2(AcqFifoDepth+1)
+  localparam int AcqFifoDepthWidth = $clog2(AcqFifoDepth)*4
 ) (
   input        clk_i,  // clock
   input        rst_ni, // active low reset
@@ -36,8 +36,8 @@ module i2c_target_fsm import i2c_pkg::*;
 
   output logic       target_idle_o,    // indicates the target is idle
 
-  input [12:0] t_r_i,      // rise time of both SDA and SCL in clock units
-  input [12:0] tsu_dat_i,  // data setup time in clock units
+  input [19:0] t_r_i,      // rise time of both SDA and SCL in clock units
+  input [19:0] tsu_dat_i,  // data setup time in clock units
   input [12:0] thd_dat_i,  // data hold time in clock units
   input [30:0] nack_timeout_i,     // max time target may stretch until it should NACK
   input        nack_timeout_en_i,  // enable nack timeout
@@ -71,8 +71,8 @@ module i2c_target_fsm import i2c_pkg::*;
 );
 
   // I2C bus clock timing variables
-  logic [15:0] tcount_q;      // current counter for setting delays
-  logic [15:0] tcount_d;      // next counter for setting delays
+  logic [19:0] tcount_q;      // current counter for setting delays
+  logic [19:0] tcount_d;      // next counter for setting delays
   logic        load_tcount;   // indicates counter must be loaded
   logic [30:0] stretch_active_cnt; // In target mode keep track of how long it has stretched for
                                    // the NACK timeout feature.
@@ -131,11 +131,11 @@ module i2c_target_fsm import i2c_pkg::*;
   always_comb begin : counter_functions
     tcount_d = tcount_q;
     if (load_tcount) begin
-      unique case (tcount_sel)
-        tSetupData  : tcount_d = 13'(t_r_i) + 13'(tsu_dat_i);
-        tHoldData   : tcount_d = 16'(thd_dat_i);
-        tNoDelay    : tcount_d = 16'h0001;
-        default     : tcount_d = 16'h0001;
+      unique case ({4'b0000,tcount_sel})
+        {4'b000,tSetupData}  : tcount_d = 20'(t_r_i) + 20'(tsu_dat_i);
+        {4'b0000,tHoldData}   : tcount_d = {4'b000,16'(thd_dat_i)};
+        {4'b0000,tNoDelay}    : tcount_d = {4'h000,16'h0001};
+        default     : tcount_d = {4'h0000,16'h0001};
       endcase
     end else if (target_enable_i) begin
       tcount_d = tcount_q - 1'b1;
@@ -266,7 +266,7 @@ module i2c_target_fsm import i2c_pkg::*;
   // has happened while still keeping space for a subsequent stop or repeated
   // start.
   logic [AcqFifoDepthWidth-1:0] acq_fifo_remainder;
-  assign acq_fifo_remainder = AcqFifoDepth - acq_fifo_depth_i;
+  assign acq_fifo_remainder = {4'b000,AcqFifoDepth} - acq_fifo_depth_i;
   // This is used for acq_fifo_full_o to send the ACQ FIFO full alert to
   // software.
   assign acq_fifo_plenty_space = acq_fifo_remainder > AcqFifoDepthWidth'(2);
