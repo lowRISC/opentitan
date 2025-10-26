@@ -466,9 +466,9 @@ status_t handle_rsa_verify(ujson_t *uj) {
   TRY(otcrypto_rsa_public_key_construct(rsa_size, modulus, &public_key));
 
   // Create the signature buffer.
-  uint32_t sig_buf[rsa_num_words];
+  uint32_t sig_buf[uj_input.sig_len >> 2];
   memset(sig_buf, 0, sizeof(sig_buf));
-  memcpy(sig_buf, uj_input.sig, uj_input.sig_len);
+  memcpy(sig_buf, uj_input.sig, sizeof(sig_buf));
 
   otcrypto_const_word32_buf_t sig = {
       .data = sig_buf,
