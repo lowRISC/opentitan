@@ -649,7 +649,6 @@ WYCHEPROOF_RSA_PKCS1_15_SUFFIXES = {
 
 WYCHEPROOF_RSA_PSS_SUFFIXES = {
     2048: [
-        "sha256_mgf1_0",
         "sha256_mgf1_32",
         "sha384_mgf1_48",
     ],
