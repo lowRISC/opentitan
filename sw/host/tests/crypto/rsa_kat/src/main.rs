@@ -218,7 +218,7 @@ fn run_rsa_testcase(
                     // Only check plaintext if the response is valid.
                     assert_eq!(
                         rsa_decrypt_resp.plaintext[0..test_case.message.len()],
-                        test_case.message[0..test_case.message.len()]
+                        ptx[0..test_case.message.len()]
                     );
                 }
             }
