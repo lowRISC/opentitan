@@ -38,6 +38,7 @@ struct Opts {
 
 #[derive(Debug, Deserialize)]
 struct RsaTestCase {
+    test_case_id: u32,
     algorithm: String,
     operation: String,
     padding: String,
@@ -234,15 +235,13 @@ fn test_rsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
-    let mut test_counter = 0u32;
     let test_vector_files = &opts.rsa_json;
     for file in test_vector_files {
         let raw_json = fs::read_to_string(file)?;
         let rsa_tests: Vec<RsaTestCase> = serde_json::from_str(&raw_json)?;
 
         for rsa_test in &rsa_tests {
-            test_counter += 1;
-            log::info!("Test counter: {}", test_counter);
+            log::info!("Test counter: {}", rsa_test.test_case_id);
             run_rsa_testcase(rsa_test, opts, &spi_console_device)?;
         }
     }
