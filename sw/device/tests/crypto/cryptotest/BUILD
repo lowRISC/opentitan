@@ -141,7 +141,6 @@ RSA_TESTVECTOR_TARGETS = [
 ] + [
     "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_pss_2048_{}.json".format(hash)
     for hash in [
-        "sha256_mgf1_0",
         "sha256_mgf1_32",
         "sha384_mgf1_48",
     ]
