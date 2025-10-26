@@ -143,7 +143,7 @@ status_t handle_rsa_encrypt(ujson_t *uj) {
   TRY(otcrypto_rsa_public_key_construct(rsa_size, modulus, &public_key));
 
   // Create input message.
-  uint8_t msg_buf[rsa_num_words];
+  uint8_t msg_buf[uj_input.plaintext_len];
   memset(msg_buf, 0, sizeof(msg_buf));
   memcpy(msg_buf, uj_input.plaintext, uj_input.plaintext_len);
   otcrypto_const_byte_buf_t input_message = {
