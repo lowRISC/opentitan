@@ -414,7 +414,7 @@ inline ct_bool32_t ct_sltz32(int32_t a) {
 OT_WARN_UNUSED_RESULT
 inline ct_bool32_t ct_sltu32(uint32_t a, uint32_t b) {
   // Proof. See Hacker's Delight page 23.
-  return ct_sltz32(OT_SIGNED(((a & ~b) | ((a ^ ~b) & (a - b)))));
+  return ct_sltz32(OT_SIGNED(((~a & b) | ((~a | b) & (a - b)))));
 }
 
 /**
