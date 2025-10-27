@@ -314,9 +314,9 @@ status_t handle_rsa_decrypt(ujson_t *uj) {
   TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, d_share0,
                                               d_share1, &private_key));
 
-  uint32_t ciphertext_buf[rsa_num_words];
+  uint32_t ciphertext_buf[uj_input.ciphertext_len >> 2];
   memset(ciphertext_buf, 0, sizeof(ciphertext_buf));
-  memcpy(ciphertext_buf, uj_input.ciphertext, uj_input.ciphertext_len);
+  memcpy(ciphertext_buf, uj_input.ciphertext, sizeof(ciphertext_buf));
 
   otcrypto_const_word32_buf_t ciphertext = {
       .len = rsa_num_words,
