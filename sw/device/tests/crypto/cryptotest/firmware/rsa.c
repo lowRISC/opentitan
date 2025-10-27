@@ -51,6 +51,31 @@ enum {
   kCryptotestRsaShake256 = 7,
 };
 
+// Use a constant Boolean mask to share the RSA private exponent.
+static const uint32_t key_mask[kCryptotestRsa4096NumWords] = {
+    0x49117c55, 0x5da90893, 0x7f7605cf, 0x2b8ce457, 0x83ba97e0, 0x8cdf64a7,
+    0x095fe63f, 0xd5aeb2e7, 0xfa3cabf5, 0xda2c6831, 0x18e92bc7, 0xe080f607,
+    0x7e408d8f, 0xf095c121, 0xd2fe1075, 0x640dff1e, 0x7668f40a, 0x8a3a5b26,
+    0xbbe4f4a5, 0x0135c08b, 0x9ff44d24, 0x799337e7, 0x9b6c4ce2, 0x9ef4edbc,
+    0xfc687575, 0x72a5760c, 0x2592e004, 0x4cb859bc, 0x56b01d66, 0x308c8fe2,
+    0xaf732664, 0xa51c0ae4, 0x80ffabf9, 0xef7e5b7f, 0x25a3881b, 0xaa15776e,
+    0x3d32daeb, 0x0943b0ca, 0x37930548, 0xde545f50, 0x8002d4c8, 0x386367d5,
+    0x569c49a1, 0xce924104, 0x86b7cb14, 0x8e536f56, 0x357395c9, 0x5cee69e4,
+    0x3c8402f5, 0xe2f591a2, 0x6ef6ce8c, 0xfe838ad6, 0xa49a06e1, 0x71a22040,
+    0xe786bb12, 0x0f0c55a0, 0x225a950a, 0x07bea294, 0x7bab7dc3, 0x7fd18a41,
+    0xb6fa362e, 0x3c330655, 0xf42818d6, 0xb0c83e5e, 0xe8481edf, 0x99e11696,
+    0xeb3b519f, 0x749f1a0a, 0x6d7162d5, 0x26e7a305, 0xbecc9b33, 0x8d5f657f,
+    0x00a403ee, 0xd9f22edf, 0x79719a78, 0xaef60ff3, 0x758c6bc7, 0x28e0fa7f,
+    0x9159bd75, 0x90f08bbd, 0xc45630b9, 0x5a37bd38, 0x08aecf3b, 0x27028a44,
+    0x0bb7585d, 0x22c6e52c, 0x27c89949, 0xfbb2f54d, 0x41dbbb3e, 0xe79d9d64,
+    0xdfbcbdcc, 0xb3246072, 0xe95db29e, 0x0cfb72b9, 0x303f88b4, 0x836d9b61,
+    0xbcdf64f5, 0xf0562416, 0xbb0ca3be, 0xfee47430, 0x4f2d94f8, 0x09669a14,
+    0x439d35ec, 0xe8e40037, 0x9d44ad51, 0x2c848d6b, 0x3193294a, 0xe1e97c3d,
+    0x7eb4adac, 0x82b0abac, 0xcb738ec9, 0x42cff388, 0x0b76d4b3, 0xa7072639,
+    0x75b54d85, 0xcc6d84f4, 0xe547b299, 0xa0e7dd85, 0xe3cad5b6, 0x632fad4d,
+    0xe6cae515, 0x063cb76b, 0xff9428aa, 0x5c69fc6a, 0xbb15f685, 0xeb951a27,
+    0xcadc73ec, 0xd3770767};
+
 status_t handle_rsa_encrypt(ujson_t *uj) {
   cryptotest_rsa_encrypt_t uj_input;
   TRY(ujson_deserialize_cryptotest_rsa_encrypt_t(uj, &uj_input));
@@ -282,13 +307,18 @@ status_t handle_rsa_decrypt(ujson_t *uj) {
   uint32_t d_buf[rsa_num_words];
   memset(d_buf, 0, sizeof(d_buf));
   memcpy(d_buf, uj_input.d, n_bytes);
+  for (size_t i = 0; i < rsa_num_words; i++) {
+    d_buf[i] ^= key_mask[i];
+  }
   otcrypto_const_word32_buf_t d_share0 = {
       .data = d_buf,
       .len = rsa_num_words,
   };
 
   uint32_t share1[rsa_num_words];
-  memset(share1, 0, sizeof(share1));
+  for (size_t i = 0; i < rsa_num_words; i++) {
+    share1[i] = key_mask[i];
+  }
   otcrypto_const_word32_buf_t d_share1 = {
       .data = share1,
       .len = rsa_num_words,
