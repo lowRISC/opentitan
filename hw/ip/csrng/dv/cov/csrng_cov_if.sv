@@ -365,6 +365,23 @@ interface csrng_cov_if (
       ignore_bins invalid = binsof(cp_acmd) intersect { INV, GENB, GENU };
     }
 
+    gen_clen_glen_cross: cross cp_acmd, cp_clen, cp_glen {
+      // Probe all sensible combinations of clen and glen for the Generate command. This is
+      // especially important for {clen > 0, glen > 1} as this triggers a multi-beat Generate with
+      // an Update step before the first beat, which must to be specifically handled.
+      bins clen_zero_glen_one = binsof(cp_clen) intersect { 0 } &&
+                                binsof(cp_glen) intersect { 1 };
+      bins clen_zero_glen_multi = binsof(cp_clen) intersect { 0 } &&
+                                  binsof(cp_glen) intersect { [2:$] };
+      bins clen_nonzero_glen_one = binsof(cp_clen) intersect { [1:$] } &&
+                                   binsof(cp_glen) intersect { 1 };
+      bins clen_nonzero_glen_multi = binsof(cp_clen) intersect { [1:$] } &&
+                                     binsof(cp_glen) intersect { [2:$] };
+      // We are only interested in Generate commands in this crosspoint (and glen has no meaning
+      // for all other commands)
+      ignore_bins ignore_other_cmds = !binsof(cp_acmd) intersect { GEN };
+    }
+
     flags_clen_acmd_cross: cross cp_acmd, cp_flags, cp_clen {
       // Use only Entropy Source seed
       bins ins_only_entropy_src_seed = binsof(cp_flags) intersect { MuBi4False } &&
