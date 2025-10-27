@@ -35,7 +35,6 @@ static size_t keyblob_share_num_bytes(const otcrypto_key_config_t config) {
       return config.key_length + (64 / 8);
     case kOtcryptoKeyTypeRsa:
       // RSA key shares are the same size as the unmasked key.
-      // TODO: update once masking is implemented for RSA keys.
       HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeRsa);
       return config.key_length;
     default:
