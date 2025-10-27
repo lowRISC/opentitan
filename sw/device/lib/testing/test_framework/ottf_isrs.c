@@ -13,6 +13,13 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_test_config.h"
+
+#if !OT_IS_ENGLISH_BREAKFAST
+#include "hw/top/dt/dt_alert_handler.h"
+#include "sw/device/lib/dif/dif_alert_handler.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
+#endif  // !OT_IS_ENGLISH_BREAKFAST
 
 dif_rv_plic_t ottf_plic;
 
@@ -208,6 +215,15 @@ void ottf_external_isr(uint32_t *exc_info) {
     CHECK_DIF_OK(
         dif_rv_plic_irq_complete(&ottf_plic, kPlicTarget, plic_irq_id));
     return;
+#if !OT_IS_ENGLISH_BREAKFAST
+  } else if (!kOttfTestConfig.ignore_alerts &&
+             devid == dt_alert_handler_instance_id(kDtAlertHandler)) {
+    ottf_alert_isr(exc_info);
+    // Complete the IRQ at PLIC.
+    CHECK_DIF_OK(
+        dif_rv_plic_irq_complete(&ottf_plic, kPlicTarget, plic_irq_id));
+    return;
+#endif  //  !OT_IS_ENGLISH_BREAKFAST
   }
 
   LOG_ERROR("unhandled IRQ: plic_id=%d, instance ID=%d", plic_irq_id, devid);
@@ -223,6 +239,9 @@ static void generic_internal_irq_handler(uint32_t *exc_info) {
 OT_WEAK
 bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
                      dif_rv_plic_irq_id_t plic_id) {
+  OT_DISCARD(exc_info);
+  OT_DISCARD(devid);
+  OT_DISCARD(plic_id);
   return false;
 }
 
