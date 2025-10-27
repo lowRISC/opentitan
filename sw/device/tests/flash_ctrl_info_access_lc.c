@@ -205,11 +205,13 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &plic0));
 
   flash_ctrl_init_with_event_irqs(kFlashCtrlDt, &flash_state);
-  dif_rv_plic_irq_id_t first =
-      dt_flash_ctrl_irq_to_plic_id(kFlashCtrlDt, kDtFlashCtrlIrqProgEmpty);
-  dif_rv_plic_irq_id_t last =
-      dt_flash_ctrl_irq_to_plic_id(kFlashCtrlDt, kDtFlashCtrlIrqOpDone);
-  rv_plic_testutils_irq_range_enable(&plic0, kPlicTarget, first, last);
+
+  if (kDtFlashCtrlIrqCount > 0) {
+    dif_rv_plic_irq_id_t first = dt_flash_ctrl_irq_to_plic_id(kFlashCtrlDt, 0);
+    dif_rv_plic_irq_id_t last =
+        dt_flash_ctrl_irq_to_plic_id(kFlashCtrlDt, kDtFlashCtrlIrqCount - 1);
+    rv_plic_testutils_irq_range_enable(&plic0, kPlicTarget, first, last);
+  }
 
   // Enable the external IRQ at Ibex.
   irq_global_ctrl(true);
