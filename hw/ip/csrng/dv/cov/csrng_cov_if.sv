@@ -365,6 +365,16 @@ interface csrng_cov_if (
       ignore_bins invalid = binsof(cp_acmd) intersect { INV, GENB, GENU };
     }
 
+    clen_glen_cross: cross cp_acmd, cp_clen, cp_glen {
+      bins gen_glen_clen = binsof(cp_acmd) intersect { GEN } &&
+                           binsof(cp_clen) intersect { [1:$] } &&
+                           binsof(cp_glen) intersect { [2:$] };
+      // We are only interested in Generate commands in this crosspoint (and glen has no meaning
+      // for all other commands)
+      ignore_bins ignore_other_cmds = binsof(cp_acmd) intersect 
+                                      { INS, UNI, UPD, RES, INV, GENB, GENU };
+    }
+
     flags_clen_acmd_cross: cross cp_acmd, cp_flags, cp_clen {
       // Use only Entropy Source seed
       bins ins_only_entropy_src_seed = binsof(cp_flags) intersect { MuBi4False } &&
