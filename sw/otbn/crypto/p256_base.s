@@ -43,33 +43,27 @@
  * sensitive; since aborting the program will be quicker than completing it,
  * the flag's value is likely clearly visible to an attacker through timing.
  *
- * @param[in]    w31: all-zero
- * @param[in]  FG0.Z: boolean indicating fault condition
+ * @param[in]  FG0.Z: boolean indicating fault condition when 1
  *
- * clobbered registers: x2
+ * clobbered registers: x2, w31
  * clobbered flag groups: none
  */
-trigger_fault_if_fg0_z:
+trigger_fault_if_fg0_not_z:
   /* Read the FG0.Z flag (position 3).
        x2 <= FG0.Z */
   csrrw     x2, FG0, x0
   andi      x2, x2, 8
-  srli      x2, x2, 3
+  addi      x2, x2, 31
 
-  /* Subtract FG0.Z from 0.
-       x2 <= 0 - x2 = FG0.Z ? 2^32 - 1 : 0 */
-  sub       x2, x0, x2
-
-  /* The `bn.lid` instruction causes an `BAD_DATA_ADDR` error if the
-     memory address is out of bounds. Therefore, if FG0.Z is 1, this
-     instruction causes an error, but if FG0.Z is 0 it simply loads the word at
-     address 0 into w31. */
-  li         x3, 31
-  bn.lid     x3, 0(x2)
+  /* The `bn.lid` instruction causes an `ILLEGAL_INSN` error if the index of the
+     bignum register (stored in x2 in this case) is invalid. Therefore, if FG0.Z
+     is 1, this instruction causes an error, but if FG0.Z is 0 it simply loads
+     the word at address 0 into w31. */
+  bn.lid    x2, 0(x0)
 
   /* If we get here, the flag must have been 0. Restore w31 to zero and return.
        w31 <= 0 */
-  bn.xor     w31, w31, w31
+  bn.xor    w31, w31, w31
 
   ret
 
@@ -84,29 +78,28 @@ trigger_fault_if_fg0_z:
  * sensitive; since aborting the program will be quicker than completing it,
  * the flag's value is likely clearly visible to an attacker through timing.
  *
- * @param[in]    w31: all-zero
- * @param[in]  FG0.Z: boolean indicating fault condition
+ * @param[in]  FG0.Z: boolean indicating fault condition when 0
  *
- * clobbered registers: x2
+ * clobbered registers: x2, w31
  * clobbered flag groups: none
  */
-trigger_fault_if_fg0_not_z:
+trigger_fault_if_fg0_z:
   /* Read the FG0.Z flag (position 3).
        x2 <= FG0.Z */
   csrrw     x2, FG0, x0
   andi      x2, x2, 8
-  slli      x2, x2, 3
+  xori      x2, x2, 8
+  addi      x2, x2, 31
 
-  /* The `bn.lid` instruction causes an `BAD_DATA_ADDR` error if the
-     memory address is out of bounds. Therefore, if FG0.Z is 1, this
-     instruction causes an error, but if FG0.Z is 0 it simply loads the word at
-     address 0 into w31. */
-  li         x3, 31
-  bn.lid     x3, 0(x2)
+  /* The `bn.lid` instruction causes an `ILLEGAL_INSN` error if the index of the
+     bignum register (stored in x2 in this case) is invalid. Therefore, if FG0.Z
+     is 0, this instruction causes an error, but if FG0.Z is 1 it simply loads
+     the word at address 0 into w31. */
+  bn.lid    x2, 0(x0)
 
   /* If we get here, the flag must have been 1. Restore w31 to zero and return.
        w31 <= 0 */
-  bn.xor     w31, w31, w31
+  bn.xor    w31, w31, w31
 
   ret
 
@@ -1358,7 +1351,7 @@ scalar_mult_int:
   bn.rshi   w2, w2, w20 >> 65
 
   /* double-and-add loop with decreasing index */
-  loopi     321, 64
+  loopi     321, 63
 
     /* double point Q
        Q = (w8, w9, w10) <= 2*(w8, w9, w10) = 2*Q */
@@ -1517,7 +1510,7 @@ scalar_mult_int:
 
      FG0.Z <= if (w10 == 0) then 1 else 0 */
   bn.cmp    w10, w31
-  jal       x0, trigger_fault_if_fg0_z
+  jal       x0, trigger_fault_if_fg0_not_z
 
 
 /**
@@ -1608,7 +1601,7 @@ p256_base_mult:
      The check fails if both sides are not equal.
      FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
   bn.cmp   w18, w19
-  jal      x1, trigger_fault_if_fg0_not_z
+  jal      x1, trigger_fault_if_fg0_z
 
   ret
 
