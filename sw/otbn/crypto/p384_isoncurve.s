@@ -27,30 +27,29 @@
  * sensitive; since aborting the program will be quicker than completing it,
  * the flag's value is likely clearly visible to an attacker through timing.
  *
- * @param[in]    w31: all-zero
- * @param[in]  FG0.Z: boolean indicating fault condition
+ * @param[in]  FG0.Z: boolean indicating fault condition when 0
  *
- * clobbered registers: x2, x3
+ * clobbered registers: x2, w31
  * clobbered flag groups: none
  */
-.globl trigger_fault_if_fg0_not_z
-trigger_fault_if_fg0_not_z:
+.globl trigger_fault_if_fg0_z
+trigger_fault_if_fg0_z:
   /* Read the FG0.Z flag (position 3).
        x2 <= FG0.Z */
   csrrw     x2, FG0, x0
   andi      x2, x2, 8
-  slli      x2, x2, 3
+  xori      x2, x2, 8
+  addi      x2, x2, 31
 
-  /* The `bn.lid` instruction causes an `BAD_DATA_ADDR` error if the
-     memory address is out of bounds. Therefore, if FG0.Z is 1, this
-     instruction causes an error, but if FG0.Z is 0 it simply loads the word at
-     address 0 into w31. */
-  li         x3, 31
-  bn.lid     x3, 0(x2)
+  /* The `bn.lid` instruction causes an `ILLEGAL_INSN` error if the index of the
+     bignum register (stored in x2 in this case) is invalid. Therefore, if FG0.Z
+     is 1, this instruction causes an error, but if FG0.Z is 0 it simply loads
+     the word at address 0 into w31. */
+  bn.lid    x2, 0(x0)
 
   /* If we get here, the flag must have been 1. Restore w31 to zero and return.
        w31 <= 0 */
-  bn.xor     w31, w31, w31
+  bn.xor    w31, w31, w31
 
   ret
 
@@ -214,11 +213,11 @@ p384_isoncurve_check:
        FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
   bn.cmp    w4, w6
   /* Fail if FG0.Z is false. */
-  jal       x1, trigger_fault_if_fg0_not_z
+  jal       x1, trigger_fault_if_fg0_z
 
   bn.cmp    w5, w7
   /* Fail if FG0.Z is false. */
-  jal       x1, trigger_fault_if_fg0_not_z
+  jal       x1, trigger_fault_if_fg0_z
 
   ret
 
