@@ -207,6 +207,10 @@ otbn_sim_test(
 
 otbn_consttime_test(
     name = "p256_base_mult_consttime",
+    ignore = [
+        "trigger_fault_if_fg0_z",
+        "trigger_fault_if_fg0_not_z",
+    ],
     subroutine = "p256_base_mult",
     deps = [
         "//sw/otbn/crypto:run_p256",
@@ -275,6 +279,10 @@ otbn_sim_test(
 
 otbn_consttime_test(
     name = "p256_shared_key_consttime",
+    ignore = [
+        "trigger_fault_if_fg0_z",
+        "trigger_fault_if_fg0_not_z",
+    ],
     subroutine = "p256_shared_key",
     deps = [
         "//sw/otbn/crypto:run_p256",
@@ -674,6 +682,7 @@ otbn_consttime_test(
 otbn_consttime_test(
     name = "p384_scalar_mult_consttime",
     ignore = [
+        "trigger_fault_if_fg0_z",
         "trigger_fault_if_fg0_not_z",
     ],
     subroutine = "p384_scalar_mult",

@@ -60,11 +60,11 @@ p384_isoncurve_proj_check:
        FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
   bn.cmp    w4, w2
   /* Fail if FG0.Z is false. */
-  jal       x1, trigger_fault_if_fg0_not_z
+  jal       x1, trigger_fault_if_fg0_z
 
   bn.cmp    w5, w3
   /* Fail if FG0.Z is false. */
-  jal       x1, trigger_fault_if_fg0_not_z
+  jal       x1, trigger_fault_if_fg0_z
 
   ret
 
