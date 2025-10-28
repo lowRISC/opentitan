@@ -296,6 +296,9 @@ Always ensure that you fully understand the security implications of the padding
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_private_key_from_exponents }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_sign }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_verify }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_encrypt }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_decrypt }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_keypair_from_cofactor }}
 
 ### RSA Asynchronous API
 
@@ -305,6 +308,12 @@ Always ensure that you fully understand the security implications of the padding
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_sign_async_finalize }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_verify_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_verify_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_encrypt_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_encrypt_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_decrypt_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_decrypt_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_keypair_from_cofactor_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_keypair_from_cofactor_async_finalize }}
 
 ## Elliptic curve cryptography
 
