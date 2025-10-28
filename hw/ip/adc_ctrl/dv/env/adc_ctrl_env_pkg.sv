@@ -81,7 +81,7 @@ package adc_ctrl_env_pkg;
   } adc_ctrl_filter_cond_e;
 
   // Filter configuration
-  typedef struct packed {
+  typedef struct {
     adc_ctrl_filter_cond_e cond;  // Condition
     int min_v;  // Minimum value
     int max_v;  // Maximum value
