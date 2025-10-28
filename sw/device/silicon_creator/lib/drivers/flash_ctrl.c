@@ -14,11 +14,16 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
+#endif
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "hw/top/flash_ctrl_regs.h"
+
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
 #include "hw/top/otp_ctrl_regs.h"
+#endif
 
 static const dt_flash_ctrl_t kFlashCtrlDt = kDtFlashCtrl;
 
@@ -249,17 +254,25 @@ void flash_ctrl_init(void) {
   // Set `HW_INFO_CFG_OVERRIDE` register if needed. This must be done before
   // initializing the flash_ctrl.
   uint32_t reg_val = FLASH_CTRL_HW_INFO_CFG_OVERRIDE_REG_RESVAL;
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
   uint32_t otp_val = otp_read32(
       OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE_OFFSET);
   multi_bit_bool_t scramble_dis = bitfield_field32_read(
       otp_val, FLASH_CTRL_OTP_FIELD_HW_INFO_CFG_OVERRIDE_SCRAMBLE_DIS);
+#else
+  multi_bit_bool_t scramble_dis = kMultiBitBool4False;
+#endif
   if (scramble_dis == kMultiBitBool4True) {
     reg_val = bitfield_field32_write(
         reg_val, FLASH_CTRL_HW_INFO_CFG_OVERRIDE_SCRAMBLE_DIS_FIELD,
         scramble_dis);
   }
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
   multi_bit_bool_t ecc_dis = bitfield_field32_read(
       otp_val, FLASH_CTRL_OTP_FIELD_HW_INFO_CFG_OVERRIDE_ECC_DIS);
+#else
+  multi_bit_bool_t ecc_dis = kMultiBitBool4False;
+#endif
   if (ecc_dis == kMultiBitBool4True) {
     reg_val = bitfield_field32_write(
         reg_val, FLASH_CTRL_HW_INFO_CFG_OVERRIDE_ECC_DIS_FIELD, ecc_dis);
@@ -274,6 +287,7 @@ void flash_ctrl_init(void) {
   abs_mmio_write32(flash_ctrl_core_base() + FLASH_CTRL_INIT_REG_OFFSET,
                    bitfield_bit32_write(0, FLASH_CTRL_INIT_VAL_BIT, true));
   // Configure default scrambling, ECC, and HE settings for the data partition.
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
   otp_val =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
   flash_ctrl_cfg_t data_default_cfg = {
@@ -282,8 +296,12 @@ void flash_ctrl_init(void) {
       .ecc = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC),
       .he = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_HE),
   };
+#else
+  flash_ctrl_cfg_t data_default_cfg = flash_ctrl_data_default_cfg_get();
+#endif
   flash_ctrl_data_default_cfg_set(data_default_cfg);
   // Configure scrambling, ECC, and HE for `boot_data` pages.
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
   otp_val =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET);
   flash_ctrl_cfg_t boot_data_cfg = {
@@ -292,6 +310,9 @@ void flash_ctrl_init(void) {
       .ecc = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC),
       .he = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_HE),
   };
+#else
+  flash_ctrl_cfg_t boot_data_cfg = flash_ctrl_data_default_cfg_get();
+#endif
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData0, boot_data_cfg);
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData1, boot_data_cfg);
 }

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_library", "rust_test")
+load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_select_top")
 load("//rules:ujson.bzl", "ujson_rust")
 
 package(default_visibility = ["//visibility:public"])
@@ -183,13 +184,14 @@ rust_library(
         "src/util/vmem/mod.rs",
         "src/util/vmem/parser.rs",
         "src/util/voltage.rs",
-    ] + select({
-        "//sw/device:is_english_breakfast": [],
-        "//conditions:default": [
+    ] + opentitan_select_top({
+        "englishbreakfast": [],
+        },
+        [
             "src/test_utils/extclk.rs",
             "src/test_utils/pinmux_config.rs",
         ],
-    }),
+    ),
     compile_data = [
         ":gpio",
         ":i2c_target",
@@ -202,10 +204,10 @@ rust_library(
         "//util/openocd/target:lowrisc-earlgrey-lc.cfg",
         "//sw/host/opentitanlib/bindgen:rom_error_enum",
     ],
-    crate_features = select({
-        "//sw/device:is_english_breakfast": ["english_breakfast"],
-        "//conditions:default": [],
-    }),
+    crate_features = opentitan_select_top({
+        "englishbreakfast": ["english_breakfast"],
+        }, [],
+    ),
     crate_name = "opentitanlib",
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",

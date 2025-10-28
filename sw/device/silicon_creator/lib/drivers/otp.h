@@ -12,8 +12,6 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "hw/top/otp_ctrl_regs.h"  // Generated.
-
 #ifdef __cplusplus
 extern "C" {
 #endif
