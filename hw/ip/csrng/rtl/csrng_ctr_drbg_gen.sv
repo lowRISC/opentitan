@@ -58,8 +58,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   output logic              ctr_err_o,
   output logic              sm_err_o,
   output logic        [2:0] fifo_gbencack_err_o,
-  output logic        [2:0] fifo_gadstage_err_o,
-  output logic        [2:0] fifo_ggenbits_err_o
+  output logic        [2:0] fifo_gadstage_err_o
 );
 
   import csrng_reg_pkg::NumApps;
@@ -68,9 +67,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   // Note: Often, the full width is not utilized but only declared to be able to
   // convienently make use of common struct data types for read- and write data.
   localparam int AdstageFifoWidth = KeyLen + BlkLen + CtrLen + 2;
-  localparam int GenbitsFifoWidth = CoreDataWidth + BlkLen;
 
-  // FIFO signals. Four stages in total
+  // FIFO signals. Two stages in total
   logic                        sfifo_adstage_wvld;
   logic                        sfifo_adstage_wrdy;
   logic [AdstageFifoWidth-1:0] sfifo_adstage_wdata;
@@ -84,13 +82,6 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   logic                        sfifo_bencack_rvld;
   logic                        sfifo_bencack_rrdy;
   csrng_benc_data_t            sfifo_bencack_rdata;
-
-  logic                        sfifo_genbits_wvld;
-  logic                        sfifo_genbits_wrdy;
-  logic [GenbitsFifoWidth-1:0] sfifo_genbits_wdata;
-  logic                        sfifo_genbits_rvld;
-  logic                        sfifo_genbits_rrdy;
-  logic [GenbitsFifoWidth-1:0] sfifo_genbits_rdata;
 
   // Helper/breakout signals between the FIFO stages
   logic  [KeyLen-1:0] adstage_key;
@@ -214,6 +205,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
     v:       v_ctr_sized
   };
 
+  assign update_rsp_rdy_o = cmd_rsp_rdy_i;
+
   always_comb begin
     state_d = state_q;
     v_ctr_load = 1'b0;
@@ -221,8 +214,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
     sfifo_adstage_wvld = 1'b0;
     sfifo_bencack_rrdy = 1'b0;
     sfifo_adstage_rrdy = 1'b0;
-    sfifo_genbits_wvld = 1'b0;
     cmd_req_rdy_o = 1'b0;
+    cmd_rsp_vld_o = 1'b0;
     block_encrypt_req_vld_o = 1'b0;
     update_req_vld_o = 1'b0;
     sm_err_o = 1'b0;
@@ -272,10 +265,12 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
               state_d = UpdESHalt;
             end
           end else begin
-            sfifo_bencack_rrdy = 1'b1;
-            sfifo_adstage_rrdy = 1'b1;
-            sfifo_genbits_wvld = 1'b1;
-            state_d = ReqIdle;
+            cmd_rsp_vld_o = 1'b1;
+            if (cmd_rsp_rdy_i) begin
+              sfifo_bencack_rrdy = 1'b1;
+              sfifo_adstage_rrdy = 1'b1;
+              state_d = ReqIdle;
+            end
           end
         end
       end
@@ -283,10 +278,12 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
         if (!enable_i) begin
           state_d = ReqIdle;
         end else if (update_rsp_vld_i) begin
-          sfifo_bencack_rrdy = 1'b1;
-          sfifo_adstage_rrdy = 1'b1;
-          sfifo_genbits_wvld = 1'b1;
-          state_d = ReqIdle;
+          cmd_rsp_vld_o = 1'b1;
+          if (cmd_rsp_rdy_i) begin
+            sfifo_bencack_rrdy = 1'b1;
+            sfifo_adstage_rrdy = 1'b1;
+            state_d = ReqIdle;
+          end
         end
       end
       ESHalt: begin
@@ -431,79 +428,34 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   };
 
   //--------------------------------------------
-  // fifo to stage reseed counter, waiting for update block to ack
+  // Mux results of update unit to output on last beat
   //--------------------------------------------
-
-  csrng_core_data_t adstage_core_data;
-
-  assign adstage_core_data = '{
-    inst_id: sfifo_bencack_rdata.inst_id,
-    cmd:     sfifo_bencack_rdata.cmd,
-    key:     adstage_key,
-    v:       adstage_v,
-    pdata:   '0, // unused
-    rs_ctr:  adstage_rs_ctr,
-    fips:    adstage_fips
-  };
-
-  assign update_rsp_rdy_o = sfifo_genbits_wrdy;
-
-  //--------------------------------------------
-  // final cmd block processing
-  //--------------------------------------------
-
-  csrng_core_data_t genbits_core_data;
-
-  prim_fifo_sync #(
-    .Width(GenbitsFifoWidth),
-    .Pass(0),
-    .Depth(1),
-    .OutputZeroIfEmpty(1'b0)
-  ) u_prim_fifo_sync_genbits (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .clr_i   (!enable_i),
-    .wvalid_i(sfifo_genbits_wvld),
-    .wready_o(sfifo_genbits_wrdy),
-    .wdata_i (sfifo_genbits_wdata),
-    .rvalid_o(sfifo_genbits_rvld),
-    .rready_i(sfifo_genbits_rrdy),
-    .rdata_o (sfifo_genbits_rdata),
-    .full_o  (),
-    .depth_o (),
-    .err_o   ()
-  );
-
-  assign sfifo_genbits_wdata = {sfifo_bencack_rdata.v, genbits_core_data};
 
   always_comb begin
-    genbits_core_data = adstage_core_data;
+    cmd_rsp_data_o = '{
+      inst_id: sfifo_bencack_rdata.inst_id,
+      cmd:     sfifo_bencack_rdata.cmd,
+      key:     adstage_key,
+      v:       adstage_v,
+      pdata:   '0, // unused
+      rs_ctr:  adstage_rs_ctr,
+      fips:    adstage_fips
+    };
+
     // On the last gen beat, splice in the updated key & v values from the
     // update unit, and increase the reseed counter by one.
     if (adstage_glast) begin
-      genbits_core_data.inst_id = update_rsp_data_i.inst_id;
-      genbits_core_data.cmd     = update_rsp_data_i.cmd;
-      genbits_core_data.key     = update_rsp_data_i.key;
-      genbits_core_data.v       = update_rsp_data_i.v;
-      genbits_core_data.rs_ctr  = adstage_core_data.rs_ctr + 1;
+      cmd_rsp_data_o.inst_id = update_rsp_data_i.inst_id;
+      cmd_rsp_data_o.cmd     = update_rsp_data_i.cmd;
+      cmd_rsp_data_o.key     = update_rsp_data_i.key;
+      cmd_rsp_data_o.v       = update_rsp_data_i.v;
+      cmd_rsp_data_o.rs_ctr  = adstage_rs_ctr + 1;
     end
   end
 
-  // TODO(#28153) Figure out how to clean this up without triggering the various FIFO errors.
-  assign cmd_rsp_vld_o      = cmd_rsp_rdy_i && sfifo_genbits_rvld;
-  assign sfifo_genbits_rrdy = cmd_rsp_rdy_i && sfifo_genbits_rvld;
-
-  assign cmd_rsp_bits_o = sfifo_genbits_rdata[CoreDataWidth +: BlkLen];
-  assign cmd_rsp_data_o = sfifo_genbits_rdata[CoreDataWidth-1:0];
-
-  assign fifo_ggenbits_err_o =
-        {( sfifo_genbits_wvld && !sfifo_genbits_wrdy),
-         ( sfifo_genbits_rrdy && !sfifo_genbits_rvld),
-         (!sfifo_genbits_wrdy && !sfifo_genbits_rvld)};
-
-  assign cmd_rsp_sts_o = (sfifo_genbits_rvld && sfifo_genbits_rrdy &&
-                          (cmd_rsp_data_o.cmd != GENU)) ? CMD_STS_INVALID_GEN_CMD
-                                                        : CMD_STS_SUCCESS;
+  assign cmd_rsp_bits_o = sfifo_bencack_rdata.v;
+  assign cmd_rsp_sts_o  = (cmd_rsp_vld_o && (cmd_rsp_data_o.cmd != GENU)) ? CMD_STS_INVALID_GEN_CMD
+                                                                          : CMD_STS_SUCCESS;
 
   // Make sure that the state machine has a stable error state. This means that after the error
   // state is entered it will not exit it unless a reset signal is received.
