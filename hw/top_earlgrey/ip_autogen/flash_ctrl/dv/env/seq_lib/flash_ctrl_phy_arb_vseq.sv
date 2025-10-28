@@ -30,7 +30,7 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_fetch_code_vseq;
 
   // Constraint host read address to be in relevant range for the selected partition.
   constraint addr_rd_c {
-    solve bank_rd before flash_op_host_rd;
+    solve bank_rd before flash_op_host_rd.addr;
     flash_op_host_rd.addr inside {[BytesPerBank * bank_rd :
                                    BytesPerBank * (bank_rd + 1) - BytesPerBank / 2]};
   }

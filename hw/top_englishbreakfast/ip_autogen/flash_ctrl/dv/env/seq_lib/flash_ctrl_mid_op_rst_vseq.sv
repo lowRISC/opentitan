@@ -50,7 +50,7 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
   }
 
   constraint flash_op_data_c {
-    solve flash_op before flash_op_data;
+    solve flash_op.num_words before flash_op_data;
     flash_op_data.size() == flash_op.num_words;
   }
 
