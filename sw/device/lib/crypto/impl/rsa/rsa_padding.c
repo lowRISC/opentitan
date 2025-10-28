@@ -537,11 +537,7 @@ status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t message_digest,
                     db_bytelen, mask));
 
   // Compute maskedDB = DB ^ mask.
-  size_t i;
-  for (i = 0; launder32(i) < ARRAYSIZE(db); i++) {
-    db[i] ^= mask[i];
-  }
-  HARDENED_CHECK_EQ(i, ARRAYSIZE(db));
+  HARDENED_TRY(hardened_xor_in_place(db, mask, ARRAYSIZE(db)));
 
   // Set the most significant bit of the first byte of maskedDB to 0. This
   // ensures the encoded message is less than the modulus. Corresponds to RFC
@@ -707,12 +703,9 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
   // all-zero (step 2f). By computing the mask first, we can simply XOR with
   // lhash, 0x01, and M, skipping PS because XOR with zero is the identity
   // function.
-  size_t i;
-  for (i = 0; launder32(i) < ARRAYSIZE(lhash); i++) {
-    db[i] ^= lhash[i];
-  }
-  HARDENED_CHECK_EQ(i, ARRAYSIZE(lhash));
+  HARDENED_TRY(hardened_xor_in_place(db, lhash, ARRAYSIZE(lhash)));
 
+  size_t i;
   size_t message_start_idx = db_bytelen - message_bytelen;
   unsigned char *db_bytes = (unsigned char *)db;
   db_bytes[message_start_idx - 1] ^= 0x01;
@@ -778,11 +771,7 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
                     seed_mask));
 
   // Construct seed = maskedSeed XOR seedMask (step 3d).
-  size_t i;
-  for (i = 0; launder32(i) < ARRAYSIZE(seed); i++) {
-    seed[i] ^= seed_mask[i];
-  }
-  HARDENED_CHECK_EQ(i, ARRAYSIZE(seed));
+  HARDENED_TRY(hardened_xor_in_place(seed, seed_mask, ARRAYSIZE(seed)));
 
   // Generate dbMask = MGF(seed, k - hLen - 1) (step 3e).
   uint32_t db_mask[db_wordlen];
@@ -797,10 +786,7 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   }
 
   // Construct DB = dbMask XOR maskedDB.
-  for (i = 0; launder32(i) < ARRAYSIZE(db); i++) {
-    db[i] ^= db_mask[i];
-  }
-  HARDENED_CHECK_EQ(i, ARRAYSIZE(db));
+  HARDENED_TRY(hardened_xor_in_place(db, db_mask, ARRAYSIZE(db)));
 
   // Hash the label (step 3a).
   uint32_t lhash[digest_wordlen];
@@ -808,7 +794,7 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
 
   // Note: as we compare parts of the encoded message to their expected values,
   // we must be careful that the attacker cannot differentiate error codes or
-  // get partial information about the encoded message. See the note in RCC
+  // get partial information about the encoded message. See the note in RFC
   // 8017, section 7.1.2. This implementation currently protects against
   // revealing this information through error codes or timing, but does not yet
   // defend against power side channels.
