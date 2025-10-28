@@ -83,7 +83,7 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
   // Flash ctrl operation data queue - used for programming or reading the flash.
   rand data_q_t             flash_op_data;
   constraint flash_op_data_c {
-    solve flash_op before flash_op_data;
+    solve flash_op.op, flash_op.num_words before flash_op_data;
     if (flash_op.op inside {flash_ctrl_top_specific_pkg::FlashOpRead,
                             flash_ctrl_top_specific_pkg::FlashOpProgram}) {
       flash_op_data.size() == flash_op.num_words;
@@ -101,8 +101,6 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
   rand flash_mp_region_cfg_t mp_regions[flash_ctrl_top_specific_pkg::MpRegions];
 
   constraint mp_regions_c {
-    solve en_mp_regions before mp_regions;
-
     foreach (mp_regions[i]) {
       mp_regions[i].en == mubi4_bool_to_mubi(en_mp_regions[i]);
 
