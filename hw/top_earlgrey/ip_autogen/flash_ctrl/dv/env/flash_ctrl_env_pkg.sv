@@ -269,26 +269,26 @@ package flash_ctrl_env_pkg;
     NumReadTask  = 2
   } read_task_e;
 
-  typedef struct packed {
-    mubi4_t en;           // enable this region
-    mubi4_t read_en;      // enable reads
-    mubi4_t program_en;   // enable write
-    mubi4_t erase_en;     // enable erase
-    mubi4_t scramble_en;  // enable scramble
-    mubi4_t ecc_en;       // enable ecc
-    mubi4_t he_en;        // enable high endurance
-    uint    num_pages;    // 0:NumPages % start_page
-    uint    start_page;   // 0:NumPages-1
+  typedef struct {
+    rand mubi4_t en;           // enable this region
+    rand mubi4_t read_en;      // enable reads
+    rand mubi4_t program_en;   // enable write
+    rand mubi4_t erase_en;     // enable erase
+    rand mubi4_t scramble_en;  // enable scramble
+    rand mubi4_t ecc_en;       // enable ecc
+    rand mubi4_t he_en;        // enable high endurance
+    rand uint    num_pages;    // 0:NumPages % start_page
+    rand uint    start_page;   // 0:NumPages-1
   } flash_mp_region_cfg_t;
 
-  typedef struct packed {
-    mubi4_t en;           // enable this page
-    mubi4_t read_en;      // enable reads
-    mubi4_t program_en;   // enable write
-    mubi4_t erase_en;     // enable erase
-    mubi4_t scramble_en;  // enable scramble
-    mubi4_t ecc_en;       // enable ecc
-    mubi4_t he_en;        // enable high endurance
+  typedef struct {
+    rand mubi4_t en;           // enable this page
+    rand mubi4_t read_en;      // enable reads
+    rand mubi4_t program_en;   // enable write
+    rand mubi4_t erase_en;     // enable erase
+    rand mubi4_t scramble_en;  // enable scramble
+    rand mubi4_t ecc_en;       // enable ecc
+    rand mubi4_t he_en;        // enable high endurance
   } flash_bank_mp_info_page_cfg_t;
 
   // 2-states flash data type
@@ -307,20 +307,20 @@ package flash_ctrl_env_pkg;
   // Otf address in a bank.
   typedef bit [flash_ctrl_top_specific_pkg::BusAddrByteW-FlashBankWidth-1 : 0] otf_addr_t;
 
-  typedef struct packed {
-    flash_dv_part_e  partition;   // data or one of the info partitions
-    flash_erase_e    erase_type;  // erase page or the whole bank
-    flash_op_e       op;          // read / program or erase
-    flash_prog_sel_e prog_sel;    // program select: normal or repair
-    uint             num_words;   // number of words to read or program (TL_DW)
-    addr_t           addr;        // starting addr for the op
+  typedef struct {
+    rand flash_dv_part_e  partition;   // data or one of the info partitions
+    rand flash_erase_e    erase_type;  // erase page or the whole bank
+    rand flash_op_e       op;          // read / program or erase
+    rand flash_prog_sel_e prog_sel;    // program select: normal or repair
+    rand uint             num_words;   // number of words to read or program (TL_DW)
+    rand addr_t           addr;        // starting addr for the op
     // address for the ctrl interface per bank, 18:0
-    bit [flash_ctrl_top_specific_pkg::BusAddrByteW-2:0] otf_addr;
+    rand bit [flash_ctrl_top_specific_pkg::BusAddrByteW-2:0] otf_addr;
   } flash_op_t;
 
   // Address combined with region
   // Need for error injection.
-  typedef struct packed {
+  typedef struct {
     bit          bank;
     addr_t addr;
     flash_dv_part_e part;
