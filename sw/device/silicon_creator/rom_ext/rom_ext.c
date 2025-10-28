@@ -484,6 +484,14 @@ static rom_error_t rom_ext_advance_secver(boot_data_t *boot_data,
   return kErrorOk;
 }
 
+// This weak function allows downstream ROM_EXT builds to override whether or
+// not boot_svc runs after a low-power wakeup.  This is a mitigation for a
+// late-added confiuration item to the owner configuration.
+OT_WEAK
+hardened_bool_t rom_ext_allow_boot_svc_after_wakeup(void) {
+  return owner_config.boot_svc_after_wakeup;
+}
+
 static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(rom_ext_init(boot_data));
   const manifest_t *self = rom_ext_manifest();
@@ -564,8 +572,13 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
       reset_reasons & (1 << kRstmgrReasonLowPowerExit) ? kHardenedBoolTrue
                                                        : kHardenedBoolFalse;
 
-  // We don't want to execute boot_svc requests if this is a low-power wakeup.
-  if (waking_from_low_power != kHardenedBoolTrue) {
+  // Determine if we want to execute boot_svc requests if this is a low-power
+  // wakeup.
+  hardened_bool_t want_boot_svc = waking_from_low_power == kHardenedBoolTrue
+                                      ? rom_ext_allow_boot_svc_after_wakeup()
+                                      : kHardenedBoolTrue;
+
+  if (want_boot_svc == kHardenedBoolTrue) {
     boot_svc_msg_t *boot_svc_msg = &retention_sram_get()->creator.boot_svc_msg;
     error =
         boot_svc_handler(boot_svc_msg, boot_data, boot_log, lc_state, &keyring,

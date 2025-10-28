@@ -16,6 +16,7 @@ use super::{
     DetachedSignature, OwnerApplicationKey, OwnerFlashConfig, OwnerFlashInfoConfig,
     OwnerIsfbConfig, OwnerRescueConfig,
 };
+use crate::chip::boolean::HardenedBool;
 use crate::crypto::Error as CryptoError;
 use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaRawSignature};
 use crate::with_unknown;
@@ -72,9 +73,11 @@ pub struct OwnerBlock {
     )]
     #[annotate(format=hex)]
     pub device_id: [u32; 8],
+    #[serde(default)]
+    pub boot_svc_after_wakeup: HardenedBool,
     #[serde(default, skip_serializing_if = "GlobalFlags::not_debug")]
     #[annotate(format=hex)]
-    pub reserved: [u32; 16],
+    pub reserved: [u32; 15],
     /// The owner identity key.
     pub owner_key: KeyMaterial,
     /// The owner activation key.
@@ -105,7 +108,8 @@ impl Default for OwnerBlock {
             min_security_version_bl0: MinSecurityVersion::default(),
             lock_constraint: 0,
             device_id: Self::default_constraint(),
-            reserved: [0u32; 16],
+            boot_svc_after_wakeup: HardenedBool::default(),
+            reserved: [0u32; 15],
             owner_key: KeyMaterial::default(),
             activate_key: KeyMaterial::default(),
             unlock_key: KeyMaterial::default(),
@@ -155,6 +159,7 @@ impl OwnerBlock {
                 dest.write_u32::<LittleEndian>(*x)?;
             }
         }
+        dest.write_u32::<LittleEndian>(u32::from(self.boot_svc_after_wakeup))?;
         for x in &self.reserved {
             dest.write_u32::<LittleEndian>(*x)?;
         }
@@ -186,7 +191,8 @@ impl OwnerBlock {
 
         let mut device_id = [0u32; 8];
         src.read_u32_into::<LittleEndian>(&mut device_id)?;
-        let mut reserved = [0u32; 16];
+        let boot_svc_after_wakeup = HardenedBool(src.read_u32::<LittleEndian>()?);
+        let mut reserved = [0u32; 15];
         src.read_u32_into::<LittleEndian>(&mut reserved)?;
         let owner_key = KeyMaterial::read_length(src, ownership_key_alg, 96)?;
         let activate_key = KeyMaterial::read_length(src, ownership_key_alg, 96)?;
@@ -213,6 +219,7 @@ impl OwnerBlock {
             min_security_version_bl0,
             lock_constraint,
             device_id,
+            boot_svc_after_wakeup,
             reserved,
             owner_key,
             activate_key,
@@ -343,7 +350,7 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
 00000010: 50 32 35 36 4f 50 45 4e ff ff ff ff 00 00 00 00  P256OPEN........
 00000020: 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e  ~~~~~~~~~~~~~~~~
 00000030: 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e  ~~~~~~~~~~~~~~~~
-00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+00000040: d4 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
@@ -476,6 +483,7 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
   update_mode: "Open",
   min_security_version_bl0: "NoChange",
   lock_constraint: 0,
+  boot_svc_after_wakeup: "False",
   owner_key: {
     Ecdsa: {
       x: "1111111111111111111111111111111111111111111111111111111111111111",
