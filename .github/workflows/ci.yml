@@ -304,8 +304,8 @@ jobs:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Build simulator with Verilator
         run: |
-          ./bazelisk.sh build //hw/top_englishbreakfast:verilator_sim
-          sim_binary_path=$(./bazelisk.sh cquery --output=files //hw/top_englishbreakfast:verilator_sim)
+          ./bazelisk.sh build --//hw/top=englishbreakfast //hw:verilator_real
+          sim_binary_path=$(./bazelisk.sh cquery --//hw/top=englishbreakfast --output=files //hw:verilator_real)
           mkdir -p build-bin/hw/top_englishbreakfast
           cp ${sim_binary_path} build-bin/hw/top_englishbreakfast/
       - name: Upload binary

@@ -9,15 +9,13 @@
 #include "verilator_sim_ctrl.h"
 
 int main(int argc, char **argv) {
-  chip_englishbreakfast_verilator top;
+  chip_sim_tb top;
   VerilatorMemUtil memutil;
   VerilatorSimCtrl &simctrl = VerilatorSimCtrl::GetInstance();
   simctrl.SetTop(&top, &top.clk_i, &top.rst_ni,
                  VerilatorSimCtrlFlags::ResetPolarityNegative);
 
-  std::string top_scope(
-      "TOP.chip_englishbreakfast_verilator."
-      "top_englishbreakfast");
+  std::string top_scope("TOP.chip_sim_tb.top_englishbreakfast");
   std::string ram1p_adv_scope("u_prim_ram_1p_adv.u_mem");
 
   MemArea rom(top_scope +

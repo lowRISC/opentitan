@@ -2,10 +2,11 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:systems:chip_englishbreakfast_verilator:0.1"
-description: "English Breakfast toplevel for simulation with Verilator"
+name: "lowrisc:dv:top_englishbreakfast_chip_verilator_sim:0.1"
+description: "English Breakfast chip DV sim target"
+
 filesets:
-  files_sim_verilator:
+  files_dv:
     depend:
       - lowrisc:systems:top_englishbreakfast:0.1
       - lowrisc:dv_dpi_c:uartdpi
@@ -34,8 +35,8 @@ filesets:
       - lowrisc:prim_generic:flash
 
     files:
-      - rtl/chip_englishbreakfast_verilator.sv: { file_type: systemVerilogSource }
-      - chip_englishbreakfast_verilator.cc: { file_type: cppSource }
+      - chip_sim_tb.sv: { file_type: systemVerilogSource }
+      - chip_sim_tb.cc: { file_type: cppSource }
 
 parameters:
   RVFI:
@@ -75,8 +76,8 @@ parameters:
 targets:
   default: &default_target
     filesets:
-      - files_sim_verilator
-    toplevel: chip_englishbreakfast_verilator
+      - files_dv
+    toplevel: chip_sim_tb
 
   sim:
     parameters:
@@ -89,8 +90,8 @@ targets:
       - RV_CORE_IBEX_SIM_SRAM=true
     default_tool: verilator
     filesets:
-      - files_sim_verilator
-    toplevel: chip_englishbreakfast_verilator
+      - files_dv
+    toplevel: chip_sim_tb
     tools:
       verilator:
         mode: cc
@@ -104,7 +105,7 @@ targets:
           - '--trace-params'
           - '--trace-max-array 1024'
           - '--unroll-count 512'
-          - '-CFLAGS "-std=c++17 -Wall -DVM_TRACE_FMT_FST -DVL_USER_STOP -DTOPLEVEL_NAME=chip_englishbreakfast_verilator"'
+          - '-CFLAGS "-std=c++17 -Wall -DVM_TRACE_FMT_FST -DVL_USER_STOP -DTOPLEVEL_NAME=chip_sim_tb"'
           - '-LDFLAGS "-pthread -lutil -lelf"'
           - '-Wall'
           # Execute simulation with four threads by default, which works best
