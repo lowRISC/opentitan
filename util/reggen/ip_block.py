@@ -348,8 +348,9 @@ class IpBlock:
         clocking = Clocking.from_raw(rd['clocking'],
                                      'clocking field of ' + what)
 
-        # Build register block if IP really defined registers.
-        if rd.get("registers"):
+        # Build register block if IP really defined registers. IPs with an empty list of registers
+        # but auto-generated registers should still be built.
+        if "registers" in rd:
             reg_blocks = RegBlock.build_blocks(init_block, rd["registers"],
                                                bus_interfaces, clocking, False)
         else:
