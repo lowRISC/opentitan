@@ -221,7 +221,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
 
     case (cfg.which_fatal_err) inside
       sfifo_cmd_error, sfifo_genbits_error, sfifo_final_error, sfifo_cmdid_error,
-      sfifo_gadstage_error, sfifo_ggenbits_error, sfifo_gbencack_error: begin
+      sfifo_gadstage_error, sfifo_gbencack_error: begin
         fifo_base_path = fld_name.substr(0, last_index-1);
 
         foreach (path_exts[i]) begin
