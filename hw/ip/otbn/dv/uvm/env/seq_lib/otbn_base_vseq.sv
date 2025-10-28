@@ -36,7 +36,7 @@ class otbn_base_vseq extends cip_base_vseq #(
   protected int unsigned stop_tokens = 0;
 
   // Saved TL agent configuration
-  typedef struct packed {
+  typedef struct {
     bit          valid;
     int unsigned a_valid_delay_min;
     int unsigned a_valid_delay_max;
