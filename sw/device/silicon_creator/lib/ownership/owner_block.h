@@ -39,6 +39,8 @@ extern owner_page_status_t owner_page_valid[2];
 typedef struct owner_config {
   /** The requested SRAM execution configuration. */
   owner_sram_exec_mode_t sram_exec;
+  /** Allow boot_svc after wakeup. */
+  hardened_bool_t boot_svc_after_wakeup;
   /** The requested flash configuration. */
   const owner_flash_config_t *flash;
   /** The requested flash INFO configuration. */

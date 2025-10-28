@@ -119,8 +119,9 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "boot_svc_wakeup_test",
+    name = "boot_svc_after_wakeup_disabled_test",
     srcs = ["boot_svc_wakeup_test.c"],
+    defines = ["BOOT_SVC_AFTER_WAKEUP_ENABLED=0"],
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
@@ -130,6 +131,45 @@ opentitan_test(
         assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
         #exit_failure = "BFV|PASS|FAIL",
         #exit_success = "FinalBootLog: 2:AA\r\n",
+    ),
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+    deps = [
+        ":boot_svc_test_lib",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_empty",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+)
+
+opentitan_test(
+    name = "boot_svc_after_wakeup_enabled_test",
+    srcs = ["boot_svc_wakeup_test.c"],
+    defines = ["BOOT_SVC_AFTER_WAKEUP_ENABLED=1"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        # Not supported in QEMU whilst low power is not modelled
+    },
+    fpga = fpga_params(
+        assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
+        changes_otp = True,
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_boot_svc_after_wakeup",
+        test_cmd = """
+            --exec="transport init"
+            --exec="fpga clear-bitstream"
+            --exec="fpga load-bitstream {bitstream}"
+            --exec="bootstrap --clear-uart=true {firmware}"
+            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+            no-op
+        """,
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [

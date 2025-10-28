@@ -195,6 +195,7 @@ void owner_config_default(owner_config_t *config) {
   config->rescue = (const owner_rescue_config_t *)kHardenedBoolFalse;
   config->isfb = (const owner_isfb_config_t *)kHardenedBoolFalse;
   config->sram_exec = kOwnerSramExecModeDisabledLocked;
+  config->boot_svc_after_wakeup = kHardenedBoolFalse;
 }
 
 rom_error_t owner_block_parse(const owner_block_t *block,
@@ -211,6 +212,7 @@ rom_error_t owner_block_parse(const owner_block_t *block,
   if (check_only == kHardenedBoolFalse) {
     owner_config_default(config);
     config->sram_exec = block->sram_exec_mode;
+    config->boot_svc_after_wakeup = block->boot_svc_after_wakeup;
   }
 
   uint32_t remain = sizeof(block->data);

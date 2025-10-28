@@ -67,9 +67,15 @@ static status_t check_empty(retention_sram_t *retram,
   }
   boot_svc_msg_t msg = retram->creator.boot_svc_msg;
   TRY(boot_svc_header_check(&msg.header));
+#if BOOT_SVC_AFTER_WAKEUP_ENABLED == 0
   // We expect the `EmptyReqType` here because the ROM_EXT should not process
   // boot_svc requests when waking from deep sleep.
   TRY_CHECK(msg.header.type == kBootSvcEmptyReqType);
+#else  // WAKEUP_ENABLED == 1
+  // We expect the `EmptyResType` here because the ROM_EXT should process
+  // boot_svc requests when waking from deep sleep.
+  TRY_CHECK(msg.header.type == kBootSvcEmptyResType);
+#endif
   state->state = kBootSvcTestStateFinal;
   return OK_STATUS();
 }

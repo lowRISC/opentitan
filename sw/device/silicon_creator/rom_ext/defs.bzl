@@ -34,6 +34,10 @@ SLOTS = [
 ]
 
 TEST_OWNER_CONFIGS = {
+    "boot_svc_after_wakeup": {
+        "owner_defines": ["TEST_OWNER_BOOT_SVC_AFTER_WAKEUP=kHardenedBoolTrue"],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
     "hybrid_owner_keys": {
         # Enable hybrid ECDSA/SPX+ ownership.
         "owner_defines": ["TEST_OWNER_KEY_ALG_HYBRID_SPX_PURE=1"],

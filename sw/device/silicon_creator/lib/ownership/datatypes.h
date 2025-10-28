@@ -181,8 +181,10 @@ typedef struct owner_block {
   uint32_t lock_constraint;
   /** The device ID to which this config applies */
   uint32_t device_id[8];
+  /** Perform ROM_EXT boot services after wakeup (hardened_bool_t). */
+  uint32_t boot_svc_after_wakeup;
   /** Reserved space for future use. */
-  uint32_t reserved[16];
+  uint32_t reserved[15];
   /** Owner public key. */
   owner_keydata_t owner_key;
   /** Owner's Activate public key. */
@@ -205,7 +207,8 @@ OT_ASSERT_MEMBER_OFFSET(owner_block_t, update_mode, 20);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, min_security_version_bl0, 24);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, lock_constraint, 28);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, device_id, 32);
-OT_ASSERT_MEMBER_OFFSET(owner_block_t, reserved, 64);
+OT_ASSERT_MEMBER_OFFSET(owner_block_t, boot_svc_after_wakeup, 64);
+OT_ASSERT_MEMBER_OFFSET(owner_block_t, reserved, 68);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, owner_key, 128);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, activate_key, 224);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, unlock_key, 320);
