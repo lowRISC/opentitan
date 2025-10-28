@@ -45,6 +45,7 @@ filesets:
       - lowrisc:ip:aon_timer
       - lowrisc:tlul:headers
       - lowrisc:systems:top_englishbreakfast_pkg
+      - lowrisc:englishbreakfast_constants:top_pkg
     files:
       - rtl/autogen/top_englishbreakfast.sv
     file_type: systemVerilogSource

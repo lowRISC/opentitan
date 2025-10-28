@@ -102,7 +102,7 @@ fusesoc_build(
     data = ["//hw/ip/otbn:rtl_files"],
     make_options = ":make_options",
     output_groups = opentitan_select_top_attr("top_verilator_binary"),
-    systems = ["lowrisc:dv:chip_verilator_sim"],
+    systems = opentitan_select_top_attr("top_verilator_core"),
     tags = [
         "manual",
         "verilator",

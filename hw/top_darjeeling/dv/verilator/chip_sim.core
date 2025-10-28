@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:top_darjeeling_chip_verilator_sim:0.1"
 description: "Darjeeling toplevel for simulation with Verilator"
-virtual:
-  - lowrisc:dv:chip_verilator_sim
 
 filesets:
   files_sim_verilator:

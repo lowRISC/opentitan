@@ -13,6 +13,7 @@ fusesoc_build(
     testonly = True,
     srcs = [
         "//hw:rtl_files",
+        "//hw/top_earlgrey:rtl_files",  # Add Earlgrey RTL files for alert_handler_pkg and top_pkg
         "//hw/top_englishbreakfast:rtl_files",
     ],
     cores = ["//hw:cores"],
