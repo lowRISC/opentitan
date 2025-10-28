@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
+#include "sw/device/lib/base/random_order.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
@@ -381,12 +382,25 @@ static status_t mgf1(otcrypto_hash_mode_t hash_mode, const uint8_t *seed,
  * @param[in,out] input Input array, modified in-place.
  */
 static inline void reverse_bytes(size_t input_len, uint32_t *input) {
-  for (size_t i = 0; i < (input_len + 1) / 2; i++) {
-    size_t j = input_len - 1 - i;
+  const size_t num_idx = (input_len + 1) / 2;
+
+  // Randomize the access pattern during the reversal.
+  random_order_t order;
+  random_order_init(&order, num_idx);
+
+  size_t i = 0;
+  for (; launderw(i) < num_idx; i = launderw(i) + 1) {
+    size_t rnd_idx = launderw(random_order_advance(&order));
+    barrierw(rnd_idx);
+
+    size_t j = launderw(input_len - 1 - rnd_idx);
     uint32_t tmp = input[j];
-    input[j] = __builtin_bswap32(input[i]);
-    input[i] = __builtin_bswap32(tmp);
+    input[j] = __builtin_bswap32(input[rnd_idx]);
+    input[rnd_idx] = __builtin_bswap32(tmp);
   }
+
+  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
+  HARDENED_CHECK_EQ(i, num_idx);
 }
 
 /**

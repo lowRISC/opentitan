@@ -67,6 +67,7 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:random_order",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:kmac",
