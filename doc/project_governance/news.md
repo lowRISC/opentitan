@@ -3,11 +3,13 @@
 Past news articles related to OpenTitan are below.
 
  Date | Publication | Article
-------|-------------|------------
+-------|-------------|------------
+ Oct 2025 | Rivos blog | [Rivos Collaborates to Complete Secure Provisioning of Integrated OpenTitan Root of Trust During SoC Production](https://www.rivosinc.com/resources/blog/rivos-collaborates-to-complete-secure-provisioning-of-integrated-opentitan-root-of-trust-during-soc-production)
  Sep 2025 | IoT Insider | [Adopt PQC today, IoTSF webinar advises](https://www.iotinsider.com/industries/security/adopt-pqc-today-iotsf-webinar-advises/)
  Aug 2025 | RISC-V Blog | [From Simulation Bottlenecks to Formal Confidence: Leveraging Formal for Exhaustive RISC-V Verification](https://riscv.org/blog/2025/08/from-simulation-bottlenecks-to-formal-confidence-leveraging-formal-for-exhaustive-risc-v-verification/)
  Jun 2025 | lowRISC News | [lowRISC Tackles Post-Quantum Cryptography Challenges through Research Collaborations](https://lowrisc.org/news/lowrisc-tackles-post-quantum-cryptography-challenges-through-research-collaborations/)
  May 2025 | Daily Kos | [OpenSilicon Chip Designs](https://www.dailykos.com/stories/2025/5/10/2321371/-OpenSilicon-Chip-Designs)
+ Feb 2025 | State of Open Con | [Video - Build your own SoC from scratch](https://www.youtube.com/watch?v=aQIkfyFN1IM)
  Feb 2025 | lowRISC News | [The world's first open source security chip hits production with Google](https://lowrisc.org/news/the-worlds-first-open-source-security-chip-hits-production-with-google/)
  Feb 2025 | lowRISC News | [Fabrication begins for production OpenTitan silicon ](https://opensource.googleblog.com/2025/02/fabrication-begins-for-production-opentitan-silicon.html)
  Feb 2025 | punkt4.info | [lowRISC launches first production of OpenTitan](https://punkt4.info/nachrichten/detail/news/lowrisc-lanciert-erste-produktion-von-opentitan/)
@@ -23,6 +25,7 @@ Past news articles related to OpenTitan are below.
  Feb 2025 | ITOps Times | [Google begins fabrication on OpenTitan silicon](https://www.itopstimes.com/itops/google-begins-fabrication-on-opentitan-silicon/)
  Feb 2025 | Heise Online | [Open and quantum-safe RISC-V security chip OpenTitan for Chromebooks ](https://www.heise.de/en/news/Open-and-quantum-safe-RISC-V-security-chip-OpenTitan-for-Chromebooks-10274833.html)
  Feb 2025 | CNX Software | [Nuvoton introduces the first security chip based on OpenTitan open-source silicon Root of Trust ](https://www.cnx-software.com/2025/02/07/nuvoton-opentitan-security-chip-open-source-silicon-root-of-trust/)
+ Jun 2024 | RISC-V Summit | [Video - Building commercially relevant open source silicon](https://www.youtube.com/watch?v=EYyi8ZhEQxA)
  Jun 2024 | Design & Reuse | [Nuvoton Develops OpenTitan® based Security Chip as Next Gen Security Solution for Chromebooks](https://www.design-reuse.com/news/56335/nuvoton-lowrisc-opentitan-security-chip-chromebooks.html)
  Jun 2024 | Industry Tap | [The OpenTitan Coalition Launches First Open-Source Chip to Commercial Market](https://www.industrytap.com/the-opentitan-coalition-launches-first-open-source-chip-to-commercial-market/72880)
  May 2024 | lowRISC News | [SafetyDetectives Interview With Gavin Ferris – CEO at lowRISC](https://lowrisc.org/news/safetydetectives-interview-with-gavin-ferris-ceo-at-lowrisc/)
@@ -31,6 +34,7 @@ Past news articles related to OpenTitan are below.
  May 2024 | HardwareBee | [lowRISC Partners with Real Intent for OpenTitan Project](https://hardwarebee.com/electronic-breaking-news/lowrisc-partners-with-real-intent-for-opentitan-project/)
  May 2024 | Electronic Specifier | [lowRISC deploys static sign-off tools for OpenTitan project](https://www.electronicspecifier.com/industries/security/lowrisc-deploys-static-sign-off-tools-for-opentitan-project)
  May 2024 | EENews Europe | [lowRISC to use Real Intent tools for OpenTitan Project](https://www.eenewseurope.com/en/lowrisc-to-use-real-intent-tools-for-opentitan-project/)
+ Feb 2024 | State of Open Con | [Video - How the Silicon Commons, developed through OpenTitan, is revolutionizing chip design](https://www.youtube.com/watch?v=4YfCDnpYm1Y)
  Feb 2024 | lowRISC News | [OpenTitan® Partnership Makes History as First Open-Source Silicon Project to Reach Commercial Availability](https://lowrisc.org/news/opentitan-commercial-availability/)
  Feb 2024 | All About Circuits | [OpenTitan Partners Release First Open-Source Chip to Commercial Market](https://www.allaboutcircuits.com/news/opentitan-partners-release-first-open-source-chip-to-commercial-market/)
  Feb 2024 | EP&T Magazine | [OpenTitan partnership makes history, bringing trustworthy, transparent, secure silicon platform to market](https://www.ept.ca/2024/02/first-open-source-silicon-project-reaches-commercial-availability/)
