@@ -774,14 +774,17 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   // by searching for the 0x01 byte in constant time.
   volatile uint32_t message_start_idx0 = 0;
   volatile uint32_t message_start_idx1 = 0;
-  HARDENED_TRY(oaep_check_padding_and_find_message_start(
-      db, lhash, digest_wordlen, digest_bytelen, encoded_message_bytes,
-      db_bytelen, &message_start_idx0));
+  if (!status_ok(oaep_check_padding_and_find_message_start(
+          db, lhash, digest_wordlen, digest_bytelen, encoded_message_bytes,
+          db_bytelen, &message_start_idx0))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   // Re-check the padding as an FI hardening measure.
-  HARDENED_TRY(oaep_check_padding_and_find_message_start(
-      db, lhash, digest_wordlen, digest_bytelen, encoded_message_bytes,
-      db_bytelen, &message_start_idx1));
-
+  if (!status_ok(oaep_check_padding_and_find_message_start(
+          db, lhash, digest_wordlen, digest_bytelen, encoded_message_bytes,
+          db_bytelen, &message_start_idx1))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   HARDENED_CHECK_EQ(message_start_idx0, message_start_idx1);
 
   // If we get here, then the encoded message has a proper format and it is
