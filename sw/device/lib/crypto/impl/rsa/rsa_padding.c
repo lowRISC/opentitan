@@ -819,5 +819,7 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   if (*message_bytelen > 0) {
     memcpy(message, (char *)db + message_start_idx0, *message_bytelen);
   }
+  // Shred the stale memory after copying out the plaintext.
+  HARDENED_TRY(hardened_memshred(db, db_wordlen));
   return OTCRYPTO_OK;
 }
