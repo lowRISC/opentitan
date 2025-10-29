@@ -53,7 +53,7 @@ def main() -> int:
             'Initially secret information-flow nodes. If provided, the final '
             'secrets will be printed.'))
     args = parser.parse_args()
-    program = decode_elf(args.elf)
+    program = decode_elf(args.elf, [])
 
     # Compute control-flow graph.
     if args.subroutine is None:
