@@ -20,19 +20,63 @@ except RuntimeError as err:
 
 class OTBNProgram:
     def __init__(self, symbols: Dict[str, int], insns: Dict[int, int],
-                 data: Dict[int, int]):
+                 data: Dict[int, int], nop_subfuncs: List[str]):
         self.symbols = symbols  # label -> PC
-        self.data = data  # addr -> data (32b word)
+        self.data = data        # addr -> data (32b word)
+
+        # For each function name in nop_subfuncs, we assume that it will have
+        # control flow limited in the following way. If the function starts at
+        # address A and the first JALR instruction after A is at address B,
+        # then execution will not leave the interval [A, B] until the function
+        # returns by executing the JALR at B.
+        #
+        # With this assumption, we can imagine replacing the instructions in
+        # that interval with a "nop sled". The ranges of the these sleds are
+        # stored in the nop_ranges list, as pairs (A, B).
+        nop_ranges: list[tuple[int, int]] = []
+
+        for symbol in nop_subfuncs:
+            # Get the start address of the function. If the function dosen't
+            # appear in the list of symbols, there's nothing to do for it.
+            start_addr = symbols.get(symbol)
+            if start_addr is None:
+                continue
+
+            for pc in range(start_addr, 1 << 32, 4):
+                opcode = insns.get(pc)
+                if opcode is None:
+                    raise RuntimeError("Fell off the end of the binary "
+                                       "when searching for a JALR for a "
+                                       f"function with symbol {symbol}, "
+                                       f"starting at {start_addr:#x}")
+
+                # Check whether we just found 'B' (see note above nop_ranges)
+                if INSNS_FILE.mnem_for_word(opcode) == 'jalr':
+                    nop_ranges.append((start_addr, pc))
+                    break
 
         self.insns = {}
         for pc, opcode in insns.items():
-            mnem = INSNS_FILE.mnem_for_word(opcode)
-            if mnem is None:
-                raise ValueError(
-                    'No legal decoding for mnemonic: {}'.format(mnem))
-            insn = INSNS_FILE.mnemonic_to_insn[mnem]
-            assert insn.encoding is not None
-            enc_vals = insn.encoding.extract_operands(opcode)
+            # Check if PC lies within one of the NOP ranges (equal to or after
+            # the start of a nop subfunc and strictly before the JALR
+            # instruction at the end).
+            in_nop_region = any(a <= pc < b for a, b in nop_ranges)
+
+            # If the PC *is* in a NOP region, interpret the opcode at PC as a
+            # NOP (addi x0, x0, x0). If not, decode the opcode and find the
+            # appropriate instruction and operands.
+            if in_nop_region:
+                insn = INSNS_FILE.mnemonic_to_insn["addi"]
+                enc_vals = {'imm': 0, 'grs1': 0, 'grd': 0}
+            else:
+                mnem = INSNS_FILE.mnem_for_word(opcode)
+                if mnem is None:
+                    raise ValueError(f'No mnemonic for opcode {opcode:#08x}')
+
+                insn = INSNS_FILE.mnemonic_to_insn[mnem]
+                assert insn.encoding is not None
+                enc_vals = insn.encoding.extract_operands(opcode)
+
             op_vals = insn.enc_vals_to_op_vals(pc, enc_vals)
             self.insns[pc] = (insn, op_vals)
 
@@ -69,7 +113,7 @@ def _decode_mem(base_addr: int, data: bytes) -> Dict[int, int]:
             for offset, int_val in enumerate(struct.iter_unpack('<I', data))}
 
 
-def decode_elf(path: str) -> OTBNProgram:
+def decode_elf(path: str, nop_subfuncs: List[str]) -> OTBNProgram:
     '''Read ELF file at path and decode contents into an OTBNProgram instance
 
     Returns the OTBNProgram instance representing the program in the ELF file.
@@ -79,4 +123,4 @@ def decode_elf(path: str) -> OTBNProgram:
     insns = _decode_mem(0, imem_bytes)
     data = _decode_mem(0, dmem_bytes)
 
-    return OTBNProgram(symbols, insns, data)
+    return OTBNProgram(symbols, insns, data, nop_subfuncs)
