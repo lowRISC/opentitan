@@ -16,6 +16,7 @@ As a whole, the community resolves hundreds of pull requests and issues monthly.
   Date | Milestone | Description
  ----- | --------- | -----------
  **2025** | |
+ October  | [Darjeeling tapeout](https://www.rivosinc.com/resources/blog/rivos-collaborates-to-complete-secure-provisioning-of-integrated-opentitan-root-of-trust-during-soc-production) | Rivos Inc announces the successful secure provisioning of Darjeeling based Root of Trust
  February | [Production begins](https://lowrisc.org/news/the-worlds-first-open-source-security-chip-hits-production-with-google/) | Fabrication started on production OpenTitan silicon based on the Earl Grey top level design by Nuvoton Technology Corporation
  **2024** | |
  May | [OpenTitan to be in Chromebooks](https://lowrisc.org/news/nuvoton-develops-opentitan-based-security-chip-as-next-gen-security-solution-for-chromebooks/) | Nuvoton Technology Corporation announces plans to use the first commercial chip built on the OpenTitan® open source secure silicon design.
