@@ -125,6 +125,11 @@ package csrng_pkg;
     logic      [BlkLen-1:0] v;
   } csrng_benc_data_t;
 
+  typedef struct packed {
+    logic [KeyLen-1:0] key;
+    logic [BlkLen-1:0] v;
+  } csrng_key_v_t;
+
   // Do not reorder these fields - software expects them in this order when doing the raw
   // state readout through the register interface.
   typedef struct packed {
