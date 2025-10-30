@@ -1,0 +1,29 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  "entrypoint": "p384_keygen_from_seed_test",
+  "input": {
+    "regs": {
+      # Lower part of seed s share 0.
+      "w10": "0xc716757891a0810d6e87d0d0d907e0ae0793c405b1fd0f6e220f3f707754f46d",
+      # Upper part of seed s share 0.
+      "w11": "0x00000000000000000000000000000000f8a869fba74b0714ba6aa4de328f9b8a",
+      # Lower part of seed s share 1.
+      "w20": "0x47d2bb8db0cba05e6002729b45f34e55d1833f6a080bfdc3459f8b9cc0ea5e89",
+      # Upper part of seed s share 1.
+      "w21": "0x00000000000000000000000000000000a3ca668d3ea216ce035a2dd60fe765ef",
+      # All zero reg w31.
+      "w31": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  }
+  "output": {
+    "regs": {
+      # Key d share 0.
+      "w16": "0x80c4cef5216b21530e85a24b9cf4aefbd610fb6fb9f6f2ad6790b4ecb7beaae4",
+      # Key d share 1.
+      "w17": "0x000000000000000000000000000000005b620f7699e911dab93089083d68fe65",
+    }
+  }
+}
