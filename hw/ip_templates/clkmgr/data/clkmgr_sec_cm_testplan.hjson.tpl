@@ -90,7 +90,7 @@
       stage: V2S
       tests: ["clkmgr_idle_intersig_mubi"]
     }
-  % if len(derived_clks) > 0:
+  % if ext_clk_bypass:
     {
       name: sec_cm_lc_ctrl_intersig_mubi
       desc: '''Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI.

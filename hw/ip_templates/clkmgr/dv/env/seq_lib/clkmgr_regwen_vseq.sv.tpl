@@ -24,7 +24,7 @@ class clkmgr_regwen_vseq extends clkmgr_base_vseq;
     `uvm_info(`gfn, "Check jitter_regwen done", UVM_MEDIUM)
   endtask : check_jitter_regwen
 
-% if len(derived_clks) > 0:
+% if ext_clk_bypass:
   task check_extclk_regwen();
     bit enable;
     int prev_value;
@@ -88,7 +88,7 @@ class clkmgr_regwen_vseq extends clkmgr_base_vseq;
     `uvm_info(`gfn, $sformatf("Will run %0d rounds", num_trans), UVM_MEDIUM)
     for (int i = 0; i < num_trans; ++i) begin
       check_jitter_regwen();
-    % if len(derived_clks) > 0:
+    % if ext_clk_bypass:
       check_extclk_regwen();
     % endif
       check_meas_ctrl_regwen();
@@ -97,7 +97,7 @@ class clkmgr_regwen_vseq extends clkmgr_base_vseq;
       // otherwise the tl_agent could mistakenly consider the following read
       // happens during reset.
       cfg.clk_rst_vif.wait_clks(4);
-    % if len(derived_clks) > 0:
+    % if ext_clk_bypass:
       csr_rd_check(.ptr(ral.extclk_ctrl_regwen), .compare_value(1));
     % endif
       csr_rd_check(.ptr(ral.measure_ctrl_regwen), .compare_value(1));

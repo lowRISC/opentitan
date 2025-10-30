@@ -87,6 +87,12 @@
       }
     }
     {
+      name: "ext_clk_bypass"
+      desc: "Support external clock bypass"
+      type: "bool"
+      default: "1"
+    }
+    {
       name: "number_of_clock_groups"
       desc: "The count of clock groups, as in 'ast', 'infra', 'secure', etc."
       type: "int"
