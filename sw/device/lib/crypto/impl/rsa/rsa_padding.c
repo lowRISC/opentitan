@@ -380,8 +380,9 @@ static status_t mgf1(otcrypto_hash_mode_t hash_mode, const uint8_t *seed,
  *
  * @param input_len Length of input in 32-bit words.
  * @param[in,out] input Input array, modified in-place.
+ * @return Result of the operation (OK or error).
  */
-static inline void reverse_bytes(size_t input_len, uint32_t *input) {
+static status_t reverse_bytes(size_t input_len, uint32_t *input) {
   const size_t num_idx = (input_len + 1) / 2;
 
   // Randomize the access pattern during the reversal.
@@ -401,6 +402,84 @@ static inline void reverse_bytes(size_t input_len, uint32_t *input) {
 
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(i, num_idx);
+
+  return OTCRYPTO_OK;
+}
+
+/**
+ * Copy memory between non-overlapping regions with a randomized byte traversal.
+ *
+ * CAUTION! This function is not considered as secure as `hardened_memcpy` due
+ * to the byte-sized memory accesses vs. 32b word accesses.
+ *
+ * @param dest the region to copy to.
+ * @param src the region to copy from.
+ * @param byte_len, the number of bytes to copy.
+ * @return Result of the operation (OK or error).
+ */
+static status_t randomized_bytecopy(void *restrict dest,
+                                    const void *restrict src, size_t byte_len) {
+  random_order_t order;
+  random_order_init(&order, byte_len);
+
+  size_t count = 0;
+
+  uintptr_t src_addr = (uintptr_t)src;
+  uintptr_t dest_addr = (uintptr_t)dest;
+
+  for (; launderw(count) < byte_len; count = launderw(count) + 1) {
+    size_t byte_idx = launderw(random_order_advance(&order));
+    barrierw(byte_idx);
+
+    uint8_t *src_byte_idx = (uint8_t *)launderw(src_addr + byte_idx);
+    // TODO(#8815) byte writes vs. word-wise integrity.
+    uint8_t *dest_byte_idx = (uint8_t *)launderw(dest_addr + byte_idx);
+
+    *(dest_byte_idx) = *(src_byte_idx);
+  }
+  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
+  HARDENED_CHECK_EQ(count, byte_len);
+
+  return OTCRYPTO_OK;
+}
+
+/**
+ * In-place XOR of two non-overlapping memory regions with a randomized byte
+ * traversal.
+ *
+ * CAUTION! This function is not considered as secure as `hardened_xor_in_place`
+ * due to the byte-sized memory accesses vs. 32b word accesses.
+ *
+ * @param x Pointer to the first operand (modified in-place).
+ * @param y Pointer to the second operand.
+ * @param byte_len, the number of bytes to XOR.
+ * @return Result of the operation (OK or error).
+ */
+static status_t randomized_bytexor_in_place(void *restrict x,
+                                            const void *restrict y,
+                                            size_t byte_len) {
+  random_order_t order;
+  random_order_init(&order, byte_len);
+
+  size_t count = 0;
+
+  uintptr_t x_addr = (uintptr_t)x;
+  uintptr_t y_addr = (uintptr_t)y;
+
+  for (; launderw(count) < byte_len; count = launderw(count) + 1) {
+    size_t byte_idx = launderw(random_order_advance(&order));
+    barrierw(byte_idx);
+
+    // TODO(#8815) byte writes vs. word-wise integrity
+    uint8_t *x_byte_idx = (uint8_t *)launderw(x_addr + byte_idx);
+    uint8_t *y_byte_idx = (uint8_t *)launderw(y_addr + byte_idx);
+
+    *(x_byte_idx) = *(x_byte_idx) ^ *(y_byte_idx);
+  }
+  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
+  HARDENED_CHECK_EQ(count, byte_len);
+
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -466,8 +545,7 @@ static status_t oaep_check_padding_and_find_message_start(
   // by searching for the 0x01 byte in constant time.
   ct_bool32_t decode_failure = 0;
   for (size_t i = digest_bytelen; i < db_bytelen; i++) {
-    uint32_t byte = 0;
-    memcpy(&byte, db_bytes + i, 1);
+    uint32_t byte = db_bytes[i];
     ct_bool32_t is_one = ct_seq32(byte, 0x01);
     ct_bool32_t is_before_message = ct_seqz32(*message_start_idx);
     ct_bool32_t is_message_start = is_one & is_before_message;
@@ -490,8 +568,7 @@ static status_t oaep_check_padding_and_find_message_start(
   decode_failure |= lhash_mismatch;
 
   // Check that the leading byte is 0.
-  uint32_t leading_byte = 0;
-  memcpy(&leading_byte, encoded_message_bytes, 1);
+  uint32_t leading_byte = encoded_message_bytes[0];
   ct_bool32_t leading_byte_nonzero = ~ct_seqz32(leading_byte);
   decode_failure |= leading_byte_nonzero;
 
@@ -548,9 +625,10 @@ status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t message_digest,
   //   EM = maskedDB || H || 0xbc
   unsigned char *encoded_message_bytes = (unsigned char *)encoded_message;
   HARDENED_TRY(hardened_memcpy(encoded_message, db, ARRAYSIZE(db)));
-  memcpy(encoded_message_bytes + db_bytelen, h, sizeof(h));
+  HARDENED_TRY(
+      randomized_bytecopy(encoded_message_bytes + db_bytelen, h, sizeof(h)));
   encoded_message_bytes[encoded_message_bytelen - 1] = 0xbc;
-  reverse_bytes(encoded_message_len, encoded_message);
+  HARDENED_TRY(reverse_bytes(encoded_message_len, encoded_message));
   return OTCRYPTO_OK;
 }
 
@@ -570,7 +648,7 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
   }
 
   // Reverse the byte-order.
-  reverse_bytes(encoded_message_len, encoded_message);
+  HARDENED_TRY(reverse_bytes(encoded_message_len, encoded_message));
 
   // Check the last byte.
   unsigned char *encoded_message_bytes = (unsigned char *)encoded_message;
@@ -589,7 +667,8 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
 
   // Extract H.
   uint32_t h[message_digest.len];
-  memcpy(h, encoded_message_bytes + db_bytelen, sizeof(h));
+  HARDENED_TRY(
+      randomized_bytecopy(h, encoded_message_bytes + db_bytelen, sizeof(h)));
 
   // Compute the mask = MFG(H, emLen - hLen - 1). Zero the last bytes if
   // needed.
@@ -601,11 +680,7 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
   }
 
   // Unmask the "DB" value.
-  size_t i;
-  for (i = 0; launder32(i) < ARRAYSIZE(db); i++) {
-    db[i] ^= mask[i];
-  }
-  HARDENED_CHECK_EQ(i, ARRAYSIZE(db));
+  HARDENED_TRY(hardened_xor_in_place(db, mask, ARRAYSIZE(db)));
 
   // Set the most significant bit of the first byte of maskedDB to 0.
   // Corresponds to RFC 8017, section 9.1.2 step 9 (emBits is modLen - 1).
@@ -620,8 +695,9 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
   unsigned char *exp_padding_bytes = (unsigned char *)exp_padding;
   memset(exp_padding, 0, padding_bytelen - 1);
   exp_padding_bytes[padding_bytelen - 1] = 0x01;
-  memcpy(exp_padding_bytes + padding_bytelen, db_bytes + padding_bytelen,
-         sizeof(exp_padding) - padding_bytelen);
+  HARDENED_TRY(randomized_bytecopy(exp_padding_bytes + padding_bytelen,
+                                   db_bytes + padding_bytelen,
+                                   sizeof(exp_padding) - padding_bytelen));
   hardened_bool_t padding_eq =
       hardened_memeq(db, exp_padding, ARRAYSIZE(exp_padding));
   if (padding_eq != kHardenedBoolTrue) {
@@ -631,7 +707,8 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
 
   // Extract the salt.
   uint32_t salt[message_digest.len];
-  memcpy(salt, db_bytes + db_bytelen - salt_bytelen, sizeof(salt));
+  HARDENED_TRY(randomized_bytecopy(salt, db_bytes + db_bytelen - salt_bytelen,
+                                   sizeof(salt)));
 
   // Construct the expected value of H and compare.
   uint32_t exp_h[message_digest.len];
@@ -705,14 +782,11 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
   // function.
   HARDENED_TRY(hardened_xor_in_place(db, lhash, ARRAYSIZE(lhash)));
 
-  size_t i;
   size_t message_start_idx = db_bytelen - message_bytelen;
   unsigned char *db_bytes = (unsigned char *)db;
   db_bytes[message_start_idx - 1] ^= 0x01;
-  for (i = 0; launder32(i) < message_bytelen; i++) {
-    db_bytes[message_start_idx + i] ^= message[i];
-  }
-  HARDENED_CHECK_EQ(i, message_bytelen);
+  HARDENED_TRY(randomized_bytexor_in_place(db_bytes + message_start_idx,
+                                           message, message_bytelen));
 
   // Compute seedMask = MGF(maskedDB, hLen) (step 2g).
   uint32_t seed_mask[digest_wordlen];
@@ -720,19 +794,18 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
                     seed_mask));
 
   // Construct maskedSeed = seed XOR seedMask (step 2h).
-  for (i = 0; launder32(i) < ARRAYSIZE(seed); i++) {
-    seed[i] ^= seed_mask[i];
-  }
-  HARDENED_CHECK_EQ(i, ARRAYSIZE(seed));
+  HARDENED_TRY(hardened_xor_in_place(seed, seed_mask, ARRAYSIZE(seed)));
 
   // Construct EM = 0x00 || maskedSeed || maskedDB (step 2i).
   unsigned char *encoded_message_bytes = (unsigned char *)encoded_message;
   encoded_message_bytes[0] = 0x00;
-  memcpy(encoded_message_bytes + 1, seed, sizeof(seed));
-  memcpy(encoded_message_bytes + 1 + sizeof(seed), db, sizeof(db));
+  HARDENED_TRY(
+      randomized_bytecopy(encoded_message_bytes + 1, seed, sizeof(seed)));
+  HARDENED_TRY(randomized_bytecopy(encoded_message_bytes + 1 + sizeof(seed), db,
+                                   sizeof(db)));
 
   // Reverse the byte-order.
-  reverse_bytes(encoded_message_len, encoded_message);
+  HARDENED_TRY(reverse_bytes(encoded_message_len, encoded_message));
   return OTCRYPTO_OK;
 }
 
@@ -742,7 +815,7 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
                                  size_t encoded_message_len, uint8_t *message,
                                  size_t *message_bytelen) {
   // Reverse the byte-order.
-  reverse_bytes(encoded_message_len, encoded_message);
+  HARDENED_TRY(reverse_bytes(encoded_message_len, encoded_message));
   *message_bytelen = 0;
 
   // Get the hash digest length for the given hash function (and check that it
@@ -754,7 +827,8 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   // 3b).
   uint32_t seed[digest_wordlen];
   unsigned char *encoded_message_bytes = (unsigned char *)encoded_message;
-  memcpy(seed, encoded_message_bytes + 1, sizeof(seed));
+  HARDENED_TRY(
+      randomized_bytecopy(seed, encoded_message_bytes + 1, sizeof(seed)));
 
   // Extract maskedDB from the encoded message (RFC 8017, section 7.1.2, step
   // 3b).
@@ -763,7 +837,9 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   size_t db_bytelen = encoded_message_bytelen - digest_bytelen - 1;
   size_t db_wordlen = ceil_div(db_bytelen, sizeof(uint32_t));
   uint32_t db[db_wordlen];
-  memcpy(db, encoded_message_bytes + 1 + sizeof(seed), db_bytelen);
+  // memcpy(db, encoded_message_bytes + 1 + sizeof(seed), db_bytelen);
+  HARDENED_TRY(randomized_bytecopy(db, encoded_message_bytes + 1 + sizeof(seed),
+                                   db_bytelen));
 
   // Compute seedMask = MGF(maskedDB, hLen) (step 3c).
   uint32_t seed_mask[digest_wordlen];
@@ -820,7 +896,8 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   // safe to copy the message into the output buffer.
   *message_bytelen = db_bytelen - message_start_idx0;
   if (*message_bytelen > 0) {
-    memcpy(message, (char *)db + message_start_idx0, *message_bytelen);
+    HARDENED_TRY(randomized_bytecopy(message, (char *)db + message_start_idx0,
+                                     *message_bytelen));
   }
   // Shred the stale memory after copying out the plaintext.
   HARDENED_TRY(hardened_memshred(db, db_wordlen));
