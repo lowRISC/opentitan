@@ -543,9 +543,12 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
   // Reverse the byte-order.
   reverse_bytes(encoded_message_len, encoded_message);
 
-  // Check the last byte.
+  // Check both Steps 4 and 6 of RFC 8017 Section 9.1.2:
+  //   4. The least significant byte of the encoded message must equal 0xbc.
+  //   6. The MSB of the encoded message must not be set.
   unsigned char *encoded_message_bytes = (unsigned char *)encoded_message;
-  if (encoded_message_bytes[encoded_message_bytelen - 1] != 0xbc) {
+  if ((encoded_message_bytes[encoded_message_bytelen - 1] != 0xbc) ||
+      (encoded_message_bytes[0] >> 7)) {
     *result = kHardenedBoolFalse;
     return OTCRYPTO_OK;
   }
