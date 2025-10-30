@@ -62,6 +62,8 @@ jobs:
         run: ./bazelisk.sh test //quality:rustfmt_check
       - name: Shellcheck
         run: ./bazelisk.sh test //quality:shellcheck_check
+      - name: ASM instrumentation
+        run: ./util/coverage/asm/run_instrument.sh --check
       - name: Header guards
         run: ./ci/scripts/include-guard.sh "$GITHUB_BASE_REF"
         if: ${{ github.event_name == 'pull_request' }}
