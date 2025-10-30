@@ -93,11 +93,11 @@ enum {
    * The expected instruction counts for constant time functions.
    */
   kModeKeygenInsCnt = 1899012,
-  kModeKeygenSideloadInsCnt = 1898906,
+  kModeKeygenSideloadInsCnt = 1898905,
   kModeEcdhInsCnt = 1910611,
-  kModeEcdhSideloadInsCnt = 1910760,
+  kModeEcdhSideloadInsCnt = 1910759,
   kModeEcdsaSignInsCnt = 1546541,
-  kModeEcdsaSignSideloadInsCnt = 1546690,
+  kModeEcdsaSignSideloadInsCnt = 1546689,
 };
 
 static status_t p384_masked_scalar_write(p384_masked_scalar_t *src,
