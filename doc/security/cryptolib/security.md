@@ -55,6 +55,7 @@ The following software-based countermeasures are implemented:
   - The exponentiation operates on projective coordinates with re-randomisation of the used additive points P and 2P on every iteration.
   - Processing of the masked and blinded scalar is hardened against SCA leakage.
   - We check if input points and results of EC scalar multiplications satisfy the curve equation.
+  - The base point and curve parameters are protected against manipulation though the CRC check upon loading the OTBN app.
 - P384 uses the same countermeasures with a blinding factor of 194b instead of 65b.
 
 ### HMAC
