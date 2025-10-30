@@ -4,15 +4,16 @@
 
 use anyhow::{Result, bail};
 use std::cell::{Cell, Ref, RefCell};
+use std::rc::Rc;
 use std::time::Duration;
 
 use crate::app::{TransportWrapper, UartRx};
+use crate::io::usb::UsbDevice;
 use crate::rescue::dfu::*;
 use crate::rescue::{EntryMode, Rescue, RescueError, RescueMode, RescueParams};
-use crate::util::usb::UsbBackend;
 
 pub struct UsbDfu {
-    usb: RefCell<Option<UsbBackend>>,
+    usb: RefCell<Option<Rc<dyn UsbDevice>>>,
     interface: Cell<u8>,
     params: RescueParams,
     reset_delay: Duration,
@@ -33,9 +34,9 @@ impl UsbDfu {
         }
     }
 
-    fn device(&self) -> Ref<'_, UsbBackend> {
-        let device = self.usb.borrow();
-        Ref::map(device, |d| d.as_ref().expect("device handle"))
+    fn device(&self) -> Ref<'_, dyn UsbDevice> {
+        let usb = self.usb.borrow();
+        Ref::map(usb, |d| &**d.as_ref().expect("device handle"))
     }
 }
 
@@ -54,7 +55,7 @@ impl Rescue for UsbDfu {
             EntryMode::None => {}
         }
 
-        let device = UsbBackend::from_interface_with_timeout(
+        let device = transport.usb()?.device_by_interface_with_timeout(
             Self::CLASS,
             Self::SUBCLASS,
             Self::PROTOCOL,
