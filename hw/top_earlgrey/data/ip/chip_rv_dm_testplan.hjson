@@ -106,7 +106,7 @@
         "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_rma",
         "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_test_unlocked0"
       ],
-      lc_states: ["DEV"]
+      lc_states: ["DEV", "TEST_UNLOCKED0", "RMA"]
       host_support: true
       features: [
         "RV_DM.JTAG.FSM",
@@ -219,7 +219,7 @@
       name: chip_sw_rv_dm_jtag_tap_sel
       desc: '''Verify ability to select all available TAPs.
 
-            - Put life cycle on Test or RMA state, so that TAPs can be selected between life cycle
+            - Put life cycle on DEV, TEST_UNLOCKED or RMA state, so that TAPs can be selected between life cycle
               RV_DM and DFT.
             - Verify the TAP is selected correctly.
             - X-ref'ed with chip_sw_tap_strap_sampling.
