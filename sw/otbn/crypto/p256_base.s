@@ -1611,10 +1611,10 @@ p256_base_mult:
  *
  * Returns t, a random value that is nonzero mod n, in shares.
  *
- * This follows a modified version of the method in FIPS 186-4 sections B.4.1
- * and B.5.1 for generation of secret scalar values d and k. The computation
- * in FIPS 186-4 is:
- *   seed = RBG(seedlen) // seedlen >= 320
+ * This follows a modified version of the method in FIPS 186-5 sections A.2.2
+ * and A.3.2 for generation of secret scalar values d and k. The computation
+ * in FIPS 186-5 is:
+ *   seed = RBG(seedlen) // seedlen >= 256
  *   return (seed mod (n-1)) + 1
  *
  * The important features here are that (a) the seed is at least 64 bits longer
@@ -1924,7 +1924,7 @@ boolean_to_arithmetic:
  *    d = (d0 + d1) mod n
  * ...where n is the curve order.
  *
- * This implementation follows FIPS 186-4 section B.4.1, where we
+ * This implementation follows FIPS 186-5 section A.2.2, where we
  * generate d using N+64 random bits (320 bits in this case) as a seed. But
  * while FIPS computes d = (seed mod (n-1)) + 1 to ensure a nonzero key, we
  * instead just compute d = seed mod n. The caller MUST ensure that if this
