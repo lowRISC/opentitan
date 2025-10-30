@@ -7,6 +7,8 @@
 #include <cassert>
 #include <cstring>
 #include <fcntl.h>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <libelf.h>
 #include <sstream>
@@ -92,6 +94,8 @@ static MemImageType GetMemImageTypeByName(const std::string &name) {
     return kMemImageElf;
   if (name == "vmem")
     return kMemImageVmem;
+  if (name == "bin")
+    return kMemImageBin;
 
   std::ostringstream oss;
   oss << "Unknown image type: `" << name << "'.";
@@ -119,6 +123,24 @@ static MemImageType DetectMemImageType(const std::string &filepath) {
   }
 
   return image_type;
+}
+
+// Load a binary image into an array of bytes.
+static std::vector<uint8_t> LoadBinary(const std::string &filepath) {
+  std::ifstream source(filepath, std::ios::binary);
+  if (!source.good()) {
+    std::ostringstream oss;
+    oss << "Cannot read file: `" << filepath << "'.";
+    throw std::runtime_error(oss.str());
+  }
+
+  source.seekg(0, std::ios::end);
+  size_t length = source.tellg();
+  source.seekg(0, std::ios::beg);
+
+  std::vector<uint8_t> buf(length);
+  source.read(reinterpret_cast<char *>(buf.data()), length);
+  return buf;
 }
 
 // Generate a single array of bytes representing the contents of PT_LOAD
@@ -405,6 +427,9 @@ void DpiMemUtil::LoadFileToNamedMem(bool verbose, const std::string &name,
         break;
       case kMemImageVmem:
         m.LoadVmem(filepath);
+        break;
+      case kMemImageBin:
+        m.Write(0, LoadBinary(filepath));
         break;
       default:
         assert(0);
