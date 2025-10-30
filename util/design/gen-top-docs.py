@@ -21,37 +21,6 @@ def to_markdown(text):
     return doc_text
 
 
-def generate_mmap_table(top_level):
-    """Generates top level memory map table."""
-    header = ["Name", "Type", "Byte Address"]
-    table = [header]
-    colalign = ("left", ) * len(header)
-
-    for module in top_level["module"]:
-        for j, (name, base) in enumerate(module["base_addrs"].items()):
-            # TODO(): Don't hard-code the addr space name for software
-            # TODO(): Document all addr spaces and explain what they represent
-            if "hart" not in base:
-                continue
-            base = base["hart"]
-
-            base_address = f"{base} ({name})"
-            if name == "null":
-                base_address = f"{base} (regs)"
-
-            if j == 0:
-                row = [module["name"], module["type"], base_address]
-            else:
-                row = ["", "", base_address]
-
-            table.append(row)
-
-    return tabulate(table,
-                    headers="firstrow",
-                    tablefmt="pipe",
-                    colalign=colalign)
-
-
 def generate_pinout_table(top_level):
     """Generates top level pinout table."""
     header = ["ID", "Name", "Bank", "Type", "Connection Type", "Description"]
@@ -92,7 +61,6 @@ def main():
     gen = args.generator
 
     doc_generators = {
-        "mmap": generate_mmap_table,
         "pinout": generate_pinout_table,
     }
     with open(args.topcfg, 'r') as infile:
