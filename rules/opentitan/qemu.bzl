@@ -518,6 +518,11 @@ def _test_dispatch(ctx, exec_env, firmware):
     qemu_args += ["-global", "ot-uart.oversample-break=true"]
     qemu_args += ["-global", "ot-uart.toggle-break=true"]
 
+    # QEMU will by default interpret quit commands over JTAG to the TAP Ctrls
+    # as signals to exit VM execution. We want to be able to disconnect from
+    # JTAG without stopping execution completely for tests.
+    qemu_args += ["-global", "tap-ctrl-rbb.quit=false"]
+
     # Add parameter-specified globals.
     if param["globals"]:
         globals = json.decode(param["globals"])
