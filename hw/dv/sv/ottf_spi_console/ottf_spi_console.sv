@@ -10,8 +10,22 @@
 class ottf_spi_console extends uvm_component;
   `uvm_component_utils(ottf_spi_console)
 
+  protected uvm_event read_ev;
+  protected bit [7:0] read_buf[$] = {};
+
+  // Once the task host_spi_console_poll_reads() has been forked, it will continually read from the
+  // DEVICE's spi_console buffer whenever tx_ready is asserted, and place all data into the buffer
+  // 'read_buf'. The data in this buffer is unstructured.
+  // To avoid parsing the data in the read buffer for an expected message payload, use this bit to
+  // disable the poll_reads() loop before calling host_spi_console_read_payload() which takes the
+  // argument 'int max_len' to capture bytes across multiple frames until the payload end is
+  // determined by the number of data bytes received. After host_spi_console_read_payload() returns,
+  // the 'enable_read_polling' bit can be set again to resume the automatic read polling loop.
+  bit enable_read_polling = 1'b0;
+
   function new(string name = "", uvm_component parent = null);
     super.new(name, parent);
+    read_ev = new("read_ev");
   endfunction : new
 
   virtual clk_rst_if clk_rst_vif;
@@ -149,8 +163,13 @@ class ottf_spi_console extends uvm_component;
                                               output bit [7:0] chunk_q[$]);
   // Read a single frame from the DEVICE spi console.
   extern protected task host_spi_console_read_frame(ref bit [7:0] chunk_q[$]);
-  // Await the DEVICE signalling a read, and check the payload contains the given string.
-  extern task host_spi_console_read_wait_for(input string wait_for);
+  // Await the DEVICE signalling tx_ready, and continually read back all content into the read
+  // buffer 'buf'. This buffer just stores bytes, so all notion of frames/headers is discarded.
+  extern task host_spi_console_poll_reads();
+  // Wait until the buffer for polled read data contains the expected string.
+  extern task host_spi_console_read_wait_for_polled_str(input string wait_for);
+  // Flush the read buffer
+  extern task host_spi_console_flush();
   // Await the DEVICE signalling a read, and return the payload as an array of bytes.
   //
   // For this method, we know the maximum expected payload length. Keep awaiting new frames until
@@ -186,8 +205,10 @@ class ottf_spi_console extends uvm_component;
   // Wait until the DEVICE signals it is awaiting a write, then perform one or more console write
   // operations. This task tries to write all given payloads successively before waiting for the
   // device to clear the sideband flow_control signal, and cannot short-circuit or early return.
-  extern task host_spi_console_write_when_ready(input bit [7:0] bytes[][],
-                                                uint timeout_ns = write_completion_timeout_ns);
+  extern task host_spi_console_write_when_ready(
+    bit [7:0] bytes[][],
+    uint      timeout_ns = write_completion_timeout_ns
+  );
 
 endclass : ottf_spi_console
 
@@ -233,12 +254,12 @@ endfunction
 task ottf_spi_console::await_flow_ctrl_signal(flow_ctrl_idx_e idx,
                                               bit val = 1'b1,
                                               uint timeout_ns = await_flow_ctrl_timeout_ns);
-  `uvm_info(`gfn, $sformatf("Waiting for pin:%0d to be %0d now...", idx, val), UVM_HIGH)
+  `uvm_info(`gfn, $sformatf("Waiting for pin:'%0s' to be %0d now...", idx.name(), val), UVM_HIGH)
   `DV_WAIT(
     /*WAIT_COND_*/  flow_ctrl_vif.pins[idx] == val,
-    /*MSG_*/        $sformatf("Timed out waiting for pin '%0s' to be 1'b%0b.", idx.name(), val),
+    /*MSG_*/        $sformatf("Timed out waiting for pin:'%0s' to be 1'b%0b.", idx.name(), val),
     /*TIMEOUT_NS_*/ timeout_ns)
-  `uvm_info(`gfn, $sformatf("Saw idx:%0d as %0d now!", idx, val), UVM_HIGH)
+  `uvm_info(`gfn, $sformatf("Saw pin:'%0s' as %0d now!", idx.name(), val), UVM_HIGH)
 endtask: await_flow_ctrl_signal
 
 //////////////////
@@ -320,33 +341,64 @@ task ottf_spi_console::host_spi_console_read_frame(ref bit [7:0] chunk_q[$]);
 
 endtask : host_spi_console_read_frame
 
-task ottf_spi_console::host_spi_console_read_wait_for(input string wait_for);
-  bit [7:0] chunk_q[$];
-  string    chunk_q_as_str;
+task ottf_spi_console::host_spi_console_poll_reads();
+  forever begin
+    // Each time around the loop, check the value of this bit to enable/disable the polling process.
+    wait (enable_read_polling == 1'b1);
 
-  `uvm_info(`gfn, $sformatf("Waiting to read the following string in the spi_console : %0s",
-    wait_for), UVM_LOW)
+    await_flow_ctrl_signal(tx_ready, 1'b1);
 
-  `uvm_info(`gfn, "Waiting for the DEVICE to set 'tx_ready' (IOA5)", UVM_HIGH)
-  await_flow_ctrl_signal(tx_ready, 1'b1);
-  `uvm_info(`gfn, "DEVICE set 'tx_ready' now.", UVM_HIGH)
+    // If software disabled read polling while blocked awaiting tx_ready, then just go back to the
+    // top and wait for it to be re-enabled. The tx_ready request will still be there when we come
+    // back.
+    if (enable_read_polling == 1'b0) continue;
 
-  // Next, get all the data_bytes from the frame until we see the expected message in the buffer.
+    fork
+      // Capture a single spi_console frame. Return as soon as the data transfer has completed.
+      begin : capture_frame
+        bit [7:0] frame_byte_q[$] = {};
+        host_spi_console_read_frame(.chunk_q(frame_byte_q));
+        read_buf = {read_buf, frame_byte_q};
+        `uvm_info(`gfn, $sformatf("Polling: Got %0d data bytes in frame : %0s", frame_byte_q.size(),
+          byte_q_as_str(frame_byte_q)), UVM_MEDIUM)
+      end
+      // The DEVICE will de-assert tx_ready after the first CSB edge, knowing that both sides
+      // understand that two full spi transfers are needed to complete the frame (header + data).
+      // It won't be reasserted for another frame until after the 4th CSB edge (the end of the
+      // second transfer)
+      await_flow_ctrl_signal(tx_ready, 1'b0);
+    join
+
+    // After a frame, check if the last entry into the read_buffer was a LF (Currently, messages
+    // may be delimited by either a LF or a CRLF)
+    // If so, trigger a read_event, unblocking tasks watching the read buffer to check if the
+    // content they are expecting is now present.
+    begin
+      bit [7:0] LF = 8'ha;
+      if (read_buf[$] == LF) begin
+        read_ev.trigger();
+        read_ev.reset();
+        `uvm_info(`gfn, $sformatf("Polling: Frame ended with (CR)LF, printing read buffer:\n%0s",
+          byte_q_as_str(read_buf)), UVM_MEDIUM)
+      end
+    end
+
+  end
+endtask : host_spi_console_poll_reads
+
+task ottf_spi_console::host_spi_console_read_wait_for_polled_str(input string wait_for);
+  `uvm_info(`gfn, $sformatf("Awaiting msg in polled spi_console buffer: %0s", wait_for), UVM_LOW)
   do begin
-    bit [7:0] data_q[$] = {};
-    host_spi_console_read_frame(.chunk_q(data_q));
-    `uvm_info(`gfn, $sformatf("Got data_bytes : %0s", byte_q_as_str(data_q)), UVM_HIGH)
-    // Append the bytes from this read transfer to the overall queue.
-    chunk_q = {chunk_q, data_q};
-  end while (!findStrRe(wait_for, byte_q_as_str(chunk_q)));
-  `uvm_info(`gfn, $sformatf("Got expected string from spi_console : '%0s'", wait_for), UVM_LOW)
+    read_ev.wait_trigger();
+  end while (!findStrRe(wait_for, byte_q_as_str(read_buf)));
+  `uvm_info(`gfn, $sformatf("Saw desired msg in polled spi_console buffer: %0s", wait_for), UVM_LOW)
+  `uvm_info(`gfn, "Flushing spi_console buffer.", UVM_LOW)
+  host_spi_console_flush();
+endtask : host_spi_console_read_wait_for_polled_str
 
-  // (If not already de-asserted) wait for the SPI console TX ready to be cleared by the DEVICE.
-  `uvm_info(`gfn, "Waiting for the DEVICE to clear 'tx_ready' (IOA5)", UVM_HIGH)
-  await_flow_ctrl_signal(tx_ready, 1'b0);
-  `uvm_info(`gfn, "DEVICE cleared 'tx_ready' now.", UVM_HIGH)
-
-endtask : host_spi_console_read_wait_for
+task ottf_spi_console::host_spi_console_flush();
+  read_buf = {};
+endtask : host_spi_console_flush
 
 task ottf_spi_console::host_spi_console_read_payload(output bit [7:0] outbuf[],
                                                      input int        max_len);
@@ -354,9 +406,7 @@ task ottf_spi_console::host_spi_console_read_payload(output bit [7:0] outbuf[],
   int       len_ctr = 0;
   `uvm_info(`gfn, $sformatf("Awaiting read_payload. (max %0d bytes)", max_len), UVM_LOW)
 
-  `uvm_info(`gfn, "Waiting for the DEVICE to set 'tx_ready' (IOA5)", UVM_HIGH)
   await_flow_ctrl_signal(tx_ready, 1'b1);
-  `uvm_info(`gfn, "DEVICE set 'tx_ready' now.", UVM_HIGH)
 
   // Keep getting spi console frames until we determine the payload has completed by length.
   while (len_ctr < max_len) begin
@@ -374,13 +424,10 @@ task ottf_spi_console::host_spi_console_read_payload(output bit [7:0] outbuf[],
           len_ctr, max_len), UVM_MEDIUM)
       end
       // The DEVICE will de-assert tx_ready after the first CSB edge, knowing that both sides
-      // understand that two full spi transfers need to complete (header + data). It won't
-      // re-assert tx_ready until after the 4th CSB edge (the end of the second transfer)
-      begin : await_tx_ready_deassert
-        `uvm_info(`gfn, "Waiting for the DEVICE to clear 'tx_ready' (IOA5)", UVM_HIGH)
-        await_flow_ctrl_signal(tx_ready, 1'b0);
-        `uvm_info(`gfn, "DEVICE cleared 'tx_ready' now.", UVM_HIGH)
-      end
+      // understand that two full spi transfers are needed to complete the frame (header + data).
+      // It won't be reasserted for another frame until after the 4th CSB edge (the end of the
+      // second transfer)
+      await_flow_ctrl_signal(tx_ready, 1'b0);
     join
 
     // If the frame is any less than the maximum size, assume this is the end of the
@@ -520,23 +567,17 @@ task ottf_spi_console::host_spi_console_write(input bit [7:0] bytes[]);
 endtask : host_spi_console_write
 
 task ottf_spi_console::host_spi_console_write_when_ready(
-  input bit [7:0] bytes[][],
-  uint timeout_ns = write_completion_timeout_ns
+  bit [7:0] bytes[][],
+  uint      timeout_ns = write_completion_timeout_ns
 );
 
-  `uvm_info(`gfn, "Waiting for the DEVICE to set 'rx_ready' (IOA6)", UVM_HIGH)
   await_flow_ctrl_signal(rx_ready, 1'b1);
-  `uvm_info(`gfn, "DEVICE set 'rx_ready' now.", UVM_HIGH)
-
   `DV_SPINWAIT(
     /* WAIT_ */       foreach (bytes[i]) host_spi_console_write(bytes[i]);,
     /* MSG_ */        "Timeout waiting for spi_console_write_when_ready() to complete.",
     /* TIMEOUT_NS_ */ timeout_ns
   )
-
-  `uvm_info(`gfn, "Waiting for the DEVICE to clear 'rx_ready' (IOA6)", UVM_HIGH)
   await_flow_ctrl_signal(rx_ready, 1'b0);
-  `uvm_info(`gfn, "DEVICE cleared 'rx_ready' now.", UVM_HIGH)
 
 endtask : host_spi_console_write_when_ready
 
