@@ -1,0 +1,21 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  "entrypoint": "p384_keygen_test",
+  "input": {
+    "regs": {
+      # All zero reg w31.
+      "w31": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  }
+  "output": {
+    "regs": {
+      # Success counter w0.
+      "w0": "0x0000000000000000000000000000000000000000000000000000000000000002"
+      # Success counter w1.
+      "w1": "0x0000000000000000000000000000000000000000000000000000000000000006"
+    }
+  }
+}

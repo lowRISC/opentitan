@@ -1,0 +1,22 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "entrypoint": "p256_arithmetic_to_boolean_mod_test",
+  "input": {
+    "regs": {
+      # w31 is zero
+      "w31": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      # First arithmetic share of x.
+      "w11": "0x2328ce20226e4542f38f1ca699ce6272592fbe18c2d1a4f0eefd3e816b35c5e6",
+      # Second arithmetic share of x.
+      "w19": "0x53038ee6d4a25811969abf6f892fa008dc0f09fc3c6c760991349036bf81b6ba"
+    }
+  }
+  "output": {
+    "regs": {
+      # Unmasked result x.
+      "w20": "0x762c5d06f7109d548a29dc1622fe027b353ec814ff3e1afa8031ceb82ab77ca0",
+    }
+  }
+}
