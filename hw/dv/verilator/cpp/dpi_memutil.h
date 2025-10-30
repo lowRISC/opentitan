@@ -20,6 +20,7 @@ enum MemImageType {
   kMemImageUnknown = 0,
   kMemImageElf,
   kMemImageVmem,
+  kMemImageBin,
 };
 
 // Staged data for a given memory area.
