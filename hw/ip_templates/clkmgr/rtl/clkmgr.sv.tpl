@@ -71,7 +71,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
   // idle hints
   // SEC_CM: IDLE.INTERSIG.MUBI
   input prim_mubi_pkg::mubi4_t [${len(hint_names)-1}:0] idle_i,
-% if len(derived_clks) > 0:
+% if ext_clk_bypass:
 
   // life cycle state output
   // SEC_CM: LC_CTRL.INTERSIG.MUBI
@@ -158,8 +158,10 @@ rg_srcs = get_rg_srcs(typed_clocks)
   // its related reset to ensure clock division
   // can happen without any dependency
   ////////////////////////////////////////////////////
+% if ext_clk_bypass:
 
   logic [${len(derived_clks)-1}:0] step_down_acks;
+% endif
 
 % for src_name in derived_clks:
   logic clk_${src_name};
@@ -186,8 +188,13 @@ rg_srcs = get_rg_srcs(typed_clocks)
     // We're using the pre-occ hookup (*_i) version for clock derivation.
     .clk_i(clk_${src['src']['name']}_i),
     .rst_ni(rst_root_${src['src']['name']}_ni),
+  % if ext_clk_bypass:
     .step_down_req_i(mubi4_test_true_strict(${src['src']['name']}_step_down_req)),
     .step_down_ack_o(step_down_acks[${loop.index}]),
+  % else:
+    .step_down_req_i(1'b0),
+    .step_down_ack_o(),
+  % endif
     .test_en_i(mubi4_test_true_strict(${src['name']}_div_scanmode[0])),
     .clk_o(clk_${src['name']})
   );
@@ -265,7 +272,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
       .alert_tx_o    ( alert_tx_o[i] )
     );
   end
-% if len(derived_clks) > 0:
+% if ext_clk_bypass:
 
   ////////////////////////////////////////////////////
   // Clock bypass request
@@ -581,7 +588,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
   `ASSERT_KNOWN(AlertsKnownO_A,   alert_tx_o)
   `ASSERT_KNOWN(PwrMgrKnownO_A, pwr_o)
-% if len(derived_clks) > 0:
+% if ext_clk_bypass:
   `ASSERT_KNOWN(AllClkBypReqKnownO_A, all_clk_byp_req_o)
   `ASSERT_KNOWN(IoClkBypReqKnownO_A, io_clk_byp_req_o)
   `ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)

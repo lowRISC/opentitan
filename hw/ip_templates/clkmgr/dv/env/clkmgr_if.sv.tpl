@@ -38,7 +38,7 @@ interface clkmgr_if (
   // scanmode_i == MuBi4True defeats all clock gating.
   prim_mubi_pkg::mubi4_t scanmode_i;
 
-% if len(derived_clks) > 0:
+% if ext_clk_bypass:
   // Life cycle enables clock bypass functionality.
   lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i;
 
@@ -59,7 +59,7 @@ interface clkmgr_if (
   clkmgr_pkg::clkmgr_out_t clocks_o;
 
   prim_mubi_pkg::mubi4_t calib_rdy;
-% if len(derived_clks) > 0:
+% if ext_clk_bypass:
   prim_mubi_pkg::mubi4_t hi_speed_sel;
 % endif
 
@@ -102,7 +102,7 @@ interface clkmgr_if (
                              ${target}: `CLKMGR_HIER.u_reg.clk_hints_status_clk_main_${target}_val_qs${sep}
 % endfor
                              };
-% if len(derived_clks) > 0:
+% if ext_clk_bypass:
 
   prim_mubi_pkg::mubi4_t extclk_ctrl_csr_sel;
   always_comb begin
@@ -157,7 +157,7 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
     scanmode_i = value;
   endfunction
 
-% if len(derived_clks) > 0:
+% if ext_clk_bypass:
   function automatic void update_lc_debug_en(lc_ctrl_pkg::lc_tx_t value);
     lc_hw_debug_en_i = value;
   endfunction
@@ -194,7 +194,7 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
   endfunction
 
   task automatic init(mubi_hintables_t idle, prim_mubi_pkg::mubi4_t scanmode,
-    % if len(derived_clks) > 0:
+    % if ext_clk_bypass:
                       lc_ctrl_pkg::lc_tx_t lc_debug_en = lc_ctrl_pkg::Off,
                       lc_ctrl_pkg::lc_tx_t lc_clk_byp_req = lc_ctrl_pkg::Off,
     % endif
@@ -202,12 +202,12 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
     `uvm_info("clkmgr_if", "In clkmgr_if init", UVM_MEDIUM)
     update_calib_rdy(calib_rdy);
     update_idle(idle);
-  % if len(derived_clks) > 0:
+  % if ext_clk_bypass:
     update_lc_clk_byp_req(lc_clk_byp_req);
     update_lc_debug_en(lc_debug_en);
   % endif
     update_scanmode(scanmode);
-  % if len(derived_clks) > 0:
+  % if ext_clk_bypass:
     update_all_clk_byp_ack(prim_mubi_pkg::MuBi4False);
   % endif
   endtask
@@ -266,7 +266,7 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
     input idle_i;
   endclocking
 
-% if len(derived_clks) > 0:
+% if ext_clk_bypass:
   // Pipelining and clocking block for external clock bypass. The divisor control is
   // triggered by an ast ack, which goes through synchronizers.
   logic step_down_ff;
@@ -281,7 +281,7 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
 % endif
   clocking clk_cb @(posedge clk);
     input calib_rdy;
-  % if len(derived_clks) > 0:
+  % if ext_clk_bypass:
     input extclk_ctrl_csr_sel;
     input extclk_ctrl_csr_step_down;
     input lc_hw_debug_en_i;

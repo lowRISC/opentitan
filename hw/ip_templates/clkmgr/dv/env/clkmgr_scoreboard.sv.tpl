@@ -18,7 +18,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   `uvm_component_utils(clkmgr_scoreboard)
 
   // local variables
-% if len(derived_clks) > 0:
+% if ext_clk_bypass:
   logic extclk_ctrl_regwen;
 % endif
   logic measure_ctrl_regwen;
@@ -41,7 +41,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
-    % if len(derived_clks) > 0:
+    % if ext_clk_bypass:
       monitor_all_clk_byp();
       monitor_io_clk_byp();
     % endif
@@ -54,7 +54,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     join_none
   endtask
 
-% if len(derived_clks) > 0:
+% if ext_clk_bypass:
   task monitor_all_clk_byp();
     mubi4_t prev_all_clk_byp_req = MuBi4False;
     forever
@@ -274,7 +274,7 @@ ${spc}cfg.clkmgr_vif.scanmode_i == MuBi4True);
       "alert_test": begin
         // FIXME
       end
-    % if len(derived_clks) > 0:
+    % if ext_clk_bypass:
       "extclk_ctrl_regwen": begin
         if (addr_phase_write) extclk_ctrl_regwen = item.a_data;
       end
@@ -349,7 +349,7 @@ ${spc}cfg.clkmgr_vif.scanmode_i == MuBi4True);
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
-  % if len(derived_clks) > 0:
+  % if ext_clk_bypass:
     extclk_ctrl_regwen  = ral.extclk_ctrl_regwen.get_reset();
   % endif
     measure_ctrl_regwen = ral.measure_ctrl_regwen.get_reset();

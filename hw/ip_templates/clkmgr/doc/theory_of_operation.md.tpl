@@ -204,7 +204,7 @@ There are two occasions where this is required:
 -  Life cycle transition from `RAW` / `TEST_LOCKED*` to `TEST_UNLOCKED*` [states](../../../../ip/lc_ctrl/README.md#clk_byp_req).
 -  Software request for external clocks during normal functional mode.
 
-% if len(derived_clks) > 0:
+% if ext_clk_bypass:
 <%text>#### Life Cycle Requested External Clock</%text>
 
 The life cycle controller only requests the io clock input to be switched.

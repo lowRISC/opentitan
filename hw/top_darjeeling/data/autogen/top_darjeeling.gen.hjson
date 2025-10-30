@@ -3203,6 +3203,10 @@
       [
         Aon
       ]
+      ipgen_params:
+      {
+        ext_clk_bypass: false
+      }
       attr: ipgen
       clock_connections:
       {
