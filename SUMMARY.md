@@ -31,6 +31,7 @@
   - [Introduction](./hw/README.md)
   - [Top Earlgrey](./hw/top_earlgrey/README.md)
     - [Datasheet](./hw/top_earlgrey/doc/datasheet.md)
+    - [Memory Map](./hw/top_earlgrey/doc/memory_map.md)
     - [Design](./hw/top_earlgrey/doc/design/README.md)
     - [Pinout / Pinmux Tables](./hw/top_earlgrey/ip_autogen/pinmux/doc/targets.md)
       - [ASIC](./hw/top_earlgrey/ip_autogen/pinmux/doc/pinout_asic.md)
@@ -146,6 +147,7 @@
 
   - [Top Darjeeling](./hw/top_darjeeling/README.md)
     - [Datasheet](./hw/top_darjeeling/doc/datasheet.md)
+    - [Memory Map](./hw/top_darjeeling/doc/memory_map.md)
     - [Pinout / Pinmux Tables](./hw/top_darjeeling/ip_autogen/pinmux/doc/targets.md)
       - [ASIC](./hw/top_darjeeling/ip_autogen/pinmux/doc/pinout_asic.md)
       - [CW310](./hw/top_darjeeling/ip_autogen/pinmux/doc/pinout_cw310.md)
