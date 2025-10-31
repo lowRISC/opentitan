@@ -22,18 +22,12 @@ module csrng_state_db
   input  logic                   enable_i,
 
   // Read interface for the core data path
-  input  logic [InstIdWidth-1:0] rd_inst_id_i,
+  input  logic   [NumAppsLg-1:0] rd_inst_id_i,
   output csrng_state_t           rd_state_o,
 
   // Write interface
   input  logic                   wr_vld_i,
   input  csrng_core_data_t       wr_data_i,
-  input  csrng_cmd_sts_e         wr_status_i,
-
-  // Write interface "status" feedback
-  output logic                   status_vld_o,
-  output csrng_cmd_sts_e         status_val_o,
-  output logic [InstIdWidth-1:0] status_inst_id_o,
 
   // State dump interface via register access
   input  logic                   reg_rd_otp_en_i,
@@ -59,25 +53,16 @@ module csrng_state_db
   logic [NumRegTotBits-1:0] state_reg_readout;
 
   // Registers
-  logic                     status_vld_q, status_vld_d;
-  csrng_cmd_sts_e           status_val_q, status_val_d;
-  logic   [InstIdWidth-1:0] status_inst_id_q, status_inst_id_d;
   logic [NumRegStateLg-1:0] reg_rd_ptr_q, reg_rd_ptr_d;
   logic     [NumAppsLg-1:0] reg_rd_id_q, reg_rd_id_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      status_vld_q     <= '0;
-      status_val_q     <= CMD_STS_SUCCESS;
-      status_inst_id_q <= '0;
-      reg_rd_ptr_q     <= '0;
-      reg_rd_id_q      <= '0;
+      reg_rd_ptr_q <= '0;
+      reg_rd_id_q  <= '0;
     end else begin
-      status_vld_q     <= status_vld_d;
-      status_val_q     <= status_val_d;
-      status_inst_id_q <= status_inst_id_d;
-      reg_rd_ptr_q     <= reg_rd_ptr_d;
-      reg_rd_id_q      <= reg_rd_id_d;
+      reg_rd_ptr_q <= reg_rd_ptr_d;
+      reg_rd_id_q  <= reg_rd_id_d;
     end
   end
 
@@ -89,7 +74,7 @@ module csrng_state_db
   end
 
   // State readout for core data path
-  assign rd_state_o = (rd_inst_id_i < NumApps) ? state_q[rd_inst_id_i[NumAppsLg-1:0]] : '0;
+  assign rd_state_o = (rd_inst_id_i < NumApps) ? state_q[rd_inst_id_i] : '0;
 
   //--------------------------------------------
   // Regfile readout logic
@@ -137,8 +122,8 @@ module csrng_state_db
   //--------------------------------------------
 
   // All valid commands except UNInstatiate set the instance state as 'instantiated'.
-  assign instance_state = (wr_data_i.cmd == INS)  || (wr_data_i.cmd == RES) ||
-                          (wr_data_i.cmd == GENU) || (wr_data_i.cmd == UPD);
+  assign instance_state = (wr_data_i.cmd == INS) || (wr_data_i.cmd == RES) ||
+                          (wr_data_i.cmd == GEN) || (wr_data_i.cmd == UPD);
 
   assign write_en = enable_i && wr_vld_i;
 
@@ -148,7 +133,7 @@ module csrng_state_db
     if (!enable_i) begin
       state_d = '0;
     end else if (write_en && (wr_data_i.inst_id < NumApps)) begin
-      state_d[wr_data_i.inst_id[NumAppsLg-1:0]] = '{
+      state_d[wr_data_i.inst_id] = '{
         fips:       wr_data_i.fips,
         key:        wr_data_i.key,
         v:          wr_data_i.v,
@@ -158,20 +143,11 @@ module csrng_state_db
     end
   end
 
-  assign status_vld_d     = write_en;
-  assign status_val_d     = wr_status_i;
-  assign status_inst_id_d = wr_data_i.inst_id;
-
-  assign status_vld_o     = status_vld_q;
-  assign status_val_o     = status_val_q;
-  assign status_inst_id_o = status_inst_id_q;
-
   // Unused signals
   logic [SeedLen-1:0] unused_wdata_pdata;
-  logic [InstIdWidth-NumAppsLg-1:0] unused_reg_rd_id, unused_rd_inst_id;
+  logic [InstIdWidth-NumAppsLg-1:0] unused_reg_rd_id;
   assign unused_wdata_pdata = wr_data_i.pdata;
   assign unused_reg_rd_id = reg_rd_id_i[InstIdWidth-1:NumAppsLg];
-  assign unused_rd_inst_id = rd_inst_id_i[InstIdWidth-1:NumAppsLg];
 
   // Assertions
   // The current architecture assumes the reseed counter fits into a single register

@@ -98,32 +98,15 @@ package csrng_pkg;
   // Struct data types for the core data path
   //------------------------------------------
 
-  // Keep these structs identical in the LSBs and add less frequently used fields toward the MSBs
-  // to allow for easy assigns/conversions from smaller to more complex data types.
   typedef struct packed {
     logic                   fips;
     logic  [RsCtrWidth-1:0] rs_ctr;
     logic     [SeedLen-1:0] pdata;
-    logic [InstIdWidth-1:0] inst_id;
+    logic   [NumAppsLg-1:0] inst_id;
     acmd_e                  cmd;
     logic      [KeyLen-1:0] key;
     logic      [BlkLen-1:0] v;
   } csrng_core_data_t;
-
-  typedef struct packed {
-    logic     [SeedLen-1:0] pdata;
-    logic [InstIdWidth-1:0] inst_id;
-    acmd_e                  cmd;
-    logic      [KeyLen-1:0] key;
-    logic      [BlkLen-1:0] v;
-  } csrng_upd_data_t;
-
-  typedef struct packed {
-    logic [InstIdWidth-1:0] inst_id;
-    acmd_e                  cmd;
-    logic      [KeyLen-1:0] key;
-    logic      [BlkLen-1:0] v;
-  } csrng_benc_data_t;
 
   typedef struct packed {
     logic [KeyLen-1:0] key;
@@ -140,9 +123,6 @@ package csrng_pkg;
     logic [RsCtrWidth-1:0] rs_ctr;
   } csrng_state_t;
 
-  parameter int unsigned CoreDataWidth = $bits(csrng_core_data_t);
-  parameter int unsigned UpdDataWidth  = $bits(csrng_upd_data_t);
-  parameter int unsigned BencDataWidth = $bits(csrng_benc_data_t);
   parameter int unsigned StateWidth    = $bits(csrng_state_t);
 
   parameter int unsigned MainSmStateWidth = 6;
