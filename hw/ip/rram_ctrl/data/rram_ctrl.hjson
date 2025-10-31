@@ -17,7 +17,7 @@
   // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
   cip_id:             "45",
   design_spec:        "../doc",
-  dv_doc:             "../doc/dv"
+  dv_doc:             "../dv/doc"
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_rram_ctrl",
   revisions: [
