@@ -105,191 +105,167 @@ class SymCryptolibFiSim(unittest.TestCase):
                 # Connect to GDB
                 gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
 
-                # Provide the function name and extract the start and end address from the dis file
-                function_name = "otcrypto_hmac"
+                # We provide the name of the unique marker in the pentest framework
+                function_name = "PENTEST_MARKER_HMAC"
                 # Gives back an array of hits where the function is called
-                trace_addresses = parser.get_function_addresses(function_name)
-                print("Start and stop addresses of ", function_name, ": ", trace_addresses)
+                trace_address = parser.get_marker_addresses(function_name)
+                print("Start and stop addresses of ", function_name, ": ", trace_address)
 
-                for trace_address in trace_addresses:
-                    if not parser.is_trigger_in_function_of_address(trace_address[0]):
-                        print("Address", trace_address[0], " does not contain a trigger function")
-                        continue
+                crash_observation_address = parser.get_function_start_address(
+                    "ottf_exception_handler"
+                )
 
-                    crash_observation_address = parser.get_function_start_address(
-                        "ottf_exception_handler"
-                    )
+                # Start the tracing
+                # We set a short timeout to detect whether GDB has connected properly
+                # and a long timeout for the entire tracing
+                initial_timeout = 10
+                total_timeout = 60 * 60 * 5
 
-                    # Start the tracing
-                    # We set a short timeout to detect whether GDB has connected properly
-                    # and a long timeout for the entire tracing
-                    initial_timeout = 10
-                    total_timeout = 60 * 60 * 5
+                gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                gdb.send_command("c", check_response=False)
 
-                    gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
-                    gdb.send_command("c", check_response=False)
+                # Trigger the hmac from the testOS (we do not read its output)
+                trigger_hmac(0)
 
-                    # Trigger the hmac from the testOS (we do not read its output)
-                    trigger_hmac(0)
+                start_time = time.time()
+                initial_timeout_stopped = False
+                total_timeout_stopped = False
 
-                    start_time = time.time()
-                    initial_timeout_stopped = False
-                    total_timeout_stopped = False
+                # Run the tracing to get the trace log
+                # Sometimes the tracing fails due to race conditions,
+                # we have a quick initial timeout to catch this
+                while time.time() - start_time < initial_timeout:
+                    output = gdb.read_output()
+                    if "breakpoint 1, " in output:
+                        initial_timeout_stopped = True
+                        break
+                if not initial_timeout_stopped:
+                    print("No initial break point found, can be a misfire, try again")
+                    sys.exit(1)
+                while time.time() - start_time < total_timeout:
+                    output = gdb.read_output()
+                    if "PC trace complete" in output:
+                        print("\nTrace complete")
+                        total_timeout_stopped = True
+                        break
+                if not total_timeout_stopped:
+                    print("Final tracing timeout reached")
+                    sys.exit(1)
 
-                    # Run the tracing to get the trace log
-                    # Sometimes the tracing fails due to race conditions,
-                    # we have a quick initial timeout to catch this
-                    while time.time() - start_time < initial_timeout:
-                        output = gdb.read_output()
-                        if "breakpoint 1, " in output:
-                            initial_timeout_stopped = True
-                            break
-                    if not initial_timeout_stopped:
-                        print("No initial break point found, can be a misfire, try again")
-                        sys.exit(1)
-                    while time.time() - start_time < total_timeout:
-                        output = gdb.read_output()
-                        if "PC trace complete" in output:
-                            print("\nTrace complete")
-                            total_timeout_stopped = True
-                            break
-                    if not total_timeout_stopped:
-                        print("Final tracing timeout reached")
-                        sys.exit(1)
+                # Parse and truncate the trace log to get all PCs in a list
+                pc_list = gdb.parse_pc_trace_file(pc_trace_file)
+                # Get the unique PCs and annotate their occurence count
+                pc_count_dict = Counter(pc_list)
+                if len(pc_count_dict) <= 0:
+                    print("Found no tracing, stopping")
+                    sys.exit(1)
+                print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
+                campaign.write(f"Tracing has a total of {len(pc_count_dict)} unique PCs\n")
 
-                    # Parse and truncate the trace log to get all PCs in a list
-                    pc_list = gdb.parse_pc_trace_file(pc_trace_file)
-                    # Get the unique PCs and annotate their occurence count
-                    pc_count_dict = Counter(pc_list)
-                    if len(pc_count_dict) <= 0:
-                        print("Found no tracing, stopping")
-                        sys.exit(1)
-                    print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
-                    campaign.write(f"Tracing has a total of {len(pc_count_dict)} unique PCs\n")
+                # Reset the target, flush the output, and close gdb
+                gdb.reset_target()
+                target.dump_all()
+                trigger_testos_init(print_output=False)
+                gdb.close_gdb()
+                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
 
-                    # Reset the target, flush the output, and close gdb
-                    gdb.reset_target()
-                    target.dump_all()
-                    trigger_testos_init(print_output=False)
-                    gdb.close_gdb()
-                    gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+                started = True
+                for pc, count in pc_count_dict.items():
+                    i_count = 0
+                    while i_count < min(MAX_SKIPS_PER_LOOP, count):
+                        # Search for collisions in outputs between the HMAC instances
+                        for i in range(2):
+                            print("-" * 80)
+                            print("Applying instruction skip in ", pc, "occurence", i_count)
+                            print("-" * 80)
+                            campaign.write(
+                                f"Applying instruction skip in {pc} occurence {i_count}\n"
+                            )
 
-                    started = True
-                    for pc, count in pc_count_dict.items():
-                        i_count = 0
-                        while i_count < min(MAX_SKIPS_PER_LOOP, count):
-                            # Search for collisions in outputs between the HMAC instances
-                            for i in range(2):
-                                print("-" * 80)
-                                print("Applying instruction skip in ", pc, "occurence", i_count)
-                                print("-" * 80)
-                                campaign.write(
-                                    f"Applying instruction skip in {pc} occurence {i_count}\n"
+                            function_output_observation = "function output detected"
+                            crash_observation = "crash detected"
+
+                            try:
+                                # The observation points
+                                observations = {
+                                    # Function output
+                                    trace_address[1]: f"{function_output_observation}",
+                                    # Crash check
+                                    crash_observation_address: f"{crash_observation}",
+                                }
+                                gdb.add_observation(observations)
+
+                                gdb.apply_instruction_skip(
+                                    pc, parser.parse_next_instruction(pc), i_count
                                 )
+                                gdb.send_command("c", check_response=False)
 
-                                function_output_observation = "function output detected"
-                                crash_observation = "crash detected"
+                                # The instruction skip loop
+                                trigger_hmac(i)
+                                testos_response = read_testos_output()
 
-                                try:
-                                    # The observation points
-                                    observations = {
-                                        # Function output
-                                        trace_address[1]: f"{function_output_observation}",
-                                        # Crash check
-                                        crash_observation_address: f"{crash_observation}",
-                                    }
-                                    gdb.add_observation(observations)
+                                gdb_response = gdb.read_output()
+                                if "instruction skip applied" in gdb_response:
+                                    i_count += 1
+                                    total_attacks += 1
 
-                                    gdb.apply_instruction_skip(
-                                        pc, parser.parse_next_instruction(pc), i_count
-                                    )
-                                    gdb.send_command("c", check_response=False)
+                                    if crash_observation in gdb_response:
+                                        print("Crash detected, resetting", flush=True)
+                                        campaign.write("Crash detected, resetting\n")
+                                        gdb.close_gdb()
+                                        gdb = GDBController(
+                                            gdb_path=GDB_PATH,
+                                            gdb_port=GDB_PORT,
+                                            elf_file=elf_path,
+                                        )
+                                        gdb.reset_target()
+                                        target.dump_all()
+                                        trigger_testos_init(print_output=False)
+                                        # Reset again
+                                        gdb.close_gdb()
+                                        gdb = GDBController(
+                                            gdb_path=GDB_PATH,
+                                            gdb_port=GDB_PORT,
+                                            elf_file=elf_path,
+                                        )
+                                    elif function_output_observation in gdb_response:
+                                        testos_response_json = json.loads(testos_response)
+                                        print("Output:", testos_response_json, flush=True)
+                                        campaign.write(f"Output: {testos_response_json}\n")
+                                        data_out = testos_response_json["data"]
+                                        hmac_outputs[i].append(data_out)
 
-                                    # The instruction skip loop
-                                    trigger_hmac(i)
-                                    testos_response = read_testos_output()
-
-                                    gdb_response = gdb.read_output()
-                                    if "instruction skip applied" in gdb_response:
-                                        i_count += 1
-                                        total_attacks += 1
-
-                                        if crash_observation in gdb_response:
-                                            print("Crash detected, resetting", flush=True)
-                                            campaign.write("Crash detected, resetting\n")
-                                            gdb.close_gdb()
-                                            gdb = GDBController(
-                                                gdb_path=GDB_PATH,
-                                                gdb_port=GDB_PORT,
-                                                elf_file=elf_path,
+                                        if data_out in hmac_outputs[1 - i]:
+                                            successful_faults += 1
+                                            print("-" * 80)
+                                            print("Successful FI attack!")
+                                            print("Location:", pc, "iteration", i_count - 1)
+                                            print(gdb_response)
+                                            print("Response:", testos_response_json)
+                                            print()
+                                            print("Content of hmac_outputs[0]")
+                                            print(hmac_outputs[0])
+                                            print()
+                                            print("Content of hmac_outputs[1]")
+                                            print(hmac_outputs[1])
+                                            print("-" * 80)
+                                            test_results.write(
+                                                f"{pc}, {i_count - 1}: {testos_response_json}\n"
                                             )
-                                            gdb.reset_target()
-                                            target.dump_all()
-                                            trigger_testos_init(print_output=False)
-                                            # Reset again
-                                            gdb.close_gdb()
-                                            gdb = GDBController(
-                                                gdb_path=GDB_PATH,
-                                                gdb_port=GDB_PORT,
-                                                elf_file=elf_path,
-                                            )
-                                        elif function_output_observation in gdb_response:
-                                            testos_response_json = json.loads(testos_response)
-                                            print("Output:", testos_response_json, flush=True)
-                                            campaign.write(f"Output: {testos_response_json}\n")
-                                            data_out = testos_response_json["data"]
-                                            hmac_outputs[i].append(data_out)
-
-                                            if data_out in hmac_outputs[1 - i]:
-                                                successful_faults += 1
-                                                print("-" * 80)
-                                                print("Successful FI attack!")
-                                                print("Location:", pc, "iteration", i_count - 1)
-                                                print(gdb_response)
-                                                print("Response:", testos_response_json)
-                                                print()
-                                                print("Content of hmac_outputs[0]")
-                                                print(hmac_outputs[0])
-                                                print()
-                                                print("Content of hmac_outputs[1]")
-                                                print(hmac_outputs[1])
-                                                print("-" * 80)
-                                                test_results.write(
-                                                    f"{pc}, {i_count - 1}: {testos_response_json}\n"
-                                                )
-                                            # Reset GDB by closing and opening again
-                                            gdb.close_gdb()
-                                            gdb = GDBController(
-                                                gdb_path=GDB_PATH,
-                                                gdb_port=GDB_PORT,
-                                                elf_file=elf_path,
-                                            )
-                                        else:
-                                            print(
-                                                "Firmware behaved unexpected, no crash or output",
-                                                flush=True,
-                                            )
-                                            campaign.write(
-                                                "Firmware behaved unexpected, no crash or output\n"
-                                            )
-                                            gdb.close_gdb()
-                                            target.close_openocd()
-                                            time.sleep(0.5)
-                                            target.initialize_target()
-                                            trigger_testos_init()
-                                            target.dump_all()
-                                            gdb = GDBController(
-                                                gdb_path=GDB_PATH,
-                                                gdb_port=GDB_PORT,
-                                                elf_file=elf_path,
-                                            )
-                                            time.sleep(2)
+                                        # Reset GDB by closing and opening again
+                                        gdb.close_gdb()
+                                        gdb = GDBController(
+                                            gdb_path=GDB_PATH,
+                                            gdb_port=GDB_PORT,
+                                            elf_file=elf_path,
+                                        )
                                     else:
                                         print(
-                                            "No break point found, something went wrong", flush=True
+                                            "Firmware behaved unexpected, no crash or output",
+                                            flush=True,
                                         )
                                         campaign.write(
-                                            "No break point found, something went wrong\n"
+                                            "Firmware behaved unexpected, no crash or output\n"
                                         )
                                         gdb.close_gdb()
                                         target.close_openocd()
@@ -298,35 +274,14 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         trigger_testos_init()
                                         target.dump_all()
                                         gdb = GDBController(
-                                            gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
+                                            gdb_path=GDB_PATH,
+                                            gdb_port=GDB_PORT,
+                                            elf_file=elf_path,
                                         )
                                         time.sleep(2)
-
-                                except json.JSONDecodeError:
-                                    print(
-                                        "Error: JSON decoding failed. Invalid response format",
-                                        flush=True,
-                                    )
-                                    campaign.write(
-                                        "Error: JSON decoding failed. Invalid response format\n"
-                                    )
-                                    gdb.close_gdb()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
-                                    gdb.reset_target()
-                                    target.dump_all()
-                                    trigger_testos_init(print_output=False)
-                                    # Reset again
-                                    gdb.close_gdb()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
-
-                                except TimeoutError as e:
-                                    print("Timeout error, retrying", flush=True)
-                                    campaign.write("Timeout error, retrying\n")
-                                    print(e, flush=True)
+                                else:
+                                    print("No break point found, something went wrong", flush=True)
+                                    campaign.write("No break point found, something went wrong\n")
                                     gdb.close_gdb()
                                     target.close_openocd()
                                     time.sleep(0.5)
@@ -337,6 +292,42 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
                                     )
                                     time.sleep(2)
+
+                            except json.JSONDecodeError:
+                                print(
+                                    "Error: JSON decoding failed. Invalid response format",
+                                    flush=True,
+                                )
+                                campaign.write(
+                                    "Error: JSON decoding failed. Invalid response format\n"
+                                )
+                                gdb.close_gdb()
+                                gdb = GDBController(
+                                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
+                                )
+                                gdb.reset_target()
+                                target.dump_all()
+                                trigger_testos_init(print_output=False)
+                                # Reset again
+                                gdb.close_gdb()
+                                gdb = GDBController(
+                                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
+                                )
+
+                            except TimeoutError as e:
+                                print("Timeout error, retrying", flush=True)
+                                campaign.write("Timeout error, retrying\n")
+                                print(e, flush=True)
+                                gdb.close_gdb()
+                                target.close_openocd()
+                                time.sleep(0.5)
+                                target.initialize_target()
+                                trigger_testos_init()
+                                target.dump_all()
+                                gdb = GDBController(
+                                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
+                                )
+                                time.sleep(2)
 
             finally:
                 print("-" * 80)
@@ -430,191 +421,167 @@ class SymCryptolibFiSim(unittest.TestCase):
                 # Connect to GDB
                 gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
 
-                # Provide the function name and extract the start and end address from the dis file
-                function_name = "otcrypto_aes_gcm_encrypt"
+                # We provide the name of the unique marker in the pentest framework
+                function_name = "PENTEST_MARKER_HMAC"
                 # Gives back an array of hits where the function is called
-                trace_addresses = parser.get_function_addresses(function_name)
-                print("Start and stop addresses of ", function_name, ": ", trace_addresses)
+                trace_address = parser.get_marker_addresses(function_name)
+                print("Start and stop addresses of ", function_name, ": ", trace_address)
 
-                for trace_address in trace_addresses:
-                    if not parser.is_trigger_in_function_of_address(trace_address[0]):
-                        print("Address", trace_address[0], " does not contain a trigger function")
-                        continue
+                crash_observation_address = parser.get_function_start_address(
+                    "ottf_exception_handler"
+                )
 
-                    crash_observation_address = parser.get_function_start_address(
-                        "ottf_exception_handler"
-                    )
+                # Start the tracing
+                # We set a short timeout to detect whether GDB has connected properly
+                # and a long timeout for the entire tracing
+                initial_timeout = 10
+                total_timeout = 60 * 60 * 5
 
-                    # Start the tracing
-                    # We set a short timeout to detect whether GDB has connected properly
-                    # and a long timeout for the entire tracing
-                    initial_timeout = 10
-                    total_timeout = 60 * 60 * 5
+                gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                gdb.send_command("c", check_response=False)
 
-                    gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
-                    gdb.send_command("c", check_response=False)
+                # Trigger the gcm from the testOS (we do not read its output)
+                trigger_gcm(0)
 
-                    # Trigger the gcm from the testOS (we do not read its output)
-                    trigger_gcm(0)
+                start_time = time.time()
+                initial_timeout_stopped = False
+                total_timeout_stopped = False
 
-                    start_time = time.time()
-                    initial_timeout_stopped = False
-                    total_timeout_stopped = False
+                # Run the tracing to get the trace log
+                # Sometimes the tracing fails due to race conditions,
+                # we have a quick initial timeout to catch this
+                while time.time() - start_time < initial_timeout:
+                    output = gdb.read_output()
+                    if "breakpoint 1, " in output:
+                        initial_timeout_stopped = True
+                        break
+                if not initial_timeout_stopped:
+                    print("No initial break point found, can be a misfire, try again")
+                    sys.exit(1)
+                while time.time() - start_time < total_timeout:
+                    output = gdb.read_output()
+                    if "PC trace complete" in output:
+                        print("\nTrace complete")
+                        total_timeout_stopped = True
+                        break
+                if not total_timeout_stopped:
+                    print("Final tracing timeout reached")
+                    sys.exit(1)
 
-                    # Run the tracing to get the trace log
-                    # Sometimes the tracing fails due to race conditions,
-                    # we have a quick initial timeout to catch this
-                    while time.time() - start_time < initial_timeout:
-                        output = gdb.read_output()
-                        if "breakpoint 1, " in output:
-                            initial_timeout_stopped = True
-                            break
-                    if not initial_timeout_stopped:
-                        print("No initial break point found, can be a misfire, try again")
-                        sys.exit(1)
-                    while time.time() - start_time < total_timeout:
-                        output = gdb.read_output()
-                        if "PC trace complete" in output:
-                            print("\nTrace complete")
-                            total_timeout_stopped = True
-                            break
-                    if not total_timeout_stopped:
-                        print("Final tracing timeout reached")
-                        sys.exit(1)
+                # Parse and truncate the trace log to get all PCs in a list
+                pc_list = gdb.parse_pc_trace_file(pc_trace_file)
+                # Get the unique PCs and annotate their occurence count
+                pc_count_dict = Counter(pc_list)
+                if len(pc_count_dict) <= 0:
+                    print("Found no tracing, stopping")
+                    sys.exit(1)
+                print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
+                campaign.write(f"Tracing has a total of {len(pc_count_dict)} unique PCs\n")
 
-                    # Parse and truncate the trace log to get all PCs in a list
-                    pc_list = gdb.parse_pc_trace_file(pc_trace_file)
-                    # Get the unique PCs and annotate their occurence count
-                    pc_count_dict = Counter(pc_list)
-                    if len(pc_count_dict) <= 0:
-                        print("Found no tracing, stopping")
-                        sys.exit(1)
-                    print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
-                    campaign.write(f"Tracing has a total of {len(pc_count_dict)} unique PCs\n")
+                # Reset the target, flush the output, and close gdb
+                gdb.reset_target()
+                target.dump_all()
+                trigger_testos_init(print_output=False)
+                gdb.close_gdb()
+                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
 
-                    # Reset the target, flush the output, and close gdb
-                    gdb.reset_target()
-                    target.dump_all()
-                    trigger_testos_init(print_output=False)
-                    gdb.close_gdb()
-                    gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+                started = True
+                for pc, count in pc_count_dict.items():
+                    i_count = 0
+                    while i_count < min(MAX_SKIPS_PER_LOOP, count):
+                        # Search for collisions in outputs between the gcm instances
+                        for i in range(2):
+                            print("-" * 80)
+                            print("Applying instruction skip in ", pc, "occurence", i_count)
+                            print("-" * 80)
+                            campaign.write(
+                                f"Applying instruction skip in {pc} occurence {i_count}\n"
+                            )
 
-                    started = True
-                    for pc, count in pc_count_dict.items():
-                        i_count = 0
-                        while i_count < min(MAX_SKIPS_PER_LOOP, count):
-                            # Search for collisions in outputs between the gcm instances
-                            for i in range(2):
-                                print("-" * 80)
-                                print("Applying instruction skip in ", pc, "occurence", i_count)
-                                print("-" * 80)
-                                campaign.write(
-                                    f"Applying instruction skip in {pc} occurence {i_count}\n"
+                            function_output_observation = "function output detected"
+                            crash_observation = "crash detected"
+
+                            try:
+                                # The observation points
+                                observations = {
+                                    # Function output
+                                    trace_address[1]: f"{function_output_observation}",
+                                    # Crash check
+                                    crash_observation_address: f"{crash_observation}",
+                                }
+                                gdb.add_observation(observations)
+
+                                gdb.apply_instruction_skip(
+                                    pc, parser.parse_next_instruction(pc), i_count
                                 )
+                                gdb.send_command("c", check_response=False)
 
-                                function_output_observation = "function output detected"
-                                crash_observation = "crash detected"
+                                # The instruction skip loop
+                                trigger_gcm(i)
+                                testos_response = read_testos_output()
 
-                                try:
-                                    # The observation points
-                                    observations = {
-                                        # Function output
-                                        trace_address[1]: f"{function_output_observation}",
-                                        # Crash check
-                                        crash_observation_address: f"{crash_observation}",
-                                    }
-                                    gdb.add_observation(observations)
+                                gdb_response = gdb.read_output()
+                                if "instruction skip applied" in gdb_response:
+                                    i_count += 1
+                                    total_attacks += 1
 
-                                    gdb.apply_instruction_skip(
-                                        pc, parser.parse_next_instruction(pc), i_count
-                                    )
-                                    gdb.send_command("c", check_response=False)
+                                    if crash_observation in gdb_response:
+                                        print("Crash detected, resetting", flush=True)
+                                        campaign.write("Crash detected, resetting\n")
+                                        gdb.close_gdb()
+                                        gdb = GDBController(
+                                            gdb_path=GDB_PATH,
+                                            gdb_port=GDB_PORT,
+                                            elf_file=elf_path,
+                                        )
+                                        gdb.reset_target()
+                                        target.dump_all()
+                                        trigger_testos_init(print_output=False)
+                                        # Reset again
+                                        gdb.close_gdb()
+                                        gdb = GDBController(
+                                            gdb_path=GDB_PATH,
+                                            gdb_port=GDB_PORT,
+                                            elf_file=elf_path,
+                                        )
+                                    elif function_output_observation in gdb_response:
+                                        testos_response_json = json.loads(testos_response)
+                                        print("Output:", testos_response_json, flush=True)
+                                        campaign.write(f"Output: {testos_response_json}\n")
+                                        tag_out = testos_response_json["tag"]
+                                        gcm_tags[i].append(tag_out)
 
-                                    # The instruction skip loop
-                                    trigger_gcm(i)
-                                    testos_response = read_testos_output()
-
-                                    gdb_response = gdb.read_output()
-                                    if "instruction skip applied" in gdb_response:
-                                        i_count += 1
-                                        total_attacks += 1
-
-                                        if crash_observation in gdb_response:
-                                            print("Crash detected, resetting", flush=True)
-                                            campaign.write("Crash detected, resetting\n")
-                                            gdb.close_gdb()
-                                            gdb = GDBController(
-                                                gdb_path=GDB_PATH,
-                                                gdb_port=GDB_PORT,
-                                                elf_file=elf_path,
+                                        if tag_out in gcm_tags[1 - i]:
+                                            successful_faults += 1
+                                            print("-" * 80)
+                                            print("Successful FI attack!")
+                                            print("Location:", pc, "iteration", i_count - 1)
+                                            print(gdb_response)
+                                            print("Response:", testos_response_json)
+                                            print()
+                                            print("Content of gcm_tags[0]")
+                                            print(gcm_tags[0])
+                                            print()
+                                            print("Content of gcm_tags[1]")
+                                            print(gcm_tags[1])
+                                            print("-" * 80)
+                                            test_results.write(
+                                                f"{pc}, {i_count - 1}: {testos_response_json}\n"
                                             )
-                                            gdb.reset_target()
-                                            target.dump_all()
-                                            trigger_testos_init(print_output=False)
-                                            # Reset again
-                                            gdb.close_gdb()
-                                            gdb = GDBController(
-                                                gdb_path=GDB_PATH,
-                                                gdb_port=GDB_PORT,
-                                                elf_file=elf_path,
-                                            )
-                                        elif function_output_observation in gdb_response:
-                                            testos_response_json = json.loads(testos_response)
-                                            print("Output:", testos_response_json, flush=True)
-                                            campaign.write(f"Output: {testos_response_json}\n")
-                                            tag_out = testos_response_json["tag"]
-                                            gcm_tags[i].append(tag_out)
-
-                                            if tag_out in gcm_tags[1 - i]:
-                                                successful_faults += 1
-                                                print("-" * 80)
-                                                print("Successful FI attack!")
-                                                print("Location:", pc, "iteration", i_count - 1)
-                                                print(gdb_response)
-                                                print("Response:", testos_response_json)
-                                                print()
-                                                print("Content of gcm_tags[0]")
-                                                print(gcm_tags[0])
-                                                print()
-                                                print("Content of gcm_tags[1]")
-                                                print(gcm_tags[1])
-                                                print("-" * 80)
-                                                test_results.write(
-                                                    f"{pc}, {i_count - 1}: {testos_response_json}\n"
-                                                )
-                                            # Reset GDB by closing and opening again
-                                            gdb.close_gdb()
-                                            gdb = GDBController(
-                                                gdb_path=GDB_PATH,
-                                                gdb_port=GDB_PORT,
-                                                elf_file=elf_path,
-                                            )
-                                        else:
-                                            print(
-                                                "Firmware behaved unexpected, no crash or output",
-                                                flush=True,
-                                            )
-                                            campaign.write(
-                                                "Firmware behaved unexpected, no crash or output\n"
-                                            )
-                                            gdb.close_gdb()
-                                            target.close_openocd()
-                                            time.sleep(0.5)
-                                            target.initialize_target()
-                                            trigger_testos_init()
-                                            target.dump_all()
-                                            gdb = GDBController(
-                                                gdb_path=GDB_PATH,
-                                                gdb_port=GDB_PORT,
-                                                elf_file=elf_path,
-                                            )
-                                            time.sleep(2)
+                                        # Reset GDB by closing and opening again
+                                        gdb.close_gdb()
+                                        gdb = GDBController(
+                                            gdb_path=GDB_PATH,
+                                            gdb_port=GDB_PORT,
+                                            elf_file=elf_path,
+                                        )
                                     else:
                                         print(
-                                            "No break point found, something went wrong", flush=True
+                                            "Firmware behaved unexpected, no crash or output",
+                                            flush=True,
                                         )
                                         campaign.write(
-                                            "No break point found, something went wrong\n"
+                                            "Firmware behaved unexpected, no crash or output\n"
                                         )
                                         gdb.close_gdb()
                                         target.close_openocd()
@@ -623,35 +590,14 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         trigger_testos_init()
                                         target.dump_all()
                                         gdb = GDBController(
-                                            gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
+                                            gdb_path=GDB_PATH,
+                                            gdb_port=GDB_PORT,
+                                            elf_file=elf_path,
                                         )
                                         time.sleep(2)
-
-                                except json.JSONDecodeError:
-                                    print(
-                                        "Error: JSON decoding failed. Invalid response format",
-                                        flush=True,
-                                    )
-                                    campaign.write(
-                                        "Error: JSON decoding failed. Invalid response format\n"
-                                    )
-                                    gdb.close_gdb()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
-                                    gdb.reset_target()
-                                    target.dump_all()
-                                    trigger_testos_init(print_output=False)
-                                    # Reset again
-                                    gdb.close_gdb()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
-
-                                except TimeoutError as e:
-                                    print("Timeout error, retrying", flush=True)
-                                    campaign.write("Timeout error, retrying\n")
-                                    print(e, flush=True)
+                                else:
+                                    print("No break point found, something went wrong", flush=True)
+                                    campaign.write("No break point found, something went wrong\n")
                                     gdb.close_gdb()
                                     target.close_openocd()
                                     time.sleep(0.5)
@@ -662,6 +608,42 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
                                     )
                                     time.sleep(2)
+
+                            except json.JSONDecodeError:
+                                print(
+                                    "Error: JSON decoding failed. Invalid response format",
+                                    flush=True,
+                                )
+                                campaign.write(
+                                    "Error: JSON decoding failed. Invalid response format\n"
+                                )
+                                gdb.close_gdb()
+                                gdb = GDBController(
+                                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
+                                )
+                                gdb.reset_target()
+                                target.dump_all()
+                                trigger_testos_init(print_output=False)
+                                # Reset again
+                                gdb.close_gdb()
+                                gdb = GDBController(
+                                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
+                                )
+
+                            except TimeoutError as e:
+                                print("Timeout error, retrying", flush=True)
+                                campaign.write("Timeout error, retrying\n")
+                                print(e, flush=True)
+                                gdb.close_gdb()
+                                target.close_openocd()
+                                time.sleep(0.5)
+                                target.initialize_target()
+                                trigger_testos_init()
+                                target.dump_all()
+                                gdb = GDBController(
+                                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
+                                )
+                                time.sleep(2)
 
             finally:
                 print("-" * 80)
