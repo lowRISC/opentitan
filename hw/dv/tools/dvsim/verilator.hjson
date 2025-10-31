@@ -13,15 +13,15 @@
   flow:             sim
   flow_makefile:    "{dv_root}/tools/dvsim/sim.mk"
 
-  import_cfgs:      ["{proj_root}/hw/data/common_project_cfg.hjson",
+ /* import_cfgs:      ["{proj_root}/hw/data/common_project_cfg.hjson",
                      "{dv_root}/tools/dvsim/common_modes.hjson",
                      "{dv_root}/tools/dvsim/fusesoc.hjson",
                      ]
-
+*/
   // Default directory structure for the output
   build_dir:          "{scratch_path}/{build_mode}"
   run_dir_name:       "{index}.{test}"
-  run_dir:            "{scratch_path}/{run_dir_name}/out"
+  run_dir:            "{scratch_path}/{run_dir_name}/latest"
   sw_root_dir:        "{proj_root}/sw"
 
   regressions: [
@@ -109,7 +109,25 @@
       run_opts: []
     }
     {
+      name: verilator_gui_debug
+      is_sim_mode: 1
+      build_opts: []
+      run_opts: []
+    }
+
+    {
       name: verilator_waves
+      is_sim_mode: 1
+      // build_opts: ["--trace",
+      //              "--trace-fst"
+      //              "--trace-structs",
+      //              "--trace-params",
+      //              "-CFLAGS \"-DVM_TRACE_FMT_FST\"",
+      //              ]
+      run_opts: ["--trace"]
+    }
+    {
+      name: verilator_waves_off
       is_sim_mode: 1
       // build_opts: ["--trace",
       //              "--trace-fst"
