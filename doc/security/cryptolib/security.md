@@ -66,7 +66,7 @@ The following software-based countermeasures are implemented:
 
 ### RSA
 Modular exponentiation is the core operation for both RSA encryption/sign and key generation.
-It is implemented as a constant-time Montgomery Ladder with Boolean-masked exponents and blinded base points as detailed in the following works:
+It is implemented as a constant-time Montgomery Ladder with Boolean-masked exponents and blinded message as detailed in the following works:
 
 - https://eprint.iacr.org/2018/1226.pdf
 - https://dl.acm.org/doi/10.1145/1873548.1873556
