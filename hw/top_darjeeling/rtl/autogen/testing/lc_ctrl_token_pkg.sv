@@ -19,13 +19,13 @@ package lc_ctrl_token_pkg;
     128'h0
   };
   parameter lc_token_t RndCnstRawUnlockToken = {
-    128'hE4225DC332EA1FDA63B4C524556ED4D4
+    128'h387B1C46E7F4AAF627885508EDA5B08C
   };
   parameter lc_token_t AllZeroTokenHashed = {
     128'h3852305BAECF5FF1D5C1D25F6DB9058D
   };
   parameter lc_token_t RndCnstRawUnlockTokenHashed = {
-    128'hF51C9CB753A5AADEA5FDC7D23AB29F6D
+    128'h348FFE58DF00CB7B3E48A76335CCF200
   };
 
 endpackage : lc_ctrl_token_pkg
