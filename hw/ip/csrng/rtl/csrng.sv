@@ -165,12 +165,8 @@ module csrng
   `ASSERT_KNOWN(IntrCsHwInstExcKnownO_A, intr_cs_hw_inst_exc_o)
   `ASSERT_KNOWN(IntrCsFatalErrKnownO_A, intr_cs_fatal_err_o)
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrDrbgUpdAlertCheck_A,
-    u_csrng_core.u_csrng_ctr_drbg_upd.u_prim_count_ctr_drbg,
-    alert_tx_o[1])
-
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrDrbgGenAlertCheck_A,
-    u_csrng_core.u_csrng_ctr_drbg_gen.u_prim_count_ctr_drbg,
+    u_csrng_core.u_csrng_ctr_drbg.u_prim_count_ctr_drbg,
     alert_tx_o[1])
 
   for (genvar i = 0; i < NumHwApps + 1; i++) begin : gen_cnt_asserts
@@ -187,21 +183,10 @@ module csrng
     u_csrng_core.u_csrng_main_sm.u_state_regs,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgCmdFsmCheck_A,
-    u_csrng_core.u_csrng_ctr_drbg_cmd.u_state_regs,
-    alert_tx_o[1])
-
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgGenFsmCheck_A,
-    u_csrng_core.u_csrng_ctr_drbg_gen.u_state_regs,
+    u_csrng_core.u_csrng_ctr_drbg.u_state_regs,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgUpdBlkEncFsmCheck_A,
-    u_csrng_core.u_csrng_ctr_drbg_upd.u_blk_enc_state_regs,
-    alert_tx_o[1])
-
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgUpdOutBlkFsmCheck_A,
-    u_csrng_core.u_csrng_ctr_drbg_upd.u_outblk_state_regs,
-    alert_tx_o[1])
 
   for (genvar i = 0; i < aes_pkg::Sp2VWidth; i++) begin : gen_aes_cipher_control_fsm_svas
     if (aes_pkg::SP2V_LOGIC_HIGH[i] == 1'b1) begin : gen_aes_cipher_control_fsm_svas_p

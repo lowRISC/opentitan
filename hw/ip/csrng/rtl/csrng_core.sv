@@ -62,9 +62,6 @@ module csrng_core import csrng_pkg::*; #(
 
   // signals
   // interrupt signals
-  logic                        event_cs_cmd_req_done;
-  logic                        event_cs_entropy_req;
-  logic                        event_cs_hw_inst_exc;
   logic                        event_cs_fatal_err;
   logic [CsEnableCopies-1:1]   cs_enable_fo;
   logic [Flag0Copies-1:0]      flag0_fo;
@@ -86,8 +83,6 @@ module csrng_core import csrng_pkg::*; #(
   logic                        acmd_eop;
 
   logic                        state_db_wr_vld;
-  csrng_core_data_t            state_db_wr_data;
-  csrng_cmd_sts_e              state_db_wr_sts;
   csrng_state_t                state_db_rd_data;
 
   logic [CmdBusWidth-1:0]      acmd_bus;
@@ -101,112 +96,46 @@ module csrng_core import csrng_pkg::*; #(
 
   logic                        cmd_entropy_req;
   logic                        cmd_entropy_avail;
-  logic                        cmd_entropy_fips;
-  logic [SeedLen-1:0]          cmd_entropy;
 
-  logic                        ctr_drbg_cmd_rsp_vld;
-  logic                        ctr_drbg_cmd_rsp_rdy;
-  csrng_core_data_t            ctr_drbg_cmd_rsp_data;
-  logic                        ctr_drbg_cmd_rsp_glast;
+  logic                        ctr_drbg_req_vld;
+  logic                        ctr_drbg_req_rdy;
+  csrng_core_data_t            ctr_drbg_req_data;
 
-  logic                        ctr_drbg_cmd_req_vld;
-  logic                        ctr_drbg_cmd_req_rdy;
-  csrng_core_data_t            ctr_drbg_cmd_req_data;
+  logic                        ctr_drbg_rsp_vld;
+  csrng_core_data_t            ctr_drbg_rsp_data;
+  csrng_cmd_sts_e              ctr_drbg_rsp_sts;
 
-  logic                        ctr_drbg_gen_req_vld;
-  logic                        ctr_drbg_gen_req_rdy;
-
-  logic                        ctr_drbg_gen_rsp_vld;
-  logic                        ctr_drbg_gen_rsp_rdy;
-  csrng_core_data_t            ctr_drbg_gen_rsp_data;
-  logic [BlkLen-1:0]           ctr_drbg_gen_rsp_bits;
-  csrng_cmd_sts_e              ctr_drbg_gen_rsp_sts;
-
-  logic                        state_db_sts_ack;
-  csrng_cmd_sts_e              state_db_sts_sts;
-  logic [InstIdWidth-1:0]      state_db_sts_id;
+  logic                        ctr_drbg_bits_vld;
+  logic [BlkLen-1:0]           ctr_drbg_bits_data;
+  logic                        ctr_drbg_bits_fips;
 
   logic                        acmd_accept;
   logic                        main_sm_cmd_vld;
   logic                        clr_adata_packer;
 
-  logic                        ctr_drbg_upd_sfifo_final_err_sum;
-  logic [2:0]                  ctr_drbg_upd_sfifo_final_err;
-  logic                        ctr_drbg_gen_sfifo_gbencack_err_sum;
-  logic [2:0]                  ctr_drbg_gen_sfifo_gbencack_err;
-  logic                        ctr_drbg_gen_sfifo_gadstage_err_sum;
-  logic [2:0]                  ctr_drbg_gen_sfifo_gadstage_err;
-  logic                        block_encrypt_sfifo_cmdid_err_sum;
-  logic [2:0]                  block_encrypt_sfifo_cmdid_err;
   logic                        fifo_write_err_sum;
   logic                        fifo_read_err_sum;
   logic                        fifo_status_err_sum;
+  logic                        ctr_err_sum;
 
-  logic                        cmd_gen_cnt_err_sum;
   logic                        cmd_stage_sm_err_sum;
   logic                        main_sm_err_sum;
   logic                        cs_main_sm_err;
   logic [MainSmStateWidth-1:0] cs_main_sm_state;
-  logic                        drbg_cmd_sm_err_sum;
-  logic                        drbg_cmd_sm_err;
-  logic                        drbg_gen_sm_err_sum;
-  logic                        drbg_gen_sm_err;
-  logic                        drbg_updbe_sm_err_sum;
-  logic                        drbg_updbe_sm_err;
-  logic                        drbg_updob_sm_err_sum;
-  logic                        drbg_updob_sm_err;
+  logic                        ctr_drbg_sm_err_sum;
+  logic                        ctr_drbg_sm_err;
+  logic                        ctr_drbg_v_ctr_err;
   logic                        block_encrypt_sm_err_sum;
   logic                        block_encrypt_sm_err;
 
-  // blk encrypt arbiter
-  // request path
-  logic                        upd_benc_req_vld;
-  logic                        upd_benc_req_rdy;
-  csrng_benc_data_t            upd_benc_req_data;
-
-  logic                        gen_benc_req_vld;
-  logic                        gen_benc_req_rdy;
-  csrng_benc_data_t            gen_benc_req_data;
-
+  // Signals to and from block cipher
   logic                        block_encrypt_req_vld;
   logic                        block_encrypt_req_rdy;
-  csrng_benc_data_t            block_encrypt_req_data;
-
-  // response path
-  logic                        upd_benc_rsp_vld;
-  logic                        upd_benc_rsp_rdy;
-
-  logic                        gen_benc_rsp_vld;
-  logic                        gen_benc_rsp_rdy;
+  csrng_key_v_t                block_encrypt_req_data;
 
   logic                        block_encrypt_rsp_vld;
   logic                        block_encrypt_rsp_rdy;
-  csrng_benc_data_t            block_encrypt_rsp_data;
-
-  // update unit arbiter
-  // request path
-  logic                        cmd_upd_req_vld;
-  logic                        cmd_upd_req_rdy;
-  csrng_upd_data_t             cmd_upd_req_data;
-
-  logic                        gen_upd_req_vld;
-  logic                        gen_upd_req_rdy;
-  csrng_upd_data_t             gen_upd_req_data;
-
-  logic                        upd_arb_req_vld;
-  logic                        upd_arb_req_rdy;
-  csrng_upd_data_t             upd_arb_req_data;
-
-  // response path
-  logic                        cmd_upd_rsp_vld;
-  logic                        cmd_upd_rsp_rdy;
-
-  logic                        gen_upd_rsp_vld;
-  logic                        gen_upd_rsp_rdy;
-
-  logic                        upd_rsp_vld;
-  logic                        upd_rsp_rdy;
-  csrng_upd_data_t             upd_rsp_data;
+  logic           [BlkLen-1:0] block_encrypt_rsp_data;
 
 
   logic [2:0]                  cmd_stage_sfifo_cmd_err[NumApps];
@@ -219,10 +148,8 @@ module csrng_core import csrng_pkg::*; #(
   logic [NumApps-1:0]          cmd_stage_sfifo_genbits_err_wr;
   logic [NumApps-1:0]          cmd_stage_sfifo_genbits_err_rd;
   logic [NumApps-1:0]          cmd_stage_sfifo_genbits_err_st;
-  logic [NumApps-1:0]          cmd_gen_cnt_err;
+  logic [NumApps-1:0]          cmd_stage_ctr_err;
   logic [NumApps-1:0]          cmd_stage_sm_err;
-  logic                        ctr_drbg_upd_v_ctr_err;
-  logic                        ctr_drbg_gen_v_ctr_err;
 
   logic [NumApps-1:0]          cmd_stage_vld;
   logic [InstIdWidth-1:0]      cmd_stage_shid[NumApps];
@@ -246,27 +173,23 @@ module csrng_core import csrng_pkg::*; #(
   logic [NumApps-1:0]          genbits_stage_fips;
   logic [BlkLen-1:0]           genbits_stage_bus[NumApps];
   logic [NumApps-1:0]          genbits_stage_rdy;
-  logic                        genbits_stage_vldo_sw;
+  logic                        genbits_stage_vld_sw;
   logic                        genbits_stage_bus_rd_sw;
   logic [31:0]                 genbits_stage_bus_sw;
-  logic                        genbits_stage_fips_sw;
 
   logic [15:0]                 hw_exception_sts;
   logic [LcHwDebugCopies-1:0]  lc_hw_debug_on_fo;
   logic                        state_db_reg_read_en;
 
   logic [30:0]                 err_code_test_bit;
-  logic                        ctr_drbg_upd_es_ack;
-  logic                        ctr_drbg_gen_es_ack;
+  logic                        ctr_drbg_es_halt_ack;
   logic                        block_encrypt_quiet;
 
   logic                        cs_rdata_capt_vld;
   logic                        cs_bus_cmp_alert;
-  logic                        cmd_rdy;
   logic [NumApps-1:0]          invalid_cmd_seq_alert;
   logic [NumApps-1:0]          invalid_acmd_alert;
   logic [NumApps-1:0]          reseed_cnt_alert;
-  logic                        sw_sts_ack;
   logic [1:0]                  otp_sw_app_read_en;
 
   logic [NumApps-1:0][31:0]    reseed_counter;
@@ -276,31 +199,31 @@ module csrng_core import csrng_pkg::*; #(
   prim_mubi_pkg::mubi4_t    [Flag0Copies-1:0] mubi_flag0_fanout;
 
   // flops
-  acmd_e                acmd_q, acmd_d;
-  logic [3:0]           shid_q, shid_d;
-  logic                 gen_last_q, gen_last_d;
-  mubi4_t               flag0_q, flag0_d;
-  logic [NumAppsLg-1:0] cmd_arb_idx_q, cmd_arb_idx_d;
-  logic                 genbits_stage_fips_sw_q, genbits_stage_fips_sw_d;
-  acmd_e                cmd_req_ccmd_dly_q, cmd_req_ccmd_dly_d;
-  logic                 cs_aes_halt_q, cs_aes_halt_d;
-  logic [SeedLen-1:0]   entropy_src_seed_q, entropy_src_seed_d;
-  logic                 entropy_src_fips_q, entropy_src_fips_d;
-  logic [63:0]          cs_rdata_capt_q, cs_rdata_capt_d;
-  logic                 cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
-  logic                 sw_rdy_sts_q, sw_rdy_sts_d;
-  logic                 sw_sts_ack_q, sw_sts_ack_d;
-  logic [NumApps-1:0]   reseed_cnt_reached_q, reseed_cnt_reached_d;
+  acmd_e                  acmd_q, acmd_d;
+  logic   [NumAppsLg-1:0] inst_id_q, inst_id_d;
+  logic                   gen_last_q, gen_last_d;
+  mubi4_t                 flag0_q, flag0_d;
+  logic   [NumAppsLg-1:0] cmd_arb_idx_q, cmd_arb_idx_d;
+  logic                   genbits_stage_fips_sw_q, genbits_stage_fips_sw_d;
+  acmd_e                  ctr_drbg_cmd_q, ctr_drbg_cmd_d;
+  logic                   cs_aes_halt_q, cs_aes_halt_d;
+  logic     [SeedLen-1:0] entropy_src_seed_q, entropy_src_seed_d;
+  logic                   entropy_src_fips_q, entropy_src_fips_d;
+  logic            [63:0] cs_rdata_capt_q, cs_rdata_capt_d;
+  logic                   cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
+  logic                   sw_rdy_sts_q, sw_rdy_sts_d;
+  logic                   sw_sts_ack_q, sw_sts_ack_d;
+  logic     [NumApps-1:0] reseed_cnt_reached_q, reseed_cnt_reached_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       acmd_q                  <= INV;
-      shid_q                  <= '0;
+      inst_id_q               <= '0;
       gen_last_q              <= '0;
       flag0_q                 <= prim_mubi_pkg::MuBi4False;
       cmd_arb_idx_q           <= '0;
       genbits_stage_fips_sw_q <= '0;
-      cmd_req_ccmd_dly_q      <= INV;
+      ctr_drbg_cmd_q          <= INV;
       cs_aes_halt_q           <= '0;
       entropy_src_seed_q      <= '0;
       entropy_src_fips_q      <= '0;
@@ -311,12 +234,12 @@ module csrng_core import csrng_pkg::*; #(
       reseed_cnt_reached_q    <= '0;
     end else begin
       acmd_q                  <= acmd_d;
-      shid_q                  <= shid_d;
+      inst_id_q               <= inst_id_d;
       gen_last_q              <= gen_last_d;
       flag0_q                 <= flag0_d;
       cmd_arb_idx_q           <= cmd_arb_idx_d;
       genbits_stage_fips_sw_q <= genbits_stage_fips_sw_d;
-      cmd_req_ccmd_dly_q      <= cmd_req_ccmd_dly_d;
+      ctr_drbg_cmd_q          <= ctr_drbg_cmd_d;
       cs_aes_halt_q           <= cs_aes_halt_d;
       entropy_src_seed_q      <= entropy_src_seed_d;
       entropy_src_fips_q      <= entropy_src_fips_d;
@@ -338,7 +261,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_intr_hw_cs_cmd_req_done (
     .clk_i                 (clk_i),
     .rst_ni                (rst_ni),
-    .event_intr_i          (event_cs_cmd_req_done),
+    .event_intr_i          (cmd_stage_ack[NumApps-1]),
     .reg2hw_intr_enable_q_i(reg2hw.intr_enable.cs_cmd_req_done.q),
     .reg2hw_intr_test_q_i  (reg2hw.intr_test.cs_cmd_req_done.q),
     .reg2hw_intr_test_qe_i (reg2hw.intr_test.cs_cmd_req_done.qe),
@@ -353,7 +276,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_intr_hw_cs_entropy_req (
     .clk_i                 (clk_i),
     .rst_ni                (rst_ni),
-    .event_intr_i          (event_cs_entropy_req),
+    .event_intr_i          (entropy_src_hw_if_o.es_req),
     .reg2hw_intr_enable_q_i(reg2hw.intr_enable.cs_entropy_req.q),
     .reg2hw_intr_test_q_i  (reg2hw.intr_test.cs_entropy_req.q),
     .reg2hw_intr_test_qe_i (reg2hw.intr_test.cs_entropy_req.qe),
@@ -368,7 +291,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_intr_hw_cs_hw_inst_exc (
     .clk_i                 (clk_i),
     .rst_ni                (rst_ni),
-    .event_intr_i          (event_cs_hw_inst_exc),
+    .event_intr_i          (|hw_exception_sts),
     .reg2hw_intr_enable_q_i(reg2hw.intr_enable.cs_hw_inst_exc.q),
     .reg2hw_intr_test_q_i  (reg2hw.intr_test.cs_hw_inst_exc.q),
     .reg2hw_intr_test_qe_i (reg2hw.intr_test.cs_hw_inst_exc.qe),
@@ -398,128 +321,73 @@ module csrng_core import csrng_pkg::*; #(
   // inferring combo loops. However, to include the state machine error for testing,
   // we use the error code test bit (index 21) directly.
   logic fatal_loc_events;
-  assign fatal_loc_events = cmd_gen_cnt_err_sum ||
-                            cmd_stage_sm_err_sum ||
-                            drbg_cmd_sm_err_sum ||
-                            drbg_gen_sm_err_sum ||
-                            drbg_updbe_sm_err_sum ||
-                            drbg_updob_sm_err_sum ||
-                            block_encrypt_sm_err_sum ||
-                            err_code_test_bit[21];
+  assign fatal_loc_events = block_encrypt_sm_err_sum || cmd_stage_sm_err_sum || ctr_drbg_sm_err_sum
+                            || ctr_err_sum || err_code_test_bit[21];
 
   // set the interrupt sources
-  assign event_cs_fatal_err = (cs_enable_fo[1]  && (
-         (|cmd_stage_sfifo_cmd_err_sum) ||
-         (|cmd_stage_sfifo_genbits_err_sum) ||
-         ctr_drbg_upd_sfifo_final_err_sum ||
-         ctr_drbg_gen_sfifo_gbencack_err_sum ||
-         ctr_drbg_gen_sfifo_gadstage_err_sum ||
-         block_encrypt_sfifo_cmdid_err_sum ||
-         fifo_write_err_sum ||
-         fifo_read_err_sum ||
-         fifo_status_err_sum)) ||
-         // errs not gated by cs_enable
-         main_sm_err_sum ||
-         fatal_loc_events;
+  assign event_cs_fatal_err = fatal_loc_events || main_sm_err_sum || (cs_enable_fo[1] &&
+                              ((|cmd_stage_sfifo_cmd_err_sum) || (|cmd_stage_sfifo_genbits_err_sum)
+                              || fifo_write_err_sum || fifo_read_err_sum || fifo_status_err_sum));
 
-  // set fifo errors that are single instances of source
-  assign ctr_drbg_upd_sfifo_final_err_sum = (|ctr_drbg_upd_sfifo_final_err) ||
-         err_code_test_bit[9];
-  assign ctr_drbg_gen_sfifo_gbencack_err_sum = (|ctr_drbg_gen_sfifo_gbencack_err) ||
-         err_code_test_bit[10];
-  assign ctr_drbg_gen_sfifo_gadstage_err_sum = (|ctr_drbg_gen_sfifo_gadstage_err) ||
-         err_code_test_bit[13];
-  assign block_encrypt_sfifo_cmdid_err_sum = (|block_encrypt_sfifo_cmdid_err) ||
-         err_code_test_bit[15];
+
+  // Individual error signals/sources
   assign cmd_stage_sm_err_sum     = (|cmd_stage_sm_err)  || err_code_test_bit[20];
   assign main_sm_err_sum          = cs_main_sm_err       || err_code_test_bit[21];
-  assign drbg_gen_sm_err_sum      = drbg_gen_sm_err      || err_code_test_bit[22];
-  assign drbg_updbe_sm_err_sum    = drbg_updbe_sm_err    || err_code_test_bit[23];
-  assign drbg_updob_sm_err_sum    = drbg_updob_sm_err    || err_code_test_bit[24];
+  assign ctr_drbg_sm_err_sum      = ctr_drbg_sm_err      || err_code_test_bit[22];
   assign block_encrypt_sm_err_sum = block_encrypt_sm_err || err_code_test_bit[25];
-  assign drbg_cmd_sm_err_sum      = drbg_cmd_sm_err      || err_code_test_bit[27];
-  assign cmd_gen_cnt_err_sum = (|cmd_gen_cnt_err) || ctr_drbg_gen_v_ctr_err ||
-         ctr_drbg_upd_v_ctr_err || err_code_test_bit[26];
-  assign fifo_write_err_sum =
-         block_encrypt_sfifo_cmdid_err[2] ||
-         ctr_drbg_gen_sfifo_gadstage_err[2] ||
-         ctr_drbg_gen_sfifo_gbencack_err[2] ||
-         ctr_drbg_upd_sfifo_final_err[2] ||
-         (|cmd_stage_sfifo_genbits_err_wr) ||
-         (|cmd_stage_sfifo_cmd_err_wr) ||
-         err_code_test_bit[28];
-  assign fifo_read_err_sum =
-         block_encrypt_sfifo_cmdid_err[1] ||
-         ctr_drbg_gen_sfifo_gadstage_err[1] ||
-         ctr_drbg_gen_sfifo_gbencack_err[1] ||
-         ctr_drbg_upd_sfifo_final_err[1] ||
-         (|cmd_stage_sfifo_genbits_err_rd) ||
-         (|cmd_stage_sfifo_cmd_err_rd) ||
-         err_code_test_bit[29];
-  assign fifo_status_err_sum =
-         block_encrypt_sfifo_cmdid_err[0] ||
-         ctr_drbg_gen_sfifo_gadstage_err[0] ||
-         ctr_drbg_gen_sfifo_gbencack_err[0] ||
-         ctr_drbg_upd_sfifo_final_err[0] ||
-         (|cmd_stage_sfifo_genbits_err_st) ||
-         (|cmd_stage_sfifo_cmd_err_st) ||
-         err_code_test_bit[30];
+
+  // Collective error signals for each type of error
+  assign ctr_err_sum         = (|cmd_stage_ctr_err) || ctr_drbg_v_ctr_err || err_code_test_bit[26];
+  assign fifo_write_err_sum  = (|cmd_stage_sfifo_genbits_err_wr) || (|cmd_stage_sfifo_cmd_err_wr) ||
+                               err_code_test_bit[28];
+  assign fifo_read_err_sum   = (|cmd_stage_sfifo_genbits_err_rd) || (|cmd_stage_sfifo_cmd_err_rd) ||
+                               err_code_test_bit[29];
+  assign fifo_status_err_sum = (|cmd_stage_sfifo_genbits_err_st) || (|cmd_stage_sfifo_cmd_err_st) ||
+                               err_code_test_bit[30];
 
   // set the err code source bits
   assign hw2reg.err_code.sfifo_cmd_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_cmd_err.de = cs_enable_fo[2] &&
-         (|cmd_stage_sfifo_cmd_err_sum);
+  assign hw2reg.err_code.sfifo_cmd_err.de = cs_enable_fo[2] && (|cmd_stage_sfifo_cmd_err_sum);
 
   assign hw2reg.err_code.sfifo_genbits_err.d = 1'b1;
   assign hw2reg.err_code.sfifo_genbits_err.de = cs_enable_fo[3] &&
          (|cmd_stage_sfifo_genbits_err_sum);
 
   assign hw2reg.err_code.sfifo_final_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_final_err.de = cs_enable_fo[11] &&
-         ctr_drbg_upd_sfifo_final_err_sum;
+  assign hw2reg.err_code.sfifo_final_err.de = 1'b0;
 
   assign hw2reg.err_code.sfifo_gbencack_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_gbencack_err.de = cs_enable_fo[12] &&
-         ctr_drbg_gen_sfifo_gbencack_err_sum;
+  assign hw2reg.err_code.sfifo_gbencack_err.de = 1'b0;
 
   assign hw2reg.err_code.sfifo_gadstage_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_gadstage_err.de = cs_enable_fo[15] &&
-         ctr_drbg_gen_sfifo_gadstage_err_sum;
+  assign hw2reg.err_code.sfifo_gadstage_err.de = 1'b0;
 
   assign hw2reg.err_code.sfifo_cmdid_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_cmdid_err.de = cs_enable_fo[17] &&
-         block_encrypt_sfifo_cmdid_err_sum;
+  assign hw2reg.err_code.sfifo_cmdid_err.de = 1'b0;
 
   assign hw2reg.err_code.cmd_stage_sm_err.d = 1'b1;
-  assign hw2reg.err_code.cmd_stage_sm_err.de = cs_enable_fo[18] &&
-         cmd_stage_sm_err_sum;
+  assign hw2reg.err_code.cmd_stage_sm_err.de = cs_enable_fo[19] && cmd_stage_sm_err_sum;
 
   assign hw2reg.err_code.main_sm_err.d = 1'b1;
-  assign hw2reg.err_code.main_sm_err.de = cs_enable_fo[19] &&
-         main_sm_err_sum;
+  assign hw2reg.err_code.main_sm_err.de = cs_enable_fo[20] && main_sm_err_sum;
 
   assign hw2reg.err_code.drbg_cmd_sm_err.d = 1'b1;
-  assign hw2reg.err_code.drbg_cmd_sm_err.de = cs_enable_fo[10] &&
-         drbg_cmd_sm_err_sum;
+  assign hw2reg.err_code.drbg_cmd_sm_err.de = cs_enable_fo[21] && ctr_drbg_sm_err_sum;
 
   assign hw2reg.err_code.drbg_gen_sm_err.d = 1'b1;
-  assign hw2reg.err_code.drbg_gen_sm_err.de = cs_enable_fo[20] &&
-         drbg_gen_sm_err_sum;
+  assign hw2reg.err_code.drbg_gen_sm_err.de = 1'b0;
 
   assign hw2reg.err_code.drbg_updbe_sm_err.d = 1'b1;
-  assign hw2reg.err_code.drbg_updbe_sm_err.de = cs_enable_fo[21] &&
-         drbg_updbe_sm_err_sum;
+  assign hw2reg.err_code.drbg_updbe_sm_err.de = 1'b0;
 
   assign hw2reg.err_code.drbg_updob_sm_err.d = 1'b1;
-  assign hw2reg.err_code.drbg_updob_sm_err.de = cs_enable_fo[22] &&
-         drbg_updob_sm_err_sum;
+  assign hw2reg.err_code.drbg_updob_sm_err.de = 1'b0;
 
   assign hw2reg.err_code.aes_cipher_sm_err.d = 1'b1;
-  assign hw2reg.err_code.aes_cipher_sm_err.de = cs_enable_fo[23] &&
-         block_encrypt_sm_err_sum;
+  assign hw2reg.err_code.aes_cipher_sm_err.de = cs_enable_fo[22] && block_encrypt_sm_err_sum;
 
   assign hw2reg.err_code.cmd_gen_cnt_err.d = 1'b1;
-  assign hw2reg.err_code.cmd_gen_cnt_err.de = cmd_gen_cnt_err_sum;
+  assign hw2reg.err_code.cmd_gen_cnt_err.de = cs_enable_fo[23] && ctr_err_sum;
 
 
  // set the err code type bits
@@ -702,35 +570,36 @@ module csrng_core import csrng_pkg::*; #(
       .genbits_fips_o               (genbits_stage_fips[ai]),
       .cmd_stage_sfifo_cmd_err_o    (cmd_stage_sfifo_cmd_err[ai]),
       .cmd_stage_sfifo_genbits_err_o(cmd_stage_sfifo_genbits_err[ai]),
-      .cmd_gen_cnt_err_o            (cmd_gen_cnt_err[ai]),
+      .cmd_gen_cnt_err_o            (cmd_stage_ctr_err[ai]),
       .cmd_stage_sm_err_o           (cmd_stage_sm_err[ai])
     );
 
     // Set reseed_cnt_reached_d to true if the max number of generate requests between reseeds
     // has been reached for the respective counter.
-    assign reseed_cnt_reached_d[ai] = (state_db_wr_vld && (state_db_wr_data.inst_id == ai)) ?
-                                      (state_db_wr_data.rs_ctr >= reg2hw.reseed_interval.q) :
+    assign reseed_cnt_reached_d[ai] = (ctr_drbg_rsp_vld && (ctr_drbg_rsp_data.inst_id == ai)) ?
+                                      (ctr_drbg_rsp_data.rs_ctr >= reg2hw.reseed_interval.q) :
                                       reseed_cnt_reached_q[ai];
 
   end : gen_cmd_stage
 
   // SW interface connection (only 1, and must be present)
   // cmd req
-  assign cmd_stage_vld[NumApps-1] = reg2hw.cmd_req.qe;
+  assign cmd_stage_vld[NumApps-1]  = reg2hw.cmd_req.qe;
+  assign cmd_stage_bus[NumApps-1]  = reg2hw.cmd_req.q;
   assign cmd_stage_shid[NumApps-1] = InstIdWidth'(NumApps-1);
-  assign cmd_stage_bus[NumApps-1] = reg2hw.cmd_req.q;
+
   assign hw2reg.sw_cmd_sts.cmd_rdy.de = 1'b1;
-  assign hw2reg.sw_cmd_sts.cmd_rdy.d = cmd_rdy;
-  assign cmd_rdy = !cmd_stage_vld[NumApps-1] && sw_rdy_sts_q;
+  assign hw2reg.sw_cmd_sts.cmd_rdy.d  = !cmd_stage_vld[NumApps-1] && sw_rdy_sts_q;
+
   assign sw_rdy_sts_d =
          !cs_enable_fo[28] ? 1'b0 :
          cmd_stage_vld[NumApps-1] ? 1'b0 :
          cmd_stage_rdy[NumApps-1] ? 1'b1 :
          sw_rdy_sts_q;
+
   // cmd sts ack
   assign hw2reg.sw_cmd_sts.cmd_ack.de = 1'b1;
   assign hw2reg.sw_cmd_sts.cmd_ack.d = sw_sts_ack_d;
-  assign sw_sts_ack = cmd_stage_ack[NumApps-1];
   assign sw_sts_ack_d =
          !cs_enable_fo[28] ? 1'b0 :
          cmd_stage_vld[NumApps-1] ? 1'b0 :
@@ -740,8 +609,8 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.sw_cmd_sts.cmd_sts.de = cmd_stage_ack[NumApps-1];
   assign hw2reg.sw_cmd_sts.cmd_sts.d = cmd_stage_ack_sts[NumApps-1];
   // genbits
-  assign hw2reg.genbits_vld.genbits_vld.d = genbits_stage_vldo_sw;
-  assign hw2reg.genbits_vld.genbits_fips.d = genbits_stage_fips_sw;
+  assign hw2reg.genbits_vld.genbits_vld.d = genbits_stage_vld_sw;
+  assign hw2reg.genbits_vld.genbits_fips.d = genbits_stage_fips_sw_q;
   assign hw2reg.genbits.d = (sw_app_enable && otp_sw_app_read_en[0]) ? genbits_stage_bus_sw : '0;
   assign genbits_stage_bus_rd_sw = reg2hw.genbits.re;
 
@@ -770,7 +639,7 @@ module csrng_core import csrng_pkg::*; #(
     .wvalid_i(genbits_stage_vld[NumApps-1]),
     .wdata_i (genbits_stage_bus[NumApps-1]),
     .wready_o(genbits_stage_rdy[NumApps-1]),
-    .rvalid_o(genbits_stage_vldo_sw),
+    .rvalid_o(genbits_stage_vld_sw),
     .rdata_o (genbits_stage_bus_sw),
     .rready_i(genbits_stage_bus_rd_sw),
     .depth_o ()
@@ -782,9 +651,6 @@ module csrng_core import csrng_pkg::*; #(
          (genbits_stage_rdy[NumApps-1] && genbits_stage_vld[NumApps-1]) ?
                                           genbits_stage_fips[NumApps-1] :
                                           genbits_stage_fips_sw_q;
-
-  assign genbits_stage_fips_sw = genbits_stage_fips_sw_q;
-
 
   //--------------------------------------------
   // data path integrity check
@@ -823,29 +689,28 @@ module csrng_core import csrng_pkg::*; #(
   // HW interface connections (up to 16, numbered 0-14)
   for (genvar hai = 0; hai < (NumApps-1); hai = hai+1) begin : gen_app_if
     // cmd req
-    assign cmd_stage_vld[hai] = csrng_cmd_i[hai].csrng_req_valid;
+    assign cmd_stage_vld[hai]  = csrng_cmd_i[hai].csrng_req_valid;
     assign cmd_stage_shid[hai] = hai;
-    assign cmd_stage_bus[hai] = csrng_cmd_i[hai].csrng_req_bus;
+    assign cmd_stage_bus[hai]  = csrng_cmd_i[hai].csrng_req_bus;
     assign csrng_cmd_o[hai].csrng_req_ready = cmd_stage_rdy[hai];
     // cmd ack
     assign csrng_cmd_o[hai].csrng_rsp_ack = cmd_stage_ack[hai];
     assign csrng_cmd_o[hai].csrng_rsp_sts = cmd_stage_ack_sts[hai];
     // genbits
     assign csrng_cmd_o[hai].genbits_valid = genbits_stage_vld[hai];
-    assign csrng_cmd_o[hai].genbits_fips = genbits_stage_fips[hai];
-    assign csrng_cmd_o[hai].genbits_bus = genbits_stage_bus[hai];
+    assign csrng_cmd_o[hai].genbits_fips  = genbits_stage_fips[hai];
+    assign csrng_cmd_o[hai].genbits_bus   = genbits_stage_bus[hai];
     assign genbits_stage_rdy[hai] = csrng_cmd_i[hai].genbits_ready;
   end : gen_app_if
 
-  // set ack status for configured instances
-  for (genvar i = 0; i < NumHwApps; i = i+1) begin : gen_app_if_sts
-    assign hw_exception_sts[i] = cmd_stage_ack[i] && (cmd_stage_ack_sts[i] != CMD_STS_SUCCESS);
+  // Assign ack statuss
+  for (genvar i = 0; i < 16; i = i+1) begin : gen_app_if_sts
+    if (i < NumApps) begin : gen_assign
+      assign hw_exception_sts[i] = cmd_stage_ack[i] && (cmd_stage_ack_sts[i] != CMD_STS_SUCCESS);
+    end else begin : gen_dummy_assign
+      assign hw_exception_sts[i] = 1'b0;
+    end
   end : gen_app_if_sts
-
-  // set ack status to zero for un-configured instances
-  for (genvar i = NumHwApps; i < 16; i = i+1) begin : gen_app_if_zero_sts
-    assign hw_exception_sts[i] = 1'b0;
-  end : gen_app_if_zero_sts
 
   // set fifo err status bits
   for (genvar i = 0; i < NumApps; i = i+1) begin : gen_fifo_sts
@@ -871,10 +736,10 @@ module csrng_core import csrng_pkg::*; #(
 
   assign cmd_arb_idx_d = (acmd_avail && acmd_accept) ? cmd_arb_idx : cmd_arb_idx_q;
 
-  assign acmd_sop = cmd_arb_sop[cmd_arb_idx_q];
-  assign acmd_mop = cmd_arb_mop[cmd_arb_idx_q];
-  assign acmd_eop = cmd_arb_eop[cmd_arb_idx_q];
-  assign acmd_bus = cmd_arb_bus[cmd_arb_idx_q];
+  assign acmd_sop = cmd_arb_sop[cmd_arb_idx_q]; // Start-of-Packet
+  assign acmd_mop = cmd_arb_mop[cmd_arb_idx_q]; // Mid-of-Packet
+  assign acmd_eop = cmd_arb_eop[cmd_arb_idx_q]; // End-of-Packet
+  assign acmd_bus = cmd_arb_bus[cmd_arb_idx_q]; // Actual bus data; content changes with s/m/eop
 
   prim_arbiter_ppc #(
     .EnDataPort(0),    // Ignore data port
@@ -906,10 +771,10 @@ module csrng_core import csrng_pkg::*; #(
          acmd_sop ? acmd_e'(acmd_bus[CmdWidth-1:0]) :
          acmd_q;
 
-  assign shid_d =
+  assign inst_id_d =
          (!cs_enable_fo[33]) ? '0 :
-         acmd_sop ? acmd_bus[15:12] :
-         shid_q;
+         acmd_sop ? acmd_bus[12 +: NumAppsLg] :
+         inst_id_q;
 
   assign gen_last_d =
          (!cs_enable_fo[34]) ? '0 :
@@ -954,32 +819,23 @@ module csrng_core import csrng_pkg::*; #(
     .cmd_entropy_req_o     (cmd_entropy_req),
     .cmd_entropy_avail_i   (cmd_entropy_avail),
     .cmd_vld_o             (main_sm_cmd_vld),
-    .cmd_rdy_i             (ctr_drbg_cmd_req_rdy),
+    .cmd_rdy_i             (ctr_drbg_req_rdy),
     .clr_adata_packer_o    (clr_adata_packer),
-    .cmd_complete_i        (state_db_wr_vld),
+    .cmd_complete_i        (ctr_drbg_rsp_vld),
     .local_escalate_i      (fatal_loc_events),
     .main_sm_state_o       (cs_main_sm_state),
     .main_sm_err_o         (cs_main_sm_err)
   );
 
-  // interrupt for sw app interface only
-  assign event_cs_cmd_req_done = sw_sts_ack;
-
-  // interrupt for entropy request
-  assign event_cs_entropy_req = entropy_src_hw_if_o.es_req;
-
-  // interrupt for app interface exception
-  assign event_cs_hw_inst_exc = |hw_exception_sts;
-
   // entropy available
   assign cmd_entropy_avail = entropy_src_hw_if_i.es_ack;
 
   for (genvar csi = 0; csi < NumApps; csi = csi+1) begin : gen_cmd_ack
-    assign cmd_core_ack[csi] = state_db_sts_ack && (state_db_sts_id == csi);
-    assign cmd_core_ack_sts[csi] = state_db_sts_sts;
-    assign genbits_core_vld[csi] = ctr_drbg_gen_rsp_vld && (ctr_drbg_gen_rsp_data.inst_id == csi);
-    assign genbits_core_bus[csi] = ctr_drbg_gen_rsp_bits;
-    assign genbits_core_fips[csi] = ctr_drbg_gen_rsp_data.fips;
+    assign cmd_core_ack[csi] = ctr_drbg_rsp_vld && (ctr_drbg_rsp_data.inst_id == csi);
+    assign cmd_core_ack_sts[csi] = ctr_drbg_rsp_sts;
+    assign genbits_core_vld[csi] = ctr_drbg_bits_vld && (ctr_drbg_rsp_data.inst_id == csi);
+    assign genbits_core_bus[csi] = ctr_drbg_bits_data;
+    assign genbits_core_fips[csi] = ctr_drbg_bits_fips;
   end : gen_cmd_ack
 
 
@@ -1009,9 +865,7 @@ module csrng_core import csrng_pkg::*; #(
   //-------------------------------------
   // csrng_state_db instantiation
   //-------------------------------------
-  // This block holds the internal state
-  // of each csrng instance. The state
-  // is updated after each command.
+  // Holds the internal state of each csrng instance. Gets updated after every command.
 
   assign state_db_reg_read_en = cs_enable_fo[40] && read_int_state && otp_sw_app_read_en[1];
 
@@ -1020,12 +874,11 @@ module csrng_core import csrng_pkg::*; #(
     .rst_ni  (rst_ni),
     .enable_i(cs_enable_fo[41]),
 
-    .rd_inst_id_i(shid_q),
+    .rd_inst_id_i(inst_id_q),
     .rd_state_o  (state_db_rd_data),
 
     .wr_vld_i   (state_db_wr_vld),
-    .wr_data_i  (state_db_wr_data),
-    .wr_status_i(state_db_wr_sts),
+    .wr_data_i  (ctr_drbg_rsp_data),
 
     .reg_rd_otp_en_i    (state_db_reg_read_en),
     .reg_rd_regfile_en_i(reg2hw.int_state_read_enable.q),
@@ -1035,29 +888,8 @@ module csrng_core import csrng_pkg::*; #(
     .reg_rd_strb_i  (reg2hw.int_state_val.re),
     .reg_rd_val_o   (hw2reg.int_state_val.d),
 
-    .status_vld_o    (state_db_sts_ack),
-    .status_val_o    (state_db_sts_sts),
-    .status_inst_id_o(state_db_sts_id),
-
     .reseed_counter_o(reseed_counter)
   );
-
-  logic cmd_rsp_to_state_db;
-
-  // Keep forwarding gen unit responses to the state db unless the cmd unit has a valid response.
-  assign cmd_rsp_to_state_db = (ctr_drbg_cmd_rsp_data.cmd != GEN) && (ctr_drbg_cmd_rsp_vld == 1'b1);
-
-  assign state_db_wr_vld  = cmd_rsp_to_state_db ?  ctr_drbg_cmd_rsp_vld : ctr_drbg_gen_rsp_vld;
-  assign state_db_wr_data = cmd_rsp_to_state_db ? ctr_drbg_cmd_rsp_data : ctr_drbg_gen_rsp_data;
-  assign state_db_wr_sts  = cmd_rsp_to_state_db ?       CMD_STS_SUCCESS : ctr_drbg_gen_rsp_sts;
-
-  // Tie gen unit request to zero if cmd unit writes to state db
-  assign ctr_drbg_gen_req_vld = cmd_rsp_to_state_db ? 1'b0 : ctr_drbg_cmd_rsp_vld;
-  // State db is always ready to write; the respective response ready signal can be tied high
-  assign ctr_drbg_gen_rsp_rdy = cmd_rsp_to_state_db ? 1'b0 : 1'b1;
-  // Response ready for cmd unit cannot depend on its response valid to avoid combinational loop,
-  // hence cmd_rsp_to_state_db cannot be used here.
-  assign ctr_drbg_cmd_rsp_rdy = (ctr_drbg_cmd_rsp_data.cmd == GEN) ? ctr_drbg_gen_req_rdy : 1'b1;
 
   // Forward the reseed counter values to the register interface.
   always_comb begin : reseed_counter_assign
@@ -1085,46 +917,23 @@ module csrng_core import csrng_pkg::*; #(
             (entropy_src_hw_if_i.es_bits ^ seed_diversification) :
          entropy_src_seed_q;
   assign entropy_src_fips_d =
-         // Use shid_d here such that u_csrng_ctr_drbg_cmd gets the shid_q and the proper
+         // Use inst_id_d here such that u_csrng_ctr_drbg_cmd gets the inst_id_q and the proper
          // entropy_src_fips_q in the next clock cycle.
-         fips_force_enable && reg2hw.fips_force.q[shid_d[NumAppsLg-1:0]] ? 1'b1 :
+         fips_force_enable && reg2hw.fips_force.q[inst_id_d] ? 1'b1 :
          flag0_fo[2] ? '0 : // special case where zero is used
          cmd_entropy_req && cmd_entropy_avail ? entropy_src_hw_if_i.es_fips :
          entropy_src_fips_q;
 
-  assign cmd_entropy      = entropy_src_seed_q;
-  assign cmd_entropy_fips = entropy_src_fips_q;
-
   //-------------------------------------
-  // csrng_ctr_drbg_cmd instantiation
+  // CTR DRBG instantiation
   //-------------------------------------
-  // commands and input parameters
-  // ins -> send to csrng_state_db
-  //  inputs:  384b entropy, 384b adata
-  //  outputs: 416b K,V,RC
-  //
-  // res -> send to csrng_state_db
-  //  inputs:  416b K,V,RC, 384b entropy, 384b adata
-  //  outputs: 416b K,V,RC
-  //
-  // gen -> send to csrng_ctr_drbg_gen block
-  //  inputs:  416b K,V,RC, 384b adata
-  //  outputs: 416b K,V,RC, 384b adata
-  //
-  // gen blk -> send to csrng_state_db
-  //  inputs:  416b K,V,RC, 384b adata
-  //  outputs: 416b K,V,RC, 128b genbits
-  //
-  // upd -> send to csrng_state_db
-  //  inputs:  416b K,V,RC, 384b adata
-  //  outputs: 416b K,V,RC
 
-  assign ctr_drbg_cmd_req_vld = !cs_enable_fo[45] ? 1'b0 : main_sm_cmd_vld;
-  assign cmd_req_ccmd_dly_d   = !cs_enable_fo[44] ?  INV : acmd_hold;
+  assign ctr_drbg_req_vld = !cs_enable_fo[45] ? 1'b0 : main_sm_cmd_vld;
+  assign ctr_drbg_cmd_d   = !cs_enable_fo[44] ?  INV : acmd_hold;
 
-  assign ctr_drbg_cmd_req_data = '{
-    inst_id: shid_q,
-    cmd:     cmd_req_ccmd_dly_q,
+  assign ctr_drbg_req_data = '{
+    inst_id: inst_id_q,
+    cmd:     ctr_drbg_cmd_q,
     key:     state_db_rd_data.key,
     v:       state_db_rd_data.v,
     pdata:   packer_adata,
@@ -1132,109 +941,71 @@ module csrng_core import csrng_pkg::*; #(
     fips:    state_db_rd_data.fips
   };
 
-  csrng_ctr_drbg_cmd u_csrng_ctr_drbg_cmd (
+  csrng_ctr_drbg u_csrng_ctr_drbg (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
-    .enable_i(cs_enable_fo[46]),
+    .enable_i(cs_enable_fo[49]),
 
-    .req_vld_i         (ctr_drbg_cmd_req_vld),
-    .req_rdy_o         (ctr_drbg_cmd_req_rdy),
-    .req_data_i        (ctr_drbg_cmd_req_data),
-    .req_entropy_i     (cmd_entropy),
-    .req_entropy_fips_i(cmd_entropy_fips),
+    .req_vld_i         (ctr_drbg_req_vld),
+    .req_rdy_o         (ctr_drbg_req_rdy),
+    .req_data_i        (ctr_drbg_req_data),
+    .req_entropy_i     (entropy_src_seed_q),
+    .req_entropy_fips_i(entropy_src_fips_q),
     .req_glast_i       (gen_last_q),
 
-    .rsp_vld_o  (ctr_drbg_cmd_rsp_vld),
-    .rsp_rdy_i  (ctr_drbg_cmd_rsp_rdy),
-    .rsp_data_o (ctr_drbg_cmd_rsp_data),
-    .rsp_glast_o(ctr_drbg_cmd_rsp_glast),
+    .rsp_vld_o (ctr_drbg_rsp_vld),
+    .rsp_data_o(ctr_drbg_rsp_data),
+    .rsp_sts_o (ctr_drbg_rsp_sts),
 
-    // Request and response path to and from update unit
-    .update_req_vld_o (cmd_upd_req_vld),
-    .update_req_rdy_i (cmd_upd_req_rdy),
-    .update_req_data_o(cmd_upd_req_data),
+    .bits_vld_o (ctr_drbg_bits_vld),
+    .bits_data_o(ctr_drbg_bits_data),
+    .bits_fips_o(ctr_drbg_bits_fips),
 
-    .update_rsp_vld_i (cmd_upd_rsp_vld),
-    .update_rsp_rdy_o (cmd_upd_rsp_rdy),
-    .update_rsp_data_i(upd_rsp_data),
+    .state_db_wr_o(state_db_wr_vld),
 
-    .sm_err_o          (drbg_cmd_sm_err)
-  );
+    .block_encrypt_req_vld_o (block_encrypt_req_vld),
+    .block_encrypt_req_rdy_i (block_encrypt_req_rdy),
+    .block_encrypt_req_data_o(block_encrypt_req_data),
 
-  //-------------------------------------
-  // csrng_ctr_drbg_upd instantiation
-  //-------------------------------------
-  // The csrng_ctr_drbg_upd is shared
-  // between the csrng_ctr_drbg_cmd block
-  // and the csrng_ctr_drbg_gen block.
-  // The arbiter in this section will
-  // route requests and responses between
-  // these two blocks.
-
-  csrng_ctr_drbg_upd u_csrng_ctr_drbg_upd (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .enable_i(cs_enable_fo[47]),
-
-    .req_vld_i (upd_arb_req_vld),
-    .req_rdy_o (upd_arb_req_rdy),
-    .req_data_i(upd_arb_req_data),
-
-    .rsp_vld_o (upd_rsp_vld),
-    .rsp_rdy_i (upd_rsp_rdy),
-    .rsp_data_o(upd_rsp_data),
-
-    .es_halt_req_i(cs_aes_halt_i.cs_aes_halt_req),
-    .es_halt_ack_o(ctr_drbg_upd_es_ack),
-
-    .block_encrypt_req_vld_o (upd_benc_req_vld),
-    .block_encrypt_req_rdy_i (upd_benc_req_rdy),
-    .block_encrypt_req_data_o(upd_benc_req_data),
-
-    .block_encrypt_rsp_vld_i (upd_benc_rsp_vld),
-    .block_encrypt_rsp_rdy_o (upd_benc_rsp_rdy),
+    .block_encrypt_rsp_vld_i (block_encrypt_rsp_vld),
+    .block_encrypt_rsp_rdy_o (block_encrypt_rsp_rdy),
     .block_encrypt_rsp_data_i(block_encrypt_rsp_data),
 
-    .ctr_err_o             (ctr_drbg_upd_v_ctr_err),
-    .fifo_final_err_o      (ctr_drbg_upd_sfifo_final_err),
-    .sm_block_enc_req_err_o(drbg_updbe_sm_err),
-    .sm_block_enc_rsp_err_o(drbg_updob_sm_err)
+    .es_halt_req_i(cs_aes_halt_i.cs_aes_halt_req),
+    .es_halt_ack_o(ctr_drbg_es_halt_ack),
+
+    .ctr_err_o(ctr_drbg_v_ctr_err),
+    .sm_err_o (ctr_drbg_sm_err)
   );
 
-  // update unit arbiter
+  //-------------------------------------
+  // csrng_block_encrypt instantiation
+  //-------------------------------------
 
-  // local helper signals
-  csrng_upd_data_t upd_arb_din[2];
+  csrng_block_encrypt #(
+    .SBoxImpl(SBoxImpl)
+  ) u_csrng_block_encrypt (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .enable_i(cs_enable_fo[48]),
 
-  logic [1:0] upd_arb_gnt;
+    .req_vld_i (block_encrypt_req_vld),
+    .req_rdy_o (block_encrypt_req_rdy),
+    .req_data_i(block_encrypt_req_data),
 
-  prim_arbiter_ppc #(
-    .N(2), // (cmd req and gen req)
-    .DW(UpdDataWidth)
-  ) u_prim_arbiter_ppc_updblk_arb (
-    .clk_i    (clk_i),
-    .rst_ni   (rst_ni),
-    .req_chk_i(cs_enable_fo[1]),
-    .req_i    ({gen_upd_req_vld, cmd_upd_req_vld}),
-    .data_i   (upd_arb_din),
-    .gnt_o    (upd_arb_gnt),
-    .idx_o    (),
-    .valid_o  (upd_arb_req_vld),
-    .data_o   (upd_arb_req_data),
-    .ready_i  (upd_arb_req_rdy)
+    .rsp_vld_o (block_encrypt_rsp_vld),
+    .rsp_rdy_i (block_encrypt_rsp_rdy),
+    .rsp_data_o(block_encrypt_rsp_data),
+
+    .cipher_quiet_o  (block_encrypt_quiet),
+    .cipher_sm_err_o (block_encrypt_sm_err)
   );
 
-  assign upd_arb_din[0] = cmd_upd_req_data;
-  assign upd_arb_din[1] = gen_upd_req_data;
+  // Entropy source to CSRNG halt request to reduce power spikes
+  assign cs_aes_halt_d = (cs_aes_halt_i.cs_aes_halt_req && ctr_drbg_es_halt_ack &&
+                          block_encrypt_quiet);
 
-  assign cmd_upd_req_rdy = upd_arb_gnt[0];
-  assign gen_upd_req_rdy = upd_arb_gnt[1];
-
-  assign cmd_upd_rsp_vld = upd_rsp_vld && (upd_rsp_data.cmd != GENU);
-  assign gen_upd_rsp_vld = upd_rsp_vld && (upd_rsp_data.cmd == GENU);
-
-  assign upd_rsp_rdy = (upd_rsp_data.cmd == GENU) ? gen_upd_rsp_rdy : cmd_upd_rsp_rdy;
-
+  assign cs_aes_halt_o.cs_aes_halt_ack = cs_aes_halt_q;
 
   //-------------------------------------
   // life cycle logic
@@ -1258,131 +1029,12 @@ module csrng_core import csrng_pkg::*; #(
     assign lc_hw_debug_on_fo[i] = lc_ctrl_pkg::lc_tx_test_true_strict(lc_hw_debug_en_out[i]);
   end : gen_lc_dbg_copies
 
-
-  //-------------------------------------
-  // csrng_block_encrypt instantiation
-  //-------------------------------------
-  // The csrng_block_encrypt is shared
-  // between the csrng_ctr_drbg_cmd block
-  // and the csrng_ctr_drbg_gen block.
-  // The arbiter in this section will
-  // route requests and responses between
-  // these two blocks.
-
-  csrng_block_encrypt #(
-    .SBoxImpl(SBoxImpl)
-  ) u_csrng_block_encrypt (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .enable_i(cs_enable_fo[48]),
-
-    .req_vld_i (block_encrypt_req_vld),
-    .req_rdy_o (block_encrypt_req_rdy),
-    .req_data_i(block_encrypt_req_data),
-
-    .rsp_vld_o (block_encrypt_rsp_vld),
-    .rsp_rdy_i (block_encrypt_rsp_rdy),
-    .rsp_data_o(block_encrypt_rsp_data),
-
-    .cipher_quiet_o  (block_encrypt_quiet),
-    .cipher_sm_err_o (block_encrypt_sm_err),
-    .fifo_cmdid_err_o(block_encrypt_sfifo_cmdid_err)
-  );
-
-  // Local helper signals
-  csrng_benc_data_t block_encrypt_arb_data[2];
-
-  prim_arbiter_ppc #(
-    .N (2), // (upd req and gen req)
-    .DW(BencDataWidth)
-  ) u_prim_arbiter_ppc_benc_arb (
-    .clk_i    (clk_i),
-    .rst_ni   (rst_ni),
-    .req_chk_i(cs_enable_fo[1]),
-    .req_i    ({gen_benc_req_vld, upd_benc_req_vld}),
-    .data_i   (block_encrypt_arb_data),
-    .gnt_o    ({gen_benc_req_rdy, upd_benc_req_rdy}),
-    .idx_o    (),
-    .valid_o  (block_encrypt_req_vld),
-    .data_o   (block_encrypt_req_data),
-    .ready_i  (block_encrypt_req_rdy)
-  );
-
-  assign block_encrypt_arb_data[0] = upd_benc_req_data;
-  assign block_encrypt_arb_data[1] = gen_benc_req_data;
-
-  // Response valid/ready muxing, depending on the requesting unit
-  assign upd_benc_rsp_vld = (block_encrypt_rsp_vld && (block_encrypt_rsp_data.cmd != GENB));
-  assign gen_benc_rsp_vld = (block_encrypt_rsp_vld && (block_encrypt_rsp_data.cmd == GENB));
-
-  assign block_encrypt_rsp_rdy = (block_encrypt_rsp_data.cmd == GENB) ? gen_benc_rsp_rdy :
-                                                                        upd_benc_rsp_rdy;
-
-
-  //-------------------------------------
-  // csrng_ctr_drbg_gen instantiation
-  //-------------------------------------
-  // this block performs the second sequence
-  // of the generate command. The first part
-  // of the sequence is done by the
-  // csrng_ctr_drbg_cmd block.
-
-  csrng_ctr_drbg_gen u_csrng_ctr_drbg_gen (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .enable_i(cs_enable_fo[49]),
-
-    .cmd_req_vld_i  (ctr_drbg_gen_req_vld),
-    .cmd_req_rdy_o  (ctr_drbg_gen_req_rdy),
-    .cmd_req_data_i (ctr_drbg_cmd_rsp_data),
-    .cmd_req_glast_i(ctr_drbg_cmd_rsp_glast),
-
-    .cmd_rsp_vld_o (ctr_drbg_gen_rsp_vld),
-    .cmd_rsp_rdy_i (ctr_drbg_gen_rsp_rdy),
-    .cmd_rsp_data_o(ctr_drbg_gen_rsp_data),
-    .cmd_rsp_bits_o(ctr_drbg_gen_rsp_bits),
-    .cmd_rsp_sts_o (ctr_drbg_gen_rsp_sts),
-
-    .es_halt_req_i(cs_aes_halt_i.cs_aes_halt_req),
-    .es_halt_ack_o(ctr_drbg_gen_es_ack),
-
-    .update_req_vld_o (gen_upd_req_vld),
-    .update_req_rdy_i (gen_upd_req_rdy),
-    .update_req_data_o(gen_upd_req_data),
-
-    .update_rsp_vld_i (gen_upd_rsp_vld),
-    .update_rsp_rdy_o (gen_upd_rsp_rdy),
-    .update_rsp_data_i(upd_rsp_data),
-
-    .block_encrypt_req_vld_o (gen_benc_req_vld),
-    .block_encrypt_req_rdy_i (gen_benc_req_rdy),
-    .block_encrypt_req_data_o(gen_benc_req_data),
-
-    .block_encrypt_rsp_vld_i (gen_benc_rsp_vld),
-    .block_encrypt_rsp_rdy_o (gen_benc_rsp_rdy),
-    .block_encrypt_rsp_data_i(block_encrypt_rsp_data),
-
-    .ctr_err_o(ctr_drbg_gen_v_ctr_err),
-    .sm_err_o (drbg_gen_sm_err),
-
-    .fifo_gbencack_err_o(ctr_drbg_gen_sfifo_gbencack_err),
-    .fifo_gadstage_err_o(ctr_drbg_gen_sfifo_gadstage_err)
-  );
-
-
-  // es to cs halt request to reduce power spikes
-  assign cs_aes_halt_d =
-         (ctr_drbg_upd_es_ack && ctr_drbg_gen_es_ack && block_encrypt_quiet &&
-          cs_aes_halt_i.cs_aes_halt_req);
-
-  assign cs_aes_halt_o.cs_aes_halt_ack = cs_aes_halt_q;
-
   //--------------------------------------------
   // observe state machine
   //--------------------------------------------
 
   assign hw2reg.main_sm_state.de = 1'b1;
-  assign hw2reg.main_sm_state.d = cs_main_sm_state;
+  assign hw2reg.main_sm_state.d  = cs_main_sm_state;
 
   //--------------------------------------------
   // report csrng request summary
@@ -1401,14 +1053,13 @@ module csrng_core import csrng_pkg::*; #(
   logic [SeedLen-1:0] unused_gen_rsp_pdata;
   logic               unused_state_db_inst_state;
 
-  assign unused_err_code_test_bit = (|err_code_test_bit[19:16]) || err_code_test_bit[14] ||
-                                    (|err_code_test_bit[12:11]) || (|err_code_test_bit[8:2]);
-  assign unused_enable_fo = cs_enable_fo[42] || cs_enable_fo[16] || (|cs_enable_fo[14:13]) ||
-                            (|cs_enable_fo[9:4]);
+  assign unused_err_code_test_bit = err_code_test_bit[27] || (|err_code_test_bit[24:23]) ||
+                                    (|err_code_test_bit[19:2]);
+  assign unused_enable_fo = (|cs_enable_fo[47:46]) || cs_enable_fo[42] || (|cs_enable_fo[18:4]);
   assign unused_reg2hw_genbits = (|reg2hw.genbits.q);
   assign unused_int_state_val = (|reg2hw.int_state_val.q);
   assign unused_reseed_interval = reg2hw.reseed_interval.qe;
-  assign unused_gen_rsp_pdata = ctr_drbg_gen_rsp_data.pdata;
+  assign unused_gen_rsp_pdata = ctr_drbg_rsp_data.pdata;
   assign unused_state_db_inst_state = state_db_rd_data.inst_state;
 
   //--------------------------------------------
@@ -1440,16 +1091,12 @@ module csrng_core import csrng_pkg::*; #(
   end
 
   logic state_db_zeroize;
-  assign state_db_zeroize = state_db_wr_vld && (state_db_wr_data.cmd == UNI);
-  `ASSERT(CsrngUniZeroizeFips_A, state_db_zeroize -> (state_db_wr_data.fips   == '0))
-  `ASSERT(CsrngUniZeroizeKey_A,  state_db_zeroize -> (state_db_wr_data.key    == '0))
-  `ASSERT(CsrngUniZeroizeV_A,    state_db_zeroize -> (state_db_wr_data.v      == '0))
-  `ASSERT(CsrngUniZeroizeRc_A,   state_db_zeroize -> (state_db_wr_data.rs_ctr == '0))
-  `ASSERT(CsrngUniZeroizeSts_A,  state_db_zeroize -> (state_db_wr_sts == '0))
-
-  // Ensure that the ctr_drbg_generate and ctr_drbg_command units never try to write to the
-  // state db at the same time.
-  `ASSERT(CsrngNoConcurrentGenCmdRsp_A, !(ctr_drbg_cmd_rsp_vld && ctr_drbg_gen_rsp_vld))
+  assign state_db_zeroize = state_db_wr_vld && (ctr_drbg_rsp_data.cmd == UNI);
+  `ASSERT(CsrngUniZeroizeFips_A, state_db_zeroize -> (ctr_drbg_rsp_data.fips   == '0))
+  `ASSERT(CsrngUniZeroizeKey_A,  state_db_zeroize -> (ctr_drbg_rsp_data.key    == '0))
+  `ASSERT(CsrngUniZeroizeV_A,    state_db_zeroize -> (ctr_drbg_rsp_data.v      == '0))
+  `ASSERT(CsrngUniZeroizeRc_A,   state_db_zeroize -> (ctr_drbg_rsp_data.rs_ctr == '0))
+  `ASSERT(CsrngUniZeroizeSts_A,  state_db_zeroize -> (ctr_drbg_rsp_sts == CMD_STS_SUCCESS))
 `endif
 
 endmodule // csrng_core
