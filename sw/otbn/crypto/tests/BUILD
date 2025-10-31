@@ -401,7 +401,7 @@ otbn_sim_test(
     srcs = [
         "p256_arithmetic_to_boolean_test.s",
     ],
-    exp = "p256_arithmetic_to_boolean_test.exp",
+    testcase = "p256_arithmetic_to_boolean_test.hjson",
     deps = [
         "//sw/otbn/crypto:p256_base",
         "//sw/otbn/crypto:p256_isoncurve",
@@ -415,7 +415,7 @@ otbn_sim_test(
     srcs = [
         "p256_arithmetic_to_boolean_mod_test.s",
     ],
-    exp = "p256_arithmetic_to_boolean_mod_test.exp",
+    testcase = "p256_arithmetic_to_boolean_mod_test.hjson",
     deps = [
         "//sw/otbn/crypto:p256_base",
         "//sw/otbn/crypto:p256_isoncurve",
@@ -457,7 +457,7 @@ otbn_sim_test(
     srcs = [
         "p384_boolean_to_arithmetic_test.s",
     ],
-    exp = "p384_boolean_to_arithmetic_test.exp",
+    testcase = "p384_boolean_to_arithmetic_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_b2a",
     ],
@@ -468,7 +468,7 @@ otbn_sim_test(
     srcs = [
         "p384_arithmetic_to_boolean_test.s",
     ],
-    exp = "p384_arithmetic_to_boolean_test.exp",
+    testcase = "p384_arithmetic_to_boolean_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_a2b",
         "//sw/otbn/crypto:p384_base",
@@ -480,7 +480,7 @@ otbn_sim_test(
     srcs = [
         "p384_arithmetic_to_boolean_mod_test.s",
     ],
-    exp = "p384_arithmetic_to_boolean_mod_test.exp",
+    testcase = "p384_arithmetic_to_boolean_mod_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_a2b",
         "//sw/otbn/crypto:p384_base",
@@ -593,7 +593,7 @@ otbn_sim_test(
     srcs = [
         "p384_keygen_test.s",
     ],
-    exp = "p384_keygen_test.exp",
+    testcase = "p384_keygen_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_keygen",
@@ -606,7 +606,7 @@ otbn_sim_test(
     srcs = [
         "p384_keygen_from_seed_test.s",
     ],
-    exp = "p384_keygen_from_seed_test.exp",
+    testcase = "p384_keygen_from_seed_test.hjson",
     deps = [
         "//sw/otbn/crypto:p384_b2a",
         "//sw/otbn/crypto:p384_base",
