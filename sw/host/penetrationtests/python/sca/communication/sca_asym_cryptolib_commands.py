@@ -6,6 +6,7 @@
 Communication with OpenTitan happens over the uJson
 command interface.
 """
+
 import json
 import time
 from sw.host.penetrationtests.python.util import common_library
@@ -45,7 +46,15 @@ class OTAsymCrypto:
         boot_log = self.target.read_response()
         boot_measurements = self.target.read_response()
         version = self.target.read_response()
-        return device_id, owner_page, boot_log, boot_measurements, version
+        cryptolib_version = self.target.read_response()
+        return (
+            device_id,
+            owner_page,
+            boot_log,
+            boot_measurements,
+            version,
+            cryptolib_version,
+        )
 
     def handle_rsa_dec(
         self,
@@ -94,17 +103,7 @@ class OTAsymCrypto:
         self.target.write(json.dumps(input_data).encode("ascii"))
 
     def handle_rsa_sign(
-        self,
-        data,
-        data_len,
-        e,
-        n,
-        n_len,
-        d,
-        padding,
-        hashing,
-        cfg,
-        trigger
+        self, data, data_len, e, n, n_len, d, padding, hashing, cfg, trigger
     ) -> None:
         """Call the cryptolib RSA to sign.
 
@@ -168,7 +167,7 @@ class OTAsymCrypto:
             "scalar": scalar,
             "cfg": cfg,
             "trigger": trigger,
-            "num_iterations": num_iterations
+            "num_iterations": num_iterations,
         }
         self.target.write(json.dumps(input_data).encode("ascii"))
 
@@ -187,7 +186,7 @@ class OTAsymCrypto:
             "scalar": scalar,
             "cfg": cfg,
             "trigger": trigger,
-            "num_iterations": num_iterations
+            "num_iterations": num_iterations,
         }
         self.target.write(json.dumps(input_data).encode("ascii"))
 
@@ -269,7 +268,7 @@ class OTAsymCrypto:
             "scalar": scalar,
             "cfg": cfg,
             "trigger": trigger,
-            "num_iterations": num_iterations
+            "num_iterations": num_iterations,
         }
         self.target.write(json.dumps(input_data).encode("ascii"))
 
@@ -288,7 +287,7 @@ class OTAsymCrypto:
             "scalar": scalar,
             "cfg": cfg,
             "trigger": trigger,
-            "num_iterations": num_iterations
+            "num_iterations": num_iterations,
         }
         self.target.write(json.dumps(input_data).encode("ascii"))
 
