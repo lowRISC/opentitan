@@ -60,9 +60,9 @@ enum {
 
   kFlashTestLoc = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
                   kBank1StartPageNum * kFlashBytesPerPage,
-  // The ROM_EXT protects itself using regions 0-1.
-  kFlashRegionNum = 2,
 };
+
+static uint32_t flash_region_index;
 
 // The flash test location is set to the encoding of `jalr x0, 0(x1)`
 // so execution can be tested.
@@ -150,10 +150,14 @@ static void setup_flash(void) {
   dif_flash_ctrl_data_region_properties_t data_region = {
       .base = kBank1StartPageNum, .size = 0x1, .properties = region_properties};
 
+  // Find the first unlocked flash region and use that for testing
+  CHECK_STATUS_OK(flash_ctrl_testutils_find_unlocked_region(
+      &flash_ctrl, 0, FLASH_CTRL_PARAM_NUM_REGIONS - 1, &flash_region_index));
+
   CHECK_DIF_OK(dif_flash_ctrl_set_data_region_properties(
-      &flash_ctrl, kFlashRegionNum, data_region));
+      &flash_ctrl, flash_region_index, data_region));
   CHECK_DIF_OK(dif_flash_ctrl_set_data_region_enablement(
-      &flash_ctrl, kFlashRegionNum, kDifToggleEnabled));
+      &flash_ctrl, flash_region_index, kDifToggleEnabled));
 
   // Make flash executable
   CHECK_DIF_OK(

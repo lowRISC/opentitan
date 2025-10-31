@@ -284,4 +284,19 @@ void flash_ctrl_testutils_data_region_print(
 void flash_ctrl_testutils_info_region_print(
     dif_flash_ctrl_info_region_t region, dif_flash_ctrl_region_properties_t *p,
     bool locked);
+
+/**
+ * Check for unlocked flash data regions
+ *
+ * This prints the unlocked region that is found
+ *
+ * @param flash A flash_ctrl state handle.
+ * @param start Start of the region range to search
+ * @param end End of the region range to search
+ * @param region The data protection region
+ */
+status_t flash_ctrl_testutils_find_unlocked_region(
+    dif_flash_ctrl_state_t *flash, uint32_t start, uint32_t end,
+    uint32_t *region);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_FLASH_CTRL_TESTUTILS_H_

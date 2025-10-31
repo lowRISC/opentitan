@@ -352,3 +352,19 @@ void flash_ctrl_testutils_info_region_print(
            mubi_prop(p->ecc_en, "EC"), mubi_prop(p->high_endurance_en, "HE"),
            locked ? "LK" : "UN");
 }
+
+status_t flash_ctrl_testutils_find_unlocked_region(
+    dif_flash_ctrl_state_t *flash, uint32_t start, uint32_t end,
+    uint32_t *region) {
+  for (uint32_t data_region = start; data_region <= end; data_region++) {
+    bool locked;
+    CHECK_DIF_OK(
+        dif_flash_ctrl_data_region_is_locked(flash, data_region, &locked));
+    if (!locked) {
+      LOG_INFO("Region %u is unlocked", data_region);
+      *region = data_region;
+      return OK_STATUS();
+    }
+  }
+  return INTERNAL();
+}
