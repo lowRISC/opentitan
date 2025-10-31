@@ -14,7 +14,15 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Write logs from sw test to separate log file as well, in addition to the simulator log file.
   bit                 write_sw_logs_to_file = 1'b1;
 
-  // use spi or backdoor to load bootstrap on the next boot
+  // When set, bootstrap a flash image on the next boot using either:
+  // - ROM SPI bootstrap routine, or
+  // - Backdoor memory model access
+  // If frontdoor-loading via the ROM SPI bootstrap mechanism, the sw_straps will be set at the
+  // point the test_rom begins executing, and cleared after the bootstrap has completed.
+  // This config knob is cleared after a ROM SPI bootstrap has completed, and hence setting it to
+  // 1 via the plusarg +use_spi_load_bootstrap=1 will only enable the bootstrap process for the
+  // first boot. To re-use this mechanism for subsequent boots in the same simulation, the stimulus
+  // sequence should set this bit again before applying reset.
   bit                 use_spi_load_bootstrap = 0;
 
   // skip ROM backdoor loading (when using ROM macro block)
@@ -229,16 +237,17 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
     // By default, assume these OTP image paths.
     // A customized OTP image may be specified loaded via the `sw_images` plusarg.
-    otp_images[OtpTypeLcStRaw] = "otp_ctrl_img_raw.vmem";
-    otp_images[OtpTypeLcStDev] = "otp_ctrl_img_dev.vmem";
-    otp_images[OtpTypeLcStProd] = "otp_ctrl_img_prod.vmem";
-    otp_images[OtpTypeLcStRma] = "otp_ctrl_img_rma.vmem";
+    otp_images[OtpTypeLcStRaw]           = "otp_ctrl_img_raw.vmem";
+    otp_images[OtpTypeLcStDev]           = "otp_ctrl_img_dev.vmem";
+    otp_images[OtpTypeLcStProd]          = "otp_ctrl_img_prod.vmem";
+    otp_images[OtpTypeLcStRma]           = "otp_ctrl_img_rma.vmem";
     otp_images[OtpTypeLcStTestUnlocked0] = "otp_ctrl_img_test_unlocked0.vmem";
     otp_images[OtpTypeLcStTestUnlocked1] = "otp_ctrl_img_test_unlocked1.vmem";
     otp_images[OtpTypeLcStTestUnlocked2] = "otp_ctrl_img_test_unlocked2.vmem";
-    otp_images[OtpTypeLcStTestLocked0] = "otp_ctrl_img_test_locked0.vmem";
-    otp_images[OtpTypeLcStTestLocked1] = "otp_ctrl_img_test_locked1.vmem";
-    otp_images[OtpTypeCustom] = "";
+    otp_images[OtpTypeLcStTestLocked0]   = "otp_ctrl_img_test_locked0.vmem";
+    otp_images[OtpTypeLcStTestLocked1]   = "otp_ctrl_img_test_locked1.vmem";
+    otp_images[OtpTypeCustom]            = "";
+    otp_images[OtpNone]                  = "";
 
     `DV_CHECK_LE_FATAL(num_ram_main_tiles, 16)
     `DV_CHECK_LE_FATAL(num_ram_ret_tiles, 16)
@@ -419,74 +428,111 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
         sw_image_flags[sw_type] = sw_image_fields[2:$];
       end
     end
-    resolve_sw_image_paths();
   endfunction
 
-  // Finalize the SW image paths, once all SW image settings are done.
+  // Resolve the final image filename to be loaded for for each passed +sw_image
+  //
+  // Based on each component of +sw_image passed to the simulation, a corresponding bazel target
+  // should have been built before the simulation, and a set of its output files/runfiles copied
+  // to the test run-directory. The logic below selects exactly one image file depending on the
+  // additional colon-seperated flags in +sw_args, and the expected filenames output by our
+  // bazel rules.
+  //
+  // This resolution is very closely-coupled to our bazel rules and entirely based on convention.
   virtual function void resolve_sw_image_paths();
     foreach (sw_images[i]) begin
+
+      // Not really used... (pre-built TOCK images?)
       if ("prebuilt" inside {sw_image_flags[i]}) begin
         sw_images[i] = $sformatf("%0s", sw_images[i]);
+
       end else begin
-        if (i == SwTypeRom) begin
-          // If Rom type AND test_in_rom, append suffix to the image name.
-          if ("test_in_rom" inside {sw_image_flags[i]} &&
-              !("new_rules" inside {sw_image_flags[i]})) begin
-            sw_images[i] = $sformatf("%0s_rom_prog_%0s", sw_images[i], sw_build_device);
-          // If Rom type but not test_in_rom, no need to tweak name further.
-          end else begin
-            sw_images[i] = $sformatf("%0s_%0s", sw_images[i], sw_build_device);
-          end
-        end else if (i inside {SwTypeTestSlotA, SwTypeTestSlotB}) begin
-          // If the tag `silicon_creator` is inside the list of flags, we want
-          // to use a flash image built for the `silicon_creator` device. This
-          // is used for GLS tests that integrate the ROM macro, which is built
-          // for the `silicon_creator` device, not the `sim_dv` device.
-          if ("silicon_creator" inside {sw_image_flags[i]}) begin
-            sw_images[i] = $sformatf("%0s_silicon_creator", sw_images[i]);
-          // If test type is `opentitan_test` and the flash image was generated
-          // by the `opentitan_test` Bazel macro itself, or it was generated
-          // by the `opentitan_flash_binary` or `opentitan_binary` Bazel macros,
-          // then we only need to append the device suffix.
-          end else if ("ot_flash_binary" inside {sw_image_flags[i]} ||
-              "new_rules" inside {sw_image_flags[i]}) begin
-            sw_images[i] = $sformatf("%0s_%0s", sw_images[i], sw_build_device);
-          // If test type is `opentitan_functest` (the legacy OpenTitan Bazel
-          // test macro), and said macro generated the flash image, then we
-          // need to tweak the name, as the flash binary target has the `_prog`
-          // suffix attached (to differentiate between the `sh_test` target
-          // also generated by the same Bazel `opentitan_functest` macro).
-          end else begin
-            sw_images[i] = $sformatf("%0s_prog_%0s", sw_images[i], sw_build_device);
-          end
-          // A flash image could be signed, and if it is, Bazel will attach a
-          // suffix to the image name.
-          if ("signed" inside {sw_image_flags[i]}) begin
-            // Options match DEFAULT_SIGNING_KEYS in `rules/opentitan/keyutils.bzl`.
-            if ("fake_ecdsa_dev_key_0" inside {sw_image_flags[i]}) begin
-              sw_images[i] = $sformatf("%0s.fake_ecdsa_dev_key_0.signed", sw_images[i]);
-            end else if ("fake_ecdsa_prod_key_0" inside {sw_image_flags[i]}) begin
-              sw_images[i] = $sformatf("%0s.fake_ecdsa_prod_key_0.signed", sw_images[i]);
-            end else if ("fake_ecdsa_test_key_0" inside {sw_image_flags[i]}) begin
-              sw_images[i] = $sformatf("%0s.fake_ecdsa_test_key_0.signed", sw_images[i]);
-            end else if ("fake_rsa_dev_key_0" inside {sw_image_flags[i]}) begin
-              sw_images[i] = $sformatf("%0s.fake_rsa_dev_key_0.signed", sw_images[i]);
-            end else if ("fake_rsa_prod_key_0" inside {sw_image_flags[i]}) begin
-              sw_images[i] = $sformatf("%0s.fake_rsa_prod_key_0.signed", sw_images[i]);
-            end else if ("fake_rsa_test_key_0" inside {sw_image_flags[i]}) begin
-              sw_images[i] = $sformatf("%0s.fake_rsa_test_key_0.signed", sw_images[i]);
+        case(i)
+
+          /* 0 */ SwTypeRom : begin
+
+            if ("silicon_creator" inside {sw_image_flags[i]}) begin
+              sw_images[i] = $sformatf("%0s_silicon_creator", sw_images[i]);
+
+            end else if ("test_in_rom" inside {sw_image_flags[i]} &&
+                         !("new_rules" inside {sw_image_flags[i]})) begin
+              sw_images[i] = $sformatf("%0s_rom_prog_%0s", sw_images[i], sw_build_device);
+
             end else begin
-              // We default to no key name if none is provided in the SW image tags.
-              sw_images[i] = $sformatf("%0s.signed", sw_images[i]);
+              sw_images[i] = $sformatf("%0s_%0s", sw_images[i], sw_build_device);
+
+            end
+
+          end
+
+          /* 1 */ SwTypeTestSlotA,
+          /* 2 */ SwTypeTestSlotB,
+          /* 6 */ SwTypeMultiSlot: begin
+
+            if ("silicon_creator" inside {sw_image_flags[i]}) begin
+              // Add the flag `silicon_creator` when using a flash image built
+              // for the `silicon_creator` device.
+              // This is used for closed-source GLS tests that integrate the ROM macro,
+              // which is built for the `silicon_creator` device, not the `sim_dv` device.
+              //
+              // Currently, the '_silicon_creator' suffix is added manually when
+              // instantiating rules.
+              sw_images[i] = $sformatf("%0s_silicon_creator", sw_images[i]);
+
+            end else if ("ot_flash_binary" inside {sw_image_flags[i]} ||
+                         "new_rules" inside {sw_image_flags[i]}) begin
+              // If test type is `opentitan_test` and the flash image was generated
+              // by the `opentitan_test` Bazel macro itself, or it was generated
+              // by the `opentitan_flash_binary` or `opentitan_binary` Bazel macros,
+              // then we only need to append the device suffix.
+              sw_images[i] = $sformatf("%0s_%0s", sw_images[i], sw_build_device);
+
+            end else begin
+              // If test type is `opentitan_functest` (the legacy OpenTitan Bazel
+              // test macro), and said macro generated the flash image, then we
+              // need to tweak the name, as the flash binary target has the `_prog`
+              // suffix attached (to differentiate between the `sh_test` target
+              // also generated by the same Bazel `opentitan_functest` macro).
+              sw_images[i] = $sformatf("%0s_prog_%0s", sw_images[i], sw_build_device);
+            end
+
+            // A flash image could be signed, and if it is, Bazel will attach a
+            // suffix to the image name.
+            if ("signed" inside {sw_image_flags[i]}) begin
+              // Options match DEFAULT_SIGNING_KEYS in `rules/opentitan/keyutils.bzl`.
+              if ("fake_ecdsa_dev_key_0" inside {sw_image_flags[i]}) begin
+                sw_images[i] = $sformatf("%0s.fake_ecdsa_dev_key_0.signed", sw_images[i]);
+              end else if ("fake_ecdsa_prod_key_0" inside {sw_image_flags[i]}) begin
+                sw_images[i] = $sformatf("%0s.fake_ecdsa_prod_key_0.signed", sw_images[i]);
+              end else if ("fake_ecdsa_test_key_0" inside {sw_image_flags[i]}) begin
+                sw_images[i] = $sformatf("%0s.fake_ecdsa_test_key_0.signed", sw_images[i]);
+              end else if ("fake_rsa_dev_key_0" inside {sw_image_flags[i]}) begin
+                sw_images[i] = $sformatf("%0s.fake_rsa_dev_key_0.signed", sw_images[i]);
+              end else if ("fake_rsa_prod_key_0" inside {sw_image_flags[i]}) begin
+                sw_images[i] = $sformatf("%0s.fake_rsa_prod_key_0.signed", sw_images[i]);
+              end else if ("fake_rsa_test_key_0" inside {sw_image_flags[i]}) begin
+                sw_images[i] = $sformatf("%0s.fake_rsa_test_key_0.signed", sw_images[i]);
+              end else begin
+
+                // We default to no key name if none is provided in the SW image tags.
+                sw_images[i] = $sformatf("%0s.signed", sw_images[i]);
+              end
             end
           end
-        end else if (i == SwTypeOtp) begin
-          otp_images[OtpTypeCustom] = $sformatf("%0s.24.vmem", sw_images[i]);
-        end else if (i == SwTypeDebug) begin
-          sw_images[i] = $sformatf("%0s_%0s", sw_images[i], sw_build_device);
-        end
+
+          /* 4 */ SwTypeOtp: begin
+            otp_images[OtpTypeCustom] = $sformatf("%0s.24.vmem", sw_images[i]);
+          end
+
+          /* 5 */ SwTypeDebug: begin
+            sw_images[i] = $sformatf("%0s_%0s", sw_images[i], sw_build_device);
+          end
+
+          default: `uvm_fatal(`gfn, $sformatf("Unknown sw_image enumeration value passed: %0d", i))
+        endcase
       end
-    end
+
+    end // foreach (sw_images[i])
   endfunction
 
   // Returns the chip memory instance to which the address belongs.
