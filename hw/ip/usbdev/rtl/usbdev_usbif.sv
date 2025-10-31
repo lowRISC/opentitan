@@ -90,6 +90,7 @@ module usbdev_usbif  #(
   input  logic                     cfg_pinflip_i, // 1: Treat outputs and inputs as though D+/D-
                                                   // are flipped
   input  logic                     tx_osc_test_mode_i, // Oscillator test mode: constant JK output
+  input  logic                     tx_pkt_test_mode_i, // Packet transmission test mode
   output logic [NEndpoints-1:0]    out_data_toggle_o, // Current state of OUT data toggles
   input  logic                     out_datatog_we_i, // OUT data toggles write strobe from software
   input  logic [NEndpoints-1:0]    out_datatog_status_i, // New state of selected OUT data toggles
@@ -323,6 +324,7 @@ module usbdev_usbif  #(
     .cfg_use_diff_rcvr_i   (cfg_use_diff_rcvr_i),
     .cfg_pinflip_i         (cfg_pinflip_i),
     .tx_osc_test_mode_i    (tx_osc_test_mode_i),
+    .tx_pkt_test_mode_i    (tx_pkt_test_mode_i),
     .out_data_toggle_o     (out_data_toggle_o),
     .out_datatog_we_i      (out_datatog_we_i),
     .out_datatog_status_i  (out_datatog_status_i),

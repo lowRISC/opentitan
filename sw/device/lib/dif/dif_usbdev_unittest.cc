@@ -130,7 +130,7 @@ TEST_F(UsbdevTest, NullArgsTest) {
   EXPECT_DIF_BADARG(dif_usbdev_status_get_rx_fifo_depth(&usbdev_, nullptr));
   EXPECT_DIF_BADARG(dif_usbdev_status_get_rx_fifo_empty(nullptr, &bool_arg));
   EXPECT_DIF_BADARG(dif_usbdev_status_get_rx_fifo_empty(&usbdev_, nullptr));
-  EXPECT_DIF_BADARG(dif_usbdev_set_osc_test_mode(nullptr, kDifToggleEnabled));
+  EXPECT_DIF_BADARG(dif_usbdev_set_test_mode(nullptr, kDifUsbdevTestModeNone));
   EXPECT_DIF_BADARG(dif_usbdev_set_wake_enable(nullptr, kDifToggleEnabled));
   EXPECT_DIF_BADARG(dif_usbdev_get_wake_status(nullptr, &wake_status));
   EXPECT_DIF_BADARG(dif_usbdev_get_wake_status(&usbdev_, nullptr));
@@ -223,6 +223,7 @@ TEST_F(UsbdevTest, PhyConfig) {
                     {USBDEV_PHY_CONFIG_PINFLIP_BIT, 1},
                     {USBDEV_PHY_CONFIG_USB_REF_DISABLE_BIT, 0},
                     {USBDEV_PHY_CONFIG_TX_OSC_TEST_MODE_BIT, 0},
+                    {USBDEV_PHY_CONFIG_TX_PKT_TEST_MODE_BIT, 0},
                 });
   EXPECT_WRITE32(USBDEV_PHY_CONFIG_REG_OFFSET,
                  {
@@ -232,8 +233,9 @@ TEST_F(UsbdevTest, PhyConfig) {
                      {USBDEV_PHY_CONFIG_PINFLIP_BIT, 1},
                      {USBDEV_PHY_CONFIG_USB_REF_DISABLE_BIT, 0},
                      {USBDEV_PHY_CONFIG_TX_OSC_TEST_MODE_BIT, 1},
+                     {USBDEV_PHY_CONFIG_TX_PKT_TEST_MODE_BIT, 0},
                  });
-  EXPECT_DIF_OK(dif_usbdev_set_osc_test_mode(&usbdev_, kDifToggleEnabled));
+  EXPECT_DIF_OK(dif_usbdev_set_test_mode(&usbdev_, kDifUsbdevTestModeTxOsc));
 
   EXPECT_READ32(USBDEV_PHY_CONFIG_REG_OFFSET,
                 {
@@ -243,6 +245,7 @@ TEST_F(UsbdevTest, PhyConfig) {
                     {USBDEV_PHY_CONFIG_PINFLIP_BIT, 1},
                     {USBDEV_PHY_CONFIG_USB_REF_DISABLE_BIT, 0},
                     {USBDEV_PHY_CONFIG_TX_OSC_TEST_MODE_BIT, 1},
+                    {USBDEV_PHY_CONFIG_TX_PKT_TEST_MODE_BIT, 0},
                 });
   EXPECT_WRITE32(USBDEV_PHY_CONFIG_REG_OFFSET,
                  {
@@ -252,8 +255,32 @@ TEST_F(UsbdevTest, PhyConfig) {
                      {USBDEV_PHY_CONFIG_PINFLIP_BIT, 1},
                      {USBDEV_PHY_CONFIG_USB_REF_DISABLE_BIT, 0},
                      {USBDEV_PHY_CONFIG_TX_OSC_TEST_MODE_BIT, 0},
+                     {USBDEV_PHY_CONFIG_TX_PKT_TEST_MODE_BIT, 1},
                  });
-  EXPECT_DIF_OK(dif_usbdev_set_osc_test_mode(&usbdev_, kDifToggleDisabled));
+
+  EXPECT_DIF_OK(dif_usbdev_set_test_mode(&usbdev_, kDifUsbdevTestModeTxPacket));
+
+  EXPECT_READ32(USBDEV_PHY_CONFIG_REG_OFFSET,
+                {
+                    {USBDEV_PHY_CONFIG_USE_DIFF_RCVR_BIT, 1},
+                    {USBDEV_PHY_CONFIG_TX_USE_D_SE0_BIT, 0},
+                    {USBDEV_PHY_CONFIG_EOP_SINGLE_BIT_BIT, 0},
+                    {USBDEV_PHY_CONFIG_PINFLIP_BIT, 1},
+                    {USBDEV_PHY_CONFIG_USB_REF_DISABLE_BIT, 0},
+                    {USBDEV_PHY_CONFIG_TX_OSC_TEST_MODE_BIT, 0},
+                    {USBDEV_PHY_CONFIG_TX_PKT_TEST_MODE_BIT, 1},
+                });
+  EXPECT_WRITE32(USBDEV_PHY_CONFIG_REG_OFFSET,
+                 {
+                     {USBDEV_PHY_CONFIG_USE_DIFF_RCVR_BIT, 1},
+                     {USBDEV_PHY_CONFIG_TX_USE_D_SE0_BIT, 0},
+                     {USBDEV_PHY_CONFIG_EOP_SINGLE_BIT_BIT, 0},
+                     {USBDEV_PHY_CONFIG_PINFLIP_BIT, 1},
+                     {USBDEV_PHY_CONFIG_USB_REF_DISABLE_BIT, 0},
+                     {USBDEV_PHY_CONFIG_TX_OSC_TEST_MODE_BIT, 0},
+                     {USBDEV_PHY_CONFIG_TX_PKT_TEST_MODE_BIT, 0},
+                 });
+  EXPECT_DIF_OK(dif_usbdev_set_test_mode(&usbdev_, kDifUsbdevTestModeNone));
 }
 
 TEST_F(UsbdevTest, ConnectAndConfig) {
