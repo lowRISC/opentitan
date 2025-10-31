@@ -149,3 +149,6 @@ class Ip:
                 return True
         else:
             return False
+
+    def has_registers(self):
+        return "registers" in self._hjson_data

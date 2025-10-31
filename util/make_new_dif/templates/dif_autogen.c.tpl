@@ -68,6 +68,7 @@ dif_result_t dif_${ip.name_snake}_init(
 
   return kDifOk;
 }
+% if ip.has_registers():
 
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_${ip.name_snake}_init_from_dt(
@@ -82,6 +83,7 @@ dif_result_t dif_${ip.name_snake}_init_from_dt(
 
   return kDifOk;
 }
+% endif
 
 dif_result_t dif_${ip.name_snake}_get_dt(
   const dif_${ip.name_snake}_t *${ip.name_snake},
