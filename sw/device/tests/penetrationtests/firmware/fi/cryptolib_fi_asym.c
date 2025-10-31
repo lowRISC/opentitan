@@ -6,6 +6,8 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/drivers/cryptolib_build_info.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -509,7 +511,18 @@ status_t handle_cryptolib_fi_asym_init(ujson_t *uj) {
   TRY(pentest_send_sku_config(uj));
 
   /////////////// STUB START ///////////////
-  // Add things like versioning.
+  uint32_t version;
+  bool released;
+  uint32_t build_hash_low;
+  uint32_t build_hash_high;
+  TRY(otcrypto_build_info(&version, &released, &build_hash_low,
+                          &build_hash_high));
+  char cryptolib_version[150];
+  memset(cryptolib_version, '\0', sizeof(cryptolib_version));
+  base_snprintf(cryptolib_version, sizeof(cryptolib_version),
+                "CRYPTO version %08x, released %s, hash %08x%08x", version,
+                released ? "true" : "false", build_hash_high, build_hash_low);
+  RESP_OK(ujson_serialize_string, uj, cryptolib_version);
   /////////////// STUB END ///////////////
 
   return OK_STATUS();

@@ -41,7 +41,14 @@ BOOTSTRAP = args.bootstrap
 class AsymCryptoScaTest(unittest.TestCase):
     def test_init(self):
         asymsca = OTAsymCrypto(target)
-        device_id, owner_page, boot_log, boot_measurements, version = asymsca.init()
+        (
+            device_id,
+            owner_page,
+            boot_log,
+            boot_measurements,
+            version,
+            cryptolib_version,
+        ) = asymsca.init()
         device_id_json = json.loads(device_id)
         owner_page_json = json.loads(owner_page)
         boot_log_json = json.loads(boot_log)
@@ -117,6 +124,8 @@ class AsymCryptoScaTest(unittest.TestCase):
         )
 
         self.assertIn("PENTEST", version)
+
+        self.assertIn("CRYPTO", cryptolib_version)
 
     def test_char_rsa_sign(self):
         n_len = 256

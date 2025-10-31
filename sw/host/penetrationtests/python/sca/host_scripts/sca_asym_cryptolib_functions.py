@@ -30,7 +30,14 @@ def char_rsa_dec(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = asymsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymsca.init()
     # Set the internal prng
     ot_prng = OTPRNG(target=target)
     ot_prng.seed_prng([1, 0, 0, 0])
@@ -63,7 +70,14 @@ def char_rsa_sign(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = asymsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymsca.init()
     # Set the internal prng
     ot_prng = OTPRNG(target=target)
     ot_prng.seed_prng([1, 0, 0, 0])
@@ -90,7 +104,14 @@ def char_prime_generation(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = asymsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymsca.init()
     for _ in range(iterations):
         asymsca.handle_prime_generation(
             e,
@@ -116,12 +137,20 @@ def char_p256_base_mult_fvsr(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = asymsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymsca.init()
     # Set the internal prng
     ot_prng = OTPRNG(target=target)
     ot_prng.seed_prng([1, 0, 0, 0])
 
     for _ in range(iterations):
+        asymsca.handle_p256_base_mult_fvsr(scalar, cfg, trigger, num_iterations)
         asymsca.handle_p256_base_mult_fvsr(scalar, cfg, trigger, num_iterations)
         response = target.read_response()
     return response
@@ -142,8 +171,16 @@ def char_p256_base_mult_daisy(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = asymsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymsca.init()
     for _ in range(iterations):
+        asymsca.handle_p256_base_mult_daisy(scalar, cfg, trigger, num_iterations)
         asymsca.handle_p256_base_mult_daisy(scalar, cfg, trigger, num_iterations)
         response = target.read_response()
     return response
@@ -164,8 +201,16 @@ def char_p256_point_mult(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = asymsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymsca.init()
     for _ in range(iterations):
+        asymsca.handle_p256_point_mult(scalar_alice, scalar_bob, cfg, trigger)
         asymsca.handle_p256_point_mult(scalar_alice, scalar_bob, cfg, trigger)
         response = target.read_response()
     return response
@@ -187,7 +232,14 @@ def char_p256_ecdh(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = asymsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymsca.init()
     for _ in range(iterations):
         asymsca.handle_p256_ecdh(private_key, public_x, public_y, cfg, trigger)
         response = target.read_response()
@@ -211,8 +263,16 @@ def char_p256_sign(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = asymsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymsca.init()
     for _ in range(iterations):
+        asymsca.handle_p256_sign(scalar, pubx, puby, message, cfg, trigger)
         asymsca.handle_p256_sign(scalar, pubx, puby, message, cfg, trigger)
         response = target.read_response()
     return response
@@ -233,11 +293,19 @@ def char_p384_base_mult_fvsr(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = asymsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymsca.init()
     # Set the internal prng
     ot_prng = OTPRNG(target=target)
     ot_prng.seed_prng([1, 0, 0, 0])
     for _ in range(iterations):
+        asymsca.handle_p384_base_mult_fvsr(scalar, cfg, trigger, num_iterations)
         asymsca.handle_p384_base_mult_fvsr(scalar, cfg, trigger, num_iterations)
         response = target.read_response()
     return response
@@ -258,8 +326,16 @@ def char_p384_base_mult_daisy(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = asymsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymsca.init()
     for _ in range(iterations):
+        asymsca.handle_p384_base_mult_daisy(scalar, cfg, trigger, num_iterations)
         asymsca.handle_p384_base_mult_daisy(scalar, cfg, trigger, num_iterations)
         response = target.read_response()
     return response
@@ -280,8 +356,16 @@ def char_p384_point_mult(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = asymsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymsca.init()
     for _ in range(iterations):
+        asymsca.handle_p384_point_mult(scalar_alice, scalar_bob, cfg, trigger)
         asymsca.handle_p384_point_mult(scalar_alice, scalar_bob, cfg, trigger)
         response = target.read_response()
     return response
@@ -303,8 +387,16 @@ def char_p384_ecdh(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = asymsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymsca.init()
     for _ in range(iterations):
+        asymsca.handle_p384_ecdh(private_key, public_x, public_y, cfg, trigger)
         asymsca.handle_p384_ecdh(private_key, public_x, public_y, cfg, trigger)
         response = target.read_response()
     return response
@@ -327,8 +419,16 @@ def char_p384_sign(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = asymsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymsca.init()
     for _ in range(iterations):
+        asymsca.handle_p384_sign(scalar, pubx, puby, message, cfg, trigger)
         asymsca.handle_p384_sign(scalar, pubx, puby, message, cfg, trigger)
         response = target.read_response()
     return response
