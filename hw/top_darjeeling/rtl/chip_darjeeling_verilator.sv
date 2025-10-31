@@ -697,8 +697,8 @@ module chip_darjeeling_verilator #(
     // Default steering to generate error response if address is not within the range
     ctn_dev_sel_s1n = 1'b1;
     // Steering to CTN SRAM.
-    if ((ctn_sm1_to_s1n_tl_h2d.a_address & ~(TOP_DARJEELING_RAM_CTN_SIZE_BYTES-1)) ==
-        (TOP_DARJEELING_RAM_CTN_BASE_ADDR - TOP_DARJEELING_CTN_BASE_ADDR)) begin
+    if ((ctn_sm1_to_s1n_tl_h2d.a_address & ~(TOP_DARJEELING_SOC_PROXY_RAM_CTN_SIZE_BYTES-1)) ==
+        (TOP_DARJEELING_SOC_PROXY_RAM_CTN_BASE_ADDR - TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR)) begin
       ctn_dev_sel_s1n = 1'd0;
     end
   end
