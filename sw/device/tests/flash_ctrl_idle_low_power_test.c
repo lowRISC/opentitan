@@ -18,11 +18,11 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
-
 static dif_rv_plic_t plic;
 static dif_aon_timer_t aon;
 static dif_rv_core_ibex_t rv_core_ibex;
@@ -43,7 +43,7 @@ static top_earlgrey_plic_peripheral_t peripheral_serviced;
 static dif_aon_timer_irq_t irq_serviced;
 
 enum {
-  kFlashDataRegion = 2,  // The ROM_EXT protects itself using regions 0-1.
+  kDataRegions = FLASH_CTRL_PARAM_NUM_REGIONS,
   kRegionBasePageIndex =
       256 + 32,  // First non-ROM_EXT page in bank 1 (avoids program code.)
   kPartitionId = 0,
@@ -102,6 +102,8 @@ bool test_main(void) {
   dif_pwrmgr_t pwrmgr;
   dif_rstmgr_t rstmgr;
 
+  uint32_t flash_region_index;
+
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
@@ -126,8 +128,13 @@ bool test_main(void) {
   rstmgr_reset_info = rstmgr_testutils_reason_get();
 
   uint32_t address = 0;
+  // Find the first unlocked flash region and use that for testing
+
+  CHECK_STATUS_OK(flash_ctrl_testutils_find_unlocked_region(
+      &flash, 0, kDataRegions - 1, &flash_region_index));
+
   CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
-      &flash, kRegionBasePageIndex, kFlashDataRegion, kRegionSize, &address));
+      &flash, kRegionBasePageIndex, flash_region_index, kRegionSize, &address));
 
   if (rstmgr_reset_info == kDifRstmgrResetInfoPor) {
     // Create data. Random data will be different than
