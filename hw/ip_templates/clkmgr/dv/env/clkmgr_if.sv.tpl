@@ -53,15 +53,12 @@ interface clkmgr_if (
   prim_mubi_pkg::mubi4_t all_clk_byp_ack;
 
   prim_mubi_pkg::mubi4_t div_step_down_req;
+  prim_mubi_pkg::mubi4_t calib_rdy;
+  prim_mubi_pkg::mubi4_t hi_speed_sel;
 
 % endif
   prim_mubi_pkg::mubi4_t jitter_en_o;
   clkmgr_pkg::clkmgr_out_t clocks_o;
-
-  prim_mubi_pkg::mubi4_t calib_rdy;
-% if ext_clk_bypass:
-  prim_mubi_pkg::mubi4_t hi_speed_sel;
-% endif
 
   // Internal DUT signals.
   // ICEBOX(lowrisc/opentitan#18379): This is a core env component (i.e. reusable entity) that
@@ -137,9 +134,6 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
   always_comb ${src}_timeout_err = `CLKMGR_HIER.u_${src}_meas.timeout_err_o;
 
 % endfor
-  function automatic void update_calib_rdy(prim_mubi_pkg::mubi4_t value);
-    calib_rdy = value;
-  endfunction
 
   function automatic void update_idle(mubi_hintables_t value);
     idle_i = value;
@@ -158,6 +152,10 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
   endfunction
 
 % if ext_clk_bypass:
+  function automatic void update_calib_rdy(prim_mubi_pkg::mubi4_t value);
+    calib_rdy = value;
+  endfunction
+
   function automatic void update_lc_debug_en(lc_ctrl_pkg::lc_tx_t value);
     lc_hw_debug_en_i = value;
   endfunction
@@ -200,7 +198,9 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
     % endif
                       prim_mubi_pkg::mubi4_t calib_rdy = prim_mubi_pkg::MuBi4True);
     `uvm_info("clkmgr_if", "In clkmgr_if init", UVM_MEDIUM)
+  % if ext_clk_bypass:
     update_calib_rdy(calib_rdy);
+  % endif
     update_idle(idle);
   % if ext_clk_bypass:
     update_lc_clk_byp_req(lc_clk_byp_req);
@@ -280,8 +280,8 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
 
 % endif
   clocking clk_cb @(posedge clk);
-    input calib_rdy;
   % if ext_clk_bypass:
+    input calib_rdy;
     input extclk_ctrl_csr_sel;
     input extclk_ctrl_csr_step_down;
     input lc_hw_debug_en_i;

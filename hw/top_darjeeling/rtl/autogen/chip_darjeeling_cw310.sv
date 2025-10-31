@@ -1128,8 +1128,6 @@ module chip_darjeeling_cw310 #(
   };
 
 
-  prim_mubi_pkg::mubi4_t ast_init_done;
-
   ast #(
     .AdcChannels(ast_pkg::AdcChannels),
     .AdcDataWidth(ast_pkg::AdcDataWidth),
@@ -1162,7 +1160,7 @@ module chip_darjeeling_cw310 #(
     .tl_i                  ( base_ast_bus ),
     .tl_o                  ( ast_base_bus ),
     // init done indication
-    .ast_init_done_o       ( ast_init_done ),
+    .ast_init_done_o       ( ),
     // buffered clocks & resets
     .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_infra),
     .clk_ast_adc_i (clkmgr_aon_clocks.clk_aon_peri),
@@ -1594,7 +1592,6 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
     .es_rng_enable_o              ( es_rng_enable              ),
     .es_rng_valid_i               ( es_rng_valid               ),
     .es_rng_bit_i                 ( es_rng_bit                 ),
-    .calib_rdy_i                  ( ast_init_done              ),
 
     // DMI TL-UL
     .dbg_tl_req_i                 ( dmi_h2d                    ),

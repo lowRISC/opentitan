@@ -94,11 +94,11 @@ rg_srcs = get_rg_srcs(typed_clocks)
   // SEC_CM: DIV.INTERSIG.MUBI
   input mubi4_t div_step_down_req_i,
 
-% endif
   // clock calibration has been done.
   // If this is signal is 0, assume clock frequencies to be
   // uncalibrated.
   input prim_mubi_pkg::mubi4_t calib_rdy_i,
+% endif
 
   // jittery enable to ast
   output mubi4_t jitter_en_o,
@@ -390,7 +390,11 @@ rg_srcs = get_rg_srcs(typed_clocks)
   ) u_calib_rdy_sync (
     .clk_i,
     .rst_ni,
+  % if ext_clk_bypass:
     .mubi_i(calib_rdy_i),
+  % else:
+    .mubi_i(MuBi4False),
+  % endif
     .mubi_o({calib_rdy})
   );
 

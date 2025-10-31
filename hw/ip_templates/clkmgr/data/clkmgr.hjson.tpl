@@ -252,7 +252,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
       package: "prim_mubi_pkg",
       width:   "${len(hint_names)}"
     },
-
+% if ext_clk_bypass:
     { struct:  "mubi4",
       desc:    "Indicates clocks are calibrated and frequencies accurate",
       type:    "uni",
@@ -261,6 +261,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
       package: "prim_mubi_pkg",
       default: "prim_mubi_pkg::MuBi4True"
     },
+% endif
   ],
 
   countermeasures: [

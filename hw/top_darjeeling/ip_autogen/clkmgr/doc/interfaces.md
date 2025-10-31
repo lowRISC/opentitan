@@ -11,15 +11,14 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name   | Package::Struct          | Type    | Act   |   Width | Description                                              |
-|:------------|:-------------------------|:--------|:------|--------:|:---------------------------------------------------------|
-| clocks      | clkmgr_pkg::clkmgr_out   | uni     | req   |       1 |                                                          |
-| cg_en       | clkmgr_pkg::clkmgr_cg_en | uni     | req   |       1 |                                                          |
-| jitter_en   | prim_mubi_pkg::mubi4     | uni     | req   |       1 |                                                          |
-| pwr         | pwr_clk                  | req_rsp | rsp   |       1 |                                                          |
-| idle        | prim_mubi_pkg::mubi4     | uni     | rcv   |       4 |                                                          |
-| calib_rdy   | prim_mubi_pkg::mubi4     | uni     | rcv   |       1 | Indicates clocks are calibrated and frequencies accurate |
-| tl          | tlul_pkg::tl             | req_rsp | rsp   |       1 |                                                          |
+| Port Name   | Package::Struct          | Type    | Act   |   Width | Description   |
+|:------------|:-------------------------|:--------|:------|--------:|:--------------|
+| clocks      | clkmgr_pkg::clkmgr_out   | uni     | req   |       1 |               |
+| cg_en       | clkmgr_pkg::clkmgr_cg_en | uni     | req   |       1 |               |
+| jitter_en   | prim_mubi_pkg::mubi4     | uni     | req   |       1 |               |
+| pwr         | pwr_clk                  | req_rsp | rsp   |       1 |               |
+| idle        | prim_mubi_pkg::mubi4     | uni     | rcv   |       4 |               |
+| tl          | tlul_pkg::tl             | req_rsp | rsp   |       1 |               |
 
 ## Security Alerts
 
