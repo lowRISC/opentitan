@@ -14,6 +14,7 @@ filesets:
       - lowrisc:dv:rram_ctrl_test
       - lowrisc:dv:rram_ctrl_sva
     files:
+      - env/rram_ctrl_misc_io_if.sv
       - tb.sv
     file_type: systemVerilogSource
 
@@ -25,6 +26,5 @@ targets:
       - files_dv
     default_tool: vcs
 
-  # TODO: add a lint check cfg in `hw/top_earlgrey/lint/top_earlgrey_dv_lint_cfgs.hjson`
   lint:
     <<: *sim_target

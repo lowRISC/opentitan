@@ -4,134 +4,160 @@
 
 class rram_ctrl_scoreboard extends cip_base_scoreboard #(
     .CFG_T(rram_ctrl_env_cfg),
-    .RAL_T(rram_ctrl_reg_block),
+    .RAL_T(rram_ctrl_core_reg_block),
     .COV_T(rram_ctrl_env_cov)
   );
   `uvm_component_utils(rram_ctrl_scoreboard)
 
-  // local variables
+  // Local variables
 
-  // TLM agent fifos
-  uvm_tlm_analysis_fifo #(tl_csr_item) tl_csr_fifo;
-  uvm_tlm_analysis_fifo #(tl_host_item) tl_host_fifo;
-  uvm_tlm_analysis_fifo #(tl_prim_item) tl_prim_fifo;
+  // Standard SV/UVM methods
+  extern function new(string name="", uvm_component parent=null);
+  extern function void build_phase(uvm_phase phase);
+  extern function void connect_phase(uvm_phase phase);
+  extern task run_phase(uvm_phase phase);
+  extern function void check_phase(uvm_phase phase);
 
-  // local queues to hold incoming packets pending comparison
-  tl_csr_item tl_csr_q[$];
-  tl_host_item tl_host_q[$];
-  tl_prim_item tl_prim_q[$];
+  // Class specific methods
+  extern task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
+  extern task process_tl_host_access(tl_seq_item item, uvm_reg_addr_t csr_addr,
+    tl_phase_e tl_phase);
+  extern task process_tl_prim_access(tl_seq_item item, uvm_reg_addr_t csr_addr,
+    tl_phase_e tl_phase);
+  extern function void reset(string kind = "HARD");
+endclass : rram_ctrl_scoreboard
 
-  `uvm_component_new
 
-  function void build_phase(uvm_phase phase);
-    super.build_phase(phase);
-    tl_csr_fifo = new("tl_csr_fifo", this);
-    tl_host_fifo = new("tl_host_fifo", this);
-    tl_prim_fifo = new("tl_prim_fifo", this);
-    // TODO: remove once support alert checking
-    do_alert_check = 0;
-  endfunction
+function rram_ctrl_scoreboard::new(string name="", uvm_component parent=null);
+  super.new(name, parent);
+endfunction : new
 
-  function void connect_phase(uvm_phase phase);
-    super.connect_phase(phase);
-  endfunction
+function void rram_ctrl_scoreboard::build_phase(uvm_phase phase);
+  super.build_phase(phase);
+  // TODO: remove once support alert checking
+  do_alert_check = 0;
+endfunction : build_phase
 
-  task run_phase(uvm_phase phase);
-    super.run_phase(phase);
-    fork
-      process_tl_csr_fifo();
-      process_tl_host_fifo();
-      process_tl_prim_fifo();
-    join_none
-  endtask
+function void rram_ctrl_scoreboard::connect_phase(uvm_phase phase);
+  super.connect_phase(phase);
+endfunction : connect_phase
 
-  virtual task process_tl_csr_fifo();
-    tl_csr_item item;
-    forever begin
-      tl_csr_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("received tl_csr item:\n%0s", item.sprint()), UVM_HIGH)
+task rram_ctrl_scoreboard::run_phase(uvm_phase phase);
+  super.run_phase(phase);
+  wait(cfg.under_reset);
+  forever begin
+    wait(!cfg.under_reset);
+    // This isolation fork is needed to ensure that "disable fork" call won't kill any other
+    // processes at the same level from the parent classes
+    fork begin : isolation_fork
+      fork
+        begin : main_thread
+          fork
+            // TODO remove this entire forever loop and replace it with something more meaningful
+            // it's just a placeholder to avoid simulation hanging
+            forever begin
+              cfg.clk_rst_vif.wait_clks(1);
+            end
+          join
+          wait fork;  // To ensure it will be killed only when the reset will occur
+        end
+        begin : reset_thread
+          wait(cfg.under_reset);
+        end
+      join_any
+      disable fork;   // Terminates all descendants and sub-descendants of isolation_fork
+    end join
+  end
+endtask : run_phase
+
+task rram_ctrl_scoreboard::process_tl_access(tl_seq_item item,
+                                                tl_channels_e channel,
+                                                string ral_name);
+  bit            write    = item.is_write();
+  uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+  tl_phase_e     tl_phase;
+
+  if (!write && channel == AddrChannel) tl_phase = AddrRead;
+  if ( write && channel == AddrChannel) tl_phase = AddrWrite;
+  if (!write && channel == DataChannel) tl_phase = DataRead;
+  if ( write && channel == DataChannel) tl_phase = DataWrite;
+
+  if (ral_name == ral.get_name()) begin
+    process_tl_host_access(item, csr_addr, tl_phase);
+  end else if (ral_name == cfg.prim_ral_name) begin
+    process_tl_prim_access(item, csr_addr, tl_phase);
+  end else begin
+    `uvm_fatal(`gfn, $sformatf("Specified RAL name %0s doesn't exist!", ral_name))
+  end
+endtask : process_tl_access
+
+task rram_ctrl_scoreboard::process_tl_host_access(
+  tl_seq_item item, uvm_reg_addr_t csr_addr, tl_phase_e tl_phase);
+  string  ral_name      = ral.get_name();
+  bit     do_read_check = 1;
+  uvm_reg csr;
+
+  // If access was to a valid CSR, get the CSR handle
+  if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
+    csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
+    `DV_CHECK_NE_FATAL(csr, null)
+  end else begin
+    `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
+  end
+
+  // If incoming access is a write to a valid csr, then make updates right away
+  if (tl_phase == AddrWrite) begin
+    void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+  end
+
+  // Process the CRS req:
+  //  - for write, update local variable and fifo at address phase
+  //  - for read, update prediction at address phase and compare at data phase
+  case (csr.get_name())
+    // Add individual case item for each csr
+    "intr_state": begin
+      // FIXME TODO MVy
+      do_read_check = 1'b0;
     end
-  endtask
-
-  virtual task process_tl_host_fifo();
-    tl_host_item item;
-    forever begin
-      tl_host_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("received tl_host item:\n%0s", item.sprint()), UVM_HIGH)
+    "intr_enable": begin
+      // FIXME TODO MVy
     end
-  endtask
-
-  virtual task process_tl_prim_fifo();
-    tl_prim_item item;
-    forever begin
-      tl_prim_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("received tl_prim item:\n%0s", item.sprint()), UVM_HIGH)
+    "intr_test": begin
+      // FIXME TODO MVy
     end
-  endtask
-
-  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
-    uvm_reg csr;
-    bit     do_read_check   = 1'b1;
-    bit     write           = item.is_write();
-    uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
-
-    bit addr_phase_read   = (!write && channel == AddrChannel);
-    bit addr_phase_write  = (write && channel == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
-    bit data_phase_write  = (write && channel == DataChannel);
-
-    // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-      `DV_CHECK_NE_FATAL(csr, null)
+    "debug_policy_relocked": begin
+      // FIXME TODO
     end
-    else begin
-      `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
+    default: begin
+      `uvm_fatal(`gfn, $sformatf("invalid CSR: %0s", csr.get_full_name()))
     end
+  endcase
 
-    // if incoming access is a write to a valid csr, then make updates right away
-    if (addr_phase_write) begin
-      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+  // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
+  if (tl_phase == DataRead) begin
+    if (do_read_check) begin
+      `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
+                   $sformatf("reg name: %0s", csr.get_full_name()))
     end
+    void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+  end
+endtask : process_tl_host_access
 
-    // process the csr req
-    // for write, update local variable and fifo at address phase
-    // for read, update prediction at address phase and compare at data phase
-    case (csr.get_name())
-      // add individual case item for each csr
-      "intr_state": begin
-        // FIXME
-        do_read_check = 1'b0;
-      end
-      "intr_enable": begin
-        // FIXME
-      end
-      "intr_test": begin
-        // FIXME
-      end
-      default: begin
-        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
-      end
-    endcase
+task rram_ctrl_scoreboard::process_tl_prim_access(
+  tl_seq_item item, uvm_reg_addr_t csr_addr, tl_phase_e tl_phase);
+  string  ral_name      = cfg.prim_ral_name;
+  bit     do_read_check = 1;
+  uvm_reg csr;
+  // TODO
+  `uvm_info(`gfn, "Tmp debug: tl_prim_access detected", UVM_LOW)
+endtask : process_tl_prim_access
 
-    // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
-    if (data_phase_read) begin
-      if (do_read_check) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
-                     $sformatf("reg name: %0s", csr.get_full_name()))
-      end
-      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
-    end
-  endtask
+function void rram_ctrl_scoreboard::reset(string kind = "HARD");
+  super.reset(kind);
+  // Reset local fifos queues and variables
+endfunction : reset
 
-  virtual function void reset(string kind = "HARD");
-    super.reset(kind);
-    // reset local fifos queues and variables
-  endfunction
-
-  function void check_phase(uvm_phase phase);
-    super.check_phase(phase);
-    // post test checks - ensure that all local fifos and queues are empty
-  endfunction
-
-endclass
+function void rram_ctrl_scoreboard::check_phase(uvm_phase phase);
+  super.check_phase(phase);
+  // Post test checks - ensure that all local fifos and queues are empty
+endfunction : check_phase

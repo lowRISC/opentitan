@@ -9,9 +9,8 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - lowrisc:dv:tl_csr_agent
-      - lowrisc:dv:tl_host_agent
-      - lowrisc:dv:tl_prim_agent
+      - lowrisc:dv:tl_agent
+      - lowrisc:dv:dv_base_reg
     files:
       - rram_ctrl_env_pkg.sv
       - rram_ctrl_env_cfg.sv: {is_include_file: true}
@@ -31,6 +30,7 @@ generate:
     parameters:
       name: rram_ctrl
       ip_hjson: ../../data/rram_ctrl.hjson
+    position: prepend
 
 targets:
   default:

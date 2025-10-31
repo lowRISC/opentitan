@@ -3,20 +3,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 package rram_ctrl_test_pkg;
-  // dep packages
+  // Dep packages
   import uvm_pkg::*;
   import cip_base_pkg::*;
   import rram_ctrl_env_pkg::*;
 
-  // macro includes
+  // Macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // local types
+  // Local types
 
-  // functions
+  // Functions
 
-  // package sources
+  // Package sources
   `include "rram_ctrl_base_test.sv"
-
-endpackage
+endpackage : rram_ctrl_test_pkg

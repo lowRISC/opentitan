@@ -11,22 +11,26 @@
 class rram_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(rram_ctrl_env_cfg));
   `uvm_component_utils(rram_ctrl_env_cov)
 
-  // the base class provides the following handles for use:
+  // The base class provides the following handles for use:
   // rram_ctrl_env_cfg: cfg
 
-  // covergroups
-  // [add covergroups here]
+  // Covergroups
+  // TODO MVy [add covergroups here]
 
-  function new(string name, uvm_component parent);
-    super.new(name, parent);
-    // [instantiate covergroups here]
-  endfunction : new
+  // Standard SV/UVM methods
+  extern function new(string name, uvm_component parent);
+  extern function void build_phase(uvm_phase phase);
+endclass : rram_ctrl_env_cov
 
-  virtual function void build_phase(uvm_phase phase);
-    super.build_phase(phase);
-    // [or instantiate covergroups here]
-    // Please instantiate sticky_intr_cov array of objects for all interrupts that are sticky
-    // See cip_base_env_cov for details
-  endfunction
 
-endclass
+function rram_ctrl_env_cov::new(string name, uvm_component parent);
+  super.new(name, parent);
+  // TODO MVy [instantiate covergroups here]
+endfunction : new
+
+function void rram_ctrl_env_cov::build_phase(uvm_phase phase);
+  super.build_phase(phase);
+  // TODO MVy [or instantiate covergroups here]
+  // Please instantiate sticky_intr_cov array of objects for all interrupts that are sticky
+  // See cip_base_env_cov for details
+endfunction : build_phase
