@@ -5,6 +5,7 @@
 
 Communication with OpenTitan happens over the uJSON command interface.
 """
+
 import json
 import time
 from sw.host.penetrationtests.python.util import common_library

@@ -351,9 +351,7 @@ def char_drbg(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = (
-        symsca.init()
-    )
+    device_id, owner_page, boot_log, boot_measurements, version = symsca.init()
     # In this test, we do not trigger the reseeding
     symsca.handle_drbg_reseed(
         entropy, entropy_len, nonce, nonce_len, reseed_interval, mode, 0, 0

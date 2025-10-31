@@ -38,7 +38,6 @@ BOOTSTRAP = args.bootstrap
 
 
 class SymCryptolibFiTest(unittest.TestCase):
-
     def test_init(self):
         asymfi = OTFIAsymCrypto(target)
         device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (

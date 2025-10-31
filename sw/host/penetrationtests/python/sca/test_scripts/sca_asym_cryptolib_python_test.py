@@ -39,7 +39,6 @@ BOOTSTRAP = args.bootstrap
 
 
 class AsymCryptoScaTest(unittest.TestCase):
-
     def test_init(self):
         asymsca = OTAsymCrypto(target)
         device_id, owner_page, boot_log, boot_measurements, version = asymsca.init()
