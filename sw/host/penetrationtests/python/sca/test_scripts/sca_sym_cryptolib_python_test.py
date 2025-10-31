@@ -36,7 +36,6 @@ BOOTSTRAP = args.bootstrap
 
 
 class SymCryptoScaTest(unittest.TestCase):
-
     def test_init(self):
         symsca = OTSymCrypto(target)
         device_id, owner_page, boot_log, boot_measurements, version = symsca.init()
