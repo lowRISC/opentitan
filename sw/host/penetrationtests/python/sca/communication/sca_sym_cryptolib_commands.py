@@ -46,7 +46,15 @@ class OTSymCrypto:
         boot_log = self.target.read_response()
         boot_measurements = self.target.read_response()
         version = self.target.read_response()
-        return device_id, owner_page, boot_log, boot_measurements, version
+        cryptolib_version = self.target.read_response()
+        return (
+            device_id,
+            owner_page,
+            boot_log,
+            boot_measurements,
+            version,
+            cryptolib_version,
+        )
 
     def handle_aes_fvsr_plaintext(
         self,
