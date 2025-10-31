@@ -196,27 +196,5 @@ module clkmgr_bind;
     .cg_en(cg_en_o.main_otbn == prim_mubi_pkg::MuBi4True)
   );
 
-  // Calibration assertions.
-  bind clkmgr clkmgr_lost_calib_regwen_sva_if clkmgr_lost_calib_regwen_sva_if (
-    .clk(clk_i),
-    .rst_n(rst_ni),
-    .calib_rdy(calib_rdy_i),
-    .meas_ctrl_regwen(u_reg.measure_ctrl_regwen_qs)
-  );
-
-  bind clkmgr clkmgr_lost_calib_ctrl_en_sva_if clkmgr_lost_calib_io_ctrl_en_sva_if (
-    .clk(clk_i),
-    .rst_n(rst_ni),
-    .calib_rdy(calib_rdy_i),
-    .meas_ctrl_en(u_reg.io_meas_ctrl_en_qs)
-  );
-
-  bind clkmgr clkmgr_lost_calib_ctrl_en_sva_if clkmgr_lost_calib_main_ctrl_en_sva_if (
-    .clk(clk_i),
-    .rst_n(rst_ni),
-    .calib_rdy(calib_rdy_i),
-    .meas_ctrl_en(u_reg.main_meas_ctrl_en_qs)
-  );
-
 `endif
 endmodule : clkmgr_bind

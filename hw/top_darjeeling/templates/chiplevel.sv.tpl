@@ -630,8 +630,6 @@ module chip_${top["name"]}_${target["name"]} #(
 
 % endif
 
-  prim_mubi_pkg::mubi4_t ast_init_done;
-
   ast #(
     .AdcChannels(ast_pkg::AdcChannels),
     .AdcDataWidth(ast_pkg::AdcDataWidth),
@@ -680,7 +678,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .tl_i                  ( base_ast_bus ),
     .tl_o                  ( ast_base_bus ),
     // init done indication
-    .ast_init_done_o       ( ast_init_done ),
+    .ast_init_done_o       ( ),
     // buffered clocks & resets
     % for port, clk in ast["clock_connections"].items():
     .${port} (${clk}),
@@ -1114,7 +1112,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .es_rng_valid_i                    ( es_rng_valid               ),
     .es_rng_bit_i                      ( es_rng_bit                 ),
     .es_rng_fips_o                     ( es_rng_fips                ),
-    .calib_rdy_i                       ( ast_init_done              ),
 
     // OTP external voltage
     .otp_ext_voltage_h_io              ( OTP_EXT_VOLT               ),
@@ -1352,7 +1349,6 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
     .es_rng_enable_o              ( es_rng_enable              ),
     .es_rng_valid_i               ( es_rng_valid               ),
     .es_rng_bit_i                 ( es_rng_bit                 ),
-    .calib_rdy_i                  ( ast_init_done              ),
 % endif
 
     // DMI TL-UL
