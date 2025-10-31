@@ -30,7 +30,14 @@ def char_aes_fvsr_plaintext(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = symsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = symsca.init()
     # Set the internal prng
     ot_prng = OTPRNG(target=target)
     ot_prng.seed_prng([1, 0, 0, 0])
@@ -74,7 +81,14 @@ def char_aes_daisy(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = symsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = symsca.init()
 
     for _ in range(iterations):
         symsca.handle_aes_daisy(
@@ -113,7 +127,14 @@ def char_cmac_fvsr_plaintext(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = symsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = symsca.init()
     # Set the internal prng
     ot_prng = OTPRNG(target=target)
     ot_prng.seed_prng([1, 0, 0, 0])
@@ -151,7 +172,14 @@ def char_cmac_daisy(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = symsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = symsca.init()
 
     for _ in range(iterations):
         symsca.handle_cmac_daisy(
@@ -189,7 +217,14 @@ def char_gcm_fvsr_plaintext(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = symsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = symsca.init()
     # Set the internal prng
     ot_prng = OTPRNG(target=target)
     ot_prng.seed_prng([1, 0, 0, 0])
@@ -231,7 +266,14 @@ def char_gcm_daisy(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = symsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = symsca.init()
 
     for _ in range(iterations):
         symsca.handle_gcm_daisy(
@@ -270,7 +312,14 @@ def char_hmac_fvsr_plaintext(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = symsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = symsca.init()
     # Set the internal prng
     ot_prng = OTPRNG(target=target)
     ot_prng.seed_prng([1, 0, 0, 0])
@@ -310,7 +359,14 @@ def char_hmac_daisy(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = symsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = symsca.init()
     # Set the internal prng
     ot_prng = OTPRNG(target=target)
     ot_prng.seed_prng([1, 0, 0, 0])
@@ -351,7 +407,14 @@ def char_drbg(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = symsca.init()
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = symsca.init()
     # In this test, we do not trigger the reseeding
     symsca.handle_drbg_reseed(
         entropy, entropy_len, nonce, nonce_len, reseed_interval, mode, 0, 0

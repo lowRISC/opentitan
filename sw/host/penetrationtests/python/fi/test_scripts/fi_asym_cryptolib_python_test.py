@@ -40,9 +40,16 @@ BOOTSTRAP = args.bootstrap
 class SymCryptolibFiTest(unittest.TestCase):
     def test_init(self):
         asymfi = OTFIAsymCrypto(target)
-        device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-            asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
-        )
+        (
+            device_id,
+            sensors,
+            alerts,
+            owner_page,
+            boot_log,
+            boot_measurements,
+            version,
+            cryptolib_version,
+        ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
         device_id_json = json.loads(device_id)
         sensors_json = json.loads(sensors)
         alerts_json = json.loads(alerts)
@@ -142,6 +149,8 @@ class SymCryptolibFiTest(unittest.TestCase):
         )
 
         self.assertIn("PENTEST", version)
+
+        self.assertIn("CRYPTO", cryptolib_version)
 
     def test_char_rsa_encrypt(self):
         n_len = 256
