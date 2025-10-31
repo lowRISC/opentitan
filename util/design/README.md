@@ -297,3 +297,45 @@ TODO
 ## KECCAK Coefficient Generation Tool
 
 TODO
+
+## Netlist checker script
+
+`check-netlist.py netlist.v` will report the number of preserved, `size_only` cells.
+In addition, it will parse the netlist for suspicious synthesis optimizations
+such as constant propagation accross preserved instances.
+
+On the `prim_sdc_example.sv` design, the script produces the following output:
+
+```
+================================================================================
+DISCLAIMER:
+This script parses a synthesized netlist for suspicious constructs.
+It does not guarantee that there are no issues in the netlist(!)
+================================================================================
+
+================================================================================
+Final Summary:
+--------------------------------------------------------------------------------
+Found the following size_only instances:
+--------------------------------------------------------------------------------
+u_size_only_xor               120
+u_size_only_xnor              56
+u_size_only_and               56
+u_size_only_mux               0
+u_size_only_flop              252
+u_size_only_buf               328
+u_size_only_clock_gate        2
+others                        2
+--------------------------------------------------------------------------------
+Total                         816
+================================================================================
+Found 0 potential netlist problems in 0 modules!
+================================================================================
+```
+
+If the script reports potential issues, it is likely because the synthesis constraints are not set
+correctly.
+Please refer to the sections [creating-a-technology-library] and [synthesis-constraints].
+
+[creating-a-technology-library]: https://github.com/lowRISC/opentitan/tree/master/hw/ip/prim#creating-a-technology-library
+[synthesis-constraints]: https://github.com/lowRISC/opentitan/tree/master/hw/ip/prim#important-synthesis-constraints-to-keep-important-redundant-constructs

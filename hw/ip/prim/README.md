@@ -366,3 +366,7 @@ This can be checked by the synthesis tool, e.g. `check_design -unloaded_comb/-un
 5. `lc_en_i`, `mubi_i` signals can only be connected to variables, or legal values (`MuBi4True`, `MuBi4False`, `On`, `Off`)
 
 If all checks are successful, the same constraints can be applied to the full design.
+The script `utils/design/check-netlist.py` [check-netlist] can be used to report a summary of size_only cells in a netlist.
+It can also automate an initial version of checks (4) and (5) but it does **not** replace a final manual inspection of the netlist.
+
+[check-netlist]: https://github.com/lowRISC/opentitan/tree/master/util/design#netlist-checker-script
