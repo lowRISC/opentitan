@@ -31,9 +31,16 @@ def char_rsa_encrypt(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-        asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
-    )
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
         asymfi.handle_rsa_enc(
             data, data_len, e, n, n_len, d, padding, hashing, mode, op_enc, cfg, trigger
@@ -63,9 +70,16 @@ def char_rsa_sign(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-        asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
-    )
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
         asymfi.handle_rsa_sign(
             data, data_len, e, n, n_len, d, padding, hashing, cfg, trigger
@@ -96,9 +110,16 @@ def char_rsa_verify(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-        asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
-    )
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
         asymfi.handle_rsa_verify(
             data,
@@ -124,9 +145,16 @@ def char_prime_generation(target, iterations, e, cfg, trigger, reset=False):
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-        asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
-    )
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
         asymfi.handle_prime_generation(e, cfg, trigger)
         response = target.read_response()
@@ -140,9 +168,16 @@ def char_p256_base_mult(target, iterations, scalar, cfg, trigger, reset=False):
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-        asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
-    )
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
         asymfi.handle_p256_base_mult(scalar, cfg, trigger)
         response = target.read_response()
@@ -158,9 +193,16 @@ def char_p256_point_mult(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-        asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
-    )
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
         asymfi.handle_p256_point_mult(scalar_alice, scalar_bob, cfg, trigger)
         response = target.read_response()
@@ -176,9 +218,16 @@ def char_p256_ecdh(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-        asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
-    )
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
         asymfi.handle_p256_ecdh(private_key, public_x, public_y, cfg, trigger)
         response = target.read_response()
@@ -194,9 +243,16 @@ def char_p256_sign(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-        asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
-    )
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
         asymfi.handle_p256_sign(scalar, pubx, puby, message, cfg, trigger)
         response = target.read_response()
@@ -212,9 +268,16 @@ def char_p256_verify(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-        asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
-    )
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
         asymfi.handle_p256_verify(pubx, puby, r, s, message, cfg, trigger)
         response = target.read_response()
@@ -228,9 +291,16 @@ def char_p384_base_mult(target, iterations, scalar, cfg, trigger, reset=False):
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-        asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
-    )
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
         asymfi.handle_p384_base_mult(scalar, cfg, trigger)
         response = target.read_response()
@@ -246,9 +316,16 @@ def char_p384_point_mult(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-        asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
-    )
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
         asymfi.handle_p384_point_mult(scalar_alice, scalar_bob, cfg, trigger)
         response = target.read_response()
@@ -264,9 +341,16 @@ def char_p384_ecdh(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-        asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
-    )
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
         asymfi.handle_p384_ecdh(private_key, public_x, public_y, cfg, trigger)
         response = target.read_response()
@@ -282,9 +366,16 @@ def char_p384_sign(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-        asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
-    )
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
         asymfi.handle_p384_sign(scalar, pubx, puby, message, cfg, trigger)
         response = target.read_response()
@@ -300,9 +391,16 @@ def char_p384_verify(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-        asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
-    )
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
         asymfi.handle_p384_verify(pubx, puby, r, s, message, cfg, trigger)
         response = target.read_response()
