@@ -76,6 +76,23 @@ cd $REPO_TOP
 ./bazelisk.sh run //sw/device/tests/penetrationtests:fi_ibex_python_test_fpga_cw340_sival_rom_ext
 ```
 
+## GDB Testing (FiSim)
+
+The crypto library is tested on a debug enabled CW340 FPGA by tracing several relevant cryptographic calls and apply instruction skips or other fault models to their execution. In order to use this testing, the CW340 FPGA has to be adapted. We provide a picture on its setup as reference:
+
+![CW340 debug setup](fi_sim_cw340_setup.png)
+
+In order to run a GDB test, find the "gdb_test" targets in the BUILD file in //sw/device/tests/penetrationtests. For example,
+```console
+./bazelisk.sh run //sw/device/tests/penetrationtests:fi_sym_cryptolib_python_gdb_test_fpga_cw340_rom_ext
+
+./bazelisk.sh run //sw/device/tests/penetrationtests:fi_asym_cryptolib_python_gdb_test_fpga_cw340_rom_ext
+```
+
+These tests specifically run in the rom_ext environment since this is a ROM version in the RMA lifecycle which enables debug. The test then builds and runs openocd in the background which opens the default port 3333 to GDB. The files in //sw/host/penetrationtests/python/util contain classes in order to communicate with the FPGA, OpenOCD, and GDB.
+
+The testing is performed on the flashed pentest framework in this directory which provides the interface to the crypto library in //sw/device/lib/crypto. The targeted functions are found parsing the dis file. The parser is also found in //sw/host/penetrationtests/python/util.
+
 ## Versioning
 
 In `//sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h`, a value PENTEST_VERSION is found with the current version of the pentest framework.
