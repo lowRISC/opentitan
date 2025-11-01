@@ -189,6 +189,12 @@ extern const dt_periph_io_t kDtPeriphIoConstantZero;
 /* Peripheral I/O that is constantly tied to zero (output only) */
 extern const dt_periph_io_t kDtPeriphIoConstantOne;
 
+/* Pad that is constantly tied to one (input only) */
+extern const dt_periph_io_t kDtPadConstantZero;
+
+/* Pad that is constantly tied to zero (input only) */
+extern const dt_periph_io_t kDtPadConstantOne;
+
 /**
  * Return the type of a `dt_periph_io_t`.
  *
