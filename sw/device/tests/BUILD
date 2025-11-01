@@ -1266,6 +1266,7 @@ opentitan_test(
         {
             "//hw/top_earlgrey:silicon_creator": None,
         },
+        DARJEELING_TEST_ENVS,
     ),
     verilator = verilator_params(
         timeout = "eternal",
@@ -1275,8 +1276,8 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
+        "//hw/top:dt",
         "//hw/top:edn_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/dif:aes",
