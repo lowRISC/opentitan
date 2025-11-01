@@ -227,7 +227,6 @@
             "pinmux_aon",
             "aon_timer_aon",
             "ast"
-            "soc_proxy.core",
             "soc_dbg_ctrl.core",
             "sram_ctrl_ret_aon",
             "rv_plic",
@@ -619,7 +618,6 @@
       },
       domain: ["Aon", "0"],
       base_addrs: {
-        core: {hart: "0x22030000"},
         ctn:  {hart: "0x40000000"},
       },
       attr: "reggen_top",
@@ -1489,11 +1487,8 @@
         'rv_core_ibex.fpga_info'               : 'fpga_info'
         'soc_proxy.misc_tl_h2d'                : 'ctn_misc_tl_h2d',
         'soc_proxy.misc_tl_d2h'                : 'ctn_misc_tl_d2h',
-        'soc_proxy.soc_fatal_alert'            : 'soc_fatal_alert',
-        'soc_proxy.soc_recov_alert'            : 'soc_recov_alert',
         'soc_proxy.soc_wkup_async'             : 'soc_wkup_async',
         'soc_proxy.soc_rst_req_async'          : 'soc_rst_req_async',
-        'soc_proxy.soc_intr_async'             : 'soc_intr_async',
         'soc_proxy.soc_lsio_trigger'           : 'soc_lsio_trigger',
         'soc_proxy.soc_gpi_async'              : 'soc_gpi_async',
         'soc_proxy.soc_gpo_async'              : 'soc_gpo_async',
