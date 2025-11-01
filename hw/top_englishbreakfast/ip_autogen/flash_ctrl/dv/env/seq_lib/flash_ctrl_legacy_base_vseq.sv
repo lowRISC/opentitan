@@ -11,7 +11,7 @@ class flash_ctrl_legacy_base_vseq extends flash_ctrl_otf_base_vseq;
 
   constraint rand_op_c {
     solve fractions before rand_op.addr;
-    solve flash_program_data before rand_op;
+    solve flash_program_data before rand_op.partition, rand_op.addr;
     solve rand_op.partition before rand_op.prog_sel, rand_op.addr;
     solve rand_op.addr before rand_op.otf_addr;
     solve rand_op.addr before rand_op.num_words;
