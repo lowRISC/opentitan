@@ -168,7 +168,7 @@ attestation_keygen:
      The check fails if both sides are not equal.
      FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
   bn.cmp   w18, w19
-  jal      x1, trigger_fault_if_fg0_not_z
+  jal      x1, trigger_fault_if_fg0_z
 
   ecall
 

@@ -50,6 +50,7 @@ licence_test(
 
         # Other Licences,
         "util/wavegen/LICENSE.wavedrom",
+        "sw/otbn/crypto/LICENSE.tiny_sha3",
         # Site Assets
         "site/**/assets/scss/**",
         "site/landing/static/js/tiny-slider.js",
@@ -62,6 +63,8 @@ licence_test(
         "sw/otbn/crypto/rsa_verify.s",
         "sw/otbn/crypto/handwritten/rsa_verify_3072.s",
         "sw/otbn/crypto/sha512.s",
+        # Code based on tiny_sha3
+        "sw/otbn/crypto/sha3_shake.s",
         # Mersenne Twister PRNG
         "sw/device/sca/lib/prng.c",
         # SPHINCS+ known-answer test data

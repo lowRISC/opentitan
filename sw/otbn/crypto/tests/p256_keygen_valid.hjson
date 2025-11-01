@@ -1,6 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+
 {
   /**
    * @param[out] dmem[d0]: First share of secret key.
@@ -16,17 +17,13 @@
   }
   "output": {
     "dmem": {
-      # Verified that (x, y)  == (d0 + d1) * G
-      "x": "0xbc17c155181376b3197b131eac726c220cdf7ab4ad947226393afc1d82372b5e"
-      "y": "0xf00fa582f6dc92f3d9016563addf53be343e2ddf13d61a60148a10823b363b0c"
+      # Verified that (x, y) == (d0 + d1) * G
+      "x": "0x135ead9ff6f89527d42d13ad5c5cba5e32056e70489aa008b3c747ad17f89154"
+      "y": "0xa8cf4b120122f7227879a550fb922676843eceaa840a2991f805da9676f46274"
 
-      # BUG: the upper 64 bits are cleared incorrectly in p256_random_scalar.
-      #   bn.rshi   w16, w20, w31 >> 192
-      #
-      # This bug is runtime-patched by ROM_EXT (PR #27679).
       "d0":
         '''
-          0x0000000000000000000000000000000000000000000000000000000000000000
+          0x000000000000000000000000000000000000000000000000bc712440d17bde95
             cad51b98eeb2713c8b67bf9e1701f3fac2d04d8ecf8d2a5b69240a89b4dae4e1
         '''
 

@@ -13,10 +13,10 @@
  *
  * Returns t, a random value that is nonzero mod n, in shares.
  *
- * This follows a modified version of the method in FIPS 186-4 sections B.4.1
- * and B.5.1 for generation of secret scalar values d and k. The computation
- * in FIPS 186-4 is:
- *   seed = RBG(seedlen) // seedlen >= 448
+ * This follows a modified version of the method in FIPS 186-5 sections A.2.2
+ * and A.3.2 for generation of secret scalar values d and k. The computation
+ * in FIPS 186-5 is:
+ *   seed = RBG(seedlen) // seedlen >= 384
  *   return (seed mod (n-1)) + 1
  *
  * The important features here are that (a) the seed is at least 64 bits longer
@@ -81,8 +81,8 @@ p384_random_scalar:
 
   /* Shift bits to get 448-bit seeds.
      seed0 = [w7,w6], seed1 = [w9,w8]
-     w7 <= w7[192:0]
-     w9 <= w9[192:0] */
+     w7 <= w7[255:64]
+     w9 <= w9[255:64] */
   bn.rshi   w7, w31, w7 >> 64
   /* Dummy instruction to avoid consecutive share access. */
   bn.xor    w31, w31, w31

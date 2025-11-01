@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
@@ -172,6 +173,7 @@ static void sw_reset(void) {
 
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
+  CHECK_STATUS_OK(entropy_complex_init());
 
   // Provision CREATOR_SW_CFG partition.
   if (!status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl))) {

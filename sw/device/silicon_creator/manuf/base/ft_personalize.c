@@ -1196,6 +1196,7 @@ bool test_main(void) {
   pinmux_testutils_init(&pinmux);
   CHECK_STATUS_OK(configure_ate_gpio_indicators());
   CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestStart, true));
+  CHECK_STATUS_OK(entropy_complex_init());
   ujson_t uj = ujson_ottf_console();
 
   // Read the reset reason directly from the RSTMGR.

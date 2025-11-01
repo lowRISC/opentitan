@@ -14,6 +14,7 @@ main:
 
   /* Operand limb count (2). */
   li      x30, 2
+  li      x31, 2
 
   /* dmem[result] <= lcm(dmem[x], dmem[y]) */
   la      x10, x

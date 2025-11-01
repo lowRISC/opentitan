@@ -27,10 +27,11 @@
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  x10: dptr_a, dmem address of first operand (n limbs)
- * @param[in]  x11: dptr_b, dmem address of second operand (n limbs)
- * @param[in]  x12: dptr_c, dmem address of buffer for result (n*2 limbs)
- * @param[in]  x30: number of 256-bit limbs for each operand
+ * @param[in]  x10: dptr_a, dmem address of first operand (n1 limbs)
+ * @param[in]  x11: dptr_b, dmem address of second operand (n2 limbs)
+ * @param[in]  x12: dptr_c, dmem address of buffer for result (n1+n2 limbs)
+ * @param[in]  x30: n1, number of 256-bit limbs of the first operand
+ * @param[in]  x31: n2, number of 256-bit limbs of the second operand
  * @param[in]  w31: all-zero
  * @param[out] dmem[x12..x12+(n*2*32)]: result, a*b
  *
@@ -40,7 +41,7 @@
 bignum_mul:
   /* Zeroize output buffer.
        dmem[dptr_c..dptr_c+(n*2*32)] <= 0 */
-  add      x2, x30, x30
+  add      x2, x30, x31
   li       x3, 31
   addi     x4, x12, 0
   loop     x2, 1
@@ -59,7 +60,7 @@ bignum_mul:
   li       x23, 23
 
   /* x6 <= 2*n */
-  add      x6, x30, x30
+  add      x6, x30, x31
 
   /* Clear flags. */
   bn.sub   w31, w31, w31
@@ -103,7 +104,7 @@ bignum_mul:
          dmem[dptr_c..dptr_c+(n*32)] + FG0.C*2^(256*(i+j+1)) =
            (a mod 2^(256*i)) * b + a[i] * (b mod 2^(256*j))
     */
-    loop     x30, 13
+    loop     x31, 13
       /* w22, w23 <= w20*b[j] = a[i]*b[j] */
       bn.lid    x21, 0(x3++)
       jal       x1, mul256_w20xw21

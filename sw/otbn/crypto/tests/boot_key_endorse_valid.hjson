@@ -32,8 +32,8 @@
       # Verified with:
       # >>> import ecdsa
       # >>> import hashlib
-      # >>> r = 0xfb9ccc2407d5f318d0dd995cbf4012e6796898fbc22829c94b691cb0df72e120
-      # >>> s = 0x3eaf474bba511934edb9aaaef0302cc337d6325fba907f26c1e76ba17a4e62a6
+      # >>> r = 0x748aea2bcc338ac86f879e3cc6e438ea495b25d443c10682fb803a9d71b1394b
+      # >>> s = 0x02f72e11603b548fa5496da754d9cecdda277363f11e475492e8f62efcb766b9
       # >>> msg = b"123400"
       # >>> x = "5868cc1d58a1ea20ee1cf22393d92a695e69ea89e85cbce80e94f900015ac2c4"
       # >>> y = "17749c44e6401eda1e71722402d940dceeeee6b7277dac6cbc9a02a44f66aa6f"
@@ -41,8 +41,8 @@
       # >>> sig = r.to_bytes(32, 'big') + s.to_bytes(32, 'big')
       # >>> p.verify(sig, msg, hashfunc=hashlib.sha256)
 
-      "r": "0xfb9ccc2407d5f318d0dd995cbf4012e6796898fbc22829c94b691cb0df72e120"
-      "s": "0x3eaf474bba511934edb9aaaef0302cc337d6325fba907f26c1e76ba17a4e62a6"
+      "r": "0x748aea2bcc338ac86f879e3cc6e438ea495b25d443c10682fb803a9d71b1394b"
+      "s": "0x02f72e11603b548fa5496da754d9cecdda277363f11e475492e8f62efcb766b9"
     }
   }
 }

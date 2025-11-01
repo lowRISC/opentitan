@@ -98,9 +98,6 @@ p384_key_from_seed:
   bn.sub    w24, w10, w16
   bn.subb   w25, w11, w17
 
-  /* Clear flags. */
-  bn.sub    w31, w31, w31
-
   /* Compute d1. Because 2^384 < 2 * n, a conditional subtraction is
      sufficient to reduce. Similarly to the carry bit, the conditional bit here
      is not very sensitive because the shares are large relative to n.
@@ -111,8 +108,9 @@ p384_key_from_seed:
   /* Clear w25 before over writing it with a different share. */
   bn.xor    w25, w25, w25
 
-  /* Dummy instruction to avoid consecutive share access. */
-  bn.xor    w31, w31, w31
+  /* Dummy instruction to avoid consecutive share access.
+     Clear all flags. */
+  bn.sub    w31, w31, w31
 
   /* Isolate the carry bit and shift it back into position.
        w25 <= x0[384] << 128 */

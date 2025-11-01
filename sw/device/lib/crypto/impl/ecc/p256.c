@@ -82,12 +82,12 @@ enum {
   /*
    * The expected instruction counts for constant time functions.
    */
-  kModeKeygenInsCnt = 567175,
-  kModeKeygenSideloadInsCnt = 567060,
-  kModeEcdhInsCnt = 574858,
-  kModeEcdhSideloadInsCnt = 574918,
-  kModeEcdsaSignInsCnt = 600349,
-  kModeEcdsaSignSideloadInsCnt = 600409,
+  kModeKeygenInsCnt = 573915,
+  kModeKeygenSideloadInsCnt = 573800,
+  kModeEcdhInsCnt = 581598,
+  kModeEcdhSideloadInsCnt = 581658,
+  kModeEcdsaSignInsCnt = 607087,
+  kModeEcdsaSignSideloadInsCnt = 607147,
 };
 
 static status_t p256_masked_scalar_write(p256_masked_scalar_t *src,
@@ -177,6 +177,7 @@ status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
                               p256_point_t *public_key) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeKeygenInsCnt);
 
   // Read the masked private key from OTBN dmem.
   HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(kP256MaskedScalarShareWords, kOtbnVarD0,
@@ -200,6 +201,7 @@ status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
 status_t p256_sideload_keygen_finalize(p256_point_t *public_key) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeKeygenSideloadInsCnt);
 
   // Read the public key from OTBN dmem.
   HARDENED_TRY_WIPE_DMEM(
@@ -273,8 +275,15 @@ status_t p256_ecdsa_sideload_sign_start(
 }
 
 status_t p256_ecdsa_sign_finalize(p256_ecdsa_signature_t *result) {
+  uint32_t ins_cnt;
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+  ins_cnt = otbn_instruction_count_get();
+  if (launder32(ins_cnt) == kModeEcdsaSignSideloadInsCnt) {
+    HARDENED_CHECK_EQ(ins_cnt, kModeEcdsaSignSideloadInsCnt);
+  } else {
+    HARDENED_CHECK_EQ(ins_cnt, kModeEcdsaSignInsCnt);
+  }
 
   // Read signature R out of OTBN dmem.
   HARDENED_TRY_WIPE_DMEM(
@@ -380,6 +389,15 @@ status_t p256_ecdh_finalize(p256_ecdh_shared_key_t *shared_key) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
+
+  // OTBN returned the status code OK, so check for the expected instr. count.
+  uint32_t ins_cnt;
+  ins_cnt = otbn_instruction_count_get();
+  if (launder32(ins_cnt) == kModeEcdhSideloadInsCnt) {
+    HARDENED_CHECK_EQ(ins_cnt, kModeEcdhSideloadInsCnt);
+  } else {
+    HARDENED_CHECK_EQ(ins_cnt, kModeEcdhInsCnt);
+  }
 
   // Read the shares of the key from OTBN dmem (at vars x and y).
   HARDENED_TRY_WIPE_DMEM(

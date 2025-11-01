@@ -460,6 +460,9 @@ static status_t oneshot(const uint32_t cfg, const hmac_key_t *key,
   // Check that the block is idle.
   HARDENED_TRY(ensure_idle());
 
+  // Make sure that the entropy complex is configured correctly.
+  HARDENED_TRY(entropy_complex_check());
+
   // Configure the HMAC block.
   abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, cfg);
 
@@ -751,6 +754,9 @@ hardened_bool_t hmac_key_integrity_checksum_check(const hmac_key_t *key) {
 }
 
 status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
+  // Make sure that the entropy complex is configured correctly.
+  HARDENED_TRY(entropy_complex_check());
+
   // If we don't have enough new bytes to fill a block, just update the partial
   // block and return.
   size_t block_bytelen = ctx->msg_block_wordlen * sizeof(uint32_t);
@@ -806,6 +812,9 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
 }
 
 status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest) {
+  // Make sure that the entropy complex is configured correctly.
+  HARDENED_TRY(entropy_complex_check());
+
   // Retore context will restore the context and also hit start or continue
   // button as necessary.
   HARDENED_TRY(context_restore(ctx));
