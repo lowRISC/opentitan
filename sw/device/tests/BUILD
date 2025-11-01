@@ -1176,6 +1176,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
         },
+        DARJEELING_TEST_ENVS,
     ),
     silicon_owner = silicon_params(
         tags = ["broken"],
@@ -1188,7 +1189,7 @@ opentitan_test(
     ),
     deps = [
         ":otbn_randomness_impl",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
