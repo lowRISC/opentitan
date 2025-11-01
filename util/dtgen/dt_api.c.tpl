@@ -143,4 +143,22 @@ const dt_periph_io_t kDtPeriphIoConstantOne = {
     .outsel_or_dt_pad = kDtPinmuxOutselConstantOne,
   }
 };
+
+/* Pin that is constantly tied to zero (input/output) */
+const dt_pad_t kDtPadConstantZero = {
+  .__internal = {
+    .type = kDtPadTypeMio,
+    .mio_out_or_direct_pad = 0,
+    .insel = k${top_name.as_camel_case()}PinmuxInselConstantZero,
+  }
+};
+
+/* Pin that is constantly tied to one (input/output) */
+const dt_pad_t kDtPadConstantOne = {
+  .__internal = {
+    .type = kDtPadTypeMio,
+    .mio_out_or_direct_pad = 0,
+    .insel = k${top_name.as_camel_case()}PinmuxInselConstantOne,
+  }
+};
 % endif
