@@ -1740,9 +1740,9 @@
               // TODO(#26733): uncomment when these run for Darjeeling.
               // "chip_plic_all_irqs",
               // "chip_sw_kmac_app_rom",
-              // "chip_sw_aes_entropy",
-              // "chip_sw_kmac_mode_cshake",
-              // "chip_sw_kmac_mode_kmac",
+              "chip_sw_aes_entropy",
+              "chip_sw_kmac_mode_cshake",
+              "chip_sw_kmac_mode_kmac",
               // "chip_sw_kmac_mode_kmac_jitter_en",
               // "chip_sw_power_virus",
               // TODO: uncomment when these run with Xcelium.
@@ -1761,7 +1761,7 @@
               "chip_sw_csrng_kat_test",
               // TODO(#26733): uncomment when these run for Darjeeling.
               // "chip_sw_aes_enc_jitter_en",
-              // "chip_sw_sram_ctrl_scrambled_access",
+              "chip_sw_sram_ctrl_scrambled_access",
               // "chip_rv_dm_ndm_reset_req",
               // "chip_sw_rstmgr_sw_req",
               // "chip_sw_pwrmgr_sleep_disabled",
