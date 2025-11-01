@@ -1307,13 +1307,14 @@ opentitan_test(
         {
             "//hw/top_earlgrey:silicon_creator": None,
         },
+        DARJEELING_TEST_ENVS,
     ),
     verilator = verilator_params(
         timeout = "eternal",
     ),
     deps = [
+        "//hw/top:dt",
         "//hw/top:edn_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:edn",
