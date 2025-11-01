@@ -372,6 +372,10 @@ class TopHelper:
 
         # List all pads and put them in an enum.
         self.pad_enum = self._enum_type(Name([]), self.DT_PAD_NAME)
+        self.pad_enum.add_constant(Name.from_snake_case("constant_zero"),
+                                   "Pad that is constantly tied to zero (input)")
+        self.pad_enum.add_constant(Name.from_snake_case("constant_one"),
+                                   "Pad that is constantly tied to one (input)")
         self._pad_map = OrderedDict()
         for pad in pads:
             name = pad['name']
@@ -507,8 +511,22 @@ registers to connect a peripheral to this pad.""",  # noqa:E501
             length = Name(["count"])
         )
         self.pad_dt_values = OrderedDict()
+        topname = self.top["name"]
+
+        self.pad_dt_values[Name.from_snake_case("constant_zero")] = {
+            self.DT_PAD_TYPE_FIELD_NAME: Name.from_snake_case("mio"),
+            self.DT_PAD_MIO_OUT_DIO_FIELD_NAME: "0",
+            self.DT_PAD_INSEL_FIELD_NAME:
+                Name.from_snake_case(f"top_{topname}_pinmux_insel_constant_zero").as_c_enum(),
+        }
+        self.pad_dt_values[Name.from_snake_case("constant_one")] = {
+            self.DT_PAD_TYPE_FIELD_NAME: Name.from_snake_case("mio"),
+            self.DT_PAD_MIO_OUT_DIO_FIELD_NAME: "0",
+            self.DT_PAD_INSEL_FIELD_NAME:
+                Name.from_snake_case(f"top_{topname}_pinmux_insel_constant_one").as_c_enum(),
+        }
+
         for (padname, pad) in self._pad_map.items():
-            topname = self.top["name"]
             if pad["connection"] == "muxed":
                 pad_type = Name.from_snake_case("mio")
                 pad_mio_out_or_direct_pad = "0"
