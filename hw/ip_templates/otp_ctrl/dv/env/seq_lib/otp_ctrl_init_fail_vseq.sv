@@ -161,13 +161,13 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
           // Since OtpHwCfg0 is the first partition with HW digest, this partition's check error
           // will be triggered first.
           `uvm_info(`gfn, "OTP digest check failure", UVM_LOW)
-          exp_status[OtpHwCfg0ErrIdx] = 1;
+          exp_status[OtpPartitionHwCfg0ErrIdx] = 1;
         end else begin
           // Create LC check failure.
           `uvm_info(`gfn, "OTP_init LC failure", UVM_LOW)
           cfg.otp_ctrl_vif.lc_check_byp_en = 0;
           req_lc_transition(1);
-          exp_status[OtpLifeCycleErrIdx] = 1;
+          exp_status[OtpPartitionLifeCycleErrIdx] = 1;
         end
         trigger_checks(.val('1), .wait_done(0));
         check_otp_fatal_err("fatal_check_error", exp_status);

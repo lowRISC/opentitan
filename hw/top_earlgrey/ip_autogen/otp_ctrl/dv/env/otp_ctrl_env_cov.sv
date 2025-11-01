@@ -340,37 +340,37 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
   function void collect_err_code_cov(int part_idx, bit [TL_DW-1:0] val,
                                      int access_part_idx = DaiIdx);
     case (part_idx)
-      OtpVendorTestErrIdx: begin
+      OtpPartitionVendorTestErrIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpCreatorSwCfgErrIdx: begin
+      OtpPartitionCreatorSwCfgErrIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpOwnerSwCfgErrIdx: begin
+      OtpPartitionOwnerSwCfgErrIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpRotCreatorAuthCodesignErrIdx: begin
+      OtpPartitionRotCreatorAuthCodesignErrIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpRotCreatorAuthStateErrIdx: begin
+      OtpPartitionRotCreatorAuthStateErrIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpHwCfg0ErrIdx: begin
+      OtpPartitionHwCfg0ErrIdx: begin
         buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
       end
-      OtpHwCfg1ErrIdx: begin
+      OtpPartitionHwCfg1ErrIdx: begin
         buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
       end
-      OtpSecret0ErrIdx: begin
+      OtpPartitionSecret0ErrIdx: begin
         buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
       end
-      OtpSecret1ErrIdx: begin
+      OtpPartitionSecret1ErrIdx: begin
         buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
       end
-      OtpSecret2ErrIdx: begin
+      OtpPartitionSecret2ErrIdx: begin
         buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
       end
-      OtpLifeCycleErrIdx: begin
+      OtpPartitionLifeCycleErrIdx: begin
       end
       OtpDaiErrIdx: begin
         dai_err_code_cg.sample(val, access_part_idx);
