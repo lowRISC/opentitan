@@ -117,6 +117,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
     { name: "CLKMGR.MEAS_CTRL.RECOV_ERR",
       desc: "Frequency and timeout measurements can flag recoverable errors."
     }
+% if ext_clk_bypass:
     { name: "CLKMGR.LC_EXTCLK.SPEED",
       desc: "Speed of LC controlled modification of external clock."
     }
@@ -129,6 +130,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
     { name: "CLKMGR.SW_EXTCLK.LOW_SPEED",
       desc: "Software configuration of external clock running at 48 MHz."
     }
+% endif
     { name: "CLKMGR.JITTER.REGWEN",
       desc: "Control modification of clock jitter enable."
     }
@@ -154,6 +156,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
       act:     "req",
       package: "clkmgr_pkg",
     },
+% if ext_clk_bypass:
 
     { struct:  "lc_tx",
       type:    "uni",
@@ -217,6 +220,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
       act:     "req",
       package: "lc_ctrl_pkg",
     },
+  % endif
 
     { struct:  "mubi4",
       type:    "uni",
@@ -248,7 +252,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
       package: "prim_mubi_pkg",
       width:   "${len(hint_names)}"
     },
-
+% if ext_clk_bypass:
     { struct:  "mubi4",
       desc:    "Indicates clocks are calibrated and frequencies accurate",
       type:    "uni",
@@ -257,6 +261,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
       package: "prim_mubi_pkg",
       default: "prim_mubi_pkg::MuBi4True"
     },
+% endif
   ],
 
   countermeasures: [
@@ -275,6 +280,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
     { name: "IDLE.INTERSIG.MUBI",
       desc: "Idle inputs are multibit encoded."
     }
+  % if ext_clk_bypass:
     { name: "LC_CTRL.INTERSIG.MUBI",
       desc: "The life cycle control signals are multibit encoded."
     }
@@ -287,6 +293,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
     { name: "DIV.INTERSIG.MUBI",
       desc: "Divider step down request is multibit encoded."
     }
+  % endif
     { name: "JITTER.CONFIG.MUBI",
       desc: "The jitter enable configuration is multibit encoded."
     }
@@ -303,6 +310,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
   ]
 
   registers: [
+  % if ext_clk_bypass:
     { name: "EXTCLK_CTRL_REGWEN",
       desc: "External clock control write enable",
       swaccess: "rw0c",
@@ -398,6 +406,10 @@ rg_srcs = get_rg_srcs(typed_clocks)
         },
       ]
     },
+    % else:
+    // Skip 3 registers for SW compatibility on the register layout if no derived clocks are in use
+    { reserved: "3" }
+    % endif
 
     { name: "JITTER_REGWEN",
       desc: "Jitter write enable",

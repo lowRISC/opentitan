@@ -278,9 +278,11 @@ status_t clkmgr_testutils_check_measurement_counts(const dif_clkmgr_t *clkmgr) {
 
 status_t clkmgr_testutils_enable_external_clock_blocking(
     const dif_clkmgr_t *clkmgr, bool is_low_speed) {
+#if defined(OPENTITAN_IS_EARLGREY)
   LOG_INFO("Configure clkmgr to enable external clock");
   TRY(dif_clkmgr_external_clock_set_enabled(clkmgr, is_low_speed));
   TRY(dif_clkmgr_wait_for_ext_clk_switch(clkmgr));
   LOG_INFO("Switching to external clock completes");
+#endif
   return OK_STATUS();
 }

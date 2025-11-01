@@ -46,12 +46,11 @@ interface clkmgr_if (
   prim_mubi_pkg::mubi4_t all_clk_byp_ack;
 
   prim_mubi_pkg::mubi4_t div_step_down_req;
+  prim_mubi_pkg::mubi4_t calib_rdy;
+  prim_mubi_pkg::mubi4_t hi_speed_sel;
 
   prim_mubi_pkg::mubi4_t jitter_en_o;
   clkmgr_pkg::clkmgr_out_t clocks_o;
-
-  prim_mubi_pkg::mubi4_t calib_rdy;
-  prim_mubi_pkg::mubi4_t hi_speed_sel;
 
   // Internal DUT signals.
   // ICEBOX(lowrisc/opentitan#18379): This is a core env component (i.e. reusable entity) that
@@ -170,9 +169,6 @@ interface clkmgr_if (
   end
   always_comb usb_timeout_err = `CLKMGR_HIER.u_usb_meas.timeout_err_o;
 
-  function automatic void update_calib_rdy(prim_mubi_pkg::mubi4_t value);
-    calib_rdy = value;
-  endfunction
 
   function automatic void update_idle(mubi_hintables_t value);
     idle_i = value;
@@ -192,6 +188,10 @@ interface clkmgr_if (
 
   function automatic void update_scanmode(prim_mubi_pkg::mubi4_t value);
     scanmode_i = value;
+  endfunction
+
+  function automatic void update_calib_rdy(prim_mubi_pkg::mubi4_t value);
+    calib_rdy = value;
   endfunction
 
   function automatic void update_lc_debug_en(lc_ctrl_pkg::lc_tx_t value);

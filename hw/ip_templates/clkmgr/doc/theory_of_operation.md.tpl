@@ -204,7 +204,7 @@ There are two occasions where this is required:
 -  Life cycle transition from `RAW` / `TEST_LOCKED*` to `TEST_UNLOCKED*` [states](../../../../ip/lc_ctrl/README.md#clk_byp_req).
 -  Software request for external clocks during normal functional mode.
 
-
+% if ext_clk_bypass:
 <%text>#### Life Cycle Requested External Clock</%text>
 
 The life cycle controller only requests the io clock input to be switched.
@@ -264,6 +264,7 @@ This table also assumes that high speed external clock is 96MHz, while low speed
 
 As can be seen from the table, the external clock switch scheme prioritizes the stability of the divided clocks, while allowing the undivided clocks to slow down.
 
+% endif
 
 <%text>### Clock Frequency / Time-out Measurements</%text>
 

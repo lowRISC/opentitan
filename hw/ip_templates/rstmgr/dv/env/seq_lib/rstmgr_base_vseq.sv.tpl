@@ -1,7 +1,17 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-<% sorted_clks = sorted(list(clk_freqs.keys())) %>\
+<% 
+sorted_clks = sorted(list(clk_freqs.keys()))
+
+def preferred_clk(preferred):
+    if preferred in sorted_clks:
+        return preferred
+    elif "io" in sorted_clks:
+        return "io"
+    else:
+        assert 0, "No preferred clock available"
+%>\
 
 class rstmgr_base_vseq extends cip_base_vseq #(
   .RAL_T              (rstmgr_reg_block),
@@ -270,7 +280,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   virtual protected task clear_alert_and_cpu_info();
     set_alert_and_cpu_info_for_capture('0, '0);
     send_sw_reset();
-    cfg.io_div4_clk_rst_vif.wait_clks(20);  // # of lc reset cycles measured from waveform
+    cfg.${preferred_clk("io_div4")}_clk_rst_vif.wait_clks(20);  // # of lc reset cycles measured from waveform
     check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(0));
   endtask
 
@@ -322,7 +332,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.sw_rst_ctrl_n[entry]), .value(sw_rst_ctrl_n[entry]));
     // And check that the reset outputs match the actual ctrl_n settings.
     // Allow for domain crossing delay.
-    cfg.io_div2_clk_rst_vif.wait_clks(3);
+    cfg.${preferred_clk("io_div2")}_clk_rst_vif.wait_clks(3);
     exp_ctrl_n = ~sw_rst_regwen | sw_rst_ctrl_n;
     `uvm_info(`gfn, $sformatf(
               "regwen=%b, ctrl_n=%b, expected=%b", sw_rst_regwen, sw_rst_ctrl_n, exp_ctrl_n),
@@ -358,7 +368,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     set_reset_cause(reset_cause);
     // These lag the reset requests since they are set after the pwrmgr fast fsm has made some
     // state transitions.
-    cfg.io_div4_clk_rst_vif.wait_clks(rst_to_req_cycles);
+    cfg.${preferred_clk("io_div4")}_clk_rst_vif.wait_clks(rst_to_req_cycles);
     set_pwrmgr_rst_reqs(.rst_lc_req('1), .rst_sys_req('1));
     cfg.clk_rst_vif.stop_clk();
     if (reset_cause == pwrmgr_pkg::LowPwrEntry) begin
@@ -370,7 +380,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     // And wait for the main reset to be done.
     `DV_WAIT(cfg.rstmgr_vif.rst_ni_inactive, "Time-out waiting for rst_ni becoming inactive");
     // And wait a few cycles for settling before allowing the sequences to start.
-    cfg.io_div4_clk_rst_vif.wait_clks(8);
+    cfg.${preferred_clk("io_div4")}_clk_rst_vif.wait_clks(8);
   endtask
 
   protected task reset_done();
@@ -381,10 +391,10 @@ class rstmgr_base_vseq extends cip_base_vseq #(
       control_all_clocks(.enable(1));
     end
     cfg.clk_rst_vif.start_clk();
-    cfg.io_div4_clk_rst_vif.wait_clks(10);
+    cfg.${preferred_clk("io_div4")}_clk_rst_vif.wait_clks(10);
     set_reset_cause(pwrmgr_pkg::ResetNone);
     set_pwrmgr_rst_reqs(.rst_lc_req('0), .rst_sys_req('1));
-    cfg.io_div4_clk_rst_vif.wait_clks(release_lc_to_release_sys_cycles);
+    cfg.${preferred_clk("io_div4")}_clk_rst_vif.wait_clks(release_lc_to_release_sys_cycles);
     set_pwrmgr_rst_reqs(.rst_lc_req('0), .rst_sys_req('0));
     set_rstreqs(0);
     wait_till_active();
@@ -404,7 +414,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
               automatic int index = i;
               automatic bit [2:0] cycles;
               `DV_CHECK_STD_RANDOMIZE_FATAL(cycles)
-              cfg.io_div4_clk_rst_vif.wait_clks(cycles);
+              cfg.${preferred_clk("io_div4")}_clk_rst_vif.wait_clks(cycles);
               add_rstreqs(rstreqs & (1 << index));
             join_none
           end
@@ -428,11 +438,11 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "Sending scan reset", UVM_MEDIUM)
     fork
       begin
-        cfg.io_div4_clk_rst_vif.wait_clks(scan_rst_cycles);
+        cfg.${preferred_clk("io_div4")}_clk_rst_vif.wait_clks(scan_rst_cycles);
         update_scan_rst_n(1'b0);
       end
       begin
-        cfg.io_div4_clk_rst_vif.wait_clks(scanmode_cycles);
+        cfg.${preferred_clk("io_div4")}_clk_rst_vif.wait_clks(scanmode_cycles);
         update_scanmode(prim_mubi_pkg::MuBi4True);
       end
     join
@@ -518,10 +528,10 @@ class rstmgr_base_vseq extends cip_base_vseq #(
 
   // setup basic rstmgr features
   virtual task rstmgr_init();
-    // Must set clk_rst_vif frequency to IO_DIV4_FREQ_MHZ since they are gated
+    // Must set clk_rst_vif frequency to ${preferred_clk("io_div4").upper()}_FREQ_MHZ since they are gated
     // versions of each other and have no clock domain crossings.
     // Notice they may still end up out of phase due to the way they get started.
-    cfg.clk_rst_vif.set_freq_mhz(IO_DIV4_FREQ_MHZ);
+    cfg.clk_rst_vif.set_freq_mhz(${preferred_clk("io_div4").upper()}_FREQ_MHZ);
 % for clk in sorted_clks:
     cfg.${clk}_clk_rst_vif.set_freq_mhz(${clk.upper()}_FREQ_MHZ);
 % endfor

@@ -242,7 +242,6 @@
       package: "prim_mubi_pkg",
       width:   "1"
     },
-
     { struct:  "mubi4",
       desc:    "Indicates clocks are calibrated and frequencies accurate",
       type:    "uni",

@@ -109,6 +109,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     // Wait for the result to propagate to the recov_err_code CSR.
     cfg.clk_rst_vif.wait_clks(CyclesForErrUpdate);
   endtask
+% if ext_clk_bypass:
 
   // If clocks become uncalibrated measure_ctrl_regwen is re-enabled.
   task check_measure_ctrl_regwen_for_calib_rdy();
@@ -118,6 +119,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     cfg.clk_rst_vif.wait_clks(20);
     calibration_lost_checks();
   endtask
+% endif
 
   task body();
     logic [TL_DW-1:0] value;
@@ -159,6 +161,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       logic [ClkMesrSize-1:0] expected_recov_meas_err = '0;
       bit expect_alert = 0;
       `DV_CHECK_RANDOMIZE_FATAL(this)
+% if ext_clk_bypass:
       // Update calib_rdy input: if calibration is not ready the measurements
       // don't happen, so we should not get faults.
       cfg.clkmgr_vif.update_calib_rdy(calib_rdy);
@@ -171,6 +174,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       // Allow calib_rdy to generate side-effects.
       cfg.clk_rst_vif.wait_clks(3);
       if (calib_rdy == MuBi4False) calibration_lost_checks();
+% endif
       prior_alert_count = cfg.scoreboard.get_alert_count("recov_fault");
       if (cause_saturation) begin
         `uvm_info(`gfn, $sformatf(
@@ -254,8 +258,10 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       csr_wr(.ptr(ral.recov_err_code), .value('1));
       cfg.aon_clk_rst_vif.wait_clks(12);
     end
+% if ext_clk_bypass:
     // And finally, check that unsetting calib_rdy causes measure_ctrl_regwen to be set to 1.
     check_measure_ctrl_regwen_for_calib_rdy();
+% endif
   endtask
 
 endclass

@@ -71,6 +71,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
   // idle hints
   // SEC_CM: IDLE.INTERSIG.MUBI
   input prim_mubi_pkg::mubi4_t [${len(hint_names)-1}:0] idle_i,
+% if ext_clk_bypass:
 
   // life cycle state output
   // SEC_CM: LC_CTRL.INTERSIG.MUBI
@@ -89,17 +90,18 @@ rg_srcs = get_rg_srcs(typed_clocks)
   input mubi4_t all_clk_byp_ack_i,
   output mubi4_t hi_speed_sel_o,
 
+  // external indication for whether dividers should be stepped down
+  // SEC_CM: DIV.INTERSIG.MUBI
+  input mubi4_t div_step_down_req_i,
+
   // clock calibration has been done.
   // If this is signal is 0, assume clock frequencies to be
   // uncalibrated.
   input prim_mubi_pkg::mubi4_t calib_rdy_i,
+% endif
 
   // jittery enable to ast
   output mubi4_t jitter_en_o,
-
-  // external indication for whether dividers should be stepped down
-  // SEC_CM: DIV.INTERSIG.MUBI
-  input mubi4_t div_step_down_req_i,
 
   // clock gated indications going to alert handlers
   output clkmgr_cg_en_t cg_en_o,
@@ -148,6 +150,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
   );
 
 % endfor
+% if len(derived_clks) > 0:
 
   ////////////////////////////////////////////////////
   // Divided clocks
@@ -155,12 +158,15 @@ rg_srcs = get_rg_srcs(typed_clocks)
   // its related reset to ensure clock division
   // can happen without any dependency
   ////////////////////////////////////////////////////
+% if ext_clk_bypass:
 
   logic [${len(derived_clks)-1}:0] step_down_acks;
+% endif
 
 % for src_name in derived_clks:
   logic clk_${src_name};
 % endfor
+% endif
 
 % for src in derived_clks.values():
 
@@ -182,8 +188,13 @@ rg_srcs = get_rg_srcs(typed_clocks)
     // We're using the pre-occ hookup (*_i) version for clock derivation.
     .clk_i(clk_${src['src']['name']}_i),
     .rst_ni(rst_root_${src['src']['name']}_ni),
+  % if ext_clk_bypass:
     .step_down_req_i(mubi4_test_true_strict(${src['src']['name']}_step_down_req)),
     .step_down_ack_o(step_down_acks[${loop.index}]),
+  % else:
+    .step_down_req_i(1'b0),
+    .step_down_ack_o(),
+  % endif
     .test_en_i(mubi4_test_true_strict(${src['name']}_div_scanmode[0])),
     .clk_o(clk_${src['name']})
   );
@@ -261,6 +272,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
       .alert_tx_o    ( alert_tx_o[i] )
     );
   end
+% if ext_clk_bypass:
 
   ////////////////////////////////////////////////////
   // Clock bypass request
@@ -292,6 +304,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
     // divider step down controls
     .step_down_acks_i(step_down_acks)
   );
+  % endif
 
   ////////////////////////////////////////////////////
   // Feed through clocks
@@ -377,7 +390,11 @@ rg_srcs = get_rg_srcs(typed_clocks)
   ) u_calib_rdy_sync (
     .clk_i,
     .rst_ni,
+  % if ext_clk_bypass:
     .mubi_i(calib_rdy_i),
+  % else:
+    .mubi_i(MuBi4False),
+  % endif
     .mubi_o({calib_rdy})
   );
 
@@ -454,7 +471,11 @@ rg_srcs = get_rg_srcs(typed_clocks)
   ) u_${k}_sw_en_sync (
     .clk_i(clk_${v['src_name']}),
     .rst_ni(rst_${v['src_name']}_ni),
+  % if len(typed_clocks['sw_clks']) > 1:
     .d_i(reg2hw.clk_enables.${k}_en.q),
+  % else:
+    .d_i(reg2hw.clk_enables.q),
+  % endif
     .q_o(${k}_sw_en)
   );
 
@@ -571,9 +592,11 @@ rg_srcs = get_rg_srcs(typed_clocks)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
   `ASSERT_KNOWN(AlertsKnownO_A,   alert_tx_o)
   `ASSERT_KNOWN(PwrMgrKnownO_A, pwr_o)
+% if ext_clk_bypass:
   `ASSERT_KNOWN(AllClkBypReqKnownO_A, all_clk_byp_req_o)
   `ASSERT_KNOWN(IoClkBypReqKnownO_A, io_clk_byp_req_o)
   `ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)
+% endif
   `ASSERT_KNOWN(JitterEnableKnownO_A, jitter_en_o)
 % for intf in exported_clks:
   `ASSERT_KNOWN(ExportClocksKownO_A, clocks_${intf}_o)

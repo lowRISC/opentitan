@@ -10,6 +10,18 @@
 // 3 - sw reset
 // Create reset consistency errors in the current leaf, and check that a
 // fatal_cnsty_fault alert is generated.
+<% 
+all_clks = set(clk_freqs.keys())
+
+if "io_div4" in all_clks:
+    preferred_domain = "io_div4"
+elif "io" in all_clks:
+    preferred_domain = "io"
+else:
+    assert 0, "No preferred clock available"
+
+preferred_clk_vif = f"{preferred_domain}_clk_rst_vif"
+%>\
 class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
   `uvm_object_utils(rstmgr_leaf_rst_cnsty_vseq)
 
@@ -68,7 +80,7 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
           check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
 
           csr_wr(.ptr(ral.reset_info), .value('1));
-          cfg.io_div4_clk_rst_vif.wait_clks(10);
+          cfg.${preferred_clk_vif}.wait_clks(10);
 
           // Send HwReq.
           // Enable alert_info and cpu_info capture.

@@ -2,6 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
+<% 
+all_clks = set(clk_freqs.keys())
+
+if "io_div4" in all_clks:
+    preferred_domain = "io_div4"
+elif "io" in all_clks:
+    preferred_domain = "io"
+else:
+    assert 0, "No preferred clock available"
+
+preferred_rst_n = f"rst_lc_{preferred_domain}_n"
+preferred_por_n = f"rst_por_{preferred_domain}_n"
+%>\
 module tb;
   // dep packages
   import uvm_pkg::*;
@@ -30,7 +43,7 @@ module tb;
 
   tl_if tl_if (
     .clk,
-    .rst_n(rstmgr_if.resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
+    .rst_n(rstmgr_if.resets_o.${preferred_rst_n}[rstmgr_pkg::Domain0Sel])
   );
 
   rstmgr_if rstmgr_if (
@@ -53,13 +66,13 @@ module tb;
   // This is consistent with rstmgr being the only source of resets.
   rstmgr dut (
     .clk_i        (clk),
-    .rst_ni       (rstmgr_if.resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ni       (rstmgr_if.resets_o.${preferred_rst_n}[rstmgr_pkg::Domain0Sel]),
 % for clk in sorted(list(clk_freqs.keys())):
 <% spaces = len("io_div2") - len(clk) %>\
     .clk_${clk}_i${" " * spaces}(clk_${clk}),
 % endfor
-    .clk_por_i    (clk_io_div4),
-    .rst_por_ni   (rstmgr_if.resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .clk_por_i    (clk_${preferred_domain}),
+    .rst_por_ni   (rstmgr_if.resets_o.${preferred_por_n}[rstmgr_pkg::DomainAonSel]),
 
     .tl_i      (tl_if.h2d),
     .tl_o      (tl_if.d2h),
@@ -107,7 +120,7 @@ module tb;
     // This may help any code that depends on clk_rst_vif.rst_n in the infrastructure: they won't
     // be able to change but at least the reset value will be true to the environment.
     clk_rst_if.drive_rst_n = 1'b0;
-    force clk_rst_if.rst_n = rstmgr_if.resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel];
+    force clk_rst_if.rst_n = rstmgr_if.resets_o.${preferred_rst_n}[rstmgr_pkg::Domain0Sel];
   end
 
 endmodule

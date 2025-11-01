@@ -9,14 +9,14 @@
 
 # clkmgr peri clock connectivity
 
-CONNECTION, CLKMGR_PERI_CLK_GPIO_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_div4_peri, top_darjeeling.u_gpio, clk_i
+CONNECTION, CLKMGR_PERI_CLK_GPIO_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_peri, top_darjeeling.u_gpio, clk_i
 
-CONNECTION, CLKMGR_PERI_CLK_SPI_DEVICE_CLK,      top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_div4_peri, top_darjeeling.u_spi_device, clk_i
-CONNECTION, CLKMGR_PERI_CLK_SPI_DEVICE_SCAN_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_div2_peri, top_darjeeling.u_spi_device, scan_clk_i
+CONNECTION, CLKMGR_PERI_CLK_SPI_DEVICE_CLK,      top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_peri, top_darjeeling.u_spi_device, clk_i
+CONNECTION, CLKMGR_PERI_CLK_SPI_DEVICE_SCAN_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_peri, top_darjeeling.u_spi_device, scan_clk_i
 
-CONNECTION, CLKMGR_PERI_CLK_SPI_HOST0_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_peri,      top_darjeeling.u_spi_host0, clk_i
-CONNECTION, CLKMGR_PERI_CLK_SPI_HOST1_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_div2_peri, top_darjeeling.u_spi_host1, clk_i
+CONNECTION, CLKMGR_PERI_CLK_SPI_HOST0_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_peri, top_darjeeling.u_spi_host0, clk_i
+CONNECTION, CLKMGR_PERI_CLK_SPI_HOST1_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_peri, top_darjeeling.u_spi_host1, clk_i
 
-CONNECTION, CLKMGR_PERI_CLK_I2C0_CLK, top_darjeeling.u_clkmgr_aon,clocks_o.clk_io_div4_peri, top_darjeeling.u_i2c0, clk_i
+CONNECTION, CLKMGR_PERI_CLK_I2C0_CLK, top_darjeeling.u_clkmgr_aon,clocks_o.clk_io_peri, top_darjeeling.u_i2c0, clk_i
 
-CONNECTION, CLKMGR_PERI_CLK_UART0_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_div4_peri, top_darjeeling.u_uart0, clk_i
+CONNECTION, CLKMGR_PERI_CLK_UART0_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_peri, top_darjeeling.u_uart0, clk_i

@@ -56,6 +56,7 @@ static bool jitter_enable_register_is_locked(const dif_clkmgr_t *clkmgr) {
       CLKMGR_JITTER_REGWEN_EN_BIT);
 }
 
+#if OPENTITAN_CLKMGR_HAS_SW_EXTCLK_REGWEN
 /**
  * Checks if the external clock control register is locked.
  *
@@ -84,6 +85,7 @@ dif_result_t dif_clkmgr_external_clock_is_settled(const dif_clkmgr_t *clkmgr,
 
   return kDifOk;
 }
+#endif
 
 dif_result_t dif_clkmgr_jitter_enable_is_locked(const dif_clkmgr_t *clkmgr,
                                                 bool *is_locked) {
@@ -262,6 +264,7 @@ dif_result_t dif_clkmgr_hintable_clock_get_hint(
   return kDifOk;
 }
 
+#if OPENTITAN_CLKMGR_HAS_SW_EXTCLK_REGWEN
 dif_result_t dif_clkmgr_external_clock_control_is_locked(
     const dif_clkmgr_t *clkmgr, bool *is_locked) {
   if (clkmgr == NULL || is_locked == NULL) {
@@ -327,6 +330,7 @@ dif_result_t dif_clkmgr_external_clock_set_disabled(
                       extclk_ctrl_reg);
   return kDifOk;
 }
+#endif
 
 dif_result_t dif_clkmgr_measure_ctrl_disable(const dif_clkmgr_t *clkmgr) {
   if (clkmgr == NULL) {
@@ -500,6 +504,7 @@ dif_result_t dif_clkmgr_fatal_err_code_get_codes(
   return kDifOk;
 }
 
+#if OPENTITAN_CLKMGR_HAS_SW_EXTCLK_REGWEN
 dif_result_t dif_clkmgr_wait_for_ext_clk_switch(const dif_clkmgr_t *clkmgr) {
   if (clkmgr == NULL) {
     return kDifBadArg;
@@ -511,3 +516,4 @@ dif_result_t dif_clkmgr_wait_for_ext_clk_switch(const dif_clkmgr_t *clkmgr) {
   } while (ext_status != kMultiBitBool4True);
   return kDifOk;
 }
+#endif

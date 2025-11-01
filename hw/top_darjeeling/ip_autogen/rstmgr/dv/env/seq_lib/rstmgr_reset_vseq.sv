@@ -156,22 +156,22 @@ class rstmgr_reset_vseq extends rstmgr_base_vseq;
         if (which_resets[ResetPOR]) por_reset(.complete_it(0));
         if (which_resets[ResetScan]) send_scan_reset(.complete_it(0));
         if (which_resets[ResetLowPower]) begin
-          cfg.io_div4_clk_rst_vif.wait_clks(lowpower_rst_cycles);
+          cfg.io_clk_rst_vif.wait_clks(lowpower_rst_cycles);
           send_lowpower_reset(.complete_it(0));
         end
         if (which_resets[ResetSw]) begin
-          cfg.io_div4_clk_rst_vif.wait_clks(sw_rst_cycles);
+          cfg.io_clk_rst_vif.wait_clks(sw_rst_cycles);
           send_sw_reset(.complete_it(0));
         end
         if (which_resets[ResetHw]) begin
-          cfg.io_div4_clk_rst_vif.wait_clks(hw_rst_cycles);
+          cfg.io_clk_rst_vif.wait_clks(hw_rst_cycles);
           send_hw_reset(rstreqs, .complete_it(0));
         end
       join
       #(reset_us * 1us);
       reset_done();
 
-      cfg.io_div4_clk_rst_vif.wait_clks(8);
+      cfg.io_clk_rst_vif.wait_clks(8);
       wait(cfg.rstmgr_vif.resets_o.rst_lc_n[1]);
       check_reset_info(expected_reset_info_code);
       check_alert_info_after_reset(.alert_dump(expected_alert_dump),

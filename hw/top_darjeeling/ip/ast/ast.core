@@ -101,7 +101,6 @@ targets:
     toplevel: ast
     parameters:
      - SYNTHESIS
-     - AST_BYPASS_CLK
      - ANALOGSIM
 
 

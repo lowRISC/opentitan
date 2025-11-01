@@ -485,13 +485,13 @@ module chip_darjeeling_verilator #(
     // init done indication
     .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
-    .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_div4_infra),
+    .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_infra),
     .clk_ast_adc_i (clkmgr_aon_clocks.clk_aon_peri),
-    .clk_ast_alert_i (clkmgr_aon_clocks.clk_io_div4_secure),
+    .clk_ast_alert_i (clkmgr_aon_clocks.clk_io_secure),
     .clk_ast_rng_i (clkmgr_aon_clocks.clk_main_secure),
-    .rst_ast_tlul_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_tlul_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_adc_ni (rstmgr_aon_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
-    .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_rng_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
     .clk_ast_ext_i         ( ext_clk ),
 
@@ -915,13 +915,6 @@ module chip_darjeeling_verilator #(
     .es_rng_valid_i                    ( es_rng_valid               ),
     .es_rng_bit_i                      ( es_rng_bit                 ),
     .es_rng_fips_o                     ( es_rng_fips                ),
-    .io_clk_byp_req_o                  ( io_clk_byp_req             ),
-    .io_clk_byp_ack_i                  ( io_clk_byp_ack             ),
-    .all_clk_byp_req_o                 ( all_clk_byp_req            ),
-    .all_clk_byp_ack_i                 ( all_clk_byp_ack            ),
-    .hi_speed_sel_o                    ( hi_speed_sel               ),
-    .div_step_down_req_i               ( div_step_down_req          ),
-    .calib_rdy_i                       ( ast_init_done              ),
 
     // OTP external voltage
     .otp_ext_voltage_h_io              (                            ),

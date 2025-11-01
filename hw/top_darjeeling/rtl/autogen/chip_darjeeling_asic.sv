@@ -1167,11 +1167,12 @@ module chip_darjeeling_asic #(
 
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
-  prim_mubi_pkg::mubi4_t io_clk_byp_ack;
   prim_mubi_pkg::mubi4_t all_clk_byp_req;
-  prim_mubi_pkg::mubi4_t all_clk_byp_ack;
   prim_mubi_pkg::mubi4_t hi_speed_sel;
-  prim_mubi_pkg::mubi4_t div_step_down_req;
+
+  assign io_clk_byp_req    = prim_mubi_pkg::MuBi4False;
+  assign all_clk_byp_req   = prim_mubi_pkg::MuBi4False;
+  assign hi_speed_sel      = prim_mubi_pkg::MuBi4False;
 
   // DFT connections
   logic scan_en;
@@ -1272,8 +1273,6 @@ module chip_darjeeling_asic #(
   assign unused_pwr_clamp = base_ast_pwr.pwr_clamp;
 
 
-  prim_mubi_pkg::mubi4_t ast_init_done;
-
   ast #(
     .AdcChannels(ast_pkg::AdcChannels),
     .AdcDataWidth(ast_pkg::AdcDataWidth),
@@ -1302,15 +1301,15 @@ module chip_darjeeling_asic #(
     .tl_i                  ( base_ast_bus ),
     .tl_o                  ( ast_base_bus ),
     // init done indication
-    .ast_init_done_o       ( ast_init_done ),
+    .ast_init_done_o       ( ),
     // buffered clocks & resets
-    .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_div4_infra),
+    .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_infra),
     .clk_ast_adc_i (clkmgr_aon_clocks.clk_aon_peri),
-    .clk_ast_alert_i (clkmgr_aon_clocks.clk_io_div4_secure),
+    .clk_ast_alert_i (clkmgr_aon_clocks.clk_io_secure),
     .clk_ast_rng_i (clkmgr_aon_clocks.clk_main_secure),
-    .rst_ast_tlul_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_tlul_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_adc_ni (rstmgr_aon_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
-    .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_rng_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
     .clk_ast_ext_i         ( ext_clk ),
 
@@ -1344,7 +1343,7 @@ module chip_darjeeling_asic #(
     .clk_src_io_en_i       ( base_ast_pwr.io_clk_en ),
     .clk_src_io_o          ( ast_base_clks.clk_io ),
     .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
-    .clk_src_io_48m_o      ( div_step_down_req ),
+    .clk_src_io_48m_o      ( ),
     // usb source clock
     .usb_ref_pulse_i       ( '0 ),
     .usb_ref_val_i         ( '0 ),
@@ -1376,9 +1375,9 @@ module chip_darjeeling_asic #(
     .ast2padmux_o          (            ),
     .ext_freq_is_96m_i     ( hi_speed_sel ),
     .all_clk_byp_req_i     ( all_clk_byp_req  ),
-    .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
+    .all_clk_byp_ack_o     ( ),
     .io_clk_byp_req_i      ( io_clk_byp_req   ),
-    .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
+    .io_clk_byp_ack_o      ( ),
     .flash_bist_en_o       ( ),
     // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
@@ -1734,13 +1733,6 @@ module chip_darjeeling_asic #(
     .es_rng_valid_i                    ( es_rng_valid               ),
     .es_rng_bit_i                      ( es_rng_bit                 ),
     .es_rng_fips_o                     ( es_rng_fips                ),
-    .io_clk_byp_req_o                  ( io_clk_byp_req             ),
-    .io_clk_byp_ack_i                  ( io_clk_byp_ack             ),
-    .all_clk_byp_req_o                 ( all_clk_byp_req            ),
-    .all_clk_byp_ack_i                 ( all_clk_byp_ack            ),
-    .hi_speed_sel_o                    ( hi_speed_sel               ),
-    .div_step_down_req_i               ( div_step_down_req          ),
-    .calib_rdy_i                       ( ast_init_done              ),
 
     // OTP external voltage
     .otp_ext_voltage_h_io              ( OTP_EXT_VOLT               ),

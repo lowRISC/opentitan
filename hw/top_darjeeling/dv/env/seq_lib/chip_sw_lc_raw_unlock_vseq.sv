@@ -23,30 +23,6 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
     cfg.m_jtag_riscv_agent_cfg.in_reset = 0;
   endtask
 
-  virtual task clkmgr_switch_to_ext_clk();
-    bit [TL_DW-1:0] status;
-    bit ack = 0;
-    int base_addr = top_darjeeling_pkg::TOP_DARJEELING_CLKMGR_AON_BASE_ADDR;
-    bit [TL_DW-1:0] extcl_en = (
-      prim_mubi_pkg::MuBi4True << ral.clkmgr_aon.extclk_ctrl.sel.get_lsb_pos() |
-      prim_mubi_pkg::MuBi4False << ral.clkmgr_aon.extclk_ctrl.hi_speed_sel.get_lsb_pos()
-    );
-
-    // Switch to external system clk source in low speed mode.
-    jtag_riscv_agent_pkg::jtag_write_csr(base_addr + ral.clkmgr_aon.extclk_ctrl.get_offset(),
-                                         p_sequencer.jtag_sequencer_h, extcl_en);
-
-    `uvm_info(`gfn, "Waiting for extclk transition", UVM_LOW)
-    while (!ack) begin
-      jtag_riscv_agent_pkg::jtag_read_csr(base_addr + ral.clkmgr_aon.extclk_status.get_offset(),
-                                          p_sequencer.jtag_sequencer_h, status);
-
-      ack = dv_base_reg_pkg::get_field_val(
-          ral.clkmgr_aon.extclk_status.ack, status
-      ) == prim_mubi_pkg::MuBi4True;
-    end
-  endtask
-
   virtual task body();
     bit [TokenWidthBit-1:0] otp_exit_token_bits, otp_unlock_token_bits, otp_rma_token_bits;
     bit [7:0] selected_dest_state[];
@@ -127,7 +103,6 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
     `uvm_info(`gfn, $sformatf("rv_dm_activated: %0d", cfg.m_jtag_riscv_agent_cfg.rv_dm_activated),
               UVM_LOW)
     cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 1;
-    clkmgr_switch_to_ext_clk();
 
   endtask
 endclass

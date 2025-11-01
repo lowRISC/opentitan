@@ -11,7 +11,9 @@ class clkmgr_stress_all_vseq extends clkmgr_base_vseq;
 
   task body();
     string seq_names[] = {
+    % if ext_clk_bypass:
       "clkmgr_extclk_vseq",
+    % endif
       "clkmgr_frequency_timeout_vseq",
       "clkmgr_frequency_vseq",
       "clkmgr_peri_vseq",

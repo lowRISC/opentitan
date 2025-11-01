@@ -38,16 +38,6 @@ module tb;
     .rst_n(rst_main_n)
   );
 
-  wire rst_io_div2_n;
-  clk_rst_if io_div2_clk_rst_if (
-    .clk  (),
-    .rst_n(rst_io_div2_n)
-  );
-  wire rst_io_div4_n;
-  clk_rst_if io_div4_clk_rst_if (
-    .clk  (),
-    .rst_n(rst_io_div4_n)
-  );
   clk_rst_if root_main_clk_rst_if (
     .clk  (),
     .rst_n(rst_root_main_n)
@@ -55,14 +45,6 @@ module tb;
   clk_rst_if root_io_clk_rst_if (
     .clk  (),
     .rst_n(rst_root_io_n)
-  );
-  clk_rst_if root_io_div2_clk_rst_if (
-    .clk  (),
-    .rst_n(rst_root_io_div2_n)
-  );
-  clk_rst_if root_io_div4_clk_rst_if (
-    .clk  (),
-    .rst_n(rst_root_io_div4_n)
   );
   tl_if tl_if (
     .clk  (clk),
@@ -82,9 +64,9 @@ module tb;
     .clk(clk_i),
     .recov_err_csr({
         u_reg.u_recov_err_code_main_timeout_err.qs,
-        u_reg.u_recov_err_code_io_div4_timeout_err.qs,
+        u_reg.u_recov_err_code_io_timeout_err.qs,
         u_reg.u_recov_err_code_main_measure_err.qs,
-        u_reg.u_recov_err_code_io_div4_measure_err.qs,
+        u_reg.u_recov_err_code_io_measure_err.qs,
         u_reg.u_recov_err_code_shadow_update_err.qs
     }),
     .fatal_err_csr({
@@ -93,8 +75,7 @@ module tb;
         u_reg.u_fatal_err_code_reg_intg.qs
      }),
     .clk_enables({
-        reg2hw.clk_enables.clk_io_div2_peri_en.q,
-        reg2hw.clk_enables.clk_io_div4_peri_en.q}),
+        reg2hw.clk_enables.q}),
     .clk_hints({
         reg2hw.clk_hints.clk_main_otbn_hint.q,
         reg2hw.clk_hints.clk_main_kmac_hint.q,
@@ -114,12 +95,8 @@ module tb;
     aon_clk_rst_if.set_active();
     io_clk_rst_if.set_active();
     main_clk_rst_if.set_active();
-    io_div2_clk_rst_if.set_active();
-    io_div4_clk_rst_if.set_active();
     root_main_clk_rst_if.set_active();
     root_io_clk_rst_if.set_active();
-    root_io_div2_clk_rst_if.set_active();
-    root_io_div4_clk_rst_if.set_active();
   end
 
   `DV_ALERT_IF_CONNECT()
@@ -136,14 +113,10 @@ module tb;
     .rst_io_ni(rst_io_n),
     .clk_main_i (clk_main),
     .rst_main_ni(rst_main_n),
-    .rst_io_div2_ni(rst_io_div2_n),
-    .rst_io_div4_ni(rst_io_div4_n),
     // ICEBOX(#17934): differentiate the root resets as mentioned for rst_io_ni above.
     .rst_root_ni(rst_root_io_n),
     .rst_root_main_ni(rst_root_main_n),
     .rst_root_io_ni(rst_root_io_n),
-    .rst_root_io_div2_ni(rst_root_io_div2_n),
-    .rst_root_io_div4_ni(rst_root_io_div4_n),
 
     .tl_i(tl_if.h2d),
     .tl_o(tl_if.d2h),
@@ -157,22 +130,10 @@ module tb;
     .scanmode_i(clkmgr_if.scanmode_i),
     .idle_i    (clkmgr_if.idle_i),
 
-    .lc_hw_debug_en_i(clkmgr_if.lc_hw_debug_en_i),
-    .all_clk_byp_req_o(clkmgr_if.all_clk_byp_req),
-    .all_clk_byp_ack_i(clkmgr_if.all_clk_byp_ack),
-    .io_clk_byp_req_o(clkmgr_if.io_clk_byp_req),
-    .io_clk_byp_ack_i(clkmgr_if.io_clk_byp_ack),
-    .lc_clk_byp_req_i(clkmgr_if.lc_clk_byp_req),
-    .lc_clk_byp_ack_o(clkmgr_if.lc_clk_byp_ack),
-    .div_step_down_req_i(clkmgr_if.div_step_down_req),
-
     .cg_en_o(),
 
     .jitter_en_o(clkmgr_if.jitter_en_o),
-    .clocks_o   (clkmgr_if.clocks_o),
-
-    .calib_rdy_i(clkmgr_if.calib_rdy),
-    .hi_speed_sel_o(clkmgr_if.hi_speed_sel)
+    .clocks_o   (clkmgr_if.clocks_o)
   );
 
   initial begin
@@ -181,18 +142,10 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "aon_clk_rst_vif", aon_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_clk_rst_vif", io_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "main_clk_rst_vif", main_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_div2_clk_rst_vif",
-                                            io_div2_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_div4_clk_rst_vif",
-                                            io_div4_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "root_main_clk_rst_vif",
                                             root_main_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "root_io_clk_rst_vif",
                                             root_io_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "root_io_div2_clk_rst_vif",
-                                            root_io_div2_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "root_io_div4_clk_rst_vif",
-                                            root_io_div4_clk_rst_if);
     uvm_config_db#(virtual clkmgr_if)::set(null, "*.env", "clkmgr_vif", clkmgr_if);
 
     uvm_config_db#(virtual clkmgr_csrs_if)::set(null, "*.env", "clkmgr_csrs_vif",
