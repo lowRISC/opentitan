@@ -31,6 +31,8 @@
 `define PATH7 \
     u_csrng_core.u_csrng_ctr_drbg_gen
 `define PATH8 \
+    u_csrng_core.u_csrng_ctr_drbg_cmd
+`define PATH9 \
     u_csrng_core.u_csrng_main_sm
 
 interface csrng_assert_if
@@ -50,6 +52,7 @@ interface csrng_assert_if
     $assertoff(0, `DUT_PATH.`PATH6.u_blk_enc_state_regs_A);
     $assertoff(0, `DUT_PATH.`PATH7.u_state_regs_A);
     $assertoff(0, `DUT_PATH.`PATH8.u_state_regs_A);
+    $assertoff(0, `DUT_PATH.`PATH9.u_state_regs_A);
   endtask // assert_off
 
   task automatic assert_on ();
@@ -64,6 +67,7 @@ interface csrng_assert_if
     $asserton(0, `DUT_PATH.`PATH6.u_blk_enc_state_regs_A);
     $asserton(0, `DUT_PATH.`PATH7.u_state_regs_A);
     $asserton(0, `DUT_PATH.`PATH8.u_state_regs_A);
+    $asserton(0, `DUT_PATH.`PATH9.u_state_regs_A);
   endtask // assert_on
 
   task automatic assert_off_alert ();

@@ -243,15 +243,15 @@ interface csrng_cov_if (
       // If ERR_CODE register has SFIFO related field set, it also needs to set at least one
       // FIFO_*_ERR field.
       illegal_bins illegal = !binsof(cp_err_codes) intersect { CMD_STAGE_SM_ERR, MAIN_SM_ERR,
-                                                               DRBG_GEN_SM_ERR, DRBG_UPDBE_SM_ERR,
-                                                               DRBG_UPDOB_SM_ERR, AES_CIPHER_SM_ERR,
-                                                               CMD_GEN_CNT_ERR } &&
+                                                               DRBG_CMD_SM_ERR, DRBG_GEN_SM_ERR,
+                                                               DRBG_UPDBE_SM_ERR, DRBG_UPDOB_SM_ERR,
+                                                               AES_CIPHER_SM_ERR, CMD_GEN_CNT_ERR } &&
                              binsof(cp_fifo_err_type) intersect { 0 };
 
       ignore_bins ignore = binsof(cp_err_codes) intersect { CMD_STAGE_SM_ERR, MAIN_SM_ERR,
-                                                            DRBG_GEN_SM_ERR, DRBG_UPDBE_SM_ERR,
-                                                            DRBG_UPDOB_SM_ERR, AES_CIPHER_SM_ERR,
-                                                            CMD_GEN_CNT_ERR };
+                                                            DRBG_CMD_SM_ERR, DRBG_GEN_SM_ERR,
+                                                            DRBG_UPDBE_SM_ERR, DRBG_UPDOB_SM_ERR,
+                                                            AES_CIPHER_SM_ERR, CMD_GEN_CNT_ERR };
     }
 
     cp_csrng_aes_fsm_err: coverpoint
@@ -363,6 +363,16 @@ interface csrng_cov_if (
 
     acmd_glen_cross: cross cp_acmd, cp_glen {
       ignore_bins invalid = binsof(cp_acmd) intersect { INV, GENB, GENU };
+    }
+
+    clen_glen_cross: cross cp_acmd, cp_clen, cp_glen {
+      bins gen_glen_clen = binsof(cp_acmd) intersect { GEN } &&
+                           binsof(cp_clen) intersect { [1:$] } &&
+                           binsof(cp_glen) intersect { [2:$] };
+      // We are only interested in Generate commands in this crosspoint (and glen has no meaning
+      // for all other commands)
+      ignore_bins ignore_other_cmds = binsof(cp_acmd) intersect 
+                                      { INS, UNI, UPD, RES, INV, GENB, GENU };
     }
 
     flags_clen_acmd_cross: cross cp_acmd, cp_flags, cp_clen {

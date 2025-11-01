@@ -27,7 +27,6 @@ module csrng_state_db
 
   // Write interface
   input  logic                   wr_vld_i,
-  output logic                   wr_rdy_o,
   input  csrng_core_data_t       wr_data_i,
   input  csrng_cmd_sts_e         wr_status_i,
 
@@ -166,8 +165,6 @@ module csrng_state_db
   assign status_vld_o     = status_vld_q;
   assign status_val_o     = status_val_q;
   assign status_inst_id_o = status_inst_id_q;
-
-  assign wr_rdy_o = 1'b1;
 
   // Unused signals
   logic [SeedLen-1:0] unused_wdata_pdata;

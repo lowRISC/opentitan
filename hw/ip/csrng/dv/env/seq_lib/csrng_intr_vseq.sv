@@ -220,26 +220,18 @@ class csrng_intr_vseq extends csrng_base_vseq;
     last_index = find_index("_", fld_name, "last");
 
     case (cfg.which_fatal_err) inside
-      sfifo_cmd_error, sfifo_genbits_error, sfifo_rcstage_error,
-      sfifo_keyvrc_error, sfifo_final_error, sfifo_gbencack_error,
-      sfifo_grcstage_error, sfifo_gadstage_error, sfifo_ggenbits_error,
-      sfifo_cmdid_error, sfifo_bencack_error, sfifo_ggenreq_error: begin
+      sfifo_cmd_error, sfifo_genbits_error, sfifo_final_error, sfifo_cmdid_error,
+      sfifo_gadstage_error, sfifo_gbencack_error: begin
         fifo_base_path = fld_name.substr(0, last_index-1);
 
         foreach (path_exts[i]) begin
           fifo_forced_paths[i] = cfg.csrng_path_vif.fifo_err_path(cfg.NHwApps, fifo_base_path,
                                                                   path_exts[i]);
         end
-        if (cfg.which_fatal_err == sfifo_bencack_error ||
-            cfg.which_fatal_err == sfifo_ggenreq_error) begin
-          force_all_fifo_errs_exception(fifo_forced_paths, fifo_forced_values, path_exts,
-                                        ral.intr_state.cs_fatal_err, 1'b1, cfg.which_fifo_err);
-        end else begin
-          force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts,
-                              ral.intr_state.cs_fatal_err, 1'b1, cfg.which_fifo_err);
-        end
+        force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts,
+                            ral.intr_state.cs_fatal_err, 1'b1, cfg.which_fifo_err);
       end
-      cmd_stage_sm_error, main_sm_error, drbg_gen_sm_error, drbg_updbe_sm_error,
+      cmd_stage_sm_error, main_sm_error, drbg_cmd_sm_error, drbg_gen_sm_error, drbg_updbe_sm_error,
       drbg_updob_sm_error: begin
         path = cfg.csrng_path_vif.sm_err_path(fld_name.substr(0, last_index-1), cfg.NHwApps);
         force_path_err(path, 8'b0, ral.intr_state.cs_fatal_err, 1'b1);
@@ -308,13 +300,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
         value1 = fifo_err_value[0][path_key];
         value2 = fifo_err_value[1][path_key];
 
-        if (cfg.which_fatal_err == fifo_read_error &&
-           ((cfg.which_fifo == sfifo_ggenreq) || (cfg.which_fifo == sfifo_bencack))) begin
-          force_fifo_err_exception(path1, path2, value1, value2, 1'b0, ral.intr_state.cs_fatal_err,
-                                   1'b1);
-        end else begin
-          force_fifo_err(path1, path2, value1, value2, ral.intr_state.cs_fatal_err, 1'b1);
-        end
+        force_fifo_err(path1, path2, value1, value2, ral.intr_state.cs_fatal_err, 1'b1);
       end
       default: begin
         `uvm_fatal(`gfn, "Invalid case! (bug in environment)")
@@ -378,7 +364,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     csr_wr(.ptr(ral.intr_state), .value(32'd15));
     cfg.clk_rst_vif.wait_clks(100);
 
-    if (cfg.which_fatal_err inside {cmd_stage_sm_err, main_sm_err,
+    if (cfg.which_fatal_err inside {cmd_stage_sm_err, main_sm_err, drbg_cmd_sm_err,
                                     drbg_gen_sm_err, drbg_updbe_sm_err, drbg_updob_sm_err,
                                     aes_cipher_sm_err,
                                     cmd_gen_cnt_err, cmd_gen_cnt_err_test}) begin
