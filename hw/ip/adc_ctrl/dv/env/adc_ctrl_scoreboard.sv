@@ -481,6 +481,8 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     bit filter_match;
     // Perform the basic match against filter config
     for (int filter_idx = 0; filter_idx < ADC_CTRL_NUM_FILTERS; filter_idx++) begin
+      bit en_somewhere, mismatch_somewhere;
+
       // Extract appropriate configuration for this channel/filter
       adc_ctrl_filter_cfg filter_cfg = cfg.filter_cfg[channel][filter_idx];
       // Check value against configured range of values
@@ -488,18 +490,18 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
       // Set match flag for this channel/filter considering inside/outside config
       m_chn_match[channel][filter_idx] = filter_cfg.match_outside ^ inside_range;
 
-      // Combine channel matches for this filter
-      filter_match = 0;
+      // Combine channel matches for this filter. We expect a match for the filter if
+      //
+      //  - This filter is enabled on at least one channel
+      //  - On every channel where the filter is enabled, it gets a match.
       for (int channel_idx = 0; channel_idx < ADC_CTRL_CHANNELS; channel_idx++) begin
-        filter_match |= cfg.filter_cfg[channel_idx][filter_idx].enabled;
+        if (cfg.filter_cfg[channel_idx][filter_idx].enabled) begin
+          en_somewhere = 1;
+          mismatch_somewhere |= ~m_chn_match[channel_idx][filter_idx];
+        end
       end
 
-      for (int channel_idx = 0; channel_idx < ADC_CTRL_CHANNELS; channel_idx++) begin
-        filter_match &= !cfg.filter_cfg[channel_idx][filter_idx].enabled |
-                         (m_chn_match[channel_idx][filter_idx] &
-                          cfg.filter_cfg[channel_idx][filter_idx].enabled);
-      end
-      m_match[filter_idx] = filter_match;
+      m_match[filter_idx] = en_somewhere & ~mismatch_somewhere;
     end
 
     // If this was data from the last channel process debounce model
