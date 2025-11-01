@@ -11,6 +11,7 @@ filesets:
       - lowrisc:dv:cip_lib
     files:
       - adc_ctrl_env_pkg.sv
+      - adc_ctrl_filter_cfg.sv: {is_include_file: true}
       - adc_ctrl_env_cfg.sv: {is_include_file: true}
       - adc_ctrl_env_var_filter_cfg.sv : {is_include_file: true}
       - adc_ctrl_env_cov.sv: {is_include_file: true}
