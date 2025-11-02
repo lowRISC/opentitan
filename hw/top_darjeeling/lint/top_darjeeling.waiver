@@ -26,17 +26,6 @@ waive -rules {HIER_BRANCH_NOT_READ} -location {pinmux.sv} \
 waive -rules INPUT_NOT_READ -location {pinmux.sv} -regexp {Input port 'scanmode_i' is not read from} \
       -comment "scanmode_i is not used in the Darjeeling pad configuration"
 
-waive -rules {HIER_NET_NOT_READ NOT_READ} -location {clkmgr.sv} \
-      -regexp {(Net|Signal) 'clk_io_root' is not read from in module 'clkmgr'} \
-      -comment "This clock is unused in Darjeeling - should not be generated"
-
-waive -rules {HIER_NET_NOT_READ NOT_READ} -location {clkmgr.sv} \
-      -regexp {(Net|Signal) 'clk_io_div2_root' is not read from in module 'clkmgr'} \
-      -comment "This clock is unused in Darjeeling  - should not be generated"
-
-waive -rules CLOCK_MUX -location {clkmgr.sv top_darjeeling.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
-      -comment "Divided clocks go through prim_clock_div, which use muxes for scan bypass and clock step down"
-
 waive -rules CLOCK_MUX -location {top_darjeeling.sv} -regexp {Clock 'spi_device_passthrough_req.sck' reaches a multiplexer here, used as a clock} \
       -comment "In passthrough mode, spi_host muxes 'spi_device_passthrough_req.sck' to the `cio_sck_o` output."
 
