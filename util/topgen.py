@@ -66,7 +66,7 @@ lichdr = """// Copyright lowRISC contributors (OpenTitan project).
 """
 genhdr = lichdr + warnhdr
 
-GENCMD = ("// util/topgen.py -t hw/{top_name}/data/{top_name}.hjson \\\n"
+GENCMD = ("// util/topgen.py -t hw/{top_name}/data/{top_name}.hjson\n"
           "//                -o hw/{top_name}/")
 
 SRCTREE_TOP = Path(__file__).parents[1].resolve()
