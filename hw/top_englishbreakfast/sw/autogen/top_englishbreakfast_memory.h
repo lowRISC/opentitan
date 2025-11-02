@@ -4,7 +4,7 @@
 //
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
-// util/topgen.py -t hw/top_englishbreakfast/data/top_englishbreakfast.hjson \
+// util/topgen.py -t hw/top_englishbreakfast/data/top_englishbreakfast.hjson
 //                -o hw/top_englishbreakfast/
 
 #ifndef OPENTITAN_HW_TOP_ENGLISHBREAKFAST_SW_AUTOGEN_TOP_ENGLISHBREAKFAST_MEMORY_H_
