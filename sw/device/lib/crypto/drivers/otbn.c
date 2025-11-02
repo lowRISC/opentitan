@@ -142,8 +142,7 @@ status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
     barrierw(idx);
 
     // Perform the write.
-    abs_mmio_write32(kBase + OTBN_DMEM_REG_OFFSET + dest + idx_word,
-                     src[idx]);
+    abs_mmio_write32(kBase + OTBN_DMEM_REG_OFFSET + dest + idx_word, src[idx]);
 
     // Update the CRC. According to the OTBN documentation, each CRC update
     // consists of 48-bit: {imem, idx, wdata}
@@ -163,8 +162,7 @@ status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
   // Get the computed (expected) checksum, fetch the checksum from the OTBN
   // LOAD_CHECKSUM register, and compare both registers.
   uint32_t checksum_expected = crc32_finish(&ctx);
-  uint32_t checksum =
-      abs_mmio_read32(kBase + OTBN_LOAD_CHECKSUM_REG_OFFSET);
+  uint32_t checksum = abs_mmio_read32(kBase + OTBN_LOAD_CHECKSUM_REG_OFFSET);
   HARDENED_CHECK_EQ(checksum, checksum_expected);
 
   return OTCRYPTO_OK;
