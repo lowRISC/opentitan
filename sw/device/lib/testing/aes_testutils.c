@@ -8,7 +8,7 @@
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+#ifdef AES_TESTUTILS_HAS_EDN_AND_CSRNG
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
 
@@ -35,7 +35,7 @@ enum {
   kAesTestutilsTimeout = (10 * 1000 * 1000),
 };
 
-#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+#ifdef AES_TESTUTILS_HAS_EDN_AND_CSRNG
 /**
  * Constants for switching AES masking off.
  */

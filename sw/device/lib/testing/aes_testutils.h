@@ -6,12 +6,16 @@
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_AES_TESTUTILS_H_
 
 #include "sw/device/lib/dif/dif_aes.h"
-#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+#include "sw/device/lib/runtime/ibex.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+
+// The AES_TESTUTILS_HAS_EDN_AND_CSRNG define is created
+// by the Bazel rule to indicate the presence of the csrng
+// and edn IPs.
+#ifdef AES_TESTUTILS_HAS_EDN_AND_CSRNG
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #endif
-#include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/testing/test_framework/check.h"
 
 /**
  * Returns the value of the AES status flag.
@@ -37,7 +41,7 @@ inline bool aes_testutils_get_status(dif_aes_t *aes, dif_aes_status_t status) {
   IBEX_TRY_SPIN_FOR(aes_testutils_get_status((aes_), (status_)) == (flag_), \
                     (timeout_usec_))
 
-#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+#ifdef AES_TESTUTILS_HAS_EDN_AND_CSRNG
 /**
  * Initializes the entropy complex for performing AES SCA measurements with
  * masking switched off.
