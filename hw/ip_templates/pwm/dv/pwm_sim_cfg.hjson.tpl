@@ -73,39 +73,39 @@
   ]
 
   // Default UVM test and seq class name.
-  uvm_test: pwm_base_test
-  uvm_test_seq: pwm_base_vseq
+  uvm_test: ${module_instance_name}_base_test
+  uvm_test_seq: ${module_instance_name}_base_vseq
 
   // List of test specifications.
   tests: [
     {
       name: pwm_smoke
-      uvm_test_seq: pwm_smoke_vseq
+      uvm_test_seq: ${module_instance_name}_smoke_vseq
       reseed: 10
     }
     {
       name: pwm_rand_output
-      uvm_test_seq: pwm_rand_output_vseq
+      uvm_test_seq: ${module_instance_name}_rand_output_vseq
     }
     {
       name: pwm_heartbeat_wrap
-      uvm_test_seq: pwm_heartbeat_wrap_vseq
+      uvm_test_seq: ${module_instance_name}_heartbeat_wrap_vseq
       // We don't need many seeds of this test: it will exercise
       // identical code across the different channels anyway.
       reseed: 10
     }
     {
       name: pwm_perf
-      uvm_test_seq: pwm_perf_vseq
+      uvm_test_seq: ${module_instance_name}_perf_vseq
       reseed: 10
     }
     {
       name: pwm_phase
-      uvm_test_seq: pwm_phase_vseq
+      uvm_test_seq: ${module_instance_name}_phase_vseq
     }
     {
       name: pwm_regwen
-      uvm_test_seq: pwm_regwen_vseq
+      uvm_test_seq: ${module_instance_name}_regwen_vseq
       // A single seed suffices because we constrain the configuration such that the PWM outputs
       // are definitely changing and monitors/scoreboard are predicting their behavior. The sequence
       // always clears the `regwen` and coverage will confirm that prohibited writes were attempted.
@@ -113,7 +113,7 @@
     }
     {
       name: pwm_stress_all
-      uvm_test_seq: pwm_stress_all_vseq
+      uvm_test_seq: ${module_instance_name}_stress_all_vseq
       run_opts:["+test_timeout_ns=10_000_000_000"]
     }
   ]

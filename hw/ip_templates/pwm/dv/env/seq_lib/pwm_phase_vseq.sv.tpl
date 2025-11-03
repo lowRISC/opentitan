@@ -4,8 +4,8 @@
 
 // Tests operation with PWM outputs having a specific phase relationship, starting all channels
 // either synchronously or in a staggered fashion.
-class pwm_phase_vseq extends pwm_rand_output_vseq;
-  `uvm_object_utils(pwm_phase_vseq)
+class ${module_instance_name}_phase_vseq extends ${module_instance_name}_rand_output_vseq;
+  `uvm_object_utils(${module_instance_name}_phase_vseq)
 
   // Decide whether to start all channels synchronously, as opposed to staggered.
   rand bit sync_start;
@@ -21,19 +21,19 @@ class pwm_phase_vseq extends pwm_rand_output_vseq;
 endclass
 
 // All channels shall be enabled.
-constraint pwm_phase_vseq::rand_chan_c {
+constraint ${module_instance_name}_phase_vseq::rand_chan_c {
   rand_chan == {PWM_NUM_CHANNELS{1'b1}};
 }
 
 // Higher-numbered channels are the phase inversion of the lower ones.
-constraint pwm_phase_vseq::rand_invert_c {
+constraint ${module_instance_name}_phase_vseq::rand_invert_c {
   rand_invert == { {(PWM_NUM_CHANNELS/2){1'b1}},    // Complementary signals.
                    {(PWM_NUM_CHANNELS/2){1'b0}} };  // Base signals.
 }
 
 // We typically have 6 outputs, so set them up as two triples, with the signals in each triple
 // being at 120-degree intervals.
-constraint pwm_phase_vseq::pwm_param_c {
+constraint ${module_instance_name}_phase_vseq::pwm_param_c {
   foreach (pwm_param[ii]) {
     pwm_param[ii].BlinkEn == 1'b1;
     pwm_param[ii].HtbtEn == 1'b0;
@@ -41,13 +41,13 @@ constraint pwm_phase_vseq::pwm_param_c {
   }
 }
 
-function pwm_phase_vseq::new (string name = "");
+function ${module_instance_name}_phase_vseq::new (string name = "");
   super.new(name);
 endfunction
 
 // TODO: We should perhaps move some the set up code into a base task which may be overridden
 // without replacing the entire `body`.
-task pwm_phase_vseq::body();
+task ${module_instance_name}_phase_vseq::body();
   // Blink mode parameters to be used for all channels.
   int unsigned blink_pulses_X = $urandom_range(7,  15);
   int unsigned blink_pulses_Y = $urandom_range(11, 23);

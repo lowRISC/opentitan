@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Sequence that performs a stress test by running other sequences back-to-back
-class pwm_stress_all_vseq extends pwm_base_vseq;
-  `uvm_object_utils(pwm_stress_all_vseq)
+class ${module_instance_name}_stress_all_vseq extends ${module_instance_name}_base_vseq;
+  `uvm_object_utils(${module_instance_name}_stress_all_vseq)
 
   // Constrain things so we run five sequences each time. This should be enough to "run some
   // back-to-back", but avoids needing to run lots sequentially (so avoids a large runtime)
@@ -14,20 +14,20 @@ class pwm_stress_all_vseq extends pwm_base_vseq;
   extern virtual task body();
 endclass
 
-constraint pwm_stress_all_vseq::num_trans_c { num_trans == 5; }
+constraint ${module_instance_name}_stress_all_vseq::num_trans_c { num_trans == 5; }
 
-function pwm_stress_all_vseq::new (string name = "");
+function ${module_instance_name}_stress_all_vseq::new (string name = "");
   super.new(name);
 endfunction
 
 task pwm_stress_all_vseq::body();
-  string seq_names[] = {"pwm_smoke_vseq",
-                        "pwm_perf_vseq",
-                        "pwm_rand_output_vseq"};
+  string seq_names[] = {"${module_instance_name}_smoke_vseq",
+                        "${module_instance_name}_perf_vseq",
+                        "${module_instance_name}_rand_output_vseq"};
 
   for (int i = 1; i <= num_trans; i++) begin
     uvm_sequence   seq;
-    pwm_base_vseq  pwm_vseq;
+    ${module_instance_name}_base_vseq  pwm_vseq;
     uint           seq_idx = $urandom_range(0, seq_names.size - 1);
     seq = create_seq_by_name(seq_names[seq_idx]);
     `downcast(pwm_vseq, seq)

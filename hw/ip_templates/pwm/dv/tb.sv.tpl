@@ -6,8 +6,8 @@ module tb;
   // dep packages
   import uvm_pkg::*;
   import dv_utils_pkg::*;
-  import pwm_env_pkg::*;
-  import pwm_test_pkg::*;
+  import ${module_instance_name}_env_pkg::*;
+  import ${module_instance_name}_test_pkg::*;
   import pwm_monitor_pkg::*;
 
   // macro includes
@@ -18,7 +18,7 @@ module tb;
   // Core logic within the DUT.
   `define DUT_CORE dut.u_pwm_core
 
-  localparam PWM_NUM_CHANNELS = pwm_reg_pkg::NOutputs;
+  localparam PWM_NUM_CHANNELS = ${module_instance_name}_reg_pkg::NOutputs;
 
   wire clk;
   wire rst_n;

@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class pwm_env extends cip_base_env #(
-    .CFG_T              (pwm_env_cfg),
-    .COV_T              (pwm_env_cov),
-    .VIRTUAL_SEQUENCER_T(pwm_virtual_sequencer),
-    .SCOREBOARD_T       (pwm_scoreboard)
+class ${module_instance_name}_env extends cip_base_env #(
+    .CFG_T              (${module_instance_name}_env_cfg),
+    .COV_T              (${module_instance_name}_env_cov),
+    .VIRTUAL_SEQUENCER_T(${module_instance_name}_virtual_sequencer),
+    .SCOREBOARD_T       (${module_instance_name}_scoreboard)
   );
-  `uvm_component_utils(pwm_env)
+  `uvm_component_utils(${module_instance_name}_env)
   `uvm_component_new
 
   // One monitor for each channel; the monitors operate independently.
@@ -28,7 +28,7 @@ class pwm_env extends cip_base_env #(
     // generate core clock (must slower than bus clock)
     if (!uvm_config_db#(virtual clk_rst_if)
         ::get(this, "", "clk_rst_core_vif", cfg.clk_rst_core_vif)) begin
-      `uvm_fatal(`gfn, "\n  pwm_env: failed to get clk_rst_core_vif from uvm_config_db")
+      `uvm_fatal(`gfn, "\n  ${module_instance_name}_env: failed to get clk_rst_core_vif from uvm_config_db")
     end
 
     cfg.clk_rst_core_vif.set_freq_mhz(cfg.get_clk_core_freq());
@@ -46,4 +46,4 @@ class pwm_env extends cip_base_env #(
     end
   endfunction : connect_phase
 
-endclass : pwm_env
+endclass : ${module_instance_name}_env

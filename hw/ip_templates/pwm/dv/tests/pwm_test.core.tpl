@@ -9,8 +9,8 @@ filesets:
     depend:
       - ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_env")}
     files:
-      - pwm_test_pkg.sv
-      - pwm_base_test.sv: {is_include_file: true}
+      - ${module_instance_name}_test_pkg.sv
+      - ${module_instance_name}_base_test.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

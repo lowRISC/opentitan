@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class pwm_scoreboard extends cip_base_scoreboard #(
-      .CFG_T(pwm_env_cfg),
-      .RAL_T(pwm_reg_block),
-      .COV_T(pwm_env_cov)
+class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(
+      .CFG_T(${module_instance_name}_env_cfg),
+      .RAL_T(${module_instance_name}_reg_block),
+      .COV_T(${module_instance_name}_env_cov)
      );
-  `uvm_component_utils(pwm_scoreboard)
+  `uvm_component_utils(${module_instance_name}_scoreboard)
   `uvm_component_new
 
   // TLM agent FIFOs.
@@ -85,16 +85,16 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   // configuration registers.
   extern function void generate_exp_item(ref pwm_item item, input int unsigned channel);
 
-endclass : pwm_scoreboard
+endclass : ${module_instance_name}_scoreboard
 
-function void pwm_scoreboard::build_phase(uvm_phase phase);
+function void ${module_instance_name}_scoreboard::build_phase(uvm_phase phase);
   super.build_phase(phase);
   for (int i = 0; i < PWM_NUM_CHANNELS; i++) begin
     item_fifo[i] = new($sformatf("item_fifo[%0d]", i), this);
   end
 endfunction
 
-task pwm_scoreboard::run_phase(uvm_phase phase);
+task ${module_instance_name}_scoreboard::run_phase(uvm_phase phase);
   super.run_phase(phase);
   if (cfg.en_scb) begin
     // For each PWM output create one checker process and one clock/output monitor process.
@@ -112,14 +112,14 @@ task pwm_scoreboard::run_phase(uvm_phase phase);
   end
 endtask
 
-function void pwm_scoreboard::check_phase(uvm_phase phase);
+function void ${module_instance_name}_scoreboard::check_phase(uvm_phase phase);
   super.check_phase(phase);
   for (int i = 0; i < PWM_NUM_CHANNELS; i++) begin
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(pwm_item, item_fifo[i])
   end
 endfunction
 
-task pwm_scoreboard::process_tl_access(tl_seq_item   item,
+task ${module_instance_name}_scoreboard::process_tl_access(tl_seq_item   item,
                                        tl_channels_e channel,
                                        string        ral_name);
   string txt;
@@ -271,7 +271,7 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
   end
 endtask
 
-function void pwm_scoreboard::reset(string kind = "HARD");
+function void ${module_instance_name}_scoreboard::reset(string kind = "HARD");
   super.reset(kind);
   `uvm_info(`gfn, "Reset flushing all channels", UVM_MEDIUM)
   for (int unsigned channel = 0; channel < PWM_NUM_CHANNELS; channel++) begin
@@ -281,7 +281,7 @@ function void pwm_scoreboard::reset(string kind = "HARD");
 endfunction
 
 // Monitor whether the TL-UL clock is running and whether the PWM output is changing.
-task pwm_scoreboard::monitor_clock(int channel);
+task ${module_instance_name}_scoreboard::monitor_clock(int channel);
   forever begin
     // The core clock is always running so we may use this to monitor whether the TL-UL bus clock
     // is gated.
@@ -299,14 +299,14 @@ endtask
 // We allow a little difference in the timing of the blink state transitions until we've
 // synchronized to this PWM output. Until that point a mismatch may legitimately occur between
 // the observed and predicted cycles.
-function bit pwm_scoreboard::blink_state_untrusted(int unsigned channel);
+function bit ${module_instance_name}_scoreboard::blink_state_untrusted(int unsigned channel);
   // Until we've synchronized, drift is permitted in either direction.
   return !synchronized[channel] &&
             (blink_cnt[channel] < SettleTime || ignore_state_change[channel] > 0);
 endfunction
 
 // Adjust channel state to synchronize with the monitor/DUT output.
-function void pwm_scoreboard::synchronize_blink_state(int unsigned channel);
+function void ${module_instance_name}_scoreboard::synchronize_blink_state(int unsigned channel);
   `uvm_info(`gfn, $sformatf("Synchronizing on channel %0d (ignore %0d blink_cnt %0d)", channel,
                             ignore_state_change[channel], blink_cnt[channel]), UVM_MEDIUM)
   if (ignore_state_change[channel] > 0) begin
@@ -331,7 +331,7 @@ function void pwm_scoreboard::synchronize_blink_state(int unsigned channel);
   ignore_state_change[channel] = 0;
 endfunction
 
-task pwm_scoreboard::compare_trans(int unsigned channel);
+task ${module_instance_name}_scoreboard::compare_trans(int unsigned channel);
   pwm_item compare_item = new($sformatf("expected_item_%0d", channel));
   pwm_item input_item   = new($sformatf("input_item_%0d", channel));
   // Count of predictions made.
@@ -436,7 +436,7 @@ task pwm_scoreboard::compare_trans(int unsigned channel);
 endtask : compare_trans
 
 // Advance the blink state at the end of the 'BLINK_PARAM.X+1' or 'BLINK_PARAM.Y+1' pulse cycles.
-function void pwm_scoreboard::advance_blink_state(int unsigned channel);
+function void ${module_instance_name}_scoreboard::advance_blink_state(int unsigned channel);
   `uvm_info(`gfn, $sformatf("Advancing blink state for channel %0d", channel), UVM_HIGH)
   if (channel_param[channel].HtbtEn) begin
     dc_mod_e dc_mod = (duty_cycle[channel].A > duty_cycle[channel].B) ? LargeA : LargeB;
@@ -500,7 +500,7 @@ function void pwm_scoreboard::advance_blink_state(int unsigned channel);
   end
 endfunction
 
-function void pwm_scoreboard::generate_exp_item(ref pwm_item item, input int unsigned channel);
+function void ${module_instance_name}_scoreboard::generate_exp_item(ref pwm_item item, input int unsigned channel);
   uint beats_cycle     = 0;
   uint period          = 0;
   uint active_cycles   = 0;
