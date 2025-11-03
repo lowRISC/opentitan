@@ -34,6 +34,8 @@ interface clkmgr_if (
   prim_mubi_pkg::mubi4_t jitter_en_o;
   clkmgr_pkg::clkmgr_out_t clocks_o;
 
+  prim_mubi_pkg::mubi4_t calib_rdy;
+
   // Internal DUT signals.
   // ICEBOX(lowrisc/opentitan#18379): This is a core env component (i.e. reusable entity) that
   // makes hierarchical references into the DUT. A better strategy would be to bind this interface
@@ -97,6 +99,9 @@ interface clkmgr_if (
   end
   always_comb main_timeout_err = `CLKMGR_HIER.u_main_meas.timeout_err_o;
 
+  function automatic void update_calib_rdy(prim_mubi_pkg::mubi4_t value);
+    calib_rdy = value;
+  endfunction
 
   function automatic void update_idle(mubi_hintables_t value);
     idle_i = value;
@@ -126,6 +131,7 @@ interface clkmgr_if (
   task automatic init(mubi_hintables_t idle, prim_mubi_pkg::mubi4_t scanmode,
                       prim_mubi_pkg::mubi4_t calib_rdy = prim_mubi_pkg::MuBi4True);
     `uvm_info("clkmgr_if", "In clkmgr_if init", UVM_MEDIUM)
+    update_calib_rdy(calib_rdy);
     update_idle(idle);
     update_scanmode(scanmode);
   endtask
@@ -176,6 +182,7 @@ interface clkmgr_if (
   endclocking
 
   clocking clk_cb @(posedge clk);
+    input calib_rdy;
     input jitter_enable_csr;
   endclocking
 

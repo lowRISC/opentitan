@@ -3285,6 +3285,21 @@
           index: -1
         }
         {
+          name: calib_rdy
+          desc: Indicates clocks are calibrated and frequencies accurate
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: prim_mubi_pkg::MuBi4True
+          inst_name: clkmgr_aon
+          external: true
+          top_signame: calib_rdy
+          conn_type: false
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -11749,6 +11764,7 @@
       spi_device.ram_cfg_spi2sys: spi_device_ram_2p_cfg_spi2sys
       pwrmgr_aon.boot_status: pwrmgr_boot_status
       clkmgr_aon.jitter_en: clk_main_jitter_en
+      clkmgr_aon.calib_rdy: calib_rdy
       dma.sys: dma_sys
       entropy_src.entropy_src_rng_enable: es_rng_enable
       entropy_src.entropy_src_rng_valid: es_rng_valid
@@ -22985,6 +23001,21 @@
         index: -1
       }
       {
+        name: calib_rdy
+        desc: Indicates clocks are calibrated and frequencies accurate
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: prim_mubi_pkg::MuBi4True
+        inst_name: clkmgr_aon
+        external: true
+        top_signame: calib_rdy
+        conn_type: false
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -28970,6 +29001,18 @@
         conn_type: false
         index: -1
         netname: clk_main_jitter_en
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        signame: calib_rdy_i
+        width: 1
+        type: uni
+        default: prim_mubi_pkg::MuBi4True
+        direction: in
+        conn_type: false
+        index: -1
+        netname: calib_rdy
       }
       {
         package: dma_pkg

@@ -130,6 +130,7 @@ module tb;
     .scanmode_i(clkmgr_if.scanmode_i),
     .idle_i    (clkmgr_if.idle_i),
 
+    .calib_rdy_i(clkmgr_if.calib_rdy),
     .cg_en_o(),
 
     .jitter_en_o(clkmgr_if.jitter_en_o),

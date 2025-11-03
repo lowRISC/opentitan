@@ -58,6 +58,10 @@
   // idle hints
   // SEC_CM: IDLE.INTERSIG.MUBI
   input prim_mubi_pkg::mubi4_t [3:0] idle_i,
+  // clock calibration has been done.
+  // If this is signal is 0, assume clock frequencies to be
+  // uncalibrated.
+  input prim_mubi_pkg::mubi4_t calib_rdy_i,
 
   // jittery enable to ast
   output mubi4_t jitter_en_o,
@@ -311,7 +315,7 @@
   ) u_calib_rdy_sync (
     .clk_i,
     .rst_ni,
-    .mubi_i(MuBi4False),
+    .mubi_i(calib_rdy_i),
     .mubi_o({calib_rdy})
   );
 

@@ -133,7 +133,6 @@ module clkmgr_bind;
   );
 
  % endfor
-% if ext_clk_bypass:
   // Calibration assertions.
   bind clkmgr clkmgr_lost_calib_regwen_sva_if clkmgr_lost_calib_regwen_sva_if (
     .clk(clk_i),
@@ -151,6 +150,7 @@ module clkmgr_bind;
   );
 
 % endfor
+% if ext_clk_bypass:
   bind clkmgr clkmgr_sec_cm_checker_assert clkmgr_sec_cm_checker_assert (
     .clk_i,
     .rst_ni,
