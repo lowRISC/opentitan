@@ -22,6 +22,9 @@
 
 #define MODULE_ID MAKE_MODULE_ID('c', 'f', 's')
 
+// Markers in the dis file to be able to trace certain functions
+#define PENTEST_MARKER_LABEL(name) asm volatile(#name ":" ::: "memory")
+
 status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
                                cryptolib_fi_sym_aes_out_t *uj_output) {
   // Set the AES mode.
@@ -134,9 +137,11 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
   };
 
   // Trigger window.
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_AES_START);
   pentest_set_trigger_high();
   TRY(otcrypto_aes(&key, iv, mode, op, input, padding, output));
   pentest_set_trigger_low();
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_AES_END);
 
   // Return data back to host.
   uj_output->data_len = padded_len_bytes;
@@ -168,11 +173,13 @@ status_t cryptolib_fi_drbg_generate_impl(
 
   // Trigger window 0.
   if (uj_input.trigger & kPentestTrigger2) {
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_DRBG_GENERATE_START);
     pentest_set_trigger_high();
   }
   TRY(otcrypto_drbg_generate(nonce, output));
   if (uj_input.trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_DRBG_GENERATE_END);
   }
 
   // Return data back to host.
@@ -197,11 +204,13 @@ status_t cryptolib_fi_drbg_reseed_impl(
 
   // Trigger window 0.
   if (uj_input.trigger & kPentestTrigger1) {
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_DRBG_RESEED_START);
     pentest_set_trigger_high();
   }
   TRY(otcrypto_drbg_instantiate(entropy));
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_DRBG_RESEED_END);
   }
 
   // Return data back to host.
@@ -298,10 +307,12 @@ status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
   }
 
   // Trigger window.
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_GCM_ENCRYPT_START);
   pentest_set_trigger_high();
   TRY(otcrypto_aes_gcm_encrypt(&key, plaintext, iv, aad, tag_len,
                                actual_ciphertext, actual_tag));
   pentest_set_trigger_low();
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_GCM_ENCRYPT_END);
 
   // Return data back to host.
   uj_output->cfg = 0;
@@ -385,9 +396,11 @@ status_t cryptolib_fi_hmac_impl(cryptolib_fi_sym_hmac_in_t uj_input,
   };
 
   // Trigger window.
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_HMAC_START);
   pentest_set_trigger_high();
   TRY(otcrypto_hmac(&key, input_message, tag));
   pentest_set_trigger_low();
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_HMAC_END);
 
   // Return data back to host.
   uj_output->data_len = tag_bytes;
