@@ -3,18 +3,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Smoke test vseq: accessing a major datapath within the pwm
-class pwm_smoke_vseq extends pwm_base_vseq;
-  `uvm_object_utils(pwm_smoke_vseq)
+class ${module_instance_name}_smoke_vseq extends ${module_instance_name}_base_vseq;
+  `uvm_object_utils(${module_instance_name}_smoke_vseq)
 
   extern function new (string name="");
   extern virtual task body();
-endclass : pwm_smoke_vseq
+endclass : ${module_instance_name}_smoke_vseq
 
-function pwm_smoke_vseq::new (string name = "");
+function ${module_instance_name}_smoke_vseq::new (string name = "");
   super.new(name);
 endfunction
 
-task pwm_smoke_vseq::body();
+task ${module_instance_name}_smoke_vseq::body();
   param_reg_t pwm_param;
   `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(pwm_param, pwm_param.BlinkEn == 1;)
 

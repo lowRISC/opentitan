@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // This sequence randomizes configurations at the output.
-class pwm_rand_output_vseq extends pwm_base_vseq;
-  `uvm_object_utils(pwm_rand_output_vseq)
+class ${module_instance_name}_rand_output_vseq extends ${module_instance_name}_base_vseq;
+  `uvm_object_utils(${module_instance_name}_rand_output_vseq)
 
   // Configuration for each channel in turn.
   rand param_reg_t [PWM_NUM_CHANNELS-1:0] pwm_param;
@@ -23,15 +23,15 @@ class pwm_rand_output_vseq extends pwm_base_vseq;
   extern virtual task body();
 endclass
 
-constraint pwm_rand_output_vseq::low_power_c {
+constraint ${module_instance_name}_rand_output_vseq::low_power_c {
   low_power dist {1'b1:/1, 1'b0:/9};
 }
 
-function pwm_rand_output_vseq::new (string name = "");
+function ${module_instance_name}_rand_output_vseq::new (string name = "");
   super.new(name);
 endfunction
 
-task pwm_rand_output_vseq::body();
+task ${module_instance_name}_rand_output_vseq::body();
   set_ch_enables(32'h0);
 
   // Set random dc and params for all channels

@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class pwm_base_vseq extends cip_base_vseq #(
-  .RAL_T              (pwm_reg_block),
-  .CFG_T              (pwm_env_cfg),
-  .COV_T              (pwm_env_cov),
-  .VIRTUAL_SEQUENCER_T(pwm_virtual_sequencer)
+class ${module_instance_name}_base_vseq extends cip_base_vseq #(
+  .RAL_T              (${module_instance_name}_reg_block),
+  .CFG_T              (${module_instance_name}_env_cfg),
+  .COV_T              (${module_instance_name}_env_cov),
+  .VIRTUAL_SEQUENCER_T(${module_instance_name}_virtual_sequencer)
 );
-  `uvm_object_utils(pwm_base_vseq)
+  `uvm_object_utils(${module_instance_name}_base_vseq)
   extern function new (string name="");
 
   // Tasks overridden from dv_base_vseq.
@@ -54,13 +54,13 @@ class pwm_base_vseq extends cip_base_vseq #(
 
   // Shutdown the dut in a way that helps the last item to finish gracefully.
   extern virtual task shutdown_dut();
-endclass : pwm_base_vseq
+endclass : ${module_instance_name}_base_vseq
 
-function pwm_base_vseq::new (string name = "");
+function ${module_instance_name}_base_vseq::new (string name = "");
   super.new(name);
 endfunction
 
-task pwm_base_vseq::apply_reset(string kind = "HARD");
+task ${module_instance_name}_base_vseq::apply_reset(string kind = "HARD");
   fork
     if (kind == "HARD" || kind == "TL_IF") begin
       super.apply_reset("HARD");
@@ -71,13 +71,13 @@ task pwm_base_vseq::apply_reset(string kind = "HARD");
   join
 endtask
 
-task pwm_base_vseq::apply_resets_concurrently(int reset_duration_ps = 0);
+task ${module_instance_name}_base_vseq::apply_resets_concurrently(int reset_duration_ps = 0);
   cfg.clk_rst_core_vif.drive_rst_pin(0);
   super.apply_resets_concurrently(cfg.clk_rst_core_vif.clk_period_ps);
   cfg.clk_rst_core_vif.drive_rst_pin(1);
 endtask
 
-task pwm_base_vseq::set_cfg_reg(bit [26:0] ClkDiv, bit [3:0] DcResn, bit CntrEn);
+task ${module_instance_name}_base_vseq::set_cfg_reg(bit [26:0] ClkDiv, bit [3:0] DcResn, bit CntrEn);
   `uvm_info(`gfn, $sformatf("ClkDiv 0x%0x DcResn 0x%0x En %0d", ClkDiv, DcResn, CntrEn), UVM_HIGH)
   // Supply the configuration to each of the monitors in advance of the register update.
   foreach (cfg.m_pwm_monitor_cfg[i]) begin
@@ -95,14 +95,14 @@ task pwm_base_vseq::set_cfg_reg(bit [26:0] ClkDiv, bit [3:0] DcResn, bit CntrEn)
   csr_update(ral.cfg);
 endtask
 
-task pwm_base_vseq::rand_pwm_cfg_reg();
+task ${module_instance_name}_base_vseq::rand_pwm_cfg_reg();
   bit [26:0] ClkDiv = $urandom_range(0, int'(MAX_CLK_DIV));
   bit [3:0]  DcResn = $urandom_range(0, 14);
   bit        CntrEn = 1'b1;
   set_cfg_reg(ClkDiv, DcResn, CntrEn);
 endtask
 
-task pwm_base_vseq::set_ch_invert(bit [PWM_NUM_CHANNELS-1:0] invert);
+task ${module_instance_name}_base_vseq::set_ch_invert(bit [PWM_NUM_CHANNELS-1:0] invert);
   `uvm_info(`gfn, $sformatf("Invert 0x%0x", invert), UVM_HIGH)
   csr_wr(.ptr(ral.invert[0]), .value(invert));
   foreach (invert[ii]) begin
@@ -110,12 +110,12 @@ task pwm_base_vseq::set_ch_invert(bit [PWM_NUM_CHANNELS-1:0] invert);
   end
 endtask
 
-task pwm_base_vseq::set_ch_enables(bit [PWM_NUM_CHANNELS-1:0] enables);
+task ${module_instance_name}_base_vseq::set_ch_enables(bit [PWM_NUM_CHANNELS-1:0] enables);
   `uvm_info(`gfn, $sformatf("Channel enables 0x%0x", enables), UVM_HIGH)
   csr_wr(.ptr(ral.pwm_en[0]), .value(enables));
 endtask
 
-task pwm_base_vseq::set_duty_cycle(int unsigned channel, bit [15:0] A, bit [15:0] B);
+task ${module_instance_name}_base_vseq::set_duty_cycle(int unsigned channel, bit [15:0] A, bit [15:0] B);
   `DV_CHECK_FATAL(channel < NOutputs)
 
   `uvm_info(`gfn, $sformatf("Channel %0d Duty cycles A 0x%0x B 0x%0x", channel, A, B), UVM_HIGH)
@@ -123,7 +123,7 @@ task pwm_base_vseq::set_duty_cycle(int unsigned channel, bit [15:0] A, bit [15:0
   csr_update(ral.duty_cycle[channel]);
 endtask
 
-task pwm_base_vseq::set_blink(int unsigned channel, bit [15:0] X, bit [15:0] Y);
+task ${module_instance_name}_base_vseq::set_blink(int unsigned channel, bit [15:0] X, bit [15:0] Y);
   `DV_CHECK_FATAL(channel < NOutputs)
 
   `uvm_info(`gfn, $sformatf("Channel %0d Blink params X 0x%0x Y 0x%0x", channel, X, Y), UVM_HIGH)
@@ -131,7 +131,7 @@ task pwm_base_vseq::set_blink(int unsigned channel, bit [15:0] X, bit [15:0] Y);
   csr_update(ral.blink_param[channel]);
 endtask
 
-task pwm_base_vseq::set_param(int unsigned channel, param_reg_t value);
+task ${module_instance_name}_base_vseq::set_param(int unsigned channel, param_reg_t value);
   `DV_CHECK_FATAL(channel < NOutputs)
 
   ral.pwm_param[channel].blink_en.set(value.BlinkEn);
@@ -140,14 +140,14 @@ task pwm_base_vseq::set_param(int unsigned channel, param_reg_t value);
   csr_update(ral.pwm_param[channel]);
 endtask
 
-function duty_cycle_t pwm_base_vseq::rand_pwm_duty_cycle();
+function duty_cycle_t ${module_instance_name}_base_vseq::rand_pwm_duty_cycle();
   duty_cycle_t value;
   value.A = $urandom_range(0, int'(MAX_16));
   value.B = $urandom_range(0, int'(MAX_16));
   return value;
 endfunction
 
-function blink_param_t pwm_base_vseq::rand_pwm_blink();
+function blink_param_t ${module_instance_name}_base_vseq::rand_pwm_blink();
   blink_param_t blink;
   blink.X = $urandom_range(0, int'(MAX_16));
   blink.Y = $urandom_range(0, int'(MAX_16));
@@ -155,7 +155,7 @@ function blink_param_t pwm_base_vseq::rand_pwm_blink();
 endfunction
 
 // Start the clocks of all alert agents.
-task pwm_base_vseq::start_alert_clks();
+task ${module_instance_name}_base_vseq::start_alert_clks();
   foreach (cfg.list_of_alerts[i]) begin
     string alert_name = cfg.list_of_alerts[i];
     // Restart the clock without advancing the simulation time; `alert_esc_agent` runs on two
@@ -165,7 +165,7 @@ task pwm_base_vseq::start_alert_clks();
 endtask
 
 // Stop the clocks of all alert agents.
-task pwm_base_vseq::stop_alert_clks();
+task ${module_instance_name}_base_vseq::stop_alert_clks();
   foreach (cfg.list_of_alerts[i]) begin
     string alert_name = cfg.list_of_alerts[i];
     cfg.m_alert_agent_cfgs[alert_name].vif.clk_rst_async_if.stop_clk();
@@ -175,7 +175,7 @@ endtask
 // The PWM outputs are required to keep running with the chip in low power mode, meaning that the
 // monitor and scoreboard must continue to match predictions successfully when the TL-UL clock is
 // not running.
-task pwm_base_vseq::monitor_dut_outputs(bit low_power_mode, uint cycles);
+task ${module_instance_name}_base_vseq::monitor_dut_outputs(bit low_power_mode, uint cycles);
   if (low_power_mode) begin
     int unsigned sleep_cycles = $urandom_range(10, cycles / 4);
     bit ping_chk;
@@ -203,7 +203,7 @@ task pwm_base_vseq::monitor_dut_outputs(bit low_power_mode, uint cycles);
   end
 endtask
 
-task pwm_base_vseq::shutdown_dut();
+task ${module_instance_name}_base_vseq::shutdown_dut();
   // Stop the phase counter _before_ we disable the channels because the scoreboard and the DUT
   // are notified of the channel disabling at different times, leading to a potential prediction
   // mismatch.

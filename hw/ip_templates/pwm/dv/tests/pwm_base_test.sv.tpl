@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class pwm_base_test extends cip_base_test #(
-  .CFG_T(pwm_env_cfg),
-  .ENV_T(pwm_env)
+class ${module_instance_name}_base_test extends cip_base_test #(
+  .CFG_T(${module_instance_name}_env_cfg),
+  .ENV_T(${module_instance_name}_env)
 );
 
-  `uvm_component_utils(pwm_base_test)
+  `uvm_component_utils(${module_instance_name}_base_test)
   `uvm_component_new
 
   // the base class dv_base_test creates the following instances:
-  // pwm_env_cfg: cfg
-  // pwm_env:     env
+  // ${module_instance_name}_env_cfg: cfg
+  // ${module_instance_name}_env:     env
 
   // the base class also looks up UVM_TEST_SEQ plusarg to create and run that seq in
   // the run_phase; as such, nothing more needs to be done
@@ -31,4 +31,4 @@ class pwm_base_test extends cip_base_test #(
     super.run_phase(phase);
   endtask
 
-endclass : pwm_base_test
+endclass : ${module_instance_name}_base_test

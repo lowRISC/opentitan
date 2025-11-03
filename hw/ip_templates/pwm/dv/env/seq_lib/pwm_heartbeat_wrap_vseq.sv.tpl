@@ -4,8 +4,8 @@
 
 // A version of pwm_rand_output_vseq that is constrained to ensure that it does heartbeats and wraps
 // (to 16 bits) reasonably quickly.
-class pwm_heartbeat_wrap_vseq extends pwm_rand_output_vseq;
-  `uvm_object_utils(pwm_heartbeat_wrap_vseq)
+class ${module_instance_name}_heartbeat_wrap_vseq extends ${module_instance_name}_rand_output_vseq;
+  `uvm_object_utils(${module_instance_name}_heartbeat_wrap_vseq)
 
   // Enable heartbeat (since we're trying to make it wrap, so it definitely needs to be enabled)
   extern constraint with_heartbeat_c;
@@ -23,17 +23,17 @@ class pwm_heartbeat_wrap_vseq extends pwm_rand_output_vseq;
   extern function blink_param_t rand_pwm_blink();
 endclass
 
-constraint pwm_heartbeat_wrap_vseq::with_heartbeat_c {
+constraint ${module_instance_name}_heartbeat_wrap_vseq::with_heartbeat_c {
   foreach (pwm_param[ii]) {
     pwm_param[ii].HtbtEn == 1'b1;
   }
 }
 
-function pwm_heartbeat_wrap_vseq::new(string name = "");
+function ${module_instance_name}_heartbeat_wrap_vseq::new(string name = "");
   super.new(name);
 endfunction
 
-function duty_cycle_t pwm_heartbeat_wrap_vseq::rand_pwm_duty_cycle();
+function duty_cycle_t ${module_instance_name}_heartbeat_wrap_vseq::rand_pwm_duty_cycle();
   duty_cycle_t ret;
   int low_delta = $urandom_range(0, 100), high_delta = $urandom_range(0, 100);
   bit a_lt_b = $urandom_range(0, 1);
@@ -43,7 +43,7 @@ function duty_cycle_t pwm_heartbeat_wrap_vseq::rand_pwm_duty_cycle();
   return ret;
 endfunction
 
-function blink_param_t pwm_heartbeat_wrap_vseq::rand_pwm_blink();
+function blink_param_t ${module_instance_name}_heartbeat_wrap_vseq::rand_pwm_blink();
   blink_param_t ret = super.rand_pwm_blink();
 
   // Make sure that ret.Y is large to exercise the saturation behavior

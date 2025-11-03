@@ -6,15 +6,15 @@
 // bit has been cleared to protect against further changes.
 // The `regwen` bit should be protecting against writes to any field within any of the PWM
 // configuration registers.
-class pwm_regwen_vseq extends pwm_rand_output_vseq;
-  `uvm_object_utils(pwm_regwen_vseq)
+class ${module_instance_name}_regwen_vseq extends ${module_instance_name}_rand_output_vseq;
+  `uvm_object_utils(${module_instance_name}_regwen_vseq)
 
   // Constrain the configuration so that the PWM outputs are definitely changing, making
   // any successful configuration changes more likely to be apparent.
   extern constraint rand_chan_c;
   extern constraint pwm_param_c;
 
-  // These functions override those in `pwm_base_vseq`. We just want to ensure that all outputs are
+  // These functions override those in `${module_instance_name}_base_vseq`. We just want to ensure that all outputs are
   // changing.
   extern function duty_cycle_t rand_pwm_duty_cycle();
   extern function blink_param_t rand_pwm_blink();
@@ -28,36 +28,36 @@ class pwm_regwen_vseq extends pwm_rand_output_vseq;
   extern virtual task shutdown_dut();
 endclass
 
-constraint pwm_regwen_vseq::rand_chan_c {
+constraint ${module_instance_name}_regwen_vseq::rand_chan_c {
   rand_chan == {PWM_NUM_CHANNELS{1'b1}};
 }
 
-constraint pwm_regwen_vseq::pwm_param_c {
+constraint ${module_instance_name}_regwen_vseq::pwm_param_c {
   foreach (pwm_param[ii]) {
     pwm_param[ii].BlinkEn == 1'b1;
     pwm_param[ii].HtbtEn == 1'b0;
   }
 }
 
-function duty_cycle_t pwm_regwen_vseq::rand_pwm_duty_cycle();
+function duty_cycle_t ${module_instance_name}_regwen_vseq::rand_pwm_duty_cycle();
   duty_cycle_t ret;
   ret.A = 16'h8000;
   ret.B = 16'h0;
   return ret;
 endfunction
 
-function blink_param_t pwm_regwen_vseq::rand_pwm_blink();
+function blink_param_t ${module_instance_name}_regwen_vseq::rand_pwm_blink();
   blink_param_t blink;
   blink.X = 11;
   blink.Y = 7;
   return blink;
 endfunction
 
-function pwm_regwen_vseq::new (string name = "");
+function ${module_instance_name}_regwen_vseq::new (string name = "");
   super.new(name);
 endfunction
 
-task pwm_regwen_vseq::monitor_dut_outputs(bit low_power_mode, uint cycles);
+task ${module_instance_name}_regwen_vseq::monitor_dut_outputs(bit low_power_mode, uint cycles);
   bit stop = 1'b0;
 
   // Start a parallel process that runs throughout the operation, attempting to change the
@@ -95,7 +95,7 @@ task pwm_regwen_vseq::monitor_dut_outputs(bit low_power_mode, uint cycles);
   join
 endtask
 
-task pwm_regwen_vseq::shutdown_dut();
+task ${module_instance_name}_regwen_vseq::shutdown_dut();
   `uvm_info(`gfn, "Applying reset to clear REGWEN", UVM_MEDIUM)
   apply_reset();
   `uvm_info(`gfn, "Completed reset", UVM_MEDIUM)

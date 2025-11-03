@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class pwm_env_cfg extends cip_base_env_cfg #(.RAL_T(pwm_reg_block));
-  `uvm_object_utils_begin(pwm_env_cfg)
+class ${module_instance_name}_env_cfg extends cip_base_env_cfg #(.RAL_T(${module_instance_name}_reg_block));
+  `uvm_object_utils_begin(${module_instance_name}_env_cfg)
   `uvm_object_utils_end
 
   `uvm_object_new
@@ -26,10 +26,10 @@ class pwm_env_cfg extends cip_base_env_cfg #(.RAL_T(pwm_reg_block));
 
   // Return the scaled core clock frequency in MHz.
   extern virtual function int get_clk_core_freq();
-endclass : pwm_env_cfg
+endclass : ${module_instance_name}_env_cfg
 
-function void pwm_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
-  list_of_alerts = pwm_env_pkg::LIST_OF_ALERTS;
+function void ${module_instance_name}_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
+  list_of_alerts = ${module_instance_name}_env_pkg::LIST_OF_ALERTS;
   super.initialize(csr_base_addr);
 
   // Set up the configuration for each of the monitors.
@@ -46,7 +46,7 @@ function void pwm_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
 endfunction
 
 // Return the scaled core clock frequency in MHz.
-function int pwm_env_cfg::get_clk_core_freq();
+function int ${module_instance_name}_env_cfg::get_clk_core_freq();
   real scaled = clk_rst_vif.clk_freq_mhz * clk_scale / 1024;
   `DV_CHECK_FATAL(clk_rst_vif.clk_freq_mhz > 0)
   `DV_CHECK_FATAL(scaled > 0)

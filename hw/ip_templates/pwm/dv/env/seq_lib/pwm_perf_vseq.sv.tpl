@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // sequence to check operation at min/max bandwidth
-class pwm_perf_vseq extends pwm_rand_output_vseq;
-  `uvm_object_utils(pwm_perf_vseq)
+class ${module_instance_name}_perf_vseq extends ${module_instance_name}_rand_output_vseq;
+  `uvm_object_utils(${module_instance_name}_perf_vseq)
 
   // The duty cycle used for all channels
   rand bit [15:0]  rand_dc;
@@ -32,37 +32,37 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
   extern virtual task body();
 endclass
 
-constraint pwm_perf_vseq::rand_chan_c {
+constraint ${module_instance_name}_perf_vseq::rand_chan_c {
   rand_chan dist {MAX_32 :/ 1, 0 :/ 1};
 }
 
-constraint pwm_perf_vseq::rand_invert_c {
+constraint ${module_instance_name}_perf_vseq::rand_invert_c {
   rand_invert dist {MAX_32 :/ 1, 0 :/ 1};
 }
 
-constraint pwm_perf_vseq::low_power_c {
+constraint ${module_instance_name}_perf_vseq::low_power_c {
   low_power dist {1'b1 :/ 1, 1'b0 :/ 1};
 }
 
-constraint pwm_perf_vseq::phase_delay_c {
+constraint ${module_instance_name}_perf_vseq::phase_delay_c {
   foreach (pwm_param[ii]) {
     pwm_param[ii].PhaseDelay dist {MAX_16 :/ 1, 0 :/ 1};
   }
 }
 
-constraint pwm_perf_vseq::rand_dc_c {
+constraint ${module_instance_name}_perf_vseq::rand_dc_c {
   rand_dc dist {MAX_16 :/ 1, 16'h0 :/ 1};
 }
 
-constraint pwm_perf_vseq::rand_blink_c {
+constraint ${module_instance_name}_perf_vseq::rand_blink_c {
   rand_blink dist {MAX_16 :/ 1, 16'h0 :/ 1};
 }
 
-function pwm_perf_vseq::new (string name = "");
+function ${module_instance_name}_perf_vseq::new (string name = "");
   super.new(name);
 endfunction
 
-task pwm_perf_vseq::body();
+task ${module_instance_name}_perf_vseq::body();
   set_ch_enables(32'h0);
 
   for (uint i = 0; i < PWM_NUM_CHANNELS; i++) begin

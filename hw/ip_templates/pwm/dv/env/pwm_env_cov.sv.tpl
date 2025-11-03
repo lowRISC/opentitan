@@ -8,11 +8,11 @@
  * Covergroups may also be wrapped inside helper classes if needed.
  */
 
-class pwm_env_cov extends cip_base_env_cov #(.CFG_T(pwm_env_cfg));
-  `uvm_component_utils(pwm_env_cov)
+class ${module_instance_name}_env_cov extends cip_base_env_cov #(.CFG_T(${module_instance_name}_env_cfg));
+  `uvm_component_utils(${module_instance_name}_env_cov)
 
   // the base class provides the following handles for use:
-  // pwm_env_cfg: cfg
+  // ${module_instance_name}_env_cfg: cfg
 
   // covergroups
 

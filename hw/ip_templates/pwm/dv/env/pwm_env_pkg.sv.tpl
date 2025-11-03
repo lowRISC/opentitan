@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-package pwm_env_pkg;
+package ${module_instance_name}_env_pkg;
   import uvm_pkg::*;
   import top_pkg::*;
   import dv_utils_pkg::*;
@@ -12,10 +12,10 @@ package pwm_env_pkg;
   import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
   import pwm_monitor_pkg::*;
-  import pwm_reg_pkg::*;
-  import pwm_ral_pkg::*;
+  import ${module_instance_name}_reg_pkg::*;
+  import ${module_instance_name}_ral_pkg::*;
 
-  parameter uint PWM_NUM_CHANNELS = pwm_reg_pkg::NOutputs;
+  parameter uint PWM_NUM_CHANNELS = ${module_instance_name}_reg_pkg::NOutputs;
 
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
@@ -73,11 +73,11 @@ package pwm_env_pkg;
   endfunction
 
   // Package sources
-  `include "pwm_env_cfg.sv"
-  `include "pwm_env_cov.sv"
-  `include "pwm_virtual_sequencer.sv"
-  `include "pwm_scoreboard.sv"
-  `include "pwm_env.sv"
-  `include "pwm_vseq_list.sv"
+  `include "${module_instance_name}_env_cfg.sv"
+  `include "${module_instance_name}_env_cov.sv"
+  `include "${module_instance_name}_virtual_sequencer.sv"
+  `include "${module_instance_name}_scoreboard.sv"
+  `include "${module_instance_name}_env.sv"
+  `include "${module_instance_name}_vseq_list.sv"
 
-endpackage : pwm_env_pkg
+endpackage : ${module_instance_name}_env_pkg
