@@ -43,7 +43,7 @@ class ac_range_check_env_cov extends cip_base_env_cov #(.CFG_T(ac_range_check_en
   bit  cnt_reached_cp;       // deny_cnt >= deny_cnt_threshold? 1 = greater or equal, 0 = lesser
   bit  intr_state_cp;        // intr_state register 1 = greater or equal, 0 = lesser
 
-  // Primary covergroup that verifies the operation of AC_RANGE_CHECK module.
+  // Primary covergroup that verifies the operation of ac_range_check module.
   // There are 4 parts to the cross in this covergroup.
   // - Index that had the address match
   // - Type of transaction observed

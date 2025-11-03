@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ac_range_check_predictor extends uvm_component;
-  import ac_range_check_reg_pkg::*;
-  `uvm_component_utils(ac_range_check_predictor)
+class ${module_instance_name}_predictor extends uvm_component;
+  import ${module_instance_name}_reg_pkg::*;
+  `uvm_component_utils(${module_instance_name}_predictor)
 
   // Local objects
   ac_range_check_dut_cfg dut_cfg;
-  ac_range_check_env_cfg env_cfg;
+  ${module_instance_name}_env_cfg env_cfg;
 
   // TODO: Add check to the coverage object such that it is not null when
   // coverage is enabled
-  ac_range_check_env_cov cov;
+  ${module_instance_name}_env_cov cov;
 
   bit bypass_sampled; // This is used for sampling the bypass mode setup
 
@@ -52,16 +52,16 @@ class ac_range_check_predictor extends uvm_component;
   extern function cip_tl_seq_item predict_tl_unfilt_d_chan();
   extern function void update_log(tl_seq_item item, int index, bit no_match,
                                         access_type_e access_type, bit attr_perm, bit racl_perm);
-endclass : ac_range_check_predictor
+endclass : ${module_instance_name}_predictor
 
 
-function ac_range_check_predictor::new(string name="", uvm_component parent=null);
+function ${module_instance_name}_predictor::new(string name="", uvm_component parent=null);
   super.new(name, parent);
   dut_cfg = ac_range_check_dut_cfg::type_id::create("dut_cfg");
   bypass_sampled = 0;
 endfunction : new
 
-function void ac_range_check_predictor::build_phase (uvm_phase phase);
+function void ${module_instance_name}_predictor::build_phase (uvm_phase phase);
   super.build_phase(phase);
   // For incoming transactions
   tl_unfilt_a_chan_fifo = new("tl_unfilt_a_chan_fifo", this);
@@ -90,7 +90,7 @@ endfunction : build_phase
 // This task predicts the EXPECTED item based on what has been assessed by the
 // process_tl_unfilt_a_chan_fifo task (by calling the check_access function). Gets the ACTUAL item
 // from its dedicated queue. When both items are available, calls the comparison function.
-task ac_range_check_predictor::manage_tl_fifos();
+task ${module_instance_name}_predictor::manage_tl_fifos();
   ac_range_check_scb_item exp_tl_filt_a_chan;
   ac_range_check_scb_item exp_tl_unfilt_d_chan;
 
@@ -128,7 +128,7 @@ endtask : manage_tl_fifos
 
 // Get an item from the tl_unfilt_a_chan_fifo and call the check_access function to assess whether
 // the current transaction should be granted or denied.
-task ac_range_check_predictor::process_tl_unfilt_a_chan_fifo(
+task ${module_instance_name}_predictor::process_tl_unfilt_a_chan_fifo(
   output ac_range_check_scb_item tl_unfilt);
   tl_unfilt = ac_range_check_scb_item::type_id::create("tl_unfilt");
   tl_unfilt_a_chan_fifo.get(tl_unfilt.item);
@@ -154,7 +154,7 @@ task ac_range_check_predictor::process_tl_unfilt_a_chan_fifo(
 endtask : process_tl_unfilt_a_chan_fifo
 
 // Get the item generated from the TB and sent to the tl_filt D channel.
-task ac_range_check_predictor::get_tl_filt_d_chan_item(output ac_range_check_scb_item tl_filt);
+task ${module_instance_name}_predictor::get_tl_filt_d_chan_item(output ac_range_check_scb_item tl_filt);
   tl_filt = ac_range_check_scb_item::type_id::create("tl_filt");
   // Timeout with an error if the FIFO remains empty
   fork
@@ -175,7 +175,7 @@ endtask : get_tl_filt_d_chan_item
 //       0 has priority over 1 for example). Thus, directly return when an enabled matching range is
 //       granting or denying the access.
 // TODO: check if RACL policies control is OK as done below
-function access_decision_e ac_range_check_predictor::check_access(tl_seq_item item);
+function access_decision_e ${module_instance_name}_predictor::check_access(tl_seq_item item);
   bit        attr_ok;
   bit        racl_ok;
   int        racl_role;
@@ -185,7 +185,7 @@ function access_decision_e ac_range_check_predictor::check_access(tl_seq_item it
 
   bit  bypass_enable;
 
-  ac_range_check_env_pkg::access_type_e access_type; // Type of transaction access (R/W/X)
+  ${module_instance_name}_env_pkg::access_type_e access_type; // Type of transaction access (R/W/X)
 
   `uvm_info(`gfn, $sformatf("Analyzing unfiltered item #%0d", all_unfilt_a_chan_cnt), UVM_MEDIUM)
 
@@ -272,15 +272,15 @@ function access_decision_e ac_range_check_predictor::check_access(tl_seq_item it
     if (item.is_write()) begin
       attr_ok   = dut_cfg.range_attr[i].write_access;
       racl_perm = dut_cfg.range_racl_policy[i].write_perm;
-      access_type = ac_range_check_env_pkg::Write;
+      access_type = ${module_instance_name}_env_pkg::Write;
     end else if (item.a_user[InstrTypeMsbPos:InstrTypeLsbPos] == MuBi4True) begin
       attr_ok   = dut_cfg.range_attr[i].execute_access;
       racl_perm = dut_cfg.range_racl_policy[i].read_perm; // EXECUTE reuses READ in RACL
-      access_type = ac_range_check_env_pkg::Execute;
+      access_type = ${module_instance_name}_env_pkg::Execute;
     end else begin
       attr_ok   = dut_cfg.range_attr[i].read_access;
       racl_perm = dut_cfg.range_racl_policy[i].read_perm;
-      access_type = ac_range_check_env_pkg::Read;
+      access_type = ${module_instance_name}_env_pkg::Read;
     end
     `uvm_info(`gfn, $sformatf("RACL Permissions: 0x%0h", racl_perm), UVM_MEDIUM)
 
@@ -349,7 +349,7 @@ function access_decision_e ac_range_check_predictor::check_access(tl_seq_item it
   return AccessDenied;
 endfunction : check_access
 
-function cip_tl_seq_item ac_range_check_predictor::predict_tl_unfilt_d_chan();
+function cip_tl_seq_item ${module_instance_name}_predictor::predict_tl_unfilt_d_chan();
   cip_tl_seq_item tmp_exp;
   mubi4_t instr_type = mubi4_t'(latest_filtered_item.a_user[InstrTypeMsbPos:InstrTypeLsbPos]);
   `DV_CHECK_FATAL(latest_filtered_item != null);
@@ -381,7 +381,7 @@ endfunction : predict_tl_unfilt_d_chan
 // Update the RAL registers for the logging CSRs upon a DENIED request,
 // keeping track of the deny count. It also raises the intr_state field
 // once the deny count passes the threshold
-function void ac_range_check_predictor::update_log(tl_seq_item item, int index, bit no_match,
+function void ${module_instance_name}_predictor::update_log(tl_seq_item item, int index, bit no_match,
                                         access_type_e access_type, bit attr_perm, bit racl_perm);
   tlul_pkg::tl_a_user_t a_user;
   bit [top_racl_pkg::NrRaclBits-1:0] racl_role;
@@ -394,11 +394,11 @@ function void ac_range_check_predictor::update_log(tl_seq_item item, int index, 
   bit [31:0] log_address;
 
   // Extract CSRs
-  ac_range_check_reg_log_config   log_config_csr  = env_cfg.ral.log_config;
-  ac_range_check_reg_log_status   log_status_csr  = env_cfg.ral.log_status;
-  ac_range_check_reg_log_address  log_address_csr = env_cfg.ral.log_address;
-  ac_range_check_reg_intr_state   intr_state_csr  = env_cfg.ral.intr_state;
-  ac_range_check_reg_range_attr   range_attr_csr  = env_cfg.ral.range_attr[index];
+  ${module_instance_name}_reg_log_config   log_config_csr  = env_cfg.ral.log_config;
+  ${module_instance_name}_reg_log_status   log_status_csr  = env_cfg.ral.log_status;
+  ${module_instance_name}_reg_log_address  log_address_csr = env_cfg.ral.log_address;
+  ${module_instance_name}_reg_intr_state   intr_state_csr  = env_cfg.ral.intr_state;
+  ${module_instance_name}_reg_range_attr   range_attr_csr  = env_cfg.ral.range_attr[index];
 
   a_user          = item.a_user;
   racl_role       = top_racl_pkg::tlul_extract_racl_role_bits(a_user.rsvd);
@@ -493,7 +493,7 @@ function void ac_range_check_predictor::update_log(tl_seq_item item, int index, 
   end
 endfunction : update_log
 
-function void ac_range_check_predictor::reset(string kind = "HARD");
+function void ${module_instance_name}_predictor::reset(string kind = "HARD");
   tl_unfilt_a_chan_fifo.flush();
   tl_filt_d_chan_fifo.flush();
   all_unfilt_a_chan_cnt = 0;
@@ -504,7 +504,7 @@ function void ac_range_check_predictor::reset(string kind = "HARD");
   latest_filtered_item  = null;
 endfunction : reset
 
-function void ac_range_check_predictor::check_phase(uvm_phase phase);
+function void ${module_instance_name}_predictor::check_phase(uvm_phase phase);
   super.check_phase(phase);
 
   if (tl_unfilt_a_chan_fifo.size() > 0) begin

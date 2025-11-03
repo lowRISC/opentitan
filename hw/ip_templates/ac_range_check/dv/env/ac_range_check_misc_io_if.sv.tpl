@@ -4,12 +4,12 @@
 
 // Interface to handle signal level code for the miscellaneous signals without an attached
 // UVM agent
-interface ac_range_check_misc_io_if();
+interface ${module_instance_name}_misc_io_if();
   // Dep packages
   import uvm_pkg::*;
   import dv_utils_pkg::*;
-  import ac_range_check_env_pkg::*;
-  import ac_range_check_test_pkg::*;
+  import ${module_instance_name}_env_pkg::*;
+  import ${module_instance_name}_test_pkg::*;
 
   // Macro includes
   `include "uvm_macros.svh"
@@ -47,16 +47,16 @@ interface ac_range_check_misc_io_if();
 
   function automatic void set_racl_policies(int unsigned idx, racl_policy_t perm);
     if (idx >= NrRaclPolicies) begin
-      `uvm_fatal("ac_range_check_misc_io_if", $sformatf("Invalid RACL policy index %0d", idx))
+      `uvm_fatal("${module_instance_name}_misc_io_if", $sformatf("Invalid RACL policy index %0d", idx))
     end
     racl_policies[idx] = perm;
   endfunction : set_racl_policies
 
   function automatic racl_policy_t get_racl_policies(int unsigned idx);
     if (idx >= NrRaclPolicies) begin
-      `uvm_fatal("ac_range_check_misc_io_if", $sformatf("Invalid RACL policy index %0d", idx))
+      `uvm_fatal("${module_instance_name}_misc_io_if", $sformatf("Invalid RACL policy index %0d", idx))
     end
     return racl_policies[idx];
   endfunction : get_racl_policies
 
-endinterface : ac_range_check_misc_io_if
+endinterface : ${module_instance_name}_misc_io_if

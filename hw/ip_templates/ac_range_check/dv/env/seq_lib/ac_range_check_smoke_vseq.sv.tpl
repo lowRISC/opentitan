@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ac_range_check_smoke_vseq extends ac_range_check_base_vseq;
-  import ac_range_check_reg_pkg::*;
-  `uvm_object_utils(ac_range_check_smoke_vseq)
+class ${module_instance_name}_smoke_vseq extends ${module_instance_name}_base_vseq;
+  import ${module_instance_name}_reg_pkg::*;
+  `uvm_object_utils(${module_instance_name}_smoke_vseq)
 
   // Local variables
   rand bit zero_delays;
@@ -40,15 +40,15 @@ class ac_range_check_smoke_vseq extends ac_range_check_base_vseq;
   extern task body();
   extern task set_logging();
   extern task check_logging();
-endclass : ac_range_check_smoke_vseq
+endclass : ${module_instance_name}_smoke_vseq
 
 
-constraint ac_range_check_smoke_vseq::num_trans_c {
+constraint ${module_instance_name}_smoke_vseq::num_trans_c {
   num_trans inside {[(2 << DenyCountWidth)+50:(2 << DenyCountWidth)+150]};
 }
 
 // Enable deny_access 3/4 of the time for each range
-constraint ac_range_check_smoke_vseq::log_denied_access_c {
+constraint ${module_instance_name}_smoke_vseq::log_denied_access_c {
   foreach (dut_cfg.range_base[i]) {
     dut_cfg.range_attr[i].log_denied_access dist {
       0 :/ 1,
@@ -57,7 +57,7 @@ constraint ac_range_check_smoke_vseq::log_denied_access_c {
   }
 }
 
-constraint ac_range_check_smoke_vseq::range_c {
+constraint ${module_instance_name}_smoke_vseq::range_c {
   solve config_range_mask before dut_cfg.range_base;
   solve dut_cfg.range_base before dut_cfg.range_limit;
   foreach (dut_cfg.range_limit[i]) {
@@ -71,7 +71,7 @@ constraint ac_range_check_smoke_vseq::range_c {
 }
 
 // Enable/allow the range 2/3 of the time, to get more granted accesses
-constraint ac_range_check_smoke_vseq::range_attr_c {
+constraint ${module_instance_name}_smoke_vseq::range_attr_c {
   foreach (dut_cfg.range_base[i]) {
     dut_cfg.range_attr[i].execute_access dist {
       0 :/ 1,
@@ -92,14 +92,14 @@ constraint ac_range_check_smoke_vseq::range_attr_c {
   }
 }
 
-constraint ac_range_check_smoke_vseq::range_racl_policy_c {
+constraint ${module_instance_name}_smoke_vseq::range_racl_policy_c {
   foreach (dut_cfg.range_racl_policy[i]) {
     soft dut_cfg.range_racl_policy[i].write_perm == 16'hFFFF;
     soft dut_cfg.range_racl_policy[i].read_perm  == 16'hFFFF;
   }
 }
 
-constraint ac_range_check_smoke_vseq::tl_main_vars_addr_c {
+constraint ${module_instance_name}_smoke_vseq::tl_main_vars_addr_c {
   solve dut_cfg.range_base before tl_main_vars;
   solve dut_cfg.range_limit before tl_main_vars;
   solve range_idx before tl_main_vars;
@@ -115,15 +115,15 @@ constraint ac_range_check_smoke_vseq::tl_main_vars_addr_c {
   };
 }
 
-constraint ac_range_check_smoke_vseq::tl_main_vars_mask_c {
+constraint ${module_instance_name}_smoke_vseq::tl_main_vars_mask_c {
   soft tl_main_vars.mask == 'hF;
 }
 
-function ac_range_check_smoke_vseq::new(string name="");
+function ${module_instance_name}_smoke_vseq::new(string name="");
   super.new(name);
 endfunction : new
 
-task ac_range_check_smoke_vseq::body();
+task ${module_instance_name}_smoke_vseq::body();
   set_logging();
   for (int i=1; i<=num_trans; i++) begin
     `uvm_info(`gfn, $sformatf("Starting seq %0d/%0d", i, num_trans), UVM_LOW)
@@ -166,7 +166,7 @@ endtask : body
 //====================================
 //       LOGGING SEQUENCING
 //====================================
-constraint ac_range_check_smoke_vseq::log_enable_c {
+constraint ${module_instance_name}_smoke_vseq::log_enable_c {
   if (apply_log_enable_c) {
     log_enable dist {
       0 :/ 3,
@@ -177,7 +177,7 @@ constraint ac_range_check_smoke_vseq::log_enable_c {
   }
 }
 
-constraint ac_range_check_smoke_vseq::deny_cnt_threshold_c {
+constraint ${module_instance_name}_smoke_vseq::deny_cnt_threshold_c {
   if (apply_deny_cnt_threshold_c) {
     deny_cnt_threshold dist {
       [8'd0                     : 8'd5]                     :/ 2,
@@ -189,7 +189,7 @@ constraint ac_range_check_smoke_vseq::deny_cnt_threshold_c {
   }
 }
 
-constraint ac_range_check_smoke_vseq::intr_enable_c {
+constraint ${module_instance_name}_smoke_vseq::intr_enable_c {
   if (apply_intr_enable_c) {
     intr_enable dist {
       0 :/ 1,
@@ -200,7 +200,7 @@ constraint ac_range_check_smoke_vseq::intr_enable_c {
   }
 }
 
-task ac_range_check_smoke_vseq::set_logging();
+task ${module_instance_name}_smoke_vseq::set_logging();
     apply_log_enable_c         = 1;
     apply_deny_cnt_threshold_c = 1;
     apply_intr_enable_c        = 1;
@@ -227,7 +227,7 @@ task ac_range_check_smoke_vseq::set_logging();
     apply_intr_enable_c        = 0;
 endtask : set_logging
 
-task ac_range_check_smoke_vseq::check_logging();
+task ${module_instance_name}_smoke_vseq::check_logging();
   uvm_reg_data_t    act_config,
                     act_status,
                     act_address;

@@ -14,21 +14,21 @@
 // - Verifies that AC_RANGE_CHECK has no implications on TLUL traffic
 //------------------------------------------------------------------------------
 
-class ac_range_check_bypass_vseq extends ac_range_check_smoke_vseq;
-  `uvm_object_utils(ac_range_check_bypass_vseq)
+class ${module_instance_name}_bypass_vseq extends ${module_instance_name}_smoke_vseq;
+  `uvm_object_utils(${module_instance_name}_bypass_vseq)
 
   // Standard SV/UVM methods
   extern function new(string name="");
   extern task body();
-endclass : ac_range_check_bypass_vseq
+endclass : ${module_instance_name}_bypass_vseq
 
 
 
-function ac_range_check_bypass_vseq::new(string name="");
+function ${module_instance_name}_bypass_vseq::new(string name="");
   super.new(name);
 endfunction : new
 
-task ac_range_check_bypass_vseq::body();
+task ${module_instance_name}_bypass_vseq::body();
 
   // AC_RANGE_CHECK can only be set to bypass when 'range_check_overwrite' pins are set to 1
   // This interface is part of the misc intf in the TB and direct access is available via the cfg in

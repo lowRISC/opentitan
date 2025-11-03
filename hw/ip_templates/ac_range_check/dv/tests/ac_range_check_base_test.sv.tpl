@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ac_range_check_base_test extends cip_base_test #(
-    .CFG_T(ac_range_check_env_cfg),
-    .ENV_T(ac_range_check_env)
+class ${module_instance_name}_base_test extends cip_base_test #(
+    .CFG_T(${module_instance_name}_env_cfg),
+    .ENV_T(${module_instance_name}_env)
   );
 
-  `uvm_component_utils(ac_range_check_base_test)
+  `uvm_component_utils(${module_instance_name}_base_test)
 
   // The base class dv_base_test creates the following instances:
-  //   - ac_range_check_env_cfg: cfg
-  //   - ac_range_check_env:     env
+  //   - ${module_instance_name}_env_cfg: cfg
+  //   - ${module_instance_name}_env:     env
 
   // The base class also looks up UVM_TEST_SEQ plusarg to create and run that seq in the run_phase.
   // As such, nothing more needs to be done
@@ -19,14 +19,14 @@ class ac_range_check_base_test extends cip_base_test #(
   // Standard SV/UVM methods
   extern function new(string name="", uvm_component parent=null);
   extern function void build_phase(uvm_phase phase);
-endclass : ac_range_check_base_test
+endclass : ${module_instance_name}_base_test
 
 
-function ac_range_check_base_test::new(string name="", uvm_component parent=null);
+function ${module_instance_name}_base_test::new(string name="", uvm_component parent=null);
   super.new(name, parent);
 endfunction : new
 
-function void ac_range_check_base_test::build_phase(uvm_phase phase);
+function void ${module_instance_name}_base_test::build_phase(uvm_phase phase);
   string test_seq_s;
   string common_seq_type;
 
@@ -42,10 +42,10 @@ function void ac_range_check_base_test::build_phase(uvm_phase phase);
     `uvm_info(`gfn, $sformatf("common_seq_type = %s", common_seq_type), UVM_LOW)
   end
 
-  if (test_seq_s == "ac_range_check_common_vseq" && common_seq_type != "intr_test") begin
+  if (test_seq_s == "${module_instance_name}_common_vseq" && common_seq_type != "intr_test") begin
     `uvm_info(`gfn, "Disabling scoreboard for common cip tests", UVM_LOW)
     cfg.en_scb = 0;
-  end else if (test_seq_s == "ac_range_check_common_vseq" && common_seq_type == "intr_test") begin
+  end else if (test_seq_s == "${module_instance_name}_common_vseq" && common_seq_type == "intr_test") begin
     `uvm_info(`gfn, "Running Interrupt Test - Downgrading error in scoreboard check_phase", UVM_LOW)
     cfg.en_scb_err_downgrade = 1;
   end

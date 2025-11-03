@@ -17,8 +17,8 @@
 //------------------------------------------------------------------------------
 
 
-class ac_range_check_lock_range_vseq extends ac_range_check_smoke_vseq;
-  `uvm_object_utils(ac_range_check_lock_range_vseq)
+class ${module_instance_name}_lock_range_vseq extends ${module_instance_name}_smoke_vseq;
+  `uvm_object_utils(${module_instance_name}_lock_range_vseq)
 
   // ---------------------------------------------------------------------------
   // Random knobs for every range
@@ -99,18 +99,18 @@ class ac_range_check_lock_range_vseq extends ac_range_check_smoke_vseq;
   extern function new(string name = "");
   extern virtual task body();
 
-endclass : ac_range_check_lock_range_vseq
+endclass : ${module_instance_name}_lock_range_vseq
 
-function ac_range_check_lock_range_vseq::new(string name);
+function ${module_instance_name}_lock_range_vseq::new(string name);
   super.new(name);
 endfunction
 
 
-task ac_range_check_lock_range_vseq::body();
+task ${module_instance_name}_lock_range_vseq::body();
   // Local variable just for the body task
   bit reprogram_done = 0;
 
-  `uvm_info(`gfn, "Starting ac_range_check_lock_range_seq", UVM_LOW)
+  `uvm_info(`gfn, "Starting ${module_instance_name}_lock_range_seq", UVM_LOW)
 
   `DV_CHECK_RANDOMIZE_FATAL(this)
   this.base.rand_mode(0);
@@ -153,7 +153,7 @@ task ac_range_check_lock_range_vseq::body();
     end
 
     // TODO(#27352): Coverage sampling needs to be moved to scoreboard.
-    // Currently in ac_range_check_scoreboard we are seeing TL transactions to range_regwen[i]
+    // Currently in ${module_instance_name}_scoreboard we are seeing TL transactions to range_regwen[i]
     // register being dropped when a write with range_regwen[i] = 1. This needs to be debugged as
     // a write to this register irrespective of the value triggers coverage sampling
     if (cfg.en_cov) begin

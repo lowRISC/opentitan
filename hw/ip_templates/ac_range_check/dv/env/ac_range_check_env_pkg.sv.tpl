@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-package ac_range_check_env_pkg;
+package ${module_instance_name}_env_pkg;
   // Dep packages
   import uvm_pkg::*;
   import top_pkg::*;
@@ -12,7 +12,7 @@ package ac_range_check_env_pkg;
   import cip_base_pkg::*;
   import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
-  import ac_range_check_ral_pkg::*;
+  import ${module_instance_name}_ral_pkg::*;
 
   // Macro includes
   `include "uvm_macros.svh"
@@ -39,7 +39,7 @@ package ac_range_check_env_pkg;
   parameter uint   ROLE_WIDTH                 = ${nr_role_bits};
 
   // Types
-  typedef virtual ac_range_check_misc_io_if misc_vif_t;
+  typedef virtual ${module_instance_name}_misc_io_if misc_vif_t;
 
   typedef enum int {
     DenyCntReached = 0
@@ -108,11 +108,11 @@ package ac_range_check_env_pkg;
   // Package sources
   `include "ac_range_check_dut_cfg.sv"
   `include "ac_range_check_scb_item.sv"
-  `include "ac_range_check_env_cfg.sv"
-  `include "ac_range_check_env_cov.sv"
-  `include "ac_range_check_virtual_sequencer.sv"
-  `include "ac_range_check_predictor.sv"
-  `include "ac_range_check_scoreboard.sv"
-  `include "ac_range_check_env.sv"
-  `include "ac_range_check_vseq_list.sv"
-endpackage : ac_range_check_env_pkg
+  `include "${module_instance_name}_env_cfg.sv"
+  `include "${module_instance_name}_env_cov.sv"
+  `include "${module_instance_name}_virtual_sequencer.sv"
+  `include "${module_instance_name}_predictor.sv"
+  `include "${module_instance_name}_scoreboard.sv"
+  `include "${module_instance_name}_env.sv"
+  `include "${module_instance_name}_vseq_list.sv"
+endpackage : ${module_instance_name}_env_pkg

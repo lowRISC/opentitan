@@ -8,15 +8,15 @@
  * Covergroups may also be wrapped inside helper classes if needed.
  */
 
-class ac_range_check_env_cov extends cip_base_env_cov #(.CFG_T(ac_range_check_env_cfg));
-  import ac_range_check_reg_pkg::*;
-  `uvm_component_utils(ac_range_check_env_cov)
+class ${module_instance_name}_env_cov extends cip_base_env_cov #(.CFG_T(${module_instance_name}_env_cfg));
+  import ${module_instance_name}_reg_pkg::*;
+  `uvm_component_utils(${module_instance_name}_env_cov)
 
   // The base class provides the following handles for use:
-  // ac_range_check_env_cfg: cfg
+  // ${module_instance_name}_env_cfg: cfg
 
   // Holds the type of TLUL transaction being processed by the predictor
-  ac_range_check_env_pkg::access_type_e access_type_cp;
+  ${module_instance_name}_env_pkg::access_type_e access_type_cp;
 
   int  idx_cp;            // Range Index for which coverage is sampled
   bit  read_cp;           // Read permission from CSR Attr field    1 = enabled, 0 = disabled
@@ -43,7 +43,7 @@ class ac_range_check_env_cov extends cip_base_env_cov #(.CFG_T(ac_range_check_en
   bit  cnt_reached_cp;       // deny_cnt >= deny_cnt_threshold? 1 = greater or equal, 0 = lesser
   bit  intr_state_cp;        // intr_state register 1 = greater or equal, 0 = lesser
 
-  // Primary covergroup that verifies the operation of AC_RANGE_CHECK module.
+  // Primary covergroup that verifies the operation of ${module_instance_name} module.
   // There are 4 parts to the cross in this covergroup.
   // - Index that had the address match
   // - Type of transaction observed
@@ -74,14 +74,14 @@ class ac_range_check_env_cov extends cip_base_env_cov #(.CFG_T(ac_range_check_en
       // If an execute transaction is observed and execute permission is enabled
       // the transaction can never be filtered out.
       illegal_bins deny_when_ex_is_set =
-                              binsof (access_type_cp) intersect {ac_range_check_env_pkg::Execute}
+                              binsof (access_type_cp) intersect {${module_instance_name}_env_pkg::Execute}
                            && binsof (execute_cp) intersect {1}
                            && binsof (access_permit_cp) intersect {0};
 
       // If an execute transaction is observed and execute permission is disabled
       // the transaction will always be filtered out.
       illegal_bins  permit_when_ex_unset =
-                              binsof (access_type_cp) intersect {ac_range_check_env_pkg::Execute}
+                              binsof (access_type_cp) intersect {${module_instance_name}_env_pkg::Execute}
                            && binsof (execute_cp) intersect {0}
                            && binsof (access_permit_cp) intersect {1};
 
@@ -89,14 +89,14 @@ class ac_range_check_env_cov extends cip_base_env_cov #(.CFG_T(ac_range_check_en
       // If a write transaction is observed and write permissions are enabled
       // the transaction can never be filtered out.
       illegal_bins deny_when_wr_is_set =
-                                binsof (access_type_cp) intersect {ac_range_check_env_pkg::Write}
+                                binsof (access_type_cp) intersect {${module_instance_name}_env_pkg::Write}
                              && binsof (write_cp) intersect {1}
                              && binsof (access_permit_cp) intersect {0};
 
       // If a write transaction is observed and write permission is disabled
       // the transaction will always be filtered out.
       illegal_bins permit_when_wr_unset =
-                                binsof (access_type_cp) intersect {ac_range_check_env_pkg::Write}
+                                binsof (access_type_cp) intersect {${module_instance_name}_env_pkg::Write}
                              && binsof (write_cp) intersect {0}
                              && binsof (access_permit_cp) intersect {1};
 
@@ -104,14 +104,14 @@ class ac_range_check_env_cov extends cip_base_env_cov #(.CFG_T(ac_range_check_en
       // If a read transaction is observed and read permissions are enabled
       // the transaction can never be filtered out.
       illegal_bins deny_when_rd_is_set =
-                                 binsof (access_type_cp) intersect {ac_range_check_env_pkg::Read}
+                                 binsof (access_type_cp) intersect {${module_instance_name}_env_pkg::Read}
                               && binsof (read_cp) intersect {1}
                               && binsof (access_permit_cp) intersect {0};
 
       // If a read transaction is observed and read permission is disabled
       // the transaction will always be filtered out.
       illegal_bins permit_when_rd_unset =
-                                 binsof (access_type_cp) intersect {ac_range_check_env_pkg::Read}
+                                 binsof (access_type_cp) intersect {${module_instance_name}_env_pkg::Read}
                               && binsof (read_cp) intersect {0}
                               && binsof (access_permit_cp) intersect {1};
     }
@@ -266,11 +266,11 @@ class ac_range_check_env_cov extends cip_base_env_cov #(.CFG_T(ac_range_check_en
   extern function void build_phase(uvm_phase phase);
 
   extern function void sample_attr_cg(int idx,
-                                      ac_range_check_env_pkg::access_type_e access_type,
+                                      ${module_instance_name}_env_pkg::access_type_e access_type,
                                       bit read_perm, bit write_perm, bit execute_perm,
                                       bit acc_permit);
   extern function void sample_racl_cg(int idx,
-                                      ac_range_check_env_pkg::access_type_e access_type,
+                                      ${module_instance_name}_env_pkg::access_type_e access_type,
                                       int role, bit racl_check);
 
   extern function void sample_range_cg(int idx, bit range_en);
@@ -282,10 +282,10 @@ class ac_range_check_env_cov extends cip_base_env_cov #(.CFG_T(ac_range_check_en
                                           bit cnt_reached, bit intr_state);
   extern function void sample_log_denied_access_cg(int idx, bit log_denied_access);
   extern function void sample_lock_logging_cg(int idx, bit log_denied_access, bit lock);
-endclass : ac_range_check_env_cov
+endclass : ${module_instance_name}_env_cov
 
 
-function ac_range_check_env_cov::new(string name, uvm_component parent);
+function ${module_instance_name}_env_cov::new(string name, uvm_component parent);
   super.new(name, parent);
   attr_perm_cg         = new();
   racl_cg              = new();
@@ -299,15 +299,15 @@ function ac_range_check_env_cov::new(string name, uvm_component parent);
   lock_logging_cg      = new();
 endfunction : new
 
-function void ac_range_check_env_cov::build_phase(uvm_phase phase);
+function void ${module_instance_name}_env_cov::build_phase(uvm_phase phase);
   super.build_phase(phase);
   // Please instantiate sticky_intr_cov array of objects for all interrupts that are sticky
   // See cip_base_env_cov for details
 endfunction : build_phase
 
 
-function void ac_range_check_env_cov::sample_attr_cg(int idx,
-                                             ac_range_check_env_pkg::access_type_e access_type,
+function void ${module_instance_name}_env_cov::sample_attr_cg(int idx,
+                                             ${module_instance_name}_env_pkg::access_type_e access_type,
                                              bit read_perm, bit write_perm, bit execute_perm,
                                              bit acc_permit);
   this.idx_cp           = idx;
@@ -320,8 +320,8 @@ function void ac_range_check_env_cov::sample_attr_cg(int idx,
   attr_perm_cg.sample();
 endfunction : sample_attr_cg
 
-function void ac_range_check_env_cov::sample_racl_cg(int idx,
-                                             ac_range_check_env_pkg::access_type_e access_type,
+function void ${module_instance_name}_env_cov::sample_racl_cg(int idx,
+                                             ${module_instance_name}_env_pkg::access_type_e access_type,
                                              int role, bit racl_check);
   this.idx_cp         = idx;
   this.access_type_cp = access_type;
@@ -331,14 +331,14 @@ function void ac_range_check_env_cov::sample_racl_cg(int idx,
   racl_cg.sample();
 endfunction : sample_racl_cg
 
-function void ac_range_check_env_cov::sample_range_cg(int idx, bit range_en);
+function void ${module_instance_name}_env_cov::sample_range_cg(int idx, bit range_en);
   this.idx_cp      = idx;
   this.range_en_cp = range_en;
 
   range_cg.sample();
 endfunction : sample_range_cg
 
-function void ac_range_check_env_cov::sample_addr_match_cg(int idx, bit addr_hit);
+function void ${module_instance_name}_env_cov::sample_addr_match_cg(int idx, bit addr_hit);
   this.idx_cp      = idx;
   this.addr_hit_cp = addr_hit;
 
@@ -350,17 +350,17 @@ function void ac_range_check_env_cov::sample_addr_match_cg(int idx, bit addr_hit
   end
 endfunction : sample_addr_match_cg
 
-function void ac_range_check_env_cov::sample_all_index_miss_cg();
+function void ${module_instance_name}_env_cov::sample_all_index_miss_cg();
   this.all_index_miss_cp = 1;
   all_index_miss_cg.sample();
 endfunction : sample_all_index_miss_cg
 
-function void ac_range_check_env_cov::sample_bypass_cg(bit bypass_en);
+function void ${module_instance_name}_env_cov::sample_bypass_cg(bit bypass_en);
   this.bypass_cp = bypass_en;
   bypass_cg.sample();
 endfunction : sample_bypass_cg
 
-function void ac_range_check_env_cov::sample_range_lock_cg(int idx, bit enable, bit lock);
+function void ${module_instance_name}_env_cov::sample_range_lock_cg(int idx, bit enable, bit lock);
   this.idx_cp      = idx;
   this.range_en_cp = enable;
   this.lock_idx_cp = lock;
@@ -368,7 +368,7 @@ function void ac_range_check_env_cov::sample_range_lock_cg(int idx, bit enable, 
   range_lock_cg.sample();
 endfunction : sample_range_lock_cg
 
-function void ac_range_check_env_cov::sample_log_intr_cg(bit log_enable, bit log_written,
+function void ${module_instance_name}_env_cov::sample_log_intr_cg(bit log_enable, bit log_written,
                                                          int deny_th, bit cnt_reached,
                                                          bit intr_state);
   this.log_enable_cp  = log_enable;
@@ -379,13 +379,13 @@ function void ac_range_check_env_cov::sample_log_intr_cg(bit log_enable, bit log
   log_intr_cg.sample();
 endfunction : sample_log_intr_cg
 
-function void ac_range_check_env_cov::sample_log_denied_access_cg(int idx, bit log_denied_access);
+function void ${module_instance_name}_env_cov::sample_log_denied_access_cg(int idx, bit log_denied_access);
   this.idx_cp               = idx;
   this.log_denied_access_cp = log_denied_access;
   log_denied_access_cg.sample();
 endfunction : sample_log_denied_access_cg
 
-function void ac_range_check_env_cov::sample_lock_logging_cg(int idx,
+function void ${module_instance_name}_env_cov::sample_lock_logging_cg(int idx,
                                                              bit log_denied_access, bit lock);
   this.idx_cp               = idx;
   this.log_denied_access_cp = log_denied_access;

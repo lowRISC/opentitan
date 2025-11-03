@@ -6,13 +6,13 @@
 // the "dut_cfg" class which itself contains all variables relating to the DUT configuration.
 // By default, we keep TL transactions random, as this can easily be overridden by derived
 // sequences if required, as the constraints are declared "soft".
-class ac_range_check_base_vseq extends cip_base_vseq #(
-    .RAL_T               (ac_range_check_reg_block),
-    .CFG_T               (ac_range_check_env_cfg),
-    .COV_T               (ac_range_check_env_cov),
-    .VIRTUAL_SEQUENCER_T (ac_range_check_virtual_sequencer)
+class ${module_instance_name}_base_vseq extends cip_base_vseq #(
+    .RAL_T               (${module_instance_name}_reg_block),
+    .CFG_T               (${module_instance_name}_env_cfg),
+    .COV_T               (${module_instance_name}_env_cov),
+    .VIRTUAL_SEQUENCER_T (${module_instance_name}_virtual_sequencer)
   );
-  `uvm_object_utils(ac_range_check_base_vseq)
+  `uvm_object_utils(${module_instance_name}_base_vseq)
 
   // Various knobs to enable certain routines
   bit do_ac_range_check_init = 1;
@@ -41,19 +41,19 @@ class ac_range_check_base_vseq extends cip_base_vseq #(
   extern virtual task configure_range(int unsigned idx = 0, bit [DataWidth-1:0] base = 0,
     bit [DataWidth-1:0] limit = 0, bit read_perm = 0, bit write_perm = 0, bit execute_perm = 0,
     bit en = 0, bit log_denied_access = 0);
-endclass : ac_range_check_base_vseq
+endclass : ${module_instance_name}_base_vseq
 
 
-constraint ac_range_check_base_vseq::range_idx_c {
+constraint ${module_instance_name}_base_vseq::range_idx_c {
   range_idx inside {[0:NUM_RANGES-1]};
 }
 
-function ac_range_check_base_vseq::new(string name="");
+function ${module_instance_name}_base_vseq::new(string name="");
   super.new(name);
   dut_cfg = ac_range_check_dut_cfg::type_id::create("dut_cfg");
 endfunction : new
 
-task ac_range_check_base_vseq::dut_init(string reset_kind = "HARD");
+task ${module_instance_name}_base_vseq::dut_init(string reset_kind = "HARD");
   // Initialize some of DUT inputs
   cfg.misc_vif.set_range_check_overwrite(0);
   cfg.misc_vif.init_racl_policies();
@@ -71,7 +71,7 @@ task ac_range_check_base_vseq::dut_init(string reset_kind = "HARD");
   join_none
 endtask : dut_init
 
-task ac_range_check_base_vseq::ac_range_check_init();
+task ${module_instance_name}_base_vseq::ac_range_check_init();
   // This fork will ensure that configuration takes place in "disorder", as the TL register
   // sequencer will have to deal with parallel requests (and random delays).
   fork
@@ -84,21 +84,21 @@ task ac_range_check_base_vseq::ac_range_check_init();
 endtask : ac_range_check_init
 
 // Only update registers whose value does not match the new one (usage of set+update instead write)
-task ac_range_check_base_vseq::cfg_range_base();
+task ${module_instance_name}_base_vseq::cfg_range_base();
   foreach (dut_cfg.range_base[i]) begin
     ral.range_base[i].set(dut_cfg.range_base[i]);
     csr_update(.csr(ral.range_base[i]));
   end
 endtask : cfg_range_base
 
-task ac_range_check_base_vseq::cfg_range_limit();
+task ${module_instance_name}_base_vseq::cfg_range_limit();
   foreach (dut_cfg.range_limit[i]) begin
     ral.range_limit[i].set(dut_cfg.range_limit[i]);
     csr_update(.csr(ral.range_limit[i]));
   end
 endtask : cfg_range_limit
 
-task ac_range_check_base_vseq::cfg_range_attr();
+task ${module_instance_name}_base_vseq::cfg_range_attr();
   foreach (dut_cfg.range_attr[i]) begin
     ral.range_attr[i].log_denied_access.set(mubi4_bool_to_mubi(
       dut_cfg.range_attr[i].log_denied_access));
@@ -110,7 +110,7 @@ task ac_range_check_base_vseq::cfg_range_attr();
   end
 endtask : cfg_range_attr
 
-task ac_range_check_base_vseq::cfg_range_racl_policy();
+task ${module_instance_name}_base_vseq::cfg_range_racl_policy();
   foreach (dut_cfg.range_racl_policy[i]) begin
     ral.range_racl_policy_shadowed[i].set(dut_cfg.range_racl_policy[i]);
     // Shadowed register: the 2 writes are automatically managed by the csr_utils_pkg
@@ -118,7 +118,7 @@ task ac_range_check_base_vseq::cfg_range_racl_policy();
   end
 endtask : cfg_range_racl_policy
 
-task ac_range_check_base_vseq::send_single_tl_unfilt_tr(bit zero_delays = 0);
+task ${module_instance_name}_base_vseq::send_single_tl_unfilt_tr(bit zero_delays = 0);
   cip_tl_host_single_seq tl_unfilt_host_seq;
   `uvm_create_on(tl_unfilt_host_seq, p_sequencer.tl_unfilt_sqr)
   if (zero_delays) begin
@@ -140,7 +140,7 @@ task ac_range_check_base_vseq::send_single_tl_unfilt_tr(bit zero_delays = 0);
   csr_utils_pkg::decrement_outstanding_access();
 endtask : send_single_tl_unfilt_tr
 
-task ac_range_check_base_vseq::tl_filt_device_auto_resp(int min_rsp_delay       = 0,
+task ${module_instance_name}_base_vseq::tl_filt_device_auto_resp(int min_rsp_delay       = 0,
                                                         int max_rsp_delay       = 80,
                                                         int rsp_abort_pct       = 25,
                                                         int d_error_pct         = 0,
@@ -157,7 +157,7 @@ task ac_range_check_base_vseq::tl_filt_device_auto_resp(int min_rsp_delay       
   tl_filt_device_seq.start(p_sequencer.tl_filt_sqr);
 endtask : tl_filt_device_auto_resp
 
-task ac_range_check_base_vseq::configure_range(int unsigned idx = 0,
+task ${module_instance_name}_base_vseq::configure_range(int unsigned idx = 0,
   bit [DataWidth-1:0] base = 0, bit [DataWidth-1:0] limit = 0, bit read_perm = 0,
   bit write_perm = 0, bit execute_perm = 0, bit en = 0, bit log_denied_access = 0);
 

@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ac_range_check_scoreboard extends cip_base_scoreboard #(
-    .CFG_T(ac_range_check_env_cfg),
-    .RAL_T(ac_range_check_reg_block),
-    .COV_T(ac_range_check_env_cov)
+class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(
+    .CFG_T(${module_instance_name}_env_cfg),
+    .RAL_T(${module_instance_name}_reg_block),
+    .COV_T(${module_instance_name}_env_cov)
   );
-  `uvm_component_utils(ac_range_check_scoreboard)
+  `uvm_component_utils(${module_instance_name}_scoreboard)
 
   // Local objects
   ac_range_check_dut_cfg   dut_cfg;
-  ac_range_check_predictor predict;
+  ${module_instance_name}_predictor predict;
 
   // Local variables
   int a_chan_matching_cnt;    // Number of matching transactions on A channel
@@ -30,8 +30,8 @@ class ac_range_check_scoreboard extends cip_base_scoreboard #(
   uvm_tlm_analysis_fifo #(tl_seq_item) tl_filt_a_chan_fifo;
 
   // Incoming transactions from the predictor
-  uvm_blocking_put_imp_filt   #(ac_range_check_scb_item, ac_range_check_scoreboard) tl_filt_imp;
-  uvm_blocking_put_imp_unfilt #(ac_range_check_scb_item, ac_range_check_scoreboard) tl_unfilt_imp;
+  uvm_blocking_put_imp_filt   #(ac_range_check_scb_item, ${module_instance_name}_scoreboard) tl_filt_imp;
+  uvm_blocking_put_imp_unfilt #(ac_range_check_scb_item, ${module_instance_name}_scoreboard) tl_unfilt_imp;
 
   // Standard SV/UVM methods
   extern function new(string name="", uvm_component parent=null);
@@ -52,17 +52,17 @@ class ac_range_check_scoreboard extends cip_base_scoreboard #(
   extern function void reset(string kind = "HARD");
   extern function void compare_tl_item(string tl_type, ac_range_check_scb_item exp,
     ac_range_check_scb_item act);
-endclass : ac_range_check_scoreboard
+endclass : ${module_instance_name}_scoreboard
 
 
-function ac_range_check_scoreboard::new(string name="", uvm_component parent=null);
+function ${module_instance_name}_scoreboard::new(string name="", uvm_component parent=null);
   super.new(name, parent);
 endfunction : new
 
-function void ac_range_check_scoreboard::build_phase(uvm_phase phase);
+function void ${module_instance_name}_scoreboard::build_phase(uvm_phase phase);
   super.build_phase(phase);
   dut_cfg               = ac_range_check_dut_cfg::type_id::create("dut_cfg");
-  predict               = ac_range_check_predictor::type_id::create("predict", this);
+  predict               = ${module_instance_name}_predictor::type_id::create("predict", this);
   predict.dut_cfg       = dut_cfg;
   predict.cov           = cov;
   predict.env_cfg       = cfg;
@@ -76,13 +76,13 @@ function void ac_range_check_scoreboard::build_phase(uvm_phase phase);
   do_alert_check = 0;
 endfunction : build_phase
 
-function void ac_range_check_scoreboard::connect_phase(uvm_phase phase);
+function void ${module_instance_name}_scoreboard::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
   predict.tl_filt_put.connect(this.tl_filt_imp);
   predict.tl_unfilt_put.connect(this.tl_unfilt_imp);
 endfunction : connect_phase
 
-task ac_range_check_scoreboard::run_phase(uvm_phase phase);
+task ${module_instance_name}_scoreboard::run_phase(uvm_phase phase);
   super.run_phase(phase);
   wait(cfg.under_reset);
   forever begin
@@ -107,7 +107,7 @@ task ac_range_check_scoreboard::run_phase(uvm_phase phase);
   end
 endtask : run_phase
 
-task ac_range_check_scoreboard::tl_filt_wait_and_compare();
+task ${module_instance_name}_scoreboard::tl_filt_wait_and_compare();
   ac_range_check_scb_item act_tl_filt_a_chan;
   ac_range_check_scb_item exp_tl_filt_a_chan;
 
@@ -125,7 +125,7 @@ task ac_range_check_scoreboard::tl_filt_wait_and_compare();
   end
 endtask : tl_filt_wait_and_compare
 
-task ac_range_check_scoreboard::tl_unfilt_wait_and_compare();
+task ${module_instance_name}_scoreboard::tl_unfilt_wait_and_compare();
   ac_range_check_scb_item act_tl_unfilt_d_chan;
   ac_range_check_scb_item exp_tl_unfilt_d_chan;
 
@@ -145,19 +145,19 @@ endtask : tl_unfilt_wait_and_compare
 
 // As required by the macro uvm_blocking_put_imp_decl, we need to implement this task which will be
 // called from the predictor when calling the "put" method
-task ac_range_check_scoreboard::put_filt(ac_range_check_scb_item tl_filt);
+task ${module_instance_name}_scoreboard::put_filt(ac_range_check_scb_item tl_filt);
   exp_tl_filt_a_chan_q.push_back(tl_filt);
   exp_tl_filt_ev.trigger;
 endtask : put_filt
 
 // As required by the macro uvm_blocking_put_imp_decl, we need to implement this task which will be
 // called from the predictor when calling the "put" method
-task ac_range_check_scoreboard::put_unfilt(ac_range_check_scb_item tl_unfilt);
+task ${module_instance_name}_scoreboard::put_unfilt(ac_range_check_scb_item tl_unfilt);
   exp_tl_unfilt_d_chan_q.push_back(tl_unfilt);
   exp_tl_unfilt_ev.trigger;
 endtask : put_unfilt
 
-task ac_range_check_scoreboard::get_tl_unfilt_d_chan_item(output ac_range_check_scb_item tl_unfilt);
+task ${module_instance_name}_scoreboard::get_tl_unfilt_d_chan_item(output ac_range_check_scb_item tl_unfilt);
   tl_unfilt = ac_range_check_scb_item::type_id::create("tl_unfilt");
   // Timeout with an error if the FIFO remains empty
   fork
@@ -174,7 +174,7 @@ task ac_range_check_scoreboard::get_tl_unfilt_d_chan_item(output ac_range_check_
             "forwarded for comparison"}, act_unfilt_d_chan_cnt), UVM_LOW)
 endtask : get_tl_unfilt_d_chan_item
 
-task ac_range_check_scoreboard::get_tl_filt_a_chan_item(output ac_range_check_scb_item tl_filt);
+task ${module_instance_name}_scoreboard::get_tl_filt_a_chan_item(output ac_range_check_scb_item tl_filt);
   tl_filt = ac_range_check_scb_item::type_id::create("tl_filt");
   // Timeout with an error if the FIFO remains empty
   fork
@@ -191,7 +191,7 @@ task ac_range_check_scoreboard::get_tl_filt_a_chan_item(output ac_range_check_sc
             "forwarded for comparison"}, act_filt_a_chan_cnt), UVM_LOW)
 endtask : get_tl_filt_a_chan_item
 
-function void ac_range_check_scoreboard::compare_tl_item(string tl_type,
+function void ${module_instance_name}_scoreboard::compare_tl_item(string tl_type,
                                                          ac_range_check_scb_item exp,
                                                          ac_range_check_scb_item act);
   int unsigned matching_cnt_increment = 0;
@@ -219,7 +219,7 @@ function void ac_range_check_scoreboard::compare_tl_item(string tl_type,
   end
 endfunction : compare_tl_item
 
-task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
+task ${module_instance_name}_scoreboard::process_tl_access(tl_seq_item item,
                                                   tl_channels_e channel,
                                                   string ral_name);
   uvm_reg        csr;
@@ -243,15 +243,15 @@ task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
     `DV_CHECK_NE_FATAL(csr, null)
     // When the CSR is defined as an array, simplify the name to make it generic. This will be
     // useful if the template parameter "num_ranges" is changed.
-    if (csr.get_type_name() == "ac_range_check_reg_range_regwen") begin
+    if (csr.get_type_name() == "${module_instance_name}_reg_range_regwen") begin
       csr_name = "range_regwen";
-    end else if (csr.get_type_name() == "ac_range_check_reg_range_base") begin
+    end else if (csr.get_type_name() == "${module_instance_name}_reg_range_base") begin
       csr_name = "range_base";
-    end else if (csr.get_type_name() == "ac_range_check_reg_range_limit") begin
+    end else if (csr.get_type_name() == "${module_instance_name}_reg_range_limit") begin
       csr_name = "range_limit";
-    end else if (csr.get_type_name() == "ac_range_check_reg_range_attr") begin
+    end else if (csr.get_type_name() == "${module_instance_name}_reg_range_attr") begin
       csr_name = "range_attr";
-    end else if (csr.get_type_name() == "ac_range_check_reg_range_racl_policy_shadowed") begin
+    end else if (csr.get_type_name() == "${module_instance_name}_reg_range_racl_policy_shadowed") begin
       csr_name = "range_racl_policy_shadowed";
     end else begin
       csr_name = csr.get_name();
@@ -365,7 +365,7 @@ task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
   end
 endtask : process_tl_access
 
-function void ac_range_check_scoreboard::reset(string kind = "HARD");
+function void ${module_instance_name}_scoreboard::reset(string kind = "HARD");
   super.reset(kind);
   predict.reset(kind);
   tl_unfilt_d_chan_fifo.flush();
@@ -376,7 +376,7 @@ function void ac_range_check_scoreboard::reset(string kind = "HARD");
   d_chan_matching_cnt   = 0;
 endfunction : reset
 
-function void ac_range_check_scoreboard::check_phase(uvm_phase phase);
+function void ${module_instance_name}_scoreboard::check_phase(uvm_phase phase);
   super.check_phase(phase);
 
   // This condition seems useless, but the way the environment builds the scoreboard, it doesn't
@@ -420,7 +420,7 @@ function void ac_range_check_scoreboard::check_phase(uvm_phase phase);
   end
 endfunction : check_phase
 
-function void ac_range_check_scoreboard::report_phase(uvm_phase phase);
+function void ${module_instance_name}_scoreboard::report_phase(uvm_phase phase);
   super.report_phase(phase);
   `uvm_info(`gfn,
             $sformatf("The number of transactions that matched the prediction on a_chan is %0d",
