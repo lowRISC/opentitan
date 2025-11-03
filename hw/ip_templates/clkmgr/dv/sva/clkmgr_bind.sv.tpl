@@ -56,7 +56,7 @@ module clkmgr_bind;
   );
 
 % endfor
-% if ext_clk_bypass:
+% if len(derived_clks) > 0:
   bind clkmgr clkmgr_extclk_sva_if clkmgr_extclk_sva_if (
     .clk_i,
     .rst_ni,
@@ -150,7 +150,7 @@ module clkmgr_bind;
   );
 
 % endfor
-% if ext_clk_bypass:
+% if len(derived_clks) > 0:
   bind clkmgr clkmgr_sec_cm_checker_assert clkmgr_sec_cm_checker_assert (
     .clk_i,
     .rst_ni,

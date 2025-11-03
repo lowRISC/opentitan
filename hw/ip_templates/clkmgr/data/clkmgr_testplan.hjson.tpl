@@ -92,7 +92,7 @@
       stage: V2
       tests: ["clkmgr_trans"]
     }
-  % if ext_clk_bypass:
+  % if len(derived_clks) > 0:
     {
       name: extclk
       desc: '''
@@ -272,7 +272,7 @@
       desc: '''This runs random sequences in succession.
 
             Randomly chooses from the following sequences:
-          % if ext_clk_bypass:
+          % if len(derived_clks) > 0:
             - clkmgr_extclk_vseq,
           % endif
             - clkmgr_frequency_timeout_vseq,
@@ -314,7 +314,7 @@
             but the dvsim coverage flow doesn't yet support arrays.
             '''
     }
-  % if ext_clk_bypass:
+  % if len(derived_clks) > 0:
     {
       name: extclk_cg
       desc: '''

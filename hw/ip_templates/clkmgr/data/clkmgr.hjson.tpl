@@ -117,7 +117,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
     { name: "CLKMGR.MEAS_CTRL.RECOV_ERR",
       desc: "Frequency and timeout measurements can flag recoverable errors."
     }
-% if ext_clk_bypass:
+% if len(derived_clks) > 0:
     { name: "CLKMGR.LC_EXTCLK.SPEED",
       desc: "Speed of LC controlled modification of external clock."
     }
@@ -156,7 +156,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
       act:     "req",
       package: "clkmgr_pkg",
     },
-% if ext_clk_bypass:
+% if len(derived_clks) > 0:
 
     { struct:  "lc_tx",
       type:    "uni",
@@ -279,7 +279,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
     { name: "IDLE.INTERSIG.MUBI",
       desc: "Idle inputs are multibit encoded."
     }
-  % if ext_clk_bypass:
+  % if len(derived_clks) > 0:
     { name: "LC_CTRL.INTERSIG.MUBI",
       desc: "The life cycle control signals are multibit encoded."
     }
@@ -309,7 +309,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
   ]
 
   registers: [
-  % if ext_clk_bypass:
+  % if len(derived_clks) > 0:
     { name: "EXTCLK_CTRL_REGWEN",
       desc: "External clock control write enable",
       swaccess: "rw0c",

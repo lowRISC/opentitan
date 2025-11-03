@@ -261,7 +261,6 @@
     with_alert_handler: true
     topname: earlgrey
     uniquified_modules: {}
-    ext_clk_bypass: true
     module_instance_name: clkmgr
   }
 }

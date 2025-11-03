@@ -5,7 +5,6 @@
   instance_name: top_darjeeling_clkmgr
   param_values:
   {
-    ext_clk_bypass: false
     src_clks:
     {
       main:

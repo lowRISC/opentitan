@@ -108,7 +108,7 @@ They depend on the `clk_hints` CSR, which has a separate bit for each, `main_ip_
 They also depend on the `idle_i` input, which also has a separate multi-bit value for each unit.
 Units are considered busy when their corresponding `idle_i` value is not `mubi_pkg::MuBi4True`, and this prevents its clock turning off until it becomes idle.
 
-% if ext_clk_bypass:
+% if len(derived_clks) > 0:
 ${"####"} clkmgr_extclk_vseq
 
 The sequence `clkmgr_extclk_vseq` randomizes the stimuli that drive the external clock selection.
@@ -147,7 +147,7 @@ The following covergroups have been developed to prove that the test intent has 
   These are wrapped in class `clkmgr_trans_cg_wrap` and instantiated in `clkmgr_env_cov`.
 * Covergroups for the outcome of each clock measurement.
   These are wrapped in class `freq_measure_cg_wrap` and instantiated in `clkmgr_env_cov`.
-% if ext_clk_bypass:
+% if len(derived_clks) > 0:
 * Covergroup for the external clock selection logic: `extclk_cg` in `clkmgr_env_cov`.
 % endif
 

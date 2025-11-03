@@ -12,7 +12,7 @@ module clkmgr_cov_bind;
   );
 % endfor
 
-% if ext_clk_bypass:
+% if len(derived_clks) > 0:
   bind clkmgr cip_lc_tx_cov_if u_lc_hw_debug_en_mubi_cov_if (
     .rst_ni (rst_ni),
     .val    (lc_hw_debug_en_i)

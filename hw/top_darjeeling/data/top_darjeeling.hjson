@@ -517,9 +517,6 @@
       base_addr: {
         hart: "0x30420000",
       },
-      ipgen_params: {
-        ext_clk_bypass: false
-      },
       attr: "ipgen",
     },
     { name: "pinmux_aon",

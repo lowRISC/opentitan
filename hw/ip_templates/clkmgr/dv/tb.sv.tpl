@@ -153,7 +153,7 @@ module tb;
     .scanmode_i(clkmgr_if.scanmode_i),
     .idle_i    (clkmgr_if.idle_i),
 
-% if ext_clk_bypass:
+% if len(derived_clks) > 0:
     .lc_hw_debug_en_i(clkmgr_if.lc_hw_debug_en_i),
     .all_clk_byp_req_o(clkmgr_if.all_clk_byp_req),
     .all_clk_byp_ack_i(clkmgr_if.all_clk_byp_ack),
