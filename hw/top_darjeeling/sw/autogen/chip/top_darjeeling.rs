@@ -2756,6 +2756,8 @@ pub enum PowerManagerResetRequests {
 pub enum GateableClocks {
     /// Clock clk_io_div4_peri in group peri
     IoDiv4Peri = 0,
+    /// Clock clk_io_div2_peri in group peri
+    IoDiv2Peri = 1,
 }
 
 /// Clock Manager Software-Hinted Clocks.

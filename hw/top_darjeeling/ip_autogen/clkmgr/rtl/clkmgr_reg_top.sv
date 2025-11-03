@@ -149,8 +149,10 @@ module clkmgr_reg_top (
   logic [3:0] jitter_enable_qs;
   logic [3:0] jitter_enable_wd;
   logic clk_enables_we;
-  logic clk_enables_qs;
-  logic clk_enables_wd;
+  logic clk_enables_clk_io_div4_peri_en_qs;
+  logic clk_enables_clk_io_div4_peri_en_wd;
+  logic clk_enables_clk_io_div2_peri_en_qs;
+  logic clk_enables_clk_io_div2_peri_en_wd;
   logic clk_hints_we;
   logic clk_hints_clk_main_aes_hint_qs;
   logic clk_hints_clk_main_aes_hint_wd;
@@ -579,18 +581,19 @@ module clkmgr_reg_top (
 
 
   // R[clk_enables]: V(False)
+  //   F[clk_io_div4_peri_en]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0)
-  ) u_clk_enables (
+  ) u_clk_enables_clk_io_div4_peri_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (clk_enables_we),
-    .wd     (clk_enables_wd),
+    .wd     (clk_enables_clk_io_div4_peri_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -598,11 +601,38 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.clk_enables.q),
+    .q      (reg2hw.clk_enables.clk_io_div4_peri_en.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (clk_enables_qs)
+    .qs     (clk_enables_clk_io_div4_peri_en_qs)
+  );
+
+  //   F[clk_io_div2_peri_en]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_clk_enables_clk_io_div2_peri_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clk_enables_we),
+    .wd     (clk_enables_clk_io_div2_peri_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_enables.clk_io_div2_peri_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clk_enables_clk_io_div2_peri_en_qs)
   );
 
 
@@ -1457,7 +1487,9 @@ module clkmgr_reg_top (
   assign jitter_enable_wd = reg_wdata[3:0];
   assign clk_enables_we = addr_hit[6] & reg_we & !reg_error;
 
-  assign clk_enables_wd = reg_wdata[0];
+  assign clk_enables_clk_io_div4_peri_en_wd = reg_wdata[0];
+
+  assign clk_enables_clk_io_div2_peri_en_wd = reg_wdata[1];
   assign clk_hints_we = addr_hit[7] & reg_we & !reg_error;
 
   assign clk_hints_clk_main_aes_hint_wd = reg_wdata[0];
@@ -1545,7 +1577,8 @@ module clkmgr_reg_top (
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[0] = clk_enables_qs;
+        reg_rdata_next[0] = clk_enables_clk_io_div4_peri_en_qs;
+        reg_rdata_next[1] = clk_enables_clk_io_div2_peri_en_qs;
       end
 
       addr_hit[7]: begin

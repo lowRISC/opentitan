@@ -67,6 +67,7 @@
     // src:  From which clock source is the clock derived
     // div:  Ratio between derived clock and source clock
     derived_srcs: [
+      { name: "io_div2", aon: "no", div: 2, src: "io", freq: "500000000" }
       { name: "io_div4", aon: "no", div: 4, src: "io", freq: "250000000" }
     ],
 
@@ -149,10 +150,12 @@
       { name: "sys_src",        gen: false, type: "int",                    clock: "io_div4" }
       { name: "por",            gen: true,  type: "top", parent: "por_aon", clock: "main"    }
       { name: "por_io",         gen: true,  type: "top", parent: "por_aon", clock: "io"      }
+      { name: "por_io_div2",    gen: true , type: "top", parent: "por_aon", clock: "io_div2" }
       { name: "por_io_div4",    gen: true , type: "top", parent: "por_aon", clock: "io_div4" }
       { name: "lc",             gen: true,  type: "top", parent: "lc_src",  clock: "main"    }
       { name: "lc_aon",         gen: true,  type: "top", parent: "lc_src",  clock: "aon"     }
       { name: "lc_io",          gen: true,  type: "top", parent: "lc_src",  clock: "io"      }
+      { name: "lc_io_div2",     gen: true,  type: "top", parent: "lc_src",  clock: "io_div2" }
       { name: "lc_io_div4",     gen: true,  type: "top", parent: "lc_src",  clock: "io_div4" }
       { name: "sys",            gen: true,  type: "top", parent: "sys_src", clock: "main"    }
       { name: "spi_device",     gen: true,  type: "top", parent: "lc_src", clock: "io_div4", sw: true }
@@ -309,7 +312,7 @@
     },
     { name: "spi_device",
       type: "spi_device",
-      clock_srcs: {clk_i: "io_div4", scan_clk_i: "io_div4"},
+      clock_srcs: {clk_i: "io_div4", scan_clk_i: "io_div2"},
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_device"},
       base_addr: {
@@ -475,7 +478,7 @@
           group: "powerup"
         },
         clk_por_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io",
-        clk_io_div4_i: "io_div4"
+        clk_io_div2_i: "io_div2", clk_io_div4_i: "io_div4"
       },
       clock_group: "powerup",
       reset_connections: {
@@ -516,10 +519,12 @@
       reset_connections: {rst_ni: "lc_io_div4",
                           rst_aon_ni: "lc_aon"
                           rst_io_ni: "lc_io",
+                          rst_io_div2_ni: "lc_io_div2",
                           rst_io_div4_ni: "lc_io_div4",
                           rst_main_ni: "lc",
                           rst_root_ni: "por_io_div4",
                           rst_root_io_ni: "por_io",
+                          rst_root_io_div2_ni: "por_io_div2",
                           rst_root_io_div4_ni: "por_io_div4",
                           rst_root_main_ni: "por",
                          },
