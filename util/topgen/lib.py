@@ -44,6 +44,11 @@ class CEnum(object):
 
         value = len(self.constants)
 
+        # Check that we're not adding duplicates
+        for const in self.constants:
+            if full_name == const[0]:
+                raise ValueError('{} is already declared with value {}'.format(const[0], const[1]))
+
         self.constants.append((full_name, value, docstring))
 
         return full_name
@@ -148,6 +153,11 @@ class RustEnum(object):
         full_name = constant_name
         value = self.enum_counter
         self.enum_counter += 1
+
+        # Check that we're not adding duplicates
+        for const in self.constants:
+            if full_name == const[0]:
+                raise ValueError('{} is already declared with value {}'.format(const[0], const[1]))
         self.constants.append((full_name, value, docstring))
         return full_name
 
