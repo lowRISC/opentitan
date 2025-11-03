@@ -13,7 +13,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import hjson
 from basegen.lib import Name
-from basegen.typing import ConfigT, ParamsT
+from basegen.typing import ConfigT
 from mako.template import Template
 from reggen.ip_block import IpBlock
 from version_file import VersionInformation
@@ -675,11 +675,6 @@ def is_ipgen(module: ConfigT) -> bool:
     """Returns an indication where a particular module is ipgen
     """
     return module.get('attr') in ["ipgen"]
-
-
-def get_ipgen_params(module: ConfigT) -> ParamsT:
-    """Return ipgen params, if defined for this module"""
-    return deepcopy(module.get("ipgen_params", {}))
 
 
 def is_top_reggen(module: ConfigT) -> bool:

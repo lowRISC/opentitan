@@ -41,7 +41,7 @@ from topgen.c_test import TopGenCTest
 from topgen.clocks import Clocks
 from topgen.gen_dv import gen_dv
 from topgen.gen_top_docs import gen_top_docs
-from topgen.lib import find_module, find_modules, load_cfg, write_file_secure, get_ipgen_params
+from topgen.lib import find_module, find_modules, load_cfg, write_file_secure
 from topgen.merge import (
     amend_alert, amend_interrupt, amend_pinmux_io, amend_racl,
     amend_reset_request, amend_resets, amend_wkup, commit_alert_modules,
@@ -282,6 +282,11 @@ def generate_ipgen(top: ConfigT, module: ConfigT, params: ParamsT,
             f"Unexpected uniquified name: expected {module_instance_name}, "
             f"got {uniq_name}")
     ipgen_render(module["template_type"], topname, params, out_path)
+
+
+def get_ipgen_params(module: ConfigT) -> ParamsT:
+    """Return ipgen params, if defined for this module"""
+    return deepcopy(module.get("ipgen_params", {}))
 
 
 def _get_alert_handler_params(top: ConfigT, name: str) -> ParamsT:

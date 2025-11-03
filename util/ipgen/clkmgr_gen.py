@@ -9,7 +9,7 @@ from typing import List, NamedTuple
 
 from basegen.typing import ConfigT, ParamsT
 from topgen.clocks import Clocks, ClockSignal
-from topgen.lib import find_module, get_ipgen_params
+from topgen.lib import find_module
 
 
 class ClockMeasureConfig(NamedTuple):
@@ -47,9 +47,7 @@ def get_clkmgr_params(top: ConfigT) -> ParamsT:
     with_alert_handler = find_module(top['module'],
                                      'alert_handler') is not None
 
-    clkmgr = find_module(top["module"], "clkmgr")
-    ipgen_params = get_ipgen_params(clkmgr)
-    ipgen_params.update({
+    return {
         "src_clks":
         OrderedDict({name: vars(obj)
                      for name, obj in clocks.srcs.items()}),
@@ -70,8 +68,7 @@ def get_clkmgr_params(top: ConfigT) -> ParamsT:
         len(clocks.groups),
         "with_alert_handler":
         with_alert_handler,
-    })
-    return ipgen_params
+    }
 
 
 def get_all_srcs(src_clks: ConfigT, derived_clks: ConfigT) -> ConfigT:
