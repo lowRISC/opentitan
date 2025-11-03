@@ -30,3 +30,13 @@ py_library(
     name = "hyperdebug",
     srcs = ["hyperdebug.py"],
 )
+
+py_library(
+    name = "gdb_controller",
+    srcs = ["gdb_controller.py"],
+)
+
+py_library(
+    name = "dis_parser",
+    srcs = ["dis_parser.py"],
+)

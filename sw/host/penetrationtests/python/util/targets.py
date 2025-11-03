@@ -11,9 +11,10 @@ from sw.host.penetrationtests.python.util.hyperdebug import HyperDebug
 
 @dataclass
 class TargetConfig:
-    """ Target configuration.
+    """Target configuration.
     Stores information about the target.
     """
+
     target_type: str
     fw_bin: str
     interface_type: Optional[str] = None
@@ -26,6 +27,9 @@ class TargetConfig:
     opentitantool: Optional[str] = None
     usb_serial: Optional[str] = None
     husky_serial: Optional[str] = None
+    openocd: Optional[str] = None
+    openocd_chip_config: Optional[str] = (None,)
+    openocd_design_config: Optional[str] = None
 
 
 class Target:
@@ -43,7 +47,6 @@ class Target:
     pacing = 10 / baudrate
 
     def __init__(self, target_cfg: TargetConfig):
-
         self.target_cfg = target_cfg
 
         self.target = None
@@ -53,18 +56,21 @@ class Target:
                 target_cfg.opentitantool,
                 target_cfg.fw_bin,
                 target_cfg.bitstream,
-                target_cfg.tool_args
+                target_cfg.tool_args,
+                target_cfg.openocd,
+                target_cfg.openocd_chip_config,
+                target_cfg.openocd_design_config,
             )
 
         self.com_interface = self.target.init_communication(target_cfg.port, self.baudrate)
 
-    def initialize_target(self):
-        self.target.initialize_target()
+    def initialize_target(self, print_output=True):
+        self.target.initialize_target(print_output=print_output)
         # Clear the UART
         self.dump_all()
 
-    def reset_target(self):
-        self.target.reset_target()
+    def reset_target(self, reset_delay=0.005):
+        self.target.reset_target(reset_delay=reset_delay)
 
     def write(self, data):
         """Write data to the target."""
@@ -84,11 +90,14 @@ class Target:
     def print_all(self, max_tries=50):
         it = 0
         while it != max_tries:
-            read_line = str(self.readline().decode().strip())
-            if len(read_line) > 0:
-                print(read_line, flush=True)
-            else:
-                break
+            try:
+                read_line = str(self.readline().decode().strip())
+                if len(read_line) > 0:
+                    print(read_line, flush=True)
+                else:
+                    break
+            except UnicodeDecodeError:
+                pass
             it += 1
 
     def dump_all(self, max_tries=50):
@@ -166,3 +175,19 @@ class Target:
                 break
             it += 1
         return ""
+
+    def start_openocd(self):
+        if self.target_cfg.openocd:
+            self.target.start_openocd()
+
+    def read_openocd(self):
+        if self.target_cfg.openocd:
+            return self.target.read_openocd()
+
+    def close_openocd(self):
+        if self.target_cfg.openocd:
+            self.target.close_openocd()
+
+    def send_openocd_command(self, command):
+        if self.target_cfg.openocd:
+            return self.target.send_openocd_command(command)
