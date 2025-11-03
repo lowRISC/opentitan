@@ -1734,6 +1734,12 @@ module chip_darjeeling_asic #(
     .es_rng_valid_i                    ( es_rng_valid               ),
     .es_rng_bit_i                      ( es_rng_bit                 ),
     .es_rng_fips_o                     ( es_rng_fips                ),
+    .io_clk_byp_req_o                  ( io_clk_byp_req             ),
+    .io_clk_byp_ack_i                  ( io_clk_byp_ack             ),
+    .all_clk_byp_req_o                 ( all_clk_byp_req            ),
+    .all_clk_byp_ack_i                 ( all_clk_byp_ack            ),
+    .hi_speed_sel_o                    ( hi_speed_sel               ),
+    .div_step_down_req_i               ( div_step_down_req          ),
     .calib_rdy_i                       ( ast_init_done              ),
 
     // OTP external voltage

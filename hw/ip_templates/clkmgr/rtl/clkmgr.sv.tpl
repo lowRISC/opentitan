@@ -71,7 +71,6 @@ rg_srcs = get_rg_srcs(typed_clocks)
   // idle hints
   // SEC_CM: IDLE.INTERSIG.MUBI
   input prim_mubi_pkg::mubi4_t [${len(hint_names)-1}:0] idle_i,
-% if len(derived_clks) > 0:
 
   // life cycle state output
   // SEC_CM: LC_CTRL.INTERSIG.MUBI
@@ -90,11 +89,6 @@ rg_srcs = get_rg_srcs(typed_clocks)
   input mubi4_t all_clk_byp_ack_i,
   output mubi4_t hi_speed_sel_o,
 
-  // external indication for whether dividers should be stepped down
-  // SEC_CM: DIV.INTERSIG.MUBI
-  input mubi4_t div_step_down_req_i,
-
-% endif
   // clock calibration has been done.
   // If this is signal is 0, assume clock frequencies to be
   // uncalibrated.
@@ -102,6 +96,10 @@ rg_srcs = get_rg_srcs(typed_clocks)
 
   // jittery enable to ast
   output mubi4_t jitter_en_o,
+
+  // external indication for whether dividers should be stepped down
+  // SEC_CM: DIV.INTERSIG.MUBI
+  input mubi4_t div_step_down_req_i,
 
   // clock gated indications going to alert handlers
   output clkmgr_cg_en_t cg_en_o,
@@ -297,6 +295,15 @@ rg_srcs = get_rg_srcs(typed_clocks)
     // divider step down controls
     .step_down_acks_i(step_down_acks)
   );
+  % else:
+  // No bypass as there are no derived clocks
+
+  // Read inputs and tie-off outputs
+  logic unused_bypass = ^{lc_clk_byp_req_i, all_clk_byp_ack_i, io_clk_byp_ack_i};
+
+  assign all_clk_byp_req_o               = prim_mubi_pkg::MuBi4False;
+  assign io_clk_byp_req_o                = prim_mubi_pkg::MuBi4False;
+  assign all_clkhi_speed_sel_o_byp_req_o = prim_mubi_pkg::MuBi4False;
   % endif
 
   ////////////////////////////////////////////////////
@@ -460,11 +467,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
   ) u_${k}_sw_en_sync (
     .clk_i(clk_${v['src_name']}),
     .rst_ni(rst_${v['src_name']}_ni),
-  % if len(typed_clocks['sw_clks']) > 1:
     .d_i(reg2hw.clk_enables.${k}_en.q),
-  % else:
-    .d_i(reg2hw.clk_enables.q),
-  % endif
     .q_o(${k}_sw_en)
   );
 
@@ -581,11 +584,9 @@ rg_srcs = get_rg_srcs(typed_clocks)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
   `ASSERT_KNOWN(AlertsKnownO_A,   alert_tx_o)
   `ASSERT_KNOWN(PwrMgrKnownO_A, pwr_o)
-% if len(derived_clks) > 0:
   `ASSERT_KNOWN(AllClkBypReqKnownO_A, all_clk_byp_req_o)
   `ASSERT_KNOWN(IoClkBypReqKnownO_A, io_clk_byp_req_o)
   `ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)
-% endif
   `ASSERT_KNOWN(JitterEnableKnownO_A, jitter_en_o)
 % for intf in exported_clks:
   `ASSERT_KNOWN(ExportClocksKownO_A, clocks_${intf}_o)

@@ -2061,7 +2061,9 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: lc_ctrl
-          top_signame: lc_ctrl_lc_clk_byp_ack
+          end_idx: -1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_clk_byp_req
           index: -1
         }
         {
@@ -3238,6 +3240,126 @@
           inst_name: clkmgr_aon
           default: ""
           top_signame: clkmgr_aon_cg_en
+          index: -1
+        }
+        {
+          name: lc_hw_debug_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: clkmgr_aon
+          default: ""
+          top_signame: lc_ctrl_lc_hw_debug_en
+          index: -1
+        }
+        {
+          name: io_clk_byp_req
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: clkmgr_aon
+          default: ""
+          external: true
+          top_signame: io_clk_byp_req
+          conn_type: false
+          index: -1
+        }
+        {
+          name: io_clk_byp_ack
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: clkmgr_aon
+          default: ""
+          external: true
+          top_signame: io_clk_byp_ack
+          conn_type: false
+          index: -1
+        }
+        {
+          name: all_clk_byp_req
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: clkmgr_aon
+          default: ""
+          external: true
+          top_signame: all_clk_byp_req
+          conn_type: false
+          index: -1
+        }
+        {
+          name: all_clk_byp_ack
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: clkmgr_aon
+          default: ""
+          external: true
+          top_signame: all_clk_byp_ack
+          conn_type: false
+          index: -1
+        }
+        {
+          name: hi_speed_sel
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: clkmgr_aon
+          default: ""
+          external: true
+          top_signame: hi_speed_sel
+          conn_type: false
+          index: -1
+        }
+        {
+          name: div_step_down_req
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: clkmgr_aon
+          default: ""
+          external: true
+          top_signame: div_step_down_req
+          conn_type: false
+          index: -1
+        }
+        {
+          name: lc_clk_byp_req
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: clkmgr_aon
+          default: ""
+          top_signame: lc_ctrl_lc_clk_byp_req
+          index: -1
+        }
+        {
+          name: lc_clk_byp_ack
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: clkmgr_aon
+          default: ""
+          top_signame: lc_ctrl_lc_clk_byp_ack
           index: -1
         }
         {
@@ -11242,6 +11364,7 @@
         ast.lc_hw_debug_en
         csrng.lc_hw_debug_en
         rv_dm.lc_hw_debug_en
+        clkmgr_aon.lc_hw_debug_en
         pwrmgr_aon.lc_hw_debug_en
         soc_dbg_ctrl.lc_hw_debug_en
       ]
@@ -11271,9 +11394,13 @@
         otp_ctrl.lc_check_byp_en
         rv_dm.lc_check_byp_en
       ]
+      lc_ctrl.lc_clk_byp_req:
+      [
+        clkmgr_aon.lc_clk_byp_req
+      ]
       lc_ctrl.lc_clk_byp_ack:
       [
-        lc_ctrl.lc_clk_byp_req
+        clkmgr_aon.lc_clk_byp_ack
       ]
       lc_ctrl.lc_creator_seed_sw_rw_en:
       [
@@ -11760,6 +11887,12 @@
       spi_device.ram_cfg_spi2sys: spi_device_ram_2p_cfg_spi2sys
       pwrmgr_aon.boot_status: pwrmgr_boot_status
       clkmgr_aon.jitter_en: clk_main_jitter_en
+      clkmgr_aon.io_clk_byp_req: io_clk_byp_req
+      clkmgr_aon.io_clk_byp_ack: io_clk_byp_ack
+      clkmgr_aon.all_clk_byp_req: all_clk_byp_req
+      clkmgr_aon.all_clk_byp_ack: all_clk_byp_ack
+      clkmgr_aon.hi_speed_sel: hi_speed_sel
+      clkmgr_aon.div_step_down_req: div_step_down_req
       clkmgr_aon.calib_rdy: calib_rdy
       dma.sys: dma_sys
       entropy_src.entropy_src_rng_enable: es_rng_enable
@@ -22164,7 +22297,9 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: lc_ctrl
-        top_signame: lc_ctrl_lc_clk_byp_ack
+        end_idx: -1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_clk_byp_req
         index: -1
       }
       {
@@ -22954,6 +23089,126 @@
         inst_name: clkmgr_aon
         default: ""
         top_signame: clkmgr_aon_cg_en
+        index: -1
+      }
+      {
+        name: lc_hw_debug_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: clkmgr_aon
+        default: ""
+        top_signame: lc_ctrl_lc_hw_debug_en
+        index: -1
+      }
+      {
+        name: io_clk_byp_req
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: clkmgr_aon
+        default: ""
+        external: true
+        top_signame: io_clk_byp_req
+        conn_type: false
+        index: -1
+      }
+      {
+        name: io_clk_byp_ack
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: clkmgr_aon
+        default: ""
+        external: true
+        top_signame: io_clk_byp_ack
+        conn_type: false
+        index: -1
+      }
+      {
+        name: all_clk_byp_req
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: clkmgr_aon
+        default: ""
+        external: true
+        top_signame: all_clk_byp_req
+        conn_type: false
+        index: -1
+      }
+      {
+        name: all_clk_byp_ack
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: clkmgr_aon
+        default: ""
+        external: true
+        top_signame: all_clk_byp_ack
+        conn_type: false
+        index: -1
+      }
+      {
+        name: hi_speed_sel
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: clkmgr_aon
+        default: ""
+        external: true
+        top_signame: hi_speed_sel
+        conn_type: false
+        index: -1
+      }
+      {
+        name: div_step_down_req
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: clkmgr_aon
+        default: ""
+        external: true
+        top_signame: div_step_down_req
+        conn_type: false
+        index: -1
+      }
+      {
+        name: lc_clk_byp_req
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: clkmgr_aon
+        default: ""
+        top_signame: lc_ctrl_lc_clk_byp_req
+        index: -1
+      }
+      {
+        name: lc_clk_byp_ack
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: clkmgr_aon
+        default: ""
+        top_signame: lc_ctrl_lc_clk_byp_ack
         index: -1
       }
       {
@@ -29001,6 +29256,78 @@
       {
         package: prim_mubi_pkg
         struct: mubi4
+        signame: io_clk_byp_req_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: io_clk_byp_req
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        signame: io_clk_byp_ack_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: io_clk_byp_ack
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        signame: all_clk_byp_req_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: all_clk_byp_req
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        signame: all_clk_byp_ack_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: all_clk_byp_ack
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        signame: hi_speed_sel_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: hi_speed_sel
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        signame: div_step_down_req_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: div_step_down_req
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
         signame: calib_rdy_i
         width: 1
         type: uni
@@ -30752,6 +31079,17 @@
         package: lc_ctrl_pkg
         struct: lc_tx
         signame: lc_ctrl_lc_check_byp_en
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_clk_byp_req
         width: 1
         type: uni
         end_idx: -1
