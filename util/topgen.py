@@ -776,7 +776,7 @@ def _get_ac_range_check_params(top: ConfigT) -> ParamsT:
 def _get_racl_params(top: ConfigT) -> ParamsT:
     """Extracts parameters for racl_ctrl ipgen."""
     module = lib.find_module(top["module"], "racl_ctrl")
-    racl_group = module.get("racl_group", "Null")
+    racl_group = module.get("ipgen_params", {}).get("racl_group", "Null")
     if len(top["racl"]["policies"]) == 1:
         # If there is only one set of policies, take the first one
         policies = list(top["racl"]["policies"].values())[0]
@@ -801,6 +801,7 @@ def _get_racl_params(top: ConfigT) -> ParamsT:
         "nr_ctn_uid_bits": top["racl"]["nr_ctn_uid_bits"],
         "nr_policies": top["racl"]["nr_policies"],
         'nr_subscribing_ips': num_subscribing_ips[racl_group],
+        "racl_group": racl_group,
         "policies": policies
     })
     return ipgen_params

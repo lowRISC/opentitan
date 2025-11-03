@@ -57,5 +57,11 @@
       type: "object"
       default: []
     }
+    {
+      name: "racl_group"
+      desc: "The RACL Group"
+      type: "string"
+      default: "Null"
+    }
   ]
 }
