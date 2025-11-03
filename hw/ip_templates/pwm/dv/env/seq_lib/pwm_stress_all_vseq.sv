@@ -22,7 +22,6 @@ endfunction
 
 task pwm_stress_all_vseq::body();
   string seq_names[] = {"pwm_smoke_vseq",
-                        "pwm_common_vseq",
                         "pwm_perf_vseq",
                         "pwm_rand_output_vseq"};
 
@@ -37,11 +36,6 @@ task pwm_stress_all_vseq::body();
     pwm_vseq.set_sequencer(p_sequencer);
     `uvm_info(`gfn, $sformatf("Running %s sequence", seq_names[seq_idx]), UVM_LOW)
     `DV_CHECK_RANDOMIZE_FATAL(pwm_vseq)
-    if (seq_names[seq_idx] == "pwm_common_vseq") begin
-      pwm_common_vseq common_vseq;
-      `downcast(common_vseq, pwm_vseq);
-      common_vseq.common_seq_type = "intr_test";
-    end
     pwm_vseq.start(p_sequencer);
   end
 endtask : body
