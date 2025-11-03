@@ -25,17 +25,29 @@ cc_library(
     name = "aes_testutils",
     srcs = ["aes_testutils.c"],
     hdrs = ["aes_testutils.h"],
+    defines = opentitan_if_ip(
+        "csrng",
+        # Assume that if csrng is present then so is the edn.
+        ["AES_TESTUTILS_HAS_EDN_AND_CSRNG"],
+        [],
+    ),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/aes:model",
         "//hw/top:dt",
         "//sw/device/lib/dif:aes",
-        "//sw/device/lib/dif:csrng_shared",
-        "//sw/device/lib/dif:edn",
         "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/testing:csrng_testutils",
         "//sw/device/lib/testing/test_framework:check",
-    ],
+    ] + opentitan_if_ip(
+        "csrng",
+        # Assume that if csrng is present then so is the edn.
+        [
+            "//sw/device/lib/dif:csrng_shared",
+            "//sw/device/lib/dif:edn",
+            "//sw/device/lib/testing:csrng_testutils",
+        ],
+        [],
+    ),
 )
 
 cc_library(
