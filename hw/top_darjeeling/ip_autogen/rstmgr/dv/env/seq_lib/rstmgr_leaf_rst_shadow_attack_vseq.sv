@@ -54,7 +54,7 @@ class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
 
     // Wait enough cycles to allow the uvm_hdl_force to take effect, since it is not instantaneous,
     // and for side-effects to propagate.
-    cfg.io_clk_rst_vif.wait_clks(10);
+    cfg.io_div4_clk_rst_vif.wait_clks(10);
 
     `uvm_info(`gfn, $sformatf("Checking rst and en for %s", path), UVM_MEDIUM)
     `DV_CHECK(uvm_hdl_read(epath, rst_en), $sformatf("Path %0s has problem", epath))

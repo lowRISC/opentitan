@@ -4,20 +4,7 @@
 // Description:
 // Test assert glitch to shadow leaf reset module and
 // check if nomal reset module got affected or vice versa
-<% 
-all_clks = set(clk_freqs.keys())
-has_sys_io = any("sys_io" in d.get('name') for d in output_rsts) if output_rsts else False
-
-if "io_div4" in all_clks:
-    preferred_domain = "io_div4"
-elif "io" in all_clks:
-    preferred_domain = "io"
-else:
-    assert 0, "No preferred clock available"
-
-preferred_clk_rst_vif = f"{preferred_domain}_clk_rst_vif"
-preferred_rst_n = f"rst_sys_{preferred_domain}_n"
-%>\
+<% has_sys_io_div4 = any(d.get('name') == 'sys_io_div4' for d in output_rsts) if output_rsts else False %>\
 class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
   `uvm_object_utils(rstmgr_leaf_rst_shadow_attack_vseq)
 
@@ -36,9 +23,9 @@ class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
   endtask : body
 
   task leaf_rst_attack(string npath, string gpath);
-% if has_sys_io:
+% if has_sys_io_div4:
     // Wait for any bit in rst_sys_io_div4_n to become inactive.
-    wait(|cfg.rstmgr_vif.resets_o.${preferred_rst_n});
+    wait(|cfg.rstmgr_vif.resets_o.rst_sys_io_div4_n);
 % endif
     // Disable cascading reset assertions, since forcing related signals causes failures.
     cfg.rstmgr_cascading_sva_vif.disable_sva = 1'b1;
@@ -72,7 +59,7 @@ class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
 
     // Wait enough cycles to allow the uvm_hdl_force to take effect, since it is not instantaneous,
     // and for side-effects to propagate.
-    cfg.${preferred_clk_rst_vif}.wait_clks(10);
+    cfg.io_div4_clk_rst_vif.wait_clks(10);
 
     `uvm_info(`gfn, $sformatf("Checking rst and en for %s", path), UVM_MEDIUM)
     `DV_CHECK(uvm_hdl_read(epath, rst_en), $sformatf("Path %0s has problem", epath))
