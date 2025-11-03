@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ac_range_check_env_cfg extends cip_base_env_cfg #(.RAL_T(ac_range_check_reg_block));
+class ${module_instance_name}_env_cfg extends cip_base_env_cfg #(.RAL_T(${module_instance_name}_reg_block));
 
-  // Enabling Scoreboard checks downgrading in ac_range_check_scoreboard
+  // Enabling Scoreboard checks downgrading in ${module_instance_name}_scoreboard
   // Addresses issue #27380 that identified in very specific scenarios no valid TLUL transactions
   // will be ever generated
   bit en_scb_err_downgrade;
@@ -16,7 +16,7 @@ class ac_range_check_env_cfg extends cip_base_env_cfg #(.RAL_T(ac_range_check_re
   rand tl_agent_cfg tl_unfilt_agt_cfg;
   rand tl_agent_cfg tl_filt_agt_cfg;
 
-  `uvm_object_utils_begin(ac_range_check_env_cfg)
+  `uvm_object_utils_begin(${module_instance_name}_env_cfg)
     `uvm_field_object(tl_unfilt_agt_cfg, UVM_DEFAULT)
     `uvm_field_object(tl_filt_agt_cfg, UVM_DEFAULT)
   `uvm_object_utils_end
@@ -26,15 +26,15 @@ class ac_range_check_env_cfg extends cip_base_env_cfg #(.RAL_T(ac_range_check_re
 
   // Class specific methods
   extern function void initialize(bit [31:0] csr_base_addr = '1);
-endclass : ac_range_check_env_cfg
+endclass : ${module_instance_name}_env_cfg
 
 
-function ac_range_check_env_cfg::new(string name="");
+function ${module_instance_name}_env_cfg::new(string name="");
   super.new(name);
 endfunction : new
 
-function void ac_range_check_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
-  list_of_alerts = ac_range_check_env_pkg::LIST_OF_ALERTS;
+function void ${module_instance_name}_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
+  list_of_alerts = ${module_instance_name}_env_pkg::LIST_OF_ALERTS;
   super.initialize(csr_base_addr);
 
   // Set shadow register error status
