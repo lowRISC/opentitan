@@ -77,6 +77,7 @@
   // Default list of things to export to shell
   exports: [
     { dv_root: "{dv_root}" },
+    { self_dir: "{self_dir}" },
     { SIMULATOR: "{tool}" },
     { GUI: "{gui}"},
     { GUI_DEBUG: "{gui_debug}"},
