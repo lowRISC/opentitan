@@ -12,7 +12,7 @@ package ${module_instance_name}_env_pkg;
   import tl_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
-  import gpio_ral_pkg::*;
+  import ${module_instance_name}_ral_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

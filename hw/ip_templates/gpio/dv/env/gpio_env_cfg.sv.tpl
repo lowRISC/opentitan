@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class ${module_instance_name}_env_cfg extends cip_base_env_cfg #(
-  .RAL_T(gpio_reg_block)
+  .RAL_T(${module_instance_name}_reg_block)
 );
 
   // flag to indicate if weak pullup has been introduced on gpio

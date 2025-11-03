@@ -92,4 +92,4 @@ class ${module_instance_name}_intr_rand_pgm_vseq extends ${module_instance_name}
 
   endtask : body
 
-endclass : gpio_intr_rand_pgm_vseq
+endclass : ${module_instance_name}_intr_rand_pgm_vseq

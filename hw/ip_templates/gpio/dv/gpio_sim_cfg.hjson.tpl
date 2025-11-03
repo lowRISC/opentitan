@@ -71,77 +71,77 @@
   tests: [
     {
       name: gpio_smoke
-      uvm_test_seq: gpio_smoke_vseq
+      uvm_test_seq: ${module_instance_name}_smoke_vseq
     }
 
     {
       name: gpio_smoke_no_pullup_pulldown
-      uvm_test_seq: gpio_smoke_vseq
+      uvm_test_seq: ${module_instance_name}_smoke_vseq
       run_opts: ["+no_pullup_pulldown=1"]
     }
 
 % if num_inp_period_counters > 0:
     {
       name: gpio_inp_prd_cnt
-      uvm_test_seq: gpio_inp_prd_cnt_vseq
+      uvm_test_seq: ${module_instance_name}_inp_prd_cnt_vseq
     }
 
 % endif
     {
       name: gpio_random_dout_din
-      uvm_test_seq: gpio_random_dout_din_vseq
+      uvm_test_seq: ${module_instance_name}_random_dout_din_vseq
     }
 
     {
       name: gpio_random_dout_din_no_pullup_pulldown
-      uvm_test_seq: gpio_random_dout_din_vseq
+      uvm_test_seq: ${module_instance_name}_random_dout_din_vseq
       run_opts: ["+no_pullup_pulldown=1"]
     }
 
     {
       name: gpio_dout_din_regs_random_rw
-      uvm_test_seq: gpio_dout_din_regs_random_rw_vseq
+      uvm_test_seq: ${module_instance_name}_dout_din_regs_random_rw_vseq
     }
 
     {
       name: gpio_intr_rand_pgm
-      uvm_test_seq: gpio_intr_rand_pgm_vseq
+      uvm_test_seq: ${module_instance_name}_intr_rand_pgm_vseq
       run_opts: ["+do_clear_all_interrupts=0"]
     }
 
     {
       name: gpio_rand_intr_trigger
-      uvm_test_seq: gpio_rand_intr_trigger_vseq
+      uvm_test_seq: ${module_instance_name}_rand_intr_trigger_vseq
       run_opts: ["+do_clear_all_interrupts=0"]
     }
 
     {
       name: gpio_intr_with_filter_rand_intr_event
-      uvm_test_seq: gpio_intr_with_filter_rand_intr_event_vseq
+      uvm_test_seq: ${module_instance_name}_intr_with_filter_rand_intr_event_vseq
       run_opts: ["+en_scb=0", "+zero_delays=1", "+do_clear_all_interrupts=0"]
     }
 
     {
       name: gpio_filter_stress
-      uvm_test_seq: gpio_filter_stress_vseq
+      uvm_test_seq: ${module_instance_name}_filter_stress_vseq
       run_opts: ["+en_scb=0", "+do_clear_all_interrupts=0"]
     }
 
     {
       name: gpio_random_long_reg_writes_reg_reads
-      uvm_test_seq: gpio_random_long_reg_writes_reg_reads_vseq
+      uvm_test_seq: ${module_instance_name}_random_long_reg_writes_reg_reads_vseq
       run_opts: ["+do_clear_all_interrupts=0"]
     }
 
     {
       name: gpio_full_random
-      uvm_test_seq: gpio_full_random_vseq
+      uvm_test_seq: ${module_instance_name}_full_random_vseq
       run_opts: ["+do_clear_all_interrupts=0"]
     }
 
     {
       name: gpio_stress_all
-      uvm_test_seq: gpio_stress_all_vseq
+      uvm_test_seq: ${module_instance_name}_stress_all_vseq
       run_opts: ["+do_clear_all_interrupts=0"]
     }
 
@@ -178,19 +178,19 @@
     // Additional smoke checks for second build mode
     {
       name: gpio_smoke_en_cdc_prim
-      uvm_test_seq: gpio_smoke_vseq
+      uvm_test_seq: ${module_instance_name}_smoke_vseq
       build_mode: en_cdc_prims
     }
 
     {
       name: gpio_smoke_no_pullup_pulldown_en_cdc_prim
-      uvm_test_seq: gpio_smoke_vseq
+      uvm_test_seq: ${module_instance_name}_smoke_vseq
       build_mode: en_cdc_prims
       run_opts: ["+no_pullup_pulldown=1"]
     }
     {
       name: gpio_rand_straps
-      uvm_test_seq: gpio_rand_straps_vseq
+      uvm_test_seq: ${module_instance_name}_rand_straps_vseq
     }
   ]
 
