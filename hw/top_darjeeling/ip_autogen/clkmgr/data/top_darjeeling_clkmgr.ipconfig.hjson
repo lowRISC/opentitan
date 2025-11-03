@@ -18,7 +18,7 @@
       {
         name: io
         aon: false
-        freq: 250000000
+        freq: 1000000000
         ref: false
       }
       aon:
@@ -29,7 +29,24 @@
         ref: true
       }
     }
-    derived_clks: {}
+    derived_clks:
+    {
+      io_div4:
+      {
+        name: io_div4
+        aon: false
+        freq: 250000000
+        ref: false
+        div: 4
+        src:
+        {
+          name: io
+          aon: no
+          freq: "1000000000"
+          ref: false
+        }
+      }
+    }
     typed_clocks:
     {
       ast_clks:
@@ -52,9 +69,9 @@
       }
       ft_clks:
       {
-        clk_io_powerup:
+        clk_io_div4_powerup:
         {
-          src_name: io
+          src_name: io_div4
           endpoint_ip: pwrmgr_aon
         }
         clk_aon_powerup:
@@ -65,6 +82,11 @@
         clk_main_powerup:
         {
           src_name: main
+          endpoint_ip: rstmgr_aon
+        }
+        clk_io_powerup:
+        {
+          src_name: io
           endpoint_ip: rstmgr_aon
         }
         clk_aon_infra:
@@ -85,9 +107,9 @@
       }
       rg_clks:
       {
-        clk_io_infra:
+        clk_io_div4_infra:
         {
-          src_name: io
+          src_name: io_div4
           endpoint_ip: ast
         }
         clk_main_infra:
@@ -95,9 +117,9 @@
           src_name: main
           endpoint_ip: soc_proxy
         }
-        clk_io_secure:
+        clk_io_div4_secure:
         {
-          src_name: io
+          src_name: io_div4
           endpoint_ip: otp_ctrl
         }
         clk_main_secure:
@@ -105,17 +127,17 @@
           src_name: main
           endpoint_ip: otp_ctrl
         }
-        clk_io_timers:
+        clk_io_div4_timers:
         {
-          src_name: io
+          src_name: io_div4
           endpoint_ip: rv_timer
         }
       }
       sw_clks:
       {
-        clk_io_peri:
+        clk_io_div4_peri:
         {
-          src_name: io
+          src_name: io_div4
           endpoint_ip: uart0
         }
       }
@@ -159,6 +181,7 @@
       io:
       [
         io
+        io_div4
       ]
     }
     exported_clks: {}

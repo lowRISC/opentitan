@@ -11,6 +11,7 @@ static const uint32_t clock_freqs[kDtClockCount] = {
     [kDtClockMain] = 500 * 1000,
     [kDtClockIo] = 250 * 1000,
     [kDtClockAon] = 125 * 1000,
+    [kDtClockIoDiv4] = 125 * 1000,
 };
 
 uint32_t dt_clock_frequency(dt_clock_t clk) {

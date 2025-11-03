@@ -17,6 +17,7 @@ module rstmgr_bind;
     .clk_i,
     .clk_aon_i,
     .clk_io_i,
+    .clk_io_div4_i,
     .clk_main_i,
     .por_n_i,
     .scan_rst_ni,
@@ -53,9 +54,9 @@ module rstmgr_bind;
 
   bind rstmgr rstmgr_sw_rst_sva_if rstmgr_sw_rst_sva_if (
     .clk_i({
-      clk_io_i,
-      clk_io_i,
-      clk_io_i
+      clk_io_div4_i,
+      clk_io_div4_i,
+      clk_io_div4_i
     }),
     .rst_ni,
     .parent_rst_n(rst_sys_src_n[1]),
@@ -77,6 +78,7 @@ module rstmgr_bind;
     .reset_en_i(rst_en_o),
     .clk_aon_i,
     .clk_io_i,
+    .clk_io_div4_i,
     .clk_main_i,
     .rst_por_ni(rst_por_ni)
   );

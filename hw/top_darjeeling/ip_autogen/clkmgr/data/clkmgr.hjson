@@ -37,8 +37,10 @@
     {clock: "clk_main_i", reset: "rst_main_ni"},
     {clock: "clk_io_i", reset: "rst_io_ni"},
     {clock: "clk_aon_i", reset: "rst_aon_ni"},
+    {clock: "clk_io_div4_i", reset: "rst_io_div4_ni", internal: true},
     {reset: "rst_root_main_ni"},
     {reset: "rst_root_io_ni"},
+    {reset: "rst_root_io_div4_ni"},
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
@@ -78,8 +80,8 @@
   ],
 
   features: [
-    { name: "CLKMGR.ENABLE.IO",
-      desc: "Gating of IO peripheral clock."
+    { name: "CLKMGR.ENABLE.IO_DIV4",
+      desc: "Gating of IO_DIV4 peripheral clock."
     }
     { name: "CLKMGR.HINT.AES",
       desc: "Gating of AES transactional clock."
@@ -98,8 +100,8 @@
             measurements.
             '''
     }
-    { name: "CLKMGR.MEAS_CTRL.IO",
-      desc: "Frequency and timeout measurements of IO clock."
+    { name: "CLKMGR.MEAS_CTRL.IO_DIV4",
+      desc: "Frequency and timeout measurements of IO_DIV4 clock."
     }
     { name: "CLKMGR.MEAS_CTRL.MAIN",
       desc: "Frequency and timeout measurements of MAIN clock."
@@ -432,11 +434,11 @@
       fields: [
         {
           bits: "0",
-          name: "CLK_IO_PERI_EN",
+          name: "CLK_IO_DIV4_PERI_EN",
           resval: 1,
           desc: '''
-            0 CLK_IO_PERI is disabled.
-            1 CLK_IO_PERI is enabled.
+            0 CLK_IO_DIV4_PERI is disabled.
+            1 CLK_IO_DIV4_PERI is enabled.
           '''
         }
       ]
@@ -572,19 +574,19 @@
         },
       ]
     },
-    { name: "IO_MEAS_CTRL_EN",
+    { name: "IO_DIV4_MEAS_CTRL_EN",
       desc: '''
         Enable for measurement control
       ''',
       regwen: "MEASURE_CTRL_REGWEN",
       swaccess: "rw",
       hwaccess: "hrw",
-      async: "clk_io_i",
+      async: "clk_io_div4_i",
       fields: [
         {
           bits: "3:0",
           name: "EN",
-          desc: "Enable measurement for io",
+          desc: "Enable measurement for io_div4",
           mubi: true,
           resval: false,
         },
@@ -596,9 +598,9 @@
       tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
-    { name: "IO_MEAS_CTRL_SHADOWED",
+    { name: "IO_DIV4_MEAS_CTRL_SHADOWED",
       desc: '''
-        Configuration controls for io measurement.
+        Configuration controls for io_div4 measurement.
 
         The threshold fields are made wider than required (by 1 bit) to ensure
         there is room to adjust for measurement inaccuracies.
@@ -606,7 +608,7 @@
       regwen: "MEASURE_CTRL_REGWEN",
       swaccess: "rw",
       hwaccess: "hro",
-      async: "clk_io_i",
+      async: "clk_io_div4_i",
       shadowed: "true",
       update_err_alert: "recov_fault",
       storage_err_alert: "fatal_fault",
@@ -614,14 +616,14 @@
         {
           bits: "8:0",
           name: "HI",
-          desc: "Max threshold for io measurement",
+          desc: "Max threshold for io_div4 measurement",
           resval: "138"
         },
 
         {
           bits: "17:9",
           name: "LO",
-          desc: "Min threshold for io measurement",
+          desc: "Min threshold for io_div4 measurement",
           resval: "118"
         },
       ]
@@ -695,10 +697,10 @@
         },
         {
           bits: "1",
-          name: "IO_MEASURE_ERR",
+          name: "IO_DIV4_MEASURE_ERR",
           resval: 0,
           desc: '''
-            io has encountered a measurement error.
+            io_div4 has encountered a measurement error.
           '''
         },
         {
@@ -711,10 +713,10 @@
         },
         {
           bits: "3",
-          name: "IO_TIMEOUT_ERR",
+          name: "IO_DIV4_TIMEOUT_ERR",
           resval: 0,
           desc: '''
-            io has timed out.
+            io_div4 has timed out.
           '''
         }
         {
