@@ -590,19 +590,6 @@
       tags: ["conn"]
     }
 
-    /////////////////////////
-    // ast_flash.csv       //
-    /////////////////////////
-    {
-      name: ast_flash_ctrl
-      desc: '''Verify ast's flash signals are connected to the flash controller.'''
-      stage: V2
-      tests: ["ast_flash_obs_ctrl",
-              "ast_flash_pwr_dwn_out",
-              "ast_flash_pwr_rdy_out",
-              "ast_flash_bist_en_out"]
-      tags: ["conn"]
-    }
     /////////////////////////////
     // ast_csrng_cfg.csv //
     /////////////////////////////

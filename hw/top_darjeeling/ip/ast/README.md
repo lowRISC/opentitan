@@ -169,22 +169,6 @@ macro.</td>
 (<strong>VCC domain</strong>).</td>
 </tr>
 <tr class="odd">
-<td>flash_power_down_h_o</td>
-<td>O</td>
-<td>1</td>
-<td>async</td>
-<td>Connected to flash (<strong>VCC domain</strong>). Used for flash
-power management.</td>
-</tr>
-<tr class="even">
-<td>flash_power_ready_h_o</td>
-<td>O</td>
-<td>1</td>
-<td>async</td>
-<td>Connected to flash (<strong>VCC domain</strong>). Used for flash
-power management.</td>
-</tr>
-<tr class="odd">
 <td><p>vcmain_pok</p>
 <p>(aka vcmain_pok_o)</p></td>
 <td>O</td>
@@ -659,13 +643,6 @@ cycle</u></a>.</p></td>
 <td>async</td>
 <td>Strap inputs for DFT selection</td>
 </tr>
-<tr class="even">
-<td>flash_bist_en_o</td>
-<td>O</td>
-<td>mubi4</td>
-<td></td>
-<td>Flash BIST enable</td>
-</tr>
 <tr class="odd">
 <td>vcc_supp_i</td>
 <td>I</td>
@@ -817,13 +794,6 @@ that the external clock is 96MHz.</td>
 <td>async</td>
 <td><p>DFT enable</p></td>
 </tr>
-<tr class="odd">
-<td>fla_obs_i</td>
-<td>I</td>
-<td>8</td>
-<td>async</td>
-<td>Flash observe bus for debug</td>
-</tr>
 <tr class="even">
 <td>otp_obs_i</td>
 <td>I</td>
@@ -930,9 +900,6 @@ On VCC power-down detection, 'flash_power_ready_h_o', is
 immediately negated. In addition, SYS clock, IO clock and USB clock are
 stopped. This means that negation of the VCC supply always triggers the
 flash brown-out (BOR) protection circuitry.
-
-When entering deep-sleep mode, 'flash_power_down_h_o' is
-asserted before negating VCMAIN until VCMAIN is back up.
 
 ## Resets
 

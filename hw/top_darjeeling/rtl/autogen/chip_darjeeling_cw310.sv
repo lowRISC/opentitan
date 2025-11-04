@@ -1176,9 +1176,7 @@ module chip_darjeeling_cw310 #(
     // main regulator
     .main_env_iso_en_i     ( base_ast_pwr.pwr_clamp_env ),
     .main_pd_ni            ( base_ast_pwr.main_pd_n ),
-    // pdm control (flash)/otp
-    .flash_power_down_h_o  ( ),
-    .flash_power_ready_h_o ( ),
+    // pdm control (otp)
     .otp_power_seq_i       ( otp_macro_pwr_seq ),
     .otp_power_seq_h_o     ( otp_macro_pwr_seq_h ),
     // system source clock
@@ -1211,7 +1209,6 @@ module chip_darjeeling_cw310 #(
     .alert_req_o           ( ast_alert_req  ),
     // dft
     .lc_dft_en_i           ( lc_dft_en        ),
-    .fla_obs_i             ( '0 ),
     .usb_obs_i             ( '0 ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
@@ -1224,7 +1221,6 @@ module chip_darjeeling_cw310 #(
     .all_clk_byp_ack_o     ( ),
     .io_clk_byp_req_i      ( io_clk_byp_req   ),
     .io_clk_byp_ack_o      ( ),
-    .flash_bist_en_o       ( ),
     // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
     .dpram_rml_o           ( ast_ram_2p_lcfg ),
