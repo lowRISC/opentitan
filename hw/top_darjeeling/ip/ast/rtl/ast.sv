@@ -60,8 +60,6 @@ module ast
   input main_env_iso_en_i,                    // Enveloped ISOlation ENable for MAIN
 
   // power down monitor logic - flash/otp related
-  output logic flash_power_down_h_o,          // Flash Power Down
-  output logic flash_power_ready_h_o,         // Flash Power Ready
   input [1:0] otp_power_seq_i,                // MMR0,24 in (VDD)
   output logic [1:0] otp_power_seq_h_o,       // MMR0,24 masked by PDM, out (VCC)
 
@@ -101,7 +99,6 @@ module ast
 
   // dft interface
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,     // DFT enable (secure bus)
-  input [8-1:0] fla_obs_i,                    // FLASH Observe Bus
   input [8-1:0] otp_obs_i,                    // OTP Observe Bus
   input [8-1:0] otm_obs_i,                    // OT Modules Observe Bus
   input usb_obs_i,                            // USB DIFF RX Observe
@@ -125,7 +122,6 @@ module ast
   output prim_mubi_pkg::mubi4_t all_clk_byp_ack_o,  // Switch all clocks to External clocks
   input prim_mubi_pkg::mubi4_t io_clk_byp_req_i,    // IO clock bypass request (for OTP bootstrap)
   output prim_mubi_pkg::mubi4_t io_clk_byp_ack_o,   // Switch IO clock to External clock
-  output prim_mubi_pkg::mubi4_t flash_bist_en_o,    // Flush BIST (TAP) Enable
 
   // memories read-write margins
   output ast_pkg::dpm_rm_t dpram_rmf_o,       // Dual Port RAM Read-write Margin Fast
@@ -171,9 +167,6 @@ prim_clock_buf #(
   .clk_o ( clk_aon )
 );
 
-
-assign flash_bist_en_o  = prim_mubi_pkg::MuBi4False;
-//
 assign dft_scan_md_o    = prim_mubi_pkg::MuBi4False;
 assign scan_shift_en_o  = 1'b0;
 assign scan_reset_no    = 1'b1;
@@ -313,8 +306,6 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .vcc_pok_str_h_o ( ast_pwst_h_o.vcc_pok ),
   .vcc_pok_str_1p1_h_o ( vcc_pok_str ),
   .deep_sleep_h_o ( deep_sleep ),
-  .flash_power_down_h_o ( flash_power_down_h_o ),
-  .flash_power_ready_h_o ( flash_power_ready_h_o ),
   .otp_power_seq_h_o ( otp_power_seq_h_o[2-1:0] )
 );
 
@@ -930,8 +921,6 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(VioaPokHKnownO_A, ast_pwst_h_o.io_pok[0], clk_src_aon_o, por_ni)
 `ASSERT_KNOWN(ViobPokHKnownO_A, ast_pwst_h_o.io_pok[1], clk_src_aon_o, por_ni)
 // FLASH/OTP
-`ASSERT_KNOWN(FlashPowerDownKnownO_A, flash_power_down_h_o, 1, ast_pwst_o.main_pok)
-`ASSERT_KNOWN(FlashPowerReadyKnownO_A, flash_power_ready_h_o, 1, ast_pwst_o.main_pok)
 `ASSERT_KNOWN(OtpPowerSeqKnownO_A, otp_power_seq_h_o, 1, ast_pwst_o.main_pok)
 // Alerts
 `ASSERT_KNOWN(AlertReqKnownO_A, alert_req_o, clk_ast_alert_i, rst_ast_alert_ni)
@@ -947,7 +936,6 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(DftScanMdKnownO_A, dft_scan_md_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 `ASSERT_KNOWN(ScanShiftEnKnownO_A, scan_shift_en_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 `ASSERT_KNOWN(ScanResetKnownO_A, scan_reset_no, clk_ast_tlul_i, ast_pwst_o.aon_pok)
-`ASSERT_KNOWN(FlashBistEnKnownO_A, flash_bist_en_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 
 // Alert assertions for reg_we onehot check
 `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ERR(RegWeOnehot_A,
@@ -970,7 +958,6 @@ assign unused_sigs = ^{ clk_ast_usb_i,
                         rst_vcmpp_aon_n,
                         padmux2ast_i[Pad2AstInWidth-1:0],
                         lc_dft_en_i[3:0],
-                        fla_obs_i[8-1:0],
                         otp_obs_i[8-1:0],
                         otm_obs_i[8-1:0],
                         usb_obs_i,
