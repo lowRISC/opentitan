@@ -6,7 +6,7 @@ class chip_sw_rom_ctrl_integrity_check_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_rom_ctrl_integrity_check_vseq)
   `uvm_object_new
 
-  localparam uint TimeoutNs = 5_000_000;  // 5ms
+  localparam uint TimeoutNs = 1_000_000;  // 1ms
 
   bit rom_ctrl_done_checker_stop;
 

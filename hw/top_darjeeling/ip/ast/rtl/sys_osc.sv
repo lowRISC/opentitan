@@ -39,9 +39,8 @@ initial begin
   $display("\n%m: System Clock Power-up Frequency: %0d Hz", $rtoi(10**9/CLK_PERIOD));
 end
 
-// Enable 5us RC Delay on rise
 wire en_osc_re_buf, en_osc_re, sys_jen;
-buf #(ast_bhv_pkg::SYS_EN_RDLY, 0) b0 (en_osc_re_buf, (vcore_pok_h_i && sys_en_i));
+assign en_osc_re_buf = vcore_pok_h_i && sys_en_i;
 assign en_osc_re = en_osc_re_buf && init_start;
 assign sys_jen = sys_jen_i && en_osc_re_buf && init_start;
 
@@ -50,11 +49,9 @@ assign sys_jen = sys_jen_i && en_osc_re_buf && init_start;
 real CalSysClkPeriod, UncSysClkPeriod, SysClkPeriod, jitter;
 
 initial CalSysClkPeriod = cal_sys_clk_70mhz ? $itor( 14286 ) :    // 14286ps (70MHz)
-                                              $itor( 10000 );     // 10000ps (100MHz)
+                                              $itor( 1000 );     // 1000ps (1GHz)
 
-initial UncSysClkPeriod = $itor( $urandom_range(40000, 16667) );  // 40000-16667ps (25-60MHz)
-
-assign SysClkPeriod = (sys_osc_cal_i && init_start) ? CalSysClkPeriod : UncSysClkPeriod;
+assign SysClkPeriod = CalSysClkPeriod;
 
 logic clk;
 
@@ -69,7 +66,7 @@ always_ff (* xprop_off *) @( posedge clk, negedge vcore_pok_h_i ) begin
   end else if ( jrate_cnt == '0 ) begin
     jrate_cnt <= jrate;
     jitter <= cal_sys_clk_70mhz ? $itor($urandom_range(3571, 0)) :  // 56MHz - 70MHz
-                                  $itor($urandom_range(2500, 0));   // 80MHz - 100MHz
+                                  0;   // No jitter
   end else if ( jrate_cnt > '0 ) begin
     jrate_cnt <= jrate_cnt - 1'b1;
   end

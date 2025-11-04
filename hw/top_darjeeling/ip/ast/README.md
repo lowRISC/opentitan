@@ -405,13 +405,6 @@ manager</u></a>.</td>
 <td>tlul</td>
 <td>TLUL bus interface clock input</td>
 </tr>
-<tr class="even">
-<td>rst_ast_adc_ni</td>
-<td>I</td>
-<td>1</td>
-<td>adc</td>
-<td>ADC interface reset (active low)</td>
-</tr>
 <tr class="odd">
 <td>rst_ast_rng_ni</td>
 <td>I</td>
