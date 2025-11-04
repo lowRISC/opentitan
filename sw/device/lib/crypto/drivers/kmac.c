@@ -9,8 +9,8 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/silicon_creator/lib/drivers/ibex.h"
 
 #include "hw/top/kmac_regs.h"  // Generated.
 

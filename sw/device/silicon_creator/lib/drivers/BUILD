@@ -612,7 +612,6 @@ dual_cc_library(
             "//sw/device/lib/base:hardened",
             "//hw/top:entropy_src_c_regs",
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top:rv_core_ibex_c_regs",
             "//sw/device/lib/base:crc32",
         ],
         host = [

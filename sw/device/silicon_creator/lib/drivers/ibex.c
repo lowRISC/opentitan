@@ -22,6 +22,25 @@ static inline uint32_t rv_core_ibex_base(void) {
   return dt_rv_core_ibex_reg_block(kRvCoreIbexDt, kDtRvCoreIbexRegBlockCfg);
 }
 
+/**
+ * Blocks until data is ready in the RND register.
+ */
+static void wait_rnd_valid(void) {
+  while (true) {
+    uint32_t reg = abs_mmio_read32(rv_core_ibex_base() +
+                                   RV_CORE_IBEX_RND_STATUS_REG_OFFSET);
+    if (bitfield_bit32_read(reg, RV_CORE_IBEX_RND_STATUS_RND_DATA_VALID_BIT)) {
+      return;
+    }
+  }
+}
+
+uint32_t ibex_rnd32_read(void) {
+  wait_rnd_valid();
+  return abs_mmio_read32(rv_core_ibex_base() +
+                         RV_CORE_IBEX_RND_DATA_REG_OFFSET);
+}
+
 uint32_t ibex_fpga_version(void) {
   const uint32_t kBase = rv_core_ibex_base();
   return abs_mmio_read32(kBase + RV_CORE_IBEX_FPGA_INFO_REG_OFFSET);

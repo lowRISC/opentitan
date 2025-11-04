@@ -12,11 +12,11 @@
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
 #include "hw/top/entropy_src_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top/rv_core_ibex_regs.h"
 
 enum {
   // This covers the health threshold registers which are contiguous. The alert
@@ -26,10 +26,6 @@ enum {
 
 static inline uint32_t entropy_src_base(void) {
   return dt_entropy_src_primary_reg_block(kDtEntropySrc);
-}
-
-static inline uint32_t ibex_base(void) {
-  return dt_rv_core_ibex_primary_reg_block(kDtRvCoreIbex);
 }
 
 // Check the number of health registers covered by this driver.
@@ -116,16 +112,10 @@ uint32_t rnd_uint32(void) {
   if (kBootStage == kBootStageOwner ||
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_EN_OFFSET) ==
           kHardenedBoolTrue) {
-    // When bit-0 is clear an EDN request for new data for RND_DATA is
-    // pending.
-    while (!(abs_mmio_read32(ibex_base() + RV_CORE_IBEX_RND_STATUS_REG_OFFSET) &
-             1)) {
-    }
+    return ibex_rnd32_read();
+  } else {
+    return ibex_mcycle32();
   }
-  uint32_t mcycle;
-  CSR_READ(CSR_REG_MCYCLE, &mcycle);
-  return mcycle +
-         abs_mmio_read32(ibex_base() + RV_CORE_IBEX_RND_DATA_REG_OFFSET);
 }
 
 // Provides the source of randomness for `hardened_memshred` (see

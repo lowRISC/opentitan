@@ -12,8 +12,8 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/silicon_creator/lib/drivers/ibex.h"
 
 #include "hw/top/hmac_regs.h"  // Generated.
 
