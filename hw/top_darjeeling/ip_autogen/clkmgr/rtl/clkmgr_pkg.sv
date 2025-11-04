@@ -17,7 +17,6 @@ package clkmgr_pkg;
     logic clk_aon_powerup;
     logic clk_main_powerup;
     logic clk_aon_infra;
-    logic clk_aon_peri;
     logic clk_aon_timers;
     logic clk_main_aes;
     logic clk_main_hmac;
@@ -37,7 +36,6 @@ package clkmgr_pkg;
     prim_mubi_pkg::mubi4_t aon_powerup;
     prim_mubi_pkg::mubi4_t main_powerup;
     prim_mubi_pkg::mubi4_t aon_infra;
-    prim_mubi_pkg::mubi4_t aon_peri;
     prim_mubi_pkg::mubi4_t aon_timers;
     prim_mubi_pkg::mubi4_t main_aes;
     prim_mubi_pkg::mubi4_t main_hmac;
@@ -51,7 +49,7 @@ package clkmgr_pkg;
     prim_mubi_pkg::mubi4_t io_peri;
   } clkmgr_cg_en_t;
 
-  parameter int NumOutputClk = 16;
+  parameter int NumOutputClk = 15;
 
 
   typedef struct packed {

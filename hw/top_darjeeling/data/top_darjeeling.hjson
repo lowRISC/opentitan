@@ -553,10 +553,6 @@
           clock: "io",
           group: "infra"
         },
-        clk_ast_adc_i: {
-          clock: "aon",
-          group: "peri"
-        },
         clk_ast_alert_i: {
           clock: "io",
           group: "secure"
@@ -572,10 +568,6 @@
           name: "lc_io",
           domain: "0",
         }
-        rst_ast_adc_ni: {
-          name: "lc_aon",
-          domain: "Aon"
-        },
         rst_ast_alert_ni: {
           name: "lc_io",
           domain: "0",

@@ -12,8 +12,6 @@
 module ast
   import ast_pkg::EntropyStreams;
 #(
-  parameter int unsigned AdcChannels     = 2,
-  parameter int unsigned AdcDataWidth    = 10,
   parameter int unsigned UsbCalibWidth   = 20,
   parameter int unsigned Ast2PadOutWidth = 9,
   parameter int unsigned Pad2AstInWidth  = 9
@@ -24,8 +22,6 @@ module ast
   output prim_mubi_pkg::mubi4_t ast_init_done_o,  // AST (registers) Init Done
 
   // clocks / resets
-  input clk_ast_adc_i,                        // Buffered AST ADC Clock
-  input rst_ast_adc_ni,                       // Buffered AST ADC Reset
   input clk_ast_alert_i,                      // Buffered AST Alert Clock
   input rst_ast_alert_ni,                     // Buffered AST Alert Reset
   input clk_ast_rng_i,                        // Buffered AST RNG Clock
@@ -92,14 +88,6 @@ module ast
   output logic clk_src_usb_o,                 // USB Source Clock
   output logic clk_src_usb_val_o,             // USB Source Clock Valid
   output logic [UsbCalibWidth-1:0] usb_io_pu_cal_o,  // USB IO Pull-up Calibration Setting
-
-  // adc interface
-  input adc_pd_i,                             // ADC Power Down
-  input ast_pkg::awire_t adc_a0_ai,           // ADC A0 Analog Input
-  input ast_pkg::awire_t adc_a1_ai,           // ADC A1 Analog Input
-  input [AdcChannels-1:0] adc_chnsel_i,       // ADC Channel Select
-  output [AdcDataWidth-1:0] adc_d_o,          // ADC Digital (per channel)
-  output adc_d_val_o,                         // ADC Digital Valid
 
   // rng (entropy source) interface
   input rng_en_i,                             // RNG Enable
@@ -570,26 +558,6 @@ prim_clock_buf #(
   .clk_o ( clk_src_aon_o )
 );
 
-
-///////////////////////////////////////
-// ADC (Always ON)
-///////////////////////////////////////
-adc #(
-  .AdcCnvtClks ( AdcCnvtClks ),
-  .AdcChannels ( AdcChannels ),
-  .AdcDataWidth ( AdcDataWidth )
-) u_adc (
-  .adc_a0_ai ( adc_a0_ai ),
-  .adc_a1_ai ( adc_a1_ai ),
-  .adc_chnsel_i ( adc_chnsel_i[AdcChannels-1:0] ),
-  .adc_pd_i ( adc_pd_i ),
-  .clk_adc_i ( clk_ast_adc_i ),
-  .rst_adc_ni ( rst_ast_adc_ni ),
-  .adc_d_o ( adc_d_o[AdcDataWidth-1:0] ),
-  .adc_d_val_o ( adc_d_val_o )
-);
-
-
 ///////////////////////////////////////
 // Entropy (Always ON)
 ///////////////////////////////////////
@@ -944,9 +912,6 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(UsbIoPuCalKnownO_A, usb_io_pu_cal_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 `ASSERT_KNOWN(LcClkBypAckEnKnownO_A, io_clk_byp_ack_o, clk_ast_tlul_i, rst_ast_tlul_ni)
 `ASSERT_KNOWN(AllClkBypAckEnKnownO_A, all_clk_byp_ack_o, clk_ast_tlul_i, rst_ast_tlul_ni)
-// ADC
-`ASSERT_KNOWN(AdcDKnownO_A, adc_d_o, clk_ast_adc_i, rst_ast_adc_ni)
-`ASSERT_KNOWN(AdcDValKnownO_A, adc_d_val_o, clk_ast_adc_i, rst_ast_adc_ni)
 // RNG
 `ASSERT_KNOWN(RngBKnownO_A, rng_b_o, clk_ast_rng_i, rst_ast_rng_ni)
 `ASSERT_KNOWN(RngValKnownO_A, rng_val_o, clk_ast_rng_i, rst_ast_rng_ni)

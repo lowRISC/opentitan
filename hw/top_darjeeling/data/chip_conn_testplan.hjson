@@ -36,7 +36,6 @@
               "ast_clk_io_out",
               "ast_all_byp_ack_out",
               "ast_io_byp_ack_out",
-              "ast_clk_adc_in",
               "ast_clk_alert_in",
               "ast_clk_es_in",
               "ast_clk_rng_in",
@@ -73,8 +72,7 @@
       desc: '''Verify the reset connectivity between AST and reset manager.
             '''
       stage: V2
-      tests: ["ast_rst_adc_in",
-              "ast_rst_alert_in",
+      tests: ["ast_rst_alert_in",
               "ast_rst_es_in",
               "ast_rst_rng_in",
               "ast_rst_tlul_in",
@@ -380,15 +378,13 @@
       name: clkmgr_clk_io_peri
       desc: '''Verify clkmgr's `clk_io_peri` is connected to the following blocks' clock
             input:
-            - adc_ctrl clk_i
             - gpio clk_i
             - spi_device clk_i
             - i2c0 clk_i
             - uart0 clk_i
             '''
       stage: V2
-      tests: ["clkmgr_peri_clk_adc_ctrl_aon_clk",
-              "clkmgr_peri_clk_gpio_clk",
+      tests: ["clkmgr_peri_clk_gpio_clk",
               "clkmgr_peri_clk_spi_device_clk",
               "clkmgr_peri_clk_i2c0_clk",
               "clkmgr_peri_clk_uart0_clk"]
@@ -950,17 +946,6 @@
       tags: ["conn"]
     }
     {
-      name: rst_sys_aon_aon
-      desc: '''Verify rstmgr's rst_sys_aon_n[0] is connected to the following:
-            - adc_ctrl's rst_aon_ni
-            - sensor_ctrl's rst_aon_ni
-            '''
-      stage: V2
-      tests: ["rstmgr_sys_aon_aon_adc_ctrl_rst_aon_ni",
-              "rstmgr_sys_aon_aon_sensor_ctrl_rst_aon_ni"]
-      tags: ["conn"]
-    }
-    {
       name: rst_sys_io_d0
       desc: '''Verify rstmgr's rst_sys_io_n[1] is connected to xbar_main's rst_spi_host0_ni.'''
       stage: V2
@@ -970,13 +955,11 @@
     {
       name: rst_sys_io_aon
       desc: '''Verify rstmgr's rst_sys_io_n[0] is connected to the following:
-            - adc_ctrl's rst_ni
             - sensor_ctrl's rst_ni
             - sram_ctrl_ret's rst_ni
             '''
       stage: V2
-      tests: ["rstmgr_sys_io_aon_adc_ctrl_rst_ni",
-              "rstmgr_sys_io_aon_sensor_ctrl_rst_ni",
+      tests: ["rstmgr_sys_io_aon_sensor_ctrl_rst_ni",
               "rstmgr_sys_io_aon_sram_ctrl_ret_rst_ni"]
       tags: ["conn"]
     }

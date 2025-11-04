@@ -33,8 +33,6 @@ filesets:
       - rtl/ast_bhv_pkg.sv
       - rtl/ast.sv
       - rtl/ast_reg_top.sv
-      - rtl/adc.sv
-      - rtl/adc_ana.sv
       - rtl/vcc_pgd.sv
       - rtl/vio_pgd.sv
       - rtl/vcaon_pgd.sv

@@ -1129,8 +1129,6 @@ module chip_darjeeling_cw310 #(
 
 
   ast #(
-    .AdcChannels(ast_pkg::AdcChannels),
-    .AdcDataWidth(ast_pkg::AdcDataWidth),
     .UsbCalibWidth(ast_pkg::UsbCalibWidth),
     .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
     .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
@@ -1143,10 +1141,6 @@ module chip_darjeeling_cw310 #(
 
     // clocks' oscillator bypass for FPGA
     .clk_osc_byp_i         ( clks_osc_byp ),
-
-    // adc
-    .adc_a0_ai             ( '0 ),
-    .adc_a1_ai             ( '0 ),
 
     // Direct short to PAD
     .ast2pad_t0_ao         (  ),
@@ -1163,11 +1157,9 @@ module chip_darjeeling_cw310 #(
     .ast_init_done_o       ( ),
     // buffered clocks & resets
     .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_infra),
-    .clk_ast_adc_i (clkmgr_aon_clocks.clk_aon_peri),
     .clk_ast_alert_i (clkmgr_aon_clocks.clk_io_secure),
     .clk_ast_rng_i (clkmgr_aon_clocks.clk_main_secure),
     .rst_ast_tlul_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::Domain0Sel]),
-    .rst_ast_adc_ni (rstmgr_aon_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
     .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_rng_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
     .clk_ast_ext_i         ( ext_clk ),
@@ -1209,11 +1201,6 @@ module chip_darjeeling_cw310 #(
     .clk_src_usb_en_i      ( '0 ),
     .clk_src_usb_o         (    ),
     .clk_src_usb_val_o     (    ),
-    // adc
-    .adc_pd_i              ( '0 ),
-    .adc_chnsel_i          ( '0 ),
-    .adc_d_o               (    ),
-    .adc_d_val_o           (    ),
     // rng
     .rng_en_i              ( es_rng_enable ),
     .rng_fips_i            ( es_rng_fips   ),

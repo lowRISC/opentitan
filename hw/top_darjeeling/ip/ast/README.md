@@ -394,13 +394,6 @@ clk_src_io_o's frequency is 48 MHz; otherwise, it is 96 MHz.</td>
 <tr class="odd">
 <td colspan="5"><strong>Clock &amp; Reset Inputs</strong></td>
 </tr>
-<tr class="even">
-<td>clk_ast_adc_i</td>
-<td>I</td>
-<td>1</td>
-<td>adc</td>
-<td>ADC interface clock input</td>
-</tr>
 <tr class="odd">
 <td>clk_ast_rng_i</td>
 <td>I</td>
@@ -1050,47 +1043,6 @@ Note that in TEST_UNLOCK*/RMA state, the booter should always act per
 It is recommended to redundantly code the OTP fields that control the
 ROM code branching and also to protect the branching code from fault
 injection.
-
-# ADC
-
-AST contains an analog to digital converter that can be used to sample
-various input signals. For OpenTitan this will primarily be used for
-[<u>debug cable detection</u>](https://www.sparkfun.com/products/14746).
-To activate the ADC, the corresponding [<u>comportable
-module</u>](../../../ip/adc_ctrl/README.md) must first
-activate the ADC through 'adc_pd_i'. Once activated, it should select
-the channel to sample. Channel transition from zero to non-zero value
-starts the ADC conversion. The ADC output is synchronous to the ADC
-controller.
-
-## ADC Usage Flow
-
-1.  Activate the ADC by negating 'adc_pd_i'
-
-2.  Wait 30 uS for the ADC to wake up.
-
-3.  Select an analog channel to measure by setting the corresponding bit
- in 'adc_chnsel_i' bus. This triggers a measurement.
-
-4.  Wait until 'adc_d_val' is set and read the result via
- 'adc_d_o'
-
-5.  Clear 'adc_chnsel_i' bus to 0. Note that adc_chnsel must
- be cleared to 0 before a new channel is selected.
-
-6.  Repeat steps 3-5 if more channels or more measurements are required
-
-7.  Deactivate the ADC by setting 'adc_pd_i' to save power.
-
-```wavejson
-{ signal: [ {node: '.a..b........', phase:0.2},
-{name: 'adc_pd_i' , wave: '10|..|.....|....|..1'}, {name:
-'clk_ast_adc_i', wave: 'p.|..|.....|....|...'}, {name:
-'adc_chnsel_i' , wave: '0.|.3|..04.|....|0..'}, {name:
-'adc_d_val_o' , wave: '0.|..|.1.0.|.1..|.0.'}, {name: 'adc_d_o' ,
-wave: 'x.|..|.3.x.|.4..|.x.', data: ['ch0', 'ch1', 'ch1']}, ],
-edge: [ 'a<->b wakeup time', ] }
-```
 
 # Random Number Generator
 
