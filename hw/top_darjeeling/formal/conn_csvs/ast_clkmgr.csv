@@ -20,7 +20,6 @@ CONNECTION, AST_IO_BYP_ACK_OUT,  u_ast, io_clk_byp_ack_o,  top_darjeeling.u_clkm
 #################################
 # Signals from Clkmgr to AST
 #################################
-CONNECTION, AST_CLK_ADC_IN,     top_darjeeling.u_clkmgr_aon, clocks_o.clk_aon_peri,         u_ast, clk_ast_adc_i
 CONNECTION, AST_CLK_ALERT_IN,   top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_secure,        u_ast, clk_ast_alert_i
 CONNECTION, AST_CLK_ES_IN,      top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_secure,      u_ast, clk_ast_es_i
 CONNECTION, AST_CLK_RNG_IN,     top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_secure,      u_ast, clk_ast_rng_i

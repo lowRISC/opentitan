@@ -123,7 +123,6 @@
         clocks:
         {
           clk_io_peri: io
-          clk_aon_peri: aon
         }
       }
       {
@@ -3562,11 +3561,6 @@
           clock: io
           group: infra
         }
-        clk_ast_adc_i:
-        {
-          clock: aon
-          group: peri
-        }
         clk_ast_alert_i:
         {
           clock: io
@@ -3585,11 +3579,6 @@
         {
           name: lc_io
           domain: "0"
-        }
-        rst_ast_adc_ni:
-        {
-          name: lc_aon
-          domain: Aon
         }
         rst_ast_alert_ni:
         {
@@ -3611,7 +3600,6 @@
       clock_connections:
       {
         clk_ast_tlul_i: clkmgr_aon_clocks.clk_io_infra
-        clk_ast_adc_i: clkmgr_aon_clocks.clk_aon_peri
         clk_ast_alert_i: clkmgr_aon_clocks.clk_io_secure
         clk_ast_rng_i: clkmgr_aon_clocks.clk_main_secure
       }
@@ -20650,7 +20638,6 @@
         clocks:
         {
           clk_io_peri: io
-          clk_aon_peri: aon
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_peri
@@ -20673,7 +20660,6 @@
         clocks:
         {
           clk_io_peri: io
-          clk_aon_peri: aon
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_peri
@@ -20696,7 +20682,6 @@
         clocks:
         {
           clk_io_peri: io
-          clk_aon_peri: aon
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_peri
@@ -20765,7 +20750,6 @@
         clocks:
         {
           clk_io_peri: io
-          clk_aon_peri: aon
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_peri

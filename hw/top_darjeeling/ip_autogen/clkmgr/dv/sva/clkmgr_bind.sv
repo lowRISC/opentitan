@@ -83,10 +83,6 @@ module clkmgr_bind;
     .cg_en(cg_en_o.aon_infra == prim_mubi_pkg::MuBi4True)
   );
 
-  bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_aon_peri (
-    .cg_en(cg_en_o.aon_peri == prim_mubi_pkg::MuBi4True)
-  );
-
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_aon_powerup (
     .cg_en(cg_en_o.aon_powerup == prim_mubi_pkg::MuBi4True)
   );

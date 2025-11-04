@@ -19,7 +19,6 @@
   dif_stage:          "",
   clocking: [
     { clock: "clk_ast_tlul_i",  reset: "rst_ast_tlul_ni", primary: true },
-    { clock: "clk_ast_adc_i",   reset: "rst_ast_adc_ni"},
     { clock: "clk_ast_alert_i", reset: "rst_ast_alert_ni"},
     { clock: "clk_ast_rng_i",   reset: "rst_ast_rng_ni"},
   ],

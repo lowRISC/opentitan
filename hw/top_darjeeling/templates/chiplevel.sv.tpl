@@ -631,8 +631,6 @@ module chip_${top["name"]}_${target["name"]} #(
 % endif
 
   ast #(
-    .AdcChannels(ast_pkg::AdcChannels),
-    .AdcDataWidth(ast_pkg::AdcDataWidth),
     .UsbCalibWidth(ast_pkg::UsbCalibWidth),
     .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
     .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
@@ -643,10 +641,6 @@ module chip_${top["name"]}_${target["name"]} #(
 
     // USB IO Pull-up Calibration Setting
     .usb_io_pu_cal_o       ( ),
-
-    // adc
-    .adc_a0_ai             ( '0 ),
-    .adc_a1_ai             ( '0 ),
 
     // Direct short to PAD
     .ast2pad_t0_ao         ( unused_t0 ),
@@ -660,10 +654,6 @@ module chip_${top["name"]}_${target["name"]} #(
 
     // clocks' oscillator bypass for FPGA
     .clk_osc_byp_i         ( clks_osc_byp ),
-
-    // adc
-    .adc_a0_ai             ( '0 ),
-    .adc_a1_ai             ( '0 ),
 
     // Direct short to PAD
     .ast2pad_t0_ao         (  ),
@@ -725,11 +715,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .clk_src_usb_en_i      ( '0 ),
     .clk_src_usb_o         (    ),
     .clk_src_usb_val_o     (    ),
-    // adc
-    .adc_pd_i              ( '0 ),
-    .adc_chnsel_i          ( '0 ),
-    .adc_d_o               (    ),
-    .adc_d_val_o           (    ),
     // rng
     .rng_en_i              ( es_rng_enable ),
     .rng_fips_i            ( es_rng_fips   ),

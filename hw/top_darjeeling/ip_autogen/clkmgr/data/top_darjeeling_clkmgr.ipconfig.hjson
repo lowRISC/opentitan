@@ -73,11 +73,6 @@
           src_name: aon
           endpoint_ip: soc_proxy
         }
-        clk_aon_peri:
-        {
-          src_name: aon
-          endpoint_ip: ast
-        }
         clk_aon_timers:
         {
           src_name: aon

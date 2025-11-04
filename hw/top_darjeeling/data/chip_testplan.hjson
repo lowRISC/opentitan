@@ -2438,11 +2438,10 @@
       desc: '''Verify the clk and rst inputs to AST (from `clkmgr`).
 
             Create different scenarios that affect the clocks and resets and see that the AST features
-            (RNG, entropy, alert, ADC) that use those clocks/resets behave correctly.
+            (RNG, entropy, alert) that use those clocks/resets behave correctly.
             sequence:
             1. Check that AST RNG generates data and fills the entropy source fifo
             2. Create AST alerts
-            3. Activate ADC conversion
             4. EDN entropy supply to AST
             Enter sleep/deep sleep/ stop IO clocks
             Repeat 1-4 to check it is ok.
@@ -2930,7 +2929,6 @@
 
       Blocks / functionality to run simultaneously in this test:
 
-        - The ADC is continuously sampling new data
         - Staggered activation of OTBN, aes, KMAC/HMAC.
           - KMAC / aes would need to take turns being fed data
           - KMAC activation should be a combination of otp background, key
