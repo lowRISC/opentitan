@@ -33,7 +33,14 @@ interface pwrmgr_rstreqs_sva_if
   // The timing of the escalation reset is determined by the slow clock, but will not propagate if
   // the non-slow clock is off. We use the regular clock and multiply the clock cycles times the
   // clock ratio.
+% if topname in ["earlgrey", "englishbreakfast"]:
   localparam int FastToSlowFreqRatio = 120;
+% elif topname == "darjeeling":
+  // Darjeeling has a 16x clock ratio between the slow and fast clocks. (1GHz / 62.5MHz = 16)
+  localparam int FastToSlowFreqRatio = 16;
+% else:
+<% assert False, f"Unsupported top: {topname}" %>\
+% endif
 
   localparam int MinEscRstCycles = 0;
   localparam int MaxEscRstCycles = 4 * FastToSlowFreqRatio;
