@@ -77,7 +77,6 @@ module ast
   input clk_src_io_en_i,                      // IO Source Clock Enable
   output logic clk_src_io_o,                  // IO Source Clock
   output logic clk_src_io_val_o,              // IO Source Clock Valid
-  output prim_mubi_pkg::mubi4_t clk_src_io_48m_o,  // IO Source Clock is 48MHz
 
   // usb source clock
   input usb_ref_pulse_i,                      // USB Reference Pulse
@@ -506,7 +505,6 @@ ast_clks_byp u_ast_clks_byp (
   .clk_src_sys_val_o ( clk_src_sys_val_o ),
   .clk_src_io_o ( clk_src_io ),
   .clk_src_io_val_o ( clk_src_io_val_o ),
-  .clk_src_io_48m_o ( clk_src_io_48m_o ),
   .clk_src_usb_o ( clk_src_usb ),
   .clk_src_usb_val_o ( clk_src_usb_val_o ),
   .clk_src_aon_o ( clk_src_aon ),
@@ -894,7 +892,6 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(ClkSrcAonValKnownO_A, clk_src_aon_val_o, clk_src_aon_o, rst_aon_clk_n)
 `ASSERT_KNOWN(ClkSrcIoKnownO_A, clk_src_io_o, 1, ast_pwst_o.main_pok)
 `ASSERT_KNOWN(ClkSrcIoValKnownO_A, clk_src_io_val_o, clk_src_io_o, rst_io_clk_n)
-`ASSERT_KNOWN(ClkSrcIo48mKnownO_A, clk_src_io_48m_o, clk_src_io_o, rst_io_clk_n)
 `ASSERT_KNOWN(ClkSrcSysKnownO_A, clk_src_sys_o, 1, ast_pwst_o.main_pok)
 `ASSERT_KNOWN(ClkSrcSysValKnownO_A, clk_src_sys_val_o, clk_src_sys_o, rst_sys_clk_n)
 `ASSERT_KNOWN(ClkSrcUsbKnownO_A, clk_src_usb_o, 1, ast_pwst_o.main_pok)

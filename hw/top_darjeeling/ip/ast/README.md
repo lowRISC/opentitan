@@ -367,14 +367,6 @@ manager</u></a>.</td>
 <td>aon</td>
 <td>I/O and timer clock enable</td>
 </tr>
-<tr class="even">
-<td>clk_src_io_48m_o</td>
-<td>O</td>
-<td>mubi4</td>
-<td>aon</td>
-<td>Clock frequency indicator. When set, it indicates that the
-clk_src_io_o's frequency is 48 MHz; otherwise, it is 96 MHz.</td>
-</tr>
 <tr class="odd">
 <td colspan="5"><strong>Clock &amp; Reset Inputs</strong></td>
 </tr>
