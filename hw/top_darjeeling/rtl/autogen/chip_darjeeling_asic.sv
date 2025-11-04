@@ -1333,7 +1333,6 @@ module chip_darjeeling_asic #(
     .clk_src_io_en_i       ( base_ast_pwr.io_clk_en ),
     .clk_src_io_o          ( ast_base_clks.clk_io ),
     .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
-    .clk_src_io_48m_o      ( ),
     // usb source clock
     .usb_ref_pulse_i       ( '0 ),
     .usb_ref_val_i         ( '0 ),

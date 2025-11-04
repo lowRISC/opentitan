@@ -39,7 +39,6 @@ module ast_clks_byp (
   output logic clk_src_sys_val_o,           // SYS Source Clock Valid
   output logic clk_src_io_o,                // IO Source Clock
   output logic clk_src_io_val_o,            // IO Source Clock Valid
-  output prim_mubi_pkg::mubi4_t clk_src_io_48m_o,  // IO Source Clock is 48Mhz
   output logic clk_src_usb_o,               // USB Source Clock
   output logic clk_src_usb_val_o,           // USB Source Clock Valid
   output logic clk_src_aon_o,               // AON Source Clock
@@ -741,40 +740,6 @@ prim_mubi4_sender #(
   .mubi_i ( prim_mubi_pkg::mubi4_bool_to_mubi(only_io_clk_byp_en) ),
   .mubi_o ( {io_clk_byp_ack_o} )
 );
-
-// IO Clock Source is 48MHz
-////////////////////////////////////////
-logic io_clk_byp_is_48m_src, io_clk_byp_is_48m;
-
-// Oscillator source is always 96MHz.
-// External Bypass source is assume to be 96MHz until it is enabled as 48MHz
-always_ff @( posedge clk_aon, negedge rst_aon_n ) begin
-  if ( !rst_aon_n ) begin
-    io_clk_byp_is_48m_src <= 1'b0;
-  end else begin
-    io_clk_byp_is_48m_src <= io_clk_byp_en && !ext_freq_is_96m;
-  end
-end
-
-prim_flop_2sync #(
-  .Width ( 1 ),
-  .ResetValue ( 1'b0 )
-) u_io_clk_byp_is_48m_sync (
-  .clk_i ( clk_src_io_o ),
-  .rst_ni ( rst_aon_ioda_n ),
-  .d_i ( io_clk_byp_is_48m_src ),
-  .q_o ( io_clk_byp_is_48m )
-);
-
-prim_mubi4_sender #(
-  .ResetValue ( prim_mubi_pkg::MuBi4False )
-) u_clk_src_io_48m_sync (
-  .clk_i ( clk_src_io_o ),
-  .rst_ni ( rst_aon_ioda_n ),
-  .mubi_i ( prim_mubi_pkg::mubi4_bool_to_mubi(io_clk_byp_is_48m) ),
-  .mubi_o ( {clk_src_io_48m_o} )
-);
-
 
 /////////////////////
 // Unused Signals  //
