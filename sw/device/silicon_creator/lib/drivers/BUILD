@@ -261,13 +261,19 @@ opentitan_test(
 dual_cc_library(
     name = "ibex",
     srcs = dual_inputs(
-        host = ["ibex_host.c"],
-        shared = ["ibex.c"],
+        device = ["ibex.c"],
+        host = ["mock_ibex.cc"],
     ),
     hdrs = dual_inputs(
+        host = ["mock_ibex.h"],
         shared = ["ibex.h"],
     ),
     deps = dual_inputs(
+        host = [
+            "//sw/device/lib/base:global_mock",
+            "//sw/device/silicon_creator/testing:rom_test",
+            "@googletest//:gtest",
+        ],
         shared = [
             "//hw/top:rv_core_ibex_c_regs",
             "//hw/top:dt",
@@ -620,6 +626,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
+            ":ibex",
             ":lifecycle",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib:error",
