@@ -49,13 +49,6 @@ module chip_darjeeling_verilator #(
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
-    // TODO: check whether there is a better way to pass these USB-specific params
-    // The use of these indexes is gated behind a parameter, but to synthesize they
-    // need to exist even if the code-path is never used (pinmux.sv:UsbWkupModuleEn).
-    // Hence, set to zero.
-    usb_dp_idx:        0,
-    usb_dn_idx:        0,
-    usb_sense_idx:     0,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
       BidirStd, // DIO soc_proxy_soc_gpo
@@ -394,7 +387,6 @@ module chip_darjeeling_verilator #(
 
   ast_pkg::clks_osc_byp_t clks_osc_byp;
   assign clks_osc_byp = '{
-    usb: clk_i,
     sys: clk_i,
     io:  clk_i,
     aon: clk_aon
@@ -445,15 +437,11 @@ module chip_darjeeling_verilator #(
   prim_mubi_pkg::mubi4_t ast_init_done;
 
   ast #(
-    .UsbCalibWidth(ast_pkg::UsbCalibWidth),
     .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
     .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
   ) u_ast (
     // external POR
     .por_ni                ( rst_ni ),
-
-    // USB IO Pull-up Calibration Setting
-    .usb_io_pu_cal_o       ( ),
 
     // Direct short to PAD
     .ast2pad_t0_ao         ( unused_t0 ),
@@ -506,12 +494,6 @@ module chip_darjeeling_verilator #(
     .clk_src_io_en_i       ( base_ast_pwr.io_clk_en ),
     .clk_src_io_o          ( ast_base_clks.clk_io ),
     .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
-    // usb source clock
-    .usb_ref_pulse_i       ( '0 ),
-    .usb_ref_val_i         ( '0 ),
-    .clk_src_usb_en_i      ( '0 ),
-    .clk_src_usb_o         (    ),
-    .clk_src_usb_val_o     (    ),
     // rng
     .rng_en_i              ( es_rng_enable ),
     .rng_fips_i            ( es_rng_fips   ),
@@ -522,14 +504,12 @@ module chip_darjeeling_verilator #(
     .alert_req_o           ( ast_alert_req  ),
     // dft
     .lc_dft_en_i           ( lc_dft_en        ),
-    .usb_obs_i             ( '0 ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
     .obs_ctrl_o            ( obs_ctrl ),
     // pinmux related
     .padmux2ast_i          ( '0         ),
     .ast2padmux_o          (            ),
-    .ext_freq_is_96m_i     ( hi_speed_sel ),
     .all_clk_byp_req_i     ( all_clk_byp_req  ),
     .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
     .io_clk_byp_req_i      ( io_clk_byp_req   ),
