@@ -257,7 +257,7 @@ pub const SOC_PROXY_CORE_BASE_ADDR: usize = 0x22030000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #SOC_PROXY_CORE_BASE_ADDR and
 /// `SOC_PROXY_CORE_BASE_ADDR + SOC_PROXY_CORE_SIZE_BYTES`.
-pub const SOC_PROXY_CORE_SIZE_BYTES: usize = 0x10;
+pub const SOC_PROXY_CORE_SIZE_BYTES: usize = 0x20;
 
 /// Peripheral base address for regs device on sram_ctrl_ret_aon in top darjeeling.
 ///

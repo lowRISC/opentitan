@@ -11,10 +11,10 @@ package soc_proxy_reg_pkg;
   parameter int NumAlerts = 29;
 
   // Address widths within the block
-  parameter int CoreAw = 4;
+  parameter int CoreAw = 5;
 
   // Number of registers for every interface
-  parameter int NumRegsCore = 4;
+  parameter int NumRegsCore = 5;
 
   // Alert indices
   typedef enum int {
@@ -204,10 +204,11 @@ package soc_proxy_reg_pkg;
   } soc_proxy_core_hw2reg_t;
 
   // Register offsets for core interface
-  parameter logic [CoreAw-1:0] SOC_PROXY_INTR_STATE_OFFSET = 4'h 0;
-  parameter logic [CoreAw-1:0] SOC_PROXY_INTR_ENABLE_OFFSET = 4'h 4;
-  parameter logic [CoreAw-1:0] SOC_PROXY_INTR_TEST_OFFSET = 4'h 8;
-  parameter logic [CoreAw-1:0] SOC_PROXY_ALERT_TEST_OFFSET = 4'h c;
+  parameter logic [CoreAw-1:0] SOC_PROXY_INTR_STATE_OFFSET = 5'h 0;
+  parameter logic [CoreAw-1:0] SOC_PROXY_INTR_ENABLE_OFFSET = 5'h 4;
+  parameter logic [CoreAw-1:0] SOC_PROXY_INTR_TEST_OFFSET = 5'h 8;
+  parameter logic [CoreAw-1:0] SOC_PROXY_ALERT_TEST_OFFSET = 5'h c;
+  parameter logic [CoreAw-1:0] SOC_PROXY_DUMMY_OFFSET = 5'h 10;
 
   // Reset values for hwext registers and their fields for core interface
   parameter logic [31:0] SOC_PROXY_INTR_TEST_RESVAL = 32'h 0;
@@ -248,15 +249,17 @@ package soc_proxy_reg_pkg;
     SOC_PROXY_INTR_STATE,
     SOC_PROXY_INTR_ENABLE,
     SOC_PROXY_INTR_TEST,
-    SOC_PROXY_ALERT_TEST
+    SOC_PROXY_ALERT_TEST,
+    SOC_PROXY_DUMMY
   } soc_proxy_core_id_e;
 
   // Register width information to check illegal writes for core interface
-  parameter logic [3:0] SOC_PROXY_CORE_PERMIT [4] = '{
+  parameter logic [3:0] SOC_PROXY_CORE_PERMIT [5] = '{
     4'b 1111, // index[0] SOC_PROXY_INTR_STATE
     4'b 1111, // index[1] SOC_PROXY_INTR_ENABLE
     4'b 1111, // index[2] SOC_PROXY_INTR_TEST
-    4'b 1111  // index[3] SOC_PROXY_ALERT_TEST
+    4'b 1111, // index[3] SOC_PROXY_ALERT_TEST
+    4'b 0001  // index[4] SOC_PROXY_DUMMY
   };
 
 endpackage
