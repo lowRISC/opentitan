@@ -41,13 +41,20 @@ function esc_monitor::new (string name, uvm_component parent);
 endfunction : new
 
 task esc_monitor::run_phase(uvm_phase phase);
-  super.run_phase(phase);
+  // Run the base class run_phase task in parallel (which runs reset_thread, maintaining the
+  // under_reset flag). For the escalation monitor in particular, don't start all the tasks until
+  // reset has finished.
   fork
-    esc_thread();
-    reset_thread();
-    unexpected_resp_thread();
-    sig_int_fail_thread();
-  join_none
+    super.run_phase(phase);
+    begin
+      wait_for_reset_done();
+      fork
+        esc_thread();
+        unexpected_resp_thread();
+        sig_int_fail_thread();
+      join
+    end
+  join
 endtask : run_phase
 
 task esc_monitor::esc_thread();

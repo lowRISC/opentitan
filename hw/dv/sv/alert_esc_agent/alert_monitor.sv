@@ -56,15 +56,21 @@ function alert_monitor::new (string name, uvm_component parent);
 endfunction : new
 
 task alert_monitor::run_phase(uvm_phase phase);
-  // Super.* Calls `wait_for_reset_done` in parent class
-  super.run_phase(phase);
+  // Run the base class run_phase task in parallel (which runs reset_thread, maintaining the
+  // under_reset flag). For the alert monitor in particular, don't start all the tasks until reset
+  // has finished.
   fork
-    alert_and_ping_thread();
-    reset_thread();
-    int_fail_thread();
-    alert_init_thread();
-    wait_ping_thread();
-  join_none
+    super.run_phase(phase);
+    begin
+      wait_for_reset_done();
+      fork
+        alert_and_ping_thread();
+        int_fail_thread();
+        alert_init_thread();
+        wait_ping_thread();
+      join
+    end
+  join
 endtask : run_phase
 
 task alert_monitor::monitor_alerts();
