@@ -46,30 +46,8 @@ module pinmux_chip_tb
 
   // Copied from chip_darjeeling_asic.sv
   // TODO: find a better way to automatically generate this FPV testbench via topgen/ipgen.
-  localparam int Tap0PadIdx = 30;
-  localparam int Tap1PadIdx = 27;
-  localparam int Dft0PadIdx = 25;
-  localparam int Dft1PadIdx = 26;
-  localparam int TckPadIdx = 38;
-  localparam int TmsPadIdx = 35;
-  localparam int TrstNPadIdx = 39;
-  localparam int TdiPadIdx = 37;
-  localparam int TdoPadIdx = 36;
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
-    tck_idx:           TckPadIdx,
-    tms_idx:           TmsPadIdx,
-    trst_idx:          TrstNPadIdx,
-    tdi_idx:           TdiPadIdx,
-    tdo_idx:           TdoPadIdx,
-    tap_strap0_idx:    Tap0PadIdx,
-    tap_strap1_idx:    Tap1PadIdx,
-    dft_strap0_idx:    Dft0PadIdx,
-    dft_strap1_idx:    Dft1PadIdx,
-    // TODO: check whether there is a better way to pass these USB-specific params
-    usb_dp_idx:        DioUsbdevUsbDp,
-    usb_dn_idx:        DioUsbdevUsbDn,
-    usb_sense_idx:     MioInUsbdevSense,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
       BidirStd, // DIO spi_host0_csb

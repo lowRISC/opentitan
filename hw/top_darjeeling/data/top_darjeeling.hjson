@@ -1833,19 +1833,7 @@
         //        parameter will be assigned the corresponding pad index.
         //
         // Each entry may have an optional 'desc' key for further description.
-        special_signals: [
-          // Straps
-          { name: 'tap0',   pad: 'MIO0', desc: 'TAP strap signal.'  },
-          { name: 'tap1',   pad: 'MIO1', desc: 'TAP strap signal.'  },
-          { name: 'dft0',   pad: 'MIO2', desc: 'DFT strap signal.'  },
-          { name: 'dft1',   pad: 'MIO3', desc: 'DFT strap signal.'  },
-          // JTAG
-          { name: 'tck',    pad: 'MIO4', desc: 'JTAG tck signal.'    },
-          { name: 'tms',    pad: 'MIO5', desc: 'JTAG tms signal.'    },
-          { name: 'trst_n', pad: 'MIO6', desc: 'JTAG trst_n signal.' },
-          { name: 'tdi',    pad: 'MIO7', desc: 'JTAG tdi signal.'    },
-          { name: 'tdo',    pad: 'MIO8', desc: 'JTAG tdo signal.'    },
-        ],
+        special_signals: [],
       }
     },
   ]

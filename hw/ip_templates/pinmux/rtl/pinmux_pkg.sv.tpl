@@ -16,6 +16,7 @@ package pinmux_pkg;
   // datastructure below serves this purpose. Note that all the indices below are with respect to
   // the concatenated {DIO, MIO} packed array.
   typedef struct packed {
+  % if enable_strap_sampling:
     integer                   tck_idx;
     integer                   tms_idx;
     integer                   trst_idx;
@@ -25,9 +26,12 @@ package pinmux_pkg;
     integer                   tap_strap1_idx;
     integer                   dft_strap0_idx;
     integer                   dft_strap1_idx;
+  % endif
+  % if enable_usb_wakeup:
     integer                   usb_dp_idx;
     integer                   usb_dn_idx;
     integer                   usb_sense_idx;
+  % endif
     pad_type_e [NDioPads-1:0] dio_pad_type;
     pad_type_e [NMioPads-1:0] mio_pad_type;
     scan_role_e [NDioPads-1:0] dio_scan_role;
@@ -35,6 +39,7 @@ package pinmux_pkg;
   } target_cfg_t;
 
   parameter target_cfg_t DefaultTargetCfg = '{
+  % if enable_strap_sampling:
     tck_idx:           0,
     tms_idx:           0,
     trst_idx:          0,
@@ -44,9 +49,12 @@ package pinmux_pkg;
     tap_strap1_idx:    0,
     dft_strap0_idx:    0,
     dft_strap1_idx:    0,
+  % endif
+  % if enable_usb_wakeup:
     usb_dp_idx:        0,
     usb_dn_idx:        0,
     usb_sense_idx:     0,
+  % endif
     dio_pad_type:      {NDioPads{BidirStd}},
     mio_pad_type:      {NMioPads{BidirStd}},
     dio_scan_role:     {NDioPads{NoScan}},
