@@ -6,6 +6,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::spi::{SpiError, Target, Transfer};
+use crate::spiflash::SpiFlash;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 /// Declarations of if and when to switch from single-lane SPI to a faster mode.
@@ -242,15 +243,12 @@ pub enum Transaction<'rd, 'wr> {
     WaitForBusyClear,
 }
 
-pub const READ_STATUS: u8 = 0x05;
-pub const STATUS_WIP: u8 = 0x01;
-
 pub fn default_run_eeprom_transactions<T: Target + ?Sized>(
     spi: &T,
     transactions: &mut [Transaction],
 ) -> Result<()> {
     // Default implementation translates into generic SPI read/write, which works as long as
-    // the transport supports generic SPI transfers of sufficint length, and that the mode is
+    // the transport supports generic SPI transfers of sufficient length, and that the mode is
     // single-data-wire.
     for transfer in transactions {
         match transfer {
@@ -264,10 +262,10 @@ pub fn default_run_eeprom_transactions<T: Target + ?Sized>(
                 spi.run_transaction(&mut [Transfer::Write(cmd.to_bytes()?), Transfer::Write(wbuf)])?
             }
             Transaction::WaitForBusyClear => {
-                let mut status = STATUS_WIP;
-                while status & STATUS_WIP != 0 {
+                let mut status = SpiFlash::STATUS_WIP;
+                while status & SpiFlash::STATUS_WIP != 0 {
                     spi.run_transaction(&mut [
-                        Transfer::Write(&[READ_STATUS]),
+                        Transfer::Write(&[SpiFlash::READ_STATUS]),
                         Transfer::Read(std::slice::from_mut(&mut status)),
                     ])?;
                 }
