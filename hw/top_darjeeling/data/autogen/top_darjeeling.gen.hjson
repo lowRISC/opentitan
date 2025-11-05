@@ -17314,63 +17314,7 @@
       }
       pinmux:
       {
-        special_signals:
-        [
-          {
-            name: tap0
-            pad: MIO0
-            desc: TAP strap signal.
-            idx: 0
-          }
-          {
-            name: tap1
-            pad: MIO1
-            desc: TAP strap signal.
-            idx: 1
-          }
-          {
-            name: dft0
-            pad: MIO2
-            desc: DFT strap signal.
-            idx: 2
-          }
-          {
-            name: dft1
-            pad: MIO3
-            desc: DFT strap signal.
-            idx: 3
-          }
-          {
-            name: tck
-            pad: MIO4
-            desc: JTAG tck signal.
-            idx: 4
-          }
-          {
-            name: tms
-            pad: MIO5
-            desc: JTAG tms signal.
-            idx: 5
-          }
-          {
-            name: trst_n
-            pad: MIO6
-            desc: JTAG trst_n signal.
-            idx: 6
-          }
-          {
-            name: tdi
-            pad: MIO7
-            desc: JTAG tdi signal.
-            idx: 7
-          }
-          {
-            name: tdo
-            pad: MIO8
-            desc: JTAG tdo signal.
-            idx: 8
-          }
-        ]
+        special_signals: []
       }
     }
   ]
