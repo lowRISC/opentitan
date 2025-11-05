@@ -313,7 +313,23 @@
 
   registers: {
     core: [
-      // no CSRs defined yet
+      {
+        name: "DUMMY"
+        desc: '''
+              Dummy register to keep the device port.
+              Always returns 0.
+              '''
+        swaccess: "ro"
+        hwaccess: "none"
+        fields: [
+          {
+            name: "dummy"
+            desc: "Dummy field"
+            bits: "0"
+            resval: 0
+          }
+        ]
+      }
     ]
   }
 

@@ -374,7 +374,7 @@
  * address between #TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR and
  * `TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR + TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES 0x10
+#define TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES 0x20
 /**
  * Peripheral base address for regs device on sram_ctrl_ret_aon in top darjeeling.
  *

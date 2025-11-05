@@ -30,7 +30,7 @@ The main address space, shared between the CPU and DM
 | pinmux_aon        | default     | `0x30460000`   | `0x800`        | `0x200`        | pinmux_aon                       |
 | aon_timer_aon     | default     | `0x30470000`   | `0x40`         | `0x10`         | aon_timer_aon                    |
 | ast               | default     | `0x30480000`   | `0x400`        | `0x100`        | ast                              |
-| soc_proxy         | core        | `0x22030000`   | `0x10`         | `0x4`          | core device on soc_proxy         |
+| soc_proxy         | core        | `0x22030000`   | `0x20`         | `0x8`          | core device on soc_proxy         |
 | sram_ctrl_ret_aon | regs        | `0x30500000`   | `0x40`         | `0x10`         | regs device on sram_ctrl_ret_aon |
 | rv_dm             | regs        | `0x21200000`   | `0x10`         | `0x4`          | regs device on rv_dm             |
 | rv_dm             | mem         | `0x40000`      | `0x1000`       | `0x400`        | mem device on rv_dm              |

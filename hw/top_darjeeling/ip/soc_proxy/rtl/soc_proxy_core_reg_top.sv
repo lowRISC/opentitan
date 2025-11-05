@@ -21,7 +21,7 @@ module soc_proxy_core_reg_top (
 
   import soc_proxy_reg_pkg::* ;
 
-  localparam int AW = 4;
+  localparam int AW = 5;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -52,9 +52,9 @@ module soc_proxy_core_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [3:0] reg_we_check;
+  logic [4:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(4)
+    .OneHotWidth(5)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -159,6 +159,7 @@ module soc_proxy_core_reg_top (
   logic alert_test_recov_alert_external_1_wd;
   logic alert_test_recov_alert_external_2_wd;
   logic alert_test_recov_alert_external_3_wd;
+  logic dummy_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -706,13 +707,19 @@ module soc_proxy_core_reg_top (
   assign reg2hw.alert_test.recov_alert_external_3.qe = alert_test_qe;
 
 
+  // R[dummy]: V(False)
+  // constant-only read
+  assign dummy_qs = 1'h0;
 
-  logic [3:0] addr_hit;
+
+
+  logic [4:0] addr_hit;
   always_comb begin
     addr_hit[0] = (reg_addr == SOC_PROXY_INTR_STATE_OFFSET);
     addr_hit[1] = (reg_addr == SOC_PROXY_INTR_ENABLE_OFFSET);
     addr_hit[2] = (reg_addr == SOC_PROXY_INTR_TEST_OFFSET);
     addr_hit[3] = (reg_addr == SOC_PROXY_ALERT_TEST_OFFSET);
+    addr_hit[4] = (reg_addr == SOC_PROXY_DUMMY_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -723,7 +730,8 @@ module soc_proxy_core_reg_top (
               ((addr_hit[0] & (|(SOC_PROXY_CORE_PERMIT[0] & ~reg_be))) |
                (addr_hit[1] & (|(SOC_PROXY_CORE_PERMIT[1] & ~reg_be))) |
                (addr_hit[2] & (|(SOC_PROXY_CORE_PERMIT[2] & ~reg_be))) |
-               (addr_hit[3] & (|(SOC_PROXY_CORE_PERMIT[3] & ~reg_be)))));
+               (addr_hit[3] & (|(SOC_PROXY_CORE_PERMIT[3] & ~reg_be))) |
+               (addr_hit[4] & (|(SOC_PROXY_CORE_PERMIT[4] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -802,6 +810,7 @@ module soc_proxy_core_reg_top (
     reg_we_check[1] = intr_enable_we;
     reg_we_check[2] = intr_test_we;
     reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = 1'b0;
   end
 
   // Read data return
@@ -850,6 +859,10 @@ module soc_proxy_core_reg_top (
         reg_rdata_next[26] = '0;
         reg_rdata_next[27] = '0;
         reg_rdata_next[28] = '0;
+      end
+
+      addr_hit[4]: begin
+        reg_rdata_next[0] = dummy_qs;
       end
 
       default: begin
