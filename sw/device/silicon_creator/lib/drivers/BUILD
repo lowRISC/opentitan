@@ -292,7 +292,7 @@ cc_test(
     name = "ibex_unittest",
     srcs = ["ibex_unittest.cc"],
     deps = [
-        ":ibex",
+        dual_cc_device_library_of(":ibex"),
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
