@@ -18,6 +18,7 @@ filesets:
   files_veriblelint:
     files:
       - tools/veriblelint/lowrisc-styleguide.rules.verible_lint: {file_type: veribleLintRules}
+      - tools/veriblelint/common.vbl: {file_type: veribleLintWaiver}
 
   files_check_tool_requirements:
     depend:
