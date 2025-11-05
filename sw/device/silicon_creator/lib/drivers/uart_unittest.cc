@@ -18,22 +18,6 @@
 namespace uart_unittest {
 namespace {
 
-#if 0
-// We supply `ibex_mcycle` and `to_cpu_cycles` because these target-specific
-// functions do not exist in the host environment.  Because their purpose is
-// to measure time for timeouts, we simply return time in microseconds.
-
-extern "C" {
-uint64_t ibex_mcycle() {
-  struct timespec tp;
-  clock_gettime(CLOCK_MONOTONIC, &tp);
-  return tp.tv_sec * 1000000 + tp.tv_nsec / 1000;
-}
-
-uint64_t to_cpu_cycles(uint64_t usec) { return usec; }
-}  // extern "C"
-#endif
-
 const std::vector<uint8_t> kBytesArray = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a',
     'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
