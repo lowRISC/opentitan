@@ -284,10 +284,10 @@ impl DediprogSpi {
                 }
                 [WaitForBusyClear, rest @ ..] => {
                     transactions = rest;
-                    let mut status = eeprom::STATUS_WIP;
-                    while status & eeprom::STATUS_WIP != 0 {
+                    let mut status = SpiFlash::STATUS_WIP;
+                    while status & SpiFlash::STATUS_WIP != 0 {
                         self.run_transaction(&mut [
-                            Transfer::Write(&[eeprom::READ_STATUS]),
+                            Transfer::Write(&[SpiFlash::READ_STATUS]),
                             Transfer::Read(std::slice::from_mut(&mut status)),
                         ])?;
                     }
