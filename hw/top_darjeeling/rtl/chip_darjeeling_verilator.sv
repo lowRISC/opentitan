@@ -344,19 +344,6 @@ module chip_darjeeling_verilator #(
   logic [ast_pkg::EntropyStreams-1:0] es_rng_bit;
   logic es_rng_fips;
 
-  // alerts interface
-  ast_pkg::ast_alert_rsp_t ast_alert_rsp;
-  ast_pkg::ast_alert_req_t ast_alert_req;
-  assign ast_alert_rsp = '0;
-
-  // clock bypass req/ack
-  prim_mubi_pkg::mubi4_t io_clk_byp_req;
-  prim_mubi_pkg::mubi4_t io_clk_byp_ack;
-  prim_mubi_pkg::mubi4_t all_clk_byp_req;
-  prim_mubi_pkg::mubi4_t all_clk_byp_ack;
-  prim_mubi_pkg::mubi4_t hi_speed_sel;
-  prim_mubi_pkg::mubi4_t div_step_down_req;
-
   // DFT connections
   logic scan_en;
   lc_ctrl_pkg::lc_tx_t lc_dft_en;
@@ -510,10 +497,10 @@ module chip_darjeeling_verilator #(
     // pinmux related
     .padmux2ast_i          ( '0         ),
     .ast2padmux_o          (            ),
-    .all_clk_byp_req_i     ( all_clk_byp_req  ),
-    .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
-    .io_clk_byp_req_i      ( io_clk_byp_req   ),
-    .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
+    .all_clk_byp_req_i     ( prim_mubi_pkg::MuBi4False ),
+    .all_clk_byp_ack_o     (   ),
+    .io_clk_byp_req_i      ( prim_mubi_pkg::MuBi4False ),
+    .io_clk_byp_ack_o      (    ),
     // Memory configuration connections
     .dpram_rmf_o           ( ),
     .dpram_rml_o           ( ),
@@ -864,6 +851,7 @@ module chip_darjeeling_verilator #(
     .mbx_pcie1_doe_intr_o              (                            ),
     .mbx_pcie1_doe_intr_support_o      (                            ),
     .mbx_pcie1_doe_async_msg_support_o (                            ),
+    .racl_policies_o                   (                            ),
     .es_rng_enable_o                   ( es_rng_enable              ),
     .es_rng_valid_i                    ( es_rng_valid               ),
     .es_rng_bit_i                      ( es_rng_bit                 ),
@@ -933,6 +921,8 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
                           pwrmgr_boot_status.lc_done,
                           pwrmgr_boot_status.otp_done,
                           pwrmgr_boot_status.rom_ctrl_status,
-                          pwrmgr_boot_status.strap_sampled};
+                          pwrmgr_boot_status.strap_sampled,
+                          pwrmgr_boot_status.light_reset_req,
+                          soc_dbg_policy_bus};
 
 endmodule : chip_darjeeling_verilator
