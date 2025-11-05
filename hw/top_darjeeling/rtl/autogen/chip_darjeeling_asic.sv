@@ -113,38 +113,9 @@ module chip_darjeeling_asic #(
   import top_darjeeling_pkg::*;
   import prim_pad_wrapper_pkg::*;
 
-  ////////////////////////////
-  // Special Signal Indices //
-  ////////////////////////////
-
-  localparam int Tap0PadIdx = 0;
-  localparam int Tap1PadIdx = 1;
-  localparam int Dft0PadIdx = 2;
-  localparam int Dft1PadIdx = 3;
-  localparam int TckPadIdx = 4;
-  localparam int TmsPadIdx = 5;
-  localparam int TrstNPadIdx = 6;
-  localparam int TdiPadIdx = 7;
-  localparam int TdoPadIdx = 8;
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
-    tck_idx:           TckPadIdx,
-    tms_idx:           TmsPadIdx,
-    trst_idx:          TrstNPadIdx,
-    tdi_idx:           TdiPadIdx,
-    tdo_idx:           TdoPadIdx,
-    tap_strap0_idx:    Tap0PadIdx,
-    tap_strap1_idx:    Tap1PadIdx,
-    dft_strap0_idx:    Dft0PadIdx,
-    dft_strap1_idx:    Dft1PadIdx,
-    // TODO: check whether there is a better way to pass these USB-specific params
-    // The use of these indexes is gated behind a parameter, but to synthesize they
-    // need to exist even if the code-path is never used (pinmux.sv:UsbWkupModuleEn).
-    // Hence, set to zero.
-    usb_dp_idx:        0,
-    usb_dn_idx:        0,
-    usb_sense_idx:     0,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
       BidirStd, // DIO soc_proxy_soc_gpo
@@ -1114,7 +1085,6 @@ module chip_darjeeling_asic #(
 
 
 
-
   //////////////////////////////////
   // AST - Common for all targets //
   //////////////////////////////////
@@ -1157,22 +1127,8 @@ module chip_darjeeling_asic #(
   assign otp_cfg = otp_macro_pkg::OTP_CFG_DEFAULT;
 
   // entropy source interface
-  logic es_rng_enable, es_rng_valid;
+  logic es_rng_enable, es_rng_valid, es_rng_fips;
   logic [ast_pkg::EntropyStreams-1:0] es_rng_bit;
-
-  // alerts interface
-  ast_pkg::ast_alert_rsp_t ast_alert_rsp;
-  ast_pkg::ast_alert_req_t ast_alert_req;
-  assign ast_alert_rsp = '0;
-
-  // clock bypass req/ack
-  prim_mubi_pkg::mubi4_t io_clk_byp_req;
-  prim_mubi_pkg::mubi4_t all_clk_byp_req;
-  prim_mubi_pkg::mubi4_t hi_speed_sel;
-
-  assign io_clk_byp_req    = prim_mubi_pkg::MuBi4False;
-  assign all_clk_byp_req   = prim_mubi_pkg::MuBi4False;
-  assign hi_speed_sel      = prim_mubi_pkg::MuBi4False;
 
   // DFT connections
   logic scan_en;
@@ -1207,14 +1163,6 @@ module chip_darjeeling_asic #(
                 cfg:    ast_rf_cfg.marg
               }
   };
-
-  logic unused_usb_ram_2p_cfg;
-  assign unused_usb_ram_2p_cfg = ^{ast_ram_2p_fcfg.marg_en_a,
-                                   ast_ram_2p_fcfg.marg_a,
-                                   ast_ram_2p_fcfg.test_a,
-                                   ast_ram_2p_fcfg.marg_en_b,
-                                   ast_ram_2p_fcfg.marg_b,
-                                   ast_ram_2p_fcfg.test_b};
 
   // this maps as follows:
   // assign spi_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_lcfg, ram_2p_cfg_i.b_ram_lcfg};
@@ -1257,7 +1205,6 @@ module chip_darjeeling_asic #(
   logic [rstmgr_pkg::PowerDomains-1:0] por_n;
   assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
 
-
   // external clock comes in at a fixed position
   assign ext_clk = mio_in_raw[MioPadMio11];
 
@@ -1272,21 +1219,17 @@ module chip_darjeeling_asic #(
   logic unused_pwr_clamp;
   assign unused_pwr_clamp = base_ast_pwr.pwr_clamp;
 
-
   ast #(
-    .UsbCalibWidth(ast_pkg::UsbCalibWidth),
     .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
     .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
   ) u_ast (
     // external POR
     .por_ni                ( manual_in_por_n ),
 
-    // USB IO Pull-up Calibration Setting
-    .usb_io_pu_cal_o       ( ),
-
     // Direct short to PAD
     .ast2pad_t0_ao         ( unused_t0 ),
     .ast2pad_t1_ao         ( unused_t1 ),
+
     // clocks and resets supplied for detection
     .sns_clks_i            ( clkmgr_aon_clocks    ),
     .sns_rsts_i            ( rstmgr_aon_resets    ),
@@ -1333,33 +1276,25 @@ module chip_darjeeling_asic #(
     .clk_src_io_en_i       ( base_ast_pwr.io_clk_en ),
     .clk_src_io_o          ( ast_base_clks.clk_io ),
     .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
-    // usb source clock
-    .usb_ref_pulse_i       ( '0 ),
-    .usb_ref_val_i         ( '0 ),
-    .clk_src_usb_en_i      ( '0 ),
-    .clk_src_usb_o         (    ),
-    .clk_src_usb_val_o     (    ),
     // rng
     .rng_en_i              ( es_rng_enable ),
     .rng_fips_i            ( es_rng_fips   ),
     .rng_val_o             ( es_rng_valid  ),
     .rng_b_o               ( es_rng_bit    ),
     // alerts
-    .alert_rsp_i           ( ast_alert_rsp  ),
-    .alert_req_o           ( ast_alert_req  ),
+    .alert_rsp_i           ( '0            ),
+    .alert_req_o           (               ),
     // dft
     .lc_dft_en_i           ( lc_dft_en        ),
-    .usb_obs_i             ( '0 ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
     .obs_ctrl_o            ( obs_ctrl ),
     // pinmux related
     .padmux2ast_i          ( '0         ),
     .ast2padmux_o          (            ),
-    .ext_freq_is_96m_i     ( hi_speed_sel ),
-    .all_clk_byp_req_i     ( all_clk_byp_req  ),
+    .all_clk_byp_req_i     ( prim_mubi_pkg::MuBi4False ),
     .all_clk_byp_ack_o     ( ),
-    .io_clk_byp_req_i      ( io_clk_byp_req   ),
+    .io_clk_byp_req_i      ( prim_mubi_pkg::MuBi4False ),
     .io_clk_byp_ack_o      ( ),
     // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
@@ -1583,7 +1518,6 @@ module chip_darjeeling_asic #(
   );
 
 
-
   //////////////////////////////////
   // Manual Pad / Signal Tie-offs //
   //////////////////////////////////
@@ -1647,7 +1581,7 @@ module chip_darjeeling_asic #(
     .otp_macro_pwr_seq_h_i             ( otp_macro_pwr_seq_h        ),
     .otp_obs_o                         ( otp_obs                    ),
     .otp_cfg_i                         ( otp_cfg                    ),
-    .otp_cfg_rsp_o                     ( otp_cfg_rsp                ),
+    .otp_cfg_rsp_o                     (                            ),
     .ctn_tl_h2d_o                      ( ctn_tl_h2d[0]              ),
     .ctn_tl_d2h_i                      ( ctn_tl_d2h[0]              ),
     .ac_range_check_overwrite_i        ( ac_range_check_overwrite_i ),
@@ -1711,6 +1645,7 @@ module chip_darjeeling_asic #(
     .mbx_pcie1_doe_intr_o              (                            ),
     .mbx_pcie1_doe_intr_support_o      (                            ),
     .mbx_pcie1_doe_async_msg_support_o (                            ),
+    .racl_policies_o                   (                            ),
     .es_rng_enable_o                   ( es_rng_enable              ),
     .es_rng_valid_i                    ( es_rng_valid               ),
     .es_rng_bit_i                      ( es_rng_bit                 ),
@@ -1779,8 +1714,8 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
                           pwrmgr_boot_status.lc_done,
                           pwrmgr_boot_status.otp_done,
                           pwrmgr_boot_status.rom_ctrl_status,
-                          pwrmgr_boot_status.strap_sampled};
-
-
+                          pwrmgr_boot_status.strap_sampled,
+                          pwrmgr_boot_status.light_reset_req,
+                          soc_dbg_policy_bus};
 
 endmodule : chip_darjeeling_asic

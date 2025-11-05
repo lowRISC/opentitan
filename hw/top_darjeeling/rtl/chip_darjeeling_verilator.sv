@@ -49,22 +49,6 @@ module chip_darjeeling_verilator #(
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
-    tck_idx:           TckPadIdx,
-    tms_idx:           TmsPadIdx,
-    trst_idx:          TrstNPadIdx,
-    tdi_idx:           TdiPadIdx,
-    tdo_idx:           TdoPadIdx,
-    tap_strap0_idx:    Tap0PadIdx,
-    tap_strap1_idx:    Tap1PadIdx,
-    dft_strap0_idx:    Dft0PadIdx,
-    dft_strap1_idx:    Dft1PadIdx,
-    // TODO: check whether there is a better way to pass these USB-specific params
-    // The use of these indexes is gated behind a parameter, but to synthesize they
-    // need to exist even if the code-path is never used (pinmux.sv:UsbWkupModuleEn).
-    // Hence, set to zero.
-    usb_dp_idx:        0,
-    usb_dn_idx:        0,
-    usb_sense_idx:     0,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
       BidirStd, // DIO soc_proxy_soc_gpo
@@ -360,19 +344,6 @@ module chip_darjeeling_verilator #(
   logic [ast_pkg::EntropyStreams-1:0] es_rng_bit;
   logic es_rng_fips;
 
-  // alerts interface
-  ast_pkg::ast_alert_rsp_t ast_alert_rsp;
-  ast_pkg::ast_alert_req_t ast_alert_req;
-  assign ast_alert_rsp = '0;
-
-  // clock bypass req/ack
-  prim_mubi_pkg::mubi4_t io_clk_byp_req;
-  prim_mubi_pkg::mubi4_t io_clk_byp_ack;
-  prim_mubi_pkg::mubi4_t all_clk_byp_req;
-  prim_mubi_pkg::mubi4_t all_clk_byp_ack;
-  prim_mubi_pkg::mubi4_t hi_speed_sel;
-  prim_mubi_pkg::mubi4_t div_step_down_req;
-
   // DFT connections
   logic scan_en;
   lc_ctrl_pkg::lc_tx_t lc_dft_en;
@@ -403,7 +374,6 @@ module chip_darjeeling_verilator #(
 
   ast_pkg::clks_osc_byp_t clks_osc_byp;
   assign clks_osc_byp = '{
-    usb: clk_i,
     sys: clk_i,
     io:  clk_i,
     aon: clk_aon
@@ -454,15 +424,11 @@ module chip_darjeeling_verilator #(
   prim_mubi_pkg::mubi4_t ast_init_done;
 
   ast #(
-    .UsbCalibWidth(ast_pkg::UsbCalibWidth),
     .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
     .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
   ) u_ast (
     // external POR
     .por_ni                ( rst_ni ),
-
-    // USB IO Pull-up Calibration Setting
-    .usb_io_pu_cal_o       ( ),
 
     // Direct short to PAD
     .ast2pad_t0_ao         ( unused_t0 ),
@@ -515,12 +481,6 @@ module chip_darjeeling_verilator #(
     .clk_src_io_en_i       ( base_ast_pwr.io_clk_en ),
     .clk_src_io_o          ( ast_base_clks.clk_io ),
     .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
-    // usb source clock
-    .usb_ref_pulse_i       ( '0 ),
-    .usb_ref_val_i         ( '0 ),
-    .clk_src_usb_en_i      ( '0 ),
-    .clk_src_usb_o         (    ),
-    .clk_src_usb_val_o     (    ),
     // rng
     .rng_en_i              ( es_rng_enable ),
     .rng_fips_i            ( es_rng_fips   ),
@@ -531,18 +491,16 @@ module chip_darjeeling_verilator #(
     .alert_req_o           ( ast_alert_req  ),
     // dft
     .lc_dft_en_i           ( lc_dft_en        ),
-    .usb_obs_i             ( '0 ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
     .obs_ctrl_o            ( obs_ctrl ),
     // pinmux related
     .padmux2ast_i          ( '0         ),
     .ast2padmux_o          (            ),
-    .ext_freq_is_96m_i     ( hi_speed_sel ),
-    .all_clk_byp_req_i     ( all_clk_byp_req  ),
-    .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
-    .io_clk_byp_req_i      ( io_clk_byp_req   ),
-    .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
+    .all_clk_byp_req_i     ( prim_mubi_pkg::MuBi4False ),
+    .all_clk_byp_ack_o     (   ),
+    .io_clk_byp_req_i      ( prim_mubi_pkg::MuBi4False ),
+    .io_clk_byp_ack_o      (    ),
     // Memory configuration connections
     .dpram_rmf_o           ( ),
     .dpram_rml_o           ( ),
@@ -893,6 +851,7 @@ module chip_darjeeling_verilator #(
     .mbx_pcie1_doe_intr_o              (                            ),
     .mbx_pcie1_doe_intr_support_o      (                            ),
     .mbx_pcie1_doe_async_msg_support_o (                            ),
+    .racl_policies_o                   (                            ),
     .es_rng_enable_o                   ( es_rng_enable              ),
     .es_rng_valid_i                    ( es_rng_valid               ),
     .es_rng_bit_i                      ( es_rng_bit                 ),
@@ -962,6 +921,8 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
                           pwrmgr_boot_status.lc_done,
                           pwrmgr_boot_status.otp_done,
                           pwrmgr_boot_status.rom_ctrl_status,
-                          pwrmgr_boot_status.strap_sampled};
+                          pwrmgr_boot_status.strap_sampled,
+                          pwrmgr_boot_status.light_reset_req,
+                          soc_dbg_policy_bus};
 
 endmodule : chip_darjeeling_verilator
