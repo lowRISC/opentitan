@@ -49,15 +49,6 @@ module chip_darjeeling_verilator #(
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
-    tck_idx:           TckPadIdx,
-    tms_idx:           TmsPadIdx,
-    trst_idx:          TrstNPadIdx,
-    tdi_idx:           TdiPadIdx,
-    tdo_idx:           TdoPadIdx,
-    tap_strap0_idx:    Tap0PadIdx,
-    tap_strap1_idx:    Tap1PadIdx,
-    dft_strap0_idx:    Dft0PadIdx,
-    dft_strap1_idx:    Dft1PadIdx,
     // TODO: check whether there is a better way to pass these USB-specific params
     // The use of these indexes is gated behind a parameter, but to synthesize they
     // need to exist even if the code-path is never used (pinmux.sv:UsbWkupModuleEn).
