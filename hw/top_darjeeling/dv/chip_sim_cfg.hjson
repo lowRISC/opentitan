@@ -1351,6 +1351,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_plic_all_irqs_20
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//hw/{top_chip}/sw/autogen/tests:plic_all_irqs_test_20:6:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_plic_sw_irq
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:plic_sw_irq_test:6:new_rules"]
@@ -1738,7 +1744,9 @@
               "chip_sw_lc_ctrl_rand_to_scrap"
               "chip_sw_sleep_pin_mio_dio_val",
               // TODO(#26733): uncomment when these run for Darjeeling.
-              // "chip_plic_all_irqs",
+              "chip_plic_all_irqs_0",
+              "chip_plic_all_irqs_10",
+              "chip_plic_all_irqs_20",
               // "chip_sw_kmac_app_rom",
               "chip_sw_aes_entropy",
               "chip_sw_kmac_mode_cshake",
@@ -1760,10 +1768,9 @@
               "chip_sw_aes_enc",
               "chip_sw_csrng_kat_test",
               // TODO(#26733): uncomment when these run for Darjeeling.
-              // "chip_sw_aes_enc_jitter_en",
               "chip_sw_sram_ctrl_scrambled_access",
-              // "chip_rv_dm_ndm_reset_req",
-              // "chip_sw_rstmgr_sw_req",
+              "chip_rv_dm_ndm_reset_req",
+              "chip_sw_rstmgr_sw_req",
               // "chip_sw_pwrmgr_sleep_disabled",
               // "base_rom_e2e_smoke",
               "chip_sw_aes_idle",
