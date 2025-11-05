@@ -1085,7 +1085,6 @@ module chip_darjeeling_asic #(
 
 
 
-
   //////////////////////////////////
   // AST - Common for all targets //
   //////////////////////////////////
@@ -1128,7 +1127,7 @@ module chip_darjeeling_asic #(
   assign otp_cfg = otp_macro_pkg::OTP_CFG_DEFAULT;
 
   // entropy source interface
-  logic es_rng_enable, es_rng_valid;
+  logic es_rng_enable, es_rng_valid, es_rng_fips;
   logic [ast_pkg::EntropyStreams-1:0] es_rng_bit;
 
   // alerts interface
@@ -1220,7 +1219,6 @@ module chip_darjeeling_asic #(
   logic [rstmgr_pkg::PowerDomains-1:0] por_n;
   assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
 
-
   // external clock comes in at a fixed position
   assign ext_clk = mio_in_raw[MioPadMio11];
 
@@ -1235,7 +1233,6 @@ module chip_darjeeling_asic #(
   logic unused_pwr_clamp;
   assign unused_pwr_clamp = base_ast_pwr.pwr_clamp;
 
-
   ast #(
     .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
     .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
@@ -1246,6 +1243,7 @@ module chip_darjeeling_asic #(
     // Direct short to PAD
     .ast2pad_t0_ao         ( unused_t0 ),
     .ast2pad_t1_ao         ( unused_t1 ),
+
     // clocks and resets supplied for detection
     .sns_clks_i            ( clkmgr_aon_clocks    ),
     .sns_rsts_i            ( rstmgr_aon_resets    ),
@@ -1534,7 +1532,6 @@ module chip_darjeeling_asic #(
   );
 
 
-
   //////////////////////////////////
   // Manual Pad / Signal Tie-offs //
   //////////////////////////////////
@@ -1598,7 +1595,7 @@ module chip_darjeeling_asic #(
     .otp_macro_pwr_seq_h_i             ( otp_macro_pwr_seq_h        ),
     .otp_obs_o                         ( otp_obs                    ),
     .otp_cfg_i                         ( otp_cfg                    ),
-    .otp_cfg_rsp_o                     ( otp_cfg_rsp                ),
+    .otp_cfg_rsp_o                     (                            ),
     .ctn_tl_h2d_o                      ( ctn_tl_h2d[0]              ),
     .ctn_tl_d2h_i                      ( ctn_tl_d2h[0]              ),
     .ac_range_check_overwrite_i        ( ac_range_check_overwrite_i ),
@@ -1731,7 +1728,5 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
                           pwrmgr_boot_status.otp_done,
                           pwrmgr_boot_status.rom_ctrl_status,
                           pwrmgr_boot_status.strap_sampled};
-
-
 
 endmodule : chip_darjeeling_asic
