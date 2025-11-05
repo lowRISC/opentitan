@@ -14,7 +14,7 @@ filesets:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
     files:
-      - racl_ctrl_bind.sv
+      - ${module_instance_name}_bind.sv
     file_type: systemVerilogSource
 
   files_formal:
