@@ -13,7 +13,10 @@ extern "C" {
 
 #define RSA_CMD_MAX_MESSAGE_BYTES 512
 #define RSA_CMD_MAX_N_BYTES 512
-#define RSA_CMD_MAX_SIGNATURE_BYTES 512
+// There are some error test cases that send larger signatures than 512 bytes.
+// The cryptolib should detect this and abort with an error.
+// Accomodate for these additional bytes.
+#define RSA_CMD_MAX_SIGNATURE_BYTES 514
 
 // clang-format off
 
