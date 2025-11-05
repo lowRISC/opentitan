@@ -110,6 +110,10 @@ struct Opts {
     #[arg(long, num_args = 1)]
     exec: Vec<String>,
 
+    /// De-assert reset signal before executing commands.
+    #[arg(short, long)]
+    drop_reset: bool,
+
     #[command(flatten)]
     backend_opts: backend::BackendOpts,
 
@@ -231,6 +235,10 @@ fn main() -> Result<()> {
     let opts = parse_command_line(Opts::parse(), args_os())?;
 
     let transport = backend::create(&opts.backend_opts)?;
+
+    if opts.drop_reset {
+        transport.pin_strapping("RESET")?.remove()?;
+    }
 
     for command in &opts.exec {
         execute(

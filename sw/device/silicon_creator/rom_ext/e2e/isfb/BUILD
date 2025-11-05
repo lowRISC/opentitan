@@ -230,15 +230,14 @@ _ISFB_CONTRAINT_TESTS = {
             rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_isfb",
             test_cmd = """
                 --exec="image assemble --output=init.bin --mirror=false --size=524288 {rom_ext}@{rom_ext_slot_a} {isfb_page_init}@{owner_slot_a}"
-                --exec="transport init"
-                --exec="fpga clear-bitstream"
-                --exec="fpga load-bitstream {bitstream}"
                 --exec="bootstrap --clear-uart=true init.bin"
                 --exec="console --non-interactive --exit-success='PASS!' --timeout=10s"
                 --exec="bootstrap --clear-uart=true {firmware}"
                 --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}' --timeout=10s"
                 no-op
             """,
+            testopt_bootstrap = "False",
+            testopt_clear_before_test = "True",
         ),
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         manifest = param["manifest"],
