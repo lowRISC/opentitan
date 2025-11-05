@@ -5762,6 +5762,12 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/spi_device:spi_passthru",
     ),
+    qemu = qemu_params(
+        test_cmd = """
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_device:spi_passthru",
+    ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
