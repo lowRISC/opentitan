@@ -6,6 +6,40 @@ load(":cryptotest.bzl", "cryptotest")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
+# Special Cryptotest firmware and harness used to run ACVP test vectors. The
+# test_args are left empty by default. This allows the user to manually specify
+# paths to the input and output ACVP JSON files that should be used.
+#
+# Example usage:
+# ./bazelisk.sh run \
+#     //sw/device/tests/crypto/cryptotest:acvp_fpga_cw340_sival_rom_ext -- \
+#         --input=${ACVP_DIR}/hmac_sha2_256_vectors.json \
+#         --output=${ACVP_DIR}/hmac_sha2_256_results.json
+cryptotest(
+    name = "acvp",
+    test_args = "",
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [],
+)
+
+cryptotest(
+    name = "acvp_hmac_sha256",
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:hmac_sha256_vectors.json)\"",
+        "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:hmac_sha256_expected.json)\"",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:hmac_sha256_vectors.json",
+        "//sw/host/cryptotest/testvectors/acvp:hmac_sha256_expected.json",
+    ],
+)
+
 AES_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_aes_kat_{}_{}_{}_json".format(alg, kat_type, key_len)
     for alg in ("cbc", "cfb128", "ecb", "ofb")
