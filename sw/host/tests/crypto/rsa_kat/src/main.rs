@@ -87,7 +87,13 @@ fn run_rsa_testcase(
     };
 
     // Convert the inputs into the expected format for the CL.
-    let n: Vec<_> = test_case.n.iter().copied().rev().collect();
+    let mut n: Vec<_> = test_case.n.iter().copied().rev().collect();
+    // n in the wycheproof vectors seem to start with a leading 0.
+    if n.len() * u8::BITS as usize != test_case.security_level {
+        // Remove it.
+        assert_eq!(n.pop(), Some(0));
+    }
+    assert_eq!(n.len() * u8::BITS as usize, test_case.security_level);
 
     CryptotestCommand::Rsa.send(spi_console)?;
     let _operation = &match test_case.operation.as_str() {
