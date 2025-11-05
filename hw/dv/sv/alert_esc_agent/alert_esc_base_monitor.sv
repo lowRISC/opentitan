@@ -38,8 +38,7 @@ function void alert_esc_base_monitor::build_phase(uvm_phase phase);
 endfunction : build_phase
 
 task alert_esc_base_monitor::run_phase(uvm_phase phase);
-  super.run_phase(phase);
-  wait_for_reset_done();
+  reset_thread();
 endtask : run_phase
 
 task alert_esc_base_monitor::wait_for_reset_done();
