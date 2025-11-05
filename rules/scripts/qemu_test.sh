@@ -18,6 +18,7 @@ args=( __args__ )
 
 mutable_flash="flash_img.bin"
 mutable_otp="otp_img.raw"
+spiflash0="spiflash0.bin"
 
 test_args=( "$@" )
 qemu_test_args=()
@@ -52,6 +53,7 @@ cleanup() {
     wait "$qemu_pid"
 
     rm -f "${mutable_otp}" "${mutable_flash}"
+    rm -f "${spiflash0}"
     rm -f qemu-monitor qemu.log
 }
 trap cleanup EXIT
@@ -62,6 +64,9 @@ cp "${otp}" "${mutable_otp}" && chmod +w "${mutable_otp}"
 if [ -n "${flash}" ]; then
     cp "${flash}" "${mutable_flash}" && chmod +w "${mutable_flash}"
 fi
+
+# create backing storage for flash device on SPI Host 0/SPI Device SPI bus
+dd if=/dev/zero of="${spiflash0}" bs=1M count=32 status=none && chmod +w "${spiflash0}"
 
 # QEMU disconnects from `stdout` when it daemonizes so we need to stream
 # the log through a pipe:

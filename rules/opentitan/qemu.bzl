@@ -431,6 +431,10 @@ def _test_dispatch(ctx, exec_env, firmware):
         }
         param["bootstrap_cmd"] = '--exec="no-op" # SKIPPING BOOTSTRAP'
 
+    # Attach SPI flash to SPI Host 0/SPI Device bus. Chosen model is W25Q256 (32MiB)
+    qemu_args += ["-global", "ot-earlgrey-board.spiflash0=w25q256"]
+    qemu_args += ["-drive", "if=mtd,file=spiflash0.bin,format=raw,bus=0"]
+
     # Get the pre-test_cmd args.
     args = get_fallback(ctx, "attr.args", exec_env)
     args = " ".join(args).format(**param)
