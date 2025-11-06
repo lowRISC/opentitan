@@ -16,6 +16,7 @@ from basegen.lib import Name
 from basegen.typing import ConfigT, ParamsT
 from mako.template import Template
 from reggen.ip_block import IpBlock
+from reggen.lib import check_bool
 from version_file import VersionInformation
 
 # Ignore flake8 warning as the function is used in the template
@@ -758,6 +759,27 @@ def get_io_enum_literal(sig: Dict, prefix: str) -> str:
     if sig['width'] > 1:
         name += Name([str(sig['idx'])])
     return name.as_camel_case()
+
+
+def get_params(top: ConfigT, module: ConfigT) -> List[str]:
+    """Return the parameters for a given module including implicit parameters
+       but excluding RACL parameters, which are handled in a separate template.
+    """
+    param_items = []
+    alert_info = top["alert_connections"].get("module_" + module["name"], {})
+    has_racl_params = bool(module.get("racl_mappings"))
+    if alert_info:
+        param_items.append((".AlertAsyncOn", alert_info["async_expr"]))
+    if alert_info or module.get("template_type") == "alert_handler":
+        param_items.append((".AlertSkewCycles", "top_pkg::AlertSkewCycles"))
+    for param in module["param_list"]:
+        is_exposed = check_bool(param.get("expose", False), f"expose field of {param['name']}")
+        has_random_type = param.get("randtype")
+        param_key = "name_top" if (is_exposed or has_random_type) else "default"
+        param_items.append((f".{param['name']}", param[param_key]))
+
+    has_params = has_racl_params or len(param_items) > 0
+    return has_params, param_items
 
 
 def make_bit_concatenation(sig_name: str, indices: List[int],

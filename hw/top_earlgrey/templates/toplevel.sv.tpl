@@ -488,16 +488,13 @@ max_sigwidth = max(len(x.name) for x in port_list) if port_list else 0
 max_intrwidth = (max(len(x.name) for x in block.interrupts)
                  if block.interrupts else 0)
 alert_info = top["alert_connections"].get("module_" + m["name"], {})
+has_params, param_items = lib.get_params(top, m)
 %>\
-  % if m["param_list"] or alert_info or m.get("racl_mappings"):
+  % if has_params:
   ${m["type"]} #(
 <%include file="/toplevel_racl_parameters.tpl" args="module=m,top=top,block=block"/>\
-  % if alert_info:
-    .AlertAsyncOn(${alert_info["async_expr"]}),
-    .AlertSkewCycles(top_pkg::AlertSkewCycles)${"," if m["param_list"] else ""}
-  % endif
-    % for i in m["param_list"]:
-    .${i["name"]}(${i["name_top" if i.get("expose") == "true" or i.get("randtype", "none") != "none" else "default"]})${"," if not loop.last else ""}
+    % for param_name, param_value in param_items:
+    ${param_name}(${param_value})${"," if not loop.last else ""}
     % endfor
   ) u_${m["name"]} (
   % else:
