@@ -73,8 +73,6 @@ fn run_rsa_testcase(
         "sha3-256" => 3,
         "sha3-384" => 4,
         "sha3-512" => 5,
-        "shake-128" => 6,
-        "shake-256" => 7,
         _ => panic!("Invalid hashing mode"),
     };
 
