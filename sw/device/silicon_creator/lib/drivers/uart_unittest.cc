@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_ibex.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/uart_regs.h"  // Generated.
@@ -28,6 +29,7 @@ class UartTest : public rom_test::RomTest {
  protected:
   uint32_t base_ = TOP_EARLGREY_UART0_BASE_ADDR;
   rom_test::MockAbsMmio mmio_;
+  rom_test::MockIbex ibex_;
 
   void ExpectDeviceReset() {
     EXPECT_ABS_WRITE32(base_ + UART_CTRL_REG_OFFSET, 0);
@@ -106,39 +108,77 @@ TEST_F(BytesSendTest, SendByteBusy) {
 }
 
 TEST_F(UartTest, RecvByte) {
+  const uint32_t kTimeoutMs = 1;
+  // The return value is irrelevant since the RX FIFO is not empty.
+  EXPECT_CALL(ibex_, MCycle()).WillOnce(testing::Return(0));
+  EXPECT_CALL(ibex_, IbexTimeToCycles(kTimeoutMs * 1000))
+      .WillOnce(testing::Return(1));
   EXPECT_ABS_READ32(base_ + UART_STATUS_REG_OFFSET,
                     {{UART_STATUS_RXEMPTY_BIT, false}});
   EXPECT_ABS_READ32(base_ + UART_RDATA_REG_OFFSET, 'A');
-  int result = uart_getchar(1);
+  int result = uart_getchar(kTimeoutMs);
   EXPECT_EQ(result, 'A');
 }
 
 TEST_F(UartTest, RecvTimeout) {
+  const uint32_t kTimeoutMs = 1;
+  const uint32_t kTimeoutCycles = 42;
+  const uint64_t kInitialMCycle = 0x123456789ab;
+  EXPECT_CALL(ibex_, MCycle()).WillOnce(testing::Return(kInitialMCycle));
+  EXPECT_CALL(ibex_, IbexTimeToCycles(kTimeoutMs * 1000))
+      .WillOnce(testing::Return(kTimeoutCycles));
   // The uart receive function will keep polling the status register for RX FIFO
   // status.  Return RXEMPTY every time.
   EXPECT_CALL(::rom_test::MockAbsMmio::Instance(),
               Read32(base_ + UART_STATUS_REG_OFFSET))
-      .WillRepeatedly(testing::Return(
+      .WillOnce(testing::Return(
           mock_mmio::ToInt<uint32_t>({{UART_STATUS_RXEMPTY_BIT, true}})));
+  EXPECT_CALL(ibex_, MCycle())
+      .WillOnce(testing::Return(kInitialMCycle + (kTimeoutCycles - 1) / 2));
+  EXPECT_CALL(::rom_test::MockAbsMmio::Instance(),
+              Read32(base_ + UART_STATUS_REG_OFFSET))
+      .WillOnce(testing::Return(
+          mock_mmio::ToInt<uint32_t>({{UART_STATUS_RXEMPTY_BIT, true}})));
+  EXPECT_CALL(ibex_, MCycle())
+      .WillOnce(testing::Return(kInitialMCycle + kTimeoutCycles + 1));
+
   int result = uart_getchar(1);
   EXPECT_EQ(result, -1);
 }
 
 TEST_F(UartTest, BreakDetect) {
+  const uint32_t kTimeoutUs = 1;
+  const uint32_t kTimeoutCycles = 42;
+  const uint64_t kInitialMCycle = 0x123456789ab;
+  EXPECT_CALL(ibex_, MCycle()).WillOnce(testing::Return(kInitialMCycle));
+  EXPECT_CALL(ibex_, IbexTimeToCycles(kTimeoutUs))
+      .WillOnce(testing::Return(kTimeoutCycles));
   // The break detect function will continuously poll the UART value register to
   // observe the sampled value on the RX line.  A break condition over the
   // measured period will always return a value of zero.
-  EXPECT_CALL(::rom_test::MockAbsMmio::Instance(),
-              Read32(base_ + UART_VAL_REG_OFFSET))
-      .WillRepeatedly(testing::Return(mock_mmio::ToInt<uint32_t>(0)));
-  hardened_bool_t result = uart_break_detect(1);
+  EXPECT_ABS_READ32(base_ + UART_VAL_REG_OFFSET, 0);
+  EXPECT_CALL(ibex_, MCycle())
+      .WillOnce(testing::Return(kInitialMCycle + (kTimeoutCycles - 1) / 2));
+  EXPECT_ABS_READ32(base_ + UART_VAL_REG_OFFSET, 0);
+  EXPECT_CALL(ibex_, MCycle())
+      .WillOnce(testing::Return(kInitialMCycle + kTimeoutCycles + 1));
+  hardened_bool_t result = uart_break_detect(kTimeoutUs);
   EXPECT_EQ(result, kHardenedBoolTrue);
 }
 
 TEST_F(UartTest, NoBreakDetect) {
+  const uint32_t kTimeoutUs = 1;
+  const uint32_t kTimeoutCycles = 42;
+  const uint64_t kInitialMCycle = 0x123456789ab;
+  EXPECT_CALL(ibex_, MCycle()).WillOnce(testing::Return(kInitialMCycle));
+  EXPECT_CALL(ibex_, IbexTimeToCycles(kTimeoutUs))
+      .WillOnce(testing::Return(kTimeoutCycles));
   // The break detect function will continuously poll the UART value register to
   // observe the sampled value on the RX line.  Any non-zero bit detected on the
   // RX line means we don't have a break condition.
+  EXPECT_ABS_READ32(base_ + UART_VAL_REG_OFFSET, 0);
+  EXPECT_CALL(ibex_, MCycle())
+      .WillOnce(testing::Return(kInitialMCycle + (kTimeoutCycles - 1) / 2));
   EXPECT_ABS_READ32(base_ + UART_VAL_REG_OFFSET, 1);
   hardened_bool_t result = uart_break_detect(1);
   EXPECT_EQ(result, kHardenedBoolFalse);
