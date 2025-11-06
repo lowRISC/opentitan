@@ -1693,6 +1693,7 @@ module top_earlgrey #(
       .rst_kmac_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   alert_handler #(
+    .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .RndCnstLfsrSeed(RndCnstAlertHandlerLfsrSeed),
     .RndCnstLfsrPerm(RndCnstAlertHandlerLfsrPerm),
     .EscNumSeverities(AlertHandlerEscNumSeverities),
