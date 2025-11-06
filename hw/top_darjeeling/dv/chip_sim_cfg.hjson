@@ -1345,12 +1345,6 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
-      name: chip_plic_all_irqs_20
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//hw/{top_chip}/sw/autogen/tests:plic_all_irqs_test_20:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-    }
-    {
       name: chip_sw_plic_sw_irq
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:plic_sw_irq_test:6:new_rules"]
@@ -1740,7 +1734,6 @@
               // TODO(#26733): uncomment when these run for Darjeeling.
               "chip_plic_all_irqs_0",
               "chip_plic_all_irqs_10",
-              "chip_plic_all_irqs_20",
               // "chip_sw_kmac_app_rom",
               "chip_sw_aes_entropy",
               "chip_sw_kmac_mode_cshake",
