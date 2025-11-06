@@ -47,8 +47,6 @@ enum {
   kCryptotestRsaSha3_256 = 3,
   kCryptotestRsaSha3_384 = 4,
   kCryptotestRsaSha3_512 = 5,
-  kCryptotestRsaShake128 = 6,
-  kCryptotestRsaShake256 = 7,
 };
 
 // Use a constant Boolean mask to share the RSA private exponent.
@@ -134,12 +132,6 @@ status_t handle_rsa_encrypt(ujson_t *uj) {
       break;
     case kCryptotestRsaSha3_512:
       hash_mode = kOtcryptoHashModeSha3_512;
-      break;
-    case kCryptotestRsaShake128:
-      hash_mode = kOtcryptoHashXofModeShake128;
-      break;
-    case kCryptotestRsaShake256:
-      hash_mode = kOtcryptoHashXofModeShake256;
       break;
     default:
       LOG_ERROR("Unsupported RSA hash mode: %d", uj_input.hashing);
@@ -279,14 +271,6 @@ status_t handle_rsa_decrypt(ujson_t *uj) {
     case kCryptotestRsaSha3_512:
       hash_mode = kOtcryptoHashModeSha3_512;
       hash_digest_bytes = 512 / 8;
-      break;
-    case kCryptotestRsaShake128:
-      hash_mode = kOtcryptoHashXofModeShake128;
-      hash_digest_bytes = 128 / 8;
-      break;
-    case kCryptotestRsaShake256:
-      hash_mode = kOtcryptoHashXofModeShake256;
-      hash_digest_bytes = 256 / 8;
       break;
     default:
       LOG_ERROR("Unsupported RSA hash mode: %d", uj_input.hashing);
@@ -449,14 +433,6 @@ status_t handle_rsa_verify(ujson_t *uj) {
       hash_mode = kOtcryptoHashModeSha3_512;
       hash_digest_words = 512 / 32;
       break;
-    case kCryptotestRsaShake128:
-      hash_mode = kOtcryptoHashXofModeShake128;
-      hash_digest_words = 128 / 32;
-      break;
-    case kCryptotestRsaShake256:
-      hash_mode = kOtcryptoHashXofModeShake256;
-      hash_digest_words = 256 / 32;
-      break;
     default:
       LOG_ERROR("Unsupported RSA hash mode: %d", uj_input.hashing);
       return INVALID_ARGUMENT();
@@ -543,12 +519,6 @@ status_t handle_rsa_verify(ujson_t *uj) {
       break;
     case kOtcryptoHashModeSha3_512:
       TRY(otcrypto_sha3_512(msg_buf, &msg_digest));
-      break;
-    case kOtcryptoHashXofModeShake128:
-      TRY(otcrypto_shake128(msg_buf, &msg_digest));
-      break;
-    case kOtcryptoHashXofModeShake256:
-      TRY(otcrypto_shake256(msg_buf, &msg_digest));
       break;
     default:
       LOG_ERROR("Unsupported RSA hash mode: %d", uj_input.hashing);
