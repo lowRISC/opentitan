@@ -22,12 +22,24 @@ package rram_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // Parameters
-  // TODO: add the number and names of alerts in order
-  parameter uint   NUM_ALERTS = 0;
-  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {};
+  parameter uint   NUM_ALERTS = 5;
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {
+    "recov_err",
+    "fatal_std_err",
+    "fatal_err",
+    "fatal_prim_rram_alert",
+    "recov_prim_rram_alert"
+  };
 
   // Types
   typedef virtual rram_ctrl_misc_io_if misc_vif_t;
+
+  typedef enum bit [1:0] {
+    AddrRead  = 0,
+    AddrWrite = 1,
+    DataRead  = 2,
+    DataWrite = 3
+  } tl_phase_e;
 
   // Functions
 

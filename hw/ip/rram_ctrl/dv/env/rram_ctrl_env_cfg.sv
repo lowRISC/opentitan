@@ -28,10 +28,11 @@ function void rram_ctrl_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
   super.initialize(csr_base_addr);
 
   // Set up second RAL model for host and prim registers
-  ral_model_names.push_back(host_ral_name);
-  clk_freqs_mhz[host_ral_name] = clk_freq_mhz;
-  ral_model_names.push_back(prim_ral_name);
-  clk_freqs_mhz[prim_ral_name] = clk_freq_mhz;
+  // TODO later
+  // ral_model_names.push_back(host_ral_name);
+  // clk_freqs_mhz[host_ral_name] = clk_freq_mhz;
+  // ral_model_names.push_back(prim_ral_name);
+  // clk_freqs_mhz[prim_ral_name] = clk_freq_mhz;
 
   // Set num_interrupts
   begin
