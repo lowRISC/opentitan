@@ -21,7 +21,7 @@ You can refer to the QEMU repository's documentation for more information on the
 
 Currently only the Earlgrey machine (`ot-earlgrey`) has any support within OpenTitanLib for test integration, primarily on the `earlgrey_1.0.0` branch.
 It is important to note that emulation is **ongoing** and **incomplete** - there are many devices and features which are not yet implemented or are infeasible to emulate within QEMU.
-Before using QEMU, it is strongly advised to read relevant QEMU [Earlgrey](https://github.com/lowRISC/qemu/blob/ot-9.2.0/docs/opentitan/earlgrey.md) and [Darjeeling](https://github.com/lowRISC/qemu/blob/ot-9.2.0/docs/opentitan/darjeeling.md) documentation pages to better understand whether the devices and features that you need are supported.
+Before using QEMU, it is strongly advised to read relevant QEMU [Earlgrey](https://github.com/lowRISC/qemu/blob/ot-9.2.0/docs/opentitan/ot_earlgrey.md) and [Darjeeling](https://github.com/lowRISC/qemu/blob/ot-9.2.0/docs/opentitan/ot_darjeeling.md) documentation pages to better understand whether the devices and features that you need are supported.
 Note that these also may not be up-to-date compared to the implementation, and as such the source files should be treated as the root source of truth.
 Furthermore, QEMU releases are pinned in Bazel, meaning that the supported features may differ compared to when this release was taken (see the [setup guide](./setup.md)).
 
