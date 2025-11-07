@@ -779,26 +779,42 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                 end else begin
                   bit [TL_DW-1:0] read_out0, read_out1;
                   bit [TL_AW-1:0] otp_addr = get_scb_otp_addr();
-                  int ecc_err = 0;
+                  int             ecc_err = 0;
 
-                  // Backdoor read to check if there is any ECC error.
+                  // Some addreses point at fuses that take 64 bits in the address space. Reading
+                  // such a fuse will pick up ECC errors from both 32-bit words. We also choose to
+                  // update our prediction for the whole 64 bits in this situation.
+                  bit is_64_bit_fuse = (is_secret(dai_addr) ||
+                                        is_digest(dai_addr) ||
+                                        is_zeroize_marker(dai_addr));
+
+                  // Backdoor read the fuse
+                  //
+                  // If this is a partition with integrity, we normally want to use
+                  // read_a_word_with_ecc, which will report any ECC error and correct it if
+                  // possible. If the partition doesn't have integrity, we use
+                  // read_a_word_with_ecc_raw instead.
+                  //
+                  // As a special case, if this is the Zeroize marker on a partition with integrity,
+                  // we use the second function (modelling the ReadRaw OTP command) and discard any
+                  // ECC errors.
                   if (part_has_integrity(part_idx)) begin
                     ecc_err = read_a_word_with_ecc(dai_addr, read_out0);
-                    if (is_secret(dai_addr) || is_digest(dai_addr)) begin
+                    if (is_64_bit_fuse) begin
                       ecc_err = max2(read_a_word_with_ecc(dai_addr + 4, read_out1), ecc_err);
                     end
+                    if (is_zeroize_marker(dai_addr)) ecc_err = 0;
                   end else begin
-                    ecc_err = read_a_word_with_ecc_raw(dai_addr, read_out0);
-                    if (is_secret(dai_addr) || is_digest(dai_addr)) begin
-                      ecc_err = max2(read_a_word_with_ecc_raw(dai_addr + 4, read_out1), ecc_err);
+                    read_a_word_with_ecc_raw(dai_addr, read_out0);
+                    if (is_64_bit_fuse) begin
+                      max2(read_a_word_with_ecc_raw(dai_addr + 4, read_out1), ecc_err);
                     end
                   end
 
                   if (ecc_err == OtpEccCorrErr && part_has_integrity(part_idx)) begin
                     predict_err(OtpDaiErrIdx, OtpMacroEccCorrError);
                     backdoor_update_otp_array(dai_addr);
-                    predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
-                                  otp_a[otp_addr], otp_a[otp_addr+1]);
+                    predict_rdata(is_64_bit_fuse, otp_a[otp_addr], otp_a[otp_addr+1]);
                   end else if (ecc_err == OtpEccUncorrErr && part_has_integrity(part_idx)) begin
                     predict_err(OtpDaiErrIdx, OtpMacroEccUncorrError);
                     // Max wait 20 clock cycles because scb did not know when exactly OTP will
@@ -810,15 +826,13 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                   end else if (ecc_err inside {OtpEccCorrErr, OtpEccUncorrErr} &&
                                !part_has_integrity(part_idx)) begin
                     predict_no_err(OtpDaiErrIdx);
-                    predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
-                                  read_out0, read_out1);
+                    predict_rdata(is_64_bit_fuse, read_out0, read_out1);
                     // do not check direct_access_rdata_* on ECC errors in
                     // non-integrity partitions
                     check_dai_rd_data = 0;
                   end else begin
                     predict_no_err(OtpDaiErrIdx);
-                    predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
-                                  otp_a[otp_addr], otp_a[otp_addr+1]);
+                    predict_rdata(is_64_bit_fuse, otp_a[otp_addr], otp_a[otp_addr+1]);
                   end
                 end
               end
