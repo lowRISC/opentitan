@@ -142,6 +142,36 @@ status_t hardened_xor(const uint32_t *OT_RESTRICT x,
 status_t hardened_xor_in_place(uint32_t *OT_RESTRICT x,
                                const uint32_t *OT_RESTRICT y, size_t word_len);
 
+/**
+ * Copy memory between non-overlapping regions with a randomized byte traversal.
+ *
+ * CAUTION! This function is not considered as secure as `hardened_memcpy` due
+ * to the byte-sized memory accesses vs. 32b word accesses.
+ *
+ * @param dest the region to copy to.
+ * @param src the region to copy from.
+ * @param byte_len, the number of bytes to copy.
+ * @return Result of the operation (OK or error).
+ */
+status_t randomized_bytecopy(void *OT_RESTRICT dest,
+                             const void *OT_RESTRICT src, size_t byte_len);
+
+/**
+ * In-place XOR of two non-overlapping memory regions with a randomized byte
+ * traversal.
+ *
+ * CAUTION! This function is not considered as secure as `hardened_xor_in_place`
+ * due to the byte-sized memory accesses vs. 32b word accesses.
+ *
+ * @param x Pointer to the first operand (modified in-place).
+ * @param y Pointer to the second operand.
+ * @param byte_len, the number of bytes to XOR.
+ * @return Result of the operation (OK or error).
+ */
+status_t randomized_bytexor_in_place(void *OT_RESTRICT x,
+                                     const void *OT_RESTRICT y,
+                                     size_t byte_len);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
