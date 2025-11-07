@@ -357,7 +357,7 @@ status_t handle_rsa_decrypt(ujson_t *uj) {
       .len = kMaxPlaintextBytes,
   };
 
-  size_t msg_len;
+  size_t msg_len = 0;
   bool status_resp = true;
   otcrypto_status_t status = otcrypto_rsa_decrypt(
       &private_key, hash_mode, ciphertext, label, plaintext, &msg_len);
