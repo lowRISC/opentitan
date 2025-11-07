@@ -18,6 +18,7 @@ filesets:
       - lowrisc:prim_xilinx:clock_mux2
       - lowrisc:prim_xilinx:flop
       - lowrisc:prim_generic:flop_2sync
+      - lowrisc:prim_generic:rst_sync
       - lowrisc:prim_xilinx:flop_en
       - lowrisc:prim_xilinx:pad_attr
       - lowrisc:prim_xilinx:pad_wrapper
@@ -42,6 +43,7 @@ mapping:
   "lowrisc:prim:clock_mux2"   : lowrisc:prim_xilinx:clock_mux2
   "lowrisc:prim:flop"         : lowrisc:prim_xilinx:flop
   "lowrisc:prim:flop_2sync"   : lowrisc:prim_generic:flop_2sync
+  "lowrisc:prim:rst_sync"     : lowrisc:prim_generic:rst_sync
   "lowrisc:prim:flop_en"      : lowrisc:prim_xilinx:flop_en
   "lowrisc:prim:pad_attr"     : lowrisc:prim_xilinx:pad_attr
   "lowrisc:prim:pad_wrapper"  : lowrisc:prim_xilinx:pad_wrapper

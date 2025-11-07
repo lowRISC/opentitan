@@ -3,15 +3,17 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: "lowrisc:prim:rst_sync"
-description: "Primitive Reset synchronizer"
+name: "lowrisc:prim_generic:rst_sync"
+description: "Generic implementation of a reset synchronizer"
+virtual:
+  - lowrisc:prim:rst_sync
+
 filesets:
   files_rtl:
     depend:
       - lowrisc:prim:clock_mux2
       - lowrisc:prim:flop_2sync
       - lowrisc:prim:mubi
-      - lowrisc:prim:cdc_rand_delay
     files:
       - rtl/prim_rst_sync.sv
     file_type: systemVerilogSource
@@ -27,7 +29,7 @@ filesets:
       # common waivers
       - lowrisc:lint:common
     files:
-      - lint/prim_rst_sync.waiver
+      - lint/prim_generic_rst_sync.waiver
     file_type: waiver
 
   files_veriblelint_waiver:

@@ -20,6 +20,7 @@ filesets:
       - lowrisc:prim_asap7:clock_mux2
       - lowrisc:prim_asap7:flop
       - lowrisc:prim_generic:flop_2sync
+      - lowrisc:prim_generic:rst_sync
       - lowrisc:prim_asap7:flop_en
       - lowrisc:prim_generic:pad_attr
       - lowrisc:prim_generic:pad_wrapper
@@ -45,6 +46,7 @@ mapping:
   "lowrisc:prim:clock_mux2"   : "lowrisc:prim_asap7:clock_mux2"
   "lowrisc:prim:flop"         : "lowrisc:prim_asap7:flop"
   "lowrisc:prim:flop_2sync"   : "lowrisc:prim_generic:flop_2sync"
+  "lowrisc:prim:rst_sync"     : "lowrisc:prim_generic:rst_sync"
   "lowrisc:prim:flop_en"      : "lowrisc:prim_asap7:flop_en"
   "lowrisc:prim:pad_attr"     : "lowrisc:prim_generic:pad_attr"
   "lowrisc:prim:pad_wrapper"  : "lowrisc:prim_generic:pad_wrapper"
