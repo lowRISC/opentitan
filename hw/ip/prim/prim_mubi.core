@@ -16,6 +16,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:buf
       - lowrisc:prim:flop
+      - lowrisc:prim:prim_pkg
       - lowrisc:prim:mubi_pkg
     files:
       - rtl/prim_mubi4_sender.sv
