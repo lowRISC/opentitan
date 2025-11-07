@@ -241,3 +241,55 @@ status_t hardened_xor_in_place(uint32_t *restrict x, const uint32_t *restrict y,
 
   return OTCRYPTO_OK;
 }
+
+status_t randomized_bytecopy(void *restrict dest, const void *restrict src,
+                             size_t byte_len) {
+  random_order_t order;
+  random_order_init(&order, byte_len);
+
+  size_t count = 0;
+
+  uintptr_t src_addr = (uintptr_t)src;
+  uintptr_t dest_addr = (uintptr_t)dest;
+
+  for (; launderw(count) < byte_len; count = launderw(count) + 1) {
+    size_t byte_idx = launderw(random_order_advance(&order));
+    barrierw(byte_idx);
+
+    uint8_t *src_byte_idx = (uint8_t *)launderw(src_addr + byte_idx);
+    // TODO(#8815) byte writes vs. word-wise integrity.
+    uint8_t *dest_byte_idx = (uint8_t *)launderw(dest_addr + byte_idx);
+
+    *(dest_byte_idx) = *(src_byte_idx);
+  }
+  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
+  HARDENED_CHECK_EQ(count, byte_len);
+
+  return OTCRYPTO_OK;
+}
+
+status_t randomized_bytexor_in_place(void *restrict x, const void *restrict y,
+                                     size_t byte_len) {
+  random_order_t order;
+  random_order_init(&order, byte_len);
+
+  size_t count = 0;
+
+  uintptr_t x_addr = (uintptr_t)x;
+  uintptr_t y_addr = (uintptr_t)y;
+
+  for (; launderw(count) < byte_len; count = launderw(count) + 1) {
+    size_t byte_idx = launderw(random_order_advance(&order));
+    barrierw(byte_idx);
+
+    // TODO(#8815) byte writes vs. word-wise integrity
+    uint8_t *x_byte_idx = (uint8_t *)launderw(x_addr + byte_idx);
+    uint8_t *y_byte_idx = (uint8_t *)launderw(y_addr + byte_idx);
+
+    *(x_byte_idx) = *(x_byte_idx) ^ *(y_byte_idx);
+  }
+  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
+  HARDENED_CHECK_EQ(count, byte_len);
+
+  return OTCRYPTO_OK;
+}
