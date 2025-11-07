@@ -43,9 +43,10 @@ static status_t seed_material_construct(
     HARDENED_TRY(hardened_memcpy(
         seed_material->data, (const uint32_t *)value.data, seed_material->len));
   } else {
-    // The data buffer is not word-aligned. We need to use the SCA
-    // unprotected memcpy.
-    memcpy(seed_material->data, value.data, value.len);
+    // The data buffer is not word-aligned. We need to use randomized_bytecopy
+    // that also implements randomization to reduce SCA leakage.
+    HARDENED_TRY(
+        randomized_bytecopy(seed_material->data, value.data, value.len));
   }
 
   // Set any unset bytes to zero.
@@ -81,7 +82,7 @@ static otcrypto_status_t seed_material_xor(
   size_t nwords = ceil_div(value.len, sizeof(uint32_t));
   uint32_t value_words[nwords];
   value_words[nwords - 1] = 0;
-  memcpy(value_words, value.data, value.len);
+  HARDENED_TRY(randomized_bytecopy(value_words, value.data, value.len));
 
   // XOR with seed value.
   HARDENED_TRY(hardened_xor_in_place(seed_material->data, value_words, nwords));
