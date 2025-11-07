@@ -228,7 +228,7 @@
     Description: It supports SHA-2 256/384/512
     Metric_Type: functional
     Item: cfg_cg.digest_size.sha2_384
-    Owner: Martin
+    Owner: Somebody else
     Priority: ""
     Milestone: ""
     Weight: ""
@@ -259,7 +259,7 @@
     Name: key_128
     Reference: req_hmac_0004
     Coverage_Result: ""
-    Description: It supports 128/256/384/512/1024-bit keys in HMAC mode
+    Description: It supports 128/256/512/1024-bit keys in HMAC mode
     Metric_Type: functional
     Item: cfg_cg.key_length.key_128
     Owner: Martin
@@ -276,7 +276,7 @@
     Name: key_256
     Reference: req_hmac_0004
     Coverage_Result: ""
-    Description: It supports 128/256/384/512/1024-bit keys in HMAC mode
+    Description: It supports 128/256/512/1024-bit keys in HMAC mode
     Metric_Type: functional
     Item: cfg_cg.key_length.key_256
     Owner: Martin
@@ -290,27 +290,10 @@
   }
   {
     Depth: "4"
-    Name: key_384
-    Reference: req_hmac_0004
-    Coverage_Result: ""
-    Description: It supports 128/256/384/512/1024-bit keys in HMAC mode
-    Metric_Type: functional
-    Item: cfg_cg.key_length.key_384
-    Owner: Martin
-    Priority: ""
-    Milestone: ""
-    Weight: ""
-    Goal: ""
-    Issue: ""
-    Comment: ""
-    Tag: hmac/technical_specification/overview/description/key_384
-  }
-  {
-    Depth: "4"
     Name: key_512
     Reference: req_hmac_0004
     Coverage_Result: ""
-    Description: It supports 128/256/384/512/1024-bit keys in HMAC mode
+    Description: It supports 128/256/512/1024-bit keys in HMAC mode
     Metric_Type: functional
     Item: cfg_cg.key_length.key_512
     Owner: Martin
@@ -327,7 +310,7 @@
     Name: key_2024
     Reference: req_hmac_0004
     Coverage_Result: ""
-    Description: It supports 128/256/384/512/1024-bit keys in HMAC mode
+    Description: It supports 128/256/512/1024-bit keys in HMAC mode
     Metric_Type: functional
     Item: cfg_cg.key_length.key_1024
     Owner: Martin

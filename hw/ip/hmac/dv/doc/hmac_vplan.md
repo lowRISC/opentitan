@@ -14,13 +14,12 @@
 | 3 | description |  |  |  | section\_title |  |  |  |  |  |  |  |  |  |
 | 4 | sha2\_spec | req\_hmac\_0007 |  | The HMAC module is a SHA-2 hash-based (see: NIST) | testcase, testcase | hmac\_test\_vectors\_sha, hmac\_test\_vectors\_hmac | Martin |  |  |  |  |  | Test against NIST vectors |  |
 | 4 | sha2\_256 | req\_hmac\_0003 |  | It supports SHA-2 256/384/512 | functional | cfg\_cg.digest\_size.sha2\_256 | Martin |  |  |  |  |  |  |  |
-| 4 | sha2\_384 | req\_hmac\_0003 |  | It supports SHA-2 256/384/512 | functional | cfg\_cg.digest\_size.sha2\_384 | Martin |  |  |  |  |  |  |  |
+| 4 | sha2\_384 | req\_hmac\_0003 |  | It supports SHA-2 256/384/512 | functional | cfg\_cg.digest\_size.sha2\_384 | Somebody else |  |  |  |  |  |  |  |
 | 4 | sha2\_512 | req\_hmac\_0003 |  | It supports SHA-2 256/384/512 | functional | cfg\_cg.digest\_size.sha2\_512 | Martin |  |  |  |  |  |  |  |
-| 4 | key\_128 | req\_hmac\_0004 |  | It supports 128/256/384/512/1024-bit keys in HMAC mode | functional | cfg\_cg.key\_length.key\_128 | Martin |  |  |  |  |  |  |  |
-| 4 | key\_256 | req\_hmac\_0004 |  | It supports 128/256/384/512/1024-bit keys in HMAC mode | functional | cfg\_cg.key\_length.key\_256 | Martin |  |  |  |  |  |  |  |
-| 4 | key\_384 | req\_hmac\_0004 |  | It supports 128/256/384/512/1024-bit keys in HMAC mode | functional | cfg\_cg.key\_length.key\_384 | Martin |  |  |  |  |  |  |  |
-| 4 | key\_512 | req\_hmac\_0004 |  | It supports 128/256/384/512/1024-bit keys in HMAC mode | functional | cfg\_cg.key\_length.key\_512 | Martin |  |  |  |  |  |  |  |
-| 4 | key\_2024 | req\_hmac\_0004 |  | It supports 128/256/384/512/1024-bit keys in HMAC mode | functional | cfg\_cg.key\_length.key\_1024 | Martin |  |  |  |  |  |  |  |
+| 4 | key\_128 | req\_hmac\_0004 |  | It supports 128/256/512/1024-bit keys in HMAC mode | functional | cfg\_cg.key\_length.key\_128 | Martin |  |  |  |  |  |  |  |
+| 4 | key\_256 | req\_hmac\_0004 |  | It supports 128/256/512/1024-bit keys in HMAC mode | functional | cfg\_cg.key\_length.key\_256 | Martin |  |  |  |  |  |  |  |
+| 4 | key\_512 | req\_hmac\_0004 |  | It supports 128/256/512/1024-bit keys in HMAC mode | functional | cfg\_cg.key\_length.key\_512 | Martin |  |  |  |  |  |  |  |
+| 4 | key\_2024 | req\_hmac\_0004 |  | It supports 128/256/512/1024-bit keys in HMAC mode | functional | cfg\_cg.key\_length.key\_1024 | Martin |  |  |  |  |  |  |  |
 | 4 | sha2\_x\_keys | req\_hmac\_0003, req\_hmac\_0004, req\_hmac\_0014 |  | Test all SHA2 with all the key length that does not exceed the block size of the configured SHA-2 digest size | functional | cfg\_cg.key\_length\_x\_digest\_size | Martin |  |  |  |  |  |  |  |
 | 4 | hmac\_done\_irq | req\_hmac\_0008 |  | The \`hmac\_done\` interrupt is raised to report to software that the final digest is available. | assertion, assertion | TODO, TODO | Martin |  |  |  |  |  | One assertion can be added to the RTL and another one to the SB when hmac\_done read is detected |  |
 | 4 | sha2\_only | req\_hmac\_0002 |  | The HMAC IP can run in SHA-2 only mode, whose purpose is to check the correctness of the received message. The same digest registers above are used to hold the final hash result. SHA-2 mode does not use the given secret key. It generates the same result with the same message every time. | functional, functional | cfg\_cg.hmac\_dis\_x\_sha\_en, wr\_key\_during\_sha\_only\_cg | Martin |  |  |  |  |  |  |  |
