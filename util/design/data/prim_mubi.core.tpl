@@ -16,6 +16,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:buf
       - lowrisc:prim:flop
+      - lowrisc:prim:prim_pkg
       - lowrisc:prim:mubi_pkg
     files:
 % for n in range(1, n_max_nibbles+1):
