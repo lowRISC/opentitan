@@ -8,7 +8,7 @@
 class racl_ctrl_error_arb_predictor extends uvm_component;
   `uvm_component_utils(racl_ctrl_error_arb_predictor)
 
-  typedef uvm_tlm_analysis_fifo #(racl_error_log_item)     error_fifo_t;
+  typedef uvm_tlm_analysis_fifo #(racl_error_log_item) error_fifo_t;
   typedef uvm_tlm_analysis_fifo #(racl_error_log_vec_item) error_vec_fifo_t;
 
   // A handle to the environment cfg

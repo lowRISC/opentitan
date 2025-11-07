@@ -10,7 +10,7 @@ module tb;
   // make sure that the EDA tool doesn't throw away the package at elaboration time, because we want
   // the classes inside it to exist so that their static variables cause them to be registered with
   // the UVM factory.
-  import racl_ctrl_test_pkg::racl_ctrl_base_test;
+  import ${module_instance_name}_test_pkg::${module_instance_name}_base_test;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -66,7 +66,7 @@ module tb;
   );
 
   initial begin
-    import racl_ctrl_env_pkg::racl_ctrl_env_wrapper_cfg;
+    import ${module_instance_name}_env_pkg::racl_ctrl_env_wrapper_cfg;
 
     automatic racl_ctrl_env_wrapper_cfg wrapper_cfg = new();
 

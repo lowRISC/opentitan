@@ -2,25 +2,60 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
+  // Name of the sim cfg - typically same as the name of the DUT.
+  name: ${module_instance_name}
+
+  // Top level dut name (sv module).
+  dut: ${module_instance_name}
+
+  // Top level testbench name (sv module).
+  tb: tb
+
+  // Simulator used to sign off this block
+  tool: xcelium
+
   // Fusesoc core file used for building the file list.
   fusesoc_core: ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_sim:0.1")}
 
-  // Testplan hjson file. Note it is not templated (even though this sim_cfg file is)
-  testplan: "{proj_root}/hw/ip/racl_ctrl/data/racl_ctrl_testplan.hjson"
+  // Testplan hjson file.
+  testplan: "{self_dir}/../data/${module_instance_name}_testplan.hjson"
 
-  // RAL spec - used to generate the RAL model.
-  ral_spec: "{self_dir}/../data/${module_instance_name}.hjson"
+  // Import additional common sim cfg files.
+  import_cfgs: [// Project wide common sim cfg file
+                "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
+                // Common CIP test lists
+                "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/shadow_reg_errors_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
 
-  // Top level dut module name
-  dut: ${module_instance_name}
-
-  // The "testbench name" that dvsim attaches to all the tests in this configuration
-  name: racl_ctrl
-
-  // Tell the tool to include the bind module as a top-level. Since the name of the bind module is
-  // templated, this needs to be done here.
+  // Add additional tops for simulation.
   sim_tops: ["${module_instance_name}_bind"]
 
-  // Import the underlying sim_cfg (not templated)
-  import_cfgs: ["{proj_root}/hw/ip/racl_ctrl/dv/racl_ctrl_tests.hjson"]
+  // Default iterations for all tests - each test entry can override this.
+  reseed: 50
+
+  // Default UVM test and seq class name.
+  uvm_test: ${module_instance_name}_base_test
+  uvm_test_seq: ${module_instance_name}_base_vseq
+
+  // List of test specifications.
+  tests: [
+    {
+      name: racl_ctrl_smoke
+      uvm_test_seq: ${module_instance_name}_smoke_vseq
+    }
+
+    // TODO: add more tests here
+  ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: smoke
+      tests: ["racl_ctrl_smoke"]
+    }
+  ]
 }
