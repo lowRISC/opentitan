@@ -4,7 +4,7 @@
 
 // An environment config for interfacing with racl_ctrl.
 
-class racl_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(racl_ctrl_reg_block));
+class racl_ctrl_env_cfg extends cip_base_env_cfg;
   `uvm_object_utils(racl_ctrl_env_cfg)
 
   racl_ctrl_reg_window regs;
@@ -22,6 +22,10 @@ endclass
 
 function racl_ctrl_env_cfg::new (string name="");
   super.new(name);
+
+  // Override ral_type_name so that the base class uses that, rather than its RAL_T parameter
+  // (dv_base_reg_block).
+  ral_type_name = racl_ctrl_reg_block::type_name;
 
   if (!$cast(regs, racl_ctrl_reg_window::type_id::create("regs")))
     `uvm_fatal(`gfn, "Could not create reg window of correct type")
