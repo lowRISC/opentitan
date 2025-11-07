@@ -332,7 +332,7 @@ status_t handle_rsa_decrypt(ujson_t *uj) {
       ceil_div(uj_input.ciphertext_len, sizeof(uint32_t));
   uint32_t ciphertext_buf[ciphertext_num_words];
   memset(ciphertext_buf, 0, sizeof(ciphertext_buf));
-  memcpy(ciphertext_buf, uj_input.ciphertext, sizeof(ciphertext_buf));
+  memcpy(ciphertext_buf, uj_input.ciphertext, uj_input.ciphertext_len);
 
   otcrypto_const_word32_buf_t ciphertext = {
       .len = ciphertext_num_words,
