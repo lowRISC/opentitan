@@ -277,6 +277,15 @@ package otp_ctrl_env_pkg;
     end
   endfunction
 
+  // Return true if this is the address of the Zeroize marker for a partition with zeroization
+  function automatic bit is_zeroize_marker(bit [TL_DW-1:0] addr);
+    int unsigned part_idx = get_part_index(addr);
+    int unsigned marker_addr = PartInfo[part_idx].offset + PartInfo[part_idx].size - 8;
+
+    // If the partition is zeroizable, its Zeroize status is in the last 64 bits of the partition.
+    return (PartInfo[part_idx].zeroizable && (addr == marker_addr));
+  endfunction
+
   function automatic bit is_sw_part(bit [TL_DW-1:0] addr);
     int part_idx = get_part_index(addr);
     return is_sw_part_idx(part_idx);
