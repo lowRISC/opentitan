@@ -21,11 +21,11 @@ module tb;
   // This will invoke the UVM registry and link this test type to
   // the name 'otp_ctrl_base_test' as a test name passed by UVM_TESTNAME
   //
-  // This is done explicitly only for the prim_pkg::ImplGeneric implementation
+  // This is done explicitly only for the generic technology implementation
   // since partner base tests inherit from otp_ctrl_base_test#(CFG_T, ENV_T) and
   // specify directly (CFG_T, ENV_T) via the class extension and use a different
   // UVM_TESTNAME
-  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_spec_base_test_params
+  if (prim_pkg::PrimTechName == "Generic") begin : gen_spec_base_test_params
     typedef otp_ctrl_base_test #(.CFG_T(otp_ctrl_env_cfg),
                                  .ENV_T(otp_ctrl_env)) otp_ctrl_base_test_t;
   end
@@ -201,7 +201,7 @@ module tb;
   // Instantiate the memory backdoor util instance only for OS implementation
   // Proprietary IP will instantiate their own backdoor util
 
-  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_impl_generic
+  if (prim_pkg::PrimTechName == "Generic") begin : gen_impl_generic
     `define MEM_MODULE_PATH \
         tb.otp_macro.u_prim_ram_1p_adv.gen_ram_inst[0]
 

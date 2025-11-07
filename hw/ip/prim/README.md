@@ -185,7 +185,6 @@ mapping:
   "lowrisc:virtual_constants:top_racl_pkg": "lowrisc:earlgrey_constants:top_racl_pkg"
   "lowrisc:systems:ast_pkg": "lowrisc:systems:top_earlgrey_ast_pkg"
   "lowrisc:virtual_ip:flash_ctrl_prim_reg_top": "lowrisc:earlgrey_ip:flash_ctrl_prim_reg_top"
-  "lowrisc:prim:prim_pkg": "lowrisc:prim:prim_legacy_pkg"
 ```
 
 The following example shows how the UART lint flow is specialized for the earlgrey top.
@@ -297,7 +296,6 @@ filesets:
       - "fileset_partner ? (partner:prim_tech:flash)"
       - "!fileset_partner ? (lowrisc:systems:top_earlgrey_ast)"
       - "!fileset_partner ? (lowrisc:earlgrey_systems:scan_role_pkg)"
-      - "!fileset_partner ? (lowrisc:prim:prim_legacy_pkg)"
       - "!fileset_partner ? (lowrisc:prim_generic:all)"
       - "!fileset_partner ? (lowrisc:prim_generic:flash)"
 ```

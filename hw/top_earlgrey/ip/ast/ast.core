@@ -20,8 +20,6 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:mubi
       - lowrisc:prim:multibit_sync
-      # TODO(#27347): prim_pkg is deprecated.
-      - lowrisc:prim:prim_pkg
       - lowrisc:prim:multibit_sync
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:edn_pkg
@@ -29,6 +27,7 @@ filesets:
       - lowrisc:earlgrey_ip:clkmgr_pkg
       - lowrisc:earlgrey_ip:rstmgr_pkg
       - lowrisc:systems:top_earlgrey_ast_pkg
+      - lowrisc:prim:prim_pkg
     files:
       - rtl/ast_reg_pkg.sv
       - rtl/ast_bhv_pkg.sv

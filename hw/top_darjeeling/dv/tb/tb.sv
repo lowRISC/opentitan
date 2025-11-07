@@ -308,7 +308,7 @@ module tb;
   `undef SIM_SRAM_IF
 
   // Instantiate the memory backdoor util instances.
-  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_generic
+  if (prim_pkg::PrimTechName == "Generic") begin : gen_generic
     initial begin
       sram_ctrl_bkdr_util ram_main0, ram_ret0, ram_mbox0;
       // TODO: CTN RAM is NOT actually a scrambled RAM presently. sw_symbol_backdoor_access

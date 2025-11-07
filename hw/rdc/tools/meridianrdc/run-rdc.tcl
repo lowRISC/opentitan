@@ -48,10 +48,6 @@ set IS_CDC_RUN 1
 # Reusing CDC setup
 if {$FOUNDRY_ROOT != ""} {
   # TODO: add lib setup tcl file here
-  # this PRIM_DEFAULT_IMPL selects the appropriate technology by defining
-  # PRIM_DEFAULT_IMPL=prim_pkg::Impl<tech identifier>
-  # PRIM_DEFAULT_IMPL is set inside the library setup script
-  set DEFINE "PRIM_DEFAULT_IMPL=${PRIM_DEFAULT_IMPL}+${PRIM_STD_CELL_VARIANT}"
   source "${FOUNDRY_ROOT}/cdc/verixcdc/setup.tcl"
 } else {
   set DEFINE ""

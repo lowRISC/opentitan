@@ -13,7 +13,6 @@ filesets:
       - lowrisc:darjeeling_ip:rstmgr_pkg
       - lowrisc:darjeeling_ip:pinmux_pkg
       - lowrisc:systems:top_darjeeling_ast
-      - lowrisc:prim:prim_legacy_pkg
 
 parameters:
   SYNTHESIS:

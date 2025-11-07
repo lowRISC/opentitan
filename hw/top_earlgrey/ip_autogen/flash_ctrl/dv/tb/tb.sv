@@ -22,11 +22,11 @@ module tb;
   // This will invoke the UVM registry and link this test type to
   // the name 'flash_ctrl_base_test' as a test name passed by UVM_TESTNAME
   //
-  // This is done explicitly only for the prim_pkg::ImplGeneric implementation
+  // This is done explicitly only for the generic prim technology implementation
   // since partner base tests inherit from flash_ctrl_base_test#(CFG_T, ENV_T) and
   // specify directly (CFG_T, ENV_T) via the class extension and use a different
   // UVM_TESTNAME
-  if (`PRIM_DEFAULT_IMPL==prim_pkg::ImplGeneric) begin : gen_spec_base_test_params
+  if (prim_pkg::PrimTechName == "Generic") begin : gen_spec_base_test_params
     typedef flash_ctrl_base_test #(.CFG_T(flash_ctrl_env_cfg),
                                    .ENV_T(flash_ctrl_env)) flash_ctrl_base_test_t;
   end
@@ -263,7 +263,7 @@ module tb;
                  "gen_prim_flash_banks[%0d].u_prim_flash_bank.gen_info_types[%0d].",    \
                  "u_info_mem.mem"}, i, j)
 
-  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_generic
+  if (prim_pkg::PrimTechName == "Generic") begin : gen_generic
     for (genvar i = 0; i < flash_ctrl_top_specific_pkg::NumBanks; i++) begin : gen_each_bank
       flash_dv_part_e part = part.first();
 
