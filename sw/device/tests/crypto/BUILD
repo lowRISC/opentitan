@@ -881,6 +881,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -895,6 +896,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/runtime:log",
@@ -1029,6 +1031,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/runtime:log",
