@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:prim_pkg
       - lowrisc:prim:flop_2sync
       - lowrisc:prim:buf
       - lowrisc:ip:lc_ctrl_pkg
