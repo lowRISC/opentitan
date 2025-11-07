@@ -12,7 +12,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
-      - lowrisc:prim:clock_mux2
+      - lowrisc:prim_generic:clock_mux2
     files:
       - rtl/prim_clock_inv.sv
     file_type: systemVerilogSource

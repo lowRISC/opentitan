@@ -12,9 +12,9 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
-      - lowrisc:prim:flop
-      - lowrisc:prim:clock_inv
-      - lowrisc:prim:clock_buf
+      - lowrisc:prim_generic:flop
+      - lowrisc:prim_generic:clock_inv
+      - lowrisc:prim_generic:clock_buf
     files:
       - rtl/prim_clock_div.sv
     file_type: systemVerilogSource

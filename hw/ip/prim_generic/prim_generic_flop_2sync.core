@@ -12,7 +12,7 @@ filesets:
   files_rtl:
     depend:
       # Needed because the generic impl instantiates prim_flop.
-      - lowrisc:prim:flop
+      - lowrisc:prim_generic:flop
       # Needed for DV.
       - lowrisc:prim:cdc_rand_delay
     files:
