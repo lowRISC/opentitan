@@ -29,8 +29,6 @@ filesets:
       - lowrisc:dv:dv_test_status
       - lowrisc:englishbreakfast_ip:flash_ctrl_prim_reg_top
       - lowrisc:prim:clock_div
-      # TODO(#27347): prim_legacy_pkg is deprecated
-      - lowrisc:prim:prim_legacy_pkg
       - lowrisc:prim_generic:all
       - lowrisc:prim_generic:flash
 
