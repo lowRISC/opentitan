@@ -254,11 +254,7 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } drbg_cmd_sm_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } cmd_gen_cnt_err;
+    } ctr_err;
     struct packed {
       logic        d;
       logic        de;
@@ -266,15 +262,7 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } drbg_updob_sm_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } drbg_updbe_sm_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } drbg_gen_sm_err;
+    } ctr_drbg_sm_err;
     struct packed {
       logic        d;
       logic        de;
@@ -283,22 +271,6 @@ package csrng_reg_pkg;
       logic        d;
       logic        de;
     } cmd_stage_sm_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_cmdid_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_gadstage_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_gbencack_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_final_err;
     struct packed {
       logic        d;
       logic        de;
@@ -333,15 +305,15 @@ package csrng_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    csrng_hw2reg_intr_state_reg_t intr_state; // [253:246]
-    csrng_hw2reg_reseed_counter_mreg_t [2:0] reseed_counter; // [245:150]
-    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [149:142]
-    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [141:140]
-    csrng_hw2reg_genbits_reg_t genbits; // [139:108]
-    csrng_hw2reg_int_state_val_reg_t int_state_val; // [107:76]
-    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [75:59]
-    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [58:41]
-    csrng_hw2reg_err_code_reg_t err_code; // [40:7]
+    csrng_hw2reg_intr_state_reg_t intr_state; // [239:232]
+    csrng_hw2reg_reseed_counter_mreg_t [2:0] reseed_counter; // [231:136]
+    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [135:128]
+    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [127:126]
+    csrng_hw2reg_genbits_reg_t genbits; // [125:94]
+    csrng_hw2reg_int_state_val_reg_t int_state_val; // [93:62]
+    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [61:45]
+    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [44:27]
+    csrng_hw2reg_err_code_reg_t err_code; // [26:7]
     csrng_hw2reg_main_sm_state_reg_t main_sm_state; // [6:0]
   } csrng_hw2reg_t;
 

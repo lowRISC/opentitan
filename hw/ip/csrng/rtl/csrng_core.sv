@@ -353,44 +353,22 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.err_code.sfifo_genbits_err.de = cs_enable_fo[3] &&
          (|cmd_stage_sfifo_genbits_err_sum);
 
-  assign hw2reg.err_code.sfifo_final_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_final_err.de = 1'b0;
-
-  assign hw2reg.err_code.sfifo_gbencack_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_gbencack_err.de = 1'b0;
-
-  assign hw2reg.err_code.sfifo_gadstage_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_gadstage_err.de = 1'b0;
-
-  assign hw2reg.err_code.sfifo_cmdid_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_cmdid_err.de = 1'b0;
-
   assign hw2reg.err_code.cmd_stage_sm_err.d = 1'b1;
   assign hw2reg.err_code.cmd_stage_sm_err.de = cs_enable_fo[19] && cmd_stage_sm_err_sum;
 
   assign hw2reg.err_code.main_sm_err.d = 1'b1;
   assign hw2reg.err_code.main_sm_err.de = cs_enable_fo[20] && main_sm_err_sum;
 
-  assign hw2reg.err_code.drbg_cmd_sm_err.d = 1'b1;
-  assign hw2reg.err_code.drbg_cmd_sm_err.de = cs_enable_fo[21] && ctr_drbg_sm_err_sum;
-
-  assign hw2reg.err_code.drbg_gen_sm_err.d = 1'b1;
-  assign hw2reg.err_code.drbg_gen_sm_err.de = 1'b0;
-
-  assign hw2reg.err_code.drbg_updbe_sm_err.d = 1'b1;
-  assign hw2reg.err_code.drbg_updbe_sm_err.de = 1'b0;
-
-  assign hw2reg.err_code.drbg_updob_sm_err.d = 1'b1;
-  assign hw2reg.err_code.drbg_updob_sm_err.de = 1'b0;
+  assign hw2reg.err_code.ctr_drbg_sm_err.d = 1'b1;
+  assign hw2reg.err_code.ctr_drbg_sm_err.de = cs_enable_fo[21] && ctr_drbg_sm_err_sum;
 
   assign hw2reg.err_code.aes_cipher_sm_err.d = 1'b1;
   assign hw2reg.err_code.aes_cipher_sm_err.de = cs_enable_fo[22] && block_encrypt_sm_err_sum;
 
-  assign hw2reg.err_code.cmd_gen_cnt_err.d = 1'b1;
-  assign hw2reg.err_code.cmd_gen_cnt_err.de = cs_enable_fo[23] && ctr_err_sum;
+  // set the err code type bits
+  assign hw2reg.err_code.ctr_err.d = 1'b1;
+  assign hw2reg.err_code.ctr_err.de = cs_enable_fo[23] && ctr_err_sum;
 
-
- // set the err code type bits
   assign hw2reg.err_code.fifo_write_err.d = 1'b1;
   assign hw2reg.err_code.fifo_write_err.de = cs_enable_fo[24] && fifo_write_err_sum;
 
@@ -400,8 +378,8 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.err_code.fifo_state_err.d = 1'b1;
   assign hw2reg.err_code.fifo_state_err.de = cs_enable_fo[26] && fifo_status_err_sum;
 
-  // Error forcing
-  for (genvar i = 0; i < 31; i = i+1) begin : gen_err_code_test_bit
+  // Error testing decoding
+  for (genvar i = 0; i < 31; i++) begin : gen_err_code_test_bit
     assign err_code_test_bit[i] = (reg2hw.err_code_test.q == i) && reg2hw.err_code_test.qe;
   end : gen_err_code_test_bit
 
@@ -806,7 +784,6 @@ module csrng_core import csrng_pkg::*; #(
 
   // sm to process all instantiation requests
   // SEC_CM: MAIN_SM.CTR.LOCAL_ESC
-  // SEC_CM: MAIN_SM.FSM.SPARSE
   csrng_main_sm u_csrng_main_sm (
     .clk_i                 (clk_i),
     .rst_ni                (rst_ni),

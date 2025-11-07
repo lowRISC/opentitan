@@ -175,29 +175,20 @@
     { name: "INTERSIG.MUBI"
       desc: "OTP signal used to enable software access to registers."
     }
+    { name: "CMD_STAGE.FSM.SPARSE"
+      desc: "The CSRNG command stage state machines use a sparse state encoding."
+    }
     { name: "MAIN_SM.FSM.SPARSE"
       desc: "The CSRNG main state machine uses a sparse state encoding."
     }
-    { name: "UPDRSP.FSM.SPARSE"
-      desc: "The CSRNG update response state machine uses a sparse state encoding."
-    }
-    { name: "UPDATE.FSM.SPARSE"
-      desc: "The CSRNG update state machine uses a sparse state encoding."
-    }
-    { name: "BLK_ENC.FSM.SPARSE"
-      desc: "The CSRNG block encrypt state machine uses a sparse state encoding."
-    }
-    { name: "OUTBLK.FSM.SPARSE"
-      desc: "The CSRNG block output state machine uses a sparse state encoding."
+    { name: "CTR_DRBG.FSM.SPARSE"
+      desc: "The CTR DRBG state machine uses a sparse state encoding."
     }
     { name: "GEN_CMD.CTR.REDUN"
       desc: "The generate command uses a counter that is protected by a second counter that counts in the opposite direction."
     }
-    { name: "DRBG_UPD.CTR.REDUN"
-      desc: "The ctr_drbg update algorithm uses a counter that is protected by a second counter that counts in the opposite direction."
-    }
-    { name: "DRBG_GEN.CTR.REDUN"
-      desc: "The ctr_drbg generate algorithm uses a counter that is protected by a second counter that counts in the opposite direction."
+    { name: "CTR_DRBG.CTR.REDUN"
+      desc: "The ctr_drbg algorithm uses a counter that is protected by a second counter that counts in the opposite direction."
     }
     { name: "CTRL.MUBI"
       desc: "Multi-bit field used for selection control."
@@ -731,42 +722,6 @@
                 This bit will stay set until the next reset.
                 '''
         }
-        { bits: "9",
-          name: "SFIFO_FINAL_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                final FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "10",
-          name: "SFIFO_GBENCACK_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                gbencack FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "13",
-          name: "SFIFO_GADSTAGE_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                gadstage FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "15",
-          name: "SFIFO_CMDID_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                cmdid FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
         { bits: "20",
           name: "CMD_STAGE_SM_ERR",
           desc: '''
@@ -786,28 +741,10 @@
                 '''
         }
         { bits: "22",
-          name: "DRBG_GEN_SM_ERR",
+          name: "CTR_DRBG_SM_ERR",
           desc: '''
                 This bit will be set to one when an illegal state has been detected for the
-                ctr_drbg gen state machine. This error will signal a fatal alert, and also
-                an interrupt if enabled.
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "23",
-          name: "DRBG_UPDBE_SM_ERR",
-          desc: '''
-                This bit will be set to one when an illegal state has been detected for the
-                ctr_drbg update block encode state machine. This error will signal a fatal alert, and also
-                an interrupt if enabled.
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "24",
-          name: "DRBG_UPDOB_SM_ERR",
-          desc: '''
-                This bit will be set to one when an illegal state has been detected for the
-                ctr_drbg update out block state machine. This error will signal a fatal alert, and also
+                ctr_drbg state machine. This error will signal a fatal alert, and also
                 an interrupt if enabled.
                 This bit will stay set until the next reset.
                 '''
@@ -816,27 +753,16 @@
           name: "AES_CIPHER_SM_ERR",
           desc: '''
                 This bit will be set to one when an AES fatal error has been detected.
-                This error will signal a fatal alert, and also
-                an interrupt if enabled.
+                This error will signal a fatal alert, and also an interrupt if enabled.
                 This bit will stay set until the next reset.
                 '''
         }
         { bits: "26",
-          name: "CMD_GEN_CNT_ERR",
+          name: "CTR_ERR",
           desc: '''
                 This bit will be set to one when a mismatch in any of the hardened counters
                 has been detected.
-                This error will signal a fatal alert, and also
-                an interrupt if enabled.
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "27",
-          name: "DRBG_CMD_SM_ERR",
-          desc: '''
-                This bit will be set when the state machine in the ctr_drbg_cmd unit has entered
-                an illegal state.
-                This error will signal a fatal alert, and also an interrupt, if enabled.
+                This error will signal a fatal alert, and also an interrupt if enabled.
                 This bit will stay set until the next reset.
                 '''
         }

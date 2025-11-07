@@ -251,6 +251,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
     Error     = 8'b01100111  // illegal state reached and hang
   } state_e;
 
+  // SEC_CM: CMD_STAGE.FSM.SPARSE
   state_e state_d, state_q;
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, Idle)
 
