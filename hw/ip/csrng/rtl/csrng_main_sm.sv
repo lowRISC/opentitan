@@ -34,6 +34,7 @@ module csrng_main_sm import csrng_pkg::*; (
   output logic                        main_sm_err_o
 );
 
+  // SEC_CM: MAIN_SM.FSM.SPARSE
   main_sm_state_e state_d, state_q;
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, main_sm_state_e, MainSmIdle)
 
