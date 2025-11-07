@@ -76,17 +76,15 @@ static otcrypto_status_t seed_material_xor(
     return OTCRYPTO_OK;
   }
 
-  // Copy into a word-aligned buffer. Using a word-wise XOR is slightly safer
-  // from a side channel perspective than byte-wise.
+  // Copy into a word-aligned buffer. This allows us to use a XOR that is more
+  // resilient against SCA leakage.
   size_t nwords = ceil_div(value.len, sizeof(uint32_t));
   uint32_t value_words[nwords];
   value_words[nwords - 1] = 0;
   memcpy(value_words, value.data, value.len);
 
   // XOR with seed value.
-  for (size_t i = 0; i < nwords; i++) {
-    seed_material->data[i] ^= value_words[i];
-  }
+  HARDENED_TRY(hardened_xor_in_place(seed_material->data, value_words, nwords));
 
   return OTCRYPTO_OK;
 }
