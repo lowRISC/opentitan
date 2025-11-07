@@ -21,6 +21,9 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
   `uvm_component_new
 
   virtual function void build_phase(uvm_phase phase);
+    uvm_object_wrapper cfg_type;
+    uvm_object         base_cfg;
+
     dv_report_server  m_dv_report_server = new();
     dv_report_catcher m_report_catcher;
     uvm_report_server::set_server(m_dv_report_server);
@@ -35,7 +38,29 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     super.build_phase(phase);
 
     env = ENV_T::type_id::create("env", this);
-    cfg = CFG_T::type_id::create("cfg", this);
+
+    // Check whether there is a type for the environment config that has been registered in
+    // config_db. Doing so is a way that a (templated) test can pass a specific type, allowing the
+    // test class not to depend on that type.
+    //
+    // If the class hasn't chosen to do so, we can just use the type for CFG_T (part of the type of
+    // this test)
+    if (!uvm_config_db#(uvm_object_wrapper)::get(this, "env", "cfg_type", cfg_type)) begin
+      cfg_type = CFG_T::get_type();
+    end
+    base_cfg = cfg_type.create_object("cfg");
+    if (!base_cfg) begin
+      `uvm_fatal(`gfn, $sformatf("Failed to create object of type %p", cfg_type))
+    end
+
+    // At this point, we will normally have just created an object of type CFG_T, but have a handle
+    // to it with a weaker type. But we might have got an instance of some extension class if one is
+    // passed as cfg_type. Either way, we should be able to cast the result to a CFG_T.
+    if (!$cast(cfg, base_cfg)) begin
+      `uvm_fatal(`gfn,
+                 $sformatf("Failed to cast object of type %p to expected CFG_T class.", cfg_type))
+    end
+
     cfg.initialize();
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     uvm_config_db#(CFG_T)::set(this, "env", "cfg", cfg);
