@@ -11,6 +11,7 @@ description: "OpenSource ASAP7 prim standard cell library: prim_asap7:* modules 
 filesets:
   files_rtl:
     depend:
+      - lowrisc:prim_asap7:prim_pkg
       - lowrisc:prim_asap7:and2
       - lowrisc:prim_asap7:buf
       - lowrisc:prim_asap7:clock_buf
@@ -36,6 +37,7 @@ filesets:
 #      - lowrisc:prim_generic:flash
 
 mapping:
+  "lowrisc:prim:prim_pkg"     : "lowrisc:prim_asap7:prim_pkg"
   "lowrisc:prim:and2"         : "lowrisc:prim_asap7:and2"
   "lowrisc:prim:buf"          : "lowrisc:prim_asap7:buf"
   "lowrisc:prim:clock_buf"    : "lowrisc:prim_asap7:clock_buf"

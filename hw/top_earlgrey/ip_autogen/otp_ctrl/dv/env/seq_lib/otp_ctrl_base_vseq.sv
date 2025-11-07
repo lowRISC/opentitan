@@ -678,7 +678,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // This test access OTP_CTRL's test_access memory. The open-sourced code only test if the access
   // is valid. Please override this task in proprietary OTP.
   virtual task otp_test_access();
-    if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin
+    if (prim_pkg::PrimTechName == "Generic") begin
       repeat (10) begin
         bit [TL_DW-1:0] data;
         bit test_access_en;

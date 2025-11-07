@@ -28,6 +28,7 @@ filesets:
       - lowrisc:darjeeling_ip:clkmgr_pkg
       - lowrisc:darjeeling_ip:rstmgr_pkg
       - lowrisc:systems:top_darjeeling_ast_pkg
+      - lowrisc:prim:prim_pkg
     files:
       - rtl/ast_reg_pkg.sv
       - rtl/ast_bhv_pkg.sv

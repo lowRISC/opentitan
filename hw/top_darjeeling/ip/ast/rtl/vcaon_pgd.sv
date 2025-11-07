@@ -5,11 +5,6 @@
 // *Name: vcaon_pgd
 // *Module Description:  VCAON Power Good
 //############################################################################
-`ifdef SYNTHESIS
-`ifndef PRIM_DEFAULT_IMPL
-`define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
-`endif
-`endif
 
 module vcaon_pgd (
   output logic vcaon_pok_o
@@ -43,9 +38,8 @@ end
 `else
 // SYNTHESIS/VERILATOR/LINTER/FPGA
 ///////////////////////////////////////
-localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
 
-if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
+if (prim_pkg::PrimTechName == "Xilinx") begin : gen_xilinx
   // FPGA Specific (place holder)
   ///////////////////////////////////////
   assign vcaon_pok_o = gen_supp_a;
