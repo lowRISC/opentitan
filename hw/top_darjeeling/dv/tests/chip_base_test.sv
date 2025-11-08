@@ -22,12 +22,6 @@ class chip_base_test extends cip_base_test #(
 
     super.build_phase(phase);
 
-    // Knob to select the chip clock source.
-    `DV_GET_ENUM_PLUSARG(chip_clock_source_e, cfg.chip_clock_source, chip_clock_source)
-    if (cfg.chip_clock_source != ChipClockSourceInternal) begin
-      cfg.clk_freq_mhz = cfg.chip_clock_source;
-    end
-
     // Knob to set the UART baud rate (set to 2M by default).
     void'($value$plusargs("uart_baud_rate=%0d", cfg.uart_baud_rate));
 

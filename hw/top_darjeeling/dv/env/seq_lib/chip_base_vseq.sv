@@ -135,12 +135,6 @@ class chip_base_vseq #(
     // TODO: This is a functional interface which should ideally be connected only in the extended
     // test sequences. Revisit this later.
     callback_vseq.pre_dut_init();
-    if (cfg.chip_clock_source != ChipClockSourceInternal) begin
-      `uvm_info(`gfn, {"Connecting and driving external clock source with frequency ",
-                       $sformatf("%0dMhz", cfg.chip_clock_source)}, UVM_LOW)
-      cfg.chip_vif.ext_clk_if.set_active(.drive_clk_val(1), .drive_rst_n_val(0));
-      cfg.chip_vif.ext_clk_if.set_freq_mhz(cfg.chip_clock_source);
-    end
 
     // Connect DIOs
     cfg.chip_vif.enable_spi_host = 1;

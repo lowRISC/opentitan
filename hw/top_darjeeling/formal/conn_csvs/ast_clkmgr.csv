@@ -29,4 +29,3 @@ CONNECTION, AST_CLK_JEN_IN,     top_darjeeling.u_clkmgr_aon, jitter_en_o,       
 
 CONNECTION, AST_ALL_BYP_REQ_IN, top_darjeeling.u_clkmgr_aon, all_clk_byp_req_o,             u_ast, all_clk_byp_req_i,
 CONNECTION, AST_IO_BYP_REQ_IN,  top_darjeeling.u_clkmgr_aon, io_clk_byp_req_o,              u_ast, io_clk_byp_req_i,
-CONNECTION, AST_HISPEED_SEL_IN, top_darjeeling.u_clkmgr_aon, hi_speed_sel_o,                u_ast, ext_freq_is_96m_i,

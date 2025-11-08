@@ -953,8 +953,6 @@ module chip_darjeeling_cw310 #(
   );
 
 
-
-
   //////////////////////////////////
   // AST - Common for all targets //
   //////////////////////////////////
@@ -974,9 +972,6 @@ module chip_darjeeling_cw310 #(
   // synchronization clocks / rests
   clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
   rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
-
-  // external clock
-  logic ext_clk;
 
   // monitored clock
   logic sck_monitor;
@@ -1008,11 +1003,9 @@ module chip_darjeeling_cw310 #(
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
   prim_mubi_pkg::mubi4_t all_clk_byp_req;
-  prim_mubi_pkg::mubi4_t hi_speed_sel;
 
   assign io_clk_byp_req    = prim_mubi_pkg::MuBi4False;
   assign all_clk_byp_req   = prim_mubi_pkg::MuBi4False;
-  assign hi_speed_sel      = prim_mubi_pkg::MuBi4False;
 
   // DFT connections
   logic scan_en;
@@ -1047,14 +1040,6 @@ module chip_darjeeling_cw310 #(
                 cfg:    ast_rf_cfg.marg
               }
   };
-
-  logic unused_usb_ram_2p_cfg;
-  assign unused_usb_ram_2p_cfg = ^{ast_ram_2p_fcfg.marg_en_a,
-                                   ast_ram_2p_fcfg.marg_a,
-                                   ast_ram_2p_fcfg.test_a,
-                                   ast_ram_2p_fcfg.marg_en_b,
-                                   ast_ram_2p_fcfg.marg_b,
-                                   ast_ram_2p_fcfg.test_b};
 
   // this maps as follows:
   // assign spi_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_lcfg, ram_2p_cfg_i.b_ram_lcfg};
@@ -1097,11 +1082,9 @@ module chip_darjeeling_cw310 #(
   logic [rstmgr_pkg::PowerDomains-1:0] por_n;
   assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
 
-  // TODO: Hook this up when FPGA pads are updated
-  assign ext_clk = '0;
   assign pad2ast = '0;
 
-  logic clk_main, clk_usb_48mhz, clk_aon, rst_n, srst_n;
+  logic clk_main, clk_aon, rst_n, srst_n;
   clkgen_xil7series # (
     .AddClkBuf(0)
   ) clkgen (
@@ -1109,7 +1092,7 @@ module chip_darjeeling_cw310 #(
     .rst_ni(manual_in_por_n),
     .srst_ni(srst_n),
     .clk_main_o(clk_main),
-    .clk_48MHz_o(clk_usb_48mhz),
+    .clk_48MHz_o(),
     .clk_aon_o(clk_aon),
     .rst_no(rst_n)
   );
@@ -1121,7 +1104,6 @@ module chip_darjeeling_cw310 #(
 
   ast_pkg::clks_osc_byp_t clks_osc_byp;
   assign clks_osc_byp = '{
-    usb: clk_usb_48mhz,
     sys: clk_main,
     io:  clk_main,
     aon: clk_aon
@@ -1129,15 +1111,11 @@ module chip_darjeeling_cw310 #(
 
 
   ast #(
-    .UsbCalibWidth(ast_pkg::UsbCalibWidth),
     .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
     .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
   ) u_ast (
     // external POR
     .por_ni                ( rst_n ),
-
-    // USB IO Pull-up Calibration Setting
-    .usb_io_pu_cal_o       ( ),
 
     // clocks' oscillator bypass for FPGA
     .clk_osc_byp_i         ( clks_osc_byp ),
@@ -1162,7 +1140,6 @@ module chip_darjeeling_cw310 #(
     .rst_ast_tlul_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_rng_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
-    .clk_ast_ext_i         ( ext_clk ),
 
     // pok test for FPGA
     .vcc_supp_i            ( 1'b1 ),
@@ -1192,12 +1169,6 @@ module chip_darjeeling_cw310 #(
     .clk_src_io_en_i       ( base_ast_pwr.io_clk_en ),
     .clk_src_io_o          ( ast_base_clks.clk_io ),
     .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
-    // usb source clock
-    .usb_ref_pulse_i       ( '0 ),
-    .usb_ref_val_i         ( '0 ),
-    .clk_src_usb_en_i      ( '0 ),
-    .clk_src_usb_o         (    ),
-    .clk_src_usb_val_o     (    ),
     // rng
     .rng_en_i              ( es_rng_enable ),
     .rng_fips_i            ( es_rng_fips   ),
@@ -1208,14 +1179,12 @@ module chip_darjeeling_cw310 #(
     .alert_req_o           ( ast_alert_req  ),
     // dft
     .lc_dft_en_i           ( lc_dft_en        ),
-    .usb_obs_i             ( '0 ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
     .obs_ctrl_o            ( obs_ctrl ),
     // pinmux related
     .padmux2ast_i          ( '0         ),
     .ast2padmux_o          (            ),
-    .ext_freq_is_96m_i     ( hi_speed_sel ),
     .all_clk_byp_req_i     ( all_clk_byp_req  ),
     .all_clk_byp_ack_o     ( ),
     .io_clk_byp_req_i      ( io_clk_byp_req   ),

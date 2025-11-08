@@ -31,10 +31,7 @@ package ast_bhv_pkg;
   parameter time MPPD_FDLY       = 1us;
   // Clocks
   parameter time SYS_EN_RDLY     = 5us;
-  parameter time USB_EN_RDLY     = 5us;
   // Reduced for simulation from 50ms
-  parameter time USB_VAL_RDLY    = 80ns;  // 50ms
-  parameter time USB_VAL_FDLY    = 80ns;
   parameter time IO_EN_RDLY      = 5us;
   parameter time AON_EN_RDLY     = 5us;
   parameter time RNG_EN_RDLY     = 5us;

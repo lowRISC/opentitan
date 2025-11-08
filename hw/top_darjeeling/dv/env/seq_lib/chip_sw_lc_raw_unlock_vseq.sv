@@ -39,9 +39,6 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
     wait_rom_check_done();
     wait_lc_ready();
 
-    // Switch to external clock via lc_ctrl TAP, and perform RAW unlock. This
-    // requires a reset to apply the transition.
-    switch_to_external_clock();
     jtag_lc_state_transition(DecLcStRaw, DecLcStTestUnlocked0);
     // Complete state transition
     apply_reset();
@@ -55,8 +52,6 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
       cfg.get_lc_ctrl_dmi_addr(ral.lc_ctrl_regs.transition_ctrl.get_offset()),
       p_sequencer.jtag_sequencer_h,
       1);
-    // Add some delay until clock bypass is turned on.
-    cfg.chip_vif.ext_clk_if.wait_clks(10);
 
     // Switch to rvdm
     reset_jtag_tap();

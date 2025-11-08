@@ -459,14 +459,6 @@ interface chip_if;
       }  // [0]
     };
 
-  ///////////////////////////////////////////////////////
-  // Functional (muxed) interface: external clock source.
-  //
-  // The reset port is passive only.
-  clk_rst_if#("ExtClkDriver") ext_clk_if(
-     .clk (mios[top_darjeeling_pkg::MioPadMio11]),
-    .rst_n(dios[top_darjeeling_pkg::DioPadPorN])
-  );
 
   // Internal probes / monitors.
 `ifdef GATE_LEVEL
@@ -748,7 +740,6 @@ interface chip_if;
     for (int i = 0; i < NUM_UARTS; i++) enable_uart(.inst_num(i), .enable(0));
     for (int i = 0; i < NUM_SPI_HOSTS; i++) enable_spi_device(.inst_num(i), .enable(0));
     for (int i = 0; i < NUM_I2CS; i++) enable_i2c(.inst_num(i), .enable(0));
-    ext_clk_if.set_active(0, 0);
   endfunction
 
   // Get the requested LC control signal that was broadcast by the LC controller

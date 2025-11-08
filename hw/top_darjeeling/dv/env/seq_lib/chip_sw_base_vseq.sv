@@ -968,14 +968,6 @@ class chip_sw_base_vseq extends chip_base_vseq;
       p_sequencer.jtag_sequencer_h,
       prim_mubi_pkg::MuBi8True);
 
-    if (cfg.chip_clock_source != ChipClockSourceInternal) begin
-      `uvm_info(`gfn, $sformatf("Setting external clock to %d MHz...", cfg.chip_clock_source),
-                UVM_LOW)
-      cfg.chip_vif.ext_clk_if.set_freq_mhz(cfg.chip_clock_source);
-      cfg.chip_vif.ext_clk_if.set_active(.drive_clk_val(1), .drive_rst_n_val(0));
-      use_ext_clk = 1'b1;
-    end
-
     `uvm_info(`gfn, "Switching to VOLATILE_RAW_UNLOCK via JTAG...", UVM_LOW)
     jtag_riscv_agent_pkg::jtag_write_csr(
       cfg.get_lc_ctrl_dmi_addr(ral.lc_ctrl_regs.transition_ctrl.get_offset()),
@@ -1177,37 +1169,6 @@ class chip_sw_base_vseq extends chip_base_vseq;
         p_sequencer.jtag_sequencer_h,
         prim_mubi_pkg::MuBi8True);
   endtask : claim_transition_interface
-
-  // Bypass IO clock with the external clock
-  // using LC_CTRL.CTRL_TRANSITION.EXT_CLOCK_EN
-  task switch_to_external_clock();
-    chip_clock_source_e ext_clk_source = cfg.chip_clock_source;
-    if (cfg.chip_clock_source == ChipClockSourceInternal) begin
-      ext_clk_source = ChipClockSourceExternal48Mhz;
-    end
-    `uvm_info(`gfn, $sformatf("Setting external clock to %d MHz...", ext_clk_source),
-              UVM_MEDIUM)
-    cfg.chip_vif.ext_clk_if.set_freq_mhz(ext_clk_source);
-    cfg.chip_vif.ext_clk_if.set_active(.drive_clk_val(1), .drive_rst_n_val(0));
-
-    // Switch OTP to use external clock instead of internal clock.
-    // Then wait for clock to arrive at the lc_ctrl prior to use
-    // jtag polling task.
-    wait_rom_check_done();
-
-    // Wait for LC to be ready, acquire the transition interface mutex
-    wait_lc_ready();
-
-    // enable external clock.
-    claim_transition_interface();
-
-    // Switch to external clock via LC controller.
-    `uvm_info(`gfn, "Switching to external clock via JTAG...", UVM_MEDIUM)
-    jtag_riscv_agent_pkg::jtag_write_csr(
-      cfg.get_lc_ctrl_dmi_addr(ral.lc_ctrl_regs.transition_ctrl.get_offset()),
-      p_sequencer.jtag_sequencer_h,
-      1);
-  endtask : switch_to_external_clock
 
   // Use JTAG interface to program OTP fields.
   virtual task jtag_otp_program32(int addr,

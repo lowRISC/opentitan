@@ -904,7 +904,6 @@
       run_opts: [
         "+sw_test_timeout_ns=200_000_000",
         "+use_otp_image=OtpTypeLcStRaw",
-        "+chip_clock_source=ChipClockSourceExternal48Mhz",
         "+rom_prod_mode=1",
       ]
       run_timeout_mins: 480
@@ -921,7 +920,6 @@
         "+do_creator_sw_cfg_ast_cfg=0",
         "+sw_test_timeout_ns=200_000_000",
         "+use_otp_image=OtpTypeLcStRaw",
-        "+chip_clock_source=ChipClockSourceExternal48Mhz",
         "+rom_prod_mode=1",
       ]
       run_timeout_mins: 480
