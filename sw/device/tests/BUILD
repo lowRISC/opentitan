@@ -6519,7 +6519,7 @@ test_suite(
             test_harness = "//sw/host/tests/chip/rv_dm:access_after_hw_reset",
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:dt",
             "//sw/device/lib/dif:rstmgr",
             "//sw/device/lib/runtime:hart",
             "//sw/device/lib/runtime:log",
