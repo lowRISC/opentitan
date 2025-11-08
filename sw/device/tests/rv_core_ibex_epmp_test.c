@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/dt_pinmux.h"     // Generated
+#include "hw/top/dt/dt_sram_ctrl.h"  // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/dif/dif_uart.h"
@@ -15,8 +17,6 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/epmp_defs.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -196,8 +196,9 @@ static void pmp_setup_machine_area(void) {
   // but is in a lower PMP register so region 15's configuration
   // will be ignored in this area.
   const uint32_t kRodataEnd = (uint32_t)__rodata_end;
-  const uint32_t kSramEnd = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
-                            TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES;
+  const uint32_t kSramEnd =
+      dt_sram_ctrl_memory_base(kDtSramCtrlMain, kDtSramCtrlMemoryRam) +
+      dt_sram_ctrl_memory_size(kDtSramCtrlMain, kDtSramCtrlMemoryRam);
 
   CSR_WRITE(CSR_REG_PMPADDR8, tor_address(kRodataEnd));
   CSR_WRITE(CSR_REG_PMPADDR9, tor_address(kSramEnd));
@@ -266,8 +267,7 @@ static void pmp_setup_test_locations(void) {
  */
 static void setup_uart(void) {
   // Initialise DIF handles
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxAon, &pinmux));
 
   // Initialise UART console.
   pinmux_testutils_init(&pinmux);
