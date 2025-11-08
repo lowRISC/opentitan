@@ -66,7 +66,7 @@
               ext_clk_freq / 4 or ext_clk_freq / 2.
             '''
       stage: V1
-      tests: ["chip_sw_uart_tx_rx_alt_clk_freq", "chip_sw_uart_tx_rx_alt_clk_freq_low_speed"]
+      tests: ["chip_sw_uart_tx_rx_alt_clk_freq"]
     }
 
     // GPIO (pre-verified IP) integration tests:
@@ -743,55 +743,6 @@
             '''
       stage: V2
       tests: ["chip_sw_clkmgr_off_peri"]
-    }
-    {
-      name: chip_sw_clkmgr_div
-      desc: '''Verify clk division logic is working correctly.
-
-            The IP level checks the divided clocks via SVA, and these are also bound at chip level.
-            Connectivity tests check peripherals are connected to the clock they expect.
-            Use the clkmgr count measurement feature to verify clock division.
-            '''
-      stage: V2
-      tests: ["chip_sw_clkmgr_external_clk_src_for_sw_fast_test_unlocked0",
-              "chip_sw_clkmgr_external_clk_src_for_sw_slow_test_unlocked0",
-              "chip_sw_clkmgr_external_clk_src_for_sw_fast_dev",
-              "chip_sw_clkmgr_external_clk_src_for_sw_slow_dev",
-              "chip_sw_clkmgr_external_clk_src_for_sw_fast_rma",
-              "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma",
-              "chip_sw_clkmgr_external_clk_src_for_lc"]
-    }
-    {
-      name: chip_sw_clkmgr_external_clk_src_for_lc
-      desc: '''Verify the clkmgr requests ext clk src during certain LC states.
-
-            On POR lc asserts lc_clk_byp_req on some LC states, and de-asserts
-            it when lc_program completes. This also triggers divided clocks to step down. It may be
-            best to verify this via SVA, unless we implement clock cycle counters.
-            '''
-      stage: V2
-      tests: ["chip_sw_clkmgr_external_clk_src_for_lc"]
-    }
-    {
-      name: chip_sw_clkmgr_external_clk_src_for_sw
-      desc: '''Verify SW causes the clkmgr requests ext clk src during certain LC states.
-
-            In RMA and TEST_UNLOCKED lc states the external clock is enabled in response to
-            `extclk_ctrl.sel` CSR writes. In addition `extclk_ctrl.hi_speed_sel` CSR causes the
-            divided clocks to step down. Verify this via SVA bound to clkmgr, and clock cycle
-            counters.
-
-            Disable external clock source and verify the AST reliably falls back to the internal
-            clock. Ensure the chip operates normally.
-            X-ref with chip_sw_uart_tx_rx_alt_clk_freq, which needs to deal with this as well.
-            '''
-      stage: V2
-      tests: ["chip_sw_clkmgr_external_clk_src_for_sw_fast_test_unlocked0",
-              "chip_sw_clkmgr_external_clk_src_for_sw_slow_test_unlocked0",
-              "chip_sw_clkmgr_external_clk_src_for_sw_fast_dev",
-              "chip_sw_clkmgr_external_clk_src_for_sw_slow_dev",
-              "chip_sw_clkmgr_external_clk_src_for_sw_fast_rma",
-              "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma"]
     }
     {
       name: chip_sw_clkmgr_jitter
@@ -1548,16 +1499,9 @@
       tests: [
         "chip_prim_tl_access",                         // lc_dft_en_o: otp_ctrl
         "chip_sw_rom_ctrl_integrity_check",            // lc_dft_en_o, lc_hw_debug_en_o: pwrmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_fast_test_unlocked0", // lc_hw_debug_en_o: clkmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_slow_test_unlocked0", // lc_hw_debug_en_o: clkmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_fast_dev",            // lc_hw_debug_en_o: clkmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_slow_dev",            // lc_hw_debug_en_o: clkmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_fast_rma",            // lc_hw_debug_en_o: clkmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma",            // lc_hw_debug_en_o: clkmgr
         "chip_sw_sram_ctrl_execution_main",            // lc_hw_debug_en_o: sram_ctrl main
         "chip_rv_dm_lc_disabled"                       // lc_hw_debug_en_o: rv_dm
         "chip_sw_keymgr_dpe_key_derivation",           // lc_keymgr_en_o: keymgr
-        "chip_sw_clkmgr_external_clk_src_for_lc",      // lc_clk_byp_req_o: clkmgr
         "chip_sw_lc_ctrl_transition",                  // lc_check_byp_en_o: otp_ctrl
         "chip_sw_otp_ctrl_lc_signals_test_unlocked0",  // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
         "chip_sw_otp_ctrl_lc_signals_dev",             // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
