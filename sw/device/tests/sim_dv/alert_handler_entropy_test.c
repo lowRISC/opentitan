@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/dt_alert_handler.h"  // Generated
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
@@ -13,7 +14,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/alert_handler_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /*
   In SV test, force the alert_handler's wait_cyc_mask_i input to shorten the
@@ -25,6 +25,9 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_alert_handler_t alert_handler;
+
+static const dt_alert_handler_t kAlertHandlerDt = (dt_alert_handler_t)0;
+static_assert(kDtAlertHandlerCount >= 1, "This test needs an Alert Handler");
 
 static void alert_handler_config(void) {
   dif_alert_handler_alert_t alerts[ALERT_HANDLER_PARAM_N_ALERTS];
@@ -83,9 +86,7 @@ static void alert_handler_config(void) {
 }
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
-      &alert_handler));
+  CHECK_DIF_OK(dif_alert_handler_init_from_dt(kAlertHandlerDt, &alert_handler));
 
   alert_handler_config();
   return true;

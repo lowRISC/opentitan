@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/dt_lc_ctrl.h"   // Generated
+#include "hw/top/dt/dt_otp_ctrl.h"  // Generated
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
@@ -11,10 +13,13 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 static dif_lc_ctrl_t lc;
 static dif_otp_ctrl_t otp;
+
+static const dt_lc_ctrl_t kLcCtrlDt = (dt_lc_ctrl_t)0;
+static const dt_otp_ctrl_t kOtpCtrlDt = (dt_otp_ctrl_t)0;
+static_assert(kDtLcCtrlCount >= 1, "This test needs a LC CTRL");
+static_assert(kDtOtpCtrlCount >= 1, "This test needs an OTP CTRL");
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -25,11 +30,9 @@ static void init_peripherals(void) {
       .consistency_period_mask = 0x3ffffff,
   };
   // Life cycle
-  CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc));
+  CHECK_DIF_OK(dif_lc_ctrl_init_from_dt(kLcCtrlDt, &lc));
   // OTP
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kOtpCtrlDt, &otp));
   CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, config));
 }
 
