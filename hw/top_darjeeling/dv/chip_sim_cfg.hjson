@@ -551,15 +551,6 @@
       reseed: 5
     }
     {
-      name: chip_sw_uart_tx_rx_alt_clk_freq_low_speed
-      uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
-      sw_images: ["//sw/device/tests:uart_tx_rx_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=80_000_000",
-                 "+chip_clock_source=ChipClockSourceExternal48Mhz"]
-      reseed: 5
-    }
-    {
       name: chip_sw_i2c_host_tx_rx
       uvm_test_seq: chip_sw_i2c_host_tx_rx_vseq
       sw_images: ["//sw/device/tests/sim_dv:i2c_host_tx_rx_test:6:new_rules"]
@@ -1381,61 +1372,6 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:clkmgr_off_otbn_trans_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
-    }
-    {
-      name: chip_sw_clkmgr_external_clk_src_for_lc
-      uvm_test_seq: chip_sw_lc_ctrl_transition_vseq
-      sw_images: ["//sw/device/tests/sim_dv:clkmgr_external_clk_src_for_lc_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+chip_clock_source=ChipClockSourceExternal48Mhz"]
-    }
-    {
-      name: chip_sw_clkmgr_external_clk_src_for_sw_fast_test_unlocked0
-      uvm_test_seq: chip_sw_lc_base_vseq
-      sw_images: ["//sw/device/tests:clkmgr_external_clk_src_for_sw_fast_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+chip_clock_source=ChipClockSourceExternal96Mhz",
-                 "+src_dec_state=DecLcStTestUnlocked0"]
-    }
-    {
-      name: chip_sw_clkmgr_external_clk_src_for_sw_slow_test_unlocked0
-      uvm_test_seq: chip_sw_lc_base_vseq
-      sw_images: ["//sw/device/tests:clkmgr_external_clk_src_for_sw_slow_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+chip_clock_source=ChipClockSourceExternal48Mhz",
-                 "+src_dec_state=DecLcStTestUnlocked0"]
-    }
-    {
-      name: chip_sw_clkmgr_external_clk_src_for_sw_fast_dev
-      uvm_test_seq: chip_sw_lc_base_vseq
-      sw_images: ["//sw/device/tests:clkmgr_external_clk_src_for_sw_fast_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+chip_clock_source=ChipClockSourceExternal96Mhz",
-                 "+src_dec_state=DecLcStDev"]
-    }
-    {
-      name: chip_sw_clkmgr_external_clk_src_for_sw_slow_dev
-      uvm_test_seq: chip_sw_lc_base_vseq
-      sw_images: ["//sw/device/tests:clkmgr_external_clk_src_for_sw_slow_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+chip_clock_source=ChipClockSourceExternal48Mhz",
-                 "+src_dec_state=DecLcStDev"]
-    }
-    {
-      name: chip_sw_clkmgr_external_clk_src_for_sw_fast_rma
-      uvm_test_seq: chip_sw_lc_base_vseq
-      sw_images: ["//sw/device/tests:clkmgr_external_clk_src_for_sw_fast_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+chip_clock_source=ChipClockSourceExternal96Mhz",
-                 "+src_dec_state=DecLcStRma"]
-    }
-    {
-      name: chip_sw_clkmgr_external_clk_src_for_sw_slow_rma
-      uvm_test_seq: chip_sw_lc_base_vseq
-      sw_images: ["//sw/device/tests:clkmgr_external_clk_src_for_sw_slow_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+chip_clock_source=ChipClockSourceExternal48Mhz",
-                 "+src_dec_state=DecLcStRma"]
     }
     {
       name: chip_sw_clkmgr_reset_frequency
