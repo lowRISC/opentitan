@@ -4,8 +4,8 @@
 
 // An environment config for interfacing with racl_ctrl.
 
-class racl_ctrl_env_cfg extends cip_base_env_cfg;
-  `uvm_object_utils(racl_ctrl_env_cfg)
+class racl_ctrl_base_env_cfg extends cip_base_env_cfg;
+  `uvm_object_utils(racl_ctrl_base_env_cfg)
 
   racl_ctrl_reg_window regs;
 
@@ -20,19 +20,15 @@ class racl_ctrl_env_cfg extends cip_base_env_cfg;
   extern virtual function void initialize(bit [31:0] csr_base_addr = '1);
 endclass
 
-function racl_ctrl_env_cfg::new (string name="");
+function racl_ctrl_base_env_cfg::new (string name="");
   super.new(name);
-
-  // Override ral_type_name so that the base class uses that, rather than its RAL_T parameter
-  // (dv_base_reg_block).
-  ral_type_name = racl_ctrl_reg_block::type_name;
 
   if (!$cast(regs, racl_ctrl_reg_window::type_id::create("regs")))
     `uvm_fatal(`gfn, "Could not create reg window of correct type")
 endfunction
 
-function void racl_ctrl_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
-  list_of_alerts = racl_ctrl_env_pkg::LIST_OF_ALERTS;
+function void racl_ctrl_base_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
+  list_of_alerts = racl_ctrl_base_env_pkg::LIST_OF_ALERTS;
 
   // Tell the CIP base code how many interrupts we have (defaults to zero)
   num_interrupts = 1;

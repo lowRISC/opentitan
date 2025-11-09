@@ -4,7 +4,7 @@
 
 class racl_ctrl_base_vseq
   extends cip_base_vseq #(.RAL_T               (dv_base_reg_block),
-                          .CFG_T               (racl_ctrl_env_cfg),
+                          .CFG_T               (racl_ctrl_base_env_cfg),
                           .COV_T               (racl_ctrl_env_cov),
                           .VIRTUAL_SEQUENCER_T (racl_ctrl_virtual_sequencer));
 

@@ -66,7 +66,7 @@ module tb;
   );
 
   initial begin
-    import racl_ctrl_env_pkg::racl_ctrl_env_wrapper_cfg;
+    import racl_ctrl_base_env_pkg::racl_ctrl_env_wrapper_cfg;
     import racl_ctrl_env_pkg::racl_ctrl_env_cfg;
 
     automatic racl_ctrl_env_wrapper_cfg wrapper_cfg = new();
