@@ -47,8 +47,6 @@ with some augmentations.
  related functionality. Up to 96MHz (divided by 4 by the clock
  manager)
 
-- usb - USB module source clock. 48MHz
-
 - aon - Always-on domain clock. The only active clock while chip is in
  deep-sleep power state, 200KHz
 
@@ -295,54 +293,6 @@ manager</u></a></td>
 <td>async</td>
 <td>aon clock valid</td>
 </tr>
-<tr class="even">
-<td>clk_src_usb_o</td>
-<td>O</td>
-<td>1</td>
-<td>usb</td>
-<td>48 MHz clock for USB. To comply with USB full speed clock
-specification, it supports frequency accuracy of +/-2500 ppm when
-usb_ref_pulse_i is available and +/-3% otherwise. It may take up to 50
-ms for this clock to reach the accuracy target from the time
-'usb_ref_pulse_i' is available. USB clock calibration interface is
-further detailed <a
-href="https://opentitan.org/book/hw/ip/usbdev#clocking"><u>here</u></a>.</td>
-</tr>
-<tr class="odd">
-<td>clk_src_usb_val_o</td>
-<td>O</td>
-<td>1</td>
-<td>async</td>
-<td>USB clock valid</td>
-</tr>
-<tr class="even">
-<td>clk_src_usb_en_i</td>
-<td>I</td>
-<td>1</td>
-<td>aon</td>
-<td>USB clock enable</td>
-</tr>
-<tr class="odd">
-<td>usb_ref_pulse_i</td>
-<td>I</td>
-<td>1</td>
-<td>usb</td>
-<td>USB reference pulse +/-500ppm. When valid, it is expected to pulse
-for one usb clock cycle every 1ms.</td>
-</tr>
-<tr class="even">
-<td>usb_ref_val_i</td>
-<td>I</td>
-<td>1</td>
-<td>usb</td>
-<td>USB reference valid. This bit serves as a valid signal for the
-usb_ref_pulse_i signal. It is set to 1 after the first valid
-usb_ref_pulse_i event is detected and remains high as long as
-usb_ref_pulse_i continues to behave as expected (per usb_ref_pulse
-description). Once usb_ref_pulse deviates from its expected behavior,
-usb_ref_val_i immediately negates to 0 and remains 0 until after the
-next valid usb_ref_val pulse.</td>
-</tr>
 <tr class="odd">
 <td>clk_src_io_o</td>
 <td>O</td>
@@ -377,13 +327,6 @@ manager</u></a>.</td>
 <td>rng</td>
 <td>RNG interface clock input</td>
 </tr>
-<tr class="even">
-<td>clk_ast_usb_i</td>
-<td>I</td>
-<td>1</td>
-<td>usb</td>
-<td>USB reference interface clock input</td>
-</tr>
 <tr class="odd">
 <td>clk_ast_es_i</td>
 <td>I</td>
@@ -411,13 +354,6 @@ manager</u></a>.</td>
 <td>1</td>
 <td>rng</td>
 <td>RNG interface reset (active low)</td>
-</tr>
-<tr class="even">
-<td>rst_ast_usb_ni</td>
-<td>I</td>
-<td>1</td>
-<td>usb</td>
-<td>USB reference interface reset (active low)</td>
 </tr>
 <tr class="odd">
 <td>rst_ast_es_ni</td>
@@ -699,13 +635,6 @@ only outputted when DFT features are enabled (Test and RMA states).
 Otherwise, these signals are grounded to 0.</td>
 </tr>
 <tr class="even">
-<td>usb_io_pu_cal_o</td>
-<td>O</td>
-<td>20</td>
-<td>async</td>
-<td>USB I/O calibration and trimming</td>
-</tr>
-<tr class="even">
 <td>lc_dft_en_i</td>
 <td>I</td>
 <td>lc_tx</td>
@@ -718,13 +647,6 @@ Otherwise, these signals are grounded to 0.</td>
 <td>8</td>
 <td>async</td>
 <td>OTP observe bus for debug</td>
-</tr>
-<tr class="odd">
-<td>usb_obs_i</td>
-<td>I</td>
-<td>1</td>
-<td>async</td>
-<td>USB differential receiver output observe for debug</td>
 </tr>
 <tr class="even">
 <td>otm_obs_i</td>
@@ -832,7 +754,7 @@ describe the AST sub-modules resets.
 | **Components**                                               | **Reset by**             | **Comments**                                                                                                                             |
 |--------------------------------------------------------------|--------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
 | Regulators, 'power-OK' logic and always-on clock | self-start / vcaon_pok_o | These circuits come to life shortly after VCC crosses its detection threshold. vcaon_pok_o serves as their register configuration reset. |
-| System/USB/IO clock generators                               | vcmain_pok_o             | vcmain_pok_o is also fed by vcaon_pok_o and por_ni.                                                                                      |
+| System/IO clock generators                               | vcmain_pok_o             | vcmain_pok_o is also fed by vcaon_pok_o and por_ni.                                                                                      |
 | Interface functions                                          | Input reset              | Per the corresponding interface [<u>clock domain reset input</u>](#clock-and-reset-inputs).                                                  |
 
 # Clock Outputs
@@ -853,13 +775,6 @@ until the next boot.
 The OpenTitan power and clock managers are responsible for manipulating
 the enables and observing the valids to know when clocks can be safely
 released to the system.
-
-## USB Clock Calibration
-
-The USB clock requires an accuracy that cannot be achieved by the AST
-clocks natively. As a result, information from USB frames are used to
-[<u>calibrate the
-clock</u>](../../../ip/usbdev/README.md#clocking).
 
 # Clock and Reset Inputs
 
