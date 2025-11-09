@@ -150,7 +150,6 @@
     - [Memory Map](./hw/top_darjeeling/doc/memory_map.md)
     - [Pinout / Pinmux Tables](./hw/top_darjeeling/ip_autogen/pinmux/doc/targets.md)
       - [ASIC](./hw/top_darjeeling/ip_autogen/pinmux/doc/pinout_asic.md)
-      - [CW310](./hw/top_darjeeling/ip_autogen/pinmux/doc/pinout_cw310.md)
     - [AC Range Check](./hw/top_darjeeling/ip_autogen/ac_range_check/README.md)
       - [Theory of Operation](./hw/top_darjeeling/ip_autogen/ac_range_check/doc/theory_of_operation.md)
       - [Design Verification](./hw/top_darjeeling/ip_autogen/ac_range_check/dv/README.md)
