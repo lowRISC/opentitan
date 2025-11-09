@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class racl_ctrl_base_test extends cip_base_test #(.CFG_T(racl_ctrl_env_cfg),
+class racl_ctrl_base_test extends cip_base_test #(.CFG_T(racl_ctrl_base_env_cfg),
                                                   .ENV_T(racl_ctrl_env));
 
   `uvm_component_utils(racl_ctrl_base_test)
