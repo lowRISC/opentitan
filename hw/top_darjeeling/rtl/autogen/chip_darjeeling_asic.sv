@@ -1133,9 +1133,6 @@ module chip_darjeeling_asic #(
   clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
   rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
 
-  // external clock
-  logic ext_clk;
-
   // monitored clock
   logic sck_monitor;
 
@@ -1162,15 +1159,6 @@ module chip_darjeeling_asic #(
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
   ast_pkg::ast_alert_req_t ast_alert_req;
   assign ast_alert_rsp = '0;
-
-  // clock bypass req/ack
-  prim_mubi_pkg::mubi4_t io_clk_byp_req;
-  prim_mubi_pkg::mubi4_t all_clk_byp_req;
-  prim_mubi_pkg::mubi4_t hi_speed_sel;
-
-  assign io_clk_byp_req    = prim_mubi_pkg::MuBi4False;
-  assign all_clk_byp_req   = prim_mubi_pkg::MuBi4False;
-  assign hi_speed_sel      = prim_mubi_pkg::MuBi4False;
 
   // DFT connections
   logic scan_en;
@@ -1255,9 +1243,6 @@ module chip_darjeeling_asic #(
   logic [rstmgr_pkg::PowerDomains-1:0] por_n;
   assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
 
-  // external clock comes in at a fixed position
-  assign ext_clk = mio_in_raw[MioPadMio11];
-
   wire unused_t0, unused_t1;
   assign unused_t0 = 1'b0;
   assign unused_t1 = 1'b0;
@@ -1300,7 +1285,6 @@ module chip_darjeeling_asic #(
     .rst_ast_tlul_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_rng_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
-    .clk_ast_ext_i         ( ext_clk ),
 
     // pok test for FPGA
     .vcc_supp_i            ( 1'b1 ),
@@ -1353,11 +1337,6 @@ module chip_darjeeling_asic #(
     // pinmux related
     .padmux2ast_i          ( '0         ),
     .ast2padmux_o          (            ),
-    .ext_freq_is_96m_i     ( hi_speed_sel ),
-    .all_clk_byp_req_i     ( all_clk_byp_req  ),
-    .all_clk_byp_ack_o     ( ),
-    .io_clk_byp_req_i      ( io_clk_byp_req   ),
-    .io_clk_byp_ack_o      ( ),
     // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
     .dpram_rml_o           ( ast_ram_2p_lcfg ),

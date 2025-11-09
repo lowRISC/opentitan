@@ -242,10 +242,7 @@ abstract_port -ports "clk_src_usb_val_o" -scope cdc -clock SG_VIRT_OUT_85
 #a sync crossing and apending -combo no                #
 #################################################################
 
-abstract_port -ports "clk_src_sys_en_i" -scope cdc -clock "clk_src_aon_o" -combo no -combo_ifn "clk_ast_ext_i"
 abstract_port -ports "clk_src_sys_jen_i" -scope cdc -clock "clk_src_aon_o" -combo no -combo_ifn "clk_src_sys_o"
-abstract_port -ports "clk_src_io_en_i" -scope cdc -clock "clk_src_aon_o" -combo no -combo_ifn "clk_ast_ext_i"
-abstract_port -ports "clk_src_usb_en_i" -scope cdc -clock "clk_src_aon_o" -combo no -combo_ifn "clk_ast_ext_i"
 abstract_port -ports "rng_en_i" -scope cdc -clock "clk_src_sys_o" -combo no -combo_ifn "clk_ast_tlul_i"
 abstract_port -ports "rng_fips_i" -scope cdc -clock "clk_src_sys_o" -combo no -combo_ifn "clk_ast_tlul_i"
 abstract_port -ports "ext_freq_is_96m_i" -scope cdc -clock "clk_ast_tlul_i" -combo no
@@ -425,7 +422,6 @@ abstract_interface_port -name "clk_ast_tlul_i" -definition "input clk_ast_tlul_i
 abstract_interface_port -name "rst_ast_tlul_ni" -definition "input rst_ast_tlul_ni; "
 abstract_interface_port -name "clk_ast_usb_i" -definition "input clk_ast_usb_i; "
 abstract_interface_port -name "rst_ast_usb_ni" -definition "input rst_ast_usb_ni; "
-abstract_interface_port -name "clk_ast_ext_i" -definition "input clk_ast_ext_i; "
 abstract_interface_port -name "por_ni" -definition "input por_ni; "
 abstract_interface_port -name "sns_clks_i" -definition "input clkmgr_pkg :: clkmgr_out_t sns_clks_i;"
 abstract_interface_port -name "sns_rsts_i" -definition "input rstmgr_pkg :: rstmgr_out_t sns_rsts_i;"
