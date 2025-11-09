@@ -46,8 +46,6 @@ class chip_sw_lc_walkthrough_testunlocks_vseq extends chip_sw_base_vseq;
     sw_symbol_backdoor_overwrite("kOtpExitToken", otp_exit_token);
     sw_symbol_backdoor_overwrite("kOtpUnlockToken", otp_unlock_token);
 
-    // Any lc state transition from Raw requires external clock.
-    switch_to_external_clock();
     jtag_lc_state_transition(DecLcStRaw, DecLcStTestUnlocked0);
     apply_reset();
 
@@ -64,7 +62,6 @@ class chip_sw_lc_walkthrough_testunlocks_vseq extends chip_sw_base_vseq;
       if (curr_state inside {DecLcStTestLocked0, DecLcStTestLocked1, DecLcStTestLocked2,
                              DecLcStTestLocked3, DecLcStTestLocked4, DecLcStTestLocked5,
                              DecLcStTestLocked6}) begin
-        switch_to_external_clock();
       end else begin
         wait_lc_ready();
       end

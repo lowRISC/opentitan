@@ -390,46 +390,6 @@ module chip_${top["name"]}_${target["name"]} #(
 % endfor
   );
 
-
-###################################################################
-## USB for CW305                                                 ##
-###################################################################
-% if target["name"] == "cw305":
-  logic usb_dp_pullup_en;
-  logic usb_dn_pullup_en;
-  logic usb_rx_d;
-  logic usb_tx_d;
-  logic usb_tx_se0;
-  logic usb_tx_use_d_se0;
-  logic usb_rx_enable;
-
-  // Connect the DP pad
-  assign dio_in[DioUsbdevUsbDp] = manual_in_usb_p;
-  assign manual_out_usb_p = dio_out[DioUsbdevUsbDp];
-  assign manual_oe_usb_p = dio_oe[DioUsbdevUsbDp];
-  assign manual_attr_usb_p = dio_attr[DioUsbdevUsbDp];
-
-  // Connect the DN pad
-  assign dio_in[DioUsbdevUsbDn] = manual_in_usb_n;
-  assign manual_out_usb_n = dio_out[DioUsbdevUsbDn];
-  assign manual_oe_usb_n = dio_oe[DioUsbdevUsbDn];
-  assign manual_attr_usb_n = dio_attr[DioUsbdevUsbDn];
-
-  // Connect DN pullup
-  assign manual_out_io_usb_dnpullup0 = usb_dn_pullup_en;
-  assign manual_oe_io_usb_dnpullup0 = 1'b1;
-  assign manual_attr_io_dnpullup0 = '0;
-
-  // Connect DP pullup
-  assign manual_out_io_usb_dppullup0 = usb_dp_pullup_en;
-  assign manual_oe_io_usb_dppullup0 = 1'b1;
-  assign manual_attr_io_dppullup0 = '0;
-
-  // Tie-off unused signals
-  assign usb_rx_d = 1'b0;
-
-% endif
-
 ###################################################################
 ## AST For all targets                                           ##
 ###################################################################
@@ -453,9 +413,6 @@ module chip_${top["name"]}_${target["name"]} #(
   // synchronization clocks / rests
   clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
   rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
-
-  // external clock
-  logic ext_clk;
 
   // monitored clock
   logic sck_monitor;
@@ -487,11 +444,9 @@ module chip_${top["name"]}_${target["name"]} #(
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
   prim_mubi_pkg::mubi4_t all_clk_byp_req;
-  prim_mubi_pkg::mubi4_t hi_speed_sel;
 
   assign io_clk_byp_req    = prim_mubi_pkg::MuBi4False;
   assign all_clk_byp_req   = prim_mubi_pkg::MuBi4False;
-  assign hi_speed_sel      = prim_mubi_pkg::MuBi4False;
 
   // DFT connections
   logic scan_en;
@@ -526,14 +481,6 @@ module chip_${top["name"]}_${target["name"]} #(
                 cfg:    ast_rf_cfg.marg
               }
   };
-
-  logic unused_usb_ram_2p_cfg;
-  assign unused_usb_ram_2p_cfg = ^{ast_ram_2p_fcfg.marg_en_a,
-                                   ast_ram_2p_fcfg.marg_a,
-                                   ast_ram_2p_fcfg.test_a,
-                                   ast_ram_2p_fcfg.marg_en_b,
-                                   ast_ram_2p_fcfg.marg_b,
-                                   ast_ram_2p_fcfg.test_b};
 
   // this maps as follows:
   // assign spi_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_lcfg, ram_2p_cfg_i.b_ram_lcfg};
@@ -583,9 +530,6 @@ module chip_${top["name"]}_${target["name"]} #(
 
 % if target["name"] == "asic":
 
-  // external clock comes in at a fixed position
-  assign ext_clk = mio_in_raw[MioPadMio11];
-
   wire unused_t0, unused_t1;
   assign unused_t0 = 1'b0;
   assign unused_t1 = 1'b0;
@@ -598,11 +542,9 @@ module chip_${top["name"]}_${target["name"]} #(
   assign unused_pwr_clamp = base_ast_pwr.pwr_clamp;
 
 % else:
-  // TODO: Hook this up when FPGA pads are updated
-  assign ext_clk = '0;
   assign pad2ast = '0;
 
-  logic clk_main, clk_usb_48mhz, clk_aon, rst_n, srst_n;
+  logic clk_main, clk_aon, rst_n, srst_n;
   clkgen_xil7series # (
     .AddClkBuf(0)
   ) clkgen (
@@ -610,7 +552,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .rst_ni(manual_in_por_n),
     .srst_ni(srst_n),
     .clk_main_o(clk_main),
-    .clk_48MHz_o(clk_usb_48mhz),
+    .clk_48MHz_o(),
     .clk_aon_o(clk_aon),
     .rst_no(rst_n)
   );
@@ -622,7 +564,6 @@ module chip_${top["name"]}_${target["name"]} #(
 
   ast_pkg::clks_osc_byp_t clks_osc_byp;
   assign clks_osc_byp = '{
-    usb: clk_usb_48mhz,
     sys: clk_main,
     io:  clk_main,
     aon: clk_aon
@@ -631,7 +572,6 @@ module chip_${top["name"]}_${target["name"]} #(
 % endif
 
   ast #(
-    .UsbCalibWidth(ast_pkg::UsbCalibWidth),
     .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
     .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
   ) u_ast (
@@ -639,18 +579,12 @@ module chip_${top["name"]}_${target["name"]} #(
     // external POR
     .por_ni                ( manual_in_por_n ),
 
-    // USB IO Pull-up Calibration Setting
-    .usb_io_pu_cal_o       ( ),
-
     // Direct short to PAD
     .ast2pad_t0_ao         ( unused_t0 ),
     .ast2pad_t1_ao         ( unused_t1 ),
 % else:
     // external POR
     .por_ni                ( rst_n ),
-
-    // USB IO Pull-up Calibration Setting
-    .usb_io_pu_cal_o       ( ),
 
     // clocks' oscillator bypass for FPGA
     .clk_osc_byp_i         ( clks_osc_byp ),
@@ -676,7 +610,6 @@ module chip_${top["name"]}_${target["name"]} #(
     % for port, reset in ast["reset_connections"].items():
     .${port} (${lib.get_reset_path(top, reset)}),
     % endfor
-    .clk_ast_ext_i         ( ext_clk ),
 
     // pok test for FPGA
     .vcc_supp_i            ( 1'b1 ),
@@ -706,12 +639,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .clk_src_io_en_i       ( base_ast_pwr.io_clk_en ),
     .clk_src_io_o          ( ast_base_clks.clk_io ),
     .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
-    // usb source clock
-    .usb_ref_pulse_i       ( '0 ),
-    .usb_ref_val_i         ( '0 ),
-    .clk_src_usb_en_i      ( '0 ),
-    .clk_src_usb_o         (    ),
-    .clk_src_usb_val_o     (    ),
     // rng
     .rng_en_i              ( es_rng_enable ),
     .rng_fips_i            ( es_rng_fips   ),
@@ -722,14 +649,12 @@ module chip_${top["name"]}_${target["name"]} #(
     .alert_req_o           ( ast_alert_req  ),
     // dft
     .lc_dft_en_i           ( lc_dft_en        ),
-    .usb_obs_i             ( '0 ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
     .obs_ctrl_o            ( obs_ctrl ),
     // pinmux related
     .padmux2ast_i          ( '0         ),
     .ast2padmux_o          (            ),
-    .ext_freq_is_96m_i     ( hi_speed_sel ),
     .all_clk_byp_req_i     ( all_clk_byp_req  ),
     .all_clk_byp_ack_o     ( ),
     .io_clk_byp_req_i      ( io_clk_byp_req   ),
@@ -1254,7 +1179,6 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
     .SecAesStartTriggerDelay(320),
     .SecAesAllowForcingMasks(1'b1),
     .SecAesSkipPRNGReseeding(1'b1),
-    .UsbdevStub(1'b1),
 % else:
     .SecAesMasking(1'b0),
     .SecAesSBoxImpl(aes_pkg::SBoxImplLut),

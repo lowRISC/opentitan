@@ -62,7 +62,6 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
     selected_dest_state = {dest_dec_state};
     sw_symbol_backdoor_overwrite("kDestState", selected_dest_state);
 
-    switch_to_external_clock();
     jtag_lc_state_transition(DecLcStRaw, DecLcStTestUnlocked0);
     apply_reset();
 

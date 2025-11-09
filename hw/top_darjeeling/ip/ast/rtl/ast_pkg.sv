@@ -35,7 +35,6 @@ parameter int unsigned Hc2LcTrCyc = 38;   // ((35+1)+(3+1))x5 = 200 us
 parameter int unsigned EntropyStreams   = 16;
 parameter int unsigned AdcChannels      = 2;
 parameter int unsigned AdcDataWidth     = 10;
-parameter int unsigned UsbCalibWidth    = 20;
 parameter int unsigned Ast2PadOutWidth  = 9;
 parameter int unsigned Pad2AstInWidth   = 9;
 //
@@ -128,7 +127,6 @@ typedef enum logic {
 
 // Clocks Oscillator Bypass
 typedef struct packed {
-  logic     usb;
   logic     sys;
   logic     io;
   logic     aon;
