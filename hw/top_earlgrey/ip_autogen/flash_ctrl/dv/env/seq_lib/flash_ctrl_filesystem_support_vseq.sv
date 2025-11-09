@@ -172,6 +172,8 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
   // readback_data[flash_op_t].
   task filesys_read_check(flash_op_t flash_op_r, bit use_cfg_rdata = 0, bit serr = 0);
     data_q_t read_data, ref_data;
+    int unsigned num_mismatches;
+
     flash_op_r.op = FlashOpRead;
     `uvm_info("read_check", $sformatf("%p", flash_op_r), UVM_MEDIUM)
     if (flash_op_r.partition == FlashPartData) begin
@@ -196,8 +198,23 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
     if (use_cfg_rdata) ref_data = cfg.prog_data[flash_op_r];
 
     for (int i = 0; i < ref_data.size(); i++) begin
-      `DV_CHECK_EQ(read_data[i], ref_data[i],
-                   $sformatf("read_check:%0d ", i))
+      if (read_data[i] != ref_data[i]) begin
+        if (num_mismatches < 10)
+          `uvm_info(`gfn,
+                    $sformatf({"Mismatch between read data and reference. ",
+                               "Item %0d read as 0x%0h but we expected 0x%0h."},
+                              i, read_data[i], ref_data[i]),
+                    UVM_LOW)
+        else if (num_mismatches == 10)
+          `uvm_info(`gfn, "...", UVM_LOW)
+
+        num_mismatches++;
+      end
+    end
+    if (num_mismatches) begin
+      `uvm_error(`gfn,
+                 $sformatf("Mismatch between read data and reference for %0d / %0d items.",
+                           num_mismatches, ref_data.size()))
     end
   endtask : filesys_read_check
 
