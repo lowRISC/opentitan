@@ -190,7 +190,11 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
       filesys_ctrl_read(flash_op_r, read_data, serr);
     end
 
-    ref_data = (use_cfg_rdata)? cfg.prog_data[flash_op_r] : readback_data[flash_op_r];
+    // Use a queue assignment (which takes a reference) to make ref_data be the queue of data we
+    // expect to see.
+    ref_data = readback_data[flash_op_r];
+    if (use_cfg_rdata) ref_data = cfg.prog_data[flash_op_r];
+
     for (int i = 0; i < ref_data.size(); i++) begin
       `DV_CHECK_EQ(read_data[i], ref_data[i],
                    $sformatf("read_check:%0d ", i))
