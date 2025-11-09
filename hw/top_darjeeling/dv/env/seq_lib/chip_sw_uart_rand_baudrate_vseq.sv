@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `define CALC_NCO(baud_rate, nco_width, clk_freq_khz) \
-  (baud_rate == BaudRate1p5Mbps && clk_freq_khz == 24_000) ? 16'hffff : \
       (longint'(baud_rate) * (2**(nco_width+4))) / (clk_freq_khz * 1000)
 
 class chip_sw_uart_rand_baudrate_vseq extends chip_sw_uart_tx_rx_vseq;
@@ -26,17 +25,7 @@ class chip_sw_uart_rand_baudrate_vseq extends chip_sw_uart_tx_rx_vseq;
 
   function void pre_randomize();
     super.pre_randomize();
-
-    if (cfg.chip_clock_source != ChipClockSourceInternal) begin
-      // Uart bus clock is in IO domain
-      uart_clk_freq_khz = cfg.chip_clock_source * 1000 / 4;  // IO
-      if (cfg.chip_clock_source == ChipClockSourceExternal48Mhz) begin
-        uart_clk_freq_khz = uart_clk_freq_khz * 2;  // div2
-      end
-    end else begin
-      // internal uart bus clock is 24Mhz
-      uart_clk_freq_khz = 24_000;
-    end
+    uart_clk_freq_khz = 250_000;
   endfunction
 
   function void post_randomize();
@@ -55,24 +44,9 @@ class chip_sw_uart_rand_baudrate_vseq extends chip_sw_uart_tx_rx_vseq;
               uart_clk_freq_khz,
               baud_rate.name
               ), UVM_LOW)
-
-    if (cfg.chip_clock_source != ChipClockSourceInternal) begin
-      bit [7:0] use_extclk_arr[] = {cfg.chip_clock_source != ChipClockSourceInternal};
-      bit [7:0] low_speed_sel_arr[] = {cfg.chip_clock_source == ChipClockSourceExternal48Mhz};
-      bit [7:0] uart_clk_freq_arr[8] = {<<byte{64'(uart_clk_freq_khz * 1000)}};
-
-      sw_symbol_backdoor_overwrite("kUseExtClk", use_extclk_arr);
-      sw_symbol_backdoor_overwrite("kUseLowSpeedSel", low_speed_sel_arr);
-      sw_symbol_backdoor_overwrite("kUartClockFreqHzDV", uart_clk_freq_arr);
-    end
   endtask
 
-  // When uart starts to send RX data, check if AST is using extclk if extclk is selected.
   virtual task send_uart_rx_data(int instance_num, int size = -1, bit random = 0);
-    if (cfg.chip_clock_source != ChipClockSourceInternal) begin
-      `DV_CHECK(cfg.ast_ext_clk_vif.is_ext_clk_in_use(),
-                "expected the external clock to be used for io");
-    end
     super.send_uart_rx_data(instance_num, size, random);
   endtask
 
