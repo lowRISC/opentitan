@@ -1848,39 +1848,5 @@
         ],
       }
     },
-    { name: 'cw310',
-
-      pinout: {
-        remove_ports: [],
-        remove_pads: [
-          'OTP_EXT_VOLT'
-        ],
-
-        add_pads: [
-          // Additional infrastructure pads
-          { name: 'IO_CLK',           type: 'InputStd', bank: 'VIO', connection: 'manual', desc: 'Extra clock input for FPGA target'}
-          { name: 'POR_BUTTON_N',     type: 'InputStd', bank: 'VIO', connection: 'manual', desc: 'Power-on reset button input'}
-          // ChipWhisperer IO
-          { name: 'IO_CLKOUT',        type: 'BidirStd', bank: 'VIO', connection: 'manual', desc: 'Manual clock output for SCA setup'}
-          { name: 'IO_TRIGGER',       type: 'BidirStd', bank: 'VIO', connection: 'manual', desc: 'Manual trigger output for SCA setup'}
-        ],
-      },
-
-      pinmux: {
-        special_signals: [
-          // Straps
-          { name: 'tap0',   pad: 'MIO0', desc: 'TAP strap signal.'   },
-          { name: 'tap1',   pad: 'MIO1', desc: 'TAP strap signal.'   },
-          { name: 'dft0',   pad: 'MIO2', desc: 'DFT strap signal.'   },
-          { name: 'dft1',   pad: 'MIO3', desc: 'DFT strap signal.'   },
-          // JTAG
-          { name: 'tck',    pad: 'MIO4', desc: 'JTAG tck signal.'    },
-          { name: 'tms',    pad: 'MIO5', desc: 'JTAG tms signal.'    },
-          { name: 'trst_n', pad: 'MIO6', desc: 'JTAG trst_n signal.' },
-          { name: 'tdi',    pad: 'MIO7', desc: 'JTAG tdi signal.'    },
-          { name: 'tdo',    pad: 'MIO8', desc: 'JTAG tdo signal.'    },
-        ],
-      }
-    }
   ]
 }
