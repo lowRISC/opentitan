@@ -602,25 +602,6 @@ enabled (Test and RMA states). Otherwise, these signals are grounded to
 <td></td>
 <td>Scan reset</td>
 </tr>
-<tr class="even">
-<td>clk_ast_ext_i</td>
-<td>I</td>
-<td>1</td>
-<td>async</td>
-<td><p>External clock. While AST generates most of its clocks on-die, it
-still needs an external clock for clock calibration and first flash/OTP
-programming.</p>
-<p>Clock calibration: AST clock sources are inaccurate by default and
-must be calibrated prior to use. The results of the calibration are
-stored in OTP and reloaded by software upon system boot.</p>
-<p>First Flash / OTP programming: AST clock sources are inaccurate by
-default and may be out of range for initial flash and OTP programming.
-In this situation, an external clock may be required for initial
-programming such that a software image can be loaded to calibrate clocks
-and advance <a
-href="https://opentitan.org/book/doc/security/specs/device_life_cycle"><u>life
-cycle</u></a>.</p></td>
-</tr>
 <tr class="odd">
 <td>dft_strap_test_i</td>
 <td>I</td>
@@ -723,54 +704,6 @@ Otherwise, these signals are grounded to 0.</td>
 <td>20</td>
 <td>async</td>
 <td>USB I/O calibration and trimming</td>
-</tr>
-<tr class="odd">
-<td>io_clk_byp_req_i</td>
-<td>I</td>
-<td>mubi4</td>
-<td>async</td>
-<td><p>External clock mux override request for OTP bootstrap purposes.
-AST responds to the request by setting io_clk_byp_ack_o to 'On'. When
-this bit is set and ack was received, clk_ast_ext_i serves as the io_clk
-clock root.</p>
-<p>Note: When 'On' (after ack), clk_src_io_o clock max frequency is
-limited to 50 MHz</p></td>
-</tr>
-<tr class="even">
-<td>io_clk_byp_ack_o</td>
-<td>O</td>
-<td>mubi4</td>
-<td>async</td>
-<td>AST response to io_clk_byp_req_i. The ack is set to 'On' after clock
-switching function is performed.</td>
-</tr>
-<tr class="odd">
-<td>all_clk_byp_req_i</td>
-<td>I</td>
-<td>mubi4</td>
-<td>async</td>
-<td><p>External clock mux override request for OTP bootstrap purposes.
-AST responds to the request by setting io_clk_byp_ack_o to 'On'. When
-this bit is set and ack was received, clk_ast_ext_i serves as the io_clk
-clock root.</p>
-<p>Note: When 'On' (after ack), clk_src_io_o clock max frequency is
-limited to 50 MHz</p></td>
-</tr>
-<tr class="even">
-<td>all_clk_byp_ack_o</td>
-<td>O</td>
-<td>mubi4</td>
-<td>async</td>
-<td>AST response to io_clk_byp_req_i. The ack is set to 'On' after clock
-switching function is performed.</td>
-</tr>
-<tr class="odd">
-<td>ext_freq_is_96m_i</td>
-<td>I</td>
-<td>mubi4</td>
-<td>async</td>
-<td>External clock frequency indication to AST. When set, it indicates
-that the external clock is 96MHz.</td>
 </tr>
 <tr class="even">
 <td>lc_dft_en_i</td>
