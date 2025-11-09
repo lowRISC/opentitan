@@ -12,7 +12,6 @@
 module ast
   import ast_pkg::EntropyStreams;
 #(
-  parameter int unsigned UsbCalibWidth   = 20,
   parameter int unsigned Ast2PadOutWidth = 9,
   parameter int unsigned Pad2AstInWidth  = 9
 ) (
@@ -28,8 +27,6 @@ module ast
   input rst_ast_rng_ni,                       // Buffered AST RNG Reset
   input clk_ast_tlul_i,                       // Buffered AST TLUL Clock
   input rst_ast_tlul_ni,                      // Buffered AST TLUL Reset
-  input clk_ast_usb_i,                        // Buffered AST USB Clock
-  input rst_ast_usb_ni,                       // Buffered AST USB Reset
   input por_ni,                               // Power ON Reset
 
   // sensed clocks / resets
@@ -77,14 +74,6 @@ module ast
   output logic clk_src_io_o,                  // IO Source Clock
   output logic clk_src_io_val_o,              // IO Source Clock Valid
 
-  // usb source clock
-  input usb_ref_pulse_i,                      // USB Reference Pulse
-  input usb_ref_val_i,                        // USB Reference Valid
-  input clk_src_usb_en_i,                     // USB Source Clock Enable
-  output logic clk_src_usb_o,                 // USB Source Clock
-  output logic clk_src_usb_val_o,             // USB Source Clock Valid
-  output logic [UsbCalibWidth-1:0] usb_io_pu_cal_o,  // USB IO Pull-up Calibration Setting
-
   // rng (entropy source) interface
   input rng_en_i,                             // RNG Enable
   input rng_fips_i,                           // RNG FIPS
@@ -99,7 +88,6 @@ module ast
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,     // DFT enable (secure bus)
   input [8-1:0] otp_obs_i,                    // OTP Observe Bus
   input [8-1:0] otm_obs_i,                    // OT Modules Observe Bus
-  input usb_obs_i,                            // USB DIFF RX Observe
   output ast_pkg::ast_obs_ctrl_t obs_ctrl_o,  // Observe Control
 
   // pad mux/pad related
@@ -134,7 +122,7 @@ import ast_bhv_pkg::* ;
 logic scan_mode, shift_en, scan_reset_n;
 logic vcc_pok, vcc_pok_h, vcc_pok_str;
 logic vcaon_pok, vcaon_pok_h, vcmain_pok;
-logic vcaon_pok_por, vcmain_pok_por;
+logic vcmain_pok_por;
 
 // Local (AST) System clock buffer
 ////////////////////////////////////////
@@ -223,7 +211,6 @@ prim_flop #(
 // Replace Latch for the OS code
 assign vcaon_pok_por_lat = rglssm_brout || por_sync_n;
 assign ast_pwst_o.aon_pok = vcaon_pok_por_lat;
-assign vcaon_pok_por = scan_mode ? scan_reset_n : vcaon_pok_por_lat;
 
 
 ////////////////////////////////////////
@@ -309,7 +296,7 @@ assign ast_pwst_o.vcc_pok = vcc_pok_str;
 ///////////////////////////////////////
 ///////////////////////////////////////
 
-logic clk_src_sys, clk_src_io, clk_src_usb, clk_src_aon;
+logic clk_src_sys, clk_src_io, clk_src_aon;
 
 ///////////////////////////////////////
 // System Clock (Always ON)
@@ -345,44 +332,6 @@ sys_clk u_sys_clk (
   .clk_src_sys_val_o ( clk_src_sys_val_o )
 );
 
-///////////////////////////////////////
-// USB Clock (Always ON)
-///////////////////////////////////////
-logic rst_usb_clk_n, clk_usb_pd_n;
-logic clk_usb_en;
-logic usb_ref_val, usb_ref_pulse;
-
-assign rst_usb_clk_n = vcmain_pok_por && vcc_pok;
-assign clk_usb_pd_n  = scan_mode || !deep_sleep;
-
-logic usb_osc_cal;
-
-`ifdef AST_BYPASS_CLK
-logic clk_usb_ext;
-assign clk_usb_ext = clk_osc_byp_i.usb;
-`endif
-
-assign clk_usb_en = clk_src_usb_en_i;
-assign usb_ref_val = usb_ref_val_i;
-assign usb_ref_pulse = usb_ref_pulse_i;
-
-usb_clk u_usb_clk (
-  .vcore_pok_h_i ( vcaon_pok_h ),
-  .clk_usb_pd_ni ( clk_usb_pd_n ),
-  .rst_usb_clk_ni ( rst_usb_clk_n ),
-  .clk_src_usb_en_i ( clk_usb_en ),
-  .usb_ref_val_i ( usb_ref_val ),
-  .usb_ref_pulse_i ( usb_ref_pulse ),
-  .clk_ast_usb_i ( clk_ast_usb_i ),
-  .rst_ast_usb_ni ( rst_ast_usb_ni ),
-  .scan_mode_i ( scan_mode ),
-  .usb_osc_cal_i ( usb_osc_cal ),
-`ifdef AST_BYPASS_CLK
-  .clk_usb_ext_i ( clk_usb_ext ),
-`endif
-  .clk_src_usb_o ( clk_src_usb ),
-  .clk_src_usb_val_o ( clk_src_usb_val_o )
-);
 
 ///////////////////////////////////////
 // AON Clock (Always ON)
@@ -474,15 +423,6 @@ prim_clock_buf #(
 ) u_clk_src_io_buf (
   .clk_i ( clk_src_io ),
   .clk_o ( clk_src_io_o )
-);
-
-// USB source clock buffer
-////////////////////////////////////////
-prim_clock_buf #(
-  .NoFpgaBuf ( 1'b1 )
-) u_clk_src_usb_buf (
-  .clk_i ( clk_src_usb ),
-  .clk_o ( clk_src_usb_o )
 );
 
 // AON source clock buffer
@@ -781,14 +721,6 @@ always_ff @( posedge clk_ast_tlul_i, negedge rst_ast_tlul_ni ) begin
   end
 end
 
-always_ff @( posedge clk_ast_tlul_i, negedge vcaon_pok_por ) begin
-  if ( !vcaon_pok_por ) begin
-    usb_osc_cal <= 1'b0;
-  end else if ( regal_we ) begin
-    usb_osc_cal <= 1'b1;
-  end
-end
-
 always_ff @( posedge clk_ast_tlul_i, negedge vcaon_pok ) begin
   if ( !vcaon_pok ) begin
     aon_osc_cal <= 1'b0;
@@ -799,9 +731,6 @@ end
 
 // TLUL Integrity Error
 assign ot0_alert_src = '{p: intg_err, n: !intg_err};
-
-// USB PU-P and PU-N value selection
-assign usb_io_pu_cal_o = UsbCalibWidth'(1 << (UsbCalibWidth[5-1:0]/2));
 
 
 ///////////////////////////////////////
@@ -841,10 +770,7 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(ClkSrcIoValKnownO_A, clk_src_io_val_o, clk_src_io_o, rst_io_clk_n)
 `ASSERT_KNOWN(ClkSrcSysKnownO_A, clk_src_sys_o, 1, ast_pwst_o.main_pok)
 `ASSERT_KNOWN(ClkSrcSysValKnownO_A, clk_src_sys_val_o, clk_src_sys_o, rst_sys_clk_n)
-`ASSERT_KNOWN(ClkSrcUsbKnownO_A, clk_src_usb_o, 1, ast_pwst_o.main_pok)
-`ASSERT_KNOWN(ClkSrcUsbValKnownO_A, clk_src_usb_val_o, clk_src_usb_o, rst_usb_clk_n)
 //
-`ASSERT_KNOWN(UsbIoPuCalKnownO_A, usb_io_pu_cal_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 // RNG
 `ASSERT_KNOWN(RngBKnownO_A, rng_b_o, clk_ast_rng_i, rst_ast_rng_ni)
 `ASSERT_KNOWN(RngValKnownO_A, rng_val_o, clk_ast_rng_i, rst_ast_rng_ni)
@@ -889,9 +815,7 @@ assign ast2pad_t1_ao = 1'bz;
 /////////////////////
 logic unused_sigs;
 
-assign unused_sigs = ^{ clk_ast_usb_i,
-                        rst_ast_usb_ni,
-                        sns_spi_ext_clk_i,
+assign unused_sigs = ^{ sns_spi_ext_clk_i,
                         sns_clks_i,
                         sns_rsts_i,
                         intg_err,
@@ -902,7 +826,6 @@ assign unused_sigs = ^{ clk_ast_usb_i,
                         lc_dft_en_i[3:0],
                         otp_obs_i[8-1:0],
                         otm_obs_i[8-1:0],
-                        usb_obs_i,
                         reg2hw.rega0,
                         reg2hw.rega1,
                         reg2hw.rega2,

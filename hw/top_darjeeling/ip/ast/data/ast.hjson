@@ -35,12 +35,6 @@
       default: "5",
       local:   "true",
     },
-    { name: "NumUsbBeaconPulses",
-      desc: "Number of USB valid beacon pulses for clock to re-calibrate",
-      type: "int",
-      default: "8",
-      local: "true"
-    },
   ],
   regwidth: "32",
   registers: [

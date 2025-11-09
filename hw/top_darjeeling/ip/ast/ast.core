@@ -44,8 +44,6 @@ filesets:
       - rtl/io_osc.sv
       - rtl/sys_clk.sv
       - rtl/sys_osc.sv
-      - rtl/usb_clk.sv
-      - rtl/usb_osc.sv
       - rtl/gfr_clk_mux2.sv
       - rtl/rglts_pdm_3p3v.sv
       - rtl/ast_pulse_sync.sv
