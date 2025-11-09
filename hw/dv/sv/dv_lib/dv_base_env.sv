@@ -17,17 +17,19 @@ class dv_base_env #(type CFG_T               = dv_base_env_cfg,
 
   virtual function void build_phase(uvm_phase phase);
     string default_ral_name;
+    string ral_models[$];
+
     super.build_phase(phase);
     // get dv_base_env_cfg object from uvm_config_db
     if (!uvm_config_db#(CFG_T)::get(this, "", "cfg", cfg)) begin
       `uvm_fatal(`gfn, $sformatf("failed to get %s from uvm_config_db", cfg.get_type_name()))
     end
 
-    // get vifs for RAL models
-    if (cfg.ral_model_names.size > 0) begin
+    ral_models = cfg.get_ral_model_names();
+    if (ral_models.size() > 0) begin
       default_ral_name = cfg.ral.get_type_name();
-      foreach (cfg.ral_model_names[i]) begin
-        string ral_name = cfg.ral_model_names[i];
+      foreach (ral_models[i]) begin
+        string ral_name = ral_models[i];
         string if_name;
 
         if (ral_name == default_ral_name) if_name = "clk_rst_vif";

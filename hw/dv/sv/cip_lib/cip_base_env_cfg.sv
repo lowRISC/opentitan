@@ -149,8 +149,8 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
 
     // Assign handle to the default `m_tl_agent_cfg` for default `RAL_T`
     if (ral_model_names.size > 0) begin
-      `DV_CHECK_FATAL(m_tl_agent_cfgs.exists(RAL_T::type_name))
-      m_tl_agent_cfg = m_tl_agent_cfgs[RAL_T::type_name];
+      `DV_CHECK_FATAL(m_tl_agent_cfgs.exists(ral_type_name))
+      m_tl_agent_cfg = m_tl_agent_cfgs[ral_type_name];
       `DV_CHECK_NE_FATAL(m_tl_agent_cfg, null)
     end
 

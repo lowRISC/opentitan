@@ -48,6 +48,14 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
     zero_delays dist {1'b0 := 6, 1'b1 := 4};
   }
 
+  // The type_name of the base RAL type (RAL_T). This is exposed explicitly, rather than being
+  // accessed through RAL_T::type_name, because this allows subclasses of dv_base_env_cfg to
+  // override the base RAL type without messing up the parameterized class type.
+  //
+  // This string will be prepended to ral_model_names at the start of the initialize function (which
+  // is after a derived class can have overridden it).
+  protected string ral_type_name = RAL_T::type_name;
+
   // A queue of the names of RAL models that should be created in the `initialize` function. Related
   // agents and adapters will be created in the environment as well as connecting them with the
   // scoreboard.
@@ -55,9 +63,14 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   // To add another RAL model, a subclass of dv_base_env_cfg should implement initialize and add its
   // name before calling super.initialize.
   //
-  // The collection of RAL model names is used as an index in ral_models, clk_rst_vifs and
-  // clk_freqs_mhz.
-  string ral_model_names[$] = {RAL_T::type_name};
+  // An index into the collection of RAL model names is used as an index in ral_models, clk_rst_vifs
+  // and clk_freqs_mhz.
+  typedef string string_queue_t[$];
+  protected string_queue_t ral_model_names;
+
+  function string_queue_t get_ral_model_names();
+    return ral_model_names;
+  endfunction
 
   // A RAL model for each name in ral_model_names.
   dv_base_reg_block ral_models[string];
@@ -158,12 +171,17 @@ endfunction
 
 function void dv_base_env_cfg::post_randomize();
   if (clk_freqs_mhz.size > 0) begin
-    `DV_CHECK_FATAL(clk_freqs_mhz.exists(RAL_T::type_name))
-    clk_freqs_mhz[RAL_T::type_name] = clk_freq_mhz;
+    `DV_CHECK_FATAL(clk_freqs_mhz.exists(ral_type_name))
+    clk_freqs_mhz[ral_type_name] = clk_freq_mhz;
   end
 endfunction
 
 function void dv_base_env_cfg::initialize(bit [BUS_AW-1:0] csr_base_addr = '1);
+  if (is_initialized) `uvm_fatal(`gfn, "Cannot call initialize when already initialized")
+
+  // Prepend ral_type_name to ral_model_names (so the "default RAL" for the class gets index 0)
+  ral_model_names.push_front(ral_type_name);
+
   is_initialized = 1'b1;
 
   // build the ral model
@@ -195,7 +213,7 @@ endfunction
 
 function void dv_base_env_cfg::make_ral_models(bit [BUS_AW-1:0] csr_base_addr);
   foreach (ral_model_names[i]) make_ral_model(ral_model_names[i], csr_base_addr);
-  `DV_CHECK_FATAL(ral_models.exists(RAL_T::type_name))
+  `DV_CHECK_FATAL(ral_models.exists(ral_type_name))
 endfunction
 
 function void dv_base_env_cfg::make_ral_model(string           ral_model_name,
@@ -221,7 +239,7 @@ function void dv_base_env_cfg::make_ral_model(string           ral_model_name,
     reg_blk.lock_model();
 
     ral_models[ral_model_name] = reg_blk;
-    if (reg_blk.get_name() == RAL_T::type_name) `downcast(ral, reg_blk)
+    if (reg_blk.get_name() == ral_type_name) `downcast(ral, reg_blk)
   end
 
   // At this point, either the model existed already or we've just created and locked it. In
