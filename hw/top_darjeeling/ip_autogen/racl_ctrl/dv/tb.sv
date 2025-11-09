@@ -67,8 +67,13 @@ module tb;
 
   initial begin
     import racl_ctrl_env_pkg::racl_ctrl_env_wrapper_cfg;
+    import racl_ctrl_env_pkg::racl_ctrl_env_cfg;
 
     automatic racl_ctrl_env_wrapper_cfg wrapper_cfg = new();
+
+    // Tell tests what type to use for the "cfg" variable.
+    uvm_config_db#(uvm_object_wrapper)::set(null, "*.env", "cfg_type",
+                                            racl_ctrl_env_cfg::get_type());
 
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
