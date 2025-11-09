@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:racl_ctrl_env:0.1"
+name: "lowrisc:dv:racl_ctrl_base_env:0.1"
 description: "RACL_CTRL DV UVM environment"
 filesets:
   files_dv:
@@ -12,10 +12,10 @@ filesets:
       - lowrisc:dv:racl_error_log_agent
     files:
       - racl_ctrl_policies_if.sv
-      - racl_ctrl_env_pkg.sv
+      - racl_ctrl_base_env_pkg.sv
       - racl_ctrl_reg_window.sv: {is_include_file: true}
       - racl_ctrl_env_wrapper_cfg.sv: {is_include_file: true}
-      - racl_ctrl_env_cfg.sv: {is_include_file: true}
+      - racl_ctrl_base_env_cfg.sv: {is_include_file: true}
       - racl_ctrl_env_cov.sv: {is_include_file: true}
       - racl_ctrl_scoreboard.sv: {is_include_file: true}
       - racl_ctrl_error_arb_predictor.sv: {is_include_file: true}

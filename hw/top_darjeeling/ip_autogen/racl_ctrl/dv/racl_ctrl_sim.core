@@ -16,6 +16,8 @@ filesets:
       - lowrisc:dv:racl_error_log_agent
       - lowrisc:darjeeling_dv:racl_ctrl_sva
     files:
+      - racl_ctrl_env_pkg.sv
+      - racl_ctrl_env_cfg.sv: {is_include_file: true}
       - tb.sv
     file_type: systemVerilogSource
 
