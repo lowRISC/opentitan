@@ -176,7 +176,7 @@ modinv_f4:
   addi     x31, x31, 17
 
   /* Main loop. */
-  loop     x31, 120
+  loop     x31, 121
     /* Load the least significant limb of v.
          w20 <= dmem[dptr_v] = v[255:0] */
     bn.lid   x20, 0(x15)
@@ -270,10 +270,12 @@ modinv_f4:
       /* FG1.C <= w23 <? m[i] + FG1.C */
       bn.cmpb  w23, w20, FG1
 
-    /* Capture FG1.C as a mask that is all 1s if we should subtract the modulus.
-         w26 <= FG1.C ? 0 : 2^256 - 1 */
-    bn.subb  w26, w31, w31, FG1
-    bn.not   w26, w26
+    /* The modulus needs to be subtracted (w26 = all 1s) in two cases:
+         1. FG1.C = 0, the last word addition did not underlow: A + C > m.
+         2. FG0.C = 1, the last word addition has overflowed:   A + C > m. */
+    bn.not   w23, w31
+    bn.sel   w26, w31, w23, FG1.C
+    bn.sel   w26, w23, w26, FG0.C
 
     /* Clear flags for both groups. */
     bn.sub   w31, w31, w31, FG0
