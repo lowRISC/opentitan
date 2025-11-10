@@ -73,10 +73,14 @@
         }
       ]
     },
+    // QEMU does not currently model TAP straps, the JTAG interfaces are always available.
+    // For now we model both straps as no-ops without any pins.
     {
       "name": "PINMUX_TAP_RISCV",
-      // QEMU does not currently model TAP straps, the JTAG interfaces are always available.
-      // For now we model this strap as a no-op without any pins.
+      "pins": [],
+    },
+    {
+      "name": "PINMUX_TAP_LC",
       "pins": [],
     },
     {

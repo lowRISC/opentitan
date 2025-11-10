@@ -4,6 +4,7 @@
 
 pub mod gpio;
 pub mod i2c;
+pub mod jtag;
 pub mod monitor;
 pub mod reset;
 pub mod spi;
@@ -21,7 +22,6 @@ use std::time::Duration;
 use anyhow::{Context, bail};
 
 use crate::backend::qemu::QemuOpts;
-use crate::debug::openocd::OpenOcdJtagChain;
 use crate::io::gpio::{GpioError, GpioPin};
 use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::uart::Uart;
@@ -30,6 +30,7 @@ use crate::transport::Target;
 use crate::transport::common::uart::SerialPortUart;
 use crate::transport::qemu::gpio::{QemuGpio, QemuGpioPin};
 use crate::transport::qemu::i2c::QemuI2c;
+use crate::transport::qemu::jtag::QemuJtag;
 use crate::transport::qemu::monitor::{Chardev, ChardevKind, Monitor};
 use crate::transport::qemu::reset::QemuReset;
 use crate::transport::qemu::spi::QemuSpi;
@@ -77,7 +78,10 @@ pub struct Qemu {
     log: Option<Rc<dyn Uart>>,
 
     /// Debug module JTAG.
-    jtag_sock: Option<PathBuf>,
+    jtag_rv_dm_sock: Option<PathBuf>,
+
+    /// Lifecycle controller JTAG.
+    jtag_lc_ctrl_sock: Option<PathBuf>,
 }
 
 impl Qemu {
@@ -216,10 +220,21 @@ impl Qemu {
         };
 
         // Debug module JTAG tap:
-        let jtag_sock = match find_chardev(&chardevs, "taprbb") {
+        let jtag_rv_dm_sock = match find_chardev(&chardevs, "taprbb") {
             Some(ChardevKind::Socket { path }) => Some(path.clone()),
             _ => {
-                log::info!("could not find socket chardev with id=taprbb, skipping JTAG");
+                log::info!("could not find socket chardev with id=taprbb, skipping RV_DM JTAG");
+                None
+            }
+        };
+
+        // Lifecycle controller JTAG tap:
+        let jtag_lc_ctrl_sock = match find_chardev(&chardevs, "taprbb-lc-ctrl") {
+            Some(ChardevKind::Socket { path }) => Some(path.clone()),
+            _ => {
+                log::info!(
+                    "could not find socket chardev with id=taprbb-lc-ctrl, skipping LC JTAG"
+                );
                 None
             }
         };
@@ -241,7 +256,8 @@ impl Qemu {
             spi,
             i2cs,
             gpio,
-            jtag_sock,
+            jtag_rv_dm_sock,
+            jtag_lc_ctrl_sock,
         })
     }
 }
@@ -325,13 +341,16 @@ impl Transport for Qemu {
     }
 
     fn jtag(&self, opts: &JtagParams) -> anyhow::Result<Box<dyn JtagChain>> {
-        let jtag = OpenOcdJtagChain::new(
-            &format!(
-                "adapter driver remote_bitbang; remote_bitbang port 0; remote_bitbang host {sock}",
-                sock = self.jtag_sock.as_ref().unwrap().display(),
-            ),
-            opts,
-        )?;
+        let rv_dm_sock = self
+            .jtag_rv_dm_sock
+            .clone()
+            .context("RV_DM JTAG socket not connected")?;
+        let lc_ctrl_sock = self
+            .jtag_lc_ctrl_sock
+            .clone()
+            .context("LC_CTRL JTAG socket not connected")?;
+
+        let jtag = QemuJtag::new(opts.clone(), rv_dm_sock, lc_ctrl_sock);
 
         Ok(Box::new(jtag))
     }
