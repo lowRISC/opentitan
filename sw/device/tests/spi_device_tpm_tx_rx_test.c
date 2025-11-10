@@ -39,7 +39,7 @@ enum {
 };
 
 const static dif_spi_device_tpm_config_t kTpmConfig = {
-    .interface = kDifSpiDeviceTpmInterfaceCrb,
+    .interface = kDifSpiDeviceTpmInterfaceFifo,
     .disable_return_by_hardware = false,
     .disable_address_prefix_check = false,
     .disable_locality_check = false};
@@ -169,8 +169,17 @@ bool test_main(void) {
   // Sync message with testbench to begin.
   LOG_INFO("SYNC: Begin TPM Test");
 
+  // Enable locality 0, so that sts_reg can be read by the host.
+  enum { kActiveLocalityBit = 5 };
+  CHECK_DIF_OK(dif_spi_device_tpm_set_access_reg(&spi_device, 0,
+                                                 0x01 << kActiveLocalityBit));
+
   for (uint32_t i = 0; i < kIterations; i++) {
     LOG_INFO("Iteration %d", i);
+    CHECK_DIF_OK(dif_spi_device_tpm_set_sts_reg(&spi_device, i));
+    CHECK_DIF_OK(dif_spi_device_tpm_set_int_enable_reg(&spi_device, i + 1));
+    CHECK_DIF_OK(dif_spi_device_tpm_set_int_vector_reg(&spi_device, i + 2));
+    CHECK_DIF_OK(dif_spi_device_tpm_set_int_status_reg(&spi_device, i + 3));
 
     // Wait for write interrupt.
     ATOMIC_WAIT_FOR_INTERRUPT(header_interrupt_received);
