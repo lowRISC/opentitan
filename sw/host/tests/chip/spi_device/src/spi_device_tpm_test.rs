@@ -42,10 +42,24 @@ fn tpm_read_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let tpm = tpm::SpiDriver::new(spi, None)?;
     const SIZE: usize = 10;
 
-    for _ in 0..10 {
+    for index in 0..10 {
         let test_data: Vec<u8> = (0..SIZE).map(|_| rand::random()).collect();
         tpm.write_register(tpm::Register::DATA_FIFO, &test_data)?;
         let _ = UartConsole::wait_for(&*uart, r"SYNC: Waiting Read\r\n", opts.timeout)?;
+
+        let mut hw_reg_val = [0xaau8; 4];
+        tpm.read_register(tpm::Register::STS, &mut hw_reg_val)?;
+        assert_eq!(hw_reg_val, [index, 0x00, 0x00, 0x00]);
+
+        tpm.read_register(tpm::Register::INT_ENABLE, &mut hw_reg_val)?;
+        assert_eq!(hw_reg_val, [index + 1, 0x00, 0x00, 0x00]);
+
+        tpm.read_register(tpm::Register::INT_VECTOR, &mut hw_reg_val)?;
+        assert_eq!(hw_reg_val, [index + 2, 0xff, 0xff, 0xff]);
+
+        tpm.read_register(tpm::Register::INT_STATUS, &mut hw_reg_val)?;
+        assert_eq!(hw_reg_val, [index + 3, 0x00, 0x00, 0x00]);
+
         let mut buffer = [0xFFu8; SIZE];
         tpm.read_register(tpm::Register::DATA_FIFO, &mut buffer)?;
         assert_eq!(buffer, &test_data[0..SIZE]);
