@@ -2,6 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/dt_flash_ctrl.h"  // Generated
+#include "hw/top/dt/dt_keymgr.h"      // Generated
+#include "hw/top/dt/dt_kmac.h"        // Generated
+#include "hw/top/dt/dt_lc_ctrl.h"     // Generated
+#include "hw/top/dt/dt_otp_ctrl.h"    // Generated
+#include "hw/top/dt/dt_rstmgr.h"      // Generated
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
@@ -21,7 +27,6 @@
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_lc_ctrl_t lc;
 static dif_otp_ctrl_t otp;
@@ -29,6 +34,18 @@ static dif_rstmgr_t rstmgr;
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
 static dif_flash_ctrl_state_t flash;
+
+static const dt_lc_ctrl_t kLcCtrlDt = (dt_lc_ctrl_t)0;
+static const dt_otp_ctrl_t kOtpCtrlDt = (dt_otp_ctrl_t)0;
+static const dt_rstmgr_t kRstmgrDt = kDtRstmgrAon;
+static const dt_keymgr_t kKeymgrDt = (dt_keymgr_t)0;
+static const dt_kmac_t kKmacDt = (dt_kmac_t)0;
+static const dt_flash_ctrl_t kFlashCtrlDt = (dt_flash_ctrl_t)0;
+static_assert(kDtLcCtrlCount >= 1, "This test needs a LC CTRL");
+static_assert(kDtOtpCtrlCount >= 1, "This test needs an OTP CTRL");
+static_assert(kDtKeymgrCount >= 1, "This test needs a Key Manager");
+static_assert(kDtKmacCount >= 1, "This test needs a KMAC");
+static_assert(kDtFlashCtrlCount >= 1, "This test needs a Flash Controller");
 
 // LC RMA token value in OTP SECRET2 partition.
 static const uint8_t kOtpRmaToken[OTP_CTRL_PARAM_RMA_TOKEN_SIZE] = {
@@ -66,25 +83,19 @@ static void init_peripherals(void) {
       .consistency_period_mask = 0x3ffffff,
   };
   // Life cycle
-  CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc));
+  CHECK_DIF_OK(dif_lc_ctrl_init_from_dt(kLcCtrlDt, &lc));
   // OTP
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kOtpCtrlDt, &otp));
   CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, config));
   // Rstmgr
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
   // KMAC (init for Keymgr use)
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  CHECK_DIF_OK(dif_kmac_init_from_dt(kKmacDt, &kmac));
   CHECK_STATUS_OK(kmac_testutils_config(&kmac, true));
   // Keymgr
-  CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
+  CHECK_DIF_OK(dif_keymgr_init_from_dt(kKeymgrDt, &keymgr));
   // Flash
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(kFlashCtrlDt, &flash));
 }
 
 /**

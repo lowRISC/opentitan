@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/dt_flash_ctrl.h"  // Generated
+#include "hw/top/dt/dt_otp_ctrl.h"    // Generated
+#include "hw/top/dt/dt_rstmgr.h"      // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/mmio.h"
@@ -21,18 +24,26 @@
 
 #include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_rstmgr_t rstmgr;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_flash_ctrl_state_t flash_ctrl;
 
+static const dt_rstmgr_t kRstmgrDt = kDtRstmgrAon;
+static const dt_otp_ctrl_t kOtpCtrlDt = (dt_otp_ctrl_t)0;
+static const dt_flash_ctrl_t kFlashCtrlDt = (dt_flash_ctrl_t)0;
+static_assert(kDtRstmgrCount >= 1, "This test needs a RSTMGR");
+static_assert(kDtOtpCtrlCount >= 1, "This test needs an OTP CTRL");
+static_assert(kDtFlashCtrlCount >= 1, "This test needs a Flash Controller");
+
 enum {
   kFlashWordSize = FLASH_CTRL_PARAM_BYTES_PER_WORD,
   kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
-  kFlashStartAddr = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
   kFlashMpRegions = FLASH_CTRL_PARAM_NUM_REGIONS
 };
+
+// Flash start address will be initialized in test_main
+static uint32_t kFlashStartAddr;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -85,15 +96,15 @@ static void check_iso_data(dif_flash_ctrl_state_t *flash_ctrl) {
 };
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  // Initialize flash start address from device table
+  kFlashStartAddr =
+      dt_flash_ctrl_memory_base(kFlashCtrlDt, kDtFlashCtrlMemoryMem);
 
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kOtpCtrlDt, &otp_ctrl));
+
+  CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash_ctrl, kFlashCtrlDt));
 
   bool secret1_locked = false;
   CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(

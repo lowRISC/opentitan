@@ -7,6 +7,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hw/top/dt/dt_alert_handler.h"  // Generated
+#include "hw/top/dt/dt_aon_timer.h"      // Generated
+#include "hw/top/dt/dt_pwrmgr.h"         // Generated
+#include "hw/top/dt/dt_rstmgr.h"         // Generated
+#include "hw/top/dt/dt_rv_core_ibex.h"   // Generated
+#include "hw/top/dt/dt_rv_plic.h"        // Generated
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
@@ -24,12 +30,11 @@
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/alert_handler_regs.h"
 #include "hw/top/pwrmgr_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -228,9 +233,12 @@ static uint16_t alert_handler_num_fired_loc_alerts(void) {
 static void enter_low_power(bool deep_sleep) {
   dif_pwrmgr_domain_config_t cfg;
   CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
-  cfg = (cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
-                kDifPwrmgrDomainOptionUsbClockInLowPower |
-                kDifPwrmgrDomainOptionUsbClockInActivePower)) |
+  cfg = (cfg & (kDifPwrmgrDomainOptionIoClockInLowPower
+#if defined(OPENTITAN_IS_EARLGREY)
+                | kDifPwrmgrDomainOptionUsbClockInLowPower |
+                kDifPwrmgrDomainOptionUsbClockInActivePower
+#endif
+                )) |
         (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
 
   // Set the wake_up trigger as AON timer module.
@@ -251,15 +259,6 @@ void cleanup_wakeup_src(void) {
   CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_clear(&pwrmgr));
 }
 
-static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
-                                  .hart_id = kTopEarlgreyPlicTargetIbex0};
-
-static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
-    .pwrmgr = &pwrmgr,
-    .plic_pwrmgr_start_irq_id = kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-    .expected_irq = kDifPwrmgrIrqWakeup,
-    .is_only_irq = true};
-
 // To keep the random number of iterations
 static uint32_t num_total_wakeups;
 // To keep track of the test steps
@@ -279,9 +278,10 @@ void init_test_components(void) {
   ret_sram_testutils_init();
 
   // Enable all the AON interrupts used in this test.
-  rv_plic_testutils_irq_range_enable(&plic, kTopEarlgreyPlicTargetIbex0,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+  dif_rv_plic_irq_id_t pwrmgr_wakeup_irq_id =
+      dt_pwrmgr_irq_to_plic_id(kPwrmgrDt, kDtPwrmgrIrqWakeup);
+  rv_plic_testutils_irq_range_enable(&plic, 0, pwrmgr_wakeup_irq_id,
+                                     pwrmgr_wakeup_irq_id);
 
   // Enable pwrmgr interrupt
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
@@ -402,14 +402,43 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
  */
 void ottf_external_isr(uint32_t *exc_info) {
   dif_pwrmgr_irq_t irq_id;
-  top_earlgrey_plic_peripheral_t peripheral;
+  dt_instance_id_t peripheral_id;
 
-  isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
+  // Claim the interrupt
+  dif_rv_plic_irq_id_t plic_irq_id;
+  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, 0, &plic_irq_id));
 
-  // Check that both the peripheral and the irq id is correct
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon,
-        "IRQ peripheral: %d is incorrect", peripheral);
-  CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
+  // Get the device instance ID from PLIC IRQ ID
+  peripheral_id = dt_plic_id_to_instance_id(plic_irq_id);
+
+  // Check if it's the pwrmgr interrupt
+  if (peripheral_id == dt_pwrmgr_instance_id(kPwrmgrDt)) {
+    dt_pwrmgr_irq_t pwrmgr_irq =
+        dt_pwrmgr_irq_from_plic_id(kPwrmgrDt, plic_irq_id);
+    irq_id = (dif_pwrmgr_irq_t)pwrmgr_irq;
+
+    // Check that the irq id is correct
+    CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
+
+    // Complete the interrupt
+    CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, 0, plic_irq_id));
+  } else {
+    // Not our interrupt, complete it anyway
+    CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, 0, plic_irq_id));
+  }
+}
+
+/**
+ * External interrupt handler.
+ */
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
+                     dif_rv_plic_irq_id_t irq_id) {
+  if (devid == dt_pwrmgr_instance_id(kPwrmgrDt) &&
+    irq_id == dt_pwrmgr_irq_to_plic_id(kPwrmgrDt, kDtPwrmgrIrqWakeup)) {
+    CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr, kDtPwrmgrIrqWakeup));
+    return true;
+  }
+  return false;
 }
 
 bool test_main(void) {
