@@ -478,7 +478,7 @@ jobs:
       bitstream: chip_earlgrey_cw310_hyperdebug
       board: cw310
       interface: hyper310
-      tag_filters: "manuf,-cw340"
+      tag_filters: "manuf,-cw340,-qemu"
 
   execute_fpga_rom_ext_tests_hyper310:
     name: Hyper310 ROM_EXT Tests
@@ -563,7 +563,7 @@ jobs:
       bitstream: chip_earlgrey_cw340
       board: cw340
       interface: cw340
-      tag_filters: "manuf,-hyper310"
+      tag_filters: "manuf,-hyper310,-qemu"
 
   verify_fpga_jobs:
     name: Verify FPGA jobs
