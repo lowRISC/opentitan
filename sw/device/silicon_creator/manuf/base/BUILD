@@ -13,6 +13,7 @@ load(
     "fpga_params",
     "opentitan_binary",
     "opentitan_test",
+    "qemu_params",
 )
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
@@ -51,6 +52,7 @@ opentitan_binary(
     testonly = True,
     srcs = ["sram_cp_provision.c"],
     exec_env = {
+        "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
@@ -90,6 +92,7 @@ opentitan_binary(
     testonly = True,
     srcs = ["sram_cp_provision_functest.c"],
     exec_env = {
+        "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
@@ -129,6 +132,7 @@ opentitan_binary(
 opentitan_test(
     name = "cp_provision_functest",
     exec_env = {
+        "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
@@ -145,6 +149,24 @@ opentitan_test(
         test_cmd = """
             --provisioning-sram-elf={sram_cp_provision}
             --test-sram-elf={sram_cp_provision_functest}
+        """,
+        test_harness = "//sw/host/tests/manuf/cp_provision_functest",
+    ),
+    qemu = qemu_params(
+        timeout = "long",
+        binaries = {
+            ":sram_cp_provision": "sram_cp_provision",
+            ":sram_cp_provision_functest": "sram_cp_provision_functest",
+        },
+        needs_jtag = True,
+        otp = "//hw/ip/otp_ctrl/data:img_raw",
+        tags = ["manuf"],
+        # NOTE: QEMU's GPIO interface goes directly to the peripheral and
+        # not via pins. We set the console TX indicator to use GPIO 0.
+        test_cmd = """
+            --provisioning-sram-elf={sram_cp_provision}
+            --test-sram-elf={sram_cp_provision_functest}
+            --console-tx-indicator-pin=0
         """,
         test_harness = "//sw/host/tests/manuf/cp_provision_functest",
     ),
