@@ -217,6 +217,7 @@ rust_library(
         "src/transport/proxy/uart.rs",
         "src/transport/qemu/gpio.rs",
         "src/transport/qemu/i2c.rs",
+        "src/transport/qemu/jtag.rs",
         "src/transport/qemu/mod.rs",
         "src/transport/qemu/monitor.rs",
         "src/transport/qemu/reset.rs",

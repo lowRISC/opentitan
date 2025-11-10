@@ -477,8 +477,9 @@ def _test_dispatch(ctx, exec_env, firmware):
     qemu_args += ["-chardev", "pty,id=usbdev-cmd"]
     qemu_args += ["-chardev", "pty,id=usbdev-host"]
 
-    # Create a chardev for the RV_DM JTAG TAP:
-    qemu_args += ["-chardev", "socket,id=taprbb,path=qemu-jtag.sock,server=on,wait=off"]
+    # Create a chardev for the RV_DM and LC_CTRL JTAG TAPs:
+    qemu_args += ["-chardev", "socket,id=taprbb,path=qemu-jtag-rv-dm.sock,server=on,wait=off"]
+    qemu_args += ["-chardev", "socket,id=taprbb-lc-ctrl,path=qemu-jtag-lc-ctrl.sock,server=on,wait=off"]
 
     # Scale the Ibex clock by an `icount` factor.
     qemu_args += ["-icount", "shift={}".format(param["icount"])]
