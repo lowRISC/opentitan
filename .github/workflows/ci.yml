@@ -161,6 +161,16 @@ jobs:
           name: docs
           path: build-site/
           overwrite: true
+      - name: Build bazel generated files tarball
+        run: |
+          ./bazelisk.sh build //doc:doxygen_gen_srcs_tar
+          cp $(./bazelisk.sh cquery //doc:doxygen_gen_srcs_tar) bazel-gen-files.tar
+      - name: Upload tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: bazel-gen-files.tar
+          path: bazel-gen-files.tar
+          overwrite: true
       - name: Upload files
         if: ${{ github.event_name != 'pull_request' && github.ref_name == 'master' }}
         run: |
