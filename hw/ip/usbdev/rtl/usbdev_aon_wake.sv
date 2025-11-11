@@ -58,7 +58,8 @@ module usbdev_aon_wake
   assign not_idle_async = (usb_dp_i != usb_dppullup_en_o) |
                           (usb_dn_i != usb_dnpullup_en_o);
 
-  // With an AON clock of 200kHz this gives us a 4 cycle filter, which is 20us
+  // Target at least 20 us for the filter by dividing the actual frequency by 50 kHz.
+  // With an AON clock of 200kHz this gives us a 4 cycle filter,
   // as well as noise debounce this gives the main IP time to detect resume if it didn't turn off
   //
   // This filter also addresses metastabililty.
