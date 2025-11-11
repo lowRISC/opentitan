@@ -10,6 +10,7 @@
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
 #include "sw/device/silicon_creator/manuf/lib/util.h"
@@ -154,20 +155,17 @@ OT_WARN_UNUSED_RESULT
 static status_t lock_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
                                    dif_otp_ctrl_partition_t partition) {
   // Compute SHA256 of the OTP partition.
-  uint32_t digest[kSha256DigestWords];
-  otcrypto_word32_buf_t otp_partition_digest = {
-      .len = ARRAYSIZE(digest),
-      .data = digest,
-  };
-  TRY(manuf_util_hash_otp_partition(otp_ctrl, partition, otp_partition_digest));
+  hmac_digest_t digest;
+  TRY(manuf_util_hash_otp_partition(otp_ctrl, partition, &digest));
 
   // Get the least significant 64 bits of the digest. We will use this as the
   // digest to lock the OTP partition. The complete digest will be used in the
-  // attestation key / certificate generation. Note: cryptolib generates the
-  // digest in big-endian format so we must rearrange the bytes.
-  uint64_t partition_digest_lowest_64bits = __builtin_bswap32(digest[6]);
+  // attestation key / certificate generation. Note: the silicon_creator hmac
+  // driver generates the digest in reversed (little-endian) format, so no
+  // byte swaps are needed.
+  uint64_t partition_digest_lowest_64bits = digest.digest[1];
   partition_digest_lowest_64bits =
-      (partition_digest_lowest_64bits << 32) | __builtin_bswap32(digest[7]);
+      (partition_digest_lowest_64bits << 32) | digest.digest[0];
 
   TRY(otp_ctrl_testutils_lock_partition(
       otp_ctrl, partition, /*digest=*/partition_digest_lowest_64bits));
