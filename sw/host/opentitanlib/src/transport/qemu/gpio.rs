@@ -21,6 +21,7 @@ const QEMU_GPIO_QUERY: char = 'Q';
 const QEMU_GPIO_FLOATING: char = 'Z';
 const QEMU_GPIO_INPUT: char = 'I';
 const QEMU_GPIO_MASK: char = 'M';
+const QEMU_GPIO_INPUT_FORWARD: char = 'Y';
 
 pub struct QemuGpio {
     pty: BufReader<TTYPort>,
@@ -56,6 +57,13 @@ pub struct QemuGpio {
     /// - 0 indicates QEMU is pulling up/down (see `qemu_pull`).
     /// - 1 indicates the pins are floating (high impedance / HiZ).
     pub qemu_floating: u32,
+
+    /// QEMU also forwards to us the last input values that it read.
+    /// Last reported input from QEMU.
+    ///
+    /// - 0 indicates QEMU last read a 0.
+    /// - 1 indicates QEMU last read a 1.
+    pub qemu_input_fwd: u32,
 }
 
 impl QemuGpio {
@@ -74,6 +82,7 @@ impl QemuGpio {
             qemu_outputting: 0x0,
             qemu_pull: 0x0,
             qemu_floating: 0x0,
+            qemu_input_fwd: 0x0,
         };
 
         Ok(qemu_gpio)
@@ -132,6 +141,8 @@ impl QemuGpio {
                 }
                 // The hi-Z value of one or more pins has changed.
                 QEMU_GPIO_FLOATING => self.qemu_floating = value,
+                // QEMU is telling us what its last GPIO input values were
+                QEMU_GPIO_INPUT_FORWARD => self.qemu_input_fwd = value,
                 _ => bail!("unknown command from QEMU: {cmd}"),
             }
         }
