@@ -147,6 +147,19 @@ pub trait Transport {
     fn dispatch(&self, _action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         Err(TransportError::UnsupportedOperation.into())
     }
+
+    /// Invoke the provided callback (preferably) without exclusive access.
+    ///
+    /// By default, ownership of `Transport` would imply exclusive access to the underlying device,
+    /// and optimisation can be made assuming no other process would be simultaneously accessing.
+    /// However for long running commands, such as `opentitantool console`, it may be desirable to
+    /// relinquish exclusive access during such comamnd and only re-take exclusive access later.
+    ///
+    /// Transport that does not support such scenario may ignore such request and perform a no-op.
+    fn relinquish_exclusive_access(&self, callback: Box<dyn FnOnce() + '_>) -> Result<()> {
+        callback();
+        Ok(())
+    }
 }
 
 /// Methods available only on the Proxy implementation of the Transport trait.

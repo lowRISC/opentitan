@@ -1104,6 +1104,22 @@ impl TransportWrapper {
         std::thread::sleep(reset_delay);
         Ok(())
     }
+
+    /// Invoke the provided callback (preferably) without exclusive access.
+    ///
+    /// By default, ownership of `Transport` would imply exclusive access to the underlying device,
+    /// and optimisation can be made assuming no other process would be simultaneously accessing.
+    /// However for long running commands, such as `opentitantool console`, it may be desirable to
+    /// relinquish exclusive access during such comamnd and only re-take exclusive access later.
+    ///
+    /// Transport that does not support such scenario may ignore such request and perform a no-op.
+    pub fn relinquish_exclusive_access<T>(&self, callback: impl FnOnce() -> T) -> Result<T> {
+        let mut ret = None;
+        self.transport.relinquish_exclusive_access(Box::new(|| {
+            ret = Some(callback());
+        }))?;
+        Ok(ret.unwrap())
+    }
 }
 
 /// Given an pin/uart/spi/i2c port name, if the name is a known alias, return the underlying
