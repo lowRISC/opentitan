@@ -9,7 +9,7 @@ use std::path::Path;
 use std::rc::Rc;
 
 use anyhow::{Context, bail};
-use serialport::{SerialPort, TTYPort};
+use serialport::TTYPort;
 
 use crate::io::gpio::{GpioPin, PinMode, PullMode};
 
@@ -101,11 +101,11 @@ impl QemuGpio {
     /// uppercase hex characters forming a value. This is a custom protocol for
     /// OpenTitan's QEMU machine.
     pub fn process_frames(&mut self) -> anyhow::Result<()> {
-        while self.pty.get_ref().bytes_to_read()? > 0 {
-            let mut line = String::new();
-            self.pty
-                .read_line(&mut line)
-                .context("failed to read TTY")?;
+        let mut line = String::new();
+        while let Ok(bytes_read) = self.pty.read_line(&mut line) {
+            if bytes_read == 0 {
+                break; // EOF reached
+            }
 
             let (cmd, value) = line
                 .split_once(":")
@@ -145,6 +145,8 @@ impl QemuGpio {
                 QEMU_GPIO_INPUT_FORWARD => self.qemu_input_fwd = value,
                 _ => bail!("unknown command from QEMU: {cmd}"),
             }
+
+            line.clear();
         }
 
         Ok(())
