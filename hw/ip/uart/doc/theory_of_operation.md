@@ -6,7 +6,7 @@
 
 ## Design Details
 
-### Serial interface (both directions)
+### Serial interface (both directions) 
 
 The TX/RX serial lines are high when idle. Data starts with a START bit (high
 idle state deasserts, **1**-->**0**) followed by 8 data bits. The least
@@ -107,7 +107,7 @@ the stop bit will be a bit time later, so this becomes 8/160 or about
 
 In practice, the transmitter and receiver will both differ from the
 ideal baud rate. Since the worst case difference for reception is 5%,
-the uart can be expected to work if both sides are within +/- 2.5% of
+the UART can be expected to work if both sides are within +/- 2.5% of
 the ideal baud rate.
 
 ### Setting the baud rate
