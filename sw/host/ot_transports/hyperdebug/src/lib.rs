@@ -10,7 +10,7 @@ use std::fs;
 use std::io::{Read, Write};
 use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
-use std::rc::{Rc, Weak};
+use std::rc::Rc;
 use std::sync::LazyLock;
 use std::time::Duration;
 
@@ -25,7 +25,6 @@ use opentitanlib::io::i2c::Bus;
 use opentitanlib::io::jtag::{JtagChain, JtagParams};
 use opentitanlib::io::spi::Target;
 use opentitanlib::io::uart::Uart;
-use opentitanlib::transport::MaintainConnection;
 use opentitanlib::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use opentitanlib::transport::common::uart::flock_serial;
 use opentitanlib::transport::{
@@ -301,7 +300,7 @@ impl<T: Flavor> Hyperdebug<T> {
                 console_tty: console_tty.ok_or_else(|| {
                     TransportError::CommunicationError("Missing console interface".to_string())
                 })?,
-                conn: RefCell::new(Weak::new()),
+                conn: RefCell::new(None),
                 usb_device: RefCell::new(device),
                 selected_spi: Cell::new(0),
             }),
@@ -423,7 +422,7 @@ impl<T: Flavor> Hyperdebug<T> {
 /// even if the caller lets the outer Hyperdebug struct run out of scope.
 pub struct Inner {
     console_tty: PathBuf,
-    conn: RefCell<Weak<Conn>>,
+    conn: RefCell<Option<Rc<Conn>>>,
     usb_device: RefCell<UsbBackend>,
     selected_spi: Cell<u8>,
 }
@@ -444,20 +443,15 @@ pub struct Conn {
     first_use: Cell<bool>,
 }
 
-// The way that the HyperDebug allows callers to request optimization for a sequence of operations
-// without other `opentitantool` processes meddling with the USB devices, is to let the caller
-// hold an `Rc`-reference to the `Conn` struct, thereby keeping the USB connection alive.
-impl MaintainConnection for Conn {}
-
 impl Inner {
     /// General timeout for response on the HyperDebug text-based USB command console.
     const COMMAND_TIMEOUT: Duration = Duration::from_millis(3000);
 
     /// Establish connection with HyperDebug console USB interface.
     pub fn connect(&self) -> Result<Rc<Conn>> {
-        if let Some(conn) = self.conn.borrow().upgrade() {
+        if let Some(ref conn) = *self.conn.borrow() {
             // The driver already has a connection, use it.
-            return Ok(conn);
+            return Ok(conn.clone());
         }
         // Establish a new connection.
         let port_name = self
@@ -475,13 +469,9 @@ impl Inner {
             console_port: RefCell::new(port),
             first_use: Cell::new(true),
         });
-        // Return a (strong) reference to the newly opened connection, while keeping a weak
-        // reference to the same in this `Inner` object.  The result is that if the caller keeps
-        // the strong reference alive long enough, the next invocation of `connect()` will be able
-        // to re-use the same instance.  If on the other hand, the caller drops their reference,
-        // then the weak reference will not keep the instance alive, and next time a new
-        // connection will be made.
-        *self.conn.borrow_mut() = Rc::downgrade(&conn);
+        // Keep a reference to the newly opened connection, so the next invocation of `connect()`
+        // will be able to re-use the same instance.
+        *self.conn.borrow_mut() = Some(conn.clone());
         Ok(conn)
     }
 
@@ -897,16 +887,6 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
             opts,
         )?);
         Ok(new_jtag)
-    }
-
-    /// The way that the HyperDebug driver allows callers to request optimization for a sequence
-    /// of operations without other `opentitantool` processes meddling with the USB devices, is to
-    /// let the caller hold an `Rc`-reference to the `Conn` struct, thereby keeping the USB
-    /// connection alive.  Callers should only hold ond to the object as long as they can
-    /// guarantee that no other `opentitantool` processes simultaneously attempt to access the
-    /// same HyperDebug USB device.
-    fn maintain_connection(&self) -> Result<Rc<dyn MaintainConnection>> {
-        Ok(self.inner.connect()?)
     }
 }
 
