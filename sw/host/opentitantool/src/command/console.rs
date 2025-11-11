@@ -99,7 +99,10 @@ impl CommandDispatch for Console {
                 eprint!("Starting interactive console\r\n");
                 eprint!("[CTRL+C] to exit.\r\n\r\n");
             }
-            console.interact(&*uart, stdin.as_mut().map(|x| x as _), Some(&mut stdout))?
+
+            transport.relinquish_exclusive_access(|| {
+                console.interact(&*uart, stdin.as_mut().map(|x| x as _), Some(&mut stdout))
+            })??
         };
         if !self.non_interactive {
             eprintln!("\n\nExiting interactive console.");

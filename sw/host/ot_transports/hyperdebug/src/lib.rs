@@ -888,6 +888,12 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         )?);
         Ok(new_jtag)
     }
+
+    fn relinquish_exclusive_access(&self, callback: Box<dyn FnOnce() + '_>) -> Result<()> {
+        *self.inner.conn.borrow_mut() = None;
+        callback();
+        Ok(())
+    }
 }
 
 /// A `StandardFlavor` is a plain Hyperdebug board.
