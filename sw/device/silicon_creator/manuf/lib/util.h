@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
 
 /**
  * Hashes a lifecycle transition token to prepare it to be written to OTP.
@@ -52,6 +52,6 @@ status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
 OT_WARN_UNUSED_RESULT
 status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
                                        dif_otp_ctrl_partition_t partition,
-                                       otcrypto_word32_buf_t hash);
+                                       hmac_digest_t *digest);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_UTIL_H_

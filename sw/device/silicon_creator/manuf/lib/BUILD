@@ -110,6 +110,7 @@ cc_library(
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
     ],
 )
 
