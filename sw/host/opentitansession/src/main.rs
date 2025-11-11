@@ -205,13 +205,6 @@ fn main() -> Result<()> {
     // command line arguments.
     let transport = backend::create(&opts.backend_opts)?;
 
-    // We do not need other invocations of `opentitantool` to directly access the debugger device
-    // while this session process runs (as any such invocations ought to instead establish TCP/IP
-    // connection and go through this session.)  Hence, we can inform the driver that it is free
-    // to e.g. hold on to open USB handles between function calls, or perform other similar
-    // optimizations.
-    let _maintain_connection = transport.maintain_connection()?;
-
     // Bind to TCP socket, in preparation for servicing requests from network.
     let mut session = SessionHandler::init(transport, opts.listen_port)?;
 

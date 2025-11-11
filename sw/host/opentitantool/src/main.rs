@@ -13,14 +13,12 @@ use std::io::ErrorKind;
 use std::io::IsTerminal;
 use std::iter::{IntoIterator, Iterator};
 use std::path::PathBuf;
-use std::rc::Rc;
 use std::str::FromStr;
 
 mod command;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::backend;
-use opentitanlib::transport::MaintainConnection;
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Parser, CommandDispatch)]
@@ -219,25 +217,13 @@ fn print_command_result(
 
 // Execute is a convenience function for taking a list of strings,
 // parsing them into a command, executing the command and printing the result.
-fn execute<I>(
-    args: I,
-    opts: &Opts,
-    transport: &TransportWrapper,
-    maintain_connection: &mut Option<Rc<dyn MaintainConnection>>,
-) -> Result<()>
+fn execute<I>(args: I, opts: &Opts, transport: &TransportWrapper) -> Result<()>
 where
     I: IntoIterator<Item = OsString>,
 {
     let command = RootCommandHierarchy::parse_from(
         std::iter::once(OsString::from("opentitantool")).chain(args),
     );
-    if command.exclusive_use_of_transport() {
-        if maintain_connection.is_none() {
-            *maintain_connection = Some(transport.maintain_connection()?);
-        }
-    } else {
-        *maintain_connection = None;
-    }
     print_command_result(opts, command.run(opts, transport))?;
     Ok(())
 }
@@ -247,22 +233,12 @@ fn main() -> Result<()> {
 
     let transport = backend::create(&opts.backend_opts)?;
 
-    let mut _maintain_connection = None;
-
     for command in &opts.exec {
         execute(
             shellwords::split(command)?.iter().map(OsString::from),
             &opts,
             &transport,
-            &mut _maintain_connection,
         )?;
-    }
-    if opts.command.exclusive_use_of_transport() {
-        if _maintain_connection.is_none() {
-            _maintain_connection = Some(transport.maintain_connection()?);
-        }
-    } else {
-        _maintain_connection = None;
     }
     print_command_result(&opts, opts.command.run(&opts, &transport))?;
     Ok(())
