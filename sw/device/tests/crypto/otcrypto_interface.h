@@ -320,6 +320,10 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*ecdsa_p384_sign)(const otcrypto_blinded_key_t *,
                                        const otcrypto_hash_digest_t,
                                        otcrypto_word32_buf_t);
+  otcrypto_status_t (*ecdsa_p384_sign_config_k)(const otcrypto_blinded_key_t *,
+                                                const otcrypto_blinded_key_t *,
+                                                const otcrypto_hash_digest_t,
+                                                otcrypto_word32_buf_t);
   otcrypto_status_t (*ecdsa_p384_sign_verify)(const otcrypto_blinded_key_t *,
                                               const otcrypto_unblinded_key_t *,
                                               const otcrypto_hash_digest_t,
@@ -337,6 +341,9 @@ typedef struct otcrypto_interface_t {
       const otcrypto_blinded_key_t *);
   otcrypto_status_t (*ecdsa_p384_keygen_async_finalize)(
       otcrypto_blinded_key_t *, otcrypto_unblinded_key_t *);
+  otcrypto_status_t (*ecdsa_p384_sign_async_start_config_k)(
+      const otcrypto_blinded_key_t *, const otcrypto_blinded_key_t *,
+      const otcrypto_hash_digest_t);
   otcrypto_status_t (*ecdsa_p384_sign_async_start)(
       const otcrypto_blinded_key_t *, const otcrypto_hash_digest_t);
   otcrypto_status_t (*ecdsa_p384_sign_async_finalize)(otcrypto_word32_buf_t);
