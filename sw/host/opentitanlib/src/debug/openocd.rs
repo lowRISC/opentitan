@@ -155,6 +155,13 @@ impl OpenOcd {
         let stream = TcpStream::connect(("localhost", openocd_port))
             .context("failed to connect to OpenOCD socket")?;
 
+        // Disable TCP Nagle delay to ensure minimal latency to OpenOCD.
+        // Without this, roundtrip communications can take 50ms which adds
+        // up to be longer than certain timeouts, e.g. the RMA loop in ROM.
+        stream
+            .set_nodelay(true)
+            .context("failed to disable TCP socket delay")?;
+
         let mut connection = Self {
             server_process: scopeguard::ScopeGuard::into_inner(kill_guard),
             reader: BufReader::new(stream.try_clone()?),
