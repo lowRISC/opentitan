@@ -196,7 +196,13 @@ bool test_main(void) {
   // Present the packet for transmission.
   CHECK_DIF_OK(dif_usbdev_send(&usbdev, endpoint, &buffer));
   // Enter test mode, immediately after presenting the packet.
-  CHECK_DIF_OK(dif_usbdev_set_test_mode(&usbdev, kDifUsbdevTestModeTxPacket));
+  if (1) {
+    // This TX Oscillator test mode has always existed in the USB device.
+    CHECK_DIF_OK(dif_usbdev_set_test_mode(&usbdev, kDifUsbdevTestModeTxOsc));
+  } else {
+    // TX Packet test mode has been added only in more recent versions.
+    CHECK_DIF_OK(dif_usbdev_set_test_mode(&usbdev, kDifUsbdevTestModeTxPacket));
+  }
 
   // Wait until VBUS is disconnected; this should cause usbdev to exit the
   // test mode.
