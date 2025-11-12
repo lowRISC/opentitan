@@ -22,6 +22,16 @@ otcrypto_status_t otcrypto_ecdsa_p384_keygen(
   return otcrypto_ecdsa_p384_keygen_async_finalize(private_key, public_key);
 }
 
+otcrypto_status_t otcrypto_ecdsa_p384_sign_config_k(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_blinded_key_t *secret_scalar,
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_word32_buf_t signature) {
+  HARDENED_TRY(otcrypto_ecdsa_p384_sign_config_k_async_start(
+      private_key, secret_scalar, message_digest));
+  return otcrypto_ecdsa_p384_sign_async_finalize(signature);
+}
+
 otcrypto_status_t otcrypto_ecdsa_p384_sign(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
@@ -289,7 +299,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_finalize(
   return keymgr_sideload_clear_otbn();
 }
 
-otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start(
+static otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start_setup(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest) {
   if (private_key == NULL || private_key->keyblob == NULL ||
@@ -325,6 +335,54 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start(
   // Check the key length.
   HARDENED_TRY(p384_private_key_length_check(private_key));
 
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_ecdsa_p384_sign_config_k_async_start(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_blinded_key_t *secret_scalar,
+    const otcrypto_hash_digest_t message_digest) {
+  // Do initial checks on the private key and digest.
+  HARDENED_TRY(
+      otcrypto_ecdsa_p384_sign_async_start_setup(private_key, message_digest));
+
+  // Load the secret key d.
+  HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
+                    kHardenedBoolFalse);
+  p384_masked_scalar_t private_scalar;
+  HARDENED_TRY(hardened_memcpy(private_scalar.share0, private_key->keyblob,
+                               kP384MaskedScalarTotalShareWords));
+  private_scalar.checksum = p384_masked_scalar_checksum(&private_scalar);
+
+  // Load the secret scalar k.
+  // The use of fixed scalars should be limited to KATs.
+  HARDENED_CHECK_EQ(launder32(secret_scalar->config.hw_backed),
+                    kHardenedBoolFalse);
+  p384_masked_scalar_t config_k_scalar;
+  HARDENED_TRY(hardened_memcpy(config_k_scalar.share0, secret_scalar->keyblob,
+                               kP384MaskedScalarTotalShareWords));
+  config_k_scalar.checksum = p384_masked_scalar_checksum(&config_k_scalar);
+  HARDENED_TRY(p384_ecdsa_sign_config_k_start(
+      message_digest.data, &private_scalar, &config_k_scalar));
+
+  // To detect forgeries of the pointer to the private key that we have passed
+  // to the ECC implementation, check again its integrity. If the pointer would
+  // have been tampered with between the first integrity check we did when
+  // entering the CryptoLib and here, we would detect this now.
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(private_key),
+                    kHardenedBoolTrue);
+
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_hash_digest_t message_digest) {
+  // Do initial checks on the private key and digest.
+  HARDENED_TRY(
+      otcrypto_ecdsa_p384_sign_async_start_setup(private_key, message_digest));
+
+  // Load the secret key d.
   if (private_key->config.hw_backed == kHardenedBoolFalse) {
     // Start the asynchronous signature-generation routine.
     HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
