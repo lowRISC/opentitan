@@ -305,7 +305,7 @@ pub fn wait_for_status(jtag: &mut dyn Jtag, timeout: Duration, status: LcCtrlSta
     let jtag_tap = jtag.tap();
 
     // Wait for LC controller to be ready.
-    poll::poll_until(timeout, Duration::from_millis(50), || {
+    poll::poll_until(timeout, Duration::from_millis(1), || {
         let polled_status = match jtag_tap {
             JtagTap::LcTap => jtag.read_lc_ctrl_reg(&LcCtrlReg::Status).unwrap(),
             JtagTap::RiscvTap => {
