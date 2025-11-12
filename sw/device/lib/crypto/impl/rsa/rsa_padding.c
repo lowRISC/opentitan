@@ -11,6 +11,7 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('r', 'p', 'a')
@@ -223,6 +224,9 @@ status_t rsa_padding_pkcs1v15_verify(
   // Compare with the expected value.
   *result = hardened_memeq(encoded_message, expected_encoded_message,
                            ARRAYSIZE(expected_encoded_message));
+  // Clear the register file in order to ensure we clear any kHardenedBoolTrue
+  // value in there
+  ibex_clear_rf();
   return OTCRYPTO_OK;
 }
 
@@ -717,6 +721,9 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
   uint32_t exp_h[message_digest.len];
   HARDENED_TRY(pss_construct_h(message_digest, salt, ARRAYSIZE(salt), exp_h));
   *result = hardened_memeq(h, exp_h, ARRAYSIZE(exp_h));
+  // Clear the register file in order to ensure we clear any kHardenedBoolTrue
+  // value in there
+  ibex_clear_rf();
   return OTCRYPTO_OK;
 }
 
