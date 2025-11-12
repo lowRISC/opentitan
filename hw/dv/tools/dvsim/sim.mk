@@ -38,7 +38,7 @@ do_build: gen_sv_flist
 post_build: do_build
 	@echo "[make]: post_build"
 ifneq (${post_build_cmds},)
-	cd ${build_dir} && ${post_build_cmds}
+	cd ${build_dir} && ${post_build_cmds} ${post_build_opts}
 endif
 
 build_result: post_build
