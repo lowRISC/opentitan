@@ -351,6 +351,7 @@ class CompileSim(Deploy):
             "build_dir": False,
             "build_opts": False,
             "post_build_cmds": False,
+            "post_build_opts": False,
         })
 
         self.mandatory_misc_attrs.update({
@@ -422,6 +423,7 @@ class CompileOneShot(Deploy):
             "build_log": False,
             "build_timeout_mins": False,
             "post_build_cmds": False,
+            "post_build_opts": False,
             "pre_build_cmds": False,
 
             # Report processing

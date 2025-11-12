@@ -103,6 +103,7 @@ class SimCfg(FlowCfg):
         self.flow_makefile = ""
         self.pre_build_cmds = []
         self.post_build_cmds = []
+        self.post_build_opts = []
         self.build_dir = ""
         self.pre_run_cmds = []
         self.post_run_cmds = []
@@ -256,6 +257,7 @@ class SimCfg(FlowCfg):
                 self.pre_build_cmds.extend(build_mode_obj.pre_build_cmds)
                 self.post_build_cmds.extend(build_mode_obj.post_build_cmds)
                 self.build_opts.extend(build_mode_obj.build_opts)
+                self.post_build_opts.extend(build_mode_obj.post_build_opts)
                 self.pre_run_cmds.extend(build_mode_obj.pre_run_cmds)
                 self.post_run_cmds.extend(build_mode_obj.post_run_cmds)
                 self.run_opts.extend(build_mode_obj.run_opts)
@@ -375,9 +377,9 @@ class SimCfg(FlowCfg):
         # Merge the global build and run opts
         Test.merge_global_opts(self.run_list, self.pre_build_cmds,
                                self.post_build_cmds, self.build_opts,
-                               self.pre_run_cmds, self.post_run_cmds,
-                               self.run_opts, self.sw_images,
-                               self.sw_build_opts)
+                               self.post_build_opts, self.pre_run_cmds,
+                               self.post_run_cmds, self.run_opts,
+                               self.sw_images, self.sw_build_opts)
 
         # Process reseed override and create the build_list
         build_list_names = []
