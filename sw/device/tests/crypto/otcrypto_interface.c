@@ -93,6 +93,7 @@ volatile otcrypto_interface_t otcrypto = {
     // ECDSA P-256 (blocking).
     .ecdsa_p256_keygen = &otcrypto_ecdsa_p256_keygen,
     .ecdsa_p256_sign = &otcrypto_ecdsa_p256_sign,
+    .ecdsa_p256_sign_config_k = &otcrypto_ecdsa_p256_sign_config_k,
     .ecdsa_p256_sign_verify = &otcrypto_ecdsa_p256_sign_verify,
     .ecdsa_p256_verify = &otcrypto_ecdsa_p256_verify,
 
@@ -101,6 +102,8 @@ volatile otcrypto_interface_t otcrypto = {
     .ecdsa_p256_keygen_async_finalize =
         &otcrypto_ecdsa_p256_keygen_async_finalize,
     .ecdsa_p256_sign_async_start = &otcrypto_ecdsa_p256_sign_async_start,
+    .ecdsa_p256_sign_async_start_config_k =
+        &otcrypto_ecdsa_p256_sign_config_k_async_start,
     .ecdsa_p256_sign_async_finalize = &otcrypto_ecdsa_p256_sign_async_finalize,
     .ecdsa_p256_verify_async_start = &otcrypto_ecdsa_p256_verify_async_start,
     .ecdsa_p256_verify_async_finalize =

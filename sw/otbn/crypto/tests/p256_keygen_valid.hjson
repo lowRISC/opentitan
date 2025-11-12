@@ -12,7 +12,7 @@
 
   "input": {
     "dmem": {
-      "mode": "0x000005c5"  # MODE_KEYGEN
+      "mode": "0x000001f8"  # MODE_KEYGEN
     }
   }
   "output": {
