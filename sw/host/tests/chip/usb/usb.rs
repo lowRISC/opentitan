@@ -35,6 +35,20 @@ pub struct UsbOpts {
     /// Pin to sense VBUS.
     #[arg(long)]
     pub vbus_sense: Option<String>,
+
+    /// Apply some strappings.
+    #[arg(long)]
+    pub strapping: Vec<String>,
+
+    // VBUS disconnect timeout: how long to wait after setting the pin.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "200ms")]
+    pub vbus_sense_wait: Duration,
+
+    /// Disable strict USB hub operation checks. The operations will be performed
+    /// but the code will not try to ensure that there were successful or even make
+    /// sense.
+    #[arg(long)]
+    pub relaxed_hub_op: bool,
 }
 
 // Parse a USB VID/PID which must be a hex-string (e.g. "18d1").
@@ -67,6 +81,15 @@ impl DeviceLoc {
             port_numbers: dev.port_numbers()?,
         })
     }
+}
+
+pub fn get_device_by_port_numbers(ports: &Vec<u8>) -> Result<UsbDevice> {
+    for device in rusb::Context::new()?.devices().context("USB error")?.iter() {
+        if &device.port_numbers()? == ports {
+            return Ok(device)
+        }
+    }
+    bail!("could not find device at port path {:?}", ports)
 }
 
 impl UsbOpts {
@@ -178,7 +201,7 @@ impl UsbOpts {
         let vbus_sense_en_pin = transport.gpio_pin(vbus_sense_en)?;
         vbus_sense_en_pin.write(en)?;
         // Give time to hardware buffer to stabilize.
-        std::thread::sleep(Duration::from_millis(100));
+        std::thread::sleep(self.vbus_sense_wait);
         Ok(())
     }
 
@@ -191,6 +214,19 @@ impl UsbOpts {
 
         let vbus_sense_pin = transport.gpio_pin(vbus_sense)?;
         vbus_sense_pin.read()
+    }
+
+    pub fn apply_strappings(&self, transport: &TransportWrapper, apply: bool) -> Result<()> {
+        for name in &self.strapping {
+            let pin_strapping = transport.pin_strapping(name)?;
+            if apply {
+                pin_strapping.apply()?;
+            }
+            else {
+                pin_strapping.remove()?;
+            }
+        }
+        Ok(())
     }
 }
 
@@ -229,12 +265,28 @@ impl UsbHub {
         })
     }
 
+    pub fn device(&self) -> UsbDevice {
+        self.handle.device()
+    }
+
+    // Report the status of a port (only returns the port status, not the port change).
+    fn port_status(&self, port: u8, timeout: Duration) -> Result<u16> {
+        let req_type = rusb::constants::LIBUSB_RECIPIENT_OTHER
+            | rusb::constants::LIBUSB_REQUEST_TYPE_CLASS
+            | rusb::constants::LIBUSB_ENDPOINT_IN;
+        let mut status = [0u8; 4];
+        let _ = self
+            .handle
+            .read_control(req_type, rusb::constants::LIBUSB_REQUEST_GET_STATUS, 0, port as u16, &mut status, timeout)?;
+        Ok(status[0] as u16 | (status[1] as u16) << 8)
+    }
+
     // Perform an operation.
-    pub fn op(&self, op: UsbHubOp, port: u8, timeout: Duration) -> Result<()> {
-        let (value, set_feature) = match op {
-            UsbHubOp::Suspend => (PORT_SUSPEND, true),
-            UsbHubOp::Resume => (PORT_SUSPEND, false),
-            UsbHubOp::Reset => (PORT_RESET, true),
+    pub fn op(&self, op: UsbHubOp, port: u8, timeout: Duration, check_status: bool) -> Result<()> {
+        let (feature_index, set_feature, human_op) = match op {
+            UsbHubOp::Suspend => (PORT_SUSPEND, true, "suspend"),
+            UsbHubOp::Resume => (PORT_SUSPEND, false, "resume"),
+            UsbHubOp::Reset => (PORT_RESET, true, "reset"),
         };
         let req = if set_feature {
             rusb::constants::LIBUSB_REQUEST_SET_FEATURE
@@ -244,9 +296,35 @@ impl UsbHub {
         let req_type = rusb::constants::LIBUSB_RECIPIENT_OTHER
             | rusb::constants::LIBUSB_REQUEST_TYPE_CLASS
             | rusb::constants::LIBUSB_ENDPOINT_OUT;
+        // Make sure that the port status is the expected one before the operation.
+        let port_status_mask = 1u16 << feature_index;
+        let port_status_before = if set_feature { 0u16 } else { port_status_mask };
+        let port_status_after = if set_feature { port_status_mask } else { 0u16 };
+
+        if check_status {
+            let port_status = self.port_status(port, timeout)?;
+            ensure!(port_status & port_status_mask == port_status_before,
+                    "Trying to {} port {} but port has unexpected status {:#x}", human_op, port, port_status);
+        }
+        // Perform operation.
         let _ = self
             .handle
-            .write_control(req_type, req, value, port as u16, &[], timeout)?;
+            .write_control(req_type, req, feature_index, port as u16, &[], timeout)?;
+        // Wait until port has changed status.
+        if check_status {
+            let start = Instant::now();
+            loop {
+                let port_status = self.port_status(port, timeout)?;
+                if port_status & port_status_mask == port_status_after {
+                    break;
+                }
+                if start.elapsed() >= timeout {
+                    bail!("Trying to {} port {} but port did not change status (last status was {:x})", human_op, port, port_status);
+                }
+            }
+            log::info!("{} performed in {:#?}", human_op, start.elapsed());
+        }
+
         Ok(())
     }
 }
