@@ -535,6 +535,10 @@ otcrypto_status_t otcrypto_ecdh_p384_async_start(
     p384_masked_scalar_t private_scalar;
     HARDENED_TRY(hardened_memcpy(private_scalar.share0, private_key->keyblob,
                                  kP384MaskedScalarTotalShareWords));
+    HARDENED_CHECK_EQ(
+        hardened_memeq(private_key->keyblob, private_scalar.share0,
+                       kP384MaskedScalarTotalShareWords),
+        kHardenedBoolTrue);
     private_scalar.checksum = p384_masked_scalar_checksum(&private_scalar);
     HARDENED_TRY(p384_ecdh_start(&private_scalar, pk));
   } else {
