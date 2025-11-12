@@ -27,6 +27,8 @@ OTBN_DECLARE_SYMBOL_ADDR(run_p256, x);      // Public key x-coordinate.
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, y);      // Public key y-coordinate.
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, d0_io);  // Private key scalar d (share 0).
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, d1_io);  // Private key scalar d (share 1).
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, k0_io);  // Secret scalar k (share 0).
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, k1_io);  // Secret scalar k (share 1).
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, x_r);    // ECDSA verification result.
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, ok);     // Status code.
 
@@ -38,12 +40,15 @@ static const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(run_p256, x);
 static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(run_p256, y);
 static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(run_p256, d0_io);
 static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(run_p256, d1_io);
+static const otbn_addr_t kOtbnVarK0 = OTBN_ADDR_T_INIT(run_p256, k0_io);
+static const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(run_p256, k1_io);
 static const otbn_addr_t kOtbnVarXr = OTBN_ADDR_T_INIT(run_p256, x_r);
 static const otbn_addr_t kOtbnVarOk = OTBN_ADDR_T_INIT(run_p256, ok);
 
 // Declare mode constants.
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_KEYGEN);
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_SIGN);
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_SIGN_CONFIG_K);
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_VERIFY);
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_ECDH);
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_SIDELOAD_KEYGEN);
@@ -52,6 +57,8 @@ OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_SIDELOAD_ECDH);
 static const uint32_t kOtbnP256ModeKeygen =
     OTBN_ADDR_T_INIT(run_p256, MODE_KEYGEN);
 static const uint32_t kOtbnP256ModeSign = OTBN_ADDR_T_INIT(run_p256, MODE_SIGN);
+static const uint32_t kOtbnP256ModeSignConfigK =
+    OTBN_ADDR_T_INIT(run_p256, MODE_SIGN_CONFIG_K);
 static const uint32_t kOtbnP256ModeVerify =
     OTBN_ADDR_T_INIT(run_p256, MODE_VERIFY);
 static const uint32_t kOtbnP256ModeEcdh = OTBN_ADDR_T_INIT(run_p256, MODE_ECDH);
@@ -86,6 +93,7 @@ enum {
   kModeKeygenSideloadInsCnt = 573800,
   kModeEcdhInsCnt = 581598,
   kModeEcdhSideloadInsCnt = 581658,
+  kModeEcdsaSignConfigKInsCnt = 606933,
   kModeEcdsaSignInsCnt = 607087,
   kModeEcdsaSignSideloadInsCnt = 607147,
 };
@@ -258,6 +266,29 @@ status_t p256_ecdsa_sign_start(const uint32_t digest[kP256ScalarWords],
   return otbn_execute();
 }
 
+status_t p256_ecdsa_sign_config_k_start(const uint32_t digest[kP256ScalarWords],
+                                        p256_masked_scalar_t *private_key,
+                                        p256_masked_scalar_t *secret_scalar) {
+  // Load the P-256 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppP256));
+
+  // Set mode so start() will jump into signing.
+  uint32_t mode = kOtbnP256ModeSignConfigK;
+  HARDENED_TRY(otbn_dmem_write(kOtbnP256ModeWords, &mode, kOtbnVarMode));
+
+  // Set the message digest.
+  HARDENED_TRY(set_message_digest(digest));
+
+  // Set the private key shares.
+  HARDENED_TRY(p256_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
+
+  // Set the secret scalar shares.
+  HARDENED_TRY(p256_masked_scalar_write(secret_scalar, kOtbnVarK0, kOtbnVarK1));
+
+  // Start the OTBN routine.
+  return otbn_execute();
+}
+
 status_t p256_ecdsa_sideload_sign_start(
     const uint32_t digest[kP256ScalarWords]) {
   // Load the P-256 app. Fails if OTBN is non-idle.
@@ -281,6 +312,8 @@ status_t p256_ecdsa_sign_finalize(p256_ecdsa_signature_t *result) {
   ins_cnt = otbn_instruction_count_get();
   if (launder32(ins_cnt) == kModeEcdsaSignSideloadInsCnt) {
     HARDENED_CHECK_EQ(ins_cnt, kModeEcdsaSignSideloadInsCnt);
+  } else if (launder32(ins_cnt) == kModeEcdsaSignConfigKInsCnt) {
+    HARDENED_CHECK_EQ(ins_cnt, kModeEcdsaSignConfigKInsCnt);
   } else {
     HARDENED_CHECK_EQ(ins_cnt, kModeEcdsaSignInsCnt);
   }
