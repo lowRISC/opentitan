@@ -17,7 +17,7 @@
 
 /**
  * Mode magic values generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 4 -n 11 --avoid-zero -s 1654842154
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 8 -n 11 --avoid-zero -s 1654842154
  *
  * Call the same utility with the same arguments and a higher -m to generate
  * additional value(s) without changing the others or sacrificing mutual HD.
@@ -27,19 +27,21 @@
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.
  */
-.equ MODE_KEYGEN, 0x0e7
-.equ MODE_SIGN, 0x633
-.equ MODE_VERIFY, 0x54d
-.equ MODE_ECDH, 0x3bd
-.equ MODE_SIDELOAD_KEYGEN, 0x4da
-.equ MODE_SIDELOAD_SIGN, 0x786
-.equ MODE_SIDELOAD_ECDH, 0x36a
+.equ MODE_KEYGEN, 0x3CC
+.equ MODE_SIGN, 0x7A1
+.equ MODE_SIGN_CONFIG_K, 0x655
+.equ MODE_VERIFY, 0x0BD
+.equ MODE_ECDH, 0x578
+.equ MODE_SIDELOAD_KEYGEN, 0x31B
+.equ MODE_SIDELOAD_SIGN, 0x2F2
+.equ MODE_SIDELOAD_ECDH, 0x4CB
 
 /**
  * Make the mode constants visible to Ibex.
  */
 .globl MODE_KEYGEN
 .globl MODE_SIGN
+.globl MODE_SIGN_CONFIG_K
 .globl MODE_VERIFY
 .globl MODE_ECDH
 .globl MODE_SIDELOAD_KEYGEN
@@ -91,6 +93,19 @@ start:
 
   addi  x3, x0, MODE_ECDH
   beq   x2, x3, shared_key
+
+  /* Copy the caller-provided secret scalar shares into scratchpad memory.
+       dmem[k0] <= dmem[k0_io]
+       dmem[k1] <= dmem[k1_io] */
+  la       x13, k0_io
+  la       x14, k0
+  jal      x1, copy_share
+  la       x13, k1_io
+  la       x14, k1
+  jal      x1, copy_share
+
+  addi  x3, x0, MODE_SIGN_CONFIG_K
+  beq   x2, x3, ecdsa_sign_config_k
 
   /* Invalid mode; fail. */
   unimp
@@ -167,6 +182,24 @@ keypair_random:
   la       x13, d1
   la       x14, d1_io
   jal      x1, copy_share
+
+  ecall
+
+/**
+ * P-384 ECDSA signature generation.
+ * Generate the secret scalar k from a random seed.
+ *
+ * @param[in]  dmem[msg]: message to be signed in dmem
+ * @param[in]   dmem[d0]: 1st private key share d0
+ * @param[in]   dmem[d1]: 2nd private key share d1
+ * @param[in]   dmem[k0]: 1st secret scalar share k0
+ * @param[in]   dmem[k1]: 2nd secret scalar share k1
+ * @param[out]   dmem[r]: r component of signature
+ * @param[out]   dmem[s]: s component of signature
+ */
+ecdsa_sign_config_k:
+  /* Generate the signature. */
+  jal      x1, p384_sign
 
   ecall
 
