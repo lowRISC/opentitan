@@ -546,12 +546,14 @@
         width: "1"
         module: sysrst_ctrl_aon
         desc: OpenTitan reset request to `rstmgr` (running on AON clock).
+        enabled_after_reset: false
       }
       {
         name: aon_timer_rst_req
         width: "1"
         module: aon_timer_aon
         desc: Watchdog reset request.
+        enabled_after_reset: false
       }
     ]
   }

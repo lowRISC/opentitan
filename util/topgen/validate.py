@@ -369,6 +369,10 @@ reset_request_required = {
 }
 reset_request_optional = {
     'width': ['d', 'TODO'],
+    "enabled_after_reset": [
+        "pb",
+        "whether the reset is enabled after a reset "
+        "(put differently, whether the reset value of the reset enable is high)"],
 }
 reset_request_added = {}
 
