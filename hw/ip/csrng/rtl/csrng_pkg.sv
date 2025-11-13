@@ -80,9 +80,7 @@ package csrng_pkg;
     RES  = 3'h2,
     GEN  = 3'h3,
     UPD  = 3'h4,
-    UNI  = 3'h5,
-    GENB = 3'h6, // Rsp routing for block encrypt
-    GENU = 3'h7  // Rsp routing for update unit
+    UNI  = 3'h5
   } acmd_e;
 
   typedef struct packed {

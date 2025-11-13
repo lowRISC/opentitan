@@ -21,18 +21,8 @@
 `define PATH2_3 \
     gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i.u_aes_cipher_control_fsm
 `define PATH3 \
-    u_csrng_core.u_prim_mubi4_sync_cs_enable
+    u_csrng_core.u_csrng_ctr_drbg
 `define PATH4 \
-    u_csrng_core.u_prim_mubi4_sync_sw_app_enable
-`define PATH5 \
-    u_csrng_core.u_prim_mubi4_sync_read_int_state
-`define PATH6 \
-    u_csrng_core.u_csrng_ctr_drbg_upd
-`define PATH7 \
-    u_csrng_core.u_csrng_ctr_drbg_gen
-`define PATH8 \
-    u_csrng_core.u_csrng_ctr_drbg_cmd
-`define PATH9 \
     u_csrng_core.u_csrng_main_sm
 
 interface csrng_assert_if
@@ -48,11 +38,8 @@ interface csrng_assert_if
     $assertoff(0, `DUT_PATH.`PATH2.`PATH2_1.u_state_regs_A);
     $assertoff(0, `DUT_PATH.`PATH2.`PATH2_2.u_state_regs_A);
     $assertoff(0, `DUT_PATH.`PATH2.`PATH2_3.u_state_regs_A);
-    $assertoff(0, `DUT_PATH.`PATH6.u_outblk_state_regs_A);
-    $assertoff(0, `DUT_PATH.`PATH6.u_blk_enc_state_regs_A);
-    $assertoff(0, `DUT_PATH.`PATH7.u_state_regs_A);
-    $assertoff(0, `DUT_PATH.`PATH8.u_state_regs_A);
-    $assertoff(0, `DUT_PATH.`PATH9.u_state_regs_A);
+    $assertoff(0, `DUT_PATH.`PATH3.u_state_regs_A);
+    $assertoff(0, `DUT_PATH.`PATH4.u_state_regs_A);
   endtask // assert_off
 
   task automatic assert_on ();
@@ -63,11 +50,8 @@ interface csrng_assert_if
     $asserton(0, `DUT_PATH.`PATH2.`PATH2_1.u_state_regs_A);
     $asserton(0, `DUT_PATH.`PATH2.`PATH2_2.u_state_regs_A);
     $asserton(0, `DUT_PATH.`PATH2.`PATH2_3.u_state_regs_A);
-    $asserton(0, `DUT_PATH.`PATH6.u_outblk_state_regs_A);
-    $asserton(0, `DUT_PATH.`PATH6.u_blk_enc_state_regs_A);
-    $asserton(0, `DUT_PATH.`PATH7.u_state_regs_A);
-    $asserton(0, `DUT_PATH.`PATH8.u_state_regs_A);
-    $asserton(0, `DUT_PATH.`PATH9.u_state_regs_A);
+    $asserton(0, `DUT_PATH.`PATH3.u_state_regs_A);
+    $asserton(0, `DUT_PATH.`PATH4.u_state_regs_A);
   endtask // assert_on
 
   task automatic assert_off_alert ();
@@ -78,10 +62,6 @@ interface csrng_assert_if
   endtask // assert_on_alert
 endinterface
 
-`undef PATH8
-`undef PATH7
-`undef PATH6
-`undef PATH5
 `undef PATH4
 `undef PATH3
 `undef PATH2_3

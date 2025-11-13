@@ -258,6 +258,7 @@ class pull_device_driver #(
         `CB.ack_int <= 1'b0;
         if (!cfg.hold_d_data_until_next_req) `CB.d_data_int <= 'x;,
         wait (cfg.in_reset);)
+    if (cfg.in_reset) `CB.ack_int <= '0;
   endtask
 
   `undef CB

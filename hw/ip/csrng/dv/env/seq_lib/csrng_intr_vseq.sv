@@ -220,8 +220,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     last_index = find_index("_", fld_name, "last");
 
     case (cfg.which_fatal_err) inside
-      sfifo_cmd_error, sfifo_genbits_error, sfifo_final_error, sfifo_cmdid_error,
-      sfifo_gadstage_error, sfifo_gbencack_error: begin
+      sfifo_cmd_error, sfifo_genbits_error: begin
         fifo_base_path = fld_name.substr(0, last_index-1);
 
         foreach (path_exts[i]) begin
@@ -231,8 +230,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
         force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts,
                             ral.intr_state.cs_fatal_err, 1'b1, cfg.which_fifo_err);
       end
-      cmd_stage_sm_error, main_sm_error, drbg_cmd_sm_error, drbg_gen_sm_error, drbg_updbe_sm_error,
-      drbg_updob_sm_error: begin
+      cmd_stage_sm_error, main_sm_error, ctr_drbg_sm_error: begin
         path = cfg.csrng_path_vif.sm_err_path(fld_name.substr(0, last_index-1), cfg.NHwApps);
         force_path_err(path, 8'b0, ral.intr_state.cs_fatal_err, 1'b1);
       end
@@ -285,7 +283,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
         `DV_CHECK(uvm_hdl_read(aes_fsm_path, aes_fsm_state))
         `DV_CHECK_EQ(aes_fsm_state, aes_pkg::CIPHER_CTRL_ERROR)
       end
-      cmd_gen_cnt_error: begin
+      ctr_error: begin
         path = cfg.csrng_path_vif.cmd_gen_cnt_err_path(cfg.NHwApps);
         force_path_err(path, 8'h01, ral.intr_state.cs_fatal_err, 1'b1);
       end
@@ -365,10 +363,8 @@ class csrng_intr_vseq extends csrng_base_vseq;
     csr_wr(.ptr(ral.intr_state), .value(32'd15));
     cfg.clk_rst_vif.wait_clks(100);
 
-    if (cfg.which_fatal_err inside {cmd_stage_sm_err, main_sm_err, drbg_cmd_sm_err,
-                                    drbg_gen_sm_err, drbg_updbe_sm_err, drbg_updob_sm_err,
-                                    aes_cipher_sm_err,
-                                    cmd_gen_cnt_err, cmd_gen_cnt_err_test}) begin
+    if (cfg.which_fatal_err inside {cmd_stage_sm_err, main_sm_err, ctr_drbg_sm_err,
+                                    aes_cipher_sm_err, ctr_err, ctr_err_test}) begin
       // These errors are either not gated with the module enable or they cause the main FSM to
       // escalate of which the alert output itself isn't gated with the module enable. After
       // clearing the interrupt state register, the cs_fatal_err interrupt bit again gets asserted.
