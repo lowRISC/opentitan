@@ -53,65 +53,44 @@ package csrng_env_pkg;
     invalid_read_int_state = 2
   } invalid_mubi_e;
 
-  // Keep these in groups and with ascending encodings as the env_cfg refers to
+  // Keep these in groups and with ascending encodings as csrng_env_cfg refers to
   // ranges of certain errors to define the distribution of error codes to test.
   typedef enum int {
     sfifo_cmd_error      = 0,
     sfifo_genbits_error  = 1,
-    sfifo_final_error    = 3,
-    sfifo_gbencack_error = 4,
-    sfifo_gadstage_error = 7,
-    sfifo_cmdid_error    = 9,
-    cmd_stage_sm_error   = 10,
-    main_sm_error        = 11,
-    drbg_cmd_sm_error    = 12,
-    drbg_gen_sm_error    = 13,
-    drbg_updbe_sm_error  = 14,
-    drbg_updob_sm_error  = 15,
-    aes_cipher_sm_error  = 16,
-    cmd_gen_cnt_error    = 17,
-    fifo_write_error     = 18,
-    fifo_read_error      = 19,
-    fifo_state_error     = 20
+    cmd_stage_sm_error   = 2,
+    main_sm_error        = 3,
+    ctr_drbg_sm_error    = 4,
+    aes_cipher_sm_error  = 5,
+    ctr_error            = 6,
+    fifo_write_error     = 7,
+    fifo_read_error      = 8,
+    fifo_state_error     = 9
   } fatal_err_e;
 
   typedef enum int {
     // ERR_CODE
     sfifo_cmd_err           = 0,
     sfifo_genbits_err       = 1,
-    sfifo_final_err         = 3,
-    sfifo_gbencack_err      = 4,
-    sfifo_gadstage_err      = 7,
-    sfifo_cmdid_err         = 9,
-    cmd_stage_sm_err        = 10,
-    main_sm_err             = 11,
-    drbg_cmd_sm_err         = 12,
-    drbg_gen_sm_err         = 13,
-    drbg_updbe_sm_err       = 14,
-    drbg_updob_sm_err       = 15,
-    aes_cipher_sm_err       = 16,
-    cmd_gen_cnt_err         = 17,
-    fifo_write_err          = 18,
-    fifo_read_err           = 19,
-    fifo_state_err          = 20,
+    cmd_stage_sm_err        = 2,
+    main_sm_err             = 3,
+    ctr_drbg_sm_err         = 4,
+    aes_cipher_sm_err       = 5,
+    ctr_err                 = 6,
+    fifo_write_err          = 7,
+    fifo_read_err           = 8,
+    fifo_state_err          = 9,
     // ERR_CODE_TEST
-    sfifo_cmd_err_test      = 21,
-    sfifo_genbits_err_test  = 22,
-    sfifo_final_err_test    = 24,
-    sfifo_gbencack_err_test = 25,
-    sfifo_gadstage_err_test = 28,
-    sfifo_cmdid_err_test    = 30,
-    cmd_stage_sm_err_test   = 31,
-    main_sm_err_test        = 32,
-    drbg_cmd_sm_err_test    = 33,
-    drbg_gen_sm_err_test    = 34,
-    drbg_updbe_sm_err_test  = 35,
-    drbg_updob_sm_err_test  = 36,
-    aes_cipher_sm_err_test  = 37,
-    cmd_gen_cnt_err_test    = 38,
-    fifo_write_err_test     = 39,
-    fifo_read_err_test      = 40,
-    fifo_state_err_test     = 41
+    sfifo_cmd_err_test      = 10,
+    sfifo_genbits_err_test  = 11,
+    cmd_stage_sm_err_test   = 12,
+    main_sm_err_test        = 13,
+    ctr_drbg_sm_err_test    = 14,
+    aes_cipher_sm_err_test  = 15,
+    ctr_err_test            = 16,
+    fifo_write_err_test     = 17,
+    fifo_read_err_test      = 18,
+    fifo_state_err_test     = 19
   } err_code_e;
 
   // These encodings must match the respective bit position of each
@@ -119,18 +98,11 @@ package csrng_env_pkg;
   typedef enum int {
     SFIFO_CMD_ERR      = 0,
     SFIFO_GENBITS_ERR  = 1,
-    SFIFO_FINAL_ERR    = 9,
-    SFIFO_GBENCACK_ERR = 10,
-    SFIFO_GADSTAGE_ERR = 13,
-    SFIFO_CMDID_ERR    = 15,
     CMD_STAGE_SM_ERR   = 20,
     MAIN_SM_ERR        = 21,
-    DRBG_GEN_SM_ERR    = 22,
-    DRBG_UPDBE_SM_ERR  = 23,
-    DRBG_UPDOB_SM_ERR  = 24,
+    CTR_DRBG_SM_ERR    = 22,
     AES_CIPHER_SM_ERR  = 25,
-    CMD_GEN_CNT_ERR    = 26,
-    DRBG_CMD_SM_ERR    = 27,
+    CTR_ERR            = 26,
     FIFO_WRITE_ERR     = 28,
     FIFO_READ_ERR      = 29,
     FIFO_STATE_ERR     = 30
@@ -148,12 +120,8 @@ package csrng_env_pkg;
   } recov_alert_bit_e;
 
   typedef enum int {
-    sfifo_cmdid    = 0,
-    sfifo_gadstage = 2,
-    sfifo_gbencack = 5,
-    sfifo_final    = 6,
-    sfifo_genbits  = 7,
-    sfifo_cmd      = 8
+    sfifo_cmd     = 0,
+    sfifo_genbits = 1
   } which_fifo_e;
 
   typedef enum int {
@@ -164,8 +132,7 @@ package csrng_env_pkg;
 
   typedef enum int {
     cmd_gen_cnt_sel  = 0,
-    drbg_upd_cnt_sel = 1,
-    drbg_gen_cnt_sel = 2
+    ctr_drbg_cnt_sel = 1
   } which_cnt_e;
 
   typedef enum int {

@@ -100,8 +100,7 @@ class csrng_err_vseq extends csrng_base_vseq;
                               cfg.which_app_err_alert, fld_name), UVM_MEDIUM)
 
     case (cfg.which_err_code) inside
-      sfifo_cmd_err, sfifo_genbits_err, sfifo_final_err, sfifo_gbencack_err, sfifo_gadstage_err,
-      sfifo_cmdid_err: begin
+      sfifo_cmd_err, sfifo_genbits_err: begin
         fld = csr.get_field_by_name(fld_name);
         fifo_base_path = fld_name.substr(0, last_index-1);
 
@@ -113,42 +112,12 @@ class csrng_err_vseq extends csrng_base_vseq;
         `uvm_info(`gfn, $sformatf("Forcing this FIFO error type %s", cfg.which_fifo_err.name()),
                   UVM_MEDIUM)
 
-        // For sfifo_gadstage_err the down stream FIFO also takes inputs from sources other than
-        // sfifo_gadstage. To avoid the propagation of undefined data through CSRNG we need to
-        // force the input of sfifo_gbencack to zero. Otherwise this will cause a lot of assertions
-        // to trigger and eventually CSRNG will output undefined bits which causes some tlul checks
-        // to fail.
-        if ((cfg.which_err_code == sfifo_gadstage_err) && (cfg.which_fifo_err == fifo_read)) begin
-          fifo_forced_path_ds = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert,
-                                                                 "sfifo_gbencack", "rdata");
-          uvm_hdl_force(fifo_forced_path_ds, 'b0);
-          force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts, fld,
-                              1'b1, cfg.which_fifo_err);
-          uvm_hdl_release(fifo_forced_path_ds);
-
-        // For sfifo_gbencack_err the downstream arbiter receives an undefined signal if we
-        // force the write signal of sfifo_gbencack. This causes some assertions to trigger.
-        // For this reason we need to force adstage_glast to zero such that the request signal
-        // to the downstream arbiter doesn't go high.
-        end else if ((cfg.which_err_code == sfifo_gbencack_err) &&
-                     (cfg.which_fifo_err == fifo_write)) begin
-          fifo_forced_path_ds =
-              cfg.csrng_path_vif.csrng_core_path("u_csrng_ctr_drbg_gen.adstage_glast");
-          uvm_hdl_force(fifo_forced_path_ds, 'b0);
-          force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts, fld,
-                              1'b1, cfg.which_fifo_err);
-          cfg.clk_rst_vif.wait_clks(1);
-          uvm_hdl_release(fifo_forced_path_ds);
-
-        end else begin
-          force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts, fld,
-                              1'b1, cfg.which_fifo_err);
-        end
+        force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts, fld, 1'b1,
+                            cfg.which_fifo_err);
         csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
         cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
       end
-      cmd_stage_sm_err, main_sm_err, drbg_cmd_sm_err, drbg_gen_sm_err, drbg_updbe_sm_err,
-      drbg_updob_sm_err: begin
+      cmd_stage_sm_err, main_sm_err, ctr_drbg_sm_err: begin
         fld = csr.get_field_by_name(fld_name);
         path = cfg.csrng_path_vif.sm_err_path(fld_name.substr(0, last_index-1),
                                               cfg.which_app_err_alert);
@@ -208,7 +177,7 @@ class csrng_err_vseq extends csrng_base_vseq;
         `DV_CHECK(uvm_hdl_read(aes_fsm_path, aes_fsm_state))
         `DV_CHECK_EQ(aes_fsm_state, aes_pkg::CIPHER_CTRL_ERROR)
       end
-      cmd_gen_cnt_err: begin
+      ctr_err: begin
         logic [csrng_pkg::MainSmStateWidth-1:0] sm_state;
         string sm_state_path = cfg.csrng_path_vif.sm_err_path("main_sm", cfg.which_app_err_alert);
         case(cfg.which_cnt) inside
@@ -217,14 +186,9 @@ class csrng_err_vseq extends csrng_base_vseq;
             path = cfg.csrng_path_vif.cmd_gen_cnt_err_path(cfg.which_app_err_alert);
             force_cnt_err(path, fld, 1'b1, csrng_pkg::GenBitsCtrWidth);
           end
-          drbg_upd_cnt_sel: begin
+          ctr_drbg_cnt_sel: begin
             fld = csr.get_field_by_name(fld_name);
-            path = cfg.csrng_path_vif.drbg_upd_cnt_err_path();
-            force_cnt_err(path, fld, 1'b1, csrng_pkg::CtrLen);
-          end
-          drbg_gen_cnt_sel: begin
-            fld = csr.get_field_by_name(fld_name);
-            path = cfg.csrng_path_vif.drbg_gen_cnt_err_path();
+            path = cfg.csrng_path_vif.ctr_drbg_ctr_err_path();
             force_cnt_err(path, fld, 1'b1, csrng_pkg::CtrLen);
           end
         endcase
@@ -254,33 +218,7 @@ class csrng_err_vseq extends csrng_base_vseq;
         value1 = fifo_err_value[0][path_key];
         value2 = fifo_err_value[1][path_key];
 
-        // For sfifo_gadstage the down stream FIFO also takes inputs from sources other than
-        // sfifo_gadstage. To avoid the propagation of undefined data through CSRNG we need to
-        // force the input of sfifo_gbencack to zero. Otherwise this will cause a lot of assertions
-        // to trigger and eventually CSRNG will output undefined bits which causes some tlul checks
-        // to fail.
-        if ((cfg.which_err_code == fifo_read_error) && (cfg.which_fifo == sfifo_gadstage)) begin
-          fifo_forced_path_ds = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert,
-                                                                 "sfifo_gbencack", "rdata");
-          uvm_hdl_force(fifo_forced_path_ds, 'b0);
-          force_fifo_readwrite_err(path1, path2, path3, value1, value2, 8'b0, fld, 1'b1);
-          uvm_hdl_release(fifo_forced_path_ds);
-
-        // For sfifo_gbencack_err the downstream arbiter receives an undefined signal if we
-        // force the write signal of sfifo_gbencack. This causes some assertions to trigger.
-        // For this reason we need to force adstage_glast to zero such that the request signal
-        // to the downstream arbiter doesn't go high.
-        end else if ((cfg.which_err_code == fifo_write_error) &&
-                     (cfg.which_fifo == sfifo_gbencack)) begin
-          fifo_forced_path_ds =
-              cfg.csrng_path_vif.csrng_core_path("u_csrng_ctr_drbg_gen.adstage_glast");
-          uvm_hdl_force(fifo_forced_path_ds, 'b0);
-          force_fifo_readwrite_err(path1, path2, path3, value1, value2, 8'b0, fld, 1'b1);
-          cfg.clk_rst_vif.wait_clks(1);
-          uvm_hdl_release(fifo_forced_path_ds);
-
-        end else if (cfg.which_err_code == fifo_write_error ||
-                     cfg.which_err_code == fifo_read_err) begin
+        if (cfg.which_err_code == fifo_write_error || cfg.which_err_code == fifo_read_err) begin
           force_fifo_readwrite_err(path1, path2, path3, value1, value2, 8'b0, fld, 1'b1);
         end else begin
           force_fifo_err(path1, path2, value1, value2, fld, 1'b1);
@@ -288,11 +226,7 @@ class csrng_err_vseq extends csrng_base_vseq;
         csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
         cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
       end
-      sfifo_cmd_err_test, sfifo_genbits_err_test, sfifo_final_err_test,
-      sfifo_gbencack_err_test, sfifo_gadstage_err_test,
-      sfifo_cmdid_err_test, cmd_stage_sm_err_test, main_sm_err_test, drbg_cmd_sm_err_test,
-      drbg_gen_sm_err_test, drbg_updbe_sm_err_test, drbg_updob_sm_err_test, aes_cipher_sm_err_test,
-      cmd_gen_cnt_err_test, fifo_write_err_test, fifo_read_err_test, fifo_state_err_test: begin
+      [sfifo_cmd_err_test : fifo_state_err_test]: begin
         fld = csr.get_field_by_name(fld_name.substr(0, last_index-1));
         err_code_test_bit = fld.get_lsb_pos();
         csr_wr(.ptr(ral.err_code_test.err_code_test), .value(err_code_test_bit));
@@ -324,12 +258,9 @@ class csrng_err_vseq extends csrng_base_vseq;
 
     if (cfg.which_err_code inside {cmd_stage_sm_err, cmd_stage_sm_err_test,
                                    main_sm_err, main_sm_err_test,
-                                   drbg_cmd_sm_err, drbg_cmd_sm_err_test,
-                                   drbg_gen_sm_err, drbg_gen_sm_err_test,
-                                   drbg_updbe_sm_err, drbg_updbe_sm_err_test,
-                                   drbg_updob_sm_err, drbg_updob_sm_err_test,
+                                   ctr_drbg_sm_err, ctr_drbg_sm_err_test,
                                    aes_cipher_sm_err, aes_cipher_sm_err_test,
-                                   cmd_gen_cnt_err, cmd_gen_cnt_err_test}) begin
+                                   ctr_err, ctr_err_test}) begin
       // These errors are either not gated with the module enable or they cause the main FSM to
       // escalate of which the alert output itself isn't gated with the module enable. After
       // clearing the interrupt state register, the cs_fatal_err interrupt bit again gets asserted.
