@@ -258,6 +258,10 @@ class pull_device_driver #(
         `CB.ack_int <= 1'b0;
         if (!cfg.hold_d_data_until_next_req) `CB.d_data_int <= 'x;,
         wait (cfg.in_reset);)
+    // In case there is a race condition between the logic above and the reset_signals task, we make
+    // sure that the reset also de-asserts the acknowledge signal. It can otherwise get stuck high
+    // during reset and emit an erroneous acknowledge upon exiting reset.
+    if (cfg.in_reset) `CB.ack_int <= 1'b0;
   endtask
 
   `undef CB
