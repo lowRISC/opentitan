@@ -688,7 +688,7 @@
         },
         { bits: "1",
           name: "EN_1",
-          resval: "0"
+          resval: "1"
           desc: "Reset enable for soc_proxy: rst_req_external.",
         },
       ]
