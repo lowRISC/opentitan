@@ -78,6 +78,17 @@ d1:
 x_r:
   .zero 64
 
+/* Secret scalar input buffer. */
+.globl k0_io
+.balign 32
+k0_io:
+  .zero 64
+
+.globl k1_io
+.balign 32
+k1_io:
+  .zero 64
+
 /* Secret scalar (k) in two shares: k = (k0 + k1) mod n */
 .globl k0
 .balign 32
