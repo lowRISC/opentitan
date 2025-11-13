@@ -716,7 +716,7 @@ module pwrmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
+    .RESVAL  (1'h1),
     .Mubi    (1'b0)
   ) u_reset_en_en_1 (
     .clk_i   (clk_i),

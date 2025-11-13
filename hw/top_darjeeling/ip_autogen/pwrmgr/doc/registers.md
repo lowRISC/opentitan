@@ -282,7 +282,7 @@ Bit mask for enabled reset requests
 Whenever a particular bit is set to 1, that reset request is enabled.
 Whenever a particular bit is set to 0, that reset request cannot reset the device.
 - Offset: `0x2c`
-- Reset default: `0x0`
+- Reset default: `0x2`
 - Reset mask: `0x3`
 - Register enable: [`RESET_EN_REGWEN`](#reset_en_regwen)
 
@@ -295,7 +295,7 @@ Whenever a particular bit is set to 0, that reset request cannot reset the devic
 |  Bits  |  Type  |  Reset  | Name   | Description                                        |
 |:------:|:------:|:-------:|:-------|:---------------------------------------------------|
 |  31:2  |        |         |        | Reserved                                           |
-|   1    |   rw   |   0x0   | EN_1   | Reset enable for soc_proxy: rst_req_external.      |
+|   1    |   rw   |   0x1   | EN_1   | Reset enable for soc_proxy: rst_req_external.      |
 |   0    |   rw   |   0x0   | EN_0   | Reset enable for aon_timer_aon: aon_timer_rst_req. |
 
 ## RESET_STATUS
