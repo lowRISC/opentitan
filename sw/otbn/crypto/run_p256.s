@@ -17,7 +17,7 @@
 
 /**
  * Mode magic values, generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 6 -n 11 \
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 8 -n 11 \
  *     --avoid-zero -s 380925547
  *
  * Call the same utility with the same arguments and a higher -m to generate
@@ -28,19 +28,21 @@
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.
  */
-.equ MODE_KEYGEN, 0x5c5
-.equ MODE_SIGN, 0x31b
-.equ MODE_VERIFY, 0x1f8
-.equ MODE_ECDH, 0x6eb
-.equ MODE_SIDELOAD_KEYGEN, 0x275
-.equ MODE_SIDELOAD_SIGN, 0x45e
-.equ MODE_SIDELOAD_ECDH, 0x72c
+.equ MODE_KEYGEN, 0x1f8
+.equ MODE_SIGN, 0x669
+.equ MODE_SIGN_CONFIG_K, 0x23E
+.equ MODE_VERIFY, 0x54E
+.equ MODE_ECDH, 0x695
+.equ MODE_SIDELOAD_KEYGEN, 0x7A2
+.equ MODE_SIDELOAD_SIGN, 0xE7
+.equ MODE_SIDELOAD_ECDH, 0x353
 
 /**
  * Make the mode constants visible to Ibex.
  */
 .globl MODE_KEYGEN
 .globl MODE_SIGN
+.globl MODE_SIGN_CONFIG_K
 .globl MODE_VERIFY
 .globl MODE_ECDH
 .globl MODE_SIDELOAD_KEYGEN
@@ -92,6 +94,19 @@ start:
 
   addi  x3, x0, MODE_ECDH
   beq   x2, x3, shared_key
+
+  /* Copy the caller-provided secret scalar shares into scratchpad memory.
+       dmem[k0] <= dmem[k0_io]
+       dmem[k1] <= dmem[k1_io] */
+  la       x13, k0_io
+  la       x14, k0
+  jal      x1, copy_share
+  la       x13, k1_io
+  la       x14, k1
+  jal      x1, copy_share
+
+  addi  x3, x0, MODE_SIGN_CONFIG_K
+  beq   x2, x3, ecdsa_sign_config_k
 
   /* Invalid mode; fail. */
   unimp
@@ -153,6 +168,23 @@ random_keygen:
   la       x13, d1
   la       x14, d1_io
   jal      x1, copy_share
+
+  ecall
+
+/**
+ * Generate a signature.
+ *
+ * @param[in]  dmem[msg]: message to be signed (256 bits)
+ * @param[in]  dmem[r]:   dmem buffer for r component of signature (256 bits)
+ * @param[in]  dmem[s]:   dmem buffer for s component of signature (256 bits)
+ * @param[in]  dmem[d0]:  first share of private key d (320 bits)
+ * @param[in]  dmem[d1]:  second share of private key d (320 bits)
+ * @param[in]  dmem[k0]:  first share of secret scalar k (320 bits)
+ * @param[in]  dmem[k1]:  second share of secret scalar k (320 bits)
+ */
+ecdsa_sign_config_k:
+  /* Generate the signature. */
+  jal      x1, p256_sign
 
   ecall
 
@@ -404,6 +436,16 @@ d0_io:
 .globl d1_io
 .balign 32
 d1_io:
+  .zero 64
+
+/* Secret scalar (k) input buffer. */
+.globl k0_io
+.balign 32
+k0_io:
+  .zero 64
+.globl k1_io
+.balign 32
+k1_io:
   .zero 64
 
 /* Verification result x_r (aka x_1). */
