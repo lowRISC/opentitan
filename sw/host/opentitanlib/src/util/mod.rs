@@ -18,7 +18,7 @@ pub mod serde;
 pub mod status;
 pub mod testing;
 pub mod unknown;
-pub mod usb;
+// pub mod usb;
 pub mod usr_access;
 pub mod vcd;
 pub mod vmem;

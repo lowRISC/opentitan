@@ -18,19 +18,20 @@ use std::rc::Rc;
 use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
 use crate::io::spi::Target;
 use crate::io::uart::{Uart, UartError};
+use crate::io::usb::{UsbContext, UsbDevice};
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use crate::transport::common::uart::SerialPortUart;
+use crate::transport::common::usb::RusbContext;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
 use crate::util::parse_int::ParseInt;
-use crate::util::usb::UsbBackend;
 
 pub mod gpio;
 pub mod spi;
 
 pub struct Inner {
-    device: UsbBackend,
+    device: Rc<dyn UsbDevice>,
     spi: Option<Rc<dyn Target>>,
     gpio: HashMap<String, Rc<dyn GpioPin>>,
     gpio_levels: u16,
@@ -41,7 +42,7 @@ pub struct Inner {
 }
 
 impl Inner {
-    fn new(device: UsbBackend, in_endpoint: u8, out_endpoint: u8) -> Self {
+    fn new(device: Rc<dyn UsbDevice>, in_endpoint: u8, out_endpoint: u8) -> Self {
         Self {
             device,
             spi: None,
@@ -130,7 +131,8 @@ impl Dediprog {
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
     ) -> anyhow::Result<Self> {
-        let device = UsbBackend::new(
+        let usb_context = RusbContext::new();
+        let device = usb_context.device_by_id(
             usb_vid.unwrap_or(Self::VID_ST_MICROELECTRONICS),
             usb_pid.unwrap_or(Self::PID_DEDIPROG_SF100),
             usb_serial,
@@ -180,7 +182,7 @@ impl Dediprog {
 
         device.claim_interface(0)?;
 
-        let protocol_version = match Self::get_protocol_version(&device) {
+        let protocol_version = match Self::get_protocol_version(&*device) {
             Ok(protocol_version) => protocol_version,
             Err(_) => {
                 let mut init_byte = [0u8];
@@ -203,7 +205,7 @@ impl Dediprog {
                     )
                     .into());
                 }
-                Self::get_protocol_version(&device)?
+                Self::get_protocol_version(&*device)?
             }
         };
         if protocol_version < 2 {
@@ -223,7 +225,7 @@ impl Dediprog {
         Ok(board)
     }
 
-    fn get_protocol_version(device: &UsbBackend) -> Result<u32> {
+    fn get_protocol_version(device: &dyn UsbDevice) -> Result<u32> {
         let mut device_id_bytes = [0u8; 16];
         device.read_control(
             rusb::request_type(
