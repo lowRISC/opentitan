@@ -5,30 +5,33 @@
 from typing import Dict, Sequence
 
 from reggen.bits import Bits
-from reggen.lib import check_keys, check_name, check_str, check_int, check_list
+from reggen.lib import check_keys, check_name, check_str, check_int, check_list, check_bool
 
 
 class Signal:
 
-    def __init__(self, name: str, desc: str, bits: Bits):
+    def __init__(self, name: str, desc: str, bits: Bits, reset_enabled: bool = False):
         self.name = name
         self.desc = desc
         self.bits = bits
+        self.reset_enabled = reset_enabled
 
     @staticmethod
     def from_raw(what: str, lsb: int, raw: object) -> 'Signal':
-        rd = check_keys(raw, what, ['name', 'desc'], ['width'])
+        rd = check_keys(raw, what, ["name", "desc"], ["width", "reset_enabled"])
 
         name = check_name(rd['name'], 'name field of ' + what)
         desc = check_str(rd['desc'], 'desc field of ' + what)
         width = check_int(rd.get('width', 1), 'width field of ' + what)
+        reset_enabled = check_bool(rd.get("reset_enabled", False), "reset_enabled field of " + what)
+
         if width <= 0:
             raise ValueError(f'The width field of signal {name} ({what}) '
                              f'has value {width}, but should be positive.')
 
         bits = Bits(lsb + width - 1, lsb)
 
-        return Signal(name, desc, bits)
+        return Signal(name, desc, bits, reset_enabled)
 
     @staticmethod
     def from_raw_list(what: str, raw: object) -> Sequence['Signal']:

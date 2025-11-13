@@ -68,7 +68,7 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
                 ndm_reset
                 ), UVM_MEDIUM)
 
-      csr_wr(.ptr(ral.reset_en[0]), .value(resets_en));
+      csr_wr(.ptr(ral.reset_en.en_0), .value(resets_en));
       // This is necessary to propagate reset_en.
       wait_for_csr_to_propagate_to_slow_domain();
 

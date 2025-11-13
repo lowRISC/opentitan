@@ -44,6 +44,7 @@
           width: "1"
           module: aon_timer_aon
           desc: Watchdog reset request.
+          reset_enabled: false
         }
       ]
     }

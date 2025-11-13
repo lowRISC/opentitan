@@ -681,7 +681,6 @@ module pwrmgr_reg_top (
   );
 
 
-  // Subregister 0 of Multireg reset_en
   // R[reset_en]: V(False)
   // Create REGWEN-gated WE signal
   logic reset_en_gated_we;
@@ -706,7 +705,7 @@ module pwrmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.reset_en[0].q),
+    .q      (reg2hw.reset_en.en_0.q),
     .ds     (),
 
     // to register interface (read)
@@ -733,7 +732,7 @@ module pwrmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.reset_en[1].q),
+    .q      (reg2hw.reset_en.en_1.q),
     .ds     (),
 
     // to register interface (read)
