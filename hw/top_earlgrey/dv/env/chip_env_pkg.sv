@@ -56,6 +56,7 @@ package chip_env_pkg;
   import rv_core_ibex_reg_pkg::RV_CORE_IBEX_DV_SIM_WINDOW_OFFSET;
   import i2c_agent_pkg::*;
   import pattgen_agent_pkg::*;
+  import ottf_spi_console_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -171,6 +172,11 @@ package chip_env_pkg;
     SpiFlashEn4B         = 8'hB7,
     SpiFlashEx4B         = 8'hE9
   } spi_flash_cmd_e;
+
+  typedef enum int {
+    ottf_spi_console_flow_ctrl_mio_idx_rx_ready = top_earlgrey_pkg::MioPadIoa6,
+    ottf_spi_console_flow_ctrl_mio_idx_tx_ready = top_earlgrey_pkg::MioPadIoa5
+  } ottf_spi_console_flow_ctrl_mio_idx_e;
 
   // package sources
   `include "chip_env_cfg.sv"

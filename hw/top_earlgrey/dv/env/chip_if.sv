@@ -226,6 +226,12 @@ interface chip_if;
     end while (1);
   end
 
+  // Bind the sideband signals used to flow-control the OTTF spi_console into a interface.
+  pins_if#(.Width(2), .PullStrength("Weak")) spi_host_console_flow_ctrl_if (
+    .pins({mios[ottf_spi_console_flow_ctrl_mio_idx_rx_ready],
+           mios[ottf_spi_console_flow_ctrl_mio_idx_tx_ready]})
+  );
+
   // Functional (dedicated) interface: SPI device 0 interface (receives traffic from the chip).
   // TODO: Update spi_if to emit all signals as inout ports and internal drivers on all ports.
   bit [NUM_SPI_HOSTS-1:0] __enable_spi_device;
