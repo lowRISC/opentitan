@@ -1,0 +1,401 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  build_cmd:        "{job_prefix} vcs"
+  post_build_cmds:  ["{job_prefix} vc_fcc"]
+  build_ex:         "{build_dir}/simv"
+  run_cmd:          "{job_prefix} vc_fcm"
+
+  fi_campaign: "fc_{name}"
+  fi_testcase: "tc_{name}"
+  fi_project: "fdb_{name}"
+
+  // This option enables the following: (needed for uvm_hdl_*)
+  //  - Read capability on registers, variables, and nets
+  //  - Write (deposit) capability on registers and variables
+  //  - Force capability on registers, variables, and nets
+  // TODO Trim this flag since +f hurts performance.
+  vcs_build_opt_debug_access: "-debug_access+f"
+  vcs_build_opt_debug_region: "-debug_region=cell+lib"
+  post_flist_opts: ""
+  build_opts: ["-sverilog -full64 -licqueue -ntb_opts uvm-1.2",
+               // Fault Injection specific parameters.
+               "-fsim=class {build_dir}/fusesoc-work/src/{strobe_file}",
+               "-fsim=dut:{dut_instance}",
+               "-fsim=portfaults",
+               "-assert disable_assert",
+               // General parameters.
+               "-timescale={timescale}",
+               "-Mdir={build_ex}.csrc",
+               "-o {build_ex}",
+               "-f {sv_flist}",
+               "{post_flist_opts}",
+               // Enable LCA features. It does not require separate licenses.
+               "-lca",
+               // List multiple tops for the simulation. Prepend each top level with `-top`.
+               "{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-top \\1/g'",
+               "+incdir+{build_dir}",
+               // Turn on warnings for non-void functions called with return values ignored
+               "+warn=SV-NFIVC",
+               "+warn=noUII-L",
+               // Disable unnecessary LCA warning.
+               "+warn=noLCA_FEATURES_ENABLED",
+               // Disable warnings about bind directive not being applied.
+               "+warn=noBNA",
+               // Below option required for $error/$fatal system calls
+               "-assert svaext",
+               // Force unique and priority to evaluate compliance checking only on the stable
+               // and final value of the selection input at the end of a simulation timestep.
+               // See https://github.com/lowRISC/ibex/issues/845.
+               "-xlrm uniq_prior_final",
+               // Newer compiler versions have escalated these warnings into an error by default, and
+               // VCS generates code to build the simulation executable which fails these checks.
+               // De-escalate the error (only when building the simv itself.)
+               // > rmapats.c:20:9: error: implicit declaration of function 'vcs_simpSetEBlkEvtID'
+               // >  [-Wimplicit-function-declaration]
+               // > rmapats.c:466:36: error: passing argument 1 of 'setChildClockWriteFuncAndPcode' makes
+               // > integer from pointer without a cast
+               // >  [-Wint-conversion]
+               "-Xcflags='-Wno-error=implicit-function-declaration -Wno-error=int-conversion'",
+               // Force DPI-C compilation in C99 mode. The -fno-extended-identifiers flag tells g++
+               // not to worry about unicode. For some bizarre reason, the VCS DPI code contains
+               // preprocessor macros with smart quotes, which causes GCC 10.2 and later to choke
+               // otherwise. The double-escaped quotes are because this needs to go inside a string
+               // that gets passed to Make (stripping one level of quotes), and then needs to
+               // result in an argument with an embedded space (the other one).
+               "-CFLAGS --std=c99 -CFLAGS -fno-extended-identifiers",
+               // C++17 standard is enforced for all sources, including the DPI-C constructs.
+               // Refer to
+               // https://opentitan.org/book/doc/contributing/style_guides/c_cpp_coding_style.html#c-style-guide
+               "-CFLAGS --std=c++17",
+               // Without this magic LDFLAGS argument below, we get compile time errors with
+               // VCS on Google Linux machines that look like this:
+               // .../libvcsnew.so: undefined reference to `snpsReallocFunc'
+               // .../libvcsnew.so: undefined reference to `snpsCheckStrdupFunc'
+               // .../libvcsnew.so: undefined reference to `snpsGetMemBytes'
+               "-LDFLAGS -Wl,--no-as-needed",
+               // This option is needed for uvm_hdl_*, when it accesses the array under `celldefine
+               "{vcs_build_opt_debug_region}",
+               "{vcs_build_opt_debug_access}",
+               // Use this to conditionally compile for VCS (example: LRM interpretations differ
+               // across tools).
+               "+define+VCS",
+               // Upgrade below warnings to errors to make VCS more strict on syntax to avoid
+               // having issue with other simulators but passing with VCS
+               //
+               // Identifier previously declared
+               "-error=IPDW",
+               // Input Supply Port with no driver
+               "-error=UPF_ISPND",
+               // Invalid generic or parameter assignment
+               "-error=IGPA",
+               // Class scope used outside of class
+               "-error=PCSRMIO",
+               // Attempt to override undefined parameter
+               "-error=AOUP",
+               // Unbound component
+               "-error=ELW_UNBOUND",
+               // Illegal Use of Wildcard Index
+               "-error=IUWI",
+               // Index into non-array variable
+               "-error=INAV",
+               // Illegal Static Cast
+               "-error=SV-ISC",
+               // Obsolete System Verilog feature
+               "-error=OSVF-NPVIUFPI",
+               // Duplicate port in module instantiation
+               "-error=DPIMI",
+               // Identifier in ANSI port declaration
+               "-error=IPDASP",
+               // File not found
+               "-error=CM-HIER-FNF",
+               // Concatenations with unsized constants
+               "-error=CWUC",
+               // More arguments than needed
+               "-error=MATN",
+               // Specifying negative delays is invalid
+               "-error=STASKW_NDTAZ1",
+               // Too many parameter overrides
+               "-error=TMPO",
+               // Class objects must not hide other class members due to same name
+               "-error=SV-OHCM",
+               // ENUMASSIGN issues can cause LEC warnings later down the road (see #10083
+               // and #10952 for context). The warning is therefore promoted to an error
+               // in simulations in order to catch this as early as possible.
+               "-error=ENUMASSIGN",
+               // Tasks must not be enabled in functions. Other tools do not allow this.
+               "-error=TEIF"
+               // This helps avoid races in flops per Synopsys CASE 01552811.
+               // It causes flops to always use the sampled data value.
+               "-deraceclockdata"
+               ]
+  post_build_opts: ["-full64",
+                    "-daidir={build_ex}.daidir",
+                    "-dut={dut_instance}",
+                    "-overwrite",
+                    "-fdb_project={fi_project}",
+                    "-sff={build_dir}/fusesoc-work/src/{project_sff_file},{build_dir}/fusesoc-work/src/{block_sff_file}",
+                    "-campaign={fi_campaign}",
+                    "-fdb_path={build_dir}/fdb"
+                   ]
+
+  run_opts_fi_sim:   ["-tcl_script={run_script}",
+               "-fdb_path={build_dir}/fdb"
+               "-fdb_project={fi_project}",
+               "-fc={fi_campaign}",
+               "-connect"
+              ]
+
+  run_opts: ["-licqueue",
+                    "+UVM_NO_RELNOTES +UVM_VERBOSITY=UVM_LOW",
+                    // In VCS, all random generation starts with an initial seed and that remains same
+                    // for each instance of the module. Hence, for each instance of the same module
+                    // $urandom() generates same random value.
+                    // Below switch generates different randomization values per instance of a module.
+                    // Refer to https://github.com/lowRISC/opentitan/issues/27659 for more details.
+                    "-xlrm hier_inst_seed",
+                    // Disable the display of the SystemVerilog assert and cover statement summary
+                    // at the end of simulation. This summary is list of assertions that started but
+                    // did not finish because the simulation terminated, or assertions that did not
+                    // fire at all. The latter is analyzed anyway in the collected coverage. Neither
+                    // of these is useful in regular simulations.
+                    "-assert nopostproc",
+                    "+UVM_TESTNAME={uvm_test}",
+                    "-assert disable_assert"
+                  ]
+
+  // Supported wave dumping formats (in order of preference).
+  supported_wave_formats: ["fsdb", "vpd"]
+
+  // Default tcl script used when running the sim. Override if needed.
+  run_script: "{dv_root}/tools/fi_sim.tcl"
+
+  // Coverage related.
+  cov_db_dir: "{scratch_path}/coverage/{build_mode}.vdb"
+
+  // Individual test specific coverage data - this will be deleted if the test fails
+  // so that coverage from failiing tests is not included in the final report.
+  cov_db_test_dir_name: "{run_dir_name}.{svseed}"
+  cov_db_test_dir: "{cov_db_dir}/snps/coverage/db/testdata/{cov_db_test_dir_name}"
+
+  // Merging coverage.
+  // "cov_db_dirs" is a special variable that appends all build directories in use.
+  // It is constructed by the tool itself.
+  cov_merge_dir:    "{scratch_path}/cov_merge"
+  cov_merge_db_dir: "{cov_merge_dir}/merged.vdb"
+  cov_merge_cmd:    "{job_prefix} urg"
+  cov_merge_opts:   ["-lca",
+                     "-full64",
+                     // No need of generating report when merging coverage.
+                     "-noreport",
+                     // Parallel merge is slower than serial merge for most
+                     // small blocks, and the corresponding flags are commented
+                     // out. If this becomes problematic and you have a powerful
+                     // machine available, uncomment the three flags below.
+                     // Merge results from tests in parallel.
+                     // "-parallel",
+                     // "-parallel_split 20",
+                     // "-parallel_temproot {cov_merge_dir}",
+                     "+urg+lic+wait",
+                     // Merge same assert instances found in different VDBs.
+                     "-merge_across_libs",
+                     // This enables grading on the merged vdb.
+                     "-show tests",
+                     // Enable union mode of flexible merging for covergroups.
+                     "-flex_merge union",
+                     // Use cov_db_dirs var for dir args; append -dir in front of each
+                     "{eval_cmd} echo {cov_db_dirs} | sed -E 's/(\\S+)/-dir \\1/g'",
+                     "-dbname {cov_merge_db_dir}"]
+
+  // Generate coverage reports in text as well as html.
+  cov_report_dir:   "{scratch_path}/cov_report"
+  cov_report_cmd:   "{job_prefix} urg"
+  cov_report_opts:  ["-lca",
+                     "-full64",
+                     "+urg+lic+wait",
+                     // Lists all the tests that covered a given object.
+                     "-show tests",
+                     // Enable test grading using the "index" scheme, and the
+                     // generation of the list of contributing tests with
+                     // "testfile".
+                     "-grade index testfile",
+                     // Use simple ratio of total covered bins over total bins across cps & crs,
+                     "-group ratio",
+                     // Follow LRM naming conventions for array bins.
+                     "-group lrm_bin_name",
+                     // Compute overall coverage for per-instance covergroups individually rather
+                     // than cumulatively.
+                     "-group instcov_for_score",
+                     "-dir {cov_merge_db_dir}",
+                     "-line nocasedef",
+                     "-format both",
+                     // Prepend each el file with `-elfile`.
+                     "{eval_cmd} echo {vcs_cov_excl_files} | sed -E 's/(\\S+)/-elfile \\1/g'",
+                     "-report {cov_report_dir}"]
+  cov_report_txt:   "{cov_report_dir}/dashboard.txt"
+  cov_report_page:  "dashboard.html"
+
+  // UNR related.
+  // All code coverage, assert isn't supported
+  cov_unr_metrics: "line+cond+fsm+tgl+branch"
+  cov_unr_dir:     "{scratch_path}/cov_unr"
+
+  cov_unr_common_build_opts: ["-sverilog -full64 -licqueue -ntb_opts uvm-1.2",
+                              "-timescale={timescale}"]
+
+  // Use recommended UUM (Unified usage model) 3 steps flow. The other flow defines macro
+  // "SYNTHESIS", which we have used in design
+  cov_unr_build_cmd: [// Step 1
+                      "{job_prefix} vlogan {cov_unr_common_build_opts} &&",
+                      // Step 2
+                      "{job_prefix} vlogan {cov_unr_common_build_opts}",
+                      // grep all defines from {build_opts} from step 2
+                      '''{eval_cmd} opts=`echo {build_opts}`; defines=; d=; \
+                      for o in $opts; \
+                      do \
+                        d=`echo $o | grep -o '+define+.*'`; \
+                        defines="$defines $d"; \
+                      done; \
+                      echo $defines
+                      ''',
+                      "-f {sv_flist} &&",
+                      // Step 3
+                      "{job_prefix} vcs {cov_unr_common_build_opts}"]
+  cov_unr_build_opts: ["-cm {cov_unr_metrics}",
+                       "{vcs_cov_cfg_file}",
+                       "-unr={vcs_unr_cfg_file}",
+                       "{dut}"]
+
+  cov_unr_run_cmd:   ["{job_prefix} ./unrSimv"]
+  cov_unr_run_opts:  ["-unr"]
+
+  // Analyzing coverage - this is done by invoking --cov-analyze switch. It opens up the
+  // GUI for visual analysis.
+  cov_analyze_dir:  "{scratch_path}/cov_analyze"
+  cov_analyze_cmd:  "{job_prefix} verdi"
+  cov_analyze_opts: ["-cov",
+                     "-covdir {cov_merge_db_dir}",
+                     "-line nocasedef"
+                     "-elfile {vcs_cov_excl_files}"]
+
+  // Vars that need to exported to the env.
+  exports: [
+    { VCS_LICENSE_WAIT: 1 },
+    { VCS_ARCH_OVERRIDE: "linux" },
+    { FI_PROJ: "{fi_project}" },
+    { FI_CAMPAIGN: "{fi_campaign}" },
+    { FI_TC: "{fi_testcase}" },
+    { SIMV: "{build_ex}" },
+    { fi_sim_run_opts: "{run_opts_fi_sim}"}
+  ]
+
+  // Defaults for VCS
+  // By default, collect all coverage metrics.
+  cov_metrics: "line+cond+fsm+tgl+branch+assert"
+
+  // Supply the cov configuration file.
+  // Note that this needs to be set as `-cm_hier <file>`.
+  // Include hierarchies for both code coverage and assertions.
+  vcs_cov_cfg_file: ""
+
+  // Supply cov configuration file for -cm_fsmresetfilter.
+  vcs_fsm_reset_cov_cfg_file: ""
+
+  // Supply the cov exclusion files.
+  vcs_cov_excl_files: []
+
+  // pass and fail patterns
+  build_fail_patterns: ["^Error-.*$"]
+  run_fail_patterns:   ["^Error-.*$"] // Null pointer error
+
+  build_modes: [
+    {
+      name: z01x_gui
+      is_sim_mode: 1
+      build_opts: ["-debug_access+all+reverse"]
+      run_opts: ["-gui", "-l {run_dir}/simv.log"]
+    }
+    {
+      name: z01x_gui_debug
+      // TODO as done for Xcelium see PR #24156
+      is_sim_mode: 1
+      build_opts: ["-debug_access+all+reverse"]
+      run_opts: ["-gui", "-l {run_dir}/simv.log"]
+    }
+    {
+      name: z01x_waves
+      is_sim_mode: 1
+      build_opts: [// Enable generating Verdi Knowledge Database
+                   "-kdb",
+                   "-debug_access"]
+    }
+    {
+      name: z01x_waves_off
+      is_sim_mode: 1
+      build_opts: [// disable dumping assertion failures to improve runtime performance
+                   "-assert dbgopt"]
+    }
+    {
+      name: z01x_cov
+      is_sim_mode: 1
+      build_opts: [// Enable the required cov metrics
+                   "-cm {cov_metrics}",
+                   // Set the coverage hierarchy
+                   "{vcs_cov_cfg_file}",
+                   "-cm_common_hier",
+                   // Cover all continuous assignments
+                   "-cm_line contassign",
+                   // Dump toggle coverage on mdas, array of structs and on ports only
+                   "-cm_tgl mda+structarr+portsonly",
+                   // Report condition coverage within tasks, functions and for loops.
+                   "-cm_cond for",
+                   // Ignore initial blocks for coverage
+                   "-cm_report noinitial",
+                   // Filter unreachable/statically constant blocks. seqnoconst does a more
+                   // sophisticated analysis including NBA / assignment with delays.
+                   "-cm_seqnoconst",
+                   // Creates a constfile.txt indicating a list of detected constants.
+                   "-diag noconst"
+                   // Don't count coverage that's coming from zero-time glitches
+                   "-cm_glitch 0",
+                   // Ignore warnings about not applying cm_glitch to path and FSM
+                   "+warn=noVCM-OPTIGN",
+                   // Coverage database output location
+                   "-cm_dir {cov_db_dir}",
+                   // The following option is to improve runtime performance
+                   "-Xkeyopt=rtopt",
+                   // Exclude FSM transitions that can only happen on reset
+                   "-cm_fsmresetfilter {vcs_fsm_reset_cov_cfg_file}",
+                   ]
+
+      run_opts:   [// Enable the required cov metrics
+                   "-cm {cov_metrics}",
+                   // Same directory as build
+                   "-cm_dir {cov_db_dir}",
+                   // Don't output cm.log which can be quite large
+                   "-cm_log /dev/null",
+                   // Provide a name to the coverage collected for this test
+                   "-cm_name {cov_db_test_dir_name}"]
+    }
+    {
+      name: z01x_xprop
+      is_sim_mode: 1
+      build_opts: ["-xprop={vcs_xprop_cfg_file}",
+                   // Enable xmerge mode specific performance optimization
+                   "-xprop=mmsopt"]
+    }
+    {
+      name: z01x_profile
+      is_sim_mode: 1
+      build_opts: ["-simprofile"]
+      run_opts:   ["-simprofile {profile}"]
+    }
+    {
+      name: z01x_loopdetect
+      is_sim_mode: 1
+      build_opts: ["+vcs+loopreport", "+vcs+loopdetect"]
+      run_opts:   ["+vcs+loopreport", "+vcs+loopdetect"]
+    }
+  ]
+}
