@@ -42,7 +42,7 @@ impl QemuSpi {
     pub fn new<P: AsRef<Path>>(tty: P) -> anyhow::Result<QemuSpi> {
         let tty = tty.as_ref().to_str().context("path not UTF-8")?;
         let tty = serialport::new(tty, 115200)
-            .timeout(std::time::Duration::from_secs(1))
+            .timeout(std::time::Duration::from_secs(5))
             .open_native()
             .context("failed to open SPI TTY")?;
         let tty = RefCell::new(tty);
