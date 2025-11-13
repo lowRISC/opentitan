@@ -84,9 +84,6 @@ module tb;
   );
 
   // TODO: Absorb this functionality into chip_if.
-  bind dut ast_ext_clk_if ast_ext_clk_if ();
-
-  // TODO: Absorb this functionality into chip_if.
   alert_esc_if alert_if[NUM_ALERTS](.clk  (`ALERT_HANDLER_HIER.clk_i),
                                     .rst_n(`ALERT_HANDLER_HIER.rst_ni));
   for (genvar i = 0; i < NUM_ALERTS; i++) begin : gen_connect_alert_rx
@@ -286,10 +283,6 @@ module tb;
     // AST supply interface.
     uvm_config_db#(virtual ast_supply_if)::set(
         null, "*.env", "ast_supply_vif", dut.ast_supply_if);
-
-    // AST io clk blocker interface.
-    uvm_config_db#(virtual ast_ext_clk_if)::set(
-        null, "*.env", "ast_ext_clk_vif", dut.ast_ext_clk_if);
 
     // DMI clk_rst_vif
     uvm_config_db#(virtual clk_rst_if)::set(
