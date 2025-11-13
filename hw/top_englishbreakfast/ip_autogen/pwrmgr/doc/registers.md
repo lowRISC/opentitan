@@ -298,6 +298,9 @@ Configuration enable for reset_en register
 
 ## RESET_EN
 Bit mask for enabled reset requests
+
+Whenever a particular bit is set to 1, that reset request is enabled.
+Whenever a particular bit is set to 0, that reset request cannot reset the device.
 - Offset: `0x2c`
 - Reset default: `0x0`
 - Reset mask: `0x1`
@@ -309,10 +312,10 @@ Bit mask for enabled reset requests
 {"reg": [{"name": "EN_0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                              |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                                                                                                                 |
-|   0    |   rw   |   0x0   | EN_0   | Whenever a particular bit is set to 1, that reset request is enabled. Whenever a particular bit is set to 0, that reset request cannot reset the device. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                        |
+|:------:|:------:|:-------:|:-------|:---------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                           |
+|   0    |   rw   |   0x0   | EN_0   | Reset enable for aon_timer_aon: aon_timer_rst_req. |
 
 ## RESET_STATUS
 A read only register of all current reset requests post enable mask

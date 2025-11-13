@@ -1421,7 +1421,8 @@ def amend_reset_request(topcfg: ConfigT,
                 'name': signal.name,
                 'width': str(signal.bits.width()),
                 'module': m["name"],
-                'desc': signal.desc
+                'desc': signal.desc,
+                'enabled_after_reset': signal.enabled_after_reset
             })
     topcfg["reset_requests"]["peripheral"] = reset_signals
 

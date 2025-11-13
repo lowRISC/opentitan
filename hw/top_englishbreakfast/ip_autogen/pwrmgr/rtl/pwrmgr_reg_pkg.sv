@@ -85,7 +85,7 @@ package pwrmgr_reg_pkg;
 
   typedef struct packed {
     logic        q;
-  } pwrmgr_reg2hw_reset_en_mreg_t;
+  } pwrmgr_reg2hw_reset_en_reg_t;
 
   typedef struct packed {
     logic        q;
@@ -190,7 +190,7 @@ package pwrmgr_reg_pkg;
     pwrmgr_reg2hw_control_reg_t control; // [23:18]
     pwrmgr_reg2hw_cfg_cdc_sync_reg_t cfg_cdc_sync; // [17:16]
     pwrmgr_reg2hw_wakeup_en_mreg_t [2:0] wakeup_en; // [15:13]
-    pwrmgr_reg2hw_reset_en_mreg_t [0:0] reset_en; // [12:12]
+    pwrmgr_reg2hw_reset_en_reg_t reset_en; // [12:12]
     pwrmgr_reg2hw_wake_info_capture_dis_reg_t wake_info_capture_dis; // [11:11]
     pwrmgr_reg2hw_wake_info_reg_t wake_info; // [10:3]
     pwrmgr_reg2hw_fault_status_reg_t fault_status; // [2:0]
