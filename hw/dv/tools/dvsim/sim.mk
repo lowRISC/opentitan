@@ -183,7 +183,11 @@ endif
 
 simulate: sw_build
 	@echo "[make]: simulate"
+ifeq (${SIMULATOR}, z01x)
+	cd ${run_dir} && ${run_cmd} ${fi_sim_run_opts}
+else
 	cd ${run_dir} && ${run_cmd} ${run_opts}
+endif
 
 post_run: simulate
 	@echo "[make]: post_run"
