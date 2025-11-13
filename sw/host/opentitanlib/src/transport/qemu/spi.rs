@@ -27,6 +27,11 @@ const HEADER_HOLD_CS_BIT: u8 = 0b1000_0000;
 /// Maximum amount of SPI data that cam be transferred in one frame to QEMU (not including header).
 const MAX_PACKET_LEN: usize = u16::MAX as usize;
 
+/// The maximum amount of data that can be transferred to the device at once,
+/// after which we must read out the returned data before continuing to send.
+/// This is based on the default linux TTY buffer size of 4 KiB.
+const MAX_TRANSMISSION_LEN: usize = 4096;
+
 pub struct QemuSpi {
     tty: RefCell<TTYPort>,
 
@@ -83,6 +88,26 @@ impl QemuSpi {
 
         Ok(())
     }
+
+    fn transfer(&self, wbuf: &[u8], rbuf: &mut [u8]) -> anyhow::Result<()> {
+        for (wbuf_chunk, rbuf_chunk) in wbuf
+            .chunks(MAX_TRANSMISSION_LEN)
+            .zip(rbuf.chunks_mut(MAX_TRANSMISSION_LEN))
+        {
+            // Send outgoing data from the write buffer to QEMU
+            self.tty
+                .borrow_mut()
+                .write_all(wbuf_chunk)
+                .context("failed to read SPI TTY")?;
+
+            // Read out the TX data from QEMU into the read buffer
+            self.tty
+                .borrow_mut()
+                .read_exact(rbuf_chunk)
+                .context("failed to read SPI TTY")?;
+        }
+        Ok(())
+    }
 }
 
 impl Target for QemuSpi {
@@ -100,33 +125,16 @@ impl Target for QemuSpi {
 
                     // QEMU will only clock out the TX data if we send dummy data to the RX.
                     let dummy_buf = vec![0; buf.len()];
-                    self.tty
-                        .borrow_mut()
-                        .write_all(&dummy_buf[..])
-                        .context("failed to read SPI TTY")?;
-                    self.tty.borrow_mut().flush()?;
-
-                    // Read out the TX data from QEMU:
-                    self.tty
-                        .borrow_mut()
-                        .read_exact(buf)
-                        .context("failed to read SPI TTY")?;
+                    self.transfer(&dummy_buf, buf)?;
                 }
                 Transfer::Write(buf) => {
                     let len: u16 = buf.len().try_into().context("write transfer too big")?;
                     self.write_header(len, !last_transfer)?;
 
-                    // Send RX data to QEMU:
-                    self.tty
-                        .borrow_mut()
-                        .write_all(buf)
-                        .context("failed to write to SPI TTY")?;
-                    self.tty.borrow_mut().flush()?;
-
                     // Sending data will also clock out TX data from QEMU which we need
-                    // to clear from the TTY. Read it into a buffer and drop it:
+                    // to clear from the TTY. Read it into a buffer and drop it.
                     let mut garbage = vec![0; buf.len()];
-                    self.tty.borrow_mut().read_exact(&mut garbage)?;
+                    self.transfer(buf, &mut garbage)?;
                 }
                 Transfer::Both(write_buf, read_buf) => {
                     ensure!(
@@ -136,16 +144,7 @@ impl Target for QemuSpi {
                     let len: u16 = write_buf.len().try_into().context("transfer too big")?;
                     self.write_header(len, !last_transfer)?;
 
-                    self.tty
-                        .borrow_mut()
-                        .write_all(write_buf)
-                        .context("failed to write to SPI TTY")?;
-                    self.tty.borrow_mut().flush()?;
-
-                    self.tty
-                        .borrow_mut()
-                        .read_exact(read_buf)
-                        .context("failed to read from SPI TTY")?;
+                    self.transfer(write_buf, read_buf)?;
                 }
             }
         }
