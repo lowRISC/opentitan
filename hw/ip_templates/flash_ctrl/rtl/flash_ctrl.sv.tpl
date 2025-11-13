@@ -1491,4 +1491,33 @@ module flash_ctrl
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[1])
 
+  `ifdef FI_SIM_Z01X
+    // Check if there are any TL-UL integrity errors caused by faults that Z01X has introduced.
+    // Specific to fault injection simulation as Z01X expects that those strobing points are
+    // available in the design.
+    wire mem_tl_intg_err;
+    tlul_rsp_intg_chk #(
+      .EnableRspDataIntgCheck(1)
+    ) u_rsp_chk_mem (
+      .tl_i (mem_tl_o),
+      .err_o(mem_tl_intg_err)
+    );
+
+    wire prim_tl_intg_err;
+    tlul_rsp_intg_chk #(
+      .EnableRspDataIntgCheck(1)
+    ) u_rsp_chk_prim (
+      .tl_i (prim_tl_o),
+      .err_o(prim_tl_intg_err)
+    );
+
+    wire core_tl_intg_err;
+    tlul_rsp_intg_chk #(
+      .EnableRspDataIntgCheck(1)
+    ) u_rsp_chk_core (
+      .tl_i (core_tl_o),
+      .err_o(core_tl_intg_err)
+    );
+  `endif
+
 endmodule
