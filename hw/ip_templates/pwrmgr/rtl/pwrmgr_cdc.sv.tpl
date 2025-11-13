@@ -7,6 +7,7 @@
 
 `include "prim_assert.sv"
 
+<%  peripheral_reset_reqs = rst_reqs.get("peripheral", []) %>\
 module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 (
   // Clocks and resets
@@ -186,7 +187,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   always_ff @(posedge clk_slow_i or negedge rst_slow_ni) begin
     if (!rst_slow_ni) begin
       slow_wakeup_en_o <= '0;
-      slow_reset_en_o <= '0;
+      slow_reset_en_o <= ${f"{len(peripheral_reset_reqs)}'b" + "".join(["1" if reset.get("enabled_after_reset", False) else "0" for reset in reversed(peripheral_reset_reqs)])};
       slow_main_pd_no <= '1;
 % for clk in src_clks:
   % if clk != 'usb':
