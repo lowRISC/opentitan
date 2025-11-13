@@ -62,7 +62,7 @@
           width: "1"
           module: soc_proxy
           desc: External reset request
-          reset_enabled: false
+          reset_enabled: true
         }
       ]
     }
