@@ -152,29 +152,8 @@ package otp_ctrl_env_pkg;
     NumOtpCtrlIntr
   } otp_intr_e;
 
-  typedef enum bit [5:0] {
-    OtpVendorTestErrIdx,
-    OtpCreatorSwCfgErrIdx,
-    OtpOwnerSwCfgErrIdx,
-    OtpOwnershipSlotStateErrIdx,
-    OtpRotCreatorAuthErrIdx,
-    OtpRotOwnerAuthSlot0ErrIdx,
-    OtpRotOwnerAuthSlot1ErrIdx,
-    OtpPlatIntegAuthSlot0ErrIdx,
-    OtpPlatIntegAuthSlot1ErrIdx,
-    OtpPlatOwnerAuthSlot0ErrIdx,
-    OtpPlatOwnerAuthSlot1ErrIdx,
-    OtpPlatOwnerAuthSlot2ErrIdx,
-    OtpPlatOwnerAuthSlot3ErrIdx,
-    OtpExtNvmErrIdx,
-    OtpRomPatchErrIdx,
-    OtpHwCfg0ErrIdx,
-    OtpHwCfg1ErrIdx,
-    OtpSecret0ErrIdx,
-    OtpSecret1ErrIdx,
-    OtpSecret2ErrIdx,
-    OtpSecret3ErrIdx,
-    OtpLifeCycleErrIdx,
+  typedef enum bit [3:0] {
+    OtpPartitionErrorIdx,
     OtpDaiErrIdx,
     OtpLciErrIdx,
     OtpTimeoutErrIdx,
@@ -186,6 +165,32 @@ package otp_ctrl_env_pkg;
     OtpCheckPendingIdx,
     OtpStatusFieldSize
   } otp_status_e;
+
+  typedef enum int {
+    OtpPartitionVendorTestIdx,
+    OtpPartitionCreatorSwCfgIdx,
+    OtpPartitionOwnerSwCfgIdx,
+    OtpPartitionOwnershipSlotStateIdx,
+    OtpPartitionRotCreatorAuthIdx,
+    OtpPartitionRotOwnerAuthSlot0Idx,
+    OtpPartitionRotOwnerAuthSlot1Idx,
+    OtpPartitionPlatIntegAuthSlot0Idx,
+    OtpPartitionPlatIntegAuthSlot1Idx,
+    OtpPartitionPlatOwnerAuthSlot0Idx,
+    OtpPartitionPlatOwnerAuthSlot1Idx,
+    OtpPartitionPlatOwnerAuthSlot2Idx,
+    OtpPartitionPlatOwnerAuthSlot3Idx,
+    OtpPartitionExtNvmIdx,
+    OtpPartitionRomPatchIdx,
+    OtpPartitionHwCfg0Idx,
+    OtpPartitionHwCfg1Idx,
+    OtpPartitionSecret0Idx,
+    OtpPartitionSecret1Idx,
+    OtpPartitionSecret2Idx,
+    OtpPartitionSecret3Idx,
+    OtpPartitionLifeCycleIdx
+  } otp_partition_e;
+
 
   typedef enum bit [2:0] {
     OtpNoError,
