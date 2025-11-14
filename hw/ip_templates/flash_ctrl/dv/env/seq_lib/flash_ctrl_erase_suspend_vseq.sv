@@ -71,8 +71,6 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
   rand flash_mp_region_cfg_t mp_regions[flash_ctrl_top_specific_pkg::MpRegions];
 
   constraint mp_regions_c {
-    solve en_mp_regions before mp_regions;
-
     foreach (mp_regions[i]) {
       mp_regions[i].en == mubi4_bool_to_mubi(en_mp_regions[i]);
 
