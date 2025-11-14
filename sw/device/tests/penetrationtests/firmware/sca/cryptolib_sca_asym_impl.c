@@ -143,8 +143,8 @@ status_t cryptolib_sca_rsa_dec_impl(
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, d_share0,
-                                              d_share1, &private_key));
+  HARDENED_TRY(otcrypto_rsa_private_key_from_exponents(
+      rsa_size, modulus, d_share0, d_share1, &private_key));
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
@@ -175,8 +175,8 @@ status_t cryptolib_sca_rsa_dec_impl(
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, ciphertext, label_buf,
-                           plaintext, &msg_len));
+  HARDENED_TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, ciphertext,
+                                    label_buf, plaintext, &msg_len));
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
@@ -252,7 +252,7 @@ status_t cryptolib_sca_p256_ecdh_impl(
   uint32_t share0[kPentestP256Words];
   uint32_t share1[kPentestP256Words];
   uint32_t ss[kPentestP256Words];
-  TRY(otcrypto_export_blinded_key(
+  HARDENED_TRY(otcrypto_export_blinded_key(
       &shared_secret,
       (otcrypto_word32_buf_t){.data = share0, .len = ARRAYSIZE(share0)},
       (otcrypto_word32_buf_t){.data = share1, .len = ARRAYSIZE(share1)}));
@@ -383,8 +383,8 @@ status_t cryptolib_sca_rsa_sign_impl(
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, d_share0,
-                                              d_share1, &private_key));
+  HARDENED_TRY(otcrypto_rsa_private_key_from_exponents(
+      rsa_size, modulus, d_share0, d_share1, &private_key));
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
@@ -410,11 +410,11 @@ status_t cryptolib_sca_rsa_sign_impl(
   }
   // Hash the message.
   if (hash_mode == kOtcryptoHashModeSha256) {
-    TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
+    HARDENED_TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
   } else if (hash_mode == kOtcryptoHashModeSha384) {
-    TRY(otcrypto_sha2_384(msg_buf, &msg_digest));
+    HARDENED_TRY(otcrypto_sha2_384(msg_buf, &msg_digest));
   } else {
-    TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
+    HARDENED_TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
   }
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
@@ -430,7 +430,8 @@ status_t cryptolib_sca_rsa_sign_impl(
   if (trigger & kPentestTrigger3) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, rsa_sig));
+  HARDENED_TRY(
+      otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, rsa_sig));
   // Trigger window.
   if (trigger & kPentestTrigger3) {
     pentest_set_trigger_low();
@@ -488,7 +489,7 @@ status_t cryptolib_sca_p256_sign_impl(
     if (uj_input.trigger == 0) {
       pentest_set_trigger_high();
     }
-    TRY(otcrypto_ecdsa_p256_keygen(&private_key, &public_key));
+    HARDENED_TRY(otcrypto_ecdsa_p256_keygen(&private_key, &public_key));
     pentest_set_trigger_low();
     if (uj_input.trigger == 0) {
       pentest_set_trigger_low();
@@ -517,8 +518,8 @@ status_t cryptolib_sca_p256_sign_impl(
   if (uj_input.trigger == 1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_ecdsa_p256_sign_verify(&private_key, &public_key, message_digest,
-                                      signature_mut));
+  HARDENED_TRY(otcrypto_ecdsa_p256_sign_verify(&private_key, &public_key,
+                                               message_digest, signature_mut));
   if (uj_input.trigger == 1) {
     pentest_set_trigger_low();
   }
@@ -595,13 +596,13 @@ status_t cryptolib_sca_p384_ecdh_impl(
   };
 
   pentest_set_trigger_high();
-  TRY(otcrypto_ecdh_p384(&private_key, &public_key, &shared_secret));
+  HARDENED_TRY(otcrypto_ecdh_p384(&private_key, &public_key, &shared_secret));
   pentest_set_trigger_low();
 
   uint32_t share0[kPentestP384Words];
   uint32_t share1[kPentestP384Words];
   uint32_t ss[kPentestP384Words];
-  TRY(otcrypto_export_blinded_key(
+  HARDENED_TRY(otcrypto_export_blinded_key(
       &shared_secret,
       (otcrypto_word32_buf_t){.data = share0, .len = ARRAYSIZE(share0)},
       (otcrypto_word32_buf_t){.data = share1, .len = ARRAYSIZE(share1)}));
@@ -660,7 +661,7 @@ status_t cryptolib_sca_p384_sign_impl(
     if (uj_input.trigger == 0) {
       pentest_set_trigger_high();
     }
-    TRY(otcrypto_ecdsa_p384_keygen(&private_key, &public_key));
+    HARDENED_TRY(otcrypto_ecdsa_p384_keygen(&private_key, &public_key));
     pentest_set_trigger_low();
     if (uj_input.trigger == 0) {
       pentest_set_trigger_low();
@@ -689,8 +690,8 @@ status_t cryptolib_sca_p384_sign_impl(
   if (uj_input.trigger == 1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_ecdsa_p384_sign_verify(&private_key, &public_key, message_digest,
-                                      signature_mut));
+  HARDENED_TRY(otcrypto_ecdsa_p384_sign_verify(&private_key, &public_key,
+                                               message_digest, signature_mut));
   if (uj_input.trigger == 1) {
     pentest_set_trigger_low();
   }
