@@ -27,8 +27,12 @@ OTBN_DECLARE_SYMBOL_ADDR(run_p384, x);      // Public key x-coordinate.
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, y);      // Public key y-coordinate.
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, d0_io);  // Private key scalar d (share 0).
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, d1_io);  // Private key scalar d (share 1).
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, x_r);    // ECDSA verification result.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, ok);     // Status code.
+OTBN_DECLARE_SYMBOL_ADDR(run_p384,
+                         k0_io);  // Private secret scalar k (share 0).
+OTBN_DECLARE_SYMBOL_ADDR(run_p384,
+                         k1_io);          // Private secret scalar k (share 1).
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, x_r);  // ECDSA verification result.
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, ok);   // Status code.
 
 static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_p384, mode);
 static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(run_p384, msg);
@@ -38,12 +42,15 @@ static const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(run_p384, x);
 static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(run_p384, y);
 static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(run_p384, d0_io);
 static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(run_p384, d1_io);
+static const otbn_addr_t kOtbnVarK0 = OTBN_ADDR_T_INIT(run_p384, k0_io);
+static const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(run_p384, k1_io);
 static const otbn_addr_t kOtbnVarXr = OTBN_ADDR_T_INIT(run_p384, x_r);
 static const otbn_addr_t kOtbnVarOk = OTBN_ADDR_T_INIT(run_p384, ok);
 
 // Declare mode constants.
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_KEYGEN);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIGN);
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIGN_CONFIG_K);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_VERIFY);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_ECDH);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIDELOAD_KEYGEN);
@@ -51,6 +58,8 @@ OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIDELOAD_SIGN);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIDELOAD_ECDH);
 static const uint32_t kP384ModeKeygen = OTBN_ADDR_T_INIT(run_p384, MODE_KEYGEN);
 static const uint32_t kP384ModeSign = OTBN_ADDR_T_INIT(run_p384, MODE_SIGN);
+static const uint32_t kP384ModeSignConfigK =
+    OTBN_ADDR_T_INIT(run_p384, MODE_SIGN_CONFIG_K);
 static const uint32_t kP384ModeVerify = OTBN_ADDR_T_INIT(run_p384, MODE_VERIFY);
 static const uint32_t kP384ModeEcdh = OTBN_ADDR_T_INIT(run_p384, MODE_ECDH);
 static const uint32_t kP384ModeSideloadKeygen =
@@ -96,6 +105,7 @@ enum {
   kModeKeygenSideloadInsCnt = 1935323,
   kModeEcdhInsCnt = 1947029,
   kModeEcdhSideloadInsCnt = 1947177,
+  kModeEcdsaSignConfigKInsCnt = 1574544,
   kModeEcdsaSignInsCnt = 1574769,
   kModeEcdsaSignSideloadInsCnt = 1574917,
 };
@@ -281,6 +291,29 @@ status_t p384_ecdsa_sign_start(const uint32_t digest[kP384ScalarWords],
   return otbn_execute();
 }
 
+status_t p384_ecdsa_sign_config_k_start(const uint32_t digest[kP384ScalarWords],
+                                        p384_masked_scalar_t *private_key,
+                                        p384_masked_scalar_t *secret_scalar) {
+  // Load the ECDSA/P-384 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppP384));
+
+  // Set mode so start() will jump into sideloaded signing.
+  uint32_t mode = kP384ModeSignConfigK;
+  HARDENED_TRY(otbn_dmem_write(kP384ModeWords, &mode, kOtbnVarMode));
+
+  // Set the message digest.
+  HARDENED_TRY(set_message_digest(digest, kOtbnVarMsg));
+
+  // Set the private key shares.
+  HARDENED_TRY(p384_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
+
+  // Set the secret scalar shares.
+  HARDENED_TRY(p384_masked_scalar_write(secret_scalar, kOtbnVarK0, kOtbnVarK1));
+
+  // Start the OTBN routine.
+  return otbn_execute();
+}
+
 status_t p384_ecdsa_sideload_sign_start(
     const uint32_t digest[kP384ScalarWords]) {
   // Load the ECDSA/P-384 app. Fails if OTBN is non-idle.
@@ -304,6 +337,8 @@ status_t p384_ecdsa_sign_finalize(p384_ecdsa_signature_t *result) {
   ins_cnt = otbn_instruction_count_get();
   if (launder32(ins_cnt) == kModeEcdsaSignSideloadInsCnt) {
     HARDENED_CHECK_EQ(ins_cnt, kModeEcdsaSignSideloadInsCnt);
+  } else if (launder32(ins_cnt) == kModeEcdsaSignConfigKInsCnt) {
+    HARDENED_CHECK_EQ(ins_cnt, kModeEcdsaSignConfigKInsCnt);
   } else {
     HARDENED_CHECK_EQ(ins_cnt, kModeEcdsaSignInsCnt);
   }
