@@ -115,7 +115,8 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
   for (size_t it = 0; it < kPentestAesMaxKeyWords; it++) {
     aes_key_mask[it] = pentest_ibex_rnd32_read();
   }
-  TRY(keyblob_from_key_and_mask(key_buf, aes_key_mask, config, keyblob));
+  HARDENED_TRY(
+      keyblob_from_key_and_mask(key_buf, aes_key_mask, config, keyblob));
   otcrypto_blinded_key_t key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
@@ -139,7 +140,7 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
   // Trigger window.
   PENTEST_MARKER_LABEL(PENTEST_MARKER_AES_START);
   pentest_set_trigger_high();
-  TRY(otcrypto_aes(&key, iv, mode, op, input, padding, output));
+  HARDENED_TRY(otcrypto_aes(&key, iv, mode, op, input, padding, output));
   pentest_set_trigger_low();
   PENTEST_MARKER_LABEL(PENTEST_MARKER_AES_END);
 
@@ -176,7 +177,7 @@ status_t cryptolib_fi_drbg_generate_impl(
     PENTEST_MARKER_LABEL(PENTEST_MARKER_DRBG_GENERATE_START);
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_drbg_generate(nonce, output));
+  HARDENED_TRY(otcrypto_drbg_generate(nonce, output));
   if (uj_input.trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
     PENTEST_MARKER_LABEL(PENTEST_MARKER_DRBG_GENERATE_END);
@@ -207,7 +208,7 @@ status_t cryptolib_fi_drbg_reseed_impl(
     PENTEST_MARKER_LABEL(PENTEST_MARKER_DRBG_RESEED_START);
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_drbg_instantiate(entropy));
+  HARDENED_TRY(otcrypto_drbg_instantiate(entropy));
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
     PENTEST_MARKER_LABEL(PENTEST_MARKER_DRBG_RESEED_END);
@@ -243,7 +244,8 @@ status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
   }
 
   uint32_t keyblob[keyblob_num_words(config)];
-  TRY(keyblob_from_key_and_mask(key_buf, aes_key_mask, config, keyblob));
+  HARDENED_TRY(
+      keyblob_from_key_and_mask(key_buf, aes_key_mask, config, keyblob));
 
   // Construct the blinded key.
   otcrypto_blinded_key_t key = {
@@ -309,8 +311,8 @@ status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
   // Trigger window.
   PENTEST_MARKER_LABEL(PENTEST_MARKER_GCM_ENCRYPT_START);
   pentest_set_trigger_high();
-  TRY(otcrypto_aes_gcm_encrypt(&key, plaintext, iv, aad, tag_len,
-                               actual_ciphertext, actual_tag));
+  HARDENED_TRY(otcrypto_aes_gcm_encrypt(&key, plaintext, iv, aad, tag_len,
+                                        actual_ciphertext, actual_tag));
   pentest_set_trigger_low();
   PENTEST_MARKER_LABEL(PENTEST_MARKER_GCM_ENCRYPT_END);
 
@@ -372,7 +374,8 @@ status_t cryptolib_fi_hmac_impl(cryptolib_fi_sym_hmac_in_t uj_input,
   for (size_t it = 0; it < kPentestHmacMaxKeyWords; it++) {
     hmac_key_mask[it] = pentest_ibex_rnd32_read();
   }
-  TRY(keyblob_from_key_and_mask(key_buf, hmac_key_mask, config, keyblob));
+  HARDENED_TRY(
+      keyblob_from_key_and_mask(key_buf, hmac_key_mask, config, keyblob));
   otcrypto_blinded_key_t key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
@@ -398,7 +401,7 @@ status_t cryptolib_fi_hmac_impl(cryptolib_fi_sym_hmac_in_t uj_input,
   // Trigger window.
   PENTEST_MARKER_LABEL(PENTEST_MARKER_HMAC_START);
   pentest_set_trigger_high();
-  TRY(otcrypto_hmac(&key, input_message, tag));
+  HARDENED_TRY(otcrypto_hmac(&key, input_message, tag));
   pentest_set_trigger_low();
   PENTEST_MARKER_LABEL(PENTEST_MARKER_HMAC_END);
 

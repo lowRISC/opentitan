@@ -118,7 +118,8 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
   for (size_t it = 0; it < kPentestAesMaxKeyWords; it++) {
     aes_key_mask[it] = pentest_ibex_rnd32_read();
   }
-  TRY(keyblob_from_key_and_mask(key_buf, aes_key_mask, config, keyblob));
+  HARDENED_TRY(
+      keyblob_from_key_and_mask(key_buf, aes_key_mask, config, keyblob));
   otcrypto_blinded_key_t aes_key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
@@ -141,7 +142,8 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
 
   // Trigger window.
   pentest_set_trigger_high();
-  TRY(otcrypto_aes(&aes_key, aes_iv, aes_mode, op, input, aes_padding, output));
+  HARDENED_TRY(
+      otcrypto_aes(&aes_key, aes_iv, aes_mode, op, input, aes_padding, output));
   pentest_set_trigger_low();
 
   // Return data back to host.
@@ -177,7 +179,7 @@ status_t cryptolib_sca_drbg_generate_impl(
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_drbg_generate(nonce_in, output));
+  HARDENED_TRY(otcrypto_drbg_generate(nonce_in, output));
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
@@ -208,7 +210,7 @@ status_t cryptolib_sca_drbg_reseed_impl(
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_drbg_instantiate(entropy_in));
+  HARDENED_TRY(otcrypto_drbg_instantiate(entropy_in));
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
@@ -249,7 +251,8 @@ status_t cryptolib_sca_gcm_impl(
   }
 
   uint32_t keyblob[keyblob_num_words(config)];
-  TRY(keyblob_from_key_and_mask(key_buf, aes_key_mask, config, keyblob));
+  HARDENED_TRY(
+      keyblob_from_key_and_mask(key_buf, aes_key_mask, config, keyblob));
 
   // Construct the blinded key.
   otcrypto_blinded_key_t gcm_key = {
@@ -313,8 +316,9 @@ status_t cryptolib_sca_gcm_impl(
 
   // Trigger window.
   pentest_set_trigger_high();
-  TRY(otcrypto_aes_gcm_encrypt(&gcm_key, plaintext, gcm_iv, gcm_aad,
-                               gcm_tag_len, actual_ciphertext, actual_tag));
+  HARDENED_TRY(otcrypto_aes_gcm_encrypt(&gcm_key, plaintext, gcm_iv, gcm_aad,
+                                        gcm_tag_len, actual_ciphertext,
+                                        actual_tag));
   pentest_set_trigger_low();
 
   // Return data back to host.
@@ -379,7 +383,8 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
   for (size_t it = 0; it < kPentestHmacMaxKeyWords; it++) {
     hmac_key_mask[it] = pentest_ibex_rnd32_read();
   }
-  TRY(keyblob_from_key_and_mask(key_buf, hmac_key_mask, config, keyblob));
+  HARDENED_TRY(
+      keyblob_from_key_and_mask(key_buf, hmac_key_mask, config, keyblob));
   otcrypto_blinded_key_t hmac_key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
@@ -404,7 +409,7 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
 
   // Trigger window.
   pentest_set_trigger_high();
-  TRY(otcrypto_hmac(&hmac_key, input_message, tag));
+  HARDENED_TRY(otcrypto_hmac(&hmac_key, input_message, tag));
   pentest_set_trigger_low();
 
   // Return data back to host.

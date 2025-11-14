@@ -123,7 +123,8 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
         .key_length = public_key_bytes,
         .key = public_key_data,
     };
-    TRY(otcrypto_rsa_public_key_construct(rsa_size, modulus, &public_key));
+    HARDENED_TRY(
+        otcrypto_rsa_public_key_construct(rsa_size, modulus, &public_key));
 
     // Create input message.
     uint8_t msg_buf[num_words];
@@ -200,8 +201,8 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     if (uj_input.trigger & kPentestTrigger1) {
       pentest_set_trigger_high();
     }
-    TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, d_share0,
-                                                d_share1, &private_key));
+    HARDENED_TRY(otcrypto_rsa_private_key_from_exponents(
+        rsa_size, modulus, d_share0, d_share1, &private_key));
     if (uj_input.trigger & kPentestTrigger1) {
       pentest_set_trigger_low();
     }
@@ -228,8 +229,8 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     if (uj_input.trigger & kPentestTrigger2) {
       pentest_set_trigger_high();
     }
-    TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, ciphertext, label_buf,
-                             plaintext, &msg_len));
+    HARDENED_TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, ciphertext,
+                                      label_buf, plaintext, &msg_len));
     if (uj_input.trigger & kPentestTrigger2) {
       pentest_set_trigger_low();
     }
@@ -361,8 +362,8 @@ status_t cryptolib_fi_rsa_sign_impl(
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, d_share0,
-                                              d_share1, &private_key));
+  HARDENED_TRY(otcrypto_rsa_private_key_from_exponents(
+      rsa_size, modulus, d_share0, d_share1, &private_key));
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
@@ -388,11 +389,11 @@ status_t cryptolib_fi_rsa_sign_impl(
   }
   // Hash the message.
   if (hash_mode == kOtcryptoHashModeSha256) {
-    TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
+    HARDENED_TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
   } else if (hash_mode == kOtcryptoHashModeSha384) {
-    TRY(otcrypto_sha2_384(msg_buf, &msg_digest));
+    HARDENED_TRY(otcrypto_sha2_384(msg_buf, &msg_digest));
   } else {
-    TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
+    HARDENED_TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
   }
   if (uj_input.trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
@@ -409,7 +410,8 @@ status_t cryptolib_fi_rsa_sign_impl(
     PENTEST_MARKER_LABEL(PENTEST_MARKER_RSA_SIGN_START);
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, sig_buf));
+  HARDENED_TRY(
+      otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, sig_buf));
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger3) {
     pentest_set_trigger_low();
@@ -515,7 +517,8 @@ status_t cryptolib_fi_rsa_verify_impl(
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_public_key_construct(rsa_size, modulus, &public_key));
+  HARDENED_TRY(
+      otcrypto_rsa_public_key_construct(rsa_size, modulus, &public_key));
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
@@ -553,11 +556,11 @@ status_t cryptolib_fi_rsa_verify_impl(
   }
   // Hash the message.
   if (hash_mode == kOtcryptoHashModeSha256) {
-    TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
+    HARDENED_TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
   } else if (hash_mode == kOtcryptoHashModeSha384) {
-    TRY(otcrypto_sha2_384(msg_buf, &msg_digest));
+    HARDENED_TRY(otcrypto_sha2_384(msg_buf, &msg_digest));
   } else {
-    TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
+    HARDENED_TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
   }
   if (uj_input.trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
@@ -569,13 +572,12 @@ status_t cryptolib_fi_rsa_verify_impl(
     PENTEST_MARKER_LABEL(PENTEST_MARKER_RSA_VERIFY_START);
     pentest_set_trigger_high();
   }
-  status_t status = otcrypto_rsa_verify(&public_key, msg_digest, padding_mode,
-                                        sig, &verification_result);
+  HARDENED_TRY(otcrypto_rsa_verify(&public_key, msg_digest, padding_mode, sig,
+                                   &verification_result));
   if (uj_input.trigger & kPentestTrigger3) {
     pentest_set_trigger_low();
     PENTEST_MARKER_LABEL(PENTEST_MARKER_RSA_VERIFY_END);
   }
-  TRY(status);
 
   // Return data back to host.
   uj_output->result = true;
@@ -643,14 +645,14 @@ status_t cryptolib_fi_p256_ecdh_impl(
 
   PENTEST_MARKER_LABEL(PENTEST_MARKER_P256_ECDH_START);
   pentest_set_trigger_high();
-  TRY(otcrypto_ecdh_p256(&private_key, &public_key, &shared_secret));
+  HARDENED_TRY(otcrypto_ecdh_p256(&private_key, &public_key, &shared_secret));
   pentest_set_trigger_low();
   PENTEST_MARKER_LABEL(PENTEST_MARKER_P256_ECDH_END);
 
   uint32_t share0[kPentestP256Words];
   uint32_t share1[kPentestP256Words];
   uint32_t ss[kPentestP256Words];
-  TRY(otcrypto_export_blinded_key(
+  HARDENED_TRY(otcrypto_export_blinded_key(
       &shared_secret,
       (otcrypto_word32_buf_t){.data = share0, .len = ARRAYSIZE(share0)},
       (otcrypto_word32_buf_t){.data = share1, .len = ARRAYSIZE(share1)}));
@@ -709,7 +711,7 @@ status_t cryptolib_fi_p256_sign_impl(
     if (uj_input.trigger == 0) {
       pentest_set_trigger_high();
     }
-    TRY(otcrypto_ecdsa_p256_keygen(&private_key, &public_key));
+    HARDENED_TRY(otcrypto_ecdsa_p256_keygen(&private_key, &public_key));
     pentest_set_trigger_low();
     if (uj_input.trigger == 0) {
       pentest_set_trigger_low();
@@ -740,8 +742,8 @@ status_t cryptolib_fi_p256_sign_impl(
     pentest_set_trigger_high();
   }
   // Sign the message.
-  TRY(otcrypto_ecdsa_p256_sign_verify(&private_key, &public_key, message_digest,
-                                      signature_mut));
+  HARDENED_TRY(otcrypto_ecdsa_p256_sign_verify(&private_key, &public_key,
+                                               message_digest, signature_mut));
   if (uj_input.trigger == 1) {
     pentest_set_trigger_low();
     PENTEST_MARKER_LABEL(PENTEST_MARKER_P256_SIGN_END);
@@ -804,8 +806,8 @@ status_t cryptolib_fi_p256_verify_impl(
 
   PENTEST_MARKER_LABEL(PENTEST_MARKER_P256_VERIFY_START);
   pentest_set_trigger_high();
-  TRY(otcrypto_ecdsa_p256_verify(&public_key, message_digest, signature,
-                                 &verification_result));
+  HARDENED_TRY(otcrypto_ecdsa_p256_verify(&public_key, message_digest,
+                                          signature, &verification_result));
   pentest_set_trigger_low();
   PENTEST_MARKER_LABEL(PENTEST_MARKER_P256_VERIFY_END);
 
@@ -875,14 +877,14 @@ status_t cryptolib_fi_p384_ecdh_impl(
 
   PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_ECDH_START);
   pentest_set_trigger_high();
-  TRY(otcrypto_ecdh_p384(&private_key, &public_key, &shared_secret));
+  HARDENED_TRY(otcrypto_ecdh_p384(&private_key, &public_key, &shared_secret));
   pentest_set_trigger_low();
   PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_ECDH_END);
 
   uint32_t share0[kPentestP384Words];
   uint32_t share1[kPentestP384Words];
   uint32_t ss[kPentestP384Words];
-  TRY(otcrypto_export_blinded_key(
+  HARDENED_TRY(otcrypto_export_blinded_key(
       &shared_secret,
       (otcrypto_word32_buf_t){.data = share0, .len = ARRAYSIZE(share0)},
       (otcrypto_word32_buf_t){.data = share1, .len = ARRAYSIZE(share1)}));
@@ -941,7 +943,7 @@ status_t cryptolib_fi_p384_sign_impl(
     if (uj_input.trigger == 0) {
       pentest_set_trigger_high();
     }
-    TRY(otcrypto_ecdsa_p384_keygen(&private_key, &public_key));
+    HARDENED_TRY(otcrypto_ecdsa_p384_keygen(&private_key, &public_key));
     pentest_set_trigger_low();
     if (uj_input.trigger == 0) {
       pentest_set_trigger_low();
@@ -971,8 +973,8 @@ status_t cryptolib_fi_p384_sign_impl(
     PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_SIGN_START);
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_ecdsa_p384_sign_verify(&private_key, &public_key, message_digest,
-                                      signature_mut));
+  HARDENED_TRY(otcrypto_ecdsa_p384_sign_verify(&private_key, &public_key,
+                                               message_digest, signature_mut));
   if (uj_input.trigger == 1) {
     pentest_set_trigger_low();
     PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_SIGN_END);
@@ -1035,8 +1037,8 @@ status_t cryptolib_fi_p384_verify_impl(
 
   PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_VERIFY_START);
   pentest_set_trigger_high();
-  TRY(otcrypto_ecdsa_p384_verify(&public_key, message_digest, signature,
-                                 &verification_result));
+  HARDENED_TRY(otcrypto_ecdsa_p384_verify(&public_key, message_digest,
+                                          signature, &verification_result));
   pentest_set_trigger_low();
   PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_VERIFY_END);
 
