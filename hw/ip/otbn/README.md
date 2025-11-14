@@ -527,9 +527,3 @@ Blanking is applied in the following locations:
   Data paths not required for the instruction being executed are blanked.
 
 Note there is no blanking on the base side (save for the CSRs as these provide access to WDRs such as ACC).
-
-# References
-
-<a name="ref-chen08">[CHEN08]</a> L. Chen, "Hsiao-Code Check Matrices and Recursively Balanced Matrices," arXiv:0803.1217 [cs], Mar. 2008 [Online]. Available: https://arxiv.org/abs/0803.1217
-
-<a name="ref-symbiotic21">[SYMBIOTIC21]</a> RISC-V Bitmanip Extension v0.93 Available: https://github.com/riscv/riscv-bitmanip/releases/download/v0.93/bitmanip-0.93.pdf

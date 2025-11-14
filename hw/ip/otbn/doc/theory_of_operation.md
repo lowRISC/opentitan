@@ -19,9 +19,9 @@ It cannot be read from or written to by user code through load or store instruct
 
 The data memory (DMEM) is 256b wide and read-write accessible from the base and big number instruction subsets of the OTBN processor core.
 There are four instructions that can access data memory.
-In the base instruction subset, there are {{#otbn-insn-ref LW}} (load word) and {{#otbn-insn-ref SW}} (store word).
+In the base instruction subset, there are [`LW`](isa.md#lw) (load word) and [`SW`](isa.md#sw) (store word).
 These access 32b-aligned 32b words.
-In the big number instruction subset, there are {{#otbn-insn-ref BN.LID}} (load indirect) and {{#otbn-insn-ref BN.SID}} (store indirect).
+In the big number instruction subset, there are [`BN.LID`](isa.md#bnlid) (load indirect) and [`BN.SID`](isa.md#bnsid) (store indirect).
 These access 256b-aligned 256b words.
 
 Both memories can be accessed through OTBN's register interface ([`DMEM`](registers.md#dmem) and [`IMEM`](registers.md#imem)).
@@ -45,7 +45,7 @@ See the [Memory Load Integrity](#memory-load-integrity) section for more details
 
 ### Instruction Prefetch
 
-OTBN employs an instruction prefetch stage to enable pre-decoding of instructions to enable the [blanking SCA hardening measure](#blanking).
+OTBN employs an instruction prefetch stage to enable pre-decoding of instructions to enable the [blanking SCA hardening measure](../README.md#blanking).
 Its operation is entirely transparent to software.
 It does not speculate and will only prefetch where the next instruction address can be known.
 This results in a stall cycle for all conditional branches and jumps as the result is neither predicted nor known ahead of time.
@@ -132,7 +132,7 @@ The software then runs to completion, without the ability for host software to i
 - OTBN transitions into the busy state, and reflects this by setting [`STATUS`](registers.md#status) to `BUSY_EXECUTE`.
 - The internal randomness source, which provides random numbers to the `URND` CSR and WSR, is re-seeded from the EDN.
 - The instruction at address zero is fetched and executed.
-- From this point on, all subsequent instructions are executed according to their semantics until either an {{#otbn-insn-ref ECALL}} instruction is executed, or an error is detected.
+- From this point on, all subsequent instructions are executed according to their semantics until either an [`ECALL`](isa.md#ecall) instruction is executed, or an error is detected.
 - A [secure wipe of internal state](#internal-state-secure-wipe) is performed.
 - The [`ERR_BITS`](registers.md#err_bits) register is set to indicate either a successful execution (value `0`), or to indicate the error that was observed (a non-zero value).
 - OTBN transitions into the [idle state](#operational-states) (in case of a successful execution, or a recoverable error) or the locked state (in case of a fatal error).
@@ -162,7 +162,7 @@ Recoverable errors can only occur during the execution of software on OTBN, and 
 
 The following actions are taken when OTBN detects a recoverable error:
 
-1. The currently running operation is terminated, similar to the way an {{#otbn-insn-ref ECALL}} instruction [is executed](#returning-from-an-application):
+1. The currently running operation is terminated, similar to the way an [`ECALL`](isa.md#ecall) instruction [is executed](#software-execution):
    - No more instructions are fetched or executed.
    - A [secure wipe of internal state](#internal-state-secure-wipe) is performed.
    - The [`ERR_BITS`](registers.md#err_bits) register is set to a non-zero value that describes the error.
@@ -180,7 +180,7 @@ Fatal errors can occur at any time, even when an OTBN operation isn't in progres
 The following actions are taken when OTBN detects a fatal error:
 
 1. A [secure wipe of the data memory](#data-memory-dmem-secure-wipe) and a [secure wipe of the instruction memory](#instruction-memory-imem-secure-wipe) is initiated.
-2. If OTBN [is not idle](#operational-states), then the currently running operation is terminated, similarly to how an operation ends after an {{#otbn-insn-ref ECALL}} instruction [is executed](#returning-from-an-application):
+2. If OTBN [is not idle](#operational-states), then the currently running operation is terminated, similarly to how an operation ends after an [`ECALL`](isa.md#ecall) instruction [is executed](#software-execution):
    - No more instructions are fetched or executed.
    - A [secure wipe of internal state](#internal-state-secure-wipe) is performed.
    - The [`ERR_BITS`](registers.md#err_bits) register is set to a non-zero value that describes the error.
@@ -295,7 +295,7 @@ This way, no alert is generated without setting an error code somewhere.
     <tr>
       <td><code>FATAL_SOFTWARE</code></td>
       <td>fatal</td>
-      <td>A software error was seen and [`CTRL.software_errs_fatal`](registers.md#ctrl) was set.</td>
+      <td>A software error was seen and CTRL.software_errs_fatal was set.</td>
     </tr>
   </tbody>
 </table>
@@ -370,8 +370,7 @@ The host processor can request new keys for each memory by issuing a [secure wip
 
 #### Actions on Integrity Errors
 
-A fatal error is raised whenever a data integrity violation is detected, which results in an immediate stop of all processing and the issuing of a fatal alert.
-The section [Error Handling and Reporting](#design-details-error-handling-and-reporting) describes the error handling in more detail.
+A [fatal error](#reaction-to-fatal-errors) is raised whenever a data integrity violation is detected, which results in an immediate stop of all processing and the issuing of a fatal alert.
 
 #### Register File Integrity Protection
 
@@ -389,8 +388,8 @@ The register files can consume data protected with the Integrity Protection Code
 Whenever possible the Integrity Protection Code is preserved from its source and written directly to the register files without recalculation, in particular in the following cases:
 
 * Data coming from the data memory (DMEM) through the load-store unit to a GPR or WDR.
-* Data copied between WDRs using the {{#otbn-insn-ref BN.MOV}} or {{#otbn-insn-ref BN.MOVR}} instructions.
-* Data conditionally copied between WDRs using the {{#otbn-insn-ref BN.SEL}} instruction.
+* Data copied between WDRs using the [`BN.MOV`](isa.md#bnmov) or [`BN.MOVR`](isa.md#bnmovr) instructions.
+* Data conditionally copied between WDRs using the [`BN.SEL`](isa.md#bnsel) instruction.
 * Data copied between the `ACC` and `MOD` WSRs and a WDR.
 * Data copied between any of the `MOD0` to `MOD7` CSRs and a GPR.
   (TODO: Not yet implemented.)
@@ -446,7 +445,7 @@ It isn't a cryptographically secure MAC, so cannot spot an attacker who can comp
 However, in this case the attacker would be equally able to control responses from OTBN, so any such check could be subverted.
 
 The CRC used is the 32-bit CRC-32-IEEE checksum.
-This standard choice of generating polynomial makes it compatible with other tooling and libraries, such as the [crc32 function](https://docs.python.org/3/library/binascii.html#binascii.crc32) in the python 'binascii' module and the crc instructions in the RISC-V bitmanip specification [[SYMBIOTIC21]](#ref-symbiotic21).
+This standard choice of generating polynomial makes it compatible with other tooling and libraries, such as the [crc32 function](https://docs.python.org/3/library/binascii.html#binascii.crc32) in the python 'binascii' module and the crc instructions in the RISC-V bitmanip specification [[SYMBIOTIC21](#ref-symbiotic21)].
 The stream over which the checksum is computed is the stream of writes that have been seen since the last write to [`LOAD_CHECKSUM`](registers.md#load_checksum).
 Each write is treated as a 48b value, `{imem, idx, wdata}`.
 Here, `imem` is a single bit flag which is one for writes to IMEM and zero for writes to DMEM.
@@ -474,7 +473,7 @@ This operation can be applied to:
 
 The three forms of secure wipe can be triggered in different ways.
 
-A secure wipe of either the instruction or the data memory can be triggered from host software by issuing a `SEC_WIPE_DMEM` or `SEC_WIPE_IMEM` [command](#design-details-command).
+A secure wipe of either the instruction or the data memory can be triggered from host software by issuing a `SEC_WIPE_DMEM` or `SEC_WIPE_IMEM` [command](#operations-and-commands).
 
 A secure wipe of instruction memory, data memory, and all internal state is performed automatically when handling a [fatal error](#reaction-to-fatal-errors).
 In addition, it can be triggered by the [Life Cycle Controller](../../lc_ctrl/README.md) before RMA entry using the `lc_rma_req/ack` interface.
@@ -530,3 +529,9 @@ In order to prevent mismatches between ISS and RTL, software needs to initialise
 Loop and call stack pointers are reset.
 
 Host software cannot explicitly trigger an internal secure wipe; it is performed automatically after reset and at the end of an `EXECUTE` operation.
+
+## References
+
+<a name="ref-chen08">[CHEN08]</a> L. Chen, "Hsiao-Code Check Matrices and Recursively Balanced Matrices," arXiv:0803.1217 [cs], Mar. 2008 [Online]. Available: https://arxiv.org/abs/0803.1217
+
+<a name="ref-symbiotic21">[SYMBIOTIC21]</a> RISC-V Bitmanip Extension v0.93 Available: https://github.com/riscv/riscv-bitmanip/releases/download/v0.93/bitmanip-0.93.pdf
