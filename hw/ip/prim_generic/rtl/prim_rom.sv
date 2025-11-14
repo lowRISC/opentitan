@@ -15,14 +15,24 @@ module prim_rom import prim_rom_pkg::*; #(
   input  logic             rst_ni,
   input  logic             req_i,
   input  logic [Aw-1:0]    addr_i,
+  output logic             rvalid_o,
   output logic [Width-1:0] rdata_o,
   input rom_cfg_t          cfg_i
 );
 
   logic unused_signals;
-  assign unused_signals = ^{cfg_i, rst_ni};
+  assign unused_signals = ^{cfg_i};
 
   logic [Width-1:0] mem [Depth];
+
+  // Data always comes in the next cycle after a request
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rvalid_o <= 1'b0;
+    end else begin
+      rvalid_o <= req_i;
+    end
+  end
 
   always_ff @(posedge clk_i) begin
     if (req_i) begin

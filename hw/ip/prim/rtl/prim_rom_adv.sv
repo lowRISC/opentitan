@@ -33,17 +33,10 @@ module prim_rom_adv import prim_rom_pkg::*; #(
     .rst_ni,
     .req_i,
     .addr_i,
+    .rvalid_o,
     .rdata_o,
     .cfg_i
   );
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      rvalid_o <= 1'b0;
-    end else begin
-      rvalid_o <= req_i;
-    end
-  end
 
   ////////////////
   // ASSERTIONS //
