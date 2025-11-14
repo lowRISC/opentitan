@@ -28,7 +28,7 @@ cryptotest(
 )
 
 cryptotest(
-    name = "acvp_hmac_sha256",
+    name = "hmac_sha256_acvp",
     test_args = " ".join([
         "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:hmac_sha256_vectors.json)\"",
         "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:hmac_sha256_expected.json)\"",
@@ -580,13 +580,13 @@ cryptotest(
 test_suite(
     name = "crypto_kat_test_suite",
     tests = [
-        ":acvp_hmac_sha256",
         ":aes_gcm_kat",
         ":aes_kat",
         ":cshake_kat",
         ":drbg_kat",
         ":ecdh_kat",
         ":ecdsa_kat",
+        ":hmac_sha256_acvp",
         ":hmac_sha256_kat",
         ":hmac_sha384_kat",
         ":hmac_sha512_kat",
