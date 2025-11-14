@@ -91,7 +91,7 @@
         "//sw/device/tests/crypto:hmac_sha512_functest",
         "//sw/device/tests/crypto:hmac_functest",
         "//sw/device/tests/crypto:hmac_multistream_functest",
-        "//sw/device/tests/crypto/cryptotest:acvp_hmac_sha256",
+        "//sw/device/tests/crypto/cryptotest:hmac_sha256_acvp",
         "//sw/device/tests/crypto/cryptotest:hmac_sha256_kat",
         "//sw/device/tests/crypto/cryptotest:hmac_sha384_kat",
         "//sw/device/tests/crypto/cryptotest:hmac_sha512_kat",
