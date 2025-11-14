@@ -7,7 +7,7 @@ description: "RACL_CTRL DV UVM test"
 filesets:
   files_dv:
     depend:
-      - lowrisc:dv:racl_ctrl_env
+      - lowrisc:dv:racl_ctrl_base_env
     files:
       - racl_ctrl_test_pkg.sv
       - racl_ctrl_base_test.sv: {is_include_file: true}

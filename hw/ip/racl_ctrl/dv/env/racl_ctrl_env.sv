@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class racl_ctrl_env extends cip_base_env #(.CFG_T              (racl_ctrl_env_cfg),
+class racl_ctrl_env extends cip_base_env #(.CFG_T              (racl_ctrl_base_env_cfg),
                                            .COV_T              (racl_ctrl_env_cov),
                                            .VIRTUAL_SEQUENCER_T(racl_ctrl_virtual_sequencer),
                                            .SCOREBOARD_T       (racl_ctrl_scoreboard));

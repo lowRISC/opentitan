@@ -27,7 +27,7 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   extern constraint kmac_accept_delay_max_c;
   extern function new (string name="");
   extern virtual function void initialize(bit [31:0] csr_base_addr = '1);
-  extern virtual function dv_base_reg_block create_ral_by_name(string name);
+  extern virtual protected function dv_base_reg_block create_ral_by_name(string name);
 
   `uvm_object_utils_begin(rom_ctrl_env_cfg)
   `uvm_object_utils_end

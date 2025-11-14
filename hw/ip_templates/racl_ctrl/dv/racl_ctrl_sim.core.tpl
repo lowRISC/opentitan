@@ -16,6 +16,8 @@ filesets:
       - lowrisc:dv:racl_error_log_agent
       - ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_sva")}
     files:
+      - ${module_instance_name}_env_pkg.sv
+      - ${module_instance_name}_env_cfg.sv: {is_include_file: true}
       - tb.sv
     file_type: systemVerilogSource
 

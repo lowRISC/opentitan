@@ -94,7 +94,7 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
   //
   // Note that the SRAM only has 2 RAL models, one is the "default" CSR model,
   // and the other is the custom model to represent the memory primitive.
-  virtual function dv_base_reg_block create_ral_by_name(string name);
+  virtual protected function dv_base_reg_block create_ral_by_name(string name);
     if (name == RAL_T::type_name) begin
       return super.create_ral_by_name(name);
     end else if (name == sram_ral_name) begin
