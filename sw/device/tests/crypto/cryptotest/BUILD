@@ -28,7 +28,7 @@ cryptotest(
 )
 
 cryptotest(
-    name = "acvp_hmac_sha256",
+    name = "hmac_sha256_acvp",
     test_args = " ".join([
         "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:hmac_sha256_vectors.json)\"",
         "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:hmac_sha256_expected.json)\"",
