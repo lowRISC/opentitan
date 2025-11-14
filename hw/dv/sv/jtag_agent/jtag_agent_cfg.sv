@@ -47,8 +47,7 @@ class jtag_agent_cfg extends dv_base_agent_cfg;
     jtag_dtm_ral.build(.base_addr(0), .csr_excl(null));
     jtag_dtm_ral.set_supports_byte_enable(1'b0);
     jtag_dtm_ral.lock_model();
-    jtag_dtm_ral.compute_mapped_addr_ranges();
-    jtag_dtm_ral.compute_unmapped_addr_ranges();
+    jtag_dtm_ral.set_base_addr(0);
     // TODO: fix the computation of mapped and unmapped ranges.
   endfunction : new
 
