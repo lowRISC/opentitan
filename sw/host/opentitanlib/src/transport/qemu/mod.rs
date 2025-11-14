@@ -34,7 +34,7 @@ use crate::transport::qemu::monitor::{Chardev, ChardevKind, Monitor};
 use crate::transport::qemu::reset::QemuReset;
 use crate::transport::qemu::spi::QemuSpi;
 use crate::transport::qemu::uart::QemuUart;
-use crate::transport::qemu::usbdev::{QemuUsbHost, QemuVbusSense};
+use crate::transport::qemu::usbdev::QemuVbusSense;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
@@ -72,8 +72,6 @@ pub struct Qemu {
 
     /// VBUS sense pin (actually goes via the `usbdev-cmd` chardev).
     vbus_sense: Option<Rc<dyn GpioPin>>,
-
-    _usb_host: Option<Rc<QemuUsbHost>>,
 
     /// QEMU log modelled as a UART.
     log: Option<Rc<dyn Uart>>,
@@ -150,25 +148,6 @@ impl Qemu {
             }
             _ => {
                 log::info!("could not find pty chardev with id=usbdev, skipping USBDEV");
-                None
-            }
-        };
-
-        // USBDEV host:
-        let usb_host = match find_chardev(&chardevs, "usbdev-host") {
-            Some(ChardevKind::Pty { path }) => {
-                let tty = serialport::new(
-                    path.to_str().context("TTY path not UTF8")?,
-                    CONSOLE_BAUDRATE,
-                )
-                .open_native()
-                .context("failed to open QEMU usbdev-host PTY")?;
-
-                let usb_host = Rc::new(QemuUsbHost::new(tty));
-                Some(usb_host)
-            }
-            _ => {
-                log::info!("could not find pty chardev with id=usbdev-host, skipping USBDEV");
                 None
             }
         };
@@ -258,7 +237,6 @@ impl Qemu {
             reset,
             uarts,
             vbus_sense,
-            _usb_host: usb_host,
             log,
             spi,
             i2cs,
