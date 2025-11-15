@@ -113,17 +113,11 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
                 if (en_timers[i][j] == 0) begin
                   // Reset the interrupt when mtimecmp is updated and timer is not active
                   intr_status_exp[i][j] = 0;
-                  if (cfg.en_cov) begin
-                    cov.sticky_intr_cov[{"rv_timer_sticky_intr_pin",
-                                        $sformatf("%0d", timer_idx)}].sample(1'b0);
-                  end
+                  if (cfg.en_cov) cov.sample_intr_pin(timer_idx, 0);
                 end else begin
                   // intr stays sticky if timer is active
                   ctimecmp_update_on_fly = 1;
-                  if (cfg.en_cov) begin
-                    cov.sticky_intr_cov[{"rv_timer_sticky_intr_pin",
-                                        $sformatf("%0d", timer_idx)}].sample(intr_status_exp[i][j]);
-                  end
+                  if (cfg.en_cov) cov.sample_intr_pin(timer_idx, intr_status_exp[i][j]);
                 end
                 break;
               end
@@ -140,17 +134,11 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
                 if (en_timers[i][j] == 0) begin
                   // Reset the interrupt when mtimecmp is updated and timer is not active
                   intr_status_exp[i][j] = 0;
-                  if (cfg.en_cov) begin
-                    cov.sticky_intr_cov[{"rv_timer_sticky_intr_pin",
-                                        $sformatf("%0d", timer_idx)}].sample(1'b0);
-                  end
+                  if (cfg.en_cov) cov.sample_intr_pin(timer_idx, 0);
                 end else begin
                   // intr stays sticky if timer is active
                   ctimecmp_update_on_fly = 1;
-                  if (cfg.en_cov) begin
-                    cov.sticky_intr_cov[{"rv_timer_sticky_intr_pin",
-                                        $sformatf("%0d", timer_idx)}].sample(intr_status_exp[i][j]);
-                  end
+                  if (cfg.en_cov) cov.sample_intr_pin(timer_idx, intr_status_exp[i][j]);
                 end
                 break;
               end
@@ -175,15 +163,8 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
                 if (item.a_data[j] == 1) begin
                   if (en_timers[i][j] == 0) begin
                     intr_status_exp[i][j] = 0;
-                    if (cfg.en_cov) begin
-                      cov.sticky_intr_cov[{"rv_timer_sticky_intr_pin",
-                                          $sformatf("%0d", timer_idx)}].sample(1'b0);
-                    end
                   end
-                  else if (cfg.en_cov) begin // sticky interrupt
-                    cov.sticky_intr_cov[{"rv_timer_sticky_intr_pin",
-                                        $sformatf("%0d", timer_idx)}].sample(1'b1);
-                  end
+                  if (cfg.en_cov) cov.sample_intr_pin(timer_idx, en_timers[i][j]);
                 end
               end
               break;
