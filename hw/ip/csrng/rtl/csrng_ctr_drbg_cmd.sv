@@ -202,7 +202,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
     rsp_glast_o = req_glast_i;
     if (req_data_i.cmd == UNI) begin
       // Zeroize everything but inst_id and cmd (?)
-      rsp_data_o = '{default: '0};
+      rsp_data_o = '{cmd: INV, default: '0};
       rsp_data_o.inst_id = req_data_i.inst_id;
       rsp_data_o.cmd     = req_data_i.cmd;
     end else if (!bypass_upd) begin

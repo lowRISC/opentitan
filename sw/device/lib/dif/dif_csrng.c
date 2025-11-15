@@ -184,17 +184,8 @@ dif_result_t dif_csrng_get_cmd_force_unhealthy_fifo(const dif_csrng_t *csrng,
     case kDifCsrngFifoGenBits:
       fifo_bit = CSRNG_ERR_CODE_SFIFO_GENBITS_ERR_BIT;
       break;
-    case kDifCsrngFifoFinal:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_FINAL_ERR_BIT;
-      break;
     case kDifCsrngFifoGBencAck:
       fifo_bit = CSRNG_ERR_CODE_SFIFO_GBENCACK_ERR_BIT;
-      break;
-    case kDifCsrngFifoGrcStage:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_GRCSTAGE_ERR_BIT;
-      break;
-    case kDifCsrngFifoGGenReq:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_GGENREQ_ERR_BIT;
       break;
     case kDifCsrngFifoGadStage:
       fifo_bit = CSRNG_ERR_CODE_SFIFO_GADSTAGE_ERR_BIT;

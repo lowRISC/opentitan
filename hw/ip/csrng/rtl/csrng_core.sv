@@ -134,14 +134,8 @@ module csrng_core import csrng_pkg::*; #(
   logic [2:0]                  ctr_drbg_upd_sfifo_final_err;
   logic                        ctr_drbg_gen_sfifo_gbencack_err_sum;
   logic [2:0]                  ctr_drbg_gen_sfifo_gbencack_err;
-  logic                        ctr_drbg_gen_sfifo_grcstage_err_sum;
-  logic [2:0]                  ctr_drbg_gen_sfifo_grcstage_err;
-  logic                        ctr_drbg_gen_sfifo_ggenreq_err_sum;
-  logic [2:0]                  ctr_drbg_gen_sfifo_ggenreq_err;
   logic                        ctr_drbg_gen_sfifo_gadstage_err_sum;
   logic [2:0]                  ctr_drbg_gen_sfifo_gadstage_err;
-  logic                        ctr_drbg_gen_sfifo_ggenbits_err_sum;
-  logic [2:0]                  ctr_drbg_gen_sfifo_ggenbits_err;
   logic                        block_encrypt_sfifo_cmdid_err_sum;
   logic [2:0]                  block_encrypt_sfifo_cmdid_err;
   logic                        fifo_write_err_sum;
@@ -288,7 +282,7 @@ module csrng_core import csrng_pkg::*; #(
   mubi4_t               flag0_q, flag0_d;
   logic [NumAppsLg-1:0] cmd_arb_idx_q, cmd_arb_idx_d;
   logic                 genbits_stage_fips_sw_q, genbits_stage_fips_sw_d;
-  logic [CmdWidth-1:0]  cmd_req_ccmd_dly_q, cmd_req_ccmd_dly_d;
+  acmd_e                cmd_req_ccmd_dly_q, cmd_req_ccmd_dly_d;
   logic                 cs_aes_halt_q, cs_aes_halt_d;
   logic [SeedLen-1:0]   entropy_src_seed_q, entropy_src_seed_d;
   logic                 entropy_src_fips_q, entropy_src_fips_d;
@@ -306,7 +300,7 @@ module csrng_core import csrng_pkg::*; #(
       flag0_q                 <= prim_mubi_pkg::MuBi4False;
       cmd_arb_idx_q           <= '0;
       genbits_stage_fips_sw_q <= '0;
-      cmd_req_ccmd_dly_q      <= '0;
+      cmd_req_ccmd_dly_q      <= INV;
       cs_aes_halt_q           <= '0;
       entropy_src_seed_q      <= '0;
       entropy_src_fips_q      <= '0;
@@ -419,10 +413,7 @@ module csrng_core import csrng_pkg::*; #(
          (|cmd_stage_sfifo_genbits_err_sum) ||
          ctr_drbg_upd_sfifo_final_err_sum ||
          ctr_drbg_gen_sfifo_gbencack_err_sum ||
-         ctr_drbg_gen_sfifo_grcstage_err_sum ||
-         ctr_drbg_gen_sfifo_ggenreq_err_sum ||
          ctr_drbg_gen_sfifo_gadstage_err_sum ||
-         ctr_drbg_gen_sfifo_ggenbits_err_sum ||
          block_encrypt_sfifo_cmdid_err_sum ||
          fifo_write_err_sum ||
          fifo_read_err_sum ||
@@ -436,14 +427,8 @@ module csrng_core import csrng_pkg::*; #(
          err_code_test_bit[9];
   assign ctr_drbg_gen_sfifo_gbencack_err_sum = (|ctr_drbg_gen_sfifo_gbencack_err) ||
          err_code_test_bit[10];
-  assign ctr_drbg_gen_sfifo_grcstage_err_sum = (|ctr_drbg_gen_sfifo_grcstage_err) ||
-         err_code_test_bit[11];
-  assign ctr_drbg_gen_sfifo_ggenreq_err_sum = (|ctr_drbg_gen_sfifo_ggenreq_err) ||
-         err_code_test_bit[12];
   assign ctr_drbg_gen_sfifo_gadstage_err_sum = (|ctr_drbg_gen_sfifo_gadstage_err) ||
          err_code_test_bit[13];
-  assign ctr_drbg_gen_sfifo_ggenbits_err_sum = (|ctr_drbg_gen_sfifo_ggenbits_err) ||
-         err_code_test_bit[14];
   assign block_encrypt_sfifo_cmdid_err_sum = (|block_encrypt_sfifo_cmdid_err) ||
          err_code_test_bit[15];
   assign cmd_stage_sm_err_sum     = (|cmd_stage_sm_err)  || err_code_test_bit[20];
@@ -457,10 +442,7 @@ module csrng_core import csrng_pkg::*; #(
          ctr_drbg_upd_v_ctr_err || err_code_test_bit[26];
   assign fifo_write_err_sum =
          block_encrypt_sfifo_cmdid_err[2] ||
-         ctr_drbg_gen_sfifo_ggenbits_err[2] ||
          ctr_drbg_gen_sfifo_gadstage_err[2] ||
-         ctr_drbg_gen_sfifo_ggenreq_err[2] ||
-         ctr_drbg_gen_sfifo_grcstage_err[2] ||
          ctr_drbg_gen_sfifo_gbencack_err[2] ||
          ctr_drbg_upd_sfifo_final_err[2] ||
          (|cmd_stage_sfifo_genbits_err_wr) ||
@@ -468,10 +450,7 @@ module csrng_core import csrng_pkg::*; #(
          err_code_test_bit[28];
   assign fifo_read_err_sum =
          block_encrypt_sfifo_cmdid_err[1] ||
-         ctr_drbg_gen_sfifo_ggenbits_err[1] ||
          ctr_drbg_gen_sfifo_gadstage_err[1] ||
-         ctr_drbg_gen_sfifo_ggenreq_err[1] ||
-         ctr_drbg_gen_sfifo_grcstage_err[1] ||
          ctr_drbg_gen_sfifo_gbencack_err[1] ||
          ctr_drbg_upd_sfifo_final_err[1] ||
          (|cmd_stage_sfifo_genbits_err_rd) ||
@@ -479,10 +458,7 @@ module csrng_core import csrng_pkg::*; #(
          err_code_test_bit[29];
   assign fifo_status_err_sum =
          block_encrypt_sfifo_cmdid_err[0] ||
-         ctr_drbg_gen_sfifo_ggenbits_err[0] ||
          ctr_drbg_gen_sfifo_gadstage_err[0] ||
-         ctr_drbg_gen_sfifo_ggenreq_err[0] ||
-         ctr_drbg_gen_sfifo_grcstage_err[0] ||
          ctr_drbg_gen_sfifo_gbencack_err[0] ||
          ctr_drbg_upd_sfifo_final_err[0] ||
          (|cmd_stage_sfifo_genbits_err_st) ||
@@ -506,21 +482,9 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.err_code.sfifo_gbencack_err.de = cs_enable_fo[12] &&
          ctr_drbg_gen_sfifo_gbencack_err_sum;
 
-  assign hw2reg.err_code.sfifo_grcstage_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_grcstage_err.de = cs_enable_fo[13] &&
-         ctr_drbg_gen_sfifo_grcstage_err_sum;
-
-  assign hw2reg.err_code.sfifo_ggenreq_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_ggenreq_err.de = cs_enable_fo[14] &&
-         ctr_drbg_gen_sfifo_ggenreq_err_sum;
-
   assign hw2reg.err_code.sfifo_gadstage_err.d = 1'b1;
   assign hw2reg.err_code.sfifo_gadstage_err.de = cs_enable_fo[15] &&
          ctr_drbg_gen_sfifo_gadstage_err_sum;
-
-  assign hw2reg.err_code.sfifo_ggenbits_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_ggenbits_err.de = cs_enable_fo[16] &&
-         ctr_drbg_gen_sfifo_ggenbits_err_sum;
 
   assign hw2reg.err_code.sfifo_cmdid_err.d = 1'b1;
   assign hw2reg.err_code.sfifo_cmdid_err.de = cs_enable_fo[17] &&
@@ -1156,7 +1120,7 @@ module csrng_core import csrng_pkg::*; #(
   //  outputs: 416b K,V,RC
 
   assign ctr_drbg_cmd_req_vld = !cs_enable_fo[45] ? 1'b0 : main_sm_cmd_vld;
-  assign cmd_req_ccmd_dly_d   = !cs_enable_fo[44] ?   '0 : acmd_hold;
+  assign cmd_req_ccmd_dly_d   = !cs_enable_fo[44] ?  INV : acmd_hold;
 
   assign ctr_drbg_cmd_req_data = '{
     inst_id: shid_q,
@@ -1402,10 +1366,7 @@ module csrng_core import csrng_pkg::*; #(
     .sm_err_o (drbg_gen_sm_err),
 
     .fifo_gbencack_err_o(ctr_drbg_gen_sfifo_gbencack_err),
-    .fifo_grcstage_err_o(ctr_drbg_gen_sfifo_grcstage_err),
-    .fifo_ggenreq_err_o (ctr_drbg_gen_sfifo_ggenreq_err),
-    .fifo_gadstage_err_o(ctr_drbg_gen_sfifo_gadstage_err),
-    .fifo_ggenbits_err_o(ctr_drbg_gen_sfifo_ggenbits_err)
+    .fifo_gadstage_err_o(ctr_drbg_gen_sfifo_gadstage_err)
   );
 
 
@@ -1440,8 +1401,10 @@ module csrng_core import csrng_pkg::*; #(
   logic [SeedLen-1:0] unused_gen_rsp_pdata;
   logic               unused_state_db_inst_state;
 
-  assign unused_err_code_test_bit = (|err_code_test_bit[19:16]) || (|err_code_test_bit[8:2]);
-  assign unused_enable_fo = cs_enable_fo[42] || (|cs_enable_fo[9:4]);
+  assign unused_err_code_test_bit = (|err_code_test_bit[19:16]) || err_code_test_bit[14] ||
+                                    (|err_code_test_bit[12:11]) || (|err_code_test_bit[8:2]);
+  assign unused_enable_fo = cs_enable_fo[42] || cs_enable_fo[16] || (|cs_enable_fo[14:13]) ||
+                            (|cs_enable_fo[9:4]);
   assign unused_reg2hw_genbits = (|reg2hw.genbits.q);
   assign unused_int_state_val = (|reg2hw.int_state_val.q);
   assign unused_reseed_interval = reg2hw.reseed_interval.qe;
