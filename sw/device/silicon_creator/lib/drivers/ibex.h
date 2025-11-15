@@ -32,51 +32,37 @@ uint32_t ibex_fpga_version(void);
 OT_WARN_UNUSED_RESULT
 size_t ibex_addr_remap_slots(void);
 
-#ifdef OT_PLATFORM_RV32
 /**
  * Set the MCYCLE counter register to zero.
  */
-inline void ibex_mcycle_zero(void) {
-  CSR_WRITE(CSR_REG_MCYCLE, 0);
-  CSR_WRITE(CSR_REG_MCYCLEH, 0);
-}
+void ibex_mcycle_zero(void);
 
 /**
  * Read the low 32 bits of the MCYCLE counter.
  */
 OT_WARN_UNUSED_RESULT
-inline uint32_t ibex_mcycle32(void) {
-  uint32_t val;
-  CSR_READ(CSR_REG_MCYCLE, &val);
-  return val;
-}
+uint32_t ibex_mcycle32(void);
 
 /**
  * Read the 64-bit MCYCLE counter.
  */
 OT_WARN_UNUSED_RESULT
-inline uint64_t ibex_mcycle(void) {
-  uint32_t lo, hi, hi2;
-  do {
-    CSR_READ(CSR_REG_MCYCLEH, &hi);
-    CSR_READ(CSR_REG_MCYCLE, &lo);
-    CSR_READ(CSR_REG_MCYCLEH, &hi2);
-  } while (hi != hi2);
-  return ((uint64_t)hi << 32) | lo;
-}
+uint64_t ibex_mcycle(void);
 
 /**
  * Convert from microseconds to CPU cycles.
  */
-inline uint64_t ibex_time_to_cycles(uint64_t time_us) {
-  return to_cpu_cycles(time_us);
-}
-#else
-extern void ibex_mcycle_zero(void);
-extern uint32_t ibex_mcycle32(void);
-extern uint64_t ibex_mcycle(void);
-extern uint64_t ibex_time_to_cycles(uint64_t time_us);
-#endif
+uint64_t ibex_time_to_cycles(uint64_t time_us);
+
+/**
+ * Get random data from the EDN0 interface.
+ *
+ * Important: this function will hang if the entropy complex is not
+ * initialized. Callers are responsible for checking first.
+ *
+ * @return 32 bits of randomness from EDN0.
+ */
+uint32_t ibex_rnd32_read(void);
 
 /**
  * An Ibex exception type for silicon_creator code.

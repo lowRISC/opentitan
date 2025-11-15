@@ -29,11 +29,15 @@ rom_error_t rnd_health_config_check(lifecycle_state_t lc_state);
 /**
  * Returns a random word from the RISC-V Ibex core wrapper.
  *
- * Requires the CREATOR_SW_CFG_RNG_EN OTP value set to `kHardenedBoolTrue`
- * in order to enable the use of entropy, otherwise it only returns the current
- * value of the MCYCLE CSR register.
+ * When compiled for the Owner stage (kBootStage == kBootStageOwner) or
+ * when CREATOR_SW_CFG_RNG_EN OTP is set to `kHardenedBoolTrue`, this function
+ * will use random data provided by the Ibex core wrapper through the entropy
+ * distribution network.
  *
- * @returns MCYCLE CSR + entropy value.
+ * In all other cases, this function will simply return the value of the MCYCLE
+ * CSR.
+ *
+ * @returns MCYCLE CSR or entropy value.
  */
 OT_WARN_UNUSED_RESULT
 uint32_t rnd_uint32(void);
