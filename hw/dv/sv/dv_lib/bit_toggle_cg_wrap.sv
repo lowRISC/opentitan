@@ -15,13 +15,11 @@ class bit_toggle_cg_wrap;
   // cp_transitions).
   //
   // If toggle_cov_en is true, the transitions in cp_transitions have nonzero weight.
-  covergroup bit_toggle_cg(string name,
-                           string path = "",
-                           bit    toggle_cov_en = 1)
+  covergroup bit_toggle_cg(string name, bit toggle_cov_en = 1)
     with function sample(bit value);
 
     option.per_instance = 1;
-    option.name         = (path == "") ? name : {path, "::", name};
+    option.name         = name;
 
     cp_value: coverpoint value;
     cp_transitions: coverpoint value {
@@ -31,8 +29,8 @@ class bit_toggle_cg_wrap;
     }
   endgroup : bit_toggle_cg
 
-  function new(string name = "bit_toggle_cg_wrap", string path = "", bit toggle_cov_en = 1);
-    bit_toggle_cg = new(name, path, toggle_cov_en);
+  function new(string name = "bit_toggle_cg_wrap", bit toggle_cov_en = 1);
+    bit_toggle_cg = new(name, toggle_cov_en);
   endfunction : new
 
   // A wrapper around bit_toggle_cg.sample, allowing code using this class to call
