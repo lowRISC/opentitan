@@ -29,7 +29,7 @@ class bit_toggle_cg_wrap;
     }
   endgroup : bit_toggle_cg
 
-  function new(string name = "bit_toggle_cg_wrap", bit toggle_cov_en = 1);
+  function new(string name, bit toggle_cov_en = 1);
     bit_toggle_cg = new(name, toggle_cov_en);
   endfunction : new
 
