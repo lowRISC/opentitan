@@ -12,6 +12,12 @@
 // that are shared between them are commented only in `memcpy()`.
 status_t hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
                          size_t word_len) {
+  // Reload the pointer inputs to ensure they are correct
+  uint32_t dest_copy = launder32((uint32_t)dest);
+  uint32_t src_copy = launder32((uint32_t)src);
+  HARDENED_CHECK_EQ((uint32_t)dest, launder32(dest_copy));
+  HARDENED_CHECK_EQ((uint32_t)src, launder32(src_copy));
+
   random_order_t order;
   random_order_init(&order, word_len);
 
