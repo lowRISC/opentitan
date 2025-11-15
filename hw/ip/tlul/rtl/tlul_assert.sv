@@ -258,7 +258,7 @@ module tlul_assert #(
   // in this case all signals coming from the device side have an assumed property
   if (EndpointType == "Host") begin : gen_host
     // h2d
-    begin : gen_h2d
+    if (1) begin : gen_h2d
       legalAOpcode_A:     assert property (h2d_pre_S |-> legalAOpcode_S);
       legalAParam_A:      assert property (h2d_pre_S |-> legalAParam_S);
       sizeGTEMask_A:      assert property (h2d_pre_S |-> sizeGTEMask_S);
@@ -269,7 +269,7 @@ module tlul_assert #(
       aDataKnown_A:       assert property (h2d_pre_S and aDataKnown_pre_S |-> aDataKnown_S);
     end
     // d2h
-    begin : gen_d2h
+    if (1) begin : gen_d2h
       respOpcode_M:       assume property (d2h_pre_S |-> respOpcode_S);
       legalDParam_M:      assume property (d2h_pre_S |-> legalDParam_S);
       respSzEqReqSz_M:    assume property (d2h_pre_S |-> respSzEqReqSz_S);
@@ -279,14 +279,14 @@ module tlul_assert #(
   // in this case all signals coming from the host side have an assumed property
   end else if (EndpointType == "Device") begin : gen_device
     // h2d
-    begin : gen_h2d
+    if (1) begin : gen_h2d
       legalAParam_M:      assume property (h2d_pre_S |-> legalAParam_S);
       pendingReqPerSrc_M: assume property (h2d_pre_S |-> pendingReqPerSrc_S);
       aDataKnown_M:       assume property (h2d_pre_S and aDataKnown_pre_S |-> aDataKnown_S);
       contigMask_M:       assume property (h2d_pre_S and contigMask_pre_S |-> contigMask_S);
     end
     // d2h
-    begin : gen_d2h
+    if (1) begin : gen_d2h
       respOpcode_A: assert property (d2h_pre_S |-> respOpcode_S);
       legalDParam_A: assert property (d2h_pre_S |-> legalDParam_S);
       respSzEqReqSz_A: assert property (d2h_pre_S |-> respSzEqReqSz_S);
@@ -304,7 +304,7 @@ module tlul_assert #(
                                              s_eventually (d2h.d_valid && d2h.d_error));
     end
   end else begin : gen_unknown
-    initial begin : p_unknonw
+    initial begin : p_unknown
       `ASSERT_I(unknownConfig_A, 0 == 1)
     end
   end
@@ -418,7 +418,7 @@ module tlul_assert #(
     `TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED(source)
     `TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED(mask)
   end else begin : gen_unknown_cov
-    initial begin : p_unknonw_cov
+    initial begin : p_unknown_cov
       `ASSERT_I(unknownConfig_A, 0 == 1)
     end
   end
