@@ -59,10 +59,6 @@ define_design_lib WORK -path $WORKLIB
 if {$FOUNDRY_ROOT != ""} {
   # ASIC lib setup for DC.
   source "${FOUNDRY_ROOT}/syn/dc/setup.tcl"
-  # this PRIM_DEFAULT_IMPL selects the appropriate technology by defining
-  # PRIM_DEFAULT_IMPL=prim_pkg::Impl<tech identifier>
-  # PRIM_DEFAULT_IMPL is set inside the library setup script
-  set DEFINE "PRIM_DEFAULT_IMPL=${PRIM_DEFAULT_IMPL}+${PRIM_STD_CELL_VARIANT}"
 } else {
   # GTECH lib setup for DC.
   source "${SYN_ROOT}/tools/dc/gtech-setup.tcl"

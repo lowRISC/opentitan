@@ -1605,10 +1605,7 @@ end
   //   Add checks that the incoming fatal conditions from prim_otp trigger alerts.
 
   // Assertions for countermeasures inside prim_otp
-  // `ifndef PRIM_DEFAULT_IMPL
-  //   `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
-  // `endif
-  // if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_reg_we_assert_generic
+  // if (prim_pkg::PrimTechName == "Generic") begin : gen_reg_we_assert_generic
   //   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A,
   //       u_tlul_lc_gate.u_state_regs, alert_tx_o[2])
   //   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PrimFsmCheck_A,

@@ -3,31 +3,26 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: "lowrisc:prim:lc_sync:0.1"
-description: "Two-stage synchronizer for life cycle control signals."
+name: "lowrisc:prim_xilinx:prim_pkg"
+description: "Xilinx technology package"
+virtual:
+  - lowrisc:prim:prim_pkg
+
 filesets:
   files_rtl:
-    depend:
-      - lowrisc:prim:assert
-      - lowrisc:prim:prim_pkg
-      - lowrisc:prim:flop_2sync
-      - lowrisc:prim:buf
-      - lowrisc:ip:lc_ctrl_pkg
     files:
-      - rtl/prim_lc_sync.sv
+      - rtl/prim_pkg.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
     depend:
       # common waivers
       - lowrisc:lint:common
-    file_type: vlt
 
   files_ascentlint_waiver:
     depend:
       # common waivers
       - lowrisc:lint:common
-    file_type: waiver
 
   files_veriblelint_waiver:
     depend:
@@ -35,20 +30,9 @@ filesets:
       - lowrisc:lint:common
 
 targets:
-  default: &default_target
+  default:
     filesets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
-
-  lint:
-    <<: *default_target
-    default_tool: verilator
-    parameters:
-      - SYNTHESIS=true
-    tools:
-      verilator:
-        mode: lint-only
-        verilator_options:
-          - "-Wall"
