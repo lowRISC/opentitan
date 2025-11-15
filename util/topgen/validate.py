@@ -369,6 +369,7 @@ reset_request_required = {
 }
 reset_request_optional = {
     'width': ['d', 'TODO'],
+    'reset_enabled': ['pb', 'whether the reset request is enabled'],
 }
 reset_request_added = {}
 

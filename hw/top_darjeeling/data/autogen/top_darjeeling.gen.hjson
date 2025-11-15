@@ -342,12 +342,14 @@
         width: "1"
         module: aon_timer_aon
         desc: Watchdog reset request.
+        reset_enabled: false
       }
       {
         name: rst_req_external
         width: "1"
         module: soc_proxy
         desc: External reset request
+        reset_enabled: true
       }
     ]
   }
