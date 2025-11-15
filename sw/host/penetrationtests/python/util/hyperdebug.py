@@ -97,6 +97,33 @@ class HyperDebug:
         com_interface.timeout = 1
         return com_interface
 
+    def set_tap_straps(self):
+        """Sets the tap straps on a RMA ROM."""
+        tap_process = (
+            [self.opentitantool]
+            + self.tool_args
+            + [
+                "--exec",
+                "gpio write TAP_STRAP0 false",
+                "--exec",
+                "gpio write TAP_STRAP1 true",
+                "--exec",
+                "gpio apply RMA_BOOTSTRAP",
+                "--exec",
+                "gpio write RESET true",
+                "--exec",
+                "no-op --delay 50ms",
+                "--exec",
+                "gpio remove RESET",
+                "no-op",
+            ]
+        )
+        try:
+            run(tap_process, check=True, capture_output=True, text=True)
+        except CalledProcessError:
+            print("Error: Failed to set tap straps.")
+            raise
+
     def start_openocd(self, startup_delay=4, print_output=True):
         self.close_openocd()
         # We set up OpenOCD with the following default ports
@@ -105,6 +132,8 @@ class HyperDebug:
         # 3333 for gdb connections
         # You can adapt those ports, e.g., via adding the config: -c "telnet_port 4444"
         OPENOCD_COMMANDS = "adapter speed 500; transport select jtag; reset_config trst_only"
+
+        self.set_tap_straps()
 
         command = [
             self.openocd,
