@@ -177,8 +177,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
                 started = True
                 for pc, count in pc_count_dict.items():
-                    i_count = 0
-                    while i_count < min(MAX_SKIPS_PER_LOOP, count):
+                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
                         print("-" * 80)
                         print("Applying instruction skip in ", pc, "occurence", i_count)
                         print("-" * 80)
@@ -206,7 +205,6 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
                             gdb_response = gdb.read_output()
                             if "instruction skip applied" in gdb_response:
-                                i_count += 1
                                 total_attacks += 1
 
                                 if crash_observation in gdb_response:
@@ -232,12 +230,12 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                         successful_faults += 1
                                         print("-" * 80)
                                         print("Successful FI attack!")
-                                        print("Location:", pc, "iteration", i_count - 1)
+                                        print("Location:", pc, "iteration", i_count)
                                         print(gdb_response)
                                         print("Response:", testos_response_json)
                                         print("-" * 80)
                                         test_results.write(
-                                            f"{pc}, {i_count - 1}: {testos_response_json}\n"
+                                            f"{pc}, {i_count}: {testos_response_json}\n"
                                         )
                                     # Reset GDB by closing and opening again
                                     gdb.close_gdb()
@@ -430,10 +428,9 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
                 started = True
                 for pc, count in pc_count_dict.items():
-                    # Search for collisions in outputs between the ecdh instances
-                    for i in range(2):
-                        i_count = 0
-                        while i_count < min(MAX_SKIPS_PER_LOOP, count):
+                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        # Search for collisions in outputs between the ecdh instances
+                        for i in range(2):
                             print("-" * 80)
                             print("Applying instruction skip in ", pc, "occurence", i_count)
                             print("-" * 80)
@@ -461,7 +458,6 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
                                 gdb_response = gdb.read_output()
                                 if "instruction skip applied" in gdb_response:
-                                    i_count += 1
                                     total_attacks += 1
 
                                     if crash_observation in gdb_response:
@@ -482,19 +478,17 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                         testos_response_json = json.loads(testos_response)
                                         print("Output:", testos_response_json, flush=True)
                                         if testos_response_json["status"] == 0:
-                                            ecdh_output[i] = tuple(
-                                                testos_response_json["shared_key"]
-                                            )
+                                            ecdh_output[i] = testos_response_json["shared_key"]
                                             if ecdh_output[i] == ecdh_output[1 - i]:
                                                 successful_faults += 1
                                                 print("-" * 80)
                                                 print("Successful FI attack!")
-                                                print("Location:", pc, "iteration", i_count - 1)
+                                                print("Location:", pc, "iteration", i_count)
                                                 print(gdb_response)
                                                 print("Response:", testos_response_json)
                                                 print("-" * 80)
                                                 test_results.write(
-                                                    f"{pc}, {i_count - 1}: {testos_response_json}\n"
+                                                    f"{pc}, {i_count}: {testos_response_json}\n"
                                                 )
                                         # Reset GDB by closing and opening again
                                         gdb.close_gdb()
@@ -693,8 +687,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
                 started = True
                 for pc, count in pc_count_dict.items():
-                    i_count = 0
-                    while i_count < min(MAX_SKIPS_PER_LOOP, count):
+                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
                         print("-" * 80)
                         print("Applying instruction skip in ", pc, "occurence", i_count)
                         print("-" * 80)
@@ -722,7 +715,6 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
                             gdb_response = gdb.read_output()
                             if "instruction skip applied" in gdb_response:
-                                i_count += 1
                                 total_attacks += 1
 
                                 if crash_observation in gdb_response:
@@ -748,12 +740,12 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                         successful_faults += 1
                                         print("-" * 80)
                                         print("Successful FI attack!")
-                                        print("Location:", pc, "iteration", i_count - 1)
+                                        print("Location:", pc, "iteration", i_count)
                                         print(gdb_response)
                                         print("Response:", testos_response_json)
                                         print("-" * 80)
                                         test_results.write(
-                                            f"{pc}, {i_count - 1}: {testos_response_json}\n"
+                                            f"{pc}, {i_count}: {testos_response_json}\n"
                                         )
                                     # Reset GDB by closing and opening again
                                     gdb.close_gdb()
@@ -946,10 +938,9 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
                 started = True
                 for pc, count in pc_count_dict.items():
-                    # Search for collisions in outputs between the ecdh instances
-                    for i in range(2):
-                        i_count = 0
-                        while i_count < min(MAX_SKIPS_PER_LOOP, count):
+                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        # Search for collisions in outputs between the ecdh instances
+                        for i in range(2):
                             print("-" * 80)
                             print("Applying instruction skip in ", pc, "occurence", i_count)
                             print("-" * 80)
@@ -977,7 +968,6 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
                                 gdb_response = gdb.read_output()
                                 if "instruction skip applied" in gdb_response:
-                                    i_count += 1
                                     total_attacks += 1
 
                                     if crash_observation in gdb_response:
@@ -998,19 +988,17 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                         testos_response_json = json.loads(testos_response)
                                         print("Output:", testos_response_json, flush=True)
                                         if testos_response_json["status"] == 0:
-                                            ecdh_output[i] = tuple(
-                                                testos_response_json["shared_key"]
-                                            )
+                                            ecdh_output[i] = testos_response_json["shared_key"]
                                             if ecdh_output[i] == ecdh_output[1 - i]:
                                                 successful_faults += 1
                                                 print("-" * 80)
                                                 print("Successful FI attack!")
-                                                print("Location:", pc, "iteration", i_count - 1)
+                                                print("Location:", pc, "iteration", i_count)
                                                 print(gdb_response)
                                                 print("Response:", testos_response_json)
                                                 print("-" * 80)
                                                 test_results.write(
-                                                    f"{pc}, {i_count - 1}: {testos_response_json}\n"
+                                                    f"{pc}, {i_count}: {testos_response_json}\n"
                                                 )
                                         # Reset GDB by closing and opening again
                                         gdb.close_gdb()
@@ -1222,8 +1210,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
                 started = True
                 for pc, count in pc_count_dict.items():
-                    i_count = 0
-                    while i_count < min(MAX_SKIPS_PER_LOOP, count):
+                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
                         print("-" * 80)
                         print("Applying instruction skip in ", pc, "occurence", i_count)
                         print("-" * 80)
@@ -1261,7 +1248,6 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
                             gdb_response = gdb.read_output()
                             if "instruction skip applied" in gdb_response:
-                                i_count += 1
                                 total_attacks += 1
 
                                 if crash_observation in gdb_response:
@@ -1287,12 +1273,12 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                         successful_faults += 1
                                         print("-" * 80)
                                         print("Successful FI attack!")
-                                        print("Location:", pc, "iteration", i_count - 1)
+                                        print("Location:", pc, "iteration", i_count)
                                         print(gdb_response)
                                         print("Response:", testos_response_json)
                                         print("-" * 80)
                                         test_results.write(
-                                            f"{pc}, {i_count - 1}: {testos_response_json}\n"
+                                            f"{pc}, {i_count}: {testos_response_json}\n"
                                         )
                                     # Reset GDB by closing and opening again
                                     gdb.close_gdb()
@@ -1413,5 +1399,7 @@ if __name__ == "__main__":
     target = targets.Target(target_cfg)
     asymfi = OTFIAsymCrypto(target)
     parser = DisParser(dis_path)
+
+    print("Disassembly is found in ", dis_path, flush=True)
 
     unittest.main(argv=[sys.argv[0]])
