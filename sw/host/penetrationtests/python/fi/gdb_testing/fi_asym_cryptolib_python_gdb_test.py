@@ -1284,8 +1284,8 @@ if __name__ == "__main__":
     # Get the openocd path.
     openocd_path = r.Rlocation("lowrisc_opentitan/third_party/openocd/build_openocd/bin/openocd")
     # Get the openocd config files.
-    # The first file is on the cw340 (this is specific to the cw340)
-    CONFIG_FILE_CHIP = r.Rlocation("lowrisc_opentitan/util/openocd/board/cw340_ftdi.cfg")
+    # The config file for jtag
+    CONFIG_FILE_CHIP = r.Rlocation("openocd/tcl/interface/cmsis-dap.cfg")
     # The config for the earlgrey design
     CONFIG_FILE_DESIGN = r.Rlocation("lowrisc_opentitan/util/openocd/target/lowrisc-earlgrey.cfg")
     # Get the opentitantool path.
