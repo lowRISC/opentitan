@@ -290,8 +290,8 @@ pentest_cryptolib_fi_asym(
 pentest_cryptolib_fi_gdb_sym(
     name = "fi_sym_cryptolib_python_gdb_test",
     tags = [
-        "manual",
-        "skip_in_ci",
+        "flaky",
+        "slow_test",
     ],
     test_args = "",
     test_harness = "//sw/host/penetrationtests/python/fi:fi_sym_cryptolib_python_gdb_test",
@@ -309,8 +309,8 @@ pentest_cryptolib_fi_asym(
 pentest_cryptolib_fi_gdb_asym(
     name = "fi_asym_cryptolib_python_gdb_test",
     tags = [
-        "manual",
-        "skip_in_ci",
+        "flaky",
+        "slow_test",
     ],
     test_args = "",
     test_harness = "//sw/host/penetrationtests/python/fi:fi_asym_cryptolib_python_gdb_test",
