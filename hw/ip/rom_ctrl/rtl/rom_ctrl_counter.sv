@@ -62,8 +62,8 @@ module rom_ctrl_counter
   localparam int unsigned TopAddrInt = RomDepth - 1;
   localparam int unsigned TNTAddrInt = RomNonTopCount - 2;
 
-  localparam bit [AW-1:0] TopAddr = TopAddrInt[AW-1:0];
-  localparam bit [AW-1:0] TNTAddr = TNTAddrInt[AW-1:0];
+  localparam bit [AW-1:0] TopAddr = TopAddrInt[0 +: AW];
+  localparam bit [AW-1:0] TNTAddr = TNTAddrInt[0 +: AW];
 
   logic          go;
   logic          req_q, vld_q;
