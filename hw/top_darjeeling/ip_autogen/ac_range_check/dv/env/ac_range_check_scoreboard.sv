@@ -34,7 +34,7 @@ class ac_range_check_scoreboard extends cip_base_scoreboard #(
   uvm_blocking_put_imp_unfilt #(ac_range_check_scb_item, ac_range_check_scoreboard) tl_unfilt_imp;
 
   // Standard SV/UVM methods
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
@@ -55,7 +55,7 @@ class ac_range_check_scoreboard extends cip_base_scoreboard #(
 endclass : ac_range_check_scoreboard
 
 
-function ac_range_check_scoreboard::new(string name="", uvm_component parent=null);
+function ac_range_check_scoreboard::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 

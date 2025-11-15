@@ -11,7 +11,7 @@ class esc_sender_driver extends alert_esc_base_driver;
   `uvm_component_utils(esc_sender_driver)
 
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
   extern virtual task reset_signals();
   extern virtual task get_and_drive();
   extern virtual task drive_esc();
@@ -19,7 +19,7 @@ class esc_sender_driver extends alert_esc_base_driver;
 
 endclass : esc_sender_driver
 
-function esc_sender_driver::new (string name="", uvm_component parent=null);
+function esc_sender_driver::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 

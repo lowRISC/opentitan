@@ -39,7 +39,7 @@ class ${module_instance_name}_predictor extends uvm_component;
   uvm_blocking_put_port #(ac_range_check_scb_item) tl_unfilt_put;
 
   // Standard SV/UVM methods
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern function void check_phase(uvm_phase phase);
 
@@ -55,7 +55,7 @@ class ${module_instance_name}_predictor extends uvm_component;
 endclass : ${module_instance_name}_predictor
 
 
-function ${module_instance_name}_predictor::new(string name="", uvm_component parent=null);
+function ${module_instance_name}_predictor::new(string name, uvm_component parent);
   super.new(name, parent);
   dut_cfg = ac_range_check_dut_cfg::type_id::create("dut_cfg");
   bypass_sampled = 0;

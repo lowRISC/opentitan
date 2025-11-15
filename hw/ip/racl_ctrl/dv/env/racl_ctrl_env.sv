@@ -12,12 +12,12 @@ class racl_ctrl_env extends cip_base_env #(.CFG_T              (racl_ctrl_env_cf
   racl_error_log_agent internal_error_agent;
   racl_error_log_agent external_error_agent;
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
 endclass
 
-function racl_ctrl_env::new (string name="", uvm_component parent=null);
+function racl_ctrl_env::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction
 

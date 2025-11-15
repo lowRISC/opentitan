@@ -13,13 +13,13 @@ class soc_dbg_ctrl_env extends cip_base_env #(
   tl_agent tl_jtag_agt;
 
   // Standard SV/UVM methods
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
 endclass : soc_dbg_ctrl_env
 
 
-function soc_dbg_ctrl_env::new(string name="", uvm_component parent=null);
+function soc_dbg_ctrl_env::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 

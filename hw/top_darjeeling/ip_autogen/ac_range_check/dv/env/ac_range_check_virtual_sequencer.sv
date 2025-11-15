@@ -12,9 +12,9 @@ class ac_range_check_virtual_sequencer extends cip_base_virtual_sequencer #(
   tl_sequencer tl_filt_sqr;
 
   // Standard SV/UVM methods
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
 endclass : ac_range_check_virtual_sequencer
 
-function ac_range_check_virtual_sequencer::new(string name="", uvm_component parent=null);
+function ac_range_check_virtual_sequencer::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new

@@ -15,7 +15,7 @@ class alert_monitor extends alert_esc_base_monitor;
   // This flag is updated in the task `monitor_alert` when an alert is detected.
   bit active_alert = 1'b0;
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
   extern virtual task run_phase(uvm_phase phase);
   // Monitors the alert interface and sets 'active_alert' when an alert is observed
   extern virtual task monitor_alerts();
@@ -51,7 +51,7 @@ class alert_monitor extends alert_esc_base_monitor;
 
 endclass : alert_monitor
 
-function alert_monitor::new (string name="", uvm_component parent=null);
+function alert_monitor::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 

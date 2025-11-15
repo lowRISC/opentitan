@@ -17,12 +17,12 @@ class ${module_instance_name}_base_test extends cip_base_test #(
   // As such, nothing more needs to be done
 
   // Standard SV/UVM methods
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
 endclass : ${module_instance_name}_base_test
 
 
-function ${module_instance_name}_base_test::new(string name="", uvm_component parent=null);
+function ${module_instance_name}_base_test::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 

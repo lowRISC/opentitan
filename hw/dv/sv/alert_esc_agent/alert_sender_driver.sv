@@ -13,7 +13,7 @@ class alert_sender_driver extends alert_esc_base_driver;
   // To guard alert ping response and real alert triggers won't trigger at the same time
   local semaphore alert_atomic = new(1);
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
   extern virtual task reset_signals();
   // alert_sender drive responses by sending the alert_p and alert_n
   // one alert sent by sequence driving the alert_send signal
@@ -45,7 +45,7 @@ class alert_sender_driver extends alert_esc_base_driver;
 
 endclass : alert_sender_driver
 
-function alert_sender_driver::new (string name="", uvm_component parent=null);
+function alert_sender_driver::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 

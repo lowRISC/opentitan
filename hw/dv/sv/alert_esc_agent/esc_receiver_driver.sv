@@ -15,7 +15,7 @@ class esc_receiver_driver extends alert_esc_base_driver;
   // receives a genuine escalation).
   bit is_ping;
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
 
   // This task runs forever and maintains dv_base_driver::under_reset.
   //
@@ -61,7 +61,7 @@ class esc_receiver_driver extends alert_esc_base_driver;
 
 endclass : esc_receiver_driver
 
-function esc_receiver_driver::new (string name="", uvm_component parent=null);
+function esc_receiver_driver::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 

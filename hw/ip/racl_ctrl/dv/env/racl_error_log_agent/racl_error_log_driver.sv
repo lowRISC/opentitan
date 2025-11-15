@@ -12,7 +12,7 @@ class racl_error_log_driver extends dv_base_driver #(.ITEM_T (racl_error_log_vec
   // The interface that gets driven. This is set up by the agent in the build phase.
   virtual racl_error_log_if vif;
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
 
   // Drive items received from the sequencer. This runs forever implementing a task declared in
   // dv_base_driver.
@@ -44,7 +44,7 @@ class racl_error_log_driver extends dv_base_driver #(.ITEM_T (racl_error_log_vec
   extern local task set_line(int unsigned i, racl_error_log_item item);
 endclass
 
-function racl_error_log_driver::new (string name="", uvm_component parent=null);
+function racl_error_log_driver::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction
 

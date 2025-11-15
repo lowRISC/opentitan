@@ -18,7 +18,7 @@ class alert_esc_base_monitor extends dv_base_monitor #(
 
   bit under_reset;
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern virtual task run_phase(uvm_phase phase);
   extern virtual task wait_for_reset_done();
@@ -28,7 +28,7 @@ class alert_esc_base_monitor extends dv_base_monitor #(
 
 endclass : alert_esc_base_monitor
 
-function alert_esc_base_monitor::new (string name="", uvm_component parent=null);
+function alert_esc_base_monitor::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 

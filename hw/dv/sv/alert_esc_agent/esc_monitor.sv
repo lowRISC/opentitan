@@ -11,7 +11,7 @@ class esc_monitor extends alert_esc_base_monitor;
 
   `uvm_component_utils(esc_monitor)
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
   extern virtual task run_phase(uvm_phase phase);
   extern virtual task esc_thread();
   extern virtual task unexpected_resp_thread();
@@ -36,7 +36,7 @@ class esc_monitor extends alert_esc_base_monitor;
 
 endclass : esc_monitor
 
-function esc_monitor::new (string name="", uvm_component parent=null);
+function esc_monitor::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 

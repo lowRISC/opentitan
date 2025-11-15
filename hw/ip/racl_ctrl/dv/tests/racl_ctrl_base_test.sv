@@ -7,7 +7,7 @@ class racl_ctrl_base_test extends cip_base_test #(.CFG_T(racl_ctrl_env_cfg),
 
   `uvm_component_utils(racl_ctrl_base_test)
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
 
   // Configure the given sequence, installing sequencers for the error log agents. This test can
@@ -17,7 +17,7 @@ class racl_ctrl_base_test extends cip_base_test #(.CFG_T(racl_ctrl_env_cfg),
   extern function void configure_sequence(uvm_sequence seq);
 endclass
 
-function racl_ctrl_base_test::new (string name="", uvm_component parent=null);
+function racl_ctrl_base_test::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction
 

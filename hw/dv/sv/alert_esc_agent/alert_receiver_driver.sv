@@ -9,7 +9,7 @@ class alert_receiver_driver extends alert_esc_base_driver;
 
   bit working_on_alert;
 
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
 
   extern task drive_req();
   extern task reset_signals();
@@ -73,7 +73,7 @@ class alert_receiver_driver extends alert_esc_base_driver;
 
 endclass : alert_receiver_driver
 
-function alert_receiver_driver::new(string name="", uvm_component parent=null);
+function alert_receiver_driver::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction
 
