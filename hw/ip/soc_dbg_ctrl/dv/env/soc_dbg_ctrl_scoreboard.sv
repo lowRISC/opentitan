@@ -12,7 +12,7 @@ class soc_dbg_ctrl_scoreboard extends cip_base_scoreboard #(
   // Local variables
 
   // Standard SV/UVM methods
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
@@ -28,7 +28,7 @@ class soc_dbg_ctrl_scoreboard extends cip_base_scoreboard #(
 endclass : soc_dbg_ctrl_scoreboard
 
 
-function soc_dbg_ctrl_scoreboard::new(string name="", uvm_component parent=null);
+function soc_dbg_ctrl_scoreboard::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 

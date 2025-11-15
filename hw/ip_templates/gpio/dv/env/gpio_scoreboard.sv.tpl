@@ -42,7 +42,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
 
   `uvm_component_utils(${module_instance_name}_scoreboard)
 
-  function new (string name = "${module_instance_name}_scoreboard", uvm_component parent = null);
+  function new (string name, uvm_component parent = null);
     super.new (name, parent);
   endfunction
 

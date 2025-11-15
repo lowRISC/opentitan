@@ -17,10 +17,10 @@ class soc_dbg_ctrl_base_test extends cip_base_test #(
   // As such, nothing more needs to be done
 
   // Standard SV/UVM methods
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
 endclass : soc_dbg_ctrl_base_test
 
 
-function soc_dbg_ctrl_base_test::new(string name="", uvm_component parent=null);
+function soc_dbg_ctrl_base_test::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new

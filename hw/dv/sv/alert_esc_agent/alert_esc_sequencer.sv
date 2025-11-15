@@ -5,10 +5,10 @@
 class alert_esc_sequencer extends dv_base_sequencer#(alert_esc_seq_item, alert_esc_agent_cfg);
   `uvm_component_utils(alert_esc_sequencer)
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
 
 endclass : alert_esc_sequencer
 
-function alert_esc_sequencer::new (string name="", uvm_component parent=null);
+function alert_esc_sequencer::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new

@@ -42,7 +42,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
 
   `uvm_component_utils(gpio_scoreboard)
 
-  function new (string name = "gpio_scoreboard", uvm_component parent = null);
+  function new (string name, uvm_component parent = null);
     super.new (name, parent);
   endfunction
 

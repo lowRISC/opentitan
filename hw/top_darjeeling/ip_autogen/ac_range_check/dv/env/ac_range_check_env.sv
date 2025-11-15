@@ -14,13 +14,13 @@ class ac_range_check_env extends cip_base_env #(
   tl_agent tl_filt_agt;
 
   // Standard SV/UVM methods
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
 endclass : ac_range_check_env
 
 
-function ac_range_check_env::new(string name="", uvm_component parent=null);
+function ac_range_check_env::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 

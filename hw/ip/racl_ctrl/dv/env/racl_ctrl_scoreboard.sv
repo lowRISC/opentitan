@@ -10,7 +10,7 @@ class racl_ctrl_scoreboard extends cip_base_scoreboard #(.CFG_T(racl_ctrl_env_cf
   uvm_analysis_export #(racl_error_log_vec_item) internal_errors_export;
   uvm_analysis_export #(racl_error_log_vec_item) external_errors_export;
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
 
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
@@ -131,7 +131,7 @@ class racl_ctrl_scoreboard extends cip_base_scoreboard #(.CFG_T(racl_ctrl_env_cf
   local tl_seq_item pending_csr_write;
 endclass
 
-function racl_ctrl_scoreboard::new (string name="", uvm_component parent=null);
+function racl_ctrl_scoreboard::new (string name, uvm_component parent);
   super.new(name, parent);
   check_interrupt_ev = new();
   error_log_pred_changed_ev = new();

@@ -6,9 +6,9 @@ class racl_error_log_sequencer extends dv_base_sequencer#(.ITEM_T (racl_error_lo
                                                           .CFG_T  (racl_error_log_agent_cfg));
   `uvm_component_utils(racl_error_log_sequencer)
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
 endclass
 
-function racl_error_log_sequencer::new(string name="", uvm_component parent=null);
+function racl_error_log_sequencer::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction

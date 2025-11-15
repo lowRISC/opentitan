@@ -36,7 +36,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   bit             hmac_done_seen;
 
   // Standard SV/UVM methods
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
   extern function void check_phase(uvm_phase phase);
@@ -75,7 +75,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 endclass : hmac_scoreboard
 
 
-function hmac_scoreboard::new(string name="", uvm_component parent=null);
+function hmac_scoreboard::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 

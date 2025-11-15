@@ -14,7 +14,7 @@ class tl_host_driver extends tl_base_driver;
   // reset_signals task.
   protected bit reset_asserted;
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
 
   // Drive items received from the sequencer. This implements a task declared in dv_base_driver.
   extern task get_and_drive();
@@ -87,7 +87,7 @@ class tl_host_driver extends tl_base_driver;
   extern protected function void invalidate_a_channel();
 endclass : tl_host_driver
 
-function tl_host_driver::new (string name="", uvm_component parent=null);
+function tl_host_driver::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction
 
