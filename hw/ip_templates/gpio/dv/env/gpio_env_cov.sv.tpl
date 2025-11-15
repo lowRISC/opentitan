@@ -110,6 +110,7 @@ class ${module_instance_name}_env_cov extends cip_base_env_cov #(.CFG_T(${module
                                      "masked_oe_lower",
                                      "masked_out_upper",
                                      "masked_oe_upper"};
+      string pin_cov_name;
       foreach (intr_state_cov_obj[each_pin]) begin
         // Create coverage for each gpio pin values and transitions
         gpio_pin_values_cov_obj[each_pin] = new($sformatf("gpio_values_cov_obj_pin%0d", each_pin));
@@ -135,8 +136,8 @@ class ${module_instance_name}_env_cov extends cip_base_env_cov #(.CFG_T(${module
         data_in_cov_obj[each_pin] = new($sformatf("data_in_cov_obj_pin%0d", each_pin));
         // Create sticky interrupt coverage per pin
         // No toggle coverage is required in this case, so specify toggle_cov_en = 0
-        sticky_intr_cov[{"gpio_sticky_intr_pin", $sformatf("%0d", each_pin)}] =
-            new(.name({"gpio_sticky_intr_pin", $sformatf("%0d", each_pin)}), .toggle_cov_en(0));
+        pin_cov_name = intr_pin_cov_name(each_pin);
+        sticky_intr_cov[pin_cov_name] = new(.name(pin_cov_name), .toggle_cov_en(0));
       end
       // Per pin coverage and cross coverage for mask and data
       // fields within masked_* registers
@@ -152,5 +153,22 @@ class ${module_instance_name}_env_cov extends cip_base_env_cov #(.CFG_T(${module
       gpio_pins_data_in_cross_cg = new("gpio_pins_data_in_cross_cg");
     end
   endfunction : new
+
+  // Return the string used to name the object that will be used to track coverage for the interrupt
+  // pin for the given GPIO pin.
+  static local function string intr_pin_cov_name(int unsigned pin_idx);
+    return $sformatf("gpio_sticky_intr_pin%0d", pin_idx);
+  endfunction
+
+  // Return the bit_toggle_cg_wrap object that is used to track coverage for the interrupt pin for
+  // the given GPIO pin.
+  local function bit_toggle_cg_wrap intr_pin_cov(int unsigned pin_idx);
+    return sticky_intr_cov[intr_pin_cov_name(pin_idx)];
+  endfunction
+
+  // Sample the interrupt pin for the given GPIO pin.
+  function void sample_intr_pin(int unsigned pin_idx, logic value);
+    intr_pin_cov(pin_idx).sample(value);
+  endfunction
 
 endclass
