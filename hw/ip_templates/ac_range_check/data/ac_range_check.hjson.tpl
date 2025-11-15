@@ -179,7 +179,9 @@ import math
     { name: "LOG_CONFIG"
       desc: ""
       swaccess: "rw"
-      hwaccess: "hro"
+      hwaccess: "hrw"
+      hwext: "true"
+      hwqe: "true"
       fields: [
         { bits: "9:2"
           name: "deny_cnt_threshold"
@@ -189,9 +191,7 @@ import math
         { bits: "1"
           name: "log_clear"
           resval: 0x0
-          hwqe: "true"
           swaccess: "r0w1c"
-          hwaccess: "hrw"
           desc: '''Clears all log information for the first denied access including:
                     - LOG_STATUS
                     - LOG_ADDRESS.

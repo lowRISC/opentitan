@@ -192,41 +192,6 @@ function access_decision_e ac_range_check_predictor::check_access(tl_seq_item it
   // Check if bypass is enabled
   bypass_enable = env_cfg.misc_vif.get_range_check_overwrite();
 
-  // Clear log status register if the log_clear regfield is set
-  if (`gmv(env_cfg.ral.log_config.log_clear)) begin
-    `uvm_info(`gfn, $sformatf("Clear performed to log_status and log_address"), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf({"Cleared info in RAL:\n",
-            " - deny_range_index: %0d\n",
-            " - denied_ctn_uid: 0b%0b\n",
-            " - denied_source_role: 0b%0b\n",
-            " - denied_racl_write: %0b\n",
-            " - denied_racl_read: %0b\n",
-            " - denied_no_match: %0b\n",
-            " - denied_execute_access: %0b\n",
-            " - denied_write_access: %0b\n",
-            " - denied_read_access: %0b\n",
-            " - deny_cnt: %0d\n",
-            " - log_address: 0x%0x\n"},
-            `gmv(env_cfg.ral.log_status.deny_range_index),
-            `gmv(env_cfg.ral.log_status.denied_ctn_uid),
-            `gmv(env_cfg.ral.log_status.denied_source_role),
-            `gmv(env_cfg.ral.log_status.denied_racl_write),
-            `gmv(env_cfg.ral.log_status.denied_racl_read),
-            `gmv(env_cfg.ral.log_status.denied_no_match),
-            `gmv(env_cfg.ral.log_status.denied_execute_access),
-            `gmv(env_cfg.ral.log_status.denied_write_access),
-            `gmv(env_cfg.ral.log_status.denied_read_access),
-            `gmv(env_cfg.ral.log_status.deny_cnt),
-            `gmv(env_cfg.ral.log_address)),
-            UVM_MEDIUM)
-    deny_cnt = 0;
-    overflow_flag = 0;
-    void'(env_cfg.ral.log_status.predict
-          (.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
-    void'(env_cfg.ral.log_address.predict
-          (.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
-  end
-
   if (env_cfg.en_cov && !bypass_sampled) begin
     // bypass_sampled is set so that we only need to sample coverage once per test and not per
     // transaction
