@@ -156,8 +156,8 @@ py_binary(
     srcs = ["gdb_testing/fi_sym_cryptolib_python_gdb_test.py"],
     data = [
         "//sw/host/opentitantool",
+        "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//third_party/openocd:openocd_bin",
-        "//util/openocd/board:cw340_ftdi.cfg",
         "//util/openocd/target:lowrisc-earlgrey.cfg",
         "@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-gdb",
     ],
@@ -196,8 +196,8 @@ py_binary(
     srcs = ["gdb_testing/fi_asym_cryptolib_python_gdb_test.py"],
     data = [
         "//sw/host/opentitantool",
+        "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//third_party/openocd:openocd_bin",
-        "//util/openocd/board:cw340_ftdi.cfg",
         "//util/openocd/target:lowrisc-earlgrey.cfg",
         "@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-gdb",
     ],
