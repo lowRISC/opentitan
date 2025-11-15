@@ -268,7 +268,7 @@ rom_error_t sc_otbn_load_app(const sc_otbn_app_t app) {
 void sc_otbn_patch(void) {
   enum {
     // Offset in the code of the bad instruction:
-    kBugOffset = 0x958,
+    kBugOffset = 0x888,
     // The bad instruction is:
     // bn.rshi   w16, w20, w31 >> 192
     kBadInstr = 0xc1fa387b,
