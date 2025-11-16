@@ -24,12 +24,9 @@ class alert_receiver_driver extends alert_base_driver;
 
   // Drive an alert ping
   //
-  // This will start by waiting between cfg.ping_delay_min and cfg.ping_delay_max cycles before
-  // sending the ping request. If cfg.use_seq_item_ping_delay is true then the delay is from the
-  // ping_delay argument.
-  //
-  // Once the ping has gone out, we wait for an alert to arrive and then acknowledge it using
-  // set_ack_pins (and passing ack_delay and ack_stable).
+  // This will start by waiting ping_delay cycles before sending the ping request. Once the ping has
+  // gone out, we wait for an alert to arrive and then acknowledge it using set_ack_pins (and
+  // passing ack_delay and ack_stable).
   //
   // The task allows to retract driving the ping. If there's an alert (r_alert_rsp_q.size > 0)
   // before the 'ping_delay' the ping is aborted and the driver moves to tackle the alert in
@@ -270,9 +267,6 @@ task alert_receiver_driver::drive_alert_ping(int unsigned ping_delay,
                                              output bit item_not_driven
                                              );
   item_not_driven = 0;
-  if (!cfg.use_seq_item_ping_delay) begin
-    ping_delay = $urandom_range(cfg.ping_delay_max, cfg.ping_delay_min);
-  end
   @(cfg.vif.receiver_cb);
   // Ping fail and differential signal fail scenarios are not implemented now.
   // This driver is used for IP (instantiate prim_alert_sender) to finish alert handshake.

@@ -25,14 +25,25 @@ class alert_esc_seq_item extends uvm_sequence_item;
   rand esc_handshake_e        esc_handshake_sta;
   rand int                    sig_cycle_cnt;
 
-  // delays
+  // A delay injected by alert_receiver_driver before it actually sends a ping request. This allows
+  // the driver to be sent a stream of back-to-back items without locking up the interface.
   rand int unsigned ping_delay;
+
+  // other delays
   rand int unsigned ack_delay;
   rand int unsigned ack_stable;
   rand int unsigned alert_delay;
   rand int unsigned int_err_cyc;
 
   extern constraint delay_c;
+
+  // An upper bound on ping_delay. This isn't really for a design reason but, instead, is to make
+  // sure that we do occasionally send pings.
+  //
+  // This is a soft constraint, so a sequence that uses these items can safely request an enormous
+  // delay.
+  extern constraint ping_delay_max_c;
+
   // if agent is alert mode, cannot send any esc_rsp signal
   // if agent is esc mode, cannot send any alert related signals
   extern constraint alert_esc_mode_c;
@@ -65,11 +76,14 @@ class alert_esc_seq_item extends uvm_sequence_item;
 endclass : alert_esc_seq_item
 
 constraint alert_esc_seq_item::delay_c {
-  soft ping_delay  dist {0 :/ 5, [1:10] :/ 5};
   soft ack_delay   dist {0 :/ 5, [1:10] :/ 5};
   soft alert_delay dist {0 :/ 5, [1:10] :/ 5};
   soft ack_stable  dist {1 :/ 5, [2:10] :/ 5};
   soft int_err_cyc dist {1 :/ 5, [2:10] :/ 5};
+}
+
+constraint alert_esc_seq_item::ping_delay_max_c {
+  soft ping_delay <= 50000;
 }
 
 constraint alert_esc_seq_item::alert_esc_mode_c {
