@@ -22,6 +22,7 @@ EARLGREY = opentitan_top(
     secret_cfgs = {
         "testing": "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     },
+    silicon_creator_hooks = "//hw/top_earlgrey/sw/device/silicon_creator:hooks",
 )
 
 EARLGREY_SLOTS = {
