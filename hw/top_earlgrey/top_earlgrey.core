@@ -60,8 +60,6 @@ filesets:
       - lowrisc:prim:usb_diff_rx
       - lowrisc:prim:mubi
       - lowrisc:systems:top_earlgrey_pkg
-      # TODO(#27347): prim_pkg is deprecated
-      - lowrisc:prim:prim_legacy_pkg
       - "fileset_partner  ? (partner:systems:top_earlgrey_ast_pkg)"
       - "!fileset_partner ? (lowrisc:systems:top_earlgrey_ast_pkg)"
       - "fileset_partner  ? (partner:ip:otp_macro)"
@@ -114,8 +112,6 @@ mapping:
   "lowrisc:virtual_ip:flash_ctrl_prim_reg_top": "lowrisc:earlgrey_ip:flash_ctrl_prim_reg_top"
   "lowrisc:virtual_constants:lc_ctrl_token_pkg": "lowrisc:earlgrey_constants:testing_lc_ctrl_token_pkg"
   "lowrisc:virtual_constants:rnd_cnst_pkg": "lowrisc:earlgrey_constants:testing_rnd_cnst_pkg"
-  # TODO(#27347): prim_legacy_pkg is deprecated
-  "lowrisc:prim:prim_pkg": "lowrisc:prim:prim_legacy_pkg"
 
 parameters:
   SYNTHESIS:

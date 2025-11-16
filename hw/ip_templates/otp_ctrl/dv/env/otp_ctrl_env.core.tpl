@@ -15,6 +15,7 @@ filesets:
       - lowrisc:dv:lc_ctrl_dv_utils
       - lowrisc:ip:otp_macro_pkg
       - lowrisc:dv:otp_macro_env
+      - lowrisc:prim:prim_pkg
     files:
       - otp_scrambler_pkg.sv
       - otp_ctrl_env_pkg.sv

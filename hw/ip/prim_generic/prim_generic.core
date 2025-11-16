@@ -9,6 +9,7 @@ description: "Technology-independent prim library"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:prim_generic:prim_pkg
       - lowrisc:prim_generic:and2
       - lowrisc:prim_generic:buf
       - lowrisc:prim_generic:clock_buf
@@ -35,6 +36,7 @@ filesets:
 #      - lowrisc:prim_generic:flash
 
 mapping:
+  "lowrisc:prim:prim_pkg"     : "lowrisc:prim_generic:prim_pkg"
   "lowrisc:prim:and2"         : "lowrisc:prim_generic:and2"
   "lowrisc:prim:buf"          : "lowrisc:prim_generic:buf"
   "lowrisc:prim:clock_buf"    : "lowrisc:prim_generic:clock_buf"

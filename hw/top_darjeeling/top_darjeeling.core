@@ -61,8 +61,6 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:mubi
       - lowrisc:systems:top_darjeeling_pkg
-      # TODO(#27347): prim_pkg is deprecated
-      - lowrisc:prim:prim_legacy_pkg
       - "fileset_partner  ? (partner:systems:top_darjeeling_ast_pkg)"
       - "!fileset_partner ? (lowrisc:systems:top_darjeeling_ast_pkg)"
     files:
@@ -113,8 +111,6 @@ mapping:
   "lowrisc:systems:ast_pkg": "lowrisc:systems:top_darjeeling_ast_pkg"
   "lowrisc:virtual_constants:lc_ctrl_token_pkg": "lowrisc:darjeeling_constants:testing_lc_ctrl_token_pkg"
   "lowrisc:virtual_constants:rnd_cnst_pkg": "lowrisc:darjeeling_constants:testing_rnd_cnst_pkg"
-  # TODO(#27347): prim_legacy_pkg is deprecated
-  "lowrisc:prim:prim_pkg": "lowrisc:prim:prim_legacy_pkg"
 
 parameters:
   SYNTHESIS:

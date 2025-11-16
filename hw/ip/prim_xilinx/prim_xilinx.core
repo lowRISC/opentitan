@@ -9,6 +9,7 @@ description: "Xilinx 7-series prim library"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:prim_xilinx:prim_pkg
       - lowrisc:prim_xilinx:and2
       - lowrisc:prim_xilinx:buf
       - lowrisc:prim_xilinx:clock_buf
@@ -34,6 +35,7 @@ filesets:
 #      - lowrisc:prim_generic:flash
 
 mapping:
+  "lowrisc:prim:prim_pkg"     : lowrisc:prim_xilinx:prim_pkg
   "lowrisc:prim:and2"         : lowrisc:prim_xilinx:and2
   "lowrisc:prim:buf"          : lowrisc:prim_xilinx:buf
   "lowrisc:prim:clock_buf"    : lowrisc:prim_xilinx:clock_buf
