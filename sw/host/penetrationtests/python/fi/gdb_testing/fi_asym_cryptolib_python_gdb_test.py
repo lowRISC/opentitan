@@ -96,6 +96,43 @@ class AsymCryptolibFiSim(unittest.TestCase):
             response = target.read_response(max_tries=1000)
             return response
 
+        def reset_gdb(gdb):
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            return gdb
+
+        def reset_target_and_gdb(gdb):
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            gdb.reset_target()
+            target.dump_all()
+            trigger_testos_init(print_output=False)
+            # Reset again
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            return gdb
+
+        def re_initialize(gdb):
+            gdb.close_gdb()
+            target.close_openocd()
+            target.initialize_target()
+            trigger_testos_init()
+            target.dump_all()
+            gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+            return gdb
+
         gdb = None
         started = False
         with open(test_results_file, "w") as test_results, open(campaign_file, "w") as campaign:
@@ -168,12 +205,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
 
                 # Reset the target, flush the output, and close gdb
-                gdb.close_gdb()
-                target.close_openocd()
-                target.initialize_target()
-                trigger_testos_init()
-                target.dump_all()
-                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+                gdb = re_initialize(gdb)
 
                 started = True
                 for pc, count in pc_count_dict.items():
@@ -209,18 +241,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
                                 if crash_observation in gdb_response:
                                     print("Crash detected, resetting", flush=True)
-                                    gdb.close_gdb()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
-                                    gdb.reset_target()
-                                    target.dump_all()
-                                    trigger_testos_init(print_output=False)
-                                    # Reset again
-                                    gdb.close_gdb()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
+                                    gdb = reset_target_and_gdb(gdb)
                                 else:
                                     testos_response_json = json.loads(testos_response)
                                     print("Output:", testos_response_json, flush=True)
@@ -238,53 +259,29 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                             f"{pc}, {i_count}: {testos_response_json}\n"
                                         )
                                     # Reset GDB by closing and opening again
-                                    gdb.close_gdb()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
+                                    gdb = reset_gdb(gdb)
                                     # We do not need to reset the target since it gave an output
                             else:
                                 print("No break point found, something went wrong", flush=True)
-                                gdb.close_gdb()
-                                target.close_openocd()
-                                target.initialize_target()
-                                trigger_testos_init()
-                                target.dump_all()
-                                gdb = GDBController(
-                                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                )
+                                gdb = re_initialize(gdb)
 
                         except json.JSONDecodeError:
                             print(
                                 "Error: JSON decoding failed. Invalid response format",
                                 flush=True,
                             )
-                            gdb.close_gdb()
-                            gdb = GDBController(
-                                gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                            )
-                            gdb.reset_target()
-                            target.dump_all()
-                            trigger_testos_init(print_output=False)
-                            # Reset again
-                            gdb.close_gdb()
-                            gdb = GDBController(
-                                gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                            )
-                            gdb.dump_output()
-                            target.dump_all()
+                            try:
+                                gdb = reset_target_and_gdb(gdb)
+                            except TimeoutError:
+                                gdb = re_initialize(gdb)
 
                         except TimeoutError as e:
                             print("Timeout error, retrying", flush=True)
                             print(e, flush=True)
-                            gdb.close_gdb()
-                            target.close_openocd()
-                            target.initialize_target()
-                            trigger_testos_init()
-                            target.dump_all()
-                            gdb = GDBController(
-                                gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                            )
+                            try:
+                                gdb = reset_target_and_gdb(gdb)
+                            except TimeoutError:
+                                gdb = re_initialize(gdb)
 
             finally:
                 print("-" * 80)
@@ -346,6 +343,45 @@ class AsymCryptolibFiSim(unittest.TestCase):
             # Read the output from the operation
             response = target.read_response(max_tries=1000)
             return response
+
+        def reset_gdb(gdb):
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            return gdb
+
+        def reset_target_and_gdb(gdb):
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            gdb.reset_target()
+            target.dump_all()
+            trigger_testos_init(print_output=False)
+            # Reset again
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            gdb.dump_output()
+            target.dump_all()
+            return gdb
+
+        def re_initialize(gdb):
+            gdb.close_gdb()
+            target.close_openocd()
+            target.initialize_target()
+            trigger_testos_init()
+            target.dump_all()
+            gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+            return gdb
 
         ecdh_output = [None, None]
 
@@ -419,12 +455,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
 
                 # Reset the target, flush the output, and close gdb
-                gdb.close_gdb()
-                target.close_openocd()
-                target.initialize_target()
-                trigger_testos_init()
-                target.dump_all()
-                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+                gdb = re_initialize(gdb)
 
                 started = True
                 for pc, count in pc_count_dict.items():
@@ -462,18 +493,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
                                     if crash_observation in gdb_response:
                                         print("Crash detected, resetting", flush=True)
-                                        gdb.close_gdb()
-                                        gdb = GDBController(
-                                            gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                        )
-                                        gdb.reset_target()
-                                        target.dump_all()
-                                        trigger_testos_init(print_output=False)
-                                        # Reset again
-                                        gdb.close_gdb()
-                                        gdb = GDBController(
-                                            gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                        )
+                                        gdb = reset_target_and_gdb(gdb)
                                     else:
                                         testos_response_json = json.loads(testos_response)
                                         print("Output:", testos_response_json, flush=True)
@@ -491,53 +511,29 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                                     f"{pc}, {i_count}: {testos_response_json}\n"
                                                 )
                                         # Reset GDB by closing and opening again
-                                        gdb.close_gdb()
-                                        gdb = GDBController(
-                                            gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                        )
+                                        gdb = reset_gdb(gdb)
                                         # We do not need to reset the target since it gave an output
                                 else:
                                     print("No break point found, something went wrong", flush=True)
-                                    gdb.close_gdb()
-                                    target.close_openocd()
-                                    target.initialize_target()
-                                    trigger_testos_init()
-                                    target.dump_all()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
+                                    gdb = re_initialize(gdb)
 
                             except json.JSONDecodeError:
                                 print(
                                     "Error: JSON decoding failed. Invalid response format",
                                     flush=True,
                                 )
-                                gdb.close_gdb()
-                                gdb = GDBController(
-                                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                )
-                                gdb.reset_target()
-                                target.dump_all()
-                                trigger_testos_init(print_output=False)
-                                # Reset again
-                                gdb.close_gdb()
-                                gdb = GDBController(
-                                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                )
-                                gdb.dump_output()
-                                target.dump_all()
+                                try:
+                                    gdb = reset_target_and_gdb(gdb)
+                                except TimeoutError:
+                                    gdb = re_initialize(gdb)
 
                             except TimeoutError as e:
                                 print("Timeout error, retrying", flush=True)
                                 print(e, flush=True)
-                                gdb.close_gdb()
-                                target.close_openocd()
-                                target.initialize_target()
-                                trigger_testos_init()
-                                target.dump_all()
-                                gdb = GDBController(
-                                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                )
+                                try:
+                                    gdb = reset_target_and_gdb(gdb)
+                                except TimeoutError:
+                                    gdb = re_initialize(gdb)
 
             finally:
                 print("-" * 80)
@@ -605,6 +601,45 @@ class AsymCryptolibFiSim(unittest.TestCase):
             # Read the output from the operation
             response = target.read_response(max_tries=1000)
             return response
+
+        def reset_gdb(gdb):
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            return gdb
+
+        def reset_target_and_gdb(gdb):
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            gdb.reset_target()
+            target.dump_all()
+            trigger_testos_init(print_output=False)
+            # Reset again
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            gdb.dump_output()
+            target.dump_all()
+            return gdb
+
+        def re_initialize(gdb):
+            gdb.close_gdb()
+            target.close_openocd()
+            target.initialize_target()
+            trigger_testos_init()
+            target.dump_all()
+            gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+            return gdb
 
         gdb = None
         started = False
@@ -678,12 +713,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
 
                 # Reset the target, flush the output, and close gdb
-                gdb.close_gdb()
-                target.close_openocd()
-                target.initialize_target()
-                trigger_testos_init()
-                target.dump_all()
-                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+                gdb = reset_target_and_gdb(gdb)
 
                 started = True
                 for pc, count in pc_count_dict.items():
@@ -719,18 +749,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
                                 if crash_observation in gdb_response:
                                     print("Crash detected, resetting", flush=True)
-                                    gdb.close_gdb()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
-                                    gdb.reset_target()
-                                    target.dump_all()
-                                    trigger_testos_init(print_output=False)
-                                    # Reset again
-                                    gdb.close_gdb()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
+                                    gdb = reset_target_and_gdb(gdb)
                                 else:
                                     testos_response_json = json.loads(testos_response)
                                     print("Output:", testos_response_json, flush=True)
@@ -748,53 +767,29 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                             f"{pc}, {i_count}: {testos_response_json}\n"
                                         )
                                     # Reset GDB by closing and opening again
-                                    gdb.close_gdb()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
+                                    gdb = reset_gdb(gdb)
                                     # We do not need to reset the target since it gave an output
                             else:
                                 print("No break point found, something went wrong", flush=True)
-                                gdb.close_gdb()
-                                target.close_openocd()
-                                target.initialize_target()
-                                trigger_testos_init()
-                                target.dump_all()
-                                gdb = GDBController(
-                                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                )
+                                gdb = re_initialize(gdb)
 
                         except json.JSONDecodeError:
                             print(
                                 "Error: JSON decoding failed. Invalid response format",
                                 flush=True,
                             )
-                            gdb.close_gdb()
-                            gdb = GDBController(
-                                gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                            )
-                            gdb.reset_target()
-                            target.dump_all()
-                            trigger_testos_init(print_output=False)
-                            # Reset again
-                            gdb.close_gdb()
-                            gdb = GDBController(
-                                gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                            )
-                            gdb.dump_output()
-                            target.dump_all()
+                            try:
+                                gdb = reset_target_and_gdb(gdb)
+                            except TimeoutError:
+                                gdb = re_initialize(gdb)
 
                         except TimeoutError as e:
                             print("Timeout error, retrying", flush=True)
                             print(e, flush=True)
-                            gdb.close_gdb()
-                            target.close_openocd()
-                            target.initialize_target()
-                            trigger_testos_init()
-                            target.dump_all()
-                            gdb = GDBController(
-                                gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                            )
+                            try:
+                                gdb = reset_target_and_gdb(gdb)
+                            except TimeoutError:
+                                gdb = re_initialize(gdb)
 
             finally:
                 print("-" * 80)
@@ -856,6 +851,45 @@ class AsymCryptolibFiSim(unittest.TestCase):
             # Read the output from the operation
             response = target.read_response(max_tries=1000)
             return response
+
+        def reset_gdb(gdb):
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            return gdb
+
+        def reset_target_and_gdb(gdb):
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            gdb.reset_target()
+            target.dump_all()
+            trigger_testos_init(print_output=False)
+            # Reset again
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            gdb.dump_output()
+            target.dump_all()
+            return gdb
+
+        def re_initialize(gdb):
+            gdb.close_gdb()
+            target.close_openocd()
+            target.initialize_target()
+            trigger_testos_init()
+            target.dump_all()
+            gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+            return gdb
 
         ecdh_output = [None, None]
 
@@ -929,12 +963,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
 
                 # Reset the target, flush the output, and close gdb
-                gdb.close_gdb()
-                target.close_openocd()
-                target.initialize_target()
-                trigger_testos_init()
-                target.dump_all()
-                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+                gdb = re_initialize(gdb)
 
                 started = True
                 for pc, count in pc_count_dict.items():
@@ -972,18 +1001,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
                                     if crash_observation in gdb_response:
                                         print("Crash detected, resetting", flush=True)
-                                        gdb.close_gdb()
-                                        gdb = GDBController(
-                                            gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                        )
-                                        gdb.reset_target()
-                                        target.dump_all()
-                                        trigger_testos_init(print_output=False)
-                                        # Reset again
-                                        gdb.close_gdb()
-                                        gdb = GDBController(
-                                            gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                        )
+                                        gdb = reset_target_and_gdb(gdb)
                                     else:
                                         testos_response_json = json.loads(testos_response)
                                         print("Output:", testos_response_json, flush=True)
@@ -1001,53 +1019,29 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                                     f"{pc}, {i_count}: {testos_response_json}\n"
                                                 )
                                         # Reset GDB by closing and opening again
-                                        gdb.close_gdb()
-                                        gdb = GDBController(
-                                            gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                        )
+                                        gdb = reset_gdb(gdb)
                                         # We do not need to reset the target since it gave an output
                                 else:
                                     print("No break point found, something went wrong", flush=True)
-                                    gdb.close_gdb()
-                                    target.close_openocd()
-                                    target.initialize_target()
-                                    trigger_testos_init()
-                                    target.dump_all()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
+                                    gdb = re_initialize(gdb)
 
                             except json.JSONDecodeError:
                                 print(
                                     "Error: JSON decoding failed. Invalid response format",
                                     flush=True,
                                 )
-                                gdb.close_gdb()
-                                gdb = GDBController(
-                                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                )
-                                gdb.reset_target()
-                                target.dump_all()
-                                trigger_testos_init(print_output=False)
-                                # Reset again
-                                gdb.close_gdb()
-                                gdb = GDBController(
-                                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                )
-                                gdb.dump_output()
-                                target.dump_all()
+                                try:
+                                    gdb = reset_target_and_gdb(gdb)
+                                except TimeoutError:
+                                    gdb = re_initialize(gdb)
 
                             except TimeoutError as e:
                                 print("Timeout error, retrying", flush=True)
                                 print(e, flush=True)
-                                gdb.close_gdb()
-                                target.close_openocd()
-                                target.initialize_target()
-                                trigger_testos_init()
-                                target.dump_all()
-                                gdb = GDBController(
-                                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                )
+                                try:
+                                    gdb = reset_target_and_gdb(gdb)
+                                except TimeoutError:
+                                    gdb = re_initialize(gdb)
 
             finally:
                 print("-" * 80)
@@ -1118,6 +1112,45 @@ class AsymCryptolibFiSim(unittest.TestCase):
             response = target.read_response(max_tries=1000)
             return response
 
+        def reset_gdb(gdb):
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            return gdb
+
+        def reset_target_and_gdb(gdb):
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            gdb.reset_target()
+            target.dump_all()
+            trigger_testos_init(print_output=False)
+            # Reset again
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            gdb.dump_output()
+            target.dump_all()
+            return gdb
+
+        def re_initialize(gdb):
+            gdb.close_gdb()
+            target.close_openocd()
+            target.initialize_target()
+            trigger_testos_init()
+            target.dump_all()
+            gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+            return gdb
+
         gdb = None
         started = False
         with open(test_results_file, "w") as test_results, open(campaign_file, "w") as campaign:
@@ -1202,12 +1235,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
 
                 # Reset the target, flush the output, and close gdb
-                gdb.close_gdb()
-                target.close_openocd()
-                target.initialize_target()
-                trigger_testos_init()
-                target.dump_all()
-                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+                gdb = re_initialize(gdb)
 
                 started = True
                 for pc, count in pc_count_dict.items():
@@ -1253,18 +1281,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
                                 if crash_observation in gdb_response:
                                     print("Crash detected, resetting", flush=True)
-                                    gdb.close_gdb()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
-                                    gdb.reset_target()
-                                    target.dump_all()
-                                    trigger_testos_init(print_output=False)
-                                    # Reset again
-                                    gdb.close_gdb()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
+                                    gdb = reset_target_and_gdb(gdb)
                                 else:
                                     testos_response_json = json.loads(testos_response)
                                     print("Output:", testos_response_json, flush=True)
@@ -1282,52 +1299,29 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                             f"{pc}, {i_count}: {testos_response_json}\n"
                                         )
                                     # Reset GDB by closing and opening again
-                                    gdb.close_gdb()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
+                                    gdb = reset_gdb(gdb)
                                     # We do not need to reset the target since it returned an output
                             else:
                                 print("No break point found, something went wrong", flush=True)
-                                gdb.close_gdb()
-                                target.close_openocd()
-                                target.initialize_target()
-                                trigger_testos_init()
-                                target.dump_all()
-                                gdb = GDBController(
-                                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                )
+                                gdb = re_initialize(gdb)
 
                         except json.JSONDecodeError:
                             print(
-                                "Error: JSON decoding failed. Invalid response format", flush=True
+                                "Error: JSON decoding failed. Invalid response format",
+                                flush=True,
                             )
-                            gdb.close_gdb()
-                            gdb = GDBController(
-                                gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                            )
-                            gdb.reset_target()
-                            target.dump_all()
-                            trigger_testos_init(print_output=False)
-                            # Reset again
-                            gdb.close_gdb()
-                            gdb = GDBController(
-                                gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                            )
-                            gdb.dump_output()
-                            target.dump_all()
+                            try:
+                                gdb = reset_target_and_gdb(gdb)
+                            except TimeoutError:
+                                gdb = re_initialize(gdb)
 
                         except TimeoutError as e:
                             print("Timeout error, retrying", flush=True)
                             print(e, flush=True)
-                            gdb.close_gdb()
-                            target.close_openocd()
-                            target.initialize_target()
-                            trigger_testos_init()
-                            target.dump_all()
-                            gdb = GDBController(
-                                gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                            )
+                            try:
+                                gdb = reset_target_and_gdb(gdb)
+                            except TimeoutError:
+                                gdb = re_initialize(gdb)
 
             finally:
                 print("-" * 80)
@@ -1398,6 +1392,45 @@ class AsymCryptolibFiSim(unittest.TestCase):
             response = target.read_response(max_tries=1000)
             return response
 
+        def reset_gdb(gdb):
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            return gdb
+
+        def reset_target_and_gdb(gdb):
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            gdb.reset_target()
+            target.dump_all()
+            trigger_testos_init(print_output=False)
+            # Reset again
+            gdb.close_gdb()
+            gdb = GDBController(
+                gdb_path=GDB_PATH,
+                gdb_port=GDB_PORT,
+                elf_file=elf_path,
+            )
+            gdb.dump_output()
+            target.dump_all()
+            return gdb
+
+        def re_initialize(gdb):
+            gdb.close_gdb()
+            target.close_openocd()
+            target.initialize_target()
+            trigger_testos_init()
+            target.dump_all()
+            gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+            return gdb
+
         gdb = None
         started = False
         with open(test_results_file, "w") as test_results, open(campaign_file, "w") as campaign:
@@ -1482,12 +1515,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
 
                 # Reset the target, flush the output, and close gdb
-                gdb.close_gdb()
-                target.close_openocd()
-                target.initialize_target()
-                trigger_testos_init()
-                target.dump_all()
-                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+                gdb = re_initialize(gdb)
 
                 started = True
                 for pc, count in pc_count_dict.items():
@@ -1533,18 +1561,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
                                 if crash_observation in gdb_response:
                                     print("Crash detected, resetting", flush=True)
-                                    gdb.close_gdb()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
-                                    gdb.reset_target()
-                                    target.dump_all()
-                                    trigger_testos_init(print_output=False)
-                                    # Reset again
-                                    gdb.close_gdb()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
+                                    gdb = reset_target_and_gdb(gdb)
                                 else:
                                     testos_response_json = json.loads(testos_response)
                                     print("Output:", testos_response_json, flush=True)
@@ -1562,52 +1579,29 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                             f"{pc}, {i_count}: {testos_response_json}\n"
                                         )
                                     # Reset GDB by closing and opening again
-                                    gdb.close_gdb()
-                                    gdb = GDBController(
-                                        gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                    )
+                                    gdb = reset_gdb(gdb)
                                     # We do not need to reset the target since it returned an output
                             else:
                                 print("No break point found, something went wrong", flush=True)
-                                gdb.close_gdb()
-                                target.close_openocd()
-                                target.initialize_target()
-                                trigger_testos_init()
-                                target.dump_all()
-                                gdb = GDBController(
-                                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                                )
+                                gdb = re_initialize(gdb)
 
                         except json.JSONDecodeError:
                             print(
-                                "Error: JSON decoding failed. Invalid response format", flush=True
+                                "Error: JSON decoding failed. Invalid response format",
+                                flush=True,
                             )
-                            gdb.close_gdb()
-                            gdb = GDBController(
-                                gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                            )
-                            gdb.reset_target()
-                            target.dump_all()
-                            trigger_testos_init(print_output=False)
-                            # Reset again
-                            gdb.close_gdb()
-                            gdb = GDBController(
-                                gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                            )
-                            gdb.dump_output()
-                            target.dump_all()
+                            try:
+                                gdb = reset_target_and_gdb(gdb)
+                            except TimeoutError:
+                                gdb = re_initialize(gdb)
 
                         except TimeoutError as e:
                             print("Timeout error, retrying", flush=True)
                             print(e, flush=True)
-                            gdb.close_gdb()
-                            target.close_openocd()
-                            target.initialize_target()
-                            trigger_testos_init()
-                            target.dump_all()
-                            gdb = GDBController(
-                                gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
-                            )
+                            try:
+                                gdb = reset_target_and_gdb(gdb)
+                            except TimeoutError:
+                                gdb = re_initialize(gdb)
 
             finally:
                 print("-" * 80)

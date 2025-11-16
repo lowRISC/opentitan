@@ -140,12 +140,25 @@ class GDBController:
         except Exception:
             return None
 
-    def setup_pc_trace(self, file_name, trace_start_addr, trace_end_addr):
+    def setup_pc_trace(self, file_name, trace_start_addr, trace_end_addr, skip_addrs=None):
         self.n_brkp = 1
         self.send_command(f"set logging file {file_name}")
         self.send_command("set logging overwrite on")
         self.send_command("set pagination off")
         self.send_command("set logging enabled on")
+
+        step_logic = "stepi"
+        if skip_addrs:
+            for addr in skip_addrs:
+                step_logic = f"""
+                if $pc == {addr}
+                    tbreak *$ra
+                    c
+                else
+                    {step_logic}
+                end
+                """
+
         traceloop_definition = f"""\
         define traceloop
             while 1
@@ -154,10 +167,11 @@ class GDBController:
                     return
                 end
                 printf "PC: 0x%x\\n", $pc
-                stepi
+                {step_logic}
             end
         end
         """
+
         self.send_command(traceloop_definition)
         self.send_command(f"tb *({trace_start_addr})")
         commands_definition = "commands 1\ntraceloop\nend"
