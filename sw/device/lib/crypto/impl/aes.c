@@ -344,7 +344,8 @@ static otcrypto_status_t otcrypto_aes_impl(
       return OTCRYPTO_BAD_ARGS;
     }
     HARDENED_CHECK_EQ(launder32(iv.len), kAesBlockNumWords);
-    HARDENED_TRY(hardened_memcpy(aes_iv.data, iv.data, kAesBlockNumWords));
+    HARDENED_TRY(hardened_memcpy(aes_iv.data, aes_iv.data, iv.data, iv.data,
+                                 kAesBlockNumWords));
   }
 
   // Parse the AES key.
@@ -453,7 +454,8 @@ static otcrypto_status_t otcrypto_aes_impl(
     HARDENED_TRY(aes_end(NULL));
   } else {
     HARDENED_TRY(aes_end(&aes_iv));
-    HARDENED_TRY(hardened_memcpy(iv.data, aes_iv.data, kAesBlockNumWords));
+    HARDENED_TRY(hardened_memcpy(iv.data, iv.data, aes_iv.data, aes_iv.data,
+                                 kAesBlockNumWords));
   }
 
   // In case the key was sideloaded, clear it.

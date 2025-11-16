@@ -220,12 +220,14 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
   size_t plaintext_num_words = config_words + 2 + keyblob_words;
   uint32_t plaintext[plaintext_num_words];
   HARDENED_TRY(hardened_memshred(plaintext, ARRAYSIZE(plaintext)));
-  HARDENED_TRY(hardened_memcpy(plaintext, (uint32_t *)&key_to_wrap->config,
-                               config_words));
+  HARDENED_TRY(hardened_memcpy(plaintext, plaintext,
+                               (uint32_t *)&key_to_wrap->config,
+                               (uint32_t *)&key_to_wrap->config, config_words));
   plaintext[config_words] = key_to_wrap->checksum;
   plaintext[config_words + 1] = keyblob_words;
-  HARDENED_TRY(hardened_memcpy(plaintext + config_words + 2,
-                               key_to_wrap->keyblob, keyblob_words));
+  HARDENED_TRY(hardened_memcpy(
+      plaintext + config_words + 2, plaintext + config_words + 2,
+      key_to_wrap->keyblob, key_to_wrap->keyblob, keyblob_words));
 
   // Wrap the key.
   return aes_kwp_wrap(kek, plaintext, sizeof(plaintext), wrapped_key.data);
@@ -274,8 +276,9 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
 
   // Extract the key configuration.
   uint32_t config_words = sizeof(otcrypto_key_config_t) / sizeof(uint32_t);
-  HARDENED_TRY(hardened_memcpy((uint32_t *)&unwrapped_key->config, plaintext,
-                               config_words));
+  HARDENED_TRY(hardened_memcpy((uint32_t *)&unwrapped_key->config,
+                               (uint32_t *)&unwrapped_key->config, plaintext,
+                               plaintext, config_words));
 
   // Extract the checksum and keyblob length.
   unwrapped_key->checksum = plaintext[config_words];
@@ -289,7 +292,8 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
   if (unwrapped_key->keyblob_length != keyblob_words * sizeof(uint32_t)) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_TRY(hardened_memcpy(unwrapped_key->keyblob,
+  HARDENED_TRY(hardened_memcpy(unwrapped_key->keyblob, unwrapped_key->keyblob,
+                               plaintext + config_words + 2,
                                plaintext + config_words + 2, keyblob_words));
 
   // Finally, check the integrity of the key material we unwrapped.
@@ -393,9 +397,9 @@ otcrypto_status_t otcrypto_export_blinded_key(
   uint32_t *keyblob_share1;
   HARDENED_TRY(
       keyblob_to_shares(blinded_key, &keyblob_share0, &keyblob_share1));
-  HARDENED_TRY(
-      hardened_memcpy(key_share0.data, keyblob_share0, key_share0.len));
-  HARDENED_TRY(
-      hardened_memcpy(key_share1.data, keyblob_share1, key_share1.len));
+  HARDENED_TRY(hardened_memcpy(key_share0.data, key_share0.data, keyblob_share0,
+                               keyblob_share0, key_share0.len));
+  HARDENED_TRY(hardened_memcpy(key_share1.data, key_share1.data, keyblob_share1,
+                               keyblob_share1, key_share1.len));
   return OTCRYPTO_OK;
 }

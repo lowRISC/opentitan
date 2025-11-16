@@ -247,7 +247,8 @@ static status_t internal_p256_keygen_finalize(
     HARDENED_TRY(p256_keygen_finalize(&private_scalar, pk));
     HARDENED_CHECK_EQ(p256_masked_scalar_checksum_check(&private_scalar),
                       kHardenedBoolTrue);
-    HARDENED_TRY(hardened_memcpy(private_key->keyblob, private_scalar.share0,
+    HARDENED_TRY(hardened_memcpy(private_key->keyblob, private_key->keyblob,
+                                 private_scalar.share0, private_scalar.share0,
                                  kP256MaskedScalarTotalShareWords));
   } else {
     return OTCRYPTO_BAD_ARGS;
@@ -322,7 +323,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
     HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
                       kHardenedBoolFalse);
     p256_masked_scalar_t private_scalar;
-    HARDENED_TRY(hardened_memcpy(private_scalar.share0, private_key->keyblob,
+    HARDENED_TRY(hardened_memcpy(private_scalar.share0, private_scalar.share0,
+                                 private_key->keyblob, private_key->keyblob,
                                  kP256MaskedScalarTotalShareWords));
     private_scalar.checksum = p256_masked_scalar_checksum(&private_scalar);
     HARDENED_TRY(p256_ecdsa_sign_start(message_digest.data, &private_scalar));
@@ -530,7 +532,8 @@ otcrypto_status_t otcrypto_ecdh_p256_async_start(
     HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
                       kHardenedBoolFalse);
     p256_masked_scalar_t private_scalar;
-    HARDENED_TRY(hardened_memcpy(private_scalar.share0, private_key->keyblob,
+    HARDENED_TRY(hardened_memcpy(private_scalar.share0, private_scalar.share0,
+                                 private_key->keyblob, private_key->keyblob,
                                  kP256MaskedScalarTotalShareWords));
     HARDENED_CHECK_EQ(
         hardened_memeq(private_key->keyblob, private_scalar.share0,

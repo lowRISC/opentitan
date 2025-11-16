@@ -52,8 +52,8 @@ enum {
  */
 static inline status_t gcm_context_save(aes_gcm_context_t *internal_ctx,
                                         otcrypto_aes_gcm_context_t *api_ctx) {
-  return hardened_memcpy(api_ctx->data, (uint32_t *)internal_ctx,
-                         kAesGcmContextNumWords);
+  return hardened_memcpy(api_ctx->data, api_ctx->data, (uint32_t *)internal_ctx,
+                         (uint32_t *)internal_ctx, kAesGcmContextNumWords);
 }
 
 /**
@@ -65,8 +65,8 @@ static inline status_t gcm_context_save(aes_gcm_context_t *internal_ctx,
  */
 static inline status_t gcm_context_restore(otcrypto_aes_gcm_context_t *api_ctx,
                                            aes_gcm_context_t *internal_ctx) {
-  return hardened_memcpy((uint32_t *)internal_ctx, api_ctx->data,
-                         kAesGcmContextNumWords);
+  return hardened_memcpy((uint32_t *)internal_ctx, (uint32_t *)internal_ctx,
+                         api_ctx->data, api_ctx->data, kAesGcmContextNumWords);
 }
 
 /**
