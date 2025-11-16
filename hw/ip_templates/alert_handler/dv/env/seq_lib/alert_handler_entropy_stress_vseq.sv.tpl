@@ -34,6 +34,7 @@ class ${module_instance_name}_entropy_stress_vseq extends ${module_instance_name
 
     foreach (cfg.alert_host_cfg[i]) begin
       cfg.alert_host_cfg[i].alert_delay_max = 0;
+      cfg.alert_host_cfg[i].ping_delay_min = 0;
       cfg.alert_host_cfg[i].ping_delay_max = 0;
     end
     super.pre_start();

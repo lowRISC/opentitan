@@ -262,7 +262,6 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     // Otherwise, we may lock invalid configurations which would require resetting the DUT.
     wait_no_outstanding_access();
     cfg.clk_rst_vif.wait_clks(
-        cfg.m_alert_agent_cfgs["recov_alert"].ping_delay_max +
         cfg.m_alert_agent_cfgs["recov_alert"].ack_delay_max +
         cfg.m_alert_agent_cfgs["recov_alert"].ack_stable_max +
         2); // Pause between back-to-back handshakes at sender end.
