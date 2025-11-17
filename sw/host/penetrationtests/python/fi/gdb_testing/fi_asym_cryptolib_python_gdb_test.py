@@ -51,6 +51,61 @@ BOOTSTRAP = args.bootstrap
 original_stdout = sys.stdout
 
 
+def trigger_testos_init(print_output=True):
+    # Initializing the testOS (setting up the alerts and accelerators)
+    (device_id, _, _, _, _, _, _) = asymfi.init(
+        alert_config=common_library.no_escalation_alert_config
+    )
+    if print_output:
+        print("Output from init ", device_id)
+
+
+def read_testos_output():
+    # Read the output from the operation
+    response = target.read_response(max_tries=1000)
+    return response
+
+
+def reset_gdb(gdb):
+    gdb.close_gdb()
+    gdb = GDBController(
+        gdb_path=GDB_PATH,
+        gdb_port=GDB_PORT,
+        elf_file=elf_path,
+    )
+    return gdb
+
+
+def reset_target_and_gdb(gdb):
+    gdb.close_gdb()
+    gdb = GDBController(
+        gdb_path=GDB_PATH,
+        gdb_port=GDB_PORT,
+        elf_file=elf_path,
+    )
+    gdb.reset_target()
+    target.dump_all()
+    trigger_testos_init(print_output=False)
+    # Reset again
+    gdb.close_gdb()
+    gdb = GDBController(
+        gdb_path=GDB_PATH,
+        gdb_port=GDB_PORT,
+        elf_file=elf_path,
+    )
+    return gdb
+
+
+def re_initialize(gdb, print_output=False):
+    gdb.close_gdb()
+    target.close_openocd()
+    target.initialize_target(print_output=print_output)
+    trigger_testos_init(print_output=print_output)
+    target.dump_all()
+    gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+    return gdb
+
+
 class AsymCryptolibFiSim(unittest.TestCase):
     def test_p384_verify(self):
         print("Starting the p384 verify test")
@@ -75,67 +130,15 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
         # Directory for the trace log files
         pc_trace_file = os.path.join(log_dir, "p384_verify_pc_trace.log")
-        # Directory for the output results
-        test_results_file = os.path.join(log_dir, "p384_verify_test_results.log")
         # Directory for the the log of the campaign
         campaign_file = os.path.join(log_dir, "p384_verify_test_campaign.log")
 
         successful_faults = 0
         total_attacks = 0
 
-        def trigger_testos_init(print_output=True):
-            # Initializing the testOS (setting up the alerts and accelerators)
-            (device_id, _, _, _, _, _, _) = asymfi.init(
-                alert_config=common_library.no_escalation_alert_config
-            )
-            if print_output:
-                print("Output from init ", device_id)
-
-        def read_testos_output():
-            # Read the output from the operation
-            response = target.read_response(max_tries=1000)
-            return response
-
-        def reset_gdb(gdb):
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            return gdb
-
-        def reset_target_and_gdb(gdb):
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            gdb.reset_target()
-            target.dump_all()
-            trigger_testos_init(print_output=False)
-            # Reset again
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            return gdb
-
-        def re_initialize(gdb):
-            gdb.close_gdb()
-            target.close_openocd()
-            target.initialize_target()
-            trigger_testos_init()
-            target.dump_all()
-            gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
-            return gdb
-
         gdb = None
         started = False
-        with open(test_results_file, "w") as test_results, open(campaign_file, "w") as campaign:
+        with open(campaign_file, "w") as campaign:
             print(f"Switching terminal output to {campaign_file}", flush=True)
             sys.stdout = campaign
             try:
@@ -202,6 +205,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 if len(pc_count_dict) <= 0:
                     print("Found no tracing, stopping")
                     sys.exit(1)
+                print("Trace data is logged in ", pc_trace_file)
                 print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
 
                 # Reset the target, flush the output, and close gdb
@@ -255,9 +259,6 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                         print(gdb_response)
                                         print("Response:", testos_response_json)
                                         print("-" * 80)
-                                        test_results.write(
-                                            f"{pc}, {i_count}: {testos_response_json}\n"
-                                        )
                                     # Reset GDB by closing and opening again
                                     gdb = reset_gdb(gdb)
                                     # We do not need to reset the target since it gave an output
@@ -285,24 +286,12 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
             finally:
                 print("-" * 80)
-                print("Trace data is logged in ", pc_trace_file)
-                print("The campaign is logged in ", campaign_file)
-                print("Instruction skip results are logged in ", test_results_file)
                 print(f"Total attacks {total_attacks}, successful attacks {successful_faults}")
-                print("You can find the dissassembly in ", dis_path)
                 # Close the OpenOCD and GDB connection at the end
                 if gdb:
                     gdb.close_gdb()
                 target.close_openocd()
-                test_results.write(
-                    f"Total attacks {total_attacks}, successful attacks {successful_faults}\n"
-                )
                 sys.stdout = original_stdout
-                print("Trace data is logged in ", pc_trace_file)
-                print("The campaign is logged in ", campaign_file)
-                print("Instruction skip results are logged in ", test_results_file)
-                print(f"Total attacks {total_attacks}, successful attacks {successful_faults}")
-                print("You can find the dissassembly in ", dis_path)
                 self.assertEqual(successful_faults, 0)
                 self.assertEqual(started, True)
 
@@ -323,71 +312,17 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
         # Directory for the trace log files
         pc_trace_file = os.path.join(log_dir, "p384_ecdh_pc_trace.log")
-        # Directory for the output results
-        test_results_file = os.path.join(log_dir, "p384_ecdh_test_results.log")
         # Directory for the the log of the campaign
         campaign_file = os.path.join(log_dir, "p384_ecdh_test_campaign.log")
 
         successful_faults = 0
         total_attacks = 0
 
-        def trigger_testos_init(print_output=True):
-            # Initializing the testOS (setting up the alerts and accelerators)
-            (device_id, _, _, _, _, _, _) = asymfi.init(
-                alert_config=common_library.no_escalation_alert_config
-            )
-            if print_output:
-                print("Output from init ", device_id)
-
-        def read_testos_output():
-            # Read the output from the operation
-            response = target.read_response(max_tries=1000)
-            return response
-
-        def reset_gdb(gdb):
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            return gdb
-
-        def reset_target_and_gdb(gdb):
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            gdb.reset_target()
-            target.dump_all()
-            trigger_testos_init(print_output=False)
-            # Reset again
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            gdb.dump_output()
-            target.dump_all()
-            return gdb
-
-        def re_initialize(gdb):
-            gdb.close_gdb()
-            target.close_openocd()
-            target.initialize_target()
-            trigger_testos_init()
-            target.dump_all()
-            gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
-            return gdb
-
         ecdh_output = [None, None]
 
         gdb = None
         started = False
-        with open(test_results_file, "w") as test_results, open(campaign_file, "w") as campaign:
+        with open(campaign_file, "w") as campaign:
             print(f"Switching terminal output to {campaign_file}", flush=True)
             sys.stdout = campaign
             try:
@@ -452,6 +387,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 if len(pc_count_dict) <= 0:
                     print("Found no tracing, stopping")
                     sys.exit(1)
+                print("Trace data is logged in ", pc_trace_file)
                 print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
 
                 # Reset the target, flush the output, and close gdb
@@ -488,6 +424,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                 testos_response = read_testos_output()
 
                                 gdb_response = gdb.read_output()
+                                ecdh_output[i] = None
                                 if "instruction skip applied" in gdb_response:
                                     total_attacks += 1
 
@@ -507,9 +444,6 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                                 print(gdb_response)
                                                 print("Response:", testos_response_json)
                                                 print("-" * 80)
-                                                test_results.write(
-                                                    f"{pc}, {i_count}: {testos_response_json}\n"
-                                                )
                                         # Reset GDB by closing and opening again
                                         gdb = reset_gdb(gdb)
                                         # We do not need to reset the target since it gave an output
@@ -537,24 +471,12 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
             finally:
                 print("-" * 80)
-                print("Trace data is logged in ", pc_trace_file)
-                print("The campaign is logged in ", campaign_file)
-                print("Instruction skip results are logged in ", test_results_file)
                 print(f"Total attacks {total_attacks}, successful attacks {successful_faults}")
-                print("You can find the dissassembly in ", dis_path)
                 # Close the OpenOCD and GDB connection at the end
                 if gdb:
                     gdb.close_gdb()
                 target.close_openocd()
-                test_results.write(
-                    f"Total attacks {total_attacks}, successful attacks {successful_faults}\n"
-                )
                 sys.stdout = original_stdout
-                print("Trace data is logged in ", pc_trace_file)
-                print("The campaign is logged in ", campaign_file)
-                print("Instruction skip results are logged in ", test_results_file)
-                print(f"Total attacks {total_attacks}, successful attacks {successful_faults}")
-                print("You can find the dissassembly in ", dis_path)
                 self.assertEqual(successful_faults, 0)
                 self.assertEqual(started, True)
 
@@ -581,69 +503,15 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
         # Directory for the trace log files
         pc_trace_file = os.path.join(log_dir, "p256_verify_pc_trace.log")
-        # Directory for the output results
-        test_results_file = os.path.join(log_dir, "p256_verify_test_results.log")
         # Directory for the the log of the campaign
         campaign_file = os.path.join(log_dir, "p256_verify_test_campaign.log")
 
         successful_faults = 0
         total_attacks = 0
 
-        def trigger_testos_init(print_output=True):
-            # Initializing the testOS (setting up the alerts and accelerators)
-            (device_id, _, _, _, _, _, _) = asymfi.init(
-                alert_config=common_library.no_escalation_alert_config
-            )
-            if print_output:
-                print("Output from init ", device_id)
-
-        def read_testos_output():
-            # Read the output from the operation
-            response = target.read_response(max_tries=1000)
-            return response
-
-        def reset_gdb(gdb):
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            return gdb
-
-        def reset_target_and_gdb(gdb):
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            gdb.reset_target()
-            target.dump_all()
-            trigger_testos_init(print_output=False)
-            # Reset again
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            gdb.dump_output()
-            target.dump_all()
-            return gdb
-
-        def re_initialize(gdb):
-            gdb.close_gdb()
-            target.close_openocd()
-            target.initialize_target()
-            trigger_testos_init()
-            target.dump_all()
-            gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
-            return gdb
-
         gdb = None
         started = False
-        with open(test_results_file, "w") as test_results, open(campaign_file, "w") as campaign:
+        with open(campaign_file, "w") as campaign:
             print(f"Switching terminal output to {campaign_file}", flush=True)
             sys.stdout = campaign
             try:
@@ -710,6 +578,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 if len(pc_count_dict) <= 0:
                     print("Found no tracing, stopping")
                     sys.exit(1)
+                print("Trace data is logged in ", pc_trace_file)
                 print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
 
                 # Reset the target, flush the output, and close gdb
@@ -763,9 +632,6 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                         print(gdb_response)
                                         print("Response:", testos_response_json)
                                         print("-" * 80)
-                                        test_results.write(
-                                            f"{pc}, {i_count}: {testos_response_json}\n"
-                                        )
                                     # Reset GDB by closing and opening again
                                     gdb = reset_gdb(gdb)
                                     # We do not need to reset the target since it gave an output
@@ -793,24 +659,12 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
             finally:
                 print("-" * 80)
-                print("Trace data is logged in ", pc_trace_file)
-                print("The campaign is logged in ", campaign_file)
-                print("Instruction skip results are logged in ", test_results_file)
                 print(f"Total attacks {total_attacks}, successful attacks {successful_faults}")
-                print("You can find the dissassembly in ", dis_path)
                 # Close the OpenOCD and GDB connection at the end
                 if gdb:
                     gdb.close_gdb()
                 target.close_openocd()
-                test_results.write(
-                    f"Total attacks {total_attacks}, successful attacks {successful_faults}\n"
-                )
                 sys.stdout = original_stdout
-                print("Trace data is logged in ", pc_trace_file)
-                print("The campaign is logged in ", campaign_file)
-                print("Instruction skip results are logged in ", test_results_file)
-                print(f"Total attacks {total_attacks}, successful attacks {successful_faults}")
-                print("You can find the dissassembly in ", dis_path)
                 self.assertEqual(successful_faults, 0)
                 self.assertEqual(started, True)
 
@@ -831,71 +685,17 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
         # Directory for the trace log files
         pc_trace_file = os.path.join(log_dir, "p256_ecdh_pc_trace.log")
-        # Directory for the output results
-        test_results_file = os.path.join(log_dir, "p256_ecdh_test_results.log")
         # Directory for the the log of the campaign
         campaign_file = os.path.join(log_dir, "p256_ecdh_test_campaign.log")
 
         successful_faults = 0
         total_attacks = 0
 
-        def trigger_testos_init(print_output=True):
-            # Initializing the testOS (setting up the alerts and accelerators)
-            (device_id, _, _, _, _, _, _) = asymfi.init(
-                alert_config=common_library.no_escalation_alert_config
-            )
-            if print_output:
-                print("Output from init ", device_id)
-
-        def read_testos_output():
-            # Read the output from the operation
-            response = target.read_response(max_tries=1000)
-            return response
-
-        def reset_gdb(gdb):
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            return gdb
-
-        def reset_target_and_gdb(gdb):
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            gdb.reset_target()
-            target.dump_all()
-            trigger_testos_init(print_output=False)
-            # Reset again
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            gdb.dump_output()
-            target.dump_all()
-            return gdb
-
-        def re_initialize(gdb):
-            gdb.close_gdb()
-            target.close_openocd()
-            target.initialize_target()
-            trigger_testos_init()
-            target.dump_all()
-            gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
-            return gdb
-
         ecdh_output = [None, None]
 
         gdb = None
         started = False
-        with open(test_results_file, "w") as test_results, open(campaign_file, "w") as campaign:
+        with open(campaign_file, "w") as campaign:
             print(f"Switching terminal output to {campaign_file}", flush=True)
             sys.stdout = campaign
             try:
@@ -960,6 +760,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 if len(pc_count_dict) <= 0:
                     print("Found no tracing, stopping")
                     sys.exit(1)
+                print("Trace data is logged in ", pc_trace_file)
                 print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
 
                 # Reset the target, flush the output, and close gdb
@@ -996,6 +797,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                 testos_response = read_testos_output()
 
                                 gdb_response = gdb.read_output()
+                                ecdh_output[i] = None
                                 if "instruction skip applied" in gdb_response:
                                     total_attacks += 1
 
@@ -1015,9 +817,6 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                                 print(gdb_response)
                                                 print("Response:", testos_response_json)
                                                 print("-" * 80)
-                                                test_results.write(
-                                                    f"{pc}, {i_count}: {testos_response_json}\n"
-                                                )
                                         # Reset GDB by closing and opening again
                                         gdb = reset_gdb(gdb)
                                         # We do not need to reset the target since it gave an output
@@ -1045,24 +844,12 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
             finally:
                 print("-" * 80)
-                print("Trace data is logged in ", pc_trace_file)
-                print("The campaign is logged in ", campaign_file)
-                print("Instruction skip results are logged in ", test_results_file)
                 print(f"Total attacks {total_attacks}, successful attacks {successful_faults}")
-                print("You can find the dissassembly in ", dis_path)
                 # Close the OpenOCD and GDB connection at the end
                 if gdb:
                     gdb.close_gdb()
                 target.close_openocd()
-                test_results.write(
-                    f"Total attacks {total_attacks}, successful attacks {successful_faults}\n"
-                )
                 sys.stdout = original_stdout
-                print("Trace data is logged in ", pc_trace_file)
-                print("The campaign is logged in ", campaign_file)
-                print("Instruction skip results are logged in ", test_results_file)
-                print(f"Total attacks {total_attacks}, successful attacks {successful_faults}")
-                print("You can find the dissassembly in ", dis_path)
                 self.assertEqual(successful_faults, 0)
                 self.assertEqual(started, True)
 
@@ -1091,69 +878,15 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
         # Directory for the trace log files
         pc_trace_file = os.path.join(log_dir, "rsa_verify_pkcs1v15_pc_trace.log")
-        # Directory for the output results
-        test_results_file = os.path.join(log_dir, "rsa_verify_pkcs1v15_test_results.log")
         # Directory for the the log of the campaign
         campaign_file = os.path.join(log_dir, "rsa_verify_pkcs1v15_test_campaign.log")
 
         successful_faults = 0
         total_attacks = 0
 
-        def trigger_testos_init(print_output=True):
-            # Initializing the testOS (setting up the alerts and accelerators)
-            (device_id, _, _, _, _, _, _) = asymfi.init(
-                alert_config=common_library.no_escalation_alert_config
-            )
-            if print_output:
-                print("Output from init ", device_id)
-
-        def read_testos_output():
-            # Read the output from the operation
-            response = target.read_response(max_tries=1000)
-            return response
-
-        def reset_gdb(gdb):
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            return gdb
-
-        def reset_target_and_gdb(gdb):
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            gdb.reset_target()
-            target.dump_all()
-            trigger_testos_init(print_output=False)
-            # Reset again
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            gdb.dump_output()
-            target.dump_all()
-            return gdb
-
-        def re_initialize(gdb):
-            gdb.close_gdb()
-            target.close_openocd()
-            target.initialize_target()
-            trigger_testos_init()
-            target.dump_all()
-            gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
-            return gdb
-
         gdb = None
         started = False
-        with open(test_results_file, "w") as test_results, open(campaign_file, "w") as campaign:
+        with open(campaign_file, "w") as campaign:
             print(f"Switching terminal output to {campaign_file}", flush=True)
             sys.stdout = campaign
             try:
@@ -1232,6 +965,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 if len(pc_count_dict) <= 0:
                     print("Found no tracing, stopping")
                     sys.exit(1)
+                print("Trace data is logged in ", pc_trace_file)
                 print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
 
                 # Reset the target, flush the output, and close gdb
@@ -1295,9 +1029,6 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                         print(gdb_response)
                                         print("Response:", testos_response_json)
                                         print("-" * 80)
-                                        test_results.write(
-                                            f"{pc}, {i_count}: {testos_response_json}\n"
-                                        )
                                     # Reset GDB by closing and opening again
                                     gdb = reset_gdb(gdb)
                                     # We do not need to reset the target since it returned an output
@@ -1325,24 +1056,12 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
             finally:
                 print("-" * 80)
-                print("Trace data is logged in ", pc_trace_file)
-                print("The campaign is logged in ", campaign_file)
-                print("Instruction skip results are logged in ", test_results_file)
                 print(f"Total attacks {total_attacks}, successful attacks {successful_faults}")
-                print("You can find the dissassembly in ", dis_path)
                 # Close the OpenOCD and GDB connection at the end
                 if gdb:
                     gdb.close_gdb()
                 target.close_openocd()
-                test_results.write(
-                    f"Total attacks {total_attacks}, successful attacks {successful_faults}\n"
-                )
                 sys.stdout = original_stdout
-                print("Trace data is logged in ", pc_trace_file)
-                print("The campaign is logged in ", campaign_file)
-                print("Instruction skip results are logged in ", test_results_file)
-                print(f"Total attacks {total_attacks}, successful attacks {successful_faults}")
-                print("You can find the dissassembly in ", dis_path)
                 self.assertEqual(successful_faults, 0)
                 self.assertEqual(started, True)
 
@@ -1371,69 +1090,15 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
         # Directory for the trace log files
         pc_trace_file = os.path.join(log_dir, "rsa_verify_pss_pc_trace.log")
-        # Directory for the output results
-        test_results_file = os.path.join(log_dir, "rsa_verify_pss_test_results.log")
         # Directory for the the log of the campaign
         campaign_file = os.path.join(log_dir, "rsa_verify_pss_test_campaign.log")
 
         successful_faults = 0
         total_attacks = 0
 
-        def trigger_testos_init(print_output=True):
-            # Initializing the testOS (setting up the alerts and accelerators)
-            (device_id, _, _, _, _, _, _) = asymfi.init(
-                alert_config=common_library.no_escalation_alert_config
-            )
-            if print_output:
-                print("Output from init ", device_id)
-
-        def read_testos_output():
-            # Read the output from the operation
-            response = target.read_response(max_tries=1000)
-            return response
-
-        def reset_gdb(gdb):
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            return gdb
-
-        def reset_target_and_gdb(gdb):
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            gdb.reset_target()
-            target.dump_all()
-            trigger_testos_init(print_output=False)
-            # Reset again
-            gdb.close_gdb()
-            gdb = GDBController(
-                gdb_path=GDB_PATH,
-                gdb_port=GDB_PORT,
-                elf_file=elf_path,
-            )
-            gdb.dump_output()
-            target.dump_all()
-            return gdb
-
-        def re_initialize(gdb):
-            gdb.close_gdb()
-            target.close_openocd()
-            target.initialize_target()
-            trigger_testos_init()
-            target.dump_all()
-            gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
-            return gdb
-
         gdb = None
         started = False
-        with open(test_results_file, "w") as test_results, open(campaign_file, "w") as campaign:
+        with open(campaign_file, "w") as campaign:
             print(f"Switching terminal output to {campaign_file}", flush=True)
             sys.stdout = campaign
             try:
@@ -1512,6 +1177,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 if len(pc_count_dict) <= 0:
                     print("Found no tracing, stopping")
                     sys.exit(1)
+                print("Trace data is logged in ", pc_trace_file)
                 print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
 
                 # Reset the target, flush the output, and close gdb
@@ -1575,9 +1241,6 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                         print(gdb_response)
                                         print("Response:", testos_response_json)
                                         print("-" * 80)
-                                        test_results.write(
-                                            f"{pc}, {i_count}: {testos_response_json}\n"
-                                        )
                                     # Reset GDB by closing and opening again
                                     gdb = reset_gdb(gdb)
                                     # We do not need to reset the target since it returned an output
@@ -1605,26 +1268,15 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
             finally:
                 print("-" * 80)
-                print("Trace data is logged in ", pc_trace_file)
-                print("The campaign is logged in ", campaign_file)
-                print("Instruction skip results are logged in ", test_results_file)
                 print(f"Total attacks {total_attacks}, successful attacks {successful_faults}")
-                print("You can find the dissassembly in ", dis_path)
                 # Close the OpenOCD and GDB connection at the end
                 if gdb:
                     gdb.close_gdb()
                 target.close_openocd()
-                test_results.write(
-                    f"Total attacks {total_attacks}, successful attacks {successful_faults}\n"
-                )
                 sys.stdout = original_stdout
-                print("Trace data is logged in ", pc_trace_file)
-                print("The campaign is logged in ", campaign_file)
-                print("Instruction skip results are logged in ", test_results_file)
-                print(f"Total attacks {total_attacks}, successful attacks {successful_faults}")
-                print("You can find the dissassembly in ", dis_path)
                 self.assertEqual(successful_faults, 0)
                 self.assertEqual(started, True)
+                print("-" * 80)
 
 
 if __name__ == "__main__":
