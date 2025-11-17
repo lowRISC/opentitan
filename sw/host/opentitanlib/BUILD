@@ -92,6 +92,7 @@ rust_library(
         "src/image/manifest_ext.rs",
         "src/image/mod.rs",
         "src/io/console.rs",
+        "src/io/console/broadcast.rs",
         "src/io/console/ext.rs",
         "src/io/eeprom.rs",
         "src/io/emu.rs",

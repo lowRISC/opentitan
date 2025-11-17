@@ -10,7 +10,9 @@ use thiserror::Error;
 
 use crate::impl_serializable_error;
 
+mod broadcast;
 mod ext;
+pub use broadcast::Broadcaster;
 pub use ext::ConsoleExt;
 
 /// Errors related to the console interface.
