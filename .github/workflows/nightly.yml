@@ -59,6 +59,9 @@ jobs:
       tag_filters: cw310_test_rom,-broken,-manual
       add_default_filters: false
       cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw310_test_rom"
+      branch: "${{ inputs.branch }}"
 
   execute_fpga_cw310_rom_tests:
     name: CW310 ROM Tests
@@ -74,6 +77,9 @@ jobs:
       add_default_filters: false
       cache_test_results: false
       timeout: 240
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw310_rom"
+      branch: "${{ inputs.branch }}"
 
   execute_fpga_cw310_rom_ext_tests:
     name: CW310 ROM_EXT Tests
@@ -88,6 +94,9 @@ jobs:
       tag_filters: cw310_rom_ext,-broken,-manual
       add_default_filters: false
       cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw310_rom_ext"
+      branch: "${{ inputs.branch }}"
 
   execute_fpga_cw310_sival_tests:
     name: CW310 SiVal Tests
@@ -102,6 +111,9 @@ jobs:
       tag_filters: cw310_sival,-broken,-manual
       add_default_filters: false
       cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw310_sival"
+      branch: "${{ inputs.branch }}"
 
   execute_fpga_cw310_sival_rom_ext_tests:
     name: CW310 SiVal ROM_EXT Tests
@@ -116,6 +128,9 @@ jobs:
       tag_filters: cw310_sival_rom_ext,-broken,-manual
       add_default_filters: false
       cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw310_sival_rom_ext"
+      branch: "${{ inputs.branch }}"
 
   execute_fpga_cw310_bob_tests:
     name: CW310 BoB (SPI and I2C) Tests
@@ -131,9 +146,12 @@ jobs:
       tag_filters: cw310_sival_rom_ext_no_hyper,-broken,-manual
       add_default_filters: false
       cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw310_bob"
+      branch: "${{ inputs.branch }}"
 
   execute_fpga_cw340_test_rom_tests:
-    name: CW340 SiVal Test ROM Tests
+    name: CW340 Test ROM Tests
     needs: chip_earlgrey_cw340
     uses: ./.github/workflows/fpga.yml
     secrets: inherit
@@ -145,9 +163,12 @@ jobs:
       tag_filters: cw340_test_rom,-broken,-manual
       add_default_filters: false
       cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw340_test_rom"
+      branch: "${{ inputs.branch }}"
 
   execute_fpga_cw340_rom_tests:
-    name: CW340 SiVal ROM Tests
+    name: CW340 ROM Tests
     needs: chip_earlgrey_cw340
     uses: ./.github/workflows/fpga.yml
     secrets: inherit
@@ -159,9 +180,12 @@ jobs:
       tag_filters: cw340_rom_with_fake_keys,-broken,-manual
       add_default_filters: false
       cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw340_rom"
+      branch: "${{ inputs.branch }}"
 
   execute_fpga_cw340_rom_ext_tests:
-    name: CW340 SiVal ROM_EXT Tests
+    name: CW340 ROM_EXT Tests
     needs: chip_earlgrey_cw340
     uses: ./.github/workflows/fpga.yml
     secrets: inherit
@@ -173,6 +197,9 @@ jobs:
       tag_filters: cw340_rom_ext,-broken,-manual
       add_default_filters: false
       cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw340_rom_ext"
+      branch: "${{ inputs.branch }}"
 
   execute_fpga_cw340_sival_tests:
     name: CW340 SiVal Tests
@@ -187,6 +214,9 @@ jobs:
       tag_filters: cw340_sival,-broken,-manual
       add_default_filters: false
       cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw340_sival"
+      branch: "${{ inputs.branch }}"
 
   execute_fpga_cw340_sival_rom_ext_tests:
     name: CW340 SiVal ROM_EXT Tests
@@ -202,6 +232,9 @@ jobs:
       add_default_filters: false
       cache_test_results: false
       timeout: 90
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw340_sival_rom_ext"
+      branch: "${{ inputs.branch }}"
 
   slow_otbn_crypto_tests:
     name: Slow OTBN Crypto Tests
