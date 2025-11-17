@@ -18,6 +18,10 @@ on:
         required: true
         type: string
         description: FPGA board to use
+      branch:
+        default: "${{ github.ref }}"
+        type: string
+        description: Branch to checkout
       interface:
         required: true
         type: string
@@ -45,6 +49,14 @@ on:
         default: true
         type: boolean
         description: Skip tests that previously passed and were cached by Bazel
+      upload_to_bucket:
+        default: false
+        type: boolean
+        description: Whether to upload FPGA results to Google Cloud Bucket
+      bucket_job_folder_name:
+        default: "fpga"
+        type: string
+        description: Google Cloud Bucket folder name for uploaded test results
 
 jobs:
   fpga:
@@ -54,7 +66,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.branch }}
           fetch-depth: 0
+
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
@@ -98,15 +112,25 @@ jobs:
             echo "No tests to run after filtering"
           fi
 
+      - uses: actions/checkout@v4
+        if: ${{ !cancelled() }}
+        with:
+          ref: ${{ github.ref }}
+          path: "upload-branch"
+          fetch-depth: 1
+
       - name: Publish Bazel test results
-        uses: ./.github/actions/publish-bazel-test-results
+        uses: ./upload-branch/.github/actions/publish-bazel-test-results
         if: ${{ !cancelled() }}
         with:
           artifact-name: ${{ inputs.job_name }}-test-results
+          upload-to-bucket: ${{ inputs.upload_to_bucket }}
+          bucket-job-folder-name: ${{ inputs.bucket_job_folder_name }}
+          branch: ${{ inputs.branch }}
 
       - name: Upload target pattern file
-        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
         with:
           name: ${{ inputs.job_name }}-targets
           path: target_pattern_file.txt
