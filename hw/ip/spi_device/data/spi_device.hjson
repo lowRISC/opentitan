@@ -8,7 +8,7 @@
   one_paragraph_desc: '''
   SPI Device is a configurable, versatile hardware block that implements three modes (SPI Flash emulation mode, SPI passthrough mode, and TPM over SPI mode) to support a variety of different applications.
   TPM over SPI operates in compliance with TPM PC Client Platform, unloading this protocol from a software solution.
-  SPI Flash emulation mode supports many JEDEC standard commands such as Read Status, Read JEDEC ID, Read SFDP, EN4B/EX4B, and multiple other read commands, allowing OpenTitan to provide, for example, verified boot firmware to other external devices.
+  SPI Flash emulation mode supports many JEDEC standard commands such as Read Status, Read JEDEC ID, Read SFDP, EN4B/EX4B, WREN/WRDI, and multiple other read commands, allowing OpenTitan to provide, for example, verified boot firmware to other external devices.
   '''
   // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
   cip_id:             "26",
@@ -67,12 +67,12 @@
   ]
   interrupt_list: [
     { name: "upload_cmdfifo_not_empty"
-      desc: "Upload Command FIFO is not empty"
+      desc: "Upload Command FIFO is not empty."
     }
     { name: "upload_payload_not_empty"
       desc: '''Upload payload is not empty.
 
-        The event occurs after SPI transaction completed
+        The event occurs after a SPI transaction is completed.
         '''
     }
     { name: "upload_payload_overflow"
@@ -377,7 +377,7 @@
     }
     {
       name: "SPI_DEVICE.HW.CSB_STATUS",
-      desc: '''CSR.STATUS fields show the current status of the two CSB signals (.csb/.tpm_csb).
+      desc: '''CSR.STATUS fields show the current status of the two CSb signals (.csb/.tpm_csb).
             '''
     }
     {
@@ -505,7 +505,7 @@
   regwidth: "32",
   registers: [
     { name: "CONTROL",
-      desc: "Control register",
+      desc: "Control register.",
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
@@ -550,15 +550,15 @@
               name: "disabled",
               desc: '''SPI Flash operations disabled.
 
-                SPI device flash operations are disabled, and all transactions are ignored.
-                Note that SPI TPM operations are controlled by !!TPM_CFG
+                SPI Device operations are disabled, and all transactions are ignored.
+                Note that SPI TPM operation is controlled by !!TPM_CFG.
                 '''
             },
             { value: "1"
               name: "flashmode"
               desc: '''SPI Flash Emulation mode.
 
-                In flash mode, SPI Device IP accepts SPI Flash commands and
+                In Flash mode, the SPI Device IP accepts SPI Flash commands and
                 processes internally, then returns data for the read commands.
                 HW processes the Status, JEDEC ID, SFDP commands.
 
@@ -569,7 +569,7 @@
             { value: "2"
               name: "passthrough"
               desc: '''
-                In passthrough mode, SPI Device IP forwards the incoming SPI
+                In Passthrough mode, SPI Device IP forwards the incoming SPI
                 flash traffics to the attached downstream flash device. HW may
                 processes commands internally and returns data.
 
@@ -584,13 +584,13 @@
       ]
     },
     { name: "CFG",
-      desc: "Configuration Register",
+      desc: "Configuration Register.",
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
         { bits: "2",
           name: "tx_order",
-          desc: "TX bit order on SDO. 0 for MSB to LSB, 1 for LSB to MSB",
+          desc: "TX bit order on SDO. 0 for MSB to LSB, 1 for LSB to MSB.",
           resval: "0",
         },
         { bits: "3",
@@ -611,15 +611,15 @@
       ]
     },
     { name: "STATUS",
-      desc: "SPI Device status register",
+      desc: "SPI Device status register.",
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
       fields: [
-        { bits: "5", name: "csb",        desc: "Direct input of CSb signal", resval: "1" },
+        { bits: "5", name: "csb",        desc: "Direct input of CSb signal.", resval: "1" },
         { bits: "6"
           name: "tpm_csb"
-          desc: "Direct input of TPM CSb"
+          desc: "Direct input of the TPM CSb signal."
           resval: "1"
           tags: [
             // the value of tpm_csb is determined by the
@@ -640,27 +640,27 @@
       fields: [
         { bits: "0"
           name: "status"
-          desc: "If set, Read Status is processed internally."
+          desc: "If set, Read Status commands are processed internally."
         } // f: status
         { bits: "1"
           name: "jedec"
-          desc: "If set, Read JEDEC ID is processed internally."
+          desc: "If set, Read JEDEC ID commands are processed internally."
         } // f: jedec
         { bits: "2"
           name: "sfdp"
-          desc: "If set, Read SFDP is processed internally."
+          desc: "If set, Read SFDP commands are processed internally."
         } // f: sfdp
         { bits: "3"
           name: "mbx"
-          desc: "If set, Read Command to Mailbox region is processed internally."
+          desc: "If set, Read commands reading from the mailbox region are processed internally."
         } // f: mailbox
       ]
     } // R: INTERCEPT_EN
     { name: "ADDR_MODE"
-      desc: '''Flash address mode configuration
+      desc: '''Flash Address Mode configuration.
 
-        This register shows the current address mode and pending changes.
-        It is updated by the HW when the command phase completes.
+        This register shows the current address mode and pending changes to it.
+        It is updated by the HW when the command opcode phase completes.
         '''
       swaccess: "ro"
       hwaccess: "hwo"
@@ -679,31 +679,33 @@
           hwqe: true
           desc: '''4B Address Mode enable.
 
-            This field configures the internal module to receive 32 bits of the SPI commands.
-            The affected commands are the SPI read commands except QPI, and program commands.
-            It is expected for SW to configure this field at the configuration stage and release control to HW until the next reset.
+            This field determines whether 4B address mode is currently enabled.
 
-            Even though Read SFDP command has address fields, the SFDP command is not affected by this field.
-            The command always parse 24 bits on the SPI line 0 following the SPI command as the address field.
+            If set, the size of addresses for SPI commands with !!CMD_INFO.addr_mode == `AddrCfg` is 4B, otherwise it is 3B. This field is modified by HW on receiving the EN4B and EX4B commands - see !!CMD_INFO_EN4B and !!CMD_INFO_EX4B.
 
-            This field has noteworthy read behavior.
-            If a software-initiated change is still `pending` the sync to the SPI domain, this bit will reflect the value to be sent.
-            Otherwise, this field will reflect the current value observed in the SPI domain.
+            Read SFDP commands (!!CMD_INFO slot 4) are unaffected by the configuration of !!ADDR_MODE.addr_4b_en, and a 3-byte
+            address will always be expected following the command opcode.
+
+            If a SW-initiated change is still pending the sync to the SPI domain, this bit will reflect the value to be sent.
+            Otherwise, this field will reflect the current value observed in the SPI domain. See !!ADDR_MODE.pending.
+
+            It is expected that software only sets this field during early configuration. Modifying this field mid-operation is
+            almost always a protocol violation.
             '''
         },
         { bits: "31"
           name: "pending"
-          desc: '''SW-originated change is pending.
+          desc: '''SW-initiated change is pending.
 
-            This bit is 1 whenever the current value of addr_4b_en has yet to sync with the SPI domain.
-            If an EN4B or EX4B command arrives next, the current value in `addr_4b_en` will be ignored,
-            and the SPI flash command will take priority, with an update to `addr_4b_en` to match the command's result.
+            This bit is set whenever the current value of !!ADDR_MODE.addr_4b_en is not yet in sync with the SPI domain.
+            If an EN4B or EX4B command arrives next, the current value in !!ADDR_MODE.addr_4b_en will be ignored
+            and the command will take priority.
             '''
         }
       ]
     } // R: ADDR_MODE
     { name: "LAST_READ_ADDR"
-      desc: '''Last Read Address
+      desc: '''Last Read Address.
 
         This register shows the last address accessed by the host system.
         It is updated by the HW when CSb is de-asserted.
@@ -714,17 +716,16 @@
       fields: [
         { bits: "31:0"
           name: "addr"
-          desc: "Last address"
+          desc: "Last address."
         }
       ]
     } // R: LAST_READ_ADDR
     { name: "FLASH_STATUS"
       desc: '''SPI Flash Status register.
 
-        This register emulates the SPI Flash Status 3, 2, 1 registers.
-        bit [7:0] is for Status register, bit [15:8] is for Status-2 register,
-        and bit [23:16] is for Status-3 register. It is SW responsibility to
-        maintain this register value up to date.
+        This register emulates the SPI Flash Status 1-3 registers.
+        Bits [7:0], [15:8], and [23:16] contain the values for the Status 1, 2, and 3 registers respectively.
+        It is the responsibility of SW to keep the value of this register up-to-date.
 
         When software writes a value here, it is delivered to a staging async FIFO, where it waits for the SPI side to commit it.
         Any updates require at least 8 SPI clocks before they commit on the SPI side, which is the source-of-truth.
@@ -743,14 +744,15 @@
       fields: [
         { bits: "0"
           name: "busy"
-          desc: '''The BUSY signal. SW should read back the register to confirm the value is cleared.
+          desc: '''The BUSY signal.
 
-            Bit 0 (BUSY) is a SW modifiable and HW modifiable field.
-            HW updates the BUSY field for matching uploaded commands in the CMD_INFO table, when the `upload` and `busy` bits are set in the table entry.
+            This bit is set by HW when a matched command with !!CMD_INFO.upload and !!CMD_INFO.busy set is received.
+            SW may only clear this bit.
+            SW should read back the register to confirm the bit is cleared.
 
             Note that the observable state of the BUSY bit updates every 8 SPI clocks.
             This enables continuous polling of the BUSY bit.
-            However, the passthrough gate (for passthrough mode) only updates when CSB is de-asserted, not on SPI clocks.
+            However, the passthrough gate (for passthrough mode) only updates when CSb is de-asserted, not on SPI clocks.
           '''
           swaccess: "rw0c"
           hwaccess: "hrw"
@@ -758,10 +760,10 @@
         { bits: "1"
           name: "wel"
           desc: '''The Write Enable Latch signal.
-            SW should read back the register to confirm the value is cleared.
 
-            Bit 1 (WEL) is a SW modifiable and HW modifiable field.
-            HW updates the WEL field when `WRDI` or `WREN` command is received.
+            This bit is set or unset by HW when a WREN or WRDI command is received - see !!CMD_INFO_WREN and !!CMD_INFO_WRDI.
+            SW may only clear this bit.
+            SW should read back the register to confirm the bit is cleared.
           '''
           swaccess: "rw0c"
           hwaccess: "hrw"
@@ -769,27 +771,29 @@
         { bits: "23:2"
           name: "status"
           desc: '''Rest of the status register.
+            HW reads will return the value stored.
+            This field is managed by SW and the bits have no special significance to the HW - SW should use the bits according to the specific flash chip emulated.
+            The following is a normative list of common uses for each bit:
 
-            Fields other than the bit 0 (BUSY) and bit 1 (WEL) fields are
-            SW-maintained fields. HW just reads and returns to the host system.
-
-            - [ 2]\: BP0
-            - [ 3]\: BP1
-            - [ 4]\: BP2
-            - [ 5]\: TB
-            - [ 6]\: SEC
-            - [ 7]\: SRP0
-            - [ 8]\: SRP1
-            - [ 9]\: QE
-            - [11]\: LB1
-            - [12]\: LB2
-            - [13]\: LB3
-            - [14]\: CMP
-            - [15]\: SUS
-            - [18]\: WPS
-            - [21]\: DRV0
-            - [22]\: DRV1
-            - [23]\: HOLD /RST
+            | Bit | Common Usage |
+            |:---:|:-------------|
+            |  2  | `BP0`        |
+            |  3  | `BP1`        |
+            |  4  | `BP2`        |
+            |  5  | `TB`         |
+            |  6  | `SEC`        |
+            |  7  | `SRP0`       |
+            |  8  | `SRP1`       |
+            |  9  | `QE`         |
+            | 11  | `LB1`        |
+            | 12  | `LB2`        |
+            | 13  | `LB3`        |
+            | 14  | `CMP`        |
+            | 15  | `SUS`        |
+            | 18  | `WPS`        |
+            | 21  | `DRV0`       |
+            | 22  | `DRV1`       |
+            | 23  | `HOLD /RST`  |
             '''
         } // f: status
       ]
@@ -807,11 +811,11 @@
       fields: [
         { bits: "15:8"
           name: "num_cc"
-          desc: "The number that Continuation Code repeats"
+          desc: "The number of Continuation Code repeats."
         } // f: num_cc
         { bits: "7:0"
           name: "cc"
-          desc: "Continuation Code byte"
+          desc: "Continuation Code byte value, typically `0x7F`."
           resval: "0x7F"
         } // f: cc
       ]
@@ -842,9 +846,10 @@
       fields: [
         { bits: "9:0"
           name: "threshold"
-          desc: '''If 0, disable the watermark. If non-zero, when the host
-            access above or equal to the threshold, it reports an interrupt.
-            The value is byte-granularity not SRAM index.
+          desc: '''Threshold value in bytes.
+            If zero, the threshold is disabled. Otherwise, when the host
+            accesses bytes beyond or equal to this threshold in the Read Buffer,
+            a readbuf_watermark interrupt is generated.
             '''
         } // f: threshold
       ]
@@ -853,70 +858,71 @@
       desc: '''Mailbox Base address register.
 
         The mailbox size is fixed. In this version of IP, the size is 1kB.
-        Lower 10 bits of the Mailbox address is tied to 0.
+        The least-significant 10 bits of the Mailbox address are tied to 0.
         '''
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
         { bits: "31:0"
           name: "addr"
-          desc: "Mailbox Address. Lower 10 bits are ignored"
+          desc: "Mailbox Address. The least-significant 10 bits are tied to 0."
         } // f: addr
       ]
     } // R: MAILBOX_ADDR
     { name: "UPLOAD_STATUS"
-      desc: '''Upload module status register.
+      desc: '''Upload Module status register.
         '''
       swaccess: "ro"
       hwaccess: "hwo"
       fields: [
         { bits: "4:0"
           name: "cmdfifo_depth"
-          desc: "Command FIFO Entry"
+          desc: "Number of entries in the Command Upload FIFO."
         } // f: cmdfifo_depth
         { bits: "7"
           name: "cmdfifo_notempty"
-          desc: "Upload Command FIFO Not Empty"
+          desc: "If set, the Command Upload FIFO is not empty."
         } // f: cmdfifo_notempty
         { bits: "12:8"
           name: "addrfifo_depth"
-          desc: "Address FIFO Entry"
+          desc: "Number of entries in the Address Upload FIFO."
         } // f: addrfifo_depth
         { bits: "15"
           name: "addrfifo_notempty"
-          desc: "Upload Address FIFO Not Empty"
+          desc: "If set, the Address Upload FIFO is not empty."
         } // f: addrfifo_notempty
       ]
     } // R: UPLOAD_STATUS
     { name: "UPLOAD_STATUS2"
-      desc: '''Upload module status 2 register.
+      desc: '''Upload Module second status register.
 
-        This register contains payload related status. payload_depth indicates
-        the payload size (from 0 to 256 bytes).
+        This register contains information related to the uploaded command payload.
+        !!UPLOAD_STATUS2.payload_depth indicates the length of the command payload, in bytes.
 
-        payload_start_idx indicates the start of the 256B. This stays 0
-        usually. However, when the SPI host system issues more than 256B of
-        payload in a command, this field may not be 0. For example, if the
-        system issues 258B payload, the payload_depth is 256 (as the IP only
-        holds 256B of payload), the payload_start_idx is 2. SW should read from
-        2 to 255 then 0 and 1.
+        !!UPLOAD_STATUS2.payload_start_idx indicates the start position of this command payload within
+        the Payload Buffer, in bytes. This field is usually 0, unless more than 256 bytes of payload
+        have been issued.
+
+        For example, if 258 bytes of payload are issued, !!UPLOAD_STATUS2.payload_depth will be 256
+        (as the Payload Buffer only has capacity for 256 bytes), but !!UPLOAD_STATUS2.payload_start_idx will be 2.
+        SW should read bytes 2-255 followed by bytes 0-1 to read the intact portion of the payload in the correct order.
         '''
       swaccess: "ro"
       hwaccess: "hwo"
       fields: [
         { bits: "8:0"
           name: "payload_depth"
-          desc: '''Payload buffer depth
+          desc: '''Payload buffer depth.
             '''
         } // f: payload_depth
         { bits: "23:16"
           name: "payload_start_idx"
-          desc: '''Payload Start Index'''
+          desc: '''Payload start index.'''
         } // f: payload_start_idx
       ]
     } // R: UPLOAD_STATUS2
     { name: "UPLOAD_CMDFIFO"
-      desc: '''Command Fifo Read Port.
+      desc: '''Command FIFO Read Port.
         '''
       swaccess: "ro"
       hwaccess: "hrw"
@@ -925,24 +931,25 @@
       fields: [
         { bits: "7:0"
           name: "data"
-          desc: "command opcode"
+          desc: "Uploaded command's opcode."
         }
         { bits: "13"
           name: "busy"
-          desc: "State of BUSY bit at command time"
+          desc: "State of !!FLASH_STATUS.busy bit when the command was received."
         }
         { bits: "14"
           name: "wel"
-          desc: "State of WEL bit at command time"
+          desc: "State of !!FLASH_STATUS.wel bit when the command was received."
         }
         { bits: "15"
           name: "addr4b_mode"
-          desc: "1 if address mode at command time is 4 Bytes, else 3 Bytes"
+          desc: "State of !!ADDR_MODE.addr_4b_en when the command was received."
         }
       ]
     } // R: UPLOAD_CMDFIFO
     { name: "UPLOAD_ADDRFIFO"
-      desc: '''Address Fifo Read Port.
+      desc: '''Address FIFO Read Port.
+
         '''
       swaccess: "ro"
       hwaccess: "hrw"
@@ -958,10 +965,11 @@
     { multireg: {
         cname: "SPI_DEVICE"
         name:  "CMD_FILTER"
-        desc:  '''Command Filter
+        desc:  '''Passthrough mode: Command Filter.
 
-          If a bit in this CSR is 1, then corresponding SPI command w.r.t the
-          bit position among 256 bit is dropped in SPI Passthrough mode.
+          If the bit corresponding to a received command's opcode is set,
+          the command is filtered (CSb is de-asserted) and does not reach the
+          downstream flash device.
           '''
         count: "256"
         swaccess: "rw"
@@ -971,19 +979,19 @@
           { bits: "0"
             name: "filter"
             resval: "0"
-            desc: "If 1, command will be filtered"
+            desc: "If set, this command will be filtered."
           }
         ]
       }
     }
     { name: "ADDR_SWAP_MASK"
-      desc: '''Address Swap Mask register.
+      desc: '''Passthrough mode: Address Swap Mask.
 
         This register is used in the SPI passthrough mode. If any of bits in
         this register is set, the corresponding address bit in the SPI Read
         commands is replaced with the data from !!ADDR_SWAP_DATA.
 
-        If 3B address mode is active, upper 8bit [31:24] is ignored.
+        If the command's address size is 3B, the upper byte (bits [31:24]) are not used.
         '''
       swaccess: "rw"
       hwaccess: "hro"
@@ -991,14 +999,13 @@
         { bits:   "31:0"
           resval: "0",
           name:   "mask"
-          desc: '''When a bit is 1, the SPI read address to the downstream SPI
-            Flash device is swapped to !!ADDR_SWAP_DATA.
-            '''
+          desc:   '''For any bit set in this register, the value of the corresponding bit
+            in !!ADDR_SWAP_DATA is used for that address bit.'''
         }
       ]
     }
     { name: "ADDR_SWAP_DATA"
-      desc: '''The address value for the address swap feature.
+      desc: '''Passthrough mode: Address Swap Data.
         '''
       swaccess: "rw"
       hwaccess: "hro"
@@ -1006,15 +1013,25 @@
         { bits:   "31:0"
           resval: "0"
           name:   "data"
-          desc:   "Desired value to be swapped for the SPI read commands."
+          desc:   '''For any bit set in !!ADDR_SWAP_MASK, the value of the corresponding bit
+            in this register is used for that address bit.'''
         }
       ]
     }
     { name: "PAYLOAD_SWAP_MASK"
-      desc: '''Write Data Swap in the passthrough mode.
+      desc: '''Passthrough mode: Payload Swap Mask.
 
-        PAYLOAD_SWAP_MASK CSR provides the SW to change certain bits in the
-        first 4 bytes of the write payload in the passthrough mode.
+        Passthrough mode payload swapping can set or unset any bits in the first 4 bytes of
+        the payload written to the downstream flash.
+        For any bit set in !!PAYLOAD_SWAP_MASK, the passthrough logic instead uses the value of
+        the corresponding bit in !!PAYLOAD_SWAP_DATA for that payload bit.
+
+        For example, if !!PAYLOAD_SWAP_MASK is set to `0x0000000f` and !!PAYLOAD_SWAP_DATA is set to `0x00000005`,
+        bits 0 and 2 of the first payload byte are set to 1, bits 1 and 3 of the first payload byte are set to 0,
+        and the rest of the payload is unchanged.
+
+        Payload swapping is applied least-significant bit first - bits [7:0] are applied to the first received byte,
+        followed by bits [15:8], and so on.
         '''
       swaccess: "rw"
       hwaccess: "hro"
@@ -1022,20 +1039,25 @@
         { bits:   "31:0"
           resval: "0"
           name:   "mask"
-          desc:   "byte mask"
+          desc:   '''For any bit set in this register, the value of the corresponding bit
+            in !!PAYLOAD_SWAP_DATA is used for that payload bit.'''
         } // f: mask
       ]
     } // R: PAYLOAD_SWAP_MASK
     { name: "PAYLOAD_SWAP_DATA"
-      desc: '''Write Data Swap in the passthrough mode.
+      desc: '''Passthrough mode: Payload Swap Data.
 
-        PAYLOAD_SWAP_DATA combined with PAYLOAD_SWAP_MASK provides the SW to
-        change certain bits in the first 4 bytes of the write payload in the
-        passthrough mode.
+        Passthrough mode payload swapping can set or unset any bits in the first 4 bytes of
+        the payload written to the downstream flash.
+        For any bit set in !!PAYLOAD_SWAP_MASK, the passthrough logic instead uses the value of
+        the corresponding bit in !!PAYLOAD_SWAP_DATA for that payload bit.
 
-        The register should be written in Little-Endian order. [7:0] bits are
-        processed in the first received payload byte. [31:24] bits for the 4th
-        byte.
+        For example, if !!PAYLOAD_SWAP_MASK is set to `0x0000000f` and !!PAYLOAD_SWAP_DATA is set to `0x00000005`,
+        bits 0 and 2 of the first payload byte are set to 1, bits 1 and 3 of the first payload byte are set to 0,
+        and the rest of the payload is unchanged.
+
+        Payload swapping is applied least-significant bit first - bits [7:0] are applied to the first received byte,
+        followed by bits [15:8], and so on.
         '''
       swaccess: "rw"
       hwaccess: "hro"
@@ -1043,15 +1065,21 @@
         { bits:   "31:0"
           resval: "0"
           name:   "data"
-          desc:   "replaced data"
+          desc:   '''For any bit set in !!PAYLOAD_SWAP_MASK, the value of the corresponding bit
+            in this register is used for that payload bit.'''
         } // f: data
       ]
     } // R: PAYLOAD_SWAP_DATA
     { multireg: {
         cname: "SPI_DEVICE"
         name:  "CMD_INFO"
-        desc: '''Command Info register.
+        desc: '''Command Information register.
 
+            For !!CMD_INFO slots assigned to HW functionality, HW ignores the setting of some configurable fields and the
+            behaviour is hard-coded.
+
+            Read SFDP commands (!!CMD_INFO slot 4) are unaffected by the configuration of !!ADDR_MODE.addr_4b_en, and a 3-byte
+            address will always be expected following the command opcode.
           '''
         count: "NumCmdInfo"
         swaccess: "rw"
@@ -1060,97 +1088,108 @@
           { bits:   "7:0"
             resval: "0"
             name:   "opcode"
-            desc: '''Command Opcode
+            desc: '''Command opcode
               '''
-          }
+          } // f: opcode
           { bits:   "9:8"
             resval: "0"
             name:   "addr_mode"
-            desc:   '''Command address mode
-
-              A command can have four modes:
-
-              - 0: Command does not have an address field
-              - 1: CFG.addr_4b_en decides the address size (3B/4B)
-              - 2: Address size is always 3B regardless of CFG.addr_4b_en
-              - 3: Address size is always 4B regardless of CFG.addr_4b_en
-              '''
+            desc:   "The size of the command's address field."
             enum: [
               { value: "0"
                 name:  "AddrDisabled"
-                desc:  "Address field does not exist"
+                desc:  "The command has no address field."
               } // e: AddrDisabled
               { value: "1"
                 name:  "AddrCfg"
-                desc:  "CFG.addr_4b_en determines the address size"
+                desc:  "The size of the command's address field is determined by !!ADDR_MODE.addr_4b_en."
               } // e: AddrCfg
               { value: "2"
                 name:  "Addr3B"
-                desc:  "Address size in the command is always 3B."
+                desc:  "The size of the command's address field is always 3B."
               } // e: Addr3B
               { value: "3"
                 name:  "Addr4B"
-                desc:  "Address size in the command is always 4B."
+                desc:  "The size of the command's address field is always 4B."
               } // e: Addr4B
             ]
           } // f: addr_mode
           { bits:   "10"
             resval: "0"
             name:   "addr_swap_en"
-            desc:   '''This field is used in the passthrough logic.
-              If this field is set to 1, the address in the passthrough command
-              is replaced to the preconfigured value.
+            desc:   '''Passthrough mode: Swap the command's address bytes.
+
+              If set, passthrough logic swaps the bytes of the command's address field,
+              according to the values !!ADDR_SWAP_MASK and !!ADDR_SWAP_DATA.
+
+              This bit is only effective if !!CMD_INFO.addr_mode is not `AddrDisabled`.
               '''
-          }
+          } // f: addr_swap_en
           { bits:   "11"
             name:   "mbyte_en"
-            desc:   '''If 1, the command has a MByte field following the
-              address field. This is set to 1 for DualIO, QuadIO commands.
+            desc:   '''If set, the command has an MByte field following the
+              address field. This should be set for Dual IO and Quad IO commands.
+
+              This field is currently unimplemented.
               '''
-          }
+          } // f: mbyte_en
           { bits:   "14:12"
             resval: "7"
             name:   "dummy_size"
-            desc:   "The number of dummy cycles -1 for the command"
-          }
+            desc:   '''The number of dummy cycles between this command's
+              opcode/address phase and the payload phase, minus one.
+
+              This field has no effect if !!CMD_INFO.dummy_en is unset.
+              '''
+          } // f: dummy_size
           { bits:   "15"
             name:   "dummy_en"
-            desc:   "Set to 1 if the command has a dummy cycle following the address field."
-          }
+            desc:   '''If set, the command has at least one dummy cycle between
+              the opcode/address phase and the payload phase.
+              '''
+          } // f: dummy_en
           { bits:   "19:16"
             name:   "payload_en"
             desc:   '''Payload Enable per SPI lane.
 
-              Set to non-zero if the command has payload at the end of the
-              protocol. This field has four bits. Each bit represents the SPI
-              line. If a command is a Single IO command and returns data to the
-              host system, the data is returned on the MISO line (IO[1]). In
-              this case, SW sets payload_en to 4'b 0010.
+              Represents which SPI lines this command's payload is transmitted over, if any.
+              Each bit corresponds to one of the SPI IO lines.
+
+              For example, if the command is a Single IO command with a payload that is written to
+              the SPI Device IP or downstream flash, this should be set to `0b0001` for the MOSI
+              line (IO[0]). If the payload is read from the SPI Device IP or downstream flash, this
+              should be set to `0b0010` for the MISO line (IO[1]). !!CMD_INFO.payload_dir should
+              also be configured with the appropriate payload direction.
               '''
-          }
+          } // f: payload_en
           { bits: "20"
             name: "payload_dir"
-            desc: '''Set to 1 if the command returns data. If 0, the payload
-              sends to the downstream Flash device.
+            desc: '''The direction of the command's payload phase.
+
+              If set, the payload is from the downstream flash or SPI Device IP to the host, otherwise it is from the host to the downstream flash or SPI Device IP.
+
+              This field has no effect if the command has no payload phase - see also !!CMD_INFO.payload_en.
               '''
             enum: [
               { value: "0"
                 name:  "PayloadIn"
-                desc:  "From host to the downstream flash device"
+                desc:  "From host to the downstream flash device."
               } // e: PayloadIn
               { value: "1"
                 name:  "PayloadOut"
-                desc:  "From the downstream flash device to the host"
+                desc:  "From the downstream flash device to the host."
               } // e: PayloadOut
             ]
           } // f: payload_dir
           { bits: "21"
             name: "payload_swap_en"
-            desc: '''Swap the first byte of the write payload.
+            desc: '''Passthrough mode: Swap the first 4 bytes of the write payload.
 
-              If `payload_swap_en` is set, the passthrough logic swaps the first byte of the write payload with DATA_SWAP CSR.
+              If set, passthrough logic swaps the first 4 bytes of the command's written payload,
+              according to the values of !!PAYLOAD_SWAP_MASK and !!PAYLOAD_SWAP_DATA.
 
-              `payload_swap_en` only works with write data and SingleIO mode. `payload_en` must be 4'b 0001 and `paylod_dir` to be PayloadIn.
+              Payload swapping only works with write payloads and in Single IO mode -
+              !!CMD_INFO.payload_en must be `0b0001` and !!CMD_INFO.payload_dir must be `PayloadIn`.
               '''
           } // f: payload_swap_en
           { bits: "23:22"
@@ -1197,29 +1236,44 @@
           } // f: payload_pipeline_en
           { bits: "24"
             name: "upload"
-            desc: '''Set to 1 to upload the command.
+            desc: '''If set, the command parser activates the upload submodule when this command is received
+              and the command is uploaded.
 
-              If upload field in the command info entry is set, the cmdparse
-              activates the upload submodule when the opcode is received.
-              `addr_en`, `addr_4B_affected`, and `addr_4b_forced` (TBD) affect
-              the upload functionality. The three address related configs
-              defines the command address field size.
+              The command's opcode (!!CMD_INFO.opcode), as well as the state of the !!FLASH_STATUS.busy,
+              !!FLASH_STATUS.wel, and !!ADDR_MODE.addr_4b_en bits at the time the command is received,
+              are stored in the Command Upload FIFO, readable from !!UPLOAD_CMDFIFO.
 
-              The logic assumes the following SPI input stream as payload,
-              which max size is 256B. If the command exceeds the maximum
-              payload size 256B, the logic wraps the payload and overwrites.
+              if !!CMD_INFO.addr_mode is not `AddrDisabled`, the command's address field is stored in the
+              Address Upload FIFO, readable from !!UPLOAD_ADDRFIFO.
+
+              The behaviour of !!CMD_INFO.upload with !!CMD_INFO.addr_mode == `AddrDisabled` is not defined.
+
+              The command's payload is written to the Payload Buffer. See !!UPLOAD_STATUS and !!UPLOAD_STATUS2.
+
+              The behaviour of !!CMD_INFO.upload with !!CMD_INFO.payload_dir is not defined.
+
+              In Passthrough mode, uploaded commands are still delivered to the downstream flash device unless
+              the bit corresponding to the opcode is set in !!CMD_FILTER.
+
+              The behaviour of !!CMD_INFO.upload with !!CMD_INFO.addr_swap_en and !!CMD_INFO.payload_swap_en
+              is not defined.
+
+              In Passthrough mode, address and payload swapping (as controlled by !!CMD_INFO.addr_swap_en and
+              !!CMD_INFO.payload_swap_en) are applied only to the data passed-through to the downstream flash,
+              and not the uploaded address and payload. SW may manually apply address and payload swapping to see
+              the values sent downstream using the same swap mask/data registers.
               '''
           } // f: upload
           { bits: "25"
             name: "busy"
-            desc: '''Set to 1 to set the BUSY bit in the FLASH_STATUS when the
-              command is received.  This bit is active only when `upload` bit is
-              set.
+            desc: '''If set, sets the !!FLASH_STATUS.busy bit when the command is received.
+              This bit is only effective if the !!CMD_INFO.upload bit is set.
               '''
           } // f: busy
           { bits: "31"
             name: "valid"
-            desc: '''Set to 1 if the config in the register is valid
+            desc: '''If set, the command is active and can be matched on command receive.
+              Otherwise, this command information entry is ignored.
             '''
           } // f: valid
         ]
@@ -1228,50 +1282,63 @@
     { name: "CMD_INFO_EN4B"
       swaccess: "rw"
       hwaccess: "hro"
-      desc: '''Opcode for EN4B.
+      desc: '''EN4B command information register.
 
-        If the register is active, it affects in flash / passthrough modes.
+        This command is handled by HW in Flash and Passthrough modes.
+
+        This command sets the !!ADDR_MODE.addr_4b_en bit.
         '''
       fields:  [
         { bits: "31"
           name: "valid"
-          desc: "If 1, Opcode affects"
+          desc: '''If set, the command is active and can be matched on command receive.
+            Otherwise, this command information entry is ignored.'''
         } // f: valid
         { bits: "7:0"
           name: "opcode"
-          desc: "EN4B opcode"
+          desc: "Vendor-specific opcode for EN4B, typically `0xb7`."
         } // f: opcode
       ]
     } // R: CMD_INFO_EN4B
     { name: "CMD_INFO_EX4B"
       swaccess: "rw"
       hwaccess: "hro"
-      desc: '''Opcode for EX4B
+      desc: '''EX4B command information register.
+
+        This command is handled by HW in Flash and Passthrough modes.
+
+        This command clears the !!ADDR_MODE.addr_4b_en bit.
         '''
       fields:  [
         { bits: "31"
           name: "valid"
-          desc: "If 1, Opcode affects"
+          desc: '''If set, the command is active and can be matched on command receive.
+            Otherwise, this command information entry is ignored.'''
         } // f: valid
         { bits: "7:0"
           name: "opcode"
-          desc: "EX4B opcode"
+          desc: "Vendor-specific opcode for EX4B, typically `0xe9`."
         } // f: opcode
       ]
     } // R: CMD_INFO_EX4B
     { name: "CMD_INFO_WREN"
       swaccess: "rw"
       hwaccess: "hro"
-      desc: '''Opcode for Write Enable (WREN)
+      desc: '''Write Enable (WREN) command information register.
+
+        This command is handled by HW in Flash and Passthrough modes.
+
+        This command sets the !!FLASH_STATUS.wel bit.
         '''
       fields: [
         { bits: "31"
           name: "valid"
-          desc: "If 1, opcode affects"
+          desc: '''If set, the command is active and can be matched on command receive.
+            Otherwise, this command information entry is ignored.'''
         } // f: valid
         { bits: "7:0"
           name: "opcode"
-          desc: "WREN opcode"
+          desc: "Vendor-specific opcode for WREN, typically `0x06`."
           // Leave default value 0 to be consistent
         } // f: opcode
       ]
@@ -1279,16 +1346,21 @@
     { name: "CMD_INFO_WRDI"
       swaccess: "rw"
       hwaccess: "hro"
-      desc: '''Opcode for Write Disable (WRDI)
+      desc: '''Write Disable (WRDI) command information register.
+
+        This command is handled by HW in Flash and Passthrough modes.
+
+        This command clears the !!FLASH_STATUS.wel bit.
         '''
       fields: [
         { bits: "31"
           name: "valid"
-          desc: "If 1, opcode affects"
+          desc: '''If set, the command is active and can be matched on command receive.
+            Otherwise, this command information entry is ignored.'''
         } // f: valid
         { bits: "7:0"
           name: "opcode"
-          desc: "WRDI opcode"
+          desc: "Vendor-specific opcode for WRDI, typically `0x04`."
           // Leave default value 0 to be consistent
         } // f: opcode
       ]
@@ -1307,47 +1379,49 @@
       fields: [
         { bits: "7:0"
           name: "rev"
-          desc: "Revision of the TPM submodule"
+          desc: "Revision of the TPM submodule."
           resval: "0"
         } // f: rev
         { bits: "8"
           name: "locality"
-          desc: '''If 1, the TPM submodule supports 5 Locality.
-            If 0, only one Locality is provided
-            '''
+          desc: '''If set, the TPM submodule supports 5 Localities, otherwise only one Locality is supported.'''
           resval: "1"
         } // f: locality
         { bits: "18:16"
           name: "max_wr_size"
           desc: '''The maximum write size in bytes the TPM submodule supports.
-            The value is the exponent of the 2.
+            The maximum write size is 2 to the power of the value in this field (between 4 and 64 byes).
 
-            - 3'b 010: Support up to 4B
-            - 3'b 011: Support up to 8B
-            - 3'b 100: Support up to 16B
-            - 3'b 101: Support up to 32B
-            - 3'b 110: Support up to 64B
+            |   Value   | Maximum write size |
+            |:---------:|:-------------------|
+            |  `0b010`  |         4B         |
+            |  `0b011`  |         8B         |
+            |  `0b100`  |         16B        |
+            |  `0b101`  |         32B        |
+            |  `0b110`  |         64B        |
 
             All other values are reserved.
 
-            It is not recommended for SW to advertise TPM supporting more than `max_wr_size` to the South Bridge.
+            It is recommended that SW does not advertise the TPM as supporting writes larger than `max_wr_size` to the Southbridge.
             '''
           resval: "6"
         } // f: max_wr_size
         { bits: "22:20"
           name: "max_rd_size"
           desc: '''The maximum read size in bytes the TPM submodule supports.
-            The value is the exponent of the 2.
+            The maximum read size is 2 to the power of the value in this field (between 4 and 64 byes).
 
-            - 3'b 010: Support up to 4B
-            - 3'b 011: Support up to 8B
-            - 3'b 100: Support up to 16B
-            - 3'b 101: Support up to 32B
-            - 3'b 110: Support up to 64B
+            |   Value   | Maximum read size |
+            |:---------:|:------------------|
+            |  `0b010`  |        4B         |
+            |  `0b011`  |        8B         |
+            |  `0b100`  |        16B        |
+            |  `0b101`  |        32B        |
+            |  `0b110`  |        64B        |
 
             All other values are reserved.
 
-            It is not recommended for SW to advertise TPM supporting more than `max_rd_size` to the South Bridge.
+            It is recommended that SW does not advertise the TPM as supporting reads larger than `max_rd_size` to the Southbridge.
             '''
           resval: "6"
         } // f: max_rd_size
@@ -1361,17 +1435,17 @@
       fields: [
         { bits: "0"
           name: "en"
-          desc: "If 1, TPM submodule accepts the transactions over SPI"
+          desc: "If set, the TPM submodule accepts the transactions over SPI."
           tags: [
-          // Enabling TPM could cause an assertion error if CSB isn't disabled properly in chip-level
+          // Enabling TPM could cause an assertion error if CSb isn't disabled properly in chip-level
           "excl:CsrNonInitTests:CsrExclWrite"]
         } // f: en
         { bits: "1"
           name: "tpm_mode"
-          desc: '''Configure the TPM mode. 1 for CRB, 0 for FIFO.
+          desc: '''Configure the TPM mode. If set, the TPM is in CRB mode, otherwise it is FIFO mode.
 
-            If the SW set this field to 1, the HW logic always pushes the
-            command/addr and write data to buffers. The logic does not compare
+            If this field is set by SW, the HW logic always pushes the
+            command, address, and write data to buffers. The logic does not compare
             the incoming address to the list of managed-by-HW register
             addresses.
 
@@ -1381,32 +1455,31 @@
         } // f: tpm_mode
         { bits: "2"
           name: "hw_reg_dis"
-          desc: '''If 0, TPM submodule directly returns the return-by-HW registers for the read requests.
+          desc: '''If unset, TPM submodule directly returns the return-by-HW registers for read requests.
 
-            If 1, TPM submodule uploads the TPM command regardless of the address, and the SW may return the value through the read FIFO.
+            If set, TPM submodule uploads the TPM command regardless of the address, and the SW may return the value through the read FIFO.
             '''
         } // f: hw_reg_dis
         { bits: "3"
           name: "tpm_reg_chk_dis"
-          desc: '''If 1, the logic does not compare the upper 8 bit of the
-            received address with the TpmAddr constant, D4h.
+          desc: '''If set, the logic does not compare the upper 8 bits of the
+            received address with the `TpmAddr` constant, `0xD4`.
 
-            If this field is 0, the HW uploads the command, address, and write
-            payload to the buffers in case of address that is not 0xD4_XXXX.
+            If unset, the HW uploads the command, address, and write
+            payload to the buffers in case of address that is not `0xD4_XXXX`.
             '''
         } // f: tpm_reg_chk_dis
         { bits: "4"
           name: "invalid_locality"
-          desc: '''If 1, TPM submodule returns the invalid data (0xFF) for the
+          desc: '''If set, TPM submodule returns the invalid data (`0xFF`) for the
             out of the max Locality request.
-            If it is a write request, HW still uploads the command and address.
-            SW needs to process the incoming invalid command.
+            If the request is a write request, The HW will still upload the command and address. In that case, SW still needs to precess the incoming invalid command.
 
-            If 0, TPM submodule uploads the TPM command and address. The SW may
-            write 0xFF to the read FIFO.
+            If unset, TPM submodule uploads the TPM command and address. The SW may
+            write `0xFF` to the read FIFO.
 
             Note: The TPM submodule uploads the TPM commands that do not fall
-            into the FIFO registers (0xD4_XXXX) regardless of
+            into the FIFO registers (`0xD4_XXXX`) regardless of
             `invalid_locality` bit.
             '''
         } // f: invalid_locality
@@ -1415,14 +1488,14 @@
     { name: "TPM_STATUS"
       desc: '''TPM submodule state register.
 
-        The TPM_STATUS CSR provides the current TPM status, mostly the buffer and FIFO status.
+        The TPM_STATUS CSR provides the status of the read and write FIFOs, as well as the Command and Address buffer.
         '''
       swaccess: "ro"
       hwaccess: "hrw"
       hwext: true
       hwqe: true
       tags: [
-        // SW is not able to read back the TPM_STATUS register right after write.
+        // SW is not able to read back the !!TPM_STATUS register right after write.
         // The read back value is the committed value, which needs at least some SPI cycles.
         // So excluded from CSR automation test.
         "excl:CsrNonInitTests:CsrExclWrite"
@@ -1431,26 +1504,26 @@
         { bits: "0"
           name: "cmdaddr_notempty"
           hwaccess: "hwo"
-          desc: "If 1, the TPM_CMD_ADDR has a valid data. This status is reported via the interrupt also."
+          desc: "If set, !!TPM_CMD_ADDR contains valid data. This status is reported via the interrupt also."
         } // f: cmdaddr_notempty
         { bits: "1"
           name: "wrfifo_pending"
           swaccess: "rw0c"
-          desc: '''If 1, the Write FIFO is reserved for software processing.
+          desc: '''If set, the Write FIFO is reserved for software processing.
 
-            This bit becomes 1 when a complete write command is received.
-            While it remains 1, subsequent write commands will block at the wait state until it is cleared.
+            This bit becomes set when a complete write command is received.
+            While it remains set, subsequent write commands will block at the wait state until it is cleared.
             Write 0 to release the Write FIFO back to the TPM module.
             '''
         } // f: cmdaddr_notempty
         { bits: "2"
           name: "rdfifo_aborted"
           hwaccess: "hwo"
-          desc: '''If 1, the last Read FIFO command was aborted.
+          desc: '''If set, the last Read FIFO command was aborted.
 
-            This bit becomes 1 when a Read FIFO command became active, but the transaction did not complete.
-            An aborted transaction occurs when the host de-asserts CSB without clocking all the requested data.
-            This bit remains 1 until reset, or it will clear automatically after the next valid command is read from TPM_CMD_ADDR.
+            This bit becomes set when a Read FIFO command became active, but the transaction did not complete.
+            An aborted transaction occurs when the host de-asserts CSb without clocking all the requested data.
+            This bit remains set until reset, or it will clear automatically after the next valid command is read from !!TPM_CMD_ADDR.
             '''
         } // f: cmdaddr_notempty
       ]
@@ -1488,7 +1561,7 @@
       ]
     } // R: TPM_STS
     { name: "TPM_INTF_CAPABILITY"
-      desc: "TPM_INTF_CAPABILITY"
+      desc: "TPM_INTF_CAPABILITY register."
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
@@ -1499,7 +1572,7 @@
       ]
     } // R: TPM_INTF_CAPABILITY
     { name: "TPM_INT_ENABLE"
-      desc: "TPM_INT_ENABLE"
+      desc: "TPM_INT_ENABLE register."
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
@@ -1510,7 +1583,7 @@
       ]
     } // R: TPM_INT_ENABLE
     { name: "TPM_INT_VECTOR"
-      desc: "TPM_INT_VECTOR"
+      desc: "TPM_INT_VECTOR register."
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
@@ -1521,7 +1594,7 @@
       ]
     } // R: TPM_INT_VECTOR
     { name: "TPM_INT_STATUS"
-      desc: "TPM_INT_STATUS"
+      desc: "TPM_INT_STATUS register."
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
@@ -1532,7 +1605,7 @@
       ]
     } // R: TPM_INT_STATUS
     { name: "TPM_DID_VID"
-      desc: "TPM_DID/ TPM_VID register"
+      desc: "TPM_DID/ TPM_VID register."
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
@@ -1547,7 +1620,7 @@
       ]
     } // R: TPM_DID_VID
     { name: "TPM_RID"
-      desc: "TPM_RID"
+      desc: "TPM_RID register."
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
@@ -1558,7 +1631,7 @@
       ]
     } // R: TPM_RID
     { name: "TPM_CMD_ADDR"
-      desc: '''TPM Command and Address buffer
+      desc: '''TPM Command and Address buffer.
 
         The SW may get the received TPM command and address by reading this CSR.
         '''
@@ -1570,11 +1643,11 @@
       fields: [
         { bits: "23:0"
           name: "addr"
-          desc: "received address"
+          desc: "Received address."
         } // f: addr
         { bits: "31:24"
           name: "cmd"
-          desc: "received command"
+          desc: "Received command."
         } // f: cmd
       ]
     } // R: TPM_CMD_ADDR
@@ -1590,7 +1663,7 @@
       fields: [
         { bits: "TpmRdFifoWidth-1:0"
           name: "value"
-          desc: "write port of the read FIFO"
+          desc: "Write port of the read FIFO."
         }
       ]
       tags: [// Updating FIFO randomly can result in tpm_status value change
@@ -1607,11 +1680,12 @@
         swaccess: "wo",
         desc: '''
           SPI internal egress buffer.
-
-          The lower 2 kB is for Read content emulating eFlash.
-          The next 1 kB is for the Mailbox buffer.
-          Then the next 256 B is for the SFDP buffer.
-          Finally, the buffer spaces end with a 64 B TPM Read FIFO.
+          | Offset (Words) | Length (Words) | Purpose                                    |
+          |:--------------:|:--------------:|:-------------------------------------------|
+          |        0       |       512      | Flash mode Read buffer for emulated flash. |
+          |       512      |       256      | Flash mode Mailbox.                        |
+          |       768      |        64      | Flash mode SFDP configuration buffer.      |
+          |       832      |        16      | TPM Read FIFO.                             |
           '''
       },
     },
@@ -1624,13 +1698,12 @@
         swaccess: "ro",
         desc: '''
           SPI internal ingress buffer.
-
-          The layout is as follows (starting from offset 0):
-              - 256 B SFDP buffer
-              - 32 B CmdFIFO
-              - 32 B AddrFIFO
-              - 256 B payload FIFO
-              - 64 B TPM Write FIFO
+          | Offset (Words) | Length (Words) | Purpose                           |
+          |:--------------:|:--------------:|:----------------------------------|
+          |        0       |        64      | Flash mode Payload FIFO.          |
+          |        64      |        16      | Flash mode uploaded command FIFO. |
+          |        80      |        16      | Flash mode uploaded address FIFO. |
+          |        96      |        16      | TPM Write FIFO.                   |
           '''
       },
     },
