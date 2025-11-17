@@ -8,7 +8,7 @@ description: "Req/Grant/RValid to TL-UL adapter (host)"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:all
+      - lowrisc:prim:assert
       - lowrisc:tlul:common
       - lowrisc:tlul:trans_intg
       - lowrisc:virtual_constants:top_pkg
