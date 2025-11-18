@@ -457,7 +457,7 @@ module tb;
   end
 
   // Instantiate the memory backdoor util instances.
-  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_generic
+  if (prim_pkg::PrimTechName == "Generic") begin : gen_generic
     initial begin
       // Unfortunately xcelium does not understand typed constructors so we must assign to local
       // variables first.
