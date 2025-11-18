@@ -11,10 +11,10 @@ use std::sync::LazyLock;
 use anyhow::{Result, anyhow, bail};
 use regex::Regex;
 
+use opentitanlib::transport::common::usb::UsbBackend;
 use opentitanlib::transport::{
     Capabilities, Capability, ProgressIndicator, Transport, TransportError, UpdateFirmware,
 };
-use opentitanlib::util::usb::UsbBackend;
 
 const VID_ST_MICROELECTRONICS: u16 = 0x0483;
 const PID_DFU_BOOTLOADER: u16 = 0xdf11;

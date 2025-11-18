@@ -10,8 +10,8 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::transport::common::usb::UsbHubOp;
 use opentitanlib::uart::console::UartConsole;
-use opentitanlib::util::usb::{UsbHub, UsbHubOp};
 
 use usb::UsbOpts;
 
