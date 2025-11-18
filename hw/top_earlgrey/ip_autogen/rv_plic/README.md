@@ -21,6 +21,9 @@ The RV_PLIC module is designed to manage various interrupt sources from the
 peripherals. It receives interrupt events as either edge or level of the
 incoming interrupt signals (``intr_src_i``) and can notify multiple targets.
 
+Note that the lowest bit of ``intr_src_i`` is ignored because it corresponds
+interrupt ID 0 which is reserved to mean "no interrupt".
+
 ## Compatibility
 
 The RV_PLIC is compatible with any RISC-V core implementing the RISC-V privilege specification.

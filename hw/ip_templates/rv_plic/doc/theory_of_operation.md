@@ -14,8 +14,8 @@
 
 Each interrupt source has a unique ID assigned based upon its bit position
 within the input `intr_src_i`. ID ranges from 0 to N, the number of interrupt
-sources. ID 0 is reserved and represents no interrupt. The bit 0 of
-`intr_src_i` shall be tied to 0 from the outside of RV_PLIC. The
+sources. ID 0 is reserved and represents no interrupt. Bit 0 of
+`intr_src_i` is ignored by RV_PLIC.
 `intr_src_i[i]` bit has an ID of `i`. This ID is used when targets "claim" the
 interrupt and to "complete" the interrupt event.
 

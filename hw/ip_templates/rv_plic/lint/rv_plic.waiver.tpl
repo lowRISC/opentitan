@@ -20,3 +20,6 @@ waive -rules INTEGER -location {${module_instance_name}_target.sv} -regexp {'i' 
 
 waive -rules TWOS_COMP -location {${module_instance_name}_target.sv} -regexp {Explicit two's complement with terms} ${"\\"}
       -comment "This is permissible in this context"
+
+waive -rules INPUT_NOT_READ -location {${module_instance_name}.sv} -regexp {Input port 'intr_src_i\[0\]' is not read from.*} \
+      -comment "This bit is reserved for 'no interrupt'. Ideally it would be removed entirely."

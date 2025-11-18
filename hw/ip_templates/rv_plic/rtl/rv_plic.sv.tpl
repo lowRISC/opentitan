@@ -47,7 +47,9 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   output top_racl_pkg::racl_error_log_t   racl_error_o,
 % endif
 
-  // Interrupt Sources
+  // Interrupt Sources. Note that the lowest bit is ignored because it
+  // is reserved for "no interrupt". Because the lowest bit is ignored,
+  // only NumSrc-1 interrupts are usable.
   input  [NumSrc-1:0] intr_src_i,
 
   // Alerts
@@ -168,7 +170,8 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   ) u_prim_flop_2sync (
     .clk_i,
     .rst_ni,
-    .d_i(intr_src_i),
+    // Replace the lowest bit with 0 since it means "no interrupt".
+    .d_i({intr_src_i[$high(intr_src_i):1], 1'b0}),
     .q_o(intr_src_synced)
   );
 
@@ -282,9 +285,6 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   for (genvar k = 0; k < NumTarget; k++) begin : gen_irq_id_known
     `ASSERT_KNOWN(IrqIdKnownO_A, irq_id_o[k])
   end
-
-  // Assume
-  `ASSUME(Irq0Tied_A, intr_src_i[0] == 1'b0)
 
   // This assertion should be provable in FPV because we don't have a block-level DV environment. It
   // is trying to say that any integrity error detected inside the register block (u_reg) will cause
