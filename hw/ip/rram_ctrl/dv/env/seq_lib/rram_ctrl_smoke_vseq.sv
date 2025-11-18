@@ -16,5 +16,13 @@ function rram_ctrl_smoke_vseq::new(string name="");
 endfunction : new
 
 task rram_ctrl_smoke_vseq::body();
-  `uvm_error(`gfn, "FIXME")
+ // TODO temporary just to check RW to a register
+  uvm_reg_data_t data;
+  `uvm_info(`gfn, "Test to write to a register", UVM_LOW)
+
+  csr_rd(ral.scratch, data);
+  `uvm_info(`gfn, $sformatf("Read data: 0x%0h", data), UVM_LOW)
+  csr_wr(ral.scratch, 32'hDEADBEEF);
+  csr_rd(ral.scratch, data);
+  `uvm_info(`gfn, $sformatf("Read data: 0x%0h", data), UVM_LOW)
 endtask : body

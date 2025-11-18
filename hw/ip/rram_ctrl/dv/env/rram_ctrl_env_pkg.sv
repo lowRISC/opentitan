@@ -41,6 +41,16 @@ package rram_ctrl_env_pkg;
     DataWrite = 3
   } tl_phase_e;
 
+  typedef enum int {
+    WrEmpty         = 0,
+    WrLvl           = 1,
+    RdFull          = 2,
+    RdLvl           = 3,
+    OpDone          = 4,
+    CorrErr         = 5,
+    NumRramCtrlIntr = 6
+  } rram_ctrl_intr_e;
+
   // Functions
 
   // Package sources

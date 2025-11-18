@@ -34,72 +34,72 @@ module tb;
 
   // DUT
   rram_ctrl #(
-    .WrFifoDepth                (WrFifoDepth      ),
-    .RdFifoDepth                (RdFifoDepth      )
+    .WrFifoDepth                (WrFifoDepth        ),
+    .RdFifoDepth                (RdFifoDepth        )
   ) dut (
-    .clk_i                      (clk              ),
-    .rst_ni                     (rst_n            ),
-    .clk_otp_i                  (clk              ),
-    .rst_otp_ni                 (rst_n            ),
+    .clk_i                      (clk                ),
+    .rst_ni                     (rst_n              ),
+    .clk_otp_i                  (clk                ),
+    .rst_otp_ni                 (rst_n              ),
 
     // Various TLUL interfaces
-    .core_tl_i                  (tl_core_if.h2d   ),
-    .core_tl_o                  (tl_core_if.d2h   ),
-    .prim_tl_i                  (tl_prim_if.h2d   ),
-    .prim_tl_o                  (tl_prim_if.d2h   ),
-    .host_tl_i                  (tl_host_if.h2d   ),
-    .host_tl_o                  (tl_host_if.d2h   ),
+    .core_tl_i                  (tl_core_if.h2d     ),
+    .core_tl_o                  (tl_core_if.d2h     ),
+    .prim_tl_i                  ('0                 ),  // TODO tl_prim_if.h2d
+    .prim_tl_o                  (tl_prim_if.d2h     ),
+    .host_tl_i                  ('0                 ),  // TODO tl_host_if.h2d
+    .host_tl_o                  (tl_host_if.d2h     ),
 
     // OTP interface
-    .otp_i                      ('0               ),
-    .otp_o                      (                 ),
+    .otp_i                      ('0                 ),
+    .otp_o                      (                   ),
 
     // Various life cycle decode signals
-    .lc_creator_seed_sw_rw_en_i (lc_ctrl_pkg::On  ),
-    .lc_owner_seed_sw_rw_en_i   (lc_ctrl_pkg::On  ),
-    .lc_iso_part_sw_rd_en_i     (lc_ctrl_pkg::On  ),
-    .lc_iso_part_sw_wr_en_i     (lc_ctrl_pkg::On  ),
-    .lc_seed_hw_rd_en_i         (lc_ctrl_pkg::On  ),
-    .lc_nvm_debug_en_i          (lc_ctrl_pkg::On  ),
-    .lc_escalate_en_i           (lc_ctrl_pkg::On  ),
+    .lc_creator_seed_sw_rw_en_i (lc_ctrl_pkg::On    ),
+    .lc_owner_seed_sw_rw_en_i   (lc_ctrl_pkg::On    ),
+    .lc_iso_part_sw_rd_en_i     (lc_ctrl_pkg::On    ),
+    .lc_iso_part_sw_wr_en_i     (lc_ctrl_pkg::On    ),
+    .lc_seed_hw_rd_en_i         (lc_ctrl_pkg::On    ),
+    .lc_nvm_debug_en_i          (lc_ctrl_pkg::On    ),
+    .lc_escalate_en_i           (lc_ctrl_pkg::On    ),
 
     // Life cycle RMA handling
-    .rma_req_i                  (lc_ctrl_pkg::Off ),
-    .rma_seed_i                 ('0               ),
-    .rma_ack_o                  (                 ),
+    .rma_req_i                  (lc_ctrl_pkg::Off   ),
+    .rma_seed_i                 ('0                 ),
+    .rma_ack_o                  (                   ),
 
     // Power manager indication
-    .pwrmgr_o                   (                 ),
-    .keymgr_o                   (                 ),
+    .pwrmgr_o                   (                   ),
+    .keymgr_o                   (                   ),
 
     // rram prim signals
-    .rram_test_analog_io        (rram_test_analog ),
+    .rram_test_analog_io        (rram_test_analog   ),
 
     // test
     .scanmode_i                 (prim_mubi_pkg::MuBi4False),
-    .scan_rst_ni                ('0               ),
-    .scan_en_i                  ('0               ),
+    .scan_rst_ni                ('0                 ),
+    .scan_en_i                  ('0                 ),
 
     // JTAG
-    .cio_tck_i                  ('0               ),
-    .cio_tms_i                  ('0               ),
-    .cio_tdi_i                  ('0               ),
-    .cio_tdo_en_o               (                 ),
-    .cio_tdo_o                  (                 ),
+    .cio_tck_i                  ('0                 ),
+    .cio_tms_i                  ('0                 ),
+    .cio_tdi_i                  ('0                 ),
+    .cio_tdo_en_o               (                   ),
+    .cio_tdo_o                  (                   ),
 
     // Alerts and interrupts
-    .intr_wr_empty_o            (                 ),
-    .intr_wr_lvl_o              (                 ),
-    .intr_rd_full_o             (                 ),
-    .intr_rd_lvl_o              (                 ),
-    .intr_op_done_o             (                 ),
-    .intr_corr_err_o            (                 ),
-    .alert_rx_i                 (alert_rx         ),
-    .alert_tx_o                 (alert_tx         ),
+    .intr_wr_empty_o            (interrupts[WrEmpty]),
+    .intr_wr_lvl_o              (interrupts[WrLvl]  ),
+    .intr_rd_full_o             (interrupts[RdFull] ),
+    .intr_rd_lvl_o              (interrupts[RdLvl]  ),
+    .intr_op_done_o             (interrupts[OpDone] ),
+    .intr_corr_err_o            (interrupts[CorrErr]),
+    .alert_rx_i                 (alert_rx           ),
+    .alert_tx_o                 (alert_tx           ),
 
     // Observability
-    .obs_ctrl_i                 ('0               ),
-    .rram_obs_o                 (                 )
+    .obs_ctrl_i                 ('0                 ),
+    .rram_obs_o                 (                   )
   );
 
   // TODO: connect to something meaningful
@@ -108,6 +108,10 @@ module tb;
   initial begin
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(
+      null, "*.env", "clk_rst_vif_rram_ctrl_host_reg_block", clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(
+      null, "*.env", "clk_rst_vif_rram_ctrl_prim_reg_block", clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_core*", "vif", tl_core_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_host*", "vif", tl_host_if);

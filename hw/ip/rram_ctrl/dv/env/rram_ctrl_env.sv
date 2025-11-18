@@ -10,9 +10,6 @@ class rram_ctrl_env extends cip_base_env #(
   );
   `uvm_component_utils(rram_ctrl_env)
 
-  tl_agent tl_host_agt;
-  tl_agent tl_prim_agt;
-
   // Standard SV/UVM methods
   extern function new(string name="", uvm_component parent=null);
   extern function void build_phase(uvm_phase phase);

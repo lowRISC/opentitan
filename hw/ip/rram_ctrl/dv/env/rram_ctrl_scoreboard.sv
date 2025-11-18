@@ -110,23 +110,222 @@ task rram_ctrl_scoreboard::process_tl_host_access(
     void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
   end
 
+  do_read_check = 0;  // TODO disable read check for now, this line should be removed later
+
   // Process the CRS req:
   //  - for write, update local variable and fifo at address phase
   //  - for read, update prediction at address phase and compare at data phase
   case (csr.get_name())
     // Add individual case item for each csr
     "intr_state": begin
-      // FIXME TODO MVy
-      do_read_check = 1'b0;
+      // FIXME
     end
     "intr_enable": begin
-      // FIXME TODO MVy
+      // FIXME
     end
     "intr_test": begin
-      // FIXME TODO MVy
+      // FIXME
     end
-    "debug_policy_relocked": begin
-      // FIXME TODO
+    "alert_test": begin
+      // FIXME
+    end
+    "dis": begin
+      // FIXME
+    end
+    "exec": begin
+      // FIXME
+    end
+    "init": begin
+      // FIXME
+    end
+    "ctrl_regwen": begin
+      // FIXME
+    end
+    "control": begin
+      // FIXME
+    end
+    "addr": begin
+      // FIXME
+    end
+    "write_abort": begin
+      // FIXME
+    end
+    "region_cfg_regwen": begin
+      // FIXME
+    end
+    "region_cfg_regwen": begin
+      // FIXME
+    end
+    "region_cfg_regwen": begin
+      // FIXME
+    end
+    "region_cfg_regwen": begin
+      // FIXME
+    end
+    "region_cfg_regwen": begin
+      // FIXME
+    end
+    "region_cfg_regwen": begin
+      // FIXME
+    end
+    "region_cfg_regwen": begin
+      // FIXME
+    end
+    "region_cfg_regwen": begin
+      // FIXME
+    end
+    "mp_region_cfg": begin
+      // FIXME
+    end
+    "mp_region_cfg": begin
+      // FIXME
+    end
+    "mp_region_cfg": begin
+      // FIXME
+    end
+    "mp_region_cfg": begin
+      // FIXME
+    end
+    "mp_region_cfg": begin
+      // FIXME
+    end
+    "mp_region_cfg": begin
+      // FIXME
+    end
+    "mp_region_cfg": begin
+      // FIXME
+    end
+    "mp_region_cfg": begin
+      // FIXME
+    end
+    "mp_region": begin
+      // FIXME
+    end
+    "mp_region": begin
+      // FIXME
+    end
+    "mp_region": begin
+      // FIXME
+    end
+    "mp_region": begin
+      // FIXME
+    end
+    "mp_region": begin
+      // FIXME
+    end
+    "mp_region": begin
+      // FIXME
+    end
+    "mp_region": begin
+      // FIXME
+    end
+    "mp_region": begin
+      // FIXME
+    end
+    "default_region": begin
+      // FIXME
+    end
+    "info_regwen": begin
+      // FIXME
+    end
+    "info_regwen": begin
+      // FIXME
+    end
+    "info_regwen": begin
+      // FIXME
+    end
+    "info_regwen": begin
+      // FIXME
+    end
+    "info_regwen": begin
+      // FIXME
+    end
+    "info_regwen": begin
+      // FIXME
+    end
+    "info_regwen": begin
+      // FIXME
+    end
+    "info_regwen": begin
+      // FIXME
+    end
+    "info_page_cfg": begin
+      // FIXME
+    end
+    "info_page_cfg": begin
+      // FIXME
+    end
+    "info_page_cfg": begin
+      // FIXME
+    end
+    "info_page_cfg": begin
+      // FIXME
+    end
+    "info_page_cfg": begin
+      // FIXME
+    end
+    "info_page_cfg": begin
+      // FIXME
+    end
+    "info_page_cfg": begin
+      // FIXME
+    end
+    "info_page_cfg": begin
+      // FIXME
+    end
+    "hw_info_cfg_override": begin
+      // FIXME
+    end
+    "op_status": begin
+      // FIXME
+    end
+    "status": begin
+      // FIXME
+    end
+    "debug_state": begin
+      // FIXME
+    end
+    "err_code": begin
+      // FIXME
+    end
+    "std_fault_status": begin
+      // FIXME
+    end
+    "fault_status": begin
+      // FIXME
+    end
+    "err_addr": begin
+      // FIXME
+    end
+    "ecc_single_err_cnt": begin
+      // FIXME
+    end
+    "ecc_single_err_addr": begin
+      // FIXME
+    end
+    "phy_alert_cfg": begin
+      // FIXME
+    end
+    "phy_status": begin
+      // FIXME
+    end
+    "scratch": begin
+      // FIXME
+    end
+    "fifo_lvl": begin
+      // FIXME
+    end
+    "fifo_clr": begin
+      // FIXME
+    end
+    "curr_fifo_lvl": begin
+      // FIXME
+    end
+    "wr_fifo": begin
+      // FIXME
+    end
+    "rd_fifo": begin
+      // FIXME
     end
     default: begin
       `uvm_fatal(`gfn, $sformatf("invalid CSR: %0s", csr.get_full_name()))
