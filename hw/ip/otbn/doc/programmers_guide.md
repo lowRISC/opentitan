@@ -62,9 +62,9 @@ All data passing must be done when OTBN [is idle](./theory_of_operation.md#opera
 
 ### Returning from an application
 
-The software running on OTBN signals completion by executing the [`ECALL`](isa.md#ecall)  instruction.
+The software running on OTBN signals completion by executing the {{#otbn-insn-ref ECALL}} instruction.
 
-Once OTBN has executed the [`ECALL`](isa.md#ecall) instruction, the following things happen:
+Once OTBN has executed the {{#otbn-insn-ref ECALL}} instruction, the following things happen:
 
 - No more instructions are fetched or executed.
 - A [secure wipe of internal state](./theory_of_operation.md#internal-state-secure-wipe) is performed.
@@ -76,7 +76,7 @@ Refer to the section [Passing of data between the host CPU and OTBN](#passing-of
 
 ### Using hardware loops
 
-OTBN provides two hardware loop instructions: [`LOOP`](isa.md#loop)  and [`LOOPI`](isa.md#loopi) .
+OTBN provides two hardware loop instructions: {{#otbn-insn-ref LOOP}} and {{#otbn-insn-ref LOOPI}}.
 
 #### Loop nesting
 
@@ -84,7 +84,7 @@ OTBN permits loop nesting and branches and jumps inside loops.
 However, it doesn't have support for early termination of loops: there's no way to pop an entry from the loop stack without executing the last instruction of the loop the correct number of times.
 It can also only pop one level of the loop stack per instruction.
 
-To avoid polluting the loop stack and avoid surprising behaviour, the programmer must ensure that:
+To avoid polluting the loop stack and avoid surprising behavior, the programmer must ensure that:
 * Even if there are branches and jumps within a loop body, the final instruction of the loop body gets executed exactly once per iteration.
 * Nested loops have distinct end addresses.
 * The end instruction of an outer loop is not executed before an inner loop finishes.
@@ -147,8 +147,8 @@ outer_body:
 ### Algorithic Examples: Multiplication with BN.MULQACC
 
 The big number instruction subset of OTBN generally operates on WLEN bit numbers.
-[`BN.MULQACC`](isa.md#bnmulqacc) operates with WLEN/4 bit operands (with a full WLEN accumulator).
-This section outlines two techniques to perform larger multiplies by composing multiple [`BN.MULQACC`](isa.md#bnmulqacc) instructions.
+{{#otbn-insn-ref BN.MULQACC}} operates with WLEN/4 bit operands (with a full WLEN accumulator).
+This section outlines two techniques to perform larger multiplies by composing multiple {{#otbn-insn-ref BN.MULQACC}} instructions.
 
 #### Multiplying two WLEN/2 numbers with BN.MULQACC
 
