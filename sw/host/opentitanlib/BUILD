@@ -107,6 +107,8 @@ rust_library(
         "src/io/uart/flow.rs",
         "src/io/uart/mod.rs",
         "src/io/uart/serial.rs",
+        "src/io/usb/desc.rs",
+        "src/io/usb/mod.rs",
         "src/lib.rs",
         "src/otp/alert_handler.rs",
         "src/otp/alert_handler_regs.rs",
