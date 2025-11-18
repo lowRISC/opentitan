@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/dt_csrng.h"     // Generated
+#include "hw/top/dt/dt_otp_ctrl.h"  // Generated
+#include "hw/top/dt/dt_rstmgr.h"    // Generated
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -14,10 +17,15 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top/otp_ctrl_regs.h"                     // Generated
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"  // Generated
 
 OTTF_DEFINE_TEST_CONFIG();
+
+static const dt_csrng_t kCsrngDt = (dt_csrng_t)0;
+static const dt_otp_ctrl_t kOtpCtrlDt = (dt_otp_ctrl_t)0;
+static const dt_rstmgr_t kRstmgrDt = kDtRstmgrAon;
+static_assert(kDtCsrngCount >= 1, "This test needs a CSRNG");
+static_assert(kDtOtpCtrlCount >= 1, "This test needs an OTP CTRL");
 
 /**
  * OTP HW partition relative IFETCH offset in bytes.
@@ -62,8 +70,7 @@ static void test_fuse_disable(const dif_csrng_t *csrng) {
  */
 static void check_csrng_fuse_enabled(bool expected) {
   dif_otp_ctrl_t otp;
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kOtpCtrlDt, &otp));
 
   dif_otp_ctrl_config_t config = {
       .check_timeout = 100000,
@@ -99,14 +106,12 @@ static void check_csrng_fuse_enabled(bool expected) {
  */
 bool test_main(void) {
   dif_csrng_t csrng;
-  CHECK_DIF_OK(dif_csrng_init(
-      mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
+  CHECK_DIF_OK(dif_csrng_init_from_dt(kCsrngDt, &csrng));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
   dif_rstmgr_t rstmgr;
   dif_rstmgr_reset_info_bitfield_t info;
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
   info = rstmgr_testutils_reason_get();
 
   if (info == kDifRstmgrResetInfoPor) {
