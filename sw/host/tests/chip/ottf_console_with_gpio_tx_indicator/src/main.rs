@@ -34,12 +34,17 @@ struct Opts {
     /// Path to the firmware's ELF file, for querying symbol addresses.
     #[arg(value_name = "FIRMWARE_ELF")]
     firmware_elf: PathBuf,
+
+    /// Name of the SPI interface to connect to the OTTF console.
+    #[arg(long, default_value = "IOA5")]
+    console_tx_indicator_pin: String,
 }
 
 fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Setup the SPI console with the GPIO TX indicator pin.
     let spi = transport.spi(&opts.console_spi)?;
-    let device_console_tx_ready_pin = &transport.gpio_pin("IOA5")?;
+    let device_console_tx_ready_pin =
+        &transport.gpio_pin(opts.console_tx_indicator_pin.as_str())?;
     device_console_tx_ready_pin.set_mode(PinMode::Input)?;
     device_console_tx_ready_pin.set_pull_mode(PullMode::None)?;
     let spi_console_device = SpiConsoleDevice::new(
