@@ -12,3 +12,4 @@ pub mod jtag;
 pub mod nonblocking_help;
 pub mod spi;
 pub mod uart;
+pub mod usb;

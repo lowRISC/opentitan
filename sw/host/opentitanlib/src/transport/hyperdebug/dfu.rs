@@ -67,8 +67,8 @@ impl HyperdebugDfu {
         )?;
         // HyperDebug device in operational mode, look at the USB strings for the running firmware
         // version.
-        let config_desc = usb_device.active_config_descriptor()?;
-        let current_firmware_version = if let Some(idx) = config_desc.description_string_index() {
+        let config_desc = usb_device.active_configuration()?;
+        let current_firmware_version = if let Some(idx) = config_desc.descriptor()?.string_index() {
             if let Ok(current_firmware_version) = usb_device.read_string_descriptor_ascii(idx) {
                 Some(current_firmware_version)
             } else {
@@ -111,6 +111,8 @@ impl Transport for HyperdebugDfu {
 
 const USB_CLASS_APP: u8 = 0xFE;
 const USB_SUBCLASS_DFU: u8 = 0x01;
+const DFU_FUNCTIONAL_DESC: u8 = 0x21;
+const DFU_FUNCTIONAL_DESC_SIZE: usize = 9;
 
 const DFUSE_ERASE_PAGE: u8 = 0x41;
 const DFUSE_PROGRAM_PAGE: u8 = 0x21;
@@ -393,51 +395,49 @@ fn scan_usb_descriptor(usb_device: &RusbDevice) -> Result<DfuDescriptor> {
     let mut flash_size = 0;
     let mut base_address = 0;
 
-    let config_desc = usb_device.active_config_descriptor()?;
-    for interface in config_desc.interfaces() {
-        for interface_desc in interface.descriptors() {
-            let idx = match interface_desc.description_string_index() {
-                Some(idx) => idx,
-                None => continue,
-            };
-            let interface_name = match usb_device.read_string_descriptor_ascii(idx) {
-                Ok(interface_name) => interface_name,
-                _ => continue,
-            };
-            if interface_desc.class_code() != USB_CLASS_APP
-                || interface_desc.sub_class_code() != USB_SUBCLASS_DFU
-                || (interface_desc.protocol_code() != 0x01
-                    && interface_desc.protocol_code() != 0x02)
-            {
-                continue;
-            }
-            dfu_interface = interface.number();
-            let extra_bytes = interface_desc.extra();
-            // Extra bytes contains inforation encoded according to DFU specification.
-            if extra_bytes.len() >= 9 {
-                xfer_size = extra_bytes[5] as u32 | (extra_bytes[6] as u32) << 8;
-            }
-            static DFU_SECTION_REGEX: Lazy<Regex> = Lazy::new(|| {
-                Regex::new("^@([^/]*)/0x([0-9a-fA-F]+)/([0-9]+)\\*([0-9]+)(..)").unwrap()
-            });
-            let Some(captures) = DFU_SECTION_REGEX.captures(&interface_name) else {
-                continue;
-            };
-            let section_name = captures.get(1).unwrap().as_str().trim();
-            if section_name != "Internal Flash" {
-                continue;
-            }
-            // We have the string describing the flash section (as opposed to fuses or
-            // once-programmable section), extract the relevant information.
-            base_address = u32::from_str_radix(captures.get(2).unwrap().as_str(), 16).unwrap();
-            let num_pages = captures.get(3).unwrap().as_str().parse::<u32>().unwrap();
-            page_size = captures.get(4).unwrap().as_str().parse::<u32>().unwrap();
-            let suffix = captures.get(5).unwrap().as_str();
-            if suffix.starts_with('K') {
-                page_size *= 1024;
-            }
-            flash_size = num_pages * page_size;
+    let config_desc = usb_device.active_configuration()?;
+    for interface in config_desc.interface_alt_settings() {
+        let interface_desc = interface.descriptor()?;
+        let idx = match interface_desc.string_index() {
+            Some(idx) => idx,
+            None => continue,
+        };
+        let interface_name = match usb_device.read_string_descriptor_ascii(idx) {
+            Ok(interface_name) => interface_name,
+            _ => continue,
+        };
+        if interface_desc.class != USB_CLASS_APP
+            || interface_desc.subclass != USB_SUBCLASS_DFU
+            || (interface_desc.protocol != 0x01 && interface_desc.protocol != 0x02)
+        {
+            continue;
         }
+        dfu_interface = interface_desc.intf_num;
+        interface.subdescriptors().for_each(|desc| {
+            // Look for a DFU functional descriptor.
+            if desc.len() == DFU_FUNCTIONAL_DESC_SIZE && desc[1] == DFU_FUNCTIONAL_DESC {
+                xfer_size = desc[5] as u32 | (desc[6] as u32) << 8;
+            }
+        });
+        static DFU_SECTION_REGEX: Lazy<Regex> =
+            Lazy::new(|| Regex::new("^@([^/]*)/0x([0-9a-fA-F]+)/([0-9]+)\\*([0-9]+)(..)").unwrap());
+        let Some(captures) = DFU_SECTION_REGEX.captures(&interface_name) else {
+            continue;
+        };
+        let section_name = captures.get(1).unwrap().as_str().trim();
+        if section_name != "Internal Flash" {
+            continue;
+        }
+        // We have the string describing the flash section (as opposed to fuses or
+        // once-programmable section), extract the relevant information.
+        base_address = u32::from_str_radix(captures.get(2).unwrap().as_str(), 16).unwrap();
+        let num_pages = captures.get(3).unwrap().as_str().parse::<u32>().unwrap();
+        page_size = captures.get(4).unwrap().as_str().parse::<u32>().unwrap();
+        let suffix = captures.get(5).unwrap().as_str();
+        if suffix.starts_with('K') {
+            page_size *= 1024;
+        }
+        flash_size = num_pages * page_size;
     }
     Ok(DfuDescriptor {
         dfu_interface,

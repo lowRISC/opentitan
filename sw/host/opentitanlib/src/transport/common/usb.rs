@@ -7,6 +7,7 @@ use rusb;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
+use crate::io::usb::desc::Configuration;
 use crate::transport::TransportError;
 
 /// Represents a device provided by the `rusb` crate.
@@ -14,6 +15,7 @@ pub struct RusbDevice {
     handle: rusb::DeviceHandle<rusb::GlobalContext>,
     serial_number: String,
     timeout: Duration,
+    configurations: Vec<Vec<u8>>,
 }
 
 /// Represents a backend using the `rusb` crate.
@@ -203,10 +205,45 @@ impl RusbDevice {
         serial_number: String,
         timeout: Duration,
     ) -> Result<Self> {
+        let mut configurations = Vec::new();
+
+        // Unfortunately, rusb simply wraps around libusb which does not
+        // give access to the raw configuration descriptor so we must
+        // get it directly from the device.
+        let nr_config = handle
+            .device()
+            .device_descriptor()
+            .context("could not retrieve device descriptor")?
+            .num_configurations();
+        for config_idx in 0..nr_config {
+            let tot_len = handle
+                .device()
+                .config_descriptor(config_idx)
+                .context("could not retrieve config descriptor")?
+                .total_length() as usize;
+            let mut desc = vec![0u8; tot_len];
+            let size = handle
+                .read_control(
+                    0x80,                       // Standard, device, IN
+                    6,                          // GET_DESCRIPTOR
+                    2 << 8 | config_idx as u16, // CONFIGURATION
+                    0,
+                    &mut desc,
+                    timeout,
+                )
+                .context("could not retrieve config descriptor")?;
+            ensure!(
+                size == tot_len,
+                "Device did not return the full configuration descriptor"
+            );
+            configurations.push(desc)
+        }
+
         Ok(RusbDevice {
             handle,
             serial_number,
             timeout,
+            configurations,
         })
     }
 
@@ -267,17 +304,9 @@ impl RusbDevice {
         self.handle.attach_kernel_driver(iface).context("USB error")
     }
 
-    //
-    // Enumerating interfaces of the USB device.  The methods below leak rusb data structures,
-    // and may have to be refactored, when we convert UsbDevice into a trait, and want to
-    // support mocked implementations.
-    //
-
-    pub fn active_config_descriptor(&self) -> Result<rusb::ConfigDescriptor> {
-        self.handle
-            .device()
-            .active_config_descriptor()
-            .context("USB error")
+    pub fn active_configuration(&self) -> Result<Configuration> {
+        // TODO fix this
+        Ok(Configuration::new(&self.configurations[0]))
     }
 
     pub fn bus_number(&self) -> u8 {
