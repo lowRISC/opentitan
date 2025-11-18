@@ -120,6 +120,8 @@ rust_library(
         "src/io/nonblocking_help.rs",
         "src/io/spi.rs",
         "src/io/uart.rs",
+        "src/io/usb/desc.rs",
+        "src/io/usb/mod.rs",
         "src/lib.rs",
         "src/otp/alert_handler.rs",
         "src/otp/alert_handler_regs.rs",
