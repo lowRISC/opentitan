@@ -9,7 +9,7 @@ use std::time::Duration;
 use crate::app::{TransportWrapper, UartRx};
 use crate::rescue::dfu::*;
 use crate::rescue::{EntryMode, Rescue, RescueError, RescueMode, RescueParams};
-use crate::util::usb::UsbBackend;
+use crate::transport::common::usb::UsbBackend;
 
 pub struct UsbDfu {
     usb: RefCell<Option<UsbBackend>>,

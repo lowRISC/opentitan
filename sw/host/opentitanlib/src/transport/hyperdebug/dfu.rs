@@ -11,10 +11,10 @@ use std::any::Any;
 use std::cell::RefCell;
 use std::cmp::Ordering;
 
+use crate::transport::common::usb::UsbBackend;
 use crate::transport::{
     Capabilities, Capability, ProgressIndicator, Transport, TransportError, UpdateFirmware,
 };
-use crate::util::usb::UsbBackend;
 
 const VID_ST_MICROELECTRONICS: u16 = 0x0483;
 const PID_DFU_BOOTLOADER: u16 = 0xdf11;

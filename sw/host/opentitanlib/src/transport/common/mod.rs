@@ -4,3 +4,4 @@
 
 pub mod fpga;
 pub mod uart;
+pub mod usb;
