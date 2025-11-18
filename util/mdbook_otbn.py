@@ -76,7 +76,7 @@ def main() -> None:
     def ref_to_link(m: re.Match):
         instr = m.group(1)
         ref = instr.replace(".", "").lower()
-        return '<a href="/{}#{}"><code>{}</code></a>)'.format(isa_book_path, ref, instr)
+        return '<a href="/book/{}#{}"><code>{}</code></a>'.format(isa_book_path, ref, instr)
 
     # Resolve any links to an instruction in all chapters.
     for chapter in md_utils.chapters(book["sections"]):
