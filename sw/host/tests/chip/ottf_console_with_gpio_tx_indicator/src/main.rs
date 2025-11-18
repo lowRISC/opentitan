@@ -46,6 +46,7 @@ fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<
         &*spi,
         Some(device_console_tx_ready_pin),
         /*ignore_frame_num=*/ false,
+        Some(opts.init.backend_opts.interface.as_str()),
     )?;
 
     // Load the ELF binary and get the expect data.

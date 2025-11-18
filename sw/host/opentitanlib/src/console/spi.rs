@@ -21,6 +21,7 @@ pub struct SpiConsoleDevice<'a> {
     next_read_address: Cell<u32>,
     device_tx_ready_pin: Option<&'a Rc<dyn GpioPin>>,
     ignore_frame_num: bool,
+    wait_tx_ready_deassert: bool,
 }
 
 impl<'a> SpiConsoleDevice<'a> {
@@ -36,10 +37,16 @@ impl<'a> SpiConsoleDevice<'a> {
         spi: &'a dyn Target,
         device_tx_ready_pin: Option<&'a Rc<dyn GpioPin>>,
         ignore_frame_num: bool,
+        interface: Option<&str>,
     ) -> Result<Self> {
         let flash = SpiFlash {
             ..Default::default()
         };
+        // QEMU is currently the only interface that requires additional
+        // synchronization on the TX-ready indicator pin to avoid timing
+        // & synchronization issues for small transactions, due to its
+        // nature as an emulated interface.
+        let wait_tx_ready_deassert = interface == Some("qemu");
         Ok(Self {
             spi,
             flash,
@@ -48,6 +55,7 @@ impl<'a> SpiConsoleDevice<'a> {
             next_read_address: Cell::new(0),
             device_tx_ready_pin,
             ignore_frame_num,
+            wait_tx_ready_deassert,
         })
     }
 
@@ -74,6 +82,19 @@ impl<'a> SpiConsoleDevice<'a> {
         let read_address = self.next_read_address.get();
         let mut header = vec![0u8; SpiConsoleDevice::SPI_FRAME_HEADER_SIZE];
         self.read_data(read_address, &mut header)?;
+
+        // When using small (<= 4 byte) SPI transactions on emulation targets,
+        // sometimes the entire transaction can occur before the logic low
+        // transmission of the TX-indicator GPIO is issued, causing the host
+        // to erroneously see the device as ready and start another transaction
+        // whilst the device is still processing the previous. For such targets,
+        // add additional synchronization by waiting for the TX-indicator pin
+        // to go low after reading the header.
+        if let Some(ready_pin) = self.get_tx_ready_pin()? {
+            if self.wait_tx_ready_deassert {
+                while ready_pin.read()? {}
+            }
+        }
 
         let magic_number: u32 = u32::from_le_bytes(header[0..4].try_into().unwrap());
         let frame_number: u32 = u32::from_le_bytes(header[4..8].try_into().unwrap());
