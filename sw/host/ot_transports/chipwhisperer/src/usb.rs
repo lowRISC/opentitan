@@ -14,9 +14,9 @@ use anyhow::{Context, Result, ensure};
 use opentitanlib::collection;
 use opentitanlib::io::gpio::GpioError;
 use opentitanlib::io::spi::SpiError;
+use opentitanlib::transport::common::usb::UsbBackend;
 use opentitanlib::transport::{ProgressIndicator, TransportError, TransportInterfaceType};
 use opentitanlib::util::parse_int::ParseInt;
-use opentitanlib::util::usb::UsbBackend;
 
 use super::board::Board;
 

@@ -14,11 +14,11 @@ use regex::Regex;
 use opentitanlib::backend::{Backend, BackendOpts, define_interface};
 use opentitanlib::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
 use opentitanlib::io::spi::Target;
+use opentitanlib::transport::common::usb::UsbBackend;
 use opentitanlib::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
 use opentitanlib::util::fs::builtin_file;
-use opentitanlib::util::usb::UsbBackend;
 
 pub mod gpio;
 pub mod spi;

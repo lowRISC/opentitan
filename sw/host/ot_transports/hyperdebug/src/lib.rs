@@ -27,12 +27,12 @@ use opentitanlib::io::jtag::{JtagChain, JtagParams};
 use opentitanlib::io::spi::Target;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::io::uart::serial::flock_serial;
+use opentitanlib::transport::common::usb::{UsbBackend, UsbHub, UsbHubOp};
 use opentitanlib::transport::{
     Capabilities, Capability, FpgaOps, ProgressIndicator, SetJtagPins, Transport, TransportError,
     TransportInterfaceType, UpdateFirmware,
 };
 use opentitanlib::util::fs::builtin_file;
-use opentitanlib::util::usb::{UsbBackend, UsbHub, UsbHubOp};
 use ot_transport_chipwhisperer::ChipWhisperer;
 use ot_transport_chipwhisperer::board::Board;
 use ot_transport_chipwhisperer::board::{Cw310, Cw340};
