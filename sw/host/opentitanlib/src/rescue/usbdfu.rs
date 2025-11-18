@@ -66,17 +66,16 @@ impl Rescue for UsbDfu {
         self.params.set_trigger(transport, false)?;
         let device = device?;
 
-        let config = device.active_config_descriptor()?;
-        for intf in config.interfaces() {
-            for desc in intf.descriptors() {
-                if desc.class_code() == Self::CLASS
-                    && desc.sub_class_code() == Self::SUBCLASS
-                    && desc.protocol_code() == Self::PROTOCOL
-                {
-                    device.claim_interface(intf.number())?;
-                    self.interface.set(intf.number());
-                    break;
-                }
+        let config = device.active_configuration()?;
+        for intf in config.interface_alt_settings() {
+            let desc = intf.descriptor()?;
+            if desc.class == Self::CLASS
+                && desc.subclass == Self::SUBCLASS
+                && desc.protocol == Self::PROTOCOL
+            {
+                device.claim_interface(desc.intf_num)?;
+                self.interface.set(desc.intf_num);
+                break;
             }
         }
         self.usb.replace(Some(device));
