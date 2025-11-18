@@ -7,37 +7,6 @@ load("//rules:otbn.bzl", "otbn_consttime_test", "otbn_library", "otbn_sim_test",
 package(default_visibility = ["//visibility:public"])
 
 otbn_sim_test(
-    name = "ed25519_ext_add_test",
-    srcs = [
-        "ed25519_ext_add_test.s",
-    ],
-    exp = "ed25519_ext_add_test.exp",
-    deps = [
-        "//sw/otbn/crypto:ed25519",
-        "//sw/otbn/crypto:field25519",
-    ],
-)
-
-otbn_consttime_test(
-    name = "ed25519_ext_add_consttime",
-    subroutine = "ext_add",
-    deps = [
-        ":ed25519_ext_add_test",
-    ],
-)
-
-otbn_sim_test(
-    name = "ed25519_scalar_test",
-    srcs = [
-        "ed25519_scalar_test.s",
-    ],
-    exp = "ed25519_scalar_test.exp",
-    deps = [
-        "//sw/otbn/crypto:ed25519_scalar",
-    ],
-)
-
-otbn_sim_test(
     name = "div_large_test",
     srcs = [
         "div_large_test.s",
@@ -78,6 +47,74 @@ otbn_consttime_test(
     subroutine = "div",
     deps = [
         ":div_small_test",
+    ],
+)
+
+otbn_sim_test(
+    name = "ed25519_ext_add_test",
+    srcs = [
+        "ed25519_ext_add_test.s",
+    ],
+    exp = "ed25519_ext_add_test.exp",
+    deps = [
+        "//sw/otbn/crypto:ed25519",
+        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:field25519",
+    ],
+)
+
+otbn_consttime_test(
+    name = "ed25519_ext_add_consttime",
+    subroutine = "ext_add",
+    deps = [
+        ":ed25519_ext_add_test",
+    ],
+)
+
+otbn_sim_test(
+    name = "ed25519_encode_decode_test",
+    srcs = [
+        "ed25519_encode_decode_test.s",
+    ],
+    deps = [
+        "//sw/otbn/crypto:ed25519",
+        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:field25519",
+    ],
+)
+
+otbn_sim_test(
+    name = "ed25519_scalar_test",
+    srcs = [
+        "ed25519_scalar_test.s",
+    ],
+    exp = "ed25519_scalar_test.exp",
+    deps = [
+        "//sw/otbn/crypto:ed25519_scalar",
+    ],
+)
+
+otbn_sim_test(
+    name = "ed25519_sign_test",
+    srcs = [
+        "ed25519_sign_test.s",
+    ],
+    deps = [
+        "//sw/otbn/crypto:ed25519",
+        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:field25519",
+    ],
+)
+
+otbn_sim_test(
+    name = "ed25519_verify_test",
+    srcs = [
+        "ed25519_verify_test.s",
+    ],
+    deps = [
+        "//sw/otbn/crypto:ed25519",
+        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:field25519",
     ],
 )
 
