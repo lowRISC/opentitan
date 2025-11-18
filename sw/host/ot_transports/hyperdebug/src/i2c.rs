@@ -161,10 +161,9 @@ impl HyperdebugI2cBus {
             idx < 16,
             TransportError::InvalidInstance(TransportInterfaceType::I2c, idx.to_string())
         );
-        let usb_handle = inner.usb_device.borrow_mut();
 
         // Exclusively claim I2C interface, preparing for bulk transfers.
-        usb_handle.claim_interface(i2c_interface.interface)?;
+        inner.usb_device.claim_interface(i2c_interface.interface)?;
 
         Ok(Self {
             inner: inner.clone(),
@@ -284,7 +283,6 @@ impl HyperdebugI2cBus {
     fn usb_write_bulk(&self, buf: &[u8]) -> Result<()> {
         self.inner
             .usb_device
-            .borrow()
             .write_bulk(self.interface.out_endpoint, buf)?;
         Ok(())
     }
@@ -293,7 +291,6 @@ impl HyperdebugI2cBus {
     fn usb_read_bulk(&self, buf: &mut [u8]) -> Result<usize> {
         self.inner
             .usb_device
-            .borrow()
             .read_bulk(self.interface.in_endpoint, buf)
     }
 
@@ -301,7 +298,6 @@ impl HyperdebugI2cBus {
     fn usb_read_bulk_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
         self.inner
             .usb_device
-            .borrow()
             .read_bulk_timeout(self.interface.in_endpoint, buf, timeout)
     }
 }
