@@ -36,7 +36,9 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
-  // Interrupt Sources
+  // Interrupt Sources. Note that the lowest bit must be tied to 0 because it
+  // is reserved for "no interrupt". Because the lowest bit is always 0,
+  // only NumSrc-1 interrupts are usable.
   input  [NumSrc-1:0] intr_src_i,
 
   // Alerts
@@ -332,8 +334,8 @@ module rv_plic import rv_plic_reg_pkg::*; #(
     `ASSERT_KNOWN(IrqIdKnownO_A, irq_id_o[k])
   end
 
-  // Assume
-  `ASSUME(Irq0Tied_A, intr_src_i[0] == 1'b0)
+  // Bit 0 must be tied to zero because it is reserved for "no interrupt".
+  `ASSERT(Irq0Tied_A, intr_src_i[0] == 1'b0)
 
   // This assertion should be provable in FPV because we don't have a block-level DV environment. It
   // is trying to say that any integrity error detected inside the register block (u_reg) will cause
