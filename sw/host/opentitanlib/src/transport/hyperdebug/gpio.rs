@@ -291,7 +291,6 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
             }
             self.inner
                 .usb_device
-                .borrow()
                 .write_bulk(cmsis_interface.out_endpoint, &pkt)?;
 
             let mut databytes: Vec<u8> =
@@ -299,7 +298,7 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
             let mut bytecount = 0;
 
             while bytecount < 1 + size_of::<RspGpioMonitoringHeader>() {
-                let read_count = self.inner.usb_device.borrow().read_bulk(
+                let read_count = self.inner.usb_device.read_bulk(
                     cmsis_interface.in_endpoint,
                     &mut databytes[bytecount..][..USB_MAX_SIZE],
                 )?;
@@ -330,7 +329,6 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
                 let c = self
                     .inner
                     .usb_device
-                    .borrow()
                     .read_bulk(cmsis_interface.in_endpoint, &mut databytes[bytecount..])?;
                 bytecount += c;
             }
@@ -488,7 +486,6 @@ impl HyperdebugGpioBitbanging {
         // Exclusively claim CMSIS-DAP interface, preparing for bulk transfers.
         inner
             .usb_device
-            .borrow_mut()
             .claim_interface(cmsis_interface.interface)?;
         Ok(Self {
             inner: Rc::clone(inner),
@@ -584,7 +581,7 @@ impl HyperdebugDataOperation {
         // Send an initial request, to ask how much buffer space HyperDebug has, so that we can
         // fill the buffer, while avoiding overflows.
         let free_bytes: usize = {
-            let usb = inner.usb_device.borrow();
+            let usb = &inner.usb_device;
             let mut pkt = Vec::<u8>::new();
             pkt.write_u8(Self::CMSIS_DAP_CUSTOM_COMMAND_GPIO)?;
             pkt.write_u8(Self::GPIO_BITBANG)?;
@@ -625,7 +622,7 @@ impl HyperdebugDataOperation {
             return Ok(true);
         }
 
-        let usb = self.inner.usb_device.borrow();
+        let usb = &self.inner.usb_device;
         let chunk_size = std::cmp::min(self.encoded_waveform.len() - self.out_ptr, self.free_bytes);
 
         let mut pkt = Vec::<u8>::new();

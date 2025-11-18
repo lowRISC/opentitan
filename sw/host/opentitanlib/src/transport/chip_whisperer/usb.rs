@@ -15,13 +15,13 @@ use super::board::Board;
 use crate::collection;
 use crate::io::gpio::GpioError;
 use crate::io::spi::SpiError;
-use crate::transport::common::usb::UsbBackend;
+use crate::transport::common::usb::{RusbContext, RusbDevice};
 use crate::transport::{ProgressIndicator, TransportError, TransportInterfaceType};
 use crate::util::parse_int::ParseInt;
 
 /// The `Backend` struct provides high-level access to the Chip Whisperer board.
 pub struct Backend<B: Board> {
-    usb: UsbBackend,
+    usb: Rc<RusbDevice>,
     _marker: PhantomData<B>,
 }
 
@@ -108,8 +108,9 @@ impl<B: Board> Backend<B> {
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
     ) -> Result<Self> {
+        let usb_context = RusbContext::new();
         Ok(Backend {
-            usb: UsbBackend::new(
+            usb: usb_context.device_by_id(
                 usb_vid.unwrap_or(B::VENDOR_ID),
                 usb_pid.unwrap_or(B::PRODUCT_ID),
                 usb_serial,

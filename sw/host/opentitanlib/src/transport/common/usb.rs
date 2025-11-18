@@ -4,22 +4,30 @@
 
 use anyhow::{Context, Result, ensure};
 use rusb;
+use std::rc::Rc;
 use std::time::{Duration, Instant};
 
 use crate::transport::TransportError;
 
-/// The `UsbBackend` provides low-level USB access to debugging devices.
-pub struct UsbBackend {
-    device: rusb::Device<rusb::GlobalContext>,
+/// Represents a device provided by the `rusb` crate.
+pub struct RusbDevice {
     handle: rusb::DeviceHandle<rusb::GlobalContext>,
     serial_number: String,
     timeout: Duration,
 }
 
-impl UsbBackend {
+/// Represents a backend using the `rusb` crate.
+#[derive(Default)]
+pub struct RusbContext {}
+
+impl RusbContext {
+    pub fn new() -> Self {
+        RusbContext::default()
+    }
+
     /// Scan the USB bus for a device matching VID/PID, and optionally also matching a serial
     /// number.
-    pub fn scan(
+    fn scan(
         usb_vid_pid: Option<(u16, u16)>,
         usb_protocol: Option<(u8, u8, u8)>,
         usb_serial: Option<&str>,
@@ -123,9 +131,13 @@ impl UsbBackend {
         Ok(devices)
     }
 
-    /// Create a new UsbBackend.
-    pub fn new(usb_vid: u16, usb_pid: u16, usb_serial: Option<&str>) -> Result<Self> {
-        let mut devices = UsbBackend::scan(Some((usb_vid, usb_pid)), None, usb_serial)?;
+    pub fn device_by_id(
+        &self,
+        usb_vid: u16,
+        usb_pid: u16,
+        usb_serial: Option<&str>,
+    ) -> Result<Rc<RusbDevice>> {
+        let mut devices = RusbContext::scan(Some((usb_vid, usb_pid)), None, usb_serial)?;
         ensure!(!devices.is_empty(), TransportError::NoDevice);
         ensure!(
             devices.len() == 1,
@@ -133,34 +145,35 @@ impl UsbBackend {
         );
 
         let (device, serial_number) = devices.remove(0);
-        Ok(UsbBackend {
-            handle: device.open().context("USB open error")?,
-            device,
+        Ok(Rc::new(RusbDevice::new(
+            device.open().context("USB open error")?,
             serial_number,
-            timeout: Duration::from_millis(500),
-        })
+            Duration::from_millis(500),
+        )?))
     }
 
     pub fn from_interface(
+        &self,
         class: u8,
         subclass: u8,
         protocol: u8,
         usb_serial: Option<&str>,
-    ) -> Result<Self> {
-        Self::from_interface_with_timeout(class, subclass, protocol, usb_serial, Duration::ZERO)
+    ) -> Result<Rc<RusbDevice>> {
+        self.from_interface_with_timeout(class, subclass, protocol, usb_serial, Duration::ZERO)
     }
 
     pub fn from_interface_with_timeout(
+        &self,
         class: u8,
         subclass: u8,
         protocol: u8,
         usb_serial: Option<&str>,
         timeout: Duration,
-    ) -> Result<Self> {
+    ) -> Result<Rc<RusbDevice>> {
         let deadline = Instant::now() + timeout;
         loop {
             let mut devices =
-                UsbBackend::scan(None, Some((class, subclass, protocol)), usb_serial)?;
+                RusbContext::scan(None, Some((class, subclass, protocol)), usb_serial)?;
             if devices.is_empty() {
                 if Instant::now() < deadline {
                     std::thread::sleep(Duration::from_millis(100));
@@ -175,13 +188,26 @@ impl UsbBackend {
             );
 
             let (device, serial_number) = devices.remove(0);
-            return Ok(UsbBackend {
-                handle: device.open().context("USB open error")?,
-                device,
+            return Ok(Rc::new(RusbDevice::new(
+                device.open().context("USB open error")?,
                 serial_number,
-                timeout: Duration::from_millis(500),
-            });
+                Duration::from_millis(500),
+            )?));
         }
+    }
+}
+
+impl RusbDevice {
+    fn new(
+        handle: rusb::DeviceHandle<rusb::GlobalContext>,
+        serial_number: String,
+        timeout: Duration,
+    ) -> Result<Self> {
+        Ok(RusbDevice {
+            handle,
+            serial_number,
+            timeout,
+        })
     }
 
     pub fn handle(&self) -> &rusb::DeviceHandle<rusb::GlobalContext> {
@@ -189,11 +215,19 @@ impl UsbBackend {
     }
 
     pub fn get_vendor_id(&self) -> u16 {
-        self.device.device_descriptor().unwrap().vendor_id()
+        self.handle
+            .device()
+            .device_descriptor()
+            .unwrap()
+            .vendor_id()
     }
 
     pub fn get_product_id(&self) -> u16 {
-        self.device.device_descriptor().unwrap().product_id()
+        self.handle
+            .device()
+            .device_descriptor()
+            .unwrap()
+            .product_id()
     }
 
     /// Gets the usb serial number of the device.
@@ -240,15 +274,18 @@ impl UsbBackend {
     //
 
     pub fn active_config_descriptor(&self) -> Result<rusb::ConfigDescriptor> {
-        self.device.active_config_descriptor().context("USB error")
+        self.handle
+            .device()
+            .active_config_descriptor()
+            .context("USB error")
     }
 
     pub fn bus_number(&self) -> u8 {
-        self.device.bus_number()
+        self.handle.device().bus_number()
     }
 
     pub fn port_numbers(&self) -> Result<Vec<u8>> {
-        self.device.port_numbers().context("USB error")
+        self.handle.device().port_numbers().context("USB error")
     }
 
     pub fn read_string_descriptor_ascii(&self, idx: u8) -> Result<String> {
