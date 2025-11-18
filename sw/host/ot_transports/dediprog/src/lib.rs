@@ -14,6 +14,7 @@ use regex::Regex;
 use opentitanlib::backend::{Backend, BackendOpts, define_interface};
 use opentitanlib::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
 use opentitanlib::io::spi::Target;
+use opentitanlib::io::usb::desc;
 use opentitanlib::transport::common::usb::{RusbContext, RusbDevice};
 use opentitanlib::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
@@ -133,35 +134,32 @@ impl Dediprog {
 
         device.set_active_configuration(1)?;
 
-        let config_desc = device.active_config_descriptor()?;
+        let config_desc = device.active_configuration()?;
         // Iterate through each USB interface, discovering endpoints.
         let mut in_endpoint: Option<u8> = None;
         let mut out_endpoint: Option<u8> = None;
-        for interface in config_desc.interfaces() {
-            for interface_desc in interface.descriptors() {
-                for endpoint_desc in interface_desc.endpoint_descriptors() {
-                    if endpoint_desc.transfer_type() != rusb::TransferType::Bulk {
-                        continue;
+        for interface in config_desc.interface_alt_settings() {
+            for endpoint in interface.endpoints() {
+                let endpoint_desc = endpoint.descriptor()?;
+                if endpoint_desc.transfer_type() != desc::TransferType::Bulk {
+                    continue;
+                }
+                match endpoint_desc.direction() {
+                    desc::Direction::In => {
+                        ensure!(
+                            in_endpoint.is_none(),
+                            TransportError::CommunicationError("Multiple IN endpoints".to_string())
+                        );
+                        in_endpoint.replace(endpoint_desc.addr);
                     }
-                    match endpoint_desc.direction() {
-                        rusb::Direction::In => {
-                            ensure!(
-                                in_endpoint.is_none(),
-                                TransportError::CommunicationError(
-                                    "Multiple IN endpoints".to_string()
-                                )
-                            );
-                            in_endpoint.replace(endpoint_desc.address());
-                        }
-                        rusb::Direction::Out => {
-                            ensure!(
-                                out_endpoint.is_none(),
-                                TransportError::CommunicationError(
-                                    "Multiple OUT endpoints".to_string()
-                                )
-                            );
-                            out_endpoint.replace(endpoint_desc.address());
-                        }
+                    desc::Direction::Out => {
+                        ensure!(
+                            out_endpoint.is_none(),
+                            TransportError::CommunicationError(
+                                "Multiple OUT endpoints".to_string()
+                            )
+                        );
+                        out_endpoint.replace(endpoint_desc.addr);
                     }
                 }
             }
