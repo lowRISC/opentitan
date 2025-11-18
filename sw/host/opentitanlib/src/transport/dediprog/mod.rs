@@ -20,11 +20,11 @@ use crate::io::spi::Target;
 use crate::io::uart::{Uart, UartError};
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use crate::transport::common::uart::SerialPortUart;
+use crate::transport::common::usb::UsbBackend;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
 use crate::util::parse_int::ParseInt;
-use crate::util::usb::UsbBackend;
 
 pub mod gpio;
 pub mod spi;
