@@ -133,6 +133,7 @@ fn main() -> Result<()> {
         &*spi,
         Some(device_console_tx_ready_pin),
         /*ignore_frame_num=*/ false,
+        Some(opts.init.backend_opts.interface.as_str()),
     )?;
     InitializeTest::print_result("load_bitstream", opts.init.load_bitstream.init(&transport))?;
 
