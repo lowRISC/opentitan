@@ -11,3 +11,4 @@ pub mod ioexpander;
 pub mod jtag;
 pub mod spi;
 pub mod uart;
+pub mod usb;
