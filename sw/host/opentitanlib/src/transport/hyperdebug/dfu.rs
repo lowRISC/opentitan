@@ -8,10 +8,9 @@ use anyhow::{Result, anyhow, bail};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::any::Any;
-use std::cell::RefCell;
 use std::cmp::Ordering;
 
-use crate::transport::common::usb::UsbBackend;
+use crate::transport::common::usb::{RusbContext, RusbDevice};
 use crate::transport::{
     Capabilities, Capability, ProgressIndicator, Transport, TransportError, UpdateFirmware,
 };
@@ -24,7 +23,7 @@ const PID_DFU_BOOTLOADER: u16 = 0xdf11;
 /// Google's).
 pub struct HyperdebugDfu {
     // Handle to USB device which may or may not already be in DFU mode
-    usb_backend: RefCell<UsbBackend>,
+    usb_device: Rc<RusbDevice>,
     current_firmware_version: Option<String>,
     // expected USB VID:PID of the HyperDebug device when not in DFU mode
     usb_vid: u16,
@@ -39,37 +38,38 @@ impl HyperdebugDfu {
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
     ) -> Result<Self> {
+        let usb_context = RusbContext::new();
         // Look for a device with given USB serial, carrying either the VID:DID of STM32 DFU
         // bootloader, or that of HyperDebug in ordinary mode.  This allows scripts to start with
         // `opentitantool --interface hyperdebug_dfu transport update-firmware`, knowing that it
         // will put the desired firmware on the HyperDebug, both in the case of previous
         // interrupted update, as well as the ordinary case of outdated or current HyperDebug
         // firmware already running.
-        if let Ok(usb_backend) =
-            UsbBackend::new(VID_ST_MICROELECTRONICS, PID_DFU_BOOTLOADER, usb_serial)
+        if let Ok(usb_device) =
+            usb_context.device_by_id(VID_ST_MICROELECTRONICS, PID_DFU_BOOTLOADER, usb_serial)
         {
             // HyperDebug device is already in DFU mode, we cannot query firmware version through
             // USB strings.  (And the fact that it was left in DFU mode, probably as a result of a
             // previous incomplete update attempt, should mean that we would not want to trust the
             // version, even if we could extract it through the DFU firmware.)
             return Ok(Self {
-                usb_backend: RefCell::new(usb_backend),
+                usb_device,
                 current_firmware_version: None,
                 usb_vid: usb_vid.unwrap_or(super::VID_GOOGLE),
                 usb_pid: usb_pid.unwrap_or(super::PID_HYPERDEBUG),
             });
         }
 
-        let usb_backend = UsbBackend::new(
+        let usb_device = usb_context.device_by_id(
             usb_vid.unwrap_or(super::VID_GOOGLE),
             usb_pid.unwrap_or(super::PID_HYPERDEBUG),
             usb_serial,
         )?;
         // HyperDebug device in operational mode, look at the USB strings for the running firmware
         // version.
-        let config_desc = usb_backend.active_config_descriptor()?;
+        let config_desc = usb_device.active_config_descriptor()?;
         let current_firmware_version = if let Some(idx) = config_desc.description_string_index() {
-            if let Ok(current_firmware_version) = usb_backend.read_string_descriptor_ascii(idx) {
+            if let Ok(current_firmware_version) = usb_device.read_string_descriptor_ascii(idx) {
                 Some(current_firmware_version)
             } else {
                 None
@@ -78,7 +78,7 @@ impl HyperdebugDfu {
             None
         };
         Ok(Self {
-            usb_backend: RefCell::new(usb_backend),
+            usb_device,
             current_firmware_version,
             usb_vid: usb_vid.unwrap_or(super::VID_GOOGLE),
             usb_pid: usb_pid.unwrap_or(super::PID_HYPERDEBUG),
@@ -95,7 +95,7 @@ impl Transport for HyperdebugDfu {
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         if let Some(update_firmware_action) = action.downcast_ref::<UpdateFirmware>() {
             update_firmware(
-                &self.usb_backend.borrow(),
+                &self.usb_device,
                 self.current_firmware_version.as_deref(),
                 &update_firmware_action.firmware,
                 update_firmware_action.progress.as_ref(),
@@ -170,7 +170,7 @@ fn get_hyperdebug_firmware_version(firmware: &[u8]) -> Result<&str> {
 /// Helper method to perform flash programming using ST's DfuSe variant of the DFU protocol.
 /// This method is used both by the `Hyperdebug` and the `HyperdebugDfu` structs.
 pub fn update_firmware(
-    usb_device: &UsbBackend,
+    usb_device: &RusbDevice,
     current_firmware_version: Option<&str>,
     firmware: &Option<Vec<u8>>,
     progress: &dyn ProgressIndicator,
@@ -242,7 +242,8 @@ pub fn update_firmware(
     // same serial number as before.
     std::thread::sleep(std::time::Duration::from_millis(1000));
     log::info!("Connecting to DFU bootloader...");
-    let dfu_device = UsbBackend::new(
+    let usb_context = RusbContext::new();
+    let dfu_device = usb_context.device_by_id(
         VID_ST_MICROELECTRONICS,
         PID_DFU_BOOTLOADER,
         Some(usb_device.get_serial_number()),
@@ -263,7 +264,11 @@ fn restablish_connection(usb_vid: u16, usb_pid: u16, serial_number: &str) -> Res
     log::info!("Connecting to newly flashed firmware...");
     for _ in 0..10 {
         std::thread::sleep(std::time::Duration::from_millis(500));
-        if UsbBackend::new(usb_vid, usb_pid, Some(serial_number)).is_ok() {
+        let usb_context = RusbContext::new();
+        if usb_context
+            .device_by_id(usb_vid, usb_pid, Some(serial_number))
+            .is_ok()
+        {
             return Ok(());
         }
     }
@@ -273,7 +278,7 @@ fn restablish_connection(usb_vid: u16, usb_pid: u16, serial_number: &str) -> Res
 }
 
 fn do_update_firmware(
-    usb_device: &UsbBackend,
+    usb_device: &RusbDevice,
     dfu_desc: DfuDescriptor,
     firmware: &[u8],
     progress: &dyn ProgressIndicator,
@@ -381,7 +386,7 @@ struct DfuDescriptor {
 }
 
 /// Inspect USB interface descriptors, looking for DFU-related ones.
-fn scan_usb_descriptor(usb_device: &UsbBackend) -> Result<DfuDescriptor> {
+fn scan_usb_descriptor(usb_device: &RusbDevice) -> Result<DfuDescriptor> {
     let mut dfu_interface = 0;
     let mut xfer_size = 0;
     let mut page_size = 0;
@@ -444,7 +449,7 @@ fn scan_usb_descriptor(usb_device: &UsbBackend) -> Result<DfuDescriptor> {
 }
 
 /// Poll the bootloader using GETSTATUS request, until it leaves the "busy" state.
-fn wait_for_idle(dfu_device: &UsbBackend, dfu_interface: u8) -> Result<u8> {
+fn wait_for_idle(dfu_device: &RusbDevice, dfu_interface: u8) -> Result<u8> {
     loop {
         let mut response = [0u8; 6];
         let rc = dfu_device.read_control(

@@ -66,9 +66,8 @@ impl HyperdebugUart {
 
 impl Uart for HyperdebugUart {
     fn get_baudrate(&self) -> Result<u32> {
-        let usb_handle = self.inner.usb_device.borrow();
         let mut data = [0u8, 0u8];
-        usb_handle.read_control(
+        self.inner.usb_device.read_control(
             rusb::request_type(Direction::In, RequestType::Vendor, Recipient::Interface),
             ControlRequest::ReqBaud as u8,
             0,
@@ -79,8 +78,7 @@ impl Uart for HyperdebugUart {
     }
 
     fn set_baudrate(&self, baudrate: u32) -> Result<()> {
-        let usb_handle = self.inner.usb_device.borrow();
-        usb_handle.write_control(
+        self.inner.usb_device.write_control(
             rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
             ControlRequest::SetBaud as u8,
             ((baudrate + 50) / 100).try_into()?,
@@ -112,8 +110,7 @@ impl Uart for HyperdebugUart {
 
     fn clear_rx_buffer(&self) -> Result<()> {
         if self.supports_clearing_queues {
-            let usb_handle = self.inner.usb_device.borrow();
-            usb_handle.write_control(
+            self.inner.usb_device.write_control(
                 rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
                 ControlRequest::ClearQueues as u8,
                 CLEAR_RX_FIFO,
@@ -125,8 +122,8 @@ impl Uart for HyperdebugUart {
     }
 
     fn set_break(&self, enable: bool) -> Result<()> {
-        let usb_handle = self.inner.usb_device.borrow();
-        usb_handle
+        self.inner
+            .usb_device
             .write_control(
                 rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
                 ControlRequest::Break as u8,
@@ -145,8 +142,7 @@ impl Uart for HyperdebugUart {
             Parity::Even => 2,
         };
 
-        let usb_handle = self.inner.usb_device.borrow();
-        usb_handle.write_control(
+        self.inner.usb_device.write_control(
             rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
             ControlRequest::SetParity as u8,
             parity_code,

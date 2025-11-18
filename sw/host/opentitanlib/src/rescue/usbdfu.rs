@@ -9,10 +9,10 @@ use std::time::Duration;
 use crate::app::{TransportWrapper, UartRx};
 use crate::rescue::dfu::*;
 use crate::rescue::{EntryMode, Rescue, RescueError, RescueMode, RescueParams};
-use crate::transport::common::usb::UsbBackend;
+use crate::transport::common::usb::{RusbContext, RusbDevice};
 
 pub struct UsbDfu {
-    usb: RefCell<Option<UsbBackend>>,
+    usb: RefCell<Option<Rc<RusbDevice>>>,
     interface: Cell<u8>,
     params: RescueParams,
     reset_delay: Duration,
@@ -33,9 +33,9 @@ impl UsbDfu {
         }
     }
 
-    fn device(&self) -> Ref<'_, UsbBackend> {
-        let device = self.usb.borrow();
-        Ref::map(device, |d| d.as_ref().expect("device handle"))
+    fn device(&self) -> Ref<'_, RusbDevice> {
+        let usb = self.usb.borrow();
+        Ref::map(usb, |d| &**d.as_ref().expect("device handle"))
     }
 }
 
@@ -54,7 +54,8 @@ impl Rescue for UsbDfu {
             EntryMode::None => {}
         }
 
-        let device = UsbBackend::from_interface_with_timeout(
+        let usb_context = RusbContext::new();
+        let device = usb_context.from_interface_with_timeout(
             Self::CLASS,
             Self::SUBCLASS,
             Self::PROTOCOL,
