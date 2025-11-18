@@ -28,11 +28,11 @@ use crate::transport::chip_whisperer::ChipWhisperer;
 use crate::transport::chip_whisperer::board::Board;
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use crate::transport::common::uart::flock_serial;
+use crate::transport::common::usb::UsbBackend;
 use crate::transport::{
     Capabilities, Capability, SetJtagPins, Transport, TransportError, TransportInterfaceType,
     UpdateFirmware,
 };
-use crate::util::usb::UsbBackend;
 
 pub mod c2d2;
 pub mod dfu;
