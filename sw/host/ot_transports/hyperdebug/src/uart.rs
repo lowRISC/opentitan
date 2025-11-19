@@ -47,7 +47,7 @@ impl HyperdebugUart {
         supports_clearing_queues: bool,
     ) -> Result<Self> {
         Ok(Self {
-            inner: Rc::clone(inner),
+            inner: inner.clone(),
             usb_interface: uart_interface.interface,
             supports_clearing_queues,
             serial_port: SoftwareFlowControl::new(SerialPortUart::open(

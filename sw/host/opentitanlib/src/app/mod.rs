@@ -746,7 +746,7 @@ impl TransportWrapperBuilder {
                 );
                 transport_wrapper
                     .artificial_pin_map
-                    .insert(pinname, Rc::clone(&io.pins[v.pin_no as usize]));
+                    .insert(pinname, io.pins[v.pin_no as usize].clone());
             } else {
                 bail!(TransportError::InvalidIoExpanderName(
                     v.io_expander.to_string()
@@ -810,23 +810,22 @@ impl TransportWrapper {
         let name = name.to_uppercase();
         let mut spi_logical_map = self.spi_logical_map.borrow_mut();
         if let Some(instance) = spi_logical_map.get(&name) {
-            return Ok(Rc::clone(instance) as Rc<dyn Target>);
+            return Ok(instance.clone());
         }
         if let Some(spi_conf) = self.spi_conf_map.get(&name) {
             let mut spi_physical_map = self.spi_physical_map.borrow_mut();
             // Find if we already have a PhysicalSpiWrapper around the requested instance.  If
             // not, create one.
-            let physical_wrapper = if let Some(instance) =
-                spi_physical_map.get(&spi_conf.underlying_instance)
-            {
-                Rc::clone(instance)
-            } else {
-                let instance = Rc::new(spi::PhysicalSpiWrapper::new(
-                    self.transport.spi(spi_conf.underlying_instance.as_str())?,
-                ));
-                spi_physical_map.insert(spi_conf.underlying_instance.clone(), Rc::clone(&instance));
-                instance
-            };
+            let physical_wrapper =
+                if let Some(instance) = spi_physical_map.get(&spi_conf.underlying_instance) {
+                    instance.clone()
+                } else {
+                    let instance = Rc::new(spi::PhysicalSpiWrapper::new(
+                        self.transport.spi(spi_conf.underlying_instance.as_str())?,
+                    ));
+                    spi_physical_map.insert(spi_conf.underlying_instance.clone(), instance.clone());
+                    instance
+                };
 
             // Create a LogicalSpiWrapper referring to the physical port, and carrying the
             // particular speed and other settings.
@@ -835,7 +834,7 @@ impl TransportWrapper {
                 spi_conf,
                 physical_wrapper,
             )?);
-            spi_logical_map.insert(name, Rc::clone(&new_wrapper));
+            spi_logical_map.insert(name, new_wrapper.clone());
             Ok(new_wrapper)
         } else {
             self.transport.spi(name.as_str())
@@ -847,23 +846,22 @@ impl TransportWrapper {
         let name = name.to_uppercase();
         let mut i2c_logical_map = self.i2c_logical_map.borrow_mut();
         if let Some(instance) = i2c_logical_map.get(&name) {
-            return Ok(Rc::clone(instance) as Rc<dyn Bus>);
+            return Ok(instance.clone());
         }
         if let Some(i2c_conf) = self.i2c_conf_map.get(&name) {
             let mut i2c_physical_map = self.i2c_physical_map.borrow_mut();
             // Find if we already have a PhysicalI2cWrapper around the requested instance.  If
             // not, create one.
-            let physical_wrapper = if let Some(instance) =
-                i2c_physical_map.get(&i2c_conf.underlying_instance)
-            {
-                Rc::clone(instance)
-            } else {
-                let instance = Rc::new(i2c::PhysicalI2cWrapper::new(
-                    self.transport.i2c(i2c_conf.underlying_instance.as_str())?,
-                ));
-                i2c_physical_map.insert(i2c_conf.underlying_instance.clone(), Rc::clone(&instance));
-                instance
-            };
+            let physical_wrapper =
+                if let Some(instance) = i2c_physical_map.get(&i2c_conf.underlying_instance) {
+                    instance.clone()
+                } else {
+                    let instance = Rc::new(i2c::PhysicalI2cWrapper::new(
+                        self.transport.i2c(i2c_conf.underlying_instance.as_str())?,
+                    ));
+                    i2c_physical_map.insert(i2c_conf.underlying_instance.clone(), instance.clone());
+                    instance
+                };
 
             // Create a LogicalI2cWrapper referring to the physical port, and carrying the
             // particular speed and other settings.
@@ -872,7 +870,7 @@ impl TransportWrapper {
                 i2c_conf,
                 physical_wrapper,
             )?);
-            i2c_logical_map.insert(name, Rc::clone(&new_wrapper));
+            i2c_logical_map.insert(name, new_wrapper.clone());
             Ok(new_wrapper)
         } else {
             self.transport.i2c(name.as_str())
@@ -929,7 +927,7 @@ impl TransportWrapper {
         // Find if we already have a GpioPinWrapper around the requested instance.  If
         // not, create one.
         if let Some(instance) = pin_instance_map.get(&resolved_pin_name) {
-            Ok(Rc::clone(instance) as Rc<dyn GpioPin>)
+            Ok(instance.clone())
         } else {
             let instance = if let Some(pin) = self.artificial_pin_map.get(&resolved_pin_name) {
                 pin.clone()
@@ -942,8 +940,8 @@ impl TransportWrapper {
                 .and_then(|conf| conf.invert)
                 .unwrap_or(false);
             let wrapper = Rc::new(gpio::GpioPinWrapper::new(instance, invert));
-            pin_instance_map.insert(resolved_pin_name, Rc::clone(&wrapper));
-            Ok(wrapper as Rc<dyn GpioPin>)
+            pin_instance_map.insert(resolved_pin_name, wrapper.clone());
+            Ok(wrapper)
         }
     }
 

@@ -110,16 +110,19 @@ impl Transport for Verilator {
                 SerialPortUart::open_pseudo(&self.uart_tty, UART_BAUD)?,
             )));
         }
-        Ok(Rc::clone(inner.uart.as_ref().unwrap()))
+        Ok(inner.uart.as_ref().unwrap().clone())
     }
 
     fn gpio_pin(&self, instance: &str) -> Result<Rc<dyn GpioPin>> {
         let pin = u8::from_str(instance).with_context(|| format!("can't convert {instance:?}"))?;
         ensure!(pin < 32 || pin == 255, GpioError::InvalidPinNumber(pin));
         let mut inner = self.inner.borrow_mut();
-        Ok(Rc::clone(inner.gpio.pins.entry(pin).or_insert_with(|| {
-            VerilatorGpioPin::new(Rc::clone(&self.inner), pin)
-        })))
+        Ok(inner
+            .gpio
+            .pins
+            .entry(pin)
+            .or_insert_with(|| VerilatorGpioPin::new(self.inner.clone(), pin))
+            .clone())
     }
 
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {

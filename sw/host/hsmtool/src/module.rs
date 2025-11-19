@@ -64,11 +64,7 @@ impl Module {
         let module = match module {
             SpxModule::Acorn(libpath) => Acorn::new(libpath)? as Box<dyn SpxInterface>,
             SpxModule::Pkcs11Ef => {
-                let session = self
-                    .session
-                    .as_ref()
-                    .map(Rc::clone)
-                    .ok_or(HsmError::SessionRequired)?;
+                let session = self.session.clone().ok_or(HsmError::SessionRequired)?;
                 SpxEf::new(session) as Box<dyn SpxInterface>
             }
         };

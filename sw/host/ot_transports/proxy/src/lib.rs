@@ -296,7 +296,7 @@ impl Transport for Proxy {
     // Create Uart instance, or return one from a cache of previously created instances.
     fn uart(&self, instance_name: &str) -> Result<Rc<dyn Uart>> {
         if let Some(instance) = self.inner.uarts.borrow().get(instance_name) {
-            return Ok(Rc::clone(&instance.uart));
+            return Ok(instance.uart.clone());
         }
 
         // All `Uart` instances that we create via proxy supports non-blocking.
@@ -321,7 +321,7 @@ impl Transport for Proxy {
         self.inner.uarts.borrow_mut().insert(
             instance_name.to_owned(),
             UartRecord {
-                uart: Rc::clone(&instance),
+                uart: instance.clone(),
                 pipe_sender,
                 pipe_receiver,
             },

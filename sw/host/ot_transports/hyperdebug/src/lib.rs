@@ -662,7 +662,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
         let (enable_cmd, idx) = T::spi_index(&self.inner, instance)?;
         if let Some(instance) = self.cached_io_interfaces.spis.borrow().get(&idx) {
-            return Ok(Rc::clone(instance));
+            return Ok(instance.clone());
         }
         let instance: Rc<dyn Target> = Rc::new(spi::HyperdebugSpiTarget::open(
             &self.inner,
@@ -674,22 +674,22 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         self.cached_io_interfaces
             .spis
             .borrow_mut()
-            .insert(idx, Rc::clone(&instance));
+            .insert(idx, instance.clone());
         Ok(instance)
     }
 
     // Create I2C Target instance, or return one from a cache of previously created instances.
     fn i2c(&self, name: &str) -> Result<Rc<dyn Bus>> {
         if let Some(instance) = self.cached_io_interfaces.i2cs_by_name.borrow().get(name) {
-            return Ok(Rc::clone(instance));
+            return Ok(instance.clone());
         }
         let (idx, mode) = T::i2c_index(&self.inner, name)?;
         if let Some(instance) = self.cached_io_interfaces.i2cs_by_index.borrow().get(&idx) {
             self.cached_io_interfaces
                 .i2cs_by_name
                 .borrow_mut()
-                .insert(name.to_string(), Rc::clone(instance));
-            return Ok(Rc::clone(instance));
+                .insert(name.to_string(), instance.clone());
+            return Ok(instance.clone());
         }
         let cmsis_google_capabilities = self.get_cmsis_google_capabilities()?;
         let instance: Rc<dyn Bus> = Rc::new(
@@ -723,11 +723,11 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         self.cached_io_interfaces
             .i2cs_by_index
             .borrow_mut()
-            .insert(idx, Rc::clone(&instance));
+            .insert(idx, instance.clone());
         self.cached_io_interfaces
             .i2cs_by_name
             .borrow_mut()
-            .insert(name.to_string(), Rc::clone(&instance));
+            .insert(name.to_string(), instance.clone());
         Ok(instance)
     }
 
@@ -741,7 +741,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                     .borrow()
                     .get(&uart_interface.tty)
                 {
-                    return Ok(Rc::clone(instance));
+                    return Ok(instance.clone());
                 }
                 let supports_clearing_queues =
                     self.get_cmsis_google_capabilities()? & Self::GOOGLE_CAP_UART_QUEUE_CLEAR != 0;
@@ -753,7 +753,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 self.cached_io_interfaces
                     .uarts
                     .borrow_mut()
-                    .insert(uart_interface.tty.clone(), Rc::clone(&instance));
+                    .insert(uart_interface.tty.clone(), instance.clone());
                 Ok(instance)
             }
             _ => Err(TransportError::InvalidInstance(
@@ -773,11 +773,8 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 .borrow_mut()
                 .entry(pinname.to_string())
             {
-                Entry::Vacant(v) => {
-                    let u = v.insert(T::gpio_pin(&self.inner, pinname)?);
-                    Rc::clone(u)
-                }
-                Entry::Occupied(o) => Rc::clone(o.get()),
+                Entry::Vacant(v) => v.insert(T::gpio_pin(&self.inner, pinname)?).clone(),
+                Entry::Occupied(o) => o.get().clone(),
             },
         )
     }

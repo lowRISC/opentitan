@@ -91,16 +91,16 @@ impl Ti50Emulator {
                 .borrow_mut()
                 .insert(name.to_string(), gpio::GpioConfiguration::default());
             let gpio: Rc<dyn GpioPin> = Rc::new(Ti50GpioPin::open(&inner, name, *state)?);
-            gpio_map.insert(name.to_uppercase(), Rc::clone(&gpio));
+            gpio_map.insert(name.to_uppercase(), gpio.clone());
         }
         for (name, path) in conf.uart.iter() {
             let uart: Rc<Ti50Uart> = Rc::new(Ti50Uart::open(&inner, path)?);
-            uart_map.insert(name.to_uppercase(), Rc::clone(&uart) as Rc<dyn Uart>);
+            uart_map.insert(name.to_uppercase(), uart.clone() as Rc<dyn Uart>);
             inner.uarts.borrow_mut().push(Rc::downgrade(&uart));
         }
         for (name, path) in conf.i2c.iter() {
             let i2c: Rc<dyn Bus> = Rc::new(Ti50I2cBus::open(&inner, path)?);
-            i2c_map.insert(name.to_uppercase(), Rc::clone(&i2c));
+            i2c_map.insert(name.to_uppercase(), i2c.clone());
         }
         let ti50_emu = Ti50Emulator {
             gpio_map,
@@ -155,23 +155,35 @@ impl Transport for Ti50Emulator {
 
     // Returns one of existing I2C instance.
     fn i2c(&self, instance: &str) -> Result<Rc<dyn Bus>> {
-        Ok(Rc::clone(self.i2c_map.get(instance).ok_or_else(|| {
-            TransportError::InvalidInstance(TransportInterfaceType::I2c, instance.to_string())
-        })?))
+        Ok(self
+            .i2c_map
+            .get(instance)
+            .ok_or_else(|| {
+                TransportError::InvalidInstance(TransportInterfaceType::I2c, instance.to_string())
+            })?
+            .clone())
     }
 
     // Returns one of existing UART instance.
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
-        Ok(Rc::clone(self.uart_map.get(instance).ok_or_else(|| {
-            TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
-        })?))
+        Ok(self
+            .uart_map
+            .get(instance)
+            .ok_or_else(|| {
+                TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
+            })?
+            .clone())
     }
 
     // Returns one of existing GPIO pin instance.
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
-        Ok(Rc::clone(self.gpio_map.get(pinname).ok_or_else(|| {
-            TransportError::InvalidInstance(TransportInterfaceType::Gpio, pinname.to_string())
-        })?))
+        Ok(self
+            .gpio_map
+            .get(pinname)
+            .ok_or_else(|| {
+                TransportError::InvalidInstance(TransportInterfaceType::Gpio, pinname.to_string())
+            })?
+            .clone())
     }
 
     // Create Emulator instance, or return one from a cache of previously created instances.

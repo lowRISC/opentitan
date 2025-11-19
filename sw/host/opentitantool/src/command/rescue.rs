@@ -9,7 +9,6 @@ use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs::File;
 use std::path::PathBuf;
-use std::rc::Rc;
 use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
@@ -95,7 +94,7 @@ impl CommandDispatch for Firmware {
         };
         let uart = self.params.create(transport)?;
         let mut prev_baudrate = 0u32;
-        let rescue = RescueSerial::new(Rc::clone(&uart));
+        let rescue = RescueSerial::new(uart.clone());
         rescue.enter(transport, self.reset_target)?;
         if let Some(rate) = self.rate {
             prev_baudrate = uart.get_baudrate()?;
