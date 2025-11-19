@@ -11,6 +11,7 @@ use std::task::{Poll, ready};
 use anyhow::{Context, Result, anyhow};
 use tokio::io::AsyncRead;
 
+use crate::io::console::ConsoleDevice;
 use crate::io::uart::Uart;
 use crate::util::runtime::MultiWaker;
 
@@ -91,13 +92,7 @@ impl ChildUart {
     }
 }
 
-impl Uart for ChildUart {
-    fn get_baudrate(&self) -> Result<u32> {
-        Err(anyhow!("Not implemented"))
-    }
-    fn set_baudrate(&self, _baudrate: u32) -> Result<()> {
-        Err(anyhow!("Not implemented"))
-    }
+impl ConsoleDevice for ChildUart {
     fn poll_read(&self, cx: &mut std::task::Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
         let mut stdout = self
             .stdout
@@ -126,5 +121,14 @@ impl Uart for ChildUart {
         } else {
             Err(anyhow!("child has no stdin"))
         }
+    }
+}
+
+impl Uart for ChildUart {
+    fn get_baudrate(&self) -> Result<u32> {
+        Err(anyhow!("Not implemented"))
+    }
+    fn set_baudrate(&self, _baudrate: u32) -> Result<()> {
+        Err(anyhow!("Not implemented"))
     }
 }

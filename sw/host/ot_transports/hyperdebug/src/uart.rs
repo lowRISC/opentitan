@@ -8,6 +8,7 @@ use anyhow::{Context, Result};
 use rusb::{Direction, Recipient, RequestType};
 use serialport::Parity;
 
+use opentitanlib::io::console::ConsoleDevice;
 use opentitanlib::io::uart::flow::SoftwareFlowControl;
 use opentitanlib::io::uart::serial::SerialPortUart;
 use opentitanlib::io::uart::{FlowControl, Uart, UartError};
@@ -62,6 +63,34 @@ impl HyperdebugUart {
     }
 }
 
+impl ConsoleDevice for HyperdebugUart {
+    fn poll_read(
+        &self,
+        cx: &mut std::task::Context<'_>,
+        buf: &mut [u8],
+    ) -> std::task::Poll<Result<usize>> {
+        self.serial_port.poll_read(cx, buf)
+    }
+
+    fn write(&self, buf: &[u8]) -> Result<()> {
+        self.serial_port.write(buf)
+    }
+
+    fn set_break(&self, enable: bool) -> Result<()> {
+        let usb_handle = self.inner.usb_device.borrow();
+        usb_handle
+            .write_control(
+                rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
+                ControlRequest::Break as u8,
+                if enable { 0xFFFF } else { 0 },
+                self.usb_interface as u16,
+                &[],
+            )
+            .context("Setting break condition")?;
+        Ok(())
+    }
+}
+
 impl Uart for HyperdebugUart {
     fn get_baudrate(&self) -> Result<u32> {
         let usb_handle = self.inner.usb_device.borrow();
@@ -109,18 +138,6 @@ impl Uart for HyperdebugUart {
         self.serial_port.get_device_path()
     }
 
-    fn poll_read(
-        &self,
-        cx: &mut std::task::Context<'_>,
-        buf: &mut [u8],
-    ) -> std::task::Poll<Result<usize>> {
-        self.serial_port.poll_read(cx, buf)
-    }
-
-    fn write(&self, buf: &[u8]) -> Result<()> {
-        self.serial_port.write(buf)
-    }
-
     fn clear_rx_buffer(&self) -> Result<()> {
         if self.supports_clearing_queues {
             let usb_handle = self.inner.usb_device.borrow();
@@ -133,20 +150,6 @@ impl Uart for HyperdebugUart {
             )?;
         }
         self.serial_port.clear_rx_buffer()
-    }
-
-    fn set_break(&self, enable: bool) -> Result<()> {
-        let usb_handle = self.inner.usb_device.borrow();
-        usb_handle
-            .write_control(
-                rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
-                ControlRequest::Break as u8,
-                if enable { 0xFFFF } else { 0 },
-                self.usb_interface as u16,
-                &[],
-            )
-            .context("Setting break condition")?;
-        Ok(())
     }
 
     fn set_parity(&self, parity: Parity) -> Result<()> {

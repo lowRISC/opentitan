@@ -10,6 +10,7 @@ use std::time::Duration;
 use anyhow::{Context as _, Result};
 
 use super::{FlowControl, Parity, Uart};
+use crate::io::console::ConsoleDevice;
 
 /// Add software flow control to a UART device.
 ///
@@ -55,34 +56,7 @@ impl<T: Uart> SoftwareFlowControl<T> {
     }
 }
 
-impl<T: Uart> Uart for SoftwareFlowControl<T> {
-    fn get_baudrate(&self) -> Result<u32> {
-        self.inner.get_baudrate()
-    }
-
-    /// Sets the UART baudrate.  May do nothing for virtual UARTs.
-    fn set_baudrate(&self, baudrate: u32) -> Result<()> {
-        self.inner.set_baudrate(baudrate)
-    }
-
-    fn get_flow_control(&self) -> Result<FlowControl> {
-        Ok(self.flow_control.get())
-    }
-
-    fn set_flow_control(&self, flow_control: bool) -> Result<()> {
-        self.flow_control.set(match flow_control {
-            false => FlowControl::None,
-            // When flow-control is enabled, assume we haven't
-            // already been put into a pause state.
-            true => FlowControl::Resume,
-        });
-        Ok(())
-    }
-
-    fn get_device_path(&self) -> Result<String> {
-        self.inner.get_device_path()
-    }
-
+impl<T: Uart> ConsoleDevice for SoftwareFlowControl<T> {
     fn poll_read(&self, cx: &mut Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
         let mut rxbuf = self.rxbuf.borrow_mut();
 
@@ -146,6 +120,35 @@ impl<T: Uart> Uart for SoftwareFlowControl<T> {
 
     fn set_break(&self, enable: bool) -> Result<()> {
         self.inner.set_break(enable)
+    }
+}
+
+impl<T: Uart> Uart for SoftwareFlowControl<T> {
+    fn get_baudrate(&self) -> Result<u32> {
+        self.inner.get_baudrate()
+    }
+
+    /// Sets the UART baudrate.  May do nothing for virtual UARTs.
+    fn set_baudrate(&self, baudrate: u32) -> Result<()> {
+        self.inner.set_baudrate(baudrate)
+    }
+
+    fn get_flow_control(&self) -> Result<FlowControl> {
+        Ok(self.flow_control.get())
+    }
+
+    fn set_flow_control(&self, flow_control: bool) -> Result<()> {
+        self.flow_control.set(match flow_control {
+            false => FlowControl::None,
+            // When flow-control is enabled, assume we haven't
+            // already been put into a pause state.
+            true => FlowControl::Resume,
+        });
+        Ok(())
+    }
+
+    fn get_device_path(&self) -> Result<String> {
+        self.inner.get_device_path()
     }
 
     fn set_parity(&self, parity: Parity) -> Result<()> {
