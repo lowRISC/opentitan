@@ -3,30 +3,44 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{Context, Result, ensure};
-use rusb;
+use rusb::{self, UsbContext};
+use std::rc::Rc;
 use std::time::{Duration, Instant};
 
+use crate::io::usb::{UsbContext as OtUsbContext, UsbDevice, desc::Configuration};
 use crate::transport::TransportError;
 
-/// The `UsbBackend` provides low-level USB access to debugging devices.
-pub struct UsbBackend {
-    device: rusb::Device<rusb::GlobalContext>,
-    handle: rusb::DeviceHandle<rusb::GlobalContext>,
+/// Represents a device provided by the `rusb` crate.
+pub struct RusbDevice {
+    handle: rusb::DeviceHandle<rusb::Context>,
     serial_number: String,
     timeout: Duration,
+    configurations: Vec<Vec<u8>>,
 }
 
-impl UsbBackend {
+
+/// Represents a backend using the `rusb` crate.
+#[derive(Default)]
+pub struct RusbContext {}
+
+impl RusbContext {
+    pub fn new() -> Self {
+        RusbContext::default()
+    }
+
     /// Scan the USB bus for a device matching VID/PID, and optionally also matching a serial
     /// number.
-    pub fn scan(
+    fn scan(
         usb_vid_pid: Option<(u16, u16)>,
         usb_protocol: Option<(u8, u8, u8)>,
         usb_serial: Option<&str>,
-    ) -> Result<Vec<(rusb::Device<rusb::GlobalContext>, String)>> {
+    ) -> Result<Vec<(rusb::Device<rusb::Context>, String)>> {
         let mut devices = Vec::new();
         let mut deferred_log_messages = Vec::new();
-        for device in rusb::devices().context("USB error")?.iter() {
+        // The global context sometimes fails to detect new devices which causes some
+        // really puzzling errors. Here we create a new context for every scan.
+        // Although less efficient, this works around most of the issues with hotplug.
+        for device in rusb::Context::new()?.devices().context("USB error")?.iter() {
             let descriptor = match device.device_descriptor() {
                 Ok(desc) => desc,
                 Err(e) => {
@@ -122,42 +136,19 @@ impl UsbBackend {
         }
         Ok(devices)
     }
+}
 
-    /// Create a new UsbBackend.
-    pub fn new(usb_vid: u16, usb_pid: u16, usb_serial: Option<&str>) -> Result<Self> {
-        let mut devices = UsbBackend::scan(Some((usb_vid, usb_pid)), None, usb_serial)?;
-        ensure!(!devices.is_empty(), TransportError::NoDevice);
-        ensure!(devices.len() == 1, TransportError::MultipleDevices);
-
-        let (device, serial_number) = devices.remove(0);
-        Ok(UsbBackend {
-            handle: device.open().context("USB open error")?,
-            device,
-            serial_number,
-            timeout: Duration::from_millis(500),
-        })
-    }
-
-    pub fn from_interface(
-        class: u8,
-        subclass: u8,
-        protocol: u8,
-        usb_serial: Option<&str>,
-    ) -> Result<Self> {
-        Self::from_interface_with_timeout(class, subclass, protocol, usb_serial, Duration::ZERO)
-    }
-
-    pub fn from_interface_with_timeout(
-        class: u8,
-        subclass: u8,
-        protocol: u8,
+impl OtUsbContext for RusbContext {
+    fn device_by_id_with_timeout(
+        &self,
+        usb_vid: u16,
+        usb_pid: u16,
         usb_serial: Option<&str>,
         timeout: Duration,
-    ) -> Result<Self> {
+    ) -> Result<Rc<dyn UsbDevice>> {
         let deadline = Instant::now() + timeout;
         loop {
-            let mut devices =
-                UsbBackend::scan(None, Some((class, subclass, protocol)), usb_serial)?;
+            let mut devices = RusbContext::scan(Some((usb_vid, usb_pid)), None, usb_serial)?;
             if devices.is_empty() {
                 if Instant::now() < deadline {
                     std::thread::sleep(Duration::from_millis(100));
@@ -169,140 +160,209 @@ impl UsbBackend {
             ensure!(devices.len() == 1, TransportError::MultipleDevices);
 
             let (device, serial_number) = devices.remove(0);
-            return Ok(UsbBackend {
-                handle: device.open().context("USB open error")?,
-                device,
+            return Ok(Rc::new(RusbDevice::new(
+                device
+                    .open()
+                    .with_context(|| format!("Cannot open device {device:?}"))?,
                 serial_number,
-                timeout: Duration::from_millis(500),
-            });
+                Duration::from_millis(500),
+            )?));
         }
     }
 
-    pub fn handle(&self) -> &rusb::DeviceHandle<rusb::GlobalContext> {
-        &self.handle
+    fn device_by_interface_with_timeout(
+        &self,
+        class: u8,
+        subclass: u8,
+        protocol: u8,
+        usb_serial: Option<&str>,
+        timeout: Duration,
+    ) -> Result<Rc<dyn UsbDevice>> {
+        let deadline = Instant::now() + timeout;
+        loop {
+            let mut devices =
+                RusbContext::scan(None, Some((class, subclass, protocol)), usb_serial)?;
+            if devices.is_empty() {
+                if Instant::now() < deadline {
+                    std::thread::sleep(Duration::from_millis(100));
+                    continue;
+                } else {
+                    return Err(TransportError::NoDevice.into());
+                }
+            }
+            ensure!(devices.len() == 1, TransportError::MultipleDevices);
+
+            let (device, serial_number) = devices.remove(0);
+            return Ok(Rc::new(RusbDevice::new(
+                device
+                    .open()
+                    .with_context(|| format!("Cannot open device {device:?}"))?,
+                serial_number,
+                Duration::from_millis(500),
+            )?));
+        }
+    }
+}
+
+impl RusbDevice {
+    fn new(
+        handle: rusb::DeviceHandle<rusb::Context>,
+        serial_number: String,
+        timeout: Duration,
+    ) -> Result<Self> {
+        let mut configurations = Vec::new();
+
+        // Unfortunately, rusb simply wraps around libusb which does not
+        // give access to the raw configuration descriptor so we must
+        // get it directly from the device.
+        let nr_config = handle
+            .device()
+            .device_descriptor()
+            .context("could not retrieve device descriptor")?
+            .num_configurations();
+        for config_idx in 0..nr_config {
+            let tot_len = handle
+                .device()
+                .config_descriptor(config_idx)
+                .context("could not retrieve config descriptor")?
+                .total_length();
+            let mut desc = vec![0u8; tot_len as usize];
+            let size = handle
+                .read_control(
+                    0x80,                       // Standard, device, IN
+                    6,                          // GET_DESCRIPTOR
+                    2 << 8 | config_idx as u16, // CONFIGURATION
+                    0,
+                    &mut desc,
+                    timeout,
+                )
+                .context("could not retrieve config descriptor")?;
+            ensure!(
+                size == tot_len as usize,
+                "Device did not return the full configuration descriptor"
+            );
+            configurations.push(desc)
+        }
+
+        Ok(RusbDevice {
+            handle,
+            serial_number,
+            timeout,
+            configurations,
+        })
+    }
+}
+
+impl UsbDevice for RusbDevice {
+    fn get_timeout(&self) -> Duration {
+        self.timeout
     }
 
-    pub fn get_vendor_id(&self) -> u16 {
-        self.device.device_descriptor().unwrap().vendor_id()
+    fn get_vendor_id(&self) -> u16 {
+        self.handle
+            .device()
+            .device_descriptor()
+            .unwrap()
+            .vendor_id()
     }
 
-    pub fn get_product_id(&self) -> u16 {
-        self.device.device_descriptor().unwrap().product_id()
+    fn get_product_id(&self) -> u16 {
+        self.handle
+            .device()
+            .device_descriptor()
+            .unwrap()
+            .product_id()
     }
 
     /// Gets the usb serial number of the device.
-    pub fn get_serial_number(&self) -> &str {
+    fn get_serial_number(&self) -> &str {
         self.serial_number.as_str()
     }
 
-    pub fn set_active_configuration(&self, config: u8) -> Result<()> {
+    fn set_active_configuration(&self, config: u8) -> Result<()> {
         self.handle
             .set_active_configuration(config)
             .context("USB error")
     }
 
-    pub fn claim_interface(&self, iface: u8) -> Result<()> {
+    fn claim_interface(&self, iface: u8) -> Result<()> {
         self.handle.claim_interface(iface).context("USB error")
     }
 
-    pub fn release_interface(&self, iface: u8) -> Result<()> {
+    fn release_interface(&self, iface: u8) -> Result<()> {
         self.handle.release_interface(iface).context("USB error")
     }
 
-    pub fn set_alternate_setting(&self, iface: u8, setting: u8) -> Result<()> {
+    fn set_alternate_setting(&self, iface: u8, setting: u8) -> Result<()> {
         self.handle
             .set_alternate_setting(iface, setting)
             .context("USB error")
     }
 
-    pub fn kernel_driver_active(&self, iface: u8) -> Result<bool> {
+    fn kernel_driver_active(&self, iface: u8) -> Result<bool> {
         self.handle.kernel_driver_active(iface).context("USB error")
     }
 
-    pub fn detach_kernel_driver(&self, iface: u8) -> Result<()> {
+    fn detach_kernel_driver(&self, iface: u8) -> Result<()> {
         self.handle.detach_kernel_driver(iface).context("USB error")
     }
 
-    pub fn attach_kernel_driver(&self, iface: u8) -> Result<()> {
+    fn attach_kernel_driver(&self, iface: u8) -> Result<()> {
         self.handle.attach_kernel_driver(iface).context("USB error")
     }
 
-    //
-    // Enumerating interfaces of the USB device.  The methods below leak rusb data structures,
-    // and may have to be refactored, when we convert UsbDevice into a trait, and want to
-    // support mocked implementations.
-    //
-
-    pub fn active_config_descriptor(&self) -> Result<rusb::ConfigDescriptor> {
-        self.device.active_config_descriptor().context("USB error")
+    fn active_configuration(&self) -> Result<Configuration> {
+        // TODO fix this
+        Ok(Configuration::new(&self.configurations[0]))
     }
 
-    pub fn bus_number(&self) -> u8 {
-        self.device.bus_number()
+    fn bus_number(&self) -> u8 {
+        self.handle.device().bus_number()
     }
 
-    pub fn port_numbers(&self) -> Result<Vec<u8>> {
-        self.device.port_numbers().context("USB error")
+    fn port_numbers(&self) -> Result<Vec<u8>> {
+        self.handle.device().port_numbers().context("USB error")
     }
 
-    pub fn read_string_descriptor_ascii(&self, idx: u8) -> Result<String> {
+    fn read_string_descriptor_ascii(&self, idx: u8) -> Result<String> {
         self.handle
             .read_string_descriptor_ascii(idx)
             .context("USB error")
     }
 
-    pub fn reset(&self) -> Result<()> {
+    fn reset(&self) -> Result<()> {
         self.handle.reset().context("USB Error")
     }
 
-    //
-    // Sending and receiving data, the below methods provide a nice interface.
-    //
-
-    /// Issue a USB control request with optional host-to-device data.
-    pub fn write_control(
+    fn write_control_timeout(
         &self,
         request_type: u8,
         request: u8,
         value: u16,
         index: u16,
         buf: &[u8],
+        timeout: Duration,
     ) -> Result<usize> {
         self.handle
-            .write_control(request_type, request, value, index, buf, self.timeout)
+            .write_control(request_type, request, value, index, buf, timeout)
             .context("USB error")
     }
 
-    /// Issue a USB control request with optional device-to-host data.
-    pub fn read_control(
+    fn read_control_timeout(
         &self,
         request_type: u8,
         request: u8,
         value: u16,
         index: u16,
         buf: &mut [u8],
+        timeout: Duration,
     ) -> Result<usize> {
         self.handle
-            .read_control(request_type, request, value, index, buf, self.timeout)
+            .read_control(request_type, request, value, index, buf, timeout)
             .context("USB error")
     }
 
-    /// Read bulk data bytes to given USB endpoint.
-    pub fn read_bulk(&self, endpoint: u8, data: &mut [u8]) -> Result<usize> {
-        let len = self
-            .handle
-            .read_bulk(endpoint, data, self.timeout)
-            .context("USB error")?;
-        Ok(len)
-    }
-
-    /// Read bulk data bytes to given USB endpoint.
-    pub fn read_bulk_timeout(
-        &self,
-        endpoint: u8,
-        data: &mut [u8],
-        timeout: Duration,
-    ) -> Result<usize> {
+    fn read_bulk_timeout(&self, endpoint: u8, data: &mut [u8], timeout: Duration) -> Result<usize> {
         let len = self
             .handle
             .read_bulk(endpoint, data, timeout)
@@ -310,11 +370,10 @@ impl UsbBackend {
         Ok(len)
     }
 
-    /// Write bulk data bytes to given USB endpoint.
-    pub fn write_bulk(&self, endpoint: u8, data: &[u8]) -> Result<usize> {
+    fn write_bulk_timeout(&self, endpoint: u8, data: &[u8], timeout: Duration) -> Result<usize> {
         let len = self
             .handle
-            .write_bulk(endpoint, data, self.timeout)
+            .write_bulk(endpoint, data, timeout)
             .context("USB error")?;
         Ok(len)
     }
