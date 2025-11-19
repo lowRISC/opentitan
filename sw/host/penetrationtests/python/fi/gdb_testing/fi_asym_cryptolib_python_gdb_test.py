@@ -78,16 +78,10 @@ def reset_gdb(gdb):
 
 def reset_target_and_gdb(gdb):
     gdb.close_gdb()
-    gdb = GDBController(
-        gdb_path=GDB_PATH,
-        gdb_port=GDB_PORT,
-        elf_file=elf_path,
-    )
-    gdb.reset_target()
+    target.reset_target()
+    target.start_openocd(startup_delay=0.2, print_output=False)
     target.dump_all()
     trigger_testos_init(print_output=False)
-    # Reset again
-    gdb.close_gdb()
     gdb = GDBController(
         gdb_path=GDB_PATH,
         gdb_port=GDB_PORT,
@@ -98,7 +92,6 @@ def reset_target_and_gdb(gdb):
 
 def re_initialize(gdb, print_output=False):
     gdb.close_gdb()
-    target.close_openocd()
     target.initialize_target(print_output=print_output)
     trigger_testos_init(print_output=print_output)
     target.dump_all()
@@ -209,7 +202,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
 
                 # Reset the target, flush the output, and close gdb
-                gdb = re_initialize(gdb)
+                gdb = reset_target_and_gdb(gdb)
 
                 started = True
                 for pc, count in pc_count_dict.items():
@@ -264,7 +257,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                     # We do not need to reset the target since it gave an output
                             else:
                                 print("No break point found, something went wrong", flush=True)
-                                gdb = re_initialize(gdb)
+                                gdb = reset_target_and_gdb(gdb)
 
                         except json.JSONDecodeError:
                             print(
@@ -391,7 +384,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
 
                 # Reset the target, flush the output, and close gdb
-                gdb = re_initialize(gdb)
+                gdb = reset_target_and_gdb(gdb)
 
                 started = True
                 for pc, count in pc_count_dict.items():
@@ -449,7 +442,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                         # We do not need to reset the target since it gave an output
                                 else:
                                     print("No break point found, something went wrong", flush=True)
-                                    gdb = re_initialize(gdb)
+                                    gdb = reset_target_and_gdb(gdb)
 
                             except json.JSONDecodeError:
                                 print(
@@ -637,7 +630,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                     # We do not need to reset the target since it gave an output
                             else:
                                 print("No break point found, something went wrong", flush=True)
-                                gdb = re_initialize(gdb)
+                                gdb = reset_target_and_gdb(gdb)
 
                         except json.JSONDecodeError:
                             print(
@@ -764,7 +757,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
 
                 # Reset the target, flush the output, and close gdb
-                gdb = re_initialize(gdb)
+                gdb = reset_target_and_gdb(gdb)
 
                 started = True
                 for pc, count in pc_count_dict.items():
@@ -822,7 +815,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                         # We do not need to reset the target since it gave an output
                                 else:
                                     print("No break point found, something went wrong", flush=True)
-                                    gdb = re_initialize(gdb)
+                                    gdb = reset_target_and_gdb(gdb)
 
                             except json.JSONDecodeError:
                                 print(
@@ -969,7 +962,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
 
                 # Reset the target, flush the output, and close gdb
-                gdb = re_initialize(gdb)
+                gdb = reset_target_and_gdb(gdb)
 
                 started = True
                 for pc, count in pc_count_dict.items():
@@ -1034,7 +1027,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                     # We do not need to reset the target since it returned an output
                             else:
                                 print("No break point found, something went wrong", flush=True)
-                                gdb = re_initialize(gdb)
+                                gdb = reset_target_and_gdb(gdb)
 
                         except json.JSONDecodeError:
                             print(
@@ -1181,7 +1174,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
 
                 # Reset the target, flush the output, and close gdb
-                gdb = re_initialize(gdb)
+                gdb = reset_target_and_gdb(gdb)
 
                 started = True
                 for pc, count in pc_count_dict.items():
@@ -1246,7 +1239,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                     # We do not need to reset the target since it returned an output
                             else:
                                 print("No break point found, something went wrong", flush=True)
-                                gdb = re_initialize(gdb)
+                                gdb = reset_target_and_gdb(gdb)
 
                         except json.JSONDecodeError:
                             print(

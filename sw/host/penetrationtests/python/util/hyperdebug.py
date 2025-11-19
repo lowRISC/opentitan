@@ -125,7 +125,7 @@ class HyperDebug:
             raise
 
     def start_openocd(self, startup_delay=4, print_output=True):
-        self.close_openocd()
+        self.close_openocd(timeout=startup_delay)
         # We set up OpenOCD with the following default ports
         # 6666 for tcl connections
         # 4444 for telnet connections
@@ -170,13 +170,13 @@ class HyperDebug:
                 print("Error reading the openocd output")
                 pass
 
-    def close_openocd(self):
+    def close_openocd(self, timeout=10):
         if not self.openocd_process or self.openocd_process.poll() is not None:
             return
 
         self.openocd_process.send_signal(signal.SIGINT)
         try:
-            self.openocd_process.communicate(timeout=10)
+            self.openocd_process.communicate(timeout=timeout)
         except TimeoutExpired:
             self.openocd_process.kill()
             self.openocd_process.communicate()

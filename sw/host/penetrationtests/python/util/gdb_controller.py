@@ -17,7 +17,6 @@ class GDBController:
         self.gdb_path = gdb_path
         gdb_command = [
             gdb_path,
-            # "--interpreter=mi",
             "-ex",
             f"target remote {remote_host}:{gdb_port}",
         ]
@@ -111,14 +110,14 @@ class GDBController:
         time.sleep(reset_delay)
         self.dump_output()
 
-    def close_gdb(self):
+    def close_gdb(self, timeout=1):
         if not self.gdb_process or self.gdb_process.poll() is not None:
             return
 
         self.dump_output()
         self.gdb_process.send_signal(signal.SIGINT)
         try:
-            self.gdb_process.communicate(timeout=1)
+            self.gdb_process.communicate(timeout=timeout)
         except TimeoutExpired:
             self.gdb_process.kill()
             self.gdb_process.communicate()
