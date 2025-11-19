@@ -294,6 +294,7 @@ cc_library(
             "//sw/device/silicon_creator/lib/drivers:watchdog",
             "//sw/device/silicon_creator/lib/ownership",
             "//sw/device/silicon_creator/lib/ownership:isfb",
+            "//sw/device/silicon_creator/lib/ownership:owner_block",
             "//sw/device/silicon_creator/lib/ownership:owner_verify",
             "//sw/device/silicon_creator/lib/ownership:ownership_activate",
             "//sw/device/silicon_creator/lib/ownership:ownership_unlock",

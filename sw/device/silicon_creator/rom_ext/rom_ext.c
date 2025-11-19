@@ -41,6 +41,7 @@
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 #include "sw/device/silicon_creator/lib/ownership/isfb.h"
+#include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_verify.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_activate.h"
@@ -548,6 +549,9 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // Initialize the chip ownership state.
   rom_error_t error;
   error = ownership_init(boot_data, &owner_config, &keyring);
+  dbg_printf("owner_page: %u-%C/%u-%C\r\n", owner_page[0].config_version,
+             owner_page_valid[0], owner_page[1].config_version,
+             owner_page_valid[1]);
   if (error == kErrorWriteBootdataThenReboot) {
     return error;
   }
