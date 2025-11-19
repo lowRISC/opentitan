@@ -1,0 +1,21 @@
+Depth,Name,Reference,Coverage_Result,Description,Metric_Type,Item,Owner,Priority,Milestone,Weight,Goal,Issue,Comment,Tag
+0,mem_xyz,,,A synchronous memory with a parameterizable address width and data width.,dut_name,,,,,,,,,mem_xyz
+1,testlist,,,Testlist,section_title,,,,,,,,,mem_xyz/testlist
+2,main_test,,,Main test,testcase,tc_my_test,Michel,1,V1,5,100,#15926,,mem_xyz/testlist/main_test
+2,bad_addr,,,Bad address,testcase,tc_addr_err,Andrew,2,V3,3,100,#15927,,mem_xyz/testlist/bad_addr
+1,system_spec,,,System level specification,section_title,,,,,,,,,mem_xyz/system_spec
+2,addr_space,req_mem_xyz_162F,,All address space,functional,cp_addr,Francesca,1,V1,2,100,#14562,,mem_xyz/system_spec/addr_space
+2,rw_cmd,req_mem_xyz_0882,,Read and write commands,functional,cp_cmd,Michel,1,V1,2,100,#14562,,mem_xyz/system_spec/rw_cmd
+2,rw_addr_space,req_mem_xyz_24BE,,Read and write to all address space,functional,cp_addr_x_cp_cmd,Francesca,1,V1,2,80,#14562,,mem_xyz/system_spec/rw_addr_space
+2,mem_full,imp_mem_xyz_0F0A,,Reach memory full,functional,cp_full,Andrew,2,V2,3,100,#14562,This cannot be tested if block_abc is not ready,mem_xyz/system_spec/mem_full
+2,concurrent_rw,imp_mem_xyz_2730,,Read and write simultaneously,dut_assert,assert_rd_wr,Andrew,3,V3,2,100,#11487,,mem_xyz/system_spec/concurrent_rw
+2,addr_width_8bits,req_mem_xyz_364E,,Address 8 bits width,formal,fpv_addr_8bits,Andrew,1,V2,1,100,#2287,,mem_xyz/system_spec/addr_width_8bits
+2,addr_width_16bits,req_mem_xyz_3A6A,,Address 16 bits width,formal,fpv_addr_16bits,Andrew,1,V2,1,100,#2287,,mem_xyz/system_spec/addr_width_16bits
+2,addr_width_32bits,req_mem_xyz_3A4E,,Address 32 bits width,formal,fpv_addr_32bits,Andrew,3,V2,1,100,#2287,,mem_xyz/system_spec/addr_width_32bits
+2,data_width_8bits,req_mem_xyz_3637,,Data width 8 bits,formal,fpv_data_8width,Andrew,1,V2,1,100,#2287,,mem_xyz/system_spec/data_width_8bits
+2,fifo_common_lib,req_mem_xyz_3115,,Uses the FIFO from the common library,vplan,vplan_fifo,,1,V1,10,100,#2145,Incorporate the sub-module verification plan,mem_xyz/system_spec/fifo_common_lib
+2,mem_depth,req_mem_xyz_12A4,,Memory depth,formal,fpv_mem_depth,Andrew,1,,1,100,#2287,,mem_xyz/system_spec/mem_depth
+1,code_cov,,,Code coverage,section_title,,,,V3,40%,,,,mem_xyz/code_cov
+2,code_cov_statement,,,Statement,code_cov,s_cov(memory_xyz),,3,,,100,#7894,Need to run UNR before,mem_xyz/code_cov/code_cov_statement
+2,code_cov_fsm,,,FSM,code_cov,f_cov(memory_xyz),,3,,,100,#7894,,mem_xyz/code_cov/code_cov_fsm
+2,code_cov_branch,,,Branch...,code_cov,b_cov(memory_xyz),,3,,,100,#7894,,mem_xyz/code_cov/code_cov_branch
