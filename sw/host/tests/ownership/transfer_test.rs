@@ -7,7 +7,6 @@ use anyhow::{Result, anyhow};
 use clap::Parser;
 use regex::Regex;
 use std::path::PathBuf;
-use std::rc::Rc;
 use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
@@ -87,7 +86,7 @@ fn remember(haystack: &str, re: &str, memory: &mut Vec<String>) -> bool {
 
 fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
-    let rescue = RescueSerial::new(Rc::clone(&uart));
+    let rescue = RescueSerial::new(uart.clone());
 
     let mut keygen = Vec::new();
 

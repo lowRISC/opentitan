@@ -7,7 +7,6 @@ use anyhow::{Result, anyhow, ensure};
 use clap::Parser;
 use regex::Regex;
 use std::path::PathBuf;
-use std::rc::Rc;
 use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
@@ -64,7 +63,7 @@ struct Opts {
 
 fn newversion_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
-    let rescue = RescueSerial::new(Rc::clone(&uart));
+    let rescue = RescueSerial::new(uart.clone());
 
     log::info!("###### Get Device Info ######");
     rescue.enter(transport, /*reset=*/ true)?;

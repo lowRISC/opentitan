@@ -167,7 +167,7 @@ impl HyperdebugI2cBus {
         usb_handle.claim_interface(i2c_interface.interface)?;
 
         Ok(Self {
-            inner: Rc::clone(inner),
+            inner: inner.clone(),
             interface: *i2c_interface,
             cmsis_encapsulation,
             supports_i2c_device,

@@ -101,11 +101,8 @@ impl<C: Chip> Transport for Ftdi<C> {
             TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
         })?;
         let uart = match inner.uart.entry(instance) {
-            Entry::Vacant(v) => {
-                let u = v.insert(Rc::new(self.open_uart(instance)?));
-                Rc::clone(u)
-            }
-            Entry::Occupied(o) => Rc::clone(o.get()),
+            Entry::Vacant(v) => v.insert(Rc::new(self.open_uart(instance)?)).clone(),
+            Entry::Occupied(o) => o.get().clone(),
         };
         Ok(uart)
     }
@@ -113,14 +110,13 @@ impl<C: Chip> Transport for Ftdi<C> {
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         let mut inner = self.inner.borrow_mut();
         Ok(match inner.gpio.entry(pinname.to_string()) {
-            Entry::Vacant(v) => {
-                let u = v.insert(Rc::new(gpio::Pin::open::<C>(
+            Entry::Vacant(v) => v
+                .insert(Rc::new(gpio::Pin::open::<C>(
                     &self.ftdi_interfaces,
                     pinname.to_string(),
-                )?));
-                Rc::clone(u)
-            }
-            Entry::Occupied(o) => Rc::clone(o.get()),
+                )?))
+                .clone(),
+            Entry::Occupied(o) => o.get().clone(),
         })
     }
 
@@ -131,7 +127,7 @@ impl<C: Chip> Transport for Ftdi<C> {
         if inner.spi.is_none() {
             inner.spi = Some(Rc::new(spi::Spi::open(&self.ftdi_interfaces, spi_cs)?));
         }
-        Ok(Rc::clone(inner.spi.as_ref().unwrap()))
+        Ok(inner.spi.as_ref().unwrap().clone())
     }
 }
 

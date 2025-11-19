@@ -24,7 +24,7 @@ pub struct ProxyI2c {
 impl ProxyI2c {
     pub fn open(proxy: &Proxy, instance: &str) -> Result<Self> {
         let result = Self {
-            inner: Rc::clone(&proxy.inner),
+            inner: proxy.inner.clone(),
             instance: instance.to_string(),
             default_address: Cell::new(None),
         };

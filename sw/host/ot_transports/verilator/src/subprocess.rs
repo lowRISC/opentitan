@@ -104,7 +104,7 @@ impl Subprocess {
             .spawn()?;
         let accumulator: Arc<Mutex<String>> = Default::default();
         let stdout = child.stdout.take().unwrap();
-        let a = Arc::clone(&accumulator);
+        let a = accumulator.clone();
         std::thread::spawn(move || {
             printer::accumulate(stdout, concat!(module_path!(), "::stdout"), a)
         });

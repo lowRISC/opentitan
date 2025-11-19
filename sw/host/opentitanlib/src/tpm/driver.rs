@@ -250,14 +250,14 @@ impl SpiDriver {
     }
 
     fn do_read_register(&self, register: Register, data: &mut [u8]) -> Result<()> {
-        let _cs_asserted = Rc::clone(&self.spi).assert_cs()?; // Deasserts when going out of scope.
+        let _cs_asserted = self.spi.clone().assert_cs()?; // Deasserts when going out of scope.
         self.write_header(register, data.len(), true)?;
         self.spi.run_transaction(&mut [spi::Transfer::Read(data)])?;
         Ok(())
     }
 
     fn do_write_register(&self, register: Register, data: &[u8]) -> Result<()> {
-        let _cs_asserted = Rc::clone(&self.spi).assert_cs()?; // Deasserts when going out of scope.
+        let _cs_asserted = self.spi.clone().assert_cs()?; // Deasserts when going out of scope.
         self.write_header(register, data.len(), false)?;
         self.spi
             .run_transaction(&mut [spi::Transfer::Write(data)])?;

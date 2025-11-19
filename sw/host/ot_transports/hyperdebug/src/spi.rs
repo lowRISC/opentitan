@@ -294,7 +294,7 @@ impl HyperdebugSpiTarget {
         );
 
         Ok(Self {
-            inner: Rc::clone(inner),
+            inner: inner.clone(),
             interface: *spi_interface,
             target_enable_cmd: enable_cmd,
             target_idx: idx,

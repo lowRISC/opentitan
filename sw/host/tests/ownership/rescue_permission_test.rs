@@ -7,7 +7,6 @@ use anyhow::{Result, anyhow};
 use clap::Parser;
 use regex::Regex;
 use std::path::PathBuf;
-use std::rc::Rc;
 use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
@@ -54,7 +53,7 @@ struct Opts {
 
 fn rescue_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
-    let rescue = RescueSerial::new(Rc::clone(&uart));
+    let rescue = RescueSerial::new(uart.clone());
 
     log::info!("###### Get Boot Log (1/2) ######");
     let (data, devid) = transfer_lib::get_device_info(transport, &rescue)?;

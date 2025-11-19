@@ -287,14 +287,13 @@ impl Transport for Dediprog {
         }
         let mut inner = self.inner.borrow_mut();
         Ok(match inner.gpio.entry(pinname.to_string()) {
-            Entry::Vacant(v) => {
-                let u = v.insert(Rc::new(gpio::DediprogPin::open(
-                    Rc::clone(&self.inner),
+            Entry::Vacant(v) => v
+                .insert(Rc::new(gpio::DediprogPin::open(
+                    self.inner.clone(),
                     pinname,
-                )?));
-                Rc::clone(u)
-            }
-            Entry::Occupied(o) => Rc::clone(o.get()),
+                )?))
+                .clone(),
+            Entry::Occupied(o) => o.get().clone(),
         })
     }
 
@@ -305,9 +304,9 @@ impl Transport for Dediprog {
         );
         if self.inner.borrow().spi.is_none() {
             self.inner.borrow_mut().spi =
-                Some(Rc::new(spi::DediprogSpi::open(Rc::clone(&self.inner))?));
+                Some(Rc::new(spi::DediprogSpi::open(self.inner.clone())?));
         }
-        Ok(Rc::clone(self.inner.borrow().spi.as_ref().unwrap()))
+        Ok(self.inner.borrow().spi.as_ref().unwrap().clone())
     }
 }
 
@@ -319,7 +318,7 @@ pub struct VoltagePin {
 impl VoltagePin {
     pub fn open(inner: &Rc<RefCell<Inner>>) -> Result<Self> {
         Ok(Self {
-            inner: Rc::clone(inner),
+            inner: inner.clone(),
         })
     }
 }

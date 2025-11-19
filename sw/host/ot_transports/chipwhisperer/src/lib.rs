@@ -130,11 +130,8 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
             TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
         })?;
         let uart = match inner.uart.entry(instance) {
-            Entry::Vacant(v) => {
-                let u = v.insert(Rc::new(self.open_uart(instance)?));
-                Rc::clone(u)
-            }
-            Entry::Occupied(o) => Rc::clone(o.get()),
+            Entry::Vacant(v) => v.insert(Rc::new(self.open_uart(instance)?)).clone(),
+            Entry::Occupied(o) => o.get().clone(),
         };
         Ok(uart)
     }
@@ -142,14 +139,13 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         let mut inner = self.inner.borrow_mut();
         Ok(match inner.gpio.entry(pinname.to_string()) {
-            Entry::Vacant(v) => {
-                let u = v.insert(Rc::new(gpio::Pin::open(
-                    Rc::clone(&self.device),
+            Entry::Vacant(v) => v
+                .insert(Rc::new(gpio::Pin::open(
+                    self.device.clone(),
                     pinname.to_string(),
-                )?));
-                Rc::clone(u)
-            }
-            Entry::Occupied(o) => Rc::clone(o.get()),
+                )?))
+                .clone(),
+            Entry::Occupied(o) => o.get().clone(),
         })
     }
 
@@ -160,9 +156,9 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
         );
         let mut inner = self.inner.borrow_mut();
         if inner.spi.is_none() {
-            inner.spi = Some(Rc::new(spi::Spi::open(Rc::clone(&self.device))?));
+            inner.spi = Some(Rc::new(spi::Spi::open(self.device.clone())?));
         }
-        Ok(Rc::clone(inner.spi.as_ref().unwrap()))
+        Ok(inner.spi.as_ref().unwrap().clone())
     }
 
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {

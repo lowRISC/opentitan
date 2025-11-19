@@ -34,7 +34,7 @@ impl Pin {
     ) -> Result<Self> {
         Ok(Self {
             pin: RefCell::new(PinType::None),
-            ftdi: Rc::clone(ftdi),
+            ftdi: ftdi.clone(),
             pinname,
         })
     }

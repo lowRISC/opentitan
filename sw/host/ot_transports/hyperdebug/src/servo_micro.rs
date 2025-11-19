@@ -76,7 +76,7 @@ impl ServoMicroResetPin {
 
     pub fn open(inner: &Rc<Inner>) -> Result<Self> {
         Ok(Self {
-            inner: Rc::clone(inner),
+            inner: inner.clone(),
         })
     }
 
