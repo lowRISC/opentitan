@@ -176,9 +176,9 @@ class Target:
             it += 1
         return ""
 
-    def start_openocd(self):
+    def start_openocd(self, startup_delay=4, print_output=True):
         if self.target_cfg.openocd:
-            self.target.start_openocd()
+            self.target.start_openocd(startup_delay=startup_delay, print_output=print_output)
 
     def read_openocd(self):
         if self.target_cfg.openocd:
