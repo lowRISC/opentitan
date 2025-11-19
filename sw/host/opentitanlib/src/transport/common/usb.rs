@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{Context, Result, ensure};
-use rusb;
+use rusb::{self, UsbContext};
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
@@ -12,11 +12,12 @@ use crate::transport::TransportError;
 
 /// Represents a device provided by the `rusb` crate.
 pub struct RusbDevice {
-    handle: rusb::DeviceHandle<rusb::GlobalContext>,
+    handle: rusb::DeviceHandle<rusb::Context>,
     serial_number: String,
     timeout: Duration,
     configurations: Vec<Vec<u8>>,
 }
+
 
 /// Represents a backend using the `rusb` crate.
 #[derive(Default)]
@@ -33,13 +34,13 @@ impl RusbContext {
         usb_vid_pid: Option<(u16, u16)>,
         usb_protocol: Option<(u8, u8, u8)>,
         usb_serial: Option<&str>,
-    ) -> Result<Vec<(rusb::Device<rusb::GlobalContext>, String)>> {
+    ) -> Result<Vec<(rusb::Device<rusb::Context>, String)>> {
         let mut devices = Vec::new();
         let mut deferred_log_messages = Vec::new();
         // The global context sometimes fails to detect new devices which causes some
         // really puzzling errors. Here we create a new context for every scan.
         // Although less efficient, this works around most of the issues with hotplug.
-        for device in rusb::devices().context("USB error")?.iter() {
+        for device in rusb::Context::new()?.devices().context("USB error")?.iter() {
             let descriptor = match device.device_descriptor() {
                 Ok(desc) => desc,
                 Err(e) => {
@@ -205,7 +206,7 @@ impl OtUsbContext for RusbContext {
 
 impl RusbDevice {
     fn new(
-        handle: rusb::DeviceHandle<rusb::GlobalContext>,
+        handle: rusb::DeviceHandle<rusb::Context>,
         serial_number: String,
         timeout: Duration,
     ) -> Result<Self> {
