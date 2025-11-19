@@ -41,7 +41,7 @@ fn test_access_after_hw_reset(
     // Enable console and wait for the message.
     let uart = &*transport.uart("console")?;
     uart.set_flow_control(true)?;
-    UartConsole::wait_for(uart, r"Running [^\r\n]*", opts.timeout)?;
+    UartConsole::wait_for(uart, r"Running ", opts.timeout)?;
     UartConsole::wait_for(uart, r"Waiting for commands", opts.timeout)?;
 
     // Check debugger is available.

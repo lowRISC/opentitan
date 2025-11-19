@@ -95,7 +95,7 @@ fn newversion_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     log::info!("###### Boot After Update Complete ######");
     transport.reset_target(Duration::from_millis(50), /*clear_uart=*/ true)?;
-    let capture = UartConsole::wait_for(
+    let capture = UartConsole::wait_for_bytes(
         &*uart,
         r"(?msR)Running.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
         opts.timeout,

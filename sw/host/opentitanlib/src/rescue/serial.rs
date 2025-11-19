@@ -58,12 +58,12 @@ impl RescueSerial {
         if reset_target {
             transport.reset_target(self.reset_delay, /*clear_uart=*/ true)?;
         }
-        UartConsole::wait_for(&*self.uart, r"rescue:.*\r\n", self.enter_delay)?;
+        UartConsole::wait_for(&*self.uart, r"rescue:", self.enter_delay)?;
         log::info!("Rescue triggered. clearing serial break.");
         self.uart.set_break(false)?;
         // Upon entry, rescue is going to tell us what mode it is.
         // Consume and discard.
-        let _ = UartConsole::wait_for(&*self.uart, r"(ok|error):.*\r\n", Self::ONE_SECOND);
+        let _ = UartConsole::wait_for(&*self.uart, r"(ok|error):", Self::ONE_SECOND);
         Ok(())
     }
 
@@ -83,14 +83,14 @@ impl RescueSerial {
         // rates isn't a "mode" request and doesn't respond the same way.
         self.uart.write(&Self::BAUD)?;
         self.uart.write(b"\r")?;
-        let result = UartConsole::wait_for(&*self.uart, r"(ok|error):.*\r\n", Self::ONE_SECOND)?;
+        let result = UartConsole::wait_for(&*self.uart, r"(ok|error):", Self::ONE_SECOND)?;
         if result[1] == "error" {
             return Err(RescueError::BadMode(result[0].clone()).into());
         }
 
         // Send the new rate and check for success.
         self.uart.write(&symbol)?;
-        let result = UartConsole::wait_for(&*self.uart, r"(ok|error):.*\r\n", Self::ONE_SECOND)?;
+        let result = UartConsole::wait_for(&*self.uart, r"(ok|error):", Self::ONE_SECOND)?;
         if result[1] == "error" {
             return Err(RescueError::BadMode(result[0].clone()).into());
         }
@@ -104,12 +104,8 @@ impl RescueSerial {
         let enter = b'\r';
         self.uart.write(std::slice::from_ref(&enter))?;
         let mode = std::str::from_utf8(&mode)?;
-        let result = UartConsole::wait_for(
-            &*self.uart,
-            &format!("mode: {mode}\r\n(ok|error):.*\r\n"),
-            Self::ONE_SECOND,
-        )?;
-
+        UartConsole::wait_for(&*self.uart, &format!("mode: {mode}"), Self::ONE_SECOND)?;
+        let result = UartConsole::wait_for(&*self.uart, "(ok|error):", Self::ONE_SECOND)?;
         if result[1] == "error" {
             return Err(RescueError::BadMode(result[0].clone()).into());
         }

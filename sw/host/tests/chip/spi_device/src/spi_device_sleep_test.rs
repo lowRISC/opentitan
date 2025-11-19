@@ -114,13 +114,13 @@ fn main() -> Result<()> {
 }
 
 fn wait_sleep(gpio: &dyn GpioPin, uart: &dyn Uart, timeout: Duration) -> Result<()> {
-    let _ = UartConsole::wait_for(uart, r"SYNC: Sleeping\r\n", timeout)?;
+    let _ = UartConsole::wait_for(uart, r"SYNC: Sleeping", timeout)?;
     while gpio.read()? {}
     Ok(())
 }
 
 fn wait_awake(gpio: &dyn GpioPin, uart: &dyn Uart, timeout: Duration) -> Result<()> {
     while !gpio.read()? {}
-    let _ = UartConsole::wait_for(uart, r"SYNC: Awaked\r\n", timeout)?;
+    let _ = UartConsole::wait_for(uart, r"SYNC: Awaked", timeout)?;
     Ok(())
 }

@@ -158,25 +158,25 @@ fn test_smbus_arp_sequence(
     log::info!("Prepare to ARP");
     if let Err(x) = prepare_to_arp(&i2c) {
         // These parts are mostly to print out more console info on failures.
-        let _ = UartConsole::wait_for(&*uart, r"FAIL[^\r\n]*", opts.timeout)?;
+        let _ = UartConsole::wait_for(&*uart, r"FAIL", opts.timeout)?;
         return Err(x);
     }
     if let Err(x) = reset_device(&i2c) {
-        let _ = UartConsole::wait_for(&*uart, r"FAIL[^\r\n]*", opts.timeout)?;
+        let _ = UartConsole::wait_for(&*uart, r"FAIL", opts.timeout)?;
         return Err(x);
     }
 
     log::info!("Get UDID");
     let mut udid = [0u8; 16];
     if let Err(x) = get_udid(&i2c, &mut udid) {
-        let _ = UartConsole::wait_for(&*uart, r"FAIL[^\r\n]*", opts.timeout)?;
+        let _ = UartConsole::wait_for(&*uart, r"FAIL", opts.timeout)?;
         return Err(x);
     }
     assert_eq!(udid, expected_udid);
 
     log::info!("Assign address");
     assign_address(&i2c, &udid, 0x57u8)?;
-    let _ = UartConsole::wait_for(&*uart, r"New i2c address assigned[^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"New i2c address assigned", opts.timeout)?;
 
     let msg_to_dut = [0xa5u8; 32];
     log::info!("Issue unsupported command");
@@ -189,17 +189,17 @@ fn test_smbus_arp_sequence(
     }
     log::info!("Write scratch");
     if let Err(x) = write_scratch(&i2c, 0x57u8, MESSAGE_REG, &msg_to_dut) {
-        let _ = UartConsole::wait_for(&*uart, r"FAIL[^\r\n]*", opts.timeout)?;
+        let _ = UartConsole::wait_for(&*uart, r"FAIL", opts.timeout)?;
         return Err(x);
     }
     log::info!("Read scratch");
     let mut msg_from_dut = [0u8; 32];
     if let Err(x) = read_scratch(&i2c, 0x57u8, MESSAGE_REG, &mut msg_from_dut) {
-        let _ = UartConsole::wait_for(&*uart, r"FAIL[^\r\n]*", opts.timeout)?;
+        let _ = UartConsole::wait_for(&*uart, r"FAIL", opts.timeout)?;
         return Err(x);
     }
     assert_eq!(msg_to_dut, msg_from_dut);
-    let _ = UartConsole::wait_for(&*uart, r"PASS[^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"PASS", opts.timeout)?;
     Ok(())
 }
 
@@ -228,7 +228,7 @@ fn main() -> Result<()> {
     let transport = opts.init.init_target()?;
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
     uart.clear_rx_buffer()?;
 
     execute_test!(

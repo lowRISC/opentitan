@@ -569,7 +569,7 @@ pub fn check_slot_b_boot_up(
 ) -> Result<()> {
     transport.reset_target(init.bootstrap.options.reset_delay, true)?;
     let uart_console = transport.uart("console")?;
-    let result = UartConsole::wait_for(&*uart_console, r"ROM_EXT:(.*)\r\n", timeout)?;
+    let result = UartConsole::wait_for(&*uart_console, r"ROM_EXT:(.*)\r", timeout)?;
     response.stats.log_string(
         "rom_ext-version",
         result

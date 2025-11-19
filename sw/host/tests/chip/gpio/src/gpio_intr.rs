@@ -375,7 +375,7 @@ fn main() -> Result<()> {
 
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"gpio_intr_test [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"gpio_intr_test ", opts.timeout)?;
 
     execute_test!(test_gpio_inputs, &opts, &transport);
     execute_test!(test_gpio_outputs, &opts, &transport);

@@ -36,7 +36,7 @@ fn test_ndm_reset_req_when_halted(opts: &Opts, transport: &TransportWrapper) -> 
     // Enable console and wait for the message.
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     log::info!("Waiting for \"Ready for CPU halt request\" message");
     let _ = UartConsole::wait_for(&*uart, "Ready for CPU halt request", opts.timeout)?;

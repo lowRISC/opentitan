@@ -46,7 +46,7 @@ fn test_access_after_wakeup(
     // Enable console and wait for the message.
     let uart = &*transport.uart("console")?;
     uart.set_flow_control(true)?;
-    UartConsole::wait_for(uart, r"Running [^\r\n]*", opts.timeout)?;
+    UartConsole::wait_for(uart, r"Running ", opts.timeout)?;
     UartConsole::wait_for(uart, r"Software Setup.", opts.timeout)?;
 
     // Write to progbuf0 and and confirm readback.
@@ -74,7 +74,7 @@ fn test_access_after_wakeup(
     MemWriteReq::execute(uart, software_barrier_addr, &[1])?;
 
     // Wait for the software to fall asleep.
-    UartConsole::wait_for(uart, r"Entering normal sleep.\r\n", opts.timeout)?;
+    UartConsole::wait_for(uart, r"Entering normal sleep.", opts.timeout)?;
 
     // Press the power button to wake up the device.
     log::info!("Pushing power button.");
@@ -104,7 +104,7 @@ fn test_access_after_wakeup(
     MemWriteReq::execute(uart, software_barrier_addr, &[2])?;
 
     // Wait for the software to fall asleep.
-    UartConsole::wait_for(uart, r"Entering deep sleep.\r\n", opts.timeout)?;
+    UartConsole::wait_for(uart, r"Entering deep sleep.", opts.timeout)?;
 
     // Press the power button to wake up the device.
     log::info!("Pushing power button.");

@@ -132,7 +132,7 @@ fn sleep_pin_wake_test(
     MemWriteReq::execute(&*uart, sival_mio_pad_addr, &[rand_pad_index as u8])?;
 
     let pad_sel_match =
-        UartConsole::wait_for(&*uart, r"Pad Selection: (\d) / (\d+)\r\n", opts.timeout)?;
+        UartConsole::wait_for(&*uart, r"Pad Selection: (\d) / (\d+)", opts.timeout)?;
     let pad_sel: usize = pad_sel_match[2].parse()?;
     let wake_pin = transport.gpio_pin(MIO_PADS[pad_sel].name)?;
 

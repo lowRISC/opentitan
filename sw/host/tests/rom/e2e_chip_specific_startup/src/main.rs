@@ -324,7 +324,7 @@ fn test_chip_specific_startup(opts: &Opts, transport: &TransportWrapper) -> Resu
     // BootstrapOptions first.
     //let uart = opts.init.uart_params.create(&transport)?;
     let uart = transport.uart("console")?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     TestCommand::ChipStartup.send(&*uart)?;
     let response = ChipStartup::recv(&*uart, opts.timeout, false)?;

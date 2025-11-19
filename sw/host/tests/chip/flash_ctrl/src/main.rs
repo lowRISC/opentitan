@@ -46,7 +46,7 @@ fn test_update_phase(
 ) -> Result<()> {
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Starting [^\r\n]*", _opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Starting ", _opts.timeout)?;
     let _ = uart.clear_rx_buffer();
     MemWrite32Req::execute(&*uart, test_word_address, value)?;
     Ok(())
@@ -57,7 +57,7 @@ fn test_end(opts: &Opts, end_test_address: u32, transport: &TransportWrapper) ->
     let end_test_value = MemRead32Req::execute(&*uart, end_test_address)?;
     assert!(end_test_value == 0);
     MemWrite32Req::execute(&*uart, end_test_address, /*value=*/ 1)?;
-    let _ = UartConsole::wait_for(&*uart, r"test_end[^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"test_end", opts.timeout)?;
     Ok(())
 }
 

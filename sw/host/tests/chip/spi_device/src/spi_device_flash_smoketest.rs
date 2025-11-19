@@ -35,7 +35,7 @@ struct Opts {
     firmware_elf: PathBuf,
 }
 
-const SYNC_MSG: &str = r"SYNC:.*\r\n";
+const SYNC_MSG: &str = r"SYNC:";
 
 fn device_tx_rx_test(
     opts: &Opts,

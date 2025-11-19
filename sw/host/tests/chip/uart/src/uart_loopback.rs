@@ -117,7 +117,7 @@ fn uart_loopback(
     MemWriteReq::execute(console, *test_phase_addr, &[TestPhase::System as u8])?;
     log::info!("Starting system loopback test");
 
-    UartConsole::wait_for(console, r"PASS![^\r\n]*", opts.timeout)?;
+    UartConsole::wait_for(console, r"PASS!", opts.timeout)?;
 
     Ok(())
 }
