@@ -18,6 +18,7 @@ use crate::io::ioexpander::IoExpander;
 use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::spi::{Target, TransferMode};
 use crate::io::uart::Uart;
+use crate::io::usb::UsbContext;
 use crate::transport::{
     Capability, FpgaOps, ProgressIndicator, ProxyOps, Transport, TransportError,
     TransportInterfaceType, ioexpander,
@@ -927,6 +928,11 @@ impl TransportWrapper {
             // TODO: stop bits are not yet supported in the UART interface
         }
         Ok(uart)
+    }
+
+    /// Returns a [`UsbContext`] implementation.
+    pub fn usb(&self) -> Result<Rc<dyn UsbContext>> {
+        self.transport.usb()
     }
 
     /// Returns a [`GpioPin`] implementation.
