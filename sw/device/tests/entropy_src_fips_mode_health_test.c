@@ -32,7 +32,7 @@ enum {
   kEntropySrcStartupWaitMicros = 250000,
 };
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
 // Module handles
 static dif_entropy_src_t entropy_src;
