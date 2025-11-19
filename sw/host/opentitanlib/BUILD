@@ -249,6 +249,7 @@ rust_library(
         "@crate_index//:indicatif",
         "@crate_index//:inventory",
         "@crate_index//:log",
+        "@crate_index//:memchr",
         "@crate_index//:num-bigint-dig",
         "@crate_index//:num-traits",
         "@crate_index//:object",
