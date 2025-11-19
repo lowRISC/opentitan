@@ -13,6 +13,7 @@ use serialport::{ClearBuffer, SerialPort, TTYPort};
 use tokio::io::unix::AsyncFd;
 
 use super::{Parity, Uart, UartError};
+use crate::io::console::ConsoleDevice;
 use crate::util;
 use crate::util::runtime::MultiWaker;
 
@@ -63,40 +64,7 @@ impl SerialPortUart {
     }
 }
 
-impl Uart for SerialPortUart {
-    /// Returns the UART baudrate.  May return zero for virtual UARTs.
-    fn get_baudrate(&self) -> Result<u32> {
-        let pseudo = self.pseudo_baud.get();
-        if pseudo == 0 {
-            self.port
-                .borrow()
-                .get_ref()
-                .baud_rate()
-                .context("getting baudrate")
-        } else {
-            Ok(pseudo)
-        }
-    }
-
-    /// Sets the UART baudrate.  May do nothing for virtual UARTs.
-    fn set_baudrate(&self, baudrate: u32) -> Result<()> {
-        let pseudo = self.pseudo_baud.get();
-        if pseudo == 0 {
-            self.port
-                .borrow_mut()
-                .get_mut()
-                .set_baud_rate(baudrate)
-                .map_err(|_| UartError::InvalidSpeed(baudrate))?;
-        } else {
-            self.pseudo_baud.set(baudrate);
-        }
-        Ok(())
-    }
-
-    fn get_device_path(&self) -> Result<String> {
-        Ok(self.port_name.clone())
-    }
-
+impl ConsoleDevice for SerialPortUart {
     fn poll_read(&self, cx: &mut Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
         let mut port = self.port.borrow_mut();
 
@@ -159,6 +127,41 @@ impl Uart for SerialPortUart {
             port.get_mut().clear_break()?;
         }
         Ok(())
+    }
+}
+
+impl Uart for SerialPortUart {
+    /// Returns the UART baudrate.  May return zero for virtual UARTs.
+    fn get_baudrate(&self) -> Result<u32> {
+        let pseudo = self.pseudo_baud.get();
+        if pseudo == 0 {
+            self.port
+                .borrow()
+                .get_ref()
+                .baud_rate()
+                .context("getting baudrate")
+        } else {
+            Ok(pseudo)
+        }
+    }
+
+    /// Sets the UART baudrate.  May do nothing for virtual UARTs.
+    fn set_baudrate(&self, baudrate: u32) -> Result<()> {
+        let pseudo = self.pseudo_baud.get();
+        if pseudo == 0 {
+            self.port
+                .borrow_mut()
+                .get_mut()
+                .set_baud_rate(baudrate)
+                .map_err(|_| UartError::InvalidSpeed(baudrate))?;
+        } else {
+            self.pseudo_baud.set(baudrate);
+        }
+        Ok(())
+    }
+
+    fn get_device_path(&self) -> Result<String> {
+        Ok(self.port_name.clone())
     }
 
     fn set_parity(&self, parity: Parity) -> Result<()> {

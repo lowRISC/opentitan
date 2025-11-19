@@ -32,14 +32,14 @@ where
     fn send(&self, device: &T) -> Result<()> {
         let s = serde_json::to_string(self)?;
         log::info!("Sending: {}", s);
-        device.console_write(s.as_bytes())?;
+        device.write(s.as_bytes())?;
         Ok(())
     }
 
     fn send_with_crc(&self, device: &T) -> Result<()> {
         let s = serde_json::to_string(self)?;
         log::info!("Sending: {}", s);
-        device.console_write(s.as_bytes())?;
+        device.write(s.as_bytes())?;
         let actual_crc = OttfCrc {
             crc: Crc::<u32>::new(&CRC_32_ISO_HDLC).checksum(s.as_bytes()),
         };

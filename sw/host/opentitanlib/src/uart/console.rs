@@ -147,7 +147,7 @@ impl UartConsole {
         } else {
             &mut buf
         };
-        let len = std::future::poll_fn(|cx| device.console_poll_read(cx, effective_buf)).await?;
+        let len = std::future::poll_fn(|cx| device.poll_read(cx, effective_buf)).await?;
         for i in 0..len {
             if self.timestamp && self.newline {
                 let t = humantime::format_rfc3339_millis(SystemTime::now());
@@ -203,7 +203,7 @@ impl UartConsole {
                 }
             }
             if len > 0 {
-                device.console_write(&buf[..len])?;
+                device.write(&buf[..len])?;
             }
         }
     }

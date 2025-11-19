@@ -7,6 +7,7 @@ use clap::Parser;
 use std::time::Duration;
 
 use opentitanlib::execute_test;
+use opentitanlib::io::console::ConsoleDevice;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::io::uart::serial::SerialPortUart;
 use opentitanlib::test_utils::init::InitializeTest;

@@ -130,7 +130,7 @@ impl<'a> SpiConsoleDevice<'a> {
 }
 
 impl<'a> ConsoleDevice for SpiConsoleDevice<'a> {
-    fn console_poll_read(
+    fn poll_read(
         &self,
         cx: &mut std::task::Context<'_>,
         buf: &mut [u8],
@@ -164,7 +164,7 @@ impl<'a> ConsoleDevice for SpiConsoleDevice<'a> {
         std::task::Poll::Ready(Ok(i))
     }
 
-    fn console_write(&self, buf: &[u8]) -> Result<()> {
+    fn write(&self, buf: &[u8]) -> Result<()> {
         let buf_len: usize = buf.len();
         let mut written_data_len: usize = 0;
         while written_data_len < buf_len {
