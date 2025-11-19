@@ -257,7 +257,6 @@ status_t randomized_bytecopy(void *restrict dest, const void *restrict src,
     barrierw(byte_idx);
 
     uint8_t *src_byte_idx = (uint8_t *)launderw(src_addr + byte_idx);
-    // TODO(#8815) byte writes vs. word-wise integrity.
     uint8_t *dest_byte_idx = (uint8_t *)launderw(dest_addr + byte_idx);
 
     *(dest_byte_idx) = *(src_byte_idx);
