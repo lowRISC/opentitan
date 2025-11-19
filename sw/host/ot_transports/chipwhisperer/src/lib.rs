@@ -18,6 +18,8 @@ use opentitanlib::io::spi::Target;
 use opentitanlib::io::uart::flow::SoftwareFlowControl;
 use opentitanlib::io::uart::serial::SerialPortUart;
 use opentitanlib::io::uart::{Uart, UartError};
+use opentitanlib::io::usb::UsbContext;
+use opentitanlib::transport::common::usb::RusbContext;
 use opentitanlib::transport::{
     Capabilities, Capability, FpgaOps, ProgressIndicator, Transport, TransportError,
     TransportInterfaceType,
@@ -105,7 +107,11 @@ impl<B: Board> ChipWhisperer<B> {
 impl<B: Board + 'static> Transport for ChipWhisperer<B> {
     fn capabilities(&self) -> Result<Capabilities> {
         Ok(Capabilities::new(
-            Capability::SPI | Capability::GPIO | Capability::UART | Capability::UART_NONBLOCKING,
+            Capability::SPI
+                | Capability::GPIO
+                | Capability::UART
+                | Capability::UART_NONBLOCKING
+                | Capability::USB,
         ))
     }
 
@@ -119,6 +125,10 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
             Entry::Occupied(o) => o.get().clone(),
         };
         Ok(uart)
+    }
+
+    fn usb(&self) -> Result<Rc<dyn UsbContext>> {
+        Ok(Rc::new(RusbContext::new()))
     }
 
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {

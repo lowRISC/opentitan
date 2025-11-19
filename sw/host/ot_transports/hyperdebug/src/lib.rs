@@ -27,8 +27,8 @@ use opentitanlib::io::jtag::{JtagChain, JtagParams};
 use opentitanlib::io::spi::Target;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::io::uart::serial::flock_serial;
-use opentitanlib::io::usb::desc;
-use opentitanlib::transport::common::usb::{RusbContext, RusbDevice, UsbHub, UsbHubOp};
+use opentitanlib::io::usb::{UsbContext, UsbDevice, desc};
+use opentitanlib::transport::common::usb::{RusbContext, UsbHub, UsbHubOp};
 use opentitanlib::transport::{
     Capabilities, Capability, FpgaOps, ProgressIndicator, SetJtagPins, Transport, TransportError,
     TransportInterfaceType, UpdateFirmware,
@@ -423,7 +423,7 @@ impl<T: Flavor> Hyperdebug<T> {
 pub struct Inner {
     console_tty: PathBuf,
     conn: RefCell<Option<Rc<Conn>>>,
-    usb_device: Rc<RusbDevice>,
+    usb_device: Box<dyn UsbDevice>,
     selected_spi: Cell<u8>,
 }
 
@@ -640,7 +640,8 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 | Capability::SPI_DUAL
                 | Capability::SPI_QUAD
                 | Capability::I2C
-                | Capability::JTAG,
+                | Capability::JTAG
+                | Capability::USB,
         ))
     }
 
@@ -764,6 +765,10 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         }
     }
 
+    fn usb(&self) -> Result<Rc<dyn UsbContext>> {
+        Ok(Rc::new(RusbContext::new()))
+    }
+
     // Create GpioPin instance, or return one from a cache of previously created instances.
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         Ok(
@@ -826,7 +831,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
             let usb_vid = self.inner.usb_device.get_vendor_id();
             let usb_pid = self.inner.usb_device.get_product_id();
             dfu::update_firmware(
-                &self.inner.usb_device,
+                &*self.inner.usb_device,
                 self.current_firmware_version.as_deref(),
                 &update_firmware_action.firmware,
                 update_firmware_action.progress.as_ref(),
@@ -896,15 +901,8 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
 impl<T: Flavor> Hyperdebug<T> {
     // Return the parent hub of the hyperdebug device.
     fn dut_usb_parent_hub(&self) -> Result<UsbHub> {
-        UsbHub::from_device(
-            &self
-                .inner
-                .usb_device
-                .device()
-                .get_parent()
-                .ok_or(anyhow::anyhow!("Hyperdebug device has no parent?!"))?,
-        )
-        .context("failed to open the parent hub of the hyperdebug device")
+        UsbHub::from_parent_device(&*self.inner.usb_device)
+            .context("failed to open the parent hub of the hyperdebug device")
     }
 
     fn enable_dut_usb_port(&self, en: bool) -> Result<()> {

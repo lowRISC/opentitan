@@ -14,8 +14,8 @@ use regex::Regex;
 use opentitanlib::backend::{Backend, BackendOpts, define_interface};
 use opentitanlib::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
 use opentitanlib::io::spi::Target;
-use opentitanlib::io::usb::desc;
-use opentitanlib::transport::common::usb::{RusbContext, RusbDevice};
+use opentitanlib::io::usb::{UsbContext, UsbDevice, desc};
+use opentitanlib::transport::common::usb::RusbContext;
 use opentitanlib::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
@@ -25,7 +25,7 @@ pub mod gpio;
 pub mod spi;
 
 pub struct Inner {
-    device: Rc<RusbDevice>,
+    device: Box<dyn UsbDevice>,
     spi: Option<Rc<dyn Target>>,
     gpio: HashMap<String, Rc<dyn GpioPin>>,
     gpio_levels: u16,
@@ -36,7 +36,7 @@ pub struct Inner {
 }
 
 impl Inner {
-    fn new(device: Rc<RusbDevice>, in_endpoint: u8, out_endpoint: u8) -> Self {
+    fn new(device: Box<dyn UsbDevice>, in_endpoint: u8, out_endpoint: u8) -> Self {
         Self {
             device,
             spi: None,
@@ -173,7 +173,7 @@ impl Dediprog {
 
         device.claim_interface(0)?;
 
-        let protocol_version = match Self::get_protocol_version(&device) {
+        let protocol_version = match Self::get_protocol_version(&*device) {
             Ok(protocol_version) => protocol_version,
             Err(_) => {
                 let mut init_byte = [0u8];
@@ -196,7 +196,7 @@ impl Dediprog {
                     )
                     .into());
                 }
-                Self::get_protocol_version(&device)?
+                Self::get_protocol_version(&*device)?
             }
         };
         if protocol_version < 2 {
@@ -216,7 +216,7 @@ impl Dediprog {
         Ok(board)
     }
 
-    fn get_protocol_version(device: &RusbDevice) -> Result<u32> {
+    fn get_protocol_version(device: &dyn UsbDevice) -> Result<u32> {
         let mut device_id_bytes = [0u8; 16];
         device.read_control(
             rusb::request_type(

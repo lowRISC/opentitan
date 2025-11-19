@@ -6,7 +6,6 @@ use std::cmp;
 use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 use std::marker::PhantomData;
-use std::rc::Rc;
 use std::sync::LazyLock;
 use std::time::Duration;
 
@@ -15,7 +14,8 @@ use anyhow::{Context, Result, ensure};
 use opentitanlib::collection;
 use opentitanlib::io::gpio::GpioError;
 use opentitanlib::io::spi::SpiError;
-use opentitanlib::transport::common::usb::{RusbContext, RusbDevice};
+use opentitanlib::io::usb::{UsbContext, UsbDevice};
+use opentitanlib::transport::common::usb::RusbContext;
 use opentitanlib::transport::{ProgressIndicator, TransportError, TransportInterfaceType};
 use opentitanlib::util::parse_int::ParseInt;
 
@@ -23,7 +23,7 @@ use super::board::Board;
 
 /// The `Backend` struct provides high-level access to the Chip Whisperer board.
 pub struct Backend<B: Board> {
-    usb: Rc<RusbDevice>,
+    usb: Box<dyn UsbDevice>,
     _marker: PhantomData<B>,
 }
 

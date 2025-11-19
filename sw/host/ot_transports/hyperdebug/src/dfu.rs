@@ -5,13 +5,13 @@
 // Firmware update protocol for HyperDebug
 
 use std::any::Any;
-use std::rc::Rc;
 use std::sync::LazyLock;
 
 use anyhow::{Result, anyhow, bail};
 use regex::Regex;
 
-use opentitanlib::transport::common::usb::{RusbContext, RusbDevice};
+use opentitanlib::io::usb::{UsbContext, UsbDevice};
+use opentitanlib::transport::common::usb::RusbContext;
 use opentitanlib::transport::{
     Capabilities, Capability, ProgressIndicator, Transport, TransportError, UpdateFirmware,
 };
@@ -24,7 +24,7 @@ const PID_DFU_BOOTLOADER: u16 = 0xdf11;
 /// Google's).
 pub struct HyperdebugDfu {
     // Handle to USB device which may or may not already be in DFU mode
-    usb_device: Rc<RusbDevice>,
+    usb_device: Box<dyn UsbDevice>,
     current_firmware_version: Option<String>,
     // expected USB VID:PID of the HyperDebug device when not in DFU mode
     usb_vid: u16,
@@ -92,7 +92,7 @@ impl Transport for HyperdebugDfu {
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         if let Some(update_firmware_action) = action.downcast_ref::<UpdateFirmware>() {
             update_firmware(
-                &self.usb_device,
+                &*self.usb_device,
                 self.current_firmware_version.as_deref(),
                 &update_firmware_action.firmware,
                 update_firmware_action.progress.as_ref(),
@@ -169,7 +169,7 @@ fn get_hyperdebug_firmware_version(firmware: &[u8]) -> Result<&str> {
 /// Helper method to perform flash programming using ST's DfuSe variant of the DFU protocol.
 /// This method is used both by the `Hyperdebug` and the `HyperdebugDfu` structs.
 pub fn update_firmware(
-    usb_device: &RusbDevice,
+    usb_device: &dyn UsbDevice,
     current_firmware_version: Option<&str>,
     firmware: &Option<Vec<u8>>,
     progress: &dyn ProgressIndicator,
@@ -247,9 +247,9 @@ pub fn update_firmware(
     };
     log::info!("Connected to DFU bootloader");
 
-    let dfu_desc = scan_usb_descriptor(&dfu_device)?;
+    let dfu_desc = scan_usb_descriptor(&*dfu_device)?;
     dfu_device.claim_interface(dfu_desc.dfu_interface)?;
-    do_update_firmware(&dfu_device, dfu_desc, firmware, progress)?;
+    do_update_firmware(&*dfu_device, dfu_desc, firmware, progress)?;
     // The new firmware has been completely transferred, and the USB device is resetting and
     // booting the new firmware.  Wait up to five seconds, repeatedly testing if the device can be
     // found on the USB bus with the original DID:VID.
@@ -266,19 +266,19 @@ fn restablish_connection(
     usb_vid: u16,
     usb_pid: u16,
     serial_number: &str,
-) -> Option<Rc<RusbDevice>> {
-    for _ in 0..10 {
-        std::thread::sleep(std::time::Duration::from_millis(500));
-        let usb_context = RusbContext::new();
-        if let Ok(device) = usb_context.device_by_id(usb_vid, usb_pid, Some(serial_number)) {
-            return Some(device);
-        }
-    }
-    None
+) -> Option<Box<dyn UsbDevice>> {
+    RusbContext::new()
+        .device_by_id_with_timeout(
+            usb_vid,
+            usb_pid,
+            Some(serial_number),
+            std::time::Duration::from_secs(5),
+        )
+        .ok()
 }
 
 fn do_update_firmware(
-    usb_device: &RusbDevice,
+    usb_device: &dyn UsbDevice,
     dfu_desc: DfuDescriptor,
     firmware: &[u8],
     progress: &dyn ProgressIndicator,
@@ -386,7 +386,7 @@ struct DfuDescriptor {
 }
 
 /// Inspect USB interface descriptors, looking for DFU-related ones.
-fn scan_usb_descriptor(usb_device: &RusbDevice) -> Result<DfuDescriptor> {
+fn scan_usb_descriptor(usb_device: &dyn UsbDevice) -> Result<DfuDescriptor> {
     let mut dfu_interface = 0;
     let mut xfer_size = 0;
     let mut page_size = 0;
@@ -448,7 +448,7 @@ fn scan_usb_descriptor(usb_device: &RusbDevice) -> Result<DfuDescriptor> {
 }
 
 /// Poll the bootloader using GETSTATUS request, until it leaves the "busy" state.
-fn wait_for_idle(dfu_device: &RusbDevice, dfu_interface: u8) -> Result<u8> {
+fn wait_for_idle(dfu_device: &dyn UsbDevice, dfu_interface: u8) -> Result<u8> {
     loop {
         let mut response = [0u8; 6];
         let rc = dfu_device.read_control(

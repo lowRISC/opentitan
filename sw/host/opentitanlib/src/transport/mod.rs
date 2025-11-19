@@ -17,6 +17,7 @@ use crate::io::i2c::Bus;
 use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
+use crate::io::usb::UsbContext;
 
 pub mod common;
 pub mod ioexpander;
@@ -43,6 +44,7 @@ bitflags! {
         const SPI_DUAL = 0x01 << 9;
         const SPI_QUAD = 0x01 << 10;
         const GPIO_BITBANGING = 0x01 << 11;
+        const USB = 0x01 << 12;
     }
 }
 
@@ -119,6 +121,10 @@ pub trait Transport {
     /// Returns a [`Uart`] implementation.
     fn uart(&self, _instance: &str) -> Result<Rc<dyn Uart>> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::Uart).into())
+    }
+    /// Returns a [`Usb`] implementation.
+    fn usb(&self) -> Result<Rc<dyn UsbContext>> {
+        Err(TransportError::InvalidInterface(TransportInterfaceType::Usb).into())
     }
     /// Returns a [`GpioPin`] implementation.
     fn gpio_pin(&self, _instance: &str) -> Result<Rc<dyn GpioPin>> {
