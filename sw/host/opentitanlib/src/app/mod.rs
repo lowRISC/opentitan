@@ -203,6 +203,7 @@ pub struct I2cConfiguration {
 pub struct TransportWrapperBuilder {
     interface: String,
     disable_dft_on_reset: bool,
+    reset_delay: Duration,
     openocd_adapter_config: Option<PathBuf>,
     provides_list: Vec<(String, String)>,
     requires_list: Vec<(String, String)>,
@@ -223,6 +224,7 @@ pub struct TransportWrapperBuilder {
 pub struct TransportWrapper {
     transport: Rc<dyn Transport>,
     disable_dft_on_reset: Cell<bool>,
+    reset_delay: Cell<Duration>,
     openocd_adapter_config: Option<PathBuf>,
     provides_map: HashMap<String, String>,
     pin_map: HashMap<String, String>,
@@ -253,6 +255,7 @@ impl TransportWrapperBuilder {
         Self {
             interface,
             disable_dft_on_reset,
+            reset_delay: Duration::from_millis(100),
             openocd_adapter_config: None,
             provides_list: Vec::new(),
             requires_list: Vec::new(),
@@ -376,6 +379,11 @@ impl TransportWrapperBuilder {
         for (key, value) in file.requires {
             self.requires_list.push((key, value));
         }
+
+        if let Some(reset_delay) = file.reset_delay {
+            self.reset_delay = reset_delay;
+        }
+
         // Merge content of configuration file into pin_map and other members.
         for pin_conf in file.pins {
             if let Some(alias_of) = &pin_conf.alias_of {
@@ -712,6 +720,7 @@ impl TransportWrapperBuilder {
         let mut transport_wrapper = TransportWrapper {
             transport: Rc::from(transport),
             disable_dft_on_reset: Cell::new(self.disable_dft_on_reset),
+            reset_delay: Cell::new(self.reset_delay),
             openocd_adapter_config: self.openocd_adapter_config,
             provides_map,
             pin_map: self.pin_alias_map,
@@ -1082,26 +1091,53 @@ impl TransportWrapper {
         Ok(())
     }
 
+    #[deprecated = "use [`reset`] or [`reset_with_delay`]"]
     pub fn reset_target(&self, reset_delay: Duration, clear_uart_rx: bool) -> Result<()> {
+        let uart_rx = match clear_uart_rx {
+            true => UartRx::Clear,
+            false => UartRx::Keep,
+        };
+        self.reset_with_delay(uart_rx, reset_delay)
+    }
+
+    /// Reset the target, optionally clearing the console UART RX.
+    pub fn reset(&self, uart_rx: UartRx) -> Result<()> {
+        self.reset_with_delay(uart_rx, self.reset_delay.get())
+    }
+
+    /// Reset the target with some delay, optionally clearing the console UART RX.
+    pub fn reset_with_delay(&self, uart_rx: UartRx, delay: Duration) -> Result<()> {
+        // Telling the transport that this function is the exclusive user of the debugger device
+        // for the duration of this function, will allow the transport to keep USB handles open,
+        // for optimization.  (For transports such as the proxy, which does not have any
+        // such optimization, this is a no-op.)
+        let _maintain_connection = self.transport.maintain_connection()?;
         log::info!("Asserting the reset signal");
+
         if self.disable_dft_on_reset.get() {
             self.pin_strapping("PRERESET_DFT_DISABLE")?.apply()?;
         }
+
         self.pin_strapping("RESET")?.apply()?;
-        std::thread::sleep(reset_delay);
-        if clear_uart_rx {
+        std::thread::sleep(delay);
+
+        if uart_rx == UartRx::Clear {
             log::info!("Clearing the UART RX buffer");
             self.uart("console")?.clear_rx_buffer()?;
         }
+
         log::info!("Deasserting the reset signal");
         self.pin_strapping("RESET")?.remove()?;
+
         if self.disable_dft_on_reset.get() {
             std::thread::sleep(Duration::from_millis(10));
             // We remove the DFT strapping after waiting some time, as the DFT straps should have been
             // sampled by then and we can resume our desired pin configuration.
             self.pin_strapping("PRERESET_DFT_DISABLE")?.remove()?;
         }
-        std::thread::sleep(reset_delay);
+
+        std::thread::sleep(delay);
+
         Ok(())
     }
 
@@ -1120,6 +1156,12 @@ impl TransportWrapper {
         }))?;
         Ok(ret.unwrap())
     }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum UartRx {
+    Clear,
+    Keep,
 }
 
 /// Given an pin/uart/spi/i2c port name, if the name is a known alias, return the underlying

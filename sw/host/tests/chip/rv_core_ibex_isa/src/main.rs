@@ -7,7 +7,7 @@ use std::time::Duration;
 use anyhow::{Result, bail};
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{JtagTap, RiscvGpr, RiscvReg};
 use opentitanlib::test_utils::init::InitializeTest;
@@ -30,7 +30,7 @@ struct Opts {
 
 fn ibex_isa_smoke_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     log::info!("Connecting to RISC-V TAP");
     let mut jtag = opts

@@ -2,18 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Result, anyhow};
-use clap::{Args, Subcommand};
-use opentitanlib::io::uart::UartParams;
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs::File;
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::time::Duration;
 
-use opentitanlib::app::TransportWrapper;
+use anyhow::{Result, anyhow};
+use clap::{Args, Subcommand};
+use opentitanlib::io::uart::UartParams;
+use serde_annotate::Annotate;
+
 use opentitanlib::app::command::CommandDispatch;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::chip::boot_svc::BootSlot;
 use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
 use opentitanlib::image::image::Image;
@@ -115,7 +116,7 @@ impl CommandDispatch for Firmware {
             rescue.set_baud(prev_baudrate)?;
         }
         if !self.wait {
-            transport.reset_target(Duration::from_millis(50), false)?;
+            transport.reset_with_delay(UartRx::Keep, Duration::from_millis(50))?;
         }
         Ok(None)
     }
