@@ -44,6 +44,7 @@ class IbexScaTest(unittest.TestCase):
         expected_device_id_keys = {
             "device_id",
             "rom_digest",
+            "rom_ext_imm_digest",
             "icache_en",
             "dummy_instr_en",
             "clock_jitter_locked",

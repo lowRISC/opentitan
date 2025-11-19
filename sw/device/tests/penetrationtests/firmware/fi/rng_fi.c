@@ -440,6 +440,9 @@ status_t handle_rng_fi_edn_init(ujson_t *uj) {
   // Read rom digest.
   TRY(pentest_read_rom_digest(uj_output.rom_digest));
 
+  // Read rom_ext_imm digest.
+  TRY(pentest_read_rom_ext_imm_digest(uj_output.rom_ext_imm_digest));
+
   // Read device ID and return to host.
   TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
@@ -676,6 +679,9 @@ status_t handle_rng_fi_csrng_init(ujson_t *uj) {
 
   // Read rom digest.
   TRY(pentest_read_rom_digest(uj_output.rom_digest));
+
+  // Read rom_ext_imm digest.
+  TRY(pentest_read_rom_ext_imm_digest(uj_output.rom_ext_imm_digest));
 
   // Read device ID and return to host.
   TRY(pentest_read_device_id(uj_output.device_id));
