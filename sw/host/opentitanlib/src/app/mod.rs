@@ -19,6 +19,7 @@ use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::nonblocking_help::NonblockingHelp;
 use crate::io::spi::{Target, TransferMode};
 use crate::io::uart::Uart;
+use crate::io::usb::UsbContext;
 use crate::transport::{
     Capability, ProgressIndicator, ProxyOps, Transport, TransportError, TransportInterfaceType,
     ioexpander,
@@ -821,6 +822,11 @@ impl TransportWrapper {
     /// Returns a [`Uart`] implementation.
     pub fn uart(&self, name: &str) -> Result<Rc<dyn Uart>> {
         self.transport.uart(map_name(&self.uart_map, name).as_str())
+    }
+
+    /// Returns a [`UsbContext`] implementation.
+    pub fn usb(&self) -> Result<Rc<dyn UsbContext>> {
+        self.transport.usb()
     }
 
     /// Returns a [`GpioPin`] implementation.

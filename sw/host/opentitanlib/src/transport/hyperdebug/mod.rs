@@ -24,12 +24,12 @@ use crate::io::i2c::Bus;
 use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
-use crate::io::usb::desc;
+use crate::io::usb::{UsbContext, UsbDevice, desc};
 use crate::transport::chip_whisperer::ChipWhisperer;
 use crate::transport::chip_whisperer::board::Board;
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use crate::transport::common::uart::flock_serial;
-use crate::transport::common::usb::{RusbContext, RusbDevice};
+use crate::transport::common::usb::RusbContext;
 use crate::transport::{
     Capabilities, Capability, SetJtagPins, Transport, TransportError, TransportInterfaceType,
     UpdateFirmware,
@@ -416,7 +416,7 @@ impl<T: Flavor> Hyperdebug<T> {
 /// even if the caller lets the outer Hyperdebug struct run out of scope.
 pub struct Inner {
     console_tty: PathBuf,
-    usb_device: Rc<RusbDevice>,
+    usb_device: Box<dyn UsbDevice>,
     selected_spi: Cell<u8>,
 }
 
@@ -589,7 +589,8 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 | Capability::SPI_DUAL
                 | Capability::SPI_QUAD
                 | Capability::I2C
-                | Capability::JTAG,
+                | Capability::JTAG
+                | Capability::USB,
         ))
     }
 
@@ -702,6 +703,10 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         }
     }
 
+    fn usb(&self) -> Result<Rc<dyn UsbContext>> {
+        Ok(Rc::new(RusbContext::new()))
+    }
+
     // Create GpioPin instance, or return one from a cache of previously created instances.
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         Ok(
@@ -763,7 +768,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
             let usb_vid = self.inner.usb_device.get_vendor_id();
             let usb_pid = self.inner.usb_device.get_product_id();
             dfu::update_firmware(
-                &self.inner.usb_device,
+                &*self.inner.usb_device,
                 self.current_firmware_version.as_deref(),
                 &update_firmware_action.firmware,
                 update_firmware_action.progress.as_ref(),

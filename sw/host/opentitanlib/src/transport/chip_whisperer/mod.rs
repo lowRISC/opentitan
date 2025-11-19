@@ -13,8 +13,10 @@ use std::rc::Rc;
 use crate::io::gpio::GpioPin;
 use crate::io::spi::Target;
 use crate::io::uart::{Uart, UartError};
+use crate::io::usb::UsbContext;
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use crate::transport::common::uart::SerialPortUart;
+use crate::transport::common::usb::RusbContext;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
@@ -93,7 +95,11 @@ impl<B: Board> ChipWhisperer<B> {
 impl<B: Board + 'static> Transport for ChipWhisperer<B> {
     fn capabilities(&self) -> Result<Capabilities> {
         Ok(Capabilities::new(
-            Capability::SPI | Capability::GPIO | Capability::UART | Capability::UART_NONBLOCKING,
+            Capability::SPI
+                | Capability::GPIO
+                | Capability::UART
+                | Capability::UART_NONBLOCKING
+                | Capability::USB,
         ))
     }
 
@@ -110,6 +116,10 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
             Entry::Occupied(o) => Rc::clone(o.get()),
         };
         Ok(uart)
+    }
+
+    fn usb(&self) -> Result<Rc<dyn UsbContext>> {
+        Ok(Rc::new(RusbContext::new()))
     }
 
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
