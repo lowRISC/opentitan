@@ -12,6 +12,7 @@ use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::bootstrap::Bootstrap;
+use opentitanlib::io::console::ConsoleExt;
 use opentitanlib::io::gpio::{
     BitbangEntry, DacBangEntry, GpioBitbangOperation, GpioDacBangOperation, GpioPin,
 };

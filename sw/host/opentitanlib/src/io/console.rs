@@ -11,6 +11,9 @@ use thiserror::Error;
 use crate::impl_serializable_error;
 use crate::transport::TransportError;
 
+mod ext;
+pub use ext::ConsoleExt;
+
 /// Errors related to the console interface.
 #[derive(Error, Debug, Serialize, Deserialize)]
 pub enum ConsoleError {

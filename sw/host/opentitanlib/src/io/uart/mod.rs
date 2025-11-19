@@ -14,7 +14,7 @@ use thiserror::Error;
 
 use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
-use crate::io::console::ConsoleDevice;
+use crate::io::console::{ConsoleDevice, ConsoleExt};
 use crate::transport::TransportError;
 
 pub mod flow;
@@ -85,22 +85,6 @@ pub trait Uart: ConsoleDevice {
         Err(TransportError::UnsupportedOperation.into())
     }
 
-    /// Reads UART receive data into `buf`, returning the number of bytes read.
-    /// This function is blocking.
-    fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        crate::util::runtime::block_on(std::future::poll_fn(|cx| self.poll_read(cx, buf)))
-    }
-
-    /// Reads UART receive data into `buf`, returning the number of bytes read.
-    /// The `timeout` may be used to specify a duration to wait for data.
-    /// If timeout expires without any data arriving `Ok(0)` will be returned, never `Err(_)`.
-    fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
-        crate::util::runtime::block_on(async {
-            tokio::time::timeout(timeout, std::future::poll_fn(|cx| self.poll_read(cx, buf))).await
-        })
-        .unwrap_or(Ok(0))
-    }
-
     /// Clears the UART RX buffer.
     fn clear_rx_buffer(&self) -> Result<()> {
         // Keep reading while until the RX buffer is empty.
@@ -122,7 +106,7 @@ pub trait Uart: ConsoleDevice {
 
 impl Read for &dyn Uart {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        Uart::read(&**self, buf).map_err(io::Error::other)
+        ConsoleExt::read(&**self, buf).map_err(io::Error::other)
     }
 }
 
