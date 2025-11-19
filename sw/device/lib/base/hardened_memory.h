@@ -146,7 +146,9 @@ status_t hardened_xor_in_place(uint32_t *OT_RESTRICT x,
  * Copy memory between non-overlapping regions with a randomized byte traversal.
  *
  * CAUTION! This function is not considered as secure as `hardened_memcpy` due
- * to the byte-sized memory accesses vs. 32b word accesses.
+ * to the byte-sized memory accesses vs. 32b word accesses. After copying the
+ * data, this function uses `consttime_memeq_byte()` to check if the data was
+ * copied correctly.
  *
  * @param dest the region to copy to.
  * @param src the region to copy from.

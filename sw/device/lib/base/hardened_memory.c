@@ -257,13 +257,16 @@ status_t randomized_bytecopy(void *restrict dest, const void *restrict src,
     barrierw(byte_idx);
 
     uint8_t *src_byte_idx = (uint8_t *)launderw(src_addr + byte_idx);
-    // TODO(#8815) byte writes vs. word-wise integrity.
     uint8_t *dest_byte_idx = (uint8_t *)launderw(dest_addr + byte_idx);
 
     *(dest_byte_idx) = *(src_byte_idx);
   }
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(count, byte_len);
+
+  // Check if copying the data was successful.
+  HARDENED_CHECK_EQ(consttime_memeq_byte(dest, src, byte_len),
+                    kHardenedBoolTrue);
 
   return OTCRYPTO_OK;
 }
