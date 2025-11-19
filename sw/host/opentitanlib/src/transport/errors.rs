@@ -90,4 +90,5 @@ pub enum TransportInterfaceType {
     GpioBitbanging,
     IoExpander,
     Provides,
+    Usb,
 }
