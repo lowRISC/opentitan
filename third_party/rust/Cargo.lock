@@ -263,6 +263,7 @@ dependencies = [
  "itertools",
  "libloading",
  "log",
+ "memchr",
  "num-bigint-dig",
  "num-traits",
  "object",

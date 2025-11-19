@@ -7,7 +7,7 @@ use std::time::Duration;
 use anyhow::{Result, anyhow};
 use regex::{Captures, Regex};
 
-use crate::io::console::{ConsoleDevice, ConsoleError, Logged};
+use crate::io::console::{ConsoleDevice, ConsoleError, ConsoleExt, Logged};
 
 pub struct UartConsole {
     timeout: Option<Duration>,
@@ -182,9 +182,13 @@ impl UartConsole {
     where
         T: ConsoleDevice + ?Sized,
     {
-        // TODO: Optimize me to read a full line first.
-        let mut v = Self::wait_for_bytes(device, &format!("({rx}).*\n"), timeout)?;
-        v.remove(0);
-        Ok(v)
+        let regex = Regex::new(rx)?;
+        let line = Logged::new(device).wait_for_line(&regex, timeout)?;
+        Ok(regex
+            .captures(&String::from_utf8_lossy(&line))
+            .unwrap()
+            .iter()
+            .map(|x| x.map(|m| m.as_str().to_owned()).unwrap_or_default())
+            .collect())
     }
 }
