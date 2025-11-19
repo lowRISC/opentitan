@@ -650,6 +650,9 @@ status_t handle_alert_fi_init(ujson_t *uj) {
   // Read rom digest.
   TRY(pentest_read_rom_digest(uj_output.rom_digest));
 
+  // Read rom_ext_imm digest.
+  TRY(pentest_read_rom_ext_imm_digest(uj_output.rom_ext_imm_digest));
+
   // Initialize all HW blocks
   TRY(init_peripherals());
 

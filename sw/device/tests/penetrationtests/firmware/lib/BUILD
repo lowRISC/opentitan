@@ -45,6 +45,7 @@ cc_library(
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:rom_ctrl",
         "//sw/device/lib/dif:rstmgr",
@@ -57,6 +58,7 @@ cc_library(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/testing:alert_handler_testutils",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
@@ -75,6 +77,7 @@ cc_library(
             "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
             "//sw/device/silicon_creator/lib/drivers:retention_sram",
             "//sw/device/silicon_creator/lib/ownership",
+            "//sw/device/silicon_creator/lib/drivers:otp",
         ],
     }),
 )
