@@ -75,7 +75,7 @@ impl<'a> SpiConsoleDevice<'a> {
             || frame_number != self.console_next_frame_number.get()
             || data_len_bytes > SpiConsoleDevice::SPI_MAX_DATA_LENGTH
         {
-            if self.get_tx_ready_pin()?.is_none() {
+            if self.device_tx_ready_pin.is_none() {
                 self.check_device_boot_up(&header)?;
             }
             // This frame is junk, so we do not read the data
@@ -91,7 +91,7 @@ impl<'a> SpiConsoleDevice<'a> {
             % SpiConsoleDevice::SPI_FLASH_READ_BUFFER_SIZE;
         self.read_data(data_address, &mut data)?;
 
-        if self.get_tx_ready_pin()?.is_some() {
+        if self.device_tx_ready_pin.is_some() {
             // When using the TX-indicator pin feature, we always write each SPI frame at the
             // beginning of the flash buffer, and wait for the host to ready it out before writing
             // another frame.
@@ -141,7 +141,7 @@ impl<'a> ConsoleDevice for SpiConsoleDevice<'a> {
         const POLL_INTERVAL: Duration = Duration::from_millis(1);
 
         if self.rx_buf.borrow().is_empty() {
-            if let Some(ready_pin) = self.get_tx_ready_pin()? {
+            if let Some(ready_pin) = self.device_tx_ready_pin {
                 // If we are gated by the TX-ready pin, only perform the SPI console read if
                 // the ready pin is high.
                 if !ready_pin.read()? {
@@ -185,9 +185,5 @@ impl<'a> ConsoleDevice for SpiConsoleDevice<'a> {
         }
 
         Ok(())
-    }
-
-    fn get_tx_ready_pin(&self) -> Result<Option<&'a Rc<dyn GpioPin>>> {
-        Ok(self.device_tx_ready_pin)
     }
 }
