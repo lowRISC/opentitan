@@ -104,7 +104,7 @@ fn test_sw_strap_values(opts: &Opts, transport: &TransportWrapper) -> Result<()>
     // BootstrapOptions first.
     //let uart = opts.init.uart_params.create(&transport)?;
     let uart = transport.uart("console")?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     for value in 0..64 {
         log::info!(

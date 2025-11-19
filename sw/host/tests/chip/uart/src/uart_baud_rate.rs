@@ -117,11 +117,7 @@ fn uart_baud_rate(
     // Keep repeating the test for various Bauds until the device tells us it's
     // `PASS`ed.
     loop {
-        let msg = UartConsole::wait_for(
-            console,
-            r"PASS![^\r\n]*|Starting test[^\n]*\n",
-            opts.timeout,
-        )?;
+        let msg = UartConsole::wait_for(console, r"PASS!|Starting test", opts.timeout)?;
 
         if msg[0].as_str().contains("PASS") {
             break;
@@ -135,7 +131,7 @@ fn uart_baud_rate(
 
         // Ask the device to send us some data.
         MemWriteReq::execute(console, *test_phase_addr, &[TestPhase::Send as u8])?;
-        UartConsole::wait_for(console, r"Data sent[^\n]*\n", opts.timeout)?;
+        UartConsole::wait_for(console, r"Data sent", opts.timeout)?;
 
         log::info!("Reading data...");
 

@@ -91,7 +91,7 @@ fn check_public_key(key: &SubjectPublicKeyInfo, id: &[u8], subject: &Name) -> Re
 
 fn attestation_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
-    let capture = UartConsole::wait_for(
+    let capture = UartConsole::wait_for_bytes(
         &*uart,
         r"(?msR)Running.*PASS!$|FAIL!$|BFV:([0-9A-Fa-f]{8})$",
         opts.timeout,

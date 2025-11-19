@@ -100,7 +100,7 @@ fn uart_tx_rx(
     uart.set_parity(Parity::None)
         .context("failed to set parity")?;
 
-    UartConsole::wait_for(console, r"Executing the test[^\n]*\n", opts.timeout)?;
+    UartConsole::wait_for(console, r"Executing the test", opts.timeout)?;
 
     log::info!("Sending data...");
     uart.write(&tx_rx_data.rx_data)
@@ -126,7 +126,7 @@ fn uart_tx_rx(
     uart.write(&too_much_data)
         .context("failed to write too much data")?;
 
-    UartConsole::wait_for(console, r"PASS![^\r\n]*", opts.timeout)?;
+    UartConsole::wait_for(console, r"PASS!", opts.timeout)?;
 
     Ok(())
 }

@@ -222,7 +222,10 @@ impl UartConsole {
         }
     }
 
-    pub fn wait_for<T>(device: &T, rx: &str, timeout: Duration) -> Result<Vec<String>>
+    /// Wait on the console until the regex matches the input.
+    ///
+    /// The input is processed one byte at a time, and is accumulated until match happens.
+    pub fn wait_for_bytes<T>(device: &T, rx: &str, timeout: Duration) -> Result<Vec<String>>
     where
         T: ConsoleDevice + ?Sized,
     {
@@ -251,5 +254,18 @@ impl UartConsole {
             ExitStatus::Timeout => Err(ConsoleError::GenericError("Timed Out".into()).into()),
             _ => Err(anyhow!("Impossible result: {:?}", result)),
         }
+    }
+
+    /// Wait on the console until the regex matches the input.
+    ///
+    /// The input is processed one line at a time. Lines that does not match the input is discarded.
+    pub fn wait_for<T>(device: &T, rx: &str, timeout: Duration) -> Result<Vec<String>>
+    where
+        T: ConsoleDevice + ?Sized,
+    {
+        // TODO: Optimize me to read a full line first.
+        let mut v = Self::wait_for_bytes(device, &format!("({rx}).*\n"), timeout)?;
+        v.remove(0);
+        Ok(v)
     }
 }

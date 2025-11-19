@@ -65,25 +65,13 @@ fn spi_host_config_test(
     output[output.len() - 2] = 0x0f; // A rising edge on the D1 to indicate when the sampling finished, which is helpfull when debugging.
     let waveform = Box::new([BitbangEntry::Both(output, &mut samples)]);
 
-    UartConsole::wait_for(
-        &*uart,
-        r".*SiVal: waiting for commands.*?[^\r\n]*",
-        opts.timeout,
-    )?;
+    UartConsole::wait_for(&*uart, r"SiVal: waiting for commands", opts.timeout)?;
     MemWriteReq::execute(&*uart, ctx.backdoor_cpha, &[ctx.cpha])?;
 
-    UartConsole::wait_for(
-        &*uart,
-        r".*SiVal: waiting for commands.*?[^\r\n]*",
-        opts.timeout,
-    )?;
+    UartConsole::wait_for(&*uart, r"SiVal: waiting for commands", opts.timeout)?;
     MemWriteReq::execute(&*uart, ctx.backdoor_cpol, &[ctx.cpol])?;
 
-    UartConsole::wait_for(
-        &*uart,
-        r".*SiVal: waiting for commands.*?[^\r\n]*",
-        opts.timeout,
-    )?;
+    UartConsole::wait_for(&*uart, r"SiVal: waiting for commands", opts.timeout)?;
     MemWriteReq::execute(&*uart, ctx.backdoor_data, &[0xAB, 0xCD, 0xEF, 0xAB])?;
     gpio_bitbanging.run(
         &ctx.gpio_pins

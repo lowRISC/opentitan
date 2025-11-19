@@ -53,10 +53,10 @@ fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<
     // Wait for generic strings to be transmitted.
     for _ in 0..2 {
         // Receive simple string from the device.
-        _ = UartConsole::wait_for(&spi_console_device, "ABC", opts.timeout)?;
+        _ = UartConsole::wait_for_bytes(&spi_console_device, "ABC", opts.timeout)?;
 
         // Receive 4K of data from the device.
-        _ = UartConsole::wait_for(&spi_console_device, data_str, opts.timeout)?;
+        _ = UartConsole::wait_for_bytes(&spi_console_device, data_str, opts.timeout)?;
     }
 
     // Receive the UJSON string transmitted and verify its contents.

@@ -34,7 +34,7 @@ fn test_ndm_reset_req(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Enable console and wait for the message.
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     // Connect via JTAG and trigger a NDM reset
     let mut jtag = opts

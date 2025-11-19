@@ -306,7 +306,7 @@ fn main() -> Result<()> {
 
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
     uart.clear_rx_buffer()?;
 
     for i2c_instance in 0..3 {
@@ -325,7 +325,7 @@ fn main() -> Result<()> {
 
     transport.pin_strapping("RESET")?.apply()?;
     transport.pin_strapping("RESET")?.remove()?;
-    UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     // The hyperdebug board does not like that pins mode are constantly changed,
     // so this commit separate the sub-tests that use the hyperdebug i2c from
