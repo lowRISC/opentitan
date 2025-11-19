@@ -11,6 +11,7 @@ use std::os::raw::c_void;
 
 use anyhow::{Result, anyhow};
 
+use opentitanlib::io::console::ConsoleExt;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::with_unknown;
 

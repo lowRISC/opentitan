@@ -13,7 +13,7 @@ use serialport::{ClearBuffer, SerialPort, TTYPort};
 use tokio::io::unix::AsyncFd;
 
 use super::{Parity, Uart, UartError};
-use crate::io::console::ConsoleDevice;
+use crate::io::console::{ConsoleDevice, ConsoleExt};
 use crate::util;
 use crate::util::runtime::MultiWaker;
 

@@ -11,6 +11,7 @@ use zerocopy::{Immutable, IntoBytes};
 use crate::app::TransportWrapper;
 use crate::bootstrap::{Bootstrap, BootstrapOptions, UpdateProtocol};
 use crate::impl_serializable_error;
+use crate::io::console::ConsoleExt;
 use crate::io::uart::Uart;
 use crate::transport::{Capability, ProgressIndicator};
 
