@@ -153,7 +153,7 @@ fn main() -> Result<()> {
     );
 
     // Now watch the console for the exit conditions.
-    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     };

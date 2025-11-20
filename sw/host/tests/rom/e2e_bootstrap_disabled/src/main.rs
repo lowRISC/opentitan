@@ -41,7 +41,7 @@ fn test_bootstrap_disabled_requested(opts: &Opts, transport: &TransportWrapper) 
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
     // Now watch the console for the exit conditions.
-    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     };
@@ -69,7 +69,7 @@ fn test_bootstrap_disabled_not_requested(opts: &Opts, transport: &TransportWrapp
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
     // Now watch the console for the exit conditions.
-    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     };

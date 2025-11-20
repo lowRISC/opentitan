@@ -7,10 +7,13 @@ use clap::Args;
 use regex::Regex;
 use std::any::Any;
 use std::fs::File;
+use std::marker::Unpin;
 use std::time::Duration;
+use tokio::io::{AsyncRead, AsyncReadExt};
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
+use opentitanlib::io::console::ConsoleDevice;
 use opentitanlib::io::uart::UartParams;
 use opentitanlib::transport::Capability;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
@@ -50,6 +53,42 @@ pub struct Console {
     /// Exit with failure if the specified regex is matched.
     #[arg(long)]
     exit_failure: Option<String>,
+}
+
+const CTRL_B: u8 = 2;
+const CTRL_C: u8 = 3;
+
+/// Takes input from an input stream and send it to a console device. Breaks are handled.
+async fn process_input<T, R: AsyncRead + Unpin>(device: &T, stdin: &mut R) -> Result<ExitStatus>
+where
+    T: ConsoleDevice + ?Sized,
+{
+    let mut break_en = false;
+    loop {
+        let mut buf = [0u8; 256];
+        let len = stdin.read(&mut buf).await?;
+        if len == 1 {
+            if buf[0] == CTRL_C {
+                return Ok(ExitStatus::CtrlC);
+            }
+            if buf[0] == CTRL_B {
+                break_en = !break_en;
+                eprint!(
+                    "\r\n{} break",
+                    if break_en { "Setting" } else { "Clearing" }
+                );
+                let b = device.set_break(break_en);
+                if b.is_err() {
+                    eprint!(": {:?}", b);
+                }
+                eprint!("\r\n");
+                continue;
+            }
+        }
+        if len > 0 {
+            device.write(&buf[..len])?;
+        }
+    }
 }
 
 impl CommandDispatch for Console {
@@ -97,7 +136,22 @@ impl CommandDispatch for Console {
             }
 
             transport.relinquish_exclusive_access(|| {
-                console.interact(&*uart, stdin.as_mut().map(|x| x as _), Some(&mut stdout))
+                opentitanlib::util::runtime::block_on(async {
+                    let tx = async {
+                        if let Some(stdin) = stdin.as_mut() {
+                            process_input(&*uart, stdin).await
+                        } else {
+                            std::future::pending().await
+                        }
+                    };
+
+                    let rx = console.interact_async(&*uart, Some(&mut stdout));
+
+                    tokio::select! {
+                        v = tx => v,
+                        v = rx => v,
+                    }
+                })
             })??
         };
         if !self.non_interactive {

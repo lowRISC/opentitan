@@ -2,14 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Result, anyhow};
-use regex::{Captures, Regex};
 use std::fs::File;
 use std::io::Write;
-use std::os::fd::AsFd;
 use std::time::{Duration, SystemTime};
 
-use tokio::io::AsyncReadExt;
+use anyhow::{Result, anyhow};
+use regex::{Captures, Regex};
 
 use crate::io::console::{ConsoleDevice, ConsoleError};
 
@@ -21,7 +19,6 @@ pub struct UartConsole {
     pub timestamp: bool,
     buffer: String,
     newline: bool,
-    break_en: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -33,13 +30,7 @@ pub enum ExitStatus {
     ExitFailure,
 }
 
-// Creates a vtable for implementors of Read and AsFd traits.
-pub trait ReadAsFd: tokio::io::AsyncRead + AsFd + std::marker::Unpin {}
-impl<T: tokio::io::AsyncRead + AsFd + std::marker::Unpin> ReadAsFd for T {}
-
 impl UartConsole {
-    const CTRL_B: u8 = 2;
-    const CTRL_C: u8 = 3;
     const BUFFER_LEN: usize = 32768;
 
     pub fn new(
@@ -55,43 +46,28 @@ impl UartConsole {
             timestamp: true,
             buffer: String::new(),
             newline: true,
-            break_en: false,
         }
     }
 
     // Runs an interactive console until CTRL_C is received.
-    pub fn interact<T>(
-        &mut self,
-        device: &T,
-        stdin: Option<&mut dyn ReadAsFd>,
-        stdout: Option<&mut dyn Write>,
-    ) -> Result<ExitStatus>
+    pub fn interact<T>(&mut self, device: &T, stdout: Option<&mut dyn Write>) -> Result<ExitStatus>
     where
         T: ConsoleDevice + ?Sized,
     {
-        crate::util::runtime::block_on(self.interact_async(device, stdin, stdout))
+        crate::util::runtime::block_on(self.interact_async(device, stdout))
     }
 
     // Runs an interactive console until CTRL_C is received.  Uses `mio` library to simultaneously
     // wait for data from UART or from stdin, without need for timeouts and repeated calls.
-    async fn interact_async<T>(
+    pub async fn interact_async<T>(
         &mut self,
         device: &T,
-        mut stdin: Option<&mut dyn ReadAsFd>,
         mut stdout: Option<&mut dyn Write>,
     ) -> Result<ExitStatus>
     where
         T: ConsoleDevice + ?Sized,
     {
-        let mut break_en = self.break_en;
         let timeout = self.timeout;
-        let tx = async {
-            if let Some(stdin) = stdin.as_mut() {
-                Self::process_input(&mut break_en, device, stdin).await
-            } else {
-                std::future::pending().await
-            }
-        };
         let rx = async {
             loop {
                 self.uart_read(device, &mut stdout).await?;
@@ -121,13 +97,10 @@ impl UartConsole {
             }
         };
 
-        let r = tokio::select! {
-            v = tx => v,
+        tokio::select! {
             v = rx => v,
             _ = timeout => Ok(ExitStatus::Timeout),
-        };
-        self.break_en = break_en;
-        r
+        }
     }
 
     /// Returns `true` if any regular expressions are used to match the streamed output.  If so,
@@ -185,41 +158,6 @@ impl UartConsole {
         Ok(())
     }
 
-    async fn process_input<T>(
-        break_en: &mut bool,
-        device: &T,
-        stdin: &mut dyn ReadAsFd,
-    ) -> Result<ExitStatus>
-    where
-        T: ConsoleDevice + ?Sized,
-    {
-        loop {
-            let mut buf = [0u8; 256];
-            let len = stdin.read(&mut buf).await?;
-            if len == 1 {
-                if buf[0] == UartConsole::CTRL_C {
-                    return Ok(ExitStatus::CtrlC);
-                }
-                if buf[0] == UartConsole::CTRL_B {
-                    *break_en = !*break_en;
-                    eprint!(
-                        "\r\n{} break",
-                        if *break_en { "Setting" } else { "Clearing" }
-                    );
-                    let b = device.set_break(*break_en);
-                    if b.is_err() {
-                        eprint!(": {:?}", b);
-                    }
-                    eprint!("\r\n");
-                    continue;
-                }
-            }
-            if len > 0 {
-                device.write(&buf[..len])?;
-            }
-        }
-    }
-
     pub fn captures(&self, status: ExitStatus) -> Option<Captures<'_>> {
         match status {
             ExitStatus::ExitSuccess => self
@@ -243,7 +181,7 @@ impl UartConsole {
     {
         let mut console = UartConsole::new(Some(timeout), Some(Regex::new(rx)?), None);
         let mut stdout = std::io::stdout();
-        let result = console.interact(device, None, Some(&mut stdout))?;
+        let result = console.interact(device, Some(&mut stdout))?;
         println!();
         match result {
             ExitStatus::ExitSuccess => {
