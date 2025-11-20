@@ -54,7 +54,7 @@ impl UartConsole {
             deadline: None,
             exit_success,
             exit_failure,
-            timestamp: false,
+            timestamp: true,
             buffer: String::new(),
             newline: true,
             break_en: false,
@@ -247,7 +247,6 @@ impl UartConsole {
         T: ConsoleDevice + ?Sized,
     {
         let mut console = UartConsole::new(Some(timeout), Some(Regex::new(rx)?), None);
-        console.timestamp = true;
         let mut stdout = std::io::stdout();
         let result = console.interact(device, None, Some(&mut stdout))?;
         println!();

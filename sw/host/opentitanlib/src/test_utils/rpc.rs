@@ -70,7 +70,6 @@ where
             Some(Regex::new(r"RESP_OK:(.*) CRC:([0-9]+)\n")?),
             Some(Regex::new(r"RESP_ERR:(.*) CRC:([0-9]+)\n")?),
         );
-        console.timestamp = true;
         let mut stdout = std::io::stdout();
         let out = if !quiet {
             let w: &mut dyn Write = &mut stdout;
