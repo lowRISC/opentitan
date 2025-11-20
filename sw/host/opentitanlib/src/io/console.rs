@@ -12,8 +12,10 @@ use crate::impl_serializable_error;
 
 mod broadcast;
 mod ext;
+mod logged;
 pub use broadcast::Broadcaster;
 pub use ext::ConsoleExt;
+pub use logged::Logged;
 
 /// Errors related to the console interface.
 #[derive(Error, Debug, Serialize, Deserialize)]
