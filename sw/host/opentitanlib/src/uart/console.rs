@@ -2,20 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::io::Write;
-use std::time::{Duration, SystemTime};
+use std::time::Duration;
 
 use anyhow::{Result, anyhow};
 use regex::{Captures, Regex};
 
-use crate::io::console::{ConsoleDevice, ConsoleError};
+use crate::io::console::{ConsoleDevice, ConsoleError, Logged};
 
 pub struct UartConsole {
     timeout: Option<Duration>,
     exit_success: Option<Regex>,
     exit_failure: Option<Regex>,
     buffer: String,
-    newline: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -38,7 +36,6 @@ impl UartConsole {
             exit_success,
             exit_failure,
             buffer: String::new(),
-            newline: true,
         }
     }
 
@@ -56,10 +53,18 @@ impl UartConsole {
     where
         T: ConsoleDevice + ?Sized,
     {
+        let logged;
+        let device: &dyn ConsoleDevice = if quiet {
+            &device
+        } else {
+            logged = Logged::new(device);
+            &logged
+        };
+
         let timeout = self.timeout;
         let rx = async {
             loop {
-                self.uart_read(device, quiet).await?;
+                self.uart_read(device).await?;
                 if self
                     .exit_success
                     .as_ref()
@@ -109,7 +114,7 @@ impl UartConsole {
     }
 
     // Read from the console device and process the data read.
-    async fn uart_read<T>(&mut self, device: &T, quiet: bool) -> Result<()>
+    async fn uart_read<T>(&mut self, device: &T) -> Result<()>
     where
         T: ConsoleDevice + ?Sized,
     {
@@ -121,19 +126,6 @@ impl UartConsole {
 
         if len == 0 {
             return Ok(());
-        }
-
-        if !quiet {
-            let mut stdout = std::io::stdout().lock();
-
-            if self.newline {
-                let t = humantime::format_rfc3339_millis(SystemTime::now());
-                stdout.write_fmt(format_args!("[{}  console]", t))?;
-            }
-            self.newline = ch == b'\n';
-
-            stdout.write_all(std::slice::from_ref(&ch))?;
-            stdout.flush()?;
         }
 
         if self.uses_regex() {

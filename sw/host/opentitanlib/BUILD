@@ -94,6 +94,7 @@ rust_library(
         "src/io/console.rs",
         "src/io/console/broadcast.rs",
         "src/io/console/ext.rs",
+        "src/io/console/logged.rs",
         "src/io/eeprom.rs",
         "src/io/emu.rs",
         "src/io/gpio.rs",
