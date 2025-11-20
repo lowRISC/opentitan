@@ -156,7 +156,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   always_ff @(posedge clk_slow_i or negedge rst_slow_ni) begin
     if (!rst_slow_ni) begin
       slow_wakeup_en_o <= '0;
-      slow_reset_en_o <= '0;
+      slow_reset_en_o <= 2'b10;
       slow_main_pd_no <= '1;
       slow_main_clk_en_o <= '0;
       slow_io_clk_en_o <= '0;
