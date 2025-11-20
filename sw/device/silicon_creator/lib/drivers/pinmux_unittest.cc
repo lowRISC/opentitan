@@ -4,6 +4,10 @@
 
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 
+#include "dt/dt_api.h"
+#include "dt/dt_gpio.h"
+#include "dt/dt_pinmux.h"
+#include "dt/dt_uart.h"
 #include "gtest/gtest.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/hardened.h"
@@ -50,6 +54,17 @@ class InitTest : public PinmuxTest {
            static_cast<uint32_t>(index) * sizeof(uint32_t);
   }
 
+  uint32_t RegInSelRegwen(top_earlgrey_pinmux_peripheral_in_t index) {
+    EXPECT_TRUE(index >= 0 && index < kTopEarlgreyPinmuxPeripheralInLast);
+    return base_ + PINMUX_MIO_PERIPH_INSEL_REGWEN_0_REG_OFFSET +
+           static_cast<uint32_t>(index) * sizeof(uint32_t);
+  }
+
+  uint32_t RegPadAttrRegwen(top_earlgrey_muxed_pads_t pad) {
+    return base_ + PINMUX_MIO_PAD_ATTR_REGWEN_0_REG_OFFSET +
+           static_cast<uint32_t>(pad) * sizeof(uint32_t);
+  }
+
   uint32_t RegPadAttr(top_earlgrey_muxed_pads_t pad) {
     return base_ + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET +
            static_cast<uint32_t>(pad) * sizeof(uint32_t);
@@ -72,6 +87,12 @@ class InitTest : public PinmuxTest {
     return base_ + PINMUX_MIO_OUTSEL_0_REG_OFFSET +
            static_cast<uint32_t>(index) * sizeof(uint32_t);
   };
+
+  uint32_t RegOutSelRegwen(top_earlgrey_pinmux_mio_out_t index) {
+    EXPECT_TRUE(index >= 0 && index < kTopEarlgreyPinmuxMioOutLast);
+    return base_ + PINMUX_MIO_OUTSEL_REGWEN_0_REG_OFFSET +
+           static_cast<uint32_t>(index) * sizeof(uint32_t);
+  };
 };
 
 TEST_F(InitTest, PadAttrPropagationDelay) {
@@ -80,64 +101,68 @@ TEST_F(InitTest, PadAttrPropagationDelay) {
   EXPECT_EQ(PINMUX_PAD_ATTR_PROP_CYCLES, kCpuCyclesIn5Micros);
 }
 
-TEST_F(InitTest, WithBootstrap) {
-  // The inputs that will be configured.
-  EXPECT_CALL(otp_,
-              read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET))
-      .WillOnce(Return(kHardenedBoolFalse));
+TEST_F(InitTest, EnablePullDownLocked) {
+  EXPECT_ABS_READ32(RegPadAttrRegwen(kTopEarlgreyMuxedPadsIoc0),
+                    {{PINMUX_MIO_PAD_ATTR_REGWEN_0_EN_0_BIT, 0}});
+
+  EXPECT_EQ(pinmux_enable_pull_down(kDtPadIoc0), kErrorPinMuxLockedPad);
+}
+
+TEST_F(InitTest, EnablePullDown) {
+  EXPECT_ABS_READ32(RegPadAttrRegwen(kTopEarlgreyMuxedPadsIoc0),
+                    {{PINMUX_MIO_PAD_ATTR_REGWEN_0_EN_0_BIT, 1}});
   EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyMuxedPadsIoc0),
-                     {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1}});
-  EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyMuxedPadsIoc1),
-                     {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1}});
-  EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyMuxedPadsIoc2),
-                     {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1}});
+                     {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1},
+                      {PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT, 0}});
   EXPECT_CSR_WRITE(CSR_REG_MCYCLE, 0);
   for (size_t i = 0; i < 6; ++i) {
     EXPECT_CSR_READ(CSR_REG_MCYCLE, i * 100);
   }
+
+  EXPECT_EQ(pinmux_enable_pull_down(kDtPadIoc0), kErrorOk);
+}
+
+TEST_F(InitTest, EnablePullUp) {
+  EXPECT_ABS_READ32(RegPadAttrRegwen(kTopEarlgreyMuxedPadsIoc0),
+                    {
+                        {PINMUX_MIO_PAD_ATTR_REGWEN_0_EN_0_BIT, 1},
+                    });
+  EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyMuxedPadsIoc0),
+                     {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1},
+                      {PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT, 1}});
+  EXPECT_CSR_WRITE(CSR_REG_MCYCLE, 0);
+  for (size_t i = 0; i < 6; ++i) {
+    EXPECT_CSR_READ(CSR_REG_MCYCLE, i * 100);
+  }
+
+  EXPECT_EQ(pinmux_enable_pull_up(kDtPadIoc0), kErrorOk);
+}
+
+TEST_F(InitTest, ConnectMioIn) {
+  EXPECT_ABS_READ32(RegInSelRegwen(kTopEarlgreyPinmuxPeripheralInGpioGpio22),
+                    {{PINMUX_MIO_PERIPH_INSEL_REGWEN_0_EN_0_BIT, 1}});
   EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpioGpio22),
                      kTopEarlgreyPinmuxInselIoc0)
-  EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpioGpio23),
-                     kTopEarlgreyPinmuxInselIoc1)
-  EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpioGpio24),
-                     kTopEarlgreyPinmuxInselIoc2)
 
-  // UART configuration: RX line pulled up, RX is IOC3, TX is IOC4.
-  EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyMuxedPadsIoc3),
-                     {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1},
-                      {PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT, 1}});
-  EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInUart0Rx),
-                     kTopEarlgreyPinmuxInselIoc3);
-  EXPECT_ABS_WRITE32(RegOutSel(kTopEarlgreyPinmuxMioOutIoc4),
-                     kTopEarlgreyPinmuxOutselUart0Tx);
+  EXPECT_ABS_READ32(RegOutSelRegwen(kTopEarlgreyPinmuxMioOutIoc0),
+                    {{PINMUX_MIO_OUTSEL_REGWEN_0_EN_0_BIT, 1}});
+  EXPECT_ABS_WRITE32(RegOutSel(kTopEarlgreyPinmuxMioOutIoc0),
+                     kDtPinmuxOutselConstantHighZ);
 
-  pinmux_init();
+  EXPECT_EQ(pinmux_connect(dt_gpio_periph_io(kDtGpio, kDtGpioPeriphIoGpio22),
+                           kDtPadIoc0, kDtPeriphIoDirIn),
+            kErrorOk);
 }
 
-TEST_F(InitTest, WithoutBootstrap) {
-  // The inputs that will be configured.
-  EXPECT_CALL(otp_,
-              read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET))
-      .WillOnce(Return(kHardenedBoolTrue));
-
-  // UART configuration: RX line pulled up, RX is IOC3, TX is IOC4.
-  EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyMuxedPadsIoc3),
-                     {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1},
-                      {PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT, 1}});
-  EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInUart0Rx),
-                     kTopEarlgreyPinmuxInselIoc3);
+TEST_F(InitTest, ConnectMioIoOut) {
+  EXPECT_ABS_READ32(RegOutSelRegwen(kTopEarlgreyPinmuxMioOutIoc4),
+                    {{PINMUX_MIO_OUTSEL_REGWEN_0_EN_0_BIT, 1}});
   EXPECT_ABS_WRITE32(RegOutSel(kTopEarlgreyPinmuxMioOutIoc4),
                      kTopEarlgreyPinmuxOutselUart0Tx);
 
-  pinmux_init();
-}
-
-TEST_F(InitTest, Uart0TxOnly) {
-  // The outputs that will be configured.
-  EXPECT_ABS_WRITE32(RegOutSel(kTopEarlgreyPinmuxMioOutIoc4),
-                     kTopEarlgreyPinmuxOutselUart0Tx);
-
-  pinmux_init_uart0_tx();
+  EXPECT_EQ(pinmux_connect(dt_uart_periph_io(kDtUart0, kDtUartPeriphIoTx),
+                           kDtPadIoc4, kDtPeriphIoDirOut),
+            kErrorOk);
 }
 
 }  // namespace
