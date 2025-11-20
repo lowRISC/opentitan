@@ -150,7 +150,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   // Override this task for otp_ctrl_common_vseq and otp_ctrl_stress_all_with_rand_reset_vseq
   // because some registers won't set to default value until otp_init is done.
-  virtual task read_and_check_all_csrs_after_reset();
+  protected virtual task read_and_check_all_csrs_after_reset();
     cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
     otp_pwr_init();
     super.read_and_check_all_csrs_after_reset();
