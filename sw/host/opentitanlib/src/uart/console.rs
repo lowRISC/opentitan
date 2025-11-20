@@ -7,7 +7,7 @@ use regex::{Captures, Regex};
 use std::fs::File;
 use std::io::Write;
 use std::os::fd::AsFd;
-use std::time::{Duration, Instant, SystemTime};
+use std::time::{Duration, SystemTime};
 
 use tokio::io::AsyncReadExt;
 
@@ -16,7 +16,6 @@ use crate::io::console::{ConsoleDevice, ConsoleError};
 pub struct UartConsole {
     pub logfile: Option<File>,
     timeout: Option<Duration>,
-    deadline: Option<Instant>,
     exit_success: Option<Regex>,
     exit_failure: Option<Regex>,
     pub timestamp: bool,
@@ -51,7 +50,6 @@ impl UartConsole {
         Self {
             logfile: None,
             timeout,
-            deadline: None,
             exit_success,
             exit_failure,
             timestamp: true,
@@ -71,9 +69,6 @@ impl UartConsole {
     where
         T: ConsoleDevice + ?Sized,
     {
-        if let Some(timeout) = &self.timeout {
-            self.deadline = Some(Instant::now() + *timeout);
-        }
         crate::util::runtime::block_on(self.interact_async(device, stdin, stdout))
     }
 
@@ -89,7 +84,7 @@ impl UartConsole {
         T: ConsoleDevice + ?Sized,
     {
         let mut break_en = self.break_en;
-        let deadline = self.deadline;
+        let timeout = self.timeout;
         let tx = async {
             if let Some(stdin) = stdin.as_mut() {
                 Self::process_input(&mut break_en, device, stdin).await
@@ -118,9 +113,9 @@ impl UartConsole {
                 }
             }
         };
-        let deadline = async {
-            if let Some(deadline) = deadline {
-                tokio::time::sleep_until(tokio::time::Instant::from_std(deadline)).await;
+        let timeout = async {
+            if let Some(timeout) = timeout {
+                tokio::time::sleep(timeout).await;
             } else {
                 std::future::pending().await
             }
@@ -129,7 +124,7 @@ impl UartConsole {
         let r = tokio::select! {
             v = tx => v,
             v = rx => v,
-            _ = deadline => Ok(ExitStatus::Timeout),
+            _ = timeout => Ok(ExitStatus::Timeout),
         };
         self.break_en = break_en;
         r
