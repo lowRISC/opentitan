@@ -311,9 +311,12 @@ fn invalid_spi_flash_transaction(
 fn usb_dfu_out_chunk_too_big(params: &RescueParams, transport: &TransportWrapper) -> Result<()> {
     let rescue = UsbDfu::new(params.clone());
     rescue.enter(transport, EntryMode::Reset)?;
-    rescue.set_mode(RescueMode::Rescue)?;
-    let data = vec![0u8; 4096];
-    let result = rescue.download(&data);
+    rescue.set_mode(RescueMode::RescueB)?;
+    let chunk = vec![0u8; 2048];
+    let chunk_too_big = vec![0u8; 4096];
+
+    rescue.download(&chunk)?;
+    let result = rescue.download(&chunk_too_big);
 
     if result.is_ok() {
         return Err(anyhow!("USB transaction should fail"));
