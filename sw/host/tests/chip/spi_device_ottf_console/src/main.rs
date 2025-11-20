@@ -95,7 +95,6 @@ fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<
 
     let result = console.interact(&spi_console_device, Some(&mut stdout))?;
     match result {
-        ExitStatus::None | ExitStatus::CtrlC => Ok(()),
         ExitStatus::Timeout => Err(anyhow!("Console timeout exceeded")),
         ExitStatus::ExitSuccess => {
             log::info!(

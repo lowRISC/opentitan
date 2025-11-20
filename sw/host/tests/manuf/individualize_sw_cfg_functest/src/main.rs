@@ -63,7 +63,6 @@ fn individualize_sw_cfg(opts: &Opts, transport: &TransportWrapper) -> Result<()>
     let mut stdout = std::io::stdout();
     let result = console.interact(&*uart, Some(&mut stdout))?;
     match result {
-        ExitStatus::None | ExitStatus::CtrlC => Ok(()),
         ExitStatus::Timeout => Err(anyhow!("Console timeout exceeded")),
         ExitStatus::ExitSuccess => {
             log::info!(
