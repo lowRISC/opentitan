@@ -105,13 +105,11 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
     opts.init.bootstrap.init(transport)?;
 
     // Reset chip, run flash stage, and wait for test status pass over the UART.
-    let mut console = UartConsole {
-        timeout: Some(opts.timeout),
-        exit_success: Some(Regex::new(r"PASS.*\n")?),
-        exit_failure: Some(Regex::new(r"(FAIL|FAULT).*\n")?),
-        newline: true,
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(
+        Some(opts.timeout),
+        Some(Regex::new(r"PASS.*\n")?),
+        Some(Regex::new(r"(FAIL|FAULT).*\n")?),
+    );
     let mut stdout = std::io::stdout();
     let result = console.interact(&*uart, None, Some(&mut stdout))?;
     match result {

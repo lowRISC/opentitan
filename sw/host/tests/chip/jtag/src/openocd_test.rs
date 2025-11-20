@@ -41,11 +41,7 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     reset(transport, &[], opts.init.bootstrap.options.reset_delay)?;
     const CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
 
-    let mut console = UartConsole {
-        timeout: Some(CONSOLE_TIMEOUT),
-        exit_success: Some(Regex::new(r"PASS!")?),
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(Some(CONSOLE_TIMEOUT), Some(Regex::new(r"PASS!")?), None);
     let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
     log::info!("result: {:?}", result);
 

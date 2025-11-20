@@ -98,12 +98,11 @@ fn test_bootstrap_enabled_requested(opts: &Opts, transport: &TransportWrapper) -
     // BootstrapOptions first.
     //let uart = opts.init.uart_params.create(&transport)?;
     let uart = transport.uart("console")?;
-    let mut console = UartConsole {
-        timeout: Some(opts.timeout),
-        exit_success: Some(Regex::new(r"bootstrap:1\r\n")?),
-        exit_failure: Some(Regex::new(r"BFV:")?),
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(
+        Some(opts.timeout),
+        Some(Regex::new(r"bootstrap:1\r\n")?),
+        Some(Regex::new(r"BFV:")?),
+    );
 
     transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
@@ -125,12 +124,11 @@ fn test_bootstrap_enabled_not_requested(opts: &Opts, transport: &TransportWrappe
     // BootstrapOptions first.
     //let uart = opts.init.uart_params.create(&transport)?;
     let uart = transport.uart("console")?;
-    let mut console = UartConsole {
-        timeout: Some(opts.timeout),
-        exit_success: Some(Regex::new(r"BFV:")?),
-        exit_failure: Some(Regex::new(r"bootstrap:1\r\n")?),
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(
+        Some(opts.timeout),
+        Some(Regex::new(r"BFV:")?),
+        Some(Regex::new(r"bootstrap:1\r\n")?),
+    );
 
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
@@ -299,14 +297,14 @@ fn test_bootstrap_shutdown(
 
     let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
-    let mut console = UartConsole {
-        timeout: Some(Duration::new(2, 0)),
+    let mut console = UartConsole::new(
+        Some(Duration::new(2, 0)),
         // `kErrorBootPolicyBadIdentifier` (0142500d) is defined in `error.h`.
-        exit_success: Some(Regex::new(
+        Some(Regex::new(
             format!("(?s)BFV:{bfv}\r\n.*BFV:0142500d\r\n").as_str(),
         )?),
-        ..Default::default()
-    };
+        None,
+    );
     // Send CHIP_ERASE to transition to phase 2.
     SpiFlash::from_spi(&*spi)?.chip_erase(&*spi)?;
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
@@ -338,11 +336,7 @@ fn test_bootstrap_phase1_reset(opts: &Opts, transport: &TransportWrapper) -> Res
     let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
     // RESET should be ignored and we should not see any messages.
-    let mut console = UartConsole {
-        timeout: Some(Duration::new(1, 0)),
-        exit_failure: Some(Regex::new(".+")?),
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(Some(Duration::new(1, 0)), None, Some(Regex::new(".+")?));
     // Discard buffered messages before interacting with the console.
     uart.clear_rx_buffer()?;
     SpiFlash::chip_reset(&*spi)?;
@@ -359,14 +353,13 @@ fn test_bootstrap_phase1_page_program(opts: &Opts, transport: &TransportWrapper)
 
     let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
-    let mut console = UartConsole {
-        timeout: Some(Duration::new(1, 0)),
+    let mut console = UartConsole::new(
+        Some(Duration::new(1, 0)),
         // `kErrorBootPolicyBadIdentifier` (0142500d) is defined in `error.h`.
-        exit_success: Some(Regex::new("BFV:0142500d\r\n")?),
+        Some(Regex::new("BFV:0142500d\r\n")?),
         // `kErrorBootPolicyBadLength` (0242500d) is defined in `error.h`.
-        exit_failure: Some(Regex::new("BFV:0242500d\r\n")?),
-        ..Default::default()
-    };
+        Some(Regex::new("BFV:0242500d\r\n")?),
+    );
     SpiFlash::from_spi(&*spi)?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
         // Note: We must start at a flash-word-aligned address.
@@ -393,10 +386,7 @@ fn test_bootstrap_phase1_erase(
     let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
     let spiflash = SpiFlash::from_spi(&*spi)?;
-    let mut console = UartConsole {
-        timeout: Some(Duration::new(1, 0)),
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(Some(Duration::new(1, 0)), None, None);
 
     let erase = || match erase_cmd {
         SpiFlash::SECTOR_ERASE => spiflash.erase(&*spi, 0, 4096),
@@ -440,10 +430,7 @@ fn test_bootstrap_phase1_read(opts: &Opts, transport: &TransportWrapper) -> Resu
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
     let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
-    let mut console = UartConsole {
-        timeout: Some(Duration::new(1, 0)),
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(Some(Duration::new(1, 0)), None, None);
 
     SpiFlash::from_spi(&*spi)?
         // Send CHIP_ERASE to transition to phase 2.
@@ -477,12 +464,12 @@ fn test_bootstrap_phase2_reset(opts: &Opts, transport: &TransportWrapper) -> Res
 
     let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
-    let mut console = UartConsole {
-        timeout: Some(Duration::new(1, 0)),
+    let mut console = UartConsole::new(
+        Some(Duration::new(1, 0)),
         // `kErrorBootPolicyBadIdentifier` (0142500d) is defined in `error.h`.
-        exit_success: Some(Regex::new("BFV:0142500d\r\n")?),
-        ..Default::default()
-    };
+        Some(Regex::new("BFV:0142500d\r\n")?),
+        None,
+    );
     // Send CHIP_ERASE to transition to phase 2.
     SpiFlash::from_spi(&*spi)?.chip_erase(&*spi)?;
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
@@ -516,12 +503,12 @@ fn test_bootstrap_phase2_page_program(opts: &Opts, transport: &TransportWrapper)
         // Write "OTRE" to the identifier field of the manifest in the second slot.
         .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
 
-    let mut console = UartConsole {
-        timeout: Some(Duration::new(1, 0)),
+    let mut console = UartConsole::new(
+        Some(Duration::new(1, 0)),
         // `kErrorBootPolicyBadLength` (0242500d) is defined in `error.h`.
-        exit_success: Some(Regex::new("BFV:0242500d\r\n")?),
-        ..Default::default()
-    };
+        Some(Regex::new("BFV:0242500d\r\n")?),
+        None,
+    );
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
@@ -556,12 +543,12 @@ fn test_bootstrap_phase2_erase(
     // Erase again.
     erase()?;
 
-    let mut console = UartConsole {
-        timeout: Some(Duration::new(1, 0)),
+    let mut console = UartConsole::new(
+        Some(Duration::new(1, 0)),
         // `kErrorBootPolicyBadIdentifier` (0142500d) is defined in `error.h`.
-        exit_success: Some(Regex::new("BFV:0142500d\r\n")?),
-        ..Default::default()
-    };
+        Some(Regex::new("BFV:0142500d\r\n")?),
+        None,
+    );
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
@@ -590,12 +577,12 @@ fn test_bootstrap_phase2_read(opts: &Opts, transport: &TransportWrapper) -> Resu
     log::info!("Received: {:#x}", received);
     assert_ne!(received, 0x4552_544f_0000_0000_u64);
 
-    let mut console = UartConsole {
-        timeout: Some(Duration::new(1, 0)),
+    let mut console = UartConsole::new(
+        Some(Duration::new(1, 0)),
         // `kErrorBootPolicyBadLength` (0242500d) is defined in `error.h`.
-        exit_success: Some(Regex::new("BFV:0242500d\r\n")?),
-        ..Default::default()
-    };
+        Some(Regex::new("BFV:0242500d\r\n")?),
+        None,
+    );
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
@@ -611,12 +598,11 @@ fn test_bootstrap_watchdog_check(opts: &Opts, transport: &TransportWrapper) -> R
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
     let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
-    let mut console = UartConsole {
-        timeout: Some(Duration::new(2, 0)),
-        exit_success: Some(Regex::new(r".+")?),
-        exit_failure: Some(Regex::new(r".+")?),
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(
+        Some(Duration::new(2, 0)),
+        Some(Regex::new(r".+")?),
+        Some(Regex::new(r".+")?),
+    );
 
     // Verify that the chip is in bootstrap by checking if it responds to `READ_SFDP` (`0x5a`).
     let _sfdp = SpiFlash::read_sfdp(&*spi)?;

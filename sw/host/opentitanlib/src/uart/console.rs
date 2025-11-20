@@ -13,17 +13,16 @@ use tokio::io::AsyncReadExt;
 
 use crate::io::console::{ConsoleDevice, ConsoleError};
 
-#[derive(Default)]
 pub struct UartConsole {
     pub logfile: Option<File>,
-    pub timeout: Option<Duration>,
-    pub deadline: Option<Instant>,
+    timeout: Option<Duration>,
+    deadline: Option<Instant>,
     pub exit_success: Option<Regex>,
-    pub exit_failure: Option<Regex>,
+    exit_failure: Option<Regex>,
     pub timestamp: bool,
-    pub buffer: String,
-    pub newline: bool,
-    pub break_en: bool,
+    buffer: String,
+    newline: bool,
+    break_en: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -43,6 +42,24 @@ impl UartConsole {
     const CTRL_B: u8 = 2;
     const CTRL_C: u8 = 3;
     const BUFFER_LEN: usize = 32768;
+
+    pub fn new(
+        timeout: Option<Duration>,
+        exit_success: Option<Regex>,
+        exit_failure: Option<Regex>,
+    ) -> Self {
+        Self {
+            logfile: None,
+            timeout,
+            deadline: None,
+            exit_success,
+            exit_failure,
+            timestamp: false,
+            buffer: String::new(),
+            newline: true,
+            break_en: false,
+        }
+    }
 
     // Runs an interactive console until CTRL_C is received.
     pub fn interact<T>(
@@ -229,13 +246,8 @@ impl UartConsole {
     where
         T: ConsoleDevice + ?Sized,
     {
-        let mut console = UartConsole {
-            timestamp: true,
-            newline: true,
-            timeout: Some(timeout),
-            exit_success: Some(Regex::new(rx)?),
-            ..Default::default()
-        };
+        let mut console = UartConsole::new(Some(timeout), Some(Regex::new(rx)?), None);
+        console.timestamp = true;
         let mut stdout = std::io::stdout();
         let result = console.interact(device, None, Some(&mut stdout))?;
         println!();
