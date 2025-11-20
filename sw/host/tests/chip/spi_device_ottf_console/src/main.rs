@@ -38,13 +38,11 @@ struct Opts {
 const SYNC_MSG: &str = r"SYNC:";
 
 fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let mut console = UartConsole {
-        timeout: Some(opts.timeout),
-        exit_success: Some(Regex::new(r"PASS.*\n")?),
-        exit_failure: Some(Regex::new(r"(FAIL|FAULT).*\n")?),
-        newline: true,
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(
+        Some(opts.timeout),
+        Some(Regex::new(r"PASS.*\n")?),
+        Some(Regex::new(r"(FAIL|FAULT).*\n")?),
+    );
     let mut stdout = std::io::stdout();
     let spi = transport.spi(&opts.console_spi)?;
 

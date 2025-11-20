@@ -63,13 +63,11 @@ fn ibex_epmp_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     jtag.disconnect()?;
 
     // Wait for test status pass over the UART.
-    let mut console = UartConsole {
-        timeout: Some(opts.timeout),
-        exit_success: Some(Regex::new(r"PASS.*\n")?),
-        exit_failure: Some(Regex::new(r"(FAIL|FAULT).*\n")?),
-        newline: true,
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(
+        Some(opts.timeout),
+        Some(Regex::new(r"PASS.*\n")?),
+        Some(Regex::new(r"(FAIL|FAULT).*\n")?),
+    );
 
     let mut stdout = std::io::stdout();
     let result = console.interact(&*uart, None, Some(&mut stdout))?;

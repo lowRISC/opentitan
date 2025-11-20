@@ -47,13 +47,13 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         .load_and_execute(&mut *jtag, ExecutionMode::Jump)?;
 
     const CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
-    let mut console = UartConsole {
-        timeout: Some(CONSOLE_TIMEOUT),
-        exit_success: Some(Regex::new(
+    let mut console = UartConsole::new(
+        Some(CONSOLE_TIMEOUT),
+        Some(Regex::new(
             r"sram_program\.c:\d+\] PC: 0x1000[0-2][0-9a-f]{3}, SRAM: \[0x10000000, 0x10020000\)",
         )?),
-        ..Default::default()
-    };
+        None,
+    );
     let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
     log::info!("result: {:?}", result);
     jtag.halt()?;

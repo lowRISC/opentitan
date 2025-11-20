@@ -146,12 +146,11 @@ fn main() -> Result<()> {
     execute_test!(spi_host_config_test, &opts, &transport, &ctx);
 
     let uart = transport.uart("console")?;
-    let mut console = UartConsole {
-        timeout: Some(opts.timeout),
-        exit_success: Some(Regex::new(r"PASS!\r\n")?),
-        exit_failure: Some(Regex::new(r"FAIL:")?),
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(
+        Some(opts.timeout),
+        Some(Regex::new(r"PASS!\r\n")?),
+        Some(Regex::new(r"FAIL:")?),
+    );
 
     // Now watch the console for the exit conditions.
     let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;

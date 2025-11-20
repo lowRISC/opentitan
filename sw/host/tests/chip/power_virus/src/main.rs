@@ -26,13 +26,11 @@ fn power_virus_systemtest(opts: &Opts, transport: &TransportWrapper) -> Result<(
     // Below is temporary until this test implements the command / response
     // ujson framework.
     let uart = transport.uart("console")?;
-    let mut console = UartConsole {
-        timeout: Some(opts.timeout),
-        exit_success: Some(Regex::new(r"PASS.*\n")?),
-        exit_failure: Some(Regex::new(r"(FAIL|FAULT).*\n")?),
-        newline: true,
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(
+        Some(opts.timeout),
+        Some(Regex::new(r"PASS.*\n")?),
+        Some(Regex::new(r"(FAIL|FAULT).*\n")?),
+    );
     let mut stdout = std::io::stdout();
     let result = console.interact(&*uart, None, Some(&mut stdout))?;
     match result {

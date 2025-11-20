@@ -62,23 +62,19 @@ impl CommandDispatch for Console {
         transport.capabilities()?.request(Capability::UART).ok()?;
 
         // Set up resources specified by the command line parameters.
-        let mut console = UartConsole {
-            logfile: self.logfile.as_ref().map(File::create).transpose()?,
-            timeout: self.timeout,
-            exit_success: self
-                .exit_success
+        let mut console = UartConsole::new(
+            self.timeout,
+            self.exit_success
                 .as_ref()
                 .map(|s| Regex::new(s.as_str()))
                 .transpose()?,
-            exit_failure: self
-                .exit_failure
+            self.exit_failure
                 .as_ref()
                 .map(|s| Regex::new(s.as_str()))
                 .transpose()?,
-            timestamp: self.timestamp,
-            newline: true,
-            ..Default::default()
-        };
+        );
+        console.logfile = self.logfile.as_ref().map(File::create).transpose()?;
+        console.timestamp = self.timestamp;
 
         let status = {
             // Put the terminal into raw mode.  The tty guard will restore the

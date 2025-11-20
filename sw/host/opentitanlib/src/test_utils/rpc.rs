@@ -65,14 +65,12 @@ where
     where
         Self: Sized,
     {
-        let mut console = UartConsole {
-            timeout: Some(timeout),
-            timestamp: true,
-            newline: true,
-            exit_success: Some(Regex::new(r"RESP_OK:(.*) CRC:([0-9]+)\n")?),
-            exit_failure: Some(Regex::new(r"RESP_ERR:(.*) CRC:([0-9]+)\n")?),
-            ..Default::default()
-        };
+        let mut console = UartConsole::new(
+            Some(timeout),
+            Some(Regex::new(r"RESP_OK:(.*) CRC:([0-9]+)\n")?),
+            Some(Regex::new(r"RESP_ERR:(.*) CRC:([0-9]+)\n")?),
+        );
+        console.timestamp = true;
         let mut stdout = std::io::stdout();
         let out = if !quiet {
             let w: &mut dyn Write = &mut stdout;

@@ -338,11 +338,11 @@ fn debug_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     dbg.resume()?;
 
     const CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
-    let mut console = UartConsole {
-        timeout: Some(CONSOLE_TIMEOUT),
-        exit_success: Some(Regex::new(r"OK!GDB-OK(?s:.*)BFV:0142500d")?),
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(
+        Some(CONSOLE_TIMEOUT),
+        Some(Regex::new(r"OK!GDB-OK(?s:.*)BFV:0142500d")?),
+        None,
+    );
     let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
     assert_eq!(result, ExitStatus::ExitSuccess);
 
