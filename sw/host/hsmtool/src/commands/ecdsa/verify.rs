@@ -25,7 +25,7 @@ pub struct Verify {
     label: Option<String>,
     #[arg(short, long, default_value = "sha256-hash", help=SignData::HELP)]
     format: SignData,
-    /// Reverse the input data and result (for little-endian targets).
+    /// Reverse the result (for little-endian targets).
     #[arg(short = 'r', long)]
     little_endian: bool,
     /// The signature is at the given byte range of the input file.
@@ -51,9 +51,7 @@ impl Dispatch for Verify {
         let object = helper::find_one_object(session, &attrs)?;
 
         let data = std::fs::read(&self.input)?;
-        let data = self
-            .format
-            .prepare(KeyType::Ec, &data, self.little_endian)?;
+        let data = self.format.prepare(KeyType::Ec, &data)?;
         let mechanism = self.format.mechanism(KeyType::Ec)?;
         let mut signature = if let Some(filename) = &self.signature {
             std::fs::read(filename)?

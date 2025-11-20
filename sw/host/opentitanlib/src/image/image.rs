@@ -19,7 +19,7 @@ use crate::crypto::ecdsa::{EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature}
 use crate::crypto::rsa::Modulus;
 use crate::crypto::rsa::RsaPublicKey;
 use crate::crypto::rsa::Signature as RsaSignature;
-use crate::crypto::sha256;
+use crate::crypto::sha256::Sha256Digest;
 use crate::image::manifest::{
     CHIP_MANIFEST_VERSION_MAJOR1, CHIP_MANIFEST_VERSION_MAJOR2, CHIP_MANIFEST_VERSION_MINOR1,
     CHIP_ROM_EXT_IDENTIFIER, CHIP_ROM_EXT_SIZE_MAX, MANIFEST_EXT_ID_SPX_KEY,
@@ -65,11 +65,27 @@ pub struct SpxSignatureParams {
 pub struct SigverifyParams {
     pub main_sig_params: MainSignatureParams,
     pub spx_sig_params: Option<SpxSignatureParams>,
+    pub spx_hash_reversal_bug: bool,
 }
 
 impl SigverifyParams {
+    pub fn new(
+        main_sig_params: MainSignatureParams,
+        spx_sig_params: Option<SpxSignatureParams>,
+    ) -> Self {
+        SigverifyParams {
+            main_sig_params,
+            spx_sig_params,
+            spx_hash_reversal_bug: false,
+        }
+    }
+    pub fn with_hash_reversal_bug(mut self, bug: bool) -> Self {
+        self.spx_hash_reversal_bug = bug;
+        self
+    }
+
     // Verify the main image signature.
-    pub fn verify(&self, digest: &sha256::Sha256Digest) -> Result<()> {
+    pub fn verify(&self, digest: &Sha256Digest) -> Result<()> {
         match &self.main_sig_params {
             MainSignatureParams::Rsa(key, sig) => {
                 key.verify(digest, sig)?;
@@ -86,7 +102,11 @@ impl SigverifyParams {
     pub fn spx_verify(&self, b: &[u8], domain: SpxDomain) -> Result<()> {
         if let Some(spx) = &self.spx_sig_params {
             let msg = match domain {
-                SpxDomain::PreHashedSha256 => Cow::from(sha256::sha256(b).to_le_bytes()),
+                SpxDomain::PreHashedSha256 => Cow::from(if self.spx_hash_reversal_bug {
+                    Sha256Digest::hash(b).to_vec_rev()
+                } else {
+                    Sha256Digest::hash(b).to_vec()
+                }),
                 _ => Cow::from(b),
             };
             spx.key.verify(domain, &spx.signature, &msg)?;
@@ -246,19 +266,19 @@ impl Image {
         {
             let rsa_key = RsaPublicKey::new(Modulus::from_le_bytes(pub_key)?)?;
             let rsa_sig = RsaSignature::from_le_bytes(signature)?;
-            return Ok(SigverifyParams {
-                main_sig_params: MainSignatureParams::Rsa(rsa_key, rsa_sig),
+            return Ok(SigverifyParams::new(
+                MainSignatureParams::Rsa(rsa_key, rsa_sig),
                 spx_sig_params,
-            });
+            ));
         }
 
         let ecdsa_pub_key = EcdsaRawPublicKey::read(&mut std::io::Cursor::new(pub_key))?;
         let ecdsa_sig = EcdsaRawSignature::read(&mut std::io::Cursor::new(signature))?;
 
-        Ok(SigverifyParams {
-            main_sig_params: MainSignatureParams::Ecdsa(ecdsa_pub_key, ecdsa_sig),
+        Ok(SigverifyParams::new(
+            MainSignatureParams::Ecdsa(ecdsa_pub_key, ecdsa_sig),
             spx_sig_params,
-        })
+        ))
     }
 
     /// Overwrites all fields in the image's manifest that are defined in `other`.
@@ -581,8 +601,8 @@ impl Image {
     }
 
     /// Compute the SHA256 digest for the signed portion of the `Image`.
-    pub fn compute_digest(&self) -> Result<sha256::Sha256Digest> {
-        self.map_signed_region(|v| sha256::sha256(v))
+    pub fn compute_digest(&self) -> Result<Sha256Digest> {
+        self.map_signed_region(|v| Sha256Digest::hash(v))
     }
 }
 
@@ -597,8 +617,8 @@ impl SubImage<'_> {
     }
 
     /// Compute the SHA256 digest for the signed portion of the `Image`.
-    pub fn compute_digest(&self) -> Result<sha256::Sha256Digest> {
-        self.map_signed_region(|v| sha256::sha256(v))
+    pub fn compute_digest(&self) -> Result<Sha256Digest> {
+        self.map_signed_region(|v| Sha256Digest::hash(v))
     }
 }
 

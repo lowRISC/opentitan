@@ -11,7 +11,7 @@ use regex::Regex;
 use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::crypto::sha256;
+use opentitanlib::crypto::sha256::Sha256Digest;
 use opentitanlib::image::image::Image;
 use opentitanlib::ownership::OwnerBlock;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -78,7 +78,7 @@ fn check_public_key(key: &SubjectPublicKeyInfo, id: &[u8], subject: &Name) -> Re
     material.extend(x);
     material.extend(vec![0; 32 - y.len()]);
     material.extend(y);
-    let hash = sha256::sha256(&material).to_be_bytes();
+    let hash = Sha256Digest::hash(&material).to_vec();
     let keyid = &hash[..20];
     log::info!("computed id = {:?}", hex::encode(keyid));
     log::info!("         id = {:?}", hex::encode(id));
@@ -115,12 +115,12 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let measurements = image
         .subimages()?
         .iter()
-        .map(|s| s.compute_digest().unwrap().to_be_bytes())
+        .map(|s| s.compute_digest().unwrap())
         .collect::<Vec<_>>();
     let owner_measurements = [
         // The owner page digests should not include the signature or seal fields.
-        sha256::sha256(&owner_page_0[0..OwnerBlock::SIGNATURE_OFFSET]).to_be_bytes(),
-        sha256::sha256(&owner_page_1[0..OwnerBlock::SIGNATURE_OFFSET]).to_be_bytes(),
+        Sha256Digest::hash(&owner_page_0[0..OwnerBlock::SIGNATURE_OFFSET]).to_vec(),
+        Sha256Digest::hash(&owner_page_1[0..OwnerBlock::SIGNATURE_OFFSET]).to_vec(),
     ];
 
     let CertificateExtension::DiceTcbInfo(dice) = &cdi0.private_extensions[0];
@@ -137,7 +137,7 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     assert_eq!(dice.layer.get_value(), &BigUint::from(1u8));
     let fw_ids = dice.fw_ids.as_ref().expect("list of fw_ids");
     assert_eq!(fw_ids.len(), 1);
-    assert_eq!(fw_ids[0].digest.get_value(), &measurements[0]);
+    assert_eq!(fw_ids[0].digest.get_value(), &measurements[0].as_ref());
 
     let CertificateExtension::DiceTcbInfo(dice) = &cdi1.private_extensions[0];
     log::info!("Checking CDI_1 (Owner) DICE certificate: {cdi1:#?}");
@@ -160,7 +160,7 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     assert_eq!(dice.layer.get_value(), &BigUint::from(2u8));
     let fw_ids = dice.fw_ids.as_ref().expect("list of fw_ids");
     assert_eq!(fw_ids.len(), 2);
-    assert_eq!(fw_ids[0].digest.get_value(), &measurements[1]);
+    assert_eq!(fw_ids[0].digest.get_value(), &measurements[1].as_ref());
     assert_eq!(fw_ids[1].digest.get_value(), &owner_measurements[0]);
     Ok(())
 }

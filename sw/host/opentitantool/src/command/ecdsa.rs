@@ -10,6 +10,7 @@ use std::any::Any;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
@@ -17,7 +18,6 @@ use opentitanlib::crypto::ecdsa::{
     EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature,
 };
 use opentitanlib::crypto::sha256::Sha256Digest;
-use opentitanlib::util::parse_int::ParseInt;
 
 /// Given the path to a public key, returns the public key. Given
 /// the path to a private key, extracts the public key from the private
@@ -199,9 +199,8 @@ pub enum EcdsaKeySubcommands {
 
 #[derive(Annotate)]
 pub struct EcdsaSignResult {
-    #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
-    pub digest: Vec<u8>,
+    pub digest: Sha256Digest,
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
     pub signature: Vec<u8>,
@@ -237,31 +236,35 @@ impl CommandDispatch for EcdsaSignCommand {
         let private_key = EcdsaPrivateKey::load(&self.private_key)?;
         let digest = if let Some(input) = &self.input {
             let bytes = std::fs::read(input)?;
-            Sha256Digest::from_le_bytes(bytes)?
+            Sha256Digest::try_from(bytes.as_slice())?
         } else {
-            self.digest.clone().unwrap()
+            self.digest.unwrap()
         };
         let signature = private_key.sign(&digest)?.to_vec()?;
         if let Some(output) = &self.output {
             std::fs::write(output, &signature)?;
         }
-        Ok(Some(Box::new(EcdsaSignResult {
-            digest: digest.to_le_bytes(),
-            signature,
-        })))
+        Ok(Some(Box::new(EcdsaSignResult { digest, signature })))
     }
 }
 
 #[derive(Debug, Args)]
 pub struct EcdsaVerifyCommand {
+    /// Signature to be verified (binary file)
+    #[arg(long, short, conflicts_with = "signature")]
+    signature_file: Option<PathBuf>,
+    /// Digest to be verified (binary file)
+    #[arg(long, short, conflicts_with = "signature")]
+    digest_file: Option<PathBuf>,
     /// Key file in DER format.
     #[arg(value_name = "KEY")]
     der_file: PathBuf,
-    /// SHA256 digest of the message as a hex string (big-endian), i.e. 0x...
-    #[arg(value_name = "SHA256_DIGEST")]
-    digest: String,
+    /// SHA256 digest of the message as a hex string.
+    #[arg(value_name = "SHA256_DIGEST", conflicts_with = "digest_file")]
+    digest: Option<String>,
     /// Signature to be verified as a hex string.
-    signature: String,
+    #[arg(conflicts_with = "signature_file")]
+    signature: Option<String>,
 }
 
 impl CommandDispatch for EcdsaVerifyCommand {
@@ -271,8 +274,22 @@ impl CommandDispatch for EcdsaVerifyCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let key = load_pub_or_priv_key(&self.der_file)?;
-        let digest = Sha256Digest::from_str(&self.digest)?;
-        let signature = EcdsaRawSignature::try_from(hex::decode(&self.signature)?.as_slice())?;
+        let digest = if let Some(digest_file) = &self.digest_file {
+            let bytes = std::fs::read(digest_file)?;
+            Sha256Digest::try_from(bytes.as_slice())?
+        } else if let Some(digest) = &self.digest {
+            Sha256Digest::from_str(digest)?
+        } else {
+            unreachable!();
+        };
+        let signature = if let Some(signature_file) = &self.signature_file {
+            let bytes = std::fs::read(signature_file)?;
+            EcdsaRawSignature::try_from(bytes.as_slice())?
+        } else if let Some(signature) = &self.signature {
+            EcdsaRawSignature::try_from(hex::decode(signature)?.as_slice())?
+        } else {
+            unreachable!();
+        };
         key.verify(&digest, &signature)?;
         Ok(None)
     }
