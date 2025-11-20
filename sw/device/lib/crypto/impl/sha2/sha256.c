@@ -67,8 +67,8 @@ static const otbn_addr_t kOtbnVarSha256NumMsgChunks =
 
 status_t sha256_init(sha256_state_t *state) {
   // Set the initial state.
-  HARDENED_TRY(
-      hardened_memcpy(state->H, kSha256InitialState, kSha256StateWords));
+  HARDENED_TRY(hardened_memcpy(state->H, state->H, kSha256InitialState,
+                               kSha256InitialState, kSha256StateWords));
   // Set the partial block to 0 (the value is ignored).
   memset(state->partial_block, 0, kSha256MessageBlockBytes);
   // Set the message length so far to 0.
@@ -256,8 +256,10 @@ static status_t process_message(sha256_state_t *state, const uint8_t *msg,
 
   // At this point, no more errors are possible; it is safe to update the
   // context object.
-  HARDENED_TRY(hardened_memcpy(state->H, new_state.H, kSha256StateWords));
-  HARDENED_TRY(hardened_memcpy(state->partial_block, block.data,
+  HARDENED_TRY(hardened_memcpy(state->H, state->H, new_state.H, new_state.H,
+                               kSha256StateWords));
+  HARDENED_TRY(hardened_memcpy(state->partial_block, state->partial_block,
+                               block.data, block.data,
                                kSha256MessageBlockWords));
   state->total_len = new_state.total_len;
   return OTCRYPTO_OK;
@@ -306,7 +308,8 @@ static status_t digest_get(sha256_state_t *state, uint32_t *digest) {
     state->H[i] = __builtin_bswap32(state->H[kSha256StateWords - 1 - i]);
     state->H[kSha256StateWords - 1 - i] = tmp;
   }
-  HARDENED_TRY(hardened_memcpy(digest, state->H, kSha256StateWords));
+  HARDENED_TRY(
+      hardened_memcpy(digest, digest, state->H, state->H, kSha256StateWords));
 
   return OTCRYPTO_OK;
 }

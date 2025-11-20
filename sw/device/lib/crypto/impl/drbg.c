@@ -41,7 +41,8 @@ static status_t seed_material_construct(
     // The data buffer is word-aligned and the data length is a multiple of the
     // word size. We can use the SCA hardened memcpy.
     HARDENED_TRY(hardened_memcpy(
-        seed_material->data, (const uint32_t *)value.data, seed_material->len));
+        seed_material->data, seed_material->data, (const uint32_t *)value.data,
+        (const uint32_t *)value.data, seed_material->len));
   } else {
     // The data buffer is not word-aligned. We need to use randomized_bytecopy
     // that also implements randomization to reduce SCA leakage.

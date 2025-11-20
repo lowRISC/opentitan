@@ -72,8 +72,8 @@ static const otbn_addr_t kOtbnVarSha512NChunks =
 
 status_t sha512_init(sha512_state_t *state) {
   // Set the initial state.
-  HARDENED_TRY(
-      hardened_memcpy(state->H, kSha512InitialState, kSha512StateWords));
+  HARDENED_TRY(hardened_memcpy(state->H, state->H, kSha512InitialState,
+                               kSha512InitialState, kSha512StateWords));
   // Set the partial block to 0 (the value is ignored).
   memset(state->partial_block, 0, sizeof(state->partial_block));
   // Set the message length so far to 0.
@@ -85,8 +85,8 @@ status_t sha512_init(sha512_state_t *state) {
 
 status_t sha384_init(sha512_state_t *state) {
   // Set the initial state.
-  HARDENED_TRY(
-      hardened_memcpy(state->H, kSha384InitialState, kSha512StateWords));
+  HARDENED_TRY(hardened_memcpy(state->H, state->H, kSha384InitialState,
+                               kSha384InitialState, kSha512StateWords));
   // Set the partial block to 0 (the value is ignored).
   memset(state->partial_block, 0, sizeof(state->partial_block));
   // Set the message length so far to 0.
@@ -276,8 +276,8 @@ static status_t process_message(sha512_state_t *state, const uint8_t *msg,
   sha512_message_block_t block;
   size_t partial_block_len =
       (state->total_len.lower >> 3) % kSha512MessageBlockBytes;
-  HARDENED_TRY(hardened_memcpy(block.data, state->partial_block,
-                               kSha512MessageBlockWords));
+  HARDENED_TRY(hardened_memcpy(block.data, block.data, state->partial_block,
+                               state->partial_block, kSha512MessageBlockWords));
 
   // Initialize the context for the OTBN message buffer.
   sha512_otbn_ctx_t ctx = {.num_blocks = 0};
@@ -326,8 +326,10 @@ static status_t process_message(sha512_state_t *state, const uint8_t *msg,
 
   // At this point, no more errors are possible; it is safe to update the
   // context object.
-  HARDENED_TRY(hardened_memcpy(state->H, new_state.H, kSha512StateWords));
-  HARDENED_TRY(hardened_memcpy(state->partial_block, block.data,
+  HARDENED_TRY(hardened_memcpy(state->H, state->H, new_state.H, new_state.H,
+                               kSha512StateWords));
+  HARDENED_TRY(hardened_memcpy(state->partial_block, state->partial_block,
+                               block.data, block.data,
                                kSha512MessageBlockWords));
   state->total_len.lower = new_state.total_len.lower;
   state->total_len.upper = new_state.total_len.upper;
@@ -370,7 +372,8 @@ static status_t sha512_digest_get(sha512_state_t *state, uint32_t *digest) {
   for (size_t i = 0; i < kSha512StateWords; i++) {
     state->H[i] = __builtin_bswap32(state->H[i]);
   }
-  HARDENED_TRY(hardened_memcpy(digest, state->H, kSha512DigestWords));
+  HARDENED_TRY(
+      hardened_memcpy(digest, digest, state->H, state->H, kSha512DigestWords));
 
   return OTCRYPTO_OK;
 }
@@ -390,7 +393,8 @@ static status_t sha384_digest_get(sha512_state_t *state, uint32_t *digest) {
   for (size_t i = 0; i < kSha512StateWords; i++) {
     state->H[i] = __builtin_bswap32(state->H[i]);
   }
-  HARDENED_TRY(hardened_memcpy(digest, state->H, kSha384DigestWords));
+  HARDENED_TRY(
+      hardened_memcpy(digest, digest, state->H, state->H, kSha384DigestWords));
 
   return OTCRYPTO_OK;
 }

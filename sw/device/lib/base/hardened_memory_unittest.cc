@@ -22,10 +22,10 @@ TEST(HardenedMemory, Memcpy) {
   std::vector<uint32_t> xs = {1, 2, 3, 4, 5, 6, 7, 8};
   std::vector<uint32_t> ys(8);
 
-  hardened_memcpy(ys.data(), xs.data(), 0);
+  hardened_memcpy(ys.data(), ys.data(), xs.data(), xs.data(), 0);
   EXPECT_THAT(ys, Each(0));
 
-  hardened_memcpy(ys.data() + 1, xs.data(), 7);
+  hardened_memcpy(ys.data() + 1, ys.data() + 1, xs.data(), xs.data(), 7);
   EXPECT_THAT(ys, ElementsAre(0, 1, 2, 3, 4, 5, 6, 7));
 }
 

@@ -100,8 +100,9 @@ status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
   HARDENED_TRY(hardened_memshred(keyblob, keyblob_num_words(config)));
 
   size_t share_words = keyblob_share_num_words(config);
-  HARDENED_TRY(hardened_memcpy(keyblob, share0, share_words));
-  HARDENED_TRY(hardened_memcpy(keyblob + share_words, share1, share_words));
+  HARDENED_TRY(hardened_memcpy(keyblob, keyblob, share0, share0, share_words));
+  HARDENED_TRY(hardened_memcpy(keyblob + share_words, keyblob + share_words,
+                               share1, share1, share_words));
   return OTCRYPTO_OK;
 }
 
@@ -115,7 +116,8 @@ status_t keyblob_buffer_to_keymgr_diversification(
   HARDENED_TRY(entropy_complex_check());
 
   // Copy the remainder of the keyblob into the salt.
-  HARDENED_TRY(hardened_memcpy(diversification->salt, &keyblob[1],
+  HARDENED_TRY(hardened_memcpy(diversification->salt, diversification->salt,
+                               &keyblob[1], &keyblob[1],
                                kKeymgrSaltNumWords - 1));
 
   // Set the key mode as the last word of the salt.

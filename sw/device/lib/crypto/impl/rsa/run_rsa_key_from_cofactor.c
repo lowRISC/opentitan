@@ -97,7 +97,8 @@ status_t rsa_keygen_from_cofactor_2048_finalize(
       otbn_dmem_read(kRsa2048NumWords, kOtbnVarRsaD1, private_key->d1.data));
 
   // Copy the modulus to the public key.
-  HARDENED_TRY(hardened_memcpy(public_key->n.data, private_key->n.data,
+  HARDENED_TRY(hardened_memcpy(public_key->n.data, public_key->n.data,
+                               private_key->n.data, private_key->n.data,
                                ARRAYSIZE(private_key->n.data)));
 
   // Wipe DMEM.

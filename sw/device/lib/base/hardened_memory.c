@@ -10,10 +10,15 @@
 
 // NOTE: The three hardened_mem* functions have similar contents, but the parts
 // that are shared between them are commented only in `memcpy()`.
-status_t hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
-                         size_t word_len) {
+status_t hardened_memcpy(uint32_t *restrict dest,
+                         uint32_t *restrict dest_shadow,
+                         const uint32_t *restrict src,
+                         const uint32_t *restrict src_shadow, size_t word_len) {
   random_order_t order;
   random_order_init(&order, word_len);
+
+  HARDENED_CHECK_EQ(dest, dest_shadow);
+  HARDENED_CHECK_EQ(src, src_shadow);
 
   size_t count = 0;
 

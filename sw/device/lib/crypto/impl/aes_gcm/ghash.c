@@ -282,14 +282,16 @@ static void ghash_process_block(ghash_context_t *ctx, ghash_block_t *block) {
   if (ctx->ghash_block_cnt == 0) {
     // Process share 0.
     // share0_tmp = (S0 + T0) * H0
-    hardened_memcpy(s0_tmp.data, block->data, kGhashBlockNumWords);
+    hardened_memcpy(s0_tmp.data, s0_tmp.data, block->data, block->data,
+                    kGhashBlockNumWords);
     hardened_xor_in_place(s0_tmp.data, ctx->enc_initial_counter_block0.data,
                           kGhashBlockNumWords);
     s0_tmp = galois_mul_state_key(s0_tmp, ctx->tbl0);
 
     // Apply the correction terms for state share 0.
     // share0 = share0_tmp + (S0*(H0+1))
-    hardened_memcpy(ctx->state0.data, s0_tmp.data, kGhashBlockNumWords);
+    hardened_memcpy(ctx->state0.data, ctx->state0.data, s0_tmp.data,
+                    s0_tmp.data, kGhashBlockNumWords);
     hardened_xor_in_place(ctx->state0.data, ctx->correction_term0.data,
                           kGhashBlockNumWords);
 
@@ -299,7 +301,8 @@ static void ghash_process_block(ghash_context_t *ctx, ghash_block_t *block) {
 
     // Process share 1.
     // share1_tmp = (S1 + T0) * H1
-    hardened_memcpy(s1_tmp.data, block->data, kGhashBlockNumWords);
+    hardened_memcpy(s1_tmp.data, s1_tmp.data, block->data, block->data,
+                    kGhashBlockNumWords);
     hardened_xor_in_place(s1_tmp.data, ctx->enc_initial_counter_block1.data,
                           kGhashBlockNumWords);
     ibex_clear_rf();
@@ -307,14 +310,16 @@ static void ghash_process_block(ghash_context_t *ctx, ghash_block_t *block) {
 
     // Apply the correction terms for state share 1.
     // share1 = share1_tmp + correction_term1
-    hardened_memcpy(ctx->state1.data, s1_tmp.data, kGhashBlockNumWords);
+    hardened_memcpy(ctx->state1.data, ctx->state1.data, s1_tmp.data,
+                    s1_tmp.data, kGhashBlockNumWords);
     hardened_xor_in_place(ctx->state1.data, ctx->correction_term1_init.data,
                           kGhashBlockNumWords);
   } else {
     // Process share 0.
     // tmp = (share0+TN-1)+share1
     ghash_block_t tmp;
-    hardened_memcpy(tmp.data, block->data, kGhashBlockNumWords);
+    hardened_memcpy(tmp.data, tmp.data, block->data, block->data,
+                    kGhashBlockNumWords);
     hardened_xor_in_place(tmp.data, ctx->state0.data, kGhashBlockNumWords);
     hardened_xor_in_place(tmp.data, ctx->state1.data, kGhashBlockNumWords);
 
@@ -323,7 +328,8 @@ static void ghash_process_block(ghash_context_t *ctx, ghash_block_t *block) {
 
     // Apply the correction terms for state share 0.
     // share0 = share0_tmp + (S0*(H0+1))
-    hardened_memcpy(ctx->state0.data, s0_tmp.data, kGhashBlockNumWords);
+    hardened_memcpy(ctx->state0.data, ctx->state0.data, s0_tmp.data,
+                    s0_tmp.data, kGhashBlockNumWords);
     hardened_xor_in_place(ctx->state0.data, ctx->correction_term0.data,
                           kGhashBlockNumWords);
 
@@ -333,7 +339,8 @@ static void ghash_process_block(ghash_context_t *ctx, ghash_block_t *block) {
 
     // Apply the correction terms for state share 1.
     // share1 = share1_tmp + (S0*H0)
-    hardened_memcpy(ctx->state1.data, s1_tmp.data, kGhashBlockNumWords);
+    hardened_memcpy(ctx->state1.data, ctx->state1.data, s1_tmp.data,
+                    s1_tmp.data, kGhashBlockNumWords);
     hardened_xor_in_place(ctx->state1.data, ctx->correction_term1.data,
                           kGhashBlockNumWords);
   }
@@ -416,7 +423,8 @@ void ghash_handle_enc_initial_counter_block(
     const uint32_t *enc_initial_counter_block1, ghash_context_t *ctx) {
   // correction_term0 = S0 * (H0 + 1).
   ghash_block_t s0;
-  hardened_memcpy(s0.data, enc_initial_counter_block0, kGhashBlockNumWords);
+  hardened_memcpy(s0.data, s0.data, enc_initial_counter_block0,
+                  enc_initial_counter_block0, kGhashBlockNumWords);
   ghash_block_t mul_tmp = galois_mul_state_key(s0, ctx->tbl0);
   block_xor(&mul_tmp, &s0, &ctx->correction_term0);
 
@@ -425,15 +433,20 @@ void ghash_handle_enc_initial_counter_block(
 
   // correction_term1_init = S1 * H1.
   ghash_block_t s1;
-  hardened_memcpy(s1.data, enc_initial_counter_block1, kGhashBlockNumWords);
+  hardened_memcpy(s1.data, s1.data, enc_initial_counter_block1,
+                  enc_initial_counter_block1, kGhashBlockNumWords);
   ctx->correction_term1_init = galois_mul_state_key(s1, ctx->tbl1);
 
   // Save the encrypted initial counter blocks into the ghash context as we
   // need them throughout the ghash computations.
   hardened_memcpy(ctx->enc_initial_counter_block0.data,
-                  enc_initial_counter_block0, kGhashBlockNumWords);
+                  ctx->enc_initial_counter_block0.data,
+                  enc_initial_counter_block0, enc_initial_counter_block0,
+                  kGhashBlockNumWords);
   hardened_memcpy(ctx->enc_initial_counter_block1.data,
-                  enc_initial_counter_block1, kGhashBlockNumWords);
+                  ctx->enc_initial_counter_block1.data,
+                  enc_initial_counter_block1, enc_initial_counter_block1,
+                  kGhashBlockNumWords);
 
   // Update the checksum.
   ctx->checksum = ghash_context_integrity_checksum(ctx);

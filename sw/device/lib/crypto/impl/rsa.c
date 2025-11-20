@@ -118,7 +118,8 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
-      HARDENED_TRY(hardened_memcpy(pk->n.data, modulus.data, modulus.len));
+      HARDENED_TRY(hardened_memcpy(pk->n.data, pk->n.data, modulus.data,
+                                   modulus.data, modulus.len));
       break;
     }
     case kOtcryptoRsaSize3072: {
@@ -127,7 +128,8 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
-      HARDENED_TRY(hardened_memcpy(pk->n.data, modulus.data, modulus.len));
+      HARDENED_TRY(hardened_memcpy(pk->n.data, pk->n.data, modulus.data,
+                                   modulus.data, modulus.len));
       break;
     }
     case kOtcryptoRsaSize4096: {
@@ -136,7 +138,8 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
-      HARDENED_TRY(hardened_memcpy(pk->n.data, modulus.data, modulus.len));
+      HARDENED_TRY(hardened_memcpy(pk->n.data, pk->n.data, modulus.data,
+                                   modulus.data, modulus.len));
       break;
     }
     default:
@@ -237,9 +240,12 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
       }
       rsa_2048_private_key_t *sk =
           (rsa_2048_private_key_t *)private_key->keyblob;
-      HARDENED_TRY(hardened_memcpy(sk->n.data, modulus.data, modulus.len));
-      HARDENED_TRY(hardened_memcpy(sk->d0.data, d_share0.data, d_share0.len));
-      HARDENED_TRY(hardened_memcpy(sk->d1.data, d_share1.data, d_share1.len));
+      HARDENED_TRY(hardened_memcpy(sk->n.data, sk->n.data, modulus.data,
+                                   modulus.data, modulus.len));
+      HARDENED_TRY(hardened_memcpy(sk->d0.data, sk->d0.data, d_share0.data,
+                                   d_share0.data, d_share0.len));
+      HARDENED_TRY(hardened_memcpy(sk->d1.data, sk->d1.data, d_share1.data,
+                                   d_share1.data, d_share1.len));
       break;
     }
     case kOtcryptoRsaSize3072: {
@@ -249,9 +255,12 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
       }
       rsa_3072_private_key_t *sk =
           (rsa_3072_private_key_t *)private_key->keyblob;
-      HARDENED_TRY(hardened_memcpy(sk->n.data, modulus.data, modulus.len));
-      HARDENED_TRY(hardened_memcpy(sk->d0.data, d_share0.data, d_share0.len));
-      HARDENED_TRY(hardened_memcpy(sk->d1.data, d_share1.data, d_share1.len));
+      HARDENED_TRY(hardened_memcpy(sk->n.data, sk->n.data, modulus.data,
+                                   modulus.data, modulus.len));
+      HARDENED_TRY(hardened_memcpy(sk->d0.data, sk->d0.data, d_share0.data,
+                                   d_share0.data, d_share0.len));
+      HARDENED_TRY(hardened_memcpy(sk->d1.data, sk->d1.data, d_share1.data,
+                                   d_share1.data, d_share1.len));
       break;
     }
     case kOtcryptoRsaSize4096: {
@@ -261,9 +270,12 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
       }
       rsa_4096_private_key_t *sk =
           (rsa_4096_private_key_t *)private_key->keyblob;
-      HARDENED_TRY(hardened_memcpy(sk->n.data, modulus.data, modulus.len));
-      HARDENED_TRY(hardened_memcpy(sk->d0.data, d_share0.data, d_share0.len));
-      HARDENED_TRY(hardened_memcpy(sk->d1.data, d_share1.data, d_share1.len));
+      HARDENED_TRY(hardened_memcpy(sk->n.data, sk->n.data, modulus.data,
+                                   modulus.data, modulus.len));
+      HARDENED_TRY(hardened_memcpy(sk->d0.data, sk->d0.data, d_share0.data,
+                                   d_share0.data, d_share0.len));
+      HARDENED_TRY(hardened_memcpy(sk->d1.data, sk->d1.data, d_share1.data,
+                                   d_share1.data, d_share1.len));
       break;
     }
     default:
@@ -577,7 +589,8 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
         cf->data[i] ^= cofactor_share1.data[i];
       }
       rsa_2048_public_key_t pk;
-      HARDENED_TRY(hardened_memcpy(pk.n.data, modulus.data, modulus.len));
+      HARDENED_TRY(hardened_memcpy(pk.n.data, pk.n.data, modulus.data,
+                                   modulus.data, modulus.len));
       return rsa_keygen_from_cofactor_2048_start(&pk, cf);
     }
     case kOtcryptoRsaSize3072: {

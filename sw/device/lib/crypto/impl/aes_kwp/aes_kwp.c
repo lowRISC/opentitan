@@ -56,9 +56,11 @@ status_t aes_kwp_wrap(const aes_key_t kek, const uint32_t *plaintext,
 
   // Initialize the output buffer with (A || plaintext || padding).
   size_t plaintext_words = ceil_div(plaintext_len, sizeof(uint32_t));
-  HARDENED_TRY(hardened_memcpy(ciphertext, block.data, kSemiblockWords));
-  HARDENED_TRY(hardened_memcpy(ciphertext + kSemiblockWords, plaintext,
-                               plaintext_words));
+  HARDENED_TRY(hardened_memcpy(ciphertext, ciphertext, block.data, block.data,
+                               kSemiblockWords));
+  HARDENED_TRY(hardened_memcpy(ciphertext + kSemiblockWords,
+                               ciphertext + kSemiblockWords, plaintext,
+                               plaintext, plaintext_words));
   unsigned char *pad_start =
       ((unsigned char *)ciphertext) + kSemiblockBytes + plaintext_len;
   memset(pad_start, 0, pad_len);
@@ -67,9 +69,10 @@ status_t aes_kwp_wrap(const aes_key_t kek, const uint32_t *plaintext,
   for (size_t j = 0; j < 6; j++) {
     for (size_t i = 1; i <= plaintext_semiblocks; i++) {
       // Copy R[i] into the block (A should already be present).
-      HARDENED_TRY(hardened_memcpy(block.data + kSemiblockWords,
-                                   ciphertext + i * kSemiblockWords,
-                                   kSemiblockWords));
+      HARDENED_TRY(hardened_memcpy(
+          block.data + kSemiblockWords, block.data + kSemiblockWords,
+          ciphertext + i * kSemiblockWords, ciphertext + i * kSemiblockWords,
+          kSemiblockWords));
       HARDENED_TRY(aes_update(/*dest=*/NULL, &block));
       HARDENED_TRY(aes_update(&block, /*src=*/NULL));
 
@@ -80,14 +83,16 @@ status_t aes_kwp_wrap(const aes_key_t kek, const uint32_t *plaintext,
       t++;
 
       // Copy the last two words back into R[i].
-      HARDENED_TRY(hardened_memcpy(ciphertext + i * kSemiblockWords,
-                                   block.data + kSemiblockWords,
-                                   kSemiblockWords));
+      HARDENED_TRY(hardened_memcpy(
+          ciphertext + i * kSemiblockWords, ciphertext + i * kSemiblockWords,
+          block.data + kSemiblockWords, block.data + kSemiblockWords,
+          kSemiblockWords));
     }
   }
 
   // Copy A into the first semiblock of the ciphertext.
-  HARDENED_TRY(hardened_memcpy(ciphertext, block.data, kSemiblockWords));
+  HARDENED_TRY(hardened_memcpy(ciphertext, ciphertext, block.data, block.data,
+                               kSemiblockWords));
   return OTCRYPTO_OK;
 }
 
@@ -123,7 +128,8 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
 
   // Initialize the working buffer, R.
   uint32_t r[(ciphertext_semiblocks - 1) * kSemiblockWords];
-  HARDENED_TRY(hardened_memcpy(r, ciphertext + kSemiblockWords, ARRAYSIZE(r)));
+  HARDENED_TRY(hardened_memcpy(r, r, ciphertext + kSemiblockWords,
+                               ciphertext + kSemiblockWords, ARRAYSIZE(r)));
 
   uint64_t t = 6 * ((uint64_t)ciphertext_semiblocks - 1);
   for (size_t j = 0; j < 6; j++) {
@@ -134,16 +140,18 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
       t--;
 
       // Copy R[i] into the block (A ^ t should already be present).
-      HARDENED_TRY(hardened_memcpy(block.data + kSemiblockWords,
-                                   r + (i - 1) * kSemiblockWords,
-                                   kSemiblockWords));
+      HARDENED_TRY(hardened_memcpy(
+          block.data + kSemiblockWords, block.data + kSemiblockWords,
+          r + (i - 1) * kSemiblockWords, r + (i - 1) * kSemiblockWords,
+          kSemiblockWords));
       HARDENED_TRY(aes_update(/*dest=*/NULL, &block));
       HARDENED_TRY(aes_update(&block, /*src=*/NULL));
 
       // Copy the last two words back into R[i].
-      HARDENED_TRY(hardened_memcpy(r + (i - 1) * kSemiblockWords,
-                                   block.data + kSemiblockWords,
-                                   kSemiblockWords));
+      HARDENED_TRY(hardened_memcpy(
+          r + (i - 1) * kSemiblockWords, r + (i - 1) * kSemiblockWords,
+          block.data + kSemiblockWords, block.data + kSemiblockWords,
+          kSemiblockWords));
     }
   }
 
@@ -179,7 +187,7 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
 
   // Copy the plaintext into the destination buffer.
   size_t plaintext_words = ceil_div(plaintext_len, sizeof(uint32_t));
-  HARDENED_TRY(hardened_memcpy(plaintext, r, plaintext_words));
+  HARDENED_TRY(hardened_memcpy(plaintext, plaintext, r, r, plaintext_words));
 
   // Return success.
   *success = kHardenedBoolTrue;

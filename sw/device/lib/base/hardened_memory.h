@@ -42,12 +42,17 @@ extern uint32_t hardened_memshred_random_word(void);
  * directly, and instead uses dedicated load/store intrinsics.
  *
  * @param dest The destination of the copy.
+ * @param dest_shadow A redundant destination of the copy.
  * @param src The source of the copy.
+ * @param src_shadow A redundant source of the copy.
  * @param word_len The number of words to copy.
  * @return OK or error.
  */
 status_t hardened_memcpy(uint32_t *OT_RESTRICT dest,
-                         const uint32_t *OT_RESTRICT src, size_t word_len);
+                         uint32_t *OT_RESTRICT dest_shadow,
+                         const uint32_t *OT_RESTRICT src,
+                         const uint32_t *OT_RESTRICT src_shadow,
+                         size_t word_len);
 
 /**
  * Fills a 32-bit aligned region of memory with random data.

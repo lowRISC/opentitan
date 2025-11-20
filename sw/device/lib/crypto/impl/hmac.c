@@ -160,8 +160,8 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
   } else {
     HARDENED_CHECK_LE(key->config.key_length,
                       key_block_wordlen * sizeof(uint32_t));
-    HARDENED_TRY(
-        hardened_memcpy(hmac_key->key_block, unmasked_key, unmasked_key_len));
+    HARDENED_TRY(hardened_memcpy(hmac_key->key_block, hmac_key->key_block,
+                                 unmasked_key, unmasked_key, unmasked_key_len));
     // If the key size isn't a multiple of the word size, zero the last few
     // bytes.
     size_t offset = key->config.key_length % sizeof(uint32_t);

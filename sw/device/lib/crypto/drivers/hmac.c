@@ -189,8 +189,8 @@ static status_t clear(void) {
 static status_t key_write(const hmac_key_t *key) {
   if (key != NULL) {
     uint32_t key_reg = hmac_base() + HMAC_KEY_0_REG_OFFSET;
-    HARDENED_TRY(
-        hardened_memcpy((uint32_t *)key_reg, key->key_block, key->key_len));
+    HARDENED_TRY(hardened_memcpy((uint32_t *)key_reg, (uint32_t *)key_reg,
+                                 key->key_block, key->key_block, key->key_len));
     // We only check the integrity of the key when entering the CryptoLib. This
     // check here will catch any manipulations of the key or the pointer to the
     // key that might have happend in the meanwhile. We do it at this point as
@@ -676,7 +676,8 @@ void hmac_hmac_sha256_init(const hmac_key_t key, hmac_ctx_t *ctx) {
   ctx->digest_wordlen = kHmacSha256DigestWords;
   ctx->key.key_len = key.key_len;
   ctx->key.checksum = key.checksum;
-  hardened_memcpy(ctx->key.key_block, key.key_block, key.key_len);
+  hardened_memcpy(ctx->key.key_block, ctx->key.key_block, key.key_block,
+                  key.key_block, key.key_len);
   hmac_init(kKeyLength512, kDigestLengthSha256, ctx);
 }
 
@@ -685,7 +686,8 @@ void hmac_hmac_sha384_init(const hmac_key_t key, hmac_ctx_t *ctx) {
   ctx->digest_wordlen = kHmacSha384DigestWords;
   ctx->key.key_len = key.key_len;
   ctx->key.checksum = key.checksum;
-  hardened_memcpy(ctx->key.key_block, key.key_block, key.key_len);
+  hardened_memcpy(ctx->key.key_block, ctx->key.key_block, key.key_block,
+                  key.key_block, key.key_len);
   hmac_init(kKeyLength1024, kDigestLengthSha384, ctx);
 }
 
@@ -694,7 +696,8 @@ void hmac_hmac_sha512_init(const hmac_key_t key, hmac_ctx_t *ctx) {
   ctx->digest_wordlen = kHmacSha512DigestWords;
   ctx->key.key_len = key.key_len;
   ctx->key.checksum = key.checksum;
-  hardened_memcpy(ctx->key.key_block, key.key_block, key.key_len);
+  hardened_memcpy(ctx->key.key_block, ctx->key.key_block, key.key_block,
+                  key.key_block, key.key_len);
   hmac_init(kKeyLength1024, kDigestLengthSha512, ctx);
 }
 
