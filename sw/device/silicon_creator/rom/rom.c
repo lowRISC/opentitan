@@ -18,6 +18,7 @@
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/base/static_critical_version.h"
+#include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/cfi.h"
@@ -379,12 +380,18 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   // Add remaining part of manifest / ROM_EXT image to the measurement.
   hmac_sha256_update(digest_region.start, digest_region.length);
   hmac_sha256_process();
-  hmac_digest_t act_digest;
-  hmac_sha256_final(&act_digest);
+  // The ECDSA verify function expects the digest in reverse order, which
+  // is what hmac_sha256_final produces.
+  hmac_digest_t rev_digest;
+  hmac_sha256_final(&rev_digest);
+  // The SPHINCS+ verify function expects the digest in the natural order,
+  // so we copy and reverse the bytes.
+  hmac_digest_t fwd_digest = rev_digest;
+  util_reverse_bytes(&fwd_digest, sizeof(fwd_digest));
   // Copy the ROM_EXT measurement to the .static_critical section.
-  static_assert(sizeof(boot_measurements.rom_ext) == sizeof(act_digest),
+  static_assert(sizeof(boot_measurements.rom_ext) == sizeof(rev_digest),
                 "Unexpected ROM_EXT digest size.");
-  memcpy(&boot_measurements.rom_ext, &act_digest,
+  memcpy(&boot_measurements.rom_ext, &rev_digest,
          sizeof(boot_measurements.rom_ext));
 
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerify, 2);
@@ -397,22 +404,22 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   *flash_exec = 0;
   if (rnd_uint32() < 0x80000000) {
     HARDENED_RETURN_IF_ERROR(sigverify_ecdsa_p256_verify(
-        &manifest->ecdsa_signature, ecdsa_key, &act_digest, flash_exec));
+        &manifest->ecdsa_signature, ecdsa_key, &rev_digest, flash_exec));
 
     return sigverify_spx_verify(
         spx_signature, spx_key, spx_config, lc_state,
         &usage_constraints_from_hw, sizeof(usage_constraints_from_hw),
         anti_rollback, anti_rollback_len, digest_region.start,
-        digest_region.length, &act_digest, flash_exec);
+        digest_region.length, &fwd_digest, flash_exec);
   } else {
     HARDENED_RETURN_IF_ERROR(sigverify_spx_verify(
         spx_signature, spx_key, spx_config, lc_state,
         &usage_constraints_from_hw, sizeof(usage_constraints_from_hw),
         anti_rollback, anti_rollback_len, digest_region.start,
-        digest_region.length, &act_digest, flash_exec));
+        digest_region.length, &fwd_digest, flash_exec));
 
     return sigverify_ecdsa_p256_verify(&manifest->ecdsa_signature, ecdsa_key,
-                                       &act_digest, flash_exec);
+                                       &rev_digest, flash_exec);
   }
 }
 
