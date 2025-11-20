@@ -194,6 +194,15 @@ def create_test_key(name, label):
 
 def create_dev_key(name, label):
     return create_key_(name, label, [
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.TEST_UNLOCKED1,
+        CONST.LCV.TEST_UNLOCKED2,
+        CONST.LCV.TEST_UNLOCKED3,
+        CONST.LCV.TEST_UNLOCKED4,
+        CONST.LCV.TEST_UNLOCKED5,
+        CONST.LCV.TEST_UNLOCKED6,
+        CONST.LCV.TEST_UNLOCKED7,
+        CONST.LCV.RMA,
         CONST.LCV.DEV,
     ])
 

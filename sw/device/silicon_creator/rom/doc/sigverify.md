@@ -42,7 +42,7 @@ not depend on the OTP value since it may not have been programmed yet.
 |           | TEST_UNLOCKED | PROD, PROD_END | DEV | RMA |
 |-----------|---------------|----------------|-----|-----|
 | Test keys | Yes           | No             | No  | OTP |
-| Dev keys  | No            | No             | OTP | No  |
+| Dev keys  | Yes           | No             | OTP | OTP |
 | Prod keys | Yes           | OTP            | OTP | OTP |
 
 ### Digest Computation
