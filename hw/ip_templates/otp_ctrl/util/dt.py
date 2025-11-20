@@ -52,7 +52,7 @@ class OtpCtrlExt(Extension):
 
     OTP_PARTITION_INFO_STRUCT_START_ADDR_FIELD_NAME = Name(["start", "addr"])
     OTP_PARTITION_INFO_STRUCT_SIZE_FIELD_NAME = Name(["size"])
-    OTP_PARTITION_INFO_STRUCT_DIGEST_ADDR_FIELD_NAME = Name(["digest", "addr"])
+    OTP_PARTITION_INFO_STRUCT_DIGEST_ADDR_FIELD_NAME = Name(["digest", "reg", "offset"])
     OTP_PARTITION_INFO_STRUCT_ALIGN_MASK_FIELD_NAME = Name(["align", "mask"])
     OTP_PARTITION_INFO_STRUCT_NAME = Name.from_snake_case("dt_otp_partition_info")
 
@@ -82,7 +82,8 @@ class OtpCtrlExt(Extension):
         self._otp_partition_info_struct.add_field(
             name = self.OTP_PARTITION_INFO_STRUCT_DIGEST_ADDR_FIELD_NAME,
             field_type = ScalarType("uint32_t"),
-            docstring = "The absolute OTP address at which this partition's digest starts",
+            docstring = "The OTP digest CSR (where the digest is buffered) offset for " +
+            "this partition.",
         )
         self._otp_partition_info_struct.add_field(
             name = self.OTP_PARTITION_INFO_STRUCT_ALIGN_MASK_FIELD_NAME,
