@@ -17,7 +17,7 @@ pub struct UartConsole {
     pub logfile: Option<File>,
     timeout: Option<Duration>,
     deadline: Option<Instant>,
-    pub exit_success: Option<Regex>,
+    exit_success: Option<Regex>,
     exit_failure: Option<Regex>,
     pub timestamp: bool,
     buffer: String,

@@ -107,7 +107,7 @@ impl CommandDispatch for Console {
         match status {
             ExitStatus::None | ExitStatus::CtrlC => Ok(None),
             ExitStatus::Timeout => {
-                if console.exit_success.is_some() {
+                if self.exit_success.is_some() {
                     // If there was a console exit success condition, then a timeout
                     // represents an error.
                     Err(anyhow!("Console timeout exceeded"))
