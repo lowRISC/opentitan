@@ -75,20 +75,6 @@ impl ConsoleDevice for HyperdebugUart {
     fn write(&self, buf: &[u8]) -> Result<()> {
         self.serial_port.write(buf)
     }
-
-    fn set_break(&self, enable: bool) -> Result<()> {
-        let usb_handle = self.inner.usb_device.borrow();
-        usb_handle
-            .write_control(
-                rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
-                ControlRequest::Break as u8,
-                if enable { 0xFFFF } else { 0 },
-                self.usb_interface as u16,
-                &[],
-            )
-            .context("Setting break condition")?;
-        Ok(())
-    }
 }
 
 impl Uart for HyperdebugUart {
@@ -188,5 +174,19 @@ impl Uart for HyperdebugUart {
             2 => Ok(Parity::Even),
             _ => Err(UartError::ReadError("Unknown parity value".to_string()).into()),
         }
+    }
+
+    fn set_break(&self, enable: bool) -> Result<()> {
+        let usb_handle = self.inner.usb_device.borrow();
+        usb_handle
+            .write_control(
+                rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
+                ControlRequest::Break as u8,
+                if enable { 0xFFFF } else { 0 },
+                self.usb_interface as u16,
+                &[],
+            )
+            .context("Setting break condition")?;
+        Ok(())
     }
 }

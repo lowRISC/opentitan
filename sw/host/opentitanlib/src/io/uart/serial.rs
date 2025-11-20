@@ -118,16 +118,6 @@ impl ConsoleDevice for SerialPortUart {
 
         Ok(())
     }
-
-    fn set_break(&self, enable: bool) -> Result<()> {
-        let mut port = self.port.borrow_mut();
-        if enable {
-            port.get_mut().set_break()?;
-        } else {
-            port.get_mut().clear_break()?;
-        }
-        Ok(())
-    }
 }
 
 impl Uart for SerialPortUart {
@@ -185,6 +175,16 @@ impl Uart for SerialPortUart {
         const TIMEOUT: Duration = Duration::from_millis(5);
         let mut buf = [0u8; 256];
         while self.read_timeout(&mut buf, TIMEOUT)? > 0 {}
+        Ok(())
+    }
+
+    fn set_break(&self, enable: bool) -> Result<()> {
+        let mut port = self.port.borrow_mut();
+        if enable {
+            port.get_mut().set_break()?;
+        } else {
+            port.get_mut().clear_break()?;
+        }
         Ok(())
     }
 }

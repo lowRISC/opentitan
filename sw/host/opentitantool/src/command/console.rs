@@ -13,8 +13,7 @@ use tokio::io::{AsyncRead, AsyncReadExt};
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::io::console::ConsoleDevice;
-use opentitanlib::io::uart::UartParams;
+use opentitanlib::io::uart::{Uart, UartParams};
 use opentitanlib::transport::Capability;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
 use opentitanlib::util::raw_tty::RawTty;
@@ -61,7 +60,7 @@ const CTRL_C: u8 = 3;
 /// Takes input from an input stream and send it to a console device. Breaks are handled.
 async fn process_input<T, R: AsyncRead + Unpin>(device: &T, stdin: &mut R) -> Result<()>
 where
-    T: ConsoleDevice + ?Sized,
+    T: Uart + ?Sized,
 {
     let mut break_en = false;
     loop {

@@ -102,6 +102,10 @@ pub trait Uart: ConsoleDevice {
     fn get_parity(&self) -> Result<Parity> {
         Err(TransportError::UnsupportedOperation.into())
     }
+
+    fn set_break(&self, _enable: bool) -> Result<()> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
 }
 
 impl Read for &dyn Uart {
