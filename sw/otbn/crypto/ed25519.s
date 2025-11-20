@@ -1,6 +1,15 @@
 /* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
+.text
+.globl ed25519_verify_var
+.globl ed25519_sign_stage1
+.globl ed25519_sign_stage2
+.globl affine_encode
+.globl affine_decode_var
+.globl ext_scmul
+.globl ext_double
+.globl ext_add
 
 /**
  * This library contains an implementation of the Ed25519 signature scheme
@@ -105,7 +114,6 @@
  * clobbered registers: x2 to x4, x20 to x23, w2 to w30
  * clobbered flag groups: FG0
  */
-.globl ed25519_verify_var
 ed25519_verify_var:
   /* Set up for scalar arithmetic.
        [w15:w14] <= mu
@@ -337,7 +345,6 @@ ed25519_verify_var:
  * clobbered registers: x2 to x4, x20 to x23, w2 to w30
  * clobbered flag groups: FG0
  */
-.globl ed25519_sign_stage1
 ed25519_sign_stage1:
   /* Set up for scalar arithmetic.
        [w15:w14] <= mu
@@ -476,7 +483,6 @@ ed25519_sign_stage1:
  * clobbered registers: x2 to x4, x20 to x23, w2 to w30
  * clobbered flag groups: FG0
  */
-.globl ed25519_sign_stage2
 ed25519_sign_stage2:
   /* Set up for scalar arithmetic.
        [w15:w14] <= mu
@@ -723,7 +729,6 @@ ext_to_affine:
  * clobbered registers: w10, w11
  * clobbered flag groups: FG0
  */
-.globl affine_encode
 affine_encode:
   /* w10 <= lsb(x) << 255 */
   bn.rshi  w10, w10, w31 >> 1
@@ -764,7 +769,6 @@ affine_encode:
  * clobbered registers: w10, w11, w14 to w18, w20 to w28
  * clobbered flag groups: FG0
  */
-.globl affine_decode_var
 affine_decode_var:
   /* Extract lsb(x) from the encoded point.
        w24 <= w11 >> 255 = lsb(x) */
@@ -1034,7 +1038,6 @@ affine_decode_var:
  * clobbered registers: w10 to w18, w20 to w28
  * clobbered flag groups: FG0
  */
-.globl ext_scmul
 ext_scmul:
   /* Initialize the intermediate result P to the origin point.
        [w13:w10] <= (0, 1, 1, 0) */
@@ -1135,7 +1138,6 @@ ext_scmul:
  * clobbered registers: w10 to w18, w20 to w23, w24 to w27
  * clobbered flag groups: FG0
  */
-.globl ext_double
 ext_double:
   /* [w17:w14] <= [w13:w10] = (X1, Y1, Z1, T1) */
   bn.mov  w14, w10
@@ -1200,7 +1202,6 @@ ext_double:
  * clobbered registers: w10 to w13, w18, w20 to w23, w24 to w27
  * clobbered flag groups: FG0
  */
-.globl ext_add
 ext_add:
   /* Compute A = (Y1 - X1) * (Y2 - X2). */
 
