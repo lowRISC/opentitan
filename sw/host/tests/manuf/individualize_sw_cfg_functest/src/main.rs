@@ -64,13 +64,7 @@ fn individualize_sw_cfg(opts: &Opts, transport: &TransportWrapper) -> Result<()>
     let result = console.interact(&*uart, None, Some(&mut stdout))?;
     match result {
         ExitStatus::None | ExitStatus::CtrlC => Ok(()),
-        ExitStatus::Timeout => {
-            if console.exit_success.is_some() {
-                Err(anyhow!("Console timeout exceeded"))
-            } else {
-                Ok(())
-            }
-        }
+        ExitStatus::Timeout => Err(anyhow!("Console timeout exceeded")),
         ExitStatus::ExitSuccess => {
             log::info!(
                 "ExitSuccess({:?})",
