@@ -7,12 +7,14 @@ use clap::Args;
 use regex::Regex;
 use std::any::Any;
 use std::fs::File;
+use std::io::Write;
 use std::marker::Unpin;
 use std::time::Duration;
 use tokio::io::{AsyncRead, AsyncReadExt};
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
+use opentitanlib::io::console::Broadcaster;
 use opentitanlib::io::uart::{Uart, UartParams};
 use opentitanlib::transport::Capability;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
@@ -89,6 +91,20 @@ where
     }
 }
 
+/// Takes input from a console and write to an output.
+async fn pipe_output<T, W>(device: &T, w: &mut W) -> Result<()>
+where
+    T: Uart + ?Sized,
+    W: Write,
+{
+    let mut buf = [0u8; 256];
+
+    loop {
+        let len = std::future::poll_fn(|cx| device.poll_read(cx, &mut buf)).await?;
+        w.write_all(&buf[..len])?;
+    }
+}
+
 impl CommandDispatch for Console {
     fn run(
         &self,
@@ -104,6 +120,8 @@ impl CommandDispatch for Console {
             uart.write(send.as_bytes())?;
         }
 
+        let mut logfile = self.logfile.as_ref().map(File::create).transpose()?;
+
         // Set up resources specified by the command line parameters.
         let mut console = UartConsole::new(
             self.timeout,
@@ -116,7 +134,6 @@ impl CommandDispatch for Console {
                 .map(|s| Regex::new(s.as_str()))
                 .transpose()?,
         );
-        console.logfile = self.logfile.as_ref().map(File::create).transpose()?;
         console.timestamp = self.timestamp;
 
         // Put the terminal into raw mode.  The tty guard will restore the
@@ -134,6 +151,8 @@ impl CommandDispatch for Console {
 
         let status = transport.relinquish_exclusive_access(|| {
             opentitanlib::util::runtime::block_on(async {
+                let uart_rx = Broadcaster::new(uart.clone());
+
                 let tx = async {
                     if let Some(stdin) = stdin.as_mut() {
                         process_input(&*uart, stdin).await
@@ -142,14 +161,23 @@ impl CommandDispatch for Console {
                     }
                 };
 
+                let log_to_file = async {
+                    if let Some(file) = logfile.as_mut() {
+                        pipe_output(&uart_rx.clone(), file).await
+                    } else {
+                        std::future::pending().await
+                    }
+                };
+
                 let rx = async {
                     console
-                        .interact_async(&*uart, Some(&mut std::io::stdout()))
+                        .interact_async(&uart_rx, Some(&mut std::io::stdout()))
                         .await
                 };
 
                 Result::<_>::Ok(tokio::select! {
                     v = tx => Err(v?),
+                    v = log_to_file => Err(v?),
                     v = rx => Ok(v?),
                 })
             })

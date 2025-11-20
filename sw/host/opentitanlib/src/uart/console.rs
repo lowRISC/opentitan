@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::fs::File;
 use std::io::Write;
 use std::time::{Duration, SystemTime};
 
@@ -12,7 +11,6 @@ use regex::{Captures, Regex};
 use crate::io::console::{ConsoleDevice, ConsoleError};
 
 pub struct UartConsole {
-    pub logfile: Option<File>,
     timeout: Option<Duration>,
     exit_success: Option<Regex>,
     exit_failure: Option<Regex>,
@@ -37,7 +35,6 @@ impl UartConsole {
         exit_failure: Option<Regex>,
     ) -> Self {
         Self {
-            logfile: None,
             timeout,
             exit_success,
             exit_failure,
@@ -145,11 +142,6 @@ impl UartConsole {
                 .map_or(Ok(()), |out| out.write_all(&buf[i..i + 1]))?;
         }
         stdout.as_mut().map_or(Ok(()), |out| out.flush())?;
-
-        // If we're logging, save it to the logfile.
-        self.logfile
-            .as_mut()
-            .map_or(Ok(()), |f| f.write_all(&buf[..len]))?;
         if self.uses_regex() {
             self.append_buffer(&buf[..len]);
         }
