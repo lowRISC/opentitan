@@ -56,7 +56,8 @@ dt_otp_partition_info_t otp_readable_partition_info(otp_partition_t partition) {
 
 uint64_t otp_partition_digest_read(otp_partition_t partition) {
   uint32_t reg_offset =
-      otp_ctrl_base() + otp_readable_partition_info(partition).digest_addr;
+      otp_ctrl_base() +
+      otp_readable_partition_info(partition).digest_reg_offset;
   uint64_t value = sec_mmio_read32(reg_offset + sizeof(uint32_t));
   value <<= 32;
   value |= sec_mmio_read32(reg_offset);
