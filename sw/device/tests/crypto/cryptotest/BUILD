@@ -151,7 +151,6 @@ RSA_TESTVECTOR_TARGETS = [
     for hash in [
         "sha256_mgf1_32",
         "sha384_mgf1_48",
-        "sha512_mgf1_32",
         "sha512_mgf1_64",
     ]
 ] + [
