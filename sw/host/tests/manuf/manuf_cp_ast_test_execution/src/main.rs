@@ -95,7 +95,7 @@ fn manuf_cp_ast_text_execution_write_otp(opts: &Opts, transport: &TransportWrapp
         Some(Regex::new(r"(FAIL|FAULT).*\n")?),
     );
     let mut stdout = std::io::stdout();
-    let result = console.interact(&*uart, None, Some(&mut stdout))?;
+    let result = console.interact(&*uart, Some(&mut stdout))?;
     match result {
         ExitStatus::None | ExitStatus::CtrlC => Ok(()),
         ExitStatus::Timeout => Err(anyhow!("Console timeout exceeded")),

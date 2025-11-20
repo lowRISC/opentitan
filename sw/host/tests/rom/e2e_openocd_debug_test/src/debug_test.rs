@@ -343,7 +343,7 @@ fn debug_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         Some(Regex::new(r"OK!GDB-OK(?s:.*)BFV:0142500d")?),
         None,
     );
-    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
     assert_eq!(result, ExitStatus::ExitSuccess);
 
     dbg.disconnect()?;

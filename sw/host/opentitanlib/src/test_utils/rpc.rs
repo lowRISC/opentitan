@@ -77,7 +77,7 @@ where
         } else {
             None
         };
-        let result = console.interact(device, None, out)?;
+        let result = console.interact(device, out)?;
         println!();
         match result {
             ExitStatus::ExitSuccess => {

@@ -100,7 +100,7 @@ fn test_no_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Res
 
     let mut stdout = io::stdout();
     let result = console
-        .interact(&*uart, None, Some(&mut stdout))
+        .interact(&*uart, Some(&mut stdout))
         .context("failed to interact with console")?;
 
     match result {
@@ -271,7 +271,7 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
 
     let mut stdout = io::stdout();
     let result = console
-        .interact(&*uart, None, Some(&mut stdout))
+        .interact(&*uart, Some(&mut stdout))
         .context("failed to interact with console")?;
 
     match result {

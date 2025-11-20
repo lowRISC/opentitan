@@ -111,7 +111,7 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
         Some(Regex::new(r"(FAIL|FAULT).*\n")?),
     );
     let mut stdout = std::io::stdout();
-    let result = console.interact(&*uart, None, Some(&mut stdout))?;
+    let result = console.interact(&*uart, Some(&mut stdout))?;
     match result {
         ExitStatus::None | ExitStatus::CtrlC => Ok(()),
         ExitStatus::Timeout => Err(anyhow!("Console timeout exceeded")),
