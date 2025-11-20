@@ -9,7 +9,6 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::impl_serializable_error;
-use crate::transport::TransportError;
 
 mod ext;
 pub use ext::ConsoleExt;
@@ -31,8 +30,4 @@ pub trait ConsoleDevice {
 
     /// Writes data from `buf` to the UART.
     fn write(&self, buf: &[u8]) -> Result<()>;
-
-    fn set_break(&self, _enable: bool) -> Result<()> {
-        Err(TransportError::UnsupportedOperation.into())
-    }
 }
