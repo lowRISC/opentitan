@@ -1,6 +1,11 @@
 /* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
+.text
+.globl fe_init
+.globl fe_mul
+.globl fe_square
+.globl fe_inv
 
 /**
  * This library contains arithmetic for the finite field modulo the prime
@@ -24,7 +29,6 @@
  * clobbered registers: x2, x3, w19, MOD
  * clobbered flag groups: FG0
  */
-.globl fe_init
 fe_init:
   /* Load modulus p into the MOD register. */
   li      x2, 19
@@ -58,7 +62,6 @@ fe_init:
  * clobbered registers: w18, w20 to w22
  * clobbered flag groups: FG0
  */
-.globl fe_mul
 fe_mul:
   /* Partial products for multiply-reduce:
 
@@ -170,7 +173,6 @@ fe_mul:
  * clobbered registers: w17, w18, w20 to w22
  * clobbered flag groups: FG0
  */
-.globl fe_square
 fe_square:
   /* Partial products for square:
 
@@ -298,7 +300,6 @@ fe_square:
  * clobbered registers: w14, w15, w17, w18, w20 to w23
  * clobbered flag groups: FG0
  */
-.globl fe_inv
 fe_inv:
   /* w22 <= w16^2 = a^2 */
   bn.mov  w22, w16
