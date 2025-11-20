@@ -1,7 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-use anyhow::{Result, anyhow};
+use anyhow::Result;
 use crc::{CRC_32_ISO_HDLC, Crc};
 use regex::Regex;
 use serde::Serialize;
@@ -100,7 +100,6 @@ where
                 Err(err.into())
             }
             ExitStatus::Timeout => Err(ConsoleError::GenericError("Timed Out".into()).into()),
-            _ => Err(anyhow!("Impossible result: {:?}", result)),
         }
     }
 }

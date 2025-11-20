@@ -59,7 +59,7 @@ const CTRL_B: u8 = 2;
 const CTRL_C: u8 = 3;
 
 /// Takes input from an input stream and send it to a console device. Breaks are handled.
-async fn process_input<T, R: AsyncRead + Unpin>(device: &T, stdin: &mut R) -> Result<ExitStatus>
+async fn process_input<T, R: AsyncRead + Unpin>(device: &T, stdin: &mut R) -> Result<()>
 where
     T: ConsoleDevice + ?Sized,
 {
@@ -69,7 +69,7 @@ where
         let len = stdin.read(&mut buf).await?;
         if len == 1 {
             if buf[0] == CTRL_C {
-                return Ok(ExitStatus::CtrlC);
+                return Ok(());
             }
             if buf[0] == CTRL_B {
                 break_en = !break_en;
@@ -147,10 +147,10 @@ impl CommandDispatch for Console {
 
                     let rx = console.interact_async(&*uart, Some(&mut stdout));
 
-                    tokio::select! {
-                        v = tx => v,
-                        v = rx => v,
-                    }
+                    Result::<_>::Ok(tokio::select! {
+                        v = tx => Err(v?),
+                        v = rx => Ok(v?),
+                    })
                 })
             })??
         };
@@ -159,8 +159,8 @@ impl CommandDispatch for Console {
         }
 
         match status {
-            ExitStatus::None | ExitStatus::CtrlC => Ok(None),
-            ExitStatus::Timeout => {
+            Err(()) => Ok(None),
+            Ok(ExitStatus::Timeout) => {
                 if self.exit_success.is_some() {
                     // If there was a console exit success condition, then a timeout
                     // represents an error.
@@ -171,17 +171,27 @@ impl CommandDispatch for Console {
                     Ok(None)
                 }
             }
-            ExitStatus::ExitSuccess => {
+            Ok(ExitStatus::ExitSuccess) => {
                 log::info!(
                     "ExitSuccess({:?})",
-                    console.captures(status).unwrap().get(0).unwrap().as_str()
+                    console
+                        .captures(ExitStatus::ExitSuccess)
+                        .unwrap()
+                        .get(0)
+                        .unwrap()
+                        .as_str()
                 );
                 Ok(None)
             }
-            ExitStatus::ExitFailure => {
+            Ok(ExitStatus::ExitFailure) => {
                 log::info!(
                     "ExitFailure({:?})",
-                    console.captures(status).unwrap().get(0).unwrap().as_str()
+                    console
+                        .captures(ExitStatus::ExitFailure)
+                        .unwrap()
+                        .get(0)
+                        .unwrap()
+                        .as_str()
                 );
                 Err(anyhow!("Matched exit_failure expression"))
             }

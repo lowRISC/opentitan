@@ -23,8 +23,6 @@ pub struct UartConsole {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ExitStatus {
-    None,
-    CtrlC,
     Timeout,
     ExitSuccess,
     ExitFailure,
