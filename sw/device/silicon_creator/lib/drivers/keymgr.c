@@ -177,9 +177,11 @@ static rom_error_t keymgr_is_idle(void) {
  * Wait for the key manager to finish an operation.
  *
  * Polls the key manager until it is no longer busy. If the operation completed
- * successfully or the key manager was already idle, returns kErrorOk. If
- * there was an error during the operation, reads and clears the error code
- * and returns kErrorKeymgrInternal.
+ * successfully, returns kErrorOk. If there was an error during the operation,
+ * reads and clears the error code and returns kErrorKeymgrInternal.
+ *
+ * This function assumes an operation has already been started by the caller,
+ * and traps if the keymgr is already idle.
  *
  * @return OK or error.
  */
@@ -195,13 +197,12 @@ static rom_error_t keymgr_wait_until_done(void) {
     status = bitfield_field32_read(reg, KEYMGR_OP_STATUS_STATUS_FIELD);
   } while (status == KEYMGR_OP_STATUS_STATUS_VALUE_WIP);
 
-  // Check if the key manager reported errors. If it is already idle or
-  // completed an operation successfully, return an OK status. A `WIP` status
-  // should not be possible because of the check above.
+  // Check if the key manager reported errors. If it completed an operation
+  // successfully, return an OK status. A `WIP` status should not be possible
+  // because of the check above.
+  // The `IDLE` status is left unhandled because the keymgr should never be
+  // idle after an operation has been started by the caller.
   switch (launder32(status)) {
-    case KEYMGR_OP_STATUS_STATUS_VALUE_IDLE:
-      HARDENED_CHECK_EQ(status, KEYMGR_OP_STATUS_STATUS_VALUE_IDLE);
-      return kErrorOk;
     case KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS:
       HARDENED_CHECK_EQ(status, KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
       return kErrorOk;
