@@ -184,15 +184,6 @@ dif_result_t dif_csrng_get_cmd_force_unhealthy_fifo(const dif_csrng_t *csrng,
     case kDifCsrngFifoGenBits:
       fifo_bit = CSRNG_ERR_CODE_SFIFO_GENBITS_ERR_BIT;
       break;
-    case kDifCsrngFifoGBencAck:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_GBENCACK_ERR_BIT;
-      break;
-    case kDifCsrngFifoGadStage:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_GADSTAGE_ERR_BIT;
-      break;
-    case kDifCsrngFifoCmdId:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_CMDID_ERR_BIT;
-      break;
     default:
       return kDifBadArg;
   }
@@ -217,23 +208,14 @@ dif_result_t dif_csrng_get_cmd_force_error(const dif_csrng_t *csrng,
     case kDifCsrngErrorMainSm:
       error_bit = CSRNG_ERR_CODE_MAIN_SM_ERR_BIT;
       break;
-    case kDifCsrngErrorDrbgCmdSm:
-      error_bit = CSRNG_ERR_CODE_DRBG_CMD_SM_ERR_BIT;
-      break;
-    case kDifCsrngErrorDrbgGenSm:
-      error_bit = CSRNG_ERR_CODE_DRBG_GEN_SM_ERR_BIT;
-      break;
-    case kDifCsrngErrorDrbgUpdateBlockEncSm:
-      error_bit = CSRNG_ERR_CODE_DRBG_UPDBE_SM_ERR_BIT;
-      break;
-    case kDifCsrngErrorDrbgUpdateOutBlockSm:
-      error_bit = CSRNG_ERR_CODE_DRBG_UPDOB_SM_ERR_BIT;
+    case kDifCsrngErrorCtrDrbgSm:
+      error_bit = CSRNG_ERR_CODE_CTR_DRBG_SM_ERR_BIT;
       break;
     case kDifCsrngErrorAesSm:
       error_bit = CSRNG_ERR_CODE_AES_CIPHER_SM_ERR_BIT;
       break;
-    case kDifCsrngErrorGenerateCmdCounter:
-      error_bit = CSRNG_ERR_CODE_CMD_GEN_CNT_ERR_BIT;
+    case kDifCsrngErrorCounters:
+      error_bit = CSRNG_ERR_CODE_CTR_ERR_BIT;
       break;
     case kDifCsrngErrorFifoWrite:
       error_bit = CSRNG_ERR_CODE_FIFO_WRITE_ERR_BIT;
