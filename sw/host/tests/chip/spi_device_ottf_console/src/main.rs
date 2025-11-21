@@ -43,7 +43,6 @@ fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<
         Some(Regex::new(r"PASS.*\n")?),
         Some(Regex::new(r"(FAIL|FAULT).*\n")?),
     );
-    let mut stdout = std::io::stdout();
     let spi = transport.spi(&opts.console_spi)?;
 
     let spi_console_device = SpiConsoleDevice::new(&*spi, None)?;
@@ -93,7 +92,7 @@ fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<
         spi_console_device.write(&data)?;
     }
 
-    let result = console.interact(&spi_console_device, Some(&mut stdout))?;
+    let result = console.interact(&spi_console_device, false)?;
     match result {
         ExitStatus::Timeout => Err(anyhow!("Console timeout exceeded")),
         ExitStatus::ExitSuccess => {
