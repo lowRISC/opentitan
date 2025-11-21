@@ -88,7 +88,10 @@
   "spi": [
     {
       "name": "BOOTSTRAP",
-      "bits_per_sec": 5000000,
+      // The current speed accounts for increased bus capacitance caused by the external
+      // SPI_TPM wires. If these wires are not connected (e.g., when skipping TPM tests),
+      // the SPI speed can safely be increased to 5MHz.
+      "bits_per_sec": 4000000,
       "chip_select": "CN10_6",
       "alias_of": "QSPI"
     }
