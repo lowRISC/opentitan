@@ -95,7 +95,7 @@ See the documentation for {{#otbn-insn-ref JAL}} and {{#otbn-insn-ref JALR}} for
 The call stack has a maximum depth of 8 elements.
 Each instruction that reads from `x1` pops a single element from the stack.
 Each instruction that writes to `x1` pushes a single element onto the stack.
-An instruction that reads from an empty stack or writes to a full stack causes a `CALL_STACK` [software error](#design-details-errors).
+An instruction that reads from an empty stack or writes to a full stack causes a `CALL_STACK` [software error](doc/theory_of_operation.md#errors).
 
 A single instruction can both read and write to the stack.
 In this case, the read is ordered before the write.
@@ -527,9 +527,3 @@ Blanking is applied in the following locations:
   Data paths not required for the instruction being executed are blanked.
 
 Note there is no blanking on the base side (save for the CSRs as these provide access to WDRs such as ACC).
-
-# References
-
-<a name="ref-chen08">[CHEN08]</a> L. Chen, "Hsiao-Code Check Matrices and Recursively Balanced Matrices," arXiv:0803.1217 [cs], Mar. 2008 [Online]. Available: https://arxiv.org/abs/0803.1217
-
-<a name="ref-symbiotic21">[SYMBIOTIC21]</a> RISC-V Bitmanip Extension v0.93 Available: https://github.com/riscv/riscv-bitmanip/releases/download/v0.93/bitmanip-0.93.pdf

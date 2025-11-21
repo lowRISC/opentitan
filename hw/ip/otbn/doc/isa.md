@@ -127,3 +127,12 @@ In particular, how do they interact with instructions that could cause other err
 # Big Number Instruction Subset
 
 {{#otbn-isa bignum }}
+
+# Encoding overview
+The following tables show the encodings of all instructions.
+
+## Base Instruction Subset
+{{#otbn-isa base_encoding }}
+
+## Big Number Instruction Subset
+{{#otbn-isa bignum_encoding }}
