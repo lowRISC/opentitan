@@ -169,11 +169,7 @@ impl CommandDispatch for Console {
                     }
                 };
 
-                let rx = async {
-                    console
-                        .interact_async(&uart_rx, Some(&mut std::io::stdout()))
-                        .await
-                };
+                let rx = async { console.interact_async(&uart_rx, false).await };
 
                 Result::<_>::Ok(tokio::select! {
                     v = tx => Err(v?),

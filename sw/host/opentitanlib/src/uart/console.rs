@@ -45,27 +45,23 @@ impl UartConsole {
     }
 
     // Runs an interactive console until CTRL_C is received.
-    pub fn interact<T>(&mut self, device: &T, stdout: Option<&mut dyn Write>) -> Result<ExitStatus>
+    pub fn interact<T>(&mut self, device: &T, quiet: bool) -> Result<ExitStatus>
     where
         T: ConsoleDevice + ?Sized,
     {
-        crate::util::runtime::block_on(self.interact_async(device, stdout))
+        crate::util::runtime::block_on(self.interact_async(device, quiet))
     }
 
     // Runs an interactive console until CTRL_C is received.  Uses `mio` library to simultaneously
     // wait for data from UART or from stdin, without need for timeouts and repeated calls.
-    pub async fn interact_async<T>(
-        &mut self,
-        device: &T,
-        mut stdout: Option<&mut dyn Write>,
-    ) -> Result<ExitStatus>
+    pub async fn interact_async<T>(&mut self, device: &T, quiet: bool) -> Result<ExitStatus>
     where
         T: ConsoleDevice + ?Sized,
     {
         let timeout = self.timeout;
         let rx = async {
             loop {
-                self.uart_read(device, &mut stdout).await?;
+                self.uart_read(device, quiet).await?;
                 if self
                     .exit_success
                     .as_ref()
@@ -115,35 +111,35 @@ impl UartConsole {
     }
 
     // Read from the console device and process the data read.
-    async fn uart_read<T>(&mut self, device: &T, stdout: &mut Option<&mut dyn Write>) -> Result<()>
+    async fn uart_read<T>(&mut self, device: &T, quiet: bool) -> Result<()>
     where
         T: ConsoleDevice + ?Sized,
     {
-        let mut buf = [0u8; 1024];
-        let effective_buf = if self.uses_regex() {
-            // Read one byte at a time when matching, to avoid the risk of consuming output past a
-            // match.
-            &mut buf[..1]
-        } else {
-            &mut buf
-        };
-        let len = std::future::poll_fn(|cx| device.poll_read(cx, effective_buf)).await?;
-        for i in 0..len {
+        let mut ch = 0;
+
+        // Read one byte at a time to avoid the risk of consuming output past a match.
+        let len =
+            std::future::poll_fn(|cx| device.poll_read(cx, std::slice::from_mut(&mut ch))).await?;
+
+        if len == 0 {
+            return Ok(());
+        }
+
+        if !quiet {
+            let mut stdout = std::io::stdout().lock();
+
             if self.timestamp && self.newline {
                 let t = humantime::format_rfc3339_millis(SystemTime::now());
-                stdout.as_mut().map_or(Ok(()), |out| {
-                    out.write_fmt(format_args!("[{}  console]", t))
-                })?;
-                self.newline = false;
+                stdout.write_fmt(format_args!("[{}  console]", t))?;
             }
-            self.newline = buf[i] == b'\n';
-            stdout
-                .as_mut()
-                .map_or(Ok(()), |out| out.write_all(&buf[i..i + 1]))?;
+            self.newline = ch == b'\n';
+
+            stdout.write_all(std::slice::from_ref(&ch))?;
+            stdout.flush()?;
         }
-        stdout.as_mut().map_or(Ok(()), |out| out.flush())?;
+
         if self.uses_regex() {
-            self.append_buffer(&buf[..len]);
+            self.append_buffer(std::slice::from_ref(&ch));
         }
         Ok(())
     }
@@ -170,8 +166,7 @@ impl UartConsole {
         T: ConsoleDevice + ?Sized,
     {
         let mut console = UartConsole::new(Some(timeout), Some(Regex::new(rx)?), None);
-        let mut stdout = std::io::stdout();
-        let result = console.interact(device, Some(&mut stdout))?;
+        let result = console.interact(device, false)?;
         println!();
         match result {
             ExitStatus::ExitSuccess => {
