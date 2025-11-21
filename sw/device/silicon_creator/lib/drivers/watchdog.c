@@ -6,7 +6,6 @@
 
 #include "hw/top/dt/dt_aon_timer.h"
 #include "hw/top/dt/dt_api.h"
-#include "hw/top/dt/dt_pwrmgr.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
@@ -75,19 +74,7 @@ void watchdog_init(lifecycle_state_t lc_state) {
 
 void watchdog_configure(watchdog_config_t config) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kWatchdogSecMmioConfigure, 4);
-  uint32_t pwrmgr_base = dt_pwrmgr_primary_reg_block(kDtPwrmgrAon);
-  uint32_t enabled_resets = 0;
-  size_t reset_source = 0;
-
-  // Tell pwrmgr we want watchdog reset events to reset the chip.
-  HARDENED_CHECK_EQ(
-      pwrmgr_find_request_source(kPwrmgrReqTypeReset,
-                                 dt_aon_timer_instance_id(kDtAonTimerAon),
-                                 kDtAonTimerResetReqAonTimer, &reset_source),
-      kErrorOk);
-  enabled_resets = bitfield_bit32_write(0, reset_source, true);
-  sec_mmio_write32(pwrmgr_base + PWRMGR_RESET_EN_REG_OFFSET, enabled_resets);
-  pwrmgr_cdc_sync(1);
+  pwrmgr_enable_watchdog_reset_request();
 
   // Set the watchdog bite and bark thresholds.
   sec_mmio_write32(aon_timer_base() + AON_TIMER_WDOG_CTRL_REG_OFFSET,

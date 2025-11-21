@@ -461,7 +461,7 @@ TEST(Asn1, TagLengthEncoding) {
     asn1_tag_t tag;                                                         \
     asn1_start_tag(&state, &tag, kAsn1TagNumberSequence);                   \
     EXPECT_EQ(state.error, kErrorOk);                                       \
-    asn1_push_bytes(&state, &tmp[0], tmp.size());                           \
+    asn1_push_bytes(&state, tmp.data(), tmp.size());                        \
     EXPECT_EQ(state.error, kErrorOk);                                       \
     asn1_finish_tag(&tag);                                                  \
     EXPECT_EQ(state.error, kErrorOk);                                       \

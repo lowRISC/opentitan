@@ -261,13 +261,19 @@ opentitan_test(
 dual_cc_library(
     name = "ibex",
     srcs = dual_inputs(
-        host = ["ibex_host.c"],
-        shared = ["ibex.c"],
+        device = ["ibex.c"],
+        host = ["mock_ibex.cc"],
     ),
     hdrs = dual_inputs(
+        host = ["mock_ibex.h"],
         shared = ["ibex.h"],
     ),
     deps = dual_inputs(
+        host = [
+            "//sw/device/lib/base:global_mock",
+            "//sw/device/silicon_creator/testing:rom_test",
+            "@googletest//:gtest",
+        ],
         shared = [
             "//hw/top:rv_core_ibex_c_regs",
             "//hw/top:dt",
@@ -286,7 +292,7 @@ cc_test(
     name = "ibex_unittest",
     srcs = ["ibex_unittest.cc"],
     deps = [
-        ":ibex",
+        dual_cc_device_library_of(":ibex"),
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
@@ -612,7 +618,6 @@ dual_cc_library(
             "//sw/device/lib/base:hardened",
             "//hw/top:entropy_src_c_regs",
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top:rv_core_ibex_c_regs",
             "//sw/device/lib/base:crc32",
         ],
         host = [
@@ -621,6 +626,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
+            ":ibex",
             ":lifecycle",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib:error",
@@ -873,18 +879,33 @@ cc_test(
     ],
 )
 
-cc_library(
+dual_cc_library(
     name = "pwrmgr",
-    srcs = ["pwrmgr.c"],
-    hdrs = ["pwrmgr.h"],
-    deps = [
-        ":ibex",
-        "//hw/top:dt",
-        "//hw/top:pwrmgr_c_regs",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-    ],
+    srcs = dual_inputs(
+        device = ["pwrmgr.c"],
+        host = ["mock_pwrmgr.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_pwrmgr.h"],
+        shared = ["pwrmgr.h"],
+    ),
+    deps = dual_inputs(
+        device = [
+            ":ibex",
+            "//hw/top:pwrmgr_c_regs",
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/silicon_creator/lib/base:sec_mmio",
+        ],
+        host = [
+            "//sw/device/lib/base:global_mock",
+            "//sw/device/silicon_creator/testing:rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            "//hw/top:dt",
+            "//sw/device/silicon_creator/lib:error",
+        ],
+    ),
 )
 
 cc_library(

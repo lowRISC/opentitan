@@ -11,6 +11,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/silicon_creator/lib/drivers/ibex.h"
 
 #include "hw/top/rv_core_ibex_regs.h"
 
@@ -56,19 +57,6 @@ hardened_bool_t ibex_check_security_config(void) {
   return kHardenedBoolTrue;
 }
 
-/**
- * Blocks until data is ready in the RND register.
- */
-static void wait_rnd_valid(void) {
-  while (true) {
-    uint32_t reg = abs_mmio_read32(rv_core_ibex_base() +
-                                   RV_CORE_IBEX_RND_STATUS_REG_OFFSET);
-    if (bitfield_bit32_read(reg, RV_CORE_IBEX_RND_STATUS_RND_DATA_VALID_BIT)) {
-      return;
-    }
-  }
-}
-
 status_t ibex_disable_icache(hardened_bool_t *icache_enabled) {
   // Check if the instruction cache is already disabled.
   uint32_t csr;
@@ -96,12 +84,6 @@ void ibex_restore_icache(hardened_bool_t icache_enabled) {
   if (icache_enabled == kHardenedBoolTrue) {
     CSR_SET_BITS(CSR_REG_CPUCTRL, kCpuctrlICacheMask);
   }
-}
-
-uint32_t ibex_rnd32_read(void) {
-  wait_rnd_valid();
-  return abs_mmio_read32(rv_core_ibex_base() +
-                         RV_CORE_IBEX_RND_DATA_REG_OFFSET);
 }
 
 OT_ALWAYS_INLINE void ibex_clear_rf(void) {
