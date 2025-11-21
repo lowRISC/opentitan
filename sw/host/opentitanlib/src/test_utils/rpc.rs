@@ -6,7 +6,6 @@ use crc::{CRC_32_ISO_HDLC, Crc};
 use regex::Regex;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
-use std::io::Write;
 use std::time::Duration;
 
 use crate::io::console::{ConsoleDevice, ConsoleError};
@@ -70,14 +69,7 @@ where
             Some(Regex::new(r"RESP_OK:(.*) CRC:([0-9]+)\n")?),
             Some(Regex::new(r"RESP_ERR:(.*) CRC:([0-9]+)\n")?),
         );
-        let mut stdout = std::io::stdout();
-        let out = if !quiet {
-            let w: &mut dyn Write = &mut stdout;
-            Some(w)
-        } else {
-            None
-        };
-        let result = console.interact(device, out)?;
+        let result = console.interact(device, quiet)?;
         println!();
         match result {
             ExitStatus::ExitSuccess => {

@@ -108,7 +108,7 @@ fn test_bootstrap_enabled_requested(opts: &Opts, transport: &TransportWrapper) -
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
     // Now watch the console for the exit conditions.
-    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     };
@@ -133,7 +133,7 @@ fn test_bootstrap_enabled_not_requested(opts: &Opts, transport: &TransportWrappe
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
     // Now watch the console for the exit conditions.
-    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     };
@@ -314,7 +314,7 @@ fn test_bootstrap_shutdown(
     let bad_erase = [cmd, 0xff, 0xff, 0xff];
     spi.run_transaction(&mut [Transfer::Write(&bad_erase)])?;
     // We should see the expected BFVs.
-    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     }
@@ -340,7 +340,7 @@ fn test_bootstrap_phase1_reset(opts: &Opts, transport: &TransportWrapper) -> Res
     // Discard buffered messages before interacting with the console.
     uart.clear_rx_buffer()?;
     SpiFlash::chip_reset(&*spi)?;
-    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, false)?;
     if result != ExitStatus::Timeout {
         bail!("FAIL: {:?}", result);
     }
@@ -369,7 +369,7 @@ fn test_bootstrap_phase1_page_program(opts: &Opts, transport: &TransportWrapper)
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
     // We should see the expected BFV.
-    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     }
@@ -407,7 +407,7 @@ fn test_bootstrap_phase1_erase(
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     }
@@ -419,7 +419,7 @@ fn test_bootstrap_phase1_erase(
     uart.clear_rx_buffer()?;
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     }
@@ -447,7 +447,7 @@ fn test_bootstrap_phase1_read(opts: &Opts, transport: &TransportWrapper) -> Resu
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     }
@@ -481,7 +481,7 @@ fn test_bootstrap_phase2_reset(opts: &Opts, transport: &TransportWrapper) -> Res
     // Discard buffered messages before interacting with the console.
     uart.clear_rx_buffer()?;
     SpiFlash::chip_reset(&*spi)?;
-    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     }
@@ -516,7 +516,7 @@ fn test_bootstrap_phase2_page_program(opts: &Opts, transport: &TransportWrapper)
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     }
@@ -556,7 +556,7 @@ fn test_bootstrap_phase2_erase(
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     }
@@ -590,7 +590,7 @@ fn test_bootstrap_phase2_read(opts: &Opts, transport: &TransportWrapper) -> Resu
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     }
@@ -615,7 +615,7 @@ fn test_bootstrap_watchdog_check(opts: &Opts, transport: &TransportWrapper) -> R
     // anything over UART until the console times out.
     uart.clear_rx_buffer()?;
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
-    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, false)?;
     if result != ExitStatus::Timeout {
         bail!("FAIL: {:?}", result);
     };

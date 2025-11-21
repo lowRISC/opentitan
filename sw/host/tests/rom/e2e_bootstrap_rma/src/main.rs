@@ -8,7 +8,6 @@
 //! 1. Checks that the ROM times out and resets under the `RMA_BOOTSTRAP` strapping.
 //! 2. Triggers a LC transition from `PROD` to `RMA` and checks for success.
 
-use std::io;
 use std::iter;
 use std::time::Duration;
 
@@ -98,9 +97,8 @@ fn test_no_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Res
         Some(exit_failure),
     );
 
-    let mut stdout = io::stdout();
     let result = console
-        .interact(&*uart, Some(&mut stdout))
+        .interact(&*uart, false)
         .context("failed to interact with console")?;
 
     match result {
@@ -269,9 +267,8 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
         Some(exit_failure),
     );
 
-    let mut stdout = io::stdout();
     let result = console
-        .interact(&*uart, Some(&mut stdout))
+        .interact(&*uart, false)
         .context("failed to interact with console")?;
 
     match result {
