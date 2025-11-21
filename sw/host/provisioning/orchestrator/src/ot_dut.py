@@ -79,7 +79,7 @@ class OtDut():
         Retuns:
             The extracted JSON data.
         """
-        with open(log_file, "r") as f:
+        with open(log_file, "r", encoding='utf-8', errors='ignore') as f:
             log_data = f.read()
 
         pattern = key + r':\s*({.*})'
@@ -282,6 +282,10 @@ class OtDut():
             --token-encrypt-key-der-file={self.sku_config.token_encrypt_key} \
             """
 
+            # Add owner FW boot success message check.
+            if self.sku_config.owner_fw_boot_str:
+                cmd += f"--owner-success-text=\"{self.sku_config.owner_fw_boot_str}\""
+
             # Enable alerts during individualization if requested.
             if self.enable_alerts:
                 cmd += " --enable-alerts-during-individualize"
@@ -310,11 +314,13 @@ class OtDut():
             device_id_in_otp = DeviceId.from_hexstr(self.ft_data["device_id"])
             if device_id_in_otp != self.device_id:
                 logging.error(
-                    "Device ID from OTP does not match expected on host.")
+                    "Device ID from OTP does not match expected on host. Use OTP variant?"
+                )
                 logging.error(
                     f"Final (device) DeviceId: {device_id_in_otp.to_hexstr()}")
                 logging.error(
                     f"Final (host)   DeviceId: {self.device_id.to_hexstr()}")
                 confirm()
+                self.device_id = device_id_in_otp
 
             logging.info("FT completed successfully.")

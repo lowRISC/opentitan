@@ -84,6 +84,11 @@ def main(args_in):
         help="SKU HJSON configuration file.",
     )
     parser.add_argument(
+        "--package",
+        type=str,
+        help="Override of package string that is in the SKU config.",
+    )
+    parser.add_argument(
         "--test-unlock-token",
         required=True,
         type=parse_hexstring_to_int,
@@ -150,6 +155,12 @@ def main(args_in):
     with open(sku_config_path, "r") as fp:
         sku_config_args = hjson.load(fp)
     sku_config = SkuConfig(**sku_config_args)
+
+    # Override package ID if requested.
+    if args.package:
+        sku_config.package = args.package
+        sku_config.validate()
+        sku_config.load_hw_ids()
 
     # The device identification number is determined during CP by extracting data
     # from the device.

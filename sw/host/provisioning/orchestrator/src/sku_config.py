@@ -29,6 +29,7 @@ class SkuConfig:
     token_encrypt_key: str
     dice_ca: Optional[OrderedDict]  # valid: see CaConfig
     ext_ca: Optional[OrderedDict] = None  # valid: see CaConfig
+    owner_fw_boot_str: str = None  # valid: any string
 
     def __post_init__(self):
         # Load CA configs.
@@ -52,15 +53,10 @@ class SkuConfig:
         # Validate inputs.
         self.validate()
 
-        # Set product, SiliconCreator, and package IDs.
-        self.si_creator_id = int(
-            self._product_ids["si_creator_ids"][self.si_creator], 16)
-        self.product_id = int(self._product_ids["product_ids"][self.product],
-                              16)
+        # Load HW IDs.
+        self.load_hw_ids()
 
-        if self.package in self._package_ids:
-            self.package_id = int(self._package_ids[self.package], 16)
-
+        # Resolve LC token encryption key path.
         if self.token_encrypt_key:
             self.token_encrypt_key = resolve_runfile(self.token_encrypt_key)
 
@@ -130,3 +126,11 @@ class SkuConfig:
             raise ValueError(
                 "Target LC state ({}) must be in [\"dev\", \"prod\", \"prod_end\"]"
                 .format(self.target_lc_state))
+
+    def load_hw_ids(self) -> None:
+        """Sets product, SiliconCreator, and package IDs."""
+        self.si_creator_id = int(
+            self._product_ids["si_creator_ids"][self.si_creator], 16)
+        self.product_id = int(self._product_ids["product_ids"][self.product],
+                              16)
+        self.package_id = int(self._package_ids[self.package], 16)

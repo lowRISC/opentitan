@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 {
-  name: "emulation",
+  name: "emulation_tpm",
   product: "earlgrey_a1",
   si_creator: "nuvoton",
   package: "npcr10",
