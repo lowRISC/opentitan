@@ -60,19 +60,38 @@
       run_timeout_mins: 800
     }
     {
-      name: rom_e2e_ft_personalize_sival
-      uvm_test_seq: chip_sw_rom_e2e_ft_perso_vseq
+      name: rom_e2e_ft_perso_base
+      uvm_test_seq: chip_sw_rom_e2e_ft_perso_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/manuf/base/binaries:ft_personalize_sival:1:silicon_creator:signed",
-        "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_dev_manuf_individualized:4"
+        // Add the 'silicon_creator' flag because the default 'sw_build_device' of sim_dv does
+        // not enable the OTTF, and hence we cannot interact with the perso binary over the
+        // spi_console. (sim_dv assumes use of the sw_logger_if instead of the OTTF)
+        "//sw/device/silicon_creator/manuf/base:ft_personalize_emulation:1:silicon_creator:dont_filter",
+        "//sw/device/silicon_creator/manuf/base:ft_fw_bundle_emulation:6:silicon_creator:dont_filter",
+        "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_prod_manuf_individualized:4",
+        "//sw/device/lib/testing/test_rom:test_rom:0:silicon_creator:dont_filter",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_base"]
       run_opts: [
-        "+sw_test_timeout_ns=1000000000",
+        "+sw_test_timeout_ns=1_000_000_000", // 1s
         "+use_otp_image=OtpTypeCustom",
-        "+skip_flash_bkdr_load=1",
+
+        // Dump simulation memory model images between phases, to allow re-loading of these images in
+        // subsequent simulations to skip past test phases that are idempotent.
+        "+dump_mems=1",
+
+        // If the +perso_start_phase >= 1, then a +load_path must be provided containing memory images
+        // from a previous run of this test with the +dump_mems plusarg set.
+        "+perso_start_phase=0",
+        // "+load_path=/tmp/scratch/",
+
+        // Pre-captured OTTF SPI_Console message payloads.
+        "+RMA_UNLOCK_TOKEN_HASH_FILE={proj_root}/hw/top_earlgrey/dv/data/ft_personalize_orch_emu_cw340/ujson_RMA_TOKEN_UNLOCK_HASH",
+        "+RMA_UNLOCK_TOKEN_HASH_CRC_FILE={proj_root}/hw/top_earlgrey/dv/data/ft_personalize_orch_emu_cw340/ujson_RMA_TOKEN_UNLOCK_HASH_CRC",
+        "+PERSO_CERTGEN_INPUTS_FILE={proj_root}/hw/top_earlgrey/dv/data/ft_personalize_orch_emu_cw340/ujson_PERSO_CERTGEN_INPUTS",
+        "+MANUF_PERSO_DATA_BACK_FILE={proj_root}/hw/top_earlgrey/dv/data/ft_personalize_orch_emu_cw340/ujson_MANUF_PERSO_DATA_BACK",
       ]
-      run_timeout_mins: 800
+      run_timeout_mins: 1000
     }
   ]
 
@@ -81,7 +100,7 @@
       name: ate_tests
       tests: [
         "rom_e2e_bootstrap_ate_smoke",
-        "rom_e2e_ft_personalize_sival",
+        "rom_e2e_ft_perso_base",
       ]
     }
   ]
