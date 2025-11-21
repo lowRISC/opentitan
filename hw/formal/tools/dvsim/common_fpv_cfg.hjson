@@ -7,11 +7,13 @@
   stopats: []
   task: ""
   after_load: []
+  params: ""
 
   // Optional vars that need to exported to the env
   exports: [
     {STOPATS:    "'{stopats}'"},
     {TASK:       '{task}'},
     {AFTER_LOAD: '{after_load}'},
+    {PARAMS:     '{params}'},
   ]
 }
