@@ -117,10 +117,6 @@ impl<T: Uart> ConsoleDevice for SoftwareFlowControl<T> {
         }
         Ok(())
     }
-
-    fn set_break(&self, enable: bool) -> Result<()> {
-        self.inner.set_break(enable)
-    }
 }
 
 impl<T: Uart> Uart for SoftwareFlowControl<T> {
@@ -161,5 +157,9 @@ impl<T: Uart> Uart for SoftwareFlowControl<T> {
 
         // Clear the host input buffer.
         self.inner.clear_rx_buffer()
+    }
+
+    fn set_break(&self, enable: bool) -> Result<()> {
+        self.inner.set_break(enable)
     }
 }

@@ -7,14 +7,15 @@ use clap::Args;
 use regex::Regex;
 use std::any::Any;
 use std::fs::File;
+use std::io::Write;
 use std::marker::Unpin;
 use std::time::Duration;
 use tokio::io::{AsyncRead, AsyncReadExt};
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::io::console::ConsoleDevice;
-use opentitanlib::io::uart::UartParams;
+use opentitanlib::io::console::Broadcaster;
+use opentitanlib::io::uart::{Uart, UartParams};
 use opentitanlib::transport::Capability;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
 use opentitanlib::util::raw_tty::RawTty;
@@ -59,13 +60,14 @@ const CTRL_B: u8 = 2;
 const CTRL_C: u8 = 3;
 
 /// Takes input from an input stream and send it to a console device. Breaks are handled.
-async fn process_input<T, R: AsyncRead + Unpin>(device: &T, stdin: &mut R) -> Result<()>
+async fn process_input<T, R>(device: &T, stdin: &mut R) -> Result<()>
 where
-    T: ConsoleDevice + ?Sized,
+    T: Uart + ?Sized,
+    R: AsyncRead + Unpin,
 {
     let mut break_en = false;
+    let mut buf = [0u8; 256];
     loop {
-        let mut buf = [0u8; 256];
         let len = stdin.read(&mut buf).await?;
         if len == 1 {
             if buf[0] == CTRL_C {
@@ -85,9 +87,21 @@ where
                 continue;
             }
         }
-        if len > 0 {
-            device.write(&buf[..len])?;
-        }
+        device.write(&buf[..len])?;
+    }
+}
+
+/// Takes input from a console and write to an output.
+async fn pipe_output<T, W>(device: &T, w: &mut W) -> Result<()>
+where
+    T: Uart + ?Sized,
+    W: Write,
+{
+    let mut buf = [0u8; 256];
+
+    loop {
+        let len = std::future::poll_fn(|cx| device.poll_read(cx, &mut buf)).await?;
+        w.write_all(&buf[..len])?;
     }
 }
 
@@ -99,6 +113,14 @@ impl CommandDispatch for Console {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // We need the UART for the console command to operate.
         transport.capabilities()?.request(Capability::UART).ok()?;
+
+        let uart = self.params.create(transport)?;
+        if let Some(send) = self.send.as_ref() {
+            log::info!("Sending: {:?}", send);
+            uart.write(send.as_bytes())?;
+        }
+
+        let mut logfile = self.logfile.as_ref().map(File::create).transpose()?;
 
         // Set up resources specified by the command line parameters.
         let mut console = UartConsole::new(
@@ -112,48 +134,54 @@ impl CommandDispatch for Console {
                 .map(|s| Regex::new(s.as_str()))
                 .transpose()?,
         );
-        console.logfile = self.logfile.as_ref().map(File::create).transpose()?;
         console.timestamp = self.timestamp;
 
-        let status = {
-            // Put the terminal into raw mode.  The tty guard will restore the
-            // console settings when it goes out of scope.
-            let mut stdin = if self.non_interactive {
-                None
-            } else {
-                Some(RawTty::new(tokio::io::stdin())?)
-            };
-            let mut stdout = std::io::stdout();
-
-            let uart = self.params.create(transport)?;
-            if let Some(send) = self.send.as_ref() {
-                log::info!("Sending: {:?}", send);
-                uart.write(send.as_bytes())?;
-            }
-            if !self.non_interactive {
-                eprint!("Starting interactive console\r\n");
-                eprint!("[CTRL+C] to exit.\r\n\r\n");
-            }
-
-            transport.relinquish_exclusive_access(|| {
-                opentitanlib::util::runtime::block_on(async {
-                    let tx = async {
-                        if let Some(stdin) = stdin.as_mut() {
-                            process_input(&*uart, stdin).await
-                        } else {
-                            std::future::pending().await
-                        }
-                    };
-
-                    let rx = console.interact_async(&*uart, Some(&mut stdout));
-
-                    Result::<_>::Ok(tokio::select! {
-                        v = tx => Err(v?),
-                        v = rx => Ok(v?),
-                    })
-                })
-            })??
+        // Put the terminal into raw mode.  The tty guard will restore the
+        // console settings when it goes out of scope.
+        let mut stdin = if self.non_interactive {
+            None
+        } else {
+            Some(RawTty::new(tokio::io::stdin())?)
         };
+
+        if !self.non_interactive {
+            eprint!("Starting interactive console\r\n");
+            eprint!("[CTRL+C] to exit.\r\n\r\n");
+        }
+
+        let status = transport.relinquish_exclusive_access(|| {
+            opentitanlib::util::runtime::block_on(async {
+                let uart_rx = Broadcaster::new(uart.clone());
+
+                let tx = async {
+                    if let Some(stdin) = stdin.as_mut() {
+                        process_input(&*uart, stdin).await
+                    } else {
+                        std::future::pending().await
+                    }
+                };
+
+                let log_to_file = async {
+                    if let Some(file) = logfile.as_mut() {
+                        pipe_output(&uart_rx.clone(), file).await
+                    } else {
+                        std::future::pending().await
+                    }
+                };
+
+                let rx = async { console.interact_async(&uart_rx, false).await };
+
+                Result::<_>::Ok(tokio::select! {
+                    v = tx => Err(v?),
+                    v = log_to_file => Err(v?),
+                    v = rx => Ok(v?),
+                })
+            })
+        })??;
+
+        // Bring us out from raw mode early.
+        drop(stdin);
+
         if !self.non_interactive {
             eprintln!("\n\nExiting interactive console.");
         }

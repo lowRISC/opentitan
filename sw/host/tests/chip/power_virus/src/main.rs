@@ -31,8 +31,7 @@ fn power_virus_systemtest(opts: &Opts, transport: &TransportWrapper) -> Result<(
         Some(Regex::new(r"PASS.*\n")?),
         Some(Regex::new(r"(FAIL|FAULT).*\n")?),
     );
-    let mut stdout = std::io::stdout();
-    let result = console.interact(&*uart, Some(&mut stdout))?;
+    let result = console.interact(&*uart, false)?;
     match result {
         ExitStatus::Timeout => Err(anyhow!("Console timeout exceeded")),
         ExitStatus::ExitSuccess => {

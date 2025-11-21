@@ -9,9 +9,10 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::impl_serializable_error;
-use crate::transport::TransportError;
 
+mod broadcast;
 mod ext;
+pub use broadcast::Broadcaster;
 pub use ext::ConsoleExt;
 
 /// Errors related to the console interface.
@@ -31,8 +32,26 @@ pub trait ConsoleDevice {
 
     /// Writes data from `buf` to the UART.
     fn write(&self, buf: &[u8]) -> Result<()>;
+}
 
-    fn set_break(&self, _enable: bool) -> Result<()> {
-        Err(TransportError::UnsupportedOperation.into())
+impl<T: ConsoleDevice + ?Sized> ConsoleDevice for &T {
+    fn poll_read(&self, cx: &mut Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
+        T::poll_read(self, cx, buf)
+    }
+
+    /// Writes data from `buf` to the UART.
+    fn write(&self, buf: &[u8]) -> Result<()> {
+        T::write(self, buf)
+    }
+}
+
+impl<T: ConsoleDevice + ?Sized> ConsoleDevice for std::rc::Rc<T> {
+    fn poll_read(&self, cx: &mut Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
+        T::poll_read(self, cx, buf)
+    }
+
+    /// Writes data from `buf` to the UART.
+    fn write(&self, buf: &[u8]) -> Result<()> {
+        T::write(self, buf)
     }
 }

@@ -54,7 +54,7 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         )?),
         None,
     );
-    let result = console.interact(&*uart, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, false)?;
     log::info!("result: {:?}", result);
     jtag.halt()?;
     jtag.disconnect()?;
