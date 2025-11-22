@@ -4381,6 +4381,7 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         # We run this as part of the manuf test suite as we want to run it in
@@ -4393,6 +4394,14 @@ opentitan_test(
             --clear-bitstream
             --bootstrap="{firmware}"
             "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/ottf_console_with_gpio_tx_indicator",
+    ),
+    qemu = qemu_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+            --console-tx-indicator-pin=0
         """,
         test_harness = "//sw/host/tests/chip/ottf_console_with_gpio_tx_indicator",
     ),
