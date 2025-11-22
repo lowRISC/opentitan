@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -117,7 +118,7 @@ hardened_bool_t ghash_context_integrity_checksum_check(
  * words).
  * @param[out] tbl The populated product table.
  */
-void ghash_init_subkey(const uint32_t *hash_subkey, ghash_block_t *tbl);
+status_t ghash_init_subkey(const uint32_t *hash_subkey, ghash_block_t *tbl);
 
 /**
  * Start a GHASH operation.
@@ -128,7 +129,7 @@ void ghash_init_subkey(const uint32_t *hash_subkey, ghash_block_t *tbl);
  *
  * @param[out] ctx Context object with GHASH state reset to zero.
  */
-void ghash_init(ghash_context_t *ctx);
+status_t ghash_init(ghash_context_t *ctx);
 
 /**
  * Given a partial GHASH block and some new input, process full blocks.
@@ -146,9 +147,9 @@ void ghash_init(ghash_context_t *ctx);
  * @param input_len Length of the input data in bytes.
  * @param input Input data.
  */
-void ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
-                               ghash_block_t *partial, size_t input_len,
-                               const uint8_t *input);
+status_t ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
+                                   ghash_block_t *partial, size_t input_len,
+                                   const uint8_t *input);
 /**
  * Update the state of a GHASH operation.
  *
@@ -164,7 +165,8 @@ void ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
  * @param input_len Number of bytes in the input.
  * @param input Pointer to input buffer.
  */
-void ghash_update(ghash_context_t *ctx, size_t input_len, const uint8_t *input);
+status_t ghash_update(ghash_context_t *ctx, size_t input_len,
+                      const uint8_t *input);
 
 /**
  * Redundant version of ghash_update().
@@ -178,8 +180,8 @@ void ghash_update(ghash_context_t *ctx, size_t input_len, const uint8_t *input);
  * @param input_len Number of bytes in the input.
  * @param input Pointer to input buffer.
  */
-void ghash_update_redundant(ghash_context_t *ctx, size_t input_len,
-                            const uint8_t *input);
+status_t ghash_update_redundant(ghash_context_t *ctx, size_t input_len,
+                                const uint8_t *input);
 
 /**
  * Computes the correction terms needed for the masking scheme.
@@ -192,7 +194,7 @@ void ghash_update_redundant(ghash_context_t *ctx, size_t input_len,
  * @param enc_initial_counter_block1 Pointer to S1.
  * @param ctx Context object.
  */
-void ghash_handle_enc_initial_counter_block(
+status_t ghash_handle_enc_initial_counter_block(
     const uint32_t *enc_initial_counter_block0,
     const uint32_t *enc_initial_counter_block1, ghash_context_t *ctx);
 
@@ -213,7 +215,7 @@ void ghash_handle_enc_initial_counter_block(
  * @param ctx Context object.
  * @param[out] result Buffer in which to write the GHASH result block
  */
-void ghash_final(ghash_context_t *ctx, uint32_t *result);
+status_t ghash_final(ghash_context_t *ctx, uint32_t *result);
 
 #ifdef __cplusplus
 }  // extern "C"
