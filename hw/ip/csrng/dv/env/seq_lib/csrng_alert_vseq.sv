@@ -350,8 +350,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
   task body();
 
     // Values for the CMD_STAGE_INVALID_ACMD_ALERT test.
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(illegal_command, illegal_command inside {INV, GENB,
-                                                                                   GENU};)
+    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(illegal_command, illegal_command inside {INV};)
     // For clen we just care about 0, 1 and the max value (coverage).
     `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(clen, clen inside {0, 1, 11};)
 

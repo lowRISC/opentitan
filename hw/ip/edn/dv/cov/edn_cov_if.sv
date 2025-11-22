@@ -75,7 +75,7 @@ interface edn_cov_if (
 
     cp_acmd: coverpoint acmd {
       // ignore unused/invalid commands
-      ignore_bins unused = { csrng_pkg::GENB, csrng_pkg::GENU, csrng_pkg::INV };
+      ignore_bins unused = { csrng_pkg::INV };
     }
 
     cp_clen: coverpoint clen {
@@ -285,7 +285,7 @@ interface edn_cov_if (
 
     cp_acmd: coverpoint acmd {
       // Ignore unused/invalid HW commands.
-      ignore_bins unused = { csrng_pkg::GENB, csrng_pkg::GENU, csrng_pkg::INV, csrng_pkg::UPD };
+      ignore_bins unused = { csrng_pkg::INV, csrng_pkg::UPD };
     }
 
     // We want to see all of the boot commands in boot mode.
