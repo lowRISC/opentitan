@@ -165,12 +165,13 @@ static status_t aes_gcm_gctr(const aes_key_t key, aes_block_t *iv,
   if (input_len < kAesBlockNumBytes - partial_len) {
     // Not enough data for a full block; copy into the partial block.
     unsigned char *partial_bytes = (unsigned char *)partial->data;
-    memcpy(partial_bytes + partial_len, input, input_len);
+    randomized_bytecopy(partial_bytes + partial_len, input, input_len);
     *output_len = 0;
   } else {
     // Construct a block from the partial data and the start of the new data.
     unsigned char *partial_bytes = (unsigned char *)partial->data;
-    memcpy(partial_bytes + partial_len, input, kAesBlockNumBytes - partial_len);
+    randomized_bytecopy(partial_bytes + partial_len, input,
+                        kAesBlockNumBytes - partial_len);
     input += kAesBlockNumBytes - partial_len;
     input_len -= kAesBlockNumBytes - partial_len;
 
@@ -178,16 +179,16 @@ static status_t aes_gcm_gctr(const aes_key_t key, aes_block_t *iv,
     aes_block_t block_out;
     HARDENED_TRY(
         gctr_process_block(key, iv, partial, security_level, &block_out));
-    memcpy(output, block_out.data, kAesBlockNumBytes);
+    randomized_bytecopy(output, block_out.data, kAesBlockNumBytes);
     output += kAesBlockNumBytes;
     *output_len = kAesBlockNumBytes;
 
     // Process any remaining full blocks of input.
     while (input_len >= kAesBlockNumBytes) {
-      memcpy(partial->data, input, kAesBlockNumBytes);
+      randomized_bytecopy(partial->data, input, kAesBlockNumBytes);
       HARDENED_TRY(
           gctr_process_block(key, iv, partial, security_level, &block_out));
-      memcpy(output, block_out.data, kAesBlockNumBytes);
+      randomized_bytecopy(output, block_out.data, kAesBlockNumBytes);
       output += kAesBlockNumBytes;
       *output_len += kAesBlockNumBytes;
       input += kAesBlockNumBytes;
@@ -195,7 +196,7 @@ static status_t aes_gcm_gctr(const aes_key_t key, aes_block_t *iv,
     }
 
     // Copy any remaining input into the partial block.
-    memcpy(partial->data, input, input_len);
+    randomized_bytecopy(partial->data, input, input_len);
   }
 
   return OTCRYPTO_OK;
@@ -420,7 +421,8 @@ static status_t aes_gcm_init(const aes_key_t key, const size_t iv_len,
 
   // Set the initial IV for GCTR to inc32(J0).
   // The eventual ciphertext is C = GCTR(K, inc32(J0), plaintext).
-  memcpy(ctx->gctr_iv.data, ctx->initial_counter_block.data, kAesBlockNumBytes);
+  randomized_bytecopy(ctx->gctr_iv.data, ctx->initial_counter_block.data,
+                      kAesBlockNumBytes);
   block_inc32(&ctx->gctr_iv);
 
   // Initialize the GHASH context. We will eventually compute
@@ -436,7 +438,7 @@ static status_t aes_gcm_init(const aes_key_t key, const size_t iv_len,
   HARDENED_TRY(ghash_init(&ctx->ghash_ctx));
 
   // Initialize the key and lengths.
-  memcpy(&ctx->key, &key, sizeof(aes_key_t));
+  HARDENED_TRY(randomized_bytecopy(&ctx->key, &key, sizeof(aes_key_t)));
   ctx->aad_len = 0;
   ctx->input_len = 0;
 
@@ -601,7 +603,8 @@ status_t aes_gcm_final(aes_gcm_context_t *ctx, size_t tag_len, uint32_t *tag,
     HARDENED_TRY(gctr_process_block(ctx->key, &ctx->gctr_iv,
                                     &ctx->partial_aes_block,
                                     ctx->security_level, &block_out));
-    memcpy(output, block_out.data, partial_aes_block_len);
+    HARDENED_TRY(
+        randomized_bytecopy(output, block_out.data, partial_aes_block_len));
     *output_len = partial_aes_block_len;
   }
 
