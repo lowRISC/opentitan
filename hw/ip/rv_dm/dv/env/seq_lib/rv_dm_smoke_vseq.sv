@@ -63,8 +63,9 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
   // subsequent item to run (and means we don't have to set expect_fatal_alerts from cip_base_vseq).
   task check_tl_integrity_error();
     // Pick a random RAL model to operate on
-    int ral_model_idx = $urandom_range(0, cfg.ral_model_names.size()-1);
-    string ral_model_name = cfg.ral_model_names[ral_model_idx];
+    string ral_model_names[$] = cfg.get_ral_model_names();
+    int    ral_model_idx = $urandom_range(0, ral_model_names.size() - 1);
+    string ral_model_name = ral_model_names[ral_model_idx];
 
     // This task will finish by applying a reset. If do_apply_reset is false, we're probably running
     // inside stress_all_with_rand_reset and applying a reset ourselves will confuse things. Fail

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class racl_ctrl_base_test extends cip_base_test #(.CFG_T(racl_ctrl_env_cfg),
+class racl_ctrl_base_test extends cip_base_test #(.CFG_T(racl_ctrl_base_env_cfg),
                                                   .ENV_T(racl_ctrl_env));
 
   `uvm_component_utils(racl_ctrl_base_test)
@@ -22,6 +22,7 @@ function racl_ctrl_base_test::new (string name, uvm_component parent);
 endfunction
 
 function void racl_ctrl_base_test::build_phase(uvm_phase phase);
+  string                             ral_name;
   dv_base_reg_pkg::dv_base_reg_block blk;
 
   super.build_phase(phase);
@@ -29,7 +30,18 @@ function void racl_ctrl_base_test::build_phase(uvm_phase phase);
   // Configure the environment config to enable auto-prediction in the system register map for the
   // register model. This means that the scoreboard in the environment will not need to manually
   // call predict.
-  blk = cfg.ral_models[racl_ctrl_ral_pkg::racl_ctrl_reg_block::type_name];
+  //
+  // Note that we can't look up the RAL model by typename, because that will depend on the templated
+  // instance. But we know that there will only actually be one RAL model, so can just use "that
+  // one".
+  if (cfg.ral_models.size() != 1) begin
+    `uvm_fatal(`gfn,
+               $sformatf("Expected exactly one RAL model but found %0d", cfg.ral_models.size()))
+  end
+  if (!cfg.ral_models.first(ral_name)) begin
+    `uvm_fatal(`gfn, "Huh? Associative array with one element has no first element...")
+  end
+  blk = cfg.ral_models[ral_name];
   blk.default_map.get_root_map().set_auto_predict();
 endfunction
 

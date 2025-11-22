@@ -22,6 +22,11 @@ class cip_base_test #(type CFG_T = cip_base_env_cfg,
     end
   endfunction
 
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    void'($value$plusargs("en_scb_tl_err_chk=%0b", cfg.en_scb_tl_err_chk));
+  endfunction
+
   virtual task run_phase(uvm_phase phase);
     // Disable random delays in specific `prim_cdc_rand_delay`s even if CDC instrumentation is
     // enabled.  (See `cip_base_env_cfg` for details.)

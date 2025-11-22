@@ -19,6 +19,7 @@ class chip_base_test extends cip_base_test #(
   virtual function void build_phase(uvm_phase phase);
     string sw_images_plusarg;
     string use_otp_image_plusarg;
+    bit    use_jtag_dmi;
 
     super.build_phase(phase);
 
@@ -79,6 +80,11 @@ class chip_base_test extends cip_base_test #(
     test_timeout_ns = 50_000_000;
     test_timeout_ns = `DV_MAX2(test_timeout_ns, 5 * cfg.sw_test_timeout_ns);
     `uvm_info(`gfn, $sformatf("test_timeout_ns = %0d", test_timeout_ns), UVM_LOW)
+
+    void'($value$plusargs("use_jtag_dmi=%0b", use_jtag_dmi));
+    if (use_jtag_dmi) begin
+      cfg.set_use_jtag_dmi();
+    end
   endfunction : build_phase
 
 endclass : chip_base_test

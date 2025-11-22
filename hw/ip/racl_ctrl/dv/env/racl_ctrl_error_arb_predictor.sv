@@ -12,7 +12,7 @@ class racl_ctrl_error_arb_predictor extends uvm_component;
   typedef uvm_tlm_analysis_fifo #(racl_error_log_vec_item) error_vec_fifo_t;
 
   // A handle to the environment cfg
-  racl_ctrl_env_cfg cfg;
+  racl_ctrl_base_env_cfg cfg;
 
   // Analysis fifos for messages from the monitors of the two error log agents.
   error_vec_fifo_t internal_errors_fifo;

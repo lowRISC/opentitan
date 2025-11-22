@@ -42,8 +42,7 @@ package jtag_dmi_agent_pkg;
     jtag_dmi_ral.build(.base_addr(0), .csr_excl(null));
     jtag_dmi_ral.set_supports_byte_enable(1'b0);
     jtag_dmi_ral.lock_model();
-    jtag_dmi_ral.compute_mapped_addr_ranges();
-    jtag_dmi_ral.compute_unmapped_addr_ranges();
+    jtag_dmi_ral.set_base_addr(0);
     // TODO: fix the computation of mapped and unmapped ranges.
 
     // Attach JTAG DMI frontdoor to all registers.
