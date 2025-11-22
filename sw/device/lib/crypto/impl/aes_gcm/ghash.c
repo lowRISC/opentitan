@@ -121,7 +121,7 @@ static inline void galois_mulx(const ghash_block_t *p, ghash_block_t *out) {
   // Get the very rightmost bit of the input block (coefficient of x^127).
   uint8_t p127 = block_byte_get(p, kGhashBlockNumBytes - 1) & 1;
   // Set the output to p >> 1.
-  memcpy(out->data, p->data, kGhashBlockNumBytes);
+  randomized_bytecopy(out->data, p->data, kGhashBlockNumBytes);
   block_shiftr(out, 1);
   // If the highest coefficient was 1, then subtract the polynomial that
   // corresponds to (modulus - 2^128).
@@ -176,7 +176,8 @@ status_t ghash_init_subkey(const uint32_t *hash_subkey, ghash_block_t *tbl) {
   // Initialize 0 * H = 0.
   memset(tbl[0].data, 0, kGhashBlockNumBytes);
   // Initialize 1 * H = H.
-  memcpy(tbl[0x8].data, hash_subkey, kGhashBlockNumBytes);
+  HARDENED_TRY(
+      randomized_bytecopy(tbl[0x8].data, hash_subkey, kGhashBlockNumBytes));
 
   // To get remaining entries, we use a variant of "shift and add"; in
   // polynomial terms, a shift is a multiplication by x. Note that, because the
@@ -359,28 +360,28 @@ status_t ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
   if (input_len < kGhashBlockNumBytes - partial_len) {
     // Not enough data for a full block; copy into the partial block.
     unsigned char *partial_bytes = (unsigned char *)partial->data;
-    memcpy(partial_bytes + partial_len, input, input_len);
+    randomized_bytecopy(partial_bytes + partial_len, input, input_len);
   } else {
     // Construct a block from the partial data and the start of the new data.
     unsigned char *partial_bytes = (unsigned char *)partial->data;
-    memcpy(partial_bytes + partial_len, input,
-           kGhashBlockNumBytes - partial_len);
+    randomized_bytecopy(partial_bytes + partial_len, input,
+                        kGhashBlockNumBytes - partial_len);
     input += kGhashBlockNumBytes - partial_len;
     input_len -= kGhashBlockNumBytes - partial_len;
 
     // Process the block.
-    HADRENED_TRY(ghash_process_block(ctx, partial));
+    HARDENED_TRY(ghash_process_block(ctx, partial));
 
     // Process any remaining full blocks of input.
     while (input_len >= kGhashBlockNumBytes) {
-      memcpy(partial->data, input, kGhashBlockNumBytes);
-      HADRENED_TRY(ghash_process_block(ctx, partial));
+      randomized_bytecopy(partial->data, input, kGhashBlockNumBytes);
+      HARDENED_TRY(ghash_process_block(ctx, partial));
       input += kGhashBlockNumBytes;
       input_len -= kGhashBlockNumBytes;
     }
 
     // Copy any remaining input into the partial block.
-    memcpy(partial->data, input, input_len);
+    randomized_bytecopy(partial->data, input, input_len);
   }
 
   return OTCRYPTO_OK;
@@ -398,7 +399,7 @@ status_t ghash_update(ghash_context_t *ctx, size_t input_len,
   if (partial_len != 0) {
     unsigned char *partial_bytes = (unsigned char *)partial.data;
     memset(partial_bytes + partial_len, 0, kGhashBlockNumBytes - partial_len);
-    HADRENED_TRY(ghash_process_block(ctx, &partial));
+    HARDENED_TRY(ghash_process_block(ctx, &partial));
   }
 
   return OTCRYPTO_OK;
@@ -408,7 +409,7 @@ status_t ghash_update_redundant(ghash_context_t *ctx, size_t input_len,
                                 const uint8_t *input) {
   // Copy ctx.
   ghash_context_t ctx_redundant;
-  memcpy(&ctx_redundant, ctx, sizeof(ctx_redundant));
+  randomized_bytecopy(&ctx_redundant, ctx, sizeof(ctx_redundant));
 
   HARDENED_TRY(ghash_update(ctx, input_len, input));
 
@@ -467,7 +468,8 @@ status_t ghash_final(ghash_context_t *ctx, uint32_t *result) {
   hardened_xor(tmp_block.data, ctx->enc_initial_counter_block1.data,
                kGhashBlockNumWords, final_block.data);
 
-  memcpy(result, final_block.data, kGhashBlockNumBytes);
+  HARDENED_TRY(
+      randomized_bytecopy(result, final_block.data, kGhashBlockNumBytes));
 
   return OTCRYPTO_OK;
 }
