@@ -199,10 +199,9 @@ class SymCryptolibFiSim(unittest.TestCase):
 
                 started = True
                 for pc, count in pc_count_dict.items():
-                    # Search for collisions in outputs between the HMAC instances
-                    for i in range(2):
-                        i_count = 0
-                        while i_count < min(MAX_SKIPS_PER_LOOP, count):
+                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        # Search for collisions in outputs between the hmac instances
+                        for i in range(2):
                             print("-" * 80)
                             print(
                                 "Applying instruction skip in ", pc, "occurence", i_count, "data", i
@@ -393,10 +392,9 @@ class SymCryptolibFiSim(unittest.TestCase):
 
                 started = True
                 for pc, count in pc_count_dict.items():
-                    # Search for collisions in outputs between the gcm instances
-                    for i in range(2):
-                        i_count = 0
-                        while i_count < min(MAX_SKIPS_PER_LOOP, count):
+                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        # Search for collisions in outputs between the drbg instances
+                        for i in range(2):
                             print("-" * 80)
                             print(
                                 "Applying instruction skip in ", pc, "occurence", i_count, "data", i
@@ -597,7 +595,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                 started = True
                 for pc, count in pc_count_dict.items():
                     for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
-                        # Search for collisions in outputs between the gcm instances
+                        # Search for collisions in outputs between the drbg instances
                         for i in range(2):
                             print("-" * 80)
                             print(
