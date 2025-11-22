@@ -289,6 +289,9 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
     return OTCRYPTO_BAD_ARGS;
   }
 
+  // Randomize the tag before the operation.
+  HARDENED_TRY(hardened_memshred(auth_tag.data, auth_tag.len));
+
   // Ensure entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
@@ -558,6 +561,9 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
     return OTCRYPTO_BAD_ARGS;
   }
   *ciphertext_bytes_written = 0;
+
+  // Randomize the tag before the operation.
+  HARDENED_TRY(hardened_memshred(auth_tag.data, auth_tag.len));
 
   // Ensure entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
