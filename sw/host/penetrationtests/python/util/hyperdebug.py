@@ -97,14 +97,43 @@ class HyperDebug:
         com_interface.timeout = 1
         return com_interface
 
+    def set_tap_straps(self):
+        """Sets the tap straps on a RMA ROM."""
+        tap_process = (
+            [self.opentitantool]
+            + self.tool_args
+            + [
+                "--exec",
+                "gpio write TAP_STRAP0 false",
+                "--exec",
+                "gpio write TAP_STRAP1 true",
+                "--exec",
+                "gpio apply RMA_BOOTSTRAP",
+                "--exec",
+                "gpio write RESET true",
+                "--exec",
+                "no-op --delay 50ms",
+                "--exec",
+                "gpio remove RESET",
+                "no-op",
+            ]
+        )
+        try:
+            run(tap_process, check=True, capture_output=True, text=True)
+        except CalledProcessError:
+            print("Error: Failed to set tap straps.")
+            raise
+
     def start_openocd(self, startup_delay=4, print_output=True):
-        self.close_openocd()
+        self.close_openocd(timeout=startup_delay)
         # We set up OpenOCD with the following default ports
         # 6666 for tcl connections
         # 4444 for telnet connections
         # 3333 for gdb connections
         # You can adapt those ports, e.g., via adding the config: -c "telnet_port 4444"
         OPENOCD_COMMANDS = "adapter speed 500; transport select jtag; reset_config trst_only"
+
+        self.set_tap_straps()
 
         command = [
             self.openocd,
@@ -141,13 +170,13 @@ class HyperDebug:
                 print("Error reading the openocd output")
                 pass
 
-    def close_openocd(self):
+    def close_openocd(self, timeout=10):
         if not self.openocd_process or self.openocd_process.poll() is not None:
             return
 
         self.openocd_process.send_signal(signal.SIGINT)
         try:
-            self.openocd_process.communicate(timeout=10)
+            self.openocd_process.communicate(timeout=timeout)
         except TimeoutExpired:
             self.openocd_process.kill()
             self.openocd_process.communicate()
