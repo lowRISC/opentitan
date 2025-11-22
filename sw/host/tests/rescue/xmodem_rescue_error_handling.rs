@@ -3,13 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(clippy::bool_assert_comparison)]
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use clap::Parser;
 
 use std::rc::Rc;
 use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::chip::boot_svc::BootSlot;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::rescue::xmodem::XmodemError;
 use opentitanlib::rescue::{EntryMode, Rescue, RescueMode, RescueSerial};
@@ -343,6 +344,32 @@ fn recv_finish_nak(
     Ok(())
 }
 
+fn rescue_image_too_big(
+    transport: &TransportWrapper,
+    uart: &dyn Uart,
+    rescue: &RescueSerial,
+) -> Result<()> {
+    rescue.enter(transport, EntryMode::Reset)?;
+    let image_too_big = [0u8; 1026*1024];
+    match rescue.update_firmware(BootSlot::SlotB, &image_too_big) {
+        Ok(_) => {
+            return Err(anyhow!("Expects cancel during firmware rescue, but got OK."));
+        }
+        Err(e) => {
+            if e.to_string().contains("Cancelled") {
+                log::info!("Operation cancelled by device as expected");
+            } else {
+                return Err(e);
+            }
+        }
+    };
+    // Check for kErrorRescueImageTooBig.
+    UartConsole::wait_for(uart, r"BFV:02525309", Duration::from_secs(5))?;
+    // Ensure we can still boot into Owner SW.
+    UartConsole::wait_for(uart, r"Finished", Duration::from_secs(5))?;
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
@@ -361,5 +388,6 @@ fn main() -> Result<()> {
     recv_data_cancel(&transport, &*uart, &rescue)?;
     recv_data_nak(&transport, &*uart, &rescue)?;
     recv_finish_nak(&transport, &*uart, &rescue)?;
+    rescue_image_too_big(&transport, &*uart, &rescue)?;
     Ok(())
 }
