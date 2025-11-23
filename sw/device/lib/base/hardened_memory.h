@@ -34,7 +34,7 @@ extern uint32_t hardened_memshred_random_word(void);
  * Unlike `memcpy()`, this function has important differences:
  * - It is significantly slower, since it mitigates power-analysis attacks.
  * - It performs operations on 32-bit words, rather than bytes.
- * - It returns void.
+ * - It returns a status.
  *
  * Input pointers *MUST* be 32-bit aligned, although they do not need to
  * actually point to memory declared as `uint32_t` per the C aliasing rules.
@@ -56,7 +56,7 @@ status_t hardened_memcpy(uint32_t *OT_RESTRICT dest,
  * - It is significantly slower, since it mitigates power-analysis attacks.
  * - It performs operations on 32-bit words, rather than bytes.
  * - A fill value cannot be specified.
- * - It returns void.
+ * - It returns a status.
  *
  * Input pointers *MUST* be 32-bit aligned, although they do not need to
  * actually point to memory declared as `uint32_t` per the C aliasing rules.
