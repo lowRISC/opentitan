@@ -47,7 +47,7 @@ status_t hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(count, word_len);
 
-  return OTCRYPTO_OK;
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
 }
 
 status_t hardened_memshred(uint32_t *dest, size_t word_len) {
@@ -72,7 +72,7 @@ status_t hardened_memshred(uint32_t *dest, size_t word_len) {
 
   HARDENED_CHECK_EQ(count, word_len);
 
-  return OTCRYPTO_OK;
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
 }
 
 hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
@@ -207,7 +207,7 @@ status_t hardened_xor(const uint32_t *restrict x, const uint32_t *restrict y,
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(count, word_len);
 
-  return OTCRYPTO_OK;
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
 }
 
 status_t hardened_xor_in_place(uint32_t *restrict x, const uint32_t *restrict y,
@@ -239,7 +239,7 @@ status_t hardened_xor_in_place(uint32_t *restrict x, const uint32_t *restrict y,
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(count, word_len);
 
-  return OTCRYPTO_OK;
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
 }
 
 status_t randomized_bytecopy(void *restrict dest, const void *restrict src,
@@ -265,7 +265,7 @@ status_t randomized_bytecopy(void *restrict dest, const void *restrict src,
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(count, byte_len);
 
-  return OTCRYPTO_OK;
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
 }
 
 status_t randomized_bytexor_in_place(void *restrict x, const void *restrict y,
@@ -291,5 +291,5 @@ status_t randomized_bytexor_in_place(void *restrict x, const void *restrict y,
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(count, byte_len);
 
-  return OTCRYPTO_OK;
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
 }
