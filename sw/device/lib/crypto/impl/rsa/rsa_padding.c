@@ -407,7 +407,7 @@ static status_t reverse_bytes(size_t input_len, uint32_t *input) {
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(i, num_idx);
 
-  return OTCRYPTO_OK;
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
 }
 
 /**
