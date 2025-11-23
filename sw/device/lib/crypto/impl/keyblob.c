@@ -102,6 +102,10 @@ status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
   size_t share_words = keyblob_share_num_words(config);
   HARDENED_TRY(hardened_memcpy(keyblob, share0, share_words));
   HARDENED_TRY(hardened_memcpy(keyblob + share_words, share1, share_words));
+  HARDENED_CHECK_EQ(hardened_memeq(share0, keyblob, share_words),
+                    kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(hardened_memeq(share1, keyblob + share_words, share_words),
+                    kHardenedBoolTrue);
   return OTCRYPTO_OK;
 }
 
