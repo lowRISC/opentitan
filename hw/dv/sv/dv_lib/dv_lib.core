@@ -25,6 +25,7 @@ filesets:
       - dv_base_seq.sv: {is_include_file: true}
 
       - dv_base_env_cfg.sv: {is_include_file: true}
+      - bit_toggle_cg_wrap.sv: {is_include_file: true}
       - dv_base_env_cov.sv: {is_include_file: true}
       - dv_base_virtual_sequencer.sv: {is_include_file: true}
       - dv_base_scoreboard.sv: {is_include_file: true}

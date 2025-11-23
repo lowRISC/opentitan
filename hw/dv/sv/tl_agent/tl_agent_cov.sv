@@ -94,14 +94,14 @@ class tl_agent_cov extends dv_base_agent_cov #(tl_agent_cfg);
     m_max_outstanding_cg    = new("m_max_outstanding_cg", cfg.max_outstanding_req, `gfn);
 
     if (cfg.max_outstanding_req > 1 && en_cov_outstanding_item_w_same_addr) begin
-      m_outstanding_item_w_same_addr_cov_obj = new(.name("m_outstanding_item_w_same_addr_cov_obj"),
-                                                   .path(`gfn));
+      m_outstanding_item_w_same_addr_cov_obj =
+          new({`gfn, "::m_outstanding_item_w_same_addr_cov_obj"});
     end
 
     if (cfg.if_mode == dv_utils_pkg::Host) begin
       m_tl_a_chan_cov_cg = new("m_tl_a_chan_cov_cg", cfg.valid_a_source_width, `gfn);
       foreach (tl_error_names[i]) begin
-        m_tl_error_cov_objs[tl_error_names[i]] = new(.name(tl_error_names[i]), .path(`gfn));
+        m_tl_error_cov_objs[tl_error_names[i]] = new({`gfn, "::", tl_error_names[i]});
       end
     end else begin // device mode
       m_tl_d_chan_cov_cg = new("m_tl_d_chan_cov_cg", `gfn);

@@ -76,10 +76,10 @@ class rv_timer_env_cov extends cip_base_env_cov #(.CFG_T(rv_timer_env_cfg));
     super.new(name, parent);
     //Create cfg coverage for each timer
     foreach (cfg_values_cov_obj[timer]) begin
+      string cov_name = intr_pin_cov_name(timer);
       cfg_values_cov_obj[timer] = rv_timer_cfg_cov_obj::type_id::create($sformatf("rv_timer-%0d",
                                                                                   timer));
-      sticky_intr_cov[{"rv_timer_sticky_intr_pin", $sformatf("%0d", timer)}] =
-            new(.name({"rv_timer_sticky_intr_pin", $sformatf("%0d", timer)}), .toggle_cov_en(0));
+      sticky_intr_cov[cov_name] = new(.name(cov_name), .toggle_cov_en(0));
     end
     //Create toggle coverage for each prescale bit
     foreach (rv_timer_prescale_values_cov_obj[timer, bit_num]) begin
@@ -93,4 +93,20 @@ class rv_timer_env_cov extends cip_base_env_cov #(.CFG_T(rv_timer_env_cfg));
     end
   endfunction : new
 
+  // Return the string used to name the object that will be used to track coverage for the interrupt
+  // pin for the given timer.
+  static local function string intr_pin_cov_name(int unsigned timer_idx);
+    return $sformatf("rv_timer_sticky_intr_pin%0d", timer_idx);
+  endfunction
+
+  // Return the bit_toggle_cg_wrap object that is used to track coverage for the interrupt pin for
+  // the given timer.
+  local function bit_toggle_cg_wrap intr_pin_cov(int unsigned timer_idx);
+    return sticky_intr_cov[intr_pin_cov_name(timer_idx)];
+  endfunction
+
+  // Sample the interrupt pin for the given timer.
+  function void sample_intr_pin(int unsigned timer_idx, logic value);
+    intr_pin_cov(timer_idx).sample(value);
+  endfunction
 endclass
