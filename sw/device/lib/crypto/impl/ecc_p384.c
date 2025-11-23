@@ -253,6 +253,10 @@ static status_t internal_p384_keygen_finalize(
                       kHardenedBoolTrue);
     HARDENED_TRY(hardened_memcpy(private_key->keyblob, private_scalar.share0,
                                  kP384MaskedScalarTotalShareWords));
+    HARDENED_CHECK_EQ(
+        hardened_memeq(private_scalar.share0, private_key->keyblob,
+                       kP384MaskedScalarTotalShareWords),
+        kHardenedBoolTrue);
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -328,6 +332,10 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start(
     p384_masked_scalar_t private_scalar;
     HARDENED_TRY(hardened_memcpy(private_scalar.share0, private_key->keyblob,
                                  kP384MaskedScalarTotalShareWords));
+    HARDENED_CHECK_EQ(
+        hardened_memeq(private_key->keyblob, private_scalar.share0,
+                       kP384MaskedScalarTotalShareWords),
+        kHardenedBoolTrue);
     private_scalar.checksum = p384_masked_scalar_checksum(&private_scalar);
     HARDENED_TRY(p384_ecdsa_sign_start(message_digest.data, &private_scalar));
   } else if (private_key->config.hw_backed == kHardenedBoolTrue) {
@@ -535,6 +543,10 @@ otcrypto_status_t otcrypto_ecdh_p384_async_start(
     p384_masked_scalar_t private_scalar;
     HARDENED_TRY(hardened_memcpy(private_scalar.share0, private_key->keyblob,
                                  kP384MaskedScalarTotalShareWords));
+    HARDENED_CHECK_EQ(
+        hardened_memeq(private_key->keyblob, private_scalar.share0,
+                       kP384MaskedScalarTotalShareWords),
+        kHardenedBoolTrue);
     private_scalar.checksum = p384_masked_scalar_checksum(&private_scalar);
     HARDENED_TRY(p384_ecdh_start(&private_scalar, pk));
   } else {
@@ -562,6 +574,9 @@ otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
 
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
+
+  // Randomize the output before computing it.
+  HARDENED_TRY(hardened_memshred(shared_secret->keyblob, kP384CoordWords));
 
   // Shared keys cannot be sideloaded because they are software-generated.
   if (shared_secret->config.hw_backed != kHardenedBoolFalse) {
