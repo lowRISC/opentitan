@@ -47,6 +47,10 @@ static status_t seed_material_construct(
     // that also implements randomization to reduce SCA leakage.
     HARDENED_TRY(
         randomized_bytecopy(seed_material->data, value.data, value.len));
+    // Check whether a FI tampered copying the bytes.
+    HARDENED_CHECK_EQ(
+        consttime_memeq_byte(value.data, seed_material->data, value.len),
+        kHardenedBoolTrue);
   }
 
   // Set any unset bytes to zero.
@@ -83,6 +87,9 @@ static otcrypto_status_t seed_material_xor(
   uint32_t value_words[nwords];
   value_words[nwords - 1] = 0;
   HARDENED_TRY(randomized_bytecopy(value_words, value.data, value.len));
+  // Check whether a FI tampered copying the bytes.
+  HARDENED_CHECK_EQ(consttime_memeq_byte(value.data, value_words, value.len),
+                    kHardenedBoolTrue);
 
   // XOR with seed value.
   HARDENED_TRY(hardened_xor_in_place(seed_material->data, value_words, nwords));

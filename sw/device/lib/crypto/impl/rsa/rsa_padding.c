@@ -555,6 +555,11 @@ status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t message_digest,
   HARDENED_TRY(hardened_memcpy(encoded_message, db, ARRAYSIZE(db)));
   HARDENED_TRY(
       randomized_bytecopy(encoded_message_bytes + db_bytelen, h, sizeof(h)));
+  // Check whether a FI tampered copying the bytes.
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(h, encoded_message_bytes + db_bytelen, sizeof(h)),
+      kHardenedBoolTrue);
+
   encoded_message_bytes[encoded_message_bytelen - 1] = 0xbc;
   HARDENED_TRY(reverse_bytes(encoded_message_len, encoded_message));
   return OTCRYPTO_OK;
@@ -600,6 +605,10 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
   uint32_t h[message_digest.len];
   HARDENED_TRY(
       randomized_bytecopy(h, encoded_message_bytes + db_bytelen, sizeof(h)));
+  // Check whether a FI tampered copying the bytes.
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(encoded_message_bytes + db_bytelen, h, sizeof(h)),
+      kHardenedBoolTrue);
 
   // Compute the mask = MFG(H, emLen - hLen - 1). Zero the last bytes if
   // needed.
@@ -629,6 +638,12 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
   HARDENED_TRY(randomized_bytecopy(exp_padding_bytes + padding_bytelen,
                                    db_bytes + padding_bytelen,
                                    sizeof(exp_padding) - padding_bytelen));
+  // Check whether a FI tampered copying the bytes.
+  HARDENED_CHECK_EQ(consttime_memeq_byte(db_bytes + padding_bytelen,
+                                         exp_padding_bytes + padding_bytelen,
+                                         sizeof(exp_padding) - padding_bytelen),
+                    kHardenedBoolTrue);
+
   hardened_bool_t padding_eq =
       hardened_memeq(db, exp_padding, ARRAYSIZE(exp_padding));
   if (padding_eq != kHardenedBoolTrue) {
@@ -640,6 +655,10 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
   uint32_t salt[message_digest.len];
   HARDENED_TRY(randomized_bytecopy(salt, db_bytes + db_bytelen - salt_bytelen,
                                    sizeof(salt)));
+  // Check whether a FI tampered copying the bytes.
+  HARDENED_CHECK_EQ(consttime_memeq_byte(db_bytes + db_bytelen - salt_bytelen,
+                                         salt, sizeof(salt)),
+                    kHardenedBoolTrue);
 
   // Construct the expected value of H and compare.
   uint32_t exp_h[message_digest.len];
@@ -735,8 +754,17 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
   encoded_message_bytes[0] = 0x00;
   HARDENED_TRY(
       randomized_bytecopy(encoded_message_bytes + 1, seed, sizeof(seed)));
+  // Check whether a FI tampered copying the bytes.
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(seed, encoded_message_bytes + 1, sizeof(seed)),
+      kHardenedBoolTrue);
   HARDENED_TRY(randomized_bytecopy(encoded_message_bytes + 1 + sizeof(seed), db,
                                    sizeof(db)));
+  // Check whether a FI tampered copying the bytes.
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(db, encoded_message_bytes + 1 + sizeof(seed),
+                           sizeof(db)),
+      kHardenedBoolTrue);
 
   // Reverse the byte-order.
   HARDENED_TRY(reverse_bytes(encoded_message_len, encoded_message));
@@ -763,6 +791,10 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   unsigned char *encoded_message_bytes = (unsigned char *)encoded_message;
   HARDENED_TRY(
       randomized_bytecopy(seed, encoded_message_bytes + 1, sizeof(seed)));
+  // Check whether a FI tampered copying the bytes.
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(encoded_message_bytes + 1, seed, sizeof(seed)),
+      kHardenedBoolTrue);
 
   // Extract maskedDB from the encoded message (RFC 8017, section 7.1.2, step
   // 3b).
@@ -774,6 +806,11 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   // memcpy(db, encoded_message_bytes + 1 + sizeof(seed), db_bytelen);
   HARDENED_TRY(randomized_bytecopy(db, encoded_message_bytes + 1 + sizeof(seed),
                                    db_bytelen));
+  // Check whether a FI tampered copying the bytes.
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(encoded_message_bytes + 1 + sizeof(seed), db,
+                           db_bytelen),
+      kHardenedBoolTrue);
 
   // Compute seedMask = MGF(maskedDB, hLen) (step 3c).
   uint32_t seed_mask[digest_wordlen];
@@ -832,6 +869,10 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   if (*message_bytelen > 0) {
     HARDENED_TRY(randomized_bytecopy(message, (char *)db + message_start_idx0,
                                      *message_bytelen));
+    // Check whether a FI tampered copying the bytes.
+    HARDENED_CHECK_EQ(consttime_memeq_byte((char *)db + message_start_idx0,
+                                           message, *message_bytelen),
+                      kHardenedBoolTrue);
   }
   // Shred the stale memory after copying out the plaintext.
   HARDENED_TRY(hardened_memshred(db, db_wordlen));
