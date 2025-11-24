@@ -732,7 +732,7 @@
     },
     "//third_party/qemu:extensions.bzl%qemu": {
       "general": {
-        "bzlTransitiveDigest": "xc6qyklU0sMBGaiB4C9nkCNMzvHli5rToc57xIeAlW4=",
+        "bzlTransitiveDigest": "M4AiEQlmGIQP1Z+xCZcSEIBR8klGN/dxwoMfo20pAhg=",
         "usagesDigest": "le4nFQIsMEytUZA5Dz/GdRTwr0Ri5kyC+VIeW4HnJLI=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -741,9 +741,9 @@
           "qemu_opentitan_src": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
-              "url": "https://github.com/lowRISC/qemu/releases/download/v9.2.0-2025-11-10/qemu-ot-earlgrey-v9.2.0-2025-11-10-x86_64-unknown-linux-gnu.tar.gz",
+              "url": "https://github.com/lowRISC/qemu/releases/download/v9.2.0-2025-11-24/qemu-ot-earlgrey-v9.2.0-2025-11-24-x86_64-unknown-linux-gnu.tar.gz",
               "build_file": "@@//third_party/qemu:BUILD.qemu_opentitan.bazel",
-              "sha256": "46037913a160c46f1a12ff8fe4eb746bf37d390848ace88b6401876c4c064669",
+              "sha256": "9a5e2ba08989a94fb2a7bb3e410021fd53936789bf935730a5fabaad88315712",
               "patch_cmds": [
                 "touch .this.is.the.archive"
               ]
