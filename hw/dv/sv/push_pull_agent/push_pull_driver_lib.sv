@@ -133,10 +133,10 @@ class push_host_driver #(
         `CB.valid_int <= 1'b0;
         if (!cfg.hold_h_data_until_next_req) `CB.h_data_int <= 'x;,
         wait (cfg.in_reset);)
-    // In case there is race condition between the logic above and reset_signals task.
-    // We always set the valid_int again to 0 to make sure the data comes out of reset is not
-    // valid.
-    if (cfg.in_reset) `CB.valid_int <= '0;
+    // In case there is a race condition between the logic above and the reset_signals task, we make
+    // sure that the reset also de-asserts the valid signal. It can otherwise get stuck high during
+    // reset and erroneously flag data as valid upon exiting reset.
+    if (cfg.in_reset) `CB.valid_int <= 1'b0;
   endtask
 
   `undef CB
@@ -179,6 +179,10 @@ class pull_host_driver #(
         end
         if (!cfg.hold_h_data_until_next_req) `CB.h_data_int <= 'x;,
         wait (cfg.in_reset);)
+    // In case there is a race condition between the logic above and the reset_signals task, we make
+    // sure that the reset also de-asserts the request signal. It can otherwise get stuck high
+    // during reset and emit an erroneous request upon exiting reset.
+    if (cfg.in_reset) `CB.req_int <= 1'b0;
   endtask
 
   `undef CB
@@ -216,6 +220,10 @@ class push_device_driver #(
         `CB.ready_int <= 1'b0;
         if (!cfg.hold_d_data_until_next_req) `CB.d_data_int <= 'x;,
         wait (cfg.in_reset);)
+    // In case there is a race condition between the logic above and the reset_signals task, we make
+    // sure that the reset also de-asserts the ready signal. It can otherwise get stuck high during
+    // reset and erroneously accept data upon exiting reset.
+    if (cfg.in_reset) `CB.ready_int <= 1'b0;
   endtask
 
   `undef CB
@@ -258,6 +266,10 @@ class pull_device_driver #(
         `CB.ack_int <= 1'b0;
         if (!cfg.hold_d_data_until_next_req) `CB.d_data_int <= 'x;,
         wait (cfg.in_reset);)
+    // In case there is a race condition between the logic above and the reset_signals task, we make
+    // sure that the reset also de-asserts the acknowledge signal. It can otherwise get stuck high
+    // during reset and emit an erroneous acknowledge upon exiting reset.
+    if (cfg.in_reset) `CB.ack_int <= 1'b0;
   endtask
 
   `undef CB
