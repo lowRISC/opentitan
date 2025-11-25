@@ -387,6 +387,7 @@ static status_t aes_gcm_init(const aes_key_t key, const size_t iv_len,
   if (ctx == NULL || iv == NULL || (iv_len != 3 && iv_len != 4)) {
     return OTCRYPTO_BAD_ARGS;
   }
+  HARDENED_CHECK_EQ(key.checksum, aes_key_integrity_checksum(&key));
 
   // Initialize the hash subkey H.
   HARDENED_TRY(aes_gcm_hash_subkey(key, ctx->security_level, &ctx->ghash_ctx));
