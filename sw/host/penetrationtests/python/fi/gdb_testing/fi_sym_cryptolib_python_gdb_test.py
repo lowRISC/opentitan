@@ -711,7 +711,9 @@ class SymCryptolibFiSim(unittest.TestCase):
         tag = [0 for _ in range(tag_len)]
         key_len = 16
         key = [i for i in range(key_len)]
-        iv = [i for i in range(16)]
+        iv1 = [i for i in range(16)]
+        iv2 = [16 - i for i in range(16)]
+        iv = [iv1, iv2]
         cfg = 0
         trigger = 0
 
@@ -795,7 +797,7 @@ class SymCryptolibFiSim(unittest.TestCase):
 
                 # Trigger the gcm from the testOS (we do not read its output)
                 symfi.handle_gcm(
-                    data[0], data_len, key, key_len, aad, aad_len, tag, tag_len, iv, cfg, trigger
+                    data[0], data_len, key, key_len, aad, aad_len, tag, tag_len, iv[0], cfg, trigger
                 )
 
                 start_time = time.time()
@@ -872,7 +874,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                     aad_len,
                                     tag,
                                     tag_len,
-                                    iv,
+                                    iv[i],
                                     cfg,
                                     trigger,
                                 )
