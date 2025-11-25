@@ -162,6 +162,9 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
                       key_block_wordlen * sizeof(uint32_t));
     HARDENED_TRY(
         hardened_memcpy(hmac_key->key_block, unmasked_key, unmasked_key_len));
+    HARDENED_CHECK_EQ(
+        hardened_memeq(unmasked_key, hmac_key->key_block, unmasked_key_len),
+        kHardenedBoolTrue);
     // If the key size isn't a multiple of the word size, zero the last few
     // bytes.
     size_t offset = key->config.key_length % sizeof(uint32_t);
@@ -452,7 +455,10 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
   // avoid that multiple cases were executed.
   HARDENED_CHECK_EQ(launder32(key_mode_used), key->config.key_mode);
 
-  memcpy(ctx->data, &hmac_ctx, sizeof(hmac_ctx));
+  randomized_bytecopy(ctx->data, &hmac_ctx, sizeof(hmac_ctx));
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(&hmac_ctx, ctx->data, sizeof(hmac_ctx)),
+      kHardenedBoolTrue);
   return OTCRYPTO_OK;
 }
 
