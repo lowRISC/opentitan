@@ -677,6 +677,9 @@ void hmac_hmac_sha256_init(const hmac_key_t key, hmac_ctx_t *ctx) {
   ctx->key.key_len = key.key_len;
   ctx->key.checksum = key.checksum;
   hardened_memcpy(ctx->key.key_block, key.key_block, key.key_len);
+  HARDENED_CHECK_EQ(
+      hardened_memeq(key.key_block, ctx->key.key_block, key.key_len),
+      kHardenedBoolTrue);
   hmac_init(kKeyLength512, kDigestLengthSha256, ctx);
 }
 
@@ -686,6 +689,9 @@ void hmac_hmac_sha384_init(const hmac_key_t key, hmac_ctx_t *ctx) {
   ctx->key.key_len = key.key_len;
   ctx->key.checksum = key.checksum;
   hardened_memcpy(ctx->key.key_block, key.key_block, key.key_len);
+  HARDENED_CHECK_EQ(
+      hardened_memeq(key.key_block, ctx->key.key_block, key.key_len),
+      kHardenedBoolTrue);
   hmac_init(kKeyLength1024, kDigestLengthSha384, ctx);
 }
 
@@ -695,6 +701,9 @@ void hmac_hmac_sha512_init(const hmac_key_t key, hmac_ctx_t *ctx) {
   ctx->key.key_len = key.key_len;
   ctx->key.checksum = key.checksum;
   hardened_memcpy(ctx->key.key_block, key.key_block, key.key_len);
+  HARDENED_CHECK_EQ(
+      hardened_memeq(key.key_block, ctx->key.key_block, key.key_len),
+      kHardenedBoolTrue);
   hmac_init(kKeyLength1024, kDigestLengthSha512, ctx);
 }
 

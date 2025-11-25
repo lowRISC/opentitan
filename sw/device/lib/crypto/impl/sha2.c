@@ -98,7 +98,10 @@ otcrypto_status_t otcrypto_sha2_init(otcrypto_hash_mode_t hash_mode,
   // avoid that multiple cases were executed.
   HARDENED_CHECK_EQ(launder32(hash_mode_used), hash_mode);
 
-  memcpy(ctx->data, &hmac_ctx, sizeof(hmac_ctx));
+  randomized_bytecopy(ctx->data, &hmac_ctx, sizeof(hmac_ctx));
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(&hmac_ctx, ctx->data, sizeof(hmac_ctx)),
+      kHardenedBoolTrue);
   return OTCRYPTO_OK;
 }
 
