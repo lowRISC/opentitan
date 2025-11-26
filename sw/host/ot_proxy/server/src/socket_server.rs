@@ -6,7 +6,9 @@ use std::collections::HashMap;
 use std::io::ErrorKind;
 use std::marker::PhantomData;
 use std::rc::Rc;
-use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Weak};
+use std::task::Wake;
 
 use anyhow::{Context, Result};
 use serde::Serialize;
@@ -131,19 +133,6 @@ impl<Msg: DeserializeOwned + Serialize + Send + 'static, T: CommandHandler<Msg> 
         }
     }
 
-    async fn transmit_outgoing_msg<M: Serialize>(
-        conn_tx: &Mutex<OwnedWriteHalf>,
-        msg: M,
-    ) -> Result<()> {
-        // Encode response into tx_buf.
-        let mut tx_buf = serde_json::to_vec(&msg)?;
-        tx_buf.push(b'\n');
-
-        let mut tx = conn_tx.lock().await;
-        tx.write_all(&tx_buf).await?;
-        Ok(())
-    }
-
     /// Read and write as much as possible from one particular socket connection.
     async fn process_connection(
         sender: &tokio::sync::mpsc::Sender<(u32, Option<(Msg, tokio::sync::oneshot::Sender<Msg>)>)>,
@@ -172,17 +161,29 @@ impl<Msg: DeserializeOwned + Serialize + Send + 'static, T: CommandHandler<Msg> 
             let (resp_send, resp_recv) = tokio::sync::oneshot::channel();
             sender.send((id, Some((request, resp_send)))).await.unwrap();
             let resp = resp_recv.await?;
-            Self::transmit_outgoing_msg(&conn_tx, resp).await?;
+            transmit_outgoing_msg(&conn_tx, resp).await?;
         }
 
         Ok(())
     }
 }
 
+async fn transmit_outgoing_msg<M: Serialize>(
+    conn_tx: &Mutex<OwnedWriteHalf>,
+    msg: M,
+) -> Result<()> {
+    // Encode response into tx_buf.
+    let mut tx_buf = serde_json::to_vec(&msg)?;
+    tx_buf.push(b'\n');
+
+    let mut tx = conn_tx.lock().await;
+    tx.write_all(&tx_buf).await?;
+    Ok(())
+}
+
 /// Represents one connection with a remote OpenTitan tool invocation.
 pub struct Connection {
-    #[allow(unused)]
-    conn_tx: Arc<Mutex<OwnedWriteHalf>>,
+    pub(crate) conn_tx: Arc<Mutex<OwnedWriteHalf>>,
     /// Map from address of a UART instance to a copy of the broadcaster.
     ///
     /// This ensures that initialized UARTs would be able to receive all data.
@@ -197,5 +198,67 @@ impl Connection {
             conn_tx,
             uarts: HashMap::default(),
         }
+    }
+}
+
+pub struct ProxyWaker {
+    conn_tx: Weak<Mutex<OwnedWriteHalf>>,
+    id: u32,
+    triggered: AtomicBool,
+}
+
+impl ProxyWaker {
+    pub(crate) fn new(conn_tx: &Arc<Mutex<OwnedWriteHalf>>, id: u32) -> Self {
+        Self {
+            conn_tx: Arc::downgrade(conn_tx),
+            id,
+            triggered: AtomicBool::new(false),
+        }
+    }
+
+    pub(crate) fn dismiss(&self) {
+        self.triggered.store(true, Ordering::Relaxed);
+    }
+
+    fn send(&self, triggered: bool) {
+        if let Some(conn_tx) = self.conn_tx.upgrade() {
+            let id = self.id;
+            opentitanlib::util::runtime().spawn(async move {
+                if let Err(err) =
+                    transmit_outgoing_msg(&conn_tx, ot_proxy_proto::Message::Wake { id, triggered })
+                        .await
+                {
+                    log::warn!("Transmission error while sending waker {id}: {err}");
+                }
+            });
+        }
+    }
+}
+
+impl Drop for ProxyWaker {
+    fn drop(&mut self) {
+        if self.triggered.load(Ordering::Relaxed) {
+            return;
+        }
+
+        self.send(false);
+    }
+}
+
+impl Wake for ProxyWaker {
+    fn wake(self: Arc<Self>) {
+        self.wake_by_ref();
+    }
+
+    fn wake_by_ref(self: &Arc<Self>) {
+        if self
+            .triggered
+            .compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed)
+            .is_err()
+        {
+            return;
+        }
+
+        self.send(true);
     }
 }

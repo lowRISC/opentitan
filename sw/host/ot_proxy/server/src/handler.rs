@@ -8,7 +8,8 @@ use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use std::task::{Context, Poll, Waker};
+use std::sync::Arc;
+use std::task::{Context, Poll};
 use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
@@ -31,6 +32,7 @@ use ot_proxy_proto::{
 };
 
 use super::{CommandHandler, Connection};
+use crate::socket_server::ProxyWaker;
 
 /// Implementation of the handling of each protocol request, by means of an underlying
 /// `Transport` implementation.
@@ -307,12 +309,15 @@ impl TransportCommandHandler {
                         let path = instance.get_device_path()?;
                         Ok(Response::Uart(UartResponse::GetDevicePath { path }))
                     }
-                    UartRequest::PollRead { len } => {
-                        let mut cx = Context::from_waker(Waker::noop());
+                    UartRequest::PollRead { len, waker } => {
+                        let proxy_waker = Arc::new(ProxyWaker::new(&conn.conn_tx, *waker));
+                        let waker = proxy_waker.clone().into();
+                        let mut cx = Context::from_waker(&waker);
                         let mut data = vec![0u8; *len as usize];
                         let data = match instance.poll_read(&mut cx, &mut data)? {
                             Poll::Pending => None,
                             Poll::Ready(len) => {
+                                proxy_waker.dismiss();
                                 data.resize(len, 0);
                                 Some(data)
                             }
