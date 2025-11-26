@@ -12,7 +12,7 @@ use crate::impl_serializable_error;
 
 pub mod broadcast;
 mod buf;
-mod ext;
+pub mod ext;
 mod logged;
 pub use broadcast::Broadcaster;
 pub use buf::Buffered;
