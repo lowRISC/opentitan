@@ -18,6 +18,10 @@ from reggen.multi_register import MultiRegister
 from reggen.window import Window
 from reggen.field import Field
 from reggen.access import SWAccess, HWAccess, HwAccess
+from reggen.inter_signal import InterSignal
+from reggen.signal import Signal
+from reggen.interrupt import Interrupt
+from reggen.alert import Alert
 from reggen.exporter import Exporter
 from reggen.systemrdl.udp import register_udps
 
@@ -141,6 +145,9 @@ class Field2Systemrdl:
                     self.root,
                     [(str(regwen), [], None), (str(reg_ref.children[0].inst_name), [], None)],
                 )  # type: ignore
+            else:
+                print(f"WARNING: regwen = {regwen} not declared.")
+
 
             self.importer.assign_property(field, "swwe", swwe)
 
@@ -264,6 +271,72 @@ class RegBlock2Systemrdl:
 
 
 @dataclass
+class InterSignal2Systemrdl:
+    inner: InterSignal
+    importer: RDLImporter
+
+    def export(self) -> systemrdl.component.Signal:
+        rdl_t = self.importer._create_definition(systemrdl.component.Signal, self.inner.name, None)
+        signal = self.importer._instantiate(rdl_t, self.inner.name.upper(), None)
+
+        if self.inner.desc:
+            self.importer.assign_property(signal, "desc", sanitize_str(self.inner.desc))
+
+        if isinstance(self.inner.width, int):
+            self.importer.assign_property(signal, "signalwidth", self.inner.width)
+        elif isinstance(self.inner.width, reggen.params.Parameter):
+            self.importer.assign_property(signal, "signalwidth", self.inner.width.default)
+
+        enum_variant = "InterModReqRsp"
+        if self.inner.signal_type == "uni":
+            enum_variant = "InterModReq" if self.inner.act == "req" else "InterModRecv"
+        enum = self.importer.compiler.namespace.lookup_type("SigType")
+        if not isinstance(enum, rdltypes.user_enum.UserEnumMeta):
+            raise RuntimeError("SigType enum defined or precompiled")
+        # The options are: SigType::InterModReqRsp, SigType::InterModReq, SigType::InterModRecv
+        self.importer.assign_property(signal, "sigtype", enum[enum_variant])
+
+        if self.inner.struct:
+            self.importer.assign_property(signal, "inter_mod_struct", self.inner.struct)
+
+        if self.inner.package:
+            self.importer.assign_property(signal, "inter_mod_package", self.inner.package)
+
+        return signal
+
+
+@dataclass
+class Signal2Systemrdl:
+    inner: Signal
+    importer: RDLImporter
+    signal_type: str | None = None
+
+    def export(self) -> systemrdl.component.Signal:
+        rdl_t = self.importer._create_definition(systemrdl.component.Signal, self.inner.name, None)
+        signal = self.importer._instantiate(rdl_t, self.inner.name.upper(), None)
+
+        if self.inner.desc:
+            self.importer.assign_property(signal, "desc", sanitize_str(self.inner.desc))
+
+        self.importer.assign_property(signal, "signalwidth", self.inner.bits.width())
+
+        if isinstance(self.inner, Interrupt):
+            enum_variant = "Interrupt"
+        elif isinstance(self.inner, Alert):
+            enum_variant = "Alert"
+        elif self.signal_type:
+            enum_variant = self.signal_type
+        else:
+            raise RuntimeError(f"Signal not supported {self.inner.name}.")
+
+        enum = self.importer.compiler.namespace.lookup_type("SigType")
+        if not isinstance(enum, rdltypes.user_enum.UserEnumMeta):
+            raise RuntimeError("SigType enum defined or precompiled")
+        self.importer.assign_property(signal, "sigtype", enum[enum_variant])
+        return signal
+
+
+@dataclass
 class IpBlock2Systemrdl:
     inner: IpBlock
     importer: RDLImporter
@@ -276,6 +349,23 @@ class IpBlock2Systemrdl:
             rdl_param = Parameter(rdltypes.get_rdltype(value), param.name)
             rdl_param._value = value
             rdl_addrmap.parameters.append(rdl_param)
+
+        for inter_sig in self.inner.inter_signals:
+            signal = InterSignal2Systemrdl(inter_sig, self.importer).export()
+            rdl_addrmap.children.append(signal)
+
+        for interrupt in self.inner.interrupts:
+            signal = Signal2Systemrdl(interrupt, self.importer).export()
+            rdl_addrmap.children.append(signal)
+
+        for alert in self.inner.alerts:
+            signal = Signal2Systemrdl(alert, self.importer).export()
+            rdl_addrmap.children.append(signal)
+
+        for xputs, direction in zip(self.inner.xputs, ["InOut", "Input", "Output"]):
+            for xput in xputs:
+                signal = Signal2Systemrdl(xput, self.importer, direction).export()
+                rdl_addrmap.children.append(signal)
 
         interfaces = list(self.inner.reg_blocks.values())
         if len(interfaces) == 1 and not bool(interfaces[0].name):
