@@ -103,3 +103,40 @@ property integrity_bypass {
   component = mem;
   default = false;
 };
+
+/*
+ * Defines properties to be used inside signals.
+ * These will help to model the hjson fields: 'inter_signal_list', 'available_output_list',
+ * 'interrupt_list' and 'alert_list' as rdl signals.
+ */
+enum SigType {
+  None;
+  Interrupt;     // Signal is an interrupt
+  Alert;         // Signal is an alert
+  InterModReqRsp;// Signal is an inter module, with type=req_rsp
+  InterModReq;   // Signal is an inter module, with type=uni and act=req
+  InterModRecv;  // Signal is an inter module, with type=uni and act=recv
+  Output;        // Signal is an output
+  Input;         // Signal is an input
+  InOut;         // Signal is input and/or output
+};
+
+property sigtype {
+  type = SigType;
+  component = signal;
+  default = SigType::None;
+};
+
+/*
+ * Defines the Inter-module signal's data structure. It is generally bundled into `struct packed`
+ * type. This `struct` is used with `package` for topgen tool to define the signal.
+ */
+property inter_mod_struct {
+  type = string;
+  component = signal;
+  default = "logic";
+};
+property inter_mod_package {
+  type = string;
+  component = signal;
+};
