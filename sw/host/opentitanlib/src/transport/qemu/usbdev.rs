@@ -310,6 +310,17 @@ struct ControlIn {
     max_pkt_size: u16,
 }
 
+struct ControlOut<'a> {
+    addr: u8,
+    ep: u8,
+    req_type: u8,
+    req: u8,
+    value: u16,
+    index: u16,
+    max_pkt_size: u16,
+    data: &'a [u8],
+}
+
 /// This structure holds the state of the USB host thread.
 struct QemuHostThread {
     /// Communication channel to QEMU USBDEV.
@@ -491,6 +502,38 @@ impl QemuHostThread {
         )
     }
 
+    /// Send a Setup command followed by a Transfer OUT command of the required length.
+    /// Return the ID of the expected Complete event corresponding to the data OUT, or
+    /// None if there is no data stage.
+    fn send_control_out<'a>(&mut self, control: &ControlOut<'a>) -> UsbResult<Option<PacketId>> {
+        let setup = UsbSetupPacket {
+            req_type: control.req_type,
+            request: control.req,
+            value: control.value.into(),
+            index: control.index.into(),
+            length: u16::try_from(control.data.len())
+                .context("control OUT length does not fit in 16 bits")?
+                .into(),
+        };
+        let _ = self
+            .send_setup(
+                control.addr,
+                control.ep,
+                setup.as_bytes().try_into().unwrap(),
+            )
+            .maybe_context("Failed to send SETUP for control in")?;
+        if control.data.is_empty() {
+            return Ok(None);
+        }
+        Ok(Some(self.send_transfer_out(
+            control.addr,
+            control.ep,
+            /* zlp */ false,
+            control.max_pkt_size,
+            control.data,
+        )?))
+    }
+
     /// Wait for a QEMU command and return its payload. Return an error if something goes
     /// wrong.
     fn wait_qemu_event(&mut self) -> UsbResult<QemuUsbdevEvent> {
@@ -638,6 +681,54 @@ impl QemuHostThread {
             ))?;
         }
         Ok(data)
+    }
+
+    /// Perform a full control OUT transaction:
+    /// - send a Setup
+    /// - send a Transfer OUT (if any)
+    /// - send a Transfer IN (status stage)
+    /// - wait for status
+    fn send_and_wait_control_out<'a>(&mut self, control: &ControlOut<'a>) -> UsbResult<()> {
+        let expected_id = self
+            .send_control_out(control)
+            .context("Failed to send control OUT transfer")?;
+        // Wait for data stage to complete if any.
+        if let Some(expected_id) = expected_id {
+            let QemuUsbdevCompleteEvent { id, status, .. } = self
+                .wait_complete()
+                .context("Failed to send control OUT data")?;
+            if id != expected_id {
+                Err(anyhow!(
+                    "Expected control OUT data complete command ID with {expected_id:?}, got {id:?}"
+                ))?;
+            }
+            /* Return early if the transfer failed, no need for a status stage */
+            if status != QemuUsbdevTransferStatus::Success {
+                return Err(UsbError::TransferFailed(
+                    status,
+                    anyhow!("control OUT data transfer failed"),
+                ));
+            }
+        }
+        /* Status stage */
+        let expected_id = self
+            .send_transfer_in(control.addr, control.ep, control.max_pkt_size, 0)
+            .maybe_context("Failed to send control OUT status packet")?;
+        let QemuUsbdevCompleteEvent { id, status, .. } = self
+            .wait_complete()
+            .maybe_context("Failed to receive control OUT status")?;
+        if status != QemuUsbdevTransferStatus::Success {
+            return Err(UsbError::TransferFailed(
+                status,
+                anyhow!("control OUT status transfer failed"),
+            ));
+        }
+        if id != expected_id {
+            Err(anyhow!(
+                "Expected control OUT status complete command ID with {expected_id:?}, got {id:?}"
+            ))?;
+        }
+        Ok(())
     }
 
     /// Perform a full enumeration sequence, retrieving the
