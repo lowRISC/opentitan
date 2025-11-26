@@ -11,7 +11,7 @@ pub mod spi;
 pub mod uart;
 pub mod usbdev;
 
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::rc::Rc;
@@ -25,6 +25,7 @@ use crate::backend::qemu::QemuOpts;
 use crate::io::gpio::{GpioError, GpioPin};
 use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::uart::Uart;
+use crate::io::usb::UsbContext;
 use crate::transport::Bus;
 use crate::transport::Target;
 use crate::transport::common::uart::SerialPortUart;
@@ -35,7 +36,7 @@ use crate::transport::qemu::monitor::{Chardev, ChardevKind, Monitor};
 use crate::transport::qemu::reset::QemuReset;
 use crate::transport::qemu::spi::QemuSpi;
 use crate::transport::qemu::uart::QemuUart;
-use crate::transport::qemu::usbdev::QemuVbusSense;
+use crate::transport::qemu::usbdev::{QemuUsbHost, QemuVbusSense};
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
@@ -73,6 +74,12 @@ pub struct Qemu {
 
     /// VBUS sense pin (actually goes via the `usbdev-cmd` chardev).
     vbus_sense: Option<Rc<dyn GpioPin>>,
+
+    /// USB host TTY port name (`usbdev-host` chardev).
+    usb_host_tty: Option<String>,
+
+    /// USB host.
+    usb_host: RefCell<Option<Rc<dyn UsbContext>>>,
 
     /// QEMU log modelled as a UART.
     log: Option<Rc<dyn Uart>>,
@@ -158,6 +165,17 @@ impl Qemu {
             }
             _ => {
                 log::info!("could not find pty chardev with id=usbdev, skipping USBDEV");
+                None
+            }
+        };
+
+        // USBDEV host:
+        let usb_host_tty = match find_chardev(&chardevs, "usbdev-host") {
+            Some(ChardevKind::Pty { path }) => {
+                Some(path.to_str().context("TTY path not UTF8")?.to_string())
+            }
+            _ => {
+                log::info!("could not find pty chardev with id=usbdev-host, skipping USBDEV");
                 None
             }
         };
@@ -270,6 +288,8 @@ impl Qemu {
             reset,
             uarts,
             vbus_sense,
+            usb_host_tty,
+            usb_host: RefCell::new(None),
             log,
             spi,
             i2cs,
@@ -297,6 +317,10 @@ impl Transport for Qemu {
 
         if !self.i2cs.is_empty() {
             cap |= Capability::I2C;
+        }
+
+        if self.usb_host_tty.is_some() {
+            cap |= Capability::USB;
         }
 
         Ok(Capabilities::new(cap))
@@ -371,5 +395,24 @@ impl Transport for Qemu {
         let jtag = QemuJtag::new(opts.clone(), rv_dm_sock, lc_ctrl_sock);
 
         Ok(Box::new(jtag))
+    }
+
+    fn usb(&self) -> anyhow::Result<Rc<dyn UsbContext>> {
+        if self.usb_host.borrow().is_none() {
+            let tty = serialport::new(
+                self.usb_host_tty
+                    .as_ref()
+                    .context("USB is not supported (no usbdev-host chardev found)")?,
+                CONSOLE_BAUDRATE,
+            )
+            .open_native()
+            .context("failed to open QEMU usbdev-host PTY")?;
+
+            let usb_host: Rc<dyn UsbContext> = Rc::new(QemuUsbHost::new(tty));
+            self.usb_host.replace(Some(usb_host));
+        }
+        let usb_host = self.usb_host.borrow();
+        let usb_host = Ref::map(usb_host, |d| d.as_ref().expect("usb host"));
+        Ok(usb_host.clone())
     }
 }

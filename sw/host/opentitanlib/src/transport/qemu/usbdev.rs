@@ -9,10 +9,12 @@ use std::cell::{Cell, RefCell};
 use std::io::{Read, Write};
 use std::sync::mpsc;
 use std::thread;
+use std::time::Duration;
 use thiserror::Error;
 use zerocopy::{FromBytes, Immutable, IntoBytes, KnownLayout, Unaligned, byteorder::little_endian};
 
 use crate::io::gpio::{GpioPin, PinMode, PullMode};
+use crate::io::usb::{UsbContext as OtUsbContext, UsbDevice, desc};
 
 /// Pin-like interface for controlling USB VBUS.
 pub struct QemuVbusSense {
@@ -97,6 +99,29 @@ impl QemuUsbHost {
         QemuUsbHost {
             _host_channel: send,
         }
+    }
+}
+
+impl OtUsbContext for QemuUsbHost {
+    fn device_by_id_with_timeout(
+        &self,
+        _usb_vid: u16,
+        _usb_pid: u16,
+        _usb_serial: Option<&str>,
+        _timeout: Duration,
+    ) -> anyhow::Result<Box<dyn UsbDevice>> {
+        unimplemented!();
+    }
+
+    fn device_by_interface_with_timeout(
+        &self,
+        _class: u8,
+        _subclass: u8,
+        _protocol: u8,
+        _usb_serial: Option<&str>,
+        _timeout: Duration,
+    ) -> anyhow::Result<Box<dyn UsbDevice>> {
+        unimplemented!();
     }
 }
 
