@@ -9,7 +9,6 @@ use std::net::TcpStream;
 use std::os::unix::process::CommandExt;
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
-use std::sync::LazyLock;
 use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result, bail, ensure};
@@ -21,6 +20,7 @@ use ot_hal::dif::lc_ctrl::LcCtrlReg;
 
 use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, JtagChain, JtagError, JtagParams, JtagTap, RiscvReg};
+use crate::regex;
 use crate::util::parse_int::ParseInt;
 use crate::util::printer;
 
@@ -116,13 +116,10 @@ impl OpenOcd {
         if log_stdio {
             log::info!("Waiting for OpenOCD to be ready to accept a TCL connection...");
         }
-        static READY_REGEX: LazyLock<Regex> = LazyLock::new(|| {
-            Regex::new("Info : Listening on port ([0-9]+) for tcl connections").unwrap()
-        });
         let mut buf = String::new();
         let regex_captures = Self::wait_until_regex_match(
             &mut stderr,
-            &READY_REGEX,
+            regex!("Info : Listening on port ([0-9]+) for tcl connections"),
             Self::OPENOCD_TCL_READY_TMO,
             log_stdio,
             &mut buf,
