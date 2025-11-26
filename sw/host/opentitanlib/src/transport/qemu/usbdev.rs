@@ -293,10 +293,12 @@ impl<T> UsbContext<T, UsbError> for UsbResult<T> {
 
 /// This structure represents an enumerated and configured device.
 #[derive(Clone, Debug)]
+// Temporary until we have a more complete stack that uses this field.
+#[allow(dead_code)]
 struct DeviceInfo {
-    // Temporary until we have a more complete stack that uses this field.
-    #[allow(dead_code)]
     dev_desc: Vec<u8>,
+    address: u8,
+    configurations: Vec<Vec<u8>>,
 }
 
 struct ControlIn {
@@ -344,19 +346,29 @@ impl QemuHostThread {
     const USB_FS_SAFE_PACKET_SIZE: u16 = 8;
 
     // Some standard request types.
+    const USB_REQ_TYPE_OUT: u8 = 0;
     const USB_REQ_TYPE_IN: u8 = 0x80;
     const USB_REQ_TYPE_STANDARD: u8 = 0;
     const USB_REQ_TYPE_DEVICE: u8 = 0;
 
     // Some standard USB requests.
+    const USB_SET_ADDRESS: u8 = 5;
     const USB_GET_DESCRIPTOR: u8 = 6;
+    const USB_SET_CONFIGURATION: u8 = 9;
 
     // Some standard descriptor types.
     const USB_DEVICE_DESCRIPTOR: u8 = 1;
-    const USB_DEVICE_DESCRIPTOR_LENGTH: usize = 18;
+    const USB_CONFIG_DESCRIPTOR: u8 = 2;
 
     // Location of the bMaxPacketSize field in the device descriptor.
     const USB_DEV_DESC_MAX_PACKET_SIZE_OFFSET: usize = 7;
+
+    // How much time to wait after a SET_ADDRESS before moving on
+    // to the rest of the enumeration sequence.
+    // The specification requires that the device be ready after 2ms
+    // but there is no guarantee that QEMU is running at a similiar
+    // speed as the host so this delay is quite conservative.
+    const SET_ADDRESS_WAIT_DELAY_MS: u64 = 10;
 
     fn new(
         usbdev: TTYPort,
@@ -752,7 +764,7 @@ impl QemuHostThread {
                 req: Self::USB_GET_DESCRIPTOR,
                 value: (Self::USB_DEVICE_DESCRIPTOR as u16) << 8,
                 index: 0,
-                length: Self::USB_FS_SAFE_PACKET_SIZE.into(), // length
+                length: Self::USB_FS_SAFE_PACKET_SIZE.into(),
                 max_pkt_size: Self::USB_FS_SAFE_PACKET_SIZE,
             })
             .maybe_context("Failed to send GET_DESC(device, 8 bytes)")?;
@@ -760,10 +772,30 @@ impl QemuHostThread {
         log::info!("USB Host: device report a maximum packet size of {max_packet_size} on EP0");
         // TODO sanity check max packet size
 
+        // Assign an address to the device.
+        let address = 42; // Arbitrary number.
+        self.send_and_wait_control_out(&ControlOut {
+            addr: 0,
+            ep: 0,
+            req_type: Self::USB_REQ_TYPE_OUT
+                | Self::USB_REQ_TYPE_STANDARD
+                | Self::USB_REQ_TYPE_DEVICE,
+            req: Self::USB_SET_ADDRESS,
+            value: address as u16,
+            index: 0,
+            max_pkt_size: max_packet_size,
+            data: &[],
+        })
+        .maybe_context("Failed to send SET_ADDRESS")?;
+        log::info!("USB Host: device accepted address {address:?}");
+
+        // Give time to the device to update its address.
+        std::thread::sleep(Duration::from_millis(Self::SET_ADDRESS_WAIT_DELAY_MS));
+
         // Retrieve the full device descriptor.
         let dev_desc = self
             .send_and_wait_control_in(&ControlIn {
-                addr: 0,
+                addr: address,
                 ep: 0,
                 req_type: Self::USB_REQ_TYPE_IN
                     | Self::USB_REQ_TYPE_STANDARD
@@ -771,12 +803,85 @@ impl QemuHostThread {
                 req: Self::USB_GET_DESCRIPTOR,
                 value: (Self::USB_DEVICE_DESCRIPTOR as u16) << 8,
                 index: 0,
-                length: Self::USB_DEVICE_DESCRIPTOR_LENGTH,
+                length: size_of::<desc::DeviceDescriptor>(),
                 max_pkt_size: max_packet_size,
             })
             .maybe_context("Failed to send GET_DESC(device, all bytes)")?;
+        // Extract number of configurations.
+        let num_config = desc::DeviceDescriptor::ref_from_bytes(&dev_desc)
+            .map_err(|_err| anyhow!("Cannot parse device descriptor"))?
+            .num_config;
 
-        Ok(DeviceInfo { dev_desc })
+        // Retrieve all configurations descriptors.
+        let mut configurations = Vec::new();
+        let mut first_config_val = None;
+        for config_idx in 0..num_config {
+            // Retrieve just the configuration descriptor first.
+            let config_desc = self
+                .send_and_wait_control_in(&ControlIn {
+                    addr: address,
+                    ep: 0,
+                    req_type: Self::USB_REQ_TYPE_IN
+                        | Self::USB_REQ_TYPE_STANDARD
+                        | Self::USB_REQ_TYPE_DEVICE,
+                    req: Self::USB_GET_DESCRIPTOR,
+                    value: (Self::USB_CONFIG_DESCRIPTOR as u16) << 8 | config_idx as u16,
+                    index: 0,
+                    length: size_of::<desc::ConfigurationDescriptor>(),
+                    max_pkt_size: max_packet_size,
+                })
+                .maybe_context(format!("Failed to send GET_DESC(config desc {config_idx})"))?;
+            // Parse and extract the size of the full configuration.
+            let parsed_desc = desc::ConfigurationDescriptor::ref_from_bytes(&config_desc)
+                .map_err(|_err| anyhow!("Cannot parse config descriptor"))?;
+            let tot_len = parsed_desc.tot_length;
+            // Remember the configuration value for later.
+            if first_config_val.is_none() {
+                first_config_val = Some(parsed_desc.config_val);
+            }
+            // Retrieve full configuration.
+            let full_config = self
+                .send_and_wait_control_in(&ControlIn {
+                    addr: address,
+                    ep: 0,
+                    req_type: Self::USB_REQ_TYPE_IN
+                        | Self::USB_REQ_TYPE_STANDARD
+                        | Self::USB_REQ_TYPE_DEVICE,
+                    req: Self::USB_GET_DESCRIPTOR,
+                    value: (Self::USB_CONFIG_DESCRIPTOR as u16) << 8 | config_idx as u16,
+                    index: 0,
+                    length: tot_len.into(),
+                    max_pkt_size: max_packet_size,
+                })
+                .maybe_context(format!("Failed to send GET_DESC(full config {config_idx})"))?;
+            configurations.push(full_config);
+        }
+
+        // Set the first available configuration.
+        if let Some(first_config_val) = first_config_val {
+            self.send_and_wait_control_out(&ControlOut {
+                addr: address,
+                ep: 0,
+                req_type: Self::USB_REQ_TYPE_OUT
+                    | Self::USB_REQ_TYPE_STANDARD
+                    | Self::USB_REQ_TYPE_DEVICE,
+                req: Self::USB_SET_CONFIGURATION,
+                value: first_config_val as u16,
+                index: 0,
+                max_pkt_size: max_packet_size,
+                data: &[],
+            })
+            .maybe_context("Failed to send SET_CONFIGURATION")?;
+        } else {
+            log::error!("USB host: device has no configurations")
+        }
+        log::info!("USB Host: device configured");
+
+        Ok(DeviceInfo {
+            dev_desc,
+            address,
+            configurations,
+        })
     }
 
     /// This thread simulates a USB host. It can react to events sent by otlib
@@ -834,7 +939,10 @@ impl QemuHostThread {
                     log::info!("USB Host: device disconnected");
                     continue;
                 }
-                Err(err) => return Err(err).maybe_context("Failed to enumerate device"),
+                Err(err) => {
+                    log::error!("USB host: failed to enumerate device: {err:?}");
+                    continue;
+                }
                 Ok(dev_info) => dev_info,
             };
             log::info!("USB Host: device configured: {dev_info:?}");
