@@ -22,8 +22,19 @@ pub trait ConsoleExt {
 
     /// Wait for a line that matches the specified pattern to appear.
     ///
-    /// The line read is returned.
-    fn wait_for_line(&self, pattern: impl MatchPattern, timeout: Duration) -> Result<Vec<u8>>;
+    /// Types that can be used include:
+    /// * `str`` / `[u8]`: literal matching is performed, no return value
+    /// * `Regex`: regex captures are returned.
+    ///
+    /// If you want to construct a static `&Regex` you can use [`regex!`] macro.
+    ///
+    /// [`regex!`]: crate::regex
+    /// The pattern matched is returned.
+    fn wait_for_line<P: MatchPattern>(
+        &self,
+        pattern: P,
+        timeout: Duration,
+    ) -> Result<P::MatchResult>;
 }
 
 impl<T: ConsoleDevice + ?Sized> ConsoleExt for T {
@@ -38,13 +49,17 @@ impl<T: ConsoleDevice + ?Sized> ConsoleExt for T {
         .unwrap_or(Ok(0))
     }
 
-    fn wait_for_line(&self, pattern: impl MatchPattern, timeout: Duration) -> Result<Vec<u8>> {
+    fn wait_for_line<P: MatchPattern>(
+        &self,
+        pattern: P,
+        timeout: Duration,
+    ) -> Result<P::MatchResult> {
         crate::util::runtime::block_on(async {
             tokio::time::timeout(timeout, async {
                 loop {
                     let line = read_line(self).await?;
-                    if pattern.is_match(&line) {
-                        return Ok(line);
+                    if let Some(m) = pattern.perform_match(&line) {
+                        return Ok(m);
                     }
                 }
             })
@@ -77,35 +92,58 @@ async fn read_line<T: ConsoleDevice + ?Sized>(console: &T) -> Result<Vec<u8>> {
 
 /// Indicating types that can be used for `wait_for_line` matching.
 pub trait MatchPattern {
-    fn is_match(&self, haystack: &[u8]) -> bool;
+    type MatchResult;
+
+    fn perform_match(&self, haystack: &[u8]) -> Option<Self::MatchResult>;
 }
 
 impl<T: MatchPattern + ?Sized> MatchPattern for &T {
-    fn is_match(&self, haystack: &[u8]) -> bool {
-        T::is_match(self, haystack)
+    type MatchResult = T::MatchResult;
+
+    fn perform_match(&self, haystack: &[u8]) -> Option<Self::MatchResult> {
+        T::perform_match(self, haystack)
     }
 }
 
 impl MatchPattern for [u8] {
-    fn is_match(&self, haystack: &[u8]) -> bool {
-        memchr::memmem::find(haystack, self).is_some()
+    type MatchResult = ();
+
+    fn perform_match(&self, haystack: &[u8]) -> Option<Self::MatchResult> {
+        memchr::memmem::find(haystack, self).map(|_| ())
     }
 }
 
 impl MatchPattern for regex::bytes::Regex {
-    fn is_match(&self, haystack: &[u8]) -> bool {
-        self.is_match(haystack)
+    type MatchResult = Vec<Vec<u8>>;
+
+    fn perform_match(&self, haystack: &[u8]) -> Option<Self::MatchResult> {
+        Some(
+            self.captures(haystack)?
+                .iter()
+                .map(|x| x.map(|m| m.as_bytes().to_owned()).unwrap_or_default())
+                .collect(),
+        )
     }
 }
 
 impl MatchPattern for str {
-    fn is_match(&self, haystack: &[u8]) -> bool {
-        self.as_bytes().is_match(haystack)
+    type MatchResult = ();
+
+    fn perform_match(&self, haystack: &[u8]) -> Option<Self::MatchResult> {
+        self.as_bytes().perform_match(haystack)
     }
 }
 
 impl MatchPattern for regex::Regex {
-    fn is_match(&self, haystack: &[u8]) -> bool {
-        self.is_match(&String::from_utf8_lossy(haystack))
+    type MatchResult = Vec<String>;
+
+    fn perform_match(&self, haystack: &[u8]) -> Option<Self::MatchResult> {
+        let haystack = String::from_utf8_lossy(haystack);
+        Some(
+            self.captures(&haystack)?
+                .iter()
+                .map(|x| x.map(|m| m.as_str().to_owned()).unwrap_or_default())
+                .collect(),
+        )
     }
 }

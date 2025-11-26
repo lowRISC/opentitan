@@ -182,13 +182,6 @@ impl UartConsole {
     where
         T: ConsoleDevice + ?Sized,
     {
-        let regex = Regex::new(rx)?;
-        let line = Logged::new(device).wait_for_line(&regex, timeout)?;
-        Ok(regex
-            .captures(&String::from_utf8_lossy(&line))
-            .unwrap()
-            .iter()
-            .map(|x| x.map(|m| m.as_str().to_owned()).unwrap_or_default())
-            .collect())
+        Logged::new(device).wait_for_line(Regex::new(rx)?, timeout)
     }
 }
