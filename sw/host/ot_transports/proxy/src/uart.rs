@@ -4,7 +4,6 @@
 
 use std::rc::Rc;
 use std::task::Poll;
-use std::time::Duration;
 
 use anyhow::{Result, bail};
 
@@ -42,14 +41,14 @@ impl ProxyUart {
 
 impl ConsoleDevice for ProxyUart {
     fn poll_read(&self, cx: &mut std::task::Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
+        let waker = self.inner.allocate_wake_id(cx.waker().clone());
         match self.execute_command(UartRequest::PollRead {
             len: buf.len() as u32,
+            waker,
         })? {
-            UartResponse::PollRead { data: None } => {
-                // `self.inner` currently does not yet support context notification.
-                opentitanlib::util::runtime::poll_later(cx, Duration::from_millis(1))
-            }
+            UartResponse::PollRead { data: None } => Poll::Pending,
             UartResponse::PollRead { data: Some(data) } => {
+                drop(Inner::get_waker_by_id(&self.inner.wakers, waker));
                 buf[..data.len()].copy_from_slice(&data);
                 Poll::Ready(Ok(data.len()))
             }

@@ -24,6 +24,8 @@ pub enum Message {
     // as requests are processed and responses generated in the order they are received.
     Req(Request),
     Res(Result<Response, SerializedError>),
+    // Wake up a previously registered waker.
+    Wake { id: u32, triggered: bool },
 }
 
 #[derive(Serialize, Deserialize)]
@@ -179,7 +181,9 @@ pub enum UartRequest {
     GetFlowControl,
     SetFlowControl(bool),
     GetDevicePath,
-    PollRead { len: u32 },
+    // If any data can be read, `Some` will be returned. Otherwise, the waker is registered and `None` will be returned.
+    // When data becomes available, an unsolicited `Wake` message will be send to the client.
+    PollRead { len: u32, waker: u32 },
     Write { data: Vec<u8> },
     Initialize,
 }

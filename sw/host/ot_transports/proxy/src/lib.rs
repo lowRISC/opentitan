@@ -7,6 +7,8 @@ use std::collections::HashMap;
 use std::io;
 use std::io::ErrorKind;
 use std::rc::Rc;
+use std::sync::Arc;
+use std::task::Waker;
 
 use anyhow::{Context, Result, bail};
 use clap::Args;
@@ -71,8 +73,11 @@ impl Proxy {
         // messages that we want to handle ASAP.
         let (conn_rx, conn_tx) = conn.into_split();
         let (resp_send, resp_recv) = tokio::sync::mpsc::channel(32);
+        let wakers = Arc::new(std::sync::Mutex::new(Vec::new()));
+
+        let wakers_clone = wakers.clone();
         let recv_task = tokio::task::spawn(async move {
-            if let Err(err) = Self::recv_messages(conn_rx, resp_send).await {
+            if let Err(err) = Self::recv_messages(conn_rx, resp_send, wakers_clone).await {
                 log::warn!("Receving failed with {err}");
             }
         });
@@ -82,6 +87,7 @@ impl Proxy {
                 conn_tx: Mutex::new(conn_tx),
                 resp_recv: Mutex::new(resp_recv),
                 uarts: RefCell::new(HashMap::new()),
+                wakers,
                 recv_task: recv_task.abort_handle(),
             }),
         })
@@ -90,6 +96,7 @@ impl Proxy {
     async fn recv_messages(
         conn_rx: OwnedReadHalf,
         resp_send: tokio::sync::mpsc::Sender<Result<Response, SerializedError>>,
+        wakers: Arc<std::sync::Mutex<Vec<Option<Waker>>>>,
     ) -> Result<()> {
         let mut conn_rx = tokio::io::BufReader::new(conn_rx);
         let mut buf = Vec::new();
@@ -109,6 +116,13 @@ impl Proxy {
                 Message::Res(resp) => {
                     resp_send.send(resp).await.context("sender closed")?;
                 }
+                Message::Wake { id, triggered } => {
+                    if let Some(waker) = Inner::get_waker_by_id(&wakers, id)
+                        && triggered
+                    {
+                        waker.wake();
+                    }
+                }
                 _ => bail!(ProxyError::UnexpectedReply()),
             }
         }
@@ -119,6 +133,7 @@ struct Inner {
     conn_tx: Mutex<OwnedWriteHalf>,
     resp_recv: Mutex<tokio::sync::mpsc::Receiver<Result<Response, SerializedError>>>,
     uarts: RefCell<HashMap<String, Rc<dyn Uart>>>,
+    pub wakers: Arc<std::sync::Mutex<Vec<Option<Waker>>>>,
     recv_task: AbortHandle,
 }
 
@@ -161,6 +176,36 @@ impl Inner {
         conn.write_all(&vec).await?;
         conn.flush().await?;
         Ok(())
+    }
+
+    fn allocate_wake_id(&self, waker: Waker) -> u32 {
+        let mut wakers = self.wakers.lock().unwrap();
+
+        let none_index = wakers.iter().position(|x| x.is_none());
+        if let Some(index) = none_index {
+            wakers[index] = Some(waker);
+            index as u32
+        } else {
+            let index = wakers.len();
+            wakers.push(Some(waker));
+            index as u32
+        }
+    }
+
+    fn get_waker_by_id(wakers: &std::sync::Mutex<Vec<Option<Waker>>>, id: u32) -> Option<Waker> {
+        let mut wakers = wakers.lock().unwrap();
+
+        if id as usize >= wakers.len() {
+            return None;
+        }
+
+        let waker = wakers[id as usize].take();
+
+        while let Some(None) = wakers.last() {
+            wakers.pop();
+        }
+
+        waker
     }
 }
 
