@@ -178,7 +178,7 @@ impl UartConsole {
                 }
                 Ok(vec)
             }
-            ExitStatus::Timeout => Err(ConsoleError::GenericError("Timed Out".into()).into()),
+            ExitStatus::Timeout => Err(ConsoleError::TimedOut)?,
             _ => Err(anyhow!("Impossible result: {:?}", result)),
         }
     }

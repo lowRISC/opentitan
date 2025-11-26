@@ -17,6 +17,7 @@ use cert_lib::{CaConfig, CaKey, EndorsedCert, parse_and_endorse_x509_cert, valid
 use ft_ext_lib::ft_ext;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::console::spi::SpiConsoleDevice;
+use opentitanlib::io::console::ConsoleError;
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
 use opentitanlib::test_utils::crashdump::{
     read_alert_crashdump_data, read_cpu_crashdump_data, read_reset_reason,
@@ -610,7 +611,12 @@ pub fn check_slot_b_boot_up(
             }
         }
         Err(e) => {
-            if owner_fw_success_string.is_none() && e.to_string().contains("Timed Out") {
+            if owner_fw_success_string.is_none()
+                && matches!(
+                    e.downcast_ref::<ConsoleError>(),
+                    Some(ConsoleError::TimedOut)
+                )
+            {
                 // Error message not found after timeout. This is the expected behavior.
             } else {
                 // An unexpected error occurred while waiting for the console output.
