@@ -40,11 +40,6 @@ impl<Msg: DeserializeOwned + Serialize + Send + 'static, T: CommandHandler<Msg> 
     }
 
     pub async fn run_loop(&mut self) -> Result<()> {
-        // Create a local set to allow `spawn_local`. This is needed as majority of opentitanlib is not
-        // multi-thread-safe currently.
-        let local_set = tokio::task::LocalSet::new();
-        let _local_set_guard = local_set.enter();
-
         // Store all connections in a join set so they're aborted when terminating.
         let mut set = tokio::task::JoinSet::new();
         let mut id_counter = 0;
@@ -100,13 +95,9 @@ impl<Msg: DeserializeOwned + Serialize + Send + 'static, T: CommandHandler<Msg> 
             Ok::<(), anyhow::Error>(())
         };
 
-        // Ensure that the local set never completes so we can keep polling it using `select!`.
-        local_set.spawn_local(std::future::pending::<()>());
-
         tokio::select! {
             r = listener => r,
             r = handler => r,
-            _ = local_set => unreachable!(),
         }
     }
 

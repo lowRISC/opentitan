@@ -8,11 +8,11 @@ use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
+use std::task::{Context, Poll, Waker};
 use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::bootstrap::Bootstrap;
-use opentitanlib::io::console::ConsoleExt;
 use opentitanlib::io::gpio::{
     BitbangEntry, DacBangEntry, GpioBitbangOperation, GpioDacBangOperation, GpioPin,
 };
@@ -27,14 +27,12 @@ use ot_proxy_proto::{
     SpiResponse, SpiTransferRequest, SpiTransferResponse, UartRequest, UartResponse,
 };
 
-use super::nonblocking_uart::NonblockingUartRegistry;
 use super::{CommandHandler, Connection};
 
 /// Implementation of the handling of each protocol request, by means of an underlying
 /// `Transport` implementation.
 pub struct TransportCommandHandler {
     transport: TransportWrapper,
-    uart_registry: NonblockingUartRegistry,
     spi_chip_select: HashMap<String, Vec<spi::AssertChipSelect>>,
     ongoing_bitbanging: Option<Box<dyn GpioBitbangOperation<'static, 'static>>>,
     ongoing_dacbanging: Option<Box<dyn GpioDacBangOperation>>,
@@ -44,7 +42,6 @@ impl TransportCommandHandler {
     pub fn new(transport: TransportWrapper) -> Result<Self> {
         Ok(Self {
             transport,
-            uart_registry: NonblockingUartRegistry::new(),
             spi_chip_select: HashMap::new(),
             ongoing_bitbanging: None,
             ongoing_dacbanging: None,
@@ -63,7 +60,11 @@ impl TransportCommandHandler {
     /// by the given `Request`, and return a response to be sent to the client.  Any `Err`
     /// return from this method will be propagated to the remote client, without any server-side
     /// logging.
-    fn do_execute_cmd(&mut self, conn: &Arc<Mutex<Connection>>, req: &Request) -> Result<Response> {
+    fn do_execute_cmd(
+        &mut self,
+        _conn: &Arc<Mutex<Connection>>,
+        req: &Request,
+    ) -> Result<Response> {
         match req {
             Request::GetCapabilities => {
                 Ok(Response::GetCapabilities(self.transport.capabilities()?))
@@ -286,29 +287,23 @@ impl TransportCommandHandler {
                         let path = instance.get_device_path()?;
                         Ok(Response::Uart(UartResponse::GetDevicePath { path }))
                     }
-                    UartRequest::Read {
-                        timeout_millis,
-                        len,
-                    } => {
+                    UartRequest::PollRead { len } => {
+                        let mut cx = Context::from_waker(Waker::noop());
                         let mut data = vec![0u8; *len as usize];
-                        let count = match timeout_millis {
-                            None => instance.read(&mut data)?,
-                            Some(ms) => instance
-                                .read_timeout(&mut data, Duration::from_millis(*ms as u64))?,
+                        let data = match instance.poll_read(&mut cx, &mut data)? {
+                            Poll::Pending => None,
+                            Poll::Ready(len) => {
+                                data.resize(len, 0);
+                                Some(data)
+                            }
                         };
-                        data.resize(count, 0);
-                        Ok(Response::Uart(UartResponse::Read { data }))
+                        Ok(Response::Uart(UartResponse::PollRead { data }))
                     }
                     UartRequest::Write { data } => {
                         instance.write(data)?;
                         Ok(Response::Uart(UartResponse::Write))
                     }
-                    UartRequest::RegisterNonblockingRead => {
-                        let channel = self.uart_registry.nonblocking_uart_init(&instance, conn)?;
-                        Ok(Response::Uart(UartResponse::RegisterNonblockingRead {
-                            channel,
-                        }))
-                    }
+                    UartRequest::Initialize => Ok(Response::Uart(UartResponse::Initialize)),
                 }
             }
             Request::Spi { id, command } => {

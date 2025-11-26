@@ -13,7 +13,6 @@ use anyhow::{Context, Result, bail};
 use clap::Args;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use tokio::io::AsyncWriteExt;
 
 use opentitanlib::backend::{Backend, BackendOpts, define_interface};
 use opentitanlib::bootstrap::BootstrapOptions;
@@ -25,8 +24,7 @@ use opentitanlib::io::spi::Target;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::transport::{Capabilities, Capability, ProxyOps, Transport, TransportError};
 use ot_proxy_proto::{
-    AsyncMessage, Message, ProxyRequest, ProxyResponse, Request, Response, UartRequest,
-    UartResponse,
+    Message, ProxyRequest, ProxyResponse, Request, Response, UartRequest, UartResponse,
 };
 
 mod emu;
@@ -66,23 +64,15 @@ impl Proxy {
             inner: Rc::new(Inner {
                 conn: RefCell::new(conn),
                 uarts: RefCell::new(HashMap::new()),
-                uart_channel_map: RefCell::new(HashMap::new()),
                 recv_buf: RefCell::new(Vec::new()),
             }),
         })
     }
 }
 
-struct UartRecord {
-    pub uart: Rc<dyn Uart>,
-    pub pipe_sender: tokio::io::WriteHalf<tokio::io::SimplexStream>,
-    pub pipe_receiver: tokio::io::ReadHalf<tokio::io::SimplexStream>,
-}
-
 struct Inner {
     conn: RefCell<TcpStream>,
-    pub uarts: RefCell<HashMap<String, UartRecord>>,
-    uart_channel_map: RefCell<HashMap<u32, String>>,
+    uarts: RefCell<HashMap<String, Rc<dyn Uart>>>,
     recv_buf: RefCell<Vec<u8>>,
 }
 
@@ -91,15 +81,9 @@ impl Inner {
     /// of the implementation of every method of the sub-traits (gpio, uart, spi, i2c).
     fn execute_command(&self, req: Request) -> Result<Response> {
         self.send_json_request(req).context("json encoding")?;
-        loop {
-            match self.recv_json_response().context("json decoding")? {
-                Message::Res(res) => match res {
-                    Ok(value) => return Ok(value),
-                    Err(e) => return Err(anyhow::Error::from(e)),
-                },
-                Message::Async { channel, msg } => self.process_async_data(channel, msg)?,
-                _ => bail!(ProxyError::UnexpectedReply()),
-            }
+        match self.recv_json_response().context("json decoding")? {
+            Message::Res(res) => Ok(res?),
+            _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
 
@@ -109,32 +93,6 @@ impl Inner {
             Response::Proxy(resp) => Ok(resp),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
-    }
-
-    fn poll_for_async_data(&self) -> Result<()> {
-        self.recv_nonblocking()?;
-        while let Some(msg) = self.dequeue_json_response()? {
-            match msg {
-                Message::Async { channel, msg } => self.process_async_data(channel, msg)?,
-                _ => bail!(ProxyError::UnexpectedReply()),
-            }
-        }
-        Ok(())
-    }
-
-    fn process_async_data(&self, channel: u32, msg: AsyncMessage) -> Result<()> {
-        match msg {
-            AsyncMessage::UartData { data } => {
-                if let Some(uart_instance) = self.uart_channel_map.borrow().get(&channel)
-                    && let Some(uart_record) = self.uarts.borrow_mut().get_mut(uart_instance)
-                {
-                    opentitanlib::util::runtime::block_on(async {
-                        uart_record.pipe_sender.write_all(&data).await
-                    })?;
-                }
-            }
-        }
-        Ok(())
     }
 
     /// Send a one-line JSON encoded requests, terminated with one newline.
@@ -173,30 +131,6 @@ impl Inner {
             buf.drain(..idx - rc + newline_pos + 1);
             return Ok(result);
         }
-    }
-
-    fn recv_nonblocking(&self) -> Result<()> {
-        let mut conn = self.conn.borrow_mut();
-        conn.set_nonblocking(true)?;
-        let mut buf = self.recv_buf.borrow_mut();
-        let mut idx: usize = buf.len();
-        loop {
-            buf.resize(idx + 2048, 0);
-            match conn.read(&mut buf[idx..]) {
-                Ok(0) => {
-                    anyhow::bail!(io::Error::new(
-                        ErrorKind::UnexpectedEof,
-                        "Server unexpectedly closed connection"
-                    ))
-                }
-                Ok(rc) => idx += rc,
-                Err(ref e) if e.kind() == ErrorKind::WouldBlock => break,
-                Err(e) => anyhow::bail!(e),
-            }
-        }
-        buf.resize(idx, 0);
-        conn.set_nonblocking(false)?;
-        Ok(())
     }
 
     fn dequeue_json_response(&self) -> Result<Option<Message>> {
@@ -296,36 +230,25 @@ impl Transport for Proxy {
     // Create Uart instance, or return one from a cache of previously created instances.
     fn uart(&self, instance_name: &str) -> Result<Rc<dyn Uart>> {
         if let Some(instance) = self.inner.uarts.borrow().get(instance_name) {
-            return Ok(instance.uart.clone());
+            return Ok(instance.clone());
         }
 
-        // All `Uart` instances that we create via proxy supports non-blocking.
-        // This allows us to control whether UART is blocking or not by controlling if
-        // `pipe_receiver` is blocking.
-        let Response::Uart(UartResponse::RegisterNonblockingRead { channel }) =
+        let instance: Rc<dyn Uart> = Rc::new(uart::ProxyUart::open(self, instance_name)?);
+
+        // Send an initial message to register the intent on receiving messages.
+        let Response::Uart(UartResponse::Initialize) =
             self.inner.execute_command(Request::Uart {
                 id: instance_name.to_owned(),
-                command: UartRequest::RegisterNonblockingRead,
+                command: UartRequest::Initialize,
             })?
         else {
             bail!(ProxyError::UnexpectedReply())
         };
 
-        let instance: Rc<dyn Uart> = Rc::new(uart::ProxyUart::open(self, instance_name)?);
-        let (pipe_receiver, pipe_sender) = tokio::io::simplex(65536);
-
         self.inner
-            .uart_channel_map
+            .uarts
             .borrow_mut()
-            .insert(channel, instance_name.to_owned());
-        self.inner.uarts.borrow_mut().insert(
-            instance_name.to_owned(),
-            UartRecord {
-                uart: instance.clone(),
-                pipe_sender,
-                pipe_receiver,
-            },
-        );
+            .insert(instance_name.to_owned(), instance.clone());
         Ok(instance)
     }
 

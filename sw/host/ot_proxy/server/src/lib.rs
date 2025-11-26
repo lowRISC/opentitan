@@ -15,7 +15,6 @@ use handler::TransportCommandHandler;
 use socket_server::{Connection, JsonSocketServer};
 
 mod handler;
-mod nonblocking_uart;
 mod socket_server;
 
 /// Interface for handlers of protocol messages, responding to each message with a single

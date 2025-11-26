@@ -2,17 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::pin::Pin;
 use std::rc::Rc;
 use std::task::Poll;
 use std::time::Duration;
 
 use anyhow::{Result, bail};
-use tokio::io::AsyncRead;
 
 use opentitanlib::io::console::ConsoleDevice;
 use opentitanlib::io::uart::{FlowControl, Parity, Uart};
-use opentitanlib::util::runtime::MultiWaker;
 use ot_proxy_proto::{Request, Response, UartRequest, UartResponse};
 
 use super::{Inner, Proxy, ProxyError};
@@ -20,7 +17,6 @@ use super::{Inner, Proxy, ProxyError};
 pub struct ProxyUart {
     inner: Rc<Inner>,
     instance: String,
-    multi_waker: MultiWaker,
 }
 
 impl ProxyUart {
@@ -28,7 +24,6 @@ impl ProxyUart {
         let result = Self {
             inner: proxy.inner.clone(),
             instance: instance.to_string(),
-            multi_waker: MultiWaker::new(),
         };
         Ok(result)
     }
@@ -47,19 +42,18 @@ impl ProxyUart {
 
 impl ConsoleDevice for ProxyUart {
     fn poll_read(&self, cx: &mut std::task::Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
-        self.inner.poll_for_async_data()?;
-
-        let mut uarts = self.inner.uarts.borrow_mut();
-        let uart_record = uarts.get_mut(&self.instance).unwrap();
-        let mut read_buf = tokio::io::ReadBuf::new(buf);
-        match self.multi_waker.poll_with(cx, |cx| {
-            Pin::new(&mut uart_record.pipe_receiver).poll_read(cx, &mut read_buf)
+        match self.execute_command(UartRequest::PollRead {
+            len: buf.len() as u32,
         })? {
-            Poll::Ready(()) => Poll::Ready(Ok(read_buf.filled().len())),
-            Poll::Pending => {
+            UartResponse::PollRead { data: None } => {
                 // `self.inner` currently does not yet support context notification.
                 opentitanlib::util::runtime::poll_later(cx, Duration::from_millis(1))
             }
+            UartResponse::PollRead { data: Some(data) } => {
+                buf[..data.len()].copy_from_slice(&data);
+                Poll::Ready(Ok(data.len()))
+            }
+            _ => Err(ProxyError::UnexpectedReply())?,
         }
     }
 

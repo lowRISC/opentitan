@@ -24,14 +24,6 @@ pub enum Message {
     // as requests are processed and responses generated in the order they are received.
     Req(Request),
     Res(Result<Response, SerializedError>),
-    // An "asynchronos message" is one that is not a direct response to a request, but can be sent
-    // at any time, as part of a communication "channel" previously set up.
-    Async { channel: u32, msg: AsyncMessage },
-}
-
-#[derive(Serialize, Deserialize)]
-pub enum AsyncMessage {
-    UartData { data: Vec<u8> },
 }
 
 #[derive(Serialize, Deserialize)]
@@ -180,23 +172,16 @@ pub enum GpioDacResponse {
 #[derive(Serialize, Deserialize)]
 pub enum UartRequest {
     GetBaudrate,
-    SetBaudrate {
-        rate: u32,
-    },
+    SetBaudrate { rate: u32 },
     SetBreak(bool),
     GetParity,
     SetParity(Parity),
     GetFlowControl,
     SetFlowControl(bool),
     GetDevicePath,
-    Read {
-        timeout_millis: Option<u32>,
-        len: u32,
-    },
-    Write {
-        data: Vec<u8>,
-    },
-    RegisterNonblockingRead,
+    PollRead { len: u32 },
+    Write { data: Vec<u8> },
+    Initialize,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -209,9 +194,9 @@ pub enum UartResponse {
     GetFlowControl { flow_control: FlowControl },
     SetFlowControl,
     GetDevicePath { path: String },
-    Read { data: Vec<u8> },
+    PollRead { data: Option<Vec<u8>> },
     Write,
-    RegisterNonblockingRead { channel: u32 },
+    Initialize,
 }
 
 #[derive(Serialize, Deserialize)]
