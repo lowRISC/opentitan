@@ -25,20 +25,8 @@ pub struct Broadcaster<T> {
 impl<T> Clone for Broadcaster<T> {
     fn clone(&self) -> Self {
         let mut inner = self.inner.lock().unwrap();
-
         let pos = inner.reader_pos[self.index];
-
-        // Add a new position to the list. Try to use a freed index preferrably (i.e. None).
-        let none_index = inner.reader_pos.iter().position(|x| x.is_none());
-        let index = if let Some(index) = none_index {
-            inner.reader_pos[index] = pos;
-            index
-        } else {
-            let index = inner.reader_pos.len();
-            inner.reader_pos.push(pos);
-            index
-        };
-
+        let index = inner.add_reader(pos);
         Self {
             inner: self.inner.clone(),
             index,
@@ -58,9 +46,7 @@ impl<T> Drop for Broadcaster<T> {
         }
 
         // Dropping a broadcaster instance may cause the buffer to be shrinkable.
-        if inner.count() != 0 {
-            inner.shrink();
-        }
+        inner.shrink();
     }
 }
 
@@ -74,13 +60,30 @@ struct BroadcasterInner<T> {
 }
 
 impl<T> BroadcasterInner<T> {
+    fn add_reader(&mut self, pos: Option<usize>) -> usize {
+        // Add a new position to the list. Try to use a freed index preferrably (i.e. None).
+        let none_index = self.reader_pos.iter().position(|x| x.is_none());
+        if let Some(index) = none_index {
+            self.reader_pos[index] = pos;
+            index
+        } else {
+            let index = self.reader_pos.len();
+            self.reader_pos.push(pos);
+            index
+        }
+    }
+
     fn count(&self) -> usize {
         self.reader_pos.iter().filter(|x| x.is_some()).count()
     }
 
     fn shrink(&mut self) {
         // Now go through all reader_pos to see if we can drop some buffer now.
-        let min_pos = self.reader_pos.iter().filter_map(|x| *x).min().unwrap();
+        let Some(min_pos) = self.reader_pos.iter().filter_map(|x| *x).min() else {
+            // Dropped to 0 strong readers.
+            self.buffer.clear();
+            return;
+        };
         self.buffer.drain(..min_pos);
 
         self.reader_pos
@@ -99,6 +102,13 @@ impl<T> Broadcaster<T> {
                 inner,
             })),
             index: 0,
+        }
+    }
+
+    /// Obtain a weak instance of this broadcaster that would not consume data.
+    pub fn downgrade(&self) -> WeakBroadcaster<T> {
+        WeakBroadcaster {
+            inner: self.inner.clone(),
         }
     }
 }
@@ -198,5 +208,35 @@ impl<T: Uart> Uart for Broadcaster<T> {
 
     fn set_break(&self, enable: bool) -> Result<()> {
         self.inner.lock().unwrap().inner.set_break(enable)
+    }
+}
+
+/// `Broadcaster` but does not actually read data.
+///
+/// This copy can be used to create proper `Broadcaster`, however it does not create
+/// buffer bloat as data does not need to be kept for this copy.
+pub struct WeakBroadcaster<T> {
+    inner: Arc<Mutex<BroadcasterInner<T>>>,
+}
+
+impl<T> Clone for WeakBroadcaster<T> {
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+        }
+    }
+}
+
+impl<T> WeakBroadcaster<T> {
+    /// Obtain a `Broadcaster` that can receive console data from this weak instance.
+    pub fn upgrade(&self) -> Broadcaster<T> {
+        let mut inner = self.inner.lock().unwrap();
+        // When upgrading from a weak broadcaster, historic data doesn't matter.
+        let pos = inner.buffer.len();
+        let index = inner.add_reader(Some(pos));
+        Broadcaster {
+            inner: self.inner.clone(),
+            index,
+        }
     }
 }

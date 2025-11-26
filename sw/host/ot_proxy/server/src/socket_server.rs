@@ -5,6 +5,7 @@
 use std::collections::HashMap;
 use std::io::ErrorKind;
 use std::marker::PhantomData;
+use std::rc::Rc;
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
@@ -14,6 +15,9 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use tokio::sync::Mutex;
+
+use opentitanlib::io::console::Broadcaster;
+use opentitanlib::io::uart::Uart;
 
 use super::CommandHandler;
 
@@ -179,10 +183,19 @@ impl<Msg: DeserializeOwned + Serialize + Send + 'static, T: CommandHandler<Msg> 
 pub struct Connection {
     #[allow(unused)]
     conn_tx: Arc<Mutex<OwnedWriteHalf>>,
+    /// Map from address of a UART instance to a copy of the broadcaster.
+    ///
+    /// This ensures that initialized UARTs would be able to receive all data.
+    /// Address is used so if an UART instance has multiple aliases, they're still backend
+    /// by the same instance.
+    pub(crate) uarts: HashMap<usize, Broadcaster<Rc<dyn Uart>>>,
 }
 
 impl Connection {
     fn new(conn_tx: Arc<Mutex<OwnedWriteHalf>>) -> Self {
-        Self { conn_tx }
+        Self {
+            conn_tx,
+            uarts: HashMap::default(),
+        }
     }
 }

@@ -5,6 +5,7 @@
 use anyhow::{Result, bail};
 
 use std::borrow::Borrow;
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::task::{Context, Poll, Waker};
@@ -12,9 +13,12 @@ use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::bootstrap::Bootstrap;
+use opentitanlib::io::console::broadcast::WeakBroadcaster;
+use opentitanlib::io::console::{Broadcaster, ConsoleDevice};
 use opentitanlib::io::gpio::{
     BitbangEntry, DacBangEntry, GpioBitbangOperation, GpioDacBangOperation, GpioPin,
 };
+use opentitanlib::io::uart::Uart;
 use opentitanlib::io::{i2c, spi};
 use opentitanlib::transport::TransportError;
 use opentitanlib::util::serializable_error::SerializedError;
@@ -32,6 +36,8 @@ use super::{CommandHandler, Connection};
 /// `Transport` implementation.
 pub struct TransportCommandHandler {
     transport: TransportWrapper,
+    /// Map from a UART instance to the corresponding broadcaster instance.
+    uarts: RefCell<HashMap<usize, WeakBroadcaster<Rc<dyn Uart>>>>,
     spi_chip_select: HashMap<String, Vec<spi::AssertChipSelect>>,
     ongoing_bitbanging: Option<Box<dyn GpioBitbangOperation<'static, 'static>>>,
     ongoing_dacbanging: Option<Box<dyn GpioDacBangOperation>>,
@@ -41,6 +47,7 @@ impl TransportCommandHandler {
     pub fn new(transport: TransportWrapper) -> Result<Self> {
         Ok(Self {
             transport,
+            uarts: Default::default(),
             spi_chip_select: HashMap::new(),
             ongoing_bitbanging: None,
             ongoing_dacbanging: None,
@@ -59,7 +66,7 @@ impl TransportCommandHandler {
     /// by the given `Request`, and return a response to be sent to the client.  Any `Err`
     /// return from this method will be propagated to the remote client, without any server-side
     /// logging.
-    fn do_execute_cmd(&mut self, _conn: &mut Connection, req: &Request) -> Result<Response> {
+    fn do_execute_cmd(&mut self, conn: &mut Connection, req: &Request) -> Result<Response> {
         match req {
             Request::GetCapabilities => {
                 Ok(Response::GetCapabilities(self.transport.capabilities()?))
@@ -246,7 +253,25 @@ impl TransportCommandHandler {
                 }
             }
             Request::Uart { id, command } => {
-                let instance = self.transport.uart(id)?;
+                // OT proxy broadcasts UART received data to all instances.
+                // Therefore we need to use the UART instance above to retrieve our copy of the broadcaster.
+                let instance = {
+                    let uart = self.transport.uart(id)?;
+                    let uart_key = Rc::as_ptr(&uart).addr();
+
+                    conn.uarts.entry(uart_key).or_insert_with(|| {
+                        // This UART instance is used for the first time for this connection.
+                        let mut uarts = self.uarts.borrow_mut();
+                        uarts
+                            .entry(uart_key)
+                            .or_insert_with(|| {
+                                // This UART instance is used for the first time for this proxy.
+                                Broadcaster::new(uart).downgrade()
+                            })
+                            .upgrade()
+                    })
+                };
+
                 match command {
                     UartRequest::GetBaudrate => {
                         let rate = instance.get_baudrate()?;
