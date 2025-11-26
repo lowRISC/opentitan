@@ -227,7 +227,8 @@ fn usbdev_suspend(
 
     let _devices = opts.usb.wait_for_device(opts.timeout)?;
 
-    let hub = UsbHub::from_device(&parent).context("for this test, you need to make sure that the program has sufficient permissions to access the hub")?;
+    let hub = UsbHub::from_device(&parent)
+        .context("for this test, you need to make sure to access the hub")?;
 
     // Collect test phases.
     let init_phase = opts.init_phase.clone();
