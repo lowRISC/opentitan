@@ -901,7 +901,12 @@ impl QemuHostThread {
             if let Err(res) =
                 Self::host_qemu_reader_thread(usbdev_for_reader, channel_send_for_reader)
             {
-                log::error!("QEMU reader failed with error: {res:?}");
+                // Ignore errors coming for the mpsc channel because they indicate that
+                // the host thread shut down and the reader couldn't send a message.
+                match res.downcast::<mpsc::SendError<HostChannelEvent>>() {
+                    Ok(_) => (),
+                    Err(err) => log::error!("QEMU reader failed with error: {err:?}"),
+                }
             }
         });
 
