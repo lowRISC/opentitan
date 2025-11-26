@@ -91,7 +91,7 @@ where
                 let err = serde_json::from_str::<Status>(json_str)?;
                 Err(err.into())
             }
-            ExitStatus::Timeout => Err(ConsoleError::GenericError("Timed Out".into()).into()),
+            ExitStatus::Timeout => Err(ConsoleError::TimedOut)?,
         }
     }
 }

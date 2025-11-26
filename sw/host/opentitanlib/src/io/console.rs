@@ -18,6 +18,8 @@ pub use ext::ConsoleExt;
 /// Errors related to the console interface.
 #[derive(Error, Debug, Serialize, Deserialize)]
 pub enum ConsoleError {
+    #[error("Timed Out")]
+    TimedOut,
     #[error("{0}")]
     GenericError(String),
 }
