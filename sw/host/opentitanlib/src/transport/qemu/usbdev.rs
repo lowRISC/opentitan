@@ -649,9 +649,6 @@ impl QemuHostThread {
             .send_packet(QemuUsbdevCmd::Reset, &[])
             .maybe_context("Failed to send RESET command")?;
 
-        // HACK Wait for a while. This should really be done in QEMU to emulate the reset.
-        std::thread::sleep(std::time::Duration::from_millis(100));
-
         // Start a typical enumeration sequence by asking for the first 8 bytes
         // of the device descriptor.
         let trunc_dev_desc = self
