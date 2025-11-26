@@ -10,7 +10,7 @@ use thiserror::Error;
 
 use crate::impl_serializable_error;
 
-mod broadcast;
+pub mod broadcast;
 mod ext;
 mod logged;
 pub use broadcast::Broadcaster;
