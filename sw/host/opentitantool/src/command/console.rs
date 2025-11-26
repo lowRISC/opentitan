@@ -134,7 +134,6 @@ impl CommandDispatch for Console {
                 .map(|s| Regex::new(s.as_str()))
                 .transpose()?,
         );
-        console.timestamp = self.timestamp;
 
         // Put the terminal into raw mode.  The tty guard will restore the
         // console settings when it goes out of scope.
@@ -169,11 +168,22 @@ impl CommandDispatch for Console {
                     }
                 };
 
-                let rx = async { console.interact_async(&uart_rx, false).await };
+                let log_to_output = async {
+                    if !self.timestamp {
+                        // If we want timestamp (similar to how FPGA tests log their outputs),
+                        // we can defer this to `UartConsole::interact`. Otherwise pipe to stdout directly.
+                        pipe_output(&uart_rx.clone(), &mut std::io::stdout()).await
+                    } else {
+                        std::future::pending().await
+                    }
+                };
+
+                let rx = async { console.interact_async(&uart_rx, !self.timestamp).await };
 
                 Result::<_>::Ok(tokio::select! {
                     v = tx => Err(v?),
                     v = log_to_file => Err(v?),
+                    v = log_to_output => Err(v?),
                     v = rx => Ok(v?),
                 })
             })

@@ -14,7 +14,6 @@ pub struct UartConsole {
     timeout: Option<Duration>,
     exit_success: Option<Regex>,
     exit_failure: Option<Regex>,
-    pub timestamp: bool,
     buffer: String,
     newline: bool,
 }
@@ -38,7 +37,6 @@ impl UartConsole {
             timeout,
             exit_success,
             exit_failure,
-            timestamp: true,
             buffer: String::new(),
             newline: true,
         }
@@ -128,7 +126,7 @@ impl UartConsole {
         if !quiet {
             let mut stdout = std::io::stdout().lock();
 
-            if self.timestamp && self.newline {
+            if self.newline {
                 let t = humantime::format_rfc3339_millis(SystemTime::now());
                 stdout.write_fmt(format_args!("[{}  console]", t))?;
             }
