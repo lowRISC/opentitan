@@ -260,7 +260,18 @@ impl UsbHub {
             "device is not a hub"
         );
         Ok(UsbHub {
-            handle: dev.open().context("cannot open hub")?,
+            handle: dev.open().with_context(|| {
+                format!(
+                    "Cannot access USB hub on bus {bus}, address {addr}\n\
+                If this test requires access to the HUB, you need to make sure that \
+                the program has sufficient permissions to access the hub\n\
+                See sw/host/tests/chip/usb/README.md for more information\n\
+                The following command may fix the issue:\n\
+                sudo chmod 0666 /dev/bus/usb/{bus:03}/{addr:03}",
+                    bus = dev.bus_number(),
+                    addr = dev.address(),
+                )
+            })?,
         })
     }
 
