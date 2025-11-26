@@ -22,13 +22,27 @@ pub trait ConsoleExt {
 
     /// Wait for a line that matches the specified pattern to appear.
     ///
+    /// The pattern matched is returned. If timeout occurs, `None` is returned.
+    fn try_wait_for_line<P: MatchPattern>(
+        &self,
+        pattern: P,
+        timeout: Duration,
+    ) -> Result<Option<P::MatchResult>>;
+
+    /// Wait for a line that matches the specified pattern to appear.
+    ///
     /// Types that can be used include:
     /// * `str`` / `[u8]`: literal matching is performed, no return value
     /// * `Regex`: regex captures are returned.
+    /// * `(T, E)`, where `T` and `E` are one of the above: match two patterns at once.
+    ///   If the first matches, `Ok` is returned, otherwise `Err` is. Note that when this
+    ///   is used, you would have `anyhow::Result<Result<TMatch, EMatch>>` from this function,
+    ///   where the `Err(_)` is I/O error or timeout, and `Ok(Err(_))` is the match for `E`.
     ///
     /// If you want to construct a static `&Regex` you can use [`regex!`] macro.
     ///
     /// [`regex!`]: crate::regex
+    ///
     /// The pattern matched is returned.
     fn wait_for_line<P: MatchPattern>(
         &self,
@@ -49,13 +63,13 @@ impl<T: ConsoleDevice + ?Sized> ConsoleExt for T {
         .unwrap_or(Ok(0))
     }
 
-    fn wait_for_line<P: MatchPattern>(
+    fn try_wait_for_line<P: MatchPattern>(
         &self,
         pattern: P,
         timeout: Duration,
-    ) -> Result<P::MatchResult> {
+    ) -> Result<Option<P::MatchResult>> {
         crate::util::runtime::block_on(async {
-            tokio::time::timeout(timeout, async {
+            match tokio::time::timeout(timeout, async {
                 loop {
                     let line = read_line(self).await?;
                     if let Some(m) = pattern.perform_match(&line) {
@@ -64,8 +78,21 @@ impl<T: ConsoleDevice + ?Sized> ConsoleExt for T {
                 }
             })
             .await
-            .with_context(|| ConsoleError::TimedOut)?
+            {
+                Ok(Ok(v)) => Ok(Some(v)),
+                Ok(Err(e)) => Err(e),
+                Err(_) => Ok(None),
+            }
         })
+    }
+
+    fn wait_for_line<P: MatchPattern>(
+        &self,
+        pattern: P,
+        timeout: Duration,
+    ) -> Result<P::MatchResult> {
+        self.try_wait_for_line(pattern, timeout)?
+            .with_context(|| ConsoleError::TimedOut)
     }
 }
 
@@ -145,5 +172,25 @@ impl MatchPattern for regex::Regex {
                 .map(|x| x.map(|m| m.as_str().to_owned()).unwrap_or_default())
                 .collect(),
         )
+    }
+}
+
+/// Match two patterns at once.
+pub struct PassFail<T, E>(pub T, pub E);
+
+pub enum PassFailResult<T, E> {
+    Pass(T),
+    Fail(E),
+}
+
+impl<T: MatchPattern, E: MatchPattern> MatchPattern for PassFail<T, E> {
+    type MatchResult = PassFailResult<T::MatchResult, E::MatchResult>;
+
+    fn perform_match(&self, haystack: &[u8]) -> Option<Self::MatchResult> {
+        if let Some(m) = self.1.perform_match(haystack) {
+            return Some(PassFailResult::Fail(m));
+        }
+
+        Some(PassFailResult::Pass(self.0.perform_match(haystack)?))
     }
 }
