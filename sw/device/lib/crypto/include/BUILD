@@ -32,8 +32,10 @@ cc_library(
         "ed25519.h",
         "hkdf.h",
         "hmac.h",
+        "integrity.h",
         "kdf_ctr.h",
         "key_transport.h",
+        "keyblob.h",
         "kmac.h",
         "kmac_kdf.h",
         "otcrypto.h",
@@ -47,6 +49,7 @@ cc_library(
     deps = [
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/drivers:keymgr",
     ],
 )
 
@@ -64,8 +67,10 @@ cc_library(
         "ed25519.h",
         "hkdf.h",
         "hmac.h",
+        "integrity.h",
         "kdf_ctr.h",
         "key_transport.h",
+        "keyblob.h",
         "kmac.h",
         "kmac_kdf.h",
         "otcrypto.h",

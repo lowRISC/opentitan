@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/impl/integrity.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 
 #include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/hardened.h"

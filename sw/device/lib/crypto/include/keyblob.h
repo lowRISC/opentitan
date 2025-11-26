@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_KEYBLOB_H_
-#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_KEYBLOB_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_KEYBLOB_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_KEYBLOB_H_
 
 #include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -202,4 +202,4 @@ status_t keyblob_sideload_key_otbn(const otcrypto_blinded_key_t *key);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_KEYBLOB_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_KEYBLOB_H_
