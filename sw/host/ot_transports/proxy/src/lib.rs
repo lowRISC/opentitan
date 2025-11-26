@@ -23,6 +23,7 @@ use tokio::task::AbortHandle;
 use opentitanlib::backend::{Backend, BackendOpts, define_interface};
 use opentitanlib::bootstrap::BootstrapOptions;
 use opentitanlib::impl_serializable_error;
+use opentitanlib::io::console::Buffered;
 use opentitanlib::io::emu::Emulator;
 use opentitanlib::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
 use opentitanlib::io::i2c::Bus;
@@ -298,7 +299,8 @@ impl Transport for Proxy {
             return Ok(instance.clone());
         }
 
-        let instance: Rc<dyn Uart> = Rc::new(uart::ProxyUart::open(self, instance_name)?);
+        let instance: Rc<dyn Uart> =
+            Rc::new(Buffered::new(uart::ProxyUart::open(self, instance_name)?));
 
         // Send an initial message to register the intent on receiving messages.
         let Response::Uart(UartResponse::Initialize) =

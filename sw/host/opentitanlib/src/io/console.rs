@@ -11,9 +11,11 @@ use thiserror::Error;
 use crate::impl_serializable_error;
 
 pub mod broadcast;
+mod buf;
 mod ext;
 mod logged;
 pub use broadcast::Broadcaster;
+pub use buf::Buffered;
 pub use ext::ConsoleExt;
 pub use logged::Logged;
 
