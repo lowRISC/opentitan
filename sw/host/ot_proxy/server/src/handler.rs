@@ -7,7 +7,6 @@ use anyhow::{Result, bail};
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::rc::Rc;
-use std::sync::Arc;
 use std::task::{Context, Poll, Waker};
 use std::time::Duration;
 
@@ -60,7 +59,7 @@ impl TransportCommandHandler {
     /// by the given `Request`, and return a response to be sent to the client.  Any `Err`
     /// return from this method will be propagated to the remote client, without any server-side
     /// logging.
-    fn do_execute_cmd(&mut self, _conn: &Arc<Connection>, req: &Request) -> Result<Response> {
+    fn do_execute_cmd(&mut self, _conn: &mut Connection, req: &Request) -> Result<Response> {
         match req {
             Request::GetCapabilities => {
                 Ok(Response::GetCapabilities(self.transport.capabilities()?))
@@ -593,7 +592,7 @@ impl CommandHandler<Message> for TransportCommandHandler {
     /// by the given `Message`, and return a response to be sent to the client.  Any `Err`
     /// return from this method will be treated as an irrecoverable protocol error, causing an
     /// error message in the server log, and the connection to be terminated.
-    fn execute_cmd(&mut self, conn: &Arc<Connection>, msg: &Message) -> Result<Message> {
+    fn execute_cmd(&mut self, conn: &mut Connection, msg: &Message) -> Result<Message> {
         if let Message::Req(req) = msg {
             // Package either `Ok()` or `Err()` into a `Message`, to be sent via network.
             return Ok(Message::Res(

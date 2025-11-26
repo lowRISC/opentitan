@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashMap;
 use std::io::ErrorKind;
 use std::marker::PhantomData;
 use std::sync::Arc;
@@ -26,6 +27,7 @@ pub struct JsonSocketServer<Msg: DeserializeOwned + Serialize, T: CommandHandler
     phantom: PhantomData<Msg>,
 }
 
+#[allow(clippy::type_complexity)]
 impl<Msg: DeserializeOwned + Serialize + Send + 'static, T: CommandHandler<Msg> + 'static>
     JsonSocketServer<Msg, T>
 {
@@ -40,12 +42,16 @@ impl<Msg: DeserializeOwned + Serialize + Send + 'static, T: CommandHandler<Msg> 
     pub async fn run_loop(&mut self) -> Result<()> {
         // Store all connections in a join set so they're aborted when terminating.
         let mut set = tokio::task::JoinSet::new();
-        let mut id_counter = 0;
 
         // Since opentitanlib is mostly not multi-thread-safe, we have to stay on this thread to deal with
         // `command_handler`.
         // We do this by using a mpsc queue that each connection can push to.
         let (sender, mut recv) = tokio::sync::mpsc::channel(32);
+
+        // We would like to store some data derived from OT-lib in connection-specific structure, which needs to
+        // stay on this thread. So instead of only send an ID to another thread, keep all other info locally.
+        let mut id_counter = 0;
+        let connections = Mutex::new(HashMap::new());
 
         let listener = async {
             loop {
@@ -63,21 +69,25 @@ impl<Msg: DeserializeOwned + Serialize + Send + 'static, T: CommandHandler<Msg> 
                 // `conn_tx` is used both for unsolicited messages and response messages.
                 let conn_tx = Arc::new(Mutex::new(conn_tx));
 
-                let conn_arc = Arc::new(Connection::new(conn_tx.clone()));
-
                 let id = id_counter;
                 id_counter += 1;
                 log::info!("New connection id:{:#X}", id);
 
+                connections
+                    .lock()
+                    .await
+                    .insert(id, Connection::new(conn_tx.clone()));
+
                 let sender_clone = sender.clone();
                 set.spawn(async move {
                     if let Err(err) =
-                        Self::process_connection(sender_clone, conn_arc, conn_rx, conn_tx).await
+                        Self::process_connection(&sender_clone, id, conn_rx, conn_tx).await
                     {
                         log::warn!("Connection {:#X} error: {}", id, err);
                     }
 
-                    log::info!("Closing connection id:{:#X}", id);
+                    // Upon connection closing, send a message to the handler to finish it.
+                    let _ = sender_clone.send((id, None)).await;
                 });
             }
 
@@ -88,9 +98,20 @@ impl<Msg: DeserializeOwned + Serialize + Send + 'static, T: CommandHandler<Msg> 
 
         let handler = async {
             loop {
-                let (conn_arc, request, resp_send) =
-                    recv.recv().await.expect("recv shouldn't be dropped");
-                let resp = self.command_handler.execute_cmd(&conn_arc, &request)?;
+                let (id, req) = recv.recv().await.expect("recv shouldn't be dropped");
+                let mut conn = connections.lock().await;
+
+                // Handle closing connections.
+                let Some((request, resp_send)) = req else {
+                    log::info!("Closing connection id:{:#X}", id);
+
+                    conn.remove(&id);
+                    continue;
+                };
+
+                let resp = self
+                    .command_handler
+                    .execute_cmd(conn.get_mut(&id).unwrap(), &request)?;
                 // Ignore error which indicates the connection has been closed.
                 let _ = resp_send.send(resp);
             }
@@ -121,12 +142,8 @@ impl<Msg: DeserializeOwned + Serialize + Send + 'static, T: CommandHandler<Msg> 
 
     /// Read and write as much as possible from one particular socket connection.
     async fn process_connection(
-        sender: tokio::sync::mpsc::Sender<(
-            Arc<Connection>,
-            Msg,
-            tokio::sync::oneshot::Sender<Msg>,
-        )>,
-        conn_arc: Arc<Connection>,
+        sender: &tokio::sync::mpsc::Sender<(u32, Option<(Msg, tokio::sync::oneshot::Sender<Msg>)>)>,
+        id: u32,
         conn_rx: OwnedReadHalf,
         conn_tx: Arc<Mutex<OwnedWriteHalf>>,
     ) -> Result<()> {
@@ -149,10 +166,7 @@ impl<Msg: DeserializeOwned + Serialize + Send + 'static, T: CommandHandler<Msg> 
             let request = serde_json::from_slice::<Msg>(&buf)?;
 
             let (resp_send, resp_recv) = tokio::sync::oneshot::channel();
-            sender
-                .send((conn_arc.clone(), request, resp_send))
-                .await
-                .unwrap();
+            sender.send((id, Some((request, resp_send)))).await.unwrap();
             let resp = resp_recv.await?;
             Self::transmit_outgoing_msg(&conn_tx, resp).await?;
         }
