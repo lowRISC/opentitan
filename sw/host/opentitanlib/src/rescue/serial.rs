@@ -10,10 +10,12 @@ use crate::app::TransportWrapper;
 use crate::chip::boot_log::BootLog;
 use crate::chip::boot_svc::{BootSlot, BootSvc, OwnershipActivateRequest, OwnershipUnlockRequest};
 use crate::chip::device_id::DeviceId;
+use crate::io::console::ConsoleExt;
+use crate::io::console::ext::{PassFail, PassFailResult};
 use crate::io::uart::Uart;
+use crate::regex;
 use crate::rescue::RescueError;
 use crate::rescue::xmodem::Xmodem;
-use crate::uart::console::UartConsole;
 
 pub struct RescueSerial {
     uart: Rc<dyn Uart>,
@@ -58,12 +60,16 @@ impl RescueSerial {
         if reset_target {
             transport.reset_target(self.reset_delay, /*clear_uart=*/ true)?;
         }
-        UartConsole::wait_for(&*self.uart, r"rescue:", self.enter_delay)?;
+        (&self.uart)
+            .logged()
+            .wait_for_line("rescue:", self.enter_delay)?;
         log::info!("Rescue triggered. clearing serial break.");
         self.uart.set_break(false)?;
         // Upon entry, rescue is going to tell us what mode it is.
         // Consume and discard.
-        let _ = UartConsole::wait_for(&*self.uart, r"(ok|error):", Self::ONE_SECOND);
+        let _ = (&self.uart)
+            .logged()
+            .wait_for_line(PassFail("ok:", "error:"), Self::ONE_SECOND);
         Ok(())
     }
 
@@ -83,15 +89,19 @@ impl RescueSerial {
         // rates isn't a "mode" request and doesn't respond the same way.
         self.uart.write(&Self::BAUD)?;
         self.uart.write(b"\r")?;
-        let result = UartConsole::wait_for(&*self.uart, r"(ok|error):", Self::ONE_SECOND)?;
-        if result[1] == "error" {
+        if let PassFailResult::Fail(result) = (&self.uart)
+            .logged()
+            .wait_for_line(PassFail("ok:", regex!("error:.*")), Self::ONE_SECOND)?
+        {
             return Err(RescueError::BadMode(result[0].clone()).into());
         }
 
         // Send the new rate and check for success.
         self.uart.write(&symbol)?;
-        let result = UartConsole::wait_for(&*self.uart, r"(ok|error):", Self::ONE_SECOND)?;
-        if result[1] == "error" {
+        if let PassFailResult::Fail(result) = (&self.uart)
+            .logged()
+            .wait_for_line(PassFail("ok:", regex!("error:.*")), Self::ONE_SECOND)?
+        {
             return Err(RescueError::BadMode(result[0].clone()).into());
         }
         // Change our side of the connection to the new rate.
@@ -104,9 +114,13 @@ impl RescueSerial {
         let enter = b'\r';
         self.uart.write(std::slice::from_ref(&enter))?;
         let mode = std::str::from_utf8(&mode)?;
-        UartConsole::wait_for(&*self.uart, &format!("mode: {mode}"), Self::ONE_SECOND)?;
-        let result = UartConsole::wait_for(&*self.uart, "(ok|error):", Self::ONE_SECOND)?;
-        if result[1] == "error" {
+        (&self.uart)
+            .logged()
+            .wait_for_line(format!("mode: {mode}").as_str(), Self::ONE_SECOND)?;
+        if let PassFailResult::Fail(result) = (&self.uart)
+            .logged()
+            .wait_for_line(PassFail("ok:", regex!("error:.*")), Self::ONE_SECOND)?
+        {
             return Err(RescueError::BadMode(result[0].clone()).into());
         }
         Ok(())
