@@ -12,7 +12,7 @@ use std::sync::Arc;
 use std::task::{Context, Poll};
 use std::time::Duration;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{NoProgressBar, TransportWrapper};
 use opentitanlib::bootstrap::Bootstrap;
 use opentitanlib::io::console::broadcast::WeakBroadcaster;
 use opentitanlib::io::console::{Broadcaster, ConsoleDevice};
@@ -25,10 +25,11 @@ use opentitanlib::transport::TransportError;
 use opentitanlib::util::serializable_error::SerializedError;
 use ot_proxy_proto::{
     BitbangEntryRequest, BitbangEntryResponse, DacBangEntryRequest, EmuRequest, EmuResponse,
-    GpioBitRequest, GpioBitResponse, GpioDacRequest, GpioDacResponse, GpioMonRequest,
-    GpioMonResponse, GpioRequest, GpioResponse, I2cRequest, I2cResponse, I2cTransferRequest,
-    I2cTransferResponse, Message, ProxyRequest, ProxyResponse, Request, Response, SpiRequest,
-    SpiResponse, SpiTransferRequest, SpiTransferResponse, UartRequest, UartResponse,
+    FgpaResponse, FpgaRequest, GpioBitRequest, GpioBitResponse, GpioDacRequest, GpioDacResponse,
+    GpioMonRequest, GpioMonResponse, GpioRequest, GpioResponse, I2cRequest, I2cResponse,
+    I2cTransferRequest, I2cTransferResponse, Message, ProxyRequest, ProxyResponse, Request,
+    Response, SpiRequest, SpiResponse, SpiTransferRequest, SpiTransferResponse, UartRequest,
+    UartResponse,
 };
 
 use super::{CommandHandler, Connection};
@@ -588,6 +589,18 @@ impl TransportCommandHandler {
                     }
                 }
             }
+            Request::Fpga(request) => match request {
+                FpgaRequest::LoadBitstream { bitstream } => {
+                    self.transport
+                        .fpga_ops()?
+                        .load_bitstream(bitstream, &NoProgressBar)?;
+                    Ok(Response::Fpga(FgpaResponse::LoadBitstream))
+                }
+                FpgaRequest::ClearBitstream => {
+                    self.transport.fpga_ops()?.clear_bitstream()?;
+                    Ok(Response::Fpga(FgpaResponse::ClearBitstream))
+                }
+            },
             Request::Proxy(command) => match command {
                 ProxyRequest::Provides => {
                     let provides_map = self.transport.provides_map()?.clone();
