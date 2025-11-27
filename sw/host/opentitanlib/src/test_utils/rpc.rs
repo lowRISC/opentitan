@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 use anyhow::Result;
 use crc::{CRC_32_ISO_HDLC, Crc};
-use regex::Regex;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use std::time::Duration;
 
-use crate::io::console::{ConsoleDevice, ConsoleError};
+use crate::io::console::ext::{PassFail, PassFailResult};
+use crate::io::console::{ConsoleDevice, ConsoleError, ConsoleExt};
+use crate::regex;
 use crate::test_utils::status::Status;
-use crate::uart::console::{ExitStatus, UartConsole};
 
 // Bring in the auto-generated sources.
 include!(env!("ottf"));
@@ -64,34 +64,28 @@ where
     where
         Self: Sized,
     {
-        let mut console = UartConsole::new(
-            Some(timeout),
-            Some(Regex::new(r"RESP_OK:(.*) CRC:([0-9]+)\n")?),
-            Some(Regex::new(r"RESP_ERR:(.*) CRC:([0-9]+)\n")?),
-        );
-        let result = console.interact(device, quiet)?;
+        let device: &dyn ConsoleDevice = if quiet { &device } else { &device.logged() };
+        let result = device.wait_for_line(
+            PassFail(
+                regex!(r"RESP_OK:(.*) CRC:([0-9]+)"),
+                regex!(r"RESP_ERR:(.*) CRC:([0-9]+)"),
+            ),
+            timeout,
+        )?;
         println!();
         match result {
-            ExitStatus::ExitSuccess => {
-                let cap = console
-                    .captures(ExitStatus::ExitSuccess)
-                    .expect("RESP_OK capture");
-                let json_str = cap.get(1).expect("RESP_OK group").as_str();
-                let crc_str = cap.get(2).expect("CRC group").as_str();
+            PassFailResult::Pass(cap) => {
+                let json_str = &cap[1];
+                let crc_str = &cap[2];
                 check_crc(json_str, crc_str)?;
                 Ok(serde_json::from_str::<Self>(json_str)?)
             }
-            ExitStatus::ExitFailure => {
-                let cap = console
-                    .captures(ExitStatus::ExitFailure)
-                    .expect("RESP_ERR capture");
-                let json_str = cap.get(1).expect("RESP_OK group").as_str();
-                let crc_str = cap.get(2).expect("CRC group").as_str();
+            PassFailResult::Fail(cap) => {
+                let json_str = &cap[1];
+                let crc_str = &cap[2];
                 check_crc(json_str, crc_str)?;
-                let err = serde_json::from_str::<Status>(json_str)?;
-                Err(err.into())
+                Err(serde_json::from_str::<Status>(json_str)?)?
             }
-            ExitStatus::Timeout => Err(ConsoleError::TimedOut)?,
         }
     }
 }
