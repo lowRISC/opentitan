@@ -29,10 +29,13 @@ use opentitanlib::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
 use opentitanlib::io::i2c::Bus;
 use opentitanlib::io::spi::Target;
 use opentitanlib::io::uart::Uart;
-use opentitanlib::transport::{Capabilities, Capability, ProxyOps, Transport, TransportError};
+use opentitanlib::transport::{
+    Capabilities, Capability, FpgaOps, ProgressIndicator, ProxyOps, Transport, TransportError,
+};
 use opentitanlib::util::serializable_error::SerializedError;
 use ot_proxy_proto::{
-    Message, ProxyRequest, ProxyResponse, Request, Response, UartRequest, UartResponse,
+    FgpaResponse, FpgaRequest, Message, ProxyRequest, ProxyResponse, Request, Response,
+    UartRequest, UartResponse,
 };
 
 mod emu;
@@ -210,6 +213,29 @@ impl Inner {
     }
 }
 
+impl FpgaOps for Proxy {
+    fn load_bitstream(&self, bitstream: &[u8], _progress: &dyn ProgressIndicator) -> Result<()> {
+        match self
+            .inner
+            .execute_command(Request::Fpga(FpgaRequest::LoadBitstream {
+                bitstream: bitstream.to_owned(),
+            }))? {
+            Response::Fpga(FgpaResponse::LoadBitstream) => Ok(()),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
+    fn clear_bitstream(&self) -> Result<()> {
+        match self
+            .inner
+            .execute_command(Request::Fpga(FpgaRequest::ClearBitstream))?
+        {
+            Response::Fpga(FgpaResponse::ClearBitstream) => Ok(()),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+}
+
 impl ProxyOps for Proxy {
     fn provides_map(&self) -> Result<HashMap<String, String>> {
         match self
@@ -336,6 +362,10 @@ impl Transport for Proxy {
 
     // Create Emulator instance, or return one from a cache of previously created instances.
     fn emulator(&self) -> Result<&dyn Emulator> {
+        Ok(self)
+    }
+
+    fn fpga_ops(&self) -> Result<&dyn FpgaOps> {
         Ok(self)
     }
 

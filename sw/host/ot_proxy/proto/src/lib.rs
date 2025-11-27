@@ -40,6 +40,7 @@ pub enum Request {
     Spi { id: String, command: SpiRequest },
     I2c { id: String, command: I2cRequest },
     Emu { command: EmuRequest },
+    Fpga(FpgaRequest),
     Proxy(ProxyRequest),
 }
 
@@ -55,6 +56,7 @@ pub enum Response {
     Spi(SpiResponse),
     I2c(I2cResponse),
     Emu(EmuResponse),
+    Fpga(FgpaResponse),
     Proxy(ProxyResponse),
 }
 
@@ -374,6 +376,18 @@ pub enum EmuResponse {
     GetState { state: EmuState },
     Start,
     Stop,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum FpgaRequest {
+    LoadBitstream { bitstream: Vec<u8> },
+    ClearBitstream,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum FgpaResponse {
+    LoadBitstream,
+    ClearBitstream,
 }
 
 #[derive(Serialize, Deserialize)]
