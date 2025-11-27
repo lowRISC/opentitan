@@ -29,6 +29,13 @@ pub struct Monitor {
     quit_qemu: bool,
 }
 
+/// A value of a property on an object in the QEMU Object Model (QOM)
+pub enum QomPropertyValue {
+    String(String),
+    Int(u64),
+    Bool(bool),
+}
+
 impl Monitor {
     /// Connect to the QEMU monitor over a given TTY.
     pub fn new<P: AsRef<Path>>(tty_path: P, quit_qemu: bool) -> anyhow::Result<Self> {
@@ -115,10 +122,39 @@ impl Monitor {
         Ok(chardevs)
     }
 
+    // Send a break condition over a specified CharDev
     pub fn send_chardev_break(&mut self, id: &str) -> anyhow::Result<()> {
         self.send_cmd(
             "chardev-send-break",
             Some(format!(r#"{{"id": "{id}"}}"#).as_str()),
+        )?;
+
+        Ok(())
+    }
+
+    // Set a QOM Property of a QEMU device
+    pub fn set_property(
+        &mut self,
+        object_path: Option<&str>,
+        property: &str,
+        value: &QomPropertyValue,
+    ) -> anyhow::Result<()> {
+        let path = object_path.unwrap_or("/machine");
+        let value = match value {
+            QomPropertyValue::String(s) => format!(r#""{s}""#),
+            QomPropertyValue::Int(i) => format!("{i}"),
+            QomPropertyValue::Bool(b) => format!("{b}"),
+        };
+        self.send_cmd(
+            "qom-set",
+            Some(
+                format!(
+                    r#"{{"path": "{path}",
+                    "property": "{property}",
+                    "value": {value}}}"#
+                )
+                .as_str(),
+            ),
         )?;
 
         Ok(())
