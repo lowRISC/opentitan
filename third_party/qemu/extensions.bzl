@@ -81,7 +81,7 @@ qemu_bazel_build_or_forward = repository_rule(
 )
 
 def _qemu_opentitan_repos():
-    QEMU_VERSION = "v9.2.0-2025-11-24"
+    QEMU_VERSION = "v9.2.0-2025-11-27"
 
     url = "/".join([
         "https://github.com/lowRISC/qemu/releases/download",
@@ -93,7 +93,7 @@ def _qemu_opentitan_repos():
         name = "qemu_opentitan_src",
         url = url,
         build_file = Label(":BUILD.qemu_opentitan.bazel"),
-        sha256 = "9a5e2ba08989a94fb2a7bb3e410021fd53936789bf935730a5fabaad88315712",
+        sha256 = "d868fc7ef2d3a3d0e51e93774065d7c4d23035b790901f5c591a3fbfa9655ef7",
         patch_cmds = ["touch {}".format(_ARCHIVE_MARKER_FILE)],
     )
 
