@@ -6,7 +6,7 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use crate::io::gpio::{GpioPin, PinMode, PullMode};
-use crate::transport::qemu::monitor::Monitor;
+use crate::transport::qemu::monitor::{Monitor, QomPropertyValue};
 
 /// Pin-like interface for resetting QEMU.
 ///
@@ -42,9 +42,19 @@ impl GpioPin for QemuReset {
         match value {
             false => {
                 monitor.stop()?;
+                monitor.set_property(
+                    Some("ot-eg-pad-ring.0"),
+                    "por_n",
+                    &QomPropertyValue::String("low".to_string()),
+                )?;
                 monitor.reset()?;
             }
             true => {
+                monitor.set_property(
+                    Some("ot-eg-pad-ring.0"),
+                    "por_n",
+                    &QomPropertyValue::String("high".to_string()),
+                )?;
                 monitor.cont()?;
             }
         }
