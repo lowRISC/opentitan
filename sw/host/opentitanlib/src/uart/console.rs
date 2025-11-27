@@ -7,7 +7,7 @@ use std::time::Duration;
 use anyhow::{Result, anyhow};
 use regex::{Captures, Regex};
 
-use crate::io::console::{ConsoleDevice, ConsoleError, ConsoleExt, Logged};
+use crate::io::console::{ConsoleDevice, ConsoleError, ConsoleExt};
 
 pub struct UartConsole {
     timeout: Option<Duration>,
@@ -53,13 +53,7 @@ impl UartConsole {
     where
         T: ConsoleDevice + ?Sized,
     {
-        let logged;
-        let device: &dyn ConsoleDevice = if quiet {
-            &device
-        } else {
-            logged = Logged::new(device);
-            &logged
-        };
+        let device: &dyn ConsoleDevice = if quiet { &device } else { &device.logged() };
 
         let timeout = self.timeout;
         let rx = async {
@@ -182,6 +176,6 @@ impl UartConsole {
     where
         T: ConsoleDevice + ?Sized,
     {
-        Logged::new(device).wait_for_line(Regex::new(rx)?, timeout)
+        device.logged().wait_for_line(Regex::new(rx)?, timeout)
     }
 }
