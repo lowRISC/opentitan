@@ -7,7 +7,7 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 
 use super::ConsoleDevice;
-use crate::io::console::ConsoleError;
+use crate::io::console::{ConsoleError, Logged};
 
 /// Extension trait to [`Uart`] where useful methods are provided.
 pub trait ConsoleExt {
@@ -19,6 +19,11 @@ pub trait ConsoleExt {
     /// The `timeout` may be used to specify a duration to wait for data.
     /// If timeout expires without any data arriving `Ok(0)` will be returned, never `Err(_)`.
     fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize>;
+
+    /// Return a wrapper that logs all outputs while reading.
+    fn logged(self) -> Logged<Self>
+    where
+        Self: Sized;
 
     /// Wait for a line that matches the specified pattern to appear.
     ///
@@ -61,6 +66,13 @@ impl<T: ConsoleDevice + ?Sized> ConsoleExt for T {
             tokio::time::timeout(timeout, std::future::poll_fn(|cx| self.poll_read(cx, buf))).await
         })
         .unwrap_or(Ok(0))
+    }
+
+    fn logged(self) -> Logged<Self>
+    where
+        Self: Sized,
+    {
+        Logged::new(self)
     }
 
     fn try_wait_for_line<P: MatchPattern>(
