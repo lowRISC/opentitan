@@ -83,6 +83,7 @@ pub enum TransportInterfaceType {
     I2c,
     Jtag,
     Emulator,
+    FpgaOps,
     ProxyOps,
     GpioMonitoring,
     GpioBitbanging,

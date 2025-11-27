@@ -19,8 +19,8 @@ use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::spi::{Target, TransferMode};
 use crate::io::uart::Uart;
 use crate::transport::{
-    Capability, ProgressIndicator, ProxyOps, Transport, TransportError, TransportInterfaceType,
-    ioexpander,
+    Capability, FpgaOps, ProgressIndicator, ProxyOps, Transport, TransportError,
+    TransportInterfaceType, ioexpander,
 };
 
 use anyhow::{Result, bail, ensure};
@@ -996,6 +996,11 @@ impl TransportWrapper {
     /// Returns a [`Emulator`] implementation.
     pub fn emulator(&self) -> Result<&dyn Emulator> {
         self.transport.emulator()
+    }
+
+    /// Methods available only on FPGA implementations.
+    pub fn fpga_ops(&self) -> Result<&dyn FpgaOps> {
+        self.transport.fpga_ops()
     }
 
     /// Methods available only on Proxy implementation.

@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use crate::app::{StagedProgressBar, TransportWrapper};
-use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
+use crate::transport::common::fpga::FpgaProgram;
 
 /// Load a bitstream into the FPGA.
 #[derive(Debug, Args)]
@@ -31,28 +31,21 @@ pub struct LoadBitstream {
 }
 
 impl LoadBitstream {
-    pub fn init(
-        &self,
-        transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+    pub fn init(&self, transport: &TransportWrapper) -> Result<()> {
         // Clear out existing bitstream, if requested.
         if self.clear_bitstream {
             log::info!("Clearing bitstream.");
-            transport.dispatch(&ClearBitstream)?;
+            transport.fpga_ops()?.clear_bitstream()?;
         }
         // Load the specified bitstream, if provided.
         if let Some(bitstream) = &self.bitstream {
-            self.load(transport, bitstream)
-        } else {
-            Ok(None)
+            self.load(transport, bitstream)?;
         }
+
+        Ok(())
     }
 
-    pub fn load(
-        &self,
-        transport: &TransportWrapper,
-        file: &Path,
-    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+    pub fn load(&self, transport: &TransportWrapper, file: &Path) -> Result<()> {
         log::info!("Loading bitstream: {:?}", file);
         let payload = std::fs::read(file)?;
         let progress = StagedProgressBar::new();
@@ -64,8 +57,11 @@ impl LoadBitstream {
         };
 
         if operation.should_skip(transport)? {
-            return Ok(None);
+            return Ok(());
         }
-        transport.dispatch(&operation)
+
+        transport
+            .fpga_ops()?
+            .load_bitstream(&operation.bitstream, &*operation.progress)
     }
 }

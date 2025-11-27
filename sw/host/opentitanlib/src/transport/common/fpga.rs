@@ -65,6 +65,3 @@ impl FpgaProgram {
         Ok(false)
     }
 }
-
-/// Command for Transport::dispatch().
-pub struct ClearBitstream;

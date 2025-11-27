@@ -18,9 +18,9 @@ use opentitanlib::io::spi::Target;
 use opentitanlib::io::uart::flow::SoftwareFlowControl;
 use opentitanlib::io::uart::serial::SerialPortUart;
 use opentitanlib::io::uart::{Uart, UartError};
-use opentitanlib::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use opentitanlib::transport::{
-    Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
+    Capabilities, Capability, FpgaOps, ProgressIndicator, Transport, TransportError,
+    TransportInterfaceType,
 };
 use opentitanlib::util::fs::builtin_file;
 use opentitanlib::util::parse_int::ParseInt;
@@ -100,22 +100,6 @@ impl<B: Board> ChipWhisperer<B> {
             )?))
         }
     }
-
-    pub fn load_bitstream(&self, fpga_program: &FpgaProgram) -> Result<()> {
-        // Program the FPGA bitstream.
-        log::info!("Programming the FPGA bitstream.");
-        let usb = self.device.borrow();
-        usb.spi1_enable(false)?;
-        usb.fpga_program(&fpga_program.bitstream, fpga_program.progress.as_ref())?;
-        Ok(())
-    }
-
-    pub fn clear_bitstream(&self) -> Result<()> {
-        let usb = self.device.borrow();
-        usb.spi1_enable(false)?;
-        usb.clear_bitstream()?;
-        Ok(())
-    }
 }
 
 impl<B: Board + 'static> Transport for ChipWhisperer<B> {
@@ -162,11 +146,12 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
         Ok(inner.spi.as_ref().unwrap().clone())
     }
 
+    fn fpga_ops(&self) -> Result<&dyn FpgaOps> {
+        Ok(self)
+    }
+
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
-        if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
-            self.load_bitstream(fpga_program)?;
-            Ok(None)
-        } else if action.downcast_ref::<ResetSam3x>().is_some() {
+        if action.downcast_ref::<ResetSam3x>().is_some() {
             self.device.borrow().reset_sam3x()?;
             Ok(None)
         } else if action.downcast_ref::<SetPll>().is_some() {
@@ -180,9 +165,6 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
             usb.pll_out_enable(2, false)?;
             usb.pll_write_defaults()?;
             Ok(None)
-        } else if action.downcast_ref::<ClearBitstream>().is_some() {
-            self.clear_bitstream()?;
-            Ok(None)
         } else if action.downcast_ref::<GetSam3xFwVersion>().is_some() {
             let usb = self.device.borrow();
             Ok(Some(Box::new(usb.get_firmware_version()?)))
@@ -192,6 +174,23 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
     }
 }
 
+impl<B: Board> FpgaOps for ChipWhisperer<B> {
+    fn load_bitstream(&self, bitstream: &[u8], progress: &dyn ProgressIndicator) -> Result<()> {
+        // Program the FPGA bitstream.
+        log::info!("Programming the FPGA bitstream.");
+        let usb = self.device.borrow();
+        usb.spi1_enable(false)?;
+        usb.fpga_program(bitstream, progress)?;
+        Ok(())
+    }
+
+    fn clear_bitstream(&self) -> Result<()> {
+        let usb = self.device.borrow();
+        usb.spi1_enable(false)?;
+        usb.clear_bitstream()?;
+        Ok(())
+    }
+}
 /// Command for Transport::dispatch().
 pub struct SetPll {}
 

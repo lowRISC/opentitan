@@ -135,7 +135,10 @@ fn main() -> Result<()> {
     transport.apply_default_configuration(None)?;
     let spi = transport.spi(&opts.console_spi)?;
     let spi_console_device = SpiConsoleDevice::new(&*spi, None)?;
-    InitializeTest::print_result("load_bitstream", opts.init.load_bitstream.init(&transport))?;
+    InitializeTest::print_result(
+        "load_bitstream",
+        opts.init.load_bitstream.init(&transport).map(|_| None),
+    )?;
 
     // Parse and format LC tokens.
     let _test_unlock_token =
