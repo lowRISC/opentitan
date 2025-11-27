@@ -8,7 +8,6 @@ use std::any::Any;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::transport::common::fpga;
 
 /// Clear the bitstream of the FPGA
 #[derive(Debug, Args)]
@@ -20,6 +19,7 @@ impl CommandDispatch for ClearBitstream {
         _context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
-        transport.dispatch(&fpga::ClearBitstream)
+        transport.fpga_ops()?.clear_bitstream()?;
+        Ok(None)
     }
 }

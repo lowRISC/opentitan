@@ -26,10 +26,9 @@ use opentitanlib::io::jtag::{JtagChain, JtagParams};
 use opentitanlib::io::spi::Target;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::io::uart::serial::flock_serial;
-use opentitanlib::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use opentitanlib::transport::{
-    Capabilities, Capability, SetJtagPins, Transport, TransportError, TransportInterfaceType,
-    UpdateFirmware,
+    Capabilities, Capability, FpgaOps, ProgressIndicator, SetJtagPins, Transport, TransportError,
+    TransportInterfaceType, UpdateFirmware,
 };
 use opentitanlib::util::fs::builtin_file;
 use opentitanlib::util::usb::UsbBackend;
@@ -83,7 +82,7 @@ pub trait Flavor {
     }
     fn get_default_usb_vid() -> u16;
     fn get_default_usb_pid() -> u16;
-    fn load_bitstream(_fpga_program: &FpgaProgram) -> Result<()> {
+    fn load_bitstream(_bitstream: &[u8], _progress: &dyn ProgressIndicator) -> Result<()> {
         Err(TransportError::UnsupportedOperation.into())
     }
     fn clear_bitstream() -> Result<()> {
@@ -817,6 +816,10 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         )?))
     }
 
+    fn fpga_ops(&self) -> Result<&dyn FpgaOps> {
+        Ok(self)
+    }
+
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         if let Some(update_firmware_action) = action.downcast_ref::<UpdateFirmware>() {
             let usb_vid = self.inner.usb_device.borrow().get_vendor_id();
@@ -856,10 +859,6 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 }
                 _ => Err(TransportError::UnsupportedOperation.into()),
             }
-        } else if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
-            T::load_bitstream(fpga_program).map(|_| None)
-        } else if action.downcast_ref::<ClearBitstream>().is_some() {
-            T::clear_bitstream().map(|_| None)
         } else {
             Err(TransportError::UnsupportedOperation.into())
         }
@@ -890,6 +889,16 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         *self.inner.conn.borrow_mut() = None;
         callback();
         Ok(())
+    }
+}
+
+impl<T: Flavor> FpgaOps for Hyperdebug<T> {
+    fn load_bitstream(&self, bitstream: &[u8], progress: &dyn ProgressIndicator) -> Result<()> {
+        T::load_bitstream(bitstream, progress)
+    }
+
+    fn clear_bitstream(&self) -> Result<()> {
+        T::clear_bitstream()
     }
 }
 
@@ -980,11 +989,11 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
     fn get_default_usb_pid() -> u16 {
         StandardFlavor::get_default_usb_pid()
     }
-    fn load_bitstream(fpga_program: &FpgaProgram) -> Result<()> {
+    fn load_bitstream(bitstream: &[u8], progress: &dyn ProgressIndicator) -> Result<()> {
         // Try to establish a connection to the native Chip Whisperer interface
         // which we will use for bitstream loading.
         let board = ChipWhisperer::<B>::new(None, None, None, &[])?;
-        board.load_bitstream(fpga_program)?;
+        board.load_bitstream(bitstream, progress)?;
         Ok(())
     }
     fn clear_bitstream() -> Result<()> {

@@ -138,6 +138,11 @@ pub trait Transport {
         Err(TransportError::InvalidInterface(TransportInterfaceType::Emulator).into())
     }
 
+    /// Methods available only on FPGA implementations.
+    fn fpga_ops(&self) -> Result<&dyn FpgaOps> {
+        Err(TransportError::InvalidInterface(TransportInterfaceType::FpgaOps).into())
+    }
+
     /// Methods available only on Proxy implementation.
     fn proxy_ops(&self) -> Result<&dyn ProxyOps> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::ProxyOps).into())
@@ -160,6 +165,13 @@ pub trait Transport {
         callback();
         Ok(())
     }
+}
+
+/// Methods available only on FPGA transports.
+pub trait FpgaOps {
+    fn load_bitstream(&self, bitstream: &[u8], progress: &dyn ProgressIndicator) -> Result<()>;
+
+    fn clear_bitstream(&self) -> Result<()>;
 }
 
 /// Methods available only on the Proxy implementation of the Transport trait.

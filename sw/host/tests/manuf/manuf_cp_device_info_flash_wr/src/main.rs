@@ -138,7 +138,10 @@ fn main() -> Result<()> {
     // want to perform bootstrap yet.
     let transport = backend::create(&opts.init.backend_opts)?;
     transport.apply_default_configuration(None)?;
-    InitializeTest::print_result("load_bitstream", opts.init.load_bitstream.init(&transport))?;
+    InitializeTest::print_result(
+        "load_bitstream",
+        opts.init.load_bitstream.init(&transport).map(|_| None),
+    )?;
 
     execute_test!(manuf_cp_device_info_flash_wr, &opts, &transport);
 
