@@ -36,8 +36,8 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
         dai_addr inside `PART_CONTENT_RANGE(OwnerSwCfgIdx);
     if (part_idx == OwnershipSlotStateIdx)
         dai_addr inside `PART_CONTENT_RANGE(OwnershipSlotStateIdx);
-    if (part_idx == RotCreatorAuthIdx)
-        dai_addr inside `PART_CONTENT_RANGE(RotCreatorAuthIdx);
+    if (part_idx == RotCreatorIdentityIdx)
+        dai_addr inside `PART_CONTENT_RANGE(RotCreatorIdentityIdx);
     if (part_idx == RotOwnerAuthSlot0Idx)
         dai_addr inside `PART_CONTENT_RANGE(RotOwnerAuthSlot0Idx);
     if (part_idx == RotOwnerAuthSlot1Idx)
@@ -58,10 +58,18 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
         dai_addr inside `PART_CONTENT_RANGE(ExtNvmIdx);
     if (part_idx == RomPatchIdx)
         dai_addr inside `PART_CONTENT_RANGE(RomPatchIdx);
+    if (part_idx == SocFusesCpIdx)
+        dai_addr inside `PART_CONTENT_RANGE(SocFusesCpIdx);
+    if (part_idx == SocFusesFtIdx)
+        dai_addr inside `PART_CONTENT_RANGE(SocFusesFtIdx);
+    if (part_idx == ScratchFusesIdx)
+        dai_addr inside `PART_CONTENT_RANGE(ScratchFusesIdx);
     if (part_idx == HwCfg0Idx)
         dai_addr inside `PART_CONTENT_RANGE(HwCfg0Idx);
     if (part_idx == HwCfg1Idx)
         dai_addr inside `PART_CONTENT_RANGE(HwCfg1Idx);
+    if (part_idx == HwCfg2Idx)
+        dai_addr inside `PART_CONTENT_RANGE(HwCfg2Idx);
     if (part_idx == Secret0Idx)
         dai_addr inside `PART_CONTENT_RANGE(Secret0Idx);
     if (part_idx == Secret1Idx)

@@ -63,8 +63,8 @@ class otp_ctrl_csr_rd_after_alert_cg_wrap;
         ral.creator_sw_cfg_digest[1].get_offset(),
         ral.owner_sw_cfg_digest[0].get_offset(),
         ral.owner_sw_cfg_digest[1].get_offset(),
-        ral.rot_creator_auth_digest[0].get_offset(),
-        ral.rot_creator_auth_digest[1].get_offset(),
+        ral.rot_creator_identity_digest[0].get_offset(),
+        ral.rot_creator_identity_digest[1].get_offset(),
         ral.rot_owner_auth_slot0_digest[0].get_offset(),
         ral.rot_owner_auth_slot0_digest[1].get_offset(),
         ral.rot_owner_auth_slot1_digest[0].get_offset(),
@@ -82,13 +82,19 @@ class otp_ctrl_csr_rd_after_alert_cg_wrap;
         ral.plat_owner_auth_slot3_digest[0].get_offset(),
         ral.plat_owner_auth_slot3_digest[1].get_offset(),
         ral.rom_patch_digest[0].get_offset(),
-        ral.rom_patch_digest[1].get_offset()
+        ral.rom_patch_digest[1].get_offset(),
+        ral.soc_fuses_cp_digest[0].get_offset(),
+        ral.soc_fuses_cp_digest[1].get_offset(),
+        ral.soc_fuses_ft_digest[0].get_offset(),
+        ral.soc_fuses_ft_digest[1].get_offset()
       };
       bins hw_digests          = {
         ral.hw_cfg0_digest[0].get_offset(),
         ral.hw_cfg0_digest[1].get_offset(),
         ral.hw_cfg1_digest[0].get_offset(),
-        ral.hw_cfg1_digest[1].get_offset()
+        ral.hw_cfg1_digest[1].get_offset(),
+        ral.hw_cfg2_digest[0].get_offset(),
+        ral.hw_cfg2_digest[1].get_offset()
       };
       bins secret_digests      = {
         ral.secret0_digest[0].get_offset(),
@@ -131,7 +137,11 @@ class otp_ctrl_csr_rd_after_alert_cg_wrap;
         ral.err_code[20].get_offset(),
         ral.err_code[21].get_offset(),
         ral.err_code[22].get_offset(),
-        ral.err_code[23].get_offset()
+        ral.err_code[23].get_offset(),
+        ral.err_code[24].get_offset(),
+        ral.err_code[25].get_offset(),
+        ral.err_code[26].get_offset(),
+        ral.err_code[27].get_offset()
       };
     }
   endgroup
@@ -194,7 +204,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     creator_sw_cfg_lock: coverpoint parts_locked[1];
     owner_sw_cfg_lock: coverpoint parts_locked[2];
     ownership_slot_state_lock: coverpoint parts_locked[3];
-    rot_creator_auth_lock: coverpoint parts_locked[4];
+    rot_creator_identity_lock: coverpoint parts_locked[4];
     rot_owner_auth_slot0_lock: coverpoint parts_locked[5];
     rot_owner_auth_slot1_lock: coverpoint parts_locked[6];
     plat_integ_auth_slot0_lock: coverpoint parts_locked[7];
@@ -205,12 +215,16 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     plat_owner_auth_slot3_lock: coverpoint parts_locked[12];
     ext_nvm_lock: coverpoint parts_locked[13];
     rom_patch_lock: coverpoint parts_locked[14];
-    hw_cfg0_lock: coverpoint parts_locked[15];
-    hw_cfg1_lock: coverpoint parts_locked[16];
-    secret0_lock: coverpoint parts_locked[17];
-    secret1_lock: coverpoint parts_locked[18];
-    secret2_lock: coverpoint parts_locked[19];
-    secret3_lock: coverpoint parts_locked[20];
+    soc_fuses_cp_lock: coverpoint parts_locked[15];
+    soc_fuses_ft_lock: coverpoint parts_locked[16];
+    scratch_fuses_lock: coverpoint parts_locked[17];
+    hw_cfg0_lock: coverpoint parts_locked[18];
+    hw_cfg1_lock: coverpoint parts_locked[19];
+    hw_cfg2_lock: coverpoint parts_locked[20];
+    secret0_lock: coverpoint parts_locked[21];
+    secret1_lock: coverpoint parts_locked[22];
+    secret2_lock: coverpoint parts_locked[23];
+    secret3_lock: coverpoint parts_locked[24];
   endgroup
 
   // This covergroup is sampled only if sram request passed scb check.
@@ -266,7 +280,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
       bins creator_sw_cfg = {CreatorSwCfgIdx};
       bins owner_sw_cfg = {OwnerSwCfgIdx};
       bins ownership_slot_state = {OwnershipSlotStateIdx};
-      bins rot_creator_auth = {RotCreatorAuthIdx};
+      bins rot_creator_identity = {RotCreatorIdentityIdx};
       bins rot_owner_auth_slot0 = {RotOwnerAuthSlot0Idx};
       bins rot_owner_auth_slot1 = {RotOwnerAuthSlot1Idx};
       bins plat_integ_auth_slot0 = {PlatIntegAuthSlot0Idx};
@@ -277,8 +291,12 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
       bins plat_owner_auth_slot3 = {PlatOwnerAuthSlot3Idx};
       bins ext_nvm = {ExtNvmIdx};
       bins rom_patch = {RomPatchIdx};
+      bins soc_fuses_cp = {SocFusesCpIdx};
+      bins soc_fuses_ft = {SocFusesFtIdx};
+      bins scratch_fuses = {ScratchFusesIdx};
       bins hw_cfg0 = {HwCfg0Idx};
       bins hw_cfg1 = {HwCfg1Idx};
+      bins hw_cfg2 = {HwCfg2Idx};
       bins secret0 = {Secret0Idx};
       bins secret1 = {Secret1Idx};
       bins secret2 = {Secret2Idx};
@@ -393,7 +411,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
       OwnershipSlotStateIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      RotCreatorAuthIdx: begin
+      RotCreatorIdentityIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
       RotOwnerAuthSlot0Idx: begin
@@ -426,10 +444,22 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
       RomPatchIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
+      SocFusesCpIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
+      end
+      SocFusesFtIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
+      end
+      ScratchFusesIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
+      end
       HwCfg0Idx: begin
         buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
       end
       HwCfg1Idx: begin
+        buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
+      end
+      HwCfg2Idx: begin
         buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
       end
       Secret0Idx: begin
