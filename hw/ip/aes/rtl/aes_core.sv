@@ -156,12 +156,17 @@ module aes_core
   add_so_sel_e                                add_state_out_sel;
   logic                                       add_state_out_sel_err;
 
+  logic               [NumRegsData-1:0][31:0] data_out;
   logic               [NumRegsData-1:0][31:0] data_out_d;
   logic               [NumRegsData-1:0][31:0] data_out_q;
   sp2v_e                                      data_out_we_ctrl;
   sp2v_e                                      data_out_we;
   logic               [NumRegsData-1:0]       data_out_re;
   logic               [NumRegsData-1:0]       data_out_re_buf;
+  logic                 [DataOutSelWidth-1:0] data_out_sel_raw;
+  data_out_sel_e                              data_out_sel_ctrl;
+  data_out_sel_e                              data_out_sel;
+  logic                                       data_out_sel_err;
 
   sp2v_e                                      cipher_in_valid;
   sp2v_e                                      cipher_in_ready;
@@ -178,6 +183,13 @@ module aes_core
   logic                                       cipher_data_out_clear;
   logic                                       cipher_data_out_clear_busy;
   logic                                       cipher_alert;
+
+  sp2v_e                                      ghash_in_valid;
+  sp2v_e                                      ghash_in_ready;
+  sp2v_e                                      ghash_out_valid;
+  sp2v_e                                      ghash_out_ready;
+  sp2v_e                                      ghash_load_hash_subkey;
+  logic                                       ghash_alert;
 
   // Pseudo-random data for clearing purposes
   logic                [WidthPRDClearing-1:0] prd_clearing [NumSharesKey];
@@ -525,11 +537,13 @@ module aes_core
 
     // Only unmask the final cipher core output. Unmasking intermediate output data causes
     // additional SCA leakage and thus has to be avoided. Forward PRD instead of a deterministic
-    // value to avoid leaking the cipher core output when it becomes valid.
+    // value to avoid leaking the cipher core output when it becomes valid. Don't unmask the hash
+    // subkey in case of GCM.
     logic [3:0][3:0][7:0] state_done_muxed [NumShares];
     for (genvar s = 0; s < NumShares; s++) begin : gen_state_done_muxed
-      assign state_done_muxed[s] =
-          (cipher_out_valid == SP2V_HIGH) ? state_done[s] : prd_clearing_state[s];
+      assign state_done_muxed[s] = ((cipher_out_valid == SP2V_HIGH) &&
+          !(aes_mode_q == AES_GCM &&
+              gcm_phase_q == GCM_INIT)) ? state_done[s] : prd_clearing_state[s];
     end
 
     // Avoid aggressive synthesis optimizations.
@@ -556,14 +570,76 @@ module aes_core
   end
 
   // Convert output state to output data format (every column corresponds to one output word).
-  assign data_out_d = aes_transpose(state_out ^ add_state_out);
+  assign data_out = aes_transpose(state_out ^ add_state_out);
 
   ///////////
   // GHASH //
   ///////////
-  // TODO: Implement and integrate the GHASH block.
-  logic [4:0] unused_num_valid_bytes;
-  assign unused_num_valid_bytes = num_valid_bytes_q;
+
+  if (AESGCMEnable) begin : gen_ghash
+    logic [3:0][3:0][7:0] ghash_state_out;
+
+    logic ghash_clear;
+    assign ghash_clear = cipher_key_clear | cipher_key_clear_busy;
+
+    // The actual GHASH module.
+    aes_ghash #(
+      .SecMasking  ( SecMasking  ),
+      .SecSBoxImpl ( SecSBoxImpl )
+    ) u_aes_ghash (
+      .clk_i               ( clk_i                  ),
+      .rst_ni              ( rst_ni                 ),
+
+      .in_valid_i          ( ghash_in_valid         ),
+      .in_ready_o          ( ghash_in_ready         ),
+
+      .out_valid_o         ( ghash_out_valid        ),
+      .out_ready_i         ( ghash_out_ready        ),
+
+      .op_i                ( aes_op_q               ),
+      .gcm_phase_i         ( gcm_phase_q            ),
+      .num_valid_bytes_i   ( num_valid_bytes_q      ),
+      .load_hash_subkey_i  ( ghash_load_hash_subkey ),
+      .clear_i             ( ghash_clear            ),
+      .alert_fatal_i       ( alert_fatal_o          ),
+      .alert_o             ( ghash_alert            ),
+
+      .prd_clearing_i      ( prd_clearing_128       ),
+      .cipher_state_init_i ( state_init             ),
+      .data_in_prev_i      ( data_in_prev_q         ),
+      .data_out_i          ( data_out_d             ),
+      .cipher_state_done_i ( state_done             ),
+      .ghash_state_done_o  ( ghash_state_out        )
+    );
+
+    // Mux for output data registers
+    always_comb begin : data_out_mux
+      unique case (data_out_sel)
+        DATA_OUT_CIPHER: data_out_d = data_out;
+        DATA_OUT_GHASH:  data_out_d = ghash_state_out;
+        default:         data_out_d = ghash_state_out;
+      endcase
+    end
+
+  end else begin : gen_no_ghash
+    // GHASH isn't there and thus generates no back pressure / alerts / output to be muxed.
+    assign ghash_in_ready  = SP2V_HIGH;
+    assign ghash_out_valid = SP2V_HIGH;
+    assign ghash_alert     = 1'b0;
+    assign data_out_d      = data_out;
+
+    // Tie-off unused signals.
+    sp2v_e         unused_ghash_in_valid;
+    sp2v_e         unused_ghash_out_ready;
+    sp2v_e         unused_ghash_load_hash_subkey;
+    logic [4:0]    unused_num_valid_bytes;
+    data_out_sel_e unused_data_out_sel;
+    assign unused_ghash_in_valid         = ghash_in_valid;
+    assign unused_ghash_out_ready        = ghash_out_ready;
+    assign unused_ghash_load_hash_subkey = ghash_load_hash_subkey;
+    assign unused_num_valid_bytes        = num_valid_bytes_q;
+    assign unused_data_out_sel           = data_out_sel;
+  end
 
   ///////////////////////
   // Control Registers //
@@ -619,6 +695,7 @@ module aes_core
 
   // Control
   aes_control #(
+    .AESGCMEnable         ( AESGCMEnable         ),
     .SecMasking           ( SecMasking           ),
     .SecStartTriggerDelay ( SecStartTriggerDelay )
   ) u_aes_control (
@@ -655,6 +732,7 @@ module aes_core
     .data_in_qe_i              ( data_in_qe_buf                         ),
     .data_out_re_i             ( data_out_re_buf                        ),
     .data_in_we_o              ( data_in_we                             ),
+    .data_out_sel_o            ( data_out_sel_ctrl                      ),
     .data_out_we_o             ( data_out_we_ctrl                       ),
 
     .data_in_prev_sel_o        ( data_in_prev_sel_ctrl                  ),
@@ -682,6 +760,12 @@ module aes_core
     .cipher_key_clear_i        ( cipher_key_clear_busy                  ),
     .cipher_data_out_clear_o   ( cipher_data_out_clear                  ),
     .cipher_data_out_clear_i   ( cipher_data_out_clear_busy             ),
+
+    .ghash_in_valid_o          ( ghash_in_valid                         ),
+    .ghash_in_ready_i          ( ghash_in_ready                         ),
+    .ghash_out_valid_i         ( ghash_out_valid                        ),
+    .ghash_out_ready_o         ( ghash_out_ready                        ),
+    .ghash_load_hash_subkey_o  ( ghash_load_hash_subkey                 ),
 
     .key_init_sel_o            ( key_init_sel_ctrl                      ),
     .key_init_we_o             ( key_init_we_ctrl                       ),
@@ -817,9 +901,22 @@ module aes_core
   );
   assign iv_sel = iv_sel_e'(iv_sel_raw);
 
+  aes_sel_buf_chk #(
+    .Num      ( DataOutSelNum   ),
+    .Width    ( DataOutSelWidth ),
+    .EnSecBuf ( 1'b1       )
+  ) u_aes_data_out_sel_buf_chk (
+    .clk_i  ( clk_i             ),
+    .rst_ni ( rst_ni            ),
+    .sel_i  ( data_out_sel_ctrl ),
+    .sel_o  ( data_out_sel_raw  ),
+    .err_o  ( data_out_sel_err  )
+  );
+  assign data_out_sel = data_out_sel_e'(data_out_sel_raw);
+
   // Signal invalid mux selector signals to control FSM which will lock up and trigger an alert.
   assign mux_sel_err = data_in_prev_sel_err | state_in_sel_err | add_state_in_sel_err |
-      add_state_out_sel_err | key_init_sel_err | iv_sel_err;
+      add_state_out_sel_err | key_init_sel_err | iv_sel_err | data_out_sel_err;
 
   //////////////////////////////
   // Sparsely Encoded Signals //
@@ -964,6 +1061,7 @@ module aes_core
   assign alert_fatal_o = ctrl_err_storage |
                          ctr_alert        |
                          cipher_alert     |
+                         ghash_alert      |
                          ctrl_alert       |
                          intg_err_alert_i;
 

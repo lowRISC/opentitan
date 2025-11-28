@@ -57,10 +57,10 @@ class aes_core_fi_vseq extends aes_base_vseq;
         end
 
         // Wait and apply force.
-        if (await_state inside {aes_pkg::CTRL_PRNG_UPDATE, aes_pkg::CTRL_CLEAR_I,
+        if (await_state inside {aes_pkg::CTRL_GHASH_READY, aes_pkg::CTRL_CLEAR_I,
                                       aes_pkg::CTRL_CLEAR_CO}) begin
-          // The PRNG Update state and the Clear states are difficult to hit with a random
-          // delay.  This writes the clear register to bring the FSM to the PRNG Update and then
+          // The GHASH Ready state and the Clear states are difficult to hit with a random
+          // delay.  This writes the clear register to bring the FSM to the GHASH ready and then
           // the Clear states, and it waits until the FSM has reached the required state.
           clear_regs('{dataout: 1'b1, key_iv_data_in: 1'b1, default: 1'b0});
           `DV_WAIT(cfg.aes_core_fi_vif.aes_ctrl_cs == await_state)

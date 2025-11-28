@@ -297,6 +297,12 @@ module aes
     end
   end
 
+  if (AESGCMEnable) begin : gen_ghash_fsm_sva
+    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesGhashFsmCheck_A,
+        u_aes_core.gen_ghash.u_aes_ghash.u_state_regs,
+        alert_tx_o[1])
+  end
+
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
 endmodule

@@ -246,7 +246,7 @@ typedef struct packed {
   typedef enum logic [CtrlStateWidth-1:0] {
     CTRL_IDLE        = 6'b001001,
     CTRL_LOAD        = 6'b100011,
-    CTRL_PRNG_UPDATE = 6'b111101,
+    CTRL_GHASH_READY = 6'b111101,
     CTRL_PRNG_RESEED = 6'b010000,
     CTRL_FINISH      = 6'b100100,
     CTRL_CLEAR_I     = 6'b111010,
@@ -537,6 +537,13 @@ typedef enum logic [HashSubkeySelWidth-1:0] {
   HASH_SUBKEY_LOAD  = MUX2_SEL_0,
   HASH_SUBKEY_CLEAR = MUX2_SEL_1
 } hash_subkey_sel_e;
+
+parameter int DataOutSelNum = 2;
+parameter int DataOutSelWidth = Mux2SelWidth;
+typedef enum logic [DataOutSelWidth-1:0] {
+  DATA_OUT_CIPHER = MUX2_SEL_0,
+  DATA_OUT_GHASH  = MUX2_SEL_1
+} data_out_sel_e;
 
 // Sparse two-value signal type sp2v_e
 parameter int Sp2VNum = 2;
