@@ -402,6 +402,9 @@
     { name: "CTR.FSM.REDUN",
       desc: "The CTR mode FSM uses multiple, independent logic rails."
     }
+    { name: "GHASH.FSM.SPARSE",
+      desc: "The GHASH FSM uses a sparse state encoding."
+    }
     { name: "CTRL.SPARSE",
       desc: "Critical control signals such as handshake and MUX control signals use sparse encodings."
     }

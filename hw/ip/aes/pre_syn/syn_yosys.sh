@@ -72,6 +72,7 @@ OT_DEP_SOURCES=(
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_onehot_check.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_sec_anchor_buf.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_sec_anchor_flop.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_gf_mult.sv
     "$LR_SYNTH_SRC_DIR"/../prim_generic/rtl/prim_flop_2sync.sv
     "$LR_SYNTH_SRC_DIR"/../prim_xilinx/rtl/prim_flop.sv
     "$LR_SYNTH_SRC_DIR"/../prim_xilinx/rtl/prim_flop_en.sv
