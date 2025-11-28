@@ -12,7 +12,6 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   // ext component cfgs
   rand push_pull_agent_cfg#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
                                                  m_entropy_src_agent_cfg;
-  rand push_pull_agent_cfg#(.HostDataWidth(1))   m_aes_halt_agent_cfg;
   rand csrng_agent_cfg                           m_edn_agent_cfg[NUM_HW_APPS];
 
   virtual pins_if#(MuBi8Width)   otp_en_cs_sw_app_read_vif;
@@ -28,8 +27,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   uint otp_en_cs_sw_app_read_pct, otp_en_cs_sw_app_read_inval_pct, lc_hw_debug_en_pct, regwen_pct,
        int_state_read_enable_pct, int_state_read_enable_regwen_pct,
        enable_pct, sw_app_enable_pct, read_int_state_pct, fips_force_enable_pct, force_state_pct,
-       check_int_state_pct, num_cmds_min, num_cmds_max, aes_halt_pct, min_aes_halt_clks,
-       max_aes_halt_clks, min_num_disable_enable, max_num_disable_enable,
+       check_int_state_pct, num_cmds_min, num_cmds_max,
+       min_num_disable_enable, max_num_disable_enable,
        min_enable_clks, max_enable_clks,
        min_disable_edn_before_csrng_clks, max_disable_edn_before_csrng_clks,
        min_disable_csrng_before_entropy_src_clks, max_disable_csrng_before_entropy_src_clks,
@@ -39,8 +38,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
 
   bit    use_invalid_mubi;
 
-  rand bit       check_int_state, regwen, hw_app[NUM_HW_APPS],
-                 sw_app, aes_halt;
+  rand bit       check_int_state, regwen, hw_app[NUM_HW_APPS], sw_app;
   rand mubi4_t   enable, sw_app_enable, read_int_state, fips_force_enable;
   rand bit [2:0] fips_force;
   rand bit [3:0] lc_hw_debug_en;
@@ -119,10 +117,6 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   constraint check_int_state_c { check_int_state dist {
                                  1 :/ check_int_state_pct,
                                  0 :/ (100 - check_int_state_pct) };}
-
-  constraint aes_halt_c { aes_halt dist {
-                          1 :/ aes_halt_pct,
-                          0 :/ (100 - aes_halt_pct) };}
 
   constraint fips_force_enable_c { fips_force_enable dist {
                                    MuBi4True  :/ fips_force_enable_pct,
@@ -244,10 +238,6 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     // create agent configs
     m_entropy_src_agent_cfg = push_pull_agent_cfg#(.HostDataWidth(entropy_src_pkg::
                               FIPS_CSRNG_BUS_WIDTH))::type_id::create("m_entropy_src_agent_cfg");
-
-    m_aes_halt_agent_cfg    = push_pull_agent_cfg#(.HostDataWidth(1))::type_id::create
-                              ("m_aes_halt_agent_cfg");
-
     for (int i = 0; i < NUM_HW_APPS; i++) begin
       m_edn_agent_cfg[i] = csrng_agent_cfg::type_id::create($sformatf("m_edn_agent_cfg[%0d]", i));
     end
@@ -383,10 +373,6 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
            num_cmds_min)};
     str = {str,  $sformatf("\n\t |***** num_cmds_max                    : %10d *****| \t",
            num_cmds_max)};
-    str = {str,  $sformatf("\n\t |***** min_aes_halt_clks               : %10d *****| \t",
-           min_aes_halt_clks)};
-    str = {str,  $sformatf("\n\t |***** max_aes_halt_clks               : %10d *****| \t",
-           max_aes_halt_clks)};
     str = {str,  $sformatf("\n\t |********************************************************| \t")};
     str = {str, "\n"};
     return str;

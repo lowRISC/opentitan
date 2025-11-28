@@ -762,9 +762,6 @@
         RngBusWidth: "16",
         RngBusBitSelWidth: "4",
         HealthTestWindowWidth: "20",
-        // Disable the CS AES halt request interface as it's not required for Darjeeling to reduce
-        // the amount of backpressure in the hardware pipeline.
-        EnCsAesHaltReqIf: "0",
         // On Darjeeling, in worst case, there is a new 16-bit entropy word from the RNG every 3
         // cycles. Based on the back pressure formula in the entropy_src, this yields a depth of 11.
         DistrFifoDepth: "11",
@@ -1185,7 +1182,6 @@
       'aon_timer_aon.nmi_wdog_timer_bark' : ['rv_core_ibex.nmi_wdog']
       'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
-      'csrng.cs_aes_halt'       : ['entropy_src.cs_aes_halt'],
       'otp_ctrl.sram_otp_key'   : ['sram_ctrl_main.sram_otp_key',
                                    'sram_ctrl_ret_aon.sram_otp_key',
                                    'sram_ctrl_mbox.sram_otp_key'

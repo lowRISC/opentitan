@@ -25,7 +25,6 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   output logic [BlkLen-1:0] rsp_data_o,
 
   // Status and error signals
-  output logic              cipher_quiet_o,
   output logic              cipher_sm_err_o
 );
 
@@ -36,7 +35,6 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   aes_pkg::sp2v_e       cipher_in_ready;
   aes_pkg::sp2v_e       cipher_out_valid;
   aes_pkg::sp2v_e       cipher_out_ready;
-  aes_pkg::sp2v_e       cipher_crypt_busy;
 
   logic [3:0][3:0][7:0] state_init[NumShares];
 
@@ -80,7 +78,7 @@ module csrng_block_encrypt import csrng_pkg::*; #(
     .op_i                (aes_pkg::CIPH_FWD),
     .key_len_i           (aes_pkg::AES_256),
     .crypt_i             (aes_pkg::SP2V_HIGH), // Enable
-    .crypt_o             (cipher_crypt_busy),
+    .crypt_o             (),
     .alert_fatal_i       (1'b0),
     .alert_o             (cipher_sm_err_o),
     .dec_key_gen_i       (aes_pkg::SP2V_LOW), // Disable
@@ -111,12 +109,5 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   // Type conversion for AES compatibility
   assign req_rdy_o = (cipher_in_ready == aes_pkg::SP2V_HIGH);
   assign cipher_out_ready = rsp_rdy_i ? aes_pkg::SP2V_HIGH : aes_pkg::SP2V_LOW;
-
-  //--------------------------------------------
-  // Cipher idle detection
-  //--------------------------------------------
-
-  assign cipher_quiet_o = (cipher_crypt_busy == aes_pkg::SP2V_LOW) &&
-    ((cipher_in_valid == aes_pkg::SP2V_LOW) || (cipher_in_ready == aes_pkg::SP2V_LOW));
 
 endmodule

@@ -259,7 +259,6 @@ module top_earlgrey #(
   localparam int SramCtrlRetAonOutstanding = 2;
   // local parameters for entropy_src
   localparam int EntropySrcEsFifoDepth = 3;
-  localparam bit EntropySrcEnCsAesHaltReqIf = 1;
   localparam int unsigned EntropySrcDistrFifoDepth = 3;
   // local parameters for sram_ctrl_main
   localparam int SramCtrlMainOutstanding = 2;
@@ -599,8 +598,6 @@ module top_earlgrey #(
   csrng_pkg::csrng_rsp_t [1:0] csrng_csrng_cmd_rsp;
   entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
   entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
-  entropy_src_pkg::cs_aes_halt_req_t       csrng_cs_aes_halt_req;
-  entropy_src_pkg::cs_aes_halt_rsp_t       csrng_cs_aes_halt_rsp;
   flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
   otp_ctrl_pkg::flash_otp_key_req_t       flash_ctrl_otp_req;
   otp_ctrl_pkg::flash_otp_key_rsp_t       flash_ctrl_otp_rsp;
@@ -2653,8 +2650,6 @@ module top_earlgrey #(
       .csrng_cmd_o(csrng_csrng_cmd_rsp),
       .entropy_src_hw_if_o(csrng_entropy_src_hw_if_req),
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_rsp),
-      .cs_aes_halt_i(csrng_cs_aes_halt_req),
-      .cs_aes_halt_o(csrng_cs_aes_halt_rsp),
       .otp_en_csrng_sw_app_read_i(csrng_otp_en_csrng_sw_app_read),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .tl_i(csrng_tl_req),
@@ -2671,7 +2666,6 @@ module top_earlgrey #(
     .RngBusBitSelWidth(EntropySrcRngBusBitSelWidth),
     .HealthTestWindowWidth(EntropySrcHealthTestWindowWidth),
     .EsFifoDepth(EntropySrcEsFifoDepth),
-    .EnCsAesHaltReqIf(EntropySrcEnCsAesHaltReqIf),
     .DistrFifoDepth(EntropySrcDistrFifoDepth),
     .Stub(EntropySrcStub)
   ) u_entropy_src (
@@ -2689,8 +2683,6 @@ module top_earlgrey #(
       // Inter-module signals
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_req),
       .entropy_src_hw_if_o(csrng_entropy_src_hw_if_rsp),
-      .cs_aes_halt_o(csrng_cs_aes_halt_req),
-      .cs_aes_halt_i(csrng_cs_aes_halt_rsp),
       .entropy_src_rng_enable_o(es_rng_enable_o),
       .entropy_src_rng_valid_i(es_rng_valid_i),
       .entropy_src_rng_bits_i(es_rng_bit_i),

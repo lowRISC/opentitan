@@ -28,10 +28,6 @@ module csrng_core import csrng_pkg::*; #(
   output entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_o,
   input  entropy_src_pkg::entropy_src_hw_if_rsp_t entropy_src_hw_if_i,
 
-  // Entropy Interface
-  input  entropy_src_pkg::cs_aes_halt_req_t       cs_aes_halt_i,
-  output entropy_src_pkg::cs_aes_halt_rsp_t       cs_aes_halt_o,
-
   // Application Interfaces
   input  csrng_req_t [NumHwApps-1:0]              csrng_cmd_i,
   output csrng_rsp_t [NumHwApps-1:0]              csrng_cmd_o,
@@ -182,8 +178,6 @@ module csrng_core import csrng_pkg::*; #(
   logic                        state_db_reg_read_en;
 
   logic [30:0]                 err_code_test_bit;
-  logic                        ctr_drbg_es_halt_ack;
-  logic                        block_encrypt_quiet;
 
   logic                        cs_rdata_capt_vld;
   logic                        cs_bus_cmp_alert;
@@ -206,7 +200,6 @@ module csrng_core import csrng_pkg::*; #(
   logic   [NumAppsLg-1:0] cmd_arb_idx_q, cmd_arb_idx_d;
   logic                   genbits_stage_fips_sw_q, genbits_stage_fips_sw_d;
   acmd_e                  ctr_drbg_cmd_q, ctr_drbg_cmd_d;
-  logic                   cs_aes_halt_q, cs_aes_halt_d;
   logic     [SeedLen-1:0] entropy_src_seed_q, entropy_src_seed_d;
   logic                   entropy_src_fips_q, entropy_src_fips_d;
   logic            [63:0] cs_rdata_capt_q, cs_rdata_capt_d;
@@ -224,7 +217,6 @@ module csrng_core import csrng_pkg::*; #(
       cmd_arb_idx_q           <= '0;
       genbits_stage_fips_sw_q <= '0;
       ctr_drbg_cmd_q          <= INV;
-      cs_aes_halt_q           <= '0;
       entropy_src_seed_q      <= '0;
       entropy_src_fips_q      <= '0;
       cs_rdata_capt_q         <= '0;
@@ -240,7 +232,6 @@ module csrng_core import csrng_pkg::*; #(
       cmd_arb_idx_q           <= cmd_arb_idx_d;
       genbits_stage_fips_sw_q <= genbits_stage_fips_sw_d;
       ctr_drbg_cmd_q          <= ctr_drbg_cmd_d;
-      cs_aes_halt_q           <= cs_aes_halt_d;
       entropy_src_seed_q      <= entropy_src_seed_d;
       entropy_src_fips_q      <= entropy_src_fips_d;
       cs_rdata_capt_q         <= cs_rdata_capt_d;
@@ -948,9 +939,6 @@ module csrng_core import csrng_pkg::*; #(
     .block_encrypt_rsp_rdy_o (block_encrypt_rsp_rdy),
     .block_encrypt_rsp_data_i(block_encrypt_rsp_data),
 
-    .es_halt_req_i(cs_aes_halt_i.cs_aes_halt_req),
-    .es_halt_ack_o(ctr_drbg_es_halt_ack),
-
     .ctr_err_o(ctr_drbg_v_ctr_err),
     .sm_err_o (ctr_drbg_sm_err)
   );
@@ -974,15 +962,8 @@ module csrng_core import csrng_pkg::*; #(
     .rsp_rdy_i (block_encrypt_rsp_rdy),
     .rsp_data_o(block_encrypt_rsp_data),
 
-    .cipher_quiet_o  (block_encrypt_quiet),
-    .cipher_sm_err_o (block_encrypt_sm_err)
+    .cipher_sm_err_o(block_encrypt_sm_err)
   );
-
-  // Entropy source to CSRNG halt request to reduce power spikes
-  assign cs_aes_halt_d = (cs_aes_halt_i.cs_aes_halt_req && ctr_drbg_es_halt_ack &&
-                          block_encrypt_quiet);
-
-  assign cs_aes_halt_o.cs_aes_halt_ack = cs_aes_halt_q;
 
   //-------------------------------------
   // life cycle logic
@@ -1043,30 +1024,6 @@ module csrng_core import csrng_pkg::*; #(
   // Assertions
   //--------------------------------------------
 `ifdef INC_ASSERT
-  // Track activity of AES.
-  logic aes_active_d, aes_active_q;
-  assign aes_active_d =
-      (u_csrng_block_encrypt.u_aes_cipher_core.in_valid_i == aes_pkg::SP2V_HIGH &&
-       u_csrng_block_encrypt.u_aes_cipher_core.in_ready_o == aes_pkg::SP2V_HIGH)  ? 1'b1 : // set
-      (u_csrng_block_encrypt.u_aes_cipher_core.out_valid_o == aes_pkg::SP2V_HIGH &&
-       u_csrng_block_encrypt.u_aes_cipher_core.out_ready_i == aes_pkg::SP2V_HIGH) ? 1'b0 : // clear
-      aes_active_q;                                                                        // keep
-
-  // Track state of AES Halt req/ack with entropy_src.
-  logic cs_aes_halt_active;
-  assign cs_aes_halt_active = cs_aes_halt_i.cs_aes_halt_req & cs_aes_halt_o.cs_aes_halt_ack;
-
-  // Assert that when AES Halt is active, AES is not active.
-  `ASSERT(AesNotActiveWhileCsAesHaltActive_A, cs_aes_halt_active |-> !aes_active_d)
-
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      aes_active_q <= '0;
-    end else begin
-      aes_active_q <= aes_active_d;
-    end
-  end
-
   logic state_db_zeroize;
   assign state_db_zeroize = state_db_wr_vld && (ctr_drbg_rsp_data.cmd == UNI);
   `ASSERT(CsrngUniZeroizeFips_A, state_db_zeroize -> (ctr_drbg_rsp_data.fips   == '0))

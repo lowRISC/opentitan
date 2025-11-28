@@ -41,19 +41,6 @@ package entropy_src_pkg;
   parameter entropy_src_hw_if_req_t ENTROPY_SRC_HW_IF_REQ_DEFAULT = '{default: '0};
   parameter entropy_src_hw_if_rsp_t ENTROPY_SRC_HW_IF_RSP_DEFAULT = '{default: '0};
 
-
-  // csrng block encrypt request/ack i/f
-  typedef struct packed {
-    logic cs_aes_halt_req;
-  } cs_aes_halt_req_t;
-
-  typedef struct packed {
-    logic cs_aes_halt_ack;
-  } cs_aes_halt_rsp_t;
-
-  parameter cs_aes_halt_req_t CS_AES_HALT_REQ_DEFAULT = '{default: '0};
-  parameter cs_aes_halt_rsp_t CS_AES_HALT_RSP_DEFAULT = '{default: '0};
-
   // external health test i/f
   typedef struct packed {
     logic rng_bit_en;
