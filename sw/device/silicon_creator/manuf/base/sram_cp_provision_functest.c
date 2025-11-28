@@ -29,7 +29,9 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"  // Generated.
 
-static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 0;
+// We use GPIO 3 to match the GPIO used by the CP flow itself, as a work-around
+// for the fact that QEMU emulation does not currently route GPIO via Pinmux.
+static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 3;
 
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                         .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,

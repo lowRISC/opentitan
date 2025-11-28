@@ -162,11 +162,11 @@ opentitan_test(
         otp = "//hw/ip/otp_ctrl/data:img_raw",
         tags = ["manuf"],
         # NOTE: QEMU's GPIO interface goes directly to the peripheral and
-        # not via pins. We set the console TX indicator to use GPIO 0.
+        # not via pins. We set the console TX indicator to use GPIO 3.
         test_cmd = """
             --provisioning-sram-elf={sram_cp_provision}
             --test-sram-elf={sram_cp_provision_functest}
-            --console-tx-indicator-pin=0
+            --console-tx-indicator-pin=3
         """,
         test_harness = "//sw/host/tests/manuf/cp_provision_functest",
     ),
