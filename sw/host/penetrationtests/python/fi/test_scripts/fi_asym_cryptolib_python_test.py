@@ -81,13 +81,13 @@ class SymCryptolibFiTest(unittest.TestCase):
         expected_sensors_keys = {"sensor_ctrl_en", "sensor_ctrl_fatal"}
         actual_sensors_keys = set(sensors_json.keys())
 
-        self.assertEqual(
-            expected_sensors_keys, actual_sensors_keys, "sensor keys do not match"
-        )
+        self.assertEqual(expected_sensors_keys, actual_sensors_keys, "sensor keys do not match")
 
         expected_alerts_keys = {
             "alert_classes",
+            "loc_alert_classes",
             "enabled_alerts",
+            "enabled_loc_alerts",
             "enabled_classes",
             "accumulation_thresholds",
             "duration_cycles",
@@ -96,9 +96,7 @@ class SymCryptolibFiTest(unittest.TestCase):
         }
         actual_alerts_keys = set(alerts_json.keys())
 
-        self.assertEqual(
-            expected_alerts_keys, actual_alerts_keys, "alert keys do not match"
-        )
+        self.assertEqual(expected_alerts_keys, actual_alerts_keys, "alert keys do not match")
 
         expected_owner_page_keys = {
             "config_version",
@@ -135,9 +133,7 @@ class SymCryptolibFiTest(unittest.TestCase):
         }
         actual_boot_log_keys = set(boot_log_json.keys())
 
-        self.assertEqual(
-            expected_boot_log_keys, actual_boot_log_keys, "boot_log keys do not match"
-        )
+        self.assertEqual(expected_boot_log_keys, actual_boot_log_keys, "boot_log keys do not match")
 
         expected_boot_measurements_keys = {"bl0", "rom_ext"}
         actual_boot_measurements_keys = set(boot_measurements_json.keys())
@@ -197,9 +193,7 @@ class SymCryptolibFiTest(unittest.TestCase):
             "cfg": 0,
         }
 
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, enc_ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, enc_ignored_keys_set)
 
         encrypted_data = actual_result_json["data"]
         encrypted_data_len = actual_result_json["data_len"]
@@ -270,9 +264,7 @@ class SymCryptolibFiTest(unittest.TestCase):
             "cfg": 0,
         }
 
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, sign_ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, sign_ignored_keys_set)
 
         signature = actual_result_json["sig"]
         signature = signature[:256]
@@ -322,9 +314,7 @@ class SymCryptolibFiTest(unittest.TestCase):
             "cfg": 0,
         }
 
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_p256_ecdh(self):
         private_key = ECC.generate(curve="P-256")
@@ -356,9 +346,7 @@ class SymCryptolibFiTest(unittest.TestCase):
             "cfg": 0,
         }
 
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_p256_sign(self):
         key = ECC.generate(curve="P-256")
@@ -394,9 +382,7 @@ class SymCryptolibFiTest(unittest.TestCase):
             "cfg": 0,
         }
 
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, sign_ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, sign_ignored_keys_set)
 
         verifier = DSS.new(key.public_key(), "fips-186-3")
         r = actual_result_json["r"]
@@ -445,9 +431,7 @@ class SymCryptolibFiTest(unittest.TestCase):
             "cfg": 0,
         }
 
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_p384_ecdh(self):
         private_key = ECC.generate(curve="P-384")
@@ -479,9 +463,7 @@ class SymCryptolibFiTest(unittest.TestCase):
             "cfg": 0,
         }
 
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_p384_sign(self):
         key = ECC.generate(curve="P-384")
@@ -517,9 +499,7 @@ class SymCryptolibFiTest(unittest.TestCase):
             "cfg": 0,
         }
 
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, sign_ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, sign_ignored_keys_set)
 
         verifier = DSS.new(key.public_key(), "fips-186-3")
         r = actual_result_json["r"]
@@ -568,17 +548,13 @@ class SymCryptolibFiTest(unittest.TestCase):
             "cfg": 0,
         }
 
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
 
 if __name__ == "__main__":
     r = Runfiles.Create()
     # Get the opentitantool path.
-    opentitantool_path = r.Rlocation(
-        "lowrisc_opentitan/sw/host/opentitantool/opentitantool"
-    )
+    opentitantool_path = r.Rlocation("lowrisc_opentitan/sw/host/opentitantool/opentitantool")
     # Program the bitstream for FPGAs.
     bitstream_path = None
     if BITSTREAM:

@@ -35,6 +35,7 @@ UJSON_SERDE_STRUCT(CryptoFiCsrngMode, crypto_fi_csrng_mode_t, CRYPTOFI_CSRNG_MOD
     field(res, uint32_t) \
     field(rand, uint32_t, 16) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(err_status, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(RngFiCsrngOutput, rng_fi_csrng_output_t, RNGFI_CSRNG_OUTPUT);
@@ -43,6 +44,7 @@ UJSON_SERDE_STRUCT(RngFiCsrngOutput, rng_fi_csrng_output_t, RNGFI_CSRNG_OUTPUT);
     field(res, uint32_t) \
     field(rand, uint32_t, 12) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(err_status, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(RngFiCsrngOvOutput, rng_fi_csrng_ov_output_t, RNGFI_CSRNG_OV_OUTPUT);
@@ -50,6 +52,7 @@ UJSON_SERDE_STRUCT(RngFiCsrngOvOutput, rng_fi_csrng_ov_output_t, RNGFI_CSRNG_OV_
 #define RNGFI_ENTRBIAS_OUTPUT(field, string) \
     field(rand, uint32_t, 32) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(err_status, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(RngFiEntrBiasOutput, rng_fi_entropy_src_bias_t, RNGFI_ENTRBIAS_OUTPUT);
@@ -57,6 +60,7 @@ UJSON_SERDE_STRUCT(RngFiEntrBiasOutput, rng_fi_entropy_src_bias_t, RNGFI_ENTRBIA
 #define RNGFI_FWOVERWRITE_OUTPUT(field, string) \
     field(rand, uint32_t, 32) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(err_status, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(RngFiFwOverwriteOutput, rng_fi_fw_overwrite_t, RNGFI_FWOVERWRITE_OUTPUT);
@@ -64,6 +68,7 @@ UJSON_SERDE_STRUCT(RngFiFwOverwriteOutput, rng_fi_fw_overwrite_t, RNGFI_FWOVERWR
 #define RNGFI_EDN(field, string) \
     field(rand, uint32_t, 16) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(err_status, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(RngFiEdn, rng_fi_edn_t, RNGFI_EDN);
@@ -72,6 +77,7 @@ UJSON_SERDE_STRUCT(RngFiEdn, rng_fi_edn_t, RNGFI_EDN);
     field(collisions, uint32_t) \
     field(rand, uint32_t, 16) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(err_status, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(RngFiEdnCollision, rng_fi_edn_collisions_t, RNGFI_EDN_COLLISION);

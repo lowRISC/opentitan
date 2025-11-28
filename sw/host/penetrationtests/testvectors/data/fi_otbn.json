@@ -4,11 +4,11 @@
     "command": "Init",
     "input": "{\"enable_icache\": true,\"enable_dummy_instr\": true,\"dummy_instr_count\": 3,\"enable_jittery_clock\": true,\"enable_sram_readback\": true, \"enable_data_ind_timing\": true}",
     "sensors": "{\"sensor_ctrl_enable\": true, \"sensor_ctrl_en_fatal\": [false, false, false, false, false, false, false, false, false, false, false]}",
-    "alerts":"{\"alert_classes\":[2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"enable_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enable_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"signals\": [4294967295, 0, 2, 3], \"duration_cycles\": [0, 2400000,48,48], \"ping_timeout\": 1200}",
+    "alerts":"{\"alert_classes\":[2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"enable_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enable_loc_alerts\": [true, true, true, true, true, true, true], \"enable_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"signals\": [4294967295, 0, 2, 3], \"duration_cycles\": [0, 2400000,48,48], \"ping_timeout\": 1200}",
     "expected_output": [
       "{\"device_id\":[0,0,0,0,0,0,0,0],\"icache_en\":true,\"dummy_instr_en\":true,\"clock_jitter_locked\":false,\"clock_jitter_en\":true,\"sram_main_readback_locked\":false,\"sram_main_readback_en\":true,\"sram_ret_readback_locked\":false,\"sram_ret_readback_en\":true, \"data_ind_timing_en\": true}",
       "{\"sensor_ctrl_en\": [true,true,true,true,true,true,true,true,true,true,true], \"sensor_ctrl_fatal\": [false,false,false,false,false,false,false,false,false,false,false]}",
-      "{\"alert_classes\": [2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"enabled_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enabled_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"duration_cycles\": [0, 2400000,48,48], \"escalation_signals_en\": [true,false,true,true], \"escalation_signals_map\": [1, 0, 2, 3]}",
+      "{\"alert_classes\": [2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"loc_alert_classes\": [0,0,0,0,0,0,0], \"enabled_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enabled_loc_alerts\": [true, true, true, true, true, true, true], \"enabled_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"duration_cycles\": [0, 2400000,48,48], \"escalation_signals_en\": [true,false,true,true], \"escalation_signals_map\": [1, 0, 2, 3]}",
       "{\"config_version\":1,\"sram_exec_mode\":0,\"ownership_key_alg\":0,\"update_mode\":0,\"min_security_version_bl0\":0,\"lock_constraint\":0}",
       "{\"digest\":[0,0,0,0,0,0,0,0],\"identifier\":0,\"scm_revision_low\":0,\"scm_revision_high\":0,\"rom_ext_slot\":0,\"rom_ext_major\":0,\"rom_ext_minor\":1,\"rom_ext_size\":0,\"bl0_slot\":0,\"ownership_state\":0,\"ownership_transfers\":0,\"rom_ext_min_sec_ver\":0,\"bl0_min_sec_ver\":0,\"primary_bl0_slot\":16000078145,\"retention_ram_initialized\":0}",
       "{\"bl0\":[0,0,0,0,0,0,0,0],\"rom_ext\":[0,0,0,0,0,0,0,0]}",
@@ -17,90 +17,90 @@
   {
     "test_case_id": 2,
     "command": "CharBeq",
-    "expected_output": ["{\"result\":0,\"insn_cnt\":509,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result\":0,\"insn_cnt\":509,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 3,
     "command": "CharBnRshi",
     "input": "{\"big_num\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}",
-    "expected_output": ["{\"big_num\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"insn_cnt\":109,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"big_num\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"insn_cnt\":109,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 4,
     "command": "CharBnSel",
      "input": "{\"big_num\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}",
-    "expected_output": ["{\"big_num\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"insn_cnt\":1014,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"big_num\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"insn_cnt\":1014,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 5,
     "command": "CharBnWsrr",
-    "expected_output": ["{\"res\":0,\"insn_cnt\":1089,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"res\":0,\"insn_cnt\":1089,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 6,
     "command": "CharBne",
-    "expected_output": ["{\"result\":0,\"insn_cnt\":509,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result\":0,\"insn_cnt\":509,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 7,
     "command": "CharDmemAccess",
-    "expected_output": ["{\"res\":0,\"insn_cnt\":271,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"res\":0,\"insn_cnt\":271,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 8,
     "command": "CharDmemWrite",
-    "expected_output": ["{\"result\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"insn_cnt\":1,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"insn_cnt\":1,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 9,
     "command": "CharHardwareDmemOpLoop",
-    "expected_output": ["{\"loop_counter\":10000,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"loop_counter\":10000,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 10,
     "command": "CharHardwareRegOpLoop",
-    "expected_output": ["{\"loop_counter\":10000,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"loop_counter\":10000,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 11,
     "command": "CharJal",
-    "expected_output": ["{\"result\":0,\"insn_cnt\":505,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result\":0,\"insn_cnt\":505,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 12,
     "command": "CharLw",
-    "expected_output": ["{\"result\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"insn_cnt\":1084,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"insn_cnt\":1084,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 13,
     "command": "CharMem",
     "input": "{\"byte_offset\":0,\"num_words\":4,\"imem\":false,\"dmem\":true}",
-    "expected_output": ["{\"res\":0,\"imem_data\":[0,0,0,0,0,0,0,0],\"imem_addr\":[0,0,0,0,0,0,0,0],\"dmem_data\":[0,0,0,0,0,0,0,0],\"dmem_addr\":[0,0,0,0,0,0,0,0],\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"res\":0,\"imem_data\":[0,0,0,0,0,0,0,0],\"imem_addr\":[0,0,0,0,0,0,0,0],\"dmem_data\":[0,0,0,0,0,0,0,0],\"dmem_addr\":[0,0,0,0,0,0,0,0],\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 14,
     "command": "CharRF",
-    "expected_output": ["{\"res\":0,\"faulty_gpr\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"faulty_wdr\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"res\":0,\"faulty_gpr\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"faulty_wdr\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 15,
     "command": "CharUnrolledDmemOpLoop",
-    "expected_output": ["{\"loop_counter\":100,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"loop_counter\":100,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 16,
     "command": "CharUnrolledRegOpLoop",
-    "expected_output": ["{\"loop_counter\":100,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"loop_counter\":100,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 17,
     "command": "LoadIntegrity",
-    "expected_output": ["{\"result\":0,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result\":0,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 18,
     "command": "PC",
     "input": "{\"pc\":2224}",
-    "expected_output": ["{\"pc_dmem\":2224,\"pc_otbn\":2224,\"insn_cnt\":472,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"pc_dmem\":2224,\"pc_otbn\":2224,\"insn_cnt\":472,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   }
 ]
