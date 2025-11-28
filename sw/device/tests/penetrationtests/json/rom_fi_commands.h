@@ -20,6 +20,7 @@ RUST_ONLY(UJSON_SERDE_ENUM(RomFiSubcommand, rom_fi_subcommand_t, ROMFI_SUBCOMMAN
 #define ROMFI_DIGEST(field, string) \
     field(digest, uint32_t, 8) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(err_status, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(RomFiDigest, rom_fi_digest_t, ROMFI_DIGEST);

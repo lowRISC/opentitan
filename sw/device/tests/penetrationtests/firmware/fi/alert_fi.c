@@ -231,6 +231,9 @@ status_t handle_alert_fi_trigger(ujson_t *uj) {
 
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
@@ -482,6 +485,8 @@ status_t handle_alert_fi_trigger(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
@@ -493,6 +498,7 @@ status_t handle_alert_fi_trigger(ujson_t *uj) {
   // Send result & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_alert_fi_alert_out_t, uj, &uj_output);
@@ -503,6 +509,9 @@ status_t handle_alert_fi_trigger(ujson_t *uj) {
 status_t handle_alert_fi_sensor_ctrl_trigger(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
@@ -535,6 +544,8 @@ status_t handle_alert_fi_sensor_ctrl_trigger(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
@@ -546,6 +557,7 @@ status_t handle_alert_fi_sensor_ctrl_trigger(ujson_t *uj) {
   // Send result & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_alert_fi_alert_out_t, uj, &uj_output);
@@ -556,6 +568,9 @@ status_t handle_alert_fi_sensor_ctrl_trigger(ujson_t *uj) {
 status_t handle_alert_fi_ibex_sw_fatal(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
@@ -587,6 +602,8 @@ status_t handle_alert_fi_ibex_sw_fatal(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
@@ -598,6 +615,7 @@ status_t handle_alert_fi_ibex_sw_fatal(ujson_t *uj) {
   // Send result & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_alert_fi_alert_out_t, uj, &uj_output);
@@ -626,9 +644,9 @@ status_t handle_alert_fi_init(ujson_t *uj) {
   // and reported to the test.
   pentest_configure_alert_handler(
       uj_alert_data.alert_classes, uj_alert_data.enable_alerts,
-      uj_alert_data.enable_classes, uj_alert_data.accumulation_thresholds,
-      uj_alert_data.signals, uj_alert_data.duration_cycles,
-      uj_alert_data.ping_timeout);
+      uj_alert_data.enable_loc_alerts, uj_alert_data.enable_classes,
+      uj_alert_data.accumulation_thresholds, uj_alert_data.signals,
+      uj_alert_data.duration_cycles, uj_alert_data.ping_timeout);
 
   // Configure the CPU for the pentest.
   penetrationtest_device_info_t uj_output;

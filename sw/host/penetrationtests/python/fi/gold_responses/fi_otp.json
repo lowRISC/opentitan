@@ -21,6 +21,7 @@
     "otp_error_causes": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "otp_status_codes": 0,
     "alerts": [0, 0, 0],
+    "loc_alerts": 0,
     "ast_alerts": [0, 0]
   },
   "char_owner_sw_cfg": {
@@ -229,6 +230,7 @@
     "otp_error_causes": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "otp_status_codes": 0,
     "alerts": [0, 0, 0],
+    "loc_alerts": 0,
     "ast_alerts": [0, 0]
   },
   "char_hw_cfg": {
@@ -257,6 +259,7 @@
     "otp_error_causes": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "otp_status_codes": 0,
     "alerts": [0, 0, 0],
+    "loc_alerts": 0,
     "ast_alerts": [0, 0]
   },
   "char_life_cycle": {
@@ -287,6 +290,7 @@
     "otp_error_causes": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "otp_status_codes": 0,
     "alerts": [0, 0, 0],
+    "loc_alerts": 0,
     "ast_alerts": [0, 0]
   }
 }
