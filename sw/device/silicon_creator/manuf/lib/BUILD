@@ -8,6 +8,7 @@ load(
     "OPENTITAN_CPU",
     "fpga_params",
     "opentitan_test",
+    "qemu_params",
 )
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
@@ -144,11 +145,15 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_sival": None,
+        "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
         otp = "//hw/ip/otp_ctrl/data:img_test_unlocked1",
         tags = ["manuf"],
+    ),
+    qemu = qemu_params(
+        otp = "//hw/ip/otp_ctrl/data:img_test_unlocked1",
     ),
     deps = [
         ":flash_info_fields",
@@ -210,11 +215,19 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
         otp = "//hw/ip/otp_ctrl/data:img_test_unlocked1",
         tags = ["manuf"],
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/manuf/individualize_sw_cfg_functest",
+    ),
+    qemu = qemu_params(
+        otp = "//hw/ip/otp_ctrl/data:img_test_unlocked1",
         test_cmd = """
             --bootstrap={firmware}
         """,
@@ -270,6 +283,7 @@ opentitan_test(
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "dev_key_0"},
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -279,6 +293,14 @@ opentitan_test(
             "lc_dev",
             "manuf",
         ],
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/manuf/personalize_functest",
+    ),
+    qemu = qemu_params(
+        needs_jtag = True,
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_dev_manuf_individualized",
         test_cmd = """
             --bootstrap={firmware}
         """,
@@ -333,6 +355,7 @@ opentitan_test(
     ],
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         tags = ["manuf"],
