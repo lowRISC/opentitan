@@ -251,7 +251,7 @@ def process_pipeline(xbar: Xbar) -> None:
                 log.info("Fifo present with no passthrough")
                 unode.dreq_pass = 0
                 unode.drsp_pass = 0
-                unode.ddepth = 1
+                unode.ddepth = device.fifo_depth
             elif fifo_passthru:
                 log.info("Fifo present with passthrough")
                 unode.dreq_pass = req_pass
