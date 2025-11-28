@@ -140,3 +140,24 @@ property inter_mod_package {
   type = string;
   component = signal;
 };
+
+enum BusProtocol {
+  TlUl;
+};
+
+enum BusDirection {
+  Host;
+  Device;
+};
+
+struct BusInterfaceCfg {
+  BusProtocol protocol;
+  BusDirection direction;
+  boolean racl_support;
+  string hier_path;
+};
+
+property bus_interface_cfg{
+  type = BusInterfaceCfg;
+  component = addrmap;
+};

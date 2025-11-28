@@ -7,7 +7,7 @@
 
 import re
 from dataclasses import dataclass
-from typing import TextIO
+from typing import TextIO, Any
 from pathlib import Path
 import shutil
 
@@ -20,6 +20,7 @@ from reggen.field import Field
 from reggen.access import SWAccess, HWAccess, HwAccess
 from reggen.inter_signal import InterSignal
 from reggen.signal import Signal
+from reggen.bus_interfaces import BusInterfaces
 from reggen.interrupt import Interrupt
 from reggen.alert import Alert
 from reggen.exporter import Exporter
@@ -337,6 +338,52 @@ class Signal2Systemrdl:
 
 
 @dataclass
+class BusInterfaces2Systemrdl:
+    inner: BusInterfaces
+    importer: RDLImporter
+
+    def _get_direction(self, interface_name: str = "") -> str:
+        if len(self.inner.racl_support) == 1:
+            return (
+                "Device"
+                if self.inner.has_unnamed_device and not self.inner.has_unnamed_host
+                else "Host"
+            )
+        return "Device" if interface_name in self.inner.named_devices else "Host"
+
+    def _get_protocol(self, interface_name: str = "") -> str:
+        return "TlUl"
+
+    def _get_hier_path(self, interface_name: str = "") -> str:
+        if len(self.inner.device_hier_paths) == 1:
+            return list(self.inner.device_hier_paths.values())[0]
+        return self.inner.device_hier_paths[interface_name]
+
+    def _get_racl_support(self, interface_name: str = "") -> bool:
+        if len(self.inner.racl_support) == 1:
+            return list(self.inner.racl_support.values())[0]
+        return self.inner.racl_support[interface_name]
+
+    def export(self, interface_name: str = "") -> Any:
+        BusInterfaceCfg = self.importer.compiler.namespace.lookup_type("BusInterfaceCfg")
+        assert isinstance(BusInterfaceCfg, rdltypes.user_struct.UserStructMeta)
+        BusDirection = self.importer.compiler.namespace.lookup_type("BusDirection")
+        assert isinstance(BusDirection, rdltypes.user_enum.UserEnumMeta)
+        BusProtocol = self.importer.compiler.namespace.lookup_type("BusProtocol")
+        assert isinstance(BusProtocol, rdltypes.user_enum.UserEnumMeta)
+
+        instance = BusInterfaceCfg(
+            {
+                "racl_support": self._get_racl_support(interface_name),
+                "direction": BusDirection[self._get_direction(interface_name)],
+                "protocol": BusProtocol[self._get_protocol(interface_name)],
+                "hier_path": self._get_hier_path(interface_name),
+            }
+        )
+        return instance
+
+
+@dataclass
 class IpBlock2Systemrdl:
     inner: IpBlock
     importer: RDLImporter
@@ -367,10 +414,14 @@ class IpBlock2Systemrdl:
                 signal = Signal2Systemrdl(xput, self.importer, direction).export()
                 rdl_addrmap.children.append(signal)
 
+        bus_interfaces = BusInterfaces2Systemrdl(self.inner.bus_interfaces, self.importer)
         interfaces = list(self.inner.reg_blocks.values())
         if len(interfaces) == 1 and not bool(interfaces[0].name):
             # If there's only one interface, the registers can go directly on the root addressmap.
             RegBlock2Systemrdl(interfaces[0], self.importer).export(rdl_addrmap)
+
+            val = bus_interfaces.export()
+            self.importer.assign_property(rdl_addrmap, "bus_interface_cfg", val)
             return rdl_addrmap
 
         num_children = 0
@@ -381,6 +432,8 @@ class IpBlock2Systemrdl:
             if rdl_rb is None:
                 continue
 
+            val = bus_interfaces.export(rb.name)
+            self.importer.assign_property(rdl_rb, "bus_interface_cfg", val)
             self.importer.add_child(rdl_addrmap, rdl_rb)
             num_children += 1
 
