@@ -37,11 +37,10 @@ BOOTSTRAP = args.bootstrap
 
 
 class SymCryptolibFiTest(unittest.TestCase):
-
     def test_init(self):
         symfi = OTFISymCrypto(target)
-        device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-            symfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+        device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = symfi.init(
+            alert_config=common_library.default_fpga_friendly_alert_config
         )
         device_id_json = json.loads(device_id)
         sensors_json = json.loads(sensors)
@@ -74,13 +73,13 @@ class SymCryptolibFiTest(unittest.TestCase):
         expected_sensors_keys = {"sensor_ctrl_en", "sensor_ctrl_fatal"}
         actual_sensors_keys = set(sensors_json.keys())
 
-        self.assertEqual(
-            expected_sensors_keys, actual_sensors_keys, "sensor keys do not match"
-        )
+        self.assertEqual(expected_sensors_keys, actual_sensors_keys, "sensor keys do not match")
 
         expected_alerts_keys = {
             "alert_classes",
+            "loc_alert_classes",
             "enabled_alerts",
+            "enabled_loc_alerts",
             "enabled_classes",
             "accumulation_thresholds",
             "duration_cycles",
@@ -89,9 +88,7 @@ class SymCryptolibFiTest(unittest.TestCase):
         }
         actual_alerts_keys = set(alerts_json.keys())
 
-        self.assertEqual(
-            expected_alerts_keys, actual_alerts_keys, "alert keys do not match"
-        )
+        self.assertEqual(expected_alerts_keys, actual_alerts_keys, "alert keys do not match")
 
         expected_owner_page_keys = {
             "config_version",
@@ -128,9 +125,7 @@ class SymCryptolibFiTest(unittest.TestCase):
         }
         actual_boot_log_keys = set(boot_log_json.keys())
 
-        self.assertEqual(
-            expected_boot_log_keys, actual_boot_log_keys, "boot_log keys do not match"
-        )
+        self.assertEqual(expected_boot_log_keys, actual_boot_log_keys, "boot_log keys do not match")
 
         expected_boot_measurements_keys = {"bl0", "rom_ext"}
         actual_boot_measurements_keys = set(boot_measurements_json.keys())
@@ -183,9 +178,7 @@ class SymCryptolibFiTest(unittest.TestCase):
             actual_result_json = json.loads(actual_result)
 
             cipher_gen = AES.new(bytes(key), AES.MODE_ECB)
-            expected_result = utils.pad_with_zeros(
-                [x for x in cipher_gen.encrypt(bytes(data))], 64
-            )
+            expected_result = utils.pad_with_zeros([x for x in cipher_gen.encrypt(bytes(data))], 64)
             expected_result_json = {
                 "status": 0,
                 "data": expected_result,
@@ -193,9 +186,7 @@ class SymCryptolibFiTest(unittest.TestCase):
                 "cfg": 0,
             }
 
-            utils.compare_json_data(
-                actual_result_json, expected_result_json, ignored_keys_set
-            )
+            utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_gcm(self):
         for _ in range(repetitions):
@@ -239,12 +230,8 @@ class SymCryptolibFiTest(unittest.TestCase):
 
             cipher_gen = AES.new(bytes(key), AES.MODE_GCM, bytes(iv))
             cipher_gen.update(bytes(aad))
-            expected_ciphertext, expected_tag = cipher_gen.encrypt_and_digest(
-                bytes(data)
-            )
-            expected_ciphertext = utils.pad_with_zeros(
-                [x for x in expected_ciphertext], 64
-            )
+            expected_ciphertext, expected_tag = cipher_gen.encrypt_and_digest(bytes(data))
+            expected_ciphertext = utils.pad_with_zeros([x for x in expected_ciphertext], 64)
             expected_tag = utils.pad_with_zeros([x for x in expected_tag], 64)
             expected_result_json = {
                 "status": 0,
@@ -255,9 +242,7 @@ class SymCryptolibFiTest(unittest.TestCase):
                 "cfg": 0,
             }
 
-            utils.compare_json_data(
-                actual_result_json, expected_result_json, ignored_keys_set
-            )
+            utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_hmac(self):
         for _ in range(repetitions):
@@ -299,9 +284,7 @@ class SymCryptolibFiTest(unittest.TestCase):
                 "cfg": 0,
             }
 
-            utils.compare_json_data(
-                actual_result_json, expected_result_json, ignored_keys_set
-            )
+            utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_drbg(self):
         entropy_len = 32
@@ -337,18 +320,14 @@ class SymCryptolibFiTest(unittest.TestCase):
         drbg_ignored_key_sets = ignored_keys_set.copy()
         drbg_ignored_key_sets.add("data")
 
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, drbg_ignored_key_sets
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, drbg_ignored_key_sets)
 
     def test_char_trng(self):
         mode = 0
         trigger = 1
         cfg = 0
 
-        actual_result = fi_sym_cryptolib_functions.char_trng(
-            target, iterations, mode, cfg, trigger
-        )
+        actual_result = fi_sym_cryptolib_functions.char_trng(target, iterations, mode, cfg, trigger)
         actual_result_json = json.loads(actual_result)
 
         expected_result_json = {
@@ -359,17 +338,13 @@ class SymCryptolibFiTest(unittest.TestCase):
         trng_ignored_key_sets = ignored_keys_set.copy()
         trng_ignored_key_sets.add("data")
 
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, trng_ignored_key_sets
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, trng_ignored_key_sets)
 
 
 if __name__ == "__main__":
     r = Runfiles.Create()
     # Get the opentitantool path.
-    opentitantool_path = r.Rlocation(
-        "lowrisc_opentitan/sw/host/opentitantool/opentitantool"
-    )
+    opentitantool_path = r.Rlocation("lowrisc_opentitan/sw/host/opentitantool/opentitantool")
     # Program the bitstream for FPGAs.
     bitstream_path = None
     if BITSTREAM:

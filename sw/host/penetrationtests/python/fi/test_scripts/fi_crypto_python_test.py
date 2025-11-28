@@ -37,19 +37,16 @@ def load_test_data(test_name):
         "lowrisc_opentitan/sw/host/penetrationtests/python/fi/gold_responses/fi_crypto.json"
     )
 
-    with open(data_path, 'r') as f:
+    with open(data_path, "r") as f:
         data = json.load(f)
         return data[test_name]
 
 
 class CryptoFiTest(unittest.TestCase):
-
     def test_init(self):
         cryptofi = OTFICrypto(target)
         device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-            cryptofi.init(
-                alert_config=common_library.default_fpga_friendly_alert_config
-            )
+            cryptofi.init(alert_config=common_library.default_fpga_friendly_alert_config)
         )
         device_id_json = json.loads(device_id)
         sensors_json = json.loads(sensors)
@@ -82,13 +79,13 @@ class CryptoFiTest(unittest.TestCase):
         expected_sensors_keys = {"sensor_ctrl_en", "sensor_ctrl_fatal"}
         actual_sensors_keys = set(sensors_json.keys())
 
-        self.assertEqual(
-            expected_sensors_keys, actual_sensors_keys, "sensor keys do not match"
-        )
+        self.assertEqual(expected_sensors_keys, actual_sensors_keys, "sensor keys do not match")
 
         expected_alerts_keys = {
             "alert_classes",
+            "loc_alert_classes",
             "enabled_alerts",
+            "enabled_loc_alerts",
             "enabled_classes",
             "accumulation_thresholds",
             "duration_cycles",
@@ -97,9 +94,7 @@ class CryptoFiTest(unittest.TestCase):
         }
         actual_alerts_keys = set(alerts_json.keys())
 
-        self.assertEqual(
-            expected_alerts_keys, actual_alerts_keys, "alert keys do not match"
-        )
+        self.assertEqual(expected_alerts_keys, actual_alerts_keys, "alert keys do not match")
 
         expected_owner_page_keys = {
             "config_version",
@@ -136,9 +131,7 @@ class CryptoFiTest(unittest.TestCase):
         }
         actual_boot_log_keys = set(boot_log_json.keys())
 
-        self.assertEqual(
-            expected_boot_log_keys, actual_boot_log_keys, "boot_log keys do not match"
-        )
+        self.assertEqual(expected_boot_log_keys, actual_boot_log_keys, "boot_log keys do not match")
 
         expected_boot_measurements_keys = {"bl0", "rom_ext"}
         actual_boot_measurements_keys = set(boot_measurements_json.keys())
@@ -155,9 +148,7 @@ class CryptoFiTest(unittest.TestCase):
         trigger = 0
         plaintext = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
         key = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
-        actual_result = fi_crypto_functions.char_aes(
-            target, iterations, plaintext, key, trigger
-        )
+        actual_result = fi_crypto_functions.char_aes(target, iterations, plaintext, key, trigger)
         actual_result_json = json.loads(actual_result)
 
         cipher_gen = AES.new(bytes(key), AES.MODE_ECB)
@@ -166,11 +157,10 @@ class CryptoFiTest(unittest.TestCase):
             "ciphertext": expected_result,
             "err_status": 0,
             "alerts": [0, 0, 0],
+            "loc_alerts": 0,
             "ast_alerts": [0, 0],
         }
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_kmac(self):
         trigger = 0
@@ -179,22 +169,18 @@ class CryptoFiTest(unittest.TestCase):
         expected_result_json = json.loads(
             '{"digest":[184,34,91,108,231,47,251,27], \
                 "digest_2nd":[142,188,186,201,216,47,203,192], \
-                    "err_status":0,"alerts":[0,0,0],"ast_alerts":[0,0]}'
+                    "err_status":0,"alerts":[0,0,0],"loc_alerts":0,"ast_alerts":[0,0]}'
         )
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_kmac_state(self):
         actual_result = fi_crypto_functions.char_kmac_state(target, iterations)
         actual_result_json = json.loads(actual_result)
         expected_result_json = json.loads(
             '{"digest":[184,34,91,108,231,47,251,27],"err_status":0, \
-                "alerts":[0,0,0],"ast_alerts":[0,0]}'
+                "alerts":[0,0,0],"loc_alerts":0,"ast_alerts":[0,0]}'
         )
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_hmac(self):
         trigger = 0
@@ -230,11 +216,10 @@ class CryptoFiTest(unittest.TestCase):
             "tag": expected_result,
             "err_status": 0,
             "alerts": [0, 0, 0],
+            "loc_alerts": 0,
             "ast_alerts": [0, 0],
         }
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
         msg = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
         trigger = 0
@@ -270,11 +255,10 @@ class CryptoFiTest(unittest.TestCase):
             "tag": expected_result,
             "err_status": 0,
             "alerts": [0, 0, 0],
+            "loc_alerts": 0,
             "ast_alerts": [0, 0],
         }
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
         msg = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
         trigger = 0
@@ -308,11 +292,10 @@ class CryptoFiTest(unittest.TestCase):
             "tag": expected_result,
             "err_status": 0,
             "alerts": [0, 0, 0],
+            "loc_alerts": 0,
             "ast_alerts": [0, 0],
         }
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
         msg = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
         trigger = 0
@@ -344,11 +327,10 @@ class CryptoFiTest(unittest.TestCase):
             "tag": expected_result,
             "err_status": 0,
             "alerts": [0, 0, 0],
+            "loc_alerts": 0,
             "ast_alerts": [0, 0],
         }
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
         # HMAC tests
 
@@ -384,11 +366,10 @@ class CryptoFiTest(unittest.TestCase):
             "tag": expected_result,
             "err_status": 0,
             "alerts": [0, 0, 0],
+            "loc_alerts": 0,
             "ast_alerts": [0, 0],
         }
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
         msg = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
         key = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -422,11 +403,10 @@ class CryptoFiTest(unittest.TestCase):
             "tag": expected_result,
             "err_status": 0,
             "alerts": [0, 0, 0],
+            "loc_alerts": 0,
             "ast_alerts": [0, 0],
         }
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
         msg = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
         key = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
@@ -459,45 +439,34 @@ class CryptoFiTest(unittest.TestCase):
             "tag": expected_result,
             "err_status": 0,
             "alerts": [0, 0, 0],
+            "loc_alerts": 0,
             "ast_alerts": [0, 0],
         }
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_shadow_reg_access(self):
         actual_result = fi_crypto_functions.char_shadow_reg_access(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_shadow_reg_access')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_shadow_reg_access")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_shadow_reg_read(self):
         actual_result = fi_crypto_functions.char_shadow_reg_read(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_shadow_reg_read')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_shadow_reg_read")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
 
 if __name__ == "__main__":
     r = Runfiles.Create()
     # Get the opentitantool path.
-    opentitantool_path = r.Rlocation(
-        "lowrisc_opentitan/sw/host/opentitantool/opentitantool"
-    )
+    opentitantool_path = r.Rlocation("lowrisc_opentitan/sw/host/opentitantool/opentitantool")
     # Program the bitstream for FPGAs.
     bitstream_path = None
     if BITSTREAM:
-        bitstream_path = r.Rlocation(
-            "lowrisc_opentitan/" + BITSTREAM
-        )
+        bitstream_path = r.Rlocation("lowrisc_opentitan/" + BITSTREAM)
     # Get the firmware path.
-    firmware_path = r.Rlocation(
-        "lowrisc_opentitan/" + BOOTSTRAP
-    )
+    firmware_path = r.Rlocation("lowrisc_opentitan/" + BOOTSTRAP)
 
     if "fpga" in BOOTSTRAP:
         target_type = "fpga"
@@ -510,7 +479,7 @@ if __name__ == "__main__":
         fw_bin=firmware_path,
         opentitantool=opentitantool_path,
         bitstream=bitstream_path,
-        tool_args=config_args
+        tool_args=config_args,
     )
 
     target = targets.Target(target_cfg)

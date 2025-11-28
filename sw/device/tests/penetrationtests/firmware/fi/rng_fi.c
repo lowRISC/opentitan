@@ -148,6 +148,9 @@ static void entropy_conditioner_stop(const dif_entropy_src_t *entropy_src) {
 status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
@@ -185,6 +188,8 @@ status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
@@ -198,6 +203,7 @@ status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
   memcpy(uj_output.rand, entropy_bits, sizeof(entropy_bits));
   uj_output.err_status = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_rng_fi_entropy_src_bias_t, uj, &uj_output);
@@ -208,6 +214,9 @@ status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
 status_t handle_rng_fi_firmware_override(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
@@ -250,6 +259,8 @@ status_t handle_rng_fi_firmware_override(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
@@ -263,6 +274,7 @@ status_t handle_rng_fi_firmware_override(ujson_t *uj) {
   memcpy(uj_output.rand, buf, sizeof(buf));
   uj_output.err_status = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_rng_fi_fw_overwrite_t, uj, &uj_output);
@@ -273,6 +285,9 @@ status_t handle_rng_fi_firmware_override(ujson_t *uj) {
 status_t handle_rng_fi_edn_bias(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
@@ -313,6 +328,8 @@ status_t handle_rng_fi_edn_bias(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
@@ -322,6 +339,7 @@ status_t handle_rng_fi_edn_bias(ujson_t *uj) {
 
   // Send result & ERR_STATUS to host.
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   uj_output.err_status = err_ibx;
@@ -332,6 +350,9 @@ status_t handle_rng_fi_edn_bias(ujson_t *uj) {
 status_t handle_rng_fi_edn_resp_ack(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
   // Enable entropy complex, CSRNG and EDN so Ibex can get entropy.
@@ -369,6 +390,8 @@ status_t handle_rng_fi_edn_resp_ack(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
@@ -379,6 +402,7 @@ status_t handle_rng_fi_edn_resp_ack(ujson_t *uj) {
   // Send result & ERR_STATUS to host.
   uj_output.collisions = collisions;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   uj_output.err_status = err_ibx;
@@ -425,9 +449,9 @@ status_t handle_rng_fi_edn_init(ujson_t *uj) {
   // and reported to the test.
   pentest_configure_alert_handler(
       uj_alert_data.alert_classes, uj_alert_data.enable_alerts,
-      uj_alert_data.enable_classes, uj_alert_data.accumulation_thresholds,
-      uj_alert_data.signals, uj_alert_data.duration_cycles,
-      uj_alert_data.ping_timeout);
+      uj_alert_data.enable_loc_alerts, uj_alert_data.enable_classes,
+      uj_alert_data.accumulation_thresholds, uj_alert_data.signals,
+      uj_alert_data.duration_cycles, uj_alert_data.ping_timeout);
 
   // Initialize peripherals used in this FI test.
   TRY(dif_entropy_src_init(
@@ -464,6 +488,9 @@ status_t handle_rng_fi_csrng_bias(ujson_t *uj) {
   TRY(ujson_deserialize_crypto_fi_csrng_mode_t(uj, &uj_data));
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
@@ -513,6 +540,8 @@ status_t handle_rng_fi_csrng_bias(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
@@ -538,6 +567,7 @@ status_t handle_rng_fi_csrng_bias(ujson_t *uj) {
   memcpy(uj_output.rand, rand_data_got, sizeof(rand_data_got));
   uj_output.err_status = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_rng_fi_csrng_output_t, uj, &uj_output);
@@ -548,6 +578,9 @@ status_t handle_rng_fi_csrng_bias(ujson_t *uj) {
 status_t handle_rng_fi_csrng_bias_fw_override(ujson_t *uj, bool static_seed) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
@@ -606,6 +639,8 @@ status_t handle_rng_fi_csrng_bias_fw_override(ujson_t *uj, bool static_seed) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
@@ -620,6 +655,7 @@ status_t handle_rng_fi_csrng_bias_fw_override(ujson_t *uj, bool static_seed) {
   memcpy(uj_output.rand, received_data, sizeof(received_data));
   uj_output.err_status = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_rng_fi_csrng_ov_output_t, uj, &uj_output);
@@ -665,9 +701,9 @@ status_t handle_rng_fi_csrng_init(ujson_t *uj) {
   // and reported to the test.
   pentest_configure_alert_handler(
       uj_alert_data.alert_classes, uj_alert_data.enable_alerts,
-      uj_alert_data.enable_classes, uj_alert_data.accumulation_thresholds,
-      uj_alert_data.signals, uj_alert_data.duration_cycles,
-      uj_alert_data.ping_timeout);
+      uj_alert_data.enable_loc_alerts, uj_alert_data.enable_classes,
+      uj_alert_data.accumulation_thresholds, uj_alert_data.signals,
+      uj_alert_data.duration_cycles, uj_alert_data.ping_timeout);
 
   // Initialize CSRNG.
   mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);

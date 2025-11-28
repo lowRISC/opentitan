@@ -28,6 +28,7 @@ UJSON_SERDE_STRUCT(AlertFiTrigger, alert_fi_trigger_t, ALERT_FI_TRIGGER);
 #define ALERT_FI_ALERT_OUT(field, string) \
     field(err_status, uint32_t) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(AlertFiAlertOut, alert_fi_alert_out_t, ALERT_FI_ALERT_OUT);
 

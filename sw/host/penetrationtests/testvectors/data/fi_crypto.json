@@ -4,11 +4,11 @@
     "command": "Init",
     "input": "{\"enable_icache\": true,\"enable_dummy_instr\": true,\"dummy_instr_count\": 3,\"enable_jittery_clock\": true,\"enable_sram_readback\": true, \"enable_data_ind_timing\": true}",
     "sensors": "{\"sensor_ctrl_enable\": true, \"sensor_ctrl_en_fatal\": [false, false, false, false, false, false, false, false, false, false, false]}",
-    "alerts":"{\"alert_classes\":[2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"enable_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enable_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"signals\": [4294967295, 0, 2, 3], \"duration_cycles\": [0, 2400000,48,48], \"ping_timeout\": 1200}",
+    "alerts":"{\"alert_classes\":[2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"enable_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enable_loc_alerts\": [true, true, true, true, true, true, true], \"enable_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"signals\": [4294967295, 0, 2, 3], \"duration_cycles\": [0, 2400000,48,48], \"ping_timeout\": 1200}",
     "expected_output": [
       "{\"device_id\":[0,0,0,0,0,0,0,0],\"icache_en\":true,\"dummy_instr_en\":true,\"clock_jitter_locked\":false,\"clock_jitter_en\":true,\"sram_main_readback_locked\":false,\"sram_main_readback_en\":true,\"sram_ret_readback_locked\":false,\"sram_ret_readback_en\":true, \"data_ind_timing_en\": true}",
       "{\"sensor_ctrl_en\": [true,true,true,true,true,true,true,true,true,true,true], \"sensor_ctrl_fatal\": [false,false,false,false,false,false,false,false,false,false,false]}",
-      "{\"alert_classes\": [2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"enabled_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enabled_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"duration_cycles\": [0, 2400000,48,48], \"escalation_signals_en\": [true,false,true,true], \"escalation_signals_map\": [1, 0, 2, 3]}",
+      "{\"alert_classes\": [2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"loc_alert_classes\": [0,0,0,0,0,0,0], \"enabled_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enabled_loc_alerts\": [true, true, true, true, true, true, true], \"enabled_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"duration_cycles\": [0, 2400000,48,48], \"escalation_signals_en\": [true,false,true,true], \"escalation_signals_map\": [1, 0, 2, 3]}",
       "{\"config_version\":1,\"sram_exec_mode\":0,\"ownership_key_alg\":0,\"update_mode\":0,\"min_security_version_bl0\":0,\"lock_constraint\":0}",
       "{\"digest\":[0,0,0,0,0,0,0,0],\"identifier\":0,\"scm_revision_low\":0,\"scm_revision_high\":0,\"rom_ext_slot\":0,\"rom_ext_major\":0,\"rom_ext_minor\":1,\"rom_ext_size\":0,\"bl0_slot\":0,\"ownership_state\":0,\"ownership_transfers\":0,\"rom_ext_min_sec_ver\":0,\"bl0_min_sec_ver\":0,\"primary_bl0_slot\":16000078145,\"retention_ram_initialized\":0}",
       "{\"bl0\":[0,0,0,0,0,0,0,0],\"rom_ext\":[0,0,0,0,0,0,0,0]}",
@@ -19,150 +19,150 @@
     "command": "Aes",
     "mode": "{\"key_trigger\": true,\"plaintext_trigger\": false,\"encrypt_trigger\": false,\"ciphertext_trigger\": false}",
     "input": "{\"plaintext\": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], \"key\": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]}",
-    "expected_output": ["{\"ciphertext\":[10,148,11,181,65,110,240,69,241,195,148,88,198,83,234,90],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"ciphertext\":[10,148,11,181,65,110,240,69,241,195,148,88,198,83,234,90],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 3,
     "command": "Aes",
     "mode": "{\"key_trigger\": false,\"plaintext_trigger\": true,\"encrypt_trigger\": false,\"ciphertext_trigger\": false}",
     "input": "{\"plaintext\": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], \"key\": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]}",
-    "expected_output": ["{\"ciphertext\":[10,148,11,181,65,110,240,69,241,195,148,88,198,83,234,90],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"ciphertext\":[10,148,11,181,65,110,240,69,241,195,148,88,198,83,234,90],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 4,
     "command": "Aes",
     "mode": "{\"key_trigger\": false,\"plaintext_trigger\": false,\"encrypt_trigger\": true,\"ciphertext_trigger\": false}",
     "input": "{\"plaintext\": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], \"key\": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]}",
-    "expected_output": ["{\"ciphertext\":[10,148,11,181,65,110,240,69,241,195,148,88,198,83,234,90],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"ciphertext\":[10,148,11,181,65,110,240,69,241,195,148,88,198,83,234,90],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 5,
     "command": "Aes",
     "mode": "{\"key_trigger\": false,\"plaintext_trigger\": false,\"encrypt_trigger\": false,\"ciphertext_trigger\": true}",
     "input": "{\"plaintext\": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], \"key\": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]}",
-    "expected_output": ["{\"ciphertext\":[10,148,11,181,65,110,240,69,241,195,148,88,198,83,234,90],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"ciphertext\":[10,148,11,181,65,110,240,69,241,195,148,88,198,83,234,90],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 6,
     "command": "Kmac",
     "mode": "{\"key_trigger\": true,\"absorb_trigger\": false,\"static_trigger\": false,\"squeeze_trigger\": false}",
-    "expected_output": ["{\"digest\":[184,34,91,108,231,47,251,27],\"digest_2nd\":[142,188,186,201,216,47,203,192],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"digest\":[184,34,91,108,231,47,251,27],\"digest_2nd\":[142,188,186,201,216,47,203,192],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 7,
     "command": "Kmac",
     "mode": "{\"key_trigger\": false,\"absorb_trigger\": true,\"static_trigger\": false,\"squeeze_trigger\": false}",
-    "expected_output": ["{\"digest\":[184,34,91,108,231,47,251,27],\"digest_2nd\":[142,188,186,201,216,47,203,192],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"digest\":[184,34,91,108,231,47,251,27],\"digest_2nd\":[142,188,186,201,216,47,203,192],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 8,
     "command": "Kmac",
     "mode": "{\"key_trigger\": false,\"absorb_trigger\": false,\"static_trigger\": true,\"squeeze_trigger\": false}",
-    "expected_output": ["{\"digest\":[184,34,91,108,231,47,251,27],\"digest_2nd\":[142,188,186,201,216,47,203,192],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"digest\":[184,34,91,108,231,47,251,27],\"digest_2nd\":[142,188,186,201,216,47,203,192],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 9,
     "command": "Kmac",
     "mode": "{\"key_trigger\": false,\"absorb_trigger\": false,\"static_trigger\": false,\"squeeze_trigger\": true}",
-    "expected_output": ["{\"digest\":[184,34,91,108,231,47,251,27],\"digest_2nd\":[142,188,186,201,216,47,203,192],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"digest\":[184,34,91,108,231,47,251,27],\"digest_2nd\":[142,188,186,201,216,47,203,192],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 10,
     "command": "KmacState",
-    "expected_output": ["{\"digest\":[184,34,91,108,231,47,251,27],\"share0\":[168,31,28,190,140,6,235,119,202,55,129,61,31,221,97,54,201,182,175,200,60,240,99,162,34,70,184,1,169,199,155,137,199,21,166,226,106,179,98,249,101,65,178,235,2,211,113,56,88,225,175,108,61,95,19,198,197,231,202,185,4,101,56,244,114,31,234,125,225,126,28,173,181,108,127,148,160,220,131,34,182,88,177,17,94,56,199,224,126,187,122,92,152,238,216,100,88,61,108,213,29,251,235,148,145,99,77,149,221,13,128,228,13,26,230,143,116,223,228,207,233,90,156,121,223,120,91,21,84,191,96,64,206,80,162,187,114,83,219,121,163,162,109,86,188,116,65,158,80,212,144,98,209,56,113,134,43,85,112,128,14,25,139,126,49,104,231,41,230,90,143,245,177,42,209,230,176,204,61,38,235,51,106,56,204,18,44,115,30,106,30,159,60,152,217,147,245,173,18,99], \"share1\": [16,61,71,210,107,41,16,108,170,255,75,141,112,27,129,192,106,34,217,60,0,9,134,114,167,165,248,253,101,35,171,138,185,143,55,87,2,191,132,184,145,19,156,5,186,11,190,103,7,53,249,90,176,27,236,206,170,101,38,115,109,136,230,237,252,163,80,180,57,81,215,109,102,224,97,53,168,152,2,43,118,77,150,109,153,47,176,198,185,117,94,130,159,28,85,216,85,93,101,95,242,84,50,129,216,139,224,215,217,68,215,28,238,249,156,219,224,30,116,181,94,13,244,179,232,1,217,35,109,31,50,174,157,31,126,158,254,106,227,249,54,150,163,32,114,31,117,24,160,167,100,139,108,127,12,236,92,245,254,144,188,30,44,151,48,78,221,38,113,206,94,4,187,19,17,217,159,162,248,255,171,51,124,205,226,207,231,86,132,74,185,169,126,221,67,204,253,13,21,24], \"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"digest\":[184,34,91,108,231,47,251,27],\"share0\":[168,31,28,190,140,6,235,119,202,55,129,61,31,221,97,54,201,182,175,200,60,240,99,162,34,70,184,1,169,199,155,137,199,21,166,226,106,179,98,249,101,65,178,235,2,211,113,56,88,225,175,108,61,95,19,198,197,231,202,185,4,101,56,244,114,31,234,125,225,126,28,173,181,108,127,148,160,220,131,34,182,88,177,17,94,56,199,224,126,187,122,92,152,238,216,100,88,61,108,213,29,251,235,148,145,99,77,149,221,13,128,228,13,26,230,143,116,223,228,207,233,90,156,121,223,120,91,21,84,191,96,64,206,80,162,187,114,83,219,121,163,162,109,86,188,116,65,158,80,212,144,98,209,56,113,134,43,85,112,128,14,25,139,126,49,104,231,41,230,90,143,245,177,42,209,230,176,204,61,38,235,51,106,56,204,18,44,115,30,106,30,159,60,152,217,147,245,173,18,99], \"share1\": [16,61,71,210,107,41,16,108,170,255,75,141,112,27,129,192,106,34,217,60,0,9,134,114,167,165,248,253,101,35,171,138,185,143,55,87,2,191,132,184,145,19,156,5,186,11,190,103,7,53,249,90,176,27,236,206,170,101,38,115,109,136,230,237,252,163,80,180,57,81,215,109,102,224,97,53,168,152,2,43,118,77,150,109,153,47,176,198,185,117,94,130,159,28,85,216,85,93,101,95,242,84,50,129,216,139,224,215,217,68,215,28,238,249,156,219,224,30,116,181,94,13,244,179,232,1,217,35,109,31,50,174,157,31,126,158,254,106,227,249,54,150,163,32,114,31,117,24,160,167,100,139,108,127,12,236,92,245,254,144,188,30,44,151,48,78,221,38,113,206,94,4,187,19,17,217,159,162,248,255,171,51,124,205,226,207,231,86,132,74,185,169,126,221,67,204,253,13,21,24], \"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 11,
     "command": "Hmac",
     "input": "{\"message\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"key\": [0, 0, 0, 0, 0, 0, 0, 0]}",
     "mode": "{\"start_trigger\": true,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": false, \"enable_hmac\": false, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":0}",
-    "expected_output": ["{\"tag\":[686569403,627255979,3962665531,1869430007,3580678696,2543765621,4151418325,927402239,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"tag\":[686569403,627255979,3962665531,1869430007,3580678696,2543765621,4151418325,927402239,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 12,
     "command": "Hmac",
     "input": "{\"message\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"key\": [0, 0, 0, 0, 0, 0, 0, 0]}",
     "mode": "{\"start_trigger\": true,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": false, \"enable_hmac\": false, \"message_endianness_big\": true, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":0}",
-    "expected_output": ["{\"tag\":[686569403,627255979,3962665531,1869430007,3580678696,2543765621,4151418325,927402239,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"tag\":[686569403,627255979,3962665531,1869430007,3580678696,2543765621,4151418325,927402239,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 13,
     "command": "Hmac",
     "input": "{\"message\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"key\": [0, 0, 0, 0, 0, 0, 0, 0]}",
     "mode": "{\"start_trigger\": true,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": false, \"enable_hmac\": false, \"message_endianness_big\": true, \"digest_endianness_big\": true, \"key_endianness_big\": false, \"hash_mode\":0}",
-    "expected_output": ["{\"tag\":[3141004328,2871681829,997863916,4147932527,684879061,1976082071,3583865335,4278732599,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"tag\":[3141004328,2871681829,997863916,4147932527,684879061,1976082071,3583865335,4278732599,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 14,
     "command": "Hmac",
     "input": "{\"message\": [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]}",
     "mode": "{\"start_trigger\": false,\"msg_trigger\": true,\"process_trigger\": false,\"finish_trigger\": false, \"enable_hmac\": false, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":0}",
-    "expected_output": ["{\"tag\":[1080378907,3894047529,4265098468,2275438372,2555095219,287412521,1595297801,1522967956,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"tag\":[1080378907,3894047529,4265098468,2275438372,2555095219,287412521,1595297801,1522967956,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 15,
     "command": "Hmac",
     "input": "{\"message\": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], \"key\": [0, 0, 0, 0, 0, 0, 0, 0]}",
     "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": true,\"finish_trigger\": false, \"enable_hmac\": false, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":0}",
-    "expected_output": ["{\"tag\":[3996813713,3685128488,2749163006,1137088592,438890749,3186001028,96417470,3192245030,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"tag\":[3996813713,3685128488,2749163006,1137088592,438890749,3186001028,96417470,3192245030,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 16,
     "command": "Hmac",
     "input": "{\"message\": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0], \"key\": [0, 0, 0, 0, 0, 0, 0, 0]}",
     "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true, \"enable_hmac\": false, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":0}",
-    "expected_output": ["{\"tag\":[956051232,3683224361,4139697432,3225996988,496274419,3147268997,3136358402,529633942,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"tag\":[956051232,3683224361,4139697432,3225996988,496274419,3147268997,3136358402,529633942,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 17,
     "command": "Hmac",
     "input": "{\"message\": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0], \"key\": [0, 0, 0, 0, 0, 0, 0, 0]}",
     "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true, \"enable_hmac\": false, \"message_endianness_big\": true, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":0}",
-    "expected_output": ["{\"tag\":[2856256064,3909088473,1660650950,4117743022,1622899107,107234495,3357956274,284642735,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"tag\":[2856256064,3909088473,1660650950,4117743022,1622899107,107234495,3357956274,284642735,0, 0, 0, 0, 0, 0, 0, 0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 18,
     "command": "Hmac",
     "input": "{\"message\": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0], \"key\": [0, 0, 0, 0, 0, 0, 0, 0]}",
     "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true, \"enable_hmac\": false, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":1}",
-    "expected_output": ["{\"tag\":[956794333,2962363795,807320094,1443896907,450466098,1195137667,4279831992,1530897902,2770728890,2252409361,1392239866,1021544579,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"tag\":[956794333,2962363795,807320094,1443896907,450466098,1195137667,4279831992,1530897902,2770728890,2252409361,1392239866,1021544579,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 19,
     "command": "Hmac",
     "input": "{\"message\": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0], \"key\": [0, 0, 0, 0, 0, 0, 0, 0]}",
     "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true, \"enable_hmac\": false, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":2}",
-    "expected_output": ["{\"tag\":[1817511279,2381723475,1333175416,3289336254,21289985,2726264315,3303817390,1284292231,1189285626,4048996872,1452280734,2335544134,1687508487,592318096,467060269,2055378582],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"tag\":[1817511279,2381723475,1333175416,3289336254,21289985,2726264315,3303817390,1284292231,1189285626,4048996872,1452280734,2335544134,1687508487,592318096,467060269,2055378582],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 20,
     "command": "Hmac",
     "input": "{\"message\": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0], \"key\": [0, 1, 2, 3, 4, 5, 6, 7]}",
     "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true, \"enable_hmac\": true, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":0}",
-    "expected_output": ["{\"tag\":[1718936401,3934232619,660172194,642293994,832111426,1447558433,2262381463,704814822,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"tag\":[1718936401,3934232619,660172194,642293994,832111426,1447558433,2262381463,704814822,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 21,
     "command": "Hmac",
     "input": "{\"message\": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0], \"key\": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]}",
     "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true, \"enable_hmac\": true, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":1}",
-    "expected_output": ["{\"tag\":[2002654839,2171821763,3734709844,319069890,1658767967,3907547394,2147427249,4285135042,1044645490,565219722,532991724,696101234,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"tag\":[2002654839,2171821763,3734709844,319069890,1658767967,3907547394,2147427249,4285135042,1044645490,565219722,532991724,696101234,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 22,
     "command": "Hmac",
     "input": "{\"message\": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0], \"key\": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}",
     "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true, \"enable_hmac\": true, \"message_endianness_big\": false, \"digest_endianness_big\": false, \"key_endianness_big\": false, \"hash_mode\":2}",
-    "expected_output": ["{\"tag\":[1709257561,1763202480,856627814,1141678823,3814690376,1695667148,1632553365,1215934345,820770384,1324704972,714820083,1277918871,1632724788,331654792,1853992088,827702048],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"tag\":[1709257561,1763202480,856627814,1141678823,3814690376,1695667148,1632553365,1215934345,820770384,1324704972,714820083,1277918871,1632724788,331654792,1853992088,827702048],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 23,
     "command": "ShadowRegAccess",
-    "expected_output": ["{\"result\":[68162304,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result\":[68162304,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 24,
     "command": "ShadowRegRead",
-    "expected_output": ["{\"result\":[0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result\":[0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   }
 ]
