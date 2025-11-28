@@ -35,17 +35,16 @@ def load_test_data(test_name):
         "lowrisc_opentitan/sw/host/penetrationtests/python/fi/gold_responses/fi_rng.json"
     )
 
-    with open(data_path, 'r') as f:
+    with open(data_path, "r") as f:
         data = json.load(f)
         return data[test_name]
 
 
 class RngFiTest(unittest.TestCase):
-
     def test_init(self):
         rngfi = OTFIRng(target)
-        device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-            rngfi.init("test", alert_config=common_library.default_fpga_friendly_alert_config)
+        device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = rngfi.init(
+            "test", alert_config=common_library.default_fpga_friendly_alert_config
         )
         device_id_json = json.loads(device_id)
         sensors_json = json.loads(sensors)
@@ -78,13 +77,13 @@ class RngFiTest(unittest.TestCase):
         expected_sensors_keys = {"sensor_ctrl_en", "sensor_ctrl_fatal"}
         actual_sensors_keys = set(sensors_json.keys())
 
-        self.assertEqual(
-            expected_sensors_keys, actual_sensors_keys, "sensor keys do not match"
-        )
+        self.assertEqual(expected_sensors_keys, actual_sensors_keys, "sensor keys do not match")
 
         expected_alerts_keys = {
             "alert_classes",
+            "loc_alert_classes",
             "enabled_alerts",
+            "enabled_loc_alerts",
             "enabled_classes",
             "accumulation_thresholds",
             "duration_cycles",
@@ -93,9 +92,7 @@ class RngFiTest(unittest.TestCase):
         }
         actual_alerts_keys = set(alerts_json.keys())
 
-        self.assertEqual(
-            expected_alerts_keys, actual_alerts_keys, "alert keys do not match"
-        )
+        self.assertEqual(expected_alerts_keys, actual_alerts_keys, "alert keys do not match")
 
         expected_owner_page_keys = {
             "config_version",
@@ -132,9 +129,7 @@ class RngFiTest(unittest.TestCase):
         }
         actual_boot_log_keys = set(boot_log_json.keys())
 
-        self.assertEqual(
-            expected_boot_log_keys, actual_boot_log_keys, "boot_log keys do not match"
-        )
+        self.assertEqual(expected_boot_log_keys, actual_boot_log_keys, "boot_log keys do not match")
 
         expected_boot_measurements_keys = {"bl0", "rom_ext"}
         actual_boot_measurements_keys = set(boot_measurements_json.keys())
@@ -149,83 +144,55 @@ class RngFiTest(unittest.TestCase):
 
     def test_char_csrng_bias(self):
         trigger = 0
-        actual_result = fi_rng_functions.char_csrng_bias(
-            target, iterations, trigger
-        )
+        actual_result = fi_rng_functions.char_csrng_bias(target, iterations, trigger)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_csrng_bias')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_csrng_bias")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_edn_resp_ack(self):
-        actual_result = fi_rng_functions.char_edn_resp_ack(
-            target, iterations
-        )
+        actual_result = fi_rng_functions.char_edn_resp_ack(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_edn_resp_ack')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_edn_resp_ack")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_edn_bias(self):
         actual_result = fi_rng_functions.char_edn_bias(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_edn_bias')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_edn_bias")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_entropy_bias(self):
-        actual_result = fi_rng_functions.char_entropy_bias(
-            target, iterations
-        )
+        actual_result = fi_rng_functions.char_entropy_bias(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_entropy_bias')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_entropy_bias")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     @unittest.skip
     def test_char_fw_overwrite(self):
         disable_health_check = False
-        actual_result = fi_rng_functions.char_fw_overwrite(
-            target, iterations, disable_health_check
-        )
+        actual_result = fi_rng_functions.char_fw_overwrite(target, iterations, disable_health_check)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_fw_overwrite')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_fw_overwrite")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
         disable_health_check = True
-        actual_result = fi_rng_functions.char_fw_overwrite(
-            target, iterations, disable_health_check
-        )
+        actual_result = fi_rng_functions.char_fw_overwrite(target, iterations, disable_health_check)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_fw_overwrite')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_fw_overwrite")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
         return True
 
 
 if __name__ == "__main__":
     r = Runfiles.Create()
     # Get the opentitantool path.
-    opentitantool_path = r.Rlocation(
-        "lowrisc_opentitan/sw/host/opentitantool/opentitantool"
-    )
+    opentitantool_path = r.Rlocation("lowrisc_opentitan/sw/host/opentitantool/opentitantool")
     # Program the bitstream for FPGAs.
     bitstream_path = None
     if BITSTREAM:
-        bitstream_path = r.Rlocation(
-            "lowrisc_opentitan/" + BITSTREAM
-        )
+        bitstream_path = r.Rlocation("lowrisc_opentitan/" + BITSTREAM)
     # Get the firmware path.
-    firmware_path = r.Rlocation(
-        "lowrisc_opentitan/" + BOOTSTRAP
-    )
+    firmware_path = r.Rlocation("lowrisc_opentitan/" + BOOTSTRAP)
 
     if "fpga" in BOOTSTRAP:
         target_type = "fpga"
@@ -238,7 +205,7 @@ if __name__ == "__main__":
         fw_bin=firmware_path,
         opentitantool=opentitantool_path,
         bitstream=bitstream_path,
-        tool_args=config_args
+        tool_args=config_args,
     )
 
     target = targets.Target(target_cfg)

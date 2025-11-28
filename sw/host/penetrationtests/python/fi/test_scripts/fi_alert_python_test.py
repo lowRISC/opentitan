@@ -97,11 +97,10 @@ case_to_alert_list_map = [
 
 
 class AlertFiTest(unittest.TestCase):
-
     def test_init(self):
         alertfi = OTFIAlert(target)
-        device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-            alertfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+        device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = alertfi.init(
+            alert_config=common_library.default_fpga_friendly_alert_config
         )
         device_id_json = json.loads(device_id)
         sensors_json = json.loads(sensors)
@@ -134,13 +133,13 @@ class AlertFiTest(unittest.TestCase):
         expected_sensors_keys = {"sensor_ctrl_en", "sensor_ctrl_fatal"}
         actual_sensors_keys = set(sensors_json.keys())
 
-        self.assertEqual(
-            expected_sensors_keys, actual_sensors_keys, "sensor keys do not match"
-        )
+        self.assertEqual(expected_sensors_keys, actual_sensors_keys, "sensor keys do not match")
 
         expected_alerts_keys = {
             "alert_classes",
+            "loc_alert_classes",
             "enabled_alerts",
+            "enabled_loc_alerts",
             "enabled_classes",
             "accumulation_thresholds",
             "duration_cycles",
@@ -149,9 +148,7 @@ class AlertFiTest(unittest.TestCase):
         }
         actual_alerts_keys = set(alerts_json.keys())
 
-        self.assertEqual(
-            expected_alerts_keys, actual_alerts_keys, "alert keys do not match"
-        )
+        self.assertEqual(expected_alerts_keys, actual_alerts_keys, "alert keys do not match")
 
         expected_owner_page_keys = {
             "config_version",
@@ -188,9 +185,7 @@ class AlertFiTest(unittest.TestCase):
         }
         actual_boot_log_keys = set(boot_log_json.keys())
 
-        self.assertEqual(
-            expected_boot_log_keys, actual_boot_log_keys, "boot_log keys do not match"
-        )
+        self.assertEqual(expected_boot_log_keys, actual_boot_log_keys, "boot_log keys do not match")
 
         expected_boot_measurements_keys = {"bl0", "rom_ext"}
         actual_boot_measurements_keys = set(boot_measurements_json.keys())
@@ -218,28 +213,21 @@ class AlertFiTest(unittest.TestCase):
                 actual_result, got_response = fi_alert_functions.char_alert_trigger(
                     target, alert, reset=True
                 )
-                alert_class = common_library.default_fpga_friendly_alert_config[
-                    "alert_classes"
-                ][translated_alert]
-                alert_enabled = common_library.default_fpga_friendly_alert_config[
-                    "enable_alerts"
-                ][translated_alert]
-                enabled_class = common_library.default_fpga_friendly_alert_config[
-                    "enable_classes"
-                ][alert_class]
+                alert_class = common_library.default_fpga_friendly_alert_config["alert_classes"][
+                    translated_alert
+                ]
+                alert_enabled = common_library.default_fpga_friendly_alert_config["enable_alerts"][
+                    translated_alert
+                ]
+                enabled_class = common_library.default_fpga_friendly_alert_config["enable_classes"][
+                    alert_class
+                ]
                 threshold = common_library.default_fpga_friendly_alert_config[
                     "accumulation_thresholds"
                 ][alert_class]
-                reset_enabled = (
-                    3 in common_library.default_fpga_friendly_alert_config["signals"]
-                )
+                reset_enabled = 3 in common_library.default_fpga_friendly_alert_config["signals"]
 
-                if (
-                    reset_enabled and
-                    alert_enabled and
-                    enabled_class and
-                    (threshold == 0)
-                ):
+                if reset_enabled and alert_enabled and enabled_class and (threshold == 0):
                     self.assertEqual(
                         got_response,
                         False,
@@ -277,22 +265,18 @@ class AlertFiTest(unittest.TestCase):
         )
         sensor_cntr_recov = case_to_alert_list_map[50]
         sensor_cntr_fatal = case_to_alert_list_map[51]
-        alert_recov_enabled = common_library.default_fpga_friendly_alert_config[
-            "enable_alerts"
-        ][sensor_cntr_recov]
-        alert_fatal_enabled = common_library.default_fpga_friendly_alert_config[
-            "enable_alerts"
-        ][sensor_cntr_fatal]
-        sensor_ctrl_en_fatal = common_library.default_sensor_config[
-            "sensor_ctrl_en_fatal"
-        ][0]
-        reset_enabled = (
-            3 in common_library.default_fpga_friendly_alert_config["signals"]
-        )
+        alert_recov_enabled = common_library.default_fpga_friendly_alert_config["enable_alerts"][
+            sensor_cntr_recov
+        ]
+        alert_fatal_enabled = common_library.default_fpga_friendly_alert_config["enable_alerts"][
+            sensor_cntr_fatal
+        ]
+        sensor_ctrl_en_fatal = common_library.default_sensor_config["sensor_ctrl_en_fatal"][0]
+        reset_enabled = 3 in common_library.default_fpga_friendly_alert_config["signals"]
 
         if reset_enabled and (
-            (sensor_ctrl_en_fatal and alert_fatal_enabled) or
-            (not sensor_ctrl_en_fatal and alert_recov_enabled)
+            (sensor_ctrl_en_fatal and alert_fatal_enabled)
+            or (not sensor_ctrl_en_fatal and alert_recov_enabled)
         ):
             self.assertEqual(
                 got_response,
@@ -312,18 +296,16 @@ class AlertFiTest(unittest.TestCase):
             target, reset=True
         )
         ibex_sw_fatal = case_to_alert_list_map[44]
-        alert_class = common_library.default_fpga_friendly_alert_config[
-            "alert_classes"
-        ][ibex_sw_fatal]
-        alert_fatal_enabled = common_library.default_fpga_friendly_alert_config[
-            "enable_alerts"
-        ][ibex_sw_fatal]
-        reset_enabled = (
-            3 in common_library.default_fpga_friendly_alert_config["signals"]
-        )
-        enabled_class = common_library.default_fpga_friendly_alert_config[
-            "enable_classes"
-        ][alert_class]
+        alert_class = common_library.default_fpga_friendly_alert_config["alert_classes"][
+            ibex_sw_fatal
+        ]
+        alert_fatal_enabled = common_library.default_fpga_friendly_alert_config["enable_alerts"][
+            ibex_sw_fatal
+        ]
+        reset_enabled = 3 in common_library.default_fpga_friendly_alert_config["signals"]
+        enabled_class = common_library.default_fpga_friendly_alert_config["enable_classes"][
+            alert_class
+        ]
 
         if reset_enabled and alert_fatal_enabled and enabled_class:
             self.assertEqual(
@@ -350,9 +332,7 @@ class AlertFiTest(unittest.TestCase):
                 "alerts": alert_array,
                 "ast_alerts": [0, 0],
             }
-            utils.compare_json_data(
-                actual_result_json, expected_result_json, ignored_keys_set
-            )
+            utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
         else:
             self.assertEqual(
                 got_response,
@@ -365,27 +345,19 @@ class AlertFiTest(unittest.TestCase):
                 "alerts": [0, 0, 0],
                 "ast_alerts": [0, 0],
             }
-            utils.compare_json_data(
-                actual_result_json, expected_result_json, ignored_keys_set
-            )
+            utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
 
 if __name__ == "__main__":
     r = Runfiles.Create()
     # Get the opentitantool path.
-    opentitantool_path = r.Rlocation(
-        "lowrisc_opentitan/sw/host/opentitantool/opentitantool"
-    )
+    opentitantool_path = r.Rlocation("lowrisc_opentitan/sw/host/opentitantool/opentitantool")
     # Program the bitstream for FPGAs.
     bitstream_path = None
     if BITSTREAM:
-        bitstream_path = r.Rlocation(
-            "lowrisc_opentitan/" + BITSTREAM
-        )
+        bitstream_path = r.Rlocation("lowrisc_opentitan/" + BITSTREAM)
     # Get the firmware path.
-    firmware_path = r.Rlocation(
-        "lowrisc_opentitan/" + BOOTSTRAP
-    )
+    firmware_path = r.Rlocation("lowrisc_opentitan/" + BOOTSTRAP)
 
     if "fpga" in BOOTSTRAP:
         target_type = "fpga"
@@ -399,7 +371,7 @@ if __name__ == "__main__":
         fw_bin=firmware_path,
         opentitantool=opentitantool_path,
         bitstream=bitstream_path,
-        tool_args=config_args
+        tool_args=config_args,
     )
 
     target = targets.Target(target_cfg)

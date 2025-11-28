@@ -192,9 +192,9 @@ status_t handle_cryptolib_fi_sym_init(ujson_t *uj) {
   // and reported to the test.
   pentest_configure_alert_handler(
       uj_alert_data.alert_classes, uj_alert_data.enable_alerts,
-      uj_alert_data.enable_classes, uj_alert_data.accumulation_thresholds,
-      uj_alert_data.signals, uj_alert_data.duration_cycles,
-      uj_alert_data.ping_timeout);
+      uj_alert_data.enable_loc_alerts, uj_alert_data.enable_classes,
+      uj_alert_data.accumulation_thresholds, uj_alert_data.signals,
+      uj_alert_data.duration_cycles, uj_alert_data.ping_timeout);
 
   // Configure the CPU for the pentest.
   penetrationtest_device_info_t uj_output;

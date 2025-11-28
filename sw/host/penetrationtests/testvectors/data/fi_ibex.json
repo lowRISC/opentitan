@@ -4,11 +4,11 @@
     "command": "Init",
     "input": "{\"enable_icache\": true,\"enable_dummy_instr\": true,\"dummy_instr_count\": 3,\"enable_jittery_clock\": true,\"enable_sram_readback\": true, \"enable_data_ind_timing\": true}",
     "sensors": "{\"sensor_ctrl_enable\": true, \"sensor_ctrl_en_fatal\": [false, false, false, false, false, false, false, false, false, false, false]}",
-    "alerts":"{\"alert_classes\":[2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"enable_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enable_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"signals\": [4294967295, 0, 2, 3], \"duration_cycles\": [0, 2400000,48,48], \"ping_timeout\": 1200}",
+    "alerts":"{\"alert_classes\":[2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"enable_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enable_loc_alerts\": [true, true, true, true, true, true, true], \"enable_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"signals\": [4294967295, 0, 2, 3], \"duration_cycles\": [0, 2400000,48,48], \"ping_timeout\": 1200}",
     "expected_output": [
       "{\"device_id\":[0,0,0,0,0,0,0,0],\"icache_en\":true,\"dummy_instr_en\":true,\"clock_jitter_locked\":false,\"clock_jitter_en\":true,\"sram_main_readback_locked\":false,\"sram_main_readback_en\":true,\"sram_ret_readback_locked\":false,\"sram_ret_readback_en\":true, \"data_ind_timing_en\": true}",
       "{\"sensor_ctrl_en\": [true,true,true,true,true,true,true,true,true,true,true], \"sensor_ctrl_fatal\": [false,false,false,false,false,false,false,false,false,false,false]}",
-      "{\"alert_classes\": [2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"enabled_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enabled_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"duration_cycles\": [0, 2400000,48,48], \"escalation_signals_en\": [true,false,true,true], \"escalation_signals_map\": [1, 0, 2, 3]}",
+      "{\"alert_classes\": [2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"loc_alert_classes\": [0,0,0,0,0,0,0], \"enabled_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enabled_loc_alerts\": [true, true, true, true, true, true, true], \"enabled_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"duration_cycles\": [0, 2400000,48,48], \"escalation_signals_en\": [true,false,true,true], \"escalation_signals_map\": [1, 0, 2, 3]}",
       "{\"config_version\":1,\"sram_exec_mode\":0,\"ownership_key_alg\":0,\"update_mode\":0,\"min_security_version_bl0\":0,\"lock_constraint\":0}",
       "{\"digest\":[0,0,0,0,0,0,0,0],\"identifier\":0,\"scm_revision_low\":0,\"scm_revision_high\":0,\"rom_ext_slot\":0,\"rom_ext_major\":0,\"rom_ext_minor\":1,\"rom_ext_size\":0,\"bl0_slot\":0,\"ownership_state\":0,\"ownership_transfers\":0,\"rom_ext_min_sec_ver\":0,\"bl0_min_sec_ver\":0,\"primary_bl0_slot\":16000078145,\"retention_ram_initialized\":0}",
       "{\"bl0\":[0,0,0,0,0,0,0,0],\"rom_ext\":[0,0,0,0,0,0,0,0]}",
@@ -17,181 +17,181 @@
   {
     "test_case_id": 2,
     "command": "CharCondBranchBeq",
-    "expected_output": ["{\"result1\":175,\"result2\":239,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result1\":175,\"result2\":239,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 3,
     "command": "CharCondBranchBge",
-    "expected_output": ["{\"result1\":175,\"result2\":239,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result1\":175,\"result2\":239,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 4,
     "command": "CharCondBranchBgeu",
-    "expected_output": ["{\"result1\":175,\"result2\":239,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result1\":175,\"result2\":239,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 5,
     "command": "CharCondBranchBlt",
-    "expected_output": ["{\"result1\":239,\"result2\":175,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result1\":239,\"result2\":175,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 6,
     "command": "CharCondBranchBltu",
-    "expected_output": ["{\"result1\":239,\"result2\":175,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result1\":239,\"result2\":175,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 7,
     "command": "CharCondBranchBne",
-    "expected_output": ["{\"result1\":175,\"result2\":175,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result1\":175,\"result2\":175,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 8,
     "command": "CharCsrRead",
-    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 9,
     "command": "CharCsrWrite",
-    "expected_output": ["{\"result\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 10,
     "command": "CharFlashRead",
     "input": "{\"flash_region\": 2}",
-    "flaky_expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "flaky_expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 11,
     "command": "CharFlashWrite",
     "input": "{\"flash_region\": 2}",
-    "flaky_expected_output": ["{\"result\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "flaky_expected_output": ["{\"result\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 12,
     "command": "CharMemOpLoop",
-    "expected_output": ["{\"result\":[10000,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result\":[10000,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 13,
     "command": "CharRegisterFile",
-    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 14,
     "command": "CharRegisterFileRead",
-    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 15,
     "command": "CharRegOpLoop",
-    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 16,
     "command": "CharSramRead",
-    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 17,
     "command": "CharSramStatic",
-    "expected_output": ["{\"addresses\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"addresses\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 18,
     "command": "CharSramWrite",
-    "expected_output": ["{\"memory\":[464367618,2343432205,2779096485,2880154539,2881141438,2880293630,3131746989,3134333474,3148725999,3200171710,3203386062,3221229823,3405697037,3405709037,3435973836,3452816845,219540062,3735883980,3735928559,3735931646,3735929054,3735943697,3735941133,3741239533,3735936685,3490524077,3958107115,4208909997,4261281277,4276215469,4277009102,4277075694,464367618,2343432205,2779096485,2880154539,2881141438,2880293630,3131746989,3134333474,3148725999,3200171710,3203386062,3221229823,3405697037,3405709037,3435973836,3452816845,219540062,3735883980,3735928559,3735931646,3735929054,3735943697,3735941133,3741239533,3735936685,3490524077,3958107115,4208909997,4261281277,4276215469,4277009102,4277075694],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"memory\":[464367618,2343432205,2779096485,2880154539,2881141438,2880293630,3131746989,3134333474,3148725999,3200171710,3203386062,3221229823,3405697037,3405709037,3435973836,3452816845,219540062,3735883980,3735928559,3735931646,3735929054,3735943697,3735941133,3741239533,3735936685,3490524077,3958107115,4208909997,4261281277,4276215469,4277009102,4277075694,464367618,2343432205,2779096485,2880154539,2881141438,2880293630,3131746989,3134333474,3148725999,3200171710,3203386062,3221229823,3405697037,3405709037,3435973836,3452816845,219540062,3735883980,3735928559,3735931646,3735929054,3735943697,3735941133,3741239533,3735936685,3490524077,3958107115,4208909997,4261281277,4276215469,4277009102,4277075694],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 19,
     "command": "CharSramWriteRead",
-    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 20,
     "command": "CharSramWriteStaticUnrolled",
-    "expected_output": ["{\"memory\":[464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"memory\":[464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 21,
     "command": "CharUncondBranch",
-    "expected_output": ["{\"result\":30,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result\":30,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 22,
     "command": "CharUncondBranchNop",
-    "expected_output": ["{\"result\":0,\"registers\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result\":0,\"registers\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 23,
     "command": "CharUnrolledMemOpLoop",
-    "expected_output": ["{\"result\":10000,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result\":10000,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 24,
     "command": "CharUnrolledRegOpLoop",
-    "expected_output": ["{\"result\":10000,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result\":10000,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 25,
     "command": "CharUnrolledRegOpLoopChain",
-    "expected_output": ["{\"result\":[60,55,56,57,58,59,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result\":[60,55,56,57,58,59,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 26,
     "command": "CharSingleBeq",
-    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 27,
     "command": "CharAddiSingleBeq",
-    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 28,
     "command": "CharAddiSingleBeqNeg",
-    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 29,
     "command": "CharSingleBne",
-    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 30,
     "command": "CharAddiSingleBne",
-    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 31,
     "command": "CharAddiSingleBneNeg",
-    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 32,
     "command": "CharCombi",
     "expected_output": [
-      "{\"data_faulty_test_1\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data_test_1\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"result_test_2\":13,\"result_test_3\":15,\"registers_test_1\":[0,0,0,0,0,175,175,0,0,0,0,0,160,15,1,3,10,28,0,0,0,0,0,0,0,0,0,0,162,5,196,7],\"registers_test_2\":[0,0,0,0,0,1,2,3,0,0,0,0,4,5,6,7,8,9,0,0,0,0,0,0,0,0,0,0,10,11,12,13],\"registers_test_3\":[0,0,0,0,0,15,3131746989,3134333474,0,0,0,0,3405697037,3405709037,3435973836,3452816845,219540062,3735883980,0,0,0,0,0,0,0,0,0,0,4261281277,4276215469,4277009102,4277075694],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+      "{\"data_faulty_test_1\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data_test_1\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"result_test_2\":13,\"result_test_3\":15,\"registers_test_1\":[0,0,0,0,0,175,175,0,0,0,0,0,160,15,1,3,10,28,0,0,0,0,0,0,0,0,0,0,162,5,196,7],\"registers_test_2\":[0,0,0,0,0,1,2,3,0,0,0,0,4,5,6,7,8,9,0,0,0,0,0,0,0,0,0,0,10,11,12,13],\"registers_test_3\":[0,0,0,0,0,15,3131746989,3134333474,0,0,0,0,3405697037,3405709037,3435973836,3452816845,219540062,3735883980,0,0,0,0,0,0,0,0,0,0,4261281277,4276215469,4277009102,4277075694],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"
     ]
   },
   {
     "test_case_id": 33,
     "command": "CharSramWriteReadAlt",
-    "expected_output": ["{\"memory\":[2880293630,3131746989,3134333474,2880293630,3131746989,3134333474,2880293630,3131746989,3134333474,2880293630,3131746989,3134333474,2880293630,3131746989,3134333474,2880293630,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"memory\":[2880293630,3131746989,3134333474,2880293630,3131746989,3134333474,2880293630,3131746989,3134333474,2880293630,3131746989,3134333474,2880293630,3131746989,3134333474,2880293630,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 34,
     "command": "CharSramReadRet",
-    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0], \"sram_err_status\":56}"]
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0, \"sram_err_status\":56}"]
   },
   {
     "test_case_id": 35,
     "command": "OtpDataRead",
-    "expected_output": ["{\"result\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"result\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 36,
     "command": "OtpReadLock",
-    "flaky_expected_output": ["{\"result\":5,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "flaky_expected_output": ["{\"result\":5,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 1,
@@ -203,11 +203,11 @@
     "command": "Init",
     "input": "{\"enable_icache\": true,\"enable_dummy_instr\": true,\"dummy_instr_count\": 3,\"enable_jittery_clock\": true,\"enable_sram_readback\": true, \"enable_data_ind_timing\": true}",
     "sensors": "{\"sensor_ctrl_enable\": true, \"sensor_ctrl_en_fatal\": [false, false, false, false, false, false, false, false, false, false, false]}",
-    "alerts":"{\"alert_classes\":[2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"enable_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enable_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"signals\": [4294967295, 0, 2, 3], \"duration_cycles\": [0, 2400000,48,48], \"ping_timeout\": 1200}",
+    "alerts":"{\"alert_classes\":[2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"enable_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enable_loc_alerts\": [true, true, true, true, true, true, true], \"enable_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"signals\": [4294967295, 0, 2, 3], \"duration_cycles\": [0, 2400000,48,48], \"ping_timeout\": 1200}",
     "expected_output": [
       "{\"device_id\":[0,0,0,0,0,0,0,0],\"icache_en\":true,\"dummy_instr_en\":true,\"clock_jitter_locked\":false,\"clock_jitter_en\":true,\"sram_main_readback_locked\":false,\"sram_main_readback_en\":true,\"sram_ret_readback_locked\":false,\"sram_ret_readback_en\":true, \"data_ind_timing_en\": true}",
       "{\"sensor_ctrl_en\": [true,true,true,true,true,true,true,true,true,true,true], \"sensor_ctrl_fatal\": [false,false,false,false,false,false,false,false,false,false,false]}",
-      "{\"alert_classes\": [2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"enabled_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enabled_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"duration_cycles\": [0, 2400000,48,48], \"escalation_signals_en\": [true,false,true,true], \"escalation_signals_map\": [1, 0, 2, 3]}",
+      "{\"alert_classes\": [2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"loc_alert_classes\": [0,0,0,0,0,0,0], \"enabled_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enabled_loc_alerts\": [true, true, true, true, true, true, true], \"enabled_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"duration_cycles\": [0, 2400000,48,48], \"escalation_signals_en\": [true,false,true,true], \"escalation_signals_map\": [1, 0, 2, 3]}",
       "{\"config_version\":1,\"sram_exec_mode\":0,\"ownership_key_alg\":0,\"update_mode\":0,\"min_security_version_bl0\":0,\"lock_constraint\":0}",
       "{\"digest\":[0,0,0,0,0,0,0,0],\"identifier\":0,\"scm_revision_low\":0,\"scm_revision_high\":0,\"rom_ext_slot\":0,\"rom_ext_major\":0,\"rom_ext_minor\":1,\"rom_ext_size\":0,\"bl0_slot\":0,\"ownership_state\":0,\"ownership_transfers\":0,\"rom_ext_min_sec_ver\":0,\"bl0_min_sec_ver\":0,\"primary_bl0_slot\":16000078145,\"retention_ram_initialized\":0}",
       "{\"bl0\":[0,0,0,0,0,0,0,0],\"rom_ext\":[0,0,0,0,0,0,0,0]}",
@@ -217,7 +217,7 @@
     "test_case_id": 37,
     "command": "CharCsrCombi",
     "input": "{\"trigger\": 7, \"ref_values\": [2,3,16641,4,5,6,38553,7,5137,256,26214,26214,26214,5,2,3,4]}",
-    "flaky_expected_output": ["{\"output\":[2,3,16641,4,5,6,38553,7,5137,256,26214,26214,26214,5,2,3,4], \"data_faulty\": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], \"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "flaky_expected_output": ["{\"output\":[2,3,16641,4,5,6,38553,7,5137,256,26214,26214,26214,5,2,3,4], \"data_faulty\": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], \"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   },
   {
     "test_case_id": 1,
@@ -229,11 +229,11 @@
     "command": "Init",
     "input": "{\"enable_icache\": true,\"enable_dummy_instr\": true,\"dummy_instr_count\": 3,\"enable_jittery_clock\": true,\"enable_sram_readback\": true, \"enable_data_ind_timing\": true}",
     "sensors": "{\"sensor_ctrl_enable\": true, \"sensor_ctrl_en_fatal\": [false, false, false, false, false, false, false, false, false, false, false]}",
-    "alerts":"{\"alert_classes\":[2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"enable_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enable_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"signals\": [4294967295, 0, 2, 3], \"duration_cycles\": [0, 2400000,48,48], \"ping_timeout\": 1200}",
+    "alerts":"{\"alert_classes\":[2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"enable_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enable_loc_alerts\": [true, true, true, true, true, true, true], \"enable_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"signals\": [4294967295, 0, 2, 3], \"duration_cycles\": [0, 2400000,48,48], \"ping_timeout\": 1200}",
     "expected_output": [
       "{\"device_id\":[0,0,0,0,0,0,0,0],\"icache_en\":true,\"dummy_instr_en\":true,\"clock_jitter_locked\":false,\"clock_jitter_en\":true,\"sram_main_readback_locked\":false,\"sram_main_readback_en\":true,\"sram_ret_readback_locked\":false,\"sram_ret_readback_en\":true, \"data_ind_timing_en\": true}",
       "{\"sensor_ctrl_en\": [true,true,true,true,true,true,true,true,true,true,true], \"sensor_ctrl_fatal\": [false,false,false,false,false,false,false,false,false,false,false]}",
-      "{\"alert_classes\": [2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"enabled_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enabled_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"duration_cycles\": [0, 2400000,48,48], \"escalation_signals_en\": [true,false,true,true], \"escalation_signals_map\": [1, 0, 2, 3]}",
+      "{\"alert_classes\": [2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,2,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"loc_alert_classes\": [0,0,0,0,0,0,0], \"enabled_alerts\": [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true], \"enabled_loc_alerts\": [true, true, true, true, true, true, true], \"enabled_classes\": [true,true,false,false], \"accumulation_thresholds\": [2,2,2,2], \"duration_cycles\": [0, 2400000,48,48], \"escalation_signals_en\": [true,false,true,true], \"escalation_signals_map\": [1, 0, 2, 3]}",
       "{\"config_version\":1,\"sram_exec_mode\":0,\"ownership_key_alg\":0,\"update_mode\":0,\"min_security_version_bl0\":0,\"lock_constraint\":0}",
       "{\"digest\":[0,0,0,0,0,0,0,0],\"identifier\":0,\"scm_revision_low\":0,\"scm_revision_high\":0,\"rom_ext_slot\":0,\"rom_ext_major\":0,\"rom_ext_minor\":1,\"rom_ext_size\":0,\"bl0_slot\":0,\"ownership_state\":0,\"ownership_transfers\":0,\"rom_ext_min_sec_ver\":0,\"bl0_min_sec_ver\":0,\"primary_bl0_slot\":16000078145,\"retention_ram_initialized\":0}",
       "{\"bl0\":[0,0,0,0,0,0,0,0],\"rom_ext\":[0,0,0,0,0,0,0,0]}",
@@ -243,6 +243,6 @@
     "test_case_id": 38,
     "command": "CharCsrCombi",
     "input": "{\"trigger\": 7, \"ref_values\": [1,5,33,101,3,5,39321,6,5138,50115,39321,38502,39321,39321,1,2,3]}",
-    "flaky_expected_output": ["{\"output\":[1,5,33,101,3,5,39321,6,5138,50115,39321,38502,39321,39321,1,2,3], \"data_faulty\": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], \"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "flaky_expected_output": ["{\"output\":[1,5,33,101,3,5,39321,6,5138,50115,39321,38502,39321,39321,1,2,3], \"data_faulty\": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], \"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0],\"loc_alerts\":0}"]
   }
 ]
