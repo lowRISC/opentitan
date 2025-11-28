@@ -378,6 +378,9 @@ package usbdev_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } tx_pkt_test_mode;
+    struct packed {
+      logic        q;
     } tx_osc_test_mode;
     struct packed {
       logic        q;
@@ -724,6 +727,13 @@ package usbdev_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } tx_pkt_test_mode;
+  } usbdev_hw2reg_phy_config_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
     } bus_not_idle;
     struct packed {
       logic        d;
@@ -807,29 +817,29 @@ package usbdev_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    usbdev_reg2hw_intr_state_reg_t intr_state; // [564:547]
-    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [546:529]
-    usbdev_reg2hw_intr_test_reg_t intr_test; // [528:493]
-    usbdev_reg2hw_alert_test_reg_t alert_test; // [492:491]
-    usbdev_reg2hw_usbctrl_reg_t usbctrl; // [490:481]
-    usbdev_reg2hw_ep_out_enable_mreg_t [11:0] ep_out_enable; // [480:469]
-    usbdev_reg2hw_ep_in_enable_mreg_t [11:0] ep_in_enable; // [468:457]
-    usbdev_reg2hw_avoutbuffer_reg_t avoutbuffer; // [456:451]
-    usbdev_reg2hw_avsetupbuffer_reg_t avsetupbuffer; // [450:445]
-    usbdev_reg2hw_rxfifo_reg_t rxfifo; // [444:424]
-    usbdev_reg2hw_rxenable_setup_mreg_t [11:0] rxenable_setup; // [423:412]
-    usbdev_reg2hw_rxenable_out_reg_t rxenable_out; // [411:386]
-    usbdev_reg2hw_set_nak_out_mreg_t [11:0] set_nak_out; // [385:374]
-    usbdev_reg2hw_in_sent_mreg_t [11:0] in_sent; // [373:362]
-    usbdev_reg2hw_out_stall_mreg_t [11:0] out_stall; // [361:350]
-    usbdev_reg2hw_in_stall_mreg_t [11:0] in_stall; // [349:338]
-    usbdev_reg2hw_configin_mreg_t [11:0] configin; // [337:170]
-    usbdev_reg2hw_out_iso_mreg_t [11:0] out_iso; // [169:158]
-    usbdev_reg2hw_in_iso_mreg_t [11:0] in_iso; // [157:146]
-    usbdev_reg2hw_out_data_toggle_reg_t out_data_toggle; // [145:120]
-    usbdev_reg2hw_in_data_toggle_reg_t in_data_toggle; // [119:94]
-    usbdev_reg2hw_phy_pins_drive_reg_t phy_pins_drive; // [93:85]
-    usbdev_reg2hw_phy_config_reg_t phy_config; // [84:79]
+    usbdev_reg2hw_intr_state_reg_t intr_state; // [565:548]
+    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [547:530]
+    usbdev_reg2hw_intr_test_reg_t intr_test; // [529:494]
+    usbdev_reg2hw_alert_test_reg_t alert_test; // [493:492]
+    usbdev_reg2hw_usbctrl_reg_t usbctrl; // [491:482]
+    usbdev_reg2hw_ep_out_enable_mreg_t [11:0] ep_out_enable; // [481:470]
+    usbdev_reg2hw_ep_in_enable_mreg_t [11:0] ep_in_enable; // [469:458]
+    usbdev_reg2hw_avoutbuffer_reg_t avoutbuffer; // [457:452]
+    usbdev_reg2hw_avsetupbuffer_reg_t avsetupbuffer; // [451:446]
+    usbdev_reg2hw_rxfifo_reg_t rxfifo; // [445:425]
+    usbdev_reg2hw_rxenable_setup_mreg_t [11:0] rxenable_setup; // [424:413]
+    usbdev_reg2hw_rxenable_out_reg_t rxenable_out; // [412:387]
+    usbdev_reg2hw_set_nak_out_mreg_t [11:0] set_nak_out; // [386:375]
+    usbdev_reg2hw_in_sent_mreg_t [11:0] in_sent; // [374:363]
+    usbdev_reg2hw_out_stall_mreg_t [11:0] out_stall; // [362:351]
+    usbdev_reg2hw_in_stall_mreg_t [11:0] in_stall; // [350:339]
+    usbdev_reg2hw_configin_mreg_t [11:0] configin; // [338:171]
+    usbdev_reg2hw_out_iso_mreg_t [11:0] out_iso; // [170:159]
+    usbdev_reg2hw_in_iso_mreg_t [11:0] in_iso; // [158:147]
+    usbdev_reg2hw_out_data_toggle_reg_t out_data_toggle; // [146:121]
+    usbdev_reg2hw_in_data_toggle_reg_t in_data_toggle; // [120:95]
+    usbdev_reg2hw_phy_pins_drive_reg_t phy_pins_drive; // [94:86]
+    usbdev_reg2hw_phy_config_reg_t phy_config; // [85:79]
     usbdev_reg2hw_wake_control_reg_t wake_control; // [78:75]
     usbdev_reg2hw_fifo_ctrl_reg_t fifo_ctrl; // [74:69]
     usbdev_reg2hw_count_out_reg_t count_out; // [68:46]
@@ -840,18 +850,19 @@ package usbdev_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    usbdev_hw2reg_intr_state_reg_t intr_state; // [390:355]
-    usbdev_hw2reg_usbctrl_reg_t usbctrl; // [354:347]
-    usbdev_hw2reg_usbstat_reg_t usbstat; // [346:317]
-    usbdev_hw2reg_rxfifo_reg_t rxfifo; // [316:300]
-    usbdev_hw2reg_rxenable_out_reg_t rxenable_out; // [299:288]
-    usbdev_hw2reg_in_sent_mreg_t [11:0] in_sent; // [287:264]
-    usbdev_hw2reg_out_stall_mreg_t [11:0] out_stall; // [263:240]
-    usbdev_hw2reg_in_stall_mreg_t [11:0] in_stall; // [239:216]
-    usbdev_hw2reg_configin_mreg_t [11:0] configin; // [215:144]
-    usbdev_hw2reg_out_data_toggle_reg_t out_data_toggle; // [143:120]
-    usbdev_hw2reg_in_data_toggle_reg_t in_data_toggle; // [119:96]
-    usbdev_hw2reg_phy_pins_sense_reg_t phy_pins_sense; // [95:87]
+    usbdev_hw2reg_intr_state_reg_t intr_state; // [392:357]
+    usbdev_hw2reg_usbctrl_reg_t usbctrl; // [356:349]
+    usbdev_hw2reg_usbstat_reg_t usbstat; // [348:319]
+    usbdev_hw2reg_rxfifo_reg_t rxfifo; // [318:302]
+    usbdev_hw2reg_rxenable_out_reg_t rxenable_out; // [301:290]
+    usbdev_hw2reg_in_sent_mreg_t [11:0] in_sent; // [289:266]
+    usbdev_hw2reg_out_stall_mreg_t [11:0] out_stall; // [265:242]
+    usbdev_hw2reg_in_stall_mreg_t [11:0] in_stall; // [241:218]
+    usbdev_hw2reg_configin_mreg_t [11:0] configin; // [217:146]
+    usbdev_hw2reg_out_data_toggle_reg_t out_data_toggle; // [145:122]
+    usbdev_hw2reg_in_data_toggle_reg_t in_data_toggle; // [121:98]
+    usbdev_hw2reg_phy_pins_sense_reg_t phy_pins_sense; // [97:89]
+    usbdev_hw2reg_phy_config_reg_t phy_config; // [88:87]
     usbdev_hw2reg_wake_events_reg_t wake_events; // [86:79]
     usbdev_hw2reg_count_out_reg_t count_out; // [78:55]
     usbdev_hw2reg_count_in_reg_t count_in; // [54:32]
@@ -1054,7 +1065,7 @@ package usbdev_reg_pkg;
     4'b 1111, // index[32] USBDEV_IN_DATA_TOGGLE
     4'b 0111, // index[33] USBDEV_PHY_PINS_SENSE
     4'b 0111, // index[34] USBDEV_PHY_PINS_DRIVE
-    4'b 0001, // index[35] USBDEV_PHY_CONFIG
+    4'b 0011, // index[35] USBDEV_PHY_CONFIG
     4'b 0001, // index[36] USBDEV_WAKE_CONTROL
     4'b 0011, // index[37] USBDEV_WAKE_EVENTS
     4'b 0001, // index[38] USBDEV_FIFO_CTRL

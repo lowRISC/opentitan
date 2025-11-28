@@ -652,8 +652,9 @@ module usbdev
     .out_ep_iso_i         (ep_out_iso),
     .in_ep_iso_i          (ep_in_iso),
     .diff_rx_ok_i         (usb_diff_rx_ok),
-    .cfg_eop_single_bit_i (reg2hw.phy_config.eop_single_bit.q), // cdc ok: quasi-static
-    .tx_osc_test_mode_i   (reg2hw.phy_config.tx_osc_test_mode.q), // cdc ok: quasi-static
+    .cfg_eop_single_bit_i (reg2hw.phy_config.eop_single_bit.q),
+    .tx_osc_test_mode_i   (reg2hw.phy_config.tx_osc_test_mode.q),
+    .tx_pkt_test_mode_i   (reg2hw.phy_config.tx_pkt_test_mode.q),
     .cfg_use_diff_rcvr_i  (usb_rx_enable_o),
     .cfg_pinflip_i        (cfg_pinflip),
     .out_data_toggle_o    (out_data_toggle),
@@ -1308,6 +1309,14 @@ module usbdev
   assign hw2reg.wake_events.disconnected.d = usb_aon_sense_lost_i;
   assign hw2reg.wake_events.bus_reset.de = 1'b1;
   assign hw2reg.wake_events.bus_reset.d = usb_aon_bus_reset_i;
+
+  /////////////////////////////////////
+  // Test modes                      //
+  /////////////////////////////////////
+
+  // Exit from Test Packet mode shall occur when the device is 'power cycled.'
+  assign hw2reg.phy_config.tx_pkt_test_mode.de = !usb_pwr_sense;
+  assign hw2reg.phy_config.tx_pkt_test_mode.d = 1'b0;
 
   /////////////////////////////////////
   // Diagnostic/performance counters //
