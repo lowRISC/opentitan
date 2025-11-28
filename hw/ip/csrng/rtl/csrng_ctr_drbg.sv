@@ -42,10 +42,6 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   output logic               block_encrypt_rsp_rdy_o,
   input  logic  [BlkLen-1:0] block_encrypt_rsp_data_i,
 
-  // Halt request from entropy source
-  input  logic               es_halt_req_i,
-  output logic               es_halt_ack_o,
-
   // Error status outputs
   output logic               ctr_err_o,
   output logic               sm_err_o
@@ -69,7 +65,7 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   //--------------------------------------------
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 10 -n 7 \
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 6 \
   //     -s 923483574589 --language=sv
   //
   // Hamming distance histogram:
@@ -77,29 +73,26 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (40.00%)
-  //  4: |||||||||||||||||||| (40.00%)
-  //  5: ||||||| (15.56%)
-  //  6: || (4.44%)
-  //  7: --
+  //  3: |||||||||||||||||||| (57.14%)
+  //  4: ||||||||||||||| (42.86%)
+  //  5: --
+  //  6: --
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 6
+  // Maximum Hamming distance: 4
   // Minimum Hamming weight: 1
   // Maximum Hamming weight: 5
   //
-  localparam int StateWidth = 7;
+  localparam int StateWidth = 6;
   typedef enum logic [StateWidth-1:0] {
-    Idle       = 7'b1011101,
-    CtrInc     = 7'b0011110,
-    ReqSend    = 7'b1000010,
-    RspWait    = 7'b1101001,
-    Hndshk     = 7'b0101111,
-    HndshkGen  = 7'b1110011,
-    HndshkLoad = 7'b0110000,
-    ESHalt     = 7'b0001000,
-    ESHaltBenc = 7'b1100100,
-    Error      = 7'b0000101
+    Idle       = 6'b101110,
+    CtrInc     = 6'b100001,
+    ReqSend    = 6'b110100,
+    RspWait    = 6'b010111,
+    Hndshk     = 6'b001101,
+    HndshkGen  = 6'b011000,
+    HndshkLoad = 6'b111011,
+    Error      = 6'b000010
   } state_e;
 
   state_e state_q, state_d;
@@ -311,7 +304,6 @@ module csrng_ctr_drbg import csrng_pkg::*; (
     rsp_vld_o  = 1'b0;
     bits_vld_o = 1'b0;
     state_db_wr_o = 1'b0;
-    es_halt_ack_o = 1'b0;
 
     block_encrypt_req_vld_o = 1'b0;
     block_encrypt_rsp_rdy_o = 1'b0;
@@ -326,11 +318,7 @@ module csrng_ctr_drbg import csrng_pkg::*; (
 
     unique case (state_q)
       Idle: begin
-        // Prioritize halt requests from entropy source over disable, as those requests would
-        // otherwise get starved when CSRNG is disabled.
-        if (es_halt_req_i) begin
-          state_d = ESHalt;
-        end else if (enable_i && req_vld_i) begin
+        if (enable_i && req_vld_i) begin
           unique case (core_data.cmd)
             UNI: begin
               // No further action needed, write to state db and flag response valid
@@ -368,13 +356,10 @@ module csrng_ctr_drbg import csrng_pkg::*; (
         end
       end
       ReqSend: begin
-        // Once a request has been accepted, also process its response, even if we get an
-        // es_halt_req (there is no point since the power-hungry processing will anyways happen)
+        // Once a request has been accepted, also process its response.
         block_encrypt_req_vld_o = 1'b1;
         if (block_encrypt_req_rdy_i) begin
           state_d = RspWait;
-        end else if (es_halt_req_i) begin
-          state_d = ESHaltBenc;
         end
       end
       RspWait: begin
@@ -463,18 +448,6 @@ module csrng_ctr_drbg import csrng_pkg::*; (
         v_ctr_inc = 1'b1;
         state_d = ReqSend;
       end
-      ESHalt: begin
-        es_halt_ack_o = 1'b1;
-        if (!es_halt_req_i) begin
-          state_d = Idle;
-        end
-      end
-      ESHaltBenc: begin
-        es_halt_ack_o = 1'b1;
-        if (!es_halt_req_i) begin
-          state_d = ReqSend;
-        end
-      end
       Error: begin
         sm_err_o = 1'b1;
       end
@@ -493,7 +466,7 @@ module csrng_ctr_drbg import csrng_pkg::*; (
       if (block_encrypt_rsp_vld_i) begin
         state_d = Idle;
       end
-    end else if (!(state_q inside {Idle, Error, ESHalt, ESHaltBenc}) && (state_d != Error)) begin
+    end else if (!(state_q inside {Idle, Error}) && (state_d != Error)) begin
       // Be careful to not enable error-state escape by accident (checked by assertions).
       if (!enable_i) begin
         state_d = Idle;
@@ -552,7 +525,7 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   `ASSERT(CsrngCtrDrbgSmErrorStStable_A, state_q == Error |=> $stable(state_q))
   // Outside of any non-error state, the FSM error output must be asserted
   `ASSERT(CsrngCtrDrbgSmErrorOutput_A, !(state_q inside
-          {Idle, CtrInc, ReqSend, RspWait, Hndshk, HndshkGen, HndshkLoad, ESHalt, ESHaltBenc})
+          {Idle, CtrInc, ReqSend, RspWait, Hndshk, HndshkGen, HndshkLoad})
           |-> sm_err_o)
 
 endmodule

@@ -45,18 +45,6 @@
       act:     "rsp",
       package: "entropy_src_pkg",
     }
-    { struct:  "cs_aes_halt"
-      type:    "req_rsp",
-      name:    "cs_aes_halt"
-      act:     "req"
-      package: "entropy_src_pkg"
-      desc:    '''
-               Coordinate activity between CSRNG's AES and Entropy Source's SHA3.
-               The idea is that Entropy Source requests CSRNG's AES to halt and waits for CSRNG to acknowledge before it starts its SHA3.
-               While SHA3 runs, Entropy Source keeps the request high.
-               CSRNG may not drop the acknowledge before Entropy Source drops the request.
-               '''
-    }
     { struct:  "logic"
       type:    "uni"
       name:    "entropy_src_rng_enable"
@@ -196,13 +184,6 @@
       type:    "int",
       default: "3",
       desc:    "Number of 384-bit entries in the esfinal FIFO"
-      local:   "true",
-      expose:  "true"
-    },
-    { name:    "EnCsAesHaltReqIf",
-      type:    "bit",
-      default: "1",
-      desc:    "Enable (1) or disable (0) the CS AES halt request interface",
       local:   "true",
       expose:  "true"
     },

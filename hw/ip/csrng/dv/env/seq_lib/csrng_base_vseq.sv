@@ -20,7 +20,6 @@ class csrng_base_vseq extends cip_base_vseq #(
       m_entropy_src_pull_seq;
   push_pull_host_seq#(.HostDataWidth(csrng_pkg::CmdBusWidth))
       m_edn_push_seq[NUM_HW_APPS];
-  push_pull_host_seq#(.HostDataWidth(1))   m_aes_halt_pull_seq;
 
   virtual task body();
     if (!uvm_config_db#(virtual csrng_cov_if)::get(null, "*.env" , "csrng_cov_if", cov_vif)) begin

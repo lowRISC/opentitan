@@ -11,7 +11,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   parameter int RngBusBitSelWidth     = 2,
   parameter int HealthTestWindowWidth = 18,
   parameter int EsFifoDepth           = 3,
-  parameter bit EnCsAesHaltReqIf      = 1'b1,
   parameter int DistrFifoDepth        = 2,
   parameter int BucketHtDataWidth     = 4,
   parameter int NumBucketHtInst       = prim_util_pkg::ceil_div(RngBusWidth, BucketHtDataWidth)
@@ -37,10 +36,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   output logic                   entropy_src_rng_enable_o,
   input  logic                   entropy_src_rng_valid_i,
   input  logic [RngBusWidth-1:0] entropy_src_rng_bits_i,
-
-  // CSRNG Interface
-  output cs_aes_halt_req_t cs_aes_halt_o,
-  input  cs_aes_halt_rsp_t cs_aes_halt_i,
 
   // External Health Test Interface
   output logic                             entropy_src_xht_valid_o,
@@ -455,8 +450,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                         sha3_squeezing;
   logic [2:0]                   sha3_fsm;
   logic [32:0]                  sha3_err;
-  logic                         cs_aes_halt_req;
-  logic                         cs_aes_halt_ack;
+  logic                         sha3_block_busy;
   logic [HealthTestWindowWidth-1:0] window_cntr;
   logic                         window_cntr_incr_en;
 
@@ -662,7 +656,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .esbit_fifo_not_empty_i(pfifo_esbit_not_empty),
     .postht_fifo_not_empty_i(pfifo_postht_not_empty),
     .distr_fifo_not_empty_i(sfifo_distr_not_empty),
-    .cs_aes_halt_req_i(cs_aes_halt_req),
+    .sha3_block_busy_i(sha3_block_busy),
     .sha3_block_processed_i(sha3_block_processed),
     .bypass_mode_i(es_bypass_mode),
     .enable_o(es_delayed_enable)
@@ -2611,10 +2605,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
 
   // The purpose of this FIFO is to buffer postht entropy bits in case the conditioner cannot
-  // accept them at the moment, i.e., because it's busy or because it's waiting on the CS AES halt
-  // interface before it can run. By properly sizing this FIFO, it can be guaranteed that even
-  // under pessimistic operating conditions (see entropy_src_rng_max_rate test), entropy bits never
-  // need to be dropped from the hardware pipeline.
+  // accept them at the moment, i.e., because it's busy. By properly sizing this FIFO, it can be
+  // guaranteed that even under pessimistic operating conditions (see
+  // entropy_src_rng_max_rate test), entropy bits never need to be dropped from the hardware
+  // pipeline.
 
   // SEC_CM: FIFO.CTR.REDUN
   prim_fifo_sync #(
@@ -2943,47 +2937,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .state_o       (sha3_state),
 
     // REQ/ACK interface to avoid power spikes
-    .run_req_o(cs_aes_halt_req),
-    .run_ack_i(cs_aes_halt_ack),
+    .run_req_o(sha3_block_busy),
+    .run_ack_i(1'b1),
 
     .error_o (sha3_err),
     .sparse_fsm_error_o (sha3_state_error),
     .count_error_o  (sha3_count_error),
     .keccak_storage_rst_error_o (sha3_rst_storage_err)
   );
-
-  // CS AES halt request interface
-  // Coordinate activity between CSRNG's AES and ENTROPY_SRC's SHA3. The idea is that ENTROPY_SRC
-  // requests CSRNG's AES to halt and waits for CSRNG to acknowledge before it starts its SHA3.
-  // While SHA3 runs, ENTROPY_SRC keeps the request high. CSRNG may not drop the acknowledge before
-  // ENTROPY_SRC drops the request.
-  if (EnCsAesHaltReqIf) begin : gen_cs_aes_halt_req_if
-
-    // Flop the request.
-    logic cs_aes_halt_d, cs_aes_halt_q;
-    assign cs_aes_halt_d = cs_aes_halt_req;
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        cs_aes_halt_q <= '0;
-      end else begin
-        cs_aes_halt_q <= cs_aes_halt_d;
-      end
-    end
-
-    // Drive the actual interface.
-    assign cs_aes_halt_o.cs_aes_halt_req = cs_aes_halt_q;
-    assign cs_aes_halt_ack               = cs_aes_halt_i.cs_aes_halt_ack;
-  end else begin : gen_no_cs_aes_halt_req_if
-
-    // Tie-off unused signals.
-    logic unused_cs_aes_halt_req_if;
-    assign unused_cs_aes_halt_req_if = cs_aes_halt_i.cs_aes_halt_ack;
-
-    // Both CSRNG's AES and ENTROPY_SRC's SHA3 are always free to process.
-    assign cs_aes_halt_o.cs_aes_halt_req = 1'b0;
-    assign cs_aes_halt_ack               = 1'b1;
-  end
 
   //--------------------------------------------
   // bypass SHA conditioner path
@@ -3074,7 +3035,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // When operating in RNG mode the state machine does not respond
   // immediately to disable requests if it processing the SHA output
-  // (here indicated by the cs_aes_halt_req handshake).  The SHA engine
+  // (here indicated by the sha3_block_busy signal). The SHA engine
   // will continue to process even if the module is disabled.  These seeds
   // that continue to process after the disable signal are referred to as
   // stale.
@@ -3089,7 +3050,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // main_stage_push signal.
 
   assign stale_seed_processing = ~es_bypass_mode & ~fw_ov_mode_entropy_insert &
-                                 cs_aes_halt_req & ~es_enable_fo[12];
+                                 sha3_block_busy & ~es_enable_fo[12];
   assign sha3_flush_d = stale_seed_processing ? 1'b1 :
                         main_stage_push_raw ? 1'b0 :
                         sha3_flush_q;

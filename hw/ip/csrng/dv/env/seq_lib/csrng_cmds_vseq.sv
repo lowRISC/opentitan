@@ -7,7 +7,7 @@ class csrng_cmds_vseq extends csrng_base_vseq;
   `uvm_object_new
 
   csrng_item   cs_item, cs_item_q[NUM_HW_APPS + 1][$];
-  uint         num_cmds, cmds_gen, cmds_sent, aes_halt_clks;
+  uint         num_cmds, cmds_gen, cmds_sent;
   bit          uninstantiate[NUM_HW_APPS + 1];
 
   function void gen_seed(uint app);
@@ -101,8 +101,6 @@ class csrng_cmds_vseq extends csrng_base_vseq;
     // Create entropy_src sequence
     m_entropy_src_pull_seq = push_pull_device_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)::
         type_id::create("m_entropy_src_pull_seq");
-    // Create aes_halt sequence
-    m_aes_halt_pull_seq = push_pull_host_seq#(1)::type_id::create("m_aes_halt_pull_seq");
     // Create edn host sequences
     for (int i = 0; i < NUM_HW_APPS; i++) begin
       m_edn_push_seq[i] = push_pull_host_seq#(csrng_pkg::CmdBusWidth)::type_id::create
@@ -120,6 +118,8 @@ class csrng_cmds_vseq extends csrng_base_vseq;
     // Send commands
     fork
       fork
+        // Generate one thread for each hardware application interface. These will end once all the
+        // commands have been sent.
         for (int i = 0; i < NUM_HW_APPS + 1; i++) begin
           automatic int j = i;
           fork
@@ -136,18 +136,11 @@ class csrng_cmds_vseq extends csrng_base_vseq;
           join_none;
         end
 
+        // Generate an endless thread. This is to ensure the thread responsible for the re-enabling
+        // below (note that it also manipulates the command queues) determines the end of the
+        // sequence.
         forever begin
-          `uvm_info(`gfn, $sformatf("aes_halt_clks = %0d, cmds_sent = %0d, cmds_gen = %0d",
-                    aes_halt_clks, cmds_sent, cmds_gen), UVM_DEBUG)
-          if (cfg.aes_halt) begin
-            `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(aes_halt_clks, aes_halt_clks inside
-                { [cfg.min_aes_halt_clks:cfg.max_aes_halt_clks] };)
-            cfg.clk_rst_vif.wait_clks(aes_halt_clks);
-            m_aes_halt_pull_seq.start(p_sequencer.aes_halt_sequencer_h);
-          end
-          else begin
-            cfg.clk_rst_vif.wait_clks(500);
-          end
+          cfg.clk_rst_vif.wait_clks(500);
         end
       join
 

@@ -588,7 +588,7 @@ interface entropy_src_cov_if
                                                   bit esbit_fifo_not_empty_i,
                                                   bit postht_fifo_not_empty_i,
                                                   bit distr_fifo_not_empty_i,
-                                                  bit cs_aes_halt_req_i,
+                                                  bit sha3_block_busy_i,
                                                   bit sha3_block_processed_i,
                                                   bit bypass_mode_i,
                                                   bit enable_o);
@@ -643,11 +643,13 @@ interface entropy_src_cov_if
                                          binsof(cp_distr_fifo.not_empty));
     }
 
-    cp_sha3_state: coverpoint {cs_aes_halt_req_i, sha3_block_processed_i} {
+    cp_sha3_state: coverpoint {sha3_block_busy_i, sha3_block_processed_i} {
       bins idle = {2'b00};
       bins sha3_block_processed = {2'b01};
-      bins aes_halt_req = {2'b10};
-      bins aes_halt_req_and_sha3_block_processed = {2'b11};
+      bins sha3_block_busy = {2'b10};
+      // In the current implementation, sha3_block_busy is de-asserted based on
+      // sha3_block_processsed.
+      illegal_bins sha3_block_busy_and_sha3_block_processed = {2'b11};
     }
 
     cr_enable_i_sha3_state: cross cp_enable, cp_sha3_state {
@@ -1186,7 +1188,7 @@ interface entropy_src_cov_if
             tb.dut.u_entropy_src_core.u_enable_delay.esbit_fifo_not_empty_i,
             tb.dut.u_entropy_src_core.u_enable_delay.postht_fifo_not_empty_i,
             tb.dut.u_entropy_src_core.u_enable_delay.distr_fifo_not_empty_i,
-            tb.dut.u_entropy_src_core.u_enable_delay.cs_aes_halt_req_i,
+            tb.dut.u_entropy_src_core.u_enable_delay.sha3_block_busy_i,
             tb.dut.u_entropy_src_core.u_enable_delay.sha3_block_processed_i,
             tb.dut.u_entropy_src_core.u_enable_delay.bypass_mode_i,
             tb.dut.u_entropy_src_core.u_enable_delay.enable_o);

@@ -19,7 +19,6 @@ module entropy_src
   parameter int RngBusBitSelWidth                 = 2,
   parameter int HealthTestWindowWidth             = 18,
   parameter int EsFifoDepth                       = 3,
-  parameter bit EnCsAesHaltReqIf                  = 1'b1,
   parameter int DistrFifoDepth                    = 3,
   parameter bit Stub                              = 1'b0
 ) (
@@ -47,10 +46,6 @@ module entropy_src
   output logic                   entropy_src_rng_enable_o,
   input  logic                   entropy_src_rng_valid_i,
   input  logic [RngBusWidth-1:0] entropy_src_rng_bits_i,
-
-  // CSRNG Interface
-  output cs_aes_halt_req_t cs_aes_halt_o,
-  input  cs_aes_halt_rsp_t cs_aes_halt_i,
 
   // External Health Test Interface
   output logic                             entropy_src_xht_valid_o,
@@ -101,7 +96,6 @@ module entropy_src
   entropy_src_hw2reg_t core_hw2reg;
   entropy_src_hw_if_rsp_t core_entropy_hw_if;
   logic core_rng_enable;
-  cs_aes_halt_req_t core_aes_halt;
   entropy_src_xht_meta_req_t core_xht_meta;
   logic core_xht_valid;
   logic [RngBusWidth-1:0] core_xht_bits;
@@ -132,7 +126,6 @@ module entropy_src
   assign core_rst_n                           = Stub ? '0                 : rst_ni;
   assign entropy_src_hw_if_o                  = Stub ? stub_entropy_hw_if : core_entropy_hw_if;
   assign entropy_src_rng_enable_o             = Stub ? '1                 : core_rng_enable;
-  assign cs_aes_halt_o                        = Stub ? '0                 : core_aes_halt;
   assign entropy_src_xht_valid_o              = Stub ? '0                 : core_xht_valid;
   assign entropy_src_xht_bits_o               = Stub ? '0                 : core_xht_bits;
   assign entropy_src_xht_bit_sel_o            = Stub ? '0                 : core_xht_bit_sel;
@@ -174,7 +167,6 @@ module entropy_src
     .RngBusBitSelWidth(RngBusBitSelWidth),
     .HealthTestWindowWidth(HealthTestWindowWidth),
     .EsFifoDepth(EsFifoDepth),
-    .EnCsAesHaltReqIf(EnCsAesHaltReqIf),
     .DistrFifoDepth(DistrFifoDepth),
     .BucketHtDataWidth(BucketHtDataWidth),
     .NumBucketHtInst(NumBucketHtInst)
@@ -201,9 +193,6 @@ module entropy_src
     .entropy_src_rng_enable_o(core_rng_enable),
     .entropy_src_rng_valid_i,
     .entropy_src_rng_bits_i,
-
-    .cs_aes_halt_o(core_aes_halt),
-    .cs_aes_halt_i,
 
     .recov_alert_o(core_alert[0]),
     .fatal_alert_o(core_alert[1]),

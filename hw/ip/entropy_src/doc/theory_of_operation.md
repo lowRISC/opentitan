@@ -150,11 +150,11 @@ This FIFO has pass-through mode enabled meaning it doesn't add latency to the ha
 It has a width of 32 bits.
 Its depth is configurable via compile-time Verilog parameter and should match the expected level of conditioner back pressure.
 The level of conditioner back pressure depends on the following factors:
-- The maximum latency for the conditioner to add the padding bits \\(n_{pad}\\) (25 clock cycles) and to run the internal SHA3 primitive \\(n_{sha3}\\) (24 clock cycles).
-- The maximum latency of the [CS AES halt request interface](interfaces.md/#inter-module-signals) \\(n_{halt}\\) (48 clock cycles corresponding to CSRNG performing the Update function).
+- The maximum latency for the conditioner to add the padding bits \\(n_{pad}\\) (25 clock cycles) and,
+- The maximum latency for the conditioner to run the internal SHA3 primitive \\(n_{sha3}\\) (24 clock cycles).
 
 The required depth \\(d_{distr}\\) of the Distribution FIFO can be computed as
-$$ d_{distr} = { (r_{ptrng} * s_{symbol}) * (2 * (n_{halt} + n_{sha3}) + n_{pad} + n_{uarch}) - 32 - 64 \over 32} $$
+$$ d_{distr} = { (r_{ptrng} * s_{symbol}) * (2 * n_{sha3} + n_{pad} + n_{uarch}) - 32 - 64 \over 32} $$
 
 where
 - \\(r_{ptrng}\\) is the rate at which the PTRNG noise source generates entropy samples,
@@ -166,7 +166,7 @@ For [Top Earlgrey](../../../top_earlgrey/README.md), the assumption is that the 
 With the ENTROPY_SRC block running at 100 MHz, this leads to noise source rate \\(r_{ptrng}\\) = 1/8000.
 
 The noise source model inside the DV environment generates symbols with an average rate of 1 4-bit symbol every 6.5 clock cycles.
-To reach functional coverage metrics, the `entropy_src_rng_max_rate` configures the noise source to generate a 4-bit symbol every other clock cycle (\\(r_{ptrng}\\) = 1/2) an the CS AES halt request interface to always respond immediately (\\(n_{halt}\\) = 0).
+To reach functional coverage metrics, the `entropy_src_rng_max_rate` configures the noise source to generate a 4-bit symbol every other clock cycle (\\(r_{ptrng}\\) = 1/2).
 With these settings, the ENTROPY_SRC block should never drop samples due to conditioner back pressure if a depth of two is chosen for the Distribution FIFO (\\(d_{distr}\\) = 2).
 
 

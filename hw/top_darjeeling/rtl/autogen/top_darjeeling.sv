@@ -319,7 +319,6 @@ module top_darjeeling #(
   localparam int SramCtrlRetAonOutstanding = 2;
   // local parameters for entropy_src
   localparam int EntropySrcEsFifoDepth = 3;
-  localparam bit EntropySrcEnCsAesHaltReqIf = 0;
   localparam int unsigned EntropySrcDistrFifoDepth = 11;
   // local parameters for edn0
   localparam int unsigned Edn0NumEndPoints = 8;
@@ -542,8 +541,6 @@ module top_darjeeling #(
   csrng_pkg::csrng_rsp_t [1:0] csrng_csrng_cmd_rsp;
   entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
   entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
-  entropy_src_pkg::cs_aes_halt_req_t       csrng_cs_aes_halt_req;
-  entropy_src_pkg::cs_aes_halt_rsp_t       csrng_cs_aes_halt_rsp;
   otp_ctrl_pkg::sram_otp_key_req_t [3:0] otp_ctrl_sram_otp_key_req;
   otp_ctrl_pkg::sram_otp_key_rsp_t [3:0] otp_ctrl_sram_otp_key_rsp;
   pwrmgr_pkg::pwr_rst_req_t       pwrmgr_aon_pwr_rst_req;
@@ -1969,8 +1966,6 @@ module top_darjeeling #(
       .csrng_cmd_o(csrng_csrng_cmd_rsp),
       .entropy_src_hw_if_o(csrng_entropy_src_hw_if_req),
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_rsp),
-      .cs_aes_halt_i(csrng_cs_aes_halt_req),
-      .cs_aes_halt_o(csrng_cs_aes_halt_rsp),
       .otp_en_csrng_sw_app_read_i(csrng_otp_en_csrng_sw_app_read),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .tl_i(csrng_tl_req),
@@ -1987,7 +1982,6 @@ module top_darjeeling #(
     .RngBusBitSelWidth(EntropySrcRngBusBitSelWidth),
     .HealthTestWindowWidth(EntropySrcHealthTestWindowWidth),
     .EsFifoDepth(EntropySrcEsFifoDepth),
-    .EnCsAesHaltReqIf(EntropySrcEnCsAesHaltReqIf),
     .DistrFifoDepth(EntropySrcDistrFifoDepth),
     .Stub(EntropySrcStub)
   ) u_entropy_src (
@@ -2005,8 +1999,6 @@ module top_darjeeling #(
       // Inter-module signals
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_req),
       .entropy_src_hw_if_o(csrng_entropy_src_hw_if_rsp),
-      .cs_aes_halt_o(csrng_cs_aes_halt_req),
-      .cs_aes_halt_i(csrng_cs_aes_halt_rsp),
       .entropy_src_rng_enable_o(es_rng_enable_o),
       .entropy_src_rng_valid_i(es_rng_valid_i),
       .entropy_src_rng_bits_i(es_rng_bit_i),

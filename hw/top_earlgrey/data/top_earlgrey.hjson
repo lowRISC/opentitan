@@ -1175,7 +1175,6 @@
       'aon_timer_aon.nmi_wdog_timer_bark' : ['rv_core_ibex.nmi_wdog'],
       'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
-      'csrng.cs_aes_halt'       : ['entropy_src.cs_aes_halt'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
       'flash_ctrl.otp'          : ['otp_ctrl.flash_otp_key'],
       'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
