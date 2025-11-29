@@ -8,6 +8,21 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   bit en_tl_err_cov      = 1;
   bit en_tl_intg_err_cov = 1;
 
+  // True if the scoreboard should check TL transactions for integrity. A transaction that fails its
+  // integrity check is expected to be ignored (although it may cause an alert).
+  bit en_scb_tl_err_chk = 1;
+
+  // True if the scoreboard should check that pings on the alert interface get timely responses.
+  bit en_scb_ping_chk = 1;
+
+  // A flag that the cip_base_vseq sets before it triggers a reset in the stress_all_with_rand_reset
+  // test. Once this is set, it causes the stop_transaction_generators() function to return true,
+  // which causes some environments to pause their sequences to leave a "quiet gap".
+  //
+  // The flag is set by calling the set_intention_to_reset() function and can be seen by calling
+  // stop_transaction_generators.
+  local bit will_reset  = 0;
+
   // If this flag is set then we allow the stress_all_with_rand_reset task to apply a reset without
   // waiting for CSR accesses to complete. This will only work if the IP block's vseqs
   //
@@ -134,8 +149,8 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
 
     // Assign handle to the default `m_tl_agent_cfg` for default `RAL_T`
     if (ral_model_names.size > 0) begin
-      `DV_CHECK_FATAL(m_tl_agent_cfgs.exists(RAL_T::type_name))
-      m_tl_agent_cfg = m_tl_agent_cfgs[RAL_T::type_name];
+      `DV_CHECK_FATAL(m_tl_agent_cfgs.exists(ral_type_name))
+      m_tl_agent_cfg = m_tl_agent_cfgs[ral_type_name];
       `DV_CHECK_NE_FATAL(m_tl_agent_cfg, null)
     end
 
@@ -259,4 +274,27 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
 
   endfunction
 
- endclass
+  // This can be used to stop transaction generators either upon reset or in preparation to issue a
+  // random reset.
+  function bit stop_transaction_generators();
+    return this.will_reset || this.under_reset;
+  endfunction
+
+  // This can be used to announce the intention to generate a random reset soon, to allow
+  // transaction generators to stop, and fire a reset with no outstanding transactions.
+  virtual function void set_intention_to_reset();
+    `uvm_info(`gfn, "Setting intention to reset", UVM_MEDIUM)
+    this.will_reset = 1'b1;
+  endfunction
+
+  // This dv_base_env_cfg function is called by dv_base_scoreboard::monitor_reset when it sees a
+  // reset on the main clk_rst_if.
+  //
+  // The override here clears the will_reset flag (since we have now seen the reset we were waiting
+  // for).
+  function void reset_asserted();
+    super.reset_asserted();
+    this.will_reset = 0;
+  endfunction
+
+endclass
