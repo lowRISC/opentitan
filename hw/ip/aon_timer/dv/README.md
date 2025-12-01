@@ -245,11 +245,11 @@ Outputs are also checked for `'X` values by assertions in the design RTL.
 
 ## Building and running tests
 
-Tests can be run with [`dvsim.py`](../../../../util/dvsim/README.md).
+The [dvsim](https://github.com/lowRISC/dvsim) tool is used for building and running our tests and regressions.
 The link gives details of the tool's features and command line arguments.
 To run a basic smoke test, go to the top of the repository and run:
 ```console
-$ util/dvsim/dvsim.py hw/ip/aon_timer/dv/aon_timer_sim_cfg.hjson -i aon_timer_smoke
+$ dvsim hw/ip/aon_timer/dv/aon_timer_sim_cfg.hjson -i aon_timer_smoke
 ```
 
 

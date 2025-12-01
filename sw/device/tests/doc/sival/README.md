@@ -27,8 +27,7 @@ environment.
 *   **Bazel**: OpenTitan software build system. Used to build host and device
     (DUT) software and trigger unit tests as well as tests requiring an
     OpenTitan target. FPGA, Verilator and Silicon targets are supported. DV test
-    targets are integrated using
-    [dvsim](../../../../../util/dvsim/README.md).
+    targets are integrated using [dvsim](https://github.com/lowRISC/dvsim).
 *   **[hsmtool](https://github.com/lowRISC/opentitan/tree/master/sw/host/hsmtool)**:
     utility used to interface with hardware used to manage signing keys. The
     tool uses PKCS#11 to access HSM and USB tokens. Only NitroKey HSM2 is

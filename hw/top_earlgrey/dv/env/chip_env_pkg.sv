@@ -113,7 +113,7 @@ package chip_env_pkg;
     SwTypeDebug     = 5  // Debug SW - injected into SRAM.
   } sw_type_e;
 
-  // Our dvsim.py configuration always generates five base OTP images (in various lifecycle states)
+  // Our dvsim configuration always generates five base OTP images (in various lifecycle states)
   // to allow tests configurations to choose from. Additionally, we support specifying a custom OTP
   // image, via the `sw_images` plusarg, that is built by the SW build system.
   typedef enum {

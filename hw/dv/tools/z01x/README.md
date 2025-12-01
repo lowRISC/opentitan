@@ -16,6 +16,6 @@ $ export Z01X_DIR=<path to the opentitan_fi_z01x directory>
 $ export OT_DIR=<path to the opentitan directory>
 $ cd opentitan/
 $ ./util/prepare_dvsim_z01x.sh
-$ ./util/dvsim/dvsim.py hw/top_earlgrey/ip_autogen/flash_ctrl/dv/flash_ctrl_fi_sim_cfg.hjson \
+$ dvsim hw/top_earlgrey/ip_autogen/flash_ctrl/dv/flash_ctrl_fi_sim_cfg.hjson \
     -i flash_ctrl_basic_rw -t z01x --reseed-multiplier 0.0001 --fixed-seed 1
 ```

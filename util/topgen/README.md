@@ -231,7 +231,7 @@ To run a chip-level test using these tapeout files, the following steps are requ
 
 You can then type the usual command, e.g.,
 ```
-./util/dvsim/dvsim.py hw/top_earlgrey/dv/chip_sim_cfg.hjson -i chip_sw_uart_tx_rx
+dvsim hw/top_earlgrey/dv/chip_sim_cfg.hjson -i chip_sw_uart_tx_rx
 ```
 to start the chip-level test.
 
