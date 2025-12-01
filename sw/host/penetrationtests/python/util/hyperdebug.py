@@ -53,9 +53,9 @@ class HyperDebug:
             return
 
         command = (
-            [self.opentitantool]
-            + self.tool_args
-            + ["--exec", "transport init", "--exec", f"fpga load-bitstream {bitstream}", "no-op"]
+            [self.opentitantool] +
+            self.tool_args +
+            ["--exec", "transport init", "--exec", f"fpga load-bitstream {bitstream}", "no-op"]
         )
         try:
             result = run(command, check=True, capture_output=True, text=True)
@@ -69,9 +69,9 @@ class HyperDebug:
 
     def flash_target(self, firmware, boot_delay=2, print_output=True):
         command = (
-            [self.opentitantool]
-            + self.tool_args
-            + ["--exec", "transport init", "--exec", f"bootstrap {firmware}", "no-op"]
+            [self.opentitantool] +
+            self.tool_args +
+            ["--exec", "transport init", "--exec", f"bootstrap {firmware}", "no-op"]
         )
         try:
             run(command, check=True, capture_output=True)
@@ -218,9 +218,9 @@ class HyperDebug:
     def reset_target(self, com_reset=False, reset_delay=0.005):
         """Resets the target."""
         reset_process = (
-            [self.opentitantool]
-            + self.tool_args
-            + [
+            [self.opentitantool] +
+            self.tool_args +
+            [
                 "--exec",
                 "transport init",
                 "--exec",

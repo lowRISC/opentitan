@@ -275,8 +275,8 @@ class AlertFiTest(unittest.TestCase):
         reset_enabled = 3 in common_library.default_fpga_friendly_alert_config["signals"]
 
         if reset_enabled and (
-            (sensor_ctrl_en_fatal and alert_fatal_enabled)
-            or (not sensor_ctrl_en_fatal and alert_recov_enabled)
+            (sensor_ctrl_en_fatal and alert_fatal_enabled) or
+            (not sensor_ctrl_en_fatal and alert_recov_enabled)
         ):
             self.assertEqual(
                 got_response,
