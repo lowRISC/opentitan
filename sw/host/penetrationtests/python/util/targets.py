@@ -100,6 +100,20 @@ class Target:
                 pass
             it += 1
 
+    def read_all(self, max_tries=50):
+        it = 0
+        response = ""
+        while it != max_tries:
+            try:
+                read_line = str(self.readline().decode().strip())
+                if len(read_line) > 0:
+                    response += read_line
+                else:
+                    return response
+            except UnicodeDecodeError:
+                pass
+            it += 1
+
     def dump_all(self, max_tries=50):
         it = 0
         while it != max_tries:
