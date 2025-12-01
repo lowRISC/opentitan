@@ -4,6 +4,66 @@
 
 package(default_visibility = ["//visibility:public"])
 
+load("//rules:const.bzl", "CONST", "hex")
+load("//rules:manifest.bzl", "manifest")
+load(
+    "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "ROM_EXT_VARIATIONS",
+    "ROM_EXT_VERSION",
+    "SLOTS",
+)
+load(
+    "//rules:otp.bzl",
+    "STD_OTP_OVERLAYS",
+    "otp_hex",
+    "otp_image",
+    "otp_json",
+    "otp_partition",
+)
+
+otp_json(
+    name = "otp_json_rom_fi",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.HARDENED_TRUE),
+                # Number of Ibex cycles to spin: we set this to the highest value
+                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "0xffffffff",
+                # Enable SPX+ signature verification.
+                # TODO: ROM_EXT is not signed with this yet
+                # "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0x0),
+            },
+        ),
+        otp_partition(
+            name = "SECRET2",
+            items = {
+                # We set reproducible bitstreams for the tests
+                "RMA_TOKEN": "0000000000000005",
+                "CREATOR_ROOT_KEY_SHARE0": "1111111111111111111111111111111111111111111111111111111111111111",
+                "CREATOR_ROOT_KEY_SHARE1": "2222222222222222222222222222222222222222222222222222222222222222",
+            },
+            lock = True,
+        ),
+    ],
+    visibility = ["//visibility:private"],
+)
+
+otp_image(
+    name = "otp_img_rom_fi",
+    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    overlays = STD_OTP_OVERLAYS + [
+        ":otp_json_rom_fi",
+    ],
+)
+
+# For when building specialized manifests for security testing.
+manifest(d = {
+    "name": "rom_fi_manifest",
+    "identifier": hex(CONST.OWNER),
+    "visibility": ["//visibility:public"],
+})
+
 cc_library(
     name = "crypto_fi",
     srcs = ["crypto_fi.c"],

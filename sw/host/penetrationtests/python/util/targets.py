@@ -69,6 +69,9 @@ class Target:
         # Clear the UART
         self.dump_all()
 
+    def clear_bitstream(self, delay=2):
+        self.target.clear_bitstream(delay=delay)
+
     def reset_target(self, reset_delay=0.005):
         self.target.reset_target(reset_delay=reset_delay)
 
