@@ -147,3 +147,30 @@ class DisParser:
             self.get_function_start_address(marker_name + "_START"),
             self.get_function_start_address(marker_name + "_END"),
         ]
+
+    def get_inlined_function_address(self, function_name):
+        try:
+            with open(self.dis_file_path, "r") as f:
+                escaped_name = re.escape(function_name)
+                marker_pattern = re.compile(r"^\s*" + escaped_name + r"\(\):")
+
+                inst_address_pattern = re.compile(r"^([0-9a-fA-F]{8}):")
+
+                found_marker = False
+                for line in f:
+                    if not found_marker:
+                        if marker_pattern.search(line):
+                            found_marker = True
+                    else:
+                        match = inst_address_pattern.search(line)
+                        if match:
+                            return f"0x{match.group(1)}"
+
+        except IOError as e:
+            print(f"Error reading file: {e}")
+            return None
+
+        print(
+            f"Error: Inlined function address not found for {function_name}"
+        )
+        return None
