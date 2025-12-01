@@ -14,11 +14,11 @@
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
-#include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/security_config.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
+#include "sw/device/lib/crypto/include/keyblob.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('a', 'g', 'c')

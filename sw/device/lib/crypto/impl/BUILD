@@ -128,7 +128,7 @@ cc_library(
 cc_library(
     name = "integrity",
     srcs = ["integrity.c"],
-    hdrs = ["integrity.h"],
+    hdrs = ["//sw/device/lib/crypto/include:integrity.h"],
     deps = [
         "//sw/device/lib/base:crc32_device_library",  # force non-mock version in unit tests
         "//sw/device/lib/base:hardened",
@@ -153,7 +153,7 @@ cc_library(
 cc_library(
     name = "keyblob",
     srcs = ["keyblob.c"],
-    hdrs = ["keyblob.h"],
+    hdrs = ["//sw/device/lib/crypto/include:keyblob.h"],
     deps = [
         ":integrity",
         ":status",
