@@ -8,7 +8,7 @@ To run synthesis through dvsim, use a command like the following:
 
 ```
 $ cd $REPO_TOP
-$ ./util/dvsim/dvsim.py -t dc hw/top_earlgrey/syn/chip_earlgrey_asic_syn_cfg.hjson --purge --local
+$ dvsim -t dc hw/top_earlgrey/syn/chip_earlgrey_asic_syn_cfg.hjson --purge --local
 ```
 
 This comment will invoke dvsim to run synthesis and terminate upon success or failure.

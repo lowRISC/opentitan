@@ -57,9 +57,9 @@ class chip_sw_random_power_glitch_vseq extends chip_sw_base_vseq;
     repeat (NumRound) begin
       // The timeout for this test needs to be larger than 30_000_000, otherwise certain seeds
       // like:
-      // ./util/dvsim/dvsim.py hw/top_earlgrey/dv/chip_sim_cfg.hjson -i \
-      //   chip_sw_pwrmgr_random_sleep_power_glitch_reset --build-seed 4232114340 \
-      //   --fixed-seed 2369106033 --verbosity m
+      // dvsim hw/top_earlgrey/dv/chip_sim_cfg.hjson \
+      //   -i chip_sw_pwrmgr_random_sleep_power_glitch_reset \
+      //   --build-seed 4232114340 --fixed-seed 2369106033
       // will fail.
       `DV_WAIT(
             cfg.sw_logger_vif.printed_log ==

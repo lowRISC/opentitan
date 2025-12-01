@@ -96,11 +96,11 @@ It creates the following analysis ports to retrieve the data monitored by corres
 * CheckEdn1stReq / CheckEdn2ndReq: Check KEYMGR_DPE sends 2 EDN request periodically based on the CSR `reseed_interval`.
 
 ## Building and running tests
-We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
+The [dvsim](https://github.com/lowRISC/dvsim) tool is used for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/keymgr_dpe/dv/keymgr_dpe_sim_cfg.hjson -i keymgr_dpe_smoke
+$ dvsim $REPO_TOP/hw/ip/keymgr_dpe/dv/keymgr_dpe_sim_cfg.hjson -i keymgr_dpe_smoke
 ```
 
 ## Testplan

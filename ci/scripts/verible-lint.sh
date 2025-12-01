@@ -48,7 +48,7 @@ if [ ! -f "$dvsim_cfg" ]; then
     exit 1
 fi
 
-# DVSIM_MAX_PARALLEL constrains how many tasks dvsim.py will try to
+# DVSIM_MAX_PARALLEL constrains how many tasks dvsim will try to
 # run in parallel. If it hasn't already been set, set it to be the
 # number of CPUs on the machine.
 if [ -n "$DVSIM_MAX_PARALLEL" ]; then
@@ -58,9 +58,9 @@ else
 fi
 
 env DVSIM_MAX_PARALLEL="$mp" \
-  util/dvsim/dvsim.py --tool=veriblelint "$dvsim_cfg" || {
+  dvsim --tool=veriblelint "$dvsim_cfg" || {
     echo "::error::"\
         "Verilog style lint of ${human_desc} sources with Verible failed for top '${top}'." \
-        "Run 'util/dvsim/dvsim.py -t veriblelint ${dvsim_cfg}' and fix all errors."
+        "Run 'dvsim -t veriblelint ${dvsim_cfg}' and fix all errors."
     exit 1
 }

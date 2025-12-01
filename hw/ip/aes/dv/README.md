@@ -135,15 +135,15 @@ This setting is only available when using the C-model as reference and is contro
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
-We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for both building and running our tests and regressions.
+The [dvsim](https://github.com/lowRISC/dvsim) tool is used for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/aes/dv/aes_sim_cfg.hjson -i aes_smoke
+$ dvsim $REPO_TOP/hw/ip/aes/dv/aes_sim_cfg.hjson -i aes_smoke
 ```
 Here's how to run a basic test without DPI calls:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/aes/dv/aes_${VARIANT}_sim_cfg.hjson -i aes_wakeup
+$ dvsim $REPO_TOP/hw/ip/aes/dv/aes_${VARIANT}_sim_cfg.hjson -i aes_wakeup
 ```
 In this run command, $VARIANT can be `masked` or `unmasked`.
 ## Testplan

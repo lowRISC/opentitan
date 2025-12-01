@@ -18,7 +18,7 @@ There are three sets of FPV jobs in OpenTitan. They are all under the directory 
 To automatically create a FPV testbench, it is recommended to use the [fpvgen](../../util/fpvgen/README.md) tool to create a template.
 To run the FPV tests in `dvsim`, please add the target to the corresponding `top_earlgrey_fpv_{category}_cfgs.hjson` file , then run with command:
 ```console
-util/dvsim/dvsim.py hw/top_earlgrey/formal/top_earlgrey_fpv_{category}_cfgs.hjson --select-cfgs {target_name}
+dvsim hw/top_earlgrey/formal/top_earlgrey_fpv_{category}_cfgs.hjson --select-cfgs {target_name}
 ```
 
 It is recommended to add the FPV target to [lint](../../hw/lint/README.md) script `hw/top_earlgrey/lint/top_earlgrey_fpv_lint_cfgs.hjson` to quickly find typos.
@@ -29,7 +29,7 @@ The connectivity verification is mainly used for exhaustively verifying system-l
 User can specify the connection ports via a CSV format file in `hw/top_earlgrey/formal/conn_csvs` folder.
 User can trigger top_earlgrey's connectivity test using `dvsim`:
 ```
-util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+dvsim hw/top_earlgrey/formal/chip_conn_cfg.hjson
 ```
 
 The connectivity testplan is documented under `hw/top_earlgrey/data/chip_conn_testplan.hjson`.

@@ -79,9 +79,9 @@ TBD: Interrupt prediction and checking.
 * 'Unknown' checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ### Building and running tests
-The MBX IP has been verified using the in-house regression tool [`dvsim`](../../../../util/dvsim/README.md) for building and running tests/regressions.
+The [dvsim](https://github.com/lowRISC/dvsim) tool is used for building and running our tests and regressions.
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/mbx/dv/mbx_sim_cfg.hjson -i mbx_smoke
+$ dvsim $REPO_TOP/hw/ip/mbx/dv/mbx_sim_cfg.hjson -i mbx_smoke
 ```
 
 ## Testplan
