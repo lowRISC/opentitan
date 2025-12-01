@@ -48,6 +48,20 @@ class HyperDebug:
         if self.openocd:
             self.start_openocd(print_output=print_output)
 
+    def clear_bitstream(self, delay=2, print_output=True):
+        command = (
+            [self.opentitantool] +
+            self.tool_args +
+            ["--exec", "transport init", "--exec", "fpga clear-bitstream", "no-op"]
+        )
+        try:
+            run(command, check=True, capture_output=True, text=True)
+            time.sleep(delay)
+            print("Info: FPGA cleared.")
+        except CalledProcessError as e:
+            print(f"Error: Failed to clear the bitstream.\nStderr: {e.stderr}", file=sys.stderr)
+            raise
+
     def program_bitstream(self, bitstream, program_delay=2, print_output=True):
         if not bitstream:
             return
