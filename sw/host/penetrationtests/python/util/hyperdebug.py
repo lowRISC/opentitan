@@ -100,9 +100,9 @@ class HyperDebug:
     def set_tap_straps(self):
         """Sets the tap straps on a RMA ROM."""
         tap_process = (
-            [self.opentitantool]
-            + self.tool_args
-            + [
+            [self.opentitantool] +
+            self.tool_args +
+            [
                 "--exec",
                 "gpio write TAP_STRAP0 false",
                 "--exec",
