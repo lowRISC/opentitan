@@ -4,7 +4,7 @@
 #
 # Connectivity of clkmgr cg_en_o
 # Run these checks with:
-#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+#  dvsim hw/top_earlgrey/formal/chip_conn_cfg.hjson
 
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
