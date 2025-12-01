@@ -91,9 +91,9 @@ Finally the scoreboard incorporates independent behavioral code for calculating 
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ### Building and running tests
-The DMA IP has been verified using the in-house regression tool [`dvsim`](../../../../util/dvsim/README.md) for building and running tests/regressions.
+The [dvsim](https://github.com/lowRISC/dvsim) tool is used for building and running our tests and regressions.
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/dma/dv/dma_sim_cfg.hjson -i dma_generic_smoke
+$ dvsim $REPO_TOP/hw/ip/dma/dv/dma_sim_cfg.hjson -i dma_generic_smoke
 ```
 
 ## Testplan

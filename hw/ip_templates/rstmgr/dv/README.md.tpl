@@ -129,11 +129,11 @@ It has its own separate dv environment and tests at `hw/top_${topname}/ip_autoge
 It is excluded from coverage for the rstmgr dv tests.
 
 ## Building and running tests
-We are using our in-house developed [regression tool](../../../../../util/dvsim/README.md) for building and running our tests and regressions.
+The [dvsim](https://github.com/lowRISC/dvsim) tool is used for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_${topname}/ip_autogen/rstmgr/dv/rstmgr_sim_cfg.hjson -i rstmgr_smoke
+$ dvsim $REPO_TOP/hw/top_${topname}/ip_autogen/rstmgr/dv/rstmgr_sim_cfg.hjson -i rstmgr_smoke
 ```
 
 ## Testplan

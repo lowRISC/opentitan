@@ -140,11 +140,11 @@ As the test sequence reads the output STATE_SHARE windows after a hash operation
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
-We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
+The [dvsim](https://github.com/lowRISC/dvsim) tool is used for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/kmac/dv/kmac_${VARIANT}_sim_cfg.hjson -i kmac_smoke
+$ dvsim $REPO_TOP/hw/ip/kmac/dv/kmac_${VARIANT}_sim_cfg.hjson -i kmac_smoke
 ```
 In this run command, $VARIANT can be `masked` or `unmasked`.
 

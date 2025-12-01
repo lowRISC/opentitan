@@ -244,11 +244,11 @@ The [`hw/top_earlgrey/ip_autogen/pwrmgr/dv/sva/pwrmgr_bind.sv`](https://github.c
 In addition, the RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
-We are using our in-house developed [regression tool](../../../../../util/dvsim/README.md) for building and running our tests and regressions.
+The [dvsim](https://github.com/lowRISC/dvsim) tool is used for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_earlgrey/ip_autogen/pwrmgr/dv/pwrmgr_sim_cfg.hjson -i pwrmgr_smoke
+$ dvsim $REPO_TOP/hw/top_earlgrey/ip_autogen/pwrmgr/dv/pwrmgr_sim_cfg.hjson -i pwrmgr_smoke
 ```
 
 ## Testplan

@@ -133,12 +133,12 @@ ${"####"} Assertions
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ${"##"} Building and running tests
-We are using our in-house developed [regression tool](../../../../../util/dvsim/README.md) for building and running our tests and regressions.
+The [dvsim](https://github.com/lowRISC/dvsim) tool is used for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console
 $ cd $REPO_TOP
-$ ./util/dvsim/dvsim.py hw/top_${topname}/ip_autogen/${module_instance_name}/dv/ac_range_check_sim_cfg.hjson -i ac_range_check_smoke
+$ dvsim hw/top_${topname}/ip_autogen/${module_instance_name}/dv/ac_range_check_sim_cfg.hjson -i ac_range_check_smoke
 ```
 
 ${"##"} Testplan
