@@ -349,6 +349,8 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   unimp
 
 .L_rma_spin_skip:
+  // Label to jump to after the spin cycles
+  LABEL_FOR_TEST(kRomStartRmaSpinSkip)
   // Skip the `entropy_src` health checks configuration if the
   // `RNG_HEALTH_CONFIG_DIGEST` is not programmed. The default digest value is
   // 0 given that it is stored in a software OTP partition.
