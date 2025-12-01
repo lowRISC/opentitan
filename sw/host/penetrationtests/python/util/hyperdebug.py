@@ -218,7 +218,7 @@ class HyperDebug:
                 if not chunk:
                     break
                 response += chunk
-                if b"\x00" in chunk:
+                if b"\x1a" in chunk:
                     break
 
         except socket.timeout:
