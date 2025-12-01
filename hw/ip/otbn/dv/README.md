@@ -122,11 +122,11 @@ Finally, the `otbn_idle_checker` checks that the `idle_o` output correctly match
 
 ## Building and running tests
 
-Tests can be run with [`dvsim.py`](../../../../util/dvsim/README.md).
+Tests can be run with [dvsim](https://github.com/lowRISC/dvsim).
 The link gives details of the tool's features and command line arguments.
 To run a basic smoke test, go to the top of the repository and run:
 ```console
-$ util/dvsim/dvsim.py hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson -i otbn_smoke
+$ dvsim hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson -i otbn_smoke
 ```
 
 ## Testplan

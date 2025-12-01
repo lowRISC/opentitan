@@ -36,15 +36,14 @@ The DV documentation is not expected to be completed in full detail at this poin
 However, it is expected to list all the verification components needed and depict the planned testbench as a block diagram.
 Under the 'design verification' directory in the OpenTitan team drive, some sample testbench block diagrams are available in the `.svg` format, which can be used as a template.
 The Hjson testplan, on the other hand, is required to be completed.
-Please refer to the [testplanner tool](../../util/dvsim/doc/testplanner.md) documentation for additional details on how to write the Hjson testplan.
 Once done, these documents are to be reviewed with the designer(s) and other project members for completeness and clarity.
 
 ## UVM RAL Model
 
 Before running any test, the [UVM RAL model](../contributing/dv/methodology/README.md#uvm-register-abstraction-layer-ral-model) needs to exist (if the design contains CSRs).
-The [DV simulation flow](../../util/dvsim/README.md) has been updated to generate the RAL model automatically at the start of the simulation.
-As such, nothing extra needs to be done.
-It can be created manually by invoking [`regtool`](../../util/reggen/doc/setup_and_use.md):
+The DV simulation flow generates the RAL model automatically at the start of the simulation.
+It can also be created by manually invoking [`regtool`](../../util/reggen/doc/setup_and_use.md).
+For example:
 ```console
 $ util/regtool.py -s -t /path-to-dv /path-to-module/data/<dut>.hjson
 ```
@@ -54,15 +53,14 @@ The generated file is placed in the simulation build scratch area instead of bei
 ## Supported Simulators
 
 The use of advanced verification constructs such as SystemVerilog classes (on which UVM is based on) requires commercial simulators.
-The [DV simulation flow](../../util/dvsim/README.md) fully supports Synopsys VCS.
-There is support for Cadence Xcelium as well, which is being slowly ramped up.
+Support for Synopsys VCS and Cadence Xcelium is mature, but not all blocks or environments currently support all simulations.
 
 ## Building and Running Tests
 
 The `uvmdvgen` tool provides an empty shell sequence at `dv/env/seq_lib/<dut>_sanity_vseq.sv` for developing the sanity test.
-The sanity test can be run as-is by invoking `dvsim.py`, as a "hello world" step to bring the DUT out of reset.
+The sanity test can be run as-is by invoking `dvsim`, as a "hello world" step to bring the DUT out of reset.
 ```console
-$ util/dvsim/dvsim.py path/to/<dut>_sim_cfg.hjson -i <dut>_sanity [--waves <format>] [--tool xcelium]
+$ dvsim path/to/<dut>_sim_cfg.hjson -i <dut>_sanity [--waves <format>] [--tool xcelium]
 ```
 
 The generated initial testbench is not expected to compile and elaborate successfully right away.
@@ -71,15 +69,13 @@ Once the testbench compiles and elaborates without any errors or warnings, the s
 
 VCS is used as the default simulator. It can be switched to Xcelium by setting `--tool xcelium` on the command line.
 
-To dump waves from the simulation, pass the `--waves <format>` argument to `dvsim.py`.
+To dump waves from the simulation, pass the `--waves <format>` argument to `dvsim`.
 If you are using Verdi for waveform viewing, then '--waves fsdb' is probably the best option. For use with other viewers, '--waves shm' is probably the best choice for Xcelium, and '--waves vpd' with vcs.
-
-Please refer to the [DV simulation flow](../../util/dvsim/README.md) for additional details.
 
 The `uvmdvgen` script also enables the user to run the full suite of CSR tests, if the DUT does have CSRs in it.
 The most basic CSR power-on-reset check test can be run by invoking:
 ```console
-$ util/dvsim/dvsim.py path/to/<dut>_sim_cfg.hjson -i <dut>_csr_hw_reset [--waves <format>] [--tool xcelium]
+$ dvsim path/to/<dut>_sim_cfg.hjson -i <dut>_csr_hw_reset [--waves <format>] [--tool xcelium]
 ```
 Please refer to [CSR utilities](../../hw/dv/sv/csr_utils/README.md) for more information on how to add exclusions for the CSR tests.
 
@@ -107,7 +103,7 @@ $ git checkout -b <temp_branch> FETCH_HEAD
 
 3. This is the command that CI runs for the smoke regression.
 ```console
-$ util/dvsim/dvsim.py hw/top_earlgrey/dv/top_earlgrey_sim_cfgs.hjson -i smoke --fixed-seed=1
+$ dvsim hw/top_earlgrey/dv/top_earlgrey_sim_cfgs.hjson -i smoke --fixed-seed=1
 ```
 Since the CI runs tests with pseudo-random behaviour driven from 'seed' numbers, to be confident of reproducing the failure we must supply the exact seed that CI used.
 
@@ -115,7 +111,7 @@ Assume there is a failure in the `uart_smoke` test. To reproduce this with the D
 
 
 ```console
-$ util/dvsim/dvsim.py hw/ip/uart/dv/uart_sim_cfg.hjson -i uart_smoke --fixed-seed=<seed> [--waves <format>]
+$ dvsim hw/ip/uart/dv/uart_sim_cfg.hjson -i uart_smoke --fixed-seed=<seed> [--waves <format>]
 ```
 
 It is recommended to use '--waves fsdb' if you are using Verdi, or '--waves vpd' if you are using vcs but a different waveform viewer. With Xcelium ('--tool xcelium') but not Verdi, then '--waves shm' is the preferred format.

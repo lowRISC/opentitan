@@ -23,10 +23,9 @@ load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 _TEST_SCRIPT = """#!/bin/bash
 set -e
 
-readonly DVSIM="util/dvsim/dvsim.py"
 TEST_CMD=({test_cmd})
-echo "At this time, dvsim.py must be run manually (after building SW) via:
-${{DVSIM}} {args} $@ ${{TEST_CMD[@]}}"
+echo "At this time, dvsim must be run manually (after building SW) via:
+dvsim {args} $@ ${{TEST_CMD[@]}}"
 """
 
 def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfile):

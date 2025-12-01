@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # This is sourced by all supported simulators. The driver scripts
-# (dvsim.py) need to make sure that we don't ask for an unsupported
+# (dvsim) need to make sure that we don't ask for an unsupported
 # dumping format (SHM with VCS, for example). The adjoining common.tcl
 # must be sourced prior to sourcing this file.
 

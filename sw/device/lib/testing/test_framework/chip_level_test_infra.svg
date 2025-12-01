@@ -60,7 +60,7 @@
         <rect x="508.3925" y="242.5" width="169.5" height="135.5" fill="white"/>
         <rect x="508.3925" y="242.5" width="169.5" height="135.5" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
         <text transform="translate(513.3925 301.026)" fill="black">
-          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="47.438" y="15">dvsim.py</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="47.438" y="15">dvsim</tspan>
         </text>
       </g>
       <g id="Graphic_22">

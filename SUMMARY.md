@@ -739,10 +739,7 @@
   - [Tooling](./util/README.md)
 
     - [Design-Related Tooling](./util/design/README.md)
-    - [dvsim](./util/dvsim/README.md)
-    - [Design Document](./util/dvsim/doc/design_doc.md)
-    - [Testplanner](./util/dvsim/doc/testplanner.md)
-    - [Glossary](./util/dvsim/doc/glossary.md)
+    - [dvsim](https://github.com/lowRISC/dvsim)
     - [fpvgen: Initial FPV Testbench Generation](./util/fpvgen/README.md)
     - [reggen & regtool: Register Generator](./util/reggen/README.md)
     - [Setup and use of regtool](./util/reggen/doc/setup_and_use.md)

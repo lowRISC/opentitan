@@ -118,7 +118,7 @@ These blocks must not include `$` at the beginning of lines, and one must make s
 It is recommended that arguments a user is likely to change are made variables; this highlights them to the user.
 
 ```sh
-util/dvsim/dvsim.py \
+dvsim \
     hw/ip/uart/dv/uart_sim_cfg.hjson \
     -i uart_smoke \
     --fixed-seed=$SEED

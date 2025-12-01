@@ -77,14 +77,14 @@ All three linting tools mentioned above have been integrated with the `dvsim` re
 In order to manually invoke any of the linting tools on a specific block, make sure that the corresponding linting tool is properly installed, step into the project root and call
 ```console
 $ cd $REPO_TOP
-$ util/dvsim/dvsim.py hw/top_earlgrey/lint/top_earlgrey_lint_cfgs.hjson --tool (ascentlint|verilator|veriblelint) --local --purge --select-cfgs <lint-config-name>
+$ dvsim hw/top_earlgrey/lint/top_earlgrey_lint_cfgs.hjson --tool (ascentlint|verilator|veriblelint) --local --purge --select-cfgs <lint-config-name>
 ```
 where `<lint-config-name>` is the name of the linting configuration as defined in the `top_earlgrey_lint_cfgs.hjson` regression list (currently that file contains a lint configuration for all available comportable IPs and the top-level).
 
 In order to run all defined configs in `top_earlgrey_lint_cfgs.hjson` as a batch regression, just omit the `--select-cfgs` switch as follows:
 ```console
 $ cd $REPO_TOP
-$ util/dvsim/dvsim.py hw/top_earlgrey/lint/top_earlgrey_lint_cfgs.hjson --tool (ascentlint|verilator|veriblelint) --local --purge
+$ dvsim hw/top_earlgrey/lint/top_earlgrey_lint_cfgs.hjson --tool (ascentlint|verilator|veriblelint) --local --purge
 ```
 The `purge` option ensures that the scratch directory is fully erased before starting the build.
 Depending on the number of AscentLint licenses that can be checked out at a time, you may also want to set the number of parallel workers to one using `--max-parallel <number>`.

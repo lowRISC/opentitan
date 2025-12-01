@@ -115,7 +115,7 @@ package chip_env_pkg;
     SwTypeSecondRom = 7  // Ibex SW - second stage boot ROM
   } sw_type_e;
 
-  // Our dvsim.py configuration always generates five base OTP images (in various lifecycle states)
+  // Our dvsim configuration always generates five base OTP images (in various lifecycle states)
   // to allow tests configurations to choose from. Additionally, we support specifying a custom OTP
   // image, via the `sw_images` plusarg, that is built by the SW build system.
   typedef enum {

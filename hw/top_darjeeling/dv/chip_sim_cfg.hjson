@@ -410,7 +410,7 @@
   // `//sw/device/tests:example_test_from_flash:1`.
   //
   // To calculate the value of `+sw_test_timeout_ns` run dvsim by:
-  // $ util/dvsim/dvsim.py hw/{top_chip}/dv/{top_chip}_sim_cfgs.hjson \
+  // $ dvsim hw/{top_chip}/dv/{top_chip}_sim_cfgs.hjson \
   //       -i TEST_NAME --fixed-seed=1
   // Run this a few times and take the worst case runtime, then  increase this
   // value by 20% and use the relationship that 5 minutes of runtime is roughly
