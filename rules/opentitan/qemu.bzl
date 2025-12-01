@@ -240,6 +240,7 @@ def _sim_qemu(ctx):
         test_dispatch = _test_dispatch,
         transform = _transform,
         qemu = ctx.executable.qemu,
+        qemu_start = ctx.executable._qemu_start,
         cfggen = ctx.attr.cfggen,
         otptool = ctx.attr.otptool,
         flashgen = ctx.attr.flashgen,
@@ -294,6 +295,11 @@ sim_qemu = rule(
         "top_hjson": attr.label(
             allow_single_file = True,
             default = Label("//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson"),
+        ),
+        "_qemu_start": attr.label(
+            executable = True,
+            cfg = "exec",
+            default = "//hw/top_earlgrey/sw/util:qemu_start",
         ),
         "_test_script": attr.label(
             allow_single_file = True,
@@ -365,14 +371,10 @@ def _test_dispatch(ctx, exec_env, firmware):
         param["firmware"] = image.short_path
         action_param["firmware"] = image.path
 
-    data_files += [exec_env.qemu]
+    data_files += [exec_env.qemu, exec_env.qemu_start]
 
     # Add arguments to pass directly to QEMU.
-    qemu_args = []
     test_script_fmt = {}
-
-    qemu_args += ["-display", "none"]
-    qemu_args += ["-M", "ot-{}".format(exec_env.design)]
 
     # Generate the OpenTitan machine config for QEMU emulation
     qemu_cfg = gen_cfg(
@@ -384,10 +386,6 @@ def _test_dispatch(ctx, exec_env, firmware):
         top_name = exec_env.design,
     )
     data_files += [qemu_cfg]
-    qemu_args += ["-readconfig", "{}".format(qemu_cfg.short_path)]
-
-    # Attach the ROM that QEMU should run
-    qemu_args += ["-object", "ot-rom_img,id=rom,file={}".format(param["rom"])]
 
     # Generate the OTP backend image for QEMU emulation
     otp_image = gen_otp(
@@ -396,7 +394,6 @@ def _test_dispatch(ctx, exec_env, firmware):
         vmem = get_fallback(ctx, "file.otp", exec_env),
     )
     data_files += [otp_image]
-    qemu_args += ["-drive", "if=pflash,file=otp_img.raw,format=raw"]
     test_script_fmt |= {
         "otp": otp_image.short_path,
     }
@@ -425,108 +422,23 @@ def _test_dispatch(ctx, exec_env, firmware):
             check_elfs = False,
         )
         data_files += [flash_image]
-        qemu_args += ["-drive", "if=mtd,id=eflash,bus=2,file=flash_img.bin,format=raw"]
         test_script_fmt |= {
             "flash": flash_image.short_path,
         }
         param["bootstrap_cmd"] = '--exec="no-op" # SKIPPING BOOTSTRAP'
-
-    # Attach SPI flash to SPI Host 0/SPI Device bus. Chosen model is W25Q256 (32MiB)
-    qemu_args += ["-global", "ot-earlgrey-board.spiflash0=w25q256"]
-    qemu_args += ["-drive", "if=mtd,file=spiflash0.bin,format=raw,bus=0"]
 
     # Get the pre-test_cmd args.
     args = get_fallback(ctx, "attr.args", exec_env)
     args = " ".join(args).format(**param)
     args = ctx.expand_location(args, data_labels)
 
-    # Connect the monitor to a PTY for test harnesses / OpenTitanTool to speak to:
-    qemu_args += ["-chardev", "pty,id=monitor,path=qemu-monitor"]
-    qemu_args += ["-mon", "chardev=monitor,mode=control"]
-
-    # Create chardevs for each UART:
-    qemu_args += ["-chardev", "pty,id=uart0"]
-    qemu_args += ["-chardev", "pty,id=uart1"]
-    qemu_args += ["-chardev", "pty,id=uart2"]
-    qemu_args += ["-chardev", "pty,id=uart3"]
-    qemu_args += ["-serial", "chardev:uart0"]
-    qemu_args += ["-serial", "chardev:uart1"]
-    qemu_args += ["-serial", "chardev:uart2"]
-    qemu_args += ["-serial", "chardev:uart3"]
-
-    # Create a chardev for the log device:
-    qemu_args += ["-chardev", "pty,id=log"]
-    qemu_args += ["-global", "ot-ibex_wrapper.logdev=log"]
-
-    # Create a chardev for the SPI device:
-    qemu_args += ["-chardev", "pty,id=spidev"]
-
-    # Create a chardev and proxy device for each I2C bus:
-    qemu_args += ["-chardev", "pty,id=i2c0"]
-    qemu_args += ["-chardev", "pty,id=i2c1"]
-    qemu_args += ["-chardev", "pty,id=i2c2"]
-    qemu_args += ["-device", "ot-i2c_host_proxy,bus=ot-i2c0,chardev=i2c0"]
-    qemu_args += ["-device", "ot-i2c_host_proxy,bus=ot-i2c1,chardev=i2c1"]
-    qemu_args += ["-device", "ot-i2c_host_proxy,bus=ot-i2c2,chardev=i2c2"]
-
-    # Create a chardev for the GPIO:
-    qemu_args += ["-chardev", "pty,id=gpio"]
-    qemu_args += ["-global", "ot-gpio-eg.chardev=gpio"]
-
-    # Create a chardev for the USBDEV control:
-    qemu_args += ["-chardev", "pty,id=usbdev-cmd"]
-    qemu_args += ["-chardev", "pty,id=usbdev-host"]
-
-    # Create a chardev for the RV_DM and LC_CTRL JTAG TAPs:
-    qemu_args += ["-chardev", "socket,id=taprbb,path=qemu-jtag-rv-dm.sock,server=on,wait=off"]
-    qemu_args += ["-chardev", "socket,id=taprbb-lc-ctrl,path=qemu-jtag-lc-ctrl.sock,server=on,wait=off"]
-
-    # Scale the Ibex clock by an `icount` factor.
-    qemu_args += ["-icount", "shift={}".format(param["icount"])]
-
-    # Do not exit QEMU on resets by default.
-    qemu_args += ["-global", "ot-rstmgr.fatal_reset=0"]
-
-    # Spawn QEMU stopped and in the background so we can run OpenTitanTool.
-    # The emulation will start when OpenTitanTool releases the reset pin and `cont`
-    # is sent over the monitor.
-    qemu_args += ["-daemonize", "-S"]
-
-    # Write any QEMU log messages to a file to be read at the end of the test.
-    qemu_args += ["-D", "qemu.log"]
-    qemu_args += ["-d", "guest_errors,unimp"]
+    # Assemble extra QEMU args from test parameters
+    qemu_args = []
 
     if param["traces"]:
         traces = json.decode(param["traces"])
         for trace in traces:
             qemu_args += ["--trace", "{}".format(trace)]
-
-    # Because flash info pages are not spliced and QEMU does not currently
-    # support flash scrambling/ECCs, any uninitialised seeds read from the flash
-    # creator/owner secret pages will be all `0xFF...`. This will cause the
-    # keymgr to error when advancing to the OwnerIntermediate state, preventing
-    # further use. Temporarily disable the relevant keymgr data validity check
-    # via an opt-in QEMU property.
-    # TODO: remove this property when either QEMU flash info page splicing
-    # is available, or the QEMU `flash_ctrl` implements scrambling & ECC support.
-    qemu_args += ["-global", "ot-keymgr.disable-flash-seed-check=true"]
-
-    # By default QEMU will exit when the test status register is written.
-    # OpenTitanTool expects to be able to do multiple resets, for example after
-    # bootstrapping, and then execute the test. Resetting could cause the test
-    # to run, finish, and exit, which we don't want to happen.
-    qemu_args += ["-global", "ot-ibex_wrapper.dv-sim-status-exit=off"]
-
-    # To enable limited support for UART rescue in the ROM_EXT, we need to
-    # be able to toggle break signals on/off in QEMU's UART and mock this
-    # in the oversampled `VAL` register.
-    qemu_args += ["-global", "ot-uart.oversample-break=true"]
-    qemu_args += ["-global", "ot-uart.toggle-break=true"]
-
-    # QEMU will by default interpret quit commands over JTAG to the TAP Ctrls
-    # as signals to exit VM execution. We want to be able to disconnect from
-    # JTAG without stopping execution completely for tests.
-    qemu_args += ["-global", "tap-ctrl-rbb.quit=false"]
 
     # Add parameter-specified globals.
     if param["globals"]:
@@ -551,12 +463,17 @@ def _test_dispatch(ctx, exec_env, firmware):
     test_cmd = test_cmd.format(**param)
     test_cmd = ctx.expand_location(test_cmd, data_labels)
 
+    # Pass relevant files through to the test script via templating
     test_script_fmt.update({
-        "qemu": exec_env.qemu.short_path,
-        "qemu_args": qemu_args,
         "args": args,
-        "test_harness": test_harness.executable.short_path,
+        "config": qemu_cfg.short_path,
+        "icount": param["icount"],
+        "qemu_args": qemu_args,
+        "qemu_bin": exec_env.qemu.short_path,
+        "qemu_start": exec_env.qemu_start.short_path,
+        "rom": param["rom"],
         "test_cmd": test_cmd,
+        "test_harness": test_harness.executable.short_path,
     })
     ctx.actions.expand_template(
         template = exec_env.test_script,
