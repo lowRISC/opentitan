@@ -114,6 +114,11 @@ interface otbn_model_if
     release u_model.wakeup_iss;
   endtask: lock_immediately
 
+  function automatic void tolerate_result_mismatch();
+    `uvm_info("otbn_model_if", "Enabling tolerate result mismatch for next check", UVM_HIGH);
+    u_model.otbn_model_tolerate_result_mismatch(handle);
+  endfunction
+
   function automatic void set_software_errs_fatal(bit new_val);
     `uvm_info("otbn_model_if", "writing to software_errs_fatal", UVM_HIGH);
     `DV_CHECK_FATAL(u_model.otbn_model_set_software_errs_fatal(handle, new_val) == 0,

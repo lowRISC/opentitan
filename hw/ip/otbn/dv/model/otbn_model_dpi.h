@@ -112,6 +112,11 @@ int otbn_model_invalidate_dmem(OtbnModel *model);
 // error. Returns 0 on success or -1 on failure.
 int otbn_model_set_software_errs_fatal(OtbnModel *model, unsigned char new_val);
 
+// Tell the trace checker to tolerate the next occurring mismatch between
+// RTL and ISS trace entries. Required for tests covering FI countermeasures
+// with delayed escalation.
+int otbn_model_tolerate_result_mismatch(OtbnModel *model);
+
 // Tell the trace checker to not execute checks to see if secure wiping has
 // written random data to all registers before wiping them with zeroes.
 void otbn_set_no_sec_wipe_chk(OtbnModel *model);

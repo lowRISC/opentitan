@@ -90,6 +90,11 @@ class OtbnModel {
   // error. Returns 0 on success; -1 on failure.
   int invalidate_dmem();
 
+  // Tell the trace checker to tolerate the next occurring mismatch between
+  // RTL and ISS trace entries. Required for tests covering FI countermeasures
+  // with delayed escalation.
+  void tolerate_result_mismatch();
+
   // Set software_errs_fatal bit in ISS model. Returns 0 on success; -1 on
   // failure.
   int set_software_errs_fatal(unsigned char new_val);
@@ -168,6 +173,10 @@ class OtbnModel {
   std::string design_scope_;
 
   bool stack_check_enabled_ = true;
+
+  // If true, tolerate a mismatch in results between ISS and RTL for the next
+  // check.
+  bool tolerate_result_mismatch_ = false;
 };
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_MODEL_H_
