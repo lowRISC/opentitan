@@ -11,3 +11,6 @@ waive -rules CONST_FF -location {prim_arbiter_*.sv} -regexp {Flip-flop 'mask.0.'
 
 waive -rules {HIER_BRANCH_NOT_READ INPUT_NOT_READ} -location {prim_arbiter_fixed.sv} -regexp {.*'(clk_i|rst_ni)' is not read from in module 'prim_arbiter_fixed'.*} \
       -comment "clk_ and rst_ni are only used for assertions in this module."
+
+waive -rules {HIER_BRANCH_NOT_READ INPUT_NOT_READ} -location {prim_arbiter_ppc.sv} -regexp {.*'(clk_i|rst_ni)' is not read from.* module 'prim_arbiter_ppc' \((N=1|N=32'h1).*} \
+      -comment "clk_i and rst_ni are only used for assertions in instantiations of this module with a single input (N=1)."
