@@ -142,6 +142,7 @@ enum QemuUsbdevCmd {
     Setup,
     Transfer,
     Complete,
+    Cancel,
 }
 
 /// USBDEV packet header, see QEMU documentation.
@@ -210,6 +211,13 @@ pub struct QemuUsbdevCompletePayload {
     status: u8,
     reserved: [u8; 3],
     xfer_size: little_endian::U32,
+}
+
+/// USBDEV cancel payload, see QEMU documentation.
+#[derive(Clone, IntoBytes, KnownLayout, Immutable, Unaligned)]
+#[repr(C)]
+pub struct QemuUsbdevCancelPayload {
+    transfer_id: little_endian::U32,
 }
 
 /// Represents a packet ID.
@@ -450,6 +458,14 @@ impl QemuHostThread {
         };
 
         self.send_packet(QemuUsbdevCmd::Transfer, &[xfer_cmd.as_bytes(), data])
+    }
+
+    fn _send_cancel(&mut self, xfer_id: PacketId) -> UsbResult<PacketId> {
+        let cancel_cmd = QemuUsbdevCancelPayload {
+            transfer_id: xfer_id.0.into(),
+        };
+
+        self.send_packet(QemuUsbdevCmd::Cancel, &[cancel_cmd.as_bytes()])
     }
 
     /// Helper function to send a Transfer IN command and return the ID.
