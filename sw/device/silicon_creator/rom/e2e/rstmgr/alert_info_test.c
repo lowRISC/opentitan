@@ -12,9 +12,9 @@
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "hw/top/uart_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+// Test handles alerts directly, disable OTTF catcher.
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = false);
 
 static const dt_uart_t kUartDt = kDtUart0;
 
