@@ -6281,18 +6281,32 @@
           domain: "0"
         }
       }
+      param_decl:
+      {
+        NumEndPoints: "8"
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
-      param_decl: {}
       memory: {}
-      param_list: []
+      param_list:
+      [
+        {
+          name: NumEndPoints
+          desc: Number of endpoints
+          type: int unsigned
+          default: "8"
+          local: "true"
+          expose: "true"
+          name_top: Edn0NumEndPoints
+        }
+      ]
       inter_signal_list:
       [
         {
           name: csrng_cmd
-          desc: EDN supports a signal CSRNG application interface.
+          desc: EDN supports a single CSRNG application interface.
           struct: csrng
           package: csrng_pkg
           type: req_rsp
@@ -6305,19 +6319,22 @@
         }
         {
           name: edn
-          desc:
-            '''
-            The collection of peripheral ports supported by edn. The width (4)
-            indicates the number of peripheral ports on a single instance.
-            Due to limitations in the parametrization of top-level interconnects
-            this value is not currently parameterizable.  However, the number
-            of peripheral ports may change in a future revision.
-            '''
+          desc: Every endpoint has its own peripheral port.
           struct: edn
           package: edn_pkg
           type: req_rsp
           act: rsp
-          width: 8
+          width:
+          {
+            name: NumEndPoints
+            desc: Number of endpoints
+            param_type: int unsigned
+            unpacked_dimensions: null
+            default: 8
+            local: true
+            expose: true
+            name_top: Edn0NumEndPoints
+          }
           default: "'0"
           inst_name: edn0
           end_idx: 7
@@ -6368,18 +6385,32 @@
           domain: "0"
         }
       }
+      param_decl:
+      {
+        NumEndPoints: "1"
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
-      param_decl: {}
       memory: {}
-      param_list: []
+      param_list:
+      [
+        {
+          name: NumEndPoints
+          desc: Number of endpoints
+          type: int unsigned
+          default: "1"
+          local: "true"
+          expose: "true"
+          name_top: Edn1NumEndPoints
+        }
+      ]
       inter_signal_list:
       [
         {
           name: csrng_cmd
-          desc: EDN supports a signal CSRNG application interface.
+          desc: EDN supports a single CSRNG application interface.
           struct: csrng
           package: csrng_pkg
           type: req_rsp
@@ -6392,23 +6423,25 @@
         }
         {
           name: edn
-          desc:
-            '''
-            The collection of peripheral ports supported by edn. The width (4)
-            indicates the number of peripheral ports on a single instance.
-            Due to limitations in the parametrization of top-level interconnects
-            this value is not currently parameterizable.  However, the number
-            of peripheral ports may change in a future revision.
-            '''
+          desc: Every endpoint has its own peripheral port.
           struct: edn
           package: edn_pkg
           type: req_rsp
           act: rsp
-          width: 8
+          width:
+          {
+            name: NumEndPoints
+            desc: Number of endpoints
+            param_type: int unsigned
+            unpacked_dimensions: null
+            default: 8
+            local: true
+            expose: true
+            name_top: Edn1NumEndPoints
+          }
           default: "'0"
           inst_name: edn1
-          end_idx: 1
-          top_type: partial-one-to-N
+          end_idx: -1
           top_signame: edn1_edn
           index: -1
         }
@@ -24214,7 +24247,7 @@
       }
       {
         name: csrng_cmd
-        desc: EDN supports a signal CSRNG application interface.
+        desc: EDN supports a single CSRNG application interface.
         struct: csrng
         package: csrng_pkg
         type: req_rsp
@@ -24227,19 +24260,22 @@
       }
       {
         name: edn
-        desc:
-          '''
-          The collection of peripheral ports supported by edn. The width (4)
-          indicates the number of peripheral ports on a single instance.
-          Due to limitations in the parametrization of top-level interconnects
-          this value is not currently parameterizable.  However, the number
-          of peripheral ports may change in a future revision.
-          '''
+        desc: Every endpoint has its own peripheral port.
         struct: edn
         package: edn_pkg
         type: req_rsp
         act: rsp
-        width: 8
+        width:
+        {
+          name: NumEndPoints
+          desc: Number of endpoints
+          param_type: int unsigned
+          unpacked_dimensions: null
+          default: 8
+          local: true
+          expose: true
+          name_top: Edn0NumEndPoints
+        }
         default: "'0"
         inst_name: edn0
         end_idx: 7
@@ -24262,7 +24298,7 @@
       }
       {
         name: csrng_cmd
-        desc: EDN supports a signal CSRNG application interface.
+        desc: EDN supports a single CSRNG application interface.
         struct: csrng
         package: csrng_pkg
         type: req_rsp
@@ -24275,23 +24311,25 @@
       }
       {
         name: edn
-        desc:
-          '''
-          The collection of peripheral ports supported by edn. The width (4)
-          indicates the number of peripheral ports on a single instance.
-          Due to limitations in the parametrization of top-level interconnects
-          this value is not currently parameterizable.  However, the number
-          of peripheral ports may change in a future revision.
-          '''
+        desc: Every endpoint has its own peripheral port.
         struct: edn
         package: edn_pkg
         type: req_rsp
         act: rsp
-        width: 8
+        width:
+        {
+          name: NumEndPoints
+          desc: Number of endpoints
+          param_type: int unsigned
+          unpacked_dimensions: null
+          default: 8
+          local: true
+          expose: true
+          name_top: Edn1NumEndPoints
+        }
         default: "'0"
         inst_name: edn1
-        end_idx: 1
-        top_type: partial-one-to-N
+        end_idx: -1
         top_signame: edn1_edn
         index: -1
       }
@@ -29664,7 +29702,17 @@
         package: edn_pkg
         struct: edn_req
         signame: edn0_edn_req
-        width: 8
+        width:
+        {
+          name: NumEndPoints
+          desc: Number of endpoints
+          param_type: int unsigned
+          unpacked_dimensions: null
+          default: 8
+          local: true
+          expose: true
+          name_top: Edn0NumEndPoints
+        }
         type: req_rsp
         end_idx: 7
         act: rsp
@@ -29675,7 +29723,17 @@
         package: edn_pkg
         struct: edn_rsp
         signame: edn0_edn_rsp
-        width: 8
+        width:
+        {
+          name: NumEndPoints
+          desc: Number of endpoints
+          param_type: int unsigned
+          unpacked_dimensions: null
+          default: 8
+          local: true
+          expose: true
+          name_top: Edn0NumEndPoints
+        }
         type: req_rsp
         end_idx: 7
         act: rsp
@@ -29686,9 +29744,19 @@
         package: edn_pkg
         struct: edn_req
         signame: edn1_edn_req
-        width: 8
+        width:
+        {
+          name: NumEndPoints
+          desc: Number of endpoints
+          param_type: int unsigned
+          unpacked_dimensions: null
+          default: 8
+          local: true
+          expose: true
+          name_top: Edn1NumEndPoints
+        }
         type: req_rsp
-        end_idx: 1
+        end_idx: -1
         act: rsp
         suffix: req
         default: "'0"
@@ -29697,9 +29765,19 @@
         package: edn_pkg
         struct: edn_rsp
         signame: edn1_edn_rsp
-        width: 8
+        width:
+        {
+          name: NumEndPoints
+          desc: Number of endpoints
+          param_type: int unsigned
+          unpacked_dimensions: null
+          default: 8
+          local: true
+          expose: true
+          name_top: Edn1NumEndPoints
+        }
         type: req_rsp
-        end_idx: 1
+        end_idx: -1
         act: rsp
         suffix: rsp
         default: ""

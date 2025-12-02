@@ -10,11 +10,11 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name   | Package::Struct   | Type    | Act   |   Width | Description                                                                                                                                                                                                                                                                                                                   |
-|:------------|:------------------|:--------|:------|--------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| csrng_cmd   | csrng_pkg::csrng  | req_rsp | req   |       1 | EDN supports a signal CSRNG application interface.                                                                                                                                                                                                                                                                            |
-| edn         | edn_pkg::edn      | req_rsp | rsp   |       8 | The collection of peripheral ports supported by edn. The width (4) indicates the number of peripheral ports on a single instance. Due to limitations in the parametrization of top-level interconnects this value is not currently parameterizable.  However, the number of peripheral ports may change in a future revision. |
-| tl          | tlul_pkg::tl      | req_rsp | rsp   |       1 |                                                                                                                                                                                                                                                                                                                               |
+| Port Name   | Package::Struct   | Type    | Act   | Width        | Description                                        |
+|:------------|:------------------|:--------|:------|:-------------|:---------------------------------------------------|
+| csrng_cmd   | csrng_pkg::csrng  | req_rsp | req   | 1            | EDN supports a single CSRNG application interface. |
+| edn         | edn_pkg::edn      | req_rsp | rsp   | NumEndPoints | Every endpoint has its own peripheral port.        |
+| tl          | tlul_pkg::tl      | req_rsp | rsp   | 1            |                                                    |
 
 ## Interrupts
 

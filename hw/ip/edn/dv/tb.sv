@@ -19,8 +19,8 @@ module tb;
   // This is used to notify the csrng_agent that the EDN is disabled, and will drop the current
   // CSRNG request.
   wire   edn_disable_o;
-  edn_pkg::edn_req_t [MAX_NUM_ENDPOINTS - 1:0] endpoint_req;
-  edn_pkg::edn_rsp_t [MAX_NUM_ENDPOINTS - 1:0] endpoint_rsp;
+  edn_pkg::edn_req_t [`NUM_END_POINTS - 1:0] endpoint_req;
+  edn_pkg::edn_rsp_t [`NUM_END_POINTS - 1:0] endpoint_rsp;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -28,7 +28,7 @@ module tb;
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   csrng_if csrng_if(.clk(clk), .rst_n(edn_disable_o === 1 ? ~edn_disable_o : rst_n));
   push_pull_if#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
-       endpoint_if[MAX_NUM_ENDPOINTS](.clk(clk), .rst_n(rst_n));
+       endpoint_if[`NUM_END_POINTS](.clk(clk), .rst_n(rst_n));
   edn_if edn_if(.clk(clk), .rst_n(rst_n));
 
   bind dut.u_edn_core edn_assert_if edn_assert_if ();
@@ -37,7 +37,7 @@ module tb;
   assign edn_disable_o = edn_if.edn_disable_o;
 
   // dut
-  edn#(.NumEndPoints(MAX_NUM_ENDPOINTS)) dut (
+  edn#(.NumEndPoints(`NUM_END_POINTS)) dut (
     .clk_i                     (clk      ),
     .rst_ni                    (rst_n    ),
 
@@ -57,7 +57,7 @@ module tb;
     .intr_edn_fatal_err_o      (intr_edn_fatal_err)
   );
 
-  for (genvar i = 0; i < MAX_NUM_ENDPOINTS; i++) begin : gen_endpoint_if
+  for (genvar i = 0; i < `NUM_END_POINTS; i++) begin : gen_endpoint_if
     assign endpoint_req[i].edn_req = endpoint_if[i].req;
     assign endpoint_if[i].ack = endpoint_rsp[i].edn_ack;
     assign endpoint_if[i].d_data = {endpoint_rsp[i].edn_fips, endpoint_rsp[i].edn_bus};

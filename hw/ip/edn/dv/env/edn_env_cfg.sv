@@ -7,11 +7,11 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   // external component cfgs
   csrng_agent_cfg   m_csrng_agent_cfg;
   push_pull_agent_cfg#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
-      m_endpoint_agent_cfg[MAX_NUM_ENDPOINTS];
+      m_endpoint_agent_cfg[`NUM_END_POINTS];
 
   `uvm_object_utils_begin(edn_env_cfg)
     `uvm_field_object(m_csrng_agent_cfg, UVM_DEFAULT)
-    for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
+    for (int i = 0; i < `NUM_END_POINTS; i++) begin
       `uvm_field_object(m_endpoint_agent_cfg[i], UVM_DEFAULT)
     end
   `uvm_object_utils_end
@@ -70,8 +70,8 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
     MuBi4False :/ (100 - cmd_fifo_rst_pct) };}
   constraint num_endpoints_c {num_endpoints dist {
     MIN_NUM_ENDPOINTS :/ 40,
-    MAX_NUM_ENDPOINTS :/ 40,
-    [MIN_NUM_ENDPOINTS + 1:MAX_NUM_ENDPOINTS - 1] :/ 20 };}
+    `NUM_END_POINTS   :/ 40,
+    [MIN_NUM_ENDPOINTS:`NUM_END_POINTS] :/ 20 };}
   constraint req_mode_c {{boot_req_mode, auto_req_mode} dist {
     {MuBi4True, MuBi4False}  :/ boot_req_mode_pct,
     {MuBi4False, MuBi4True}  :/ auto_req_mode_pct,
@@ -119,7 +119,7 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
     // create config objects
     m_csrng_agent_cfg = csrng_agent_cfg::type_id::create("m_csrng_genbits_agent_cfg");
 
-    for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
+    for (int i = 0; i < `NUM_END_POINTS; i++) begin
       m_endpoint_agent_cfg[i] = push_pull_agent_cfg#(.HostDataWidth(edn_pkg::
                                 FIPS_ENDPOINT_BUS_WIDTH))::type_id::create
                                 ($sformatf("m_endpoint_agent_cfg[%0d]", i));
@@ -161,8 +161,8 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
         boot_req_mode_pct)};
     str = {str,  $sformatf("\n\t |***** auto_req_mode_pct            : %10d *****| \t",
         auto_req_mode_pct)};
-    str = {str,  $sformatf("\n\t |***** MAX_NUM_ENDPOINTS            : %10d *****| \t",
-        MAX_NUM_ENDPOINTS)};
+    str = {str,  $sformatf("\n\t |***** `NUM_END_POINTS              : %10d *****| \t",
+        `NUM_END_POINTS)};
     str = {str,  $sformatf("\n\t |***** min_num_boot_reqs            : %10d *****| \t",
         min_num_boot_reqs)};
     str = {str,  $sformatf("\n\t |***** max_num_boot_reqs            : %10d *****| \t",
