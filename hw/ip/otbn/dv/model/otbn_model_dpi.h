@@ -147,6 +147,9 @@ int otbn_model_send_err_escalation(OtbnModel *model,
                                    svBitVecVal *err_val /* bit [31:0] */,
                                    svBit lock_immediately);
 
+// Stall for one cycle instead of retiring the next instruction.
+int otbn_model_send_stall_request(OtbnModel *model);
+
 // Send an RMA request value to the model
 int otbn_model_set_rma_req(OtbnModel *model,
                            svBitVecVal *rma_req /* bit [3:0] */);
