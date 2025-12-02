@@ -168,6 +168,8 @@ With the ENTROPY_SRC block running at 100 MHz, this leads to noise source rate \
 The noise source model inside the DV environment generates symbols with an average rate of 1 4-bit symbol every 6.5 clock cycles.
 To reach functional coverage metrics, the `entropy_src_rng_max_rate` configures the noise source to generate a 4-bit symbol every other clock cycle (\\(r_{ptrng}\\) = 1/2).
 With these settings, the ENTROPY_SRC block should never drop samples due to conditioner back pressure if a depth of two is chosen for the Distribution FIFO (\\(d_{distr}\\) = 2).
+Note that the pipeline depth tracking logic responsible for guaranteeing that the full health test window is always absorbed into the conditioner before triggering the final processing requires an odd depth of the Distribution FIFO.
+As a result, a depth of three is chosen for the Distribution FIFO by default (\\(d_{distr}\\) = 3).
 
 
 ### Security
