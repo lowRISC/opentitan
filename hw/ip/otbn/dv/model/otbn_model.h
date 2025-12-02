@@ -124,6 +124,10 @@ class OtbnModel {
   int send_err_escalation(svBitVecVal *err_val /* bit [31:0] */,
                           svBit lock_immediately);
 
+  // Stall for one cycle instead of retiring the next instruction.
+  // Returns 0 on success; -1 on failure.
+  int send_stall_request();
+
   // Returns true if we have an ISS wrapper and it has the START_WIPE flag
   // asserted
   bool is_at_start_of_wipe() const;

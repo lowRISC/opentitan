@@ -144,6 +144,17 @@ class OTBNState:
         self.injected_err_bits = 0
         self.lock_immediately = False
 
+        # If True, enter the stall state at the end of the instruction.
+        #
+        # This is a workaround to model the ld_insn injection error from the
+        # otbn_ctrl_redun_vseq.sv test. When a load instruction is injected in parallel to the
+        # actual instruction, the OTBN will not execute the current instruction and will stall
+        # (due to how the ld_insn signal factors into the stall logic).
+        # Modeling this behaviour is complicated and would require duplicating RTL
+        # implementation details in the model. Thus, we add this command/flag which UVM can use to
+        # signal that we should enter the stall state.
+        self.stall_requested = False
+
         # OTBN might zero its insn_cnt register during a secure wipe. The
         # precise cycle that this happens depends slightly on how we decide to
         # do so. If this is not None, it is a counter of the number of cycles
