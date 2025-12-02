@@ -943,6 +943,9 @@
       base_addr: {
         hart: "0x41170000",
       },
+      param_decl: {
+        NumEndPoints: "8",
+      },
     },
     { name: "edn1",
       type: "edn",
@@ -951,6 +954,9 @@
       reset_connections: {rst_ni: "lc"},
       base_addr: {
         hart: "0x41180000",
+      },
+      param_decl: {
+        NumEndPoints: "1",
       },
     },
     { name: "sram_ctrl_main",

@@ -51,27 +51,30 @@
       width:   "1",
       package: "csrng_pkg",
       desc:    '''
-               EDN supports a signal CSRNG application interface.
+               EDN supports a single CSRNG application interface.
                ''',
     }
     { struct:  "edn",  // edn_req_t, edn_rsp_t
       type:    "req_rsp",
       name:    "edn",
       act:     "rsp",
-      width:   "8",
+      width:   "NumEndPoints",
       default: "'0",
       desc:    '''
-               The collection of peripheral ports supported by edn. The width (4)
-               indicates the number of peripheral ports on a single instance.
-               Due to limitations in the parametrization of top-level interconnects
-               this value is not currently parameterizable.  However, the number
-               of peripheral ports may change in a future revision.
+               Every endpoint has its own peripheral port.
                ''',
       package: "edn_pkg",
     }
   ],
   // Keep the following parameters in line with the literal values defined in the corresponding registers below
   param_list: [
+    { name:    "NumEndPoints",
+      type:    "int unsigned",
+      default: "8",
+      desc:    "Number of endpoints",
+      local:   "true",
+      expose:  "true"
+    },
     { name:    "EdnBootInsCmdResval",
       type:    "logic [31:0]",
       default: "32'h901",

@@ -321,6 +321,10 @@ module top_darjeeling #(
   localparam int EntropySrcEsFifoDepth = 3;
   localparam bit EntropySrcEnCsAesHaltReqIf = 0;
   localparam int unsigned EntropySrcDistrFifoDepth = 11;
+  // local parameters for edn0
+  localparam int unsigned Edn0NumEndPoints = 8;
+  // local parameters for edn1
+  localparam int unsigned Edn1NumEndPoints = 1;
   // local parameters for sram_ctrl_main
   localparam int SramCtrlMainOutstanding = 2;
   // local parameters for sram_ctrl_mbox
@@ -562,10 +566,10 @@ module top_darjeeling #(
   logic       uart0_lsio_trigger;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_flash_rma_req;
   lc_ctrl_pkg::lc_tx_t       otbn_lc_rma_ack;
-  edn_pkg::edn_req_t [7:0] edn0_edn_req;
-  edn_pkg::edn_rsp_t [7:0] edn0_edn_rsp;
-  edn_pkg::edn_req_t [7:0] edn1_edn_req;
-  edn_pkg::edn_rsp_t [7:0] edn1_edn_rsp;
+  edn_pkg::edn_req_t [Edn0NumEndPoints-1:0] edn0_edn_req;
+  edn_pkg::edn_rsp_t [Edn0NumEndPoints-1:0] edn0_edn_rsp;
+  edn_pkg::edn_req_t [Edn1NumEndPoints-1:0] edn1_edn_req;
+  edn_pkg::edn_rsp_t [Edn1NumEndPoints-1:0] edn1_edn_rsp;
   otp_ctrl_pkg::otbn_otp_key_req_t       otp_ctrl_otbn_otp_key_req;
   otp_ctrl_pkg::otbn_otp_key_rsp_t       otp_ctrl_otbn_otp_key_rsp;
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
@@ -805,31 +809,10 @@ module top_darjeeling #(
 
   // define partial inter-module tie-off
   edn_pkg::edn_rsp_t unused_edn0_edn_rsp7;
-  edn_pkg::edn_rsp_t unused_edn1_edn_rsp1;
-  edn_pkg::edn_rsp_t unused_edn1_edn_rsp2;
-  edn_pkg::edn_rsp_t unused_edn1_edn_rsp3;
-  edn_pkg::edn_rsp_t unused_edn1_edn_rsp4;
-  edn_pkg::edn_rsp_t unused_edn1_edn_rsp5;
-  edn_pkg::edn_rsp_t unused_edn1_edn_rsp6;
-  edn_pkg::edn_rsp_t unused_edn1_edn_rsp7;
 
   // assign partial inter-module tie-off
   assign unused_edn0_edn_rsp7 = edn0_edn_rsp[7];
-  assign unused_edn1_edn_rsp1 = edn1_edn_rsp[1];
-  assign unused_edn1_edn_rsp2 = edn1_edn_rsp[2];
-  assign unused_edn1_edn_rsp3 = edn1_edn_rsp[3];
-  assign unused_edn1_edn_rsp4 = edn1_edn_rsp[4];
-  assign unused_edn1_edn_rsp5 = edn1_edn_rsp[5];
-  assign unused_edn1_edn_rsp6 = edn1_edn_rsp[6];
-  assign unused_edn1_edn_rsp7 = edn1_edn_rsp[7];
   assign edn0_edn_req[7] = '0;
-  assign edn1_edn_req[1] = '0;
-  assign edn1_edn_req[2] = '0;
-  assign edn1_edn_req[3] = '0;
-  assign edn1_edn_req[4] = '0;
-  assign edn1_edn_req[5] = '0;
-  assign edn1_edn_req[6] = '0;
-  assign edn1_edn_req[7] = '0;
 
 
   // OTP HW_CFG Broadcast signals.
@@ -2045,7 +2028,8 @@ module top_darjeeling #(
   );
   edn #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[39:38]),
-    .AlertSkewCycles(top_pkg::AlertSkewCycles)
+    .AlertSkewCycles(top_pkg::AlertSkewCycles),
+    .NumEndPoints(Edn0NumEndPoints)
   ) u_edn0 (
 
       // Interrupt
@@ -2070,7 +2054,8 @@ module top_darjeeling #(
   );
   edn #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[41:40]),
-    .AlertSkewCycles(top_pkg::AlertSkewCycles)
+    .AlertSkewCycles(top_pkg::AlertSkewCycles),
+    .NumEndPoints(Edn1NumEndPoints)
   ) u_edn1 (
 
       // Interrupt

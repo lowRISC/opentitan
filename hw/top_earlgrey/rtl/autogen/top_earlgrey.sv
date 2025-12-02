@@ -261,6 +261,10 @@ module top_earlgrey #(
   localparam int EntropySrcEsFifoDepth = 3;
   localparam bit EntropySrcEnCsAesHaltReqIf = 1;
   localparam int unsigned EntropySrcDistrFifoDepth = 3;
+  // local parameters for edn0
+  localparam int unsigned Edn0NumEndPoints = 8;
+  // local parameters for edn1
+  localparam int unsigned Edn1NumEndPoints = 1;
   // local parameters for sram_ctrl_main
   localparam int SramCtrlMainOutstanding = 2;
   // local parameters for rom_ctrl
@@ -631,10 +635,10 @@ module top_earlgrey #(
   logic       usbdev_usb_aon_bus_reset;
   logic       usbdev_usb_aon_sense_lost;
   logic       pinmux_aon_usbdev_wake_detect_active;
-  edn_pkg::edn_req_t [7:0] edn0_edn_req;
-  edn_pkg::edn_rsp_t [7:0] edn0_edn_rsp;
-  edn_pkg::edn_req_t [7:0] edn1_edn_req;
-  edn_pkg::edn_rsp_t [7:0] edn1_edn_rsp;
+  edn_pkg::edn_req_t [Edn0NumEndPoints-1:0] edn0_edn_req;
+  edn_pkg::edn_rsp_t [Edn0NumEndPoints-1:0] edn0_edn_rsp;
+  edn_pkg::edn_req_t [Edn1NumEndPoints-1:0] edn1_edn_req;
+  edn_pkg::edn_rsp_t [Edn1NumEndPoints-1:0] edn1_edn_rsp;
   otp_ctrl_pkg::otbn_otp_key_req_t       otp_ctrl_otbn_otp_key_req;
   otp_ctrl_pkg::otbn_otp_key_rsp_t       otp_ctrl_otbn_otp_key_rsp;
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
@@ -822,32 +826,11 @@ module top_earlgrey #(
 
   // define partial inter-module tie-off
   otp_ctrl_pkg::sram_otp_key_rsp_t unused_otp_ctrl_sram_otp_key_rsp3;
-  edn_pkg::edn_rsp_t unused_edn1_edn_rsp1;
-  edn_pkg::edn_rsp_t unused_edn1_edn_rsp2;
-  edn_pkg::edn_rsp_t unused_edn1_edn_rsp3;
-  edn_pkg::edn_rsp_t unused_edn1_edn_rsp4;
-  edn_pkg::edn_rsp_t unused_edn1_edn_rsp5;
-  edn_pkg::edn_rsp_t unused_edn1_edn_rsp6;
-  edn_pkg::edn_rsp_t unused_edn1_edn_rsp7;
 
   // assign partial inter-module tie-off
 
   assign unused_otp_ctrl_sram_otp_key_rsp3 = otp_ctrl_sram_otp_key_rsp[3];
-  assign unused_edn1_edn_rsp1 = edn1_edn_rsp[1];
-  assign unused_edn1_edn_rsp2 = edn1_edn_rsp[2];
-  assign unused_edn1_edn_rsp3 = edn1_edn_rsp[3];
-  assign unused_edn1_edn_rsp4 = edn1_edn_rsp[4];
-  assign unused_edn1_edn_rsp5 = edn1_edn_rsp[5];
-  assign unused_edn1_edn_rsp6 = edn1_edn_rsp[6];
-  assign unused_edn1_edn_rsp7 = edn1_edn_rsp[7];
   assign otp_ctrl_sram_otp_key_req[3] = '0;
-  assign edn1_edn_req[1] = '0;
-  assign edn1_edn_req[2] = '0;
-  assign edn1_edn_req[3] = '0;
-  assign edn1_edn_req[4] = '0;
-  assign edn1_edn_req[5] = '0;
-  assign edn1_edn_req[6] = '0;
-  assign edn1_edn_req[7] = '0;
 
 
   // OTP HW_CFG* Broadcast signals.
@@ -2712,7 +2695,8 @@ module top_earlgrey #(
   );
   edn #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[56:55]),
-    .AlertSkewCycles(top_pkg::AlertSkewCycles)
+    .AlertSkewCycles(top_pkg::AlertSkewCycles),
+    .NumEndPoints(Edn0NumEndPoints)
   ) u_edn0 (
 
       // Interrupt
@@ -2737,7 +2721,8 @@ module top_earlgrey #(
   );
   edn #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[58:57]),
-    .AlertSkewCycles(top_pkg::AlertSkewCycles)
+    .AlertSkewCycles(top_pkg::AlertSkewCycles),
+    .NumEndPoints(Edn1NumEndPoints)
   ) u_edn1 (
 
       // Interrupt
