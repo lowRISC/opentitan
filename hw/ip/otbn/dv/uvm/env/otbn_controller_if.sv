@@ -27,6 +27,14 @@ interface otbn_controller_if
     release u_otbn_controller.ispr_rdata_intg_i;
   endfunction
 
+  // Wait until the SW error signal rises
+  clocking wait_sw_error_rises @(posedge u_otbn_controller.software_err);
+  endclocking
+
+  // Wait until the fatal SW error signal rises
+  clocking wait_fatal_sw_error_rises @(posedge u_otbn_controller.fatal_software_err);
+  endclocking
+
   // Wait until some ISPR data is being used (outside a reset) or until `max_cycles` clock cycles
   // have passed. When this task returns, the `used_words` output indicates which words are being
   // used.
