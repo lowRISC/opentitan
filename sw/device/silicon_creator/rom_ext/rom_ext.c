@@ -43,6 +43,7 @@
 #include "sw/device/silicon_creator/lib/rescue/rescue.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
+#include "sw/device/silicon_creator/lib/sigverify/flash_exec.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_verify.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/verify.h"
@@ -221,7 +222,7 @@ static rom_error_t rom_ext_spx_verify(
     const sigverify_spx_signature_t *signature, const sigverify_spx_key_t *key,
     uint32_t key_alg, const void *msg_prefix_1, size_t msg_prefix_1_len,
     const void *msg_prefix_2, size_t msg_prefix_2_len, const void *msg,
-    size_t msg_len, hmac_digest_t digest) {
+    size_t msg_len, hmac_digest_t digest, uint32_t *flash_exec) {
   /*
    * Shares for producing kErrorOk if SPHINCS+ verification succeeds.  The first
    * three shares are generated using the `sparse-fsm-encode` script while the
@@ -279,6 +280,7 @@ static rom_error_t rom_ext_spx_verify(
   }
   uint32_t result = 0;
   uint32_t diff = 0;
+  *flash_exec = kErrorOk ^ kSigverifySpxSuccess;
   for (--i; launder32(i) < kSigverifySpxRootNumWords; --i) {
     uint32_t val = expected_root.data[i] ^ actual_root.data[i];
     diff |= val ^ shares[i];
@@ -286,6 +288,9 @@ static rom_error_t rom_ext_spx_verify(
     diff |= ~(diff >> 31) + 1;  // Set all 1s if MSB is set, no change o/w.
     result ^= val;
     result |= diff;
+
+    *flash_exec ^= val;
+    *flash_exec |= diff;
   }
   HARDENED_CHECK_EQ(i, SIZE_MAX);
   if (result != kErrorOk) {
@@ -296,7 +301,8 @@ static rom_error_t rom_ext_spx_verify(
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_verify(const manifest_t *manifest,
-                                  const boot_data_t *boot_data) {
+                                  const boot_data_t *boot_data,
+                                  uint32_t *flash_exec) {
   RETURN_IF_ERROR(rom_ext_boot_policy_manifest_check(manifest, boot_data));
 
   uint32_t key_id =
@@ -349,11 +355,13 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
                 "Unexpected BL0 digest size.");
   memcpy(&boot_measurements.bl0, &act_digest, sizeof(boot_measurements.bl0));
 
-  uint32_t flash_exec = 0;
   if (key_alg == kOwnershipKeyAlgEcdsaP256) {
+    HARDENED_CHECK_EQ(key_alg, kOwnershipKeyAlgEcdsaP256);
+    // SPX is not executed, so we set its return to success.
+    *flash_exec ^= kSigverifySpxSuccess;
     return sigverify_ecdsa_p256_verify(&manifest->ecdsa_signature,
                                        &keyring.key[verify_key]->data.ecdsa,
-                                       &act_digest, &flash_exec);
+                                       &act_digest, flash_exec);
   } else if ((key_alg & kOwnershipKeyAlgCategoryMask) ==
              kOwnershipKeyAlgCategoryHybrid) {
     // Hybrid signatures check both ECDSA and SPX+ signatures.
@@ -366,10 +374,10 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
         &ext_spx_signature->signature,
         &keyring.key[verify_key]->data.hybrid.spx, key_alg,
         &usage_constraints_from_hw, sizeof(usage_constraints_from_hw), NULL, 0,
-        digest_region.start, digest_region.length, act_digest);
+        digest_region.start, digest_region.length, act_digest, flash_exec);
     // ECDSA should be finished.  Poll for completeion and get the result.
     rom_error_t ecdsa =
-        sigverify_ecdsa_p256_finish(&manifest->ecdsa_signature, &flash_exec);
+        sigverify_ecdsa_p256_finish(&manifest->ecdsa_signature, flash_exec);
     HARDENED_RETURN_IF_ERROR(spx);
     HARDENED_RETURN_IF_ERROR(ecdsa);
     // Both values should be kErrorOk.  Mix them and return the result.
@@ -403,7 +411,8 @@ static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
-                                const manifest_t *manifest) {
+                                const manifest_t *manifest,
+                                uint32_t *flash_exec) {
   // Determine which owner block the key came from and measure that block.
   hmac_digest_t owner_measurement;
   const owner_application_key_t *key = keyring.key[verify_key];
@@ -521,6 +530,8 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   // to know if it's allowed to used the CSRNG and OTP is locked down.
   sec_mmio_check_values_except_otp(/*rnd_uint32()*/ 0,
                                    TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
+
+  HARDENED_CHECK_EQ(*flash_exec, kSigverifyFlashExec);
   // Jump to OWNER entry point.
   dbg_printf("entry: 0x%x\r\n", (unsigned int)entry_point);
   ((owner_stage_entry_point *)entry_point)();
@@ -601,12 +612,12 @@ static rom_error_t boot_svc_min_sec_ver_handler(boot_svc_msg_t *boot_svc_msg,
     // value of the new minimum_security_version.  This prevents a malicious
     // MinBl0SecVer request from making the chip un-bootable.
     const manifest_t *manifest = rom_ext_boot_policy_manifest_a_get();
-    rom_error_t error = rom_ext_verify(manifest, boot_data);
+    rom_error_t error = rom_ext_verify(manifest, boot_data, NULL);
     if (error == kErrorOk && manifest->security_version > max_sec_ver) {
       max_sec_ver = manifest->security_version;
     }
     manifest = rom_ext_boot_policy_manifest_b_get();
-    error = rom_ext_verify(manifest, boot_data);
+    error = rom_ext_verify(manifest, boot_data, NULL);
     if (error == kErrorOk && manifest->security_version > max_sec_ver) {
       max_sec_ver = manifest->security_version;
     }
@@ -684,11 +695,13 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
   rom_error_t error = kErrorRomExtBootFailed;
   rom_error_t slot[2] = {0, 0};
   for (size_t i = 0; i < ARRAYSIZE(manifests.ordered); ++i) {
-    error = rom_ext_verify(manifests.ordered[i], boot_data);
+    uint32_t flash_exec = 0;
+    error = rom_ext_verify(manifests.ordered[i], boot_data, &flash_exec);
     slot[i] = error;
     if (error != kErrorOk) {
       continue;
     }
+    HARDENED_CHECK_EQ(flash_exec, kSigverifyFlashExec);
 
     if (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) {
       boot_log->bl0_slot = kBootSlotA;
@@ -700,7 +713,8 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
     boot_log_digest_update(boot_log);
 
     // Boot fails if a verified ROM_EXT cannot be booted.
-    RETURN_IF_ERROR(rom_ext_boot(boot_data, boot_log, manifests.ordered[i]));
+    RETURN_IF_ERROR(
+        rom_ext_boot(boot_data, boot_log, manifests.ordered[i], &flash_exec));
     // `rom_ext_boot()` should never return `kErrorOk`, but if it does
     // we must shut down the chip instead of trying the next ROM_EXT.
     return kErrorRomExtBootFailed;

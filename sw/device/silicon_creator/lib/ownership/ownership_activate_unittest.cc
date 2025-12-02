@@ -21,10 +21,12 @@
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/mock_ownership_key.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
+#include "sw/device/silicon_creator/lib/sigverify/flash_exec.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 namespace {
 using ::testing::_;
+using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 
@@ -131,8 +133,9 @@ TEST_P(OwnershipActivateValidStateTest, InvalidVersion) {
   MakePage1Valid(true);
   owner_page[1].header.version.major = 5;
 
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<5>(kSigverifyFlashExec),
+                      Return(kHardenedBoolTrue)));
   EXPECT_CALL(lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
   EXPECT_CALL(hdr_, Finalize(_, _, _));
@@ -147,8 +150,8 @@ TEST_P(OwnershipActivateValidStateTest, InvalidSignature) {
   // We want to pass the page 1 validity test to check the signature on the
   // message.
   MakePage1Valid(true);
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolFalse));
+  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<5>(0), Return(kHardenedBoolFalse)));
   EXPECT_CALL(hdr_, Finalize(_, _, _));
 
   rom_error_t error = ownership_activate_handler(&message_, &bootdata_);
@@ -162,8 +165,9 @@ TEST_P(OwnershipActivateValidStateTest, InvalidNonce) {
   // We want to pass the page 1 validity test to check the nonce of the
   // message.
   MakePage1Valid(true);
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<5>(kSigverifyFlashExec),
+                      Return(kHardenedBoolTrue)));
   EXPECT_CALL(hdr_, Finalize(_, _, _));
 
   rom_error_t error = ownership_activate_handler(&message_, &bootdata_);
@@ -176,8 +180,9 @@ TEST_P(OwnershipActivateValidStateTest, InvalidActivateDin) {
   // We want to pass the page 1 validity test to check the nonce of the
   // message.
   MakePage1Valid(true);
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<5>(kSigverifyFlashExec),
+                      Return(kHardenedBoolTrue)));
   EXPECT_CALL(lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0, 1, 1}));
   EXPECT_CALL(hdr_, Finalize(_, _, _));
@@ -228,8 +233,9 @@ TEST_P(OwnershipActivateValidStateTest, OwnerPageValid) {
   bootdata_.next_owner[0] = 12345;
   MakePage1Valid(true);
 
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<5>(kSigverifyFlashExec),
+                      Return(kHardenedBoolTrue)));
   EXPECT_CALL(lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
 
@@ -297,8 +303,9 @@ TEST_P(OwnershipActivateValidStateTest, UpdateBootdataBl0) {
   MakePage1Valid(true);
   owner_page[1].min_security_version_bl0 = 5;
 
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<5>(kSigverifyFlashExec),
+                      Return(kHardenedBoolTrue)));
   EXPECT_CALL(lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
 

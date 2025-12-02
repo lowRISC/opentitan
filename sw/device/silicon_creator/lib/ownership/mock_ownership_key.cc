@@ -9,9 +9,10 @@ extern "C" {
 
 hardened_bool_t ownership_key_validate(size_t page, ownership_key_t key,
                                        const owner_signature_t *signature,
-                                       const void *message, size_t len) {
+                                       const void *message, size_t len,
+                                       uint32_t *flash_exec) {
   return MockOwnershipKey::Instance().validate(page, key, signature, message,
-                                               len);
+                                               len, flash_exec);
 }
 
 rom_error_t ownership_seal_init() {
