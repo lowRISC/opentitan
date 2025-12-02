@@ -114,7 +114,8 @@ static clock_error_info_t info[kTestTransCount];
  * Send CSR access to aes, expecting to timeout.
  */
 OT_NOINLINE void aes_csr_access(void) {
-  CHECK_DIF_OK(dif_aes_alert_force(&aes, kDifAesAlertRecovCtrlUpdateErr));
+  bool status;
+  CHECK_DIF_OK(dif_aes_get_status(&aes, kDifAesStatusIdle, &status));
 }
 
 OT_NOINLINE static void hmac_csr_access(void) {
@@ -204,7 +205,7 @@ bool execute_off_trans_test(test_trans_block_t block) {
         inst = dt_aes_instance_id(kTestAes);
         info[trans].name = "aes";
         info[trans].csr_offset =
-            addr_as_offset(aes.base_addr, AES_ALERT_TEST_REG_OFFSET);
+            addr_as_offset(aes.base_addr, AES_STATUS_REG_OFFSET);
         info[trans].crash_function = aes_csr_access;
         break;
 
