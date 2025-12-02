@@ -309,6 +309,8 @@ struct DeviceInfo {
     configurations: Vec<Vec<u8>>,
 }
 
+/// This structure represents an enumerated and configured device.
+#[derive(Clone, Debug)]
 struct ControlIn {
     addr: u8,
     ep: u8,
@@ -320,6 +322,8 @@ struct ControlIn {
     max_pkt_size: u16,
 }
 
+/// This structure represents an enumerated and configured device.
+#[derive(Clone, Debug)]
 struct ControlOut<'a> {
     addr: u8,
     ep: u8,
