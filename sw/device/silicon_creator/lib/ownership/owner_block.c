@@ -23,7 +23,7 @@ owner_page_status_t owner_page_valid[2];
 enum {
   kFlashBankSize = FLASH_CTRL_PARAM_REG_PAGES_PER_BANK,
   kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
-  kFlashTotalSize = 2 * kFlashBankSize,
+  kFlashTotalSize = FLASH_CTRL_PARAM_REG_NUM_BANKS * kFlashBankSize,
 
   kRomExtSizeInPages = CHIP_ROM_EXT_SIZE_MAX / kFlashPageSize,
   kRomExtAStart = 0 / kFlashPageSize,
