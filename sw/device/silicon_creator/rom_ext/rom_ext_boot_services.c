@@ -95,14 +95,14 @@ static rom_error_t boot_svc_min_sec_ver_handler(
     const manifest_t *manifest = rom_ext_boot_policy_manifest_a_get();
     uint32_t flash_exec = 0;
     rom_error_t error =
-        rom_ext_verify(manifest, boot_data, &flash_exec, keyring, verify_key,
-                       owner_config, isfb_check_count);
+        rom_ext_verify(manifest, /*slot_id=*/0, boot_data, &flash_exec, keyring,
+                       verify_key, owner_config, isfb_check_count);
     if (error == kErrorOk) {
       slot_a_max_sec_ver = manifest->security_version;
     }
     manifest = rom_ext_boot_policy_manifest_b_get();
-    error = rom_ext_verify(manifest, boot_data, &flash_exec, keyring,
-                           verify_key, owner_config, isfb_check_count);
+    error = rom_ext_verify(manifest, /*slot_id=*/0, boot_data, &flash_exec,
+                           keyring, verify_key, owner_config, isfb_check_count);
     if (error == kErrorOk) {
       slot_b_max_sec_ver = manifest->security_version;
     }
