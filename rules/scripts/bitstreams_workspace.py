@@ -59,6 +59,9 @@ parser.add_argument('--create-symlink', default=True,
 parser.add_argument('--latest-update',
                     default='latest.txt',
                     help='Last time the cache was updated')
+parser.add_argument('--branch',
+                    default="master",
+                    help='Upstream git branch to search for bitstreams.')
 parser.add_argument('--bucket-url', default=BUCKET_URL, help='GCP Bucket URL')
 parser.add_argument('--build-file',
                     default='BUILD.bazel',
@@ -217,7 +220,7 @@ class BitstreamCache(object):
             time.sleep(wait_time)
             wait_time *= 2.0
 
-    def GetBitstreamsAvailable(self, refresh, load_latest_update=True):
+    def GetBitstreamsAvailable(self, branch, refresh, load_latest_update=True):
         """Inventory which bitstreams are available.
 
         Args:
@@ -265,7 +268,7 @@ class BitstreamCache(object):
             else:
                 break
 
-        latest = self.Get('master/latest.txt').decode('utf-8').split('\n')
+        latest = self.Get(f'{branch}/latest.txt').decode('utf-8').split('\n')
         self.available['latest'] = latest[1]
 
     def GetClosest(self, repodir, key):
@@ -600,7 +603,7 @@ def main(argv):
                     cache.NeedRefresh(args.refresh_time))
     # Do we need to load the latest_update file?
     load_latest_update = (desired_bitstream == 'latest')
-    cache.GetBitstreamsAvailable(need_refresh and not args.offline,
+    cache.GetBitstreamsAvailable(args.branch, need_refresh and not args.offline,
                                  load_latest_update)
 
     # If commanded to print bitstream availability, do so.
