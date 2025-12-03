@@ -388,11 +388,15 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
   rom_error_t slot[2] = {0, 0};
   for (size_t i = 0; i < ARRAYSIZE(manifests.ordered); ++i) {
     uint32_t flash_exec = 0;
+    char slot_id =
+        (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) ? 'A'
+                                                                       : 'B';
     error =
-        rom_ext_verify(manifests.ordered[i], boot_data, &flash_exec, &keyring,
-                       &verify_key, &owner_config, &isfb_check_count);
+        rom_ext_verify(manifests.ordered[i], slot_id, boot_data, &flash_exec,
+                       &keyring, &verify_key, &owner_config, &isfb_check_count);
     slot[i] = error;
     if (error != kErrorOk) {
+      dbg_printf("verifyfail: Slot%c;%x\r\n", slot_id, error);
       continue;
     }
     HARDENED_CHECK_EQ(flash_exec, kSigverifyFlashExec);
