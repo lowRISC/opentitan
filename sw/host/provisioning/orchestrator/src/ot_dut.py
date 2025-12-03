@@ -173,12 +173,12 @@ class OtDut():
                 # has already run through CP, and only needs to execute FT.
                 if chip_probe_data["cp_device_id"] == "":
                     logging.warning(
-                        "cp_device_id empty; setting default of all zeros.")
-                    din_from_device = DeviceIdentificationNumber(0)
+                        "cp_device_id empty; setting default DIN of all 0xFF.")
+                    din_from_device = DeviceIdentificationNumber.blind_asm()
                 else:
                     din_from_device = DeviceIdentificationNumber.from_int(
                         (int(chip_probe_data["cp_device_id"], 16) >> 32) &
-                        0xFFFFFFFFFFFFFFFF)
+                        (2**64 - 1))
             logging.info(
                 f"Updating device ID to: {chip_probe_data['cp_device_id']}")
             self.device_id.update_din(din_from_device)
@@ -320,7 +320,8 @@ class OtDut():
                     f"Final (device) DeviceId: {device_id_in_otp.to_hexstr()}")
                 logging.error(
                     f"Final (host)   DeviceId: {self.device_id.to_hexstr()}")
-                confirm()
+                if self.require_confirmation:
+                    confirm()
                 self.device_id = device_id_in_otp
 
             logging.info("FT completed successfully.")

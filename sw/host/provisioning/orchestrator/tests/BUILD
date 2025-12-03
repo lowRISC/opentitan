@@ -69,6 +69,47 @@ orchestrator_cw340_test_settings_transition(
     target = "//sw/host/provisioning/orchestrator/src:orchestrator.zip",
 )
 
+sh_test(
+    name = "e2e_option_flags_test",
+    timeout = "moderate",
+    srcs = ["e2e_option_flags.sh"],
+    data = [
+        ":orchestrator_cw310_zip",
+        "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+        "@python3",
+    ],
+    env = {
+        "PYTHON": "$(location @python3//:python3)",
+        "PACKAGE": "npcr11",
+    },
+    tags = [
+        "changes_otp",
+        "cw310",
+        "exclusive",
+        "fpga",
+        "manuf",
+    ],
+)
+
+sh_test(
+    name = "e2e_multistage_test",
+    srcs = ["e2e_multistage.sh"],
+    data = [
+        ":orchestrator_cw310_zip",
+        "@python3",
+    ],
+    env = {
+        "PYTHON": "$(location @python3//:python3)",
+    },
+    tags = [
+        "changes_otp",
+        "cw310",
+        "exclusive",
+        "fpga",
+        "manuf",
+    ],
+)
+
 [
     sh_test(
         name = "e2e_{}_{}_test".format(sku, fpga),
@@ -129,21 +170,3 @@ orchestrator_cw340_test_settings_transition(
         "cw340",
     ]
 ]
-
-# TODO: this test seems to work locally but fails in CI.
-# sh_test(
-#     name = "e2e_multistage_test",
-#     srcs = ["e2e_multistage.sh"],
-#     data = [
-#         ":orchestrator_zip",
-#         "@rules_python//python:current_py_toolchain",
-#     ],
-#     env = {
-#         "PYTHON": "$(PYTHON3)",
-#     },
-#     tags = [
-#         "cw310",
-#         "manuf",
-#     ],
-#     toolchains = ["@rules_python//python:current_py_toolchain"],
-# )

@@ -84,6 +84,17 @@ def main(args_in):
         help="SKU HJSON configuration file.",
     )
     parser.add_argument(
+        "--ast-cfg-version",
+        required=True,
+        type=int,
+        help="AST configuration version to be written to OTP.",
+    )
+    parser.add_argument(
+        "--package",
+        type=str,
+        help="Override of package string that is in the SKU config.",
+    )
+    parser.add_argument(
         "--test-unlock-token",
         required=True,
         type=parse_hexstring_to_int,
@@ -149,11 +160,18 @@ def main(args_in):
     sku_config_args = {}
     with open(sku_config_path, "r") as fp:
         sku_config_args = hjson.load(fp)
-    sku_config = SkuConfig(**sku_config_args)
+    sku_config = SkuConfig(ast_cfg_version=args.ast_cfg_version,
+                           **sku_config_args)
+
+    # Override package ID if requested.
+    if args.package:
+        sku_config.package = args.package
+        sku_config.validate()
+        sku_config.load_hw_ids()
 
     # The device identification number is determined during CP by extracting data
     # from the device.
-    din = DeviceIdentificationNumber(0)
+    din = DeviceIdentificationNumber.blind_asm()
     device_id = DeviceId(sku_config, din)
 
     # TODO: Setup remote and/or local DB connections.
