@@ -213,7 +213,7 @@ class TestFetchAvailableBitstreams(unittest.TestCase):
             name='cache.Get',
             side_effect=MOCKED_GET_RETURN,
         )
-        self.cache.GetBitstreamsAvailable(refresh=True)
+        self.cache.GetBitstreamsAvailable(branch="master", refresh=True)
         self.assertEqual(self.cache.Get.call_count, 2)
         self.assertEqual(self.cache.available, {
             "0": "master/bitstream-0.tar.gz",
@@ -269,7 +269,7 @@ class TestFetchAvailableBitstreams(unittest.TestCase):
             name='cache.Get',
             side_effect=MOCKED_GET_RETURN,
         )
-        self.cache.GetBitstreamsAvailable(refresh=True)
+        self.cache.GetBitstreamsAvailable(branch="master", refresh=True)
         self.assertEqual(self.cache.Get.call_count, 3)
         self.assertEqual(
             self.cache.available, {
