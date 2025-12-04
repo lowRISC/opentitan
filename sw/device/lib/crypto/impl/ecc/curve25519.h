@@ -73,6 +73,27 @@ typedef struct curve25519_signature_t {
 } curve25519_signature_t;
 
 /**
+ * Start an async Ed25519 keygen operation on OTBN.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param hash_h_low 32 low bytes of the key hash.
+ * @return Result of the operation (OK or error).
+ */
+status_t curve25519_keygen_start(
+    const uint32_t hash_h_low[kCurve25519HalfHashWords]);
+
+/**
+ * Finish an async Ed25519 keygen operation on OTBN.
+ *
+ * Blocks until OTBN is idle.
+ *
+ * @param public_key Pointer for public key A.
+ * @return Result of the operation (OK or error).
+ */
+status_t curve25519_keygen_finalize(uint32_t public_key[kCurve25519PointWords]);
+
+/**
  * Start stage 1 of an async Ed25519 sign operation on OTBN.
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
