@@ -178,62 +178,75 @@ class Window2Systemrdl:
 
 
 class Register2Systemrdl:
-    inner: Register
+    inner: list[Register]
     importer: RDLImporter
     root: Addrmap
     stride: int | None = None
     count: int | None = None
     strip_suffix: bool = False
     name: str = ""
+    compacted: bool = False
 
     def __init__(self, reg: MultiRegister | Register, importer: RDLImporter, root: Addrmap):
         self.importer = importer
         self.root = root
         if isinstance(reg, Register):
-            self.inner = reg
+            self.inner = [reg]
             self.name = reg.name
         elif isinstance(reg, MultiRegister):
-            self.inner = reg.cregs[0]
-            self.stride = reg.stride
-            self.count = len(reg.cregs)
-            # Workaround because reggen adds the register index to all multiregisters fields,
-            # although it only makes sense when multiregisters are compacted (collapsed)
-            # to avoid name colision.
-            self.strip_suffix = not self._has_name_colision(reg)
-            self.name = re.sub(r"_\d+$", "", self.inner.name)
+            if len(reg.cregs) > 1 and reg.compact and reg.get_n_bits() % 32:
+                # There're cases where the number of fields can't fit into a round number of
+                # registers which makes it unfit for a systemrdl array.
+                self.inner = reg.cregs
+            else:
+                # This will be a systermrdl array.
+                self.inner = reg.cregs[0:1]
+                self.stride = reg.stride
+                self.count = len(reg.cregs)
+                self.compacted = reg.compact
+                # Workaround because reggen adds the register index to all multiregisters fields,
+                # although it only makes sense when multiregisters are compacted (collapsed)
+                # to avoid name colision.
+                self.strip_suffix = not self._has_name_colision(reg)
+                self.name = re.sub(r"_\d+$", "", self.inner[0].name)
 
-    def export(self) -> systemrdl.component.Reg:
-        reg_type = self.importer.create_reg_definition(self.inner.name)
-        for rfield in self.inner.fields:
-            self.importer.add_child(
+    def export(self) -> list[systemrdl.component.Reg]:
+        res = []
+        for reg in self.inner:
+            name = self.name or reg.name or "Register"
+            reg_type = self.importer.create_reg_definition(name)
+            for rfield in reg.fields:
+                self.importer.add_child(
+                    reg_type,
+                    Field2Systemrdl(rfield, self.importer, self.root).export(
+                        self.strip_suffix, reg.regwen
+                    ),
+                )
+
+            reg_type.external = reg.hwext
+
+            if self.compacted:
+                self.importer.assign_property(reg_type, "compacted", True)
+
+            if reg.hwre:
+                self.importer.assign_property(reg_type, "hwre", reg.hwre)
+
+            if reg.shadowed:
+                self.importer.assign_property(reg_type, "shadowed", reg.shadowed)
+
+            if reg.desc:
+                self.importer.assign_property(reg_type, "desc", sanitize_str(reg.desc))
+
+
+            reg = self.importer.instantiate_reg(
                 reg_type,
-                Field2Systemrdl(rfield, self.importer, self.root).export(
-                    self.strip_suffix, self.inner.regwen
-                ),
+                name.upper(),
+                reg.offset,
+                [self.count] if self.count else None,
+                self.stride if self.stride else None,
             )
-
-        reg_type.external = self.inner.hwext
-
-        if self.inner.hwre:
-            self.importer.assign_property(reg_type, "hwre", self.inner.hwre)
-
-        if self.inner.shadowed:
-            self.importer.assign_property(reg_type, "shadowed", self.inner.shadowed)
-
-        if self.inner.desc:
-            self.importer.assign_property(reg_type, "desc", sanitize_str(self.inner.desc))
-
-        if self.inner.async_clk:
-            self.importer.assign_property(reg_type, "async_clk", True)
-
-        reg = self.importer.instantiate_reg(
-            reg_type,
-            self.name.upper(),
-            self.inner.offset,
-            [self.count] if self.count else None,
-            self.stride if self.stride else None,
-        )
-        return reg
+            res.append(reg)
+        return res
 
     def _has_name_colision(self, reg: MultiRegister) -> bool:
         names = set([re.sub(r"_\d+$", "", f.name) for f in reg.cregs[0].fields])
@@ -254,14 +267,14 @@ class RegBlock2Systemrdl:
         # registers and multiregs
         for reg in self.inner.registers:
             self.importer.add_child(
-                addrmap, Register2Systemrdl(reg, self.importer, addrmap).export()
+                addrmap, Register2Systemrdl(reg, self.importer, addrmap).export()[0]
             )
 
         # multiregs
         for mreg in self.inner.multiregs:
-            self.importer.add_child(
-                addrmap, Register2Systemrdl(mreg, self.importer, addrmap).export()
-            )
+            _regs = Register2Systemrdl(mreg, self.importer, addrmap).export()
+            for reg in _regs:  # type: ignore
+                self.importer.add_child(addrmap, reg)  # type: ignore
 
         # windows
         for window in self.inner.windows:
