@@ -167,11 +167,6 @@ static rom_error_t rom_init(void) {
     // low power.  In that case, the state of AON IP blocks would have been
     // reset, and the ROM should not treat this as "waking from low power".
     waking_from_low_power = kHardenedBoolFalse;
-
-    // Initialize pinmux configuration so we can use the UART, (except if waking
-    // up from low power, as the pinmux will in such case have retained its
-    // previous configuration.)
-    pinmux_init();
   } else {
     waking_from_low_power = kHardenedBoolTrue;
   }
