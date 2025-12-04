@@ -2671,6 +2671,20 @@
           conn_type: true
         }
         {
+          name: ext_rst_ack
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: pwrmgr_aon
+          default: ""
+          package: ""
+          external: true
+          top_signame: pwrmgr_ext_rst_ack
+          conn_type: false
+          index: -1
+        }
+        {
           name: pwr_ast
           struct: pwr_ast
           package: pwrmgr_pkg
@@ -11678,6 +11692,7 @@
       spi_device.ram_cfg_rsp_spi2sys: spi_device_ram_2p_cfg_rsp_spi2sys
       spi_device.ram_cfg_spi2sys: spi_device_ram_2p_cfg_spi2sys
       pwrmgr_aon.boot_status: pwrmgr_boot_status
+      pwrmgr_aon.ext_rst_ack: pwrmgr_ext_rst_ack
       clkmgr_aon.jitter_en: clk_main_jitter_en
       dma.sys: dma_sys
       entropy_src.entropy_src_rng_enable: es_rng_enable
@@ -21955,6 +21970,20 @@
         conn_type: true
       }
       {
+        name: ext_rst_ack
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: pwrmgr_aon
+        default: ""
+        package: ""
+        external: true
+        top_signame: pwrmgr_ext_rst_ack
+        conn_type: false
+        index: -1
+      }
+      {
         name: pwr_ast
         struct: pwr_ast
         package: pwrmgr_pkg
@@ -28308,6 +28337,18 @@
         conn_type: true
         index: -1
         netname: pwrmgr_aon_boot_status
+      }
+      {
+        package: ""
+        struct: logic
+        signame: pwrmgr_ext_rst_ack_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: pwrmgr_ext_rst_ack
       }
       {
         package: prim_mubi_pkg

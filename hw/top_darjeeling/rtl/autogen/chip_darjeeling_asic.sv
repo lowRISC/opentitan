@@ -1619,6 +1619,7 @@ module chip_darjeeling_asic #(
     .dma_sys_rsp_i                     ( '0                         ),
     .mbx_tl_req_i                      ( tlul_pkg::TL_H2D_DEFAULT   ),
     .mbx_tl_rsp_o                      (                            ),
+    .pwrmgr_ext_rst_ack_i              ( 1'b0                       ),
     .pwrmgr_boot_status_o              ( pwrmgr_boot_status         ),
     .ctn_misc_tl_h2d_i                 ( ctn_misc_tl_h2d_i          ),
     .ctn_misc_tl_d2h_o                 ( ctn_misc_tl_d2h_o          ),

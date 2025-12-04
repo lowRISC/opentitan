@@ -206,6 +206,7 @@ module top_darjeeling #(
   output prim_ram_2p_pkg::ram_2p_cfg_rsp_t       spi_device_ram_2p_cfg_rsp_spi2sys_o,
   input  prim_ram_2p_pkg::ram_2p_cfg_t       spi_device_ram_2p_cfg_spi2sys_i,
   output pwrmgr_pkg::pwr_boot_status_t       pwrmgr_boot_status_o,
+  input  logic       pwrmgr_ext_rst_ack_i,
   output prim_mubi_pkg::mubi4_t       clk_main_jitter_en_o,
   output dma_pkg::sys_req_t       dma_sys_req_o,
   input  dma_pkg::sys_rsp_t       dma_sys_rsp_i,
@@ -1437,6 +1438,7 @@ module top_darjeeling #(
 
       // Inter-module signals
       .boot_status_o(pwrmgr_aon_boot_status),
+      .ext_rst_ack_i(pwrmgr_ext_rst_ack_i),
       .pwr_ast_o(pwrmgr_ast_req_o),
       .pwr_ast_i(pwrmgr_ast_rsp_i),
       .pwr_rst_o(pwrmgr_aon_pwr_rst_req),
