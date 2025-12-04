@@ -51,7 +51,7 @@ enum module_ {
   kModuleAsn1 =            MODULE_CODE('A', '1'),
   kModuleRetRam =          MODULE_CODE('R', 'R'),
   kModuleXModem =          MODULE_CODE('X', 'M'),
-  kModuleRescue =          MODULE_CODE('R', 'S'),
+  kModuleRescue =          MODULE_CODE('R', 'C'),
   kModuleCert =            MODULE_CODE('C', 'E'),
   kModuleOwnership =       MODULE_CODE('O', 'W'),
   kModulePersoTlv =        MODULE_CODE('P', 'T'),
