@@ -23,7 +23,7 @@ EARLGREY_SKUS = {
     # OTP Config: Emulation; DICE Certs: X.509; Additional Certs: None
     "emulation": {
         "otp": "em00",
-        "ca_data": "@//sw/device/silicon_creator/manuf/keys/fake:ca_data",
+        "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/fake:ca_data",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
@@ -33,12 +33,12 @@ EARLGREY_SKUS = {
         "ecdsa_key": {},
         "spx_key": {},
         "signature_prefix": None,
-        "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+        "orchestrator_cfg": "@lowrisc_opentitan//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
     },
     # OTP Config: Emulation; DICE Certs: CWT; Additional Certs: None
     "emulation_dice_cwt": {
         "otp": "em00",
-        "ca_data": "@//sw/device/silicon_creator/manuf/keys/fake:ca_data",
+        "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/fake:ca_data",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice_cwt"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
@@ -48,12 +48,12 @@ EARLGREY_SKUS = {
         "ecdsa_key": {},
         "spx_key": {},
         "signature_prefix": None,
-        "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:emulation_dice_cwt.hjson",
+        "orchestrator_cfg": "@lowrisc_opentitan//sw/host/provisioning/orchestrator/configs/skus:emulation_dice_cwt.hjson",
     },
     # OTP Config: Emulation; DICE Certs: X.509; Additional Certs: TPM EK
     "emulation_tpm": {
         "otp": "em00",
-        "ca_data": "@//sw/device/silicon_creator/manuf/keys/fake:ca_data",
+        "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/fake:ca_data",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": [
@@ -66,11 +66,11 @@ EARLGREY_SKUS = {
         "ecdsa_key": {},
         "spx_key": {},
         "signature_prefix": None,
-        "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:emulation_tpm.hjson",
+        "orchestrator_cfg": "@lowrisc_opentitan//sw/host/provisioning/orchestrator/configs/skus:emulation_tpm.hjson",
     },
     "sival": {
         "otp": "sv00",
-        "ca_data": "@//sw/device/silicon_creator/manuf/keys/sival:ca_data",
+        "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/sival:ca_data",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
@@ -81,7 +81,7 @@ EARLGREY_SKUS = {
         "spx_key": {},
         "signature_prefix": None,
         "perso_bin": "//sw/device/silicon_creator/manuf/base/binaries:ft_personalize_sival",
-        "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:sival.hjson",
+        "orchestrator_cfg": "@lowrisc_opentitan//sw/host/provisioning/orchestrator/configs/skus:sival.hjson",
         "offline": True,
     },
 } | EXT_EARLGREY_SKUS
