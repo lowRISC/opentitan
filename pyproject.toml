@@ -14,14 +14,13 @@ dependencies = [
   "hjson==3.1.0",
   "libclang==16.0.0",
   "libcst ~= 1.1",
-  "lxml ~= 5.0",
   "mako ~= 1.2",
   "ninja ~= 1.11.1.1",
   "pluralizer==1.2.0",
   "pycryptodome ~= 3.19",
   "pyelftools==0.29",
-  "pytest-timeout ~= 2.1",
   "pytest ~= 7.2",
+  "pytest-timeout ~= 2.1",
   "pyyaml ~= 6.0",
   "rich==12.6.0", # maximum version compatible with Python 3.6.8 (used on CentOS7 nightly regression machines)
   "semantic_version==2.10.0",
@@ -34,14 +33,8 @@ dependencies = [
   # Dependencies: gen-flash-img.py
   "pyfinite==1.9.1",
 
-  # Dependencies: dv_sim
-  "enlighten ~= 1.10",
+  # Dependencies: reggen
   "mistletoe==0.9.0",
-  # Premailer 3.9.0 broke the API by introducing an allow_loading_external_files
-  # argument that is now mandatory, but didn't exist in previous versions.
-  # To relax the constraint we either need to do a runtime detection, or switch all
-  # users to a newer version.
-  "premailer==3.8.0",
 
   # Dependencies: check_dif_statuses.py
   "pydriller ~= 2.7",
