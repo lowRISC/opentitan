@@ -158,7 +158,8 @@ volatile otcrypto_interface_t otcrypto = {
     // Ed25519 (async).
     .ed25519_keygen_async_start = &otcrypto_ed25519_keygen_async_start,
     .ed25519_keygen_async_finalize = &otcrypto_ed25519_keygen_async_finalize,
-    .ed25519_sign_async_start = &otcrypto_ed25519_sign_async_start,
+    .ed25519_sign_async_part1_start = &otcrypto_ed25519_sign_part1_async_start,
+    .ed25519_sign_async_part2_start = &otcrypto_ed25519_sign_part2_async_start,
     .ed25519_sign_async_finalize = &otcrypto_ed25519_sign_async_finalize,
     .ed25519_verify_async_start = &otcrypto_ed25519_verify_async_start,
     .ed25519_verify_async_finalize = &otcrypto_ed25519_verify_async_finalize,
