@@ -11,6 +11,7 @@ from typing import TextIO, Any
 from pathlib import Path
 import shutil
 
+import reggen
 from reggen.ip_block import IpBlock
 from reggen.reg_block import RegBlock
 from reggen.register import Register
@@ -23,6 +24,7 @@ from reggen.signal import Signal
 from reggen.bus_interfaces import BusInterfaces
 from reggen.interrupt import Interrupt
 from reggen.alert import Alert
+from reggen.clocking import Clocking, ClockingItem
 from reggen.exporter import Exporter
 from reggen.systemrdl.udp import register_udps
 
@@ -338,6 +340,34 @@ class Signal2Systemrdl:
 
 
 @dataclass
+class Clocking2Systemrdl:
+    inner: Clocking
+    importer: RDLImporter
+
+    def export(self) -> list[systemrdl.component.Signal]:
+        signals = []
+        enum_variant = "Sync"
+        enum = self.importer.compiler.namespace.lookup_type("SigType")
+        assert isinstance(enum, rdltypes.user_enum.UserEnumMeta)
+        rdl_t = self.importer._create_definition(systemrdl.component.Signal, "sync_t", None)
+
+        for item in self.inner.items:
+            if item.clock:
+                signal = self.importer._instantiate(rdl_t, str(item.clock).upper(), None)
+                self.importer.assign_property(signal, "signalwidth", 1)
+                self.importer.assign_property(signal, "sigtype", enum[enum_variant])
+                signals.append(signal)
+
+            if item.reset:
+                signal = self.importer._instantiate(rdl_t, str(item.reset).upper(), None)
+                self.importer.assign_property(signal, "signalwidth", 1)
+                self.importer.assign_property(signal, "sigtype", enum[enum_variant])
+                signals.append(signal)
+
+        return signals
+
+
+@dataclass
 class BusInterfaces2Systemrdl:
     inner: BusInterfaces
     importer: RDLImporter
@@ -407,6 +437,9 @@ class IpBlock2Systemrdl:
 
         for alert in self.inner.alerts:
             signal = Signal2Systemrdl(alert, self.importer).export()
+            rdl_addrmap.children.append(signal)
+
+        for signal in Clocking2Systemrdl(self.inner.clocking, self.importer).export():
             rdl_addrmap.children.append(signal)
 
         for xputs, direction in zip(self.inner.xputs, ["InOut", "Input", "Output"]):
