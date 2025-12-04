@@ -140,11 +140,11 @@ ed25519_verify_var:
 
   /* Load the 512-bit signature (R_ || S).
        w11 <= R_
-       w29 <= S */
+        w1 <= S */
   li       x2, 11
   la       x3, ed25519_sig_R
   bn.lid   x2, 0(x3)
-  li       x2, 29
+  li       x2, 1
   la       x3, ed25519_sig_S
   bn.lid   x2, 0(x3)
 
@@ -152,8 +152,8 @@ ed25519_verify_var:
 
   /* w27 <= MOD = L */
   bn.wsrr  w27, 0x0
-  /* FG0.C <= (w29 - w27) <? 0 = S <? L */
-  bn.cmp   w29, w27
+  /* FG0.C <= (w1 - w27) <? 0 = S <? L */
+  bn.cmp   w1, w27
   /* x2 <= FG0[0] = FG0.C */
   csrrs    x2, FG0, x0
   andi     x2, x2, 1
@@ -163,10 +163,10 @@ ed25519_verify_var:
   bne      x2, x3, verify_fail
 
   /* Compute (8 * S) mod L.
-       w29 <= (2 * (2 * (2 * w29) mod L) mod L) mod L = (8 * S) mod L */
-  bn.addm  w29, w29, w29
-  bn.addm  w29, w29, w29
-  bn.addm  w29, w29, w29
+       w1 <= (2 * (2 * (2 * w1) mod L) mod L) mod L = (8 * S) mod L */
+  bn.addm  w1, w1, w1
+  bn.addm  w1, w1, w1
+  bn.addm  w1, w1, w1
 
   /* Set up for field arithmetic in preparation for scalar multiplication and
      point addition.
@@ -175,8 +175,8 @@ ed25519_verify_var:
   jal      x1, fe_init
 
   /* Initialize curve parameter d.
-       w30 <= dmem[d] = (-121665/121666) mod p */
-  li      x2, 30
+       w29 <= dmem[d] = (-121665/121666) mod p */
+  li      x2, 29
   la      x3, ed25519_d
   bn.lid  x2, 0(x3)
 
@@ -209,8 +209,11 @@ ed25519_verify_var:
   bne      x20, x21, verify_fail
 
   /* Precompute (2*d) mod p in preparation for scalar multiplication.
-       w30 <= (w30 + w30) mod p = (2 * d) mod p */
-  bn.addm  w30, w30, w30
+       w29 <= (w29 + w29) mod p = (2 * d) mod p */
+  bn.addm  w29, w29, w29
+
+  /* w30 <= 38 */
+  bn.addi w30, w31, 38
 
   /* Convert A to extended coordinates.
       [w9:w6] <= extended(A) = (A.X, A.Y, A.Z, A.T) */
@@ -279,8 +282,8 @@ ed25519_verify_var:
        [w9:w6] <= extended(B) = (B.X, B.Y, B.Z, B.T) */
   jal      x1, affine_to_ext
 
-  /* w28 <= w29 = (8 * S) mod L */
-  bn.mov   w28, w29
+  /* w28 <= w1 = (8 * S) mod L */
+  bn.mov   w28, w1
 
   /* Compute the left-hand side of the curve equation.
        [w13:w10] <= w28 * [w9:w6] = [8][S]B */
@@ -397,13 +400,16 @@ ed25519_sign_stage1:
 
   /* Initialize curve parameter d.
        w30 <= dmem[d] = (-121665/121666) mod p */
-  li      x2, 30
+  li      x2, 29
   la      x3, ed25519_d
   bn.lid  x2, 0(x3)
 
   /* Precompute (2*d) mod p in preparation for scalar multiplication.
-       w30 <= (w30 + w30) mod p = (2 * d) mod p */
-  bn.addm  w30, w30, w30
+       w29 <= (w29 + w29) mod p = (2 * d) mod p */
+  bn.addm  w29, w29, w29
+
+  /* w30 <= 38 */
+  bn.addi w30, w31, 38
 
   /* Load the base point B (in affine coordinates).
        w6 <= dmem[ed25519_Bx] = B.x
@@ -759,7 +765,7 @@ affine_encode:
  *
  * @param[in]  w11: encoded point: y | (lsb(x) << 255)
  * @param[in]  w19: constant, w19 = 19
- * @param[in]  w30: constant, w30 = d = (-121665/121666) mod p
+ * @param[in]  w29: constant, w29 = d = (-121665/121666) mod p
  * @param[in]  w31: all-zero
  * @param[in]  MOD: p, modulus = 2^255 - 19
  * @param[out] x20: SUCCESS or FAILURE code
@@ -826,8 +832,8 @@ affine_decode_var:
    jal      x1, fe_square
    /* w26 <= (w22 - w25) mod p <= (y^2 - 1) mod p = u */
    bn.subm  w26, w22, w25
-   /* w22 <= (w22 * w30) mod p = (y^2 * d) mod p */
-   bn.mov   w23, w30
+   /* w22 <= (w22 * w29) mod p = (y^2 * d) mod p */
+   bn.mov   w23, w29
    jal      x1, fe_mul
    /* w25 <= (w22 + w25) mod p = (y^2 * d + 1) mod p = v */
    bn.addm  w25, w22, w25
@@ -1027,7 +1033,7 @@ affine_decode_var:
  * @param[in]   w9: input T1 (T1 < p)
  * @param[in]  w19: constant, w19 = 19
  * @param[in]  w28: a, scalar input, a < L
- * @param[in]  w30: constant, w30 = (2*d) mod p, d = (-121665/121666) mod p
+ * @param[in]  w29: constant, w29 = (2*d) mod p, d = (-121665/121666) mod p
  * @param[in]  w31: all-zero
  * @param[in]  MOD: p, modulus = 2^255 - 19
  * @param[out] w10: output X2
@@ -1127,7 +1133,7 @@ ext_scmul:
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]  w19: constant, w19 = 19
- * @param[in]  w30: constant, w30 = (2*d) mod p, d = (-121665/121666) mod p
+ * @param[in]  w29: constant, w29 = (2*d) mod p, d = (-121665/121666) mod p
  * @param[in]  w31: all-zero
  * @param[in]  MOD: p, modulus = 2^255 - 19
  * @param[in,out] w10: input X1 (X1 < p), output X3
