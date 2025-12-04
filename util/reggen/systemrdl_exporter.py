@@ -237,6 +237,28 @@ class Register2Systemrdl:
             if reg.desc:
                 self.importer.assign_property(reg_type, "desc", sanitize_str(reg.desc))
 
+            if reg.async_clk:
+                name = reg.async_clk[1].clock or "Clock"
+                if sig_ref := self.root.get_child_by_name(name.upper()):
+                    # This is a workaround and shall be fixed when the Issue
+                    # https://github.com/SystemRDL/systemrdl-compiler/issues/276 is fixed.
+                    sig_name = sig_ref.inst_name or "Clock"
+                    async_clk = InstRef(
+                        self.importer.compiler.env,
+                        self.root,
+                        [(sig_ref.inst_name, [], None)],
+                    )  # type: ignore
+                    self.importer.assign_property(reg_type, "async_clk", async_clk)
+
+                reset_name = reg.async_clk[1].reset or "reset"
+                if sig_ref := self.root.get_child_by_name(reset_name.upper()):
+                    sig_name = sig_ref.inst_name or "reset"
+                    async_rst = InstRef(
+                        self.importer.compiler.env,
+                        self.root,
+                        [(sig_ref.inst_name, [], None)],
+                    )  # type: ignore
+                    self.importer.assign_property(reg_type, "async_rst", async_rst)
 
             reg = self.importer.instantiate_reg(
                 reg_type,

@@ -29,11 +29,6 @@ class Shadowed(UDPBoolean):
     valid_components = {Reg}
 
 
-class AsyncClk(UDPBoolean):
-    name = "async_clk"
-    valid_components = {Reg}
-
-
 class IntegrityBypass(UDPBoolean):
     name = "integrity_bypass"
     valid_components = {Mem}
@@ -94,7 +89,7 @@ def register_udps(compiler: RDLCompiler) -> Path:
     """
     compiler.register_udp(Hwre)
     compiler.register_udp(Shadowed)
-    compiler.register_udp(AsyncClk)
+    # compiler.register_udp(AsyncClk)
     compiler.register_udp(IntegrityBypass)
     # TODO: figure out how to declare the 'valid_types' attribute when it is a user-defined enum.
     # compiler.register_udp(SigType)
