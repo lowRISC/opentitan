@@ -2,6 +2,7 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 .text
+.globl ed25519_gen_public_key
 .globl ed25519_verify_var
 .globl ed25519_sign_stage1
 .globl ed25519_sign_stage2
@@ -77,6 +78,102 @@
  * Constants for accessing flags.
  */
 .equ FG0,          0x7c0
+
+/**
+ * Ed25519 public key computation.
+ *
+ * Provided a private key this function calculates the public key.
+ *
+ * Returns A_ (encoded public key point).
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  [w15:w14]: mu = floor(2^512 / L) (precomputed constant)
+ * @param[in]  w31:       all-zero
+ * @param[in]  MOD:       L, modulus
+ * @param[in]  dmem[ed25519_hash_h_low]: lower half of precomputed hash h, 256 bits
+ * @param[out] dmem[ed25519_public_key]: encoded public key A_, 256 bits
+ *
+ * clobbered registers: x2 to x3, w2 to w30
+ * clobbered flag groups: FG0
+ */
+ed25519_gen_public_key:
+
+  /* Load the 256-bit lower half of the precomputed hash h.
+       w16 <= h[255:0] */
+  li       x2, 16
+  la       x3, ed25519_hash_h_low
+  bn.lid   x2, 0(x3)
+
+  /* Recover the secret scalar s from h.
+       w16 <= s */
+  jal      x1, sc_clamp
+
+  /* Reduce s modulo L. Note: s is only 255 bits, so this full 512-bit
+     reduction could be much faster (in fact, since clamping guarantees 3L < s
+     < 4L, we can simply subtract 3L instead). However, this routine is not
+     performance-critical, so we use the generalized routine and set the high
+     bits to zero.
+       w18 <= [w31,w16] mod L = s mod L */
+  bn.mov   w17, w31
+  jal      x1, sc_reduce
+
+  /* Save s for later.
+       w28 <= s mod L */
+  bn.mov   w28, w18
+
+  /* Set up for field arithmetic in preparation for scalar multiplication.
+       MOD <= p
+       w19 <= 19 */
+  jal      x1, fe_init
+
+  /* Initialize curve parameter d.
+       w30 <= dmem[d] = (-121665/121666) mod p */
+  li      x2, 29
+  la      x3, ed25519_d
+  bn.lid  x2, 0(x3)
+
+  /* Precompute (2*d) mod p in preparation for scalar multiplication.
+       w29 <= (w29 + w29) mod p = (2 * d) mod p */
+  bn.addm  w29, w29, w29
+
+  /* w30 <= 38 */
+  bn.addi w30, w31, 38
+
+  /* Load the base point B (in affine coordinates).
+       w6 <= dmem[ed25519_Bx] = B.x
+       w7 <= dmem[ed25519_By] = B.y */
+  li       x2, 6
+  la       x3, ed25519_Bx
+  bn.lid   x2++, 0(x3)
+  la       x3, ed25519_By
+  bn.lid   x2, 0(x3)
+
+  /* Convert B to extended coordinates.
+       [w9:w6] <= extended(B) = (B.X, B.Y, B.Z, B.T) */
+  jal      x1, affine_to_ext
+
+  /* Compute the public key point A = [s]B.
+       [w13:w10] <= w28 * [w9:w6] = [s]B */
+  jal      x1, ext_scmul
+
+  /* Convert A to affine coordinates.
+       w10 <= A.x, w11 <= A.y */
+  jal      x1, ext_to_affine
+
+  /* Encode A.
+       w11 <= encode(w10, w11) = A_ */
+  jal      x1, affine_encode
+
+  /* Write encoded A (A_) to DMEM.
+       dmem[ed25519_public_key] <= w11 = A_ */
+  li       x2, 11
+  la       x3, ed25519_public_key
+  bn.sid   x2, 0(x3)
+
+  ret
 
 /**
  * Top-level Ed25519 signature verification operation.
@@ -345,7 +442,7 @@ ed25519_verify_var:
  * @param[out] dmem[ed25519_sig_R]: encoded signature point R_, 256 bits
  * @param[out] dmem[ed25519_public_key]: encoded public key A_, 256 bits
  *
- * clobbered registers: x2 to x4, x20 to x23, w2 to w30
+ * clobbered registers: x2 to x3, w2 to w30
  * clobbered flag groups: FG0
  */
 ed25519_sign_stage1:
@@ -353,29 +450,6 @@ ed25519_sign_stage1:
        [w15:w14] <= mu
        MOD <= L */
   jal      x1, sc_init
-
-  /* Load the 256-bit lower half of the precomputed hash h.
-       w16 <= h[255:0] */
-  li       x2, 16
-  la       x3, ed25519_hash_h_low
-  bn.lid   x2, 0(x3)
-
-  /* Recover the secret scalar s from h.
-       w16 <= s */
-  jal      x1, sc_clamp
-
-  /* Reduce s modulo L. Note: s is only 255 bits, so this full 512-bit
-     reduction could be much faster (in fact, since clamping guarantees 3L < s
-     < 4L, we can simply subtract 3L instead). However, this routine is not
-     performance-critical, so we use the generalized routine and set the high
-     bits to zero.
-       w18 <= [w31,w16] mod L = s mod L */
-  bn.mov   w17, w31
-  jal      x1, sc_reduce
-
-  /* Save s for later.
-       w5 <= s mod L */
-  bn.mov   w5, w18
 
   /* Load the 512-bit precomputed hash r.
        [w17:w16] <= r */
@@ -390,42 +464,26 @@ ed25519_sign_stage1:
   jal      x1, sc_reduce
 
   /* Save r for later.
-       w28 <= w18 = r mod L */
-  bn.mov   w28, w18
+       w5 <= w18 = r mod L */
+  bn.mov   w5, w18
 
-  /* Set up for field arithmetic in preparation for scalar multiplication.
+  /* Calculate and write encoded public key A (A_) to DMEM.
+       dmem[ed25519_public_key] <= A_
+
+     Furthermore, set up for field arithmetic in preparation for scalar multiplication.
        MOD <= p
-       w19 <= 19 */
-  jal      x1, fe_init
+       w19 <= 19
 
-  /* Initialize curve parameter d.
-       w30 <= dmem[d] = (-121665/121666) mod p */
-  li      x2, 29
-  la      x3, ed25519_d
-  bn.lid  x2, 0(x3)
+     And initialize curve parameter d.
+       w30 <= dmem[d] = (-121665/121666) mod p
 
-  /* Precompute (2*d) mod p in preparation for scalar multiplication.
-       w29 <= (w29 + w29) mod p = (2 * d) mod p */
-  bn.addm  w29, w29, w29
-
-  /* w30 <= 38 */
-  bn.addi w30, w31, 38
-
-  /* Load the base point B (in affine coordinates).
-       w6 <= dmem[ed25519_Bx] = B.x
-       w7 <= dmem[ed25519_By] = B.y */
-  li       x2, 6
-  la       x3, ed25519_Bx
-  bn.lid   x2++, 0(x3)
-  la       x3, ed25519_By
-  bn.lid   x2, 0(x3)
-
-  /* Convert B to extended coordinates.
-       [w9:w6] <= extended(B) = (B.X, B.Y, B.Z, B.T) */
-  jal      x1, affine_to_ext
+     Lastly, load B in extended coordinates.
+       [w9:w6] <= extended(B) = (B.X, B.Y, B.Z, B.T)*/
+  jal      x1, ed25519_gen_public_key
 
   /* Compute the signature point R = [r]B.
-       [w13:w10] <= w28 * [w9:w6] = [r]B */
+       [w13:w10] <= w5 * [w9:w6] = [r]B */
+  bn.mov   w28, w5
   jal      x1, ext_scmul
 
   /* Convert R to affine coordinates.
@@ -440,25 +498,6 @@ ed25519_sign_stage1:
        dmem[ed25519_sig_R] <= w11 = R_ */
   li       x2, 11
   la       x3, ed25519_sig_R
-  bn.sid   x2, 0(x3)
-
-  /* Compute the public key point A = [s]B.
-       [w13:w10] <= w5 * [w9:w6] = [s]B */
-  bn.mov   w28, w5
-  jal      x1, ext_scmul
-
-  /* Convert A to affine coordinates.
-       w10 <= A.x, w11 <= A.y */
-  jal      x1, ext_to_affine
-
-  /* Encode A.
-       w11 <= encode(w10, w11) = A_ */
-  jal      x1, affine_encode
-
-  /* Write encoded A (A_) to DMEM.
-       dmem[ed25519_public_key] <= w11 = A_ */
-  li       x2, 11
-  la       x3, ed25519_public_key
   bn.sid   x2, 0(x3)
 
   ret
