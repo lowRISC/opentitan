@@ -190,6 +190,10 @@ class SymCryptolibFiTest(unittest.TestCase):
             "d": utils.pad_with_zeros(d, 512),
             "n": utils.pad_with_zeros(n, 512),
             "n_len": 256,
+            "err_status": 0,
+            "alerts": [0, 0, 0],
+            "loc_alerts": 0,
+            "ast_alerts": [0, 0],
             "cfg": 0,
         }
 
@@ -261,6 +265,10 @@ class SymCryptolibFiTest(unittest.TestCase):
             "n": utils.pad_with_zeros(n, 512),
             "n_len": 256,
             "sig_len": 256,
+            "err_status": 0,
+            "alerts": [0, 0, 0],
+            "loc_alerts": 0,
+            "ast_alerts": [0, 0],
             "cfg": 0,
         }
 
@@ -311,6 +319,10 @@ class SymCryptolibFiTest(unittest.TestCase):
         expected_result_json = {
             "status": 0,
             "result": True,
+            "err_status": 0,
+            "alerts": [0, 0, 0],
+            "loc_alerts": 0,
+            "ast_alerts": [0, 0],
             "cfg": 0,
         }
 
@@ -343,6 +355,10 @@ class SymCryptolibFiTest(unittest.TestCase):
         expected_result_json = {
             "status": 0,
             "shared_key": shared_secret_point,
+            "err_status": 0,
+            "alerts": [0, 0, 0],
+            "loc_alerts": 0,
+            "ast_alerts": [0, 0],
             "cfg": 0,
         }
 
@@ -379,6 +395,10 @@ class SymCryptolibFiTest(unittest.TestCase):
 
         expected_result_json = {
             "status": 0,
+            "err_status": 0,
+            "alerts": [0, 0, 0],
+            "loc_alerts": 0,
+            "ast_alerts": [0, 0],
             "cfg": 0,
         }
 
@@ -428,6 +448,10 @@ class SymCryptolibFiTest(unittest.TestCase):
         expected_result_json = {
             "status": 0,
             "result": True,
+            "err_status": 0,
+            "alerts": [0, 0, 0],
+            "loc_alerts": 0,
+            "ast_alerts": [0, 0],
             "cfg": 0,
         }
 
@@ -460,6 +484,10 @@ class SymCryptolibFiTest(unittest.TestCase):
         expected_result_json = {
             "status": 0,
             "shared_key": shared_secret_point,
+            "err_status": 0,
+            "alerts": [0, 0, 0],
+            "loc_alerts": 0,
+            "ast_alerts": [0, 0],
             "cfg": 0,
         }
 
@@ -496,6 +524,10 @@ class SymCryptolibFiTest(unittest.TestCase):
 
         expected_result_json = {
             "status": 0,
+            "err_status": 0,
+            "alerts": [0, 0, 0],
+            "loc_alerts": 0,
+            "ast_alerts": [0, 0],
             "cfg": 0,
         }
 
@@ -545,6 +577,10 @@ class SymCryptolibFiTest(unittest.TestCase):
         expected_result_json = {
             "status": 0,
             "result": True,
+            "err_status": 0,
+            "alerts": [0, 0, 0],
+            "loc_alerts": 0,
+            "ast_alerts": [0, 0],
             "cfg": 0,
         }
 

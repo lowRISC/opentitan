@@ -192,6 +192,10 @@ class SymCryptolibFiTest(unittest.TestCase):
                 "status": 0,
                 "data": expected_result,
                 "data_len": data_len,
+                "err_status": 0,
+                "alerts": [0, 0, 0],
+                "loc_alerts": 0,
+                "ast_alerts": [0, 0],
                 "cfg": 0,
             }
 
@@ -248,6 +252,10 @@ class SymCryptolibFiTest(unittest.TestCase):
                 "data_len": data_len,
                 "tag": expected_tag,
                 "tag_len": 16,
+                "err_status": 0,
+                "alerts": [0, 0, 0],
+                "loc_alerts": 0,
+                "ast_alerts": [0, 0],
                 "cfg": 0,
             }
 
@@ -290,6 +298,10 @@ class SymCryptolibFiTest(unittest.TestCase):
                 "status": 0,
                 "data": expected_result,
                 "data_len": 32,
+                "err_status": 0,
+                "alerts": [0, 0, 0],
+                "loc_alerts": 0,
+                "ast_alerts": [0, 0],
                 "cfg": 0,
             }
 
@@ -323,6 +335,10 @@ class SymCryptolibFiTest(unittest.TestCase):
 
         expected_result_json = {
             "status": 0,
+            "err_status": 0,
+            "alerts": [0, 0, 0],
+            "loc_alerts": 0,
+            "ast_alerts": [0, 0],
             "cfg": 0,
         }
 
@@ -341,6 +357,10 @@ class SymCryptolibFiTest(unittest.TestCase):
 
         expected_result_json = {
             "status": 0,
+            "err_status": 0,
+            "alerts": [0, 0, 0],
+            "loc_alerts": 0,
+            "ast_alerts": [0, 0],
             "cfg": 0,
         }
 
