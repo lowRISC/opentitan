@@ -464,7 +464,12 @@ autogen_cryptotest_header(
 opentitan_test(
     name = "ed25519_functest",
     srcs = ["ed25519_functest.c"],
-    exec_env = CRYPTOTEST_EXEC_ENVS,
+    exec_env = dicts.add(
+        CRYPTOTEST_EXEC_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+        },
+    ),
     verilator = verilator_params(
         timeout = "eternal",
         # This test can take > 60 minutes, so mark it manual as it shouldn't
