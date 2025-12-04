@@ -56,11 +56,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
         cfg.chip_vif.aon_clk_por_rst_if.wait_clks(1);
         if (cfg.chip_vif.signal_probe_pwrmgr_light_reset_req(
               .kind(dv_utils_pkg::SignalProbeSample))) begin
-          int unsigned clks = $urandom_range(24, 5);
-          `uvm_info(`gfn, $sformatf("Supplying external reset request of %0d cycle(s)", clks),
-                    UVM_MEDIUM)
-          // Apply an extended reset signal of sufficient duration to pass through the filter.
-          apply_soc_reset_request(clks);
+          apply_soc_reset_ack();
         end
       end else begin
         @(posedge cfg.chip_vif.aon_clk_por_rst_if.rst_n);
@@ -96,6 +92,17 @@ class chip_sw_base_vseq extends chip_base_vseq;
     void'(cfg.chip_vif.signal_probe_soc_rst_req_async(.kind(dv_utils_pkg::SignalProbeRelease)));
     // Wait for at least 5 AON clock cycles to ensure the reset request is deasserted.
     cfg.chip_vif.aon_clk_por_rst_if.wait_clks(clks);
+  endtask
+
+  // Acknowledge the external reset request.
+  //
+  virtual task apply_soc_reset_ack();
+    void'(cfg.chip_vif.signal_probe_ext_rst_ack(.kind(dv_utils_pkg::SignalProbeForce),
+                                                      .value(1'b1)));
+    // Acknowledge the external SoC reset request.
+    cfg.chip_vif.aon_clk_por_rst_if.wait_clks(1);
+    // Deactivate the reset acknowledgment.
+    void'(cfg.chip_vif.signal_probe_ext_rst_ack(.kind(dv_utils_pkg::SignalProbeRelease)));
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");

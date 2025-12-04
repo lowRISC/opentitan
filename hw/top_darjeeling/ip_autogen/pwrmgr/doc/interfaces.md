@@ -13,6 +13,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | Port Name      | Package::Struct              | Type    | Act   |   Width | Description   |
 |:---------------|:-----------------------------|:--------|:------|--------:|:--------------|
 | boot_status    | pwrmgr_pkg::pwr_boot_status  | uni     | req   |       1 |               |
+| ext_rst_ack    | logic                        | uni     | rcv   |       1 |               |
 | pwr_ast        | pwrmgr_pkg::pwr_ast          | req_rsp | req   |       1 |               |
 | pwr_rst        | pwrmgr_pkg::pwr_rst          | req_rsp | req   |       1 |               |
 | pwr_clk        | pwrmgr_pkg::pwr_clk          | req_rsp | req   |       1 |               |

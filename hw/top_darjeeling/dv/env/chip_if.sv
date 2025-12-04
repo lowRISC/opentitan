@@ -999,6 +999,11 @@ interface chip_if;
                                    `TOP_HIER.soc_rst_req_async_i,
                                    1)
 
+  // Signal probe function for `ext_rst_ack_i` of TOP_HIER.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_ext_rst_ack,
+                                   `TOP_HIER.pwrmgr_ext_rst_ack_i,
+                                   1)
+
   // Signal probe function for `soc_wkup_async_i` of TOP_HIER.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_wkup_async,
                                    `TOP_HIER.soc_wkup_async_i,

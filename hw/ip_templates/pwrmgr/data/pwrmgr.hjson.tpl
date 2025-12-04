@@ -150,6 +150,12 @@
       act:     "req",
       package: "pwrmgr_pkg",
     },
+    { struct:  "logic",
+      type:    "uni",
+      name:    "ext_rst_ack",
+      act:     "rcv",
+      package: "",
+    },
 % endif
     { struct:  "pwr_ast",
       type:    "req_rsp",

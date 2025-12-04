@@ -67,6 +67,7 @@ module pwrmgr
   input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
   input  lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
 % if wait_for_external_reset:
+  input  logic ext_rst_ack_i,
   output pwr_boot_status_t    boot_status_o,
 % endif
   // peripherals wakeup and reset requests
@@ -557,14 +558,9 @@ module pwrmgr
 % if wait_for_external_reset:
   logic strap_sampled;
   logic internal_reset_req;
-  logic ext_reset_req;
 
   // Make the SoC see what the slow FSM sees to to generate the light_reset to the SoC
   assign internal_reset_req = |slow_peri_reqs_masked.rstreqs;
-
-  // The MSB of `slow_peri_reqs.rstreqs` is the external reset request. We want it to always
-  // propagate, in order to continue from the Reset Wait state in the fast FSM.
-  assign ext_reset_req              = slow_peri_reqs.rstreqs[NumRstReqs-1];
 % endif
 
   for (genvar i = 0; i < NumWkups; i++) begin : gen_wakeup_status
@@ -677,7 +673,7 @@ module pwrmgr
     .clr_hint_o        (clr_hint),
 % if wait_for_external_reset:
     .int_reset_req_i   (internal_reset_req),
-    .ext_reset_req_i   (ext_reset_req),
+    .ext_rst_ack_i     (ext_rst_ack_i),
 % endif
 
     // rstmgr
