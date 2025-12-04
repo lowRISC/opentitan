@@ -31,7 +31,7 @@ typedef enum otcrypto_eddsa_sign_mode {
 /**
  * Generates a key pair for Ed25519.
  *
- * The caller should allocate and partially populate the blinded key struct,
+ * The caller should allocate and partially populate the public key struct,
  * including populating the key configuration and allocating space for the
  * keyblob. For a hardware-backed key, use the private key handle returned by
  * `otcrypto_hw_backed_key`. Otherwise, the mode should indicate Ed25519 and the
@@ -43,8 +43,9 @@ typedef enum otcrypto_eddsa_sign_mode {
  * @return Result of the Ed25519 key generation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ed25519_keygen(otcrypto_blinded_key_t *private_key,
-                                          otcrypto_unblinded_key_t *public_key);
+otcrypto_status_t otcrypto_ed25519_keygen(
+    const otcrypto_unblinded_key_t *private_key,
+    otcrypto_unblinded_key_t *public_key);
 
 /**
  * Generates an Ed25519 digital signature.
@@ -88,12 +89,12 @@ otcrypto_status_t otcrypto_ed25519_verify(
  *
  * See `otcrypto_ed25519_keygen` for requirements on input values.
  *
- * @param private_key Destination structure for private key, or key handle.
+ * @param private_key Source structure for private key, or key handle.
  * @return Result of asynchronous Ed25519 keygen start operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_keygen_async_start(
-    const otcrypto_blinded_key_t *private_key);
+    const otcrypto_unblinded_key_t *private_key);
 
 /**
  * Finalizes asynchronous key generation for Ed25519.
@@ -102,16 +103,12 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_start(
  *
  * May block until the operation is complete.
  *
- * The caller should ensure that the private key configuration matches that
- * passed to the `_start` function.
- *
- * @param[out] private_key Pointer to the blinded private key struct.
  * @param[out] public_key Pointer to the unblinded public key struct.
  * @return Result of asynchronous ed25519 keygen finalize operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
-    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
+    otcrypto_unblinded_key_t *public_key);
 
 /**
  * Starts asynchronous signature generation for Ed25519.
