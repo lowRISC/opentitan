@@ -144,9 +144,12 @@ static status_t ed25519_message_prehash(otcrypto_eddsa_sign_mode_t sign_mode,
 }
 
 otcrypto_status_t otcrypto_ed25519_keygen(
-    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
-  // TODO: Ed25519 is not yet implemented.
-  return OTCRYPTO_NOT_IMPLEMENTED;
+    const otcrypto_unblinded_key_t *private_key,
+    otcrypto_unblinded_key_t *public_key) {
+  // Start the execution of the key generation.
+  HARDENED_TRY(otcrypto_ed25519_keygen_async_start(private_key));
+  // Finish the keygen operation and get the public key.
+  return otcrypto_ed25519_keygen_async_finalize(public_key);
 }
 
 otcrypto_status_t otcrypto_ed25519_sign(
@@ -209,15 +212,39 @@ otcrypto_status_t otcrypto_ed25519_verify(
 }
 
 otcrypto_status_t otcrypto_ed25519_keygen_async_start(
-    const otcrypto_blinded_key_t *private_key) {
-  // TODO: Ed25519 is not yet implemented.
-  return OTCRYPTO_NOT_IMPLEMENTED;
+    const otcrypto_unblinded_key_t *private_key) {
+  // Check that the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
+
+  // Check the private key.
+  HARDENED_TRY(ed25519_key_check(private_key));
+
+  // Instantiate struct to store the secret key digest.
+  uint32_t key_digest_data[kCurve25519HashWords];
+  otcrypto_hash_digest_t key_digest = {
+      .data = key_digest_data,
+      .len = ARRAYSIZE(key_digest_data),
+  };
+
+  // Compute hash_h_low.
+  otcrypto_const_byte_buf_t key_buf = {
+      .data = (const uint8_t *const)private_key->key,
+      .len = private_key->key_length};
+  HARDENED_TRY(otcrypto_sha2_512(key_buf, &key_digest));
+
+  // Start the OTBN keygen app.
+  HARDENED_TRY(curve25519_keygen_start(key_digest.data));
+
+  return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
-    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
-  // TODO: Ed25519 is not yet implemented.
-  return OTCRYPTO_NOT_IMPLEMENTED;
+    otcrypto_unblinded_key_t *public_key) {
+  // Finalize the keygen operation and retrieve the public key.
+  HARDENED_TRY(curve25519_keygen_finalize(public_key->key));
+  // Calculate the public key checksum.
+  public_key->checksum = integrity_unblinded_checksum(public_key);
+  return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
