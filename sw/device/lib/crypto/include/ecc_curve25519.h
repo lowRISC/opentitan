@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_ED25519_H_
-#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_ED25519_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_ECC_CURVE25519_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_ECC_CURVE25519_H_
 
 #include "datatypes.h"
 
@@ -57,9 +57,9 @@ otcrypto_status_t otcrypto_ed25519_keygen(otcrypto_blinded_key_t *private_key,
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign(
-    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *private_key,
     otcrypto_const_byte_buf_t input_message,
-    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t signature);
+    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature);
 
 /**
  * Verifies an Ed25519 signature.
@@ -121,14 +121,36 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
  * @param private_key Pointer to the blinded private key struct.
  * @param input_message Input message to be signed.
  * @param sign_mode EdDSA signature hashing mode.
- * @param[out] signature Pointer to the EdDSA signature to get (r) value.
+ * @param key_digest[out] Pointer to the key digest.
+ * @param msg_digest[out] Pointer to the msg digest.
  * @return Result of async Ed25519 start operation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ed25519_sign_async_start(
-    const otcrypto_blinded_key_t *private_key,
+otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
+    const otcrypto_unblinded_key_t *private_key,
     otcrypto_const_byte_buf_t input_message,
-    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t signature);
+    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_hash_digest_t *key_digest,
+    otcrypto_hash_digest_t *msg_digest);
+
+/**
+ * Starts asynchronous signature generation for Ed25519.
+ *
+ * See `otcrypto_ed25519_sign` for requirements on input values.
+ *
+ * @param private_key Pointer to the blinded private key struct.
+ * @param input_message Input message to be signed.
+ * @param sign_mode EdDSA signature hashing mode.
+ * @param key_digest Pointer to the key digest.
+ * @param msg_digest Pointer to the msg digest.
+ * @param signature[out] Pointer to the EdDSA signature to get (R) value.
+ * @return Result of async Ed25519 start operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
+    const otcrypto_unblinded_key_t *private_key,
+    otcrypto_const_byte_buf_t input_message,
+    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature,
+    otcrypto_hash_digest_t *key_digest, otcrypto_hash_digest_t *msg_digest);
 
 /**
  * Finalizes asynchronous signature generation for Ed25519.
@@ -137,12 +159,13 @@ otcrypto_status_t otcrypto_ed25519_sign_async_start(
  *
  * May block until the operation is complete.
  *
- * @param[out] signature Pointer to the EdDSA signature to get (s) value.
+ * @param[inout] signature Pointer to the EdDSA signature containing (R) to get
+ * (s) value.
  * @return Result of async Ed25519 finalize operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
-    otcrypto_word32_buf_t signature);
+    otcrypto_word32_buf_t *signature);
 
 /**
  * Starts asynchronous signature verification for Ed25519.
@@ -185,4 +208,4 @@ otcrypto_status_t otcrypto_ed25519_verify_async_finalize(
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_ED25519_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_ECC_CURVE25519_H_
