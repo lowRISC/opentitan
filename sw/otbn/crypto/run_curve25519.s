@@ -23,6 +23,7 @@
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.
  */
+.equ MODE_KEYGEN, 0x6CE
 .equ MODE_SIGN_STAGE1, 0x77D
 .equ MODE_SIGN_STAGE2, 0x397
 .equ MODE_VERIFY, 0x5F2
@@ -30,6 +31,7 @@
 /**
  * Make the mode constants visible to Ibex.
  */
+.globl MODE_KEYGEN
 .globl MODE_SIGN_STAGE1
 .globl MODE_SIGN_STAGE2
 .globl MODE_VERIFY
@@ -40,6 +42,9 @@ start:
   /* Read the mode and tail-call the requested operation. */
   la    x2, mode
   lw    x2, 0(x2)
+
+  addi  x3, x0, MODE_KEYGEN
+  beq   x2, x3, ecdsa_keygen
 
   addi  x3, x0, MODE_SIGN_STAGE1
   beq   x2, x3, ecdsa_sign_compute_r
@@ -54,6 +59,32 @@ start:
   unimp
   unimp
   unimp
+
+/**
+ * Ed25519 key generation operation.
+ * Generate the encoded public key A.
+ *
+ * Returns A_ (encoded public key point).
+ *
+ * @param[in]  dmem[ed25519_hash_h_low]: lower half of precomputed hash h, 256 bits
+ * @param[out] dmem[ed25519_public_key]: encoded public key A_, 256 bits
+ *
+ * clobbered registers: x2 to x3, w2 to w31
+ * clobbered flag groups: FG0
+ */
+ecdsa_keygen:
+  /* Zeroize w31 */
+  bn.xor   w31, w31, w31
+
+  /* Set up for scalar arithmetic.
+       [w15:w14] <= mu
+       MOD <= L */
+  jal      x1, sc_init
+
+  /* Generate the public key. */
+  jal      x1, ed25519_gen_public_key
+
+  ecall
 
 /**
  * Ed25519 signature generation operation (first stage).
