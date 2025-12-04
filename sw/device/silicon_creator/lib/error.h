@@ -57,6 +57,7 @@ enum module_ {
   kModulePersoTlv =        MODULE_CODE('P', 'T'),
   kModuleDice =            MODULE_CODE('D', 'C'),
   kModulePwrmgr =          MODULE_CODE('P', 'M'),
+  kModuleGpio =            MODULE_CODE('G', 'I'),
   // clang-format on
 };
 
@@ -243,6 +244,8 @@ enum module_ {
   \
   X(kErrorPwrmgrUnknownRequestSource, ERROR_(1, kModulePwrmgr, kInvalidArgument)), \
   X(kErrorPwrmgrInvalidRequestType,   ERROR_(2, kModulePwrmgr, kInvalidArgument)), \
+  \
+  X(kErrorGpioInvalidPin,             ERROR_(0, kModuleGpio, kInvalidArgument)), \
   \
   /* This comment prevent clang from trying to format the macro. */
 
