@@ -165,26 +165,34 @@ typedef struct otcrypto_interface_t {
                                  otcrypto_hash_digest_t *);
 
   // ED25519
-  otcrypto_status_t (*ed25519_keygen)(otcrypto_blinded_key_t *,
+  otcrypto_status_t (*ed25519_keygen)(const otcrypto_unblinded_key_t *,
                                       otcrypto_unblinded_key_t *);
-  otcrypto_status_t (*ed25519_sign)(const otcrypto_blinded_key_t *,
+  otcrypto_status_t (*ed25519_sign)(const otcrypto_unblinded_key_t *,
                                     otcrypto_const_byte_buf_t,
                                     otcrypto_eddsa_sign_mode_t,
-                                    otcrypto_word32_buf_t);
+                                    otcrypto_word32_buf_t *);
   otcrypto_status_t (*ed25519_verify)(const otcrypto_unblinded_key_t *,
                                       otcrypto_const_byte_buf_t,
                                       otcrypto_eddsa_sign_mode_t,
                                       otcrypto_const_word32_buf_t,
                                       hardened_bool_t *);
   otcrypto_status_t (*ed25519_keygen_async_start)(
-      const otcrypto_blinded_key_t *);
+      const otcrypto_unblinded_key_t *);
   otcrypto_status_t (*ed25519_keygen_async_finalize)(
-      otcrypto_blinded_key_t *, otcrypto_unblinded_key_t *);
+      otcrypto_unblinded_key_t *);
   otcrypto_status_t (*ed25519_sign_async_start)(const otcrypto_blinded_key_t *,
                                                 otcrypto_const_byte_buf_t,
                                                 otcrypto_eddsa_sign_mode_t,
                                                 otcrypto_word32_buf_t);
-  otcrypto_status_t (*ed25519_sign_async_finalize)(otcrypto_word32_buf_t);
+  otcrypto_status_t (*ed25519_sign_async_part1_start)(
+      const otcrypto_unblinded_key_t *, otcrypto_const_byte_buf_t,
+      otcrypto_eddsa_sign_mode_t, otcrypto_hash_digest_t *,
+      otcrypto_hash_digest_t *);
+  otcrypto_status_t (*ed25519_sign_async_part2_start)(
+      const otcrypto_unblinded_key_t *, otcrypto_const_byte_buf_t,
+      otcrypto_eddsa_sign_mode_t, otcrypto_word32_buf_t *,
+      otcrypto_hash_digest_t *, otcrypto_hash_digest_t *);
+  otcrypto_status_t (*ed25519_sign_async_finalize)(otcrypto_word32_buf_t *);
   otcrypto_status_t (*ed25519_verify_async_start)(
       const otcrypto_unblinded_key_t *, otcrypto_const_byte_buf_t,
       otcrypto_eddsa_sign_mode_t, otcrypto_const_word32_buf_t);
