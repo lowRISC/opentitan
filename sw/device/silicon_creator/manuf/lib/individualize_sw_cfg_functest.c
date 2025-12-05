@@ -125,34 +125,34 @@ static status_t check_otp_sw_cfg_digest(dif_otp_ctrl_partition_t partition) {
   // Compute expected_digest.
   hmac_sha256_init();
   const unsigned char *const kOtpSwCfgWindowBase =
-      (unsigned char *)TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+      (const unsigned char *)TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
       OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET;
   switch (partition) {
-    case kDifOtpCtrlPartitionCreatorSwCfg: {
+    case kDifOtpCtrlPartitionCreatorSwCfg:
       hmac_sha256_update(kOtpSwCfgWindowBase +
                              OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET,
                          OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
                              OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE -
                              OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_SIZE);
-    } break;
-    case kDifOtpCtrlPartitionOwnerSwCfg: {
+      break;
+    case kDifOtpCtrlPartitionOwnerSwCfg:
       hmac_sha256_update(
           kOtpSwCfgWindowBase + OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET,
           OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
               OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE);
-    } break;
-    case kDifOtpCtrlPartitionRotCreatorAuthCodesign: {
+      break;
+    case kDifOtpCtrlPartitionRotCreatorAuthCodesign:
       hmac_sha256_update(
           kOtpSwCfgWindowBase + OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET,
           OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
               OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE);
-    } break;
-    case kDifOtpCtrlPartitionRotCreatorAuthState: {
+      break;
+    case kDifOtpCtrlPartitionRotCreatorAuthState:
       hmac_sha256_update(
           kOtpSwCfgWindowBase + OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_OFFSET,
           OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
               OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE);
-    } break;
+      break;
     default:
       return INVALID_ARGUMENT();
   }
