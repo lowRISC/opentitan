@@ -20,6 +20,7 @@
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/otbn_randomness_impl.h"
 
@@ -869,6 +870,10 @@ status_t execute_test(void) {
     // compliant mode mode
     CHECK_STATUS_OK(configure_realistic_fips_health_tests());
 
+    // Mark that we expect the recoverable alert to be generated in this region.
+    CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+        kTopEarlgreyAlertIdEntropySrcRecovAlert));
+
     // Step 3: Enable ENTROPY_SRC in FIPS mode
     CHECK_STATUS_OK(enable_realistic_entropy_src_fips_mode(window_sizes[i]));
 
@@ -912,6 +917,7 @@ status_t execute_test(void) {
         "Step 11 and Step 12:Configure a low alert threshold value in the "
         "ALERT_THRESHOLD and enable entropy_src. iter = %d",
         iter);
+
     CHECK_STATUS_OK(set_threshold_and_enable_stringent_entropy_src_fips_mode());
 
     //  Wait for Entropy Source startup tests to complete
@@ -946,6 +952,8 @@ status_t execute_test(void) {
       LOG_ERROR("wait_for_recoverable_alert() error=0x%x", st.value);
       return INTERNAL();
     }
+    CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+        kTopEarlgreyAlertIdEntropySrcRecovAlert));
     CHECK_STATUS_OK(print_entropy_src_state(&entropy_src));
 
     // Step 17 Verify that various entropy consuming endpoints hang as
