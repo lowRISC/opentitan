@@ -33,7 +33,9 @@ impl fmt::Debug for SpxSecretKey {
     }
 }
 
-#[derive(Default, Debug, Clone, Copy, EnumString, Display, Serialize, Deserialize)]
+#[derive(
+    Default, Debug, Clone, Copy, PartialEq, Eq, EnumString, Display, Serialize, Deserialize,
+)]
 #[strum(ascii_case_insensitive)]
 pub enum SpxDomain {
     None,
