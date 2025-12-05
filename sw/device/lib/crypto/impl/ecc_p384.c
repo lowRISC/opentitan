@@ -10,8 +10,8 @@
 #include "sw/device/lib/crypto/impl/ecc/p384.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
-#include "sw/device/lib/crypto/impl/security_config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/security_config.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '3', '8')
@@ -125,7 +125,8 @@ otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_start(
   }
 
   // Check the security config of the device.
-  HARDENED_TRY(security_config_check(private_key->config.security_level));
+  HARDENED_TRY(
+      otcrypto_security_config_check(private_key->config.security_level));
 
   // Check the key mode.
   if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP384) {
@@ -308,7 +309,8 @@ static otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start_setup(
   }
 
   // Check the security config of the device.
-  HARDENED_TRY(security_config_check(private_key->config.security_level));
+  HARDENED_TRY(
+      otcrypto_security_config_check(private_key->config.security_level));
 
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
