@@ -14,12 +14,56 @@
 
 static const dt_rv_core_ibex_t kRvCoreIbexDt = kDtRvCoreIbex;
 
+void ibex_mcycle_zero(void) {
+  CSR_WRITE(CSR_REG_MCYCLE, 0);
+  CSR_WRITE(CSR_REG_MCYCLEH, 0);
+}
+
+uint32_t ibex_mcycle32(void) {
+  uint32_t val;
+  CSR_READ(CSR_REG_MCYCLE, &val);
+  return val;
+}
+
+uint64_t ibex_mcycle(void) {
+  uint32_t lo, hi, hi2;
+  do {
+    CSR_READ(CSR_REG_MCYCLEH, &hi);
+    CSR_READ(CSR_REG_MCYCLE, &lo);
+    CSR_READ(CSR_REG_MCYCLEH, &hi2);
+  } while (hi != hi2);
+  return ((uint64_t)hi << 32) | lo;
+}
+
+uint64_t ibex_time_to_cycles(uint64_t time_us) {
+  return to_cpu_cycles(time_us);
+}
+
 /**
  * Base address of the rv_core_ibex registers.
  *
  */
 static inline uint32_t rv_core_ibex_base(void) {
   return dt_rv_core_ibex_reg_block(kRvCoreIbexDt, kDtRvCoreIbexRegBlockCfg);
+}
+
+/**
+ * Blocks until data is ready in the RND register.
+ */
+static void wait_rnd_valid(void) {
+  while (true) {
+    uint32_t reg = abs_mmio_read32(rv_core_ibex_base() +
+                                   RV_CORE_IBEX_RND_STATUS_REG_OFFSET);
+    if (bitfield_bit32_read(reg, RV_CORE_IBEX_RND_STATUS_RND_DATA_VALID_BIT)) {
+      return;
+    }
+  }
+}
+
+uint32_t ibex_rnd32_read(void) {
+  wait_rnd_valid();
+  return abs_mmio_read32(rv_core_ibex_base() +
+                         RV_CORE_IBEX_RND_DATA_REG_OFFSET);
 }
 
 uint32_t ibex_fpga_version(void) {
@@ -162,10 +206,3 @@ void ibex_clear_nmi(ibex_nmi_source_t nmi_src) {
   abs_mmio_write32(rv_core_ibex_base() + RV_CORE_IBEX_NMI_STATE_REG_OFFSET,
                    nmi_src);
 }
-
-// `extern` declarations to give the inline functions in the corresponding
-// header a link location.
-extern void ibex_mcycle_zero(void);
-extern uint32_t ibex_mcycle32(void);
-extern uint64_t ibex_mcycle(void);
-extern uint64_t ibex_time_to_cycles(uint64_t time_us);

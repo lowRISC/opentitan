@@ -121,7 +121,6 @@ cc_library(
     ],
     deps = [
         ":entropy",
-        ":rv_core_ibex",
         "//hw/top:dt_kmac",
         "//hw/top:kmac_c_regs",
         "//sw/device/lib/base:abs_mmio",
@@ -129,6 +128,7 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/impl:status",
+        "//sw/device/silicon_creator/lib/drivers:ibex",
     ],
 )
 
@@ -213,8 +213,8 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:status",
+        "//sw/device/silicon_creator/lib/drivers:ibex",
     ],
 )
 
@@ -238,6 +238,7 @@ dual_cc_library(
         shared = [
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/crypto/impl:status",
+            "//sw/device/silicon_creator/lib/drivers:ibex",
         ],
     ),
 )
@@ -250,14 +251,11 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
-        ":rv_core_ibex",
-        "//hw/top:rv_core_ibex_c_regs",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:csr",
         "//sw/device/lib/base:status",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:ibex",
     ],
 )
 

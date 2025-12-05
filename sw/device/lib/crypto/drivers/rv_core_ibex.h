@@ -45,16 +45,6 @@ OT_WARN_UNUSED_RESULT
 hardened_bool_t ibex_check_security_config(void);
 
 /**
- * Get random data from the EDN0 interface.
- *
- * Important: this function will hang if the entropy complex is not
- * initialized. Callers are responsible for checking first.
- *
- * @return 32 bits of randomness from EDN0.
- */
-uint32_t ibex_rnd32_read(void);
-
-/**
  * Write a random value into x5...x7 and x9...x31.
  *
  * To avoid having SCA sensitive variables in the register file, this function

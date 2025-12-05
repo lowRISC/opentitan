@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/pwrmgr.h"
 
+#include "hw/top/dt/dt_aon_timer.h"
 #include "hw/top/dt/dt_api.h"
 #include "hw/top/dt/dt_pwrmgr.h"
 #include "sw/device/lib/base/abs_mmio.h"
@@ -21,6 +22,29 @@ enum {
   kSyncConfig = (1 << PWRMGR_CFG_CDC_SYNC_SYNC_BIT),
 };
 
+/**
+ * A power manager request type.
+ */
+typedef enum pwrmgr_req_type {
+  kPwrmgrReqTypeWakeup,
+  kPwrmgrReqTypeReset,
+} pwr_mgr_req_type_t;
+
+/**
+ * Obtain a bit index of wakeup/reset request for a device and a signal.
+ *
+ * Given a module instance (identified by its instance ID) and a wakeup
+ * or reset request index from this module, return the source bit index
+ * that, once shifted into a bitmask, can be programmed into the pwrmgr
+ * `RESET_EN` register.
+ *
+ * @param req_type Request type (wake up or reset request).
+ * @param inst_id A DT instance ID.
+ * @param signal_idx Signal index.
+ * @param[out] source_idx The source index corresponding to the wakeup or reset
+ * requested.
+ * @return `kErrorOk` if a signal matches, or a `kErrorPwrmgr` error otherwise.
+ */
 OT_WARN_UNUSED_RESULT
 rom_error_t pwrmgr_find_request_source(pwr_mgr_req_type_t req_type,
                                        dt_instance_id_t inst_id,
@@ -48,6 +72,22 @@ rom_error_t pwrmgr_find_request_source(pwr_mgr_req_type_t req_type,
   } else {
     return kErrorPwrmgrInvalidRequestType;
   }
+}
+
+void pwrmgr_enable_watchdog_reset_request(void) {
+  uint32_t pwrmgr_base = dt_pwrmgr_primary_reg_block(kDtPwrmgrAon);
+  uint32_t enabled_resets = 0;
+  size_t reset_source = 0;
+
+  // Tell pwrmgr we want watchdog reset events to reset the chip.
+  HARDENED_CHECK_EQ(
+      pwrmgr_find_request_source(kPwrmgrReqTypeReset,
+                                 dt_aon_timer_instance_id(kDtAonTimerAon),
+                                 kDtAonTimerResetReqAonTimer, &reset_source),
+      kErrorOk);
+  enabled_resets = bitfield_bit32_write(0, reset_source, true);
+  sec_mmio_write32(pwrmgr_base + PWRMGR_RESET_EN_REG_OFFSET, enabled_resets);
+  pwrmgr_cdc_sync(1);
 }
 
 void pwrmgr_cdc_sync(uint32_t n) {

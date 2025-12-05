@@ -11,6 +11,7 @@
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_pwrmgr.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/aon_timer_regs.h"
@@ -24,13 +25,7 @@ using ::testing::Return;
 
 class WatchdogTest : public rom_test::RomTest {
  protected:
-  void ExpectCdcSync() {
-    // The pwrmgr_cdc_sync function reads to check that the sync bit is clear,
-    // writes to the sync bit and then reads back waiting for it to clear.
-    EXPECT_ABS_READ32(pwrmgr_ + PWRMGR_CFG_CDC_SYNC_REG_OFFSET, 0);
-    EXPECT_ABS_WRITE32(pwrmgr_ + PWRMGR_CFG_CDC_SYNC_REG_OFFSET, 1);
-    EXPECT_ABS_READ32(pwrmgr_ + PWRMGR_CFG_CDC_SYNC_REG_OFFSET, 0);
-  }
+  void ExpectCdcSync() { EXPECT_CALL(pwrmgr_, CdcSync(1)).WillOnce(Return()); }
   /**
    * Sets up expectations for `watchdog_init()`.
    *
@@ -44,11 +39,7 @@ class WatchdogTest : public rom_test::RomTest {
             OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES_OFFSET))
         .WillOnce(Return(kBiteThreshold));
 
-    EXPECT_SEC_WRITE32(pwrmgr_ + PWRMGR_RESET_EN_REG_OFFSET,
-                       {
-                           {PWRMGR_RESET_EN_EN_1_BIT, true},
-                       });
-    ExpectCdcSync();
+    EXPECT_CALL(pwrmgr_, EnableWatchdogResetRequest).WillOnce(Return());
     EXPECT_SEC_WRITE32(wdog_ + AON_TIMER_WDOG_CTRL_REG_OFFSET,
                        0 << AON_TIMER_WDOG_CTRL_ENABLE_BIT);
     EXPECT_ABS_WRITE32(wdog_ + AON_TIMER_WDOG_COUNT_REG_OFFSET, 0);
@@ -61,11 +52,11 @@ class WatchdogTest : public rom_test::RomTest {
     ExpectCdcSync();
   }
 
-  uint32_t pwrmgr_ = TOP_EARLGREY_PWRMGR_AON_BASE_ADDR;
   uint32_t wdog_ = TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR;
   rom_test::MockAbsMmio abs_;
   rom_test::MockSecMmio sec_;
   rom_test::MockOtp otp_;
+  rom_test::MockPwrmgr pwrmgr_;
 };
 
 TEST_F(WatchdogTest, InitializeNoOtp) {
