@@ -124,10 +124,6 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_start(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Check the security config of the device.
-  HARDENED_TRY(
-      otcrypto_security_config_check(private_key->config.security_level));
-
   // Check the key mode.
   if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256) {
     return OTCRYPTO_BAD_ARGS;
@@ -303,10 +299,6 @@ static otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start_setup(
       message_digest.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Check the security config of the device.
-  HARDENED_TRY(
-      otcrypto_security_config_check(private_key->config.security_level));
 
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
