@@ -198,6 +198,33 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "gpio",
+    srcs = ["gpio.c"],
+    hdrs = ["gpio.h"],
+    deps = [
+        "//hw/top:dt",
+        "//hw/top:gpio_c_regs",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)
+
+cc_test(
+    name = "gpio_unittest",
+    srcs = ["gpio_unittest.cc"],
+    deps = [
+        ":gpio",
+        "//hw/top:dt",
+        "//hw/top:gpio_c_regs",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
 dual_cc_library(
     name = "hmac",
     srcs = dual_inputs(
