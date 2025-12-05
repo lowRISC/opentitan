@@ -8,7 +8,7 @@ It has been generated with ./util/topgen.py -t hw/top_darjeeling/data/top_darjee
 |           [VENDOR_TEST_DIGEST](#Reg_vendor_test_digest_0)           |      VENDOR_TEST      |         no         |
 |        [CREATOR_SW_CFG_DIGEST](#Reg_creator_sw_cfg_digest_0)        |    CREATOR_SW_CFG     |         no         |
 |          [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)          |     OWNER_SW_CFG      |         no         |
-|      [ROT_CREATOR_AUTH_DIGEST](#Reg_rot_creator_auth_digest_0)      |   ROT_CREATOR_AUTH    |         no         |
+|  [ROT_CREATOR_IDENTITY_DIGEST](#Reg_rot_creator_identity_digest_0)  | ROT_CREATOR_IDENTITY  |         no         |
 |  [ROT_OWNER_AUTH_SLOT0_DIGEST](#Reg_rot_owner_auth_slot0_digest_0)  | ROT_OWNER_AUTH_SLOT0  |         no         |
 |  [ROT_OWNER_AUTH_SLOT1_DIGEST](#Reg_rot_owner_auth_slot1_digest_0)  | ROT_OWNER_AUTH_SLOT1  |         no         |
 | [PLAT_INTEG_AUTH_SLOT0_DIGEST](#Reg_plat_integ_auth_slot0_digest_0) | PLAT_INTEG_AUTH_SLOT0 |         no         |
@@ -18,8 +18,11 @@ It has been generated with ./util/topgen.py -t hw/top_darjeeling/data/top_darjee
 | [PLAT_OWNER_AUTH_SLOT2_DIGEST](#Reg_plat_owner_auth_slot2_digest_0) | PLAT_OWNER_AUTH_SLOT2 |         no         |
 | [PLAT_OWNER_AUTH_SLOT3_DIGEST](#Reg_plat_owner_auth_slot3_digest_0) | PLAT_OWNER_AUTH_SLOT3 |         no         |
 |             [ROM_PATCH_DIGEST](#Reg_rom_patch_digest_0)             |       ROM_PATCH       |         no         |
+|          [SOC_FUSES_CP_DIGEST](#Reg_soc_fuses_cp_digest_0)          |     SOC_FUSES_CP      |         no         |
+|          [SOC_FUSES_FT_DIGEST](#Reg_soc_fuses_ft_digest_0)          |     SOC_FUSES_FT      |         no         |
 |               [HW_CFG0_DIGEST](#Reg_hw_cfg0_digest_0)               |        HW_CFG0        |        yes         |
 |               [HW_CFG1_DIGEST](#Reg_hw_cfg1_digest_0)               |        HW_CFG1        |        yes         |
+|               [HW_CFG2_DIGEST](#Reg_hw_cfg2_digest_0)               |        HW_CFG2        |        yes         |
 |               [SECRET0_DIGEST](#Reg_secret0_digest_0)               |        SECRET0        |        yes         |
 |               [SECRET1_DIGEST](#Reg_secret1_digest_0)               |        SECRET1        |        yes         |
 |               [SECRET2_DIGEST](#Reg_secret2_digest_0)               |        SECRET2        |        yes         |

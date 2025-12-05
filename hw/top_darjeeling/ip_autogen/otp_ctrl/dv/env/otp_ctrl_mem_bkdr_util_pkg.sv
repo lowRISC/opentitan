@@ -73,8 +73,7 @@ package otp_ctrl_mem_bkdr_util_pkg;
 
   function automatic void otp_write_hw_cfg0_partition(
       mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h,
-      bit [DeviceIdSize*8-1:0] device_id,
-      bit [ManufStateSize*8-1:0] manuf_state
+      bit [DeviceIdSize*8-1:0] device_id
   );
     bit [HwCfg0DigestSize*8-1:0] digest;
     bit [bus_params_pkg::BUS_DW-1:0] partition_data[$];
@@ -82,12 +81,8 @@ package otp_ctrl_mem_bkdr_util_pkg;
     for (int i = 0; i < DeviceIdSize; i += 4) begin
       mem_bkdr_util_h.write32(i + DeviceIdOffset, device_id[i*8+:32]);
     end
-    for (int i = 0; i < ManufStateSize; i += 4) begin
-      mem_bkdr_util_h.write32(i + ManufStateOffset, manuf_state[i*8+:32]);
-    end
 
     partition_data = {<<32{
-      manuf_state,
       device_id
     }};
     digest = cal_digest(HwCfg0Idx, partition_data);
@@ -96,7 +91,6 @@ package otp_ctrl_mem_bkdr_util_pkg;
 
   function automatic void otp_write_hw_cfg1_partition(
       mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h,
-      bit [SocDbgStateSize*8-1:0] soc_dbg_state,
       bit [EnCsrngSwAppReadSize*8-1:0] en_csrng_sw_app_read,
       bit [EnSramIfetchSize*8-1:0] en_sram_ifetch
   );
@@ -105,20 +99,39 @@ package otp_ctrl_mem_bkdr_util_pkg;
     bit [bus_params_pkg::BUS_DW-1:0] concat_data[$];
     bit [31:0] word;
 
-    for (int i = 0; i < SocDbgStateSize; i += 4) begin
-      mem_bkdr_util_h.write32(i + SocDbgStateOffset, soc_dbg_state[i*8+:32]);
-      concat_data.push_front(soc_dbg_state[i*8+:32]);
-    end
     word = {
       en_sram_ifetch,
       en_csrng_sw_app_read
     };
-    mem_bkdr_util_h.write32(1 + EnCsrngSwAppReadOffset, word);
+    mem_bkdr_util_h.write32(0 + EnCsrngSwAppReadOffset, word);
     concat_data.push_front(word);
 
     partition_data = {<<32{concat_data}};
     digest = cal_digest(HwCfg1Idx, partition_data);
     mem_bkdr_util_h.write64(HwCfg1DigestOffset, digest);
+  endfunction
+
+  function automatic void otp_write_hw_cfg2_partition(
+      mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h,
+      bit [SocDbgStateSize*8-1:0] soc_dbg_state,
+      bit [ManufStateSize*8-1:0] manuf_state
+  );
+    bit [HwCfg2DigestSize*8-1:0] digest;
+    bit [bus_params_pkg::BUS_DW-1:0] partition_data[$];
+
+    for (int i = 0; i < SocDbgStateSize; i += 4) begin
+      mem_bkdr_util_h.write32(i + SocDbgStateOffset, soc_dbg_state[i*8+:32]);
+    end
+    for (int i = 0; i < ManufStateSize; i += 4) begin
+      mem_bkdr_util_h.write32(i + ManufStateOffset, manuf_state[i*8+:32]);
+    end
+
+    partition_data = {<<32{
+      manuf_state,
+      soc_dbg_state
+    }};
+    digest = cal_digest(HwCfg2Idx, partition_data);
+    mem_bkdr_util_h.write64(HwCfg2DigestOffset, digest);
   endfunction
 
   function automatic void otp_write_secret0_partition(
@@ -260,6 +273,14 @@ package otp_ctrl_mem_bkdr_util_pkg;
   );
     for (int i = 0; i < HwCfg1Size; i += 4) begin
       mem_bkdr_util_h.write32(i + HwCfg1Offset, 32'h0);
+    end
+  endfunction
+
+  function automatic void otp_clear_hw_cfg2_partition(
+      mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h
+  );
+    for (int i = 0; i < HwCfg2Size; i += 4) begin
+      mem_bkdr_util_h.write32(i + HwCfg2Offset, 32'h0);
     end
   endfunction
 

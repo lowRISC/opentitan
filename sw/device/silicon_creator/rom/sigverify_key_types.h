@@ -53,6 +53,49 @@ typedef enum sigverify_key_type {
 } sigverify_key_type_t;
 
 /**
+ * Key roles values in OTP and ROM.
+ *
+ * Encoding generated with
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 7 -n 32 \
+ *     -s 47726686 --language=c
+ *
+ * Minimum Hamming distance: 12
+ * Maximum Hamming distance: 24
+ * Minimum Hamming weight: 13
+ * Maximum Hamming weight: 19
+ */
+typedef enum sigverify_key_role {
+  /**
+   * A key used for signing key bundles.
+   */
+  kSigverifyKeyRoleKeyBundleSigning = 0x2642f8b5,
+  /**
+   * A key used for signing firmware bundles.
+   */
+  kSigverifyKeyRoleFirmwareSigning = 0x1da3b74f,
+  /**
+   * A key used for allowing ownership transfers.
+   */
+  kSigverifyKeyRoleRelinquishOwnership = 0x427c7871,
+  /**
+   * A key used for entering platform debug.
+   */
+  kSigverifyKeyRoleDebugAuthorization = 0x31bf03ba,
+  /**
+   * A key used for signing second stage ROM patches.
+   */
+  kSigverifyKeyRoleRomPatchSigning = 0xeee1ee0e,
+  /**
+   * A key used for signing bootstrap firmwares.
+   */
+  kSigverifyKeyRoleBootstrapFirmwareSigning = 0x918adc12,
+  /**
+   * A key used for signing OTP keys.
+   */
+  kSigverifyKeyRoleOtpKeySigning = 0xbe85349c,
+} sigverify_key_role_t;
+
+/**
  * OTP key state encoding values used in the `ROT_CREATOR_AUTH_STATE` OTP
  * partition.
  *

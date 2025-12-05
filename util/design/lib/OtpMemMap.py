@@ -103,6 +103,30 @@ def _dist_unused(config: Dict, allocated: int):
     _dist_blocks(leftover_blocks, sponge_parts)
 
 
+# distribute unused otp bits within a partition
+def _dist_part_unused(part: Dict):
+    part_size = part["size"]
+    part_allocated_size = 0
+
+    if part["sw_digest"] or part["hw_digest"]:
+        part_size -= DIGEST_SIZE
+
+    if part["zeroizable"]:
+        part_size -= ZER_SIZE
+
+    for item in part['items']:
+        part_allocated_size += item['size']
+
+    # determine how many aligned blocks are left in the partition
+    leftover_blocks = _avail_blocks(part_size - part_allocated_size)
+
+    # sponge items are items that will accept leftover allocation from a partition
+    sponge_items = [item for item in part['items'] if item['absorb']]
+
+    # spread out the blocks
+    _dist_blocks(leftover_blocks, sponge_items)
+
+
 # return aligned partition size
 def _calc_size(part: Dict, size: int) -> int:
 
@@ -248,6 +272,7 @@ def _validate_item(item: Dict, buffered: bool, secret: bool, generate_fresh_keys
     item.setdefault("ismubi", "false")
     item.setdefault("iskeymgr_creator", "false")
     item.setdefault("iskeymgr_owner", "false")
+    item.setdefault("absorb", False)
 
     # make sure these have the correct types
     item["iskeymgr_creator"] = check_bool(item["iskeymgr_creator"])
@@ -315,6 +340,12 @@ def _validate_mmap(config: Dict, generate_fresh_keys: bool) -> Dict:
 
     # distribute unallocated bits
     _dist_unused(config, allocated)
+
+    # Now that each partition's size is defined and allocated,
+    # distribute the remaining blocks to each `absorb` item
+    # within a partition.
+    for part in config["partitions"]:
+        _dist_part_unused(part)
 
     # Determine offsets and generation dicts
     offset = 0

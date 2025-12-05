@@ -204,6 +204,19 @@ _start:
   csrw pmpcfg1, zero
   csrw pmpcfg2, zero
 
+#ifdef OPENTITAN_IS_DARJEELING
+  // Copy all required AST words.
+  li   a0, (OTP_CTRL_CORE_BASE_ADDR + \
+            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
+  lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_SIZE_OFFSET(a0)
+  slli t1, t0, 2
+  li   a0, (AST_BASE_ADDR)
+  add  a1, a0, t1
+  li   a2, (OTP_CTRL_CORE_BASE_ADDR + \
+            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \
+            OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET)
+  call crt_section_copy
+#else
   // Check if AST initialization should be skipped.
   li   a0, (OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
@@ -218,6 +231,7 @@ _start:
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \
             OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET)
   call crt_section_copy
+#endif
 
 #ifdef OPENTITAN_IS_EARLGREY
   // Wait for AST initialization to complete.

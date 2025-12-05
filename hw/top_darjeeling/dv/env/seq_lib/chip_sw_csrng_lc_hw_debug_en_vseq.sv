@@ -48,13 +48,16 @@ class chip_sw_csrng_lc_hw_debug_en_vseq extends chip_sw_base_vseq;
     // lc states across resets.
     otp_write_hw_cfg0_partition(
       .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
-      .device_id(DEVICE_ID), .manuf_state(MANUF_STATE));
+      .device_id(DEVICE_ID));
     otp_write_hw_cfg1_partition(
       .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
-      // This means SOC_DEBUG won't block debug access.
-      .soc_dbg_state(SOC_DBG_RAW),
       .en_csrng_sw_app_read(MUBI8TRUE),
       .en_sram_ifetch(MUBI8FALSE));
+     // This means SOC_DEBUG won't block debug access.
+     otp_write_hw_cfg2_partition(
+      .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
+      .soc_dbg_state(SOC_DBG_RAW),
+      .manuf_state(MANUF_STATE));
   endtask
 
   virtual task body();

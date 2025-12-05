@@ -26,9 +26,6 @@ class chip_sw_exit_test_unlocked_bootstrap_vseq extends chip_sw_base_vseq;
     otp_write_secret0_partition(cfg.mem_bkdr_util_h[Otp],
       '0, otp_exit_token_bits);
 
-    //ensure rom_exec_en is 0, so that flash is never reached
-    cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgRomExecEnOffset, 0);
-
   endtask
 
   // reset jtag interface
@@ -53,8 +50,6 @@ class chip_sw_exit_test_unlocked_bootstrap_vseq extends chip_sw_base_vseq;
     `uvm_info(`gfn, $sformatf("rv_dm_activated: %0d", cfg.m_jtag_riscv_agent_cfg.rv_dm_activated),
               UVM_LOW)
     cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 1;
-    jtag_otp_program32(otp_ctrl_reg_pkg::CreatorSwCfgRomExecEnOffset, 1);
-
 
     // Reset tap interface for switch.
     reset_jtag_tap();
