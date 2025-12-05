@@ -39,6 +39,7 @@ cc_library(
         "kmac_kdf.h",
         "otcrypto.h",
         "rsa.h",
+        "security_config.h",
         "sha2.h",
         "sha3.h",
         "x25519.h",

@@ -247,7 +247,7 @@ cc_library(
 cc_library(
     name = "security_config",
     srcs = ["security_config.c"],
-    hdrs = ["security_config.h"],
+    hdrs = ["//sw/device/lib/crypto/include:security_config.h"],
     deps = [
         ":integrity",
         ":status",
