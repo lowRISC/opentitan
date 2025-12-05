@@ -932,7 +932,7 @@ TEST_P(DataRegionProtectTestSuite, ProtectRegionReadWriteEraseEnabled) {
 
   // Expect that flash_ctrl_data_region_protect() will reset the
   // MP_REGION_CFG_${i} register.
-  EXPECT_CALL(sec_mmio_,
+  EXPECT_CALL(mmio_,
               Write32(kBase + kFlashCtrlMpRegionCfgRegOffset[GetParamRegion()],
                       kFlashCtrlMpRegionCfgRegResval[GetParamRegion()]));
 
