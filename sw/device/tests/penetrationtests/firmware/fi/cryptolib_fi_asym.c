@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/include/security_config.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -512,6 +513,9 @@ status_t handle_cryptolib_fi_asym_init(ujson_t *uj) {
 
   /////////////// STUB START ///////////////
   // Add things like versioning.
+
+  // Check the security config of the device.
+  TRY(otcrypto_security_config_check(kOtcryptoKeySecurityLevelHigh));
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
