@@ -53,7 +53,8 @@ import "DPI-C" function int otbn_model_invalidate_dmem(chandle model);
 
 import "DPI-C" function int otbn_model_set_software_errs_fatal(chandle model, bit new_val);
 
-import "DPI-C" function int otbn_model_tolerate_result_mismatch(chandle model);
+import "DPI-C" function int otbn_model_tolerate_result_mismatch(chandle model,
+                                                                int unsigned num_checks);
 
 import "DPI-C" function int otbn_set_no_sec_wipe_chk(chandle model);
 

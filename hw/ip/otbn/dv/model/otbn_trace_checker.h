@@ -80,10 +80,12 @@ class OtbnTraceChecker : public OtbnTraceListener {
   // secure wipe entry.
   void set_no_sec_wipe_chk();
 
-  // Tell the model to tolerate a mismatch in results between ISS and RTL for
-  // the next check. This is required for FI tests where we expect the RTL to
-  // misbehave.
-  void TolerateResultMismatch();
+  // Tell the trace checker to tolerate one mismatch between RTL and ISS trace
+  // entries during the next num_checks checks. A value of 0 means indefinitely
+  // many checks will tolerate a mismatch. In both cases the checker no longer
+  // tolerates mismatches after the first detected mismatch. Required for tests
+  // covering FI countermeasures with delayed escalation.
+  void TolerateResultMismatch(unsigned int num_checks);
 
  private:
   // If rtl_pending_ and iss_pending_ are not both true, return true
@@ -102,6 +104,7 @@ class OtbnTraceChecker : public OtbnTraceListener {
 
   bool done_;
   bool tolerate_result_mismatch_;
+  unsigned int num_tolerating_checks_;
   bool seen_err_;
 
   // The ISS entry for the last pair of trace entries that went through
