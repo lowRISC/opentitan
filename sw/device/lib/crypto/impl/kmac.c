@@ -9,8 +9,8 @@
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
-#include "sw/device/lib/crypto/impl/security_config.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/security_config.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'm', 'c')
@@ -28,7 +28,7 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
   }
 
   // Check the security config of the device.
-  HARDENED_TRY(security_config_check(key->config.security_level));
+  HARDENED_TRY(otcrypto_security_config_check(key->config.security_level));
 
   // Check for null input message with nonzero length.
   if (input_message.data == NULL && input_message.len != 0) {

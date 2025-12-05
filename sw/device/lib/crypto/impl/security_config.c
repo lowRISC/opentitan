@@ -2,14 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/impl/security_config.h"
+#include "sw/device/lib/crypto/include/security_config.h"
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/clkmgr.h"
 
-status_t security_config_check(otcrypto_key_security_level_t security_level) {
+status_t otcrypto_security_config_check(
+    otcrypto_key_security_level_t security_level) {
   // Only check the security config on silicon as some of the countermeasures
   // might not be available in other targets.
   if (kDeviceType == kDeviceSilicon) {

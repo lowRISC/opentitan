@@ -10,8 +10,8 @@
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
-#include "sw/device/lib/crypto/impl/security_config.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/security_config.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('h', 'm', 'c')
@@ -227,7 +227,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
   HARDENED_TRY(hardened_memshred(tag.data, tag.len));
 
   // Check the security config of the device.
-  HARDENED_TRY(security_config_check(key->config.security_level));
+  HARDENED_TRY(otcrypto_security_config_check(key->config.security_level));
 
   // Check the key for null pointers or invalid configurations.
   HARDENED_TRY(check_key(key));
