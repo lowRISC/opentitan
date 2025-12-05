@@ -90,12 +90,13 @@ class OtbnModel {
   // error. Returns 0 on success; -1 on failure.
   int invalidate_dmem();
 
-  // Set software_errs_fatal bit in ISS model.
+  // Set software_errs_fatal bit in ISS model. Returns 0 on success; -1 on
+  // failure.
   int set_software_errs_fatal(unsigned char new_val);
 
-  // Tell the model to not execute checks to see if secure wiping has written
-  // random data to all registers before wiping them with zeroes.
-  int set_no_sec_wipe_chk();
+  // Tell the trace checker to not execute checks to see if secure wiping has
+  // written random data to all registers before wiping them with zeroes.
+  void set_no_sec_wipe_chk();
 
   // Step CRC by consuming 48 bits of data.
   //
@@ -120,14 +121,14 @@ class OtbnModel {
   // asserted
   bool is_at_start_of_wipe() const;
 
-  // Trigger initial secure wipe.
+  // Trigger initial secure wipe. Returns 0 on success; -1 on failure.
   int initial_secure_wipe();
 
-  // Set RMA request input on model.
+  // Set RMA request input on model. Returns 0 on success; -1 on failure.
   int set_rma_req(svBitVecVal *rma_req /* bit [3:0] */);
 
   // Disable stack integrity checks
-  int disable_stack_check();
+  void disable_stack_check();
 
  private:
   // Constructs an ISS wrapper if necessary. If something goes wrong, this

@@ -561,15 +561,11 @@ int OtbnModel::set_software_errs_fatal(unsigned char new_val) {
   return 0;
 }
 
-int OtbnModel::set_no_sec_wipe_chk() {
+void OtbnModel::set_no_sec_wipe_chk() {
   OtbnTraceChecker::get().set_no_sec_wipe_chk();
-  return 0;
 }
 
-int OtbnModel::disable_stack_check() {
-  stack_check_enabled_ = false;
-  return 0;
-}
+void OtbnModel::disable_stack_check() { stack_check_enabled_ = false; }
 
 int OtbnModel::step_crc(const svBitVecVal *item /* bit [47:0] */,
                         svBitVecVal *state /* bit [31:0] */) {
@@ -1029,14 +1025,14 @@ int otbn_model_set_software_errs_fatal(OtbnModel *model,
   return model->set_software_errs_fatal(new_val);
 }
 
-int otbn_set_no_sec_wipe_chk(OtbnModel *model) {
+void otbn_set_no_sec_wipe_chk(OtbnModel *model) {
   assert(model);
-  return model->set_no_sec_wipe_chk();
+  model->set_no_sec_wipe_chk();
 }
 
-int otbn_disable_stack_check(OtbnModel *model) {
+void otbn_disable_stack_check(OtbnModel *model) {
   assert(model);
-  return model->disable_stack_check();
+  model->disable_stack_check();
 }
 
 int otbn_model_step_crc(OtbnModel *model, svBitVecVal *item /* bit [47:0] */,

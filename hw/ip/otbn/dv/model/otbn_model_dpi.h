@@ -109,15 +109,15 @@ int otbn_model_invalidate_dmem(OtbnModel *model);
 
 // Tell the model to set software_errs_fatal bit in ctrl register. Once this bit
 // is set, any software error will be elevated to fatal error from recoverable
-// error.
+// error. Returns 0 on success or -1 on failure.
 int otbn_model_set_software_errs_fatal(OtbnModel *model, unsigned char new_val);
 
-// Tell the model to not execute checks to see if secure wiping has written
-// random data to all registers before wiping them with zeroes.
-int otbn_set_no_sec_wipe_chk(OtbnModel *model);
+// Tell the trace checker to not execute checks to see if secure wiping has
+// written random data to all registers before wiping them with zeroes.
+void otbn_set_no_sec_wipe_chk(OtbnModel *model);
 
 // Disable stack integrity checks
-int otbn_disable_stack_check(OtbnModel *model);
+void otbn_disable_stack_check(OtbnModel *model);
 
 // Step the CRC calculation for item
 //
