@@ -53,10 +53,10 @@ class aes_control_fi_vseq extends aes_base_vseq;
               `uvm_fatal(`gfn, $sformatf("Randomization failed"))
             end
             `DV_CHECK_STD_RANDOMIZE_FATAL(await_state)
-            if (await_state inside {aes_pkg::CTRL_PRNG_UPDATE, aes_pkg::CTRL_CLEAR_I,
+            if (await_state inside {aes_pkg::CTRL_GHASH_READY, aes_pkg::CTRL_CLEAR_I,
                                           aes_pkg::CTRL_CLEAR_CO}) begin
-              // The PRNG Update state and the Clear states are difficult to hit with a random
-              // delay.  This writes the clear register to bring the FSM to the PRNG Update and then
+              // The GHASH Ready state and the Clear states are difficult to hit with a random
+              // delay.  This writes the clear register to bring the FSM to the GHASH Ready and then
               // the Clear states, and it waits until the FSM has reached the required state.
               clear_regs('{dataout: 1'b1, key_iv_data_in: 1'b1, default: 1'b0});
               `DV_WAIT(cfg.aes_control_fi_vif[if_num].aes_ctrl_cs == await_state)

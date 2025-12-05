@@ -15,42 +15,43 @@ For a detailed overview of the register tool, please refer to the [Register Tool
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/aes/data/aes.hjson -->
 ## Summary
 
-| Name                                          | Offset   |   Length | Description                              |
-|:----------------------------------------------|:---------|---------:|:-----------------------------------------|
-| aes.[`ALERT_TEST`](#alert_test)               | 0x0      |        4 | Alert Test Register                      |
-| aes.[`KEY_SHARE0_0`](#key_share0)             | 0x4      |        4 | Initial Key Registers Share 0.           |
-| aes.[`KEY_SHARE0_1`](#key_share0)             | 0x8      |        4 | Initial Key Registers Share 0.           |
-| aes.[`KEY_SHARE0_2`](#key_share0)             | 0xc      |        4 | Initial Key Registers Share 0.           |
-| aes.[`KEY_SHARE0_3`](#key_share0)             | 0x10     |        4 | Initial Key Registers Share 0.           |
-| aes.[`KEY_SHARE0_4`](#key_share0)             | 0x14     |        4 | Initial Key Registers Share 0.           |
-| aes.[`KEY_SHARE0_5`](#key_share0)             | 0x18     |        4 | Initial Key Registers Share 0.           |
-| aes.[`KEY_SHARE0_6`](#key_share0)             | 0x1c     |        4 | Initial Key Registers Share 0.           |
-| aes.[`KEY_SHARE0_7`](#key_share0)             | 0x20     |        4 | Initial Key Registers Share 0.           |
-| aes.[`KEY_SHARE1_0`](#key_share1)             | 0x24     |        4 | Initial Key Registers Share 1.           |
-| aes.[`KEY_SHARE1_1`](#key_share1)             | 0x28     |        4 | Initial Key Registers Share 1.           |
-| aes.[`KEY_SHARE1_2`](#key_share1)             | 0x2c     |        4 | Initial Key Registers Share 1.           |
-| aes.[`KEY_SHARE1_3`](#key_share1)             | 0x30     |        4 | Initial Key Registers Share 1.           |
-| aes.[`KEY_SHARE1_4`](#key_share1)             | 0x34     |        4 | Initial Key Registers Share 1.           |
-| aes.[`KEY_SHARE1_5`](#key_share1)             | 0x38     |        4 | Initial Key Registers Share 1.           |
-| aes.[`KEY_SHARE1_6`](#key_share1)             | 0x3c     |        4 | Initial Key Registers Share 1.           |
-| aes.[`KEY_SHARE1_7`](#key_share1)             | 0x40     |        4 | Initial Key Registers Share 1.           |
-| aes.[`IV_0`](#iv)                             | 0x44     |        4 | Initialization Vector Registers.         |
-| aes.[`IV_1`](#iv)                             | 0x48     |        4 | Initialization Vector Registers.         |
-| aes.[`IV_2`](#iv)                             | 0x4c     |        4 | Initialization Vector Registers.         |
-| aes.[`IV_3`](#iv)                             | 0x50     |        4 | Initialization Vector Registers.         |
-| aes.[`DATA_IN_0`](#data_in)                   | 0x54     |        4 | Input Data Registers.                    |
-| aes.[`DATA_IN_1`](#data_in)                   | 0x58     |        4 | Input Data Registers.                    |
-| aes.[`DATA_IN_2`](#data_in)                   | 0x5c     |        4 | Input Data Registers.                    |
-| aes.[`DATA_IN_3`](#data_in)                   | 0x60     |        4 | Input Data Registers.                    |
-| aes.[`DATA_OUT_0`](#data_out)                 | 0x64     |        4 | Output Data Register.                    |
-| aes.[`DATA_OUT_1`](#data_out)                 | 0x68     |        4 | Output Data Register.                    |
-| aes.[`DATA_OUT_2`](#data_out)                 | 0x6c     |        4 | Output Data Register.                    |
-| aes.[`DATA_OUT_3`](#data_out)                 | 0x70     |        4 | Output Data Register.                    |
-| aes.[`CTRL_SHADOWED`](#ctrl_shadowed)         | 0x74     |        4 | Control Register.                        |
-| aes.[`CTRL_AUX_SHADOWED`](#ctrl_aux_shadowed) | 0x78     |        4 | Auxiliary Control Register.              |
-| aes.[`CTRL_AUX_REGWEN`](#ctrl_aux_regwen)     | 0x7c     |        4 | Lock bit for Auxiliary Control Register. |
-| aes.[`TRIGGER`](#trigger)                     | 0x80     |        4 | Trigger Register.                        |
-| aes.[`STATUS`](#status)                       | 0x84     |        4 | Status Register                          |
+| Name                                          | Offset   |   Length | Description                                 |
+|:----------------------------------------------|:---------|---------:|:--------------------------------------------|
+| aes.[`ALERT_TEST`](#alert_test)               | 0x0      |        4 | Alert Test Register                         |
+| aes.[`KEY_SHARE0_0`](#key_share0)             | 0x4      |        4 | Initial Key Registers Share 0.              |
+| aes.[`KEY_SHARE0_1`](#key_share0)             | 0x8      |        4 | Initial Key Registers Share 0.              |
+| aes.[`KEY_SHARE0_2`](#key_share0)             | 0xc      |        4 | Initial Key Registers Share 0.              |
+| aes.[`KEY_SHARE0_3`](#key_share0)             | 0x10     |        4 | Initial Key Registers Share 0.              |
+| aes.[`KEY_SHARE0_4`](#key_share0)             | 0x14     |        4 | Initial Key Registers Share 0.              |
+| aes.[`KEY_SHARE0_5`](#key_share0)             | 0x18     |        4 | Initial Key Registers Share 0.              |
+| aes.[`KEY_SHARE0_6`](#key_share0)             | 0x1c     |        4 | Initial Key Registers Share 0.              |
+| aes.[`KEY_SHARE0_7`](#key_share0)             | 0x20     |        4 | Initial Key Registers Share 0.              |
+| aes.[`KEY_SHARE1_0`](#key_share1)             | 0x24     |        4 | Initial Key Registers Share 1.              |
+| aes.[`KEY_SHARE1_1`](#key_share1)             | 0x28     |        4 | Initial Key Registers Share 1.              |
+| aes.[`KEY_SHARE1_2`](#key_share1)             | 0x2c     |        4 | Initial Key Registers Share 1.              |
+| aes.[`KEY_SHARE1_3`](#key_share1)             | 0x30     |        4 | Initial Key Registers Share 1.              |
+| aes.[`KEY_SHARE1_4`](#key_share1)             | 0x34     |        4 | Initial Key Registers Share 1.              |
+| aes.[`KEY_SHARE1_5`](#key_share1)             | 0x38     |        4 | Initial Key Registers Share 1.              |
+| aes.[`KEY_SHARE1_6`](#key_share1)             | 0x3c     |        4 | Initial Key Registers Share 1.              |
+| aes.[`KEY_SHARE1_7`](#key_share1)             | 0x40     |        4 | Initial Key Registers Share 1.              |
+| aes.[`IV_0`](#iv)                             | 0x44     |        4 | Initialization Vector Registers.            |
+| aes.[`IV_1`](#iv)                             | 0x48     |        4 | Initialization Vector Registers.            |
+| aes.[`IV_2`](#iv)                             | 0x4c     |        4 | Initialization Vector Registers.            |
+| aes.[`IV_3`](#iv)                             | 0x50     |        4 | Initialization Vector Registers.            |
+| aes.[`DATA_IN_0`](#data_in)                   | 0x54     |        4 | Input Data Registers.                       |
+| aes.[`DATA_IN_1`](#data_in)                   | 0x58     |        4 | Input Data Registers.                       |
+| aes.[`DATA_IN_2`](#data_in)                   | 0x5c     |        4 | Input Data Registers.                       |
+| aes.[`DATA_IN_3`](#data_in)                   | 0x60     |        4 | Input Data Registers.                       |
+| aes.[`DATA_OUT_0`](#data_out)                 | 0x64     |        4 | Output Data Register.                       |
+| aes.[`DATA_OUT_1`](#data_out)                 | 0x68     |        4 | Output Data Register.                       |
+| aes.[`DATA_OUT_2`](#data_out)                 | 0x6c     |        4 | Output Data Register.                       |
+| aes.[`DATA_OUT_3`](#data_out)                 | 0x70     |        4 | Output Data Register.                       |
+| aes.[`CTRL_SHADOWED`](#ctrl_shadowed)         | 0x74     |        4 | Control Register.                           |
+| aes.[`CTRL_AUX_SHADOWED`](#ctrl_aux_shadowed) | 0x78     |        4 | Auxiliary Control Register.                 |
+| aes.[`CTRL_AUX_REGWEN`](#ctrl_aux_regwen)     | 0x7c     |        4 | Lock bit for Auxiliary Control Register.    |
+| aes.[`TRIGGER`](#trigger)                     | 0x80     |        4 | Trigger Register.                           |
+| aes.[`STATUS`](#status)                       | 0x84     |        4 | Status Register                             |
+| aes.[`CTRL_GCM_SHADOWED`](#ctrl_gcm_shadowed) | 0x88     |        4 | Galois/Counter Mode (GCM) Control Register. |
 
 ## ALERT_TEST
 Alert Test Register
@@ -254,7 +255,7 @@ Any write operation to this register will clear the status tracking required for
 A write to the Control Register is considered the start of a new message.
 Hence, software needs to provide new key, IV and input data afterwards.
 - Offset: `0x74`
-- Reset default: `0x1181`
+- Reset default: `0x11fd`
 - Reset mask: `0xffff`
 
 ### Fields
@@ -270,7 +271,7 @@ Hence, software needs to provide new key, IV and input data afterwards.
 | 14:12  |   rw   |   0x1   | [PRNG_RESEED_RATE](#ctrl_shadowed--prng_reseed_rate) |
 |   11   |   rw   |   0x0   | [SIDELOAD](#ctrl_shadowed--sideload)                 |
 |  10:8  |   rw   |   0x1   | [KEY_LEN](#ctrl_shadowed--key_len)                   |
-|  7:2   |   rw   |  0x20   | [MODE](#ctrl_shadowed--mode)                         |
+|  7:2   |   rw   |  0x3f   | [MODE](#ctrl_shadowed--mode)                         |
 |  1:0   |   rw   |   0x1   | [OPERATION](#ctrl_shadowed--operation)               |
 
 ### CTRL_SHADOWED . MANUAL_OPERATION
@@ -310,16 +311,17 @@ Other values are reserved.
 
 ### CTRL_SHADOWED . MODE
 6-bit one-hot field to select AES block cipher mode.
-Invalid input values, i.e., values with multiple bits set and value 6'b00_0000, are mapped to AES_NONE (6'b10_0000).
+Invalid input values, i.e., values with multiple bits set and value 6'b00_0000, are mapped to AES_NONE (6'b11_1111).
 
-| Value   | Name     | Description                                                                                                        |
-|:--------|:---------|:-------------------------------------------------------------------------------------------------------------------|
-| 0x01    | AES_ECB  | 6'b00_0001: Electronic Codebook (ECB) mode.                                                                        |
-| 0x02    | AES_CBC  | 6'b00_0010: Cipher Block Chaining (CBC) mode.                                                                      |
-| 0x04    | AES_CFB  | 6'b00_0100: Cipher Feedback (CFB) mode.                                                                            |
-| 0x08    | AES_OFB  | 6'b00_1000: Output Feedback (OFB) mode.                                                                            |
-| 0x10    | AES_CTR  | 6'b01_0000: Counter (CTR) mode.                                                                                    |
-| 0x20    | AES_NONE | 6'b10_0000: Invalid input values, i.e., value with multiple bits set and value 6'b00_0000, are mapped to AES_NONE. |
+| Value   | Name     | Description                                                                                                                                                                                          |
+|:--------|:---------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x01    | AES_ECB  | 6'b00_0001: Electronic Codebook (ECB) mode.                                                                                                                                                          |
+| 0x02    | AES_CBC  | 6'b00_0010: Cipher Block Chaining (CBC) mode.                                                                                                                                                        |
+| 0x04    | AES_CFB  | 6'b00_0100: Cipher Feedback (CFB) mode.                                                                                                                                                              |
+| 0x08    | AES_OFB  | 6'b00_1000: Output Feedback (OFB) mode.                                                                                                                                                              |
+| 0x10    | AES_CTR  | 6'b01_0000: Counter (CTR) mode.                                                                                                                                                                      |
+| 0x20    | AES_GCM  | 6'b10_0000: Galois/Counter Mode (GCM). In case support for GCM has been disabled at compile time, setting this value results in configuring AES_NONE (6'b11_1111).                                   |
+| 0x3f    | AES_NONE | 6'b11_1111: Invalid input values, i.e., value with multiple bits set, value 6'b00_0000, and value 6'b10_0000 in case GCM is not supported (because disabled at compile time) are mapped to AES_NONE. |
 
 Other values are reserved.
 
@@ -487,6 +489,52 @@ This flag is not meaningful if MANUAL_OPERATION=1 (see Control Register).
 The AES unit is idle (1) or busy (0).
 This flag is `0` if one of the following operations is currently running: i) encryption/decryption, ii) register clearing or iii) PRNG reseeding.
 This flag is also `0` if an encryption/decryption is running but the AES unit is stalled.
+
+## CTRL_GCM_SHADOWED
+Galois/Counter Mode (GCM) Control Register.
+
+Can only be updated when the AES unit is idle.
+If the AES unit is non-idle, writes to this register are ignored.
+This register is shadowed, meaning two subsequent write operations are required to change its content.
+If the two write operations try to set a different value, a recoverable alert is triggered (See Status Register).
+A read operation clears the internal phase tracking: The next write operation is always considered a first write operation of an update sequence.
+- Offset: `0x88`
+- Reset default: `0x401`
+- Reset mask: `0x7ff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "PHASE", "bits": 6, "attr": ["rw"], "rotate": 0}, {"name": "NUM_VALID_BYTES", "bits": 5, "attr": ["rw"], "rotate": -90}, {"bits": 21}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                                   |
+|:------:|:------:|:-------:|:-------------------------------------------------------|
+| 31:11  |        |         | Reserved                                               |
+|  10:6  |   rw   |  0x10   | [NUM_VALID_BYTES](#ctrl_gcm_shadowed--num_valid_bytes) |
+|  5:0   |   rw   |   0x1   | [PHASE](#ctrl_gcm_shadowed--phase)                     |
+
+### CTRL_GCM_SHADOWED . NUM_VALID_BYTES
+Number of valid bytes of the current input block.
+Only the last block in the GCM_AAD and GCM_TEXT phases are expected to have not all bytes marked as valid.
+For all other blocks, the number of valid bytes should be set to 16.
+Invalid input values, i.e., the value 5'b0_0000, and all other values different from 5'b1_0000 in case GCM is not supported (because disabled at compile time) are mapped to 5'b1_0000.
+
+### CTRL_GCM_SHADOWED . PHASE
+6-bit one-hot field to select the phase of the Galois/Counter Mode (GCM) of operation.
+Invalid input values, i.e., values with multiple bits set and value 6'b00_0000, are mapped to GCM_INIT (6'b00_0001).
+In case support for GCM has been disabled at compile time, this field is not writable and always reads as GCM_INIT (6'b00_0001).
+
+| Value   | Name        | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+|:--------|:------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x01    | GCM_INIT    | 6'b00_0001: Initialization phase. Software configures the Initial Key and IV Registers. The hardware then performs two encryption operations to 1) generate the hash subkey and 2) encrypt the IV. Both results are loaded into the internal GHASH block. Once the AES unit is idle again, software can advance to the next phase. Possible next phases are GCM_RESTORE, GCM_AAD, GCM_TEXT, and GCM_TAG. Invalid input values, i.e., values with multiple bits set, value 6'b00_0000, and all other values in case GCM is not supported (because disabled at compile time) are mapped to GCM_INIT. |
+| 0x02    | GCM_RESTORE | 6'b00_0010: Optional context restore phase. Software configures the IV and Input Data Registers to restore a previously saved AES-GCM context (IV and GHASH state). Possible next phases are GCM_INIT, GCM_AAD and GCM_TEXT.                                                                                                                                                                                                                                                                                                                                                                       |
+| 0x04    | GCM_AAD     | 6'b00_0100: Optional additional authenticated data phase (AAD). Software inputs the AAD via Input Data Registers block by block via Input Data Registers. Possible next phases are GCM_INIT, GCM_TEXT, GCM_SAVE and GCM_TAG.                                                                                                                                                                                                                                                                                                                                                                       |
+| 0x08    | GCM_TEXT    | 6'b00_1000: Optional plaintext/ciphertext phase. Software inputs the plaintext/ciphertext block by block via Input Data Registers, and retrieves the output ciphertext/plaintext block by block via Output Data Registers. Possible next phases are GCM_INIT, GCM_SAVE and GCM_TAG.                                                                                                                                                                                                                                                                                                                |
+| 0x10    | GCM_SAVE    | 6'b01_0000: Optional context save phase. The hardware stops accepting inputs. Software reads the current GHASH state and IV via Output Data and IV Registers, respectively. The only possible next phase is GCM_INIT.                                                                                                                                                                                                                                                                                                                                                                              |
+| 0x20    | GCM_TAG     | 6'b10_0000: Tag phase. Software inputs a single data block containing the length of the AAD and the ciphertext via Input Data Registers. The hardware then produces the final integrity tag. Once the AES unit is idle again, software reads the final integrity tag via Data Out Registers. The only possible next phase is GCM_INIT.                                                                                                                                                                                                                                                             |
+
+Other values are reserved.
 
 
 <!-- END CMDGEN -->

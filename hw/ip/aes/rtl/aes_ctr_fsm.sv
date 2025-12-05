@@ -11,9 +11,10 @@ module aes_ctr_fsm import aes_pkg::*;
   input  logic                     clk_i,
   input  logic                     rst_ni,
 
+  input  logic                     inc32_i,    // Sparsify using multi-rail.
   input  logic                     incr_i,     // Sparsify using multi-rail.
   output logic                     ready_o,    // Sparsify using multi-rail.
-  input  logic                     incr_err_i,
+  input  logic                     sp_enc_err_i,
   input  logic                     mr_err_i,
   output logic                     alert_o,
 
@@ -26,6 +27,7 @@ module aes_ctr_fsm import aes_pkg::*;
   // Signals
   aes_ctr_e                 aes_ctr_ns, aes_ctr_cs;
   logic [SliceIdxWidth-1:0] ctr_slice_idx_d, ctr_slice_idx_q;
+  logic [SliceIdxWidth-1:0] ctr_slice_idx_max;
   logic                     ctr_carry_d, ctr_carry_q;
 
   logic    [SliceSizeCtr:0] ctr_value;
@@ -37,6 +39,9 @@ module aes_ctr_fsm import aes_pkg::*;
   // We do SliceSizeCtr bits at a time.
   assign ctr_value   = ctr_slice_i + {{(SliceSizeCtr-1){1'b0}}, ctr_carry_q};
   assign ctr_slice_o = ctr_value[SliceSizeCtr-1:0];
+
+  // Perform either inc128() or inc32() for GCM.
+  assign ctr_slice_idx_max = inc32_i ? SliceIdxWidth'(SliceIdxMaxInc32) : {SliceIdxWidth{1'b1}};
 
   /////////////
   // Control //
@@ -69,7 +74,7 @@ module aes_ctr_fsm import aes_pkg::*;
       CTR_INCR: begin
         // Increment slice index.
         ctr_slice_idx_d = ctr_slice_idx_q + SliceIdxWidth'(1);
-        ctr_carry_d     = ctr_value[SliceSizeCtr];
+        ctr_carry_d     = ctr_slice_idx_q >= ctr_slice_idx_max ? 1'b0 : ctr_value[SliceSizeCtr];
         ctr_we_o        = 1'b1;
 
         if (ctr_slice_idx_q == {SliceIdxWidth{1'b1}}) begin
@@ -92,7 +97,7 @@ module aes_ctr_fsm import aes_pkg::*;
     endcase
 
     // Unconditionally jump into the terminal error state in case an error is detected.
-    if (incr_err_i || mr_err_i) begin
+    if (sp_enc_err_i || mr_err_i) begin
       aes_ctr_ns = CTR_ERROR;
     end
   end

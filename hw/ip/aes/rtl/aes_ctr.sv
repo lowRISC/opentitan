@@ -12,6 +12,7 @@ module aes_ctr import aes_pkg::*;
   input  logic                                       clk_i,
   input  logic                                       rst_ni,
 
+  input  sp2v_e                                      inc32_i,
   input  sp2v_e                                      incr_i,
   output sp2v_e                                      ready_o,
   output logic                                       alert_o,
@@ -50,12 +51,16 @@ module aes_ctr import aes_pkg::*;
   logic                    [SliceSizeCtr-1:0] ctr_i_slice;
   logic                    [SliceSizeCtr-1:0] ctr_o_slice;
 
+  sp2v_e                                      inc32;
+  logic                                       inc32_err;
   sp2v_e                                      incr;
   logic                                       incr_err;
+  logic                                       sp_enc_err;
   logic                                       mr_err;
 
   // Sparsified FSM signals. These are needed for connecting the individual bits of the Sp2V
   // signals to the single-rail FSMs.
+  logic    [Sp2VWidth-1:0]                    sp_inc32;
   logic    [Sp2VWidth-1:0]                    sp_incr;
   logic    [Sp2VWidth-1:0]                    sp_ready;
   logic    [Sp2VWidth-1:0]                    sp_ctr_we;
@@ -73,13 +78,27 @@ module aes_ctr import aes_pkg::*;
   assign ctr_i_rev = aes_rev_order_byte(ctr_i);
 
   // SEC_CM: CTRL.SPARSE
-  // Check sparsely encoded incr signal.
+  // Check sparsely encoded inc32 and incr signals.
+  logic [Sp2VWidth-1:0] inc32_raw;
+  aes_sel_buf_chk #(
+    .Num      ( Sp2VNum   ),
+    .Width    ( Sp2VWidth ),
+    .EnSecBuf ( 1'b0      )
+  ) u_aes_inc32_buf_chk (
+    .clk_i  ( clk_i    ),
+    .rst_ni ( rst_ni   ),
+    .sel_i  ( inc32_i   ),
+    .sel_o  ( inc32_raw ),
+    .err_o  ( inc32_err )
+  );
+  assign inc32 = sp2v_e'(inc32_raw);
+
   logic [Sp2VWidth-1:0] incr_raw;
   aes_sel_buf_chk #(
     .Num      ( Sp2VNum   ),
     .Width    ( Sp2VWidth ),
     .EnSecBuf ( 1'b0      )
-  ) u_aes_sb_en_buf_chk (
+  ) u_aes_incr_buf_chk (
     .clk_i  ( clk_i    ),
     .rst_ni ( rst_ni   ),
     .sel_i  ( incr_i   ),
@@ -87,6 +106,9 @@ module aes_ctr import aes_pkg::*;
     .err_o  ( incr_err )
   );
   assign incr = sp2v_e'(incr_raw);
+
+  // Collect encoding errors.
+  assign sp_enc_err = inc32_err | incr_err;
 
   /////////////
   // Counter //
@@ -100,7 +122,8 @@ module aes_ctr import aes_pkg::*;
   /////////
 
   // Convert sp2v_e signals to sparsified inputs.
-  assign sp_incr = {incr};
+  assign sp_inc32 = {inc32};
+  assign sp_incr  = {incr};
 
   // SEC_CM: CTR.FSM.REDUN
   // For every bit in the Sp2V signals, one separate rail is instantiated. The inputs and outputs
@@ -111,9 +134,10 @@ module aes_ctr import aes_pkg::*;
         .clk_i           ( clk_i               ),
         .rst_ni          ( rst_ni              ),
 
+        .inc32_i         ( sp_inc32[i]         ), // Sparsified
         .incr_i          ( sp_incr[i]          ), // Sparsified
         .ready_o         ( sp_ready[i]         ), // Sparsified
-        .incr_err_i      ( incr_err            ),
+        .sp_enc_err_i    ( sp_enc_err          ),
         .mr_err_i        ( mr_err              ),
         .alert_o         ( mr_alert[i]         ), // OR-combine
 
@@ -127,9 +151,10 @@ module aes_ctr import aes_pkg::*;
         .clk_i           ( clk_i               ),
         .rst_ni          ( rst_ni              ),
 
+        .inc32_ni        ( sp_inc32[i]         ), // Sparsified
         .incr_ni         ( sp_incr[i]          ), // Sparsified
         .ready_no        ( sp_ready[i]         ), // Sparsified
-        .incr_err_i      ( incr_err            ),
+        .sp_enc_err_i    ( sp_enc_err          ),
         .mr_err_i        ( mr_err              ),
         .alert_o         ( mr_alert[i]         ), // OR-combine
 

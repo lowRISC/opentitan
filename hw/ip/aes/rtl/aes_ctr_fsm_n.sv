@@ -16,9 +16,10 @@ module aes_ctr_fsm_n import aes_pkg::*;
   input  logic                     clk_i,
   input  logic                     rst_ni,
 
+  input  logic                     inc32_ni,        // Sparsify using multi-rail.
   input  logic                     incr_ni,         // Sparsify using multi-rail.
   output logic                     ready_no,        // Sparsify using multi-rail.
-  input  logic                     incr_err_i,
+  input  logic                     sp_enc_err_i,
   input  logic                     mr_err_i,
   output logic                     alert_o,
 
@@ -33,8 +34,9 @@ module aes_ctr_fsm_n import aes_pkg::*;
   /////////////////////
 
   localparam int NumInBufBits = $bits({
+    inc32_ni,
     incr_ni,
-    incr_err_i,
+    sp_enc_err_i,
     mr_err_i,
     ctr_slice_i
   });
@@ -42,8 +44,9 @@ module aes_ctr_fsm_n import aes_pkg::*;
   logic [NumInBufBits-1:0] in, in_buf;
 
   assign in = {
+    inc32_ni,
     incr_ni,
-    incr_err_i,
+    sp_enc_err_i,
     mr_err_i,
     ctr_slice_i
   };
@@ -57,13 +60,15 @@ module aes_ctr_fsm_n import aes_pkg::*;
     .out_o(in_buf)
   );
 
+  logic                    inc32_n;
   logic                    incr_n;
-  logic                    incr_err;
+  logic                    sp_enc_err;
   logic                    mr_err;
   logic [SliceSizeCtr-1:0] ctr_i_slice;
 
-  assign {incr_n,
-          incr_err,
+  assign {inc32_n,
+          incr_n,
+          sp_enc_err,
           mr_err,
           ctr_i_slice} = in_buf;
 
@@ -86,9 +91,10 @@ module aes_ctr_fsm_n import aes_pkg::*;
     .clk_i           ( clk_i         ),
     .rst_ni          ( rst_ni        ),
 
+    .inc32_i         ( ~inc32_n      ), // Invert for regular FSM.
     .incr_i          ( ~incr_n       ), // Invert for regular FSM.
     .ready_o         ( ready         ), // Invert below for negated output.
-    .incr_err_i      ( incr_err      ),
+    .sp_enc_err_i    ( sp_enc_err    ),
     .mr_err_i        ( mr_err        ),
     .alert_o         ( alert         ),
 

@@ -17,7 +17,8 @@ module aes_ctrl_reg_shadowed
   import aes_pkg::*;
   import aes_reg_pkg::*;
 #(
-  parameter bit AES192Enable = 1
+  parameter bit AES192Enable = 1,
+  parameter bit AESGCMEnable = 1
 ) (
   input  logic clk_i,
   input  logic rst_ni,
@@ -90,6 +91,7 @@ module aes_ctrl_reg_shadowed
       AES_CFB: ctrl_wd.mode = AES_CFB;
       AES_OFB: ctrl_wd.mode = AES_OFB;
       AES_CTR: ctrl_wd.mode = AES_CTR;
+      AES_GCM: ctrl_wd.mode = AESGCMEnable ? AES_GCM : AES_NONE;
       default: ctrl_wd.mode = AES_NONE; // unsupported values are mapped to AES_NONE
     endcase
   end
