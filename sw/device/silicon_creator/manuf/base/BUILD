@@ -96,8 +96,8 @@ opentitan_binary(
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
         ":flash_info_permissions",
-        "//hw/top:dt",
         "//hw/top:otp_ctrl_c_regs",
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",

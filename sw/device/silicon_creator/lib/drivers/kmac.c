@@ -4,8 +4,8 @@
 
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 
-#include "hw/top/dt/dt_api.h"
-#include "hw/top/dt/dt_kmac.h"
+#include "hw/top/dt/api.h"
+#include "hw/top/dt/kmac.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"

@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 
-#include "hw/top/dt/dt_alert_handler.h"  // Generated
-#include "hw/top/dt/dt_api.h"            // Generated
+#include "hw/top/dt/alert_handler.h"  // Generated
+#include "hw/top/dt/api.h"            // Generated
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_base.h"

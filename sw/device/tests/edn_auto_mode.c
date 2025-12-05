@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/ip/aes/model/aes_modes.h"
-#include "hw/top/dt/dt_aes.h"
-#include "hw/top/dt/dt_csrng.h"
-#include "hw/top/dt/dt_edn.h"
-#include "hw/top/dt/dt_otbn.h"
-#include "hw/top/dt/dt_rv_core_ibex.h"
+#include "hw/top/dt/aes.h"
+#include "hw/top/dt/csrng.h"
+#include "hw/top/dt/edn.h"
+#include "hw/top/dt/otbn.h"
+#include "hw/top/dt/rv_core_ibex.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_csrng.h"

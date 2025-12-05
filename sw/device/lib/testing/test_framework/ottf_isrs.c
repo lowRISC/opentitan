@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 
-#include "hw/top/dt/dt_sram_ctrl.h"
+#include "hw/top/dt/sram_ctrl.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"

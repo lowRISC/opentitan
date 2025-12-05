@@ -16,7 +16,7 @@ top_name = helper.top["name"]
  * @brief Device Tables (DT) for IP ${device_name} and top ${top_name}.
  */
 
-#include "hw/top/dt/dt_${device_name}.h"
+#include "hw/top/dt/${device_name}.h"
 
 ## Extension
 ${helper.render_extension(Extension.DtIpPos.SourceIncludes)}

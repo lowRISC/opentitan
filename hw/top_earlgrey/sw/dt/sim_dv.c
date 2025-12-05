@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-#include "hw/top/dt/dt_api.h"  // Generated
+#include "hw/top/dt/api.h"  // Generated
 
 static const uint32_t clock_freqs[kDtClockCount] = {
     [kDtClockMain] = 100 * 1000 * 1000,  [kDtClockIo] = 96 * 1000 * 1000,

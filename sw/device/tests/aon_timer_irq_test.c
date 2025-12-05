@@ -7,10 +7,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "hw/top/dt/dt_aon_timer.h"     // Generated
-#include "hw/top/dt/dt_rv_core_ibex.h"  // Generated
-#include "hw/top/dt/dt_rv_plic.h"       // Generated
-#include "hw/top/dt/dt_rv_timer.h"      // Generated
+#include "hw/top/dt/aon_timer.h"     // Generated
+#include "hw/top/dt/rv_core_ibex.h"  // Generated
+#include "hw/top/dt/rv_plic.h"       // Generated
+#include "hw/top/dt/rv_timer.h"      // Generated
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"

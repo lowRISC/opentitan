@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top/dt/dt_pinmux.h"     // Generated
-#include "hw/top/dt/dt_sram_ctrl.h"  // Generated
+#include "hw/top/dt/pinmux.h"     // Generated
+#include "hw/top/dt/sram_ctrl.h"  // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/dif/dif_uart.h"

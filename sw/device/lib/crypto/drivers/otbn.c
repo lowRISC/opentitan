@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/otbn.h"
 
-#include "hw/top/dt/dt_otbn.h"
+#include "hw/top/dt/otbn.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/crc32.h"

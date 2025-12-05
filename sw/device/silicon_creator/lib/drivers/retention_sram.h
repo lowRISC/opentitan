@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "hw/top/dt/dt_sram_ctrl.h"
+#include "hw/top/dt/sram_ctrl.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"

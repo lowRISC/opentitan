@@ -2,14 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("//rules/opentitan:util.bzl", "flatten")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load(
     "//rules:autogen.bzl",
     "opentitan_ip_c_header",
-    "opentitan_ip_dt",
     "opentitan_ip_rust_header",
-    "opentitan_top_dt_api",
 )
 load("//rules/opentitan:hw.bzl", "get_top_attr")
 load(
@@ -20,8 +18,6 @@ load(
     "ALL_TOP_NAMES",
     "opentitan_alias_top_attr",
     "opentitan_if_ip",
-    "opentitan_require_ip",
-    "opentitan_select_ip_attr",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -139,73 +135,11 @@ alias(
     for ip in ALL_IP_NAMES
 ]
 
-opentitan_top_dt_api(
-    name = "dt_api",
-    deps = [":top_lib"],
-)
-
-[
-    opentitan_ip_dt(
-        name = "dt_{}".format(ip),
-        ip = ip,
-        target_compatible_with = opentitan_require_ip(ip),
-    )
-    for ip in ALL_IP_NAMES
-]
-
-cc_library(
-    name = "dt_headers",
-    hdrs = flatten([
-        opentitan_if_ip(
-            ip,
-            ["dt_{}_hdr".format(ip)],
-            [],
-        )
-        for ip in ALL_IP_NAMES
-    ]),
-    deps = [":dt_api"] + flatten([
-        opentitan_select_ip_attr(
-            ip,
-            "dt_hdr_deps",
-            default = [],
-            required = False,
-        )
-        for ip in ALL_IP_NAMES
-    ]),
-)
-
-[
-    cc_library(
-        name = "dt_{}".format(ip),
-        srcs = [":dt_{}_src".format(ip)],
-        deps = [":dt_headers"] + opentitan_select_ip_attr(
-            ip,
-            "dt_src_deps",
-            default = [],
-            required = False,
-        ),
-    )
-    for ip in ALL_IP_NAMES
-]
-
-cc_library(
-    name = "dt",
-    srcs = [],
-    deps = flatten([
-        opentitan_if_ip(
-            ip,
-            ["dt_{}".format(ip)],
-            [],
-        )
-        for ip in ALL_IP_NAMES
-    ]),
-)
-
 cc_library(
     name = "doxy_target",
     deps = [
         # Pull all DT headers and implementation, transitively includes top headers.
-        ":dt",
+        "//hw/top/dt",
     ] + flatten([
         # Add all compatible register headers
         opentitan_if_ip(
