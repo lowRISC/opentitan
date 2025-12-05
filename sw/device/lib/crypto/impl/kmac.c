@@ -27,9 +27,6 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Check the security config of the device.
-  HARDENED_TRY(otcrypto_security_config_check(key->config.security_level));
-
   // Check for null input message with nonzero length.
   if (input_message.data == NULL && input_message.len != 0) {
     return OTCRYPTO_BAD_ARGS;
