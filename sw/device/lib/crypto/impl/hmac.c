@@ -226,9 +226,6 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
   // Preload the tag with randomness.
   HARDENED_TRY(hardened_memshred(tag.data, tag.len));
 
-  // Check the security config of the device.
-  HARDENED_TRY(otcrypto_security_config_check(key->config.security_level));
-
   // Check the key for null pointers or invalid configurations.
   HARDENED_TRY(check_key(key));
 

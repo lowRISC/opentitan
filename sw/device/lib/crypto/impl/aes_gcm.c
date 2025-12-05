@@ -394,9 +394,6 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Check the security config of the device.
-  HARDENED_TRY(otcrypto_security_config_check(key->config.security_level));
-
   // Ensure entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
