@@ -295,10 +295,10 @@ rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
       }
       flash_ctrl_data_region_protect(kRomExtRegions + i, config->start,
                                      config->size, perm, cfg, lock);
-      SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtect + lock ==
-                                       kHardenedBoolTrue
-                                   ? kFlashCtrlSecMmioDataRegionProtectLock
-                                   : 0);
+      SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtect +
+                               (lock == kHardenedBoolTrue
+                                    ? kFlashCtrlSecMmioDataRegionProtectLock
+                                    : 0));
     }
   }
   return kErrorOk;
