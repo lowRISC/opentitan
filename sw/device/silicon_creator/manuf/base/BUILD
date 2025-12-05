@@ -292,6 +292,7 @@ manifest(d = {
         deps = [
             ":perso_tlv_data",
             ":personalize_ext",
+            "//hw/top:otp_ctrl_c_regs",
             "//sw/device/lib/crypto/drivers:entropy",
             "//sw/device/lib/dif:flash_ctrl",
             "//sw/device/lib/dif:lc_ctrl",
