@@ -368,10 +368,30 @@ interface otbn_trace_if
     end
   end
 
-  assign internal_intg_err_i.rf_base_intg_err = rf_base_intg_err;
-  assign internal_intg_err_i.rf_bignum_intg_err = rf_bignum_intg_err;
-  assign internal_intg_err_i.mod_ispr_intg_err = alu_bignum_reg_intg_violation_err;
-  assign internal_intg_err_i.acc_ispr_intg_err = mac_bignum_reg_intg_violation_err;
+  // Register integrity check signals to model the registering of the escalation signal.
+  logic rf_base_intg_err_q;
+  logic rf_bignum_intg_err_q;
+  logic alu_bignum_reg_intg_violation_err_q;
+  logic mac_bignum_reg_intg_violation_err_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rf_base_intg_err_q                  <= '0;
+      rf_bignum_intg_err_q                <= '0;
+      alu_bignum_reg_intg_violation_err_q <= '0;
+      mac_bignum_reg_intg_violation_err_q <= '0;
+    end else begin
+      rf_base_intg_err_q                  <= rf_base_intg_err;
+      rf_bignum_intg_err_q                <= rf_bignum_intg_err;
+      alu_bignum_reg_intg_violation_err_q <= alu_bignum_reg_intg_violation_err;
+      mac_bignum_reg_intg_violation_err_q <= mac_bignum_reg_intg_violation_err;
+    end
+  end
+
+  assign internal_intg_err_i.rf_base_intg_err = rf_base_intg_err_q;
+  assign internal_intg_err_i.rf_bignum_intg_err = rf_bignum_intg_err_q;
+  assign internal_intg_err_i.mod_ispr_intg_err = alu_bignum_reg_intg_violation_err_q;
+  assign internal_intg_err_i.acc_ispr_intg_err = mac_bignum_reg_intg_violation_err_q;
   assign internal_intg_err_i.loop_stack_addr_intg_err = controller_bad_int_i.loop_hw_intg_err;
   assign internal_intg_err_i.insn_fetch_intg_err = insn_fetch_err;
 

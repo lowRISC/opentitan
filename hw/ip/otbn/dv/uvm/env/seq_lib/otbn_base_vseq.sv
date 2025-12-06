@@ -952,4 +952,56 @@ class otbn_base_vseq extends cip_base_vseq #(
      repeat (2) wait_secure_wipe_phase();
    endtask
 
+  // Wait for the next clk posedge and monitor any SW error. If a SW error arises, signal this to
+  // the model. Resumes at the next posedge of clk.
+  //
+  // When injecting errors we must consider two escalation sources which result in different
+  // reaction times:
+  // - HW detected escalation, e.g., the actual HW integrity checks. These error signals are
+  //   registered and thus we must delay the escalation (after the call of this task).
+  // - SW based errors. Either a non fatal error or a fatal error. This can happen for example if
+  //   we inject an error into a branch instruction and an illegal target address is computed.
+  //   Fatal as well as non fatal SW errors escalate immediately. For non fatal errors the OTBN
+  //   will transition into the HALT state and start a secure wipe. For fatal SW errors the OTBN
+  //   goes directly into LOCKED and starts a secure wipe. In any case, in the next cycle the HW
+  //   escalation will trigger and convert any non locking wipe into locking one.
+  //
+  // We model this with a fork. The first two forks monitor the SW (fatal) error signals which
+  // will be asserted in the next delta in case the injection leads to a SW error. We then can
+  // set the error bits in the same cycle. We then also wait until the cycle completes.
+  // The 3rd fork covers the case when there is never a SW error asserted.
+  // Note that a proper program should never result in a SW error without any external
+  // interference. Therefore a SW error in the following cycle/instruction should never occur.
+  task handle_delayed_escalation();
+    otbn_pkg::err_bits_t err_bits;
+    // This isolation fork is needed to ensure that "disable fork" call won't kill any other
+    // processes at the same level from the base classes
+    fork begin : isolation_fork
+      fork
+        begin
+          // Handle non fatal SW error
+          @(cfg.controller_vif.wait_sw_error_rises);
+          `uvm_info(`gfn, $sformatf("The injection led to a non fatal SW error"), UVM_LOW)
+          err_bits = '{illegal_insn: 1'b1, default: 1'b0};
+          cfg.model_agent_cfg.vif.send_err_escalation(err_bits);
+          @(cfg.clk_rst_vif.cb);
+        end
+        begin
+          // Handle fatal SW error
+          @(cfg.controller_vif.wait_fatal_sw_error_rises);
+          `uvm_info(`gfn, $sformatf("The injection led to a fatal SW error"), UVM_LOW)
+          err_bits = '{fatal_software: 1'b1, default: 1'b0};
+          cfg.model_agent_cfg.vif.send_err_escalation(err_bits);
+          @(cfg.clk_rst_vif.cb);
+        end
+        begin
+          // Handle HW based escalation
+          // Do nothing yet. We signal the error in the next cycle.
+          @(cfg.clk_rst_vif.cb);
+        end
+      join_any
+      disable fork; // Kill the SW handling forks if the HW case completes first.
+    end join
+  endtask
+
 endclass : otbn_base_vseq

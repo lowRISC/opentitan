@@ -536,6 +536,10 @@ void ISSWrapper::send_err_escalation(uint32_t err_val, bool lock_immediately) {
   run_command(oss.str(), nullptr);
 }
 
+void ISSWrapper::send_stall_request() {
+  run_command("send_stall_request\n", nullptr);
+}
+
 void ISSWrapper::set_rma_req(uint8_t rma_req) {
   std::ostringstream oss;
   oss << "set_rma_req " << std::hex << "0x" << (int)rma_req << "\n";
