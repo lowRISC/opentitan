@@ -101,7 +101,7 @@ impl Qemu {
     /// match what OpenTitanLib expects to be accepted.
     pub fn from_options(options: QemuOpts) -> anyhow::Result<Self> {
         let monitor = Rc::new(RefCell::new(Monitor::new(
-            options.qemu_monitor_tty.unwrap(),
+            options.qemu_monitor_socket.unwrap(),
             options.qemu_quit,
         )?));
 
