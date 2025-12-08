@@ -21,8 +21,9 @@
 #   - QEMU_LOG: The location QEMU should log to, default /dev/fd/1.
 #   - QEMU_ICOUNT: The "-icount shift N" value to use, defaults to 6.
 #   - QEMU_MONITOR: The path to use for the QEMU Monitor Socket.
-#   - QEMU_RV_DM_JTAG_SOCK: The path to use for the RV_DM JTAG TAP Ctrl PTY.
-#   - QEMU_LC_JTAG_SOCK: The path to use for the LC_CTRL JTAG TAP Ctrl PTY.
+#   - QEMU_GPIO: The path to use for the QEMU GPIO Socket.
+#   - QEMU_RV_DM_JTAG: The path to use for the RV_DM JTAG TAP Ctrl Socket.
+#   - QEMU_LC_JTAG: The path to use for the LC_CTRL JTAG TAP Ctrl Socket.
 
 set -e
 
@@ -41,8 +42,9 @@ if [ ! -f "$QEMU_OTP"      ]; then fail "expected QEMU_OTP to point to QEMU OTP 
 QEMU_ICOUNT="${QEMU_ICOUNT:-6}"
 QEMU_LOG="${QEMU_LOG:-/dev/fd/1}"
 QEMU_MONITOR="${QEMU_MONITOR:-qemu-monitor}"
-QEMU_RV_DM_JTAG_SOCK="${QEMU_RV_DM_JTAG_SOCK:-qemu-jtag.sock}"
-QEMU_LC_JTAG_SOCK="${QEMU_LC_JTAG_SOCK:-qemu-jtag-lc-ctrl.sock}"
+QEMU_GPIO="${QEMU_GPIO:-qemu-gpio.sock}"
+QEMU_RV_DM_JTAG="${QEMU_RV_DM_JTAG:-qemu-jtag.sock}"
+QEMU_LC_JTAG="${QEMU_LC_JTAG:-qemu-jtag-lc-ctrl.sock}"
 
 # Construct a list of arguments to provide to QEMU
 qemu_args=(
@@ -159,8 +161,8 @@ qemu_args+=(
   "-device" "ot-i2c_host_proxy,bus=ot-i2c1,chardev=i2c1"
   "-device" "ot-i2c_host_proxy,bus=ot-i2c2,chardev=i2c2"
 
-  # Connect GPIO interface to a PTY.
-  "-chardev" "pty,id=gpio"
+  # Connect GPIO interface to a socket.
+  "-chardev" "socket,id=gpio,path=${QEMU_GPIO},server=on,wait=off"
   "-global" "ot-gpio-eg.chardev=gpio"
 
   # Connect USB command & protocol interfaces to PTYs.
@@ -168,8 +170,8 @@ qemu_args+=(
   "-chardev" "pty,id=usbdev-host"
 
   # Connect JTAG remote bit-bang for RV_DM & LC_CTRL TAPs to sockets.
-  "-chardev" "socket,id=taprbb,path=${QEMU_RV_DM_JTAG_SOCK},server=on,wait=off"
-  "-chardev" "socket,id=taprbb-lc-ctrl,path=${QEMU_LC_JTAG_SOCK},server=on,wait=off"
+  "-chardev" "socket,id=taprbb,path=${QEMU_RV_DM_JTAG},server=on,wait=off"
+  "-chardev" "socket,id=taprbb-lc-ctrl,path=${QEMU_LC_JTAG},server=on,wait=off"
 )
 
 # Spawn QEMU
