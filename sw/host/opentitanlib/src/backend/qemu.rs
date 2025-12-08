@@ -12,11 +12,11 @@ use crate::transport::qemu::Qemu;
 
 #[derive(Clone, Debug, Args)]
 pub struct QemuOpts {
-    /// Path to the TTY connected to the QEMU monitor.
+    /// Path to the socket connected to the QEMU monitor.
     ///
     /// Must be configured in `control`/QMP mode (the JSON protocol).
     #[arg(long, required_if_eq("interface", "qemu"))]
-    pub qemu_monitor_tty: Option<PathBuf>,
+    pub qemu_monitor_socket: Option<PathBuf>,
 
     /// Quit QEMU when finished.
     #[arg(long, default_value_t = false)]

@@ -20,7 +20,7 @@
 #   - QEMU_PIDFILE: The path to store the PID when QEMU daemonizes.
 #   - QEMU_LOG: The location QEMU should log to, default /dev/fd/1.
 #   - QEMU_ICOUNT: The "-icount shift N" value to use, defaults to 6.
-#   - QEMU_MONITOR: The path to use for the QEMU Monitor PTY.
+#   - QEMU_MONITOR: The path to use for the QEMU Monitor Socket.
 #   - QEMU_RV_DM_JTAG_SOCK: The path to use for the RV_DM JTAG TAP Ctrl PTY.
 #   - QEMU_LC_JTAG_SOCK: The path to use for the LC_CTRL JTAG TAP Ctrl PTY.
 
@@ -120,8 +120,8 @@ qemu_args+=(
   # JTAG without stopping execution completely for tests.
   "-global" "tap-ctrl-rbb.quit=false"
 
-  # Configure the monitor in QMP mode with a PTY.
-  "-chardev" "pty,id=monitor,path=${QEMU_MONITOR}"
+  # Configure the monitor in QMP mode with a socket.
+  "-chardev" "socket,id=monitor,path=${QEMU_MONITOR},server=on,wait=off"
   "-mon" "chardev=monitor,mode=control"
 
   # Connect log device to a PTY (only used for optional pass/fail message).
