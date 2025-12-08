@@ -100,6 +100,23 @@ status_t manuf_individualize_device_hw_cfg(
         flash_state, kFlashInfoFieldAstCfgVersion, &ast_cfg_version,
         kFlashInfoFieldAstCfgVersionSizeIn32BitWords));
 
+    // On non-silicon targets, the default behaviour is to expect that the flash
+    // starts "programmed/set" to 0 and must be erased first before it can be
+    // written. This means that we expect the CP device ID and AST configuration
+    // version fields from flash to read as all empty, which the provisioning
+    // flow relies on to function on these targets.
+    //
+    // QEMU emulation instead defaults to being erased (all 1s) by default,
+    // meaning that the AST configuration version that is read will be all 1s,
+    // and the CP device ID will be programmed to some meaningful value.
+    if (kDeviceType == kDeviceSimQemu && ast_cfg_version == UINT32_MAX) {
+      ast_cfg_version = 0;
+
+      // For now, we don't erase the CP Device ID for QEMU, meaning it retains
+      // some meaningful value and we do not set it to all 1s later to identify
+      // it as a Sim-generated device ID.
+    }
+
     // Check if AST configuration version is an 8-bit value.
     if (ast_cfg_version > UINT8_MAX) {
       return OUT_OF_RANGE();
