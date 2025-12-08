@@ -72,7 +72,7 @@ jobs:
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+          service_account_json: "${{ secrets.BAZEL_CACHE_CREDS }}"
       - name: Download bitstream
         uses: ./.github/actions/download-partial-build-bin
         with:
