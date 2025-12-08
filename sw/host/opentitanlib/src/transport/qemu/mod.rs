@@ -101,7 +101,7 @@ impl Qemu {
     /// match what OpenTitanLib expects to be accepted.
     pub fn from_options(options: QemuOpts) -> anyhow::Result<Self> {
         let monitor = Rc::new(RefCell::new(Monitor::new(
-            options.qemu_monitor_socket.unwrap(),
+            options.qemu_monitor_socket.clone().unwrap(),
             options.qemu_quit,
         )?));
 
@@ -123,6 +123,9 @@ impl Qemu {
             let ChardevKind::Pty { ref path } = chardev.kind else {
                 continue;
             };
+            let path = options
+                .device_path(&chardev.id)
+                .unwrap_or(path.to_path_buf());
 
             let serial_port = SerialPortUart::open_pseudo(path.to_str().unwrap(), CONSOLE_BAUDRATE)
                 .context("failed to open QEMU console PTY")?;
@@ -140,6 +143,9 @@ impl Qemu {
         // USBDEV control:
         let vbus_sense = match find_chardev(&chardevs, "usbdev-cmd") {
             Some(ChardevKind::Pty { path }) => {
+                let path = options
+                    .device_path("usbdev-cmd")
+                    .unwrap_or(path.to_path_buf());
                 let tty = serialport::new(
                     path.to_str().context("TTY path not UTF8")?,
                     CONSOLE_BAUDRATE,
@@ -159,6 +165,7 @@ impl Qemu {
         // QEMU log, not really a UART but modelled as one:
         let log = match find_chardev(&chardevs, "log") {
             Some(ChardevKind::Pty { path }) => {
+                let path = options.device_path("log").unwrap_or(path.to_path_buf());
                 let log: Rc<dyn Uart> = Rc::new(
                     SerialPortUart::open_pseudo(path.to_str().unwrap(), CONSOLE_BAUDRATE)
                         .context("failed to open QEMU log PTY")?,
@@ -174,6 +181,7 @@ impl Qemu {
         // If there's a chardev called `spidev`, configure it as a PTY and use as the SPI bus.
         let spi = match find_chardev(&chardevs, "spidev") {
             Some(ChardevKind::Pty { path }) => {
+                let path = options.device_path("spidev").unwrap_or(path.to_path_buf());
                 let spi = QemuSpi::new(path).context("failed to connect to QEMU SPI PTY")?;
                 let spi: Rc<dyn Target> = Rc::new(spi);
                 Some(spi)
@@ -194,6 +202,9 @@ impl Qemu {
             let ChardevKind::Pty { ref path } = chardev.kind else {
                 continue;
             };
+            let path = options
+                .device_path(&chardev.id)
+                .unwrap_or(path.to_path_buf());
 
             let i2c = QemuI2c::new(path).context("failed to connect to QEMU I2C PTY")?;
             let i2c: Rc<dyn Bus> = Rc::new(i2c);
@@ -209,6 +220,7 @@ impl Qemu {
         // If there's a chardev called `gpio`, configure it as a PTY and use as the GPIO pins.
         let gpio = match find_chardev(&chardevs, "gpio") {
             Some(ChardevKind::Pty { path }) => {
+                let path = options.device_path("gpio").unwrap_or(path.to_path_buf());
                 let gpio = QemuGpio::new(path).context("failed to connect to QEMU GPIO PTY")?;
                 let gpio = Rc::new(RefCell::new(gpio));
                 Some(gpio)
@@ -221,7 +233,9 @@ impl Qemu {
 
         // Debug module JTAG tap:
         let jtag_rv_dm_sock = match find_chardev(&chardevs, "taprbb") {
-            Some(ChardevKind::Socket { path }) => Some(path.clone()),
+            Some(ChardevKind::Socket { path }) => {
+                Some(options.device_path("taprbb").unwrap_or(path.to_path_buf()))
+            }
             _ => {
                 log::info!("could not find socket chardev with id=taprbb, skipping RV_DM JTAG");
                 None
@@ -230,7 +244,11 @@ impl Qemu {
 
         // Lifecycle controller JTAG tap:
         let jtag_lc_ctrl_sock = match find_chardev(&chardevs, "taprbb-lc-ctrl") {
-            Some(ChardevKind::Socket { path }) => Some(path.clone()),
+            Some(ChardevKind::Socket { path }) => Some(
+                options
+                    .device_path("taprbb-lc-ctrl")
+                    .unwrap_or(path.to_path_buf()),
+            ),
             _ => {
                 log::info!(
                     "could not find socket chardev with id=taprbb-lc-ctrl, skipping LC JTAG"
