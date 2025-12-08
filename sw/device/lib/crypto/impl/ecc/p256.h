@@ -59,20 +59,35 @@ enum {
    */
   kP256MaskedScalarNumShares = 2,
   /**
+   * Length of checksum for the scalar in bits.
+   */
+  kP256ChecksumBits = 32,
+  /**
+   * Length of checksum for the scalar in bytes.
+   */
+  kP256ChecksumBytes = kP256ChecksumBits / 8,
+  /**
+   * Length of checksum for the scalar in words.
+   */
+  kP256ChecksumWords = kP256ChecksumBytes / sizeof(uint32_t),
+  /**
    * Length of the full masked secret scalar share in bits.
    */
   kP256MaskedScalarTotalShareBits =
-      kP256MaskedScalarNumShares * kP256MaskedScalarShareBits,
+      kP256MaskedScalarNumShares * kP256MaskedScalarShareBits +
+      kP256ChecksumBits,
   /**
    * Length of the full masked secret scalar share in bytes.
    */
   kP256MaskedScalarTotalShareBytes =
-      kP256MaskedScalarNumShares * kP256MaskedScalarShareBytes,
+      kP256MaskedScalarNumShares * kP256MaskedScalarShareBytes +
+      kP256ChecksumBytes,
   /**
    * Length of the full masked secret scalar share in words.
    */
   kP256MaskedScalarTotalShareWords =
-      kP256MaskedScalarNumShares * kP256MaskedScalarShareWords,
+      kP256MaskedScalarNumShares * kP256MaskedScalarShareWords +
+      kP256ChecksumWords,
 };
 
 /**
