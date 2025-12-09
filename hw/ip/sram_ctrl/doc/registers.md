@@ -133,10 +133,16 @@ Sram execution enable.
 |  3:0   |   rw   |   0x9   | [EN](#exec--en) |
 
 ### EXEC . EN
-Write kMultiBitBool4True to this field to enable execution from SRAM.
-Note that this register only takes effect if the EN_SRAM_IFETCH switch
-in the OTP HW_CFG1 partition is set to kMultiBitBool8True. Otherwise execution
-from SRAM cannot be enabled via this register.
+This register only has any effect if the value of the incoming
+otp_en_sram_ifetch_i signal is set to kMultiBitBool8True (in
+Earlgrey, this comes from the OTP HW_CFG1 partition).
+
+If so, execution from SRAM requires this register to contain
+kMultiBitBool4True.
+
+If otp_en_sram_ifetch_i is not kMultiBitBool8True, execution
+from SRAM is instead controlled by a signal from lc_ctrl. See
+"Theory of Operation" for more details.
 
 ## CTRL_REGWEN
 Lock register for control register.
