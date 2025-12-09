@@ -8,13 +8,12 @@ Terms of Reference for the OTGB are set in the OpenTitan Technical Charter which
 
 ## Expectations and Conduct
 
-All OpenTitan spaces, including the OTGB, are covered by the OpenTitan code of conduct to ensure a welcoming and respectful community.
+All OpenTitan spaces, including the OTGB, are covered by the OpenTitan [code of conduct](./code_of_conduct.md) to ensure a welcoming and respectful community.
 
 ## Membership
 
 The OTGB membership is:
 
-* Aaron Durbin (Rivos)
 * Claus Dietze (Giesecke & Devrient)
 * Jay Alphey (lowRISC)
 * Miguel Osorio (Google)
