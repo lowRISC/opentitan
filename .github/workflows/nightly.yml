@@ -81,6 +81,23 @@ jobs:
       bucket_job_folder_name: "cw310_rom"
       branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
 
+  execute_fpga_cw310_sival_rom_ext_tests:
+    name: CW310 ROM_EXT Tests
+    needs: chip_earlgrey_cw310_hyperdebug
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_fpga_cw310_rom_ext_tests
+      bitstream: chip_earlgrey_cw310_hyperdebug
+      board: cw310
+      interface: hyper310
+      tag_filters: cw310_sival_rom_ext,-broken,-manual
+      add_default_filters: false
+      cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw310_sival_rom_ext"
+      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
+
   execute_fpga_cw310_rom_ext_tests:
     name: CW310 ROM_EXT Tests
     needs: chip_earlgrey_cw310_hyperdebug
