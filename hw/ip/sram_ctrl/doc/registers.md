@@ -135,8 +135,10 @@ Sram execution enable.
 ### EXEC . EN
 Write kMultiBitBool4True to this field to enable execution from SRAM.
 Note that this register only takes effect if the EN_SRAM_IFETCH switch
-in the OTP HW_CFG1 partition is set to kMultiBitBool8True. Otherwise execution
-from SRAM cannot be enabled via this register.
+in the OTP HW_CFG1 partition is set to kMultiBitBool8True. Otherwise
+execution from SRAM cannot be enabled via this register, and is instead
+only enabled with HW debug functionality (via the lifecycle controller's
+lc_hw_debug_en signal).
 
 ## CTRL_REGWEN
 Lock register for control register.
