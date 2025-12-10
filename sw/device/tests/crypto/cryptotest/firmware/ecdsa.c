@@ -197,7 +197,7 @@ status_t p256_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
   p256_masked_scalar_t private_key_masked;
   otcrypto_blinded_key_t private_key = {
       .config = kP256PrivateKeyConfig,
-      .keyblob_length = sizeof(private_key_masked),
+      .keyblob_length = kP256MaskedScalarTotalShareBytes,
       .keyblob = (uint32_t *)&private_key_masked,
   };
   memset(private_key_masked.share0, 0, kP256MaskedScalarShareBytes);
@@ -233,7 +233,7 @@ status_t p384_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
   p384_masked_scalar_t private_key_masked;
   otcrypto_blinded_key_t private_key = {
       .config = kP384PrivateKeyConfig,
-      .keyblob_length = sizeof(private_key_masked),
+      .keyblob_length = kP384MaskedScalarTotalShareBytes,
       .keyblob = (uint32_t *)&private_key_masked,
   };
   memset(private_key_masked.share0, 0, kP384MaskedScalarShareBytes);
