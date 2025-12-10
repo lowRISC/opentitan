@@ -20,7 +20,7 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // Class specific methods
   extern task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
-  extern task process_tl_host_access(tl_seq_item item, uvm_reg_addr_t csr_addr,
+  extern task process_tl_core_access(tl_seq_item item, uvm_reg_addr_t csr_addr,
     tl_phase_e tl_phase);
   extern task process_tl_prim_access(tl_seq_item item, uvm_reg_addr_t csr_addr,
     tl_phase_e tl_phase);
@@ -83,264 +83,267 @@ task rram_ctrl_scoreboard::process_tl_access(tl_seq_item item,
   if ( write && channel == DataChannel) tl_phase = DataWrite;
 
   if (ral_name == ral.get_name()) begin
-    process_tl_host_access(item, csr_addr, tl_phase);
+    process_tl_core_access(item, csr_addr, tl_phase);
   end else if (ral_name == cfg.prim_ral_name) begin
     process_tl_prim_access(item, csr_addr, tl_phase);
+  end else if (ral_name == cfg.host_ral_name) begin
+
   end else begin
     `uvm_fatal(`gfn, $sformatf("Specified RAL name %0s doesn't exist!", ral_name))
   end
 endtask : process_tl_access
 
-task rram_ctrl_scoreboard::process_tl_host_access(
+task rram_ctrl_scoreboard::process_tl_core_access(
   tl_seq_item item, uvm_reg_addr_t csr_addr, tl_phase_e tl_phase);
   string  ral_name      = ral.get_name();
   bit     do_read_check = 1;
+  bit     csr_access = 0;
   uvm_reg csr;
 
+  // If fifo access
+  if (is_mem_addr(item, ral_name)) begin
+
   // If access was to a valid CSR, get the CSR handle
-  if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
+  end else if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
     csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
+    csr_access = 1;
     `DV_CHECK_NE_FATAL(csr, null)
   end else begin
     `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
   end
 
-  // If incoming access is a write to a valid csr, then make updates right away
-  if (tl_phase == AddrWrite) begin
-    void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+  if (csr_access) begin
+    // If incoming access is a write to a valid csr, then make updates right away
+    if (tl_phase == AddrWrite) begin
+      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+    end
+
+    do_read_check = 0;  // TODO disable read check for now, this line should be removed later
+
+    // Process the CRS req:
+    //  - for write, update local variable and fifo at address phase
+    //  - for read, update prediction at address phase and compare at data phase
+    case (csr.get_name())
+      // Add individual case item for each csr
+      "intr_state": begin
+        // FIXME
+      end
+      "intr_enable": begin
+        // FIXME
+      end
+      "intr_test": begin
+        // FIXME
+      end
+      "alert_test": begin
+        // FIXME
+      end
+      "dis": begin
+        // FIXME
+      end
+      "exec": begin
+        // FIXME
+      end
+      "init": begin
+        // FIXME
+      end
+      "ctrl_regwen": begin
+        // FIXME
+      end
+      "control": begin
+        // FIXME
+      end
+      "addr": begin
+        // FIXME
+      end
+      "write_abort": begin
+        // FIXME
+      end
+      "region_cfg_regwen_0": begin
+        // FIXME
+      end
+      "region_cfg_regwen_1": begin
+        // FIXME
+      end
+      "region_cfg_regwen_2": begin
+        // FIXME
+      end
+      "region_cfg_regwen_3": begin
+        // FIXME
+      end
+      "region_cfg_regwen_4": begin
+        // FIXME
+      end
+      "region_cfg_regwen_5": begin
+        // FIXME
+      end
+      "region_cfg_regwen_6": begin
+        // FIXME
+      end
+      "region_cfg_regwen_7": begin
+        // FIXME
+      end
+      "mp_region_cfg_0": begin
+        // FIXME
+      end
+      "mp_region_cfg_1": begin
+        // FIXME
+      end
+      "mp_region_cfg_2": begin
+        // FIXME
+      end
+      "mp_region_cfg_3": begin
+        // FIXME
+      end
+      "mp_region_cfg_4": begin
+        // FIXME
+      end
+      "mp_region_cfg_5": begin
+        // FIXME
+      end
+      "mp_region_cfg_6": begin
+        // FIXME
+      end
+      "mp_region_cfg_7": begin
+        // FIXME
+      end
+      "mp_region_0": begin
+        // FIXME
+      end
+      "mp_region_1": begin
+        // FIXME
+      end
+      "mp_region_2": begin
+        // FIXME
+      end
+      "mp_region_3": begin
+        // FIXME
+      end
+      "mp_region_4": begin
+        // FIXME
+      end
+      "mp_region_5": begin
+        // FIXME
+      end
+      "mp_region_6": begin
+        // FIXME
+      end
+      "mp_region_7": begin
+        // FIXME
+      end
+      "default_region": begin
+        // FIXME
+      end
+      "info_regwen_0": begin
+        // FIXME
+      end
+      "info_regwen_1": begin
+        // FIXME
+      end
+      "info_regwen_2": begin
+        // FIXME
+      end
+      "info_regwen_3": begin
+        // FIXME
+      end
+      "info_regwen_4": begin
+        // FIXME
+      end
+      "info_regwen_5": begin
+        // FIXME
+      end
+      "info_regwen_6": begin
+        // FIXME
+      end
+      "info_regwen_7": begin
+        // FIXME
+      end
+      "info_page_cfg_0": begin
+        // FIXME
+      end
+      "info_page_cfg_1": begin
+        // FIXME
+      end
+      "info_page_cfg_2": begin
+        // FIXME
+      end
+      "info_page_cfg_3": begin
+        // FIXME
+      end
+      "info_page_cfg_4": begin
+        // FIXME
+      end
+      "info_page_cfg_5": begin
+        // FIXME
+      end
+      "info_page_cfg_6": begin
+        // FIXME
+      end
+      "info_page_cfg_7": begin
+        // FIXME
+      end
+      "hw_info_cfg_override": begin
+        // FIXME
+      end
+      "op_status": begin
+        // FIXME
+      end
+      "status": begin
+        // FIXME
+      end
+      "debug_state": begin
+        // FIXME
+      end
+      "err_code": begin
+        // FIXME
+      end
+      "std_fault_status": begin
+        // FIXME
+      end
+      "fault_status": begin
+        // FIXME
+      end
+      "err_addr": begin
+        // FIXME
+      end
+      "ecc_single_err_cnt": begin
+        // FIXME
+      end
+      "ecc_single_err_addr": begin
+        // FIXME
+      end
+      "phy_alert_cfg": begin
+        // FIXME
+      end
+      "phy_status": begin
+        // FIXME
+      end
+      "scratch": begin
+        // FIXME
+      end
+      "fifo_lvl": begin
+        // FIXME
+      end
+      "fifo_clr": begin
+        // FIXME
+      end
+      "curr_fifo_lvl": begin
+        // FIXME
+      end
+      default: begin
+        `uvm_fatal(`gfn, $sformatf("invalid CSR: %0s", csr.get_full_name()))
+      end
+    endcase
+
+    // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
+    if (tl_phase == DataRead) begin
+      if (do_read_check) begin
+        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
+                     $sformatf("reg name: %0s", csr.get_full_name()))
+      end
+      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+    end
   end
-
-  do_read_check = 0;  // TODO disable read check for now, this line should be removed later
-
-  // Process the CRS req:
-  //  - for write, update local variable and fifo at address phase
-  //  - for read, update prediction at address phase and compare at data phase
-  case (csr.get_name())
-    // Add individual case item for each csr
-    "intr_state": begin
-      // FIXME
-    end
-    "intr_enable": begin
-      // FIXME
-    end
-    "intr_test": begin
-      // FIXME
-    end
-    "alert_test": begin
-      // FIXME
-    end
-    "dis": begin
-      // FIXME
-    end
-    "exec": begin
-      // FIXME
-    end
-    "init": begin
-      // FIXME
-    end
-    "ctrl_regwen": begin
-      // FIXME
-    end
-    "control": begin
-      // FIXME
-    end
-    "addr": begin
-      // FIXME
-    end
-    "write_abort": begin
-      // FIXME
-    end
-    "region_cfg_regwen": begin
-      // FIXME
-    end
-    "region_cfg_regwen": begin
-      // FIXME
-    end
-    "region_cfg_regwen": begin
-      // FIXME
-    end
-    "region_cfg_regwen": begin
-      // FIXME
-    end
-    "region_cfg_regwen": begin
-      // FIXME
-    end
-    "region_cfg_regwen": begin
-      // FIXME
-    end
-    "region_cfg_regwen": begin
-      // FIXME
-    end
-    "region_cfg_regwen": begin
-      // FIXME
-    end
-    "mp_region_cfg": begin
-      // FIXME
-    end
-    "mp_region_cfg": begin
-      // FIXME
-    end
-    "mp_region_cfg": begin
-      // FIXME
-    end
-    "mp_region_cfg": begin
-      // FIXME
-    end
-    "mp_region_cfg": begin
-      // FIXME
-    end
-    "mp_region_cfg": begin
-      // FIXME
-    end
-    "mp_region_cfg": begin
-      // FIXME
-    end
-    "mp_region_cfg": begin
-      // FIXME
-    end
-    "mp_region": begin
-      // FIXME
-    end
-    "mp_region": begin
-      // FIXME
-    end
-    "mp_region": begin
-      // FIXME
-    end
-    "mp_region": begin
-      // FIXME
-    end
-    "mp_region": begin
-      // FIXME
-    end
-    "mp_region": begin
-      // FIXME
-    end
-    "mp_region": begin
-      // FIXME
-    end
-    "mp_region": begin
-      // FIXME
-    end
-    "default_region": begin
-      // FIXME
-    end
-    "info_regwen": begin
-      // FIXME
-    end
-    "info_regwen": begin
-      // FIXME
-    end
-    "info_regwen": begin
-      // FIXME
-    end
-    "info_regwen": begin
-      // FIXME
-    end
-    "info_regwen": begin
-      // FIXME
-    end
-    "info_regwen": begin
-      // FIXME
-    end
-    "info_regwen": begin
-      // FIXME
-    end
-    "info_regwen": begin
-      // FIXME
-    end
-    "info_page_cfg": begin
-      // FIXME
-    end
-    "info_page_cfg": begin
-      // FIXME
-    end
-    "info_page_cfg": begin
-      // FIXME
-    end
-    "info_page_cfg": begin
-      // FIXME
-    end
-    "info_page_cfg": begin
-      // FIXME
-    end
-    "info_page_cfg": begin
-      // FIXME
-    end
-    "info_page_cfg": begin
-      // FIXME
-    end
-    "info_page_cfg": begin
-      // FIXME
-    end
-    "hw_info_cfg_override": begin
-      // FIXME
-    end
-    "op_status": begin
-      // FIXME
-    end
-    "status": begin
-      // FIXME
-    end
-    "debug_state": begin
-      // FIXME
-    end
-    "err_code": begin
-      // FIXME
-    end
-    "std_fault_status": begin
-      // FIXME
-    end
-    "fault_status": begin
-      // FIXME
-    end
-    "err_addr": begin
-      // FIXME
-    end
-    "ecc_single_err_cnt": begin
-      // FIXME
-    end
-    "ecc_single_err_addr": begin
-      // FIXME
-    end
-    "phy_alert_cfg": begin
-      // FIXME
-    end
-    "phy_status": begin
-      // FIXME
-    end
-    "scratch": begin
-      // FIXME
-    end
-    "fifo_lvl": begin
-      // FIXME
-    end
-    "fifo_clr": begin
-      // FIXME
-    end
-    "curr_fifo_lvl": begin
-      // FIXME
-    end
-    "wr_fifo": begin
-      // FIXME
-    end
-    "rd_fifo": begin
-      // FIXME
-    end
-    default: begin
-      `uvm_fatal(`gfn, $sformatf("invalid CSR: %0s", csr.get_full_name()))
-    end
-  endcase
-
-  // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
-  if (tl_phase == DataRead) begin
-    if (do_read_check) begin
-      `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
-                   $sformatf("reg name: %0s", csr.get_full_name()))
-    end
-    void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
-  end
-endtask : process_tl_host_access
+endtask : process_tl_core_access
 
 task rram_ctrl_scoreboard::process_tl_prim_access(
   tl_seq_item item, uvm_reg_addr_t csr_addr, tl_phase_e tl_phase);

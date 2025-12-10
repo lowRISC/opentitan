@@ -10,8 +10,7 @@ class rram_ctrl_base_vseq extends cip_base_vseq #(
   );
   `uvm_object_utils(rram_ctrl_base_vseq)
 
-  rram_ctrl_host_reg_block host_ral;
-  rram_ctrl_prim_reg_block prim_ral;
+  rram_macro_prim_reg_block prim_ral;
 
   // Various knobs to enable certain routines
   bit do_rram_ctrl_init = 1'b1;
@@ -32,7 +31,6 @@ endfunction : new
 
 function void rram_ctrl_base_vseq::set_handles();
   super.set_handles();
-  `downcast(host_ral, cfg.ral_models[cfg.host_ral_name]);
   `downcast(prim_ral, cfg.ral_models[cfg.prim_ral_name]);
 endfunction : set_handles
 
@@ -50,4 +48,5 @@ endtask : dut_init
 
 task rram_ctrl_base_vseq::rram_ctrl_init();
   // TODO
+  #1ms;
 endtask : rram_ctrl_init

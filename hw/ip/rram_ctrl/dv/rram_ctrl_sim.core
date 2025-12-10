@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:rram_ctrl
+      - lowrisc:ip:rram_macro
 
   files_dv:
     depend:

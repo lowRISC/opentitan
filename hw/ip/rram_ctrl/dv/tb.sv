@@ -30,77 +30,93 @@ module tb;
   tl_if                         tl_prim_if    (.clk(clk), .rst_n(rst_n));
   rram_ctrl_misc_io_if          misc_if       ();
 
+  rram_ctrl_pkg::prim_rram_req_t rram_req;
+  rram_ctrl_pkg::prim_rram_rsp_t rram_rsp;
+
   `DV_ALERT_IF_CONNECT()
 
   // DUT
   rram_ctrl #(
-    .WrFifoDepth                (WrFifoDepth        ),
-    .RdFifoDepth                (RdFifoDepth        )
+    .WrFifoDepth(WrFifoDepth),
+    .RdFifoDepth(RdFifoDepth)
   ) dut (
-    .clk_i                      (clk                ),
-    .rst_ni                     (rst_n              ),
-    .clk_otp_i                  (clk                ),
-    .rst_otp_ni                 (rst_n              ),
+    .clk_i          (clk),
+    .rst_ni         (rst_n),
 
-    // Various TLUL interfaces
-    .core_tl_i                  (tl_core_if.h2d     ),
-    .core_tl_o                  (tl_core_if.d2h     ),
-    .prim_tl_i                  ('0                 ),  // TODO tl_prim_if.h2d
-    .prim_tl_o                  (tl_prim_if.d2h     ),
-    .host_tl_i                  ('0                 ),  // TODO tl_host_if.h2d
-    .host_tl_o                  (tl_host_if.d2h     ),
+    .clk_otp_i      (clk),
+    .rst_otp_ni     (rst_n),
 
-    // OTP interface
-    .otp_i                      ('0                 ),
-    .otp_o                      (                   ),
+    // various tlul interfaces
+    .core_tl_i(tl_core_if.h2d),
+    .core_tl_o(tl_core_if.d2h),
+    .host_tl_i(tl_host_if.h2d),
+    .host_tl_o(tl_host_if.d2h),
 
-    // Various life cycle decode signals
-    .lc_creator_seed_sw_rw_en_i (lc_ctrl_pkg::On    ),
-    .lc_owner_seed_sw_rw_en_i   (lc_ctrl_pkg::On    ),
-    .lc_iso_part_sw_rd_en_i     (lc_ctrl_pkg::On    ),
-    .lc_iso_part_sw_wr_en_i     (lc_ctrl_pkg::On    ),
-    .lc_seed_hw_rd_en_i         (lc_ctrl_pkg::On    ),
-    .lc_nvm_debug_en_i          (lc_ctrl_pkg::On    ),
-    .lc_escalate_en_i           (lc_ctrl_pkg::On    ),
+    // otp interface
+    .otp_i('0),
+    .otp_o(),
 
-    // Life cycle RMA handling
-    .rma_req_i                  (lc_ctrl_pkg::Off   ),
-    .rma_seed_i                 ('0                 ),
-    .rma_ack_o                  (                   ),
+    // various life cycle decode signals
+    .lc_creator_seed_sw_rw_en_i(lc_ctrl_pkg::On),
+    .lc_owner_seed_sw_rw_en_i  (lc_ctrl_pkg::On),
+    .lc_iso_part_sw_rd_en_i    (lc_ctrl_pkg::On),
+    .lc_iso_part_sw_wr_en_i    (lc_ctrl_pkg::On),
+    .lc_seed_hw_rd_en_i        (lc_ctrl_pkg::On),
+    .lc_nvm_debug_en_i         (lc_ctrl_pkg::On),
+    .lc_escalate_en_i          (lc_ctrl_pkg::On),
 
-    // Power manager indication
-    .pwrmgr_o                   (                   ),
-    .keymgr_o                   (                   ),
+    // life cycle rma handling
+    .rma_req_i (lc_ctrl_pkg::Off),
+    .rma_seed_i('0),
+    .rma_ack_o (),
 
-    // rram prim signals
-    .rram_test_analog_io        (rram_test_analog   ),
+    // power manager indication
+    .pwrmgr_o(),
+    .keymgr_o(),
 
-    // test
-    .scanmode_i                 (prim_mubi_pkg::MuBi4False),
-    .scan_rst_ni                ('0                 ),
-    .scan_en_i                  ('0                 ),
+    // alerts and interrupts
+    .intr_wr_empty_o  (interrupts[WrEmpty]),
+    .intr_wr_lvl_o    (interrupts[WrLvl]  ),
+    .intr_rd_full_o   (interrupts[RdFull] ),
+    .intr_rd_lvl_o    (interrupts[RdLvl]  ),
+    .intr_op_done_o   (interrupts[OpDone] ),
+    .intr_corr_err_o  (interrupts[CorrErr]),
+    .alert_rx_i       (alert_rx),
+    .alert_tx_o       (alert_tx),
 
-    // JTAG
-    .cio_tck_i                  ('0                 ),
-    .cio_tms_i                  ('0                 ),
-    .cio_tdi_i                  ('0                 ),
-    .cio_tdo_en_o               (                   ),
-    .cio_tdo_o                  (                   ),
-
-    // Alerts and interrupts
-    .intr_wr_empty_o            (interrupts[WrEmpty]),
-    .intr_wr_lvl_o              (interrupts[WrLvl]  ),
-    .intr_rd_full_o             (interrupts[RdFull] ),
-    .intr_rd_lvl_o              (interrupts[RdLvl]  ),
-    .intr_op_done_o             (interrupts[OpDone] ),
-    .intr_corr_err_o            (interrupts[CorrErr]),
-    .alert_rx_i                 (alert_rx           ),
-    .alert_tx_o                 (alert_tx           ),
-
-    // Observability
-    .obs_ctrl_i                 ('0                 ),
-    .rram_obs_o                 (                   )
+    .prim_rram_req_o(rram_req),
+    .prim_rram_rsp_i(rram_rsp)
   );
+
+  rram_macro #(
+    .TotalPages(rram_ctrl_pkg::TotalPages),
+    .DataWidth(rram_ctrl_pkg::DataWidth),
+    .WordsPerPage(rram_ctrl_pkg::WordsPerPage),
+    .TotalInfoPages(rram_ctrl_pkg::TotalInfoPages),
+    .WrResWords(rram_ctrl_pkg::WrResWords)
+  ) u_rram_macro (
+    .clk_i(clk),
+    .rst_ni(rst_n),
+    .rram_req_i(rram_req),
+    .rram_rsp_o(rram_rsp),
+    .init_busy_o(init_busy),
+    .tck_i('0),
+    .tdi_i('0),
+    .tms_i('0),
+    .tdo_o(),
+    .bist_enable_i(prim_mubi_pkg::MuBi4False),
+    .scanmode_i(prim_mubi_pkg::MuBi4False),
+    .scan_en_i(1'b0),
+    .scan_rst_ni(1'b0),
+    .rram_test_analog_io(rram_test_analog),
+    .fatal_alert_o(),
+    .recov_alert_o(),
+    .tl_i(tl_prim_if.h2d),
+    .tl_o(tl_prim_if.d2h),
+    .obs_ctrl_i('0),
+    .rram_obs_o()
+  );
+
 
   // TODO: connect to something meaningful
   assign (pull1, pull0) rram_test_analog = 1'b0;
@@ -111,7 +127,7 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(
       null, "*.env", "clk_rst_vif_rram_ctrl_host_reg_block", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(
-      null, "*.env", "clk_rst_vif_rram_ctrl_prim_reg_block", clk_rst_if);
+      null, "*.env", "clk_rst_vif_rram_macro_prim_reg_block", clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_core*", "vif", tl_core_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_host*", "vif", tl_host_if);

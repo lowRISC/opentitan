@@ -46,7 +46,7 @@ module rram_ctrl_bind;
   //     .d2h  (prim_tl_o)
   // );
 
-  // bind rram_ctrl rram_ctrl_prim_assert_fpv rram_ctrl_prim_csr_assert (
+  // bind rram_ctrl rram_macro_prim_assert_fpv rram_macro_prim_csr_assert (
   //   .clk_i,
   //   .rst_ni,
   //   .h2d  (prim_tl_i),
