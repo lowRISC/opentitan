@@ -128,10 +128,8 @@ static status_t sign_then_verify_test(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 static status_t sign_kat(void) {
-  uint32_t keyblob_len = 2 * kP384SecretScalarWords;
-
   // Allocate space for a masked secret scalar.
-  uint32_t keyblob_scalar[keyblob_len];
+  uint32_t keyblob_scalar[keyblob_num_words(kPrivateKeyConfig)];
   otcrypto_blinded_key_t secret_scalar = {
       .config = kPrivateKeyConfig,
       .keyblob_length = sizeof(keyblob_scalar),
@@ -142,7 +140,7 @@ static status_t sign_kat(void) {
   secret_scalar.checksum = integrity_blinded_checksum(&secret_scalar);
 
   // Allocate space for a masked private key.
-  uint32_t keyblob_sk[keyblob_len];
+  uint32_t keyblob_sk[keyblob_num_words(kPrivateKeyConfig)];
   otcrypto_blinded_key_t private_key = {
       .config = kPrivateKeyConfig,
       .keyblob_length = sizeof(keyblob_sk),
