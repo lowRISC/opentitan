@@ -197,6 +197,7 @@ def _build_binary(ctx, exec_env, name, deps, kind):
     binary = obj_transform(
         ctx,
         name = name,
+        strip_llvm_prf_cnts = True,
         suffix = "bin",
         format = "binary",
         src = elf,
@@ -416,6 +417,12 @@ common_binary_attrs = {
         default = {},
         doc = "Firmware slot spec to use in this environment",
     ),
+    "_check_initial_coverage": attr.label(
+        doc = "Tool to check the coverage counter initialization.",
+        default = "//util/coverage:check_initial_coverage",
+        executable = True,
+        cfg = "exec",
+    ),
 }
 
 opentitan_binary = rv_rule(
@@ -472,9 +479,15 @@ def _opentitan_test(ctx):
         harness_runfiles = ctx.attr.test_harness[DefaultInfo].default_runfiles
     else:
         harness_runfiles = ctx.runfiles()
+
+    if ctx.var.get("ot_coverage_enabled", "false") == "true":
+        coverage_runfiles = ctx.attr._collect_cc_coverage[DefaultInfo].default_runfiles
+    else:
+        coverage_runfiles = ctx.runfiles()
+
     return DefaultInfo(
         executable = executable,
-        runfiles = ctx.runfiles(files = runfiles).merge_all([harness_runfiles]),
+        runfiles = ctx.runfiles(files = runfiles).merge_all([harness_runfiles, coverage_runfiles]),
     )
 
 opentitan_test = rv_rule(
@@ -544,6 +557,16 @@ opentitan_test = rv_rule(
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_modid_check": attr.label(
             default = "//rules/scripts:modid_check",
+            executable = True,
+            cfg = "exec",
+        ),
+        "_lcov_merger": attr.label(
+            default = configuration_field(fragment = "coverage", name = "output_generator"),
+            executable = True,
+            cfg = "exec",
+        ),
+        "_collect_cc_coverage": attr.label(
+            default = "//util/coverage/collect_cc_coverage",
             executable = True,
             cfg = "exec",
         ),
