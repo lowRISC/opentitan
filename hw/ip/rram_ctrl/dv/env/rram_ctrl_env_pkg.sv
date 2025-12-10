@@ -51,6 +51,24 @@ package rram_ctrl_env_pkg;
     NumRramCtrlIntr = 6
   } rram_ctrl_intr_e;
 
+  localparam WrFifoDepth = 4;
+  localparam RdFifoDepth = 16;
+
+  // bus addr width
+  typedef bit [BusAddrByteW-1:0] addr_t;
+  // bus data words
+  typedef logic [TL_DW-1:0] data_t;
+  // queue of data words
+  typedef data_t data_q_t[$];
+
+  typedef struct packed {
+    rram_part_e  partition;   // data or info partition
+    rram_op_e    op;          // read / write
+    logic [9:0]  num_words;   // number of words to read or write (TL_DW)
+    addr_t       addr;        // starting addr for the op
+  } rram_ctrl_op_t;
+
+
   // Functions
 
   // Package sources
