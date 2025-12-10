@@ -76,10 +76,10 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
         # Check that bank=0 page=5 is configured for RD/WR, but not ERase.
         exit_success = "info region bank=0 part=0 page=5 RD-WR-uu-uu-uu-uu LK",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_isfb",
+        testopt_clear_after_test = "True",
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
@@ -101,13 +101,13 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
         # Even though the isfb_erase extension is present and set to true,
         # the manifest doesn't node lock this image.  The erase condition
         # is not met and the ISFB page should not allow erase.
         # Check that bank=0 page=5 is configured for RD/WR, but not ERase.
         exit_success = "info region bank=0 part=0 page=5 RD-WR-uu-uu-uu-uu LK",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_isfb",
+        testopt_clear_after_test = "True",
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     manifest = ":manifest_bad_erase_contraint",
@@ -224,21 +224,20 @@ _ISFB_CONTRAINT_TESTS = {
             binaries = {
                 ":isfb_page_init": "isfb_page_init",
             },
-            changes_otp = True,
             exit_failure = param["failure"],
             exit_success = param["success"],
             rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_isfb",
             test_cmd = """
                 --exec="image assemble --output=init.bin --mirror=false --size=524288 {rom_ext}@{rom_ext_slot_a} {isfb_page_init}@{owner_slot_a}"
-                --exec="transport init"
-                --exec="fpga clear-bitstream"
-                --exec="fpga load-bitstream {bitstream}"
                 --exec="bootstrap --clear-uart=true init.bin"
                 --exec="console --non-interactive --exit-success='PASS!' --timeout=10s"
                 --exec="bootstrap --clear-uart=true {firmware}"
                 --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}' --timeout=10s"
                 no-op
             """,
+            testopt_bootstrap = "False",
+            testopt_clear_after_test = "True",
+            testopt_clear_before_test = "True",
         ),
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         manifest = param["manifest"],

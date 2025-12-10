@@ -31,9 +31,7 @@ opentitan_test(
     fpga = fpga_params(
         timeout = "moderate",
         data = _TEST_VECTORS,
-        test_cmd = """
-                --bootstrap={firmware}
-            """ + _TEST_ARGS,
+        test_cmd = _TEST_ARGS,
         test_harness = "//sw/host/tests/crypto/ecdsa_kat:harness",
     ),
     deps = [
