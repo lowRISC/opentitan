@@ -659,6 +659,7 @@
 
   - [Host Software](./sw/host/README.md)
     - [OpenTitanLib](./sw/host/opentitanlib/README.md)
+      - [Bitbanging](./sw/host/opentitanlib/doc/bitbanging.md)
     - [OpenTitanTool](./sw/host/opentitantool/README.md)
     - [OpenTitanSession](./sw/host/opentitansession/README.md)
     - [OpenTitan Certificate Generator](./sw/host/ot_certs/README.md)
