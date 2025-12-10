@@ -57,15 +57,19 @@ static status_t peripheral_handles_init(void) {
 /**
  * Initializes flash info page 0 fields required to complete the
  * individualization step, which include:
- *   - AST configuration data
+ *   - making page 0 accessible
+ *   - AST configuration data (if requested)
  */
-static status_t init_flash_info_page0(void) {
+static status_t init_flash_info_page0(bool write_ast_data) {
   uint32_t byte_address = 0;
   TRY(flash_ctrl_testutils_info_region_setup_properties(
       &flash_ctrl_state, kFlashInfoFieldAstCalibrationData.page,
       kFlashInfoFieldAstCalibrationData.bank,
       kFlashInfoFieldAstCalibrationData.partition, kFlashInfoPage0Permissions,
       &byte_address));
+  if (!write_ast_data) {
+    return OK_STATUS();
+  }
   TRY(flash_ctrl_testutils_erase_page(
       &flash_ctrl_state, byte_address,
       kFlashInfoFieldAstCalibrationData.partition,
@@ -102,6 +106,7 @@ static status_t check_otp_ast_cfg(void) {
   }
 
   // Check that the AST configuration data was erased from flash info page 0.
+  TRY(init_flash_info_page0(false));
   uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords] = {0};
   TRY(manuf_flash_info_field_read(
       &flash_ctrl_state, kFlashInfoFieldAstCalibrationData, ast_cfg_data,
@@ -187,7 +192,7 @@ bool test_main(void) {
 
   // Provision CREATOR_SW_CFG partition.
   if (!status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl))) {
-    CHECK_STATUS_OK(init_flash_info_page0());
+    CHECK_STATUS_OK(init_flash_info_page0(true));
     CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg(
         &otp_ctrl, &flash_ctrl_state));
     CHECK_STATUS_OK(manuf_individualize_device_field_cfg(
