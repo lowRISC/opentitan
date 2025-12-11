@@ -34,6 +34,12 @@ function void rram_ctrl_env_cfg::initialize();
 
   super.initialize();
 
+  // configure tl agents:
+  m_tl_agent_cfg.max_outstanding_req = 1;
+  m_tl_agent_cfgs[prim_ral_name].max_outstanding_req = 1;
+  // the host interface can tolerate up to 4 outstanding read requests
+  m_tl_agent_cfgs[host_ral_name].max_outstanding_req = 4;
+
   // Set num_interrupts
   begin
     uvm_reg rg = ral.get_reg_by_name("intr_state");

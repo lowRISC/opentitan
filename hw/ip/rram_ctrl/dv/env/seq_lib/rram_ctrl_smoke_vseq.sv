@@ -110,23 +110,28 @@ task rram_ctrl_smoke_vseq::body();
     rram_ctrl_op.op = rram_ctrl_pkg::RramOpWrite;
     rram_ctrl_base_vseq::rram_ctrl_write(rram_ctrl_op, rram_data);
 
-    // read back data over ctrl interface
-    rram_ctrl_op.op = rram_ctrl_pkg::RramOpRead;
-    rram_ctrl_base_vseq::rram_ctrl_read(rram_ctrl_op, rram_data_rd);
-
-    // read back data over host interface
-    if (rram_ctrl_op.partition == RramPartData) begin
-      logic completed;
-      for (int i = 0; i <= rram_ctrl_op.num_words; i++) begin
-        data_t rdata;
-        rram_ctrl_base_vseq::rram_host_read(.addr(rram_ctrl_op.addr + 4*i), .blocking(1'b1),
-                                            .check_rdata(1'b1), .exp_rdata(rram_data[i]),
-                                            .instr_type(MuBi4False), .rdata(rdata),
-                                            .completed(completed), .exp_err_rsp(1'b0));
+    fork
+      // read back data over ctrl interface
+      begin
+        rram_ctrl_op.op = rram_ctrl_pkg::RramOpRead;
+        rram_ctrl_base_vseq::rram_ctrl_read(rram_ctrl_op, rram_data_rd);
       end
-      wait(completed == 1'b1);
 
-    end
+      // read back data over host interface
+      begin
+        if (rram_ctrl_op.partition == RramPartData) begin
+          logic completed;
+          for (int i = 0; i <= rram_ctrl_op.num_words; i++) begin
+            data_t rdata;
+            rram_ctrl_base_vseq::rram_host_read(.addr(rram_ctrl_op.addr + 4*i), .blocking(1'b0),
+                                                .check_rdata(1'b1), .exp_rdata(rram_data[i]),
+                                                .instr_type(MuBi4False), .rdata(rdata),
+                                                .completed(completed), .exp_err_rsp(1'b0));
+          end
+        end
+      end
+    join
+
     // check if data matches with written values
     for (int i = 0; i < rram_data_rd.size(); i++) begin
       if (rram_data[i] !== rram_data_rd[i]) begin
