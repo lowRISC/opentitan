@@ -777,6 +777,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
+        timeout = "long",
         assemble = "{romext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
         binaries = {
             "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a": "romext",
