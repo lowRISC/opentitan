@@ -134,6 +134,18 @@
       tests: ["aes_stress_all"]
     }
     {
+      name: gcm_save_and_restore
+      desc: '''
+            Verify that saving and restoring contexts in GCM works correctly.
+            When triggered, two different scenarios are possible:
+              - Save and restore the same context
+              - Save and restore with a different message scheduled in between
+            This feature may be randomly exercised during tests, alternatively a dedicated but randomized test sequence may be used.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
       name: reseeding
       desc: '''
             Verify that internal PRNGs are effectively reseeded upon manually triggering a PRNG reseed, and - depending on the configuration - if the initial key changes.
@@ -179,6 +191,18 @@ covergroups: [
            - manual operation
 
            All valid combinations of these will be crossed.
+           '''
+    }
+    {
+     name: ctrl_gcm_reg_cg
+     desc: '''
+           Covers that all valid settings have been tested.
+           Further more it covers that also illegal values have been tested.
+           Individual control settings that are covered include:
+           - phase (all phases including illegal values)
+           - restore after init/aad/text
+           - save after aad/text
+           - num_valid_bytes (all valid numbers from 1 to 16 for the last AAD and last TEXT block, all invalid values)
            '''
     }
     {
