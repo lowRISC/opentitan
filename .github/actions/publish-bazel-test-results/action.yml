@@ -33,16 +33,17 @@ runs:
           cat /tmp/test-xmls | xargs merge-junit -o "${{ inputs.merged-results }}"
         else
           # No test results to upload
-          exit 1
+          echo "report_exists=false" >> $GITHUB_ENV
         fi
 
     - name: Add hostname to testsuites
+      if: ${{ report_exists == 'true' }}
       shell: bash
       run: |
         xmlstarlet ed --inplace -i '/testsuites/testsuite' -t attr -n hostname -v "${{ runner.name }}" "${{ inputs.merged-results }}"
 
     - name: Upload report as artifact
-      if: ${{ success() && inputs.artifact-name != '' }}
+      if: ${{ report_exists == 'true' && inputs.artifact-name != '' }}
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.artifact-name }}
@@ -51,7 +52,7 @@ runs:
         overwrite: true
 
     - name: Upload report to Google Cloud
-      if: ${{ success() && inputs.upload-to-bucket != 'false' }}
+      if: ${{ report_exists == 'true' && inputs.upload-to-bucket != 'false' }}
       shell: bash
       run: |
         BUCKET_PATH=opentitan-test-results/job/${{ inputs.bucket-job-folder-name }}/branch/${{ inputs.branch }}/$(date +%Y-%m-%d-%H%M%S)_test_results.xml
