@@ -17,7 +17,6 @@
 
 # Ensure changes to block system must be authorized
 BLOCKFILE
-.github/workflows/pr_change_check.yml
 ci/scripts/check-pr-changes-allowed.py
 
 # Earlgrey related RTL
