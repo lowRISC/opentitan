@@ -20,6 +20,11 @@ static_assert(
     OTP_CTRL_PARAM_VENDOR_TEST_SIZE % sizeof(uint32_t) == 0,
     "OTP Vendor Test partition should be an integer multiple of 32-bit words.");
 
+static_assert(OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET ==
+                  OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
+              "The CREATOR_SW_CFG_AST_CFG item must be at the beginning of the "
+              "CREATOR_SW_CFG partition");
+
 enum {
   kSha256DigestWords = 256 / 32,
 };
@@ -93,12 +98,24 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
       TRY(otcrypto_sha2_256(input, &digest));
     } break;
     case kDifOtpCtrlPartitionCreatorSwCfg: {
+      // Note: we purposely exclude the AST configuration data field of this
+      // partition from the digest calculation because this could be different
+      // per chip and we do not want to it to be part of the foundation for the
+      // UDS keys if the OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN switch is set to
+      // enabled. If this field is intended to be set for a given SKU, during
+      // personalization we need to be able to inject the expected OTP SW
+      // partition measurement into the manifest of the perso image so that the
+      // same CreatorRootKey keymgr attestation binding value computed in the
+      // field by the ROM is the same as the one used during perso when all the
+      // CreatorSwCfg fields have not yet been set.
       otcrypto_const_byte_buf_t input = {
-          .data = (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
-                                    OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-                                    OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET),
+          .data = (unsigned char
+                       *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+                          OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+                          OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET),
           .len = OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
-                 OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE,
+                 OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE -
+                 OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_SIZE,
       };
       TRY(otcrypto_sha2_256(input, &digest));
     } break;

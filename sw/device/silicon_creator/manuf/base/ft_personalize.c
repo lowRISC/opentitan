@@ -48,6 +48,7 @@
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
 #include "hw/top/flash_ctrl_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"    // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
@@ -75,6 +76,11 @@ static_assert(
     "OwnerSwCfg partition. Update the "
     "kDiceMeasuredOtpPartitionMaxSizeIn32bitWords constant.");
 // clang-format on
+
+static_assert(OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET ==
+                  OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
+              "The CREATOR_SW_CFG_AST_CFG item must be at the beginning of the "
+              "CREATOR_SW_CFG partition");
 
 /**
  * Peripheral handles.
@@ -252,7 +258,7 @@ static status_t measure_otp_partition(otp_partition_t partition,
                                       hmac_digest_t *measurement,
                                       bool use_expected_values) {
   // Compute the digest.
-  otp_dai_read(partition, /*address=*/0, otp_state,
+  otp_dai_read(partition, /*relative_address=*/0, otp_state,
                otp_readable_partition_info(partition).size / sizeof(uint32_t));
 
   if (use_expected_values) {
@@ -267,8 +273,17 @@ static status_t measure_otp_partition(otp_partition_t partition,
     }
   }
 
-  hmac_sha256(otp_state, otp_readable_partition_info(partition).size,
-              measurement);
+  uint32_t *otp_state_ptr = otp_state;
+  size_t otp_state_size = otp_readable_partition_info(partition).size;
+  if (partition == kOtpPartitionCreatorSwCfg) {
+    // Note: we purposely exclude the AST configuration data field of this
+    // partition from the digest calculation. See
+    // sw/device/silicon_creator/manuf/lib/util.c for why.
+    otp_state_ptr = &otp_state[OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_SIZE /
+                               sizeof(uint32_t)];
+    otp_state_size -= OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_SIZE;
+  }
+  hmac_sha256(otp_state_ptr, otp_state_size, measurement);
 
   return OK_STATUS();
 }
