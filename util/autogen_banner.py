@@ -7,7 +7,9 @@ from textwrap import fill
 LICENSE_BANNER = (
     "Copyright lowRISC contributors (OpenTitan project).\n"
     "Licensed under the Apache License, Version 2.0, see LICENSE for details.\n"
+    # REUSE-IgnoreStart
     "SPDX-License-Identifier: Apache-2.0")
+# REUSE-IgnoreEnd
 
 AUTOGEN_BANNER = (
     "THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:\n{command}")
