@@ -103,7 +103,7 @@ pub const OTP_CTRL_CORE_BASE_ADDR: usize = 0x30130000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #OTP_CTRL_CORE_BASE_ADDR and
 /// `OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_CORE_SIZE_BYTES`.
-pub const OTP_CTRL_CORE_SIZE_BYTES: usize = 0x8000;
+pub const OTP_CTRL_CORE_SIZE_BYTES: usize = 0x10000;
 
 /// Peripheral base address for prim device on otp_macro in top darjeeling.
 ///

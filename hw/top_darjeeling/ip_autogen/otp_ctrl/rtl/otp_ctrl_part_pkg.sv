@@ -100,8 +100,8 @@ package otp_ctrl_part_pkg;
     // VENDOR_TEST
     '{
       variant:          Unbuffered,
-      offset:           14'd0,
-      size:             64,
+      offset:           15'd0,
+      size:             72,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -111,13 +111,98 @@ package otp_ctrl_part_pkg;
       integrity:        1'b0,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
+      zeroizable:       1'b1,
       ignore_read_lock_in_rma: 1'b0
     },
     // CREATOR_SW_CFG
     '{
       variant:          Unbuffered,
-      offset:           14'd64,
+      offset:           15'd72,
+      size:             224,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // OWNER_SW_CFG
+    '{
+      variant:          Unbuffered,
+      offset:           15'd296,
+      size:             968,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // OWNERSHIP_SLOT_STATE
+    '{
+      variant:          Unbuffered,
+      offset:           15'd1264,
+      size:             56,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b0,
+      hw_digest:        1'b0,
+      write_lock:       1'b0,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // ROT_CREATOR_IDENTITY
+    '{
+      variant:          Unbuffered,
+      offset:           15'd1320,
+      size:             800,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // ROT_OWNER_AUTH_SLOT0
+    '{
+      variant:          Unbuffered,
+      offset:           15'd2120,
+      size:             360,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // ROT_OWNER_AUTH_SLOT1
+    '{
+      variant:          Unbuffered,
+      offset:           15'd2480,
       size:             304,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -128,99 +213,14 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
-      ignore_read_lock_in_rma: 1'b0
-    },
-    // OWNER_SW_CFG
-    '{
-      variant:          Unbuffered,
-      offset:           14'd368,
-      size:             600,
-      key_sel:          key_sel_e'('0),
-      secret:           1'b0,
-      sw_digest:        1'b1,
-      hw_digest:        1'b0,
-      write_lock:       1'b1,
-      read_lock:        1'b0,
-      integrity:        1'b1,
-      iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
-      ignore_read_lock_in_rma: 1'b0
-    },
-    // OWNERSHIP_SLOT_STATE
-    '{
-      variant:          Unbuffered,
-      offset:           14'd968,
-      size:             48,
-      key_sel:          key_sel_e'('0),
-      secret:           1'b0,
-      sw_digest:        1'b0,
-      hw_digest:        1'b0,
-      write_lock:       1'b0,
-      read_lock:        1'b0,
-      integrity:        1'b1,
-      iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
-      ignore_read_lock_in_rma: 1'b0
-    },
-    // ROT_CREATOR_AUTH
-    '{
-      variant:          Unbuffered,
-      offset:           14'd1016,
-      size:             1424,
-      key_sel:          key_sel_e'('0),
-      secret:           1'b0,
-      sw_digest:        1'b1,
-      hw_digest:        1'b0,
-      write_lock:       1'b1,
-      read_lock:        1'b0,
-      integrity:        1'b1,
-      iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
-      ignore_read_lock_in_rma: 1'b0
-    },
-    // ROT_OWNER_AUTH_SLOT0
-    '{
-      variant:          Unbuffered,
-      offset:           14'd2440,
-      size:             328,
-      key_sel:          key_sel_e'('0),
-      secret:           1'b0,
-      sw_digest:        1'b1,
-      hw_digest:        1'b0,
-      write_lock:       1'b1,
-      read_lock:        1'b0,
-      integrity:        1'b1,
-      iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
-      ignore_read_lock_in_rma: 1'b0
-    },
-    // ROT_OWNER_AUTH_SLOT1
-    '{
-      variant:          Unbuffered,
-      offset:           14'd2768,
-      size:             328,
-      key_sel:          key_sel_e'('0),
-      secret:           1'b0,
-      sw_digest:        1'b1,
-      hw_digest:        1'b0,
-      write_lock:       1'b1,
-      read_lock:        1'b0,
-      integrity:        1'b1,
-      iskeymgr_creator: 1'b0,
-      iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
+      zeroizable:       1'b1,
       ignore_read_lock_in_rma: 1'b0
     },
     // PLAT_INTEG_AUTH_SLOT0
     '{
       variant:          Unbuffered,
-      offset:           14'd3096,
-      size:             328,
+      offset:           15'd2784,
+      size:             160,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -230,14 +230,14 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
+      zeroizable:       1'b1,
       ignore_read_lock_in_rma: 1'b0
     },
     // PLAT_INTEG_AUTH_SLOT1
     '{
       variant:          Unbuffered,
-      offset:           14'd3424,
-      size:             328,
+      offset:           15'd2944,
+      size:             160,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -247,14 +247,14 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
+      zeroizable:       1'b1,
       ignore_read_lock_in_rma: 1'b0
     },
     // PLAT_OWNER_AUTH_SLOT0
     '{
       variant:          Unbuffered,
-      offset:           14'd3752,
-      size:             328,
+      offset:           15'd3104,
+      size:             160,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -264,14 +264,14 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
+      zeroizable:       1'b1,
       ignore_read_lock_in_rma: 1'b0
     },
     // PLAT_OWNER_AUTH_SLOT1
     '{
       variant:          Unbuffered,
-      offset:           14'd4080,
-      size:             328,
+      offset:           15'd3264,
+      size:             160,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -281,14 +281,14 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
+      zeroizable:       1'b1,
       ignore_read_lock_in_rma: 1'b0
     },
     // PLAT_OWNER_AUTH_SLOT2
     '{
       variant:          Unbuffered,
-      offset:           14'd4408,
-      size:             328,
+      offset:           15'd3424,
+      size:             160,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -298,14 +298,14 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
+      zeroizable:       1'b1,
       ignore_read_lock_in_rma: 1'b0
     },
     // PLAT_OWNER_AUTH_SLOT3
     '{
       variant:          Unbuffered,
-      offset:           14'd4736,
-      size:             328,
+      offset:           15'd3584,
+      size:             160,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -315,14 +315,14 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
+      zeroizable:       1'b1,
       ignore_read_lock_in_rma: 1'b0
     },
     // EXT_NVM
     '{
       variant:          Unbuffered,
-      offset:           14'd5064,
-      size:             1024,
+      offset:           15'd3744,
+      size:             1032,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b0,
@@ -332,14 +332,31 @@ package otp_ctrl_part_pkg;
       integrity:        1'b0,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
+      zeroizable:       1'b1,
       ignore_read_lock_in_rma: 1'b0
     },
     // ROM_PATCH
     '{
       variant:          Unbuffered,
-      offset:           14'd6088,
-      size:             9864,
+      offset:           15'd4776,
+      size:             8208,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // SOC_FUSES_CP
+    '{
+      variant:          Unbuffered,
+      offset:           15'd12984,
+      size:             392,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -352,11 +369,45 @@ package otp_ctrl_part_pkg;
       zeroizable:       1'b0,
       ignore_read_lock_in_rma: 1'b0
     },
+    // SOC_FUSES_FT
+    '{
+      variant:          Unbuffered,
+      offset:           15'd13376,
+      size:             4232,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b0,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // SCRATCH_FUSES
+    '{
+      variant:          Unbuffered,
+      offset:           15'd17608,
+      size:             2400,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b0,
+      hw_digest:        1'b0,
+      write_lock:       1'b0,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
     // HW_CFG0
     '{
       variant:          Buffered,
-      offset:           14'd15952,
-      size:             72,
+      offset:           15'd20008,
+      size:             48,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b0,
@@ -366,14 +417,14 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
+      zeroizable:       1'b1,
       ignore_read_lock_in_rma: 1'b0
     },
     // HW_CFG1
     '{
       variant:          Buffered,
-      offset:           14'd16024,
-      size:             16,
+      offset:           15'd20056,
+      size:             24,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b0,
@@ -383,13 +434,30 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
+    },
+    // HW_CFG2
+    '{
+      variant:          Buffered,
+      offset:           15'd20080,
+      size:             56,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b0,
+      hw_digest:        1'b1,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
       ignore_read_lock_in_rma: 1'b0
     },
     // SECRET0
     '{
       variant:          Buffered,
-      offset:           14'd16040,
+      offset:           15'd20136,
       size:             48,
       key_sel:          Secret0Key,
       secret:           1'b1,
@@ -406,7 +474,7 @@ package otp_ctrl_part_pkg;
     // SECRET1
     '{
       variant:          Buffered,
-      offset:           14'd16088,
+      offset:           15'd20184,
       size:             32,
       key_sel:          Secret1Key,
       secret:           1'b1,
@@ -423,7 +491,7 @@ package otp_ctrl_part_pkg;
     // SECRET2
     '{
       variant:          Buffered,
-      offset:           14'd16120,
+      offset:           15'd20216,
       size:             128,
       key_sel:          Secret2Key,
       secret:           1'b1,
@@ -440,7 +508,7 @@ package otp_ctrl_part_pkg;
     // SECRET3
     '{
       variant:          Buffered,
-      offset:           14'd16248,
+      offset:           15'd20344,
       size:             48,
       key_sel:          Secret3Key,
       secret:           1'b1,
@@ -457,7 +525,7 @@ package otp_ctrl_part_pkg;
     // LIFE_CYCLE
     '{
       variant:          LifeCycle,
-      offset:           14'd16296,
+      offset:           15'd20392,
       size:             88,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -478,7 +546,7 @@ package otp_ctrl_part_pkg;
     CreatorSwCfgIdx,
     OwnerSwCfgIdx,
     OwnershipSlotStateIdx,
-    RotCreatorAuthIdx,
+    RotCreatorIdentityIdx,
     RotOwnerAuthSlot0Idx,
     RotOwnerAuthSlot1Idx,
     PlatIntegAuthSlot0Idx,
@@ -489,8 +557,12 @@ package otp_ctrl_part_pkg;
     PlatOwnerAuthSlot3Idx,
     ExtNvmIdx,
     RomPatchIdx,
+    SocFusesCpIdx,
+    SocFusesFtIdx,
+    ScratchFusesIdx,
     HwCfg0Idx,
     HwCfg1Idx,
+    HwCfg2Idx,
     Secret0Idx,
     Secret1Idx,
     Secret2Idx,
@@ -509,21 +581,29 @@ package otp_ctrl_part_pkg;
 
   // Breakout types for easier access of individual items.
   typedef struct packed {
+    logic [63:0] hw_cfg0_zer;
     logic [63:0] hw_cfg0_digest;
-    logic [255:0] manuf_state;
     logic [255:0] device_id;
   } otp_hw_cfg0_data_t;
   typedef struct packed {
+    logic [63:0] hw_cfg1_zer;
     logic [63:0] hw_cfg1_digest;
-    logic [15:0] unallocated;
+    logic [47:0] unallocated;
     prim_mubi_pkg::mubi8_t en_sram_ifetch;
     prim_mubi_pkg::mubi8_t en_csrng_sw_app_read;
-    logic [31:0] soc_dbg_state;
   } otp_hw_cfg1_data_t;
+  typedef struct packed {
+    logic [63:0] hw_cfg2_zer;
+    logic [63:0] hw_cfg2_digest;
+    logic [31:0] unallocated;
+    logic [255:0] manuf_state;
+    logic [31:0] soc_dbg_state;
+  } otp_hw_cfg2_data_t;
 
   typedef struct packed {
     // This reuses the same encoding as the life cycle signals for indicating valid status.
     lc_ctrl_pkg::lc_tx_t valid;
+    otp_hw_cfg2_data_t hw_cfg2_data;
     otp_hw_cfg1_data_t hw_cfg1_data;
     otp_hw_cfg0_data_t hw_cfg0_data;
   } otp_broadcast_t;
@@ -541,7 +621,7 @@ package otp_ctrl_part_pkg;
     hw2reg.vendor_test_digest = part_digest[VendorTestIdx];
     hw2reg.creator_sw_cfg_digest = part_digest[CreatorSwCfgIdx];
     hw2reg.owner_sw_cfg_digest = part_digest[OwnerSwCfgIdx];
-    hw2reg.rot_creator_auth_digest = part_digest[RotCreatorAuthIdx];
+    hw2reg.rot_creator_identity_digest = part_digest[RotCreatorIdentityIdx];
     hw2reg.rot_owner_auth_slot0_digest = part_digest[RotOwnerAuthSlot0Idx];
     hw2reg.rot_owner_auth_slot1_digest = part_digest[RotOwnerAuthSlot1Idx];
     hw2reg.plat_integ_auth_slot0_digest = part_digest[PlatIntegAuthSlot0Idx];
@@ -551,8 +631,11 @@ package otp_ctrl_part_pkg;
     hw2reg.plat_owner_auth_slot2_digest = part_digest[PlatOwnerAuthSlot2Idx];
     hw2reg.plat_owner_auth_slot3_digest = part_digest[PlatOwnerAuthSlot3Idx];
     hw2reg.rom_patch_digest = part_digest[RomPatchIdx];
+    hw2reg.soc_fuses_cp_digest = part_digest[SocFusesCpIdx];
+    hw2reg.soc_fuses_ft_digest = part_digest[SocFusesFtIdx];
     hw2reg.hw_cfg0_digest = part_digest[HwCfg0Idx];
     hw2reg.hw_cfg1_digest = part_digest[HwCfg1Idx];
+    hw2reg.hw_cfg2_digest = part_digest[HwCfg2Idx];
     hw2reg.secret0_digest = part_digest[Secret0Idx];
     hw2reg.secret1_digest = part_digest[Secret1Idx];
     hw2reg.secret2_digest = part_digest[Secret2Idx];
@@ -585,9 +668,9 @@ package otp_ctrl_part_pkg;
     if (!reg2hw.ownership_slot_state_read_lock) begin
       part_access_pre[OwnershipSlotStateIdx].read_lock = prim_mubi_pkg::MuBi8True;
     end
-    // ROT_CREATOR_AUTH
-    if (!reg2hw.rot_creator_auth_read_lock) begin
-      part_access_pre[RotCreatorAuthIdx].read_lock = prim_mubi_pkg::MuBi8True;
+    // ROT_CREATOR_IDENTITY
+    if (!reg2hw.rot_creator_identity_read_lock) begin
+      part_access_pre[RotCreatorIdentityIdx].read_lock = prim_mubi_pkg::MuBi8True;
     end
     // ROT_OWNER_AUTH_SLOT0
     if (!reg2hw.rot_owner_auth_slot0_read_lock) begin
@@ -629,12 +712,24 @@ package otp_ctrl_part_pkg;
     if (!reg2hw.rom_patch_read_lock) begin
       part_access_pre[RomPatchIdx].read_lock = prim_mubi_pkg::MuBi8True;
     end
+    // SOC_FUSES_CP
+    if (!reg2hw.soc_fuses_cp_read_lock) begin
+      part_access_pre[SocFusesCpIdx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
+    // SOC_FUSES_FT
+    if (!reg2hw.soc_fuses_ft_read_lock) begin
+      part_access_pre[SocFusesFtIdx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
+    // SCRATCH_FUSES
+    if (!reg2hw.scratch_fuses_read_lock) begin
+      part_access_pre[ScratchFusesIdx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
     return part_access_pre;
   endfunction : named_part_access_pre
 
   function automatic otp_broadcast_t named_broadcast_assign(
       logic [NumPart-1:0] part_init_done,
-      logic [16383:0][7:0] part_buf_data);
+      logic [20479:0][7:0] part_buf_data);
     otp_broadcast_t otp_broadcast;
     logic valid, unused;
     unused = 1'b0;
@@ -651,9 +746,9 @@ package otp_ctrl_part_pkg;
     // OWNERSHIP_SLOT_STATE
     unused ^= ^{part_init_done[OwnershipSlotStateIdx],
                 part_buf_data[OwnershipSlotStateOffset +: OwnershipSlotStateSize]};
-    // ROT_CREATOR_AUTH
-    unused ^= ^{part_init_done[RotCreatorAuthIdx],
-                part_buf_data[RotCreatorAuthOffset +: RotCreatorAuthSize]};
+    // ROT_CREATOR_IDENTITY
+    unused ^= ^{part_init_done[RotCreatorIdentityIdx],
+                part_buf_data[RotCreatorIdentityOffset +: RotCreatorIdentitySize]};
     // ROT_OWNER_AUTH_SLOT0
     unused ^= ^{part_init_done[RotOwnerAuthSlot0Idx],
                 part_buf_data[RotOwnerAuthSlot0Offset +: RotOwnerAuthSlot0Size]};
@@ -684,12 +779,24 @@ package otp_ctrl_part_pkg;
     // ROM_PATCH
     unused ^= ^{part_init_done[RomPatchIdx],
                 part_buf_data[RomPatchOffset +: RomPatchSize]};
+    // SOC_FUSES_CP
+    unused ^= ^{part_init_done[SocFusesCpIdx],
+                part_buf_data[SocFusesCpOffset +: SocFusesCpSize]};
+    // SOC_FUSES_FT
+    unused ^= ^{part_init_done[SocFusesFtIdx],
+                part_buf_data[SocFusesFtOffset +: SocFusesFtSize]};
+    // SCRATCH_FUSES
+    unused ^= ^{part_init_done[ScratchFusesIdx],
+                part_buf_data[ScratchFusesOffset +: ScratchFusesSize]};
     // HW_CFG0
     valid &= part_init_done[HwCfg0Idx];
     otp_broadcast.hw_cfg0_data = otp_hw_cfg0_data_t'(part_buf_data[HwCfg0Offset +: HwCfg0Size]);
     // HW_CFG1
     valid &= part_init_done[HwCfg1Idx];
     otp_broadcast.hw_cfg1_data = otp_hw_cfg1_data_t'(part_buf_data[HwCfg1Offset +: HwCfg1Size]);
+    // HW_CFG2
+    valid &= part_init_done[HwCfg2Idx];
+    otp_broadcast.hw_cfg2_data = otp_hw_cfg2_data_t'(part_buf_data[HwCfg2Offset +: HwCfg2Size]);
     // SECRET0
     unused ^= ^{part_init_done[Secret0Idx],
                 part_buf_data[Secret0Offset +: Secret0Size]};
@@ -711,8 +818,8 @@ package otp_ctrl_part_pkg;
 
   function automatic otp_keymgr_key_t named_keymgr_key_assign(
       logic [NumPart-1:0][ScrmblBlockWidth-1:0] part_digest,
-      logic [16383:0][7:0] part_buf_data,
-      logic [131071:0] part_inv_default,
+      logic [20479:0][7:0] part_buf_data,
+      logic [163839:0] part_inv_default,
       lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en);
     otp_keymgr_key_t otp_keymgr_key;
     logic valid, unused;
@@ -733,9 +840,9 @@ package otp_ctrl_part_pkg;
     // OWNERSHIP_SLOT_STATE
     unused ^= ^{part_digest[OwnershipSlotStateIdx],
                 part_buf_data[OwnershipSlotStateOffset +: OwnershipSlotStateSize]};
-    // ROT_CREATOR_AUTH
-    unused ^= ^{part_digest[RotCreatorAuthIdx],
-                part_buf_data[RotCreatorAuthOffset +: RotCreatorAuthSize]};
+    // ROT_CREATOR_IDENTITY
+    unused ^= ^{part_digest[RotCreatorIdentityIdx],
+                part_buf_data[RotCreatorIdentityOffset +: RotCreatorIdentitySize]};
     // ROT_OWNER_AUTH_SLOT0
     unused ^= ^{part_digest[RotOwnerAuthSlot0Idx],
                 part_buf_data[RotOwnerAuthSlot0Offset +: RotOwnerAuthSlot0Size]};
@@ -766,12 +873,24 @@ package otp_ctrl_part_pkg;
     // ROM_PATCH
     unused ^= ^{part_digest[RomPatchIdx],
                 part_buf_data[RomPatchOffset +: RomPatchSize]};
+    // SOC_FUSES_CP
+    unused ^= ^{part_digest[SocFusesCpIdx],
+                part_buf_data[SocFusesCpOffset +: SocFusesCpSize]};
+    // SOC_FUSES_FT
+    unused ^= ^{part_digest[SocFusesFtIdx],
+                part_buf_data[SocFusesFtOffset +: SocFusesFtSize]};
+    // SCRATCH_FUSES
+    unused ^= ^{part_digest[ScratchFusesIdx],
+                part_buf_data[ScratchFusesOffset +: ScratchFusesSize]};
     // HW_CFG0
     unused ^= ^{part_digest[HwCfg0Idx],
                 part_buf_data[HwCfg0Offset +: HwCfg0Size]};
     // HW_CFG1
     unused ^= ^{part_digest[HwCfg1Idx],
                 part_buf_data[HwCfg1Offset +: HwCfg1Size]};
+    // HW_CFG2
+    unused ^= ^{part_digest[HwCfg2Idx],
+                part_buf_data[HwCfg2Offset +: HwCfg2Size]};
     // SECRET0
     unused ^= ^{part_digest[Secret0Idx],
                 part_buf_data[Secret0Offset +: Secret0Size]};

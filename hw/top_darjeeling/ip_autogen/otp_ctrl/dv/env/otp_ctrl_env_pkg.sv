@@ -39,7 +39,7 @@ package otp_ctrl_env_pkg;
   parameter uint NUM_EDN             = 1;
 
   parameter uint DIGEST_SIZE         = 8;
-  parameter uint SW_WINDOW_BASE_ADDR = 'h4000;
+  parameter uint SW_WINDOW_BASE_ADDR = 'h8000;
   parameter uint SW_WINDOW_SIZE      = NumSwCfgWindowWords * 4;
 
   parameter uint TL_SIZE = (TL_DW / 8);
@@ -77,7 +77,7 @@ package otp_ctrl_env_pkg;
     CreatorSwCfgOffset,
     OwnerSwCfgOffset,
     OwnershipSlotStateOffset,
-    RotCreatorAuthOffset,
+    RotCreatorIdentityOffset,
     RotOwnerAuthSlot0Offset,
     RotOwnerAuthSlot1Offset,
     PlatIntegAuthSlot0Offset,
@@ -88,8 +88,12 @@ package otp_ctrl_env_pkg;
     PlatOwnerAuthSlot3Offset,
     ExtNvmOffset,
     RomPatchOffset,
+    SocFusesCpOffset,
+    SocFusesFtOffset,
+    ScratchFusesOffset,
     HwCfg0Offset,
     HwCfg1Offset,
+    HwCfg2Offset,
     Secret0Offset,
     Secret1Offset,
     Secret2Offset,
@@ -102,7 +106,7 @@ package otp_ctrl_env_pkg;
     CreatorSwCfgDigestOffset >> 2,
     OwnerSwCfgDigestOffset >> 2,
     -1, // This partition does not have a digest.
-    RotCreatorAuthDigestOffset >> 2,
+    RotCreatorIdentityDigestOffset >> 2,
     RotOwnerAuthSlot0DigestOffset >> 2,
     RotOwnerAuthSlot1DigestOffset >> 2,
     PlatIntegAuthSlot0DigestOffset >> 2,
@@ -113,8 +117,12 @@ package otp_ctrl_env_pkg;
     PlatOwnerAuthSlot3DigestOffset >> 2,
     -1, // This partition does not have a digest.
     RomPatchDigestOffset >> 2,
+    SocFusesCpDigestOffset >> 2,
+    SocFusesFtDigestOffset >> 2,
+    -1, // This partition does not have a digest.
     HwCfg0DigestOffset >> 2,
     HwCfg1DigestOffset >> 2,
+    HwCfg2DigestOffset >> 2,
     Secret0DigestOffset >> 2,
     Secret1DigestOffset >> 2,
     Secret2DigestOffset >> 2,
@@ -122,23 +130,27 @@ package otp_ctrl_env_pkg;
   };
 
   parameter int PART_OTP_ZEROIZED_ADDRS [NumPart-1] = {
+    VendorTestZerOffset >> 2,
+    CreatorSwCfgZerOffset >> 2,
+    OwnerSwCfgZerOffset >> 2,
+    OwnershipSlotStateZerOffset >> 2,
+    RotCreatorIdentityZerOffset >> 2,
+    RotOwnerAuthSlot0ZerOffset >> 2,
+    RotOwnerAuthSlot1ZerOffset >> 2,
+    PlatIntegAuthSlot0ZerOffset >> 2,
+    PlatIntegAuthSlot1ZerOffset >> 2,
+    PlatOwnerAuthSlot0ZerOffset >> 2,
+    PlatOwnerAuthSlot1ZerOffset >> 2,
+    PlatOwnerAuthSlot2ZerOffset >> 2,
+    PlatOwnerAuthSlot3ZerOffset >> 2,
+    ExtNvmZerOffset >> 2,
+    RomPatchZerOffset >> 2,
     -1, // This partition has no zeroized field.
     -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
+    ScratchFusesZerOffset >> 2,
+    HwCfg0ZerOffset >> 2,
+    HwCfg1ZerOffset >> 2,
+    HwCfg2ZerOffset >> 2,
     Secret0ZerOffset >> 2,
     Secret1ZerOffset >> 2,
     Secret2ZerOffset >> 2,
@@ -171,7 +183,7 @@ package otp_ctrl_env_pkg;
     OtpPartitionCreatorSwCfgIdx,
     OtpPartitionOwnerSwCfgIdx,
     OtpPartitionOwnershipSlotStateIdx,
-    OtpPartitionRotCreatorAuthIdx,
+    OtpPartitionRotCreatorIdentityIdx,
     OtpPartitionRotOwnerAuthSlot0Idx,
     OtpPartitionRotOwnerAuthSlot1Idx,
     OtpPartitionPlatIntegAuthSlot0Idx,
@@ -182,8 +194,12 @@ package otp_ctrl_env_pkg;
     OtpPartitionPlatOwnerAuthSlot3Idx,
     OtpPartitionExtNvmIdx,
     OtpPartitionRomPatchIdx,
+    OtpPartitionSocFusesCpIdx,
+    OtpPartitionSocFusesFtIdx,
+    OtpPartitionScratchFusesIdx,
     OtpPartitionHwCfg0Idx,
     OtpPartitionHwCfg1Idx,
+    OtpPartitionHwCfg2Idx,
     OtpPartitionSecret0Idx,
     OtpPartitionSecret1Idx,
     OtpPartitionSecret2Idx,

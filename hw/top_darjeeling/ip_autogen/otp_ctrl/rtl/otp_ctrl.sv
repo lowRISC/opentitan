@@ -33,7 +33,7 @@ module otp_ctrl
   parameter digest_const_t RndCnstDigestConst1 = '0,
   parameter digest_iv_t RndCnstDigestIV0 = '0,
   parameter digest_iv_t RndCnstDigestIV1 = '0,
-  parameter logic [131071:0] RndCnstPartInvDefault = '0,
+  parameter logic [163839:0] RndCnstPartInvDefault = '0,
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter scrmbl_key_init_t RndCnstScrmblKeyInit = RndCnstScrmblKeyInitDefault
@@ -619,7 +619,8 @@ module otp_ctrl
     hw2reg.partition_status_0.owner_sw_cfg_error.d = part_errors_reduced[OwnerSwCfgIdx];
     hw2reg.partition_status_0.ownership_slot_state_error.d =
       part_errors_reduced[OwnershipSlotStateIdx];
-    hw2reg.partition_status_0.rot_creator_auth_error.d = part_errors_reduced[RotCreatorAuthIdx];
+    hw2reg.partition_status_0.rot_creator_identity_error.d =
+      part_errors_reduced[RotCreatorIdentityIdx];
     hw2reg.partition_status_0.rot_owner_auth_slot0_error.d =
       part_errors_reduced[RotOwnerAuthSlot0Idx];
     hw2reg.partition_status_0.rot_owner_auth_slot1_error.d =
@@ -638,8 +639,12 @@ module otp_ctrl
       part_errors_reduced[PlatOwnerAuthSlot3Idx];
     hw2reg.partition_status_0.ext_nvm_error.d = part_errors_reduced[ExtNvmIdx];
     hw2reg.partition_status_0.rom_patch_error.d = part_errors_reduced[RomPatchIdx];
+    hw2reg.partition_status_0.soc_fuses_cp_error.d = part_errors_reduced[SocFusesCpIdx];
+    hw2reg.partition_status_0.soc_fuses_ft_error.d = part_errors_reduced[SocFusesFtIdx];
+    hw2reg.partition_status_0.scratch_fuses_error.d = part_errors_reduced[ScratchFusesIdx];
     hw2reg.partition_status_0.hw_cfg0_error.d = part_errors_reduced[HwCfg0Idx];
     hw2reg.partition_status_0.hw_cfg1_error.d = part_errors_reduced[HwCfg1Idx];
+    hw2reg.partition_status_0.hw_cfg2_error.d = part_errors_reduced[HwCfg2Idx];
     hw2reg.partition_status_0.secret0_error.d = part_errors_reduced[Secret0Idx];
     hw2reg.partition_status_0.secret1_error.d = part_errors_reduced[Secret1Idx];
     hw2reg.partition_status_0.secret2_error.d = part_errors_reduced[Secret2Idx];

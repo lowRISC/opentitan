@@ -172,7 +172,6 @@ class chip_base_vseq #(
     //   otp_clear_secret3_partition(cfg.mem_bkdr_util_h[Otp]);
     // end
 
-    initialize_otp_sig_verify();
     initialize_otp_creator_sw_cfg_ast_cfg();
     // Initialize selected memories to all 0. This is required for some chip-level tests such as
     // otbn_mem_scramble that may intentionally read memories before writing them. Reading these
@@ -315,21 +314,12 @@ class chip_base_vseq #(
     end
   endtask : alert_ping_en_shorten
 
-  // Initialize the OTP creator SW cfg region to use otbn for signature verification.
-  virtual function void initialize_otp_sig_verify();
-    // Use otbn mod_exp implementation for signature
-    // verification. See the definition of `hardened_bool_t` in
-    // sw/lib/sw/device/base/hardened.h.
-    cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgSigverifyRsaModExpIbexEnOffset,
-                                     32'h1d4);
-  endfunction : initialize_otp_sig_verify
-
   // Initialize the OTP creator SW cfg region with AST configuration data.
   virtual function void initialize_otp_creator_sw_cfg_ast_cfg();
     // The knob controls whether the AST is actually programmed.
     if (cfg.do_creator_sw_cfg_ast_cfg) begin
-      cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset,
-                                       prim_mubi_pkg::MuBi4True);
+      cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitSizeOffset,
+                                       ast_pkg::AstRegsNum);
     end
 
     // Ensure that the allocated size of the AST cfg region in OTP is equal to the number of AST
@@ -343,27 +333,6 @@ class chip_base_vseq #(
                 ), UVM_MEDIUM)
       cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstCfgOffset + i * 4,
                                        cfg.creator_sw_cfg_ast_cfg_data[i]);
-    end
-  endfunction
-
-  // Set the ROM_EXEC_EN bit in OTP if we are not in RAW state
-  virtual function void set_otp_creator_sw_cfg_rom_exec_en(bit [31:0] value);
-    lc_ctrl_state_pkg::lc_state_e lc_state;
-    logic [31:0] otp_raw_val;
-    logic [31:0] chk_vector;
-
-    // Set rom_exec_en only when we are not in RAW state.
-    lc_state = otp_read_lc_partition_state(cfg.mem_bkdr_util_h[Otp]);
-
-    // If we are already 1, we cannot set to 0.
-    // This should probably be relocated to mem_bkdr_util eventually as an option for writes
-    otp_raw_val = cfg.mem_bkdr_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgRomExecEnOffset);
-    chk_vector = ~value & (otp_raw_val ^ value);
-    `DV_CHECK(chk_vector == '0);
-
-    if (lc_state != LcStRaw) begin
-      `uvm_info(`gfn, "Automatically set rom_exec_en", UVM_LOW)
-      cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgRomExecEnOffset, value);
     end
   endfunction
 

@@ -35,7 +35,6 @@ class chip_prim_tl_access_vseq extends chip_stub_cpu_base_vseq;
 
   virtual function void initialize_otp_sig_verify();
     backdoor_override_otp();
-    super.initialize_otp_sig_verify();
   endfunction
 
   function response_mode_e get_response_mode(bit using_prims);
