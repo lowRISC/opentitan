@@ -2,14 +2,26 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:const.bzl", "CONST", "hex")
+load("//rules:manifest.bzl", "manifest")
+load("//rules/opentitan:cc.bzl", "opentitan_binary_assemble")
 load(
     "//rules/opentitan:defs.bzl",
     "fpga_params",
+    "opentitan_binary",
     "opentitan_test",
+)
+load(
+    "//sw/device/silicon_creator/rom/e2e:defs.bzl",
+    "SLOTS",
 )
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
     "ROM_EXT_VARIATIONS",
+)
+load(
+    "//sw/device/silicon_creator/rom_ext/e2e:defs.bzl",
+    "OWNER_SLOTS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -38,3 +50,91 @@ package(default_visibility = ["//visibility:public"])
     )
     for variation in ROM_EXT_VARIATIONS.keys()
 ]
+
+manifest({
+    "name": "owner_manifest",
+    "identifier": hex(CONST.OWNER),
+    "visibility": ["//visibility:private"],
+})
+
+opentitan_binary(
+    name = "print_certs_for_assemble",
+    testonly = True,
+    srcs = ["//sw/device/silicon_creator/rom_ext/e2e/attestation:print_certs.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+    manifest = ":owner_manifest",
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
+    ],
+)
+
+[
+    opentitan_binary_assemble(
+        name = "{}_rom_ext_owner_bundle".format(variation),
+        testonly = True,
+        bins = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation): SLOTS["a"],
+            ":print_certs_for_assemble": OWNER_SLOTS["a"],
+        },
+        exec_env = [
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+        ],
+    )
+    for variation in ROM_EXT_VARIATIONS.keys()
+]
+
+_VARIATION_INTEROP_TEST_CASES = [
+    {
+        "first": "x509",
+        "second": "cwt",
+    },
+    {
+        "first": "cwt",
+        "second": "x509",
+    },
+]
+
+[
+    opentitan_test(
+        name = "variation_interop_{}_first_test".format(tc["first"]),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        },
+        fpga = fpga_params(
+            binaries = {
+                ":dice_{}_rom_ext_owner_bundle".format(tc["second"]): "second",
+                ":dice_{}_rom_ext_owner_bundle".format(tc["first"]): "firmware",
+            },
+            otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
+            test_cmd = """
+                --clear-bitstream
+                --bootstrap={firmware}
+                --second-bootstrap={second}
+            """,
+            test_harness = "//sw/host/tests/rom_ext/e2e_variation_interop",
+        ),
+    )
+    for tc in _VARIATION_INTEROP_TEST_CASES
+]
+
+test_suite(
+    name = "variation_interop_tests",
+    tags = ["manual"],
+    tests = [
+        "variation_interop_{}_first_test".format(
+            tc["first"],
+        )
+        for tc in _VARIATION_INTEROP_TEST_CASES
+    ],
+)

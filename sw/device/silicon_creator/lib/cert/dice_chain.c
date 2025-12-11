@@ -437,7 +437,7 @@ rom_error_t dice_chain_attestation_owner(
   // Check if the current CDI_1 cert is valid.
   RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_1", /*name_size=*/6));
   if (dice_chain.cert_valid == kHardenedBoolFalse) {
-    dbg_puts("CDI_1 certificate not valid. Updating it ...\r\n");
+    dbg_puts("warning: CDI_1 certificate not valid; updating\r\n");
     // Update the cert page buffer.
     size_t updated_cert_size = kScratchCertSizeBytes;
     // TODO(#19596): add owner configuration block measurement to CDI_1 cert.
