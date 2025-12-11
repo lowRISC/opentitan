@@ -19,6 +19,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
     set_and_release_sw_strap_nonblocking();
     // Disable mem checks in scoreboard - it does not factor in memory scrambling.
     cfg.en_scb_mem_chk = 1'b0;
+
+    // Connect the spi_console object to this sequence
+    cfg.ottf_spi_console_h.seq_h = this;
+    cfg.ottf_spi_console_h.spi_host_sequencer_h = p_sequencer.spi_host_sequencer_h;
   endtask
 
   // Drive sw_strap pins only when the ROM / test ROM code is active

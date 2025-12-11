@@ -434,6 +434,16 @@ filegroup(
                   ]).to_list(),
 )
 
+alias(
+    name = "ft_personalize_emulation_silicon_creator",
+    actual = "ft_personalize_emulation",
+)
+
+alias(
+    name = "ft_fw_bundle_emulation_silicon_creator",
+    actual = "ft_fw_bundle_emulation",
+)
+
 [
     offline_presigning_artifacts(
         name = "provisioning_{}".format(sku),

@@ -259,6 +259,8 @@ def _opentitan_binary(ctx):
 
         # FIXME: vmem is a special case for ram targets used in ROM e2e test
         # cases.
+        if provides.get("vmem_base"):
+            default_info.append(provides["vmem_base"])
         if provides.get("vmem"):
             default_info.append(provides["vmem"])
 
