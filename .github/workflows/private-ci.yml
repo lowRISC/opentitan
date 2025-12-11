@@ -13,7 +13,8 @@ on:
       - "*"
   pull_request_target:
     branches:
-      - "*"
+      # We should only run Private CI on `master` currently.
+      - "master"
 
 permissions:
   contents: write # For repository dispatch
