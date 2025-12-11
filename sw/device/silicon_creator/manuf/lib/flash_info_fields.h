@@ -69,6 +69,18 @@ enum {
   kFlashInfoFieldCpDeviceIdSizeInBytes =
       kFlashInfoFieldCpDeviceIdSizeIn32BitWords * sizeof(uint32_t),
 
+  /**
+   * AST Individualize Patch Address Start / Size - Bank 0, Page 0
+   */
+  kFlashInfoFieldAstIndividPatchAddrStartOffset = 400,
+  kFlashInfoFieldAstIndividPatchAddrSizeIn32BitWords = 1,
+
+  /**
+   * AST Individualize Patch Value Start / Size - Bank 0, Page 0
+   */
+  kFlashInfoFieldAstIndividPatchValStartOffset = 404,
+  kFlashInfoFieldAstIndividPatchValSizeIn32BitWords = 1,
+
   // Creator/Owner Seeds - Bank 0, Pages 1 and 2
   kFlashInfoFieldKeySeedSizeIn32BitWords = 32 / sizeof(uint32_t),
 
@@ -90,6 +102,8 @@ extern const flash_info_field_t kFlashInfoFieldWaferYCoord;
 extern const flash_info_field_t kFlashInfoFieldProcessData;
 extern const flash_info_field_t kFlashInfoFieldAstCalibrationData;
 extern const flash_info_field_t kFlashInfoFieldCpDeviceId;
+extern const flash_info_field_t kFlashInfoFieldAstIndividPatchAddr;
+extern const flash_info_field_t kFlashInfoFieldAstIndividPatchVal;
 
 // Info Page 1 fields.
 extern const flash_info_field_t kFlashInfoFieldCreatorSeed;

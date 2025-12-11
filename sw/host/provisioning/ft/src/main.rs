@@ -46,6 +46,9 @@ pub struct ManufFtProvisioningDataInput {
     #[arg(long)]
     pub use_ext_clk_during_individualize: bool,
 
+    #[arg(long)]
+    pub use_ast_patch_during_individualize: bool,
+
     /// TestUnlock token; a 128-bit hex string.
     #[arg(long)]
     pub test_unlock_token: String,
@@ -164,6 +167,7 @@ fn main() -> Result<()> {
     let ft_individualize_data_in = ManufFtIndividualizeData {
         enable_alerts: opts.provisioning_data.enable_alerts_during_individualize,
         use_ext_clk: opts.provisioning_data.use_ext_clk_during_individualize,
+        patch_ast: opts.provisioning_data.use_ast_patch_during_individualize,
         ft_device_id,
     };
 

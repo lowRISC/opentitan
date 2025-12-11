@@ -123,6 +123,12 @@ def main(args_in):
         help="Use external clock during FT individualize step.",
     )
     parser.add_argument(
+        "--patch-ast",
+        action="store_true",
+        default=False,
+        help="Use AST patch in flash info page 0 during FT individualize step.",
+    )
+    parser.add_argument(
         "--non-interactive",
         action="store_true",
         default=False,
@@ -186,6 +192,7 @@ def main(args_in):
                 fpga_dont_clear_bitstream=args.fpga_dont_clear_bitstream,
                 enable_alerts=args.enable_alerts,
                 use_ext_clk=args.use_ext_clk,
+                patch_ast=args.patch_ast,
                 require_confirmation=not args.non_interactive)
     dut.run_cp()
     if args.cp_only:
