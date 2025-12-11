@@ -280,7 +280,9 @@ def main():
         found_spdx = None
         found_lunder = None
         copy = re.compile(r'.*(copyright.*)|(.*\(c\).*)', re.IGNORECASE)
+        # REUSE-IgnoreStart
         spdx = re.compile(r'.*(SPDX-License-Identifier:.+)')
+        # REUSE-IgnoreEnd
         lunder = re.compile(r'.*(Licensed under.+)', re.IGNORECASE)
         for line in srcfull.splitlines():
             mat = copy.match(line)
