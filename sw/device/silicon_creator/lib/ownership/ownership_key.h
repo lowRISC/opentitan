@@ -49,11 +49,14 @@ typedef struct owner_secret_page {
  * @param signature The signature over the message.
  * @param message Pointer to the message.
  * @param len Size of the message.
+ * @param flash_exec The magic value signifying whether the signature was
+ * verified.
  * @return kHardenedBoolTrue if the message is valid.
  */
 hardened_bool_t ownership_key_validate(size_t page, ownership_key_t key,
                                        const owner_signature_t *signature,
-                                       const void *message, size_t len);
+                                       const void *message, size_t len,
+                                       uint32_t *flash_exec);
 
 /**
  * Initialize sealing.

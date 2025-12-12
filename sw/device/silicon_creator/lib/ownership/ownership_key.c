@@ -10,6 +10,7 @@
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/ownership/ecdsa.h"
+#include "sw/device/silicon_creator/lib/sigverify/flash_exec.h"
 
 // RAM copy of the owner INFO pages from flash.
 extern owner_block_t owner_page[2];
@@ -18,7 +19,10 @@ OT_WEAK const owner_key_t *const kNoOwnerRecoveryKey;
 
 hardened_bool_t ownership_key_validate(size_t page, ownership_key_t key,
                                        const owner_signature_t *signature,
-                                       const void *message, size_t len) {
+                                       const void *message, size_t len,
+                                       uint32_t *flash_exec) {
+  // TODO: Pipe this through to a secure ecdsa.
+  *flash_exec = kSigverifyFlashExec;
   if ((key & kOwnershipKeyUnlock) == kOwnershipKeyUnlock) {
     if (ecdsa_verify_message(&owner_page[page].unlock_key.ecdsa,
                              &signature->ecdsa, message,
