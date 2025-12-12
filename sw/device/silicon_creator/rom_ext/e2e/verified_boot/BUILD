@@ -5,13 +5,6 @@
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
 load(
-    "//rules/opentitan:defs.bzl",
-    "DEFAULT_TEST_FAILURE_MSG",
-    "DEFAULT_TEST_SUCCESS_MSG",
-    "fpga_params",
-    "opentitan_test",
-)
-load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
     "otp_hex",
@@ -24,7 +17,13 @@ load(
     "IMMUTABLE_HASH_UNENFORCED_MSG",
     "IMM_SECTION_MAJOR_VERSION",
     "IMM_SECTION_MINOR_VERSION",
-    "IMM_SECTION_VARIATIONS",
+)
+load(
+    "//rules/opentitan:defs.bzl",
+    "DEFAULT_TEST_FAILURE_MSG",
+    "DEFAULT_TEST_SUCCESS_MSG",
+    "fpga_params",
+    "opentitan_test",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -34,37 +33,31 @@ filegroup(
     srcs = ["boot_test.c"],
 )
 
-[
-    otp_json_immutable_rom_ext(
-        name = "otp_json_with_{}_imm_romext_enabled".format(name),
-        testonly = True,
-        partitions = [
-            otp_partition(
-                name = "CREATOR_SW_CFG",
-                items = {
-                    "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_TRUE),
-                },
-            ),
-        ],
-        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_with_{}_imm_slot_virtual".format(name),
-        visibility = ["//visibility:private"],
-    )
-    for name in IMM_SECTION_VARIATIONS
-]
+otp_json_immutable_rom_ext(
+    name = "otp_json_with_imm_romext_enabled",
+    testonly = True,
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_TRUE),
+            },
+        ),
+    ],
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
+    visibility = ["//visibility:private"],
+)
 
-[
-    otp_image(
-        name = "otp_img_with_{}_imm_romext_enabled".format(name),
-        testonly = True,
-        src = "//hw/top_earlgrey/data/otp:otp_json_prod",
-        overlays = STD_OTP_OVERLAYS + [
-            "//sw/device/silicon_creator/rom_ext/e2e:otp_json_secret2_locked",
-            ":otp_json_with_{}_imm_romext_enabled".format(name),
-        ],
-        visibility = ["//visibility:private"],
-    )
-    for name in IMM_SECTION_VARIATIONS
-]
+otp_image(
+    name = "otp_img_with_imm_romext_enabled",
+    testonly = True,
+    src = "//hw/top_earlgrey/data/otp:otp_json_prod",
+    overlays = STD_OTP_OVERLAYS + [
+        "//sw/device/silicon_creator/rom_ext/e2e:otp_json_secret2_locked",
+        ":otp_json_with_imm_romext_enabled",
+    ],
+    visibility = ["//visibility:private"],
+)
 
 _POSITIONS = {
     "owner_slot_a": {
@@ -131,6 +124,15 @@ _POSITIONS = {
         "success": "rom_ext_slot = __BB\r\n",
         "otp_img": None,
     },
+    "romext_virtual_a_with_imm_romext_enabled": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
+        "romext_offset": "{rom_ext_slot_a}",
+        "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+        "owner_offset": "{owner_slot_a}",
+        "success": "rom_ext_slot = AA__\r\n",
+        "failure": IMMUTABLE_HASH_UNENFORCED_MSG,
+        "otp_img": ":otp_img_with_imm_romext_enabled",
+    },
     "imm_section_virtual_a": {
         "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
         "romext_offset": "{rom_ext_slot_a}",
@@ -139,17 +141,6 @@ _POSITIONS = {
         "success": "IMM_SECTION:{}.{}".format(IMM_SECTION_MAJOR_VERSION, IMM_SECTION_MINOR_VERSION),
         "otp_img": None,
     },
-} | {
-    "romext_virtual_a_with_{}_imm_romext_enabled".format(name): {
-        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_with_{}_imm_slot_virtual".format(name),
-        "romext_offset": "{rom_ext_slot_a}",
-        "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
-        "owner_offset": "{owner_slot_a}",
-        "success": "rom_ext_slot = AA__\r\n",
-        "failure": IMMUTABLE_HASH_UNENFORCED_MSG,
-        "otp_img": ":otp_img_with_{}_imm_romext_enabled".format(name),
-    }
-    for name in IMM_SECTION_VARIATIONS
 }
 
 [
