@@ -44,27 +44,40 @@ class GDBController:
             return ""
 
         output = ""
-
         readable_pipes = []
         if self.gdb_process.stdout:
             readable_pipes.append(self.gdb_process.stdout.fileno())
         if self.gdb_process.stderr:
             readable_pipes.append(self.gdb_process.stderr.fileno())
 
-        try:
-            readable, _, _ = select.select(readable_pipes, [], [], timeout)
+        while True:
+            try:
+                current_timeout = timeout if output == "" else 0
+                readable, _, _ = select.select(readable_pipes, [], [], current_timeout)
 
-            for fd in readable:
-                if fd == self.gdb_process.stdout.fileno():
-                    data = os.read(fd, 4096).decode("utf-8", errors="ignore")
-                    output += data
-                elif fd == self.gdb_process.stderr.fileno():
-                    # GDB uses stderr for logging/errors
-                    err_data = os.read(fd, 4096).decode("utf-8", errors="ignore")
-                    if print_errors:
-                        print(f"GDB Stderr: {err_data}")
-        except Exception as e:
-            print(f"Error reading GDB output: {e}")
+                if not readable:
+                    break
+
+                data_read = False
+                for fd in readable:
+                    if fd == self.gdb_process.stdout.fileno():
+                        chunk = os.read(fd, 4096).decode("utf-8", errors="ignore")
+                        if chunk:
+                            output += chunk
+                            data_read = True
+                    elif fd == self.gdb_process.stderr.fileno():
+                        err_chunk = os.read(fd, 4096).decode("utf-8", errors="ignore")
+                        if err_chunk:
+                            if print_errors:
+                                print(f"GDB Stderr: {err_chunk}")
+                            data_read = True
+
+                if not data_read:
+                    break
+
+            except Exception as e:
+                print(f"Error reading GDB output: {e}")
+                break
 
         return output
 
@@ -78,7 +91,7 @@ class GDBController:
         command_line = mi_command.strip() + "\n"
 
         self.gdb_process.stdin.write(command_line.encode("utf-8"))
-        # Aria: After sending the command let's wait for a while till the command is
+        # After sending the command let's wait for a while till the command is
         # processed on the receiving end
         time.sleep(0.1)
 
@@ -105,8 +118,11 @@ class GDBController:
         else:
             return None
 
-    def reset_target(self, reset_delay=0.005):
-        self.send_command("monitor reset run", check_response=False)
+    def reset_target(self, halt=True, reset_delay=0.005):
+        if halt:
+            self.send_command("monitor reset halt", check_response=False)
+        else:
+            self.send_command("monitor reset run", check_response=False)
         time.sleep(reset_delay)
         self.dump_output()
 
