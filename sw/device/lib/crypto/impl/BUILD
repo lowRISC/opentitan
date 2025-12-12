@@ -101,12 +101,20 @@ cc_library(
 )
 
 cc_library(
-    name = "ed25519",
-    srcs = ["ed25519.c"],
-    hdrs = ["//sw/device/lib/crypto/include:ed25519.h"],
+    name = "ecc_curve25519",
+    srcs = ["ecc_curve25519.c"],
+    hdrs = ["//sw/device/lib/crypto/include:ecc_curve25519.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":hmac",
+        ":integrity",
+        ":keyblob",
+        ":security_config",
+        ":sha2",
         ":status",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl/ecc:curve25519",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
