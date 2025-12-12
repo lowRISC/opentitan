@@ -62,8 +62,14 @@ task rram_ctrl_base_vseq::dut_init(string reset_kind = "HARD");
 endtask : dut_init
 
 task rram_ctrl_base_vseq::rram_ctrl_init();
-  // TODO
-  #1ms;
+  uvm_reg_data_t reg_data;
+  bit init_done;
+
+  do begin // poll init_done
+    csr_rd(.ptr(ral.phy_status), .value(reg_data));
+    init_done = get_field_val(ral.phy_status.init_done, reg_data);
+    #1us;
+  end while (init_done == 1'b0);
 endtask : rram_ctrl_init
 
 task rram_ctrl_base_vseq::rram_ctrl_wait_op_done();
