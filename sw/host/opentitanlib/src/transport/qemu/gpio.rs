@@ -5,11 +5,12 @@
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader, Write};
+use std::os::unix::net::UnixStream;
 use std::path::Path;
 use std::rc::Rc;
+use std::time::Duration;
 
 use anyhow::{Context, bail};
-use serialport::TTYPort;
 
 use crate::io::gpio::{GpioPin, PinMode, PullMode};
 
@@ -24,7 +25,7 @@ const QEMU_GPIO_MASK: char = 'M';
 const QEMU_GPIO_INPUT_FORWARD: char = 'Y';
 
 pub struct QemuGpio {
-    pty: BufReader<TTYPort>,
+    stream: BufReader<UnixStream>,
     pub pins: HashMap<u8, Rc<dyn GpioPin>>,
 
     /// Current outputs being driven from host to QEMU when pins are in an
@@ -67,14 +68,16 @@ pub struct QemuGpio {
 }
 
 impl QemuGpio {
-    pub fn new<P: AsRef<Path>>(gpio_pty: P) -> anyhow::Result<Self> {
-        let pty = serialport::new(gpio_pty.as_ref().to_str().unwrap(), 0)
-            .open_native()
-            .context("failed to open QEMU GPIO PTY")?;
-        let pty = BufReader::new(pty);
+    pub fn new<P: AsRef<Path>>(gpio_socket: P) -> anyhow::Result<Self> {
+        let stream =
+            UnixStream::connect(gpio_socket).context("failed to connect to QEMU GPIO Socket")?;
+        // Set a minimal timeout to emulate non-blocking GPIO socket reads
+        stream.set_read_timeout(Some(Duration::from_millis(1)))?;
+
+        let stream = BufReader::new(stream);
 
         let qemu_gpio = QemuGpio {
-            pty,
+            stream,
             pins: HashMap::default(),
             host_to_qemu: 0x0,
             host_output_enable: 0x0,
@@ -84,6 +87,24 @@ impl QemuGpio {
             qemu_floating: 0x0,
             qemu_input_fwd: 0x0,
         };
+
+        // TODO: may need to think more carefully about what to do here.
+        //
+        // On a new connection QEMU will send us details about all its output
+        // pins and forward what it *thinks* the host is outputting. Upon
+        // reconnecting to QEMU GPIO that has seen outputs from a previous
+        // connection, should we:
+        // (a) Completely ignore and do nothing, as we currently do, with
+        //     the host and QEMU out of sync.
+        // (b) Tell QEMU to assume default pin outputs
+        //     (host_output_enable = 0, host_to_qemu=0).
+        // (c) Read QEMU's forwarded GPIO and load those values into
+        //     `qemu_gpio`, retaining previous GPIO output state while
+        //     keeping QEMU and the host consistent.
+        //
+        // This should be determined based on what the Transport interface
+        // assumes. E.g. HyperDebug is managed asynchronously, which might
+        // suggest option (c)/(a) if this is not reset on a new connection.
 
         Ok(qemu_gpio)
     }
@@ -102,7 +123,7 @@ impl QemuGpio {
     /// OpenTitan's QEMU machine.
     pub fn process_frames(&mut self) -> anyhow::Result<()> {
         let mut line = String::new();
-        while let Ok(bytes_read) = self.pty.read_line(&mut line) {
+        while let Ok(bytes_read) = self.stream.read_line(&mut line) {
             if bytes_read == 0 {
                 break; // EOF reached
             }
@@ -162,7 +183,8 @@ impl QemuGpio {
     /// * `M:<value>`:  the inputs are masked with `<value>`, meaning driven/connected.
     /// * `R:00000000`: ask QEMU to repeat the last `D` and `O` frames (see [`process_frames`]).
     pub fn send_frame(&mut self, cmd: char, value: u32) -> anyhow::Result<()> {
-        writeln!(self.pty.get_mut(), "{cmd}:{value:08x}").context("failed to send GPIO frame")?;
+        writeln!(self.stream.get_mut(), "{cmd}:{value:08x}")
+            .context("failed to send GPIO frame")?;
 
         Ok(())
     }
