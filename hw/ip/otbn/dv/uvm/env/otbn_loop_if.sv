@@ -65,6 +65,16 @@ interface otbn_loop_if #(
     loop_counter_assertions_enabled = enable;
   endfunction
 
+  // Force the `current_loop_intg_err` signal to zero to ignore this error.
+  function automatic void disable_current_loop_intg_err();
+    force tb.dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller.current_loop_intg_err = '0;
+  endfunction
+
+  // Release the forcing of the current_loop_intg_err to no longer ignore this error.
+  function automatic void enable_current_loop_intg_err();
+    release tb.dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller.current_loop_intg_err;
+  endfunction
+
   // Track completing some loop. This is implied by the next item, but much easier to hit so maybe
   // worth covering separately.
   `COVER(LoopEnd_C, current_loop_finish)

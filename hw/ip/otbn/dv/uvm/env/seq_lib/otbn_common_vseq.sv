@@ -244,6 +244,19 @@ class otbn_common_vseq extends otbn_base_vseq;
   endfunction: sec_cm_fi_ctrl_svas
 
   virtual task sec_cm_inject_fault(sec_cm_base_if_proxy if_proxy);
+    // When testing the countermeasures for the OTBN hardware loop stack, the current_loop_valid
+    // can be driven to high as the loop stack counter is forced to zero. This fault should be
+    // detected and assert the `hw_err_o` of the loop controller. As in this test no SW is run the
+    // loop stack has undefined values (x). When the `current_loop_valid` is high, the integrity
+    // check of the loop address (current_loop_intg_err) is OR factored into the `hw_err_o` as well
+    // leading to undefined error bits. We prevent this propagation by forcing the
+    // `current_loop_intg_err` to zero / we ignore it. This ensures that the countermeasures must
+    // detect the fault. This is ok because in real HW the integrity error is OR combined and
+    // therefore only additionally drives the error signal.
+    if (!uvm_re_match("*loop_info_stack*u_stack_wr_ptr*", if_proxy.path)) begin
+          cfg.loop_vif.disable_current_loop_intg_err();
+    end
+
     fork
       begin
         if_proxy.inject_fault();
@@ -258,6 +271,12 @@ class otbn_common_vseq extends otbn_base_vseq;
         end
       end
     join
+
+    // Re-enable the current_loop_intg_err for the next tests
+    if (!uvm_re_match("*loop_info_stack*u_stack_wr_ptr*", if_proxy.path)) begin
+          cfg.loop_vif.enable_current_loop_intg_err();
+    end
+
   endtask : sec_cm_inject_fault
 
   virtual task pre_run_sec_cm_fi_vseq();
