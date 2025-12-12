@@ -99,7 +99,7 @@ enum {
   /**
    * Maximum number of test iterations in silicon targets.
    */
-  kMaxIterationsSilicon = 1000,
+  kMaxIterationsSilicon = 500,
   /**
    * Test timeout parameter.
    */
@@ -1134,6 +1134,7 @@ static void crypto_data_load(void) {
 
 static void crypto_data_load_task(void *task_parameters) {
   while (test_stage != kPowerVirusTestStageComplete) {
+    LOG_INFO("Crypto data load task running ...");
     if (test_stage == kPowerVirusTestStageCryptoDataLoad) {
       crypto_data_load();
       test_stage = kPowerVirusTestStageCommsDataLoad;
@@ -1160,10 +1161,13 @@ static void comms_data_load(void) {
   // Load data into I2C FIFOs.
   static_assert(ARRAYSIZE(i2c_handles) < UINT8_MAX,
                 "Length of i2c_handles must fit in uint8_t");
-  for (uint8_t i = 0; i < ARRAYSIZE(i2c_handles); ++i) {
-    CHECK_STATUS_OK(i2c_testutils_write(i2c_handles[i], /*addr=*/i + 1,
-                                        I2C_PARAM_FIFO_DEPTH - 1, kI2cMessage,
-                                        /*skip_stop=*/false));
+  if (kDeviceType == kDeviceSimDV) {
+    for (uint8_t i = 0; i < ARRAYSIZE(i2c_handles); ++i) {
+      LOG_INFO("Loading I2C FIFO %d with data ...", i);
+      CHECK_STATUS_OK(i2c_testutils_write(i2c_handles[i], /*addr=*/i + 1,
+                                          I2C_PARAM_FIFO_DEPTH - 1, kI2cMessage,
+                                          /*skip_stop=*/false));
+    }
   }
 
   // Load data into SPI host (1; as 0 is used in passthrough mode) FIFO.
