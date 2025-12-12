@@ -66,6 +66,20 @@ const flash_info_field_t kFlashInfoFieldCpDeviceId = {
     .byte_offset = kFlashInfoFieldCpDeviceIdStartOffset,
 };
 
+const flash_info_field_t kFlashInfoFieldAstIndividPatchAddr = {
+    .partition = 0,
+    .bank = 0,
+    .page = 0,
+    .byte_offset = kFlashInfoFieldAstIndividPatchAddrStartOffset,
+};
+
+const flash_info_field_t kFlashInfoFieldAstIndividPatchVal = {
+    .partition = 0,
+    .bank = 0,
+    .page = 0,
+    .byte_offset = kFlashInfoFieldAstIndividPatchValStartOffset,
+};
+
 /**
  * Partition 0, page 1 fields.
  */
