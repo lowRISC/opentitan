@@ -9,7 +9,7 @@
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 
-#ifdef OT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
+#ifdef OPENTITAN_IS_ENGLISHBREAKFAST
 
 #include "hw/top/aon_timer_regs.h"  // Generated.
 #include "hw/top/clkmgr_regs.h"     // Generated.
