@@ -39,6 +39,7 @@ typedef struct rstmgr_info {
  *
  * Note that the reset reasons are not necessarily mutually exclusive.
  */
+// FIXME This is incorrect for English Breakfast
 typedef enum rstmgr_reason {
   /**
    * Power on reset (POR).
@@ -115,6 +116,7 @@ noreturn
     void
     rstmgr_reset(void);
 
+#ifdef OPENTITAN_IS_EARLGREY
 /**
  * Verifies that info collection is initialized properly.
  *
@@ -152,6 +154,8 @@ bool rstmgr_is_hw_reset_reason(dt_rstmgr_t dt, uint32_t reasons,
   (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 0 }
 #define RSTMGR_OTP_FIELD_CPU_INFO_EN \
   (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 1 }
+
+#endif
 
 #ifdef __cplusplus
 }

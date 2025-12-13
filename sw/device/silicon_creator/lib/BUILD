@@ -17,7 +17,6 @@ load(
     "opentitan_test",
     "verilator_params",
 )
-load("//rules/opentitan:util.bzl", "flatten")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -299,7 +298,7 @@ dual_cc_library(
             ":error",
             ":keymgr_binding",
             "//sw/device/lib/base:macros",
-            "//sw/device/silicon_creator/lib/drivers:lifecycle",
+            "//sw/device/silicon_creator/lib/drivers:lifecycle_hdr",
             "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
             "//sw/device/silicon_creator/lib/sigverify:rsa_key",
             "//sw/device/silicon_creator/lib/sigverify:spx_key",
@@ -430,14 +429,6 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:spi_device",
-    ],
-)
-
-filegroup(
-    name = "bootstrap_srcs",
-    srcs = [
-        "bootstrap.c",
-        "bootstrap.h",
     ],
 )
 

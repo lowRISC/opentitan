@@ -22,6 +22,7 @@ load(
     "EARLGREY_CW340_TEST_ENVS",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
+    "ENGLISHBREAKFAST_TEST_ENVS",
     "OPENTITAN_CPU",
     "dv_params",
     "ecdsa_key_for_lc_state",
@@ -4700,6 +4701,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         EARLGREY_CW340_TEST_ENVS,
         DARJEELING_TEST_ENVS,
+        ENGLISHBREAKFAST_TEST_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
         },
