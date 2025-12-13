@@ -171,16 +171,6 @@ cc_library(
     ],
 )
 
-alias(
-    name = "test_rom_manifest",
-    actual = opentitan_select_top(
-        {
-            "englishbreakfast": ":english_breakfast_test_rom_manifest",
-        },
-        "//sw/device/silicon_creator/lib:manifest",
-    ),
-)
-
 cc_library(
     name = "test_rom_lib",
     srcs = [
@@ -204,7 +194,6 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":target_test_rom_lib",
-        ":test_rom_manifest",
         "//hw/top:ast_c_regs",
         "//hw/top:clkmgr_c_regs",
         "//hw/top:sram_ctrl_c_regs",
@@ -227,6 +216,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/lib:chip_info",
+        "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
     ] + opentitan_if_ip(
