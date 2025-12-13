@@ -55,6 +55,8 @@ static_assert(
     "Alert info dump max size has grown, please update the public define!");
 #elif defined(OPENTITAN_IS_DARJEELING)
 // TODO: equivalent assertations are not yet defined for Darjeeling
+#elif defined(OPENTITAN_IS_ENGLISHBREAKFAST)
+// TODO: equivalent assertations are not yet defined for English Breakfast
 #else
 #error "dif_rstmgr does not support this top"
 #endif
