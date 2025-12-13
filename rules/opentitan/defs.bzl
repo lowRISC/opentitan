@@ -144,6 +144,11 @@ DARJEELING_TEST_ENVS = {
     "//hw/top_darjeeling:sim_verilator": None,
 }
 
+# The default set of test environments for Earlgrey.
+ENGLISHBREAKFAST_TEST_ENVS = {
+    "//hw/top_englishbreakfast:sim_verilator": None,
+}
+
 # Messages we expect for possible test outcomes.
 OTTF_SUCCESS_MSG = r"PASS.*\n"
 OTTF_FAILURE_MSG = r"(FAIL|FAULT).*\n"
