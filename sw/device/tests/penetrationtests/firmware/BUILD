@@ -14,6 +14,7 @@ load(
     "opentitan_binary",
     "opentitan_test",
     "silicon_params",
+    "verilator_params",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -230,6 +231,12 @@ opentitan_test(
             "skip_in_ci",
         ],
     ),
+    verilator = verilator_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
     deps = FIRMWARE_DEPS_FI,
 )
 
@@ -239,6 +246,12 @@ opentitan_test(
     exec_env = PENTEST_EXEC_ENVS,
     fpga = fpga_params(tags = ["skip_in_ci"]),
     silicon = silicon_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
+    verilator = verilator_params(
         tags = [
             "manual",
             "skip_in_ci",
@@ -258,6 +271,12 @@ opentitan_test(
             "skip_in_ci",
         ],
     ),
+    verilator = verilator_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
     deps = FIRMWARE_DEPS_FI_OTBN,
 )
 
@@ -267,6 +286,12 @@ opentitan_test(
     exec_env = PENTEST_EXEC_ENVS,
     fpga = fpga_params(tags = ["skip_in_ci"]),
     silicon = silicon_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
+    verilator = verilator_params(
         tags = [
             "manual",
             "skip_in_ci",
@@ -286,6 +311,12 @@ opentitan_test(
             "skip_in_ci",
         ],
     ),
+    verilator = verilator_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
     deps = FIRMWARE_DEPS_CRYPTOLIB_FI_SYM,
 )
 
@@ -295,6 +326,12 @@ opentitan_test(
     exec_env = PENTEST_EXEC_ENVS,
     fpga = fpga_params(tags = ["skip_in_ci"]),
     silicon = silicon_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
+    verilator = verilator_params(
         tags = [
             "manual",
             "skip_in_ci",
@@ -314,6 +351,12 @@ opentitan_test(
             "skip_in_ci",
         ],
     ),
+    verilator = verilator_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
     deps = FIRMWARE_DEPS_CRYPTOLIB_SCA_SYM,
 )
 
@@ -323,6 +366,12 @@ opentitan_test(
     exec_env = PENTEST_EXEC_ENVS,
     fpga = fpga_params(tags = ["skip_in_ci"]),
     silicon = silicon_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
+    verilator = verilator_params(
         tags = [
             "manual",
             "skip_in_ci",
