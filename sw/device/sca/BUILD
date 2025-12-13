@@ -3,15 +3,18 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules/opentitan:defs.bzl", "opentitan_binary")
+load("//hw/top:defs.bzl", "opentitan_select_top")
 
 package(default_visibility = ["//visibility:public"])
 
 alias(
     name = "aes_serial_aes_testutils",
-    actual = select({
-        "//sw/device:is_english_breakfast": "//sw/device:nothing",
-        "//conditions:default": "//sw/device/lib/testing:aes_testutils",
-    }),
+    actual = opentitan_select_top(
+        {
+            "englishbreakfast": "//sw/device:nothing",
+        },
+        "//sw/device/lib/testing:aes_testutils",
+    ),
     visibility = ["//visibility:private"],
 )
 

@@ -7,6 +7,7 @@
 #include <getopt.h>
 #include <iostream>
 #include <signal.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <verilated.h>
 
@@ -247,20 +248,37 @@ VerilatorSimCtrl::VerilatorSimCtrl()
 }
 
 void VerilatorSimCtrl::RegisterSignalHandler() {
+  const int sigTypes[] = {SIGINT, SIGABRT, SIGFPE, SIGUSR1, SIGILL};
   struct sigaction sigIntHandler;
 
   sigIntHandler.sa_handler = SignalHandler;
   sigemptyset(&sigIntHandler.sa_mask);
   sigIntHandler.sa_flags = 0;
 
-  sigaction(SIGINT, &sigIntHandler, NULL);
-  sigaction(SIGUSR1, &sigIntHandler, NULL);
+  for (int i = 0; i < sizeof(sigTypes) / sizeof(sigTypes[0]); ++i) {
+    sigaction(sigTypes[i], &sigIntHandler, NULL);
+  }
 }
 
 void VerilatorSimCtrl::SignalHandler(int sig) {
   VerilatorSimCtrl &simctrl = VerilatorSimCtrl::GetInstance();
 
   switch (sig) {
+    // Abort (eg. assertion failure in DPI model)
+    case SIGABRT:
+    // Exceptions
+    case SIGFPE:
+    case SIGILL:
+    case SIGSEGV:
+      // Try to ensure that traces are up to date
+      if (simctrl.TracingEverEnabled()) {
+        simctrl.tracer_.close();
+      }
+
+      simctrl.RequestStop(true);
+      exit(1);
+      break;
+
     case SIGINT:
       simctrl.RequestStop(true);
       break;

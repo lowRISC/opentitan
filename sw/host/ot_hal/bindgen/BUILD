@@ -8,6 +8,7 @@ load("@rules_rust_bindgen//:defs.bzl", "rust_bindgen", "rust_bindgen_library")
 package(default_visibility = ["//visibility:public"])
 
 # NOTE: This variable is modified during English breakfast SW build from prepare_sw.py.
+# FIXME need to fix that
 _TOPLEVEL = "earlgrey"
 
 _ENGLISH_BREAKFAST_DEPS = [

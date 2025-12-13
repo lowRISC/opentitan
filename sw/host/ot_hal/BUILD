@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_library", "rust_test")
+load("//hw/top:defs.bzl", "opentitan_select_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -23,18 +24,22 @@ rust_library(
         "src/util/mod.rs",
         "src/util/multibits.rs",
         "src/util/unknown.rs",
-    ] + select({
-        "//sw/device:is_english_breakfast": [],
-        "//conditions:default": [
+    ] + opentitan_select_top(
+        {
+            "englishbreakfast": [],
+        },
+        [
             "src/dif/clkmgr.rs",
             "src/dif/pinmux.rs",
             "src/top/autogen/earlgrey.rs",
         ],
-    }),
-    crate_features = select({
-        "//sw/device:is_english_breakfast": ["english_breakfast"],
-        "//conditions:default": [],
-    }),
+    ),
+    crate_features = opentitan_select_top(
+        {
+            "englishbreakfast": ["english_breakfast"],
+        },
+        [],
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/ot_hal/bindgen",

@@ -102,6 +102,8 @@ typedef enum dif_rstmgr_reset_info {
    * Device has reset due to an external reset request via soc_proxy.
    */
   kDifRstmgrResetInfoExternalRst = (1 << 4),
+#elif defined(OPENTITAN_IS_ENGLISHBREAKFAST)
+/* Nothing else */
 #else
 #error "dif_rstmgr does not support this top"
 #endif

@@ -4,24 +4,35 @@
 
 """Helpers for transitioning to the RISC-V target."""
 
-OPENTITAN_CPU = "@platforms//cpu:riscv32"
-OPENTITAN_PLATFORM = "//toolchain:opentitan_platform"
+load("//hw/top:defs.bzl", "ALL_TOPS")
+load("//rules/opentitan:hw.bzl", "get_top_attr")
 
-# This constant holds a dictionary of per-device dependencies which are used to
-# generate slightly different binaries for each hardware target, including two
-# simulation platforms (DV and Verilator), and two FPGA platforms (CW305
-# and CW310).
-PER_DEVICE_DEPS = {
-    "sim_verilator": ["//sw/device/lib/arch:sim_verilator"],
-    "sim_dv": ["//sw/device/lib/arch:sim_dv"],
-    "fpga_cw305": ["//sw/device/lib/arch:fpga_cw305"],
-    "fpga_cw310": ["//sw/device/lib/arch:fpga_cw310"],
-}
+OPENTITAN_BASE_PLATFORM = "//sw/target:opentitan_base_platform"
+OPENTITAN_CPU = "@platforms//cpu:riscv32"
 
 def _opentitan_transition_impl(settings, attr):
+    # FIXME If transition composition were supported [1], the platform
+    # transition would better be expressed as a transition, defined in
+    # //hw/top. Instead, we have to reimplement some details of the top
+    # selection here.
+    # [1] https://github.com/bazelbuild/bazel/discussions/22019
+
+    # Use the requested platform if specified.
+    if attr.platform:
+        platform = attr.platform
+        # Otherwise use the top's specified platform.
+
+    else:
+        platform = None
+        for top in ALL_TOPS:
+            if settings["//hw/top"] == top.name:
+                platform = get_top_attr(top, "platform", required = False, default = OPENTITAN_BASE_PLATFORM)
+        if platform == None:
+            fail("The requested top is not listed in ALL_TOPS")
+
+    print("setting platform to", platform)
     return {
-        "//command_line_option:platforms": attr.platform,
-        "//command_line_option:copt": settings["//command_line_option:copt"],
+        "//command_line_option:platforms": platform,
         "//hw/bitstream/universal:rom": "//hw/bitstream/universal:none",
         "//hw/bitstream/universal:otp": "//hw/bitstream/universal:none",
         "//hw/bitstream/universal:env": "//hw/bitstream/universal:none",
@@ -29,17 +40,12 @@ def _opentitan_transition_impl(settings, attr):
 
 opentitan_transition = transition(
     implementation = _opentitan_transition_impl,
-    # In order to build the englishbreakfast binaries, we need to pass through
-    # the `--copt` and `--features` flags:
-    # - The copt flag defines a preprocessor symbol indicating englishbreakfast.
-    # - The features flags turn off compiler support for CPU extensions not
-    #   present in the englishbreakfast rv32i implementation.
     inputs = [
         "//command_line_option:copt",
+        "//hw/top",
     ],
     outputs = [
         "//command_line_option:platforms",
-        "//command_line_option:copt",
         "//hw/bitstream/universal:rom",
         "//hw/bitstream/universal:otp",
         "//hw/bitstream/universal:env",
@@ -54,7 +60,7 @@ def rv_rule(**kwargs):
 
     attrs = kwargs.pop("attrs", {})
     if "platform" not in attrs:
-        attrs["platform"] = attr.string(default = OPENTITAN_PLATFORM)
+        attrs["platform"] = attr.string()
     attrs["_allowlist_function_transition"] = attr.label(
         default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
     )

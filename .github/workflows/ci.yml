@@ -322,11 +322,6 @@ jobs:
           overwrite: true
       - name: Test
         run: ./ci/scripts/run-english-breakfast-verilator-tests.sh
-        # The patching mechanism for english breakfast is incompatible with multitop
-        # so this job will fail. At the same time, multitop is not advanced enough
-        # that we can compile those tests for EB yet. Ignore this job until we can
-        # fix it.
-        continue-on-error: true
 
   verilator_earlgrey:
     name: Verilated Earl Grey
@@ -387,6 +382,7 @@ jobs:
           tar xvf ${bitstream_archive}
 
           # Build CW305 test rom required by `build-bitstream-vivado.sh`
+          # FIXME: fix that
           rom_path="sw/device/lib/testing/test_rom"
           ./bazelisk.sh build "//${rom_path}:test_rom_fpga_cw305" \
             --features=-rv32_bitmanip \
