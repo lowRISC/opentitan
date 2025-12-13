@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
                      "gen_prim_flash_banks[0].u_prim_flash_bank.u_mem",
                  0x100000 / 8, 8);
 
-  memutil.RegisterMemoryArea("rom", 0x8000, &rom);
+  memutil.RegisterMemoryArea("rom0", 0x8000, &rom);
   memutil.RegisterMemoryArea("ram", 0x10000000u, &ram);
   memutil.RegisterMemoryArea("flash0", 0x20000000u, &flash0);
   simctrl.RegisterExtension(&memutil);
