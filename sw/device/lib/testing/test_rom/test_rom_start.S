@@ -6,24 +6,22 @@
 #include "sw/device/lib/base/multibits_asm.h"
 #include "hw/top/ast_regs.h"
 #include "hw/top/clkmgr_regs.h"
-#include "hw/top/csrng_regs.h"
-#include "hw/top/edn_regs.h"
 #include "hw/top/sram_ctrl_regs.h"
 
 #if defined(OPENTITAN_IS_ENGLISHBREAKFAST)
-#include "hw/top/otp_ctrl_regs.h"
-#include "hw/top/sensor_ctrl_regs.h"
 #include "hw/top_englishbreakfast/sw/autogen/top_englishbreakfast_memory.h"
-#define OTP_CTRL_CORE_BASE_ADDR             TOP_ENGLISHBREAKFAST_OTP_CTRL_CORE_BASE_ADDR
+#undef OTP_CTRL_CORE_BASE_ADDR              /* No OTP */
 #define AST_BASE_ADDR                       TOP_ENGLISHBREAKFAST_AST_BASE_ADDR
 #define CLKMGR_AON_BASE_ADDR                TOP_ENGLISHBREAKFAST_CLKMGR_AON_BASE_ADDR
 #define SRAM_CTRL_MAIN_REGS_BASE_ADDR       TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_REGS_BASE_ADDR
-#define ENTROPY_SRC_BASE_ADDR               TOP_ENGLISHBREAKFAST_ENTROPY_SRC_BASE_ADDR
-#define CSRNG_BASE_ADDR                     TOP_ENGLISHBREAKFAST_CSRNG_BASE_ADDR
-#define EDN0_BASE_ADDR                      TOP_ENGLISHBREAKFAST_EDN0_BASE_ADDR
-#define SENSOR_CTRL_BASE_ADDR               TOP_ENGLISHBREAKFAST_SENSOR_CTRL_AON_BASE_ADDR
+#undef ENTROPY_SRC_BASE_ADDR                /* No entropy source */
+#undef CSRNG_BASE_ADDR                      /* No CSRNG */
+#undef EDN0_BASE_ADDR                       /* No EDN */
+#undef SENSOR_CTRL_BASE_ADDR                /* No sensor */
 
 #elif defined(OPENTITAN_IS_EARLGREY)
+#include "hw/top/csrng_regs.h"
+#include "hw/top/edn_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/sensor_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
@@ -37,6 +35,8 @@
 #define SENSOR_CTRL_BASE_ADDR               TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR
 
 #elif defined(OPENTITAN_IS_DARJEELING)
+#include "hw/top/csrng_regs.h"
+#include "hw/top/edn_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling_memory.h"
 #define OTP_CTRL_CORE_BASE_ADDR             TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR
@@ -188,6 +188,7 @@ _reset_start:
   .global _start
   .type _start, @function
 _start:
+#ifdef OPENTITAN_IS_DARJEELING
   // Certain tops like Darjeeling lock down everything but the ROM by default.
   //
   // Remove address space protections by configuring entry 15 as
@@ -203,7 +204,9 @@ _start:
   csrw pmpcfg0, zero
   csrw pmpcfg1, zero
   csrw pmpcfg2, zero
+#endif
 
+#ifdef OTP_CTRL_CORE_BASE_ADDR
   // Check if AST initialization should be skipped.
   li   a0, (OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
@@ -218,6 +221,7 @@ _start:
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \
             OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET)
   call crt_section_copy
+#endif
 
 #ifdef OPENTITAN_IS_EARLGREY
   // Wait for AST initialization to complete.
@@ -260,19 +264,23 @@ _start:
   sw t0, ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET(a0)
 #endif
 
+#ifdef CSRNG_BASE_ADDR
   li a0, CSRNG_BASE_ADDR
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_SW_APP_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_READ_INT_STATE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << CSRNG_CTRL_FIPS_FORCE_ENABLE_OFFSET)
   sw t0, CSRNG_CTRL_REG_OFFSET(a0)
+#endif
 
+#ifdef EDN0_BASE_ADDR
   li a0, EDN0_BASE_ADDR
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << EDN_CTRL_EDN_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << EDN_CTRL_BOOT_REQ_MODE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << EDN_CTRL_AUTO_REQ_MODE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << EDN_CTRL_CMD_FIFO_RST_OFFSET)
   sw t0, EDN_CTRL_REG_OFFSET(a0)
+#endif
 
   // Scramble and initialize main memory (main SRAM).
   // Memory accesses will stall until initialization is complete.
