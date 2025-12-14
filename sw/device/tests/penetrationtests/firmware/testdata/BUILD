@@ -89,6 +89,10 @@ otp_json(
                 # Enable SPX+ signature verification.
                 # TODO: ROM_EXT is not signed with this yet
                 # "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0x0),
+                # Turn off the ROM_EXT_IMM
+                "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(0x0),
+                # We disable randomness since that messes with GDB
+                "CREATOR_SW_CFG_RNG_EN": otp_hex(0x0),
             },
         ),
         otp_partition(
