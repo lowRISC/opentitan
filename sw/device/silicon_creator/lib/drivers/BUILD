@@ -538,7 +538,7 @@ cc_test(
 )
 
 dual_cc_library(
-    name = "otp",
+    name = "otp_real",
     srcs = dual_inputs(
         device = ["otp.c"],
         host = ["mock_otp.cc"],
@@ -563,6 +563,16 @@ dual_cc_library(
             "//sw/device/silicon_creator/lib/base:sec_mmio",
             "//sw/device/lib/base:abs_mmio",
         ],
+    ),
+)
+
+cc_library(
+    name = "otp",
+    deps = opentitan_select_top(
+        {
+            "englishbreakfast": [],
+        },
+        [":otp_real"],
     ),
 )
 
