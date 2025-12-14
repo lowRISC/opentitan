@@ -322,11 +322,6 @@ jobs:
           overwrite: true
       - name: Test
         run: ./ci/scripts/run-english-breakfast-verilator-tests.sh
-        # The patching mechanism for english breakfast is incompatible with multitop
-        # so this job will fail. At the same time, multitop is not advanced enough
-        # that we can compile those tests for EB yet. Ignore this job until we can
-        # fix it.
-        continue-on-error: true
 
   verilator_earlgrey:
     name: Verilated Earl Grey
