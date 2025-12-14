@@ -27,20 +27,6 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
-filegroup(
-    name = "english_breakfast_test_rom_driver_srcs",
-    srcs = [
-        "flash_ctrl.c",
-        "flash_ctrl.h",
-        "flash_ctrl_info_pages.c",
-        "lifecycle.h",
-        "otp.h",
-        "rstmgr.h",
-        "spi_device.c",
-        "spi_device.h",
-    ],
-)
-
 dual_cc_library(
     name = "alert",
     srcs = dual_inputs(
