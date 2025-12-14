@@ -729,7 +729,6 @@ dual_cc_library(
         ],
         shared = [
             "//hw/top/dt",
-            "//hw/top:otp_ctrl_c_regs",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:multibits",
@@ -737,7 +736,12 @@ dual_cc_library(
             "//sw/device/silicon_creator/lib:error",
             "//sw/device/silicon_creator/lib/base:sec_mmio",
             "//sw/device/silicon_creator/lib/drivers:otp",
-        ],
+        ] + opentitan_select_top(
+            {
+                "earlgrey": ["//hw/top:otp_ctrl_c_regs"],
+            },
+            [],
+        ),
     ),
 )
 
