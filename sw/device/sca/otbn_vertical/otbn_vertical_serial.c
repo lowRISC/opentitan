@@ -64,13 +64,10 @@ static void ecc256_app_select(const uint8_t *app_cmd, size_t app_cmd_len) {
  */
 static void simple_serial_main(void) {
   SS_CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
-  bool sensor_ctrl_enable = false;
-  bool sensor_ctrl_en_fatal[SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS] = {false};
   pentest_init(kPentestTriggerSourceOtbn,
                kPentestPeripheralEntropy | kPentestPeripheralIoDiv4 |
                    kPentestPeripheralOtbn | kPentestPeripheralCsrng |
-                   kPentestPeripheralEdn | kPentestPeripheralHmac,
-               sensor_ctrl_enable, sensor_ctrl_en_fatal);
+                   kPentestPeripheralEdn | kPentestPeripheralHmac);
 
   LOG_INFO("Running ECC serial");
   LOG_INFO("Initializing simple serial interface to capture board.");
