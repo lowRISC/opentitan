@@ -111,9 +111,47 @@ otp_json(
 
 otp_image(
     name = "otp_img_rom_ext_fi",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_rom_ext_fi",
+    ],
+)
+
+otp_json(
+    name = "otp_json_rom_rollback_fi",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.HARDENED_TRUE),
+                # Number of Ibex cycles to spin: we set this to the highest value
+                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "0xffffffff",
+                # We set the version to a higher number to check rollback protection
+                "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT": "0x1",
+                # Enable SPX+ signature verification.
+                # TODO: ROM_EXT is not signed with this yet
+                # "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0x0),
+            },
+        ),
+        otp_partition(
+            name = "SECRET2",
+            items = {
+                # We set reproducible bitstreams for the tests
+                "RMA_TOKEN": "0000000000000005",
+                "CREATOR_ROOT_KEY_SHARE0": "1111111111111111111111111111111111111111111111111111111111111111",
+                "CREATOR_ROOT_KEY_SHARE1": "2222222222222222222222222222222222222222222222222222222222222222",
+            },
+            lock = True,
+        ),
+    ],
+    visibility = ["//visibility:private"],
+)
+
+otp_image(
+    name = "otp_img_rom_rollback_fi",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    overlays = STD_OTP_OVERLAYS + [
+        ":otp_json_rom_rollback_fi",
     ],
 )
 
@@ -149,7 +187,7 @@ otp_json(
 
 otp_image(
     name = "otp_img_rom_ext_rollback_fi",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_rom_ext_rollback_fi",
     ],
