@@ -443,8 +443,25 @@ opentitan_test(
     ],
 )
 
+cc_library(
+    name = "lifecycle_stub",
+    srcs = ["lifecycle_stub.c"],
+    deps = [
+        ":lifecycle_hdr",
+    ],
+)
+
+cc_library(
+    name = "lifecycle_hdr",
+    hdrs = ["lifecycle.h"],
+    deps = [
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+    ],
+)
+
 dual_cc_library(
-    name = "lifecycle",
+    name = "lifecycle_real",
     srcs = dual_inputs(
         device = ["lifecycle.c"],
         host = ["mock_lifecycle.cc"],
@@ -469,6 +486,16 @@ dual_cc_library(
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib/base:sec_mmio",
         ],
+    ),
+)
+
+alias(
+    name = "lifecycle",
+    actual = opentitan_select_top(
+        {
+            "englishbreakfast": ":lifecycle_stub",
+        },
+        ":lifecycle_real",
     ),
 )
 
