@@ -382,6 +382,7 @@ jobs:
           tar xvf ${bitstream_archive}
 
           # Build CW305 test rom required by `build-bitstream-vivado.sh`
+          # FIXME: fix that
           rom_path="sw/device/lib/testing/test_rom"
           ./bazelisk.sh build "//${rom_path}:test_rom_fpga_cw305" \
             --features=-rv32_bitmanip \
