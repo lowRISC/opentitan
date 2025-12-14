@@ -16,6 +16,10 @@ load(
     "opentitan_test",
 )
 load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
+load(
+    "//hw/top:defs.bzl",
+    "opentitan_select_top",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -357,9 +361,7 @@ cc_library(
     deps = [
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
-        "//hw/top:otp_ctrl_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
@@ -367,8 +369,15 @@ cc_library(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-    ],
+    ] + opentitan_select_top(
+        {
+            "englishbreakfast": [],
+        },
+        [
+            "//hw/top:otp_ctrl_c_regs",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+        ],
+    ),
 )
 
 cc_test(
