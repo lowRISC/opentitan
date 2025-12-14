@@ -116,52 +116,22 @@ status_t handle_edn_sca_bus_data(ujson_t *uj) {
 }
 
 status_t handle_edn_sca_init(ujson_t *uj) {
-  penetrationtest_cpuctrl_t uj_cpuctrl_data;
-  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_cpuctrl_data));
-  penetrationtest_sensor_config_t uj_sensor_data;
-  TRY(ujson_deserialize_penetrationtest_sensor_config_t(uj, &uj_sensor_data));
+  // Configure the device.
+  pentest_setup_device(uj, false, false);
 
   pentest_select_trigger_type(kPentestTriggerTypeSw);
-
-  // Disable the instruction cache and dummy instructions for SCA attacks.
-  penetrationtest_device_info_t uj_output;
-  TRY(pentest_configure_cpu(
-      uj_cpuctrl_data.enable_icache, &uj_output.icache_en,
-      uj_cpuctrl_data.enable_dummy_instr, &uj_output.dummy_instr_en,
-      uj_cpuctrl_data.dummy_instr_count, uj_cpuctrl_data.enable_jittery_clock,
-      uj_cpuctrl_data.enable_sram_readback, &uj_output.clock_jitter_locked,
-      &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
-      &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
-      &uj_output.sram_ret_readback_en, uj_cpuctrl_data.enable_data_ind_timing,
-      &uj_output.data_ind_timing_en));
 
   // As we are using the software defined trigger, the first argument of
   // sca_init is not needed. kPentestTriggerSourceAes is selected as a
   // placeholder.
   pentest_init(kPentestTriggerSourceAes,
                kPentestPeripheralIoDiv4 | kPentestPeripheralEntropy |
-                   kPentestPeripheralCsrng | kPentestPeripheralEdn,
-               uj_sensor_data.sensor_ctrl_enable,
-               uj_sensor_data.sensor_ctrl_en_fatal);
+                   kPentestPeripheralCsrng | kPentestPeripheralEdn);
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
-
-  // Configure the entropy complex. Set the reseed interval to max to avoid
-  // reseed during the trigger window.
-  TRY(pentest_configure_entropy_source_max_reseed_interval());
-
-  // Read rom digest.
-  TRY(pentest_read_rom_digest(uj_output.rom_digest));
-
-  // Read device ID and return to host.
-  TRY(pentest_read_device_id(uj_output.device_id));
-  RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
-
-  // Read different SKU config fields and return to host.
-  TRY(pentest_send_sku_config(uj));
 
   return OK_STATUS();
 }
