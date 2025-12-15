@@ -1,10 +1,13 @@
 # Contributing code to the opentitan repository
 
+Please see [Contributing to OpenTitan](https://opentitan.org/book/doc/contributing)
+for more detailed guidance.
+
 ## Contributor License Agreement
 
 Contributions to OpenTitan must be accompanied by sign-off text that indicates
-acceptance of the Contributor License Agreement (see [CLA](CLA) for full
-text), which is closely derived from the Apache Individual Contributor License
+acceptance of the Contributor License Agreement (see [CLA](CLA) for full text),
+which is closely derived from the Apache Individual Contributor License
 Agreement. The sign-off text must be included once per commit, in the commit
 message. The sign-off can be automatically inserted using a command such as
 `git commit -s`, which will generate the text in the form:
@@ -23,29 +26,22 @@ with it, including a sign-off) is maintained indefinitely and may be
 redistributed consistent with this project or the open source license(s)
 involved.
 
-## Quick guidelines
+### Organisational Agreement
 
-* Keep a clean commit history. This means no merge commits, and no long series
-  of "fixup" patches (rebase or squash as appropriate). Structure work as a
-  series of logically ordered, atomic patches. `git rebase -i` is your friend.
-* Changes should be made via pull request, with review. A pull request will be
-  committed by a "committer" (an account listed in `COMMITTERS`) once it has
-  had an explicit positive review.
-* When changes are restricted to a specific area, you are recommended to add a
-  tag to the beginning of the first line of the commit message in square
-  brackets. e.g. "[uart] Fix bug #157".
-* Code review is not design review and doesn't remove the need for discussing
-  implementation options. If you would like to make a large-scale change or
-  discuss multiple implementation options, discuss on the mailing list.
-* Create pull requests from a fork rather than making new branches in
-  `github.com/lowrisc/opentitan`.
-* Do not attempt to commit code with a non-Apache license without discussing
-  first.
-* If a relevant bug or tracking issue exists, reference it in the pull request
-  and commits.
-* Do not report security vulnerabilities through public GitHub issues or pull
-  requests. For instructions on how to report vulnerabilities, please consult
-  SECURITY.md.
+Under the [CLA](CLA) a Grant of Copyright License is given by the individual to the Project.
+To ensure that the individual is authorised to give this grant, individuals need to be identified as
+a [Partner Individual](./doc/project_governance/useraccounts.md#partner-individuals)
+or an [Individual Collaborator](./doc/project_governance/useraccounts.md#individual-collaborators) with an appropriate agreement.
 
-Please see [Contributing to OpenTitan](https://opentitan.org/book/doc/contributing)
-for more general guidance.
+## Copyright messages
+
+More than 200 individuals from more than 25 organizations and more than 20 non-organizational individuals have contributed to OpenTitan to date.
+If all of them would add their own attribution or copyright notices, that would clutter the code base.
+Copyright is therefore indicated in OpenTitan files by a generic header:
+
+`Copyright lowRISC contributors (OpenTitan project).`
+
+Detailed and up-to-date attribution for all contributions is available via the Git version control system:
+- `git shortlog --author "<your name>"` lists all contributions under your name.
+- `git shortlog --author "<organization's domain>"` lists all contributions by an organization.
+- `git shortlog -- <path>` lists all contributors for a file or directory tree.
