@@ -45,6 +45,18 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
+  overrides: [
+    // Override the default scratch directory and rel_path to take variant into account
+    {
+      name: scratch_path
+      value: "{scratch_base_path}/{name}_{variant}-{flow}-{tool}"
+    }
+    {
+      name: rel_path
+      value: "hw/ip/{name}_{variant}/dv"
+    }
+  ]
+
   // Default UVM test and seq class name.
   uvm_test: edn_base_test
   uvm_test_seq: edn_base_vseq
