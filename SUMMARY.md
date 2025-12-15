@@ -1,6 +1,7 @@
 - [About OpenTitan](./doc/sections/opentitan.md)
 
   - [Introduction](./README.md)
+  - [Why Open Source?](./doc/project_governance/opensource.md)
   - [OpenTitan News](./doc/project_governance/news.md))
   - [Product Architecture](./doc/productarchitecture.md)
   - [History](./doc/project_governance/history.md)
