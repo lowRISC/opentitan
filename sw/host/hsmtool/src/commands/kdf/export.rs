@@ -6,8 +6,7 @@ use std::any::Any;
 use std::fs;
 use std::path::PathBuf;
 
-use anyhow::{Result, bail};
-use cryptoki::object::ObjectHandle;
+use anyhow::Result;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
 
