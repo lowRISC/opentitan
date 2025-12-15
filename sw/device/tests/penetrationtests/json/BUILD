@@ -196,3 +196,10 @@ cc_library(
     hdrs = ["trigger_sca_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
+
+cc_library(
+    name = "gdb_commands",
+    srcs = ["gdb_commands.c"],
+    hdrs = ["gdb_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
