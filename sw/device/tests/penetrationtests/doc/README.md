@@ -95,6 +95,10 @@ The testing is performed on the flashed pentest framework in this directory whic
 
 All test outputs are saved in the `bazel-testlogs/sw/device/tests/penetrationtests` folder in opentitan. Take note that the output to the terminal is piped to the campaign file in that directory, please consult this file for the test output. This is done since each subtest can take 2-12h.
 
+## Secure Code Guidelines and Fault CI Tests
+
+There are secure coding guidelines written in `//sw/device/tests/penetrationtests/firmware/firmware_gdb.c`. These contain examples on how to write secure code for the crypto library. These guidelines are also tested via fault simulation. In parallel, these tests serve as the CI tests of fault simulation tools to keep these tools updated and running since the regular tests can take several hours.
+
 ## Versioning
 
 In `//sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h`, a value PENTEST_VERSION is found with the current version of the pentest framework.
