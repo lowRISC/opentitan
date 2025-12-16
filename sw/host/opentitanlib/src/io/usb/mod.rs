@@ -31,7 +31,7 @@ pub trait UsbDevice {
     fn get_product_id(&self) -> u16;
 
     /// Gets the serial number of the device.
-    fn get_serial_number(&self) -> &str;
+    fn get_serial_number(&self) -> Option<&str>;
 
     /// Set the active configuration.
     fn set_active_configuration(&self, config: u8) -> Result<()>;
