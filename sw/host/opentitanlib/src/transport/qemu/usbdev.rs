@@ -9,7 +9,7 @@ use std::cell::{Cell, RefCell};
 use std::io::{Read, Write};
 use std::sync::mpsc;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use thiserror::Error;
 use zerocopy::{FromBytes, Immutable, IntoBytes, KnownLayout, Unaligned, byteorder::little_endian};
 
@@ -97,16 +97,24 @@ const USB_CONFIG_DESCRIPTOR: u8 = 2;
 const USB_DEV_DESC_MAX_PACKET_SIZE_OFFSET: usize = 7;
 
 /// Events sent by otlib to the virtual host thread.
+#[derive(Debug)]
 enum HostChannelEvent {
     /// A message was sent by QEMU to the host.
     QemuMessage { cmd: u32, id: u32, data: Vec<u8> },
+    /// Request information about the currently plugged device.
+    /// The information is immediately sent back over the channel.
+    GetDeviceInfo {
+        answer: mpsc::Sender<Option<DeviceInfo>>,
+    },
+    /// Request to be notified on any device change (connection or disconnection).
+    NotifyDeviceChange { answer: mpsc::Sender<()> },
 }
 
 /// Minimal virtual USB host to drive the QEMU usbdev.
 pub struct QemuUsbHost {
     /// Sender to notify the virtual host thread of various events
     /// from the otlib side.
-    _host_channel: mpsc::Sender<HostChannelEvent>,
+    host_channel: mpsc::Sender<HostChannelEvent>,
 }
 
 impl QemuUsbHost {
@@ -120,8 +128,93 @@ impl QemuUsbHost {
             };
         });
 
-        QemuUsbHost {
-            _host_channel: send,
+        QemuUsbHost { host_channel: send }
+    }
+
+    /// Try to obtain information about the QEMU device connected.
+    /// This is non-blocking.
+    fn device_info(&self) -> UsbResult<Option<DeviceInfo>> {
+        let (send, recv) = mpsc::channel();
+        self.host_channel
+            .send(HostChannelEvent::GetDeviceInfo { answer: send })?;
+        Ok(recv.recv()?)
+    }
+
+    /// Wait for a device change or a timeout. Return an error if no
+    /// changes occurred within the time limit.
+    fn wait_device_change(&self, timeout: Duration) -> UsbResult<()> {
+        let (send, recv) = mpsc::channel();
+        self.host_channel
+            .send(HostChannelEvent::NotifyDeviceChange { answer: send })?;
+        Ok(recv.recv_timeout(timeout)?)
+    }
+
+    fn device_matches_filter(
+        &self,
+        device: &QemuUsbDevice,
+        usb_vid_pid: Option<(u16, u16)>,
+        usb_protocol: Option<(u8, u8, u8)>,
+        usb_serial: Option<&str>,
+    ) -> UsbResult<bool> {
+        // Parsing cannot fail because it was parsed during enumeration.
+        if let Some((usb_vid, usb_pid)) = usb_vid_pid {
+            if device.get_vendor_id() != usb_vid || device.get_product_id() != usb_pid {
+                return Ok(false);
+            }
+        }
+
+        if let Some((class, subclass, protocol)) = usb_protocol {
+            // Failure should never occur to get the active descriptor since
+            // it is cached.
+            let config = device.active_configuration()?;
+            let mut found = false;
+            for intf in config.interface_alt_settings() {
+                if let Ok(desc) = intf.descriptor() {
+                    if desc.class == class && desc.subclass == subclass && desc.protocol == protocol
+                    {
+                        found = true;
+                    }
+                }
+            }
+            if !found {
+                return Ok(false);
+            }
+        }
+
+        if let Some(_usb_serial) = usb_serial {
+            log::error!("matching by serial number is not implemented yet");
+        }
+        Ok(true)
+    }
+
+    fn device_by_filter_with_timeout(
+        &self,
+        usb_vid_pid: Option<(u16, u16)>,
+        usb_protocol: Option<(u8, u8, u8)>,
+        usb_serial: Option<&str>,
+        timeout: Duration,
+    ) -> anyhow::Result<Box<dyn UsbDevice>> {
+        let deadline = Instant::now() + timeout;
+
+        loop {
+            let now = Instant::now();
+            if now > deadline {
+                return Err(anyhow!("no device found"));
+            }
+            if let Some(dev_info) = self.device_info()? {
+                let dev = QemuUsbDevice::new(self, dev_info);
+                match self.device_matches_filter(&dev, usb_vid_pid, usb_protocol, usb_serial) {
+                    Ok(true) => return Ok(Box::new(dev)),
+                    Ok(false) => (),
+                    Err(err) => {
+                        log::error!("{err:?}");
+                    }
+                }
+            }
+            // If the device did not match our expectation, wait until
+            // a new device shows up.
+            log::info!("wait for device change");
+            self.wait_device_change(deadline - now)?;
         }
     }
 }
@@ -129,23 +222,189 @@ impl QemuUsbHost {
 impl OtUsbContext for QemuUsbHost {
     fn device_by_id_with_timeout(
         &self,
-        _usb_vid: u16,
-        _usb_pid: u16,
-        _usb_serial: Option<&str>,
-        _timeout: Duration,
+        usb_vid: u16,
+        usb_pid: u16,
+        usb_serial: Option<&str>,
+        timeout: Duration,
     ) -> anyhow::Result<Box<dyn UsbDevice>> {
-        unimplemented!();
+        self.device_by_filter_with_timeout(Some((usb_vid, usb_pid)), None, usb_serial, timeout)
     }
 
     fn device_by_interface_with_timeout(
         &self,
-        _class: u8,
-        _subclass: u8,
-        _protocol: u8,
-        _usb_serial: Option<&str>,
-        _timeout: Duration,
+        class: u8,
+        subclass: u8,
+        protocol: u8,
+        usb_serial: Option<&str>,
+        timeout: Duration,
     ) -> anyhow::Result<Box<dyn UsbDevice>> {
-        unimplemented!();
+        self.device_by_filter_with_timeout(
+            None,
+            Some((class, subclass, protocol)),
+            usb_serial,
+            timeout,
+        )
+    }
+}
+
+#[derive(Debug)]
+struct QemuUsbDevice {
+    dev_info: DeviceInfo,
+    /// Active configuration *index*.
+    active_cfg_idx: usize,
+    timeout: Duration,
+}
+
+impl QemuUsbDevice {
+    fn new(_host: &QemuUsbHost, dev_info: DeviceInfo) -> Self {
+        QemuUsbDevice {
+            dev_info,
+            // The host always set the first available configuration.
+            active_cfg_idx: 0,
+            // Operations should be reasonably fast with QEMU.
+            timeout: Duration::from_millis(500),
+        }
+    }
+}
+
+impl UsbDevice for QemuUsbDevice {
+    fn get_vendor_id(&self) -> u16 {
+        // This cannot fail, the device descriptor was parsed during enumeration.
+        desc::DeviceDescriptor::ref_from_bytes(&self.dev_info.dev_desc)
+            .unwrap()
+            .vendor_id
+            .into()
+    }
+
+    /// Return the PID of the device.
+    fn get_product_id(&self) -> u16 {
+        // This cannot fail, the device descriptor was parsed during enumeration.
+        desc::DeviceDescriptor::ref_from_bytes(&self.dev_info.dev_desc)
+            .unwrap()
+            .product_id
+            .into()
+    }
+
+    /// Gets the serial number of the device.
+    fn get_serial_number(&self) -> Option<&str> {
+        // TODO
+        None
+    }
+
+    /// Set the active configuration.
+    fn set_active_configuration(&self, _config: u8) -> anyhow::Result<()> {
+        anyhow::bail!("unimplemented set_active_configuration");
+    }
+
+    /// Claim an interface for use with the kernel.
+    fn claim_interface(&self, _iface: u8) -> anyhow::Result<()> {
+        Ok(())
+    }
+
+    /// Release a previously claimed interface to the kernel.
+    fn release_interface(&self, _iface: u8) -> anyhow::Result<()> {
+        Ok(())
+    }
+
+    /// Set an interface alternate setting.
+    fn set_alternate_setting(&self, _iface: u8, _setting: u8) -> anyhow::Result<()> {
+        anyhow::bail!("unimplemented set_alternate_setting");
+    }
+
+    /// Check whether a kernel driver currently controls the device.
+    fn kernel_driver_active(&self, _iface: u8) -> anyhow::Result<bool> {
+        Ok(false)
+    }
+
+    /// Detach the kernel driver from the device.
+    fn detach_kernel_driver(&self, _iface: u8) -> anyhow::Result<()> {
+        Ok(())
+    }
+
+    /// Attach the kernel driver to the device.
+    fn attach_kernel_driver(&self, _iface: u8) -> anyhow::Result<()> {
+        Ok(())
+    }
+
+    /// Return the currently active configuration's descriptor.
+    fn active_configuration(&self) -> anyhow::Result<desc::Configuration> {
+        Ok(desc::Configuration::new(
+            &self.dev_info.configurations[self.active_cfg_idx],
+        ))
+    }
+
+    /// Return the device's bus number.
+    fn bus_number(&self) -> u8 {
+        0
+    }
+
+    /// Return the sequence of port numbers from the root down to the device.
+    fn port_numbers(&self) -> anyhow::Result<Vec<u8>> {
+        Ok(vec![0])
+    }
+
+    /// Return a string descriptor in ASCII.
+    fn read_string_descriptor_ascii(&self, _idx: u8) -> anyhow::Result<String> {
+        anyhow::bail!("unimplemented read_string_descriptor_ascii");
+    }
+
+    /// Reset the device.
+    ///
+    /// Note that this UsbDevice handle will most likely become invalid
+    /// after resetting the device and a new one has to be obtained.
+    fn reset(&self) -> anyhow::Result<()> {
+        anyhow::bail!("unimplemented reset");
+    }
+
+    /// Get the default timeout for operations.
+    fn get_timeout(&self) -> Duration {
+        self.timeout
+    }
+
+    /// Issue a USB control request with optional host-to-device data.
+    fn write_control_timeout(
+        &self,
+        _request_type: u8,
+        _request: u8,
+        _value: u16,
+        _index: u16,
+        _buf: &[u8],
+        _timeout: Duration,
+    ) -> anyhow::Result<usize> {
+        anyhow::bail!("unimplemented write_control_timeout");
+    }
+
+    /// Issue a USB control request with optional device-to-host data.
+    fn read_control_timeout(
+        &self,
+        _request_type: u8,
+        _request: u8,
+        _value: u16,
+        _index: u16,
+        _buf: &mut [u8],
+        _timeout: Duration,
+    ) -> anyhow::Result<usize> {
+        anyhow::bail!("unimplemented write_control_timeout");
+    }
+
+    /// Read bulk data bytes to given USB endpoint.
+    fn read_bulk_timeout(
+        &self,
+        _endpoint: u8,
+        _data: &mut [u8],
+        _timeout: Duration,
+    ) -> anyhow::Result<usize> {
+        anyhow::bail!("unimplemented");
+    }
+
+    /// Write bulk data bytes to given USB endpoint.
+    fn write_bulk_timeout(
+        &self,
+        _endpoint: u8,
+        _data: &[u8],
+        _timeout: Duration,
+    ) -> anyhow::Result<usize> {
+        anyhow::bail!("unimplemented");
     }
 }
 
@@ -245,7 +504,7 @@ pub struct QemuUsbdevCancelPayload {
 }
 
 /// Represents a packet ID.
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
 struct PacketId(u32);
 
 /// This structure records an event received from QEMU on the chardev.
@@ -289,6 +548,9 @@ enum UsbError {
     /// Device disconnected.
     #[error("USB device was disconnected")]
     Disconnected,
+    /// Operation timed out
+    #[error("Operation timed out")]
+    Timeout,
     /// Transfer failed.
     #[error("USB transfer failed with error {0:?}, context is {1:?}")]
     TransferFailed(QemuUsbdevTransferStatus, anyhow::Error),
@@ -320,6 +582,27 @@ impl<T> UsbContext<T, UsbError> for UsbResult<T> {
             UsbError::Other(err) => UsbError::Other(err.context(ctx)),
             err => err,
         })
+    }
+}
+
+impl From<mpsc::SendError<HostChannelEvent>> for UsbError {
+    fn from(_value: mpsc::SendError<HostChannelEvent>) -> UsbError {
+        UsbError::Shutdown
+    }
+}
+
+impl From<mpsc::RecvError> for UsbError {
+    fn from(_value: mpsc::RecvError) -> UsbError {
+        UsbError::Shutdown
+    }
+}
+
+impl From<mpsc::RecvTimeoutError> for UsbError {
+    fn from(value: mpsc::RecvTimeoutError) -> UsbError {
+        match value {
+            mpsc::RecvTimeoutError::Timeout => UsbError::Timeout,
+            mpsc::RecvTimeoutError::Disconnected => UsbError::Shutdown,
+        }
     }
 }
 
@@ -368,6 +651,9 @@ struct QemuHostThread {
     channel_send: mpsc::Sender<HostChannelEvent>,
     /// Next ID.
     next_id: u32,
+    /// List of pending channels that should be notified on a
+    /// device change.
+    pending_dev_changes: Vec<mpsc::Sender<()>>,
 }
 
 impl QemuHostThread {
@@ -392,6 +678,7 @@ impl QemuHostThread {
             channel_recv,
             channel_send,
             next_id: 0,
+            pending_dev_changes: Vec::new(),
         }
     }
 
@@ -567,22 +854,31 @@ impl QemuHostThread {
     }
 
     /// Wait for a QEMU command and return its payload. Return an error if something goes
-    /// wrong.
+    /// wrong. Other requests will be handled assuming the context of a device enumerating.
     fn wait_qemu_event(&mut self) -> UsbResult<QemuUsbdevEvent> {
-        let Ok(event) = self.channel_recv.recv() else {
-            return Err(UsbError::Shutdown);
-        };
-        Ok(match event {
-            HostChannelEvent::QemuMessage { cmd, id, data } => {
-                let cmd = QemuUsbdevCmd::try_from(cmd)
-                    .with_context(|| format!("Unknown command {cmd} from USBDEV"))?;
-                QemuUsbdevEvent {
-                    cmd,
-                    id: PacketId(id),
-                    data,
+        loop {
+            let Ok(event) = self.channel_recv.recv() else {
+                return Err(UsbError::Shutdown);
+            };
+            match event {
+                HostChannelEvent::QemuMessage { cmd, id, data } => {
+                    let cmd = QemuUsbdevCmd::try_from(cmd)
+                        .with_context(|| format!("Unknown command {cmd} from USBDEV"))?;
+                    return Ok(QemuUsbdevEvent {
+                        cmd,
+                        id: PacketId(id),
+                        data,
+                    });
+                }
+                HostChannelEvent::GetDeviceInfo { answer } => {
+                    // There is no device connected. Ignore errors (ie the other end disconnected).
+                    let _ = answer.send(None);
+                }
+                HostChannelEvent::NotifyDeviceChange { answer } => {
+                    self.pending_dev_changes.push(answer)
                 }
             }
-        })
+        }
     }
 
     /// Wait for a HELLO packet and return the payload. Return an error if something goes
@@ -892,6 +1188,44 @@ impl QemuHostThread {
         })
     }
 
+    /// Serve requests for the device until it disconnects .
+    fn serve_device_requests(&mut self, dev_info: &DeviceInfo) -> UsbResult<()> {
+        loop {
+            let Ok(event) = self.channel_recv.recv() else {
+                return Err(UsbError::Shutdown);
+            };
+            match event {
+                HostChannelEvent::QemuMessage { cmd, id, data } => {
+                    let cmd = QemuUsbdevCmd::try_from(cmd)
+                        .with_context(|| format!("Unknown command {cmd} from USBDEV"))?;
+                    match cmd {
+                        QemuUsbdevCmd::Disconnect => return Err(UsbError::Disconnected),
+                        cmd => {
+                            log::error!(
+                                "ignoring unexpected QEMU event: {cmd:?}, id={id}, data={data:?}"
+                            );
+                        }
+                    }
+                }
+                HostChannelEvent::GetDeviceInfo { answer } => {
+                    // Ignore errors (ie the other end disconnected).
+                    let _ = answer.send(Some(dev_info.clone()));
+                }
+                HostChannelEvent::NotifyDeviceChange { answer } => {
+                    self.pending_dev_changes.push(answer)
+                }
+            }
+        }
+    }
+
+    fn notify_device_change(&mut self) {
+        for send in &self.pending_dev_changes {
+            // Ignore errors (receiver might have disconnected after a timeout).
+            let _ = send.send(());
+        }
+        self.pending_dev_changes.clear();
+    }
+
     /// This thread simulates a USB host. It can react to events sent by otlib
     /// over the channel.
     fn run(&mut self) -> UsbResult<()> {
@@ -960,10 +1294,21 @@ impl QemuHostThread {
             };
             log::info!("USB Host: device configured: {dev_info:?}");
 
-            break;
-        }
+            self.notify_device_change();
 
-        Ok(())
+            // Handle messages until the device disconnects.
+            match self.serve_device_requests(&dev_info) {
+                Err(UsbError::Shutdown) => return Ok(()),
+                Err(UsbError::Disconnected) | Ok(()) => {
+                    log::info!("USB Host: device disconnected");
+                }
+                Err(err) => {
+                    log::error!("USB host: an error occurred: {err:?}");
+                    // Pretend that device has disconnected.
+                }
+            }
+            self.notify_device_change();
+        }
     }
 
     fn blocking_read_exact<T: Read>(read: &mut T, buf: &mut [u8]) -> anyhow::Result<()> {
