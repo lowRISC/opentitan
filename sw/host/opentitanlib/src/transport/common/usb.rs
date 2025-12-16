@@ -12,7 +12,7 @@ use crate::transport::TransportError;
 /// Represents a device provided by the `rusb` crate.
 pub struct RusbDevice {
     handle: rusb::DeviceHandle<rusb::Context>,
-    serial_number: String,
+    serial_number: Option<String>,
     timeout: Duration,
     device_desc: Vec<u8>,
     configurations: Vec<Vec<u8>>,
@@ -33,7 +33,7 @@ impl RusbContext {
         usb_vid_pid: Option<(u16, u16)>,
         usb_protocol: Option<(u8, u8, u8)>,
         usb_serial: Option<&str>,
-    ) -> Result<Vec<(rusb::Device<rusb::Context>, String)>> {
+    ) -> Result<Vec<(rusb::Device<rusb::Context>, Option<String>)>> {
         let mut devices = Vec::new();
         let mut deferred_log_messages = Vec::new();
         // The global context sometimes fails to detect new devices which causes some
@@ -102,21 +102,23 @@ impl RusbContext {
                 }
             };
 
-            let serial_number = match handle.read_serial_number_string_ascii(&descriptor) {
-                Ok(sn) => sn,
-                Err(e) => {
-                    deferred_log_messages.push(format!(
-                        "Could not read serial number from device at bus={} address={}: {}",
-                        device.bus_number(),
-                        device.address(),
-                        e,
-                    ));
-                    continue;
+            let serial_number = if descriptor.serial_number_string_index().is_some() {
+                match handle.read_serial_number_string_ascii(&descriptor) {
+                    Ok(sn) => Some(sn),
+                    Err(e) => {
+                        deferred_log_messages.push(format!(
+                            "Could not read serial number from device at bus={} address={}: {}",
+                            device.bus_number(),
+                            device.address(),
+                            e,
+                        ));
+                        continue;
+                    }
                 }
+            } else {
+                None
             };
-            if let Some(sn) = &usb_serial
-                && &serial_number != sn
-            {
+            if usb_serial.is_some() && serial_number.as_deref() != usb_serial {
                 continue;
             }
             devices.push((device, serial_number));
@@ -239,7 +241,7 @@ impl OtUsbContext for RusbContext {
 impl RusbDevice {
     pub fn new(
         handle: rusb::DeviceHandle<rusb::Context>,
-        serial_number: String,
+        serial_number: Option<String>,
         timeout: Duration,
     ) -> Result<Self> {
         let mut configurations = Vec::new();
@@ -321,11 +323,7 @@ impl UsbDevice for RusbDevice {
         ))?;
         // We do not try to read the serial number of the parent because hubs generally do not have
         // unique serial numbers.
-        Ok(Box::new(RusbDevice::new(
-            handle,
-            String::new(),
-            self.get_timeout(),
-        )?))
+        Ok(Box::new(RusbDevice::new(handle, None, self.get_timeout())?))
     }
 
     fn get_vendor_id(&self) -> u16 {
@@ -345,8 +343,8 @@ impl UsbDevice for RusbDevice {
     }
 
     /// Gets the usb serial number of the device.
-    fn get_serial_number(&self) -> &str {
-        self.serial_number.as_str()
+    fn get_serial_number(&self) -> Option<&str> {
+        self.serial_number.as_deref()
     }
 
     fn set_active_configuration(&self, config: u8) -> Result<()> {
