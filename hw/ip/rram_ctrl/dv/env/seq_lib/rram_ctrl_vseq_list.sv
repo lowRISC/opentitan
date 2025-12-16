@@ -4,4 +4,6 @@
 
 `include "rram_ctrl_base_vseq.sv"
 `include "rram_ctrl_smoke_vseq.sv"
+`include "rram_ctrl_data_hazard_vseq.sv"
 `include "rram_ctrl_common_vseq.sv"
+`include "rram_ctrl_concurrent_rd_wr_vseq.sv"

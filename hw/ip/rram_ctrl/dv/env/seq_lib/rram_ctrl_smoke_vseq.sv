@@ -9,7 +9,7 @@ class rram_ctrl_smoke_vseq extends rram_ctrl_base_vseq;
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::mubi4_t;
 
-  localparam int unsigned NumTrans = 10;
+  localparam int unsigned NumTrans = 20;
 
   rand data_q_t rram_data;
   rand rram_ctrl_op_t rram_ctrl_op;
@@ -133,20 +133,17 @@ task rram_ctrl_smoke_vseq::body();
     join
 
     // check if data matches with written values
-    for (int i = 0; i < rram_data_rd.size(); i++) begin
+    for (int i = 0; i <= rram_ctrl_op.num_words; i++) begin
       if (rram_data[i] !== rram_data_rd[i]) begin
           `uvm_error("Read-back error:", $sformatf("data[%0d] exp: %08x is: %08x", i, rram_data[i],
                      rram_data_rd[i]))
       end
     end
 
-    rram_data.delete();
-    rram_data_rd.delete();
     // Rerandomize variables for next iteration
     if (!randomize()) begin
         `uvm_fatal(`gfn, "Randomization failed!")
     end
   end
-
 
 endtask : body
