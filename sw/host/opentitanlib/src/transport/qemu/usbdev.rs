@@ -72,6 +72,30 @@ impl GpioPin for QemuVbusSense {
     }
 }
 
+/// Standard USB mask for EP IN in Setup packets.
+const USBDEV_TRANSFER_EP_IN: u8 = 1 << 7;
+
+// Every device must be able to handle 8 bytes packets.
+const USB_FS_SAFE_PACKET_SIZE: u16 = 8;
+
+// Some standard request types.
+const USB_REQ_TYPE_OUT: u8 = 0;
+const USB_REQ_TYPE_IN: u8 = 0x80;
+const USB_REQ_TYPE_STANDARD: u8 = 0;
+const USB_REQ_TYPE_DEVICE: u8 = 0;
+
+// Some standard USB requests.
+const USB_SET_ADDRESS: u8 = 5;
+const USB_GET_DESCRIPTOR: u8 = 6;
+const USB_SET_CONFIGURATION: u8 = 9;
+
+// Some standard descriptor types.
+const USB_DEVICE_DESCRIPTOR: u8 = 1;
+const USB_CONFIG_DESCRIPTOR: u8 = 2;
+
+// Location of the bMaxPacketSize field in the device descriptor.
+const USB_DEV_DESC_MAX_PACKET_SIZE_OFFSET: usize = 7;
+
 /// Events sent by otlib to the virtual host thread.
 enum HostChannelEvent {
     /// A message was sent by QEMU to the host.
@@ -351,30 +375,6 @@ impl QemuHostThread {
     const USBDEV_HELLO_MAJOR: u16 = 1;
     const USBDEV_HELLO_MINOR: u16 = 0;
 
-    /// Standard USB mask for EP IN in Setup packets.
-    const USBDEV_TRANSFER_EP_IN: u8 = 1 << 7;
-
-    // Every device must be able to handle 8 bytes packets.
-    const USB_FS_SAFE_PACKET_SIZE: u16 = 8;
-
-    // Some standard request types.
-    const USB_REQ_TYPE_OUT: u8 = 0;
-    const USB_REQ_TYPE_IN: u8 = 0x80;
-    const USB_REQ_TYPE_STANDARD: u8 = 0;
-    const USB_REQ_TYPE_DEVICE: u8 = 0;
-
-    // Some standard USB requests.
-    const USB_SET_ADDRESS: u8 = 5;
-    const USB_GET_DESCRIPTOR: u8 = 6;
-    const USB_SET_CONFIGURATION: u8 = 9;
-
-    // Some standard descriptor types.
-    const USB_DEVICE_DESCRIPTOR: u8 = 1;
-    const USB_CONFIG_DESCRIPTOR: u8 = 2;
-
-    // Location of the bMaxPacketSize field in the device descriptor.
-    const USB_DEV_DESC_MAX_PACKET_SIZE_OFFSET: usize = 7;
-
     // How much time to wait after a SET_ADDRESS before moving on
     // to the rest of the enumeration sequence.
     // The specification requires that the device be ready after 2ms
@@ -482,7 +482,7 @@ impl QemuHostThread {
     ) -> UsbResult<PacketId> {
         self.send_transfer_internal(
             addr,
-            ep | Self::USBDEV_TRANSFER_EP_IN,
+            ep | USBDEV_TRANSFER_EP_IN,
             /* flags */ 0,
             max_pkt_size,
             transfer_size as u32,
@@ -778,17 +778,15 @@ impl QemuHostThread {
             .send_and_wait_control_in(&ControlIn {
                 addr: 0,
                 ep: 0,
-                req_type: Self::USB_REQ_TYPE_IN
-                    | Self::USB_REQ_TYPE_STANDARD
-                    | Self::USB_REQ_TYPE_DEVICE,
-                req: Self::USB_GET_DESCRIPTOR,
-                value: (Self::USB_DEVICE_DESCRIPTOR as u16) << 8,
+                req_type: USB_REQ_TYPE_IN | USB_REQ_TYPE_STANDARD | USB_REQ_TYPE_DEVICE,
+                req: USB_GET_DESCRIPTOR,
+                value: (USB_DEVICE_DESCRIPTOR as u16) << 8,
                 index: 0,
-                length: Self::USB_FS_SAFE_PACKET_SIZE.into(),
-                max_pkt_size: Self::USB_FS_SAFE_PACKET_SIZE,
+                length: USB_FS_SAFE_PACKET_SIZE.into(),
+                max_pkt_size: USB_FS_SAFE_PACKET_SIZE,
             })
             .maybe_context("Failed to send GET_DESC(device, 8 bytes)")?;
-        let max_packet_size = trunc_dev_desc[Self::USB_DEV_DESC_MAX_PACKET_SIZE_OFFSET] as u16;
+        let max_packet_size = trunc_dev_desc[USB_DEV_DESC_MAX_PACKET_SIZE_OFFSET] as u16;
         log::info!("USB Host: device report a maximum packet size of {max_packet_size} on EP0");
         // TODO sanity check max packet size
 
@@ -797,10 +795,8 @@ impl QemuHostThread {
         self.send_and_wait_control_out(&ControlOut {
             addr: 0,
             ep: 0,
-            req_type: Self::USB_REQ_TYPE_OUT
-                | Self::USB_REQ_TYPE_STANDARD
-                | Self::USB_REQ_TYPE_DEVICE,
-            req: Self::USB_SET_ADDRESS,
+            req_type: USB_REQ_TYPE_OUT | USB_REQ_TYPE_STANDARD | USB_REQ_TYPE_DEVICE,
+            req: USB_SET_ADDRESS,
             value: address as u16,
             index: 0,
             max_pkt_size: max_packet_size,
@@ -817,11 +813,9 @@ impl QemuHostThread {
             .send_and_wait_control_in(&ControlIn {
                 addr: address,
                 ep: 0,
-                req_type: Self::USB_REQ_TYPE_IN
-                    | Self::USB_REQ_TYPE_STANDARD
-                    | Self::USB_REQ_TYPE_DEVICE,
-                req: Self::USB_GET_DESCRIPTOR,
-                value: (Self::USB_DEVICE_DESCRIPTOR as u16) << 8,
+                req_type: USB_REQ_TYPE_IN | USB_REQ_TYPE_STANDARD | USB_REQ_TYPE_DEVICE,
+                req: USB_GET_DESCRIPTOR,
+                value: (USB_DEVICE_DESCRIPTOR as u16) << 8,
                 index: 0,
                 length: size_of::<desc::DeviceDescriptor>(),
                 max_pkt_size: max_packet_size,
@@ -841,11 +835,9 @@ impl QemuHostThread {
                 .send_and_wait_control_in(&ControlIn {
                     addr: address,
                     ep: 0,
-                    req_type: Self::USB_REQ_TYPE_IN
-                        | Self::USB_REQ_TYPE_STANDARD
-                        | Self::USB_REQ_TYPE_DEVICE,
-                    req: Self::USB_GET_DESCRIPTOR,
-                    value: (Self::USB_CONFIG_DESCRIPTOR as u16) << 8 | config_idx as u16,
+                    req_type: USB_REQ_TYPE_IN | USB_REQ_TYPE_STANDARD | USB_REQ_TYPE_DEVICE,
+                    req: USB_GET_DESCRIPTOR,
+                    value: (USB_CONFIG_DESCRIPTOR as u16) << 8 | config_idx as u16,
                     index: 0,
                     length: size_of::<desc::ConfigurationDescriptor>(),
                     max_pkt_size: max_packet_size,
@@ -864,11 +856,9 @@ impl QemuHostThread {
                 .send_and_wait_control_in(&ControlIn {
                     addr: address,
                     ep: 0,
-                    req_type: Self::USB_REQ_TYPE_IN
-                        | Self::USB_REQ_TYPE_STANDARD
-                        | Self::USB_REQ_TYPE_DEVICE,
-                    req: Self::USB_GET_DESCRIPTOR,
-                    value: (Self::USB_CONFIG_DESCRIPTOR as u16) << 8 | config_idx as u16,
+                    req_type: USB_REQ_TYPE_IN | USB_REQ_TYPE_STANDARD | USB_REQ_TYPE_DEVICE,
+                    req: USB_GET_DESCRIPTOR,
+                    value: (USB_CONFIG_DESCRIPTOR as u16) << 8 | config_idx as u16,
                     index: 0,
                     length: tot_len.into(),
                     max_pkt_size: max_packet_size,
@@ -882,10 +872,8 @@ impl QemuHostThread {
             self.send_and_wait_control_out(&ControlOut {
                 addr: address,
                 ep: 0,
-                req_type: Self::USB_REQ_TYPE_OUT
-                    | Self::USB_REQ_TYPE_STANDARD
-                    | Self::USB_REQ_TYPE_DEVICE,
-                req: Self::USB_SET_CONFIGURATION,
+                req_type: USB_REQ_TYPE_OUT | USB_REQ_TYPE_STANDARD | USB_REQ_TYPE_DEVICE,
+                req: USB_SET_CONFIGURATION,
                 value: first_config_val as u16,
                 index: 0,
                 max_pkt_size: max_packet_size,
