@@ -17,7 +17,6 @@
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
-#include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -34,23 +33,8 @@
 static const unsigned char kTestLabel[] = "Test label.";
 static const size_t kTestLabelLen = sizeof(kTestLabel) - 1;
 
-// Interface to Ibex.
-static dif_rv_core_ibex_t rv_core_ibex;
-
 status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
                                    cryptolib_fi_asym_rsa_enc_out_t *uj_output) {
-  // Clear registered alerts in alert handler.
-  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
-  // Clear registered local alerts in alert handler.
-  pentest_registered_loc_alerts_t reg_loc_alerts =
-      pentest_get_triggered_loc_alerts();
-  // Clear the AST recoverable alerts.
-  pentest_clear_sensor_recov_alerts();
-  // Configure Ibex to allow reading ERR_STATUS register.
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
   size_t public_key_bytes;
   size_t private_key_bytes;
   size_t private_key_blob_bytes;
@@ -264,39 +248,12 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     memcpy(uj_output->d, uj_input.d, uj_input.n_len);
   }
 
-  // Get registered alerts from alert handler.
-  reg_alerts = pentest_get_triggered_alerts();
-  // Get registered local alerts from alert handler.
-  reg_loc_alerts = pentest_get_triggered_loc_alerts();
-  // Get fatal and recoverable AST alerts from sensor controller.
-  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
-  // Read ERR_STATUS register.
-  dif_rv_core_ibex_error_status_t codes;
-  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
-  uj_output->err_status = codes;
-  memcpy(uj_output->alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  uj_output->loc_alerts = reg_loc_alerts.loc_alerts;
-  memcpy(uj_output->ast_alerts, sensor_alerts.alerts,
-         sizeof(sensor_alerts.alerts));
-
   return OK_STATUS();
 }
 
 status_t cryptolib_fi_rsa_sign_impl(
     cryptolib_fi_asym_rsa_sign_in_t uj_input,
     cryptolib_fi_asym_rsa_sign_out_t *uj_output) {
-  // Clear registered alerts in alert handler.
-  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
-  // Clear registered local alerts in alert handler.
-  pentest_registered_loc_alerts_t reg_loc_alerts =
-      pentest_get_triggered_loc_alerts();
-  // Clear the AST recoverable alerts.
-  pentest_clear_sensor_recov_alerts();
-  // Configure Ibex to allow reading ERR_STATUS register.
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
   size_t private_key_bytes;
   size_t private_key_blob_bytes;
   size_t num_words;
@@ -473,39 +430,12 @@ status_t cryptolib_fi_rsa_sign_impl(
   memset(uj_output->d, 0, RSA_CMD_MAX_N_BYTES);
   memcpy(uj_output->d, uj_input.d, uj_input.n_len);
 
-  // Get registered alerts from alert handler.
-  reg_alerts = pentest_get_triggered_alerts();
-  // Get registered local alerts from alert handler.
-  reg_loc_alerts = pentest_get_triggered_loc_alerts();
-  // Get fatal and recoverable AST alerts from sensor controller.
-  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
-  // Read ERR_STATUS register.
-  dif_rv_core_ibex_error_status_t codes;
-  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
-  uj_output->err_status = codes;
-  memcpy(uj_output->alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  uj_output->loc_alerts = reg_loc_alerts.loc_alerts;
-  memcpy(uj_output->ast_alerts, sensor_alerts.alerts,
-         sizeof(sensor_alerts.alerts));
-
   return OK_STATUS();
 }
 
 status_t cryptolib_fi_rsa_verify_impl(
     cryptolib_fi_asym_rsa_verify_in_t uj_input,
     cryptolib_fi_asym_rsa_verify_out_t *uj_output) {
-  // Clear registered alerts in alert handler.
-  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
-  // Clear registered local alerts in alert handler.
-  pentest_registered_loc_alerts_t reg_loc_alerts =
-      pentest_get_triggered_loc_alerts();
-  // Clear the AST recoverable alerts.
-  pentest_clear_sensor_recov_alerts();
-  // Configure Ibex to allow reading ERR_STATUS register.
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
   size_t public_key_bytes;
   size_t num_words;
   otcrypto_rsa_size_t rsa_size;
@@ -656,39 +586,12 @@ status_t cryptolib_fi_rsa_verify_impl(
   }
   uj_output->cfg = 0;
 
-  // Get registered alerts from alert handler.
-  reg_alerts = pentest_get_triggered_alerts();
-  // Get registered local alerts from alert handler.
-  reg_loc_alerts = pentest_get_triggered_loc_alerts();
-  // Get fatal and recoverable AST alerts from sensor controller.
-  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
-  // Read ERR_STATUS register.
-  dif_rv_core_ibex_error_status_t codes;
-  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
-  uj_output->err_status = codes;
-  memcpy(uj_output->alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  uj_output->loc_alerts = reg_loc_alerts.loc_alerts;
-  memcpy(uj_output->ast_alerts, sensor_alerts.alerts,
-         sizeof(sensor_alerts.alerts));
-
   return OK_STATUS();
 }
 
 status_t cryptolib_fi_p256_ecdh_impl(
     cryptolib_fi_asym_p256_ecdh_in_t uj_input,
     cryptolib_fi_asym_p256_ecdh_out_t *uj_output) {
-  // Clear registered alerts in alert handler.
-  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
-  // Clear registered local alerts in alert handler.
-  pentest_registered_loc_alerts_t reg_loc_alerts =
-      pentest_get_triggered_loc_alerts();
-  // Clear the AST recoverable alerts.
-  pentest_clear_sensor_recov_alerts();
-  // Configure Ibex to allow reading ERR_STATUS register.
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
   // Construct the private key object.
   uint32_t private_keyblob[kPentestP256MaskedPrivateKeyWords * 2];
   memset(private_keyblob, 0, sizeof(private_keyblob));
@@ -762,39 +665,12 @@ status_t cryptolib_fi_p256_ecdh_impl(
   memset(uj_output->shared_key, 0, P256_CMD_BYTES);
   memcpy(uj_output->shared_key, ss, P256_CMD_BYTES);
 
-  // Get registered alerts from alert handler.
-  reg_alerts = pentest_get_triggered_alerts();
-  // Get registered local alerts from alert handler.
-  reg_loc_alerts = pentest_get_triggered_loc_alerts();
-  // Get fatal and recoverable AST alerts from sensor controller.
-  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
-  // Read ERR_STATUS register.
-  dif_rv_core_ibex_error_status_t codes;
-  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
-  uj_output->err_status = codes;
-  memcpy(uj_output->alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  uj_output->loc_alerts = reg_loc_alerts.loc_alerts;
-  memcpy(uj_output->ast_alerts, sensor_alerts.alerts,
-         sizeof(sensor_alerts.alerts));
-
   return OK_STATUS();
 }
 
 status_t cryptolib_fi_p256_sign_impl(
     cryptolib_fi_asym_p256_sign_in_t uj_input,
     cryptolib_fi_asym_p256_sign_out_t *uj_output) {
-  // Clear registered alerts in alert handler.
-  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
-  // Clear registered local alerts in alert handler.
-  pentest_registered_loc_alerts_t reg_loc_alerts =
-      pentest_get_triggered_loc_alerts();
-  // Clear the AST recoverable alerts.
-  pentest_clear_sensor_recov_alerts();
-  // Configure Ibex to allow reading ERR_STATUS register.
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
   static const otcrypto_key_config_t kP256PrivateKeyConfig = {
       .version = kOtcryptoLibVersion1,
       .key_mode = kOtcryptoKeyModeEcdsaP256,
@@ -887,39 +763,12 @@ status_t cryptolib_fi_p256_sign_impl(
   memcpy(uj_output->pubx, pub->x, P256_CMD_BYTES);
   memcpy(uj_output->puby, pub->y, P256_CMD_BYTES);
 
-  // Get registered alerts from alert handler.
-  reg_alerts = pentest_get_triggered_alerts();
-  // Get registered local alerts from alert handler.
-  reg_loc_alerts = pentest_get_triggered_loc_alerts();
-  // Get fatal and recoverable AST alerts from sensor controller.
-  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
-  // Read ERR_STATUS register.
-  dif_rv_core_ibex_error_status_t codes;
-  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
-  uj_output->err_status = codes;
-  memcpy(uj_output->alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  uj_output->loc_alerts = reg_loc_alerts.loc_alerts;
-  memcpy(uj_output->ast_alerts, sensor_alerts.alerts,
-         sizeof(sensor_alerts.alerts));
-
   return OK_STATUS();
 }
 
 status_t cryptolib_fi_p256_verify_impl(
     cryptolib_fi_asym_p256_verify_in_t uj_input,
     cryptolib_fi_asym_p256_verify_out_t *uj_output) {
-  // Clear registered alerts in alert handler.
-  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
-  // Clear registered local alerts in alert handler.
-  pentest_registered_loc_alerts_t reg_loc_alerts =
-      pentest_get_triggered_loc_alerts();
-  // Clear the AST recoverable alerts.
-  pentest_clear_sensor_recov_alerts();
-  // Configure Ibex to allow reading ERR_STATUS register.
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
   // Set up the message buffer.
   uint32_t message_buf[kPentestP256Words];
   memset(message_buf, 0, sizeof(message_buf));
@@ -969,39 +818,12 @@ status_t cryptolib_fi_p256_verify_impl(
   }
   uj_output->cfg = 0;
 
-  // Get registered alerts from alert handler.
-  reg_alerts = pentest_get_triggered_alerts();
-  // Get registered local alerts from alert handler.
-  reg_loc_alerts = pentest_get_triggered_loc_alerts();
-  // Get fatal and recoverable AST alerts from sensor controller.
-  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
-  // Read ERR_STATUS register.
-  dif_rv_core_ibex_error_status_t codes;
-  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
-  uj_output->err_status = codes;
-  memcpy(uj_output->alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  uj_output->loc_alerts = reg_loc_alerts.loc_alerts;
-  memcpy(uj_output->ast_alerts, sensor_alerts.alerts,
-         sizeof(sensor_alerts.alerts));
-
   return OK_STATUS();
 }
 
 status_t cryptolib_fi_p384_ecdh_impl(
     cryptolib_fi_asym_p384_ecdh_in_t uj_input,
     cryptolib_fi_asym_p384_ecdh_out_t *uj_output) {
-  // Clear registered alerts in alert handler.
-  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
-  // Clear registered local alerts in alert handler.
-  pentest_registered_loc_alerts_t reg_loc_alerts =
-      pentest_get_triggered_loc_alerts();
-  // Clear the AST recoverable alerts.
-  pentest_clear_sensor_recov_alerts();
-  // Configure Ibex to allow reading ERR_STATUS register.
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
   // Construct the private key object.
   uint32_t private_keyblob[kPentestP384MaskedPrivateKeyWords * 2];
   memset(private_keyblob, 0, sizeof(private_keyblob));
@@ -1075,39 +897,12 @@ status_t cryptolib_fi_p384_ecdh_impl(
   memset(uj_output->shared_key, 0, P384_CMD_BYTES);
   memcpy(uj_output->shared_key, ss, P384_CMD_BYTES);
 
-  // Get registered alerts from alert handler.
-  reg_alerts = pentest_get_triggered_alerts();
-  // Get registered local alerts from alert handler.
-  reg_loc_alerts = pentest_get_triggered_loc_alerts();
-  // Get fatal and recoverable AST alerts from sensor controller.
-  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
-  // Read ERR_STATUS register.
-  dif_rv_core_ibex_error_status_t codes;
-  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
-  uj_output->err_status = codes;
-  memcpy(uj_output->alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  uj_output->loc_alerts = reg_loc_alerts.loc_alerts;
-  memcpy(uj_output->ast_alerts, sensor_alerts.alerts,
-         sizeof(sensor_alerts.alerts));
-
   return OK_STATUS();
 }
 
 status_t cryptolib_fi_p384_sign_impl(
     cryptolib_fi_asym_p384_sign_in_t uj_input,
     cryptolib_fi_asym_p384_sign_out_t *uj_output) {
-  // Clear registered alerts in alert handler.
-  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
-  // Clear registered local alerts in alert handler.
-  pentest_registered_loc_alerts_t reg_loc_alerts =
-      pentest_get_triggered_loc_alerts();
-  // Clear the AST recoverable alerts.
-  pentest_clear_sensor_recov_alerts();
-  // Configure Ibex to allow reading ERR_STATUS register.
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
   static const otcrypto_key_config_t kP384PrivateKeyConfig = {
       .version = kOtcryptoLibVersion1,
       .key_mode = kOtcryptoKeyModeEcdsaP384,
@@ -1199,39 +994,12 @@ status_t cryptolib_fi_p384_sign_impl(
   memcpy(uj_output->pubx, pub->x, P384_CMD_BYTES);
   memcpy(uj_output->puby, pub->y, P384_CMD_BYTES);
 
-  // Get registered alerts from alert handler.
-  reg_alerts = pentest_get_triggered_alerts();
-  // Get registered local alerts from alert handler.
-  reg_loc_alerts = pentest_get_triggered_loc_alerts();
-  // Get fatal and recoverable AST alerts from sensor controller.
-  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
-  // Read ERR_STATUS register.
-  dif_rv_core_ibex_error_status_t codes;
-  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
-  uj_output->err_status = codes;
-  memcpy(uj_output->alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  uj_output->loc_alerts = reg_loc_alerts.loc_alerts;
-  memcpy(uj_output->ast_alerts, sensor_alerts.alerts,
-         sizeof(sensor_alerts.alerts));
-
   return OK_STATUS();
 }
 
 status_t cryptolib_fi_p384_verify_impl(
     cryptolib_fi_asym_p384_verify_in_t uj_input,
     cryptolib_fi_asym_p384_verify_out_t *uj_output) {
-  // Clear registered alerts in alert handler.
-  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
-  // Clear registered local alerts in alert handler.
-  pentest_registered_loc_alerts_t reg_loc_alerts =
-      pentest_get_triggered_loc_alerts();
-  // Clear the AST recoverable alerts.
-  pentest_clear_sensor_recov_alerts();
-  // Configure Ibex to allow reading ERR_STATUS register.
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
   // Set up the message buffer.
   uint32_t message_buf[kPentestP384Words];
   memset(message_buf, 0, sizeof(message_buf));
@@ -1280,21 +1048,6 @@ status_t cryptolib_fi_p384_verify_impl(
     uj_output->result = false;
   }
   uj_output->cfg = 0;
-
-  // Get registered alerts from alert handler.
-  reg_alerts = pentest_get_triggered_alerts();
-  // Get registered local alerts from alert handler.
-  reg_loc_alerts = pentest_get_triggered_loc_alerts();
-  // Get fatal and recoverable AST alerts from sensor controller.
-  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
-  // Read ERR_STATUS register.
-  dif_rv_core_ibex_error_status_t codes;
-  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
-  uj_output->err_status = codes;
-  memcpy(uj_output->alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  uj_output->loc_alerts = reg_loc_alerts.loc_alerts;
-  memcpy(uj_output->ast_alerts, sensor_alerts.alerts,
-         sizeof(sensor_alerts.alerts));
 
   return OK_STATUS();
 }
