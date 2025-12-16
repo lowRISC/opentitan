@@ -160,7 +160,7 @@ class GDBController:
         self.send_command(f"set logging file {file_name}")
         self.send_command("set logging overwrite on")
         self.send_command("set pagination off")
-        self.send_command("set logging enabled on")
+        self.send_command("set logging on")
 
         step_logic = "stepi"
         if skip_addrs:
