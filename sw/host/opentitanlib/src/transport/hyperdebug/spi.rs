@@ -715,7 +715,10 @@ impl Target for HyperdebugSpiTarget {
     fn get_flashrom_programmer(&self) -> Result<String> {
         Ok(format!(
             "raiden_debug_spi:serial={},target={}",
-            self.inner.usb_device.get_serial_number(),
+            self.inner
+                .usb_device
+                .get_serial_number()
+                .expect("hyperdebug with no serial number!"),
             self.target_idx
         ))
     }
