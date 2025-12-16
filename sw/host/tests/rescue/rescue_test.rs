@@ -445,7 +445,17 @@ fn main() -> Result<()> {
                     .device_id
                     .as_ref()
                     .ok_or_else(|| anyhow!("No device_id provided"))?;
-                get_device_id_test(device_id, &rescue.params, &transport)?;
+                let res = get_device_id_test(device_id, &rescue.params, &transport);
+                // In case of error, drain the UART to get more message out to debug.
+                if res.is_err() {
+                    log::info!("UART");
+                    let _ = UartConsole::wait_for(
+                        &*transport.uart("CONSOLE")?,
+                        r"(PASS|FAIL)!",
+                        Duration::from_secs(1),
+                    );
+                }
+                res?;
             }
             RescueTestActions::GetBootLog => {
                 let binary = &opts
