@@ -28,7 +28,7 @@ pub trait UsbDevice {
     fn get_product_id(&self) -> u16;
 
     /// Gets the serial number of the device.
-    fn get_serial_number(&self) -> &str;
+    fn get_serial_number(&self) -> Option<&str>;
 
     /// Try to get the parent of this device (or None if root).
     fn get_parent(&self) -> Result<Box<dyn UsbDevice>>;

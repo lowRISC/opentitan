@@ -7,7 +7,7 @@
 use std::any::Any;
 use std::sync::LazyLock;
 
-use anyhow::{Result, anyhow, bail};
+use anyhow::{Context, Result, anyhow, bail};
 use regex::Regex;
 
 use opentitanlib::io::usb::{UsbContext, UsbDevice};
@@ -204,11 +204,14 @@ pub fn update_firmware(
         // Device is already running DFU bootloader, proceed to firmware transfer.
         do_update_firmware(usb_device, dfu_desc, firmware, progress)?;
         log::info!("Connecting to newly flashed firmware...");
-        if restablish_connection(usb_vid, usb_pid, usb_device.get_serial_number()).is_none() {
-            bail!(TransportError::FirmwareProgramFailed(
-                "Unable to establish connection after flashing.  Possibly bad image.".to_string()
-            ));
-        }
+        restablish_connection(
+            usb_vid,
+            usb_pid,
+            usb_device
+                .get_serial_number()
+                .expect("hyperdebug with no serial number!"),
+        )
+        .context("Unable to establish connection after flashing.  Possibly bad image.")?;
         return Ok(None);
     }
 
@@ -236,15 +239,14 @@ pub fn update_firmware(
     // serial number as before.
     std::thread::sleep(std::time::Duration::from_millis(1000));
     log::info!("Connecting to DFU bootloader...");
-    let Some(dfu_device) = restablish_connection(
+    let dfu_device = restablish_connection(
         VID_ST_MICROELECTRONICS,
         PID_DFU_BOOTLOADER,
-        usb_device.get_serial_number(),
-    ) else {
-        bail!(TransportError::FirmwareProgramFailed(
-            "Unable to establish connection with DFU bootloader.".to_string()
-        ));
-    };
+        usb_device
+            .get_serial_number()
+            .expect("hyperdebug with no serial number!"),
+    )
+    .context("Unable to establish connection with DFU bootloader.")?;
     log::info!("Connected to DFU bootloader");
 
     let dfu_desc = scan_usb_descriptor(&*dfu_device)?;
@@ -254,11 +256,14 @@ pub fn update_firmware(
     // booting the new firmware.  Wait up to five seconds, repeatedly testing if the device can be
     // found on the USB bus with the original DID:VID.
     log::info!("Connecting to newly flashed firmware...");
-    if restablish_connection(usb_vid, usb_pid, usb_device.get_serial_number()).is_none() {
-        bail!(TransportError::FirmwareProgramFailed(
-            "Unable to establish connection after flashing.  Possibly bad image.".to_string()
-        ));
-    }
+    restablish_connection(
+        usb_vid,
+        usb_pid,
+        usb_device
+            .get_serial_number()
+            .expect("hyperdebug with no serial number!"),
+    )
+    .context("Unable to establish connection after flashing.  Possibly bad image.")?;
     Ok(None)
 }
 
@@ -266,15 +271,13 @@ fn restablish_connection(
     usb_vid: u16,
     usb_pid: u16,
     serial_number: &str,
-) -> Option<Box<dyn UsbDevice>> {
-    RusbContext::new()
-        .device_by_id_with_timeout(
-            usb_vid,
-            usb_pid,
-            Some(serial_number),
-            std::time::Duration::from_secs(5),
-        )
-        .ok()
+) -> Result<Box<dyn UsbDevice>> {
+    RusbContext::new().device_by_id_with_timeout(
+        usb_vid,
+        usb_pid,
+        Some(serial_number),
+        std::time::Duration::from_secs(5),
+    )
 }
 
 fn do_update_firmware(
