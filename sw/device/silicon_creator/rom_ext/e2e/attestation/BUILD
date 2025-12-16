@@ -15,6 +15,7 @@ opentitan_test(
     srcs = ["print_certs.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         test_cmd = """
