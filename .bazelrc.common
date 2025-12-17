@@ -1,0 +1,156 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# https://opentitan.org/book/doc/contributing/style_guides/c_cpp_coding_style.html#c-version specifies
+build --action_env=BAZEL_CXXOPTS="-std=gnu++14"
+build --cxxopt='-std=gnu++14'
+build --conlyopt='-std=gnu11'
+
+# Never strip debugging information so that we can produce annotated
+# disassemblies when compilation mode is fastbuild.
+build --strip='never'
+
+# Use --config=disable_hardening to disable hardening to measure the
+# impact of the hardened sequences on code size.
+build:disable_hardening --features=-guards --copt=-DOT_DISABLE_HARDENING=1
+
+# Enable toolchain resolution with cc
+build --incompatible_enable_cc_toolchain_resolution
+
+# This lets us generate key/value pairs for the workspace which can be
+# accessed like we do in util/BUILD
+build --workspace_status_command=util/get_workspace_status.sh
+
+# This enables convenient building for opentitan targets with the argument
+# --config=riscv32
+build:riscv32 --platforms=@//toolchain:opentitan_platform
+
+# These options are required to build `cc_fuzz_test` targets. Enable with
+# --config=asan-libfuzzer
+build:asan-libfuzzer --action_env=CC=clang
+build:asan-libfuzzer --action_env=CXX=clang++
+build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing//fuzzing/engines:libfuzzer
+build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_instrumentation=libfuzzer
+build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_sanitizer=asan
+
+# Shared configuration for clang's source-based coverage instrumentation.
+# Bazel seems to support this only partially, thus we have to perform some
+# additional processing. See
+# https://github.com/bazelbuild/bazel/commit/21b5eb627d78c09d47c4de957e9e6b56a9ae6fad
+# and `util/coverage/coverage_off_target.py`.
+build:ot_coverage --repo_env='CC=clang'
+build:ot_coverage --repo_env='BAZEL_USE_LLVM_NATIVE_COVERAGE=1'
+build:ot_coverage --java_runtime_version='remotejdk_11'
+# Docs state that bazel will fail to create coverage information if tests have
+# been cached previously. See
+# https://bazel.build/configure/coverage?hl=en#remote-execution
+coverage:ot_coverage --nocache_test_results
+
+# Configuration for measuring off-target coverage. Enable with
+# `--config=ot_coverage_off_target`.
+build:ot_coverage_off_target --config='ot_coverage'
+build:ot_coverage_off_target --collect_code_coverage
+coverage:ot_coverage_off_target --repo_env='GCOV=/usr/bin/llvm-profdata'
+coverage:ot_coverage_off_target --repo_env='BAZEL_LLVM_COV=/usr/bin/llvm-cov'
+
+# Configuration for measuring on-target coverage. Enable with
+# `--config=ot_coverage_on_target`.
+build:ot_coverage_on_target --config='ot_coverage'
+build:ot_coverage_on_target --platforms="@//toolchain:opentitan_platform"
+build:ot_coverage_on_target --define='measure_coverage_on_target=true'
+# Instrument selectively to limit size overhead when measuring on-target coverage.
+# Note: We have to disable optimizations until the corresponding item in #16761 is
+# resolved.
+build:ot_coverage_on_target --per_file_copt='//sw/device/silicon_creator[/:].*,//sw/device/lib/base:.*@-fprofile-instr-generate,-fcoverage-mapping,-O0'
+# Needed to be able to build host binaries while collecting coverage.
+coverage:ot_coverage_on_target --platforms=""
+
+# Disable ccache if it happens to be installed
+build --define=CCACHE_DISABLE=true
+
+# Configuration to override resource constrained test
+# scheduling. Enable with `--config=local_test_jobs_per_cpus`
+test:local_test_jobs_per_cpus --local_test_jobs=HOST_CPUS*0.22
+# Verilator is built for 4 cores, but requires a harness and additional overhead.
+# Empirically 72 cores can support 16 simultaneous tests, but not 17. Setting
+# this will ignore tags like "cpu:5"
+
+# We have verilator tests that take more than an hour to complete
+test --test_timeout=60,300,1500,7200
+
+# Configuration to run clang-tidy alongside build actions. This is a strict
+# analysis, which will fail the build when any of its checks fail. Enable with
+# `--config=clang_tidy_check`.
+build:clang_tidy_check --aspects rules/quality.bzl%clang_tidy_check_aspect
+build:clang_tidy_check --output_groups=clang_tidy
+
+# Configuration to run clang-tidy alongside build actions. In this mode, fixes
+# will be applied automatically when possible. This is not a strict analysis;
+# clang-tidy errors will not fail the build. Enable with
+# `--config=clang_tidy_check`.
+build:clang_tidy_fix --aspects rules/quality.bzl%clang_tidy_fix_aspect
+build:clang_tidy_fix --output_groups=clang_tidy
+build:clang_tidy_fix --spawn_strategy=local
+
+# AddressSanitizer (ASan) catches runtime out-of-bounds accesses to globals, the
+# stack, and (less importantly for OpenTitan) the heap. ASan instruments
+# programs at compile time and also requires a runtime library.
+#
+# ASan documentation: https://clang.llvm.org/docs/AddressSanitizer.html
+#
+# Enable ASan with --config=asan.
+build:asan --copt -fsanitize=address
+build:asan --copt -g
+build:asan --strip=never
+build:asan --copt -fno-omit-frame-pointer
+build:asan --linkopt -fsanitize=address
+
+# UndefinedBehaviorSanitizer (UBSan) catches C/C++ undefined behavior at
+# runtime, e.g. signed integer overflow. UBSan instruments programs at compile
+# time and also requires a runtime library.
+#
+# UBSan documentation:
+# https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
+#
+# Enable UBSan with --config=ubsan.
+build:ubsan --copt -fsanitize=undefined
+build:ubsan --copt -g
+build:ubsan --strip=never
+build:ubsan --copt -fno-omit-frame-pointer
+build:ubsan --linkopt -fsanitize=undefined
+
+# Enable the rust nightly toolchain
+build --@rules_rust//rust/toolchain/channel=nightly
+
+# Configure the rust 'clippy' linter.
+build --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
+build --output_groups=+clippy_checks
+build --@rules_rust//:clippy_flags="-Aclippy::bool_assert_comparison,-Aclippy::uninlined_format_args,-Aclippy::needless_lifetimes,-Aclippy::precedence,-Wclippy::undocumented_unsafe_blocks,-Dwarnings"
+
+# Configure the module ID check.
+build --aspects=rules/quality.bzl%modid_check_aspect
+build --output_groups=+modid_checks
+
+# Import site-specific configuration.
+try-import .bazelrc-site
+
+# Shortcut for enabling Cloud KMS certificate endorsement during test
+build --flag_alias=ckms_cert_endorsement=//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:endorse_certs_with_ckms
+
+# cquery output option.
+cquery --output=files
+
+# When test suites are specified in `bazel test`, only build the ones matching the tag filters.
+# This prevents having to build Verilator or an FPGA bitstream when not needed.
+# https://bazel.build/docs/user-manual#build-tests-only
+test --build_tests_only
+
+# We have Verilator DPIs that use pseudoterminals, so we need to be able to use
+# these when running sandboxed tests.
+test --sandbox_explicit_pseudoterminal
+run --sandbox_explicit_pseudoterminal
+
+# Enable strict action env. This will prevent `PATH` and `LD_LIBRARY_PATH` from being passed into the sandbox
+# which would help the cacheability.
+build --incompatible_strict_action_env
