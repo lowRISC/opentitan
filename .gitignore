@@ -92,3 +92,8 @@ book
 
 # Custom Ruff config overrides
 .ruff.toml
+
+# Synopsys Z01X configuration files
+*.sff
+hw/dv/tools/fi_sim.tcl
+hw/dv/tools/dvsim/z01x.hjson
