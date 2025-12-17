@@ -25,7 +25,7 @@ dependencies = [
   "pyyaml ~= 6.0",
   "rich==12.6.0", # maximum version compatible with Python 3.6.8 (used on CentOS7 nightly regression machines)
   "semantic_version==2.10.0",
-  "tabulate==0.8.10",
+  "tabulate~=0.9",
   "typer==0.6.1",
 
   # Dependencies: bitstreams cache
@@ -66,6 +66,9 @@ dependencies = [
 
   # The hardware package manager and build system.
   "fusesoc==2.4.3",
+
+  # Build and run tool for Design Verification flows
+  "dvsim==1.6.1",
 
   "peakrdl-systemrdl >= 1.0",
 ]
