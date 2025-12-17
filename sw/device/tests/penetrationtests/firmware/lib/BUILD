@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top:defs.bzl", "opentitan_select_top")
+
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
@@ -70,10 +72,12 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/ownership",
         "//sw/device/tests/penetrationtests/json:pentest_lib_commands",
-    ] + select({
-        "//sw/device:is_english_breakfast": [],
-        "//conditions:default": [
+    ] + opentitan_select_top(
+        {
+            "englishbreakfast": [],
+        },
+        [
             "//sw/device/lib/testing:entropy_testutils",
         ],
-    }),
+    ),
 )

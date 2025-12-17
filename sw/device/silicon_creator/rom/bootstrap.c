@@ -9,12 +9,16 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
-#include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/gpio_regs.h"
+
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
+
 #include "hw/top/otp_ctrl_regs.h"
+#endif
 
 static const dt_gpio_t kGpioDt = kDtGpio;
 
@@ -38,12 +42,14 @@ rom_error_t bootstrap_erase_verify(void) {
 }
 
 hardened_bool_t bootstrap_requested(void) {
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
   uint32_t bootstrap_dis =
       otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET);
   if (launder32(bootstrap_dis) == kHardenedBoolTrue) {
     return kHardenedBoolFalse;
   }
   HARDENED_CHECK_NE(bootstrap_dis, kHardenedBoolTrue);
+#endif
 
   // A single read is sufficient since we expect strong pull-ups on the strap
   // pins.  We assume pinmux has already been configured (by pinmux_init) to

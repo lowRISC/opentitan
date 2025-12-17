@@ -14,17 +14,21 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits.h"
+
+#ifdef OPENTITAN_IS_EARLGREY
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
+
+#include "hw/top/otp_ctrl_regs.h"
+#endif
 
 #ifdef OT_PLATFORM_RV32
 #include "sw/device/lib/runtime/hart.h"
 #endif
 
-#include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/rstmgr_regs.h"
 
 static inline uint32_t rstmgr_base(void) {
-  return dt_rstmgr_primary_reg_block(kDtRstmgrAon);
+  return dt_rstmgr_primary_reg_block(kDtRstmgrFirst);
 }
 
 void rstmgr_alert_info_collect(rstmgr_info_t *info) {
@@ -52,7 +56,10 @@ void rstmgr_cpu_info_collect(rstmgr_info_t *info) {
   }
 }
 
+// HACK
 uint32_t rstmgr_reason_get(void) {
+  // FIXME This is incorrect for English Breakfast
+#ifdef OPENTITAN_IS_EARLGREY
   // Static assertions for bitfield indices.
 #define REASON_ASSERT(index, expect) \
   static_assert((index) == (expect), #index " value incorrect.");
@@ -63,6 +70,7 @@ uint32_t rstmgr_reason_get(void) {
   REASON_ASSERT(kRstmgrReasonHardwareRequest, RSTMGR_RESET_INFO_HW_REQ_OFFSET);
 
 #undef REASON_ASSERT
+#endif
 
   return abs_mmio_read32(rstmgr_base() + RSTMGR_RESET_INFO_REG_OFFSET);
 }
@@ -79,6 +87,7 @@ void rstmgr_cpu_info_enable(void) {
   abs_mmio_write32(rstmgr_base() + RSTMGR_CPU_INFO_CTRL_REG_OFFSET, 1);
 }
 
+#ifdef OPENTITAN_IS_EARLGREY
 rom_error_t rstmgr_info_en_check(uint32_t reset_reasons) {
   enum {
     kByteTrueXorFalse = kHardenedByteBoolTrue ^ kHardenedByteBoolFalse,
@@ -135,6 +144,7 @@ rom_error_t rstmgr_info_en_check(uint32_t reset_reasons) {
   }
   return kErrorRstmgrBadInit;
 }
+#endif
 
 void rstmgr_reset(void) {
   abs_mmio_write32(rstmgr_base() + RSTMGR_RESET_REQ_REG_OFFSET,

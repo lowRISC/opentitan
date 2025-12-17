@@ -167,30 +167,9 @@ ld_library(
     ],
 )
 
-# TODO(#12905): Use a slightly hollowed out version of the silicon_creator
-# manifest_def implementation when building the test_framework for the english
-# breakfast top level.
-cc_library(
-    name = "english_breakfast_test_framework_manifest_def",
-    srcs = [
-        "//sw/device/silicon_creator/lib:english_breakfast_test_framework_manifest_def_srcs",
-    ],
-    # This should be built only for english breakfast and skipped if using wildcards.
-    tags = ["manual"],
-    deps = [
-        "//sw/device/lib/testing/test_rom:english_breakfast_test_rom_manifest",
-    ],
-    # The manifest section should be populated anytime this is added as a
-    # dependency, even if the manifest is not referenced by software.
-    alwayslink = True,
-)
-
 alias(
     name = "test_framework_manifest_def",
-    actual = select({
-        "//sw/device:is_english_breakfast": ":english_breakfast_test_framework_manifest_def",
-        "//conditions:default": "//sw/device/silicon_creator/lib:manifest_def",
-    }),
+    actual = "//sw/device/silicon_creator/lib:manifest_def",
 )
 
 cc_library(
@@ -237,14 +216,7 @@ cc_library(
         ":ottf_isrs",
         ":test_framework_manifest_def",
         "//hw/top:top_lib",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:macros",
         "//sw/device/lib/crt",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/runtime:log",
         "//sw/device/silicon_creator/lib/base:static_critical",
     ],
 )
@@ -285,6 +257,7 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",

@@ -22,7 +22,7 @@ def _merge_and_split_inputs(inputs):
 
 def dual_cc_library(
         name,
-        on_device_config_setting = "//rules:opentitan_platform",
+        on_device_config_setting = "//sw/target:device",
         srcs = [],
         hdrs = [],
         copts = [],

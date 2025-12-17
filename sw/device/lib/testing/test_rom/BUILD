@@ -37,6 +37,7 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_verilator_base",
         "//hw/top_darjeeling:sim_dv_base",
         "//hw/top_darjeeling:sim_verilator_base",
+        "//hw/top_englishbreakfast:sim_verilator_base",
     ],
     features = ["use_lld"],
     kind = "rom",
@@ -89,31 +90,17 @@ legacy_rom_targets(
 # and other functions necessary to build the test_rom for the english breakfast top level.
 cc_library(
     name = "english_breakfast_test_rom_lib",
-    srcs = [
-        "english_breakfast_fake_driver_funcs.c",
-        "//sw/device/silicon_creator/lib/drivers:english_breakfast_test_rom_driver_srcs",
-        "//sw/device/silicon_creator/rom:english_breakfast_test_rom_bootstrap_srcs",
-    ],
     # This should be built only for english breakfast and skipped if using wildcards.
     tags = ["manual"],
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
-        "//hw/top:gpio_c_regs",
-        "//hw/top:spi_device_c_regs",
-        "//hw/top:top_lib",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:multibits",
-        "//sw/device/lib/dif:rstmgr_intf",
-        "//sw/device/silicon_creator/lib:stack_utilization",
-        "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/rom:bootstrap",
     ],
 )
 
 cc_library(
     name = "earl_grey_test_rom_lib",
     deps = [
-        "//sw/device/lib/dif:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/rom:bootstrap",
@@ -122,11 +109,7 @@ cc_library(
 
 cc_library(
     name = "darjeeling_test_rom_lib",
-    srcs = [
-        "darjeeling_fake_driver_funcs.c",
-    ],
     deps = [
-        "//sw/device/lib/dif:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )
@@ -147,10 +130,6 @@ alias(
 # implementation when building the test_rom for the english breakfast top level.
 cc_library(
     name = "english_breakfast_test_rom_manifest",
-    srcs = [
-        "//sw/device/silicon_creator/lib:english_breakfast_test_rom_manifest_srcs",
-        "//sw/device/silicon_creator/lib/drivers:english_breakfast_test_rom_driver_srcs",
-    ],
     # This should be built only for english breakfast and skipped if using wildcards.
     tags = ["manual"],
     deps = [
@@ -169,16 +148,6 @@ cc_library(
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
         "//sw/device/silicon_creator/lib/sigverify:spx_key",
     ],
-)
-
-alias(
-    name = "test_rom_manifest",
-    actual = opentitan_select_top(
-        {
-            "englishbreakfast": ":english_breakfast_test_rom_manifest",
-        },
-        "//sw/device/silicon_creator/lib:manifest",
-    ),
 )
 
 cc_library(
@@ -204,7 +173,6 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":target_test_rom_lib",
-        ":test_rom_manifest",
         "//hw/top:ast_c_regs",
         "//hw/top:clkmgr_c_regs",
         "//hw/top:sram_ctrl_c_regs",
@@ -217,6 +185,7 @@ cc_library(
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/dif:uart",
@@ -227,6 +196,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/lib:chip_info",
+        "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
     ] + opentitan_if_ip(

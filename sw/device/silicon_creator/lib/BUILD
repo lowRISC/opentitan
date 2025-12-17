@@ -17,7 +17,6 @@ load(
     "opentitan_test",
     "verilator_params",
 )
-load("//rules/opentitan:util.bzl", "flatten")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -299,7 +298,7 @@ dual_cc_library(
             ":error",
             ":keymgr_binding",
             "//sw/device/lib/base:macros",
-            "//sw/device/silicon_creator/lib/drivers:lifecycle",
+            "//sw/device/silicon_creator/lib/drivers:lifecycle_hdr",
             "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
             "//sw/device/silicon_creator/lib/sigverify:rsa_key",
             "//sw/device/silicon_creator/lib/sigverify:spx_key",
@@ -320,14 +319,6 @@ dual_cc_library(
     # The manifest section should be populated anytime this is added as a
     # dependency, even if the manifest is not referenced by software.
     alwayslink = True,
-)
-
-filegroup(
-    name = "english_breakfast_test_framework_manifest_def_srcs",
-    srcs = [
-        "manifest_def.c",
-        "manifest_def.h",
-    ],
 )
 
 cc_test(
@@ -438,14 +429,6 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:spi_device",
-    ],
-)
-
-filegroup(
-    name = "bootstrap_srcs",
-    srcs = [
-        "bootstrap.c",
-        "bootstrap.h",
     ],
 )
 

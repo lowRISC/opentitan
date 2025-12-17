@@ -7,8 +7,8 @@
 load("@bazel_skylib//lib:sets.bzl", "sets")
 load(
     "@lowrisc_opentitan//rules:rv.bzl",
+    _OPENTITAN_BASE_PLATFORM = "OPENTITAN_BASE_PLATFORM",
     _OPENTITAN_CPU = "OPENTITAN_CPU",
-    _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
     _opentitan_transition = "opentitan_transition",
 )
 load(
@@ -80,8 +80,8 @@ load(
 CLEAR_KEY_SET = {"//signing:none_key": "none_key"}
 
 # Re-exports of names from transition.bzl
+OPENTITAN_BASE_PLATFORM = _OPENTITAN_BASE_PLATFORM
 OPENTITAN_CPU = _OPENTITAN_CPU
-OPENTITAN_PLATFORM = _OPENTITAN_PLATFORM
 opentitan_transition = _opentitan_transition
 
 fpga_cw305 = _fpga_cw305
@@ -142,6 +142,11 @@ EARLGREY_CW340_TEST_ENVS = {
 DARJEELING_TEST_ENVS = {
     "//hw/top_darjeeling:sim_dv": None,
     "//hw/top_darjeeling:sim_verilator": None,
+}
+
+# The default set of test environments for Earlgrey.
+ENGLISHBREAKFAST_TEST_ENVS = {
+    "//hw/top_englishbreakfast:sim_verilator": None,
 }
 
 # Messages we expect for possible test outcomes.
