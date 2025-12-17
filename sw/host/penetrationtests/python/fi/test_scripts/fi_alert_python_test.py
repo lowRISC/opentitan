@@ -252,6 +252,7 @@ class AlertFiTest(unittest.TestCase):
                     expected_result_json = {
                         "err_status": 0,
                         "alerts": alert_array,
+                        "loc_alerts": 0,
                         "ast_alerts": [0, 0],
                     }
                     utils.compare_json_data(
@@ -330,6 +331,7 @@ class AlertFiTest(unittest.TestCase):
             expected_result_json = {
                 "err_status": 0,
                 "alerts": alert_array,
+                "loc_alerts": 0,
                 "ast_alerts": [0, 0],
             }
             utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
@@ -343,6 +345,7 @@ class AlertFiTest(unittest.TestCase):
             expected_result_json = {
                 "err_status": 0,
                 "alerts": [0, 0, 0],
+                "loc_alerts": 0,
                 "ast_alerts": [0, 0],
             }
             utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
