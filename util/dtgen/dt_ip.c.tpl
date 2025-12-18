@@ -69,6 +69,7 @@ uint32_t dt_${device_name}_reg_block(
 }
 
 % endif
+% if helper.has_memories():
 uint32_t dt_${device_name}_memory_base(
     dt_${device_name}_t dt,
     dt_${device_name}_memory_t mem) {
@@ -83,6 +84,7 @@ uint32_t dt_${device_name}_memory_size(
   return TRY_GET_DT(dt, 0)->mem_size[mem];
 }
 
+% endif
 % if helper.has_irqs():
 dt_plic_irq_id_t dt_${device_name}_irq_to_plic_id(
     dt_${device_name}_t dt,

@@ -54,6 +54,7 @@ ${helper.reg_block_enum.render()}
 static const ${helper.reg_block_enum.name.as_c_type()} ${default_reg_block_name} = ${default_reg_block_value};
 
 % endif
+% if helper.has_memories():
 /**
  * List of memories.
  *
@@ -61,6 +62,7 @@ static const ${helper.reg_block_enum.name.as_c_type()} ${default_reg_block_name}
  */
 ${helper.memory_enum.render()}
 
+% endif
 % if helper.has_irqs():
 /**
  * List of IRQs.
@@ -180,6 +182,7 @@ static inline uint32_t dt_${device_name}_primary_reg_block(
 }
 
 % endif
+% if helper.has_memories():
 /**
  * Get the base address of a memory.
  *
@@ -202,6 +205,7 @@ uint32_t dt_${device_name}_memory_size(
     dt_${device_name}_t dt,
     dt_${device_name}_memory_t mem);
 
+% endif
 % if helper.has_irqs():
 /**
  * Get the PLIC ID of a ${device_name} IRQ for a given instance.
