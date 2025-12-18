@@ -74,6 +74,7 @@ cc_toolchain(
         "@rules_cc//cc/toolchains/args:experimental_replace_legacy_action_config_features",
         ":feat_rv32_bitmanip",
         ":feat_warnings_as_errors",
+        ":feat_pattern_init",
     ],
     known_features = [
         "@rules_cc//cc/toolchains/args:experimental_replace_legacy_action_config_features",
@@ -87,6 +88,7 @@ cc_toolchain(
         ":feat_fastbuild",
         ":feat_opt",
         ":feat_rv32_bitmanip",
+        ":feat_pattern_init",
     ],
     tool_map = ":tool_map",
 )
@@ -451,6 +453,18 @@ cc_args(
         "@rules_cc//cc/toolchains/actions:link_actions",
     ],
     args = ["-flto"],
+)
+
+cc_args(
+    name = "pattern_init",
+    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
+    args = ["-ftrivial-auto-var-init=pattern"],
+)
+
+cc_feature(
+    name = "feat_pattern_init",
+    args = [":pattern_init"],
+    feature_name = "pattern_init",
 )
 
 cc_args(
