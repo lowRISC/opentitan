@@ -59,6 +59,7 @@ class OtDut():
     fpga_dont_clear_bitstream: bool
     enable_alerts: bool
     use_ext_clk: bool
+    patch_ast: bool
     require_confirmation: bool = True
 
     def _make_log_dir(self) -> None:
@@ -293,6 +294,11 @@ class OtDut():
             # Enable external clock during individualization if requested.
             if self.use_ext_clk:
                 cmd += " --use-ext-clk-during-individualize"
+
+            # Patch AST config (with patch value in flash info page 0) during
+            # individualization if requested.
+            if self.patch_ast:
+                cmd += " --use-ast-patch-during-individualize"
 
             # Get user confirmation before running command.
             logging.info(f"Running command: {cmd}")
