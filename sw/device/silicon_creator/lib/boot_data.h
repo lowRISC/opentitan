@@ -193,12 +193,28 @@ OT_WARN_UNUSED_RESULT
 rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data);
 
 /**
- * Writes the given boot data to the flash info partition.
+ * Writes the given boot data with the old circular scheme.
  *
  * This function updates the `identifier`, `counter`, and `digest` fields of the
  * given `boot_data` before writing it to the flash.
  *
- * @param boot_data[out] Boot data.
+ * This function is intended for internal use and testing of the legacy
+ * circular scheme. Most callers should use `boot_data_write()` instead.
+ *
+ * @param boot_data[in] Boot data.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t boot_data_write_old(const boot_data_t *boot_data);
+
+/**
+ * Writes the given boot data using the dual-redundancy scheme.
+ *
+ * This function updates the `identifier`, `counter`, and `digest` fields of the
+ * given `boot_data` and writes the entry to the first index of both boot data
+ * pages.
+ *
+ * @param boot_data[in] Boot data.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -215,6 +231,16 @@ rom_error_t boot_data_write(const boot_data_t *boot_data);
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t boot_data_check(const boot_data_t *boot_data);
+
+/**
+ * Checks whether both boot data pages have valid and identical entries.
+ *
+ * This function is used to verify the dual-redundancy of the boot data.
+ *
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t boot_data_redundancy_check(void);
 
 #ifdef __cplusplus
 }  // extern "C"
