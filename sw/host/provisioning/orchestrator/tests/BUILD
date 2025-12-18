@@ -90,23 +90,34 @@ sh_test(
     ],
 )
 
-sh_test(
-    name = "e2e_multistage_test",
-    srcs = ["e2e_multistage.sh"],
-    data = [
-        ":orchestrator_hyper310_zip",
-        "@python3",
-    ],
-    env = {
-        "PYTHON": "$(location @python3//:python3)",
-    },
-    tags = [
-        "changes_otp",
-        "exclusive",
+[
+    sh_test(
+        name = "e2e_multistage_{}_{}_test".format(sku, fpga),
+        srcs = ["e2e_multistage.sh"],
+        data = [
+            ":orchestrator_{}_zip".format(fpga),
+            "@python3",
+            cfg["orchestrator_cfg"],
+        ],
+        env = {
+            "PYTHON": "$(location @python3//:python3)",
+            "SKU_CONFIG_PATH": "$(location {})".format(cfg["orchestrator_cfg"]),
+            "FPGA": "{}".format(fpga),
+        },
+        tags = [
+            "changes_otp",
+            "exclusive",
+            "manuf",
+        ] + [fpga] + ([
+            "manual",
+        ] if cfg.get("offline", False) else []),
+    )
+    for sku, cfg in EARLGREY_SKUS.items()
+    for fpga in [
         "hyper310",
-        "manuf",
-    ],
-)
+        "cw340",
+    ]
+]
 
 sh_test(
     name = "e2e_ate_individ_test",
