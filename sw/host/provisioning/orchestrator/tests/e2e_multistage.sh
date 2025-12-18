@@ -27,10 +27,10 @@ unset RUNFILES_DIR
 # Run tool in CP-only mode first. The path to the --sku-config parameter is
 # relative to the runfiles-dir.
 $PYTHON ${ORCHESTRATOR_PATH} \
-  --sku-config=sw/host/provisioning/orchestrator/configs/skus/emulation.hjson \
+  --sku-config=${SKU_CONFIG_PATH} \
   --test-unlock-token="0x11111111_11111111_11111111_11111111" \
   --test-exit-token="0x22222222_22222222_22222222_22222222" \
-  --fpga=cw310 \
+  --fpga=${FPGA} \
   --non-interactive \
   --cp-only \
   --db-path=$TEST_TMPDIR/registry.sqlite
@@ -39,10 +39,10 @@ $PYTHON ${ORCHESTRATOR_PATH} \
 # when executing CP mode as we want to simulate a chip that has already had CP
 # run, but just needs to run FT.
 $PYTHON ${ORCHESTRATOR_PATH} \
-  --sku-config=sw/host/provisioning/orchestrator/configs/skus/emulation.hjson \
+  --sku-config=${SKU_CONFIG_PATH} \
   --test-unlock-token="0x11111111_11111111_11111111_11111111" \
   --test-exit-token="0x22222222_22222222_22222222_22222222" \
-  --fpga=cw310 \
+  --fpga=${FPGA} \
   --fpga-dont-clear-bitstream \
   --non-interactive \
   --db-path=$TEST_TMPDIR/registry.sqlite

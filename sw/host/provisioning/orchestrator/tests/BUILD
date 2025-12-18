@@ -91,24 +91,34 @@ sh_test(
     ],
 )
 
-sh_test(
-    name = "e2e_multistage_test",
-    srcs = ["e2e_multistage.sh"],
-    data = [
-        ":orchestrator_cw310_zip",
-        "@python3",
-    ],
-    env = {
-        "PYTHON": "$(location @python3//:python3)",
-    },
-    tags = [
-        "changes_otp",
+[
+    sh_test(
+        name = "e2e_{}_{}_multistage_test".format(sku, fpga),
+        srcs = ["e2e_multistage.sh"],
+        data = [
+            ":orchestrator_{}_zip".format(fpga),
+            cfg["orchestrator_cfg"],
+            "@python3",
+        ],
+        env = {
+            "PYTHON": "$(location @python3//:python3)",
+            "SKU_CONFIG_PATH": "$(location {})".format(cfg["orchestrator_cfg"]),
+            "FPGA": "{}".format(fpga),
+        },
+        tags = [
+            "changes_otp",
+            "exclusive",
+            "manuf",
+        ] + [fpga] + ([
+            "manual",
+        ] if cfg.get("offline", False) else []),
+    )
+    for sku, cfg in EARLGREY_SKUS.items()
+    for fpga in [
         "cw310",
-        "exclusive",
-        "fpga",
-        "manuf",
-    ],
-)
+        "cw340",
+    ]
+]
 
 [
     sh_test(
