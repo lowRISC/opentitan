@@ -966,3 +966,16 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "rv_timer",
+    srcs = ["rv_timer.c"],
+    hdrs = ["rv_timer.h"],
+    deps = [
+        "//hw/top:rv_timer_c_regs",
+        "//hw/top/dt",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+    ],
+)
