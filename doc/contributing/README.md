@@ -22,17 +22,6 @@ Important points before getting started:
 **Important**: Please read the next three, short sections on reporting bugs, reporting security issues, and contributing code in preparation for making your first contribution to OpenTitan.
 If you would like more details, see the [Detailed Contribution Guide](./detailed_contribution_guide/README.md).
 
-## Bug reports
-
-**To report a security issue, please follow the [Security Issues Process](#security-issues)**.
-
-Ideally, all designs are bug free.
-Realistically, each piece of collateral in our repository is in a different state of maturity with some still under active testing and development.
-See the [Hardware Development Stages](../project_governance/development_stages.md) for an example of how hardware progress is tracked.
-
-We are happy to receive bug reports and eager to fix them.
-Please make reports by opening a new issue in our [GitHub issue tracker](https://github.com/lowRISC/opentitan/issues).
-
 ## Security issues
 
 Security is of major importance to the OpenTitan project.
@@ -44,7 +33,16 @@ For example,
 If you intend to work on potentially security sensitive matters, please first reach out to our experienced security team at security@opentitan.org before starting a public discussion.
 That will enable us to engage successfully without creating undue risk to the project or its consumers.
 
-Please refer to https://opentitan.org/cvd-policy for a description of our disclosure process.
+Please refer to [https://opentitan.org/cvd-policy](https://opentitan.org/cvd-policy) for a description of our disclosure process.
+
+## (Non-security) bug reports
+
+Ideally, all designs are bug free.
+Realistically, each piece of collateral in our repository is in a different state of maturity with some still under active testing and development.
+See the [Hardware Development Stages](../project_governance/development_stages.md) for an example of how hardware progress is tracked.
+
+We are happy to receive bug reports and eager to fix them.
+Please make reports by opening a new issue in the [GitHub issue tracker](https://github.com/lowRISC/opentitan/issues).
 
 ## Contributing code
 
@@ -59,4 +57,29 @@ For larger proposed changes we ask contributors to:
 * Implement the contribution, i.e., the solution previously agreed on, and reference the discussion when submitting the contribution.
 * Have the implementation reviewed by the team, address any feedback, and finally have it integrated into the project.
 
-Note that contributions must be accompanied by sign-off text which indicates acceptance of the project's Contributor License Agreement - see [CONTRIBUTING.md](https://github.com/lowRISC/opentitan/blob/master/CONTRIBUTING.md) for details.
+### Quick guidelines for code contribution
+
+* Keep a clean commit history. This means no merge commits, and no long series
+  of "fixup" patches (rebase or squash as appropriate). Structure work as a
+  series of logically ordered, atomic patches. `git rebase -i` is your friend.
+* Changes should be made via pull request, with review. A pull request will be
+  committed by a "committer" (an account listed in `COMMITTERS`) once it has
+  had an explicit positive review.
+* When changes are restricted to a specific area, you are recommended to add a
+  tag to the beginning of the first line of the commit message in square
+  brackets. e.g. "[uart] Fix bug #157".
+* Code review is not design review and doesn't remove the need for discussing
+  implementation options. If you would like to make a large-scale change or
+  discuss multiple implementation options, discuss on the mailing list.
+* Create pull requests from a fork rather than making new branches in
+  `github.com/lowrisc/opentitan`.
+* Do not attempt to commit code with a non-Apache license without discussing
+  first.
+* If a relevant bug or tracking issue exists, reference it in the pull request
+  and commits.
+
+## License agreements
+The following information is detailed in the [CONTRIBUTING.md](../../CONTRIBUTING.md) file
+* Contributor License agreement
+* Organisational Agreement
+* Use of Copyright messages
