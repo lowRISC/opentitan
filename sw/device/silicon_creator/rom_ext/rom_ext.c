@@ -542,6 +542,12 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // Maybe advance the security version.
   HARDENED_RETURN_IF_ERROR(rom_ext_advance_secver(boot_data, self));
 
+  // Fix the boot data if needed
+  rom_error_t boot_data_validity = boot_data_redundancy_check();
+  if (boot_data_validity != kErrorOk) {
+    RETURN_IF_ERROR(boot_data_write(boot_data));
+  }
+
   // Initialize the boot_log in retention RAM.
   const build_info_t *rom_chip_info =
       (const build_info_t *)_rom_chip_info_start;

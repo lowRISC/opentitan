@@ -42,11 +42,48 @@ boot_data_t kTestBootData = (boot_data_t){
     .identifier = kBootDataIdentifier,
     .version = kBootDataVersion2,
     .is_valid = kBootDataValidEntry,
-    // `kBootDataDefaultCounterVal` + 1 for consistency.
-    .counter = kBootDataDefaultCounterVal + 1,
+    // `(kBootDataDefaultCounterVal` | 1) + 1 for consistency.
+    .counter = (kBootDataDefaultCounterVal | 1) + 1,
     .min_security_version_rom_ext = 0,
     .primary_bl0_slot = kBootSlotA,
 };
+
+boot_data_t kTestBootDataDual = (boot_data_t){
+    .digest = {{
+        0x3bc88432,
+        0xafdb9475,
+        0x38f9d68c,
+        0x19919156,
+        0xe8e065d3,
+        0xf88568b8,
+        0xd9d49849,
+        0xe3ae6d8d,
+    }},
+    .identifier = kBootDataIdentifier,
+    .version = kBootDataVersion2,
+    .is_valid = kBootDataValidEntry,
+    // i.e. kTestBootData.counter + 1
+    .counter = (kBootDataDefaultCounterVal | 1) + 2,
+    .min_security_version_rom_ext = 0,
+    .primary_bl0_slot = kBootSlotA,
+};
+
+/**
+ * Sets/Unsets ecc and scramble settings for boot data pages.
+ *
+ * @param enable New ecc and scramble settings.
+ */
+static void boot_data_pages_cfg_set(hardened_bool_t enable) {
+  uint8_t mubi_en =
+      enable == kHardenedBoolTrue ? kMultiBitBool4True : kMultiBitBool4False;
+  for (size_t i = 0; i < ARRAYSIZE(kPages); ++i) {
+    flash_ctrl_info_cfg_set(kPages[i], (flash_ctrl_cfg_t){
+                                           .scrambling = mubi_en,
+                                           .ecc = mubi_en,
+                                           .he = kMultiBitBool4False,
+                                       });
+  }
+}
 
 /**
  * Sets read, write, and erase permissions for boot data pages.
@@ -55,7 +92,7 @@ boot_data_t kTestBootData = (boot_data_t){
  * contents of a page before a read test or check the contents after a write
  * test.
  *
- * @param enable New read, write, and erase permissions.
+ * @param perm New read, write, and erase permissions.
  */
 static void boot_data_pages_mp_set(hardened_bool_t perm) {
   uint8_t mubi_perm =
@@ -194,6 +231,28 @@ static rom_error_t check_boot_data(const boot_data_t *boot_data,
   return kErrorOk;
 }
 
+/**
+ * Checks whether boot data entries is valid with dual redundancy scheme.
+ *
+ * This function checks the `identifier`, `digest`, and counter fields of a boot
+ * data entry.
+ *
+ * @param counter_0 expected counter of entry on page 0.
+ * @return The result of the operation.
+ */
+static rom_error_t check_boot_data_redundency(uint32_t counter_0) {
+  boot_data_t boot_data;
+  // Check `identifier`, `digest`, and `counter` fields.
+  read_boot_data(kPages[0], 0, &boot_data);
+  RETURN_IF_ERROR(check_boot_data(&boot_data, counter_0));
+  LOG_INFO("Page 0 OK");
+  read_boot_data(kPages[1], 0, &boot_data);
+  RETURN_IF_ERROR(check_boot_data(&boot_data, counter_0 ^ 1));
+  LOG_INFO("Page 1 OK");
+  RETURN_IF_ERROR(boot_data_redundancy_check());
+  return kErrorOk;
+}
+
 rom_error_t check_test_data_test(void) {
   RETURN_IF_ERROR(check_boot_data(&kTestBootData, kTestBootData.counter));
   return kErrorOk;
@@ -290,65 +349,129 @@ rom_error_t read_full_page_1_test(void) {
 rom_error_t write_empty_test(void) {
   erase_boot_data_pages();
   RETURN_IF_ERROR(boot_data_write(&kTestBootData));
+  RETURN_IF_ERROR(boot_data_redundancy_check());
+
   boot_data_t boot_data;
-  RETURN_IF_ERROR(boot_data_read(kLcStateProd, &boot_data));
+  read_boot_data(kPages[0], 0, &boot_data);
   RETURN_IF_ERROR(compare_boot_data(&kTestBootData, &boot_data));
+  LOG_INFO("Page 0 OK");
+
+  read_boot_data(kPages[1], 0, &boot_data);
+  RETURN_IF_ERROR(compare_boot_data(&kTestBootDataDual, &boot_data));
+  LOG_INFO("Page 1 OK");
+
+  RETURN_IF_ERROR(boot_data_read(kLcStateProd, &boot_data));
+  RETURN_IF_ERROR(compare_boot_data(&kTestBootDataDual, &boot_data));
   return kErrorOk;
 }
 
-rom_error_t write_page_switch_test(void) {
+rom_error_t write_page_0_first_test(void) {
   erase_boot_data_pages();
-  boot_data_t boot_data_act;
-  boot_data_t boot_data_exp;
-  uint32_t counter_exp = kBootDataDefaultCounterVal;
+  write_boot_data(kPages[0], 0, &kTestBootData);
+  write_boot_data(kPages[1], 0, &kTestBootDataDual);  // active page
+  RETURN_IF_ERROR(boot_data_redundancy_check());
 
-  // Write `kBootDataEntriesPerPage` + 1 entries to test the switch from page 0
-  // to page 1.
-  for (size_t i = 0; i < kBootDataEntriesPerPage + 1; ++i) {
-    RETURN_IF_ERROR(boot_data_write(&kTestBootData));
-    // Check `identifier`, `digest`, and `counter` fields.
-    RETURN_IF_ERROR(boot_data_read(kLcStateProd, &boot_data_act));
-    RETURN_IF_ERROR(check_boot_data(&boot_data_act, ++counter_exp));
-    if (i > 0) {
-      // Previous entry must be invalidated.
-      boot_data_t prev_entry;
-      read_boot_data(kPages[0], i - 1, &prev_entry);
-      if (prev_entry.is_valid != kBootDataInvalidEntry) {
-        LOG_ERROR("Previous entry was not invalidated");
-        return kErrorUnknown;
-      }
-    }
-  }
-  // Last written entry must be at entry 0 in page 1.
-  read_boot_data(kPages[1], 0, &boot_data_exp);
-  if (memcmp(&boot_data_act, &boot_data_exp, sizeof(boot_data_t)) != 0) {
-    LOG_ERROR("Page 0 -> 1 switch failed.");
-    return kErrorUnknown;
+  RETURN_IF_ERROR(boot_data_write(&kTestBootData));
+  RETURN_IF_ERROR(check_boot_data_redundency(kTestBootData.counter + 2));
+  return kErrorOk;
+}
+
+rom_error_t write_page_1_first_test(void) {
+  erase_boot_data_pages();
+  write_boot_data(kPages[0], 0, &kTestBootDataDual);  // active page
+  write_boot_data(kPages[1], 0, &kTestBootData);
+  RETURN_IF_ERROR(boot_data_redundancy_check());
+
+  RETURN_IF_ERROR(boot_data_write(&kTestBootData));
+  RETURN_IF_ERROR(check_boot_data_redundency(kTestBootData.counter + 2 ^ 1));
+  return kErrorOk;
+}
+
+rom_error_t write_page_0_missing_test(void) {
+  erase_boot_data_pages();
+  write_boot_data(kPages[1], 0, &kTestBootDataDual);  // active page
+  CHECK(boot_data_redundancy_check() == kErrorBootDataInvalid);
+
+  RETURN_IF_ERROR(boot_data_write(&kTestBootData));
+  RETURN_IF_ERROR(check_boot_data_redundency(kTestBootData.counter + 2));
+  return kErrorOk;
+}
+
+rom_error_t write_page_1_missing_test(void) {
+  erase_boot_data_pages();
+  write_boot_data(kPages[0], 0, &kTestBootData);  // active page
+  CHECK(boot_data_redundancy_check() == kErrorBootDataInvalid);
+
+  RETURN_IF_ERROR(boot_data_write(&kTestBootData));
+  RETURN_IF_ERROR(check_boot_data_redundency(kTestBootData.counter + 2 ^ 1));
+  return kErrorOk;
+}
+
+rom_error_t write_page_0_invalid_test(void) {
+  erase_boot_data_pages();
+  write_boot_data(kPages[1], 0, &kTestBootDataDual);  // active page
+  fill_with_invalidated_boot_data(kPages[0], 2, &kTestBootData);
+  CHECK(boot_data_redundancy_check() == kErrorBootDataInvalid);
+
+  RETURN_IF_ERROR(boot_data_write(&kTestBootData));
+  RETURN_IF_ERROR(check_boot_data_redundency(kTestBootData.counter + 2));
+  return kErrorOk;
+}
+
+rom_error_t write_page_1_invalid_test(void) {
+  erase_boot_data_pages();
+  write_boot_data(kPages[0], 0, &kTestBootData);  // active page
+  fill_with_invalidated_boot_data(kPages[1], 2, &kTestBootData);
+  CHECK(boot_data_redundancy_check() == kErrorBootDataInvalid);
+
+  RETURN_IF_ERROR(boot_data_write(&kTestBootData));
+  RETURN_IF_ERROR(check_boot_data_redundency(kTestBootData.counter + 2 ^ 1));
+  return kErrorOk;
+}
+
+static rom_error_t write_page_compatibility_test_impl(void) {
+  erase_boot_data_pages();
+  boot_data_t boot_data;
+
+  // Prepare the boot data with old circular buffer scheme.
+  // Write `kBootDataEntriesPerPage` * 2 + 3 entries.
+  for (size_t i = 0; i < kBootDataEntriesPerPage * 2 + 3; ++i) {
+    RETURN_IF_ERROR(boot_data_write_old(&kTestBootData));
+    CHECK(boot_data_redundancy_check() == kErrorBootDataInvalid);
   }
 
-  // Write `kBootDataEntriesPerPage` entries to test the switch from page 1 to
-  // page 0.
-  for (size_t i = 1; i < kBootDataEntriesPerPage + 1; ++i) {
-    RETURN_IF_ERROR(boot_data_write(&kTestBootData));
-    // Check `identifier`, `digest`, and `counter` fields.
-    RETURN_IF_ERROR(boot_data_read(kLcStateProd, &boot_data_act));
-    RETURN_IF_ERROR(check_boot_data(&boot_data_act, ++counter_exp));
-    // Previous entry must be invalidated.
-    boot_data_t prev_entry;
-    read_boot_data(kPages[1], i - 1, &prev_entry);
-    if (prev_entry.is_valid != kBootDataInvalidEntry) {
-      LOG_ERROR("Previous entry was not invalidated");
-      return kErrorUnknown;
-    }
-  }
-  // Last written entry must be at entry 0 in page 0.
-  read_boot_data(kPages[0], 0, &boot_data_exp);
-  if (memcmp(&boot_data_act, &boot_data_exp, sizeof(boot_data_t)) != 0) {
-    LOG_ERROR("Page 1 -> 0 switch failed.");
-    return kErrorUnknown;
+  // Switch to new dual-redundancy scheme
+  uint32_t counter = kTestBootData.counter + kBootDataEntriesPerPage * 2 + 4;
+  RETURN_IF_ERROR(boot_data_write(&kTestBootData));
+  RETURN_IF_ERROR(boot_data_read(kLcStateProd, &boot_data));
+  RETURN_IF_ERROR(check_boot_data(&boot_data, counter + 1));
+  RETURN_IF_ERROR(check_boot_data_redundency(counter + 0 ^ 1));
+
+  // Update with new dual-redundancy scheme
+  RETURN_IF_ERROR(boot_data_write(&kTestBootData));
+  RETURN_IF_ERROR(boot_data_read(kLcStateProd, &boot_data));
+  RETURN_IF_ERROR(check_boot_data(&boot_data, counter + 3));
+  RETURN_IF_ERROR(check_boot_data_redundency(counter + 2 ^ 1));
+
+  // Switch back to old circular scheme
+  for (size_t i = 0; i < kBootDataEntriesPerPage * 2 + 3; ++i) {
+    RETURN_IF_ERROR(boot_data_write_old(&kTestBootData));
+    RETURN_IF_ERROR(boot_data_read(kLcStateProd, &boot_data));
+    RETURN_IF_ERROR(check_boot_data(&boot_data, counter + 4 + i));
   }
 
   return kErrorOk;
+}
+
+rom_error_t write_page_compatibility_test(void) {
+  return write_page_compatibility_test_impl();
+}
+
+rom_error_t write_page_compatibility_test_with_ecc(void) {
+  boot_data_pages_cfg_set(kHardenedBoolTrue);
+  rom_error_t result = write_page_compatibility_test_impl();
+  boot_data_pages_cfg_set(kHardenedBoolFalse);
+  return result;
 }
 
 bool test_main(void) {
@@ -369,7 +492,14 @@ bool test_main(void) {
   EXECUTE_TEST(result, read_full_page_0_test);
   EXECUTE_TEST(result, read_full_page_1_test);
   EXECUTE_TEST(result, write_empty_test);
-  EXECUTE_TEST(result, write_page_switch_test);
+  EXECUTE_TEST(result, write_page_0_first_test);
+  EXECUTE_TEST(result, write_page_1_first_test);
+  EXECUTE_TEST(result, write_page_0_missing_test);
+  EXECUTE_TEST(result, write_page_1_missing_test);
+  EXECUTE_TEST(result, write_page_0_invalid_test);
+  EXECUTE_TEST(result, write_page_1_invalid_test);
+  EXECUTE_TEST(result, write_page_compatibility_test);
+  EXECUTE_TEST(result, write_page_compatibility_test_with_ecc);
 
   return status_ok(result);
 }
