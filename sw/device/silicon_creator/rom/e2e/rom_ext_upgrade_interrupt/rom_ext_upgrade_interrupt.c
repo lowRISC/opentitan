@@ -43,19 +43,8 @@ static void increment_flash_counter(void) {
       &flash_ctrl, false, false, false, false, false, false));
 }
 
-static rom_error_t first_boot_test(void) {
-  LOG_INFO("First boot: interrupted upgrade");
-  boot_data_t boot_data;
-  RETURN_IF_ERROR(boot_data_read(lifecycle_state_get(), &boot_data));
-  print_boot_data(&boot_data);
-  CHECK(boot_data.min_security_version_rom_ext == 0);
-
-  boot_data.min_security_version_rom_ext = kNewMinSecVer;
-  RETURN_IF_ERROR(boot_data_write(&boot_data));
-  RETURN_IF_ERROR(boot_data_read(lifecycle_state_get(), &boot_data));
-  print_boot_data(&boot_data);
-  CHECK(boot_data.min_security_version_rom_ext == kNewMinSecVer);
-
+static rom_error_t corrupt_page_0(void) {
+  // Simulates the corruption on Page 0
   uint32_t corrupted_words[4] = {0};
   flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData0,
                             (flash_ctrl_perms_t){
@@ -74,6 +63,47 @@ static rom_error_t first_boot_test(void) {
   return kErrorOk;
 }
 
+static rom_error_t erase_page_1(void) {
+  // Simulates the incomplete upgrade before duplicate to Page 1
+  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData1,
+                            (flash_ctrl_perms_t){
+                                .read = kMultiBitBool4False,
+                                .write = kMultiBitBool4False,
+                                .erase = kMultiBitBool4True,
+                            });
+  RETURN_IF_ERROR(flash_ctrl_info_erase(&kFlashCtrlInfoPageBootData1,
+                                        kFlashCtrlEraseTypePage));
+  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData1,
+                            (flash_ctrl_perms_t){
+                                .read = kMultiBitBool4False,
+                                .write = kMultiBitBool4False,
+                                .erase = kMultiBitBool4False,
+                            });
+  return kErrorOk;
+}
+
+static rom_error_t first_boot_test(void) {
+  LOG_INFO("First boot: interrupted upgrade");
+  boot_data_t boot_data;
+  RETURN_IF_ERROR(boot_data_read(lifecycle_state_get(), &boot_data));
+  print_boot_data(&boot_data);
+  CHECK(boot_data.min_security_version_rom_ext == 0);
+
+  boot_data.min_security_version_rom_ext = kNewMinSecVer;
+  RETURN_IF_ERROR(boot_data_write(&boot_data));
+  RETURN_IF_ERROR(boot_data_read(lifecycle_state_get(), &boot_data));
+  print_boot_data(&boot_data);
+  CHECK(boot_data.min_security_version_rom_ext == kNewMinSecVer);
+  RETURN_IF_ERROR(boot_data_redundancy_check());
+
+  // Simulates the interrupt when writing page 0, while page 1 hasn't been
+  // written yet.
+  RETURN_IF_ERROR(corrupt_page_0());
+  RETURN_IF_ERROR(erase_page_1());
+
+  return kErrorOk;
+}
+
 static rom_error_t second_boot_test(void) {
   LOG_INFO("Second boot: Recovery");
 
@@ -81,6 +111,7 @@ static rom_error_t second_boot_test(void) {
   RETURN_IF_ERROR(boot_data_read(lifecycle_state_get(), &boot_data));
   print_boot_data(&boot_data);
   CHECK(boot_data.min_security_version_rom_ext == 0);
+  CHECK(boot_data_redundancy_check() == kErrorBootDataInvalid);
 
   boot_data.min_security_version_rom_ext = kNewMinSecVer;
   RETURN_IF_ERROR(boot_data_write(&boot_data));
@@ -98,6 +129,22 @@ static rom_error_t third_boot_test(void) {
   RETURN_IF_ERROR(boot_data_read(lifecycle_state_get(), &boot_data));
   print_boot_data(&boot_data);
   CHECK(boot_data.min_security_version_rom_ext == kNewMinSecVer);
+  RETURN_IF_ERROR(boot_data_redundancy_check());
+
+  // Simulates the corruption on page 0, while the page 1 is still valid.
+  RETURN_IF_ERROR(corrupt_page_0());
+
+  return kErrorOk;
+}
+
+static rom_error_t fourth_boot_test(void) {
+  LOG_INFO("Fourth boot: Done");
+
+  boot_data_t boot_data;
+  RETURN_IF_ERROR(boot_data_read(lifecycle_state_get(), &boot_data));
+  print_boot_data(&boot_data);
+  CHECK(boot_data.min_security_version_rom_ext == kNewMinSecVer);
+  CHECK(boot_data_redundancy_check() == kErrorBootDataInvalid);
 
   return kErrorOk;
 }
@@ -130,6 +177,13 @@ bool test_main(void) {
     }
     case 2: {
       EXECUTE_TEST(result, third_boot_test);
+
+      increment_flash_counter();
+      rstmgr_reset();
+      return false;
+    }
+    case 3: {
+      EXECUTE_TEST(result, fourth_boot_test);
 
       return status_ok(result);
     }
