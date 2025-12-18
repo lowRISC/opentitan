@@ -250,7 +250,7 @@ pub struct OpenOcdJtagChain {
 pub enum OpenOcdError {
     #[error("OpenOCD initialization failed: {0}")]
     InitializeFailure(String),
-    #[error("OpenOCD server exists prematurely")]
+    #[error("OpenOCD server exited prematurely")]
     PrematureExit,
     #[error("Generic error {0}")]
     Generic(String),
