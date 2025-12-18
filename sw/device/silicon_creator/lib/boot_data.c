@@ -605,7 +605,7 @@ rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data) {
   }
 }
 
-rom_error_t boot_data_write(const boot_data_t *boot_data) {
+rom_error_t boot_data_write_old(const boot_data_t *boot_data) {
   boot_data_t new_entry = *boot_data;
   new_entry.is_valid = kBootDataValidEntry;
   new_entry.identifier = kBootDataIdentifier;
@@ -644,6 +644,38 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
   }
 
   return kErrorOk;
+}
+
+rom_error_t boot_data_write(const boot_data_t *boot_data) {
+  boot_data_t new_entry = *boot_data;
+  new_entry.is_valid = kBootDataValidEntry;
+  new_entry.identifier = kBootDataIdentifier;
+  // Counters are rounded to the next even value to ensure wraparound happens on
+  // both pages.
+  new_entry.counter = (kBootDataDefaultCounterVal | 1) + 1;
+
+  // Find the active page and the next counter.
+  active_page_info_t active_page;
+  boot_data_t last_entry;
+  RETURN_IF_ERROR(boot_data_active_page_find(&active_page, &last_entry));
+  if (active_page.has_valid_entry == kHardenedBoolTrue) {
+    // Counters are rounded to the next even value to ensure wraparound happens
+    // on both pages.
+    new_entry.counter = (last_entry.counter | 1) + 1;
+  }
+
+  // Write to the inactive page first, and then active page.
+  // If both pages are invalid, write the page0 first.
+  int inactive_idx = active_page.page == kPages[0];
+
+  boot_data_digest_compute(&new_entry, &new_entry.digest);
+  RETURN_IF_ERROR(boot_data_entry_write(kPages[inactive_idx], 0, &new_entry,
+                                        /*erase=*/kHardenedBoolTrue));
+
+  new_entry.counter += 1;
+  boot_data_digest_compute(&new_entry, &new_entry.digest);
+  return boot_data_entry_write(kPages[!inactive_idx], 0, &new_entry,
+                               /*erase=*/kHardenedBoolTrue);
 }
 
 /**
@@ -695,4 +727,54 @@ rom_error_t boot_data_check(const boot_data_t *boot_data) {
   }
 
   return kErrorBootDataInvalid;
+}
+
+/**
+ * Finds the active record for a given page and returns its page info and entry.
+ *
+ * @param page A boot data page.
+ * @param[out] page_info Page info struct of the active info page.
+ * @param[out] boot_data Last valid boot data entry.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+static rom_error_t boot_data_active_record_find(
+    const flash_ctrl_info_page_t *page, active_page_info_t *page_info,
+    boot_data_t *boot_data) {
+  *page_info = (active_page_info_t){
+      .page = NULL,
+      .has_empty_entry = kHardenedBoolFalse,
+      .first_empty_index = kBootDataEntriesPerPage,
+      .has_valid_entry = kHardenedBoolFalse,
+      .last_valid_index = kBootDataEntriesPerPage,
+  };
+  return boot_data_page_info_update(page, page_info, boot_data);
+}
+
+rom_error_t boot_data_redundancy_check(void) {
+  static_assert(kPageCount == 2,
+                "Number of pages changed, unrolled loop must be updated");
+
+  // Find the active record for page 0.
+  active_page_info_t page_info_0;
+  boot_data_t boot_data_0;
+  RETURN_IF_ERROR(
+      boot_data_active_record_find(kPages[0], &page_info_0, &boot_data_0));
+
+  // Find the active record for page 1.
+  active_page_info_t page_info_1;
+  boot_data_t boot_data_1;
+  RETURN_IF_ERROR(
+      boot_data_active_record_find(kPages[1], &page_info_1, &boot_data_1));
+
+  // Both pages must have a valid entry.
+  if (page_info_0.has_valid_entry != kHardenedBoolTrue ||
+      page_info_1.has_valid_entry != kHardenedBoolTrue) {
+    return kErrorBootDataInvalid;
+  }
+
+  // Validate the contents are the same, except for the counter and digest.
+  boot_data_1.counter ^= 1;
+  boot_data_1.digest = boot_data_0.digest;
+  return boot_data_check(&boot_data_1);
 }
