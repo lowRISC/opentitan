@@ -19,6 +19,7 @@ load(
     "otp_hex",
     "otp_image",
     "otp_json",
+    "otp_json_immutable_rom_ext",
     "otp_partition",
 )
 
@@ -190,5 +191,45 @@ otp_image(
     src = "//hw/top_earlgrey/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_rom_ext_rollback_fi",
+    ],
+)
+
+otp_json_immutable_rom_ext(
+    name = "otp_json_rom_ext_imm_skip_fi",
+    testonly = True,
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.HARDENED_TRUE),
+                # Number of Ibex cycles to spin: we set this to the highest value
+                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "0xffffffff",
+                # Enable the immutable ROM_EXT
+                "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_TRUE),
+                # Set the hash to a bogus value
+                "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH": otp_hex(0x1234),
+            },
+        ),
+        otp_partition(
+            name = "SECRET2",
+            items = {
+                # We set reproducible bitstreams for the tests
+                "RMA_TOKEN": "0000000000000005",
+                "CREATOR_ROOT_KEY_SHARE0": "1111111111111111111111111111111111111111111111111111111111111111",
+                "CREATOR_ROOT_KEY_SHARE1": "2222222222222222222222222222222222222222222222222222222222222222",
+            },
+            lock = True,
+        ),
+    ],
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
+    visibility = ["//visibility:private"],
+)
+
+otp_image(
+    name = "otp_img_rom_ext_imm_skip_fi",
+    testonly = True,
+    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    overlays = STD_OTP_OVERLAYS + [
+        ":otp_json_rom_ext_imm_skip_fi",
     ],
 )

@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(":pentest.bzl", "pentest_cryptolib_fi_asym", "pentest_cryptolib_fi_gdb_asym", "pentest_cryptolib_fi_gdb_sym", "pentest_cryptolib_fi_sym", "pentest_cryptolib_sca_asym", "pentest_cryptolib_sca_sym", "pentest_fi", "pentest_fi_ibex", "pentest_fi_otbn", "pentest_gdb_unit", "pentest_rom_ext_fi_gdb", "pentest_rom_ext_rollback_fi_gdb", "pentest_rom_fi_gdb", "pentest_rom_rollback_fi_gdb", "pentest_sca")
+load(":pentest.bzl", "pentest_cryptolib_fi_asym", "pentest_cryptolib_fi_gdb_asym", "pentest_cryptolib_fi_gdb_sym", "pentest_cryptolib_fi_sym", "pentest_cryptolib_sca_asym", "pentest_cryptolib_sca_sym", "pentest_fi", "pentest_fi_ibex", "pentest_fi_otbn", "pentest_rom_ext_fi_gdb", "pentest_rom_ext_imm_skip_fi_gdb", "pentest_rom_ext_rollback_fi_gdb", "pentest_rom_fi_gdb", "pentest_rom_rollback_fi_gdb", "pentest_sca")
 load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
@@ -518,21 +518,13 @@ pentest_rom_ext_rollback_fi_gdb(
     test_vectors = [],
 )
 
-# This test is to perform unit tests of instruction skipping (also in CI).
-# The functional test
-pentest_gdb_unit(
-    name = "fi_unit_gdb_python_test",
-    tags = [],
+pentest_rom_ext_imm_skip_fi_gdb(
+    name = "fi_rom_ext_imm_skip_python_gdb_test",
+    tags = [
+        "manual",
+        "skip_in_ci",
+    ],
     test_args = "",
-    test_harness = "//sw/host/penetrationtests/python/fi:fi_unit_gdb_python_test",
-    test_vectors = [],
-)
-
-# The instruction skipping test
-pentest_gdb_unit(
-    name = "fi_unit_gdb_python_gdb_test",
-    tags = [],
-    test_args = "",
-    test_harness = "//sw/host/penetrationtests/python/fi:fi_unit_gdb_python_gdb_test",
+    test_harness = "//sw/host/penetrationtests/python/fi:fi_rom_ext_imm_skip_python_gdb_test",
     test_vectors = [],
 )
