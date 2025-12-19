@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Result, bail};
+use anyhow::{Context, Result, bail};
 use std::cell::{Cell, Ref, RefCell};
 use std::time::Duration;
 
@@ -63,7 +63,7 @@ impl Rescue for UsbDfu {
         );
         log::info!("Rescue triggered; clearing trigger condition.");
         self.params.set_trigger(transport, false)?;
-        let device = device?;
+        let device = device.context("No USB DFU rescue device found")?;
 
         let config = device.active_configuration()?;
         for intf in config.interface_alt_settings() {

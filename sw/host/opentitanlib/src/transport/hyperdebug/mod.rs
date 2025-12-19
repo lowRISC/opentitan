@@ -825,7 +825,9 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 include_str!(env!("openocd_cmsis_dap_adapter_cfg")),
                 usb_device.get_vendor_id(),
                 usb_device.get_product_id(),
-                usb_device.get_serial_number(),
+                usb_device
+                    .get_serial_number()
+                    .expect("hyperdebug with no serial number!"),
             ),
             opts,
         )?);

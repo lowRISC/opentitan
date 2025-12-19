@@ -217,7 +217,13 @@ pub fn update_firmware(
     if wait_for_idle(usb_device, dfu_desc.dfu_interface)? != DFU_STATE_APP_IDLE {
         // Device is already running DFU bootloader, proceed to firmware transfer.
         do_update_firmware(usb_device, dfu_desc, firmware, progress)?;
-        restablish_connection(usb_vid, usb_pid, usb_device.get_serial_number())?;
+        restablish_connection(
+            usb_vid,
+            usb_pid,
+            usb_device
+                .get_serial_number()
+                .expect("hyperdebug with no serial number!"),
+        )?;
         return Ok(None);
     }
 
@@ -249,14 +255,20 @@ pub fn update_firmware(
     let dfu_device = usb_context.device_by_id(
         VID_ST_MICROELECTRONICS,
         PID_DFU_BOOTLOADER,
-        Some(usb_device.get_serial_number()),
+        usb_device.get_serial_number(),
     )?;
     log::info!("Connected to DFU bootloader");
 
     let dfu_desc = scan_usb_descriptor(&*dfu_device)?;
     dfu_device.claim_interface(dfu_desc.dfu_interface)?;
     do_update_firmware(&*dfu_device, dfu_desc, firmware, progress)?;
-    restablish_connection(usb_vid, usb_pid, usb_device.get_serial_number())?;
+    restablish_connection(
+        usb_vid,
+        usb_pid,
+        usb_device
+            .get_serial_number()
+            .expect("hyperdebug with no serial number!"),
+    )?;
     Ok(None)
 }
 

@@ -13,6 +13,7 @@ load(
     "fpga_params",
     "opentitan_binary",
     "opentitan_test",
+    "qemu_params",
 )
 load(
     "//sw/device/silicon_creator/rom_ext/e2e:defs.bzl",
@@ -605,6 +606,7 @@ opentitan_test(
         exec_env = {
             "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_earlgrey:sim_qemu_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "",
@@ -615,6 +617,17 @@ opentitan_test(
             test_cmd = """
             --clear-bitstream
             --bootstrap={rom_ext}
+            --device-id={device_id}
+            rescue {params} --action=get-device-id
+            """,
+            test_harness = "//sw/host/tests/rescue:rescue_test",
+        ),
+        qemu = qemu_params(
+            assemble = "{rom_ext}@{rom_ext_slot_a}",
+            device_id = DEVICE_ID,
+            params = config["params"],
+            rom_ext = config["rom_ext"],
+            test_cmd = """
             --device-id={device_id}
             rescue {params} --action=get-device-id
             """,

@@ -148,7 +148,9 @@ impl<B: Board> Backend<B> {
 
     /// Gets the usb serial number of the device.
     pub fn get_serial_number(&self) -> &str {
-        self.usb.get_serial_number()
+        self.usb
+            .get_serial_number()
+            .expect("The chip whisperer does not have a serial number!")
     }
 
     /// Get the firmware build date as a string.
