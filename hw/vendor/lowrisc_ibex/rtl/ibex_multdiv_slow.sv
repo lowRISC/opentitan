@@ -374,7 +374,7 @@ module ibex_multdiv_slow
   logic sva_fsm_idle;
   logic unused_sva_fsm_idle;
 
-  // This is intended to be accessed via hierarchal references so isn't output from this module nor
+  // This is intended to be accessed via hierarchical references so isn't output from this module nor
   // used in any logic in this module
   assign sva_fsm_idle = (md_state_q == MD_IDLE);
   // Mark the sva_fsm_idle as unused to avoid lint issues

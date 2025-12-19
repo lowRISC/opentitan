@@ -8,7 +8,7 @@ interface irq_if(input clk);
   logic        irq_timer;
   logic        irq_external;
   logic [14:0] irq_fast;
-  logic        irq_nm;       // non-maskeable interrupt
+  logic        irq_nm;       // non-maskable interrupt
 
   clocking driver_cb @(posedge clk);
     default output negedge;

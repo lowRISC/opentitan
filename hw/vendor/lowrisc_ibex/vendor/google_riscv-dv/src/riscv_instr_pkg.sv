@@ -1097,7 +1097,10 @@ package riscv_instr_pkg;
     VXRM            = 'h00A,  // Fixed point rounding mode
     VL              = 'hC20,  // Vector length
     VTYPE           = 'hC21,  // Vector data type register
-    VLENB           = 'hC22   // VLEN/8 (vector register length in bytes)
+    VLENB           = 'hC22,  // VLEN/8 (vector register length in bytes)
+    // Ibex Registers
+    CPUCTRLSTS      = 'h7C0,  // CPU Control and Status (Ibex Specific)
+    SECURESEED      = 'h7C1   // Secure Seed (Ibex Specific)
   } privileged_reg_t;
 
   typedef enum bit [5:0] {

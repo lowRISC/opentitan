@@ -161,6 +161,6 @@ targets:
           - '--trace-structs'
           - '--trace-params'
           - '--trace-max-array 1024'
-          - '-CFLAGS "-std=c++14 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=ibex_riscv_compliance -g"'
+          - '-CFLAGS "-std=c++17 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=ibex_riscv_compliance -g"'
           - '-LDFLAGS "-pthread -lutil -lelf"'
           - "-Wall"

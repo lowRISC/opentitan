@@ -47,27 +47,27 @@ lemma riscv
   /
 
   Arith:
-  in I:(`ISS_ADDI | `ISS_SLTI | `ISS_SLTIU | `ISS_XORI | `ISS_ORI | `ISS_ANDI) \
-     R:(`ISS_ADD | `ISS_SUB | `ISS_SLL | `ISS_SLT | `ISS_SLTU | `ISS_XOR | `ISS_SRL | `ISS_SRA | `ISS_OR | `ISS_AND) \
-     Shift:(`ISS_SHIFTIOP)
+  in I:(`IS_ADDI | `IS_SLTI | `IS_SLTIU | `IS_XORI | `IS_ORI | `IS_ANDI) \
+     R:(`IS_ADD | `IS_SUB | `IS_SLL | `IS_SLT | `IS_SLTU | `IS_XOR | `IS_SRL | `IS_SRA | `IS_OR | `IS_AND) \
+     Shift:(`IS_SHIFTIOP)
     use structure_fast
     /
     use spec_compliant_no_err
 
   # Never actually proved, just assumed to be true instead.
   MType:
-  in Mul:(`ISS_MUL) MulH:(`ISS_MULH) MulHSH:(`ISS_MULHSH) MulHU:(`ISS_MULHU) Div:(`ISS_DIV) DivU:(`ISS_DIVU) Rem:(`ISS_REM) RemU:(`ISS_REMU)
+  in Mul:(`IS_MUL) MulH:(`IS_MULH) MulHSH:(`IS_MULHSH) MulHU:(`IS_MULHU) Div:(`IS_DIV) DivU:(`IS_DIVU) Rem:(`IS_REM) RemU:(`IS_REMU)
     use spec_compliant_no_err
 
   CSR:
-  in (`ISS_CSR & wbexc_is_checkable_csr)
+  in (`IS_CSR & wbexc_is_checkable_csr)
     use structure_fast
     /
     use spec_compliant
       split_bool Err:(wbexc_err)
 
   BType:
-  in (`ISS_BTYPE)
+  in (`IS_BTYPE)
     lemma btype
     use structure_fast
     /
@@ -76,31 +76,31 @@ lemma riscv
   JType: block
     lemma jump
     /
-    in Jal:(`ISS_JAL) Jalr:(`ISS_JALR)
+    in Jal:(`IS_JAL) Jalr:(`IS_JALR)
       use structure_fast
       /
       use spec_compliant
 
   UType:
-  in Lui:(`ISS_LUI) Auipc:(`ISS_AUIPC)
+  in Lui:(`IS_LUI) Auipc:(`IS_AUIPC)
     use structure_fast
     /
     use spec_compliant
 
   Fence:
-  in Fence:(`ISS_FENCE) FenceI:(`ISS_FENCEI)
+  in Fence:(`IS_FENCE) FenceI:(`IS_FENCEI)
     use structure_fast
     /
     use spec_compliant
 
   Special:
-  in ECall:(`ISS_ECALL) EBreak:(`ISS_EBREAK) MRet:(`ISS_MRET)
+  in ECall:(`IS_ECALL) EBreak:(`IS_EBREAK) MRet:(`IS_MRET)
     use structure_fast
     /
     use spec_compliant
 
   WFI:
-  in (`ISS_WFI && finishing_executed && ~wbexc_illegal)
+  in (`IS_WFI && finishing_executed && ~wbexc_illegal)
     use structure_fast
     /
     use spec_compliant_raw
@@ -112,7 +112,7 @@ lemma riscv
     Load: lemma load
     Store: lemma store
     /
-    in L:(wbexc_is_pres_load_instr) S:(wbexc_is_pres_store_instr)
+    in L:(wbexc_is_load_instr) S:(wbexc_is_store_instr)
       use spec_compliant
           split_bool Err:(wbexc_err)
 
@@ -120,7 +120,7 @@ lemma riscv
     PC: have (pc_match)
     CSR: have (csrs_match)
 
-  Illegal: in (wbexc_illegal & can_check_illegal & wbexc_finishing & ~wbexc_fetch_err & (`ISS_CSR -> wbexc_is_checkable_csr))
+  Illegal: in (wbexc_illegal & wbexc_finishing & ~wbexc_fetch_err & (`IS_CSR -> wbexc_is_checkable_csr))
     Fast: have ($past(instr_will_progress))
     /
     use spec_compliant_raw
@@ -135,7 +135,7 @@ lemma riscv
   # Uncomment this for liveness proofs, see ibex.proof for a description of when this can be done.
   # Liveness: lemma live
 
-  Top: in (wbexc_finishing & (`ISS_CSR -> wbexc_is_checkable_csr))
+  Top: in (wbexc_finishing & (`IS_CSR -> wbexc_is_checkable_csr))
     use spec_compliant_raw
 
   /
@@ -153,7 +153,7 @@ lemma riscv
          Pmp_cfg:(pmp_cfg) Pmp_addr:(pmp_addr) Mseccfg:(mseccfg)
       have (spec_past_``X == pre_``X)
 
-  SleepSpecPastPC: have (has_spec_past & (`IDC.ctrl_fsm_cs == `IDC.WAIT_SLEEP || `IDC.ctrl_fsm_cs == `IDC.SLEEP) |-> spec_past_pc == `CR.pc_if)
+  SleepSpecPastPC: have (has_spec_past & (`IDC.ctrl_fsm_cs == WAIT_SLEEP || `IDC.ctrl_fsm_cs == SLEEP) |-> spec_past_pc == `CR.pc_if)
 
   /
 
@@ -172,8 +172,8 @@ lemma riscv
          Pc:(pc)
       have (has_spec_past |-> pre_``X == spec_past_``X)
 
-    RegA: have (spec_rx_a_en && (spec_rx_a_addr != 0) && spec_past_has_reg[spec_rx_a_addr] |-> spec_rx_a == spec_past_regs[spec_rx_a_addr])
-    RegB: have (spec_rx_b_en && (spec_rx_b_addr != 0) && spec_past_has_reg[spec_rx_b_addr] |-> spec_rx_b == spec_past_regs[spec_rx_b_addr])
+    RegA: have (reg_driven[`CR.rf_raddr_a] && spec_past_has_reg[`CR.rf_raddr_a] |-> spec_past_regs[`CR.rf_raddr_a] == pre_regs_cut[`CR.rf_raddr_a])
+    RegB: have (reg_driven[`CR.rf_raddr_b] && spec_past_has_reg[`CR.rf_raddr_b] |-> spec_past_regs[`CR.rf_raddr_b] == pre_regs_cut[`CR.rf_raddr_b])
 
   # Live: have (always (##[1:157 + 2*`WFI_BOUND + 17*`TIME_LIMIT] spec_en))
 

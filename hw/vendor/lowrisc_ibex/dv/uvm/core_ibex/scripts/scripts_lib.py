@@ -263,14 +263,14 @@ class testdata_cls():
     """Baseclass for testdata to hold common methods....
 
     Objects inheriting from this can easily import/export
-    themselves to files, allowing data to gain continuinty between
+    themselves to files, allowing data to gain continuity between
     different phases of the regression and testing process
     """
 
     @classmethod
     @typechecked
     def construct_from_pickle(cls, metadata_pickle: pathlib.Path):
-        """Allow easy contruction of the data-structure from a file."""
+        """Allow easy construction of the data-structure from a file."""
         trr = cls()
         logger.debug(f"Constructing object from data in {metadata_pickle}")
         with metadata_pickle.open('rb') as handle:

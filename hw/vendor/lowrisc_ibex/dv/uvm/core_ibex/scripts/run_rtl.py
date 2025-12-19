@@ -39,18 +39,20 @@ def _main() -> int:
     trr.rtl_test = testopts['rtl_test']
     trr.timeout_s = testopts.get('timeout_s') or md.run_rtl_timeout_s
 
-    if not os.path.exists(trr.binary):
-        raise RuntimeError(
-            "When computing simulation command for running "
-            f"seed {trr.seed} of test {trr.testname}, cannot find the "
-            f"expected binary at {trr.binary!r}.")
-
     # Each test in testlist.yaml can (optionally) specify 'sim_opts'
     # which are to be passed to the simulator when running the test.
     sim_opts = ''
     sim_opts_raw = testopts.get('sim_opts')
     if sim_opts_raw:
         sim_opts += sim_opts_raw.replace('\n', '')
+    # If discrete_debug_module is enabled, pass some extra sim_opts
+    trr.ddm_sim_opts = ''
+    if (trr.testtype == TestType.RISCVDV and trr.is_discrete_debug_module):
+        trr.ddm_sim_opts = \
+            f" +vmem_main={trr.vmem_main}\n" + \
+            f" +vmem_dm={trr.vmem_dm}\n" + \
+            f" +bin_main={trr.binary_main}\n" + \
+            f" +bin_dm={trr.binary_dm}\n"
 
     trr.rtl_log         = trr.dir_test / 'rtl_sim.log'
     trr.rtl_trace       = trr.dir_test / 'trace_core_00000000.log'
@@ -71,6 +73,7 @@ def _main() -> int:
         'sim_opts': (f"+signature_addr={md.signature_addr}\n" +
                      f"+test_timeout_s={trr.timeout_s}\n" +
                      f"{get_sim_opts(md.ibex_config, md.simulator)}\n" +
+                     trr.ddm_sim_opts +
                      sim_opts)
     }
 

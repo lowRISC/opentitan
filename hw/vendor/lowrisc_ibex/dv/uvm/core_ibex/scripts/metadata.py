@@ -29,6 +29,7 @@ import ibex_cmd
 import ibex_config
 import lib as riscvdv_lib
 from test_run_result import TestRunResult, TestType
+from test_entry import get_test_entry
 import directed_test_schema
 
 import logging
@@ -256,7 +257,7 @@ class RegressionMetadata(scripts_lib.testdata_cls):
         md = cls.construct_from_pickle(md_pickle)
         return md
 
-    def get_tests_and_counts(self) -> List[Tuple[str, int, TestType]]:
+    def get_tests_and_counts(self) -> List[Tuple[Tuple[str, int, TestType], object]]:
         """Get a list of tests and the number of iterations to run of each.
 
         ibex_config should be the name of the Ibex configuration to be tested.
@@ -287,12 +288,12 @@ class RegressionMetadata(scripts_lib.testdata_cls):
             name, iterations = (test['test'], test['iterations'])
             assert isinstance(name, str) and isinstance(iterations, int) \
                                          and iterations > 0
-            ret.append((name, iterations, TestType.RISCVDV))
+            ret.append(((name, iterations, TestType.RISCVDV), test))
         for test in directed_filtered_list:
             name, iterations = (test['test'], test['iterations'])
             assert isinstance(name, str) and isinstance(iterations, int) \
                                          and iterations > 0
-            ret.append((name, iterations, TestType.DIRECTED))
+            ret.append(((name, iterations, TestType.DIRECTED), test))
 
         return ret
 
@@ -374,7 +375,8 @@ def _main():
         # Setup the tests/counts we are going to use, by parsing the
         # riscv-dv/directed-test structured data.
         # eg. testlist.yaml / directed_testlist.yaml
-        md.tests_and_counts = md.get_tests_and_counts()
+        tests_and_counts = md.get_tests_and_counts()
+        md.tests_and_counts = [tctt for (tctt, obj) in tests_and_counts]
         if not md.tests_and_counts:
             raise RuntimeError("md.tests_and_counts is empty, cannot get TEST.SEED strings.")
 
@@ -383,7 +385,8 @@ def _main():
         # constructed above, so we can easily find and import them later, and
         # give each test object a link back to this top-level object that
         # defines the wider regression.
-        for test, count, testtype in md.tests_and_counts:
+        for tctt, obj in tests_and_counts:
+            test, count, testtype = tctt
             for testseed in range(md.seed, md.seed + count):
                 tds_str = f"{test}.{testseed}"
 
@@ -401,6 +404,21 @@ def _main():
                     metadata_pickle_file=md.pickle_file,
                     pickle_file=md.dir_metadata/(tds_str + ".pickle"),
                     yaml_file=md.dir_tests/tds_str/'trr.yaml')
+
+                if testtype == TestType.RISCVDV:
+                    # Copy the test options into the object, to make it easier to fetch later.
+                    shlex_if_not_empty = lambda field: shlex.split(obj.get(field) or "")
+                    trr.gen_test = shlex_if_not_empty('gen_test')
+                    trr.gen_opts = shlex_if_not_empty('gen_opts')
+                    trr.rtl_test = shlex_if_not_empty('rtl_test')
+                    trr.sim_opts = shlex_if_not_empty('sim_opts')
+
+                    # If the +discrete_debug_module=1 argument is passed via sim_opts, a alternate
+                    # memory heirarchy is enabled which seperates the debug rom memory sections
+                    # from the main binary, emulating an external debug module
+                    for plusarg, val in (trr.split('=') for trr in trr.sim_opts):
+                        if plusarg == "+discrete_debug_module":
+                            trr.is_discrete_debug_module = False if '' else bool(int(val))
 
                 # Get the data from the directed test yaml that we need to construct the command.
                 if testtype == TestType.DIRECTED:

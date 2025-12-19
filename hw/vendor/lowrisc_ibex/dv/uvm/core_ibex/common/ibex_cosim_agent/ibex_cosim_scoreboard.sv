@@ -70,9 +70,13 @@ class ibex_cosim_scoreboard extends uvm_scoreboard;
   protected function void init_cosim();
     cleanup_cosim();
 
+    `DV_CHECK_FATAL(cfg.dm_start_addr > 0, "Debug module start address configured to zero.")
+    `DV_CHECK_FATAL(cfg.dm_end_addr > 0, "Debug module end address configured to zero.")
+
     // TODO: Ensure log file on reset gets append rather than overwrite?
     cosim_handle = spike_cosim_init(cfg.isa_string, cfg.start_pc, cfg.start_mtvec, cfg.log_file,
-      cfg.pmp_num_regions, cfg.pmp_granularity, cfg.mhpm_counter_num, cfg.secure_ibex, cfg.icache);
+      cfg.pmp_num_regions, cfg.pmp_granularity, cfg.mhpm_counter_num, cfg.secure_ibex, cfg.icache,
+      cfg.dm_start_addr, cfg.dm_end_addr);
 
     if (cosim_handle == null) begin
       `uvm_fatal(`gfn, "Could not initialise cosim")
@@ -347,7 +351,7 @@ class ibex_cosim_scoreboard extends uvm_scoreboard;
   endfunction : final_phase
 
   // If the UVM_EXIT action is triggered (such as by reaching max_quit_count), this callback is run.
-  // This ensures proper cleanup, such as commiting the logfile to disk.
+  // This ensures proper cleanup, such as committing the logfile to disk.
   function void pre_abort();
     cleanup_cosim();
   endfunction

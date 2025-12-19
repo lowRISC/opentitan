@@ -203,7 +203,7 @@ module ibex_alu #(
   //
   // Funnel Shifts
   // -------------
-  // For funnel shifs, operand_a_i is tied to rs1 in the first cycle and rs3 in the
+  // For funnel shifts, operand_a_i is tied to rs1 in the first cycle and rs3 in the
   // second cycle. operand_b_i is always tied to rs2. The order of applying the shift amount or
   // its complement is determined by bit [5] of shift_amt.
   //
@@ -484,7 +484,7 @@ module ibex_alu #(
     // butterfly network control signals. The adders in the intermediate value adder tree thus need
     // not be full 5-bit adders. We leave the optimization to the synthesis tools.
     //
-    // Consider the following 8-bit example for illustraton.
+    // Consider the following 8-bit example for illustration.
     //
     // let bitcnt_bits = 8'babcdefgh.
     //
@@ -783,7 +783,7 @@ module ibex_alu #(
           end
 
           ALU_XPERM_B: begin
-            // Convert byte to nibble indicies.
+            // Convert byte to nibble indices.
             for (int b = 0; b < 4; b++) begin
               sel[b*2 +  0] =   {sel_b[b], 1'b0};
               sel[b*2 +  1] =   {sel_b[b], 1'b1};
@@ -863,7 +863,7 @@ module ibex_alu #(
       // where P denotes lower 32 bits of the corresponding CRC polynomial, rev(a) the bit reversal
       // of a, n = 8,16, or 32 for .b, .h, .w -variants. {a, b} denotes bit concatenation.
       //
-      // Using barret reduction, one can show that
+      // Using Barrett reduction, one can show that
       //
       // M(x) mod P(x) = R(x) =
       //          (M(x) * x**n) & {deg(P(x)'{1'b1}}) ^ (M(x) x**-(deg(P(x) - n)) cx mu(x) cx P(x),

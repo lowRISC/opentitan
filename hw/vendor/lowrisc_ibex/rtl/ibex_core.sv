@@ -14,44 +14,44 @@
  * Top level module of the ibex RISC-V core
  */
 module ibex_core import ibex_pkg::*; #(
-  parameter bit                     PMPEnable        = 1'b0,
-  parameter int unsigned            PMPGranularity   = 0,
-  parameter int unsigned            PMPNumRegions    = 4,
-  parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[16]    = ibex_pkg::PmpCfgRst,
-  parameter logic [33:0]            PMPRstAddr[16]   = ibex_pkg::PmpAddrRst,
-  parameter ibex_pkg::pmp_mseccfg_t PMPRstMsecCfg    = ibex_pkg::PmpMseccfgRst,
-  parameter int unsigned            MHPMCounterNum   = 0,
-  parameter int unsigned            MHPMCounterWidth = 40,
-  parameter bit                     RV32E            = 1'b0,
-  parameter rv32m_e                 RV32M            = RV32MFast,
-  parameter rv32b_e                 RV32B            = RV32BNone,
-  parameter bit                     BranchTargetALU  = 1'b0,
-  parameter bit                     WritebackStage   = 1'b0,
-  parameter bit                     ICache           = 1'b0,
-  parameter bit                     ICacheECC        = 1'b0,
-  parameter int unsigned            BusSizeECC       = BUS_SIZE,
-  parameter int unsigned            TagSizeECC       = IC_TAG_SIZE,
-  parameter int unsigned            LineSizeECC      = IC_LINE_SIZE,
-  parameter bit                     BranchPredictor  = 1'b0,
-  parameter bit                     DbgTriggerEn     = 1'b0,
-  parameter int unsigned            DbgHwBreakNum    = 1,
-  parameter bit                     ResetAll         = 1'b0,
-  parameter lfsr_seed_t             RndCnstLfsrSeed  = RndCnstLfsrSeedDefault,
-  parameter lfsr_perm_t             RndCnstLfsrPerm  = RndCnstLfsrPermDefault,
-  parameter bit                     SecureIbex       = 1'b0,
-  parameter bit                     DummyInstructions= 1'b0,
-  parameter bit                     RegFileECC       = 1'b0,
-  parameter int unsigned            RegFileDataWidth = 32,
-  parameter bit                     MemECC           = 1'b0,
-  parameter int unsigned            MemDataWidth     = MemECC ? 32 + 7 : 32,
-  parameter int unsigned            DmBaseAddr       = 32'h1A110000,
-  parameter int unsigned            DmAddrMask       = 32'h00000FFF,
-  parameter int unsigned            DmHaltAddr       = 32'h1A110800,
-  parameter int unsigned            DmExceptionAddr  = 32'h1A110808,
+  parameter bit                     PMPEnable                   = 1'b0,
+  parameter int unsigned            PMPGranularity              = 0,
+  parameter int unsigned            PMPNumRegions               = 4,
+  parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[PMP_MAX_REGIONS]  = ibex_pkg::PmpCfgRst,
+  parameter logic [PMP_ADDR_MSB:0]  PMPRstAddr[PMP_MAX_REGIONS] = ibex_pkg::PmpAddrRst,
+  parameter ibex_pkg::pmp_mseccfg_t PMPRstMsecCfg               = ibex_pkg::PmpMseccfgRst,
+  parameter int unsigned            MHPMCounterNum              = 0,
+  parameter int unsigned            MHPMCounterWidth            = 40,
+  parameter bit                     RV32E                       = 1'b0,
+  parameter rv32m_e                 RV32M                       = RV32MFast,
+  parameter rv32b_e                 RV32B                       = RV32BNone,
+  parameter bit                     BranchTargetALU             = 1'b0,
+  parameter bit                     WritebackStage              = 1'b0,
+  parameter bit                     ICache                      = 1'b0,
+  parameter bit                     ICacheECC                   = 1'b0,
+  parameter int unsigned            BusSizeECC                  = BUS_SIZE,
+  parameter int unsigned            TagSizeECC                  = IC_TAG_SIZE,
+  parameter int unsigned            LineSizeECC                 = IC_LINE_SIZE,
+  parameter bit                     BranchPredictor             = 1'b0,
+  parameter bit                     DbgTriggerEn                = 1'b0,
+  parameter int unsigned            DbgHwBreakNum               = 1,
+  parameter bit                     ResetAll                    = 1'b0,
+  parameter lfsr_seed_t             RndCnstLfsrSeed             = RndCnstLfsrSeedDefault,
+  parameter lfsr_perm_t             RndCnstLfsrPerm             = RndCnstLfsrPermDefault,
+  parameter bit                     SecureIbex                  = 1'b0,
+  parameter bit                     DummyInstructions           = 1'b0,
+  parameter bit                     RegFileECC                  = 1'b0,
+  parameter int unsigned            RegFileDataWidth            = 32,
+  parameter bit                     MemECC                      = 1'b0,
+  parameter int unsigned            MemDataWidth                = MemECC ? 32 + 7 : 32,
+  parameter int unsigned            DmBaseAddr                  = 32'h1A110000,
+  parameter int unsigned            DmAddrMask                  = 32'h00000FFF,
+  parameter int unsigned            DmHaltAddr                  = 32'h1A110800,
+  parameter int unsigned            DmExceptionAddr             = 32'h1A110808,
   // mvendorid: encoding of manufacturer/provider
-  parameter logic [31:0]            CsrMvendorId     = 32'b0,
+  parameter logic [31:0]            CsrMvendorId                = 32'b0,
   // marchid: encoding of base microarchitecture
-  parameter logic [31:0]            CsrMimpId        = 32'b0
+  parameter logic [31:0]            CsrMimpId                   = 32'b0
 ) (
   // Clock and Reset
   input  logic                         clk_i,
@@ -109,7 +109,7 @@ module ibex_core import ibex_pkg::*; #(
   input  logic                         irq_timer_i,
   input  logic                         irq_external_i,
   input  logic [14:0]                  irq_fast_i,
-  input  logic                         irq_nm_i,       // non-maskeable interrupt
+  input  logic                         irq_nm_i,       // non-maskable interrupt
   output logic                         irq_pending_o,
 
   // Debug Interface
@@ -291,7 +291,7 @@ module ibex_core import ibex_pkg::*; #(
   logic [31:0] csr_rdata;
   logic [31:0] csr_wdata;
   logic        illegal_csr_insn_id;    // CSR access to non-existent register,
-                                       // with wrong priviledge level,
+                                       // with wrong privilege level,
                                        // or missing write permissions
 
   // Data Memory Control
@@ -331,11 +331,11 @@ module ibex_core import ibex_pkg::*; #(
   logic [31:0] csr_mepc, csr_depc;
 
   // PMP signals
-  logic [33:0]  csr_pmp_addr [PMPNumRegions];
-  pmp_cfg_t     csr_pmp_cfg  [PMPNumRegions];
-  pmp_mseccfg_t csr_pmp_mseccfg;
-  logic         pmp_req_err  [PMPNumChan];
-  logic         data_req_out;
+  logic [PMP_ADDR_MSB:0]  csr_pmp_addr [PMPNumRegions];
+  pmp_cfg_t               csr_pmp_cfg  [PMPNumRegions];
+  pmp_mseccfg_t           csr_pmp_mseccfg;
+  logic                   pmp_req_err  [PMPNumChan];
+  logic                   data_req_out;
 
   logic        csr_save_if;
   logic        csr_save_id;
@@ -897,7 +897,7 @@ module ibex_core import ibex_pkg::*; #(
     logic [1:0] rf_ecc_err_a, rf_ecc_err_b;
     logic       rf_ecc_err_a_id, rf_ecc_err_b_id;
 
-    // ECC checkbit generation for regiter file wdata
+    // ECC checkbit generation for register file wdata
     prim_secded_inv_39_32_enc regfile_ecc_enc (
       .data_i(rf_wdata_wb),
       .data_o(rf_wdata_wb_ecc_o)
@@ -1035,13 +1035,6 @@ module ibex_core import ibex_pkg::*; #(
 
   `endif // INC_ASSERT
 
-  ////////////////////////
-  // RF (Register File) //
-  ////////////////////////
-`ifdef RVFI
-`endif
-
-
   /////////////////////////////////////////
   // CSRs (Control and Status Registers) //
   /////////////////////////////////////////
@@ -1170,10 +1163,10 @@ module ibex_core import ibex_pkg::*; #(
   `ASSERT_KNOWN_IF(IbexCsrWdataIntKnown, cs_registers_i.csr_wdata_int, csr_op_en)
 
   if (PMPEnable) begin : g_pmp
-    logic [31:0] pc_if_inc;
-    logic [33:0] pmp_req_addr [PMPNumChan];
-    pmp_req_e    pmp_req_type [PMPNumChan];
-    priv_lvl_e   pmp_priv_lvl [PMPNumChan];
+    logic [31:0]           pc_if_inc;
+    logic [PMP_ADDR_MSB:0] pmp_req_addr [PMPNumChan];
+    pmp_req_e              pmp_req_type [PMPNumChan];
+    priv_lvl_e             pmp_priv_lvl [PMPNumChan];
 
     assign pc_if_inc            = pc_if + 32'd2;
     assign pmp_req_addr[PMP_I]  = {2'b00, pc_if};
@@ -1206,10 +1199,10 @@ module ibex_core import ibex_pkg::*; #(
     );
   end else begin : g_no_pmp
     // Unused signal tieoff
-    priv_lvl_e unused_priv_lvl_ls;
-    logic [33:0] unused_csr_pmp_addr [PMPNumRegions];
-    pmp_cfg_t    unused_csr_pmp_cfg  [PMPNumRegions];
-    pmp_mseccfg_t unused_csr_pmp_mseccfg;
+    priv_lvl_e             unused_priv_lvl_ls;
+    logic [PMP_ADDR_MSB:0] unused_csr_pmp_addr [PMPNumRegions];
+    pmp_cfg_t              unused_csr_pmp_cfg  [PMPNumRegions];
+    pmp_mseccfg_t          unused_csr_pmp_mseccfg;
     assign unused_priv_lvl_ls = priv_mode_lsu;
     assign unused_csr_pmp_addr = csr_pmp_addr;
     assign unused_csr_pmp_cfg = csr_pmp_cfg;
@@ -1537,7 +1530,7 @@ module ibex_core import ibex_pkg::*; #(
 
 
   // rvfi_irq_valid signals an interrupt event to the cosim. These should only occur when the RVFI
-  // pipe is empty so just send it straigh through.
+  // pipe is empty so just send it straight through.
   for (genvar i = 0; i < RVFI_STAGES + 1; i = i + 1) begin : g_rvfi_irq_valid
     if (i == 0) begin : g_rvfi_irq_valid_first_stage
       always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -1591,9 +1584,28 @@ module ibex_core import ibex_pkg::*; #(
         rvfi_ext_stage_debug_req[i+1]      <= '0;
         rvfi_ext_stage_debug_mode[i]       <= '0;
         rvfi_ext_stage_mcycle[i]           <= '0;
-        rvfi_ext_stage_mhpmcounters[i]     <= '{10{'0}};
-        rvfi_ext_stage_mhpmcountersh[i]    <= '{10{'0}};
         rvfi_ext_stage_ic_scr_key_valid[i] <= '0;
+        // DSim does not properly support array assignment in for loop, so unroll
+        rvfi_ext_stage_mhpmcounters[i][0]  <= '0;
+        rvfi_ext_stage_mhpmcountersh[i][0] <= '0;
+        rvfi_ext_stage_mhpmcounters[i][1]  <= '0;
+        rvfi_ext_stage_mhpmcountersh[i][1] <= '0;
+        rvfi_ext_stage_mhpmcounters[i][2]  <= '0;
+        rvfi_ext_stage_mhpmcountersh[i][2] <= '0;
+        rvfi_ext_stage_mhpmcounters[i][3]  <= '0;
+        rvfi_ext_stage_mhpmcountersh[i][3] <= '0;
+        rvfi_ext_stage_mhpmcounters[i][4]  <= '0;
+        rvfi_ext_stage_mhpmcountersh[i][4] <= '0;
+        rvfi_ext_stage_mhpmcounters[i][5]  <= '0;
+        rvfi_ext_stage_mhpmcountersh[i][5] <= '0;
+        rvfi_ext_stage_mhpmcounters[i][6]  <= '0;
+        rvfi_ext_stage_mhpmcountersh[i][6] <= '0;
+        rvfi_ext_stage_mhpmcounters[i][7]  <= '0;
+        rvfi_ext_stage_mhpmcountersh[i][7] <= '0;
+        rvfi_ext_stage_mhpmcounters[i][8]  <= '0;
+        rvfi_ext_stage_mhpmcountersh[i][8] <= '0;
+        rvfi_ext_stage_mhpmcounters[i][9]  <= '0;
+        rvfi_ext_stage_mhpmcountersh[i][9] <= '0;
       end else begin
         rvfi_stage_valid[i] <= rvfi_stage_valid_d[i];
 
@@ -1611,7 +1623,7 @@ module ibex_core import ibex_pkg::*; #(
             rvfi_stage_rs3_addr[i]             <= rvfi_rs3_addr_d;
             rvfi_stage_pc_rdata[i]             <= pc_id;
             rvfi_stage_pc_wdata[i]             <= pc_set ? branch_target_ex : pc_if;
-            rvfi_stage_mem_rmask[i]            <= rvfi_mem_mask_int;
+            rvfi_stage_mem_rmask[i]            <= data_we_o ? 4'b0000 : rvfi_mem_mask_int;
             rvfi_stage_mem_wmask[i]            <= data_we_o ? rvfi_mem_mask_int : 4'b0000;
             rvfi_stage_rs1_rdata[i]            <= rvfi_rs1_data_d;
             rvfi_stage_rs2_rdata[i]            <= rvfi_rs2_data_d;
@@ -1624,12 +1636,27 @@ module ibex_core import ibex_pkg::*; #(
             rvfi_ext_stage_debug_mode[i]       <= debug_mode;
             rvfi_ext_stage_mcycle[i]           <= cs_registers_i.mcycle_counter_i.counter_val_o;
             rvfi_ext_stage_ic_scr_key_valid[i] <= cs_registers_i.cpuctrlsts_ic_scr_key_valid_q;
-            // This is done this way because SystemVerilog does not support looping through
-            // gen_cntrs[k] within a for loop.
-            for (int k=0; k < 10; k++) begin
-              rvfi_ext_stage_mhpmcounters[i][k]  <= cs_registers_i.mhpmcounter[k+3][31:0];
-              rvfi_ext_stage_mhpmcountersh[i][k] <= cs_registers_i.mhpmcounter[k+3][63:32];
-            end
+            // DSim does not properly support array assignment in for loop, so unroll
+            rvfi_ext_stage_mhpmcounters[i][0]  <= cs_registers_i.mhpmcounter[3][31:0];
+            rvfi_ext_stage_mhpmcountersh[i][0] <= cs_registers_i.mhpmcounter[3][63:32];
+            rvfi_ext_stage_mhpmcounters[i][1]  <= cs_registers_i.mhpmcounter[4][31:0];
+            rvfi_ext_stage_mhpmcountersh[i][1] <= cs_registers_i.mhpmcounter[4][63:32];
+            rvfi_ext_stage_mhpmcounters[i][2]  <= cs_registers_i.mhpmcounter[5][31:0];
+            rvfi_ext_stage_mhpmcountersh[i][2] <= cs_registers_i.mhpmcounter[5][63:32];
+            rvfi_ext_stage_mhpmcounters[i][3]  <= cs_registers_i.mhpmcounter[6][31:0];
+            rvfi_ext_stage_mhpmcountersh[i][3] <= cs_registers_i.mhpmcounter[6][63:32];
+            rvfi_ext_stage_mhpmcounters[i][4]  <= cs_registers_i.mhpmcounter[7][31:0];
+            rvfi_ext_stage_mhpmcountersh[i][4] <= cs_registers_i.mhpmcounter[7][63:32];
+            rvfi_ext_stage_mhpmcounters[i][5]  <= cs_registers_i.mhpmcounter[8][31:0];
+            rvfi_ext_stage_mhpmcountersh[i][5] <= cs_registers_i.mhpmcounter[8][63:32];
+            rvfi_ext_stage_mhpmcounters[i][6]  <= cs_registers_i.mhpmcounter[9][31:0];
+            rvfi_ext_stage_mhpmcountersh[i][6] <= cs_registers_i.mhpmcounter[9][63:32];
+            rvfi_ext_stage_mhpmcounters[i][7]  <= cs_registers_i.mhpmcounter[10][31:0];
+            rvfi_ext_stage_mhpmcountersh[i][7] <= cs_registers_i.mhpmcounter[10][63:32];
+            rvfi_ext_stage_mhpmcounters[i][8]  <= cs_registers_i.mhpmcounter[11][31:0];
+            rvfi_ext_stage_mhpmcountersh[i][8] <= cs_registers_i.mhpmcounter[11][63:32];
+            rvfi_ext_stage_mhpmcounters[i][9]  <= cs_registers_i.mhpmcounter[12][31:0];
+            rvfi_ext_stage_mhpmcountersh[i][9] <= cs_registers_i.mhpmcounter[12][63:32];
           end
 
           // Some of the rvfi_ext_* signals are used to provide an interrupt notification (signalled
