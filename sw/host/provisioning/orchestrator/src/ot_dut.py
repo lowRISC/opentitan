@@ -22,7 +22,7 @@ _FPGA_UNIVERSAL_SPLICE_BITSTREAM = "hw/bitstream/universal/splice.bit"
 # Opentitantool interface
 _OTT_FPGA_INTERFACE = {
     "cw310": "hyper310",
-    "cw340": "cw340",
+    "cw340": "hyper340",
 }
 
 # CP and FT shared flags.
