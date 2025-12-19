@@ -1,0 +1,1 @@
+[[16, ["Mem_Store_SndAddr", "Mem_Store_SndWData", "Mem_Store_FstAddr", "Mem_Store_FstWData", "Mem_Load_FstAddr", "Mem_Load_SndAddr"], "rIC3 -e kind --no-preproc", [20, 13.040031433105469, 20.674562454223633, "OK", "RESULT: UNSAT\n"]]]

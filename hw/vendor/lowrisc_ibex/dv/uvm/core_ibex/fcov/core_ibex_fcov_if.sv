@@ -310,7 +310,7 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
   assign instr_id_matches_trigger_d = id_stage_i.controller_i.trigger_match_i &&
                                       id_stage_i.controller_i.fcov_debug_entry_if;
 
-  // Delay instruction matching trigger point since it is catched in IF stage.
+  // Delay instruction matching trigger point since it is cached in IF stage.
   // We would want to cross it with decoded instruction categories and it does not matter
   // when exactly we are hitting the condition.
   always @(posedge clk_i or negedge rst_ni) begin

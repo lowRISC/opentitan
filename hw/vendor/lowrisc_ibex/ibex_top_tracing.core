@@ -9,6 +9,8 @@ filesets:
     depend:
       - lowrisc:ibex:ibex_top
       - lowrisc:ibex:ibex_tracer
+      - "fileset_partner ? (partner:prim_generic:all)"
+      - "!fileset_partner ? (lowrisc:prim_generic:all)"
     files:
       - rtl/ibex_top_tracing.sv
     file_type: systemVerilogSource

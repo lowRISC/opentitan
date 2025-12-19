@@ -1,0 +1,34 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# Original author: Louis-Emile Ploix
+# SPDX-License-Identifier: Apache-2.0
+
+# Parse and lower the Ibex and specification RTL. LOWRISC_SAIL_SRC is replaced in Makefile.
+read_slang --top top -DSYNTHESIS -DYOSYS \
+	-F build/fusesoc/lowrisc_ibex_ibex_formal_0.1/default-vcs/lowrisc_ibex_ibex_formal_0.1.scr \
+	build/ibexspec.sv spec/stub.sv spec/spec_api.sv check/peek/alt_lsu.sv check/top.sv \
+	-I LOWRISC_SAIL_SRC/lib/sv/ --single-unit --no-proc
+setattr -set keep 1 n:\\* # Keep all named wires. FIXME: Is this still necessary?
+proc
+global_clk \clk_i # custom pass (./yosys_formal/global_clock.cc) which blindly enforces a formal-suitable global clock
+opt_muxtree_2 # custom fork of opt_muxtree (./yosys_formal/opt_muxtree.cc)
+opt_clean
+
+memory_nordff
+delete */t:$print
+setundef -undriven -anyseq
+memory_map -formal
+delete -output
+expose n:\\* # Expose all public signals as outputs so they don't get optimised out
+
+opt_muxtree_2
+opt_expr
+opt_dff
+opt_clean
+techmap
+simplemap
+dffunmap
+opt_clean
+write_smt2 build/all.smt2 # Helpful for yosys-smtbmc
+aigmap # Way faster than abc -g AND -fast
+write_aiger_2 -I -B -zinit -no-startoffset -ywmap build/all.ywmap -vmap build/all.vmap build/all.aig

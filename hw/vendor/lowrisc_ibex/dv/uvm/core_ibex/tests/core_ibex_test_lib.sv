@@ -755,17 +755,17 @@ class core_ibex_debug_intr_basic_test extends core_ibex_base_test;
   `uvm_component_utils(core_ibex_debug_intr_basic_test)
   `uvm_component_new
 
-  bit [ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0] core_init_mstatus;
-  bit [ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0] core_init_mie;
+  bit [ibex_mem_intf_pkg::DATA_WIDTH-1:0] core_init_mstatus;
+  bit [ibex_mem_intf_pkg::DATA_WIDTH-1:0] core_init_mie;
   priv_lvl_e                                    init_operating_mode;
   priv_lvl_e                                    operating_mode;
   bit [$clog2(irq_agent_pkg::DATA_WIDTH)-1:0]   irq_id;
   irq_seq_item                                  irq_txn;
   bit [irq_agent_pkg::DATA_WIDTH-1:0]           irq;
-  bit [ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0] mstatus;
-  bit [ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0] mcause;
-  bit [ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0] mip;
-  bit [ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0] mie;
+  bit [ibex_mem_intf_pkg::DATA_WIDTH-1:0] mstatus;
+  bit [ibex_mem_intf_pkg::DATA_WIDTH-1:0] mcause;
+  bit [ibex_mem_intf_pkg::DATA_WIDTH-1:0] mip;
+  bit [ibex_mem_intf_pkg::DATA_WIDTH-1:0] mie;
   bit                                           in_nested_trap;
 
   virtual task send_stimulus();
@@ -966,14 +966,14 @@ class core_ibex_debug_intr_basic_test extends core_ibex_base_test;
     return have_irq;
   endfunction
 
-  virtual task check_mcause(bit irq_or_exc, bit[ibex_mem_intf_agent_pkg::DATA_WIDTH-2:0] cause);
-    bit[ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0] mcause;
+  virtual task check_mcause(bit irq_or_exc, bit[ibex_mem_intf_pkg::DATA_WIDTH-2:0] cause);
+    bit[ibex_mem_intf_pkg::DATA_WIDTH-1:0] mcause;
     wait_for_csr_write(CSR_MCAUSE, 10000);
     mcause = signature_data;
     `uvm_info(`gfn, $sformatf("mcause: 0x%0x", mcause), UVM_LOW)
-    `DV_CHECK_EQ_FATAL(mcause[ibex_mem_intf_agent_pkg::DATA_WIDTH-1], irq_or_exc,
+    `DV_CHECK_EQ_FATAL(mcause[ibex_mem_intf_pkg::DATA_WIDTH-1], irq_or_exc,
                         $sformatf("mcause.interrupt is not set to 0x%0x", irq_or_exc))
-    `DV_CHECK_EQ_FATAL(mcause[ibex_mem_intf_agent_pkg::DATA_WIDTH-2:0], cause,
+    `DV_CHECK_EQ_FATAL(mcause[ibex_mem_intf_pkg::DATA_WIDTH-2:0], cause,
                        "mcause.exception_code is encoding the wrong exception type")
   endtask
 
@@ -1118,14 +1118,16 @@ class core_ibex_directed_test extends core_ibex_debug_intr_basic_test;
 
   // Illegal instruction checker
   virtual task check_illegal_insn(string exception_msg);
-    check_next_core_status(HANDLING_EXCEPTION, "Core did not jump to vectored exception handler", 10000);
-    check_next_core_status(ILLEGAL_INSTR_EXCEPTION, exception_msg, 10000);
-    check_mcause(1'b0, ExcCauseIllegalInsn);
-    // Ibex will wait to change the privilege mode until it is allowed to FLUSH. This happens because
-    // we are blocking the current instruction until the instruction from WB stage is ready.
+    // Ibex will wait to change the privilege mode until it is allowed to FLUSH. This happens
+    // because it is blocking the current instruction until the instruction from WB stage is ready.
     wait (dut_vif.dut_cb.ctrl_fsm_cs == FLUSH);
     clk_vif.wait_clks(2);
     check_priv_mode(PRIV_LVL_M);
+    check_next_core_status(HANDLING_EXCEPTION,
+                           "Core did not jump to vectored exception handler",
+                           10000);
+    check_next_core_status(ILLEGAL_INSTR_EXCEPTION, exception_msg, 10000);
+    check_mcause(1'b0, ExcCauseIllegalInsn);
     wait_ret("mret", 15000);
   endtask
 
@@ -1161,7 +1163,7 @@ class core_ibex_directed_test extends core_ibex_debug_intr_basic_test;
   // currently in the ID stage against the global seen_instr[$] queue.
   // If we've seen the same type of instruction before, return 0, otherwise add it to the
   // seen_instr[$] queue and return 1.
-  virtual function bit decode_instr(bit [ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0] instr);
+  virtual function bit decode_instr(bit [ibex_mem_intf_pkg::DATA_WIDTH-1:0] instr);
     ibex_pkg::opcode_e                            opcode;
     bit [2:0]                                     funct3;
     bit [6:0]                                     funct7;
@@ -1670,8 +1672,8 @@ class core_ibex_debug_ebreak_test extends core_ibex_directed_test;
   `uvm_component_utils(core_ibex_debug_ebreak_test)
   `uvm_component_new
 
-  bit[ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0] dpc;
-  bit[ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0] dcsr;
+  bit[ibex_mem_intf_pkg::DATA_WIDTH-1:0] dpc;
+  bit[ibex_mem_intf_pkg::DATA_WIDTH-1:0] dcsr;
 
   virtual task check_stimulus();
     forever begin
@@ -1860,7 +1862,7 @@ class core_ibex_mem_error_test extends core_ibex_directed_test;
     //
     // We don't terminate immediately as sometimes the test hits an illegal instruction exception
     // but finds its way back to generated code and terminates as usual. Sometimes it doesn't. The
-    // treshold allows for normal test termination in cases where that's possible.
+    // threshold allows for normal test termination in cases where that's possible.
     if (!cfg.enable_mem_intg_err) begin
       return;
     end
@@ -1885,7 +1887,7 @@ class core_ibex_umode_tw_test extends core_ibex_directed_test;
   `uvm_component_new
 
   virtual task check_stimulus();
-    bit [ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0] mcause;
+    bit [ibex_mem_intf_pkg::DATA_WIDTH-1:0] mcause;
     forever begin
       wait (dut_vif.dut_cb.wfi === 1'b1);
       check_illegal_insn("Core did not treat U-mode WFI as illegal");

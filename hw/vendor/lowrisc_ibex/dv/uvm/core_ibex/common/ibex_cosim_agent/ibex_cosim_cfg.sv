@@ -14,6 +14,8 @@ class core_ibex_cosim_cfg extends uvm_object;
   bit        relax_cosim_check;
   bit        secure_ibex;
   bit        icache;
+  bit [31:0] dm_start_addr;
+  bit [31:0] dm_end_addr;
 
   `uvm_object_utils_begin(core_ibex_cosim_cfg)
     `uvm_field_string(isa_string, UVM_DEFAULT)
@@ -26,6 +28,8 @@ class core_ibex_cosim_cfg extends uvm_object;
     `uvm_field_int(mhpm_counter_num, UVM_DEFAULT)
     `uvm_field_int(secure_ibex, UVM_DEFAULT)
     `uvm_field_int(icache, UVM_DEFAULT)
+    `uvm_field_int(dm_start_addr, UVM_DEFAULT | UVM_HEX)
+    `uvm_field_int(dm_end_addr, UVM_DEFAULT | UVM_HEX)
   `uvm_object_utils_end
 
   `uvm_object_new

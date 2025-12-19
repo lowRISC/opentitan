@@ -43,67 +43,82 @@ module top import ibex_pkg::*; #(
   parameter int unsigned PMPNumRegions    = 4
 ) (
   // Clock and Reset
-  input  logic                         clk_i,
-  input  logic                         rst_ni,
+  input  logic                                                         clk_i,
 
-  input  logic                         test_en_i,     // enable all clock gates for testing
-  input  prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
+  `ifndef YOSYS
+  input  logic                                                         rst_ni,
+  `endif
 
-  input  logic [31:0]                  hart_id_i,
-  input  logic [31:0]                  boot_addr_i,
+  input  logic                                                         test_en_i,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t                                 ram_cfg_icache_tag_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0] ram_cfg_rsp_icache_tag_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t                                 ram_cfg_icache_data_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0] ram_cfg_rsp_icache_data_o,
+
+  input  logic [31:0]                                                  hart_id_i,
+  input  logic [31:0]                                                  boot_addr_i,
 
   // Instruction memory interface
-  output logic                         instr_req_o,
-  input  logic                         instr_gnt_i,
-  input  logic                         instr_rvalid_i,
-  output logic [31:0]                  instr_addr_o,
-  input  logic [31:0]                  instr_rdata_i,
-  input  logic [6:0]                   instr_rdata_intg_i,
-  input  logic                         instr_err_i,
+  output logic                                                         instr_req_o,
+  input  logic                                                         instr_gnt_i,
+  input  logic                                                         instr_rvalid_i,
+  output logic [31:0]                                                  instr_addr_o,
+  input  logic [31:0]                                                  instr_rdata_i,
+  input  logic [6:0]                                                   instr_rdata_intg_i,
+  input  logic                                                         instr_err_i,
 
   // Data memory interface
-  output logic                         data_req_o,
-  output logic                         data_is_cap_o,
-  input  logic                         data_gnt_i,
-  input  logic                         data_rvalid_i,
-  output logic                         data_we_o,
-  output logic [3:0]                   data_be_o,
-  output logic [31:0]                  data_addr_o,
-  output logic [31:0]                  data_wdata_o,
-  output logic [6:0]                   data_wdata_intg_o,
-  input  logic [31:0]                  data_rdata_i,
-  input  logic [6:0]                   data_rdata_intg_i,
-  input  logic                         data_err_i,
+  output logic                                                         data_req_o,
+  output logic                                                         data_is_cap_o,
+  input  logic                                                         data_gnt_i,
+  input  logic                                                         data_rvalid_i,
+  output logic                                                         data_we_o,
+  output logic [3:0]                                                   data_be_o,
+  output logic [31:0]                                                  data_addr_o,
+  output logic [31:0]                                                  data_wdata_o,
+  output logic [6:0]                                                   data_wdata_intg_o,
+  input  logic [31:0]                                                  data_rdata_i,
+  input  logic [6:0]                                                   data_rdata_intg_i,
+  input  logic                                                         data_err_i,
 
   // Interrupt inputs
-  input  logic                         irq_software_i,
-  input  logic                         irq_timer_i,
-  input  logic                         irq_external_i,
-  input  logic [14:0]                  irq_fast_i,
-  input  logic                         irq_nm_i,       // non-maskeable interrupt
+  input  logic                                                         irq_software_i,
+  input  logic                                                         irq_timer_i,
+  input  logic                                                         irq_external_i,
+  input  logic [14:0]                                                  irq_fast_i,
+  // non-maskable interrupt
+  input  logic                                                         irq_nm_i,
 
   // Scrambling Interface
-  input  logic                         scramble_key_valid_i,
-  input  logic [SCRAMBLE_KEY_W-1:0]    scramble_key_i,
-  input  logic [SCRAMBLE_NONCE_W-1:0]  scramble_nonce_i,
-  output logic                         scramble_req_o,
+  input  logic                                                         scramble_key_valid_i,
+  input  logic [SCRAMBLE_KEY_W-1:0]                                    scramble_key_i,
+  input  logic [SCRAMBLE_NONCE_W-1:0]                                  scramble_nonce_i,
+  output logic                                                         scramble_req_o,
 
   // Debug Interface
-  input  logic                         debug_req_i,
-  output crash_dump_t                  crash_dump_o,
-  output logic                         double_fault_seen_o,
+  input  logic                                                         debug_req_i,
+  output crash_dump_t                                                  crash_dump_o,
+  output logic                                                         double_fault_seen_o,
 
   // CPU Control Signals
-  input  ibex_mubi_t                   fetch_enable_i,
-  output logic                         core_sleep_o,
-  output logic                         alert_minor_o,
-  output logic                         alert_major_internal_o,
-  output logic                         alert_major_bus_o,
+  input  ibex_mubi_t                                                   fetch_enable_i,
+  output logic                                                         core_sleep_o,
+  output logic                                                         alert_minor_o,
+  output logic                                                         alert_major_internal_o,
+  output logic                                                         alert_major_bus_o,
 
 
   // DFT bypass controls
-  input logic                          scan_rst_ni
+  input logic                                                          scan_rst_ni
 );
+
+// Yosys based tools have no inherent understanding of a reset signal (unlike jasper, which has the
+// `reset` TCL command). We must therefore introduce one ourselves using an initial block.
+`ifdef YOSYS
+logic rst_ni;
+initial rst_ni = 1'b0;
+always @(posedge clk_i) rst_ni = 1'b1;
+`endif
 
 localparam logic [31:0] CSR_MVENDORID_VALUE = 32'b0;
 localparam logic [31:0] CSR_MIMPID_VALUE = 32'b0;
@@ -179,6 +194,7 @@ WFIStart: assume property (`IDC.ctrl_fsm_cs == SLEEP |-> (
 
 // Pre state is the architectural state of Ibex at the start of the cycle
 logic [31:0] pre_regs[32];
+logic [31:0] pre_regs_cut[1:31];
 logic [31:0] pre_nextpc;
 logic [31:0] pre_mip;
 
@@ -196,10 +212,9 @@ logic [31:0] pre_mip;
 //  - ex_P is 1 if P is true for the instruction in the ID/EX stage.
 //  - wbexc_P is 1 if P is true for the instruction in the WB/EXC (exception) stage.
 
-logic ex_is_wfi, ex_is_rtype, ex_is_div;
-logic ex_is_pres_btype, ex_is_pres_jump;
+logic ex_is_wfi, ex_is_rtype, ex_is_div, ex_is_mtype;
+logic ex_is_btype, ex_is_jump;
 logic ex_is_mem_instr, ex_is_load_instr, ex_is_store_instr;
-logic ex_is_pres_mem_instr, ex_is_pres_load_instr, ex_is_pres_store_instr;
 
 // Have we branched, or are we branching in this cycle?
 logic ex_has_branched_d, ex_has_branched_q;
@@ -221,9 +236,7 @@ logic has_two_resp_waiting_q, has_two_resp_waiting_d;
 assign has_two_resp_waiting_q = data_mem_assume.outstanding_reqs_q == 8'h2;
 assign has_two_resp_waiting_d = data_mem_assume.outstanding_reqs == 8'h2;
 
-logic wbexc_is_pres_load_instr, wbexc_is_pres_store_instr;
-logic wbexc_is_load_instr, wbexc_is_store_instr;
-logic wbexc_is_pres_mem_instr, wbexc_is_mem_instr;
+logic wbexc_is_load_instr, wbexc_is_store_instr, wbexc_is_mem_instr;
 logic wbexc_is_wfi;
 
 logic [31:0] ex_compressed_instr;
@@ -233,7 +246,7 @@ logic ex_has_compressed_instr;
 logic wbexc_post_int_err; // Spec had an internal error
 
 logic [31:0] wbexc_post_wX;
-logic [5:0] wbexc_post_wX_addr;
+logic [4:0] wbexc_post_wX_addr;
 logic wbexc_post_wX_en;
 
 `define X(n) wbexc_post_``n
@@ -315,17 +328,6 @@ logic wbexc_handling_irq; // Check the results of handling an IRQ
 `undef X
 
 ////////////////////// Spec Post //////////////////////
-
-// These cause combinational cycles, but not severe ones. The problem is fixed in CherIoT-Ibex
-logic spec_rx_a_en;
-logic [4:0] spec_rx_a_addr;
-logic [31:0] spec_rx_a;
-assign spec_rx_a = pre_regs[spec_rx_a_addr];
-
-logic spec_rx_b_en;
-logic [4:0] spec_rx_b_addr;
-logic [31:0] spec_rx_b;
-assign spec_rx_b = pre_regs[spec_rx_b_addr];
 
 logic [31:0] spec_post_wX;
 logic [4:0] spec_post_wX_addr;
@@ -433,13 +435,6 @@ assign ex_is_checkable_csr = ~(
 );
 
 `undef INSTR
-`define INSTR wbexc_decompressed_instr
-
-// Illegal instructions arent checkable unless the relevant specifications are present.
-logic can_check_illegal;
-assign can_check_illegal = `SPEC_ILLEGAL & `SPEC_CSR & `SPEC_MRET & `SPEC_WFI;
-
-`undef INSTR
 
 ////////////////////// Decompression Invariant Defs //////////////////////
 // These will be used to show that the decompressed instruction stored is in fact the decompressed version of the compressed instruction.
@@ -499,7 +494,11 @@ mem_assume_t data_mem_assume(
 
 ////////////////////// Proof //////////////////////
 `define INSTR wbexc_decompressed_instr
-`include "../build/psgen.sv"
+`ifdef YOSYS
+`include "../build/psgen-yosys.sv"
+`else
+`include "../build/psgen-jg.sv"
+`endif
 `undef INSTR
 
 // Assign spec fetch error after instantiating the specification.

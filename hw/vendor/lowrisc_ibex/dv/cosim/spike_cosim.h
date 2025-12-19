@@ -62,7 +62,7 @@ class SpikeCosim : public simif_t, public Cosim {
   uint32_t pending_iside_err_addr;
 
   typedef enum {
-    kCheckMemOk,           // Checks passed and access succeded in RTL
+    kCheckMemOk,           // Checks passed and access succeeded in RTL
     kCheckMemCheckFailed,  // Checks failed
     kCheckMemBusError  // Checks passed, but access generated bus error in RTL
   } check_mem_result_e;
@@ -103,7 +103,8 @@ class SpikeCosim : public simif_t, public Cosim {
   SpikeCosim(const std::string &isa_string, uint32_t start_pc,
              uint32_t start_mtvec, const std::string &trace_log_path,
              bool secure_ibex, bool icache_en, uint32_t pmp_num_regions,
-             uint32_t pmp_granularity, uint32_t mhpm_counter_num);
+             uint32_t pmp_granularity, uint32_t mhpm_counter_num,
+             uint32_t dm_start_addr, uint32_t dm_end_addr);
 
   // simif_t implementation
   virtual char *addr_to_mem(reg_t addr) override;

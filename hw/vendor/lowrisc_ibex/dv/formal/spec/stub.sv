@@ -4,6 +4,8 @@
 // Original author: Louis-Emile Ploix
 // SPDX-License-Identifier: Apache-2.0
 
+`include "sail.sv"
+
 /*
 Provides stubs (mostly) for the native functions the Sail expects to see, mostly
 handling config stuff.

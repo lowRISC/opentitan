@@ -18,8 +18,8 @@ module ibex_top import ibex_pkg::*; #(
   parameter int unsigned            PMPNumRegions                = 4,
   parameter int unsigned            MHPMCounterNum               = 0,
   parameter int unsigned            MHPMCounterWidth             = 40,
-  parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[16]                = ibex_pkg::PmpCfgRst,
-  parameter logic [33:0]            PMPRstAddr[16]               = ibex_pkg::PmpAddrRst,
+  parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[PMP_MAX_REGIONS]   = ibex_pkg::PmpCfgRst,
+  parameter logic [PMP_ADDR_MSB:0]  PMPRstAddr[PMP_MAX_REGIONS]  = ibex_pkg::PmpAddrRst,
   parameter ibex_pkg::pmp_mseccfg_t PMPRstMsecCfg                = ibex_pkg::PmpMseccfgRst,
   parameter bit                     RV32E                        = 1'b0,
   parameter rv32m_e                 RV32M                        = RV32MFast,
@@ -45,11 +45,11 @@ module ibex_top import ibex_pkg::*; #(
   parameter logic [SCRAMBLE_KEY_W-1:0]   RndCnstIbexKey          = RndCnstIbexKeyDefault,
   parameter logic [SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonce        = RndCnstIbexNonceDefault,
   // mvendorid: encoding of manufacturer/provider
-  // 0 indicates this field is not implemented. Ibex implementors may wish to set their
+  // 0 indicates this field is not implemented. Ibex implementers may wish to set their
   // own JEDEC ID here.
   parameter logic [31:0]            CsrMvendorId                 = 32'b0,
   // mimpid: encoding of processor implementation version
-  // 0 indicates this field is not implemented. Ibex implementors may wish to indicate an
+  // 0 indicates this field is not implemented. Ibex implementers may wish to indicate an
   // RTL/netlist version here using their own unique encoding (e.g. 32 bits of the git hash of the
   // implemented commit).
   parameter logic [31:0]            CsrMimpId                    = 32'b0
@@ -746,7 +746,7 @@ module ibex_top import ibex_pkg::*; #(
 
   end else begin : gen_norams
 
-    prim_ram_1p_pkg::ram_1p_cfg_t unused_ram_cfg;
+    logic unused_ram_cfg;
     logic unused_ram_inputs;
 
     assign unused_ram_cfg    = |{ram_cfg_icache_tag_i, ram_cfg_icache_data_i};
@@ -1151,10 +1151,6 @@ module ibex_top import ibex_pkg::*; #(
                                   icache_alert_major_internal;
   assign alert_major_bus_o      = core_alert_major_bus | lockstep_alert_major_bus;
   assign alert_minor_o          = core_alert_minor | lockstep_alert_minor;
-
-  // Parameter assertions
-  `ASSERT_INIT(DmHaltAddrInRange_A, (DmHaltAddr & ~DmAddrMask) == DmBaseAddr)
-  `ASSERT_INIT(DmExceptionAddrInRange_A, (DmExceptionAddr & ~DmAddrMask) == DmBaseAddr)
 
   // X checks for top-level outputs
   `ASSERT_KNOWN(IbexInstrReqX, instr_req_o)

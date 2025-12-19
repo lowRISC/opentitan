@@ -34,7 +34,7 @@ Primitives
 ----------
 
 Ibex uses a number of primitive modules (that are held outside the :file:`rtl/` which contains the Ibex RTL).
-Full implementations of these primitives are provided in the Ibex repository but implementors may wish to provide their own implementations.
+Full implementations of these primitives are provided in the Ibex repository but implementers may wish to provide their own implementations.
 Some of the primitives are only used for specific Ibex configurations so can be ignored/removed if you're not using one of those configurations.
 
 The mandatory primitives (used by all configurations) are:
@@ -55,7 +55,7 @@ The configuration dependent primitives are:
    Required where ``SecureIbex == 1``.
  * ``prim_onehot_check`` - Checks a onehot signal is correct, for detecting fault injection attacks.
    Required where ``SecureIbex == 1``.
- * ``prim_secded_X`` - Various primitives to encode and decode SECDED (single error correct, double error detect) error detection and correction codes.
+ * ``prim_secded_X`` - Various primitives to encode and decode SECDED (Single Error Correct, Double Error Detect) error detection and correction codes.
    Required where ``SecureIbex == 1``.
 
 Primitives exclusively used by other primitives:
@@ -207,7 +207,7 @@ Parameters
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
 | ``ICache``                   | bit                 | 0          | Enable instruction cache instead of prefetch buffer                   |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``ICacheECC``                | bit                 | 0          | Enable SECDED ECC protection in ICache (if  ICache == 1)              |
+| ``ICacheECC``                | bit                 | 0          | Enable SECDED ECC protection in ICache (if ICache == 1)               |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
 | ``ICacheScramble``           | bit                 | 0          | Enabling this parameter replaces tag and data RAMs of ICache with     |
 |                              |                     |            | scrambling RAM primitives.                                            |

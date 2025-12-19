@@ -51,7 +51,7 @@ class ibex_breakpoint_stream extends riscv_directed_instr_stream;
     la_instr.rd                = cfg.gpr[1];
 
     // Create the ebreak insn which will cause us to enter debug mode, and run the
-    // special code in the debugrom.
+    // special code in the debug ROM.
     ebreak_insn = riscv_instr::get_instr(EBREAK);
 
     // Add the instructions into the stream.
@@ -79,7 +79,7 @@ class ibex_rand_mseccfg_stream extends riscv_directed_instr_stream;
     csrrw_instr = riscv_instr::get_instr(CSRRWI);
     csrrw_instr.atomic = 1'b0;
     csrrw_instr.csr = MSECCFG;
-    csrrw_instr.rd = '0;
+    csrrw_instr.rd = ZERO;
     // Randomize between 3'b000 and 3'b111 to hit every combination of RLB/MMWP/MML bits.
     csrrw_instr.imm_str = $sformatf("0x%0x", $urandom_range(7,0));
     instr_list = {csrrw_instr};
@@ -159,7 +159,7 @@ class ibex_rand_cpuctrlsts_stream extends riscv_directed_instr_stream;
     instrs[3] = riscv_instr::get_instr(CSRRW);
     instrs[3].atomic = 1'b0;
     instrs[3].csr = 12'h7c0;
-    instrs[3].rd = '0;
+    instrs[3].rd = ZERO;
     instrs[3].rs1 = cfg.gpr[0];
 
     instr_list = instrs;
@@ -191,7 +191,7 @@ class ibex_valid_na4_stream extends riscv_directed_instr_stream;
     cfg_csrrw_instr.atomic = 1'b1;
     cfg_csrrw_instr.has_label = 1'b0;
     cfg_csrrw_instr.csr = PMPCFG0;
-    cfg_csrrw_instr.rd = '0;
+    cfg_csrrw_instr.rd = ZERO;
     cfg_csrrw_instr.imm_str = $sformatf("%0d", $urandom_range(16,23));
 
     // Use a label to use it for setting pmpaddr CSR.
@@ -222,7 +222,7 @@ class ibex_valid_na4_stream extends riscv_directed_instr_stream;
     addr_csrrw_instr.atomic = 1'b1;
     addr_csrrw_instr.csr = PMPADDR0;
     addr_csrrw_instr.rs1 = cfg.gpr[1];
-    addr_csrrw_instr.rd = '0;
+    addr_csrrw_instr.rd = ZERO;
     instr_list = {cfg_csrrw_instr, nop_instr, la_instr, srli_instr, addr_csrrw_instr};
   endfunction
 
@@ -395,7 +395,7 @@ class ibex_make_pmp_region_exec_stream extends riscv_directed_instr_stream;
     instrs[5] = riscv_instr::get_instr(CSRRW);
     instrs[5].atomic = 1'b0;
     instrs[5].csr = PMPCFG0 + pmpcfg_num;
-    instrs[5].rd = '0;
+    instrs[5].rd = ZERO;
     instrs[5].rs1 = cfg.gpr[2];
 
     // Immediately read back what we wrote, to check it has been dealt with correctly (i.e. write
@@ -404,7 +404,7 @@ class ibex_make_pmp_region_exec_stream extends riscv_directed_instr_stream;
     instrs[6].atomic = 1'b0;
     instrs[6].csr = PMPCFG0 + pmpcfg_num;
     instrs[6].rd = cfg.gpr[0];
-    instrs[6].rs1 = 0;
+    instrs[6].rs1 = ZERO;
 
     instr_list = instrs;
 

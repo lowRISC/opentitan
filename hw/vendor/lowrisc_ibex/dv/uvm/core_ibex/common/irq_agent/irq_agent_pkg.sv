@@ -10,6 +10,7 @@ package irq_agent_pkg;
   parameter int ADDR_WIDTH = 32;
 
   `include "uvm_macros.svh"
+  `include "dv_macros.svh"
   `include "irq_seq_item.sv"
 
   typedef uvm_sequencer#(irq_seq_item) irq_request_sequencer;

@@ -36,6 +36,15 @@
     }
   ]
 
+  overrides: [
+    // Override the search paths to prioritize the selection of
+    // packages (with the same VLNV). The last one wins.
+    {
+      name: fusesoc_cores_root_dirs
+      value: ["--cores-root {proj_root}"]
+    }
+  ]
+
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 

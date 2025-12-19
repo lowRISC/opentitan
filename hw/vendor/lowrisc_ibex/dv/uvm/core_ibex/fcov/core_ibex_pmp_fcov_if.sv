@@ -10,7 +10,10 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
     // 0 = No restriction, 1 = 8 byte, 2 = 16 byte, 3 = 32 byte, etc.
     parameter int unsigned PMPGranularity = 0,
     // Number of implemented regions
-    parameter int unsigned PMPNumRegions  = 4
+    parameter int unsigned PMPNumRegions  = 4,
+    // Debug Module Address Space
+    parameter int unsigned DmBaseAddr     = 32'h1A110000,
+    parameter int unsigned DmAddrMask     = 32'h00000FFF
 ) (
   input clk_i,
   input rst_ni,
@@ -19,6 +22,8 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
   input logic[33:0]          csr_pmp_addr    [PMPNumRegions],
   input logic                pmp_req_err     [3],
   input pmp_mseccfg_t        csr_pmp_mseccfg,
+
+  input logic debug_mode,
 
   input logic data_req_out,
 
@@ -97,6 +102,8 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
   end
 
   if (PMPEnable) begin : g_pmp_cgs
+    logic [PMPNumChan-1:0] fcov_access_attempted_into_dm;
+
     logic [PMPNumRegions-1:0] pmp_iside_match;
     logic [PMPNumRegions-1:0] pmp_iside2_match;
     logic [PMPNumRegions-1:0] pmp_dside_match;
@@ -135,6 +142,14 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
     assign pmp_iside_boundary_cross = |(pmp_iside_match ^ pmp_iside2_match);
     assign pmp_dside_boundary_cross = |(pmp_dside_match ^ pmp_dside_match_last) &
                                       load_store_unit_i.fcov_ls_second_req;
+
+    logic pmp_iside_access_fault_check;
+    logic pmp_iside2_access_fault_check;
+    logic pmp_dside_access_fault_check;
+
+    assign pmp_iside_access_fault_check  = g_pmp.pmp_i.access_fault_check_res[PMP_I];
+    assign pmp_iside2_access_fault_check = g_pmp.pmp_i.access_fault_check_res[PMP_I2];
+    assign pmp_dside_access_fault_check  = g_pmp.pmp_i.access_fault_check_res[PMP_D];
 
     for (genvar i_region = 0; i_region < PMPNumRegions; i_region += 1) begin : g_pmp_region_fcov
       pmp_priv_bits_e pmp_region_priv_bits;
@@ -237,9 +252,10 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
           cross cp_region_priv_bits, cp_req_type_iside, cp_priv_lvl_iside, pmp_iside_req_err
             iff (g_pmp_fcov_signals.g_pmp_region_fcov[i_region].fcov_pmp_region_ichan_access &&
                  g_pmp_fcov_signals.fcov_pmp_region_ichan_priority[i_region]                 &&
-                 csr_pmp_cfg[i_region].mode != PMP_MODE_OFF) {
+                 csr_pmp_cfg[i_region].mode != PMP_MODE_OFF                                  &&
+                 !(fcov_access_attempted_into_dm[PMP_I])) {
 
-            // Will never see a succesful exec access when execute is disallowed
+            // Will never see a successful exec access when execute is disallowed
             illegal_bins illegal_allow_exec =
               // Ensuring MML is low and we are not in a X allowed configuration
               (binsof(cp_region_priv_bits) intersect {NONE, R, W, WR, L, LR, LW, LWR} &&
@@ -294,9 +310,10 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
           cross cp_region_priv_bits, cp_req_type_iside2, cp_priv_lvl_iside2, pmp_iside2_req_err
             iff (g_pmp_fcov_signals.g_pmp_region_fcov[i_region].fcov_pmp_region_ichan2_access &&
                  g_pmp_fcov_signals.fcov_pmp_region_ichan2_priority[i_region]                 &&
-                 csr_pmp_cfg[i_region].mode != PMP_MODE_OFF) {
+                 csr_pmp_cfg[i_region].mode != PMP_MODE_OFF                                   &&
+                   !(fcov_access_attempted_into_dm[PMP_I2])) {
 
-          // Will never see a succesful exec access when execute is disallowed
+          // Will never see a successful exec access when execute is disallowed
           illegal_bins illegal_allow_exec =
             // Ensuring MML is low and we are not in a X allowed configuration
             (binsof(cp_region_priv_bits) intersect {NONE, R, W, WR, L, LR, LW, LWR} &&
@@ -351,9 +368,10 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
           cross cp_region_priv_bits, cp_req_type_dside, cp_priv_lvl_dside, pmp_dside_req_err
             iff (g_pmp_fcov_signals.g_pmp_region_fcov[i_region].fcov_pmp_region_dchan_access &&
                  g_pmp_fcov_signals.fcov_pmp_region_dchan_priority[i_region]                 &&
-                 csr_pmp_cfg[i_region].mode != PMP_MODE_OFF) {
+                 csr_pmp_cfg[i_region].mode != PMP_MODE_OFF                                  &&
+                 !(fcov_access_attempted_into_dm[PMP_D])) {
 
-          // Will never see a succesful read access when read is disallowed
+          // Will never see a successful read access when read is disallowed
           illegal_bins illegal_allow_read =
             // Ensuring MML is low and we are not in a R allowed configuration
             (binsof(cp_region_priv_bits) intersect {NONE, W, X, XW, L, LW, LX, LXW} &&
@@ -397,7 +415,7 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
              binsof(cp_req_type_dside) intersect {PMP_ACC_READ} &&
              binsof(pmp_dside_req_err) intersect {1});
 
-          // Will never see a succesful write access when write is disallowed
+          // Will never see a successful write access when write is disallowed
           illegal_bins illegal_allow_write =
             // Ensuring MML is low and we are not in a W allowed configuration
             (binsof(cp_region_priv_bits) intersect {NONE, R, X, XR, L, LR, LX, LXR} &&
@@ -498,6 +516,22 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
                                      cs_registers_i.priv_mode_id_o,
                                      current_priv_perm_check);
 
+    // Create a signal 'fcov_access_attempted_into_dm' for each PMP channel, which becomes true at
+    // the point when a memory access into the debug_module address space via that channel is
+    // accesses-checked by its PMP unit. If true we know that the current instruction at least
+    // attempted to make an access, and we can then cross this signal with the result of the pmp
+    // check and the current debug_mode state to capture all appropriate coverage.
+    logic [PMPNumChan-1:0] access_check_into_dm;
+    for (genvar c = 0; c < PMPNumChan; c++) begin : g_pmp_channel_access_check
+      assign access_check_into_dm[c] = (g_pmp.pmp_req_addr[c][31:0] & ~DmAddrMask) == DmBaseAddr;
+    end
+    assign fcov_access_attempted_into_dm[PMP_I] =
+      access_check_into_dm[PMP_D] & data_req_out;
+    assign fcov_access_attempted_into_dm[PMP_I2] =
+      access_check_into_dm[PMP_I2] & if_stage_i.if_id_pipe_reg_we;
+    assign fcov_access_attempted_into_dm[PMP_D] =
+      access_check_into_dm[PMP_I] & if_stage_i.if_id_pipe_reg_we;
+
     covergroup pmp_top_cg @(posedge clk_i);
       option.per_instance = 1;
       option.name = "pmp_top_cg";
@@ -579,7 +613,7 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
       pmp_iside_nomatch_cross :
         cross cp_req_type_iside, cp_priv_lvl_iside, pmp_iside_req_err, cp_mmwp, cp_mml
           iff (pmp_iside_nomatch) {
-          // Will never see a succesful exec access when execute is disallowed
+          // Will never see a successful exec access when execute is disallowed
           illegal_bins illegal_user_allow_exec =
             // In User mode - no match case, we should always deny
             (binsof(cp_priv_lvl_iside) intersect {PRIV_LVL_U} &&
@@ -605,7 +639,7 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
       pmp_iside2_nomatch_cross :
         cross cp_req_type_iside2, cp_priv_lvl_iside2, pmp_iside2_req_err, cp_mmwp, cp_mml
           iff (pmp_iside2_nomatch) {
-          // Will never see a succesful exec access when execute is disallowed
+          // Will never see a successful exec access when execute is disallowed
           illegal_bins illegal_user_allow_exec =
             // In User mode - no match case, we should always deny
             (binsof(cp_priv_lvl_iside2) intersect {PRIV_LVL_U} &&
@@ -632,7 +666,7 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
         cross cp_req_type_dside, cp_priv_lvl_dside, pmp_dside_req_err, cp_mmwp, cp_mml
           iff (pmp_dside_nomatch) {
 
-          // Will never see a succesful write/read access when it should be denied
+          // Will never see a successful write/read access when it should be denied
           illegal_bins illegal_machine_allow_wr =
             // Deny WR when MMWP = 1 in Machine mode
             (binsof(cp_priv_lvl_dside) intersect {PRIV_LVL_M} &&
@@ -709,6 +743,109 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
       misaligned_lsu_access_cross: cross misaligned_pmp_err_last,
                                          load_store_unit_i.fcov_ls_mis_pmp_err_2
                                    iff (pmp_dside_boundary_cross);
+
+      // Debug Module Accesses
+
+      // Coverpoints that we have attempted to access the debug module address range
+      //
+      // The riscv-dbg module states the following:
+      // > riscv-dbg/doc/debug-system.md (# Debug Memory)
+      // > The Debug Memory should only be accessible from the CPU if it is in debug mode.
+      // However, The RISC-V Debug Specification does not mandate this. Bins for accesses in normal
+      // mode are ignored for the purpose of this coverage.
+
+      dm_fetch_iside_debug_mode_cp: coverpoint debug_mode
+        iff (fcov_access_attempted_into_dm[PMP_I])
+      {
+        bins dm_debug_mode_fetch = {1'b1};
+        // We shouldn't be fetching from the debug module unless in debug mode.
+        ignore_bins dm_normal_mode_fetch = {1'b0};
+      }
+      dm_fetch_iside2_debug_mode_cp: coverpoint debug_mode
+        iff (fcov_access_attempted_into_dm[PMP_I2])
+      {
+        bins dm_debug_mode_fetch = {1'b1};
+        // We shouldn't be fetching from the debug module unless in debug mode.
+        ignore_bins dm_normal_mode_fetch = {1'b0};
+      }
+      dm_load_store_debug_mode_cp: coverpoint debug_mode
+        iff (fcov_access_attempted_into_dm[PMP_D])
+          {
+        bins dm_debug_mode_load_store = {1'b1};
+        // We shouldn't be loading/storing from/to the debug module unless in debug mode.
+        ignore_bins dm_normal_mode_load_store = {1'b0};
+      }
+
+      cp_ls_pmp_exception: coverpoint load_store_unit_i.fcov_ls_pmp_exception;
+
+      // Cross access attempts with the result of the access check
+
+      dm_fetch_access_iside_cross: cross
+        dm_fetch_iside_debug_mode_cp,
+        pmp_iside_req_err,
+        pmp_iside_access_fault_check
+      {
+        // Fetches should never fail the access check in debug mode
+        // This behaviour is checked via cosimulation.
+        illegal_bins dm_debug_mode_disallowed_fetch =
+          binsof(pmp_iside_req_err) intersect {1'b1} &&
+          binsof(dm_fetch_iside_debug_mode_cp) intersect {1'b1};
+
+        // Allowed fetches in debug mode may or may not override a denying PMP region.
+        // Create a bin for each possibility.
+        bins dm_debug_mode_pmp_allow_fetch_allowed =
+          binsof(dm_fetch_iside_debug_mode_cp) intersect {1'b1} &&
+          binsof(pmp_iside_access_fault_check) intersect {1'b0} &&
+          binsof(pmp_iside_req_err) intersect {1'b0};
+        bins dm_debug_mode_pmp_deny_fetch_allowed =
+          binsof(dm_fetch_iside_debug_mode_cp) intersect {1'b1} &&
+          binsof(pmp_iside_access_fault_check) intersect {1'b1} &&
+          binsof(pmp_iside_req_err) intersect {1'b0};
+      }
+
+      dm_fetch_access_iside2_cross: cross
+        dm_fetch_iside2_debug_mode_cp,
+        pmp_iside2_req_err,
+        pmp_iside2_access_fault_check
+      {
+        // Fetches should never fail the access check in debug mode
+        illegal_bins dm_debug_mode_disallowed_fetch =
+          binsof(pmp_iside2_req_err) intersect {1'b1} &&
+          binsof(dm_fetch_iside2_debug_mode_cp) intersect {1'b1};
+
+        // Allowed fetches in debug mode may or may not override a denying PMP region.
+        // Create a bin for each possibility.
+        bins dm_debug_mode_pmp_allow_fetch_allowed =
+          binsof(dm_fetch_iside2_debug_mode_cp) intersect {1'b1} &&
+          binsof(pmp_iside2_access_fault_check) intersect {1'b0} &&
+          binsof(pmp_iside2_req_err) intersect {1'b0};
+        bins dm_debug_mode_pmp_deny_fetch_allowed =
+          binsof(dm_fetch_iside2_debug_mode_cp) intersect {1'b1} &&
+          binsof(pmp_iside2_access_fault_check) intersect {1'b1} &&
+          binsof(pmp_iside2_req_err) intersect {1'b0};
+      }
+
+      dm_load_store_access_cross: cross
+        dm_load_store_debug_mode_cp,
+        cp_ls_pmp_exception,
+        pmp_dside_access_fault_check
+      {
+        // Loads/Stores should never fail the access check in debug mode
+        illegal_bins dm_debug_mode_disallowed_load_store =
+          binsof(cp_ls_pmp_exception) intersect {1'b1} &&
+          binsof(dm_load_store_debug_mode_cp) intersect {1'b1};
+
+        // Allowed loads/stores in debug mode may or may not override a denying PMP region.
+        // Create a bin for each possibility.
+        bins dm_debug_mode_pmp_allow_allowed_load_store =
+          binsof(dm_load_store_debug_mode_cp) intersect {1'b1} &&
+          binsof(pmp_dside_access_fault_check) intersect {1'b1} &&
+          binsof(cp_ls_pmp_exception) intersect {1'b0};
+        bins dm_debug_mode_pmp_deny_allowed_load_store =
+          binsof(dm_load_store_debug_mode_cp) intersect {1'b1} &&
+          binsof(pmp_dside_access_fault_check) intersect {1'b0} &&
+          binsof(cp_ls_pmp_exception) intersect {1'b0};
+      }
     endgroup
 
     `DV_FCOV_INSTANTIATE_CG(pmp_top_cg, en_pmp_fcov)
