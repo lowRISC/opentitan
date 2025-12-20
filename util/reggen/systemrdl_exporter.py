@@ -95,11 +95,25 @@ class Field2Systemrdl:
     inner: Field
     importer: RDLImporter
     root: Addrmap
+    parent: systemrdl.component.Component
 
     def _get_mubi_name(self) -> str:
         alignment = 4
         aligned_width = (self.inner.bits.width() + alignment - 1) & ~(alignment - 1)
         return f"MultiBitBool{aligned_width}"
+    
+    def assign_swwe(self, field: systemrdl.component.Field, regwen: str) -> None:
+        if swwe := bool(regwen):
+            if reg_ref := self.root.get_child_by_name(str(regwen)):
+                # This is a workaround and shall be fixed when the Issue
+                # https://github.com/SystemRDL/systemrdl-compiler/issues/183 is fixed.
+                swwe = InstRef(
+                    self.importer.compiler.env,
+                    self.root,
+                    [(str(regwen), [], None), (str(reg_ref.children[0].inst_name), [], None)],
+                )  # type: ignore
+            self.importer.assign_property(field, "swwe", swwe)
+
 
     def export(
         self, strip_suffix: bool = False, regwen: str | None = None
@@ -139,23 +153,13 @@ class Field2Systemrdl:
             enum = self.importer.compiler.namespace.lookup_type(mubi_enum_name)
             self.importer.assign_property(field, "encode", enum)
 
-        if swwe := bool(regwen):
-            if reg_ref := self.root.get_child_by_name(str(regwen)):
-                # This is a workaround and shall be fixed when the Issue
-                # https://github.com/SystemRDL/systemrdl-compiler/issues/276 is fixed.
-                swwe = InstRef(
-                    self.importer.compiler.env,
-                    self.root,
-                    [(str(regwen), [], None), (str(reg_ref.children[0].inst_name), [], None)],
-                )  # type: ignore
-            else:
-                print(f"WARNING: regwen = {regwen} not declared.")
-
-
-            self.importer.assign_property(field, "swwe", swwe)
+        self.assign_swwe(field, regwen)
 
         return field
 
+    def post_process(self, regwen: str) -> None:
+        if field := self.parent.get_child_by_name(self.inner.name.upper()):
+            self.assign_swwe(field, regwen)
 
 @dataclass
 class Window2Systemrdl:
@@ -215,27 +219,33 @@ class Register2Systemrdl:
         for reg in self.inner:
             name = self.name or reg.name or "Register"
             reg_type = self.importer.create_reg_definition(name)
-            for rfield in reg.fields:
-                self.importer.add_child(
-                    reg_type,
-                    Field2Systemrdl(rfield, self.importer, self.root).export(
-                        self.strip_suffix, reg.regwen
-                    ),
-                )
+            reg_inst = self.importer.instantiate_reg(
+                reg_type,
+                name.upper(),
+                reg.offset,
+                [self.count] if self.count else None,
+                self.stride if self.stride else None,
+            )
 
-            reg_type.external = reg.hwext
+            for rfield in reg.fields:
+                field = Field2Systemrdl(rfield, self.importer, self.root, reg_inst).export(
+                    self.strip_suffix, reg.regwen
+                )
+                self.importer.add_child(reg_inst, field)
+
+            reg_inst.external = reg.hwext
 
             if self.compacted:
-                self.importer.assign_property(reg_type, "compacted", True)
+                self.importer.assign_property(reg_inst, "compacted", True)
 
             if reg.hwre:
-                self.importer.assign_property(reg_type, "hwre", reg.hwre)
+                self.importer.assign_property(reg_inst, "hwre", reg.hwre)
 
             if reg.shadowed:
-                self.importer.assign_property(reg_type, "shadowed", reg.shadowed)
+                self.importer.assign_property(reg_inst, "shadowed", reg.shadowed)
 
             if reg.desc:
-                self.importer.assign_property(reg_type, "desc", sanitize_str(reg.desc))
+                self.importer.assign_property(reg_inst, "desc", sanitize_str(reg.desc))
 
             if reg.async_clk:
                 name = reg.async_clk[1].clock or "Clock"
@@ -246,9 +256,9 @@ class Register2Systemrdl:
                     async_clk = InstRef(
                         self.importer.compiler.env,
                         self.root,
-                        [(sig_ref.inst_name, [], None)],
-                    )  # type: ignore
-                    self.importer.assign_property(reg_type, "async_clk", async_clk)
+                        [(sig_name, [], None)],
+                    )
+                    self.importer.assign_property(reg_inst, "async_clk", async_clk)
 
                 reset_name = reg.async_clk[1].reset or "reset"
                 if sig_ref := self.root.get_child_by_name(reset_name.upper()):
@@ -256,19 +266,20 @@ class Register2Systemrdl:
                     async_rst = InstRef(
                         self.importer.compiler.env,
                         self.root,
-                        [(sig_ref.inst_name, [], None)],
-                    )  # type: ignore
-                    self.importer.assign_property(reg_type, "async_rst", async_rst)
+                        [(sig_name, [], None)],
+                    )
+                    self.importer.assign_property(reg_inst, "async_rst", async_rst)
 
-            reg = self.importer.instantiate_reg(
-                reg_type,
-                name.upper(),
-                reg.offset,
-                [self.count] if self.count else None,
-                self.stride if self.stride else None,
-            )
-            res.append(reg)
+            res.append(reg_inst)
         return res
+
+    def post_process(self) -> None:
+        for reg in self.inner:
+            if reg.regwen and (reg_inst := self.root.get_child_by_name(reg.name.upper())):
+                for rfield in reg.fields:
+                    Field2Systemrdl(rfield, self.importer, self.root, reg_inst).post_process(
+                        reg.regwen
+                    )
 
     def _has_name_colision(self, reg: MultiRegister) -> bool:
         names = set([re.sub(r"_\d+$", "", f.name) for f in reg.cregs[0].fields])
@@ -291,6 +302,9 @@ class RegBlock2Systemrdl:
             self.importer.add_child(
                 addrmap, Register2Systemrdl(reg, self.importer, addrmap).export()[0]
             )
+
+        for reg in self.inner.registers:
+            Register2Systemrdl(reg, self.importer, addrmap).post_process()
 
         # multiregs
         for mreg in self.inner.multiregs:
@@ -460,7 +474,7 @@ class IpBlock2Systemrdl:
             value = int(param.value)
             rdl_param = Parameter(rdltypes.get_rdltype(value), param.name)
             rdl_param._value = value
-            rdl_addrmap.parameters.append(rdl_param)
+            rdl_addrmap.parameters_dict[param.name] = rdl_param
 
         for inter_sig in self.inner.inter_signals:
             signal = InterSignal2Systemrdl(inter_sig, self.importer).export()
