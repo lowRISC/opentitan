@@ -185,6 +185,9 @@ status_t handle_otp_fi_init(ujson_t *uj) {
   TRY_CHECK(kOtpFiHwCfg0Size <= OTPFI_MAX_HW_CFG0_SIZE);
   TRY_CHECK(kOtpFiLifeCycleSize <= OTPFI_MAX_LC_SIZE);
 
+  // Read different SKU config fields and return to host.
+  TRY(pentest_send_sku_config(uj));
+
   return OK_STATUS();
 }
 

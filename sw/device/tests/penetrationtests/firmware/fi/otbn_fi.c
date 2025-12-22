@@ -1340,6 +1340,9 @@ status_t handle_otbn_fi_init(ujson_t *uj) {
   char_mem_init = false;
   char_mem_test_cfg_valid = false;
 
+  // Read different SKU config fields and return to host.
+  TRY(pentest_send_sku_config(uj));
+
   return OK_STATUS();
 }
 
