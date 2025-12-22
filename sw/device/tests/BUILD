@@ -8,7 +8,6 @@ load(
     "CONST",
     "get_lc_items",
 )
-load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
@@ -31,6 +30,7 @@ load(
     "silicon_params",
     "verilator_params",
 )
+load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -5435,12 +5435,23 @@ opentitan_test(
     srcs = [
         "usbdev_deep_disconnect_test.c",
     ],
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
+            # Modified EARLGREY_TEST_ENVS test set to mark broken tests (#28985):
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": "broken",
             "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_earlgrey:sim_verilator": None,
+            "//hw/top_earlgrey:sim_qemu_sival_rom_ext": None,
+            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+            # Modified EARLGREY_CW340_TEST_ENVS test set to mark broken tests (#28985):
+            "//hw/top_earlgrey:fpga_cw340_test_rom": "broken",
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": "broken",
         },
     ),
     fpga = fpga_params(
