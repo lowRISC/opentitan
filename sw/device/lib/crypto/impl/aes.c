@@ -13,9 +13,9 @@
 #include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
-#include "sw/device/lib/crypto/impl/security_config.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/security_config.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('a', 'e', 's')
@@ -299,9 +299,6 @@ static otcrypto_status_t otcrypto_aes_impl(
       cipher_input.data == NULL || cipher_output.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Check the security config of the device.
-  HARDENED_TRY(security_config_check(key->config.security_level));
 
   // Ensure the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
