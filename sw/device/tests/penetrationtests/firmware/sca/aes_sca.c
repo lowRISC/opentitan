@@ -374,6 +374,9 @@ status_t handle_aes_pentest_init(ujson_t *uj) {
     return ABORTED();
   }
 
+  // Read different SKU config fields and return to host.
+  TRY(pentest_send_sku_config(uj));
+
   return OK_STATUS();
 }
 

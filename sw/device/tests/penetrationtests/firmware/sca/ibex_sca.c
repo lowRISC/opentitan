@@ -163,6 +163,9 @@ status_t handle_ibex_pentest_init(ujson_t *uj) {
   // This is not used, but just set so it receives input,
   TRY(otbn_load_app(kOtbnAppP256Ecdsa));
 
+  // Read different SKU config fields and return to host.
+  TRY(pentest_send_sku_config(uj));
+
   return OK_STATUS();
 }
 

@@ -436,6 +436,9 @@ status_t handle_rng_fi_edn_init(ujson_t *uj) {
 
   firmware_override_init = false;
 
+  // Read different SKU config fields and return to host.
+  TRY(pentest_send_sku_config(uj));
+
   return OK_STATUS();
 }
 
@@ -640,6 +643,9 @@ status_t handle_rng_fi_csrng_init(ujson_t *uj) {
   mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);
   CHECK_DIF_OK(dif_csrng_init(base_addr, &csrng));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
+
+  // Read different SKU config fields and return to host.
+  TRY(pentest_send_sku_config(uj));
 
   return OK_STATUS();
 }

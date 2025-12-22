@@ -882,6 +882,8 @@ status_t handle_cryptolib_sca_sym_drbg_reseed(ujson_t *uj) {
 status_t handle_cryptolib_sca_sym_init(ujson_t *uj) {
   // Configure the device.
   pentest_setup_device(uj, false, false);
+  // Read different SKU config fields and return to host.
+  TRY(pentest_send_sku_config(uj));
 
   pentest_select_trigger_type(kPentestTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
