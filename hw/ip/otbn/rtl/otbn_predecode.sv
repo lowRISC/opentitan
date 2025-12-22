@@ -18,10 +18,10 @@ module otbn_predecode
   input  logic                     imem_rvalid_i,
   input  logic [ImemAddrWidth-1:0] imem_raddr_i,
 
-  output rf_predec_bignum_t        rf_predec_bignum_o,
-  output alu_predec_bignum_t       alu_predec_bignum_o,
-  output ispr_predec_bignum_t      ispr_predec_bignum_o,
-  output mac_predec_bignum_t       mac_predec_bignum_o,
+  output rf_bignum_predec_t        rf_bignum_predec_o,
+  output alu_bignum_predec_t       alu_bignum_predec_o,
+  output ispr_bignum_predec_t      ispr_bignum_predec_o,
+  output mac_bignum_predec_t       mac_bignum_predec_o,
   output logic                     lsu_addr_en_predec_o,
   output ctrl_flow_predec_t        ctrl_flow_predec_o,
   output logic [ImemAddrWidth-1:0] ctrl_flow_target_predec_o
@@ -498,28 +498,28 @@ module otbn_predecode
     end
   end
 
-  assign alu_predec_bignum_o.adder_x_en            = alu_bignum_adder_x_en;
-  assign alu_predec_bignum_o.x_res_operand_a_sel   = alu_bignum_x_res_operand_a_sel;
-  assign alu_predec_bignum_o.adder_y_op_a_en       = alu_bignum_adder_y_op_a_en;
-  assign alu_predec_bignum_o.adder_y_op_shifter_en = alu_bignum_adder_y_op_shifter_en;
-  assign alu_predec_bignum_o.shifter_a_en          = alu_bignum_shifter_a_en;
-  assign alu_predec_bignum_o.shifter_b_en          = alu_bignum_shifter_b_en;
-  assign alu_predec_bignum_o.shift_right           = alu_bignum_shift_right;
-  assign alu_predec_bignum_o.shift_amt             = alu_bignum_shift_amt;
-  assign alu_predec_bignum_o.shift_mod_sel         = alu_bignum_shift_mod_sel;
-  assign alu_predec_bignum_o.logic_a_en            = alu_bignum_logic_a_en;
-  assign alu_predec_bignum_o.logic_shifter_en      = alu_bignum_logic_shifter_en;
-  assign alu_predec_bignum_o.logic_res_sel         = alu_bignum_logic_res_sel;
-  assign alu_predec_bignum_o.flag_group_sel        = flag_group_sel;
-  assign alu_predec_bignum_o.flag_sel              = flag_sel;
-  assign alu_predec_bignum_o.flags_keep            = flags_keep;
-  assign alu_predec_bignum_o.flags_adder_update    = flags_adder_update;
-  assign alu_predec_bignum_o.flags_logic_update    = flags_logic_update;
-  assign alu_predec_bignum_o.flags_mac_update      = flags_mac_update;
-  assign alu_predec_bignum_o.flags_ispr_wr         = flags_ispr_wr;
+  assign alu_bignum_predec_o.adder_x_en            = alu_bignum_adder_x_en;
+  assign alu_bignum_predec_o.x_res_operand_a_sel   = alu_bignum_x_res_operand_a_sel;
+  assign alu_bignum_predec_o.adder_y_op_a_en       = alu_bignum_adder_y_op_a_en;
+  assign alu_bignum_predec_o.adder_y_op_shifter_en = alu_bignum_adder_y_op_shifter_en;
+  assign alu_bignum_predec_o.shifter_a_en          = alu_bignum_shifter_a_en;
+  assign alu_bignum_predec_o.shifter_b_en          = alu_bignum_shifter_b_en;
+  assign alu_bignum_predec_o.shift_right           = alu_bignum_shift_right;
+  assign alu_bignum_predec_o.shift_amt             = alu_bignum_shift_amt;
+  assign alu_bignum_predec_o.shift_mod_sel         = alu_bignum_shift_mod_sel;
+  assign alu_bignum_predec_o.logic_a_en            = alu_bignum_logic_a_en;
+  assign alu_bignum_predec_o.logic_shifter_en      = alu_bignum_logic_shifter_en;
+  assign alu_bignum_predec_o.logic_res_sel         = alu_bignum_logic_res_sel;
+  assign alu_bignum_predec_o.flag_group_sel        = flag_group_sel;
+  assign alu_bignum_predec_o.flag_sel              = flag_sel;
+  assign alu_bignum_predec_o.flags_keep            = flags_keep;
+  assign alu_bignum_predec_o.flags_adder_update    = flags_adder_update;
+  assign alu_bignum_predec_o.flags_logic_update    = flags_logic_update;
+  assign alu_bignum_predec_o.flags_mac_update      = flags_mac_update;
+  assign alu_bignum_predec_o.flags_ispr_wr         = flags_ispr_wr;
 
-  assign mac_predec_bignum_o.op_en     = mac_bignum_op_en;
-  assign mac_predec_bignum_o.acc_rd_en = mac_bignum_acc_rd_en;
+  assign mac_bignum_predec_o.op_en     = mac_bignum_op_en;
+  assign mac_bignum_predec_o.acc_rd_en = mac_bignum_acc_rd_en;
 
   assign insn_rs1 = imem_rdata_i[19:15];
   assign insn_rs2 = imem_rdata_i[24:20];
@@ -530,7 +530,7 @@ module otbn_predecode
   ) rf_ren_a_bignum_onehot_enc (
     .in_i  (insn_rs1),
     .en_i  (rf_ren_a_bignum),
-    .out_o (rf_predec_bignum_o.rf_ren_a)
+    .out_o (rf_bignum_predec_o.rf_ren_a)
   );
 
   prim_onehot_enc #(
@@ -538,7 +538,7 @@ module otbn_predecode
   ) rf_ren_b_bignum_onehot_enc (
     .in_i  (insn_rs2),
     .en_i  (rf_ren_b_bignum),
-    .out_o (rf_predec_bignum_o.rf_ren_b)
+    .out_o (rf_bignum_predec_o.rf_ren_b)
   );
 
   prim_onehot_enc #(
@@ -546,7 +546,7 @@ module otbn_predecode
   ) rf_we_bignum_onehot_enc (
     .in_i  (insn_rd),
     .en_i  (rf_we_bignum),
-    .out_o (rf_predec_bignum_o.rf_we)
+    .out_o (rf_bignum_predec_o.rf_we)
   );
 
   prim_onehot_enc #(
@@ -554,7 +554,7 @@ module otbn_predecode
   ) ispr_rd_en_onehot_enc (
     .in_i  (ispr_addr),
     .en_i  (ispr_rd_en),
-    .out_o (ispr_predec_bignum_o.ispr_rd_en)
+    .out_o (ispr_bignum_predec_o.ispr_rd_en)
   );
 
   prim_onehot_enc #(
@@ -562,7 +562,7 @@ module otbn_predecode
   ) ispr_wr_en_onehot_enc (
     .in_i  (ispr_addr),
     .en_i  (ispr_wr_en),
-    .out_o (ispr_predec_bignum_o.ispr_wr_en)
+    .out_o (ispr_bignum_predec_o.ispr_wr_en)
   );
 
   assign ctrl_flow_predec_o.call_stack_pop = (rf_ren_a_base & insn_rs1 == 5'd1) |
@@ -582,7 +582,7 @@ module otbn_predecode
   assign unused_clk = clk_i;
   assign unused_rst = rst_ni;
 
-  `ASSERT(RFRenABignumOnehot, $onehot0(rf_predec_bignum_o.rf_ren_a))
-  `ASSERT(RFRenBBignumOnehot, $onehot0(rf_predec_bignum_o.rf_ren_b))
-  `ASSERT(RFWeBignumOnehot,   $onehot0(rf_predec_bignum_o.rf_we))
+  `ASSERT(RFRenABignumOnehot, $onehot0(rf_bignum_predec_o.rf_ren_a))
+  `ASSERT(RFRenBBignumOnehot, $onehot0(rf_bignum_predec_o.rf_ren_b))
+  `ASSERT(RFWeBignumOnehot,   $onehot0(rf_bignum_predec_o.rf_we))
 endmodule

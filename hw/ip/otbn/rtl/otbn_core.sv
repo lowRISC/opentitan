@@ -115,12 +115,12 @@ module otbn_core
   logic                     insn_fetch_err;
   logic                     insn_addr_err;
 
-  rf_predec_bignum_t        rf_predec_bignum;
-  alu_predec_bignum_t       alu_predec_bignum;
+  rf_bignum_predec_t        rf_bignum_predec;
+  alu_bignum_predec_t       alu_bignum_predec;
   ctrl_flow_predec_t        ctrl_flow_predec;
   logic [ImemAddrWidth-1:0] ctrl_flow_target_predec;
-  ispr_predec_bignum_t      ispr_predec_bignum;
-  mac_predec_bignum_t       mac_predec_bignum;
+  ispr_bignum_predec_t      ispr_bignum_predec;
+  mac_bignum_predec_t       mac_bignum_predec;
   logic                     lsu_addr_en_predec;
 
   logic [NWdr-1:0] rf_bignum_rd_a_indirect_onehot;
@@ -363,12 +363,12 @@ module otbn_core
     .insn_fetch_err_o       (insn_fetch_err),
     .insn_addr_err_o        (insn_addr_err),
 
-    .rf_predec_bignum_o       (rf_predec_bignum),
-    .alu_predec_bignum_o      (alu_predec_bignum),
+    .rf_bignum_predec_o       (rf_bignum_predec),
+    .alu_bignum_predec_o      (alu_bignum_predec),
     .ctrl_flow_predec_o       (ctrl_flow_predec),
     .ctrl_flow_target_predec_o(ctrl_flow_target_predec),
-    .ispr_predec_bignum_o     (ispr_predec_bignum),
-    .mac_predec_bignum_o      (mac_predec_bignum),
+    .ispr_bignum_predec_o     (ispr_bignum_predec),
+    .mac_bignum_predec_o      (mac_bignum_predec),
     .lsu_addr_en_predec_o     (lsu_addr_en_predec),
 
     .rf_bignum_rd_a_indirect_onehot_i(rf_bignum_rd_a_indirect_onehot),
@@ -412,9 +412,9 @@ module otbn_core
   // guaranteed there are no register reads (hence no sensitive data bits being fed into the blanked
   // data paths). RF and ISPR predecode must always be checked to ensure read and write data paths
   // are always correctly blanked.
-  assign rd_predec_error = |{rf_predec_bignum.rf_ren_a,
-                             rf_predec_bignum.rf_ren_b,
-                             ispr_predec_bignum.ispr_rd_en} & ~insn_valid;
+  assign rd_predec_error = |{rf_bignum_predec.rf_ren_a,
+                             rf_bignum_predec.rf_ren_b,
+                             ispr_bignum_predec.ispr_rd_en} & ~insn_valid;
 
   assign predec_error =
     ((alu_bignum_predec_error | mac_bignum_predec_error | controller_predec_error) & insn_valid) |
@@ -775,7 +775,7 @@ module otbn_core
 
     .intg_err_o(rf_bignum_intg_err),
 
-    .rf_predec_bignum_i(rf_predec_bignum),
+    .rf_bignum_predec_i(rf_bignum_predec),
     .predec_error_o    (rf_bignum_predec_error),
 
     .spurious_we_err_o(rf_bignum_spurious_we_err)
@@ -828,8 +828,8 @@ module otbn_core
     .operation_result_o(alu_bignum_operation_result),
     .selection_flag_o  (alu_bignum_selection_flag),
 
-    .alu_predec_bignum_i (alu_predec_bignum),
-    .ispr_predec_bignum_i(ispr_predec_bignum),
+    .alu_bignum_predec_i (alu_bignum_predec),
+    .ispr_bignum_predec_i(ispr_bignum_predec),
 
     .ispr_addr_i             (ispr_addr),
     .ispr_base_wdata_i       (ispr_base_wdata),
@@ -874,8 +874,8 @@ module otbn_core
     .operation_flags_en_o           (mac_bignum_operation_flags_en),
     .operation_intg_violation_err_o (mac_bignum_reg_intg_violation_err),
 
-    .mac_predec_bignum_i(mac_predec_bignum),
-    .predec_error_o     (mac_bignum_predec_error),
+    .predec_i      (mac_bignum_predec),
+    .predec_error_o(mac_bignum_predec_error),
 
     .urnd_data_i        (urnd_data),
     .sec_wipe_acc_urnd_i(sec_wipe_acc_urnd),
@@ -926,10 +926,10 @@ module otbn_core
   // Advance URND either when the start_stop_control commands it or when temporary secure wipe keys
   // are requested.
   // When SecMuteUrnd is enabled, signal urnd_advance_start_stop_control is muted. Therefore, it is
-  // necessary to enable urnd_advance using ispr_predec_bignum.ispr_rd_en[IsprUrnd] whenever URND
+  // necessary to enable urnd_advance using ispr_bignum_predec.ispr_rd_en[IsprUrnd] whenever URND
   // data are consumed by the ALU.
   assign urnd_advance = urnd_advance_start_stop_control | req_sec_wipe_urnd_keys_q |
-                        (SecMuteUrnd & ispr_predec_bignum.ispr_rd_en[IsprUrnd]);
+                        (SecMuteUrnd & ispr_bignum_predec.ispr_rd_en[IsprUrnd]);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
