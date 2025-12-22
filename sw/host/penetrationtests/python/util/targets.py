@@ -44,7 +44,7 @@ class Target:
     # Due to a bug in the UART of the CW340, we need to send each byte separately
     # and add a small timeout before sending the next one.
     # This contains the calculation of the delay.
-    pacing = 10 / baudrate
+    pacing = 20 / baudrate
 
     def __init__(self, target_cfg: TargetConfig):
         self.target_cfg = target_cfg
