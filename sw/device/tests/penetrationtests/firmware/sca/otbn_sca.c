@@ -494,6 +494,9 @@ status_t handle_otbn_pentest_init(ujson_t *uj) {
                    kPentestPeripheralOtbn | kPentestPeripheralCsrng |
                    kPentestPeripheralEdn);
 
+  // Read different SKU config fields and return to host.
+  TRY(pentest_send_sku_config(uj));
+
   return OK_STATUS();
 }
 

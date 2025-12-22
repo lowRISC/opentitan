@@ -114,6 +114,9 @@ status_t handle_hmac_pentest_init(ujson_t *uj) {
   mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
   TRY(dif_hmac_init(base_addr, &hmac));
 
+  // Read different SKU config fields and return to host.
+  TRY(pentest_send_sku_config(uj));
+
   return OK_STATUS();
 }
 
