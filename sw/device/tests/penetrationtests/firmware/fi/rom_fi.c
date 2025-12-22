@@ -98,6 +98,9 @@ status_t handle_rom_fi_init(ujson_t *uj) {
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
+  // Read different SKU config fields and return to host.
+  TRY(pentest_send_sku_config(uj));
+
   return OK_STATUS();
 }
 

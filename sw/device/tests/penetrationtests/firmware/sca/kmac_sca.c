@@ -476,6 +476,9 @@ status_t handle_kmac_pentest_init(ujson_t *uj) {
   pentest_init(kPentestTriggerSourceKmac,
                kPentestPeripheralIoDiv4 | kPentestPeripheralKmac);
 
+  // Read different SKU config fields and return to host.
+  TRY(pentest_send_sku_config(uj));
+
   return OK_STATUS();
 }
 

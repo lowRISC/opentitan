@@ -642,6 +642,9 @@ status_t handle_alert_fi_init(ujson_t *uj) {
   // Initialize all HW blocks
   TRY(init_peripherals());
 
+  // Read different SKU config fields and return to host.
+  TRY(pentest_send_sku_config(uj));
+
   return OK_STATUS();
 }
 
