@@ -201,7 +201,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           0: begin
             bit [31:0] bad_rf_ren_a;
             bit [31:0] good_rf_ren_a;
-            err_path = "tb.dut.u_otbn_core.rf_predec_bignum.rf_ren_a";
+            err_path = "tb.dut.u_otbn_core.rf_bignum_predec.rf_ren_a";
             `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_rf_ren_a));
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_rf_ren_a,  $countones(bad_rf_ren_a) == 1;
                                                bad_rf_ren_a != good_rf_ren_a;)
@@ -210,7 +210,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           1: begin
             bit [31:0] bad_rf_ren_b;
             bit [31:0] good_rf_ren_b;
-            err_path = "tb.dut.u_otbn_core.rf_predec_bignum.rf_ren_b";
+            err_path = "tb.dut.u_otbn_core.rf_bignum_predec.rf_ren_b";
             `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_rf_ren_b));
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_rf_ren_b,  $countones(bad_rf_ren_b) == 1;
                                                bad_rf_ren_b != good_rf_ren_b;)
@@ -219,7 +219,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           2: begin
             bit [8:0] bad_ispr_rd_en;
             bit [8:0] good_ispr_rd_en;
-            err_path = "tb.dut.u_otbn_core.ispr_predec_bignum.ispr_rd_en";
+            err_path = "tb.dut.u_otbn_core.ispr_bignum_predec.ispr_rd_en";
             `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_ispr_rd_en));
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_ispr_rd_en,  $countones(bad_ispr_rd_en) == 1;
                                                bad_ispr_rd_en != good_ispr_rd_en;)

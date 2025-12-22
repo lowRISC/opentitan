@@ -19,7 +19,7 @@ module otbn_mac_bignum
   output flags_t          operation_flags_en_o,
   output logic            operation_intg_violation_err_o,
 
-  input  mac_predec_bignum_t mac_predec_bignum_i,
+  input  mac_bignum_predec_t predec_i,
   output logic               predec_error_o,
 
   input  logic [WLEN-1:0] urnd_data_i,
@@ -56,14 +56,14 @@ module otbn_mac_bignum
   // SEC_CM: DATA_REG_SW.SCA
   prim_blanker #(.Width(WLEN)) u_operand_a_blanker (
     .in_i (operation_i.operand_a),
-    .en_i (mac_predec_bignum_i.op_en),
+    .en_i (predec_i.op_en),
     .out_o(operand_a_blanked)
   );
 
   // SEC_CM: DATA_REG_SW.SCA
   prim_blanker #(.Width(WLEN)) u_operand_b_blanker (
     .in_i (operation_i.operand_b),
-    .en_i (mac_predec_bignum_i.op_en),
+    .en_i (predec_i.op_en),
     .out_o(operand_b_blanked)
   );
 
@@ -150,7 +150,7 @@ module otbn_mac_bignum
   // acc_rd_en is so if .Z set in MULQACC (zero_acc) so accumulator reads as 0
   prim_blanker #(.Width(WLEN)) u_acc_blanker (
     .in_i (acc_no_intg_q),
-    .en_i (mac_predec_bignum_i.acc_rd_en),
+    .en_i (predec_i.acc_rd_en),
     .out_o(acc_blanked)
   );
 
@@ -235,8 +235,8 @@ module otbn_mac_bignum
   assign expected_acc_rd_en = ~operation_i.zero_acc & mac_en_i;
 
   // SEC_CM: CTRL.REDUN
-  assign predec_error_o = |{expected_op_en     != mac_predec_bignum_i.op_en,
-                            expected_acc_rd_en != mac_predec_bignum_i.acc_rd_en};
+  assign predec_error_o = |{expected_op_en     != predec_i.op_en,
+                            expected_acc_rd_en != predec_i.acc_rd_en};
 
   assign sec_wipe_err_o = sec_wipe_acc_urnd_i & ~sec_wipe_running_i;
 
