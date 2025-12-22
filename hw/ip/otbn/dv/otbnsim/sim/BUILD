@@ -97,6 +97,14 @@ py_library(
 )
 
 py_library(
+    name = "kmac",
+    srcs = ["kmac.py"],
+    deps = [
+        requirement("pycryptodome"),
+    ],
+)
+
+py_library(
     name = "load_elf",
     srcs = ["load_elf.py"],
     deps = [
