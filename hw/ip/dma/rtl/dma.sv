@@ -1180,11 +1180,11 @@ module dma
     update_dst_addr_reg = 1'b0;
     update_src_addr_reg = 1'b0;
     if (data_move_state && (ctrl_state_d == DmaIdle)) begin
-      if (reg2hw.src_config.increment.q == AddrNoIncrement &&
+      if (reg2hw.src_config.increment.q == AddrIncrement &&
           reg2hw.src_config.wrap.q == AddrNoWrapChunk) begin
         update_src_addr_reg = 1'b1;
       end
-      if (reg2hw.dst_config.increment.q == AddrNoIncrement &&
+      if (reg2hw.dst_config.increment.q == AddrIncrement &&
           reg2hw.dst_config.wrap.q == AddrNoWrapChunk) begin
         update_dst_addr_reg = 1'b1;
       end
