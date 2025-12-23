@@ -52,6 +52,13 @@ package ibex_pkg;
     RV32BFull       = 3
   } rv32b_e;
 
+  typedef enum integer {
+    RV32Zca        = 0,
+    RV32ZcaZcb     = 1,
+    RV32ZcaZcmp    = 2,
+    RV32ZcaZcbZcmp = 3
+  } rv32zc_e;
+
   /////////////
   // Opcodes //
   /////////////
@@ -299,6 +306,13 @@ package ibex_pkg;
     PC_DRET,
     PC_BP
   } pc_sel_e;
+
+  // Compressed instruction expansion
+  typedef enum logic [1:0] {
+    INSTR_NOT_EXPANDED,
+    INSTR_EXPANDED,
+    INSTR_EXPANDED_LAST
+  } instr_exp_e;
 
   // Exception PC mux selection
   typedef enum logic [1:0] {

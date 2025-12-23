@@ -18,6 +18,7 @@ module ibex_if_stage import ibex_pkg::*; #(
   parameter int unsigned DmExceptionAddr   = 32'h1A110808,
   parameter bit          DummyInstructions = 1'b0,
   parameter bit          ICache            = 1'b0,
+  parameter rv32zc_e     RV32ZC            = RV32ZcaZcbZcmp,
   parameter bit          ICacheECC         = 1'b0,
   parameter int unsigned BusSizeECC        = BUS_SIZE,
   parameter int unsigned TagSizeECC        = IC_TAG_SIZE,
@@ -70,6 +71,11 @@ module ibex_if_stage import ibex_pkg::*; #(
                                                                 // instr_is_compressed_id_o = 1'b1
   output logic                        instr_is_compressed_id_o, // compressed decoder thinks this
                                                                 // is a compressed instr
+  output instr_exp_e                  instr_gets_expanded_id_o, // this instruction comes from one
+                                                                // that gets expanded by the
+                                                                // compressed decoder
+  output logic [15:0]                 instr_expanded_id_o,      // the instruction that is currently
+                                                                // getting expanded
   output logic                        instr_bp_taken_o,         // instruction was predicted to be
                                                                 // a taken branch
   output logic                        instr_fetch_err_o,        // bus error on fetch
@@ -144,6 +150,7 @@ module ibex_if_stage import ibex_pkg::*; #(
   logic [31:0]       instr_decompressed;
   logic              illegal_c_insn;
   logic              instr_is_compressed;
+  instr_exp_e        instr_gets_expanded;
 
   logic              if_instr_valid;
   logic       [31:0] if_instr_rdata;
@@ -161,6 +168,7 @@ module ibex_if_stage import ibex_pkg::*; #(
   logic              stall_dummy_instr;
   logic [31:0]       instr_out;
   logic              instr_is_compressed_out;
+  instr_exp_e        instr_gets_expanded_out;
   logic              illegal_c_instr_out;
   logic              instr_err_out;
 
@@ -401,13 +409,18 @@ module ibex_if_stage import ibex_pkg::*; #(
   //
   // since it does not matter where we decompress instructions, we do it here
   // to ease timing closure
-  ibex_compressed_decoder compressed_decoder_i (
+  ibex_compressed_decoder #(
+    .RV32ZC   (RV32ZC),
+    .ResetAll (ResetAll)
+  ) compressed_decoder_i (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
     .valid_i        (fetch_valid & ~fetch_err),
+    .id_in_ready_i  (id_in_ready_i & ~pc_set_i),
     .instr_i        (if_instr_rdata),
     .instr_o        (instr_decompressed),
     .is_compressed_o(instr_is_compressed),
+    .gets_expanded_o(instr_gets_expanded),
     .illegal_instr_o(illegal_c_insn)
   );
 
@@ -436,6 +449,7 @@ module ibex_if_stage import ibex_pkg::*; #(
     // Mux between actual instructions and dummy instructions
     assign instr_out               = insert_dummy_instr ? dummy_instr_data : instr_decompressed;
     assign instr_is_compressed_out = insert_dummy_instr ? 1'b0 : instr_is_compressed;
+    assign instr_gets_expanded_out = insert_dummy_instr ? INSTR_NOT_EXPANDED : instr_gets_expanded;
     assign illegal_c_instr_out     = insert_dummy_instr ? 1'b0 : illegal_c_insn;
     assign instr_err_out           = insert_dummy_instr ? 1'b0 : if_instr_err;
 
@@ -465,6 +479,7 @@ module ibex_if_stage import ibex_pkg::*; #(
     assign unused_dummy_seed       = dummy_instr_seed_i;
     assign instr_out               = instr_decompressed;
     assign instr_is_compressed_out = instr_is_compressed;
+    assign instr_gets_expanded_out = instr_gets_expanded;
     assign illegal_c_instr_out     = illegal_c_insn;
     assign instr_err_out           = if_instr_err;
     assign stall_dummy_instr       = 1'b0;
@@ -476,7 +491,7 @@ module ibex_if_stage import ibex_pkg::*; #(
   // Valid is held until it is explicitly cleared (due to an instruction completing or an exception)
   assign instr_valid_id_d = (if_instr_valid & id_in_ready_i & ~pc_set_i) |
                             (instr_valid_id_q & ~instr_valid_clear_i);
-  assign instr_new_id_d   = if_instr_valid & id_in_ready_i;
+  assign instr_new_id_d   = if_instr_valid & id_in_ready_i & ~pc_set_i;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -504,6 +519,8 @@ module ibex_if_stage import ibex_pkg::*; #(
         instr_fetch_err_plus2_o  <= '0;
         instr_rdata_c_id_o       <= '0;
         instr_is_compressed_id_o <= '0;
+        instr_gets_expanded_id_o <= INSTR_NOT_EXPANDED;
+        instr_expanded_id_o      <= '0;
         illegal_c_insn_id_o      <= '0;
         pc_id_o                  <= '0;
       end else if (if_id_pipe_reg_we) begin
@@ -514,6 +531,8 @@ module ibex_if_stage import ibex_pkg::*; #(
         instr_fetch_err_plus2_o  <= if_instr_err_plus2;
         instr_rdata_c_id_o       <= if_instr_rdata[15:0];
         instr_is_compressed_id_o <= instr_is_compressed_out;
+        instr_gets_expanded_id_o <= instr_gets_expanded_out;
+        instr_expanded_id_o      <= if_instr_rdata[15:0];
         illegal_c_insn_id_o      <= illegal_c_instr_out;
         pc_id_o                  <= pc_if_o;
       end
@@ -528,6 +547,8 @@ module ibex_if_stage import ibex_pkg::*; #(
         instr_fetch_err_plus2_o  <= if_instr_err_plus2;
         instr_rdata_c_id_o       <= if_instr_rdata[15:0];
         instr_is_compressed_id_o <= instr_is_compressed_out;
+        instr_gets_expanded_id_o <= instr_gets_expanded_out;
+        instr_expanded_id_o      <= if_instr_rdata[15:0];
         illegal_c_insn_id_o      <= illegal_c_instr_out;
         pc_id_o                  <= pc_if_o;
       end
@@ -544,7 +565,7 @@ module ibex_if_stage import ibex_pkg::*; #(
     // request, all of which will set branch_req. Also do not check after reset or for dummy
     // instructions.
     assign prev_instr_seq_d = (prev_instr_seq_q | instr_new_id_d) &
-        ~branch_req & ~if_instr_err & ~stall_dummy_instr;
+        ~branch_req & ~if_instr_err & ~stall_dummy_instr & !(instr_gets_expanded == INSTR_EXPANDED);
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
@@ -606,8 +627,8 @@ module ibex_if_stage import ibex_pkg::*; #(
 
     assign instr_skid_en = predict_branch_taken & ~pc_set_i & ~id_in_ready_i & ~instr_skid_valid_q;
 
-    assign instr_skid_valid_d = (instr_skid_valid_q & ~id_in_ready_i & ~stall_dummy_instr) |
-                                instr_skid_en;
+    assign instr_skid_valid_d = (instr_skid_valid_q & ~id_in_ready_i & ~stall_dummy_instr &
+                                 !(instr_gets_expanded == INSTR_EXPANDED)) | instr_skid_en;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
@@ -665,7 +686,8 @@ module ibex_if_stage import ibex_pkg::*; #(
     assign if_instr_bus_err = ~instr_skid_valid_q & fetch_err;
     assign instr_bp_taken_d = instr_skid_valid_q ? instr_skid_bp_taken_q : predict_branch_taken;
 
-    assign fetch_ready = id_in_ready_i & ~stall_dummy_instr & ~instr_skid_valid_q;
+    assign fetch_ready = id_in_ready_i & ~stall_dummy_instr &
+                         !(instr_gets_expanded == INSTR_EXPANDED) & ~instr_skid_valid_q;
 
     assign instr_bp_taken_o = instr_bp_taken_q;
 
@@ -680,7 +702,8 @@ module ibex_if_stage import ibex_pkg::*; #(
     assign if_instr_rdata = fetch_rdata;
     assign if_instr_addr  = fetch_addr;
     assign if_instr_bus_err = fetch_err;
-    assign fetch_ready = id_in_ready_i & ~stall_dummy_instr;
+    assign fetch_ready = id_in_ready_i & ~stall_dummy_instr &
+                         !(instr_gets_expanded == INSTR_EXPANDED);
   end
 
   //////////
