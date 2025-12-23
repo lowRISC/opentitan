@@ -28,6 +28,9 @@ class adc_ctrl_filters_polled_vseq extends adc_ctrl_base_vseq;
   endtask
 
   // Run a randomised vseq to ramp channel from start_value to end_value
+  //
+  // The increments each time will be randomised in the range [0, 20], so we can expect the ramp to
+  // take abs(end_value - start_value) / 25 steps on average.
   local task ramp_channel(int unsigned channel, adc_value_t start_value, adc_value_t end_value);
     adc_ctrl_channel_ramp_vseq vseq = adc_ctrl_channel_ramp_vseq::type_id::create("vseq");
     vseq.push_pull_cfg = cfg.m_adc_push_pull_cfg[channel];
@@ -36,7 +39,7 @@ class adc_ctrl_filters_polled_vseq extends adc_ctrl_base_vseq;
            vseq.ramp_start == start_value;
            vseq.ramp_end == end_value;
            vseq.ramp_step_min == 0;
-           vseq.ramp_step_max == 5;
+           vseq.ramp_step_max == 50;
          }) begin
       `uvm_fatal(`gfn, "Failed to randomise ramp vseq")
     end
