@@ -23,7 +23,6 @@ cc_library(
     name = "keys",
     srcs = [
         "sigverify_rsa_keys_sival.c",
-        "//sw/device/silicon_creator/rom_ext:sigverify_keys.h",
     ],
     hdrs = [
         "earlgrey_z0_sival_1.h",
@@ -51,7 +50,6 @@ cc_test(
         "//sw/device/silicon_creator/lib/sigverify:mod_exp_ibex_device_library",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
         "//sw/device/silicon_creator/lib/sigverify:rsa_verify",
-        "//sw/device/silicon_creator/rom_ext:sigverify_keys",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
