@@ -2,8 +2,8 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv_verilator:aes_tlul_shim_tb"
-description: "AES TLUL Shim TB"
+name: "lowrisc:dv_verilator:aes_tb"
+description: "AES TB"
 filesets:
   files_rtl:
     depend:
@@ -16,11 +16,12 @@ filesets:
       - data/gcm_k128_a0_d16.svh : {is_include_file : true}
       - data/gcm_k128_a0_d0.svh : {is_include_file : true}
       - data/modes_d64.svh : {is_include_file : true}
-      - rtl/aes_tlul_shim_tb_pkg.sv
-      - rtl/aes_tlul_shim_tb_reqs.sv
-      - rtl/aes_tlul_shim_tb_c_dpi.sv
-      - rtl/aes_tlul_shim_delayer.sv
-      - rtl/aes_tlul_shim_tb.sv
+      - rtl/aes_tb_pkg.sv
+      - rtl/aes_tb_reqs.sv
+      - rtl/aes_tb_c_dpi.sv
+      - rtl/tlul_delayer.sv
+      - rtl/tlul_adapter_tb_reqs.sv
+      - rtl/aes_tb.sv
     file_type: systemVerilogSource
 
   files_dv_verilator:
@@ -28,7 +29,7 @@ filesets:
       - lowrisc:dv_verilator:simutil_verilator
 
     files:
-      - cpp/aes_tlul_shim_tb.cc
+      - cpp/aes_tb.cc
     file_type: cppSource
 
 targets:
@@ -37,7 +38,7 @@ targets:
     filesets:
       - files_rtl
       - files_dv_verilator
-    toplevel: aes_tlul_shim_tb
+    toplevel: aes_tb
     tools:
       verilator:
         mode: cc
@@ -55,7 +56,7 @@ targets:
 # -O
 #   Optimization levels have a large impact on the runtime performance of the
 #   simulation model. -O2 and -O3 are pretty similar, -Os is slower than -O2/-O3
-          - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=aes_tlul_shim_tb -g -O0"'
+          - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=aes_tb -g -O0"'
           - '-LDFLAGS "-pthread -lutil -lelf"'
           - "-Wall"
           # XXX: Cleanup all warnings and remove this option

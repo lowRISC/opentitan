@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-package aes_tlul_shim_tb_pkg;
+package aes_tb_pkg;
 
   import tlul_pkg::*;
   import aes_pkg::*;
@@ -53,79 +53,74 @@ package aes_tlul_shim_tb_pkg;
     logic [127:0] tag; // Only used in the GCM decryption case.
    } c_dpi_input_t;
 
-  // Grouping of all signals required for a shim read/write request and to instrument the `c_dpi`
-  // API.
+  // Grouping of all signals required for a TLUL/shim read/write request and to instrument the
+  // `c_dpi` API.
   typedef struct packed {
-    logic                       dv;
-    logic [top_pkg::TL_AW-1:0]  addr;
-    logic                       write;
-    logic [top_pkg::TL_DW-1:0]  wdata;
-    logic [top_pkg::TL_DBW-1:0] wstrb;
-    logic [2:0]                 size;
-    logic                       last;
-    logic [31:0]                user;
-    logic [top_pkg::TL_AIW-1:0] id;
+    logic write;
+    logic [top_pkg::TL_AW-1:0] addr;
+    logic [top_pkg::TL_DW-1:0] wdata;
 
-    // Internal signal to verify status bits.
+    // Internal signal: The request is a `c_dpi` invocation instead of a TLUL/shim request.
+    logic c_dpi_load;
+
+    // Internal signal: To mask read request responses, e.g., to check whether a certain bit is set.
     logic [top_pkg::TL_DW-1:0] mask;
 
     // Internal signal: AD and PT inputs to the `c_dpi` model.
     c_dpi_input_t c_dpi_input;
-  } shim_request_t;
+  } bus_request_t;
 
-  // write_request returns a filled out `shim_request_t` struct for a shim write request.
-  function automatic shim_request_t write_request (logic [7:0] addr,
-                                                   logic [top_pkg::TL_DW-1:0] wdata);
-    shim_request_t req = '{
-      dv: 1'b1,
-      addr: {24'b0, addr},
+  // write_request returns a filled out `bus_request_t` struct for a TLUL/shim write request.
+  function automatic bus_request_t write_request (logic [7:0] addr,
+                                                  logic [top_pkg::TL_DW-1:0] wdata);
+    bus_request_t req = '{
+      c_dpi_load: 1'b0,
       write: 1'b1,
+      addr: {24'b0, addr},
       wdata: wdata,
-      wstrb: top_pkg::TL_DBW'(4'b1111),
-      size: 3'b010,
-      last: 1'b0,
-      user: 32'(TL_A_USER_DEFAULT),
-      id: '{default: '0},
-      mask: '{default: '0},
+      mask: '0,
       c_dpi_input: '0
     };
     return req;
   endfunction
 
-  // read_request returns a filled out `shim_request_t` struct for a shim read request.
-  function automatic shim_request_t read_request (logic [7:0] addr,
-                                                  logic [top_pkg::TL_DW-1:0] mask = '0);
-    shim_request_t req = '{
-      dv: 1'b1,
-      addr: 32'(addr),
+  // read_request returns a filled out `bus_request_t` struct for a TLUL/shim read request.
+  function automatic bus_request_t read_request (logic [7:0] addr,
+                                                 logic [top_pkg::TL_DW-1:0] mask = '0);
+    bus_request_t req = '{
+      c_dpi_load: 1'b0,
       write: 1'b0,
-      wdata: '{default: '0},
-      wstrb: top_pkg::TL_DBW'(4'b1111),
-      size: 3'b010,
-      last: 1'b0,
-      user: 32'(TL_A_USER_DEFAULT),
-      id: '{default: '0},
+      addr: {24'b0, addr},
+      wdata: '0,
       mask: mask,
       c_dpi_input: '0
     };
     return req;
   endfunction
 
-  // read_caliptra returns a filled out `shim_request_t` struct for an internal Caliptra register.
-  function automatic shim_request_t read_caliptra (logic [11:0] addr);
-    shim_request_t req = '{
-      dv: 1'b1,
-      addr: 32'(addr),
-      default: '0
+  // read_caliptra returns a filled out `bus_request_t` struct for an internal Caliptra register.
+  // This is only useful if a TLUL-to-Shim adapter is configured otherwise the request will result
+  // in a zero-value being returned by the register file.
+  function automatic bus_request_t read_caliptra (logic [11:0] addr);
+    bus_request_t req = '{
+      c_dpi_load: 1'b0,
+      write: 1'b0,
+      addr: {20'b0, addr},
+      wdata: '0,
+      mask: '0,
+      c_dpi_input: '0
     };
     return req;
   endfunction
 
-  // c_dpi_load assigns a `c_dpi_input_t` to an empty `shim_request_t` struct. This type of
+  // c_dpi_load assigns a `c_dpi_input_t` to an empty `bus_request_t` struct. This type of
   // request is used to instrument the `c_dpi` API at the beginning of a test.
-  function automatic shim_request_t c_dpi_load (c_dpi_input_t c_dpi_input);
-    shim_request_t req = '0;
-    req.c_dpi_input = c_dpi_input;
+  function automatic bus_request_t c_dpi_load (c_dpi_input_t c_dpi_input);
+    bus_request_t req = '{
+      c_dpi_load: 1'b1,
+      c_dpi_input: c_dpi_input,
+      default: '0
+    };
     return req;
   endfunction
 

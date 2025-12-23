@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module aes_tlul_shim_delayer
+module tlul_delayer
   import tlul_pkg::*;
 #(
   parameter bit DelayerEnable = 1
