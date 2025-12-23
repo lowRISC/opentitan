@@ -138,6 +138,9 @@ struct ISSWrapper {
   // Send an error escalation
   void send_err_escalation(uint32_t err_val, bool lock_immediately);
 
+  // Stall for one cycle instead of retiring the next instruction.
+  void send_stall_request();
+
   // Set the RMA request input
   void set_rma_req(uint8_t rma_req);
 

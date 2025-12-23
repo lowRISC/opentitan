@@ -199,6 +199,7 @@ class OTBNSim:
         }
 
         stepper, handles_injected_err = steppers[fsm_state]
+        self.state.take_pending_err_bits()
         self.state.step(not handles_injected_err)
 
         return stepper(verbose)
@@ -366,7 +367,11 @@ class OTBNSim:
         if self.state.pending_halt:
             self._execute_generator = None
 
-        sim_stalled = (self._execute_generator is not None)
+        sim_stalled = (self._execute_generator is not None) or self.state.stall_requested
+
+        # The stall request is for only one cycle.
+        self.state.stall_requested = False
+
         if not sim_stalled:
             return (insn, self._on_retire(verbose, insn))
 
@@ -444,7 +449,23 @@ class OTBNSim:
             self.state.lock_after_wipe = True
 
         # Zero INSN_CNT once if we're going to lock after wipe.
-        self._delayed_insn_cnt_zero(1)
+        # The exact cycle when the zeroing happens depends on when we decide
+        # that we are going to lock after the secure wipe (SecWipe).
+        # There are two cases to consider:
+        # - We decide that we are going to lock when starting the SecWipe.
+        #   This is the regular case when e.g. a fatal escalation triggers the
+        #   SecWipe. This requires a one cycle delay to match the RTL.
+        # - We decide that we want to lock while a SecWipe is ongoing. This
+        #   happens when a non-locking SecWipe is ongoing but an escalation
+        #   happens. In this case, we want to immediately reset INSN_CNT.
+        #
+        # We can distinguish these two cases based on the previous FSM state.
+        # If a secure wipe is ongoing, the previous state must have been in
+        # PRE_WIPE or WIPING.
+        if self.state.old_state in [FsmState.PRE_WIPE, FsmState.WIPING]:
+            self._delayed_insn_cnt_zero(0)
+        else:
+            self._delayed_insn_cnt_zero(1)
 
         if self.state.wipe_cycles == 1:
             # This is the penultimate clock cycle of a wipe round. We want to
@@ -540,6 +561,10 @@ class OTBNSim:
         assert err_val & ~ErrBits.MASK == 0
         self.state.injected_err_bits |= err_val
         self.state.lock_immediately = lock_immediately
+
+    def send_stall_request(self) -> None:
+        '''Make the model stall for one cycle instead of retiring the next instruction.'''
+        self.state.stall_requested = True
 
     def lock_immediately(self) -> None:
         '''React to an event that should cause us to immediately jump to the

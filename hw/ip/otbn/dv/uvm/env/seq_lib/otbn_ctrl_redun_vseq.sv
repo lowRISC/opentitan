@@ -178,6 +178,23 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         case(choose_err)
           0: begin
             insn_dec_shared_i.ld_insn = !insn_dec_shared_i.ld_insn;
+            // This is a workaround to match the model behaviour to what happens if this
+            // error is injected. When injecting the ld_insn error from the, the OTBN will start a
+            // load in parallel to the current instruction. As of this the stall signal is asserted
+            // and the OTBN enter the stall state (as ld_insn factors into it). We need to model
+            // this but duplicating the logic in the model is not smart. We therefore signal simply
+            // to the model to stall once. Due to the error the OTBN will escalate in the next
+            // cycle anyway.
+            // TODO: In case the instruction where we inject the error into is a branch instruction
+            // the assertion NoStallOnBranch in the controller fails. However, this assertion is
+            // not meaningful in this case and maybe could be disabled.
+            // TODO: The injection can next to the stall also lead to a non fatal SW error. The RTL
+            // therefore does not immediately escalate but still retires the current instruction
+            // and goes into the HALT state. The RTL will then escalate from this state. Due to the
+            // stall request, the model however won't retire the current instruction. Therefore no
+            // ISS trace is generated and we get the back-to-back RTL trace entries with no ISS
+            // entry error. To fix this the errors due to injections must be modelled differently.
+            cfg.model_agent_cfg.vif.send_stall_request();
           end
           1: begin
             insn_dec_shared_i.st_insn = !insn_dec_shared_i.st_insn;
@@ -309,9 +326,18 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         `uvm_fatal(`gfn, "issue with randomization")
       end
     endcase
+
+    // Due to the delayed escalation, the faulted instruction still commits but with wrong values.
+    // We must signal to the ISS that the result can be off.
+    cfg.model_agent_cfg.vif.tolerate_result_mismatch(1);
+
+    // Handle any SW error during the delayed escalation
+    handle_delayed_escalation();
+
     `uvm_info(`gfn, "injecting bad internal state error into ISS", UVM_HIGH)
     have_injected_error = 1'b1;
     cfg.model_agent_cfg.vif.send_err_escalation(err_val);
+
     `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked)
     `DV_CHECK_FATAL(uvm_hdl_release(err_path) == 1);
     reset_if_locked();
