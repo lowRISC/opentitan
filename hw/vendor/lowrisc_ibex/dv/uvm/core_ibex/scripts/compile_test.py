@@ -12,10 +12,11 @@ import shlex
 import sys
 import tempfile
 import pathlib3x as pathlib
+import itertools
 
 from scripts_lib import run_one, format_to_cmd, read_yaml
 import riscvdv_interface
-from test_entry import read_test_dot_seed
+from test_entry import read_test_dot_seed, get_test_entry
 from metadata import RegressionMetadata
 from test_run_result import TestRunResult, TestType
 
@@ -84,6 +85,66 @@ def get_riscvdv_compile_cmds(md: RegressionMetadata, trr: TestRunResult) -> List
 
             new_cmd.append(word)
         new_cmds.append(new_cmd)
+
+
+    if (trr.testtype == TestType.RISCVDV and trr.is_discrete_debug_module):
+        logger.warning(f"Using discrete debug module memory layout.")
+
+        # Remove the objdump command for the single contiguous memory region.
+        # (If debug module address is far from the boot_address, a single loadable
+        # .bin file can be very large (roughly 1.6Gb for the default address params))
+        new_cmds.pop()
+
+        # Replace default riscv-dv linker script with custom script
+        for cmd in new_cmds:
+            for index, token in enumerate(cmd):
+                if token.startswith("-T"):
+                    cmd[index] = "-T" + str(md.ibex_riscvdv_customtarget / 'ddm_link.ld')
+
+        # Generate binary outputs for the different LOADABLE memory regions (main, dm).
+        # The linker script places some sections inside the 'dm' memory region,
+        # which may be quite far away from the 'main' memory. To avoid
+        # generating a very large uncompressed binary file to LOAD both
+        # segments, we probably want to use the .vmem format passed to
+        # $readmemh to initialize the RTL-side memory model. However, as the
+        # cosim memory model is initialized over the DPI interface, and may be
+        # comprised of multiple 'memories' rather than a single contiguous
+        # space, we can't simply rely on $readmemh to automatically partition a
+        # single file across multiple arrays. Hence for it's initialization,
+        # generate raw .bin files which will be loaded via the base address of
+        # each section.
+
+        # The following sections are within the loadable 'dm' region
+        dm_sections = [".debug_module", ".dm_scratch"]
+
+        # The following objcopy arguments generate outputs with only a subset of the sections
+        # present in the object file.
+        flatten_list = lambda unflat_list: list(itertools.chain(*unflat_list))
+        only_sections = flatten_list([["--only-section", s] for s in dm_sections])
+        remove_sections = flatten_list([["--remove-section", s] for s in dm_sections])
+
+        env = os.environ.copy()
+        objcopy = env.get('RISCV_OBJCOPY')
+
+        # Generate verilog memory formatted outputs (.vmem)
+
+        trr.vmem_main = trr.dir_test / "test.main.vmem"
+        trr.vmem_dm = trr.dir_test / "test.dm.vmem"
+        vmem_dm_cmd = \
+            [objcopy, "-O", "verilog", *only_sections, f"{trr.objectfile}", f"{trr.vmem_dm}"]
+        vmem_main_cmd = \
+            [objcopy, "-O", "verilog", *remove_sections, f"{trr.objectfile}", f"{trr.vmem_main}"]
+
+        # Generate binary-formatted outputs (.bin)
+
+        trr.binary_main = trr.dir_test / "test.main.bin"
+        trr.binary_dm = trr.dir_test / "test.dm.bin"
+        bin_dm_cmd = \
+            [objcopy, "-O", "binary", *only_sections, f"{trr.objectfile}", f"{trr.binary_dm}"]
+        bin_main_cmd = \
+            [objcopy, "-O", "binary", *remove_sections, f"{trr.objectfile}", f"{trr.binary_main}"]
+
+        new_cmds.extend([vmem_dm_cmd, vmem_main_cmd, bin_dm_cmd, bin_main_cmd])
 
     return new_cmds
 
