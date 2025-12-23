@@ -52,6 +52,13 @@ package ibex_pkg;
     RV32BFull       = 3
   } rv32b_e;
 
+  typedef enum integer {
+    RV32Zca        = 0,
+    RV32ZcaZcb     = 1,
+    RV32ZcaZcmp    = 2,
+    RV32ZcaZcbZcmp = 3
+  } rv32zc_e;
+
   /////////////
   // Opcodes //
   /////////////
@@ -300,6 +307,13 @@ package ibex_pkg;
     PC_BP
   } pc_sel_e;
 
+  // Compressed instruction expansion
+  typedef enum logic [1:0] {
+    INSTR_NOT_EXPANDED,
+    INSTR_EXPANDED,
+    INSTR_EXPANDED_LAST
+  } instr_exp_e;
+
   // Exception PC mux selection
   typedef enum logic [1:0] {
     EXC_PC_EXC,
@@ -387,8 +401,14 @@ package ibex_pkg;
   // PMP constants
   parameter int unsigned PMP_MAX_REGIONS      = 16;
   parameter int unsigned PMP_CFG_W            = 8;
+  // For RV32 the most significant bit of PMP address refers to the physical
+  // address bit index 33.
+  parameter int unsigned PMP_ADDR_MSB         = 33;
+  // For RV32 the least significant bit of the PMP CSRs refers to the physical
+  // address bit index 2.
+  parameter int unsigned PMP_ADDR_LSB         = 2;
 
-  // PMP acces type
+  // PMP access type
   parameter int unsigned PMP_I  = 0;
   parameter int unsigned PMP_I2 = 1;
   parameter int unsigned PMP_D  = 2;
@@ -624,7 +644,7 @@ package ibex_pkg;
   localparam logic [31:0] CSR_MARCHID_VALUE = {1'b0, 31'd22};
 
   // Machine Configuration Pointer
-  // 0 indicates the configuration data structure does not eixst. Ibex implementors may wish to
+  // 0 indicates the configuration data structure does not exist. Ibex implementers may wish to
   // alter this to point to their system specific configuration data structure.
   localparam logic [31:0] CSR_MCONFIGPTR_VALUE = 32'b0;
 
@@ -642,7 +662,7 @@ package ibex_pkg;
   parameter logic [SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonceDefault =
       64'hf79780bc735f3843;
 
-  // Mult-bit signal used for security hardening. For non-secure implementation all bits other than
+  // Multi-bit signal used for security hardening. For non-secure implementation all bits other than
   // the bottom bit are ignored.
   parameter int IbexMuBiWidth = 4;
   typedef logic [IbexMuBiWidth-1:0] ibex_mubi_t;
@@ -661,7 +681,7 @@ package ibex_pkg;
   // See the Ibex Reference Guide (Custom Reset Values under Physical Memory
   // Protection) for more information.
 
-  parameter pmp_cfg_t PmpCfgRst[16] = '{
+  parameter pmp_cfg_t PmpCfgRst[PMP_MAX_REGIONS] = '{
     '{lock: 1'b0, mode: PMP_MODE_OFF, exec: 1'b0, write: 1'b0, read: 1'b0}, // region 0
     '{lock: 1'b0, mode: PMP_MODE_OFF, exec: 1'b0, write: 1'b0, read: 1'b0}, // region 1
     '{lock: 1'b0, mode: PMP_MODE_OFF, exec: 1'b0, write: 1'b0, read: 1'b0}, // region 2
@@ -680,10 +700,10 @@ package ibex_pkg;
     '{lock: 1'b0, mode: PMP_MODE_OFF, exec: 1'b0, write: 1'b0, read: 1'b0}  // region 15
   };
 
-  // Addresses are given in byte granularity for readibility. A minimum of two
+  // Addresses are given in byte granularity for readability. A minimum of two
   // bits will be stripped off the bottom (PMPGranularity == 0) with more stripped
   // off at coarser granularities.
-  parameter logic [33:0] PmpAddrRst[16] = '{
+  parameter logic [PMP_ADDR_MSB:0] PmpAddrRst[PMP_MAX_REGIONS] = '{
     34'h0, // region 0
     34'h0, // region 1
     34'h0, // region 2

@@ -13,7 +13,7 @@ main is equivalent to the Sail step function, it has some differences however:
    1. It's difficult to compare IRQ handling, since ibex takes them later than the Sail would. This is OK since it's not really
       fair to enforce that IRQs are handled between any two specific instructions, so long as it is eventually.
    2. The three modes are a useful case analysis we can make. This means that to prove correctness of an I-Type instruction, for example, we
-      can more easily seperate out the check for instruction fetch correctness, which makes things faster and avoids repeated work.
+      can more easily separate out the check for instruction fetch correctness, which makes things faster and avoids repeated work.
 */
 
 union FetchResult = {
@@ -48,7 +48,7 @@ function main(insn_bits, mode) : (bits(32), MainMode) -> MainResult = {
 
   let irq = dispatchInterrupt(cur_privilege);
   let f : FetchResult = altFetch(insn_bits[15..0], insn_bits[31..16]);
-  
+
   let res : MainResult = match mode {
     MAIN_IDEX => {
       match decompress(insn) {

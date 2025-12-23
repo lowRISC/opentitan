@@ -1102,7 +1102,10 @@ enum privileged_reg_t: ushort {	// 12'b
     VXRM            = 0x00A,  // Fixed point rounding mode
     VL              = 0xC20,  // Vector length
     VTYPE           = 0xC21,  // Vector data type register
-    VLENB           = 0xC22   // VLEN/8 (vector register length in bytes)
+    VLENB           = 0xC22,  // VLEN/8 (vector register length in bytes)
+    // Ibex Registers
+    CPUCTRLSTS      = 0x7C0,  // CPU Control and Status (Ibex Specific)
+    SECURESEED      = 0x7C1   // Secure Seed (Ibex Specific)
 }
 
 enum privileged_reg_fld_t: ubyte {

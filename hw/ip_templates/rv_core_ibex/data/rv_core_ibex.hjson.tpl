@@ -367,6 +367,14 @@
       expose:  "true"
     },
 
+    { name:    "RV32ZC"
+      type:    "ibex_pkg::rv32zc_e"
+      default: "ibex_pkg::RV32ZcaZcbZcmp"
+      desc:    "RV32ZC"
+      local:   "false"
+      expose:  "true"
+    },
+
     { name:    "RegFile"
       type:    "ibex_pkg::regfile_e"
       default: "ibex_pkg::RegFileFF"

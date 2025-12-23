@@ -5,7 +5,7 @@ This directory contains the custom directed tests as well as scripts and headers
 Currently following open source test suites are vendored:
 - [riscv-tests](https://github.com/riscv-software-src/riscv-tests)
 - [riscv-arch-tests](https://github.com/riscv-non-isa/riscv-arch-test)
-- epmp-tests ([fork](https://github.com/lowRISC/riscv-isa-sim/tree/mseccfg_tests) from an opensource [repo](https://github.com/joxie/riscv-isa-sim))
+- epmp-tests ([fork](https://github.com/lowRISC/riscv-isa-sim/tree/mseccfg_tests) from an open-source [repo](https://github.com/joxie/riscv-isa-sim))
 
 ## Generating test list
 

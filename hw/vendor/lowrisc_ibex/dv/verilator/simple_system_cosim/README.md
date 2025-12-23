@@ -3,7 +3,7 @@
 This augments the Ibex Simple System (`examples/simple_system`) to include the
 co-simulation system to check Ibex's execution. This runs Spike in lockstep with
 Ibex and checks each instruction Ibex retires matches what Spike has executed.
-In addition all data memory accesses are checked against memory acceses Spike
+In addition all data memory accesses are checked against memory accesses Spike
 has performed. More details on how the co-simulation works and how to build and
 run simple system with it included can be in found in the Ibex documentation
 under 'Co-simulation System' in the 'Ibex Reference Guide' section.
@@ -20,7 +20,7 @@ mkdir build
 cd build
 
 # Configure and build spike
-../configure --enable-commitlog --enable-misaligned --prefix=/opt/spike-cosim 
+../configure --enable-commitlog --enable-misaligned --prefix=/opt/spike-cosim
 # Installs in /opt/spike-cosim
 sudo make -j8 install
 
@@ -33,7 +33,7 @@ cd <ibex_repo>
 # Build simulator
 fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ibex:ibex_simple_system_cosim --RV32E=0 --RV32M=ibex_pkg::RV32MFast
 
-# Build coremark test binary, with performance counter dump disabled. The 
+# Build coremark test binary, with performance counter dump disabled. The
 # co-simulator system doesn't produce matching performance counters in spike so
 # any read of those CSRs results in a mismatch and a failure.
 make -C ./examples/sw/benchmarks/coremark SUPPRESS_PCOUNT_DUMP=1

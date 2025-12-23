@@ -1196,7 +1196,7 @@ module ibex_decoder #(
   // instruction exceptions
   assign illegal_insn_o = illegal_insn | illegal_reg_rv32e;
 
-  // do not propgate regfile write enable if non-available registers are accessed in RV32E
+  // do not propagate regfile write enable if non-available registers are accessed in RV32E
   assign rf_we_o = rf_we & ~illegal_reg_rv32e;
 
   // Not all bits are used

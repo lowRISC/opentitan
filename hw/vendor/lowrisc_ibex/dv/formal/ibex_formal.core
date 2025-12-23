@@ -10,19 +10,9 @@ filesets:
     depend:
       - lowrisc:ibex:ibex_pkg
       - lowrisc:ibex:ibex_core
-      - lowrisc:prim:buf
-      - lowrisc:prim:clock_gating
-      - lowrisc:prim:secded
-      - lowrisc:prim:assert
-      - lowrisc:prim:ram_1p_pkg
-      - lowrisc:prim_generic:buf
-      - lowrisc:prim_generic:clock_gating
-    files:
-      - ../../rtl/ibex_register_file_ff.sv # generic FF-based
-      - ../../rtl/ibex_register_file_fpga.sv # FPGA
-      - ../../rtl/ibex_register_file_latch.sv # ASIC
-      - ../../rtl/ibex_top.sv
-    file_type: systemVerilogSource
+      - lowrisc:ibex:ibex_top
+      - "fileset_partner ? (partner:prim_generic:all)"
+      - "!fileset_partner ? (lowrisc:prim_generic:all)"
 
 targets:
   default:

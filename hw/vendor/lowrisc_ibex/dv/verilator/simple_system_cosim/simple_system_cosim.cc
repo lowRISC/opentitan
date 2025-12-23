@@ -20,14 +20,16 @@ class SimpleSystemCosim : public SimpleSystem {
   ~SimpleSystemCosim() {}
 
   void CreateCosim(bool secure_ibex, bool icache_en, uint32_t pmp_num_regions,
-                   uint32_t pmp_granularity, uint32_t mhpm_counter_num) {
+                   uint32_t pmp_granularity, uint32_t mhpm_counter_num,
+                   uint32_t DmStartAddr, uint32_t DmEndAddr) {
     _cosim = std::make_unique<SpikeCosim>(
         GetIsaString(), 0x100080, 0x100001, "simple_system_cosim.log",
         secure_ibex, icache_en, pmp_num_regions, pmp_granularity,
-        mhpm_counter_num);
+        mhpm_counter_num, DmStartAddr, DmEndAddr);
 
-    _cosim->add_memory(0x100000, 1024 * 1024);
-    _cosim->add_memory(0x20000, 4096);
+    // Add a memory device that covers the entire address space.
+    // This will only be sparsely populated.
+    _cosim->add_memory(0x00000000, 0xFFFF0000);
 
     CopyMemAreaToCosim(&_ram, 0x100000);
   }
@@ -70,17 +72,19 @@ void *get_spike_cosim() {
 void create_cosim(svBit secure_ibex, svBit icache_en,
                   const svBitVecVal *pmp_num_regions,
                   const svBitVecVal *pmp_granularity,
-                  const svBitVecVal *mhpm_counter_num) {
+                  const svBitVecVal *mhpm_counter_num,
+                  const svBitVecVal *DmStartAddr,
+                  const svBitVecVal *DmEndAddr) {
   assert(simple_system_cosim);
   simple_system_cosim->CreateCosim(secure_ibex, icache_en, pmp_num_regions[0],
-                                   pmp_granularity[0], mhpm_counter_num[0]);
+                                   pmp_granularity[0], mhpm_counter_num[0],
+                                   DmStartAddr[0], DmEndAddr[0]);
 }
 }
 
 int main(int argc, char **argv) {
   simple_system_cosim = new SimpleSystemCosim(
-      "TOP.ibex_simple_system.u_ram.u_ram.gen_generic.u_impl_generic",
-      (1024 * 1024) / 4);
+      "TOP.ibex_simple_system.u_ram.u_ram", (1024 * 1024) / 4);
 
   int ret_code = simple_system_cosim->Main(argc, argv);
 
