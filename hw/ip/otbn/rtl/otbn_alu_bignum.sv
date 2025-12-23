@@ -80,8 +80,8 @@ module otbn_alu_bignum
   output logic [WLEN-1:0]       operation_result_o,
   output logic                  selection_flag_o,
 
-  input  alu_predec_bignum_t  alu_predec_bignum_i,
-  input  ispr_predec_bignum_t ispr_predec_bignum_i,
+  input  alu_bignum_predec_t  alu_bignum_predec_i,
+  input  ispr_bignum_predec_t ispr_bignum_predec_i,
 
   input  ispr_e                       ispr_addr_i,
   input  logic [31:0]                 ispr_base_wdata_i,
@@ -168,7 +168,7 @@ module otbn_alu_bignum
     .clk_i,
     .rst_ni,
     .in_i  (flags_q),
-    .sel_i (alu_predec_bignum_i.flag_group_sel),
+    .sel_i (alu_bignum_predec_i.flag_group_sel),
     .out_o (selected_flags)
   );
 
@@ -182,10 +182,10 @@ module otbn_alu_bignum
                          selected_flags.M,
                          selected_flags.L,
                          selected_flags.Z};
-  assign flag_mux_sel = {alu_predec_bignum_i.flag_sel.Z,
-                         alu_predec_bignum_i.flag_sel.L,
-                         alu_predec_bignum_i.flag_sel.M,
-                         alu_predec_bignum_i.flag_sel.C};
+  assign flag_mux_sel = {alu_bignum_predec_i.flag_sel.Z,
+                         alu_bignum_predec_i.flag_sel.L,
+                         alu_bignum_predec_i.flag_sel.M,
+                         alu_bignum_predec_i.flag_sel.C};
 
   // SEC_CM: DATA_REG_SW.SCA
   prim_onehot_mux #(
@@ -275,7 +275,7 @@ module otbn_alu_bignum
     // SEC_CM: DATA_REG_SW.SCA
     prim_blanker #(.Width(1)) u_mac_z_flag_en_blanker (
       .in_i (mac_operation_flags_en_i.Z),
-      .en_i (alu_predec_bignum_i.flags_mac_update[i_fg]),
+      .en_i (alu_bignum_predec_i.flags_mac_update[i_fg]),
       .out_o(mac_update_z_flag_en_blanked[i_fg])
     );
     assign mac_update_flags[i_fg].Z = mac_update_z_flag_en_blanked[i_fg] ?
@@ -296,11 +296,11 @@ module otbn_alu_bignum
                               logic_update_flags[i_fg],
                               adder_update_flags,
                               flags_q[i_fg]};
-    assign flags_d_mux_sel = {alu_predec_bignum_i.flags_keep[i_fg],
-                              alu_predec_bignum_i.flags_adder_update[i_fg],
-                              alu_predec_bignum_i.flags_logic_update[i_fg],
-                              alu_predec_bignum_i.flags_mac_update[i_fg],
-                              alu_predec_bignum_i.flags_ispr_wr[i_fg]};
+    assign flags_d_mux_sel = {alu_bignum_predec_i.flags_keep[i_fg],
+                              alu_bignum_predec_i.flags_adder_update[i_fg],
+                              alu_bignum_predec_i.flags_logic_update[i_fg],
+                              alu_bignum_predec_i.flags_mac_update[i_fg],
+                              alu_bignum_predec_i.flags_ispr_wr[i_fg]};
 
     // SEC_CM: DATA_REG_SW.SCA
     prim_onehot_mux #(
@@ -339,7 +339,7 @@ module otbn_alu_bignum
   // SEC_CM: DATA_REG_SW.SCA
   prim_blanker #(.Width(ExtWLEN)) u_ispr_mod_bignum_wdata_blanker (
     .in_i (ispr_bignum_wdata_intg_i),
-    .en_i (ispr_predec_bignum_i.ispr_wr_en[IsprMod]),
+    .en_i (ispr_bignum_predec_i.ispr_wr_en[IsprMod]),
     .out_o(ispr_mod_bignum_wdata_intg_blanked)
   );
   // If the blanker is enabled, the output will not carry the correct ECC bits.  This is not
@@ -418,7 +418,7 @@ module otbn_alu_bignum
   // SEC_CM: DATA_REG_SW.SCA
   prim_blanker #(.Width(ExtWLEN)) u_ispr_acc_bignum_wdata_intg_blanker (
     .in_i (ispr_bignum_wdata_intg_i),
-    .en_i (ispr_predec_bignum_i.ispr_wr_en[IsprAcc]),
+    .en_i (ispr_bignum_predec_i.ispr_wr_en[IsprAcc]),
     .out_o(ispr_acc_bignum_wdata_intg_blanked)
   );
   // If the blanker is enabled, the output will not carry the correct ECC bits.  This is not
@@ -473,7 +473,7 @@ module otbn_alu_bignum
     .clk_i,
     .rst_ni,
     .in_i  (ispr_rdata_no_intg_mux_in),
-    .sel_i (ispr_predec_bignum_i.ispr_rd_en),
+    .sel_i (ispr_bignum_predec_i.ispr_rd_en),
     .out_o (ispr_rdata_no_intg)
   );
 
@@ -489,26 +489,26 @@ module otbn_alu_bignum
   assign ispr_rdata_intg_mux_in[IsprAccIntg] = ispr_acc_intg_i;
   assign ispr_rdata_intg_mux_in[IsprNoIntg]  = ispr_rdata_intg_calc;
 
-  assign ispr_rdata_intg_mux_sel[IsprModIntg] = ispr_predec_bignum_i.ispr_rd_en[IsprMod];
-  assign ispr_rdata_intg_mux_sel[IsprAccIntg] = ispr_predec_bignum_i.ispr_rd_en[IsprAcc];
+  assign ispr_rdata_intg_mux_sel[IsprModIntg] = ispr_bignum_predec_i.ispr_rd_en[IsprMod];
+  assign ispr_rdata_intg_mux_sel[IsprAccIntg] = ispr_bignum_predec_i.ispr_rd_en[IsprAcc];
 
   assign ispr_rdata_intg_mux_sel[IsprNoIntg]  =
-    |{ispr_predec_bignum_i.ispr_rd_en[IsprKeyS1H:IsprKeyS0L],
-      ispr_predec_bignum_i.ispr_rd_en[IsprUrnd],
-      ispr_predec_bignum_i.ispr_rd_en[IsprFlags],
-      ispr_predec_bignum_i.ispr_rd_en[IsprRnd]};
+    |{ispr_bignum_predec_i.ispr_rd_en[IsprKeyS1H:IsprKeyS0L],
+      ispr_bignum_predec_i.ispr_rd_en[IsprUrnd],
+      ispr_bignum_predec_i.ispr_rd_en[IsprFlags],
+      ispr_bignum_predec_i.ispr_rd_en[IsprRnd]};
 
   // If we're reading from an ISPR we must be using the ispr_rdata_intg_mux
   `ASSERT(IsprRDataIntgMuxSelIfIsprRd_A,
-    |ispr_predec_bignum_i.ispr_rd_en |-> |ispr_rdata_intg_mux_sel)
+    |ispr_bignum_predec_i.ispr_rd_en |-> |ispr_rdata_intg_mux_sel)
 
   // If we're reading from MOD or ACC we must not take the read data from the calculated integrity
   // path
   `ASSERT(IsprModMustTakeIntg_A,
-    ispr_predec_bignum_i.ispr_rd_en[IsprMod] |-> !ispr_rdata_intg_mux_sel[IsprNoIntg])
+    ispr_bignum_predec_i.ispr_rd_en[IsprMod] |-> !ispr_rdata_intg_mux_sel[IsprNoIntg])
 
   `ASSERT(IsprAccMustTakeIntg_A,
-    ispr_predec_bignum_i.ispr_rd_en[IsprAcc] |-> !ispr_rdata_intg_mux_sel[IsprNoIntg])
+    ispr_bignum_predec_i.ispr_rd_en[IsprAcc] |-> !ispr_rdata_intg_mux_sel[IsprNoIntg])
 
 
   prim_onehot_mux #(
@@ -542,8 +542,8 @@ module otbn_alu_bignum
 
   // SEC_CM: CTRL.REDUN
   assign ispr_predec_error_o =
-    |{expected_ispr_rd_en_onehot != ispr_predec_bignum_i.ispr_rd_en,
-      expected_ispr_wr_en_onehot != ispr_predec_bignum_i.ispr_wr_en};
+    |{expected_ispr_rd_en_onehot != ispr_bignum_predec_i.ispr_rd_en,
+      expected_ispr_wr_en_onehot != ispr_bignum_predec_i.ispr_wr_en};
 
   /////////////
   // Shifter //
@@ -559,19 +559,19 @@ module otbn_alu_bignum
   // SEC_CM: DATA_REG_SW.SCA
   prim_blanker #(.Width(WLEN)) u_shifter_operand_a_blanker (
     .in_i (operation_i.operand_a),
-    .en_i (alu_predec_bignum_i.shifter_a_en),
+    .en_i (alu_bignum_predec_i.shifter_a_en),
     .out_o(shifter_operand_a_blanked)
   );
 
   // SEC_CM: DATA_REG_SW.SCA
   prim_blanker #(.Width(WLEN)) u_shifter_operand_b_blanker (
     .in_i (operation_i.operand_b),
-    .en_i (alu_predec_bignum_i.shifter_b_en),
+    .en_i (alu_bignum_predec_i.shifter_b_en),
     .out_o(shifter_operand_b_blanked)
   );
 
   // Operand A is only used for BN.RSHI, otherwise the upper input is 0. For all instructions other
-  // than BN.RHSI alu_predec_bignum_i.shifter_a_en will be 0, resulting in 0 for the upper input.
+  // than BN.RHSI alu_bignum_predec_i.shifter_a_en will be 0, resulting in 0 for the upper input.
   assign shifter_in_upper = shifter_operand_a_blanked;
   assign shifter_in_lower = shifter_operand_b_blanked;
 
@@ -580,16 +580,16 @@ module otbn_alu_bignum
   end
 
   assign shifter_in = {shifter_in_upper,
-      alu_predec_bignum_i.shift_right ? shifter_in_lower : shifter_in_lower_reverse};
+      alu_bignum_predec_i.shift_right ? shifter_in_lower : shifter_in_lower_reverse};
 
-  assign shifter_out = shifter_in >> alu_predec_bignum_i.shift_amt;
+  assign shifter_out = shifter_in >> alu_bignum_predec_i.shift_amt;
 
   for (genvar i = 0; i < WLEN; i++) begin : g_shifter_out_lower_reverse
     assign shifter_out_lower_reverse[i] = shifter_out[WLEN-i-1];
   end
 
   assign shifter_res =
-      alu_predec_bignum_i.shift_right ? shifter_out[WLEN-1:0] : shifter_out_lower_reverse;
+      alu_bignum_predec_i.shift_right ? shifter_out[WLEN-1:0] : shifter_out_lower_reverse;
 
   // Only the lower WLEN bits of the shift result are returned.
   assign unused_shifter_out_upper = shifter_out[WLEN*2-1:WLEN];
@@ -615,7 +615,7 @@ module otbn_alu_bignum
   // SEC_CM: DATA_REG_SW.SCA
   prim_blanker #(.Width(WLEN+1)) u_adder_x_op_a_blanked (
     .in_i ({operation_i.operand_a, 1'b1}),
-    .en_i (alu_predec_bignum_i.adder_x_en),
+    .en_i (alu_bignum_predec_i.adder_x_en),
     .out_o(adder_x_op_a_blanked)
   );
 
@@ -625,7 +625,7 @@ module otbn_alu_bignum
   // SEC_CM: DATA_REG_SW.SCA
   prim_blanker #(.Width(WLEN+1)) u_adder_x_op_b_blanked (
     .in_i (adder_x_op_b),
-    .en_i (alu_predec_bignum_i.adder_x_en),
+    .en_i (alu_bignum_predec_i.adder_x_en),
     .out_o(adder_x_op_b_blanked)
   );
 
@@ -634,22 +634,22 @@ module otbn_alu_bignum
   // SEC_CM: DATA_REG_SW.SCA
   prim_blanker #(.Width(WLEN)) u_adder_y_op_a_blanked (
     .in_i (operation_i.operand_a),
-    .en_i (alu_predec_bignum_i.adder_y_op_a_en),
+    .en_i (alu_bignum_predec_i.adder_y_op_a_en),
     .out_o(adder_y_op_a_blanked)
   );
 
   assign x_res_operand_a_mux_out =
-      alu_predec_bignum_i.x_res_operand_a_sel ? adder_x_res[WLEN:1] : adder_y_op_a_blanked;
+      alu_bignum_predec_i.x_res_operand_a_sel ? adder_x_res[WLEN:1] : adder_y_op_a_blanked;
 
   // SEC_CM: DATA_REG_SW.SCA
   prim_blanker #(.Width(WLEN)) u_adder_y_op_shifter_blanked (
     .in_i (shifter_res),
-    .en_i (alu_predec_bignum_i.adder_y_op_shifter_en),
+    .en_i (alu_bignum_predec_i.adder_y_op_shifter_en),
     .out_o(adder_y_op_shifter_res_blanked)
   );
 
   assign shift_mod_mux_out =
-      alu_predec_bignum_i.shift_mod_sel ? adder_y_op_shifter_res_blanked : mod_no_intg_q;
+      alu_bignum_predec_i.shift_mod_sel ? adder_y_op_shifter_res_blanked : mod_no_intg_q;
 
   assign adder_y_op_a = {x_res_operand_a_mux_out, 1'b1};
   assign adder_y_op_b = {adder_y_op_b_invert ? ~shift_mod_mux_out : shift_mod_mux_out,
@@ -820,25 +820,25 @@ module otbn_alu_bignum
 
   // SEC_CM: CTRL.REDUN
   assign alu_predec_error_o =
-    |{expected_adder_x_en != alu_predec_bignum_i.adder_x_en,
-      expected_x_res_operand_a_sel != alu_predec_bignum_i.x_res_operand_a_sel,
-      expected_adder_y_op_a_en != alu_predec_bignum_i.adder_y_op_a_en,
-      expected_adder_y_op_shifter_en != alu_predec_bignum_i.adder_y_op_shifter_en,
-      expected_shifter_a_en != alu_predec_bignum_i.shifter_a_en,
-      expected_shifter_b_en != alu_predec_bignum_i.shifter_b_en,
-      expected_shift_right != alu_predec_bignum_i.shift_right,
-      expected_shift_amt != alu_predec_bignum_i.shift_amt,
-      expected_shift_mod_sel != alu_predec_bignum_i.shift_mod_sel,
-      expected_logic_a_en != alu_predec_bignum_i.logic_a_en,
-      expected_logic_shifter_en != alu_predec_bignum_i.logic_shifter_en,
-      expected_logic_res_sel != alu_predec_bignum_i.logic_res_sel,
-      expected_flag_group_sel != alu_predec_bignum_i.flag_group_sel,
-      expected_flag_sel != alu_predec_bignum_i.flag_sel,
-      expected_flags_keep != alu_predec_bignum_i.flags_keep,
-      expected_flags_adder_update != alu_predec_bignum_i.flags_adder_update,
-      expected_flags_logic_update != alu_predec_bignum_i.flags_logic_update,
-      expected_flags_mac_update != alu_predec_bignum_i.flags_mac_update,
-      expected_flags_ispr_wr != alu_predec_bignum_i.flags_ispr_wr};
+    |{expected_adder_x_en != alu_bignum_predec_i.adder_x_en,
+      expected_x_res_operand_a_sel != alu_bignum_predec_i.x_res_operand_a_sel,
+      expected_adder_y_op_a_en != alu_bignum_predec_i.adder_y_op_a_en,
+      expected_adder_y_op_shifter_en != alu_bignum_predec_i.adder_y_op_shifter_en,
+      expected_shifter_a_en != alu_bignum_predec_i.shifter_a_en,
+      expected_shifter_b_en != alu_bignum_predec_i.shifter_b_en,
+      expected_shift_right != alu_bignum_predec_i.shift_right,
+      expected_shift_amt != alu_bignum_predec_i.shift_amt,
+      expected_shift_mod_sel != alu_bignum_predec_i.shift_mod_sel,
+      expected_logic_a_en != alu_bignum_predec_i.logic_a_en,
+      expected_logic_shifter_en != alu_bignum_predec_i.logic_shifter_en,
+      expected_logic_res_sel != alu_bignum_predec_i.logic_res_sel,
+      expected_flag_group_sel != alu_bignum_predec_i.flag_group_sel,
+      expected_flag_sel != alu_bignum_predec_i.flag_sel,
+      expected_flags_keep != alu_bignum_predec_i.flags_keep,
+      expected_flags_adder_update != alu_bignum_predec_i.flags_adder_update,
+      expected_flags_logic_update != alu_bignum_predec_i.flags_logic_update,
+      expected_flags_mac_update != alu_bignum_predec_i.flags_mac_update,
+      expected_flags_ispr_wr != alu_bignum_predec_i.flags_ispr_wr};
 
   ////////////////////////
   // Logical operations //
@@ -851,14 +851,14 @@ module otbn_alu_bignum
   // SEC_CM: DATA_REG_SW.SCA
   prim_blanker #(.Width(WLEN)) u_logical_op_a_blanker (
     .in_i (operation_i.operand_a),
-    .en_i (alu_predec_bignum_i.logic_a_en),
+    .en_i (alu_bignum_predec_i.logic_a_en),
     .out_o(logical_op_a_blanked)
   );
 
   // SEC_CM: DATA_REG_SW.SCA
   prim_blanker #(.Width(WLEN)) u_logical_op_shifter_res_blanker (
     .in_i (shifter_res),
-    .en_i (alu_predec_bignum_i.logic_shifter_en),
+    .en_i (alu_bignum_predec_i.logic_shifter_en),
     .out_o(logical_op_shifter_res_blanked)
   );
 
@@ -875,7 +875,7 @@ module otbn_alu_bignum
     .clk_i,
     .rst_ni,
     .in_i  (logical_res_mux_in),
-    .sel_i (alu_predec_bignum_i.logic_res_sel),
+    .sel_i (alu_bignum_predec_i.logic_res_sel),
     .out_o (logical_res)
   );
 
@@ -957,7 +957,7 @@ module otbn_alu_bignum
   // `operation_result_o`.
   logic mod_used;
   assign mod_used = operation_valid_i & (operation_i.op != AluOpBignumNone)
-                    & !alu_predec_bignum_i.shift_mod_sel & adder_y_res_used;
+                    & !alu_bignum_predec_i.shift_mod_sel & adder_y_res_used;
   `ASSERT_KNOWN(ModUsed_A, mod_used)
 
   // Raise a register integrity violation error iff `mod_intg_q` is used and (at least partially)
