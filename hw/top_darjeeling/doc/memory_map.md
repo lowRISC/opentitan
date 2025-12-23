@@ -19,7 +19,7 @@ The main address space, shared between the CPU and DM
 | spi_device        | default     | `0x30310000`   | `0x2000`       | `0x800`        | spi_device                       |
 | i2c0              | default     | `0x30080000`   | `0x80`         | `0x20`         | i2c0                             |
 | rv_timer          | default     | `0x30100000`   | `0x200`        | `0x80`         | rv_timer                         |
-| otp_ctrl          | core        | `0x30130000`   | `0x8000`       | `0x2000`       | core device on otp_ctrl          |
+| otp_ctrl          | core        | `0x30130000`   | `0x10000`      | `0x4000`       | core device on otp_ctrl          |
 | otp_macro         | prim        | `0x30140000`   | `0x20`         | `0x8`          | prim device on otp_macro         |
 | lc_ctrl           | regs        | `0x30150000`   | `0x100`        | `0x40`         | regs device on lc_ctrl           |
 | alert_handler     | default     | `0x30160000`   | `0x800`        | `0x200`        | alert_handler                    |

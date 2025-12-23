@@ -10,17 +10,6 @@
     // The partition and item names must correspond with the OTP memory map.
     partitions: [
         {
-            name:  "CREATOR_SW_CFG",
-            items: [
-                {
-                    name: "CREATOR_SW_CFG_ROM_EXEC_EN",
-                    // ROM execution is enabled if this item is set to a
-                    // non-zero value.
-                    value: "0xffffffff",
-                },
-            ],
-        }
-        {
             name:  "LIFE_CYCLE",
             // Can be one of the following strings:
             // RAW, TEST_UNLOCKED0-3, TEST_LOCKED0-2, DEV, PROD, PROD_END, RMA, SCRAP
