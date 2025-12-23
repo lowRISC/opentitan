@@ -904,6 +904,9 @@ class IpHelper:
     def has_reg_blocks(self):
         return len(self.ip.reg_blocks) > 0
 
+    def has_memories(self):
+        return len(self.ip.memories) > 0
+
     def has_features(self):
         return len(self.ip.features) > 0
 
@@ -930,24 +933,25 @@ class IpHelper:
                 ),
                 docstring = "Base address of each register block"
             )
-        self.inst_struct.add_field(
-            name = self.MEM_ADDR_FIELD_NAME,
-            field_type = ArrayMapType(
-                elem_type = ScalarType("uint32_t"),
-                index_type = ScalarType(self.memory_enum.name),
-                length = Name(["count"]),
-            ),
-            docstring = "Base address of each memory"
-        )
-        self.inst_struct.add_field(
-            name = self.MEM_SIZE_FIELD_NAME,
-            field_type = ArrayMapType(
-                elem_type = ScalarType("uint32_t"),
-                index_type = ScalarType(self.memory_enum.name),
-                length = Name(["count"]),
-            ),
-            docstring = "Size in bytes of each memory"
-        )
+        if self.has_memories():
+            self.inst_struct.add_field(
+                name = self.MEM_ADDR_FIELD_NAME,
+                field_type = ArrayMapType(
+                    elem_type = ScalarType("uint32_t"),
+                    index_type = ScalarType(self.memory_enum.name),
+                    length = Name(["count"]),
+                ),
+                docstring = "Base address of each memory"
+            )
+            self.inst_struct.add_field(
+                name = self.MEM_SIZE_FIELD_NAME,
+                field_type = ArrayMapType(
+                    elem_type = ScalarType("uint32_t"),
+                    index_type = ScalarType(self.memory_enum.name),
+                    length = Name(["count"]),
+                ),
+                docstring = "Size in bytes of each memory"
+            )
         if self.has_irqs():
             # FIXME We need to handle better the case where a block is not connected to the PLIC.
             self.inst_struct.add_field(
@@ -1036,19 +1040,20 @@ This value is undefined if the block is not connected to the Alert Handler."""
                 reg_block_map[rb] = m["base_addrs"][rb_key].get(self._addr_space, "0xffffffff")
             inst_desc[self.REG_BLOCK_ADDR_FIELD_NAME] = reg_block_map
         # Memories.
-        mem_addr_map = OrderedDict()
-        mem_size_map = OrderedDict()
-        for mem in self.ip.memories.keys():
-            mem_name = Name.from_snake_case(mem)
-            # It is possible that this module is not accessible in this
-            # address space. In this case, return a dummy value.
-            # FIXME Maybe find a better way of doing this.
-            assert mem in m["base_addrs"]
-            mem_addr_map[mem_name] = m["base_addrs"][mem].get(self._addr_space, "0xffffffff")
-            assert mem in m["memory"] and "size" in m["memory"][mem]
-            mem_size_map[mem_name] = m["memory"][mem]["size"]
-        inst_desc[self.MEM_ADDR_FIELD_NAME] = mem_addr_map
-        inst_desc[self.MEM_SIZE_FIELD_NAME] = mem_size_map
+        if self.has_memories():
+            mem_addr_map = OrderedDict()
+            mem_size_map = OrderedDict()
+            for mem in self.ip.memories.keys():
+                mem_name = Name.from_snake_case(mem)
+                # It is possible that this module is not accessible in this
+                # address space. In this case, return a dummy value.
+                # FIXME Maybe find a better way of doing this.
+                assert mem in m["base_addrs"]
+                mem_addr_map[mem_name] = m["base_addrs"][mem].get(self._addr_space, "0xffffffff")
+                assert mem in m["memory"] and "size" in m["memory"][mem]
+                mem_size_map[mem_name] = m["memory"][mem]["size"]
+            inst_desc[self.MEM_ADDR_FIELD_NAME] = mem_addr_map
+            inst_desc[self.MEM_SIZE_FIELD_NAME] = mem_size_map
         # Clock map.
         if self.has_clocks():
             inst_clock_map = OrderedDict()
