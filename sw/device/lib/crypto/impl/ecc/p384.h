@@ -246,6 +246,32 @@ status_t p384_ecdsa_sign_start(const uint32_t digest[kP384ScalarWords],
 /**
  * Start an async ECDSA/P-384 signature generation operation on OTBN.
  *
+ * This function allows for configuration of the secret scalar k.
+ * KATs for FIPS CMVP compliance require ECDSA implementations to receive
+ * non-random selected ephemeral k as input (see p.82 bottom in Implementation
+ * Guidance for FIPS 140-3 and the Cryptographic Module Validation Program).
+ * https://csrc.nist.gov/csrc/media/Projects/cryptographic-module-validation-program/documents/fips%20140-3/FIPS%20140-3%20IG.pdf
+ *
+ * Note that the provided secret scalar k is not re-blinded before signature
+ * generation. This is inline with the strict recommendation that every secret
+ * scalar in ECDSA is strictly only ever used once. The scalar is provided as
+ * 448b which includes implicit blinding, and in arithmetic shares.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param digest Digest of the message to sign.
+ * @param private_key Secret key to sign the message with.
+ * @param secret_scalar Secret scalar to sign the message with.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t p384_ecdsa_sign_config_k_start(const uint32_t digest[kP384ScalarWords],
+                                        p384_masked_scalar_t *private_key,
+                                        p384_masked_scalar_t *secret_scalar);
+
+/**
+ * Start an async ECDSA/P-384 signature generation operation on OTBN.
+ *
  * Expects a sideloaded key from keymgr to be already loaded on OTBN. Returns
  * an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
