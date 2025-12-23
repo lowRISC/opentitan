@@ -40,6 +40,7 @@ module top import ibex_pkg::*; #(
   parameter bit          SecureIbex       = 1'b0,
   parameter bit          WritebackStage   = 1'b1,
   parameter bit          RV32E            = 1'b0,
+  parameter rv32zc_e     RV32ZC           = RV32Zca,
   parameter int unsigned PMPNumRegions    = 4
 ) (
   // Clock and Reset
@@ -131,6 +132,7 @@ ibex_top #(
     .SecureIbex(SecureIbex),
     .WritebackStage(WritebackStage),
     .RV32E(RV32E),
+    .RV32ZC(RV32ZC),
     .BranchTargetALU(1'b1),
     .PMPEnable(1'b1),
     .PMPNumRegions(PMPNumRegions),
@@ -441,25 +443,35 @@ assign ex_is_checkable_csr = ~(
 
 logic [31:0] decompressed_instr;
 logic decompressed_instr_illegal;
-ibex_compressed_decoder decompression_assertion_decoder(
+ibex_compressed_decoder #(
+    .RV32ZC(RV32ZC),
+    .ResetAll(SecureIbex)
+) decompression_assertion_decoder (
     .clk_i,
     .rst_ni,
     .valid_i(1'b1),
+    .id_in_ready_i(1'b1),
     .instr_i(ex_compressed_instr),
     .instr_o(decompressed_instr),
     .is_compressed_o(),
+    .gets_expanded_o(),
     .illegal_instr_o(decompressed_instr_illegal)
 );
 
 logic [31:0] decompressed_instr_2;
 logic decompressed_instr_illegal_2;
-ibex_compressed_decoder decompression_assertion_decoder_2(
+ibex_compressed_decoder #(
+    .RV32ZC(RV32ZC),
+    .ResetAll(SecureIbex)
+) decompression_assertion_decoder_2(
     .clk_i,
     .rst_ni,
     .valid_i(1'b1),
+    .id_in_ready_i(1'b1),
     .instr_i(wbexc_instr),
     .instr_o(decompressed_instr_2),
     .is_compressed_o(wbexc_is_compressed),
+    .gets_expanded_o(),
     .illegal_instr_o(decompressed_instr_illegal_2)
 );
 
