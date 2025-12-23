@@ -28,6 +28,7 @@ package(default_visibility = ["//visibility:public"])
             "@crate_index//:elliptic-curve",
             "@crate_index//:hex",
             "@crate_index//:humantime",
+            "@crate_index//:indexmap",
             "@crate_index//:log",
             "@crate_index//:p256",
             "@crate_index//:serde_json",

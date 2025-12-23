@@ -68,18 +68,18 @@ fn run_aes_testcase(
         "ecb" => CryptotestAesMode::Ecb.send(spi_console)?,
         "ofb" => CryptotestAesMode::Ofb.send(spi_console)?,
         _ => panic!("Invalid AES mode"),
-    }
+    };
     match test_case.operation.as_str() {
         "encrypt" => CryptotestAesOperation::Encrypt.send(spi_console)?,
         "decrypt" => CryptotestAesOperation::Decrypt.send(spi_console)?,
         _ => panic!("Invalid AES operation"),
-    }
+    };
     match test_case.padding.as_str() {
         "null" => CryptotestAesPadding::Null.send(spi_console)?,
         "pkcs7" => CryptotestAesPadding::Pkcs7.send(spi_console)?,
         "iso9797m2" => CryptotestAesPadding::Iso9797M2.send(spi_console)?,
         _ => panic!("Invalid AES padding scheme"),
-    }
+    };
 
     let mut iv: ArrayVec<u8, AES_BLOCK_BYTES>;
     match &test_case.iv {

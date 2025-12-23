@@ -28,4 +28,5 @@ $PYTHON ${ORCHESTRATOR_PATH} \
   --test-exit-token="0x22222222_22222222_22222222_22222222" \
   --fpga=${FPGA} \
   --non-interactive \
+  "$@" \
   --db-path=$TEST_TMPDIR/registry.sqlite
