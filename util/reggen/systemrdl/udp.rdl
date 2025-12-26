@@ -70,6 +70,14 @@ enum MultiBitBool32 {
   False = 0x69696969;
 };
 
+/*
+ * The same as swwe, but supports multibit references.
+ */
+property mubi_swwe {
+  type = ref;
+  component = reg|field;
+};
+
 /**
  * true if hardware uses `re` signal, which is latched signal of software read pulse.
  * The standard SystemRDL property `swacc` cannot be used here because `swacc = hwre | swmod`.

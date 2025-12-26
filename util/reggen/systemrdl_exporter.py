@@ -102,19 +102,22 @@ class Field2Systemrdl:
         alignment = 4
         aligned_width = (self.inner.bits.width() + alignment - 1) & ~(alignment - 1)
         return f"MultiBitBool{aligned_width}"
-    
-    def assign_swwe(self, field: systemrdl.component.Field, regwen: str) -> None:
+
+    def assign_swwe(self, field: systemrdl.component.Component, regwen: str | None) -> None:
         if swwe := bool(regwen):
+            property_name = "swwe"
             if reg_ref := self.root.get_child_by_name(str(regwen)):
+                wen_field = reg_ref.children[0]
                 # This is a workaround and shall be fixed when the Issue
                 # https://github.com/SystemRDL/systemrdl-compiler/issues/183 is fixed.
                 swwe = InstRef(
                     self.importer.compiler.env,
                     self.root,
-                    [(str(regwen), [], None), (str(reg_ref.children[0].inst_name), [], None)],
+                    [(str(regwen), [], None), (str(wen_field.inst_name), [], None)],
                 )  # type: ignore
-            self.importer.assign_property(field, "swwe", swwe)
-
+                if wen_field.width > 1:  # type: ignore
+                    property_name = "mubi_swwe"
+            self.importer.assign_property(field, property_name, swwe)
 
     def export(
         self, strip_suffix: bool = False, regwen: str | None = None
@@ -161,6 +164,7 @@ class Field2Systemrdl:
     def post_process(self, regwen: str) -> None:
         if field := self.parent.get_child_by_name(self.inner.name.upper()):
             self.assign_swwe(field, regwen)
+
 
 @dataclass
 class Window2Systemrdl:
