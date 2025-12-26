@@ -224,6 +224,18 @@ class GDBController:
         self.send_command(skip_commands)
         self.n_brkp += 1
 
+    def apply_power_cut(self, pc_address, count):
+        skip_commands = f"commands {self.n_brkp}\n"
+        skip_commands += 'printf "instruction skip applied\\n"\n'
+        skip_commands += "end"
+
+        self.send_command(f"tb *({pc_address})")
+        if count > 1:
+            ignore_amount = count - 1
+            self.send_command(f"ignore {self.n_brkp} {ignore_amount}")
+        self.send_command(skip_commands)
+        self.n_brkp += 1
+
     def add_observation(self, observations):
         for addr, log_message in observations.items():
             obs_command = f"commands {self.n_brkp}\n"
