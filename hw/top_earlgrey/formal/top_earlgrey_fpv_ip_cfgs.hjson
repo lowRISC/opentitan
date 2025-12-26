@@ -53,5 +53,14 @@
                exp_fail_hjson: "{proj_root}/hw/top_earlgrey/ip_autogen/rv_plic/fpv/rv_plic_expected_failure.hjson"
                after_load: ["{proj_root}/hw/top_earlgrey/ip_autogen/rv_plic/fpv/tb/coverage.tcl"]
              }
+
+             {
+               name: rstmgr_fpv
+               dut: rstmgr
+               fusesoc_core: lowrisc:earlgrey_ip:rstmgr_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/top_earlgrey/ip_autogen/rstmgr/{sub_flow}/{tool}"
+               after_load: ["{proj_root}/hw/top_earlgrey/ip_autogen/rstmgr/fpv/tb/rstmgr_formal.tcl"]
+             }
             ]
 }
