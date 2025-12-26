@@ -24,7 +24,8 @@ from reggen.signal import Signal
 from reggen.bus_interfaces import BusInterfaces
 from reggen.interrupt import Interrupt
 from reggen.alert import Alert
-from reggen.clocking import Clocking, ClockingItem
+from reggen.params import LocalParam
+from reggen.clocking import Clocking
 from reggen.exporter import Exporter
 from reggen.systemrdl.udp import register_udps
 
@@ -463,6 +464,27 @@ class BusInterfaces2Systemrdl:
 
 
 @dataclass
+class LocalParam2Systemrdl:
+    inner: LocalParam
+
+    def get_value(self) -> int:
+        bases = {"h": 16, "d": 10, "b": 2}
+        value = self.inner.value
+        base = 10
+        if match := re.match(r"\d+'([hdb])(.*)", value):
+            base = bases[match[1]]
+            value = match[2]
+        return int(value, base)
+
+    def export(self) -> Parameter:
+        value = self.get_value()
+        name = self.inner.name
+        rdl_param = Parameter(rdltypes.get_rdltype(value), name)
+        rdl_param._value = value
+        return rdl_param
+
+
+@dataclass
 class IpBlock2Systemrdl:
     inner: IpBlock
     importer: RDLImporter
@@ -471,10 +493,8 @@ class IpBlock2Systemrdl:
         rdl_addrmap = self.importer.create_addrmap_definition(self.inner.name)
 
         for param in self.inner.params.get_localparams():
-            value = int(param.value)
-            rdl_param = Parameter(rdltypes.get_rdltype(value), param.name)
-            rdl_param._value = value
-            rdl_addrmap.parameters_dict[param.name] = rdl_param
+            param = LocalParam2Systemrdl(param).export()  # type: ignore
+            rdl_addrmap.parameters_dict[param.name] = param  # type: ignore
 
         for inter_sig in self.inner.inter_signals:
             signal = InterSignal2Systemrdl(inter_sig, self.importer).export()
