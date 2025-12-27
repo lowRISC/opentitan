@@ -793,6 +793,46 @@
         ]
       }
     },
+    "//third_party/prolead:extensions.bzl%prolead": {
+      "general": {
+        "bzlTransitiveDigest": "GSZLnvHdWu/B4CxlQFKWKoXqooCS0QRgbOBulE9YCuE=",
+        "usagesDigest": "zVUSOupTVnyA5ZDTtVQvCFbaSkrKqYL6RNyZY10WjDU=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "prolead": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "build_file": "@@//third_party/prolead:BUILD.bazel",
+              "strip_prefix": "PROLEAD-7ed0f9f2afe2d1294fb15a48501d489641d70820",
+              "urls": [
+                "https://github.com/ChairImpSec/PROLEAD/archive/7ed0f9f2afe2d1294fb15a48501d489641d70820.zip"
+              ],
+              "integrity": "sha256-Et9OhCkH+zXlrklrE83/2StitSaFwzrsfW+g7Xw9m3U="
+            }
+          },
+          "boost": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "build_file_content": "\npackage(default_visibility = [\"//visibility:public\"])\n\nfilegroup(\n    name = \"headers\",\n    srcs = glob([\"boost/**/*\"]),\n)\n\nfilegroup(\n    name = \"root_anchor\",\n    srcs = [\"boost/version.hpp\"],\n)\n",
+              "strip_prefix": "boost_1_83_0",
+              "urls": [
+                "https://archives.boost.io/release/1.83.0/source/boost_1_83_0.tar.bz2"
+              ],
+              "sha256": "6478edfe2f3305127cffe8caf73ea0176c53769f4bf1585be237eb30798c3b8e"
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "",
+            "bazel_tools",
+            "bazel_tools"
+          ]
+        ]
+      }
+    },
     "//third_party/qemu:extensions.bzl%qemu": {
       "general": {
         "bzlTransitiveDigest": "OuB1CxVkFqfOZYzBZb1O0hzVaq2zEJpEDFBbDYyxM8M=",

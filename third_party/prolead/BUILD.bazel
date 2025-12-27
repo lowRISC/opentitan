@@ -1,0 +1,42 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "all_srcs",
+    srcs = glob(["**"]),
+)
+
+genrule(
+    name = "prolead_binary",
+    srcs = [
+        ":all_srcs",
+        "Makefile",
+        "@boost//:headers",
+        "@boost//:root_anchor",
+    ],
+    outs = ["release/PROLEAD"],
+    cmd = """
+        ANCHOR_PATH=$$(readlink -f $(location @boost//:root_anchor))
+        BOOST_ROOT_DIR=$$(dirname $$(dirname $$ANCHOR_PATH))
+
+        export CPLUS_INCLUDE_PATH="$$BOOST_ROOT_DIR:$${CPLUS_INCLUDE_PATH:-}"
+
+        mkdir -p build_dir
+
+        MAKEFILE_PATH=$$(readlink -f $(location Makefile))
+        SOURCE_ROOT=$$(dirname $$MAKEFILE_PATH)
+
+        cp -L -R $$SOURCE_ROOT/* build_dir/
+
+        pushd build_dir
+            # Run make. It will implicitly use the CPLUS_INCLUDE_PATH env var.
+            make release -j $$(nproc)
+        popd
+
+        mkdir -p $(@D)/release
+        mv build_dir/release/PROLEAD $(location release/PROLEAD)
+    """,
+)
