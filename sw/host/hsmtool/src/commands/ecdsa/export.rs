@@ -17,7 +17,7 @@ use crate::util::attribute::{AttrData, AttributeMap, AttributeType, KeyType, Obj
 use crate::util::helper;
 use crate::util::key::KeyEncoding;
 use crate::util::key::ecdsa::{save_private_key, save_public_key};
-use crate::util::wrap::Wrap;
+use crate::util::wrap::{Wrap, WrapPrivateKey};
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Export {
@@ -31,6 +31,9 @@ pub struct Export {
     /// Wrap the exported key a wrapping key.
     #[arg(long)]
     wrap: Option<String>,
+    // Wrapping key mechanism. Required when wrap is specified.
+    #[arg(long, default_value = "aes-key-wrap-pad")]
+    wrap_mechanism: Option<WrapPrivateKey>,
     #[arg(short, long, value_enum, default_value = "pem")]
     format: KeyEncoding,
     filename: PathBuf,
@@ -55,7 +58,10 @@ impl Export {
     }
 
     fn wrap_key(&self, session: &Session, object: ObjectHandle) -> Result<()> {
-        let wrapper = Wrap::AesKeyWrapPad;
+        let wrapper: Wrap = self
+            .wrap_mechanism
+            .ok_or(anyhow!("wrap_mechanism is required when wrap is specified"))?
+            .into();
         let wrapped = wrapper.wrap(session, object, self.wrap.as_deref())?;
         std::fs::write(&self.filename, &wrapped)?;
         Ok(())
