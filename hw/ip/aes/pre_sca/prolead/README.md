@@ -3,74 +3,15 @@
 This directory contains support files to evaluate the masking employed inside the AES cipher core together with the instantiated PRNG using the tool [PROLEAD - A Probing-Based Leakage Detection Tool for Hardware and Software](https://github.com/ChairImpSec/PROLEAD).
 For further details on the tool and its capabilities, refer to the paper [PROLEAD - A Probing-Based Hardware Leakage Detection Tool](https://eprint.iacr.org/2022/965).
 
-## Prerequisites
+## Bazel run target
 
-Note that this flow is experimental.
-It has been developed using Yosys 0.36 (git sha1 8f07a0d84) and sv2v v0.0.11-28-g81d8225.
-The used PROLEAD version is from Oct 31, 2023 (7ed0f9f2).
-Other versions of these tools might not be compatible.
+   In order to build the aes_cipher_core_netlist using the nangate45 library and to evaluate it with PROLEAD, you can run the following command.
+   This uses the aes_cipher_core_config.set file for settings.
 
-1. Download the PROLEAD tool
-   ```sh
-   git clone git@github.com:ChairImpSec/PROLEAD.git
-   cd PROLEAD
-   git reset --hard 7ed0f9f2
+   ```console
+   ./bazelisk.sh run //hw/ip/aes/pre_sca/prolead:full_evaluate_aes_cipher_core
    ```
 
-   Install the PROLEAD requirements as documented in the [corresponding wiki page](https://github.com/ChairImpSec/PROLEAD/wiki/Installation#installation).
-
-   In the PROLEAD directory, run
-   ```sh
-   make release -j 16
-   ```
-   to build the tool.
-
-   The compiled binary can be found in the `release` directory.
-   Make sure to add it to your path.
-
-1. Generate a Verilog netlist
-
-   A netlist of the AES cipher core can be generated using the Yosys synthesis flow from the OpenTitan repository.
-   From the OpenTitan top level, run
-   ```sh
-   cd hw/ip/aes/pre_syn
-   ```
-   Set up the synthesis flow as described in the corresponding README.
-   Then, make sure to change the line in `syn_setup.sh`
-   ```sh
-   export LR_SYNTH_TOP_MODULE=aes
-   ```
-   to
-   ```sh
-   export LR_SYNTH_TOP_MODULE=aes_cipher_core
-   ```
-   to only synthesize the masked AES cipher core without the TL-UL and key sideload interfaces, unmasked datapath logic for the different block cipher modes of operation, and related control logic.
-
-   Then, run the synthesis
-   ```sh
-   ./syn_yosys.sh
-   ```
-
-## Evaluate the masking inside the AES cipher core together with the PRNG
-
-After downloading and building the PROLEAD tool, and synthesizing the AES cipher core, the masking together with the PRNG can finally be evaluated.
-
-1. Make sure to source the `build_consts.sh` script from the OpenTitan
-   repository
-   ```sh
-   source util/build_consts.sh
-   ```
-   in order to set up some shell variables.
-
-1. Enter the directory containing the PROLEAD support files for AES
-   ```sh
-   cd hw/ip/aes/pre_sca/prolead
-   ```
-
-1. Launch the PROLEAD tool to evaluate the netlist using the provided script
-   ```sh
-   ./evaluate.sh
-   ```
    This should produce output similar to the one below:
    ```sh
    Start Hardware Leakage Evaluation
@@ -151,10 +92,6 @@ After downloading and building the PROLEAD tool, and synthesizing the AES cipher
    For example, to verify a single AES S-Box, first re-run the Yosys synthesis with
    ```sh
    export LR_SYNTH_TOP_MODULE=aes_sbox
-   ```
-   and then execute
-   ```sh
-   ./evaluate.sh aes_sbox
    ```
    Note that you need to create a dedicated PROLEAD config file for this.
 
