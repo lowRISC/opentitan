@@ -40,3 +40,35 @@ CONFIG_PATH="${CONFIG_FILE:-${TOP_MODULE}_config.set}"
         -cf "$CONFIG_PATH" \
         -rf ${OUT_DIR} \
         2>&1 | tee "${OUT_DIR}/log.txt"
+
+EXIT_CODE=${PIPESTATUS[0]}
+
+if [ $EXIT_CODE -ne 0 ]; then
+    echo "Error: PROLEAD failed with exit code $EXIT_CODE"
+    exit $EXIT_CODE
+fi
+
+if [[ -n "${MAX_LEAKAGE_THRESHOLD}" ]]; then
+    echo "---------------------------------------------------"
+    echo "Verifying leakage against threshold: ${MAX_LEAKAGE_THRESHOLD}"
+
+    if ! awk -F'|' -v threshold="${MAX_LEAKAGE_THRESHOLD}" '
+        /OKAY/ || /LEAKAGE/ {
+            gsub(/ /, "", $(NF-2));
+            raw_val = $(NF-2);
+
+            if (raw_val !~ /^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {
+                exit 1;
+            }
+
+            if (raw_val + 0.0 > threshold) {
+                exit 1;
+            }
+        }
+    ' "${OUT_DIR}/log.txt"; then
+        echo "TEST FAILED"
+        exit 1
+    else
+        echo "SUCCESS"
+    fi
+fi
