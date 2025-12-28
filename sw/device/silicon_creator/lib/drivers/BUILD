@@ -700,6 +700,7 @@ dual_cc_library(
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:multibits",
             "//sw/device/lib/runtime:hart",
+            "//sw/device/lib/coverage:api",
             "//sw/device/silicon_creator/lib:error",
             "//sw/device/silicon_creator/lib/base:sec_mmio",
             "//sw/device/silicon_creator/lib/drivers:otp",
