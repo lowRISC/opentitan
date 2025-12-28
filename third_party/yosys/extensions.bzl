@@ -18,8 +18,8 @@ filegroup(
 filegroup(
     name = "data",
     srcs = glob([
-        "share/**", 
-        "lib/**", 
+        "share/**",
+        "lib/**",
         "libexec/**",
         "bin/**",
     ]),

@@ -1182,7 +1182,7 @@
     },
     "//third_party/yosys:extensions.bzl%yosys": {
       "general": {
-        "bzlTransitiveDigest": "5luHVBBMOlhyuwih46sKvtt3UMwVQVTEMtY2V61vIpM=",
+        "bzlTransitiveDigest": "wNTjxusFtIYIb3ISFgZ3O059JE+JbQvVpnn540XW6eI=",
         "usagesDigest": "lKfB6E+ql/0qddV6Yzpz2vnTusLF2a8oM/Aw7gKA6CM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1191,7 +1191,7 @@
           "yosys": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
-              "build_file_content": "\npackage(default_visibility = [\"//visibility:public\"])\n\nfilegroup(\n    name = \"yosys_bin\",\n    srcs = [\"bin/yosys\"],\n)\n\nfilegroup(\n    name = \"data\",\n    srcs = glob([\n        \"share/**\", \n        \"lib/**\", \n        \"libexec/**\",\n        \"bin/**\",\n    ]),\n)\n",
+              "build_file_content": "\npackage(default_visibility = [\"//visibility:public\"])\n\nfilegroup(\n    name = \"yosys_bin\",\n    srcs = [\"bin/yosys\"],\n)\n\nfilegroup(\n    name = \"data\",\n    srcs = glob([\n        \"share/**\",\n        \"lib/**\",\n        \"libexec/**\",\n        \"bin/**\",\n    ]),\n)\n",
               "urls": [
                 "https://github.com/YosysHQ/oss-cad-suite-build/releases/download/2024-01-01/oss-cad-suite-linux-x64-20240101.tgz"
               ],

@@ -164,4 +164,4 @@ fi
 #-------------------------------------------------------------------------
 # report kGE number
 #-------------------------------------------------------------------------
-python/get_kge.py $LR_SYNTH_CELL_LIBRARY_PATH $LR_SYNTH_OUT_DIR/reports/area.rpt
+python/get_kge.py $LR_SYNTH_CELL_LIBRARY_PATH $LR_SYNTH_OUT_DIR/reports/area.rpt --library=$LR_SYNTH_CELL_LIBRARY_NAME
