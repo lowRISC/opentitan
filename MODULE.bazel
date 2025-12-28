@@ -358,6 +358,9 @@ use_repo(qemu, "qemu_opentitan", "qemu_opentitan_src")
 doxygen = use_extension("//third_party/doxygen:extensions.bzl", "doxygen")
 use_repo(doxygen, "doxygen")
 
+sv2v_ext = use_extension("//third_party/sv2v:extensions.bzl", "sv2v")
+use_repo(sv2v_ext, "sv2v")
+
 # Hooks:
 # Extension for linking in externally managed test and provisioning customizations
 # for both secure/non-secure manufacturer domains.
