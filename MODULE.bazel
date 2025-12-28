@@ -361,6 +361,9 @@ use_repo(doxygen, "doxygen")
 sv2v_ext = use_extension("//third_party/sv2v:extensions.bzl", "sv2v")
 use_repo(sv2v_ext, "sv2v")
 
+yosys_ext = use_extension("//third_party/yosys:extensions.bzl", "yosys")
+use_repo(yosys_ext, "yosys")
+
 # Hooks:
 # Extension for linking in externally managed test and provisioning customizations
 # for both secure/non-secure manufacturer domains.
