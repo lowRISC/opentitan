@@ -135,7 +135,7 @@
   supported_wave_formats: ["fsdb", "vpd"]
 
   // Default tcl script used when running the sim. Override if needed.
-  run_script: "{dv_root}/tools/sim.tcl"
+  run_script: "{dv_root}/tools/tcl/sim.tcl"
 
   // Coverage related.
   cov_db_dir: "{scratch_path}/coverage/{build_mode}.vdb"
