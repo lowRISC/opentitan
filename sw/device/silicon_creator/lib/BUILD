@@ -74,6 +74,7 @@ opentitan_test(
         ),
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
     ),
     verilator = verilator_params(
