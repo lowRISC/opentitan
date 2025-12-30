@@ -193,52 +193,39 @@ static size_t spi_device_send_frame(ottf_console_t *console, const char *buf,
   // reads out the entire frame. Clear the TX-ready indicator pin before
   // continuing.
   if (console->data.spi.tx_ready_gpio != kOttfSpiNoTxGpio) {
-    // Where possible, for synchronization use the last read address to
-    // determine whether the host has started/finished reading the data to avoid
-    // reliance on HW chip select signals, which could be missed depending on
-    // Ibex/SPI clock speeds and are difficult to handle in emulation
-    // environments.
-    uint32_t target_read_addr = 0;
-    if (next_write_address == 0) {
-      target_read_addr = kSpiDeviceReadBufferSizeBytes - 1;
-    } else {
-      target_read_addr = next_write_address - 1;
-    }
-
-    uint32_t initial_read_addr;
-    if (dif_spi_device_get_last_read_address(spi_device, &initial_read_addr) !=
-        kDifOk) {
-      return 0;
-    }
     OT_DISCARD(dif_gpio_write(&ottf_console_gpio,
                               console->data.spi.tx_ready_gpio, true));
+    bool cs_state = true;
+    bool target_cs_state = false;
+    // There will be two bulk transfers that can be synchronized by the
+    // chip-select action. First the host will read out the 12-byte frame
+    // header, followed by the N-byte payload. Each transfer is framed on the
+    // wire by observing the chip-select first toggling high->low then
+    // low->high.
+    //
+    // After the first toggle low, when the host begins reading out the frame
+    // header, we can deassert the TX-ready pin as the host will continue to
+    // complete two SPI transfers regardless.
+    for (size_t i = 0; i < 4; ++i) {
+      // Repeat four times, because there are 4 CSB-toggle events in two
+      // standard SPI transfers.
 
-    // Wait until a /CS low or a read address change to toggle TX ready low
-    bool cs_state;
-    uint32_t last_read_addr;
-    do {
-      if (dif_spi_device_get_csb_status(spi_device, &cs_state) != kDifOk ||
-          dif_spi_device_get_last_read_address(spi_device, &last_read_addr) !=
-              kDifOk) {
-        return 0;
+      // Query the state of CSB until it changes.
+      do {
+        if (dif_spi_device_get_csb_status(spi_device, &cs_state) != kDifOk) {
+          return 0;
+        }
+      } while (cs_state != target_cs_state);
+      target_cs_state = !target_cs_state;
+
+      // After the first toggle of CSB (high->low, the start of the header
+      // transfer), the HOST is already going to queue up and complete 2 full
+      // transfers, so we can de-assert the TX-Ready indicator GPIO.
+      if (i == 0) {
+        OT_DISCARD(dif_gpio_write(&ottf_console_gpio,
+                                  console->data.spi.tx_ready_gpio, false));
       }
-    } while (cs_state && last_read_addr == initial_read_addr);
-
-    // After the host begins reading out the frame header, we can deassert the
-    // TX-ready pin as the host will continue to complete two SPI transfers
-    // (the header and payload) regardless.
-    OT_DISCARD(dif_gpio_write(&ottf_console_gpio,
-                              console->data.spi.tx_ready_gpio, false));
-
-    // Finished only when the read address matches the last written byte of
-    // data, and /CS is high (deasserted).
-    do {
-      if (dif_spi_device_get_csb_status(spi_device, &cs_state) != kDifOk ||
-          dif_spi_device_get_last_read_address(spi_device, &last_read_addr) !=
-              kDifOk) {
-        return 0;
-      }
-    } while (!cs_state || last_read_addr != target_read_addr);
+    }
 
     // Reset the write_address before returning.
     next_write_address = 0;
