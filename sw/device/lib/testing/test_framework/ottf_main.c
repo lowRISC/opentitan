@@ -183,7 +183,9 @@ void _ottf_main(void) {
 
 #if !OT_IS_ENGLISH_BREAKFAST
   if (!kOttfTestConfig.ignore_alerts) {
-    LOG_INFO("Enabling OTTF alert catcher");
+    if (!kOttfTestConfig.silence_console_prints) {
+      LOG_INFO("Enabling OTTF alert catcher");
+    }
     CHECK_STATUS_OK(ottf_alerts_enable_all());
   }
 #endif  // !OT_IS_ENGLISH_BREAKFAST
