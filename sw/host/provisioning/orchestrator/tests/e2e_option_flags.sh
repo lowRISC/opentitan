@@ -30,8 +30,5 @@ $PYTHON ${ORCHESTRATOR_PATH} \
   --package=${PACKAGE} \
   --fpga=cw310 \
   --ast-cfg-version=0 \
-  --enable-alerts \
-  --use-ext-clk \
-  --patch-ast \
   --non-interactive \
   --db-path=$TEST_TMPDIR/registry.sqlite

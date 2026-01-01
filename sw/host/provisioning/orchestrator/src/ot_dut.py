@@ -39,7 +39,7 @@ _ZERO_256BIT_HEXSTR = "0x" + "_".join(["00000000"] * 8)
 # CP & FT Device Firmware
 _BASE_DEV_DIR           = "sw/device/silicon_creator/manuf/base"  # noqa: E221
 _CP_DEVICE_ELF          = "{base_dir}/sram_cp_provision_{target}.elf"  # noqa: E221
-_FT_INDIVID_DEVICE_ELF  = "{base_dir}/sram_ft_individualize_{otp}_{target}.elf"  # noqa: E221
+_FT_INDIVID_DEVICE_ELF  = "{base_dir}/sram_ft_individualize_{sku}_{target}.elf"  # noqa: E221
 _FT_FW_BUNDLE_BIN       = "{base_dir}/ft_fw_bundle_{sku}_{target}.img"  # noqa: E221
 # CP & FT Host Binaries
 _CP_HOST_BIN = "sw/host/provisioning/cp/cp"
@@ -57,9 +57,6 @@ class OtDut():
     test_exit_token: str
     fpga: str
     fpga_dont_clear_bitstream: bool
-    enable_alerts: bool
-    use_ext_clk: bool
-    patch_ast: bool
     require_confirmation: bool = True
 
     def _make_log_dir(self) -> None:
@@ -218,7 +215,7 @@ class OtDut():
                                            openocd_cfg=openocd_cfg)
             individ_elf = individ_elf.format(
                 base_dir=self._base_dev_dir(),
-                otp=self.sku_config.otp,
+                sku=self.sku_config.name,
                 target=f"fpga_{self.fpga}_rom_with_fake_keys")
             perso_bin = perso_bin.format(
                 base_dir=self._base_dev_dir(),
@@ -236,7 +233,7 @@ class OtDut():
                                            openocd_cfg=openocd_cfg)
             host_flags += " --disable-dft-on-reset"
             individ_elf = individ_elf.format(base_dir=self._base_dev_dir(),
-                                             otp=self.sku_config.otp,
+                                             sku=self.sku_config.name,
                                              target="silicon_creator")
             perso_bin = perso_bin.format(base_dir=self._base_dev_dir(),
                                          sku=self.sku_config.name,
@@ -270,7 +267,6 @@ class OtDut():
             --elf={individ_elf} \
             --bootstrap={perso_bin} \
             --second-bootstrap={fw_bundle_bin} \
-            --ft-device-id="0x{hex(self.device_id.sku_specific)[2:].zfill(32)}" \
             --test-unlock-token="{format_hex(self.test_unlock_token, width=32)}" \
             --test-exit-token="{format_hex(self.test_exit_token, width=32)}" \
             --target-mission-mode-lc-state="{self.sku_config.target_lc_state}" \
@@ -281,19 +277,6 @@ class OtDut():
             # Add owner FW boot success message check.
             if self.sku_config.owner_fw_boot_str:
                 cmd += f"--owner-success-text=\"{self.sku_config.owner_fw_boot_str}\""
-
-            # Enable alerts during individualization if requested.
-            if self.enable_alerts:
-                cmd += " --enable-alerts-during-individualize"
-
-            # Enable external clock during individualization if requested.
-            if self.use_ext_clk:
-                cmd += " --use-ext-clk-during-individualize"
-
-            # Patch AST config (with patch value in flash info page 0) during
-            # individualization if requested.
-            if self.patch_ast:
-                cmd += " --use-ast-patch-during-individualize"
 
             # Get user confirmation before running command.
             logging.info(f"Running command: {cmd}")
