@@ -76,23 +76,19 @@ static rom_error_t unlock(boot_svc_msg_t *msg, boot_data_t *bootdata) {
     // Check the signature against the unlock key.
     // TODO(cfrantz): Add a mechanism to control whether or not the
     // recovery key is allowed here.
-    if (ownership_key_validate(
-            /*page=*/0, kOwnershipKeyUnlock | kOwnershipKeyRecovery,
-            &msg->ownership_unlock_req.signature,
-            &msg->ownership_unlock_req.unlock_mode,
-            len) == kHardenedBoolFalse) {
-      return kErrorOwnershipInvalidSignature;
-    }
+    HARDENED_RETURN_IF_ERROR(ownership_key_validate(
+        /*page=*/0, kOwnershipKeyUnlock | kOwnershipKeyRecovery,
+        msg->header.type, &bootdata->nonce,
+        &msg->ownership_unlock_req.signature,
+        &msg->ownership_unlock_req.unlock_mode, len));
     return do_unlock(msg, bootdata);
   } else if (is_locked_none(bootdata->ownership_state) == kHardenedBoolTrue) {
     // In the No-Owner state, we check against the silicon_creator's
     // no_owner_recovery_key.
-    if (ownership_key_validate(/*page=*/0, kOwnershipKeyRecovery,
-                               &msg->ownership_unlock_req.signature,
-                               &msg->ownership_unlock_req.unlock_mode,
-                               len) == kHardenedBoolFalse) {
-      return kErrorOwnershipInvalidSignature;
-    }
+    HARDENED_RETURN_IF_ERROR(ownership_key_validate(
+        /*page=*/0, kOwnershipKeyRecovery, msg->header.type, &bootdata->nonce,
+        &msg->ownership_unlock_req.signature,
+        &msg->ownership_unlock_req.unlock_mode, len));
     return do_unlock(msg, bootdata);
   } else {
     return kErrorOwnershipInvalidState;
@@ -116,12 +112,10 @@ static rom_error_t unlock_update(boot_svc_msg_t *msg, boot_data_t *bootdata) {
           ;
     }
     // Check the signature against the unlock key.
-    if (ownership_key_validate(/*page=*/0, kOwnershipKeyUnlock,
-                               &msg->ownership_unlock_req.signature,
-                               &msg->ownership_unlock_req.unlock_mode,
-                               len) == kHardenedBoolFalse) {
-      return kErrorOwnershipInvalidSignature;
-    }
+    HARDENED_RETURN_IF_ERROR(ownership_key_validate(
+        /*page=*/0, kOwnershipKeyUnlock, msg->header.type, &bootdata->nonce,
+        &msg->ownership_unlock_req.signature,
+        &msg->ownership_unlock_req.unlock_mode, len));
     return do_unlock(msg, bootdata);
   }
   return kErrorOwnershipInvalidState;
@@ -134,12 +128,10 @@ static rom_error_t unlock_abort(boot_svc_msg_t *msg, boot_data_t *bootdata) {
       bootdata->ownership_state == kOwnershipStateUnlockedAny ||
       bootdata->ownership_state == kOwnershipStateUnlockedSelf) {
     // Check the signature against the unlock key.
-    if (ownership_key_validate(/*page=*/0, kOwnershipKeyUnlock,
-                               &msg->ownership_unlock_req.signature,
-                               &msg->ownership_unlock_req.unlock_mode,
-                               len) == kHardenedBoolFalse) {
-      return kErrorOwnershipInvalidSignature;
-    }
+    HARDENED_RETURN_IF_ERROR(ownership_key_validate(
+        /*page=*/0, kOwnershipKeyUnlock, msg->header.type, &bootdata->nonce,
+        &msg->ownership_unlock_req.signature,
+        &msg->ownership_unlock_req.unlock_mode, len));
     if (!nonce_equal(&msg->ownership_unlock_req.nonce, &bootdata->nonce)) {
       return kErrorOwnershipInvalidNonce;
     }
