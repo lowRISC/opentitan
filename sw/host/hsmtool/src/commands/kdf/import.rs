@@ -6,7 +6,7 @@ use std::any::Any;
 use std::fs;
 use std::path::PathBuf;
 
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
 
@@ -30,7 +30,7 @@ pub struct Import {
     #[arg(long)]
     unwrap: Option<String>,
     #[arg(long, default_value = "rsa-pkcs")]
-    unwrap_mechanism: Wrap,
+    unwrap_mechanism: Option<Wrap>,
     filename: PathBuf,
 }
 
@@ -63,7 +63,9 @@ impl Dispatch for Import {
                 key,
                 self.template.clone(),
                 self.unwrap.as_deref(),
-                &self.unwrap_mechanism,
+                self.unwrap_mechanism.as_ref().ok_or(anyhow!(
+                    "unwrap_mechanism is required when unwrap is specified"
+                ))?,
             )?;
         } else {
             let _object = secret.import(
