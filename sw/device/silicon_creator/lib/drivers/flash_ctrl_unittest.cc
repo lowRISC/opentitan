@@ -973,5 +973,51 @@ TEST_P(DataRegionProtectTestSuite, ProtectRegionReadWriteEraseEnabled) {
       kHardenedBoolFalse);
 }
 
+TEST(FlashCtrl, FlashPermissionBits) {
+  union Permissions {
+    flash_ctrl_perms_t perms;
+    uint32_t raw;
+  };
+
+  Permissions word = {
+      .perms =
+          {
+              .read = 1,
+              .write = 2,
+              .erase = 3,
+          },
+  };
+
+  EXPECT_EQ(1, bitfield_field32_read(word.raw,
+                                     FLASH_CTRL_MP_REGION_CFG_0_RD_EN_0_FIELD));
+  EXPECT_EQ(2, bitfield_field32_read(
+                   word.raw, FLASH_CTRL_MP_REGION_CFG_0_PROG_EN_0_FIELD));
+  EXPECT_EQ(3, bitfield_field32_read(
+                   word.raw, FLASH_CTRL_MP_REGION_CFG_0_ERASE_EN_0_FIELD));
+}
+
+TEST(FlashCtrl, FlashConfigurationBits) {
+  union Permissions {
+    flash_ctrl_cfg_t cfg;
+    uint32_t raw;
+  };
+
+  Permissions word = {
+      .cfg =
+          {
+              .scrambling = 1,
+              .ecc = 2,
+              .he = 3,
+          },
+  };
+
+  EXPECT_EQ(1, bitfield_field32_read(
+                   word.raw, FLASH_CTRL_MP_REGION_CFG_0_SCRAMBLE_EN_0_FIELD));
+  EXPECT_EQ(2, bitfield_field32_read(
+                   word.raw, FLASH_CTRL_MP_REGION_CFG_0_ECC_EN_0_FIELD));
+  EXPECT_EQ(3, bitfield_field32_read(word.raw,
+                                     FLASH_CTRL_MP_REGION_CFG_0_HE_EN_0_FIELD));
+}
+
 }  // namespace
 }  // namespace flash_ctrl_unittest

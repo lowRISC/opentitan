@@ -54,19 +54,19 @@ using MockFlashCtrl = testing::StrictMock<internal::MockFlashCtrl>;
 using NiceMockFlashCtrl = testing::NiceMock<internal::MockFlashCtrl>;
 
 MATCHER_P3(FlashPerms, read, write, erase, "") {
-  return ::testing::Value(
-      arg,
-      ::testing::AllOf(::testing::Field(&flash_ctrl_perms_t::read, read),
-                       ::testing::Field(&flash_ctrl_perms_t::write, write),
-                       ::testing::Field(&flash_ctrl_perms_t::erase, erase)));
+  // It would be nice to use `testing::Field` here, but that matcher does not
+  // work with bitfields.
+  return arg.read == static_cast<uint8_t>(read) &&
+         arg.write == static_cast<uint8_t>(write) &&
+         arg.erase == static_cast<uint8_t>(erase);
 }
 
 MATCHER_P3(FlashCfg, scrambling, ecc, he, "") {
-  return ::testing::Value(
-      arg, ::testing::AllOf(
-               ::testing::Field(&flash_ctrl_cfg_t::scrambling, scrambling),
-               ::testing::Field(&flash_ctrl_cfg_t::ecc, ecc),
-               ::testing::Field(&flash_ctrl_cfg_t::he, he)));
+  // It would be nice to use `testing::Field` here, but that matcher does not
+  // work with bitfields.
+  return arg.scrambling == static_cast<uint8_t>(scrambling) &&
+         arg.ecc == static_cast<uint8_t>(ecc) &&
+         arg.he == static_cast<uint8_t>(he);
 }
 
 }  // namespace rom_test
