@@ -14,7 +14,7 @@
 // RAM copy of the owner INFO pages from flash.
 extern owner_block_t owner_page[2];
 
-OT_WEAK const owner_key_t *const kNoOwnerRecoveryKey;
+OT_WEAK const owner_keydata_t *const kNoOwnerRecoveryKey;
 
 hardened_bool_t ownership_key_validate(size_t page, ownership_key_t key,
                                        const owner_signature_t *signature,
