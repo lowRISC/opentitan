@@ -67,7 +67,7 @@ rand_chacha = "0.3"
 regex = "1.7"
 reqwest = { version = "0.12.9", features = ["http2", "default-tls", "blocking", "json"] }
 rsa = "0.9.7"
-rusb = "0.9.3"
+rusb = "0.9.4"
 rustix = { version = "1", features = ["event", "fs", "net", "process", "stdio", "termios"] }
 scopeguard = "1.2"
 serde = { version = "1.0.188", features = ["derive"] }

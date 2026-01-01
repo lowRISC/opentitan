@@ -11,6 +11,7 @@ use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boot_svc::{BootSlot, UnlockMode};
+use opentitanlib::rescue::Rescue;
 use opentitanlib::rescue::serial::RescueSerial;
 use opentitanlib::test_utils::init::InitializeTest;
 

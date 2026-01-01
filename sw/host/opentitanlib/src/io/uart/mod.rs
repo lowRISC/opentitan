@@ -20,7 +20,7 @@ use crate::transport::TransportError;
 pub mod flow;
 pub mod serial;
 
-#[derive(Clone, Debug, Args, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Args, Serialize, Deserialize)]
 pub struct UartParams {
     /// UART instance.
     #[arg(long, default_value = "CONSOLE")]
