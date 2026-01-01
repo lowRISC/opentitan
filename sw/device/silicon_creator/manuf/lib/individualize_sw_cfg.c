@@ -9,7 +9,6 @@
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
@@ -89,9 +88,6 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
          kv[i].offset < kInvalidAstCfgOtpAddrHigh)) {
       continue;
     }
-    LOG_INFO(
-        "OTP Write: Partition (%d); Idx (%d); Offset (0x%x); Num Vals (%d)",
-        partition, i, kv[i].offset, kv[i].num_values);
     uint32_t offset;
     TRY(dif_otp_ctrl_relative_address(partition, kv[i].offset, &offset));
     switch (kv[i].type) {
@@ -301,9 +297,7 @@ status_t manuf_individualize_device_flash_data_default_cfg_check(
 
 status_t manuf_individualize_device_creator_sw_cfg_lock(
     const dif_otp_ctrl_t *otp_ctrl) {
-  LOG_INFO("Locking CreatorSwCfg partition.");
   TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg));
-  LOG_INFO("Done.");
   return OK_STATUS();
 }
 
@@ -346,9 +340,7 @@ status_t manuf_individualize_device_partition_expected_read(
 
 status_t manuf_individualize_device_owner_sw_cfg_lock(
     const dif_otp_ctrl_t *otp_ctrl) {
-  LOG_INFO("Locking OwnerSwCfg partition.");
   TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg));
-  LOG_INFO("Done.");
   return OK_STATUS();
 }
 
@@ -365,9 +357,7 @@ status_t manuf_individualize_device_rot_creator_auth_codesign(
   TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionRotCreatorAuthCodesign,
                     kOtpKvRotCreatorAuthCodesign,
                     kOtpKvRotCreatorAuthCodesignSize));
-  LOG_INFO("Locking RotCreatorAuthCodesign partition.");
   TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionRotCreatorAuthCodesign));
-  LOG_INFO("Done.");
   return OK_STATUS();
 }
 
@@ -375,9 +365,7 @@ status_t manuf_individualize_device_rot_creator_auth_state(
     const dif_otp_ctrl_t *otp_ctrl) {
   TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionRotCreatorAuthState,
                     kOtpKvRotCreatorAuthState, kOtpKvRotCreatorAuthStateSize));
-  LOG_INFO("Locking RotCreatorAuthState partition.");
   TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionRotCreatorAuthState));
-  LOG_INFO("Done.");
   return OK_STATUS();
 }
 
