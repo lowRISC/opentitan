@@ -11,6 +11,7 @@ use std::time::Duration;
 
 use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::chip::rom_error::RomError;
+use opentitanlib::rescue::Rescue;
 use opentitanlib::rescue::serial::RescueSerial;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
