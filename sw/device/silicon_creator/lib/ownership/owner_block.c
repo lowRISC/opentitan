@@ -13,9 +13,11 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "hw/top/flash_ctrl_regs.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 // RAM copy of the owner INFO pages from flash.
 owner_block_t owner_page[2];
@@ -252,6 +254,7 @@ rom_error_t owner_block_parse(const owner_block_t *block,
           if ((hardened_bool_t)config->rescue != kHardenedBoolFalse)
             return kErrorOwnershipDuplicateItem;
           config->rescue = (const owner_rescue_config_t *)item;
+          owner_block_rescue_apply(config->rescue);
         } else {
           HARDENED_RETURN_IF_ERROR(
               owner_block_rescue_check((const owner_rescue_config_t *)item));
@@ -440,6 +443,28 @@ rom_error_t owner_block_info_apply(const owner_flash_info_config_t *info) {
       };
       flash_ctrl_info_perms_set(&page, perm);
     }
+  }
+  return kErrorOk;
+}
+
+rom_error_t owner_block_rescue_apply(const owner_rescue_config_t *rescue) {
+  rescue_detect_t detect = bitfield_field32_read(rescue->detect, RESCUE_DETECT);
+  uint32_t index = bitfield_field32_read(rescue->detect, RESCUE_DETECT_INDEX);
+  bool pull_en = bitfield_bit32_read(rescue->gpio, RESCUE_GPIO_PULL_EN_BIT);
+  bool gpio_value = bitfield_bit32_read(rescue->gpio, RESCUE_GPIO_VALUE_BIT);
+  switch (detect) {
+    case kRescueDetectGpio:
+      if (index <= kTopEarlgreyMuxedPadsLast) {
+        // Set the pad for input as Gpio0.  On earlgrey, the pad index is two
+        // less than the peripheral input select.
+        pinmux_configure_input(0, index + 2);
+        // If configured, enable the pull resistor in the opposite direction of
+        // the detection value.
+        pinmux_enable_pull(index, pull_en, !gpio_value);
+      }
+      break;
+    default:
+        /* nothing to do */;
   }
   return kErrorOk;
 }

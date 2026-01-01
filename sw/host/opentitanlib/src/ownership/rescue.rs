@@ -15,9 +15,18 @@ use crate::chip::boot_svc::BootSvcKind;
 use crate::with_unknown;
 
 with_unknown! {
-    pub enum RescueType: u32 [default = Self::None] {
+    pub enum RescueProtocol: u8 [default = Self::None] {
         None = 0,
-        Xmodem = u32::from_le_bytes(*b"XMDM"),
+        Xmodem = b'X',
+        UsbDfu = b'U',
+        SpiDfu = b'S',
+    }
+
+    pub enum RescueTrigger: u8 [default = Self::UartBreak] {
+        None = 0,
+        UartBreak = 1,
+        Strapping = 2,
+        Gpio = 3,
     }
 
     pub enum CommandTag: u32 [default = Self::Unknown] {
@@ -43,6 +52,10 @@ with_unknown! {
     }
 }
 
+fn is_default<T: Default + Eq>(val: &T) -> bool {
+    *val == T::default()
+}
+
 /// Describes the configuration of the rescue feature of the ROM_EXT.
 #[derive(Debug, Deserialize, Annotate)]
 pub struct OwnerRescueConfig {
@@ -53,7 +66,25 @@ pub struct OwnerRescueConfig {
     )]
     pub header: TlvHeader,
     /// The type of rescue protocol to use (ie: Xmodem).
-    pub rescue_type: RescueType,
+    #[serde(alias = "rescue_type")]
+    pub protocol: RescueProtocol,
+    /// The rescue triggering mechanism (UartBreak, Strapping or Gpio).
+    pub trigger: RescueTrigger,
+    /// The index of the trigger (e.g. Strapping combo or GPIO pin number).
+    pub trigger_index: u8,
+    /// Whether or not to enable the GPIO pull resistor (only if trigger is GPIO).
+    pub gpio_pull_en: bool,
+    /// The GPIO trigger value (only if trigger is GPIO).
+    pub gpio_value: bool,
+    /// Enter rescue mode if boot fails (not implemented yet).
+    #[serde(skip_serializing_if = "is_default")]
+    pub _enter_on_failure: bool,
+    /// Enable a timeout (rescue exits after a period of no activity; not implemented yet).
+    #[serde(skip_serializing_if = "is_default")]
+    pub _timeout_enable: bool,
+    /// The timeout in seconds (not implemented yet).
+    #[serde(skip_serializing_if = "is_default")]
+    pub _timeout: u8,
     /// The start of the rescue flash region (in pages).
     pub start: u16,
     /// The size of the rescue flash region (in pages).
@@ -66,7 +97,14 @@ impl Default for OwnerRescueConfig {
     fn default() -> Self {
         Self {
             header: Self::default_header(),
-            rescue_type: RescueType::default(),
+            protocol: RescueProtocol::default(),
+            gpio_pull_en: false,
+            gpio_value: false,
+            _enter_on_failure: false,
+            _timeout_enable: false,
+            _timeout: 0,
+            trigger: RescueTrigger::default(),
+            trigger_index: 0,
             start: 0u16,
             size: 0u16,
             command_allow: Vec::new(),
@@ -76,11 +114,22 @@ impl Default for OwnerRescueConfig {
 
 impl OwnerRescueConfig {
     const BASE_SIZE: usize = 16;
+    const GPIO_PULL_BIT: u8 = 0x02;
+    const GPIO_VALUE_BIT: u8 = 0x01;
+    const ENTER_ON_FAIL_BIT: u8 = 0x80;
+    const TIMEOUT_EN_BIT: u8 = 0x40;
+    const TIMEOUT_MASK: u8 = 0x3f;
+    const TRIGGER_SHIFT: u8 = 6;
+    const INDEX_MASK: u8 = 0x3f;
+
     pub fn default_header() -> TlvHeader {
         TlvHeader::new(TlvTag::Rescue, 0, "0.0")
     }
     pub fn read(src: &mut impl Read, header: TlvHeader) -> Result<Self> {
-        let rescue_type = RescueType(src.read_u32::<LittleEndian>()?);
+        let protocol = RescueProtocol(src.read_u8()?);
+        let gpio = src.read_u8()?;
+        let timeout = src.read_u8()?;
+        let trigger = src.read_u8()?;
         let start = src.read_u16::<LittleEndian>()?;
         let size = src.read_u16::<LittleEndian>()?;
         let allow_len = (header.length - Self::BASE_SIZE) / std::mem::size_of::<u32>();
@@ -90,7 +139,14 @@ impl OwnerRescueConfig {
         }
         Ok(Self {
             header,
-            rescue_type,
+            protocol,
+            gpio_pull_en: gpio & Self::GPIO_PULL_BIT != 0,
+            gpio_value: gpio & Self::GPIO_VALUE_BIT != 0,
+            _enter_on_failure: timeout & Self::ENTER_ON_FAIL_BIT != 0,
+            _timeout_enable: timeout & Self::TIMEOUT_EN_BIT != 0,
+            _timeout: timeout & Self::TIMEOUT_MASK,
+            trigger: RescueTrigger(trigger >> Self::TRIGGER_SHIFT),
+            trigger_index: trigger & Self::INDEX_MASK,
             start,
             size,
             command_allow,
@@ -103,7 +159,34 @@ impl OwnerRescueConfig {
             "0.0",
         );
         header.write(dest)?;
-        dest.write_u32::<LittleEndian>(u32::from(self.rescue_type))?;
+        dest.write_u8(u8::from(self.protocol))?;
+        dest.write_u8(
+            if self.gpio_pull_en {
+                Self::GPIO_PULL_BIT
+            } else {
+                0
+            } | if self.gpio_value {
+                Self::GPIO_VALUE_BIT
+            } else {
+                0
+            },
+        )?;
+        dest.write_u8(
+            self._timeout & Self::TIMEOUT_MASK
+                | if self._timeout_enable {
+                    Self::TIMEOUT_EN_BIT
+                } else {
+                    0
+                }
+                | if self._enter_on_failure {
+                    Self::ENTER_ON_FAIL_BIT
+                } else {
+                    0
+                },
+        )?;
+        dest.write_u8(
+            self.trigger_index & Self::INDEX_MASK | u8::from(self.trigger) << Self::TRIGGER_SHIFT,
+        )?;
         dest.write_u16::<LittleEndian>(self.start)?;
         dest.write_u16::<LittleEndian>(self.size)?;
         for allow in self.command_allow.iter() {
@@ -114,7 +197,8 @@ impl OwnerRescueConfig {
 
     pub fn all() -> Self {
         OwnerRescueConfig {
-            rescue_type: RescueType::Xmodem,
+            protocol: RescueProtocol::Xmodem,
+            trigger: RescueTrigger::UartBreak,
             // Start after the ROM_EXT.
             start: 32,
             // End at the end of the partition.
@@ -148,14 +232,18 @@ mod test {
     use crate::util::hexdump::{hexdump_parse, hexdump_string};
 
     const OWNER_RESCUE_CONFIG_BIN: &str = "\
-00000000: 52 45 53 51 4c 00 00 00 58 4d 44 4d 20 00 64 00  RESQL...XMDM .d.\n\
+00000000: 52 45 53 51 4c 00 00 00 58 00 00 40 20 00 64 00  RESQL...X..@ .d.\n\
 00000010: 45 4d 50 54 4d 53 45 43 4e 45 58 54 55 4e 4c 4b  EMPTMSECNEXTUNLK\n\
 00000020: 41 43 54 56 51 53 45 52 42 53 45 52 47 4f 4c 42  ACTVQSERBSERGOLB\n\
 00000030: 51 45 52 42 50 53 52 42 52 4e 57 4f 30 47 50 4f  QERBPSRBRNWO0GPO\n\
 00000040: 31 47 50 4f 44 49 54 4f 54 49 41 57              1GPODITOTIAW\n\
 ";
     const OWNER_RESCUE_CONFIG_JSON: &str = r#"{
-  rescue_type: "Xmodem",
+  protocol: "Xmodem",
+  trigger: "UartBreak",
+  trigger_index: 0,
+  gpio_pull_en: false,
+  gpio_value: false,
   start: 32,
   size: 100,
   command_allow: [
@@ -181,7 +269,8 @@ mod test {
     fn test_owner_rescue_config_write() -> Result<()> {
         let orc = OwnerRescueConfig {
             header: TlvHeader::default(),
-            rescue_type: RescueType::Xmodem,
+            protocol: RescueProtocol::Xmodem,
+            trigger: RescueTrigger::UartBreak,
             start: 32,
             size: 100,
             command_allow: vec![
@@ -201,6 +290,7 @@ mod test {
                 CommandTag::GetDeviceId,
                 CommandTag::Wait,
             ],
+            ..Default::default()
         };
 
         let mut bin = Vec::new();

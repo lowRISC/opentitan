@@ -340,7 +340,7 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
 00000220: 66 06 00 00 00 01 00 02 77 17 11 88 77 17 11 11  f.......w...w...
 00000230: 49 4e 46 4f 20 00 00 00 00 01 00 00 66 06 00 99  INFO .......f...
 00000240: 66 06 00 00 01 05 00 00 77 17 11 88 77 17 11 11  f.......w...w...
-00000250: 52 45 53 51 50 00 00 00 58 4d 44 4d 20 00 e0 00  RESQP...XMDM ...
+00000250: 52 45 53 51 50 00 00 00 58 00 00 40 20 00 e0 00  RESQP...X..@ ...
 00000260: 45 4d 50 54 4d 53 45 43 4e 45 58 54 55 4e 4c 4b  EMPTMSECNEXTUNLK
 00000270: 41 43 54 56 51 53 45 52 42 53 45 52 4f 42 45 52  ACTVQSERBSEROBER
 00000280: 47 4f 4c 42 51 45 52 42 50 53 52 42 52 4e 57 4f  GOLBQERBPSRBRNWO
@@ -545,7 +545,11 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
     },
     {
       RescueConfig: {
-        rescue_type: "Xmodem",
+        protocol: "Xmodem",
+        trigger: "UartBreak",
+        trigger_index: 0,
+        gpio_pull_en: false,
+        gpio_value: false,
         start: 32,
         size: 224,
         command_allow: [
