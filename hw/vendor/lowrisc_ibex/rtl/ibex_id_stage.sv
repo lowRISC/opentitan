@@ -519,7 +519,7 @@ module ibex_id_stage #(
   // instructions are in general rare and not part of performance critical parts of the code.
   //
   // No flush is triggered for a small number of specific CSRs. These are ones that have been
-  // specifically identified to be a) likely to be modifed in exception handlers and b) safe to
+  // specifically identified to be a) likely to be modified in exception handlers and b) safe to
   // alter without a flush.
   assign no_flush_csr_addr = csr_addr_o inside {CSR_MSCRATCH, CSR_MEPC};
 
@@ -578,7 +578,7 @@ module ibex_id_stage #(
     .controller_run_o   (controller_run),
     .instr_exec_i       (instr_exec_i),
 
-    // to prefetcher
+    // to prefetch
     .instr_req_o           (instr_req_o),
     .pc_set_o              (pc_set_o),
     .pc_mux_o              (pc_mux_o),
@@ -972,7 +972,7 @@ module ibex_id_stage #(
                        (outstanding_memory_access | (lsu_req_dec & ~lsu_req_done_i));
 
     // If we stall a load in ID for any reason, it must not make an LSU request
-    // (otherwide we might issue two requests for the same instruction)
+    // (otherwise we might issue two requests for the same instruction)
     `ASSERT(IbexStallMemNoRequest,
       instr_valid_i & lsu_req_dec & ~instr_done |-> ~lsu_req_done_i)
 
@@ -1040,7 +1040,7 @@ module ibex_id_stage #(
     assign rf_rd_b_wb_match_o = 1'b0;
 
     // First cycle of a load or store is always the request. We're expecting a response the cycles
-    // following. Note if the request isn't immediatly accepted these signals will still assert.
+    // following. Note if the request isn't immediately accepted these signals will still assert.
     // However in this case the LSU won't signal a response as it's still waiting for the grant
     // (even if the external memory bus signals are glitched to generate a false response).
     assign expecting_load_resp_o  = instr_valid_i & lsu_req_dec & ~instr_first_cycle & ~lsu_we;
@@ -1146,7 +1146,7 @@ module ibex_id_stage #(
   `ASSERT(IbexDuplicateInstrMatch, instr_valid_i |-> instr_rdata_i === instr_rdata_alu_i)
 
   // Check that when ID stage is ready for next instruction FSM is in FIRST_CYCLE state the
-  // following cycle (when the new instructon may begin executing).
+  // following cycle (when the new instruction may begin executing).
   `ASSERT(IbexMoveToFirstCycleWhenIdReady, id_in_ready_o |=> id_fsm_q == FIRST_CYCLE)
 
   `ifdef CHECK_MISALIGNED

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generating testlists for following opensource test suites
+Generating testlists for following open-source test suites
     - riscv-tests
     - riscv-arch-tests
     - ePMP directed tests

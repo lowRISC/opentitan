@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -33,7 +33,16 @@ source syn_setup.sh
 #-------------------------------------------------------------------------
 
 LR_DEP_SOURCES=(
+    "../vendor/lowrisc_ip/ip/prim/rtl/prim_count.sv"
+    "../vendor/lowrisc_ip/ip/prim/rtl/prim_onehot_check.sv"
+    "../vendor/lowrisc_ip/ip/prim/rtl/prim_onehot_enc.sv"
+    "../vendor/lowrisc_ip/ip/prim/rtl/prim_onehot_mux.sv"
+    "../vendor/lowrisc_ip/ip/prim/rtl/prim_secded_inv_39_32_dec.sv"
+    "../vendor/lowrisc_ip/ip/prim/rtl/prim_secded_inv_39_32_enc.sv"
+    "../vendor/lowrisc_ip/ip/prim/rtl/prim_lfsr.sv"
+    "../vendor/lowrisc_ip/ip/prim_generic/rtl/prim_generic_and2.sv"
     "../vendor/lowrisc_ip/ip/prim_generic/rtl/prim_generic_buf.sv"
+    "../vendor/lowrisc_ip/ip/prim_generic/rtl/prim_generic_clock_mux2.sv"
     "../vendor/lowrisc_ip/ip/prim_generic/rtl/prim_generic_flop.sv"
 )
 
@@ -47,9 +56,17 @@ for file in "${LR_DEP_SOURCES[@]}"; do
 
     sv2v \
         --define=SYNTHESIS --define=YOSYS \
+        ../vendor/lowrisc_ip/ip/prim/rtl/prim_count_pkg.sv \
+        ../vendor/lowrisc_ip/ip/prim/rtl/prim_cipher_pkg.sv \
         -I../vendor/lowrisc_ip/ip/prim/rtl \
         "$file" \
         > "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
+    # Make sure auto-generated primitives are resolved to generic primitives
+    # where available.
+    sed -i 's/prim_and2/prim_generic_and2/g' "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
+    sed -i 's/prim_buf/prim_generic_buf/g'  "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
+    sed -i 's/prim_clock_mux2/prim_generic_clock_mux2/g'  "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
+    sed -i 's/prim_flop/prim_generic_flop/g' "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
 done
 
 # Convert core sources
@@ -73,7 +90,9 @@ for file in ../rtl/*.sv; do
 
 # Make sure auto-generated primitives are resolved to generic primitives
 # where available.
+  sed -i 's/prim_and2/prim_generic_and2/g' "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
   sed -i 's/prim_buf/prim_generic_buf/g'  "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
+  sed -i 's/prim_clock_mux2/prim_generic_clock_mux2/g'  "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
   sed -i 's/prim_flop/prim_generic_flop/g' "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
 done
 

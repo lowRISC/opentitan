@@ -565,7 +565,7 @@ module ibex_load_store_unit #(
   // fcov_mis_rvalid_2: Set when response is received for the second half
   logic fcov_mis_rvalid_1, fcov_mis_rvalid_2;
 
-  // Set when the first half of a misaligned access saw a bus errror
+  // Set when the first half of a misaligned access saw a bus error
   logic fcov_mis_bus_err_1_d, fcov_mis_bus_err_1_q;
 
   assign fcov_mis_rvalid_1 = ls_fsm_cs inside {WAIT_RVALID_MIS, WAIT_RVALID_MIS_GNTS_DONE} &&

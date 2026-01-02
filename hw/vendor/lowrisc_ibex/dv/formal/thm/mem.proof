@@ -17,12 +17,12 @@ lemma mem
 
   MisStates: have (`LSU.ls_fsm_cs == `LSU.WAIT_GNT_MIS || `LSU.ls_fsm_cs == `LSU.WAIT_RVALID_MIS || `LSU.ls_fsm_cs == `LSU.WAIT_RVALID_MIS_GNTS_DONE |-> `LSU.split_misaligned_access)
 
-  LoadPMPErrorWx: have (`CR.instr_valid_id & ex_is_pres_load_instr |-> spec_post_wX_en == ~spec_has_pmp_err)
+  LoadPMPErrorWx: have (`CR.instr_valid_id & ex_is_load_instr |-> spec_post_wX_en == ~spec_has_pmp_err)
 
   # Another graph induction for LSU states which specifically bind what is
   # happening to the specification.
   MemSpec: graph_induction +rev
-    cond (ex_is_pres_mem_instr && (`LSU.ls_fsm_cs != `LSU.IDLE || `CR.lsu_req))
+    cond (ex_is_mem_instr && (`LSU.ls_fsm_cs != `LSU.IDLE || `CR.lsu_req))
 
     inv fst_req (
       (data_req_o -> (mem_req_fst_d && fst_mem_cmp)) &&
@@ -99,44 +99,44 @@ lemma mem
   LSU2ndReqStep: have (data_req_o & $past(data_gnt_i) & ~$past(instr_will_progress) |-> data_we_o == $past(data_we_o) && data_addr_o == $past(data_addr_o) + 4)
   LSUInternalHold: have (`LSU.data_req_o && ~data_gnt_i && ~`LSU.pmp_err_q |=> $stable(data_addr_o))
 
-  NoMem: have (~ex_is_pres_mem_instr & instr_will_progress |-> ~mem_gnt_fst_d) # Top level property! Non memory instructions don't do memory requests!
+  NoMem: have (~ex_is_mem_instr & instr_will_progress |-> ~mem_gnt_fst_d) # Top level property! Non memory instructions don't do memory requests!
   
-  PMPErrMatch: have (ex_is_pres_mem_instr & instr_will_progress & ~`CR.illegal_insn_id & ~`CR.instr_fetch_err |-> spec_has_pmp_err == (`LSU.lsu_err_d | `LSU.pmp_err_d))
+  PMPErrMatch: have (ex_is_mem_instr & instr_will_progress & ~`CR.illegal_insn_id & ~`CR.instr_fetch_err |-> spec_has_pmp_err == (`LSU.lsu_err_d | `LSU.pmp_err_d))
 
-  PCMaintainEx1: have (`ID.instr_valid_i & ex_is_pres_mem_instr & ~ex_err & ~ex_kill |-> pre_nextpc == post_pc)
-  PCMaintainEx2: have (`ID.instr_valid_i & ex_is_pres_mem_instr & ~ex_err & ~ex_kill & ~spec_has_pmp_err |-> pre_nextpc == spec_post_pc)
-  CSRMaintainEx: have (`ID.instr_valid_i & ex_is_pres_mem_instr & ~ex_err & ~ex_kill & ~spec_has_pmp_err |-> ex_csrs_match)
-  ExcCSRMaintainEx: have (`ID.instr_valid_i & ex_is_pres_mem_instr & ~ex_err & ~ex_kill & spec_has_pmp_err |-> ex_csrs_match_non_exc)
+  PCMaintainEx1: have (`ID.instr_valid_i & ex_is_mem_instr & ~ex_err & ~ex_kill |-> pre_nextpc == post_pc)
+  PCMaintainEx2: have (`ID.instr_valid_i & ex_is_mem_instr & ~ex_err & ~ex_kill & ~spec_has_pmp_err |-> pre_nextpc == spec_post_pc)
+  CSRMaintainEx: have (`ID.instr_valid_i & ex_is_mem_instr & ~ex_err & ~ex_kill & ~spec_has_pmp_err |-> ex_csrs_match)
+  ExcCSRMaintainEx: have (`ID.instr_valid_i & ex_is_mem_instr & ~ex_err & ~ex_kill & spec_has_pmp_err |-> ex_csrs_match_non_exc)
   AltLSUVeryEarly: have (`LSU.ls_fsm_cs != `LSU.IDLE & spec_post_wX_en & ~lsu_had_first_resp |-> spec_post_wX == alt_lsu_very_early_res)
   /
-  PCNoChangeNoBranch: have (wbexc_exists & wbexc_is_pres_mem_instr & ~wbexc_err & ~ex_has_branched_d |-> (`ID.instr_valid_i ? pre_pc : `CR.pc_if) == wbexc_dut_post_pc)
+  PCNoChangeNoBranch: have (wbexc_exists & wbexc_is_mem_instr & ~wbexc_err & ~ex_has_branched_d |-> (`ID.instr_valid_i ? pre_pc : `CR.pc_if) == wbexc_dut_post_pc)
   AltLSUEarly: have (`LSU.ls_fsm_cs != `LSU.IDLE & spec_post_wX_en & lsu_had_first_resp |-> spec_post_wX == alt_lsu_early_res)
   /
-  AltLSU: have (wbexc_exists & wbexc_is_pres_load_instr & ~wbexc_err & wbexc_post_wX_en |-> wbexc_post_wX == alt_lsu_late_res)
-  PCNoChangeBranch: have (wbexc_exists & wbexc_is_pres_mem_instr & ~wbexc_err & ex_has_branched_d |-> pre_pc == wbexc_dut_post_pc)
-  PCExc: have (wbexc_exists & wbexc_is_pres_mem_instr & `LSU.data_or_pmp_err |-> wbexc_post_pc == { `IF.csr_mtvec_i[31:8], 8'h00 })
+  AltLSU: have (wbexc_exists & wbexc_is_load_instr & ~wbexc_err & wbexc_post_wX_en |-> wbexc_post_wX == alt_lsu_late_res)
+  PCNoChangeBranch: have (wbexc_exists & wbexc_is_mem_instr & ~wbexc_err & ex_has_branched_d |-> pre_pc == wbexc_dut_post_pc)
+  PCExc: have (wbexc_exists & wbexc_is_mem_instr & `LSU.data_or_pmp_err |-> wbexc_post_pc == { `IF.csr_mtvec_i[31:8], 8'h00 })
 
-  CSRMaintain: have (wbexc_exists & wbexc_is_pres_mem_instr & ~wbexc_err & ~`LSU.data_or_pmp_err |-> csrs_match)
-  CSRNoChange: have (wbexc_exists & wbexc_is_pres_mem_instr & ~wbexc_err |-> csrs_didnt_change)
-  PCMaintainWb: have (wbexc_exists & wbexc_is_pres_mem_instr & ~wbexc_err & ~`LSU.data_or_pmp_err |-> wbexc_post_pc == wbexc_dut_post_pc)
-  LoadAddrMaintain: have (wbexc_exists & wbexc_is_pres_load_instr & ~wbexc_err & ~`LSU.data_or_pmp_err |-> wbexc_post_wX_en && `WBG.rf_waddr_wb_q == wbexc_post_wX_addr && ~`WBG.rf_we_wb_q)
-  StoreAddrMaintain: have (wbexc_exists & wbexc_is_pres_store_instr & ~wbexc_err |-> ~wbexc_post_wX_en && ~`WBG.rf_we_wb_q)
-  ExcAddrMaintain: have (wbexc_exists & wbexc_is_pres_mem_instr & `LSU.data_or_pmp_err |-> ~wbexc_post_wX_en)
+  CSRMaintain: have (wbexc_exists & wbexc_is_mem_instr & ~wbexc_err & ~`LSU.data_or_pmp_err |-> csrs_match)
+  CSRNoChange: have (wbexc_exists & wbexc_is_mem_instr & ~wbexc_err |-> csrs_didnt_change)
+  PCMaintainWb: have (wbexc_exists & wbexc_is_mem_instr & ~wbexc_err & ~`LSU.data_or_pmp_err |-> wbexc_post_pc == wbexc_dut_post_pc)
+  LoadAddrMaintain: have (wbexc_exists & wbexc_is_load_instr & ~wbexc_err & ~`LSU.data_or_pmp_err |-> wbexc_post_wX_en && `WBG.rf_waddr_wb_q == wbexc_post_wX_addr && ~`WBG.rf_we_wb_q)
+  StoreAddrMaintain: have (wbexc_exists & wbexc_is_store_instr & ~wbexc_err |-> ~wbexc_post_wX_en && ~`WBG.rf_we_wb_q)
+  ExcAddrMaintain: have (wbexc_exists & wbexc_is_mem_instr & `LSU.data_or_pmp_err |-> ~wbexc_post_wX_en)
 
-  ExcCSRMaintainMCause: have (wbexc_exists & wbexc_is_pres_mem_instr & `LSU.data_or_pmp_err & ~wbexc_fetch_err & ~wbexc_illegal |-> wbexc_post_mcause == (wbexc_is_store_instr ? ExcCauseStoreAccessFault : ExcCauseLoadAccessFault))
-  ExcCSRMaintainMTVal: have (wbexc_exists & wbexc_is_pres_mem_instr & `LSU.data_or_pmp_err & ~wbexc_fetch_err & ~wbexc_illegal |-> wbexc_post_mtval == `LSU.addr_last_o)
-  ExcCSRMaintainMStatus: have (wbexc_exists & wbexc_is_pres_mem_instr & `LSU.data_or_pmp_err & ~wbexc_fetch_err & ~wbexc_illegal |->
+  ExcCSRMaintainMCause: have (wbexc_exists & wbexc_is_mem_instr & `LSU.data_or_pmp_err & ~wbexc_fetch_err & ~wbexc_illegal |-> wbexc_post_mcause == (wbexc_is_store_instr ? ExcCauseStoreAccessFault : ExcCauseLoadAccessFault))
+  ExcCSRMaintainMTVal: have (wbexc_exists & wbexc_is_mem_instr & `LSU.data_or_pmp_err & ~wbexc_fetch_err & ~wbexc_illegal |-> wbexc_post_mtval == `LSU.addr_last_o)
+  ExcCSRMaintainMStatus: have (wbexc_exists & wbexc_is_mem_instr & `LSU.data_or_pmp_err & ~wbexc_fetch_err & ~wbexc_illegal |->
     wbexc_post_mstatus.mie == 1'b0 &&
     wbexc_post_mstatus.mpie == pre_mstatus.mie &&
     wbexc_post_mstatus.mpp == (pre_priv == Machine ? PRIV_LVL_M : PRIV_LVL_U)
   )
-  ExcCSRMaintainMepc: have (wbexc_exists & wbexc_is_pres_mem_instr & `LSU.data_or_pmp_err & ~wbexc_fetch_err & ~wbexc_illegal |-> wbexc_post_mepc == `CR.pc_wb)
-  ExcCSRMaintainPriv: have (wbexc_exists & wbexc_is_pres_mem_instr & `LSU.data_or_pmp_err & ~wbexc_fetch_err & ~wbexc_illegal |-> wbexc_post_priv == Machine)
-  ExcCSRMaintainRest: have (wbexc_exists & wbexc_is_pres_mem_instr & `LSU.data_or_pmp_err & ~wbexc_fetch_err & ~wbexc_illegal |-> csrs_match_non_exc)
+  ExcCSRMaintainMepc: have (wbexc_exists & wbexc_is_mem_instr & `LSU.data_or_pmp_err & ~wbexc_fetch_err & ~wbexc_illegal |-> wbexc_post_mepc == `CR.pc_wb)
+  ExcCSRMaintainPriv: have (wbexc_exists & wbexc_is_mem_instr & `LSU.data_or_pmp_err & ~wbexc_fetch_err & ~wbexc_illegal |-> wbexc_post_priv == Machine)
+  ExcCSRMaintainRest: have (wbexc_exists & wbexc_is_mem_instr & `LSU.data_or_pmp_err & ~wbexc_fetch_err & ~wbexc_illegal |-> csrs_match_non_exc)
 
 # Top level load properties
 lemma load
-  cond (ex_is_pres_load_instr)
+  cond (ex_is_load_instr)
 
   NoWe: have (spec_mem_read & data_req_o |-> ~data_we_o)
   En: have (data_req_o |-> spec_mem_read)
@@ -152,7 +152,7 @@ lemma load
 
 # Top level store properties
 lemma store
-  cond (ex_is_pres_store_instr)
+  cond (ex_is_store_instr)
 
   We: have (spec_mem_write & data_req_o |-> data_we_o)
   En: have (data_req_o |-> spec_mem_write)

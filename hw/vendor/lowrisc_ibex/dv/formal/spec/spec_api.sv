@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /*
-This module contains the actual instance of the specification. It's quite ugly. Mostly it's just forwaring things to
+This module contains the actual instance of the specification. It's quite ugly. Mostly it's just forwarding things to
 different names and ignoring registers we don't care about.
 */
 
@@ -23,12 +23,7 @@ module spec_api #(
 ) (
     input t_MainMode main_mode,
 
-    output logic rx_a_en_o,
-    output logic [4:0] rx_a_addr_o,
-    input logic [31:0] rx_a_i,
-    output logic rx_b_en_o,
-    output logic [4:0] rx_b_addr_o,
-    input logic [31:0] rx_b_i,
+    input [31:0] regs_i [1:31],
 
     output logic wx_en_o,
     output logic [31:0] wx_o,
@@ -62,8 +57,6 @@ module spec_api #(
     output mstatus_t mstatus_o,
     input logic [31:0] mcause_i,
     output logic [31:0] mcause_o,
-    input logic [63:0] mcycle_i,
-    output logic [63:0] mcycle_o,
     input logic [31:0] mtval_i,
     output logic [31:0] mtval_o,
     input logic [31:0] mtvec_i,
@@ -72,10 +65,6 @@ module spec_api #(
     output logic [31:0] mscratch_o,
     input logic [31:0] mepc_i,
     output logic [31:0] mepc_o,
-    input logic [31:0] mshwmb_i,
-    output logic [31:0] mshwmb_o,
-    input logic [31:0] mshwm_i,
-    output logic [31:0] mshwm_o,
     input logic [31:0] mcounteren_i,
     output logic [31:0] mcounteren_o,
 
@@ -98,16 +87,6 @@ module spec_api #(
     output logic [3:0] mem_write_fst_be_o,
     output logic [3:0] mem_write_snd_be_o
 );
-
-bit rX_sail_invoke[2];
-logic [31:0] rX_sail_invoke_ret[2];
-logic [63:0] rX_sail_invoke_arg_0[2];
-assign rx_a_en_o = rX_sail_invoke[0];
-assign rx_a_addr_o = rX_sail_invoke_arg_0[0][4:0];
-assign rX_sail_invoke_ret[0] = rx_a_i;
-assign rx_b_en_o = rX_sail_invoke[1];
-assign rx_b_addr_o = rX_sail_invoke_arg_0[1][4:0];
-assign rX_sail_invoke_ret[1] = rx_b_i;
 
 logic wX_sail_invoke[1];
 logic [63:0] wX_sail_invoke_arg_0[1];
@@ -181,7 +160,12 @@ end
 t_Mseccfg_ent mseccfg_out;
 assign mseccfg_o = mseccfg_out.bits;
 
+logic sail_reached_unreachable;
+logic [31:0] sail_reached_unreachable_loc;
+
 sail_ibexspec spec_i(
+    .sail_reached_unreachable,
+    .sail_reached_unreachable_loc,
     .cur_inst_in(insn_bits),
     .cur_inst_out(),
     .cur_privilege_in(priv_i),
@@ -198,8 +182,8 @@ sail_ibexspec spec_i(
     .mcounteren_out,
     .mcountinhibit_in(),
     .mcountinhibit_out(),
-    .mcycle_in(mcycle_i),
-    .mcycle_out(mcycle_o),
+    .mcycle_in(),
+    .mcycle_out(),
     .medeleg_in('{bits: 32'h0}),
     .medeleg_out(),
     .menvcfg_in('{bits: 32'h0}),
@@ -272,77 +256,76 @@ sail_ibexspec spec_i(
     .stvec_out(),
     .tselect_in(),
     .tselect_out(),
-    .x1_in(),
+    .mtime_in(),
+    .mtime_out(),
+
+    .x1_in(regs_i[1]),
     .x1_out(),
-    .x2_in(),
+    .x2_in(regs_i[2]),
     .x2_out(),
-    .x3_in(),
+    .x3_in(regs_i[3]),
     .x3_out(),
-    .x4_in(),
+    .x4_in(regs_i[4]),
     .x4_out(),
-    .x5_in(),
+    .x5_in(regs_i[5]),
     .x5_out(),
-    .x6_in(),
+    .x6_in(regs_i[6]),
     .x6_out(),
-    .x7_in(),
+    .x7_in(regs_i[7]),
     .x7_out(),
-    .x8_in(),
+    .x8_in(regs_i[8]),
     .x8_out(),
-    .x9_in(),
+    .x9_in(regs_i[9]),
     .x9_out(),
-    .x10_in(),
+    .x10_in(regs_i[10]),
     .x10_out(),
-    .x11_in(),
+    .x11_in(regs_i[11]),
     .x11_out(),
-    .x12_in(),
+    .x12_in(regs_i[12]),
     .x12_out(),
-    .x13_in(),
+    .x13_in(regs_i[13]),
     .x13_out(),
-    .x14_in(),
+    .x14_in(regs_i[14]),
     .x14_out(),
-    .x15_in(),
+    .x15_in(regs_i[15]),
     .x15_out(),
-    .x16_in(),
+    .x16_in(regs_i[16]),
     .x16_out(),
-    .x17_in(),
+    .x17_in(regs_i[17]),
     .x17_out(),
-    .x18_in(),
+    .x18_in(regs_i[18]),
     .x18_out(),
-    .x19_in(),
+    .x19_in(regs_i[19]),
     .x19_out(),
-    .x20_in(),
+    .x20_in(regs_i[20]),
     .x20_out(),
-    .x21_in(),
+    .x21_in(regs_i[21]),
     .x21_out(),
-    .x22_in(),
+    .x22_in(regs_i[22]),
     .x22_out(),
-    .x23_in(),
+    .x23_in(regs_i[23]),
     .x23_out(),
-    .x24_in(),
+    .x24_in(regs_i[24]),
     .x24_out(),
-    .x25_in(),
+    .x25_in(regs_i[25]),
     .x25_out(),
-    .x26_in(),
+    .x26_in(regs_i[26]),
     .x26_out(),
-    .x27_in(),
+    .x27_in(regs_i[27]),
     .x27_out(),
-    .x28_in(),
+    .x28_in(regs_i[28]),
     .x28_out(),
-    .x29_in(),
+    .x29_in(regs_i[29]),
     .x29_out(),
-    .x30_in(),
+    .x30_in(regs_i[30]),
     .x30_out(),
-    .x31_in(),
+    .x31_in(regs_i[31]),
     .x31_out(),
 
     .wX_sail_invoke,
     .wX_sail_invoke_ret(),
     .wX_sail_invoke_arg_0,
     .wX_sail_invoke_arg_1,
-
-    .rX_sail_invoke,
-    .rX_sail_invoke_ret,
-    .rX_sail_invoke_arg_0,
 
     .write_ram_sail_invoke,
     .write_ram_sail_invoke_ret(),
@@ -361,7 +344,7 @@ sail_ibexspec spec_i(
     .mode(main_mode)
 );
 
-assign int_err_o = spec_i.sail_reached_unreachable |
+assign int_err_o = sail_reached_unreachable |
                    spec_i.sail_have_exception |
                    (main_result != MAINRES_OK);
 

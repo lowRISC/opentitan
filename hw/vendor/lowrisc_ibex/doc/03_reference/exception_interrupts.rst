@@ -11,7 +11,7 @@ Interrupts are handled in vectored mode, i.e., the core jumps to the base addres
 Upon executing an MRET instruction, the core jumps to the program counter previously saved in the ``mepc`` CSR and restores ``mstatus``.MPIE to ``mstatus``.MIE.
 
 The base address of the vector table is initialized to the boot address (must be aligned to 256 bytes, i.e., its least significant byte must be 0x00) when the core is booting.
-The base address can be changed after bootup by writing to the ``mtvec`` CSR.
+The base address can be changed after boot-up by writing to the ``mtvec`` CSR.
 For more information, see the :ref:`cs-registers` documentation.
 
 The core starts fetching at the address made by concatenating the most significant 3 bytes of the boot address and the reset value (0x80) as the least significant byte.
