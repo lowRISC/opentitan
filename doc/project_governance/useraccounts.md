@@ -1,30 +1,9 @@
 # OpenTitan user accounts
 
-## Contributor License Agreement (CLA)
-
-All contributions to the project are under the terms of the [Contributor License Agreement](https://github.com/lowRISC/opentitan/blob/master/CLA) (CLA) which is referenced on every commit.
-This grants patent and copyright licenses to the project so that any submissions can legally be used by OpenTitan and downstream users.
-Copyright remains unchanged.
-
-More than 200 individuals from more than 25 organizations and more than 20 non-organizational individuals have contributed to OpenTitan to date.
-If all of them would add their own attribution or copyright notices, that would clutter the code base.
-Copyright is therefore indicated in OpenTitan files by a generic header:
-
-`Copyright lowRISC contributors (OpenTitan project).`
-
-Detailed and up-to-date attribution for all contributions is available via the Git version control system:
-- `git shortlog --author "<your name>"` lists all contributions under your name.
-- `git shortlog --author "<organization's domain>"` lists all contributions by an organization.
-- `git shortlog -- <path>` lists all contributors for a file or directory tree.
-
 ## Project Participants
-
-Submitters must be legally entitled to grant patent or copyright licenses for their own work.
-There are different categories of submitter who use different mechanisms for this.
 
 - **Partner Individuals** are individuals working for a Project Partner and designated by that Partner.
 - **Individual Collaborators** are individuals who are not working for any organisation.
-- **Non-partner individuals** exist for the unusual case of individuals who are working for an organisation which is not a Project Partner.
 
 *lowRISC reserves the right to refuse, or revoke, Project Participant status to any individual where, in the opinion of lowRISC C.I.C. (following consultation with the respective Project Partner in the case of Partner Individuals),*
 *the actions, inactions, conduct or connections of the Project Participant have harmed or risk harming the perception or reputation of lowRISC, the OpenTitan Project and/or any Project Partner.*
@@ -38,7 +17,7 @@ There are different categories of submitter who use different mechanisms for thi
 Partner Individuals are those working for an OpenTitan Project Partner and designated by that Project Partner as one of its contributors to the OpenTitan project.
 No separate legal agreement beyond the partner agreement is required.
 
-Partners may identify individuals as Partner Individuals by requesting an OpenTitan account (see below).
+Partners may identify individuals as Partner Individuals by requesting an [OpenTitan account](./useraccounts.md#requesting-a-partner-individual-account).
 A number of OpenTitan accounts are available according to the Partnership agreement.
 By identifying an individual as a Partner Individual, the Partner authorises them to agree to the terms in the OpenTitan CLA when making contributions.
 
@@ -47,15 +26,15 @@ If a Partner Individual leaves the employment of a Project Partner, the Project 
 ### Individual Collaborators
 
 Individual Collaborators are individuals who wish to make a significant contribution to the OpenTitan project, either on their own or as part of a team.
+They will need to sign an Individual Collaborator license agreement to contribute to OpenTitan.
+
 They should not be associated with any company.
-An individual can be 'associated with' a company or other institution by being an employee, consultant or director of the institution, or because they are primarily funded by an institution.
+An individual is 'associated with' a company or other institution by being an employee, consultant or director of the institution, or because they are primarily funded by an institution.
 
-They will need to sign an Individual Collaborator license agreement to gain access to OpenTitan.
+In most cases where an individual is associated with an organisation, the organisation will join as a Partner and the individual as a Partner Individual.
 
-### Non-Partner Individuals
-
-In unusual cases, participants may be associated with an organisation which is not an OpenTitan Project Partner.
-As the individuals are assigning licenses to the project, the organisation will need to sign a [corporate contributor license agreement](./corporate_cla.txt).
+If an individual is contributing as an individual collaborator, and is associated with an organisation which is not a Partner, as the individual is assigning licenses to the project,
+the associated organisation will need to sign a [corporate contributor license agreement](./corporate_cla.txt).
 
 ## Account Management
 
@@ -69,8 +48,6 @@ If an account is not needed, it can be closed by contacting get-involved@opentit
 
 ### Requesting other accounts
 Individual Collaborators should be proposed by lowRISC or a Project Partner, a decision by the Governing Board and approval by lowRISC after an Individual Collaborator agreement is signed.
-
-Non-Partner individuals should be discussed directly with lowRISC.
 
 ### Using an OpenTitan account
 All communications using your OpenTitan account are as part of the OpenTitan community.
