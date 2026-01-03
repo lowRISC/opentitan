@@ -178,35 +178,35 @@ uint32_t registers_dumped[IBEXFI_NUM_REGS];
  * bit-flip that was introduced by FI.
  */
 OT_ALWAYS_INLINE void init_reg_ref_values(void) {
-  asm volatile("li x1, %0" : : "i"(ref_values[kRegX1]));
-  asm volatile("li x3, %0" : : "i"(ref_values[kRegX3]));
-  asm volatile("li x4, %0" : : "i"(ref_values[kRegX4]));
-  asm volatile("li x5, %0" : : "i"(ref_values[kRegX5]));
-  asm volatile("li x6, %0" : : "i"(ref_values[kRegX6]));
-  asm volatile("li x7, %0" : : "i"(ref_values[kRegX7]));
-  asm volatile("li x9, %0" : : "i"(ref_values[kRegX9]));
-  asm volatile("li x10, %0" : : "i"(ref_values[kRegX10]));
-  asm volatile("li x11, %0" : : "i"(ref_values[kRegX11]));
-  asm volatile("li x12, %0" : : "i"(ref_values[kRegX12]));
-  asm volatile("li x13, %0" : : "i"(ref_values[kRegX13]));
-  asm volatile("li x14, %0" : : "i"(ref_values[kRegX14]));
-  asm volatile("li x15, %0" : : "i"(ref_values[kRegX15]));
-  asm volatile("li x16, %0" : : "i"(ref_values[kRegX16]));
-  asm volatile("li x17, %0" : : "i"(ref_values[kRegX17]));
-  asm volatile("li x18, %0" : : "i"(ref_values[kRegX18]));
-  asm volatile("li x19, %0" : : "i"(ref_values[kRegX19]));
-  asm volatile("li x20, %0" : : "i"(ref_values[kRegX20]));
-  asm volatile("li x21, %0" : : "i"(ref_values[kRegX21]));
-  asm volatile("li x22, %0" : : "i"(ref_values[kRegX22]));
-  asm volatile("li x23, %0" : : "i"(ref_values[kRegX23]));
-  asm volatile("li x24, %0" : : "i"(ref_values[kRegX24]));
-  asm volatile("li x25, %0" : : "i"(ref_values[kRegX25]));
-  asm volatile("li x26, %0" : : "i"(ref_values[kRegX26]));
-  asm volatile("li x27, %0" : : "i"(ref_values[kRegX27]));
-  asm volatile("li x28, %0" : : "i"(ref_values[kRegX28]));
-  asm volatile("li x29, %0" : : "i"(ref_values[kRegX29]));
-  asm volatile("li x30, %0" : : "i"(ref_values[kRegX30]));
-  asm volatile("li x31, %0" : : "i"(ref_values[kRegX31]));
+  asm volatile("li x1, %0" : : "i"(ref_values[kRegX1]) : "x1");
+  asm volatile("li x3, %0" : : "i"(ref_values[kRegX3]) : "x3");
+  asm volatile("li x4, %0" : : "i"(ref_values[kRegX4]) : "x4");
+  asm volatile("li x5, %0" : : "i"(ref_values[kRegX5]) : "x5");
+  asm volatile("li x6, %0" : : "i"(ref_values[kRegX6]) : "x6");
+  asm volatile("li x7, %0" : : "i"(ref_values[kRegX7]) : "x7");
+  asm volatile("li x9, %0" : : "i"(ref_values[kRegX9]) : "x9");
+  asm volatile("li x10, %0" : : "i"(ref_values[kRegX10]) : "x10");
+  asm volatile("li x11, %0" : : "i"(ref_values[kRegX11]) : "x11");
+  asm volatile("li x12, %0" : : "i"(ref_values[kRegX12]) : "x12");
+  asm volatile("li x13, %0" : : "i"(ref_values[kRegX13]) : "x13");
+  asm volatile("li x14, %0" : : "i"(ref_values[kRegX14]) : "x14");
+  asm volatile("li x15, %0" : : "i"(ref_values[kRegX15]) : "x15");
+  asm volatile("li x16, %0" : : "i"(ref_values[kRegX16]) : "x16");
+  asm volatile("li x17, %0" : : "i"(ref_values[kRegX17]) : "x17");
+  asm volatile("li x18, %0" : : "i"(ref_values[kRegX18]) : "x18");
+  asm volatile("li x19, %0" : : "i"(ref_values[kRegX19]) : "x19");
+  asm volatile("li x20, %0" : : "i"(ref_values[kRegX20]) : "x20");
+  asm volatile("li x21, %0" : : "i"(ref_values[kRegX21]) : "x21");
+  asm volatile("li x22, %0" : : "i"(ref_values[kRegX22]) : "x22");
+  asm volatile("li x23, %0" : : "i"(ref_values[kRegX23]) : "x23");
+  asm volatile("li x24, %0" : : "i"(ref_values[kRegX24]) : "x24");
+  asm volatile("li x25, %0" : : "i"(ref_values[kRegX25]) : "x25");
+  asm volatile("li x26, %0" : : "i"(ref_values[kRegX26]) : "x26");
+  asm volatile("li x27, %0" : : "i"(ref_values[kRegX27]) : "x27");
+  asm volatile("li x28, %0" : : "i"(ref_values[kRegX28]) : "x28");
+  asm volatile("li x29, %0" : : "i"(ref_values[kRegX29]) : "x29");
+  asm volatile("li x30, %0" : : "i"(ref_values[kRegX30]) : "x30");
+  asm volatile("li x31, %0" : : "i"(ref_values[kRegX31]) : "x31");
 }
 
 /**
@@ -217,21 +217,21 @@ OT_ALWAYS_INLINE void init_reg_ref_values(void) {
  * and x28...x31.
  */
 OT_ALWAYS_INLINE void init_tmp_reg_ref_values(void) {
-  asm volatile("li x5, %0" : : "i"(ref_values[kRegX5]));
-  asm volatile("li x6, %0" : : "i"(ref_values[kRegX6]));
-  asm volatile("li x7, %0" : : "i"(ref_values[kRegX7]));
+  asm volatile("li x5, %0" : : "i"(ref_values[kRegX5]) : "x5");
+  asm volatile("li x6, %0" : : "i"(ref_values[kRegX6]) : "x6");
+  asm volatile("li x7, %0" : : "i"(ref_values[kRegX7]) : "x7");
 
-  asm volatile("li x12, %0" : : "i"(ref_values[kRegX12]));
-  asm volatile("li x13, %0" : : "i"(ref_values[kRegX13]));
-  asm volatile("li x14, %0" : : "i"(ref_values[kRegX14]));
-  asm volatile("li x15, %0" : : "i"(ref_values[kRegX15]));
-  asm volatile("li x16, %0" : : "i"(ref_values[kRegX16]));
-  asm volatile("li x17, %0" : : "i"(ref_values[kRegX17]));
+  asm volatile("li x12, %0" : : "i"(ref_values[kRegX12]) : "x12");
+  asm volatile("li x13, %0" : : "i"(ref_values[kRegX13]) : "x13");
+  asm volatile("li x14, %0" : : "i"(ref_values[kRegX14]) : "x14");
+  asm volatile("li x15, %0" : : "i"(ref_values[kRegX15]) : "x15");
+  asm volatile("li x16, %0" : : "i"(ref_values[kRegX16]) : "x16");
+  asm volatile("li x17, %0" : : "i"(ref_values[kRegX17]) : "x17");
 
-  asm volatile("li x28, %0" : : "i"(ref_values[kRegX28]));
-  asm volatile("li x29, %0" : : "i"(ref_values[kRegX29]));
-  asm volatile("li x30, %0" : : "i"(ref_values[kRegX30]));
-  asm volatile("li x31, %0" : : "i"(ref_values[kRegX31]));
+  asm volatile("li x28, %0" : : "i"(ref_values[kRegX28]) : "x28");
+  asm volatile("li x29, %0" : : "i"(ref_values[kRegX29]) : "x29");
+  asm volatile("li x30, %0" : : "i"(ref_values[kRegX30]) : "x30");
+  asm volatile("li x31, %0" : : "i"(ref_values[kRegX31]) : "x31");
 }
 
 /**
@@ -320,38 +320,38 @@ OT_ALWAYS_INLINE void save_tmp_regs(uint32_t buffer[]) {
  * @param buffer: The buffer to store the register file content.
  */
 OT_ALWAYS_INLINE void restore_all_regs(uint32_t buffer[]) {
-  asm volatile("lw x0,    0(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x1,    4(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x2,    8(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x3,   12(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x4,   16(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x5,   20(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x6,   24(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x7,   28(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x8,   32(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x9,   36(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x10,  40(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x11,  44(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x12,  48(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x13,  52(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x14,  56(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x15,  60(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x16,  64(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x17,  68(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x18,  72(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x19,  76(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x20,  80(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x21,  84(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x22,  88(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x23,  92(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x24,  96(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x25, 100(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x26, 104(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x27, 108(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x28, 112(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x29, 116(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x30, 120(%0)" : : "r"(&buffer[0]));
-  asm volatile("lw x31, 124(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x0,    0(%0)" : : "r"(&buffer[0]) : "x0");
+  asm volatile("lw x1,    4(%0)" : : "r"(&buffer[0]) : "x1");
+  asm volatile("lw x2,    8(%0)" : : "r"(&buffer[0]) : "x2");
+  asm volatile("lw x3,   12(%0)" : : "r"(&buffer[0]) : "x3");
+  asm volatile("lw x4,   16(%0)" : : "r"(&buffer[0]) : "x4");
+  asm volatile("lw x5,   20(%0)" : : "r"(&buffer[0]) : "x5");
+  asm volatile("lw x6,   24(%0)" : : "r"(&buffer[0]) : "x6");
+  asm volatile("lw x7,   28(%0)" : : "r"(&buffer[0]) : "x7");
+  asm volatile("lw x8,   32(%0)" : : "r"(&buffer[0]) : "x8");
+  asm volatile("lw x9,   36(%0)" : : "r"(&buffer[0]) : "x9");
+  asm volatile("lw x10,  40(%0)" : : "r"(&buffer[0]) : "x10");
+  asm volatile("lw x11,  44(%0)" : : "r"(&buffer[0]) : "x11");
+  asm volatile("lw x12,  48(%0)" : : "r"(&buffer[0]) : "x12");
+  asm volatile("lw x13,  52(%0)" : : "r"(&buffer[0]) : "x13");
+  asm volatile("lw x14,  56(%0)" : : "r"(&buffer[0]) : "x14");
+  asm volatile("lw x15,  60(%0)" : : "r"(&buffer[0]) : "x15");
+  asm volatile("lw x16,  64(%0)" : : "r"(&buffer[0]) : "x16");
+  asm volatile("lw x17,  68(%0)" : : "r"(&buffer[0]) : "x17");
+  asm volatile("lw x18,  72(%0)" : : "r"(&buffer[0]) : "x18");
+  asm volatile("lw x19,  76(%0)" : : "r"(&buffer[0]) : "x19");
+  asm volatile("lw x20,  80(%0)" : : "r"(&buffer[0]) : "x20");
+  asm volatile("lw x21,  84(%0)" : : "r"(&buffer[0]) : "x21");
+  asm volatile("lw x22,  88(%0)" : : "r"(&buffer[0]) : "x22");
+  asm volatile("lw x23,  92(%0)" : : "r"(&buffer[0]) : "x23");
+  asm volatile("lw x24,  96(%0)" : : "r"(&buffer[0]) : "x24");
+  asm volatile("lw x25, 100(%0)" : : "r"(&buffer[0]) : "x25");
+  asm volatile("lw x26, 104(%0)" : : "r"(&buffer[0]) : "x26");
+  asm volatile("lw x27, 108(%0)" : : "r"(&buffer[0]) : "x27");
+  asm volatile("lw x28, 112(%0)" : : "r"(&buffer[0]) : "x28");
+  asm volatile("lw x29, 116(%0)" : : "r"(&buffer[0]) : "x29");
+  asm volatile("lw x30, 120(%0)" : : "r"(&buffer[0]) : "x30");
+  asm volatile("lw x31, 124(%0)" : : "r"(&buffer[0]) : "x31");
 }
 
 // Save the current register file content and initialize it with pre-defined
@@ -394,7 +394,7 @@ static volatile uint32_t sram_main_buffer[kSramMainBufSize];
 // Make sure that this function does not get optimized by the compiler.
 OT_USED
 void increment_counter(void) __attribute__((optnone)) {
-  asm volatile("addi x5, x5, 1");
+  asm volatile("addi x5, x5, 1" ::: "x5");
 }
 
 static status_t init_ref_otp_data(void) {
@@ -748,8 +748,8 @@ status_t handle_ibex_fi_char_addi_single_beq(ujson_t *uj)
   INIT_REGISTER_FILE
 
   // Init x5 and x6.
-  asm volatile("li x5, 0x1a\n");
-  asm volatile("li x6, 0x1a\n");
+  asm volatile("li x5, 0x1a\n" ::: "x5");
+  asm volatile("li x6, 0x1a\n" ::: "x6");
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
@@ -779,7 +779,9 @@ status_t handle_ibex_fi_char_addi_single_beq(ujson_t *uj)
       "correctaddibeq:\n"
       "addi x5, x5, 0x11\n"
       "addi x6, x6, 0x22\n"
-      "badaddibeq:\n");
+      "badaddibeq:\n" ::
+          : "x5", "x6", "x12", "x13", "x14", "x15", "x16", "x17", "x28", "x29",
+            "x30", "x31");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -863,7 +865,9 @@ status_t handle_ibex_fi_char_addi_single_beq_cm(ujson_t *uj)
       "c.addi x28, 1\n"
       "c.addi x29, 1\n"
       "c.addi x30, 1\n"
-      "c.addi x31, 1\n");
+      "c.addi x31, 1\n" ::
+          : "x12", "x13", "x14", "x15", "x16", "x17", "x28", "x29", "x30",
+            "x31");
   HARDENED_CHECK_EQ(value1, value2);
   asm volatile(
       "c.addi x12, 16\n"
@@ -885,7 +889,9 @@ status_t handle_ibex_fi_char_addi_single_beq_cm(ujson_t *uj)
       "c.addi x29, 16\n"
       "c.addi x30, 16\n"
       "c.addi x31, 16\n"
-      "labelend:\n");
+      "labelend:\n" ::
+          : "x12", "x13", "x14", "x15", "x16", "x17", "x28", "x29", "x30",
+            "x31");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -983,7 +989,8 @@ status_t handle_ibex_fi_char_addi_single_beq_cm2(ujson_t *uj)
       "c.addi x30, 16\n"
       "c.addi x31, 16\n"
       "labelend2:\n"
-      : "=r"(value1), "=r"(value2));
+      : "=r"(value1), "=r"(value2)::"x12", "x13", "x14", "x15", "x16", "x17",
+        "x28", "x29", "x30", "x31");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -1032,8 +1039,8 @@ status_t handle_ibex_fi_char_addi_single_beq_neg(ujson_t *uj)
   INIT_REGISTER_FILE
 
   // Set the registers used in the FI trigger window (x5, x6) to constants.
-  asm volatile("li x5, 0x1a\n");
-  asm volatile("li x6, 0x0f\n");
+  asm volatile("li x5, 0x1a\n" ::: "x5");
+  asm volatile("li x6, 0x0f\n" ::: "x6");
 
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile(
@@ -1062,7 +1069,9 @@ status_t handle_ibex_fi_char_addi_single_beq_neg(ujson_t *uj)
       "badbeqneg:\n"
       "addi x5, x5, 0x11\n"
       "addi x6, x6, 0x22\n"
-      "correctbeqneg:\n");
+      "correctbeqneg:\n" ::
+          : "x5", "x6", "x12", "x13", "x14", "x15", "x16", "x17", "x28", "x29",
+            "x30", "x31");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -1126,8 +1135,8 @@ status_t handle_ibex_fi_char_addi_single_bne(ujson_t *uj)
   INIT_REGISTER_FILE
 
   // Set the registers used in the FI trigger window (x5, x6) to constants.
-  asm volatile("li x5, 0x1a\n");
-  asm volatile("li x6, 0x0a\n");
+  asm volatile("li x5, 0x1a\n" ::: "x5");
+  asm volatile("li x6, 0x0a\n" ::: "x6");
 
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile(
@@ -1156,7 +1165,9 @@ status_t handle_ibex_fi_char_addi_single_bne(ujson_t *uj)
       "correctaddibne:\n"
       "addi x5, x5, 0x11\n"
       "addi x6, x6, 0x22\n"
-      "badaddibne:\n");
+      "badaddibne:\n" ::
+          : "x5", "x6", "x12", "x13", "x14", "x15", "x16", "x17", "x28", "x29",
+            "x30", "x31");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -1220,8 +1231,8 @@ status_t handle_ibex_fi_char_addi_single_bne_neg(ujson_t *uj)
   INIT_REGISTER_FILE
 
   // Set the registers used in the FI trigger window (x5, x6) to a constant.
-  asm volatile("li x5, 0x1a\n");
-  asm volatile("li x6, 0x1a\n");
+  asm volatile("li x5, 0x1a\n" ::: "x5");
+  asm volatile("li x6, 0x1a\n" ::: "x6");
 
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile(
@@ -1250,7 +1261,9 @@ status_t handle_ibex_fi_char_addi_single_bne_neg(ujson_t *uj)
       "badbneneg:\n"
       "addi x5, x5, 0x11\n"
       "addi x6, x6, 0x22\n"
-      "correctbneneg:\n");
+      "correctbneneg:\n" ::
+          : "x5", "x6", "x12", "x13", "x14", "x15", "x16", "x17", "x28", "x29",
+            "x30", "x31");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -1315,25 +1328,25 @@ status_t handle_ibex_fi_char_combi(ujson_t *uj) __attribute__((optnone)) {
   INIT_TMP_REGISTER_FILE
 
   // Init the used registers.
-  asm volatile("addi x5, x0, 0xaf");
-  asm volatile("addi x6, x0, 0xaf");
+  asm volatile("addi x5, x0, 0xaf" ::: "x5");
+  asm volatile("addi x6, x0, 0xaf" ::: "x6");
 
-  asm volatile("addi x12, x0, 0xa0");
-  asm volatile("addi x13, x0, 0x0f");
+  asm volatile("addi x12, x0, 0xa0" ::: "x12");
+  asm volatile("addi x13, x0, 0x0f" ::: "x13");
 
-  asm volatile("addi x14, x0, 0x01");
-  asm volatile("addi x15, x0, 0x03");
+  asm volatile("addi x14, x0, 0x01" ::: "x14");
+  asm volatile("addi x15, x0, 0x03" ::: "x15");
 
-  asm volatile("addi x16, x0, 0x0a");
-  asm volatile("addi x17, x0, 0x1c");
+  asm volatile("addi x16, x0, 0x0a" ::: "x16");
+  asm volatile("addi x17, x0, 0x1c" ::: "x17");
 
-  asm volatile("addi x28, x0, 0xa2");
-  asm volatile("addi x29, x0, 0x05");
+  asm volatile("addi x28, x0, 0xa2" ::: "x28");
+  asm volatile("addi x29, x0, 0x05" ::: "x29");
 
-  asm volatile("addi x30, x0, 0xc4");
-  asm volatile("addi x31, x0, 0x07");
+  asm volatile("addi x30, x0, 0xc4" ::: "x30");
+  asm volatile("addi x31, x0, 0x07" ::: "x31");
 
-  asm volatile("addi x7, x0, 0");
+  asm volatile("addi x7, x0, 0" ::: "x7");
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
@@ -1413,7 +1426,9 @@ status_t handle_ibex_fi_char_combi(ujson_t *uj) __attribute__((optnone)) {
       "addi x30, x30, 0x1\n"
       "addi x31, x31, 0x1\n"
 
-      "endcombicorrect:\n");
+      "endcombicorrect:\n" ::
+          : "x5", "x6", "x12", "x13", "x14", "x15", "x16", "x17", "x28", "x29",
+            "x30", "x31");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -1427,19 +1442,19 @@ status_t handle_ibex_fi_char_combi(ujson_t *uj) __attribute__((optnone)) {
   // Initialize the register file before the FI trigger window.
   INIT_TMP_REGISTER_FILE
 
-  asm volatile("addi x5, x0, 0");
-  asm volatile("addi x6, x0, 0");
-  asm volatile("addi x7, x0, 0");
-  asm volatile("addi x12, x0, 0");
-  asm volatile("addi x13, x0, 0");
-  asm volatile("addi x14, x0, 0");
-  asm volatile("addi x15, x0, 0");
-  asm volatile("addi x16, x0, 0");
-  asm volatile("addi x17, x0, 0");
-  asm volatile("addi x28, x0, 0");
-  asm volatile("addi x29, x0, 0");
-  asm volatile("addi x30, x0, 0");
-  asm volatile("addi x31, x0, 0");
+  asm volatile("addi x5, x0, 0" ::: "x5");
+  asm volatile("addi x6, x0, 0" ::: "x6");
+  asm volatile("addi x7, x0, 0" ::: "x7");
+  asm volatile("addi x12, x0, 0" ::: "x12");
+  asm volatile("addi x13, x0, 0" ::: "x13");
+  asm volatile("addi x14, x0, 0" ::: "x14");
+  asm volatile("addi x15, x0, 0" ::: "x15");
+  asm volatile("addi x16, x0, 0" ::: "x16");
+  asm volatile("addi x17, x0, 0" ::: "x17");
+  asm volatile("addi x28, x0, 0" ::: "x28");
+  asm volatile("addi x29, x0, 0" ::: "x29");
+  asm volatile("addi x30, x0, 0" ::: "x30");
+  asm volatile("addi x31, x0, 0" ::: "x31");
 
   uint32_t counter = 0;
 
@@ -1460,7 +1475,9 @@ status_t handle_ibex_fi_char_combi(ujson_t *uj) __attribute__((optnone)) {
       "lw x30, (%0)\n addi x30, x30, 1\n sw x30, (%0)\n"
       "lw x31, (%0)\n addi x31, x31, 1\n sw x31, (%0)\n"
       :
-      : "r"((uint32_t *)&counter));
+      : "r"((uint32_t *)&counter)
+      : "x5", "x6", "x7", "x12", "x13", "x14", "x15", "x16", "x17", "x28",
+        "x29", "x30", "x31");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -1480,34 +1497,34 @@ status_t handle_ibex_fi_char_combi(ujson_t *uj) __attribute__((optnone)) {
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   // Attack target.
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -1603,8 +1620,8 @@ status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
-  asm volatile("addi x5, x0, 0xaf");
-  asm volatile("addi x6, x0, 0xef");
+  asm volatile("addi x5, x0, 0xaf" ::: "x5");
+  asm volatile("addi x6, x0, 0xef" ::: "x6");
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
@@ -1645,7 +1662,8 @@ status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
   asm volatile(
       "endfitestfaultybeq:\n"
       "addi x5, x0, 0x11\n"
-      "addi x6, x0, 0x22");
+      "addi x6, x0, 0x22" ::
+          : "x5", "x6");
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestbeq:\n");
@@ -1691,8 +1709,8 @@ status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj)
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
-  asm volatile("addi x5, x0, 0xaf");
-  asm volatile("addi x6, x0, 0xef");
+  asm volatile("addi x5, x0, 0xaf" ::: "x5");
+  asm volatile("addi x6, x0, 0xef" ::: "x6");
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
@@ -1733,7 +1751,8 @@ status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj)
   asm volatile(
       "endfitestfaultybge:\n"
       "addi x5, x0, 0x11\n"
-      "addi x6, x0, 0x22");
+      "addi x6, x0, 0x22" ::
+          : "x5", "x6");
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestbge:\n");
@@ -1779,8 +1798,8 @@ status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj)
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
-  asm volatile("addi x5, x0, 0xaf");
-  asm volatile("addi x6, x0, 0xef");
+  asm volatile("addi x5, x0, 0xaf" ::: "x5");
+  asm volatile("addi x6, x0, 0xef" ::: "x6");
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
@@ -1821,7 +1840,8 @@ status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj)
   asm volatile(
       "endfitestfaultybgeu:\n"
       "addi x5, x0, 0x11\n"
-      "addi x6, x0, 0x22");
+      "addi x6, x0, 0x22" ::
+          : "x5", "x6");
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestbgeu:\n");
@@ -1867,8 +1887,8 @@ status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj)
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
-  asm volatile("addi x5, x0, 0xef");
-  asm volatile("addi x6, x0, 0xaf");
+  asm volatile("addi x5, x0, 0xef" ::: "x5");
+  asm volatile("addi x6, x0, 0xaf" ::: "x6");
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
@@ -1909,7 +1929,8 @@ status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj)
   asm volatile(
       "endfitestfaultyblt:\n"
       "addi x5, x0, 0x11\n"
-      "addi x6, x0, 0x22");
+      "addi x6, x0, 0x22" ::
+          : "x5", "x6");
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestblt:\n");
@@ -1955,8 +1976,8 @@ status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj)
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
-  asm volatile("addi x5, x0, 0xef");
-  asm volatile("addi x6, x0, 0xaf");
+  asm volatile("addi x5, x0, 0xef" ::: "x5");
+  asm volatile("addi x6, x0, 0xaf" ::: "x6");
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
@@ -1997,7 +2018,8 @@ status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj)
   asm volatile(
       "endfitestfaultybltu:\n"
       "addi x5, x0, 0x11\n"
-      "addi x6, x0, 0x22");
+      "addi x6, x0, 0x22" ::
+          : "x5", "x6");
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestbltu:\n");
@@ -2043,8 +2065,8 @@ status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
-  asm volatile("addi x5, x0, 0xaf");
-  asm volatile("addi x6, x0, 0xaf");
+  asm volatile("addi x5, x0, 0xaf" ::: "x5");
+  asm volatile("addi x6, x0, 0xaf" ::: "x6");
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
@@ -2085,7 +2107,8 @@ status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
   asm volatile(
       "endfitestfaultybne:\n"
       "addi x5, x0, 0x11\n"
-      "addi x6, x0, 0x22");
+      "addi x6, x0, 0x22" ::
+          : "x5", "x6");
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestbne:\n");
@@ -2135,19 +2158,19 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) __attribute__((optnone)) {
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
-  asm volatile("csrr x5,mscratch");
-  asm volatile("csrr x6,mscratch");
-  asm volatile("csrr x7,mscratch");
-  asm volatile("csrr x12,mscratch");
-  asm volatile("csrr x13,mscratch");
-  asm volatile("csrr x14,mscratch");
-  asm volatile("csrr x15,mscratch");
-  asm volatile("csrr x16,mscratch");
-  asm volatile("csrr x17,mscratch");
-  asm volatile("csrr x28,mscratch");
-  asm volatile("csrr x29,mscratch");
-  asm volatile("csrr x30,mscratch");
-  asm volatile("csrr x31,mscratch");
+  asm volatile("csrr x5,mscratch" ::: "x5");
+  asm volatile("csrr x6,mscratch" ::: "x6");
+  asm volatile("csrr x7,mscratch" ::: "x7");
+  asm volatile("csrr x12,mscratch" ::: "x12");
+  asm volatile("csrr x13,mscratch" ::: "x13");
+  asm volatile("csrr x14,mscratch" ::: "x14");
+  asm volatile("csrr x15,mscratch" ::: "x15");
+  asm volatile("csrr x16,mscratch" ::: "x16");
+  asm volatile("csrr x17,mscratch" ::: "x17");
+  asm volatile("csrr x28,mscratch" ::: "x28");
+  asm volatile("csrr x29,mscratch" ::: "x29");
+  asm volatile("csrr x30,mscratch" ::: "x30");
+  asm volatile("csrr x31,mscratch" ::: "x31");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -2214,31 +2237,31 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) __attribute__((optnone)) {
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile("csrw	mscratch, x5");
-  asm volatile("csrr x5,mscratch");
+  asm volatile("csrr x5,mscratch" ::: "x5");
   asm volatile("csrw	mscratch, x5");
-  asm volatile("csrr x5,mscratch");
+  asm volatile("csrr x5,mscratch" ::: "x5");
   asm volatile("csrw	mscratch, x5");
-  asm volatile("csrr x5,mscratch");
+  asm volatile("csrr x5,mscratch" ::: "x5");
   asm volatile("csrw	mscratch, x5");
-  asm volatile("csrr x5,mscratch");
+  asm volatile("csrr x5,mscratch" ::: "x5");
   asm volatile("csrw	mscratch, x5");
-  asm volatile("csrr x5,mscratch");
+  asm volatile("csrr x5,mscratch" ::: "x5");
   asm volatile("csrw	mscratch, x5");
-  asm volatile("csrr x5,mscratch");
+  asm volatile("csrr x5,mscratch" ::: "x5");
   asm volatile("csrw	mscratch, x5");
-  asm volatile("csrr x5,mscratch");
+  asm volatile("csrr x5,mscratch" ::: "x5");
   asm volatile("csrw	mscratch, x5");
-  asm volatile("csrr x5,mscratch");
+  asm volatile("csrr x5,mscratch" ::: "x5");
   asm volatile("csrw	mscratch, x5");
-  asm volatile("csrr x5,mscratch");
+  asm volatile("csrr x5,mscratch" ::: "x5");
   asm volatile("csrw	mscratch, x5");
-  asm volatile("csrr x5,mscratch");
+  asm volatile("csrr x5,mscratch" ::: "x5");
   asm volatile("csrw	mscratch, x5");
-  asm volatile("csrr x5,mscratch");
+  asm volatile("csrr x5,mscratch" ::: "x5");
   asm volatile("csrw	mscratch, x5");
-  asm volatile("csrr x5,mscratch");
+  asm volatile("csrr x5,mscratch" ::: "x5");
   asm volatile("csrw	mscratch, x5");
-  asm volatile("csrr x5,mscratch");
+  asm volatile("csrr x5,mscratch" ::: "x5");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -2523,19 +2546,19 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
-  asm volatile("lw x5, (%0)" : : "r"((flash_test_page.base)));
-  asm volatile("lw x6, (%0)" : : "r"((flash_test_page.base)));
-  asm volatile("lw x7, (%0)" : : "r"((flash_test_page.base)));
-  asm volatile("lw x12, (%0)" : : "r"((flash_test_page.base)));
-  asm volatile("lw x13, (%0)" : : "r"((flash_test_page.base)));
-  asm volatile("lw x14, (%0)" : : "r"((flash_test_page.base)));
-  asm volatile("lw x15, (%0)" : : "r"((flash_test_page.base)));
-  asm volatile("lw x16, (%0)" : : "r"((flash_test_page.base)));
-  asm volatile("lw x17, (%0)" : : "r"((flash_test_page.base)));
-  asm volatile("lw x28, (%0)" : : "r"((flash_test_page.base)));
-  asm volatile("lw x29, (%0)" : : "r"((flash_test_page.base)));
-  asm volatile("lw x30, (%0)" : : "r"((flash_test_page.base)));
-  asm volatile("lw x31, (%0)" : : "r"((flash_test_page.base)));
+  asm volatile("lw x5, (%0)" : : "r"((flash_test_page.base)) : "x5");
+  asm volatile("lw x6, (%0)" : : "r"((flash_test_page.base)) : "x6");
+  asm volatile("lw x7, (%0)" : : "r"((flash_test_page.base)) : "x7");
+  asm volatile("lw x12, (%0)" : : "r"((flash_test_page.base)) : "x12");
+  asm volatile("lw x13, (%0)" : : "r"((flash_test_page.base)) : "x13");
+  asm volatile("lw x14, (%0)" : : "r"((flash_test_page.base)) : "x14");
+  asm volatile("lw x15, (%0)" : : "r"((flash_test_page.base)) : "x15");
+  asm volatile("lw x16, (%0)" : : "r"((flash_test_page.base)) : "x16");
+  asm volatile("lw x17, (%0)" : : "r"((flash_test_page.base)) : "x17");
+  asm volatile("lw x28, (%0)" : : "r"((flash_test_page.base)) : "x28");
+  asm volatile("lw x29, (%0)" : : "r"((flash_test_page.base)) : "x29");
+  asm volatile("lw x30, (%0)" : : "r"((flash_test_page.base)) : "x30");
+  asm volatile("lw x31, (%0)" : : "r"((flash_test_page.base)) : "x31");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -3141,75 +3164,75 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj)
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
-  asm volatile("or x5, x5, x5");
-  asm volatile("or x6, x6, x6");
-  asm volatile("or x7, x7, x7");
-  asm volatile("or x12, x12, x12");
-  asm volatile("or x13, x13, x13");
-  asm volatile("or x14, x14, x14");
-  asm volatile("or x15, x15, x15");
-  asm volatile("or x16, x16, x16");
-  asm volatile("or x17, x17, x17");
-  asm volatile("or x28, x28, x28");
-  asm volatile("or x29, x29, x29");
-  asm volatile("or x30, x30, x30");
-  asm volatile("or x31, x31, x31");
+  asm volatile("or x5, x5, x5" ::: "x5");
+  asm volatile("or x6, x6, x6" ::: "x6");
+  asm volatile("or x7, x7, x7" ::: "x7");
+  asm volatile("or x12, x12, x12" ::: "x12");
+  asm volatile("or x13, x13, x13" ::: "x13");
+  asm volatile("or x14, x14, x14" ::: "x14");
+  asm volatile("or x15, x15, x15" ::: "x15");
+  asm volatile("or x16, x16, x16" ::: "x16");
+  asm volatile("or x17, x17, x17" ::: "x17");
+  asm volatile("or x28, x28, x28" ::: "x28");
+  asm volatile("or x29, x29, x29" ::: "x29");
+  asm volatile("or x30, x30, x30" ::: "x30");
+  asm volatile("or x31, x31, x31" ::: "x31");
 
-  asm volatile("or x5, x5, x5");
-  asm volatile("or x6, x6, x6");
-  asm volatile("or x7, x7, x7");
-  asm volatile("or x12, x12, x12");
-  asm volatile("or x13, x13, x13");
-  asm volatile("or x14, x14, x14");
-  asm volatile("or x15, x15, x15");
-  asm volatile("or x16, x16, x16");
-  asm volatile("or x17, x17, x17");
-  asm volatile("or x28, x28, x28");
-  asm volatile("or x29, x29, x29");
-  asm volatile("or x30, x30, x30");
-  asm volatile("or x31, x31, x31");
+  asm volatile("or x5, x5, x5" ::: "x5");
+  asm volatile("or x6, x6, x6" ::: "x6");
+  asm volatile("or x7, x7, x7" ::: "x7");
+  asm volatile("or x12, x12, x12" ::: "x12");
+  asm volatile("or x13, x13, x13" ::: "x13");
+  asm volatile("or x14, x14, x14" ::: "x14");
+  asm volatile("or x15, x15, x15" ::: "x15");
+  asm volatile("or x16, x16, x16" ::: "x16");
+  asm volatile("or x17, x17, x17" ::: "x17");
+  asm volatile("or x28, x28, x28" ::: "x28");
+  asm volatile("or x29, x29, x29" ::: "x29");
+  asm volatile("or x30, x30, x30" ::: "x30");
+  asm volatile("or x31, x31, x31" ::: "x31");
 
-  asm volatile("or x5, x5, x5");
-  asm volatile("or x6, x6, x6");
-  asm volatile("or x7, x7, x7");
-  asm volatile("or x12, x12, x12");
-  asm volatile("or x13, x13, x13");
-  asm volatile("or x14, x14, x14");
-  asm volatile("or x15, x15, x15");
-  asm volatile("or x16, x16, x16");
-  asm volatile("or x17, x17, x17");
-  asm volatile("or x28, x28, x28");
-  asm volatile("or x29, x29, x29");
-  asm volatile("or x30, x30, x30");
-  asm volatile("or x31, x31, x31");
+  asm volatile("or x5, x5, x5" ::: "x5");
+  asm volatile("or x6, x6, x6" ::: "x6");
+  asm volatile("or x7, x7, x7" ::: "x7");
+  asm volatile("or x12, x12, x12" ::: "x12");
+  asm volatile("or x13, x13, x13" ::: "x13");
+  asm volatile("or x14, x14, x14" ::: "x14");
+  asm volatile("or x15, x15, x15" ::: "x15");
+  asm volatile("or x16, x16, x16" ::: "x16");
+  asm volatile("or x17, x17, x17" ::: "x17");
+  asm volatile("or x28, x28, x28" ::: "x28");
+  asm volatile("or x29, x29, x29" ::: "x29");
+  asm volatile("or x30, x30, x30" ::: "x30");
+  asm volatile("or x31, x31, x31" ::: "x31");
 
-  asm volatile("or x5, x5, x5");
-  asm volatile("or x6, x6, x6");
-  asm volatile("or x7, x7, x7");
-  asm volatile("or x12, x12, x12");
-  asm volatile("or x13, x13, x13");
-  asm volatile("or x14, x14, x14");
-  asm volatile("or x15, x15, x15");
-  asm volatile("or x16, x16, x16");
-  asm volatile("or x17, x17, x17");
-  asm volatile("or x28, x28, x28");
-  asm volatile("or x29, x29, x29");
-  asm volatile("or x30, x30, x30");
-  asm volatile("or x31, x31, x31");
+  asm volatile("or x5, x5, x5" ::: "x5");
+  asm volatile("or x6, x6, x6" ::: "x6");
+  asm volatile("or x7, x7, x7" ::: "x7");
+  asm volatile("or x12, x12, x12" ::: "x12");
+  asm volatile("or x13, x13, x13" ::: "x13");
+  asm volatile("or x14, x14, x14" ::: "x14");
+  asm volatile("or x15, x15, x15" ::: "x15");
+  asm volatile("or x16, x16, x16" ::: "x16");
+  asm volatile("or x17, x17, x17" ::: "x17");
+  asm volatile("or x28, x28, x28" ::: "x28");
+  asm volatile("or x29, x29, x29" ::: "x29");
+  asm volatile("or x30, x30, x30" ::: "x30");
+  asm volatile("or x31, x31, x31" ::: "x31");
 
-  asm volatile("or x5, x5, x5");
-  asm volatile("or x6, x6, x6");
-  asm volatile("or x7, x7, x7");
-  asm volatile("or x12, x12, x12");
-  asm volatile("or x13, x13, x13");
-  asm volatile("or x14, x14, x14");
-  asm volatile("or x15, x15, x15");
-  asm volatile("or x16, x16, x16");
-  asm volatile("or x17, x17, x17");
-  asm volatile("or x28, x28, x28");
-  asm volatile("or x29, x29, x29");
-  asm volatile("or x30, x30, x30");
-  asm volatile("or x31, x31, x31");
+  asm volatile("or x5, x5, x5" ::: "x5");
+  asm volatile("or x6, x6, x6" ::: "x6");
+  asm volatile("or x7, x7, x7" ::: "x7");
+  asm volatile("or x12, x12, x12" ::: "x12");
+  asm volatile("or x13, x13, x13" ::: "x13");
+  asm volatile("or x14, x14, x14" ::: "x14");
+  asm volatile("or x15, x15, x15" ::: "x15");
+  asm volatile("or x16, x16, x16" ::: "x16");
+  asm volatile("or x17, x17, x17" ::: "x17");
+  asm volatile("or x28, x28, x28" ::: "x28");
+  asm volatile("or x29, x29, x29" ::: "x29");
+  asm volatile("or x30, x30, x30" ::: "x30");
+  asm volatile("or x31, x31, x31" ::: "x31");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -3343,8 +3366,8 @@ status_t handle_ibex_fi_char_single_beq(ujson_t *uj) __attribute__((optnone)) {
   INIT_REGISTER_FILE
 
   // Init x5 and x6.
-  asm volatile("li x5, 0x1a\n");
-  asm volatile("li x6, 0x1a\n");
+  asm volatile("li x5, 0x1a\n" ::: "x5");
+  asm volatile("li x6, 0x1a\n" ::: "x6");
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
@@ -3353,7 +3376,8 @@ status_t handle_ibex_fi_char_single_beq(ujson_t *uj) __attribute__((optnone)) {
                      "correctbeq:\n"
                      "addi x5, x5, 0x11\n"
                      "addi x6, x6, 0x22\n"
-                     "badbeq:\n");
+                     "badbeq:\n" ::
+                         : "x5", "x6");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -3416,8 +3440,8 @@ status_t handle_ibex_fi_char_single_bne(ujson_t *uj) __attribute__((optnone)) {
   INIT_REGISTER_FILE
 
   // Init x5 and x6.
-  asm volatile("li x5, 0x1a\n");
-  asm volatile("li x6, 0x0a\n");
+  asm volatile("li x5, 0x1a\n" ::: "x5");
+  asm volatile("li x6, 0x0a\n" ::: "x6");
 
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile(NOP10 "bne x5, x6, correctbne\n" NOP10
@@ -3425,7 +3449,8 @@ status_t handle_ibex_fi_char_single_bne(ujson_t *uj) __attribute__((optnone)) {
                      "correctbne:\n"
                      "addi x5, x5, 0x11\n"
                      "addi x6, x6, 0x22\n"
-                     "badbne:\n");
+                     "badbne:\n" ::
+                         : "x5", "x6");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -3501,19 +3526,49 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) __attribute__((optnone)) {
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   // Read from SRAM into temporary registers.
-  asm volatile("lw x5, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
-  asm volatile("lw x6, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
-  asm volatile("lw x7, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
-  asm volatile("lw x12, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
-  asm volatile("lw x13, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
-  asm volatile("lw x14, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
-  asm volatile("lw x15, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
-  asm volatile("lw x16, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
-  asm volatile("lw x17, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
-  asm volatile("lw x28, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
-  asm volatile("lw x29, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
-  asm volatile("lw x30, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
-  asm volatile("lw x31, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
+  asm volatile("lw x5, (%0)" : : "r"(&sram_main_buffer[sram_half_size]) : "x5");
+  asm volatile("lw x6, (%0)" : : "r"(&sram_main_buffer[sram_half_size]) : "x6");
+  asm volatile("lw x7, (%0)" : : "r"(&sram_main_buffer[sram_half_size]) : "x7");
+  asm volatile("lw x12, (%0)"
+               :
+               : "r"(&sram_main_buffer[sram_half_size])
+               : "x12");
+  asm volatile("lw x13, (%0)"
+               :
+               : "r"(&sram_main_buffer[sram_half_size])
+               : "x13");
+  asm volatile("lw x14, (%0)"
+               :
+               : "r"(&sram_main_buffer[sram_half_size])
+               : "x14");
+  asm volatile("lw x15, (%0)"
+               :
+               : "r"(&sram_main_buffer[sram_half_size])
+               : "x15");
+  asm volatile("lw x16, (%0)"
+               :
+               : "r"(&sram_main_buffer[sram_half_size])
+               : "x16");
+  asm volatile("lw x17, (%0)"
+               :
+               : "r"(&sram_main_buffer[sram_half_size])
+               : "x17");
+  asm volatile("lw x28, (%0)"
+               :
+               : "r"(&sram_main_buffer[sram_half_size])
+               : "x28");
+  asm volatile("lw x29, (%0)"
+               :
+               : "r"(&sram_main_buffer[sram_half_size])
+               : "x29");
+  asm volatile("lw x30, (%0)"
+               :
+               : "r"(&sram_main_buffer[sram_half_size])
+               : "x30");
+  asm volatile("lw x31, (%0)"
+               :
+               : "r"(&sram_main_buffer[sram_half_size])
+               : "x31");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -3604,19 +3659,19 @@ status_t handle_ibex_fi_char_sram_read_ret(ujson_t *uj)
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   // Read from ret. SRAM into temporary registers.
-  asm volatile("lw x5, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
-  asm volatile("lw x6, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
-  asm volatile("lw x7, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
-  asm volatile("lw x12, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
-  asm volatile("lw x13, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
-  asm volatile("lw x14, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
-  asm volatile("lw x15, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
-  asm volatile("lw x16, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
-  asm volatile("lw x17, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
-  asm volatile("lw x28, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
-  asm volatile("lw x29, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
-  asm volatile("lw x30, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
-  asm volatile("lw x31, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
+  asm volatile("lw x5, (%0)" : : "r"(&ret_ram[ret_ram_half_len]) : "x5");
+  asm volatile("lw x6, (%0)" : : "r"(&ret_ram[ret_ram_half_len]) : "x6");
+  asm volatile("lw x7, (%0)" : : "r"(&ret_ram[ret_ram_half_len]) : "x7");
+  asm volatile("lw x12, (%0)" : : "r"(&ret_ram[ret_ram_half_len]) : "x12");
+  asm volatile("lw x13, (%0)" : : "r"(&ret_ram[ret_ram_half_len]) : "x13");
+  asm volatile("lw x14, (%0)" : : "r"(&ret_ram[ret_ram_half_len]) : "x14");
+  asm volatile("lw x15, (%0)" : : "r"(&ret_ram[ret_ram_half_len]) : "x15");
+  asm volatile("lw x16, (%0)" : : "r"(&ret_ram[ret_ram_half_len]) : "x16");
+  asm volatile("lw x17, (%0)" : : "r"(&ret_ram[ret_ram_half_len]) : "x17");
+  asm volatile("lw x28, (%0)" : : "r"(&ret_ram[ret_ram_half_len]) : "x28");
+  asm volatile("lw x29, (%0)" : : "r"(&ret_ram[ret_ram_half_len]) : "x29");
+  asm volatile("lw x30, (%0)" : : "r"(&ret_ram[ret_ram_half_len]) : "x30");
+  asm volatile("lw x31, (%0)" : : "r"(&ret_ram[ret_ram_half_len]) : "x31");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -3852,101 +3907,101 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x7");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -4017,37 +4072,37 @@ status_t handle_ibex_fi_char_sram_write_read_alt(ujson_t *uj)
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[1]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[1]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[1]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[2]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[2]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[2]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[3]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[3]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[3]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[4]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[4]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[4]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[5]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[5]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[5]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[6]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[6]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[6]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[7]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[7]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[7]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[8]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[8]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[8]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[9]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[9]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[9]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[10]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[10]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[10]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[11]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[11]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[11]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[12]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[12]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[12]) : "x5");
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[13]));
-  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[13]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[13]) : "x6");
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[14]));
-  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[14]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[14]) : "x7");
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[15]));
-  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[15]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[15]) : "x5");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -4310,36 +4365,36 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj)
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   // Attack target.
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
-  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
+  asm volatile("jal ra, increment_counter" ::: "ra");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -4395,36 +4450,36 @@ status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj)
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   // Attack target.
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
-  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
+  asm volatile("jal ra, not_increment_counter" ::: "ra");
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
