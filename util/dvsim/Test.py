@@ -117,15 +117,17 @@ class Test(RunMode):
 
     @staticmethod
     def merge_global_opts(tests, global_pre_build_cmds, global_post_build_cmds,
-                          global_build_opts, global_pre_run_cmds,
-                          global_post_run_cmds, global_run_opts,
-                          global_sw_images, global_sw_build_opts):
+                          global_build_opts, global_post_build_opts,
+                          global_pre_run_cmds, global_post_run_cmds,
+                          global_run_opts, global_sw_images,
+                          global_sw_build_opts):
         processed_build_modes = set()
         for test in tests:
             if test.build_mode.name not in processed_build_modes:
                 test.build_mode.pre_build_cmds.extend(global_pre_build_cmds)
                 test.build_mode.post_build_cmds.extend(global_post_build_cmds)
                 test.build_mode.build_opts.extend(global_build_opts)
+                test.build_mode.post_build_opts.extend(global_post_build_opts)
                 processed_build_modes.add(test.build_mode.name)
             test.pre_run_cmds.extend(global_pre_run_cmds)
             test.post_run_cmds.extend(global_post_run_cmds)
