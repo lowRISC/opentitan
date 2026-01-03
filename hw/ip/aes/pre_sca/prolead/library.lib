@@ -426,3 +426,19 @@ D SI SE CK RN
 Q QN
      RN and (((not CK) and      Q ) or (CK and (((not SE) and      D ) or (SE and      SI ))))
 (not RN) or (((not CK) and (not Q)) or (CK and (((not SE) and (not D)) or (SE and (not SI)))))
+
+Gate
+1
+LOGIC0_X1
+0
+1
+Z
+Z and (not Z)
+
+Gate
+1
+LOGIC1_X1
+0
+1
+Z
+Z or (not Z)

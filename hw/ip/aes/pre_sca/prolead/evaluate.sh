@@ -3,9 +3,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Script for evaluating e.g. the masking implementation in combination with the PRNG inside the AES
-# cipher core using PROLEAD.
-
 set -e
 
 # Argument parsing
@@ -19,6 +16,11 @@ if [[ "$#" -gt 1 ]]; then
 else
   NETLIST_DIR="${REPO_TOP}/hw/ip/aes/pre_syn/syn_out/latest/generated"
 fi
+if [[ "$#" -gt 2 ]]; then
+  PROLEAD_BIN="$3"
+else
+  PROLEAD_BIN="${PROLEAD_BIN:-PROLEAD}"
+fi
 
 # Create results directory.
 OUT_DIR_PREFIX="out/${TOP_MODULE}"
@@ -27,10 +29,46 @@ mkdir -p ${OUT_DIR}
 rm -f out/latest
 ln -s "${OUT_DIR#out/}" out/latest
 
+NETLIST_PATH="${NETLIST_FILE:-${NETLIST_DIR}/${TOP_MODULE}_netlist.v}"
+LIBRARY_PATH="${LIBRARY_FILE:-library.lib}"
+CONFIG_PATH="${CONFIG_FILE:-${TOP_MODULE}_config.set}"
+
 # Launch the tool.
-PROLEAD -lf library.lib -ln NANG45 \
+"$PROLEAD_BIN" -lf "$LIBRARY_PATH" -ln NANG45 \
         -mn ${TOP_MODULE} \
-        -df "${NETLIST_DIR}/${TOP_MODULE}_netlist.v" \
-        -cf "${TOP_MODULE}_config.set" \
+        -df "$NETLIST_PATH" \
+        -cf "$CONFIG_PATH" \
         -rf ${OUT_DIR} \
         2>&1 | tee "${OUT_DIR}/log.txt"
+
+EXIT_CODE=${PIPESTATUS[0]}
+
+if [ $EXIT_CODE -ne 0 ]; then
+    echo "Error: PROLEAD failed with exit code $EXIT_CODE"
+    exit $EXIT_CODE
+fi
+
+if [[ -n "${MAX_LEAKAGE_THRESHOLD}" ]]; then
+    echo "---------------------------------------------------"
+    echo "Verifying leakage against threshold: ${MAX_LEAKAGE_THRESHOLD}"
+
+    if ! awk -F'|' -v threshold="${MAX_LEAKAGE_THRESHOLD}" '
+        /OKAY/ || /LEAKAGE/ {
+            gsub(/ /, "", $(NF-2));
+            raw_val = $(NF-2);
+
+            if (raw_val !~ /^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {
+                exit 1;
+            }
+
+            if (raw_val + 0.0 > threshold) {
+                exit 1;
+            }
+        }
+    ' "${OUT_DIR}/log.txt"; then
+        echo "TEST FAILED"
+        exit 1
+    else
+        echo "SUCCESS"
+    fi
+fi
