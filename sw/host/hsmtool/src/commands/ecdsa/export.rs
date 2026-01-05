@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Result, anyhow};
+use anyhow::{Context, Result, anyhow};
 use cryptoki::object::{Attribute, ObjectHandle};
 use cryptoki::session::Session;
 use p256::ecdsa::{SigningKey, VerifyingKey};
@@ -60,7 +60,7 @@ impl Export {
     fn wrap_key(&self, session: &Session, object: ObjectHandle) -> Result<()> {
         let wrapper: Wrap = self
             .wrap_mechanism
-            .ok_or(anyhow!("wrap_mechanism is required when wrap is specified"))?
+            .context("wrap_mechanism is required when wrap is specified")?
             .into();
         let wrapped = wrapper.wrap(session, object, self.wrap.as_deref())?;
         std::fs::write(&self.filename, &wrapped)?;
