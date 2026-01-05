@@ -5,9 +5,8 @@
 from typing import List, Optional, Tuple
 from .ext_regs import OTBNExtRegs
 from .ispr import ISPR, DumbISPR, TraceISPR
+from .kmac_ispr import KmacDataWSR
 from .trace import Trace
-
-from .ext_regs import OTBNExtRegs
 
 
 class RandWSR(ISPR):
@@ -255,6 +254,9 @@ class WSRFile:
         self.KeyS0H = KeyWSR('KeyS0H', 256, self.KeyS0)
         self.KeyS1L = KeyWSR('KeyS1L', 0, self.KeyS1)
         self.KeyS1H = KeyWSR('KeyS1H', 256, self.KeyS1)
+        # The KMAC_DATA_S0/1 regs are only accessible through the Kmac() class.
+        self.KMAC_DATA_S0 = KmacDataWSR('KMAC_DATA_S0')
+        self.KMAC_DATA_S1 = KmacDataWSR('KMAC_DATA_S1')
 
         self._by_idx = {
             0: self.MOD,
@@ -265,6 +267,8 @@ class WSRFile:
             5: self.KeyS0H,
             6: self.KeyS1L,
             7: self.KeyS1H,
+            8: self.KMAC_DATA_S0,
+            9: self.KMAC_DATA_S1,
         }
 
     def on_start(self) -> None:
@@ -294,6 +298,18 @@ class WSRFile:
         Assumes that idx is a valid index (call check_idx to ensure this).
 
         '''
+        # KMAC_DATA_S0/1 should only be accessed through the Kmac() class.
+        if idx in {0x8, 0x9}:
+            raise RuntimeError(
+                f"Illegal read from index {hex(idx)}. KMAC_DATA_S0/1 registers "
+                "must be managed via the Kmac() class."
+            )
+
+        # Ensure the register exists before attempting access.
+        wsr = self._by_idx.get(idx)
+        if wsr is None:
+            raise KeyError(f"No WSR found at index {hex(idx)}")
+
         return self._by_idx[idx].read_unsigned()
 
     def write_at_idx(self, idx: int, value: int) -> None:
@@ -302,7 +318,19 @@ class WSRFile:
         Assumes that idx is a valid index (call check_idx to ensure this).
 
         '''
-        return self._by_idx[idx].write_unsigned(value)
+        # KMAC_DATA_S0/1 should only be accessed through the Kmac() class.
+        if idx in {0x8, 0x9}:
+            raise RuntimeError(
+                f"Illegal write to index {hex(idx)}. KMAC_DATA_S0/1 registers "
+                "must be managed via the Kmac() class."
+            )
+
+        # Ensure the register exists before attempting access.
+        wsr = self._by_idx.get(idx)
+        if wsr is None:
+            raise KeyError(f"No WSR found at index {hex(idx)}")
+
+        wsr.write_unsigned(value)
 
     def commit(self) -> None:
         self.MOD.commit()
@@ -311,12 +339,16 @@ class WSRFile:
         self.ACC.commit()
         self.KeyS0.commit()
         self.KeyS1.commit()
+        self.KMAC_DATA_S0.commit()
+        self.KMAC_DATA_S1.commit()
 
     def abort(self) -> None:
         self.MOD.abort()
         self.RND.abort()
         self.URND.abort()
         self.ACC.abort()
+        self.KMAC_DATA_S0.abort()
+        self.KMAC_DATA_S1.abort()
         # We commit changes to the sideloaded keys from outside, even if the
         # instruction itself gets aborted.
         self.KeyS0.commit()
@@ -329,6 +361,8 @@ class WSRFile:
         ret += self.ACC.changes()
         ret += self.KeyS0.changes()
         ret += self.KeyS1.changes()
+        ret += self.KMAC_DATA_S0.changes()
+        ret += self.KMAC_DATA_S1.changes()
         return ret
 
     def set_sideload_keys(self,

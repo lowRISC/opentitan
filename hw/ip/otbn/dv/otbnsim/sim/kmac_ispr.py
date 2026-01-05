@@ -2,7 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from .ispr import ISPR, DumbISPR
+from typing import List
+from .ispr import ISPR, DumbISPR, TraceISPR
 
 
 class KmacCommandCSR(DumbISPR):
