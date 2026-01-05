@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/cryptolib_build_info.h"
+#include "sw/device/lib/crypto/include/security_config.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
@@ -491,6 +492,9 @@ status_t handle_cryptolib_fi_sym_init(ujson_t *uj) {
                 "CRYPTO version %08x, released %s, hash %08x%08x", version,
                 released ? "true" : "false", build_hash_high, build_hash_low);
   RESP_OK(ujson_serialize_string, uj, cryptolib_version);
+
+  // Check the security config of the device.
+  TRY(otcrypto_security_config_check(kOtcryptoKeySecurityLevelHigh));
   /////////////// STUB END ///////////////
 
   return OK_STATUS();

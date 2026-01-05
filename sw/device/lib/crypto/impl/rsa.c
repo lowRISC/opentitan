@@ -12,9 +12,9 @@
 #include "sw/device/lib/crypto/impl/rsa/rsa_signature.h"
 #include "sw/device/lib/crypto/impl/rsa/run_rsa.h"
 #include "sw/device/lib/crypto/impl/rsa/run_rsa_key_from_cofactor.h"
-#include "sw/device/lib/crypto/impl/security_config.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/security_config.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('r', 's', 'a')
@@ -695,9 +695,6 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Check the security config of the device.
-  HARDENED_TRY(security_config_check(private_key->config.security_level));
-
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
@@ -1002,9 +999,6 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
       ciphertext.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Check the security config of the device.
-  HARDENED_TRY(security_config_check(private_key->config.security_level));
 
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
