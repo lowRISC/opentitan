@@ -657,7 +657,8 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
   // Find the active page and the next counter.
   active_page_info_t active_page;
   boot_data_t last_entry;
-  RETURN_IF_ERROR(boot_data_active_page_find(&active_page, &last_entry));
+  HARDENED_RETURN_IF_ERROR(
+      boot_data_active_page_find(&active_page, &last_entry));
   if (active_page.has_valid_entry == kHardenedBoolTrue) {
     // Counters are rounded to the next even value to ensure wraparound happens
     // on both pages.
@@ -666,16 +667,22 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
 
   // Write to the inactive page first, and then active page.
   // If both pages are invalid, write the page0 first.
-  int inactive_idx = active_page.page == kPages[0];
+  size_t inactive_idx = active_page.page == kPages[0] ? 1 : 0;
+  boot_data_digest_compute(&new_entry, &new_entry.digest);
+  // NE also covers the NULL case when both pages are invalid.
+  HARDENED_CHECK_NE(active_page.page, kPages[inactive_idx]);
+  RETURN_IF_ERROR(boot_data_entry_write(kPages[inactive_idx], 0, &new_entry,
+                                        /*erase=*/kHardenedBoolTrue));
+  HARDENED_RETURN_IF_ERROR(boot_data_entry_write(
+      kPages[inactive_idx], 1, &new_entry, /*erase=*/kHardenedBoolFalse));
 
+  inactive_idx = 1 - inactive_idx;
+  new_entry.counter += 1;
   boot_data_digest_compute(&new_entry, &new_entry.digest);
   RETURN_IF_ERROR(boot_data_entry_write(kPages[inactive_idx], 0, &new_entry,
                                         /*erase=*/kHardenedBoolTrue));
-
-  new_entry.counter += 1;
-  boot_data_digest_compute(&new_entry, &new_entry.digest);
-  return boot_data_entry_write(kPages[!inactive_idx], 0, &new_entry,
-                               /*erase=*/kHardenedBoolTrue);
+  return boot_data_entry_write(kPages[inactive_idx], 1, &new_entry,
+                               /*erase=*/kHardenedBoolFalse);
 }
 
 /**

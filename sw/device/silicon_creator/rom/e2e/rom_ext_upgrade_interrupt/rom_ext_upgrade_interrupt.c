@@ -52,8 +52,11 @@ static rom_error_t corrupt_page_0(void) {
                                 .write = kMultiBitBool4True,
                                 .erase = kMultiBitBool4False,
                             });
-  RETURN_IF_ERROR(flash_ctrl_info_write(&kFlashCtrlInfoPageBootData0, 0, 4,
-                                        &corrupted_words));
+  for (uint32_t i = 0; i < 2; i++) {
+    RETURN_IF_ERROR(flash_ctrl_info_write(&kFlashCtrlInfoPageBootData0,
+                                          sizeof(boot_data_t) * i, 4,
+                                          &corrupted_words));
+  }
   flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData0,
                             (flash_ctrl_perms_t){
                                 .read = kMultiBitBool4False,
