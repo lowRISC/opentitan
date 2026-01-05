@@ -17,6 +17,7 @@ py_library(
     srcs = ["csr.py"],
     deps = [
         ":flags",
+        ":kmac",
         ":wsr",
     ],
 )
@@ -163,6 +164,7 @@ py_library(
         ":ext_regs",
         ":flags",
         ":gpr",
+        ":kmac",
         ":loop",
         ":reg",
         ":trace",
@@ -193,6 +195,7 @@ py_library(
     srcs = ["wsr.py"],
     deps = [
         ":ext_regs",
+        ":kmac",
         ":trace",
     ],
 )
