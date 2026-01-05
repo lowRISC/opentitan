@@ -14,6 +14,7 @@ from .edn_client import EdnClient
 from .ext_regs import OTBNExtRegs
 from .flags import FlagReg
 from .gpr import GPRs
+from .kmac import Kmac
 from .loop import LoopStack
 from .reg import RegFile
 from .trace import Trace, TracePC
@@ -82,7 +83,8 @@ class OTBNState:
 
         self.ext_regs = OTBNExtRegs()
         self.wsrs = WSRFile(self.ext_regs)
-        self.csrs = CSRFile()
+        self.csrs = CSRFile(self.wsrs)
+        self.kmac = Kmac(self.csrs, self.wsrs)
 
         self.pc = 0
         self._pc_next_override: Optional[int] = None
@@ -285,7 +287,7 @@ class OTBNState:
         c += self.loop_stack.changes()
         c += self.ext_regs.changes()
         c += self.wsrs.changes()
-        c += self.csrs.flags.changes()
+        c += self.csrs.changes()
         c += self.wdrs.changes()
         return c
 
@@ -308,6 +310,7 @@ class OTBNState:
             self.take_injected_err_bits()
         self.ext_regs.step()
         self._urnd_client.step()
+        self.kmac.step()
 
     def commit(self, sim_stalled: bool) -> None:
         if self._time_to_imem_invalidation is not None:
@@ -343,8 +346,9 @@ class OTBNState:
         self.dmem.commit()
         self.loop_stack.commit()
         self.wsrs.commit()
-        self.csrs.flags.commit()
+        self.csrs.commit()
         self.wdrs.commit()
+        self.kmac.end_cycle()
 
         if not sim_stalled:
             self.pc = self.get_next_pc()
@@ -358,8 +362,9 @@ class OTBNState:
         self.loop_stack.abort()
         self.ext_regs.abort()
         self.wsrs.abort()
-        self.csrs.flags.abort()
+        self.csrs.abort()
         self.wdrs.abort()
+        self.kmac.end_cycle()
 
     def start(self) -> None:
         '''Start running; perform state init'''
@@ -376,8 +381,10 @@ class OTBNState:
         # Reset CSRs, WSRs, loop stack and call stack. WSRs have special
         # treatment because some of them have values that persist across
         # operations.
-        self.csrs = CSRFile()
+        # TODO: Figure out when and how kmac should be reset.
         self.wsrs.on_start()
+        self.csrs = CSRFile(self.wsrs)
+        self.kmac.on_start(self.csrs, self.wsrs)
         self.loop_stack = LoopStack()
         self.gprs.empty_call_stack()
 

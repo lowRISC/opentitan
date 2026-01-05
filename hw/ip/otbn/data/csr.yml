@@ -99,6 +99,69 @@
     Write to this CSR to begin a request to fill the RND cache.
     Always reads as 0.
 
+- name: kmac_if_status
+  address: 0x7d9
+  doc: |
+    Write a 1 to bits 1 or 2 to clear the error bits.
+    KMAC_IF_STATUS is a CSR that exposes status information for the OTBN-KMAC interface.
+  bits:
+    0: MSG_WRITE_RDY indicates whether the KMAC_DATA_S0/1 WSR is ready for the next word.
+    1: MSG_SEND_ERROR (W1C) indicates whether an error occurred after issuing a message send command.
+    2: MSG_WRITE_ERROR (W1C) indicates whether an error occurred after writing to the KMAC_DATA_S0/1 WSR.
+    3: DIGEST_VALID indicates whether the 64 bit word in KMAC_DATA_S0/1 WSR is valid.
+    31-4: Reserved. Always reads as 0. Any write is ignored.
+
+- name: kmac_intr
+  address: 0x7da
+  doc: |
+    KMAC_INTR is a CSR that exposes the KMAC_ERROR interrupt of the KMAC HWIP.
+  bits:
+    0: KMAC_ERROR (W1C) indicates whether an error occurred in the KMAC HWIP.
+    31-1: Reserved. Always reads as 0. Any write is ignored.
+
+- name: kmac_cfg
+  address: 0x7db
+  doc: |
+    A configuration register for the KMAC interface.
+    The encodings for the fields are equivalent to the encodings for the CFG_SHADOWED register in the KMAC HWIP.
+  bits:
+    0: KMAC_EN enables keyed operation in the KMAC HWIP (kmac_en = 0/1).
+    3-1: STRENGTH allows OTBN to select the desired security strength (kstrength = L128 / L224 / L256 / L384 / L512).
+    5-4: MODE allows OTBN to set the KMAC hashing mode (mode = SHAKE / cSHAKE / SHA3).
+    31-6: Reserved. Always reads as 0. Any write is ignored.
+
+- name: kmac_msg_send
+  address: 0x7dc
+  doc: |
+    A command register to send a message to KMAC.
+    Reads from this register always return a 0.
+  bits:
+    0: MSG_SEND can be set to send the contents of KMAC_DATA_S0 and KMAC_DATA_S1 to KMAC.
+    31-1: Reserved. Always reads as 0. Any write is ignored.
+
+- name: kmac_cmd
+  address: 0x7dd
+  doc: |
+    The encodings for the commands are equivalent to the encodings for the CMD register in the KMAC HWIP.
+    Reads from this register always return a 0.
+  bits:
+    5-0: CMD is the KMAC command field used to issue START, PROCESS, RUN and DONE commands to KMAC.
+    31-6: Reserved. Always reads as 0. Any write is ignored.
+
+- name: kmac_byte_strobe
+  address: 0x7de
+  doc: |
+    The input bytes of KMAC_DATA_S0/1 that are valid and should be consumed by KMAC.
+
+    For all message chunks except the final one, BYTE_STROBE must be programmed to all ones, indicating that all bytes in KMAC_DATA are valid. For the final message chunk, selected bits may be cleared to indicate unused bytes.
+    Any cleared bits must correspond to the most-significant bytes only, that is, the mask must be contiguous, with no zero bit followed by a one at a higher significance.
+    This needs to be the case, because that's how SHA3 inside KMAC expects the data.
+    If a non contiguous strobe is defined the behaviour is undefined.
+
+    Reads from this register return the current configuration of the KMAC_BYTE_STROBE CSR.
+  bits:
+    31-0: BYTE_STROBE is the KMAC byte strobe field.
+
 - name: rnd
   address: 0xfc0
   read-only: true
@@ -119,3 +182,26 @@
 
     The number is sourced from an local PRNG.
     Reads never stall.
+
+- name: kmac_status
+  address: 0xfc2
+  read-only: true
+  doc: |
+    Writes to this CSR are always ignored.
+    This CSR exposes the internal state of the SHA3 FSM within KMAC.
+  bits:
+    0: SHA3_IDLE indicates whether the SHA3 core is in the idle state.
+    1: SHA3_ABSORB indicates whether the SHA3 core is in the absorb state.
+    2: SHA3_SQUEEZE indicates whether the SHA3 core is in the squeeze state.
+    31-3: Reserved. Always reads as 0. Any write is ignored.
+
+- name: kmac_error
+  address: 0xfc3
+  read-only: true
+  doc: |
+    Writes to this register are ignored.
+    This register exposes the error code from the KMAC HWIP ERR_CODE register.
+    No other information from the KMAC HWIP ERR_CODE register is exposed.
+  bits:
+    7-0: ERROR_CODE contains the error code coming directly from the KMAC HWIP.
+    31-8: Reserved. Always reads as 0. Any write is ignored.

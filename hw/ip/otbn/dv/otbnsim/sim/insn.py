@@ -1253,6 +1253,7 @@ class BNWSRR(OTBNInsn):
 
         # The WSR is ready and has a value. Read it.
         val = state.wsrs.read_at_idx(self.wsr)
+
         state.wdrs.get_reg(self.wrd).write_unsigned(val)
         return None
 
@@ -1272,6 +1273,7 @@ class BNWSRW(OTBNInsn):
             return None
 
         val = state.wdrs.get_reg(self.wrs).read_unsigned()
+
         state.wsrs.write_at_idx(self.wsr, val)
 
 

@@ -5,9 +5,8 @@
 from typing import List, Optional, Tuple
 from .ext_regs import OTBNExtRegs
 from .ispr import ISPR, DumbISPR, ISPRChange
+from .kmac_ispr import KmacDataWSRs
 from .trace import Trace
-
-from .ext_regs import OTBNExtRegs
 
 
 class RandWSR(ISPR):
@@ -255,6 +254,7 @@ class WSRFile:
         self.KeyS0H = KeyWSR('KeyS0H', 256, self.KeyS0)
         self.KeyS1L = KeyWSR('KeyS1L', 0, self.KeyS1)
         self.KeyS1H = KeyWSR('KeyS1H', 256, self.KeyS1)
+        self.KMAC_DATA = KmacDataWSRs(['KMAC_DATA_S0', 'KMAC_DATA_S1'])
 
         self._by_idx = {
             0: self.MOD,
@@ -265,6 +265,8 @@ class WSRFile:
             5: self.KeyS0H,
             6: self.KeyS1L,
             7: self.KeyS1H,
+            8: self.KMAC_DATA.shares[0],
+            9: self.KMAC_DATA.shares[1],
         }
 
     def on_start(self) -> None:
@@ -294,6 +296,13 @@ class WSRFile:
         Assumes that idx is a valid index (call check_idx to ensure this).
 
         '''
+        # KMAC_DATA_S0/1 should only be accessed through the wrapper class.
+        if idx == 0x8:
+            return self.KMAC_DATA.read_unsigned(share_idx=0)
+
+        elif idx == 0x9:
+            return self.KMAC_DATA.read_unsigned(share_idx=1)
+
         return self._by_idx[idx].read_unsigned()
 
     def write_at_idx(self, idx: int, value: int) -> None:
@@ -302,7 +311,15 @@ class WSRFile:
         Assumes that idx is a valid index (call check_idx to ensure this).
 
         '''
-        return self._by_idx[idx].write_unsigned(value)
+        if idx == 0x8:
+            self.KMAC_DATA.write_unsigned(share_idx=0, value=value)
+            return
+
+        elif idx == 0x9:
+            self.KMAC_DATA.write_unsigned(share_idx=1, value=value)
+            return
+
+        self._by_idx[idx].write_unsigned(value)
 
     def commit(self) -> None:
         self.MOD.commit()
@@ -311,12 +328,14 @@ class WSRFile:
         self.ACC.commit()
         self.KeyS0.commit()
         self.KeyS1.commit()
+        self.KMAC_DATA.commit()
 
     def abort(self) -> None:
         self.MOD.abort()
         self.RND.abort()
         self.URND.abort()
         self.ACC.abort()
+        self.KMAC_DATA.abort()
         # We commit changes to the sideloaded keys from outside, even if the
         # instruction itself gets aborted.
         self.KeyS0.commit()
@@ -329,6 +348,7 @@ class WSRFile:
         ret += self.ACC.changes()
         ret += self.KeyS0.changes()
         ret += self.KeyS1.changes()
+        ret += self.KMAC_DATA.changes()
         return ret
 
     def set_sideload_keys(self,
