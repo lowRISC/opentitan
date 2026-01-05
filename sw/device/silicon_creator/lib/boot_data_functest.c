@@ -354,9 +354,13 @@ rom_error_t write_empty_test(void) {
   boot_data_t boot_data;
   read_boot_data(kPages[0], 0, &boot_data);
   RETURN_IF_ERROR(compare_boot_data(&kTestBootData, &boot_data));
+  read_boot_data(kPages[0], 1, &boot_data);
+  RETURN_IF_ERROR(compare_boot_data(&kTestBootData, &boot_data));
   LOG_INFO("Page 0 OK");
 
   read_boot_data(kPages[1], 0, &boot_data);
+  RETURN_IF_ERROR(compare_boot_data(&kTestBootDataDual, &boot_data));
+  read_boot_data(kPages[1], 1, &boot_data);
   RETURN_IF_ERROR(compare_boot_data(&kTestBootDataDual, &boot_data));
   LOG_INFO("Page 1 OK");
 
