@@ -107,10 +107,10 @@ int kernel_stack_len = 5000;
 int kernel_program_instr_cnt = 400;
 
 // ----------------------------------------------------------------------------
-// Previleged CSR implementation
+// Privileged CSR implementation
 // ----------------------------------------------------------------------------
 
-// Implemented previlieged CSR list
+// Implemented privileged CSR list
 // TODO: Bring back commented out CSRs, these are currently removed as they can
 // cause co-sim mismatches. These must be investigated and fixed
 const privileged_reg_t implemented_csr[] = {
@@ -131,8 +131,8 @@ const privileged_reg_t implemented_csr[] = {
     MTVAL,            // Machine bad address or instruction
     MIE,              // Machine interrupt enable
     MIP,              // Machine interrupt pending
-    12'h7c0,          // CPU Control and Status (Ibex Specific)
-    12'h7c1,          // Secure Seed (Ibex Specific)
+    CPUCTRLSTS,       // CPU Control and Status (Ibex Specific)
+    SECURESEED,       // Secure Seed (Ibex Specific)
     MCYCLE,           // Machine cycle counter (lower 32 bits)
     MCYCLEH,          // Machine cycle counter (upper 32 bits)
     //MINSTRET,         // Machine instructions retired counter (lower 32 bits)

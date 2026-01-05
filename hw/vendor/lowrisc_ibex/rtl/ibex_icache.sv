@@ -76,7 +76,7 @@ module ibex_icache import ibex_pkg::*; #(
   logic [ADDR_W-1:0]                      lookup_addr_aligned;
   logic [ADDR_W-1:0]                      prefetch_addr_d, prefetch_addr_q;
   logic                                   prefetch_addr_en;
-  // Cache pipelipe IC0 signals
+  // Cache pipeline IC0 signals
   logic                                   lookup_throttle;
   logic                                   lookup_req_ic0;
   logic [ADDR_W-1:0]                      lookup_addr_ic0;
@@ -98,7 +98,7 @@ module ibex_icache import ibex_pkg::*; #(
   logic [IC_NUM_WAYS-1:0]                 data_banks_ic0;
   logic                                   data_write_ic0;
   logic [LineSizeECC-1:0]                 data_wdata_ic0;
-  // Cache pipelipe IC1 signals
+  // Cache pipeline IC1 signals
   logic [TagSizeECC-1:0]                  tag_rdata_ic1  [IC_NUM_WAYS];
   logic [LineSizeECC-1:0]                 data_rdata_ic1 [IC_NUM_WAYS];
   logic [LineSizeECC-1:0]                 hit_data_ecc_ic1;
@@ -1112,7 +1112,7 @@ module ibex_icache import ibex_pkg::*; #(
         inval_index_en  = 1'b1;
 
         if (icache_inval_i) begin
-          // If a new invalidaiton requests comes in go back to the beginning with a new scramble
+          // If a new invalidation requests comes in go back to the beginning with a new scramble
           // key
           ic_scr_key_req_o = 1'b1;
           inval_state_d = AWAIT_SCRAMBLE_KEY;
@@ -1127,7 +1127,7 @@ module ibex_icache import ibex_pkg::*; #(
           ic_scr_key_req_o = 1'b1;
           inval_state_d = AWAIT_SCRAMBLE_KEY;
         end else begin
-          // Allow other cache activies whilst in IDLE and no invalidation has been requested
+          // Allow other cache activities whilst in IDLE and no invalidation has been requested
           inval_block_cache = 1'b0;
         end
       end

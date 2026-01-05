@@ -96,9 +96,9 @@ module ibex_dummy_instr import ibex_pkg::*; #(
   // LFSR with a mask applied (based on CSR config data) to shorten the period if required.
   assign dummy_cnt_threshold = lfsr_data.cnt & {dummy_instr_mask_i,{TIMEOUT_CNT_W-3{1'b1}}};
   assign dummy_cnt_incr      = dummy_cnt_q + {{TIMEOUT_CNT_W-1{1'b0}},1'b1};
-  // Clear the counter everytime a new instruction is inserted
+  // Clear the counter every time a new instruction is inserted
   assign dummy_cnt_d         = insert_dummy_instr ? '0 : dummy_cnt_incr;
-  // Increment the counter for each executed instruction while dummy instuctions are
+  // Increment the counter for each executed instruction while dummy instructions are
   // enabled.
   assign dummy_cnt_en        = dummy_instr_en_i & id_in_ready_i &
                                (fetch_valid_i | insert_dummy_instr);

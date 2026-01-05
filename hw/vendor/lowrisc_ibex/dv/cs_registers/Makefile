@@ -17,7 +17,7 @@ OBJS    := $(patsubst %.$(SRCEXT),$(OBJDIR)/%.o,$(SRCS))
 
 DEBUG    = -g
 INCLUDES = -I./env -I./rst_driver -I./reg_driver -I./model
-CFLAGS   = -std=c++14 -m64 -fPIC -Wall -pedantic $(DEBUG) $(INCLUDES)
+CFLAGS   = -std=c++17 -m64 -fPIC -Wall -pedantic $(DEBUG) $(INCLUDES)
 LDFLAGS  = -shared
 
 CC       = $(CXX)

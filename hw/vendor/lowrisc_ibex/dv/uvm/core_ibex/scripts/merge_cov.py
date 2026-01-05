@@ -66,7 +66,7 @@ def merge_cov_xlm(md: RegressionMetadata, cov_dbs: Set[pathlib.Path]) -> int:
 
     imc_cmd = ["imc", "-64bit", "-licqueue"]
 
-    # Update the metdadata file with the commands we're about to run
+    # Update the metadata file with the commands we're about to run
     with LockedMetadata(md.dir_metadata, __file__) as md:
 
         md.cov_merge_db_list = md.dir_cov / 'cov_db_runfile'

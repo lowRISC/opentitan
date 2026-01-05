@@ -98,7 +98,8 @@ class ibex_asm_program_gen extends riscv_asm_program_gen;
     instr_stream.push_back(".option norvc");
     // 0x0 debug mode entry
     instr_stream.push_back("j debug_rom");
-    // 0x4 debug mode exception handler
+    instr_stream.push_back(".align 3");
+    // 0x8 debug mode exception handler
     instr_stream.push_back("j debug_exception");
     // Align the start section to 0x80
     instr_stream.push_back(".align 7");
@@ -112,7 +113,7 @@ class ibex_asm_program_gen extends riscv_asm_program_gen;
   endfunction
 
   // Re-define gen_test_done() to override the base-class with an empty implementation.
-  // Then, our own overrided gen_program() can append new test_done code.
+  // Then, our own overriding gen_program() can append new test_done code.
   virtual function void gen_test_done();
     // empty
   endfunction

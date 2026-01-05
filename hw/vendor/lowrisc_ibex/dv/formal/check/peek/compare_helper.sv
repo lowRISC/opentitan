@@ -11,10 +11,6 @@ some of it is checking spec conformance.
 
 `define INSTR wbexc_decompressed_instr
 
-assign wbexc_is_pres_load_instr = `ISS_LB | `ISS_LBU | `ISS_LH | `ISS_LHU | `ISS_LW;
-assign wbexc_is_pres_store_instr = `ISS_SB | `ISS_SH | `ISS_SW;
-assign wbexc_is_pres_mem_instr = wbexc_is_pres_load_instr | wbexc_is_pres_store_instr;
-
 assign wbexc_is_load_instr = `IS_LB | `IS_LBU | `IS_LH | `IS_LHU | `IS_LW;
 assign wbexc_is_store_instr = `IS_SB | `IS_SH | `IS_SW;
 
@@ -29,15 +25,12 @@ assign ex_is_load_instr = `IS_LB | `IS_LBU | `IS_LH | `IS_LHU | `IS_LW;
 assign ex_is_store_instr = `IS_SB | `IS_SH | `IS_SW;
 assign ex_is_mem_instr = ex_is_load_instr | ex_is_store_instr;
 
-assign ex_is_pres_load_instr = `ISS_LB | `ISS_LBU | `ISS_LH | `ISS_LHU | `ISS_LW;
-assign ex_is_pres_store_instr = `ISS_SB | `ISS_SH | `ISS_SW;
-assign ex_is_pres_mem_instr = ex_is_pres_load_instr | ex_is_pres_store_instr;
-
-assign ex_is_pres_btype = `ISS_BTYPE;
-assign ex_is_pres_jump = `ISS_JAL | `ISS_JALR;
+assign ex_is_btype = `IS_BTYPE;
+assign ex_is_jump = `IS_JAL | `IS_JALR;
 assign ex_is_wfi = `IS_WFI;
 assign ex_is_rtype = `IS_ADD | `IS_SUB | `IS_SLL | `IS_SLT | `IS_SLTU | `IS_XOR | `IS_SRL | `IS_SRA | `IS_OR | `IS_AND;
 assign ex_is_div = `IS_DIV | `IS_DIVU | `IS_REM | `IS_REMU;
+assign ex_is_mtype = ex_is_div | `IS_MUL | `IS_MULH | `IS_MULHSH | `IS_MULHU;
 `undef INSTR
 
 // real_write checks that there is a write and the dest reg is not x0
@@ -58,8 +51,6 @@ Select CSRs based on the current state of the follower, in particular:
 - In the case of an exception or WFI we compare the CSRs about to be written now with the CSRs from the spec at the end of ID/EX
 - In the case of an IRQ we compare the the CSRs about to be written now with the CSRs from the spec now
 */
-
-`define INSTR `CR.instr_rdata_id
 
 logic use_curr_dut, use_curr_spec;
 assign use_curr_dut = wbexc_err | wbexc_handling_irq;
