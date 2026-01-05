@@ -245,8 +245,12 @@ static rom_error_t check_boot_data_redundency(uint32_t counter_0) {
   // Check `identifier`, `digest`, and `counter` fields.
   read_boot_data(kPages[0], 0, &boot_data);
   RETURN_IF_ERROR(check_boot_data(&boot_data, counter_0));
+  read_boot_data(kPages[0], 1, &boot_data);
+  RETURN_IF_ERROR(check_boot_data(&boot_data, counter_0));
   LOG_INFO("Page 0 OK");
   read_boot_data(kPages[1], 0, &boot_data);
+  RETURN_IF_ERROR(check_boot_data(&boot_data, counter_0 ^ 1));
+  read_boot_data(kPages[1], 1, &boot_data);
   RETURN_IF_ERROR(check_boot_data(&boot_data, counter_0 ^ 1));
   LOG_INFO("Page 1 OK");
   RETURN_IF_ERROR(boot_data_redundancy_check());
@@ -354,9 +358,13 @@ rom_error_t write_empty_test(void) {
   boot_data_t boot_data;
   read_boot_data(kPages[0], 0, &boot_data);
   RETURN_IF_ERROR(compare_boot_data(&kTestBootData, &boot_data));
+  read_boot_data(kPages[0], 1, &boot_data);
+  RETURN_IF_ERROR(compare_boot_data(&kTestBootData, &boot_data));
   LOG_INFO("Page 0 OK");
 
   read_boot_data(kPages[1], 0, &boot_data);
+  RETURN_IF_ERROR(compare_boot_data(&kTestBootDataDual, &boot_data));
+  read_boot_data(kPages[1], 1, &boot_data);
   RETURN_IF_ERROR(compare_boot_data(&kTestBootDataDual, &boot_data));
   LOG_INFO("Page 1 OK");
 
