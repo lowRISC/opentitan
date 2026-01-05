@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Result, anyhow};
+use anyhow::{Context, Result};
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -61,9 +61,9 @@ impl Dispatch for Import {
                 key,
                 self.template.clone(),
                 self.unwrap.as_deref(),
-                self.unwrap_mechanism.as_ref().ok_or(anyhow!(
-                    "unwrap_mechanism is required when unwrap is specified"
-                ))?,
+                self.unwrap_mechanism
+                    .as_ref()
+                    .context("unwrap_mechanism is required when unwrap is specified")?,
             )?;
         } else {
             let _object = secret.import(
