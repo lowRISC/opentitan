@@ -67,3 +67,45 @@
     Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
 
     A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
+
+- name: kmac_data_s0
+  address: 8
+  doc: |
+    KMAC_DATA_S0 is the first 256-bit share of the masked message or digest interface.
+
+    For masked operations, provide the first share here and the second share in KMAC_DATA_S1.
+
+    If masking is not required:
+    - Set this share to the plaintext data.
+    - Set the other share to all-zeros.
+
+    The digest data is provided in chunks of 64 bits at a time.
+    For plaintext retrieval of the digest, software must XOR the values from KMAC_DATA_S0 and KMAC_DATA_S1.
+  bits:
+    63-0: |
+      Write: Least significant word of the message share.
+      Read: Current 64-bit word of the digest share.
+    255-64: |
+      Write: Words 1-3 of the message share.
+      Read: Returns `0`. Digest shares are read out via the least significant word only.
+
+- name: kmac_data_s1
+  address: 9
+  doc: |
+    KMAC_DATA_S1 is the second 256-bit share of the masked message or digest interface.
+
+    For masked operations, provide the second share here and the second share in KMAC_DATA_S0.
+
+    If masking is not required:
+    - Set this share to the plaintext data.
+    - Set the other share to all-zeros.
+
+    The digest data is provided in chunks of 64 bits at a time.
+    For plaintext retrieval of the digest, software must XOR the values from KMAC_DATA_S0 and KMAC_DATA_S1.
+  bits:
+    63-0: |
+      Write: Least significant word of the message share.
+      Read: Current 64-bit word of the digest share.
+    255-64: |
+      Write: Words 1-3 of the message share.
+      Read: Returns `0`. Digest shares are read out via the least significant word only.

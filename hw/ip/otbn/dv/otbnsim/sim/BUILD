@@ -18,6 +18,7 @@ py_library(
     deps = [
         ":flags",
         ":ispr",
+        ":kmac_ispr",
         ":trace",
         ":wsr",
     ],
@@ -182,6 +183,7 @@ py_library(
         ":ext_regs",
         ":flags",
         ":gpr",
+        ":kmac",
         ":loop",
         ":reg",
         ":trace",
@@ -213,6 +215,7 @@ py_library(
     deps = [
         ":ext_regs",
         ":ispr",
+        ":kmac_ispr",
         ":trace",
     ],
 )
