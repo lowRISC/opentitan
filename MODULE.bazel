@@ -364,6 +364,9 @@ use_repo(sv2v_ext, "sv2v")
 yosys_ext = use_extension("//third_party/yosys:extensions.bzl", "yosys")
 use_repo(yosys_ext, "yosys")
 
+skywater = use_extension("//third_party/skywater:extensions.bzl", "skywater")
+use_repo(skywater, "sky130_fd_sc_hd")
+
 # Hooks:
 # Extension for linking in externally managed test and provisioning customizations
 # for both secure/non-secure manufacturer domains.

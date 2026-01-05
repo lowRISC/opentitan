@@ -916,6 +916,35 @@
         ]
       }
     },
+    "//third_party/skywater:extensions.bzl%skywater": {
+      "general": {
+        "bzlTransitiveDigest": "nSft1fw2ZIeGCoOt8szMPoqNYvZw1/SDxEDI1sBdhlo=",
+        "usagesDigest": "yPjoWpaJjDKV6ZHi64HTR6KxjfmR3vNtqiB3O++XnxE=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "sky130_fd_sc_hd": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "build_file_content": "\npackage(default_visibility = [\"//visibility:public\"])\n\nfilegroup(\n    name = \"libs\",\n    srcs = glob([\n        \"timing/*.lib\",\n        \"timing/*.lib.gz\",\n    ], allow_empty = True),\n)\n\nfilegroup(\n    name = \"verilog\",\n    srcs = glob([\n        \"cells/*/*.v\",\n    ], allow_empty = True),\n)\n",
+              "urls": [
+                "https://github.com/efabless/skywater-pdk-libs-sky130_fd_sc_hd/archive/master.zip"
+              ],
+              "strip_prefix": "skywater-pdk-libs-sky130_fd_sc_hd-master",
+              "integrity": "sha256-nEHzRoeQE6U2JF+13d8+Asw2C0NxJF2Rf+RIQIYD4Y4="
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "",
+            "bazel_tools",
+            "bazel_tools"
+          ]
+        ]
+      }
+    },
     "//third_party/sphincsplus:extensions.bzl%sphincsplus": {
       "general": {
         "bzlTransitiveDigest": "fz/VTcXFnMm0+TIrnjUUZ81hG2QZylrNIgUjbSMYeik=",
@@ -970,6 +999,35 @@
             "",
             "lowrisc_opentitan",
             ""
+          ]
+        ]
+      }
+    },
+    "//third_party/sv2v:extensions.bzl%sv2v": {
+      "general": {
+        "bzlTransitiveDigest": "27dU2LzrswhJ+LGenVE8gRy4j5nqELB1gRdyTCudNgU=",
+        "usagesDigest": "ujFw4tyoiDmI4N1rVecrTC2Fd4Qh72TIN83SdTr8KGQ=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "sv2v": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "build_file_content": "\npackage(default_visibility = [\"//visibility:public\"])\nfilegroup(\n    name = \"sv2v_bin\",\n    srcs = [\"sv2v\"],\n)\n",
+              "urls": [
+                "https://github.com/zachjs/sv2v/releases/download/v0.0.11/sv2v-Linux.zip"
+              ],
+              "strip_prefix": "sv2v-Linux",
+              "integrity": "sha256-3pUZPZi+a7icBZMlEXAXxvW5Ur/4G7ewwfbgkur3wiA="
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "",
+            "bazel_tools",
+            "bazel_tools"
           ]
         ]
       }
@@ -1110,6 +1168,35 @@
               "patch_args": [
                 "-p1"
               ]
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "",
+            "bazel_tools",
+            "bazel_tools"
+          ]
+        ]
+      }
+    },
+    "//third_party/yosys:extensions.bzl%yosys": {
+      "general": {
+        "bzlTransitiveDigest": "5luHVBBMOlhyuwih46sKvtt3UMwVQVTEMtY2V61vIpM=",
+        "usagesDigest": "lKfB6E+ql/0qddV6Yzpz2vnTusLF2a8oM/Aw7gKA6CM=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "yosys": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "build_file_content": "\npackage(default_visibility = [\"//visibility:public\"])\n\nfilegroup(\n    name = \"yosys_bin\",\n    srcs = [\"bin/yosys\"],\n)\n\nfilegroup(\n    name = \"data\",\n    srcs = glob([\n        \"share/**\", \n        \"lib/**\", \n        \"libexec/**\",\n        \"bin/**\",\n    ]),\n)\n",
+              "urls": [
+                "https://github.com/YosysHQ/oss-cad-suite-build/releases/download/2024-01-01/oss-cad-suite-linux-x64-20240101.tgz"
+              ],
+              "strip_prefix": "oss-cad-suite",
+              "integrity": "sha256-SPOrxaZ/pJrbSMhyf3t9BCOg78hpmmErO3vJFv9TQC8="
             }
           }
         },
