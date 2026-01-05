@@ -186,6 +186,14 @@ otbn_consttime_test(
 )
 
 otbn_sim_test(
+    name = "kmac_test",
+    srcs = [
+        "kmac_test.s",
+    ],
+    testcase = "kmac_test.hjson",
+)
+
+otbn_sim_test(
     name = "lcm_test",
     srcs = [
         "lcm_test.s",

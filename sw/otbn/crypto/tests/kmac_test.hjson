@@ -1,0 +1,66 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "entrypoint": "kmac_test",
+  "input": {
+    "regs": {
+      # Max polling loop iterations
+      "x29": "0x00000400",
+      # w31 is zero
+      "w31": "0x0",
+    }
+    "dmem": {
+      # SHA3-224 test vector input.
+      "sha224_msg":        "0x00000000000000972c4bd3b75823c5a1b7a7b17ccb7ac589b961d17dd5ba6f1f6c3c7223d4f09248b06e58b0875a467e872049b494ed624c97f0929703d105d5",
+      "sha224_msg_len":    "0x00000039",
+      "sha224_digest_len": "0x00000020",
+      "sha224_rate":       "0x00000090",
+      # SHA3-256 test vector input.
+      "sha256_msg":        "0x0000006a",
+      "sha256_msg_len":    "0x00000001",
+      "sha256_digest_len": "0x00000020",
+      "sha256_rate":       "0x00000088",
+      # SHA3-384 test vector input.
+      "sha384_msg":        "0x000000cdfb166bf92809f7244acaa423bf758ffa804775d07b2b2c1a2e88610187489716fa2b5e38e34cd1c41cf355fde09c8ebde146a45ca7ffb6df2aae9e63b122e5caec5a07a64e15ea64af9c9bbc21cd4a57106a86c1a0a3bb9041e0ebd496d2abc087bb6098a2fbb9ddb9dd6eb6b8a239a0c5cd14579db0b3062c3643ad6df162d1836660691796b706f3cec743deb2d56fb8864578d8be1519a3c89b45701881d59a72006fe57e5bb815879dbdcb95959da1ad1179876659a05eaeedf5d5dd81a383f93702444a1dcbd721e979b6e3f201375a70b5e33ef77315013014d5d9d813f513fd7c6b947516f0b2a1d2d934637433a55b8224e0686c7fd75cfba8a500fea9d64a3294f4dc711953bf1d6a2060cd4da7c93881e22361554a6a0285d8703c575b177ef500c9b50a1d3bb5a23f61e53d76b33034dea02a4f705180a609a1a4b7ba5bb8c651b5ba7b260bf0b929df94bb2b0fc2736b57a0256309ce41d20a0f800b0f38417f175724882926e67751b17eded7457721c19b8f398b438fca23556c6729559d226765bd5a8db063bf2f153fa80312789856f2440cce38c889654d31e4a36711d31dbbfdb32de6669af297b69f8980ae678c7dfef3ca0524a747cf889c75c7d628b2329dad031f28a111109bdd63e85128dd1573057801dabc41b429a595cd24bb9da2555f06b4e16a0457a67889a19872c0925c5cce842460cbd4cb19fdd0332256e2dde12ffcc98f44458f8af104bcdeaecc700fc7e7382b5e06280fa4293bf756cbed4b755017a748b20d2a9569f5021d9a693658824fb57123f69e832f73d114343cb5d00705498875d9706d277b7787d4fde97baca0967d02eee0913b144808f58337387ac90f7d67ab736f9686d56453e54027be6567f87cc8ecc6a456f3aae87ae9a6019c909e5f3b4d95104db52aefd954550fd4be5c693bda1bc3716c73e3d9e311f3b66463364015d6ea09ad547f913bfbf8273421a001c286f09d4adabe583d72a94e2344c374e32b7ff25757dcc50e13d19462bdf9d0bc028211255852af10bf7a9e65badf8dcf8a254049addd2ce595f153deaa4e61e084d2069564779572f2bfdcc23c6144f2ee342b1dcc5b7fd977b09e4260746c460637b4327604c37d03cf41d2432251624c05ea692f2d7600b367ac255546a9077f0a539506d1f147e803052d46fa6b389ef0b7c74b2cc974416eb41f039acf39e7a21b548db8d7ea9bb35f6cbdc04c8cdb4cc8ce9a30304c171cefc7e14898f537584408828f2c7c14368925204daa77fb7256169310629f2fca95b76829ba546683054a5d2e",
+      "sha384_msg_len":    "0x000003a9",
+      "sha384_digest_len": "0x00000030",
+      "sha384_rate":       "0x00000068",
+      # SHA3-512 test vector input.
+      "sha512_msg":        "0x00000000",
+      "sha512_msg_len":    "0x00000000",
+      "sha512_digest_len": "0x00000040",
+      "sha512_rate":       "0x00000048",
+      # SHAKE-128 test vector input.
+      "shake128_msg":        "0x0000000000000038e074ab29a6062cf5b419502969af26113e7230d10be950c398f8f71266978b97bdd618f2f80f39eb0e6c4809639ac372cfcdff04eff712b2",
+      "shake128_msg_len":    "0x00000039",
+      "shake128_digest_len": "0x00000010",
+      "shake128_rate":       "0x000000a8",
+      # SHAKE-256 test vector input.
+      "shake256_msg":        "0xe085c88b0a93411561999feb88eee87158db81947e62e33d51499cf6f36d88dc",
+      "shake256_msg_len":    "0x00000020",
+      "shake256_digest_len": "0x00000060",
+      "shake256_rate":       "0x00000088",
+    }
+  }
+  "output": {
+    "regs": {
+      # Error counter.
+      "w0": "0x0",
+    }
+    "dmem": {
+      # SHA3-224 test vector output.
+      "sha224_digest": "0x000000002453bc0ca0fe2ff82f35d79094a685bc593e4c5adabebd1978724d45",
+      # SHA3-256 test vector output.
+      "sha256_digest": "0xca4027fa4b3517fbe14e2f0e10ebdf81aba7c213f5b969269f77de050e565ef3",
+      # SHA3-384 test vector output.
+      "sha384_digest": "0x6ea6c23aefdf6b7ab7dce5855560900fbaeb221343fcf96f6fde2586a55429683bdca30d39ee384a24f9429a7d2de285",
+      # SHA3-512 test vector output.
+      "sha512_digest": "0x26cd1d2886857501e3d3b6959d1900f558c53a2c40e9e3114cf9f5f13a12b215a6805c47c1dcd1e05958e24f1682c9976e755a18dc67b5c8c59a3aa2cc739fa6",
+      # SHAKE-128 test vector output.
+      "shake128_digest": "0x0000000000000000000000000000000017d7b1e26c4aa43166127f3e674c68e6",
+      # SHAKE-256 test vector output.
+      "shake256_digest": "0xce4c9ac38a112d7936bab7c97ea86d56cc9b456f06e6d16c7cb9ab5fb8664352928034d55c12d1189852aadf23cbdc417b40c1ccb03463f2d87ef2a3d713d696e0e76dd550495c380d8677c8b42f12bcdb006b9382fdb19d6451e6c5fb8a6400",
+    }
+  }
+}
