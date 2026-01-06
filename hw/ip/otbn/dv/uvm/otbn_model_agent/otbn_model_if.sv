@@ -114,9 +114,15 @@ interface otbn_model_if
     release u_model.wakeup_iss;
   endtask: lock_immediately
 
-  function automatic void tolerate_result_mismatch();
-    `uvm_info("otbn_model_if", "Enabling tolerate result mismatch for next check", UVM_HIGH);
-    u_model.otbn_model_tolerate_result_mismatch(handle);
+  function automatic void tolerate_result_mismatch(int unsigned num_checks);
+    if (num_checks < 0) begin
+      `uvm_info("otbn_model_if",
+                $sformatf("Enabling tolerate result mismatch for %d checks", num_checks),
+                UVM_HIGH);
+    end else begin
+      `uvm_info("otbn_model_if", "Enabling tolerate result mismatch", UVM_HIGH);
+    end
+    u_model.otbn_model_tolerate_result_mismatch(handle, num_checks);
   endfunction
 
   function automatic void set_software_errs_fatal(bit new_val);
