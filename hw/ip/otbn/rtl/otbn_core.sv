@@ -963,9 +963,9 @@ module otbn_core
   `ASSERT(EdnRndReqStable_A, edn_rnd_req_o & ~edn_rnd_ack_i |=> edn_rnd_req_o)
   `ASSERT(EdnUrndReqStable_A, edn_urnd_req_o & ~edn_urnd_ack_i |=> edn_urnd_req_o)
 
-  `ASSERT(OnlyWriteLoadDataBaseWhenDMemValid_A,
-          rf_bignum_wr_en_ctrl & insn_dec_bignum.rf_wdata_sel == RfWdSelLsu |-> dmem_rvalid_i)
   `ASSERT(OnlyWriteLoadDataBignumWhenDMemValid_A,
+          rf_bignum_wr_en_ctrl & insn_dec_bignum.rf_wdata_sel == RfWdSelLsu |-> dmem_rvalid_i)
+  `ASSERT(OnlyWriteLoadDataBaseWhenDMemValid_A,
           rf_base_wr_en_ctrl & insn_dec_base.rf_wdata_sel == RfWdSelLsu |-> dmem_rvalid_i)
 
   // Error handling: if we pass an error signal down to the controller then we should also be
