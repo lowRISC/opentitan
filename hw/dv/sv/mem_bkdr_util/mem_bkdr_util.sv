@@ -505,7 +505,7 @@ class mem_bkdr_util extends uvm_object;
     `_ACCESS_CHECKS(addr, 128)
     if (!check_addr_valid(addr)) return;
     write64(addr, data[63:0]);
-    write64(addr + 8, data[127:63]);
+    write64(addr + 8, data[127:64]);
   endfunction
 
   virtual function void write256(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [255:0] data);
