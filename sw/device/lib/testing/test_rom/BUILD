@@ -25,6 +25,37 @@ ld_library(
     ],
 )
 
+cc_library(
+    name = "flash_rom_loader_impl",
+    srcs = ["flash_rom_loader_impl.S"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+    ],
+    alwayslink = True,
+)
+
+opentitan_binary(
+    name = "flash_rom_loader",
+    collect_code_coverage = 0,
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw305",
+        "//hw/top_earlgrey:fpga_cw340",
+        "//hw/top_earlgrey:sim_dv_base",
+        "//hw/top_earlgrey:sim_qemu_base",
+        "//hw/top_earlgrey:sim_verilator_base",
+    ],
+    kind = "rom",
+    linker_script = ":linker_script",
+    deps = [
+        ":flash_rom_loader_impl",
+        ":test_rom_lib",
+    ],
+)
+
 opentitan_binary(
     name = "test_rom",
     collect_code_coverage = 0,
