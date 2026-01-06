@@ -13,7 +13,9 @@ interface otbn_controller_if
   // Signal names from the otbn_controller module (where we are bound)
   input logic [ExtWLEN-1:0]          ispr_rdata_intg_i,
   input logic [BaseWordsPerWLEN-1:0] ispr_read_mask,
-  input logic                        non_prefetch_insn_running
+  input logic                        non_prefetch_insn_running,
+  input logic                        software_err,
+  input logic                        fatal_software_err
 );
 
   // Force the `ispr_rdata_intg_i` signal to `should_val`.  This function needs to be static because

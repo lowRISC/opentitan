@@ -952,4 +952,51 @@ class otbn_base_vseq extends cip_base_vseq #(
      repeat (2) wait_secure_wipe_phase();
    endtask
 
+  // Injecting an hardware error which should lead to a delayed escalation can also lead to SW
+  // errors which escalate immediately. This tasks keeps the DV model in synch with the RTL if a
+  // SW error occurs. It does so by monitors any SW error until the next positive clock edge. If a
+  // SW error arises an escalation request is sent to the model. It is expected that in the
+  // next cycle (after this task) the test sequence will send a HW escalation to the model.
+  //
+  // This task may not be used to check if an injection leads to a SW error as the error monitoring
+  // directly depends on the RTL model!
+  task handle_sw_error_during_delayed_hw_escalation();
+    otbn_pkg::err_bits_t err_bits;
+    // Isolation_fork prevents "disable fork" from killing parent processes.
+    fork begin : isolation_fork
+      fork
+        begin
+          // Handle non fatal SW error
+          // We probe the RTL directly to monitor SW errors, avoiding complex error logic
+          // replication in the DV model. While this creates an RTL dependency, it does not
+          // compromise verification as we only synchronize the models and do not influence whether
+          // an actual hardware escalation happens. If the RTL error logic is faulty, the models
+          // will remain synchronized, and the test will still verify whether the hardware
+          // escalation occurred. Exact timing is anyway not a concern due to unpredictable EDN
+          // behavior.
+          wait(cfg.controller_vif.software_err);
+          `uvm_info(`gfn, $sformatf("The injection led to a non fatal SW error"), UVM_LOW)
+          err_bits = '{illegal_insn: 1'b1, default: 1'b0};
+          cfg.model_agent_cfg.vif.send_err_escalation(err_bits);
+          @(cfg.clk_rst_vif.cb);
+        end
+        begin
+          // Handle fatal SW error
+          // See the non fatal SW error case for an explanation why probing the RTL is ok.
+          wait(cfg.controller_vif.fatal_software_err);
+          `uvm_info(`gfn, $sformatf("The injection led to a fatal SW error"), UVM_LOW)
+          err_bits = '{fatal_software: 1'b1, default: 1'b0};
+          cfg.model_agent_cfg.vif.send_err_escalation(err_bits);
+          @(cfg.clk_rst_vif.cb);
+        end
+        begin
+          // Handle HW based escalation
+          // Do nothing yet. The escalation is expected to be signaled in the next cycle / after this task.
+          @(cfg.clk_rst_vif.cb);
+        end
+      join_any
+      disable fork; // Kill the SW handling forks if the HW case completes first.
+    end join
+  endtask
+
 endclass : otbn_base_vseq
