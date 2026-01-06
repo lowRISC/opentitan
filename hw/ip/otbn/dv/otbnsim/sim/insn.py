@@ -258,14 +258,13 @@ class LW(OTBNInsn):
             state.stop_at_end_of_cycle(ErrBits.BAD_DATA_ADDR)
             return None
 
-        result = state.dmem.load_u32(addr)
+        result, valid = state.dmem.load_u32(addr)
 
         # Stall for a single cycle for memory to respond
         yield None
 
-        if result is None:
+        if not valid:
             state.stop_at_end_of_cycle(ErrBits.DMEM_INTG_VIOLATION)
-            return None
 
         state.gprs.get_reg(self.grd).write_unsigned(result)
         return None
@@ -1076,7 +1075,7 @@ class BNLID(OTBNInsn):
             return None
 
         wrd = grd_val & 0x1f
-        value = state.dmem.load_u256(addr)
+        value, valid = state.dmem.load_u256(addr)
 
         if self.grd_inc:
             new_grd_val = grd_val + 1
@@ -1089,9 +1088,8 @@ class BNLID(OTBNInsn):
         # Stall for a single cycle for memory to respond
         yield None
 
-        if value is None:
+        if not valid:
             state.stop_at_end_of_cycle(ErrBits.DMEM_INTG_VIOLATION)
-            return None
 
         state.wdrs.get_reg(wrd).write_unsigned(value)
         return None

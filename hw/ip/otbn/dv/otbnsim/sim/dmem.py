@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import struct
-from typing import Dict, List, Sequence, Optional
+from typing import Dict, List, Sequence, Tuple
 
 from shared.mem_layout import get_memory_layout
 
@@ -48,11 +48,13 @@ class Dmem:
                                .format(dmem_size))
 
         # We represent the contents of DMEM as a list of 32-bit words (unlike
-        # the RTL, which uses a 256-bit array). An entry in self.data is None
-        # if the word has invalid integrity bits and we'll get an error if we
-        # try to read it. Otherwise, we store the integer value.
+        # the RTL, which uses an array of 256-bit words). An entry in self.data
+        # is a tuple of (value, validity). The value is an integer representing
+        # the 32-bit word, and validity is a boolean indicating whether the
+        # word has valid integrity bits. If validity is False, we'll get
+        # an error if we try to read it.
         num_words = dmem_size // 4
-        self.data: List[Optional[int]] = [None] * num_words
+        self.data: List[Tuple[int, bool]] = [(0, False)] * num_words
 
         # Because it's an actual memory, stores to DMEM take two cycles in the
         # RTL. We wouldn't need to model this except that a DMEM invalidation
@@ -97,7 +99,7 @@ class Dmem:
                 raise ValueError('The validity byte for 32-bit word {} '
                                  'in the input data is {}, not 0 or 1.'
                                  .format(idx32, vld))
-            self.data[idx32 + word_offset] = u32 if vld else None
+            self.data[idx32 + word_offset] = (u32, vld)
 
     def _load_4byte_le_words(self, data: bytes, word_offset: int) -> None:
         '''Replace the memory start at word_offset with data
@@ -116,7 +118,7 @@ class Dmem:
             data = data + b'0' * (32 - (len(data) % 32))
 
         for idx32, u32 in enumerate(struct.iter_unpack('<I', data)):
-            self.data[idx32 + word_offset] = u32[0]
+            self.data[idx32 + word_offset] = (u32[0], True)
 
     def load_le_words(self, data: bytes, has_validity: bool, word_offset: int) -> None:
         '''Replace the memory start at word_offset with data
@@ -138,15 +140,17 @@ class Dmem:
 
         '''
         ret = b''
-        for idx, u32 in enumerate(self.data):
+        for idx, (u32, valid) in enumerate(self.data):
             # If there's a pending store, apply it. This matches the RTL, where
             # we only observe the memory after that store has landed.
+            # A pending store is assumed to have always valid data.
+            has_pending_store = self.pending.get(idx) is not None
             u32 = self.pending.get(idx, u32)
 
-            if u32 is None:
-                ret += struct.pack('<BI', 0, 0)
-            else:
+            if valid or has_pending_store:
                 ret += struct.pack('<BI', 1, u32)
+            else:
+                ret += struct.pack('<BI', 0, 0)
 
         return ret
 
@@ -162,18 +166,18 @@ class Dmem:
 
         return True
 
-    def load_u256(self, addr: int) -> Optional[int]:
+    def load_u256(self, addr: int) -> Tuple[int, bool]:
         '''Read a u256 little-endian value from an aligned address'''
         assert addr >= 0
         assert self.is_valid_256b_addr(addr)
         ret_data = 0
+        valid = True
         for i in range(256 // 32):
-            rd_data = self.load_u32(addr + 4 * i)
-            if rd_data is None:
-                return None
-            ret_data = ret_data | (rd_data << (i * 32))
+            data_32, valid_32 = self.load_u32(addr + 4 * i)
+            ret_data = ret_data | (data_32 << (i * 32))
+            valid = valid and valid_32
 
-        return ret_data
+        return (ret_data, valid)
 
     def store_u256(self, addr: int, value: int) -> None:
         '''Write a u256 little-endian value to an aligned address'''
@@ -194,7 +198,7 @@ class Dmem:
 
         return True
 
-    def load_u32(self, addr: int) -> Optional[int]:
+    def load_u32(self, addr: int) -> Tuple[int, bool]:
         '''Read a 32-bit value from memory.
 
         addr should be 4-byte aligned. The result is returned as an unsigned
@@ -209,7 +213,7 @@ class Dmem:
         # Handle "read under write" hazards properly
         pending_val = self.pending.get(idx)
         if pending_val is not None:
-            return pending_val
+            return (pending_val, True)
 
         return self.data[addr // 4]
 
@@ -244,7 +248,7 @@ class Dmem:
     def commit(self) -> None:
         # Move items from self.pending to self.data
         for idx, value in self.pending.items():
-            self.data[idx] = value
+            self.data[idx] = (value, True)
         self.pending = {}
 
         # Apply trace entries to self.pending
@@ -255,5 +259,7 @@ class Dmem:
     def abort(self) -> None:
         self.trace = []
 
-    def empty_dmem(self) -> None:
-        self.data = [None] * len(self.data)
+    def invalidate_dmem(self) -> None:
+        for idx in range(len(self.data)):
+            u32, _ = self.data[idx]
+            self.data[idx] = (u32, False)
