@@ -144,6 +144,14 @@ class OTBNState:
         self.injected_err_bits = 0
         self.lock_immediately = False
 
+        # The DV environment can request a stall for one cycle.
+        # This is used to model situations where OTBN is stalled due to
+        # injected errors. The DV environment can decide whether a stall
+        # request should be enforced even if there is a pending halt. If not
+        # enforced, any pending halt will override the stall request.
+        self._stall_requested = False
+        self._enforce_stall_request = False
+
         # OTBN might zero its insn_cnt register during a secure wipe. The
         # precise cycle that this happens depends slightly on how we decide to
         # do so. If this is not None, it is a counter of the number of cycles
@@ -600,3 +608,29 @@ class OTBNState:
         if self.injected_err_bits != 0:
             self.stop_at_end_of_cycle(self.injected_err_bits)
             self.injected_err_bits = 0
+
+    def request_stall(self, enforce: bool) -> None:
+        '''Make the model stall for one cycle instead of retiring the next
+        instruction.
+
+        In case there is a pending halt, the stall request is ignored except
+        if enforced is True.'''
+        self._stall_requested = True
+        self._enforce_stall_request = enforce
+
+    def stall_requested(self) -> bool:
+        '''Returns whether a stall should happen. Any call resets a pending
+        stall request.
+
+        If there is also a pending halt, the stall request is ignored unless
+        it was requested to be enforced.
+        '''
+        # Stall if there is an enforced stall request or if there is a request
+        # but no pending halt.
+        should_stall = (self._stall_requested and
+                        (self._enforce_stall_request or (not self.pending_halt)))
+
+        # Any stall request is only valid for one cycle.
+        self._stall_requested = False
+        self._enforce_stall_request = False
+        return should_stall
