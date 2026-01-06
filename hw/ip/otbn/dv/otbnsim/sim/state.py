@@ -110,6 +110,7 @@ class OTBNState:
 
         self._err_bits = 0
         self.pending_halt = False
+        self._pending_err_bits = 0
 
         self._urnd_client = EdnClient()
 
@@ -540,9 +541,45 @@ class OTBNState:
         Any bits set in err_bits will be set in the ERR_BITS register when
         we're done.
 
+        Some errors are delayed by one cycle to match the RTL's behaviour.
         '''
+        # Delay certain errors due to the registering of escalation signals.
+        # For some fatal escalation sources (like predecode errors) OTBN
+        # escalates one cycle after the error is detected. This is not directly
+        # modeled in this simulator as such errors only occur in real HW or
+        # during tests that inject errors into the simulation model. In case
+        # such a test injects an error it can notify the model in the correct
+        # cycle using the send_err_escalation command of the stepped simulator.
+        # However, this method cannot cover all possible escalation sources.
+        # One such example is the DMEM integrity violation error. If the test
+        # invalidates the DMEM it cannot know when the next DMEM read will
+        # happen as the binary being executed is not known to the testbench.
+        # When the memory is invalidated the next load instruction will
+        # trigger the DMEM integrity violation error by calling
+        # stop_at_end_of_cycle with the DMEM_INTG_VIOLATION error set. The
+        # model now detects that this error is set and must delay the
+        # escalation by one cycle. For this the error bit is added to the
+        # pending errors and removed from the current error bits. If there are
+        # no other error bits set the model must still commit the current
+        # instruction and thus may not set the pending_halt flag.
+        if err_bits & ErrBits.DMEM_INTG_VIOLATION:
+            # Clear the flag so it's not applied below
+            err_bits &= ~ErrBits.DMEM_INTG_VIOLATION
+            self._pending_err_bits |= ErrBits.DMEM_INTG_VIOLATION
+            # We don't want to stop if this is the only error bit set
+            if err_bits == 0:
+                return
+
+        # Any other stop request (with or without errors) happens immediately
         self._err_bits |= err_bits
         self.pending_halt = True
+
+    def take_pending_err_bits(self) -> None:
+        '''Apply any pending error bits'''
+        if self._pending_err_bits:
+            self._err_bits |= self._pending_err_bits
+            self._pending_err_bits = 0
+            self.pending_halt = True
 
     def invalidate_imem(self) -> None:
         self._time_to_imem_invalidation = 2
