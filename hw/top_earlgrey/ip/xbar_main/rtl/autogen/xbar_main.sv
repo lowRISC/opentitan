@@ -965,6 +965,8 @@ end
     .HRspDepth (12'h0),
     .DReqPass  (1'b0),
     .DRspPass  (1'b0),
+    .DReqDepth (4'h2),
+    .DRspDepth (4'h2),
     .M         (3)
   ) u_sm1_31 (
     .clk_i        (clk_main_i),
