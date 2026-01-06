@@ -638,6 +638,22 @@ int OtbnModel::send_err_escalation(svBitVecVal *err_val /* bit [31:0] */,
   return 0;
 }
 
+int OtbnModel::send_stall_request(svBit enforced) {
+  ISSWrapper *iss = ensure_wrapper();
+  if (!iss)
+    return -1;
+
+  try {
+    iss->send_stall_request(enforced);
+  } catch (const std::exception &err) {
+    std::cerr << "Error when sending stall request to ISS: " << err.what()
+              << "\n";
+    return -1;
+  }
+
+  return 0;
+}
+
 int OtbnModel::set_rma_req(svBitVecVal *rma_req /* bit [3:0] */) {
   ISSWrapper *iss = ensure_wrapper();
   if (!iss)
@@ -1065,6 +1081,11 @@ int otbn_model_send_err_escalation(OtbnModel *model,
                                    svBit lock_immediately) {
   assert(model);
   return model->send_err_escalation(err_val, lock_immediately);
+}
+
+int otbn_model_send_stall_request(OtbnModel *model, svBit enforced) {
+  assert(model);
+  return model->send_stall_request(enforced);
 }
 
 int otbn_model_set_rma_req(OtbnModel *model,

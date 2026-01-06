@@ -98,6 +98,12 @@ interface otbn_model_if
     release u_model.wakeup_iss;
   endtask: send_err_escalation
 
+  function automatic send_stall_request(bit enforced);
+    `uvm_info("otbn_model_if", "Stalling next cycle", UVM_HIGH)
+    `DV_CHECK_FATAL(u_model.otbn_model_send_stall_request(handle, enforced) == 0,
+                    "Failed to send stall request", "otbn_model_if")
+  endfunction
+
   task automatic lock_immediately(bit [31:0] err_val);
     string lock_path = "tb.u_model.lock_immediately_q";
     `uvm_info("otbn_model_if", "Locking immediately after error", UVM_HIGH)

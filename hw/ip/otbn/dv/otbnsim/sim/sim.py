@@ -367,7 +367,11 @@ class OTBNSim:
         if self.state.pending_halt:
             self._execute_generator = None
 
-        sim_stalled = (self._execute_generator is not None)
+        # Stall the simulator if the instruction is still executing or we have
+        # a stall request.
+        sim_stalled = ((self._execute_generator is not None) or
+                       self.state.stall_requested())
+
         if not sim_stalled:
             return (insn, self._on_retire(verbose, insn))
 
@@ -559,6 +563,14 @@ class OTBNSim:
         assert err_val & ~ErrBits.MASK == 0
         self.state.injected_err_bits |= err_val
         self.state.lock_immediately = lock_immediately
+
+    def send_stall_request(self, enforced: bool) -> None:
+        '''Make the model stall for one cycle instead of retiring the next
+        instruction.
+
+        In case there is a pending halt, the stall request is ignored except
+        if enforced is True.'''
+        self.state.request_stall(enforced)
 
     def lock_immediately(self) -> None:
         '''React to an event that should cause us to immediately jump to the
