@@ -108,7 +108,6 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
         timeout: Some(opts.timeout),
         exit_success: Some(Regex::new(r"PASS.*\n")?),
         exit_failure: Some(Regex::new(r"(FAIL|FAULT).*\n")?),
-        newline: true,
         ..Default::default()
     };
     let mut stdout = std::io::stdout();
