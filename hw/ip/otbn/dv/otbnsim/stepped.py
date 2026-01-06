@@ -338,7 +338,7 @@ def on_invalidate_imem(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 def on_invalidate_dmem(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     check_arg_count('invalidate_dmem', 0, args)
 
-    sim.state.dmem.empty_dmem()
+    sim.state.dmem.invalidate_dmem()
     return None
 
 
