@@ -175,7 +175,7 @@ module otbn_core
 
   logic [BaseIntgWidth-1:0] lsu_base_rdata;
   logic [ExtWLEN-1:0]       lsu_bignum_rdata;
-  logic                     lsu_rdata_err_d, lsu_rdata_err;
+  logic                     lsu_rdata_err_d, lsu_rdata_err_raw, lsu_rdata_err;
 
   logic [WdrAw-1:0]   rf_bignum_wr_addr;
   logic [WdrAw-1:0]   rf_bignum_wr_addr_ctrl;
@@ -611,6 +611,14 @@ module otbn_core
   // - They become readable once the execution finishes without a fatal error. In addition, only a
   //   part of the DMEM is readable by Ibex.
 
+  // Do not propagate lsu rdata error if there has been a error which results in a delayed
+  // escalation in the previous cycle. Reason is that a faulty LSU instruction still starts but the
+  // memory interface can return an undefined error signal (x). We ignore the error as it is not
+  // relevant and to avoid spreading the undefined value into the error bits.
+  assign lsu_rdata_err_d = (|{urnd_all_zero, predec_error, rf_base_intg_err, lsu_rdata_err,
+                             non_controller_reg_intg_violation, insn_addr_err})
+                             ? '0 : lsu_rdata_err_raw;
+
   // We drop the _q suffix for the registered signals such that DV and tracing can stay the same
   // whether the escalation is delayed or not.
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -722,7 +730,7 @@ module otbn_core
 
     .lsu_base_rdata_o  (lsu_base_rdata),
     .lsu_bignum_rdata_o(lsu_bignum_rdata),
-    .lsu_rdata_err_o   (lsu_rdata_err_d)
+    .lsu_rdata_err_o   (lsu_rdata_err_raw)
   );
 
   // Base Instruction Subset =======================================================================
