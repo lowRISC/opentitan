@@ -115,7 +115,16 @@ class otbn_rf_base_intg_err_vseq extends otbn_base_vseq;
 
     inject_errors();
 
+    // Due to the delayed escalation, the faulted instruction still commits but with wrong values.
+    // We must signal to the ISS that the result can be off.
+    cfg.model_agent_cfg.vif.tolerate_result_mismatch(1);
+
+    // Injecting the error can lead to SW errors which escalate immediately.
+    handle_sw_error_during_delayed_hw_escalation(); // This resumes on the next clk posedge
+
     // Notify the model about the integrity violation error.
+    // The HW escalation must happen on the rising edge. Otherwise the model is informed too late.
+    `uvm_info(`gfn, $sformatf("Send HW escalation to model"), UVM_LOW)
     err_bits = '{reg_intg_violation: 1'b1, default: 1'b0};
     cfg.model_agent_cfg.vif.send_err_escalation(err_bits);
 
