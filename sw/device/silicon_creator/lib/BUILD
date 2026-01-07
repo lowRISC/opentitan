@@ -88,7 +88,10 @@ opentitan_test(
         dicts.omit(
             EARLGREY_TEST_ENVS,
             # Not intended for ROM_EXT environments.
-            ["//hw/top_earlgrey:fpga_cw310_sival_rom_ext"],
+            [
+                "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
+                "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
+            ],
         ),
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
@@ -534,6 +537,7 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             # See #21706, expects keymgr state 0 so not working after ROM_EXT.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     # This test can take > 40 minutes, so mark it manual as it shouldn't run

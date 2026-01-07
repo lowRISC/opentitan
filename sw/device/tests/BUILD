@@ -434,6 +434,7 @@ opentitan_test(
         {
             # See #23038, this test requires a provisioned flash in sival.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     # This test can take > 40 minutes, so mark it manual as it shouldn't run
@@ -535,6 +536,7 @@ opentitan_test(
         {
             # See #23038, this test requires a provisioned flash in sival.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
@@ -2073,8 +2075,9 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         {
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            # FIXME broken in sival ROM_EXT, remove these lines when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     verilator = verilator_params(timeout = "long"),
@@ -5587,7 +5590,9 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
             # TODO(lowrisc/opentitan#20589): Enable _sival* tests when bug is fixed
             "//hw/top_earlgrey:fpga_cw310_sival": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival": "broken",
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
             "//hw/top_darjeeling:sim_dv": None,
         },
     ),
@@ -7082,6 +7087,7 @@ opentitan_binary(
     ],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
