@@ -8,6 +8,7 @@ module tb;
   import dv_utils_pkg::*;
   import rram_ctrl_env_pkg::*;
   import rram_ctrl_test_pkg::*;
+  import rram_ctrl_bkdr_util_pkg::rram_ctrl_bkdr_util;
 
   // Macro includes
   `include "uvm_macros.svh"
@@ -117,6 +118,42 @@ module tb;
     .rram_obs_o()
   );
 
+  // Instantiate the memory backdoor util instances.
+  //
+  // This only applies to the generic rram. A unique memory backdoor util instance is created for
+  // each type of rram partition.
+  `define RRAM_DATA_MEM_HIER      tb.u_rram_macro.u_data_array.mem
+  `define RRAM_DATA_MEM_HIER_STR  "tb.u_rram_macro.u_data_array.mem"
+  `define RRAM_INFO_MEM_HIER      tb.u_rram_macro.u_info_array.mem
+  `define RRAM_INFO_MEM_HIER_STR  "tb.u_rram_macro.u_info_array.mem"
+
+  initial begin
+    rram_ctrl_bkdr_util m_mem_bkdr_util;
+    rram_ctrl_pkg::rram_part_e part = rram_ctrl_pkg::RramPartData;
+    m_mem_bkdr_util = new(
+      .name($sformatf("rram_ctrl_bkdr_util[%0s]", part.name())),
+      .path(`RRAM_DATA_MEM_HIER_STR),
+      .depth($size(`RRAM_DATA_MEM_HIER)),
+      .n_bits($bits(`RRAM_DATA_MEM_HIER)),
+      .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone)
+    );
+    uvm_config_db#(rram_ctrl_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
+                                             m_mem_bkdr_util);
+  end
+
+  initial begin
+    rram_ctrl_bkdr_util m_mem_bkdr_util;
+    rram_ctrl_pkg::rram_part_e part = rram_ctrl_pkg::RramPartInfo;
+    m_mem_bkdr_util = new(
+      .name($sformatf("rram_ctrl_bkdr_util[%0s]", part.name())),
+      .path(`RRAM_INFO_MEM_HIER_STR),
+      .depth($size(`RRAM_INFO_MEM_HIER)),
+      .n_bits($bits(`RRAM_INFO_MEM_HIER)),
+      .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone)
+    );
+    uvm_config_db#(rram_ctrl_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
+                                             m_mem_bkdr_util);
+  end
 
   // TODO: connect to something meaningful
   assign (pull1, pull0) rram_test_analog = 1'b0;

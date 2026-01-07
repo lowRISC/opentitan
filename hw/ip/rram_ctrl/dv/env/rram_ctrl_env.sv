@@ -22,12 +22,24 @@ function rram_ctrl_env::new(string name="", uvm_component parent=null);
 endfunction : new
 
 function void rram_ctrl_env::build_phase(uvm_phase phase);
+  rram_part_e parts[] ='{RramPartData, RramPartInfo};
+
   super.build_phase(phase);
 
   // Retrieve the rram_ctrl_misc_io_if virtual interface
   if (!uvm_config_db#(misc_vif_t)::get(this, "", "misc_vif", cfg.misc_vif)) begin
     `uvm_fatal(`gfn, "Failed to get misc_vif from uvm_config_db")
   end
+
+  foreach (parts[i]) begin
+    rram_part_e part = parts[i];
+    string name = $sformatf("rram_ctrl_bkdr_util[%0s]", part.name());
+
+    if (!uvm_config_db#(rram_ctrl_bkdr_util)::get(this, "", name, cfg.mem_bkdr_util_h[part])) begin
+      `uvm_fatal(`gfn, $sformatf("Failed to get %s from uvm_config_db", name))
+    end
+  end
+
 endfunction : build_phase
 
 function void rram_ctrl_env::connect_phase(uvm_phase phase);

@@ -16,6 +16,8 @@ package rram_ctrl_env_pkg;
   import rram_ctrl_core_ral_pkg::*;
   import rram_ctrl_host_ral_pkg::*;
   import rram_macro_prim_ral_pkg::*;
+  import rram_ctrl_bkdr_util_pkg::*;
+  import mem_bkdr_util_pkg::*;
 
   // Macro includes
   `include "uvm_macros.svh"

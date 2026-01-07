@@ -12,9 +12,6 @@ class rram_ctrl_base_vseq extends cip_base_vseq #(
 
   rram_macro_prim_reg_block prim_ral;
 
-  // Various knobs to enable certain routines
-  bit do_rram_ctrl_init = 1'b1;
-
   uint write_timeout_ns = 1_000_000;  // 1ms
 
   // Standard SV/UVM methods
@@ -27,6 +24,7 @@ class rram_ctrl_base_vseq extends cip_base_vseq #(
   extern task rram_ctrl_write(rram_ctrl_op_t rram_ctrl_op, data_q_t data);
   extern task rram_ctrl_read(rram_ctrl_op_t rram_ctrl_op, ref data_q_t data);
   extern task rram_ctrl_wait_op_done();
+  extern task rram_ctrl_wait_wr_done();
   extern task rram_host_read(input  addr_t addr,
                              input  bit blocking,
                              input  bit check_rdata,
@@ -49,6 +47,26 @@ function void rram_ctrl_base_vseq::set_handles();
   `downcast(prim_ral, cfg.ral_models[cfg.prim_ral_name]);
 endfunction : set_handles
 
+// setup inputs for DUT
+task rram_ctrl_base_vseq::pre_start();
+
+    // Create key before mem init
+    otp_addr_key = {$urandom, $urandom, $urandom, $urandom};
+    otp_addr_rand_key = {$urandom, $urandom, $urandom, $urandom};
+    otp_data_key = {$urandom, $urandom, $urandom, $urandom};
+    otp_data_rand_key = {$urandom, $urandom, $urandom, $urandom};
+
+    cfg.otp_addr_key = otp_addr_key;
+    cfg.otp_data_key = otp_data_key;
+
+    cfg.misc_vif.rma_req <= lc_ctrl_pkg::Off;
+    cfg.misc_vif.rma_seed <= lc_ctrl_pkg::LC_FLASH_RMA_SEED_DEFAULT;
+    otp_model();  // Start OTP Model
+    super.pre_start();
+
+endtask : pre_start
+
+// initializes the DUT
 task rram_ctrl_base_vseq::dut_init(string reset_kind = "HARD");
   // Initialize some of DUT inputs
   // TODO
@@ -56,9 +74,7 @@ task rram_ctrl_base_vseq::dut_init(string reset_kind = "HARD");
 
   super.dut_init();
 
-  if (do_rram_ctrl_init) begin
-    rram_ctrl_init();
-  end
+  rram_ctrl_init();
 endtask : dut_init
 
 task rram_ctrl_base_vseq::rram_ctrl_init();
@@ -74,13 +90,25 @@ endtask : rram_ctrl_init
 
 task rram_ctrl_base_vseq::rram_ctrl_wait_op_done();
   uvm_reg_data_t reg_data;
-  bit op_start;
+  bit op_done;
 
   do begin // poll op_done
-    csr_rd(.ptr(ral.control), .value(reg_data));
-    op_start = get_field_val(ral.control.start, reg_data);
-  end while (op_start == 1'b1);
+    csr_rd(.ptr(ral.op_status), .value(reg_data));
+    op_done = get_field_val(ral.op_status.done, reg_data);
+  end while (op_done == 1'b0);
+  reg_data = get_csr_val_with_updated_field(ral.op_status.done, reg_data, 1'b0);
+  csr_wr(.ptr(ral.op_status), .value(reg_data));
 endtask : rram_ctrl_wait_op_done
+
+task rram_ctrl_base_vseq::rram_ctrl_wait_wr_done();
+  uvm_reg_data_t reg_data;
+  bit wr_busy;
+
+  do begin // poll phy_status.wr_busy
+    csr_rd(.ptr(ral.phy_status), .value(reg_data));
+    wr_busy = get_field_val(ral.phy_status.wr_busy, reg_data);
+  end while (wr_busy == 1'b1);
+endtask : rram_ctrl_wait_wr_done
 
 task rram_ctrl_base_vseq::rram_ctrl_write(rram_ctrl_op_t rram_ctrl_op, data_q_t data);
   uvm_reg_data_t reg_data;
