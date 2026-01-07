@@ -136,6 +136,19 @@ _reset_start:
 
 // -----------------------------------------------------------------------------
 
+/**
+ * Skip the instrumented ROM loader if not overwritten.
+ *
+ */
+  .weak _try_instrumented_rom
+  .type _try_instrumented_rom, @function
+
+_try_instrumented_rom:
+  ret
+  .size _try_instrumented_rom, .-_try_instrumented_rom
+
+// -----------------------------------------------------------------------------
+
   /**
    * Callable entry point for the boot rom.
    *
@@ -146,6 +159,8 @@ _reset_start:
   .global _start
   .type _start, @function
 _start:
+  call _try_instrumented_rom
+
 #if !OT_IS_ENGLISH_BREAKFAST
   // Check if AST initialization should be skipped.
   li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
