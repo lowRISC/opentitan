@@ -1268,6 +1268,11 @@ class BNWSRW(OTBNInsn):
         self.wrs = op_vals['wrs']
 
     def execute(self, state: OTBNState) -> None:
+        if not state.wsrs.check_idx(self.wsr):
+            # Invalid WSR index. Stop with an illegal instruction error.
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return None
+
         val = state.wdrs.get_reg(self.wrs).read_unsigned()
         state.wsrs.write_at_idx(self.wsr, val)
 
