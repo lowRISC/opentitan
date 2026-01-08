@@ -81,13 +81,6 @@ archive_override(
     urls = ["https://github.com/lowRISC/misc-linters/archive/refs/tags/20250217_01.tar.gz"],
 )
 
-archive_override(
-    module_name = "rules_multitool",
-    sha256 = "63e8b3d7999574a62ccf49d3234390c584a11ac90392eb16d63b964584c1af6c",
-    strip_prefix = "rules_multitool-temp-fork-0.4",
-    urls = ["https://github.com/jwnrt/rules_multitool/archive/refs/tags/temp-fork-0.4.tar.gz"],
-)
-
 # Rust toolchain:
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
 rust.repository_set(
