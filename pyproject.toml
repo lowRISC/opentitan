@@ -67,7 +67,9 @@ dependencies = [
   # Build and run tool for Design Verification flows
   "dvsim==1.34.1",
 
-  "peakrdl-systemrdl >= 1.0",
+  # Used in reggen to export register description in SystemRDL format from hjson.
+  "rdlexporter>=0.4",
+  "systemrdl-compiler>=1.32.1",
 ]
 
 [tool.setuptools]
