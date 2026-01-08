@@ -976,6 +976,7 @@ ownership_transfer_test(
     name = "transfer_ecdsa_to_pq_test",
     ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0"},
     fpga = {"changes_otp": True},
+    qemu = {"timeout": "long"},
     shared_params = {
         "binaries": {
             ":boot_test": "boot_test",
