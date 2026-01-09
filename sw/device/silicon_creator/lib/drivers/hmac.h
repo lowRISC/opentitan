@@ -22,6 +22,14 @@ enum {
    * Size of a SHA-256 digest in 32-bit words.
    */
   kHmacDigestNumWords = kHmacDigestNumBytes / sizeof(uint32_t),
+  /**
+   * Size of a HMAC-SHA-256 key in bytes.
+   */
+  kHmacKeyNumBytes = kHmacDigestNumBytes,
+  /**
+   * Size of a HMAC-SHA-256 key in 32-bit words.
+   */
+  kHmacKeyNumWords = kHmacDigestNumWords,
 };
 
 /**
@@ -30,6 +38,13 @@ enum {
 typedef struct hmac_digest {
   uint32_t digest[kHmacDigestNumWords];
 } hmac_digest_t;
+
+/**
+ * A typed representation of the HMAC secret key (for HMAC-SHA256 mode).
+ */
+typedef struct hmac_key {
+  uint32_t key[kHmacDigestNumWords];
+} hmac_key_t;
 
 /**
  * Stored SHA256 operation state.
@@ -43,6 +58,32 @@ typedef struct hmac_context {
   uint32_t msg_len_lower;
   uint32_t digest[kHmacDigestNumWords];
 } hmac_context_t;
+
+/**
+ * Configure the HMAC block in HMAC-SHA256 mode.
+ *
+ * This function resets the HMAC module to clear the digest register.
+ * It then configures the HMAC block in HMAC mode with digest output
+ * in the requested endianness.
+ *
+ * @param big_endian Whether or not to initialize the peripheral for big-endian
+ *                   results.
+ */
+void sc_hmac_hmac_sha256_configure(bool big_endian_digest, hmac_key_t key);
+
+/**
+ * Convenience single-shot function for computing the HMAC-SHA-256 keyed-digest
+ * of a contiguous buffer.
+ *
+ * @param data Buffer to copy data from.
+ * @param len Size of the `data` buffer in bytes.
+ * @param key Secret key to use.
+ * @param big_endian_digest Whether to configure the hardware to produce a
+ *                          big-endian digest.
+ * @param[out] digest Buffer to copy digest to.
+ */
+void sc_hmac_hmac_sha256(const void *data, size_t len, hmac_key_t key,
+                         bool big_endian_digest, hmac_digest_t *digest);
 
 /**
  * Configure the HMAC block in SHA256 mode.
@@ -68,6 +109,14 @@ void hmac_sha256_start(void);
  */
 inline void hmac_sha256_init(void) {
   hmac_sha256_configure(false);
+  hmac_sha256_start();
+}
+
+/**
+ * Configures and starts HMAC in HMAC mode with little-endian output.
+ */
+inline void sc_hmac_hmac_sha256_init(hmac_key_t key, bool big_endian_digest) {
+  sc_hmac_hmac_sha256_configure(big_endian_digest, key);
   hmac_sha256_start();
 }
 
