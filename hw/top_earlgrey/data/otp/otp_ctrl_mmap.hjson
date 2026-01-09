@@ -260,7 +260,8 @@
                     PROD_END life cycle states. A value of kHardenedBoolTrue
                     enables, all other values disable. If left disabled,
                     provisioning flows are required to setup boot data pages
-                    prior to enabling ROM execution.
+                    prior to enabling ROM execution. The default personalization
+                    flow in `ft_personalize.c` configures these pages.
                     '''
                 }
                 {
