@@ -14,8 +14,10 @@
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
+#include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -46,10 +48,12 @@
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
+#include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 #include "sw/device/silicon_creator/manuf/base/personalize_ext.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
+#include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
 #include "hw/top/flash_ctrl_regs.h"  // Generated.
@@ -58,7 +62,8 @@
 
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                         .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
-                        .console.test_may_clobber = false, );
+                        .console.test_may_clobber = false,
+                        .silence_console_prints = true);
 
 enum {
   /**
@@ -98,8 +103,11 @@ static dif_pinmux_t pinmux;
 static dif_rstmgr_t rstmgr;
 
 // ATE Indicator GPIOs.
-static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 0;
-static const dif_gpio_pin_t kGpioPinSpiConsoleRxReady = 1;
+static const dif_gpio_pin_t kGpioPinTestStart = 0;
+static const dif_gpio_pin_t kGpioPinTestDone = 1;
+static const dif_gpio_pin_t kGpioPinTestError = 2;
+static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 3;
+static const dif_gpio_pin_t kGpioPinSpiConsoleRxReady = 4;
 
 /**
  * Keymgr binding values.
@@ -592,6 +600,77 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   return OK_STATUS();
 }
 
+static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
+  // Read out the WAS from flash.
+  hmac_key_t was;
+  static_assert(
+      kFlashInfoFieldWaferAuthSecretSizeIn32BitWords == kHmacKeyNumWords,
+      "WAS size expected to be same size as HMAC-SHA256 key.");
+  TRY(flash_ctrl_testutils_info_region_setup_properties(
+      &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret.page,
+      kFlashInfoFieldWaferAuthSecret.bank,
+      kFlashInfoFieldWaferAuthSecret.partition, kFlashInfoPage3ReadPermissions,
+      /*offset=*/NULL));
+  TRY(manuf_flash_info_field_read(
+      &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret, was.key,
+      kFlashInfoFieldWaferAuthSecretSizeIn32BitWords));
+
+  // Compute HMAC of TBS certs with WAS as the key.
+  // HSMs and host tooling will compute an HMAC in big endian format, so we do
+  // the same to make the comparison easier.
+  sc_hmac_hmac_sha256_init(was, /*big_endian_digest=*/true);
+  uint8_t *tlv_buf = perso_blob_to_host->body;
+  uint16_t obj_size;
+  perso_tlv_object_type_t obj_type;
+  perso_tlv_cert_obj_t cert_obj;
+  for (size_t i = 0; i < perso_blob_to_host->num_objs; ++i) {
+    // Parse the TLV object header.
+    perso_tlv_object_header_t obj_header = *(uint16_t *)tlv_buf;
+    PERSO_TLV_GET_FIELD(Objh, Type, obj_header, &obj_type);
+    PERSO_TLV_GET_FIELD(Objh, Size, obj_header, &obj_size);
+    if (obj_type == kPersoObjectTypeX509Tbs) {
+      TRY(perso_tlv_get_cert_obj(tlv_buf, obj_size, &cert_obj));
+      hmac_sha256_update(cert_obj.cert_body_p, cert_obj.cert_body_size);
+    }
+    tlv_buf += obj_size;
+  }
+  hmac_sha256_process();
+  hmac_digest_t digest;
+  hmac_sha256_final(&digest);
+
+  // Push hash into perso blob.
+  perso_tlv_object_header_t was_hmac_tlv_header = 0;
+  obj_size = sizeof(perso_tlv_object_header_t) + sizeof(hmac_digest_t);
+  PERSO_TLV_SET_FIELD(Objh, Type, was_hmac_tlv_header,
+                      kPersoObjectTypeWasTbsHmac);
+  PERSO_TLV_SET_FIELD(Objh, Size, was_hmac_tlv_header, obj_size);
+  TRY(perso_tlv_push_to_perso_blob(&was_hmac_tlv_header,
+                                   sizeof(perso_tlv_object_header_t),
+                                   perso_blob_to_host));
+  TRY(perso_tlv_push_to_perso_blob(digest.digest, kHmacDigestNumBytes,
+                                   perso_blob_to_host));
+  perso_blob_to_host->num_objs++;
+
+  // Read complete device ID and push into perso blob. The host will need the
+  // device ID to reconstruct the WAS.
+  uint32_t device_id[kHwCfgDeviceIdSizeIn32BitWords] = {0};
+  TRY(otp_ctrl_testutils_dai_read32_array(&otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
+                                          kHwCfgDeviceIdOffset, device_id,
+                                          ARRAYSIZE(device_id)));
+  perso_tlv_object_header_t device_id_header = 0;
+  obj_size = sizeof(perso_tlv_object_header_t) + kHwCfgDeviceIdSizeInBytes;
+  PERSO_TLV_SET_FIELD(Objh, Type, device_id_header, kPersoObjectTypeDeviceId);
+  PERSO_TLV_SET_FIELD(Objh, Size, device_id_header, obj_size);
+  TRY(perso_tlv_push_to_perso_blob(&device_id_header,
+                                   sizeof(perso_tlv_object_header_t),
+                                   perso_blob_to_host));
+  TRY(perso_tlv_push_to_perso_blob(device_id, kHwCfgDeviceIdSizeInBytes,
+                                   perso_blob_to_host));
+  perso_blob_to_host->num_objs++;
+
+  return OK_STATUS();
+}
+
 static status_t boot_data_cfg_initialize(void) {
   // Configure the boot data OTP word.
   if (!status_ok(manuf_individualize_device_flash_info_boot_data_cfg_check(
@@ -925,8 +1004,6 @@ static status_t check_otp_measurement_post_lock(hmac_digest_t *measurement,
 }
 
 static status_t finalize_otp_partitions(void) {
-  // TODO(#21554): Complete the provisioning of the root keys and key policies.
-
   TRY(check_next_slot_bootable());
 
   // Complete the provisioning of OTP OwnerSwCfg partition.
@@ -959,12 +1036,75 @@ static status_t finalize_otp_partitions(void) {
 }
 
 static status_t configure_ate_gpio_indicators(void) {
-  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa5,
-                               kTopEarlgreyPinmuxOutselGpioGpio0));
-  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa6,
-                               kTopEarlgreyPinmuxOutselGpioGpio1));
-  TRY(dif_gpio_output_set_enabled_all(&gpio, 0x3));  // Enable first two GPIOs.
-  TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));   // Intialize all to 0.
+  // IOA6 / GPIO4 is for SPI console RX ready signal.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa6,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleRxReady));
+  // IOA5 / GPIO3 is for SPI console TX ready signal.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa5,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleTxReady));
+  // IOA0 / GPIO2 is for error reporting.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa0,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestError));
+  // IOA1 / GPIO1 is for test done reporting.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa1,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestDone));
+  // IOA4 / GPIO0 is for test start reporting.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa4,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestStart));
+  TRY(dif_gpio_output_set_enabled_all(&gpio, 0x1f));  // Enable first 5 GPIOs.
+  TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));    // Intialize all to 0.
+  return OK_STATUS();
+}
+
+static status_t provision(ujson_t *uj) {
+  // Provision OTP, flash secrets, certs, and install the first owner.
+  TRY(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
+  TRY(personalize_otp_and_flash_secrets(uj));
+  TRY(personalize_gen_dice_certificates(uj));
+  TRY(install_owner());
+  personalize_extension_pre_endorse_t pre_endorse = {
+      .uj = uj,
+      .certgen_inputs = &certgen_inputs,
+      .perso_blob_to_host = &perso_blob_to_host,
+      .cert_flash_layout = cert_flash_layout,
+      .flash_ctrl_handle = &flash_ctrl_state,
+      .uds_pubkey = &uds_pubkey,
+      .uds_pubkey_id = &uds_pubkey_id,
+      .otp_creator_sw_cfg_measurement = &otp_creator_sw_cfg_measurement,
+      .otp_owner_sw_cfg_measurement = &otp_owner_sw_cfg_measurement,
+      .otp_rot_creator_auth_codesign_measurement =
+          &otp_rot_creator_auth_codesign_measurement,
+      .otp_rot_creator_auth_state_measurement =
+          &otp_rot_creator_auth_state_measurement};
+  TRY(personalize_extension_pre_cert_endorse(&pre_endorse));
+  TRY(compute_tbs_was_hmac(pre_endorse.perso_blob_to_host));
+
+  // Endorse TBS certs and install in flash.
+  TRY(personalize_endorse_certificates(uj));
+  TRY(hash_all_certs());
+  personalize_extension_post_endorse_t post_endorse = {
+      .uj = uj,
+      .perso_blob_from_host = &perso_blob_from_host,
+      .cert_flash_layout = cert_flash_layout};
+  TRY(personalize_extension_post_cert_endorse(&post_endorse));
+
+  // Log the hash of all perso objects to the host and console.
+  serdes_sha256_hash_t hash;
+  hmac_sha256_process();
+  hmac_sha256_final((hmac_digest_t *)&hash);
+  TRY(send_final_hash(uj, &hash));
+  LOG_INFO("SHA256 hash of all perso objects: %08x%08x%08x%08x%08x%08x%08x%08x",
+           hash.data[7], hash.data[6], hash.data[5], hash.data[4], hash.data[3],
+           hash.data[2], hash.data[1], hash.data[0]);
+
+  // Complete any remaining OTP programming.
+  TRY(finalize_otp_partitions());
+
   return OK_STATUS();
 }
 
@@ -973,9 +1113,11 @@ bool test_main(void) {
   // This is needed to avoid a watchdog reset if enabled in the ROM.
   watchdog_disable();
 
+  // Enable peripherals, ATE GPIO indicators, and the SPI console.
   CHECK_STATUS_OK(peripheral_handles_init());
   pinmux_testutils_init(&pinmux);
   CHECK_STATUS_OK(configure_ate_gpio_indicators());
+  CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestStart, true));
   CHECK_STATUS_OK(entropy_complex_init());
   ujson_t uj = ujson_ottf_console();
 
@@ -989,46 +1131,14 @@ bool test_main(void) {
     rstmgr_reason_clear(reason);
   }
 
-  CHECK_STATUS_OK(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
-  CHECK_STATUS_OK(personalize_otp_and_flash_secrets(&uj));
-  CHECK_STATUS_OK(personalize_gen_dice_certificates(&uj));
-  CHECK_STATUS_OK(install_owner());
+  // Execute personalization provisioning sequence.
+  status_t result = provision(&uj);
+  if (!status_ok(result)) {
+    CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestError, true));
+  } else {
+    CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestDone, true));
+  }
 
-  personalize_extension_pre_endorse_t pre_endorse = {
-      .uj = &uj,
-      .certgen_inputs = &certgen_inputs,
-      .perso_blob_to_host = &perso_blob_to_host,
-      .cert_flash_layout = cert_flash_layout,
-      .flash_ctrl_handle = &flash_ctrl_state,
-      .uds_pubkey = &uds_pubkey,
-      .uds_pubkey_id = &uds_pubkey_id,
-      .otp_creator_sw_cfg_measurement = &otp_creator_sw_cfg_measurement,
-      .otp_owner_sw_cfg_measurement = &otp_owner_sw_cfg_measurement,
-      .otp_rot_creator_auth_codesign_measurement =
-          &otp_rot_creator_auth_codesign_measurement,
-      .otp_rot_creator_auth_state_measurement =
-          &otp_rot_creator_auth_state_measurement};
-  CHECK_STATUS_OK(personalize_extension_pre_cert_endorse(&pre_endorse));
-
-  CHECK_STATUS_OK(personalize_endorse_certificates(&uj));
-  CHECK_STATUS_OK(hash_all_certs());
-
-  personalize_extension_post_endorse_t post_endorse = {
-      .uj = &uj,
-      .perso_blob_from_host = &perso_blob_from_host,
-      .cert_flash_layout = cert_flash_layout};
-  CHECK_STATUS_OK(personalize_extension_post_cert_endorse(&post_endorse));
-
-  // Log the hash of all perso objects to the host and console.
-  serdes_sha256_hash_t hash;
-  hmac_sha256_process();
-  hmac_sha256_final((hmac_digest_t *)&hash);
-  CHECK_STATUS_OK(send_final_hash(&uj, &hash));
-  LOG_INFO("SHA256 hash of all perso objects: %08x%08x%08x%08x%08x%08x%08x%08x",
-           hash.data[7], hash.data[6], hash.data[5], hash.data[4], hash.data[3],
-           hash.data[2], hash.data[1], hash.data[0]);
-
-  CHECK_STATUS_OK(finalize_otp_partitions());
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
   LOG_INFO("Personalization done.");
