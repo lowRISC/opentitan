@@ -734,6 +734,34 @@ static void configure_entropy_complex(void) {
   // requires temporarily disabling it.
   CHECK_STATUS_OK(entropy_testutils_stop_all());
 
+  uint32_t recoverable_alerts = 0;
+  CHECK_DIF_OK(dif_entropy_src_get_recoverable_alerts(&entropy_src,
+                                                      &recoverable_alerts));
+  if (recoverable_alerts != 0) {
+    LOG_INFO("entropy_src - clearing recoverable alerts: %x",
+             recoverable_alerts);
+    CHECK_DIF_OK(dif_entropy_src_clear_recoverable_alerts(&entropy_src,
+                                                          recoverable_alerts));
+  }
+
+  CHECK_DIF_OK(dif_csrng_get_recoverable_alerts(&csrng, &recoverable_alerts));
+  if (recoverable_alerts != 0) {
+    LOG_INFO("csrng - clearing recoverable alerts: %x", recoverable_alerts);
+    CHECK_DIF_OK(dif_csrng_clear_recoverable_alerts(&csrng));
+  }
+
+  CHECK_DIF_OK(dif_edn_get_recoverable_alerts(&edn_0, &recoverable_alerts));
+  if (recoverable_alerts != 0) {
+    LOG_INFO("edn_0 - clearing recoverable alerts: %x", recoverable_alerts);
+    CHECK_DIF_OK(dif_edn_clear_recoverable_alerts(&edn_0));
+  }
+
+  CHECK_DIF_OK(dif_edn_get_recoverable_alerts(&edn_1, &recoverable_alerts));
+  if (recoverable_alerts != 0) {
+    LOG_INFO("edn_1 - clearing recoverable alerts: %x", recoverable_alerts);
+    CHECK_DIF_OK(dif_edn_clear_recoverable_alerts(&edn_1));
+  }
+
   // Enable entropy_src interrupts for health-test alert detection.
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
       &rv_plic, kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed, 0x1));
@@ -1308,6 +1336,16 @@ static void max_power(void) {
   csrng_wait_ready();
   mmio_region_write32(csrng.base_addr, CSRNG_CMD_REQ_REG_OFFSET,
                       csrng_reseed_cmd);
+
+  // This is required to avoid triggering a recoverable alert in the next
+  // test iteration. CSRNG does not accept the instantiate command when it
+  // has been previously instantiated.
+  csrng_wait_ready();
+  mmio_region_write32(csrng.base_addr, CSRNG_CMD_REQ_REG_OFFSET,
+                      csrng_cmd_header_build(kCsrngAppCmdUninstantiate,
+                                             kDifCsrngEntropySrcToggleEnable,
+                                             /*cmd_len=*/0,
+                                             /*generate_len=*/0));
 
   // Issue HMAC process and KMAC squeeze commands.
   kmac_operation_state.squeezing = true;
