@@ -310,13 +310,14 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
   return kErrorOk;
 }
 
-rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
-                                  hmac_digest_t *owner_manifest_measurement,
-                                  uint32_t owner_security_version,
-                                  owner_app_domain_t key_domain,
-                                  cert_key_id_pair_t *key_ids,
-                                  ecdsa_p256_public_key_t *cdi_1_pubkey,
-                                  uint8_t *cert, size_t *cert_size) {
+rom_error_t dice_cdi_1_cert_build(
+    hmac_digest_t *owner_measurement, hmac_digest_t *owner_manifest_measurement,
+    hmac_digest_t *owner_history_hash, uint32_t owner_security_version,
+    owner_app_domain_t key_domain, cert_key_id_pair_t *key_ids,
+    ecdsa_p256_public_key_t *cdi_1_pubkey, uint8_t *cert, size_t *cert_size) {
+  // TODO: The ownership history is currently not included in the CWT
+  // certificate.
+  OT_DISCARD(owner_history_hash);
   // Build Subject public key structure
   size_t cose_key_size = sizeof(cose_key_buffer);
   cwt_cose_key_values_t cwt_cose_key_params = {

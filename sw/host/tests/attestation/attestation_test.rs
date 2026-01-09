@@ -89,7 +89,7 @@ fn check_public_key(key: &SubjectPublicKeyInfo, id: &[u8], subject: &Name) -> Re
     Ok(keyid == id && &hex::encode(keyid) == name)
 }
 
-fn attestation_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+fn attestation_test(opts: &Opts, transport: &TransportWrapper, owner_history: &[u8]) -> Result<()> {
     let uart = transport.uart("console")?;
     let capture = UartConsole::wait_for_bytes(
         &*uart,
@@ -159,9 +159,10 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     assert_eq!(dice.vendor.get_value(), "OpenTitan");
     assert_eq!(dice.layer.get_value(), &BigUint::from(2u8));
     let fw_ids = dice.fw_ids.as_ref().expect("list of fw_ids");
-    assert_eq!(fw_ids.len(), 2);
+    assert_eq!(fw_ids.len(), 3);
     assert_eq!(fw_ids[0].digest.get_value(), &measurements[1].as_ref());
     assert_eq!(fw_ids[1].digest.get_value(), &owner_measurements[0]);
+    assert_eq!(fw_ids[2].digest.get_value(), &owner_history);
     Ok(())
 }
 
@@ -169,6 +170,7 @@ fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
-    attestation_test(&opts, &transport)?;
+    // If there haven't been any ownership transfers, the owner history will be all ones.
+    attestation_test(&opts, &transport, &[255u8; 32])?;
     Ok(())
 }
