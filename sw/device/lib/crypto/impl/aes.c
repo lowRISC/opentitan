@@ -488,8 +488,10 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
     // plaintexts after the actual AES operation and compares it to the input.
 
     // Copy the IV for the second AES computation.
-    uint32_t iv_data[iv.len];
-    memcpy(iv_data, iv.data, sizeof(iv_data));
+    // No FI protection with HARDENED_TRY() is needed as this is the redundant
+    // IV.
+    uint32_t iv_data[kAesBlockNumWords];
+    hardened_memcpy(iv_data, iv.data, kAesBlockNumWords);
     otcrypto_word32_buf_t iv_redundant = {
         .data = iv_data,
         .len = iv.len,
