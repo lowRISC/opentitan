@@ -17,7 +17,7 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import Optional
 
-from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr, RunTest
+from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr, RunTest, CovVPlan
 from FlowCfg import FlowCfg
 from modes import BuildMode, Mode, RunMode, find_mode
 from Regression import Regression
@@ -515,6 +515,11 @@ class SimCfg(FlowCfg):
                 self.cov_report_deploy = CovReport(self.cov_merge_deploy, self)
                 self.deploy += [self.cov_merge_deploy, self.cov_report_deploy]
 
+            # Check if 'vplan' attribute is defined in the HJSON
+            if hasattr(self, "vplan") and self.vplan:
+                self.cov_vplan_deploy = CovVPlan(self.cov_report_deploy, self)
+                self.deploy.append(self.cov_vplan_deploy)
+
         # Create initial set of directories before kicking off the regression.
         self._create_dirs()
 
@@ -868,25 +873,147 @@ class SimCfg(FlowCfg):
 
             self.results_summary = self.testplan.get_test_results_summary()
 
-            # Append coverage results if coverage was enabled.
+            # Extract coverage results if coverage has been collected in this run.
             if self.cov_report_deploy is not None:
                 report_status = run_results[self.cov_report_deploy]
                 if report_status == "P":
                     results_str += "\n## Coverage Results\n"
-                    # Link the dashboard page using "cov_report_page" value.
+
+                    # --- 1. SETUP VPLAN DATA & API ---
+                    vplan_score = "--"
+                    vplan_table_str = ""
+
+                    # Check if vPlan job passed
+                    if getattr(self, 'cov_vplan_deploy', None) and run_results[self.cov_vplan_deploy] == "P":
+                        hjson_path = self.cov_vplan_deploy.gen_hjson
+                        if os.path.exists(hjson_path):
+                            try:
+                                # A. Dynamic Import of your tool
+                                tool_dir = os.path.join(self.proj_root, 'util', 'dvplan')
+                                if tool_dir not in sys.path:
+                                    sys.path.append(tool_dir)
+                                import calc_cov # Import your module
+
+                                # B. Call the API to analyze the file
+                                res, top, raw = calc_cov.analyze_hjson(hjson_path)
+
+                                # C. Get Score (Root node result)
+                                if top and top[0] in res:
+                                    vplan_score = f"{res[top[0]]['overall']:.2f} %"
+
+                                # D. Capture the Table Print
+                                class BufferLogger:
+                                    def __init__(self): self.buf = []
+                                    def log(self, msg=""): self.buf.append(str(msg))
+                                    def close(self): pass
+
+                                logger = BufferLogger()
+                                calc_cov.print_table_summary(res, top, raw, logger)
+
+                                # Convert to string and adjust header level for nesting
+                                raw_table = "\n".join(logger.buf)
+                                vplan_table_str = raw_table.replace("# vPlan Coverage Summary", "### vPlan Coverage Summary")
+
+                            except Exception as e:
+                                log.warning(f"vPlan API call failed: {e}")
+
+                    # --- 2. LINK DASHBOARDS ---
+                    if vplan_score != "--":
+                        if self.args.publish:
+                            vplan_link = f"cov_vplan/{self.name}_vplan.html"
+                        else:
+                            vplan_link = self.cov_vplan_deploy.gen_html
+                        results_str += f"\n### [vPlan Dashboard]({vplan_link})\n"
+
+                    # --- 3. INJECT VPLAN TABLE ---
+                    # This puts the Milestone table right after the link
+                    if vplan_table_str:
+                        results_str += "\n" + vplan_table_str
+
+                    # Link EDA Coverage Dashboard
                     if hasattr(self, "cov_report_page"):
-                        results_str += "\n### [Coverage Dashboard]"
+                        results_str += "### [Coverage Dashboard]"
                         if self.args.publish:
                             cov_report_page_path = "cov_report"
                         else:
                             cov_report_page_path = self.cov_report_dir
                         cov_report_page_path += "/" + self.cov_report_page
                         results_str += "({})\n\n".format(cov_report_page_path)
+
+                    # --- 4. PRINT STANDARD EDA TABLE (Raw) ---
                     results_str += self.cov_report_deploy.cov_results
-                    self.results_summary[
-                        "Coverage"] = self.cov_report_deploy.cov_total
+                    results_str += "\n"
+
+                    # --- 5. GENERATE EXECUTIVE SUMMARY (Combined) ---
+                    cov_dict = self.cov_report_deploy.cov_results_dict
+
+                    def get_float_val(keys):
+                        for k in keys:
+                            for dict_k in cov_dict:
+                                if k.lower() == dict_k.lower():
+                                    try: return float(cov_dict[dict_k].strip().replace('%',''))
+                                    except: return 0.0
+                        return 0.0
+
+                    def str_to_float(s):
+                        if not s or s == "--": return 0.0
+                        try: return float(s.strip().replace('%',''))
+                        except: return 0.0
+
+                    # Calculate Code Coverage
+                    val_line   = get_float_val(['Line', 'Statement'])
+                    val_toggle = get_float_val(['Toggle'])
+                    val_fsm    = get_float_val(['Fsm', 'FSM'])
+                    val_branch = get_float_val(['Branch'])
+                    val_cond   = get_float_val(['Cond', 'Condition'])
+                    val_expr   = get_float_val(['Expression'])
+                    val_block  = get_float_val(['Block'])
+
+                    code_val = 0.0
+                    if self.tool in ['vcs', 'verdi']:
+                        code_val = (val_line + val_cond + val_toggle + val_fsm + val_branch) / 5.0
+                    elif self.tool in ['xcelium', 'imc']:
+                        code_val = (val_block + val_expr + val_toggle + val_fsm) / 4.0
+                    else:
+                        vals = [v for v in [val_line, val_block, val_toggle, val_fsm, val_branch, val_cond, val_expr] if v > 0]
+                        code_val = sum(vals) / len(vals) if vals else 0.0
+
+                    # Calculate Overall
+                    val_vplan  = str_to_float(vplan_score)
+                    val_tests  = str_to_float(self.results_summary.get("Pass Rate", "0"))
+                    val_func   = get_float_val(['Group', 'CoverGroup', 'Functional'])
+                    val_assert = get_float_val(['Assert', 'Assertion'])
+
+                    overall_val = (val_vplan + val_tests + code_val + val_func + val_assert) / 5.0
+
+                    # Format (Floor to 2 decimals)
+                    def fmt(x):
+                        if x is None: return "--"
+                        floored_val = int(x * 100) / 100.0
+                        return f"{floored_val:.2f} %"
+
+                    summary_row = [
+                        fmt(overall_val),
+                        vplan_score,
+                        fmt(val_tests),
+                        fmt(code_val),
+                        fmt(val_func),
+                        fmt(val_assert)
+                    ]
+
+                    summary_headers = ["Overall", "vPlan", "Tests", "Code", "Functional", "Assertion"]
+
+                    results_str += "\n### Coverage Summary\n\n"
+                    results_str += tabulate([summary_row], headers=summary_headers,
+                                        tablefmt="pipe", colalign=("center",)*6)
+                    results_str += "\n"
+
+                    # Update Global DVSim Summary with Calculated Values
+                    self.results_summary["Coverage"] = fmt(overall_val)
+                    self.results_summary["vPlan"] = vplan_score
                 else:
                     self.results_summary["Coverage"] = "--"
+                    self.results_summary["vPlan"] = "--"
 
         if results.buckets:
             self.errors_seen = True
