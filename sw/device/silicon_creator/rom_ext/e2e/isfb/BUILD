@@ -40,7 +40,7 @@ manifest(d = {
                 value = "0xa0a0a0a0",
             ),
         ],
-        strike_mask = "0x00000000000000000000000000000001",
+        strike_mask = "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE",
     ),
     "isfb_erase_allowed_policy": isfb_erase_allowed_policy(
         name = "isfb_erase_allowed",

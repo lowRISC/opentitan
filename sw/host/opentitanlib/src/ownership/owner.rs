@@ -2,16 +2,21 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{Result, anyhow, ensure};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use serde::Deserialize;
 use serde_annotate::Annotate;
+use sphincsplus::SpxSecretKey;
 use std::convert::TryFrom;
 use std::io::{Read, Write};
 
 use super::GlobalFlags;
 use super::misc::{KeyMaterial, OwnershipKeyAlg, TlvHeader, TlvTag};
-use super::{OwnerApplicationKey, OwnerFlashConfig, OwnerFlashInfoConfig, OwnerRescueConfig};
+use super::{
+    DetachedSignature, OwnerApplicationKey, OwnerFlashConfig, OwnerFlashInfoConfig,
+    OwnerIsfbConfig, OwnerRescueConfig,
+};
+use crate::crypto::Error as CryptoError;
 use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaRawSignature};
 use crate::with_unknown;
 
@@ -219,10 +224,36 @@ impl OwnerBlock {
         })
     }
     pub fn sign(&mut self, key: &EcdsaPrivateKey) -> Result<()> {
+        ensure!(
+            self.ownership_key_alg == OwnershipKeyAlg::EcdsaP256,
+            CryptoError::SignFailed(anyhow!(
+                "Algorithm {} requires a detached signature",
+                self.ownership_key_alg
+            ))
+        );
         let mut data = Vec::new();
         self.write(&mut data)?;
         self.signature = key.digest_and_sign(&data[..Self::SIGNATURE_OFFSET])?;
         Ok(())
+    }
+
+    pub fn detached_sign(
+        &mut self,
+        nonce: u64,
+        ecdsa_key: Option<&EcdsaPrivateKey>,
+        spx_key: Option<&SpxSecretKey>,
+    ) -> Result<DetachedSignature> {
+        self.signature = Default::default();
+        let mut data = Vec::new();
+        self.write(&mut data)?;
+        DetachedSignature::new(
+            &data[..Self::SIGNATURE_OFFSET],
+            TlvTag::Owner.into(),
+            self.ownership_key_alg,
+            nonce,
+            ecdsa_key,
+            spx_key,
+        )
     }
 
     pub fn is_default_constraint(d: &[u32; 8]) -> bool {
@@ -244,6 +275,8 @@ pub enum OwnerConfigItem {
     FlashConfig(OwnerFlashConfig),
     #[serde(alias = "rescue_config")]
     RescueConfig(OwnerRescueConfig),
+    #[serde(alias = "isfb_config")]
+    IsfbConfig(OwnerIsfbConfig),
     #[serde(alias = "raw")]
     Raw(
         #[serde(with = "serde_bytes")]
@@ -259,6 +292,7 @@ impl OwnerConfigItem {
             Self::FlashInfoConfig(x) => x.write(dest)?,
             Self::FlashConfig(x) => x.write(dest)?,
             Self::RescueConfig(x) => x.write(dest)?,
+            Self::IsfbConfig(x) => x.write(dest)?,
             Self::Raw(x) => dest.write_all(x)?,
         }
         Ok(())
@@ -273,6 +307,9 @@ impl OwnerConfigItem {
                 Self::FlashInfoConfig(OwnerFlashInfoConfig::read(src, header)?)
             }
             TlvTag::Rescue => Self::RescueConfig(OwnerRescueConfig::read(src, header)?),
+            TlvTag::IntegratorSpecificFirmwareBinding => {
+                Self::IsfbConfig(OwnerIsfbConfig::read(src, header)?)
+            }
             TlvTag::NotPresent => return Ok(None),
             _ => {
                 let mut data = Vec::new();
@@ -345,9 +382,9 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
 00000270: 41 43 54 56 51 53 45 52 42 53 45 52 4f 42 45 52  ACTVQSERBSEROBER
 00000280: 47 4f 4c 42 51 45 52 42 50 53 52 42 52 4e 57 4f  GOLBQERBPSRBRNWO
 00000290: 30 47 50 4f 31 47 50 4f 44 49 54 4f 54 49 41 57  0GPO1GPODITOTIAW
-000002a0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
-000002b0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
-000002c0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
+000002a0: 49 53 46 42 2c 00 00 00 01 08 00 00 66 06 00 00  ISFB,.......f...
+000002b0: 70 72 6f 64 00 00 00 00 00 00 00 00 00 00 00 00  prod............
+000002c0: 00 00 00 00 00 00 00 00 80 00 00 00 5a 5a 5a 5a  ............ZZZZ
 000002d0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
 000002e0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
 000002f0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
@@ -571,6 +608,15 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
           "Wait"
         ]
       }
+    },
+    {
+      IsfbConfig: {
+        bank: 1,
+        page: 8,
+        erase_conditions: 0x666,
+        key_domain: "Prod",
+        product_words: 128
+      }
     }
   ],
   signature: {
@@ -635,6 +681,15 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
                     ..Default::default()
                 }),
                 OwnerConfigItem::RescueConfig(OwnerRescueConfig::all()),
+                OwnerConfigItem::IsfbConfig(OwnerIsfbConfig {
+                    bank: 1,
+                    page: 8,
+                    pad: 0,
+                    erase_conditions: 0x0000_0666,
+                    key_domain: ApplicationKeyDomain::Prod,
+                    product_words: 128,
+                    ..Default::default()
+                }),
             ],
             signature: EcdsaRawSignature {
                 r: hex::decode("7777777777777777777777777777777777777777777777777777777777777777")?,

@@ -89,10 +89,11 @@ hardened_bool_t owner_block_page1_valid_for_transfer(boot_data_t *bootdata) {
   return kHardenedBoolFalse;
 }
 
-static inline hardened_bool_t is_owner_page(const owner_info_page_t *config) {
+static inline hardened_bool_t is_owner_page(const uint8_t bank,
+                                            const uint8_t page) {
   // On earlgrey_a1, in banks 0 and 1, pages 5-8 (inclusive) are reserved
   // for the owner.
-  if (config->page >= 5 && config->page <= 8) {
+  if (page >= 5 && page <= 8) {
     return kHardenedBoolTrue;
   }
   return kHardenedBoolFalse;
@@ -154,7 +155,7 @@ rom_error_t owner_block_flash_info_check(
   len /= sizeof(owner_info_page_t);
   const owner_info_page_t *config = info->config;
   for (size_t i = 0; i < len; ++i, ++config) {
-    if (is_owner_page(config) != kHardenedBoolTrue) {
+    if (is_owner_page(config->bank, config->page) != kHardenedBoolTrue) {
       return kErrorOwnershipBadInfoPage;
     }
   }
@@ -177,6 +178,7 @@ void owner_config_default(owner_config_t *config) {
   config->flash = (const owner_flash_config_t *)kHardenedBoolFalse;
   config->info = (const owner_flash_info_config_t *)kHardenedBoolFalse;
   config->rescue = (const owner_rescue_config_t *)kHardenedBoolFalse;
+  config->isfb = (const owner_isfb_config_t *)kHardenedBoolFalse;
   config->sram_exec = kOwnerSramExecModeDisabledLocked;
 }
 
@@ -265,6 +267,19 @@ rom_error_t owner_block_parse(const owner_block_t *block,
               owner_block_rescue_check((const owner_rescue_config_t *)item));
         }
         break;
+      case kTlvTagIntegrationSpecificFirmwareBinding:
+        HARDENED_CHECK_EQ(tag, kTlvTagIntegrationSpecificFirmwareBinding);
+        if (item->version.major != 0)
+          return kErrorOwnershipISFBVersion;
+        if (check_only == kHardenedBoolFalse) {
+          if ((hardened_bool_t)config->isfb != kHardenedBoolFalse)
+            return kErrorOwnershipDuplicateItem;
+          config->isfb = (const owner_isfb_config_t *)item;
+        } else {
+          HARDENED_RETURN_IF_ERROR(
+              owner_isfb_config_check((const owner_isfb_config_t *)item));
+        }
+        break;
       default:
         return kErrorOwnershipInvalidTag;
     }
@@ -325,6 +340,19 @@ rom_error_t owner_block_flash_check(const owner_flash_config_t *flash) {
       // the end of flash.
       return kErrorOwnershipFlashConfigBounds;
     }
+  }
+  return kErrorOk;
+}
+
+rom_error_t owner_isfb_config_check(const owner_isfb_config_t *isfb) {
+  if (isfb->header.length < sizeof(owner_isfb_config_t)) {
+    return kErrorOwnershipInvalidTagLength;
+  }
+  if (is_owner_page(isfb->bank, isfb->page) == kHardenedBoolFalse) {
+    return kErrorOwnershipISFBPage;
+  }
+  if (isfb->product_words > 256) {
+    return kErrorOwnershipISFBSize;
   }
   return kErrorOk;
 }
@@ -423,20 +451,10 @@ rom_error_t owner_block_info_apply(const owner_flash_info_config_t *info) {
   const owner_info_page_t *config = info->config;
   uint32_t crypt = 0;
   for (size_t i = 0; i < len; ++i, ++config, crypt += 0x11111111) {
-    if (is_owner_page(config) == kHardenedBoolTrue) {
-      flash_ctrl_info_page_t page = {
-          .base_addr = config->bank * FLASH_CTRL_PARAM_BYTES_PER_BANK +
-                       config->page * FLASH_CTRL_PARAM_BYTES_PER_PAGE,
-          .cfg_wen_offset =
-              config->page * sizeof(uint32_t) +
-              (config->bank == 0 ? FLASH_CTRL_BANK0_INFO0_REGWEN_0_REG_OFFSET
-                                 : FLASH_CTRL_BANK1_INFO0_REGWEN_0_REG_OFFSET),
-          .cfg_offset = config->page * sizeof(uint32_t) +
-                        (config->bank == 0
-                             ? FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_REG_OFFSET
-                             : FLASH_CTRL_BANK1_INFO0_PAGE_CFG_0_REG_OFFSET),
-      };
-
+    if (is_owner_page(config->bank, config->page) == kHardenedBoolTrue) {
+      flash_ctrl_info_page_t page;
+      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_type0_params_build(
+          config->bank, config->page, &page));
       uint32_t val = config->properties ^ crypt;
       flash_ctrl_cfg_t cfg = {
           .scrambling = bitfield_field32_read(val, FLASH_CONFIG_SCRAMBLE),

@@ -720,3 +720,34 @@ void flash_ctrl_cert_info_page_owner_restrict(
   flash_ctrl_info_perms_set(info_page, kCertificateInfoPageOwnerAccess);
   sec_mmio_write32(flash_ctrl_core_base() + info_page->cfg_wen_offset, 0);
 }
+
+rom_error_t flash_ctrl_info_type0_params_build(
+    uint8_t bank, uint8_t page, flash_ctrl_info_page_t *info_page) {
+  HARDENED_CHECK_LT(bank, FLASH_CTRL_PARAM_REG_NUM_BANKS);
+  HARDENED_CHECK_LT(page, FLASH_CTRL_PARAM_NUM_INFOS0);
+
+  uint32_t cfg_offset = 0;
+  uint32_t cfg_wen_offset = 0;
+
+  switch (bank) {
+    case 0:
+      cfg_offset = FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_REG_OFFSET;
+      cfg_wen_offset += FLASH_CTRL_BANK0_INFO0_REGWEN_0_REG_OFFSET;
+      break;
+    case 1:
+      cfg_offset = FLASH_CTRL_BANK1_INFO0_PAGE_CFG_0_REG_OFFSET;
+      cfg_wen_offset += FLASH_CTRL_BANK1_INFO0_REGWEN_0_REG_OFFSET;
+      break;
+    default:
+      HARDENED_TRAP();
+  }
+
+  *info_page = (flash_ctrl_info_page_t){
+      .base_addr = bank * FLASH_CTRL_PARAM_BYTES_PER_BANK +
+                   page * FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+      .cfg_offset = cfg_offset + page * sizeof(uint32_t),
+      .cfg_wen_offset = cfg_wen_offset + page * sizeof(uint32_t),
+  };
+
+  return kErrorOk;
+}
