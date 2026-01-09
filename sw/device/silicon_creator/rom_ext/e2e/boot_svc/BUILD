@@ -60,6 +60,31 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "boot_svc_enter_rescue_test",
+    srcs = ["boot_svc_enter_rescue_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
+    fpga = fpga_params(
+        assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
+        exit_failure = "BFV|PASS|FAIL",
+        exit_success = "mode: RESQ\r\n",
+    ),
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+    deps = [
+        ":boot_svc_test_lib",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_enter_rescue",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+)
+
+opentitan_test(
     name = "boot_svc_wakeup_test",
     srcs = ["boot_svc_wakeup_test.c"],
     exec_env = {
