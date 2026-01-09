@@ -1,12 +1,46 @@
 /* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
+.text
+.globl fe_init
+.globl fe_mul
+.globl fe_square
+.globl fe_inv
 
 /**
  * This library contains arithmetic for the finite field modulo the prime
  * p = 2^255-19, which is used for both the X25519 key exchange and the Ed25519
  * signature scheme.
  */
+
+/**
+ * Load constants for the field modulo p.
+ *
+ * This routine should run before any other operations in this field are used,
+ * and again if its output is subsequently overwritten.
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in]  w31: all-zero
+ * @param[out] w19: 19, constant
+ * @param[out] w30: 38, constant
+ * @param[out] MOD: p=2^255-19, modulus
+ *
+ * clobbered registers: x2, x3, w19, MOD
+ * clobbered flag groups: FG0
+ */
+fe_init:
+  /* Load modulus p into the MOD register. */
+  li      x2, 19
+  la      x3, field25519_p
+  bn.lid  x2, 0(x3)
+  bn.wsrw 0x0, w19
+
+  /* Load the constants 19 and 38. */
+  bn.addi w19, w31, 19
+  bn.addi w30, w31, 38
+
+  ret
 
 /**
  * Multiply two field elements and reduce modulo p.
@@ -28,7 +62,6 @@
  * clobbered registers: w18, w20 to w22
  * clobbered flag groups: FG0
  */
-.globl fe_mul
 fe_mul:
   /* Partial products for multiply-reduce:
 
@@ -140,7 +173,6 @@ fe_mul:
  * clobbered registers: w17, w18, w20 to w22
  * clobbered flag groups: FG0
  */
-.globl fe_square
 fe_square:
   /* Partial products for square:
 
@@ -268,7 +300,6 @@ fe_square:
  * clobbered registers: w14, w15, w17, w18, w20 to w23
  * clobbered flag groups: FG0
  */
-.globl fe_inv
 fe_inv:
   /* w22 <= w16^2 = a^2 */
   bn.mov  w22, w16
@@ -381,3 +412,17 @@ fe_inv:
   jal     x1, fe_mul
 
   ret
+
+.data
+
+/* Modulus p = 2^255 - 19. */
+.balign 32
+field25519_p:
+  .word 0xffffffed
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0x7fffffff
