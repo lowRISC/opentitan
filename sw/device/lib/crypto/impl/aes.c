@@ -50,8 +50,6 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
   if (integrity_blinded_key_check(blinded_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(launder32(integrity_blinded_key_check(blinded_key)),
-                    kHardenedBoolTrue);
 
   if (blinded_key->config.hw_backed == kHardenedBoolTrue) {
     // Call keymgr to sideload the key into AES.
@@ -130,6 +128,12 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
     // Create the checksum of the key and store it in the key structure.
     aes_key->checksum = aes_key_integrity_checksum(aes_key);
   }
+
+  // Second integrity check of the key we got passed into the cryptolib.
+  // This check is placed here to catch any corruptions that might have
+  // happen after the first check when assembling the `aes_key`.
+  HARDENED_CHECK_EQ(launder32(integrity_blinded_key_check(blinded_key)),
+                    kHardenedBoolTrue);
 
   return OTCRYPTO_OK;
 }
