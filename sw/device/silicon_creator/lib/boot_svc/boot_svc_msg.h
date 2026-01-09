@@ -7,6 +7,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_empty.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_enter_rescue.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_header.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_min_bl0_sec_ver.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_next_boot_bl0_slot.h"
@@ -30,6 +31,11 @@ extern "C" {
    * Empty boot services message.
    */ \
   X(boot_svc_empty_t, empty) \
+  /**
+   * Enter rescue mode.
+   */ \
+  X(boot_svc_enter_rescue_req_t, enter_rescue_req) \
+  X(boot_svc_enter_rescue_res_t, enter_rescue_res) \
   /**
    * Next Boot BL0 Slot request and response.
    */ \
