@@ -7,7 +7,7 @@
 # because of how the bazel rule accepts attributes.
 ROM_EXT_VERSION = struct(
     MAJOR = "0",
-    MINOR = "104",
+    MINOR = "105",
     SECURITY = "0",
 )
 
