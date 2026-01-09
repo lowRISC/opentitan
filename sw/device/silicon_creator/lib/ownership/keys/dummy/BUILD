@@ -26,6 +26,26 @@ filegroup(
 )
 
 filegroup(
+    name = "owner_key_spx",
+    srcs = ["owner_spx.pem"],
+)
+
+filegroup(
+    name = "owner_key_spx_pub",
+    srcs = ["owner_spx.pub.pem"],
+)
+
+filegroup(
+    name = "activate_key_spx",
+    srcs = ["activate_spx.pem"],
+)
+
+filegroup(
+    name = "unlock_key_spx",
+    srcs = ["unlock_spx.pem"],
+)
+
+filegroup(
     name = "app_prod_ecdsa_pub",
     srcs = ["app_prod_ecdsa_p256.pub.der"],
 )

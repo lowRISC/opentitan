@@ -3,13 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
-    "opentitan_test",
-)
-load(
     "//rules:cross_platform.bzl",
     "dual_cc_library",
     "dual_inputs",
+)
+load(
+    "//rules/opentitan:defs.bzl",
+    "opentitan_test",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -194,8 +194,29 @@ cc_library(
         ":owner_block",
         ":ownership",
         "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
+        "//sw/device/silicon_creator/lib/rescue",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
+    name = "test_owner_hybrid",
+    testonly = True,
+    srcs = ["test_owner.c"],
+    defines = [
+        "TEST_OWNER_KEY_ALG_HYBRID_SPX_PURE=1",
+    ],
+    deps = [
+        ":datatypes",
+        ":owner_block",
+        ":ownership",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
+        "//sw/device/silicon_creator/lib/rescue",
     ],
     alwayslink = True,
 )
@@ -212,8 +233,35 @@ cc_library(
         ":owner_block",
         ":ownership",
         "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
+        "//sw/device/silicon_creator/lib/rescue",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
+    name = "test_owner_usbdfu",
+    testonly = True,
+    srcs = ["test_owner.c"],
+    defines = [
+        # 0x55 is 'U'sb.
+        "WITH_RESCUE_PROTOCOL=0x55",
+        # Trigger 2 is strap pins combination.
+        "WITH_RESCUE_TRIGGER=2",
+        # Strapping value of 3.
+        "WITH_RESCUE_INDEX=3",
+    ],
+    deps = [
+        ":datatypes",
+        ":owner_block",
+        ":ownership",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
+        "//sw/device/silicon_creator/lib/rescue",
     ],
     alwayslink = True,
 )
