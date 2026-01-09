@@ -13,6 +13,7 @@ py_library(
     data = [
         "//sw/host/provisioning/orchestrator/data:products.hjson",
         "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a1.hjson",
+        "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a2.hjson",
     ],
     imports = ["."],
     deps = [
@@ -23,8 +24,8 @@ py_library(
 )
 
 py_binary(
-    name = "ft_devid_gen",
-    srcs = ["ft_devid_gen.py"],
+    name = "devid_header_gen",
+    srcs = ["devid_header_gen.py"],
     data = ["//sw/device/silicon_creator/manuf/keys:ca_data_all"],
     imports = ["."],
     deps = [
@@ -55,6 +56,7 @@ py_library(
     data = [
         "//sw/host/provisioning/orchestrator/data:products.hjson",
         "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a1.hjson",
+        "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a2.hjson",
     ],
     deps = [
         ":ca_config",

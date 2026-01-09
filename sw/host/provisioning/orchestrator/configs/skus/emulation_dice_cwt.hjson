@@ -4,7 +4,7 @@
 
 {
   name: "emulation_dice_cwt",
-  product: "earlgrey_a1",
+  product: "earlgrey_a2",
   si_creator: "nuvoton",
   package: "npcr10",
   target_lc_state: "prod",

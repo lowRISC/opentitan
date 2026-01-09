@@ -2,7 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@//rules:manuf.bzl", "ft_device_id")
+load("@//rules:manuf.bzl", "device_id_header")
+load("@//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load(
     "@provisioning_exts//:cfg.bzl",
     "EXT_SIGNED_PERSO_BINS",
@@ -43,6 +44,16 @@ cc_library(
     deps = ["//sw/device/lib/dif:flash_ctrl"],
 )
 
+device_id_header(
+    name = "cp_device_id",
+    headers = ["cp_device_id.h"],
+    mode = "cp",
+    # All SKUs have the same CP device ID for a given product version so we just
+    # use the SiVal SKU configuration here.
+    sku_config = "@//sw/host/provisioning/orchestrator/configs/skus:sival.hjson",
+    template = ":cp_device_id.c.tpl",
+)
+
 opentitan_binary(
     name = "sram_cp_provision",
     testonly = True,
@@ -55,6 +66,7 @@ opentitan_binary(
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
+        ":cp_device_id_library",
         ":flash_info_permissions",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -95,6 +107,7 @@ opentitan_binary(
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
+        ":cp_device_id_library",
         ":flash_info_permissions",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top/dt",
@@ -149,10 +162,11 @@ opentitan_test(
 )
 
 [
-    ft_device_id(
+    device_id_header(
         name = "ft_device_id_{}".format(sku),
         ast_cfg_version = 0,
         headers = ["ft_device_id.h"],
+        mode = "ft",
         sku_config = config["orchestrator_cfg"],
         template = ":ft_device_id.c.tpl",
     )
