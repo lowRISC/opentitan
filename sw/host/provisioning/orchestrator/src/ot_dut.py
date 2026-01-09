@@ -268,6 +268,7 @@ class OtDut():
             --elf={individ_elf} \
             --bootstrap={perso_bin} \
             --second-bootstrap={fw_bundle_bin} \
+            --wafer-auth-secret="{_ZERO_256BIT_HEXSTR}" \
             --test-unlock-token="{format_hex(self.test_unlock_token, width=32)}" \
             --test-exit-token="{format_hex(self.test_exit_token, width=32)}" \
             --target-mission-mode-lc-state="{self.sku_config.target_lc_state}" \

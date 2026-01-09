@@ -36,6 +36,10 @@ use util_lib::{
 /// Provisioning data command-line parameters.
 #[derive(Debug, Args, Clone)]
 pub struct ManufFtProvisioningDataInput {
+    /// Wafer Authentication Secret to verify from device.
+    #[arg(long)]
+    pub wafer_auth_secret: String,
+
     /// TestUnlock token; a 128-bit hex string.
     #[arg(long)]
     pub test_unlock_token: String,
@@ -117,7 +121,9 @@ fn main() -> Result<()> {
         opts.init.load_bitstream.init(&transport).map(|_| None),
     )?;
 
-    // Parse and format LC tokens.
+    // Parse and format tokens.
+    let wafer_auth_secret =
+        hex_string_to_u8_arrayvec::<32>(opts.provisioning_data.wafer_auth_secret.as_str())?;
     let _test_unlock_token =
         hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.test_unlock_token.as_str())?;
     let _test_exit_token =
@@ -238,6 +244,7 @@ fn main() -> Result<()> {
     run_ft_personalize(
         &transport,
         &opts.init,
+        &wafer_auth_secret,
         &rma_unlock_token,
         ca_cfgs,
         ca_keys,
