@@ -6,22 +6,19 @@ use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::PathBuf;
-use std::thread;
 use std::time::{Duration, Instant};
 
-use anyhow::{Result, anyhow, bail};
+use anyhow::{Result, bail};
 use arrayvec::ArrayVec;
 use zerocopy::IntoBytes;
 
+use bindgen::sram_program::SRAM_MAGIC_SP_EXECUTION_DONE;
 use cert_lib::{CaConfig, CaKey, EndorsedCert, parse_and_endorse_x509_cert, validate_cert_chain};
 use ft_ext_lib::ft_ext;
 use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::io::console::ConsoleError;
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
-use opentitanlib::test_utils::crashdump::{
-    read_alert_crashdump_data, read_cpu_crashdump_data, read_reset_reason,
-};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
 use opentitanlib::test_utils::load_sram_program::{
@@ -40,10 +37,6 @@ use util_lib::hash_lc_token;
 
 pub mod response;
 use response::*;
-
-// After seeing 10 alert NMIs, this is the time to wait after disconnecting JTAG
-// before capturing crashdump information.
-const FT_NMI_CRASHDUMP_DELAY_MILLIS: u64 = 10000; // 10 seconds
 
 pub fn test_unlock(
     transport: &TransportWrapper,
@@ -83,13 +76,11 @@ pub fn test_unlock(
     Ok(())
 }
 
-#[allow(clippy::too_many_arguments)]
 pub fn run_sram_ft_individualize(
     transport: &TransportWrapper,
     jtag_params: &JtagParams,
     sram_program: &SramProgramParams,
     timeout: Duration,
-    spi_console: &SpiConsoleDevice,
 ) -> Result<()> {
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
@@ -101,9 +92,12 @@ pub fn run_sram_ft_individualize(
     jtag.reset(/*run=*/ false)?;
 
     // Load and execute the SRAM program that contains the provisioning code.
-    let result = sram_program.load_and_execute(&mut *jtag, ExecutionMode::Jump)?;
+    let result = sram_program.load_and_execute(&mut *jtag, ExecutionMode::JumpAndWait(timeout))?;
     match result {
-        ExecutionResult::Executing => log::info!("SRAM program loaded and is executing."),
+        ExecutionResult::ExecutionDone(sp_val) => match sp_val {
+            SRAM_MAGIC_SP_EXECUTION_DONE => log::info!("SRAM program completed."),
+            _ => panic!("SRAM program load/execution failed: sp = {:?}.", sp_val),
+        },
         _ => panic!("SRAM program load/execution failed: {:?}.", result),
     }
 
@@ -113,28 +107,7 @@ pub fn run_sram_ft_individualize(
     transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
 
-    // Wait for provisioning operations to complete. If we see at least 10 NMIs, we know it is time
-    // to capture crashdump information.
-    let console_text = UartConsole::wait_for(
-        spi_console,
-        r"FT SRAM provisioning done.|Processing Alert NMI 10 ...",
-        timeout,
-    )?;
-    match console_text[0].as_str() {
-        "FT SRAM provisioning done." => Ok(()),
-        "Processing Alert NMI 10 ..." => {
-            log::info!(
-                "10 NMIs detected, waiting {:?} before capturing crashdump information",
-                Duration::from_millis(FT_NMI_CRASHDUMP_DELAY_MILLIS)
-            );
-            thread::sleep(Duration::from_millis(FT_NMI_CRASHDUMP_DELAY_MILLIS));
-            read_reset_reason(transport, jtag_params)?;
-            read_cpu_crashdump_data(transport, jtag_params)?;
-            read_alert_crashdump_data(transport, jtag_params)?;
-            Ok(())
-        }
-        _ => Err(anyhow!("Unexpected console_text: {:?}", console_text)),
-    }
+    Ok(())
 }
 
 pub fn test_exit(
@@ -153,9 +126,25 @@ pub fn test_exit(
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
     let mut jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
 
-    // Check that LC state is currently `TEST_UNLOCKED1`.
-    let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
-    assert_eq!(state, DifLcCtrlState::TestUnlocked1.redundant_encoding());
+    // Check that LC state is currently `TEST_UNLOCKED*`.
+    let state =
+        DifLcCtrlState::from_redundant_encoding(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?)?;
+    match state {
+        DifLcCtrlState::TestUnlocked0
+        | DifLcCtrlState::TestUnlocked1
+        | DifLcCtrlState::TestUnlocked2
+        | DifLcCtrlState::TestUnlocked3
+        | DifLcCtrlState::TestUnlocked4
+        | DifLcCtrlState::TestUnlocked5
+        | DifLcCtrlState::TestUnlocked6
+        | DifLcCtrlState::TestUnlocked7 => {
+            log::info!("Starting test exit LC transition ...")
+        }
+        _ => panic!(
+            "Cannot perform test exit LC transition from {:x?} LC state.",
+            state
+        ),
+    }
 
     // ROM execution should now be enabled in OTP so we cannot safely reconnect to the LC TAP after
     // the transition without risking the chip resetting. Therefore, it is the responsibility of the

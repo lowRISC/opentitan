@@ -210,7 +210,6 @@ fn main() -> Result<()> {
                 &opts.init.jtag_params,
                 &opts.sram_program,
                 opts.timeout,
-                &spi_console_device,
             )?;
             response.stats.log_elapsed_time("ft-individualize", t0);
 

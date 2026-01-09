@@ -11,12 +11,10 @@
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
 #include "sw/device/silicon_creator/manuf/base/ft_device_id.h"
@@ -28,9 +26,7 @@
 #include "hw/top/ast_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
-                        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
-                        .console.test_may_clobber = false, );
+OTTF_DEFINE_TEST_CONFIG();
 
 static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_gpio_t gpio;
@@ -103,15 +99,10 @@ static status_t patch_ast_config_value(void) {
 
   // Only patch AST if the patch value is present.
   if (ast_patch_value != 0 && ast_patch_value != UINT32_MAX) {
-    LOG_INFO("Patching AST with:");
-    LOG_INFO("AST patch address offset = 0x%08x", ast_patch_addr_offset);
-    LOG_INFO("AST patch address value  = 0x%08x", ast_patch_value);
-
     // Check the address is within range before programming.
     if (kDeviceType == kDeviceSilicon || kDeviceType == kDeviceSimDV) {
       TRY_CHECK(ast_patch_addr_offset <= AST_REGAL_REG_OFFSET);
     }
-
     // Write patch value.
     abs_mmio_write32(
         TOP_EARLGREY_AST_BASE_ADDR + ast_patch_addr_offset * sizeof(uint32_t),
@@ -146,7 +137,6 @@ static status_t provision(void) {
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
   CHECK_STATUS_OK(entropy_complex_init());
-  ottf_console_init();
   CHECK_STATUS_OK(configure_ate_gpio_indicators());
 
   // Perform provisioning operations.
@@ -157,11 +147,5 @@ bool test_main(void) {
   } else {
     CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestDone, true));
   }
-
-  // Halt the CPU here to enable JTAG to perform an LC transition to mission
-  // mode, as ROM execution should be active now.
-  LOG_INFO("FT SRAM provisioning done.");
-  abort();
-
   return true;
 }
