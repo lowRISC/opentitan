@@ -546,8 +546,8 @@ status_t hmac_hmac_sha256_redundant(const hmac_key_t *key, const uint8_t *msg,
   // Concatenate the message with the inner padded key.
   uint8_t i_key_pad_msg[kHmacSha256BlockBytes + msg_len];
   memset(i_key_pad_msg, 0, sizeof(i_key_pad_msg));
-  memcpy(i_key_pad_msg, i_key_pad, kHmacSha256BlockBytes);
-  memcpy(i_key_pad_msg + kHmacSha256BlockBytes, msg, msg_len);
+  randomized_bytecopy(i_key_pad_msg, i_key_pad, kHmacSha256BlockBytes);
+  randomized_bytecopy(i_key_pad_msg + kHmacSha256BlockBytes, msg, msg_len);
 
   // h_i_key_pad_msg = H(i_key_pad || m).
   uint32_t h_i_key_pad_msg[kHmacSha256DigestWords];
@@ -558,9 +558,9 @@ status_t hmac_hmac_sha256_redundant(const hmac_key_t *key, const uint8_t *msg,
   // Concatenate the outer padded key with h_i_key_pad_msg.
   uint8_t o_key_pad_hash[kHmacSha256BlockBytes + kHmacSha256DigestBytes];
   memset(o_key_pad_hash, 0, sizeof(o_key_pad_hash));
-  memcpy(o_key_pad_hash, o_key_pad, kHmacSha256BlockBytes);
-  memcpy(o_key_pad_hash + kHmacSha256BlockBytes, h_i_key_pad_msg,
-         kHmacSha256DigestBytes);
+  randomized_bytecopy(o_key_pad_hash, o_key_pad, kHmacSha256BlockBytes);
+  randomized_bytecopy(o_key_pad_hash + kHmacSha256BlockBytes, h_i_key_pad_msg,
+                      kHmacSha256DigestBytes);
 
   // hmac = H(o_key_pad || h_i_key_pad_msg).
   return hmac_hash_sha256(o_key_pad_hash,
@@ -590,8 +590,8 @@ status_t hmac_hmac_sha384_redundant(const hmac_key_t *key, const uint8_t *msg,
   // Concatenate the message with the inner padded key.
   uint8_t i_key_pad_msg[kHmacSha384BlockBytes + msg_len];
   memset(i_key_pad_msg, 0, sizeof(i_key_pad_msg));
-  memcpy(i_key_pad_msg, i_key_pad, kHmacSha384BlockBytes);
-  memcpy(i_key_pad_msg + kHmacSha384BlockBytes, msg, msg_len);
+  randomized_bytecopy(i_key_pad_msg, i_key_pad, kHmacSha384BlockBytes);
+  randomized_bytecopy(i_key_pad_msg + kHmacSha384BlockBytes, msg, msg_len);
 
   // h_i_key_pad_msg = H(i_key_pad || m).
   uint32_t h_i_key_pad_msg[kHmacSha384DigestWords];
@@ -602,9 +602,9 @@ status_t hmac_hmac_sha384_redundant(const hmac_key_t *key, const uint8_t *msg,
   // Concatenate the outer padded key with h_i_key_pad_msg.
   uint8_t o_key_pad_hash[kHmacSha384BlockBytes + kHmacSha384DigestBytes];
   memset(o_key_pad_hash, 0, sizeof(o_key_pad_hash));
-  memcpy(o_key_pad_hash, o_key_pad, kHmacSha384BlockBytes);
-  memcpy(o_key_pad_hash + kHmacSha384BlockBytes, h_i_key_pad_msg,
-         kHmacSha384DigestBytes);
+  randomized_bytecopy(o_key_pad_hash, o_key_pad, kHmacSha384BlockBytes);
+  randomized_bytecopy(o_key_pad_hash + kHmacSha384BlockBytes, h_i_key_pad_msg,
+                      kHmacSha384DigestBytes);
 
   // hmac = H(o_key_pad || h_i_key_pad_msg).
   return hmac_hash_sha384(o_key_pad_hash,
@@ -634,8 +634,8 @@ status_t hmac_hmac_sha512_redundant(const hmac_key_t *key, const uint8_t *msg,
   // Concatenate the message with the inner padded key.
   uint8_t i_key_pad_msg[kHmacSha512BlockBytes + msg_len];
   memset(i_key_pad_msg, 0, sizeof(i_key_pad_msg));
-  memcpy(i_key_pad_msg, i_key_pad, kHmacSha512BlockBytes);
-  memcpy(i_key_pad_msg + kHmacSha512BlockBytes, msg, msg_len);
+  randomized_bytecopy(i_key_pad_msg, i_key_pad, kHmacSha512BlockBytes);
+  randomized_bytecopy(i_key_pad_msg + kHmacSha512BlockBytes, msg, msg_len);
 
   // h_i_key_pad_msg = H(i_key_pad || m).
   uint32_t h_i_key_pad_msg[kHmacSha512DigestWords];
@@ -646,9 +646,9 @@ status_t hmac_hmac_sha512_redundant(const hmac_key_t *key, const uint8_t *msg,
   // Concatenate the outer padded key with h_i_key_pad_msg.
   uint8_t o_key_pad_hash[kHmacSha512BlockBytes + kHmacSha512DigestBytes];
   memset(o_key_pad_hash, 0, sizeof(o_key_pad_hash));
-  memcpy(o_key_pad_hash, o_key_pad, kHmacSha512BlockBytes);
-  memcpy(o_key_pad_hash + kHmacSha512BlockBytes, h_i_key_pad_msg,
-         kHmacSha512DigestBytes);
+  randomized_bytecopy(o_key_pad_hash, o_key_pad, kHmacSha512BlockBytes);
+  randomized_bytecopy(o_key_pad_hash + kHmacSha512BlockBytes, h_i_key_pad_msg,
+                      kHmacSha512DigestBytes);
 
   // hmac = H(o_key_pad || h_i_key_pad_msg).
   return hmac_hash_sha512(o_key_pad_hash,
