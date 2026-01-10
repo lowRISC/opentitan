@@ -21,13 +21,14 @@ opentitan_test(
         binaries = {
             "//sw/device/silicon_creator/rom_ext/e2e/rescue:boot_test_slot_a": "boot_test",
         },
-        changes_otp = True,
         test_cmd = """
-            --clear-bitstream
             --bootstrap={rom_ext}
             --firmware={boot_test}
         """,
         test_harness = "//sw/host/tests/rescue:xmodem_protocol",
+        testopt_bootstrap = "False",
+        testopt_clear_after_test = "True",
+        testopt_clear_before_test = "True",
     ),
 )
 
@@ -42,15 +43,16 @@ opentitan_test(
         binaries = {
             "//sw/device/silicon_creator/rom_ext/e2e/rescue:boot_test_slot_a": "boot_test",
         },
-        changes_otp = True,
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_usbdfu",
         test_cmd = """
-            --clear-bitstream
             --bootstrap={rom_ext}
             --firmware={boot_test}
             --trigger=strap
             --value=3
         """,
         test_harness = "//sw/host/tests/rescue:usbdfu_protocol",
+        testopt_bootstrap = "False",
+        testopt_clear_after_test = "True",
+        testopt_clear_before_test = "True",
     ),
 )
