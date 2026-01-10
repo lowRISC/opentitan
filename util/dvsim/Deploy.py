@@ -6,6 +6,8 @@ import logging as log
 import pprint
 import random
 import shlex
+import sys
+import os
 from pathlib import Path
 from typing import List
 
@@ -777,3 +779,96 @@ class CovAnalyze(Deploy):
         self.qual_name = self.target
         self.full_name = self.sim_cfg.name + ":" + self.qual_name
         self.input_dirs += [self.cov_merge_db_dir]
+
+class CovVPlan(Deploy):
+    """
+    Runs the full vPlan flow:
+    1. process_vplan.py (setup)
+    2. process_results.py (back-annotation)
+    """
+    target = "cov_vplan"
+    weight = 10
+
+    def __init__(self, cov_report_job, sim_cfg):
+        self.report_job = cov_report_job
+        super().__init__(sim_cfg)
+        self.dependencies.append(cov_report_job)
+
+    def _define_attrs(self):
+        super()._define_attrs()
+        self.mandatory_cmd_attrs.update({
+            "proj_root": False,
+            "vplan": False,
+            "tool": False,
+            "tb": False,
+            "dut": False,
+        })
+        self.mandatory_misc_attrs.update({
+            "cov_report_txt": False,
+            "dut_instance": False,
+        })
+
+    def _set_attrs(self):
+        self.cov_vplan_dir = os.path.join(self.sim_cfg.scratch_path, self.target)
+        super()._set_attrs()
+
+        self.qual_name = self.target
+        self.full_name = self.sim_cfg.name + ":" + self.qual_name
+
+        self.gen_hjson = os.path.join(self.odir, f"{self.sim_cfg.name}_vplan.hjson")
+        self.gen_html = os.path.join(self.odir, f"{self.sim_cfg.name}_vplan.html")
+
+        self.tool_setup = os.path.join(self.sim_cfg.proj_root, "util/dvplan/process_vplan.py")
+        self.tool_gen   = os.path.join(self.sim_cfg.proj_root, "util/dvplan/process_results.py")
+
+        if not hasattr(self, 'dut_instance'):
+            self.dut_instance = "tb.dut"
+
+    def _construct_cmd(self):
+        # 1. Setup Command
+        if hasattr(self.sim_cfg, 'dut'):
+            ip_root = os.path.join(self.proj_root, "hw", "ip", self.sim_cfg.dut)
+        else:
+            ip_root = self.proj_root
+
+        cmd1_parts = [
+            sys.executable, self.tool_setup,
+            "--root_dir", ip_root,
+            "--vplan_file", self.vplan,
+            "--output_dir", self.odir,
+            "--gen_name", os.path.basename(self.gen_hjson)
+        ]
+
+        # 2. Back-annotation Command
+        tool_map = { "xcelium": "cadence", "vcs": "synopsys", "verdi": "synopsys" }
+        vendor_tool = tool_map.get(self.tool, "null")
+
+        if vendor_tool == "cadence":
+            # Target dir: .../cov_report/report_data/
+            report_data_dir = os.path.join(self.report_job.cov_report_dir, "report_data")
+
+            # Get the latest available '.report' which has been just created from the CovReport call
+            input_report = f"$(ls -t {report_data_dir}/*.report | head -n 1)"
+
+        elif vendor_tool == "synopsys":
+            input_report = os.path.join(self.report_job.cov_report_dir)
+        else:
+            input_report = self.report_job.cov_report_txt
+
+        cmd2_parts = [
+            sys.executable, self.tool_gen,
+            self.gen_hjson,
+            input_report,
+            "--output", self.gen_html,
+            "--tool", vendor_tool,
+            "--dut_inst_path", self.dut_instance,
+            "--dut_entity_name", self.sim_cfg.name
+        ]
+
+        # 3. Construct Bash Command
+        cmd1_str = " ".join(str(x) for x in cmd1_parts)
+        cmd2_str = " ".join(str(x) for x in cmd2_parts)
+
+        full_command = f"{cmd1_str} && {cmd2_str}".replace('"', '\\"')
+
+        return f'/bin/bash -c "{full_command}"'
