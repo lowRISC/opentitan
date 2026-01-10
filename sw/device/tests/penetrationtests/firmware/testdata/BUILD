@@ -71,9 +71,16 @@ offline_signature_attach(
 
 # For when building specialized manifests for security testing.
 manifest(d = {
-    "name": "rom_ext_rollback_manifest",
+    "name": "rom_ext_rollback_manifest_low",
     "identifier": hex(CONST.OWNER),
     "security_version": "0",
+    "visibility": ["//visibility:public"],
+})
+
+manifest(d = {
+    "name": "rom_ext_rollback_manifest_high",
+    "identifier": hex(CONST.OWNER),
+    "security_version": "15",
     "visibility": ["//visibility:public"],
 })
 
