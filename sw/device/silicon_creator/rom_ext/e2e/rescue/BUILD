@@ -742,6 +742,7 @@ opentitan_test(
             --exec="console --non-interactive --send='REBO\r' --exit-success='Finished' --exit-failure='BFV:.*\r\n'"
             no-op
         """,
+        testopt_clear_after_test = "True",  # See important note at the top
         testopt_clear_before_test = "True",
     ),
 )
@@ -763,6 +764,7 @@ opentitan_test(
         rescue {params} --action=disability
         """,
         test_harness = "//sw/host/tests/rescue:rescue_test",
+        testopt_clear_after_test = "True",  # See important note at the top
         testopt_clear_before_test = "True",
     ),
 )
@@ -802,6 +804,7 @@ opentitan_test(
         rescue {params} --action=spi-dfu-state-transitions
         """,
         test_harness = "//sw/host/tests/rescue:dfu_rescue_error_handling",
+        testopt_clear_after_test = "True",  # See important note at the top
         testopt_clear_before_test = "True",
     ),
 )
@@ -823,6 +826,7 @@ opentitan_test(
         rescue {params} --action=invalid-spi-dfu-requests
         """,
         test_harness = "//sw/host/tests/rescue:dfu_rescue_error_handling",
+        testopt_clear_after_test = "True",  # See important note at the top
         testopt_clear_before_test = "True",
     ),
 )
@@ -844,6 +848,7 @@ opentitan_test(
         rescue {params} --action=invalid-spi-flash-transaction
         """,
         test_harness = "//sw/host/tests/rescue:dfu_rescue_error_handling",
+        testopt_clear_after_test = "True",  # See important note at the top
         testopt_clear_before_test = "True",
     ),
 )
@@ -865,6 +870,7 @@ opentitan_test(
         rescue {params} --action=usb-dfu-out-chunk-too-big
         """,
         test_harness = "//sw/host/tests/rescue:dfu_rescue_error_handling",
+        testopt_clear_after_test = "True",  # See important note at the top
         testopt_clear_before_test = "True",
     ),
 )
