@@ -2,11 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List, Optional, Sequence, Tuple
-
-from .trace import Trace
-
+from typing import Callable, List, Optional, Sequence, Tuple
 from .ext_regs import OTBNExtRegs
+from .kmac import Kmac
+from .trace import Trace
 
 
 class TraceWSR(Trace):
@@ -342,9 +341,41 @@ class KeyWSR(WSR):
         return
 
 
+class CustomWSR(WSR):
+    """WSR model with optional per-instance read/write overrides."""
+
+    def __init__(
+        self,
+        name: str,
+        read_func: Optional[Callable[['CustomWSR'], int]] = None,
+        write_func: Optional[Callable[['CustomWSR', int], None]] = None,
+    ) -> None:
+        super().__init__(name)
+        # Store the callbacks as attributes.
+        self._custom_read = read_func
+        self._custom_write = write_func
+
+    def read_unsigned(self) -> int:
+        # If a custom function exists, call it.
+        if self._custom_read:
+            return self._custom_read(self)
+        # TODO: Ignore reads if None
+        # Otherwise, use the parent logic.
+        return super().read_unsigned()
+
+    def write_unsigned(self, value: int) -> None:
+        # If a custom function exists, call it.
+        if self._custom_write:
+            self._custom_write(self, value)
+        # TODO: Ignore writes if None
+        # Otherwise, use the parent logic.
+        else:
+            super().write_unsigned(value)
+
+
 class WSRFile:
     '''A model of the WSR file'''
-    def __init__(self, ext_regs: OTBNExtRegs) -> None:
+    def __init__(self, ext_regs: OTBNExtRegs, kmac: Kmac) -> None:
         self.KeyS0 = SideloadKey('KeyS0')
         self.KeyS1 = SideloadKey('KeyS1')
 
@@ -356,6 +387,16 @@ class WSRFile:
         self.KeyS0H = KeyWSR('KeyS0H', 256, self.KeyS0)
         self.KeyS1L = KeyWSR('KeyS1L', 0, self.KeyS1)
         self.KeyS1H = KeyWSR('KeyS1H', 256, self.KeyS1)
+        self.KMAC_DATA_S0 = CustomWSR(
+            name='KMAC_DATA_S0',
+            read_func=lambda csr_self: kmac.get_data_s0(),
+            write_func=lambda csr_self, val: kmac.set_data_s0(val)
+        )
+        self.KMAC_DATA_S1 = CustomWSR(
+            name='KMAC_DATA_S1',
+            read_func=lambda csr_self: kmac.get_data_s1(),
+            write_func=lambda csr_self, val: kmac.set_data_s1(val)
+        )
 
         self._by_idx = {
             0: self.MOD,
@@ -366,6 +407,8 @@ class WSRFile:
             5: self.KeyS0H,
             6: self.KeyS1L,
             7: self.KeyS1H,
+            8: self.KMAC_DATA_S0,
+            9: self.KMAC_DATA_S1,
         }
 
     def on_start(self) -> None:
