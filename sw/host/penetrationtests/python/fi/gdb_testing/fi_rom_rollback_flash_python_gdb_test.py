@@ -23,13 +23,11 @@ import serial
 ignored_keys_set = set(["status"])
 opentitantool_path = ""
 log_dir = ""
-rom_ext_elf_path = ""
 rom_elf_path = ""
-rom_ext_parser = None
 rom_parser = None
 target = None
 firmware_path = None
-bl0_sec_ver_incr_path = None
+rom_ext_sec_ver_incr_path = None
 bitstream_path = None
 
 # We set to only apply instruction skips in the first
@@ -78,7 +76,7 @@ def read_uart_output():
 def reset_target_and_gdb(gdb, jump_address, print_output=False):
     gdb.close_gdb()
     target.start_openocd(startup_delay=0.2, print_output=False)
-    gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_ext_elf_path)
+    gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_elf_path)
     gdb.reset_target()
     gdb.send_command(f"set $pc={jump_address}")
     target.dump_all()
@@ -94,7 +92,7 @@ def re_initialize(gdb, jump_address, print_output=False):
     # Initialize the high security version
     target.target.program_bitstream(bitstream_path, print_output=print_output)
     target.target.program_bitstream(bitstream_path, print_output=print_output)
-    target.target.flash_target(bl0_sec_ver_incr_path, print_output=print_output)
+    target.target.flash_target(rom_ext_sec_ver_incr_path, print_output=print_output)
     target.start_openocd(print_output=print_output)
     gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT)
     # Reset and let the flashing continue
@@ -109,21 +107,21 @@ def re_initialize(gdb, jump_address, print_output=False):
     # Flash with the lower version manifest
     target.target.flash_target(firmware_path, print_output=print_output)
     target.start_openocd(print_output=print_output)
-    gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_ext_elf_path)
+    gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_elf_path)
     gdb.reset_target()
     gdb.send_command(f"set $pc={jump_address}")
     target.dump_all()
     return gdb
 
 
-class RomExtFiSimRollbackFlash(unittest.TestCase):
-    def test_rom_ext_rollback_flash(self):
-        print("Starting the rom_ext rollback flash test")
+class RomFiSimRollbackFlash(unittest.TestCase):
+    def test_rom_rollback_flash(self):
+        print("Starting the rom rollback flash test")
 
         # Directory for the trace log files
-        pc_trace_file = os.path.join(log_dir, "rom_ext_rollback_flash_pc_trace.log")
+        pc_trace_file = os.path.join(log_dir, "rom_rollback_flash_pc_trace.log")
         # Directory for the the log of the campaign
-        campaign_file = os.path.join(log_dir, "rom_ext_rollback_flash_test_campaign.log")
+        campaign_file = os.path.join(log_dir, "rom_rollback_flash_test_campaign.log")
 
         successful_faults = 0
         total_attacks = 0
@@ -139,9 +137,10 @@ class RomExtFiSimRollbackFlash(unittest.TestCase):
                 jump_address = rom_parser.get_function_start_address("kRomStartRmaSpinSkip")
 
                 # Program the bitstream, flash the target, and set up OpenOCD
+                target.clear_bitstream()
                 target.target.program_bitstream(bitstream_path, print_output=False)
                 target.target.program_bitstream(bitstream_path, print_output=False)
-                target.target.flash_target(bl0_sec_ver_incr_path, print_output=False)
+                target.target.flash_target(rom_ext_sec_ver_incr_path, print_output=False)
                 target.start_openocd(print_output=False)
                 gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT)
                 # Reset and let the flashing continue
@@ -158,28 +157,24 @@ class RomExtFiSimRollbackFlash(unittest.TestCase):
                 target.start_openocd(print_output=False)
 
                 # Connect to GDB
-                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_ext_elf_path)
+                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_elf_path)
 
                 # Reset the device and halt it immediately
                 gdb.reset_target()
                 gdb.send_command(f"set $pc={jump_address}")
 
                 # Functions where we can get GDB to jump over
-                upsert_register_address = rom_ext_parser.get_function_start_address(
-                    "upsert_register"
-                )
-                hmac_sha256_update_address = rom_ext_parser.get_function_start_address(
-                    "hmac_sha256_update"
-                )
-                dbg_printf_address = rom_ext_parser.get_function_start_address("dbg_printf")
+                upsert_register_address = rom_parser.get_function_start_address("upsert_register")
 
-                # We perform the tracing starting from the uart init
-                trace_start_address = rom_ext_parser.get_function_end_address("uart_init")
+                # We perform the tracing over the rom_state_boot_rom_ext function
+                trace_start_address = rom_parser.get_function_start_address(
+                    "rom_state_boot_rom_ext"
+                )
                 # We expect with the test that we end up in shutdown
-                trace_end_address = rom_ext_parser.get_function_start_address("shutdown_finalize")
+                trace_end_address = rom_parser.get_function_start_address("shutdown_finalize")
 
                 print(
-                    "Start and stop addresses for the rom_ext: ",
+                    "Start and stop addresses for the rom: ",
                     trace_start_address,
                     trace_end_address,
                     flush=True,
@@ -198,8 +193,6 @@ class RomExtFiSimRollbackFlash(unittest.TestCase):
                     trace_end_address,
                     skip_addrs=[
                         upsert_register_address,
-                        hmac_sha256_update_address,
-                        dbg_printf_address,
                     ],
                 )
                 gdb.send_command("c", check_response=False)
@@ -252,7 +245,7 @@ class RomExtFiSimRollbackFlash(unittest.TestCase):
                             # If we have a timeout, we continue to the next iteration
                             with IterationTimeout(seconds=180):
                                 gdb.apply_instruction_skip(
-                                    pc, rom_ext_parser.parse_next_instruction(pc), i_count
+                                    pc, rom_parser.parse_next_instruction(pc), i_count
                                 )
                                 gdb.send_command("c", check_response=False)
 
@@ -332,10 +325,10 @@ if __name__ == "__main__":
         bitstream_path = r.Rlocation("lowrisc_opentitan/" + BITSTREAM)
     # Get the test result path
     log_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR")
-    # Get the firmware path to increment the security version of the bl0
-    bl0_sec_ver_incr_path = r.Rlocation(
+    # Get the firmware path to increment the security version of the rom_ext
+    rom_ext_sec_ver_incr_path = r.Rlocation(
         "lowrisc_opentitan/sw/device/tests/penetrationtests/"
-        "bl0_sec_ver_incr_fpga_cw340_rom_with_fake_keys.test_key_0.signed.bin"
+        "rom_ext_sec_ver_incr_fpga_cw340_rom_with_fake_keys.test_key_0.signed.bin"
     )
     # Get the firmware path of the low security version testOS
     firmware_path = r.Rlocation("lowrisc_opentitan/" + BOOTSTRAP)
@@ -345,12 +338,6 @@ if __name__ == "__main__":
     rom_dis_path = rom_path.replace(".39.scr.vmem", ".dis")
     # And the path for the elf.
     rom_elf_path = rom_path.replace(".39.scr.vmem", ".elf")
-    # Get the rom_ext path.
-    rom_ext_path = r.Rlocation("lowrisc_opentitan/" + ROM_EXT)
-    # Get the disassembly path.
-    rom_ext_dis_path = rom_ext_path.replace(".prod_key_0.signed.bin", ".dis")
-    # And the path for the elf.
-    rom_ext_elf_path = rom_ext_path.replace(".prod_key_0.signed.bin", ".elf")
 
     if "fpga" in BOOTSTRAP:
         target_type = "fpga"
@@ -370,10 +357,8 @@ if __name__ == "__main__":
     )
 
     target = targets.Target(target_cfg)
-    rom_ext_parser = DisParser(rom_ext_dis_path)
     rom_parser = DisParser(rom_dis_path)
 
     print("ROM disassembly is found in ", rom_dis_path, flush=True)
-    print("ROM_EXT disassembly is found in ", rom_ext_dis_path, flush=True)
 
     unittest.main(argv=[sys.argv[0]])

@@ -203,3 +203,7 @@ otp_image(
 exports_files([
     "bl0_sec_ver_incr.c",
 ])
+
+exports_files([
+    "rom_ext_sec_ver_incr.c",
+])
