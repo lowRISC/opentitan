@@ -114,7 +114,7 @@ class RomFiSimRollback(unittest.TestCase):
                 # Functions where we can get GDB to jump over
                 upsert_register_address = rom_parser.get_function_start_address("upsert_register")
 
-                # We perform the tracing over the rom_start function
+                # We perform the tracing over the rom_state_boot_rom_ext function
                 trace_start_address = rom_parser.get_function_start_address(
                     "rom_state_boot_rom_ext"
                 )
