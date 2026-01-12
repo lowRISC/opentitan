@@ -15,13 +15,13 @@ package otp_ctrl_macro_pkg;
   // The bit-width of the macro words.
   parameter int OtpWidth         = 16;
   // The total number of words.
-  parameter int OtpDepth         = 8192;
+  parameter int OtpDepth         = 10240;
   // The macro can transfer up to 4 native words per request, which is encoded
   // in 2 bits.
   parameter int OtpSizeWidth     = 2;
   parameter int OtpPwrSeqWidth   = 2;
 
-  parameter int OtpAddrWidth     = 13;
+  parameter int OtpAddrWidth     = 14;
   parameter int OtpIfWidth       = 2**OtpSizeWidth*OtpWidth;
   // Number of Byte address bits to cut off in order to get the native OTP word address.
   parameter int OtpAddrShift     = 1;

@@ -136,7 +136,7 @@ extern "C" {
  * address between #TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR and
  * `TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + TOP_DARJEELING_OTP_CTRL_CORE_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_OTP_CTRL_CORE_SIZE_BYTES 0x8000u
+#define TOP_DARJEELING_OTP_CTRL_CORE_SIZE_BYTES 0x10000u
 
 /**
  * Peripheral base address for prim device on otp_macro in top darjeeling.

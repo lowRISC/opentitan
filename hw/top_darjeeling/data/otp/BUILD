@@ -42,22 +42,11 @@ otp_json(
                 # Enable use of entropy for countermeasures. See the definition
                 # of `hardened_bool_t` in sw/device/lib/base/hardened.h.
                 "CREATOR_SW_CFG_RNG_EN": otp_hex(CONST.HARDENED_TRUE),
-                # ROM execution is enabled if this item is set to a non-zero
-                # value.
-                "CREATOR_SW_CFG_ROM_EXEC_EN": otp_hex(0xffffffff),
                 # Value to write to the cpuctrl CSR in `rom_init()`.
                 # See:
                 # https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html#cpu-control-register-cpuctrl
                 "CREATOR_SW_CFG_CPUCTRL": otp_hex(0x1),
                 "CREATOR_SW_CFG_JITTER_EN": otp_hex(CONST.MUBI4_FALSE),
-                "CREATOR_SW_CFG_AST_INIT_EN": otp_hex(CONST.MUBI4_TRUE),
-                # TODO: This enables a busyloop in the ROM to give time to
-                # trigger an RMA lifecycle transition via JTAG.  The current
-                # value of 10 cycles is useful for test code which verifies
-                # the path through the ROM.  This value is not useful for a
-                # real chip.
-                "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.HARDENED_TRUE),
-                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "10",
             },
         ),
     ],
@@ -70,10 +59,6 @@ otp_json(
         otp_partition(
             name = "OWNER_SW_CFG",
             items = {
-                # Enable bootstrap. See `hardened_bool_t` in
-                # sw/device/lib/base/hardened.h.
-                "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": otp_hex(CONST.HARDENED_FALSE),
-                # Report errors without any redaction.
                 "OWNER_SW_CFG_ROM_ERROR_REPORTING": otp_hex(CONST.SHUTDOWN.REDACT.NONE),
                 # Set the enables to kAlertEnableNone.
                 # See `alert_enable_t` in
@@ -157,9 +142,22 @@ otp_json(
         otp_partition(
             name = "HW_CFG1",
             items = {
-                "SOC_DBG_STATE": "PRE_PROD",
                 # Enable code execution from SRAM.
                 "EN_SRAM_IFETCH": True,
+            },
+            lock = True,
+        ),
+    ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
+)
+
+otp_json(
+    name = "otp_json_hw_cfg2",
+    partitions = [
+        otp_partition(
+            name = "HW_CFG2",
+            items = {
+                "SOC_DBG_STATE": "PROD",
             },
             lock = True,
         ),
@@ -235,8 +233,14 @@ otp_json(
         otp_partition(
             name = "HW_CFG1",
             items = {
-                "SOC_DBG_STATE": "BLANK",
                 "EN_SRAM_IFETCH": True,
+            },
+            lock = True,
+        ),
+        otp_partition(
+            name = "HW_CFG2",
+            items = {
+                "SOC_DBG_STATE": "BLANK",
             },
             lock = True,
         ),
@@ -250,8 +254,14 @@ otp_json(
         otp_partition(
             name = "HW_CFG1",
             items = {
-                "SOC_DBG_STATE": "PRE_PROD",
                 "EN_SRAM_IFETCH": True,
+            },
+            lock = True,
+        ),
+        otp_partition(
+            name = "HW_CFG2",
+            items = {
+                "SOC_DBG_STATE": "PRE_PROD",
             },
             lock = True,
         ),
@@ -265,8 +275,14 @@ otp_json(
         otp_partition(
             name = "HW_CFG1",
             items = {
-                "SOC_DBG_STATE": "PROD",
                 "EN_SRAM_IFETCH": True,
+            },
+            lock = True,
+        ),
+        otp_partition(
+            name = "HW_CFG2",
+            items = {
+                "SOC_DBG_STATE": "PROD",
             },
             lock = True,
         ),
@@ -431,42 +447,6 @@ otp_image(
     name = "img_rma",
     src = ":otp_json_rma",
     overlays = STD_OTP_OVERLAYS,
-)
-
-# Create an execution-disabling overlay
-otp_json(
-    name = "otp_json_exec_disabled",
-    partitions = [
-        otp_partition(
-            name = "CREATOR_SW_CFG",
-            items = {"CREATOR_SW_CFG_ROM_EXEC_EN": otp_hex(0x0)},
-        ),
-    ],
-    target_compatible_with = TARGET_COMPATIBLE_WITH,
-)
-
-otp_image(
-    name = "img_exec_disabled",
-    src = ":otp_json_rma",
-    overlays = STD_OTP_OVERLAYS + [":otp_json_exec_disabled"],
-)
-
-# Create a bootstrap-disabling overlay
-otp_json(
-    name = "otp_json_bootstrap_disabled",
-    partitions = [
-        otp_partition(
-            name = "OWNER_SW_CFG",
-            items = {"OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": otp_hex(CONST.HARDENED_TRUE)},
-        ),
-    ],
-    target_compatible_with = TARGET_COMPATIBLE_WITH,
-)
-
-otp_image(
-    name = "img_bootstrap_disabled",
-    src = ":otp_json_rma",
-    overlays = STD_OTP_OVERLAYS + [":otp_json_bootstrap_disabled"],
 )
 
 filegroup(

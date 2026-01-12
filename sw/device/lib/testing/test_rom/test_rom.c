@@ -107,6 +107,8 @@ bool rom_test_main(void) {
 #ifdef HAS_OTP_CTRL
   // Check the otp to see if execute should start
   const uint32_t otp_ctrl_base = dt_otp_ctrl_primary_reg_block(kOtpCtrlDt);
+
+#ifndef OPENTITAN_IS_DARJEELING
   uint32_t otp_val =
       abs_mmio_read32(otp_ctrl_base + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
                       OTP_CTRL_PARAM_CREATOR_SW_CFG_ROM_EXEC_EN_OFFSET);
@@ -116,6 +118,7 @@ bool rom_test_main(void) {
     // Abort simply forever loops on a wait_for_interrupt;
     abort();
   }
+#endif
 #endif
 
 #ifndef OPENTITAN_IS_ENGLISHBREAKFAST
