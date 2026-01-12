@@ -247,7 +247,10 @@ module rv_plic import rv_plic_reg_pkg::*; #(
     .src_i      (intr_src_synced),
     .le_i       (LevelEdgeTrig),
 
-    .claim_i    (claim),
+    // Clear the lowest bit of `claim`. This represents interrupt 0 ("no interrupt")
+    // which is "claimed" if no interrupts are pending. This isn't strictly necessary
+    // but it satisfies the OnlyClaimPending_A assertion in rv_plic_gateway.
+    .claim_i    ({ claim[NumSrc-1:1], 1'b0 }),
     .complete_i (complete),
 
     .ip_o       (ip)
