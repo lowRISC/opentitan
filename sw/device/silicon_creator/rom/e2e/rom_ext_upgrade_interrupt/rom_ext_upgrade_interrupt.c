@@ -43,7 +43,7 @@ static void increment_flash_counter(void) {
       &flash_ctrl, false, false, false, false, false, false));
 }
 
-static rom_error_t corrupt_page_0(void) {
+static rom_error_t corrupt_entries(int num_page_0, int num_page_1) {
   // Simulates the corruption on Page 0
   uint32_t corrupted_words[4] = {0};
   flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData0,
@@ -52,12 +52,30 @@ static rom_error_t corrupt_page_0(void) {
                                 .write = kMultiBitBool4True,
                                 .erase = kMultiBitBool4False,
                             });
-  for (uint32_t i = 0; i < 2; i++) {
+  for (uint32_t i = 0; i < num_page_0; i++) {
     RETURN_IF_ERROR(flash_ctrl_info_write(&kFlashCtrlInfoPageBootData0,
                                           sizeof(boot_data_t) * i, 4,
                                           &corrupted_words));
   }
   flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData0,
+                            (flash_ctrl_perms_t){
+                                .read = kMultiBitBool4False,
+                                .write = kMultiBitBool4False,
+                                .erase = kMultiBitBool4False,
+                            });
+
+  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData1,
+                            (flash_ctrl_perms_t){
+                                .read = kMultiBitBool4False,
+                                .write = kMultiBitBool4True,
+                                .erase = kMultiBitBool4False,
+                            });
+  for (uint32_t i = 0; i < num_page_1; i++) {
+    RETURN_IF_ERROR(flash_ctrl_info_write(&kFlashCtrlInfoPageBootData1,
+                                          sizeof(boot_data_t) * i, 4,
+                                          &corrupted_words));
+  }
+  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData1,
                             (flash_ctrl_perms_t){
                                 .read = kMultiBitBool4False,
                                 .write = kMultiBitBool4False,
@@ -101,7 +119,7 @@ static rom_error_t first_boot_test(void) {
 
   // Simulates the interrupt when writing page 0, while page 1 hasn't been
   // written yet.
-  RETURN_IF_ERROR(corrupt_page_0());
+  RETURN_IF_ERROR(corrupt_entries(/*num_page_0=*/2, /*num_page_1=*/0));
   RETURN_IF_ERROR(erase_page_1());
 
   return kErrorOk;
@@ -125,29 +143,23 @@ static rom_error_t second_boot_test(void) {
   return kErrorOk;
 }
 
-static rom_error_t third_boot_test(void) {
-  LOG_INFO("Third boot: Done");
+static rom_error_t no_rollback_test(int counter) {
+  LOG_INFO("No rollback test: %d", counter);
 
   boot_data_t boot_data;
   RETURN_IF_ERROR(boot_data_read(lifecycle_state_get(), &boot_data));
   print_boot_data(&boot_data);
   CHECK(boot_data.min_security_version_rom_ext == kNewMinSecVer);
-  RETURN_IF_ERROR(boot_data_redundancy_check());
 
-  // Simulates the corruption on page 0, while the page 1 is still valid.
-  RETURN_IF_ERROR(corrupt_page_0());
+  // Fix the boot data redundancy.
+  RETURN_IF_ERROR(boot_data_write(&boot_data));
 
-  return kErrorOk;
-}
-
-static rom_error_t fourth_boot_test(void) {
-  LOG_INFO("Fourth boot: Done");
-
-  boot_data_t boot_data;
-  RETURN_IF_ERROR(boot_data_read(lifecycle_state_get(), &boot_data));
-  print_boot_data(&boot_data);
-  CHECK(boot_data.min_security_version_rom_ext == kNewMinSecVer);
-  CHECK(boot_data_redundancy_check() == kErrorBootDataInvalid);
+  // Simulates the corruption.
+  int num_page_0 = counter % 3;
+  int num_page_1 = counter / 3 % 3;
+  LOG_INFO("Corrupting %d entries on page 0 and %d entries on page 1",
+           num_page_0, num_page_1);
+  RETURN_IF_ERROR(corrupt_entries(num_page_0, num_page_1));
 
   return kErrorOk;
 }
@@ -178,18 +190,19 @@ bool test_main(void) {
       rstmgr_reset();
       return false;
     }
-    case 2: {
-      EXECUTE_TEST(result, third_boot_test);
+  }
 
-      increment_flash_counter();
-      rstmgr_reset();
-      return false;
-    }
-    case 3: {
-      EXECUTE_TEST(result, fourth_boot_test);
+  int counter = (int)reboot_counter - 2;
+  if (0 <= counter && counter < 9) {
+    EXECUTE_TEST(result, no_rollback_test, counter);
 
+    if (counter == 8) {
       return status_ok(result);
     }
+
+    increment_flash_counter();
+    rstmgr_reset();
+    return false;
   }
   return false;
 }
