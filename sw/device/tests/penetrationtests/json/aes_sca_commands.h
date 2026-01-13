@@ -13,6 +13,7 @@ extern "C" {
 #define AESSCA_CMD_MAX_KEY_BYTES 16
 #define AESSCA_CMD_MAX_LFSR_BYTES 4
 #define AESSCA_CMD_MAX_DATA_BYTES 16
+#define AESSCA_CMD_MAX_BLOCKS 1
 
 // clang-format off
 
@@ -24,6 +25,7 @@ extern "C" {
     value(_, BatchRandom) \
     value(_, BatchFvsrData) \
     value(_, BatchFvsrKey) \
+    value(_, GcmSingleEncrypt) \
     value(_, Init) \
     value(_, SeedLfsr) \
     value(_, SeedLfsrOrder)
@@ -52,6 +54,20 @@ UJSON_SERDE_STRUCT(CryptotestAesScaCiphertext, aes_sca_ciphertext_t, AES_SCA_CIP
 #define AES_SCA_FPGA_MODE(field, string) \
     field(fpga_mode, uint8_t)
 UJSON_SERDE_STRUCT(CryptotestAesScaFpgaMode, aes_sca_fpga_mode_t, AES_SCA_FPGA_MODE);
+
+#define AES_SCA_NUM_BLOCKS(field, string) \
+    field(num_blocks, size_t)
+UJSON_SERDE_STRUCT(CryptotestAesScaNumBlocks, aes_sca_num_blocks_t, AES_SCA_NUM_BLOCKS);
+
+#define AES_SCA_BLOCK(field, string) \
+    field(block, uint8_t, AESSCA_CMD_MAX_DATA_BYTES) \
+    field(num_valid_bytes, size_t)
+UJSON_SERDE_STRUCT(CryptotestAesScaBlock, aes_sca_block_t, AES_SCA_BLOCK);
+
+#define AES_SCA_GCM_TRIGGERS(field, string) \
+    field(triggers, bool, 3) \
+    field(block, size_t)
+UJSON_SERDE_STRUCT(CryptotestAesScaGcmTriggers, aes_sca_gcm_triggers_t, AES_SCA_GCM_TRIGGERS);
 
 // clang-format on
 
