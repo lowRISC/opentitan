@@ -96,6 +96,19 @@
     Write to this CSR to begin a request to fill the RND cache.
     Always reads as 0.
 
+- name: mai_ctrl
+  address: 0x7f0
+  doc: |
+    The MAI control register.
+    Bit  [   0] MAI_START: Writing 1 to this bit starts the MAI operation. Writing it when MAI is busy will cause a MAI_ERROR software error.
+    Bits [ 2:1] MAI_OPERATION: Selects the MAI operation to perform. Valid values are:
+                0b00: A2B
+                0b01: B2A
+                0b10: secAdd
+                Invalid values and writing to these bits when MAI is busy will cause a MAI_ERROR software error.
+    Bits [31:3] are reserved/ignored.
+  # TODO: Expand the documentation format such that bitfields can be described.
+
 - name: rnd
   address: 0xfc0
   read-only: true
@@ -116,3 +129,13 @@
 
     The number is sourced from an local PRNG.
     Reads never stall.
+
+- name: mai_status
+  address: 0xfe0
+  read-only: true
+  doc: |
+    The MAI status register.
+    Bit  [   0] MAI_BUSY: This bit is set to 1 when an MAI operation is in progress. If reset, a new execution can be started by writing to the MAI_START bit in the MAI_CTRL CSR.
+    Bit  [   1] MAI_READY: This bit is set to 1 when the MAI_INx_Sx WSRs are ready to accept new values for the next execution.
+    Bits [31:2] are reserved/ignored.
+  # TODO: Expand the documentation format such that bitfields can be described.
