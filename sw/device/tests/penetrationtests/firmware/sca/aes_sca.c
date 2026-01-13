@@ -389,6 +389,14 @@ static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
 
   // Write the initial key share, IV and data in CSRs.
   TRY(dif_aes_start(&aes, &transaction_gcm, &key, &iv));
+
+#if !OT_IS_ENGLISH_BREAKFAST
+  if (transaction.force_masks) {
+    // Disable masking. Force the masking PRNG output value to 0.
+    TRY(aes_sca_load_fixed_seed());
+  }
+#endif
+
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
                                 kIbexAesGcmSleepCycles * 2);
   // Encrypt all-zero block.
