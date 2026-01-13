@@ -209,9 +209,8 @@ ROM_EXT_FEATURES = [
         ],
         linker_script = ":ld_slot_{}".format(slot),
         manifest = ":manifest",
+        spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
         transitive_features = ROM_EXT_FEATURES,
-        # TODO(#26060): Temporarily disable SPX signing of ROM_EXT.
-        #spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
         deps = [
             ":rom_ext_{}".format(variation_name),
             "//sw/device/lib/crt",

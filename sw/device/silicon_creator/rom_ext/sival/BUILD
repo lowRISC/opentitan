@@ -55,9 +55,8 @@ ROM_EXT_FEATURES = [
             "$(location //sw/device/lib/crt)",
         ],
         manifest = ":manifest_sival",
+        spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
         transitive_features = ROM_EXT_FEATURES,
-        # TODO(#26060): Temporarily disable SPX signing of ROM_EXT.
-        #spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
         deps = [
             # The sival_owner C library is included only in the "fake" ROM_EXT,
             # as it is typically used to test FPGA flows and the FPGA doesn't
