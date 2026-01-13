@@ -135,6 +135,7 @@ opentitan_binary(
         local_defines = [
             "CAUSE_ID={}".format(c["id"]),
         ],
+        spx_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:spx_keyset": "app_prod_0"},
         deps = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
