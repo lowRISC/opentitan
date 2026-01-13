@@ -25,6 +25,7 @@ extern "C" {
     value(_, BatchRandom) \
     value(_, BatchFvsrData) \
     value(_, BatchFvsrKey) \
+    value(_, GcmFvsrBatch) \
     value(_, GcmSingleEncrypt) \
     value(_, Init) \
     value(_, SeedLfsr) \
@@ -68,6 +69,10 @@ UJSON_SERDE_STRUCT(CryptotestAesScaBlock, aes_sca_block_t, AES_SCA_BLOCK);
     field(triggers, bool, 3) \
     field(block, size_t)
 UJSON_SERDE_STRUCT(CryptotestAesScaGcmTriggers, aes_sca_gcm_triggers_t, AES_SCA_GCM_TRIGGERS);
+
+#define AES_SCA_NUM_OPS(field, string) \
+    field(num_batch_ops, size_t)
+UJSON_SERDE_STRUCT(CryptotestAesScaNumOps, aes_sca_num_ops_t, AES_SCA_NUM_OPS);
 
 // clang-format on
 
