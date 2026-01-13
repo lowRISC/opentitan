@@ -98,6 +98,14 @@ status_t handle_aes_sca_batch_fvsr_data(ujson_t *uj);
 status_t handle_aes_sca_batch_fvsr_key(ujson_t *uj);
 
 /**
+ * Invokes an AES-GCM encryption with tag generation.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_aes_sca_gcm_single_encrypt(ujson_t *uj);
+
+/**
  * Initialize AES command handler.
  *
  * This command is designed to setup the AES.
