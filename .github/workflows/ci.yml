@@ -247,7 +247,7 @@ jobs:
           extra_args: "--waiver_files=verible_waiver"
 
   otbn_standalone_tests:
-    name: Run OTBN smoke Test
+    name: Run OTBN smoke test
     needs: quick_lint
     runs-on: ubuntu-22.04
     if: ${{ github.event_name != 'merge_group' }}
@@ -260,19 +260,20 @@ jobs:
         uses: ./.github/actions/prepare-env
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-      - name: Install toolchain
-        run: |
-          TOOLCHAIN_PATH=/tools/riscv
-          sudo util/get-toolchain.py \
-            --install-dir="$TOOLCHAIN_PATH" \
-            --release-version="$TOOLCHAIN_VERSION" \
-            --update
-          echo "$TOOLCHAIN_PATH/bin" >> $GITHUB_PATH
       - name: Display environment
         run: |
           python3 --version
           fusesoc --version
           verilator --version
+      - name: Install toolchain
+        run: |
+          TOOLCHAIN_PATH=/tools/riscv
+          source "${VIRTUAL_ENV}/bin/activate"
+          sudo util/get-toolchain.py \
+            --install-dir="$TOOLCHAIN_PATH" \
+            --release-version="$TOOLCHAIN_VERSION" \
+            --update
+          echo "$TOOLCHAIN_PATH/bin" >> $GITHUB_PATH
       - name: OTBN ISS test
         run: make -C hw/ip/otbn/dv/otbnsim test
       - name: OBTN smoke test
