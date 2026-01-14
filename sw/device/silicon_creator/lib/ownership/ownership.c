@@ -44,7 +44,7 @@ static owner_page_status_t owner_page_validity_check(size_t page,
   }
 
   rom_error_t sealed = ownership_seal_check(page);
-  if (sealed == kErrorOk) {
+  if (launder32(sealed) == kErrorOk) {
     HARDENED_CHECK_EQ(sealed, kErrorOk);
     return kOwnerPageStatusSealed;
   }
@@ -79,7 +79,7 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
     HARDENED_CHECK_EQ(owner_block_owner_key_equal(), kHardenedBoolTrue);
     rom_error_t error =
         ownership_activate(bootdata, /*write_both_pages=*/kHardenedBoolFalse);
-    if (error == kErrorOk) {
+    if (launder32(error) == kErrorOk) {
       HARDENED_CHECK_EQ(error, kErrorOk);
       // Thunk the status of page 0 to Invalid so the next set of validity
       // checks will copy the new page 1 content over to page 0 and establish a
@@ -325,7 +325,7 @@ void ownership_pages_lockdown(boot_data_t *bootdata, hardened_bool_t rescue) {
   flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot0, perm);
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot0, cfg);
   abs_mmio_write32(kFlashCtrlInfoPageOwnerSlot0.cfg_wen_addr, 0);
-  if (rescue == kHardenedBoolTrue) {
+  if (launder32(rescue) == kHardenedBoolTrue) {
     // Do not lock page 1 in rescue mode.
     HARDENED_CHECK_EQ(rescue, kHardenedBoolTrue);
     return;

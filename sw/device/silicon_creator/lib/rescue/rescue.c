@@ -343,7 +343,7 @@ void rescue_state_init(rescue_state_t *state, boot_data_t *bootdata,
   state->default_mode = kRescueModeFirmware;
   state->next_mode = 0;
 
-  if ((hardened_bool_t)config == kHardenedBoolFalse) {
+  if (launder32((hardened_bool_t)config) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ((hardened_bool_t)config, kHardenedBoolFalse);
     // If there is no rescue config, then the rescue region starts immediately
     // after the ROM_EXT and ends at the end of the flash bank.

@@ -372,7 +372,7 @@ rom_error_t kmac_shake256_squeeze_end(uint32_t *out, size_t outlen) {
       ++idx;
     }
 
-    if (offset == kShake256KeccakRateWords) {
+    if (launder32(offset) == kShake256KeccakRateWords) {
       // If we read all the remaining words, issue `CMD.RUN` to generate more
       // state.
       HARDENED_CHECK_EQ(offset, kShake256KeccakRateWords);

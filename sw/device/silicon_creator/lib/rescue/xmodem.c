@@ -176,7 +176,7 @@ void xmodem_cancel(void *iohandle) {
   xmodem_putchar(iohandle, kXModemCancel);
 }
 
-static rom_error_t xmodem_send_finish(void *iohandle) {
+static void xmodem_send_finish(void *iohandle) {
   xmodem_putchar(iohandle, kXModemEof);
   uint8_t ch;
   xmodem_read(iohandle, &ch, sizeof(ch), kXModemLongTimeout);
@@ -184,7 +184,6 @@ static rom_error_t xmodem_send_finish(void *iohandle) {
     // Should have seen an ACK, but we don't really care since there is nothing
     // we could do about it.
   }
-  return kErrorOk;
 }
 
 static rom_error_t xmodem_send_data(void *iohandle, const void *data,
@@ -249,6 +248,6 @@ rom_error_t xmodem_send(void *iohandle, const void *data, size_t len) {
   HARDENED_RETURN_IF_ERROR(xmodem_send_start(iohandle, 30));
   HARDENED_RETURN_IF_ERROR(
       xmodem_send_data(iohandle, data, len, kXModemMaxErrors));
-  HARDENED_RETURN_IF_ERROR(xmodem_send_finish(iohandle));
+  xmodem_send_finish(iohandle);
   return kErrorOk;
 }
