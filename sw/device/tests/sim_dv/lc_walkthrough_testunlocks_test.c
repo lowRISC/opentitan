@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/dt_lc_ctrl.h"   // Generated
+#include "hw/top/dt/dt_otp_ctrl.h"  // Generated
+#include "hw/top/dt/dt_rstmgr.h"    // Generated
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
@@ -13,8 +16,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 #define LC_TOKEN_SIZE 16
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -22,6 +23,12 @@ OTTF_DEFINE_TEST_CONFIG();
 static dif_lc_ctrl_t lc;
 static dif_otp_ctrl_t otp;
 static dif_rstmgr_t rstmgr;
+
+static const dt_lc_ctrl_t kLcCtrlDt = (dt_lc_ctrl_t)0;
+static const dt_otp_ctrl_t kOtpCtrlDt = (dt_otp_ctrl_t)0;
+static const dt_rstmgr_t kRstmgrDt = kDtRstmgrAon;
+static_assert(kDtLcCtrlCount >= 1, "This test needs a LC CTRL");
+static_assert(kDtOtpCtrlCount >= 1, "This test needs an OTP CTRL");
 
 /**
  * Track LC state transition tokens.
@@ -149,16 +156,11 @@ static void get_dest_state_and_cnt(dif_lc_ctrl_state_t *curr_state,
 bool test_main(void) {
   LOG_INFO("Start LC walkthrough testunlocks test.");
 
-  mmio_region_t lc_reg =
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR);
-  CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
+  CHECK_DIF_OK(dif_lc_ctrl_init_from_dt(kLcCtrlDt, &lc));
 
-  mmio_region_t otp_reg =
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_otp_ctrl_init(otp_reg, &otp));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kOtpCtrlDt, &otp));
 
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
   LOG_INFO("Read and check LC state and count.");
   dif_lc_ctrl_state_t curr_state;

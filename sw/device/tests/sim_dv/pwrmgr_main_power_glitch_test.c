@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/dt_rstmgr.h"  // Generated
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
@@ -9,7 +10,8 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+static const dt_rstmgr_t kRstmgrDt = kDtRstmgrAon;
+static_assert(kDtRstmgrCount >= 1, "This test needs a RSTMGR");
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -23,8 +25,7 @@ bool test_main(void) {
   dif_rstmgr_t rstmgr;
 
   // Initialize rstmgr since this will check some registers.
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
   // Notice we are clearing rstmgr's RESET_INFO, so after the power glitch there
   // is only one bit set.
