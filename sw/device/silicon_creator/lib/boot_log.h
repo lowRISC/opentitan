@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/build_info.h"
@@ -53,8 +54,10 @@ typedef struct boot_log {
   uint32_t primary_bl0_slot;
   /** Whether the RET-RAM was initialized on this boot (hardened_bool_t). */
   uint32_t retention_ram_initialized;
+  /** Signals of events during boot. */
+  uint32_t events;
   /** Pad to 128 bytes. */
-  uint32_t reserved[8];
+  uint32_t reserved[7];
 } boot_log_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, digest, 0);
@@ -72,7 +75,8 @@ OT_ASSERT_MEMBER_OFFSET(boot_log_t, rom_ext_min_sec_ver, 80);
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, bl0_min_sec_ver, 84);
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, primary_bl0_slot, 88);
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, retention_ram_initialized, 92);
-OT_ASSERT_MEMBER_OFFSET(boot_log_t, reserved, 96);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, events, 96);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, reserved, 100);
 
 enum {
   /**
@@ -80,6 +84,14 @@ enum {
    */
   kBootLogIdentifier = 0x474f4c42,
 };
+
+/**
+ * Boot log event (bit 0): Boot data redundancy fixed.
+ *
+ * This bit will be set to 1 if the boot data was corrupted and has been
+ * repaired by the ROM_EXT during this boot.
+ */
+#define BOOT_LOG_EVENT_REDUNDANCY 0
 
 /**
  * Updates the digest of the boot_log.

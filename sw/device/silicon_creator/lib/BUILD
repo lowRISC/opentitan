@@ -97,6 +97,7 @@ cc_library(
     deps = [
         ":boot_data",
         ":nonce",
+        "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:build_info",
         "//sw/device/silicon_creator/lib:error",
