@@ -504,7 +504,7 @@ bool test_main(void) {
     // We need to initialize the info FLASH partitions storing the Creator and
     // Owner secrets to avoid getting the flash controller into a fatal error
     // state.
-    if (kDeviceType == kDeviceFpgaCw310) {
+    if (kDeviceType == kDeviceFpgaCw310 || kDeviceType == kDeviceFpgaCw340) {
       CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash_ctrl, &kCreatorSecret,
                                                   &kOwnerSecret));
       chip_sw_reset();
