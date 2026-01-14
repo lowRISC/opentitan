@@ -28,7 +28,7 @@ $PYTHON ${ORCHESTRATOR_PATH} \
   --test-unlock-token="0x11111111_11111111_11111111_11111111" \
   --test-exit-token="0x22222222_22222222_22222222_22222222" \
   --package=${PACKAGE} \
-  --fpga=cw310 \
+  --fpga=${FPGA} \
   --ast-cfg-version=10 \
   --log-ujson-payloads \
   --non-interactive \
