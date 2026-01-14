@@ -127,6 +127,7 @@ def download(url, max_attempts=5):
             # Do not use urllib3 retry logic as we also need to handle stream
             # disruption failures after an initial successful HTTP status
             with http.request("GET", url, preload_content=False) as response:
+                print(response.__dict__)
                 if response.status != 200:
                     raise Exception(f"Unexpected status code: {response.status}")
                 with open(tmpfile, 'wb') as target_file:
@@ -134,15 +135,15 @@ def download(url, max_attempts=5):
                         target_file.write(part)
                 response.release_conn()
             break
-        except Exception as e:
+        except Exception:
             # If we get a failure (initial HTTP or mid-stream), retry by
             # restarting the entire operation.
             attempt += 1
-            log.error(f"Toolchain download attempt {attempt} failed: {e}")
+            log.exception(f"Toolchain download attempt {attempt} failed")
             if os.path.exists(tmpfile):
                 os.remove(tmpfile)
             if attempt >= max_attempts:
-                log.error(f"Toolchain download failed after {attempt} retries.")
+                log.exception(f"Toolchain download failed after {attempt} retries.")
                 sys.exit(1)
             else:
                 time.sleep(2 ** (attempt - 1))
