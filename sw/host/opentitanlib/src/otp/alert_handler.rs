@@ -315,7 +315,7 @@ impl AlertRegs {
 }
 
 trait Crc32Add {
-    fn crc32_add(self, diegst: &mut Digest<u32>);
+    fn crc32_add(self, digest: &mut Digest<u32>);
 }
 
 impl Crc32Add for u32 {
