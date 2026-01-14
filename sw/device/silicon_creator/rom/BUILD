@@ -16,6 +16,7 @@ load(
     "opentitan_test",
 )
 load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
+load("//util/design:hardened.bzl", "hardened_comparison_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -217,6 +218,12 @@ opentitan_binary(
         # by tests such as `rom_epmp_test`.
         ":rom_isrs",
     ],
+)
+
+hardened_comparison_test(
+    name = "mask_rom_hardened_comparison_test",
+    srcs = [":mask_rom"],
+    tags = ["broken"],
 )
 
 # Create the legacy ROM target names so that existing splicing rules can find
