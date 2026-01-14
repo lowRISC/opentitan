@@ -103,7 +103,7 @@ static rom_error_t activate_handler(boot_svc_msg_t *msg,
     bootdata->primary_bl0_slot = msg->ownership_activate_req.primary_bl0_slot;
   }
 
-  if (bootdata->ownership_state == kOwnershipStateUnlockedSelf) {
+  if (launder32(bootdata->ownership_state) == kOwnershipStateUnlockedSelf) {
     // An activate from UnlockedSelf is not a transfer and should not
     // regenerate the OwnerSecret page.
     HARDENED_CHECK_EQ(bootdata->ownership_state, kOwnershipStateUnlockedSelf);

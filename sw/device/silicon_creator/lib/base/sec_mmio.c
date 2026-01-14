@@ -151,7 +151,7 @@ void sec_mmio_check_values_except_otp(uint32_t rnd_offset, uint32_t otp_base) {
   for (; launder32(i) < last_index && launder32(r) < last_index; ++i, --r) {
     uint32_t address = sec_mmio_ctx.addrs[offset];
     // Avoid the 64K aligned and 64K sized region at otp_base.
-    if ((address & 0xFFFF0000) != otp_base) {
+    if (launder32(address & 0xFFFF0000) != otp_base) {
       uint32_t read_value = abs_mmio_read32(launder32(address));
       HARDENED_CHECK_EQ(read_value ^ kSecMmioMaskVal,
                         sec_mmio_ctx.values[offset]);
