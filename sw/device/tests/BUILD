@@ -862,7 +862,10 @@ opentitan_test(
         # changing the key for a single environment.
         dicts.omit(
             EARLGREY_TEST_ENVS,
-            ["//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys"],
+            [
+                "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
+                "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+            ],
         ),
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
