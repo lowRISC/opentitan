@@ -69,26 +69,61 @@ orchestrator_cw340_test_settings_transition(
     target = "//sw/host/provisioning/orchestrator/src:orchestrator.zip",
 )
 
-sh_test(
-    name = "e2e_option_flags_test",
-    timeout = "moderate",
-    srcs = ["e2e_option_flags.sh"],
-    data = [
-        ":orchestrator_hyper310_zip",
-        "//sw/host/provisioning/orchestrator/configs/skus:emulation",
-        "@python3",
-    ],
-    env = {
-        "PYTHON": "$(location @python3//:python3)",
-        "PACKAGE": "npcr12",
-    },
-    tags = [
-        "changes_otp",
-        "exclusive",
+[
+    sh_test(
+        name = "e2e_option_flags_test_{}".format(fpga),
+        timeout = "moderate",
+        srcs = ["e2e_option_flags.sh"],
+        data = [
+            ":orchestrator_{}_zip".format(fpga),
+            "@//sw/host/provisioning/orchestrator/configs/skus:emulation",
+            "@python3",
+        ],
+        env = {
+            "PYTHON": "$(location @python3//:python3)",
+            "PACKAGE": "npcr12",
+            "FPGA": "{}".format(fpga),
+        },
+        tags = [
+            "changes_otp",
+            "exclusive",
+            "fpga",
+            "manuf",
+        ] + [fpga],
+    )
+    for fpga in [
         "hyper310",
-        "manuf",
-    ],
-)
+        "cw340",
+    ]
+]
+
+[
+    sh_test(
+        name = "e2e_ate_individ_test_{}".format(fpga),
+        timeout = "moderate",
+        srcs = ["e2e_ate_individ.sh"],
+        data = [
+            ":orchestrator_{}_zip".format(fpga),
+            "@//sw/host/provisioning/orchestrator/configs/skus:emulation",
+            "@python3",
+        ],
+        env = {
+            "PYTHON": "$(location @python3//:python3)",
+            "PACKAGE": "npcr12",
+            "FPGA": "{}".format(fpga),
+        },
+        tags = [
+            "changes_otp",
+            "exclusive",
+            "fpga",
+            "manuf",
+        ] + [fpga],
+    )
+    for fpga in [
+        "hyper310",
+        "cw340",
+    ]
+]
 
 [
     sh_test(
@@ -119,27 +154,6 @@ sh_test(
         "cw340",
     ]
 ]
-
-sh_test(
-    name = "e2e_ate_individ_test",
-    timeout = "moderate",
-    srcs = ["e2e_ate_individ.sh"],
-    data = [
-        ":orchestrator_hyper310_zip",
-        "//sw/host/provisioning/orchestrator/configs/skus:emulation",
-        "@python3",
-    ],
-    env = {
-        "PYTHON": "$(location @python3//:python3)",
-        "PACKAGE": "npcr12",
-    },
-    tags = [
-        "changes_otp",
-        "exclusive",
-        "hyper310",
-        "manuf",
-    ],
-)
 
 [
     sh_test(
