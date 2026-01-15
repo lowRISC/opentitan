@@ -26,41 +26,34 @@
 | entropy_src.[`MARKOV_LO_THRESHOLDS`](#markov_lo_thresholds)           | 0x48     |        4 | Markov test low thresholds register                          |
 | entropy_src.[`EXTHT_HI_THRESHOLDS`](#extht_hi_thresholds)             | 0x4c     |        4 | External health test high thresholds register                |
 | entropy_src.[`EXTHT_LO_THRESHOLDS`](#extht_lo_thresholds)             | 0x50     |        4 | External health test low thresholds register                 |
-| entropy_src.[`REPCNT_HI_WATERMARKS`](#repcnt_hi_watermarks)           | 0x54     |        4 | Repetition count test high watermarks register               |
-| entropy_src.[`REPCNTS_HI_WATERMARKS`](#repcnts_hi_watermarks)         | 0x58     |        4 | Repetition count symbol test high watermarks register        |
-| entropy_src.[`ADAPTP_HI_WATERMARKS`](#adaptp_hi_watermarks)           | 0x5c     |        4 | Adaptive proportion test high watermarks register            |
-| entropy_src.[`ADAPTP_LO_WATERMARKS`](#adaptp_lo_watermarks)           | 0x60     |        4 | Adaptive proportion test low watermarks register             |
-| entropy_src.[`EXTHT_HI_WATERMARKS`](#extht_hi_watermarks)             | 0x64     |        4 | External health test high watermarks register                |
-| entropy_src.[`EXTHT_LO_WATERMARKS`](#extht_lo_watermarks)             | 0x68     |        4 | External health test low watermarks register                 |
-| entropy_src.[`BUCKET_HI_WATERMARKS`](#bucket_hi_watermarks)           | 0x6c     |        4 | Bucket test high watermarks register                         |
-| entropy_src.[`MARKOV_HI_WATERMARKS`](#markov_hi_watermarks)           | 0x70     |        4 | Markov test high watermarks register                         |
-| entropy_src.[`MARKOV_LO_WATERMARKS`](#markov_lo_watermarks)           | 0x74     |        4 | Markov test low watermarks register                          |
-| entropy_src.[`REPCNT_TOTAL_FAILS`](#repcnt_total_fails)               | 0x78     |        4 | Repetition count test failure counter register               |
-| entropy_src.[`REPCNTS_TOTAL_FAILS`](#repcnts_total_fails)             | 0x7c     |        4 | Repetition count symbol test failure counter register        |
-| entropy_src.[`ADAPTP_HI_TOTAL_FAILS`](#adaptp_hi_total_fails)         | 0x80     |        4 | Adaptive proportion high test failure counter register       |
-| entropy_src.[`ADAPTP_LO_TOTAL_FAILS`](#adaptp_lo_total_fails)         | 0x84     |        4 | Adaptive proportion low test failure counter register        |
-| entropy_src.[`BUCKET_TOTAL_FAILS`](#bucket_total_fails)               | 0x88     |        4 | Bucket test failure counter register                         |
-| entropy_src.[`MARKOV_HI_TOTAL_FAILS`](#markov_hi_total_fails)         | 0x8c     |        4 | Markov high test failure counter register                    |
-| entropy_src.[`MARKOV_LO_TOTAL_FAILS`](#markov_lo_total_fails)         | 0x90     |        4 | Markov low test failure counter register                     |
-| entropy_src.[`EXTHT_HI_TOTAL_FAILS`](#extht_hi_total_fails)           | 0x94     |        4 | External health test high threshold failure counter register |
-| entropy_src.[`EXTHT_LO_TOTAL_FAILS`](#extht_lo_total_fails)           | 0x98     |        4 | External health test low threshold failure counter register  |
-| entropy_src.[`ALERT_THRESHOLD`](#alert_threshold)                     | 0x9c     |        4 | Alert threshold register                                     |
-| entropy_src.[`ALERT_SUMMARY_FAIL_COUNTS`](#alert_summary_fail_counts) | 0xa0     |        4 | Alert summary failure counts register                        |
-| entropy_src.[`ALERT_FAIL_COUNTS`](#alert_fail_counts)                 | 0xa4     |        4 | Alert failure counts register                                |
-| entropy_src.[`EXTHT_FAIL_COUNTS`](#extht_fail_counts)                 | 0xa8     |        4 | External health test alert failure counts register           |
-| entropy_src.[`FW_OV_CONTROL`](#fw_ov_control)                         | 0xac     |        4 | Firmware override control register                           |
-| entropy_src.[`FW_OV_SHA3_START`](#fw_ov_sha3_start)                   | 0xb0     |        4 | Firmware override sha3 block start control register          |
-| entropy_src.[`FW_OV_WR_FIFO_FULL`](#fw_ov_wr_fifo_full)               | 0xb4     |        4 | Firmware override FIFO write full status register            |
-| entropy_src.[`FW_OV_RD_FIFO_OVERFLOW`](#fw_ov_rd_fifo_overflow)       | 0xb8     |        4 | Firmware override observe FIFO overflow status               |
-| entropy_src.[`FW_OV_RD_DATA`](#fw_ov_rd_data)                         | 0xbc     |        4 | Firmware override observe FIFO read register                 |
-| entropy_src.[`FW_OV_WR_DATA`](#fw_ov_wr_data)                         | 0xc0     |        4 | Firmware override FIFO write register                        |
-| entropy_src.[`OBSERVE_FIFO_THRESH`](#observe_fifo_thresh)             | 0xc4     |        4 | Observe FIFO threshold register                              |
-| entropy_src.[`OBSERVE_FIFO_DEPTH`](#observe_fifo_depth)               | 0xc8     |        4 | Observe FIFO depth register                                  |
-| entropy_src.[`DEBUG_STATUS`](#debug_status)                           | 0xcc     |        4 | Debug status register                                        |
-| entropy_src.[`RECOV_ALERT_STS`](#recov_alert_sts)                     | 0xd0     |        4 | Recoverable alert status register                            |
-| entropy_src.[`ERR_CODE`](#err_code)                                   | 0xd4     |        4 | Hardware detection of error conditions status register       |
-| entropy_src.[`ERR_CODE_TEST`](#err_code_test)                         | 0xd8     |        4 | Test error conditions register                               |
-| entropy_src.[`MAIN_SM_STATE`](#main_sm_state)                         | 0xdc     |        4 | Main state machine state debug register                      |
+| entropy_src.[`HT_WATERMARK_NUM`](#ht_watermark_num)                   | 0x54     |        4 | Health test watermark number register                        |
+| entropy_src.[`HT_WATERMARK`](#ht_watermark)                           | 0x58     |        4 | Health test watermark register                               |
+| entropy_src.[`REPCNT_TOTAL_FAILS`](#repcnt_total_fails)               | 0x5c     |        4 | Repetition count test failure counter register               |
+| entropy_src.[`REPCNTS_TOTAL_FAILS`](#repcnts_total_fails)             | 0x60     |        4 | Repetition count symbol test failure counter register        |
+| entropy_src.[`ADAPTP_HI_TOTAL_FAILS`](#adaptp_hi_total_fails)         | 0x64     |        4 | Adaptive proportion high test failure counter register       |
+| entropy_src.[`ADAPTP_LO_TOTAL_FAILS`](#adaptp_lo_total_fails)         | 0x68     |        4 | Adaptive proportion low test failure counter register        |
+| entropy_src.[`BUCKET_TOTAL_FAILS`](#bucket_total_fails)               | 0x6c     |        4 | Bucket test failure counter register                         |
+| entropy_src.[`MARKOV_HI_TOTAL_FAILS`](#markov_hi_total_fails)         | 0x70     |        4 | Markov high test failure counter register                    |
+| entropy_src.[`MARKOV_LO_TOTAL_FAILS`](#markov_lo_total_fails)         | 0x74     |        4 | Markov low test failure counter register                     |
+| entropy_src.[`EXTHT_HI_TOTAL_FAILS`](#extht_hi_total_fails)           | 0x78     |        4 | External health test high threshold failure counter register |
+| entropy_src.[`EXTHT_LO_TOTAL_FAILS`](#extht_lo_total_fails)           | 0x7c     |        4 | External health test low threshold failure counter register  |
+| entropy_src.[`ALERT_THRESHOLD`](#alert_threshold)                     | 0x80     |        4 | Alert threshold register                                     |
+| entropy_src.[`ALERT_SUMMARY_FAIL_COUNTS`](#alert_summary_fail_counts) | 0x84     |        4 | Alert summary failure counts register                        |
+| entropy_src.[`ALERT_FAIL_COUNTS`](#alert_fail_counts)                 | 0x88     |        4 | Alert failure counts register                                |
+| entropy_src.[`EXTHT_FAIL_COUNTS`](#extht_fail_counts)                 | 0x8c     |        4 | External health test alert failure counts register           |
+| entropy_src.[`FW_OV_CONTROL`](#fw_ov_control)                         | 0x90     |        4 | Firmware override control register                           |
+| entropy_src.[`FW_OV_SHA3_START`](#fw_ov_sha3_start)                   | 0x94     |        4 | Firmware override sha3 block start control register          |
+| entropy_src.[`FW_OV_WR_FIFO_FULL`](#fw_ov_wr_fifo_full)               | 0x98     |        4 | Firmware override FIFO write full status register            |
+| entropy_src.[`FW_OV_RD_FIFO_OVERFLOW`](#fw_ov_rd_fifo_overflow)       | 0x9c     |        4 | Firmware override observe FIFO overflow status               |
+| entropy_src.[`FW_OV_RD_DATA`](#fw_ov_rd_data)                         | 0xa0     |        4 | Firmware override observe FIFO read register                 |
+| entropy_src.[`FW_OV_WR_DATA`](#fw_ov_wr_data)                         | 0xa4     |        4 | Firmware override FIFO write register                        |
+| entropy_src.[`OBSERVE_FIFO_THRESH`](#observe_fifo_thresh)             | 0xa8     |        4 | Observe FIFO threshold register                              |
+| entropy_src.[`OBSERVE_FIFO_DEPTH`](#observe_fifo_depth)               | 0xac     |        4 | Observe FIFO depth register                                  |
+| entropy_src.[`DEBUG_STATUS`](#debug_status)                           | 0xb0     |        4 | Debug status register                                        |
+| entropy_src.[`RECOV_ALERT_STS`](#recov_alert_sts)                     | 0xb4     |        4 | Recoverable alert status register                            |
+| entropy_src.[`ERR_CODE`](#err_code)                                   | 0xb8     |        4 | Hardware detection of error conditions status register       |
+| entropy_src.[`ERR_CODE_TEST`](#err_code_test)                         | 0xbc     |        4 | Test error conditions register                               |
+| entropy_src.[`MAIN_SM_STATE`](#main_sm_state)                         | 0xc0     |        4 | Main state machine state debug register                      |
 
 ## INTR_STATE
 Interrupt State Register
@@ -267,7 +260,7 @@ Setting this field to `kMultiBitBool4True` will set the FIPS flag for the ENTROP
 
 ### CONF . FIPS_ENABLE
 Setting this field to `kMultiBitBool4True` selects the mode targeting FIPS/CC compliance (in short FIPS mode) with hardware conditioning enabled.
-The ENTROPY_SRC block will use the FIPS_WINDOW, FIPS_THRESH and FIPS_WATERMARK values of the [`HEALTH_TEST_WINDOWS`](#health_test_windows), health test thresholds and watermark register, respectively.
+The ENTROPY_SRC block will use the FIPS_WINDOW and FIPS_THRESH values of the [`HEALTH_TEST_WINDOWS`](#health_test_windows) and health test thresholds register, respectively.
 Whether the ENTROPY_SRC block is indeed running with the configuration used for FIPS/CC validation is under the control of firmware.
 Thus, firmware must explicitly mark the produced entropy as FIPS qualified using the [`CONF.FIPS_FLAG`](#conf) field.
 Note that the hardware conditioning can still be disabled in FIPS mode by setting both [`ENTROPY_CONTROL.ES_ROUTE`](#entropy_control) and [`ENTROPY_CONTROL.ES_TYPE`](#entropy_control) fields to `kMultiBitBool4True`.
@@ -681,162 +674,64 @@ This is the threshold size for the external health test.
    written value is greater than the current value of this register.
    A read from this register always reflects the current value.
 
-## REPCNT_HI_WATERMARKS
-Repetition count test high watermarks register
+## HT_WATERMARK_NUM
+Health test watermark number register
 - Offset: `0x54`
 - Reset default: `0x0`
-- Reset mask: `0xffffffff`
+- Reset mask: `0xf`
+- Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FIPS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "BYPASS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "HT_WATERMARK_NUM", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name             | Description                                             |
-|:------:|:------:|:-------:|:-----------------|:--------------------------------------------------------|
-| 31:16  |   ro   |    x    | BYPASS_WATERMARK | High watermark value of the REPCNT test in bypass mode. |
-|  15:0  |   ro   |    x    | FIPS_WATERMARK   | High watermark value of the REPCNT test in FIPS mode.   |
+|  Bits  |  Type  |  Reset  | Name                                                    |
+|:------:|:------:|:-------:|:--------------------------------------------------------|
+|  31:4  |        |         | Reserved                                                |
+|  3:0   |   rw   |   0x0   | [HT_WATERMARK_NUM](#ht_watermark_num--ht_watermark_num) |
 
-## REPCNTS_HI_WATERMARKS
-Repetition count symbol test high watermarks register
+### HT_WATERMARK_NUM . HT_WATERMARK_NUM
+The value of this field defines the health test for which the HT_WATERMARK register records the watermark.
+Invalid input values, i.e., values greater than 8 are mapped to 0.
+
+This register must be written before the module is enabled.
+
+| Value   | Name       | Description                                  |
+|:--------|:-----------|:---------------------------------------------|
+| 0x0     | REPCNT_HI  | Repetition count test high watermark.        |
+| 0x1     | REPCNTS_HI | Repetition count symbol test high watermark. |
+| 0x2     | ADAPTP_HI  | Adaptive proportion test high watermark.     |
+| 0x3     | ADAPTP_LO  | Adaptive proportion test low watermark.      |
+| 0x4     | BUCKET_HI  | Bucket test high watermark.                  |
+| 0x5     | MARKOV_HI  | Markov test high watermark.                  |
+| 0x6     | MARKOV_LO  | Markov test low watermark.                   |
+| 0x7     | EXTHT_HI   | External health test high watermark.         |
+| 0x8     | EXTHT_LO   | External health test low watermark.          |
+
+Other values are reserved.
+
+## HT_WATERMARK
+Health test watermark register
 - Offset: `0x58`
 - Reset default: `0x0`
-- Reset mask: `0xffffffff`
+- Reset mask: `0xffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FIPS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "BYPASS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "HT_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name             | Description                                              |
-|:------:|:------:|:-------:|:-----------------|:---------------------------------------------------------|
-| 31:16  |   ro   |    x    | BYPASS_WATERMARK | High watermark value of the REPCNTS test in bypass mode. |
-|  15:0  |   ro   |    x    | FIPS_WATERMARK   | High watermark value of the REPCNTS test in FIPS mode.   |
-
-## ADAPTP_HI_WATERMARKS
-Adaptive proportion test high watermarks register
-- Offset: `0x5c`
-- Reset default: `0x0`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "FIPS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "BYPASS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name             | Description                                                          |
-|:------:|:------:|:-------:|:-----------------|:---------------------------------------------------------------------|
-| 31:16  |   ro   |    x    | BYPASS_WATERMARK | High watermark value of the adaptive proportion test in bypass mode. |
-|  15:0  |   ro   |    x    | FIPS_WATERMARK   | High watermark value of the adaptive proportion test in FIPS mode.   |
-
-## ADAPTP_LO_WATERMARKS
-Adaptive proportion test low watermarks register
-- Offset: `0x60`
-- Reset default: `0xffffffff`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "FIPS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "BYPASS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name             | Description                                                         |
-|:------:|:------:|:-------:|:-----------------|:--------------------------------------------------------------------|
-| 31:16  |   ro   | 0xffff  | BYPASS_WATERMARK | Low watermark value of the adaptive proportion test in bypass mode. |
-|  15:0  |   ro   | 0xffff  | FIPS_WATERMARK   | Low watermark value of the adaptive proportion test in FIPS mode.   |
-
-## EXTHT_HI_WATERMARKS
-External health test high watermarks register
-- Offset: `0x64`
-- Reset default: `0x0`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "FIPS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "BYPASS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name             | Description                                                      |
-|:------:|:------:|:-------:|:-----------------|:-----------------------------------------------------------------|
-| 31:16  |   ro   |    x    | BYPASS_WATERMARK | High watermark value of the external health test in bypass mode. |
-|  15:0  |   ro   |    x    | FIPS_WATERMARK   | High watermark value of the external health test in FIPS mode.   |
-
-## EXTHT_LO_WATERMARKS
-External health test low watermarks register
-- Offset: `0x68`
-- Reset default: `0xffffffff`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "FIPS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "BYPASS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name             | Description                                                     |
-|:------:|:------:|:-------:|:-----------------|:----------------------------------------------------------------|
-| 31:16  |   ro   | 0xffff  | BYPASS_WATERMARK | Low watermark value of the external health test in bypass mode. |
-|  15:0  |   ro   | 0xffff  | FIPS_WATERMARK   | Low watermark value of the external health test in FIPS mode.   |
-
-## BUCKET_HI_WATERMARKS
-Bucket test high watermarks register
-- Offset: `0x6c`
-- Reset default: `0x0`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "FIPS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "BYPASS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name             | Description                                             |
-|:------:|:------:|:-------:|:-----------------|:--------------------------------------------------------|
-| 31:16  |   ro   |    x    | BYPASS_WATERMARK | High watermark value of the bucket test in bypass mode. |
-|  15:0  |   ro   |    x    | FIPS_WATERMARK   | High watermark value of the bucket test in FIPS mode.   |
-
-## MARKOV_HI_WATERMARKS
-Markov test high watermarks register
-- Offset: `0x70`
-- Reset default: `0x0`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "FIPS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "BYPASS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name             | Description                                             |
-|:------:|:------:|:-------:|:-----------------|:--------------------------------------------------------|
-| 31:16  |   ro   |    x    | BYPASS_WATERMARK | High watermark value of the Markov test in bypass mode. |
-|  15:0  |   ro   |    x    | FIPS_WATERMARK   | High watermark value of the Markov test in FIPS mode.   |
-
-## MARKOV_LO_WATERMARKS
-Markov test low watermarks register
-- Offset: `0x74`
-- Reset default: `0xffffffff`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "FIPS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "BYPASS_WATERMARK", "bits": 16, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name             | Description                                            |
-|:------:|:------:|:-------:|:-----------------|:-------------------------------------------------------|
-| 31:16  |   ro   | 0xffff  | BYPASS_WATERMARK | Low watermark value of the Markov test in bypass mode. |
-|  15:0  |   ro   | 0xffff  | FIPS_WATERMARK   | Low watermark value of the Markov test in FIPS mode.   |
+|  Bits  |  Type  |  Reset  | Name         | Description                                                                                                                                                                                                                        |
+|:------:|:------:|:-------:|:-------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:16  |        |         |              | Reserved                                                                                                                                                                                                                           |
+|  15:0  |   ro   |   0x0   | HT_WATERMARK | Watermark value for health test selected by HT_WATERMARK_NUM. After a reset, this register always reads as 0. If a low watermark is configured in HT_WATERMARK_NUM, this register is cleared to all-1s after enabling ENTROPY_SRC. |
 
 ## REPCNT_TOTAL_FAILS
 Repetition count test failure counter register
-- Offset: `0x78`
+- Offset: `0x5c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -852,7 +747,7 @@ Repetition count test failure counter register
 
 ## REPCNTS_TOTAL_FAILS
 Repetition count symbol test failure counter register
-- Offset: `0x7c`
+- Offset: `0x60`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -868,7 +763,7 @@ Repetition count symbol test failure counter register
 
 ## ADAPTP_HI_TOTAL_FAILS
 Adaptive proportion high test failure counter register
-- Offset: `0x80`
+- Offset: `0x64`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -884,7 +779,7 @@ Adaptive proportion high test failure counter register
 
 ## ADAPTP_LO_TOTAL_FAILS
 Adaptive proportion low test failure counter register
-- Offset: `0x84`
+- Offset: `0x68`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -900,7 +795,7 @@ Adaptive proportion low test failure counter register
 
 ## BUCKET_TOTAL_FAILS
 Bucket test failure counter register
-- Offset: `0x88`
+- Offset: `0x6c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -916,7 +811,7 @@ Bucket test failure counter register
 
 ## MARKOV_HI_TOTAL_FAILS
 Markov high test failure counter register
-- Offset: `0x8c`
+- Offset: `0x70`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -932,7 +827,7 @@ Markov high test failure counter register
 
 ## MARKOV_LO_TOTAL_FAILS
 Markov low test failure counter register
-- Offset: `0x90`
+- Offset: `0x74`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -948,7 +843,7 @@ Markov low test failure counter register
 
 ## EXTHT_HI_TOTAL_FAILS
 External health test high threshold failure counter register
-- Offset: `0x94`
+- Offset: `0x78`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -964,7 +859,7 @@ External health test high threshold failure counter register
 
 ## EXTHT_LO_TOTAL_FAILS
 External health test low threshold failure counter register
-- Offset: `0x98`
+- Offset: `0x7c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -989,7 +884,7 @@ In case the configured threshold is reached, firmware needs to disable/re-enable
 Note that when reaching the threshold while running in Firmware Override: Extract & Insert mode, the recoverable alert is not raised nor does the block stop operating.
 In other modes, the generation of the recoverable alert can be disabled by configuring a value of zero.
 The default value is set to two.
-- Offset: `0x9c`
+- Offset: `0x80`
 - Reset default: `0xfffd0002`
 - Reset mask: `0xffffffff`
 - Register enable: [`REGWEN`](#regwen)
@@ -1018,7 +913,7 @@ If an alert is signaled, the value persists until it is cleared by firmware.
 
 The register is automatically cleared after every passing health test window unless the ENTROPY_SRC is configured in Firmware Override: Extract & Insert mode.
 The register is also cleared after re-enabling the block.
-- Offset: `0xa0`
+- Offset: `0x84`
 - Reset default: `0x0`
 - Reset mask: `0xffff`
 
@@ -1042,7 +937,7 @@ Note that if multiple health tests fail for a certain symbol or window, the valu
 
 All fields of this register are automatically cleared after every passing health test window unless the ENTROPY_SRC is configured in Firmware Override: Extract & Insert mode.
 The fields are also cleared after re-enabling the block.
-- Offset: `0xa4`
+- Offset: `0x88`
 - Reset default: `0x0`
 - Reset mask: `0xfffffff0`
 
@@ -1072,7 +967,7 @@ Note that if multiple health tests fail for a certain symbol or window, the valu
 
 All fields of this register are automatically cleared after every passing health test window unless the ENTROPY_SRC is configured in Firmware Override: Extract & Insert mode.
 The fields are also cleared after re-enabling the block.
-- Offset: `0xa8`
+- Offset: `0x8c`
 - Reset default: `0x0`
 - Reset mask: `0xff`
 
@@ -1090,7 +985,7 @@ The fields are also cleared after re-enabling the block.
 
 ## FW_OV_CONTROL
 Firmware override control register
-- Offset: `0xac`
+- Offset: `0x90`
 - Reset default: `0x99`
 - Reset mask: `0xff`
 - Register enable: [`REGWEN`](#regwen)
@@ -1135,7 +1030,7 @@ Note that the post-health test entropy bits collected in the observe FIFO contin
 
 ## FW_OV_SHA3_START
 Firmware override sha3 block start control register
-- Offset: `0xb0`
+- Offset: `0x94`
 - Reset default: `0x9`
 - Reset mask: `0xf`
 
@@ -1161,7 +1056,7 @@ To avoid this, check that [`FW_OV_WR_FIFO_FULL`](#fw_ov_wr_fifo_full) is clear b
 
 ## FW_OV_WR_FIFO_FULL
 Firmware override FIFO write full status register
-- Offset: `0xb4`
+- Offset: `0x98`
 - Reset default: `0x0`
 - Reset mask: `0x1`
 
@@ -1178,7 +1073,7 @@ Firmware override FIFO write full status register
 
 ## FW_OV_RD_FIFO_OVERFLOW
 Firmware override observe FIFO overflow status
-- Offset: `0xb8`
+- Offset: `0x9c`
 - Reset default: `0x0`
 - Reset mask: `0x1`
 
@@ -1202,7 +1097,7 @@ If an overflow event occurs, this bit is cleared by hardware as soon as the FIFO
 
 ## FW_OV_RD_DATA
 Firmware override observe FIFO read register
-- Offset: `0xbc`
+- Offset: `0xa0`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -1224,7 +1119,7 @@ Reading this register while the observe FIFO is empty results in a fatal error w
 
 ## FW_OV_WR_DATA
 Firmware override FIFO write register
-- Offset: `0xc0`
+- Offset: `0xa4`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -1245,7 +1140,7 @@ In addition, the otp_en_entropy_src_fw_over input needs to be set to `kMultiBitB
 
 ## OBSERVE_FIFO_THRESH
 Observe FIFO threshold register
-- Offset: `0xc4`
+- Offset: `0xa8`
 - Reset default: `0x10`
 - Reset mask: `0x3f`
 - Register enable: [`REGWEN`](#regwen)
@@ -1263,7 +1158,7 @@ Observe FIFO threshold register
 
 ## OBSERVE_FIFO_DEPTH
 Observe FIFO depth register
-- Offset: `0xc8`
+- Offset: `0xac`
 - Reset default: `0x0`
 - Reset mask: `0x3f`
 
@@ -1280,7 +1175,7 @@ Observe FIFO depth register
 
 ## DEBUG_STATUS
 Debug status register
-- Offset: `0xcc`
+- Offset: `0xb0`
 - Reset default: `0x10000`
 - Reset mask: `0x303fb`
 
@@ -1306,7 +1201,7 @@ Debug status register
 
 ## RECOV_ALERT_STS
 Recoverable alert status register
-- Offset: `0xd0`
+- Offset: `0xb4`
 - Reset default: `0x0`
 - Reset mask: `0x8007ffaf`
 
@@ -1432,7 +1327,7 @@ Writing a zero resets this status bit.
 
 ## ERR_CODE
 Hardware detection of error conditions status register
-- Offset: `0xd4`
+- Offset: `0xb8`
 - Reset default: `0x0`
 - Reset mask: `0x71f0000f`
 
@@ -1526,7 +1421,7 @@ This bit will stay set until the next reset.
 
 ## ERR_CODE_TEST
 Test error conditions register
-- Offset: `0xd8`
+- Offset: `0xbc`
 - Reset default: `0x0`
 - Reset mask: `0x1f`
 
@@ -1551,7 +1446,7 @@ an interrupt or an alert.
 
 ## MAIN_SM_STATE
 Main state machine state debug register
-- Offset: `0xdc`
+- Offset: `0xc0`
 - Reset default: `0xf5`
 - Reset mask: `0x1ff`
 

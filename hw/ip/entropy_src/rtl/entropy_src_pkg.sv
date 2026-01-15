@@ -64,4 +64,17 @@ package entropy_src_pkg;
   parameter entropy_src_xht_meta_rsp_t ENTROPY_SRC_XHT_META_RSP_DEFAULT =
       '{test_cnt_lo: 16'hffff, default: '0};
 
+  parameter int HT_WATERMARK_NUM_WIDTH = 4;
+  typedef enum logic [HT_WATERMARK_NUM_WIDTH-1:0] {
+    REPCNT_HI  = 0,
+    REPCNTS_HI = 1,
+    ADAPTP_HI  = 2,
+    ADAPTP_LO  = 3,
+    BUCKET_HI  = 4,
+    MARKOV_HI  = 5,
+    MARKOV_LO  = 6,
+    EXTHT_HI   = 7,
+    EXTHT_LO   = 8
+  } ht_watermark_num_e;
+
 endpackage : entropy_src_pkg

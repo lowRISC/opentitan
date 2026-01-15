@@ -239,6 +239,22 @@ typedef struct dif_entropy_src_health_test_config {
 } dif_entropy_src_health_test_config_t;
 
 /**
+ * Values of the health test watermark number register to record the high or low
+ * watermarks of the corresponding health tests.
+ */
+typedef enum dif_entropy_src_watermark_num {
+  kDifEntropySrcWatermarkNumRepcntHi = 0,
+  kDifEntropySrcWatermarkNumRepcntsHi = 1,
+  kDifEntropySrcWatermarkNumAdaptpHi = 2,
+  kDifEntropySrcWatermarkNumAdaptpLo = 3,
+  kDifEntropySrcWatermarkNumBucketHi = 4,
+  kDifEntropySrcWatermarkNumMarkovHi = 5,
+  kDifEntropySrcWatermarkNumMarkovLo = 6,
+  kDifEntropySrcWatermarkNumExthtHi = 7,
+  kDifEntropySrcWatermarkNumExthtLo = 8,
+} dif_entropy_src_watermark_num_t;
+
+/**
  * Revision information for an entropy source.
  *
  * The fields of this struct have an implementation-specific interpretation.
@@ -254,20 +270,19 @@ typedef struct dif_entropy_src_revision {
  */
 typedef struct dif_entropy_src_health_test_stats {
   /**
-   * High watermark indicating the highest value emitted by a particular test.
+   * Identifier defining test and the watermark (high or low) the recorded
+   * number belongs to.
    */
-  uint16_t high_watermark[kDifEntropySrcTestNumVariants];
+  dif_entropy_src_watermark_num_t watermark_num;
   /**
-   * Low watermark indicating the lowest value emitted by a particular test
-   * (contains both FIPS and bypass watermarks).
-   *
-   * Note, some health tests do not emit a low watermark as there is no low
-   * threshold. For these tests, this value will always be UINT16_MAX.
+   * The recorded watermark. For low or high watermarks, this indicates the
+   * lowest or highest values emitted by the corresponding health test,
+   * respectively.
    */
-  uint16_t low_watermark[kDifEntropySrcTestNumVariants];
+  uint16_t watermark;
   /**
    * The number of times a particular test has failed above the high threshold
-   * (contains both FIPS and bypass watermarks).
+   * (contains both failures when using the FIPS or the bypass thresholds).
    */
   uint32_t high_fails[kDifEntropySrcTestNumVariants];
   /**
@@ -580,6 +595,22 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_health_test_configure(
     const dif_entropy_src_t *entropy_src,
     dif_entropy_src_health_test_config_t config);
+
+/**
+ * Configures the health test watermark number register to record the high or
+ * low watermark of a specific health test.
+ *
+ * This function is primarily required for the initial validation during chip
+ * bring-up.
+ *
+ * @param entropy_src An entropy source handle.
+ * @param config Specific health test and high or low watermark to be recorded.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_watermark_configure(
+    const dif_entropy_src_t *entropy_src,
+    dif_entropy_src_watermark_num_t config);
 
 /**
  * Enables/Disables the entropy source.

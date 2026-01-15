@@ -70,9 +70,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   task check_ht_diagnostics();
     int val;
     string stat_regs [] = '{
-        "repcnt_hi_watermarks", "repcnts_hi_watermarks", "adaptp_hi_watermarks",
-        "adaptp_lo_watermarks", "extht_hi_watermarks", "extht_lo_watermarks",
-        "bucket_hi_watermarks", "markov_hi_watermarks", "markov_lo_watermarks",
+        "ht_watermark",
         "repcnt_total_fails", "repcnts_total_fails", "adaptp_hi_total_fails",
         "adaptp_lo_total_fails", "bucket_total_fails", "markov_hi_total_fails",
         "markov_lo_total_fails", "extht_hi_total_fails", "extht_lo_total_fails",

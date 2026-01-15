@@ -446,7 +446,7 @@
           mubi: true,
           desc: '''
                 Setting this field to `kMultiBitBool4True` selects the mode targeting FIPS/CC compliance (in short FIPS mode) with hardware conditioning enabled.
-                The ENTROPY_SRC block will use the FIPS_WINDOW, FIPS_THRESH and FIPS_WATERMARK values of the !!HEALTH_TEST_WINDOWS, health test thresholds and watermark register, respectively.
+                The ENTROPY_SRC block will use the FIPS_WINDOW and FIPS_THRESH values of the !!HEALTH_TEST_WINDOWS and health test thresholds register, respectively.
                 Whether the ENTROPY_SRC block is indeed running with the configuration used for FIPS/CC validation is under the control of firmware.
                 Thus, firmware must explicitly mark the produced entropy as FIPS qualified using the !!CONF.FIPS_FLAG field.
                 Note that the hardware conditioning can still be disabled in FIPS mode by setting both !!ENTROPY_CONTROL.ES_ROUTE and !!ENTROPY_CONTROL.ES_TYPE fields to `kMultiBitBool4True`.
@@ -911,171 +911,100 @@
         }
       ]
     },
-    { name:     "REPCNT_HI_WATERMARKS",
-      desc:     "Repetition count test high watermarks register",
+    { name:     "HT_WATERMARK_NUM",
+      desc:     "Health test watermark number register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext:    "true",
+      hwqe:     "true",
+      regwen:   "REGWEN",
+      tags: [ // Internal HW can modify status register
+             "excl:CsrAllTests:CsrExclCheck"]
+      fields: [
+        { bits: "3:0",
+          name: "HT_WATERMARK_NUM",
+          resval: "0",
+          desc: '''
+                The value of this field defines the health test for which the HT_WATERMARK register records the watermark.
+                Invalid input values, i.e., values greater than 8 are mapped to 0.
+
+                This register must be written before the module is enabled.
+                '''
+          enum: [
+            { value: "0",
+              name: "REPCNT_HI",
+              desc: '''
+                    Repetition count test high watermark.
+                    '''
+            },
+            { value: "1",
+              name: "REPCNTS_HI",
+              desc: '''
+                    Repetition count symbol test high watermark.
+                    '''
+            },
+            { value: "2",
+              name: "ADAPTP_HI",
+              desc: '''
+                    Adaptive proportion test high watermark.
+                    '''
+            },
+            { value: "3",
+              name: "ADAPTP_LO",
+              desc: '''
+                    Adaptive proportion test low watermark.
+                    '''
+            },
+            { value: "4",
+              name: "BUCKET_HI",
+              desc: '''
+                    Bucket test high watermark.
+                    '''
+            },
+            { value: "5",
+              name: "MARKOV_HI",
+              desc: '''
+                    Markov test high watermark.
+                    '''
+            },
+            { value: "6",
+              name: "MARKOV_LO",
+              desc: '''
+                    Markov test low watermark.
+              '''
+            },
+            { value: "7",
+              name: "EXTHT_HI",
+              desc: '''
+                    External health test high watermark.
+                    '''
+            },
+            { value: "8",
+              name: "EXTHT_LO",
+              desc: '''
+                    External health test low watermark.
+                    '''
+            }
+          ]
+        }
+      ]
+    },
+    { name:     "HT_WATERMARK",
+      desc:     "Health test watermark register",
       swaccess: "ro",
       hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
+      hwext:    "true",
+      tags: [ // Internal HW drives this register.
              "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the REPCNT test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the REPCNT test in bypass mode."
-        }
-      ]
-    },
-    { name:     "REPCNTS_HI_WATERMARKS",
-      desc:     "Repetition count symbol test high watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrAllTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the REPCNTS test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the REPCNTS test in bypass mode."
-        }
-      ]
-    },
-    { name:     "ADAPTP_HI_WATERMARKS",
-      desc:     "Adaptive proportion test high watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the adaptive proportion test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the adaptive proportion test in bypass mode."
-        }
-      ]
-    },
-    { name:     "ADAPTP_LO_WATERMARKS",
-      desc:     "Adaptive proportion test low watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "Low watermark value of the adaptive proportion test in FIPS mode."
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "Low watermark value of the adaptive proportion test in bypass mode."
-          resval: "0xFFFF"
-        }
-      ]
-    },
-    { name:     "EXTHT_HI_WATERMARKS",
-      desc:     "External health test high watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the external health test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the external health test in bypass mode."
-        }
-      ]
-    },
-    { name:     "EXTHT_LO_WATERMARKS",
-      desc:     "External health test low watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "Low watermark value of the external health test in FIPS mode."
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "Low watermark value of the external health test in bypass mode."
-          resval: "0xFFFF"
-        }
-      ]
-    },
-    { name:     "BUCKET_HI_WATERMARKS",
-      desc:     "Bucket test high watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the bucket test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the bucket test in bypass mode."
-        }
-      ]
-    },
-    { name:     "MARKOV_HI_WATERMARKS",
-      desc:     "Markov test high watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the Markov test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the Markov test in bypass mode."
-        }
-      ]
-    },
-    { name:     "MARKOV_LO_WATERMARKS",
-      desc:     "Markov test low watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "Low watermark value of the Markov test in FIPS mode."
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "Low watermark value of the Markov test in bypass mode."
-          resval: "0xFFFF"
+          name: "HT_WATERMARK",
+          resval: "0",
+          desc: '''
+                Watermark value for health test selected by HT_WATERMARK_NUM.
+                After a reset, this register always reads as 0.
+                If a low watermark is configured in HT_WATERMARK_NUM, this register is cleared to all-1s after enabling ENTROPY_SRC.
+                '''
         }
       ]
     },
