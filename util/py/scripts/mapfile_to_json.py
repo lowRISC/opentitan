@@ -6,7 +6,6 @@
 import argparse
 import json
 import logging
-import os
 import os.path
 import re
 import subprocess
