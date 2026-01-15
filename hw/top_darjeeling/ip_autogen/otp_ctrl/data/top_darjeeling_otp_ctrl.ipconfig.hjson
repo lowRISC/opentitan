@@ -490,7 +490,7 @@
               offset: 348
             }
             {
-              name: CREATOR_SW_CFG_SRAM_KEY_RENEW_EN
+              name: CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN
               size: 4
               isdigest: false
               iszer: false

@@ -40,7 +40,7 @@ It has been generated with ./util/topgen.py -t hw/top_darjeeling/data/top_darjee
 |         |                       |            |              |      32bit       |               CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS                |     0x154      |     4      |
 |         |                       |            |              |      32bit       |                 CREATOR_SW_CFG_RNG_ALERT_THRESHOLD                  |     0x158      |     4      |
 |         |                       |            |              |      32bit       |               CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST               |     0x15C      |     4      |
-|         |                       |            |              |      32bit       |                  CREATOR_SW_CFG_SRAM_KEY_RENEW_EN                   |     0x160      |     4      |
+|         |                       |            |              |      32bit       |              CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN              |     0x160      |     4      |
 |         |                       |            |              |      64bit       |        [CREATOR_SW_CFG_DIGEST](#Reg_creator_sw_cfg_digest_0)        |     0x168      |     8      |
 |    2    |     OWNER_SW_CFG      |    600     |      no      |      32bit       |                  OWNER_SW_CFG_ROM_ERROR_REPORTING                   |     0x170      |     4      |
 |         |                       |            |              |      32bit       |                   OWNER_SW_CFG_ROM_BOOTSTRAP_DIS                    |     0x174      |     4      |

@@ -654,14 +654,14 @@
       default: "4",
       local: "true"
     },
-    { name: "CreatorSwCfgSramKeyRenewEnOffset",
-      desc: "Offset of CREATOR_SW_CFG_SRAM_KEY_RENEW_EN",
+    { name: "CreatorSwCfgSramKeyRenewAndInitEnOffset",
+      desc: "Offset of CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN",
       type: "int",
       default: "332",
       local: "true"
     },
-    { name: "CreatorSwCfgSramKeyRenewEnSize",
-      desc: "Size of CREATOR_SW_CFG_SRAM_KEY_RENEW_EN",
+    { name: "CreatorSwCfgSramKeyRenewAndInitEnSize",
+      desc: "Size of CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN",
       type: "int",
       default: "4",
       local: "true"

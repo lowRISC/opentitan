@@ -36,7 +36,7 @@ It has been generated with ./util/topgen.py -t hw/top_earlgrey/data/top_earlgrey
 |         |                           |            |              |      32bit       |                   CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS                    |     0x140      |     4      |
 |         |                           |            |              |      32bit       |                     CREATOR_SW_CFG_RNG_ALERT_THRESHOLD                      |     0x144      |     4      |
 |         |                           |            |              |      32bit       |                   CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST                   |     0x148      |     4      |
-|         |                           |            |              |      32bit       |                      CREATOR_SW_CFG_SRAM_KEY_RENEW_EN                       |     0x14C      |     4      |
+|         |                           |            |              |      32bit       |                  CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN                  |     0x14C      |     4      |
 |         |                           |            |              |      32bit       |                     CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN                     |     0x150      |     4      |
 |         |                           |            |              |      32bit       |                CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET                |     0x154      |     4      |
 |         |                           |            |              |      32bit       |                   CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH                   |     0x158      |     4      |
