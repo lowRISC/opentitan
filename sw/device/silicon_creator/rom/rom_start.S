@@ -417,17 +417,11 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   lw   t2, OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_SRAM_READBACK_EN_OFFSET(a0)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_SRAM_KEY_RENEW_EN_OFFSET(a0)
   li   t1, HARDENED_BOOL_FALSE
-  li   a0, TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR
-  li   a1, (1 << SRAM_CTRL_CTRL_INIT_BIT)
-  beq  t0, t1, .L_sram_key_renew_skip
-
-  // Set the scrambling key renewal bit if `SRAM_KEY_RENEW_EN` is not set to
-  // `HARDENED_BOOL_FALSE`
-  or   a1, a1, (1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT)
-
+  beq t0, t1, .L_sram_key_renew_skip
+  li a0, TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+  li a1, (1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT) | (1 << SRAM_CTRL_CTRL_INIT_BIT)
+  sw a1, SRAM_CTRL_CTRL_REG_OFFSET(a0)
 .L_sram_key_renew_skip:
-  sw   a1, SRAM_CTRL_CTRL_REG_OFFSET(a0)
-
   // Depending on OTP, enable the SRAM readback feature.
   sw   t2, SRAM_CTRL_READBACK_REG_OFFSET(a0)
 
