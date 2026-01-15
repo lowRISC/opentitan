@@ -406,6 +406,49 @@
       0
     ]
   },
+  "char_flash_read_static": {
+    "data_faulty": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
   "char_flash_write": {
     "result": 0,
     "err_status": 0,

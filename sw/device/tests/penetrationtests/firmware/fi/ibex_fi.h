@@ -440,6 +440,25 @@ status_t handle_ibex_fi_char_csr_combi(ujson_t *uj);
 status_t handle_ibex_fi_char_flash_read(ujson_t *uj);
 
 /**
+ * ibex.fi.char.flash_read_static command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - If the init Boolean is set, write reference values into flash.
+ * - Set the trigger.
+ * - Provide a 1000 NOPS of delay.
+ * - Unset the trigger.
+ * - Read and compare the values.
+ * - Return the values over UART.
+ *
+ * Faults are injected during the trigger_high & trigger_low or at device sleep
+ * using the stateful Boolean init input.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_fi_char_flash_read_static(ujson_t *uj);
+
+/**
  * ibex.fi.char.flash_write command handler.
  *
  * This FI penetration tests executes the following instructions:
