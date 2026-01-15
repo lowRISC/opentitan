@@ -2511,6 +2511,120 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
   return OK_STATUS();
 }
 
+status_t handle_ibex_fi_char_flash_read_static(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Set the flash region we want to test.
+  ibex_fi_flash_set_region_t uj_data;
+  TRY(ujson_deserialize_ibex_fi_flash_set_region_t(uj, &uj_data));
+
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
+
+  // Configure the data flash.
+  // Flash configuration with ECC and scramble disabled
+  dif_flash_ctrl_region_properties_t region_properties = {
+      .rd_en = kMultiBitBool4True,
+      .prog_en = kMultiBitBool4True,
+      .erase_en = kMultiBitBool4True,
+      .scramble_en = kMultiBitBool4False,
+      .ecc_en = kMultiBitBool4False,
+      .high_endurance_en = kMultiBitBool4False};
+
+  dif_flash_ctrl_data_region_properties_t data_region = {
+      .base = FLASH_PAGES_PER_BANK,
+      .size = 0x1,
+      .properties = region_properties};
+
+  dif_result_t res_prop = dif_flash_ctrl_set_data_region_properties(
+      &flash, uj_data.flash_region, data_region);
+  if (res_prop == kDifLocked) {
+    LOG_INFO("Flash region locked, aborting!");
+    ibex_fi_empty_t uj_output;
+    uj_output.success = false;
+    RESP_OK(ujson_serialize_ibex_fi_empty_t, uj, &uj_output);
+    return OK_STATUS();
+  }
+
+  uint32_t flash_addr = data_region.base * FLASH_PAGE_SZ;
+  mmio_region_t flash_test_page = mmio_region_from_addr(
+      TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + (uintptr_t)flash_addr);
+
+  if (uj_data.init) {
+    dif_result_t res_en = dif_flash_ctrl_set_data_region_enablement(
+        &flash, uj_data.flash_region, kDifToggleEnabled);
+    if (res_en == kDifLocked) {
+      LOG_INFO("Flash region locked, aborting!");
+      ibex_fi_empty_t uj_output;
+      uj_output.success = false;
+      RESP_OK(ujson_serialize_ibex_fi_empty_t, uj, &uj_output);
+      return OK_STATUS();
+    }
+
+    // Prepare page and write reference values into it.
+    uint32_t input_page[FLASH_UINT32_WORDS_PER_PAGE];
+    memset(input_page, 0x0, FLASH_UINT32_WORDS_PER_PAGE * sizeof(uint32_t));
+    for (int i = 0; i < kNumRefValues; i++) {
+      input_page[i] = ref_values[i];
+    }
+
+    // Erase flash and write page with reference values.
+    TRY(flash_ctrl_testutils_erase_and_write_page(
+        &flash, flash_addr, /*partition_id=*/0, input_page,
+        kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
+  }
+
+  PENTEST_ASM_TRIGGER_HIGH
+  asm volatile(NOP1000);
+  PENTEST_ASM_TRIGGER_LOW
+
+  uint32_t flash_reads[IBEXFI_MAX_FAULTY_ADDRESSES_DATA] = {0};
+
+  for (int idx = 0; idx < IBEXFI_MAX_FAULTY_ADDRESSES_DATA; idx++) {
+    flash_reads[idx] =
+        mmio_region_read32(flash_test_page, idx * (ptrdiff_t)sizeof(uint32_t));
+  }
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+
+  ibex_fi_faulty_pure_data_t uj_output;
+  // Preset buffers to 0.
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+
+  // Check if one or multiple values are faulty.
+  for (size_t it = 0; it < IBEXFI_MAX_FAULTY_ADDRESSES_DATA; it++) {
+    if (flash_reads[it] != ref_values[it]) {
+      // If there is a mismatch, set data_faulty to true and return the
+      // faulty value.
+      uj_output.data_faulty[it] = true;
+      uj_output.data[it] = flash_reads[it];
+    }
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send result & ERR_STATUS to host.
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_faulty_pure_data_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
 status_t handle_ibex_fi_char_flash_write(ujson_t *uj) __attribute__((optnone)) {
   // Set the flash region we want to test.
   ibex_fi_flash_region_t uj_data;
@@ -4673,6 +4787,8 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_char_csr_combi(uj);
     case kIbexFiSubcommandCharFlashRead:
       return handle_ibex_fi_char_flash_read(uj);
+    case kIbexFiSubcommandCharFlashReadStatic:
+      return handle_ibex_fi_char_flash_read_static(uj);
     case kIbexFiSubcommandCharFlashWrite:
       return handle_ibex_fi_char_flash_write(uj);
     case kIbexFiSubcommandCharHardenedCheckComplementBranch:
