@@ -95,14 +95,14 @@ def re_initialize(gdb, jump_address, print_output=False):
     return gdb
 
 
-class RomExtFiSimRollback(unittest.TestCase):
-    def test_rom_ext_rollback(self):
-        print("Starting the rom_ext rollback test")
+class RomExtFiSimRollbackOtp(unittest.TestCase):
+    def test_rom_ext_rollback_otp(self):
+        print("Starting the rom_ext rollback otp test")
 
         # Directory for the trace log files
-        pc_trace_file = os.path.join(log_dir, "rom_ext_rollback_pc_trace.log")
+        pc_trace_file = os.path.join(log_dir, "rom_ext_rollback_otp_pc_trace.log")
         # Directory for the the log of the campaign
-        campaign_file = os.path.join(log_dir, "rom_ext_rollback_test_campaign.log")
+        campaign_file = os.path.join(log_dir, "rom_ext_rollback_otp_test_campaign.log")
 
         successful_faults = 0
         total_attacks = 0

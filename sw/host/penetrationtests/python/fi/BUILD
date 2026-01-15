@@ -208,9 +208,49 @@ py_binary(
 )
 
 py_binary(
-    name = "fi_rom_ext_rollback_python_gdb_test",
+    name = "fi_rom_rollback_flash_python_gdb_test",
     testonly = True,
-    srcs = ["gdb_testing/fi_rom_ext_rollback_python_gdb_test.py"],
+    srcs = ["gdb_testing/fi_rom_rollback_flash_python_gdb_test.py"],
+    data = [
+        "//sw/device/tests/penetrationtests:rom_ext_sec_ver_incr_fpga_cw340_rom_with_fake_keys",
+        "//sw/host/opentitantool",
+        "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
+        "//third_party/openocd:openocd_bin",
+        "//util/openocd/target:lowrisc-earlgrey.cfg",
+        "@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-gdb",
+    ],
+    deps = [
+        "//sw/host/penetrationtests/python/util:dis_parser",
+        "//sw/host/penetrationtests/python/util:gdb_controller",
+        "//sw/host/penetrationtests/python/util:targets",
+        "@rules_python//python/runfiles",
+    ],
+)
+
+py_binary(
+    name = "fi_rom_ext_rollback_flash_python_gdb_test",
+    testonly = True,
+    srcs = ["gdb_testing/fi_rom_ext_rollback_flash_python_gdb_test.py"],
+    data = [
+        "//sw/device/tests/penetrationtests:bl0_sec_ver_incr_fpga_cw340_rom_with_fake_keys",
+        "//sw/host/opentitantool",
+        "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
+        "//third_party/openocd:openocd_bin",
+        "//util/openocd/target:lowrisc-earlgrey.cfg",
+        "@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-gdb",
+    ],
+    deps = [
+        "//sw/host/penetrationtests/python/util:dis_parser",
+        "//sw/host/penetrationtests/python/util:gdb_controller",
+        "//sw/host/penetrationtests/python/util:targets",
+        "@rules_python//python/runfiles",
+    ],
+)
+
+py_binary(
+    name = "fi_rom_ext_rollback_otp_python_gdb_test",
+    testonly = True,
+    srcs = ["gdb_testing/fi_rom_ext_rollback_otp_python_gdb_test.py"],
     data = [
         "//sw/host/opentitantool",
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",

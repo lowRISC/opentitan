@@ -71,9 +71,16 @@ offline_signature_attach(
 
 # For when building specialized manifests for security testing.
 manifest(d = {
-    "name": "rom_ext_rollback_manifest",
+    "name": "rom_ext_rollback_manifest_low",
     "identifier": hex(CONST.OWNER),
     "security_version": "0",
+    "visibility": ["//visibility:public"],
+})
+
+manifest(d = {
+    "name": "rom_ext_rollback_manifest_high",
+    "identifier": hex(CONST.OWNER),
+    "security_version": "2",
     "visibility": ["//visibility:public"],
 })
 
@@ -192,3 +199,11 @@ otp_image(
         ":otp_json_rom_ext_rollback_fi",
     ],
 )
+
+exports_files([
+    "bl0_sec_ver_incr.c",
+])
+
+exports_files([
+    "rom_ext_sec_ver_incr.c",
+])
