@@ -68,6 +68,9 @@ dependencies = [
   "fusesoc==2.4.3",
 
   "peakrdl-systemrdl >= 1.0",
+
+  # Dependency of util/get-toolchain.py
+  "urllib3==2.6.3",
 ]
 
 [tool.setuptools]
