@@ -28,7 +28,7 @@ def main(args_in):
         "--mode",
         type=str,
         choices=["cp", "ft"],
-        help="AST configuration version to be written to OTP.",
+        help="The device ID header to generate: CP or FT.",
     )
     parser.add_argument(
         "--sku-config",
@@ -48,25 +48,13 @@ def main(args_in):
         type=str,
         help="The template source file to be overwritten.",
     )
-    parser.add_argument(
-        "--ast-cfg-version",
-        type=int,
-        help="AST configuration version to be written to OTP.",
-    )
     args = parser.parse_args(args_in)
-
-    # Check usage.
-    ast_cfg_version = 0
-    if args.mode == "ft":
-        assert args.ast_cfg_version is not None, (
-            "--ast-cfg-version must be set when mode is FT")
-        ast_cfg_version = args.ast_cfg_version
 
     # Load and validate a SKU configuration file.
     sku_config_args = {}
     with open(args.sku_config, "r") as fp:
         sku_config_args = hjson.load(fp)
-    sku_config = SkuConfig(ast_cfg_version=ast_cfg_version, **sku_config_args)
+    sku_config = SkuConfig(**sku_config_args)
 
     # Generate CP/FT portion of device ID.
     din = DeviceIdentificationNumber.blind_asm()
