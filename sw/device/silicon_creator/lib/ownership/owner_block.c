@@ -188,6 +188,9 @@ rom_error_t owner_block_rescue_check(const owner_rescue_config_t *rescue) {
   return kErrorOk;
 }
 
+// This weak function allows downstream ROM_EXT builds to provide
+// sku-specific default config.
+OT_WEAK
 void owner_config_default(owner_config_t *config) {
   // Use a bogus pointer value to avoid the all-zeros pattern of NULL.
   config->flash = (const owner_flash_config_t *)kHardenedBoolFalse;
