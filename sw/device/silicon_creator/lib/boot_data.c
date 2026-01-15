@@ -205,7 +205,7 @@ static rom_error_t boot_data_entry_write_impl(
   if (memcmp(&written, boot_data, sizeof(boot_data_t)) != 0) {
     return kErrorBootDataWriteCheck;
   }
-  return kErrorOk;
+  return boot_data_check(&written);
 }
 
 /**
