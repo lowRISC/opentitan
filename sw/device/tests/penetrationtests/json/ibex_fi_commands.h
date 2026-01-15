@@ -37,6 +37,7 @@ extern "C" {
     value(_, CharCsrWrite) \
     value(_, CharCsrCombi) \
     value(_, CharFlashRead) \
+    value(_, CharFlashReadStatic) \
     value(_, CharFlashWrite) \
     value(_, CharHardenedCheckComplementBranch) \
     value(_, CharHardenedCheckUnimp) \
@@ -105,6 +106,15 @@ UJSON_SERDE_STRUCT(IbexFiTestResultSram, ibex_fi_test_result_sram_t, IBEXFI_TEST
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(IbexFiTestResultMult, ibex_fi_test_result_mult_t, IBEXFI_TEST_RESULT_MULT);
 
+#define IBEXFI_FAULTY_PURE_DATA(field, string) \
+    field(err_status, uint32_t) \
+    field(data_faulty, bool, IBEXFI_MAX_FAULTY_ADDRESSES_DATA) \
+    field(data, uint32_t, IBEXFI_MAX_FAULTY_ADDRESSES_DATA) \
+    field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
+    field(ast_alerts, uint32_t, 2)
+UJSON_SERDE_STRUCT(IbexFiFaultyPureData, ibex_fi_faulty_pure_data_t, IBEXFI_FAULTY_PURE_DATA);
+
 #define IBEXFI_FAULTY_DATA(field, string) \
     field(err_status, uint32_t) \
     field(registers, uint32_t, IBEXFI_NUM_REGS) \
@@ -147,6 +157,11 @@ UJSON_SERDE_STRUCT(IbexFiRfDump, ibex_fi_rf_dump_t, IBEXFI_RF_DUMP);
 #define IBEXFI_FLASH_REGION(field, string) \
     field(flash_region, uint32_t)
 UJSON_SERDE_STRUCT(IbexFiFlashRegion, ibex_fi_flash_region_t, IBEXFI_FLASH_REGION);
+
+#define IBEXFI_FLASH_SET_REGION(field, string) \
+    field(flash_region, uint32_t) \
+    field(init, bool)
+UJSON_SERDE_STRUCT(IbexFiFlashSetRegion, ibex_fi_flash_set_region_t, IBEXFI_FLASH_SET_REGION);
 
 #define IBEXFI_COMBI_DATA(field, string) \
     field(registers_test_1, uint32_t, IBEXFI_NUM_REGS) \
