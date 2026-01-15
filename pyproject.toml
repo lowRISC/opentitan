@@ -27,6 +27,7 @@ dependencies = [
   "semantic_version==2.10.0",
   "tabulate==0.8.10",
   "typer==0.6.1",
+  "urllib3==2.6.3",
 
   # Dependencies: bitstreams cache
   "jsonschema ~= 4.17",

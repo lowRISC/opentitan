@@ -17,6 +17,9 @@ from pathlib import Path
 from urllib3 import PoolManager, Retry
 from urllib3.exceptions import HTTPError, MaxRetryError
 
+import urllib3
+print("urllib3 version is:", urllib3.__version__)
+
 log.basicConfig(level=log.INFO, format="%(levelname)s: %(message)s")
 http = PoolManager()
 
@@ -134,15 +137,15 @@ def download(url, max_attempts=5):
                         target_file.write(part)
                 response.release_conn()
             break
-        except Exception as e:
+        except Exception:
             # If we get a failure (initial HTTP or mid-stream), retry by
             # restarting the entire operation.
             attempt += 1
-            log.error(f"Toolchain download attempt {attempt} failed: {e}")
+            log.exception("Toolchain download attempt %d failed", attempt)
             if os.path.exists(tmpfile):
                 os.remove(tmpfile)
             if attempt >= max_attempts:
-                log.error(f"Toolchain download failed after {attempt} retries.")
+                log.exception(f"Toolchain download failed after %d retries.", attempt)
                 sys.exit(1)
             else:
                 time.sleep(2 ** (attempt - 1))
