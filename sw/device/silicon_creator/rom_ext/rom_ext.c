@@ -497,6 +497,11 @@ hardened_bool_t rom_ext_allow_boot_svc_after_wakeup(void) {
   return owner_config.boot_svc_after_wakeup;
 }
 
+// This weak function allows downstream ROM_EXT builds to provide
+// sku-specific initialization.
+OT_WEAK
+void rom_ext_sku_init(void) {}
+
 static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(rom_ext_init(boot_data));
   const manifest_t *self = rom_ext_manifest();
@@ -535,6 +540,8 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
 
   // Maybe advance the security version.
   HARDENED_RETURN_IF_ERROR(rom_ext_advance_secver(boot_data, self));
+
+  rom_ext_sku_init();
 
   // Fix the boot data if needed
   rom_error_t boot_data_validity = boot_data_redundancy_check();
