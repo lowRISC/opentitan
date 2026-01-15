@@ -95,7 +95,7 @@ otp_json(
 
                 # Any value different than `CONST.HARDENED_FALSE` will force
                 # main SRAM scramble key rotation.
-                "CREATOR_SW_CFG_SRAM_KEY_RENEW_EN": otp_hex(0x0),
+                "CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN": otp_hex(0x0),
 
                 # Disable the use of the ROM_EXT immutable section.
                 "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_FALSE),
