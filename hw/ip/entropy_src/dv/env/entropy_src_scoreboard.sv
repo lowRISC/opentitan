@@ -32,6 +32,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   bit observe_fifo_overflow = 0;
   int overflow_read_cnt     = 0;
 
+  string es_delayed_enable_path = "tb.dut.u_entropy_src_core.es_delayed_enable";
   bit dut_pipeline_enabled = 0;
   bit regwen_pending = 0;
   bit ht_fips_mode = 0;
@@ -282,7 +283,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // Health check test routines
   //
 
-  function void update_repcnts(bit fips_mode, rng_val_t rng_val);
+  function void update_repcnts(bit fips_mode, rng_val_t rng_val, bit disabling);
     int           max_repcnt = 0;
     bit           repcnt_fail, repcnt_sym_fail;
     uvm_reg_field alert_summary_field = ral.alert_summary_fail_counts.any_fail_count;
@@ -304,14 +305,14 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       max_repcnt = repcnt[rng_bit_sel];
     end
     `uvm_info(`gfn, $sformatf("max repcnt %0h", max_repcnt), UVM_DEBUG)
-    repcnt_fail = evaluate_repcnt_test(fips_mode, max_repcnt);
+    repcnt_fail = evaluate_repcnt_test(fips_mode, max_repcnt, disabling);
 
     if (rng_val == prev_rng_val) begin
       repcnt_symbol++;
     end else begin
       repcnt_symbol = 1;
     end
-    repcnt_sym_fail = evaluate_repcnt_symbol_test(fips_mode, repcnt_symbol);
+    repcnt_sym_fail = evaluate_repcnt_symbol_test(fips_mode, repcnt_symbol, disabling);
 
     cont_fail_in_last_sample = repcnt_fail | repcnt_sym_fail;
     continuous_fail_count += cont_fail_in_last_sample;
@@ -464,45 +465,52 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     return (name.substr(len - 3, len - 1) == "_lo");
   endfunction
 
-  // Operate on the watermark for a given test, using the mirrored copy of the corresponding
-  // watermark register.
-  //
-  // If the value exceeds (or is less then) the latest watermark value, then update the prediction.
-  //
-  // Implements predictions for all registers named <test>_watermarks.
-  function void update_watermark(string test, bit fips_mode, int value);
-    string        watermark_field_name;
-    string        watermark_reg_name;
-    uvm_reg       watermark_reg;
-    uvm_reg_field watermark_field;
-    int           watermark_val;
-    bit           low_test;
-    string        fmt;
+  // If watermark register is configured to record the specified test and if the value exceeds (or
+  // is less then) the latest watermark value, then update the prediction.
+  function void update_watermark(string test, int value, bit disabling = 0);
+    int                watermark_val;
+    bit                low_test;
+    string             fmt;
+    ht_watermark_num_e watermark_num;
+    bit                windowed_test;
 
     validate_test_name(test);
 
+    // Is the test continuous or windowed? For windowed tests, we may need to update the watermark
+    // now. For continuous tests, this has already been done in case the ENTROPY_SRC is getting
+    // disabled.
+    if (test inside {"adaptp_hi", "adaptp_lo", "bucket", "markov_hi", "markov_lo"}) begin
+      windowed_test = 1;
+    end else begin
+      windowed_test = 0;
+    end
     // The watermark registers for repcnt, repcnts and bucket tests deviate from the
     // general convention of suppressing the "_hi" suffix for tests that do not have a low
     // threshold.
-    if ((test == "repcnt") || (test == "repcnts") || (test == "bucket")) begin
+    if (test inside {"repcnt", "repcnts", "bucket"}) begin
       test = {test, "_hi"};
     end
 
-    watermark_field_name = fips_mode ? "fips_watermark" : "bypass_watermark";
-    watermark_reg_name   = $sformatf("%s_watermarks", test);
-    watermark_reg        = ral.get_reg_by_name(watermark_reg_name);
-    watermark_field      = watermark_reg.get_field_by_name(watermark_field_name);
-    watermark_val        = watermark_field.get_mirrored_value();
-    low_test             = is_low_test(test);
+    watermark_num = ht_watermark_num_e'(`gmv(ral.ht_watermark_num));
+    watermark_val = `gmv(ral.ht_watermark);
+    low_test      = is_low_test(test);
 
     if (low_test) begin : low_watermark_check
-      if (value < watermark_val) begin
-        fmt = "Predicted LO watermark for \"%s\" test (FIPS? %d): %04h";
-        `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, value), UVM_HIGH)
-        `DV_CHECK_FATAL(watermark_field.predict(.value(value), .kind(UVM_PREDICT_READ)))
+      if (watermark_num.name().tolower() == test) begin
+        if (disabling && !windowed_test) begin
+          fmt = "DUT disabled. Not updating %s watermwark to %04h. Current value %04h";
+          `uvm_info(`gfn, $sformatf(fmt, test, value, `gmv(ral.ht_watermark)), UVM_HIGH)
+        end else  if (value < watermark_val) begin
+          fmt = "Predicted LO watermark for \"%s\" test: %04h";
+          `uvm_info(`gfn, $sformatf(fmt, test, value), UVM_HIGH)
+          `DV_CHECK_FATAL(ral.ht_watermark.predict(.value(value), .kind(UVM_PREDICT_READ)))
+        end else begin
+          fmt = "LO watermark unchanged for \"%s\" test: %04h";
+          `uvm_info(`gfn, $sformatf(fmt, test, watermark_val), UVM_HIGH)
+        end
       end else begin
-        fmt = "LO watermark unchanged for \"%s\" test (FIPS? %d): %04h";
-        `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, watermark_val), UVM_HIGH)
+        fmt = "ht_watermark_num is set to %s, not %s. Not updating watermark";
+        `uvm_info(`gfn, $sformatf(fmt, watermark_num.name().tolower(), test), UVM_HIGH)
       end
     end else begin : high_watermark_check
       // Update predicted value of internal repetition counter even if the watermark does not
@@ -513,14 +521,21 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         repcnts_event_cnt = value;
       end
       // Update predicted watermark value if appropriate.
-      if (value > watermark_val) begin
-        string fmt;
-        fmt = "Predicted HI watermark for \"%s\" test (FIPS? %d): %04h";
-        `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, value), UVM_HIGH)
-        `DV_CHECK_FATAL(watermark_field.predict(.value(value), .kind(UVM_PREDICT_READ)))
+      if (watermark_num.name().tolower() == test) begin
+        if (disabling && !windowed_test) begin
+          fmt = "DUT disabled. Not updating %s watermwark to %04h. Current value %04h";
+          `uvm_info(`gfn, $sformatf(fmt, test, value, `gmv(ral.ht_watermark)), UVM_HIGH)
+        end else if (value > watermark_val) begin
+          fmt = "Predicted HI watermark for \"%s\" test: %04h";
+          `uvm_info(`gfn, $sformatf(fmt, test, value), UVM_HIGH)
+          `DV_CHECK_FATAL(ral.ht_watermark.predict(.value(value), .kind(UVM_PREDICT_READ)))
+        end else begin
+          fmt = "HI watermark unchanged for \"%s\" test: %04h";
+          `uvm_info(`gfn, $sformatf(fmt, test, watermark_val), UVM_HIGH)
+        end
       end else begin
-        fmt = "HI watermark unchanged for \"%s\" test (FIPS? %d): %04h";
-        `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, watermark_val), UVM_HIGH)
+        fmt = "ht_watermark_num is set to %s, not %s. Not updating watermark";
+        `uvm_info(`gfn, $sformatf(fmt, watermark_num.name().tolower(), test), UVM_HIGH)
       end
     end : high_watermark_check
 
@@ -673,8 +688,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     rng_bit_enable = (ral.conf.rng_bit_enable.get_mirrored_value() == MuBi4True);
 
     value = calc_adaptp_test(window, maxval, minval);
-    update_watermark("adaptp_lo", fips_mode, total_scope ? value : minval);
-    update_watermark("adaptp_hi", fips_mode, total_scope ? value : maxval);
+    update_watermark("adaptp_lo", total_scope ? value : minval);
+    update_watermark("adaptp_hi", total_scope ? value : maxval);
 
     fail_lo = check_threshold("adaptp_lo", fips_mode, total_scope ? value : minval);
     if (fail_lo) predict_failure_logs("adaptp_lo");
@@ -725,7 +740,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     test_result = calc_bucket_test(window);
     test_result_max = test_result.max();
     max_value = test_result_max[0];
-    update_watermark("bucket", fips_mode, max_value);
+    update_watermark("bucket", max_value);
 
     for (int i = 0; i < test_result.size(); i++) begin
       value = test_result[i];
@@ -775,8 +790,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     rng_bit_enable = (ral.conf.rng_bit_enable.get_mirrored_value() == MuBi4True);
 
     value = calc_markov_test(window, maxval, minval);
-    update_watermark("markov_lo", fips_mode, total_scope ? value : minval);
-    update_watermark("markov_hi", fips_mode, total_scope ? value : maxval);
+    update_watermark("markov_lo", total_scope ? value : minval);
+    update_watermark("markov_hi", total_scope ? value : maxval);
 
     fail_lo = check_threshold("markov_lo", fips_mode, total_scope ? value : minval);
     if (fail_lo) predict_failure_logs("markov_lo");
@@ -813,7 +828,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     return (fail_hi || fail_lo);
   endfunction
 
-  function void evaluate_external_ht(entropy_src_xht_meta_rsp_t xht_rsp, bit fips_mode);
+  function void evaluate_external_ht(entropy_src_xht_meta_rsp_t xht_rsp);
     int value_hi, value_lo;
     bit fail_hi, fail_lo;
     string msg;
@@ -824,8 +839,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     fail_hi = xht_rsp.test_fail_hi_pulse;
     fail_lo = xht_rsp.test_fail_lo_pulse;
 
-    update_watermark("extht_lo", fips_mode, value_lo);
-    update_watermark("extht_hi", fips_mode, value_hi);
+    update_watermark("extht_lo", value_lo);
+    update_watermark("extht_hi", value_hi);
 
     if (fail_lo) predict_failure_logs("extht_lo");
 
@@ -836,11 +851,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   endfunction
 
   // The repetition counts are always running
-  function bit evaluate_repcnt_test(bit fips_mode, int value);
+  function bit evaluate_repcnt_test(bit fips_mode, int value, bit disabling);
     bit fail;
     bit rng_en = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
 
-    update_watermark("repcnt", fips_mode, value);
+    update_watermark("repcnt", value, disabling);
 
     fail = check_threshold("repcnt", fips_mode, value);
     if (fail) begin
@@ -857,11 +872,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   endfunction
 
-  function bit evaluate_repcnt_symbol_test(bit fips_mode, int value);
+  function bit evaluate_repcnt_symbol_test(bit fips_mode, int value, bit disabling);
     bit fail;
     bit rng_en = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
 
-    update_watermark("repcnts", fips_mode, value);
+    update_watermark("repcnts", value, disabling);
 
     fail = check_threshold("repcnts", fips_mode, value);
     if (fail) begin
@@ -1125,9 +1140,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   function void clear_ht_stat_predictions();
     string stat_regs [] = '{
-        "repcnt_hi_watermarks", "repcnts_hi_watermarks", "adaptp_hi_watermarks",
-        "adaptp_lo_watermarks", "extht_hi_watermarks", "extht_lo_watermarks",
-        "bucket_hi_watermarks", "markov_hi_watermarks", "markov_lo_watermarks",
+        "ht_watermark",
         "repcnt_total_fails", "repcnts_total_fails", "adaptp_hi_total_fails",
         "adaptp_lo_total_fails", "bucket_total_fails", "markov_hi_total_fails",
         "markov_lo_total_fails", "extht_hi_total_fails", "extht_lo_total_fails",
@@ -1188,12 +1201,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     if (rst_type == Enable) begin
       fork
         begin
-          // Clear watermark registers (to 0) and internal repetition counters (to 1).
-          `DV_CHECK_FATAL(ral.repcnt_hi_watermarks.fips_watermark.predict(16'd0))
-          `DV_CHECK_FATAL(ral.repcnt_hi_watermarks.bypass_watermark.predict(16'd0))
+          // Clear watermark register to all-0 or all-1 depending on the config.
+          ht_watermark_num_e ht_watermark_num = ht_watermark_num_e'(`gmv(ral.ht_watermark_num));
+          bit ht_watermark_high = (ht_watermark_num inside {REPCNT_HI, REPCNTS_HI, ADAPTP_HI,
+                                                            BUCKET_HI, MARKOV_HI, EXTHT_HI});
+          `DV_CHECK_FATAL(ral.ht_watermark.predict({16{~ht_watermark_high}}))
           repcnt_event_cnt = 16'd1;
-          `DV_CHECK_FATAL(ral.repcnts_hi_watermarks.fips_watermark.predict(16'd0))
-          `DV_CHECK_FATAL(ral.repcnts_hi_watermarks.bypass_watermark.predict(16'd0))
           repcnts_event_cnt = 16'd1;
           // Wait one clock cycle, then propagate the internal counter to the watermark registers.
           cfg.clk_rst_vif.wait_clks(1);
@@ -1550,23 +1563,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         one_way_threshold   = 1;
         threshold_increases = 1;
       end
-      "repcnt_hi_watermarks": begin
+      "ht_watermark_num": begin
+        locked_reg_access = dut_reg_locked;
       end
-      "repcnts_hi_watermarks": begin
-      end
-      "adaptp_hi_watermarks": begin
-      end
-      "adaptp_lo_watermarks": begin
-      end
-      "bucket_hi_watermarks": begin
-      end
-      "markov_hi_watermarks": begin
-      end
-      "markov_lo_watermarks": begin
-      end
-      "extht_hi_watermarks": begin
-      end
-      "extht_lo_watermarks": begin
+      "ht_watermark": begin
       end
       "repcnt_total_fails": begin
       end
@@ -1831,18 +1831,30 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                                    invalid_threshold_scope);
               check_redundancy_val("conf", "rng_bit_enable", "rng_bit_enable_field_alert",
                                    invalid_rng_bit_enable);
-              // The `fips_enable` field affects the bypass/FIPS mode selection, so we have to
-              // propagate the internal counter to the watermark register.
-              propagate_repcnt_to_watermark();
             end
             "entropy_control": begin
               check_redundancy_val("entropy_control", "es_route", "es_route_field_alert",
                                    invalid_es_route);
               check_redundancy_val("entropy_control", "es_type", "es_type_field_alert",
                                    invalid_es_type);
-              // Both fields affect the bypass/FIPS mode selection, so we have to propagate the
-              // internal counter to the watermark register.
-              propagate_repcnt_to_watermark();
+            end
+            "ht_watermark_num": begin
+              // Resolve unsupported values
+              bit [3:0] ht_watermark_num_in = item.a_data[3:0];
+              ht_watermark_num_e ht_watermark_num;
+              case (ht_watermark_num_e'(ht_watermark_num_in))
+                REPCNT_HI,
+                REPCNTS_HI,
+                ADAPTP_HI,
+                ADAPTP_LO,
+                BUCKET_HI,
+                MARKOV_HI,
+                MARKOV_LO,
+                EXTHT_HI,
+                EXTHT_LO: ht_watermark_num = ht_watermark_num_e'(ht_watermark_num_in);
+                default:  ht_watermark_num = REPCNT_HI;
+              endcase
+              void'(csr.predict(.value(ht_watermark_num), .kind(UVM_PREDICT_WRITE)));
             end
             "alert_threshold": begin
               cov_vif.cg_alert_cnt_sample(item.a_data, 0);
@@ -2594,13 +2606,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end
   endtask
 
-  // Propagate internal repetition counter to watermark register.  Call this function when changing
-  // a setting that influences the switch between bypass and FIPS mode.  This will propagate the
-  // internal repetition counters to the watermark field of the new mode (i.e., bypass or FIPS).
+  // Propagate internal repetition counter to watermark register.
   function automatic void propagate_repcnt_to_watermark();
     bit fips_enable, bypass_to_sw, route_to_sw, bypass_mode, rng_bit_en;
     bit [1:0] rng_bit_sel;
     int max_repcnt = 0;
+    ht_watermark_num_e ht_watermark_num;
     // Determine whether FIPS or bypass mode is now active.
     fips_enable = `gmv(ral.conf.fips_enable) == MuBi4True;
     bypass_to_sw = `gmv(ral.entropy_control.es_type) == MuBi4True;
@@ -2608,26 +2619,20 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     rng_bit_en  = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
     rng_bit_sel = `gmv(ral.conf.rng_bit_sel);
     bypass_mode = ~fips_enable | (bypass_to_sw & route_to_sw);
+    ht_watermark_num = ht_watermark_num_e'(`gmv(ral.ht_watermark_num));
     // Calculate the new value for repcnt_event_cnt, since it can change when we toggle rng_bit_en.
     for (int i = 0; i < `RNG_BUS_WIDTH; i++) begin
       max_repcnt = (repcnt[i] > max_repcnt) ? repcnt[i] : max_repcnt;
     end
     repcnt_event_cnt = rng_bit_en ? repcnt[rng_bit_sel] : max_repcnt;
-    if (bypass_mode) begin
-      // Propagate internal repetition counter to bypass watermark fields.
-      if (repcnt_event_cnt > `gmv(ral.repcnt_hi_watermarks.bypass_watermark)) begin
-        `DV_CHECK_FATAL(ral.repcnt_hi_watermarks.bypass_watermark.predict(repcnt_event_cnt))
+    // Propagate internal repetition counter to watermark register if configured accordingly.
+    if (ht_watermark_num == REPCNT_HI) begin
+      if (repcnt_event_cnt > `gmv(ral.ht_watermark)) begin
+        `DV_CHECK_FATAL(ral.ht_watermark.predict(repcnt_event_cnt))
       end
-      if (repcnts_event_cnt > `gmv(ral.repcnts_hi_watermarks.bypass_watermark)) begin
-        `DV_CHECK_FATAL(ral.repcnts_hi_watermarks.bypass_watermark.predict(repcnts_event_cnt))
-      end
-    end else begin
-      // Propagate internal repetition counter to FIPS watermark fields.
-      if (repcnt_event_cnt > `gmv(ral.repcnt_hi_watermarks.fips_watermark)) begin
-        `DV_CHECK_FATAL(ral.repcnt_hi_watermarks.fips_watermark.predict(repcnt_event_cnt))
-      end
-      if (repcnts_event_cnt > `gmv(ral.repcnts_hi_watermarks.fips_watermark)) begin
-        `DV_CHECK_FATAL(ral.repcnts_hi_watermarks.fips_watermark.predict(repcnts_event_cnt))
+    end else if (ht_watermark_num == REPCNTS_HI) begin
+      if (repcnts_event_cnt > `gmv(ral.ht_watermark)) begin
+        `DV_CHECK_FATAL(ral.ht_watermark.predict(repcnts_event_cnt))
       end
     end
   endfunction
@@ -2716,6 +2721,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         forever begin : window_loop
           string fmt;
           bit [`RNG_BUS_WIDTH - 1:0] xht_bus_val;
+          bit module_enable;
+          bit es_delayed_enable;
+          bit disabling;
 
           // For synchronization purposes we wait to process each sample until it is visible on the
           // as an event on xht bus. We then perform checks to ensure that the xht interface data
@@ -2733,7 +2741,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             disable_detected = !xht_fifo.try_get(xht_item);
             if (disable_detected) break; // No events. DUT has shutdown
             if (!xht_item.req.clear) begin
-              evaluate_external_ht(xht_item.rsp, ht_fips_mode);
+              evaluate_external_ht(xht_item.rsp);
             end
             if (xht_item.entropy_valid || xht_item.req.window_wrap_pulse) break;
           end : sample_loop
@@ -2767,9 +2775,30 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           fmt = "RNG element: %0x, idx: %0d";
           `uvm_info(`gfn, $sformatf(fmt, rng_val, window.size()), UVM_FULL)
 
+          // Accurately determine whether the DUT is still enabled (the watermark register gets
+          // still updated) or already disabled (the watermark register gets no longer updated).
+          // We directly get the value from the DUT via backdoor as some sequences disable the DUT
+          // via backdoor csr_poke() to exercise FSM transitions hard to cover otherwise.
+          module_enable = csr_peek(ral.module_enable.module_enable) == MuBi4True;
+          fmt = "module_enable %01d, disable_detected %01d, dut_pipeline_enabled %01d";
+          `uvm_info(`gfn, $sformatf(fmt, module_enable, disable_detected, dut_pipeline_enabled),
+              UVM_HIGH)
+          if (module_enable) begin
+            // The module is for sure not disabling.
+            disabling = 0;
+          end else if (!dut_pipeline_enabled && disable_detected) begin
+            // The scoreboard accurately knows that the DUT is disabling at this moment.
+            disabling = disable_detected;
+          end else begin
+            // The DUT is about to get disabled but the scoreboard is undecided whether it has
+            // happened already or not. Probe the RTL to find it out.
+            `DV_CHECK(uvm_hdl_read(es_delayed_enable_path, es_delayed_enable))
+            disabling = ~es_delayed_enable;
+          end
+
           // Update the repetition counts, which are updated continuously.
           // The other health checks only operate on complete windows, and are processed later.
-          update_repcnts(ht_fips_mode, rng_val);
+          update_repcnts(ht_fips_mode, rng_val, disabling);
         end
 
         if (disable_detected) break; // No events. DUT has shutdown
