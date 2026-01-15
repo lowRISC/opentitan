@@ -285,6 +285,16 @@
                     '''
                 }
                 {
+                    name: "CREATOR_SW_CFG_RNG_HEALTH_TEST_WINDOWS",
+                    size: "4",
+                    desc: '''
+                    The health test window size settings for bypass mode and
+                    FIPS/CC compliance mode.
+                    This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    See entropy_src documentation for more details.
+                    '''
+                }
+                {
                     name: "CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS",
                     size: "4",
                     desc: '''

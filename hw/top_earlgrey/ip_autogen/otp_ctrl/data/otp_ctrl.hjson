@@ -522,10 +522,22 @@
       default: "4",
       local: "true"
     },
+    { name: "CreatorSwCfgRngHealthTestWindowsOffset",
+      desc: "Offset of CREATOR_SW_CFG_RNG_HEALTH_TEST_WINDOWS",
+      type: "int",
+      default: "288",
+      local: "true"
+    },
+    { name: "CreatorSwCfgRngHealthTestWindowsSize",
+      desc: "Size of CREATOR_SW_CFG_RNG_HEALTH_TEST_WINDOWS",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "CreatorSwCfgRngRepcntThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS",
       type: "int",
-      default: "288",
+      default: "292",
       local: "true"
     },
     { name: "CreatorSwCfgRngRepcntThresholdsSize",
@@ -537,7 +549,7 @@
     { name: "CreatorSwCfgRngRepcntsThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_REPCNTS_THRESHOLDS",
       type: "int",
-      default: "292",
+      default: "296",
       local: "true"
     },
     { name: "CreatorSwCfgRngRepcntsThresholdsSize",
@@ -549,7 +561,7 @@
     { name: "CreatorSwCfgRngAdaptpHiThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_ADAPTP_HI_THRESHOLDS",
       type: "int",
-      default: "296",
+      default: "300",
       local: "true"
     },
     { name: "CreatorSwCfgRngAdaptpHiThresholdsSize",
@@ -561,7 +573,7 @@
     { name: "CreatorSwCfgRngAdaptpLoThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_ADAPTP_LO_THRESHOLDS",
       type: "int",
-      default: "300",
+      default: "304",
       local: "true"
     },
     { name: "CreatorSwCfgRngAdaptpLoThresholdsSize",
@@ -573,7 +585,7 @@
     { name: "CreatorSwCfgRngBucketThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS",
       type: "int",
-      default: "304",
+      default: "308",
       local: "true"
     },
     { name: "CreatorSwCfgRngBucketThresholdsSize",
@@ -585,7 +597,7 @@
     { name: "CreatorSwCfgRngMarkovHiThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_MARKOV_HI_THRESHOLDS",
       type: "int",
-      default: "308",
+      default: "312",
       local: "true"
     },
     { name: "CreatorSwCfgRngMarkovHiThresholdsSize",
@@ -597,7 +609,7 @@
     { name: "CreatorSwCfgRngMarkovLoThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS",
       type: "int",
-      default: "312",
+      default: "316",
       local: "true"
     },
     { name: "CreatorSwCfgRngMarkovLoThresholdsSize",
@@ -609,7 +621,7 @@
     { name: "CreatorSwCfgRngExthtHiThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_EXTHT_HI_THRESHOLDS",
       type: "int",
-      default: "316",
+      default: "320",
       local: "true"
     },
     { name: "CreatorSwCfgRngExthtHiThresholdsSize",
@@ -621,7 +633,7 @@
     { name: "CreatorSwCfgRngExthtLoThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS",
       type: "int",
-      default: "320",
+      default: "324",
       local: "true"
     },
     { name: "CreatorSwCfgRngExthtLoThresholdsSize",
@@ -633,7 +645,7 @@
     { name: "CreatorSwCfgRngAlertThresholdOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_ALERT_THRESHOLD",
       type: "int",
-      default: "324",
+      default: "328",
       local: "true"
     },
     { name: "CreatorSwCfgRngAlertThresholdSize",
@@ -645,7 +657,7 @@
     { name: "CreatorSwCfgRngHealthConfigDigestOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST",
       type: "int",
-      default: "328",
+      default: "332",
       local: "true"
     },
     { name: "CreatorSwCfgRngHealthConfigDigestSize",
@@ -657,7 +669,7 @@
     { name: "CreatorSwCfgSramKeyRenewEnOffset",
       desc: "Offset of CREATOR_SW_CFG_SRAM_KEY_RENEW_EN",
       type: "int",
-      default: "332",
+      default: "336",
       local: "true"
     },
     { name: "CreatorSwCfgSramKeyRenewEnSize",
@@ -669,7 +681,7 @@
     { name: "CreatorSwCfgImmutableRomExtEnOffset",
       desc: "Offset of CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN",
       type: "int",
-      default: "336",
+      default: "340",
       local: "true"
     },
     { name: "CreatorSwCfgImmutableRomExtEnSize",
@@ -681,7 +693,7 @@
     { name: "CreatorSwCfgImmutableRomExtStartOffsetOffset",
       desc: "Offset of CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET",
       type: "int",
-      default: "340",
+      default: "344",
       local: "true"
     },
     { name: "CreatorSwCfgImmutableRomExtStartOffsetSize",
@@ -693,7 +705,7 @@
     { name: "CreatorSwCfgImmutableRomExtLengthOffset",
       desc: "Offset of CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH",
       type: "int",
-      default: "344",
+      default: "348",
       local: "true"
     },
     { name: "CreatorSwCfgImmutableRomExtLengthSize",
@@ -705,7 +717,7 @@
     { name: "CreatorSwCfgImmutableRomExtSha256HashOffset",
       desc: "Offset of CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH",
       type: "int",
-      default: "348",
+      default: "352",
       local: "true"
     },
     { name: "CreatorSwCfgImmutableRomExtSha256HashSize",
@@ -717,7 +729,7 @@
     { name: "CreatorSwCfgReservedOffset",
       desc: "Offset of CREATOR_SW_CFG_RESERVED",
       type: "int",
-      default: "380",
+      default: "384",
       local: "true"
     },
     { name: "CreatorSwCfgReservedSize",

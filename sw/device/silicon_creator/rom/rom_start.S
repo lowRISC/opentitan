@@ -359,6 +359,13 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   lw t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST_OFFSET(a0)
   beqz t0, .L_entropy_enable
 
+  // Copy the entropy source health test windows configuration from OTP.
+  li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
+  li a1, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
+  lw t1, OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_HEALTH_TEST_WINDOWS_OFFSET(a1)
+  sw t1, ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET(a0)
+
   // Copy the entropy source health checks configuration thresholds from OTP.
   li   a0, (TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR + \
             ENTROPY_SRC_REPCNT_THRESHOLDS_REG_OFFSET)

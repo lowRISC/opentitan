@@ -199,7 +199,7 @@ package top_darjeeling_rnd_cnst_pkg;
     }),
     2432'({
       64'h9521702FCBCF4F54,
-      32'h0, // unallocated space
+      32'h0,
       32'h0,
       32'h0,
       32'h0,
