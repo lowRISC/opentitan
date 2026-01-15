@@ -307,6 +307,27 @@ class IbexFiTest(unittest.TestCase):
                 utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     @unittest.skip
+    def test_char_flash_read_static(self):
+        test_succeeded = False
+        for flash_region in range(2, 10):
+            actual_result = fi_ibex_functions.char_flash_read_static(
+                target, init=True, flash_region=flash_region, iterations=iterations
+            )
+            actual_result_json = json.loads(actual_result)
+            expected_result_json = load_test_data("char_flash_read_static")
+            if "success" not in actual_result_json:
+                utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
+
+                actual_result = fi_ibex_functions.char_flash_read_static(
+                    target, init=False, flash_region=flash_region, iterations=iterations
+                )
+                actual_result_json = json.loads(actual_result)
+                utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
+
+                test_succeeded = True
+        assert test_succeeded, "No writable flash region found"
+
+    @unittest.skip
     def test_char_flash_write(self):
         for flash_region in range(2, 10):
             actual_result = fi_ibex_functions.char_flash_write(
