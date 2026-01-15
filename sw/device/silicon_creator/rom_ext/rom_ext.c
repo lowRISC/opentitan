@@ -545,7 +545,8 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // Fix the boot data if needed
   rom_error_t boot_data_validity = boot_data_redundancy_check();
   if (boot_data_validity != kErrorOk) {
-    RETURN_IF_ERROR(boot_data_write(boot_data));
+    // Ignore the result to prevent unnecessary bootloop.
+    OT_DISCARD(boot_data_write(boot_data));
   }
 
   // Initialize the boot_log in retention RAM.
