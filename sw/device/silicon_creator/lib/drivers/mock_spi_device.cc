@@ -7,7 +7,14 @@
 namespace rom_test {
 extern "C" {
 
-void spi_device_init(void) { MockSpiDevice::Instance().Init(); }
+void spi_device_init(uint8_t log2_density, const void *sfdp_table,
+                     size_t sfdp_len) {
+  MockSpiDevice::Instance().Init(log2_density, sfdp_table, sfdp_len);
+}
+
+void spi_device_init_bootstrap(void) {
+  MockSpiDevice::Instance().InitBootstrap();
+}
 
 rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd) {
   return MockSpiDevice::Instance().CmdGet(cmd);

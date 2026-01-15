@@ -162,7 +162,7 @@ TEST_F(InitTest, Init) {
                          {SPI_DEVICE_CMD_INFO_WRDI_VALID_BIT, 1},
                      });
 
-  spi_device_init();
+  spi_device_init_bootstrap();
 }
 
 TEST_F(SpiDeviceTest, FlashStatusClear) {
