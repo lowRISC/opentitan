@@ -693,6 +693,7 @@ opentitan_test(
         ":rnd",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:crc32",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:rand_testutils",
@@ -1022,6 +1023,7 @@ opentitan_test(
         ":rnd",
         ":usb",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
