@@ -195,6 +195,10 @@
                     size: "4"
                 }
                 {
+                    name: "CREATOR_SW_CFG_RNG_HEALTH_TEST_WINDOWS",
+                    size: "4",
+                }
+                {
                     name: "CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS",
                     size: "4"
                 }

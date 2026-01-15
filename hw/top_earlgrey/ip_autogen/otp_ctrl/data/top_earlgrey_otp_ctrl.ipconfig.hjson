@@ -448,6 +448,24 @@
               offset: 284
             }
             {
+              name: CREATOR_SW_CFG_RNG_HEALTH_TEST_WINDOWS
+              size: 4
+              desc:
+                '''
+                The health test window size settings for bypass mode and
+                FIPS/CC compliance mode.
+                This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                See entropy_src documentation for more details.
+                '''
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 288
+            }
+            {
               name: CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS
               size: 4
               desc:
@@ -463,7 +481,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 288
+              offset: 292
             }
             {
               name: CREATOR_SW_CFG_RNG_REPCNTS_THRESHOLDS
@@ -481,7 +499,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 292
+              offset: 296
             }
             {
               name: CREATOR_SW_CFG_RNG_ADAPTP_HI_THRESHOLDS
@@ -499,7 +517,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 296
+              offset: 300
             }
             {
               name: CREATOR_SW_CFG_RNG_ADAPTP_LO_THRESHOLDS
@@ -517,7 +535,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 300
+              offset: 304
             }
             {
               name: CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS
@@ -535,7 +553,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 304
+              offset: 308
             }
             {
               name: CREATOR_SW_CFG_RNG_MARKOV_HI_THRESHOLDS
@@ -553,7 +571,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 308
+              offset: 312
             }
             {
               name: CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS
@@ -571,7 +589,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 312
+              offset: 316
             }
             {
               name: CREATOR_SW_CFG_RNG_EXTHT_HI_THRESHOLDS
@@ -589,7 +607,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 316
+              offset: 320
             }
             {
               name: CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS
@@ -607,7 +625,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 320
+              offset: 324
             }
             {
               name: CREATOR_SW_CFG_RNG_ALERT_THRESHOLD
@@ -625,7 +643,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 324
+              offset: 328
             }
             {
               name: CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST
@@ -643,7 +661,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 328
+              offset: 332
             }
             {
               name: CREATOR_SW_CFG_SRAM_KEY_RENEW_EN
@@ -660,7 +678,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 332
+              offset: 336
             }
             {
               name: CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN
@@ -677,7 +695,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 336
+              offset: 340
             }
             {
               name: CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET
@@ -693,7 +711,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 340
+              offset: 344
             }
             {
               name: CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH
@@ -705,7 +723,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 344
+              offset: 348
             }
             {
               name: CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH
@@ -717,7 +735,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 348
+              offset: 352
             }
             {
               name: CREATOR_SW_CFG_RESERVED
@@ -733,7 +751,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 380
+              offset: 384
             }
             {
               name: CREATOR_SW_CFG_DIGEST
