@@ -113,7 +113,7 @@ UJSON_SERDE_STRUCT(ManufCertgenInputs, \
 #define STRUCT_PERSO_BLOB(field, string) \
     field(num_objs, size_t) \
     field(next_free, size_t) \
-    field(body, uint8_t, 4096)
+    field(body, uint8_t, 5120)
 UJSON_SERDE_STRUCT(PersoBlob, \
                    perso_blob_t, \
                    STRUCT_PERSO_BLOB);
