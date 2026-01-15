@@ -9,13 +9,14 @@ load(
     _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
     _opentitan_transition = "opentitan_transition",
 )
-load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
-load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
 load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "convert_to_vmem",
     "obj_disassemble",
     "obj_transform",
 )
+load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
+load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_override")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
@@ -599,9 +600,25 @@ def _opentitan_binary_assemble_impl(ctx):
         spec = " ".join(spec)
         spec = recursive_format(spec, action_param)
         spec = spec.split(" ")
-        img = assemble_for_test(ctx, name, spec, input_bins, tc.tools.opentitantool)
-        result.append(exec_env_provider(default = img, kind = "flash"))
-        assembled_bins.append(img)
+
+        # Generate the multislot bin.
+        bin = assemble_for_test(ctx, name, spec, input_bins, tc.tools.opentitantool)
+
+        # Generate unscrambled VMEM files.
+        #
+        # Multi-slot binaries are currently only used for bootstrap operations,
+        # i.e., non-backdoor loaded sim environments and FPGA/silicon
+        # environments. Therefore we only need unscrambled VMEM files.
+        vmem = convert_to_vmem(
+            ctx,
+            name = name,
+            src = bin,
+            word_size = 64,
+        )
+
+        result.append(exec_env_provider(default = bin, kind = "flash", vmem = vmem))
+        assembled_bins.append(bin)
+        assembled_bins.append(vmem)
         ot_bin_env_info[exec_env_provider] = env
     result.append(OpenTitanBinaryInfo(exec_env = ot_bin_env_info))
     return result + [DefaultInfo(files = depset(assembled_bins))]
