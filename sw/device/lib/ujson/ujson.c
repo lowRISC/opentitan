@@ -169,6 +169,15 @@ status_t ujson_parse_qs(ujson_t *uj, char *str, size_t len) {
 status_t ujson_parse_integer(ujson_t *uj, void *result, size_t rsz) {
   char ch = (char)TRY(consume_whitespace(uj));
   bool neg = false;
+  bool quoted = false;
+
+  if (ch == '"') {
+    // If we encounter a quote while parsing an integer, assume that
+    // the quoted string will contain an integer.  Get the next
+    // character and continue parsing as if we expect an integer.
+    quoted = true;
+    ch = (char)TRY(ujson_getc(uj));
+  }
 
   if (ch == '-') {
     neg = true;
@@ -194,8 +203,19 @@ status_t ujson_parse_integer(ujson_t *uj, void *result, size_t rsz) {
       break;
     ch = (char)s.value;
   }
-  if (status_ok(s))
-    TRY(ujson_ungetc(uj, ch));
+
+  if (status_ok(s)) {
+    if (quoted) {
+      if (ch != '"') {
+        return INVALID_ARGUMENT();
+      }
+      // Close quote on an integer in quoted string.
+      // Don't have to unget the quote because we
+      // want to consume it.
+    } else {
+      TRY(ujson_ungetc(uj, ch));
+    }
+  }
 
   if (neg) {
     if (value > (uint64_t)INT64_MAX + 1) {
