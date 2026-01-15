@@ -6,7 +6,7 @@
 name = "opentitan"
 version = "0.0.0"
 description = "Open-source hardware root-of-trust"
-requires-python = ">=3.10"
+requires-python = ">=3.10, <3.14"
 
 dependencies = [
   # Keep sorted
