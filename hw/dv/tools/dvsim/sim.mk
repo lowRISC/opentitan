@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-export SHELL  := /bin/bash
+export SHELL  := /usr/bin/env bash
 .DEFAULT_GOAL := all
 
 LOCK_ROOT_DIR ?= flock --timeout 3600 ${proj_root} --command
