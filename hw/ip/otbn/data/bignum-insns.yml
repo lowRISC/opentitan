@@ -112,9 +112,9 @@
   doc: |
     Add two WDR values, modulo the MOD WSR.
 
-    The values in `<wrs1>` and `<wrs2>` are summed to get an intermediate result (of width `WLEN + 1`).
+    The values in `wrs1` and `wrs2` are summed to get an intermediate result (of width `WLEN + 1`).
     If this result is greater than MOD then MOD is subtracted from it.
-    The result is then truncated to 256 bits and stored in `<wrd>`.
+    The result is then truncated to 256 bits and stored in `wrd`.
 
     This operation correctly implements addition modulo MOD, providing that the intermediate result is less than `2 * MOD`.
     The intermediate result is small enough if both inputs are less than `MOD`.
@@ -149,7 +149,7 @@
       abbrev: q1
       type: uimm2
       doc: |
-        Quarter-word select for `<wrs1>`.
+        Quarter-word select for `wrs1`.
 
         Valid values:
         - `0`: Select `wrs1[WLEN/4-1:0]` (least significant quarter-word)
@@ -164,13 +164,13 @@
       abbrev: q2
       type: uimm2
       doc: |
-        Quarter-word select for `<wrs2>`.
+        Quarter-word select for `wrs2`.
 
         Valid values:
-        - `0`: Select `wrs1[WLEN/4-1:0]` (least significant quarter-word)
-        - `1`: Select `wrs1[WLEN/2:WLEN/4]`
-        - `2`: Select `wrs1[WLEN/4*3-1:WLEN/2]`
-        - `3`: Select `wrs1[WLEN-1:WLEN/4*3]` (most significant quarter-word)
+        - `0`: Select `wrs2[WLEN/4-1:0]` (least significant quarter-word)
+        - `1`: Select `wrs2[WLEN/2:WLEN/4]`
+        - `2`: Select `wrs2[WLEN/4*3-1:WLEN/2]`
+        - `3`: Select `wrs2[WLEN-1:WLEN/4*3]` (most significant quarter-word)
     - &mulqacc-acc-shift-imm
       name: acc_shift_imm
       abbrev: shift
@@ -258,7 +258,7 @@
       abbrev: dh
       type: enum(L,U)
       doc: |
-        Half-word select for `<wrd>`.
+        Half-word select for `wrd`.
         A value of `L` means the less significant half-word; `U` means the more significant half-word.
     - *mulqacc-wrs1
     - *mulqacc-wrs1-qwsel
@@ -410,11 +410,11 @@
   synopsis: Pseudo-modulo subtraction
   operands: [wrd, wrs1, wrs2]
   doc: |
-    Subtract `<wrs2>` from `<wrs1>`, modulo the `MOD` WSR.
+    Subtract `wrs2` from `wrs1`, modulo the `MOD` WSR.
 
     The intermediate result is treated as a signed number (of width `WLEN + 1`).
     If it is negative, `MOD` is added to it.
-    The 2's-complement result is then truncated to 256 bits and stored in `<wrd>`.
+    The 2's-complement result is then truncated to 256 bits and stored in `wrd`.
 
     This operation correctly implements subtraction modulo `MOD`, providing that the intermediate result at least `-MOD` and at most `MOD - 1`.
     This is guaranteed if both inputs are less than `MOD`.
@@ -768,13 +768,13 @@
       type: option(++)
       abbrev: inc1
       doc: |
-        Increment the value in `<grs1>` by WLEN/8 (one word).
+        Increment the value in `grs1` by WLEN/8 (one word).
         Cannot be specified together with `grs2_inc`.
     - name: grs2_inc
       type: option(++)
       abbrev: inc2
       doc: |
-        Increment the value in `<grs2>` by one.
+        Increment the value in `grs2` by one.
         Cannot be specified together with `grs1_inc`.
   syntax: |
     <grs2>[<grs2_inc>], <offset>(<grs1>[<grs1_inc>])
@@ -847,12 +847,12 @@
     - name: grd_inc
       type: option(++)
       doc: |
-        Increment the value in `<grd>` by one.
+        Increment the value in `grd` by one.
         Cannot be specified together with `grs_inc`.
     - name: grs_inc
       type: option(++)
       doc: |
-        Increment the value in `<grs>` by one.
+        Increment the value in `grs` by one.
         Cannot be specified together with `grd_inc`.
   syntax: |
     <grd>[<grd_inc>], <grs>[<grs_inc>]
