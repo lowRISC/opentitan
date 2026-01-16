@@ -39,7 +39,7 @@ pub struct ManufFtProvisioningDataInput {
     /// FT Device ID to provision.
     ///
     /// Contains the SKU-specific portion of the device ID.
-    #[arg(long)]
+    #[arg(long, default_value = "")]
     pub ft_device_id: String,
 
     /// Wafer Authentication Secret to verify from device.
@@ -98,6 +98,10 @@ struct Opts {
     #[arg(long, default_value = "BOOTSTRAP")]
     console_spi: String,
 
+    /// Name of the SPI interface to connect to the OTTF console.
+    #[arg(long, default_value = "IOA5")]
+    console_tx_indicator_pin: String,
+
     /// Owner's firmware string indicating successful start up.
     #[arg(long)]
     owner_success_text: Option<String>,
@@ -146,10 +150,13 @@ fn main() -> Result<()> {
     log::info!("Encrypted rma_unlock_token = {}", response.rma_unlock_token);
 
     // Parse and prepare individualization ujson data payload.
-    let mut ft_device_id =
-        hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.ft_device_id.as_str())?;
+    let mut ft_device_id = ArrayVec::<u32, 4>::from([0; 4]);
+    if !opts.provisioning_data.ft_device_id.is_empty() {
+        ft_device_id =
+            hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.ft_device_id.as_str())?;
+        ft_device_id.reverse();
+    }
     // The FT device ID is sent to the DUT in little endian order.
-    ft_device_id.reverse();
     let ft_individualize_data_in = ManufFtIndividualizeData { ft_device_id };
 
     // Parse and prepare CA key.
@@ -229,7 +236,8 @@ fn main() -> Result<()> {
                 &opts.init.jtag_params,
                 &opts.sram_program,
                 &ft_individualize_data_in,
-                &spi_console_device,
+                &opts.console_spi,
+                &opts.console_tx_indicator_pin,
                 opts.timeout,
                 &mut ujson_payloads,
             )?;

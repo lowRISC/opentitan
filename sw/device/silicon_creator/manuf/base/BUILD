@@ -164,7 +164,6 @@ opentitan_test(
 [
     device_id_header(
         name = "ft_device_id_{}".format(sku),
-        ast_cfg_version = 0,
         headers = ["ft_device_id.h"],
         mode = "ft",
         sku_config = config["orchestrator_cfg"],
@@ -200,6 +199,7 @@ opentitan_test(
             "//sw/device/lib/dif:gpio",
             "//sw/device/lib/dif:otp_ctrl",
             "//sw/device/lib/dif:pinmux",
+            "//sw/device/lib/runtime:print",
             "//sw/device/lib/testing:pinmux_testutils",
             "//sw/device/lib/testing/json:provisioning_data",
             "//sw/device/lib/testing/test_framework:check",
@@ -224,8 +224,12 @@ filegroup(
     name = "sram_ft_individualize_all",
     testonly = True,
     srcs = [
-        ":sram_ft_individualize_{}".format(sku)
+        ":sram_ft_individualize_{}{}".format(sku, variant)
         for sku in EARLGREY_SKUS.keys()
+        for variant in [
+            "",
+            "_ate",
+        ]
     ],
 )
 
