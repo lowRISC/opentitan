@@ -520,6 +520,9 @@ static status_t read_otp_partitions(ujson_t *uj) {
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
 
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -626,6 +629,10 @@ status_t handle_ibex_fi_address_translation(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -718,6 +725,10 @@ status_t handle_ibex_fi_address_translation_config(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -809,6 +820,10 @@ status_t handle_ibex_fi_char_addi_single_beq(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -896,6 +911,9 @@ status_t handle_ibex_fi_char_addi_single_beq_cm(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_rf_dump_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
 
   return OK_STATUS();
 }
@@ -992,6 +1010,9 @@ status_t handle_ibex_fi_char_addi_single_beq_cm2(ujson_t *uj)
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_rf_dump_t, uj, &uj_output);
 
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -1082,6 +1103,10 @@ status_t handle_ibex_fi_char_addi_single_beq_neg(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -1172,6 +1197,10 @@ status_t handle_ibex_fi_char_addi_single_bne(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -1262,6 +1291,10 @@ status_t handle_ibex_fi_char_addi_single_bne_neg(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -1549,6 +1582,9 @@ status_t handle_ibex_fi_char_combi(ujson_t *uj) __attribute__((optnone)) {
   // Send over the response
   RESP_OK(ujson_serialize_ibex_fi_combi_data_t, uj, &uj_test_output);
 
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -1633,6 +1669,10 @@ status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -1717,6 +1757,10 @@ status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -1801,6 +1845,10 @@ status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -1885,6 +1933,10 @@ status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -1969,6 +2021,10 @@ status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -2053,6 +2109,10 @@ status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -2130,6 +2190,10 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) __attribute__((optnone)) {
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -2207,6 +2271,10 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) __attribute__((optnone)) {
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -2373,6 +2441,10 @@ status_t handle_ibex_fi_char_csr_combi(ujson_t *uj) {
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_csr_combi_out_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -2508,6 +2580,10 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -2723,6 +2799,10 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) __attribute__((optnone)) {
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -2773,6 +2853,9 @@ status_t handle_ibex_fi_char_hardened_check_eq_complement_branch(ujson_t *uj)
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
 
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -2819,6 +2902,9 @@ status_t handle_ibex_fi_char_hardened_check_eq_unimp(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
 
   return OK_STATUS();
 }
@@ -2867,6 +2953,9 @@ status_t handle_ibex_fi_char_hardened_check_eq_2_unimps(ujson_t *uj)
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
 
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -2913,6 +3002,9 @@ status_t handle_ibex_fi_char_hardened_check_eq_3_unimps(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
 
   return OK_STATUS();
 }
@@ -2961,6 +3053,9 @@ status_t handle_ibex_fi_char_hardened_check_eq_4_unimps(ujson_t *uj)
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
 
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -3007,6 +3102,9 @@ status_t handle_ibex_fi_char_hardened_check_eq_5_unimps(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
 
   return OK_STATUS();
 }
@@ -3064,6 +3162,9 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) __attribute__((optnone)) {
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_array_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
 
   return OK_STATUS();
 }
@@ -3130,6 +3231,10 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -3261,6 +3366,10 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -3326,6 +3435,10 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) __attribute__((optnone)) {
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -3395,6 +3508,10 @@ status_t handle_ibex_fi_char_single_beq(ujson_t *uj) __attribute__((optnone)) {
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -3463,6 +3580,10 @@ status_t handle_ibex_fi_char_single_bne(ujson_t *uj) __attribute__((optnone)) {
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -3549,6 +3670,10 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) __attribute__((optnone)) {
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -3652,6 +3777,10 @@ status_t handle_ibex_fi_char_sram_read_ret(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_data_sram_codes_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -3742,6 +3871,10 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) __attribute__((optnone)) {
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -3807,6 +3940,10 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj) __attribute__((optnone)) {
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_sram_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -3963,6 +4100,10 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -4059,6 +4200,10 @@ status_t handle_ibex_fi_char_sram_write_read_alt(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_sram_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -4250,6 +4395,10 @@ status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_sram_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -4331,6 +4480,10 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -4412,6 +4565,10 @@ status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -4469,6 +4626,10 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -4529,6 +4690,10 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj)
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
@@ -4597,49 +4762,13 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj)
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_array_t, uj, &uj_output);
 
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
+
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_init(ujson_t *uj) {
-  penetrationtest_cpuctrl_t uj_cpuctrl_data;
-  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_cpuctrl_data));
-  penetrationtest_sensor_config_t uj_sensor_data;
-  TRY(ujson_deserialize_penetrationtest_sensor_config_t(uj, &uj_sensor_data));
-  penetrationtest_alert_config_t uj_alert_data;
-  TRY(ujson_deserialize_penetrationtest_alert_config_t(uj, &uj_alert_data));
-
-  pentest_select_trigger_type(kPentestTriggerTypeSw);
-  // As we are using the software defined trigger, the first argument of
-  // pentest_init is not needed. kPentestTriggerSourceAes is selected as a
-  // placeholder.
-  pentest_init(kPentestTriggerSourceAes,
-               kPentestPeripheralIoDiv4 | kPentestPeripheralEdn |
-                   kPentestPeripheralCsrng | kPentestPeripheralEntropy |
-                   kPentestPeripheralAes | kPentestPeripheralHmac |
-                   kPentestPeripheralKmac | kPentestPeripheralOtbn,
-               uj_sensor_data.sensor_ctrl_enable,
-               uj_sensor_data.sensor_ctrl_en_fatal);
-
-  // Configure the alert handler. Alerts triggered by IP blocks are captured
-  // and reported to the test.
-  pentest_configure_alert_handler(
-      uj_alert_data.alert_classes, uj_alert_data.enable_alerts,
-      uj_alert_data.enable_loc_alerts, uj_alert_data.enable_classes,
-      uj_alert_data.accumulation_thresholds, uj_alert_data.signals,
-      uj_alert_data.duration_cycles, uj_alert_data.ping_timeout);
-
-  // Configure the CPU for the pentest.
-  penetrationtest_device_info_t uj_output;
-  TRY(pentest_configure_cpu(
-      uj_cpuctrl_data.enable_icache, &uj_output.icache_en,
-      uj_cpuctrl_data.enable_dummy_instr, &uj_output.dummy_instr_en,
-      uj_cpuctrl_data.dummy_instr_count, uj_cpuctrl_data.enable_jittery_clock,
-      uj_cpuctrl_data.enable_sram_readback, &uj_output.clock_jitter_locked,
-      &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
-      &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
-      &uj_output.sram_ret_readback_en, uj_cpuctrl_data.enable_data_ind_timing,
-      &uj_output.data_ind_timing_en));
-
   // Enable the flash.
   flash_info = dif_flash_ctrl_get_device_info();
   TRY(dif_flash_ctrl_init_state(
@@ -4650,27 +4779,6 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
   TRY(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
 
-  // Configure Ibex to allow reading ERR_STATUS register.
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
-  // Read rom digest.
-  TRY(pentest_read_rom_digest(uj_output.rom_digest));
-
-  // Read device ID and return to host.
-  TRY(pentest_read_device_id(uj_output.device_id));
-  RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
-
-  // Read the sensor config.
-  TRY(pentest_send_sensor_config(uj));
-
-  // Read the alert config.
-  TRY(pentest_send_alert_config(uj));
-
-  // Read different SKU config fields and return to host.
-  TRY(pentest_send_sku_config(uj));
-
   // Initialize flash for the flash test and write reference values into page.
   flash_init = false;
   flash_data_valid = false;
@@ -4678,6 +4786,27 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
   sram_ret_init = false;
   // Fetch reference values from OTP before OTP tests.
   otp_ref_init = false;
+
+  // Configure the device.
+  pentest_setup_device(uj, true, false);
+
+  pentest_select_trigger_type(kPentestTriggerTypeSw);
+  // As we are using the software defined trigger, the first argument of
+  // pentest_init is not needed. kPentestTriggerSourceAes is selected as a
+  // placeholder.
+  pentest_init(kPentestTriggerSourceAes,
+               kPentestPeripheralIoDiv4 | kPentestPeripheralEdn |
+                   kPentestPeripheralCsrng | kPentestPeripheralEntropy |
+                   kPentestPeripheralAes | kPentestPeripheralHmac |
+                   kPentestPeripheralKmac | kPentestPeripheralOtbn);
+
+  // Configure Ibex to allow reading ERR_STATUS register.
+  TRY(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  // Read different SKU config fields and return to host.
+  TRY(pentest_send_sku_config(uj));
 
   return OK_STATUS();
 }
@@ -4741,6 +4870,9 @@ status_t handle_ibex_fi_otp_write_lock(ujson_t *uj) __attribute__((optnone)) {
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+
+  // Signal to Verilator that the test completed.
+  pentest_verilator_signal_test_end();
 
   return OK_STATUS();
 }

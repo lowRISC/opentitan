@@ -581,11 +581,8 @@ static void sha3_serial_seed_lfsr(const uint8_t *seed, size_t seed_len) {
  * UART.
  */
 bool test_main(void) {
-  bool sensor_ctrl_enable = false;
-  bool sensor_ctrl_en_fatal[SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS] = {false};
   pentest_init(kPentestTriggerSourceKmac,
-               kPentestPeripheralIoDiv4 | kPentestPeripheralKmac,
-               sensor_ctrl_enable, sensor_ctrl_en_fatal);
+               kPentestPeripheralIoDiv4 | kPentestPeripheralKmac);
 
   LOG_INFO("Running kmac_serial");
 
