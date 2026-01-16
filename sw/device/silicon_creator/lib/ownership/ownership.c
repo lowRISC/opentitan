@@ -69,6 +69,7 @@ OT_WEAK rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
 static rom_error_t locked_owner_init(boot_data_t *bootdata,
                                      owner_config_t *config,
                                      owner_application_keyring_t *keyring) {
+  HARDENED_CHECK_EQ(bootdata->ownership_state, kOwnershipStateLockedOwner);
   if (owner_page_valid[0] == kOwnerPageStatusSealed &&
       launder32(owner_page_valid[1]) == kOwnerPageStatusSigned &&
       owner_block_newversion_mode() == kHardenedBoolTrue &&
@@ -143,6 +144,9 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
 
 static rom_error_t unlocked_init(boot_data_t *bootdata, owner_config_t *config,
                                  owner_application_keyring_t *keyring) {
+  HARDENED_CHECK_EQ(
+      bootdata->ownership_state & kOwnershipStateUnlockedGroupMask,
+      kOwnershipStateUnlockedGroup);
   uint32_t secondary =
       bootdata->primary_bl0_slot == kBootSlotA ? kBootSlotB : kBootSlotA;
   if (bootdata->ownership_state == kOwnershipStateUnlockedSelf &&
@@ -260,8 +264,7 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
   HARDENED_RETURN_IF_ERROR(sku_creator_owner_init(bootdata));
 
   rom_error_t error = kErrorOwnershipNoOwner;
-  // TODO(#22386): Harden this switch/case statement.
-  switch (bootdata->ownership_state) {
+  switch (launder32(bootdata->ownership_state)) {
     case kOwnershipStateLockedOwner:
       error = locked_owner_init(bootdata, config, keyring);
       break;
