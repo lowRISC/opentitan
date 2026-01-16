@@ -18,8 +18,11 @@ load(
 )
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("//rules:signing.bzl", "signature_test")
+load("//util/design:hardened.bzl", "hardened_comparison_test")
 
 package(default_visibility = ["//visibility:public"])
+
+ROM_EXT_LABELS = []
 
 filegroup(
     name = "signed_spx_binaries",
@@ -351,6 +354,12 @@ manifest(d = {
     for slot in SLOTS
 ]
 
+ROM_EXT_LABELS.extend([
+    "rom_ext_{}_slot_{}".format(variation_name, slot)
+    for variation_name, variation_deps in ROM_EXT_VARIATIONS.items()
+    for slot in SLOTS
+])
+
 [
     opentitan_binary(
         name = "rom_ext_{}".format(name),
@@ -378,6 +387,11 @@ manifest(d = {
     )
     for name, param in TEST_OWNER_CONFIGS.items()
 ]
+
+ROM_EXT_LABELS.extend([
+    "rom_ext_{}".format(name)
+    for name, param in TEST_OWNER_CONFIGS.items()
+])
 
 manifest(d = {
     "name": "manifest_bad_address_translation",
@@ -413,6 +427,11 @@ opentitan_binary(
     ],
 )
 
+hardened_comparison_test(
+    name = "rom_ext_dice_x509_slot_a_bad_address_translation_hardened_comparison_test",
+    srcs = [":rom_ext_dice_x509_slot_a_bad_address_translation"],
+)
+
 output_groups(
     name = "fpga_dev_binaries",
     testonly = True,
@@ -441,3 +460,11 @@ pkg_filegroup(
     prefix = "rom_ext",
     tags = ["manual"],
 )
+
+[
+    hardened_comparison_test(
+        name = label + "_hardened_comparison_test",
+        srcs = [":" + label],
+    )
+    for label in ROM_EXT_LABELS
+]

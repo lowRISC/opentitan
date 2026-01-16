@@ -21,6 +21,7 @@ load(
     "create_imm_section_targets",
     "imm_section_bundle",
 )
+load("//util/design:hardened.bzl", "hardened_comparison_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -144,6 +145,15 @@ ld_library(
             ":main_lib",
             "//sw/device/lib/crt",
         ] + variation_deps,
+    )
+    for variation_name, variation_deps in ROM_EXT_VARIATIONS.items()
+    for slot in SLOTS
+]
+
+[
+    hardened_comparison_test(
+        name = "main_binaries_{}_slot_{}_hardened_comparison_test".format(variation_name, slot),
+        srcs = [":main_binaries_{}_slot_{}".format(variation_name, slot)],
     )
     for variation_name, variation_deps in ROM_EXT_VARIATIONS.items()
     for slot in SLOTS

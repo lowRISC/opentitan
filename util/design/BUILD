@@ -88,3 +88,8 @@ py_test(
     srcs = ["sparse-fsm-encode-test.py"],
     deps = [":sparse-fsm-encode"],
 )
+
+py_binary(
+    name = "check-hardened-comparison",
+    srcs = ["check-hardened-comparison.py"],
+)
