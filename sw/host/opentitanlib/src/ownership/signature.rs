@@ -8,6 +8,7 @@ use serde::Deserialize;
 use serde_annotate::Annotate;
 use sphincsplus::{SpxDomain, SpxSecretKey};
 use std::io::{Read, Write};
+use std::path::Path;
 
 use super::GlobalFlags;
 use super::misc::{OwnershipKeyAlg, TlvHeader, TlvTag};
@@ -169,6 +170,40 @@ impl DetachedSignature {
             nonce,
             ecdsa,
             spx,
+            ..Default::default()
+        })
+    }
+
+    pub fn from_raw_signatures(
+        command: u32,
+        algorithm: OwnershipKeyAlg,
+        nonce: u64,
+        ecdsa_signature_path: Option<&Path>,
+        spx_signature_path: Option<&Path>,
+    ) -> Result<Self> {
+        let mut ecdsa_sig: Option<EcdsaRawSignature> = None;
+        let mut spx_sig: Option<Vec<u8>> = None;
+
+        if algorithm.is_ecdsa() {
+            let path =
+                ecdsa_signature_path.ok_or_else(|| anyhow!("No ecdsa signature provided"))?;
+            let mut file = std::fs::File::open(path)?;
+            ecdsa_sig = Some(EcdsaRawSignature::read(&mut file)?);
+        }
+
+        if algorithm.is_spx() {
+            let path = spx_signature_path.ok_or_else(|| anyhow!("No spx signature provided"))?;
+            let spx_bytes = std::fs::read(path)?;
+            spx_sig = Some(spx_bytes);
+        }
+
+        Ok(Self {
+            header: Self::default_header(),
+            command,
+            algorithm,
+            nonce,
+            ecdsa: ecdsa_sig,
+            spx: spx_sig,
             ..Default::default()
         })
     }
