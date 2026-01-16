@@ -634,6 +634,7 @@ def _exec_env_filegroup(ctx):
 
     result = []
     default_files = []
+    ot_bin_env_info = {}
     for k in files.keys():
         provider = exec_env[k][ExecEnvInfo].provider
         f = files[k].files.to_list()
@@ -643,7 +644,10 @@ def _exec_env_filegroup(ctx):
         # Return the exec_env's provider so this rule can be consumed by
         # opentitan_test rules.
         result.append(provider(default = f[0], kind = ctx.attr.kind))
+        ot_bin_env_info[provider] = exec_env[k][ExecEnvInfo]
         default_files.append(f[0])
+
+    result.append(OpenTitanBinaryInfo(exec_env = ot_bin_env_info))
 
     # Also return a DefaultInfo provider so this rule can be consumed by other
     # filegroup or packaging rules.

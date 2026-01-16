@@ -56,7 +56,7 @@ ok: send firmware via xmodem-crc
 The ROM_EXT will then prompt for the transfer to start by sending the Xmodem-CRC start character (which is the ASCII character `C`).
 Normally, the rescue payload is stored into slot A of the flash.
 The alternative code `RESB` causes the ROM_EXT to store the payload in slot B of the flash.
-After receiving the payload, the ROM_EXT will reboot the chip (unless commanded to `WAIT`).
+After receiving the payload, the rescue will wait for subsequent commands.
 
 #### Request a change in the serial data rate (`BAUD`)
 
@@ -114,7 +114,7 @@ ok: send boot_svc request via xmodem-crc
 ```
 
 The ROM_EXT will then will prompt for the transfer to start by sending the Xmodem-CRC start character (which is the ASCII character `C`).
-After receiving the payload, the ROM_EXT will reboot the chip (unless commanded to `WAIT`).
+After receiving the payload, the rescue will wait for subsequent commands.
 
 
 #### Request the last Boot Services Response (`BRSP`)
@@ -187,6 +187,8 @@ ok: reboot
 The ROM_EXT will then exit rescue mode and reboot the chip.
 
 #### Disable automatic reboot (`WAIT`)
+
+> NOTE: the `WAIT` command is deprecated.  Rescue mode now always waits for subsequent commands.
 
 The user may request that the ROM_EXT disable the automatic reboot after upload actions with the 4-byte code `WAIT`.
 The ROM_EXT will acknowledge this request with the following message:
