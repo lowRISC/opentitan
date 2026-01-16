@@ -154,7 +154,7 @@ class Target:
                 continue
         return "", False
 
-    def read_response(self, max_tries: Optional[int] = 50):
+    def read_response(self, init_timeout: Optional[int] = 0, max_tries: Optional[int] = 250):
         """
         Args:
             max_tries: Maximum number of attempts to read from UART.
@@ -162,6 +162,7 @@ class Target:
         Returns:
             The JSON response of OpenTitan.
         """
+        time.sleep(init_timeout)
         it = 0
         while it < max_tries:
             try:
