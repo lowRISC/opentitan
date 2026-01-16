@@ -252,6 +252,10 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
     memset(&sealing_binding, 0x55, sizeof(sealing_binding));
   }
 
+  // Prepare dice chain builder for CDI_1.
+  HARDENED_RETURN_IF_ERROR(dice_chain_init());
+  HARDENED_RETURN_IF_ERROR(dice_chain_rom_ext_check());
+
   // Generate CDI_1 attestation keys and certificate.
   HARDENED_RETURN_IF_ERROR(dice_chain_attestation_owner(
       manifest, &boot_measurements.bl0, &owner_measurement, &owner_history_hash,
@@ -531,10 +535,6 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
 
   // Maybe advance the security version.
   HARDENED_RETURN_IF_ERROR(rom_ext_advance_secver(boot_data, self));
-
-  // Prepare dice chain builder for CDI_1.
-  HARDENED_RETURN_IF_ERROR(dice_chain_init());
-  HARDENED_RETURN_IF_ERROR(dice_chain_rom_ext_check());
 
   // Initialize the boot_log in retention RAM.
   const build_info_t *rom_chip_info = (const build_info_t *)_chip_info_start;
