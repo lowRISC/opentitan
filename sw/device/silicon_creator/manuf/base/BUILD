@@ -219,6 +219,7 @@ opentitan_test(
             "//sw/device/lib/testing/test_framework:ottf_test_config",
             "//sw/device/lib/testing/test_framework:status",
             "//sw/device/lib/testing/test_framework:ujson_ottf",
+            "//sw/device/silicon_creator/lib:boot_data",
             "//sw/device/silicon_creator/manuf/lib:individualize",
             "//sw/device/silicon_creator/manuf/lib:otp_fields",
             "//sw/device/silicon_creator/manuf/lib:sram_start",

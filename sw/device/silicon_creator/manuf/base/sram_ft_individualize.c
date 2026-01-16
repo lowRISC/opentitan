@@ -20,6 +20,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
+#include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
 #include "sw/device/silicon_creator/manuf/base/ft_device_id.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
@@ -141,6 +142,21 @@ static status_t patch_ast_config_value(void) {
 }
 
 /**
+ * Provisions the (default) boot data explicitly.
+ *
+ * This function is used to ensure the perso is bootable when the
+ * `DEFAULT_BOOT_DATA_IN_PROD_EN` OTP is disabled. This is done by
+ * explicitly provisioning the default boot data. This function is a
+ * no-op if any boot data has already been provisioned.
+ */
+static status_t provision_boot_data(void) {
+  boot_data_t boot_data;
+  TRY(boot_data_read(kLcStateTest, &boot_data));
+  TRY(boot_data_write(&boot_data));
+  return OK_STATUS();
+}
+
+/**
  * Provision OTP {CreatorSw,OwnerSw,Hw}Cfg and RotCreatorAuth{Codesign,State}
  * partitions.
  *
@@ -169,6 +185,7 @@ static status_t provision(ujson_t *uj) {
   TRY(manuf_individualize_device_rot_creator_auth_state(&otp_ctrl));
   TRY(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
   TRY(manuf_individualize_device_creator_sw_cfg(&otp_ctrl, &flash_ctrl_state));
+  TRY(provision_boot_data());
 
   return OK_STATUS();
 }
