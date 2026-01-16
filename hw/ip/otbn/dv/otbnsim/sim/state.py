@@ -14,6 +14,7 @@ from .edn_client import EdnClient
 from .ext_regs import OTBNExtRegs
 from .flags import FlagReg
 from .gpr import GPRs
+from .kmac import Kmac
 from .loop import LoopStack
 from .reg import RegFile
 from .trace import Trace, TracePC
@@ -80,9 +81,10 @@ class OTBNState:
         self.gprs = GPRs()
         self.wdrs = RegFile('w', 256, 32)
 
+        self.kmac = Kmac()
         self.ext_regs = OTBNExtRegs()
-        self.wsrs = WSRFile(self.ext_regs)
-        self.csrs = CSRFile()
+        self.wsrs = WSRFile(self.ext_regs, self.kmac)
+        self.csrs = CSRFile(self.kmac)
 
         self.pc = 0
         self._pc_next_override: Optional[int] = None
@@ -308,6 +310,7 @@ class OTBNState:
             self.take_injected_err_bits()
         self.ext_regs.step()
         self._urnd_client.step()
+        self.kmac.step()
 
     def commit(self, sim_stalled: bool) -> None:
         if self._time_to_imem_invalidation is not None:
@@ -345,6 +348,7 @@ class OTBNState:
         self.wsrs.commit()
         self.csrs.flags.commit()
         self.wdrs.commit()
+        self.kmac.commit()
 
         if not sim_stalled:
             self.pc = self.get_next_pc()
@@ -360,6 +364,7 @@ class OTBNState:
         self.wsrs.abort()
         self.csrs.flags.abort()
         self.wdrs.abort()
+        self.kmac.abort()
 
     def start(self) -> None:
         '''Start running; perform state init'''
@@ -376,7 +381,8 @@ class OTBNState:
         # Reset CSRs, WSRs, loop stack and call stack. WSRs have special
         # treatment because some of them have values that persist across
         # operations.
-        self.csrs = CSRFile()
+        # TODO: Figure out when and how kmac should be reset.
+        self.csrs = CSRFile(self.kmac)
         self.wsrs.on_start()
         self.loop_stack = LoopStack()
         self.gprs.empty_call_stack()

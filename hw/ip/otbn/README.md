@@ -271,6 +271,103 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       </td>
     </tr>
     <tr>
+      <td>0x7E0</td>
+      <td>RW</td>
+      <td>KMAC_STATUS</td>
+      <td>
+        Writes to this CSR are always ignored.
+        This CSR exposes the internal state of the SHA3 FSM within KMAC.
+        <br>
+        Bit  [   0] SHA3_IDLE indicates whether the SHA3 core is in the idle state.
+        Bit  [   1] SHA3_ABSORB indicates whether the SHA3 core is in the absorb state.
+        Bit  [   2] SHA3_SQUEEZE indicates whether the SHA3 core is in the squeeze state.
+        Bits [31:3] are reserved/ignored.
+      </td>
+    </tr>
+    <tr>
+      <td>0x7E1</td>
+      <td>RW</td>
+      <td>KMAC_IF_STATUS</td>
+      <td>
+        Write a 1 to bits 1 or 2 to clear the error bits.
+        KMAC_IF_STATUS is a CSR that exposes status information for the OTBN-KMAC interface.
+        <br>
+        Bit  [   0] MSG_WRITE_RDY indicates whether the KMAC_DATA_S0/1 WSR is ready for the next word.
+        Bit  [   1] MSG_SEND_ERROR indicates whether an error ocurred after issuing a message send command.
+        Bit  [   2] MSG_WRITE_ERROR indicates whether an error ocurred after writing to the KMAC_DATA_S0/1 WSR.
+        Bit  [   3] DIGEST_VALID0 indicates whether word 0 in the KMAC_DATA_S0/1 WSR is valid.
+        Bit  [   4] DIGEST_VALID1 indicates whether word 1 in the KMAC_DATA_S0/1 WSR is valid.
+        Bit  [   5] DIGEST_VALID2 indicates whether word 2 in the KMAC_DATA_S0/1 WSR is valid.
+        Bit  [   6] DIGEST_VALID3 indicates whether word 3 in the KMAC_DATA_S0/1 WSR is valid.
+        Bits [31:7] are reserved/ignored.
+      </td>
+    </tr>
+    <tr>
+      <td>0x7E2</td>
+      <td>RW</td>
+      <td>KMAC_INTR</td>
+      <td>
+        Writing 1 to bit 0 of this register clears the interrupt.
+        KMAC_INTR is a CSR that exposes a KMAC_ERROR interrupt of the KMAC HW IP.
+        <br>
+        Bit  [   0] KMAC_ERROR indicates whether an error ocurred in the KMAC HW IP.
+        Bits [31:1] are reserved/ignored.
+      </td>
+    </tr>
+    <tr>
+      <td>0x7E3</td>
+      <td>RW</td>
+      <td>KMAC_ERROR</td>
+      <td>
+        Writes to this register are ignored.
+        This register exposes information from the KMAC HW IP ERR_CODE register.
+      </td>
+    </tr>
+    <tr>
+      <td>0x7E4</td>
+      <td>RW</td>
+      <td>KMAC_CFG</td>
+      <td>
+        This register allows OTBN to set the KMAC hashing mode (mode = SHAKE / cSHAKE / SHA3), enable or disable keyed KMAC mode (kmac_en = 0/1), and select the desired security strength (kstrength = L128 / L224 / L256 / L384 / L512).
+        Reading from this register returns the current KMAC configuration.
+        <br>
+        Bit  [   0] KMAC_EN enables keyed operation in the KMAC HWIP.
+        Bits [ 3:1] STRENGTH is the KAMC security strength.
+        Bits [ 5:4] MODE is the KMAC hashing mode.
+        Bits [31:6] are reserved/ignored.
+      </td>
+    </tr>
+    <tr>
+      <td>0x7E5</td>
+      <td>RW</td>
+      <td>KMAC_MSG_SEND</td>
+      <td>
+        This CSR consists of a single bit that, if set to one, will trigger OTBN to send the contents of KMAC_DATA_S0 and KMAC_DATA_S1 to KMAC.
+        Reads from this register always return a 0.
+      </td>
+    </tr>
+    <tr>
+      <td>0x7E6</td>
+      <td>RW</td>
+      <td>KMAC_CMD</td>
+      <td>
+        The register allows OTBN to issue START, PROCESS, RUN and DONE commands to KMAC.
+        Reads from this register always return a 0.
+        <br>
+        Bit  [ 5:0] CMD is the KMAC command field.
+        Bits [31:6] are reserved/ignored.
+      </td>
+    </tr>
+    <tr>
+      <td>0x7E7</td>
+      <td>RW</td>
+      <td>KMAC_BYTE_STROBE</td>
+      <td>
+        BYTE_STROBE is a CSR that specifies which input bytes of KMAC_DATA are valid and should be consumed by KMAC.
+        Reads from this register return the current configuration of the KMAC_BYTE_STROBE CSR.
+      </td>
+    </tr>
+    <tr>
       <td>0xFC0</td>
       <td>RO</td>
       <td>RND</td>
@@ -420,6 +517,24 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
         Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
         <br>
         A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
+      </td>
+    </tr>
+    <tr>
+      <td>0x8</td>
+      <td>RW</td>
+      <td><a name="kmac-data-s0">KMAC_DATA_S0</a></td>
+      <td>
+        KMAC_DATA_S0 is used by OTBN to provide masked input message shares to KMAC and to retrieve masked digest shares.
+        This WSR is 256 bits wide and holds one share of the message or digest.
+      </td>
+    </tr>
+    <tr>
+      <td>0x9</td>
+      <td>RW</td>
+      <td><a name="kmac-data-s1">KMAC_DATA_S1</a></td>
+      <td>
+        KMAC_DATA_S1 is used by OTBN to provide masked input message shares to KMAC and to retrieve masked digest shares.
+        This WSR is 256 bits wide and holds one share of the message or digest.
       </td>
     </tr>
   </tbody>

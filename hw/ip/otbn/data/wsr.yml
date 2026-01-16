@@ -67,3 +67,15 @@
     Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
 
     A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
+
+- name: kmac_data_s0
+  address: 8
+  doc: |
+    KMAC_DATA_S0 is used by OTBN to provide masked input message shares to KMAC and to retrieve masked digest shares.
+    This WSR is 256 bits wide and holds one share of the message or digest.
+
+- name: kmac_data_s1
+  address: 9
+  doc: |
+    KMAC_DATA_S1 is used by OTBN to provide masked input message shares to KMAC and to retrieve masked digest shares.
+    This WSR is 256 bits wide and holds one share of the message or digest.
