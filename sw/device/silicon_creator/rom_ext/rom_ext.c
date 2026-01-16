@@ -475,7 +475,8 @@ static rom_error_t rom_ext_advance_secver(boot_data_t *boot_data,
   error = manifest_ext_get_secver_write(manifest, &secver);
   if (error == kErrorOk) {
     if (secver->write == kHardenedBoolTrue &&
-        manifest->security_version > boot_data->min_security_version_rom_ext) {
+        manifest->security_version > boot_data->min_security_version_rom_ext &&
+        boot_data->counter != kBootDataDefaultCounterVal) {
       // If our security version is greater than the minimum security version
       // advance the minimum version to our version.
       boot_data->min_security_version_rom_ext = manifest->security_version;

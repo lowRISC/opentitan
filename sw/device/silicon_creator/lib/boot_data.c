@@ -647,6 +647,11 @@ rom_error_t boot_data_write_old(const boot_data_t *boot_data) {
 }
 
 rom_error_t boot_data_write(const boot_data_t *boot_data) {
+  // Making the default boot data persistent on the flash is not allowed.
+  if (launder32(boot_data->counter) == kBootDataDefaultCounterVal) {
+    return kErrorBootDataInvalid;
+  }
+
   boot_data_t new_entry = *boot_data;
   new_entry.is_valid = kBootDataValidEntry;
   new_entry.identifier = kBootDataIdentifier;
@@ -664,6 +669,9 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
     // on both pages.
     new_entry.counter = (last_entry.counter | 1) + 1;
   }
+
+  // Making the default boot data persistent on the flash is not allowed.
+  HARDENED_CHECK_NE(boot_data->counter, kBootDataDefaultCounterVal);
 
   // Write to the inactive page first, and then active page.
   // If both pages are invalid, write the page0 first.

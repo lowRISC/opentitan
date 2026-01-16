@@ -21,6 +21,8 @@ bool test_main(void) {
   RETURN_IF_ERROR(boot_data_read(lifecycle_state_get(), &boot_data));
   LOG_INFO("ROM_EXT booted min_security_version_rom_ext:%d",
            boot_data.min_security_version_rom_ext);
+  // Allow writing the default boot data by making the counter non-default.
+  ++boot_data.counter;
   ++boot_data.min_security_version_rom_ext;
   RETURN_IF_ERROR(boot_data_write(&boot_data));
   RETURN_IF_ERROR(boot_data_read(kLcStateProd, &boot_data));

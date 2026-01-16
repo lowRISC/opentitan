@@ -105,7 +105,11 @@ static rom_error_t unlock(boot_svc_msg_t *msg, boot_data_t *bootdata) {
         /*page=*/0, kOwnershipKeyRecovery, msg->header.type, &bootdata->nonce,
         &msg->ownership_unlock_req.signature,
         &msg->ownership_unlock_req.unlock_mode, len, &flash_exec));
-    return do_unlock(msg, bootdata, &flash_exec);
+    // Allow writing the default boot data by making the counter non-default.
+    ++bootdata->counter;
+    rom_error_t error = do_unlock(msg, bootdata, &flash_exec);
+    --bootdata->counter;
+    return error;
   } else {
     return kErrorOwnershipInvalidState;
   }

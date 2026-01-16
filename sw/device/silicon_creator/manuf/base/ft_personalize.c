@@ -764,6 +764,9 @@ static status_t install_owner(owner_config_t *config,
   boot_data_t boot_data;
   TRY(boot_data_read(kLcStateProd, &boot_data));
 
+  // Allow writing the default boot data by making the counter non-default.
+  ++boot_data.counter;
+
   // Initialize the ownership-related flash pages.
   flash_ctrl_perms_t perm = {
       .read = kMultiBitBool4True,

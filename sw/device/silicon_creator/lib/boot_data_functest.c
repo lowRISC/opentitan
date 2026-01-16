@@ -421,6 +421,14 @@ rom_error_t read_redundancy_test(void) {
   return kErrorOk;
 }
 
+rom_error_t write_default_disallowed_test(void) {
+  erase_boot_data_pages();
+  boot_data_t boot_data = kTestBootData0;
+  boot_data.counter = kBootDataDefaultCounterVal;
+  CHECK(boot_data_write(&boot_data) == kErrorBootDataInvalid);
+  return kErrorOk;
+}
+
 // Tests the write function when both pages are empty.
 // This test also validates that the data was correctly duplicated across both
 // pages according to the dual-redundancy scheme.
@@ -608,6 +616,7 @@ bool test_main(void) {
   EXECUTE_TEST(result, read_full_page_0_test);
   EXECUTE_TEST(result, read_full_page_1_test);
   EXECUTE_TEST(result, read_redundancy_test);
+  EXECUTE_TEST(result, write_default_disallowed_test);
   EXECUTE_TEST(result, write_empty_test);
   EXECUTE_TEST(result, write_page_1_active_test);
   EXECUTE_TEST(result, write_page_0_active_test);

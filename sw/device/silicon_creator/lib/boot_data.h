@@ -214,6 +214,10 @@ rom_error_t boot_data_write_old(const boot_data_t *boot_data);
  * given `boot_data` and writes the entry to the first index of both boot data
  * pages.
  *
+ * This function prohibits writing default boot data to the flash. For use cases
+ * that require writing default boot data, the `counter` field must be set to a
+ * value other than `kBootDataDefaultCounterVal` before calling this function.
+ *
  * @param boot_data[in] Boot data.
  * @return The result of the operation.
  */

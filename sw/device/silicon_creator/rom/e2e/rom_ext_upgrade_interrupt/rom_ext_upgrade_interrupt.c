@@ -110,6 +110,8 @@ static rom_error_t first_boot_test(void) {
   print_boot_data(&boot_data);
   CHECK(boot_data.min_security_version_rom_ext == 0);
 
+  // Allow writing the default boot data by making the counter non-default.
+  ++boot_data.counter;
   boot_data.min_security_version_rom_ext = kNewMinSecVer;
   RETURN_IF_ERROR(boot_data_write(&boot_data));
   RETURN_IF_ERROR(boot_data_read(lifecycle_state_get(), &boot_data));
