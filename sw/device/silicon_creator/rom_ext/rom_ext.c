@@ -532,6 +532,13 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // Maybe advance the security version.
   HARDENED_RETURN_IF_ERROR(rom_ext_advance_secver(boot_data, self));
 
+  // Fix the boot data if needed
+  rom_error_t boot_data_validity = boot_data_redundancy_check();
+  if (boot_data_validity != kErrorOk) {
+    // Ignore the result to prevent unnecessary bootloop.
+    OT_DISCARD(boot_data_write(boot_data));
+  }
+
   // Prepare dice chain builder for CDI_1.
   HARDENED_RETURN_IF_ERROR(dice_chain_init());
   HARDENED_RETURN_IF_ERROR(dice_chain_rom_ext_check());
@@ -546,6 +553,9 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // it here so the "SetNextBl0" can do a one-time override of the RAM copy
   // of `boot_data`.
   boot_log->primary_bl0_slot = boot_data->primary_bl0_slot;
+  boot_log->events =
+      bitfield_bit32_write(boot_log->events, BOOT_LOG_EVENT_REDUNDANCY,
+                           boot_data_validity != kErrorOk);
 
   // Protect the flash pages where the ROM_EXT is located.
   rom_ext_flash_protect_self(boot_log->rom_ext_slot);
