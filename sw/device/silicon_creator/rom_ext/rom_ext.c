@@ -501,6 +501,10 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(rom_ext_init(boot_data));
   const manifest_t *self = rom_ext_manifest();
 
+  // Security version self-check
+  HARDENED_CHECK_GE(self->security_version,
+                    boot_data->min_security_version_rom_ext);
+
   lifecycle_claim(kMultiBitBool8True);
   lifecycle_set_status(kLifecycleStatusWordRomExtVersion, self->version_minor);
   lifecycle_set_status(kLifecycleStatusWordRomExtSecVersion,
