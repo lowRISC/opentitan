@@ -19,6 +19,7 @@
 #include "sw/device/silicon_creator/lib/ownership/ownership.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_activate.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
+#include "sw/device/silicon_creator/lib/sigverify/flash_exec.h"
 
 static owner_page_status_t owner_page_validity_check(size_t page,
                                                      boot_data_t *bootdata) {
@@ -48,15 +49,16 @@ static owner_page_status_t owner_page_validity_check(size_t page,
     return kOwnerPageStatusSealed;
   }
 
+  uint32_t flash_exec = 0;
   rom_error_t result = ownership_key_validate(
       page, kOwnershipKeyOwner, kTlvTagOwner, &bootdata->nonce,
-      &owner_page[page].signature, &owner_page[page], sig_len, NULL);
-  if (result != kErrorOk) {
+      &owner_page[page].signature, &owner_page[page], sig_len, &flash_exec);
+  if (launder32(result) != kErrorOk) {
     // If the page is bad, destroy the RAM copy.
     memset(&owner_page[page], 0x5a, sizeof(owner_page[0]));
     return kOwnerPageStatusInvalid;
   }
-  return kOwnerPageStatusSigned;
+  return kOwnerPageStatusSigned ^ kSigverifyFlashExec ^ flash_exec;
 }
 
 OT_WEAK rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
