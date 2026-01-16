@@ -78,6 +78,7 @@ cc_toolchain(
     known_features = [
         "@rules_cc//cc/toolchains/args:experimental_replace_legacy_action_config_features",
         ":feat_warnings_as_errors",
+        ":feat_conditional_uninitialized",
         ":feat_guards",
         ":feat_coverage",
         ":feat_use_lld",
@@ -354,7 +355,24 @@ cc_feature(
 cc_args(
     name = "warnings_as_errors",
     actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
-    args = ["-Werror"],
+    args = [
+        "-Werror",
+    ],
+)
+
+# Feature which warns about variables that may be used uninitialized.
+cc_feature(
+    name = "feat_conditional_uninitialized",
+    args = [":conditional_uninitialized"],
+    feature_name = "conditional_uninitialized",
+)
+
+cc_args(
+    name = "conditional_uninitialized",
+    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
+    args = [
+        "-Wconditional-uninitialized",
+    ],
 )
 
 cc_args(
