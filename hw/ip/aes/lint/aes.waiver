@@ -74,3 +74,9 @@ waive -rules {CLOCK_USE} -location {aes_core.sv} -regexp {clk_i' is connected to
 
 waive -rules {RESET_USE} -location {aes_core.sv} -regexp {rst_[a-z]*_*ni' is connected to 'aes_ctrl_gcm_reg_shadowed' port} \
       -comment "when disabling GCM support, no resets are used inside aes_ctrl_gcm_reg_shadowed"
+
+waive -rules {CLOCK_USE} -location {aes_ghash.sv} -regexp {clk_i' is connected to 'prim_onehot_mux' port} \
+      -comment "clock and reset are just used for assertions inside prim_onehot_mux"
+
+waive -rules {RESET_USE} -location {aes_ghash.sv} -regexp {rst_ni' is connected to 'prim_onehot_mux' port} \
+      -comment "clock and reset are just used for assertions inside prim_onehot_mux"

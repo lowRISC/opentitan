@@ -70,6 +70,8 @@ OT_DEP_SOURCES=(
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_cdc_rand_delay.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_reg_we_check.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_onehot_check.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_onehot_mux.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_blanker.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_sec_anchor_buf.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_sec_anchor_flop.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_gf_mult.sv
@@ -109,7 +111,6 @@ for file in "${OT_DEP_SOURCES[@]}"; do
         -I"$LR_SYNTH_SRC_DIR"/../prim/rtl \
         $file \
         > $LR_SYNTH_OUT_DIR/generated/${module}.v
-
 done
 
 # Rename the prim_sparse_fsm_flop module. For some reason, sv2v decides to append a suffix.

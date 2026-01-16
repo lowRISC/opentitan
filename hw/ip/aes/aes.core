@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim:gf_mult
       - lowrisc:prim:lc_sync
       - lowrisc:prim:lfsr
+      - lowrisc:prim:onehot
       - lowrisc:prim:sparse_fsm
       - lowrisc:prim:trivium
       - lowrisc:prim:util

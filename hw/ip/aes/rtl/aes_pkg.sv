@@ -258,7 +258,7 @@ typedef struct packed {
   } aes_ctrl_e;
 
 // Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 6 \
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 9 -n 7 \
 //     -s 31468618 --language=sv
 //
 // Hamming distance histogram:
@@ -266,26 +266,28 @@ typedef struct packed {
 //  0: --
 //  1: --
 //  2: --
-//  3: |||||||||||||||||||| (57.14%)
-//  4: ||||||||||||||| (42.86%)
-//  5: --
-//  6: --
+//  3: |||||||||||||||||| (38.89%)
+//  4: |||||||||||||||||||| (41.67%)
+//  5: |||||||| (16.67%)
+//  6: | (2.78%)
+//  7: --
 //
 // Minimum Hamming distance: 3
-// Maximum Hamming distance: 4
+// Maximum Hamming distance: 6
 // Minimum Hamming weight: 1
 // Maximum Hamming weight: 5
 //
-localparam int GhashStateWidth = 6;
+localparam int GhashStateWidth = 7;
 typedef enum logic [GhashStateWidth-1:0] {
-  GHASH_IDLE                    = 6'b101001,
-  GHASH_MULT                    = 6'b010000,
-  GHASH_ADD_S                   = 6'b111110,
-  GHASH_OUT                     = 6'b011101,
-  GHASH_ERROR                   = 6'b110011,
-  GHASH_MASKED_INIT             = 6'b001010,
-  GHASH_MASKED_ADD_STATE_SHARES = 6'b000111,
-  GHASH_MASKED_ADD_CORR         = 6'b100100
+  GHASH_IDLE                    = 7'b1100001,
+  GHASH_MULT                    = 7'b0010001,
+  GHASH_ADD_S                   = 7'b0000110,
+  GHASH_OUT                     = 7'b0110111,
+  GHASH_ERROR                   = 7'b0111010,
+  GHASH_MASKED_INIT             = 7'b1111100,
+  GHASH_MASKED_ADD_STATE_SHARES = 7'b0101101,
+  GHASH_MASKED_ADD_CORR         = 7'b0001000,
+  GHASH_MASKED_SETTLE           = 7'b1001111
 } aes_ghash_e;
 
 // Generic, sparse mux selector encodings
@@ -512,37 +514,37 @@ typedef enum logic [AddSOSelWidth-1:0] {
   ADD_SO_DIP  = MUX3_SEL_2
 } add_so_sel_e;
 
-parameter int GHashInSelNum = 3;
-parameter int GHashInSelWidth = Mux3SelWidth;
+parameter int GHashInSelNum = 2;
+parameter int GHashInSelWidth = Mux2SelWidth;
 typedef enum logic [GHashInSelWidth-1:0] {
-  GHASH_IN_DATA_IN_PREV = MUX3_SEL_0,
-  GHASH_IN_DATA_OUT     = MUX3_SEL_1,
-  GHASH_IN_S            = MUX3_SEL_2
+  GHASH_IN_DATA_IN_PREV = MUX2_SEL_0,
+  GHASH_IN_DATA_OUT     = MUX2_SEL_1
 } ghash_in_sel_e;
 
-parameter int GHashAddInSelNum = 3;
-parameter int GHashAddInSelWidth = Mux3SelWidth;
+parameter int GHashAddInSelWidth = 3;
 typedef enum logic [GHashAddInSelWidth-1:0] {
-  ADD_IN_GHASH_IN = MUX3_SEL_0,
-  ADD_IN_CORR_A   = MUX3_SEL_1,
-  ADD_IN_CORR_B   = MUX3_SEL_2
+  ADD_IN_GHASH_IN = 3'b001,
+  ADD_IN_CORR_A   = 3'b010,
+  ADD_IN_CORR_B   = 3'b100,
+  ADD_IN_ZERO     = 3'b000
 } ghash_add_in_sel_e;
 
-parameter int GHashStateSelNum = 4;
-parameter int GHashStateSelWidth = Mux4SelWidth;
+parameter int GHashStateSelNum = 5;
+parameter int GHashStateSelWidth = Mux5SelWidth;
 typedef enum logic [GHashStateSelWidth-1:0] {
-  GHASH_STATE_RESTORE = MUX4_SEL_0,
-  GHASH_STATE_INIT    = MUX4_SEL_1,
-  GHASH_STATE_ADD     = MUX4_SEL_2,
-  GHASH_STATE_MULT    = MUX4_SEL_3
+  GHASH_STATE_RESTORE = MUX5_SEL_0,
+  GHASH_STATE_INIT    = MUX5_SEL_1,
+  GHASH_STATE_ADD     = MUX5_SEL_2,
+  GHASH_STATE_ADD_S   = MUX5_SEL_3,
+  GHASH_STATE_MULT    = MUX5_SEL_4
 } ghash_state_sel_e;
 
-parameter int GFMultS1SelNum = 3;
-parameter int GFMultS1SelWidth = Mux3SelWidth;
-typedef enum logic [GFMultS1SelWidth-1:0] {
-  MULT_IN_STATE0 = MUX3_SEL_0,
-  MULT_IN_STATE1 = MUX3_SEL_1,
-  MULT_IN_S1     = MUX3_SEL_2
+parameter int GFMultInSelWidth = 3;
+typedef enum logic [GFMultInSelWidth-1:0] {
+  MULT_IN_STATE0 = 3'b001,
+  MULT_IN_STATE1 = 3'b010,
+  MULT_IN_S1     = 3'b100,
+  MULT_IN_ZERO   = 3'b000
 } gf_mult_in_sel_e;
 
 parameter int DataOutSelNum = 2;

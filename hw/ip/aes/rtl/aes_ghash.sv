@@ -123,6 +123,9 @@ module aes_ghash
   output logic [NumRegsData-1:0][31:0] ghash_state_done_o
 );
 
+  // Parameters
+  localparam int GFMultStagesPerCycle = GCMDegree / GFMultCycles;
+
   // Signals
   logic [GCMDegree-1:0] s_d;
   logic [GCMDegree-1:0] s_q;
@@ -130,13 +133,20 @@ module aes_ghash
   logic [GCMDegree-1:0] corr_d [2];
   logic [GCMDegree-1:0] corr_q [2];
   sp2v_e                corr_we;
+  logic                 corr0_en_d;
+  logic                 corr0_en_q;
   logic [15:0][7:0]     ghash_in;
   logic [15:0][7:0]     ghash_in_valid;
   ghash_in_sel_e        ghash_in_sel;
-  ghash_add_in_sel_e    ghash_add_in_sel [2];
+  ghash_add_in_sel_e    ghash_add_in_sel_d [2];
+  ghash_add_in_sel_e    ghash_add_in_sel_q [2];
+  logic [1:0]           ghash_add_in_sel_err;
   logic [GCMDegree-1:0] ghash_state_d [NumShares];
   logic [GCMDegree-1:0] ghash_state_q [NumShares];
-  logic [GCMDegree-1:0] ghash_state_restore [NumShares];
+  logic [GCMDegree-1:0] add_s_in;
+  logic                 add_s_en_d;
+  logic                 add_s_en_q;
+  logic [GCMDegree-1:0] ghash_state_done;
   logic [GCMDegree-1:0] ghash_state_add [NumShares];
   sp2v_e                ghash_state_we [2];
   ghash_state_sel_e     ghash_state_sel;
@@ -144,9 +154,14 @@ module aes_ghash
   logic [GCMDegree-1:0] hash_subkey_d [NumShares];
   logic [GCMDegree-1:0] hash_subkey_q [NumShares];
   sp2v_e                hash_subkey_we;
-  gf_mult_in_sel_e      gf_mult1_in_sel;
+  logic                 gf_mult0_en_d;
+  logic                 gf_mult0_en_q;
+  gf_mult_in_sel_e      gf_mult1_in_sel_d;
+  gf_mult_in_sel_e      gf_mult1_in_sel_q;
+  logic                 gf_mult1_in_sel_err;
   logic [1:0]           gf_mult_req;
   logic [1:0]           gf_mult_ack;
+  logic [1:0]           gf_mult_ack_pre;
   aes_ghash_e           aes_ghash_ns, aes_ghash_cs;
   logic                 first_block_d;
   logic                 first_block_q;
@@ -214,9 +229,33 @@ module aes_ghash
   // where S0 or S1 is Share 0 or Share 1 of S, respectively. Similarly, H0 or H1 is Share 0 or
   // Share 1 of the hash subkey, respectively.
   //
-  // These register can be cleared after pushing some pseudo-random data through the multipliers.
+  // These registers can be cleared after pushing some pseudo-random data through the multipliers.
   if (SecMasking) begin : gen_corr_terms
-    assign corr_d[0] = ghash_state_mult[0] ^ ghash_state_q[0];
+    // Avoid glichtes on the enable signal controlling the blanking.
+    prim_flop #(
+      .Width     (1),
+      .ResetValue(1'b0)
+    ) u_prim_flop_corr0_en (
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
+
+      .d_i(corr0_en_d),
+      .q_o(corr0_en_q)
+    );
+
+    // Only feed Share 0 of the GHASH state into the addition if we're actually updating the
+    // correction terms. This helps reducing undesirable SCA leakage due to combining intermediate
+    // results of the first mutliplier (when not computing correction terms) with the GHASH state.
+    logic [GCMDegree-1:0] ghash_state0_blanked;
+    prim_blanker #(
+      .Width(GCMDegree)
+    ) u_prim_blanker_corr0 (
+      .in_i (ghash_state_q[0]),
+      .en_i (corr0_en_q),
+      .out_o(ghash_state0_blanked)
+    );
+
+    assign corr_d[0] = ghash_state_mult[0] ^ ghash_state0_blanked;
     assign corr_d[1] = ghash_state_mult[1];
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : corr_reg
@@ -231,12 +270,11 @@ module aes_ghash
   /////////////////
   // GHASH Input //
   /////////////////
-  // Select the ciphertext for encryption / decryption or S for the final authentication tag.
+  // Select the ciphertext for encryption / decryption.
   always_comb begin : ghash_in_mux
     unique case (ghash_in_sel)
       GHASH_IN_DATA_IN_PREV: ghash_in = data_in_prev;
       GHASH_IN_DATA_OUT:     ghash_in = data_out;
-      GHASH_IN_S:            ghash_in = s_q;
       default:               ghash_in = data_out;
     endcase
   end
@@ -257,23 +295,62 @@ module aes_ghash
     logic [GCMDegree-1:0] add_in [NumShares];
 
     // Depending on the which phase we are in, we either add the GHASH input, or some correction
-    // term to the GHASH state. The selection may vary between the two shares.
-    always_comb begin : add_in_mux0
-      unique case (ghash_add_in_sel[0])
-        ADD_IN_GHASH_IN: add_in[0] = ghash_in_valid;
-        ADD_IN_CORR_A:   add_in[0] = corr_q[0];
-        ADD_IN_CORR_B:   add_in[0] = ghash_state_q[1];
-        default:         add_in[0] = ghash_in_valid;
-      endcase
-    end
+    // term to the GHASH state. The selection may vary between the two shares. To reduce
+    // undesirable SCA leakage due to the multiplexing, prim_onehot_mux instances are used.
+    logic [GHashAddInSelWidth-1:0] ghash_add_in_sel_q_raw [NumShares];
+    logic          [GCMDegree-1:0] ghash_add_in_mux_in [NumShares][GHashAddInSelWidth];
 
-    always_comb begin : add_in_mux1
-      unique case (ghash_add_in_sel[1])
-        ADD_IN_GHASH_IN: add_in[1] = ghash_in_valid;
-        ADD_IN_CORR_A:   add_in[1] = corr_q[1];
-        ADD_IN_CORR_B:   add_in[1] = ghash_state_mult[1];
-        default:         add_in[1] = ghash_in_valid;
-      endcase
+    // The actual one-hot multiplexer forward any of the three inputs or zero if no input is
+    // selected (ghash_add_in_sel_q[i] == ADD_IN_ZERO).
+    assign ghash_add_in_mux_in[0][0] = ghash_in_valid;
+    assign ghash_add_in_mux_in[0][1] = corr_q[0];
+    assign ghash_add_in_mux_in[0][2] = ghash_state_q[1];
+
+    assign ghash_add_in_mux_in[1][0] = ghash_in_valid;
+    assign ghash_add_in_mux_in[1][1] = corr_q[1];
+    assign ghash_add_in_mux_in[1][2] = ghash_state_mult[1];
+
+    for (genvar s = 0; s < NumShares; s++) begin : gen_add_in_muxes
+      // Avoid glichtes on the selector signals.
+      prim_flop #(
+        .Width     (GHashAddInSelWidth),
+        .ResetValue({ADD_IN_GHASH_IN})
+      ) u_prim_flop_add_in_sel (
+        .clk_i (clk_i),
+        .rst_ni(rst_ni),
+
+        .d_i({ghash_add_in_sel_d[s]}),
+        .q_o(ghash_add_in_sel_q_raw[s])
+      );
+      assign ghash_add_in_sel_q[s] = ghash_add_in_sel_e'(ghash_add_in_sel_q_raw[s]);
+
+      // Check that the selector signals are indeed one-hot encoded or zero.
+      prim_onehot_check #(
+        .OneHotWidth(GHashAddInSelWidth),
+        .AddrCheck  (1'b0),
+        .StrictCheck(1'b0)
+      ) u_prim_onehot_check_add_in_sel (
+        .clk_i (clk_i),
+        .rst_ni(rst_ni),
+
+        .oh_i  ({ghash_add_in_sel_q[s]}),
+        .addr_i('0),
+        .en_i  (1'b1),
+        .err_o (ghash_add_in_sel_err[s])
+      );
+
+      // The actual mux.
+      prim_onehot_mux #(
+        .Width (GCMDegree),
+        .Inputs(GHashAddInSelWidth)
+      ) u_prim_onehot_mux_add_in (
+        .clk_i (clk_i),
+        .rst_ni(rst_ni),
+
+        .in_i (ghash_add_in_mux_in[s]),
+        .sel_i(ghash_add_in_sel_q[s]),
+        .out_o(add_in[s])
+      );
     end
 
     // Perform the addition on a per-share basis.
@@ -287,32 +364,58 @@ module aes_ghash
     assign ghash_state_add[0] = ghash_state_q[0] ^ ghash_in_valid;
   end
 
-  // For restoring a GHASH state, we overwrite Share 0 of the initialized GHASH state with the
-  // previously saved GHASH state in unmasked form. Share 1 is left untouched. This is identical to
-  // subtracing Share 1 of S which will be added again at the very end. To save muxing resources,
-  // Share 1 of the state multiplexer below is identical to the default.
-  //
-  // For the unmasked implementation, we add the previously saved GHASH state to the GHASH state
-  // previously initialized with S. S is then substracted again seperately. Doing this allows
-  // saving one multiplexer input.
-  if (SecMasking) begin : gen_ghash_state_restore_masked
-    assign ghash_state_restore[0] = data_in_prev;
-    assign ghash_state_restore[1] = ghash_state_add[1];
-  end else begin : gen_ghash_state_restore_unmasked
-    assign ghash_state_restore[0] = ghash_state_add[0];
-  end
+  // The GHASH state muxing differs in the number of inputs between the masked and the unmasked
+  // implementation.
+  if (SecMasking) begin : gen_ghash_state_mux_masked
 
-  // We initialize the state with S. In case of the unmasked implementation, S has to be
-  // substracted in a second step to reach the required zero state. Doing it this way allows saving
-  // one multiplexer input.
-  always_comb begin : ghash_state_mux
-    unique case (ghash_state_sel)
-      GHASH_STATE_RESTORE: ghash_state_d = ghash_state_restore;
-      GHASH_STATE_INIT:    ghash_state_d = cipher_state_done;
-      GHASH_STATE_ADD:     ghash_state_d = ghash_state_add;
-      GHASH_STATE_MULT:    ghash_state_d = ghash_state_mult;
-      default:             ghash_state_d = ghash_state_add;
-    endcase
+    // We initialize the state with S.
+    //
+    // For restoring a GHASH state, we overwrite Share 0 of the initialized GHASH state with the
+    // previously saved value in unmasked form, i.e. GHASH state + S. Share 1 is left untouched.
+    // This is equal to subtracing Share 1 of S which will be added again at the very end. To save
+    // muxing resources, Share 1 of the state multiplexer below is identical to the default.
+    always_comb begin : ghash_state0_mux
+      unique case (ghash_state_sel)
+        GHASH_STATE_INIT:    ghash_state_d[0] = cipher_state_done[0];
+        GHASH_STATE_RESTORE: ghash_state_d[0] = data_in_prev;
+        GHASH_STATE_ADD:     ghash_state_d[0] = ghash_state_add[0];
+        GHASH_STATE_MULT:    ghash_state_d[0] = ghash_state_mult[0];
+        // GHASH_STATE_ADD_S unused.
+        default:             ghash_state_d[0] = ghash_state_add[0];
+      endcase
+    end
+    always_comb begin : ghash_state1_mux
+      unique case (ghash_state_sel)
+        GHASH_STATE_INIT:    ghash_state_d[1] = cipher_state_done[1];
+        GHASH_STATE_ADD:     ghash_state_d[1] = ghash_state_add[1];
+        GHASH_STATE_MULT:    ghash_state_d[1] = ghash_state_mult[1];
+        // GHASH_STATE_RESTORE and GHASH_STATE_ADD_S unused.
+        default:             ghash_state_d[1] = ghash_state_add[1];
+      endcase
+    end
+
+  end else begin : gen_ghash_state_mux_unmasked
+
+    // We initialize the state with S. In case of the unmasked implementation, S has to be
+    // substracted in a second step to reach the required zero state. Doing it this way allows
+    // saving one multiplexer input.
+    //
+    // For restoring a GHASH state in the unmasked implementation, the previously saved value,
+    // i.e., GHASH state + S, is added to the GHASH state initialized to 0. S is then substracted
+    // again seperately. Doing this allows saving one multiplexer input.
+    //
+    // The resulting multiplexer has 4 inputs.
+    always_comb begin : ghash_state_mux
+      unique case (ghash_state_sel)
+        GHASH_STATE_RESTORE: ghash_state_d[0] = ghash_state_add[0];
+        GHASH_STATE_INIT:    ghash_state_d[0] = cipher_state_done[0];
+        GHASH_STATE_ADD:     ghash_state_d[0] = ghash_state_add[0];
+        GHASH_STATE_ADD_S:   ghash_state_d[0] = ghash_state_done;
+        GHASH_STATE_MULT:    ghash_state_d[0] = ghash_state_mult[0];
+        // GHASH_STATE_RESTORE is equal to GHASH_STATE_ADD.
+        default:             ghash_state_d[0] = ghash_state_add[0];
+      endcase
+    end
   end
 
   // This register can be cleared with pseudo-random data by adding the output of the cipher core
@@ -345,29 +448,125 @@ module aes_ghash
   // GF(2^128) Multiplier //
   //////////////////////////
   logic [GCMDegree-1:0] gf_mult_op_b[NumShares];
+  logic [GCMDegree-1:0] gf_mult_op_b_rev[NumShares];
   logic [GCMDegree-1:0] gf_mult_prod[NumShares];
 
-  // The first multiplier has no muxes on the operand inputs.
-  assign gf_mult_op_b[0] = ghash_state_q[0];
+  // The first multiplier has no muxes on the operand inputs. For the masked implementation,
+  // a prim_blanker instance helps to reduce undesirable SCA leakage.
+  if (SecMasking) begin : gen_gf_mult0_blanker
+    // Avoid glichtes on the enable signal controlling the blanking.
+    prim_flop #(
+      .Width     (1),
+      .ResetValue(1'b0)
+    ) u_prim_flop_gf_mult0_en (
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-  if (SecMasking) begin : gen_gf_mult_s1_mux
-    // The second multiplier is used to multiply Share 0, Share 1 (first block only) of
-    // the state, and also Share 1 of S with Share 1 of the hash subkey.
-    always_comb begin : gf_mult1_in_mux
-      unique case (gf_mult1_in_sel)
-        MULT_IN_STATE0:  gf_mult_op_b[1] = ghash_state_q[0];
-        MULT_IN_STATE1:  gf_mult_op_b[1] = ghash_state_q[1];
-        MULT_IN_S1:      gf_mult_op_b[1] = s_q;
-        default:         gf_mult_op_b[1] = ghash_state_q[0];
-      endcase
+      .d_i(gf_mult0_en_d),
+      .q_o(gf_mult0_en_q)
+    );
+
+    // Only present a non-zero input if we're actually performing a multiplication.
+    prim_blanker #(
+      .Width(GCMDegree)
+    ) u_prim_blanker_gf_mult0 (
+      .in_i (ghash_state_q[0]),
+      .en_i (gf_mult0_en_q),
+      .out_o(gf_mult_op_b[0])
+    );
+  end else begin : gen_no_gf_mult0_blanker
+    assign gf_mult_op_b[0] = ghash_state_q[0];
+  end
+
+  // Reverse the bit order.
+  assign gf_mult_op_b_rev[0] = aes_ghash_reverse_bit_order(gf_mult_op_b[0]);
+
+  if (SecMasking) begin : gen_gf_mult1_mux
+    // The second multiplier is used to multiply Share 1 of the hash subkey with Share 0,
+    // Share 1 (first block only) of the state, and also Share 1 of S. To reduce undesirable SCA
+    // leakage due to the multiplexing, a prim_onehot_mux instance is used.
+    logic [GFMultInSelWidth-1:0] gf_mult1_in_sel_q_raw;
+    logic        [GCMDegree-1:0] gf_mult1_op_b_mux_in [GFMultInSelWidth];
+
+    // Avoid glitches on the selector signal.
+    prim_flop #(
+      .Width     (GFMultInSelWidth),
+      .ResetValue({MULT_IN_ZERO})
+    ) u_prim_flop_gf_mult1_in_sel (
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
+
+      .d_i({gf_mult1_in_sel_d}),
+      .q_o(gf_mult1_in_sel_q_raw)
+    );
+    assign gf_mult1_in_sel_q = gf_mult_in_sel_e'(gf_mult1_in_sel_q_raw);
+
+    // Check that the selector signal is indeed one-hot encoded or zero.
+    prim_onehot_check #(
+      .OneHotWidth(GFMultInSelWidth),
+      .AddrCheck  (1'b0),
+      .StrictCheck(1'b0)
+    ) u_prim_onehot_check_gf_mult1_in_sel (
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
+
+      .oh_i  ({gf_mult1_in_sel_q}),
+      .addr_i('0),
+      .en_i  (1'b1),
+      .err_o (gf_mult1_in_sel_err)
+    );
+
+    // The actual one-hot multiplexer forwards any of the three inputs or zero if no input is
+    // selected (gf_mult1_in_sel_q == MULT_IN_ZERO).
+    assign gf_mult1_op_b_mux_in[0] = ghash_state_q[0];
+    assign gf_mult1_op_b_mux_in[1] = ghash_state_q[1];
+    assign gf_mult1_op_b_mux_in[2] = s_q;
+    prim_onehot_mux #(
+      .Width (GCMDegree),
+      .Inputs(GFMultInSelWidth)
+    ) u_prim_onehot_mux_gf_mult1_op_b (
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
+
+      .in_i (gf_mult1_op_b_mux_in),
+      .sel_i(gf_mult1_in_sel_q),
+      .out_o(gf_mult_op_b[1])
+    );
+
+    // Reverse the bit order.
+    logic [GCMDegree-1:0] gf_mult1_op_b_rev;
+    assign gf_mult1_op_b_rev = aes_ghash_reverse_bit_order(gf_mult_op_b[1]);
+
+    // Register the last input slice of Operand B. This allows switching the one-hot multiplexer
+    // during the last clock cycle of the multiplication to effectively flush the multiplexer. This
+    // is beneficial from a SCA hardening viewpoint for two reasons:
+    // - Flushing the multiplexer before providing the next input avoids leakage between
+    //   different multiplexer inputs and enables back-to-back multiplications.
+    // - Upon the last multiplication cycle, the GHASH state is updated. Even if the Operand B
+    //   input of the multiplier is blanked in the next clock cycle, transient effects may cause
+    //   the updated GHASH state to propagate into the multiplier and be combined with the secret
+    //   hash subkey which can cause undesirable leakage.
+    logic [GFMultStagesPerCycle-1:0] gf_mult1_op_b_rev_slice_d;
+    logic [GFMultStagesPerCycle-1:0] gf_mult1_op_b_rev_slice_q;
+    assign gf_mult1_op_b_rev_slice_d = gf_mult1_op_b_rev[GCMDegree-1 -: GFMultStagesPerCycle];
+    always_ff @(posedge clk_i or negedge rst_ni) begin : gf_mult1_op_b_slice_reg
+      if (!rst_ni) begin
+        gf_mult1_op_b_rev_slice_q <= '0;
+      end else begin
+        gf_mult1_op_b_rev_slice_q <= gf_mult1_op_b_rev_slice_d;
+      end
     end
+
+    assign gf_mult_op_b_rev[1] =
+        {gf_mult1_op_b_rev_slice_q, gf_mult1_op_b_rev[GCMDegree-GFMultStagesPerCycle-1:0]};
   end
 
   for (genvar s = 0; s < NumShares; s++) begin : gen_gf_mult
     prim_gf_mult #(
-      .Width         (GCMDegree),
-      .StagesPerCycle(GCMDegree / GFMultCycles),
-      .IPoly         (GCMIPoly)
+      .Width             (GCMDegree),
+      .StagesPerCycle    (GFMultStagesPerCycle),
+      .IPoly             (GCMIPoly),
+      .OutputZeroUntilAck(1'b1)
     ) u_gf_mult (
       .clk_i (clk_i),
       .rst_ni(rst_ni),
@@ -375,8 +574,10 @@ module aes_ghash
       .req_i(gf_mult_req[s]),
       .ack_o(gf_mult_ack[s]),
 
+      .ack_pre_o(gf_mult_ack_pre[s]),
+
       .operand_a_i(aes_ghash_reverse_bit_order(hash_subkey_q[s])), // The A input is not scanned.
-      .operand_b_i(aes_ghash_reverse_bit_order(gf_mult_op_b[s])),  // The B input is scanned.
+      .operand_b_i(gf_mult_op_b_rev[s]),                           // The B input is scanned.
 
       .prod_o(gf_mult_prod[s])
     );
@@ -392,18 +593,27 @@ module aes_ghash
     assign unused_corr_q  = corr_q;
     assign unused_corr_we = corr_we;
 
-    logic unused_ghash_add_in_sel;
-    assign unused_ghash_add_in_sel = ^{{ghash_add_in_sel[0]}, {ghash_add_in_sel[1]}};
+    logic unused_corr0_en_q;
+    assign corr0_en_q        = corr0_en_d;
+    assign unused_corr0_en_q = corr0_en_q;
+
+    logic unused_ghash_add_in_sel_d;
+    assign unused_ghash_add_in_sel_d = ^{{ghash_add_in_sel_d[0]}, {ghash_add_in_sel_d[1]}};
+    assign ghash_add_in_sel_q        = '{default: ADD_IN_GHASH_IN};
+    assign ghash_add_in_sel_err      = 2'b00;
+    assign gf_mult1_in_sel_err       = 1'b0;
 
     sp2v_e unused_ghash_state_we;
     assign unused_ghash_state_we = ghash_state_we[1];
 
-    gf_mult_in_sel_e unused_gf_mult1_in_sel;
-    assign unused_gf_mult1_in_sel = gf_mult1_in_sel;
-
     logic unused_gf_mult_req;
     assign unused_gf_mult_req = gf_mult_req[1];
     assign gf_mult_ack[1]     = 1'b1;
+    assign gf_mult_ack_pre[1] = 1'b1;
+
+    logic unused_add_s_en_q;
+    assign add_s_en_q        = add_s_en_d;
+    assign unused_add_s_en_q = add_s_en_q;
   end
 
   /////////////////
@@ -417,13 +627,13 @@ module aes_ghash
     out_valid_o = SP2V_LOW;
 
     // Data path
-    s_we    = SP2V_LOW;
-    corr_we = SP2V_LOW;
+    s_we       = SP2V_LOW;
+    corr_we    = SP2V_LOW;
+    corr0_en_d = 1'b0;
 
     ghash_in_sel = GHASH_IN_DATA_OUT;
 
-    ghash_add_in_sel[0] = ADD_IN_GHASH_IN;
-    ghash_add_in_sel[1] = ADD_IN_GHASH_IN;
+    ghash_add_in_sel_d = ghash_add_in_sel_q;
 
     ghash_state_sel   = GHASH_STATE_ADD;
     ghash_state_we[0] = SP2V_LOW;
@@ -431,8 +641,11 @@ module aes_ghash
 
     hash_subkey_we = SP2V_LOW;
 
-    gf_mult1_in_sel = MULT_IN_STATE0;
-    gf_mult_req     = '0;
+    gf_mult_req       = '0;
+    gf_mult0_en_d     = gf_mult0_en_q;
+    gf_mult1_in_sel_d = gf_mult1_in_sel_q;
+
+    add_s_en_d = 1'b0;
 
     // FSM
     aes_ghash_ns  = aes_ghash_cs;
@@ -462,7 +675,11 @@ module aes_ghash
 
             // In case of the masked implementation, also the correction terms need to be cleared.
             // This can be done by using the multipliers.
-            aes_ghash_ns = SecMasking ? GHASH_MASKED_INIT : aes_ghash_cs;
+            if (SecMasking) begin
+              gf_mult0_en_d     = 1'b1;
+              gf_mult1_in_sel_d = MULT_IN_STATE0;
+              aes_ghash_ns      = GHASH_MASKED_INIT;
+            end
 
           end else if (gcm_phase_i == GCM_INIT) begin
             if (load_hash_subkey_i == SP2V_HIGH) begin
@@ -481,7 +698,13 @@ module aes_ghash
               // We have now all pre-requisites to compute the correction terms for the masked
               // implementation. For the unmasked implementation, we now have to subtract S again
               // from the state. Doing it this way allows saving one multiplexer input.
-              aes_ghash_ns = SecMasking ? GHASH_MASKED_INIT : GHASH_ADD_S;
+              if (SecMasking) begin
+                gf_mult0_en_d     = 1'b1;
+                gf_mult1_in_sel_d = MULT_IN_STATE0;
+                aes_ghash_ns      = GHASH_MASKED_INIT;
+              end else begin
+                aes_ghash_ns      = GHASH_ADD_S;
+              end
             end
 
           end else if (gcm_phase_i == GCM_RESTORE) begin
@@ -493,8 +716,9 @@ module aes_ghash
             ghash_state_we[0] = SP2V_HIGH;
             first_block_d     = 1'b0;
 
-            // For the unmasked implementation, the previously restored GHASH state is added to the
-            // GHASH state initialized with S, meaning S needs to be subtracted again to continue.
+            // For the unmasked implementation, the previously saved value, i.e., GHASH state + S,
+            // is added to the GHASH state initialized to 0. S needs then to be substracted again
+            // seperately before continuing.
             ghash_in_sel = !SecMasking ? GHASH_IN_DATA_IN_PREV : GHASH_IN_DATA_OUT;
             aes_ghash_ns = !SecMasking ? GHASH_ADD_S           : GHASH_IDLE;
 
@@ -514,10 +738,19 @@ module aes_ghash
             ghash_state_we[0] = SP2V_HIGH;
             ghash_state_we[1] = first_block_q ? SP2V_HIGH : SP2V_LOW;
 
-            // Start the multiplication. In case masking is enabled and we've already done the
-            // first block, we have to do one more addtion first.
-            aes_ghash_ns =
-                SecMasking && !first_block_q ? GHASH_MASKED_ADD_STATE_SHARES : GHASH_MULT;
+            if (SecMasking && !first_block_q) begin
+              // In case masking is enabled and we've already done the first block, we have to do
+              // one more addition before starting the multiplication.
+              ghash_add_in_sel_d[0] = ADD_IN_CORR_B;
+              aes_ghash_ns          = GHASH_MASKED_ADD_STATE_SHARES;
+            end else begin
+
+              // Start the multiplication. For the masked implementation, the second multiplier
+              // takes Share 1 only for the very first block.
+              gf_mult0_en_d     = 1'b1;
+              gf_mult1_in_sel_d = MULT_IN_STATE1;
+              aes_ghash_ns      = GHASH_MULT;
+            end
 
           end else if (gcm_phase_i == GCM_SAVE) begin
             // Get ready to output the current GHASH state.
@@ -525,7 +758,13 @@ module aes_ghash
             // For the masked implementation, first unmask the GHASH state and then add Share 1 of
             // S. For the unmasked implementation, add S directly.
             final_add_d  = 1'b1;
-            aes_ghash_ns = SecMasking ? GHASH_MASKED_ADD_STATE_SHARES : GHASH_ADD_S;
+            if (SecMasking) begin
+              ghash_add_in_sel_d[0] = ADD_IN_CORR_B;
+              aes_ghash_ns          = GHASH_MASKED_ADD_STATE_SHARES;
+            end else begin
+              add_s_en_d   = 1'b1;
+              aes_ghash_ns = GHASH_OUT;
+            end
 
           end else begin
             // Handshake without a valid command. We should never get here. If we do (e.g. via a
@@ -542,53 +781,91 @@ module aes_ghash
         // 2.  S0 * H1
         //
         // S0 and S1 have been loaded into the GHASH state registers previsously.
-        gf_mult1_in_sel = MULT_IN_STATE0;
-        gf_mult_req     = 2'b11;
+        gf_mult_req = 2'b11;
+        if (gf_mult_ack_pre[0]) begin
+          corr0_en_d = 1'b1;
+        end
+        if (gf_mult_ack_pre[1]) begin
+          gf_mult1_in_sel_d = MULT_IN_ZERO;
+        end
         if (&gf_mult_ack) begin
-          corr_we       = SP2V_HIGH;
-          aes_ghash_ns  = GHASH_IDLE;
+          gf_mult0_en_d     = 1'b0;
+          gf_mult1_in_sel_d = MULT_IN_ZERO;
+          corr_we           = SP2V_HIGH;
+          aes_ghash_ns      = GHASH_IDLE;
         end
       end
 
       GHASH_MASKED_ADD_STATE_SHARES: begin
         // Add both shares of the GHASH state and store the result in Share 0.
-        ghash_add_in_sel[0] = ADD_IN_CORR_B;
         ghash_state_sel     = GHASH_STATE_ADD;
         ghash_state_we[0]   = SP2V_HIGH;
+        final_add_d         = 1'b0;
 
-        // We need to add Share 1 of S next, in case we're saving the context or producing the
-        // final authentication tag.
-        final_add_d  = 1'b0;
-        aes_ghash_ns = ((gcm_phase_i == GCM_SAVE) ||
-                        (gcm_phase_i == GCM_TAG)) && final_add_q ? GHASH_ADD_S : GHASH_MULT;
+        // Switch the add_in multiplexers back to the default position in the next clock cycle.
+        ghash_add_in_sel_d[0] = ADD_IN_GHASH_IN;
+        ghash_add_in_sel_d[1] = ADD_IN_GHASH_IN;
+
+        if ((gcm_phase_i == GCM_SAVE) || ((gcm_phase_i == GCM_TAG) && final_add_q)) begin
+          // When saving the context or when producing the final authentication tag, we have to
+          // add Share 1 of S next and output the result.
+          add_s_en_d   = 1'b1;
+          aes_ghash_ns = GHASH_OUT;
+        end else begin
+
+          // Multiply Share 0 of the GHASH state with the hash subkey next. Share 1 of the GHASH
+          // state is only multiplied by Share 1 of the hash subkey for the very first block.
+          gf_mult0_en_d     = 1'b1;
+          gf_mult1_in_sel_d = MULT_IN_STATE0;
+          aes_ghash_ns      = GHASH_MULT;
+        end
       end
 
       GHASH_MULT: begin
         // Perform the multiplication and update the state.
-        gf_mult1_in_sel = first_block_q ? MULT_IN_STATE1 : MULT_IN_STATE0;
         gf_mult_req     = 2'b11;
+        if (gf_mult_ack_pre[1]) begin
+          gf_mult1_in_sel_d = MULT_IN_ZERO;
+        end
         if (&gf_mult_ack) begin
+          // Note: Once the multiplication finishes, Share 0 of the state depends on Share 0 of the
+          // hash subkey. Thus, we don't forward it to the second multiplier as this may lead to
+          // undesirable SCA leakage inside the multiplier.
+          // When doing the first block only, we have to start computing another correction term
+          // using the second multiplier in the next clock cycle, i.e., S1 * H1.
+          gf_mult0_en_d     = 1'b0;
+          gf_mult1_in_sel_d = SecMasking && first_block_q ? MULT_IN_S1 : MULT_IN_ZERO;
+
           ghash_state_sel   = GHASH_STATE_MULT;
           ghash_state_we[0] = SP2V_HIGH;
           ghash_state_we[1] = SP2V_HIGH;
-          first_block_d     = SecMasking               ? first_block_q         : 1'b0;
-          aes_ghash_ns      = SecMasking               ? GHASH_MASKED_ADD_CORR :
-                              (gcm_phase_i == GCM_TAG) ? GHASH_ADD_S           : GHASH_IDLE;
+          if (SecMasking) begin
+            ghash_add_in_sel_d[0] = ADD_IN_CORR_A;
+            ghash_add_in_sel_d[1] = first_block_q ? ADD_IN_GHASH_IN : ADD_IN_CORR_A;
+            aes_ghash_ns          = GHASH_MASKED_ADD_CORR;
+          end else begin
+            first_block_d = 1'b0;
+            aes_ghash_ns  = (gcm_phase_i == GCM_TAG) ? GHASH_OUT : GHASH_IDLE;
+          end
         end
       end
 
       GHASH_MASKED_ADD_CORR: begin
         // Add the proper correction terms to both state shares.
-        ghash_add_in_sel[0] = ADD_IN_CORR_A;
-        ghash_add_in_sel[1] = ADD_IN_CORR_A;
 
         if (first_block_q) begin
           // When doing the first block only, we need to compute another correction term using the
-          // second multiplier only, i.e., S1 * H1.
-          ghash_add_in_sel[1] = ADD_IN_CORR_B;
-          gf_mult1_in_sel     = MULT_IN_S1;
-          gf_mult_req[1]      = 1'b1;
+          // second multiplier only, i.e., S1 * H1. To reduce undesirable SCA leakage, we should
+          // not combine the previously computed correction term S0 * H1 with Share 1 of the GHASH
+          // state or potential intermediate results of the second multiplier (both may depend on
+          // S1). Only the final result of the second multiplier is forwarded to the addition.
+          gf_mult_req = 2'b10;
+          if (gf_mult_ack_pre[1]) begin
+            ghash_add_in_sel_d[1] = ADD_IN_CORR_B;
+            gf_mult1_in_sel_d     = MULT_IN_ZERO;
+          end
           if (gf_mult_ack[1]) begin
+            gf_mult1_in_sel_d = MULT_IN_ZERO;
             ghash_state_we[0] = SP2V_HIGH;
             ghash_state_we[1] = SP2V_HIGH;
             first_block_d     = 1'b0;
@@ -598,41 +875,55 @@ module aes_ghash
           // We don't have to do another multiplication.
           advance = 1'b1;
 
-          // Note: Share 0 of the state now depends on Share 0 of the hash subkey. Thus, we don't
-          // forward it to the second multiplier as this may lead to undesirable SCA leakage in the
-          // multiplier.
-          gf_mult1_in_sel = MULT_IN_S1;
-
           // Add the previously computed correction terms.
           ghash_state_we[0] = SP2V_HIGH;
           ghash_state_we[1] = SP2V_HIGH;
         end
 
-        // In case we're producing the final authentication tag, we have to unmask the state next.
         if (advance) begin
           if (gcm_phase_i == GCM_TAG) begin
-            final_add_d  = 1'b1;
-            aes_ghash_ns = GHASH_MASKED_ADD_STATE_SHARES;
+            // When producing the final authentication tag, we have to unmask the state next.
+            //
+            // But before doing that, we pause for one clock cycle to allow downstream wires of the
+            // GHASH state to fully settle to the corrected values. Otherwise, transient effects
+            // inside the addition for Share 0 of the GHASH state may cause undesirable SCA
+            // leakage. This is because before adding the correction terms, Share 0 and Share 1
+            // of the GHASH state depends on H0 and H1, respectively.
+            aes_ghash_ns = GHASH_MASKED_SETTLE;
           end else begin
-            aes_ghash_ns = GHASH_IDLE;
+            ghash_add_in_sel_d[0] = ADD_IN_GHASH_IN;
+            ghash_add_in_sel_d[1] = ADD_IN_GHASH_IN;
+            aes_ghash_ns          = GHASH_IDLE;
           end
         end
       end
 
+      GHASH_MASKED_SETTLE: begin
+        // After adding the correction terms the last time and before unmasking the state, we pause
+        // for one clock cycle. This allows downstream wires of the GHASH state to fully settle to
+        // the corrected values to reduce undesirable SCA leakage.
+        final_add_d           = 1'b1;
+        ghash_add_in_sel_d[0] = ADD_IN_CORR_B;
+        ghash_add_in_sel_d[1] = ADD_IN_GHASH_IN;
+        aes_ghash_ns          = GHASH_MASKED_ADD_STATE_SHARES;
+      end
+
       GHASH_ADD_S: begin
-        // Add S to the GHASH state and then get ready to output the final tag or return to the
-        // idle state in case this state has been reached as part of an initialization or state
-        // restore operation.
-        ghash_in_sel      = GHASH_IN_S;
+        // Add S to the GHASH state and then return to the idle state. This state is used for the
+        // unmasked implementation only. The generatiion of the final authentication tag (also
+        // involves adding the GHASH state and S) is handled separately in the GHASH_OUT FSM state.
+        ghash_state_sel   = GHASH_STATE_ADD_S;
         ghash_state_we[0] = SP2V_HIGH;
-        aes_ghash_ns      = ((gcm_phase_i == GCM_INIT) ||
-                             (gcm_phase_i == GCM_RESTORE)) ? GHASH_IDLE : GHASH_OUT;
+        aes_ghash_ns      = GHASH_IDLE;
       end
 
       GHASH_OUT: begin
-        // Perform output handshake and clear all internal state with pseudo-random data.
+        // Add S to the GHASH state to output the final authentication tag. Upon performing the
+        // output handshake, clear all internal state with pseudo-random data.
+        add_s_en_d  = 1'b1;
         out_valid_o = SP2V_HIGH;
         if (out_ready_i == SP2V_HIGH) begin
+          add_s_en_d        = 1'b0;
           s_we              = SP2V_HIGH;
           ghash_state_sel   = SecMasking ? GHASH_STATE_INIT : GHASH_STATE_ADD;
           ghash_state_we[0] = SP2V_HIGH;
@@ -654,8 +945,9 @@ module aes_ghash
       end
     endcase
 
-    // Unconditionally jump into the terminal error state if a fatal alert has been triggered.
-    if (alert_fatal_i) begin
+    // Unconditionally jump into the terminal error state in case a mux selector becomes invalid,
+    // or if a fatal alert has been triggered.
+    if (|ghash_add_in_sel_err || gf_mult1_in_sel_err || alert_fatal_i) begin
       aes_ghash_ns = GHASH_ERROR;
     end
   end
@@ -680,11 +972,20 @@ module aes_ghash
         final_add_q <= final_add_d;
       end
     end
+
   end else begin : gen_no_fsm_reg
     // Tie-off unused FSM signals.
     logic unused_final_add_d;
     assign final_add_q = 1'b0;
     assign unused_final_add_d = final_add_d;
+
+    logic unused_gf_mult0_en_d;
+    assign gf_mult0_en_q = 1'b0;
+    assign unused_gf_mult0_en_d = gf_mult0_en_d;
+
+    gf_mult_in_sel_e unused_gf_mult1_in_sel_d;
+    assign gf_mult1_in_sel_q = MULT_IN_ZERO;
+    assign unused_gf_mult1_in_sel_d = gf_mult1_in_sel_d;
 
     logic unused_advance;
     assign unused_advance = advance;
@@ -697,9 +998,47 @@ module aes_ghash
   // Moving to GCM_SAVE is only allowed after having done the first block.
   assign first_block_o = first_block_q;
 
+  // Add S to the GHASH state for the generation of the final authentication tag. To reduce
+  // undesirable SCA leakage, the following measures are taken:
+  // 1. A blanker is used to only perform the addition at the very end. This avoids adding
+  //    S to intermediate GHASH states. This is done for the masked implementation only.
+  // 2. The result of the addition is not written back into state regsiter but forwarded to
+  //    the output directly.
+  if (SecMasking) begin : gen_add_s_in_masked
+    // Avoid glichtes on the enable signal controlling the blanking.
+    prim_flop #(
+      .Width     (1),
+      .ResetValue(1'b0)
+    ) u_prim_flop_add_s_en (
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
+
+      .d_i(add_s_en_d),
+      .q_o(add_s_en_q)
+    );
+
+    // Only feed Share 0 of the GHASH state into the addition if we're actually generating and
+    // output. This helps reducing undesirable SCA leakage due to combining intermediate values of
+    // Share 0 of the GHASH state with Share 1 of S.
+    prim_blanker #(
+      .Width(GCMDegree)
+    ) u_prim_blanker_add_s_in (
+      .in_i (ghash_state_q[0]),
+      .en_i (add_s_en_q),
+      .out_o(add_s_in)
+    );
+  end else begin : gen_add_s_in_unmasked
+
+    // Don't perform any blanking in the unmasked case.
+    assign add_s_in = ghash_state_q[0];
+  end
+
+  // Perform the actual addition.
+  assign ghash_state_done = s_q ^ add_s_in;
+
   // Covert the output data from the internal data format to the output format.
   always_comb begin : data_out_conversion
-    ghash_state_done_o = aes_transpose(aes_state_to_ghash_vec(ghash_state_q[0]));
+    ghash_state_done_o = aes_transpose(aes_state_to_ghash_vec(ghash_state_done));
   end
 
 endmodule
