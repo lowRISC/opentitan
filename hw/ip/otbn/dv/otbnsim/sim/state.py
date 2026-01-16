@@ -15,6 +15,7 @@ from .ext_regs import OTBNExtRegs
 from .flags import FlagReg
 from .gpr import GPRs
 from .loop import LoopStack
+from .mai import MaskingAcceleratorInterface
 from .reg import RegFile
 from .trace import Trace, TracePC
 from .wsr import WSRFile
@@ -200,6 +201,9 @@ class OTBNState:
         # random data).
         self.edn_seen_running = False
 
+        # The masking accelerator interface (MAI) handles the accelerators
+        self.mai = MaskingAcceleratorInterface(self.csrs, self.wsrs)
+
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
             return self._pc_next_override
@@ -285,7 +289,7 @@ class OTBNState:
         c += self.loop_stack.changes()
         c += self.ext_regs.changes()
         c += self.wsrs.changes()
-        c += self.csrs.flags.changes()
+        c += self.csrs.changes()
         c += self.wdrs.changes()
         return c
 
@@ -308,6 +312,7 @@ class OTBNState:
             self.take_injected_err_bits()
         self.ext_regs.step()
         self._urnd_client.step()
+        self.mai.step()
 
     def commit(self, sim_stalled: bool) -> None:
         if self._time_to_imem_invalidation is not None:
@@ -343,7 +348,7 @@ class OTBNState:
         self.dmem.commit()
         self.loop_stack.commit()
         self.wsrs.commit()
-        self.csrs.flags.commit()
+        self.csrs.commit()
         self.wdrs.commit()
 
         if not sim_stalled:
@@ -358,7 +363,7 @@ class OTBNState:
         self.loop_stack.abort()
         self.ext_regs.abort()
         self.wsrs.abort()
-        self.csrs.flags.abort()
+        self.csrs.abort()
         self.wdrs.abort()
 
     def start(self) -> None:
@@ -376,7 +381,7 @@ class OTBNState:
         # Reset CSRs, WSRs, loop stack and call stack. WSRs have special
         # treatment because some of them have values that persist across
         # operations.
-        self.csrs = CSRFile()
+        self.csrs.on_start()
         self.wsrs.on_start()
         self.loop_stack = LoopStack()
         self.gprs.empty_call_stack()
