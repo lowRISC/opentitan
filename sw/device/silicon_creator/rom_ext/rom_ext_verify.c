@@ -25,7 +25,8 @@ rom_error_t rom_ext_verify(const manifest_t *manifest, char slot_id,
                            owner_application_keyring_t *keyring,
                            size_t *verify_key, owner_config_t *owner_config,
                            uint32_t *isfb_check_count) {
-  RETURN_IF_ERROR(rom_ext_boot_policy_manifest_check(manifest, boot_data));
+  HARDENED_RETURN_IF_ERROR(
+      rom_ext_boot_policy_manifest_check(manifest, boot_data));
 
   uint32_t key_id =
       sigverify_ecdsa_p256_key_id_get(&manifest->ecdsa_public_key);
