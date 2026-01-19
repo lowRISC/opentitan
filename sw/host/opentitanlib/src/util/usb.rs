@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{Context, Result, ensure};
-use rusb;
+use rusb::{self, UsbContext};
 use std::time::Duration;
 
 use crate::transport::TransportError;
 
 /// The `UsbBackend` provides low-level USB access to debugging devices.
 pub struct UsbBackend {
-    device: rusb::Device<rusb::GlobalContext>,
-    handle: rusb::DeviceHandle<rusb::GlobalContext>,
+    device: rusb::Device<rusb::Context>,
+    handle: rusb::DeviceHandle<rusb::Context>,
     serial_number: String,
     timeout: Duration,
 }
@@ -23,10 +23,10 @@ impl UsbBackend {
         usb_vid: u16,
         usb_pid: u16,
         usb_serial: Option<&str>,
-    ) -> Result<Vec<(rusb::Device<rusb::GlobalContext>, String)>> {
+    ) -> Result<Vec<(rusb::Device<rusb::Context>, String)>> {
         let mut devices = Vec::new();
         let mut deferred_log_messages = Vec::new();
-        for device in rusb::devices().context("USB error")?.iter() {
+        for device in rusb::Context::new()?.devices().context("USB error")?.iter() {
             let descriptor = match device.device_descriptor() {
                 Ok(desc) => desc,
                 Err(e) => {
