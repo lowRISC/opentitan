@@ -302,15 +302,6 @@ def _deploy_software_collateral(args) -> None:
             f"--//util/design/data:data_perm={ENV.get('BAZEL_OTP_DATA_PERM_FLAG')}",
         ]
 
-    # If build_seed is provided, feed this value into bazel when building the OTP pre-load images.
-    # This overrides the default seed value and is needed for reproducibility to match the
-    # synthesized hardware from the 'build' stage. (sw build happens in the 'run' stage)
-    if args.build_seed != "None":
-        bazel_runner.build_opts += [
-            f"--//hw/ip/otp_ctrl/data:lc_seed={args.build_seed}",
-            f"--//hw/ip/otp_ctrl/data:otp_seed={args.build_seed}",
-        ]
-
     # Print a summary of the accumulated bazel_runner configuration that we will use to
     # assemble all further bazel operations.
     logger.info(bazel_runner)
