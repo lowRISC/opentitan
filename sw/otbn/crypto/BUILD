@@ -47,6 +47,18 @@ otbn_library(
     ],
 )
 
+otbn_binary(
+    name = "run_curve25519",
+    srcs = [
+        "run_curve25519.s",
+    ],
+    deps = [
+        ":ed25519",
+        ":ed25519_scalar",
+        ":field25519",
+    ],
+)
+
 otbn_library(
     name = "gcd",
     srcs = [
