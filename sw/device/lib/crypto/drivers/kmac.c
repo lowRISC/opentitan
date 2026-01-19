@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
@@ -729,14 +730,18 @@ static status_t kmac_process_msg_blocks(kmac_operation_t operation,
       // valid and should be suspicious if it's not.
       HARDENED_CHECK_EQ(masked_digest, kHardenedBoolFalse);
       // Unmask the digest as we read it.
-      for (; launder32(idx) < digest_len_words && offset < keccak_rate_words;
-           offset++) {
-        digest[idx] =
-            abs_mmio_read32(kKmacStateShare0Addr + offset * sizeof(uint32_t));
-        digest[idx] ^=
-            abs_mmio_read32(kKmacStateShare1Addr + offset * sizeof(uint32_t));
-        idx++;
+      size_t read_len_words = keccak_rate_words;
+      if (idx + read_len_words >= digest_len_words) {
+        read_len_words = digest_len_words - idx;
       }
+      uint32_t offset_share0 =
+          kKmacBaseAddr + KMAC_STATE_REG_OFFSET + offset * sizeof(uint32_t);
+      uint32_t offset_share1 = kKmacBaseAddr + KMAC_STATE_REG_OFFSET +
+                               kKmacStateShareSize + offset * sizeof(uint32_t);
+      HARDENED_TRY(hardened_xor((const uint32_t *)offset_share0,
+                                (const uint32_t *)offset_share1, read_len_words,
+                                &digest[idx]));
+      idx += read_len_words;
     }
 
     // If we read all the remaining words and still need more digest, issue
