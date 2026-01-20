@@ -567,27 +567,18 @@ static status_t kmac_write_key_block(kmac_blinded_key_t *key) {
       KMAC_KEY_LEN_REG_RESVAL, KMAC_KEY_LEN_LEN_FIELD, key_len_enum);
   abs_mmio_write32(kBase + KMAC_KEY_LEN_REG_OFFSET, key_len_reg);
 
-  // Write random words to the key registers first for SCA defense.
-  for (size_t i = 0; i * sizeof(uint32_t) < key->len; i++) {
-    abs_mmio_write32(
-        kBase + KMAC_KEY_SHARE0_0_REG_OFFSET + i * sizeof(uint32_t),
-        ibex_rnd32_read());
-  }
-  for (size_t i = 0; i * sizeof(uint32_t) < key->len; i++) {
-    abs_mmio_write32(
-        kBase + KMAC_KEY_SHARE0_0_REG_OFFSET + i * sizeof(uint32_t),
-        key->share0[i]);
-  }
-  for (size_t i = 0; i * sizeof(uint32_t) < key->len; i++) {
-    abs_mmio_write32(
-        kBase + KMAC_KEY_SHARE1_0_REG_OFFSET + i * sizeof(uint32_t),
-        ibex_rnd32_read());
-  }
-  for (size_t i = 0; i * sizeof(uint32_t) < key->len; i++) {
-    abs_mmio_write32(
-        kBase + KMAC_KEY_SHARE1_0_REG_OFFSET + i * sizeof(uint32_t),
-        key->share1[i]);
-  }
+  // Write random words to the key registers and use hardened_memcpy
+  // for SCA defense. Using the hardened_mem* functions is fine as
+  // we are always operating on multiples of 32-bit words.
+  uint32_t share0_addr = kBase + KMAC_KEY_SHARE0_0_REG_OFFSET;
+  uint32_t share1_addr = kBase + KMAC_KEY_SHARE1_0_REG_OFFSET;
+  size_t key_len_words = key->len / sizeof(uint32_t);
+  HARDENED_TRY(hardened_memshred((uint32_t *)share0_addr, key_len_words));
+  HARDENED_TRY(
+      hardened_memcpy((uint32_t *)share0_addr, key->share0, key_len_words));
+  HARDENED_TRY(hardened_memshred((uint32_t *)share1_addr, key_len_words));
+  HARDENED_TRY(
+      hardened_memcpy((uint32_t *)share1_addr, key->share1, key_len_words));
 
   return OTCRYPTO_OK;
 }
@@ -707,24 +698,22 @@ static status_t kmac_process_msg_blocks(kmac_operation_t operation,
     // Read words from the state registers (either `digest_len_words` or the
     // maximum number of words available).
     size_t offset = 0;
+    uint32_t offset_share0 = kBase + KMAC_STATE_REG_OFFSET;
+    uint32_t offset_share1 =
+        kBase + KMAC_STATE_REG_OFFSET + kKmacStateShareSize;
+    size_t read_len_words = keccak_rate_words;
+    if (idx + read_len_words >= digest_len_words) {
+      read_len_words = digest_len_words - idx;
+    }
     if (launder32(masked_digest) == kHardenedBoolTrue) {
       HARDENED_CHECK_EQ(masked_digest, kHardenedBoolTrue);
-      // Read the digest into each share in turn. Do this in separate loops so
-      // corresponding shares aren't handled close together.
-      for (offset = 0; launder32(idx + offset) < digest_len_words &&
-                       offset < keccak_rate_words;
-           offset++) {
-        digest[idx + offset] = abs_mmio_read32(kBase + KMAC_STATE_REG_OFFSET +
-                                               offset * sizeof(uint32_t));
-      }
-      for (offset = 0; launder32(idx + offset) < digest_len_words &&
-                       offset < keccak_rate_words;
-           offset++) {
-        digest[idx + offset + digest_len_words] =
-            abs_mmio_read32(kBase + KMAC_STATE_REG_OFFSET +
-                            kKmacStateShareSize + offset * sizeof(uint32_t));
-      }
-      idx += offset;
+      // Read the digest into each share in turn. Do this by using the SCA
+      // resilient hardened_memcpy function.
+      HARDENED_TRY(hardened_memcpy(
+          &digest[idx], (const uint32_t *)offset_share0, read_len_words));
+      HARDENED_TRY(hardened_memcpy(&digest[idx + digest_len_words],
+                                   (const uint32_t *)offset_share1,
+                                   read_len_words));
     } else {
       // Skip right to the hardened check here instead of returning
       // `OTCRYPTO_BAD_ARGS` if the value is not `kHardenedBoolFalse`; this
@@ -732,19 +721,12 @@ static status_t kmac_process_msg_blocks(kmac_operation_t operation,
       // valid and should be suspicious if it's not.
       HARDENED_CHECK_EQ(masked_digest, kHardenedBoolFalse);
       // Unmask the digest as we read it.
-      size_t read_len_words = keccak_rate_words;
-      if (idx + read_len_words >= digest_len_words) {
-        read_len_words = digest_len_words - idx;
-      }
-      uint32_t offset_share0 =
-          kBase + KMAC_STATE_REG_OFFSET + offset * sizeof(uint32_t);
-      uint32_t offset_share1 = kBase + KMAC_STATE_REG_OFFSET +
-                               kKmacStateShareSize + offset * sizeof(uint32_t);
       HARDENED_TRY(hardened_xor((const uint32_t *)offset_share0,
                                 (const uint32_t *)offset_share1, read_len_words,
                                 &digest[idx]));
-      idx += read_len_words;
     }
+    offset += read_len_words;
+    idx += read_len_words;
 
     // If we read all the remaining words and still need more digest, issue
     // `CMD.RUN` to generate more state.
