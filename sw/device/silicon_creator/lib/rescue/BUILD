@@ -6,6 +6,7 @@ load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
+load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
@@ -58,15 +59,30 @@ cc_library(
     ] + RESCUE_DEPS,
 )
 
-cc_library(
+dual_cc_library(
     name = "xmodem",
-    srcs = ["xmodem.c"],
-    hdrs = ["xmodem.h"],
-    deps = [
-        "//sw/device/lib/base:hardened",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:uart",
-    ],
+    srcs = dual_inputs(
+        device = ["xmodem.c"],
+        host = ["mock_xmodem.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_xmodem.h"],
+        shared = ["xmodem.h"],
+    ),
+    deps = dual_inputs(
+        device = [
+            "//sw/device/silicon_creator/lib/drivers:uart",
+        ],
+        host = [
+            "//sw/device/lib/base:global_mock",
+            "//sw/device/silicon_creator/testing:rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            "//sw/device/lib/base:hardened",
+            "//sw/device/silicon_creator/lib:error",
+        ],
+    ),
 )
 
 cc_library(
