@@ -113,7 +113,6 @@ status_t cryptolib_sca_gcm_impl(
  * @param key_len  Key length.
  * @param data_out Output data.
  * @param data_out_len Output data length.
- * @param padding Padding.
  * @param mode Mode.
  * @param cfg_in Input config.
  * @param cfg_out Output config.
@@ -125,7 +124,7 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
                                  uint8_t key[HMAC_CMD_MAX_KEY_BYTES],
                                  size_t key_len,
                                  uint8_t data_out[HMAC_CMD_MAX_TAG_BYTES],
-                                 size_t *data_out_len, size_t padding,
+                                 size_t *data_out_len, size_t hash_mode,
                                  size_t mode, size_t cfg_in, size_t *cfg_out,
                                  size_t trigger);
 

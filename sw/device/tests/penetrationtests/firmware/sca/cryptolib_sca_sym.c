@@ -110,14 +110,14 @@ static status_t trigger_cryptolib_hmac(
     uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES], size_t data_in_len,
     uint8_t key[HMAC_CMD_MAX_KEY_BYTES], size_t key_len,
     uint8_t data_out[HMAC_CMD_MAX_TAG_BYTES], size_t *data_out_len,
-    size_t padding, size_t mode, size_t cfg_in, size_t *cfg_out, size_t *status,
-    size_t trigger) {
+    size_t hash_mode, size_t mode, size_t cfg_in, size_t *cfg_out,
+    size_t *status, size_t trigger) {
   /////////////// STUB START ///////////////
   // Perform a TDES encryption or decryption.
-  // Adjust the mode of operation and the padding mode.
+  // Adjust the mode of operation and the hash mode.
   // Triggers are over the API calls.
   *status = (size_t)cryptolib_sca_hmac_impl(data_in, data_in_len, key, key_len,
-                                            data_out, data_out_len, padding,
+                                            data_out, data_out_len, hash_mode,
                                             mode, cfg_in, cfg_out, trigger)
                 .value;
   /////////////// STUB END ///////////////
@@ -723,7 +723,7 @@ status_t handle_cryptolib_sca_sym_hmac_fvsr_plaintext(ujson_t *uj) {
   for (size_t it = 0; it < uj_input.num_iterations; it++) {
     TRY(trigger_cryptolib_hmac(
         batch_data_in[it], uj_input.data_len, batch_keys[it], uj_input.key_len,
-        data_out_buf, &data_out_len, uj_input.padding, uj_input.mode,
+        data_out_buf, &data_out_len, uj_input.hash_mode, uj_input.mode,
         uj_input.cfg, &cfg_out, &status, uj_input.trigger));
   }
 
@@ -769,7 +769,7 @@ status_t handle_cryptolib_sca_sym_hmac_fvsr_key(ujson_t *uj) {
   for (size_t it = 0; it < uj_input.num_iterations; it++) {
     TRY(trigger_cryptolib_hmac(
         batch_data_in[it], uj_input.data_len, batch_keys[it], uj_input.key_len,
-        data_out_buf, &data_out_len, uj_input.padding, uj_input.mode,
+        data_out_buf, &data_out_len, uj_input.hash_mode, uj_input.mode,
         uj_input.cfg, &cfg_out, &status, uj_input.trigger));
   }
 
@@ -807,7 +807,7 @@ status_t handle_cryptolib_sca_sym_hmac_daisy_chain(ujson_t *uj) {
   for (size_t it = 0; it < uj_input.num_iterations; it++) {
     TRY(trigger_cryptolib_hmac(data_in_buf, uj_input.data_len, key,
                                uj_input.key_len, data_out_buf, &data_out_len,
-                               uj_input.padding, uj_input.mode, uj_input.cfg,
+                               uj_input.hash_mode, uj_input.mode, uj_input.cfg,
                                &cfg_out, &status, uj_input.trigger));
     // Copy output to input
     memset(data_in_buf, 0, HMAC_CMD_MAX_MSG_BYTES);

@@ -387,8 +387,8 @@ class SymCryptoScaTest(unittest.TestCase):
             cfg = 0
             trigger = 0
 
-            # We just test the first padding mode and the first mode (HMAC)
-            padding = 0
+            # We just test the first padding mode and the first hash mode (HMAC)
+            hash_mode = 0
             mode = 0
 
             actual_result = sca_sym_cryptolib_functions.char_hmac_fvsr_plaintext(
@@ -398,7 +398,7 @@ class SymCryptoScaTest(unittest.TestCase):
                 data_len,
                 key,
                 key_len,
-                padding,
+                hash_mode,
                 mode,
                 cfg,
                 trigger,
@@ -445,8 +445,8 @@ class SymCryptoScaTest(unittest.TestCase):
             cfg = 0
             trigger = 0
 
-            # We just test the first padding mode and the first mode (HMAC)
-            padding = 0
+            # We just test the first padding mode and the first hash mode (HMAC)
+            hash_mode = 0
             mode = 0
 
             actual_result = sca_sym_cryptolib_functions.char_hmac_daisy(
@@ -456,7 +456,7 @@ class SymCryptoScaTest(unittest.TestCase):
                 data_len,
                 key,
                 key_len,
-                padding,
+                hash_mode,
                 mode,
                 cfg,
                 trigger,
@@ -488,8 +488,8 @@ class SymCryptoScaTest(unittest.TestCase):
         for num_segments in num_segments_list:
             entropy_len = 32
             entropy = [random.randint(0, 255) for _ in range(entropy_len)]
-            nonce_len = 16
-            nonce = [random.randint(0, 255) for _ in range(nonce_len)]
+            add_len = 16
+            add = [random.randint(0, 255) for _ in range(add_len)]
             reseed_interval = 100
             data_len = 16
             mode = 0
@@ -501,8 +501,8 @@ class SymCryptoScaTest(unittest.TestCase):
                 iterations,
                 entropy,
                 entropy_len,
-                nonce,
-                nonce_len,
+                add,
+                add_len,
                 reseed_interval,
                 data_len,
                 mode,

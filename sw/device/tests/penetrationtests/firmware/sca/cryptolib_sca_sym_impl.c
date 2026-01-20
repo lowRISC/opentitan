@@ -335,7 +335,7 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
                                  uint8_t key[HMAC_CMD_MAX_KEY_BYTES],
                                  size_t key_len,
                                  uint8_t data_out[HMAC_CMD_MAX_TAG_BYTES],
-                                 size_t *data_out_len, size_t padding,
+                                 size_t *data_out_len, size_t hash_mode,
                                  size_t mode, size_t cfg_in, size_t *cfg_out,
                                  size_t trigger) {
   // Set the HMAC mode.

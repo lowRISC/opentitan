@@ -370,8 +370,8 @@ status_t handle_cryptolib_sca_asym_p384_base_mul_daisy_chaining(ujson_t *uj) {
     TRY(trigger_cryptolib_sca_asym_p384_base_mul(
         scalar, x, y, uj_input.cfg, &cfg_out, &status, uj_input.trigger));
     // Copy out x coordinate to scalar
-    memset(scalar, 0, P256_CMD_BYTES);
-    memcpy(scalar, x, P256_CMD_BYTES);
+    memset(scalar, 0, P384_CMD_BYTES);
+    memcpy(scalar, x, P384_CMD_BYTES);
   }
 
   // Send the last coordinates to host via UART.

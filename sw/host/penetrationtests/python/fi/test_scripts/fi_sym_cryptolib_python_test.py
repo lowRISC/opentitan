@@ -271,8 +271,8 @@ class SymCryptolibFiTest(unittest.TestCase):
             cfg = 0
             trigger = 0
 
-            # We just test the first padding mode and the first mode (HMAC)
-            padding = 0
+            # We just test the first padding mode and the first hash mode (HMAC)
+            hash_mode = 0
             mode = 0
 
             actual_result = fi_sym_cryptolib_functions.char_hmac(
@@ -282,7 +282,7 @@ class SymCryptolibFiTest(unittest.TestCase):
                 data_len,
                 key,
                 key_len,
-                padding,
+                hash_mode,
                 mode,
                 cfg,
                 trigger,

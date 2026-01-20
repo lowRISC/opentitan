@@ -144,7 +144,7 @@ UJSON_SERDE_STRUCT(CryptoLibFiSymTdesOut, cryptolib_fi_sym_tdes_out_t, CRYPTOLIB
     field(data_len, size_t) \
     field(key, uint8_t, HMAC_CMD_MAX_KEY_BYTES) \
     field(key_len, size_t) \
-    field(padding, size_t) \
+    field(hash_mode, size_t) \
     field(mode, size_t) \
     field(cfg, size_t) \
     field(trigger, size_t)

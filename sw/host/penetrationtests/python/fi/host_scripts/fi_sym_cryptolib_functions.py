@@ -119,7 +119,7 @@ def char_hmac(
     data_len,
     key,
     key_len,
-    padding,
+    hash_mode,
     mode,
     cfg,
     trigger,
@@ -142,7 +142,7 @@ def char_hmac(
         cryptolib_version,
     ) = symfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
-        symfi.handle_hmac(data, data_len, key, key_len, padding, mode, cfg, trigger)
+        symfi.handle_hmac(data, data_len, key, key_len, hash_mode, mode, cfg, trigger)
         response = target.read_response()
     return response
 
