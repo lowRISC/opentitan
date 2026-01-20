@@ -42,7 +42,7 @@ Realistically, each piece of collateral in our repository is in a different stat
 See the [Hardware Development Stages](../project_governance/development_stages.md) for an example of how hardware progress is tracked.
 
 We are happy to receive bug reports and eager to fix them.
-Please make reports by opening a new issue in the [GitHub issue tracker](https://github.com/lowRISC/opentitan/issues).
+Please make reports by opening a new issue in our [GitHub issue tracker](https://github.com/lowRISC/opentitan/issues).
 
 ## Contributing code
 
@@ -79,7 +79,7 @@ For larger proposed changes we ask contributors to:
   and commits.
 
 ## License agreements
-The following information is detailed in the [CONTRIBUTING.md](../../CONTRIBUTING.md) file
+The following information is detailed in the [CONTRIBUTING.md](https://github.com/lowRISC/opentitan/blob/master/CONTRIBUTING.md) file
 * Contributor License agreement
 * Organisational Agreement
 * Use of Copyright messages
