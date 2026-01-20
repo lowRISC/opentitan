@@ -192,3 +192,5 @@ otp_image(
         ":otp_json_rom_ext_rollback_fi",
     ],
 )
+
+exports_files(["bl0_owner_upgrade.c"])
