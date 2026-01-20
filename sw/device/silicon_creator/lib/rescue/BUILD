@@ -59,6 +59,33 @@ cc_library(
     ] + RESCUE_DEPS,
 )
 
+cc_test(
+    name = "rescue_xmodem_unittest",
+    srcs = [
+        "device_host.c",
+        "rescue.c",
+        "rescue_xmodem.c",
+        "rescue_xmodem_unittest.cc",
+    ],
+    deps = [
+        ":rescue",
+        ":xmodem",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:ibex",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:pinmux",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/ownership:owner_block",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
 dual_cc_library(
     name = "xmodem",
     srcs = dual_inputs(
