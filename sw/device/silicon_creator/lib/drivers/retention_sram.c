@@ -24,6 +24,10 @@ static_assert(kRetentionSramBase == TOP_EARLGREY_RAM_RET_AON_BASE_ADDR,
 static_assert(sizeof(retention_sram_t) == TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES,
               "Unexpected retention SRAM size.");
 
+retention_sram_t *retention_sram_get(void) {
+  return (retention_sram_t *)kRetentionSramBase;
+}
+
 void retention_sram_clear(void) {
   memset(retention_sram_get(), 0, sizeof(retention_sram_t));
 }
