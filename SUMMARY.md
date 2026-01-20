@@ -12,6 +12,7 @@
 - [Governance and Policies](./doc/sections/governance.md)
 
   - [Introduction](./doc/project_governance/README.md)
+  - [Membership](./doc/project_governance/membership.md)
   - [Governing Board](./doc/project_governance/governing_board.md)
   - [Technical Committee](./doc/project_governance/technical_committee.md)
   - [Working Groups](./doc/project_governance/working_group.md)
