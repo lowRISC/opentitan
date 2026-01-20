@@ -1,6 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+#include <stdio.h>
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/memory.h"
@@ -80,73 +81,77 @@ static rom_error_t handle_recv_modes(rescue_state_t *state) {
   return error;
 }
 
-static rom_error_t protocol(rescue_state_t *state) {
+// This function should be static, but we want to call it from the unittest.
+rom_error_t protocol_inner(rescue_state_t *state) {
   rom_error_t result;
   size_t rxlen;
   uint8_t command;
-  uint32_t next_mode = 0;
 
+  HARDENED_RETURN_IF_ERROR(handle_send_modes(state));
+  result =
+      xmodem_recv_frame(iohandle, state->frame, state->data + state->offset,
+                        sizeof(state->data) - state->offset, &rxlen, &command);
+
+  HARDENED_RETURN_IF_ERROR(rescue_inactivity(state));
+  if (state->frame == 1 && result == kErrorXModemTimeoutStart) {
+    if (state->mode != kRescueModeNoOp) {
+      xmodem_recv_start(iohandle);
+    }
+    return kErrorOk;
+  }
+
+  switch (result) {
+    case kErrorOk:
+      // Packet ok. Cancel the inactivity deadline.
+      state->inactivity_deadline = 0;
+      state->offset += rxlen;
+      HARDENED_RETURN_IF_ERROR(handle_recv_modes(state));
+      xmodem_ack(iohandle, true);
+      break;
+    case kErrorXModemEndOfFile:
+      if (state->offset % 2048 != 0) {
+        // If there is unhandled residue, extend out to a full block and
+        // then handle it.
+        while (state->offset % 2048 != 0) {
+          state->data[state->offset++] = 0xFF;
+        }
+        HARDENED_RETURN_IF_ERROR(handle_recv_modes(state));
+      }
+      xmodem_ack(iohandle, true);
+      state->frame = 1;
+      state->offset = 0;
+      state->flash_offset = 0;
+      return kErrorOk;
+    case kErrorXModemCrc:
+      xmodem_ack(iohandle, false);
+      return kErrorOk;
+    case kErrorXModemCancel:
+      return result;
+    case kErrorXModemUnknown:
+      if (state->frame == 1) {
+        if (command == '\r') {
+          // Mode change request.  Cancel the inactivity deadline.
+          state->inactivity_deadline = 0;
+          validate_mode(state->next_mode, state);
+          state->next_mode = 0;
+        } else {
+          state->next_mode = (state->next_mode << 8) | command;
+        }
+        return kErrorOk;
+      }
+      OT_FALLTHROUGH_INTENDED;
+    default:
+      return result;
+  }
+  state->frame += 1;
+  return kErrorOk;
+}
+
+static rom_error_t protocol(rescue_state_t *state) {
   validate_mode(state->default_mode, state);
-
   xmodem_recv_start(iohandle);
   while (true) {
-    HARDENED_RETURN_IF_ERROR(handle_send_modes(state));
-    result = xmodem_recv_frame(
-        iohandle, state->frame, state->data + state->offset,
-        sizeof(state->data) - state->offset, &rxlen, &command);
-
-    HARDENED_RETURN_IF_ERROR(rescue_inactivity(state));
-    if (state->frame == 1 && result == kErrorXModemTimeoutStart) {
-      if (state->mode != kRescueModeNoOp) {
-        xmodem_recv_start(iohandle);
-      }
-      continue;
-    }
-
-    switch (result) {
-      case kErrorOk:
-        // Packet ok. Cancel the inactivity deadline.
-        state->inactivity_deadline = 0;
-        state->offset += rxlen;
-        HARDENED_RETURN_IF_ERROR(handle_recv_modes(state));
-        xmodem_ack(iohandle, true);
-        break;
-      case kErrorXModemEndOfFile:
-        if (state->offset % 2048 != 0) {
-          // If there is unhandled residue, extend out to a full block and
-          // then handle it.
-          while (state->offset % 2048 != 0) {
-            state->data[state->offset++] = 0xFF;
-          }
-          HARDENED_RETURN_IF_ERROR(handle_recv_modes(state));
-        }
-        xmodem_ack(iohandle, true);
-        state->frame = 1;
-        state->offset = 0;
-        state->flash_offset = 0;
-        continue;
-      case kErrorXModemCrc:
-        xmodem_ack(iohandle, false);
-        continue;
-      case kErrorXModemCancel:
-        return result;
-      case kErrorXModemUnknown:
-        if (state->frame == 1) {
-          if (command == '\r') {
-            // Mode change request.  Cancel the inactivity deadline.
-            state->inactivity_deadline = 0;
-            validate_mode(next_mode, state);
-            next_mode = 0;
-          } else {
-            next_mode = (next_mode << 8) | command;
-          }
-          continue;
-        }
-        OT_FALLTHROUGH_INTENDED;
-      default:
-        return result;
-    }
-    state->frame += 1;
+    HARDENED_RETURN_IF_ERROR(protocol_inner(state));
   }
 }
 

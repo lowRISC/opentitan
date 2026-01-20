@@ -15,6 +15,10 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 enum {
   // Rescue is signalled by asserting serial break to the UART for at least
   // 4 byte periods.  At 115200 bps, one byte period is about 87us; four is
@@ -73,6 +77,8 @@ typedef struct RescueState {
   rescue_mode_t mode;
   // Default rescue mode.
   rescue_mode_t default_mode;
+  // Tracking of next_mode in the xmodem implementation.
+  uint32_t next_mode;
   // Inactivity deadline.
   uint64_t inactivity_deadline;
   // Current xmodem frame.
@@ -194,4 +200,7 @@ void rescue_skip_next_boot(void);
 hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config,
                                     uint32_t reset_reasons);
 
+#ifdef __cplusplus
+}
+#endif  // __cplusplus
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_RESCUE_RESCUE_H_

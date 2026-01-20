@@ -340,6 +340,7 @@ void rescue_state_init(rescue_state_t *state, boot_data_t *bootdata,
   state->bootdata = bootdata;
   state->config = config;
   state->default_mode = kRescueModeFirmware;
+  state->next_mode = 0;
 
   if ((hardened_bool_t)config == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ((hardened_bool_t)config, kHardenedBoolFalse);
