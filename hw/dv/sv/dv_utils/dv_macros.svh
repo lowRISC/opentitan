@@ -371,18 +371,24 @@
 `define DV_SPINWAIT_EXIT(WAIT_, EXIT_, MSG_ = "exit condition occurred!", ID_ =`gfn) \
   begin \
     fork begin \
+      bit exit_completed_ = 0; \
+      bit wait_completed_ = 0; \
       fork \
         begin \
           WAIT_ \
+          wait_completed_ = 1; \
         end \
         begin \
           EXIT_ \
-          if (MSG_ != "") begin \
+          if (!wait_completed_ && MSG_ != "") begin \
             `dv_info(MSG_, uvm_pkg::UVM_HIGH, ID_) \
           end \
+          exit_completed_ = 1; \
         end \
       join_any \
-      disable fork; \
+      if (exit_completed_) begin \
+        disable fork; \
+      end \
     end join \
   end
 `endif
