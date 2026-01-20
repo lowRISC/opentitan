@@ -25,6 +25,16 @@ static const char *basename(const char *file, size_t *basename_len) {
   return f;
 }
 
+static inline uint8_t ascii_5bit(uint8_t c) {
+  if (c >= '@' && c <= '_') {
+    return c - '@';
+  } else if (c >= '`' && c <= 'z') {
+    return c - '`';
+  } else {
+    return '_' - '@';
+  }
+}
+
 status_t status_create(absl_status_t code, uint32_t module_id, const char *file,
                        int32_t arg) {
   if (code == kOk) {
@@ -55,6 +65,11 @@ status_t status_create(absl_status_t code, uint32_t module_id, const char *file,
     module_id = basename_len >= 3 ? MAKE_MODULE_ID(f[0], f[1], f[2])
                                   : MAKE_MODULE_ID('u', 'n', 'd');
   }
+  // The module ID currently encodes one ASCII in each 8-bit field. To make
+  // it fit in 15, we convert it to 5-bit ASCII characters.
+  module_id = (uint32_t)((ascii_5bit((module_id >> 16) & 0xff) << 16) |
+                         (ascii_5bit((module_id >> 8) & 0xff) << 21) |
+                         (ascii_5bit(module_id & 0xff) << 26));
   // At this point, the module_id is already packed into the correct bitfield.
   return (status_t){
       .value = (int32_t)(module_id |

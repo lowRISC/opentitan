@@ -53,14 +53,6 @@ extern "C" {
   ((bitfield_field32_t){.mask = 0x7fff, .index = 16})
 #define STATUS_BIT_ERROR 31
 
-// clang-format off
-#define ASCII_5BIT(v) ( \
-    /*uppercase characters*/  (v) >= '@' && (v) <= '_' ? OT_UNSIGNED((v) - '@') \
-    /*lower cvt upper*/     : (v) >= '`' && (v) <= 'z' ? OT_UNSIGNED((v) - '`') \
-    /*else cvt underscore*/ : OT_UNSIGNED('_' - '@')                            \
-  )
-// clang-format on
-
 /*
  * Creates a module ID from 3 ASCII characters.
  *
@@ -74,7 +66,7 @@ extern "C" {
  * #define MODULE_ID MAKE_MODULE_ID('a', 'b', 'c')
  */
 #define MAKE_MODULE_ID(a, b, c) \
-  (ASCII_5BIT(a) << 16) | (ASCII_5BIT(b) << 21) | (ASCII_5BIT(c) << 26)
+  (uint32_t)(((((a)&0xff) << 16) | (((b)&0xff) << 8) | ((c)&0xff)))
 
 #ifdef __cplusplus
 }
