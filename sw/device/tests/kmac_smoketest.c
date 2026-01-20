@@ -28,6 +28,25 @@ OTTF_DEFINE_TEST_CONFIG();
 #define DIGEST_LEN_SHA3_512 (512 / 32)
 #define DIGEST_LEN_SHA3_MAX DIGEST_LEN_SHA3_512
 
+const char short_message[] = {0xe7, 0x37, 0x21, 0x05};
+const char medium_message[] = {0xa7, 0x48, 0x47, 0x93, 0x0a, 0x03,
+                               0xab, 0xee, 0xa4, 0x73, 0xe1, 0xf3,
+                               0xdc, 0x30, 0xb8, 0x88, 0x15};
+const char long_message[] = {
+    0x66, 0x4e, 0xf2, 0xe3, 0xa7, 0x05, 0x9d, 0xaf, 0x1c, 0x58, 0xca, 0xf5,
+    0x20, 0x08, 0xc5, 0x22, 0x7e, 0x85, 0xcd, 0xcb, 0x83, 0xb4, 0xc5, 0x94,
+    0x57, 0xf0, 0x2c, 0x50, 0x8d, 0x4f, 0x4f, 0x69, 0xf8, 0x26, 0xbd, 0x82,
+    0xc0, 0xcf, 0xfc, 0x5c, 0xb6, 0xa9, 0x7a, 0xf6, 0xe5, 0x61, 0xc6, 0xf9,
+    0x69, 0x70, 0x00, 0x52, 0x85, 0xe5, 0x8f, 0x21, 0xef, 0x65, 0x11, 0xd2,
+    0x6e, 0x70, 0x98, 0x89, 0xa7, 0xe5, 0x13, 0xc4, 0x34, 0xc9, 0x0a, 0x3c,
+    0xf7, 0x44, 0x8f, 0x0c, 0xae, 0xec, 0x71, 0x14, 0xc7, 0x47, 0xb2, 0xa0,
+    0x75, 0x8a, 0x3b, 0x45, 0x03, 0xa7, 0xcf, 0x0c, 0x69, 0x87, 0x3e, 0xd3,
+    0x1d, 0x94, 0xdb, 0xef, 0x2b, 0x7b, 0x2f, 0x16, 0x88, 0x30, 0xef, 0x7d,
+    0xa3, 0x32, 0x2c, 0x3d, 0x3e, 0x10, 0xca, 0xfb, 0x7c, 0x2c, 0x33, 0xc8,
+    0x3b, 0xbf, 0x4c, 0x46, 0xa3, 0x1d, 0xa9, 0x0c, 0xff, 0x3b, 0xfd, 0x4c,
+    0xcc, 0x6e, 0xd4, 0xb3, 0x10, 0x75, 0x84, 0x91, 0xee, 0xba, 0x60, 0x3a,
+    0x76};
+
 /**
  * SHA-3 test description.
  */
@@ -57,7 +76,7 @@ const sha3_test_t sha3_tests[] = {
     },
     {
         .mode = kDifKmacModeSha3Len256,
-        .message = "\xe7\x37\x21\x05",
+        .message = &short_message[0],
         .message_len = 32 / 8,
         .digest = {0x8ab6423a, 0x8cf279b0, 0x52c7a34c, 0x90276f29, 0x78fec406,
                    0xd979ebb1, 0x057f7789, 0xae46401e},
@@ -65,8 +84,7 @@ const sha3_test_t sha3_tests[] = {
     },
     {
         .mode = kDifKmacModeSha3Len384,
-        .message = "\xa7\x48\x47\x93\x0a\x03\xab\xee\xa4\x73\xe1\xf3\xdc\x30"
-                   "\xb8\x88\x15",
+        .message = &medium_message[0],
         .message_len = 136 / 8,
         .digest = {0x29f9a6db, 0xd6f955fe, 0xc0675f6c, 0xf1823baf, 0xb358cf7b,
                    0x16f35267, 0x3f08165c, 0x78d48fea, 0xf20369ee, 0xd20a827f,
@@ -75,17 +93,7 @@ const sha3_test_t sha3_tests[] = {
     },
     {
         .mode = kDifKmacModeSha3Len512,
-        .message =
-            "\x66\x4e\xf2\xe3\xa7\x05\x9d\xaf\x1c\x58\xca\xf5\x20\x08\xc5\x22"
-            "\x7e\x85\xcd\xcb\x83\xb4\xc5\x94\x57\xf0\x2c\x50\x8d\x4f\x4f\x69"
-            "\xf8\x26\xbd\x82\xc0\xcf\xfc\x5c\xb6\xa9\x7a\xf6\xe5\x61\xc6\xf9"
-            "\x69\x70\x00\x52\x85\xe5\x8f\x21\xef\x65\x11\xd2\x6e\x70\x98\x89"
-            "\xa7\xe5\x13\xc4\x34\xc9\x0a\x3c\xf7\x44\x8f\x0c\xae\xec\x71\x14"
-            "\xc7\x47\xb2\xa0\x75\x8a\x3b\x45\x03\xa7\xcf\x0c\x69\x87\x3e\xd3"
-            "\x1d\x94\xdb\xef\x2b\x7b\x2f\x16\x88\x30\xef\x7d\xa3\x32\x2c\x3d"
-            "\x3e\x10\xca\xfb\x7c\x2c\x33\xc8\x3b\xbf\x4c\x46\xa3\x1d\xa9\x0c"
-            "\xff\x3b\xfd\x4c\xcc\x6e\xd4\xb3\x10\x75\x84\x91\xee\xba\x60\x3a"
-            "\x76",
+        .message = &long_message[0],
         .message_len = 1160 / 8,
         .digest = {0xf15f82e5, 0xd570c0a3, 0xe7bb2fa5, 0x444a8511, 0x5f295405,
                    0x69797afb, 0xd10879a1, 0xbebf6301, 0xa6521d8f, 0x13a0e876,
@@ -199,9 +207,8 @@ void run_sha3_test(dif_kmac_t *kmac) {
 void run_sha3_alignment_test(dif_kmac_t *kmac) {
   // Examples taken from NIST FIPS-202 Algorithm Test Vectors:
   // https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/sha3/sha-3bytetestvectors.zip
-  const char kMsg[] =
-      "\xa7\x48\x47\x93\x0a\x03\xab\xee\xa4\x73\xe1\xf3\xdc\x30"
-      "\xb8\x88\x15";
+  const char kMsg[] = {0xa7, 0x48, 0x47, 0x93, 0x0a, 0x03, 0xab, 0xee, 0xa4,
+                       0x73, 0xe1, 0xf3, 0xdc, 0x30, 0xb8, 0x88, 0x15};
   const size_t kSize = ARRAYSIZE(kMsg);
   const uint32_t kExpect = 0x29f9a6db;
   const dif_kmac_mode_sha3_t kMode = kDifKmacModeSha3Len384;
@@ -227,9 +234,8 @@ void run_sha3_alignment_test(dif_kmac_t *kmac) {
     // SystemVerilog parameter).
     CHECK_DIF_OK(dif_kmac_poll_status(kmac, KMAC_STATUS_SHA3_IDLE_BIT));
 
-    CHECK_DIF_OK((out == kExpect),
-                 "mismatch at alignment %u got 0x%u want 0x%x", i, out,
-                 kExpect);
+    CHECK((out == kExpect), "mismatch at alignment %u got 0x%x want 0x%x", i,
+          out, kExpect);
   }
 
   // Run a SHA-3 test case using multiple absorb calls.
@@ -254,7 +260,7 @@ void run_sha3_alignment_test(dif_kmac_t *kmac) {
     // SystemVerilog parameter).
     CHECK_DIF_OK(dif_kmac_poll_status(kmac, KMAC_STATUS_SHA3_IDLE_BIT));
 
-    CHECK_DIF_OK((out == kExpect), "mismatch got 0x%u want 0x%x", out, kExpect);
+    CHECK((out == kExpect), "mismatch got 0x%x want 0x%x", out, kExpect);
   }
 }
 
@@ -298,8 +304,8 @@ bool test_main(void) {
   dif_kmac_t kmac;
   CHECK_DIF_OK(dif_kmac_init_from_dt(kTestKmac, &kmac));
 
-  // Configure KMAC hardware using software entropy. The seed has been randomnly
-  // chosen and is genrated using enerated using
+  // Configure KMAC hardware using software entropy. The seed has been randomly
+  // chosen and is generated using:
   // ./util/design/gen-lfsr-seed.py --width 192 --seed 2034386436 --prefix ""
   dif_kmac_config_t config = (dif_kmac_config_t){
       .entropy_mode = kDifKmacEntropyModeSoftware,
