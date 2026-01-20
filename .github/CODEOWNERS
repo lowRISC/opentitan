@@ -27,19 +27,9 @@
 /WORKSPACE          @cfrantz
 /.bazelrc           @cfrantz
 
-# Utils: reggen, topgen, tlgen
-util/*gen/          @msfschaffner
-util/tlgen.py       @msfschaffner
-util/topgen.py      @msfschaffner
-
 # RTL related
 /hw/ip/aes/             @vogelpi
-/hw/ip/alert_handler/   @msfschaffner
-/hw/ip/pinmux/          @msfschaffner
 /hw/ip/rv_dm/           @vogelpi
-/hw/top_*/doc/top_*     @msfschaffner
-/hw/top_*/ip/ast        @msfschaffner
-
 
 # DV related common files
 dv/                 @lowRISC/ot-dv-reviewers
