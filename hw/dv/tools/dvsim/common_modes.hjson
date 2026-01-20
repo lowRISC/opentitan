@@ -69,7 +69,7 @@
     {
       name: build_seed
       is_sim_mode: 1
-      build_opts: ["+define+BUILD_SEED={seed}"]
+      build_opts: ["+define+BUILD_SEED={long_seed}"]
     }
   ]
 
