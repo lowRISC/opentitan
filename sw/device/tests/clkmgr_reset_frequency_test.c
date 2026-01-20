@@ -70,6 +70,13 @@ bool test_main(void) {
 
     // Trigger a rstmgr SW reset.
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
+
+    // Add delay such that the software reset can take effect
+    busy_spin_micros(100);
+
+    // This should not be reached.
+    LOG_ERROR("This is unreachable since a reset should have been triggered");
+    return false;
   } else if (UNWRAP(rstmgr_testutils_reset_info_any(&rstmgr,
                                                     kDifRstmgrResetInfoSw))) {
     LOG_INFO("Back from rstmgr SW reset");
