@@ -153,12 +153,7 @@ enum {
  * @return A pointer to the retention SRAM.
  */
 OT_WARN_UNUSED_RESULT
-inline retention_sram_t *retention_sram_get(void) {
-  // NOTE: this assumes that the retention SRAM is always using the name
-  // "ret_aon"
-  return (retention_sram_t *)dt_sram_ctrl_memory_base(kDtSramCtrlRetAon,
-                                                      kDtSramCtrlMemoryRam);
-}
+retention_sram_t *retention_sram_get(void);
 
 /**
  * Clear the retention SRAM by setting every word to 0.
