@@ -2,6 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/dt_csrng.h"        // Generated
+#include "hw/top/dt/dt_entropy_src.h"  // Generated
+#include "hw/top/dt/dt_flash_ctrl.h"   // Generated
+#include "hw/top/dt/dt_kmac.h"         // Generated
+#include "hw/top/dt/dt_lc_ctrl.h"      // Generated
+#include "hw/top/dt/dt_otp_ctrl.h"     // Generated
+#include "hw/top/dt/dt_rstmgr.h"       // Generated
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng.h"
@@ -22,9 +29,21 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 OTTF_DEFINE_TEST_CONFIG();
+
+static const dt_csrng_t kCsrngDt = (dt_csrng_t)0;
+static const dt_entropy_src_t kEntropySrcDt = (dt_entropy_src_t)0;
+static const dt_flash_ctrl_t kFlashCtrlDt = (dt_flash_ctrl_t)0;
+static const dt_kmac_t kKmacDt = (dt_kmac_t)0;
+static const dt_lc_ctrl_t kLcCtrlDt = (dt_lc_ctrl_t)0;
+static const dt_otp_ctrl_t kOtpCtrlDt = (dt_otp_ctrl_t)0;
+static const dt_rstmgr_t kRstmgrDt = kDtRstmgrAon;
+static_assert(kDtCsrngCount >= 1, "This test needs a CSRNG");
+static_assert(kDtEntropySrcCount >= 1, "This test needs an Entropy Source");
+static_assert(kDtFlashCtrlCount >= 1, "This test needs a Flash Controller");
+static_assert(kDtKmacCount >= 1, "This test needs a KMAC");
+static_assert(kDtLcCtrlCount >= 1, "This test needs a LC CTRL");
+static_assert(kDtOtpCtrlCount >= 1, "This test needs an OTP CTRL");
 
 enum {
   /**
@@ -86,8 +105,7 @@ static_assert(kExitTokenSizeInBytes == ARRAYSIZE(kLcExitToken.data),
  * EDN0.
  */
 static void kmac_init(void) {
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  CHECK_DIF_OK(dif_kmac_init_from_dt(kKmacDt, &kmac));
 
   // Configure KMAC hardware using software entropy.
   dif_kmac_config_t config = (dif_kmac_config_t){
@@ -103,20 +121,14 @@ static void kmac_init(void) {
  * Initializes the peripherals used in this test.
  */
 static void peripherals_init(void) {
-  CHECK_DIF_OK(dif_csrng_init(
-      mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
-  CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
-  CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  CHECK_DIF_OK(dif_csrng_init_from_dt(kCsrngDt, &csrng));
+  CHECK_DIF_OK(dif_lc_ctrl_init_from_dt(kLcCtrlDt, &lc_ctrl));
+  CHECK_DIF_OK(dif_entropy_src_init_from_dt(kEntropySrcDt, &entropy_src));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kOtpCtrlDt, &otp_ctrl));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  CHECK_DIF_OK(
+      dif_flash_ctrl_init_state_from_dt(kFlashCtrlDt, &flash_ctrl_state));
 
   kmac_init();
 }
@@ -311,8 +323,9 @@ bool test_main(void) {
     enum {
       kPartitionId = 0,
     };
-    uint32_t address =
-        (uint32_t)(nv_csrng_output)-TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+    uint32_t flash_base =
+        dt_flash_ctrl_memory_base(kFlashCtrlDt, kDtFlashCtrlMemoryMem);
+    uint32_t address = (uint32_t)(nv_csrng_output)-flash_base;
     uint32_t expected[kEntropyFifoBufferSize];
     csrng_static_generate_run(expected, ARRAYSIZE(expected));
     CHECK_STATUS_OK(flash_ctrl_testutils_write(&flash_ctrl_state, address,

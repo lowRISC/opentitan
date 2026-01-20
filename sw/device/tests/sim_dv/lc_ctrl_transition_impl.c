@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <assert.h>
-#include <stdbool.h>
-
+#include "hw/top/dt/dt_lc_ctrl.h"  // Generated
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
@@ -13,11 +11,11 @@
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 #define LC_TOKEN_SIZE 16
 
 static dif_lc_ctrl_t lc;
+static const dt_lc_ctrl_t kLcCtrlDt = (dt_lc_ctrl_t)0;
+static_assert(kDtLcCtrlCount >= 1, "This test needs a LC CTRL");
 
 /**
  * Track number of iterations of this C test.
@@ -64,9 +62,7 @@ static volatile const uint8_t kLcExitToken[LC_TOKEN_SIZE] = {
 bool execute_lc_ctrl_transition_test(bool use_ext_clk) {
   LOG_INFO("Start LC_CTRL transition test.");
 
-  mmio_region_t lc_reg =
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR);
-  CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
+  CHECK_DIF_OK(dif_lc_ctrl_init_from_dt(kLcCtrlDt, &lc));
 
   LOG_INFO("Read and check LC state.");
   dif_lc_ctrl_state_t curr_state;
