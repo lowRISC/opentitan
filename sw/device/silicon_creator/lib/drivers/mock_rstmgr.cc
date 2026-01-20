@@ -17,5 +17,6 @@ void rstmgr_alert_info_enable(void) {
 }
 
 void rstmgr_reset(void) { MockRstmgr::Instance().Reset(); }
+void rstmgr_reboot(void) { MockRstmgr::Instance().Reboot(); }
 }  // extern "C"
 }  // namespace rom_test

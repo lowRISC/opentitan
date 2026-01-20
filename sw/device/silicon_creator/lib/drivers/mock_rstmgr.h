@@ -20,6 +20,7 @@ class MockRstmgr : public global_mock::GlobalMock<MockRstmgr> {
   MOCK_METHOD(void, ReasonClear, (uint32_t));
   MOCK_METHOD(void, AlertInfoEnable, ());
   MOCK_METHOD(void, Reset, ());
+  MOCK_METHOD(void, Reboot, ());
 };
 
 }  // namespace internal
