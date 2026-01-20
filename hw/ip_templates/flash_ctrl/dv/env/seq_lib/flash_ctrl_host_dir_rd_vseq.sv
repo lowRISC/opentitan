@@ -29,7 +29,7 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_fetch_code_vseq;
 
   // Constraint address to be in relevant range for the selected partition.
   constraint addr_c {
-    solve bank before flash_op;
+    solve bank before flash_op.addr;
     flash_op.addr inside {[BytesPerBank * bank : BytesPerBank * (bank + 1) - BytesPerBank / 2]};
   }
 
@@ -45,8 +45,6 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_fetch_code_vseq;
   data_t flash_rd_one_data;
 
   constraint mp_regions_c {
-    solve en_mp_regions before mp_regions;
-
     foreach (mp_regions[i]) {
       mp_regions[i].en == mubi4_bool_to_mubi(en_mp_regions[i]);
 
