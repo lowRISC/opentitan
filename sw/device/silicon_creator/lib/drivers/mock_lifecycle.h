@@ -26,6 +26,7 @@ class MockLifecycle : public global_mock::GlobalMock<MockLifecycle> {
 }  // namespace internal
 
 using MockLifecycle = testing::StrictMock<internal::MockLifecycle>;
+using NiceMockLifecycle = testing::NiceMock<internal::MockLifecycle>;
 
 }  // namespace rom_test
 
