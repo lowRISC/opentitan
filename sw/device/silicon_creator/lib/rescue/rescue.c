@@ -299,6 +299,7 @@ rom_error_t rescue_recv_handler(rescue_state_t *state) {
     case kRescueModeOwnerPage0:
     case kRescueModeOwnerPage1:
       // Nothing to do for send modes.
+      state->offset = 0;
       break;
     case kRescueModeBootSvcReq:
       if (state->offset >= sizeof(rr->creator.boot_svc_msg)) {
