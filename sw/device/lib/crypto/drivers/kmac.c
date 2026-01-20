@@ -644,12 +644,16 @@ static status_t kmac_process_msg_blocks(kmac_operation_t operation,
     uint32_t next_word = read_32(&message[i]);
     abs_mmio_write32(kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET, next_word);
   }
+  // Check that the loops ran for the correct number of iterations.
+  HARDENED_CHECK_LT(message_len, i + sizeof(uint32_t));
 
   // For the last few bytes, we need to write one byte at a time again.
   for (; i < message_len; i++) {
     HARDENED_TRY(wait_status_bit(KMAC_STATUS_FIFO_FULL_BIT, 0));
     abs_mmio_write8(kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET, message[i]);
   }
+  // Check that the loops ran for the correct number of iterations.
+  HARDENED_CHECK_EQ(i, message_len);
 
   // If operation=KMAC, then we need to write `right_encode(digest->len)`
   if (operation == kKmacOperationKmac) {
