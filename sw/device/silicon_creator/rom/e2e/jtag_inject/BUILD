@@ -38,10 +38,11 @@ package(default_visibility = ["//visibility:public"])
     # Since execution in the ROM is disabled, bootstrap is not possible so we need
     # to make sure that the test does not try to bootstrap
     opentitan_test(
-        name = "sram_program_fpga_cw310_test_otp_{}".format(lc_state),
+        name = "sram_program_test_otp_{}".format(lc_state),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             binaries = {
@@ -50,7 +51,6 @@ package(default_visibility = ["//visibility:public"])
             logging = "debug",
             needs_jtag = True,
             otp = ":img_{}_exec_disabled".format(lc_state),
-            tags = ["cw310_rom_with_fake_keys"],
             test_cmd = """
                 --elf={sram_program}
             """,
@@ -74,7 +74,7 @@ test_suite(
     name = "rom_e2e_jtag_inject_tests",
     tags = ["manual"],
     tests = [
-        "sram_program_fpga_cw310_test_otp_" + lc_state
+        "sram_program_test_otp_" + lc_state
         for lc_state, _ in get_lc_items(
             CONST.LCV.TEST_UNLOCKED0,
             CONST.LCV.DEV,
@@ -89,6 +89,7 @@ test_suite(
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             logging = "debug",
@@ -130,6 +131,7 @@ test_suite(
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             logging = "debug",
@@ -171,6 +173,7 @@ test_suite(
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             logging = "debug",
@@ -213,6 +216,7 @@ test_suite(
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             logging = "debug",
@@ -261,6 +265,8 @@ LC_STATES_DEBUG_DISALLOWED = [
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
         fpga = fpga_params(
             timeout = "moderate",

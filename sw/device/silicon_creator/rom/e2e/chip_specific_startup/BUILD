@@ -25,6 +25,7 @@ package(default_visibility = ["//visibility:public"])
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             otp = "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_{}".format(lc_state),
