@@ -551,7 +551,7 @@ static status_t edn_ready_block(uint32_t edn_address) {
     reg = abs_mmio_read32(edn_address + EDN_SW_CMD_STS_REG_OFFSET);
   } while (!bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_RDY_BIT));
 
-  if (bitfield_field32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_FIELD)) {
+  if (bitfield_field32_read(reg, EDN_SW_CMD_STS_CMD_STS_FIELD)) {
     return OTCRYPTO_RECOV_ERR;
   }
   return OTCRYPTO_OK;
