@@ -7,7 +7,11 @@
 
 `include "prim_assert.sv"
 
-module usbdev_aon_wake import usbdev_pkg::*;(
+module usbdev_aon_wake
+  import usbdev_pkg::*;
+#(
+  parameter int unsigned ClkFreqkHz = 200  // Frequency of `clk_aon_i` in kHz.
+) (
   input  logic clk_aon_i,
   input  logic rst_aon_ni,
 
@@ -54,11 +58,15 @@ module usbdev_aon_wake import usbdev_pkg::*;(
   assign not_idle_async = (usb_dp_i != usb_dppullup_en_o) |
                           (usb_dn_i != usb_dnpullup_en_o);
 
-  // aon clock is ~200kHz so 4 cycle filter is about 20us
+  // Target at least 20 us for the filter by dividing the actual frequency by 50 kHz.
+  // With an AON clock of 200kHz this gives us a 4 cycle filter,
   // as well as noise debounce this gives the main IP time to detect resume if it didn't turn off
+  //
+  // This filter also addresses metastabililty.
+  localparam int unsigned IdleFiltCycles = (ClkFreqkHz + 49) / 50;
   prim_filter #(
     .AsyncOn(1), // Instantiate 2-stage synchronizer
-    .Cycles(4)
+    .Cycles(IdleFiltCycles)
   ) filter_activity (
     .clk_i    (clk_aon_i),
     .rst_ni   (rst_aon_ni),
@@ -80,9 +88,15 @@ module usbdev_aon_wake import usbdev_pkg::*;(
   assign se0_async = ~usb_dp_i & ~usb_dn_i;
   assign sense_lost_async = ~usb_sense_i;
 
+  // The number of cycles of SE0 assertion that we must see before treating it as Bus Reset
+  // signaling and issuing a wake up request; this is frequency-sensitive because we _must_
+  // ignore Low Speed EOP signaling (1.4us) whilst monitoring.
+  //
+  // This filter also addresses metastabililty.
+  localparam int unsigned SE0FiltCycles = (ClkFreqkHz + 79) / 80;  // 12-15us
   prim_filter #(
     .AsyncOn(1),
-    .Cycles(3)
+    .Cycles(SE0FiltCycles)
   ) filter_bus_reset (
     .clk_i    (clk_aon_i),
     .rst_ni   (rst_aon_ni),
@@ -93,7 +107,7 @@ module usbdev_aon_wake import usbdev_pkg::*;(
 
   prim_filter #(
     .AsyncOn(1),
-    .Cycles(3)
+    .Cycles(SE0FiltCycles)  // This suffices here too.
   ) filter_sense (
     .clk_i    (clk_aon_i),
     .rst_ni   (rst_aon_ni),
