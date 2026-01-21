@@ -199,7 +199,7 @@ module ${module_instance_name}
   logic [6:0]  shadow_core_data_wdata_intg;
 
   // Lockstep interface
-  logic [3:0] lockstep_cmp_en;
+  logic [3:0]  core_lockstep_cmp_en;
 
   // Pipeline interfaces
   tl_h2d_t tl_i_ibex2fifo;
@@ -581,7 +581,7 @@ module ${module_instance_name}
     .core_sleep_o           (core_sleep),
 
     // Lockstep outputs.
-    .lockstep_cmp_en_o        (lockstep_cmp_en),
+    .lockstep_cmp_en_o        (core_lockstep_cmp_en),
 
     // Shadow core data interface outputs.
     .data_req_shadow_o        (shadow_core_data_req),
@@ -835,7 +835,8 @@ module ${module_instance_name}
   // Peripheral functions
   //////////////////////////////////
 
-  logic intg_err;
+  logic cfg_reg_intg_err;
+  logic cfg_reg_intg_err_shadow;
   tlul_pkg::tl_h2d_t tl_win_h2d;
   tlul_pkg::tl_d2h_t tl_win_d2h;
 % if racl_support:
@@ -857,7 +858,7 @@ module ${module_instance_name}
     .racl_policies_i,
     .racl_error_o,
   % endif
-    .intg_err_o (intg_err),
+    .intg_err_o (cfg_reg_intg_err),
     .tl_win_o(tl_win_h2d),
     .tl_win_i(tl_win_d2h)
   );
@@ -866,16 +867,28 @@ module ${module_instance_name}
   // Region assignments
   ///////////////////////
 
+  logic [NumRegions-1:0] unused_ibus_region_cfg_qe;
   for(genvar i = 0; i < NumRegions; i++) begin : gen_ibus_region_cfgs
-    assign ibus_region_cfg[i].en = reg2hw.ibus_addr_en[i];
-    assign ibus_region_cfg[i].matching_region = reg2hw.ibus_addr_matching[i];
-    assign ibus_region_cfg[i].remap_addr = reg2hw.ibus_remap_addr[i];
+    assign ibus_region_cfg[i].en = reg2hw.ibus_addr_en[i].q;
+    assign ibus_region_cfg[i].matching_region = reg2hw.ibus_addr_matching[i].q;
+    assign ibus_region_cfg[i].remap_addr = reg2hw.ibus_remap_addr[i].q;
+    // Tie off the unused `qe` signals as they are only used in the shadow cfg registers in the
+    // TLUL lockstep.
+    assign unused_ibus_region_cfg_qe[i] = ^{reg2hw.ibus_addr_en[i].qe,
+                                            reg2hw.ibus_addr_matching[i].qe,
+                                            reg2hw.ibus_remap_addr[i].qe};
   end
 
+  logic [NumRegions-1:0] unused_dbus_region_cfg_qe;
   for(genvar i = 0; i < NumRegions; i++) begin : gen_dbus_region_cfgs
-    assign dbus_region_cfg[i].en = reg2hw.dbus_addr_en[i];
-    assign dbus_region_cfg[i].matching_region = reg2hw.dbus_addr_matching[i];
-    assign dbus_region_cfg[i].remap_addr = reg2hw.dbus_remap_addr[i];
+    assign dbus_region_cfg[i].en = reg2hw.dbus_addr_en[i].q;
+    assign dbus_region_cfg[i].matching_region = reg2hw.dbus_addr_matching[i].q;
+    assign dbus_region_cfg[i].remap_addr = reg2hw.dbus_remap_addr[i].q;
+    // Tie off the unused `qe` signals as they are only used in the shadow cfg registers in the
+    // TLUL lockstep.
+    assign unused_dbus_region_cfg_qe[i] = ^{reg2hw.dbus_addr_en[i].qe,
+                                            reg2hw.dbus_addr_matching[i].qe,
+                                            reg2hw.dbus_remap_addr[i].qe};
   end
 
   ///////////////////////
@@ -887,7 +900,7 @@ module ${module_instance_name}
   assign recov_core_err = recov_core_event;
 
   assign hw2reg.err_status.reg_intg_err.d = 1'b1;
-  assign hw2reg.err_status.reg_intg_err.de = intg_err;
+  assign hw2reg.err_status.reg_intg_err.de = cfg_reg_intg_err | cfg_reg_intg_err_shadow;
   assign hw2reg.err_status.fatal_intg_err.d = 1'b1;
   assign hw2reg.err_status.fatal_intg_err.de = fatal_intg_err;
   assign hw2reg.err_status.fatal_core_err.d = 1'b1;
@@ -918,7 +931,8 @@ module ${module_instance_name}
   import prim_mubi_pkg::mubi4_t;
   assign alert_events[0] = mubi4_test_true_loose(mubi4_t'(reg2hw.sw_fatal_err.q));
   assign alert_events[1] = mubi4_test_true_loose(mubi4_t'(reg2hw.sw_recov_err.q));
-  assign alert_events[2] = intg_err | fatal_intg_err | fatal_core_err;
+  assign alert_events[2] = cfg_reg_intg_err | cfg_reg_intg_err_shadow |
+                           fatal_intg_err | fatal_core_err;
   assign alert_events[3] = recov_core_err;
 
   logic unused_alert_acks;
@@ -1015,10 +1029,93 @@ module ${module_instance_name}
   // fpga build info hook-up
   assign hw2reg.fpga_info.d = fpga_info_i;
 
-  /////////////////////////////////////////////////////////////////
-  // Shadow Core Data Address Translation Unit and TL-UL Adapter //
-  /////////////////////////////////////////////////////////////////
-  if (SecureIbex) begin : gen_d_tlul_lockstep
+  if (SecureIbex) begin : gen_tlul_lockstep
+    /////////////////////////////////////////////////////
+    // Shadow Core instruction and data region config. //
+    /////////////////////////////////////////////////////
+
+    rv_core_ibex_cfg_reg2hw_t reg2hw_shadow;
+    region_cfg_t [NumRegions-1:0] ibus_region_cfg_shadow;
+    region_cfg_t [NumRegions-1:0] dbus_region_cfg_shadow;
+    logic        [NumRegions-1:0] ibus_region_cfg_shadow_changed;
+    logic        [NumRegions-1:0] dbus_region_cfg_shadow_changed;
+
+    tlul_pkg::tl_h2d_t unused_tl_win_h2d_shadow;
+    tlul_pkg::tl_d2h_t unused_cfg_tl_d_shadow;
+
+    rv_core_ibex_cfg_reg_top u_reg_cfg_shadow (
+      .clk_i,
+      .rst_ni,
+      .tl_i       (cfg_tl_d_i),
+      .tl_o       (unused_cfg_tl_d_shadow),
+      .reg2hw     (reg2hw_shadow),
+      .hw2reg     (rv_core_ibex_cfg_hw2reg_t'('0)),
+      .intg_err_o (cfg_reg_intg_err_shadow),
+      .tl_win_o   (unused_tl_win_h2d_shadow),
+      .tl_win_i   (tl_win_d2h)
+    );
+
+    for(genvar i = 0; i < NumRegions; i++) begin : gen_ibus_region_cfg_shadows
+      assign ibus_region_cfg_shadow[i].en = reg2hw_shadow.ibus_addr_en[i].q;
+      assign ibus_region_cfg_shadow[i].matching_region = reg2hw_shadow.ibus_addr_matching[i].q;
+      assign ibus_region_cfg_shadow[i].remap_addr = reg2hw_shadow.ibus_remap_addr[i].q;
+      assign ibus_region_cfg_shadow_changed[i] = reg2hw_shadow.ibus_addr_en[i].qe |
+                                                 reg2hw_shadow.ibus_addr_matching[i].qe |
+                                                 reg2hw_shadow.ibus_remap_addr[i].qe;
+    end
+
+    for(genvar i = 0; i < NumRegions; i++) begin : gen_dbus_region_cfg_shadows
+      assign dbus_region_cfg_shadow[i].en = reg2hw_shadow.dbus_addr_en[i].q;
+      assign dbus_region_cfg_shadow[i].matching_region = reg2hw_shadow.dbus_addr_matching[i].q;
+      assign dbus_region_cfg_shadow[i].remap_addr = reg2hw_shadow.dbus_remap_addr[i].q;
+      assign dbus_region_cfg_shadow_changed[i] = reg2hw_shadow.dbus_addr_en[i].qe |
+                                                 reg2hw_shadow.dbus_addr_matching[i].qe |
+                                                 reg2hw_shadow.dbus_remap_addr[i].qe;
+    end
+
+    // When the dbus or ibus region configuration register shadow has been updated, which is
+    // detected by the write enable (.qe) signal, delay this write enable by LockstepOffset
+    // cycles and disable the lockstep comparison in this time.
+    logic tlul_lockstep_cmp_en;
+    logic [LockstepOffset-1:0] reg_cfg_shadow_updated_q;
+    if (LockstepOffset > 1) begin : gen_multi_cycle_delay
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          reg_cfg_shadow_updated_q <= '0;
+        end else begin
+          reg_cfg_shadow_updated_q <= {reg_cfg_shadow_updated_q[LockstepOffset-2:0],
+                                       (|dbus_region_cfg_shadow_changed) |
+                                       (|ibus_region_cfg_shadow_changed)};
+        end
+      end
+    end else begin : gen_single_cycle_delay
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          reg_cfg_shadow_updated_q <= '0;
+        end else begin
+          reg_cfg_shadow_updated_q <= |{dbus_region_cfg_shadow_changed,
+                                        ibus_region_cfg_shadow_changed};
+        end
+      end
+    end
+
+    // Enable the lockstep comparison if no change in the register has been observed.
+    assign tlul_lockstep_cmp_en = ~|reg_cfg_shadow_updated_q &
+                                  ~|dbus_region_cfg_shadow_changed &
+                                  ~|ibus_region_cfg_shadow_changed;
+
+    // Tie off unused signals.
+    logic unused_reg_cfg_signals;
+    logic unused_reg2hw_shadow;
+    assign unused_reg_cfg_signals = ^{unused_tl_win_h2d_shadow, unused_cfg_tl_d_shadow};
+
+    assign unused_reg2hw_shadow = ^{reg2hw_shadow.alert_test, reg2hw_shadow.nmi_enable,
+                                    reg2hw_shadow.nmi_state, reg2hw_shadow.rnd_data,
+                                    reg2hw_shadow.sw_fatal_err, reg2hw_shadow.sw_recov_err};
+
+    /////////////////////////////////////////////////////////////////
+    // Shadow Core Data Address Translation Unit and TL-UL Adapter //
+    /////////////////////////////////////////////////////////////////
     // TL-UL output signals
     tl_h2d_t      tl_d_shadow_core;
 
@@ -1086,7 +1183,7 @@ module ${module_instance_name}
     ) u_dbus_trans_shadow_core (
       .clk_i,
       .rst_ni       (addr_trans_rst_ni),
-      .region_cfg_i (dbus_region_cfg),
+      .region_cfg_i (dbus_region_cfg_shadow),
       .addr_i       (shadow_core_data_addr),
       .addr_o       (shadow_core_data_addr_trans)
     );
@@ -1122,21 +1219,20 @@ module ${module_instance_name}
 
     // Compare the main and shadow core TL-UL outputs.
     assign alert_rv_d_tlul_comparison =
-      ((lockstep_cmp_en != ibex_pkg::IbexMuBiOff) & (tl_d_main_core_delayed != tl_d_shadow_core));
+      ((core_lockstep_cmp_en != ibex_pkg::IbexMuBiOff) &
+       (tlul_lockstep_cmp_en == 1'b1) &
+       (tl_d_main_core_delayed != tl_d_shadow_core));
 
     // Tie off unused signals.
     logic unused_tlul_d_signals;
     assign unused_tlul_d_signals = ^{unused_shadow_core_rdata_intg, unused_shadow_core_rdata,
                                      unused_shadow_core_err, unused_shadow_core_intg_err,
                                      unused_shadow_core_valid, unused_shadow_core_gnt};
-  end else begin : gen_no_d_tlul_lockstep
-    assign alert_rv_d_tlul_comparison = 1'b0;
-  end
 
-  ////////////////////////////////////////////////////////////////////////
-  // Shadow Core Instruction Address Translation Unit and TL-UL Adapter //
-  ////////////////////////////////////////////////////////////////////////
-  if (SecureIbex) begin : gen_i_tlul_lockstep
+    ////////////////////////////////////////////////////////////////////////
+    // Shadow Core Instruction Address Translation Unit and TL-UL Adapter //
+    ////////////////////////////////////////////////////////////////////////
+
     // Shadow core instruction interface (internal)
     logic        shadow_core_instr_gnt, shadow_core_instr_gnt_ibex;
     logic        shadow_core_instr_req_q;
@@ -1236,7 +1332,7 @@ module ${module_instance_name}
     ) u_ibus_trans_shadow_core (
       .clk_i,
       .rst_ni       (addr_trans_rst_ni),
-      .region_cfg_i (ibus_region_cfg),
+      .region_cfg_i (ibus_region_cfg_shadow),
       .addr_i       (shadow_core_instr_addr_q),
       .addr_o       (shadow_core_instr_addr_trans)
     );
@@ -1274,7 +1370,9 @@ module ${module_instance_name}
 
     // Compare the main and shadow core TL-UL outputs.
     assign alert_rv_i_tlul_comparison =
-      ((lockstep_cmp_en != ibex_pkg::IbexMuBiOff) & (tl_i_main_core_delayed != tl_i_shadow_core));
+      ((core_lockstep_cmp_en != ibex_pkg::IbexMuBiOff) &
+       (tlul_lockstep_cmp_en == 1'b1) &
+       (tl_i_main_core_delayed != tl_i_shadow_core));
 
     // Tie off unused signals.
     logic unused_tlul_i_signals;
@@ -1283,8 +1381,10 @@ module ${module_instance_name}
                                      unused_shadow_core_instr_rdata_intg,
                                      unused_shadow_core_instr_err,
                                      unused_shadow_core_ibus_intg_err};
-  end else begin : gen_no_i_tlul_lockstep
+  end else begin : gen_no_tlul_lockstep
+    assign alert_rv_d_tlul_comparison = 1'b0;
     assign alert_rv_i_tlul_comparison = 1'b0;
+    assign cfg_reg_intg_err_shadow = 1'b0;
   end
 
   /////////////////////////////////////
@@ -1366,6 +1466,10 @@ module ${module_instance_name}
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_cfg, alert_tx_o[2])
+  if (SecureIbex) begin : gen_u_reg_cfg_shadow_assert
+    `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheckShdw_A,
+        gen_tlul_lockstep.u_reg_cfg_shadow, alert_tx_o[2])
+  end
 
 `ifdef INC_ASSERT
   if (ICache && ICacheScramble) begin : gen_icache_scramble_asserts

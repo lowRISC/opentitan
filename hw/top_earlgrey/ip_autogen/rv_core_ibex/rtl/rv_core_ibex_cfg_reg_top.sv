@@ -442,6 +442,17 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 0 of Multireg ibus_addr_en
   // R[ibus_addr_en_0]: V(False)
+  logic ibus_addr_en_0_qe;
+  logic [0:0] ibus_addr_en_0_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_ibus_addr_en0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&ibus_addr_en_0_flds_we),
+    .q_o(ibus_addr_en_0_qe)
+  );
   // Create REGWEN-gated WE signal
   logic ibus_addr_en_0_gated_we;
   assign ibus_addr_en_0_gated_we = ibus_addr_en_0_we & ibus_regwen_0_qs;
@@ -463,17 +474,29 @@ module rv_core_ibex_cfg_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (ibus_addr_en_0_flds_we[0]),
     .q      (reg2hw.ibus_addr_en[0].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (ibus_addr_en_0_qs)
   );
+  assign reg2hw.ibus_addr_en[0].qe = ibus_addr_en_0_qe;
 
 
   // Subregister 1 of Multireg ibus_addr_en
   // R[ibus_addr_en_1]: V(False)
+  logic ibus_addr_en_1_qe;
+  logic [0:0] ibus_addr_en_1_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_ibus_addr_en1_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&ibus_addr_en_1_flds_we),
+    .q_o(ibus_addr_en_1_qe)
+  );
   // Create REGWEN-gated WE signal
   logic ibus_addr_en_1_gated_we;
   assign ibus_addr_en_1_gated_we = ibus_addr_en_1_we & ibus_regwen_1_qs;
@@ -495,17 +518,29 @@ module rv_core_ibex_cfg_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (ibus_addr_en_1_flds_we[0]),
     .q      (reg2hw.ibus_addr_en[1].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (ibus_addr_en_1_qs)
   );
+  assign reg2hw.ibus_addr_en[1].qe = ibus_addr_en_1_qe;
 
 
   // Subregister 0 of Multireg ibus_addr_matching
   // R[ibus_addr_matching_0]: V(False)
+  logic ibus_addr_matching_0_qe;
+  logic [0:0] ibus_addr_matching_0_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_ibus_addr_matching0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&ibus_addr_matching_0_flds_we),
+    .q_o(ibus_addr_matching_0_qe)
+  );
   // Create REGWEN-gated WE signal
   logic ibus_addr_matching_0_gated_we;
   assign ibus_addr_matching_0_gated_we = ibus_addr_matching_0_we & ibus_regwen_0_qs;
@@ -527,17 +562,29 @@ module rv_core_ibex_cfg_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (ibus_addr_matching_0_flds_we[0]),
     .q      (reg2hw.ibus_addr_matching[0].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (ibus_addr_matching_0_qs)
   );
+  assign reg2hw.ibus_addr_matching[0].qe = ibus_addr_matching_0_qe;
 
 
   // Subregister 1 of Multireg ibus_addr_matching
   // R[ibus_addr_matching_1]: V(False)
+  logic ibus_addr_matching_1_qe;
+  logic [0:0] ibus_addr_matching_1_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_ibus_addr_matching1_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&ibus_addr_matching_1_flds_we),
+    .q_o(ibus_addr_matching_1_qe)
+  );
   // Create REGWEN-gated WE signal
   logic ibus_addr_matching_1_gated_we;
   assign ibus_addr_matching_1_gated_we = ibus_addr_matching_1_we & ibus_regwen_1_qs;
@@ -559,17 +606,29 @@ module rv_core_ibex_cfg_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (ibus_addr_matching_1_flds_we[0]),
     .q      (reg2hw.ibus_addr_matching[1].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (ibus_addr_matching_1_qs)
   );
+  assign reg2hw.ibus_addr_matching[1].qe = ibus_addr_matching_1_qe;
 
 
   // Subregister 0 of Multireg ibus_remap_addr
   // R[ibus_remap_addr_0]: V(False)
+  logic ibus_remap_addr_0_qe;
+  logic [0:0] ibus_remap_addr_0_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_ibus_remap_addr0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&ibus_remap_addr_0_flds_we),
+    .q_o(ibus_remap_addr_0_qe)
+  );
   // Create REGWEN-gated WE signal
   logic ibus_remap_addr_0_gated_we;
   assign ibus_remap_addr_0_gated_we = ibus_remap_addr_0_we & ibus_regwen_0_qs;
@@ -591,17 +650,29 @@ module rv_core_ibex_cfg_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (ibus_remap_addr_0_flds_we[0]),
     .q      (reg2hw.ibus_remap_addr[0].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (ibus_remap_addr_0_qs)
   );
+  assign reg2hw.ibus_remap_addr[0].qe = ibus_remap_addr_0_qe;
 
 
   // Subregister 1 of Multireg ibus_remap_addr
   // R[ibus_remap_addr_1]: V(False)
+  logic ibus_remap_addr_1_qe;
+  logic [0:0] ibus_remap_addr_1_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_ibus_remap_addr1_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&ibus_remap_addr_1_flds_we),
+    .q_o(ibus_remap_addr_1_qe)
+  );
   // Create REGWEN-gated WE signal
   logic ibus_remap_addr_1_gated_we;
   assign ibus_remap_addr_1_gated_we = ibus_remap_addr_1_we & ibus_regwen_1_qs;
@@ -623,13 +694,14 @@ module rv_core_ibex_cfg_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (ibus_remap_addr_1_flds_we[0]),
     .q      (reg2hw.ibus_remap_addr[1].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (ibus_remap_addr_1_qs)
   );
+  assign reg2hw.ibus_remap_addr[1].qe = ibus_remap_addr_1_qe;
 
 
   // Subregister 0 of Multireg dbus_regwen
@@ -692,6 +764,17 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 0 of Multireg dbus_addr_en
   // R[dbus_addr_en_0]: V(False)
+  logic dbus_addr_en_0_qe;
+  logic [0:0] dbus_addr_en_0_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_dbus_addr_en0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&dbus_addr_en_0_flds_we),
+    .q_o(dbus_addr_en_0_qe)
+  );
   // Create REGWEN-gated WE signal
   logic dbus_addr_en_0_gated_we;
   assign dbus_addr_en_0_gated_we = dbus_addr_en_0_we & dbus_regwen_0_qs;
@@ -713,17 +796,29 @@ module rv_core_ibex_cfg_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (dbus_addr_en_0_flds_we[0]),
     .q      (reg2hw.dbus_addr_en[0].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (dbus_addr_en_0_qs)
   );
+  assign reg2hw.dbus_addr_en[0].qe = dbus_addr_en_0_qe;
 
 
   // Subregister 1 of Multireg dbus_addr_en
   // R[dbus_addr_en_1]: V(False)
+  logic dbus_addr_en_1_qe;
+  logic [0:0] dbus_addr_en_1_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_dbus_addr_en1_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&dbus_addr_en_1_flds_we),
+    .q_o(dbus_addr_en_1_qe)
+  );
   // Create REGWEN-gated WE signal
   logic dbus_addr_en_1_gated_we;
   assign dbus_addr_en_1_gated_we = dbus_addr_en_1_we & dbus_regwen_1_qs;
@@ -745,17 +840,29 @@ module rv_core_ibex_cfg_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (dbus_addr_en_1_flds_we[0]),
     .q      (reg2hw.dbus_addr_en[1].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (dbus_addr_en_1_qs)
   );
+  assign reg2hw.dbus_addr_en[1].qe = dbus_addr_en_1_qe;
 
 
   // Subregister 0 of Multireg dbus_addr_matching
   // R[dbus_addr_matching_0]: V(False)
+  logic dbus_addr_matching_0_qe;
+  logic [0:0] dbus_addr_matching_0_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_dbus_addr_matching0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&dbus_addr_matching_0_flds_we),
+    .q_o(dbus_addr_matching_0_qe)
+  );
   // Create REGWEN-gated WE signal
   logic dbus_addr_matching_0_gated_we;
   assign dbus_addr_matching_0_gated_we = dbus_addr_matching_0_we & dbus_regwen_0_qs;
@@ -777,17 +884,29 @@ module rv_core_ibex_cfg_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (dbus_addr_matching_0_flds_we[0]),
     .q      (reg2hw.dbus_addr_matching[0].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (dbus_addr_matching_0_qs)
   );
+  assign reg2hw.dbus_addr_matching[0].qe = dbus_addr_matching_0_qe;
 
 
   // Subregister 1 of Multireg dbus_addr_matching
   // R[dbus_addr_matching_1]: V(False)
+  logic dbus_addr_matching_1_qe;
+  logic [0:0] dbus_addr_matching_1_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_dbus_addr_matching1_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&dbus_addr_matching_1_flds_we),
+    .q_o(dbus_addr_matching_1_qe)
+  );
   // Create REGWEN-gated WE signal
   logic dbus_addr_matching_1_gated_we;
   assign dbus_addr_matching_1_gated_we = dbus_addr_matching_1_we & dbus_regwen_1_qs;
@@ -809,17 +928,29 @@ module rv_core_ibex_cfg_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (dbus_addr_matching_1_flds_we[0]),
     .q      (reg2hw.dbus_addr_matching[1].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (dbus_addr_matching_1_qs)
   );
+  assign reg2hw.dbus_addr_matching[1].qe = dbus_addr_matching_1_qe;
 
 
   // Subregister 0 of Multireg dbus_remap_addr
   // R[dbus_remap_addr_0]: V(False)
+  logic dbus_remap_addr_0_qe;
+  logic [0:0] dbus_remap_addr_0_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_dbus_remap_addr0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&dbus_remap_addr_0_flds_we),
+    .q_o(dbus_remap_addr_0_qe)
+  );
   // Create REGWEN-gated WE signal
   logic dbus_remap_addr_0_gated_we;
   assign dbus_remap_addr_0_gated_we = dbus_remap_addr_0_we & dbus_regwen_0_qs;
@@ -841,17 +972,29 @@ module rv_core_ibex_cfg_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (dbus_remap_addr_0_flds_we[0]),
     .q      (reg2hw.dbus_remap_addr[0].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (dbus_remap_addr_0_qs)
   );
+  assign reg2hw.dbus_remap_addr[0].qe = dbus_remap_addr_0_qe;
 
 
   // Subregister 1 of Multireg dbus_remap_addr
   // R[dbus_remap_addr_1]: V(False)
+  logic dbus_remap_addr_1_qe;
+  logic [0:0] dbus_remap_addr_1_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_dbus_remap_addr1_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&dbus_remap_addr_1_flds_we),
+    .q_o(dbus_remap_addr_1_qe)
+  );
   // Create REGWEN-gated WE signal
   logic dbus_remap_addr_1_gated_we;
   assign dbus_remap_addr_1_gated_we = dbus_remap_addr_1_we & dbus_regwen_1_qs;
@@ -873,13 +1016,14 @@ module rv_core_ibex_cfg_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (dbus_remap_addr_1_flds_we[0]),
     .q      (reg2hw.dbus_remap_addr[1].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (dbus_remap_addr_1_qs)
   );
+  assign reg2hw.dbus_remap_addr[1].qe = dbus_remap_addr_1_qe;
 
 
   // R[nmi_enable]: V(False)
