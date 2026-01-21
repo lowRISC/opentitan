@@ -285,7 +285,7 @@ class OTBNState:
         c += self.loop_stack.changes()
         c += self.ext_regs.changes()
         c += self.wsrs.changes()
-        c += self.csrs.flags.changes()
+        c += self.csrs.changes()
         c += self.wdrs.changes()
         return c
 
@@ -343,7 +343,7 @@ class OTBNState:
         self.dmem.commit()
         self.loop_stack.commit()
         self.wsrs.commit()
-        self.csrs.flags.commit()
+        self.csrs.commit()
         self.wdrs.commit()
 
         if not sim_stalled:
@@ -358,7 +358,7 @@ class OTBNState:
         self.loop_stack.abort()
         self.ext_regs.abort()
         self.wsrs.abort()
-        self.csrs.flags.abort()
+        self.csrs.abort()
         self.wdrs.abort()
 
     def start(self) -> None:
@@ -376,7 +376,7 @@ class OTBNState:
         # Reset CSRs, WSRs, loop stack and call stack. WSRs have special
         # treatment because some of them have values that persist across
         # operations.
-        self.csrs = CSRFile()
+        self.csrs.on_start()
         self.wsrs.on_start()
         self.loop_stack = LoopStack()
         self.gprs.empty_call_stack()
