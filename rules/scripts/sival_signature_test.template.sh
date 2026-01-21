@@ -34,13 +34,20 @@ do
   # If there are keys to verify, perform manifest update
   if [[ ${#KEY_ARGS[@]} -ne 0 ]]; then
     echo -n "Checking key material in ${file}..."
+        # We process the original file through the tool to ensure it has the
+        # same serialization (e.g. null extension handling) as the version
+        # with updated public keys we are about to generate.
+        ${OPENTITANTOOL}  --rcfile= image manifest update \
+          --private-keys-sign=false \
+          --output=/tmp/manifest_test_original.$$ \
+          ${file}
         ${OPENTITANTOOL}  --rcfile= image manifest update \
           --private-keys-sign=false \
           "${KEY_ARGS[@]}" \
           --output=/tmp/manifest_test_key_verify.$$ \
           ${file}
 
-    cmp ${file} /tmp/manifest_test_key_verify.$$
+    cmp /tmp/manifest_test_original.$$ /tmp/manifest_test_key_verify.$$
 
     if [[ $? -eq 0 ]]; then
       echo "ok."
