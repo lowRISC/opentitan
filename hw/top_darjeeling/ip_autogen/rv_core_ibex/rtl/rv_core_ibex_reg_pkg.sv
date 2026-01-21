@@ -59,26 +59,32 @@ package rv_core_ibex_reg_pkg;
 
   typedef struct packed {
     logic        q;
+    logic        qe;
   } rv_core_ibex_reg2hw_ibus_addr_en_mreg_t;
 
   typedef struct packed {
     logic [31:0] q;
+    logic        qe;
   } rv_core_ibex_reg2hw_ibus_addr_matching_mreg_t;
 
   typedef struct packed {
     logic [31:0] q;
+    logic        qe;
   } rv_core_ibex_reg2hw_ibus_remap_addr_mreg_t;
 
   typedef struct packed {
     logic        q;
+    logic        qe;
   } rv_core_ibex_reg2hw_dbus_addr_en_mreg_t;
 
   typedef struct packed {
     logic [31:0] q;
+    logic        qe;
   } rv_core_ibex_reg2hw_dbus_addr_matching_mreg_t;
 
   typedef struct packed {
     logic [31:0] q;
+    logic        qe;
   } rv_core_ibex_reg2hw_dbus_remap_addr_mreg_t;
 
   typedef struct packed {
@@ -158,15 +164,15 @@ package rv_core_ibex_reg_pkg;
 
   // Register -> HW type for cfg interface
   typedef struct packed {
-    rv_core_ibex_reg2hw_alert_test_reg_t alert_test; // [4212:4205]
-    rv_core_ibex_reg2hw_sw_recov_err_reg_t sw_recov_err; // [4204:4201]
-    rv_core_ibex_reg2hw_sw_fatal_err_reg_t sw_fatal_err; // [4200:4197]
-    rv_core_ibex_reg2hw_ibus_addr_en_mreg_t [31:0] ibus_addr_en; // [4196:4165]
-    rv_core_ibex_reg2hw_ibus_addr_matching_mreg_t [31:0] ibus_addr_matching; // [4164:3141]
-    rv_core_ibex_reg2hw_ibus_remap_addr_mreg_t [31:0] ibus_remap_addr; // [3140:2117]
-    rv_core_ibex_reg2hw_dbus_addr_en_mreg_t [31:0] dbus_addr_en; // [2116:2085]
-    rv_core_ibex_reg2hw_dbus_addr_matching_mreg_t [31:0] dbus_addr_matching; // [2084:1061]
-    rv_core_ibex_reg2hw_dbus_remap_addr_mreg_t [31:0] dbus_remap_addr; // [1060:37]
+    rv_core_ibex_reg2hw_alert_test_reg_t alert_test; // [4404:4397]
+    rv_core_ibex_reg2hw_sw_recov_err_reg_t sw_recov_err; // [4396:4393]
+    rv_core_ibex_reg2hw_sw_fatal_err_reg_t sw_fatal_err; // [4392:4389]
+    rv_core_ibex_reg2hw_ibus_addr_en_mreg_t [31:0] ibus_addr_en; // [4388:4325]
+    rv_core_ibex_reg2hw_ibus_addr_matching_mreg_t [31:0] ibus_addr_matching; // [4324:3269]
+    rv_core_ibex_reg2hw_ibus_remap_addr_mreg_t [31:0] ibus_remap_addr; // [3268:2213]
+    rv_core_ibex_reg2hw_dbus_addr_en_mreg_t [31:0] dbus_addr_en; // [2212:2149]
+    rv_core_ibex_reg2hw_dbus_addr_matching_mreg_t [31:0] dbus_addr_matching; // [2148:1093]
+    rv_core_ibex_reg2hw_dbus_remap_addr_mreg_t [31:0] dbus_remap_addr; // [1092:37]
     rv_core_ibex_reg2hw_nmi_enable_reg_t nmi_enable; // [36:35]
     rv_core_ibex_reg2hw_nmi_state_reg_t nmi_state; // [34:33]
     rv_core_ibex_reg2hw_rnd_data_reg_t rnd_data; // [32:0]
