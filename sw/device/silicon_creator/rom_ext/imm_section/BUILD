@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "obj_transform")
+load("//rules/coverage:asm.bzl", "asm_library_with_coverage")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
 load("//rules:linker.bzl", "ld_library")
 load(
@@ -25,7 +26,7 @@ load("//util/design:hardened.bzl", "hardened_comparison_test")
 
 package(default_visibility = ["//visibility:public"])
 
-cc_library(
+asm_library_with_coverage(
     name = "imm_section_start",
     srcs = ["imm_section_start.S"],
     target_compatible_with = [OPENTITAN_CPU],
@@ -50,6 +51,7 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/coverage:api",
+        "//sw/device/lib/coverage:api_asm",
         "//sw/device/lib/coverage:uart_runtime",
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib:error",
