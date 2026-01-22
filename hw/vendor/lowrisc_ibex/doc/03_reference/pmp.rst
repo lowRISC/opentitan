@@ -21,7 +21,13 @@ When PMPEnable is zero, the PMP module is not instantiated and all PMP registers
 PMP Integration
 ---------------
 
-Addresses from the instruction fetch unit and load-store unit are passed to the PMP module for checking, and the output of the PMP check is used to gate the external request.
+Addresses from the instruction fetch unit and load-store unit are passed to the PMP module for checking.
+The output of PMP check is used to gate the external request of the load-store unit.
+This is because both writes and reads can have side-effects on MMIO devices connected to the data memory bus.
+The request coming from the instruction fetch unit are not gated by the PMP check, so integrators must choose carefully what to connect to the instruction fetch bus.
+Specifically, no devices that experience side-effects due to reading should be available on this bus.
+In general, connecting memories to the instruction fetch bus should be safe.
+
 To maintain consistency with external errors, the instruction fetch unit and load-store unit progress with their request as if it was granted externally.
 The PMP error is registered and consumed by the core when the data would have been consumed.
 

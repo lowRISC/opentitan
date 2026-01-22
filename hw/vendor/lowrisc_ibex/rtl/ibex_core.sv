@@ -1932,10 +1932,13 @@ module ibex_core import ibex_pkg::*; #(
   end
 
 `else
-  logic unused_instr_new_id, unused_instr_id_done, unused_instr_done_wb;
+  logic unused_instr_new_id, unused_instr_id_done, unused_instr_done_wb,
+        unused_instr_expanded_id, unused_instr_gets_expanded_id;
   assign unused_instr_id_done = instr_id_done;
   assign unused_instr_new_id = instr_new_id;
   assign unused_instr_done_wb = instr_done_wb;
+  assign unused_instr_expanded_id = ^instr_expanded_id;
+  assign unused_instr_gets_expanded_id = ^instr_gets_expanded_id;
 `endif
 
   // Certain parameter combinations are not supported

@@ -36,6 +36,8 @@ Software that has need of data independent timing may wish to disable the instru
 The instruction cache is controlled by the **icache_enable** bit in the **cpuctrl** register.
 Precise details of fetch timing will depend upon the memory system Ibex is connected to.
 
+If data independent timing is needed for branches, turn off the branch prediction feature as it is :ref:`experimental<branch-prediction>`.
+
 Dummy Instruction Insertion
 ---------------------------
 
