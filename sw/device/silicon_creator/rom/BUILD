@@ -69,11 +69,20 @@ cc_test(
 )
 
 ld_library(
+    name = "linker_script_common",
+    includes = ["rom_common.ld"],
+    deps = [
+        "//sw/device:info_sections",
+        "//sw/device/lib/coverage:coverage_sections",
+    ],
+)
+
+ld_library(
     name = "linker_script",
     script = "rom.ld",
     deps = [
+        ":linker_script_common",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
-        "//sw/device:info_sections",
     ],
 )
 
