@@ -22,7 +22,22 @@ cc_library(
     hdrs = ["api_asm.h"],
     deps = [
         ":api",
+        ":asm_runtime",
     ],
+)
+
+cc_library(
+    name = "asm_runtime_real",
+    srcs = ["asm_runtime.c"],
+    features = ["-coverage"],
+)
+
+alias(
+    name = "asm_runtime",
+    actual = select({
+        "//rules/coverage:instrumented": ":asm_runtime_real",
+        "//conditions:default": "//sw/device:nothing",
+    }),
 )
 
 cc_library(
