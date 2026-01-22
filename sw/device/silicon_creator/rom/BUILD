@@ -16,6 +16,7 @@ load(
     "opentitan_test",
 )
 load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
+load("//rules/coverage:asm.bzl", "asm_library_with_coverage")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -78,11 +79,20 @@ ld_library(
 
 cc_library(
     name = "rom_isrs",
-    srcs = [
-        "rom_isrs.c",
-        "//sw/device/silicon_creator/lib:flash_exc_handler",
-    ],
+    srcs = ["rom_isrs.c"],
     hdrs = ["rom_isrs.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":rom_flash_exc_handler",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)
+
+asm_library_with_coverage(
+    name = "rom_flash_exc_handler",
+    srcs = ["//sw/device/silicon_creator/lib:flash_exc_handler"],
     defines = [
         "INTERRUPT_HANDLER=rom_interrupt_handler",
     ],
@@ -90,18 +100,17 @@ cc_library(
     deps = [
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/lib/coverage:api_asm",
     ],
 )
 
-cc_library(
+asm_library_with_coverage(
     name = "mask_rom_lib",
     srcs = ["rom_start.S"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        ":linker_script",
         ":rom_common",
         ":rom_epmp",
         "//hw/ip/aon_timer/data:aon_timer_c_regs",
@@ -122,6 +131,9 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:multibits",
+        "//sw/device/lib/coverage:api",
+        "//sw/device/lib/coverage:api_asm",
+        "//sw/device/lib/coverage:uart_runtime",
         "//sw/device/silicon_creator/lib/base:chip",
     ],
     alwayslink = True,
@@ -245,19 +257,28 @@ legacy_rom_targets(
 
 cc_library(
     name = "rom_epmp",
-    srcs = [
-        "rom_epmp.c",
-        "rom_epmp_init.S",
-    ],
+    srcs = ["rom_epmp.c"],
     hdrs = ["rom_epmp.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":rom_epmp_init",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
+    ],
+)
+
+asm_library_with_coverage(
+    name = "rom_epmp_init",
+    srcs = ["rom_epmp_init.S"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/coverage:api_asm",
+        "//sw/device/silicon_creator/lib:epmp_state",
     ],
 )
 

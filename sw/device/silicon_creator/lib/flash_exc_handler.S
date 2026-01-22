@@ -12,9 +12,12 @@
  * name of the general interrupt handler for the respective target.
  */
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "sw/device/lib/coverage/api_asm.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/hardened_asm.h"
 #include "flash_ctrl_regs.h"
+
+// PRAGMA_COVERAGE: section(__llvm_prf_cnts)
 
 .equ LOAD_ACCESS_FAULT, 5
 
@@ -42,6 +45,8 @@ flash_exception_handler:
   // Save `sp` into `mscratch` and use the 128 bytes reserved at the top of
   // RAM as the exception frame.
   csrw mscratch, sp
+
+  COVERAGE_ASM_MANUAL_MARK(sp,0)
 
   // Before saving the stack frame, check if handling of flash exceptions is
   // enabled.  Determine this with just the stack pointer so that if not enabled,
@@ -86,6 +91,8 @@ flash_exception_handler:
   sw   x29,  29 * OT_WORD_SIZE(sp)
   sw   x30,  30 * OT_WORD_SIZE(sp)
   sw   x31,  31 * OT_WORD_SIZE(sp)
+
+  // PRAGMA_COVERAGE: autogen start
 
   // Get the mcause, mask the reason and check that it is LoadAccessFault.
   csrr a1, mcause
@@ -221,6 +228,7 @@ flash_exception_handler:
   mret
 
 .L_no_flash_exceptions:
+  COVERAGE_ASM_MANUAL_MARK(sp,14)
   csrr sp, mscratch
 .L_not_a_flash_error:
   // Since we aren't dealing with a flash error, we'll jump to the normal
