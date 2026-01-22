@@ -57,9 +57,9 @@ module ibex_compressed_decoder #(
   function automatic logic [4:0] cm_stack_adj_word(input logic [3:0] rlist,
                                                    input logic [1:0] spimm);
     logic [6:0] tmp;
-    logic [1:0] _unused;
+    logic [1:0] unused_tmp;
     tmp = cm_stack_adj(.rlist(rlist), .spimm(spimm));
-    _unused = tmp[1:0];
+    unused_tmp = tmp[1:0];
     return tmp[6:2];
   endfunction
 
@@ -79,8 +79,12 @@ module ibex_compressed_decoder #(
   function automatic logic [31:0] cm_push_store_reg(input logic [4:0] rlist,
                                                     input logic [4:0] sp_offset);
     logic [11:0] neg_offset;
+    logic signed [11:0] neg_offset_signed;
     logic [31:0] instr;
-    neg_offset = ~{5'b00000, sp_offset, 2'b00} + 12'd1;
+    // Compute two's complement on signed variable, then cast back to unsigned
+    // for the part select operations below.
+    neg_offset_signed = -signed'({5'b00000, sp_offset, 2'b00});
+    neg_offset = unsigned'(neg_offset_signed);
     instr[ 6: 0] /* opcode       */ = OPCODE_STORE;
     instr[11: 7] /* offset[4:0]  */ = neg_offset[4:0];
     instr[14:12] /* width        */ = 3'b010; // 32 bit
@@ -105,15 +109,18 @@ module ibex_compressed_decoder #(
                                              input logic [1:0] spimm,
                                              input logic decr = 1'b0);
     logic [11:0] imm;
+    logic signed [11:0] imm_signed;
     logic [31:0] instr;
     imm[11:7] = '0;
     imm[ 6:0] = cm_stack_adj(.rlist(rlist), .spimm(spimm));
-    if (decr) imm = ~imm + 12'd1;
+    // Compute two's complement on signed variable, but as it will be used in
+    // unsigned targets below, it will have to be cast back to unsigned then.
+    imm_signed = decr ? -signed'(imm) : signed'(imm);
     instr[ 6: 0] /* opcode    */ = OPCODE_OP_IMM;
     instr[11: 7] /* dest reg  */ = 5'd2; // x2 (sp / stack pointer)
     instr[14:12] /* funct3    */ = 3'b000; // addi
     instr[19:15] /* src reg   */ = 5'd2; // x2
-    instr[31:20] /* imm[11:0] */ = imm;
+    instr[31:20] /* imm[11:0] */ = unsigned'(imm_signed);
     return instr;
   endfunction
 
