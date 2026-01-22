@@ -61,6 +61,7 @@ rom_epmp_init:
   // Setup PMP address registers.
 
   // ROM TEXT
+  COVERAGE_ASM_AUTOGEN_MARK(t6,0)
   la   t0, _epmp_text_tor_lo
   csrw pmpaddr0, t0
   la   t0, _epmp_text_tor_hi
