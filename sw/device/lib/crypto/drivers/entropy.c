@@ -318,9 +318,9 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
   }
 
   uint32_t cmd_reg_addr;
-  uint32_t sts_reg_addr;
-  uint32_t rdy_bit_offset;
-  uint32_t reg_rdy_bit_offset;
+  uint32_t sts_reg_addr = 0;
+  uint32_t rdy_bit_offset = 0;
+  uint32_t reg_rdy_bit_offset = 0;
   uint32_t reg;
   bool ready;
 
