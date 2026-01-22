@@ -280,10 +280,12 @@ def _deploy_software_collateral(args) -> None:
     bazel_runner = BazelRunner()
 
     bazel_runner.cmd = "./bazelisk.sh"
-    bazel_runner.build_opts = args.sw_build_opts + [
+    external_opts = args.sw_build_opts
+    bazel_runner.build_opts = external_opts + [
         "--define",
         "DISABLE_VERILATOR_BUILD=true",
     ]
+    bazel_runner.cquery_opts_common += external_opts
 
     # In the air-gapped environment, the following environment variable will exist.
     if ENV.get("BAZEL_PYTHON_WHEELS_REPO"):
