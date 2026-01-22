@@ -16,6 +16,7 @@ load(
     "opentitan_test",
 )
 load("//rules/coverage:asm.bzl", "asm_library_with_coverage")
+load("//rules/opentitan:cc.bzl", "opentitan_binary_assemble")
 load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
 load("//util/design:hardened.bzl", "hardened_comparison_test")
 
@@ -81,6 +82,15 @@ ld_library(
 ld_library(
     name = "linker_script",
     script = "rom.ld",
+    deps = [
+        ":linker_script_common",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+    ],
+)
+
+ld_library(
+    name = "linker_script_flash",
+    script = "flash_rom.ld",
     deps = [
         ":linker_script_common",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
@@ -247,6 +257,36 @@ hardened_comparison_test(
     tags = ["broken"],
 )
 
+opentitan_binary(
+    name = "flash_rom",
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
+    ],
+    linker_script = ":linker_script_flash",
+    manifest = "//hw/top_earlgrey:none_manifest",
+    deps = [
+        ":flash_rom_bootstrap_erase",
+        ":linker_script_flash",
+        ":mask_rom_lib",
+        # We depend on rom_isrs here rather than in mask_rom_lib so that the
+        # `rom_exception_handler` symbol remains unresolved and can be supplied
+        # by tests such as `rom_epmp_test`.
+        ":rom_isrs",
+    ],
+)
+
+opentitan_binary_assemble(
+    name = "flash_rom_image",
+    bins = {
+        ":flash_rom": "{flash_rom_slot}",
+    },
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
+    ],
+)
+
 # Create the legacy ROM target names so that existing splicing rules can find
 # the rom VMEM files.
 legacy_rom_targets(
@@ -375,6 +415,19 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:otp",
     ],
+)
+
+cc_library(
+    name = "flash_rom_bootstrap_erase",
+    srcs = ["flash_rom_bootstrap_erase.c"],
+    deps = [
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:bootstrap",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    ],
+    alwayslink = True,
 )
 
 cc_test(
