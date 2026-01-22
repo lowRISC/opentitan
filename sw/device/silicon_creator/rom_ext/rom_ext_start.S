@@ -160,6 +160,7 @@ _rom_ext_start_boot:
   /**
    * Initialize the `.data` section in RAM from ROM.
    */
+  COVERAGE_ASM_AUTOGEN_MARK(t6,2)
   la   a0, _data_start
   la   a1, _data_end
   la   a2, _data_init_start
@@ -171,11 +172,13 @@ _rom_ext_start_boot:
    * We do this despite zeroing all of SRAM above, so that we still zero `.bss`
    * once we've enabled SRAM scrambling.
    */
+  COVERAGE_ASM_AUTOGEN_MARK(t6,3)
   la   a0, _bss_start
   la   a1, _bss_end
   call crt_section_clear
 
   // Re-clobber all of the temporary registers.
+  COVERAGE_ASM_AUTOGEN_MARK(t6,4)
   li t0, 0x0
   li t1, 0x0
   li t2, 0x0
