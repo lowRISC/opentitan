@@ -26,6 +26,7 @@ class MockBootData : public global_mock::GlobalMock<MockBootData> {
 }  // namespace internal
 
 using MockBootData = testing::StrictMock<internal::MockBootData>;
+using NiceMockBootData = testing::NiceMock<internal::MockBootData>;
 
 }  // namespace rom_test
 

@@ -65,6 +65,39 @@ opentitan_test(
     ],
 )
 
+# Run with --config=fuzztest
+cc_test(
+    name = "aes_fuzztest",
+    srcs = ["aes_fuzztest.cc"],
+    deps = [
+        ":aes",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@fuzztest//fuzztest",
+        "@fuzztest//fuzztest:fuzztest_gtest_main",
+        "@googletest//:gtest",
+    ],
+)
+
+# Run via Centipede - BROKEN
+cc_binary(
+    name = "aes_fuzztest_binary",
+    testonly = True,
+    srcs = ["aes_fuzztest.cc"],
+    deps = [
+        ":aes",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@fuzztest//fuzztest",
+        "@fuzztest//fuzztest:fuzztest_gtest_main",
+        "@googletest//:gtest",
+    ],
+)
+
 cc_library(
     name = "keymgr",
     srcs = ["keymgr.c"],

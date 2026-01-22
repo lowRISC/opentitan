@@ -398,6 +398,9 @@ def _modid_check_aspect_impl(target, ctx):
     using opentitantool.
     """
 
+    if "fuzztest" in ctx.label.name:
+        return []
+
     # If the target is //sw/device/lib/base:status, then it has module ID information,
     # this is the root of all the information.
     if ctx.label == Label("@//sw/device/lib/base:status"):
