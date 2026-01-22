@@ -8,6 +8,7 @@ load("//rules:const.bzl", "CONST", "hex")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:manifest.bzl", "manifest")
+load("//rules/coverage:asm.bzl", "asm_library_with_coverage")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
@@ -148,7 +149,7 @@ cc_test(
     ],
 )
 
-cc_library(
+asm_library_with_coverage(
     name = "rom_ext_flash_exc_handler",
     srcs = ["//sw/device/silicon_creator/lib:flash_exc_handler"],
     defines = [
@@ -160,6 +161,7 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/coverage:api_asm",
     ],
 )
 
@@ -233,7 +235,7 @@ ld_library(
     ],
 )
 
-cc_library(
+asm_library_with_coverage(
     name = "rom_ext_start",
     srcs = ["rom_ext_start.S"],
     target_compatible_with = [OPENTITAN_CPU],

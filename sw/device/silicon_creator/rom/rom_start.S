@@ -5,6 +5,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #include "sw/device/lib/base/hardened_asm.h"
 #include "sw/device/lib/base/multibits_asm.h"
+#include "sw/device/lib/coverage/api_asm.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/stack_utilization_asm.h"
 #include "aon_timer_regs.h"
@@ -22,6 +23,8 @@
 #include "rv_core_ibex_regs.h"
 #include "sensor_ctrl_regs.h"
 #include "sram_ctrl_regs.h"
+
+// PRAGMA_COVERAGE: section(__llvm_prf_cnts_head)
 
 // This macro defines convenience labels for tests that use a debugger.
 #define LABEL_FOR_TEST(kName_) .local kName_ ; kName_: ;
@@ -146,6 +149,14 @@ _rom_start_boot:
   // Set up the global pointer and re-enable linker relaxations.
   la gp, __global_pointer$
   .option pop
+
+  // Initialize the pre-C coverage counter.
+  // It's no-op when coverage mode is not enabled.
+  COVERAGE_ASM_INIT()
+  COVERAGE_ASM_TRANSPORT_INIT()
+
+
+  // PRAGMA_COVERAGE: autogen start
 
 LABEL_FOR_TEST(kRomStartBootMaybeHalt)
   // Check if we should halt here.
@@ -412,18 +423,25 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // Memory accesses will stall until initialization is complete.
   // Set `SRAM_KEY_RENEW_EN` OTP item to `HARDENED_BOOL_FALSE` to disable and
   // any other value to enable.
+  COVERAGE_ASM_BACKUP_COUNTERS(s10, s11)
   li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t2, OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_SRAM_READBACK_EN_OFFSET(a0)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_SRAM_KEY_RENEW_EN_OFFSET(a0)
   li   t1, HARDENED_BOOL_FALSE
   beq t0, t1, .L_sram_key_renew_skip
+  COVERAGE_ASM_BACKUP_COUNTERS(s10, s11)
   li a0, TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR
   li a1, (1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT) | (1 << SRAM_CTRL_CTRL_INIT_BIT)
   sw a1, SRAM_CTRL_CTRL_REG_OFFSET(a0)
 .L_sram_key_renew_skip:
   // Depending on OTP, enable the SRAM readback feature.
   sw   t2, SRAM_CTRL_READBACK_REG_OFFSET(a0)
+
+  // Re-initialize coverage counters after scramble
+  COVERAGE_ASM_INIT()
+  COVERAGE_ASM_RESTORE_COUNTERS(s10, s11)
+  COVERAGE_ASM_MANUAL_MARK(t6,29)
 
   /**
    * Clean Device State Part 1 (Please refer to `boot.md` section "Cleaning Device
@@ -483,6 +501,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // memory at addresses below `sp`.
   la sp, _stack_end
 
+  // PRAGMA_COVERAGE: skip start
 #ifdef STACK_UTILIZATION_CHECK
   // Fill the stack with a known pattern
   // We configure a No-Access ePMP NA4 region at stack_start as a
@@ -496,6 +515,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   addi a0, a0, 4
   bltu a0, sp, .L_stack_clear_loop
 #endif
+  // PRAGMA_COVERAGE: skip stop
 
   // Set up shadow stack pointer.
   //
