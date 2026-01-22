@@ -135,10 +135,36 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
             <tr><th>Bit</th><th>Description</th></tr>
           </thead>
           <tbody>
-            <tr><td>0</td><td>Carry of flag group 0</td></tr>
-            <tr><td>1</td><td>MSb of flag group 0</td></tr>
-            <tr><td>2</td><td>LSb of flag group 0</td></tr>
-            <tr><td>3</td><td>Zero of flag group 0</td></tr>
+            <tr>
+              <td>0</td>
+              <td>
+                Carry of flag group 0
+              </td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>
+                MSb of flag group 0
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                LSb of flag group 0
+              </td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>
+                Zero of flag group 0
+              </td>
+            </tr>
+            <tr>
+              <td>31:4</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
           </tbody>
         </table>
       </td>
@@ -156,10 +182,36 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
             <tr><th>Bit</th><th>Description</th></tr>
           </thead>
           <tbody>
-            <tr><td>0</td><td>Carry of flag group 1</td></tr>
-            <tr><td>1</td><td>MSb of flag group 1</td></tr>
-            <tr><td>2</td><td>LSb of flag group 1</td></tr>
-            <tr><td>3</td><td>Zero of flag group 1</td></tr>
+            <tr>
+              <td>0</td>
+              <td>
+                Carry of flag group 1
+              </td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>
+                MSb of flag group 1
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                LSb of flag group 1
+              </td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>
+                Zero of flag group 1
+              </td>
+            </tr>
+            <tr>
+              <td>31:4</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
           </tbody>
         </table>
       </td>
@@ -177,14 +229,60 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
             <tr><th>Bit</th><th>Description</th></tr>
           </thead>
           <tbody>
-            <tr><td>0</td><td>Carry of flag group 0</td></tr>
-            <tr><td>1</td><td>MSb of flag group 0</td></tr>
-            <tr><td>2</td><td>LSb of flag group 0</td></tr>
-            <tr><td>3</td><td>Zero of flag group 0</td></tr>
-            <tr><td>4</td><td>Carry of flag group 1</td></tr>
-            <tr><td>5</td><td>MSb of flag group 1</td></tr>
-            <tr><td>6</td><td>LSb of flag group 1</td></tr>
-            <tr><td>7</td><td>Zero of flag group 1</td></tr>
+            <tr>
+              <td>0</td>
+              <td>
+                Carry of flag group 0
+              </td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>
+                MSb of flag group 0
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                LSb of flag group 0
+              </td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>
+                Zero of flag group 0
+              </td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>
+                Carry of flag group 1
+              </td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>
+                MSb of flag group 1
+              </td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td>
+                LSb of flag group 1
+              </td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td>
+                Zero of flag group 1
+              </td>
+            </tr>
+            <tr>
+              <td>31:8</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
           </tbody>
         </table>
       </td>
