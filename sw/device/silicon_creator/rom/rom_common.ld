@@ -15,14 +15,6 @@ OUTPUT_ARCH(riscv)
  */
 __DYNAMIC = 0;
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
-
-/**
- * The boot address, which indicates the location of the initial interrupt
- * vector.
- */
-_rom_boot_address = ORIGIN(rom);
-
 /**
  * Symbols to be used in the setup of the address translation for ROM_EXT.
  */
@@ -60,6 +52,8 @@ _epmp_stack_guard_na4 = _stack_start / 4;
 
 ENTRY(_rom_start_boot);
 
+REGION_ALIAS("coverage_flash", rom_region);
+
 /**
  * NOTE: We have to align each section to word boundaries as our current
  * s19->slm conversion scripts are not able to handle non-word aligned sections.
@@ -74,7 +68,7 @@ SECTIONS {
   .vectors _rom_boot_address : ALIGN(256) {
     _text_start = .;
     KEEP(*(.vectors))
-  } > rom
+  } > rom_region
 
   /**
    * C runtime (CRT) section, containing program initialization code.
@@ -90,7 +84,7 @@ SECTIONS {
     ASSERT(
         SIZEOF(.vectors) + SIZEOF(.crt) <= _epmp_reset_rx_size,
         "Error: .crt overflows reset ePMP region");
-  } > rom
+  } > rom_region
 
   /**
    * Standard text section, containing program code.
@@ -102,7 +96,7 @@ SECTIONS {
 
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
-  } > rom
+  } > rom_region
 
   /**
    * ROM ISRs text section, containing the exception handler entry/exit logic
@@ -116,7 +110,7 @@ SECTIONS {
 
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
-  } > rom
+  } > rom_region
 
   /**
    * Shutdown text section, containing shutdown function(s).
@@ -130,7 +124,7 @@ SECTIONS {
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _text_end = .;
-  } > rom
+  } > rom_region
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -143,7 +137,9 @@ SECTIONS {
     *(.srodata.*)
     *(.rodata)
     *(.rodata.*)
-  } > rom
+  } > rom_region
+
+  INCLUDE sw/device/lib/coverage/rodata.ld
 
   /**
    * Critical static data that is accessible by both the ROM and the ROM
@@ -193,6 +189,8 @@ SECTIONS {
     _bss_end = .;
   } > ram_main
 
+  INCLUDE sw/device/lib/coverage/bss.ld
+
   /**
    * Immutable chip_info data, containing build-time-recorded information.
    *
@@ -200,7 +198,7 @@ SECTIONS {
    */
   .chip_info _chip_info_start : ALIGN(4) {
     KEEP(*(.build_info))
-  } > rom
+  } > rom_region
 
   INCLUDE sw/device/info_sections.ld
 }
