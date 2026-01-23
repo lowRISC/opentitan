@@ -119,6 +119,8 @@ class entropy_src_dut_cfg extends uvm_object;
   rand bit [15:0]   repcnt_thresh_bypass, repcnt_thresh_fips,
                     repcnts_thresh_bypass, repcnts_thresh_fips;
 
+  rand bit [3:0] ht_watermark_num;
+
   rand bit             use_invalid_mubi;
   rand invalid_mubi_e  which_invalid_mubi;
 
@@ -350,6 +352,12 @@ class entropy_src_dut_cfg extends uvm_object;
         };
       }
     }
+
+  constraint ht_watermark_num_c {ht_watermark_num dist {
+      0        :/ 1,  // Unsupported values are mapped to 0, too.
+      [1 :  8] :/ 16,
+      [9 : 15] :/ 1}; // Unsupported values
+  }
 
   constraint alert_threshold_c {alert_threshold dist {
       1             :/ 3,

@@ -175,6 +175,10 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     // Windowed health test thresholds managed in derived vseq classes
 
+    ral.ht_watermark_num.set(newcfg.ht_watermark_num);
+    csr_update(.csr(ral.ht_watermark_num));
+    #(pause);
+
     // FW_OV registers
     ral.fw_ov_control.fw_ov_mode.set(newcfg.fw_read_enable);
     ral.fw_ov_control.fw_ov_entropy_insert.set(newcfg.fw_over_enable);
