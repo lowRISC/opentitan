@@ -24,6 +24,47 @@
 #define COVERAGE_ASM_TRANSPORT_INIT() call coverage_transport_init;
 
 /**
+ * Backup the first 64 coverage counters from RAM to registers.
+ *
+ * This function clobbers the a0 register.
+ * This function is no-op in non-coverage builds.
+ *
+ * @param[out] kReg0 A temporary register to store the first 32 counters.
+ * @param[out] kReg1 A temporary register to store the next 32 counters.
+ */
+#define COVERAGE_ASM_BACKUP_COUNTERS(kReg0, kReg1) \
+  li a0, 0;                                        \
+  call coverage_backup_asm_counters;               \
+  mv kReg0, a0;                                    \
+  li a0, 32;                                       \
+  call coverage_backup_asm_counters;               \
+  mv kReg1, a0;
+
+/**
+ * Restore the first 64 coverage counters from registers to RAM.
+ *
+ * This function clobbers the a0 and a1 registers.
+ * This function is no-op in non-coverage builds.
+ *
+ * @param kReg0 A temporary register that stores the first 32 counters.
+ * @param kReg1 A temporary register that stores the next 32 counters.
+ */
+#define COVERAGE_ASM_RESTORE_COUNTERS(kReg0, kReg1) \
+  mv a0, kReg0;                                     \
+  mv a1, kReg1;                                     \
+  call coverage_restore_asm_counters;
+
+/**
+ * Triggers a coverage report dump.
+ *
+ * If the coverage data is valid, it compresses the counter data and sends the
+ * report.
+ *
+ * This function is no-op in non-coverage builds.
+ */
+#define COVERAGE_ASM_REPORT() call coverage_report;
+
+/**
  * Marks a specific coverage point as hit.
  *
  * This function is no-op in non-coverage builds.
@@ -39,6 +80,9 @@
 
 #define COVERAGE_ASM_INIT(...)
 #define COVERAGE_ASM_TRANSPORT_INIT(...)
+#define COVERAGE_ASM_BACKUP_COUNTERS(...)
+#define COVERAGE_ASM_RESTORE_COUNTERS(...)
+#define COVERAGE_ASM_REPORT(...)
 #define COVERAGE_ASM_AUTOGEN_MARK(...)
 
 #endif  // OT_COVERAGE_INSTRUMENTED

@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/coverage/api_asm.h"
 #include "sw/device/silicon_creator/lib/epmp_defs.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+
+// PRAGMA_COVERAGE: section(__llvm_prf_cnts)
 
 /**
  * Helper macro to move v into the correct position to set the pmp{N*4+i}cfg
@@ -29,6 +32,8 @@
 #define NAPOT(addr, len) (((addr) >> 2) | (((len) - 1) >> 3))
 
 // -----------------------------------------------------------------------------
+
+  // PRAGMA_COVERAGE: autogen start
 
   /**
    * The "ax" flag below is necessary to ensure that this section
@@ -56,6 +61,7 @@ rom_epmp_init:
   // Setup PMP address registers.
 
   // ROM TEXT
+  COVERAGE_ASM_AUTOGEN_MARK(t6,0)
   la   t0, _epmp_text_tor_lo
   csrw pmpaddr0, t0
   la   t0, _epmp_text_tor_hi

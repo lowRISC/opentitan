@@ -3,9 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "sw/device/lib/coverage/api_asm.h"
 #include "sw/device/lib/base/hardened_asm.h"
 #include "sw/device/lib/coverage/api_asm.h"
 #include "otp_ctrl_regs.h"
+
+// PRAGMA_COVERAGE: section(__llvm_prf_cnts)
 
 /**
  * ROM_EXT Interrupt Vector
@@ -88,6 +91,12 @@ _rom_ext_start_boot:
   .option push
   .option norelax
 
+  // Initialize the pre-C coverage counter.
+  // It's no-op when coverage mode is not enabled.
+  COVERAGE_ASM_INIT()
+  COVERAGE_ASM_TRANSPORT_INIT()
+  COVERAGE_ASM_MANUAL_MARK(t6,0)
+
   /**
    * Call the .rom_ext_immutable first if it's not called by ROM.
    */
@@ -97,6 +106,11 @@ _rom_ext_start_boot:
   li   t1, HARDENED_BOOL_TRUE
   beq  t0, t1, .L_mutable_start_boot
   call _rom_ext_immutable_start
+
+  // Re-initialize after returning from immutable section.
+  COVERAGE_ASM_INIT()
+  COVERAGE_ASM_TRANSPORT_INIT()
+  COVERAGE_ASM_MANUAL_MARK(t6,1)
 
   /**
    * Continue booting the mutable rom_ext.
@@ -137,6 +151,8 @@ _rom_ext_start_boot:
    */
   la   sp, _stack_end
 
+  // PRAGMA_COVERAGE: autogen start
+
   /**
    * Setup C Runtime
    */
@@ -144,6 +160,7 @@ _rom_ext_start_boot:
   /**
    * Initialize the `.data` section in RAM from ROM.
    */
+  COVERAGE_ASM_AUTOGEN_MARK(t6,2)
   la   a0, _data_start
   la   a1, _data_end
   la   a2, _data_init_start
@@ -155,11 +172,13 @@ _rom_ext_start_boot:
    * We do this despite zeroing all of SRAM above, so that we still zero `.bss`
    * once we've enabled SRAM scrambling.
    */
+  COVERAGE_ASM_AUTOGEN_MARK(t6,3)
   la   a0, _bss_start
   la   a1, _bss_end
   call crt_section_clear
 
   // Re-clobber all of the temporary registers.
+  COVERAGE_ASM_AUTOGEN_MARK(t6,4)
   li t0, 0x0
   li t1, 0x0
   li t2, 0x0
