@@ -31,7 +31,7 @@ class Trace:
         '''Render a hex value in the format expected by RTL tracing'''
         if bit_width == 32:
             if value is None:
-                return '0x' + 'x' * 8
+                return '0x' + 'X' * 8
             else:
                 return '{:#010x}'.format(value)
 

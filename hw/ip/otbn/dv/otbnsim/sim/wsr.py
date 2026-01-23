@@ -15,12 +15,8 @@ class TraceWSR(Trace):
         self.new_value = new_value
 
     def trace(self) -> str:
-        s = '{} = '.format(self.wsr_name)
-        if self.new_value is None:
-            s += '0x' + 'x' * 8
-        else:
-            s += '{:#x}'.format(self.new_value)
-        return s
+        return '{} = {}'.format(self.wsr_name,
+                                Trace.hex_value(self.new_value, 256))
 
     def rtl_trace(self) -> str:
         return '> {}: {}'.format(self.wsr_name,
