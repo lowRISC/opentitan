@@ -1855,6 +1855,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                 default:  ht_watermark_num = REPCNT_HI;
               endcase
               void'(csr.predict(.value(ht_watermark_num), .kind(UVM_PREDICT_WRITE)));
+              cov_vif.cg_ht_watermark_num_sample(item.a_data);
             end
             "alert_threshold": begin
               cov_vif.cg_alert_cnt_sample(item.a_data, 0);
@@ -2081,6 +2082,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           end else begin
             process_entropy_data_csr_access(item, csr);
           end
+        end
+        "ht_watermark": begin
+          cov_vif.cg_ht_watermark_sample(ht_watermark_num_e'(`gmv(ral.ht_watermark_num)),
+              item.d_data);
         end
         "observe_fifo_depth": begin
           // If a new word was pushed to the observe FIFO in the address phase,
