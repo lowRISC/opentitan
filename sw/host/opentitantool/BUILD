@@ -14,6 +14,7 @@ rust_binary(
         "src/command/bootstrap.rs",
         "src/command/certificate.rs",
         "src/command/clear_bitstream.rs",
+        "src/command/clear_flash_rom.rs",
         "src/command/console.rs",
         "src/command/ecdsa.rs",
         "src/command/emulator.rs",
