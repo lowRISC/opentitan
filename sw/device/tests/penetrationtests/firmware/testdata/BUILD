@@ -53,7 +53,7 @@ offline_presigning_artifacts(
     name = "non_signed_firmware",
     testonly = True,
     srcs = [":bl0_firmware"],
-    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+    ecdsa_key = {"//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-prod-0"},
     manifest = "//sw/device/silicon_owner:manifest",
     spx_key = {},
     tags = ["manual"],
@@ -111,7 +111,7 @@ otp_json(
 
 otp_image(
     name = "otp_img_rom_ext_fi",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_rom_ext_fi",
     ],
@@ -149,7 +149,7 @@ otp_json(
 
 otp_image(
     name = "otp_img_rom_rollback_fi",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_rom_rollback_fi",
     ],
@@ -187,7 +187,7 @@ otp_json(
 
 otp_image(
     name = "otp_img_rom_ext_rollback_fi",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_rom_ext_rollback_fi",
     ],
