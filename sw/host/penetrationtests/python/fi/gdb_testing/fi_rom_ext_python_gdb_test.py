@@ -293,9 +293,9 @@ if __name__ == "__main__":
     # Get the rom_ext path.
     rom_ext_path = r.Rlocation("lowrisc_opentitan/" + ROM_EXT)
     # Get the disassembly path.
-    rom_ext_dis_path = rom_ext_path.replace(".prod_key_0.signed.bin", ".dis")
+    rom_ext_dis_path = rom_ext_path.replace(".prod_key_0.prod_key_0.signed.bin", ".dis")
     # And the path for the elf.
-    rom_ext_elf_path = rom_ext_path.replace(".prod_key_0.signed.bin", ".elf")
+    rom_ext_elf_path = rom_ext_path.replace(".prod_key_0.prod_key_0.signed.bin", ".elf")
 
     if "fpga" in BOOTSTRAP:
         target_type = "fpga"

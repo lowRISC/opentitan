@@ -84,8 +84,7 @@ class RomFiSim(unittest.TestCase):
         print("Starting the rom secure boot test")
 
         # Directory for the trace log files
-        pc_trace_file_1 = os.path.join(log_dir, "rom_secure_boot_pc_trace_1.log")
-        pc_trace_file_2 = os.path.join(log_dir, "rom_secure_boot_pc_trace_2.log")
+        pc_trace_file = os.path.join(log_dir, "rom_secure_boot_pc_trace.log")
         # Directory for the the log of the campaign
         campaign_file = os.path.join(log_dir, "rom_secure_boot_test_campaign.log")
 
@@ -112,8 +111,6 @@ class RomFiSim(unittest.TestCase):
                 gdb.reset_target()
                 gdb.send_command(f"set $pc={jump_address}")
 
-                # Tracing in done in two steps to jump over sc_otbn_cmd_run which makes GDB hang
-
                 # Functions where we can get GDB to jump over
                 upsert_register_address = rom_parser.get_function_start_address("upsert_register")
 
@@ -123,74 +120,16 @@ class RomFiSim(unittest.TestCase):
                     "sigverify_ecdsa_p256_key_id_get"
                 )
 
-                # We stop tracing when we execute the p256 verify in the otbn
-                trace_end_address = rom_parser.get_function_start_address("sc_otbn_cmd_run")
-
-                print(
-                    "Start and stop addresses for the rom for trace 1: ",
-                    trace_start_address,
-                    trace_end_address,
-                    flush=True,
-                )
-                print("First trace data is logged in ", pc_trace_file_1, flush=True)
-
-                # Start the tracing
-                # We set a short timeout to detect whether GDB has connected properly
-                # and a long timeout for the entire tracing
-                initial_timeout = 20
-                total_timeout = 60 * 60 * 5
-
-                gdb.setup_pc_trace(
-                    pc_trace_file_1,
-                    trace_start_address,
-                    trace_end_address,
-                    skip_addrs=[upsert_register_address],
-                )
-                gdb.send_command("c", check_response=False)
-
-                start_time = time.time()
-                initial_timeout_stopped = False
-                total_timeout_stopped = False
-
-                # Run the tracing to get the trace log
-                # Sometimes the tracing fails due to race conditions,
-                # we have a quick initial timeout to catch this
-                while time.time() - start_time < initial_timeout:
-                    output = gdb.read_output()
-                    if "breakpoint 1, " in output:
-                        initial_timeout_stopped = True
-                        break
-                if not initial_timeout_stopped:
-                    print("No initial break point found, can be a misfire, try again")
-                    sys.exit(1)
-                while time.time() - start_time < total_timeout:
-                    output = gdb.read_output()
-                    if "PC trace complete" in output:
-                        print("\nTrace complete")
-                        total_timeout_stopped = True
-                        break
-                if not total_timeout_stopped:
-                    print("Final tracing timeout reached")
-                    sys.exit(1)
-
-                # Reset the target, flush the output, and close gdb
-                gdb = reset_target_and_gdb(gdb, jump_address)
-
-                # We ready the second part of the trace
-
-                # We start from sc_otbn_dmem_read which reads p256 verify's results from otbn
-                trace_start_address = rom_parser.get_function_start_address("sc_otbn_dmem_read")
-
                 # We expect with the test that we end up in shutdown_finalize
                 trace_end_address = rom_parser.get_function_start_address("shutdown_finalize")
 
                 print(
-                    "Start and stop addresses for the rom for trace 2: ",
+                    "Start and stop addresses for the rom: ",
                     trace_start_address,
                     trace_end_address,
                     flush=True,
                 )
-                print("Second trace data is logged in ", pc_trace_file_2, flush=True)
+                print("Trace data is logged in ", pc_trace_file, flush=True)
 
                 # Start the tracing
                 # We set a short timeout to detect whether GDB has connected properly
@@ -199,7 +138,7 @@ class RomFiSim(unittest.TestCase):
                 total_timeout = 60 * 60 * 5
 
                 gdb.setup_pc_trace(
-                    pc_trace_file_2,
+                    pc_trace_file,
                     trace_start_address,
                     trace_end_address,
                     skip_addrs=[upsert_register_address],
@@ -232,8 +171,7 @@ class RomFiSim(unittest.TestCase):
                     sys.exit(1)
 
                 # Parse and truncate the trace log to get all PCs in a list
-                pc_list = gdb.parse_pc_trace_file(pc_trace_file_1)
-                pc_list.extend(gdb.parse_pc_trace_file(pc_trace_file_2))
+                pc_list = gdb.parse_pc_trace_file(pc_trace_file)
                 # Get the unique PCs and annotate their occurence count
                 pc_count_dict = Counter(pc_list)
                 if len(pc_count_dict) <= 0:
