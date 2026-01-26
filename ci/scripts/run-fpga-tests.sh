@@ -55,4 +55,5 @@ trap './bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga}
     --build_tests_only \
     --define "$fpga"=lowrisc \
     --flaky_test_attempts=2 \
-    --target_pattern_file="${target_pattern_file}" "$@"
+    //sw/device/silicon_creator/rom_ext/e2e/rescue:rescue_firmware_slot_b_usbdfu_fpga_cw310_rom_ext \
+    //sw/device/silicon_creator/rom_ext/e2e/rescue:rescue_rate_test_fpga_cw310_rom_ext "$@"
