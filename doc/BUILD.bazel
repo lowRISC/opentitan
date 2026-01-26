@@ -29,6 +29,7 @@ doxygen_gather_cc(
         "//hw/top:doxy_target",
         "//sw/device/lib/arch:doxy_target",
         "//sw/device/lib/base:doxy_target",
+        "//sw/device/lib/crypto/include:doxy_target",
         "//sw/device/lib/dif:doxy_target",
         "//sw/device/lib/testing:doxy_target",
     ],

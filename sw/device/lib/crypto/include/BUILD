@@ -4,6 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
+load("//rules:doxygen.bzl", "doxygen_gather_all_package_cc")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
 # Export all headers.
@@ -85,4 +86,8 @@ pkg_files(
     name = "package",
     srcs = glob(["*.h"]),
     prefix = "crypto/include",
+)
+
+doxygen_gather_all_package_cc(
+    name = "doxy_target",
 )
