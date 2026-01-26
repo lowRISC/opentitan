@@ -72,6 +72,7 @@ _CONFIGS = {
             binaries = {
                 ":boot_test_{}".format(name): "payload",
             },
+            changes_otp = True,
             params = config["params"],
             rom_ext = config["rom_ext"],
             slot = position["slot"],
@@ -107,6 +108,7 @@ _CONFIGS = {
                 ":boot_test_slot_a": "slot_a",
                 ":boot_test_slot_b": "slot_b",
             },
+            changes_otp = True,
             params = config["params"],
             rom_ext = config["rom_ext"],
             tags = config["tags"],
@@ -143,6 +145,7 @@ _CONFIGS = {
                 ":boot_test_slot_a": "slot_a",
                 ":boot_test_slot_b": "slot_b",
             },
+            changes_otp = True,
             params = config["params"],
             rom_ext = config["rom_ext"],
             tags = config["tags"],
@@ -181,6 +184,7 @@ opentitan_test(
         binaries = {
             ":boot_test_slot_a": "payload",
         },
+        changes_otp = True,
         test_cmd = """
             --exec="transport init"
             --exec="fpga load-bitstream {bitstream}"
