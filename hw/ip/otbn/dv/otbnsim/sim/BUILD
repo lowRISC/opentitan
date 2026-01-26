@@ -17,6 +17,8 @@ py_library(
     srcs = ["csr.py"],
     deps = [
         ":flags",
+        ":ispr",
+        ":trace",
         ":wsr",
     ],
 )
@@ -93,6 +95,14 @@ py_library(
     deps = [
         ":state",
         "//hw/ip/otbn/util/shared:insn_yaml",
+    ],
+)
+
+py_library(
+    name = "ispr",
+    srcs = ["ispr.py"],
+    deps = [
+        ":trace",
     ],
 )
 
@@ -185,6 +195,7 @@ py_library(
     srcs = ["wsr.py"],
     deps = [
         ":ext_regs",
+        ":ispr",
         ":trace",
     ],
 )

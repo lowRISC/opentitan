@@ -2,7 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+from typing import List
 from .flags import FlagGroups
+from .ispr import DumbISPR
+from .trace import Trace
 from .wsr import WSRFile
 
 
