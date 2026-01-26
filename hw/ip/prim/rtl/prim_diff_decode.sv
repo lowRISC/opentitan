@@ -21,10 +21,9 @@ module prim_diff_decode #(
   // enables additional synchronization logic
   parameter bit AsyncOn = 1'b0,
   // Number of cycles a differential skew is tolerated before a signal integrity issue is flagged.
-  // Only has an effect if AsyncOn = 1
-  // 0 means no skew is tolerated (any mismatch is an immediate signal integrity error).
-  // 1 means a one-cycle skew is tolerated.
-  // Values larger than 1 are also supported.
+  // This should be a positive number and only has an effect if AsyncOn = 1.
+  //   - 1 means a one-cycle skew is tolerated.
+  //   - Values larger than 1 are also supported.
   parameter int unsigned SkewCycles = 1
 ) (
   input        clk_i,
@@ -137,15 +136,9 @@ module prim_diff_decode #(
               end
             end
           end else begin
-            if (SkewCycles == 0) begin
-              // If no skew is tolerated, immediate signal integrity error
-              state_d  = SigInt;
-              sigint_o = 1'b1;
-            end else begin
-              // Mismatch with an edge: likely start of a tolerated skew
-              state_d    = IsSkewing;
-              skew_cnt_d = 1;
-            end
+            // Mismatch with an edge: likely start of a tolerated skew
+            state_d    = IsSkewing;
+            skew_cnt_d = 1;
           end
         end
         // diff pair must be correctly encoded, otherwise we got a sigint
@@ -257,6 +250,10 @@ module prim_diff_decode #(
   if (AsyncOn) begin : gen_async_assert
     // assertions for asynchronous case
 `ifdef INC_ASSERT
+    // Parameter check: If asynchronous mode is enabled, SkewCycles must be positive (because
+    // SkewCycles=0 is the same behaviour as AsyncOn=0)
+    `ASSERT(AsyncNeedsSkew_A, SkewCycles > 0)
+
   `ifndef FPV_ALERT_NO_SIGINT_ERR
     // Correctly detect signal integrity issue:
     // If diff_pd and diff_nd are equal for (SkewCycles + 1) consecutive cycles, sigint_o must be
