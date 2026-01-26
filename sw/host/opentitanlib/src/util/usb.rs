@@ -154,6 +154,7 @@ impl UsbBackend {
         usb_serial: Option<&str>,
         timeout: Duration,
     ) -> Result<Self> {
+        let start = Instant::now();
         let deadline = Instant::now() + timeout;
         loop {
             let mut devices =
@@ -169,6 +170,7 @@ impl UsbBackend {
             ensure!(devices.len() == 1, TransportError::MultipleDevices);
 
             let (device, serial_number) = devices.remove(0);
+            log::info!("Found device in {:?}", start.elapsed());
             return Ok(UsbBackend {
                 handle: device.open().context("USB open error")?,
                 device,
