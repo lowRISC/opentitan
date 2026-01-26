@@ -181,7 +181,12 @@ rom_error_t rescue_protocol(boot_data_t *bootdata, boot_log_t *boot_log,
   usb_ep_init(0, kUsbEpTypeControl, 0x40, dfu_protocol_handler, &ctx);
   usb_enable(true);
   while (true) {
-    RETURN_IF_ERROR(rescue_inactivity(&ctx.state));
+    rom_error_t err = rescue_inactivity(&ctx.state);
+    if (err != kErrorOk) {
+      usb_enable(false);
+      dbg_printf("USB-DFU stop due to inactivity\r\n");
+      return err;
+    }
     usb_poll();
   }
   return kErrorOk;

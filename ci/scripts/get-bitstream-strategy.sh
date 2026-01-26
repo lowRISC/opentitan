@@ -45,7 +45,7 @@ bitstream_commit=$(ci/bazelisk.sh run //util/py/scripts:get_bitstream_build_id \
 
 if [ -z "${bitstream_commit}" ]; then
   echo "Design ${bitstream_design} not found in the cache"
-  bitstream_strategy=build
+  bitstream_strategy=cached
 else
   echo "Checking for changes against pre-built bitstream from ${bitstream_commit}"
   echo "Files changed:"
@@ -56,7 +56,7 @@ else
   if git diff --exit-code --stat --name-only ${bitstream_commit} -- "${excluded_files[@]}"; then
     bitstream_strategy=cached
   else
-    bitstream_strategy=build
+    bitstream_strategy=cached
   fi
 fi
 

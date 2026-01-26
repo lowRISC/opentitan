@@ -20,6 +20,9 @@ use opentitanlib::rescue::{EntryMode, RescueMode, RescueParams};
 use opentitanlib::util::file::FromReader;
 use opentitanlib::util::parse_int::ParseInt;
 
+use opentitanlib::uart::console::UartConsole;
+use std::time::Duration;
+
 #[derive(Debug, serde::Serialize, Annotate)]
 pub struct RawBytes(
     #[serde(with = "serde_bytes")]
@@ -574,6 +577,12 @@ impl CommandDispatch for RescueCommand {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // None of the SPI commands care about the prior context, but they do
         // care about the `bus` parameter in the current node.
-        self.command.run(self, transport)
+        let res = self.command.run(self, transport);
+        if res.is_err() {
+            log::info!("====== UART =====");
+            let uart_console = transport.uart("console")?;
+            let _ = UartConsole::wait_for(&*uart_console, r"XXXX", Duration::from_secs(1));
+        }
+        res
     }
 }

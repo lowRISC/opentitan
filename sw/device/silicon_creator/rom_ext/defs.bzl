@@ -109,8 +109,8 @@ TEST_OWNER_CONFIGS = {
             "WITH_RESCUE_TRIGGER=2",
             # Strapping value of 3.
             "WITH_RESCUE_INDEX=3",
-            # Timeout: 0x80=enter_on_fail, 0x05 = 5 seconds.
-            "WITH_RESCUE_TIMEOUT=0x85",
+            # Timeout: 0x80=enter_on_fail, 0x14 = 20 seconds.
+            "WITH_RESCUE_TIMEOUT=0x94",
         ],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_usbdfu"],
     },

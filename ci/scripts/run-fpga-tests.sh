@@ -54,4 +54,5 @@ ci/bazelisk.sh test \
     --build_tests_only \
     --define "$fpga"=lowrisc \
     --flaky_test_attempts=2 \
-    --target_pattern_file="${target_pattern_file}"
+    --runs_per_test=10 \
+    //sw/device/silicon_creator/rom_ext/e2e/rescue:next_slot_usbdfu_fpga_cw340_rom_ext
