@@ -40,7 +40,7 @@ single_version_override(
     module_name = "rules_cc",
     patch_strip = 1,
     patches = [
-        "@lowrisc_opentitan//third_party/cc/patches:remove_gold.patch",
+        "//third_party/cc/patches:remove_gold.patch",
     ],
     version = "0.1.2",
 )
@@ -49,7 +49,7 @@ single_version_override(
     module_name = "rules_rust",
     patch_strip = 1,
     patches = [
-        "@lowrisc_opentitan//third_party/rust/patches:rules_rust.extra_rustc_toolchain_dirs.patch",
+        "//third_party/rust/patches:rules_rust.extra_rustc_toolchain_dirs.patch",
     ],
     version = "0.59.2",
 )
@@ -58,7 +58,7 @@ single_version_override(
     module_name = "rules_rust_bindgen",
     patch_strip = 3,
     patches = [
-        "@lowrisc_opentitan//third_party/rust/patches:rules_rust.bindgen_static_lib.patch",
+        "//third_party/rust/patches:rules_rust.bindgen_static_lib.patch",
     ],
     version = "0.59.2",
 )
@@ -69,7 +69,7 @@ single_version_override(
         # Patch to remove all build log file output when using rules_foreign_cc
         # toolchains to ensure deterministic Bazel builds. See upstream issue:
         # https://github.com/bazel-contrib/rules_foreign_cc/issues/1313
-        "@lowrisc_opentitan//third_party/foreign_cc/patches:rules_foreign_cc.remove_log_output.patch",
+        "//third_party/foreign_cc/patches:rules_foreign_cc.remove_log_output.patch",
     ],
     version = "0.9.0",
 )
@@ -140,15 +140,15 @@ crate.from_cargo(
 crate.annotation(
     crate = "libudev-sys",
     patch_args = ["-p1"],
-    patches = ["@lowrisc_opentitan//third_party/rust/patches:libudev-sys-0.1.4.patch"],
+    patches = ["//third_party/rust/patches:libudev-sys-0.1.4.patch"],
     repositories = ["crate_index"],
 )
 crate.annotation(
     crate = "cryptoki",
     patch_args = ["-p2"],
     patches = [
-        "@lowrisc_opentitan//third_party/rust/patches:cryptoki-vendor-defined-mechanism-type.patch",
-        "@lowrisc_opentitan//third_party/rust/patches:cryptoki-profile.patch",
+        "//third_party/rust/patches:cryptoki-vendor-defined-mechanism-type.patch",
+        "//third_party/rust/patches:cryptoki-profile.patch",
     ],
     repositories = ["crate_index"],
 )
@@ -173,7 +173,7 @@ crate.annotation(
         "PKG_CONFIG_PATH": "$(OPENSSL_PKG_CONFIG_PATH)",
         "OPENSSL_STATIC": "1",
     },
-    build_script_toolchains = ["@lowrisc_opentitan//third_party/rust:openssl_pkg_config_path"],
+    build_script_toolchains = ["//third_party/rust:openssl_pkg_config_path"],
     crate = "openssl-sys",
     repositories = ["crate_index"],
 )
@@ -193,7 +193,7 @@ crate.annotation(
     gen_binaries = ["mdbook"],
     patch_args = ["-p1"],
     patches = [
-        "@lowrisc_opentitan//third_party/mdbook/patches:mdbook-mdignore.patch",
+        "//third_party/mdbook/patches:mdbook-mdignore.patch",
     ],
     repositories = ["mdbook_index"],
 )
@@ -361,22 +361,22 @@ use_repo(doxygen, "doxygen")
 hooks = use_extension("//rules:extensions.bzl", "hooks")
 hooks.repo(
     name = "manufacturer_test_hooks",
-    dummy = "@lowrisc_opentitan//:sw/device/tests/closed_source",
+    dummy = "//:sw/device/tests/closed_source",
     env = "MANUFACTURER_HOOKS_DIR",
 )
 hooks.repo(
     name = "secure_manufacturer_test_hooks",
-    dummy = "@lowrisc_opentitan//:sw/device/tests/closed_source",
+    dummy = "//:sw/device/tests/closed_source",
     env = "SECURE_MANUFACTURER_HOOKS_DIR",
 )
 hooks.repo(
     name = "provisioning_exts",
-    dummy = "@lowrisc_opentitan//:sw/device/silicon_creator/manuf/extensions",
+    dummy = "//:sw/device/silicon_creator/manuf/extensions",
     env = "PROV_EXTS_DIR",
 )
 hooks.repo(
     name = "rom_hooks",
-    dummy = "@lowrisc_opentitan//:sw/device/silicon_creator/rom/hooks",
+    dummy = "//:sw/device/silicon_creator/rom/hooks",
     env = "ROM_HOOKS_DIR",
 )
 use_repo(

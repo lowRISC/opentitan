@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:types.bzl", "types")
-load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo")
-load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files")
+load("//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo")
+load("//rules/opentitan:util.bzl", "get_fallback", "get_files")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 # ExecEnvInfo provider fields and whether the field is required.

@@ -3,18 +3,18 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "@lowrisc_opentitan//rules/opentitan:providers.bzl",
+    "//rules/opentitan:providers.bzl",
     "SiliconBinaryInfo",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "//rules/opentitan:transform.bzl",
     "convert_to_scrambled_rom_vmem",
     "convert_to_vmem",
     "extract_software_logs",
     "scramble_flash",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:util.bzl",
+    "//rules/opentitan:util.bzl",
     "assemble_for_test",
     "get_fallback",
 )

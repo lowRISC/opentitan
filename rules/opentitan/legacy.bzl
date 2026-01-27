@@ -3,15 +3,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "//rules/opentitan:transform.bzl",
     "convert_to_vmem",
     "scramble_flash",
     _obj_transform = "obj_transform",
 )
-load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
-load("@lowrisc_opentitan//rules/opentitan:defs.bzl", "exec_env_to_top_map")
+load("//rules:rv.bzl", "rv_rule")
+load("//rules/opentitan:defs.bzl", "exec_env_to_top_map")
 load(
-    "@lowrisc_opentitan//hw/top:defs.bzl",
+    "//hw/top:defs.bzl",
     "opentitan_select_top",
 )
 

@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "@lowrisc_opentitan//rules/opentitan:providers.bzl",
+    "//rules/opentitan:providers.bzl",
     "SimQemuBinaryInfo",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:util.bzl",
+    "//rules/opentitan:util.bzl",
     "get_fallback",
     "get_override",
 )

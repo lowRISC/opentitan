@@ -48,7 +48,7 @@ def opentitan_if_ip(ip, obj, default):
                 break
 
     return select({
-        "@lowrisc_opentitan//hw/top:is_{}".format(top): obj
+        "//hw/top:is_{}".format(top): obj
         for top in compatible_tops
     } | {
         "//conditions:default": default,
@@ -91,7 +91,7 @@ def opentitan_select_top(values, default):
         if type(tops) == "string":
             tops = [tops]
         for top in tops:
-            branches["@lowrisc_opentitan//hw/top:is_{}".format(top)] = value
+            branches["//hw/top:is_{}".format(top)] = value
     branches["//conditions:default"] = default
     return select(branches)
 
@@ -147,7 +147,7 @@ def opentitan_select_top_attr(attr_name, required = True, default = None, fn = N
         return fn(x) if fn != None else x
 
     branches = {
-        "@lowrisc_opentitan//hw/top:is_{}".format(top.name): maybe_fn(get_top_attr(top, attr_name))
+        "//hw/top:is_{}".format(top.name): maybe_fn(get_top_attr(top, attr_name))
         for top in ALL_TOPS
         if has_top_attr(top, attr_name)
     }
@@ -219,7 +219,7 @@ def opentitan_select_ip_attr(ipname, attr_name, required = True, default = None,
         return fn(x) if fn != None else x
 
     branches = {
-        "@lowrisc_opentitan//hw/top:is_{}".format(top.name): maybe_fn(get_ip_attr(top, ipname, attr_name))
+        "//hw/top:is_{}".format(top.name): maybe_fn(get_ip_attr(top, ipname, attr_name))
         for top in ALL_TOPS
         if has_ip_attr(top, ipname, attr_name)
     }

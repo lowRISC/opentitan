@@ -3,13 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "@lowrisc_opentitan//rules/opentitan:providers.bzl",
+    "//rules/opentitan:providers.bzl",
     "Cw305BinaryInfo",
     "Cw310BinaryInfo",
     "Cw340BinaryInfo",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:util.bzl",
+    "//rules/opentitan:util.bzl",
     "assemble_for_test",
     "get_fallback",
     "recursive_format",
@@ -22,7 +22,7 @@ load(
     "exec_env_common_attrs",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "//rules/opentitan:transform.bzl",
     "convert_to_scrambled_rom_vmem",
     "convert_to_vmem",
 )

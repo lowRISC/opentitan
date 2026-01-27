@@ -3,21 +3,21 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "@lowrisc_opentitan//rules:rv.bzl",
+    "//rules:rv.bzl",
     "rv_rule",
     _OPENTITAN_CPU = "OPENTITAN_CPU",
     _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
     _opentitan_transition = "opentitan_transition",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "//rules/opentitan:transform.bzl",
     "convert_to_vmem",
     "obj_disassemble",
     "obj_transform",
 )
-load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
-load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
-load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_override")
+load("//rules:signing.bzl", "sign_binary")
+load("//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
+load("//rules/opentitan:util.bzl", "get_fallback", "get_override")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 load("//rules/opentitan:util.bzl", "assemble_for_test", "recursive_format")
