@@ -128,7 +128,7 @@ scramble_flash_vmem = rv_rule(
             doc = "Option to indicate OTP VMEM file bit layout.",
         ),
         "_tool": attr.label(
-            default = "@//util/design:gen-flash-img",
+            default = "//util/design:gen-flash-img",
             executable = True,
             cfg = "exec",
         ),
