@@ -423,7 +423,7 @@ TEST(Asn1, TagOverflow) {
   // Allocate one byte for the tag, one for the length, 0x100 for the data.
   const size_t kBufferSize = 1 + 1 + 0x100;
   buf.resize(kBufferSize + 1, kPattern);
-  EXPECT_EQ(asn1_start(&state, &buf[0], kBufferSize), kErrorOk);
+  EXPECT_EQ(asn1_start(&state, buf.data(), kBufferSize), kErrorOk);
   // The function will allocate one byte for the tag length.
   asn1_tag_t tag;
   asn1_start_tag(&state, &tag, kAsn1TagNumberSequence);
@@ -431,7 +431,7 @@ TEST(Asn1, TagOverflow) {
   // Push 0x100 bytes so that the length tag requires two bytes.
   std::vector<uint8_t> tmp;
   tmp.resize(0x100, 0xff);
-  asn1_push_bytes(&state, &tmp[0], tmp.size());
+  asn1_push_bytes(&state, tmp.data(), tmp.size());
   EXPECT_EQ(state.error, kErrorOk);
   // At this point, the function will need to move the data forward by one byte
   // so it should hit the buffer size.
@@ -461,13 +461,13 @@ TEST(Asn1, TagLengthEncoding) {
     asn1_tag_t tag;                                                         \
     asn1_start_tag(&state, &tag, kAsn1TagNumberSequence);                   \
     EXPECT_EQ(state.error, kErrorOk);                                       \
-    asn1_push_bytes(&state, &tmp[0], tmp.size());                           \
+    asn1_push_bytes(&state, tmp.data(), tmp.size());                        \
     EXPECT_EQ(state.error, kErrorOk);                                       \
     asn1_finish_tag(&tag);                                                  \
     EXPECT_EQ(state.error, kErrorOk);                                       \
   } while (0)
 
-  EXPECT_EQ(asn1_start(&state, &buf[0], buf.size()), kErrorOk);
+  EXPECT_EQ(asn1_start(&state, buf.data(), buf.size()), kErrorOk);
   ADD_BYTES(0x00, 0, 0x00);
   ADD_BYTES(0xa5, 0x7f, 0x7f);
   ADD_BYTES(0xb6, 0x80, 0x81, 0x80);
