@@ -1252,7 +1252,12 @@ class BNWSRR(OTBNInsn):
             return None
 
         # The WSR is ready and has a value. Read it.
-        val = state.wsrs.read_at_idx(self.wsr)
+        if self.wsr in {0x8, 0x9}:
+            # Reads from kmac WSRs are forwarded to the kmac model.
+            val = state.kmac.read_wsr(self.wsr)
+        else:
+            val = state.wsrs.read_at_idx(self.wsr)
+
         state.wdrs.get_reg(self.wrd).write_unsigned(val)
         return None
 
@@ -1272,6 +1277,12 @@ class BNWSRW(OTBNInsn):
             return None
 
         val = state.wdrs.get_reg(self.wrs).read_unsigned()
+
+        # Writes to kmac WSRs are forwarded to the kmac model.
+        if self.wsr in {0x8, 0x9}:
+            state.kmac.write_wsr(self.wsr, val)
+            return
+
         state.wsrs.write_at_idx(self.wsr, val)
 
 
