@@ -16,6 +16,7 @@ mod aes;
 mod ecdsa;
 mod exec;
 mod kdf;
+mod mldsa;
 mod object;
 mod rsa;
 mod spx;
@@ -48,6 +49,8 @@ pub enum Commands {
     #[command(subcommand)]
     Kdf(kdf::Kdf),
     #[command(subcommand)]
+    Mldsa(mldsa::Mldsa),
+    #[command(subcommand)]
     Object(object::Object),
     #[command(subcommand)]
     Rsa(rsa::Rsa),
@@ -70,6 +73,7 @@ impl Dispatch for Commands {
             Commands::Ecdsa(x) => x.run(context, hsm, session),
             Commands::Exec(x) => x.run(context, hsm, session),
             Commands::Kdf(x) => x.run(context, hsm, session),
+            Commands::Mldsa(x) => x.run(context, hsm, session),
             Commands::Object(x) => x.run(context, hsm, session),
             Commands::Rsa(x) => x.run(context, hsm, session),
             Commands::Spx(x) => x.run(context, hsm, session),
@@ -86,6 +90,7 @@ impl Dispatch for Commands {
             Commands::Ecdsa(x) => x.leaf(),
             Commands::Exec(x) => x.leaf(),
             Commands::Kdf(x) => x.leaf(),
+            Commands::Mldsa(x) => x.leaf(),
             Commands::Object(x) => x.leaf(),
             Commands::Rsa(x) => x.leaf(),
             Commands::Spx(x) => x.leaf(),

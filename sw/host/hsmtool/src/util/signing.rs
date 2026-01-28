@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use cryptoki::mechanism::vendor_defined::VendorDefinedMechanism;
 use cryptoki::mechanism::Mechanism;
 use rsa::pkcs1v15::Pkcs1v15Sign;
 use serde::{Deserialize, Serialize};
@@ -13,7 +14,7 @@ use sphincsplus::SpxDomain;
 use std::str::FromStr;
 
 use crate::error::HsmError;
-use crate::util::attribute::KeyType;
+use crate::util::attribute::{KeyType, MechanismType};
 use crate::util::helper::parse_range;
 
 /// Specify the type of data being signed or verified.
@@ -97,6 +98,20 @@ impl SignData {
                 // Data is a slice of plaintext: hash.
                 SignData::Slice(a, b) => Self::data_plain_text(&input[*a..*b]),
             },
+            KeyType::MlDsa => match self {
+                // Data is plaintext: hash.
+                SignData::PlainText => Self::data_plain_text(input),
+                // Data is already hashed: no transformation needed.
+                // If the `little_endian` flag is true, we assume the pre-hashed input came
+                // from opentitantool, which writes out the hash in little endian order,
+                // and therefore, needs to be reversed before the signing operation.
+                SignData::Sha256Hash => Self::data_raw(input, false),
+                SignData::Sha256HashReversed => Self::data_raw(input, true),
+                // Raw data requires no transformation.
+                SignData::Raw => Self::data_raw(input, false),
+                // Data is a slice of plaintext: hash.
+                SignData::Slice(a, b) => Self::data_plain_text(&input[*a..*b]),
+            },
             _ => Err(HsmError::Unsupported(format!("SignData prepare for {keytype:?}")).into()),
         }
     }
@@ -155,6 +170,19 @@ impl SignData {
                 SignData::Raw => Ok(Mechanism::Ecdsa),
                 SignData::Slice(_, _) => Ok(Mechanism::Ecdsa),
             },
+            KeyType::MlDsa => {
+                let mechanism = Mechanism::VendorDefined(VendorDefinedMechanism::new::<()>(
+                    MechanismType::MlDsa.try_into()?,
+                    None,
+                ));
+                match self {
+                    SignData::PlainText => Ok(mechanism),
+                    SignData::Sha256Hash => Ok(mechanism),
+                    SignData::Sha256HashReversed => Ok(mechanism),
+                    SignData::Raw => Ok(mechanism),
+                    SignData::Slice(_, _) => Ok(mechanism),
+                }
+            }
             _ => Err(HsmError::Unsupported(format!("No mechanism for {keytype:?}")).into()),
         }
     }
