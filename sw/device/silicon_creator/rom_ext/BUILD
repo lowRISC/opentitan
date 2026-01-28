@@ -12,6 +12,7 @@ load(
     "ROM_EXT_VARIATIONS",
     "ROM_EXT_VERSION",
     "SLOTS",
+    "TEST_OWNER_CONFIGS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -247,97 +248,29 @@ ROM_EXT_FEATURES = [
     for slot in SLOTS
 ]
 
-# This binary is a test-only ROM_EXT that has ownership initialized in
-# the "NewVersion" update mode.  Initializing in this mode makes the
-# test flows for the "NewVersion" style of ownership updates easier.
-opentitan_binary(
-    name = "rom_ext_owner_update_newversion",
-    testonly = True,
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-    ],
-    linker_script = ":ld_slot_a",
-    manifest = ":manifest",
-    deps = [
-        ":rom_ext_dice_x509",
-        "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/lib/ownership:test_owner_update_mode_newversion",
-        "//sw/device/silicon_creator/lib/ownership/keys/fake",
-        "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
-        "//sw/device/silicon_creator/rom_ext/imm_section:main_section_dice_x509_slot_a",
-    ],
-)
-
-opentitan_binary(
-    name = "rom_ext_hybrid_owner_keys",
-    testonly = True,
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-    ],
-    linker_script = ":ld_slot_a",
-    manifest = ":manifest",
-    transitive_features = ROM_EXT_FEATURES,
-    deps = [
-        ":rom_ext_dice_x509",
-        "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/lib/ownership:test_owner_hybrid",
-        "//sw/device/silicon_creator/lib/ownership/keys/fake",
-        "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
-        "//sw/device/silicon_creator/rom_ext/imm_section:main_section_dice_x509_slot_a",
-    ],
-)
-
-# This binary is a test-only ROM_EXT that has rescue configured
-# for USB-DFU.
-opentitan_binary(
-    name = "rom_ext_usbdfu",
-    testonly = True,
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-    ],
-    linker_script = ":ld_slot_a",
-    manifest = ":manifest",
-    transitive_features = ROM_EXT_FEATURES,
-    deps = [
-        ":rom_ext_dice_x509",
-        "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/lib/ownership:test_owner_usbdfu",
-        "//sw/device/silicon_creator/lib/ownership/keys/fake",
-        "//sw/device/silicon_creator/lib/rescue:rescue_usbdfu",
-        "//sw/device/silicon_creator/rom_ext/imm_section:main_section_dice_x509_slot_a",
-    ],
-)
-
-# This binary is a test-only ROM_EXT that has rescue configured for USB-DFU.
-opentitan_binary(
-    name = "rom_ext_spidfu",
-    testonly = True,
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-    ],
-    linker_script = ":ld_slot_a",
-    manifest = ":manifest",
-    transitive_features = ROM_EXT_FEATURES,
-    deps = [
-        ":rom_ext_dice_x509",
-        "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/lib/ownership:test_owner_spidfu",
-        "//sw/device/silicon_creator/lib/ownership/keys/fake",
-        "//sw/device/silicon_creator/lib/rescue:rescue_spidfu",
-        "//sw/device/silicon_creator/rom_ext/imm_section:main_section_dice_x509_slot_a",
-    ],
-)
+[
+    opentitan_binary(
+        name = "rom_ext_{}".format(name),
+        testonly = True,
+        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+        exec_env = [
+            "//hw/top_earlgrey:fpga_cw310",
+            "//hw/top_earlgrey:fpga_cw340",
+        ],
+        linker_script = ":ld_slot_a",
+        manifest = ":manifest",
+        transitive_features = ROM_EXT_FEATURES,
+        deps = [
+            ":rom_ext_dice_x509",
+            "//sw/device/lib/crt",
+            "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/lib/ownership:test_owner_{}".format(name),
+            "//sw/device/silicon_creator/lib/ownership/keys/fake",
+            "//sw/device/silicon_creator/rom_ext/imm_section:main_section_dice_x509_slot_a",
+        ] + param["rescue_module"],
+    )
+    for name, param in TEST_OWNER_CONFIGS.items()
+]
 
 manifest(d = {
     "name": "manifest_bad_address_translation",

@@ -490,6 +490,31 @@ impl CommandDispatch for GetOwnerConfig {
 }
 
 #[derive(Debug, Args)]
+/// Rescue No-op.
+pub struct NoOp {
+    #[arg(
+        long,
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
+    )]
+    reset_target: EntryMode,
+}
+
+impl CommandDispatch for NoOp {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
+        rescue.enter(transport, self.reset_target)?;
+        Ok(None)
+    }
+}
+
+#[derive(Debug, Args)]
 pub struct EraseOwner {
     #[arg(
         long,
@@ -545,6 +570,7 @@ pub enum InternalRescueCommand {
     Firmware(Firmware),
     SetOwnerConfig(SetOwnerConfig),
     GetOwnerConfig(GetOwnerConfig),
+    NoOp(NoOp),
 }
 
 #[derive(Debug, Args)]

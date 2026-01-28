@@ -52,10 +52,6 @@ with_unknown! {
     }
 }
 
-fn is_default<T: Default + Eq>(val: &T) -> bool {
-    *val == T::default()
-}
-
 /// Describes the configuration of the rescue feature of the ROM_EXT.
 #[derive(Debug, Deserialize, Annotate)]
 pub struct OwnerRescueConfig {
@@ -80,15 +76,10 @@ pub struct OwnerRescueConfig {
     /// The GPIO trigger value (only if trigger is GPIO).
     #[serde(default)]
     pub gpio_value: bool,
-    /// Enter rescue mode if boot fails (not implemented yet).
-    #[serde(default, skip_serializing_if = "is_default")]
-    pub _enter_on_failure: bool,
-    /// Enable a timeout (rescue exits after a period of no activity; not implemented yet).
-    #[serde(default, skip_serializing_if = "is_default")]
-    pub _timeout_enable: bool,
-    /// The timeout in seconds (not implemented yet).
-    #[serde(default, skip_serializing_if = "is_default")]
-    pub _timeout: u8,
+    /// Enter rescue mode if boot fails.
+    pub enter_on_failure: bool,
+    /// The inactivity timeout in seconds (zero means disabled).
+    pub timeout: u8,
     /// The start of the rescue flash region (in pages).
     pub start: u16,
     /// The size of the rescue flash region (in pages).
@@ -104,9 +95,8 @@ impl Default for OwnerRescueConfig {
             protocol: RescueProtocol::default(),
             gpio_pull_en: false,
             gpio_value: false,
-            _enter_on_failure: false,
-            _timeout_enable: false,
-            _timeout: 0,
+            enter_on_failure: false,
+            timeout: 0,
             trigger: RescueTrigger::default(),
             trigger_index: 0,
             start: 0u16,
@@ -121,8 +111,7 @@ impl OwnerRescueConfig {
     const GPIO_PULL_BIT: u8 = 0x02;
     const GPIO_VALUE_BIT: u8 = 0x01;
     const ENTER_ON_FAIL_BIT: u8 = 0x80;
-    const TIMEOUT_EN_BIT: u8 = 0x40;
-    const TIMEOUT_MASK: u8 = 0x3f;
+    const TIMEOUT_MASK: u8 = 0x7f;
     const TRIGGER_SHIFT: u8 = 6;
     const INDEX_MASK: u8 = 0x3f;
 
@@ -146,9 +135,8 @@ impl OwnerRescueConfig {
             protocol,
             gpio_pull_en: gpio & Self::GPIO_PULL_BIT != 0,
             gpio_value: gpio & Self::GPIO_VALUE_BIT != 0,
-            _enter_on_failure: timeout & Self::ENTER_ON_FAIL_BIT != 0,
-            _timeout_enable: timeout & Self::TIMEOUT_EN_BIT != 0,
-            _timeout: timeout & Self::TIMEOUT_MASK,
+            enter_on_failure: timeout & Self::ENTER_ON_FAIL_BIT != 0,
+            timeout: timeout & Self::TIMEOUT_MASK,
             trigger: RescueTrigger(trigger >> Self::TRIGGER_SHIFT),
             trigger_index: trigger & Self::INDEX_MASK,
             start,
@@ -176,13 +164,8 @@ impl OwnerRescueConfig {
             },
         )?;
         dest.write_u8(
-            self._timeout & Self::TIMEOUT_MASK
-                | if self._timeout_enable {
-                    Self::TIMEOUT_EN_BIT
-                } else {
-                    0
-                }
-                | if self._enter_on_failure {
+            self.timeout & Self::TIMEOUT_MASK
+                | if self.enter_on_failure {
                     Self::ENTER_ON_FAIL_BIT
                 } else {
                     0
@@ -248,6 +231,8 @@ mod test {
   trigger_index: 0,
   gpio_pull_en: false,
   gpio_value: false,
+  enter_on_failure: false,
+  timeout: 0,
   start: 32,
   size: 100,
   command_allow: [

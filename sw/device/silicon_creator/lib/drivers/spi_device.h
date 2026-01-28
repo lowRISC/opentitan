@@ -365,9 +365,10 @@ typedef struct spi_device_cmd {
  * next word boundary.
  *
  * @param[out] cmd SPI flash command.
+ * @param blocking Whether or not to block until a command is received.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd);
+rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd, bool blocking);
 
 /**
  * Clears the SPI flash status register.

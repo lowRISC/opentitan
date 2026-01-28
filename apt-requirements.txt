@@ -44,6 +44,7 @@ srecord
 tree
 xmlstarlet
 xsltproc
+xxd
 xz-utils
 zip
 zlib1g-dev
