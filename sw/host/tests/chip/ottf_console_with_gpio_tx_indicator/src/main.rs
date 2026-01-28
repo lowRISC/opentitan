@@ -42,7 +42,11 @@ fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<
     let device_console_tx_ready_pin = &transport.gpio_pin("IOA5")?;
     device_console_tx_ready_pin.set_mode(PinMode::Input)?;
     device_console_tx_ready_pin.set_pull_mode(PullMode::None)?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi, Some(device_console_tx_ready_pin))?;
+    let spi_console_device = SpiConsoleDevice::new(
+        &*spi,
+        Some(device_console_tx_ready_pin),
+        /*ignore_frame_num=*/ false,
+    )?;
 
     // Load the ELF binary and get the expect data.
     let elf_binary = fs::read(&opts.firmware_elf)?;
