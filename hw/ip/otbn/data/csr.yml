@@ -13,6 +13,7 @@
     1: MSb of flag group 0
     2: LSb of flag group 0
     3: Zero of flag group 0
+    31-4: Reserved. Always reads as 0. Any write is ignored.
 
 - name: fg1
   address: 0x7c1
@@ -25,6 +26,7 @@
     1: MSb of flag group 1
     2: LSb of flag group 1
     3: Zero of flag group 1
+    31-4: Reserved. Always reads as 0. Any write is ignored.
 
 - name: flags
   address: 0x7c8
@@ -41,6 +43,7 @@
     5: MSb of flag group 1
     6: LSb of flag group 1
     7: Zero of flag group 1
+    31-8: Reserved. Always reads as 0. Any write is ignored.
 
 - name: mod0
   address: 0x7d0
@@ -96,6 +99,24 @@
     Write to this CSR to begin a request to fill the RND cache.
     Always reads as 0.
 
+- name: mai_ctrl
+  address: 0x7f0
+  doc: |
+    The MAI control register. This is used to start MAI operations as well as configuring the accelerators.
+  bits:
+    0: |
+      MAI_START: Writing 1 to this bit starts the MAI operation.
+      Writing it when MAI is busy will cause a MAI_ERROR software error.
+    2-1:
+      doc: |
+        The MAI_OPERATION field defines which accelerator is used for the next operation.
+        Invalid values and writing to these bits when MAI is busy will cause a MAI_ERROR software error.
+      values:
+        0: A2B
+        1: B2A
+        2: secAdd
+    31-3: Reserved. Any write is ignored. Always reads as 0.
+
 - name: rnd
   address: 0xfc0
   read-only: true
@@ -116,3 +137,16 @@
 
     The number is sourced from an local PRNG.
     Reads never stall.
+
+- name: mai_status
+  address: 0xfe0
+  read-only: true
+  doc: |
+    The MAI status register.
+  bits:
+    0: |
+      MAI_BUSY: This bit is set to 1 when an MAI operation is in progress.
+      If reset, the MAI accepts new configuration values and a new execution can be started by writing to the MAI_START bit in the MAI_CTRL CSR.
+    1: |
+      MAI_READY: This bit is set to 1 when the MAI_INx_Sx WSRs are ready to accept new values for the next execution.
+    31-2: Reserved. Always reads as 0.
