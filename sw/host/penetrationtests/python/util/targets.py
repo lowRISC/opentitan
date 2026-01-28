@@ -69,6 +69,9 @@ class Target:
         # Clear the UART
         self.dump_all()
 
+    def clear_bitstream(self, delay=2):
+        self.target.clear_bitstream(delay=delay)
+
     def reset_target(self, reset_delay=0.005):
         self.target.reset_target(reset_delay=reset_delay)
 
@@ -96,6 +99,20 @@ class Target:
                     print(read_line, flush=True)
                 else:
                     break
+            except UnicodeDecodeError:
+                pass
+            it += 1
+
+    def read_all(self, max_tries=50):
+        it = 0
+        response = ""
+        while it != max_tries:
+            try:
+                read_line = str(self.readline().decode().strip())
+                if len(read_line) > 0:
+                    response += read_line
+                else:
+                    return response
             except UnicodeDecodeError:
                 pass
             it += 1
