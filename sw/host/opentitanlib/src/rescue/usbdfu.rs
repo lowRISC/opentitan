@@ -29,7 +29,7 @@ impl UsbDfu {
             interface: Cell::default(),
             params,
             reset_delay: Duration::from_millis(50),
-            enter_delay: Duration::from_secs(5),
+            enter_delay: Duration::from_secs(20),
         }
     }
 
