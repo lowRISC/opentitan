@@ -4,7 +4,7 @@
 
 load("//rules:host.bzl", "host_tools_transition")
 
-LOCALTOOLS_TOOLCHAIN = "@lowrisc_opentitan//rules/opentitan:localtools_type"
+LOCALTOOLS_TOOLCHAIN = "//rules/opentitan:localtools_type"
 
 LocalToolInfo = provider(fields = [
     "opentitantool",

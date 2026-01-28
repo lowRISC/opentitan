@@ -2,8 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@//rules:manuf.bzl", "device_id_header")
-load("@//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
+load("//rules:manuf.bzl", "device_id_header")
+load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load(
     "@provisioning_exts//:cfg.bzl",
     "EXT_SIGNED_PERSO_BINS",
@@ -33,7 +33,7 @@ load(
     "//sw/device/silicon_creator/rom_ext/e2e:defs.bzl",
     "OWNER_SLOTS",
 )
-load("@//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
+load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 package(default_visibility = ["//visibility:public"])
@@ -50,7 +50,7 @@ device_id_header(
     mode = "cp",
     # All SKUs have the same CP device ID for a given product version so we just
     # use the emulation SKU configuration here.
-    sku_config = "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+    sku_config = "//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
     template = ":cp_device_id.c.tpl",
 )
 

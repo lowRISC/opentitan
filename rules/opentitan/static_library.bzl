@@ -9,7 +9,7 @@
 
 load("@rules_cc//cc:action_names.bzl", "CPP_LINK_STATIC_LIBRARY_ACTION_NAME")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
-load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
+load("//rules:rv.bzl", "rv_rule")
 
 def _ot_static_library_impl(ctx):
     output_lib = ctx.actions.declare_file("lib{}.a".format(ctx.attr.name))

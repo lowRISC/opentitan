@@ -2,8 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "SimDvBinaryInfo")
-load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback")
+load("//rules/opentitan:providers.bzl", "SimDvBinaryInfo")
+load("//rules/opentitan:util.bzl", "get_fallback")
 load(
     "//rules/opentitan:exec_env.bzl",
     "ExecEnvInfo",
@@ -12,7 +12,7 @@ load(
     "exec_env_common_attrs",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "//rules/opentitan:transform.bzl",
     "convert_to_scrambled_rom_vmem",
     "convert_to_vmem",
     "extract_software_logs",

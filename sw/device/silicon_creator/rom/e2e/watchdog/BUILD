@@ -120,8 +120,8 @@ WATCHDOG_OTP = {
             lc_state,
         ),
         exec_env = {
-            "@//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "@//hw/top_earlgrey:sim_verilator": None,
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:sim_verilator": None,
         },
         fpga = fpga_params(
             binaries = {

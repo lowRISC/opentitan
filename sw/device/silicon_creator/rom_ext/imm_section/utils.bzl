@@ -10,7 +10,7 @@ load(
 )
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
-load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
+load("//rules:rv.bzl", "rv_rule")
 load(
     "//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl",
     "IMM_SECTION_VERSION",

@@ -4,7 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("@//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
+load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
 load(

@@ -13,5 +13,5 @@ def _hyperdebug_repos():
         name = "hyperdebug_firmware",
         urls = ["https://github.com/lowRISC/hyperdebug-firmware/releases/download/20250131_01/hyperdebug-firmware.tar.gz"],
         sha256 = "8595340b347531438ce07f7d678ec24038b4fa2edd7f4a620bd8c5130d72c2ce",
-        build_file = "@lowrisc_opentitan//third_party/hyperdebug:BUILD",
+        build_file = "//third_party/hyperdebug:BUILD",
     )

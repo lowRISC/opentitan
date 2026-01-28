@@ -234,24 +234,24 @@ SILICON_CREATOR_KEYS = struct(
     FAKE = struct(
         ECDSA = struct(
             TEST = [
-                create_test_key("fake_ecdsa_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256"),
+                create_test_key("fake_ecdsa_test_key_0", "//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256"),
             ],
             DEV = [
-                create_dev_key("fake_ecdsa_dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:dev_key_0_ecdsa_p256"),
+                create_dev_key("fake_ecdsa_dev_key_0", "//sw/device/silicon_creator/rom/keys/fake/ecdsa:dev_key_0_ecdsa_p256"),
             ],
             PROD = [
-                create_prod_key("fake_ecdsa_prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256"),
+                create_prod_key("fake_ecdsa_prod_key_0", "//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256"),
             ],
         ),
         SPX = struct(
             TEST = [
-                create_test_key("fake_spx_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:test_key_0_spx"),
+                create_test_key("fake_spx_test_key_0", "//sw/device/silicon_creator/rom/keys/fake/spx:test_key_0_spx"),
             ],
             DEV = [
-                create_dev_key("fake_spx_dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:dev_key_0_spx"),
+                create_dev_key("fake_spx_dev_key_0", "//sw/device/silicon_creator/rom/keys/fake/spx:dev_key_0_spx"),
             ],
             PROD = [
-                create_prod_key("fake_spx_prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx"),
+                create_prod_key("fake_spx_prod_key_0", "//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx"),
             ],
         ),
     ),
@@ -259,7 +259,7 @@ SILICON_CREATOR_KEYS = struct(
     REAL = None,
     UNAUTHORIZED = struct(
         SPX = [
-            create_key_("spx_unauthorized_0", "@//sw/device/silicon_creator/rom/keys/unauthorized/spx:unauthorized_0_spx", []),
+            create_key_("spx_unauthorized_0", "//sw/device/silicon_creator/rom/keys/unauthorized/spx:unauthorized_0_spx", []),
         ],
     ),
 )
@@ -268,10 +268,10 @@ SILICON_OWNER_KEYS = struct(
     FAKE = struct(
         RSA = struct(
             TEST = [
-                create_test_key("fake_rsa_rom_ext_test_key_0", "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0"),
+                create_test_key("fake_rsa_rom_ext_test_key_0", "//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0"),
             ],
             DEV = [
-                create_dev_key("fake_rsa_rom_ext_dev_key_0", "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_dev_private_key_0"),
+                create_dev_key("fake_rsa_rom_ext_dev_key_0", "//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_dev_private_key_0"),
             ],
             PROD = None,
         ),

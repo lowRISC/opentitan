@@ -6,33 +6,33 @@
 
 load("@bazel_skylib//lib:sets.bzl", "sets")
 load(
-    "@lowrisc_opentitan//rules:rv.bzl",
+    "//rules:rv.bzl",
     _OPENTITAN_CPU = "OPENTITAN_CPU",
     _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
     _opentitan_transition = "opentitan_transition",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:cc.bzl",
+    "//rules/opentitan:cc.bzl",
     _opentitan_binary = "opentitan_binary",
     _opentitan_test = "opentitan_test",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:ci.bzl",
+    "//rules/opentitan:ci.bzl",
     "ci_orchestrator",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:fpga.bzl",
+    "//rules/opentitan:fpga.bzl",
     _fpga_cw305 = "fpga_cw305",
     _fpga_cw310 = "fpga_cw310",
     _fpga_cw340 = "fpga_cw340",
     _fpga_params = "fpga_params",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:hw.bzl",
+    "//rules/opentitan:hw.bzl",
     "get_top_attr",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:keyutils.bzl",
+    "//rules/opentitan:keyutils.bzl",
     _ecdsa_key_by_name = "ecdsa_key_by_name",
     _ecdsa_key_for_lc_state = "ecdsa_key_for_lc_state",
     _rsa_key_by_name = "rsa_key_by_name",
@@ -41,31 +41,31 @@ load(
     _spx_key_for_lc_state = "spx_key_for_lc_state",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:manual.bzl",
+    "//rules/opentitan:manual.bzl",
     _opentitan_manual_test = "opentitan_manual_test",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:silicon.bzl",
+    "//rules/opentitan:silicon.bzl",
     _silicon = "silicon",
     _silicon_params = "silicon_params",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:sim_dv.bzl",
+    "//rules/opentitan:sim_dv.bzl",
     _dv_params = "dv_params",
     _sim_dv = "sim_dv",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:sim_verilator.bzl",
+    "//rules/opentitan:sim_verilator.bzl",
     _sim_verilator = "sim_verilator",
     _verilator_params = "verilator_params",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:qemu.bzl",
+    "//rules/opentitan:qemu.bzl",
     _qemu_params = "qemu_params",
     _sim_qemu = "sim_qemu",
 )
 load(
-    "@lowrisc_opentitan//hw/top:defs.bzl",
+    "//hw/top:defs.bzl",
     "ALL_TOPS",
     "opentitan_select_top",
 )
