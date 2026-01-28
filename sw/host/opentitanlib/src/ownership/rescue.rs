@@ -81,6 +81,9 @@ pub struct OwnerRescueConfig {
     pub enter_on_watchdog: bool,
     /// Enter rescue mode if boot fails.
     pub enter_on_failure: bool,
+    /// Erase rescuable regions in both slots.
+    #[serde(default)]
+    pub erase_both_slots: bool,
     /// The inactivity timeout in seconds (zero means disabled).
     pub timeout: u8,
     /// The start of the rescue flash region (in pages).
@@ -100,6 +103,7 @@ impl Default for OwnerRescueConfig {
             gpio_value: false,
             enter_on_watchdog: false,
             enter_on_failure: false,
+            erase_both_slots: false,
             timeout: 0,
             trigger: RescueTrigger::default(),
             trigger_index: 0,
@@ -113,6 +117,7 @@ impl Default for OwnerRescueConfig {
 impl OwnerRescueConfig {
     const BASE_SIZE: usize = 16;
     const MISC_GPIO_WATCHDOG_TIMEOUT_EN_BIT: u8 = 0x80;
+    const MISC_GPIO_ERASE_BOTH_SLOTS_BIT: u8 = 0x40;
     const MISC_GPIO_PULL_BIT: u8 = 0x02;
     const MISC_GPIO_VALUE_BIT: u8 = 0x01;
     const ENTER_ON_FAIL_BIT: u8 = 0x80;
@@ -142,6 +147,7 @@ impl OwnerRescueConfig {
             gpio_value: gpio & Self::MISC_GPIO_VALUE_BIT != 0,
             enter_on_watchdog: gpio & Self::MISC_GPIO_WATCHDOG_TIMEOUT_EN_BIT != 0,
             enter_on_failure: timeout & Self::ENTER_ON_FAIL_BIT != 0,
+            erase_both_slots: gpio & Self::MISC_GPIO_ERASE_BOTH_SLOTS_BIT != 0,
             timeout: timeout & Self::TIMEOUT_MASK,
             trigger: RescueTrigger(trigger >> Self::TRIGGER_SHIFT),
             trigger_index: trigger & Self::INDEX_MASK,
@@ -161,6 +167,10 @@ impl OwnerRescueConfig {
         dest.write_u8(
             if self.enter_on_watchdog {
                 Self::MISC_GPIO_WATCHDOG_TIMEOUT_EN_BIT
+            } else {
+                0
+            } | if self.erase_both_slots {
+                Self::MISC_GPIO_ERASE_BOTH_SLOTS_BIT
             } else {
                 0
             } | if self.gpio_pull_en {
@@ -243,6 +253,7 @@ mod test {
   gpio_value: false,
   enter_on_watchdog: true,
   enter_on_failure: false,
+  erase_both_slots: false,
   timeout: 0,
   start: 32,
   size: 100,
@@ -310,6 +321,29 @@ mod test {
         let doc = serde_annotate::serialize(&orc)?.to_json5().to_string();
         eprintln!("{}", doc);
         assert_eq!(doc, OWNER_RESCUE_CONFIG_JSON);
+        Ok(())
+    }
+
+    #[test]
+    fn test_erase_both_slots_bit() -> Result<()> {
+        let orc = OwnerRescueConfig {
+            erase_both_slots: true,
+            ..Default::default()
+        };
+        let mut bin = Vec::new();
+        orc.write(&mut bin)?;
+
+        // The 'gpio' byte is the 10th byte (index 9) in the serialized output.
+        // Base size is 16, header is 8. protocol is 8, gpio is 9.
+        assert_eq!(
+            bin[9] & OwnerRescueConfig::MISC_GPIO_ERASE_BOTH_SLOTS_BIT,
+            0x40
+        );
+
+        let mut cur = std::io::Cursor::new(&bin);
+        let header = TlvHeader::read(&mut cur)?;
+        let decoded = OwnerRescueConfig::read(&mut cur, header)?;
+        assert!(decoded.erase_both_slots);
         Ok(())
     }
 }

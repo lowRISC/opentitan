@@ -400,10 +400,14 @@ typedef struct owner_rescue_config {
   /**
    * The misc & gpio configuration (if relevant, depending on `detect`).
    *
-   *      7 6       2        1       0
-   * +-----+---------+--------+-------+
-   * | WDT | Reserved| PullEn | Value |
-   * +-----+---------+--------+-------+
+   *      7           6 5        2        1       0
+   * +-----+-----------+----------+--------+-------+
+   * | WDT | EraseBoth | Reserved | PullEn | Value |
+   * +-----+-----------+----------+--------+-------+
+   *
+   * EraseBoth:
+   *  0 - Erase the requested region to be rescue.
+   *  1 - Erase rescuable regions in both slots.
    */
   uint8_t gpio;
   /**
@@ -451,6 +455,7 @@ OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, command_allow, 16);
 OT_ASSERT_SIZE(owner_rescue_config_t, 16);
 
 #define RESCUE_ENTER_ON_FAIL_BIT 7
+#define RESCUE_ERASE_BOTH_SLOTS_BIT 6
 #define RESCUE_TIMEOUT_SECONDS ((bitfield_field32_t){.mask = 0x7F, .index = 0})
 #define RESCUE_MISC_GPIO_WATCHDOG_TIMEOUT_EN_BIT 7
 #define RESCUE_MISC_GPIO_PULL_EN_BIT 1
