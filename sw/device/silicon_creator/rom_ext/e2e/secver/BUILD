@@ -127,22 +127,27 @@ opentitan_test(
             --exec="fpga load-bitstream {bitstream}"
 
             # Bootstrap the initial version 0 into SlotA
+            --exec="no-op --info='##### Bootstrap version 0 to slot A'"
             --exec="bootstrap --clear-uart=true {firmware}"
             --exec="console --non-interactive --exit-success='rom_ext_min_sec_ver = 0'"
 
             # Rescue and update to SlotB.  We expect to update the secver.
+            --exec="no-op --info='##### Rescue and update to version 1 in slot B (will update secver)'"
             --exec="rescue firmware --raw --slot=SlotB fw1.bin"
             --exec="console --non-interactive --exit-success='rom_ext_min_sec_ver = 1'"
 
             # Rescue and update to SlotA.  We expect NOT to update the secver.
+            --exec="no-op --info='##### Rescue and update to version 2 in slot A'"
             --exec="rescue firmware --raw --slot=SlotA fw2.bin"
             --exec="console --non-interactive --exit-success='rom_ext_min_sec_ver = 1'"
 
             # Rescue and update to SlotB.  We expect to update the secver.
+            --exec="no-op --info='##### Rescue and update to version 3 in slot B (will update secver)'"
             --exec="rescue firmware --raw --slot=SlotB fw3.bin"
             --exec="console --non-interactive --exit-success='rom_ext_min_sec_ver = 3'"
 
             # Finally, bootstrap back to version 0, which we expect NOT to work.
+            --exec="no-op --info='##### Bootstrap back version 0 to slot A (expecting rollback prevention)'"
             --exec="bootstrap --clear-uart=true {firmware}"
             --exec="console --non-interactive --exit-success='{exit_success}' --timeout=10s"
             no-op
