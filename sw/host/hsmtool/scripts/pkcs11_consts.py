@@ -124,7 +124,8 @@ class EnumGen(object):
                             raise Exception(
                                 'Expected objects to all be of uniform type',
                                 name, tp, m.group(2))
-                        names.append(name)
+                        if name not in names:
+                            names.append(name)
         return (names, tp)
 
     @staticmethod
