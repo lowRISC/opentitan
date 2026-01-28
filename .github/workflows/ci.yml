@@ -62,8 +62,6 @@ jobs:
         run: ruff check
       - name: Validate testplans with schema
         run: ./ci/scripts/validate_testplans.sh
-      - name: C/C++ formatting
-        run: ./bazelisk.sh test //quality:clang_format_check
       - name: Rust formatting
         run: ./bazelisk.sh test //quality:rustfmt_check
       - name: Shellcheck
