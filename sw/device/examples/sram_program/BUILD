@@ -27,6 +27,7 @@ opentitan_binary(
     srcs = ["sram_program.c"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310_test_rom",
+        "//hw/top_earlgrey:fpga_cw340_test_rom",
         "//hw/top_earlgrey:sim_dv",
         "//hw/top_earlgrey:sim_verilator",
     ],
