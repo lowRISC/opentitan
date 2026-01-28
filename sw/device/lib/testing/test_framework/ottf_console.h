@@ -132,4 +132,14 @@ status_t ottf_console_flushbuf(void *io);
  */
 status_t ottf_console_getc(void *io);
 
+/**
+ * Get a buffer sink object for a console.
+ *
+ * This buffer sink can be used with `base_fprintf`.
+ *
+ * @param console Pointer to the console object.
+ * @return A buffer sink.
+ */
+buffer_sink_t ottf_console_get_buffer_sink(ottf_console_t *console);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_CONSOLE_H_
