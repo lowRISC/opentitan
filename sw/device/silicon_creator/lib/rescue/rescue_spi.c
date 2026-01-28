@@ -74,15 +74,14 @@ void dfu_transport_result(dfu_ctx_t *ctx, rom_error_t result) {
   spi_device_flash_status_clear();
 }
 
-rom_error_t rescue_protocol(boot_data_t *bootdata,
+rom_error_t rescue_protocol(boot_data_t *bootdata, boot_log_t *boot_log,
                             const owner_rescue_config_t *config) {
   dfu_ctx_t ctx = {
-      .bootdata = bootdata,
       .dfu_state = kDfuStateIdle,
       .dfu_error = kDfuErrOk,
   };
   dbg_printf("SPI-DFU rescue ready\r\n");
-  rescue_state_init(&ctx.state, config);
+  rescue_state_init(&ctx.state, bootdata, boot_log, config);
   spi_device_init(
       /*log2_density=*/kRescueDensity, &kRescueSfdpTable,
       sizeof(kRescueSfdpTable));

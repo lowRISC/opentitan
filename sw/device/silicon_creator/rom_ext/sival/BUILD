@@ -12,6 +12,7 @@ load(
     "ROM_EXT_VARIATIONS",
     "ROM_EXT_VERSION",
     "SLOTS",
+    "secver_write_selection",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -22,6 +23,7 @@ manifest(d = {
     "version_major": ROM_EXT_VERSION.MAJOR,
     "version_minor": ROM_EXT_VERSION.MINOR,
     "security_version": ROM_EXT_VERSION.SECURITY,
+    "secver_write": secver_write_selection(),
     "visibility": ["//visibility:private"],
 })
 
