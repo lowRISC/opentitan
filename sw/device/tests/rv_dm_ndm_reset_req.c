@@ -117,61 +117,61 @@ static void check_test_reg(test_register_t *regs, size_t reg_count) {
 
 bool test_main(void) {
   test_register_t regs[] = {
-    {
-        .name = "OTP_CTRL",
-        .base = dt_otp_ctrl_primary_reg_block(kDtOtpCtrl),
-        .offset = OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
-        .write_val = 0x06092022,
-        .exp_read_val = OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_RESVAL,
-    },
-    {
-        .name = "PINMUX",
-        .base = dt_pinmux_primary_reg_block(kDtPinmuxAon),
-        .offset = PINMUX_WKUP_DETECTOR_CNT_TH_1_REG_OFFSET,
-        .write_val = 0x44,
-        .exp_read_val = PINMUX_WKUP_DETECTOR_CNT_TH_1_REG_RESVAL,
+      {
+          .name = "OTP_CTRL",
+          .base = dt_otp_ctrl_primary_reg_block(kDtOtpCtrl),
+          .offset = OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
+          .write_val = 0x06092022,
+          .exp_read_val = OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_RESVAL,
+      },
+      {
+          .name = "PINMUX",
+          .base = dt_pinmux_primary_reg_block(kDtPinmuxAon),
+          .offset = PINMUX_WKUP_DETECTOR_CNT_TH_1_REG_OFFSET,
+          .write_val = 0x44,
+          .exp_read_val = PINMUX_WKUP_DETECTOR_CNT_TH_1_REG_RESVAL,
 
-    },
+      },
 #if defined(OPENTITAN_IS_EARLGREY)
-    {
-        .name = "ADC_CTRL",
-        .base = dt_adc_ctrl_primary_reg_block(kDtAdcCtrlAon),
-        .offset = ADC_CTRL_ADC_SAMPLE_CTL_REG_OFFSET,
-        .write_val = 0x37,
-        .exp_read_val = ADC_CTRL_ADC_SAMPLE_CTL_REG_RESVAL,
+      {
+          .name = "ADC_CTRL",
+          .base = dt_adc_ctrl_primary_reg_block(kDtAdcCtrlAon),
+          .offset = ADC_CTRL_ADC_SAMPLE_CTL_REG_OFFSET,
+          .write_val = 0x37,
+          .exp_read_val = ADC_CTRL_ADC_SAMPLE_CTL_REG_RESVAL,
 
-    },
-    {
-        .name = "SYSRST_CTRL",
-        .base = dt_sysrst_ctrl_primary_reg_block(kDtSysrstCtrlAon),
-        .offset = SYSRST_CTRL_EC_RST_CTL_REG_OFFSET,
-        .write_val = 0x567,
-        .exp_read_val = SYSRST_CTRL_EC_RST_CTL_REG_RESVAL,
+      },
+      {
+          .name = "SYSRST_CTRL",
+          .base = dt_sysrst_ctrl_primary_reg_block(kDtSysrstCtrlAon),
+          .offset = SYSRST_CTRL_EC_RST_CTL_REG_OFFSET,
+          .write_val = 0x567,
+          .exp_read_val = SYSRST_CTRL_EC_RST_CTL_REG_RESVAL,
 
-    },
-    {
-        .name = "KEYMGR",
-        .base = dt_keymgr_primary_reg_block(kDtKeymgr),
-        .offset = KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_OFFSET,
-        .write_val = 0x1600ABBA,
-        .exp_read_val = KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_RESVAL,
+      },
+      {
+          .name = "KEYMGR",
+          .base = dt_keymgr_primary_reg_block(kDtKeymgr),
+          .offset = KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_OFFSET,
+          .write_val = 0x1600ABBA,
+          .exp_read_val = KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_RESVAL,
 
-    },
-    {
-        .name = "FLASH_CTRL",
-        .base = dt_flash_ctrl_primary_reg_block(kDtFlashCtrl),
-        .offset = FLASH_CTRL_SCRATCH_REG_OFFSET,
-        .write_val = 0x3927,
-        .exp_read_val = FLASH_CTRL_SCRATCH_REG_RESVAL,
-    },
+      },
+      {
+          .name = "FLASH_CTRL",
+          .base = dt_flash_ctrl_primary_reg_block(kDtFlashCtrl),
+          .offset = FLASH_CTRL_SCRATCH_REG_OFFSET,
+          .write_val = 0x3927,
+          .exp_read_val = FLASH_CTRL_SCRATCH_REG_RESVAL,
+      },
 #elif defined(OPENTITAN_IS_DARJEELING)
-    {
-        .name = "KEYMGR_DPE",
-        .base = dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe),
-        .offset = KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_OFFSET,
-        .write_val = 0x1600ABBA,
-        .exp_read_val = KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_RESVAL,
-    },
+      {
+          .name = "KEYMGR_DPE",
+          .base = dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe),
+          .offset = KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_OFFSET,
+          .write_val = 0x1600ABBA,
+          .exp_read_val = KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_RESVAL,
+      },
 #else
 #error Unsupported top
 #endif

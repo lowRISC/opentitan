@@ -51,5 +51,5 @@ directory(
 subdirectory(
     name = "lib-clang-include",
     parent = ":root",
-    path = "lib/clang/16/include",
+    path = "lib/clang/21/include",
 )

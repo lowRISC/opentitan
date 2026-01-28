@@ -43,11 +43,12 @@ static_assert(kNumHealthRegisters ==
 // Ensure the relative offsets of OTP versus entropy_src registers are
 // equivalent. This is imporant as rom_start.S uses a copy function to
 // copy the values from OTP into the entropy_src.
-#define ASSERT_REG_OFFSET(otp_offset_, entropy_src_offset_)                         \
-  static_assert(                                                                    \
-      ((otp_offset_)-OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS_OFFSET) == \
-          ((entropy_src_offset_)-ENTROPY_SRC_REPCNT_THRESHOLD_REG_OFFSET),          \
-      "OTP configuration offset does not match the expected entropy_src "           \
+#define ASSERT_REG_OFFSET(otp_offset_, entropy_src_offset_)                  \
+  static_assert(                                                             \
+      ((otp_offset_) -                                                       \
+       OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS_OFFSET) ==        \
+          ((entropy_src_offset_) - ENTROPY_SRC_REPCNT_THRESHOLD_REG_OFFSET), \
+      "OTP configuration offset does not match the expected entropy_src "    \
       "register offset")
 
 ASSERT_REG_OFFSET(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS_OFFSET,

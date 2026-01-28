@@ -87,7 +87,7 @@ static inline uint16_t template_finalize(template_state_t *state) {
  */
 static inline void template_set_bit(template_state_t *state, int byte_offset,
                                     int bit_offset, bool value) {
-  *(state->out_end - byte_offset) |= ((uint8_t) !!value) << bit_offset;
+  *(state->out_end - byte_offset) |= ((uint8_t)!!value) << bit_offset;
 }
 
 /**

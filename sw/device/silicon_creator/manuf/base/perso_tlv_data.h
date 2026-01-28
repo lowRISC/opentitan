@@ -132,7 +132,7 @@ typedef enum perso_tlv_cert_header_fields {
   {                                                                         \
     uint16_t mask = k##type_name##field_name##FieldMask;                    \
     uint16_t shift = k##type_name##field_name##FieldShift;                  \
-    uint16_t fieldv = (uint16_t)(field_value)&mask;                         \
+    uint16_t fieldv = (uint16_t)(field_value) & mask;                       \
     uint16_t fullv = __builtin_bswap16((uint16_t)(full_value));             \
     mask = (uint16_t)(mask << shift);                                       \
     (full_value) = __builtin_bswap16(                                       \

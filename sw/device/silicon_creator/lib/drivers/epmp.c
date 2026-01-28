@@ -22,7 +22,7 @@ void epmp_set(uint8_t entry, uint32_t pmpcfg, uint32_t pmpaddr) {
   uint32_t cfg = (pmpcfg & 0xFFu) << shift;
   HARDENED_CHECK_LT(entry, 16);
   switch (entry) {
-    // clang-format off
+      // clang-format off
     case  0: EPMP_SET(0,  0, mask, cfg, pmpaddr); break;
     case  1: EPMP_SET(0,  1, mask, cfg, pmpaddr); break;
     case  2: EPMP_SET(0,  2, mask, cfg, pmpaddr); break;

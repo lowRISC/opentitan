@@ -129,10 +129,10 @@ extern char _dv_log_offset[];
  *               string literal.
  * @param ... format parameters matching the format string.
  */
-#define LOG(severity, format, ...)                               \
-  do {                                                           \
-    OT_CHECK_VALID_LOG_ARGS(__VA_ARGS__);                        \
-    if (device_log_bypass_uart_address() != 0) {                 \
+#define LOG(severity, format, ...)                           \
+  do {                                                       \
+    OT_CHECK_VALID_LOG_ARGS(__VA_ARGS__);                    \
+    if (device_log_bypass_uart_address() != 0) {             \
       /* clang-format off */                                     \
       /* Put DV-only log constants in .logs.* sections, which
        * the linker will dutifully discard.
@@ -143,21 +143,24 @@ extern char _dv_log_offset[];
           LOG_MAKE_FIELDS_(severity, format, ##__VA_ARGS__);     \
       base_log_internal_dv((const log_fields_t*)((char*)&kLogFields + (uintptr_t)&_dv_log_offset), \
                            OT_VA_ARGS_COUNT(format, ##__VA_ARGS__), \
-                           ##__VA_ARGS__); /* clang-format on */ \
-    } else {                                                     \
-      static const log_fields_t log_fields =                     \
-          LOG_MAKE_FIELDS_(severity, format, ##__VA_ARGS__);     \
-      base_log_internal_core(&log_fields, ##__VA_ARGS__);        \
-    }                                                            \
+                           ##__VA_ARGS__); /* clang-format on */              \
+    } else {                                                 \
+      static const log_fields_t log_fields =                 \
+          LOG_MAKE_FIELDS_(severity, format, ##__VA_ARGS__); \
+      base_log_internal_core(&log_fields, ##__VA_ARGS__);    \
+    }                                                        \
   } while (false)
 
 /**
  * Implementation detail of `LOG`.
  */
-#define LOG_MAKE_FIELDS_(_severity, _format, ...)                         \
-  {                                                                       \
-    .severity = _severity, .file_name = "" __FILE__ "", .line = __LINE__, \
-    .nargs = OT_VA_ARGS_COUNT(_format, ##__VA_ARGS__), .format = _format, \
+#define LOG_MAKE_FIELDS_(_severity, _format, ...)        \
+  {                                                      \
+      .severity = _severity,                             \
+      .file_name = "" __FILE__ "",                       \
+      .line = __LINE__,                                  \
+      .nargs = OT_VA_ARGS_COUNT(_format, ##__VA_ARGS__), \
+      .format = _format,                                 \
   }
 
 /**
