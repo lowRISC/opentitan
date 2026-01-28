@@ -181,7 +181,8 @@ rom_error_t owner_block_rescue_check(const owner_rescue_config_t *rescue) {
   if (rescue->header.length < sizeof(owner_rescue_config_t)) {
     return kErrorOwnershipInvalidTagLength;
   }
-  uint32_t end = rescue->start + rescue->size;
+  uint32_t end =
+      rescue->start + bitfield_field32_read(rescue->size, RESCUE_REGION_SIZE);
   if (rescue->start < kRomExtSizeInPages || end > kFlashBankSize) {
     return kErrorOwnershipInvalidRescueBounds;
   }
