@@ -427,6 +427,95 @@ opentitan_test(
     ],
 )
 
+manifest(d = {
+    "name": "owner_fw_erased_status_manifest",
+    "identifier": hex(CONST.ROM_EXT),
+    "visibility": ["//visibility:public"],
+    "version_major": hex(0),
+    "version_minor": hex(0),
+    "security_version": hex(0xFFFFFFFF),
+})
+
+opentitan_binary(
+    name = "owner_fw_erased_status",
+    testonly = True,
+    srcs = ["owner_fw_erased_status_test.c"],
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
+    exec_env = [
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext",
+        "//hw/top_earlgrey:fpga_cw340_rom_ext",
+    ],
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_virtual",
+    manifest = ":owner_fw_erased_status_manifest",
+    deps = [
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/base:chip",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    ],
+)
+
+_RESCUE_ERASE_TESTCASES = {
+    "slot_a_only": {
+        "rescue_slot": "SlotA",
+        "active_slot": "{rom_ext_slot_b}",
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
+        "expected_status": "Owner slots status: ERASED / PROGRAMMED",
+    },
+    "slot_b_only": {
+        "rescue_slot": "SlotB",
+        "active_slot": "{rom_ext_slot_a}",
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
+        "expected_status": "Owner slots status: PROGRAMMED / ERASED",
+    },
+    "slot_a_both": {
+        "rescue_slot": "SlotA",
+        "active_slot": "{rom_ext_slot_b}",
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_xmodem_erase_both",
+        "expected_status": "Owner slots status: ERASED / ERASED",
+    },
+    "slot_b_both": {
+        "rescue_slot": "SlotB",
+        "active_slot": "{rom_ext_slot_a}",
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_xmodem_erase_both",
+        "expected_status": "Owner slots status: ERASED / ERASED",
+    },
+}
+
+[
+    opentitan_test(
+        name = "rescue_erase_{}".format(name),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        },
+        fpga = fpga_params(
+            active_slot = params["active_slot"],
+            assemble = "{rom_ext}@{active_slot} {bl0_slot_a}@{owner_slot_a} {bl0_slot_b}@{owner_slot_b}",
+            binaries = {
+                ":boot_test_slot_a": "bl0_slot_a",
+                ":boot_test_slot_b": "bl0_slot_b",
+                ":owner_fw_erased_status": "payload",
+            },
+            expected_status = params["expected_status"],
+            rescue_slot = params["rescue_slot"],
+            rom_ext = params["rom_ext"],
+            test_cmd = """
+                # Check for firmware execution
+                --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+                --exec="rescue firmware --raw --slot={rescue_slot} {payload:signed_bin}"
+                # Check the status of the BL0 slots after rescue
+                --exec="console --non-interactive --exit-success='{expected_status}\r\n' --exit-failure='{exit_failure}'"
+                no-op
+            """,
+            testopt_clear_after_test = "True",
+            testopt_clear_before_test = "True",
+        ),
+    )
+    for name, params in _RESCUE_ERASE_TESTCASES.items()
+]
+
 opentitan_test(
     # This test ensures that the ROM_EXT clears power-on-reset before rebooting
     # so that the ROM wont re-scrable RET-RAM and destroy the 'skip_once' request.

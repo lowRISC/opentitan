@@ -596,6 +596,7 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
         gpio_value: false,
         enter_on_watchdog: false,
         enter_on_failure: false,
+        erase_both_slots: false,
         timeout: 0,
         start: 32,
         size: 224,
