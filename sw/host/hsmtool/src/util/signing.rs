@@ -18,7 +18,8 @@ use crate::util::attribute::{KeyType, MechanismType};
 use crate::util::helper::parse_range;
 
 /// Specify the ML-DSA domain.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(clap::ValueEnum, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[value(rename_all = "kebab-case")]
 pub enum MlDsaDomain {
     /// Pure ML-DSA (sign the message directly).
     Pure,

@@ -16,7 +16,7 @@ use crate::error::HsmError;
 use crate::module::Module;
 use crate::util::attribute::KeyType;
 use crate::util::helper;
-use crate::util::signing::SignData;
+use crate::util::signing::{MlDsaDomain, SignData};
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Verify {
@@ -26,9 +26,9 @@ pub struct Verify {
     label: Option<String>,
     #[arg(short, long, default_value = "sha256-hash", help=SignData::HELP)]
     format: SignData,
-    /// Reverse the result (for little-endian targets).
-    #[arg(short = 'r', long)]
-    little_endian: bool,
+    /// The ML-DSA domain (pure or pre-hashed).
+    #[arg(long, default_value = "pure")]
+    domain: MlDsaDomain,
     /// The signature is at the given byte range of the input file.
     #[arg(short, long, value_parser=helper::parse_range, conflicts_with="signature")]
     signature_at: Option<Range<usize>>,
@@ -52,9 +52,9 @@ impl Dispatch for Verify {
         let object = helper::find_one_object(session, &attrs)?;
 
         let data = fs::read(&self.input)?;
-        let data = self.format.prepare(KeyType::MlDsa, &data)?;
+        let data = self.format.mldsa_prepare(self.domain, &data)?;
         let mechanism = self.format.mechanism(KeyType::MlDsa)?;
-        let mut signature = if let Some(filename) = &self.signature {
+        let signature = if let Some(filename) = &self.signature {
             fs::read(filename)?
         } else if let Some(range) = &self.signature_at {
             let input = fs::read(&self.input)?;
@@ -65,9 +65,6 @@ impl Dispatch for Verify {
         } else {
             unreachable!();
         };
-        if self.little_endian {
-            signature.reverse();
-        }
         session.verify(&mechanism, object, &data, &signature)?;
         Ok(Box::<BasicResult>::default())
     }

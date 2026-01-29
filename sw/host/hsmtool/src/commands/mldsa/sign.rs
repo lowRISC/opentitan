@@ -16,7 +16,7 @@ use crate::error::HsmError;
 use crate::module::Module;
 use crate::util::attribute::KeyType;
 use crate::util::helper;
-use crate::util::signing::SignData;
+use crate::util::signing::{MlDsaDomain, SignData};
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Sign {
@@ -26,9 +26,9 @@ pub struct Sign {
     label: Option<String>,
     #[arg(short, long, default_value = "sha256-hash", help=SignData::HELP)]
     format: SignData,
-    /// Reverse the result (for little-endian targets).
-    #[arg(short = 'r', long)]
-    little_endian: bool,
+    /// The ML-DSA domain (pure or pre-hashed).
+    #[arg(long, default_value = "pure")]
+    domain: MlDsaDomain,
     #[arg(short, long)]
     output: Option<PathBuf>,
     /// Update the given byte range in the input file.
@@ -52,12 +52,9 @@ impl Dispatch for Sign {
         let object = helper::find_one_object(session, &attrs)?;
 
         let data = fs::read(&self.input)?;
-        let data = self.format.prepare(KeyType::MlDsa, &data)?;
+        let data = self.format.mldsa_prepare(self.domain, &data)?;
         let mechanism = self.format.mechanism(KeyType::MlDsa)?;
-        let mut result = session.sign(&mechanism, object, &data)?;
-        if self.little_endian {
-            result.reverse();
-        }
+        let result = session.sign(&mechanism, object, &data)?;
         if let Some(output) = &self.output {
             fs::write(output, &result)?;
         }
