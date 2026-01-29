@@ -2,10 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/coverage/api_asm.h"
 #include "sw/device/lib/base/multibits_asm.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #include "flash_ctrl_regs.h"
 #include "rstmgr_regs.h"
+
+// PRAGMA_COVERAGE: section(__llvm_prf_cnts_head)
 
   // Place this code into the .crt section to be able to call it early in
   // the boot process before ePMP is reconfigured.
@@ -24,6 +27,9 @@
   .global _asm_exception_handler
   .type _asm_exception_handler, @function
 _asm_exception_handler:
+  COVERAGE_ASM_MANUAL_MARK(t6,0)
+  COVERAGE_ASM_REPORT()
+
 .L_exception_loop:
   // Request a system reset.
   li t0, TOP_EARLGREY_RSTMGR_AON_BASE_ADDR
