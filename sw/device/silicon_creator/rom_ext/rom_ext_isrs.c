@@ -36,6 +36,15 @@ static rom_error_t rom_ext_irq_error(void) {
 
 OT_USED
 void rom_ext_interrupt_handler(void) {
+#ifdef OT_COVERAGE_INSTRUMENTED
+  // Fix gp first in case it's modified by later boot stages.
+  asm volatile(
+      ".option push\n"
+      ".option norelax\n"
+      "la gp, __global_pointer$\n"
+      ".option pop\n");
+#endif
+
   register rom_error_t error asm("a0") = rom_ext_irq_error();
   asm volatile("tail shutdown_finalize;" ::"r"(error));
   OT_UNREACHABLE();
