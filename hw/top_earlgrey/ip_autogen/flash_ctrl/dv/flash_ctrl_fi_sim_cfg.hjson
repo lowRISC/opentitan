@@ -1,0 +1,25 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// We want to use a different tool in another flash_ctrl env, but overriding `tool` doesn't work, as
+// it needs to first import all the included hjson to know what to override, but some fi_sim_cfg hjson
+// files depends on the `tool` variable, such as {tool}.hjson.
+// To solve this issue, split out the fi_sim_cfg file into 2 files. the base contains everything except
+// `tool`, the other one includes the base and set the `tool`.
+//
+// In this file, only `tool` can be set. Tests or other configuration should be add in
+// flash_ctrl_base_fi_sim_cfg.hjson.
+{
+  // FI Simulator used to sign off this block
+  tool: z01x
+
+  import_cfgs: ["{self_dir}/flash_ctrl_base_fi_sim_cfg.hjson"]
+
+  fi_core: "lowrisc:earlgrey_dv:flash_ctrl_fi_sim:0.1"
+  fi_src_dir: "{eval_cmd} echo \"{fi_core}\" | tr ':' '_'"
+
+  block_sff_file: "{fi_src_dir}/fi/block.sff"
+  project_sff_file: "{fi_src_dir}/fi/project.sff"
+  strobe_file: "{fi_src_dir}/fi/strobe.sv"
+}
