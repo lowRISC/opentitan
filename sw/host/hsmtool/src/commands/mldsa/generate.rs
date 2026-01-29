@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::ValueEnum;
 use cryptoki::mechanism::Mechanism;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
@@ -14,10 +15,32 @@ use crate::error::HsmError;
 use crate::module::Module;
 use crate::util::attribute::{AttrData, AttributeMap, AttributeType};
 use crate::util::helper;
+use crate::util::signing::MlDsaDomain;
+
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, ValueEnum)]
+pub enum MlDsaType {
+    #[value(name = "44", alias = "1")]
+    MlDsa44,
+    #[value(name = "65", alias = "2")]
+    MlDsa65,
+    #[value(name = "87", alias = "3")]
+    #[default]
+    MlDsa87,
+}
+
+impl From<MlDsaType> for u64 {
+    fn from(val: MlDsaType) -> Self {
+        match val {
+            MlDsaType::MlDsa44 => 1,
+            MlDsaType::MlDsa65 => 2,
+            MlDsaType::MlDsa87 => 3,
+        }
+    }
+}
 
 /// Default to 3 for ML-DSA-87.
-fn default_mldsa_type() -> u64 {
-    3
+fn default_mldsa_type() -> MlDsaType {
+    MlDsaType::MlDsa87
 }
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
@@ -31,10 +54,13 @@ pub struct Generate {
     /// Permit the generated key to be extractable.
     #[arg(long)]
     extractable: bool,
-    /// MLDSA algorithm type (e.g. 3 for MLDSA 87).
-    #[arg(long, default_value = "3")]
+    /// MLDSA algorithm type.
+    #[arg(long, value_enum, default_value_t = MlDsaType::MlDsa87)]
     #[serde(default = "default_mldsa_type")]
-    mldsa_type: u64,
+    mldsa_type: MlDsaType,
+    /// The ML-DSA domain.
+    #[arg(long, value_enum, default_value_t = MlDsaDomain::Pure)]
+    domain: MlDsaDomain,
     /// Template for creating the public key.
     #[arg(long)]
     public_template: Option<AttributeMap>,
@@ -86,7 +112,7 @@ impl Dispatch for Generate {
             AttributeMap::from_str(Self::PRIVATE_TEMPLATE).expect("error in PRIVATE_TEMPLATE");
         public_template.insert(AttributeType::Id, id.clone());
         public_template.insert(AttributeType::Label, result.label.clone());
-        public_template.insert(AttributeType::ParameterSet, AttrData::from(self.mldsa_type));
+        public_template.insert(AttributeType::ParameterSet, AttrData::from(u64::from(self.mldsa_type)));
 
         if let Some(tpl) = &self.public_template {
             public_template.merge(tpl.clone());
