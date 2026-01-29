@@ -184,8 +184,6 @@ opentitan_binary(
             primary = t["primary"],
             rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
             test_cmd = """
-                --exec="transport init"
-                --exec="fpga load-bitstream {bitstream}"
                 # First run the setup program to make sure the keymgr secrets are configured.
                 # This is required to allow the ROM_EXT to run.
                 --exec="bootstrap --clear-uart=true {setup}"
@@ -200,6 +198,7 @@ opentitan_binary(
                 --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
                 no-op
             """,
+            testopt_bootstrap = "False",
         ),
     )
     for t in BOOT_POLICY_FLASH_ECC_ERROR_TESTS
@@ -228,8 +227,6 @@ opentitan_test(
         primary = "SlotA",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
         test_cmd = """
-            --exec="transport init"
-            --exec="fpga load-bitstream {bitstream}"
             # First run the setup program to make sure the keymgr secrets are configured.
             # This is required to allow the ROM_EXT to run.
             --exec="bootstrap --clear-uart=true {setup}"
@@ -244,6 +241,7 @@ opentitan_test(
             --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
             no-op
         """,
+        testopt_bootstrap = "False",
     ),
 )
 

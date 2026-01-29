@@ -73,15 +73,8 @@ otp_json(
         fpga = fpga_params(
             otp = ":otp_img_rom_ext_upgrade_interrupt_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
-            test_cmd = """
-                --exec="transport init"
-                --exec="fpga clear-bitstream"
-                --exec="fpga load-bitstream {bitstream}"
-                --exec="bootstrap --clear-uart=true {firmware}"
-                --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
-                --exec="fpga clear-bitstream"
-                no-op
-            """,
+            testopt_clear_after_test = "True",
+            testopt_clear_before_test = "True",
         ),
         manifest = ":manifest_rom_ext_upgrade_interrupt",
         deps = [
