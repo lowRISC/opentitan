@@ -369,6 +369,207 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       </td>
     </tr>
     <tr>
+      <td>0x7D9</td>
+      <td>RW</td>
+      <td>KMAC_IF_STATUS</td>
+      <td>
+        Write a 1 to bits 1 or 2 to clear the error bits.
+        KMAC_IF_STATUS is a CSR that exposes status information for the OTBN-KMAC interface.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                MSG_WRITE_RDY indicates whether the KMAC_DATA_S0/1 WSR is ready for the next word.
+              </td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>
+                MSG_SEND_ERROR indicates whether an error occurred after issuing a message send command.
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                MSG_WRITE_ERROR indicates whether an error occurred after writing to the KMAC_DATA_S0/1 WSR.
+              </td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>
+                DIGEST_VALID indicates whether the 64 bit word in KMAC_DATA_S0/1 WSR is valid.
+              </td>
+            </tr>
+            <tr>
+              <td>31:4</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0x7DA</td>
+      <td>RW</td>
+      <td>KMAC_INTR</td>
+      <td>
+        Writing 1 to bit 0 of this register clears the interrupt.
+        KMAC_INTR is a CSR that exposes the KMAC_ERROR interrupt of the KMAC HWIP.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                KMAC_ERROR indicates whether an error occurred in the KMAC HWIP.
+              </td>
+            </tr>
+            <tr>
+              <td>31:1</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0x7DB</td>
+      <td>RW</td>
+      <td>KMAC_CFG</td>
+      <td>
+        This register allows OTBN to set the KMAC hashing mode (mode = SHAKE / cSHAKE / SHA3), enable or disable keyed KMAC mode (kmac_en = 0/1), and select the desired security strength (kstrength = L128 / L224 / L256 / L384 / L512).
+        The encodings for the fields are equivalent to the encodings for the CFG_SHADOWED register in the KMAC HWIP.
+        Reading from this register returns the current KMAC configuration.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                KMAC_EN enables keyed operation in the KMAC HWIP.
+              </td>
+            </tr>
+            <tr>
+              <td>3:1</td>
+              <td>
+                STRENGTH is the KMAC security strength.
+              </td>
+            </tr>
+            <tr>
+              <td>5:4</td>
+              <td>
+                MODE is the KMAC hashing mode.
+              </td>
+            </tr>
+            <tr>
+              <td>31:6</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0x7DC</td>
+      <td>RW</td>
+      <td>KMAC_MSG_SEND</td>
+      <td>
+        This CSR consists of a single bit that, if set to one, will trigger OTBN to send the contents of KMAC_DATA_S0 and KMAC_DATA_S1 to KMAC.
+        Reads from this register always return a 0.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                MSG_SEND can be set to send the contents of KMAC_DATA_S0 and KMAC_DATA_S1 to KMAC.
+              </td>
+            </tr>
+            <tr>
+              <td>31:1</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0x7DD</td>
+      <td>RW</td>
+      <td>KMAC_CMD</td>
+      <td>
+        The register allows OTBN to issue START, PROCESS, RUN and DONE commands to KMAC.
+        The encodings for the commands are equivalent to the encodings for the CMD register in the KMAC HWIP.
+        Reads from this register always return a 0.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>5:0</td>
+              <td>
+                CMD is the KMAC command field.
+              </td>
+            </tr>
+            <tr>
+              <td>31:6</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0x7DE</td>
+      <td>RW</td>
+      <td>KMAC_BYTE_STROBE</td>
+      <td>
+        BYTE_STROBE is a CSR that specifies which input bytes of KMAC_DATA_S0/1 are valid and should be consumed by KMAC.
+        The register is 32 bits wide, with each bit corresponding to one byte of KMAC_DATA_SHARE0/1.
+        <br>
+        For all message chunks except the final one, BYTE_STROBE must be programmed to all ones, indicating that all bytes in KMAC_DATA are valid. For the final message chunk, selected bits may be cleared to indicate unused bytes.
+        Any cleared bits must correspond to the most-significant bytes only, that is, the mask must be contiguous, with no zero bit followed by a one at a higher significance.
+        This needs to be the case, because that's how SHA3 inside KMAC expects the data.
+        If a non contiguous strobe is defined the behaviour is undefined.
+        <br>
+        Reads from this register return the current configuration of the KMAC_BYTE_STROBE CSR.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>31:0</td>
+              <td>
+                BYTE_STROBE is the KMAC byte strobe field.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
       <td>0xFC0</td>
       <td>RO</td>
       <td>RND</td>
@@ -391,6 +592,75 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
         <br>
         The number is sourced from an local PRNG.
         Reads never stall.
+      </td>
+    </tr>
+    <tr>
+      <td>0xFC2</td>
+      <td>RO</td>
+      <td>KMAC_STATUS</td>
+      <td>
+        Writes to this CSR are always ignored.
+        This CSR exposes the internal state of the SHA3 FSM within KMAC.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                SHA3_IDLE indicates whether the SHA3 core is in the idle state.
+              </td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>
+                SHA3_ABSORB indicates whether the SHA3 core is in the absorb state.
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                SHA3_SQUEEZE indicates whether the SHA3 core is in the squeeze state.
+              </td>
+            </tr>
+            <tr>
+              <td>31:3</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0xFC3</td>
+      <td>RO</td>
+      <td>KMAC_ERROR</td>
+      <td>
+        Writes to this register are ignored.
+        This register exposes the error code from the KMAC HWIP ERR_CODE register.
+        The additional debug information from the KMAC HWIP ERR_CODE register is not displayed.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>7:0</td>
+              <td>
+                ERROR_CODE contains the error code coming directly from the KMAC HWIP.
+              </td>
+            </tr>
+            <tr>
+              <td>31:8</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </td>
     </tr>
   </tbody>
@@ -518,6 +788,78 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
         Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
         <br>
         A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
+      </td>
+    </tr>
+    <tr>
+      <td>0x8</td>
+      <td>RW</td>
+      <td><a name="kmac-data-s0">KMAC_DATA_S0</a></td>
+      <td>
+        KMAC_DATA_S0 is the first 256-bit share of the masked message or digest interface.
+        <br>
+        For masked operations, provide the first share here and the second share in KMAC_DATA_S1.
+        <br>
+        If masking is not required:
+        - Set one share (e.g., KMAC_DATA_S0) to the plaintext data.
+        - Set the corresponding share (e.g., KMAC_DATA_S1) to all-zeros.
+        <br>
+        The digest data is provided in chunks of 64 bits at a time.
+        For plaintext retrieval of the digest, software must XOR the values from KMAC_DATA_S0 and KMAC_DATA_S1.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>63:0</td>
+              <td>
+                Write: Least significant word of the message share. Read: Current 64-bit word of the digest share.
+              </td>
+            </tr>
+            <tr>
+              <td>255:64</td>
+              <td>
+                Write: Words 1-3 of the message share. Read: Returns `0`. Digest shares are read out via the least significant word only.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0x9</td>
+      <td>RW</td>
+      <td><a name="kmac-data-s1">KMAC_DATA_S1</a></td>
+      <td>
+        KMAC_DATA_S1 is the second 256-bit share of the masked message or digest interface.
+        <br>
+        For masked operations, provide the second share here and the second share in KMAC_DATA_S0.
+        <br>
+        If masking is not required:
+        - Set one share (e.g., KMAC_DATA_S0) to the plaintext data.
+        - Set the corresponding share (e.g., KMAC_DATA_S1) to all-zeros.
+        <br>
+        The digest data is provided in chunks of 64 bits at a time.
+        For plaintext retrieval of the digest, software must XOR the values from KMAC_DATA_S0 and KMAC_DATA_S1.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>63:0</td>
+              <td>
+                Write: Least significant word of the message share. Read: Current 64-bit word of the digest share.
+              </td>
+            </tr>
+            <tr>
+              <td>255:64</td>
+              <td>
+                Write: Words 1-3 of the message share. Read: Returns `0`. Digest shares are read out via the least significant word only.
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </td>
     </tr>
   </tbody>
