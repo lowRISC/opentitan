@@ -15,6 +15,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/stdasm.h"
+#include "sw/device/lib/coverage/api.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/base/static_critical_version.h"
@@ -677,10 +678,17 @@ static rom_error_t rom_boot(const manifest_t *manifest,
   stack_utilization_print();
 
   if (imm_section_entry_point != kHardenedBoolFalse) {
+    coverage_report();
+    coverage_invalidate();
     ((rom_ext_entry_point *)imm_section_entry_point)();
+    coverage_init();  // re-init after invalidate.
   }
+
   // Jump to ROM_EXT.
+  coverage_report();
+  coverage_invalidate();
   ((rom_ext_entry_point *)entry_point)();
+  coverage_init();  // re-init after invalidate.
   return kErrorRomBootFailed;
 }
 
