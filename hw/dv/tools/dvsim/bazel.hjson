@@ -2,6 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  sw_build_cmd: "bazel"
+  sw_build_cmd: [
+    "python",
+    "{proj_root}/util/py/scripts/build_sw_collateral_for_sim.py",
+	  "--sw-images='{sw_images}'",
+	  "--sw-build-opts='{sw_build_opts}'",
+	  "--sw-build-device={sw_build_device}",
+	  "--seed={seed}",
+	  "--run-dir={run_dir}",
+  ]
   sw_build_opts: []
 }
