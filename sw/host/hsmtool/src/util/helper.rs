@@ -8,6 +8,7 @@ use cryptoki::session::Session;
 use rand::prelude::*;
 use std::convert::AsRef;
 use std::fs::File;
+use std::io::{Read, Write};
 use std::ops::Range;
 use std::path::Path;
 
@@ -65,6 +66,21 @@ pub fn find_one_object(session: &Session, search: &[Attribute]) -> Result<Object
     } else {
         Ok(object.remove(0))
     }
+}
+
+/// Reads a file into a byte buffer.
+pub fn read_file<P: AsRef<Path>>(path: P) -> Result<Vec<u8>> {
+    let mut data = Vec::new();
+    let mut input = File::open(path)?;
+    input.read_to_end(&mut data)?;
+    Ok(data)
+}
+
+/// Writes `data` to a file.
+pub fn write_file<P: AsRef<Path>>(path: P, data: &[u8]) -> Result<()> {
+    let mut output = File::create(path)?;
+    output.write_all(data)?;
+    Ok(())
 }
 
 /// Generates an 8-byte random id.

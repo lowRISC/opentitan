@@ -4,6 +4,7 @@
 
 use anyhow::{Context, Result};
 use cryptoki::context::CInitializeArgs;
+use cryptoki::context::CInitializeFlags;
 use cryptoki::context::Pkcs11;
 use cryptoki::session::Session;
 use cryptoki::session::UserType;
@@ -53,7 +54,7 @@ pub struct Module {
 impl Module {
     pub fn initialize(module: &str) -> Result<Self> {
         let pkcs11 = Pkcs11::new(module)?;
-        pkcs11.initialize(CInitializeArgs::OsThreads)?;
+        pkcs11.initialize(CInitializeArgs::new(CInitializeFlags::OS_LOCKING_OK))?;
         Ok(Module {
             pkcs11,
             session: None,
@@ -99,7 +100,7 @@ impl Module {
         let slot = self.get_token(token)?;
         let session = self.pkcs11.open_rw_session(slot)?;
         if let Some(user) = user {
-            let pin = pin.map(|x| AuthPin::new(x.to_owned()));
+            let pin = pin.map(|x| AuthPin::new(x.to_owned().into()));
             session
                 .login(user, pin.as_ref())
                 .context("Failed HSM Login")?;
