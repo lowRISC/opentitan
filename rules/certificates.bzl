@@ -56,6 +56,10 @@ def _certificate_codegen_impl(ctx):
             headers = depset([out_h]),
             unittest = depset([out_ut]),
         ),
+        coverage_common.instrumented_files_info(
+            ctx = ctx,
+            metadata_files = [out_c, out_h],
+        ),
     ]
 
 # This rule uses `opentitantool certificate codegen` to generate the
@@ -131,6 +135,8 @@ def certificate_template(name, template, cert_format = "x509"):
         name = "{}_library".format(name),
         srcs = [":{}_srcs".format(name)],
         hdrs = [":{}_hdrs".format(name)],
+        # Include the codegen rule in data to propagate the instrumented files.
+        data = [":{}".format(name)],
         deps = runtime_deps,
     )
 
