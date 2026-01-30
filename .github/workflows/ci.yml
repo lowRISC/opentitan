@@ -426,21 +426,24 @@ jobs:
   cache_bitstreams:
     name: Cache bitstreams to GCP
     runs-on: ubuntu-22.04
-    if: ${{ github.event_name != 'pull_request' }}
     needs:
       - chip_earlgrey_cw310_hyperdebug
       - chip_earlgrey_cw340
     steps:
       - uses: actions/checkout@v4
+        if: ${{ github.event_name != 'pull_request' }}
       - name: Prepare environment
+        if: ${{ github.event_name != 'pull_request' }}
         uses: ./.github/actions/prepare-env
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Download partial build-bin
+        if: ${{ github.event_name != 'pull_request' }}
         uses: ./.github/actions/download-partial-build-bin
         with:
           job-patterns: chip_earlgrey_{cw310,cw310_hyperdebug,cw340}
       - name: Create bitstream cache archive
+        if: ${{ github.event_name != 'pull_request' }}
         run: |
           shopt -s globstar # Allow use of **
           ./bazelisk.sh build //util/py/scripts:bitstream_cache_create
@@ -450,6 +453,7 @@ jobs:
             --out $PWD/build-bin/bitstream-cache \
             $PWD/build-bin/**/manifest.json
       - name: Upload bitstreams to GCP bucket
+        if: ${{ github.event_name != 'pull_request' }}
         run: |
           BUCKET_URI=gs://opentitan-bitstreams/${{ github.ref_name }}
           printf "$(date -u +%Y-%m-%dT%H:%M:%S)\n${{ github.sha }}" > latest.txt
@@ -840,23 +844,12 @@ jobs:
           name: qemu-override-build-logs
           path: qemu/build/*.log
 
-  # We would like to gate PR on quick lint and merge queue on bitstream caching.
-  # GitHub requires a single job name to be used for branch protection rule, so we use 2 jobs with
-  # conditional names so the non-skipped ones woud be called "Merge blocker".
-  merge_blocker_pr:
-    name: Merge blocker${{ github.event_name != 'pull_request' && ' (skipped)' || '' }}
-    runs-on: ubuntu-latest
-    needs: quick_lint
-    if: ${{ !cancelled() && github.event_name == 'pull_request' }}
-    steps:
-      - name: Complete
-        run: ${{ needs.quick_lint.result == 'success' }}
-
-  merge_blocker_merge:
-    name: Merge blocker${{ github.event_name != 'merge_group' && ' (skipped)' || '' }}
+  # Single job that we can gate pull requests and merge queues on:
+  merge_blocker:
+    name: Merge blocker
     runs-on: ubuntu-latest
     needs: cache_bitstreams
-    if: ${{ !cancelled() && github.event_name == 'merge_group' }}
+    if: ${{ !cancelled() }}
     steps:
       - name: Complete
         run: ${{ needs.cache_bitstreams.result == 'success' }}
