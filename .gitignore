@@ -8,6 +8,7 @@ opentitan-docs
 
 # Python
 __pycache__
+.venv/
 
 # fusesoc result
 build/
