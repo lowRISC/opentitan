@@ -80,10 +80,10 @@ There are four health tests that will be performed: repetitive count, adaptive p
 Each test has a pair of threshold values that determine that pass/fail of the test, one threshold for boot-time / bypass mode, and one for FIPS mode.
 By default, all tests are enabled, but can be turned off by setting the thresholds to the maximum value.
 Because of the variability of the PTRNG noise source, there are several registers that log statistics associated with the health tests.
-For example, the adaptive proportion test has a high watermark register that logs the highest measured number of ones.
-The [`ADAPTP_HI_WATERMARKS`](registers.md#adaptp_hi_watermarks) register has an entry for both FIPS and boot-time modes.
-This register allows for determining how close the threshold value should be set to the fail over value.
-Specific to the adaptive proportion test, there is also the [`ADAPTP_LO_WATERMARKS`](registers.md#adaptp_lo_watermarks) register, which will hold the lowest number of ones measured.
+In particular, the [`HT_WATERMARK`](registers.md#ht_watermark) can be used to log the highest or lowest results of specific health tests.
+This allows to determine how close the threshold values for specific tests should be set to the fail over values.
+For example, to log the highest measured number of ones in the adaptive proportion test, firmware can configure the [`HT_WATERMARK_NUM`](registers.md#ht_watermark_num) register with the value 2 (`ADAPTP_HI`).
+To log the lowest measured number of ones in the same test, firmware can configure [`HT_WATERMARK_NUM`](registers.md#ht_watermark_num) register with the value 3 (`ADAPTP_LO`).
 To help understand how well the thresholds work through time, a running count of test fails is kept in the [`ADAPTP_HI_TOTAL_FAILS`](registers.md#adaptp_hi_total_fails) register.
 The above example for the adaptive proportion test also applies to the other health tests, with the exception of the low watermark registers.
 See the timing diagrams below for more details on how the health tests work.

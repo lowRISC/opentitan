@@ -231,8 +231,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    repcnt_bypass_threshold_wr;
   logic [HalfRegWidth-1:0] repcnt_threshold;
   logic [HalfRegWidth-1:0] repcnt_event_cnt;
-  logic [HalfRegWidth-1:0] repcnt_event_hwm_fips;
-  logic [HalfRegWidth-1:0] repcnt_event_hwm_bypass;
   logic [FullRegWidth-1:0] repcnt_total_fails;
   logic [EighthRegWidth-1:0] repcnt_fail_count;
   logic                     repcnt_fail_pulse;
@@ -247,8 +245,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    repcnts_bypass_threshold_wr;
   logic [HalfRegWidth-1:0] repcnts_threshold;
   logic [HalfRegWidth-1:0] repcnts_event_cnt;
-  logic [HalfRegWidth-1:0] repcnts_event_hwm_fips;
-  logic [HalfRegWidth-1:0] repcnts_event_hwm_bypass;
   logic [FullRegWidth-1:0] repcnts_total_fails;
   logic [EighthRegWidth-1:0] repcnts_fail_count;
   logic                     repcnts_fail_pulse;
@@ -271,10 +267,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [HalfRegWidth-1:0] adaptp_lo_threshold;
   logic [HalfRegWidth-1:0] adaptp_hi_event_cnt;
   logic [HalfRegWidth-1:0] adaptp_lo_event_cnt;
-  logic [HalfRegWidth-1:0] adaptp_hi_event_hwm_fips;
-  logic [HalfRegWidth-1:0] adaptp_hi_event_hwm_bypass;
-  logic [HalfRegWidth-1:0] adaptp_lo_event_hwm_fips;
-  logic [HalfRegWidth-1:0] adaptp_lo_event_hwm_bypass;
   logic [FullRegWidth-1:0] adaptp_hi_total_fails;
   logic [FullRegWidth-1:0] adaptp_lo_total_fails;
   logic [EighthRegWidth-1:0] adaptp_hi_fail_count;
@@ -295,8 +287,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [HalfRegWidth-1:0] bucket_threshold;
   logic [NumBucketHtInst-1:0][HalfRegWidth-1:0] bucket_event_cnt;
   logic [HalfRegWidth-1:0] bucket_event_cnt_max;
-  logic [HalfRegWidth-1:0] bucket_event_hwm_fips;
-  logic [HalfRegWidth-1:0] bucket_event_hwm_bypass;
   logic [FullRegWidth-1:0] bucket_total_fails;
   logic [EighthRegWidth-1:0]  bucket_fail_count;
   logic [NumBucketHtInst-1:0] bucket_fail_pulse;
@@ -320,10 +310,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [HalfRegWidth-1:0] markov_lo_threshold;
   logic [HalfRegWidth-1:0] markov_hi_event_cnt;
   logic [HalfRegWidth-1:0] markov_lo_event_cnt;
-  logic [HalfRegWidth-1:0] markov_hi_event_hwm_fips;
-  logic [HalfRegWidth-1:0] markov_hi_event_hwm_bypass;
-  logic [HalfRegWidth-1:0] markov_lo_event_hwm_fips;
-  logic [HalfRegWidth-1:0] markov_lo_event_hwm_bypass;
   logic [FullRegWidth-1:0] markov_hi_total_fails;
   logic [FullRegWidth-1:0] markov_lo_total_fails;
   logic [EighthRegWidth-1:0] markov_hi_fail_count;
@@ -351,10 +337,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [HalfRegWidth-1:0] extht_lo_threshold;
   logic [HalfRegWidth-1:0] extht_event_cnt_hi;
   logic [HalfRegWidth-1:0] extht_event_cnt_lo;
-  logic [HalfRegWidth-1:0] extht_hi_event_hwm_fips;
-  logic [HalfRegWidth-1:0] extht_hi_event_hwm_bypass;
-  logic [HalfRegWidth-1:0] extht_lo_event_hwm_fips;
-  logic [HalfRegWidth-1:0] extht_lo_event_hwm_bypass;
   logic [FullRegWidth-1:0] extht_hi_total_fails;
   logic [FullRegWidth-1:0] extht_lo_total_fails;
   logic [EighthRegWidth-1:0] extht_hi_fail_count;
@@ -367,6 +349,12 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     extht_hi_alert_cntr_err;
   logic                     extht_lo_alert_cntr_err;
 
+  ht_watermark_num_e       ht_watermark_num_reg_if;
+  logic                    ht_watermark_high;
+  logic                    ht_watermark_event;
+  logic                    ht_watermark_event_pre;
+  logic [HalfRegWidth-1:0] ht_watermark_cnt;
+  logic [HalfRegWidth-1:0] ht_watermark;
 
   logic                     pfifo_esbit_wdata;
   logic [RngBusWidth-1:0]   pfifo_esbit_rdata;
@@ -522,6 +510,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic        es_rdata_capt_vld_q, es_rdata_capt_vld_d;
   mubi4_t      mubi_mod_en_dly_d, mubi_mod_en_dly_q;
 
+  ht_watermark_num_e ht_watermark_num_q, ht_watermark_num_d;
 
   logic        sha3_start_mask_q, sha3_start_mask_d;
   logic        sha3_flush_q, sha3_flush_d;
@@ -1225,10 +1214,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
+    .ResVal({HalfRegWidth{1'b1}})
   ) u_entropy_src_watermark_reg_repcnt_thresh_fips (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b0),
     .clear_i             (1'b0),
     .event_i             (repcnt_fips_threshold_wr),
     .value_i             (repcnt_fips_threshold),
@@ -1237,10 +1227,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
+    .ResVal({HalfRegWidth{1'b1}})
   ) u_entropy_src_watermark_reg_repcnt_thresh_bypass (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b0),
     .clear_i             (1'b0),
     .event_i             (repcnt_bypass_threshold_wr),
     .value_i             (repcnt_bypass_threshold),
@@ -1255,10 +1246,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
+    .ResVal({HalfRegWidth{1'b1}})
   ) u_entropy_src_watermark_reg_repcnts_thresh_fips (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b0),
     .clear_i             (1'b0),
     .event_i             (repcnts_fips_threshold_wr),
     .value_i             (repcnts_fips_threshold),
@@ -1267,10 +1259,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
+    .ResVal({HalfRegWidth{1'b1}})
   ) u_entropy_src_watermark_reg_repcnts_thresh_bypass (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b0),
     .clear_i             (1'b0),
     .event_i             (repcnts_bypass_threshold_wr),
     .value_i             (repcnts_bypass_threshold),
@@ -1286,10 +1279,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
+    .ResVal({HalfRegWidth{1'b1}})
   ) u_entropy_src_watermark_reg_adaptp_hi_thresh_fips (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b0),
     .clear_i             (1'b0),
     .event_i             (adaptp_hi_fips_threshold_wr),
     .value_i             (adaptp_hi_fips_threshold),
@@ -1298,10 +1292,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
+    .ResVal({HalfRegWidth{1'b1}})
   ) u_entropy_src_watermark_reg_adaptp_hi_thresh_bypass (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b0),
     .clear_i             (1'b0),
     .event_i             (adaptp_hi_bypass_threshold_wr),
     .value_i             (adaptp_hi_bypass_threshold),
@@ -1313,10 +1308,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
+    .ResVal('0)
   ) u_entropy_src_watermark_reg_adaptp_lo_thresh_fips (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b1),
     .clear_i             (1'b0),
     .event_i             (adaptp_lo_fips_threshold_wr),
     .value_i             (adaptp_lo_fips_threshold),
@@ -1325,10 +1321,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
+    .ResVal('0)
   ) u_entropy_src_watermark_reg_adaptp_lo_thresh_bypass (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b1),
     .clear_i             (1'b0),
     .event_i             (adaptp_lo_bypass_threshold_wr),
     .value_i             (adaptp_lo_bypass_threshold),
@@ -1344,10 +1341,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
+    .ResVal({HalfRegWidth{1'b1}})
   ) u_entropy_src_watermark_reg_bucket_thresh_fips (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b0),
     .clear_i             (1'b0),
     .event_i             (bucket_fips_threshold_wr),
     .value_i             (bucket_fips_threshold),
@@ -1356,10 +1354,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
+    .ResVal({HalfRegWidth{1'b1}})
   ) u_entropy_src_watermark_reg_bucket_thresh_bypass (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b0),
     .clear_i             (1'b0),
     .event_i             (bucket_bypass_threshold_wr),
     .value_i             (bucket_bypass_threshold),
@@ -1375,10 +1374,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
+    .ResVal({HalfRegWidth{1'b1}})
   ) u_entropy_src_watermark_reg_markov_hi_thresh_fips (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b0),
     .clear_i             (1'b0),
     .event_i             (markov_hi_fips_threshold_wr),
     .value_i             (markov_hi_fips_threshold),
@@ -1387,10 +1387,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
+    .ResVal({HalfRegWidth{1'b1}})
   ) u_entropy_src_watermark_reg_markov_hi_thresh_bypass (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b0),
     .clear_i             (1'b0),
     .event_i             (markov_hi_bypass_threshold_wr),
     .value_i             (markov_hi_bypass_threshold),
@@ -1402,10 +1403,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
+    .ResVal('0)
   ) u_entropy_src_watermark_reg_markov_lo_thresh_fips (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b1),
     .clear_i             (1'b0),
     .event_i             (markov_lo_fips_threshold_wr),
     .value_i             (markov_lo_fips_threshold),
@@ -1414,10 +1416,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
+    .ResVal('0)
   ) u_entropy_src_watermark_reg_markov_lo_thresh_bypass (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b1),
     .clear_i             (1'b0),
     .event_i             (markov_lo_bypass_threshold_wr),
     .value_i             (markov_lo_bypass_threshold),
@@ -1433,10 +1436,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
+    .ResVal({HalfRegWidth{1'b1}})
   ) u_entropy_src_watermark_reg_extht_hi_thresh_fips (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b0),
     .clear_i             (1'b0),
     .event_i             (extht_hi_fips_threshold_wr),
     .value_i             (extht_hi_fips_threshold),
@@ -1445,10 +1449,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
+    .ResVal({HalfRegWidth{1'b1}})
   ) u_entropy_src_watermark_reg_extht_hi_thresh_bypass (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b0),
     .clear_i             (1'b0),
     .event_i             (extht_hi_bypass_threshold_wr),
     .value_i             (extht_hi_bypass_threshold),
@@ -1461,10 +1466,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
+    .ResVal('0)
   ) u_entropy_src_watermark_reg_extht_lo_thresh_fips (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b1),
     .clear_i             (1'b0),
     .event_i             (extht_lo_fips_threshold_wr),
     .value_i             (extht_lo_fips_threshold),
@@ -1473,10 +1479,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
+    .ResVal('0)
   ) u_entropy_src_watermark_reg_extht_lo_thresh_bypass (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
+    .high_i              (1'b1),
     .clear_i             (1'b0),
     .event_i             (extht_lo_bypass_threshold_wr),
     .value_i             (extht_lo_bypass_threshold),
@@ -1670,30 +1677,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .count_err_o         (repcnt_cntr_err)
   );
 
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
-  ) u_entropy_src_watermark_reg_repcnt_fips (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             (!es_bypass_mode),
-    .value_i             (repcnt_event_cnt),
-    .value_o             (repcnt_event_hwm_fips)
-  );
-
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
-  ) u_entropy_src_watermark_reg_repcnt_bypass (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             (es_bypass_mode),
-    .value_i             (repcnt_event_cnt),
-    .value_o             (repcnt_event_hwm_bypass)
-  );
-
   // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
@@ -1707,8 +1690,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .err_o               (repcnt_fails_cntr_err)
   );
 
-  assign hw2reg.repcnt_hi_watermarks.fips_watermark.d = repcnt_event_hwm_fips;
-  assign hw2reg.repcnt_hi_watermarks.bypass_watermark.d = repcnt_event_hwm_bypass;
   assign hw2reg.repcnt_total_fails.d = repcnt_total_fails;
 
   //--------------------------------------------
@@ -1732,30 +1713,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .count_err_o         (repcnts_cntr_err)
   );
 
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
-  ) u_entropy_src_watermark_reg_repcnts_fips (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             (!es_bypass_mode),
-    .value_i             (repcnts_event_cnt),
-    .value_o             (repcnts_event_hwm_fips)
-  );
-
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
-  ) u_entropy_src_watermark_reg_repcnts_bypass (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             (es_bypass_mode),
-    .value_i             (repcnts_event_cnt),
-    .value_o             (repcnts_event_hwm_bypass)
-  );
-
   // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
@@ -1769,8 +1726,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .err_o               (repcnts_fails_cntr_err)
   );
 
-  assign hw2reg.repcnts_hi_watermarks.fips_watermark.d = repcnts_event_hwm_fips;
-  assign hw2reg.repcnts_hi_watermarks.bypass_watermark.d = repcnts_event_hwm_bypass;
   assign hw2reg.repcnts_total_fails.d = repcnts_total_fails;
 
   //--------------------------------------------
@@ -1802,31 +1757,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .count_err_o         (adaptp_cntr_err)
   );
 
-
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
-  ) u_entropy_src_watermark_reg_adaptp_hi_fips (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && !es_bypass_mode),
-    .value_i             (adaptp_hi_event_cnt),
-    .value_o             (adaptp_hi_event_hwm_fips)
-  );
-
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
-  ) u_entropy_src_watermark_reg_adaptp_hi_bypass (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && es_bypass_mode),
-    .value_i             (adaptp_hi_event_cnt),
-    .value_o             (adaptp_hi_event_hwm_bypass)
-  );
-
   // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
@@ -1840,35 +1770,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .err_o               (adaptp_hi_fails_cntr_err)
   );
 
-
-  assign hw2reg.adaptp_hi_watermarks.fips_watermark.d = adaptp_hi_event_hwm_fips;
-  assign hw2reg.adaptp_hi_watermarks.bypass_watermark.d = adaptp_hi_event_hwm_bypass;
   assign hw2reg.adaptp_hi_total_fails.d = adaptp_hi_total_fails;
-
-
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
-  ) u_entropy_src_watermark_reg_adaptp_lo_fips (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && !es_bypass_mode),
-    .value_i             (adaptp_lo_event_cnt),
-    .value_o             (adaptp_lo_event_hwm_fips)
-  );
-
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
-  ) u_entropy_src_watermark_reg_adaptp_lo_bypass (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && es_bypass_mode),
-    .value_i             (adaptp_lo_event_cnt),
-    .value_o             (adaptp_lo_event_hwm_bypass)
-  );
 
   // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
@@ -1883,10 +1785,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .err_o               (adaptp_lo_fails_cntr_err)
   );
 
-  assign hw2reg.adaptp_lo_watermarks.fips_watermark.d = adaptp_lo_event_hwm_fips;
-  assign hw2reg.adaptp_lo_watermarks.bypass_watermark.d = adaptp_lo_event_hwm_bypass;
   assign hw2reg.adaptp_lo_total_fails.d = adaptp_lo_total_fails;
-
 
   //--------------------------------------------
   // bucket test
@@ -1952,35 +1851,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .err_o               (bucket_fails_cntr_err)
   );
 
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
-  ) u_entropy_src_watermark_reg_bucket_fips (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && !es_bypass_mode),
-    .value_i             (bucket_event_cnt_max),
-    .value_o             (bucket_event_hwm_fips)
-  );
-
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
-  ) u_entropy_src_watermark_reg_bucket_bypass (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && es_bypass_mode),
-    .value_i             (bucket_event_cnt_max),
-    .value_o             (bucket_event_hwm_bypass)
-  );
-
-
-  assign hw2reg.bucket_hi_watermarks.fips_watermark.d = bucket_event_hwm_fips;
-  assign hw2reg.bucket_hi_watermarks.bypass_watermark.d = bucket_event_hwm_bypass;
   assign hw2reg.bucket_total_fails.d = bucket_total_fails;
-
 
   //--------------------------------------------
   // Markov test
@@ -2011,30 +1882,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .count_err_o         (markov_cntr_err)
   );
 
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
-  ) u_entropy_src_watermark_reg_markov_hi_fips (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && !es_bypass_mode),
-    .value_i             (markov_hi_event_cnt),
-    .value_o             (markov_hi_event_hwm_fips)
-  );
-
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
-  ) u_entropy_src_watermark_reg_markov_hi_bypass (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && es_bypass_mode),
-    .value_i             (markov_hi_event_cnt),
-    .value_o             (markov_hi_event_hwm_bypass)
-  );
-
   // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
@@ -2048,34 +1895,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .err_o               (markov_hi_fails_cntr_err)
   );
 
-  assign hw2reg.markov_hi_watermarks.fips_watermark.d = markov_hi_event_hwm_fips;
-  assign hw2reg.markov_hi_watermarks.bypass_watermark.d = markov_hi_event_hwm_bypass;
   assign hw2reg.markov_hi_total_fails.d = markov_hi_total_fails;
-
-
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
-  ) u_entropy_src_watermark_reg_markov_lo_fips (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && !es_bypass_mode),
-    .value_i             (markov_lo_event_cnt),
-    .value_o             (markov_lo_event_hwm_fips)
-  );
-
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
-  ) u_entropy_src_watermark_reg_markov_lo_bypass (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && es_bypass_mode),
-    .value_i             (markov_lo_event_cnt),
-    .value_o             (markov_lo_event_hwm_bypass)
-  );
 
   // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
@@ -2090,10 +1910,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .err_o               (markov_lo_fails_cntr_err)
   );
 
-  assign hw2reg.markov_lo_watermarks.fips_watermark.d = markov_lo_event_hwm_fips;
-  assign hw2reg.markov_lo_watermarks.bypass_watermark.d = markov_lo_event_hwm_bypass;
   assign hw2reg.markov_lo_total_fails.d = markov_lo_total_fails;
-
 
   //--------------------------------------------
   // External health test
@@ -2118,30 +1935,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign extht_lo_fail_pulse = entropy_src_xht_meta_i.test_fail_lo_pulse;
   assign extht_cont_test = entropy_src_xht_meta_i.continuous_test;
 
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
-  ) u_entropy_src_watermark_reg_extht_hi_fips (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             ((extht_cont_test || health_test_done_pulse) && !es_bypass_mode),
-    .value_i             (extht_event_cnt_hi),
-    .value_o             (extht_hi_event_hwm_fips)
-  );
-
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
-  ) u_entropy_src_watermark_reg_extht_hi_bypass (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             ((extht_cont_test || health_test_done_pulse) && es_bypass_mode),
-    .value_i             (extht_event_cnt_hi),
-    .value_o             (extht_hi_event_hwm_bypass)
-  );
-
   // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
@@ -2155,35 +1948,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .err_o               (extht_hi_fails_cntr_err)
   );
 
-
-  assign hw2reg.extht_hi_watermarks.fips_watermark.d = extht_hi_event_hwm_fips;
-  assign hw2reg.extht_hi_watermarks.bypass_watermark.d = extht_hi_event_hwm_bypass;
   assign hw2reg.extht_hi_total_fails.d = extht_hi_total_fails;
-
-
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
-  ) u_entropy_src_watermark_reg_extht_lo_fips (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             ((extht_cont_test || health_test_done_pulse) && !es_bypass_mode),
-    .value_i             (extht_event_cnt_lo),
-    .value_o             (extht_lo_event_hwm_fips)
-  );
-
-  entropy_src_watermark_reg #(
-    .RegWidth(HalfRegWidth),
-    .HighWatermark(0)
-  ) u_entropy_src_watermark_reg_extht_lo_bypass (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             ((extht_cont_test || health_test_done_pulse) && es_bypass_mode),
-    .value_i             (extht_event_cnt_lo),
-    .value_o             (extht_lo_event_hwm_bypass)
-  );
 
   // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
@@ -2198,10 +1963,114 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .err_o               (extht_lo_fails_cntr_err)
   );
 
-  assign hw2reg.extht_lo_watermarks.fips_watermark.d = extht_lo_event_hwm_fips;
-  assign hw2reg.extht_lo_watermarks.bypass_watermark.d = extht_lo_event_hwm_bypass;
   assign hw2reg.extht_lo_total_fails.d = extht_lo_total_fails;
 
+  //--------------------------------------------
+  // watermark register
+  //--------------------------------------------
+
+  // Get and resolve HT_WATERMARK_NUM values from register interface.
+  assign ht_watermark_num_reg_if = ht_watermark_num_e'(reg2hw.ht_watermark_num.q);
+  always_comb begin
+    unique case (ht_watermark_num_reg_if)
+      REPCNT_HI,
+      REPCNTS_HI,
+      ADAPTP_HI,
+      ADAPTP_LO,
+      BUCKET_HI,
+      MARKOV_HI,
+      MARKOV_LO,
+      EXTHT_HI,
+      EXTHT_LO: ht_watermark_num_d = ht_watermark_num_reg_if;
+      default:  ht_watermark_num_d = REPCNT_HI;  // Unsupported values are mapped to REPCNT_HI.
+    endcase
+  end
+
+  // Write the resolved value to the actual register.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      ht_watermark_num_q <= REPCNT_HI;
+    end else if (reg2hw.ht_watermark_num.qe) begin
+      ht_watermark_num_q <= ht_watermark_num_d;
+    end
+  end
+  assign hw2reg.ht_watermark_num.d = ht_watermark_num_q;
+
+  // Select the health test for which we want to record the watermark based on the HT_WATERMARK_NUM
+  // register.
+  always_comb begin
+    unique case (ht_watermark_num_q)
+      REPCNT_HI: begin
+        ht_watermark_high      = 1'b1;
+        ht_watermark_event_pre = 1'b1; // continuous
+        ht_watermark_cnt       = repcnt_event_cnt;
+      end
+      REPCNTS_HI: begin
+        ht_watermark_high      = 1'b1;
+        ht_watermark_event_pre = 1'b1; // continuous
+        ht_watermark_cnt       = repcnts_event_cnt;
+      end
+      ADAPTP_HI: begin
+        ht_watermark_high      = 1'b1;
+        ht_watermark_event_pre = health_test_done_pulse;
+        ht_watermark_cnt       = adaptp_hi_event_cnt;
+      end
+      ADAPTP_LO: begin
+        ht_watermark_high      = 1'b0;
+        ht_watermark_event_pre = health_test_done_pulse;
+        ht_watermark_cnt       = adaptp_lo_event_cnt;
+      end
+      BUCKET_HI: begin
+        ht_watermark_high      = 1'b1;
+        ht_watermark_event_pre = health_test_done_pulse;
+        ht_watermark_cnt       = bucket_event_cnt_max;
+      end
+      MARKOV_HI: begin
+        ht_watermark_high      = 1'b1;
+        ht_watermark_event_pre = health_test_done_pulse;
+        ht_watermark_cnt       = markov_hi_event_cnt;
+      end
+      MARKOV_LO: begin
+        ht_watermark_high      = 1'b0;
+        ht_watermark_event_pre = health_test_done_pulse;
+        ht_watermark_cnt       = markov_lo_event_cnt;
+      end
+      EXTHT_HI: begin
+        ht_watermark_high      = 1'b1;
+        ht_watermark_event_pre = extht_cont_test || health_test_done_pulse;
+        ht_watermark_cnt       = extht_event_cnt_hi;
+      end
+      EXTHT_LO: begin
+        ht_watermark_high      = 1'b0;
+        ht_watermark_event_pre = extht_cont_test || health_test_done_pulse;
+        ht_watermark_cnt       = extht_event_cnt_lo;
+      end
+      default: begin // Unsupported values are mapped to REPCNT_HI.
+        ht_watermark_high      = 1'b1;
+        ht_watermark_event_pre = 1'b1; // continuous
+        ht_watermark_cnt       = repcnt_event_cnt;
+      end
+    endcase
+  end
+
+  // Prevent watermark register updates while the module disabled. Upon enabling, we then clear
+  // the watermark register before we start recording.
+  assign ht_watermark_event = ht_watermark_event_pre && es_delayed_enable;
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .ResVal('0)
+  ) u_entropy_src_ht_watermark_reg (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .high_i  (ht_watermark_high),
+    .clear_i (health_test_clr),
+    .event_i (ht_watermark_event),
+    .value_i (ht_watermark_cnt),
+    .value_o (ht_watermark)
+  );
+
+  assign hw2reg.ht_watermark.d = ht_watermark;
 
   //--------------------------------------------
   // summary and alert registers

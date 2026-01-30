@@ -260,6 +260,33 @@ dif_result_t dif_entropy_src_health_test_configure(
   return kDifOk;
 }
 
+dif_result_t dif_entropy_src_watermark_configure(
+    const dif_entropy_src_t *entropy_src,
+    dif_entropy_src_watermark_num_t config) {
+  if (entropy_src == NULL) {
+    return kDifBadArg;
+  }
+
+  if (!mmio_region_read32(entropy_src->base_addr,
+                          ENTROPY_SRC_REGWEN_REG_OFFSET)) {
+    return kDifLocked;
+  }
+
+  // Write the specified value.
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_HT_WATERMARK_NUM_REG_OFFSET, config);
+
+  // Read the value back. In case it doesn't match the previously written
+  // value, the specified value isn't supported.
+  uint32_t ht_watermark_num = mmio_region_read32(
+      entropy_src->base_addr, ENTROPY_SRC_HT_WATERMARK_NUM_REG_OFFSET);
+  if ((uint32_t)config != ht_watermark_num) {
+    return kDifError;
+  }
+
+  return kDifOk;
+}
+
 dif_result_t dif_entropy_src_set_enabled(const dif_entropy_src_t *entropy_src,
                                          dif_toggle_t enabled) {
   if (entropy_src == NULL || !dif_is_valid_toggle(enabled)) {
@@ -320,64 +347,42 @@ dif_result_t dif_entropy_src_get_health_test_stats(
     return kDifBadArg;
   }
 
-  ptrdiff_t high_watermarks_reg_offset = -1;
-  ptrdiff_t low_watermarks_reg_offset = -1;
+  stats->watermark_num = (dif_entropy_src_watermark_num_t)mmio_region_read32(
+      entropy_src->base_addr, ENTROPY_SRC_HT_WATERMARK_NUM_REG_OFFSET);
+  stats->watermark = (uint16_t)mmio_region_read32(
+      entropy_src->base_addr, ENTROPY_SRC_HT_WATERMARK_REG_OFFSET);
+
   ptrdiff_t high_fails_reg_offset = -1;
   ptrdiff_t low_fails_reg_offset = -1;
   for (uint32_t i = 0; i < kDifEntropySrcTestNumVariants; ++i) {
     switch ((dif_entropy_src_test_t)i) {
       case kDifEntropySrcTestRepetitionCount:
-        high_watermarks_reg_offset =
-            ENTROPY_SRC_REPCNT_HI_WATERMARKS_REG_OFFSET;
-        low_watermarks_reg_offset = -1;
         high_fails_reg_offset = ENTROPY_SRC_REPCNT_TOTAL_FAILS_REG_OFFSET;
         low_fails_reg_offset = -1;
         break;
       case kDifEntropySrcTestRepetitionCountSymbol:
-        high_watermarks_reg_offset =
-            ENTROPY_SRC_REPCNTS_HI_WATERMARKS_REG_OFFSET;
-        low_watermarks_reg_offset = -1;
         high_fails_reg_offset = ENTROPY_SRC_REPCNTS_TOTAL_FAILS_REG_OFFSET;
         low_fails_reg_offset = -1;
         break;
       case kDifEntropySrcTestAdaptiveProportion:
-        high_watermarks_reg_offset =
-            ENTROPY_SRC_ADAPTP_HI_WATERMARKS_REG_OFFSET;
-        low_watermarks_reg_offset = ENTROPY_SRC_ADAPTP_LO_WATERMARKS_REG_OFFSET;
         high_fails_reg_offset = ENTROPY_SRC_ADAPTP_HI_TOTAL_FAILS_REG_OFFSET;
         low_fails_reg_offset = ENTROPY_SRC_ADAPTP_LO_TOTAL_FAILS_REG_OFFSET;
         break;
       case kDifEntropySrcTestBucket:
-        high_watermarks_reg_offset =
-            ENTROPY_SRC_BUCKET_HI_WATERMARKS_REG_OFFSET;
-        low_watermarks_reg_offset = -1;
         high_fails_reg_offset = ENTROPY_SRC_BUCKET_TOTAL_FAILS_REG_OFFSET;
         low_fails_reg_offset = -1;
         break;
       case kDifEntropySrcTestMarkov:
-        high_watermarks_reg_offset =
-            ENTROPY_SRC_MARKOV_HI_WATERMARKS_REG_OFFSET;
-        low_watermarks_reg_offset = ENTROPY_SRC_MARKOV_LO_WATERMARKS_REG_OFFSET;
         high_fails_reg_offset = ENTROPY_SRC_MARKOV_HI_TOTAL_FAILS_REG_OFFSET;
         low_fails_reg_offset = ENTROPY_SRC_MARKOV_LO_TOTAL_FAILS_REG_OFFSET;
         break;
       case kDifEntropySrcTestMailbox:
-        high_watermarks_reg_offset = ENTROPY_SRC_EXTHT_HI_WATERMARKS_REG_OFFSET;
-        low_watermarks_reg_offset = ENTROPY_SRC_EXTHT_LO_WATERMARKS_REG_OFFSET;
         high_fails_reg_offset = ENTROPY_SRC_EXTHT_HI_TOTAL_FAILS_REG_OFFSET;
         low_fails_reg_offset = ENTROPY_SRC_EXTHT_LO_TOTAL_FAILS_REG_OFFSET;
         break;
       default:
         return kDifError;
     }
-
-    stats->high_watermark[i] = (uint16_t)mmio_region_read32(
-        entropy_src->base_addr, high_watermarks_reg_offset);
-    stats->low_watermark[i] =
-        low_watermarks_reg_offset == -1
-            ? 0
-            : (uint16_t)mmio_region_read32(entropy_src->base_addr,
-                                           low_watermarks_reg_offset);
 
     stats->high_fails[i] =
         mmio_region_read32(entropy_src->base_addr, high_fails_reg_offset);

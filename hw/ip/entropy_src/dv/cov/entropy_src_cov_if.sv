@@ -959,6 +959,31 @@ interface entropy_src_cov_if
 
   endgroup : one_way_ht_threshold_reg_cg
 
+  // Covergroup to confirm the ht_watermark_num register works correctly.
+  // Do we write all possible (including unsupported values)?
+  covergroup ht_watermark_num_cg with function sample(logic [3:0] num);
+    option.name         = "ht_watermark_num_cg";
+    option.per_instance = 1;
+
+    cp_ht_watermark_num : coverpoint num;
+  endgroup : ht_watermark_num_cg
+
+  // Covergroup to confirm the ht_watermark register works correctly.
+  // Do we read the ht_watermark register for all supported ht_watermark_num values?
+  covergroup ht_watermark_cg with function sample(ht_watermark_num_e num, logic [15:0] value);
+    option.name         = "ht_watermark_cg";
+    option.per_instance = 1;
+
+    cp_ht_watermark_num : coverpoint num;
+    cp_ht_watermark : coverpoint value {
+      bins min = {0};
+      bins med = {[1:16'hfffe]};
+      bins max = {16'hffff};
+    }
+
+    cr_cross : cross cp_ht_watermark_num, cp_ht_watermark;
+  endgroup : ht_watermark_cg
+
   covergroup recov_alert_cg with function sample(int alert_bit);
     option.name         = "recov_alert_cg";
     option.per_instance = 1;
@@ -967,7 +992,6 @@ interface entropy_src_cov_if
       bins alert_bits[] = {0, 1, 2, 3, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
     }
   endgroup : recov_alert_cg
-
 
   `DV_FCOV_INSTANTIATE_CG(err_test_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(mubi_err_cg, en_full_cov)
@@ -986,6 +1010,8 @@ interface entropy_src_cov_if
   `DV_FCOV_INSTANTIATE_CG(alert_cnt_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(observe_fifo_threshold_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(one_way_ht_threshold_reg_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(ht_watermark_num_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(ht_watermark_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(recov_alert_cg, en_full_cov)
 
   // Sample functions needed for xcelium
@@ -1142,6 +1168,14 @@ interface entropy_src_cov_if
 
   function automatic void cg_recov_alert_sample(int which_bit);
     recov_alert_cg_inst.sample(which_bit);
+  endfunction
+
+  function automatic void cg_ht_watermark_num_sample(logic [3:0] num);
+    ht_watermark_num_cg_inst.sample(num);
+  endfunction
+
+  function automatic void cg_ht_watermark_sample(ht_watermark_num_e num, logic [15:0] value);
+    ht_watermark_cg_inst.sample(num, value);
   endfunction
 
 
