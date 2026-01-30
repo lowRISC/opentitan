@@ -19,9 +19,9 @@ load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
 load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_override")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
-load("//rules/opentitan:util.bzl", "assemble_for_test", "recursive_format")
-load("//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo")
+load("@lowrisc_opentitan//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("@lowrisc_opentitan//rules/opentitan:util.bzl", "assemble_for_test", "recursive_format")
+load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo")
 
 def _expand(ctx, name, items):
     """Perform location and make_variable expansion on a list of items.
@@ -205,7 +205,7 @@ def _build_binary(ctx, exec_env, name, deps, kind):
     )
 
     manifest = get_fallback(ctx, "file.manifest", exec_env)
-    if manifest and str(manifest.owner) == "@@//hw/top_earlgrey:none_manifest":
+    if manifest and str(manifest.owner).endswith("@lowrisc_opentitan//hw/top_earlgrey:none_manifest"):
         manifest = None
 
     ecdsa_key = get_fallback(ctx, "attr.ecdsa_key", exec_env)
@@ -323,18 +323,18 @@ def _opentitan_binary(ctx):
     return providers
 
 def _transitive_feature_transition_impl(settings, attr):
-    features = settings["//command_line_option:features"] + attr.transitive_features
+    features = settings["@lowrisc_opentitan//command_line_option:features"] + attr.transitive_features
     return {
-        "//command_line_option:features": features,
+        "@lowrisc_opentitan//command_line_option:features": features,
     }
 
 _transitive_feature_transition = transition(
     implementation = _transitive_feature_transition_impl,
     inputs = [
-        "//command_line_option:features",
+        "@lowrisc_opentitan//command_line_option:features",
     ],
     outputs = [
-        "//command_line_option:features",
+        "@lowrisc_opentitan//command_line_option:features",
     ],
 )
 
@@ -396,13 +396,13 @@ common_binary_attrs = {
     # I was unable to make that work.  See the comment in `exec_env.bzl`.
     "extract_sw_logs": attr.label(
         doc = "Software logs extraction script.",
-        default = "//util/device_sw_utils:extract_sw_logs_db",
+        default = "@lowrisc_opentitan//util/device_sw_utils:extract_sw_logs_db",
         executable = True,
         cfg = "exec",
     ),
     "rom_scramble_tool": attr.label(
         doc = "ROM scrambling tool.",
-        default = "//hw/ip/rom_ctrl/util:scramble_image",
+        default = "@lowrisc_opentitan//hw/ip/rom_ctrl/util:scramble_image",
         executable = True,
         cfg = "exec",
     ),
@@ -420,7 +420,7 @@ common_binary_attrs = {
     ),
     "_check_initial_coverage": attr.label(
         doc = "Tool to check the coverage counter initialization.",
-        default = "//util/coverage:check_initial_coverage",
+        default = "@lowrisc_opentitan//util/coverage:check_initial_coverage",
         executable = True,
         cfg = "exec",
     ),
@@ -435,7 +435,7 @@ opentitan_binary = rv_rule(
         ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_modid_check": attr.label(
-            default = "//rules/scripts:modid_check",
+            default = "@lowrisc_opentitan//rules/scripts:modid_check",
             executable = True,
             cfg = "exec",
         ),
@@ -445,21 +445,21 @@ opentitan_binary = rv_rule(
 )
 
 def _testing_bitstream_impl(settings, attr):
-    rom = attr.rom if attr.rom else "//hw/bitstream/universal:none"
-    otp = attr.otp if attr.otp else "//hw/bitstream/universal:none"
+    rom = attr.rom if attr.rom else "@lowrisc_opentitan//hw/bitstream/universal:none"
+    otp = attr.otp if attr.otp else "@lowrisc_opentitan//hw/bitstream/universal:none"
     return {
-        "//hw/bitstream/universal:rom": rom,
-        "//hw/bitstream/universal:otp": otp,
-        "//hw/bitstream/universal:env": attr.exec_env,
+        "@lowrisc_opentitan//hw/bitstream/universal:rom": rom,
+        "@lowrisc_opentitan//hw/bitstream/universal:otp": otp,
+        "@lowrisc_opentitan//hw/bitstream/universal:env": attr.exec_env,
     }
 
 _testing_bitstream = transition(
     implementation = _testing_bitstream_impl,
     inputs = [],
     outputs = [
-        "//hw/bitstream/universal:rom",
-        "//hw/bitstream/universal:otp",
-        "//hw/bitstream/universal:env",
+        "@lowrisc_opentitan//hw/bitstream/universal:rom",
+        "@lowrisc_opentitan//hw/bitstream/universal:otp",
+        "@lowrisc_opentitan//hw/bitstream/universal:env",
     ],
 )
 
@@ -557,7 +557,7 @@ opentitan_test = rv_rule(
         ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_modid_check": attr.label(
-            default = "//rules/scripts:modid_check",
+            default = "@lowrisc_opentitan//rules/scripts:modid_check",
             executable = True,
             cfg = "exec",
         ),
@@ -567,7 +567,7 @@ opentitan_test = rv_rule(
             cfg = "exec",
         ),
         "_collect_cc_coverage": attr.label(
-            default = "//util/coverage/collect_cc_coverage",
+            default = "@lowrisc_opentitan//util/coverage/collect_cc_coverage",
             executable = True,
             cfg = "exec",
         ),

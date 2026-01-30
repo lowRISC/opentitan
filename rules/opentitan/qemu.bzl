@@ -12,13 +12,13 @@ load(
     "get_override",
 )
 load(
-    "//rules/opentitan:exec_env.bzl",
+    "@lowrisc_opentitan//rules/opentitan:exec_env.bzl",
     "ExecEnvInfo",
     "common_test_setup",
     "exec_env_as_dict",
     "exec_env_common_attrs",
 )
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("@lowrisc_opentitan//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 _TEST_SCRIPT = """#!/bin/bash
 set -e
@@ -38,7 +38,7 @@ def qemu_params(
         tags = [],
         timeout = "short",
         local = True,
-        test_harness = "//rules/scripts:qemu_pass",
+        test_harness = "@lowrisc_opentitan//rules/scripts:qemu_pass",
         binaries = {},
         rom = None,
         rom_ext = None,
@@ -120,7 +120,7 @@ qemu_cfg = rule(
             executable = True,
             cfg = "exec",
             allow_files = True,
-            default = Label("//third_party/qemu:cfggen"),
+            default = Label("@lowrisc_opentitan//third_party/qemu:cfggen"),
         ),
     },
 )
@@ -157,7 +157,7 @@ qemu_otp = rule(
             executable = True,
             cfg = "exec",
             allow_files = True,
-            default = Label("//third_party/qemu:otptool"),
+            default = Label("@lowrisc_opentitan//third_party/qemu:otptool"),
         ),
     },
 )
@@ -212,7 +212,7 @@ qemu_flash = rule(
             executable = True,
             cfg = "exec",
             allow_files = True,
-            default = Label("//third_party/qemu:flashgen"),
+            default = Label("@lowrisc_opentitan//third_party/qemu:flashgen"),
         ),
     },
 )
@@ -239,32 +239,32 @@ sim_qemu = rule(
             executable = True,
             cfg = "exec",
             allow_files = True,
-            default = Label("//third_party/qemu:cfggen"),
+            default = Label("@lowrisc_opentitan//third_party/qemu:cfggen"),
         ),
         "otptool": attr.label(
             executable = True,
             cfg = "exec",
             allow_files = True,
-            default = Label("//third_party/qemu:otptool"),
+            default = Label("@lowrisc_opentitan//third_party/qemu:otptool"),
         ),
         "flashgen": attr.label(
             executable = True,
             cfg = "exec",
             allow_files = True,
-            default = Label("//third_party/qemu:flashgen"),
+            default = Label("@lowrisc_opentitan//third_party/qemu:flashgen"),
         ),
         "otp_sv": attr.label(
             allow_single_file = True,
             # TODO: should we really use Earl Grey as the default?
-            default = Label("//hw/top_earlgrey/ip_autogen/otp_ctrl:rtl/otp_ctrl_part_pkg.sv"),
+            default = Label("@lowrisc_opentitan//hw/top_earlgrey/ip_autogen/otp_ctrl:rtl/otp_ctrl_part_pkg.sv"),
         ),
         "lc_sv": attr.label(
             allow_single_file = True,
-            default = Label("//hw/ip/lc_ctrl:rtl/lc_ctrl_state_pkg.sv"),
+            default = Label("@lowrisc_opentitan//hw/ip/lc_ctrl:rtl/lc_ctrl_state_pkg.sv"),
         ),
         "top_hjson": attr.label(
             allow_single_file = True,
-            default = Label("//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson"),
+            default = Label("@lowrisc_opentitan//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson"),
         ),
     },
     toolchains = [LOCALTOOLS_TOOLCHAIN],

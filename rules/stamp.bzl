@@ -66,7 +66,7 @@ def stamp_flag(name):
         name = name,
         value = select({
             name + "_config": True,
-            "//conditions:default": False,
+            "@lowrisc_opentitan//conditions:default": False,
         }),
     )
 

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "@lowrisc_opentitan//rules/opentitan:defs.bzl",
     "opentitan_test",
     "verilator_params",
 )

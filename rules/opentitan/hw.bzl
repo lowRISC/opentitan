@@ -4,7 +4,7 @@
 
 """Rules to describe OpenTitan HW"""
 
-load("//rules:host.bzl", "host_tools_transition")
+load("@lowrisc_opentitan//rules:host.bzl", "host_tools_transition")
 
 def opentitan_ip(name, **kwargs):
     """
@@ -14,8 +14,8 @@ def opentitan_ip(name, **kwargs):
     ```
     opentitan_ip(
         name = "pwrmgr",
-        'hjson' = "//hw/top_earlgrey/ip_autogen/pwrmgr:data/pwrmgr.hjson",
-        'ipconfig' = "//hw/top_earlgrey/ip_autogen/pwrmgr:data/top_earlgrey_pwrmgr.ipconfig.hjson",
+        'hjson' = "@lowrisc_opentitan//hw/top_earlgrey/ip_autogen/pwrmgr:data/pwrmgr.hjson",
+        'ipconfig' = "@lowrisc_opentitan//hw/top_earlgrey/ip_autogen/pwrmgr:data/top_earlgrey_pwrmgr.ipconfig.hjson",
     )
     ```
 

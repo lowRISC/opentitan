@@ -110,7 +110,7 @@ copy_files = rule(
             doc = "An environment variable that holds the path to the root of the workspace.",
         ),
         "_runner": attr.label(
-            default = "//rules/scripts:copy_files.template.sh",
+            default = "@lowrisc_opentitan//rules/scripts:copy_files.template.sh",
             allow_single_file = True,
         ),
     },

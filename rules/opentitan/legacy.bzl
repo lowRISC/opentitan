@@ -40,8 +40,8 @@ def legacy_rom_targets(target, suffixes, testonly = False):
             name = "{}_{}".format(target, suffix),
             srcs = [":{}".format(target)],
             output_group = select({
-                "//sw/device:is_english_breakfast": "{}_rom32".format(suffix),
-                "//conditions:default": "{}_rom".format(suffix),
+                "@lowrisc_opentitan//sw/device:is_english_breakfast": "{}_rom32".format(suffix),
+                "@lowrisc_opentitan//conditions:default": "{}_rom".format(suffix),
             }),
             testonly = testonly,
             target_compatible_with = opentitan_select_top(
@@ -120,15 +120,15 @@ scramble_flash_vmem = rv_rule(
         "otp": attr.label(allow_single_file = True),
         "top_secret_cfg": attr.label(
             allow_single_file = True,
-            default = "//hw/top:secrets",
+            default = "@lowrisc_opentitan//hw/top:secrets",
             doc = "Generated top configuration file including secrets.",
         ),
         "otp_data_perm": attr.label(
-            default = "//util/design/data:data_perm",
+            default = "@lowrisc_opentitan//util/design/data:data_perm",
             doc = "Option to indicate OTP VMEM file bit layout.",
         ),
         "_tool": attr.label(
-            default = "@//util/design:gen-flash-img",
+            default = "@lowrisc_opentitan//util/design:gen-flash-img",
             executable = True,
             cfg = "exec",
         ),

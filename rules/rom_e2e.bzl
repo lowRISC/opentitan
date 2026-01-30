@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:const.bzl", "CONST")
+load("@lowrisc_opentitan//rules:const.bzl", "CONST")
 load("@bazel_skylib//lib:structs.bzl", "structs")
 
 _ALL_LC_STATE_VALS = structs.to_dict(CONST.LCV).values()

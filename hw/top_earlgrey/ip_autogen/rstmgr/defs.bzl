@@ -1,11 +1,11 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-load("//rules/opentitan:hw.bzl", "opentitan_ip")
+load("@lowrisc_opentitan//rules/opentitan:hw.bzl", "opentitan_ip")
 
 RSTMGR = opentitan_ip(
     name = "rstmgr",
-    hjson = "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr.hjson",
-    ipconfig = "//hw/top_earlgrey/ip_autogen/rstmgr/data:top_earlgrey_rstmgr.ipconfig.hjson",
-    extension = "//hw/top/dt:rstmgr_binding",
+    hjson = "@lowrisc_opentitan//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr.hjson",
+    ipconfig = "@lowrisc_opentitan//hw/top_earlgrey/ip_autogen/rstmgr/data:top_earlgrey_rstmgr.ipconfig.hjson",
+    extension = "@lowrisc_opentitan//hw/top/dt:rstmgr_binding",
 )

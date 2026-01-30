@@ -126,7 +126,7 @@ bitstreams_repo = repository_rule(
             doc = "Python interpreter to use.",
         ),
         "_cache_manager": attr.label(
-            default = Label("//rules/scripts:bitstreams_workspace.py"),
+            default = Label("@lowrisc_opentitan//rules/scripts:bitstreams_workspace.py"),
             allow_files = True,
         ),
     },
@@ -334,13 +334,13 @@ bitstream_fragment_from_manifest = rule(
         ),
         "_schema": attr.label(
             doc = "Path to bitstream cache manifest schema",
-            default = "//rules/scripts:bitstreams_manifest_schema",
+            default = "@lowrisc_opentitan//rules/scripts:bitstreams_manifest_schema",
             allow_single_file = True,
         ),
         "_fragment_extractor_tool": attr.label(
             doc = "Path to bitstream manifest fragment extractor tool",
             executable = True,
-            default = "//util/py/scripts:bitstreams_fragment_from_manifest",
+            default = "@lowrisc_opentitan//util/py/scripts:bitstreams_fragment_from_manifest",
             cfg = "exec",
         ),
     },

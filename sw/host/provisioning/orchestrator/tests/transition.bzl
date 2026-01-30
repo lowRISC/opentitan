@@ -4,31 +4,31 @@
 
 def _orchestrator_cw310_settings_impl(settings, attr):
     return {
-        "//hw/bitstream/universal:otp": "//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty",
-        "//hw/bitstream/universal:env": "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
+        "@lowrisc_opentitan//hw/bitstream/universal:otp": "@lowrisc_opentitan//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty",
+        "@lowrisc_opentitan//hw/bitstream/universal:env": "@lowrisc_opentitan//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
     }
 
 _orchestrator_cw310_settings = transition(
     implementation = _orchestrator_cw310_settings_impl,
     inputs = [],
     outputs = [
-        "//hw/bitstream/universal:otp",
-        "//hw/bitstream/universal:env",
+        "@lowrisc_opentitan//hw/bitstream/universal:otp",
+        "@lowrisc_opentitan//hw/bitstream/universal:env",
     ],
 )
 
 def _orchestrator_cw340_settings_impl(settings, attr):
     return {
-        "//hw/bitstream/universal:otp": "//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty",
-        "//hw/bitstream/universal:env": "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+        "@lowrisc_opentitan//hw/bitstream/universal:otp": "@lowrisc_opentitan//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty",
+        "@lowrisc_opentitan//hw/bitstream/universal:env": "@lowrisc_opentitan//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
     }
 
 _orchestrator_cw340_settings = transition(
     implementation = _orchestrator_cw340_settings_impl,
     inputs = [],
     outputs = [
-        "//hw/bitstream/universal:otp",
-        "//hw/bitstream/universal:env",
+        "@lowrisc_opentitan//hw/bitstream/universal:otp",
+        "@lowrisc_opentitan//hw/bitstream/universal:env",
     ],
 )
 

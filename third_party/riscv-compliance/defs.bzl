@@ -9,7 +9,7 @@ load(
     "dicts",
 )
 load(
-    "//rules/opentitan:defs.bzl",
+    "@lowrisc_opentitan//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
     "fpga_params",
@@ -55,7 +55,7 @@ def rv_compliance_test(name, arch):
         exec_env = EARLGREY_TEST_ENVS,
         linkopts = ["-Wl,--no-relax"],
         deps = [
-            "//sw/device/lib/testing/test_framework:ottf_main",
+            "@lowrisc_opentitan//sw/device/lib/testing/test_framework:ottf_main",
             "@riscv-compliance//:riscv-test-env",
         ],
     )

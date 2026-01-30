@@ -66,7 +66,7 @@ ujson_rust = rule(
             doc = "C preprocessor defines",
         ),
         "ujson_lib": attr.label(
-            default = "//sw/device/lib/ujson",
+            default = "@lowrisc_opentitan//sw/device/lib/ujson",
             doc = "Location of the ujson library",
             providers = [CcInfo],
         ),

@@ -2,11 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("//rules:rv.bzl", "rv_rule")
-load("//rules/opentitan:providers.bzl", "get_binary_files")
-load("//rules/opentitan:util.bzl", "get_override")
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
-load("//rules:host.bzl", "host_tools_transition")
+load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
+load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "get_binary_files")
+load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_override")
+load("@lowrisc_opentitan//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("@lowrisc_opentitan//rules:host.bzl", "host_tools_transition")
 
 PreSigningBinaryInfo = provider(fields = ["files"])
 SigningToolInfo = provider(fields = ["tool", "data", "env", "location"])
@@ -728,12 +728,12 @@ offline_signature_attach = rule(
 )
 
 def _clear_if_none_key(key_attr):
-    """Clear the key attribute if it is set to "//hw/signing:none_key.
+    """Clear the key attribute if it is set to "@lowrisc_opentitan//hw/signing:none_key.
 
     Args:
         key_attr: The key attribute.
     Returns:
-        The key attribute if it is not set to "//hw/signing:none_key" or {}.
+        The key attribute if it is not set to "@lowrisc_opentitan//hw/signing:none_key" or {}.
     """
     if not key_attr:
         return None

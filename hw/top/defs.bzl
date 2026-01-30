@@ -1,7 +1,7 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-load("//rules/opentitan:hw.bzl", "get_ip_attr", "get_top_attr", "has_ip_attr", "has_top_attr")
+load("@lowrisc_opentitan//rules/opentitan:hw.bzl", "get_ip_attr", "get_top_attr", "has_ip_attr", "has_top_attr")
 load("@tops_desc//:defs.bzl", _ALL_TOPS = "ALL_TOPS")
 
 ALL_TOPS = _ALL_TOPS
@@ -36,7 +36,7 @@ def opentitan_if_ip(ip, obj, default):
     cc_library(
       name = "my_library",
       defines = opentitan_if_ip("usbdev", ["HAS_USBDEV"], []),
-      deps = opentitan_if_ip("usbdev", ["//sw/device/lib/dif:usbdev"], []),
+      deps = opentitan_if_ip("usbdev", ["@lowrisc_opentitan//sw/device/lib/dif:usbdev"], []),
     )
     ```
     """
@@ -51,7 +51,7 @@ def opentitan_if_ip(ip, obj, default):
         "@lowrisc_opentitan//hw/top:is_{}".format(top): obj
         for top in compatible_tops
     } | {
-        "//conditions:default": default,
+        "@lowrisc_opentitan//conditions:default": default,
     })
 
 def opentitan_require_ip(ip):
@@ -80,9 +80,9 @@ def opentitan_select_top(values, default):
     alias(
       name = "my_alias",
       actual = opentitan_select_top({
-        "earlgrey": "//something:earlgrey",
-        ("englishbreakfast", "darjeeling"): "//something:else",
-      }, "//something:error")
+        "earlgrey": "@lowrisc_opentitan//something:earlgrey",
+        ("englishbreakfast", "darjeeling"): "@lowrisc_opentitan//something:else",
+      }, "@lowrisc_opentitan//something:error")
     )
     ```
     """
@@ -92,7 +92,7 @@ def opentitan_select_top(values, default):
             tops = [tops]
         for top in tops:
             branches["@lowrisc_opentitan//hw/top:is_{}".format(top)] = value
-    branches["//conditions:default"] = default
+    branches["@lowrisc_opentitan//conditions:default"] = default
     return select(branches)
 
 def opentitan_require_top(top):
@@ -152,7 +152,7 @@ def opentitan_select_top_attr(attr_name, required = True, default = None, fn = N
         if has_top_attr(top, attr_name)
     }
     if not required:
-        branches["//conditions:default"] = default
+        branches["@lowrisc_opentitan//conditions:default"] = default
         no_match_error = ""
     else:
         no_match_error = "the select top does not have attribute '{}'".format(attr_name)
@@ -224,7 +224,7 @@ def opentitan_select_ip_attr(ipname, attr_name, required = True, default = None,
         if has_ip_attr(top, ipname, attr_name)
     }
     if not required:
-        branches["//conditions:default"] = default
+        branches["@lowrisc_opentitan//conditions:default"] = default
         no_match_error = ""
     else:
         no_match_error = "the select top does not have IP {} or its IP does not have attribute '{}'".format(ipname, attr_name)
