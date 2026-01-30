@@ -112,7 +112,7 @@ opentitan_alias_top_attr(
 alias(
     name = "secrets",
     actual = select({
-        "@lowrisc_opentitan//hw/top:is_{}".format(top): ":top_{}_seed_secrets".format(top)
+        "//hw/top:is_{}".format(top): ":top_{}_seed_secrets".format(top)
         for top in ALL_TOP_NAMES
     }),
 )
