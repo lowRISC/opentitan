@@ -32,7 +32,7 @@ opentitan_manual_test = rule(
             mandatory = True,
         ),
         "_runner": attr.label(
-            default = "//util:run_manual_tests",
+            default = "@lowrisc_opentitan//util:run_manual_tests",
             executable = True,
             cfg = "exec",
         ),

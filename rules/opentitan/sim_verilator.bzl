@@ -5,7 +5,7 @@
 load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "SimVerilatorBinaryInfo")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback")
 load(
-    "//rules/opentitan:exec_env.bzl",
+    "@lowrisc_opentitan//rules/opentitan:exec_env.bzl",
     "ExecEnvInfo",
     "common_test_setup",
     "exec_env_as_dict",
@@ -16,7 +16,7 @@ load(
     "convert_to_scrambled_rom_vmem",
     "convert_to_vmem",
 )
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("@lowrisc_opentitan//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 _TEST_SCRIPT = """#!/bin/bash
 set -e

@@ -4,7 +4,7 @@
 
 """Unit tests for const.bzl"""
 
-load("//rules:const.bzl", "CONST", "get_lc_items", "hex", "hex_digits", "lcv_hw_to_sw")
+load("@lowrisc_opentitan//rules:const.bzl", "CONST", "get_lc_items", "hex", "hex_digits", "lcv_hw_to_sw")
 load("@bazel_skylib//lib:unittest.bzl", "asserts", "unittest")
 load("@bazel_skylib//lib:sets.bzl", "sets")
 

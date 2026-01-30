@@ -77,7 +77,7 @@ load(
 # The following definition is used to clear the key set in the signing
 # configuration for execution environments (exec_env) and opentitan_test
 # and opentitan_binary rules.
-CLEAR_KEY_SET = {"//signing:none_key": "none_key"}
+CLEAR_KEY_SET = {"@lowrisc_opentitan//signing:none_key": "none_key"}
 
 # Re-exports of names from transition.bzl
 OPENTITAN_CPU = _OPENTITAN_CPU
@@ -117,33 +117,33 @@ opentitan_manual_test = _opentitan_manual_test
 
 # The default set of test environments for Earlgrey.
 EARLGREY_TEST_ENVS = {
-    "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-    "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-    "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-    "//hw/top_earlgrey:sim_dv": None,
-    "//hw/top_earlgrey:sim_verilator": None,
-    "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+    "@lowrisc_opentitan//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+    "@lowrisc_opentitan//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+    "@lowrisc_opentitan//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    "@lowrisc_opentitan//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+    "@lowrisc_opentitan//hw/top_earlgrey:sim_dv": None,
+    "@lowrisc_opentitan//hw/top_earlgrey:sim_verilator": None,
+    "@lowrisc_opentitan//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
 }
 
 # The default set of test environments for Earlgrey.
 EARLGREY_SILICON_OWNER_ROM_EXT_ENVS = {
-    "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+    "@lowrisc_opentitan//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
 } | EXT_EXEC_ENV_SILICON_ROM_EXT
 
 # All CW340 test environments for Earlgrey.
 EARLGREY_CW340_TEST_ENVS = {
-    "//hw/top_earlgrey:fpga_cw340_test_rom": None,
-    "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-    "//hw/top_earlgrey:fpga_cw340_sival": None,
-    "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-    "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    "@lowrisc_opentitan//hw/top_earlgrey:fpga_cw340_test_rom": None,
+    "@lowrisc_opentitan//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+    "@lowrisc_opentitan//hw/top_earlgrey:fpga_cw340_sival": None,
+    "@lowrisc_opentitan//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+    "@lowrisc_opentitan//hw/top_earlgrey:fpga_cw340_rom_ext": None,
 }
 
 # The default set of test environments for Darjeeling.
 DARJEELING_TEST_ENVS = {
-    "//hw/top_darjeeling:sim_dv": None,
-    "//hw/top_darjeeling:sim_verilator": None,
+    "@lowrisc_opentitan//hw/top_darjeeling:sim_dv": None,
+    "@lowrisc_opentitan//hw/top_darjeeling:sim_verilator": None,
 }
 
 # Messages we expect for possible test outcomes.

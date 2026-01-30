@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:const.bzl", "CONST", "hex")
+load("@lowrisc_opentitan//rules:const.bzl", "CONST", "hex")
 
 _SEL_DEVICE_ID = 1
 _SEL_MANUF_STATE_CREATOR = (1 << 8)

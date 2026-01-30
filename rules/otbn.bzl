@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:rv.bzl", "rv_rule")
+load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 
 def _otbn_assemble_sources(ctx, additional_srcs = []):
@@ -321,7 +321,7 @@ otbn_library = rv_rule(
             cfg = "exec",
         ),
         "_otbn_as": attr.label(
-            default = "//hw/ip/otbn/util:otbn_as",
+            default = "@lowrisc_opentitan//hw/ip/otbn/util:otbn_as",
             executable = True,
             cfg = "exec",
         ),
@@ -362,16 +362,16 @@ otbn_binary = rv_rule(
             cfg = "exec",
         ),
         "_otbn_as": attr.label(
-            default = "//hw/ip/otbn/util:otbn_as",
+            default = "@lowrisc_opentitan//hw/ip/otbn/util:otbn_as",
             executable = True,
             cfg = "exec",
         ),
         "_otbn_data": attr.label(
-            default = "//hw/ip/otbn/data:all_files",
+            default = "@lowrisc_opentitan//hw/ip/otbn/data:all_files",
             allow_files = True,
         ),
         "_wrapper": attr.label(
-            default = "//util:otbn_build",
+            default = "@lowrisc_opentitan//util:otbn_build",
             executable = True,
             cfg = "exec",
         ),
@@ -416,26 +416,26 @@ otbn_sim_test = rv_rule(
             cfg = "exec",
         ),
         "_otbn_as": attr.label(
-            default = "//hw/ip/otbn/util:otbn_as",
+            default = "@lowrisc_opentitan//hw/ip/otbn/util:otbn_as",
             executable = True,
             cfg = "exec",
         ),
         "_otbn_data": attr.label(
-            default = "//hw/ip/otbn/data:all_files",
+            default = "@lowrisc_opentitan//hw/ip/otbn/data:all_files",
             allow_files = True,
         ),
         "_simulator": attr.label(
-            default = "//hw/ip/otbn/dv/otbnsim:standalone",
+            default = "@lowrisc_opentitan//hw/ip/otbn/dv/otbnsim:standalone",
             executable = True,
             cfg = "exec",
         ),
         "_sim_test_wrapper": attr.label(
-            default = "//hw/ip/otbn/util:otbn_sim_test",
+            default = "@lowrisc_opentitan//hw/ip/otbn/util:otbn_sim_test",
             executable = True,
             cfg = "exec",
         ),
         "_wrapper": attr.label(
-            default = "//util:otbn_build",
+            default = "@lowrisc_opentitan//util:otbn_build",
             executable = True,
             cfg = "exec",
         ),
@@ -482,26 +482,26 @@ otbn_autogen_sim_test = rv_rule(
         ),
         "seed": attr.int(mandatory = True),
         "_otbn_as": attr.label(
-            default = "//hw/ip/otbn/util:otbn_as",
+            default = "@lowrisc_opentitan//hw/ip/otbn/util:otbn_as",
             executable = True,
             cfg = "exec",
         ),
         "_otbn_data": attr.label(
-            default = "//hw/ip/otbn/data:all_files",
+            default = "@lowrisc_opentitan//hw/ip/otbn/data:all_files",
             allow_files = True,
         ),
         "_simulator": attr.label(
-            default = "//hw/ip/otbn/dv/otbnsim:standalone",
+            default = "@lowrisc_opentitan//hw/ip/otbn/dv/otbnsim:standalone",
             executable = True,
             cfg = "exec",
         ),
         "_sim_test_wrapper": attr.label(
-            default = "//hw/ip/otbn/util:otbn_sim_test",
+            default = "@lowrisc_opentitan//hw/ip/otbn/util:otbn_sim_test",
             executable = True,
             cfg = "exec",
         ),
         "_wrapper": attr.label(
-            default = "//util:otbn_build",
+            default = "@lowrisc_opentitan//util:otbn_build",
             executable = True,
             cfg = "exec",
         ),
@@ -522,7 +522,7 @@ otbn_consttime_test = rule(
         "secrets": attr.string_list(),
         "initial_constants": attr.string_list(),
         "_checker": attr.label(
-            default = "//hw/ip/otbn/util:check_const_time",
+            default = "@lowrisc_opentitan//hw/ip/otbn/util:check_const_time",
             executable = True,
             cfg = "exec",
         ),
@@ -534,7 +534,7 @@ otbn_insn_count_range = rule(
     attrs = {
         "deps": attr.label_list(providers = [OutputGroupInfo]),
         "_counter": attr.label(
-            default = "//hw/ip/otbn/util:get_instruction_count_range.py",
+            default = "@lowrisc_opentitan//hw/ip/otbn/util:get_instruction_count_range.py",
             allow_single_file = True,
         ),
     },

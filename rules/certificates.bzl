@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("@lowrisc_opentitan//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 def _certificate_codegen_impl(ctx):
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
@@ -119,12 +119,12 @@ def certificate_template(name, template, cert_format = "x509"):
 
     if cert_format == "x509":
         runtime_deps = [
-            "//sw/device/silicon_creator/lib/cert:asn1",
-            "//sw/device/silicon_creator/lib/cert:template",
+            "@lowrisc_opentitan//sw/device/silicon_creator/lib/cert:asn1",
+            "@lowrisc_opentitan//sw/device/silicon_creator/lib/cert:template",
         ]
     else:
         runtime_deps = [
-            "//sw/device/silicon_creator/lib/cert:cbor",
+            "@lowrisc_opentitan//sw/device/silicon_creator/lib/cert:cbor",
         ]
 
     native.cc_library(

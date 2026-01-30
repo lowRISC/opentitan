@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//hw/top:defs.bzl", "ALL_TOP_NAMES")
+load("@lowrisc_opentitan//hw/top:defs.bzl", "ALL_TOP_NAMES")
 
 DoxygenCcInputInfo = provider(
     fields = {
@@ -92,9 +92,9 @@ def _doxygen_gather_cc_impl(ctx):
     ]
 
 def _doxygen_gather_cc_transition_impl(settings, attr):
-    platform = str(attr.platform) if attr.platform != None else settings["//command_line_option:platforms"]
+    platform = str(attr.platform) if attr.platform != None else settings["@lowrisc_opentitan//command_line_option:platforms"]
     return {
-        "//command_line_option:platforms": platform,
+        "@lowrisc_opentitan//command_line_option:platforms": platform,
     }
 
 doxygen_gather_cc = rule(
@@ -112,8 +112,8 @@ doxygen_gather_cc = rule(
     provides = [DoxygenCcInputInfo],
     cfg = transition(
         implementation = _doxygen_gather_cc_transition_impl,
-        inputs = ["//command_line_option:platforms"],
-        outputs = ["//command_line_option:platforms"],
+        inputs = ["@lowrisc_opentitan//command_line_option:platforms"],
+        outputs = ["@lowrisc_opentitan//command_line_option:platforms"],
     ),
     doc = """
 This rule recursively gathers all source and headers files from cc_library.
@@ -131,7 +131,7 @@ alongside the include paths found in the CcInfo from the targets.
 def _doxygen_multitop_dispatch(settings, attr):
     return {
         top_name: {
-            "//hw/top": top_name,
+            "@lowrisc_opentitan//hw/top": top_name,
         }
         for top_name in ALL_TOP_NAMES
     }
@@ -214,7 +214,7 @@ doxygen_multitop = rule(
             cfg = transition(
                 implementation = _doxygen_multitop_dispatch,
                 inputs = [],
-                outputs = ["//hw/top"],
+                outputs = ["@lowrisc_opentitan//hw/top"],
             ),
         ),
     },

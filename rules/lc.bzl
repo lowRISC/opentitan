@@ -42,26 +42,26 @@ lc_raw_unlock_token = rule(
     attrs = {
         "src": attr.label(
             allow_single_file = [".rs.tpl"],
-            default = "//sw/device/silicon_creator/manuf/data:lc_raw_unlock_token.rs.tpl",
+            default = "@lowrisc_opentitan//sw/device/silicon_creator/manuf/data:lc_raw_unlock_token.rs.tpl",
             doc = "Life-cycle state definition file in Hjson format.",
         ),
         "lc_state_def": attr.label(
             allow_single_file = True,
-            default = "//hw/ip/lc_ctrl/data:lc_ctrl_state.hjson",
+            default = "@lowrisc_opentitan//hw/ip/lc_ctrl/data:lc_ctrl_state.hjson",
             doc = "Life-cycle state definition file in Hjson format.",
         ),
         "lc_raw_unlock_rust_template": attr.label(
             allow_single_file = True,
-            default = "//sw/device/silicon_creator/manuf/data:lc_raw_unlock_token.rs.tpl",
+            default = "@lowrisc_opentitan//sw/device/silicon_creator/manuf/data:lc_raw_unlock_token.rs.tpl",
             doc = "Life-cycle state definition file in Hjson format.",
         ),
         "top_secret_cfg": attr.label(
             allow_single_file = True,
-            default = "//hw/top:secrets",
+            default = "@lowrisc_opentitan//hw/top:secrets",
             doc = "Generated top configuration file including secrets.",
         ),
         "_tool": attr.label(
-            default = "//util/design:gen-lc-state-enc",
+            default = "@lowrisc_opentitan//util/design:gen-lc-state-enc",
             executable = True,
             cfg = "exec",
         ),

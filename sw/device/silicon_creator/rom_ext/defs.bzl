@@ -13,10 +13,10 @@ ROM_EXT_VERSION = struct(
 
 ROM_EXT_VARIATIONS = {
     "dice_x509": [
-        "//sw/device/silicon_creator/lib/cert:dice",
+        "@lowrisc_opentitan//sw/device/silicon_creator/lib/cert:dice",
     ],
     "dice_cwt": [
-        "//sw/device/silicon_creator/lib/cert:dice_cwt",
+        "@lowrisc_opentitan//sw/device/silicon_creator/lib/cert:dice_cwt",
     ],
 }
 

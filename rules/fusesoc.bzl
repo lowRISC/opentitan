@@ -132,7 +132,7 @@ fusesoc_build = rule(
         "verilator_options": attr.label(),
         "make_options": attr.label(),
         "_fusesoc": attr.label(
-            default = "//util:fusesoc_build",
+            default = "@lowrisc_opentitan//util:fusesoc_build",
             executable = True,
             cfg = "exec",
         ),

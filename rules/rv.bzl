@@ -5,30 +5,30 @@
 """Helpers for transitioning to the RISC-V target."""
 
 OPENTITAN_CPU = "@platforms//cpu:riscv32"
-OPENTITAN_PLATFORM = "//toolchain:opentitan_platform"
+OPENTITAN_PLATFORM = "@lowrisc_opentitan//toolchain:opentitan_platform"
 
 # This constant holds a dictionary of per-device dependencies which are used to
 # generate slightly different binaries for each hardware target, including two
 # simulation platforms (DV and Verilator), and two FPGA platforms (CW305
 # and CW310).
 PER_DEVICE_DEPS = {
-    "sim_verilator": ["//sw/device/lib/arch:sim_verilator"],
-    "sim_dv": ["//sw/device/lib/arch:sim_dv"],
-    "fpga_cw305": ["//sw/device/lib/arch:fpga_cw305"],
-    "fpga_cw310": ["//sw/device/lib/arch:fpga_cw310"],
+    "sim_verilator": ["@lowrisc_opentitan//sw/device/lib/arch:sim_verilator"],
+    "sim_dv": ["@lowrisc_opentitan//sw/device/lib/arch:sim_dv"],
+    "fpga_cw305": ["@lowrisc_opentitan//sw/device/lib/arch:fpga_cw305"],
+    "fpga_cw310": ["@lowrisc_opentitan//sw/device/lib/arch:fpga_cw310"],
 }
 
 def _opentitan_transition_impl(settings, attr):
-    coverage = settings["//command_line_option:collect_code_coverage"]
+    coverage = settings["@lowrisc_opentitan//command_line_option:collect_code_coverage"]
     if attr.collect_code_coverage != -1:
         coverage = bool(attr.collect_code_coverage)
     return {
-        "//command_line_option:platforms": attr.platform,
-        "//command_line_option:copt": settings["//command_line_option:copt"],
-        "//command_line_option:collect_code_coverage": coverage,
-        "//hw/bitstream/universal:rom": "//hw/bitstream/universal:none",
-        "//hw/bitstream/universal:otp": "//hw/bitstream/universal:none",
-        "//hw/bitstream/universal:env": "//hw/bitstream/universal:none",
+        "@lowrisc_opentitan//command_line_option:platforms": attr.platform,
+        "@lowrisc_opentitan//command_line_option:copt": settings["@lowrisc_opentitan//command_line_option:copt"],
+        "@lowrisc_opentitan//command_line_option:collect_code_coverage": coverage,
+        "@lowrisc_opentitan//hw/bitstream/universal:rom": "@lowrisc_opentitan//hw/bitstream/universal:none",
+        "@lowrisc_opentitan//hw/bitstream/universal:otp": "@lowrisc_opentitan//hw/bitstream/universal:none",
+        "@lowrisc_opentitan//hw/bitstream/universal:env": "@lowrisc_opentitan//hw/bitstream/universal:none",
     }
 
 opentitan_transition = transition(
@@ -39,16 +39,16 @@ opentitan_transition = transition(
     # - The features flags turn off compiler support for CPU extensions not
     #   present in the englishbreakfast rv32i implementation.
     inputs = [
-        "//command_line_option:copt",
-        "//command_line_option:collect_code_coverage",
+        "@lowrisc_opentitan//command_line_option:copt",
+        "@lowrisc_opentitan//command_line_option:collect_code_coverage",
     ],
     outputs = [
-        "//command_line_option:platforms",
-        "//command_line_option:copt",
-        "//command_line_option:collect_code_coverage",
-        "//hw/bitstream/universal:rom",
-        "//hw/bitstream/universal:otp",
-        "//hw/bitstream/universal:env",
+        "@lowrisc_opentitan//command_line_option:platforms",
+        "@lowrisc_opentitan//command_line_option:copt",
+        "@lowrisc_opentitan//command_line_option:collect_code_coverage",
+        "@lowrisc_opentitan//hw/bitstream/universal:rom",
+        "@lowrisc_opentitan//hw/bitstream/universal:otp",
+        "@lowrisc_opentitan//hw/bitstream/universal:env",
     ],
 )
 

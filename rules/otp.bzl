@@ -38,10 +38,10 @@ format expected by the image generation tool.
 
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("//rules:const.bzl", "CONST", "hex")
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
-load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
-load("//hw/top:defs.bzl", "opentitan_select_top_attr")
+load("@lowrisc_opentitan//rules:const.bzl", "CONST", "hex")
+load("@lowrisc_opentitan//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("@lowrisc_opentitan//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
+load("@lowrisc_opentitan//hw/top:defs.bzl", "opentitan_select_top_attr")
 
 def get_otp_images():
     """Returns a list of (otp_name, img_target) tuples.
@@ -52,29 +52,29 @@ def get_otp_images():
     """
 
     img_targets = [
-        "//hw/top_earlgrey/data/otp:img_dev",
-        "//hw/top_earlgrey/data/otp:img_rma",
-        "//hw/top_earlgrey/data/otp:img_test_locked0",
-        "//hw/top_earlgrey/data/otp:img_test_locked1",
-        "//hw/top_earlgrey/data/otp:img_test_locked2",
-        "//hw/top_earlgrey/data/otp:img_test_locked3",
-        "//hw/top_earlgrey/data/otp:img_test_locked4",
-        "//hw/top_earlgrey/data/otp:img_test_locked5",
-        "//hw/top_earlgrey/data/otp:img_test_locked6",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked0",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked1",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked1_initial",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked2",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked3",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked4",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked5",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked6",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked7",
-        "//hw/top_earlgrey/data/otp:img_prod",
-        "//hw/top_earlgrey/data/otp:img_prod_end",
-        "//hw/top_earlgrey/data/otp:img_exec_disabled",
-        "//hw/top_earlgrey/data/otp:img_bootstrap_disabled",
-        "//hw/top_earlgrey/data/otp:img_raw",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_dev",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_rma",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_test_locked0",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_test_locked1",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_test_locked2",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_test_locked3",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_test_locked4",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_test_locked5",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_test_locked6",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_test_unlocked0",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_test_unlocked1",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_test_unlocked1_initial",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_test_unlocked2",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_test_unlocked3",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_test_unlocked4",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_test_unlocked5",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_test_unlocked6",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_test_unlocked7",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_prod",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_prod_end",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_exec_disabled",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_bootstrap_disabled",
+        "@lowrisc_opentitan//hw/top_earlgrey/data/otp:img_raw",
     ]
 
     out = []
@@ -264,21 +264,21 @@ otp_image = rule(
         ),
         "lc_state_def": attr.label(
             allow_single_file = True,
-            default = "//hw/ip/lc_ctrl/data:lc_ctrl_state.hjson",
+            default = "@lowrisc_opentitan//hw/ip/lc_ctrl/data:lc_ctrl_state.hjson",
             doc = "Life-cycle state definition file in Hjson format.",
         ),
         "mmap_def": attr.label(
             allow_single_file = True,
-            default = "//hw/top:top_otp_map",
+            default = "@lowrisc_opentitan//hw/top:top_otp_map",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
         "top_secret_cfg": attr.label(
             allow_single_file = True,
-            default = "//hw/top:secrets",
+            default = "@lowrisc_opentitan//hw/top:secrets",
             doc = "Generated top configuration file including secrets.",
         ),
         "data_perm": attr.label(
-            default = "//util/design/data:data_perm",
+            default = "@lowrisc_opentitan//util/design/data:data_perm",
             doc = "Post-processing option to trigger permuting bit positions in memfile.",
         ),
         "verbose": attr.bool(
@@ -286,11 +286,11 @@ otp_image = rule(
             doc = "Display progress messages from image-generation tool.",
         ),
         "_tool": attr.label(
-            default = "//util/design:gen-otp-img",
+            default = "@lowrisc_opentitan//util/design:gen-otp-img",
             executable = True,
             cfg = "exec",
         ),
-    } | stamp_attr(-1, "//rules:stamp_flag"),
+    } | stamp_attr(-1, "@lowrisc_opentitan//rules:stamp_flag"),
 )
 
 def _otp_image_consts_impl(ctx):
@@ -336,22 +336,22 @@ otp_image_consts = rule(
         ),
         "lc_state_def": attr.label(
             allow_single_file = True,
-            default = "//hw/ip/lc_ctrl/data:lc_ctrl_state.hjson",
+            default = "@lowrisc_opentitan//hw/ip/lc_ctrl/data:lc_ctrl_state.hjson",
             doc = "Life-cycle state definition file in Hjson format.",
         ),
         "mmap_def": attr.label(
             allow_single_file = True,
-            default = "//hw/top:top_otp_map",
+            default = "@lowrisc_opentitan//hw/top:top_otp_map",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
         "top_secret_cfg": attr.label(
             allow_single_file = True,
-            default = "//hw/top:secrets",
+            default = "@lowrisc_opentitan//hw/top:secrets",
             doc = "Generated top configuration file including secrets.",
         ),
         "c_template": attr.label(
             allow_single_file = True,
-            default = "//util/design/data:otp_ctrl_img.c.tpl",
+            default = "@lowrisc_opentitan//util/design/data:otp_ctrl_img.c.tpl",
             doc = "OTP image header template.",
         ),
         "verbose": attr.bool(
@@ -359,11 +359,11 @@ otp_image_consts = rule(
             doc = "Display progress messages from image-generation tool.",
         ),
         "_tool": attr.label(
-            default = "//util/design:gen-otp-img",
+            default = "@lowrisc_opentitan//util/design:gen-otp-img",
             executable = True,
             cfg = "exec",
         ),
-    } | stamp_attr(-1, "//rules:stamp_flag"),
+    } | stamp_attr(-1, "@lowrisc_opentitan//rules:stamp_flag"),
 )
 
 # The following overlays are used to generate a generic OTP image with fake

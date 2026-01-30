@@ -15,7 +15,7 @@ load(
     "recursive_format",
 )
 load(
-    "//rules/opentitan:exec_env.bzl",
+    "@lowrisc_opentitan//rules/opentitan:exec_env.bzl",
     "ExecEnvInfo",
     "common_test_setup",
     "exec_env_as_dict",
@@ -26,7 +26,7 @@ load(
     "convert_to_scrambled_rom_vmem",
     "convert_to_vmem",
 )
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("@lowrisc_opentitan//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 _TEST_SCRIPT = """#!/bin/bash
 set -e
@@ -255,10 +255,10 @@ def fpga_params(
     if bitstream and (rom or otp):
         fail("Cannot use rom or otp with bitstream.")
     if not bitstream:
-        bitstream = "//hw/bitstream/universal:splice"
+        bitstream = "@lowrisc_opentitan//hw/bitstream/universal:splice"
 
     # Clear bitstream after the test if it changes the OTP.
-    post_test_harness = "//sw/host/opentitantool" if changes_otp else None
+    post_test_harness = "@lowrisc_opentitan//sw/host/opentitantool" if changes_otp else None
     post_test_cmd = "--rcfile= --logging=info --interface={interface} fpga clear-bitstream" if changes_otp else ""
     return struct(
         # We do not yet know what FPGA platform the test will target (as this is
