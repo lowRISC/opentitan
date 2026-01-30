@@ -33,6 +33,8 @@ module aes_control
   input  logic                      key_touch_forces_reseed_i,
   input  logic                      ctrl_gcm_qe_i,
   output logic                      ctrl_gcm_we_o,
+  input  logic                      ctrl_gcm_phase_i,
+  output logic                      gcm_init_done_o,
   input  gcm_phase_e                gcm_phase_i,
   input  logic                      start_i,
   input  logic                      key_iv_data_in_clear_i,
@@ -195,6 +197,7 @@ module aes_control
   // Multi-rail signals. These are outputs of the single-rail FSMs and need combining.
   logic          [Sp2VWidth-1:0] mr_ctrl_we;
   logic          [Sp2VWidth-1:0] mr_ctrl_gcm_we;
+  logic          [Sp2VWidth-1:0] mr_gcm_init_done;
   logic          [Sp2VWidth-1:0] mr_alert;
   logic          [Sp2VWidth-1:0] mr_data_in_we;
   data_out_sel_e [Sp2VWidth-1:0] mr_data_out_sel;
@@ -290,6 +293,8 @@ module aes_control
         .key_touch_forces_reseed_i ( key_touch_forces_reseed_i     ),
         .ctrl_gcm_qe_i             ( ctrl_gcm_qe_i                 ),
         .ctrl_gcm_we_o             ( mr_ctrl_gcm_we[i]             ), // AND-combine
+        .ctrl_gcm_phase_i          ( ctrl_gcm_phase_i              ),
+        .gcm_init_done_o           ( mr_gcm_init_done[i]           ), // AND-combine
         .gcm_phase_i               ( gcm_phase_i                   ),
         .start_i                   ( start_trigger                 ),
         .key_iv_data_in_clear_i    ( key_iv_data_in_clear_i        ),
@@ -392,6 +397,8 @@ module aes_control
         .key_touch_forces_reseed_i ( key_touch_forces_reseed_i     ),
         .ctrl_gcm_qe_i             ( ctrl_gcm_qe_i                 ),
         .ctrl_gcm_we_o             ( mr_ctrl_gcm_we[i]             ), // AND-combine
+        .ctrl_gcm_phase_i          ( ctrl_gcm_phase_i              ),
+        .gcm_init_done_o           ( mr_gcm_init_done[i]           ), // AND-combine
         .gcm_phase_i               ( gcm_phase_i                   ),
         .start_i                   ( start_trigger                 ),
         .key_iv_data_in_clear_i    ( key_iv_data_in_clear_i        ),
@@ -504,6 +511,7 @@ module aes_control
   // AND: Only if all bits are high, the corresponding action should be triggered.
   assign ctrl_we_o                 = &mr_ctrl_we;
   assign ctrl_gcm_we_o             = &mr_ctrl_gcm_we;
+  assign gcm_init_done_o           = &mr_gcm_init_done;
   assign data_in_we_o              = &mr_data_in_we;
   assign key_iv_data_in_clear_we_o = &mr_key_iv_data_in_clear_we;
   assign data_out_clear_we_o       = &mr_data_out_clear_we;

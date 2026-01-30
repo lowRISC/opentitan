@@ -661,12 +661,10 @@ module aes_ghash
         in_ready_o = SP2V_HIGH;
         if (in_valid_i == SP2V_HIGH) begin
           if (clear_i) begin
-            // Clearing has highest priority. In case of the masked implementation, we clear the
-            // state using the initial state (the cipher core output, for which both shares are
-            // random at this point). For the unmasked implementation, we use the unmasked cipher
-            // core output.
+            // Clearing has highest priority. We clear the state using the unmasked cipher core
+            // output which is randomized at this point.
             s_we              = SP2V_HIGH;
-            ghash_state_sel   = SecMasking ? GHASH_STATE_INIT : GHASH_STATE_ADD;
+            ghash_state_sel   = GHASH_STATE_ADD;
             ghash_state_we[0] = SP2V_HIGH;
             ghash_state_we[1] = SP2V_HIGH;
             hash_subkey_we    = SP2V_HIGH;
@@ -677,7 +675,7 @@ module aes_ghash
             // This can be done by using the multipliers.
             if (SecMasking) begin
               gf_mult0_en_d     = 1'b1;
-              gf_mult1_in_sel_d = MULT_IN_STATE0;
+              gf_mult1_in_sel_d = MULT_IN_STATE1;
               aes_ghash_ns      = GHASH_MASKED_INIT;
             end
 
@@ -781,6 +779,9 @@ module aes_ghash
         // 2.  S0 * H1
         //
         // S0 and S1 have been loaded into the GHASH state registers previsously.
+        //
+        // This state is also used as part of the clearing sequence. Then, we multiply each state
+        // share by the corresponding share of the cleared hash subkey.
         gf_mult_req = 2'b11;
         if (gf_mult_ack_pre[0]) begin
           corr0_en_d = 1'b1;
@@ -925,11 +926,20 @@ module aes_ghash
         if (out_ready_i == SP2V_HIGH) begin
           add_s_en_d        = 1'b0;
           s_we              = SP2V_HIGH;
-          ghash_state_sel   = SecMasking ? GHASH_STATE_INIT : GHASH_STATE_ADD;
+          ghash_state_sel   = GHASH_STATE_ADD;
           ghash_state_we[0] = SP2V_HIGH;
           ghash_state_we[1] = SP2V_HIGH;
           hash_subkey_we    = SP2V_HIGH;
-          aes_ghash_ns      = SecMasking ? GHASH_MASKED_INIT : GHASH_IDLE;
+
+          // In case of the masked implementation, also the correction terms need to be cleared.
+          // This can be done by using the multipliers.
+          if (SecMasking) begin
+            gf_mult0_en_d     = 1'b1;
+            gf_mult1_in_sel_d = MULT_IN_STATE1;
+            aes_ghash_ns      = GHASH_MASKED_INIT;
+          end else begin
+            aes_ghash_ns      = GHASH_IDLE;
+          end
         end
       end
 
