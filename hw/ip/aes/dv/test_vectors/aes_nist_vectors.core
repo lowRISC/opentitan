@@ -10,6 +10,7 @@ filesets:
       - lowrisc:ip:aes
     files:
       - nist_vectors_pkg.sv
+      - nist_vectors_gcm_pkg.sv
     file_type: systemVerilogSource
 
 targets:

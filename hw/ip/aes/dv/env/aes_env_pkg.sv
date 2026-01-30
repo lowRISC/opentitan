@@ -32,7 +32,9 @@ package aes_env_pkg;
   typedef enum int {
     AES_CFG     = 0,
     AES_DATA    = 1,
-    AES_ERR_INJ = 2
+    AES_ERR_INJ = 2,
+    AES_GCM_AAD = 3,
+    AES_GCM_TAG = 4
   } aes_item_type_e;
 
   typedef enum int {

@@ -115,6 +115,12 @@
       reseed: 1
     }
     {
+      name: aes_nist_vectors_gcm
+      uvm_test: aes_wake_up_test
+      uvm_test_seq: aes_nist_vectors_gcm_vseq
+      reseed: 1
+    }
+    {
       name: aes_deinit
       uvm_test: aes_deinit_test
       uvm_test_seq: aes_deinit_vseq
