@@ -126,7 +126,7 @@ TEST_F(IsfbTest, InvalidManifestProductExpressionCount) {
           },
       // The product expression count is larger than what is allowed in the
       // ownership configuration.
-      .product_expr_count = 4,
+      .product_expr_count = 5,
   };
   uint32_t checks_performed_count;
   rom_error_t error =

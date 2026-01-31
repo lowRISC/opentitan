@@ -190,6 +190,7 @@ ld_library(
             "//sw/device/silicon_creator/lib/drivers:rnd",
             "//sw/device/silicon_creator/lib/drivers:uart",
             "//sw/device/silicon_creator/lib/ownership",
+            "//sw/device/silicon_creator/lib/ownership:isfb",
             "//sw/device/silicon_creator/lib/ownership:owner_verify",
             "//sw/device/silicon_creator/lib/ownership:ownership_activate",
             "//sw/device/silicon_creator/lib/ownership:ownership_unlock",

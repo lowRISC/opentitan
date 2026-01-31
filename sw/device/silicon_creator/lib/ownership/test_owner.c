@@ -71,6 +71,8 @@
   (owner_keydata_t) { .ecdsa = UNLOCK_ECDSA_P256 }
 #endif
 
+// The following preprocessor symbols are only relevant when
+// WITH_RESCUE_PROTOCOL is defined.
 #ifndef WITH_RESCUE_GPIO_PARAM
 #define WITH_RESCUE_GPIO_PARAM 0
 #endif
@@ -82,6 +84,15 @@
 #endif
 #ifndef WITH_RESCUE_TRIGGER
 #define WITH_RESCUE_TRIGGER 1 /* default to UartBreak */
+#endif
+#ifndef WITH_RESCUE_COMMAND_ALLOW
+#define WITH_RESCUE_COMMAND_ALLOW                                            \
+  kRescueModeBootLog, kRescueModeBootSvcRsp, kRescueModeBootSvcReq,          \
+      kRescueModeOwnerBlock, kRescueModeOwnerPage0, kRescueModeOwnerPage1,   \
+      kRescueModeOpenTitanID, kRescueModeFirmware, kRescueModeFirmwareSlotB, \
+      kBootSvcEmptyReqType, kBootSvcNextBl0SlotReqType,                      \
+      kBootSvcMinBl0SecVerReqType, kBootSvcOwnershipActivateReqType,         \
+      kBootSvcOwnershipUnlockReqType,
 #endif
 
 rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
@@ -231,25 +242,40 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
       .start = 32,
       .size = 224,
   };
-  const uint32_t commands[] = {
-      kRescueModeBootLog,
-      kRescueModeBootSvcRsp,
-      kRescueModeBootSvcReq,
-      kRescueModeOwnerBlock,
-      kRescueModeOwnerPage0,
-      kRescueModeOwnerPage1,
-      kRescueModeOpenTitanID,
-      kRescueModeFirmware,
-      kRescueModeFirmwareSlotB,
-      kBootSvcEmptyReqType,
-      kBootSvcNextBl0SlotReqType,
-      kBootSvcMinBl0SecVerReqType,
-      kBootSvcOwnershipActivateReqType,
-      kBootSvcOwnershipUnlockReqType,
-  };
+  const uint32_t commands[] = {WITH_RESCUE_COMMAND_ALLOW};
   memcpy(&rescue->command_allow, commands, sizeof(commands));
   rescue->header.length += sizeof(commands);
   end = (uintptr_t)rescue + rescue->header.length;
+#endif
+#ifdef WITH_ISFB
+  owner_flash_info_config_t *info = (owner_flash_info_config_t *)end;
+  info->header = (tlv_header_t){
+      .tag = kTlvTagInfoConfig,
+      .length = sizeof(owner_flash_info_config_t) + sizeof(owner_info_page_t),
+  };
+  info->config[0] = (owner_info_page_t){
+      .bank = 0,
+      .page = 5,
+      // Access: -erase, +program, +read.
+      .access = 0x066,
+      .properties = 0,
+  };
+  end = (uintptr_t)info + info->header.length;
+  owner_isfb_config_t *isfb = (owner_isfb_config_t *)end;
+  *isfb = (owner_isfb_config_t){
+      .header =
+          {
+              .tag = kTlvTagIntegrationSpecificFirmwareBinding,
+              .length = sizeof(owner_isfb_config_t),
+          },
+      .bank = 0,
+      .page = 5,
+      // erase extension present, node-locked and specific key domain.
+      .erase_conditions = 0x666,
+      .key_domain = kOwnerAppDomainProd,
+      .product_words = 2,
+  };
+  end = (uintptr_t)isfb + isfb->header.length;
 #endif
   // Fill the remainder of the data segment with the end tag (0x5a5a5a5a).
   size_t len = (uintptr_t)(owner_page[0].data + sizeof(owner_page[0].data)) -

@@ -117,6 +117,10 @@ CONST = struct(
         ROM = struct(
             IMM_SECTION = 0x034d5203,
         ),
+        ISFB = struct(
+            STRIKE_MASK = 0x624f5707,
+            PRODUCT_EXP = 0x634f5707,
+        ),
         UNKNOWN = 0xffffffff,
         OK = 0x739,
     ),

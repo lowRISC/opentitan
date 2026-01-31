@@ -245,4 +245,43 @@ enum {
 OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_show_faults(
     const dif_flash_ctrl_state_t *flash_state);
+
+/**
+ * Print the properties of a flash data region configuration.
+ *
+ * This prints:
+ *
+ * data region n=<index> st=<start> sz=<size> RD-WR-ER-SC-EC-HE LK
+ *
+ * The various properties are printed depending on their mubi bool value:
+ * - The property (e.g. `RD`, `WR`, etc) is printed if enabled by Mubi4True.
+ * - The string `xx` is printed if disabled by Mubi4False.
+ * - The string `uu` is printed if disabled by any other non-True value.
+ *
+ * @param index The index of the region.
+ * @param p The properties of the region.
+ * @param locked Whether or not the region is locked.
+ */
+void flash_ctrl_testutils_data_region_print(
+    size_t index, dif_flash_ctrl_data_region_properties_t *p, bool locked);
+
+/**
+ * Print the properties of a flash data region configuration.
+ *
+ * This prints:
+ *
+ * info region bank=<bank> part=<partition> page=<page> RD-WR-ER-SC-EC-HE LK
+ *
+ * The various properties are printed depending on their mubi bool value:
+ * - The property (e.g. `RD`, `WR`, etc) is printed if enabled by Mubi4True.
+ * - The string `xx` is printed if disabled by Mubi4False.
+ * - The string `uu` is printed if disabled by any other non-True value.
+ *
+ * @param region The info region descriptor.
+ * @param p The properties of the region.
+ * @param locked Whether or not the region is locked.
+ */
+void flash_ctrl_testutils_info_region_print(
+    dif_flash_ctrl_info_region_t region, dif_flash_ctrl_region_properties_t *p,
+    bool locked);
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_FLASH_CTRL_TESTUTILS_H_
