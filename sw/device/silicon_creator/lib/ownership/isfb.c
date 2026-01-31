@@ -96,8 +96,11 @@ rom_error_t isfb_boot_request_process(const manifest_ext_isfb_t *ext,
   // The `product_expr_count` boundary check is performed at the beginning of
   // the function.
   for (i = 0; i < ext->product_expr_count; ++i) {
+    // The expression below wants to be (expr & mask) == value, but the user of
+    // the ISFB feature wants to use the mask value of zero to mark the image as
+    // unconstrained.
     if ((product_expr[i] & ext->product_expr[i].mask) ==
-        ext->product_expr[i].value) {
+        (ext->product_expr[i].value & ext->product_expr[i].mask)) {
       pe_cnt_ok++;
     } else {
       p_cnt_bad++;
