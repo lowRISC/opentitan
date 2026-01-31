@@ -432,7 +432,18 @@ typedef struct owner_rescue_config {
   uint8_t detect;
   /** The start offset of the rescue region in flash (in pages). */
   uint16_t start;
-  /** The size of the rescue region in flash (in pages). */
+  /**
+   * The size of the rescue region in flash (in pages).
+   *
+   *           15 14                 0
+   * +-----------+--------------------+
+   * | EraseBoth |               Size |
+   * +-----------+--------------------+
+   *
+   * EraseBoth:
+   *  0 - Erase the requested region to be rescue.
+   *  1 - Erase rescuable regions in both slots.
+   */
   uint16_t size;
   /** An allowlist of rescue and boot_svc commands that may be invoked by the
    * rescue protocol.  The commands are identified by their 4-byte tags (tag
@@ -457,6 +468,8 @@ OT_ASSERT_SIZE(owner_rescue_config_t, 16);
 #define RESCUE_MISC_GPIO_VALUE_BIT 0
 #define RESCUE_DETECT ((bitfield_field32_t){.mask = 0x03, .index = 6})
 #define RESCUE_DETECT_INDEX ((bitfield_field32_t){.mask = 0x3F, .index = 0})
+#define RESCUE_ERASE_BOTH_SLOTS_BIT 15
+#define RESCUE_REGION_SIZE ((bitfield_field32_t){.mask = 0x7FFF, .index = 0})
 
 typedef enum rescue_protocol {
   kRescueProtocolXmodem = 'X',

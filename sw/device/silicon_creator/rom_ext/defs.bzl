@@ -191,6 +191,16 @@ TEST_OWNER_CONFIGS = {
         ],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
     },
+    "xmodem_erase_both": {
+        # Enable Xmodem rescue with enter-on-fail and a timeout.
+        "owner_defines": [
+            # 0x58 is 'X'modem.
+            "WITH_RESCUE_PROTOCOL=0x58",
+            # EraseBoth 0x8000 + Size 0x80 (128 pages).
+            "WITH_RESCUE_SIZE=0x8080",
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
     "spidfu_rescue_disability": {
         "owner_defines": [
             # 0x53 is 'S'pi.
