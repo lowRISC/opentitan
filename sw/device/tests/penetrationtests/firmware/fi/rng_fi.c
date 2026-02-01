@@ -41,9 +41,6 @@ static dif_entropy_src_t entropy_src;
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
-static bool disable_health_check;
-
-static bool firmware_override_init;
 
 static const uint32_t kInputMsg[kCsrngBiasFWFifoBufferSize] = {
     0xa52a0da9, 0xcae141b2, 0x6d5bab9d, 0x2c3e5cc0, 0x225afc93, 0x5d31a610,
@@ -219,41 +216,41 @@ status_t handle_rng_fi_firmware_override(ujson_t *uj) {
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  if (!firmware_override_init) {
-    // Check if we keep heal tests enabled.
-    rng_fi_fw_overwrite_health_t uj_data;
-    TRY(ujson_deserialize_rng_fi_fw_overwrite_health_t(uj, &uj_data));
-    disable_health_check = uj_data.disable_health_check;
+  rng_fi_fw_overwrite_health_t uj_data;
+  TRY(ujson_deserialize_rng_fi_fw_overwrite_health_t(uj, &uj_data));
 
-    firmware_override_init = true;
-  }
-
+  // Stop the entropy complex.
   TRY(entropy_testutils_stop_all());
 
-  if (disable_health_check) {
+  if (uj_data.disable_health_check) {
     // Disable all health tests.
     TRY(entropy_testutils_disable_health_tests(&entropy_src));
   }
 
+  // Enable firmware override mode
   TRY(entropy_testutils_fw_override_enable(&entropy_src, kEntropyFifoBufferSize,
                                            /*route_to_firmware=*/true,
                                            /*bypass_conditioner=*/true));
 
-  entropy_data_flush(&entropy_src);
+  // Flush any residual data in the observation FIFO.
+  size_t len;
+  do {
+    len = kEntropyFifoBufferSize;
+    TRY(dif_entropy_src_observe_fifo_nonblocking_read(&entropy_src, NULL,
+                                                      &len));
+  } while (len > 0);
 
   uint32_t buf[kEntropyFifoBufferSize] = {0};
 
   pentest_set_trigger_high();
   asm volatile(NOP30);
-  for (size_t it = 0; it < kEntropyFifoBufferSize; it++) {
-    while (buf[it] == 0) {
-      TRY(dif_entropy_src_observe_fifo_blocking_read(&entropy_src, &buf[it],
-                                                     kEntropyFifoBufferSize));
-    }
-  }
+  TRY(dif_entropy_src_observe_fifo_blocking_read(&entropy_src, buf,
+                                                 kEntropyFifoBufferSize));
 
   asm volatile(NOP30);
   pentest_set_trigger_low();
+
+  TRY(entropy_testutils_stop_all());
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -434,9 +431,6 @@ status_t handle_rng_fi_edn_init(ujson_t *uj) {
   TRY(dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn0));
   TRY(dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn1));
 
-  firmware_override_init = false;
-
-  // Read different SKU config fields and return to host.
   TRY(pentest_send_sku_config(uj));
 
   return OK_STATUS();
