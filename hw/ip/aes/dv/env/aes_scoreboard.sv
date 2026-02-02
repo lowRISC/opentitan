@@ -638,29 +638,42 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
   virtual task compare();
     string txt="";
-    bit [3:0][31:0] tmp_input;
-    bit [3:0][31:0] tmp_output;
-    bit [3:0][31:0] tag_out;
     forever begin
       bit operation;
       int crypto_res;
       aes_message_item msg;
-      bit [7:0] in_msg[];
       bit [7:0] in_aad[];
+      bit [3:0][31:0] predicted_tag;
+      bit [3:0][31:0] out_tag;
       msg_fifo.get(msg);
 
       if (msg.aes_mode != AES_NONE && !msg.skip_msg) begin
         msg.alloc_predicted_msg();
 
-        //ref-model     / operation     / cipher mode /    IV   / key_len   / key /data i /data o //
         operation = msg.aes_operation == AES_ENC ? 1'b0 :
                     msg.aes_operation == AES_DEC ? 1'b1 : 1'b0;
 
+        if (msg.aes_mode == AES_GCM) begin
+          in_aad = msg.input_aad;
+          out_tag = msg.output_tag;
+        end else begin
+          // All modes except GCM do not take an AAD as an input. Just pass '0
+          // to avoid passing a NULL object to the C_DPI library.
+          in_aad = {'0};
+          // As only GCM produces an tag, set it to 0 for all other modes. The
+          // C_DPI library ignores it for those modes.
+          out_tag = '0;
+        end
+
+        // ref-model    / operation     / chipher mode / IV             //
+        // key_len      / key           / data length  / AAD length     //
+        // data         / AAD           / tag          / data out       //
+        // tag out      / crypto lib error code                         //
         c_dpi_aes_crypt_message(cfg.ref_model, operation, msg.aes_mode, msg.aes_iv,
                                 msg.aes_keylen, msg.aes_key[0] ^ msg.aes_key[1],
                                 msg.message_length, msg.aad_length, msg.input_msg,
-                                msg.input_aad, msg.output_tag, msg.predicted_msg,
-                                tag_out, crypto_res);
+                                in_aad, out_tag, msg.predicted_msg, predicted_tag,
+                                crypto_res);
         if (crypto_res < 0) begin
           // The underlying c_dpi cyrpto lib returns an error code < 0 if something
           // is wrong.
@@ -702,16 +715,16 @@ class aes_scoreboard extends cip_base_scoreboard #(
         // and we check the error code above.
         if (msg.aes_mode == AES_GCM && msg.aes_operation == AES_ENC) begin
           txt = "";
-          tag_out = aes_transpose(tag_out);
-          foreach(tag_out[n]) begin
-            if ((tag_out[n] != msg.output_tag[n]) && msg.output_tag_vld) begin
+          predicted_tag = aes_transpose(predicted_tag);
+          foreach(predicted_tag[n]) begin
+            if ((predicted_tag[n] != msg.output_tag[n]) && msg.output_tag_vld) begin
               txt = {"\t TEST FAILED TAGS DID NOT MATCH \n ", txt};
 
               txt = {txt,
                   $sformatf("\n\n\t ----| ACTUAL OUTPUT DID NOT MATCH PREDICTED OUTPUT |----")};
               txt = {txt,
                   $sformatf("\n\t ----| FAILED AT WORD #%0d \t ACTUAL: 0x%h \t PREDICTED: 0x%h ",
-                                    n, tag_out[n], msg.output_tag[n])};
+                                    n, predicted_tag[n], msg.output_tag[n])};
               `uvm_fatal(`gfn, $sformatf(" # %0d  \n\t %s \n", cfg.good_cnt, txt))
             end
           end
