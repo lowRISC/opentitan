@@ -87,13 +87,20 @@ hardened_bool_t owner_block_newversion_mode(void);
 hardened_bool_t owner_block_page1_valid_for_transfer(boot_data_t *bootdata);
 
 /**
- * Initialize the owner config with default values.
+ * Clear all settings in the owner config.
  *
  * The sram_exec mode is set to DisabledLocked and the three configuration
  * pointers are set to kHardenedBoolFalse.
  *
- * The default implementation is weak and can be overridden for SKU-specific
- * defaults.
+ * @param config A pointer to a config struct holding pointers to config items.
+ */
+void owner_config_clear(owner_config_t *config);
+
+/**
+ * Initialize the owner config with default fallback values.
+ *
+ * The default implementation calls `owner_config_clear`, and is weak so it can
+ * be overridden for SKU-specific defaults.
  *
  * @param config A pointer to a config struct holding pointers to config items.
  */

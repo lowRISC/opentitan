@@ -70,6 +70,23 @@ _CONFIGS = {
         "setup": "--exec=\"gpio set --mode OpenDrain Ioa2\"",
         "tags": [],
     },
+    "spidfu_custom_fallback_owner": {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_custom_fallback_owner",
+        # Use spi-dfu, trigger with GPIO IOA2 high.
+        "params": "-p spi-dfu -t gpio -v +Ioa2",
+        "setup": "--exec=\"gpio set --mode OpenDrain Ioa2\"",
+        "tags": [],
+    },
+}
+
+_FAULT_CONFIG = {
+    "spidfu_fault_to_fallback_owner": {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_fault_to_fallback_owner",
+        # Use spi-dfu, trigger with GPIO IOA2 high.
+        "params": "-p spi-dfu -t gpio -v +Ioa2",
+        "setup": "--exec=\"gpio set --mode OpenDrain Ioa2\"",
+        "tags": [],
+    },
 }
 
 [
@@ -634,7 +651,7 @@ opentitan_test(
             test_harness = "//sw/host/tests/rescue:rescue_test",
         ),
     )
-    for protocol, config in _CONFIGS.items()
+    for protocol, config in (_CONFIGS | _FAULT_CONFIG).items()
 ]
 
 [
