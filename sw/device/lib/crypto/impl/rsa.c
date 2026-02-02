@@ -516,7 +516,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
       rsa_3072_private_key_t *sk =
           (rsa_3072_private_key_t *)private_key->keyblob;
       HARDENED_TRY(rsa_keygen_3072_finalize(pk, sk));
-      size_used = launder32(size_used) | kOtcryptoRsaSize2048;
+      size_used = launder32(size_used) | kOtcryptoRsaSize3072;
       break;
     }
     case kOtcryptoRsaSize4096: {
@@ -525,7 +525,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
       rsa_4096_private_key_t *sk =
           (rsa_4096_private_key_t *)private_key->keyblob;
       HARDENED_TRY(rsa_keygen_4096_finalize(pk, sk));
-      size_used = launder32(size_used) | kOtcryptoRsaSize2048;
+      size_used = launder32(size_used) | kOtcryptoRsaSize4096;
       break;
     }
     default:
