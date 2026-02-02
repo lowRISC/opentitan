@@ -1,0 +1,31 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // FI-specific overrides.
+  overrides: [
+    // Simulator used to sign off this block.
+    {
+      name: tool
+      value: z01x
+    }
+    // Fusesoc core file used for building the file list.
+    {
+      name: fusesoc_core
+      value: "lowrisc:dv:sram_ctrl_fi_sim:0.1"
+    }
+    // Use the VCS build mode for the DPI scrambled memory model even when
+    // running with the z01x tool.
+    {
+      name: en_build_modes
+      value: ["vcs_memutil_dpi_scrambled_build_opts"]
+    }
+    // Add the FI strobe module to the simulation tops.
+    {
+      name: sim_tops
+      value: ["{tb}", "sram_ctrl_bind", "sram_ctrl_cov_bind",
+              "sec_cm_prim_onehot_check_bind", "sec_cm_prim_count_bind",
+              "strobe"]
+    }
+  ]
+}
