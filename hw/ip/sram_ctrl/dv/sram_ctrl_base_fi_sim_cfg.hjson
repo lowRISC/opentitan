@@ -1,0 +1,173 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Name of the sim cfg - typically same as the name of the DUT.
+  name: sram_ctrl
+
+  // Top level dut name (sv module).
+  dut: sram_ctrl
+
+  // Top level testbench name (sv module).
+  tb: tb
+
+  // Simulator used to sign off this block
+  tool: z01x
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:dv:sram_ctrl_fi_sim:0.1
+
+  // Testplan hjson file.
+  testplan: "{proj_root}/hw/ip/sram_ctrl/data/sram_ctrl_testplan.hjson"
+
+  // RAL spec - used to generate the RAL model.
+  ral_spec: "{proj_root}/hw/ip/sram_ctrl/data/sram_ctrl.hjson"
+
+  // Import additional common sim cfg files.
+  import_cfgs: [// Project wide common sim cfg file
+                "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
+                // Config files to get the correct flags for prim_ram_1p_scr
+                "{proj_root}/hw/dv/verilator/memutil_dpi_scrambled_opts.hjson",
+                // Common CIP test lists
+                "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"
+                "{proj_root}/hw/dv/tools/dvsim/tests/passthru_mem_intg_tests.hjson"
+                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"
+                ]
+
+  en_build_modes: ["vcs_memutil_dpi_scrambled_build_opts"]
+
+  // Add additional tops for simulation.
+  sim_tops: ["sram_ctrl_bind", "sram_ctrl_cov_bind",
+             "sec_cm_prim_onehot_check_bind", "sec_cm_prim_count_bind",
+             "strobe"]
+
+  // Default iterations for all tests - each test entry can override this.
+  reseed: 50
+
+  vcs_cov_excl_files: ["{proj_root}/hw/ip/sram_ctrl/dv/cov/sram_ctrl_cov_excl.el",
+                       "{proj_root}/hw/ip/sram_ctrl/dv/cov/sram_ctrl_unr_excl.el"]
+
+  // Need to override the default output directory
+  overrides: [
+    {
+      name: scratch_path
+      value: "{scratch_base_path}/{name}_{variant}-{flow}-{tool}"
+    }
+    {
+      name: rel_path
+      value: "hw/ip/{name}_{variant}/dv"
+    }
+  ]
+
+  // Default UVM test and seq class name.
+  uvm_test: sram_ctrl_base_test
+  uvm_test_seq: sram_ctrl_base_vseq
+
+  // Increase timeout for all tests and enable cdc instrumentation.
+  run_opts: ["+test_timeout_ns=1000000000",
+             "+cdc_instrumentation_enabled=1"]
+
+  // List of test specifications.
+  tests: [
+    {
+      name: "{name}_smoke"
+      uvm_test_seq: sram_ctrl_smoke_vseq
+    }
+    {
+      name: "{name}_multiple_keys"
+      uvm_test_seq: sram_ctrl_multiple_keys_vseq
+    }
+    {
+      name: "{name}_bijection"
+      uvm_test_seq: sram_ctrl_bijection_vseq
+      // We max. do 25*32768 write and 25*32768 read operations. Each operation
+      // takes roughly 1000ns, resulting in 1638400ns for the read/write
+      // operations. Add some buffer for setting up the test and requesting
+      // new scrambling keys.
+      run_opts: ["+test_timeout_ns=2000000000"]
+    }
+    {
+      name: "{name}_stress_pipeline"
+      uvm_test_seq: sram_ctrl_stress_pipeline_vseq
+      run_opts: ["+zero_delays=1"]
+    }
+    {
+      name: "{name}_partial_access"
+      uvm_test_seq: sram_ctrl_smoke_vseq
+      run_opts: ["+partial_access_pct=90"]
+    }
+    {
+      name: "{name}_partial_access_b2b"
+      uvm_test_seq: sram_ctrl_stress_pipeline_vseq
+      run_opts: ["+partial_access_pct=90"]
+    }
+    {
+      name: "{name}_max_throughput"
+      uvm_test_seq: sram_ctrl_throughput_vseq
+      run_opts: ["+zero_delays=1 +partial_access_pct=0"]
+    }
+    {
+      name: "{name}_throughput_w_partial_write"
+      uvm_test_seq: sram_ctrl_throughput_vseq
+      run_opts: ["+zero_delays=1 +partial_access_pct=20"]
+    }
+    {
+      name: "{name}_throughput_w_readback"
+      uvm_test_seq: sram_ctrl_throughput_vseq
+      run_opts: ["+zero_delays=1 +partial_access_pct=0 +init_w_readback=1"]
+    }
+    {
+      name: "{name}_lc_escalation"
+      uvm_test_seq: sram_ctrl_lc_escalation_vseq
+    }
+    {
+      name: "{name}_access_during_key_req"
+      uvm_test_seq: sram_ctrl_access_during_key_req_vseq
+      // Need to make sure no sram access when we just request new key or init, so use zero_delays
+      run_opts: ["+zero_delays=1"]
+    }
+    {
+      name: "{name}_executable"
+      uvm_test_seq: sram_ctrl_executable_vseq
+    }
+    {
+      name: "{name}_regwen"
+      uvm_test_seq: sram_ctrl_regwen_vseq
+    }
+    {
+      name: "{name}_ram_cfg"
+      uvm_test_seq: "{name}_ram_cfg_vseq"
+    }
+    // Below 2 tests are same as the tests in dvsim/tests/mem_tests.hjson
+    // Replicate them here in order to enable scb
+    {
+      name: "{name}_mem_walk"
+      uvm_test_seq: "{name}_common_vseq"
+      run_opts: ["+csr_mem_walk"]
+    }
+    {
+      name: "{name}_mem_partial_access"
+      uvm_test_seq: "{name}_common_vseq"
+      run_opts: ["+run_mem_partial_access"]
+    }
+    {
+      name: "{name}_readback_err"
+      uvm_test_seq: sram_ctrl_readback_err_vseq
+    }
+    {
+      name: "{name}_mubi_enc_err"
+      uvm_test_seq: sram_ctrl_mubi_enc_err_vseq
+    }
+  ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: smoke
+      tests: ["{name}_smoke"]
+    }
+  ]
+}

@@ -767,4 +767,25 @@ module sram_ctrl
   // because the SRAM is initializing.
   `ASSERT(TlulGntIsCorrect_A, tlul_req |-> (sram_gnt & ~init_req) == tlul_gnt)
 
+  `ifdef FI_SIM_Z01X
+    // Check if there are any TL-UL integrity errors caused by faults that Z01X has introduced.
+    // Specific to fault injection simulation as Z01X expects that those strobing points are
+    // available in the design.
+    wire ram_tl_intg_err;
+    tlul_rsp_intg_chk #(
+      .EnableRspDataIntgCheck(1)
+    ) u_rsp_chk_ram (
+      .tl_i (ram_tl_o),
+      .err_o(ram_tl_intg_err)
+    );
+
+    wire regs_tl_intg_err;
+    tlul_rsp_intg_chk #(
+      .EnableRspDataIntgCheck(1)
+    ) u_rsp_chk_regs (
+      .tl_i (regs_tl_o),
+      .err_o(regs_tl_intg_err)
+    );
+  `endif
+
 endmodule : sram_ctrl
