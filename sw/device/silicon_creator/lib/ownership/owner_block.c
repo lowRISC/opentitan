@@ -188,10 +188,7 @@ rom_error_t owner_block_rescue_check(const owner_rescue_config_t *rescue) {
   return kErrorOk;
 }
 
-// This weak function allows downstream ROM_EXT builds to provide
-// sku-specific default config.
-OT_WEAK
-void owner_config_default(owner_config_t *config) {
+void owner_config_clear(owner_config_t *config) {
   // Use a bogus pointer value to avoid the all-zeros pattern of NULL.
   config->flash = (const owner_flash_config_t *)kHardenedBoolFalse;
   config->info = (const owner_flash_info_config_t *)kHardenedBoolFalse;
@@ -199,6 +196,13 @@ void owner_config_default(owner_config_t *config) {
   config->isfb = (const owner_isfb_config_t *)kHardenedBoolFalse;
   config->sram_exec = kOwnerSramExecModeDisabledLocked;
   config->boot_svc_after_wakeup = kHardenedBoolFalse;
+}
+
+// This weak function allows downstream ROM_EXT builds to provide
+// sku-specific default config.
+OT_WEAK
+void owner_config_default(owner_config_t *config) {
+  owner_config_clear(config);
 }
 
 rom_error_t owner_block_parse(const owner_block_t *block,
@@ -213,7 +217,7 @@ rom_error_t owner_block_parse(const owner_block_t *block,
     return kErrorOwnershipOWNRVersion;
 
   if (check_only == kHardenedBoolFalse) {
-    owner_config_default(config);
+    owner_config_clear(config);
     config->sram_exec = block->sram_exec_mode;
     config->boot_svc_after_wakeup = block->boot_svc_after_wakeup;
   }

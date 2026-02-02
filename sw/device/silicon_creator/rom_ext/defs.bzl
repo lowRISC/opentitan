@@ -266,4 +266,45 @@ TEST_OWNER_CONFIGS = {
         ],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
     },
+    "custom_fallback_owner": {
+        "owner_defines": [
+            # Enable fallback default owner override.
+            "WITH_FALLBACK_OWNER=1",
+            # 0x53 is 'S'pi.
+            "WITH_RESCUE_PROTOCOL=0x53",
+            # Trigger 3 is GPIO pin.
+            "WITH_RESCUE_TRIGGER=3",
+            # When the trigger is GPIO, the index is the MuxedPad to us as the sense
+            # input. Index 2 is kTopEarlgreyMuxedPadsIoa2.
+            "WITH_RESCUE_INDEX=2",
+            # GPIO param 3 means enable the internal pull resistor and trigger
+            # rescue when the GPIO is high.
+            "WITH_RESCUE_MISC_GPIO_PARAM=3",
+            # Timeout: 0x80=enter_on_fail, 0x05 = 5 seconds.
+            "WITH_RESCUE_TIMEOUT=0x85",
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_spidfu"],
+    },
+    "fault_to_fallback_owner": {
+        "owner_defines": [
+            # Fault to skip parsing owner blocks.
+            # (e.g. simulating boot data corruption)
+            "TEST_FAULT_NO_OWNER=1",
+            # Enable fallback default owner override.
+            "WITH_FALLBACK_OWNER=1",
+            # 0x53 is 'S'pi.
+            "WITH_RESCUE_PROTOCOL=0x53",
+            # Trigger 3 is GPIO pin.
+            "WITH_RESCUE_TRIGGER=3",
+            # When the trigger is GPIO, the index is the MuxedPad to us as the sense
+            # input. Index 2 is kTopEarlgreyMuxedPadsIoa2.
+            "WITH_RESCUE_INDEX=2",
+            # GPIO param 3 means enable the internal pull resistor and trigger
+            # rescue when the GPIO is high.
+            "WITH_RESCUE_MISC_GPIO_PARAM=3",
+            # No timeout.
+            "WITH_RESCUE_TIMEOUT=0",
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_spidfu"],
+    },
 }
