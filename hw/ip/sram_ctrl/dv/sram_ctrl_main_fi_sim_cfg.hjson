@@ -1,0 +1,18 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// sim cfg file for the main SRAM FI variant
+{
+  // Import the main sram_ctrl sim cfg for the variant-specific settings, and
+  // the base FI sim cfg for the FI-specific overrides.
+  import_cfgs: ["{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_main_sim_cfg.hjson",
+                "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_base_fi_sim_cfg.hjson"]
+
+  fi_core: "lowrisc:dv:sram_ctrl_fi_sim:0.1"
+  fi_src_dir: "{eval_cmd} echo \"{fi_core}\" | tr ':' '_'"
+
+  block_sff_file: "{fi_src_dir}/fi/block.sff"
+  project_sff_file: "{fi_src_dir}/fi/project.sff"
+  strobe_file: "{fi_src_dir}/fi/strobe.sv"
+}
