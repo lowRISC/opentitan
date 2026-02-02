@@ -430,6 +430,11 @@ jobs:
       - chip_earlgrey_cw310_hyperdebug
       - chip_earlgrey_cw340
     steps:
+      - name: Skipped message
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          echo ":information_source: Bitstream caching is skipped for this pull request job" \
+            >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@v4
         if: ${{ github.event_name != 'pull_request' }}
       - name: Prepare environment
