@@ -62,10 +62,10 @@ impl Import {
     fn import(&self, session: &Session, id: AttrData, label: AttrData) -> Result<ObjectHandle> {
         let data = fs::read(&self.filename)?;
         let key_value = if let Ok((_label, bytes)) = pem_rfc7468::decode_vec(&data) {
-             bytes
+            bytes
         } else {
-             // Assume DER/Raw
-             data
+            // Assume DER/Raw
+            data
         };
 
         let mut template = if self.private {
@@ -86,10 +86,7 @@ impl Import {
             template.merge(tpl.clone());
         }
 
-        log::info!(
-            "template = {}",
-            serde_json::to_string_pretty(&template)?
-        );
+        log::info!("template = {}", serde_json::to_string_pretty(&template)?);
 
         let template_vec = template.to_vec()?;
         Ok(session.create_object(&template_vec)?)
@@ -98,9 +95,11 @@ impl Import {
     fn unwrap_key(&self, session: &Session, id: AttrData, label: AttrData) -> Result<ObjectHandle> {
         let wrapper: Wrap = self
             .unwrap_mechanism
-            .ok_or(anyhow!("unwrap_mechanism is required when unwrap is specified"))?
+            .ok_or(anyhow!(
+                "unwrap_mechanism is required when unwrap is specified"
+            ))?
             .into();
-        
+
         let mut template = if self.private {
             AttributeMap::from_str(Self::PRIVATE_TEMPLATE).expect("error in PRIVATE_TEMPLATE")
         } else {
@@ -134,7 +133,7 @@ impl Dispatch for Import {
         helper::no_object_exists(session, self.id.as_deref(), self.label.as_deref())?;
         let id = AttrData::Str(self.id.as_ref().cloned().unwrap_or_else(helper::random_id));
         let label = AttrData::Str(self.label.as_ref().cloned().unwrap_or_default());
-        
+
         let result = Box::new(BasicResult {
             success: true,
             id: id.clone(),

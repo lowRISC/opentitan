@@ -4,8 +4,8 @@
 
 use anyhow::{Result, anyhow};
 use const_oid::ObjectIdentifier;
-use cryptoki::mechanism::vendor_defined::VendorDefinedMechanism;
 use cryptoki::mechanism::Mechanism;
+use cryptoki::mechanism::vendor_defined::VendorDefinedMechanism;
 use cryptoki::object::Attribute;
 use cryptoki::session::Session;
 use der::{Encode, EncodePem};
@@ -67,11 +67,14 @@ impl ExportCsr {
 
         // Get public key value
         let map = AttributeMap::from_object(session, public_key)?;
-        let val = map.get(&AttributeType::Value).ok_or(anyhow!("Public key does not contain a value"))?;
+        let val = map
+            .get(&AttributeType::Value)
+            .ok_or(anyhow!("Public key does not contain a value"))?;
         let pub_key_bytes: Vec<u8> = val.try_into()?;
 
         // Construct Subject Name
-        let subject = Name::from_str(&self.subject).map_err(|e| anyhow!("Invalid subject: {}", e))?;
+        let subject =
+            Name::from_str(&self.subject).map_err(|e| anyhow!("Invalid subject: {}", e))?;
 
         // Create CertReqInfo
         let algorithm = AlgorithmIdentifierOwned {
@@ -92,7 +95,9 @@ impl ExportCsr {
         };
 
         // Serialize Info to sign
-        let tbs_bytes = info.to_der().map_err(|e| anyhow!("Failed to encode CertReqInfo: {}", e))?;
+        let tbs_bytes = info
+            .to_der()
+            .map_err(|e| anyhow!("Failed to encode CertReqInfo: {}", e))?;
 
         // Sign the request using HSM
         // Using VendorDefinedMechanism for MLDSA signature generation
@@ -101,8 +106,9 @@ impl ExportCsr {
             MechanismType::MlDsa.try_into()?,
             None,
         ));
-        
-        let signature_bytes = session.sign(&mechanism, private_key, &tbs_bytes)
+
+        let signature_bytes = session
+            .sign(&mechanism, private_key, &tbs_bytes)
             .map_err(|e| anyhow!("HSM signing failed: {}", e))?;
 
         let signature = x509_cert::der::asn1::BitString::from_bytes(&signature_bytes)
@@ -115,7 +121,8 @@ impl ExportCsr {
         };
 
         // Encode to PEM
-        let pem = cert_req.to_pem(Default::default())
+        let pem = cert_req
+            .to_pem(Default::default())
             .map_err(|e| anyhow!("Failed to encode CSR to PEM: {}", e))?;
 
         fs::write(&self.output, pem.as_bytes())?;

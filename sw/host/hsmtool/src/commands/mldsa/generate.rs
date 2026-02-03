@@ -112,7 +112,10 @@ impl Dispatch for Generate {
             AttributeMap::from_str(Self::PRIVATE_TEMPLATE).expect("error in PRIVATE_TEMPLATE");
         public_template.insert(AttributeType::Id, id.clone());
         public_template.insert(AttributeType::Label, result.label.clone());
-        public_template.insert(AttributeType::ParameterSet, AttrData::from(u64::from(self.mldsa_type)));
+        public_template.insert(
+            AttributeType::ParameterSet,
+            AttrData::from(u64::from(self.mldsa_type)),
+        );
 
         if let Some(tpl) = &self.public_template {
             public_template.merge(tpl.clone());
