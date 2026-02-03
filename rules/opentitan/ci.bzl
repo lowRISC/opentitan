@@ -29,12 +29,13 @@ def ci_orchestrator(test_name, exec_envs):
     that should be skipped in CI.
     """
     exec_env_sets = sets.make(exec_envs)
-    found_one = False
-    skip_in_ci = []
-    for env in _ONLY_RUN_ONE_IN_CI_SORTED:
-        if sets.contains(exec_env_sets, env):
-            if found_one:
-                skip_in_ci.append(env)
-            found_one = True
+    only_one_run_sets = sets.make(_ONLY_RUN_ONE_IN_CI_SORTED)
+    # List environments among which only one must run.
+    skip_in_ci = sets.to_list(sets.intersection(exec_env_sets, only_one_run_sets))
+    # Choose one at random.
+    if len(skip_in_ci) > 0:
+        # FIXME This is not good randomness
+        the_one_index = hash(test_name) % len(skip_in_ci)
+        the_one = skip_in_ci.pop(the_one_index)
 
     return skip_in_ci
