@@ -162,5 +162,12 @@ cc_args(
             for top in ALL_TOP_NAMES
         },
         [],
-    ),
+    ) + flatten([
+        opentitan_if_ip(
+            ip,
+            ["-DOPENTITAN_HAS_{}".format(ip.upper())],
+            [],
+        )
+        for ip in ALL_IP_NAMES
+    ]),
 )

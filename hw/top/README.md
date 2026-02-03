@@ -38,6 +38,7 @@ Each top's libraries is exposed as
 The toolchain will automatically define the following variables during C/C++ compilation:
 
 - `OPENTITAN_IS_${TOP}` (e.g. `OPENTITAN_IS_EARLGREY`)
+- `OPENTITAN_HAS_${IP}` (e.g. `OPENTITAN_HAS_UART`)
 
 ### C/Rust headers
 
