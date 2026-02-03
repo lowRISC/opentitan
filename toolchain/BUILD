@@ -337,14 +337,23 @@ cc_args(
 # Feature which turns all warnings into fatal errors.
 cc_feature(
     name = "feat_warnings_as_errors",
-    args = [":warnings_as_errors"],
+    args = [
+        ":warnings_as_errors_cc",
+        ":warnings_as_errors_ld",
+    ],
     feature_name = "warnings_as_errors",
 )
 
 cc_args(
-    name = "warnings_as_errors",
+    name = "warnings_as_errors_cc",
     actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
     args = ["-Werror"],
+)
+
+cc_args(
+    name = "warnings_as_errors_ld",
+    actions = ["@rules_cc//cc/toolchains/actions:link_actions"],
+    args = ["-Wl,--fatal-warnings"],
 )
 
 cc_args(
