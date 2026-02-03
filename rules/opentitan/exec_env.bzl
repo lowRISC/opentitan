@@ -5,7 +5,7 @@
 load("@bazel_skylib//lib:types.bzl", "types")
 load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files")
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("@lowrisc_opentitan//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 # ExecEnvInfo provider fields and whether the field is required.
 _FIELDS = {
@@ -200,12 +200,12 @@ def exec_env_common_attrs(**kwargs):
         ),
         "top_gen_hjson": attr.label(
             allow_single_file = True,
-            default = "//hw/top:top_gen_hjson",
+            default = "@lowrisc_opentitan//hw/top:top_gen_hjson",
             doc = "Generated top configuration file of the top.",
         ),
         "top_secret_cfg": attr.label(
             allow_single_file = True,
-            default = "//hw/top:secrets",
+            default = "@lowrisc_opentitan//hw/top:secrets",
             doc = "Generated top configuration file including secrets.",
         ),
         "otp_data_perm": attr.label(
@@ -219,13 +219,13 @@ def exec_env_common_attrs(**kwargs):
         ),
         "rom_scramble_tool": attr.label(
             doc = "ROM scrambling tool.",
-            default = "//hw/ip/rom_ctrl/util:scramble_image",
+            default = "@lowrisc_opentitan//hw/ip/rom_ctrl/util:scramble_image",
             executable = True,
             cfg = "exec",
         ),
         "openocd": attr.label(
             doc = "OpenOCD binary for this environment",
-            default = "//third_party/openocd:openocd_bin",
+            default = "@lowrisc_opentitan//third_party/openocd:openocd_bin",
             executable = True,
             cfg = "exec",
         ),

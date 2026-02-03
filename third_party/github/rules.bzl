@@ -57,7 +57,7 @@ release = rule(
             executable = True,
         ),
         "_runner": attr.label(
-            default = "//third_party/github:release.template.bash",
+            default = "@lowrisc_opentitan//third_party/github:release.template.bash",
             allow_single_file = True,
         ),
     },

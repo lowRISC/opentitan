@@ -17,31 +17,31 @@ def _host_tools_transition_impl(settings, attr):
     settings specified on the command line.
     """
     ret = {
-        "//command_line_option:platforms": "@local_config_platform//:host",
-        "//command_line_option:copt": settings["//command_line_option:copt"],
-        "//command_line_option:features": settings["//command_line_option:features"],
-        "//hw/bitstream/universal:rom": "//hw/bitstream/universal:none",
-        "//hw/bitstream/universal:otp": "//hw/bitstream/universal:none",
-        "//hw/bitstream/universal:env": "//hw/bitstream/universal:none",
+        "@lowrisc_opentitan//command_line_option:platforms": "@local_config_platform//:host",
+        "@lowrisc_opentitan//command_line_option:copt": settings["@lowrisc_opentitan//command_line_option:copt"],
+        "@lowrisc_opentitan//command_line_option:features": settings["@lowrisc_opentitan//command_line_option:features"],
+        "@lowrisc_opentitan//hw/bitstream/universal:rom": "@lowrisc_opentitan//hw/bitstream/universal:none",
+        "@lowrisc_opentitan//hw/bitstream/universal:otp": "@lowrisc_opentitan//hw/bitstream/universal:none",
+        "@lowrisc_opentitan//hw/bitstream/universal:env": "@lowrisc_opentitan//hw/bitstream/universal:none",
         # WARNING This is a horrible hack: when we transition to host, we pretend
         # that this is earlgrey so opentitantool can compile...
-        "//hw/top": "earlgrey",
+        "@lowrisc_opentitan//hw/top": "earlgrey",
     }
     return ret
 
 host_tools_transition = transition(
     implementation = _host_tools_transition_impl,
     inputs = [
-        "//command_line_option:copt",
-        "//command_line_option:features",
+        "@lowrisc_opentitan//command_line_option:copt",
+        "@lowrisc_opentitan//command_line_option:features",
     ],
     outputs = [
-        "//command_line_option:platforms",
-        "//command_line_option:copt",
-        "//command_line_option:features",
-        "//hw/bitstream/universal:rom",
-        "//hw/bitstream/universal:otp",
-        "//hw/bitstream/universal:env",
-        "//hw/top",
+        "@lowrisc_opentitan//command_line_option:platforms",
+        "@lowrisc_opentitan//command_line_option:copt",
+        "@lowrisc_opentitan//command_line_option:features",
+        "@lowrisc_opentitan//hw/bitstream/universal:rom",
+        "@lowrisc_opentitan//hw/bitstream/universal:otp",
+        "@lowrisc_opentitan//hw/bitstream/universal:env",
+        "@lowrisc_opentitan//hw/top",
     ],
 )

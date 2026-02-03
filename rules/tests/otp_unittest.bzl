@@ -5,7 +5,7 @@
 """Unit tests for otp.bzl"""
 
 load(
-    "//rules:otp.bzl",
+    "@lowrisc_opentitan//rules:otp.bzl",
     "otp_alert_classification",
     "otp_bytestring",
     "otp_hex",

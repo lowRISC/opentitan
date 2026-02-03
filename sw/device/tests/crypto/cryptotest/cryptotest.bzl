@@ -5,7 +5,7 @@
 """Cryptotest test case definition"""
 
 load(
-    "//rules/opentitan:defs.bzl",
+    "@lowrisc_opentitan//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "fpga_params",
     "opentitan_test",
@@ -19,33 +19,33 @@ load(
 # - cw340
 # - silicon
 CRYPTOTEST_EXEC_ENVS = {
-    "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-    "//hw/top_earlgrey:fpga_cw340_test_rom": "fpga_cw340",
-    "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "fpga_cw340",
+    "@lowrisc_opentitan//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    "@lowrisc_opentitan//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+    "@lowrisc_opentitan//hw/top_earlgrey:fpga_cw340_test_rom": "fpga_cw340",
+    "@lowrisc_opentitan//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "fpga_cw340",
 } | EARLGREY_SILICON_OWNER_ROM_EXT_ENVS
 
 FIRMWARE_DEPS = [
-    "//sw/device/tests/crypto/cryptotest/firmware:aes",
-    "//sw/device/tests/crypto/cryptotest/firmware:aes_gcm",
-    "//sw/device/tests/crypto/cryptotest/firmware:drbg",
-    "//sw/device/tests/crypto/cryptotest/firmware:ecdh",
-    "//sw/device/tests/crypto/cryptotest/firmware:ecdsa",
-    "//sw/device/tests/crypto/cryptotest/firmware:hash",
-    "//sw/device/tests/crypto/cryptotest/firmware:hmac",
-    "//sw/device/tests/crypto/cryptotest/firmware:kmac",
-    "//sw/device/tests/crypto/cryptotest/firmware:rsa",
-    "//sw/device/tests/crypto/cryptotest/firmware:sphincsplus",
-    "//sw/device/lib/base:csr",
-    "//sw/device/lib/base:status",
-    "//sw/device/lib/crypto/drivers:entropy",
-    "//sw/device/lib/testing/test_framework:check",
-    "//sw/device/lib/testing/test_framework:ottf_main",
-    "//sw/device/lib/testing/test_framework:ujson_ottf",
-    "//sw/device/lib/ujson",
+    "@lowrisc_opentitan//sw/device/tests/crypto/cryptotest/firmware:aes",
+    "@lowrisc_opentitan//sw/device/tests/crypto/cryptotest/firmware:aes_gcm",
+    "@lowrisc_opentitan//sw/device/tests/crypto/cryptotest/firmware:drbg",
+    "@lowrisc_opentitan//sw/device/tests/crypto/cryptotest/firmware:ecdh",
+    "@lowrisc_opentitan//sw/device/tests/crypto/cryptotest/firmware:ecdsa",
+    "@lowrisc_opentitan//sw/device/tests/crypto/cryptotest/firmware:hash",
+    "@lowrisc_opentitan//sw/device/tests/crypto/cryptotest/firmware:hmac",
+    "@lowrisc_opentitan//sw/device/tests/crypto/cryptotest/firmware:kmac",
+    "@lowrisc_opentitan//sw/device/tests/crypto/cryptotest/firmware:rsa",
+    "@lowrisc_opentitan//sw/device/tests/crypto/cryptotest/firmware:sphincsplus",
+    "@lowrisc_opentitan//sw/device/lib/base:csr",
+    "@lowrisc_opentitan//sw/device/lib/base:status",
+    "@lowrisc_opentitan//sw/device/lib/crypto/drivers:entropy",
+    "@lowrisc_opentitan//sw/device/lib/testing/test_framework:check",
+    "@lowrisc_opentitan//sw/device/lib/testing/test_framework:ottf_main",
+    "@lowrisc_opentitan//sw/device/lib/testing/test_framework:ujson_ottf",
+    "@lowrisc_opentitan//sw/device/lib/ujson",
 
     # Include all JSON commands.
-    "//sw/device/tests/crypto/cryptotest/json:commands",
+    "@lowrisc_opentitan//sw/device/tests/crypto/cryptotest/json:commands",
 ]
 
 def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False):
@@ -61,7 +61,7 @@ def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False):
     tags = ["slow_test"] if slow_test else []
     opentitan_test(
         name = name,
-        srcs = ["//sw/device/tests/crypto/cryptotest/firmware:firmware.c"],
+        srcs = ["@lowrisc_opentitan//sw/device/tests/crypto/cryptotest/firmware:firmware.c"],
         fpga = fpga_params(
             timeout = "long",
             data = test_vectors,

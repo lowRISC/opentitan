@@ -8,7 +8,7 @@
 load("@rules_cc//cc:action_names.bzl", "OBJ_COPY_ACTION_NAME")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load(
-    "//rules:rv.bzl",
+    "@lowrisc_opentitan//rules:rv.bzl",
     "rv_rule",
     _OPENTITAN_CPU = "OPENTITAN_CPU",
     _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
@@ -89,12 +89,12 @@ tock_elf2tab = rule(
 # kernel and apps builds into the `opt` compilation mode.  This is required
 # because `fastbuild` and `dbg` builds of tock will not fit into flash.
 def _opt_mode_impl(settings, attr):
-    return {"//command_line_option:compilation_mode": "opt"}
+    return {"@lowrisc_opentitan//command_line_option:compilation_mode": "opt"}
 
 opt_mode = transition(
     implementation = _opt_mode_impl,
     inputs = [],
-    outputs = ["//command_line_option:compilation_mode"],
+    outputs = ["@lowrisc_opentitan//command_line_option:compilation_mode"],
 )
 
 def _tock_image_impl(ctx):
@@ -193,7 +193,7 @@ tock_image = rv_rule(
         "debug": attr.bool(default = True, doc = "Tockloader debug output"),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_tockloader": attr.label(
-            default = "//third_party/tock:tockloader",
+            default = "@lowrisc_opentitan//third_party/tock:tockloader",
             executable = True,
             cfg = "exec",
         ),

@@ -3,18 +3,18 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
-load("//rules/opentitan:providers.bzl", "get_one_binary_file")
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
-load("//rules/opentitan:util.bzl", "get_fallback")
+load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
+load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "get_one_binary_file")
+load("@lowrisc_opentitan//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback")
 load("@nonhermetic//:env.bzl", "BIN_PATHS", "ENV")
 
 # Rules for memory splicing with Vivado.
 
 DEFAULTS = struct(
-    rom = "//hw/bitstream/universal:none",
-    otp = "//hw/bitstream/universal:none",
-    env = "//hw/bitstream/universal:none",
+    rom = "@lowrisc_opentitan//hw/bitstream/universal:none",
+    otp = "@lowrisc_opentitan//hw/bitstream/universal:none",
+    env = "@lowrisc_opentitan//hw/bitstream/universal:none",
 )
 
 def gen_vivado_mem_file(ctx, name, src, tool, swap_nibbles = True):
@@ -184,8 +184,8 @@ bitstream_splice_ = rule(
 def bitstream_splice(**kwargs):
     bitstream_splice_(
         skip = select({
-            "//hw/bitstream:bitstream_skip": True,
-            "//conditions:default": False,
+            "@lowrisc_opentitan//hw/bitstream:bitstream_skip": True,
+            "@lowrisc_opentitan//conditions:default": False,
         }),
         **kwargs
     )

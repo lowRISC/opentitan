@@ -22,7 +22,7 @@ def _merge_and_split_inputs(inputs):
 
 def dual_cc_library(
         name,
-        on_device_config_setting = "//toolchain:on_device_config",
+        on_device_config_setting = "@lowrisc_opentitan//toolchain:on_device_config",
         srcs = [],
         hdrs = [],
         copts = [],
@@ -96,6 +96,6 @@ def dual_cc_library(
         name = name,
         actual = select({
             on_device_config_setting: dual_cc_device_library_of(name),
-            "//conditions:default": off_device_name,
+            "@lowrisc_opentitan//conditions:default": off_device_name,
         }),
     )

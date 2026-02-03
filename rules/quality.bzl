@@ -8,8 +8,8 @@
 load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES", "C_COMPILE_ACTION_NAME")
 load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
-load("//rules:rv.bzl", "rv_rule")
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
+load("@lowrisc_opentitan//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 def _ensure_tag(tags, *tag):
     for t in tag:
@@ -177,7 +177,7 @@ def _make_clang_tidy_aspect(enable_fix):
         attr_aspects = ["deps"],
         attrs = {
             "_clang_tidy_wrapper": attr.label(
-                default = "//rules/scripts:clang_tidy.py",
+                default = "@lowrisc_opentitan//rules/scripts:clang_tidy.py",
                 allow_single_file = True,
                 cfg = "host",
                 executable = True,
@@ -234,7 +234,7 @@ audit_sec_mmio_calls_aspect = aspect(
     attr_aspects = ["deps"],
     attrs = {
         "_audit_tool": attr.label(
-            default = "//util/py/scripts:bazel_aspect_tool_audit_sec_mmio_calls",
+            default = "@lowrisc_opentitan//util/py/scripts:bazel_aspect_tool_audit_sec_mmio_calls",
             cfg = "host",
             executable = True,
         ),
@@ -302,7 +302,7 @@ html_coverage_report = rule(
     implementation = _html_coverage_report_impl,
     attrs = {
         "_runner": attr.label(
-            default = "//rules/scripts:html_coverage_report.template.sh",
+            default = "@lowrisc_opentitan//rules/scripts:html_coverage_report.template.sh",
             allow_single_file = True,
         ),
     },

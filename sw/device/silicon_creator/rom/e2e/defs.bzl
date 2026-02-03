@@ -2,8 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:const.bzl", "CONST", "hex_digits")
-load("//rules/opentitan:keyutils.bzl", "SILICON_CREATOR_KEYS")
+load("@lowrisc_opentitan//rules:const.bzl", "CONST", "hex_digits")
+load("@lowrisc_opentitan//rules/opentitan:keyutils.bzl", "SILICON_CREATOR_KEYS")
 
 MSG_TEMPLATE_BFV = "{}{}\r\n(?s:.*){}{}\r\n".format(
     CONST.SHUTDOWN.PREFIX.BFV,

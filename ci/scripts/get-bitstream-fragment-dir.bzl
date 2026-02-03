@@ -3,5 +3,5 @@
 # SPDX-License-Identifier: Apache-2.0
 
 def format(target):
-    provider_name = "//rules:bitstreams.bzl%BitstreamManifestFragmentInfo"
+    provider_name = "@lowrisc_opentitan//rules:bitstreams.bzl%BitstreamManifestFragmentInfo"
     return providers(target)[provider_name].fragment.dirname

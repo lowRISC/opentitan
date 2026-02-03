@@ -2,11 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
-load("//rules/opentitan:util.bzl", "flatten")
-load("//rules:doxygen.bzl", "DoxygenCcInputInfo")
+load("@lowrisc_opentitan//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
+load("@lowrisc_opentitan//rules/opentitan:util.bzl", "flatten")
+load("@lowrisc_opentitan//rules:doxygen.bzl", "DoxygenCcInputInfo")
 load(
-    "//hw/top:defs.bzl",
+    "@lowrisc_opentitan//hw/top:defs.bzl",
     "opentitan_require_ip_attr",
     "opentitan_require_top_attr",
     "opentitan_select_ip_attr",
@@ -77,7 +77,7 @@ opentitan_ip_c_header_rule = rule(
             doc = "A path to an alias file",
         ),
         "_regtool": attr.label(
-            default = "//util:regtool",
+            default = "@lowrisc_opentitan//util:regtool",
             executable = True,
             cfg = "exec",
         ),
@@ -133,11 +133,11 @@ opentitan_ip_rust_header_rule = rule(
         "hjson": attr.label(allow_single_file = True, doc = "Hjson description of the IP"),
         "ip": attr.string(doc = "Name of the IP block"),
         "_regtool": attr.label(
-            default = "//util:regtool",
+            default = "@lowrisc_opentitan//util:regtool",
             executable = True,
             cfg = "exec",
         ),
-    } | stamp_attr(-1, "//rules:stamp_flag"),
+    } | stamp_attr(-1, "@lowrisc_opentitan//rules:stamp_flag"),
 )
 
 def opentitan_ip_rust_header(name, ip, target_compatible_with = [], **kwargs):
@@ -199,7 +199,7 @@ opentitan_autogen_dif_gen = rule(
             """,
         ),
         "_autogen_dif": attr.label(
-            default = "//util:autogen_dif",
+            default = "@lowrisc_opentitan//util:autogen_dif",
             executable = True,
             cfg = "exec",
         ),
@@ -314,7 +314,7 @@ opentitan_top_dt_gen_rule = rule(
             """,
         ),
         "_dttool": attr.label(
-            default = "//util:dttool",
+            default = "@lowrisc_opentitan//util:dttool",
             executable = True,
             cfg = "exec",
         ),
@@ -341,7 +341,7 @@ def opentitan_top_dt_gen(name, gen_ips = [], gen_top = False, output_groups = {}
             for ip in gen_ips
         ]),
         output_groups = output_groups,
-        top_hjson = "//hw/top:top_gen_hjson",
+        top_hjson = "@lowrisc_opentitan//hw/top:top_gen_hjson",
         target_compatible_with = target_compatible_with + opentitan_require_top_attr("hjson") + flatten([
             opentitan_require_ip_attr(ip, "hjson")
             for ip in gen_ips
@@ -460,7 +460,7 @@ opentitan_autogen_testutils_gen = rule(
             """,
         ),
         "_autogen_testutils": attr.label(
-            default = "//util:gen_testutils",
+            default = "@lowrisc_opentitan//util:gen_testutils",
             executable = True,
             cfg = "exec",
         ),
@@ -491,7 +491,7 @@ def opentitan_autogen_isr_testutils(name, ips = [], deps = [], target_compatible
             opentitan_select_ip_attr(ip, "hjson", required = False, default = [], fn = lambda x: [x])
             for ip in ips
         ]),
-        top_hjson = "//hw/top:top_gen_hjson",
+        top_hjson = "@lowrisc_opentitan//hw/top:top_gen_hjson",
         output_groups = {
             "hdr": ["isr_testutils.h"],
             "src": ["isr_testutils.c"],
@@ -549,11 +549,11 @@ autogen_chip_info_src = rule(
     implementation = _chip_info_src,
     attrs = {
         "_tool": attr.label(
-            default = "//util:rom_chip_info",
+            default = "@lowrisc_opentitan//util:rom_chip_info",
             executable = True,
             cfg = "exec",
         ),
-    } | stamp_attr(-1, "//rules:stamp_flag"),
+    } | stamp_attr(-1, "@lowrisc_opentitan//rules:stamp_flag"),
 )
 
 def autogen_chip_info(name):
@@ -570,9 +570,9 @@ def autogen_chip_info(name):
     native.cc_library(
         name = name,
         srcs = [chip_info_src_target],
-        hdrs = ["//sw/device/silicon_creator/lib:chip_info.h"],
+        hdrs = ["@lowrisc_opentitan//sw/device/silicon_creator/lib:chip_info.h"],
         deps = [
-            "//sw/device/lib/base:macros",
+            "@lowrisc_opentitan//sw/device/lib/base:macros",
         ],
     )
 
@@ -677,7 +677,7 @@ autogen_cryptotest_header = rule(
         "template": attr.label(mandatory = True, allow_single_file = [".tpl"]),
         "hjson": attr.label(mandatory = True, allow_single_file = [".hjson"]),
         "tool": attr.label(
-            default = "//sw/device/tests/crypto:ecdsa_p256_verify_set_testvectors",
+            default = "@lowrisc_opentitan//sw/device/tests/crypto:ecdsa_p256_verify_set_testvectors",
             executable = True,
             cfg = "exec",
         ),
@@ -717,5 +717,5 @@ def _autogen_stamp_include(ctx):
 
 autogen_stamp_include = rule(
     implementation = _autogen_stamp_include,
-    attrs = stamp_attr(-1, "//rules:stamp_flag"),
+    attrs = stamp_attr(-1, "@lowrisc_opentitan//rules:stamp_flag"),
 )
