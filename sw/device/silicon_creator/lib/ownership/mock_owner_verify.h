@@ -28,6 +28,7 @@ class MockOwnerVerify : public global_mock::GlobalMock<MockOwnerVerify> {
 }  // namespace internal
 
 using MockOwnerVerify = testing::StrictMock<internal::MockOwnerVerify>;
+using NiceMockOwnerVerify = testing::NiceMock<internal::MockOwnerVerify>;
 
 }  // namespace rom_test
 

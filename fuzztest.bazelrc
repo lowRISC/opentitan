@@ -1,0 +1,95 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+common --enable_platform_specific_config
+
+# Force the use of Clang for all builds. FuzzTest relies on Clang for sanitizer
+# coverage (https://clang.llvm.org/docs/SanitizerCoverage.html).
+build:fuzztest-common --action_env=CC=clang
+build:fuzztest-common --action_env=CXX=clang++
+
+# Use the C++17 standard.
+build:fuzztest-common --cxxopt=-std=c++17
+
+# Show everything when running tests.
+test:fuzztest-common --test_output=streamed
+
+build:macos --macos_minimum_os=10.15
+build:macos --no@fuzztest//fuzztest:use_riegeli
+
+### Common options.
+#
+# Do not use directly.
+
+# Standard define for \"ifdef-ing\" any fuzz test specific code.
+build:fuzztest-common --copt=-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+
+# In fuzz tests, we want to catch assertion violations even in optimized builds.
+build:fuzztest-common --copt=-UNDEBUG
+
+# Enable libc++ assertions.
+# See https://libcxx.llvm.org/UsingLibcxx.html#enabling-the-safe-libc-mode
+build:fuzztest-common --copt=-D_LIBCPP_ENABLE_ASSERTIONS=1
+
+### ASan (Address Sanitizer) build configuration.
+#
+# Use with: --config=fuzztest-asan
+
+build:fuzztest-asan --linkopt=-fsanitize=address
+build:fuzztest-asan --copt=-fsanitize=address
+
+# We rely on the following flag instead of the compiler provided
+# __has_feature(address_sanitizer) to know that we have an ASAN build even in
+# the uninstrumented runtime.
+build:fuzztest-asan --copt=-DADDRESS_SANITIZER
+
+### FuzzTest build configuration.
+#
+# Use with: --config=fuzztest
+#
+# Note that this configuration includes the ASan configuration.
+
+build:fuzztest --config=fuzztest-asan
+build:fuzztest --config=fuzztest-common
+
+# Link statically.
+build:fuzztest --dynamic_mode=off
+
+# We apply coverage tracking instrumentation to everything but Centipede and the
+# FuzzTest framework itself (including GoogleTest and GoogleMock).
+build:fuzztest --copt=-fsanitize-coverage=inline-8bit-counters,trace-cmp,pc-table
+build:fuzztest --per_file_copt=common/.*,fuzztest/.*,centipede/.*,-centipede/.*fuzz_target,googletest/.*,googlemock/.*@-fsanitize-coverage=0
+
+### Experimental FuzzTest build configuration.
+#
+# Use with: --config=fuzztest-experimental
+#
+# Use this instead of --config=fuzztest when building test binaries to run with
+# Centipede. Eventually, this will be consolidated with --config=fuzztest.
+# Note that this configuration doesn't include the ASan configuration. If you
+# want to use both, you can use --config=fuzztest-experimental --config=asan.
+
+build:fuzztest-centipede-common --config=fuzztest-common
+build:fuzztest-centipede-common --config=asan
+build:fuzztest-centipede-common --@fuzztest//fuzztest:centipede_integration
+build:fuzztest-centipede-common --copt=-gline-tables-only
+build:fuzztest-centipede-common --strip=never
+build:fuzztest-centipede-common --copt=-fno-builtin
+build:fuzztest-centipede-common --copt=-DHEAPCHECK_DISABLE
+build:fuzztest-centipede-common --dynamic_mode=off
+
+build:fuzztest-centipede-binary-fuzzing --config=fuzztest-centipede-common
+build:fuzztest-centipede-binary-fuzzing --copt=-fsanitize-coverage=trace-pc-guard,pc-table,trace-loads,trace-cmp,control-flow
+build:fuzztest-centipede-binary-fuzzing  --per_file_copt=common/.*,fuzztest/.*,centipede/.*,-centipede/.*fuzz_target,googletest/.*,googlemock/.*@-fsanitize-coverage=0
+
+build:fuzztest-centipede-binary-instrumented --config=fuzztest-centipede-common
+build:fuzztest-centipede-binary-instrumented --copt=-fcoverage-mapping
+build:fuzztest-centipede-binary-instrumented --copt=-fprofile-instr-generate
+build:fuzztest-centipede-binary-instrumented --linkopt=-fprofile-instr-generate
+build:fuzztest-centipede-binary-instrumented --linkopt=-fcoverage-mapping
+
+build:fuzztest-centipede-binary --action_env=CC=clang
+build:fuzztest-centipede-binary --action_env=CXX=clang++
+build:fuzztest-centipede-binary --cxxopt=-std=c++17
+build:fuzztest-centipede-binary --compilation_mode=opt

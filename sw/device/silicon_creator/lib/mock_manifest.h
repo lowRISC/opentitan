@@ -33,6 +33,7 @@ class MockManifest : public global_mock::GlobalMock<MockManifest> {
 }  // namespace internal
 
 using MockManifest = testing::StrictMock<internal::MockManifest>;
+using NiceMockManifest = testing::NiceMock<internal::MockManifest>;
 
 }  // namespace rom_test
 
