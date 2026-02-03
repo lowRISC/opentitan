@@ -18,7 +18,9 @@ load(
     "ALL_TOP_NAMES",
     "opentitan_alias_top_attr",
     "opentitan_if_ip",
+    "opentitan_select_top",
 )
+load("@rules_cc//cc/toolchains:args.bzl", "cc_args")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -145,6 +147,25 @@ cc_library(
         opentitan_if_ip(
             ip,
             ["{}_c_regs".format(ip)],
+            [],
+        )
+        for ip in ALL_IP_NAMES
+    ]),
+)
+
+cc_args(
+    name = "defines",
+    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
+    args = opentitan_select_top(
+        {
+            top: ["-DOPENTITAN_IS_{}".format(top.upper())]
+            for top in ALL_TOP_NAMES
+        },
+        [],
+    ) + flatten([
+        opentitan_if_ip(
+            ip,
+            ["-DOPENTITAN_HAS_{}".format(ip.upper())],
             [],
         )
         for ip in ALL_IP_NAMES
