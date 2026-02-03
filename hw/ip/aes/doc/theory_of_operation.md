@@ -17,7 +17,7 @@ The benefits of this design compared to passing all round keys via register inte
 On-the-fly round-key generation comes however at the price of an initial delay whenever the key is changed by the processor before the AES unit can perform ECB/CBC **decryption** using this new key.
 During this phase, the key expanding mechanism iteratively computes the start key for the decryption.
 The duration of this delay phase corresponds to the latency required for encrypting one 16B block (i.e., 12/14/16 cycles for AES-128/192/256).
-Once the start key for decryption has been computed, it is stored in a dedicated internal register for later use.
+Once the start key for decryption has been computed, it is stored in a dedicated internal register. This allows the unit to switch back and forth between encryption and decryption instantly, provided the initial key remains the same.
 The AES unit can then switch between decryption and encryption without additional overhead.
 
 For encryption or if the mode is set to CFB, OFB or CTR, there is no such initial delay upon changing the key.
@@ -26,7 +26,7 @@ If the next operation after a key switch is ECB or CBC **decryption**, the AES u
 The AES unit uses a status register to indicate to the processor when ready to receive the next input data block via the register interface.
 While the AES unit is performing encryption/decryption of a data block, it is safe for the processor to provide the next input data block.
 The AES unit automatically starts the encryption/decryption of the next data block once the previous encryption/decryption is finished and new input data is available.
-The order in which the input registers are written does not matter.
+The order in which the input registers are written does not matter; however, the internal 'data-ready' trigger is only tripped once the final 32-bit word of the 128-bit block is received.
 Every input register must be written at least once for the AES unit to automatically start encryption/decryption.
 This is the default behavior.
 It can be disabled by setting the MANUAL_OPERATION bit in [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) to `1`.
@@ -118,7 +118,7 @@ For a general introduction into these cipher modes, refer to [Recommendation for
 
     _Note, for the AES unit to automatically start in CBC, CFB, OFB or CTR mode, also the IV must be ready.
     The IV is ready if -- since the last IV update (either done by the processor or the AES unit itself) -- all IV registers have been written at least once or none of them.
-    The AES unit will not automatically start the next encryption/decryption with a partially updated IV._
+    The AES unit will not automatically start with a partially updated IV. Software must ensure either all or none of the IV registers are written between operations to maintain synchronization._
 
     By setting the MANUAL_OPERATION bit in [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) to `1`, the AES unit can be operated in manual mode.
     In manual mode, the AES unit starts encryption/decryption whenever the START bit in [`TRIGGER`](registers.md#trigger) is set to `1`, irrespective of the status of the IV and input data registers.
