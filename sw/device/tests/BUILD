@@ -4561,6 +4561,7 @@ cc_library(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing:sram_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )
