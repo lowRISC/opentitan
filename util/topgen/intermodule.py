@@ -968,9 +968,17 @@ def im_netname(sig: OrderedDict, suffix: str = "", default_name=False) -> str:
             # custom default has been specified
             if obj["default"]:
                 return obj["default"]
-            if isinstance(sig["width"], Parameter):
-                return "{{{param}{{{package}::{struct}_DEFAULT}}}}".format(
-                    param=sig["width"].name_top,
+
+            repetitions = 1
+            if sig["width"]:
+                if isinstance(sig["width"], Parameter):
+                    repetitions = sig["width"].name_top
+                else:
+                    repetitions = sig["width"]
+            # repetitions may be an int (literal) or a string (Parameter)
+            if repetitions != 1:
+                return "{{{repetitions}{{{package}::{struct}_DEFAULT}}}}".format(
+                    repetitions=repetitions,
                     package=obj["package"],
                     struct=obj["struct"].upper())
             else:
