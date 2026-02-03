@@ -226,6 +226,31 @@ HMAC_RANDOM_COUNT = 64
 
 [
     run_binary(
+        name = cryptotest_name,
+        srcs = [
+            "//sw/device/tests/crypto/testvectors:{}".format(src_name),
+            "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_sig_ver_schema",
+        ],
+        outs = [":{}.json".format(cryptotest_name)],
+        args = [
+            "--src",
+            "$(location //sw/device/tests/crypto/testvectors:{})".format(src_name),
+            "--dst",
+            "$(location :{}.json)".format(cryptotest_name),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_sig_ver_schema)",
+            "--curve",
+            curve,
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:hjson_ecdsa_parser",
+    )
+    for src_name, cryptotest_name, curve in [
+        ("ecdsa_p256_verify_hardcoded.hjson", "manual_ecdsa_p256", "p256"),
+    ]
+]
+
+[
+    run_binary(
         name = "nist_cavp_{}_{}_{}_json".format(
             src_repo,
             algorithm.lower(),
