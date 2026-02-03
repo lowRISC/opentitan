@@ -127,6 +127,31 @@ def lint_commit_message(commit):
               signoff_req_msg)
         success = False
 
+    origin_lines = []
+    for line in lines:
+        cherry_pick = r'^\(cherry picked from commit [A-fa-f0-9]+\)$'
+        original = r'^\(commit is original to earlgrey_1.0.0\)$'
+
+        if re.match(cherry_pick, line) is not None or re.match(original, line) is not None:
+            origin_lines.append(line)
+
+    if not origin_lines:
+        error("Commit message is missing an origin line.\n"
+              "\n"
+              "Commits cherry-picked to this branch should include the line:\n"
+              "    (cherry picked from <original commit SHA>)\n"
+              "This can be added automatically using `git cherry-pick -x <SHA>`\n"
+              "\n"
+              "Commits original to this branch should include the line:\n"
+              "    (commit is original to earlgrey_1.0.0)")
+        success = False
+
+    if len(origin_lines) > 1:
+        error("Multiple origin lines found in commit message. "
+              "Expected a single line indicating either a cherry-picked or "
+              "an original commit to this branch")
+        success = False
+
     return success
 
 
