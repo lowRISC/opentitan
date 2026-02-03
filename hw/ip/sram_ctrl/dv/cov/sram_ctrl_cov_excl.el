@@ -67,19 +67,6 @@ Block 1 "461445014" "assign rsp_intg = tl_i.d_user.rsp_intg;"
 ANNOTATION: "[UNR] all inputs are constant"
 Block 2 "2643129081" "assign data_intg = tl_i.d_user.data_intg;"
 
-CHECKSUM: "281300783 1779845869"
-INSTANCE: tb.dut.u_reg_regs.u_status_bus_integ_error.wr_en_data_arb
-ANNOTATION: "[UNR] all inputs are constant"
-Block 2 "1620753216" "assign wr_data = d;"
-INSTANCE: tb.dut.u_reg_regs.u_status_init_error.wr_en_data_arb
-ANNOTATION: "[UNR] all inputs are constant"
-Block 2 "1620753216" "assign wr_data = d;"
-
-CHECKSUM: "281300783 1779845869"
-INSTANCE: tb.dut.u_reg_regs.u_status_escalated.wr_en_data_arb
-ANNOTATION: "[UNR] all inputs are constant"
-Block 2 "1620753216" "assign wr_data = d;"
-
 CHECKSUM: "1296247128 1854270750"
 INSTANCE: tb.dut
 ANNOTATION: "[UNSUPPORTED] ACK can't come without REQ"

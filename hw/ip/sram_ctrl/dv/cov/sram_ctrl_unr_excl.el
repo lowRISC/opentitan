@@ -14,10 +14,10 @@ ANNOTATION: "VC_COV_UNR"
 Block 12 "398307645" "wptr_o <= (wptr_o + {{(Width - 1) {1'b0}}, 1'b1});"
 ANNOTATION: "VC_COV_UNR"
 Block 21 "2517571270" "rptr_o <= (rptr_o + {{(Width - 1) {1'b0}}, 1'b1});"
-CHECKSUM: "4263908928 1069164873"
+CHECKSUM: "2326541723 4103140726"
 INSTANCE: tb.dut.u_prim_ram_1p_scr
 ANNOTATION: "VC_COV_UNR"
-Block 23 "264295034" "rdata_o[k] = rdata[k];"
+Block 28 "16825046" "rdata_o[k] = rdata[k];"
 CHECKSUM: "4224194069 2881513198"
 INSTANCE: tb.dut.u_tlul_lc_gate
 ANNOTATION: "VC_COV_UNR"
