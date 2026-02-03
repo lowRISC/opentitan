@@ -41,7 +41,9 @@ pub struct Export {
 impl Export {
     fn export(&self, session: &Session, object: ObjectHandle) -> Result<()> {
         let map = AttributeMap::from_object(session, object)?;
-        let val = map.get(&AttributeType::Value).ok_or(anyhow!("Key does not contain a value"))?;
+        let val = map
+            .get(&AttributeType::Value)
+            .ok_or(anyhow!("Key does not contain a value"))?;
         let key_value: Vec<u8> = val.try_into()?;
 
         match self.format {
@@ -49,11 +51,16 @@ impl Export {
                 fs::write(&self.filename, &key_value)?;
             }
             KeyEncoding::Pem | KeyEncoding::Pkcs8Pem => {
-                let label = if self.private { "PRIVATE KEY" } else { "PUBLIC KEY" };
-                let pem = pem_rfc7468::encode_string(label, pem_rfc7468::LineEnding::LF, &key_value)?;
+                let label = if self.private {
+                    "PRIVATE KEY"
+                } else {
+                    "PUBLIC KEY"
+                };
+                let pem =
+                    pem_rfc7468::encode_string(label, pem_rfc7468::LineEnding::LF, &key_value)?;
                 fs::write(&self.filename, pem.as_bytes())?;
             }
-             _ => return Err(anyhow!("Unsupported format for MLDSA export")),
+            _ => return Err(anyhow!("Unsupported format for MLDSA export")),
         }
         Ok(())
     }

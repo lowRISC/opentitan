@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use cryptoki::mechanism::vendor_defined::VendorDefinedMechanism;
 use cryptoki::mechanism::Mechanism;
+use cryptoki::mechanism::vendor_defined::VendorDefinedMechanism;
 use rsa::pkcs1v15::Pkcs1v15Sign;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
@@ -118,12 +118,10 @@ impl SignData {
 
     pub fn mldsa_prepare(&self, domain: MlDsaDomain, input: &[u8]) -> Result<Vec<u8>> {
         match self {
-            SignData::PlainText => {
-                match domain {
-                    MlDsaDomain::Pure => Ok(input.into()),
-                    MlDsaDomain::PreHashed => Ok(Sha256::digest(input).as_slice().to_vec()),
-                }
-            }
+            SignData::PlainText => match domain {
+                MlDsaDomain::Pure => Ok(input.into()),
+                MlDsaDomain::PreHashed => Ok(Sha256::digest(input).as_slice().to_vec()),
+            },
             SignData::Sha256Hash => Ok(input.into()),
             SignData::Sha256HashReversed => Self::data_raw(input, true),
             SignData::Raw => Ok(input.into()),
