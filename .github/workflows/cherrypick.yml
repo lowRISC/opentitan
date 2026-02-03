@@ -10,6 +10,12 @@ on:
 permissions:
   contents: read
 
+# 2 backport jobs may be running simultaneously if the merge and label event happen in quick
+# succession. Serialize them based on PR number to avoid this.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
 jobs:
   cherrypick:
     # NOTE: We currently need these permissions because we create pull request with the repo-scoped
