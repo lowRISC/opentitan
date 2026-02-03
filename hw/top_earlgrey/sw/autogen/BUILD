@@ -21,7 +21,6 @@ cc_library(
         "top_earlgrey.h",
         "top_earlgrey_memory.h",
     ],
-    defines = ["OPENTITAN_IS_EARLGREY"],
     target_compatible_with = opentitan_require_top("earlgrey"),
 )
 
@@ -29,7 +28,6 @@ ld_library(
     name = "top_earlgrey_memory",
     defines = [
         "OPENTITAN_TOP_MEMORY_LD=top_earlgrey_memory.ld",
-        "OPENTITAN_IS_EARLGREY",
     ],
     includes = ["top_earlgrey_memory.ld"],
     target_compatible_with = opentitan_require_top("earlgrey"),

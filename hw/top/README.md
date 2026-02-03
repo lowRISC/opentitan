@@ -32,11 +32,12 @@ The `//hw/top` package provides a number of important targets that expose inform
 ### Top library, linker script and defines
 
 Each top's libraries is exposed as
-- `//hw/top:top_lib`which is an alias to the actual top's library (e.g. `top_earlgrey.h`).
+- `//hw/top:top_lib` which is an alias to the actual top's library (e.g. `top_earlgrey.h`).
 - `//hw/top:top_ld` which is an alias to the actual top's linker script (e.g. `top_earlgrey_memory.ld`).
 
-Furthermore, adding `//hw/top:top_lib` or `//hw/top:top_ld` as a dependency of a C library or linker script will automatically make the following defines available:
-- `OPENTITAN_IS_<TOPNAME>`: this define can be used for conditional compilation.
+The toolchain will automatically define the following variables during C/C++ compilation:
+
+- `OPENTITAN_IS_${TOP}` (e.g. `OPENTITAN_IS_EARLGREY`)
 
 ### C/Rust headers
 

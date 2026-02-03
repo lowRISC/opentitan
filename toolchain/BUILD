@@ -65,6 +65,7 @@ cc_toolchain(
         ":constructor_destructor",
         ":nostdinc",
         ":discard_locals",
+        "//hw/top:defines",
     ],
     enabled_features = [
         "@rules_cc//cc/toolchains/args:experimental_replace_legacy_action_config_features",
