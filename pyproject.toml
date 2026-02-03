@@ -73,9 +73,8 @@ dependencies = [
   "peakrdl-systemrdl >= 1.0",
 ]
 
-[tool.setuptools]
-# This is actually not a python project, we just use pyproject.toml to manage dependencies.
-py-modules = []
+[tool.setuptools.packages.find]
+where = ["util"]
 
 [tool.ruff]
 target-version = "py310"
