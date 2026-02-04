@@ -59,6 +59,13 @@ DUPLICATE_NAMES = [
     'CKM_DSA_PROBABLISTIC_PARAMETER_GEN',  # Typo of CKM_DSA_PROBABILISTIC_PARAMETER_GEN
 ]
 
+# Map of canonical name to list of aliases.
+ALIASES = {
+    'CKK_ML_DSA': ['CKK_MLDSA', 'MLDSA'],
+    'CKM_ML_DSA_KEY_PAIR_GEN': ['CKM_MLDSA_KEY_PAIR_GEN', 'MLDSA_KEY_PAIR_GEN'],
+    'CKM_ML_DSA': ['CKM_MLDSA', 'MLDSA'],
+}
+
 
 class EnumGen(object):
 
@@ -160,29 +167,57 @@ class EnumGen(object):
         """
         typename = self.ki_type.split('::')[-1]
         prefix = len(self.prefix) + 1
-        enumerators = map(lambda name: self.to_studlycaps(name[prefix:]),
-                          names)
-        traits = [
-            'Clone', 'Copy', 'Debug', 'PartialEq', 'Eq', 'Hash'
-        ]
+        enumerators = list(
+            map(lambda name: self.to_studlycaps(name[prefix:]), names))
+        traits = ['Clone', 'Copy', 'Debug', 'PartialEq', 'Eq', 'Hash']
         if self.serde:
             traits.extend(['serde::Serialize', 'serde::Deserialize'])
         if self.strum:
             traits.extend(
-                ['strum::Display', 'strum::EnumString', 'strum::EnumIter', 'strum::FromRepr'])
+                ['strum::Display', 'strum::EnumString', 'strum::EnumIter'])
         self.emit(f'#[derive({", ".join(traits)})]')
         self.emit('#[repr(u64)]')
         self.emit(f'pub enum {typename} {{')
         for (en, val) in zip(enumerators, names):
             snake_case = val[4:].lower()
             if self.serde:
-                self.emit(f'    #[serde(rename="{val}")]')
+                aliases = ALIASES.get(val, [])
+                alias_str = ''.join([f', alias="{a}"' for a in aliases])
+                self.emit(f'    #[serde(rename="{val}"{alias_str})]')
             if self.strum:
-                self.emit(
-                    f'    #[strum(serialize="{val}", serialize="{en}", serialize="{snake_case}")]'
-                )
+                aliases = ALIASES.get(val, [])
+                # Also add StudlyCaps version of aliases to strum
+                alias_enum_names = [
+                    self.to_studlycaps(a[prefix:]) for a in aliases
+                ]
+                alias_snake_names = [a[prefix:].lower() for a in aliases]
+                strum_aliases = aliases + alias_enum_names + alias_snake_names
+                alias_str = ''.join(
+                    [f', serialize="{a}"' for a in strum_aliases])
+                self.emit(f'    #[strum(serialize="{val}", serialize="{en}", '
+                          f'serialize="{snake_case}"{alias_str})]')
             self.emit(f'    {en} = {val},')
-        self.emit(f'    Unknown{typename} = u64::MAX,')
+        self.emit(f'    Unknown{typename}(u64) = u64::MAX,')
+        self.emit('}')
+        self.emit()
+        self.emit(f'impl From<u64> for {typename} {{')
+        self.emit('    fn from(val: u64) -> Self {')
+        self.emit('        match val {')
+        for (en, val) in zip(enumerators, names):
+            self.emit(f'            {val} => Self::{en},')
+        self.emit(f'            _ => Self::Unknown{typename}(val),')
+        self.emit('        }')
+        self.emit('    }')
+        self.emit('}')
+        self.emit()
+        self.emit(f'impl From<{typename}> for u64 {{')
+        self.emit(f'    fn from(val: {typename}) -> Self {{')
+        self.emit('        match val {')
+        for (en, val) in zip(enumerators, names):
+            self.emit(f'            {typename}::{en} => {val},')
+        self.emit(f'            {typename}::Unknown{typename}(x) => x,')
+        self.emit('        }')
+        self.emit('    }')
         self.emit('}')
 
     def emit_conversions(self, reprtype):
@@ -192,22 +227,6 @@ class EnumGen(object):
             reprtype: str; The low-level PKCS#11 representation type.
         """
         typename = self.ki_type.split('::')[-1]
-        if self.strum:
-            self.emit(f"""
-impl From<u64> for {typename} {{
-    fn from(val: u64) -> Self {{
-        {typename}::from_repr(val)
-            .unwrap_or({typename}::Unknown{typename})
-    }}
-}}
-
-impl From<{typename}> for u64 {{
-    fn from(val: {typename}) -> u64 {{
-        val as u64
-    }}
-}}
-""")
-
         self.emit(f"""
 impl From<{self.ki_type}> for {typename} {{
     fn from(val: {self.ki_type}) -> Self {{
