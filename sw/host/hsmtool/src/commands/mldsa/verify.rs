@@ -52,6 +52,7 @@ impl Dispatch for Verify {
         let object = helper::find_one_object(session, &attrs)?;
 
         let data = fs::read(&self.input)?;
+        // TODO: decide whether domain preparation should be done in this program or if the HSM is expected to do it.
         let data = self.format.mldsa_prepare(self.domain, &data)?;
         let mechanism = self.format.mechanism(KeyType::MlDsa)?;
         let signature = if let Some(filename) = &self.signature {
