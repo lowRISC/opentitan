@@ -42,7 +42,7 @@ Furthermore, adding `//hw/top:top_lib` or `//hw/top:top_ld` as a dependency of a
 
 The headers for every IP are exposed as:
 - `//hw/top:<ip>_c_regs` for the C registers,
-- `//hw/top:<ip>_rust_regs` for the rust registers.
+- `//hw/top/tock:<ip>_regs` for the Rust registers for Tock.
 
 [**Compatibility annotations**](#compatibility-annotations): those targets are only marked as compatible with the tops that contain at least an instance of them.
 

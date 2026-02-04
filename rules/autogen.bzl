@@ -98,8 +98,8 @@ def opentitan_ip_c_header(name, ip, target_compatible_with = [], **kwargs):
         **kwargs
     )
 
-def _opentitan_ip_rust_header_impl(ctx):
-    tock = ctx.actions.declare_file("{}.rs".format(ctx.attr.ip))
+def _opentitan_ip_rust_module_impl(ctx):
+    module = ctx.actions.declare_file("{}.rs".format(ctx.attr.ip))
 
     stamp_args = []
     stamp_files = []
@@ -107,31 +107,43 @@ def _opentitan_ip_rust_header_impl(ctx):
         stamp_files = [ctx.version_file]
         stamp_args.append("--version-stamp={}".format(ctx.version_file.path))
 
+    if ctx.attr.kind == "generic":
+        kind_flag = "--rust"
+    elif ctx.attr.kind == "tock":
+        kind_flag = "--tock"
+    else:
+        fail("unhandled kind '{}'".format(ctx.attr.kind))
+
     ctx.actions.run(
-        outputs = [tock],
+        outputs = [module],
         inputs = [ctx.file.hjson] + stamp_files,
         arguments = [
-            "--tock",
+            kind_flag,
             "-q",
             "-o",
-            tock.path,
+            module.path,
         ] + stamp_args + [ctx.file.hjson.path],
         executable = ctx.executable._regtool,
     )
 
     return [
-        DefaultInfo(files = depset([tock])),
+        DefaultInfo(files = depset([module])),
         OutputGroupInfo(
-            tock = depset([tock]),
+            module = depset([module]),
         ),
     ]
 
-opentitan_ip_rust_header_rule = rule(
-    implementation = _opentitan_ip_rust_header_impl,
-    doc = "Generate the Rust headers for an IP block as used in a top",
+opentitan_ip_rust_module_rule = rule(
+    implementation = _opentitan_ip_rust_module_impl,
+    doc = "Generate the Rust modules for an IP block as used in a top",
     attrs = {
         "hjson": attr.label(allow_single_file = True, doc = "Hjson description of the IP"),
         "ip": attr.string(doc = "Name of the IP block"),
+        "kind": attr.string(
+            doc = "Kind of Rust module to generate (generic or for Tock)",
+            default = "generic",
+            values = ["generic", "tock"],
+        ),
         "_regtool": attr.label(
             default = "//util:regtool",
             executable = True,
@@ -140,14 +152,15 @@ opentitan_ip_rust_header_rule = rule(
     } | stamp_attr(-1, "//rules:stamp_flag"),
 )
 
-def opentitan_ip_rust_header(name, ip, target_compatible_with = [], **kwargs):
+def opentitan_ip_rust_module(name, ip, kind, target_compatible_with = [], **kwargs):
     """
-    Macro around `opentitan_ip_rust_header_rule` that automatically sets `hjson` for the current top.
+    Macro around `opentitan_ip_rust_module_rule` that automatically sets `hjson` for the current top.
     The target will also be marked as compatible only with tops containing this IP.
     """
-    opentitan_ip_rust_header_rule(
+    opentitan_ip_rust_module_rule(
         name = name,
         ip = ip,
+        kind = kind,
         hjson = opentitan_select_ip_attr(ip, "hjson"),
         target_compatible_with = target_compatible_with + opentitan_require_ip_attr(ip, "hjson"),
         **kwargs
