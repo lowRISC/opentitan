@@ -7,6 +7,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load(
     "//rules:autogen.bzl",
     "opentitan_ip_c_header",
+    "opentitan_ip_rust_module",
 )
 load("//rules/opentitan:hw.bzl", "get_top_attr")
 load(
@@ -18,6 +19,7 @@ load(
     "opentitan_alias_top_attr",
     "opentitan_if_ip",
 )
+load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -124,6 +126,51 @@ alias(
     )
     for ip in ALL_IP_NAMES
 ]
+
+# Rust register modules for all IPs.
+[
+    opentitan_ip_rust_module(
+        name = "{}_rust_regs".format(ip),
+        ip = ip,
+        kind = "generic",
+    )
+    for ip in ALL_IP_NAMES
+]
+
+# `lib.rs` file defining a module for each IP.
+genrule(
+    name = "ot_regs_lib_rs",
+    srcs = [],
+    outs = ["lib.rs"],
+    cmd = "echo '{}' > \"$@\"".format(
+        "\n".join([
+            '#[cfg(feature = "{ip}")]\npub mod {ip};'.format(ip = ip)
+            for ip in ALL_IP_NAMES
+        ]),
+    ),
+    visibility = ["//visibility:private"],
+)
+
+# Crate with a module for the registers of each IP.
+rust_library(
+    name = "ot_regs",
+    srcs = [":ot_regs_lib_rs"] + flatten([
+        opentitan_if_ip(
+            ip,
+            [":{}_rust_regs".format(ip)],
+            [],
+        )
+        for ip in ALL_IP_NAMES
+    ]),
+    crate_features = flatten([
+        opentitan_if_ip(
+            ip,
+            [ip],
+            [],
+        )
+        for ip in ALL_IP_NAMES
+    ]),
+)
 
 cc_library(
     name = "doxy_target",
