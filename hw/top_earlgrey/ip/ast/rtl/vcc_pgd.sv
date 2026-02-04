@@ -5,7 +5,6 @@
 // *Name: vcc_pgd
 // *Module Description:  VCC Power Good
 //############################################################################
-
 module vcc_pgd (
   output logic vcc_pok_o
 );
@@ -26,7 +25,7 @@ initial begin
   init_start = 1'b0;
 end
 
-always (* xprop_off *) @( * ) begin
+always_ff (* xprop_off *) @( * ) begin
   if ( init_start ) begin
     vcc_pok_o <= 1'b0;
   end
