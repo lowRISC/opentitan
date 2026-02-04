@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use clap::ValueEnum;
 use cryptoki::mechanism::Mechanism;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
@@ -17,30 +16,8 @@ use crate::util::attribute::{AttrData, AttributeMap, AttributeType};
 use crate::util::helper;
 use crate::util::signing::MlDsaDomain;
 
-#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, ValueEnum)]
-pub enum MlDsaType {
-    #[value(name = "44", alias = "1")]
-    MlDsa44,
-    #[value(name = "65", alias = "2")]
-    MlDsa65,
-    #[value(name = "87", alias = "3")]
-    #[default]
-    MlDsa87,
-}
-
-impl From<MlDsaType> for u64 {
-    fn from(val: MlDsaType) -> Self {
-        match val {
-            MlDsaType::MlDsa44 => 1,
-            MlDsaType::MlDsa65 => 2,
-            MlDsaType::MlDsa87 => 3,
-        }
-    }
-}
-
-/// Default to 3 for ML-DSA-87.
-fn default_mldsa_type() -> MlDsaType {
-    MlDsaType::MlDsa87
+fn default_mldsa_type() -> String {
+    "87".to_string()
 }
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
@@ -55,9 +32,9 @@ pub struct Generate {
     #[arg(long)]
     extractable: bool,
     /// MLDSA algorithm type.
-    #[arg(long, value_enum, default_value_t = MlDsaType::MlDsa87)]
+    #[arg(long, default_value = "87", value_parser = ["44", "65", "87"])]
     #[serde(default = "default_mldsa_type")]
-    mldsa_type: MlDsaType,
+    mldsa_type: String,
     /// The ML-DSA domain.
     #[arg(long, value_enum, default_value_t = MlDsaDomain::Pure)]
     domain: MlDsaDomain,
@@ -112,9 +89,17 @@ impl Dispatch for Generate {
             AttributeMap::from_str(Self::PRIVATE_TEMPLATE).expect("error in PRIVATE_TEMPLATE");
         public_template.insert(AttributeType::Id, id.clone());
         public_template.insert(AttributeType::Label, result.label.clone());
+
+        let mldsa_type_val = match self.mldsa_type.as_str() {
+            "44" => 1,
+            "65" => 2,
+            "87" => 3,
+            _ => unreachable!(),
+        };
+
         public_template.insert(
             AttributeType::ParameterSet,
-            AttrData::from(u64::from(self.mldsa_type)),
+            AttrData::from(mldsa_type_val),
         );
 
         if let Some(tpl) = &self.public_template {

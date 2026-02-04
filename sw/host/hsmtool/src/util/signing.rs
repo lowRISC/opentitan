@@ -101,17 +101,6 @@ impl SignData {
                 // Data is a slice of plaintext: hash.
                 SignData::Slice(a, b) => Self::data_plain_text(&input[*a..*b]),
             },
-            KeyType::MlDsa => match self {
-                // Data is plaintext: hash.
-                SignData::PlainText => Self::data_plain_text(input),
-                // Data is already hashed: no transformation needed.
-                SignData::Sha256Hash => Self::data_raw(input, false),
-                SignData::Sha256HashReversed => Self::data_raw(input, true),
-                // Raw data requires no transformation.
-                SignData::Raw => Self::data_raw(input, false),
-                // Data is a slice of plaintext: hash.
-                SignData::Slice(a, b) => Self::data_plain_text(&input[*a..*b]),
-            },
             _ => Err(HsmError::Unsupported(format!("SignData prepare for {keytype:?}")).into()),
         }
     }
