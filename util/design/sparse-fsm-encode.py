@@ -150,8 +150,8 @@ class EncodingGenerator:
 
         print(
             f"{comment} Encoding generated with:\n"
-            f"{comment} $ ./util/design/sparse-fsm-encode.py -d {self.min_hd} -m {self.num_states} -n {self.encoding_len} \\\n"  # noqa: E501
-            f"{comment}     -s {self.seed} --language={self.language}\n"
+            f"{comment} $ ./util/design/sparse-fsm-encode.py --language={self.language} \\\n"  # noqa: E501
+            f"{comment}     --seed {self.seed} --distance {self.min_hd} --states {self.num_states} --bits {self.encoding_len}\n"
             f"{comment}\n"
             f"{comment} Hamming distance histogram:\n"
             f"{comment}")
@@ -241,26 +241,26 @@ def main():
         description=wrapped_docstring(),
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
-        '-d',
+        '-d', '--distance',
         type=int,
         default=5,
         metavar='<minimum HD>',
         help='Minimum Hamming distance between encoded states.')
-    parser.add_argument('-m',
+    parser.add_argument('-m', '--states',
                         type=int,
                         default=7,
                         metavar='<#states>',
                         help='Number of states to encode.')
-    parser.add_argument('-n',
+    parser.add_argument('-n', '--bits',
                         type=int,
                         default=10,
                         metavar='<#nbits>',
                         help='Encoding length [bit].')
-    parser.add_argument('-s',
+    parser.add_argument('-s', '--seed',
                         type=int,
                         metavar='<seed>',
                         help='Custom seed for RNG.')
-    parser.add_argument('--language',
+    parser.add_argument('-l', '--language',
                         choices=['sv', 'c', 'rust'],
                         default='sv',
                         help='Choose the language of the generated enum.')
@@ -272,32 +272,32 @@ def main():
     args = parser.parse_args()
 
     if args.language in ['c', 'rust']:
-        if args.n not in [8, 16, 32]:
+        if args.bits not in [8, 16, 32]:
             log.error("When using C or Rust, widths must be a power-of-two "
-                      f"at least a byte (8 bits) wide. You chose {args.n}.")
+                      f"at least a byte (8 bits) wide. You chose {args.bits}.")
             sys.exit(1)
 
-    if args.m < 2:
+    if args.states < 2:
         log.error('Number of states (m) must be at least 2.')
         sys.exit(1)
 
-    if args.m > 2**args.n:
+    if args.states > 2**args.bits:
         log.error(
-            f'Statespace 2^{args.n} not large enough to accommodate {args.m} states.'
+            f'Statespace 2^{args.bits} not large enough to accommodate {args.states} states.'
         )
         sys.exit(1)
 
-    if (args.d >= args.n) and not (args.d == args.n and args.m == 2):
+    if (args.distance >= args.bits) and not (args.distance == args.bits and args.states == 2):
         log.error(
-            f'State is only {args.n} bits wide, which is not enough to fulfill a '
-            f'minimum Hamming distance constraint of {args.d}.')
+            f'State is only {args.bits} bits wide, which is not enough to fulfill a '
+            f'minimum Hamming distance constraint of {args.distance}.')
         sys.exit(1)
 
-    if args.d <= 0:
+    if args.distance <= 0:
         log.error('Hamming distance must be > 0.')
         sys.exit(1)
 
-    if args.d < 3:
+    if args.distance < 3:
         log.warning(
             'A value of 4-5 is recommended for the minimum Hamming distance '
             'constraint. At a minimum, this should be set to 3.')
@@ -305,14 +305,14 @@ def main():
     # If no seed has been provided, we choose a seed and print it
     # into the generated output later on such that this run can be
     # reproduced.
-    if args.s is None:
+    if args.seed is None:
         random.seed()
-        args.s = random.getrandbits(32)
+        args.seed = random.getrandbits(32)
 
-    generator = EncodingGenerator(min_hd=args.d,
-                                  num_states=args.m,
-                                  encoding_len=args.n,
-                                  seed=args.s,
+    generator = EncodingGenerator(min_hd=args.distance,
+                                  num_states=args.states,
+                                  encoding_len=args.bits,
+                                  seed=args.seed,
                                   language=args.language,
                                   avoid_zero=args.avoid_zero)
     generator.generate()
