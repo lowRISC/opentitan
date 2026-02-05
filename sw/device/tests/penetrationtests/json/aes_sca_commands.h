@@ -25,7 +25,8 @@ extern "C" {
     value(_, BatchRandom) \
     value(_, BatchFvsrData) \
     value(_, BatchFvsrKey) \
-    value(_, GcmFvsrBatch) \
+    value(_, GcmFvsrBatchIvKey) \
+    value(_, GcmFvsrBatchPtxAad) \
     value(_, GcmSingleEncrypt) \
     value(_, Init) \
     value(_, SeedLfsr) \
