@@ -25,7 +25,7 @@ image extension correctly. The flag "test_in_rom" is used to indicate a test run
 directly out of ROM instead of flash. There are more possible flags documented below.
 
 A string for each sw image (root filename + index + flags) is also passed through
-to the tesbench, which re-parses it (in chip_env_cfg.sv) to extract the index and
+to the testbench, which re-parses it (in chip_env_cfg.sv) to extract the index and
 flags which determines which piece of collateral should be loaded (by filename)
 to which simulated memory model.
 
@@ -74,6 +74,7 @@ import subprocess
 import os
 import sys
 import shutil
+import shlex
 from dataclasses import dataclass, field
 from enum import Enum
 import textwrap
@@ -187,7 +188,7 @@ class BazelRunner:
         logger.info(f"query_cmd = {' '.join(query_cmd)}")
         return self._run_cmd(query_cmd)
 
-    def cquery(self, label: str, opts: list[str]) -> list[str]:
+    def cquery(self, label: str, opts: tuple[str]) -> tuple[str]:
         cquery_cmd = (
             self.cmd,
             "cquery",
@@ -212,12 +213,14 @@ class BazelRunner:
         res = subprocess.run(cmd, capture_output=True, encoding="utf-8", text=True)
 
         if res.returncode != 0:
+            print("---- STDOUT ----")
             print(res.stdout, flush=True)
+            print("---- STDERR ----")
             print(res.stderr, flush=True)
             sys.exit(f"_run_cmd -> had a non-zero return code of {res.returncode}.")
 
-        logger.debug(f"_run_cmd -> stdout:\n{res.stdout}")
-        logger.debug(f"_run_cmd -> stderr:\n{res.stderr}")
+        logger.debug("_run_cmd -> stdout:\n%s\n", res.stdout)
+        logger.debug("_run_cmd -> stderr:\n%s\n", res.stderr)
 
         stdout_lines = res.stdout.split("\n")
         return [s for s in stdout_lines if s]
@@ -231,7 +234,7 @@ class ImageString:
     label: str = field(init=False)
     package: str = field(init=False)
     target: str = field(init=False)
-    index: int = field(init=False)
+    index: sw_type_e = field(init=False)
     flags: set[str] = field(init=False)
 
     def __post_init__(self):
@@ -240,11 +243,15 @@ class ImageString:
 
         self.package = parts[0]
         self.target = parts[1]
-        self.index = int(parts[2])
-        self.flags = parts[3:] if len(parts) > 3 else ()
+        try:
+            self.index = sw_type_e(int(parts[2]))
+        except ValueError as e:
+            sys.exit(f"Invalid index value: {e}")
+        self.flags = set(parts[3:])
         self.label = f"{self.package}:{self.target}"
 
-        assert all((f in KNOWN_FLAGS) for f in self.flags), "Unknown FLAG used in sw_image"
+        for flag in self.flags:
+            assert flag in KNOWN_FLAGS, f"Unknown flag '{flag}' used in sw_image '{self.raw}'"
         logger.debug(f"flags={self}")
 
 
@@ -298,7 +305,7 @@ def _deploy_software_collateral(args) -> None:
             f"--repository_cache={ENV.get('BAZEL_CACHE')}",
         ]
 
-    # Export this environment variable to build with a non-default OTP permuation
+    # Export this environment variable to build with a non-default OTP permutation
     if ENV.get("BAZEL_OTP_DATA_PERM_FLAG"):
         bazel_runner.build_opts += [
             f"--//util/design/data:data_perm={ENV.get('BAZEL_OTP_DATA_PERM_FLAG')}",
@@ -310,7 +317,7 @@ def _deploy_software_collateral(args) -> None:
 
     # Determine the final label and cquery expression to build and get the
     # artifacts for each image.
-    image_query_set = {}
+    image_query_map = {}
     for image in args.sw_images:
         image_string = ImageString(image)
 
@@ -353,12 +360,12 @@ def _deploy_software_collateral(args) -> None:
         kind = kind_query[0].split(" ")[0]
 
         # Add a query object to the set for this image
-        image_query_set[image] = ImageQuery(image_string, label, cquery, kind)
+        image_query_map[image] = ImageQuery(image_string, label, cquery, kind)
 
     logger.info("Image query parameters determined.\n")
 
     # Build all the software artifacts
-    bazel_labels = (v.label for v in image_query_set.values())
+    bazel_labels = [v.label for v in image_query_map.values()]
     logger.info("Building all labels...")
     bazel_runner.build(bazel_labels)
     logger.info("All labels built.\n")
@@ -367,7 +374,7 @@ def _deploy_software_collateral(args) -> None:
     for image in args.sw_images:
         logger.info(f"Querying runfiles for image : {image}")
 
-        iq = image_query_set[image]
+        iq = image_query_map[image]
 
         # First, run the query to get the maximal set of runfiles for the image
         runfiles = _get_image_runfiles(iq, bazel_runner)
@@ -418,7 +425,7 @@ def _get_image_runfiles(iq: ImageQuery, bazel_runner: BazelRunner) -> list[str]:
     runfiles: list[str] = []
 
     logger.info(f"kind = {iq.kind}")
-    if iq.kind in ("opentitan_test", "opentitan_binary", "alias"):
+    if iq.kind in BAZEL_STARLARK_QUERY_RULE_KIND:
         # For targets of this kind, we can query directly for the set of runfiles.
         # The query may have a slightly different starlark expression to extract the
         # files from the target depending on the kind.
@@ -495,11 +502,10 @@ def _main() -> None:
         except Exception:
             return value
 
-    mod_doc = sys.modules[__name__].__doc__
     parser = argparse.ArgumentParser(
         # Use the module description to generate CLI --help docs
-        description=(mod_doc.split("\n")[0]),
-        epilog=(80 * "-" + f"\n\n{mod_doc}"),
+        description=(__doc__.splitlines()[0]),
+        epilog=(80 * "-" + f"\n\n{__doc__}"),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
@@ -514,7 +520,7 @@ def _main() -> None:
         default=[],
         help="Additional opts to be passed while building software",
     )
-    parser.add_argument("--sw-build-device", type=str, help="")
+    parser.add_argument("--sw-build-device")
     parser.add_argument("--seed", type=int, help="Seed")
     parser.add_argument("--build-seed", type=_int_or_str, help="Build Seed")
     parser.add_argument(
@@ -528,25 +534,12 @@ def _main() -> None:
     log_format = "%(levelname)s: [%(filename)s:%(lineno)d] %(message)s"
     logging.basicConfig(level=log_level, format=log_format)
 
-    # Generate string of script arguments
-    def _mk_argstr(args) -> str:
-        argstr = ""
-        for arg, argval in sorted(vars(args).items()):
-            if argval:
-                if not isinstance(argval, list):
-                    argval = [argval]
-                for a in argval:
-                    argname = "-".join(arg.split("_"))
-                    # Get absolute paths for all files specified.
-                    a = a.resolve() if isinstance(a, Path) else a
-                    argstr += " \\\n//   --" + argname + " " + str(a) + ""
-        return argstr
-
-    # Log the script name and invocation arguments
-    logger.info(f"\n// {sys.argv[0]} {_mk_argstr(args)}\n")
+    logger.info("Command: %s", shlex.join(sys.argv))
+    logger.info("Parsed arguments:")
+    for name, val in sorted(vars(args).items()):
+        logger.info("  %s = %r", name, val)
 
     _deploy_software_collateral(args)
-
 
 if __name__ == "__main__":
     sys.exit(_main())
