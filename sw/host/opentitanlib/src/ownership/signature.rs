@@ -187,8 +187,7 @@ impl DetachedSignature {
         if algorithm.is_ecdsa() {
             let path =
                 ecdsa_signature_path.ok_or_else(|| anyhow!("No ecdsa signature provided"))?;
-            let mut file = std::fs::File::open(path)?;
-            ecdsa_sig = Some(EcdsaRawSignature::read(&mut file)?);
+            ecdsa_sig = Some(EcdsaRawSignature::read_from_file(path)?);
         }
 
         if algorithm.is_spx() {
