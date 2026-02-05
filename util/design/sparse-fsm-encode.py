@@ -129,7 +129,7 @@ class EncodingGenerator:
         num_restarts = 0
 
         rand = random.Random()
-        rand.seed(self.seed)
+        rand.seed(self.seed, version=2)
         rnd = rand.getrandbits(self.encoding_len)
 
         while len(self.encodings) < self.num_states:
