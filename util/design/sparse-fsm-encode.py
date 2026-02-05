@@ -22,6 +22,7 @@ deterministic. If not specified, the script randomly picks a seed.
 import argparse
 import logging as log
 import math
+import platform
 import random
 import sys
 
@@ -53,6 +54,11 @@ RUST_INSTRUCTIONS = """
 | EASE AUDITABILITY AND REPRODUCIBILITY.       |
 ------------------------------------------------
 """
+
+
+def get_python_version() -> str:
+    """Returns the current Python version as a string."""
+    return platform.python_version()
 
 
 class EncodingGenerator:
@@ -148,8 +154,14 @@ class EncodingGenerator:
         else:
             raise ValueError(f"Unsupported language: {self.lanugage}")
 
+        # Retrieve the current Python version for reproducibility.
+        version = get_python_version()
+
+        print(f"{comment} Encoding generated", end="")
+        if version:
+            print(f" using Python {version}", end="")
         print(
-            f"{comment} Encoding generated with:\n"
+            " with:\n"
             f"{comment} $ ./util/design/sparse-fsm-encode.py"
             f" --language={self.language}"
             + (" --avoid-zero" if self.avoid_zero else "") +
