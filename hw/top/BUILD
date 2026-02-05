@@ -7,7 +7,6 @@ load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load(
     "//rules:autogen.bzl",
     "opentitan_ip_c_header",
-    "opentitan_ip_rust_header",
 )
 load("//rules/opentitan:hw.bzl", "get_top_attr")
 load(
@@ -121,15 +120,6 @@ alias(
 [
     opentitan_ip_c_header(
         name = "{}_c_regs".format(ip),
-        ip = ip,
-    )
-    for ip in ALL_IP_NAMES
-]
-
-# Rust register headers for all IPs.
-[
-    opentitan_ip_rust_header(
-        name = "{}_rust_regs".format(ip),
         ip = ip,
     )
     for ip in ALL_IP_NAMES
