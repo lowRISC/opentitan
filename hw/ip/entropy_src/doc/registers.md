@@ -266,10 +266,15 @@ Setting this field to `kMultiBitBool4True` will enable reading entropy values fr
 This function also requires that the otp_en_entropy_src_fw_read input is set to `kMultiBitBool8True`.
 
 ### CONF . THRESHOLD_SCOPE
-This field controls the scope (either by-line or by-sum) of the health checks.
-If set to `kMultiBitBool4True`, the Adaptive Proportion and Markov Tests will accumulate all RNG input lines into a single score, and thresholds will be applied to the sum all the entropy input lines.
-If set to `kMultiBitBool4False`, the RNG input lines are all scored individually.
-A statistical deviation in any one input line, be it due to coincidence or failure, will force rejection of the sample, and count toward the total alert count.
+This field controls the scope (either by-line or by-sum) of the Adaptive Proportion and the Markov health tests.
+It has no effect if [`CONF.RNG_BIT_ENABLE`](#conf) is set to `kMultiBitBool4True`, i.e., if the ENTROPY_SRC is operating in single-channel mode.
+
+If set to `kMultiBitBool4False`, the minimum/maximum results of the individual, line-based tests are taken and compared against the configured thresholds.
+This allows detecting failures of individual noise source channels in multi-channel mode.
+If set to `kMultiBitBool4True`, the individual, line-based test results are summed up and then compared against the configured thresholds.
+This allows lowering the likelihood for coincidental test failures (higher alpha).
+
+Note that the value of THRESHOLD_SCOPE needs to be considered when defining the health test thresholds.
 
 ### CONF . RNG_BIT_SEL
 When [`CONF.RNG_BIT_ENABLE`](#conf) is set, this field selects which bit from the RNG bus will be processed.
