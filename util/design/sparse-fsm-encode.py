@@ -150,8 +150,15 @@ class EncodingGenerator:
 
         print(
             f"{comment} Encoding generated with:\n"
-            f"{comment} $ ./util/design/sparse-fsm-encode.py --language={self.language} \\\n"  # noqa: E501
-            f"{comment}     --seed {self.seed} --distance {self.min_hd} --states {self.num_states} --bits {self.encoding_len}\n"
+            f"{comment} $ ./util/design/sparse-fsm-encode.py"
+            f" --language={self.language}"
+            + (" --avoid-zero" if self.avoid_zero else "") +
+            f" \\\n"
+            f"{comment}    "
+            f" --seed {self.seed}"
+            f" --distance {self.min_hd}"
+            f" --states {self.num_states}"
+            f" --bits {self.encoding_len}\n"
             f"{comment}\n"
             f"{comment} Hamming distance histogram:\n"
             f"{comment}")
