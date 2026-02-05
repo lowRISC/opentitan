@@ -22,8 +22,10 @@ deterministic. If not specified, the script randomly picks a seed.
 import argparse
 import logging as log
 import math
+import os
 import platform
 import random
+import subprocess
 import sys
 
 from lib.common import get_hd, hd_histogram, wrapped_docstring
@@ -59,6 +61,25 @@ RUST_INSTRUCTIONS = """
 def get_python_version() -> str:
     """Returns the current Python version as a string."""
     return platform.python_version()
+
+
+def get_git_commit_hash(short: bool = False) -> str | None:
+    """Returns the current commit hash of the repo containing the CWD, if it exists."""
+    cmd = ['git', 'rev-parse']
+    if short:
+        cmd.append('--short')
+    cmd.append('HEAD')
+    try:
+        return subprocess.check_output(
+            cmd,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            cwd=os.getcwd()
+        ).strip()
+    except subprocess.CalledProcessError as e:
+        # Not a git repo, or some other git error.
+        log.debug("Error getting git commit hash: %s", str(e))
+        return None
 
 
 class EncodingGenerator:
@@ -154,10 +175,13 @@ class EncodingGenerator:
         else:
             raise ValueError(f"Unsupported language: {self.lanugage}")
 
-        # Retrieve the current Python version for reproducibility.
+        # Retrieve the current git commit and Python version for reproducibility.
+        commit = get_git_commit_hash(short=True)
         version = get_python_version()
 
         print(f"{comment} Encoding generated", end="")
+        if commit:
+            print(f" at commit {commit}", end="")
         if version:
             print(f" using Python {version}", end="")
         print(
