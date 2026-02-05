@@ -211,12 +211,12 @@ class EncodingGenerator:
         print("} my_state_t;")
 
     def _print_rust(self):
-        print("#[derive(Clone,Copy,Eq,PartialEq,Ord,ParitalOrd,Hash,Debug)]\n"
+        print("#[derive(Clone, Copy, Eq, PartialEq, Ord, ParitalOrd, Hash, Debug)]\n"
               "#[repr(transparent)]\n"
               f"struct MyState(u{self.encoding_len});\n"
               "\n"
               "impl MyState {")
-        fmt_str = "  const MY_STATE{0:}: MyState {1:}= MyState(0x{3:0" + str(
+        fmt_str = "    const MY_STATE{0:}: MyState {1:}= MyState(0x{3:0" + str(
             math.ceil(self.encoding_len / 4)) + "x});"
         for j, k in enumerate(self.encodings):
             pad = " " * (len(str(self.num_states)) - len(str(j)))
