@@ -136,14 +136,14 @@ class EncodingGenerator:
     def _print_comment(self):
         if self.language == "c":
             comment = " *"
-            print(C_INSTRUCTIONS)
+            print(C_INSTRUCTIONS, file=sys.stderr)
             print("/*")
         elif self.language == "sv":
             comment = "//"
-            print(SV_INSTRUCTIONS)
+            print(SV_INSTRUCTIONS, file=sys.stderr)
         elif self.language == "rust":
             comment = "///"
-            print(RUST_INSTRUCTIONS)
+            print(RUST_INSTRUCTIONS, file=sys.stderr)
             print("///```text")
         else:
             raise ValueError(f"Unsupported language: {self.lanugage}")
