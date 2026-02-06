@@ -17,8 +17,8 @@
 | entropy_src.[`ENTROPY_CONTROL`](#entropy_control)                     | 0x24     |        4 | Entropy control register                                     |
 | entropy_src.[`ENTROPY_DATA`](#entropy_data)                           | 0x28     |        4 | Entropy data bits                                            |
 | entropy_src.[`HEALTH_TEST_WINDOWS`](#health_test_windows)             | 0x2c     |        4 | Health test windows register                                 |
-| entropy_src.[`REPCNT_THRESHOLDS`](#repcnt_thresholds)                 | 0x30     |        4 | Repetition count test thresholds register                    |
-| entropy_src.[`REPCNTS_THRESHOLDS`](#repcnts_thresholds)               | 0x34     |        4 | Repetition count symbol test thresholds register             |
+| entropy_src.[`REPCNT_THRESHOLDS`](#repcnt_thresholds)                 | 0x30     |        4 | Repetition Count Test thresholds register                    |
+| entropy_src.[`REPCNTS_THRESHOLDS`](#repcnts_thresholds)               | 0x34     |        4 | Repetition Count Symbol Test thresholds register             |
 | entropy_src.[`ADAPTP_HI_THRESHOLDS`](#adaptp_hi_thresholds)           | 0x38     |        4 | Adaptive proportion test high thresholds register            |
 | entropy_src.[`ADAPTP_LO_THRESHOLDS`](#adaptp_lo_thresholds)           | 0x3c     |        4 | Adaptive proportion test low thresholds register             |
 | entropy_src.[`BUCKET_THRESHOLDS`](#bucket_thresholds)                 | 0x40     |        4 | Bucket test thresholds register                              |
@@ -28,8 +28,8 @@
 | entropy_src.[`EXTHT_LO_THRESHOLDS`](#extht_lo_thresholds)             | 0x50     |        4 | External health test low thresholds register                 |
 | entropy_src.[`HT_WATERMARK_NUM`](#ht_watermark_num)                   | 0x54     |        4 | Health test watermark number register                        |
 | entropy_src.[`HT_WATERMARK`](#ht_watermark)                           | 0x58     |        4 | Health test watermark register                               |
-| entropy_src.[`REPCNT_TOTAL_FAILS`](#repcnt_total_fails)               | 0x5c     |        4 | Repetition count test failure counter register               |
-| entropy_src.[`REPCNTS_TOTAL_FAILS`](#repcnts_total_fails)             | 0x60     |        4 | Repetition count symbol test failure counter register        |
+| entropy_src.[`REPCNT_TOTAL_FAILS`](#repcnt_total_fails)               | 0x5c     |        4 | Repetition Count Test failure counter register               |
+| entropy_src.[`REPCNTS_TOTAL_FAILS`](#repcnts_total_fails)             | 0x60     |        4 | Repetition Count Symbol Test failure counter register        |
 | entropy_src.[`ADAPTP_HI_TOTAL_FAILS`](#adaptp_hi_total_fails)         | 0x64     |        4 | Adaptive proportion high test failure counter register       |
 | entropy_src.[`ADAPTP_LO_TOTAL_FAILS`](#adaptp_lo_total_fails)         | 0x68     |        4 | Adaptive proportion low test failure counter register        |
 | entropy_src.[`BUCKET_TOTAL_FAILS`](#bucket_total_fails)               | 0x6c     |        4 | Bucket test failure counter register                         |
@@ -360,12 +360,12 @@ Note that the value defined in this register applies both to single-channel and 
 Note that the number of tested bits taken by the conditioner to produce a seed is equal to the window size x symbol size, where the symbol size is 1 in single-channel mode.
 The only exception is the startup seed which is produced using the bits of two subsequent windows, i.e., 2 x window size x symbol tested bits.
 
-Note that NIST SP 800-90B (Table 2) requires the adaptive proportion test to be run on 1024 or 512 samples in single-channel or multi-channel mode, respectively (see [`ENTROPY_SRC.RNG_BIT_ENABLE`](#entropy_src)).
+Note that NIST SP 800-90B (Table 2) requires the Adaptive Proportion Test to be run on 1024 or 512 samples in single-channel or multi-channel mode, respectively (see [`ENTROPY_SRC.RNG_BIT_ENABLE`](#entropy_src)).
 The startup tests must be run on at least 1024 consecutive samples (see Section 4.3 Requirements for Health Tests of NIST SP 800-90B) and this block always uses two subsequent windows for startup health testing.
 The use of window sizes below 512 samples is thus not recommended as this may not comply with NIST SP 800-90B.
 
 ## REPCNT_THRESHOLDS
-Repetition count test thresholds register
+Repetition Count Test thresholds register
 - Offset: `0x30`
 - Reset default: `0xffffffff`
 - Reset mask: `0xffffffff`
@@ -383,7 +383,7 @@ Repetition count test thresholds register
 |  15:0  |   rw   | 0xffff  | [FIPS_THRESH](#repcnt_thresholds--fips_thresh)     |
 
 ### REPCNT_THRESHOLDS . BYPASS_THRESH
-This is the threshold size for the repetition count health test
+This is the threshold for the Repetition Count Test
    running in bypass mode. This mode is active after reset for the
    first and only test run, or when this mode is programmed by firmware.
    This register must be written before the module is enabled.
@@ -392,7 +392,7 @@ This is the threshold size for the repetition count health test
    A read from this register always reflects the current value.
 
 ### REPCNT_THRESHOLDS . FIPS_THRESH
-This is the threshold size for the repetition count health test.
+This is the threshold for the Repetition Count Test.
    This value is used in FIPS mode.
    This register must be written before the module is enabled.
    Writing to this register will only update the register if the
@@ -400,7 +400,7 @@ This is the threshold size for the repetition count health test.
    A read from this register always reflects the current value.
 
 ## REPCNTS_THRESHOLDS
-Repetition count symbol test thresholds register
+Repetition Count Symbol Test thresholds register
 - Offset: `0x34`
 - Reset default: `0xffffffff`
 - Reset mask: `0xffffffff`
@@ -418,7 +418,7 @@ Repetition count symbol test thresholds register
 |  15:0  |   rw   | 0xffff  | [FIPS_THRESH](#repcnts_thresholds--fips_thresh)     |
 
 ### REPCNTS_THRESHOLDS . BYPASS_THRESH
-This is the threshold size for the repetition count symbol health test
+This is the threshold for the Repetition Count Symbol Test
    running in bypass mode. This mode is active after reset for the
    first and only test run, or when this mode is programmed by firmware.
    This register must be written before the module is enabled.
@@ -427,7 +427,7 @@ This is the threshold size for the repetition count symbol health test
    A read from this register always reflects the current value.
 
 ### REPCNTS_THRESHOLDS . FIPS_THRESH
-This is the threshold size for the repetition count symbol health test.
+This is the threshold for the Repetition Count Symbol Test.
    This value is used in FIPS mode.
    This register must be written before the module is enabled.
    Writing to this register will only update the register if the
@@ -453,7 +453,7 @@ Adaptive proportion test high thresholds register
 |  15:0  |   rw   | 0xffff  | [FIPS_THRESH](#adaptp_hi_thresholds--fips_thresh)     |
 
 ### ADAPTP_HI_THRESHOLDS . BYPASS_THRESH
-This is the threshold size for the adaptive proportion health test
+This is the threshold for the Adaptive Proportion Test
    running in bypass mode. This mode is active after reset for the
    first and only test run, or when this mode is programmed by firmware.
    This register must be written before the module is enabled.
@@ -462,7 +462,7 @@ This is the threshold size for the adaptive proportion health test
    A read from this register always reflects the current value.
 
 ### ADAPTP_HI_THRESHOLDS . FIPS_THRESH
-This is the threshold size for the adaptive proportion health test.
+This is the threshold for the Adaptive Proportion Test.
    This value is used in FIPS mode.
    This register must be written before the module is enabled.
    Writing to this register will only update the register if the
@@ -488,7 +488,7 @@ Adaptive proportion test low thresholds register
 |  15:0  |   rw   |   0x0   | [FIPS_THRESH](#adaptp_lo_thresholds--fips_thresh)     |
 
 ### ADAPTP_LO_THRESHOLDS . BYPASS_THRESH
-This is the threshold size for the adaptive proportion health test
+This is the threshold for the Adaptive Proportion Test
    running in bypass mode. This mode is active after reset for the
    first and only test run, or when this mode is programmed by firmware.
    This register must be written before the module is enabled.
@@ -497,7 +497,7 @@ This is the threshold size for the adaptive proportion health test
    A read from this register always reflects the current value.
 
 ### ADAPTP_LO_THRESHOLDS . FIPS_THRESH
-This is the threshold size for the adaptive proportion health test.
+This is the threshold for the Adaptive Proportion Test.
    This value is used in FIPS mode.
    This register must be written before the module is enabled.
    Writing to this register will only update the register if the
@@ -705,8 +705,8 @@ This register must be written before the module is enabled.
 
 | Value   | Name       | Description                                  |
 |:--------|:-----------|:---------------------------------------------|
-| 0x0     | REPCNT_HI  | Repetition count test high watermark.        |
-| 0x1     | REPCNTS_HI | Repetition count symbol test high watermark. |
+| 0x0     | REPCNT_HI  | Repetition Count Test high watermark.        |
+| 0x1     | REPCNTS_HI | Repetition Count Symbol Test high watermark. |
 | 0x2     | ADAPTP_HI  | Adaptive proportion test high watermark.     |
 | 0x3     | ADAPTP_LO  | Adaptive proportion test low watermark.      |
 | 0x4     | BUCKET_HI  | Bucket test high watermark.                  |
@@ -735,7 +735,7 @@ Health test watermark register
 |  15:0  |   ro   |   0x0   | HT_WATERMARK | Watermark value for health test selected by HT_WATERMARK_NUM. After a reset, this register always reads as 0. If a low watermark is configured in HT_WATERMARK_NUM, this register is cleared to all-1s after enabling ENTROPY_SRC. |
 
 ## REPCNT_TOTAL_FAILS
-Repetition count test failure counter register
+Repetition Count Test failure counter register
 - Offset: `0x5c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -751,7 +751,7 @@ Repetition count test failure counter register
 |  31:0  |   ro   |    x    | REPCNT_TOTAL_FAILS | This register will hold a running count of test failures observed during normal operation. It will persist until cleared. |
 
 ## REPCNTS_TOTAL_FAILS
-Repetition count symbol test failure counter register
+Repetition Count Symbol Test failure counter register
 - Offset: `0x60`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -882,7 +882,7 @@ External health test low threshold failure counter register
 Alert threshold register
 
 This register determines during how many subsequent health test windows one or more health test failures can occur before a recoverable alert is raised and the ENTROPY_SRC block stops operating.
-Note that continuous health tests such as the repetition count test or the repetition count symbol test can trigger multiple test failures within a single window.
+Note that continuous health tests such as the Repetition Count Test or the Repetition Count Symbol Test can trigger multiple test failures within a single window.
 Each symbol for which at least one continuous health test fails counts separately towards the threshold.
 In case the configured threshold is reached, firmware needs to disable/re-enable the block to restart operation including the startup health testing.
 
@@ -910,7 +910,7 @@ Alert summary failure counts register
 
 This register holds the total number of subsequent health test windows during which one or more health test failures occurred.
 For information on which health tests failed specifically, refer to [`ALERT_FAIL_COUNTS`](#alert_fail_counts) and [`EXTHT_FAIL_COUNTS.`](#extht_fail_counts)
-Note that continuous health tests such as the repetition count test or the repetition count symbol test can trigger multiple test failures within a single window.
+Note that continuous health tests such as the Repetition Count Test or the Repetition Count Symbol Test can trigger multiple test failures within a single window.
 Each symbol for which at least one continuous health test fails is counted separately.
 
 If the value of this register reaches the value configured in the [`ALERT_THRESHOLD`](#alert_threshold) register, a recoverable alert is raised and the ENTROPY_SRC block stops operating.
