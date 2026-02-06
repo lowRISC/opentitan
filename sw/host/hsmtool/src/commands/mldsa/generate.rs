@@ -16,8 +16,18 @@ use crate::util::attribute::{AttrData, AttributeMap, AttributeType};
 use crate::util::helper;
 use crate::util::signing::MlDsaDomain;
 
-fn default_mldsa_type() -> String {
-    "87".to_string()
+#[derive(clap::ValueEnum, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum MlDsaType {
+    #[serde(rename = "44")]
+    #[value(name = "44")]
+    MlDsa44 = 1,
+    #[serde(rename = "65")]
+    #[value(name = "65")]
+    MlDsa65 = 2,
+    #[default]
+    #[serde(rename = "87")]
+    #[value(name = "87")]
+    MlDsa87 = 3,
 }
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
@@ -31,10 +41,10 @@ pub struct Generate {
     /// Permit the generated key to be extractable.
     #[arg(long)]
     extractable: bool,
-    /// MLDSA algorithm type.
-    #[arg(long, default_value = "87", value_parser = ["44", "65", "87"])]
-    #[serde(default = "default_mldsa_type")]
-    mldsa_type: String,
+    /// MLDSA algorithm type for the key.
+    #[arg(long, value_enum, default_value_t = MlDsaType::MlDsa87)]
+    #[serde(default)]
+    mldsa_type: MlDsaType,
     /// The ML-DSA domain.
     #[arg(long, value_enum, default_value_t = MlDsaDomain::Pure)]
     domain: MlDsaDomain,
@@ -90,16 +100,9 @@ impl Dispatch for Generate {
         public_template.insert(AttributeType::Id, id.clone());
         public_template.insert(AttributeType::Label, result.label.clone());
 
-        let mldsa_type_val = match self.mldsa_type.as_str() {
-            "44" => 1,
-            "65" => 2,
-            "87" => 3,
-            _ => unreachable!(),
-        };
-
         public_template.insert(
             AttributeType::ParameterSet,
-            AttrData::from(mldsa_type_val),
+            AttrData::from(self.mldsa_type as u64),
         );
 
         if let Some(tpl) = &self.public_template {
