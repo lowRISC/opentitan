@@ -100,8 +100,10 @@ package chip_env_pkg;
     Rom
   } chip_mem_e;
 
-  // On OpenTitan, we deal with 4 types of SW - ROM, the main test, the OTBN test and the OTP image.
+  // On Earlgrey, we deal with 6 types of SW.
   // This basically puts these SW types into 'slots' that the external regression tool can set.
+  // Note: This enum must be consistent across tops.
+  // Note: If this enum is updated, then also update the file `build_sw_collateral_for_sim.py`.
   typedef enum {
     SwTypeRom       = 0, // Ibex SW - first stage boot ROM.
     SwTypeTestSlotA = 1, // Ibex SW - test SW in (flash) slot A.

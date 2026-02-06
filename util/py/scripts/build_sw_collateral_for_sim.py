@@ -134,6 +134,8 @@ KNOWN_FLAGS = [
     "dont_filter",
 ]
 
+""" This enum should match the enum in `hw/top_<>/dv/env/chip_env_pkg.sv`. """
+
 
 class sw_type_e(Enum):
     SwTypeROM = 0  # Ibex SW - first stage boot ROM.
@@ -540,6 +542,7 @@ def _main() -> None:
         logger.info("  %s = %r", name, val)
 
     _deploy_software_collateral(args)
+
 
 if __name__ == "__main__":
     sys.exit(_main())
