@@ -151,6 +151,8 @@ impl Rescue for RescueSerial {
 
     fn reboot(&self) -> Result<()> {
         self.set_mode(Self::REBOOT)?;
+        #[cfg(feature = "ot_coverage_enabled")]
+        UartConsole::wait_for_coverage(&*self.uart, Self::ONE_SECOND)?;
         Ok(())
     }
 
