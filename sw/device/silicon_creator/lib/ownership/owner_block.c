@@ -23,6 +23,12 @@
 owner_block_t owner_page[2];
 owner_page_status_t owner_page_valid[2];
 
+// Force production flash layout for unit test coverage
+#if defined(OT_COVERAGE_ENABLED) && !defined(OT_PLATFORM_RV32)
+#undef CHIP_ROM_EXT_SIZE_MAX
+#define CHIP_ROM_EXT_SIZE_MAX CHIP_ROM_EXT_SIZE_MAX_PRODUCTION_BUILD
+#endif  // defined(OT_COVERAGE_ENABLED) && !defined(OT_PLATFORM_RV32)
+
 enum {
   kFlashBankSize = FLASH_CTRL_PARAM_REG_PAGES_PER_BANK,
   kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
