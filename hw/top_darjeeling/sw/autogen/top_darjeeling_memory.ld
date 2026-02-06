@@ -48,7 +48,7 @@ _static_critical_size = 8168;
 /**
  * `.chip_info` at the top of each ROM.
  */
-_chip_info_size = 128;
+_chip_info_size = 64;
 _rom0_chip_info_end = ORIGIN(rom0) + LENGTH(rom0);
 _rom0_chip_info_start = _rom0_chip_info_end - _chip_info_size;
 _rom1_chip_info_end = ORIGIN(rom1) + LENGTH(rom1);
