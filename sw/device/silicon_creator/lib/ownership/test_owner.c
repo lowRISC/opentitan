@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
@@ -25,6 +26,8 @@
 #include "sw/device/silicon_creator/lib/ownership/ownership.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 #include "sw/device/silicon_creator/lib/rescue/rescue.h"
+
+#include "flash_ctrl_regs.h"
 
 /*
  * This module overrides the weak `sku_creator_owner_init` symbol in
@@ -136,11 +139,15 @@
       kBootSvcOwnershipUnlockReqType,
 #endif
 #ifndef WITH_RESCUE_START
-#define WITH_RESCUE_START (32)
+#define WITH_RESCUE_START (kRomExtSizeInPages)
 #endif
 #ifndef WITH_RESCUE_SIZE
-#define WITH_RESCUE_SIZE (224)
+#define WITH_RESCUE_SIZE (256 - kRomExtSizeInPages)
 #endif
+
+enum {
+  kRomExtSizeInPages = CHIP_ROM_EXT_SIZE_MAX / FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+};
 
 rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
 #ifdef TEST_FAULT_NO_OWNER
