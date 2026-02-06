@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{Result, anyhow};
-use const_oid::ObjectIdentifier;
 use cryptoki::mechanism::Mechanism;
 use cryptoki::mechanism::vendor_defined::VendorDefinedMechanism;
 use cryptoki::object::Attribute;
@@ -21,11 +20,9 @@ use x509_cert::spki::{AlgorithmIdentifierOwned, SubjectPublicKeyInfoOwned};
 use crate::commands::{BasicResult, Dispatch};
 use crate::error::HsmError;
 use crate::module::Module;
-use crate::util::attribute::{AttributeMap, AttributeType, KeyType, MechanismType, ObjectClass};
+use crate::util::attribute::{AttributeMap, KeyType, MechanismType, ObjectClass};
 use crate::util::helper;
-
-// ML-DSA-87 OID: 2.16.840.1.101.3.4.3.19
-const OID_MLDSA_87: ObjectIdentifier = ObjectIdentifier::new_unwrap("2.16.840.1.101.3.4.3.19");
+use crate::util::key::mldsa;
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct ExportCsr {
@@ -67,10 +64,8 @@ impl ExportCsr {
 
         // Get public key value
         let map = AttributeMap::from_object(session, public_key)?;
-        let val = map
-            .get(&AttributeType::Value)
-            .ok_or(anyhow!("Public key does not contain a value"))?;
-        let pub_key_bytes: Vec<u8> = val.try_into()?;
+        let key = mldsa::MldsaVerifyingKey::try_from(&map)?;
+        let pub_key_bytes = key.encode();
 
         // Construct Subject Name
         let subject =
@@ -78,7 +73,7 @@ impl ExportCsr {
 
         // Create CertReqInfo
         let algorithm = AlgorithmIdentifierOwned {
-            oid: OID_MLDSA_87,
+            oid: key.oid(),
             parameters: None,
         };
         let subject_public_key_info = SubjectPublicKeyInfoOwned {

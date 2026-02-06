@@ -16,11 +16,8 @@ use crate::error::HsmError;
 use crate::module::Module;
 use crate::util::attribute::{AttrData, AttributeMap, AttributeType};
 use crate::util::helper;
+use crate::util::key::mldsa;
 use crate::util::wrap::{Wrap, WrapPrivateKey};
-
-use ml_dsa::{MlDsa44, MlDsa65, MlDsa87, SigningKey, VerifyingKey};
-use pkcs8::DecodePrivateKey;
-use spki::DecodePublicKey;
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Import {
@@ -64,56 +61,30 @@ impl Import {
     }"#;
 
     fn import(&self, session: &Session, id: AttrData, label: AttrData) -> Result<ObjectHandle> {
-        let data = fs::read(&self.filename)?;
-        let der_bytes = if let Ok((_label, bytes)) = pem_rfc7468::decode_vec(&data) {
-            bytes
-        } else {
-            // Assume DER/Raw
-            data
-        };
-
-        let (key_value, mldsa_type) = if self.private {
-            if let Ok(key) = SigningKey::<MlDsa44>::from_pkcs8_der(&der_bytes) {
-                (key.encode().to_vec(), 1u64)
-            } else if let Ok(key) = SigningKey::<MlDsa65>::from_pkcs8_der(&der_bytes) {
-                (key.encode().to_vec(), 2u64)
-            } else if let Ok(key) = SigningKey::<MlDsa87>::from_pkcs8_der(&der_bytes) {
-                (key.encode().to_vec(), 3u64)
-            } else {
-                return Err(anyhow!("Could not decode MLDSA private key from PKCS#8 DER"));
-            }
-        } else if let Ok(key) = VerifyingKey::<MlDsa44>::from_public_key_der(&der_bytes) {
-            (key.encode().to_vec(), 1u64)
-        } else if let Ok(key) = VerifyingKey::<MlDsa65>::from_public_key_der(&der_bytes) {
-            (key.encode().to_vec(), 2u64)
-        } else if let Ok(key) = VerifyingKey::<MlDsa87>::from_public_key_der(&der_bytes) {
-            (key.encode().to_vec(), 3u64)
-        } else {
-            return Err(anyhow!("Could not decode MLDSA public key from SPKI DER"));
-        };
-
         let mut template = if self.private {
-            AttributeMap::from_str(Self::PRIVATE_TEMPLATE).expect("error in PRIVATE_TEMPLATE")
+            let key = mldsa::load_private_key(&self.filename)?;
+            let mut template = AttributeMap::try_from(&key)?;
+            template.merge(
+                AttributeMap::from_str(Self::PRIVATE_TEMPLATE).expect("error in PRIVATE_TEMPLATE"),
+            );
+            if let Some(tpl) = &self.private_template {
+                template.merge(tpl.clone());
+            }
+            template
         } else {
-            AttributeMap::from_str(Self::PUBLIC_TEMPLATE).expect("error in PUBLIC_TEMPLATE")
+            let key = mldsa::load_public_key(&self.filename)?;
+            let mut template = AttributeMap::try_from(&key)?;
+            template.merge(
+                AttributeMap::from_str(Self::PUBLIC_TEMPLATE).expect("error in PUBLIC_TEMPLATE"),
+            );
+            if let Some(tpl) = &self.public_template {
+                template.merge(tpl.clone());
+            }
+            template
         };
 
         template.insert(AttributeType::Id, id);
         template.insert(AttributeType::Label, label);
-        template.insert(AttributeType::Value, AttrData::from(key_value.as_slice()));
-
-        if self.private {
-            if let Some(tpl) = &self.private_template {
-                template.merge(tpl.clone());
-            }
-        } else if let Some(tpl) = &self.public_template {
-            template.merge(tpl.clone());
-        }
-
-        template.insert(
-            AttributeType::ParameterSet,
-            AttrData::from(mldsa_type),
-        );
 
         log::info!("template = {}", serde_json::to_string_pretty(&template)?);
 
