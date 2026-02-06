@@ -309,8 +309,7 @@ bool test_main(void) {
   if (kBootStage == kBootStageOwner) {
     // If we're running at the owner stage, we want to compute a location
     // inside the owner code, which starts after the ROM_EXT.
-    // The ROM_EXT is 64K.
-    addr_of_corruption += 0x10000;
+    addr_of_corruption += CHIP_ROM_EXT_SIZE_MAX;
   }
 
   // Corrupt the ECC of a targeted flash word by performing a double write.
