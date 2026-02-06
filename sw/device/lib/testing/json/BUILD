@@ -8,6 +8,7 @@ cc_library(
     name = "command",
     srcs = ["command.c"],
     hdrs = ["command.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -15,6 +16,7 @@ cc_library(
     name = "chip_specific_startup",
     srcs = ["chip_specific_startup.c"],
     hdrs = ["chip_specific_startup.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -22,6 +24,7 @@ cc_library(
     name = "gpio",
     srcs = ["gpio.c"],
     hdrs = ["gpio.h"],
+    features = ["-coverage"],
     deps = [
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -33,6 +36,7 @@ cc_library(
     name = "i2c_target",
     srcs = ["i2c_target.c"],
     hdrs = ["i2c_target.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -40,6 +44,7 @@ cc_library(
     name = "mem",
     srcs = ["mem.c"],
     hdrs = ["mem.h"],
+    features = ["-coverage"],
     deps = [
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
@@ -50,6 +55,7 @@ cc_library(
     name = "pinmux",
     srcs = ["pinmux.c"],
     hdrs = ["pinmux.h"],
+    features = ["-coverage"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/ujson",
@@ -60,6 +66,7 @@ cc_library(
     name = "pinmux_config",
     srcs = ["pinmux_config.c"],
     hdrs = ["pinmux_config.h"],
+    features = ["-coverage"],
     deps = [
         ":pinmux",
         "//sw/device/lib/base:macros",
@@ -78,6 +85,7 @@ cc_library(
     name = "spi_passthru",
     srcs = ["spi_passthru.c"],
     hdrs = ["spi_passthru.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -94,5 +102,6 @@ cc_library(
     name = "ottf",
     srcs = ["ottf.c"],
     hdrs = ["ottf.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
