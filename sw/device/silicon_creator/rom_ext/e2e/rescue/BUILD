@@ -19,6 +19,10 @@ load(
     "//sw/device/silicon_creator/rom_ext/e2e:defs.bzl",
     "DEVICE_ID",
 )
+load(
+    "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "USBDFU_RESCUE_TIMEOUT_SECS",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -59,9 +63,10 @@ _CONFIGS = {
     },
     "usbdfu": {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_usbdfu",
-        "params": "-p usb-dfu -t strap -v 3",
+        "params": "-p usb-dfu -t strap -v 3 --enter-delay={}s".format(USBDFU_RESCUE_TIMEOUT_SECS),
         "setup": "",
         "tags": [],
+        "rescue_timeout": USBDFU_RESCUE_TIMEOUT_SECS,
     },
     "spidfu": {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_spidfu",
@@ -572,6 +577,8 @@ opentitan_test(
             assemble = "",
             changes_otp = True,  # See important note at the top
             exit_success = "BFV:05525304\r\n",
+            # Wait for at least the rescue timeout + 5 seconds
+            rescue_tmo = "{}s".format(config.get("rescue_timeout", 5) + 5),
             rom_ext = config.get(
                 "alt_rom_ext",
                 config["rom_ext"],
@@ -586,7 +593,7 @@ opentitan_test(
                 # Load only the ROM_EXT so the boot will fail because of no firmware.
                 --exec="bootstrap --clear-uart=true {rom_ext}"
                 # Check that the final boot-fault is "kErrorRescueInactivity".
-                --exec="console --non-interactive --exit-success='{exit_success}' --timeout=10s"
+                --exec="console --non-interactive --exit-success='{exit_success}' --timeout={rescue_tmo}"
                 no-op
             """,
         ),
