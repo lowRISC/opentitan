@@ -1174,6 +1174,7 @@ module top_englishbreakfast #(
     .AlertAsyncOn(AsyncOnOutgoingAlertEnglishbreakfast[21:20]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .AES192Enable(1'b1),
+    .AESGCMEnable(1'b1),
     .SecMasking(SecAesMasking),
     .SecSBoxImpl(SecAesSBoxImpl),
     .SecStartTriggerDelay(SecAesStartTriggerDelay),
