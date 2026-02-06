@@ -604,7 +604,7 @@ reg_field_name, field)">\
           "${shadowed_reg_path}.committed_reg.q", // verilog_lint: waive line-length
           ${field.bits.lsb}, ${field.bits.width()}, 0, "BkdrRegPathRtl");
       ${reg_inst}.add_hdl_path_slice(
-          "${shadowed_reg_path}.shadow_reg.q", // verilog_lint: waive line-length
+          "${shadowed_reg_path}.shadow_q", // verilog_lint: waive line-length
           ${field.bits.lsb}, ${field.bits.width()}, 0, "BkdrRegPathRtlShadow");
     % endfor
   % endif
@@ -637,7 +637,7 @@ reg_field_name, field)">\
           "${reg_block_path}.u_${reg_field_name}.committed_reg.q",
           ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
       ${reg_inst}.add_hdl_path_slice(
-          "${reg_block_path}.u_${reg_field_name}.shadow_reg.q",
+          "${reg_block_path}.u_${reg_field_name}.shadow_q",
           ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlShadow");
 %   endif
 % endfor
