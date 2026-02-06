@@ -13,17 +13,11 @@ use std::path::PathBuf;
 use crate::commands::{BasicResult, Dispatch};
 use crate::error::HsmError;
 use crate::module::Module;
-use crate::util::attribute::{AttributeMap, AttributeType, KeyType, ObjectClass};
+use crate::util::attribute::{AttributeMap, KeyType, ObjectClass};
 use crate::util::helper;
+use crate::util::key::mldsa;
 use crate::util::key::KeyEncoding;
 use crate::util::wrap::{Wrap, WrapPrivateKey};
-
-use der::{Encode, EncodePem};
-use ml_dsa::{
-    EncodedSigningKey, EncodedVerifyingKey, MlDsa44, MlDsa65, MlDsa87, SigningKey, VerifyingKey,
-};
-use pkcs8::{LineEnding, PrivateKeyInfo};
-use spki::{AssociatedAlgorithmIdentifier, EncodePublicKey};
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Export {
@@ -48,89 +42,13 @@ pub struct Export {
 impl Export {
     fn export(&self, session: &Session, object: ObjectHandle) -> Result<()> {
         let map = AttributeMap::from_object(session, object)?;
-        let val = map
-            .get(&AttributeType::Value)
-            .ok_or(anyhow!("Key does not contain a value"))?;
-        let key_value: Vec<u8> = val.try_into()?;
-
-        let encoded_bytes = if self.private {
-            if let Ok(arr) = EncodedSigningKey::<MlDsa44>::try_from(key_value.as_slice()) {
-                let _ = SigningKey::<MlDsa44>::decode(&arr); // Validate
-                let pk_info = PrivateKeyInfo::new(MlDsa44::ALGORITHM_IDENTIFIER, &key_value);
-                match self.format {
-                    KeyEncoding::Der | KeyEncoding::Pkcs8Der => pk_info.to_der()?,
-                    KeyEncoding::Pem | KeyEncoding::Pkcs8Pem => {
-                        pk_info.to_pem(LineEnding::LF)?.as_bytes().to_vec()
-                    }
-                    _ => return Err(anyhow!("Unsupported format for MLDSA export")),
-                }
-            } else if let Ok(arr) = EncodedSigningKey::<MlDsa65>::try_from(key_value.as_slice()) {
-                let _ = SigningKey::<MlDsa65>::decode(&arr); // Validate
-                let pk_info = PrivateKeyInfo::new(MlDsa65::ALGORITHM_IDENTIFIER, &key_value);
-                match self.format {
-                    KeyEncoding::Der | KeyEncoding::Pkcs8Der => pk_info.to_der()?,
-                    KeyEncoding::Pem | KeyEncoding::Pkcs8Pem => {
-                        pk_info.to_pem(LineEnding::LF)?.as_bytes().to_vec()
-                    }
-                    _ => return Err(anyhow!("Unsupported format for MLDSA export")),
-                }
-            } else if let Ok(arr) = EncodedSigningKey::<MlDsa87>::try_from(key_value.as_slice()) {
-                let _ = SigningKey::<MlDsa87>::decode(&arr); // Validate
-                let pk_info = PrivateKeyInfo::new(MlDsa87::ALGORITHM_IDENTIFIER, &key_value);
-                match self.format {
-                    KeyEncoding::Der | KeyEncoding::Pkcs8Der => pk_info.to_der()?,
-                    KeyEncoding::Pem | KeyEncoding::Pkcs8Pem => {
-                        pk_info.to_pem(LineEnding::LF)?.as_bytes().to_vec()
-                    }
-                    _ => return Err(anyhow!("Unsupported format for MLDSA export")),
-                }
-            } else {
-                return Err(anyhow!(
-                    "Could not decode MLDSA private key (length: {})",
-                    key_value.len()
-                ));
-            }
-        } else if let Ok(arr) = EncodedVerifyingKey::<MlDsa44>::try_from(key_value.as_slice()) {
-            let key = VerifyingKey::<MlDsa44>::decode(&arr);
-            match self.format {
-                KeyEncoding::Der | KeyEncoding::Pkcs8Der => {
-                    key.to_public_key_der()?.as_bytes().to_vec()
-                }
-                KeyEncoding::Pem | KeyEncoding::Pkcs8Pem => {
-                    key.to_public_key_pem(LineEnding::LF)?.as_bytes().to_vec()
-                }
-                _ => return Err(anyhow!("Unsupported format for MLDSA export")),
-            }
-        } else if let Ok(arr) = EncodedVerifyingKey::<MlDsa65>::try_from(key_value.as_slice()) {
-            let key = VerifyingKey::<MlDsa65>::decode(&arr);
-            match self.format {
-                KeyEncoding::Der | KeyEncoding::Pkcs8Der => {
-                    key.to_public_key_der()?.as_bytes().to_vec()
-                }
-                KeyEncoding::Pem | KeyEncoding::Pkcs8Pem => {
-                    key.to_public_key_pem(LineEnding::LF)?.as_bytes().to_vec()
-                }
-                _ => return Err(anyhow!("Unsupported format for MLDSA export")),
-            }
-        } else if let Ok(arr) = EncodedVerifyingKey::<MlDsa87>::try_from(key_value.as_slice()) {
-            let key = VerifyingKey::<MlDsa87>::decode(&arr);
-            match self.format {
-                KeyEncoding::Der | KeyEncoding::Pkcs8Der => {
-                    key.to_public_key_der()?.as_bytes().to_vec()
-                }
-                KeyEncoding::Pem | KeyEncoding::Pkcs8Pem => {
-                    key.to_public_key_pem(LineEnding::LF)?.as_bytes().to_vec()
-                }
-                _ => return Err(anyhow!("Unsupported format for MLDSA export")),
-            }
+        if self.private {
+            let key = mldsa::MldsaSigningKey::try_from(&map)?;
+            mldsa::save_private_key(&self.filename, &key, self.format)?;
         } else {
-            return Err(anyhow!(
-                "Could not decode MLDSA public key (length: {})",
-                key_value.len()
-            ));
-        };
-
-        fs::write(&self.filename, &encoded_bytes)?;
+            let key = mldsa::MldsaVerifyingKey::try_from(&map)?;
+            mldsa::save_public_key(&self.filename, &key, self.format)?;
+        }
         Ok(())
     }
 

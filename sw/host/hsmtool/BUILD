@@ -156,6 +156,7 @@ rust_library(
         "src/util/escape.rs",
         "src/util/helper.rs",
         "src/util/key/ecdsa.rs",
+        "src/util/key/mldsa.rs",
         "src/util/key/mod.rs",
         "src/util/key/rsa.rs",
         "src/util/mod.rs",
