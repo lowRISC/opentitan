@@ -8,6 +8,7 @@ cc_library(
     name = "commands",
     srcs = ["commands.c"],
     hdrs = ["commands.h"],
+    features = ["-coverage"],
     deps = [
         ":aes_sca_commands",
         ":alert_fi_commands",
@@ -38,6 +39,7 @@ cc_library(
     name = "aes_sca_commands",
     srcs = ["aes_sca_commands.c"],
     hdrs = ["aes_sca_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -45,6 +47,7 @@ cc_library(
     name = "crypto_fi_commands",
     srcs = ["crypto_fi_commands.c"],
     hdrs = ["crypto_fi_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -52,6 +55,7 @@ cc_library(
     name = "cryptolib_fi_sym_commands",
     srcs = ["cryptolib_fi_sym_commands.c"],
     hdrs = ["cryptolib_fi_sym_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -59,6 +63,7 @@ cc_library(
     name = "cryptolib_fi_asym_commands",
     srcs = ["cryptolib_fi_asym_commands.c"],
     hdrs = ["cryptolib_fi_asym_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -66,6 +71,7 @@ cc_library(
     name = "cryptolib_sca_sym_commands",
     srcs = ["cryptolib_sca_sym_commands.c"],
     hdrs = ["cryptolib_sca_sym_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -73,6 +79,7 @@ cc_library(
     name = "cryptolib_sca_asym_commands",
     srcs = ["cryptolib_sca_asym_commands.c"],
     hdrs = ["cryptolib_sca_asym_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -80,6 +87,7 @@ cc_library(
     name = "edn_sca_commands",
     srcs = ["edn_sca_commands.c"],
     hdrs = ["edn_sca_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -87,6 +95,7 @@ cc_library(
     name = "extclk_sca_fi_commands",
     srcs = ["extclk_sca_fi_commands.c"],
     hdrs = ["extclk_sca_fi_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -94,6 +103,7 @@ cc_library(
     name = "hmac_sca_commands",
     srcs = ["hmac_sca_commands.c"],
     hdrs = ["hmac_sca_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -101,6 +111,7 @@ cc_library(
     name = "ibex_fi_commands",
     srcs = ["ibex_fi_commands.c"],
     hdrs = ["ibex_fi_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -108,6 +119,7 @@ cc_library(
     name = "ibex_sca_commands",
     srcs = ["ibex_sca_commands.c"],
     hdrs = ["ibex_sca_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -115,6 +127,7 @@ cc_library(
     name = "kmac_sca_commands",
     srcs = ["kmac_sca_commands.c"],
     hdrs = ["kmac_sca_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -122,6 +135,7 @@ cc_library(
     name = "lc_ctrl_fi_commands",
     srcs = ["lc_ctrl_fi_commands.c"],
     hdrs = ["lc_ctrl_fi_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -129,6 +143,7 @@ cc_library(
     name = "otbn_fi_commands",
     srcs = ["otbn_fi_commands.c"],
     hdrs = ["otbn_fi_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -136,6 +151,7 @@ cc_library(
     name = "otbn_sca_commands",
     srcs = ["otbn_sca_commands.c"],
     hdrs = ["otbn_sca_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -143,6 +159,7 @@ cc_library(
     name = "otp_fi_commands",
     srcs = ["otp_fi_commands.c"],
     hdrs = ["otp_fi_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -150,6 +167,7 @@ cc_library(
     name = "prng_sca_commands",
     srcs = ["prng_sca_commands.c"],
     hdrs = ["prng_sca_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -157,6 +175,7 @@ cc_library(
     name = "rng_fi_commands",
     srcs = ["rng_fi_commands.c"],
     hdrs = ["rng_fi_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -164,6 +183,7 @@ cc_library(
     name = "rom_fi_commands",
     srcs = ["rom_fi_commands.c"],
     hdrs = ["rom_fi_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -178,6 +198,7 @@ cc_library(
     name = "alert_fi_commands",
     srcs = ["alert_fi_commands.c"],
     hdrs = ["alert_fi_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -185,6 +206,7 @@ cc_library(
     name = "pentest_lib_commands",
     srcs = ["pentest_lib_commands.c"],
     hdrs = ["pentest_lib_commands.h"],
+    features = ["-coverage"],
     deps = [
         "//hw/top_earlgrey:alert_handler_c_regs",
         "//sw/device/lib/ujson",
@@ -195,6 +217,7 @@ cc_library(
     name = "sha3_sca_commands",
     srcs = ["sha3_sca_commands.c"],
     hdrs = ["sha3_sca_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -202,6 +225,7 @@ cc_library(
     name = "trigger_sca_commands",
     srcs = ["trigger_sca_commands.c"],
     hdrs = ["trigger_sca_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
@@ -209,5 +233,6 @@ cc_library(
     name = "gdb_commands",
     srcs = ["gdb_commands.c"],
     hdrs = ["gdb_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
