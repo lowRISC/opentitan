@@ -1,6 +1,6 @@
 # Theory of Operation
 
-The AES unit supports both encryption and decryption for AES-128/192/256 in ECB, CBC, CFB, OFB and CTR modes using a single, shared data path.
+The AES unit supports both encryption and decryption for AES-128/192/256 in ECB, CBC, CFB, OFB and CTR modes as well as GCM using a single, shared data path.
 That is, it can either do encryption or decryption but not both at the same time.
 
 The AES unit features a key expanding mechanism to generate the required round keys on-the-fly from a single initial key provided through the register interface.
@@ -61,12 +61,17 @@ Inside the cipher core, both the data paths for the actual cipher (left) and the
 Consequently, the blocks shown in the diagram always implement the forward and backward (inverse) version of the corresponding operation.
 For example, SubBytes implements both SubBytes and InvSubBytes.
 
-Besides the actual AES cipher core, the AES unit features a set of control and status registers (CSRs) accessible by the processor via TL-UL bus interface, and a counter module (used in CTR mode only).
-This counter module implements the Standard Incrementing Function according to [Recommendation for Block Cipher Modes of Operation (Appendix B.1)](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf) with a fixed parameter m = 128.
+Besides the actual AES cipher core, the AES unit features a set of control and status registers (CSRs) accessible by the processor via TL-UL bus interface, a counter module (used in CTR mode and GCM only), and a GHASH module (used in GCM only).
+The counter module implements the Standard Incrementing Function according to [Recommendation for Block Cipher Modes of Operation (Appendix B.1)](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf) with a fixed parameter m = 128 (32 for GCM, see [Recommendations for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC (Section 5.3)](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf)).
 Note that for AES, parameter b = 128 and the counter increment is big-endian.
-CFB mode is supported with a fixed parameter s = 128 (CFB-128).
+The GHASH module is responsible for computing the integrity tag in GCM.
+Internally, it uses iteratively decomposed Galois Field GF(2^128) multipliers with a latency of 8 or 32 clock cycles for the unmasked or masked implementation, respectively.
+For details on the data path of the masked GHASH module refer to [Security Hardening below](#1st-order-masking-of-the-ghash-block).
+As the GHASH module can operate in parallel to the AES cipher core and since the latency of GHASH module is lower than the latency of the AES cipher core, the overall throughput of the AES unit is independent of the mode.
+
+Note that CFB mode is supported with a fixed parameter s = 128 (CFB-128).
 Support for data segment sizes other than 128 bits would require a substantial amount of additional muxing resources and is thus not provided.
-The initialization vector (IV) register and the register to hold the previous input data are used in CBC, CFB, OFB and CTR modes only.
+The initialization vector (IV) register and the register to hold the previous input data are used in CBC, CFB, OFB and CTR modes, as well as in GCM only.
 
 
 ## Design Details
@@ -91,6 +96,14 @@ The only sequential logic in the cipher and round key generation are the State, 
 The following description explains how the AES unit operates, i.e., how the operation of the AES cipher is mapped to the datapath architecture of the AES unit.
 Phrases in italics apply to peculiarities of different block cipher modes.
 For a general introduction into these cipher modes, refer to [Recommendation for Block Cipher Modes of Operation](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf).
+Note that GCM is special as the way it operates the data path depends on the GCM phase:
+- the initialization phase uses ECB mode,
+- the plaintext/ciphertext phase uses CTR mode, and
+- the additional authenticated data (AAD) phase does not use the AES data path but only the GHASH module.
+
+For a general introduction into GCM and the GHASH operation, refer to [Recommendations for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf).
+For more information on how the different GCM phases are mapped to the AES unit, refer to the [Programmer's Guide](programmers_guide.md#galoiscounter-mode-gcm).
+The data path of the masked GHASH module is explained in detail in [Security Hardening below](#1st-order-masking-of-the-ghash-module).
 
 1. The configuration and initial key is provided to the AES unit via a set of control and status registers (CSRs) accessible by the processor via TL-UL bus interface.
    The processor must first provide the configuration to the [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) register.
@@ -161,7 +174,7 @@ If the AES unit is busy and running in CBC or CTR mode, the AES unit itself upda
 
 The cipher core architecture of the AES unit is derived from the architecture proposed by Satoh et al.: ["A compact Rijndael Hardware Architecture with S-Box Optimization"](https://link.springer.com/chapter/10.1007%2F3-540-45682-1_15).
 The expected circuit area in a 110nm CMOS technology is in the order of 12 - 22 kGE (unmasked implementation, AES-128 only).
-The expected circuit area of the entire AES unit with masking enabled is around 112 kGE.
+The expected circuit area of the entire AES unit with masking enabled is around 136 kGE (112 kGE if support for GCM is disabled).
 
 For a description of the various sub modules, see the following sections.
 
@@ -322,6 +335,92 @@ Besides more noise for increased resistance against higher-order SCA, the fully-
 It allows users to seamlessly switch out the S-Box implementation in order to experiment with different masking schemes.
 To interface the data paths with the S-Boxes, a handshake protocol is used.
 
+### 1st-order Masking of the GHASH Module
+
+The masking implementation of the GHASH module is based on state of the art SCA hardening concepts for GCM such as [Oshida et al.: "On Masked Galois-Field Multiplication for Authenticated Encryption Resistant to Side Channel Analysis"](https://link.springer.com/chapter/10.1007/978-3-319-89641-0_3) and [Seo et al.: "SCA-Resistant GCM Implementation on 8-Bit AVR Microcontrollers"](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8772132), but adapted to the masked AES cipher core delivering outputs in fresh shares and extended to process both the hash subkey H and the encrypted initial counter block S in shares to improve robustness against SCA, and ultimately improved to pass formal masking verification at the netlist level using [Alma: Execution-aware Masking Verification](https://github.com/IAIK/coco-alma).
+
+#### Masking Concept
+
+The employed masking concept aims at protecting both the hash subkey H and the encrypted initial counter block S against SCA.
+Recovering either H or S would allow maliciously constructing valid authentication tags.
+However, it would not allow to recover the AES encryption key to break confidentiality.
+The other input to the GHASH module, i.e., the ciphertext, is considered to be known to adversaries and is not masked by this implementation.
+
+The AES cipher core outputs both H and S in masked form.
+Even if the AES key and consequently the hash subkey H (obtained by encrypting an all-zero block using the AES key) remain the same, different GCM executions can get a fresh sharing of H (and S, but S needs to be different for every execution anyway).
+In addition, the context switching feature can be used to refresh the sharing of H and S for any execution (See [Programmer's Guide](programmers_guide.md#gcm-context-restoring)).
+
+The goal of the employed masking concept is to process both the hash subkey H = H<sub>0</sub> + H<sub>1</sub> as well as the encrypted initial counter block S = S<sub>0</sub> + S<sub>1</sub> in shares without combining to prevent SCA leakage.
+
+The following points are worth noting before going into the algorithmic details of the masking concept:
+- The inputs to the Galois Field GF(2^128) multiplications involved in the GHASH operation can be masked in a straightforward manner because the multiplication is linear: inputs can be split additively (XOR), two multiplications can be performed on both shares, and the results can be added again at the end.
+  Or in other words GHASH(H, x) = H * x = H * x<sub>0</sub> + H * x<sub>1</sub> where x = x<sub>0</sub> + x<sub>1</sub>.
+- Any XOR-additive masking before a multiplication must be corrected again before the next multiplication because the squaring does not distribute across addition, i.e., a<sup>2</sup> + b<sup>2</sup> != (a + b)<sup>2</sup> .
+- It is possible to re-use the randomness from S which is provided in XOR shares at the start similar to [Oshida et al.: "On Masked Galois-Field Multiplication for Authenticated Encryption Resistant to Side Channel Analysis"](https://link.springer.com/chapter/10.1007/978-3-319-89641-0_3).
+- The first input block is masked with S and after each multiplication, the H-multiples of this masking are subtracted, and the same masking is added again similarly to [Seo et al.: "SCA-Resistant GCM Implementation on 8-Bit AVR Microcontrollers"](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8772132).
+
+#### Algorithmic Overview
+
+The figure below illustrates the operating principle of the masking concept and the table provides information on the content of the two state registers at points of interest.
+
+There are two parallel paths, each featuring their own Galois Field GF(2^128) multiplier to separate the processing of the two shares H<sub>0</sub> and H<sub>1</sub> of the hash subkey H to prevent SPA on the multiplication.
+Using two separate multipliers allows to prevent unmasking H at any point during the execution, incl. e.g., due to accidental leakage occurring due to multiplexing H<sub>0</sub> and H<sub>1</sub>.
+The multipliers are implemented in a serial-parallel fashion to trade off area vs. performance.
+For better SPA robustness, the data input is scanned, not the more critical H input.
+
+At the beginning, the two shares S<sub>0</sub> and S<sub>1</sub> of the initial encrypted counter block S are loaded into the two state registers.
+Then, the very first Block T0 is added to both state shares (1) and the state shares are separately multiplied by the shares of H (2).
+To finish the processing of the first block, two correction terms are added:
+Share 0 gets added S<sub>0</sub> * (H<sub>0</sub> + 1) and Share 1 gets added S<sub>1</sub> * H<sub>1</sub> (3).
+Note that the former will be used again for the following blocks while the latter is used just once for Block 0.
+
+![Algorithmic overview of the masking concept for the GHASH module.](../doc/ghash_masked_algorithm.svg)
+
+| Step | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+|:-----|:--|:--|:--|:--|:--|:--|:--|
+| State Share&#160;0 | S<sub>0</sub>+T0 | (S<sub>0</sub>+T0)\*H<sub>0</sub> | T0\*H<sub>0</sub>+S<sub>0</sub> | T0\*H<sub>0</sub>+S<sub>0</sub>+T1+T0\*H<sub>1</sub> = T0\*H+S<sub>0</sub>+T1 | T0\*H\*H<sub>0</sub>+S<sub>0</sub>\*H<sub>0</sub>+ T1\*H<sub>0</sub> | T0\*H\*H<sub>0</sub>+T1\*H<sub>0</sub>+S<sub>0</sub> | T0\*H<sup>2</sup>+T1\*H+S = Tag |
+| State Share&#160;1 | S<sub>1</sub>+T0 | (S<sub>1</sub>+T0)\*H<sub>1</sub> | T0\*H<sub>1</sub> |  | T0\*H\*H<sub>1</sub>+S<sub>0</sub>\*H<sub>1</sub>+ T1\*H<sub>1</sub> | T0\*H\*H<sub>1</sub>+T1\*H<sub>1</sub> |  |
+| Notes |  |  | S and H shared | H not shared but masked with S<sub>0</sub> | H not shared but masked with S<sub>0</sub> and H<sub>0</sub> / H<sub>1</sub> | H not shared but masked with S<sub>0</sub> and H<sub>0</sub> / H<sub>1</sub> | S and H not shared |
+
+All following blocks T1 till TN-1 are started by adding the block to State Share 0 and afterwards adding State Share 1 into Share 0 (4).
+Then follows the multiplication with the shared hash subkey (5) and the addition of the correction terms S<sub>0</sub> * (H<sub>0</sub> + 1) to Share 0 and S<sub>0</sub> * H<sub>1</sub> to Share 1 (6).
+
+Finally, the two state shares are added again and Share 1 of S, i.e., S<sub>1</sub>, is added to obtain the final authentication tag.
+
+Note regarding context saving and restoring:
+With this masking concept, context saving and restoring is possible after every block, e.g. (3) or (6).
+To save the context, the final tag generation step is run, i.e., the state shares are unmasked (added together) and S<sub>1</sub> is added.
+Before restoring a state, the GHASH block will first get H and S in fresh shares, then load the previously saved state into State Share 0 while leaving State Share 1 untouched.
+Since State Share 1 is initialized to S<sub>1</sub> this is equal to subtract S<sub>1</sub> from the overall state, i.e., the state is where it was left of before (3) or (6) with the difference that H and S have both been refreshed.
+This means the context save and restore feature can be used to refresh the masks if necessary.
+
+#### Mapping the Masked Algorithm to the Hardware
+
+The figure below shows the resulting data path architecture for implementing this algorithm in hardware. All wires are 128 bits wide unless noted otherwise.
+
+![Block diagram of the masked GHASH module.](../doc/ghash_masked_block_diagram.svg)
+
+The Hash Subkey registers (Hash Subkey 0 and Hash Subkey 1) are directly initialized using the masked cipher core output (`cipher_state_done_i`) at the beginning of the operation.
+The GHASH state registers (State 0 and State 1) as well as the S 1 register are initialized with the masked, encrypted initial counter block.
+The repeatedly used correction terms (S<sub>0</sub> \* H<sub>0</sub>) + S<sub>0</sub> and S<sub>0</sub> \* H<sub>1</sub> are computed after the initialization and then stored in the Corr Term 0 and 1 registers, respectively.
+The third correction term S<sub>1</sub> \* H<sub>1</sub> which is used only once for the first block is computed on the fly and not stored.
+The `data_in_prev_i` input (connected to the internal data\_in\_prev register inside the AES block) is used for feeding the unmasked AAD part of the message as well as the unmasked ciphertext in the case of decryption into the GHASH module.
+The `data_out_i` input (carrying the sum of the unmasked cipher core output and the `data_in_prev` register) is used for feeding the ciphertext into the GHASH module in the case of encryption.
+
+There are two GF(2^128) multipliers with a latency of 32 clock cycles to match the latency of the masked AES cipher core (56 clock cycles for AES-128). The hash subkey inputs to the multipliers are not multiplexed to avoid accidentally unmasking the hash subkey.
+
+Note on clearing the various registers with pseudo-random data: While the cipher core is busy with an encryption, the `cipher_state_done_i` and `data_out_i` inputs of the GHASH block carry pseudo-random data.
+The same holds for when the AES unit is performing a clearing operation (in which case also the `data_in_prev_i` input is random).
+This means to clear the various registers inside the GHASH block, the hardware first overwrites the state and hash subkey registers as well as the S 1 register with pseudo-random data, and then runs the multipliers to clear the internal state of the multipliers as well as the correction term registers.
+
+#### Formal Masking Verification
+
+The masking implementation of the GHASH module successfully passes formal masking verification at the netlist level using [Alma: Execution-aware Masking Verification](https://github.com/IAIK/coco-alma).
+The flow required for repeating the masking verification together with a Howto can be found [here](https://github.com/vogelpi/opentitan/blob/aes-gcm-review/hw/ip/aes/pre_sca/alma/README.md).
+To verify the masking of the GHASH module the following modifications are required to the Howto:
+1. Change the `LR_SYNTH_TOP_MODULE` variable in `syn_setup.sh` to `aes_ghash_wrap`.
+1. Run the GHASH specific run script `${REPO_TOP}/hw/ip/aes/pre_sca/alma/verify_aes_ghash.sh` instead of the one for the cipher core.
+
 ### Note on Reset vs. Non-Reset Flip-Flops
 
 The choice of flip-flop type for registering sensitive assets such as keys can have implications on the vulnerability against e.g. combined reset glitch attacks and SCA.
@@ -354,10 +453,10 @@ Example targets for AES include: switch to less secure mode of operation (ECB), 
 
 To protect against FI attacks on the control path, the AES unit implements the following countermeasures.
 
-- Shadowed Control Register:
-  The main control register is implemented as a shadow register.
+- Shadowed Control Registers:
+  The main, auxiliary and GCM control registers are implemented as shadow registers.
   This means software has to perform two subsequent write operations to perform an update.
-  Internally, a shadow copy is used that is constantly compared with the actual register.
+  Internally, shadow copies are used that are constantly compared with the actual register values.
   For further details, refer to the [Register Tool documentation.](../../../../util/reggen/README.md#shadow-registers)
 
 - Sparse encodings of FSM states:
@@ -369,7 +468,7 @@ To protect against FI attacks on the control path, the AES unit implements the f
 - Sparse encodings for handshake and other important control signals.
 
 - Multi-rail control logic:
-  All FSMs inside the AES unit are implemented using multiple independent and redundant logic rails.
+  Main, cipher core and CTR FSMs inside the AES unit are implemented using multiple independent and redundant logic rails.
   Every rail evaluates and drives exactly one bit of sparsely encoded handshake or other important control signals.
   The outputs of the different rails are constantly compared to detect potential faults.
   The number of logic rails can be scaled up by means of relatively easy RTL modifications.

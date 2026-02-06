@@ -9,7 +9,7 @@
   one_line_desc:      "AES encryption and decryption engine with SCA and FI countermeasures",
   one_paragraph_desc: '''
   [Advanced Encryption Standard (AES)][nist-aes] is the primary symmetric encryption and decryption mechanism used in OpenTitan protocols.
-  AES Accelerator supports encryption/decryption using AES-128/192/256 in ECB, CBC, CFB, OFB, and CTR block cipher modes.
+  AES Accelerator supports encryption/decryption using AES-128/192/256 in ECB, CBC, CFB, OFB, CTR, and GCM block cipher modes.
   Its cipher core uses first-order domain-oriented masking (DOM) to deter side-channel analysis (SCA).
   To save area, the masking can optionally be disabled using a compile-time Verilog parameter.
   In addition, AES Accelerator features several countermeasures to deter fault injection (FI) attacks on the control path.
@@ -50,11 +50,20 @@
       local:   "false",
       expose:  "false"
     },
+    { name:    "AESGCMEnable",
+      type:    "bit",
+      default: "1'b1",
+      desc:    '''
+        Disable (0) or enable (1) support for Galois/Counter Mode (GCM) in hardware.
+      '''
+      local:   "false",
+      expose:  "false"
+    },
     { name:    "SecMasking",
       type:    "bit",
       default: "1'b1",
       desc:    '''
-        Disable (0) or enable (1) first-order masking of the AES cipher core.
+        Disable (0) or enable (1) first-order masking of the AES cipher core and the GHASH operation of GCM.
         Masking requires the use of a masked S-Box, see SecSBoxImpl parameter.
       '''
       local:   "false",
