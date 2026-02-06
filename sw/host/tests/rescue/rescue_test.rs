@@ -24,6 +24,9 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 use opentitanlib::util::file::FromReader;
 
+#[cfg(feature = "ot_coverage_enabled")]
+use opentitanlib::transport::Capability;
+
 #[derive(Debug, Parser)]
 struct Opts {
     #[command(flatten)]
@@ -86,6 +89,17 @@ fn get_device_id_test(
     let rescue = params.create(transport)?;
     rescue.enter(transport, EntryMode::Reset)?;
     let actual_device_id_from_rescue = rescue.get_device_id()?;
+    #[cfg(feature = "ot_coverage_enabled")]
+    {
+        rescue.reboot()?;
+
+        if params.protocol != RescueProtocol::Xmodem {
+            let uart = transport.uart("console")?;
+            UartConsole::wait_for(&*uart, r"rescue ready", Duration::from_secs(5))?;
+            UartConsole::wait_for_coverage(&*uart, Duration::from_secs(5))?;
+        }
+    }
+
     let mut actual_id_bytes = Vec::new();
     actual_device_id_from_rescue.write(&mut actual_id_bytes)?;
     // Reverse the entire byte sequence to match the expected hex string format.
@@ -129,6 +143,18 @@ fn get_boot_log_test(
     let boot_log = rescue
         .get_boot_log()
         .context("Failed to get boot log from rescue")?;
+
+    #[cfg(feature = "ot_coverage_enabled")]
+    {
+        rescue.reboot()?;
+
+        if params.protocol != RescueProtocol::Xmodem {
+            let uart = transport.uart("console")?;
+            UartConsole::wait_for(&*uart, r"rescue ready", Duration::from_secs(5))?;
+            UartConsole::wait_for_coverage(&*uart, Duration::from_secs(5))?;
+        }
+    }
+
     let rom_ext_manifest = image
         .subimages()?
         .first()
@@ -188,6 +214,17 @@ fn get_owner_page_test(
         .get_raw(RescueMode::GetOwnerPage0)
         .context("Failed to get owner page from rescue")?;
 
+    #[cfg(feature = "ot_coverage_enabled")]
+    {
+        rescue.reboot()?;
+
+        if params.protocol != RescueProtocol::Xmodem {
+            let uart = transport.uart("console")?;
+            UartConsole::wait_for(&*uart, r"rescue ready", Duration::from_secs(5))?;
+            UartConsole::wait_for_coverage(&*uart, Duration::from_secs(5))?;
+        }
+    }
+
     let mut cursor = std::io::Cursor::new(&data);
     let header = TlvHeader::read(&mut cursor)?;
     let owner_block_from_rescue = OwnerBlock::read(&mut cursor, header)?;
@@ -215,7 +252,7 @@ fn load_owner_block(
             let capture = UartConsole::wait_for(
                 &*uart,
                 r"(?msR)OWNER_PAGE_0: (.*?)\r\n",
-                Duration::from_secs(1),
+                Duration::from_secs(5),
             )?;
             if capture.len() < 2 {
                 return Err(anyhow!(
@@ -256,11 +293,10 @@ where
 }
 
 macro_rules! expect_disallowed_cmd {
-    ($command_allow_list:expr, $command_tag:expr, $operation:expr, $reset:expr, $expected_err_str:expr $(,)?) => {
+    ($command_allow_list:expr, $command_tag:expr, $operation:expr, $expected_err_str:expr $(,)?) => {
         if !$command_allow_list.contains(&$command_tag) {
             log::info!("Testing disallowed command: {}", $command_tag,);
             expect_err_from_rescue_result($operation, $expected_err_str)?;
-            ($reset)?;
         }
     };
 }
@@ -318,7 +354,6 @@ fn disability_test(
                 config.command_allow,
                 CommandTag::Rescue,
                 rescue.update_firmware(BootSlot::SlotA, &DUMMY_BYTES),
-                rescue.enter(transport, EntryMode::Reset),
                 &get_expected_err_msg(CommandTag::Rescue, params)
             );
 
@@ -326,7 +361,6 @@ fn disability_test(
                 config.command_allow,
                 CommandTag::RescueB,
                 rescue.update_firmware(BootSlot::SlotB, &DUMMY_BYTES),
-                rescue.enter(transport, EntryMode::Reset),
                 &get_expected_err_msg(CommandTag::RescueB, params)
             );
 
@@ -334,7 +368,6 @@ fn disability_test(
                 config.command_allow,
                 CommandTag::GetDeviceId,
                 rescue.get_device_id(),
-                rescue.enter(transport, EntryMode::Reset),
                 &get_expected_err_msg(CommandTag::GetDeviceId, params)
             );
 
@@ -342,7 +375,6 @@ fn disability_test(
                 config.command_allow,
                 CommandTag::GetBootLog,
                 rescue.get_boot_log(),
-                rescue.enter(transport, EntryMode::Reset),
                 &get_expected_err_msg(CommandTag::GetBootLog, params)
             );
 
@@ -350,7 +382,6 @@ fn disability_test(
                 config.command_allow,
                 CommandTag::GetOwnerPage0,
                 rescue.get_raw(RescueMode::GetOwnerPage0),
-                rescue.enter(transport, EntryMode::Reset),
                 &get_expected_err_msg(CommandTag::GetOwnerPage0, params)
             );
 
@@ -360,7 +391,6 @@ fn disability_test(
                     config.command_allow,
                     CommandTag::GetOwnerPage1,
                     rescue.get_raw(RescueMode::GetOwnerPage1),
-                    rescue.enter(transport, EntryMode::Reset),
                     &get_expected_err_msg(CommandTag::GetOwnerPage1, params)
                 );
             }
@@ -383,7 +413,6 @@ fn disability_test(
                 config.command_allow,
                 CommandTag::Empty,
                 rescue.empty(DUMMY_PAYLOAD.as_ref()),
-                rescue.enter(transport, EntryMode::Reset),
                 &boot_svc_req_sub_cmd_err_msg,
             );
 
@@ -392,7 +421,6 @@ fn disability_test(
                 config.command_allow,
                 CommandTag::MinBl0SecVerRequest,
                 rescue.set_min_bl0_sec_ver(NEW_BL0_VER),
-                rescue.enter(transport, EntryMode::Reset),
                 &boot_svc_req_sub_cmd_err_msg,
             );
 
@@ -400,7 +428,6 @@ fn disability_test(
                 config.command_allow,
                 CommandTag::NextBl0SlotRequest,
                 rescue.set_next_bl0_slot(BootSlot::SlotA, BootSlot::SlotA),
-                rescue.enter(transport, EntryMode::Reset),
                 &boot_svc_req_sub_cmd_err_msg,
             );
 
@@ -408,7 +435,6 @@ fn disability_test(
                 config.command_allow,
                 CommandTag::OwnershipUnlockRequest,
                 rescue.ownership_unlock(OwnershipUnlockRequest::default()),
-                rescue.enter(transport, EntryMode::Reset),
                 &boot_svc_req_sub_cmd_err_msg,
             );
 
@@ -416,7 +442,6 @@ fn disability_test(
                 config.command_allow,
                 CommandTag::OwnershipActivateRequest,
                 rescue.ownership_activate(OwnershipActivateRequest::default()),
-                rescue.enter(transport, EntryMode::Reset),
                 &boot_svc_req_sub_cmd_err_msg,
             );
 
@@ -424,9 +449,21 @@ fn disability_test(
                 config.command_allow,
                 CommandTag::BootSvcRsp,
                 rescue.get_boot_svc(),
-                rescue.enter(transport, EntryMode::Reset),
                 &get_expected_err_msg(CommandTag::BootSvcRsp, params)
             );
+
+            #[cfg(feature = "ot_coverage_enabled")]
+            {
+                rescue.reboot()?;
+                if params.protocol != RescueProtocol::Xmodem {
+                    transport.capabilities()?.request(Capability::UART).ok()?;
+                    let uart = transport
+                        .uart("console")
+                        .expect("Failed to init Uart console");
+                    UartConsole::wait_for(&*uart, r"Finished", Duration::from_secs(5))?;
+                    UartConsole::wait_for_coverage(&*uart, Duration::from_secs(5))?;
+                }
+            }
 
             Ok(())
         }
