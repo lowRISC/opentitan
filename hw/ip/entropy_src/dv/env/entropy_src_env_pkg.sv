@@ -336,7 +336,7 @@ package entropy_src_env_pkg;
   // rounded down for low thresholds
   //
   // The function computes the mean and standard deviation of the test result, assuming a binomial
-  // distribution (or multinomial distribution in the case of the Bucket test).  Then the min/max
+  // distribution (or multinomial distribution in the case of the bucket test).  Then the min/max
   // range is generated assuming that the window size is large enough to apply a gaussian
   // approximation.
   //
@@ -362,7 +362,7 @@ package entropy_src_env_pkg;
   //               4.9    1e-6
   //
   // The table above can be used to estimate the likelihood of failure for the AdaptP and Markov
-  // tests, which have both high and low thresholds.  Since the Bucket test has only a single
+  // tests, which have both high and low thresholds.  Since the bucket test has only a single
   // threshold, the likelihood of chance bucket-test failure is 1/2 the above value for the same
   // sigma value.
   //

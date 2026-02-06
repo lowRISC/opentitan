@@ -76,16 +76,16 @@ For more details, refer to the [programmer's guide](programmers_guide.md/#firmwa
 ### Health Tests
 
 Health checks are performed on the input raw data from the PTRNG noise source when in that mode.
-There are four health tests that will be performed: repetitive count, adaptive proportion, bucket, and Markov tests.
+There are four health tests that will be performed: Repetition Count Test, Adaptive Proportion Test, bucket test, and Markov test.
 Each test has a pair of threshold values that determine that pass/fail of the test, one threshold for boot-time / bypass mode, and one for FIPS mode.
 By default, all tests are enabled, but can be turned off by setting the thresholds to the maximum value.
 Because of the variability of the PTRNG noise source, there are several registers that log statistics associated with the health tests.
 In particular, the [`HT_WATERMARK`](registers.md#ht_watermark) can be used to log the highest or lowest results of specific health tests.
 This allows to determine how close the threshold values for specific tests should be set to the fail over values.
-For example, to log the highest measured number of ones in the adaptive proportion test, firmware can configure the [`HT_WATERMARK_NUM`](registers.md#ht_watermark_num) register with the value 2 (`ADAPTP_HI`).
+For example, to log the highest measured number of ones in the Adaptive Proportion Test, firmware can configure the [`HT_WATERMARK_NUM`](registers.md#ht_watermark_num) register with the value 2 (`ADAPTP_HI`).
 To log the lowest measured number of ones in the same test, firmware can configure [`HT_WATERMARK_NUM`](registers.md#ht_watermark_num) register with the value 3 (`ADAPTP_LO`).
 To help understand how well the thresholds work through time, a running count of test fails is kept in the [`ADAPTP_HI_TOTAL_FAILS`](registers.md#adaptp_hi_total_fails) register.
-The above example for the adaptive proportion test also applies to the other health tests, with the exception of the low watermark registers.
+The above example for the Adaptive Proportion Test also applies to the other health tests, with the exception of the low watermark registers.
 See the timing diagrams below for more details on how the health tests work.
 It should be noted that for all error counter registers, they are sized for 16 bits, which prevents any case where counters might wrap.
 
@@ -235,7 +235,7 @@ Operating on each bit stream, this test will count when a signal is at a stuck l
 This NIST test is intended to signal a catastrophic failure with the PTRNG noise source.
 
 Note that as per definition in SP 800-90B, the Repetition Count test does not operate on a fixed window.
-The repetition count test fails if any sequence of bits continuously asserts the same value for too many samples, as determined by the programmable threshold, regardless of whether that sequence crosses any window boundaries.
+The Repetition Count Test fails if any sequence of bits continuously asserts the same value for too many samples, as determined by the programmable threshold, regardless of whether that sequence crosses any window boundaries.
 
 
 ```wavejson
@@ -291,7 +291,7 @@ In this example, the sum is taken over all RNG lines (i.e., [`CONF.THRESHOLD_SCO
 ```
 
 ### Bucket Test
-The following waveform shows how a sampling of a data pattern will be tested by the Bucket test.
+The following waveform shows how a sampling of a data pattern will be tested by the bucket test.
 Operating on all four bit streams, this test will identify the symbol and sort it into bin counters, or "buckets".
 This test is intended to find bias with a symbol or symbols.
 
@@ -333,7 +333,7 @@ For instance the string: "010101010101010101" has almost zero entropy, even thou
 The test counts the number of changes in the a fixed number of RNG samples, and comparing the number of "01"/"10" pairs to the number of "00"/"11" pairs.
 On average, the number of switching (e.g., "01") vs. non-switching (e.g., "00") pairs should be 50% of the total, with a variance proportional to the sample size.
 
-Like the Adaptive Proportion test, the Markov Test can be computed either cumulatively (summing the results over all RNG lines) or on a per-line basis.
+Like the Adaptive Proportion test, the Markov test can be computed either cumulatively (summing the results over all RNG lines) or on a per-line basis.
 In this example, the RNG lines are scored individually (i.e., [`CONF.THRESHOLD_SCOPE`](registers.md#conf) is False).
 
 ```wavejson
