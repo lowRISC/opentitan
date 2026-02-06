@@ -695,7 +695,6 @@ jobs:
         with:
           context: .
           file: util/container/Dockerfile
-        continue-on-error: true
 
   sw_build_test:
     name: Build and test software
