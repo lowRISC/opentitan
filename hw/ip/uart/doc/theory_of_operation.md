@@ -70,7 +70,7 @@ detected as high and the optional parity bit is correct the data byte
 is pushed into a 32 byte deep RX FIFO. The data can be read out by
 reading [`RDATA`](registers.md#rdata) register.
 
-This behaviour of the receiver can be used to compute the approximate
+This behavior of the receiver can be used to compute the approximate
 baud clock frequency error that can be tolerated between the
 transmitter at the other end of the cable and the receiver. The
 initial sample point is aligned with the center of the START bit. The
