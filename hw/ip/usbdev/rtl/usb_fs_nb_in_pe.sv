@@ -42,7 +42,8 @@ module usb_fs_nb_in_pe #(
   ////////////////////
   output logic [3:0]            in_ep_current_o, // Other signals addressed to this ep
   output logic                  in_ep_rollback_o, // Bad termination, rollback transaction
-  output logic                  in_ep_xact_end_o, // good termination, transaction complete
+  output logic                  in_ep_xact_end_o, // Transaction ended, whether good or bad
+  output logic                  in_ep_collected_o, // Good termination, IN packet collected
   output logic [PktW - 1:0]     in_ep_get_addr_o, // Offset requested (0..pktlen)
   output logic                  in_ep_data_get_o, // Accept data (get_addr advances too)
   output logic                  in_ep_newpkt_o, // New IN packet starting (updates in_ep_current_o)
@@ -113,9 +114,17 @@ module usb_fs_nb_in_pe #(
   state_in_e  in_xact_state;
   state_in_e  in_xact_state_next;
 
+  // Transaction concluded but unsuccessfully
+  logic rollback_in_xact;
+  // was some data actually collected from an IN endpoint?
+  logic in_xact_collected;
+  // IN transaction completed
   logic in_xact_end;
 
-  assign in_ep_xact_end_o = in_xact_end;
+  // Transaction ending successfully; IN packet collected
+  assign in_ep_collected_o = in_xact_collected;
+  // Transaction ending; no matter whether or not data was collected
+  assign in_ep_xact_end_o = in_xact_end | rollback_in_xact;
 
   // data toggle state
   logic [NumInEps-1:0] data_toggle_q, data_toggle_d;
@@ -193,11 +202,11 @@ module usb_fs_nb_in_pe #(
   ////////////////////////////////////////////////////////////////////////////////
 
   logic [AckTimeoutCntW-1:0] timeout_cntdown_d, timeout_cntdown_q;
-  logic rollback_in_xact;
 
   always_comb begin
     in_xact_state_next = in_xact_state;
     in_xact_end = 1'b0;
+    in_xact_collected = 1'b0;
     tx_pkt_start_o = 1'b0;
     tx_pid_o = 4'b0000;
     rollback_in_xact = 1'b0;
@@ -239,7 +248,8 @@ module usb_fs_nb_in_pe #(
         if ((!more_data_to_send) || ((&in_ep_get_addr_o) && tx_data_get_i)) begin
           if (in_ep_iso_i[in_ep_index]) begin
             in_xact_state_next = StIdle; // no ACK for ISO EPs
-            in_xact_end = has_data_q;
+            in_xact_end = 1'b1;
+            in_xact_collected = has_data_q;
           end else begin
             if (tx_pkt_end_i) begin
               in_xact_state_next = StWaitAckStart;
@@ -278,6 +288,7 @@ module usb_fs_nb_in_pe #(
         if (ack_received) begin
           in_xact_state_next = StIdle;
           in_xact_end = 1'b1;
+          in_xact_collected = 1'b1;
         end else if (in_token_received) begin
           // Handshake response is missing.
           in_xact_state_next = ep_active ? StRcvdIn : StIdle;
