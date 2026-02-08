@@ -40,6 +40,7 @@ module rv_core_ibex
   parameter bit                     DbgTriggerEn        = 1'b1,
   parameter int unsigned            DbgHwBreakNum       = 4,
   parameter bit                     SecureIbex          = 1'b1,
+  parameter int unsigned            LockstepOffset      = 1,
   parameter ibex_pkg::lfsr_seed_t   RndCnstLfsrSeed     = ibex_pkg::RndCnstLfsrSeedDefault,
   parameter ibex_pkg::lfsr_perm_t   RndCnstLfsrPerm     = ibex_pkg::RndCnstLfsrPermDefault,
   parameter int unsigned            DmBaseAddr          = 32'h1A110000,
@@ -430,6 +431,7 @@ module rv_core_ibex
     // SEC_CM: EXCEPTION.CTRL_FLOW.GLOBAL_ESC, EXCEPTION.CTRL_FLOW.LOCAL_ESC
     // SEC_CM: DATA_REG_SW.INTEGRITY, DATA_REG_SW.GLITCH_DETECT
     .SecureIbex                  ( SecureIbex               ),
+    .LockstepOffset              ( LockstepOffset           ),
     .RndCnstLfsrSeed             ( RndCnstLfsrSeed          ),
     .RndCnstLfsrPerm             ( RndCnstLfsrPerm          ),
     .RndCnstIbexKey              ( RndCnstIbexKeyDefault    ),
@@ -1093,8 +1095,10 @@ module rv_core_ibex
       lsu_store_resp_intg_err)
   `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexInstrIntgErrCheck_A, alert_tx_o[2], u_ibex_core,
       instr_intg_err)
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(IbexLockstepResetCountAlertCheck_A,
-      u_core.gen_lockstep.u_ibex_lockstep.u_rst_shadow_cnt, alert_tx_o[2])
+  if (LockstepOffset > 1) begin: gen_lockstep_rst_cnt_assert
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(IbexLockstepResetCountAlertCheck_A,
+      u_core.gen_lockstep.u_ibex_lockstep.gen_reset_counter.u_rst_shadow_cnt, alert_tx_o[2])
+  end
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CoredTlLcGateFsm_A,
       u_tlul_lc_gate_cored.u_state_regs, alert_tx_o[2])
 
