@@ -68,6 +68,7 @@ module core_ibex_tb_top;
   parameter bit ICacheECC                 = 1'b0;
   parameter bit BranchPredictor           = 1'b0;
   parameter bit SecureIbex                = 1'b0;
+  parameter int unsigned LockstepOffset   = 1;
   parameter bit ICacheScramble            = 1'b0;
   parameter bit DbgTriggerEn              = 1'b0;
   parameter int unsigned DmBaseAddr       = 32'h`DM_ADDR;
@@ -107,6 +108,7 @@ module core_ibex_tb_top;
     .ICache           (ICache           ),
     .ICacheECC        (ICacheECC        ),
     .SecureIbex       (SecureIbex       ),
+    .LockstepOffset   (LockstepOffset   ),
     .ICacheScramble   (ICacheScramble   ),
     .BranchPredictor  (BranchPredictor  ),
     .DbgTriggerEn     (DbgTriggerEn     ),
@@ -377,9 +379,10 @@ module core_ibex_tb_top;
   end
 
   // Manually set unused_assert_connected = 1 to disable the AssertConnected_A assertion for
-  // prim_count in case lockstep (set by SecureIbex) is enabled. If not disabled, DV fails.
-  if (SecureIbex) begin : gen_disable_count_check
-    assign dut.u_ibex_top.gen_lockstep.u_ibex_lockstep.u_rst_shadow_cnt.
+  // prim_count in case lockstep (set by SecureIbex) is enabled and the lockstep offset is
+  // larger than 1. If not disabled, DV fails.
+  if (SecureIbex && LockstepOffset > 1) begin : gen_disable_count_check
+    assign dut.u_ibex_top.gen_lockstep.u_ibex_lockstep.gen_reset_counter.u_rst_shadow_cnt.
           unused_assert_connected = 1;
   end
 
