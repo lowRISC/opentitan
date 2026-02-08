@@ -9,7 +9,7 @@
 
 // SEC_CM: LOGIC.SHADOW
 module ibex_lockstep import ibex_pkg::*; #(
-  parameter int unsigned            LockstepOffset              = 2,
+  parameter int unsigned            LockstepOffset              = 1,
   parameter bit                     PMPEnable                   = 1'b0,
   parameter int unsigned            PMPGranularity              = 0,
   parameter int unsigned            PMPNumRegions               = 4,
@@ -116,55 +116,75 @@ module ibex_lockstep import ibex_pkg::*; #(
   input  logic                         scan_rst_ni
 );
 
-  localparam int unsigned LockstepOffsetW = $clog2(LockstepOffset);
+  localparam int unsigned LockstepOffsetW = prim_util_pkg::vbits(LockstepOffset);
   // Core outputs are delayed for an extra cycle due to shadow output registers
   localparam int unsigned OutputsOffset = LockstepOffset + 1;
 
   //////////////////////
   // Reset generation //
   //////////////////////
-
-  // Upon reset, the comparison is stopped and the shadow core is reset, both immediately. A
-  // counter is started. After LockstepOffset clock cycles:
-  // - The counter is stopped.
-  // - The reset of the shadow core is synchronously released.
-  // The comparison is started in the following clock cycle.
-
-  logic [LockstepOffsetW-1:0] rst_shadow_cnt;
   logic                       rst_shadow_cnt_err;
   ibex_mubi_t                 rst_shadow_set_d, rst_shadow_set_q;
   logic                       rst_shadow_n;
   ibex_mubi_t                 enable_cmp_d, enable_cmp_q;
+  if (LockstepOffset > 1) begin : gen_reset_counter
+    // Upon reset, the comparison is stopped and the shadow core is reset, both immediately. A
+    // counter is started. After LockstepOffset clock cycles:
+    // - The counter is stopped.
+    // - The reset of the shadow core is synchronously released.
+    // The comparison is started in the following clock cycle.
 
-  // This counter primitive starts counting to LockstepOffset after a system
-  // reset. The counter value saturates at LockstepOffset.
-  prim_count #(
-    .Width      (LockstepOffsetW        ),
-    .ResetValue (LockstepOffsetW'(1'b0) )
-  ) u_rst_shadow_cnt (
-    .clk_i              (clk_i                  ),
-    .rst_ni             (rst_ni                 ),
-    .clr_i              (1'b0                   ),
-    .set_i              (1'b0                   ),
-    .set_cnt_i          ('0                     ),
-    .incr_en_i          (1'b1                   ),
-    .decr_en_i          (1'b0                   ),
-    .step_i             (LockstepOffsetW'(1'b1) ),
-    .commit_i           (1'b1                   ),
-    .cnt_o              (rst_shadow_cnt         ),
-    .cnt_after_commit_o (                       ),
-    .err_o              (rst_shadow_cnt_err     )
-  );
+    logic [LockstepOffsetW-1:0] rst_shadow_cnt;
+    // This counter primitive starts counting to LockstepOffset after a system
+    // reset. The counter value saturates at LockstepOffset.
+    prim_count #(
+      .Width      (LockstepOffsetW        ),
+      .ResetValue (LockstepOffsetW'(1'b0) )
+    ) u_rst_shadow_cnt (
+      .clk_i              (clk_i                  ),
+      .rst_ni             (rst_ni                 ),
+      .clr_i              (1'b0                   ),
+      .set_i              (1'b0                   ),
+      .set_cnt_i          ('0                     ),
+      .incr_en_i          (1'b1                   ),
+      .decr_en_i          (1'b0                   ),
+      .step_i             (LockstepOffsetW'(1'b1) ),
+      .commit_i           (1'b1                   ),
+      .cnt_o              (rst_shadow_cnt         ),
+      .cnt_after_commit_o (                       ),
+      .err_o              (rst_shadow_cnt_err     )
+    );
 
-  // When the LockstepOffset counter value is reached, activate the lockstep
-  // comparison. We do not explicitly check whether rst_shadow_set_q forms a valid
-  // multibit signal as this value is implicitly checked by the enable_cmp
-  // comparison below.
-  assign rst_shadow_set_d =
-    (rst_shadow_cnt >= LockstepOffsetW'(LockstepOffset - 1)) ? IbexMuBiOn : IbexMuBiOff;
+    // When the LockstepOffset counter value is reached, activate the lockstep
+    // comparison.
+    assign rst_shadow_set_d =
+      (rst_shadow_cnt >= LockstepOffsetW'(LockstepOffset - 1)) ? IbexMuBiOn : IbexMuBiOff;
 
-  // Enable lockstep comparison.
-  assign enable_cmp_d = rst_shadow_set_q;
+    // Enable lockstep comparison.
+    assign enable_cmp_d = rst_shadow_set_q;
+
+  end else begin : gen_no_reset_counter
+    // Assert rst_shadow_set_d as soon as we have the first clk_i and rst_ni posedge.
+    // The reset of the shadow core will then be enabled with a delay of 1 cycle with
+    // rst_shadow_set_q.
+    assign rst_shadow_set_d = IbexMuBiOn;
+
+    // Tie off this error as it is not used in the `LockstepOffset = 1` case.
+    assign rst_shadow_cnt_err = 1'b0;
+
+    // Delay the comparison enable signal by 1 cycle.
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        enable_cmp_d <= IbexMuBiOff;
+      end else begin
+        enable_cmp_d <= IbexMuBiOn;
+      end
+    end
+
+    // Tie off the upper unused bits of rst_shadow_set_q.
+    logic [2:0] unused_bits;
+    assign unused_bits = rst_shadow_set_q[3:1];
+  end
 
   // The primitives below are used to place size-only constraints in order to prevent
   // synthesis optimizations and preserve anchor points for constraining backend tools.
@@ -224,9 +244,62 @@ module ibex_lockstep import ibex_pkg::*; #(
 
   delayed_inputs_t [LockstepOffset-1:0] shadow_inputs_q;
   delayed_inputs_t                      shadow_inputs_in;
+
   // Packed arrays must be dealt with separately
-  logic [TagSizeECC-1:0]                shadow_tag_rdata_q [IC_NUM_WAYS][LockstepOffset];
-  logic [LineSizeECC-1:0]               shadow_data_rdata_q [IC_NUM_WAYS][LockstepOffset];
+  logic [TagSizeECC-1:0]                shadow_tag_rdata_delayed [IC_NUM_WAYS];
+  logic [LineSizeECC-1:0]               shadow_data_rdata_delayed [IC_NUM_WAYS];
+  if (LockstepOffset > 1) begin : gen_multi_cycle_delay
+    logic [TagSizeECC-1:0]  shadow_tag_rdata_q [IC_NUM_WAYS][LockstepOffset];
+    logic [LineSizeECC-1:0] shadow_data_rdata_q [IC_NUM_WAYS][LockstepOffset];
+
+    assign shadow_tag_rdata_delayed = shadow_tag_rdata_q[0];
+    assign shadow_data_rdata_delayed = shadow_data_rdata_q[0];
+
+    // Delay the ic_tag_rdata_i and ic_data_rdata_i inputs by LockstepOffset cycles.
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        for (int unsigned i = 0; i < LockstepOffset; i++) begin
+          shadow_inputs_q[i]     <= delayed_inputs_t'('0);
+          shadow_tag_rdata_q[i]  <= '{default: 0};
+          shadow_data_rdata_q[i] <= '{default: 0};
+        end
+      end else begin
+        for (int unsigned i = 0; i < LockstepOffset - 1; i++) begin
+          shadow_inputs_q[i]     <= shadow_inputs_q[i+1];
+          shadow_tag_rdata_q[i]  <= shadow_tag_rdata_q[i+1];
+          shadow_data_rdata_q[i] <= shadow_data_rdata_q[i+1];
+        end
+        shadow_inputs_q[LockstepOffset-1]     <= shadow_inputs_in;
+        shadow_tag_rdata_q[LockstepOffset-1]  <= ic_tag_rdata_i;
+        shadow_data_rdata_q[LockstepOffset-1] <= ic_data_rdata_i;
+      end
+    end
+  end else begin : gen_single_cycle_delay
+    // If LockstepOffset = 1, using:
+    // logic [TagSizeECC-1:0]                shadow_tag_rdata_q [IC_NUM_WAYS][LockstepOffset];
+    // logic [TagSizeECC-1:0]                shadow_tag_rdata_q [IC_NUM_WAYS][LockstepOffset];
+    // aborts the compilation with an error message:
+    // `port or terminal connection type check failed on instance`
+    // Hence, in this case, remove the unpacked array dimension.
+    logic [TagSizeECC-1:0]                shadow_tag_rdata_q [IC_NUM_WAYS];
+    logic [LineSizeECC-1:0]               shadow_data_rdata_q [IC_NUM_WAYS];
+
+    assign shadow_tag_rdata_delayed = shadow_tag_rdata_q;
+    assign shadow_data_rdata_delayed = shadow_data_rdata_q;
+
+    // Delay the ic_tag_rdata_i and ic_data_rdata_i inputs by 1 cycle.
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        shadow_inputs_q     <= delayed_inputs_t'('0);
+        shadow_tag_rdata_q  <= '{default: 0};
+        shadow_data_rdata_q <= '{default: 0};
+      end else begin
+        shadow_inputs_q     <= shadow_inputs_in;
+        shadow_tag_rdata_q  <= ic_tag_rdata_i;
+        shadow_data_rdata_q <= ic_data_rdata_i;
+      end
+    end
+  end
 
   // Assign the inputs to the delay structure
   assign shadow_inputs_in.instr_gnt        = instr_gnt_i;
@@ -247,26 +320,6 @@ module ibex_lockstep import ibex_pkg::*; #(
   assign shadow_inputs_in.debug_req        = debug_req_i;
   assign shadow_inputs_in.fetch_enable     = fetch_enable_i;
   assign shadow_inputs_in.ic_scr_key_valid = ic_scr_key_valid_i;
-
-  // Delay the inputs
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      for (int unsigned i = 0; i < LockstepOffset; i++) begin
-        shadow_inputs_q[i]     <= delayed_inputs_t'('0);
-        shadow_tag_rdata_q[i]  <= '{default: 0};
-        shadow_data_rdata_q[i] <= '{default: 0};
-      end
-    end else begin
-      for (int unsigned i = 0; i < LockstepOffset - 1; i++) begin
-        shadow_inputs_q[i]     <= shadow_inputs_q[i+1];
-        shadow_tag_rdata_q[i]  <= shadow_tag_rdata_q[i+1];
-        shadow_data_rdata_q[i] <= shadow_data_rdata_q[i+1];
-      end
-      shadow_inputs_q[LockstepOffset-1]     <= shadow_inputs_in;
-      shadow_tag_rdata_q[LockstepOffset-1]  <= ic_tag_rdata_i;
-      shadow_data_rdata_q[LockstepOffset-1] <= ic_data_rdata_i;
-    end
-  end
 
   ///////////////////
   // Output delays //
@@ -425,12 +478,12 @@ module ibex_lockstep import ibex_pkg::*; #(
     .ic_tag_write_o      (shadow_outputs_d.ic_tag_write),
     .ic_tag_addr_o       (shadow_outputs_d.ic_tag_addr),
     .ic_tag_wdata_o      (shadow_outputs_d.ic_tag_wdata),
-    .ic_tag_rdata_i      (shadow_tag_rdata_q[0]),
+    .ic_tag_rdata_i      (shadow_tag_rdata_delayed),
     .ic_data_req_o       (shadow_outputs_d.ic_data_req),
     .ic_data_write_o     (shadow_outputs_d.ic_data_write),
     .ic_data_addr_o      (shadow_outputs_d.ic_data_addr),
     .ic_data_wdata_o     (shadow_outputs_d.ic_data_wdata),
-    .ic_data_rdata_i     (shadow_data_rdata_q[0]),
+    .ic_data_rdata_i     (shadow_data_rdata_delayed),
     .ic_scr_key_valid_i  (shadow_inputs_q[0].ic_scr_key_valid),
     .ic_scr_key_req_o    (shadow_outputs_d.ic_scr_key_req),
 
@@ -504,8 +557,10 @@ module ibex_lockstep import ibex_pkg::*; #(
 
   logic outputs_mismatch;
 
+  // Any value except IbexMuBiOff will turn on the lockstep output comparison.
   assign outputs_mismatch =
     (enable_cmp_q != IbexMuBiOff) & (shadow_outputs_q != core_outputs_q[0]);
+
   assign alert_major_internal_o
     = outputs_mismatch | shadow_alert_major_internal | rst_shadow_cnt_err;
   assign alert_major_bus_o      = shadow_alert_major_bus;

@@ -34,6 +34,7 @@ module ibex_top import ibex_pkg::*; #(
   parameter bit                     DbgTriggerEn                 = 1'b0,
   parameter int unsigned            DbgHwBreakNum                = 1,
   parameter bit                     SecureIbex                   = 1'b0,
+  parameter int unsigned            LockstepOffset               = 1,
   parameter bit                     ICacheScramble               = 1'b0,
   parameter int unsigned            ICacheScrNumPrinceRoundsHalf = 2,
   parameter lfsr_seed_t             RndCnstLfsrSeed              = RndCnstLfsrSeedDefault,
@@ -573,7 +574,9 @@ module ibex_top import ibex_pkg::*; #(
 
     logic unused_scramble_inputs = scramble_key_valid_i & (|scramble_key_i) & (|RndCnstIbexKey) &
                                    (|scramble_nonce_i) & (|RndCnstIbexNonce) & scramble_req_q &
-                                   ic_scr_key_req & scramble_key_valid_d & scramble_req_d;
+                                   ic_scr_key_req & scramble_key_valid_d & scramble_req_d &
+                                   (|scramble_key_q) & (|scramble_nonce_q) & scramble_key_valid_q &
+                                   scramble_key_valid_d;
 
     assign scramble_req_d       = 1'b0;
     assign scramble_req_q       = 1'b0;
@@ -762,8 +765,6 @@ module ibex_top import ibex_pkg::*; #(
     assign ram_cfg_rsp_icache_data_o = '0;
     assign unused_ram_inputs = (|ic_tag_req) & ic_tag_write & (|ic_tag_addr) & (|ic_tag_wdata) &
                                (|ic_data_req) & ic_data_write & (|ic_data_addr) & (|ic_data_wdata) &
-                               (|scramble_key_q) & (|scramble_nonce_q) & scramble_key_valid_q &
-                               scramble_key_valid_d & (|scramble_nonce_q) &
                                (|NumAddrScrRounds);
 
     assign ic_tag_rdata      = '{default:'b0};
@@ -1049,6 +1050,7 @@ module ibex_top import ibex_pkg::*; #(
       .RndCnstLfsrSeed  (RndCnstLfsrSeed),
       .RndCnstLfsrPerm  (RndCnstLfsrPerm),
       .SecureIbex       (SecureIbex),
+      .LockstepOffset   (LockstepOffset),
       .DummyInstructions(DummyInstructions),
       .RegFileECC       (RegFileECC),
       .RegFileDataWidth (RegFileDataWidth),
