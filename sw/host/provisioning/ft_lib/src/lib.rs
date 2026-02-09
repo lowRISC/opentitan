@@ -667,6 +667,10 @@ pub fn run_ft_personalize(
     response
         .stats
         .log_elapsed_time("second-bootstrap-done", second_t0);
+
+    #[cfg(feature = "ot_coverage_enabled")]
+    let _ = UartConsole::wait_for_coverage(spi_console, Duration::from_secs(10));
+
     Ok(())
 }
 
