@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     files:
         - rtl/prim_sec_anchor_buf.sv
+        - rtl/prim_sec_anchor_const.sv
         - rtl/prim_sec_anchor_flop.sv
     file_type: systemVerilogSource
     depend:
