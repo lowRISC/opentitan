@@ -342,18 +342,18 @@ module lc_ctrl
 
   logic lc_idle_d, lc_done_d;
 
-  // Assign the hardware revision constant and feed it through an anchor buffer. This ensures the
-  // individual bits remain visible in the netlist, thereby enabling metal fixes to be reflected
-  // in the hardware revision.
-  lc_hw_rev_t hw_rev;
-  assign hw_rev = '{silicon_creator_id: SiliconCreatorId,
-                    product_id:         ProductId,
-                    revision_id:        RevisionId,
-                    reserved:           '0};
-  prim_sec_anchor_buf #(
-    .Width($bits(lc_hw_rev_t))
-  ) u_hw_rev_anchor_buf (
-    .in_i(hw_rev),
+  // Create the hardware revision with the anchor const that instantiates specific standard cells.
+  // This ensures the individual bits are not combined through logic optimization and remain visible
+  // in the netlist, thereby enabling metal fixes to be reflected in the hardware revision.
+  localparam lc_hw_rev_t HwRev = '{silicon_creator_id: SiliconCreatorId,
+                                   product_id:         ProductId,
+                                   revision_id:        RevisionId,
+                                   reserved:           '0};
+
+  prim_const #(
+    .Width($bits(lc_hw_rev_t)),
+    .ConstVal(HwRev)
+  ) u_hw_rev_const (
     .out_o(hw_rev_o)
   );
 
