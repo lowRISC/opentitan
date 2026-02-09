@@ -85,6 +85,8 @@ cc_library(
     name = "provisioning_data",
     srcs = ["provisioning_data.c"],
     hdrs = ["provisioning_data.h"],
+    # Instrumenting this module consumes about 29K RAM.
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
 
