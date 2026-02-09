@@ -24,7 +24,7 @@ class Parser:
         "u_size_only",
         "u_size_only_xor", "u_size_only_xnor", "u_size_only_and",
         "u_size_only_mux", "u_size_only_flop", "u_size_only_buf",
-        "u_size_only_clock_gate"
+        "u_size_only_tie", "u_size_only_clock_gate"
     ]
 
     # Regex to find ".lc_en_i, ( ... )" and capture the content

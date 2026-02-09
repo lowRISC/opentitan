@@ -348,9 +348,9 @@ After synthesizing the top module `prim_sdc_example` the following checks should
 
 1. In the synthesized netlist, the following number of size_only instances must be present:
 
-| cell names |  buf  | and2 |  xor  |  xnor  | flop | clock_mux2 | clock_gating |
-| -----------|  ---- |------|-----  |------  |------|------------|--------------|
-| #instances |  328  |  56  |  120  |  56    |  252 |  2         |  2           |
+| cell names |  buf  | and2 |  xor  |  xnor  | flop | tie | clock_mux2 | clock_gating |
+| -----------|  ---- |------|-----  |------  |------|-----|------------|--------------|
+| #instances |  328  |  56  |  120  |  56    |  252 |  64 |  2         |  2           |
 
 2. None of the test_*_o signals can be driven by a constant 0 or 1.
 The instantiated `size_only` instances must prevent logic optimizations and keep the output comparators.
