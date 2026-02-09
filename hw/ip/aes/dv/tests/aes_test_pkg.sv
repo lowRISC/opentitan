@@ -30,5 +30,6 @@ package aes_test_pkg;
   `include "aes_manual_config_err_test.sv"
   `include "aes_reseed_test.sv"
   `include "aes_fi_test.sv"
+  `include "aes_ghash_fi_test.sv"
   `include "aes_gcm_save_restore_test.sv"
 endpackage

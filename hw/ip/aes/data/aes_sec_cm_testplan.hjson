@@ -273,6 +273,15 @@
       tests: ["aes_fi", "aes_control_fi", "aes_ctr_fi"]
     }
     {
+      name: sec_cm_ghash_fsm_local_esc
+      desc: '''
+            Verify the countermeasure(s) GHASH.FSM.LOCAL_ESC.
+            Upon detecting a local alert condition it is ensured that the DUT stops processing data, locks up and triggers a fatal alert.
+            '''
+      stage: V2S
+      tests: ["aes_fi", "aes_ghash_fi"]
+    }
+    {
       name: sec_cm_data_reg_local_esc
       desc: '''
             Verify the countermeasure(s) DATA_REG.LOCAL_ESC.
