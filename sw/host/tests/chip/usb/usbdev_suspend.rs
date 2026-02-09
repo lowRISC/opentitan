@@ -22,9 +22,10 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::transport::common::usb::{UsbHub, UsbHubOp};
 use opentitanlib::uart::console::UartConsole;
 
-use usb::{UsbHub, UsbHubOp, UsbOpts, get_device_by_port_numbers};
+use usb::{UsbOpts, get_device_by_port_numbers};
 
 #[derive(Debug, Parser)]
 struct Opts {
