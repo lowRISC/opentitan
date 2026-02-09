@@ -59,6 +59,7 @@ package aes_env_pkg;
   } error_types_t;
 
   typedef struct packed {
+    bit          gcm_phase;
     bit          key_len;
     bit          mode;
     bit          rsd_rate;

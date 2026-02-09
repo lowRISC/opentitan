@@ -71,7 +71,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
 
       // Put AES-GCM into init phase.
       cov_if.cg_ctrl_gcm_reg_sample(GCM_INIT);
-      set_gcm_phase(GCM_INIT, 16, 1);
+      set_gcm_phase(GCM_INIT, 16, 1, 0);
 
       // Write key registers.
       // Transpose key to match NIST format (<little endian).
@@ -93,7 +93,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
         end
         `uvm_info(`gfn, $sformatf(" \n\t ---| ADDING AAD"), UVM_MEDIUM)
         cov_if.cg_ctrl_gcm_reg_sample(GCM_AAD);
-        set_gcm_phase(GCM_AAD, valid_bytes, 1);
+        set_gcm_phase(GCM_AAD, valid_bytes, 1, 0);
 
         // Write all except the last AAD block into the data registers.
         for (int n = 0; n < num_aad_blocks - 1; n++) begin
@@ -106,7 +106,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
         // Then we need to again put AES-GCM into the AAD phase with the block size.
         if (num_aad_blocks != 1 && last_aad_block_size != 16) begin
           cov_if.cg_ctrl_gcm_reg_sample(GCM_AAD);
-          set_gcm_phase(GCM_AAD, last_aad_block_size, 1);
+          set_gcm_phase(GCM_AAD, last_aad_block_size, 1, 0);
         end
         // Write last AAD block to AES.
         csr_spinwait(.ptr(ral.status.input_ready), .exp_data(1'b1));
@@ -123,7 +123,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
         end
         `uvm_info(`gfn, $sformatf(" \n\t ---| ADDING PLAIN TEXT"), UVM_MEDIUM)
         cov_if.cg_ctrl_gcm_reg_sample(GCM_TEXT);
-        set_gcm_phase(GCM_TEXT, valid_bytes, 1);
+        set_gcm_phase(GCM_TEXT, valid_bytes, 1, 0);
 
         // Write all except the last PTX block into the data registers.
         for (int n = 0; n < num_ptx_blocks - 1; n++) begin
@@ -139,7 +139,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
         // Then we need to again put AES-GCM into the TEXT phase with the block size.
         if (num_ptx_blocks != 1 && last_plain_text_block_size != 16) begin
           cov_if.cg_ctrl_gcm_reg_sample(GCM_TEXT);
-          set_gcm_phase(GCM_TEXT, last_plain_text_block_size, 1);
+          set_gcm_phase(GCM_TEXT, last_plain_text_block_size, 1, 0);
         end
         // Write last PTX block to AES.
         csr_spinwait(.ptr(ral.status.input_ready), .exp_data(1'b1));
@@ -164,7 +164,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
       `uvm_info(`gfn, $sformatf(" \n\t ---| READ TAG"), UVM_MEDIUM)
       // Put AES-GCM into TAG mode and write len(ad) || len(pt).
       cov_if.cg_ctrl_gcm_reg_sample(GCM_TAG);
-      set_gcm_phase(GCM_TAG, 16, 1);
+      set_gcm_phase(GCM_TAG, 16, 1, 0);
       csr_spinwait(.ptr(ral.status.input_ready), .exp_data(1'b1));
       len_ctx_aad = {<<8{nist_vectors[i].len_ctx_aad}};
       add_data(len_ctx_aad, do_b2b);
@@ -201,7 +201,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
 
       // Put AES-GCM into init phase.
       cov_if.cg_ctrl_gcm_reg_sample(GCM_INIT);
-      set_gcm_phase(GCM_INIT, 16, 1);
+      set_gcm_phase(GCM_INIT, 16, 1, 0);
 
       // Write key registers.
       // Transpose key to match NIST format (<little endian).
@@ -223,7 +223,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
         end
         `uvm_info(`gfn, $sformatf(" \n\t ---| ADDING AAD"), UVM_MEDIUM)
         cov_if.cg_ctrl_gcm_reg_sample(GCM_AAD);
-        set_gcm_phase(GCM_AAD, valid_bytes, 1);
+        set_gcm_phase(GCM_AAD, valid_bytes, 1, 0);
 
         // Write all except the last AAD block into the data registers.
         for (int n = 0; n < num_aad_blocks - 1; n++) begin
@@ -236,7 +236,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
         // Then we need to again put AES-GCM into the AAD phase with the block size.
         if (num_aad_blocks != 1 && last_aad_block_size != 16) begin
           cov_if.cg_ctrl_gcm_reg_sample(GCM_AAD);
-          set_gcm_phase(GCM_AAD, last_aad_block_size, 1);
+          set_gcm_phase(GCM_AAD, last_aad_block_size, 1, 0);
         end
         // Write last AAD block to AES.
         csr_spinwait(.ptr(ral.status.input_ready), .exp_data(1'b1));
@@ -253,7 +253,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
         end
         `uvm_info(`gfn, $sformatf(" \n\t ---| ADDING CIPHER TEXT"), UVM_MEDIUM)
         cov_if.cg_ctrl_gcm_reg_sample(GCM_TEXT);
-        set_gcm_phase(GCM_TEXT, valid_bytes, 1);
+        set_gcm_phase(GCM_TEXT, valid_bytes, 1, 0);
 
         // Write all except the last CTX block into the data registers.
         for (int n = 0; n < num_ptx_blocks - 1; n++) begin
@@ -269,7 +269,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
         // Then we need to again put AES-GCM into the TEXT phase with the block size.
         if (num_ptx_blocks != 1 && last_plain_text_block_size != 16) begin
           cov_if.cg_ctrl_gcm_reg_sample(GCM_TEXT);
-          set_gcm_phase(GCM_TEXT, last_plain_text_block_size, 1);
+          set_gcm_phase(GCM_TEXT, last_plain_text_block_size, 1, 0);
         end
         // Write last CTX block to AES.
         csr_spinwait(.ptr(ral.status.input_ready), .exp_data(1'b1));
@@ -294,7 +294,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
       `uvm_info(`gfn, $sformatf(" \n\t ---| READ TAG"), UVM_MEDIUM)
       // Put AES-GCM into TAG mode and write len(ad) || len(pt).
       cov_if.cg_ctrl_gcm_reg_sample(GCM_TAG);
-      set_gcm_phase(GCM_TAG, 16, 1);
+      set_gcm_phase(GCM_TAG, 16, 1, 0);
       csr_spinwait(.ptr(ral.status.input_ready), .exp_data(1'b1));
       len_ctx_aad = {<<8{nist_vectors[i].len_ctx_aad}};
       add_data(len_ctx_aad, do_b2b);

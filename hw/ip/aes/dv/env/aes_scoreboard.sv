@@ -104,19 +104,81 @@ class aes_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   function void on_ctrl_gcm_shadowed_write(logic [31:0] wdata);
-    case (get_field_val(ral.ctrl_gcm_shadowed.phase, wdata))
-      GCM_INIT:     input_item.item_type = AES_CFG;
-      GCM_TEXT:     input_item.item_type = AES_DATA;
-      GCM_AAD:      input_item.item_type = AES_GCM_AAD;
-      GCM_TAG:      input_item.item_type = AES_GCM_TAG;
-      GCM_SAVE:     input_item.item_type = AES_GCM_SAVE;
-      GCM_RESTORE:  input_item.item_type = AES_GCM_RESTORE;
-      default:   input_item.item_type = AES_CFG;
+    bit [AES_GCMPHASE_WIDTH-1:0] gcm_phase;
+    gcm_phase_e gcm_phase_prev;
+    bit [4:0] num_valid_bytes;
+    // The hardware resolves invalid values to GCM_INIT and only allows certain phase transitions.
+    // General notes:
+    // - Whether the initialization is actually done is hard to track. This is thus
+    //   verified using a directed test.
+    // - Whether a first block has been processed already and the DUT can enter GCM_SAVE is hard to
+    //   track. This is thus verified using a directed test.
+    gcm_phase_prev = gcm_phase_e'(`gmv(ral.ctrl_gcm_shadowed.phase));
+    gcm_phase = get_field_val(ral.ctrl_gcm_shadowed.phase, wdata);
+    if (!(gcm_phase inside {GCM_INIT,
+                            GCM_RESTORE,
+                            GCM_AAD,
+                            GCM_TEXT,
+                            GCM_SAVE,
+                            GCM_TAG})) begin
+      gcm_phase = GCM_INIT;
+    end
+    case (gcm_phase)
+      GCM_INIT:; // Switching to GCM_INIT is always possible.
+      GCM_RESTORE: begin
+        // Restoring is only possible after initialization.
+        if (gcm_phase_prev != GCM_INIT) begin
+          gcm_phase = gcm_phase_prev;
+        end
+      end
+      GCM_AAD: begin
+        // Processing the AAD is only possible after initialization and restoring.
+        if (gcm_phase_prev != GCM_INIT &&
+            gcm_phase_prev != GCM_RESTORE) begin
+          gcm_phase = gcm_phase_prev;
+        end
+      end
+      GCM_TEXT: begin
+        // Processing plain- and ciphertexts is only possible after initialization, restoring,
+        // and after the AAD.
+        if (gcm_phase_prev != GCM_INIT &&
+            gcm_phase_prev != GCM_RESTORE &&
+            gcm_phase_prev != GCM_AAD) begin
+          gcm_phase = gcm_phase_prev;
+        end
+      end
+      GCM_SAVE: begin
+        // Saving a context is only possible after processing the AAD or the plain/ciphertext.
+        if (gcm_phase_prev != GCM_AAD &&
+            gcm_phase_prev != GCM_TEXT) begin
+          gcm_phase = gcm_phase_prev;
+        end
+      end
+      GCM_TAG: begin
+        // Producing the tag is possible after initialization, and after processing AAD and plain-
+        // or ciphertext.
+        if (gcm_phase_prev != GCM_INIT &&
+            gcm_phase_prev != GCM_AAD &&
+            gcm_phase_prev != GCM_TEXT) begin
+          gcm_phase = gcm_phase_prev;
+        end
+      end
+      default:;
     endcase
+    case (gcm_phase)
+      GCM_INIT:     input_item.item_type = AES_CFG;
+      GCM_RESTORE:  input_item.item_type = AES_GCM_RESTORE;
+      GCM_AAD:      input_item.item_type = AES_GCM_AAD;
+      GCM_TEXT:     input_item.item_type = AES_DATA;
+      GCM_SAVE:     input_item.item_type = AES_GCM_SAVE;
+      GCM_TAG:      input_item.item_type = AES_GCM_TAG;
+      default:      input_item.item_type = AES_CFG;
+    endcase
+    // Invalid values such as values in the range of [17, 31] and 0 are resolved to 16 in hardware.
+    num_valid_bytes = get_field_val(ral.ctrl_gcm_shadowed.num_valid_bytes, wdata);
+    input_item.data_len = (num_valid_bytes < 1) || (num_valid_bytes > 16) ? 16 : num_valid_bytes;
 
     cov_if.cg_ctrl_gcm_reg_sample(get_field_val(ral.ctrl_gcm_shadowed.phase, wdata));
-
-    input_item.data_len = get_field_val(ral.ctrl_gcm_shadowed.num_valid_bytes, wdata);
   endfunction
 
   function void on_key_share_write(string csr_name, logic [31:0] wdata);

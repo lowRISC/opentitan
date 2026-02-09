@@ -24,6 +24,7 @@ interface fi_core_if
     $sformatf("%s.%s", par_hier, "aes_op_q"),
     $sformatf("%s.%s", par_hier, "aes_mode_q"),
     $sformatf("%s.%s", par_hier, "key_len_q"),
+    $sformatf("%s.%s", par_hier, "gcm_phase_q"),
     // signals not triggering alerts and not causing mismatches
     $sformatf("%s.%s", par_hier, "prng_reseed_rate_q")
   };

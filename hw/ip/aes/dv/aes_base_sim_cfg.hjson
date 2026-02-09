@@ -139,6 +139,7 @@
       name: aes_gcm_save_restore
       uvm_test: aes_gcm_save_restore_test
       uvm_test_seq: aes_gcm_save_restore_vseq
+      reseed: 100
     }
     // Regular tests for which the scoreboard is active.
     {
