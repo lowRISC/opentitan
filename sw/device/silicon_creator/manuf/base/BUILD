@@ -51,6 +51,7 @@ opentitan_binary(
     name = "sram_cp_provision",
     testonly = True,
     srcs = ["sram_cp_provision.c"],
+    collect_code_coverage = 0,
     exec_env = {
         "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
@@ -91,6 +92,7 @@ opentitan_binary(
     name = "sram_cp_provision_functest",
     testonly = True,
     srcs = ["sram_cp_provision_functest.c"],
+    collect_code_coverage = 0,
     exec_env = {
         "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
@@ -188,6 +190,7 @@ opentitan_test(
         name = "sram_ft_individualize_{}{}".format(sku, variant),
         testonly = True,
         srcs = ["sram_ft_individualize.c"],
+        collect_code_coverage = 0,
         exec_env = {
             "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
