@@ -94,27 +94,25 @@ module keymgr_dpe
   seed_t kmac_seed;
   seed_t none_seed;
 
-  prim_sec_anchor_buf #(
-    .Width(TotalSeedWidth)
-  ) u_seed_anchor (
-    .in_i({
-      RndCnstRevisionSeed,
-      RndCnstSoftOutputSeed,
-      RndCnstHardOutputSeed,
-      RndCnstAesSeed,
-      RndCnstOtbnSeed,
-      RndCnstKmacSeed,
-      RndCnstNoneSeed
-    }),
-    .out_o({
-      revision_seed,
-      soft_output_seed,
-      hard_output_seed,
-      aes_seed,
-      otbn_seed,
-      kmac_seed,
-      none_seed
-    })
+  localparam logic [TotalSeedWidth-1:0] RndConstSeed = {RndCnstRevisionSeed,
+                                                        RndCnstSoftOutputSeed,
+                                                        RndCnstHardOutputSeed,
+                                                        RndCnstAesSeed,
+                                                        RndCnstOtbnSeed,
+                                                        RndCnstKmacSeed,
+                                                        RndCnstNoneSeed};
+
+  prim_sec_anchor_const #(
+    .Width(TotalSeedWidth),
+    .ConstVal(RndConstSeed)
+  ) u_seed_anchor_const (
+    .out_o({revision_seed,
+            soft_output_seed,
+            hard_output_seed,
+            aes_seed,
+            otbn_seed,
+            kmac_seed,
+            none_seed})
   );
 
   // Register module
