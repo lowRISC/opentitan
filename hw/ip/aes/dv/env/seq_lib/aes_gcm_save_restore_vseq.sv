@@ -6,6 +6,19 @@
 // item, the GCM save and restore feature is tested. Here, before the new item
 // is processed, the current state is saved, the registers are cleared, and the
 // state is restored. Then, the test continues processing the item.
+//
+// In addition, the sequence performs randomized writes to the phase field of
+// the GCM control register to:
+// 1) verify that the DUT cannot move out of GCM_INIT without having completed
+//    initialization first,
+// 2) verify that the DUT does not perform certain phase transitions that are not
+//    allowed (such as entering GCM_SAVE after GCM_INIT),
+// 3) verify that the DUT does not enter the GCM_SAVE phase without having
+//    processed at least one block, and
+// 4) verify that the DUT moves to the GCM_INIT phase upon receiving an invalid
+//    value for the phase field.
+// All these cases are difficult to handle in the scoreboard and are thus tested
+// with this directed test.
 
 // scoreboard is disabled for this test
 class aes_gcm_save_restore_vseq extends aes_base_vseq;
@@ -50,6 +63,9 @@ class aes_gcm_save_restore_vseq extends aes_base_vseq;
       aes_seq_item       cfg_item_restored_iv = new();
       aes_seq_item       data_item  = new();
 
+      bit [AES_GCMPHASE_WIDTH-1:0] gcm_phase_wr;
+      ctrl_gcm_reg_t               ctrl_gcm, ctrl_gcm_prev;
+
       `uvm_info(`gfn, $sformatf("Starting New Message - messages left %d",
                                  message_queue.size() ), UVM_MEDIUM)
 
@@ -73,8 +89,28 @@ class aes_gcm_save_restore_vseq extends aes_base_vseq;
       // Provide key, IV and data.
       cov_if.cg_ctrl_gcm_reg_sample(GCM_INIT);
       write_data_key_iv(cfg_item, cfg_item, 1, cfg_item.manual_op, 0, 0, rst_set);
-      if (cfg_item.manual_op && !rst_set) trigger();
-      if (cfg_item.manual_op && !rst_set) trigger();
+      if (cfg_item.manual_op && !rst_set) begin
+        // Try to advance to any other phase without having completed the initialization. The DUT
+        // must remain in the GCM_INIT phase.
+        if (!std::randomize(gcm_phase_wr)
+              with { gcm_phase_wr inside {GCM_RESTORE,
+                                          GCM_AAD,
+                                          GCM_TEXT,
+                                          GCM_TAG,
+                                          GCM_SAVE};}) begin
+          `uvm_fatal(`gfn, $sformatf("Randomization failed"))
+        end
+        cov_if.cg_ctrl_gcm_reg_sample(gcm_phase_wr);
+        set_gcm_phase(gcm_phase_e'(gcm_phase_wr), 16, 1, 0);
+        csr_rd(.ptr(ral.ctrl_gcm_shadowed), .value(ctrl_gcm), .blocking(1));
+        if (ctrl_gcm.phase != GCM_INIT) begin
+          `uvm_fatal(`gfn, $sformatf("Expected GCM phase GCM_INIT, got %s", ctrl_gcm.phase.name()))
+        end
+        // Trigger the generation of the hash subkey as well as the encryption of the initial
+        // counter block.
+        trigger();
+        trigger();
+      end
 
       // At which item do we perform the save and restore?
       // Do not perform before we have processed the first item and also when
@@ -95,7 +131,7 @@ class aes_gcm_save_restore_vseq extends aes_base_vseq;
           `uvm_info(`gfn, $sformatf("Saving AES-GCM state before processing item %d",
                                     item_cnt), UVM_MEDIUM)
           cov_if.cg_ctrl_gcm_reg_sample(GCM_SAVE);
-          set_gcm_phase(GCM_SAVE, 16, 0);
+          set_gcm_phase(GCM_SAVE, 16, 0, 0);
           if (cfg_item.manual_op) trigger();
           // Save the current AES-GCM context.
           csr_spinwait(.ptr(ral.status.output_valid), .exp_data(1'b1));
@@ -106,6 +142,33 @@ class aes_gcm_save_restore_vseq extends aes_base_vseq;
           `downcast(cfg_item_restored_iv, cfg_item.clone());
           cfg_item_restored_iv.iv = saved_iv;
           cfg_item_restored_iv.iv[3] = '0; // Clear upper IV bits to restore the original IV.
+          // Attempt to update the GCM phase with configuration error injection enabled. This means
+          // we randomly try to switch to a GCM phase other than GCM_INIT which is not allowed at
+          // this point.
+          set_gcm_phase(GCM_SAVE, 16, 1, 1);
+          // Attempt to update the GCM phase to an invalid setting. The DUT must go back to
+          // GCM_INIT now.
+          if (!std::randomize(gcm_phase_wr)
+              with { !(gcm_phase_wr inside {GCM_INIT,
+                                            GCM_RESTORE,
+                                            GCM_AAD,
+                                            GCM_TEXT,
+                                            GCM_SAVE,
+                                            GCM_TAG});}) begin
+            `uvm_fatal(`gfn, $sformatf("Randomization failed"))
+          end
+          ctrl_gcm.phase = gcm_phase_e'(gcm_phase_wr);
+          ctrl_gcm.num_valid_bytes = 16;
+          `uvm_info(`gfn,
+              $sformatf("Writing invalid GCM phase 0x%0x, the DUT is expected to move to GCM_INIT",
+                  gcm_phase_wr), UVM_MEDIUM)
+          cov_if.cg_ctrl_gcm_reg_sample(gcm_phase_wr);
+          csr_wr(.ptr(ral.ctrl_gcm_shadowed), .value(ctrl_gcm), .en_shadow_wr(1'b1), .blocking(1));
+          csr_rd(.ptr(ral.ctrl_gcm_shadowed), .value(ctrl_gcm), .blocking(1));
+          if (ctrl_gcm.phase != GCM_INIT) begin
+            `uvm_fatal(`gfn,
+                $sformatf("Expected GCM phase GCM_INIT, got %s", ctrl_gcm.phase.name()))
+          end
           // Clear the AES IV, data in, and data out registers.
           csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
           clear_regs(2'b11);
@@ -121,7 +184,19 @@ class aes_gcm_save_restore_vseq extends aes_base_vseq;
 
           // Restore the saved AES-GCM context.
           cov_if.cg_ctrl_gcm_reg_sample(GCM_RESTORE);
-          set_gcm_phase(GCM_RESTORE, 16, 1);
+          set_gcm_phase(GCM_RESTORE, 16, 1, 0);
+          if ($urandom_range(0, 4) == 0) begin
+            // Randomly transition to the GCM_INIT phase for coverage. This requires going through
+            // the initialization phase again afterwards.
+            cov_if.cg_ctrl_gcm_reg_sample(GCM_INIT);
+            set_gcm_phase(GCM_INIT, 16, 1, 0);
+            write_data_key_iv(cfg_item_restored_iv, data_item, 1, cfg_item.manual_op,
+                              0, 0, rst_set);
+            if (cfg_item.manual_op) trigger();
+            if (cfg_item.manual_op) trigger();
+            cov_if.cg_ctrl_gcm_reg_sample(GCM_RESTORE);
+            set_gcm_phase(GCM_RESTORE, 16, 1, 0);
+          end
           csr_spinwait(.ptr(ral.status.input_ready), .exp_data(1'b1));
           add_data(saved_gcm_state, do_b2b);
           // Restore the saved IV.
@@ -141,8 +216,20 @@ class aes_gcm_save_restore_vseq extends aes_base_vseq;
             // partial block.
             valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
             cov_if.cg_ctrl_gcm_reg_sample(GCM_AAD);
-            set_gcm_phase(GCM_AAD, valid_bytes, 0);
+            set_gcm_phase(GCM_AAD, valid_bytes, 0, 0);
             new_aad = 0;
+            if ((item_cnt == 1) && $urandom_range(0, 3) == 0)  begin
+              // Randomly attemp to enter GCM_SAVE before having processed at least one block. The DUT
+              // must remain in the current phase.
+              csr_rd(.ptr(ral.ctrl_gcm_shadowed), .value(ctrl_gcm_prev), .blocking(1));
+              cov_if.cg_ctrl_gcm_reg_sample(GCM_SAVE);
+              set_gcm_phase(GCM_SAVE, 16, 1, 0);
+              csr_rd(.ptr(ral.ctrl_gcm_shadowed), .value(ctrl_gcm), .blocking(1));
+              if (ctrl_gcm.phase == GCM_SAVE) begin
+                `uvm_fatal(`gfn, $sformatf("Expected GCM phase %s, got %s",
+                    ctrl_gcm_prev.phase.name(), ctrl_gcm.phase.name()))
+              end
+            end
           end
           csr_spinwait(.ptr(ral.status.input_ready), .exp_data(1'b1));
           add_data(data_item.data_in, do_b2b);
@@ -155,8 +242,20 @@ class aes_gcm_save_restore_vseq extends aes_base_vseq;
             // partial block.
             valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
             cov_if.cg_ctrl_gcm_reg_sample(GCM_TEXT);
-            set_gcm_phase(GCM_TEXT, valid_bytes, 0);
+            set_gcm_phase(GCM_TEXT, valid_bytes, 0, 0);
             new_aad = 0;
+            if ((item_cnt == 1) && $urandom_range(0, 3) == 0)  begin
+              // Randomly attemp to enter GCM_SAVE before having processed at least one block. The DUT
+              // must remain in the current phase.
+              csr_rd(.ptr(ral.ctrl_gcm_shadowed), .value(ctrl_gcm_prev), .blocking(1));
+              cov_if.cg_ctrl_gcm_reg_sample(GCM_SAVE);
+              set_gcm_phase(GCM_SAVE, 16, 1, 0);
+              csr_rd(.ptr(ral.ctrl_gcm_shadowed), .value(ctrl_gcm), .blocking(1));
+              if (ctrl_gcm.phase == GCM_SAVE) begin
+                `uvm_fatal(`gfn, $sformatf("Expected GCM phase %s, got %s",
+                    ctrl_gcm_prev.phase.name(), ctrl_gcm.phase.name()))
+              end
+            end
           end
           csr_spinwait(.ptr(ral.status.input_ready), .exp_data(1'b1));
           add_data(data_item.data_in, do_b2b);
@@ -167,7 +266,7 @@ class aes_gcm_save_restore_vseq extends aes_base_vseq;
           msg.add_data_item(data_item);
         end else if (data_item.item_type == AES_GCM_TAG) begin
           cov_if.cg_ctrl_gcm_reg_sample(GCM_TAG);
-          set_gcm_phase(GCM_TAG, 16, 0);
+          set_gcm_phase(GCM_TAG, 16, 0, 0);
           csr_spinwait(.ptr(ral.status.input_ready), .exp_data(1'b1));
           add_data(data_item.data_in, do_b2b);
           if (cfg_item.manual_op) trigger();

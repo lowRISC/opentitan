@@ -100,7 +100,9 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   //   [1]: reseed error
   //   [2]: mode error
   //   [3]: key_len
-  cfg_error_type_t   config_error_type_en       = '{key_len:  1'b1,
+  //   [4]: gcm_phase
+  cfg_error_type_t   config_error_type_en       = '{gcm_phase:1'b1,
+                                                    key_len:  1'b1,
                                                     mode:     1'b1,
                                                     rsd_rate: 1'b1,
                                                     op:       1'b1};

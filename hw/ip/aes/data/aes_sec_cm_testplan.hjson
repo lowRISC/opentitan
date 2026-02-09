@@ -65,9 +65,10 @@
       desc: '''
             Verify the countermeasure(s) GCM.CONFIG.SPARSE.
             Illegally encoded values as well as currently disallowed but legal values are written into the GCM control register via register interface and it is ensured that the values are resolved to the correct legal values.
+            Internal wires carrying the corresponding signals are forced to invalid values and it is ensured that the DUT stops processing data.
             '''
       stage: V2S
-      tests: ["aes_stress", "aes_config_error"]
+      tests: ["aes_stress", "aes_config_error", "aes_gcm_save_restore", "aes_core_fi"]
     }
     {
       name: sec_cm_aux_config_shadow

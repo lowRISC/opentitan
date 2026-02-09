@@ -53,6 +53,10 @@ class aes_core_fi_vseq extends aes_base_vseq;
               $countones(force_value[aes_pkg::AES_KEYLEN_WIDTH-1:0]) > 1;)
         end else if (target == 4) begin
           `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(force_value,
+              $countones(force_value[aes_pkg::AES_GCMPHASE_WIDTH-1:0]) > 1;)
+          wait_for_idle = 1;
+        end else if (target == 5) begin
+          `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(force_value,
               $countones(force_value[aes_pkg::AES_PRNGRESEEDRATE_WIDTH-1:0]) > 1;)
         end
 

@@ -208,15 +208,123 @@ class aes_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual task set_gcm_phase(gcm_phase_e phase, int num_bytes, bit wait_idle);
+  virtual task set_gcm_phase(gcm_phase_e phase, int num_bytes, bit wait_idle, bit config_err_en);
+    ctrl_gcm_reg_t ctrl_gcm;
+    gcm_phase_e phase_prev, phase_wr;
+    int num_bytes_wr;
+
     if (wait_idle) begin
       csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
     end
-    ral.ctrl_gcm_shadowed.phase.set(phase);
-    ral.ctrl_gcm_shadowed.num_valid_bytes.set(num_bytes);
+
+    // In case configuration error injection is enabled, we inject an error with a probability of
+    // 33% as we want to hit the GCM_AAD, GCM_TEXT and GCM_TAG phases. Note that there are
+    // actually two kinds of errors possible:
+    // - Requesting illegal phase changes such as switching from GCM_TEXT back to GCM_AAD. The DUT
+    //   needs to remain in the current phase in this case. This is what this task can test.
+    //   However, there are some exceptions:
+    //   1) testing that the DUT cannot move out of GCM_INIT without completing the initialization
+    //      first,
+    //   2) testing that the DUT does not enter GCM_SAVE after GCM_INIT (as this will clear the
+    //      initialization status), and
+    //   3) testing that the DUT does not enter the GCM_SAVE phase without having processed at
+    //      least one block first.
+    //   These special cases are verified using a directed test.
+    // - Configuring invalid phase values such as the all-zero value or values with multiple bits
+    //   set. The DUT switches back to GCM_INIT in this case (which also includes clearing the
+    //   initialization status). This is however hard to handle which is why it is tested using a
+    //   directed test.
+    phase_prev = gcm_phase_e'(`gmv(ral.ctrl_gcm_shadowed.phase));
+    if (config_err_en && ($urandom_range(0, 2) == 0)) begin
+      case (phase_prev)
+        GCM_AAD: begin
+          phase_wr = GCM_RESTORE;
+        end
+        GCM_TEXT: begin
+          if (!std::randomize(phase_wr)
+              with { phase_wr inside {GCM_AAD,
+                                      GCM_RESTORE};}) begin
+            `uvm_fatal(`gfn, $sformatf("Randomization failed"))
+          end
+        end
+        GCM_SAVE: begin
+          if (!std::randomize(phase_wr)
+              with { phase_wr inside {GCM_RESTORE,
+                                      GCM_AAD,
+                                      GCM_TEXT,
+                                      GCM_TAG};}) begin
+            `uvm_fatal(`gfn, $sformatf("Randomization failed"))
+          end
+        end
+        GCM_TAG: begin
+          if (!std::randomize(phase_wr)
+              with { phase_wr inside {GCM_RESTORE,
+                                      GCM_AAD,
+                                      GCM_TEXT,
+                                      GCM_SAVE};}) begin
+            `uvm_fatal(`gfn, $sformatf("Randomization failed"))
+          end
+        end
+        default: begin
+          phase_wr = phase;
+        end
+      endcase
+    end else begin
+      phase_wr = phase;
+    end
+    // Invalid values such as values in the range of [17, 31] and 0 for the number of valid bytes
+    // are resolved to 16 in hardware. We inject such values with a 25% chance when writing 16.
+    if (num_bytes == 16) begin
+      num_bytes_wr = ($urandom_range(0, 3) != 0) ? num_bytes              :
+                     ($urandom_range(0, 1) == 0) ? $urandom_range(17, 31) : 0;
+    end else begin
+      num_bytes_wr = num_bytes;
+    end
+    // Update the desired values in the abstraction class.
+    ral.ctrl_gcm_shadowed.phase.set(phase_wr);
+    ral.ctrl_gcm_shadowed.num_valid_bytes.set(num_bytes_wr);
+    // Update the DUT if the desired and mirrored values mismatch. The DUT resolves potentially
+    // invalid values internally.
+    `uvm_info(`gfn,
+        $sformatf("Current GCM phase %s, writing %s, actually requested %s",
+        phase_prev.name(), phase_wr.name(), phase.name()), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("Writing num_bytes_valid %0d", num_bytes_wr), UVM_MEDIUM)
     csr_update(.csr(ral.ctrl_gcm_shadowed), .en_shadow_wr(1'b1), .blocking(1));
-    void'(ral.ctrl_gcm_shadowed.phase.predict(phase));
-    void'(ral.ctrl_gcm_shadowed.num_valid_bytes.predict(num_bytes));
+    if (phase != phase_wr) begin
+      // Reflect the resolution of invalid values in the abstraction class.
+      ral.ctrl_gcm_shadowed.phase.set(phase_prev);
+      ral.ctrl_gcm_shadowed.num_valid_bytes.set(num_bytes);
+      // Update the mirrored values.
+      void'(ral.ctrl_gcm_shadowed.phase.predict(phase_prev));
+      void'(ral.ctrl_gcm_shadowed.num_valid_bytes.predict(num_bytes));
+      // Perform a readback to check that the DUT resolved potentially illegal phase value changes
+      // correctly.
+      csr_rd(.ptr(ral.ctrl_gcm_shadowed), .value(ctrl_gcm), .blocking(1));
+      if (ctrl_gcm.phase != phase_prev) begin
+        `uvm_fatal(`gfn, $sformatf("Expected GCM phase %s, got %s",
+            phase_prev.name(), ctrl_gcm.phase.name()))
+      end
+      // Repeat the update but now with the correct values.
+      ral.ctrl_gcm_shadowed.phase.set(phase);
+      ral.ctrl_gcm_shadowed.num_valid_bytes.set(num_bytes);
+      ctrl_gcm.phase = phase;
+      ctrl_gcm.num_valid_bytes = num_bytes;
+      `uvm_info(`gfn,
+          $sformatf("Current GCM phase %s, writing %s",
+          phase_prev.name(), phase.name()), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("Writing num_bytes_valid %0d", num_bytes), UVM_MEDIUM)
+      csr_wr(.ptr(ral.ctrl_gcm_shadowed), .value(ctrl_gcm), .en_shadow_wr(1'b1), .blocking(1));
+    end else if (num_bytes != num_bytes_wr) begin
+      // Reflect the resolution of invalid values in the abstraction class and update the mirrored
+      // values.
+      ral.ctrl_gcm_shadowed.num_valid_bytes.set(num_bytes);
+      void'(ral.ctrl_gcm_shadowed.phase.predict(phase));
+      void'(ral.ctrl_gcm_shadowed.num_valid_bytes.predict(num_bytes));
+    end else begin
+      // Just update the mirrored values.
+      void'(ral.ctrl_gcm_shadowed.phase.predict(phase));
+      void'(ral.ctrl_gcm_shadowed.num_valid_bytes.predict(num_bytes));
+    end
   endtask
 
   virtual task add_data(ref bit [3:0] [31:0] data, bit do_b2b);
@@ -450,7 +558,7 @@ class aes_base_vseq extends cip_base_vseq #(
                             "key_share1_4", "key_share1_5", "key_share1_6", "key_share1_7",
                             "iv_0", "iv_1", "iv_2", "iv_3"};
       // if GCM mode, put AES into GCM_INIT before configuring the IP.
-      set_gcm_phase(GCM_INIT, 16, 0);
+      set_gcm_phase(GCM_INIT, 16, 0, 0);
     end
 
     if (|item.clear_reg) begin
@@ -792,17 +900,20 @@ class aes_base_vseq extends cip_base_vseq #(
             // Configure AAD phase as this is either the first AAD block or a
             // partial block.
             valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
-            set_gcm_phase(GCM_AAD, valid_bytes, 0);
+            set_gcm_phase(GCM_AAD, valid_bytes, 0,
+                cfg.error_types.cfg && cfg.config_error_type_en.gcm_phase);
           end
         end else if (data_item.item_type == AES_DATA) begin
           if (new_data || data_item.data_len[3:0] != 4'd0) begin
             // Configure TEXT phase as this is either the first plaintext block or a
             // partial block.
             valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
-            set_gcm_phase(GCM_TEXT, valid_bytes, 0);
+            set_gcm_phase(GCM_TEXT, valid_bytes, 0,
+                cfg.error_types.cfg && cfg.config_error_type_en.gcm_phase);
           end
         end else if (data_item.item_type == AES_GCM_TAG) begin
-          set_gcm_phase(GCM_TAG, 16, 0);
+          set_gcm_phase(GCM_TAG, 16, 0,
+              cfg.error_types.cfg && cfg.config_error_type_en.gcm_phase);
         end
       end
       add_data(data_item.data_in, cfg_item.do_b2b);
@@ -824,6 +935,13 @@ class aes_base_vseq extends cip_base_vseq #(
     if (read_output && !rst_set) begin
        status_fsm(cfg_item, data_item, new_msg,
                    manual_operation, sideload_en, 0, read_output, status, rst_set);
+    end
+    // After having read the tag in GCM, move the DUT back into the GCM_INIT phase with a 25%
+    // chance. This is not really needed but it allows checking that the DUT can't be moved
+    // to other phases if the injection of conifg errors is turned on at the same time.
+    if ((data_item.item_type == AES_GCM_TAG) && ($urandom_range(0, 3) == 0)) begin
+      set_gcm_phase(GCM_INIT, 16, 0,
+          cfg.error_types.cfg && cfg.config_error_type_en.gcm_phase);
     end
   endtask // config_and_transmit
 
@@ -1091,7 +1209,7 @@ class aes_base_vseq extends cip_base_vseq #(
 
       // After re-calculating len(aad) || len(data) start the AES-GCM operation
       // by putting the block into the GCM_INIT phase.
-      set_gcm_phase(GCM_INIT, 16, 1);
+      set_gcm_phase(GCM_INIT, 16, 1, 0);
     end
 
     write_key(cfg_item.key, is_blocking);
@@ -1112,15 +1230,15 @@ class aes_base_vseq extends cip_base_vseq #(
       int valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
       if (new_msg == 0 && !status.alert_fatal_fault) begin
         if (data_item.item_type == AES_GCM_AAD) begin
-          set_gcm_phase(GCM_AAD, valid_bytes, 1);
+          set_gcm_phase(GCM_AAD, valid_bytes, 1, 0);
           add_data(data_item.data_in, cfg_item.do_b2b);
           if (manual_operation) trigger();
         end else if (data_item.item_type == AES_DATA) begin
-          set_gcm_phase(GCM_TEXT, valid_bytes, 1);
+          set_gcm_phase(GCM_TEXT, valid_bytes, 1, 0);
           add_data(data_item.data_in, cfg_item.do_b2b);
           if (manual_operation) trigger();
         end else if (data_item.item_type == AES_GCM_TAG) begin
-          set_gcm_phase(GCM_TAG, 16, 1);
+          set_gcm_phase(GCM_TAG, 16, 1, 0);
           add_data(data_item.data_in, cfg_item.do_b2b);
           if (manual_operation) trigger();
         end
