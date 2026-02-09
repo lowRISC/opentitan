@@ -136,7 +136,7 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
           repcnts_ht_cntr: begin // repcnts ht test counter
             repcnts_ht_cntr_test(m_rng_push_seq, fld);
           end
-          adaptp_ht_cntr: begin // adaptive proportion test counter
+          adaptp_ht_cntr: begin // Adaptive Proportion Test counter
             adaptp_ht_cntr_test(m_rng_push_seq, fld);
           end
           bucket_ht_cntr: begin // Bucket test counter

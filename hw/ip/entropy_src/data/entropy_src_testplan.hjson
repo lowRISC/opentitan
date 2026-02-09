@@ -350,7 +350,7 @@
       name: cont_ht_cg
       desc: '''
             Covers a range of thresholds and configurations for the continuous health tests: REPCNT
-            (the repetition count test), and REPCNTS (the symbol based repetition count test).
+            (the Repetition Count Test), and REPCNTS (the Repetition Count Symbol Test).
             The primary cover points are the test_type (REPCNT vs. REPCNTS), the pass or fail value
             of the test, and the "score". The score is a generalization of the numerical value of
             the test output, which accounts for the fact it is far more likely to see high values

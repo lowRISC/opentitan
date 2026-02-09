@@ -521,7 +521,7 @@
                 The only exception is the startup seed which is produced using the bits of two subsequent windows, i.e., 2 x window size x 4 tested bits.
                 The factor of 4 relates to the number of noise source channels (i.e. symbol size) and applies both in single-channel and multi-channel mode (see !!ENTROPY_SRC.RNG_BIT_ENABLE).
 
-                Note that NIST SP 800-90B (Table 2) requires the adaptive proportion test to be run on 1024 or 512 samples in single-channel or multi-channel mode, respectively (see !!ENTROPY_SRC.RNG_BIT_ENABLE).
+                Note that NIST SP 800-90B (Table 2) requires the Adaptive Proportion Test to be run on 1024 or 512 samples in single-channel or multi-channel mode, respectively (see !!ENTROPY_SRC.RNG_BIT_ENABLE).
                 The startup tests must be run on at least 1024 consecutive samples (see Section 4.3 Requirements for Health Tests of NIST SP 800-90B) and this block always uses two subsequent windows for startup health testing.
                 The use of window sizes below 512 samples is thus not recommended as this may not comply with NIST SP 800-90B.
                 '''
@@ -542,7 +542,7 @@
       ]
     },
     { name: "REPCNT_THRESHOLDS",
-      desc: "Repetition count test thresholds register",
+      desc: "Repetition Count Test thresholds register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -553,7 +553,7 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the repetition count health test.
+          desc: '''This is the threshold for the Repetition Count Test.
                    This value is used in FIPS mode.
                    This register must be written before the module is enabled.
                    Writing to this register will only update the register if the
@@ -564,7 +564,7 @@
         }
         { bits: "31:16",
           name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the repetition count health test
+          desc: '''This is the threshold for the Repetition Count Test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
                    This register must be written before the module is enabled.
@@ -577,7 +577,7 @@
       ]
     },
     { name: "REPCNTS_THRESHOLDS",
-      desc: "Repetition count symbol test thresholds register",
+      desc: "Repetition Count Symbol Test thresholds register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -588,7 +588,7 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the repetition count symbol health test.
+          desc: '''This is the threshold for the Repetition Count Symbol Test.
                    This value is used in FIPS mode.
                    This register must be written before the module is enabled.
                    Writing to this register will only update the register if the
@@ -599,7 +599,7 @@
         }
         { bits: "31:16",
           name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the repetition count symbol health test
+          desc: '''This is the threshold for the Repetition Count Symbol Test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
                    This register must be written before the module is enabled.
@@ -623,7 +623,7 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the adaptive proportion health test.
+          desc: '''This is the threshold for the Adaptive Proportion Test.
                    This value is used in FIPS mode.
                    This register must be written before the module is enabled.
                    Writing to this register will only update the register if the
@@ -634,7 +634,7 @@
         }
         { bits: "31:16",
           name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the adaptive proportion health test
+          desc: '''This is the threshold for the Adaptive Proportion Test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
                    This register must be written before the module is enabled.
@@ -658,7 +658,7 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the adaptive proportion health test.
+          desc: '''This is the threshold for the Adaptive Proportion Test.
                    This value is used in FIPS mode.
                    This register must be written before the module is enabled.
                    Writing to this register will only update the register if the
@@ -669,7 +669,7 @@
         }
         { bits: "31:16",
           name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the adaptive proportion health test
+          desc: '''This is the threshold for the Adaptive Proportion Test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
                    This register must be written before the module is enabled.
@@ -1025,7 +1025,7 @@
       ]
     },
     { name:     "REPCNT_TOTAL_FAILS",
-      desc:     "Repetition count test failure counter register",
+      desc:     "Repetition Count Test failure counter register",
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
@@ -1039,7 +1039,7 @@
       ]
     },
     { name:     "REPCNTS_TOTAL_FAILS",
-      desc:     "Repetition count symbol test failure counter register",
+      desc:     "Repetition Count Symbol Test failure counter register",
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
@@ -1155,6 +1155,8 @@
             Alert threshold register
 
             This register determines during how many subsequent health test windows one or more health test failures can occur before a recoverable alert is raised and the ENTROPY_SRC block stops operating.
+            Note that continuous health tests such as the Repetition Count Test or the Repetition Count Symbol Test can trigger multiple test failures within a single window.
+            Each symbol for which at least one continuous health test fails counts separately towards the threshold.
             In case the configured threshold is reached, firmware needs to disable/re-enable the block to restart operation including the startup health testing.
 
             Note that when reaching the threshold while running in Firmware Override: Extract & Insert mode, the recoverable alert is not raised nor does the block stop operating.
@@ -1189,6 +1191,8 @@
 
             This register holds the total number of subsequent health test windows during which one or more health test failures occurred.
             For information on which health tests failed specifically, refer to !!ALERT_FAIL_COUNTS and !!EXTHT_FAIL_COUNTS.
+            Note that continuous health tests such as the Repetition Count Test or the Repetition Count Symbol Test can trigger multiple test failures within a single window.
+            Each symbol for which at least one continuous health test fails is counted separately.
 
             If the value of this register reaches the value configured in the !!ALERT_THRESHOLD register, a recoverable alert is raised and the ENTROPY_SRC block stops operating.
             If an alert is signaled, the value persists until it is cleared by firmware.
