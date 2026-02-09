@@ -35,40 +35,32 @@ class chip_base_vseq #(
     super.post_start();
   endtask
 
+  // At chip level the only external reset is POR. All others are internally generated, or
+  // are triggered by specific pin actions. The important observation is that we DO NOT
+  // handle resets like it is done for IP blocks, where each invididual reset is triggered
+  // by the environment.
   virtual task apply_reset(string kind = "HARD");
     callback_vseq.pre_apply_reset();
-    // Note: The JTAG reset does not have a dedicated pad and is muxed with other chip IOs.
-    // These IOs have pad attributes that are driven from registers, and as long as
-    // the reset line of those registers is X, the registers and hence the pad outputs
-    // will also be X. This causes the JTAG reset to not properly propagate, and hence we
-    // have to assert the main reset before that (release can happen in a randomized way
-    // via the apply_reset task later on).
-    // assert_por_reset();
-    void'($value$plusargs("skip_por_n_during_first_pwrup=%0b", skip_por_n_during_first_pwrup));
-    if (!(skip_por_n_during_first_pwrup && is_first_pwrup)) begin
-      `uvm_info(`gfn, "Asserting POR_N", UVM_LOW)
-      cfg.chip_vif.por_n_if.drive(0);
-      #10us;  // TODO: revisit this.
-      cfg.chip_vif.por_n_if.drive(1);
-      `uvm_info(`gfn, "POR_N complete", UVM_LOW)
+    if (kind == "HARD") begin
+      if (!is_first_pwrup) begin
+        assert_por_reset(.delay(0));
+      end
+      // Note: The JTAG reset does not have a dedicated pad and is muxed with other chip IOs.
+      // These IOs have pad attributes that are driven from registers, and as long as
+      // the reset line of those registers is X, the registers and hence the pad outputs
+      // will also be X. This causes the JTAG reset to not properly propagate, and hence we
+      // have to assert the main reset before that (release can happen in a randomized way
+      // via the apply_reset task later on).
+
+      // Should this be reset for any reset_kind?
+      cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.do_trst_n();
+      if (jtag_dmi_ral != null) jtag_dmi_ral.reset(kind);
     end
-    // TODO: Cannot assert different types of resets in parallel; due to randomization
-    // resets de-assert at different times. If the main rst_n de-asserts before others,
-    // the CPU starts executing right away which can cause breakages.
-    cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.do_trst_n();
-    super.apply_reset(kind);
-    if (jtag_dmi_ral != null) jtag_dmi_ral.reset(kind);
     callback_vseq.post_apply_reset();
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
-    cfg.chip_vif.por_n_if.drive(0);
-    // At least 6 AON clock cycles.
-    // TODO: Tentatively this is set to 100us. Fetch the individual clock freqs from AST via
-    // chip_vif.
-    reset_duration_ps = max2(reset_duration_ps, 100_000_000 /* 100us */);
-    super.apply_resets_concurrently(reset_duration_ps);
-    cfg.chip_vif.por_n_if.drive(1);
+    apply_reset("HARD");
   endtask
 
   chip_callback_vseq callback_vseq;
@@ -379,7 +371,10 @@ class chip_base_vseq #(
   // POR_N needs to stay asserted for at least 6 AON clock cycles.
   task assert_por_reset(int delay = 0);
     repeat (delay) @cfg.chip_vif.pwrmgr_low_power_if.fast_cb;
+    `uvm_info(`gfn, "Asserting POR_N", UVM_LOW)
     cfg.chip_vif.por_n_if.drive(0);
+    // For reset we need the aon clock to be running, so it is okay to wait a few cycles
+    // before de-asserting .
     repeat (6) @cfg.chip_vif.pwrmgr_low_power_if.cb;
     cfg.clk_rst_vif.wait_clks(10);
     cfg.chip_vif.por_n_if.drive(1);
