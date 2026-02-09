@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, ensure};
+use anyhow::{Context, Result, bail, ensure};
 use rusb::{self, UsbContext};
 use std::time::{Duration, Instant};
 
@@ -394,5 +394,130 @@ impl UsbDevice for RusbDevice {
             .write_bulk(endpoint, data, timeout)
             .context("USB error")?;
         Ok(len)
+    }
+}
+
+// Structure representing a USB hub. The device needs to have sufficient permission
+// to be opened.
+pub struct UsbHub {
+    handle: rusb::DeviceHandle<rusb::Context>,
+}
+
+// USB hub operation.
+pub enum UsbHubOp {
+    // Suspend a specific port.
+    Suspend,
+    // Suspend a specific port.
+    Resume,
+    // Reset a specific port.
+    Reset,
+}
+
+const PORT_SUSPEND: u16 = 2;
+const PORT_RESET: u16 = 4;
+
+impl UsbHub {
+    // Construct a hub from a device.
+    pub fn from_device(dev: &rusb::Device<rusb::Context>) -> Result<UsbHub> {
+        // Make sure the device is a hub.
+        let dev_desc = dev.device_descriptor()?;
+        // Assume that if the device has the HUB class then Linux will already enforce
+        // that it follows the specification.
+        ensure!(
+            dev_desc.class_code() == rusb::constants::LIBUSB_CLASS_HUB,
+            "device is not a hub"
+        );
+        Ok(UsbHub {
+            handle: dev.open().with_context(|| {
+                format!(
+                    "Cannot access USB hub on bus {bus}, address {addr}\n\
+                If this test requires access to the HUB, you need to make sure that \
+                the program has sufficient permissions to access the hub\n\
+                See sw/host/tests/chip/usb/README.md for more information\n\
+                The following command may fix the issue:\n\
+                sudo chmod 0666 /dev/bus/usb/{bus:03}/{addr:03}",
+                    bus = dev.bus_number(),
+                    addr = dev.address(),
+                )
+            })?,
+        })
+    }
+
+    pub fn device(&self) -> rusb::Device<rusb::Context> {
+        self.handle.device()
+    }
+
+    // Report the status of a port (only returns the port status, not the port change).
+    fn port_status(&self, port: u8, timeout: Duration) -> Result<u16> {
+        let req_type = rusb::constants::LIBUSB_RECIPIENT_OTHER
+            | rusb::constants::LIBUSB_REQUEST_TYPE_CLASS
+            | rusb::constants::LIBUSB_ENDPOINT_IN;
+        let mut status = [0u8; 4];
+        let _ = self.handle.read_control(
+            req_type,
+            rusb::constants::LIBUSB_REQUEST_GET_STATUS,
+            0,
+            port as u16,
+            &mut status,
+            timeout,
+        )?;
+        Ok(status[0] as u16 | (status[1] as u16) << 8)
+    }
+
+    // Perform an operation.
+    pub fn op(&self, op: UsbHubOp, port: u8, timeout: Duration, check_status: bool) -> Result<()> {
+        let (feature_index, set_feature, human_op) = match op {
+            UsbHubOp::Suspend => (PORT_SUSPEND, true, "suspend"),
+            UsbHubOp::Resume => (PORT_SUSPEND, false, "resume"),
+            UsbHubOp::Reset => (PORT_RESET, true, "reset"),
+        };
+        let req = if set_feature {
+            rusb::constants::LIBUSB_REQUEST_SET_FEATURE
+        } else {
+            rusb::constants::LIBUSB_REQUEST_CLEAR_FEATURE
+        };
+        let req_type = rusb::constants::LIBUSB_RECIPIENT_OTHER
+            | rusb::constants::LIBUSB_REQUEST_TYPE_CLASS
+            | rusb::constants::LIBUSB_ENDPOINT_OUT;
+        // Make sure that the port status is the expected one before the operation.
+        let port_status_mask = 1u16 << feature_index;
+        let port_status_before = if set_feature { 0u16 } else { port_status_mask };
+        let port_status_after = if set_feature { port_status_mask } else { 0u16 };
+
+        if check_status {
+            let port_status = self.port_status(port, timeout)?;
+            ensure!(
+                port_status & port_status_mask == port_status_before,
+                "Trying to {} port {} but port has unexpected status {:#x}",
+                human_op,
+                port,
+                port_status
+            );
+        }
+        // Perform operation.
+        let _ =
+            self.handle
+                .write_control(req_type, req, feature_index, port as u16, &[], timeout)?;
+        // Wait until port has changed status.
+        if check_status {
+            let start = Instant::now();
+            loop {
+                let port_status = self.port_status(port, timeout)?;
+                if port_status & port_status_mask == port_status_after {
+                    break;
+                }
+                if start.elapsed() >= timeout {
+                    bail!(
+                        "Trying to {} port {} but port did not change status (last status was {:x})",
+                        human_op,
+                        port,
+                        port_status
+                    );
+                }
+            }
+            log::info!("{} performed in {:#?}", human_op, start.elapsed());
+        }
+
+        Ok(())
     }
 }

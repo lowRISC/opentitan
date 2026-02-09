@@ -10,9 +10,10 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::transport::common::usb::{UsbHub, UsbHubOp};
 use opentitanlib::uart::console::UartConsole;
 
-use usb::{UsbHub, UsbHubOp, UsbOpts};
+use usb::UsbOpts;
 
 #[derive(Debug, Parser)]
 struct Opts {
