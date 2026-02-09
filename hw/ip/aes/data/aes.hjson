@@ -423,7 +423,7 @@
     { name: "MAIN.FSM.LOCAL_ESC",
       desc: '''
         The main control FSM moves to a terminal error state upon local escalation.
-        Can be triggered by MAIN.FSM.SPARSE, MAIN.FSM.REDUN, CTRL.SPARSE, as well as CIPHER.FSM.LOCAL_ESC, CTR.FSM.LOCAL_ESC.
+        Can be triggered by MAIN.FSM.SPARSE, MAIN.FSM.REDUN, CTRL.SPARSE, as well as CIPHER.FSM.LOCAL_ESC, CTR.FSM.LOCAL_ESC, GHASH.FSM.LOCAL_ESC.
       '''
     }
     { name: "CIPHER.FSM.LOCAL_ESC",
@@ -436,6 +436,12 @@
       desc: '''
         The CTR mode FSM moves to a terminal error state upon local escalation.
         Can be triggered by CTR.FSM.SPARSE, CTR.FSM.REDUN, and CTRL.SPARSE.
+      '''
+    }
+    { name: "GHASH.FSM.LOCAL_ESC",
+      desc: '''
+        The GHASH FSM moves to a terminal error state upon local escalation.
+        Can be triggered by GHASH.FSM.SPARSE, CTRL.SPARSE, as well as MAIN.FSM.LOCAL_ESC.
       '''
     }
     { name: "DATA_REG.LOCAL_ESC",

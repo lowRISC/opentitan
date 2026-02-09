@@ -213,6 +213,12 @@
       uvm_test_seq: aes_core_fi_vseq
       reseed: 70 // Test must cover 35 bins. Overseed by 2x to get reasonable coverage.
     }
+    {
+      name: aes_ghash_fi
+      uvm_test: aes_ghash_fi_test
+      uvm_test_seq: aes_ghash_fi_vseq
+      reseed: 90 // Test must cover 42 bins. Overseed by 2x to get reasonable coverage.
+    }
     // This test runs several sequences back-to-back with random resets between the individual
     // sequences. We shouldn't need many seeds here because aes_stress is the real stress test.
     {

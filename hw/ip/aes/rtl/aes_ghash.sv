@@ -324,6 +324,7 @@ module aes_ghash
       );
       assign ghash_add_in_sel_q[s] = ghash_add_in_sel_e'(ghash_add_in_sel_q_raw[s]);
 
+      // SEC_CM: CTRL.SPARSE
       // Check that the selector signals are indeed one-hot encoded or zero.
       prim_onehot_check #(
         .OneHotWidth(GHashAddInSelWidth),
@@ -501,6 +502,7 @@ module aes_ghash
     );
     assign gf_mult1_in_sel_q = gf_mult_in_sel_e'(gf_mult1_in_sel_q_raw);
 
+    // SEC_CM: CTRL.SPARSE
     // Check that the selector signal is indeed one-hot encoded or zero.
     prim_onehot_check #(
       .OneHotWidth(GFMultInSelWidth),
@@ -944,6 +946,7 @@ module aes_ghash
       end
 
       GHASH_ERROR: begin
+        // SEC_CM: GHASH.FSM.LOCAL_ESC
         // Terminal error state
         alert_o = 1'b1;
       end
