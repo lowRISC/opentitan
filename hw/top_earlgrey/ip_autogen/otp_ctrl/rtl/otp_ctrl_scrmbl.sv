@@ -109,26 +109,26 @@ module otp_ctrl_scrmbl
   digest_iv_array_t rnd_cnst_digest_iv_anchor;
 
   for (genvar i = 0; i < NumScrmblKeys; i++) begin : gen_anchor_keys
-    prim_sec_anchor_buf #(
-      .Width(ScrmblKeyWidth)
-    ) u_key_anchor_buf (
-      .in_i(RndCnstKey[i]),
+    prim_sec_anchor_const #(
+      .Width(ScrmblKeyWidth),
+      .ConstVal(RndCnstKey[i])
+    ) u_key_anchor_const (
       .out_o(rnd_cnst_key_anchor[i])
     );
   end
 
   for (genvar i = 0; i < NumDigestSets; i++) begin : gen_anchor_digests
-    prim_sec_anchor_buf #(
-      .Width(ScrmblKeyWidth)
-    ) u_const_anchor_buf (
-      .in_i(RndCnstDigestConst[i]),
+    prim_sec_anchor_const #(
+      .Width(ScrmblKeyWidth),
+      .ConstVal(RndCnstDigestConst[i])
+    ) u_digest_anchor_const (
       .out_o(rnd_cnst_digest_anchor[i])
     );
 
-    prim_sec_anchor_buf #(
-      .Width(ScrmblBlockWidth)
-    ) u_iv_anchor_buf (
-      .in_i(RndCnstDigestIV[i]),
+    prim_sec_anchor_const #(
+      .Width(ScrmblBlockWidth),
+      .ConstVal(RndCnstDigestIV[i])
+    ) u_iv_anchor_const (
       .out_o(rnd_cnst_digest_iv_anchor[i])
     );
   end
