@@ -7,8 +7,10 @@ from typing import Dict, Iterator, Optional
 from .constants import ErrBits
 from .flags import FlagReg
 from .isa import (OTBNInsn, RV32RegReg, RV32RegImm,
-                  RV32ImmShift, insn_for_mnemonic, logical_byte_shift,
-                  extract_quarter_word)
+                  RV32ImmShift, BnVecVecAdd, BnVecVecMul, BnVecVecTrn,
+                  insn_for_mnemonic, logical_byte_shift,
+                  extract_quarter_word, extract_vec_elem, element_length_in_bits,
+                  shift_vec_elem, map_elems, montgomery_mul_no_cond_subtraction)
 from .state import OTBNState
 
 
@@ -1277,6 +1279,477 @@ class BNWSRW(OTBNInsn):
         state.wsrs.write_at_idx(self.wsr, val)
 
 
+class BNADDV(BnVecVecAdd):
+    insn = insn_for_mnemonic('bn.addv', 4)
+
+    def execute(self, state: OTBNState) -> None:
+        # The operation performed on the element pairs.
+        def op(a: int, b: int) -> int:
+            c = a + b
+            return c
+
+        vec_a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        vec_b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        size = element_length_in_bits(self.elen)
+
+        # Invalid ELEN choice. Stop with an illegal instruction error.
+        if size not in BNADDV.supported_elens:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return None
+
+        result = map_elems(op, size, vec_a, vec_b)
+
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
+
+
+class BNADDVM(BnVecVecAdd):
+    insn = insn_for_mnemonic('bn.addvm', 4)
+
+    def execute(self, state: OTBNState) -> None:
+        # The operation performed on the element pairs.
+        def op(mod_val: int, a: int, b: int) -> int:
+            c = a + b
+            if c >= mod_val:
+                c -= mod_val
+            return c
+
+        vec_a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        vec_b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        size = element_length_in_bits(self.elen)
+
+        # Invalid ELEN choice. Stop with an illegal instruction error.
+        if size not in BNADDVM.supported_elens:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return None
+
+        # Extract the modulus from WSR MOD but only size bits as upper bits may contain the
+        # Montgomery constant.
+        mod_val = state.wsrs.MOD.read_unsigned() & ((1 << size) - 1)
+
+        result = map_elems(lambda a, b: op(mod_val, a, b), size, vec_a, vec_b)
+
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
+
+
+class BNSUBV(BnVecVecAdd):
+    insn = insn_for_mnemonic('bn.subv', 4)
+
+    def execute(self, state: OTBNState) -> None:
+        # The operation performed on the element pairs.
+        def op(a: int, b: int) -> int:
+            c = a - b
+            return c
+
+        vec_a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        vec_b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        size = element_length_in_bits(self.elen)
+
+        # Invalid ELEN choice. Stop with an illegal instruction error.
+        if size not in BNSUBV.supported_elens:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return None
+
+        result = map_elems(op, size, vec_a, vec_b)
+
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
+
+
+class BNSUBVM(BnVecVecAdd):
+    insn = insn_for_mnemonic('bn.subvm', 4)
+
+    def execute(self, state: OTBNState) -> None:
+        # The operation performed on the element pairs.
+        def op(mod_val: int, a: int, b: int) -> int:
+            c = a - b
+            if c < 0:
+                c += mod_val
+            return c
+
+        vec_a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        vec_b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        size = element_length_in_bits(self.elen)
+
+        # Invalid ELEN choice. Stop with an illegal instruction error.
+        if size not in BNSUBVM.supported_elens:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return None
+
+        # Extract the modulus from WSR MOD.
+        mod_val = state.wsrs.MOD.read_unsigned() & ((1 << size) - 1)
+
+        result = map_elems(lambda a, b: op(mod_val, a, b), size, vec_a, vec_b)
+
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
+
+
+class BNMULV(BnVecVecMul):
+    insn = insn_for_mnemonic('bn.mulv', 4)
+
+    def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
+        # The operation performed on the element pairs.
+        def op(a: int, b: int) -> int:
+            c = a * b
+            return c
+
+        vec_a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        vec_b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        size = element_length_in_bits(self.elen)
+
+        # Invalid ELEN choice. Stop with an illegal instruction error.
+        if size not in BNMULV.supported_elens:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return None
+
+        # This instruction operates over 4 cycles. In each cycle 64b of the 256b vector are
+        # processed. We first compute the results and then emulate the register updates.
+        result = map_elems(op, size, vec_a, vec_b)
+
+        # Emulate the register updates
+        # In the first cycle ACC is reset and the lowest quarter word is written.
+        # In other cycles ACC is read and the corresponding quarter word is merged.
+        # In the last cycle we also write the result to the destination WDR.
+        qword_mask = (1 << 64) - 1
+        for cycle in range(4):
+            acc = 0 if cycle == 0 else state.wsrs.ACC.read_unsigned()
+            current_qword_mask = qword_mask << (cycle * 64)
+            acc |= result & current_qword_mask
+            state.wsrs.ACC.write_unsigned(acc)
+            if cycle < 3:
+                yield None
+
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
+
+
+class BNMULVL(BnVecVecMul):
+    insn = insn_for_mnemonic('bn.mulvl', 5)
+
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
+        self.lane = op_vals['lane']
+
+    def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
+        # The operation performed on the element pairs.
+        def op(a: int, b: int) -> int:
+            c = a * b
+            return c
+
+        vec_a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        vec_b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        size = element_length_in_bits(self.elen)
+
+        # Invalid ELEN choice. Stop with an illegal instruction error.
+        if size not in BNMULVL.supported_elens:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return None
+
+        # This instruction operates over 4 cycles. In each cycle 64b of the 256b vector are
+        # processed. We first compute the results and then emulate the register updates.
+
+        # Replicate lane element to generate a 256b vector with 256/size elements.
+        lane_elem = extract_vec_elem(vec_b, self.lane, size)
+        lane_vec = 0
+        for i in range(256 // size):
+            lane_vec |= (lane_elem << (i * size))
+
+        result = map_elems(op, size, vec_a, lane_vec)
+
+        # Emulate the register updates
+        # In the first cycle ACC is reset and the lowest quarter word is written.
+        # In other cycles ACC is read and the corresponding quarter word is merged.
+        # In the last cycle we also write the result to the destination WDR.
+        qword_mask = (1 << 64) - 1
+        for cycle in range(4):
+            acc = 0 if cycle == 0 else state.wsrs.ACC.read_unsigned()
+            current_qword_mask = qword_mask << (cycle * 64)
+            acc |= result & current_qword_mask
+            state.wsrs.ACC.write_unsigned(acc)
+            if cycle < 3:
+                yield None
+
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
+
+
+class BNMULVM(BnVecVecMul):
+    insn = insn_for_mnemonic('bn.mulvm', 4)
+
+    # This instruction performs a Montgomery multiplication without the final conditional
+    # subtraction.
+    #
+    # Inputs for the Montgomery algorithm:
+    # - a, b: Operands in [0, q[ in Montgomery space
+    # - d:    Bit-width of operands
+    # - q:    Modulus in ]0, 2^d]
+    # - mu:   Montgomery constant, precomputed, mu = (-q)^(-1) mod 2^d
+    #
+    # The operands must be pre-transformed into Montgomery space with
+    #   a = a_orig * 2^d mod q.
+    # This must be ensured by the programmer.
+    #
+    # The Montgomery multiplication is defined as:
+    #   r = a*b * 2^(-d) mod q
+    # where r is in [0,q[.
+    #
+    # This can be computed with the following steps where `[]_d` are the lower `d` bits and `[]^d`
+    # are the higher `d` bits:
+    #   c = a*b
+    #   r = [c + [[c]_d * mu]_d * q]^d
+    #   if r >= q then // not implemented in hardware
+    #       return r - q
+    #   return r
+    #
+    # This instruction computes these steps except the final conditional subtraction (`r >= q`) to
+    # optimize area and timing.
+    #
+    # To save resources the 64 bit MAC multiplier is reused and thus the calculations is split over
+    # multiple cycles. The instruction requires 12 cycles in total where each 64b part is processed
+    # in 3 cycles.
+    #   Cycle 0:  Reg(Tmp) = 0, Reg(C) = 0
+    #   Cycle 1:  Reg(Tmp) = [a*b]_d,     Reg(C) = a*b
+    #   Cycle 2:  Reg(Tmp) = [Tmp*mu]_d,  Reg(C) = a*b
+    #   Cycle 3:  Output   = c + (Tmp)*q mod q = [c + (Tmp)*q]^d (-q)
+    #
+    # The required constants q and mu are expected to be in the MOD WSR at following locations:
+    # For .8s: q @ [31:0], mu @ [63:32]
+    def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
+        # The operation performed on the element pairs.
+        def op(a: int, b: int, q: int, mu: int, size: int) -> int:
+            return montgomery_mul_no_cond_subtraction(a, b, q, mu, size)
+
+        vec_a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        vec_b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        size = element_length_in_bits(self.elen)
+
+        # Invalid ELEN choice. Stop with an illegal instruction error.
+        if size not in BNMULVM.supported_elens:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return None
+
+        # Extract the Montgomery constants q and mu
+        mod_raw = state.wsrs.MOD.read_unsigned()
+        offset_mu = size
+        mod_q = mod_raw & ((1 << size) - 1)
+        mod_mu = (mod_raw >> offset_mu) & ((1 << size) - 1)
+
+        # We first compute the result and then emulate the register update sequence. We do model
+        # only the ACC updates. We do not model the MAC's internal registers.
+        result = map_elems(lambda a, b: op(a, b, mod_q, mod_mu, size), size, vec_a, vec_b)
+
+        # Emulate the ACC register updates.
+        # One 64b chunk computation requires 3 cycles. We perform the following register accesses
+        # Cycle 1: TMP and C are written (internal registers, not modelled)
+        # Cycle 2: TMP is written, ACC and C unused
+        # Cycle 3: ACC is read and written, TMP and C are read
+        #
+        # We now repeat these 3 cycles for all four 64b chunks (quarter words).
+        # When capturing the first QWord result, the ACC is cleared.
+        # In cycle 12 we also write the result to the destination WDR
+        qword_mask = (1 << 64) - 1
+        for qword in range(4):
+            # For the first QWord the first cycle is the one when the loop starts.
+            if qword != 0:
+                yield None
+            yield None
+            yield None
+            acc = 0 if qword == 0 else state.wsrs.ACC.read_unsigned()
+            current_qword_mask = qword_mask << (qword * 64)
+            acc |= result & current_qword_mask
+            state.wsrs.ACC.write_unsigned(acc)
+
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
+
+
+class BNMULVML(BnVecVecMul):
+    insn = insn_for_mnemonic('bn.mulvml', 5)
+
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
+        self.lane = op_vals['lane']
+
+    # See BNMULVM for detailed explanation of instruction
+    def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
+        def op(a: int, b: int, q: int, mu: int, size: int) -> int:
+            return montgomery_mul_no_cond_subtraction(a, b, q, mu, size)
+
+        vec_a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        vec_b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        size = element_length_in_bits(self.elen)
+
+        # Invalid ELEN choice. Stop with an illegal instruction error.
+        if size not in BNMULVML.supported_elens:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return None
+
+        # Extract the Montgomery constants q and mu
+        mod_raw = state.wsrs.MOD.read_unsigned()
+        offset_mu = size
+        mod_q = mod_raw & ((1 << size) - 1)
+        mod_mu = (mod_raw >> offset_mu) & ((1 << size) - 1)
+
+        # This instruction operates over 12 cycles. We first compute the results and then emulate
+        # the register updates.
+
+        # Replicate lane element to generate a 256b vector with 256/size elements.
+        lane_elem = extract_vec_elem(vec_b, self.lane, size)
+        lane_vec = 0
+        for i in range(256 // size):
+            lane_vec |= (lane_elem << (i * size))
+
+        result = map_elems(lambda a, b: op(a, b, mod_q, mod_mu, size), size, vec_a, lane_vec)
+
+        # Emulate the register updates. See BN.MULVM for details.
+        qword_mask = (1 << 64) - 1
+        for qword in range(4):
+            # For the first QWord the first cycle is the one when the loop starts.
+            if qword != 0:
+                yield None
+            yield None
+            yield None
+            acc = 0 if qword == 0 else state.wsrs.ACC.read_unsigned()
+            current_qword_mask = qword_mask << (qword * 64)
+            acc |= result & current_qword_mask
+            state.wsrs.ACC.write_unsigned(acc)
+
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
+
+
+class BNTRN1(BnVecVecTrn):
+    insn = insn_for_mnemonic('bn.trn1', 4)
+
+    def execute(self, state: OTBNState) -> None:
+        vec_a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        vec_b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        size = element_length_in_bits(self.elen)
+
+        # Invalid ELEN choice. Stop with an illegal instruction error.
+        if size not in BNTRN1.supported_elens:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return None
+
+        vec_c = 0
+        for elem in range(0, 256 // size, 2):
+            elem_a = extract_vec_elem(vec_a, elem, size)
+            elem_b = extract_vec_elem(vec_b, elem, size)
+
+            vec_c = vec_c | ((elem_a) << (elem * size))
+            vec_c = vec_c | ((elem_b) << ((elem + 1) * size))
+
+        state.wdrs.get_reg(self.wrd).write_unsigned(vec_c)
+
+
+class BNTRN2(BnVecVecTrn):
+    insn = insn_for_mnemonic('bn.trn2', 4)
+
+    def execute(self, state: OTBNState) -> None:
+        vec_a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        vec_b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        size = element_length_in_bits(self.elen)
+
+        # Invalid ELEN choice. Stop with an illegal instruction error.
+        if size not in BNTRN2.supported_elens:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return None
+
+        vec_c = 0
+        for elem in range(0, 256 // size, 2):
+            elem_a = extract_vec_elem(vec_a, elem + 1, size)
+            elem_b = extract_vec_elem(vec_b, elem + 1, size)
+
+            vec_c = vec_c | ((elem_a) << (elem * size))
+            vec_c = vec_c | ((elem_b) << ((elem + 1) * size))
+
+        state.wdrs.get_reg(self.wrd).write_unsigned(vec_c)
+
+
+class BNSHV(OTBNInsn):
+    insn = insn_for_mnemonic('bn.shv', 5)
+    supported_elens = [32]
+
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
+        self.wrd = op_vals['wrd']
+        self.wrs1 = op_vals['wrs']
+        self.elen = op_vals['elen']
+        self.shift_type = op_vals['shift_type']
+        self.shift_bits = op_vals['shift_bits']
+
+    def execute(self, state: OTBNState) -> None:
+        vec_a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        size = element_length_in_bits(self.elen)
+
+        # Invalid ELEN choice. Stop with an illegal instruction error.
+        if size not in BNSHV.supported_elens:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return None
+
+        vec_c = 0
+        for elem in range(256 // size):
+            elem_a = extract_vec_elem(vec_a, elem, size)
+            elem_a_shifted = shift_vec_elem(elem_a, size, self.shift_type, self.shift_bits)
+            vec_c = vec_c | (elem_a_shifted << (elem * size))
+
+        state.wdrs.get_reg(self.wrd).write_unsigned(vec_c)
+
+
+class BNUNPK(OTBNInsn):
+    insn = insn_for_mnemonic('bn.unpk', 4)
+
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
+        self.wrd = op_vals['wrd']
+        self.wrs1 = op_vals['wrs1']
+        self.wrs2 = op_vals['wrs2']
+        self.shift = op_vals['shift_bits']
+
+    def execute(self, state: OTBNState) -> None:
+        vec_a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        vec_b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+
+        # Concatenate to 512 bits and shift
+        combined = (vec_a << 256) | (vec_b)
+        shifted = combined >> self.shift
+
+        # Unpack 8 24-bit elements into 32-bit elements
+        unpacked = 0
+        for elem in range(256 // 32):
+            chunk = (shifted >> (elem * 24)) & ((1 << 24) - 1)
+            unpacked = unpacked | (chunk << (elem * 32))
+
+        state.wdrs.get_reg(self.wrd).write_unsigned(unpacked)
+
+
+class BNPACK(OTBNInsn):
+    insn = insn_for_mnemonic('bn.pack', 4)
+
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
+        self.wrd = op_vals['wrd']
+        self.wrs1 = op_vals['wrs1']
+        self.wrs2 = op_vals['wrs2']
+        self.shift = op_vals['shift_bits']
+
+    def execute(self, state: OTBNState) -> None:
+        vec_a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        vec_b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+
+        # Pack 8 24b elements from 256b string into 192b string
+        def pack_24b_elems(vec: int) -> int:
+            dense = 0
+            for elem in range(256 // 32):
+                elem_a = (vec >> (elem * 32)) & ((1 << 24) - 1)
+                dense = dense | (elem_a << (elem * 24))
+            return dense
+
+        dense_a = pack_24b_elems(vec_a)
+        dense_b = pack_24b_elems(vec_b)
+
+        # Concatenate and append 64 zeros to the right.
+        combined = (dense_a << (192 + 64)) | (dense_b << 64)
+        shifted = combined >> self.shift
+        packed = shifted & ((1 << 256) - 1)
+
+        state.wdrs.get_reg(self.wrd).write_unsigned(packed)
+
+
 INSN_CLASSES = [
     ADD, ADDI, LUI, SUB, SLL, SLLI, SRL, SRLI, SRA, SRAI,
     AND, ANDI, OR, ORI, XOR, XORI,
@@ -1295,5 +1768,13 @@ INSN_CLASSES = [
     BNCMP, BNCMPB,
     BNLID, BNSID,
     BNMOV, BNMOVR,
-    BNWSRR, BNWSRW
+    BNWSRR, BNWSRW,
+
+    BNADDV, BNADDVM,
+    BNSUBV, BNSUBVM,
+    BNMULV, BNMULVL,
+    BNMULVM, BNMULVML,
+    BNTRN1, BNTRN2,
+    BNSHV,
+    BNUNPK, BNPACK
 ]
