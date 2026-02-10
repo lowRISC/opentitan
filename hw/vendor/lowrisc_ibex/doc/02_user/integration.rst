@@ -53,8 +53,6 @@ The configuration dependent primitives are:
    Required where ``ICache == 1`` and ``SecureIbex == 1``.
  * ``prim_lfsr`` - Linear feedback shift register, used for pseudo random number generation for dummy instruction insertion.
    Required where ``SecureIbex == 1``.
- * ``prim_onehot_check`` - Checks a onehot signal is correct, for detecting fault injection attacks.
-   Required where ``SecureIbex == 1``.
  * ``prim_secded_X`` - Various primitives to encode and decode SECDED (Single Error Correct, Double Error Detect) error detection and correction codes.
    Required where ``SecureIbex == 1``.
 
