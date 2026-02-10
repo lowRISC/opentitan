@@ -240,6 +240,52 @@ class KeyWSR(ISPR):
         return
 
 
+class MaiOutputWSR(ISPR):
+    def __init__(self, name: str) -> None:
+        super().__init__(name, 256)
+
+    def write_unsigned(self, value: int) -> None:
+        # Writes are ignored
+        return
+
+    def set_unsigned(self, value: int) -> None:
+        '''Sets a value that can be read by a future `read_unsigned`.
+
+        This takes effect immediately and is used to model a write from the
+        MAI. This is used by the simulation environment to provide a value
+        that is later read by `read_unsigned` and doesn't relate to instruction
+        execution (e.g. in RTL the MAI will update this register when a new
+        result is available. Note that we do still report the change until the
+        next commit.
+        '''
+        assert 0 <= value < (1 << 256)
+        self._value = value
+        self._next_value = value
+        self._pending_write = True
+
+    def set_32bit_unsigned(self, value: int, index: int) -> None:
+        '''Sets the 32-bit chunk at the given index to the unsigned value.
+        The index 0 corresponds to bits [31:0], index 1 to bits [63:32],etc..
+        '''
+        assert 0 <= value < (1 << 32)
+        assert 0 <= index < 8
+        current = self.read_unsigned()
+        mask = ((1 << 32) - 1) << (index * 32)
+        new_value = (current & ~mask) | (value << (index * 32))
+        assert 0 <= new_value < (1 << 256)
+        self.set_unsigned(new_value)
+
+
+class MaiInputWSR(ISPR):
+    def __init__(self, name: str) -> None:
+        super().__init__(name, 256)
+
+    def read_32bit_unsigned(self, index: int) -> int:
+        assert 0 <= index < 8
+        mask = (1 << 32) - 1
+        return (self.read_unsigned() >> (32 * index)) & mask
+
+
 class WSRFile:
     '''A model of the WSR file'''
     def __init__(self, ext_regs: OTBNExtRegs) -> None:
@@ -255,6 +301,12 @@ class WSRFile:
         self.KeyS1L = KeyWSR('KeyS1L', 0, self.KeyS1)
         self.KeyS1H = KeyWSR('KeyS1H', 256, self.KeyS1)
         self.KMAC_DATA = KmacDataWSRs(['KMAC_DATA_S0', 'KMAC_DATA_S1'])
+        self.MaiResS0 = MaiOutputWSR('MaiResS0')
+        self.MaiResS1 = MaiOutputWSR('MaiResS1')
+        self.MaiIn0S0 = MaiInputWSR('MaiIn0S0')
+        self.MaiIn0S1 = MaiInputWSR('MaiIn0S1')
+        self.MaiIn1S0 = MaiInputWSR('MaiIn1S0')
+        self.MaiIn1S1 = MaiInputWSR('MaiIn1S1')
 
         self._by_idx = {
             0: self.MOD,
@@ -267,6 +319,12 @@ class WSRFile:
             7: self.KeyS1H,
             8: self.KMAC_DATA.shares[0],
             9: self.KMAC_DATA.shares[1],
+            10: self.MaiResS0,
+            11: self.MaiResS1,
+            12: self.MaiIn0S0,
+            13: self.MaiIn0S1,
+            14: self.MaiIn1S0,
+            15: self.MaiIn1S1,
         }
 
     def on_start(self) -> None:
@@ -329,6 +387,12 @@ class WSRFile:
         self.KeyS0.commit()
         self.KeyS1.commit()
         self.KMAC_DATA.commit()
+        self.MaiResS0.commit()
+        self.MaiResS1.commit()
+        self.MaiIn0S0.commit()
+        self.MaiIn0S1.commit()
+        self.MaiIn1S0.commit()
+        self.MaiIn1S1.commit()
 
     def abort(self) -> None:
         self.MOD.abort()
@@ -340,6 +404,15 @@ class WSRFile:
         # instruction itself gets aborted.
         self.KeyS0.commit()
         self.KeyS1.commit()
+        # We commit changes to the MAI output registers from outside, even if
+        # the instruction itself gets aborted (there is never a write to these
+        # WSRs from an instruction).
+        self.MaiResS0.commit()
+        self.MaiResS1.commit()
+        self.MaiIn0S0.abort()
+        self.MaiIn0S1.abort()
+        self.MaiIn1S0.abort()
+        self.MaiIn1S1.abort()
 
     def changes(self) -> List[Trace]:
         ret: List[Trace] = []
@@ -349,6 +422,12 @@ class WSRFile:
         ret += self.KeyS0.changes()
         ret += self.KeyS1.changes()
         ret += self.KMAC_DATA.changes()
+        ret += self.MaiResS0.changes()
+        ret += self.MaiResS1.changes()
+        ret += self.MaiIn0S0.changes()
+        ret += self.MaiIn0S1.changes()
+        ret += self.MaiIn1S0.changes()
+        ret += self.MaiIn1S1.changes()
         return ret
 
     def set_sideload_keys(self,
@@ -360,3 +439,9 @@ class WSRFile:
     def wipe(self) -> None:
         self.MOD.write_invalid()
         self.ACC.write_invalid()
+        self.MaiResS0.write_invalid()
+        self.MaiResS1.write_invalid()
+        self.MaiIn0S0.write_invalid()
+        self.MaiIn0S1.write_invalid()
+        self.MaiIn1S0.write_invalid()
+        self.MaiIn1S1.write_invalid()
