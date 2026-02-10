@@ -127,5 +127,5 @@ command-line use otherwise.
 ## Test the ISS
 
 The ISS has a simple test suite, which runs various instructions and
-makes sure they behave as expected. You can find the tests in
-`dv/otbnsim/test` and can run them with `make -C dv/otbnsim test`.
+makes sure they behave as expected.
+See the [simulator page](../dv/otbnsim/README.md) for more details.
