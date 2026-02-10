@@ -389,7 +389,6 @@ This allows one to construct all the required packings.
 
 <img src="./pack_instruction_shifting.svg" width="780"/>
 
-To unpack vectors one can use the following approach.
 The unpacking works by concatenating two 256-bit strings loaded from memory and shifting the desired bits to the lower 192 bits.
 These 192 bits are then expanded to 8x 32 bits by inserting zero bytes every 3 bytes.
 ```
@@ -407,6 +406,14 @@ bn.unpk w1, w11, w10, 192 /* unpack the yellow vector to w1 */
 bn.unpk w2, w12, w11, 128 /* unpack the green vector to w2 */
 bn.unpk w3, wXX, w12, 64  /* unpack the blue vector to w3, wXX represents that any WDR can be used */
 ```
+
+### Transposing vector elements
+To efficiently shuffle vectors, one can use the `bn.trn1` and `bn.trn2` instructions.
+These instructions reorder the vector elements as illustrated in the image below for `bn.trn1.4d` and `bn.trn2.4d`.
+- The `bn.trn1 wrd, wrs1, wrs2` instruction places even-indexed vector elements from `wrs1` into even-indexed elements of `wrd` and even-indexed vector elements from `wrs2` are placed into odd-indexed elements of `wrd`.
+- The `bn.trn2 wrd, wrs1, wrs2` instruction places odd-indexed vector elements from `wrs1` into even-indexed elements of `wrd` and odd-indexed vector elements from `wrs2` are placed into odd-indexed elements of `wrd`.
+
+<img src="./bn_trn_illustration.svg" width="780">
 
 ## Device Interface Functions (DIFs)
 
