@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/abs_mmio.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 
@@ -15,6 +16,7 @@ enum {
   kBase = TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR,
 };
 
+OT_NO_COVERAGE
 int test_stub(void) { return 0x42; }
 
 // SRAM copy of `test_stub` bytecodes.
