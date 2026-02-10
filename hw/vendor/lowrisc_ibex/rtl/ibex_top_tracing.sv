@@ -26,6 +26,8 @@ module ibex_top_tracing import ibex_pkg::*; #(
   parameter int unsigned DbgHwBreakNum    = 1,
   parameter bit          SecureIbex       = 1'b0,
   parameter int unsigned LockstepOffset   = 1,
+  parameter bit          MemECC           = SecureIbex,
+  parameter int unsigned MemDataWidth     = MemECC ? 32 + 7 : 32,
   parameter bit          ICacheScramble   = 1'b0,
   parameter lfsr_seed_t  RndCnstLfsrSeed  = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t  RndCnstLfsrPerm  = RndCnstLfsrPermDefault,
@@ -96,8 +98,22 @@ module ibex_top_tracing import ibex_pkg::*; #(
   output logic                                                         alert_minor_o,
   output logic                                                         alert_major_internal_o,
   output logic                                                         alert_major_bus_o,
-  output logic                                                         core_sleep_o
+  output logic                                                         core_sleep_o,
 
+  // Lockstep signals
+  output ibex_mubi_t                                                  lockstep_cmp_en_o,
+
+  // Shadow core data interface outputs
+  output logic                                                        data_req_shadow_o,
+  output logic                                                        data_we_shadow_o,
+  output logic [3:0]                                                  data_be_shadow_o,
+  output logic [31:0]                                                 data_addr_shadow_o,
+  output logic [31:0]                                                 data_wdata_shadow_o,
+  output logic [6:0]                                                  data_wdata_intg_shadow_o,
+
+  // Shadow core instruction interface outputs
+  output logic                                                        instr_req_shadow_o,
+  output logic [31:0]                                                 instr_addr_shadow_o
 );
 
   // ibex_tracer relies on the signals from the RISC-V Formal Interface
@@ -197,6 +213,8 @@ module ibex_top_tracing import ibex_pkg::*; #(
     .WritebackStage   ( WritebackStage   ),
     .SecureIbex       ( SecureIbex       ),
     .LockstepOffset   ( LockstepOffset   ),
+    .MemECC           ( MemECC           ),
+    .MemDataWidth     ( MemDataWidth     ),
     .ICacheScramble   ( ICacheScramble   ),
     .RndCnstLfsrSeed  ( RndCnstLfsrSeed  ),
     .RndCnstLfsrPerm  ( RndCnstLfsrPerm  ),
@@ -296,7 +314,19 @@ module ibex_top_tracing import ibex_pkg::*; #(
     .alert_minor_o,
     .alert_major_internal_o,
     .alert_major_bus_o,
-    .core_sleep_o
+    .core_sleep_o,
+
+    .lockstep_cmp_en_o,
+
+    .data_req_shadow_o,
+    .data_we_shadow_o,
+    .data_be_shadow_o,
+    .data_addr_shadow_o,
+    .data_wdata_shadow_o,
+    .data_wdata_intg_shadow_o,
+
+    .instr_req_shadow_o,
+    .instr_addr_shadow_o
   );
 
   ibex_tracer

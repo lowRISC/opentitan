@@ -170,7 +170,18 @@ module core_ibex_tb_top;
     .alert_minor_o             (dut_if.alert_minor         ),
     .alert_major_internal_o    (dut_if.alert_major_internal),
     .alert_major_bus_o         (dut_if.alert_major_bus     ),
-    .core_sleep_o              (dut_if.core_sleep          )
+    .core_sleep_o              (dut_if.core_sleep          ),
+
+    .lockstep_cmp_en_o         (                           ),
+    .data_req_shadow_o         (                           ),
+    .data_we_shadow_o          (                           ),
+    .data_be_shadow_o          (                           ),
+    .data_addr_shadow_o        (                           ),
+    .data_wdata_shadow_o       (                           ),
+    .data_wdata_intg_shadow_o  (                           ),
+
+    .instr_req_shadow_o        (                           ),
+    .instr_addr_shadow_o       (                           )
   );
 
   `define IBEX_RF_PATH core_ibex_tb_top.dut.u_ibex_top.gen_regfile_ff.register_file_i
