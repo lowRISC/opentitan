@@ -156,6 +156,8 @@ TEST_OWNER_CONFIGS = {
         "owner_defines": [
             # 0x58 is 'X'modem.
             "WITH_RESCUE_PROTOCOL=0x58",
+            # Rescue can be triggered by watchdog even if rescue detect is set to None.
+            "WITH_RESCUE_TRIGGER=0",
             # misc_gpio: 0x80=enter_on_watchdog.
             "WITH_RESCUE_MISC_GPIO_PARAM=0x80",
         ],
