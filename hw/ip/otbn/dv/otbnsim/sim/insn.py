@@ -434,11 +434,18 @@ class CSRRS(OTBNInsn):
                 # There's a pending EDN request. Stall for a cycle.
                 yield None
 
-        # At this point, the CSR is ready. Read, update and write back to grs1.
+        # At this point, the CSR is ready. Read it to grd.
         old_val = state.read_csr(self.csr)
-        new_val = old_val | bits_to_set
         state.gprs.get_reg(self.grd).write_unsigned(old_val)
+
+        # If CSR should be updated, compute update, check if update is allowed
+        # and write it back.
         if self.grs1 != 0:
+            new_val = old_val | bits_to_set
+            if self.csr == 0x7f0:
+                if not state.mai.is_valid_ctrl_change(new_val):
+                    state.stop_at_end_of_cycle(ErrBits.MAI_ERROR)
+                    return None
             state.write_csr(self.csr, new_val)
 
         return None
@@ -478,6 +485,12 @@ class CSRRW(OTBNInsn):
         if self.grd != 0:
             old_val = state.read_csr(self.csr)
             state.gprs.get_reg(self.grd).write_unsigned(old_val)
+
+        # Check if the write to MAI_CTRL is allowed.
+        if self.csr == 0x7f0:
+            if not state.mai.is_valid_ctrl_change(new_val):
+                state.stop_at_end_of_cycle(ErrBits.MAI_ERROR)
+                return None
 
         state.write_csr(self.csr, new_val)
         return None
@@ -1271,6 +1284,13 @@ class BNWSRW(OTBNInsn):
             # Invalid WSR index. Stop with an illegal instruction error.
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
             return None
+
+        # Check if MAI is ready to accept new inputs. If not stop with MAI
+        # error.
+        if self.wsr in [12, 13, 14, 15]:
+            if not state.mai.ready_for_inputs():
+                state.stop_at_end_of_cycle(ErrBits.MAI_ERROR)
+                return None
 
         val = state.wdrs.get_reg(self.wrs).read_unsigned()
 
