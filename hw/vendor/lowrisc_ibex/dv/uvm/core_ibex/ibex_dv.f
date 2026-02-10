@@ -50,9 +50,6 @@ ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_39_32_enc.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_39_32_dec.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_72_64_enc.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_72_64_dec.sv
-${LOWRISC_IP_DIR}/ip/prim/rtl/prim_onehot_check.sv
-${LOWRISC_IP_DIR}/ip/prim/rtl/prim_onehot_enc.sv
-${LOWRISC_IP_DIR}/ip/prim/rtl/prim_onehot_mux.sv
 
 // ibex CORE RTL files
 +incdir+${PRJ_DIR}/rtl

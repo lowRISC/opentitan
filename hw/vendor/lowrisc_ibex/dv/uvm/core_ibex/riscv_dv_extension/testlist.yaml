@@ -709,9 +709,9 @@
   rtl_params:
     SecureIbex: 1
 
-- test: riscv_rf_ctrl_intg_test
+- test: riscv_rf_addr_intg_test
   description: >
-    Randomly corrupt one of the register file write and read enables signals in the middle of program execution
+    Randomly corrupt one of the register file addresses in the middle of program execution
   iterations: 15
   gen_test: riscv_rand_instr_test
   gen_opts: >
@@ -720,7 +720,7 @@
     +gen_all_csrs_by_default=1
     +add_csr_write=MSTATUS,MEPC,MCAUSE,MTVAL,0x7c0,0x7c1
     +no_csr_instr=0
-  rtl_test: core_ibex_rf_ctrl_intg_test
+  rtl_test: core_ibex_rf_addr_intg_test
   rtl_params:
     SecureIbex: 1
 

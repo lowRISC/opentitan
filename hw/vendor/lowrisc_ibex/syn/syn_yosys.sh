@@ -34,9 +34,6 @@ source syn_setup.sh
 
 LR_DEP_SOURCES=(
     "../vendor/lowrisc_ip/ip/prim/rtl/prim_count.sv"
-    "../vendor/lowrisc_ip/ip/prim/rtl/prim_onehot_check.sv"
-    "../vendor/lowrisc_ip/ip/prim/rtl/prim_onehot_enc.sv"
-    "../vendor/lowrisc_ip/ip/prim/rtl/prim_onehot_mux.sv"
     "../vendor/lowrisc_ip/ip/prim/rtl/prim_secded_inv_39_32_dec.sv"
     "../vendor/lowrisc_ip/ip/prim/rtl/prim_secded_inv_39_32_enc.sv"
     "../vendor/lowrisc_ip/ip/prim/rtl/prim_lfsr.sv"
