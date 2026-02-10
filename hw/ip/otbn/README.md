@@ -707,7 +707,7 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>RW</td>
       <td><a name="mod">MOD</a></td>
       <td>
-        The modulus used by the {{#otbn-insn-ref BN.ADDM}} and {{#otbn-insn-ref BN.SUBM}} instructions.
+        The modulus used by the {{#otbn-insn-ref BN.ADDM}} and {{#otbn-insn-ref BN.SUBM}} instructions as well as their vectorized variants.
         This WSR is also visible as CSRs `MOD0` through to `MOD7`.
       </td>
     </tr>
@@ -741,7 +741,7 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>RW</td>
       <td><a name="acc">ACC</a></td>
       <td>
-        The accumulator register used by the {{#otbn-insn-ref BN.MULQACC}} instruction.
+        The accumulator register used by the {{#otbn-insn-ref BN.MULQACC}} instruction and the vectorized multiplication instructions like {{#otbn-insn-ref BN.MULV}}.
       </td>
     </tr>
     <tr>
