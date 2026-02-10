@@ -40,6 +40,15 @@
           commit_id:          "a6b908283fccba3f8b6b44052c6ad87276dc21e8",
           notes:              ""
       },
+      {
+          version:            "1.2.0",
+          life_stage:         "L1",
+          design_stage:       "D1",
+          verification_stage: "V0",
+          dif_stage:          "S1",
+          commit_id:          "7511d6082ea9ebc926dca4a1bfd3ed2201339fd0",
+          notes:              ""
+      },
   ]
   clocking: [
     {clock: "clk_i", reset: "rst_ni", idle: "idle_o", primary: true},
