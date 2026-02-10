@@ -71,7 +71,7 @@ module ibex_lockstep import ibex_pkg::*; #(
   input  logic                         data_we_i,
   input  logic [3:0]                   data_be_i,
   input  logic [31:0]                  data_addr_i,
-  input  logic [MemDataWidth-1:0]      data_wdata_i,
+  input  logic [31:0]                  data_wdata_i,
   input  logic [MemDataWidth-1:0]      data_rdata_i,
   input  logic                         data_err_i,
 
@@ -108,7 +108,17 @@ module ibex_lockstep import ibex_pkg::*; #(
   output logic                         alert_major_bus_o,
   input  ibex_mubi_t                   core_busy_i,
   input  logic                         test_en_i,
-  input  logic                         scan_rst_ni
+  input  logic                         scan_rst_ni,
+
+  output ibex_mubi_t                   lockstep_cmp_en_o,
+  output logic                         data_req_shadow_o,
+  output logic                         data_we_shadow_o,
+  output logic [3:0]                   data_be_shadow_o,
+  output logic [31:0]                  data_addr_shadow_o,
+  output logic [31:0]                  data_wdata_shadow_o,
+  output logic [6:0]                   data_wdata_intg_shadow_o,
+  output logic                         instr_req_shadow_o,
+  output logic [31:0]                  instr_addr_shadow_o
 );
 
   import prim_secded_pkg::SecdedInv3932ZeroWord;
@@ -329,7 +339,7 @@ module ibex_lockstep import ibex_pkg::*; #(
     logic                    data_we;
     logic [3:0]              data_be;
     logic [31:0]             data_addr;
-    logic [MemDataWidth-1:0] data_wdata;
+    logic [31:0]             data_wdata;
     logic [IC_NUM_WAYS-1:0]  ic_tag_req;
     logic                    ic_tag_write;
     logic [IC_INDEX_W-1:0]   ic_tag_addr;
@@ -391,6 +401,10 @@ module ibex_lockstep import ibex_pkg::*; #(
   logic                           shadow_rf_we_wb;
   logic                           shadow_dummy_instr_id;
   logic                           shadow_dummy_instr_wb;
+
+  // The following output does not need to be checked in the lockstep comparison as we anyways
+  // check the data_wdata itself.
+  logic [6:0]                     shadow_data_wdata_intg;
 
   ///////////////////////////////
   // Shadow core instantiation //
@@ -458,7 +472,7 @@ module ibex_lockstep import ibex_pkg::*; #(
     .data_we_o           (shadow_outputs_d.data_we),
     .data_be_o           (shadow_outputs_d.data_be),
     .data_addr_o         (shadow_outputs_d.data_addr),
-    .data_wdata_o        (shadow_outputs_d.data_wdata),
+    .data_wdata_o        ({shadow_data_wdata_intg, shadow_outputs_d.data_wdata}),
     .data_rdata_i        (shadow_inputs_q[0].data_rdata),
     .data_err_i          (shadow_inputs_q[0].data_err),
 
@@ -641,4 +655,14 @@ module ibex_lockstep import ibex_pkg::*; #(
   assign alert_major_bus_o      = shadow_alert_major_bus;
   assign alert_minor_o          = shadow_alert_minor;
 
+  assign lockstep_cmp_en_o = enable_cmp_q;
+
+  assign data_req_shadow_o = shadow_outputs_d.data_req;
+  assign data_we_shadow_o = shadow_outputs_d.data_we;
+  assign data_be_shadow_o = shadow_outputs_d.data_be;
+  assign data_addr_shadow_o = shadow_outputs_d.data_addr;
+  assign data_wdata_shadow_o = shadow_outputs_d.data_wdata;
+  assign data_wdata_intg_shadow_o = shadow_data_wdata_intg;
+  assign instr_req_shadow_o = shadow_outputs_d.instr_req;
+  assign instr_addr_shadow_o = shadow_outputs_d.instr_addr;
 endmodule

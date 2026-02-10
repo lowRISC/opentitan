@@ -217,7 +217,19 @@ module ibex_riscv_compliance (
       .alert_minor_o             (                     ),
       .alert_major_internal_o    (                     ),
       .alert_major_bus_o         (                     ),
-      .core_sleep_o              (                     )
+      .core_sleep_o              (                     ),
+
+      .lockstep_cmp_en_o         (                     ),
+
+      .data_req_shadow_o         (                     ),
+      .data_we_shadow_o          (                     ),
+      .data_be_shadow_o          (                     ),
+      .data_addr_shadow_o        (                     ),
+      .data_wdata_shadow_o       (                     ),
+      .data_wdata_intg_shadow_o  (                     ),
+
+      .instr_req_shadow_o        (                     ),
+      .instr_addr_shadow_o       (                     )
     );
 
   // SRAM block for instruction and data storage
