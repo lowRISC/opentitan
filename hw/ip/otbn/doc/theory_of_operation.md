@@ -515,7 +515,7 @@ OTBN provides a mechanism to securely wipe all internal state, excluding the ins
 
 The following state is wiped:
 * Register files: GPRs and WDRs
-* The accumulator register (also accessible through the ACC WSR)
+* The accumulator register (also accessible through the ACC WSR) and the intermediate result registers for the Montgomery computation (hidden registers).
 * Flags (accessible through the FG0, FG1, and FLAGS CSRs)
 * The modulus (accessible through the MOD0 to MOD7 CSRs and the MOD WSR)
 
