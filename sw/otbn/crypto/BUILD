@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:otbn.bzl", "otbn_binary", "otbn_library")
+load("//rules/coverage:view.bzl", "coverage_view_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -17,6 +18,12 @@ otbn_binary(
         ":p256_sign",
         ":p256_verify",
     ],
+)
+
+coverage_view_test(
+    name = "boot_coverage_view",
+    elf = ":boot",
+    kind = "otbn",
 )
 
 otbn_library(
