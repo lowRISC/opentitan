@@ -15,8 +15,8 @@ use crate::error::HsmError;
 use crate::module::Module;
 use crate::util::attribute::{AttributeMap, KeyType, ObjectClass};
 use crate::util::helper;
-use crate::util::key::mldsa;
 use crate::util::key::KeyEncoding;
+use crate::util::key::mldsa;
 use crate::util::wrap::{Wrap, WrapPrivateKey};
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]

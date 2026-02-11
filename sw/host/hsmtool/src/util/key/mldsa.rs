@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use const_oid::ObjectIdentifier;
 use der::{Encode, EncodePem};
 use ml_dsa::{
-    EncodedSigningKey, EncodedVerifyingKey, MlDsa44, MlDsa65, MlDsa87, SigningKey,
-    VerifyingKey,
+    EncodedSigningKey, EncodedVerifyingKey, MlDsa44, MlDsa65, MlDsa87, SigningKey, VerifyingKey,
 };
 use pem_rfc7468;
 use pkcs8::{DecodePrivateKey, PrivateKeyInfo};
@@ -98,7 +97,9 @@ fn _load_private_key(path: &Path) -> Result<MldsaSigningKey> {
     } else if let Ok(key) = SigningKey::<MlDsa87>::from_pkcs8_der(&der_bytes) {
         Ok(MldsaSigningKey::V87(Box::new(key)))
     } else {
-        Err(anyhow!("Could not decode MLDSA private key from PKCS#8 DER"))
+        Err(anyhow!(
+            "Could not decode MLDSA private key from PKCS#8 DER"
+        ))
     }
 }
 
@@ -115,7 +116,10 @@ impl TryFrom<&MldsaSigningKey> for AttributeMap {
             AttrData::ObjectClass(ObjectClass::PrivateKey),
         );
         attr.insert(AttributeType::KeyType, AttrData::KeyType(KeyType::MlDsa));
-        attr.insert(AttributeType::ParameterSet, AttrData::from(k.parameter_set()));
+        attr.insert(
+            AttributeType::ParameterSet,
+            AttrData::from(k.parameter_set()),
+        );
         attr.insert(AttributeType::Value, AttrData::from(k.encode().as_slice()));
         Ok(attr)
     }
@@ -153,40 +157,42 @@ impl TryFrom<&AttributeMap> for MldsaSigningKey {
             Some(1) => {
                 let arr = EncodedSigningKey::<MlDsa44>::try_from(value.as_slice())
                     .map_err(|_| HsmError::KeyError("invalid MLDSA-44 key length".into()))?;
-                Ok(MldsaSigningKey::V44(Box::new(SigningKey::<MlDsa44>::decode(
-                    &arr,
-                ))))
+                Ok(MldsaSigningKey::V44(Box::new(
+                    SigningKey::<MlDsa44>::decode(&arr),
+                )))
             }
             Some(2) => {
                 let arr = EncodedSigningKey::<MlDsa65>::try_from(value.as_slice())
                     .map_err(|_| HsmError::KeyError("invalid MLDSA-65 key length".into()))?;
-                Ok(MldsaSigningKey::V65(Box::new(SigningKey::<MlDsa65>::decode(
-                    &arr,
-                ))))
+                Ok(MldsaSigningKey::V65(Box::new(
+                    SigningKey::<MlDsa65>::decode(&arr),
+                )))
             }
             Some(3) => {
                 let arr = EncodedSigningKey::<MlDsa87>::try_from(value.as_slice())
                     .map_err(|_| HsmError::KeyError("invalid MLDSA-87 key length".into()))?;
-                Ok(MldsaSigningKey::V87(Box::new(SigningKey::<MlDsa87>::decode(
-                    &arr,
-                ))))
+                Ok(MldsaSigningKey::V87(Box::new(
+                    SigningKey::<MlDsa87>::decode(&arr),
+                )))
             }
             _ => {
                 // If parameter set is missing or unknown, try to guess from length
                 if let Ok(arr) = EncodedSigningKey::<MlDsa44>::try_from(value.as_slice()) {
-                    Ok(MldsaSigningKey::V44(Box::new(SigningKey::<MlDsa44>::decode(
-                        &arr,
-                    ))))
+                    Ok(MldsaSigningKey::V44(Box::new(
+                        SigningKey::<MlDsa44>::decode(&arr),
+                    )))
                 } else if let Ok(arr) = EncodedSigningKey::<MlDsa65>::try_from(value.as_slice()) {
-                    Ok(MldsaSigningKey::V65(Box::new(SigningKey::<MlDsa65>::decode(
-                        &arr,
-                    ))))
+                    Ok(MldsaSigningKey::V65(Box::new(
+                        SigningKey::<MlDsa65>::decode(&arr),
+                    )))
                 } else if let Ok(arr) = EncodedSigningKey::<MlDsa87>::try_from(value.as_slice()) {
-                    Ok(MldsaSigningKey::V87(Box::new(SigningKey::<MlDsa87>::decode(
-                        &arr,
-                    ))))
+                    Ok(MldsaSigningKey::V87(Box::new(
+                        SigningKey::<MlDsa87>::decode(&arr),
+                    )))
                 } else {
-                    Err(HsmError::KeyError("Could not decode MLDSA private key".into()))
+                    Err(HsmError::KeyError(
+                        "Could not decode MLDSA private key".into(),
+                    ))
                 }
             }
         }
@@ -225,7 +231,10 @@ impl TryFrom<&MldsaVerifyingKey> for AttributeMap {
             AttrData::ObjectClass(ObjectClass::PublicKey),
         );
         attr.insert(AttributeType::KeyType, AttrData::KeyType(KeyType::MlDsa));
-        attr.insert(AttributeType::ParameterSet, AttrData::from(k.parameter_set()));
+        attr.insert(
+            AttributeType::ParameterSet,
+            AttrData::from(k.parameter_set()),
+        );
         attr.insert(AttributeType::Value, AttrData::from(k.encode().as_slice()));
         Ok(attr)
     }
@@ -294,7 +303,9 @@ impl TryFrom<&AttributeMap> for MldsaVerifyingKey {
                         VerifyingKey::<MlDsa87>::decode(&arr),
                     )))
                 } else {
-                    Err(HsmError::KeyError("Could not decode MLDSA public key".into()))
+                    Err(HsmError::KeyError(
+                        "Could not decode MLDSA public key".into(),
+                    ))
                 }
             }
         }
@@ -331,23 +342,26 @@ pub fn save_public_key<P: AsRef<Path>>(
     let data = match key {
         MldsaVerifyingKey::V44(k) => match enc {
             KeyEncoding::Der | KeyEncoding::Pkcs8Der => k.to_public_key_der()?.as_bytes().to_vec(),
-            KeyEncoding::Pem | KeyEncoding::Pkcs8Pem => {
-                k.to_public_key_pem(pkcs8::LineEnding::LF)?.as_bytes().to_vec()
-            }
+            KeyEncoding::Pem | KeyEncoding::Pkcs8Pem => k
+                .to_public_key_pem(pkcs8::LineEnding::LF)?
+                .as_bytes()
+                .to_vec(),
             _ => return Err(anyhow!("Unsupported format for MLDSA export")),
         },
         MldsaVerifyingKey::V65(k) => match enc {
             KeyEncoding::Der | KeyEncoding::Pkcs8Der => k.to_public_key_der()?.as_bytes().to_vec(),
-            KeyEncoding::Pem | KeyEncoding::Pkcs8Pem => {
-                k.to_public_key_pem(pkcs8::LineEnding::LF)?.as_bytes().to_vec()
-            }
+            KeyEncoding::Pem | KeyEncoding::Pkcs8Pem => k
+                .to_public_key_pem(pkcs8::LineEnding::LF)?
+                .as_bytes()
+                .to_vec(),
             _ => return Err(anyhow!("Unsupported format for MLDSA export")),
         },
         MldsaVerifyingKey::V87(k) => match enc {
             KeyEncoding::Der | KeyEncoding::Pkcs8Der => k.to_public_key_der()?.as_bytes().to_vec(),
-            KeyEncoding::Pem | KeyEncoding::Pkcs8Pem => {
-                k.to_public_key_pem(pkcs8::LineEnding::LF)?.as_bytes().to_vec()
-            }
+            KeyEncoding::Pem | KeyEncoding::Pkcs8Pem => k
+                .to_public_key_pem(pkcs8::LineEnding::LF)?
+                .as_bytes()
+                .to_vec(),
             _ => return Err(anyhow!("Unsupported format for MLDSA export")),
         },
     };
