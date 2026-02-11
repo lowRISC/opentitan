@@ -34,6 +34,7 @@ jobs:
         with:
           script: |
             const wr = context.payload.workflow_run;
+
             const payload = {
               sha: wr.event === 'pull_request' ? wr.pull_requests[0].head.sha : wr.head.sha,
               pull_request: wr.event === 'pull_request' ? wr.pull_requests[0].number : context.issue.number,
@@ -43,6 +44,12 @@ jobs:
                 run_name: wr.event === 'pull_request' ? wr.pull_requests[0].title : wr.head_commit.message.split('\n')[0],
               },
             };
+
+            // Log the Dispatched Payload
+            core.info("Private CI Dispatch payload:")
+            core.info(JSON.stringify(payload, null, 2))
+
+            // Dispatch to Private CI
             await github.rest.repos.createDispatchEvent({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -52,6 +59,8 @@ jobs:
                 target: `${context.repo.owner}/opentitan-private-ci/master/private-ci.yml`,
               }
             });
+
+            // Dispatch to AscentLint CI
             await github.rest.repos.createDispatchEvent({
               owner: context.repo.owner,
               repo: context.repo.repo,
